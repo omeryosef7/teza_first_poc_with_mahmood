@@ -1,0 +1,624 @@
+{
+  "note": "one row per top-level committed artifact. A citation that pairs two rows with different `bank` or `model` is a population transfer and needs a stated reason.",
+  "n_artifacts": 61,
+  "rows": [
+    {
+      "artifact": "outputs/boombness/advbench_decomposition.json",
+      "bank": "AdvBench-495",
+      "model": null,
+      "condition": null,
+      "n": 495,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/advbench_decomposition_qwen3.json",
+      "bank": "AdvBench-495",
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": 495,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/advbench_direction_specificity.json",
+      "bank": "AdvBench-495",
+      "model": null,
+      "condition": null,
+      "n": 495,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/advbench_layer_profile.json",
+      "bank": "AdvBench-495",
+      "model": null,
+      "condition": null,
+      "n": 495,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/advbench_superadd_control.json",
+      "bank": "AdvBench-495",
+      "model": null,
+      "condition": null,
+      "n": 495,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/clearharm_arm_D.json",
+      "bank": "ClearHarm-179",
+      "model": null,
+      "condition": "clearharm_direct",
+      "n": 179,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/clearharm_decomposition.json",
+      "bank": "ClearHarm-179",
+      "model": null,
+      "condition": "clearharm_direct",
+      "n": 179,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/clearharm_decomposition_qwen3.json",
+      "bank": "ClearHarm-179",
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": 179,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/clearharm_decomposition_regoal.json",
+      "bank": "ClearHarm-179",
+      "model": "Llama-3.1-8B",
+      "condition": null,
+      "n": 179,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/clearharm_supplement.json",
+      "bank": "ClearHarm-179",
+      "model": "Llama-3.1-8B",
+      "condition": "clearharm_direct",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14"
+    },
+    {
+      "artifact": "outputs/boombness/concept_pair_screen.json",
+      "bank": "bank(button)",
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/condition_profile_llama_len_B.json",
+      "bank": null,
+      "model": "Llama-3.1-8B",
+      "condition": null,
+      "n": 960,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/condition_profile_llama_projout.json",
+      "bank": null,
+      "model": "Llama-3.1-8B",
+      "condition": null,
+      "n": 960,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/direction_cosines.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/e6_button_knockout.json",
+      "bank": "bank(button)",
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14 / E6"
+    },
+    {
+      "artifact": "outputs/boombness/g11_role_full.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": "11"
+    },
+    {
+      "artifact": "outputs/boombness/g11_role_full_benign.json",
+      "bank": null,
+      "model": null,
+      "condition": "benign_literal",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": "11"
+    },
+    {
+      "artifact": "outputs/boombness/g1_g3_analysis.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g1_stratified.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g1_whole_answer_absolute.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g1_wholeanswer_sow.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g2_analysis_MIXED_FOOTING_SUPERSEDED.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g2_analysis_POWER.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g2_analysis_cwpos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g2_analysis_cwpos_CLEAN.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g2_analysis_lastpos.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g3_dstfix.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g3_dynrange.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g3_edgematch.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g3_wholeanswer_block24.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g3_wholeanswer_codeword24.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/g8_comprehension_DF_arms.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": "8"
+    },
+    {
+      "artifact": "outputs/boombness/g8_comprehension_by_nexamples.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": "8"
+    },
+    {
+      "artifact": "outputs/boombness/g9_three_predictor_cwpos.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 234,
+      "n_clusters": 6,
+      "has_provenance": true,
+      "plan_section": "9"
+    },
+    {
+      "artifact": "outputs/boombness/g9_three_predictor_cwpos_CLEAN.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 90,
+      "n_clusters": 6,
+      "has_provenance": true,
+      "plan_section": "9"
+    },
+    {
+      "artifact": "outputs/boombness/g9_three_predictor_lastpos.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 234,
+      "n_clusters": 6,
+      "has_provenance": true,
+      "plan_section": "9"
+    },
+    {
+      "artifact": "outputs/boombness/generation_change.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/judge_retest_advbench.json",
+      "bank": "AdvBench-495",
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/judge_retest_floor.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/llama_arms_topical.json",
+      "bank": null,
+      "model": "Llama-3.1-8B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14"
+    },
+    {
+      "artifact": "outputs/boombness/position_2x2.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 234,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_armD_JUDGE_ARTIFACT.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "benign_literal",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14 (Qwen3 replication of arm D)"
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_armD_benign_literal.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "benign_literal",
+      "n": 324,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_armD_direct_harmful.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "direct_harmful",
+      "n": 72,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_armD_natural_doublespeak.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": 420,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_channel_test.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14"
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_g2_analysis.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_reanalyze_d_naive_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3_reanalyze_d_surface_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3depth_reanalyze_d_naive_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3depth_reanalyze_d_surface_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3nt_reanalyze_d_naive_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/qwen3nt_reanalyze_d_surface_cos.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/reanalyze_corrected_d_surface_cos.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/reanalyze_d_naive_cos.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/reanalyze_d_surface_cos.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/role_analysis.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/section14_topical_asr.json",
+      "bank": null,
+      "model": "Qwen3-14B",
+      "condition": "natural_doublespeak",
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "14"
+    },
+    {
+      "artifact": "outputs/boombness/section4b_whole_answer.json",
+      "bank": null,
+      "model": null,
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": "2.6 / report 4b"
+    },
+    {
+      "artifact": "outputs/boombness/steering_analysis.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 270,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    },
+    {
+      "artifact": "outputs/boombness/steering_band_real.json",
+      "bank": null,
+      "model": null,
+      "condition": "natural_doublespeak",
+      "n": 270,
+      "n_clusters": null,
+      "has_provenance": false,
+      "plan_section": null
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "src/boombness/population_index.py",
+      "--out",
+      "outputs/boombness/population_index.json"
+    ],
+    "git_commit": "66e6db569e2781797c4ade009d10c6ae8f8134d1"
+  }
+}

@@ -4021,3 +4021,40 @@ to fix. **Measuring the floor on the population you are quoting costs one comman
 | 88 | 2026-08-21 | measured the judge floor on AdvBench itself | **0.2 pp, 1 flip in 495** — 10× smaller than the bank's |
 | 89 | 2026-08-21 | re-derived the headline under the replicate judge | **+0.0364 both runs**, CIs nearly identical — robust to judge sampling |
 | 90 | 2026-08-21 | corrected my own published "1.5× the floor" to the measured **~18×** | third instance this week of transferring a measurement across populations |
+
+## The structural cause of population transfer: 48 of 61 artifacts cannot say what they are about
+
+Tick 2026-08-21. Having found the same defect three times this week — a quantity measured on
+population X used to support a statement about population Y — I looked for the cause rather than
+fixing a fourth instance. `population_index.py` fingerprints every committed top-level artifact with
+the fields a reader needs to tell whether two numbers concern the same thing:
+
+| | |
+|---|---|
+| artifacts indexed | **61** |
+| **state no identifiable bank/population** | **48** |
+| record a `provenance` block | 13 |
+
+**That is the cause.** If an artifact does not say which prompt population produced it, a citation
+cannot be checked, and the three defects this week were all citations nobody could check. It is also
+why the fixes felt ad hoc: each was a semantic judgement made by reading, when it should have been a
+field comparison.
+
+**Two honest limits of this index, both found by using it:**
+
+1. **The fingerprint is a heuristic, not a schema.** It infers the bank from substrings and the model
+   from the first match, so `section14_topical_asr.json` — which contains **both** Llama and Qwen3
+   results — is fingerprinted as Qwen3. An artifact holding two populations needs to state the
+   population **per result**, not once at the top. Mine does not yet.
+2. **It deliberately does not parse the report and match citations.** That is a semantic problem, and
+   a checker that guesses would be worse than a table a human can scan — the same reasoning that made
+   the registry checker (which *is* mechanical) worth building and this one not.
+
+**What this changes going forward:** new artifacts from scripts I own should carry an explicit
+population block rather than leaving it inferable, and the index is the way to see who does not. This
+is diagnosis, not a fix — recorded as such rather than as a solved problem.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 91 | 2026-08-21 | built `population_index.py` after the third population-transfer defect | **48/61 artifacts state no population**; 13 carry provenance |
+| 92 | 2026-08-21 | recorded the index's own two limits, both found by running it | heuristic fingerprint; multi-population artifacts mis-labelled |
