@@ -3294,7 +3294,9 @@ is measured separately.
 | remR (refusalness) | +0.2028, p 0.00030, 101↑ / 0↓ | +0.1291, p 0.33 | −0.2222 | 110 |
 | remBoth | +0.2740, p 0.000095, 142↑ / 0↓ | +0.0812, p 0.57 | −0.3091 | 153 |
 
-**Not one prompt in any arm moves down.** And the decisive structural fact, checked directly on the
+**Not one prompt in any arm moves down.**
+> ⛔ **SUPERSEDED — see R4-2 (review #4). It is false outside `base_refused`: the artifact records `n_negative = 2` for both `remBoth` and `remS_ctrl`. My R4-2 note said this was 'corrected in place'; it was not, and this marker is the correction later in this file. Do not cite the passage above.**
+ And the decisive structural fact, checked directly on the
 raw rows: **among prompts that stay keyword-refused, the score delta is exactly 0.0 for every single
 prompt, in every arm** — 440/440, 351/351, 308/308, 461/461. Every point of score movement is a
 refusal→non-refusal flip. `remS`'s 24 movers are its 21 flips plus 3 prompts the baseline already
@@ -3907,7 +3909,9 @@ the one arm with real content, matching R-13's 54.3% harmful-keyword figure at 4
 | remove refusalness | 0.271 | **0.788** | ✅ **PASS** |
 | remove both | 0.352 | **0.794** | ✅ **PASS** |
 
-**Every Llama arm passes, at 0.79–0.80 against a 0.15 threshold.** The exposure R-13 opened is
+**Every Llama arm passes, at 0.79–0.80 against a 0.15 threshold.**
+> ⛔ **SUPERSEDED — R4-7: at the documented default threshold only `remR` and `remBoth` are gated, so arm B is NOT certified; the overlaps were also recomputed under word-boundary matching. Do not cite the passage above.**
+ The exposure R-13 opened is
 confined to codeword-substituted banks, and that is now **measured on this sprint's own arms rather
 than argued from the absence of goal substitution**. Arm B (+0.0305), arm C (+0.1895), arm D
 (+0.2544), the E4 pathway decomposition and the Phase F composed matrix all rest on ASR numbers that
@@ -5869,6 +5873,8 @@ predict as well at the prompt level, that would make the direction non-specific 
 
 
 ## ✅ THE LAYER PROFILE RE-CHECKED — `d_surface` is causally specific at all four depths, and only L8 survives Holm
+> ⛔ **SUPERSEDED — superseded by the session-matched, deterministic-basis re-run below, where ALL FOUR depths survive Holm and the L12 control moves from +0.0103 (p 0.062) to -0.0048 (p 0.24). Do not cite the passage above.**
+
 
 **Artifact:** `outputs/boombness_followup/control_recheck_subspace.json`.
 **Producer:** `src/boombness/analyze_control_recheck.py`. AdvBench heldout 495, one baseline, four
@@ -5892,7 +5898,9 @@ exceeds a control that ablates a *different* direction in the same subspace, at 
 +0.0094 to +0.0339. That is the direction-specificity test the isotropic controls were never able to
 perform, and `d_surface` passes it four times out of four.
 
-**⛔ But only L8 survives Holm over the four depths** (adjusted: L8 **0.0413**, L12 0.0638, L6 0.0705,
+**⛔ But only L8 survives Holm over the four depths**
+> ⛔ **SUPERSEDED — the deterministic-basis re-run: all four survive (L12 0.0136, L8 0.0276, L6/L10 0.0347). Do not cite the passage above.**
+ (adjusted: L8 **0.0413**, L12 0.0638, L6 0.0705,
 L10 0.0705). The family is the depth set, because the contrast is run once per depth — the same
 correction this sprint applied to the layer profile itself, where Holm rejected nothing at m = 11.
 Reporting four individually-significant contrasts without it would be exactly the defect this sprint
@@ -5967,6 +5975,8 @@ near-orthogonal (cos 0.008–0.087) — predicts *equally strongly with the oppo
 effect. So this is not "any scalar predicts".
 
 ### ⛔ Requirement 4 fails — CONFIRMED, and for the first time on a control that could have passed
+> ⛔ **SUPERSEDED — review #6 R6-2: `d_naive` is an exact linear combination of `d_surface` and `d_context` and is struck from the evidence; the verdict rests on `d_inter` and the three orthogonal draws. Do not cite the passage above.**
+
 
 The verdict is unchanged; the evidence for it is now sound. **Prompt-level Boombness is not a usable
 optimization target**, and the reason is sharper than "other directions also predict": the predictive
