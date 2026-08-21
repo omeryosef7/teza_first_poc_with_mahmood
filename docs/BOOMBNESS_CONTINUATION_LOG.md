@@ -5308,3 +5308,47 @@ tick's corrected table digit-for-digit.
 | 181 | 2026-08-21 | fixed the `t(3)` label (df was 9) | mislabeled statistic corrected before publication |
 | 182 | 2026-08-21 | added `arm/max_control`, the assumption-free statistic | L6 1.80×, L8 2.33×, L12 3.60×; arm exceeds all controls at all four layers |
 | 183 | 2026-08-21 | submitted angles 10/11 (772653/772654) | PENDING; completes L6's 12-point grid |
+
+## A glob over tags is address-by-incidental-property, so it now gets checked against identity
+
+Tick 2026-08-21. Angles 10/11 at L6 completed (772653/772654) — **all 12 L6 generations verified
+distinct**, 12 of 12 unique `gens.jsonl` hashes, 495 rows and `DONE.json` each. Judging submitted
+(772757/772758). L8's dense sweep started: 772760-772763 (angles 1,2,4,5 of 12), keeping the queue at
+the 6-job cap.
+
+**The defect I went looking for before it happened.** `angle_glob()` selects each null draw with a
+shell glob over run **tags** — and a tag is an incidental property. `angJ8k1_*` and `angJ8k1of12_*` are
+one character apart and name **different directions** (θ = 45° vs 15°). If a glob ever caught both,
+`_rows()` would union them into a single "angle" and the null would quietly contain a blend of two
+directions — no error, no missing file, just a wrong number. This repo has hit
+address-by-incidental-property four times, and a glob over tags is exactly that shape. The L8 dense
+runs I just submitted are the first time both spellings will coexist at the same layer.
+
+**The fix addresses identity.** Every run resolved for an angle is now checked against what it
+**declared**: the judge run's `config.json` records its `--gens` directory, whose own `config.json`
+carries the `--intervene` string. If a matched run declares a different direction than the angle asked
+for, the script **exits** rather than blending. Both spellings of the same direction are accepted
+(`angle3of12` ≡ `angle1` at n=4, the equivalence verified at cos 1.0000), because the check is on the
+angle, not on the tag.
+
+**Tested against a case it must fail.** Planted a judge dir named `angJ6k1of12_FAKEGUARDTEST` whose
+declared spec was `angle2of12`, with real result rows so it would otherwise have been unioned in:
+
+```
+[hardnull] GLOB CAUGHT THE WRONG DIRECTION.
+  glob:     outputs/boombness/judge/angJ6k1of12_*
+  expected one of: ['in_subspace_angle1of12:project_out:6-6:1.0']
+  run angJ6k1of12_FAKEGUARDTEST declares: in_subspace_angle2of12:project_out:6-6:1.0
+```
+
+Exit **1** on the planted collision, exit **0** on clean data, numbers unchanged, planted dirs removed
+(0 remain). Also deleted a dead branch in `angle_glob` — an `if layer != 8 else` whose two arms were
+identical, i.e. a special case that special-cased nothing.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 184 | 2026-08-21 | 772653/772654 COMPLETED | **12 of 12** L6 gens hashes distinct, 495 rows each |
+| 185 | 2026-08-21 | submitted judging 772757/772758 | completes L6's 12-point grid |
+| 186 | 2026-08-21 | submitted L8 dense angles 772760-772763 | L8 has the widest null (sd 0.0128) and weakest ratio (2.33×) |
+| 187 | 2026-08-21 | added a declared-spec guard to the angle resolver | glob-over-tags can no longer blend two directions into one null point |
+| 188 | 2026-08-21 | adversarially tested it with a planted wrong-direction run | exit 1 on collision, 0 on clean; dirs cleaned |

@@ -52,13 +52,37 @@ def angle_glob(layer: int, k: int, n_angles: int) -> str:
     twice, or a real draw silently dropped.
     """
     if n_angles == 4:
-        return f"{JUDGE}/angJ{layer}k{k}_*" if layer != 8 else f"{JUDGE}/angJ8k{k}_*"
+        return f"{JUDGE}/angJ{layer}k{k}_*"
     if n_angles == 12 and k % 3 == 0:
         return f"{JUDGE}/angJ{layer}k{k // 3}_*"
     return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
 
 
-def _rows(pat):
+
+def declared_spec(judge_dir: str):
+    """The `--intervene` spec the run that produced these generations actually declared.
+
+    ADDRESS BY IDENTITY, NOT BY FILENAME. `angle_glob` picks runs with a shell glob over tags, and a
+    tag is an incidental property: `angJ8k1_*` and `angJ8k1of12_*` are one character apart and name
+    DIFFERENT directions (theta = 45 deg vs 15 deg). If a glob ever caught both, `_rows` would union
+    them into a single "angle" and the null would silently contain a blend of two directions. This
+    repo has hit address-by-incidental-property four times; a glob over tags is exactly that shape.
+
+    So every run is checked against what it DECLARED: the judge run records its `--gens` directory,
+    whose `config.json` carries the `--intervene` string. Mismatch is a hard failure, not a warning.
+    """
+    try:
+        cfg = json.load(open(os.path.join(judge_dir, "config.json")))
+        gens = (cfg.get("args", cfg) or {}).get("gens")
+        if not gens:
+            return None
+        g = json.load(open(os.path.join(gens, "config.json")))
+        return (g.get("args", g) or {}).get("intervene")
+    except Exception:
+        return None
+
+
+def _rows(pat, expect_spec=None):
     """Load a judge run, UNIONING shards.
 
     A judge glob may resolve to several runs that are disjoint `--offset/--limit` shards of one
@@ -69,6 +93,14 @@ def _rows(pat):
     hits = sorted(glob.glob(pat))
     if not hits:
         return None, None
+    if expect_spec is not None:
+        bad = [(os.path.basename(h), declared_spec(h)) for h in hits
+               if declared_spec(h) not in (None, expect_spec)]
+        if bad:
+            raise SystemExit(
+                f"[hardnull] GLOB CAUGHT THE WRONG DIRECTION.\n  glob:     {pat}\n"
+                f"  expected: {expect_spec}\n  but matched runs declaring: {bad}\n"
+                f"These are different directions and unioning them would blend the null.")
     merged, dupes = {}, 0
     for d in hits:
         f = os.path.join(d, "results.jsonl")
@@ -140,6 +172,20 @@ def main() -> int:
             if k >= n_ang:
                 continue
             g = angle_glob(L, k, n_ang)
+            # what the run for this angle MUST declare. of-4 tags spell the angle without the
+            # denominator, so both spellings of the same direction are accepted -- by angle, not tag.
+            want = {f"in_subspace_angle{k}of{n_ang}:project_out:{L}-{L}:1.0"}
+            if n_ang == 12 and k % 3 == 0:
+                want.add(f"in_subspace_angle{k // 3}:project_out:{L}-{L}:1.0")
+            if n_ang == 4:
+                want.add(f"in_subspace_angle{k}:project_out:{L}-{L}:1.0")
+            lab, a = None, None
+            for h in sorted(glob.glob(g)):
+                ds = declared_spec(h)
+                if ds is not None and ds not in want:
+                    raise SystemExit(
+                        f"[hardnull] GLOB CAUGHT THE WRONG DIRECTION.\n  glob:     {g}\n"
+                        f"  expected one of: {sorted(want)}\n  run {os.path.basename(h)} declares: {ds}")
             lab, a = _rows(g)
             if a:
                 angs[k] = (lab, a)
