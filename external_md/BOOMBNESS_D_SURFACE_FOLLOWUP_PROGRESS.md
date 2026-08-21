@@ -7738,11 +7738,26 @@ comparability check, `--min-separation`, and my first orthogonalisation.
    R5-6's stratum-matched check drops it to +0.1173 at **p 0.063**, with 2 of 6 leave-one-domain-out
    replicates also losing significance. The raw +0.3810 and its direction-specificity stand; the
    doublespeak-specific *component* is not established on either arm.
-3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
-   `d_surface`'s own band because only five refusal directions exist on disk.
+3. ⛔ **DONE 2026-08-21, and the answer is that the question cannot be posed.** The directions were
+   fitted (job 772476) and are **causally inert**: projecting the L6/L8/L10 — and the pre-existing
+   L12 — direction out of *every* layer leaves harmful-prompt refusal at **1.000, unchanged**, while
+   L14–L20 all give positive ablation gains. So `d_surface`'s band has **no causal refusal handle at
+   all**; the directions were missing because they do not work, not because nobody fitted them.
+   Convergent: the independent behavioural refusalness profile has exactly one non-surviving depth,
+   **L12**. ⚠ Limits: n = 15 per arm, so "0.000" means 0/15 (95% upper bound ≈ 0.20, not zero), and
+   the induce arm is uninterpretable. **This also retrospectively justifies Phase F running at
+   L12–L20 rather than the plan's L6–L12 band** (blocker F-B1, now resolved).
 4. ✅/⚠ **Partly done.** `judge_boombness` now writes `prompt_sha16` on every row and records
    `judge_model_candidates`; existing artifacts predate the fix, so they still report
    `n_judge_rows_with_prompt_sha16: 0` and must be re-judged or joined on scalars. **Still open:
    recording the judge model *actually used*** — the rubric falls back between two models and
    pinning the responder needs a change inside `strong_reject`.
 5. **Do not build the GCG objective.**
+6. 🔬 **IN FLIGHT — F-3 is testable again for the first time since its retraction.** The
+   add-refusalness intervention has a **gate-clean dose window at 0.50–0.75 of one diff-of-means**
+   (α 7.33: scorable 0.865, uniq 0.940, trigram 0.004; α 10.99: 0.863 / 0.750 / 0.187), between a
+   terse-refusal regime below it and a collapse regime above. Every previously tried dose — α 1.0
+   *and* α 14.65 — fails the coherence gate, **including the α = 1.0 arm whose −0.0111 ASR this
+   document had been citing as "coherent"** (`scorable_frac 0.475 < 0.5`; that number was never
+   citable under the repo's own rule). Dose-matched random controls are generating (773065, 773114);
+   `scripts/judge_f3_dose_pair.sh` gates the control before spending any judge calls.

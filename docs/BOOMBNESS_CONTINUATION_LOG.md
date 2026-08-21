@@ -5947,3 +5947,51 @@ supports rather than the strength the pooled number would suggest.
 | 239 | 2026-08-21 | applied the pre-committed rule unrenegotiated | **replicated in direction, NOT upgraded to established** |
 | 240 | 2026-08-21 | checked the dose gaps' direction | at L8/L12 the rung has **more** dose and **less** effect — the confound pushes against the result |
 | 241 | 2026-08-21 | declined to pool 27-up/5-down across layers | non-independent; would repeat R-18's pseudo-replication |
+
+## Extending the replication to an UNSELECTED layer, and why not to ClearHarm
+
+Tick 2026-08-21. Audit #7 launched at the newest apparatus — the dose ladder, `dose_curve.py`,
+`paired_arm_test.py`, and the geometric bound. I briefed it with the attacks that would hurt most,
+including the one I am least able to check myself: **is the bound's cross term actually zero?**
+`dose(u) ≤ c²a + s²b` is only valid if `M·d ⟂ M·w`, and if it is not, the most load-bearing derivation
+of the last three ticks is wrong. Also asked whether the ladder is **basis-dependent** (`w` is the
+*first* Gram-Schmidt complement vector, an arbitrary pick from a 2-D space — if a different `w` gives a
+different ladder, then "`d_naive` beats every dose-matched mixture" is really "beats one arbitrary
+path"), and whether cell-mean dose is even the right dose metric when the intervention acts on
+activations.
+
+**Considered ClearHarm and rejected it.** The obvious next replication is a second population, and
+`clearharm_179.jsonl` is sitting there. But the claim's weakness is **power**, and ClearHarm has
+**179** prompts against AdvBench's 495. Scaling this tick's discordant counts, it would yield ~5
+discordant prompts — *less* power than the L6 test that just failed. Running it would produce a null I
+could not interpret and would be tempted to read as "doesn't generalise". Rejected on those grounds and
+recorded, rather than run for the appearance of thoroughness.
+
+**Ran the test that actually addresses the standing objection instead.** Audit #6 established that
+L6/L8/L10/L12 are the **top four of eleven layers ranked by the same arm delta** — outcome-selected.
+Every replication so far has lived inside that selected set. So:
+
+| layer | in the selected top-4? | `d_naive` dose | rung k=1 dose | gap |
+|---|---|---|---|---|
+| **L10** | yes (untested until now) | 0.7498 | 0.7711 | **+0.0213** |
+| **L13** | **no — rank 5 of 11, outside the selection** | 0.7571 | 0.7802 | **+0.0231** |
+
+L13 is the point of this: a layer that was *not* chosen for having a large effect. If the `d_naive`
+advantage appears there too, it is not an artifact of the layer selection. And at **both** layers the
+matched rung again carries **more** dose than `d_naive`, so residual dose pushes **against** the
+advantage, as at L8 and L12.
+
+**Pre-committing the reading, as before.** L13 is the informative one and it is also the
+lowest-powered — its `d_surface` arm is only +0.0081 overall. If L13 shows a positive point estimate,
+I will report it as *consistent in sign outside the selected set* and will **not** claim significance
+from it. If L13 is negative, that is evidence the advantage is confined to the selected layers and I
+will say so. L10 is a straightforward addition inside the selected set and carries less weight either
+way.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 242 | 2026-08-21 | launched **audit #7** at the ladder apparatus | briefed on the bound's cross term, basis-dependence, and dose metric |
+| 243 | 2026-08-21 | evaluated and **rejected** a ClearHarm replication | n=179 → ~5 discordant; less power than the L6 test that already failed |
+| 244 | 2026-08-21 | submitted L10 + **L13** replications (773124-773127) | **L13 sits outside the outcome-selected top-4** — the point of the test |
+| 245 | 2026-08-21 | checked dose gaps at both | rung carries **more** dose at both; confound pushes against the advantage |
+| 246 | 2026-08-21 | pre-committed the reading for L13 | sign-consistency only; no significance claim from an underpowered layer |
