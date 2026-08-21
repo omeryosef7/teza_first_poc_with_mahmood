@@ -5637,3 +5637,58 @@ recommendation, and it is the most useful thing to come out of the last three ti
 | 209 | 2026-08-21 | filed **C-13**; corrected report, artifact verdict, and log | R-26's §14-D retraction stands on `d_context`, not `d_naive` |
 | 210 | 2026-08-21 | derived + measured the dose↔identity bound | f=0.7 forces \|cos\| ≥ 0.88–0.91; `d_naive`'s 0.96 is **forced**, not coincidental |
 | 211 | 2026-08-21 | recorded the design recommendation | identity/dose inseparable **in this bank**; needs a non-degenerate cell-mean spectrum |
+
+## The experiment C-13's bound actually licenses: is DOSE SUFFICIENT?
+
+Tick 2026-08-21. Three ticks of negatives (R-25, R-26, C-13) all point at one unanswered question, and
+it is worth stating precisely because it is *not* the question I had been asking.
+
+C-13 settled **"which direction?"** — it cannot be asked in this bank, because reaching dose `f`
+forces |cos| with `d_surface` of ~0.9 by f=0.7. There is one direction at high dose, up to a small
+rotation. Asking for a dose-matched *rival* is asking for something the geometry forbids.
+
+**The question that remains is whether dose is SUFFICIENT**: does every direction measured in this
+sprint lie on a single effect-vs-dose curve? That is answerable, and it is a positive claim rather than
+another negative — if all of `d_surface`, `d_naive`, `d_context` and the 12 angle controls fall on one
+curve, then the sprint's causal finding has a clean mechanical description ("removing this much of the
+bank's cell-mean variance at L6–L12 raises ASR by this much") and the direction's identity adds
+nothing. If they scatter off it, identity is doing work after all.
+
+**Built the ladder that tests it.** `dose_mix_direction` (`signals.py`) sweeps
+`u(θ) = cos θ · d̂_surface + sin θ · w`, `w` the leading complement basis vector, so dose varies
+continuously while identity is *known at every point* rather than free (it cannot be free — that is
+C-13). At L8, `n_steps=8`:
+
+| k | θ | dose | cos with `d_surface` |
+|---|---|---|---|
+| 0 | 0.0° | **0.8402** | **1.0000** |
+| 1 | 12.9° | 0.7969 | 0.9749 |
+| 2 | 25.7° | 0.6835 | 0.9010 |
+| 3 | 38.6° | 0.5224 | 0.7818 |
+| 4 | 51.4° | 0.3456 | 0.6235 |
+| 5 | 64.3° | 0.1881 | 0.4339 |
+| 6 | 77.1° | 0.0810 | 0.2225 |
+| 7 | 90.0° | 0.0457 | −0.0000 |
+
+Two things worth noting before any data arrives. **k=0 reproduces `d_surface` exactly** (dose 0.8402,
+cos 1.0000) — a built-in regression check, so if the k=0 arm ever disagrees with the existing L8 arm
+the plumbing is wrong, not the finding. And the ladder's cos values sit **just above C-13's bound** at
+every dose (bound at f=0.5 is 0.729; ladder gives 0.7818 at dose 0.5224), which is what a
+near-optimal mixture should do — the bound is not vacuous and the ladder is close to saturating it.
+
+Submitted k=1…6 at L8 (772960-772965); k=0 and k=7 are already covered by the existing arm and the
+angle-0 control.
+
+**Pre-committing the reading, since that is the only way this stays a test rather than a story.**
+`d_naive` (dose 0.7919, Δ +0.0586) and `d_context` (dose 0.1313, Δ +0.0000) are **not** on the ladder —
+they are independent points from a different construction. If the ladder's curve passes near both, dose
+is sufficient and identity is not doing work. If `d_naive` sits **above** the ladder at its dose, then
+something about that direction beyond its dose matters, and R-26's narrow reading ("the 2×2's
+identification buys nothing") becomes the wrong summary.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 212 | 2026-08-21 | reframed the open question from "which direction" to "is dose sufficient" | the former is forbidden by C-13's bound; the latter is answerable |
+| 213 | 2026-08-21 | implemented `dose_mix_direction` + `dose_mix{k}of{n}` plumbing | ladder spans dose 0.84 → 0.046 with cos recorded at every rung |
+| 214 | 2026-08-21 | verified k=0 ≡ `d_surface` and that the ladder nearly saturates C-13's bound | built-in regression check; bound shown non-vacuous |
+| 215 | 2026-08-21 | submitted 772960-772965 (L8, k=1…6) | 6 jobs, at cap |

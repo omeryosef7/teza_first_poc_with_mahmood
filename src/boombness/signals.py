@@ -488,6 +488,63 @@ def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
     return v.to(d.dtype), f"{tag}:k={keep}"
 
 
+
+def dose_mix_direction(payload: dict, layer: int, k: int, n_steps: int = 8):
+    """A direction that MIXES `d_surface` with the complement, to sweep DOSE at controlled identity.
+
+    WHY THIS EXISTS (R-25 / R-26 / C-13). `d_surface` is essentially PC1 of the rank-3 cell-mean
+    span, so projecting it out removes 0.81-0.88 of that spread while every direction confined to the
+    orthogonal complement removes at most 0.13. The `in_subspace_angle` null therefore compared a
+    high-dose intervention against low-dose ones, and inside that null Spearman rho(dose, delta) was
+    0.961 -- dose explained nearly everything.
+
+    C-13 then showed the two cannot be untangled by picking a cleverer control: reaching dose f
+    REQUIRES |cos| with `d_surface` of at least sqrt((f-b)/(a-b)), which is ~0.9 by f=0.7. At high
+    dose there is only one direction, up to a small rotation.
+
+    So the remaining question is not "which direction" but "is dose SUFFICIENT" -- does every measured
+    direction lie on one effect-vs-dose curve? This builds the ladder that answers it:
+
+        u(theta) = cos(theta) * d_surface_hat + sin(theta) * w,  theta = (pi/2) * k / (n_steps-1)
+
+    with `w` the leading complement basis vector. k=0 is `d_surface` itself (dose ~0.84); k=n_steps-1
+    is pure complement (dose ~0.11); intermediate k sweep dose smoothly between. Identity is not free
+    here -- it CANNOT be, per C-13 -- it is *known*, which is what the ladder needs: every point has a
+    recorded (dose, cos_with_d_surface) pair, so `d_naive`, `d_context` and the angle controls can be
+    checked against the curve rather than argued about.
+
+    Deterministic; no RNG. Same Gram-Schmidt basis as `in_subspace_angle_direction`, so the two
+    families are commensurable.
+    """
+    cm = payload.get("cell_means")
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    d = payload["d_surface"][layer].float().reshape(-1)
+    u = d / (d.norm() + 1e-8)
+    proj = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
+    basis = []
+    for i in range(proj.shape[0]):
+        w = proj[i].clone()
+        for b in basis:
+            w = w - torch.dot(w, b) * b
+        nb = w.norm()
+        if float(nb) > 1e-4 * float(proj.norm()):
+            basis.append(w / nb)
+    if not basis:
+        raise SystemExit(f"dose_mix: empty complement at L{layer}")
+    theta = (math.pi / 2) * (k / max(1, n_steps - 1))
+    v = math.cos(theta) * u + math.sin(theta) * basis[0]
+    v = v / (v.norm() + 1e-8) * d.norm()
+    tot = float((M ** 2).sum())
+    vv = v.float() / v.float().norm()
+    dose = float(((M @ vv.reshape(-1, 1)) ** 2).sum()) / tot
+    cosd = float(torch.dot(u, vv))
+    return v.to(payload["d_surface"][layer].dtype), \
+        f"dose_mix:{k}/{n_steps}:theta={math.degrees(theta):.1f}:dose={dose:.4f}:cos={cosd:.4f}"
+
+
 def in_subspace_angle_direction(payload: dict, layer: int, k: int, n_angles: int = 4):
     """The k-th of `n_angles` evenly spaced directions in the 2-D complement of the arm.
 

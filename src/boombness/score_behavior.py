@@ -192,7 +192,21 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
     # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
     # names a draw actually selects one.
-    if name.startswith("in_subspace_angle"):
+    if name.startswith("dose_mix"):
+        import signals as _sg
+        spec_k = name.replace("dose_mix", "")
+        k, n_steps = ((int(x) for x in spec_k.split("of")) if "of" in spec_k
+                      else (int(spec_k), 8))
+        k, n_steps = int(k), int(n_steps)
+        base = payload["d_surface"]
+        dmap, diag = {}, {}
+        for L in base:
+            v, how = _sg.dose_mix_direction(payload, L, k, n_steps=n_steps)
+            dmap[L] = v
+            diag[f"L{L}"] = {"how": how}
+        print(f"[score] {name}: L8={json.dumps(diag.get('L8'))}")
+        gaps = {}
+    elif name.startswith("in_subspace_angle"):
         import signals as _sg
         # `in_subspace_angleK` (K of 4) or `in_subspace_angleKofN` for a denser sweep. Four points
         # SAMPLE the half-circle; they do not prove the effect is null between them. N is how the
