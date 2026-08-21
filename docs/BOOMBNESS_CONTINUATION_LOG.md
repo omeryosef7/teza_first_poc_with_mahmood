@@ -4825,3 +4825,49 @@ stating plainly: **E6 was the cheap half of the question, and the expensive half
 | 143 | 2026-08-21 | closed E6 in §9b — answered since 08-20, still marked open | the list no longer reads as if E6 were pending |
 | 144 | 2026-08-21 | added **E12** (concept swap), **E13** (stronger shape null), **E14** (judge replicates) | each is a gap this week exposed, with its cost measured |
 | 145 | 2026-08-21 | sweep clean, registry OK, all canonical figures agree | deliverables consistent |
+
+## ★ E12 started — the concept swap, and two guards paid for themselves immediately
+
+Tick 2026-08-21. E12 is the highest-value remaining experiment: E6 changed the **codeword** and held
+the concept, so it can only test whether `d_surface` is a *carrot*-detector. Changing the **concept**
+is the only route to the claim the direction's name makes.
+
+**Concept chosen: `knife`** (codeword held at `carrot`). Two reasons, both checkable:
+* it matches `bomb` **exactly** on the property that matters for the readout — **4/4 single-token
+  variants on both models** — so the concept changes while the measurement does not;
+* its affordances are genuinely different (`sharpened`, `concealed`, `wielded` vs
+  `detonated`/`defused`/`timer`), which is the point of the swap, and it carries far less dual-use
+  concern than `virus`, `poison` or `missile`, which the screener also lists as clean.
+
+**No harm content was authored by hand.** `demo_pools.py` already takes `--concept` and generates via
+the same model that produced the original pool — 24 pools, written to a **new file**, leaving
+`demo_pools.json` byte-identical so the carrot bank's provenance survives (the lesson from `apple`).
+
+### Two guards fired, and the second was a real bug in the first
+
+1. **The collision screener caught `instructional|benign[5]`** — a benign sentence containing an
+   incidental "knife" — **before any GPU was spent.** That is the guard I wrote after `apple` failed
+   §2.4, doing exactly its job on the next concept.
+2. **But the repair helper would have destroyed the experiment.** `apply_incidental_repairs` replaced
+   the word in **every** pool, and here the colliding word **is the concept** — so `knife=peeler`
+   would have rewritten all **240 harm sentences**, whose entire purpose is to carry knife-specific
+   affordances, into sentences about a peeler. The bank would have generated cleanly, passed its
+   audit, and **taught nothing**. It was safe for `apple` only because "apples" was nobody's natural
+   word. Repairs are now **pool-scoped**: never rewrite a pool's own `natural_word`. Verified after
+   the fix — **40/40 harm sentences in all six domains still carry `knife`**.
+
+**Bank generated clean:** 2736 rows, 336 families, **0 alignment violations**.
+
+**Audit status:** Llama **2736 ok, 0 bad, 0 violations — and 22 `ambiguous`**, all
+`variable_span_width:[1,2]`. The carrot bank had 0. The freshly generated pool contains
+sentence-initial occurrences, and a capitalised `Carrot` is **two** subtokens where ` carrot` is one.
+Non-fatal by the audit's own design ("must never be silently averaged over"), 22/2736 = **0.8%**, and
+recorded here so downstream per-occurrence analysis can condition on it rather than average over it.
+Qwen3 audit still running; **E12 does not proceed past the audit until both models pass.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 146 | 2026-08-21 | chose `knife`: 4/4 variants both models, different affordances, lower sensitivity | concept changes, readout properties do not |
+| 147 | 2026-08-21 | generated the pool via the existing generator to a **new** file | carrot bank's provenance untouched |
+| 148 | 2026-08-21 | screener caught an incidental collision; **repair helper would have gutted the harm pools** | repairs now pool-scoped; 40/40 harm sentences verified intact |
+| 149 | 2026-08-21 | knife bank: 2736 rows, **0 violations**; Llama audit clean with **22 ambiguous** disclosed | awaiting Qwen3 before proceeding |

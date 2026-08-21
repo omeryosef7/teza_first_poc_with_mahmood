@@ -839,12 +839,23 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
     for name, pool in pools.items():
         p = dict(pool)
         p["sentences"] = list(pool.get("sentences", []))
+        nat = str(pool.get("natural_word") or "").casefold()
         for a, b in repairs.items():
+            # NEVER REWRITE A POOL'S OWN NATURAL WORD. The `apple` case was safe because the
+            # colliding word ("apples") was nobody's natural word. For `knife` the collision IS the
+            # concept, and a blanket replace would have rewritten every harm pool -- 240 sentences
+            # whose whole purpose is to carry knife-specific affordances -- into sentences about a
+            # peeler, silently producing a bank that teaches nothing. Repairs apply only to pools
+            # where the word is incidental, which is the only place a collision can exist.
+            if a.casefold() == nat:
+                continue
             p["sentences"] = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, sent) for sent in p["sentences"]]
         for split in ("dev", "heldout"):
             if isinstance(pool.get(split), list):
                 v = pool[split]
                 for a, b in repairs.items():
+                    if a.casefold() == nat:
+                        continue
                     v = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, x) if isinstance(x, str) else x for x in v]
                 p[split] = v
         out[name] = p
