@@ -6170,3 +6170,43 @@ line is finished, and finished with an explanation instead of an unexplained nul
 | 259 | 2026-08-21 | added `frontier_gap` (forward question, one cheap sweep) | `d_naive` gaps **0.0001–0.0009**; ladder gaps 0.0067–0.0136 |
 | 260 | 2026-08-21 | identified the ladder as an **interior path** | any frontier direction sits above it — the comparison was never fair |
 | 261 | 2026-08-21 | closed the `d_naive` line | explained geometrically, against the claim, not merely un-replicated |
+
+## The plumbing check is finally real — and I re-created the tautology once on the way there
+
+Tick 2026-08-22. 773219/773220 produced the `dm8k0` and `dm8k7` runs that R-27(g) said never existed.
+
+**The verification is stronger than the one I originally promised.** I had planned to compare judged
+ASR deltas. But decoding is greedy, so if `dose_mix` genuinely reproduces the reference direction the
+two runs' **`gens.jsonl` must be byte-identical** — and equal deltas could coincide, while equal sha256
+over 495 completions cannot. Measured:
+
+| endpoint | `dose_mix` run | reference | |
+|---|---|---|---|
+| k=0 ≡ `d_surface` | `1f5e5d70e75f` | `1f5e5d70e75f` (`ab_B`) | **identical** |
+| k=7 ≡ `angle0` | `c19e355e3b26` | `c19e355e3b26` (`ang8k0`) | **identical** |
+
+The `dose_mix` code path is now verified end to end, at a stricter level than a delta comparison and
+without waiting for a judge pass. (The hash is computed streaming over the file; no generation text
+enters a variable, is printed, or is logged.)
+
+**And on the way I re-created the exact bug I was fixing.** My first wiring took the "ladder" hash from
+`LADDER_PAT`, which — with no `dmJ8k0` *judge* directory yet — still routes to the reuse glob. So both
+hashes resolved to **the same file**, and `gens_identical: true` once again verified nothing. It
+printed a green `plumbing_checks_are_real = True` that was as vacuous as the one R-27 had just
+condemned, one command after condemning it.
+
+Caught because I checked *which files* the two hashes came from rather than trusting the boolean.
+Fixed by addressing the **generation run directly** (`score_behavior/dm{L}k{k}_*`) — it exists long
+before its judge run does, and it is the thing under test. **Tested against a case it must fail**:
+`dm8k7` against the `d_surface` reference returns **False**, `dm8k0` returns **True**.
+
+The lesson is the same one this log keeps recording, now with an unusually short feedback loop: a
+guard that resolves its two sides through the *same* lookup will compare a thing to itself, and the
+fix is always to address each side by its own identity.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 262 | 2026-08-22 | `dm8k0`/`dm8k7` generated | the endpoints R-27(g) found missing now exist |
+| 263 | 2026-08-22 | verified by **byte-identity of `gens.jsonl`**, not judged deltas | stricter check, and available before judging |
+| 264 | 2026-08-22 | **re-created the tautology** in the first wiring | both hashes resolved to one file; green flag, zero content |
+| 265 | 2026-08-22 | fixed to address the generation run by identity | `dm8k0` True / `dm8k7` False — discriminates correctly |

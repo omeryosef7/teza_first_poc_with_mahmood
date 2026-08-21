@@ -160,25 +160,33 @@
       "--out",
       "outputs/boombness/dose_curve_L8.json"
     ],
-    "git_commit": "3e49c4a9ff86500ea125f283b64282c666d0fed6"
+    "git_commit": "e73025c21f340119b19ce7eeea37e11da30badef"
   },
   "plumbing_checks": {
     "k0_is_d_surface": {
       "ladder_value": 0.04242424242424243,
       "reference_value": 0.04242424242424243,
       "agree": true,
-      "tautological": true,
-      "meaning": "VACUOUS -- the ladder value was loaded from this same run, so `agree` is guaranteed and verifies nothing about the dose_mix code path (R-27)"
+      "tautological": false,
+      "gens_sha_ladder": "1f5e5d70e75f624b5f3a3b55ff07fdbd3cea1d2955e82efb2d9bbb9ed9d2a580",
+      "gens_sha_reference": "1f5e5d70e75f624b5f3a3b55ff07fdbd3cea1d2955e82efb2d9bbb9ed9d2a580",
+      "meaning": "REAL and STRICT -- an independently generated dose_mix run produced BYTE-IDENTICAL generations to the reference direction (greedy decode), so the dose_mix code path is verified end to end",
+      "gens_identical": true,
+      "gens_sha_source": "score_behavior/dm8k*  vs  outputs/boombness/judge reference (distinct runs)"
     },
     "k7_is_angle0": {
       "ladder_value": 0.00202020202020202,
       "reference_value": 0.00202020202020202,
       "agree": true,
-      "tautological": true,
-      "meaning": "VACUOUS -- the ladder value was loaded from this same run, so `agree` is guaranteed and verifies nothing about the dose_mix code path (R-27)"
+      "tautological": false,
+      "gens_sha_ladder": "c19e355e3b26ab91327508907a8d9ab7c09246c6fddea9c3ac9e3ecd4809dcf2",
+      "gens_sha_reference": "c19e355e3b26ab91327508907a8d9ab7c09246c6fddea9c3ac9e3ecd4809dcf2",
+      "meaning": "REAL and STRICT -- an independently generated dose_mix run produced BYTE-IDENTICAL generations to the reference direction (greedy decode), so the dose_mix code path is verified end to end",
+      "gens_identical": true,
+      "gens_sha_source": "score_behavior/dm8k*  vs  outputs/boombness/judge reference (distinct runs)"
     }
   },
-  "plumbing_checks_are_real": false,
+  "plumbing_checks_are_real": true,
   "ladder_fit": {
     "0.0457": 0.00202020202020202,
     "0.0810": 0.010101010101010102,

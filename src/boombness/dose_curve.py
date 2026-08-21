@@ -100,6 +100,34 @@ def curve_at(fit, x):
     return fit[ks[-1]]
 
 
+
+def _gens_sha(judge_or_gens_dir):
+    """sha256 of a run's `gens.jsonl`, following a judge dir back to its `--gens` source.
+
+    Hashes the FILE, never its contents in memory beyond the digest -- no generation text is read
+    into any variable, printed, or logged, per the sprint's redaction rule.
+    """
+    import hashlib
+    d = judge_or_gens_dir
+    cfg = os.path.join(d, "config.json")
+    if os.path.exists(cfg):
+        try:
+            a = json.load(open(cfg))
+            a = a.get("args", a)
+            if a.get("gens"):
+                d = a["gens"]
+        except Exception:
+            pass
+    f = os.path.join(d, "gens.jsonl")
+    if not os.path.exists(f):
+        return None
+    h = hashlib.sha256()
+    with open(f, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--fit-dir", default="outputs/boombness/extract_boombness/full_20260816_185942_1008673")
@@ -194,6 +222,17 @@ def main() -> int:
         checks[name] = {"ladder_value": have[k]["delta"], "reference_value": ref["delta"],
                         "agree": abs(have[k]["delta"] - ref["delta"]) < 1e-9,
                         "tautological": taut,
+                        # ADDRESS THE dose_mix GENERATION RUN DIRECTLY, not whatever the ladder
+                        # happened to load. Routing this through LADDER_PAT re-created the very
+                        # tautology being fixed: with no `dmJ{L}k{k}` JUDGE dir yet, LADDER_PAT still
+                        # points at the reuse glob, so both shas resolved to the SAME file and
+                        # `gens_identical: true` again verified nothing. The generation run exists
+                        # long before its judge run does, and it is the thing under test.
+                        "gens_sha_ladder": _gens_sha(sorted(glob.glob(
+                            f"outputs/boombness/score_behavior/dm{L}k{k}_*"))[-1])
+                            if glob.glob(f"outputs/boombness/score_behavior/dm{L}k{k}_*") else None,
+                        "gens_sha_reference": _gens_sha(sorted(glob.glob(ref_pat))[-1])
+                            if glob.glob(ref_pat) else None,
                         "meaning": ("VACUOUS -- the ladder value was loaded from this same run, so "
                                     "`agree` is guaranteed and verifies nothing about the dose_mix "
                                     "code path (R-27)") if taut else
@@ -201,8 +240,22 @@ def main() -> int:
                                     "against the reference direction it is geometrically identical "
                                     "to" % (L, k))}
     doc["plumbing_checks"] = checks
-    doc["plumbing_checks_are_real"] = bool(checks) and not any(
-        c.get("tautological") for c in checks.values())
+    # THE REAL CHECK IS AT THE GENERATION LEVEL, NOT THE JUDGED DELTA. Decoding is greedy, so if
+    # `dose_mix` really produces the same intervention as the reference direction, the two runs'
+    # `gens.jsonl` must be BYTE-IDENTICAL. Equal ASR deltas could coincide; equal sha256 over 495
+    # completions cannot. This is both stricter than the delta comparison and available without
+    # waiting for a judge pass.
+    for c in checks.values():
+        a, b = c.get("gens_sha_ladder"), c.get("gens_sha_reference")
+        c["gens_identical"] = bool(a and b and a == b)
+        c["gens_sha_source"] = f"score_behavior/dm{L}k*  vs  {JUDGE} reference (distinct runs)"
+        if c["gens_identical"]:
+            c["meaning"] = ("REAL and STRICT -- an independently generated dose_mix run produced "
+                            "BYTE-IDENTICAL generations to the reference direction (greedy decode), "
+                            "so the dose_mix code path is verified end to end")
+            c["tautological"] = False
+    doc["plumbing_checks_are_real"] = bool(checks) and all(
+        c.get("gens_identical") for c in checks.values())
 
     if len(have) >= 4:
         xs = [have[k]["dose"] for k in sorted(have)]
