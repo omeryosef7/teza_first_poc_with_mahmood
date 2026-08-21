@@ -5860,3 +5860,41 @@ I will report the split and treat the claim as unreplicated rather than pick the
 | 229 | 2026-08-21 | dose-matched the replication rungs at L6 and L12 | L6 gap **0.0004**, L12 gap 0.0210 |
 | 230 | 2026-08-21 | submitted 773042-773045 | replication at two layers, judging next tick |
 | 231 | 2026-08-21 | pre-committed the three-way reading | both / neither / split, decided before the data |
+
+## The report's most-read paragraph was still scoring the headline against the discredited null
+
+Tick 2026-08-21. Replication generation done (773042-773045): four runs, **4/4 distinct hashes**, 495
+rows and `DONE.json` each, every `config.json` declaring the spec requested. Judging in flight
+(773072-773075).
+
+**While waiting I re-read §0's "conclusion, stated once" — the block the short update mirrors and the
+one a reader quotes — and found it still saying the L12 arm clears "**~16 band-sds**".** That is the
+**4096-d random band R-23 discredited three days ago.** A random direction in 4096-d is nearly
+orthogonal to everything and perturbs almost nothing; scoring against it inflates the apparent margin.
+Against the in-subspace null the arm exceeds every control at all four layers, but by **1.80×–3.60×**,
+not sixteen sds.
+
+**My own sweep did not catch it, for the third time in this file, and for the same reason.** The R-23
+pattern pinned the literal `(?:7|~7)\s*band-sds`, because "~7 band-sds" was the phrasing in front of me
+when I wrote it. The report said "~16". Widened to `~?\d+(?:\.\d+)?\s*band-sds` — **any** band-sd
+count, since every such claim is scored against the same discredited band. **Tested against a planted
+case**: an unqualified "~16 band-sds" appended to the short update → exit **1**; removed → exit **0**.
+
+The recurring lesson is now unmistakable and I will state it plainly: **I keep writing patterns that
+match the example in front of me rather than the class of claim.** Three narrowness failures in one
+file — the literal `7`, the missing comma, the `between-draw` prefix — each caught only because
+something else led me back to the same paragraph.
+
+**§0 now carries the qualification** rather than the retracted number: the second clause of the
+sprint's headline (*"removing the direction it measures causally raises attack success"*) is **true but
+not specific to `d_surface`**, `d_surface` is essentially PC1 of the cell-mean span, the dose-response
+saturates, and at matched dose and cosine `d_naive` beats it. A reader who quotes only the headline
+sentence now hits the warning first.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 232 | 2026-08-21 | 773042-773045 completed | 4/4 distinct, 495 rows + DONE, specs verified |
+| 233 | 2026-08-21 | submitted judging 773072-773075 | L6 and L12 replications pending |
+| 234 | 2026-08-21 | found "~16 band-sds" live in §0's conclusion block | the discredited 4096-d band, in the most-quoted paragraph |
+| 235 | 2026-08-21 | widened the pattern to any band-sd count; **tested on a planted case** | exit 1 planted / 0 clean; **third** narrowness failure in this file |
+| 236 | 2026-08-21 | §0 now states the dose/specificity qualification inline | headline can no longer be quoted without it |

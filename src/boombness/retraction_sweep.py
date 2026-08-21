@@ -106,7 +106,11 @@ RETRACTED = [
      r"61%[^\n]{0,40}(?:delivers|half|50%)|"
      r"shared component is the caus\w+ active|"
      r"concept-general in consequence|"
-     r"(?:7|~7)\s*band-sds"),
+     # ANY band-sd count, not just "7". The first version pinned the literal 7 and the report's
+     # most-read block said "~16 band-sds" -- a THIRD narrowness failure in this file, and in the one
+     # paragraph a reader is most likely to quote. Match any number of band-sds: every such claim is
+     # scored against the 4096-d random band that R-23 discredited.
+     r"~?\d+(?:\.\d+)?\s*band-sds"),
     ("R24 cos 0.61 read as the concept-general fraction",
      r"substantially but not wholly concept-general|"
      r"concept-general (?:fraction|component)[^\n]{0,40}0\.61|"

@@ -42,10 +42,25 @@ the version it replaces:**
 > **Boombness does not predict attack success — and removing the direction it measures causally
 > raises attack success.**
 >
+> ⚠ **Narrowed 2026-08-21 (R-25, R-26, and the pre-registered dose ladder). The second clause is
+> true but is NOT specific to `d_surface`.** Read the qualification before quoting the sentence.
+>
 > **Both halves are now localized to the same layers.** At **L12**, `d_surface`'s projection has a
 > within-domain ρ of **−0.066 (p=0.49, n=108 independent prompts)** with attack success, while
-> *ablating* that direction at L12 raises it by **+0.0322** against a **5-draw control band** at
-> +0.0012 (between-draw sd 0.0026) — ~16 band-sds. ⚠ The per-layer **p=0.0056 is UNCORRECTED and
+> *ablating* that direction at L12 raises it by **+0.0322**. ⛔ An earlier revision scored that
+> against a 5-draw 4096-d random band (sd 0.0026) as "**~16 band-sds**" — **retracted (R-23)**: a
+> random direction in 4096-d is near-orthogonal to everything and perturbs almost nothing, so that
+> band is far too weak a null. Against the **in-subspace** null — other directions in the same
+> rank-3 cell-mean span — the arm exceeds every control at all four layers tested, but by
+> **1.80×–3.60×**, not sixteen sds (`insubspace_null_by_layer.json`).
+>
+> **And the effect is mostly, though not entirely, about HOW MUCH is removed rather than WHICH
+> direction.** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), so it
+> removes 0.81–0.88 of that spread while any in-subspace control removes ≤0.13 (R-25). A
+> pre-registered dose ladder shows a clean, **saturating** dose-response — and shows dose is **not
+> sufficient**: at matched dose *and* matched cosine, `d_naive` beats `d_surface`'s own ladder
+> (+0.0586 vs +0.0444). **So `d_surface` is one high-variance direction of the bank's cell-mean
+> structure, and not the strongest one** (R-26). ⚠ The per-layer **p=0.0056 is UNCORRECTED and
 > must not be quoted as a result**: it is the maximum of a 10-layer family and **nothing survives
 > Holm** (§"Multiplicity over the layer family"). What licenses the band is the **shape test**,
 > permutation **p=0.0109**. Against an inert matched
