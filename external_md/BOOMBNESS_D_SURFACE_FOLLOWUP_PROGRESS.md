@@ -4336,6 +4336,42 @@ do with degeneracy.
 
 
 
+
+### ⚠ Where every published single draw actually sat — and a suspicion I checked and cleared
+
+With all four complements swept, each published draw can be placed in the range of what was available
+at its own depth:
+
+| depth | sweep range (spread removed) | published draw | position |
+|---|---|---|---|
+| L6 | 4.31 – 8.00% | **5.40%** | near-min |
+| L8 | 4.57 – 11.41% | **4.55%** | **near-min** |
+| L10 | 5.70 – 13.15% | **5.88%** | near-min |
+| L12 | 6.07 – 11.88% | **11.25%** | near-MAX |
+
+**Three of the four landed near the weak end of their own complement.** At L8 that is already known to
+have flattered the published contrast (+0.0319 p 0.0092 for the draw, against +0.0183 p 0.073 for the
+worst angle), and it predicts the same for **L6 and L10**, whose sweeps are judging now.
+
+**The suspicion, and the check.** Three near-min out of four looked systematic, and the obvious
+culprit was the seeding: every published control used `control_seed + L`, i.e. **seeds differing by
+2**, and the three seeds I sampled earlier gave pairwise cosines of 1.000 / 0.912 / 0.996. If nearby
+seeds produced correlated draws, every "independent" control in this sprint would share a defect.
+
+**They do not.** `torch.randn(1, 2)` over 200 consecutive seeds gives angles with **mean 86.9°,
+sd 52.0°, min 1.5°, max 179.9°**, and 53.0% below 90° — a full, unbiased spread of the half-circle.
+The seeds actually used land at 72.9° / 55.2° / 31.3° / 93.4°, nowhere near each other. **The RNG is
+sound and the seeding convention is fine.**
+
+The earlier high cosines were **chance, and expected chance**: three uniform draws on a half-circle
+have mean |cos| = 2/π ≈ 0.64, and 20260901/2/3 happen to fall at 135.2° / 110.9° / 130.0° — all within
+25°. That is unlucky, not broken.
+
+**So the diagnosis is the one that motivated the sweep in the first place, now confirmed rather than
+assumed: the problem is not the sampler, it is that a 2-D space cannot be characterised by three
+draws.** Sampling was the wrong tool; the fix is exhaustive coverage, and it is not a workaround for a
+faulty RNG.
+
 ## ✅✅ L12 PASSES THE EXHAUSTIVE SWEEP — direction-specificity established against the whole complement
 
 **Artifact:** `outputs/boombness_followup/angle_sweep_L12.json`. Four controls × 495 generations,
