@@ -4259,6 +4259,36 @@ contains the arm that was already tested.
 **771509 (L8) / 771510 (L31)**, otherwise identical to the profile arms, to be judged against the
 same 2026-08-21 baseline.
 
+
+#### Free evidence already in the repo: causal efficacy does NOT decay monotonically with depth
+
+Before the span runs land, one thing can be settled from committed artifacts at zero cost. If late
+ablations were architecturally impotent *in general*, every direction's causal profile should decay
+with depth. **Refusalness does the opposite** (`refusalness_layer_profile.json`):
+
+| layer | Δ ASR | p_cl |
+|---|---|---|
+| L12 | +0.0028 | 0.451 |
+| L14 | +0.0475 | 0.013 |
+| L16 | +0.1167 | 0.002 |
+| **L18** | **+0.1895** | **0.0001** |
+| L20 | +0.0628 | 0.008 |
+
+**A single-direction projection at L18 — past the middle of a 32-layer model — moves ASR by +0.19,
+six times `d_surface`'s largest effect at any depth.** So "an intervention late in the stack cannot
+do much" is **false as a general claim about this model**: causal efficacy is direction-specific and
+band-specific, not monotonically decaying.
+
+⚠ **This does not settle the question, and I am not treating it as if it did.** The architectural
+argument is strongest for the *last few* layers, where there is genuinely almost no computation left
+— and refusalness has never been fitted above L20, so nothing in the repo tests L28–L31 with a
+direction known to be potent. That is exactly the gap 771509/771510 exist to fill, and the L31 span
+arm is still the deciding number.
+
+What this evidence does establish is narrower and worth having: the decay is **not** a smooth
+architectural gradient across the whole second half of the model, because at L18 it is at its
+strongest for a different direction.
+
 **Prediction, recorded before they land.** I expect the full span at L8 to move ASR **more** than
 `d_surface` alone (+0.0305) since it strictly contains it. L31 is the one I genuinely cannot call —
 and that is the point of running it. **If L31 comes back null, I will weaken the central claim in the
