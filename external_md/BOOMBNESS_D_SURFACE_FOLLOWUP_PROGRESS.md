@@ -4339,6 +4339,57 @@ do with degeneracy.
 
 
 
+
+## ✅ THE INTERPOLATION ASSUMPTION HOLDS AT L12 — 8 angles, all null — and the bound argument still fails
+
+**Artifact:** `outputs/boombness_followup/angle_sweep_L12_intermediate.json`. Four intermediate
+angles, 495 generations each, 0 failures, same-session judging, guards now enforced
+(`--expect-baseline 495`, direction and layer checked per run).
+
+| new angle | removes | control vs baseline | p | **arm − control** | p |
+|---|---|---|---|---|---|
+| 22.5° | 7.56% | +0.0051 | 0.18 | +0.0265 | 0.0049 |
+| **67.5°** | **11.67%** | −0.0015 | 0.46 | +0.0331 | 0.0071 |
+| 112.5° | 10.40% | −0.0107 | 0.25 | +0.0423 | 0.0040 |
+| 157.5° | 6.29% | +0.0065 | 0.44 | +0.0251 | 0.0060 |
+
+**Nothing hides between the original grid points.** All four new controls are null, including the one
+at **11.67% spread removal** — near the maximum anywhere on the circle — and all four contrasts are
+significant. **At L12 the full 8-point sweep is now 8/8 controls null (max |Δ| 0.0120, min p 0.134)
+and 8/8 contrasts significant, worst case +0.0195 at p 0.0043.**
+
+### ⛔ But doubling the resolution did NOT rescue the bound argument, exactly as predicted
+
+The effect at 22.5° resolution, wrap included:
+
+```
+   0.0°  +0.0120     67.5°  -0.0015    135.0°  +0.0030
+  22.5°  +0.0051     90.0°  -0.0023    157.5°  +0.0065
+  45.0°  -0.0002    112.5°  -0.0107
+```
+
+| resolution | max step between adjacent samples | max \|value\| | ratio |
+|---|---|---|---|
+| 45° (4 points) | 0.0123 | 0.0120 | 1.02 |
+| **22.5° (8 points)** | **0.0137** | 0.0120 | **1.13** |
+
+**The inter-point variation still exceeds the largest sampled value — and got slightly worse, not
+better.** That is what sampling a step function looks like: finer grids reveal more variation rather
+than converging. **Halving the gap does not turn a sample into a bound, and the honest phrasing
+remains "K systematically spaced controls, all null".**
+
+### What the densification actually bought
+
+Not a bound — but a real, and the useful, thing: **evidence that the interpolation assumption is not
+hiding a spike.** Before it, four nulls at 45° spacing left an untested question at every midpoint.
+Now eight nulls at 22.5° spacing, including two of the three strongest edits available anywhere on
+the circle, say the assumption is at least not obviously wrong at the depth carrying the sprint's
+strongest causal claim.
+
+**The claim is unchanged in strength and better supported in kind:** at L12, `d_surface` beats every
+one of eight systematically spaced orthogonal directions, worst case p 0.0043, and not one of them
+moves ASR.
+
 ### ⛔ "A bound, not a sample" is REFUTED BY THE DATA — and the retraction had not propagated
 
 I corrected this wording in one paragraph at 13:50. Review #8 found the corrected claim still
@@ -4495,7 +4546,9 @@ null.
 
 > **At L12 the arm beats *every* direction orthogonal to it inside the concept subspace, at p < 0.01
 > in each case.** Because the sweep is exhaustive over a 2-D complement and projection is
-> sign-invariant, this is a **bound, not a sample**: there is no orthogonal direction left to try.
+> sign-invariant, this covers the half-circle at π/K resolution. ⛔ **It is a systematic
+> SAMPLE, not a bound** — see the refutation below; the phrase 'no orthogonal direction left
+> to try' is withdrawn.
 
 ### The two swept depths now say different things, and the difference is the honest headline
 
