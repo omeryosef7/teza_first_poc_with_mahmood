@@ -23,7 +23,21 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT = os.path.join(ROOT, "reports", "boombness_objective_sprint_report.md")
 
-# (label, artifact, json path, expected, tol, a string that must appear in the report)
+# (label, artifact, json path, expected, tol, needle[, status])
+#
+# ⛔ THIS CHECKER WAS POINTING THE WRONG WAY (audit #8, 2026-08-22). The `needle` field REQUIRES its
+# string to appear in the report, and three checks pinned numbers that have since been RETRACTED:
+# "−0.0062" (the 4096-d random control, withdrawn on the same grounds as R-23 -- far too weak a null),
+# "+0.0449" and "0.399" (both under R-26, which retracted §14-D's specificity conclusion). So the
+# checker ran GREEN while enforcing the continued presence of retracted claims: any attempt to strike
+# them from the report would have FAILED the build. That is worse than a dead guard -- a dead guard
+# merely fails to help, this one actively resisted the correction.
+#
+# `status` fixes it: "live" (default) behaves as before; "retracted" still verifies the ARTIFACT value
+# (so a silently drifting artifact is still caught, which is the half of the check that stays useful)
+# but drops the presence requirement, and prints RETRACTED so the status is visible in the output
+# rather than hidden behind a green line. Qualification of any surviving mention is retraction_sweep's
+# job, not this script's.
 CHECKS = [
     ("G1 demos_only L18 frac_of_span", "g1_wholeanswer_sow.json",
      ["G1", "pairs", "harm_ctx", "arms", "transplant|demos_only|L18", "frac_of_span"],
@@ -44,7 +58,7 @@ CHECKS = [
     ("14-B arm B p_cl", "advbench_decomposition.json",
      ["paired_vs_baseline", "B", "p_cl"], 0.0089, 0.0005, "0.0089"),
     ("14-B control is inert", "advbench_decomposition.json",
-     ["paired_vs_baseline", "Bctrl", "delta_cluster_mean"], -0.0062, 0.0005, "−0.0062"),
+     ["paired_vs_baseline", "Bctrl", "delta_cluster_mean"], -0.0062, 0.0005, "−0.0062", "retracted"),
     ("14-SA super-additivity", "advbench_decomposition.json",
      ["super_additivity", "excess"], 0.0333, 0.0005, "+0.0333"),
     ("14-SA vs control, paired", "advbench_decomposition.json",
@@ -54,9 +68,9 @@ CHECKS = [
     ("14-L L16 is exactly zero", "advbench_layer_profile.json",
      ["paired_vs_baseline", "L16", "delta_cluster_mean"], 0.0000, 1e-9, "+0.0000"),
     ("14-D d_naive reproduces", "advbench_direction_specificity.json",
-     ["paired_vs_baseline", "d_naive", "delta_cluster_mean"], 0.0449, 0.0005, "+0.0449"),
+     ["paired_vs_baseline", "d_naive", "delta_cluster_mean"], 0.0449, 0.0005, "+0.0449", "retracted"),
     ("14-D d_context is null", "advbench_direction_specificity.json",
-     ["paired_vs_baseline", "d_context", "p_cl"], 0.3991, 0.002, "0.399"),
+     ["paired_vs_baseline", "d_context", "p_cl"], 0.3991, 0.002, "0.399", "retracted"),
     ("cos(d_surface, d_naive) @L8", "direction_cosines.json",
      ["by_layer", "8", "d_naive"], 0.9452, 0.001, "0.945"),
     ("cos(d_surface, d_context) @L8", "direction_cosines.json",
@@ -82,8 +96,11 @@ def committed(rel: str) -> bool:
 def main() -> int:
     report = open(REPORT, encoding="utf-8").read()
     bad = 0
+    retracted = 0
     print(f"{'claim':<34}{'artifact':<38}{'expected':>11}{'actual':>13}  verdict")
-    for label, art, path, expected, tol, needle in CHECKS:
+    for _chk in CHECKS:
+        label, art, path, expected, tol, needle = _chk[:6]
+        status = _chk[6] if len(_chk) > 6 else "live"
         rel = os.path.join("outputs", "boombness", art)
         full = os.path.join(ROOT, rel)
         if not os.path.exists(full):
@@ -96,10 +113,20 @@ def main() -> int:
             print(f"{label:<34}{art:<38}{'':>11}{'':>13}  PATH ERROR {type(e).__name__}")
             bad += 1; continue
         ok_val = abs(actual - expected) <= tol
-        ok_txt = needle in report
-        verdict = "ok" if (ok_val and ok_txt) else (
+        # a retracted claim must still MATCH its artifact (drift detection) but must NOT be required
+        # to appear in the report -- requiring that is what made this checker fight the corrections.
+        ok_txt = True if status == "retracted" else (needle in report)
+        verdict = ("RETRACTED (artifact ok)" if (status == "retracted" and ok_val)
+                   else "RETRACTED — ARTIFACT DRIFTED" if status == "retracted"
+                   else "ok") if status == "retracted" else "ok" if (ok_val and ok_txt) else (
             "VALUE MISMATCH" if not ok_val else f"NOT IN REPORT: {needle!r}")
-        if verdict != "ok":
+        if verdict.startswith("RETRACTED"):
+            # a retracted check is not a failure unless its ARTIFACT drifted
+            if "DRIFTED" in verdict:
+                bad += 1
+            else:
+                retracted += 1
+        elif verdict != "ok":
             bad += 1
         print(f"{label:<34}{art:<38}{expected:>11.4f}{actual:>13.4f}  {verdict}")
     print()
@@ -107,8 +134,10 @@ def main() -> int:
         print(f"[verify] {bad} of {len(CHECKS)} checks FAILED — a report number does not match its "
               f"artifact, or its artifact is not committed, or the report no longer contains it.")
         return 1
-    print(f"[verify] all {len(CHECKS)} gate-table numbers match their committed artifacts "
-          f"and appear in the report.")
+    live = len(CHECKS) - retracted
+    print(f"[verify] all {live} LIVE gate-table numbers match their committed artifacts and appear "
+          f"in the report; {retracted} check(s) are RETRACTED and are verified against their "
+          f"artifacts only (their presence in the report is NOT required -- see the CHECKS comment).")
     return 0
 
 

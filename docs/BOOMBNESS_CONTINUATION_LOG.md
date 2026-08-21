@@ -6442,3 +6442,53 @@ swap failed both pre-committed controls (R-23/R-24).
 | 285 | 2026-08-22 | found §0a's own commit had **deleted** an artifact §0a cites | re-tracked `cluster_power.json` |
 | 286 | 2026-08-22 | struck "monotone"; fixed 443–453 → **440–451**; fixed the ratio range | one endpoint had come from a **retracted** arm |
 | 287 | 2026-08-22 | added R-26's number, the selection bias, and the single-model scope | the flat block now says what the body says |
+
+## A guard that was fighting the corrections, and an estimand that was two mismatches deep
+
+Tick 2026-08-22. Cleared the two audit #8 findings I had not yet actioned.
+
+### `verify_report_numbers.py` was pointing the wrong way
+
+Each check carries a `needle` — *a string that must appear in the report*. Three of them pinned
+numbers that have since been **retracted**: `−0.0062` (the 4096-d random control, withdrawn on R-23's
+grounds), and `+0.0449` / `0.399` (both under **R-26**). So the checker ran **green while enforcing the
+continued presence of retracted claims** — striking them from the report would have **failed the
+build**.
+
+That is worse than a dead guard. A dead guard fails to help; this one actively resisted the
+correction, and it did so while printing *"all 17 gate-table numbers match … and appear in the
+report"*, which reads as reassurance.
+
+Fixed with a `status` field. `retracted` checks still verify the **artifact** value — silent artifact
+drift is the half of the check worth keeping — but drop the presence requirement and print
+`RETRACTED (artifact ok)` so the status is visible rather than hidden behind a green line. Output now
+reads *"all **14 LIVE** … ; **3** RETRACTED, verified against artifacts only"*.
+
+**Tested against a case it must fail.** My first attempt planted a break on `+0.0322`, which is not
+actually a needle, and the checker passed — a *test* that verified nothing, which is the same class of
+error one level up. Redid it against a real live needle (`+68.9%`, present in 5 places): exit **1**
+with `NOT IN REPORT: '+68.9%'`; restored → exit **0**.
+
+### The estimand mismatch was two deep, not one
+
+Last tick I labelled `+0.0424` vs `+0.0305` as **pooled vs clustered**. That was only half of it.
+Measured directly:
+
+| | pooled | domain-clustered |
+|---|---|---|
+| **binary ASR** (threshold 0.5) | **+0.042424** | **+0.030581** |
+| **continuous StrongReject** | +0.042172 | **+0.030519** |
+
+`advbench_decomposition.json`'s `delta_cluster_mean` is the **continuous** one, and `p_cl = 0.0089`
+belongs to it. So the published pair took a **binary pooled** figure and a **continuous clustered**
+figure, called the difference *weighting*, and attached a **flip count** — a binary quantity — to both.
+The two agree to three decimals by coincidence, which is exactly why it survived a labelling pass that
+was specifically looking for estimand errors. Both deliverables now state all four numbers.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 288 | 2026-08-22 | found `verify_report_numbers.py` **requiring** three retracted numbers to stay | green build that fought its own corrections |
+| 289 | 2026-08-22 | added `status`; retracted checks verify the artifact only | 14 LIVE + 3 RETRACTED, status printed |
+| 290 | 2026-08-22 | **my first guard test verified nothing** (planted on a non-needle) | redone on a real needle: exit 1 / 0 |
+| 291 | 2026-08-22 | measured all four estimands directly | the labelled pair mixed **binary pooled** with **continuous clustered** |
+| 292 | 2026-08-22 | both deliverables now state all four | binary +0.0424/+0.0306, continuous +0.0422/+0.0305 |

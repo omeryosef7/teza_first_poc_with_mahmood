@@ -17,7 +17,8 @@
 >
 > **What survives, all causal, all on external harmful sets the prompt bank never generated:**
 > * Removing `d_surface` alone raises attack success on **AdvBench (495 prompts, 16 clusters)**:
->   **+0.0305 domain-clustered** (pooled: **+0.0424**), p=0.0089. ⚠ **Estimand labelled 2026-08-22** —
+>   **+0.0305 domain-clustered on the CONTINUOUS StrongReject score**, p=0.0089; the **binary ASR** is
+>   **+0.0424 pooled / +0.0306 clustered**. ⚠ **Estimand labelled 2026-08-22** —
 >   the full report's §0a quotes the *pooled* +0.0424 for the same effect, and comparing the two
 >   unlabelled reads as a contradiction. ⛔ "against a matched random projection that is inert
 >   (−0.0062)" is **retracted (R-23/R-25)**: a random direction in 4096-d is near-orthogonal to
@@ -80,8 +81,10 @@ Five retractions and three corrections have landed since revision 5. The full re
 authoritative flat version; this is the same content, shorter.
 
 **Still standing — but only L12 survives multiplicity.** Projecting out `d_surface` raises AdvBench
-attack success: L8 **+0.0424 pooled / +0.0305 clustered** (21 flips), L12 +0.0364, L10 +0.0323,
-L6 +0.0182, n=495. Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039,
+attack success: L8 **+0.0424** (21 flips), L12 +0.0364, L10 +0.0323, L6 +0.0182, n=495 — all
+**binary ASR at threshold 0.5, pooled**; the L8 binary domain-clustered figure is **+0.0306**. ⚠ The
+**+0.0305 / p_cl=0.0089** quoted elsewhere is the **continuous StrongReject** clustered mean, a
+*different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039,
 Holm over the 11-layer family 0.043 → survives**; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
 significant *only uncorrected*; **L6 p=0.0625 is not significant at all**. The four layers were
 themselves the **top four of eleven** by this same statistic, which is why Holm uses m=11. The arm
