@@ -4539,3 +4539,46 @@ different route.
 | 123 | 2026-08-21 | 3 new draws generated, all distinct, all coherence-OK | 5 coherent draws available |
 | 124 | 2026-08-21 | found arm names collapsing on `_2026` in tags | 3 arms → 1 key, 2 silently dropped; fixed |
 | 125 | 2026-08-21 | **band computed: mean +0.0012, sd 0.0026; arm B ≈16 sd above** | §2.5 met on the headline |
+
+## The addressing bug is fixed at the class level — the identity existed and nothing read it
+
+Tick 2026-08-21. Four instances of one bug in `analyze_steering` in a single day, each patched
+individually:
+
+| # | how identity was derived | how it failed |
+|---|---|---|
+| 1 | `ctrl_rand_s` prefix | matched **0** arms; band silently reported 0 draws (audit B1) |
+| 2 | `ctrlband_s` prefix, patched | missed `ctrlbandfix_s` re-runs — same silence |
+| 3 | `basename.split("_2026")[0]` | a **tag** containing a 2026 date truncated → 3 draws collapsed to 1 key, **2 silently dropped** |
+| 4 | `--band-arm` vs the derived name | unpredictable once names de-duplicate |
+
+Last tick I wrote that the real fix is for an arm to carry its declared name and be read, and
+recorded it as "not done". It is done now, and the discovery is slightly embarrassing: **the identity
+was already there.** `judge_boombness` writes `--tag` into every run's `config.json`. Four bugs came
+from parsing the directory name of runs that were already stating their own names one file over.
+
+`analyze_steering` now reads `config.json → args.tag`, keeps the basename parse **only** as a fallback
+for runs predating the field, and **prints a NOTE naming any arm that fell back** — so the next
+mismatch is visible rather than silent, which is what all four instances had in common.
+
+**Verified to change nothing.** Both bands reproduce exactly:
+
+| band | draws | mean | between-draw sd |
+|---|---|---|---|
+| AdvBench (headline) | 5 | +0.0012 | 0.0026 |
+| ClearHarm | 3 | +0.0086 | 0.0034 |
+
+and the arm names are now their declared tags — `abg_Bband_20260904/05/06` distinct and predictable,
+where an hour ago all three read `abg_Bband`.
+
+**The general lesson, since this is the clearest example the sprint has produced.** Every one of the
+four failures was silent: a band of zero draws printed as a band, three arms printed as one. The
+project's rule *address by identity, not by an incidental property* is usually justified by
+correctness, but the sharper argument is **detectability** — an incidental property fails without
+raising anything, because the code cannot tell "no match" from "nothing to match".
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 126 | 2026-08-21 | read the declared `tag` from each run's own `config.json` | the identity existed and nothing was reading it |
+| 127 | 2026-08-21 | fallback retained + a NOTE printed when it fires | the failure mode that hid four bugs is now loud |
+| 128 | 2026-08-21 | re-ran both bands | **identical**: AdvBench 5 draws +0.0012/0.0026, ClearHarm 3 draws +0.0086/0.0034 |

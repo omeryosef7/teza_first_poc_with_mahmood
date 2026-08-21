@@ -6,7 +6,7 @@
     "abg_B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_B_20260819_013447_1506491",
     "abg_Bctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bctrl_20260819_020905_1520524",
     "abg_Bband2": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bband2_20260819_043341_1572581",
-    "abg_Bband": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bband_20260904_20260821_090427_310991",
+    "abg_Bband_20260904": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bband_20260904_20260821_090427_310991",
     "abg_Bband_20260905": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bband_20260905_20260821_090427_310995",
     "abg_Bband_20260906": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bband_20260906_20260821_090427_310999"
   },
@@ -108,7 +108,7 @@
       "topicality": null
     },
     {
-      "arm": "abg_Bband",
+      "arm": "abg_Bband_20260904",
       "n": 495,
       "asr": 0.06666666666666667,
       "wilson95_IID_UNDERSTATES": [
@@ -210,7 +210,7 @@
       "n_suppressed": 0,
       "frac_refusal": null
     },
-    "abg_Bband": {
+    "abg_Bband_20260904": {
       "n_suppressed": 1,
       "frac_refusal": 0.0
     },
@@ -228,7 +228,7 @@
     "draws": {
       "abg_Bctrl": -0.0017676767676767678,
       "abg_Bband2": 0.002777777777777778,
-      "abg_Bband": 0.0022727272727272726,
+      "abg_Bband_20260904": 0.0022727272727272726,
       "abg_Bband_20260905": 0.00404040404040404,
       "abg_Bband_20260906": -0.0012626262626262627
     },

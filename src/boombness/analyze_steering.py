@@ -95,24 +95,50 @@ def main() -> int:
     # identical rows. Same class as the band-prefix bug two hours earlier: arm identity derived from
     # a filename convention. Names are now de-duplicated against what has already been claimed, and
     # a collision keeps enough of the original to stay distinguishable.
+    def _declared_tag(path):
+        """The identity the run DECLARED for itself, from its own config.json.
+
+        THE ACTUAL FIX (2026-08-21). Arm identity had been derived from the directory name four
+        separate times in this file, and every one of them broke:
+          * `ctrl_rand_s` vs `ctrlband_s`   -> band matched 0 arms, silently (audit B1);
+          * `ctrlbandfix_s`                 -> same, again, after the prefix list was patched;
+          * `basename.split("_2026")[0]`    -> tags containing a 2026 date truncated, so three
+                                               band draws collapsed to ONE key and two were dropped;
+          * `--band-arm` matching that derived name -> unpredictable once names de-duplicate.
+        Every instance is the same rule violation: address by identity, not by an incidental
+        property. The identity exists -- `judge_boombness` writes `--tag` into `config.json` -- and
+        nothing was reading it. This reads it; the basename parse remains only as a fallback for
+        runs predating the field, and `name_source` records which was used per arm so a future
+        mismatch is visible instead of silent.
+        """
+        try:
+            a = json.load(open(os.path.join(path, "config.json")))
+            t = (a.get("args", a) or {}).get("tag")
+            if t:
+                return str(t), "declared"
+        except Exception:
+            pass
+        return os.path.basename(path.rstrip("/")).split("_2026")[0], "derived_from_path"
+
     def _armname(path, taken):
-        base = os.path.basename(path.rstrip("/"))
-        stem = base.split("_2026")[0]
-        if stem not in taken:
-            return stem
-        rest = base[len(stem):].lstrip("_")
-        cand = f"{stem}_{rest.split('_')[0]}" if rest else base
-        i = 2
+        stem, src = _declared_tag(path)
+        cand, i = stem, 2
         while cand in taken:
             cand, i = f"{stem}#{i}", i + 1
-        return cand
+        return cand, src
 
     _taken = {"baseline"}
     _named = []
+    _name_source = {}
     for _a in args.arms:
-        _n = _armname(_a, _taken)
+        _n, _src = _armname(_a, _taken)
         _taken.add(_n)
         _named.append((_n, _a))
+        _name_source[_n] = _src
+    _derived = [k for k, v in _name_source.items() if v != "declared"]
+    if _derived:
+        print(f"[steer] NOTE: {len(_derived)} arm name(s) fell back to the path because the run "
+              f"declares no tag: {_derived}")
     runs = [("baseline", args.baseline)] + _named
     data = {name: load(d) for name, d in runs}
     common = set.intersection(*[set(v) for v in data.values()])
