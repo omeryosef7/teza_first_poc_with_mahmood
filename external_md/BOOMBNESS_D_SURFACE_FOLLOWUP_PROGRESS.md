@@ -6158,22 +6158,28 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
    categories positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
-4. **Within L6–L12, causation is concentrated on the `d_surface` axis — confirmed by a SUBSET and a
-   SUPERSET control.** An orthogonal axis in the same subspace is inert at four Holm-corrected
-   depths, and ablating the *entire* 3-D subspace at L8 (+0.0287) adds nothing over `d_surface`
-   alone (+0.0278). **Correlationally the subspace as a whole becomes more readable with depth and
-   `d_surface` is not privileged in it** (a random orthogonal axis predicts at 83–106%).
-   ⛔ The depth anti-alignment (Spearman −0.850) is a **description, not a mechanism**: the full
-   subspace is equally inert at L31, so that null is a property of the depth, not the direction. A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
-   its strength (three seeds, three layers) — yet ablating that same control moves nothing (L8
-   −0.0033, p 0.15) while ablating `d_surface` does (+0.0305, p 0.009). A direction can be **read**
-   from a subspace without being the direction that **acts**. This is the sprint's most interesting
-   finding and it subsumes what I briefly mis-framed as a disagreement between grains.
+4. **Within L6–L12, causation is concentrated on the `d_surface` axis, by a SUBSET and a SUPERSET
+   control.** A random axis in the same 2×2 span, exactly orthogonal to `d_surface`, is inert at
+   **all four depths, every one surviving Holm** (arm − control: L6 +0.0127, L8 +0.0319, L10 +0.0303,
+   L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
+   basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
+   of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
+   ⚠ Each per-depth control is **one draw**; the correlational side uses three seeds, the causal side
+   does not.
+   **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
+   privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
+   seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
+   ⛔ The depth anti-alignment (Spearman −0.850) is a **description, not a mechanism**: the whole
+   subspace is equally inert at L31, so that null is **not specific to `d_surface`**. Whether it is a
+   property of the depth or of this subspace is **undecided** — the `unembed_refusal` positive
+   control at L31 is judging as this is written.
+
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
-   in high dimensions** — and the one arm re-tested against a subspace-matched control (arm B)
-   **passed**, so the criticism is about what the other controls *establish*, not about the result
-   they happened to accompany. Also: StrongReject ≈ 0.9 × ASR on AdvBench, so continuous and binary
+   in high dimensions** — and **all four `d_surface` depths re-tested against a
+   subspace-matched control passed, Holm-corrected**, so the criticism is about what the *other*
+   controls establish — the refusalness profile, Phase F, the Qwen3 double-random — not about the
+   results they accompanied. Also: StrongReject ≈ 0.9 × ASR on AdvBench, so continuous and binary
    estimands are one measurement; and a judge run with `bank=None` scores against the empty string.
 
 ### 11. What was retracted or downgraded during this sprint?
