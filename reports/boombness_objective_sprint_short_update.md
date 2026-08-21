@@ -18,7 +18,9 @@
 > **What survives, all causal, all on external harmful sets the prompt bank never generated:**
 > * Removing `d_surface` alone raises attack success on **AdvBench (495 prompts, 16 clusters)**:
 >   **+0.0305, p=0.0089**, against a matched random projection that is inert (−0.0062).
-> * The effect is **localized to a band of layers, ~L6–L12 with a core at L8–L12**, with a matched
+> * The effect is **localized to a band of layers, ~L6–L14 with a core at L8–L12** (scan-statistic
+>   window, permutation p=0.011 under layer-label exchangeability; no single layer survives Holm),
+>   with a matched
 >   control inert at all eleven depths tested, and **exactly zero at L16** — where the same
 >   intervention still changes 29.5% of generations.
 > * It is **specific to this direction**: the effect tracks the cosine with `d_surface`. `d_context`,

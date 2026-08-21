@@ -1,0 +1,72 @@
+{
+  "test": "scan statistic over contiguous layer windows; null = layer-label exchangeability",
+  "population": {
+    "bank_file": "advbench_heldout_495.jsonl",
+    "population": "AdvBench-495 (external; goal == prompt)",
+    "is_external_bank": true,
+    "goal_semantics": "goal == visible prompt (no substitution; R-13's style artifact cannot arise)",
+    "model": null,
+    "condition": null,
+    "n": null,
+    "n_clusters": null
+  },
+  "profile": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/advbench_layer_profile.json",
+  "effect_field": "delta_cluster_mean",
+  "layers": [
+    4,
+    6,
+    8,
+    10,
+    12,
+    13,
+    14,
+    16,
+    18,
+    24,
+    28
+  ],
+  "effects": [
+    0.009200177436035288,
+    0.01586529546537835,
+    0.030519369707034255,
+    0.022302519578752712,
+    0.032212634581190856,
+    0.013750592697961118,
+    0.011838748002561201,
+    0.0,
+    0.0036778143274853797,
+    0.0004937448197264815,
+    0.0036778143274853797
+  ],
+  "observed_statistic": 0.05163898334563264,
+  "observed_window": {
+    "layers": [
+      6,
+      14
+    ],
+    "n_layers": 6,
+    "members": [
+      "L6",
+      "L8",
+      "L10",
+      "L12",
+      "L13",
+      "L14"
+    ]
+  },
+  "n_perm": 100000,
+  "p_perm": 0.01086989130108699,
+  "conditions_on": "the observed multiset of per-layer effects; this tests ARRANGEMENT, not whether the effects are real. Report beside the per-layer inference.",
+  "provenance": {
+    "argv": [
+      "src/boombness/layer_profile_test.py",
+      "--profile",
+      "outputs/boombness/advbench_layer_profile.json",
+      "--bank",
+      "data/boombness_prompts/external/advbench_heldout_495.jsonl",
+      "--out",
+      "outputs/boombness/layer_profile_shape_test.json"
+    ],
+    "git_commit": "1bb77f2081b462a994329dd9a5a2241d97c3ccdd"
+  }
+}

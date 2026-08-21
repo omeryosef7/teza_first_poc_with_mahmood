@@ -4238,3 +4238,50 @@ supports. Writing the permutation test is the obvious next piece of real work on
 | 102 | 2026-08-21 | Holm over the 10-arm layer family | **nothing survives**; L12 p=0.00562 vs thr 0.00500 |
 | 103 | 2026-08-21 | separated "L12 is significant" from "there is a band" | the second is the claim; the first is not quotable |
 | 104 | 2026-08-21 | report states the band descriptively and **names the test it lacks** | weaker wording, honestly bounded |
+
+## ★ The band is tested, not asserted — and the test reverses a "correction" I made two ticks ago
+
+Tick 2026-08-21. Last tick I removed the band claim's strength, said per-layer Holm was the wrong
+test for it, and **named the test I lacked**. This tick I wrote it.
+
+`layer_profile_test.py`: take the per-layer effects as a multiset, reassign them to depths at random —
+under that null the same effect sizes exist but their **arrangement** is uninformative — and use a
+**scan statistic**, the largest contiguous window by size-weighted sum.
+
+| | |
+|---|---|
+| maximal contiguous window | **L6 – L14** (6 layers) |
+| scan statistic | 0.05164 |
+| **permutation p**, 100,000 draws | **0.0109** |
+
+**The arrangement is not chance**, even though **no individual layer survives Holm** (L12 p=0.00562
+vs threshold 0.00500). Those two results are consistent and answer different questions: no single
+layer is establishable, *and* the effects are concentrated in a contiguous run more than random
+assignment produces. The band claim is now licensed at the level it was always being made.
+
+### The uncomfortable part: this reverses my own earlier "fix"
+
+Audit #2 finding #13 was that the two deliverables disagreed — full report **~L6–L12**, short update
+**~L6–L14**. I "resolved" it by changing the short update to match the report, on the grounds that
+L13 (p=0.090) and L14 (p=0.141) are **not individually significant**.
+
+That reasoning used **per-layer significance** — the exact criterion I argued one tick later is the
+wrong one for a band claim. Under the criterion that respects the claim, the scan window is
+**L6–L14**, and **the short update's original wording was the better description.** I overwrote a
+correct statement with a defensible-but-weaker one, then built the test that vindicated what I had
+overwritten.
+
+Both deliverables now carry both facts: `L8/L10/L12` are the individually-strongest layers; **L6–L14**
+is the maximal contiguous window and the one the shape test licenses. The short update is restored,
+with the test cited rather than the assertion it originally had.
+
+**What the test cannot do**, stated in its docstring and in the report: it conditions on the observed
+multiset of effects, so it tests **arrangement**, not whether the effects are real. If every layer
+effect were noise, a lucky contiguous run could still fire it. It sits beside the per-layer inference,
+not instead of it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 105 | 2026-08-21 | wrote the profile-shape permutation test I said was missing | **p = 0.0109**; band licensed, no layer establishable |
+| 106 | 2026-08-21 | scan window is **L6–L14**, not L6–L12 | my audit-#2 "fix" of the short update used the wrong criterion |
+| 107 | 2026-08-21 | restored the short update's band and put the test behind it in both deliverables | both now carry both criteria |

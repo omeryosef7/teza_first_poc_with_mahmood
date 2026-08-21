@@ -2171,10 +2171,36 @@ edge, and the descriptive pattern is not a single spike:
 * the **matched controls at 3 depths are inert** (c4, c6, c8).
 
 A single significant layer flanked by nulls would be a selection artifact. A monotone rise-and-fall
-across six ordered layers with a hard edge is a different kind of evidence — but it is **descriptive**,
-and this report does not currently have a test of the *profile shape* against a null in which layer
-labels are exchangeable. **That test is not run, so the band claim is asserted at the descriptive
-level and the per-layer p-values are reported uncorrected and labelled as such.**
+across ordered layers with a hard edge is a different kind of evidence — and that is now **tested
+rather than asserted** (`layer_profile_test.py`, `outputs/boombness/layer_profile_shape_test.json`).
+
+**The test.** Take the observed per-layer effects as a multiset and reassign them to depths at
+random: under that null the same effect sizes exist but their *arrangement* carries no information.
+The statistic is a **scan** — the largest contiguous window of layers by size-weighted sum.
+
+| | |
+|---|---|
+| maximal contiguous window | **L6 – L14** (6 layers) |
+| scan statistic | 0.05164 |
+| **permutation p** (label exchangeability, 100,000 draws) | **0.0109** |
+
+**So the arrangement is not chance**, even though no individual layer survives Holm. The two results
+are consistent and answer different questions: *no single layer is establishable*, and *the effects
+are concentrated in a contiguous run more than random assignment would produce*.
+
+⚠ **This also revises the band's edges, and revises a "correction" made earlier in this sprint.**
+The scan's window is **L6–L14**, not L6–L12. The two deliverables previously disagreed (full report
+~L6–L12, short update ~L6–L14) and the short update was "fixed" to match the report on the basis of
+**per-layer significance** — L13 (p=0.090) and L14 (p=0.141) are not individually significant. But
+per-layer significance is the criterion this section has just argued is the wrong one for a band
+claim. Under the criterion that respects the claim, **the short update's original ~L6–L14 was the
+better description.** Both are reported here: `L8/L10/L12` are the individually-strongest layers;
+`L6–L14` is the maximal contiguous window and the one the shape test licenses.
+
+**What the test does not do.** It conditions on the observed multiset of effects, so it tests
+**arrangement**, not whether the effects are real. If every layer effect were noise, a lucky
+contiguous run could still fire it. It is evidence about shape, reported beside the per-layer
+inference rather than instead of it.
 
 ### ✅ Is the headline just longer text? No — decomposed by refusal transition (added 2026-08-21)
 
