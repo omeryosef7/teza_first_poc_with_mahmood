@@ -6252,3 +6252,41 @@ construction rather than about the model.
 | 267 | 2026-08-22 | withdrew the sign-consistency argument | 4 positive, **1 negative**, none significant |
 | 268 | 2026-08-22 | recorded that L8 and L13 sit **at** their attainable floors | the design cannot produce significance here regardless of truth |
 | 269 | 2026-08-22 | closed the `d_naive` line in the artifact | verdict + frontier explanation stored in JSON, not only prose |
+
+## What the five nulls actually mean: a minimum detectable effect, not an absence
+
+Tick 2026-08-22. Before letting "five layers, nothing significant" stand as the conclusion, I asked the
+question that should follow any null: **could this design have detected the effect it was looking
+for?** `cluster_power.py` simulates the actual test — inject a true per-prompt effect, using the real
+16 domain sizes and the real 463 refusable prompts (only those can flip, which is where every observed
+flip came from), and measure how often the cluster sign-flip test rejects.
+
+| true Δ | 0.005 | 0.010 | **0.020** | 0.030 | 0.050 |
+|---|---|---|---|---|---|
+| power | 0.005 | 0.120 | **0.640** | **0.922** | 0.998 |
+
+**Minimum detectable effect at 80% power: ≈ +0.03. The largest effect this comparison ever produced
+was +0.0222 (L12).** At the observed sizes power ran ≈0.08 (L6), ≈0.19 (L13), ≈0.25 (L8), ≈0.72 (L12).
+
+**So the five nulls are not evidence of absence.** They are what an underpowered design returns. The
+honest statement is *"not established"*, not *"shown absent"* — and I am recording that distinction
+because the temptation after a long run of retractions is to over-correct into treating every null as
+a settled negative. Four of the five layers had less than a one-in-four chance of detecting an effect
+of the size actually present.
+
+**This also explains the floor observations mechanically.** With k informative clusters the attainable
+floor is 2/2ᵏ, so **k ≥ 6, all pointing the same way, is required before p ≤ 0.05 is even possible**.
+Observed k was 4, 4, 4, 6, 5. The floor is the *necessary* half; the power curve is the *sufficient*
+half, and this design fails both at the effect sizes in play.
+
+**Actionable consequence for anyone continuing this.** Do not re-run this comparison on 495 AdvBench
+prompts across 16 domains expecting resolution — it cannot resolve effects below ~0.03. Either target
+a larger effect, or change the design so more domains carry a signal (the binding constraint is the
+count of *informative* clusters, not the prompt count).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 270 | 2026-08-22 | built `cluster_power.py` (simulates the real test on the real domain structure) | MDE @80% power = **+0.03** |
+| 271 | 2026-08-22 | compared MDE to observed effects | largest observed **+0.0222**; power 0.08–0.72 |
+| 272 | 2026-08-22 | reframed the five nulls | **"not established", NOT "shown absent"** — recorded against over-correction |
+| 273 | 2026-08-22 | stored the caveat inside the replication artifact | a reader opening the JSON sees it, not just this log |

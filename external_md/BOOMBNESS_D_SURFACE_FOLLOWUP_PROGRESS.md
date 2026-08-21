@@ -5056,6 +5056,63 @@ reported.
 
 
 
+## ⛔⛔ I REPRODUCED F-3's OWN DEFECT WHILE BUILDING F-3's REPLACEMENT — a 14.65× overdose from an identical-looking flag
+
+The dose-matched random control came back **catastrophically degenerate**: `uniq 0.066`,
+`trigram 0.915`, `top_word_frac 0.952` (one token is 95% of the output), `truncated 1.000` — **every
+single row truncated** — `scorable 0.125`.
+
+⚠ **I was one step from writing that up as a coherence asymmetry** — "at identical magnitude the
+refusalness direction produces articulate refusals (uniq 0.940) while a random direction destroys
+the model (uniq 0.066), which shows refusalness is a real absorbable feature axis". It would have
+been a clean, publishable-sounding claim. **It is an arithmetic error in my own flag.**
+
+### The units are not the same, and the flag hides it
+
+`score_behavior.py` dispatches `add` dosing two different ways:
+
+| direction | code | magnitude injected |
+|---|---|---|
+| `refusalness` | `alpha * float(v.norm())`, and the file is **normalized** | **α × 1.0 = α** |
+| everything else (incl. `random`) | `alpha * g`, where `g` = the **`d_surface` gap** | **α × 14.653462** at L18 |
+
+So `refusalness:add:18-18:7.326731` injects **7.33**, while `random:add:18-18:7.326731` injects
+**≈107.4**. Same-looking flag, **14.65× apart**. Cross-checked against the log's own record: tick-17
+noted `random:add:18-18:0.068243` "injects magnitude 1.0", and 1/0.068243 = **14.653462** exactly.
+
+**This is precisely the defect RETRACTION F-3 exists for** — an arm compared against a control at a
+14.8× dose mismatch — and I reproduced it *in the experiment built to repair it*. The degeneracy was
+never evidence about random directions; it was magnitude ~107 destroying the model, which magnitude
+~107 would do along any axis.
+
+### Corrections applied
+
+- **Cancelled 773114** (the α 10.99 control, same overdose, magnitude ≈161) mid-run.
+- **Relaunched both controls magnitude-matched**: `random:add:18-18:**0.5**` → magnitude 7.326731
+  (773279) and `**0.75**` → 10.990097 (773280). The clean arithmetic: the matched control alpha is
+  the *gap fraction itself*, because the random leg is already dosed in gap units.
+- ⛔ **The F-3 comparison remains UNANSWERED.** Nothing about refusalness specificity is established
+  or refuted by tonight's control; it was simply not a control.
+
+### ✅ The guard that would have caught it, now in the code
+
+`_report_add_magnitude()` prints, once per (direction, layer), for every additive intervention:
+
+> `[score] ADD DOSE random L18: alpha=7.326731 x unit=14.653462 -> EFFECTIVE MAGNITUDE 107.35
+> (alpha is NOT a common unit across directions; compare magnitudes, not alphas)`
+
+The mismatch is now visible in the log of any run that doses additively, **before** a single
+generation is judged. Note what kind of guard this is: not a threshold that can pass vacuously, but
+a **printed quantity that makes the invisible visible**. Seven of this sprint's dead guards were
+tests that could not fail; this one cannot fail *because it does not test anything* — it reports.
+
+### The lesson, and it is not "check your arithmetic"
+
+I verified the *statistics* of that run carefully — gate thresholds, sample size, degeneracy mode —
+and never asked what number the model actually received. **The flag looked matched, so I treated it
+as matched.** F-3's original defect was the same shape, and the repo had already written it down.
+Reading the retraction was not enough to avoid repeating it; only computing the magnitude was.
+
 ## ⚠ OPERATIONAL — the concurrent writer materialised, and it ate a commit message (not the work)
 
 At 23:05 a `git commit` of mine failed with

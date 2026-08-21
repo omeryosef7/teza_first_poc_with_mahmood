@@ -65,7 +65,18 @@
   "n_positive": 4,
   "n_negative": 1,
   "any_significant_at_cluster_level": false,
-  "VERDICT": "CLOSED / NULL. Five layers, no cluster-level significance anywhere. L8 and L13 sit exactly AT their attainable floors (0.125 with 4 informative clusters; 0.0625 with 5), so neither could have cleared 0.05 whatever the data. Point estimates are 4 positive and 1 NEGATIVE (L10 -0.0040), so the sign-consistency that was the last support for this line does not hold either.",
+  "VERDICT": "CLOSED / NULL. Five layers, no cluster-level significance anywhere. L8 and L13 sit exactly AT their attainable floors (0.125 with 4 informative clusters; 0.0625 with 5), so neither could have cleared 0.05 whatever the data. Point estimates are 4 positive and 1 NEGATIVE (L10 -0.0040), so the sign-consistency that was the last support for this line does not hold either. POWER: the design's minimum detectable effect at 80% power is ~0.03, above every effect observed here, so these nulls are uninformative about absence.",
   "why_it_is_closed_with_an_explanation": "R-27 follow-up: d_naive sits ON the exact dose-vs-cosine frontier (gap 0.0001-0.0009) while the dose_mix ladder is an INTERIOR path (gap 0.0067-0.0136). Any frontier direction sits above an interior path's curve, so 'd_naive beats every dose-matched mixture' was a fact about the construction, not the model.",
-  "preregistration_honoured": "The three-way rule (both / neither / split) was fixed before the L6+L12 data and applied unrenegotiated; L13 was chosen specifically because it lies OUTSIDE the outcome-selected top-4, and its positive point estimate is reported without any significance claim, exactly as pre-committed."
+  "preregistration_honoured": "The three-way rule (both / neither / split) was fixed before the L6+L12 data and applied unrenegotiated; L13 was chosen specifically because it lies OUTSIDE the outcome-selected top-4, and its positive point estimate is reported without any significance claim, exactly as pre-committed.",
+  "power": {
+    "minimum_detectable_effect_at_80pct": 0.03,
+    "power_at_observed_effects": {
+      "L6 (+0.0081)": "~0.08",
+      "L8 (+0.0141)": "~0.25",
+      "L12 (+0.0222)": "~0.72",
+      "L13 (+0.0121)": "~0.19"
+    },
+    "source": "outputs/boombness/cluster_power.json",
+    "IMPORTANT": "These nulls are NOT evidence of absence. The cluster sign-flip test needs a true effect of ~0.03 for 80% power on this 495-prompt / 16-domain design, and the largest effect this comparison ever produced was +0.0222. At the observed sizes power was 0.08-0.72. The correct statement is 'not established', not 'shown absent'."
+  }
 }

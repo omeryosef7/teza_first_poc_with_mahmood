@@ -110,6 +110,36 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]],
 COMPOSED_SEED_STRIDE = 131_071
 
 
+def _report_add_magnitude(name: str, layer: int, alpha: float, unit: float, eff: float) -> None:
+    """Print the EFFECTIVE injected magnitude of an `add`, once per (direction, layer).
+
+    WHY (2026-08-22). `--intervene <dir>:add:<layers>:<alpha>` does NOT mean the same physical
+    magnitude for different directions. `refusalness` is dosed in units of its own (unit) norm, so
+    alpha == magnitude. Every other direction is dosed in units of the **d_surface gap**, which at
+    L18 is 14.653462. So `refusalness:add:18:7.33` injects 7.33 while `random:add:18:7.33` injects
+    **107.4** -- a 14.65x overdose from an identical-looking flag.
+
+    That is exactly the mismatch RETRACTION F-3 was raised for, and I reproduced it while building
+    F-3's replacement control: the "dose-matched" random arm came back with uniq 0.066, top-word
+    0.952 and 100% truncation, which I nearly wrote up as a coherence asymmetry between refusalness
+    and random directions. It was an arithmetic error in the flag, not a property of the model.
+
+    Printing the effective magnitude makes the mismatch visible in the log of every run that dozes
+    additively, before any generation is judged.
+    """
+    key = (name, layer)
+    seen = getattr(_report_add_magnitude, "_seen", None)
+    if seen is None:
+        seen = set()
+        _report_add_magnitude._seen = seen
+    if key in seen:
+        return
+    seen.add(key)
+    print(f"[score] ADD DOSE {name} L{layer}: alpha={alpha:g} x unit={unit:.6f} "
+          f"-> EFFECTIVE MAGNITUDE {eff:.6f}  "
+          f"(alpha is NOT a common unit across directions; compare magnitudes, not alphas)")
+
+
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816):
     """Return a list of context managers implementing --intervene, or [].
@@ -175,7 +205,9 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             elif mode == "add":
                 # dosed in units of the refusal direction's own norm, recorded so it is not
                 # confused with the gap-unit dosing used for d_surface
-                ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * float(v.norm())))
+                eff = alpha * float(v.norm())
+                _report_add_magnitude("refusalness", L, alpha, float(v.norm()), eff)
+                ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=eff))
             else:
                 raise SystemExit(f"unknown intervention mode {mode!r}")
         if not ctxs:
@@ -339,6 +371,7 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                 raise SystemExit(
                     f"direction {name!r} has no `gap` entry; refusing to dose an additive "
                     "intervention on a unit vector (see the docstring)")
+            _report_add_magnitude(name, L, alpha, g, alpha * g)
             ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * g))
         else:
             raise SystemExit(f"unknown intervention mode {mode!r}")
