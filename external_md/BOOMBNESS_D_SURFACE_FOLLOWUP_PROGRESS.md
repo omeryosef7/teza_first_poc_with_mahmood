@@ -5056,6 +5056,96 @@ reported.
 
 
 
+## ✅✅ ITEM 2 RESULT — Qwen3's +0.3476 is ENTIRELY the `d_surface` leg, it is direction-specific, and two thirds of it is not doublespeak
+
+**Artifact:** `outputs/boombness_followup/qwen3_decomposition_sessionmatched.json`
+(`analyze_qwen3_decomposition.py`, all six arms judged in **one** session, `20260821_182849`).
+
+| arm | intervention | ΔASR (natural_doublespeak) | p |
+|---|---|---|---|
+| C20 | refusalness @ L20 | +0.0262 | 0.140 |
+| **B11** | **`d_surface` @ L11 — the never-run cell** | **+0.3810** | **0.00031** |
+| D20 | both | +0.3476 | 0.00024 |
+| D20ctrl | isotropic double-random | +0.0048 | 0.638 |
+| **B11ctrl** | **subspace-matched, ⊥ `d_surface` @ L11** | **−0.0119** | **0.601** |
+| — | **INTERACTION** (D − B − C + base) | **−0.0595** | **0.145** |
+
+### The pre-registered question is answered, and it is branch 1
+
+I recorded two outcomes in advance. **`d_surface` alone carries the whole effect.** Arm B is
+statistically indistinguishable from removing both (the interaction is **null**, −0.0595 at
+p 0.145), while the refusalness leg on its own does **nothing** (+0.0262, p 0.140). The
+"remove-both" headline was never a joint effect — it was the `d_surface` leg with an inert
+passenger. ⛔ **The final report's framing — that +0.3476 is a combined effect awaiting
+decomposition — is now wrong and is corrected below.**
+
+⚠ Arm B's point estimate is *numerically* larger than remove-both (+0.3810 vs +0.3476), but the
+interaction test says that gap is not real. **I am not claiming removing refusalness makes things
+worse**; the honest statement is that the second leg adds nothing detectable at n = 6 domains.
+
+### ✅ And it is direction-specific — by a control that could fail
+
+`B11ctrl` removes an exactly-orthogonal direction *inside the same concept subspace* at the same
+layer (cos 1.9e-09, removing 3.63% of the cell-mean spread against the arm's 89.97%). It moves ASR
+**−0.0119, p 0.601** — nothing. So a +0.38 swing belongs to the `d_surface` axis specifically, not
+to perturbing that subspace. **This is the first Qwen3 control in this repo that was capable of
+failing**; the pre-existing `norm_matched_double_random` is isotropic and, per R5-7, certifies
+nothing (it duly reports +0.0048).
+
+### ⛔ But most of the effect is NOT doublespeak — and this is the load-bearing caveat
+
+`benign_literal` is **zero by construction**: those prompts have no hidden referent, so anything the
+arm moves there is generic, not doublespeak.
+
+| arm | Δ doublespeak | Δ benign_literal | **doublespeak-specific excess** | p |
+|---|---|---|---|---|
+| **B11** | +0.3810 | **+0.2562** (p 0.0023) | **+0.1248** | **0.032** |
+| D20 | +0.3476 | +0.2222 (p 0.0071) | +0.1254 | 0.048 |
+| B11ctrl | −0.0119 | +0.0031 | −0.0150 | 0.566 |
+
+**Roughly two thirds of the +0.3810 reproduces on prompts with no doublespeak content at all.** The
+doublespeak-attributable part is **+0.1248** — and it sits at p 0.032 on 6 domains, i.e. in exactly
+the fragile band where **R5-6 already showed D20's near-identical +0.1254 fails three of four
+robustness checks** (stratum-matched, jackknife, proportional transport). The two numbers agree to
+within 0.0006, which is unsurprising now that we know they are the same effect, and that agreement
+means **R5-6's downgrade transfers to arm B and should be assumed to apply until re-tested.**
+
+### What this changes in the final report
+
+1. **Answer 8's "remove-both gives +0.3476 … and the arm cannot be decomposed — no arm B exists on
+   that bank"** is superseded: arm B exists, and the decomposition is *all `d_surface`*.
+2. The Llama/Qwen3 contrast is sharper than recorded. Llama's arm B on AdvBench is **+0.0305**;
+   Qwen3's on its internal bank is **+0.3810**, an order of magnitude larger. ⚠ Different banks and
+   different baselines (0.0081 vs 0.1595), so this is **not** a clean cross-model effect-size
+   comparison and must not be cited as one.
+3. `d_surface` being non-harm-specific was already the sprint's conclusion on Llama (finding 2).
+   **This is the strongest evidence yet for it**, and on a second model: the axis moves benign
+   prompts by +0.2562.
+
+### ⚠ Judge nondeterminism, measured
+
+Re-judging the *identical* 08-17/08-18 generations moved baseline ASR **0.1714 → 0.1595** and benign
+baseline 0.0000 → 0.0031. The arms moved with it, and D20's paired delta reproduced at **+0.3476,
+identical to four decimal places**. So the judge is not deterministic run-to-run, the *paired*
+estimand absorbs it, and R6-6's insistence on one judging session is vindicated rather than
+academic.
+
+### Bugs caught before they produced a number
+
+1. ⛔ **The analyzer would have silently used half the data.** It inherited
+   `consolidate_deliverables.newest()`, which returns **one** directory — correct when each arm was
+   one 960-row run, wrong here where each arm is two 480-row shards. It would have returned a
+   perfectly plausible result computed on 480 prompts. Replaced with a shard-union loader that
+   hard-fails on duplicate ids and pins one session. This is review #6's `abgL6_B` failure
+   (40 rows silently returning delta 0.0) in a new costume.
+2. ⛔ **I ran the judge batch twice.** A stray foreground invocation fired alongside the SLURM job,
+   producing a second, partial set of `q3dec_*` directories — several empty. Wasted API spend, my
+   error. The union loader now requires an explicit `--session`, so the two batches cannot be
+   silently merged; the SLURM batch was verified complete first (6 arms × 960 unique rows,
+   0 duplicates, all `judge_status ok`).
+3. Regression check re-run after the loader change: the committed session still reproduces every
+   published value exactly.
+
 ## ITEM 2 — generation complete on the control, and a cross-time confound closed rather than assumed
 
 **Control arm 772473 done:** 960 rows, **0 failures**, intervention verified
@@ -7040,10 +7130,19 @@ baseline 0.1714** — both usable. **R-17's "Qwen3 is floor-limited" is about Ad
 Qwen3.**
 
 On the internal bank, remove-both gives **ΔASR +0.3476, p_cl 0.00028** against an inert control, and
-remove-refusalness alone is **inert (−0.0048)** — the opposite of the Llama pattern. ⛔ But the
+remove-refusalness alone is **inert** — the opposite of the Llama pattern. ✅ **DECOMPOSED
+2026-08-21** (`qwen3_decomposition_sessionmatched.json`): the never-run arm B — `d_surface` @ L11
+alone — is **+0.3810, p 0.00031**, statistically indistinguishable from remove-both (interaction
+−0.0595, p 0.145). **The whole effect is the `d_surface` leg**; the refusalness leg is a passenger.
+It is **direction-specific** — a subspace-matched, exactly-orthogonal control at the same layer
+moves −0.0119 (p 0.601), the first Qwen3 control here that could have failed. ⛔ **But only about a
+third is doublespeak**: `benign_literal`, zero by construction, moves **+0.2562**, leaving a
+specific excess of **+0.1248 (p 0.032)** — within 0.0006 of D20's +0.1254, so **R5-6's downgrade of
+that number applies here too until re-tested.** ⛔ But the
 **doublespeak-specific** component is **not robust** (R5-6): +0.1254 p 0.030 as reported, +0.1142
 p 0.075 stratum-matched, 4 of 6 jackknife replicates p > 0.05, +0.0478 p 0.267 under proportional
-transport. And the arm cannot be decomposed — no arm B exists on that bank.
+transport. ⛔ ~~And the arm cannot be decomposed — no arm B exists on that bank.~~ **Superseded: arm B was run
+on 2026-08-21 and the decomposition is above.**
 
 **The representational port is blocked, not negative:** the knockout stack does not run numerically on
 Qwen3 (20 of 21 rows non-finite readout logits).
@@ -7176,7 +7275,12 @@ comparability check, `--min-separation`, and my first orthogonalisation.
    variance — the span of the five committed refusal directions, or the top PCs of activations on
    refused-versus-complied prompts. Phase F's composed arms and the Qwen3 double-random control are
    in the same position.
-2. **Run arm B on Qwen3's internal bank** so the +0.3476 can be decomposed.
+2. ✅ **DONE 2026-08-21.** Arm B run on Qwen3's internal bank: the +0.3476 is **entirely the
+   `d_surface` leg** (+0.3810, p 0.00031; interaction with refusalness null at −0.0595, p 0.145),
+   direction-specific against a subspace-matched control (−0.0119, p 0.601), but only ~a third
+   doublespeak-specific (+0.1248, p 0.032, with R5-6's downgrade presumed to apply). **New open
+   item:** re-test that +0.1248 under R5-6's three robustness checks, which the near-identical
+   D20 figure failed.
 3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
    `d_surface`'s own band because only five refusal directions exist on disk.
 4. ✅/⚠ **Partly done.** `judge_boombness` now writes `prompt_sha16` on every row and records
