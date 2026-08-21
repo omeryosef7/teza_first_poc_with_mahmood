@@ -5033,6 +5033,79 @@ reported.
 
 
 
+## ⛔✅ ITEM 3 CLOSED AS AN EVALUATED NEGATIVE — there is no causally valid refusal direction in `d_surface`'s band
+
+**Artifact:** `doublespeak_causality/outputs/stage_gcg_full_lowlayers/` (job 772476). Same script,
+same bench (60 harmful / 20 harmless), `--layers 6,8,10`, `--validate`.
+
+The item was written as *"fit Llama refusal directions at L6/L8/L10 — the interaction cannot be
+measured inside `d_surface`'s own band because only five refusal directions exist on disk."* That
+framing was wrong, and in an informative way: **the directions were missing because they do not
+work, not because nobody had fitted them.**
+
+| layer | separation | ablate_gain | induce_gain | causally usable |
+|---|---|---|---|---|
+| L6 | 0.4370 | **0.000** | −0.333 | ⛔ |
+| L8 | 0.4490 | **0.000** | −0.333 | ⛔ |
+| L10 | 0.5283 | **0.000** | −0.333 | ⛔ |
+| L12 | 0.5396 | **0.000** | −0.333 | ⛔ *(pre-existing, committed)* |
+| L14 | 0.7519 | +0.200 | +0.200 | ✅ |
+| L16 | 0.9224 | +0.133 | +0.667 | ✅ |
+| L18 | 0.9525 | **+0.467** | +0.667 | ✅ |
+| L20 | 1.0231 | +0.133 | +0.467 | ✅ |
+
+**The clean half is the ablation arm**, and it is a strong null: projecting the L6/L8/L10/L12
+direction out of **every layer** leaves the harmful-prompt refusal rate at **1.000, exactly where it
+started**. Not reduced, not partially — unchanged.
+
+### ✅ Two independent measurements put the boundary in the same place
+
+`d_surface_layer_profile_replication.json → multiplicity_M3.refusalness_profile` has **exactly one
+non-surviving depth: L12, p 0.451**, against L14/L16/L18/L20 at p 0.00014–0.0126. That is a
+*behavioural ASR profile on the doublespeak bank*. This run is a *generation-based sign check on the
+pair benchmark* — different prompts, different outcome, different script — and it fails at exactly
+L6–L12 and passes at exactly L14–L20. **The refusal axis becomes causally live between L12 and
+L14 on both measurements.**
+
+### ⛔ What I nearly claimed and the data does not support
+
+I was about to write this up as a **representation-without-behaviour dissociation** — decodable
+early, causal only late — because that is this project's recurring theme. **The separations refute
+it.** Decodability is not flat across the boundary: the single largest jump in the whole series is
+**L12 → L14 (+0.212)**, precisely where causal efficacy switches on. Decodability and causal
+efficacy **step together here**. This is a coherent onset, not a dissociation, and it is the
+opposite of the L8/L31 pattern in finding 4.
+
+### ⚠ Three limits, stated rather than buried
+
+1. **n = 15 per arm.** `ablate_gain` resolves to 1/15 = 0.067, so "0.000" means *0 of 15* — by the
+   rule of three the 95% upper bound is ≈ **0.20**, not zero. The honest claim is "no effect larger
+   than about 20 points of compliance", not "no effect".
+2. **The induce arm is uninterpretable and I am not resting anything on it.** `induce_gain` is
+   −0.333 at all four failing layers because adding the direction at α = 8 drove the *neutral*
+   refusal rate from 0.333 to **exactly 0.0** every time. A dose that large at an early layer may
+   simply be destroying the generation, and "gibberish is not a refusal" would produce this number
+   without meaning anything. Distinguishing a wrong-signed direction from a destroyed generation
+   needs reading the text, which the safety rule forbids doing at scale. **Flagged, not resolved.**
+3. `ablation_scope = all_layers` while `induce_scope = single_layer` — the two arms are not
+   symmetric, which is another reason to lean on the ablation half only.
+
+### ✅ A near-miss the separate output directory caught
+
+The new run writes `refusal_direction_llama_SELECTED.json` with **`selected_layer = null`** (no
+layer passed). Had I written into the existing `stage_gcg_full/`, that file would have **overwritten
+the committed selection over L12–L20** — replacing a working choice with a null one, silently, in a
+directory five other scripts read from. The only reason it did not is that the run was pointed at a
+new directory as a precaution.
+
+### Consequence
+
+**Item 3 is closed, and closed more strongly than it was opened.** The `d_surface` × refusalness
+interaction cannot be measured inside L6–L12 **because refusalness has no causal handle there at
+all** — not because the direction was missing. Any future attempt to compose the two inside
+`d_surface`'s band is asking for an interaction between a live axis and an inert one. The Qwen3 arm
+now running (772472/772473) is the remaining live question.
+
 ## NEXT-SPRINT ITEMS 2 AND 3 LAUNCHED — the Qwen3 decomposition, and refusal directions inside `d_surface`'s band
 
 Both were listed as open in the final report's answer 12 and both are now in flight. **No new
