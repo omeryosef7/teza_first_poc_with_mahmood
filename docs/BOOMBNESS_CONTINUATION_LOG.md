@@ -4454,3 +4454,41 @@ checked'"* and refused to proceed silently — so the third recurrence cost minu
 | 117 | 2026-08-21 | mined the inventory for the post-R-12 band draws | three distinct generation hashes — the seed fix works |
 | 118 | 2026-08-21 | computed the band | **3 draws, sd 0.0034 real, mean +0.0086**; arm B ≈28 sd above it |
 | 119 | 2026-08-21 | band matcher missed a third naming variant → added `--band-arm` | membership is declared, not inferred from a tag |
+
+## The AdvBench headline has NO control band — the inventory found a gap, not a result
+
+Tick 2026-08-21. Having closed R-12 with ClearHarm's band, I looked for the same on the headline's own
+population. Three AdvBench control draws exist and are genuinely independent (`99d880c0`, `2baeb7f0`,
+`b7f3f071`) — but **one fails the coherence gate**, so the band cannot be estimated.
+
+| draw | seed | uniq | 3-gram | Δ score | verdict |
+|---|---|---|---|---|---|
+| `ab_Bctrl` | 20260901 | 0.844 | 0.011 | −0.0018 | OK |
+| `ab_Bband_20260902` | 20260902 | 0.846 | 0.011 | +0.0028 | OK |
+| **`ab_Bband_20260903`** | 20260903 | 0.833 | 0.014 | +0.0023 | **DEGENERATE** |
+
+**The failure reason is precise and not what I expected.** The text is *not* repetitive — uniq 0.833,
+trigram 0.014, top-word 0.105 are all healthy. It fails on **`scorable_frac 0.446 < 0.5`: 274 of 495
+generations are under 8 words.** A random direction at that seed pushes the model into terse
+refusals, so its ratios describe an unrepresentative long tail and its ASR would be computed over a
+population of stubs. This is the "empty or all-short sample" hole that was closed in
+`coherence_gate.py` earlier this sprint, firing on a real run.
+
+**So the honest state is n=2, and `analyze_steering` refuses to call that a band** — "only 2 draw(s):
+between-draw variance UNESTIMATED. Do not claim 'more than a random direction' from this." I did not
+override it. The claim that arm B (+0.0422) beats a random *band* on AdvBench is **not currently
+supported**; what is supported is that it beats each of two individual coherent draws by ~15×.
+
+**Remedy launched rather than deferred:** jobs 771633–771635, three further draws at seeds
+20260904–06. GPU was idle, so this costs nothing but time.
+
+**Worth noting against my own framing.** Last tick I wrote that the audits keep finding *unanalysed*
+data rather than *missing* data, and that the highest-yield work left is analysis rather than GPU.
+This tick the same inventory found a genuine **gap** — the headline's control band does not exist and
+needs compute. The generalisation was too comfortable, and one tick old.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 120 | 2026-08-21 | looked for an AdvBench control band | 3 draws exist, all independent |
+| 121 | 2026-08-21 | one draw **fails coherence**: 274/495 generations under 8 words | terse-refusal collapse, not repetition |
+| 122 | 2026-08-21 | n=2 → analyzer refuses to estimate a band; **not overridden** | headline has **no** control band; 3 more draws launched |
