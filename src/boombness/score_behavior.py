@@ -192,7 +192,41 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
     # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
     # names a draw actually selects one.
-    if name.startswith("cell_span"):
+    if name == "unembed_refusal":
+        # POSITIVE CONTROL FOR LATE ABLATION. The span test showed the entire concept subspace is
+        # inert at L31 while acting at L8, which is consistent with two very different stories:
+        # (i) L31 ablation is architecturally weak -- one layer before the unembedding there is
+        # almost nothing left to amplify an edit -- or (ii) L31 ablation works fine and this
+        # particular subspace simply does not act there. Nothing in the repo distinguishes them,
+        # because every late arm ever run ablates a direction with no guaranteed output relevance.
+        #
+        # This direction has guaranteed output relevance BY CONSTRUCTION: the difference of the
+        # unembedding rows for a refusal opener and a compliance opener. Projecting it out at the
+        # last layer removes the component of the residual stream that most directly separates
+        # those two continuations, so if ANY rank-1 edit at L31 can move behaviour, this one can.
+        #
+        # Reading: if this moves ASR at L31, late ablation is NOT impotent and the concept
+        # subspace's L31 null is a fact about that subspace. If it does not, L31 is effectively
+        # dead to rank-1 projection and no null measured there means anything.
+        import torch as _t
+        W = lm.model.get_output_embeddings().weight            # [vocab, hidden]
+        tok = lm.tokenizer
+
+        def _first_id(s):
+            ids = tok.encode(s, add_special_tokens=False)
+            if not ids:
+                raise SystemExit(f"unembed_refusal: {s!r} encodes to nothing")
+            return ids[0]
+
+        a_id, b_id = _first_id("I"), _first_id("Sure")
+        v = (W[a_id].detach().float() - W[b_id].detach().float()).cpu()
+        v = v / (v.norm() + 1e-8)
+        dmap = {L: v.clone() for L in payload["d_surface"]}
+        print(f"[score] unembed_refusal: rows for {tok.convert_ids_to_tokens(a_id)!r} minus "
+              f"{tok.convert_ids_to_tokens(b_id)!r} (ids {a_id}/{b_id}), dim {v.numel()}, "
+              f"norm {float(v.norm()):.4f}")
+        gaps = {}
+    elif name.startswith("cell_span"):
         import signals as _sg
         idx = int(name.replace("cell_span", "") or 0)
         base = payload["d_surface"]

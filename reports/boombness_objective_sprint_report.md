@@ -2159,6 +2159,29 @@ four decimals; L8 and L10 move by ≤0.002. Together with the AdvBench judge flo
 in 495) this makes judge sampling a non-issue for the band — the earlier disclosure that only L12 had
 been re-judged is superseded.
 
+### ✅ The AdvBench headline now clears a real 5-draw control band (added 2026-08-21)
+
+Plan §2.5 requires a control to be a **band, not one draw**, and R-12 retracted a band that turned out
+to be one draw repeated. The headline had no band at all until now: three draws existed, **one failed
+the coherence gate**, and `analyze_steering` correctly refuses to estimate between-draw variance from
+two. Three further draws were run.
+
+| | |
+|---|---|
+| independent draws (all coherence-OK, all distinct generation hashes) | **5** |
+| band mean | **+0.0012** |
+| **between-draw sd** | **0.0026** |
+| **arm B** (`project_out d_surface` @L8) | **+0.0422 ± 0.0089** |
+
+**Arm B sits ≈16 between-draw standard deviations above the band.**
+
+⚠ **One draw was excluded and the reason matters.** `ab_Bband_20260903` fails coherence on
+`scorable_frac 0.446 < 0.5` — **274 of 495 generations are under 8 words**. Its degeneracy statistics
+are otherwise healthy (uniq 0.833, trigram 0.014): a random direction at that seed pushes the model
+into terse refusals rather than into repetition, so its ASR would be computed over a population of
+stubs. **Random directions are not uniformly benign**, which is itself a reason a band of one draw
+cannot be trusted.
+
 ### ✅ Is the control matched on what matters? A disruption-matched comparison (added 2026-08-21)
 
 **The objection.** `project_out` is scale-free, so norm-matching a random control does **not** equalise

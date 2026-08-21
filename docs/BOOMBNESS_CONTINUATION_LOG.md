@@ -4492,3 +4492,50 @@ needs compute. The generalisation was too comfortable, and one tick old.
 | 120 | 2026-08-21 | looked for an AdvBench control band | 3 draws exist, all independent |
 | 121 | 2026-08-21 | one draw **fails coherence**: 274/495 generations under 8 words | terse-refusal collapse, not repetition |
 | 122 | 2026-08-21 | n=2 → analyzer refuses to estimate a band; **not overridden** | headline has **no** control band; 3 more draws launched |
+
+## ★ The headline clears a real 5-draw band — and two more addressing bugs on the way there
+
+Tick 2026-08-21. Last tick found the AdvBench headline had **no** control band. Three further draws
+were run; all three are distinct and all three pass coherence.
+
+| | |
+|---|---|
+| independent coherent draws | **5** |
+| band mean | **+0.0012** |
+| **between-draw sd** | **0.0026** |
+| arm B | **+0.0422 ± 0.0089** |
+
+**≈16 between-draw sds above the band.** Plan §2.5's requirement — a band, not one draw — is met on
+the surviving headline for the first time.
+
+**The excluded draw is informative.** `ab_Bband_20260903` fails on `scorable_frac 0.446`: 274/495
+generations under 8 words, while its repetition statistics are healthy. A random direction at that
+seed pushes the model into **terse refusals**, not into gibberish. So random directions are **not
+uniformly benign**, which is an independent reason a one-draw band cannot be trusted — and the
+`scorable_frac` check that caught it was added to `coherence_gate.py` earlier this sprint.
+
+### Two more instances of the same addressing bug, found in ten minutes
+
+1. **Arm names collapsed.** `analyze_steering` derived names as `basename.split("_2026")[0]`, which
+   strips the run timestamp — **and also truncates any tag containing a 2026 date**. My draws tagged
+   `abg_Bband_20260904/05/06` all became `abg_Bband`, so three runs became one dict key and **two were
+   silently dropped**; the table printed three identical rows. Fixed with collision-safe naming.
+2. **`--band-arm` then matched nothing**, because the flag I added last tick matches the *derived*
+   name and the derived name is no longer predictable by the caller. It now matches the run directory
+   too.
+
+Both are the same class as the band-prefix bug two hours earlier: **arm identity derived from a
+filename convention**. That is now the third and fourth instance in one day, in one file. The
+underlying design smell is that `analyze_steering` has no notion of an arm's identity independent of
+where its directory happens to sit — a proper fix would carry the arm's declared name in its own
+`config.json` and read it. Recorded rather than done.
+
+**What the collision would have cost if unnoticed:** a five-draw band reported as three draws with
+two invented duplicates, i.e. an understated between-draw sd — the exact failure mode of R-12, by a
+different route.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 123 | 2026-08-21 | 3 new draws generated, all distinct, all coherence-OK | 5 coherent draws available |
+| 124 | 2026-08-21 | found arm names collapsing on `_2026` in tags | 3 arms → 1 key, 2 silently dropped; fixed |
+| 125 | 2026-08-21 | **band computed: mean +0.0012, sd 0.0026; arm B ≈16 sd above** | §2.5 met on the headline |

@@ -88,8 +88,32 @@ def main() -> int:
                 if r.get("condition") == args.condition
                 and r.get("strongreject_score") is not None}
 
-    runs = [("baseline", args.baseline)] + [(os.path.basename(a).split("_2026")[0], a)
-                                            for a in args.arms]
+    # COLLISION-SAFE ARM NAMES (fixed 2026-08-21). The name was `basename.split("_2026")[0]`, which
+    # strips the run timestamp -- and also truncates any TAG containing a 2026 date. The band draws
+    # tagged `abg_Bband_20260904/05/06` all collapsed to `abg_Bband`, so three independent runs
+    # became one key in `data` and two were silently dropped; the printed table showed three
+    # identical rows. Same class as the band-prefix bug two hours earlier: arm identity derived from
+    # a filename convention. Names are now de-duplicated against what has already been claimed, and
+    # a collision keeps enough of the original to stay distinguishable.
+    def _armname(path, taken):
+        base = os.path.basename(path.rstrip("/"))
+        stem = base.split("_2026")[0]
+        if stem not in taken:
+            return stem
+        rest = base[len(stem):].lstrip("_")
+        cand = f"{stem}_{rest.split('_')[0]}" if rest else base
+        i = 2
+        while cand in taken:
+            cand, i = f"{stem}#{i}", i + 1
+        return cand
+
+    _taken = {"baseline"}
+    _named = []
+    for _a in args.arms:
+        _n = _armname(_a, _taken)
+        _taken.add(_n)
+        _named.append((_n, _a))
+    runs = [("baseline", args.baseline)] + _named
     data = {name: load(d) for name, d in runs}
     common = set.intersection(*[set(v) for v in data.values()])
     print(f"[steer] condition={args.condition}")
@@ -292,11 +316,28 @@ def main() -> int:
     # future mismatch is visible rather than silent.
     BAND_PREFIXES = ("ctrl_rand_s", "ctrlband_s", "ctrlbandfix_s")
     declared = set(args.band_arm or [])
-    band = [r for r in rows if r["arm"] in declared] if declared else \
+    # Match a declaration against the DERIVED arm name OR the run directory it came from. The
+    # derived name is collision-safe but therefore not predictable by the caller (the first claimant
+    # of a stem keeps the bare stem), and requiring the caller to guess which one won would be a
+    # third variant of the same addressing bug.
+    _run_of = dict(runs)
+
+    def _declared(r):
+        if r["arm"] in declared:
+            return True
+        base = os.path.basename(str(_run_of.get(r["arm"], "")).rstrip("/"))
+        return any(d in base for d in declared)
+
+    band = [r for r in rows if _declared(r)] if declared else \
            [r for r in rows if r["arm"].startswith(BAND_PREFIXES)]
     band_selection = "declared via --band-arm" if declared else f"prefix match {BAND_PREFIXES}"
     if declared:
-        missing = sorted(declared - {r["arm"] for r in rows})
+        _hit = set()
+        for r in rows:
+            for d in declared:
+                if r["arm"] == d or d in os.path.basename(str(_run_of.get(r["arm"], "")).rstrip("/")):
+                    _hit.add(d)
+        missing = sorted(declared - _hit)
         if missing:
             raise SystemExit(f"[steer] --band-arm names arms that were not passed: {missing}")
     if not band:
