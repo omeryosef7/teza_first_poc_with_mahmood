@@ -4334,6 +4334,32 @@ do with degeneracy.
 
 
 
+
+### L12 swept too (772001–772004) — and its geometry predicts the opposite of L8's outcome
+
+| angle | L8 removes | **L12 removes** |
+|---|---|---|
+| 0° | 4.57% | **6.07%** |
+| 45° | 8.32% | **9.88%** |
+| 90° | 11.41% | **11.88%** |
+| 135° | 7.66% | **8.08%** |
+
+**The published L12 draw removes 11.25% — between the 45° and 90° angles, near the TOP of its
+range.** At L8 the published draw was 4.5506%, essentially the 0° direction and the **weakest**
+available. So the two depths sit at opposite ends of their own complements, and the sweeps should
+move their numbers in opposite directions: L8's contrast fell to +0.0183 (p 0.073) at its worst
+angle; L12's, already measured against a near-strongest control, has less room to fall.
+
+That is a prediction from geometry alone, recorded before the judges finish. ⚠ It is **not** a
+guarantee — "removes more cell-mean spread" and "moves ASR more" are different quantities, and the
+L8 sweep showed exactly that: its **strongest** control (90°, 11.41%) had a *smaller* effect on ASR
+(−0.0079) than its second-weakest (135°, 7.66% → −0.0129). **Spread removed does not order behavioural
+effect**, which is itself worth recording — it means the "how strong is this control" diagnostic is a
+statement about representation, not about behaviour, and I have been quoting it as if it bounded both.
+
+Run-time diagnostics verified before judging, as now standard: all four `angle:k/4:rank2`, cos with
+the arm between 2.2e-07 and 9.9e-07. Judging in eight shards.
+
 ## ⛔ THE EXHAUSTIVE SWEEP WEAKENS THE L8 CLAIM — and shows the published draw was the weakest direction available
 
 **Artifact:** `outputs/boombness_followup/angle_sweep_L8.json`. Four controls, 495 generations each,
