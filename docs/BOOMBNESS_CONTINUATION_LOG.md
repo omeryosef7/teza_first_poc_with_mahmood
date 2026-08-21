@@ -4369,3 +4369,44 @@ data already on disk (multiplicity → the shape test; disruption-matching → `
 | 111 | 2026-08-21 | checked the "unjudged L25 variant" | **106/960 and 0/960 rows, no summary, no DONE** — never generated |
 | 112 | 2026-08-21 | traced the cause to Qwen3's fitted layer set | L25 unfitted → the derived random control had nothing to derive from |
 | 113 | 2026-08-21 | closed audit #3 | 2 fixed, 2 answered from existing data, 1 refuted |
+
+## An inventory of unanalysed evidence — which immediately found a replication and a bug in itself
+
+Tick 2026-08-21. Three consecutive audits ended by finding the answer already on disk. Rather than
+wait for a fourth, `unanalysed_inventory.py` walks the pipeline and reports the drop-offs:
+generations nobody judged, judge runs no artifact cites, and scores computed over truncated runs.
+
+**Scale of the gap:** 78 judge runs of ≥100 rows are **cited by no committed artifact**. That is not
+all waste — smokes and abandoned arms belong there — but it is the pool every recent audit has been
+drawing from.
+
+**It found a real replication immediately.** Among the uncited runs were `abrep_L6`, `abrep_L8`,
+`abrep_L10` — independent-judge replicates of the *other* band layers, which I had not known existed
+when I reported last tick that "only L12 has been re-judged":
+
+| layer | original judge | **independent replicate** |
+|---|---|---|
+| L6 | +0.0182 [+0.0052, +0.0283] | **+0.0182 [+0.0052, +0.0283]** |
+| L8 | +0.0424 [+0.0177, +0.0607] | **+0.0404 [+0.0135, +0.0599]** |
+| L10 | +0.0323 [+0.0132, +0.0460] | **+0.0303 [+0.0094, +0.0456]** |
+| L12 | +0.0364 [+0.0202, +0.0533] | **+0.0364 [+0.0200, +0.0539]** |
+
+**All four replicate; all eight intervals exclude zero.** L6 and L12 identical to four decimals, L8
+and L10 within 0.002. The band's judge-independence is now established across the band, not at one
+layer.
+
+**And it found a bug in itself, in its worst category.** The first run reported **3 runs "judged over
+an INCOMPLETE generation run"** — the most alarming thing the script can say. All three were **false
+positives**: `--gens` may name the run directory *or* the `gens.jsonl` inside it, and an
+unconditional `basename()` turned every file-form path into the literal string `gens.jsonl`, which
+matched no run. All three sources were `DONE=True` with 495 rows. Fixed; the category is now **0**.
+
+A checker whose worst category is wrong is worse than no checker — I nearly reported three phantom
+data-integrity failures. This is the fourth tool this week to catch its own author within minutes of
+being written, which is an argument for writing them, not against.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 114 | 2026-08-21 | built `unanalysed_inventory.py` to pre-empt the audits' recurring finding | **78 judge runs cited by no artifact** |
+| 115 | 2026-08-21 | used it: found `abrep_L6/L8/L10` and ran the band replication | **all four band layers replicate**, 8/8 CIs exclude zero |
+| 116 | 2026-08-21 | its "judged over an incomplete run" list was 3 **false positives** | path-form bug in my own basename(); now 0 |

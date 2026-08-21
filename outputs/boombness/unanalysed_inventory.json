@@ -1,0 +1,650 @@
+{
+  "root": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness",
+  "min_rows": 100,
+  "n_generation_runs": 140,
+  "n_judge_runs": 180,
+  "generated_but_never_judged": [
+    {
+      "run": "abVMC_20260821_003746_943096",
+      "n_gens": 357,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addBoth_20260819_204413_3655578",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addR_gapdose_20260820_055743_3693541",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addS_20260819_204413_3655579",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_remR_addS_20260819_205407_532706",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_remS_addR_CTRL_20260819_221402_576761",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "len_D_20260818_103518_4120749",
+      "n_gens": 256,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "len_Dctrl_20260818_103518_4120748",
+      "n_gens": 474,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "q3_C_20260818_151452_3853327",
+      "n_gens": 118,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "q3_D_20260818_151452_3853326",
+      "n_gens": 106,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "qwen3_base_20260817_140633_3382348",
+      "n_gens": 724,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "qwen3nt_base_20260817_160556_1434592",
+      "n_gens": 119,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "span31_20260821_071516_2938471",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "span8_20260821_071516_1028239",
+      "n_gens": 457,
+      "done": false,
+      "judged_by": []
+    }
+  ],
+  "judged_but_cited_by_no_artifact": [
+    {
+      "judge": "ab_C_20260819_002240_1397246",
+      "n": 482,
+      "source_gens": "ab_C_20260818_190458_3890686",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "ab_base_20260819_002240_1397245",
+      "n": 483,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "abg_Bband2_20260819_043341_1572581",
+      "n": 495,
+      "source_gens": "ab_Bband_20260902_20260819_035529_1775730",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "abg_Bband3_20260819_045315_1579399",
+      "n": 495,
+      "source_gens": "ab_Bband_20260903_20260819_040029_1413029",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "abrep_L10_20260821_045449_669921",
+      "n": 495,
+      "source_gens": "abL10_B_20260819_073537_3351267",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "abrep_L6_20260821_045448_669920",
+      "n": 495,
+      "source_gens": "abL6_B_20260819_073537_3351336",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "abrep_L8_20260821_045440_669580",
+      "n": 495,
+      "source_gens": "ab_B_20260818_185458_3888974",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "b104_C_20260817_193617_3652689",
+      "n": 960,
+      "source_gens": "b104_C_20260817_182412_1493642",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "b104_F_20260817_201825_3672363",
+      "n": 960,
+      "source_gens": "b104_F_20260817_182338_1214791",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "base_RETEST_20260817_221645_3729303",
+      "n": 660,
+      "source_gens": "base_20260816_203355_3985444",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "chg_Bctrl_20260819_051045_1585288",
+      "n": 179,
+      "source_gens": "ch_Bctrl_20260819_045543_2226268",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "ctrl_rand_L8_a1_20260817_004121_3124111",
+      "n": 660,
+      "source_gens": "ctrl_rand_L8_a1_20260816_233438_4131599",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "ctrlbandfix_s20260901_20260819_002240_1397244",
+      "n": 179,
+      "source_gens": "ctrlband_s20260901_20260818_190957_3891690",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "ctrlbandfix_s20260902_20260819_002952_1402992",
+      "n": 179,
+      "source_gens": "ctrlband_s20260902_20260818_190957_3891646",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "ctrlbandfix_s20260903_20260819_003630_1408405",
+      "n": 179,
+      "source_gens": "ctrlband_s20260903_20260818_191458_3892825",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL29J0_20260821_061546_748197",
+      "n": 248,
+      "source_gens": "dsL29_20260821_055018_2931997",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL29J1_20260821_061546_748198",
+      "n": 247,
+      "source_gens": "dsL29_20260821_055018_2931997",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL30J0_20260821_061546_748202",
+      "n": 248,
+      "source_gens": "dsL30_20260821_055018_2931998",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL30J1_20260821_061546_748203",
+      "n": 247,
+      "source_gens": "dsL30_20260821_055018_2931998",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL31J0_20260821_061546_748207",
+      "n": 248,
+      "source_gens": "dsL31_20260821_055018_2931999",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dsL31J1_20260821_061546_748208",
+      "n": 247,
+      "source_gens": "dsL31_20260821_055018_2931999",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu2_abL15_B_20260819_171707_2018105",
+      "n": 495,
+      "source_gens": "abL15_B_20260819_162312_494292",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu2_abL15_Bctrl_20260819_171706_2018109",
+      "n": 495,
+      "source_gens": "abL15_Bctrl_20260819_162312_494287",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu2_abR12_C_20260819_171706_2018113",
+      "n": 495,
+      "source_gens": "abR12_C_20260819_162312_494291",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu_abL15_B_20260819_171502_2016716",
+      "n": 495,
+      "source_gens": "abL15_B_20260819_162312_494292",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu_abL15_Bctrl_20260819_171502_2016720",
+      "n": 495,
+      "source_gens": "abL15_Bctrl_20260819_162312_494287",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "fu_abR12_C_20260819_171502_2016724",
+      "n": 495,
+      "source_gens": "abR12_C_20260819_162312_494291",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR12_Cctrl_20260819_194551_2118320",
+      "n": 495,
+      "source_gens": "fuR12_Cctrl_20260819_191548_3650550",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR14_C_20260819_194551_2118324",
+      "n": 495,
+      "source_gens": "fuR14_C_20260819_185236_3647712",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR14_Cctrl_20260819_194551_2118328",
+      "n": 495,
+      "source_gens": "fuR14_Cctrl_20260819_185236_3647902",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR16_C_20260819_194551_2118332",
+      "n": 495,
+      "source_gens": "fuR16_C_20260819_185642_3648447",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR16_Cctrl_20260819_194551_2118337",
+      "n": 495,
+      "source_gens": "fuR16_Cctrl_20260819_185658_2605578",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR20_C_20260819_194551_2118341",
+      "n": 495,
+      "source_gens": "fuR20_C_20260819_185658_2605577",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "k_fuR20_Cctrl_20260819_194551_2118345",
+      "n": 495,
+      "source_gens": "fuR20_Cctrl_20260819_185704_2606431",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "len_A_20260818_002156_3799962",
+      "n": 960,
+      "source_gens": "len_A_20260817_221624_3713162",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "m_fuF_addCtrl18_20260819_214330_2192954",
+      "n": 495,
+      "source_gens": "fuF_addCtrl18_20260819_204413_3655581",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "m_fuF_addCtrl8_20260819_214330_2192950",
+      "n": 495,
+      "source_gens": "fuF_addCtrl8_20260819_204413_3655582",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "m_fuF_addR_20260819_211326_2174243",
+      "n": 495,
+      "source_gens": "fuF_addR_20260819_204413_3655580",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "m_fuF_remS_addR_20260819_214330_2192946",
+      "n": 495,
+      "source_gens": "fuF_remS_addR_20260819_205407_532707",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "n_fuF25_addBoth_20260819_231331_2244678",
+      "n": 495,
+      "source_gens": "fuF25_addBoth_20260819_224348_3668745",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "n_fuF25_addCtrl8_20260819_231331_2244686",
+      "n": 495,
+      "source_gens": "fuF25_addCtrl8_20260819_224348_3668595",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "n_fuF25_addS_20260819_231331_2244674",
+      "n": 495,
+      "source_gens": "fuF25_addS_20260819_224403_580365",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "n_fuF25_remR_addS_20260819_231331_2244682",
+      "n": 495,
+      "source_gens": "fuF25_remR_addS_20260819_224348_3668594",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "p_addBoth_CTRL_20260820_064339_2390551",
+      "n": 495,
+      "source_gens": "fuF25_addBoth_CTRL_20260820_055744_617418",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "p_remR_addS_CTRL_20260820_071344_2399521",
+      "n": 495,
+      "source_gens": "fuF25_remR_addS_CTRL_20260820_055743_617415",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "p_remS_addR_CTRL2_20260820_064339_2390552",
+      "n": 495,
+      "source_gens": "fuF_remS_addR_CTRL2_20260820_055743_3693542",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ0_20260820_222411_2785833",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ1_20260820_222412_2785834",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ2_20260820_222411_2785835",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ3_20260820_222411_2785836",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ4_20260820_222411_2785837",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "pdJ5_20260820_222411_2785838",
+      "n": 360,
+      "source_gens": "phaseD_base_20260820_184915_2800944",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3_projctrl_20260818_065626_3997286",
+      "n": 960,
+      "source_gens": "q3_projctrl_20260818_043506_3751474",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3_projout_20260818_033658_3909900",
+      "n": 960,
+      "source_gens": "q3_projout_20260818_013510_171291",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3abg_D_20260819_043341_1572582",
+      "n": 495,
+      "source_gens": "q3ab_D_20260819_031027_2290754",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj2_C20_20260820_211846_2694653",
+      "n": 960,
+      "source_gens": "q3_C20_20260818_154112_366026",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj2_D20_20260820_211846_2694654",
+      "n": 960,
+      "source_gens": "q3_D20_20260818_154112_366027",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj2_D20ctrl_20260820_211846_2694655",
+      "n": 960,
+      "source_gens": "q3_D20ctrl_20260818_154112_366028",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj2_base_20260820_211846_2694656",
+      "n": 960,
+      "source_gens": "qwen3nt_base_20260817_163110_3560487",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj_C20_20260820_201224_2562031",
+      "n": 598,
+      "source_gens": "q3_C20_20260818_154112_366026",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj_D20_20260820_201224_2562032",
+      "n": 606,
+      "source_gens": "q3_D20_20260818_154112_366027",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3rj_D20ctrl_20260820_201224_2562033",
+      "n": 601,
+      "source_gens": "q3_D20ctrl_20260818_154112_366028",
+      "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "steer_L8_a1_20260817_004120_3124103",
+      "n": 660,
+      "source_gens": "steer_L8_a1_20260816_233438_1276120",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "steer_L8_a2_20260817_004121_3124107",
+      "n": 660,
+      "source_gens": "steer_L8_a2_20260816_233438_4131597",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "steer_a010_20260817_015221_3165445",
+      "n": 660,
+      "source_gens": "steer_L8_a010_20260817_010842_25616",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vD12J0_20260821_045406_668758",
+      "n": 248,
+      "source_gens": "vmcD12_20260821_042623_2925728",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vD12J1_20260821_045406_668759",
+      "n": 247,
+      "source_gens": "vmcD12_20260821_042623_2925728",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vD8J0_20260821_045406_668753",
+      "n": 248,
+      "source_gens": "vmcD8_20260821_042623_2925729",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vD8J1_20260821_045406_668754",
+      "n": 247,
+      "source_gens": "vmcD8_20260821_042623_2925729",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL10J0_20260821_025400_547817",
+      "n": 248,
+      "source_gens": "vmcL10_20260821_022618_2917443",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL10J1_20260821_025400_547818",
+      "n": 247,
+      "source_gens": "vmcL10_20260821_022618_2917443",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL12J0_20260821_025400_547823",
+      "n": 248,
+      "source_gens": "vmcL12_20260821_022618_2917442",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL12J1_20260821_025400_547824",
+      "n": 247,
+      "source_gens": "vmcL12_20260821_022618_2917442",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL6J0_20260821_025400_547812",
+      "n": 248,
+      "source_gens": "vmcL6_20260821_022618_979356",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vL6J1_20260821_025400_547813",
+      "n": 247,
+      "source_gens": "vmcL6_20260821_022618_979356",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vmcJ0_20260821_012704_433016",
+      "n": 165,
+      "source_gens": "abVMC2_20260821_010052_955575",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vmcJ1_20260821_012704_433017",
+      "n": 165,
+      "source_gens": "abVMC2_20260821_010052_955575",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "vmcJ2_20260821_012704_433018",
+      "n": 165,
+      "source_gens": "abVMC2_20260821_010052_955575",
+      "done": true,
+      "cited_by_an_artifact": false
+    }
+  ],
+  "judged_over_an_INCOMPLETE_generation_run": [],
+  "note": "an inventory to read, not a pass/fail. A smoke or a deliberately abandoned arm SHOULD appear here. The third list is the one that matters most: a score computed over a truncated prefix.",
+  "provenance": {
+    "argv": [
+      "src/boombness/unanalysed_inventory.py",
+      "--out",
+      "outputs/boombness/unanalysed_inventory.json"
+    ],
+    "git_commit": "0f71134cd72a30b77faa5dc9e105644a5e2cdb14"
+  }
+}

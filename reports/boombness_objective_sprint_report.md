@@ -2141,6 +2141,24 @@ see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `con
 underpowered by an order of magnitude and confounded on three variables at once. Making them usable
 is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
+### ✅ The whole band replicates under an independent judge, not just L12 (added 2026-08-21)
+
+Generation is deterministic here (660/660 byte-identical across two runs), so re-judging the same
+completions with fresh sampling is a clean test of judge dependence. Paired binary ASR delta vs
+baseline, domain-clustered, G=16, `effect_decomposition.py`:
+
+| layer | original judge run | **independent replicate** |
+|---|---|---|
+| L6 | +0.0182 [+0.0052, +0.0283] | **+0.0182 [+0.0052, +0.0283]** |
+| L8 | +0.0424 [+0.0177, +0.0607] | **+0.0404 [+0.0135, +0.0599]** |
+| L10 | +0.0323 [+0.0132, +0.0460] | **+0.0303 [+0.0094, +0.0456]** |
+| L12 | +0.0364 [+0.0202, +0.0533] | **+0.0364 [+0.0200, +0.0539]** |
+
+**All four band layers replicate, and all eight intervals exclude zero.** L6 and L12 are identical to
+four decimals; L8 and L10 move by ≤0.002. Together with the AdvBench judge floor (0.2 pp, 1 sign flip
+in 495) this makes judge sampling a non-issue for the band — the earlier disclosure that only L12 had
+been re-judged is superseded.
+
 ### ✅ Is the control matched on what matters? A disruption-matched comparison (added 2026-08-21)
 
 **The objection.** `project_out` is scale-free, so norm-matching a random control does **not** equalise
