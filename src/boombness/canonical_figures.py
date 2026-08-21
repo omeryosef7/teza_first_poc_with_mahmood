@@ -67,6 +67,23 @@ FIGURES = {
         r"`?knife`?-fitted[^\n]{0,80}?\+(0\.01\d{2})",
         "outputs/boombness/e12_causal_knife.json",
         ["groups", "ALL", "delta"], 1e-3),
+    # §0a current-state figures (2026-08-22). Registered because §0a is the block a reader is now
+    # directed to FIRST, and because two of its numbers were already wrong on first writing (the
+    # exact-bound range and the max control dose) -- caught only by checking them against the
+    # artifacts by hand. A summary block that restates numbers from elsewhere is exactly the
+    # cross-deliverable drift this registry exists for.
+    "state_L8_arm_delta": (
+        r"L8 \*\*\+(0\.0\d{3,4})\*\* \(21 flips\)",
+        "outputs/boombness/insubspace_null_by_layer.json",
+        ["layers", "L8", "arm", "delta"], 5e-4),
+    "state_L12_arm_delta": (
+        r"L12 \*\*\+(0\.0\d{3,4})\*\* \(18\)",
+        "outputs/boombness/insubspace_null_by_layer.json",
+        ["layers", "L12", "arm", "delta"], 5e-4),
+    "state_mde": (
+        r"minimum detectable effect at 80%\s*\n?\s*power is \*\*≈ \+(0\.0\d{1,3})\*\*",
+        "outputs/boombness/cluster_power.json",
+        ["minimum_detectable_effect_at_80pct_power"], 1e-3),
     "layer_shape_p": (
         r"permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})",
         "outputs/boombness/layer_profile_shape_test.json", ["p_perm"], 2e-3),
@@ -95,6 +112,9 @@ FIGURE_SCOPE = {
     # because it happens to be where they currently sit.
     "e12_cross_concept_cos": SCOPE_REPORT_ONLY,
     "e12_knife_causal_delta": SCOPE_REPORT_ONLY,
+    "state_L8_arm_delta": SCOPE_REPORT_ONLY,
+    "state_L12_arm_delta": SCOPE_REPORT_ONLY,
+    "state_mde": SCOPE_REPORT_ONLY,
     "layer_shape_p": SCOPE_ALL,
 }
 

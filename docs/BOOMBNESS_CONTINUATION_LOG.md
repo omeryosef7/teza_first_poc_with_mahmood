@@ -6290,3 +6290,41 @@ count of *informative* clusters, not the prompt count).
 | 271 | 2026-08-22 | compared MDE to observed effects | largest observed **+0.0222**; power 0.08–0.72 |
 | 272 | 2026-08-22 | reframed the five nulls | **"not established", NOT "shown absent"** — recorded against over-correction |
 | 273 | 2026-08-22 | stored the caveat inside the replication artifact | a reader opening the JSON sees it, not just this log |
+
+## Phase 4: a flat statement of what is true, because the layered version is now unreadable
+
+Tick 2026-08-22. With the `d_naive` line closed, the plan's Phase 4 (rewrite the deliverable) is the
+next unblocked work. The report is 2,672 lines of original text with retraction blocks and corrections
+layered over it; **a reader would have to navigate 27 retractions to learn what currently holds.** That
+is not a document anyone can act on.
+
+**Added §0a — "Current state, as of 2026-08-22 — read this first"**: a flat table of what survives,
+each row pointing at a committed artifact and carrying **the caveat that must travel with it**, then
+what was retracted this session, then what is *not established but also not shown absent*, then the
+objective's own verdict. The layered body stays exactly as it is — rewriting history is how the
+sprint's earlier numbering collisions happened.
+
+**Three stale/over-confident things in the header, fixed.** It was dated **2026-08-17**; its status
+line still read *"every claim below re-derived by an independent verifier; the 15 gaps it found are
+fixed"* — true of the 08-18 verifier and false since **audits #5, #6 and #7** forced R-23…R-27 and
+C-11…C-13; and it asserted the judge was `gpt-4o-mini` when audit #6 showed **the model that actually
+answered is never recorded** (only a candidate list with fallback). That last one is now stated as a
+provenance gap with its measured bound (cross-pass drift ≤0.002, an order of magnitude below every
+effect) rather than left as an unearned certainty.
+
+**And two numbers in the summary I had just written were already wrong.** I quoted the exact bound as
+"0.89–0.91" when the artifact range is **0.8803–0.9127**, and max control dose as "≤0.13" when it is
+**0.1315**. Caught by checking each figure against its artifact before committing — which is the
+entire point, since a summary block that restates numbers from elsewhere is *precisely* the
+cross-deliverable drift that has bitten this sprint five times.
+
+**So all three of §0a's headline figures are now in the figure registry** (`state_L8_arm_delta`,
+`state_L12_arm_delta`, `state_mde`), verified against their artifacts on every run. A summary that
+cannot drift is worth more than a summary that happens to be right today.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 274 | 2026-08-22 | added **§0a**, a flat current-state block with artifact pointers | 27 retractions no longer stand between a reader and the answer |
+| 275 | 2026-08-22 | de-staled the header (date, verifier status, judge model) | judge provenance gap stated with its measured bound, not hidden |
+| 276 | 2026-08-22 | checked §0a's own numbers against artifacts | **two were wrong on first writing** — 0.89→0.88, 0.13→0.132 |
+| 277 | 2026-08-22 | registered §0a's three headline figures | the summary is now drift-proof, not merely correct today |

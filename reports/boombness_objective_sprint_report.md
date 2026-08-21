@@ -1,17 +1,67 @@
 # Boombness Objective Sprint — full report
 
-**Author:** Omer · **Date:** 2026-08-17 · **Branch:** `behavioral-causality-sprint`
+**Author:** Omer · **Date:** 2026-08-17, **last revised 2026-08-22** · **Branch:** `behavioral-causality-sprint`
 **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md` (20 sections)
 **Execution log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` (superseded as the live board by
 `docs/BOOMBNESS_CONTINUATION_LOG.md`). **The retraction registry is the table in §0 below and it is authoritative: every ID cited
 anywhere in this document has a row there. Take the next free ID from that table and nowhere else —
 `retraction_sweep.py` fails the build if a cited ID is missing a row.**
 **Summary for collaborators:** `reports/boombness_objective_sprint_short_update.md` (revision 5)
-**Status:** every claim below re-derived by an independent verifier; the 15 gaps it found are fixed and marked ⚠.
+**Status:** ⚠ **This line was stale for four days and is now dated.** It read "every claim below
+re-derived by an independent verifier; the 15 gaps it found are fixed" — true of the 2026-08-18
+verifier, but **three further audits (#5, #6, #7) have since forced retractions R-23…R-27 and
+corrections C-11…C-13**. Read §0's *current state* block before anything else.
 
 **Model:** `meta-llama/Llama-3.1-8B-Instruct`, bfloat16. **Concept pair:** carrot ↔ bomb.
 **Bank:** 2352 prompts, 912 families (240 matched 2×2), content sha `71bea179345ed118`.
-**Judge:** StrongReject rubric via `gpt-4o-mini`, threshold 0.5, continuous score always persisted.
+**Judge:** StrongReject rubric, threshold 0.5, continuous score always persisted. ⚠ **The judge
+model that actually answered is never recorded** (audit #6): runs store only a *candidate list*
+(`gpt-4o-mini`, then `gpt-3.5-turbo`) tried in order with fallback, and no per-row model field. So
+"via `gpt-4o-mini`" is the intended model, not a verified one. Cross-pass drift was measured at
+**≤0.002** in delta, an order of magnitude below every effect here, so this is a provenance gap rather
+than a live confound — but it cannot be closed retrospectively.
+
+---
+
+## 0a. Current state, as of 2026-08-22 — read this first
+
+The body below is layered: original text, then retraction blocks, then corrections. This section is
+the flat version. Every row points at a committed artifact, and every number here is regenerable by a
+committed script.
+
+### What survives
+
+| claim | evidence | caveat that must travel with it |
+|---|---|---|
+| **Projecting out `d_surface` at L6–L12 raises AdvBench attack success.** L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495 | `insubspace_null_by_layer.json` | **Confounded with dose (R-25).** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), removing **0.81–0.88** of that spread against **≤0.132** for any in-subspace control. This is *not* shown to be about the direction's content. |
+| The arm exceeds **every** in-subspace control at all four layers, by **1.80×–3.60×** | `insubspace_null_by_layer.json` | The earlier "~16 band-sds" scored against a 4096-d random band and is **retracted (R-23)**; that band is far too weak a null. |
+| The gain is **real refusal→compliance flips**, not the judge rewarding longer refusals | `effect_decomposition.py` | On the 443–453 both-refused rows the delta is **+0.0000**. |
+| The dose-response is **monotone and saturating** | `dose_curve_L8.json` | Measured, from dose 0.046 to 0.84. From 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
+| **Dose and direction-identity are entangled in this bank** | `dose_vs_effect.json` (`dose_identity_bound`, exact) | A direction removing 70% of cell-mean spread must have \|cos\| ≥ **0.88–0.91** with `d_surface`. Separating them needs a **different design**, not more compute. |
+
+### What was retracted this session
+
+**R-23** E12's causal half · **R-24** E12's representational half · **R-25** the in-subspace null's
+"content, not magnitude" reading · **R-26** §14-D's specificity conclusion · **R-27** the entire
+dose-ladder inference chain, including a geometric bound of mine that was **algebraically false**.
+Corrections **C-11** (a population mismatch I published), **C-12** (a figure corrected and re-asserted
+three sentences later), **C-13** (an over-claim caught within one tick).
+
+### What is NOT established — and is not shown absent either
+
+The `d_naive`-versus-matched-rung comparison returned **no cluster-level significance at any of five
+layers** (p = 0.375 / 0.125 / 0.625 / 0.156 / 0.0625), with four positive point estimates and one
+negative. But **this design cannot detect what it was looking for**: minimum detectable effect at 80%
+power is **≈ +0.03**, and the largest effect it ever produced was **+0.0222**
+(`cluster_power.json`). With k informative clusters the attainable p-floor is 2/2ᵏ, so **k ≥ 6 all
+pointing one way is required** before p ≤ 0.05 is possible; observed k was 4, 4, 4, 6, 5. **"Not
+established" — not "shown absent."**
+
+### The objective itself
+
+Unchanged and still the sprint's answer: **do not build it.** G4 is a directional null, and nothing
+found since has reopened §12. R-26 (the specificity retraction) is fresh evidence *against* building
+it, not for.
 
 ---
 
