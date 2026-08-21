@@ -6328,3 +6328,50 @@ cannot drift is worth more than a summary that happens to be right today.
 | 275 | 2026-08-22 | de-staled the header (date, verifier status, judge model) | judge provenance gap stated with its measured bound, not hidden |
 | 276 | 2026-08-22 | checked §0a's own numbers against artifacts | **two were wrong on first writing** — 0.89→0.88, 0.13→0.132 |
 | 277 | 2026-08-22 | registered §0a's three headline figures | the summary is now drift-proof, not merely correct today |
+
+## The decision gates were asserting the opposite of the report, and nothing was watching them
+
+Tick 2026-08-22. Audit #8 launched at the two new current-state summaries — the right target, since
+they are now what a collaborator reads *instead of* the body. I briefed it to attack every number in
+them, to find what a reader of §0a alone would **not** learn, and, most importantly, to apply the
+cluster-level test to the **surviving headline** itself, since audit #7 showed that test kills effects
+the bootstrap called significant.
+
+While it runs I audited the part of the progress doc the loop instruction actually names —
+**"phase board, tick log, decision gates"** — and which I have been quietly not maintaining. I have
+appended to the tick log and the audit table every tick; **I have not touched the gates in days.**
+
+**Four rows were stale. Two asserted the opposite of the report.**
+
+| row | said | actually |
+|---|---|---|
+| **G2** | **YES**, ρ=+0.307, p=5e-4 | ⛔ **retracted by R-18** — clean-row ρ is −0.052 / −0.066 (p=0.493) |
+| **G4** | **YES**, "the objective that works", arm F 0.548 | ⛔ **retracted by R-20/R-22** — ~94% answer style; report §0 says *do not build it* |
+| **FINAL** | "closest to **A**, conditional" | ⛔ rests entirely on the arm-F interaction, retracted twice over |
+| **P8.2** | ⭐ "VINDICATED" | ⛔ same retraction |
+
+A gate table is the part of a document a reader trusts to be current — the report's own §0 says exactly
+that, which is why the withdrawn verdicts were moved *out* of the report's gate table back in August.
+The progress doc's gate table never got the same treatment. Superseded verdicts are now kept inline and
+struck rather than deleted.
+
+**And the reason nothing caught it: `retraction_sweep.py` excludes this file by design.** The exclusion
+comment says it is a "historical record" and that sweeping it would flag the historical record as a
+defect. **That is right for the tick log and wrong for the head.** The phase board and gates are live
+status, and the blanket exclusion left the single most trusted part of the file unguarded — for days,
+while it contradicted the report.
+
+**Fixed with a scoped rule rather than by dropping the exclusion:** `LIVE_PREFIX_ENDS_AT` sweeps each
+file only up to a named heading (here `## Bug / integrity audit log`), so the live prefix is policed and
+the dated record is left alone. That preserves the original reasoning instead of overruling it.
+**Tested against a case it must fail**: a planted stale gate verdict in the live prefix → exit **1**;
+removed → exit **0**. The live prefix is clean after the corrections, which also confirms the fixes were
+complete rather than merely plausible.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 278 | 2026-08-22 | launched **audit #8** at the two current-state summaries | briefed to cluster-test the **surviving headline** itself |
+| 279 | 2026-08-22 | audited the decision gates I had stopped maintaining | **4 stale rows, 2 asserting the opposite of the report** |
+| 280 | 2026-08-22 | corrected G2 / G4 / FINAL / P8.2, keeping superseded text struck | gate table no longer contradicts §0 |
+| 281 | 2026-08-22 | found the sweep **excludes this file entirely** | right for the tick log, wrong for the live head |
+| 282 | 2026-08-22 | added `LIVE_PREFIX_ENDS_AT`; **tested both directions** | sweep now covers 4 files; exit 1 planted / 0 clean |

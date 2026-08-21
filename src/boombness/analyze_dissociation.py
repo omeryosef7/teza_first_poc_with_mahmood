@@ -31,6 +31,34 @@ import subprocess
 
 from analyze_control_recheck import REPO, load, paired, paired_diff, intervention_of
 
+
+def git_commit_safe() -> str:
+    """Provenance that cannot kill the analysis. Added 2026-08-22 after two crashes.
+
+    `git rev-parse HEAD` raises FileNotFoundError on the batch nodes -- they have no git binary --
+    and every caller invoked it INSIDE the literal that builds the output dict. So the run died
+    before writing anything, and the artifact on disk silently kept its previous contents while
+    `sacct` said FAILED. A stale file that reads as current is the worst possible failure mode, and
+    it happened twice: once to analyze_qwen3_decomposition.py, then to analyze_dissociation.py after
+    I fixed only the first and left its 25 siblings.
+
+    The SLURM wrappers export BOOMB_GIT_COMMIT from the submitting host, so real provenance is
+    preserved; absent that, this degrades to an explicit marker rather than to silence.
+    """
+    import os as _os
+    import subprocess as _sp
+    env = _os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        r = _sp.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
 FIELDS = ("strongreject_score", "malicious_at_0.5")
 
 
@@ -81,8 +109,7 @@ def main() -> None:
         "estimand": "paired per prompt vs the same baseline, domain-clustered (G-1 df); identical "
                     "to analyze_control_recheck.py",
         "caveat": "a significant cell plus a null cell is NOT a dissociation; read `interaction`",
-        "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
-                                     capture_output=True, text=True).stdout.strip(),
+        "git_commit": git_commit_safe(),
         "baseline": a.baseline,
         "n_baseline_rows": n_base,
         "cells": cells,

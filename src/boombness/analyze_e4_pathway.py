@@ -56,6 +56,34 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_g8 import cluster_mean_ci  # noqa: E402
 from common import read_jsonl, REPO_ROOT as REPO  # noqa: E402
 
+
+def git_commit_safe() -> str:
+    """Provenance that cannot kill the analysis. Added 2026-08-22 after two crashes.
+
+    `git rev-parse HEAD` raises FileNotFoundError on the batch nodes -- they have no git binary --
+    and every caller invoked it INSIDE the literal that builds the output dict. So the run died
+    before writing anything, and the artifact on disk silently kept its previous contents while
+    `sacct` said FAILED. A stale file that reads as current is the worst possible failure mode, and
+    it happened twice: once to analyze_qwen3_decomposition.py, then to analyze_dissociation.py after
+    I fixed only the first and left its 25 siblings.
+
+    The SLURM wrappers export BOOMB_GIT_COMMIT from the submitting host, so real provenance is
+    preserved; absent that, this degrades to an explicit marker rather than to silence.
+    """
+    import os as _os
+    import subprocess as _sp
+    env = _os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        r = _sp.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
 SCORE = "strongreject_score"
 FLAG = "malicious_at_0.5"
 
@@ -236,8 +264,7 @@ def main() -> None:
     out = {
         "script": "src/boombness/analyze_e4_pathway.py",
         "plan_section": "§7 E4 -- semantic-salience interpretation, safe/aggregate only",
-        "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
-                                     capture_output=True, text=True).stdout.strip(),
+        "git_commit": git_commit_safe(),
         "estimand": "paired per-prompt delta vs baseline, aggregated to DOMAIN clusters "
                     "(unit of inference = domain, G-1 df)",
         "refused_field_provenance": "judge_boombness.py:262 -- bj.kw_refusal(text), a KEYWORD "

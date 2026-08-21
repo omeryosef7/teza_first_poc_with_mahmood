@@ -193,9 +193,23 @@ RETRACTED = [
      r"[≈~]0 on every benign condition|"
      r"generalises across three attack types"),
 ]
+#: file -> heading at which the LIVE region ends. Everything before it is swept; everything after is
+#: treated as dated record. A file with no entry here is swept in full.
+LIVE_PREFIX_ENDS_AT = {
+    # BOOMBNESS_SPRINT_PROGRESS.md was excluded entirely as a "historical record". That is right for
+    # its tick log and wrong for its HEAD: the phase board and the DECISION GATES are live status,
+    # and the loop's standing instruction is to keep them current. The cost of the blanket exclusion
+    # was measured on 2026-08-22 -- FOUR rows were found stale, two asserting the OPPOSITE of the
+    # report (G2 read YES after R-18 retracted it; G4 read YES while report §0 said do not build).
+    # They sat there for days because no guard covered the one part of that file a reader trusts.
+    # Sweep the live prefix, leave the record alone.
+    "docs/BOOMBNESS_SPRINT_PROGRESS.md": "## Bug / integrity audit log",
+}
+
 DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",
     "reports/boombness_objective_sprint_short_update.md",
+    "docs/BOOMBNESS_SPRINT_PROGRESS.md",   # live prefix only -- see LIVE_PREFIX_ENDS_AT
     # NOT swept (2026-08-21): the two mid-session sanity checks are DATED SNAPSHOTS of what was
     # believed on 2026-08-17/18, superseded in full by the continuation log. Sweeping them flags the
     # historical record as a defect -- the same reason BOOMBNESS_SPRINT_PROGRESS.md is excluded.
@@ -223,6 +237,9 @@ def sweep(paths):
             text = open(f, encoding="utf-8").read()
         except OSError:
             continue
+        stop = LIVE_PREFIX_ENDS_AT.get(f)
+        if stop and stop in text:
+            text = text[:text.index(stop)]
         # BLOCKS ARE BLANK-LINE PARAGRAPHS, **EXCEPT THAT EVERY TABLE ROW IS ITS OWN BLOCK.**
         #
         # WHY (audit 2026-08-21, and it is the worst miss this checker has had). The exemption is
