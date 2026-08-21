@@ -5585,3 +5585,55 @@ are consistent with each other, which is itself the most informative thing here.
 | 205 | 2026-08-21 | built `dose_vs_effect.py` | the dose-matched test R-25 said was impossible |
 | 206 | 2026-08-21 | ran it | **`d_naive` at 94% dose → 38% larger effect** |
 | 207 | 2026-08-21 | filed **R-26**; retracted §14-D's specificity row | withdrawn: specificity and content; surviving: the raw ASR effect |
+
+## C-13 — I overstated R-26 by one tick, and the correction is the better result
+
+Tick 2026-08-21. First thing this tick I checked how *different* `d_naive` actually is from
+`d_surface`, because R-26's force depends on it entirely. It is not very different at all:
+
+| | L6 | L8 | L10 | L12 |
+|---|---|---|---|---|
+| cos(`d_surface`, `d_naive`) | 0.9698 | **0.9613** | 0.9515 | 0.9549 |
+| cos(`d_surface`, `d_context`) | 0.161 | 0.207 | 0.108 | 0.078 |
+
+**cos = 0.96 is a ~16° rotation, not a rival direction.** So last tick's line — *"at matched dose
+`d_surface` is not the stronger direction, so the effect is not about content"* — **overstates what I
+measured**, and I have corrected it in the report, the artifact's verdict string, and here. What the
+`d_naive` comparison actually establishes is narrower and still worth having: **the 2×2's
+identification step — which is the entire difference between `d_naive` and `d_surface` — buys no
+behavioural effect and costs a little.** R-26's retraction of §14-D stands unchanged, because it rests
+on the **`d_context`** dose argument (dose 0.13, inside the control range where everything is inert),
+not on `d_naive`.
+
+### The correction turned into the cleanest result of the thread
+
+`d_naive`'s near-collinearity is **not a coincidence to be explained away — it is forced.** Write any
+unit direction as `u = c·d_surface + s·w`, `w` in the orthogonal complement. Then
+`dose(u) ≤ c²·a + s²·b`, with `a = dose(d_surface)` and `b =` the largest dose available in the
+complement. So reaching dose `f` **requires** `c² ≥ (f − b)/(a − b)`. Measured on this payload:
+
+| layer | a = dose(`d_surface`) | b = max complement dose | \|cos\| needed for f=0.5 | for f=0.7 | for f=0.8 |
+|---|---|---|---|---|---|
+| L6 | 0.8768 | 0.0801 | 0.726 | **0.882** | 0.977 |
+| L8 | 0.8402 | 0.1143 | 0.729 | **0.898** | ~1 |
+| L10 | 0.8114 | 0.1319 | 0.736 | **0.914** | unattainable |
+| L12 | 0.8204 | 0.1202 | 0.736 | **0.910** | unattainable |
+
+`d_naive` sits at dose 0.79, where the bound demands |cos| ≳ 0.95 — and it measures **0.9613**. The
+geometry predicted the observation.
+
+**So the honest final statement on this whole line of work:** within this bank, *"remove `d_surface`"*
+and *"remove a large share of the cell-mean variance"* are **not separable propositions** — not for
+want of compute or a cleverer control, but because at high dose there is only one direction up to a
+small rotation. R-25 said a dose-matched control cannot exist in the complement; the bound says
+something stronger and cleaner: **no admissible high-dose direction is meaningfully different from
+`d_surface` at all.** Separating identity from dose requires a **different design** — a bank whose
+cell-mean spectrum is not dominated by a single component. That is a concrete, actionable
+recommendation, and it is the most useful thing to come out of the last three ticks.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 208 | 2026-08-21 | checked cos(`d_surface`, `d_naive`) before building on R-26 | **0.9613** — near-collinear; last tick's framing overstated |
+| 209 | 2026-08-21 | filed **C-13**; corrected report, artifact verdict, and log | R-26's §14-D retraction stands on `d_context`, not `d_naive` |
+| 210 | 2026-08-21 | derived + measured the dose↔identity bound | f=0.7 forces \|cos\| ≥ 0.88–0.91; `d_naive`'s 0.96 is **forced**, not coincidental |
+| 211 | 2026-08-21 | recorded the design recommendation | identity/dose inseparable **in this bank**; needs a non-degenerate cell-mean spectrum |

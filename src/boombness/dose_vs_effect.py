@@ -48,6 +48,55 @@ def _rows(pat):
     return m
 
 
+
+def dose_identity_bound(payload, layer):
+    """How similar to `d_surface` is a direction FORCED to be, in order to reach a given dose?
+
+    THE FINAL WORD ON R-25/R-26, AND IT IS GEOMETRY, NOT SAMPLING. Write a unit direction as
+    u = c*d_surface + s*w with w in the orthogonal complement. Then
+
+        dose(u) <= c^2 * a + s^2 * b,   a = dose(d_surface) ~ 0.81-0.88,  b = max dose in complement ~ 0.08-0.13
+
+    so reaching dose f REQUIRES c^2 >= (f - b) / (a - b). Measured on this payload, a direction that
+    removes 70% of the cell-mean spread must already have |cos| >= 0.88-0.91 with `d_surface`, and at
+    the arm's own dose the bound saturates at ~1.
+
+    That is why `d_naive` -- the one high-dose alternative that exists -- has cos 0.95-0.97 with
+    `d_surface`: its similarity is not a coincidence to be explained away, it is FORCED by its dose.
+    So "is the effect about this direction, or about how much variance it removes?" is not a question
+    this design can answer, and no further run inside this bank can answer it: at high dose there is
+    only one direction, up to a small rotation. Separating them needs a different design (e.g. a bank
+    whose cell-mean spectrum is not dominated by a single component), not more compute.
+    """
+    import torch
+    cm = payload.get("cell_means") or {}
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    if len(rows) < 2:
+        return None
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    tot = float((M ** 2).sum())
+    d = payload["d_surface"][layer].float().reshape(-1)
+    u = d / (d.norm() + 1e-8)
+    a = float(((M @ u.reshape(-1, 1)) ** 2).sum()) / tot
+    Mp = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
+    b = float(torch.linalg.svdvals(Mp)[0] ** 2) / tot
+    import math
+    def mincos(f):
+        if f <= b:
+            return 0.0
+        r = (f - b) / (a - b)
+        return math.sqrt(r) if r <= 1 else None      # None = dose unattainable by ANY direction
+    return {"dose_d_surface": a, "max_dose_in_complement": b,
+            "min_abs_cos_with_d_surface_to_reach": {str(f): mincos(f)
+                                                    for f in (0.3, 0.5, 0.7, 0.8)},
+            "reading": "a direction removing 70%% of the cell-mean spread must have |cos| >= %.2f "
+                       "with d_surface; at the arm's dose the bound saturates. High dose and "
+                       "d_surface-identity are geometrically entangled in this design."
+                       % (mincos(0.7) or 1.0)}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--fit-dir", default="outputs/boombness/extract_boombness/full_20260816_185942_1008673")
@@ -94,6 +143,8 @@ def main() -> int:
                      "judge_run": os.path.basename(sorted(glob.glob(pat))[-1])}
 
     ds, dn = out.get("d_surface", {}), out.get("d_naive", {})
+    _u = lambda v: (v.float().reshape(-1) / v.float().reshape(-1).norm())
+    cos_ns = float(torch.dot(_u(pl["d_surface"][8]), _u(pl["d_naive"][8])))
     verdict = None
     if ds.get("dose_cellmean_frac") and dn.get("dose_cellmean_frac"):
         ratio = dn["dose_cellmean_frac"] / ds["dose_cellmean_frac"]
@@ -101,20 +152,29 @@ def main() -> int:
             "dose_ratio_naive_over_surface": ratio,
             "dose_matched": abs(1 - ratio) < 0.15,
             "naive_effect_over_surface_effect": (dn["delta"] / ds["delta"]) if ds["delta"] else None,
+            "cos_naive_surface": cos_ns,
             "reading": (
                 "d_naive carries %.0f%% of d_surface's dose and produces a %.0f%% LARGER effect "
-                "(%+.4f vs %+.4f, %d vs %d flips). At matched dose d_surface is NOT the stronger "
-                "direction, so the ASR effect is not evidence that d_surface's CONTENT is what "
-                "matters. d_context, at %.2f dose -- inside the in-subspace controls' own dose range "
-                "-- moves ASR by %+.4f, which the dose account predicts and the content account does "
-                "not distinguish from 'wrong meaning'."
+                "(%+.4f vs %+.4f, %d vs %d flips). READ THIS NARROWLY: cos(d_surface, d_naive) = "
+                "%.4f, so this is NOT 'a different direction wins' -- it is a ~%.0f-degree rotation "
+                "of the same direction doing somewhat more. The near-collinearity is not a "
+                "coincidence: see dose_identity_bound, which shows a direction at this dose is "
+                "FORCED to have |cos| >= ~0.95 with d_surface. What it does establish is that the "
+                "2x2's identification step (which is the whole difference between d_naive and "
+                "d_surface) buys no behavioural effect and in fact costs some. "
+                "d_context, at %.2f dose -- inside the in-subspace controls' own dose range -- moves "
+                "ASR by %+.4f, which the dose account predicts and which therefore carries no "
+                "information about meaning."
                 % (100 * ratio, 100 * (dn["delta"] / ds["delta"] - 1), dn["delta"], ds["delta"],
-                   dn["net_flips"], ds["net_flips"],
+                   dn["net_flips"], ds["net_flips"], cos_ns, __import__("math").degrees(
+                       __import__("math").acos(min(1.0, abs(cos_ns)))),
                    out.get("d_context", {}).get("dose_cellmean_frac", float("nan")),
                    out.get("d_context", {}).get("delta", float("nan")))),
         }
 
-    doc = {"question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
+    bounds = {f"L{L}": dose_identity_bound(pl, L) for L in (6, 8, 10, 12)}
+    doc = {"dose_identity_bound": bounds,
+           "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
            "threshold": args.threshold, "directions": out, "verdict": verdict,
            "caveat": "delta_over_dose is only comparable between directions of SIMILAR dose; the "
                      "dose-response saturates, so comparing it across a 6x gap is the error this "

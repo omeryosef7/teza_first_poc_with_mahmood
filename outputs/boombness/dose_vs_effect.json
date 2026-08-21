@@ -1,4 +1,50 @@
 {
+  "dose_identity_bound": {
+    "L6": {
+      "dose_d_surface": 0.8768239688421499,
+      "max_dose_in_complement": 0.08012859361984599,
+      "min_abs_cos_with_d_surface_to_reach": {
+        "0.3": 0.5253372896374919,
+        "0.5": 0.7259588463948141,
+        "0.7": 0.8820732540067817,
+        "0.8": 0.9505638930770115
+      },
+      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.88 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+    },
+    "L8": {
+      "dose_d_surface": 0.8402006196015032,
+      "max_dose_in_complement": 0.11429965311195878,
+      "min_abs_cos_with_d_surface_to_reach": {
+        "0.3": 0.5057870087256349,
+        "0.5": 0.7289308440736733,
+        "0.7": 0.8982537796682462,
+        "0.8": 0.9719154753945718
+      },
+      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.90 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+    },
+    "L10": {
+      "dose_d_surface": 0.8114456002264713,
+      "max_dose_in_complement": 0.13186127260090483,
+      "min_abs_cos_with_d_surface_to_reach": {
+        "0.3": 0.49740735258359636,
+        "0.5": 0.7360106116908589,
+        "0.7": 0.914335368800137,
+        "0.8": 0.9915432112104584
+      },
+      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.91 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+    },
+    "L12": {
+      "dose_d_surface": 0.8204428847812593,
+      "max_dose_in_complement": 0.12019742950016081,
+      "min_abs_cos_with_d_surface_to_reach": {
+        "0.3": 0.5067255452641746,
+        "0.5": 0.7364678629963618,
+        "0.7": 0.909944530303678,
+        "0.8": 0.9852949384479541
+      },
+      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.91 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+    }
+  },
   "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
   "threshold": 0.5,
   "directions": {
@@ -34,7 +80,8 @@
     "dose_ratio_naive_over_surface": 0.9425625172717178,
     "dose_matched": true,
     "naive_effect_over_surface_effect": 1.380952380952381,
-    "reading": "d_naive carries 94% of d_surface's dose and produces a 38% LARGER effect (+0.0586 vs +0.0424, 29 vs 21 flips). At matched dose d_surface is NOT the stronger direction, so the ASR effect is not evidence that d_surface's CONTENT is what matters. d_context, at 0.13 dose -- inside the in-subspace controls' own dose range -- moves ASR by +0.0000, which the dose account predicts and the content account does not distinguish from 'wrong meaning'."
+    "cos_naive_surface": 0.9613239765167236,
+    "reading": "d_naive carries 94% of d_surface's dose and produces a 38% LARGER effect (+0.0586 vs +0.0424, 29 vs 21 flips). READ THIS NARROWLY: cos(d_surface, d_naive) = 0.9613, so this is NOT 'a different direction wins' -- it is a ~16-degree rotation of the same direction doing somewhat more. The near-collinearity is not a coincidence: see dose_identity_bound, which shows a direction at this dose is FORCED to have |cos| >= ~0.95 with d_surface. What it does establish is that the 2x2's identification step (which is the whole difference between d_naive and d_surface) buys no behavioural effect and in fact costs some. d_context, at 0.13 dose -- inside the in-subspace controls' own dose range -- moves ASR by +0.0000, which the dose account predicts and which therefore carries no information about meaning."
   },
   "caveat": "delta_over_dose is only comparable between directions of SIMILAR dose; the dose-response saturates, so comparing it across a 6x gap is the error this script exists to expose.",
   "provenance": {
@@ -43,6 +90,6 @@
       "--out",
       "outputs/boombness/dose_vs_effect.json"
     ],
-    "git_commit": "bc26234ccbe2795170fb57f9f66ced9a1110d1f4"
+    "git_commit": "e351586c77c3a8c94a538363f56e678119f8bef3"
   }
 }
