@@ -4294,6 +4294,72 @@ strongest for a different direction.
 and that is the point of running it. **If L31 comes back null, I will weaken the central claim in the
 final report rather than keep it as written.**
 
+
+## ⛔ THE CONTROL FIRED — the L31 null is NOT direction-specific, and the central claim is WEAKENED as promised
+
+**Artifacts:** `score_behavior/span{8,31}_*` (495 generations each, 0 failures, three composed hooks
+verified in metadata), judged in four shards at `null_frac 0.0000`, paired against the same
+2026-08-21 baseline.
+
+| arm | Δ StrongReject | se | p_cl |
+|---|---|---|---|
+| **L8** — full 3-D concept subspace | **+0.0287** | 0.0092 | **0.0071** |
+| L8 — `d_surface` alone | +0.0278 | 0.0117 | 0.0311 |
+| **L31** — full 3-D concept subspace | **−0.0108** | 0.0089 | **0.242** |
+| L31 — `d_surface` alone | −0.0041 | 0.0035 | 0.255 |
+
+**Ablating the ENTIRE concept subspace at L31 does nothing.** At L8 the same edit moves ASR. That is
+precisely the pattern the architectural explanation predicts, and it is the outcome I said would
+force a weakening.
+
+### What is withdrawn
+
+⛔ **The sentence I built the central result on — *"at L31 the metric predicts ASR at ρ +0.164 and
+ablating the very same direction at the very same layer changes nothing"* — can no longer be read as
+evidence that `d_surface` is causally inert late.** Removing the whole 3-D span, which strictly
+contains `d_surface` (captured at 1.000000), is *also* inert at L31. **The L31 null is a property of
+the depth, not of the direction.**
+
+⛔ Consequently the **Spearman −0.850 anti-alignment stands as a description and not as a
+mechanism.** It conflates two trends that are both real but not the same claim: readability rising
+with depth (representational) and ablation efficacy falling toward the output (at least partly
+architectural). It is **not** a within-layer representation-versus-behaviour dissociation, and I
+described it as one.
+
+### What survives, and is now better supported
+
+✅ **Within the layers where ablation demonstrably works, the causal effect is concentrated on the
+`d_surface` axis — and the superset test confirms it by a new route.** At L8, ablating all three
+dimensions gives **+0.0287** against `d_surface` alone at **+0.0278**: **adding the other two
+dimensions of the subspace adds nothing.** Combined with the orthogonal-axis controls being inert at
+four Holm-corrected depths, two independent designs — a *subset* control and a *superset* control —
+now agree that the L6–L12 effect is carried by that one axis.
+
+✅ **The prediction profile is untouched** (it is correlational): rising with depth, +0.164 at L31,
+and carried by the whole subspace — a random orthogonal axis predicts at 83–106% of `d_surface`.
+
+✅ **And the depth story is still not purely architectural.** Refusalness moves ASR by **+0.1895 at
+L18** — six times `d_surface`'s best anywhere — so efficacy is not a smooth decay across the second
+half of the model. What the span test establishes is narrower and specific: **at L31 in particular,
+this subspace cannot act.**
+
+### The corrected claim
+
+> **Causally, `d_surface` is the acting axis of the concept subspace within L6–L12** — subset and
+> superset controls agree, Holm-corrected. **Correlationally, the subspace as a whole becomes more
+> readable with depth, and `d_surface` is not privileged in it.** The two facts are about different
+> quantities at different depths; **the apparent "reads here, acts there" anti-alignment is not
+> established as a mechanism, because at L31 nothing in this subspace acts at all.**
+
+### Why this is a good outcome
+
+The control was designed to be able to fire, the reading was fixed in writing before it ran, and it
+fired. **A claim that survived only because nobody built the control that could kill it would have
+been the sprint's worst result**; this costs one headline sentence and leaves two well-controlled
+findings standing. The remaining open question is sharper than the one it replaces: *is there any
+direction that can move behaviour from L28–L31 in this model?* Refusalness has never been fitted
+above L20, so nobody knows.
+
 ## ✅✅✅ THE SPRINT'S CENTRAL RESULT — prediction and causation are ANTI-ALIGNED across depth
 
 **Artifact:** `outputs/boombness_followup/subspace_prediction.json` (`prediction_profile`,
@@ -5943,11 +6009,13 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
    categories positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
-4. **Prediction and causation are ANTI-ALIGNED across depth — Spearman −0.850 over 13 layers.** At
-   L31 the metric predicts ASR at ρ +0.164 (p 1e-4) and ablating the same direction at the same
-   layer does nothing (−0.0041, p 0.26); at L8–L12, where ablation moves ASR most, prediction is at
-   its weakest. **Prediction is also distributed across the concept subspace while causation is
-   concentrated on one axis within it.** A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
+4. **Within L6–L12, causation is concentrated on the `d_surface` axis — confirmed by a SUBSET and a
+   SUPERSET control.** An orthogonal axis in the same subspace is inert at four Holm-corrected
+   depths, and ablating the *entire* 3-D subspace at L8 (+0.0287) adds nothing over `d_surface`
+   alone (+0.0278). **Correlationally the subspace as a whole becomes more readable with depth and
+   `d_surface` is not privileged in it** (a random orthogonal axis predicts at 83–106%).
+   ⛔ The depth anti-alignment (Spearman −0.850) is a **description, not a mechanism**: the full
+   subspace is equally inert at L31, so that null is a property of the depth, not the direction. A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
    its strength (three seeds, three layers) — yet ablating that same control moves nothing (L8
    −0.0033, p 0.15) while ablating `d_surface` does (+0.0305, p 0.009). A direction can be **read**
    from a subspace without being the direction that **acts**. This is the sprint's most interesting
