@@ -7989,3 +7989,59 @@ the queue. Running it now would repeat exactly the partial-data error `judge_pas
 | 445 | 2026-08-22 | fix's own reporting exposed a **fourth** prefix `a24_` | added, plus `assert_spelling_complete` cross-check vs declared spec |
 | 446 | 2026-08-22 | new guard `test_angle_resolver.py`, incl. a must-fail case | PASS; 52 of-24 angles now reachable |
 | 447 | 2026-08-22 | deferred the n=24 null | L6 8/12 odd angles judged; **will not run on partial data** |
+
+## "78 uncited runs" was an anxiety, not a finding — so I triaged it, and it found a real one
+
+Audit #12 left the residual: *nothing states which of the unanalysed runs would change a conclusion.*
+`unanalysed_inventory.py` counts the drop-offs and, by design, "deliberately does NOT try to decide
+which gaps matter". Correct for a counter — but the count is unactionable. An unanalysed run that could
+overturn a claim and an unanalysed smoke test are **the same row in a count and opposite things in a
+report**. New `unanalysed_triage.py` adds the judgment on top, kept separate so it can be argued with
+separately.
+
+**The triage had to be debugged before it could be believed.** Its first run said **94** runs could
+change a conclusion, which is not a shortlist, it is noise. Two detector bugs, both of the
+address-by-identity shape this repo keeps hitting:
+
+1. It only counted a run as consumed if an **artifact** named it. But `analyze_qwen3_decomposition.py`
+   reads runs whose output artifact never records which runs it read. *A run analysed by a committed
+   script whose output does not name its inputs is indistinguishable from a run nobody touched.*
+2. **The judge tag is not the generation tag** — judge `f3d_armA_*` scores generations from
+   `fuF_addR_g02_*` — so a script naming the generation tag read as "nobody consumed this". Also
+   `config.json` records `model: None` whenever a run took the script default, so 78 runs had model
+   "unknown" and the identity key `(model, bank, spec)` silently merged two models. The true model is
+   in `metadata.json`.
+
+94 → 39 → **27**. The bogus "largest replicate ASR gap = 0.7031" went with it (now **0.0594**).
+
+**Then the shortlist earned its keep.** Top of it: six Qwen3-14B arms at L11, 480 rows each, judged,
+cited by nothing. `analyze_qwen3_decomposition.py` was written and committed **for this exact batch and
+never run** — because the 2026-08-21 18:40 re-judge half-failed (2 of every 4 shards empty, no
+`DONE.json`), and the work stalled there. The 18:28 session is complete and clean. Running it:
+
+| arm | spec | dASR (doublespeak, n=420) | p | **doublespeak-specific excess** | p |
+|---|---|---|---|---|---|
+| **B11** | `d_surface:project_out:11` | **+0.3810** | 0.00031 | **+0.1248** | **0.032** |
+| **B11ctrl** | `in_subspace_orth:project_out:11` | −0.0119 | 0.60 | **−0.015** | **0.57** |
+| D20 | remove-both | +0.3476 | 0.00024 | +0.1254 | 0.048 |
+| D20ctrl | matched control | +0.0048 | 0.64 | +0.0017 | 0.89 |
+
+**Why this matters.** R-23 retracted the Llama causal claim because an **in-subspace** direction
+reproduced the effect at L8/L12. On Qwen3 at L11 it does **not**: the hard control is null on every
+cut — −0.015, p=0.57, and p>0.05 in **6 of 6** leave-one-domain-out folds — while `d_surface` is not.
+That is the failure that killed the Llama claim, absent on the second model.
+
+**Why I am not putting it in the headline.** Three reasons, and they are not small. **(a)** Two-thirds
+of the raw effect is **non-specific**: the same arm moves *benign_literal* ASR **+0.2562** (p=0.002),
+so the model is being damaged, not just disinhibited — the specific excess is what is left after
+removing that, and it is +0.125, not +0.38. **(b)** That specific excess **loses significance under
+stratum matching** (+0.1173, p=0.063) and holds in only **4 of 6** LOO folds. **(c)** One judging
+session, uncorrected for the arm family. Recorded as a **live lead, not a result**.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 448 | 2026-08-22 | built `unanalysed_triage.py` to answer audit #12's residual | count → shortlist |
+| 449 | 2026-08-22 | debugged it: script-consumers, gens-tag ≠ judge-tag, model from `metadata.json` | **94 → 27**; bogus 0.7031 replicate gap → 0.0594 |
+| 450 | 2026-08-22 | found 6 Qwen3 L11 arms judged, analysis script committed but **never run** | 18:40 re-judge half-failed (2 of 4 shards empty); 18:28 clean |
+| 451 | 2026-08-22 | ran it | **hard in-subspace control is NULL on Qwen3 (6/6 LOO)** — the failure that killed the Llama claim |
+| 452 | 2026-08-22 | did **not** promote it | benign leak +0.2562; specific excess p=0.063 stratum-matched; one session |

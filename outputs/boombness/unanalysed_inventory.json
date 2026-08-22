@@ -1,13 +1,115 @@
 {
   "root": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness",
   "min_rows": 100,
-  "n_generation_runs": 140,
-  "n_judge_runs": 180,
+  "n_generation_runs": 254,
+  "n_judge_runs": 331,
   "generated_but_never_judged": [
     {
       "run": "abVMC_20260821_003746_943096",
       "n_gens": 357,
       "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k1of24_20260822_183557_3920587",
+      "n_gens": 231,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k2of24_20260822_183557_3920447",
+      "n_gens": 231,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k3of24_20260822_183658_3921589",
+      "n_gens": 177,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k4of24_20260822_183658_3921591",
+      "n_gens": 176,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k5of24_20260822_183658_3921590",
+      "n_gens": 178,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k10of24_20260822_181658_3128539",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k11of24_20260822_182336_1534115",
+      "n_gens": 219,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k13of24_20260822_182336_1534114",
+      "n_gens": 219,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k14of24_20260822_182856_77026",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k16of24_20260822_183357_3129893",
+      "n_gens": 325,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k17of24_20260822_183557_3920448",
+      "n_gens": 217,
+      "done": false,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k1of24_20260822_181658_3917529",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k2of24_20260822_181658_3917532",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k4of24_20260822_181658_3917531",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k5of24_20260822_181658_3917480",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k7of24_20260822_181658_3917530",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang12k8of24_20260822_181656_76095",
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
@@ -17,9 +119,33 @@
       "judged_by": []
     },
     {
+      "run": "fuF_addR_g04_20260821_201346_3034028",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addR_g08_20260821_201111_4162011",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
       "run": "fuF_addR_gapdose_20260820_055743_3693541",
       "n_gens": 495,
       "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addRand_g02_20260821_215204_1252827",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuF_addRand_g075_20260821_223129_3048964",
+      "n_gens": 474,
+      "done": false,
       "judged_by": []
     },
     {
@@ -36,6 +162,60 @@
     },
     {
       "run": "fuF_remS_addR_CTRL_20260819_221402_576761",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_add_g00625_20260822_123009_3880350",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_add_g0125_20260822_123009_3880349",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_add_g05_20260822_113423_1339685",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_add_g075_20260822_113423_1339686",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_randS01_g075_20260822_124400_3882841",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_randS02_g075_20260822_124400_3882842",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_randS03_g075_20260822_124400_3882843",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_rand_g05_20260822_114838_1342439",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "fuS_rand_g075_20260822_114838_1342440",
       "n_gens": 495,
       "done": true,
       "judged_by": []
@@ -75,21 +255,240 @@
       "n_gens": 119,
       "done": false,
       "judged_by": []
-    },
-    {
-      "run": "span31_20260821_071516_2938471",
-      "n_gens": 495,
-      "done": true,
-      "judged_by": []
-    },
-    {
-      "run": "span8_20260821_071516_1028239",
-      "n_gens": 457,
-      "done": false,
-      "judged_by": []
     }
   ],
   "judged_but_cited_by_no_artifact": [
+    {
+      "judge": "J_abL10_naive_20260821_234406_4190284",
+      "n": 495,
+      "source_gens": "abL10_naive_20260821_230553_4186275",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_abL12_naive_20260821_220407_4182302",
+      "n": 495,
+      "source_gens": "abL12_naive_20260821_213454_4177347",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_abL13_naive_20260821_234413_3056913",
+      "n": 495,
+      "source_gens": "abL13_naive_20260821_230553_4186277",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_abL6_naive_20260821_220407_4182402",
+      "n": 495,
+      "source_gens": "abL6_naive_20260821_213454_4177349",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_dm10k1_20260821_234406_4190197",
+      "n": 495,
+      "source_gens": "dm10k1_20260821_230553_4186276",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_dm12k1_20260821_220407_4182588",
+      "n": 495,
+      "source_gens": "dm12k1_20260821_213454_4177348",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_dm13k1_20260821_234413_3056914",
+      "n": 495,
+      "source_gens": "dm13k1_20260821_230553_4186211",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "J_dm6k1_20260821_220407_4182495",
+      "n": 495,
+      "source_gens": "dm6k1_20260821_213454_4177350",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k11_20260822_165021_1129216",
+      "n": 495,
+      "source_gens": "ang6k11of24_20260822_153747_3900609",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k13_20260822_165021_1129217",
+      "n": 495,
+      "source_gens": "ang6k13of24_20260822_153747_3900606",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k15_20260822_165021_1129218",
+      "n": 495,
+      "source_gens": "ang6k15of24_20260822_154205_66256",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k1_20260822_163302_1127803",
+      "n": 495,
+      "source_gens": "ang6k1of24_20260822_153720_3114711",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k3_20260822_163302_1127804",
+      "n": 495,
+      "source_gens": "ang6k3of24_20260822_153720_3114712",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k5_20260822_163302_1127805",
+      "n": 495,
+      "source_gens": "ang6k5of24_20260822_153747_3900610",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k7_20260822_163302_1127806",
+      "n": 495,
+      "source_gens": "ang6k7of24_20260822_153747_3900608",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L6k9_20260822_163302_1127807",
+      "n": 495,
+      "source_gens": "ang6k9of24_20260822_153747_3900607",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k11_20260822_170732_1130639",
+      "n": 495,
+      "source_gens": "ang8k11of24_20260822_155458_1413277",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k13_20260822_170732_1130640",
+      "n": 495,
+      "source_gens": "ang8k13of24_20260822_155557_3117544",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k15_20260822_170732_1130641",
+      "n": 495,
+      "source_gens": "ang8k15of24_20260822_155557_3117543",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k1_20260822_165021_1129219",
+      "n": 495,
+      "source_gens": "ang8k1of24_20260822_154204_3116075",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k3_20260822_165021_1129220",
+      "n": 495,
+      "source_gens": "ang8k3of24_20260822_154157_1409653",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k5_20260822_165021_1129221",
+      "n": 495,
+      "source_gens": "ang8k5of24_20260822_154559_1411476",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k7_20260822_170732_1130637",
+      "n": 495,
+      "source_gens": "ang8k7of24_20260822_155657_3118334",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_L8k9_20260822_170732_1130638",
+      "n": 495,
+      "source_gens": "ang8k9of24_20260822_160014_1414595",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a24_base_20260822_163302_1127802",
+      "n": 495,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k1_0_20260821_141317_1418218",
+      "n": 248,
+      "source_gens": "a8L12k1_20260821_134734_1125126",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k1_1_20260821_141317_1418219",
+      "n": 247,
+      "source_gens": "a8L12k1_20260821_134734_1125126",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k3_0_20260821_141317_1418223",
+      "n": 248,
+      "source_gens": "a8L12k3_20260821_134734_1125125",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k3_1_20260821_141317_1418224",
+      "n": 247,
+      "source_gens": "a8L12k3_20260821_134734_1125125",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k5_0_20260821_141317_1418228",
+      "n": 248,
+      "source_gens": "a8L12k5_20260821_134710_2975225",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k5_1_20260821_141317_1418229",
+      "n": 247,
+      "source_gens": "a8L12k5_20260821_134710_2975225",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k7_0_20260821_141317_1418233",
+      "n": 248,
+      "source_gens": "a8L12k7_20260821_135218_4045493",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "a8J12k7_1_20260821_141317_1418234",
+      "n": 247,
+      "source_gens": "a8L12k7_20260821_135218_4045493",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
     {
       "judge": "ab_C_20260819_002240_1397246",
       "n": 482,
@@ -105,9 +504,9 @@
       "cited_by_an_artifact": false
     },
     {
-      "judge": "abg_Bband2_20260819_043341_1572581",
+      "judge": "abgK_Bctrl_20260821_142631_887131",
       "n": 495,
-      "source_gens": "ab_Bband_20260902_20260819_035529_1775730",
+      "source_gens": "abK_Bctrl_20260821_140717_1134825",
       "done": true,
       "cited_by_an_artifact": false
     },
@@ -136,6 +535,314 @@
       "judge": "abrep_L8_20260821_045440_669580",
       "n": 495,
       "source_gens": "ab_B_20260818_185458_3888974",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k0_0_20260821_124554_1220607",
+      "n": 248,
+      "source_gens": "ang10k0_20260821_121911_2965190",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k0_1_20260821_124554_1220608",
+      "n": 247,
+      "source_gens": "ang10k0_20260821_121911_2965190",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k1_0_20260821_124554_1220612",
+      "n": 248,
+      "source_gens": "ang10k1_20260821_121911_2965192",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k1_1_20260821_124554_1220613",
+      "n": 247,
+      "source_gens": "ang10k1_20260821_121911_2965192",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k2_0_20260821_124554_1220617",
+      "n": 248,
+      "source_gens": "ang10k2_20260821_121911_2965189",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k2_1_20260821_124554_1220618",
+      "n": 247,
+      "source_gens": "ang10k2_20260821_121911_2965189",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k3_0_20260821_124554_1220622",
+      "n": 248,
+      "source_gens": "ang10k3_20260821_121911_2965193",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ10k3_1_20260821_124554_1220623",
+      "n": 247,
+      "source_gens": "ang10k3_20260821_121911_2965193",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k0_0_20260821_114815_1136790",
+      "n": 248,
+      "source_gens": "ang12k0_20260821_112220_1100872",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k0_1_20260821_114815_1136791",
+      "n": 247,
+      "source_gens": "ang12k0_20260821_112220_1100872",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k1_0_20260821_114815_1136795",
+      "n": 248,
+      "source_gens": "ang12k1_20260821_112220_1100871",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k1_1_20260821_114815_1136796",
+      "n": 247,
+      "source_gens": "ang12k1_20260821_112220_1100871",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k2_0_20260821_114816_1136800",
+      "n": 248,
+      "source_gens": "ang12k2_20260821_112209_4017318",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k2_1_20260821_114816_1136801",
+      "n": 247,
+      "source_gens": "ang12k2_20260821_112209_4017318",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k3_0_20260821_114816_1136805",
+      "n": 248,
+      "source_gens": "ang12k3_20260821_112209_4017317",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ12k3_1_20260821_114816_1136806",
+      "n": 247,
+      "source_gens": "ang12k3_20260821_112209_4017317",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k0_0_20260821_124554_1220587",
+      "n": 248,
+      "source_gens": "ang6k0_20260821_121911_1107757",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k0_1_20260821_124554_1220588",
+      "n": 247,
+      "source_gens": "ang6k0_20260821_121911_1107757",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k10of12_20260821_173739_4121283",
+      "n": 495,
+      "source_gens": "ang6k10of12_20260821_170722_4107865",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k11of12_20260821_173739_4121282",
+      "n": 495,
+      "source_gens": "ang6k11of12_20260821_170722_4107864",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k1_0_20260821_124554_1220592",
+      "n": 248,
+      "source_gens": "ang6k1_20260821_121911_1107758",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k1_1_20260821_124554_1220593",
+      "n": 247,
+      "source_gens": "ang6k1_20260821_121911_1107758",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k1of12_20260821_162827_4087286",
+      "n": 495,
+      "source_gens": "ang6k1of12_20260821_153854_4075953",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k2_0_20260821_124554_1220597",
+      "n": 248,
+      "source_gens": "ang6k2_20260821_121911_1107759",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k2_1_20260821_124554_1220598",
+      "n": 247,
+      "source_gens": "ang6k2_20260821_121911_1107759",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k2of12_20260821_162827_4087291",
+      "n": 495,
+      "source_gens": "ang6k2of12_20260821_153900_4076441",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k3_0_20260821_124554_1220602",
+      "n": 248,
+      "source_gens": "ang6k3_20260821_121911_2965191",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k3_1_20260821_124554_1220603",
+      "n": 247,
+      "source_gens": "ang6k3_20260821_121911_2965191",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k4of12_20260821_162827_4087289",
+      "n": 495,
+      "source_gens": "ang6k4of12_20260821_153854_4075954",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k5of12_20260821_162827_4087287",
+      "n": 495,
+      "source_gens": "ang6k5of12_20260821_153854_4075952",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k7of12_20260821_162827_4087288",
+      "n": 495,
+      "source_gens": "ang6k7of12_20260821_153855_4076276",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ6k8of12_20260821_162827_4087290",
+      "n": 495,
+      "source_gens": "ang6k8of12_20260821_153854_4076177",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k0_20260821_105123_1042515",
+      "n": 495,
+      "source_gens": "ang8k0_20260821_102514_2954521",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k10of12_20260821_183856_4137477",
+      "n": 495,
+      "source_gens": "ang8k10of12_20260821_180727_4131491",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k11of12_20260821_183856_4137478",
+      "n": 495,
+      "source_gens": "ang8k11of12_20260821_180727_4131492",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k1_20260821_105123_1042519",
+      "n": 495,
+      "source_gens": "ang8k1_20260821_102514_2954520",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k1of12_20260821_180750_4131488",
+      "n": 495,
+      "source_gens": "ang8k1of12_20260821_173724_4121285",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k2_20260821_105123_1042523",
+      "n": 495,
+      "source_gens": "ang8k2_20260821_102707_4010958",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k2of12_20260821_180923_3015652",
+      "n": 495,
+      "source_gens": "ang8k2of12_20260821_173724_4121284",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k3_20260821_105123_1042527",
+      "n": 495,
+      "source_gens": "ang8k3_20260821_102707_4010959",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k4of12_20260821_183856_4137481",
+      "n": 495,
+      "source_gens": "ang8k4of12_20260821_173724_4121286",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k5of12_20260821_183856_4137480",
+      "n": 495,
+      "source_gens": "ang8k5of12_20260821_173724_3007396",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k7of12_20260821_183856_4137479",
+      "n": 495,
+      "source_gens": "ang8k7of12_20260821_180727_4131490",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "angJ8k8of12_20260821_183856_4137476",
+      "n": 495,
+      "source_gens": "ang8k8of12_20260821_180727_4131489",
       "done": true,
       "cited_by_an_artifact": false
     },
@@ -175,24 +882,66 @@
       "cited_by_an_artifact": false
     },
     {
-      "judge": "ctrlbandfix_s20260901_20260819_002240_1397244",
-      "n": 179,
-      "source_gens": "ctrlband_s20260901_20260818_190957_3891690",
-      "done": true,
-      "cited_by_an_artifact": false
-    },
-    {
-      "judge": "ctrlbandfix_s20260902_20260819_002952_1402992",
-      "n": 179,
-      "source_gens": "ctrlband_s20260902_20260818_190957_3891646",
-      "done": true,
-      "cited_by_an_artifact": false
-    },
-    {
       "judge": "ctrlbandfix_s20260903_20260819_003630_1408405",
       "n": 179,
       "source_gens": "ctrlband_s20260903_20260818_191458_3892825",
       "done": false,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k0_20260822_000916_4193353",
+      "n": 495,
+      "source_gens": "dm8k0_20260821_234053_4189414",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k1_20260821_203730_4169260",
+      "n": 495,
+      "source_gens": "dm8k1_20260821_200456_4159655",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k2_20260821_203730_4169259",
+      "n": 495,
+      "source_gens": "dm8k2_20260821_200456_4159657",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k3_20260821_203730_4169261",
+      "n": 495,
+      "source_gens": "dm8k3_20260821_200456_4159660",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k4_20260821_203725_3035834",
+      "n": 495,
+      "source_gens": "dm8k4_20260821_200456_4159658",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k5_20260821_203725_3035833",
+      "n": 495,
+      "source_gens": "dm8k5_20260821_200456_4159659",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k6_20260821_203747_4169776",
+      "n": 495,
+      "source_gens": "dm8k6_20260821_200456_4159656",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "dmJ8k7_20260822_000916_4193352",
+      "n": 495,
+      "source_gens": "dm8k7_20260821_234053_4189436",
+      "done": true,
       "cited_by_an_artifact": false
     },
     {
@@ -234,6 +983,83 @@
       "judge": "dsL31J1_20260821_061546_748208",
       "n": 247,
       "source_gens": "dsL31_20260821_055018_2931999",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_arm_20260822_131407_1118357",
+      "n": 495,
+      "source_gens": "fuF_addR_g02_20260821_211859_1247621",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_base_20260822_131407_1118356",
+      "n": 495,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_c01_20260822_131407_1118359",
+      "n": 495,
+      "source_gens": "fuF_addRandS01_20260822_120657_1348001",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_c02_20260822_131407_1118360",
+      "n": 495,
+      "source_gens": "fuF_addRandS02_20260822_120829_3876740",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_c03_20260822_131407_1118361",
+      "n": 495,
+      "source_gens": "fuF_addRandS03_20260822_121655_3877532",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3b_c16_20260822_131407_1118358",
+      "n": 495,
+      "source_gens": "fuF_addRandM_g02_20260822_001803_3059406",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3d_armA_20260822_011104_1090349",
+      "n": 495,
+      "source_gens": "fuF_addR_g02_20260821_211859_1247621",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3d_armB_20260822_011104_1090351",
+      "n": 495,
+      "source_gens": "fuF_addR_g075_20260821_211859_1247622",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3d_base_20260822_011104_1090348",
+      "n": 495,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3d_ctlA_20260822_011104_1090350",
+      "n": 495,
+      "source_gens": "fuF_addRandM_g02_20260822_001803_3059406",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "f3d_ctlB_20260822_011104_1090352",
+      "n": 495,
+      "source_gens": "fuF_addRandM_g075_20260822_001803_3059407",
       "done": true,
       "cited_by_an_artifact": false
     },
@@ -476,6 +1302,90 @@
       "cited_by_an_artifact": false
     },
     {
+      "judge": "q3dec_B11_20260821_184017_1946888",
+      "n": 480,
+      "source_gens": "q3B11_20260821_155952_4084982",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_B11_20260821_184017_1946890",
+      "n": 480,
+      "source_gens": "q3B11_20260821_155952_4084982",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_B11ctrl_20260821_184017_1946924",
+      "n": 480,
+      "source_gens": "q3B11ctrl_20260821_160051_2982112",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_B11ctrl_20260821_184017_1946925",
+      "n": 480,
+      "source_gens": "q3B11ctrl_20260821_160051_2982112",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_C20_20260821_184017_1946720",
+      "n": 480,
+      "source_gens": "q3_C20_20260818_154112_366026",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_C20_20260821_184017_1946722",
+      "n": 480,
+      "source_gens": "q3_C20_20260818_154112_366026",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_D20_20260821_184017_1946755",
+      "n": 480,
+      "source_gens": "q3_D20_20260818_154112_366027",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_D20_20260821_184017_1946757",
+      "n": 480,
+      "source_gens": "q3_D20_20260818_154112_366027",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_D20ctrl_20260821_184017_1946853",
+      "n": 480,
+      "source_gens": "q3_D20ctrl_20260818_154112_366028",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_D20ctrl_20260821_184017_1946854",
+      "n": 480,
+      "source_gens": "q3_D20ctrl_20260818_154112_366028",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_base_20260821_184017_1946637",
+      "n": 480,
+      "source_gens": "qwen3nt_base_20260817_163110_3560487",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "q3dec_base_20260821_184017_1946638",
+      "n": 480,
+      "source_gens": "qwen3nt_base_20260817_163110_3560487",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
       "judge": "q3rj2_C20_20260820_211846_2694653",
       "n": 960,
       "source_gens": "q3_C20_20260818_154112_366026",
@@ -525,6 +1435,76 @@
       "cited_by_an_artifact": false
     },
     {
+      "judge": "rjp3_L12_20260822_174248_3913067",
+      "n": 495,
+      "source_gens": "abL12_B_20260819_063539_2455409",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "rjp3_L8_20260822_173556_3125747",
+      "n": 495,
+      "source_gens": "ab_B_20260818_185458_3888974",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "rjp3_base_20260822_173531_72154",
+      "n": 495,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "rjp4_L12_20260822_175412_3126989",
+      "n": 495,
+      "source_gens": "abL12_B_20260819_063539_2455409",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "rjp4_L8_20260822_175410_73287",
+      "n": 495,
+      "source_gens": "ab_B_20260818_185458_3888974",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "rjp4_base_20260822_174313_3913444",
+      "n": 495,
+      "source_gens": "ab_base_20260818_185458_3888976",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "spanJ31_0_20260821_074038_831719",
+      "n": 248,
+      "source_gens": "span31_20260821_071516_2938471",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "spanJ31_1_20260821_074038_831720",
+      "n": 247,
+      "source_gens": "span31_20260821_071516_2938471",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "spanJ8_0_20260821_074038_831714",
+      "n": 248,
+      "source_gens": "span8_20260821_071516_1028239",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "spanJ8_1_20260821_074038_831715",
+      "n": 247,
+      "source_gens": "span8_20260821_071516_1028239",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
       "judge": "steer_L8_a1_20260817_004120_3124103",
       "n": 660,
       "source_gens": "steer_L8_a1_20260816_233438_1276120",
@@ -542,6 +1522,34 @@
       "judge": "steer_a010_20260817_015221_3165445",
       "n": 660,
       "source_gens": "steer_L8_a010_20260817_010842_25616",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "unJ31_0_20260821_092909_944631",
+      "n": 248,
+      "source_gens": "unemb31_20260821_083653_3984900",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "unJ31_1_20260821_092909_944632",
+      "n": 247,
+      "source_gens": "unemb31_20260821_083653_3984900",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "unJ8_0_20260821_092909_944626",
+      "n": 248,
+      "source_gens": "unemb8_20260821_083653_3984902",
+      "done": true,
+      "cited_by_an_artifact": false
+    },
+    {
+      "judge": "unJ8_1_20260821_092909_944627",
+      "n": 247,
+      "source_gens": "unemb8_20260821_083653_3984902",
       "done": true,
       "cited_by_an_artifact": false
     },
@@ -645,6 +1653,6 @@
       "--out",
       "outputs/boombness/unanalysed_inventory.json"
     ],
-    "git_commit": "0f71134cd72a30b77faa5dc9e105644a5e2cdb14"
+    "git_commit": "a6ce5269f0944d1cf0baea3f9ca6c2250b562266"
   }
 }
