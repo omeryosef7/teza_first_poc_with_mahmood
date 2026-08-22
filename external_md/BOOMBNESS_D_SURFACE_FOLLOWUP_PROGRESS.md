@@ -5056,6 +5056,42 @@ reported.
 
 
 
+## 🔬 L10 AND L12 DENSIFIED TO 20 CONTROLS (774260–774287) — the debt the L6 result created
+
+**28 jobs**: L12 gains 12 angles (8 → 20), L10 gains 16 (4 → 20), all at `of24` positions not
+already covered. This is not optional tidying — **L6 was refuted only because it was densified**, and
+L10/L12 sit inside the citable profile at exactly the resolution that proved misleading.
+
+⚠ **Pre-registered, and the bad branch is the likely one.** Densification raised the control envelope
+**+46% at L6 and +23% at L8**. If it does the same at L12 (current band max +0.0120 against an arm
+of +0.0316) the max would land near +0.0175 — still short of the arm. At **L10** the current band max
+is only **−0.0025** from 4 angles, so there is a great deal of unmeasured space and the largest
+uncertainty of the four depths. **If a control at either depth reaches its arm, the flagship profile
+reduces to L8 alone.**
+
+### ⛔ A shell bug caught before it corrupted anything — and it is one I had already recorded
+
+The first launch produced **2 jobs instead of 28**. Cause: `for k in $KS` with an unquoted variable.
+**zsh does not word-split unquoted parameters**, so the entire k-list became a single iteration —
+creating argsfiles literally named
+`ang12k1 2 4 5 7 8 10 11 13 14 16 17of24.txt` and submitting jobs whose `--intervene` was
+`in_subspace_angle1 2 4 5 …of24:project_out:12-12:1.0`.
+
+⚠ **I have this exact hazard in my own memory** (`feedback_zsh_expansion_hazards`: *"unquoted `$VAR`
+does not word-split"*) and walked into it anyway. Recording what actually caught it: **the job count**
+— I expected 28 and the queue said 2. Had I written a loop that produced *plausibly many* jobs with
+subtly wrong angles, nothing would have flagged it, and the corrupted controls would have entered
+the band as real measurements.
+
+**Fixed properly rather than patched:** the loop is now driven from Python, which has no
+word-splitting semantics at all, plus an assertion that no argsfile name contains a space. The two
+malformed jobs were cancelled within a minute (they had produced no output directories) and both
+garbage argsfiles deleted.
+
+**The general lesson, and it is not "remember zsh quoting":** a fan-out should assert its own
+cardinality. `launched == expected` is one line and it is the only reason this was caught in seconds
+rather than surfacing later as eight controls with impossible angles.
+
 ## ⛔✅ THE 20-CONTROL RANK TEST — L6 is REFUTED, L8 PASSES distribution-free for the first time
 
 **Artifacts:** `angle_band24_new.json` + `angle_band_L{6,8}_full.json`. Twenty distinct controls per
