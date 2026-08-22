@@ -6722,7 +6722,57 @@ looks like an oversight and is not. Their only purpose was the **coherence** asy
 while the arm fails), which is a gate-level claim and needs no judging. **If the ASR question is ever
 revisited it needs a coherent `d_surface:add` arm, and this sprint has established there isn't one.**
 
-## ✅✅✅ DEFINITIVE — COMPLETE 24-POINT GRID, PAIRED ESTIMATOR, SEED-MATCHED ARMS
+## ⛔⛔ FIFTH REVERSAL — NO DEPTH IS "ESTABLISHED" UNDER THE SPRINT'S OWN MULTIPLICITY POLICY
+
+> ⛔ **`analyze_control_recheck.py` corrects the arm-minus-control contrast across the depth set**, and
+> its comment says why in words I should have re-read before writing the table below:
+> *"the family is the depth set … Reporting four individually-significant contrasts without it would
+> be **the defect the sprint keeps catching in its own inherited results**."*
+>
+> **I reported four depth-level contrasts and applied no such correction.** Applying it to my own
+> numbers:
+>
+> | depth | raw worst-case p | **Holm m=4** (depth family) | **Holm m=11** (top-4-of-11 selection) |
+> |---|---|---|---|
+> | L12 | 0.0183 | **0.0732** ⛔ | 0.2014 ⛔ |
+> | L10 | 0.0244 | **0.0732** ⛔ | 0.2440 ⛔ |
+> | L8 | 0.1035 | 0.2070 ⛔ | 0.9315 ⛔ |
+> | L6 | 0.6783 | 0.6783 ⛔ | 1.0000 ⛔ |
+>
+> ⛔ **Nothing rejects at 0.05. The "✅ established" verdicts at L10 and L12 are withdrawn.** This is
+> the same answer the sprint got when it corrected the layer profile at m=11 and Holm rejected
+> nothing — **consistency demanded the same treatment here and I did not apply it.**
+>
+> ⚠ The within-depth headline is *not* the problem: "beats all 24" is an intersection–union test and
+> its max-p needs no correction. The problem is that I made that claim at **four** depths.
+>
+> ### Three further defects, all confirmed
+>
+> ⛔ **The table had no producing artifact** — assembled off-artifact, the markdown-only defect this
+> sprint has now caught in itself four separate times. ✅ Emitted:
+> **`outputs/boombness_followup/angle24_specificity_FULL.json`**, carrying all 96 contrasts, the
+> worst case per depth, both Holm families, and the dose/session/selection caveats inline.
+>
+> ⛔ **"The new `k20` angle is stronger than anything in the 20-point grid" — FALSE.** k20's Δ is
+> **+0.011241**; `k0`, already in the 20-point grid, is **+0.011834**. k20 has the largest *p*, which
+> is an SE effect, not strength.
+>
+> ⛔ **"Fourth time densification has raised the control envelope" — FALSE at L12.** The envelope is
+> **unchanged** (k0 at +0.011834 in both the 20- and 24-point grids); all four new angles are weaker.
+> Only the worst-case p moved. **Both sentences are deleted rather than patched** — they were
+> decorative, and decoration is where unchecked claims hide.
+>
+> ⚠ **L6 is softer still than "not established".** Its arm Δ is **+0.0152 (p 0.060)** or
+> **+0.0192 (p 0.029)** depending which of seven *identical-generation* baseline re-judges it is
+> paired against, and its 0/24 rank margins (0.0020–0.0039) are **smaller than the measured 0.0040
+> judge-session drift**, oriented in the arm's favour.
+>
+> **The surviving statement, and it is the honest one:** across a complete 24-point angular grid at
+> four depths, **no orthogonal direction in the concept subspace exceeds the arm anywhere**
+> (0/24 × 4), and at L10/L12 the arm is above every control at raw p < 0.05 — **but no depth
+> survives correction for the depth family, and the comparison is dose-confounded by construction.**
+
+## ⛔ (WITHDRAWN VERDICT) COMPLETE 24-POINT GRID, PAIRED ESTIMATOR, SEED-MATCHED ARMS
 
 Every angular position on the half-circle is now sampled at every depth: **24 controls per depth, no
 gaps**, contrasts computed with `paired_diff` (baseline cancels algebraically), and the L12 arm
