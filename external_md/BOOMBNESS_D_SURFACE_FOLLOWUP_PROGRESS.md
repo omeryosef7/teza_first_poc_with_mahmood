@@ -5056,6 +5056,72 @@ reported.
 
 
 
+## ⛔⛔⛔ F-3 SPECIFICITY IS **NOT** ESTABLISHED — the control band settles it, and against the claim
+
+**Artifact:** `outputs/boombness_followup/f3_control_band.json` (job 773876). Arm and **four**
+independent random draws, every one at the measured magnitude **7.396252**, all six judged in one
+session.
+
+| | Δ StrongReject | p |
+|---|---|---|
+| **arm** (refusalness) | **−0.0276** | **0.0556** |
+| control seed 20260901 | +0.0125 | 0.141 |
+| control seed 20260902 | +0.0071 | 0.338 |
+| control seed 20260816 | +0.0157 | 0.097 |
+| **control seed 20260903** | **−0.0219** | 0.088 |
+
+### ⛔ One random direction in four suppresses ASR almost as much as the refusalness direction
+
+`seed 20260903` moves ASR by **−0.0219 — 79% of the arm's −0.0276.** The contrast against *that*
+control collapses to **−0.0057 (p 0.0587)**, i.e. against that particular random vector the arm
+shows **essentially no specificity at all**. The other three contrasts are clean (−0.0433 p 0.011,
+−0.0401 p 0.023, −0.0347 p 0.013), which is exactly why a single draw looked decisive.
+
+### ⛔ The test the claim actually needs gives p ≈ 0.2
+
+"Is refusalness special *among directions*?" is an exchangeability question, and with a band it has
+an exact answer. The arm is the most suppressive of the five vectors (0 of 4 controls reach it), so
+under exchangeability **p = 1/5 = 0.20. Not significant.**
+
+The paired contrasts answer a *different* question — "does the arm differ from **this** control?" —
+and they condition on the draw. Both are legitimate; **only the second was ever reported, and it is
+not the one F-3 claims.** With one control you cannot tell these apart, which is precisely why
+R5-7 says a single isotropic draw certifies nothing.
+
+| framing | statistic | verdict |
+|---|---|---|
+| paired vs one fixed control | −0.0433, p 0.011 | looks decisive |
+| paired vs each of four | 3 of 4 reject at Holm m=4 | **1 of 4 does not** |
+| exchangeability across draws | arm most extreme of 5, **p = 0.20** | **not significant** |
+| Holm over the wide family (m=9) | best adjusted > 0.05 | **nothing survives** |
+
+### ⛔ And the arm's own effect did not survive a second judging session
+
+Same generations, different judging session: **−0.0325 (p 0.0222) → −0.0276 (p 0.0556)**. The arm
+crossed from significant to not, on identical text. Its CI now includes zero: **[−0.0560, +0.0007]**.
+So the headline number is fragile to judge nondeterminism as well as to draw choice.
+
+### The verdict
+
+⛔ **RETRACTION F-3 stays retracted.** The specificity claim is **not** re-earned. What the sprint
+has is: an intervention that suppresses ASR by about 0.03 with a CI touching zero, at a dose where
+one random direction in four does most of the same thing. That is a **suggestive** result and it is
+worth the compute it took to find out — but it is not evidence that the refusalness axis is special.
+
+**Three downgrades in one day, each from adding a control the previous version lacked:**
+1. matched the dose → the "coherence asymmetry" vanished (it was a 14.79× overdose);
+2. audited the framing → "both contrasts survive Holm" became "only at m=2";
+3. **added three more draws → the specificity itself vanished.**
+
+Each step was cheap and each one removed a claim. **The single-draw version would have gone into the
+paper.** The band cost four GPU-hours and is the only reason it will not.
+
+⚠ **What would settle it properly:** a larger band (≥20 draws) gives the exchangeability test real
+power — with 4 draws the best achievable p is 0.20, so the current design **cannot** produce a
+significant result no matter what the arm does. That is a design flaw in my own experiment: I chose
+n=4 to answer a question whose minimum p-value is 1/(n+1). Any future run must size the band to the
+test.
+
 ## ✅ THE F-3 CONTROL IS NOW A BAND OF FOUR, AND THE HOLM FAMILY IS IN THE ARTIFACT
 
 Two of review #11's findings repaired with runs and code rather than with wording.
@@ -8195,7 +8261,7 @@ own.
 |---|---|---|
 | F-1 | Phase B gradient as a doublespeak result | no control; `benign_literal` shows the same |
 | F-2 | the gradient is surface-specific | `d_context` carries 45–67% |
-| F-3 | "sign reversal against a matched control" | 14.8× dose mismatch — ✅ **RE-EARNED 2026-08-22** at matched magnitude: arm −0.0325/−0.0374, matched control +0.0082/+0.0518, contrasts −0.0407 (Holm 0.0202) and −0.0891 (Holm 0.0229) |
+| F-3 | "sign reversal against a matched control" | 14.8× dose mismatch — ⛔ **STILL RETRACTED.** Re-tested at matched dose 2026-08-22: arm −0.0276 (p 0.056, CI touches zero), but **1 of 4 independent random draws gives −0.0219**, and the exchangeability test across the band is **p = 0.20**. Specificity not established |
 | C-1 | my cancellation of a peer's jobs "because they would fail" | false by 17 seconds |
 | — | "bfloat16 is inadmissible" | miscalibrated guard, not bad arithmetic |
 | R4-2 | "no prompt in any arm moves down" | false outside `base_refused` |
