@@ -6676,6 +6676,93 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## 4h Code and Output Review — Review #12 (2026-08-22 20:50) — BOTH DIRECTIONS OF CORRECTION WERE WRONG
+
+Three parallel auditors: the F-3 control band, the L6/L8 rank test, and an unsupported-claim sweep
+over everything written today. **Every load-bearing finding verified by me against the artifacts
+before acting. All confirmed.**
+
+### The two headline failures are opposites, and that is the finding
+
+| | what I published | what was wrong |
+|---|---|---|
+| **L6** | "REFUTED — 3 of 20 controls beat the arm" | ⛔ a **baseline-seed artifact of my own making**. Corrected: **0/20, rank p 0.0476** |
+| **F-3** | "the band settles it **against** the claim" | ⛔ **over-retracted**. The verdict flips with the metric, and a stronger test on the same data gives **p 0.037** |
+
+**I over-claimed, was caught, and then over-retracted.** Both are the same error — reporting the
+framing that favours the story I was telling at that moment. The second is not more virtuous than
+the first for being self-critical.
+
+### ⛔ The L6 artifact, and why "I checked for it" did not save me
+
+`abrep_base` was judged with **`--seed 20260821`**; the new baseline, **both arms, all 12 old
+controls and all 8 new controls** used **20260816**. One run in the entire set had a different seed,
+and it was the baseline that 13 of the deltas were built on.
+
+**I had checked for exactly this and reasoned the sign backwards.** I measured the −0.0023 baseline
+difference, then argued *"every delta is (arm − ITS OWN baseline), so a uniform shift cancels."* A
+shift in the **subtrahend alone** does not cancel — it transfers 1:1 into every delta of that block.
+The three L6 controls "beat" the arm by **+0.000024, +0.001233, +0.001511**, all smaller than the
+offset I had measured and then argued away.
+
+⚠ **The lesson is not "check for artifacts."** I did check. The check's *logic* was wrong, and a
+wrong check is worse than none because it licenses confidence. What actually caught it was an
+adversary recomputing the same quantity from a different direction.
+
+**Fixed at zero compute** — everything was already seed-matched to `a24_base`, so re-pairing all 42
+runs against that single baseline removed the confound outright.
+
+### ✅ The corrected position on the flagship profile
+
+| depth | estimator | arm | max ctl | ctl ≥ arm | rank p | arm − strongest ctl | t |
+|---|---|---|---|---|---|---|---|
+| **L6** | clustered | +0.019193 | +0.017171 | **0/20** | 0.0476 | +0.002022 | **+0.17** |
+| **L6** | pooled | +0.020707 | +0.011111 | **0/20** | 0.0476 | — | — |
+| **L8** | clustered | +0.031288 | +0.014700 | **0/20** | 0.0476 | +0.016589 | **+1.35** |
+| **L8** | pooled | +0.043182 | +0.018182 | **0/20** | 0.0476 | — | — |
+
+✅ At both depths the arm is the most extreme of 21, under **both** estimators.
+⛔ At **neither** depth is it distinguishable from the strongest control.
+⛔ **My "+6.0× judge noise" divisor is withdrawn** — it was a *single* paired re-judge (a net of one
+flipped row in 495), a **bias estimate used as a dispersion**, while the artifacts already carried
+clustered SEs 3–5× larger.
+⚠ And the rank test is **not** the clean permutation null I implied: `signals.py` records
+`d_surface` carrying dose ≈0.84 against the complement's ≈0.11, ρ(dose, effect) = 0.961. The arm is
+non-exchangeable **by construction**.
+
+### Corrections applied this review
+
+| # | claim | correction |
+|---|---|---|
+| 1 | L6 "refuted", 3/20 | **0/20** under a common baseline, both estimators |
+| 2 | "+6.0× judge noise" | withdrawn; proper contrast t = +0.17 / +1.35 |
+| 3 | F-3 "settles it against the claim" | **not established, and not settled either way** |
+| 4 | F-3 "1 of 4 fails Holm" | true on `strongreject` only; `malicious_at_0.5` gives **4 of 4** |
+| 5 | F-3 "design cannot produce significance" | false — random-effects over the same draws, **p 0.037** |
+| 6 | "band cost four GPU-hours" | ≈**1.2–1.8 h** |
+| 7 | 0.25-gap gate row | was markdown-only; **measured and committed** (reproduces exactly) |
+| 8 | six-dose table "artifact" | rows live in **four** files, now all named |
+| 9 | "magnitudes printed by the diagnostic" | true for 4 of 6; two were hand-multiplied |
+| 10 | cos 1.000/0.912/0.996 "measured" | docstring assertion, no artifact |
+| 11 | +23% / 79.0% | **+24.0% / 79.2%** |
+
+### ⚠ Known coverage gap, recorded not buried
+
+The densified grid runs `k = 1…15 of 24` — **k = 17, 19, 21, 23 (127.5°–172.5°) were never run.**
+Resolution is 7.5° over [0°, 112.5°] and 15° above it. **L6's maximum control sits at k=15 = 112.5°,
+the last densified point, with the new-block sequence still rising monotonically into it.** By this
+document's own "sample, not a bound" logic that is the worst place for a maximum to sit, and it
+means the L6 count is unstable in *both* directions.
+
+### The pattern at twelve reviews
+
+#9/#10 found **guards that could not fail**. #11 found **framing chosen to favour the result**.
+#12 found **framing chosen to disfavour it** — and a check whose logic was inverted. The constant is
+not carelessness in one direction; it is that **every self-assessment I make is made by the party
+with an interest in the answer**, whichever way that interest currently points. The audits are not a
+formality on top of the work; on this sprint they are the only thing that has reliably reversed a
+wrong conclusion.
+
 ## 4h Code and Output Review — Review #11 (2026-08-22 12:10) — THREE AUDITS; THE HEADLINE SURVIVED THE ARITHMETIC AND NOT THE FRAMING
 
 Three parallel read-only auditors over (a) the F-3 specificity result, (b) the 25-file provenance
