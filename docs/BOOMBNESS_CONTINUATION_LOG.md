@@ -7042,3 +7042,38 @@ gate row already discloses.
 | 347 | 2026-08-22 | implemented `_domain_boot_delta` and wired it into `g3()` | recommendation from last tick turned into a fix |
 | 348 | 2026-08-22 | regenerated the artifact with both intervals per arm | same field names as the G1 path, so the file is self-consistent |
 | 349 | 2026-08-22 | checked the null controls under clustering | **all still contain zero** — G3's nulls survive |
+
+## §0a became the thing it was created to replace, in six ticks
+
+Tick 2026-08-22. §0a was added on 08-22 because the report was *"2,672 lines of original text with
+retraction blocks layered over it"* and a reader had to navigate 27 retractions to learn what held.
+Six ticks later **§0a was 237 lines across ten subsections** — a layered document with its own
+accretion problem, sitting in front of the layered document it was meant to replace.
+
+Each addition was individually justified: the effect hierarchy, the containment finding, the refusal
+accounting, the p-value rule, the reproducibility disclosure. None of them was wrong to add. The
+failure is that "read this first" and "contains everything important" are **incompatible
+requirements**, and I kept satisfying the second at the expense of the first.
+
+**Split, with nothing deleted.** §0a is now **71 lines**: a bottom line, the surviving-claims table,
+what was retracted, what is not established, and the objective's verdict. The six detail sections moved
+verbatim to a new **§0b, 199 lines**, which §0a points at. Section count 4 + 6 = the original 10;
+tooling green (sweep, figure registry, and the 15-check number verifier all pass); every figure still
+resolves.
+
+**The bottom line now reads in three sentences**, which it did not before: the large robust result is
+**refusal** (+0.2061 alone, +0.2869 with `d_surface`, surviving every multiplicity family at Holm
+≤ 0.002 with inert controls); the `d_surface`-specific part is **an order of magnitude smaller and on
+the significance boundary**, from a comparison that is **not dose-matched**; and **the objective should
+not be built.**
+
+I am recording this as a process failure rather than a formatting one, because the same shape will
+recur: a summary that is allowed to absorb every new finding stops being a summary at roughly the sixth
+one. §0b exists so the next finding has somewhere to go.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 350 | 2026-08-22 | measured §0a | **237 lines, 10 subsections** — the failure it was created to fix |
+| 351 | 2026-08-22 | split into §0a (71 lines) + §0b (199), nothing deleted | 4 + 6 = 10 sections preserved |
+| 352 | 2026-08-22 | verified tooling and figure resolution after the move | sweep / verifier / registry all green |
+| 353 | 2026-08-22 | recorded it as a process failure with a named cause | "read first" and "contains everything" are incompatible |

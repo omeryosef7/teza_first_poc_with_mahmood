@@ -25,11 +25,29 @@ than a live confound — but it cannot be closed retrospectively.
 
 ## 0a. Current state, as of 2026-08-22 — read this first
 
-The body below is layered: original text, then retraction blocks, then corrections. This section is
-the flat version. Every row points at a committed artifact, and every number here is regenerable by a
-committed script.
+**One screen. Detail, derivations and every caveat's evidence are in §0b immediately below; the
+layered body follows that.**
+
+⚠ **This section was itself restructured on 2026-08-22.** It had grown to 237 lines and ten
+subsections — a layered document, which is precisely what it was created to replace. The detail was
+not deleted, only moved to §0b.
+
+### The bottom line
+
+**The sprint's large, robust behavioural result is about REFUSAL.** Removing the refusal direction
+raises AdvBench attack success by **+0.2061** (102 flips) and removing it together with `d_surface`
+by **+0.2869** (142); both survive every multiplicity family tried (Holm ≤ 0.002) with inert
+controls. **The `d_surface`-specific part is an order of magnitude smaller and sits on the
+significance boundary** — ⚠ and that cross-channel comparison is **not dose-matched** (§0b).
+
+**The objective the sprint set out to build should not be built.** Unchanged, and R-26 is fresh
+evidence against it.
+
+**Read p-values with care here:** the cluster p answers *"does this point the same way in enough
+domains?"*, not *"how big is it?"*. Quote the CI for magnitude. Full rule in §0b.
 
 ### What survives
+
 
 | claim | evidence | caveat that must travel with it |
 |---|---|---|
@@ -39,7 +57,49 @@ committed script.
 | The dose-response is **saturating** | `dose_curve_L8.json` | ⚠ **"Monotone" struck 2026-08-22.** It is monotone over dose 0.046→0.68 and **falls at the top rung** (+0.0444 at dose 0.7969 → +0.0424 at 0.8402, one net flip). Only the *isotonic fit* is monotone, which is what a monotone fit does. Saturating is correct and unaffected: from 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
 | **Dose and direction-identity are entangled in this bank** | `dose_vs_effect.json` (`dose_identity_bound`, exact) | A direction removing 70% of cell-mean spread must have \|cos\| ≥ **0.88–0.91** with `d_surface`. Separating them needs a **different design**, not more compute. |
 
+### What was retracted this session
+
+
+**R-23** E12's causal half · **R-24** E12's representational half · **R-25** the in-subspace null's
+"content, not magnitude" reading · **R-26** §14-D's specificity conclusion · **R-27** the entire
+dose-ladder inference chain, including a geometric bound of mine that was **algebraically false**.
+Corrections **C-11** (a population mismatch I published), **C-12** (a figure corrected and re-asserted
+three sentences later), **C-13** (an over-claim caught within one tick).
+
+### What is NOT established — and is not shown absent either
+
+
+⚠ **An asymmetry in this block, corrected 2026-08-22.** An earlier revision demanded a cluster-level
+p-value of the `d_naive` comparison in order to call it "not established", while quoting the surviving
+headline with **no** significance statement at all. That is the same asymmetric evidential standard
+this report has already retracted three times (R-13, R-15). Both are now stated on the same footing:
+the headline is cluster-significant uncorrected at L8/L10/L12 and survives Holm **only at L12**; the
+`d_naive` comparison is significant nowhere.
+
+The `d_naive`-versus-matched-rung comparison returned **no cluster-level significance at any of five
+layers** (p = 0.375 / 0.125 / 0.625 / 0.156 / 0.0625), with four positive point estimates and one
+negative. But **this design cannot detect what it was looking for**: minimum detectable effect at 80%
+power is **≈ +0.03**, and the largest effect it ever produced was **+0.0222**
+(`cluster_power.json`). With k informative clusters the attainable p-floor is 2/2ᵏ, so **k ≥ 6 all
+pointing one way is required** before p ≤ 0.05 is possible; observed k was 4, 4, 4, 6, 5. **"Not
+established" — not "shown absent."**
+
+### The objective itself
+
+
+Unchanged and still the sprint's answer: **do not build it.** G4 is a directional null, and nothing
+found since has reopened §12. R-26 (the specificity retraction) is fresh evidence *against* building
+it, not for.
+
+---
+
+
+## 0b. Supporting detail for §0a
+
+Everything §0a asserts, with its evidence. Moved here 2026-08-22 so §0a stays one screen.
+
 ### Three things a reader of this block alone would otherwise miss (added 2026-08-22, audit #8)
+
 
 **1. At matched dose, `d_naive` beats `d_surface` by 38%.** Dose 0.7919 vs 0.8402 (94%), Δ **+0.0586
 / 29 flips** vs **+0.0424 / 21** (`dose_vs_effect.json`). The 2×2's identification step did not merely
@@ -59,6 +119,7 @@ dropping one domain, 3/6 domains). And the concept-transfer test failed both pre
 is `carrot↔bomb`, Llama-3.1-8B, one judge.
 
 ### The effect hierarchy, under one consistent test (added 2026-08-22)
+
 
 Every AdvBench arm re-tested with the **exact cluster sign-flip** test, so the whole table uses one
 instrument rather than a mix of CR1, percentile bootstrap and permutation
@@ -90,6 +151,7 @@ controls are properly inert. Every `d_surface`-specific claim is small (+0.018�
 **So the sprint's largest and most robust behavioural effect is the refusal arm, and the `d_surface` arm is far smaller and far more marginal** — stated as a fact about these interventions, not as an inference about channels (see the dose caveat above).
 
 ### "Distinct channel" vs "interacting channels" — the report conflates them (added 2026-08-22)
+
 
 §18 and the FINAL gate call `d_surface` *"a distinct and interacting second channel"*. Those are two
 claims and the flip sets settle them in **opposite directions**
@@ -126,6 +188,7 @@ excluded here. What containment *does* rule out is the claim that `d_surface`'s 
 largely separate from refusal's. It is not.
 
 ### Removing `d_surface` does nothing except reduce refusal (added 2026-08-22)
+
 
 `refusal_accounting.json`, all arms vs baseline, n=495:
 
@@ -179,6 +242,7 @@ and firmer: the effect is **exhausted** by refusal reduction.
 
 ### How to read every p-value in this report (added 2026-08-22)
 
+
 Two consecutive audits found the same misreading, so the rule is stated once here rather than
 per-claim (`how_to_read_the_p_values.json`).
 
@@ -211,6 +275,7 @@ the bank's design, not a choice that can be optimised away.
 
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
+
 **Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded
 `bank_join.hash_verdict.ok = false` with reason *"no `*_meta.json` for the bank"*. That message was
 **accurate when written** — the runs executed 2026-08-19 between 01:17 and 07:23 and the bank's
@@ -227,38 +292,6 @@ row. A standing "unverified" caveat has been replaced with an answer.
 **not** pin the code that ran. Nothing can recover it now; it is disclosed rather than described as
 reproducible.
 
-### What was retracted this session
-
-**R-23** E12's causal half · **R-24** E12's representational half · **R-25** the in-subspace null's
-"content, not magnitude" reading · **R-26** §14-D's specificity conclusion · **R-27** the entire
-dose-ladder inference chain, including a geometric bound of mine that was **algebraically false**.
-Corrections **C-11** (a population mismatch I published), **C-12** (a figure corrected and re-asserted
-three sentences later), **C-13** (an over-claim caught within one tick).
-
-### What is NOT established — and is not shown absent either
-
-⚠ **An asymmetry in this block, corrected 2026-08-22.** An earlier revision demanded a cluster-level
-p-value of the `d_naive` comparison in order to call it "not established", while quoting the surviving
-headline with **no** significance statement at all. That is the same asymmetric evidential standard
-this report has already retracted three times (R-13, R-15). Both are now stated on the same footing:
-the headline is cluster-significant uncorrected at L8/L10/L12 and survives Holm **only at L12**; the
-`d_naive` comparison is significant nowhere.
-
-The `d_naive`-versus-matched-rung comparison returned **no cluster-level significance at any of five
-layers** (p = 0.375 / 0.125 / 0.625 / 0.156 / 0.0625), with four positive point estimates and one
-negative. But **this design cannot detect what it was looking for**: minimum detectable effect at 80%
-power is **≈ +0.03**, and the largest effect it ever produced was **+0.0222**
-(`cluster_power.json`). With k informative clusters the attainable p-floor is 2/2ᵏ, so **k ≥ 6 all
-pointing one way is required** before p ≤ 0.05 is possible; observed k was 4, 4, 4, 6, 5. **"Not
-established" — not "shown absent."**
-
-### The objective itself
-
-Unchanged and still the sprint's answer: **do not build it.** G4 is a directional null, and nothing
-found since has reopened §12. R-26 (the specificity retraction) is fresh evidence *against* building
-it, not for.
-
----
 
 ## 0. What the sprint set out to do, and what it found
 
