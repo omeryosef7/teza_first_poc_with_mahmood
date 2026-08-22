@@ -8532,3 +8532,57 @@ half-shard bug.
 | 498 | 2026-08-22 | verified every input before spending an API call | 495 rows and DONE on all nine, else the batch refuses |
 | 499 | 2026-08-22 | **pre-committed the decision rule** | gap <2p = session artifact, >4p = real, else ambiguous |
 | 500 | 2026-08-22 | analysis script written and made to refuse partial data | exits non-zero until all nine reach 495 rows |
+
+## The crossover came back and it refutes my own hypothesis
+
+Job 774501 finished: nine runs, 495 rows each, all in one judging session with its own baseline.
+
+| k/24 | originally judged in | old Δ | new Δ | shift |
+|---|---|---|---|---|
+| 1 | `163302` (low) | −1 | −2 | −1 |
+| 3 | `163302` | 0 | −1 | −1 |
+| 5 | `163302` | 0 | −2 | −2 |
+| 7 | `163302` | +1 | +2 | +1 |
+| 9 | `163302` | +2 | +2 | 0 |
+| 11 | `165021` (ceiling) | +5 | +5 | 0 |
+| 13 | `165021` | +5 | +4 | −1 |
+| 15 | `165021` | +5 | +4 | −1 |
+
+**Between-group gap: +4.6p → +4.5p.** No angle moved by more than 2 prompts. Under the rule fixed
+before the numbers existed, the verdict is **REAL ANGLE EFFECT**.
+
+**This refutes the hypothesis I raised last tick, and that is the useful outcome.** I proposed that
+L6's ceiling might be an artifact of the unbaselined session `165021`, and treated the per-session mean
+spread (L6 5.5p, L8 8.0p) as a stricter noise bound on that basis. It is not noise — it is real
+variation between directions. **That bound is withdrawn.** The honest noise scale is judge drift,
+**2.8 prompts**, which is what I had before I over-corrected.
+
+Consequences, including one that reverses something I told the user:
+
+* **The cross-session construction of the null is vindicated**, not undermined. Re-judging eight angles
+  in a different session moved every one of them by ≤2 prompts. Cross-session deltas are sound at this
+  precision, so the "only one control session has a baseline" observation, while true, is **not
+  load-bearing**.
+* **L8's confidence is restored.** Last tick I said its margin cleared the bound by "only 1.5×, not
+  4.22×" and lowered confidence accordingly. That was wrong: 12 prompts against 2.8 of real judge
+  noise is **4.2×**. My walk-back is itself withdrawn.
+* **L6's withdrawal stands, on a different footing.** Not "the comparison is confounded by session
+  mixing" — that is now tested and false — but simply **the margin is 4 prompts against a judge that
+  moves 2.8**, i.e. 1.41×. A small margin, honestly measured.
+* **The disagreement with the concurrent 20-control result is now harder to explain away.** Their max
+  control is 8.5 prompts; my highest of twenty is 5, and those angles are now shown stable to ±2 across
+  sessions. So the gap is not judge noise. It must be a different angle set or a different baseline
+  convention, and it remains unresolved.
+
+Two ticks, two of my own hypotheses tested and killed: the refusal ladder by audit #13, the session
+artifact by this crossover. Both had run in the direction that made the analysis look more careful than
+the data warranted.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 501 | 2026-08-22 | job 774501 finished, 9 runs × 495 in one session | crossover complete |
+| 502 | 2026-08-22 | applied the pre-committed rule | gap **+4.6p → +4.5p** → **REAL ANGLE EFFECT** |
+| 503 | 2026-08-22 | **withdrew my own session-spread noise bound** | it is real angle variation, not noise |
+| 504 | 2026-08-22 | **restored L8's confidence** — 12p vs 2.8p = **4.2×** | last tick's walk-back withdrawn |
+| 505 | 2026-08-22 | L6 withdrawal re-footed on margin size, not artifact | 4p vs 2.8p = 1.41× |
+| 506 | 2026-08-22 | cross-session null construction **vindicated** | every angle stable to ≤2 prompts across sessions |
