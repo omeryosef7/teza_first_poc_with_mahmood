@@ -7021,6 +7021,67 @@ carries dose ≈0.84 against the controls' ≈0.11), and the angular grid covers
 — **k = 17,19,21,23 were never run** — so the control envelope is better characterised in the lower
 half of the half-circle than the upper.
 
+## 4h Code and Output Review — Review #14 (2026-08-23 02:20) — STOCKTAKE: WHAT SURVIVES FIVE REVERSALS
+
+Five headline reversals in two days, **every one toward a weaker claim**. That pattern is worth
+stopping on: a loop that only ever subtracts is either converging on the truth or eating itself, and
+the way to tell is to write down what is left and check it holds.
+
+### ✅ A. What survives every correction (artifact-backed, re-verified this tick)
+
+| # | claim | evidence | why it survives |
+|---|---|---|---|
+| **1** | **Cutting attention to the first demonstration's codeword carries most of the codeword-scope effect** | **+0.9949**, domain-clustered **p 0.00019** | largest effect in the sprint by two orders of magnitude; replicated on a second codeword (`button` +0.2659) |
+| **2** | **The L8/L31 double dissociation, tested as an interaction** | +0.1113 (p 0.00017), +0.1072 (p 0.00012), +0.0395 (p 0.0039) | tested at the *right* level after review #9 — three crossing contrasts, not two marginal p-values |
+| **3** | **On Qwen3's internal bank the whole remove-both effect is the `d_surface` leg** | arm B **+0.3810, p 0.00031**; refusalness leg inert; subspace-matched control **−0.0119, p 0.60** | pre-registered before judging; the control could fail and didn't |
+| **4** | **`d_surface` is not harm-specific** | 8/16 categories move; the fitted category ranks 7th of 8 movable | survived review #9's correction of the "weakest" gloss |
+| **5** | **Removing `d_surface` moves a refusal gate** | +0.0327, **p 0.0100**, on the 461 baseline-refused prompts | the content half was never measurable (R4-3), and that limit is stated |
+| **6** | **Refusalness has no causal handle at L6–L12** | ablation leaves refusal at **1.000**; L14–L20 all positive | convergent with the behavioural profile's single non-surviving depth (L12, p 0.451) |
+| **7** | **Plan §8's add-track is closed** | 0 of 7 `d_surface:add` doses coherent; §8 fully answered | negative, but complete |
+| **8** | **No GCG objective** | Gate C AUROC 1.0 (token identity); Gate D requirement 4 | unchanged since the report was written |
+
+### ⛔ B. The one thing that has NOT survived, and it is the one I kept trying to save
+
+**The direction-specificity of the Llama ablation.** Five attempts, five failures:
+
+| attempt | outcome |
+|---|---|
+| single subspace-matched draw per depth | ⛔ one draw certifies nothing (R5-7) |
+| 4-angle sweep | ⛔ 2 of 4 at L6, worst case p 0.242 |
+| 12 controls | ⛔ nearest control 75% of arm at L6 |
+| 20 controls + rank test | ⛔ rank floor 1/21; margins inside session drift |
+| **24 controls + paired test + depth-family Holm** | ⛔ **0.0732 at L10 and L12 — nothing rejects** |
+
+⚠ **Each attempt was a genuine improvement in design and each produced a weaker verdict.** That is
+what a real effect looks like when it is smaller than the measurement error, and what an absent one
+looks like too — this design cannot distinguish them, because **a dose-matched in-subspace control
+cannot exist** (the arm removes 0.81–0.88 of the cell-mean spread; the entire complement holds 0.16).
+
+### The honest shape of the sprint's contribution
+
+**The durable results are localisation and dissociation, not direction-specificity.** Where the
+sprint has clean, correction-resistant findings (rows 1–3, all p < 0.001) they are about **where** in
+the prompt and **which layer band** the effect lives, and about a **second model**. Where it has been
+repeatedly wrong, it is about whether a *particular axis* in a 3-D subspace is privileged — a
+question this apparatus is structurally unable to answer.
+
+⚠ **That is a useful negative for the paper, not a failure of the sprint**: "the concept subspace at
+L6–L12 causally affects ASR, and no experiment we could construct isolates one direction within it
+from dose" is a publishable and honest statement. The five reversals are the evidence for the second
+half of it.
+
+### The process finding, at fourteen reviews
+
+Reviews #9–#10 found **guards that could not fail**; #11 found **framing chosen to favour the
+result**; #12 found **framing chosen to disfavour it** plus **an inverted check**; #13 found **the
+wrong estimator**; #14 found **a correction policy the repo already owned and I did not apply**.
+
+⛔ **Not one of the five reversals was caught by me first.** Every one came from an adversarial
+audit, and in three cases I had *already run a check* and drawn the wrong conclusion from it. The
+practical lesson is narrow and I will state it as such: **on this sprint, self-review reliably caught
+arithmetic and reliably missed framing.** The audits are not overhead on the work — for the class of
+error that actually changed conclusions here, they were the only thing that worked.
+
 ## 4h Code and Output Review — Review #12 (2026-08-22 20:50) — BOTH DIRECTIONS OF CORRECTION WERE WRONG
 
 Three parallel auditors: the F-3 control band, the L6/L8 rank test, and an unsupported-claim sweep
