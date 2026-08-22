@@ -29,6 +29,57 @@
     "top_eigenvalue_share": 0.527041761417306,
     "n_cells": 12
   },
+  "strategies": {
+    "concept_varies_codeword_fixed": {
+      "dose_d_surface": 0.5922673733888395,
+      "max_orthogonal_dose": 0.2841650241277771,
+      "top_eigenvalue_share": 0.608725328074359,
+      "n_cells": 8,
+      "banks": [
+        "carrot_bomb",
+        "carrot_knife"
+      ],
+      "new_orth_dir_vs_each_banks_d_surface": {
+        "carrot_bomb": 2.9802322387695312e-08,
+        "carrot_knife": 0.7893747687339783,
+        "button_bomb": 0.28331565856933594
+      },
+      "residual_after_removing_each_banks_own_d_surface": 0.1397956346795229
+    },
+    "codeword_varies_concept_fixed": {
+      "dose_d_surface": 0.5812583452181291,
+      "max_orthogonal_dose": 0.264813664493717,
+      "top_eigenvalue_share": 0.6097646238873854,
+      "n_cells": 8,
+      "banks": [
+        "carrot_bomb",
+        "button_bomb"
+      ],
+      "new_orth_dir_vs_each_banks_d_surface": {
+        "carrot_bomb": 1.1175870895385742e-08,
+        "carrot_knife": 0.29141244292259216,
+        "button_bomb": 0.7441911697387695
+      },
+      "residual_after_removing_each_banks_own_d_surface": 0.1802344894312627
+    },
+    "all_three": {
+      "dose_d_surface": 0.5242904909216867,
+      "max_orthogonal_dose": 0.2070210479934083,
+      "top_eigenvalue_share": 0.527041761417306,
+      "n_cells": 12,
+      "banks": [
+        "carrot_bomb",
+        "carrot_knife",
+        "button_bomb"
+      ],
+      "new_orth_dir_vs_each_banks_d_surface": {
+        "carrot_bomb": 7.450580596923828e-09,
+        "carrot_knife": 0.6742614507675171,
+        "button_bomb": 0.6109009385108948
+      },
+      "residual_after_removing_each_banks_own_d_surface": 0.16139634414086884
+    }
+  },
   "control_1_three_identical_copies": {
     "dose_d_surface": 0.8402005569245803,
     "max_orthogonal_dose": 0.11429967093880528,
@@ -51,6 +102,7 @@
     "carrot_bomb|button_bomb": 0.6615768074989319,
     "carrot_knife|button_bomb": 0.1695346236228943
   },
+  "VERDICT_ALL_STRATEGIES": "NO pooling strategy delivers the design C-13 asked for. One-factor-at-a-time pooling looks better on the headline number (b_orth 0.2842 concept-varies / 0.2648 codeword-varies, vs 0.2070 for all three) but fails the same controls: the direction carrying the new dose is the OTHER bank's surface contrast (cos 0.79 and 0.74 respectively), and the residual after removing every bank's own d_surface is 0.1398 and 0.1802 against the single bank's 0.1598 -- i.e. no meaningful non-surface variance is added by any of them. Pooling more banks simply averages more surface contrasts.",
   "VERDICT": "Pooling does NOT deliver the design C-13 asked for. Control 1: three identical copies leave the geometry unchanged, so pooling per se buys nothing -- the gain is entirely that the banks' d_surface directions are non-collinear. Control 2: the direction carrying the new orthogonal dose is itself a surface contrast. Control 3: pooling adds essentially no non-surface variance. A control built to reach the pooled b would most likely be another codeword's surface contrast, which is the confound C-13 flagged.",
   "provenance": {
     "argv": [
@@ -58,6 +110,6 @@
       "--out",
       "outputs/boombness/pooled_design_feasibility.json"
     ],
-    "git_commit": "a314034d65dac1f2ff766ad7f2cd75340f2bf999"
+    "git_commit": "264ee40d805dd23c40576475ef891cc0ec21fd23"
   }
 }

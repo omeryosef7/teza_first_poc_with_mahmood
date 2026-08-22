@@ -7603,3 +7603,40 @@ adversarially tested.
 | 408 | 2026-08-22 | unified on the live-head policy | the log's Gate table is now in scope for all three |
 | 409 | 2026-08-22 | annotated the two flagged p's **by method**, not boilerplate | permutation p ≠ cluster p; only one had a floor to violate |
 | 410 | 2026-08-22 | tested both sides of the boundary | live head exit 1, record exit 0 |
+
+## Pooling is a dead end in every arrangement — and this time I ran the controls first
+
+Tick 2026-08-22. Audit #11 killed the three-bank pooling recommendation. The obvious follow-up is
+whether pooling **one factor at a time** does better, and on the headline number it clearly does:
+
+| strategy | cells | b (max orthogonal dose) |
+|---|---|---|
+| single bank | 4 | 0.1143 |
+| **concept varies, codeword fixed** | 8 | **0.2842** |
+| **codeword varies, concept fixed** | 8 | 0.2648 |
+| all three | 12 | 0.2070 |
+
+Both two-bank poolings beat the three-bank one — pooling *more* is **worse**, which is the opposite of
+what I would have guessed and would have made an appealing correction to last tick's advice.
+
+**I ran audit #11's three controls before writing any of that down**, which is the whole point of this
+tick. All three strategies fail identically: the direction carrying the extra dose is **another bank's
+surface contrast** (cos **0.79** / **0.74** / 0.67), and the residual after removing every bank's own
+`d_surface` sits at **0.1398 / 0.1802 / 0.1614** against the single bank's **0.1598** — no strategy
+adds meaningful non-surface variance. Pooling more banks just averages more surface contrasts.
+
+**So the answer is a complete negative, and it is the useful kind:** do not spend compute pooling these
+banks in any arrangement. No rearrangement of three banks that all vary the surface word by
+construction can produce cells whose dominant variation is something else.
+
+Last tick I published `b = 0.207` as a bar for future controls and had it withdrawn a tick later
+because I had not run the controls. This time the appealing result — *pooling one factor is better!* —
+died before it reached the report. The script now runs the controls for **every** strategy rather than
+only the one being recommended, so the next person cannot repeat my mistake either.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 411 | 2026-08-22 | tested one-factor-at-a-time pooling | **b_orth 0.2842 / 0.2648 beat all-three's 0.2070** — pooling more is worse |
+| 412 | 2026-08-22 | ran the three controls **before** writing a recommendation | new direction is the other bank's surface contrast (cos 0.74–0.79) |
+| 413 | 2026-08-22 | recorded a complete negative | no pooling arrangement adds non-surface variance |
+| 414 | 2026-08-22 | made the script run controls for **every** strategy | not just the one being recommended |

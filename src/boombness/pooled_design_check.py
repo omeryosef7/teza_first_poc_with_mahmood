@@ -82,6 +82,34 @@ def main() -> int:
     pooled = torch.cat([mats[k][0] for k in mats], 0)
     pooled_geo = geometry(pooled, ref_u)
 
+    # ALL POOLING STRATEGIES, not just the three-bank one (2026-08-22). Audit #11 killed the
+    # three-bank recommendation; the obvious follow-up is whether pooling ONE factor at a time does
+    # better. It does on the headline number -- b_orth 0.2842 (concept varies) and 0.2648 (codeword
+    # varies) against 0.2070 for all three -- and it fails the SAME controls, which is why the controls
+    # run for every strategy here rather than only for the one that was recommended.
+    strategies = {
+        "concept_varies_codeword_fixed": ("carrot_bomb", "carrot_knife"),
+        "codeword_varies_concept_fixed": ("carrot_bomb", "button_bomb"),
+        "all_three": tuple(mats),
+    }
+    strat = {}
+    for sname, keys in strategies.items():
+        A = torch.cat([mats[k][0] for k in keys], 0)
+        g = geometry(A, ref_u)
+        Ac = A - A.mean(dim=0, keepdim=True)
+        Ap = Ac - (Ac @ ref_u.reshape(-1, 1)) @ ref_u.reshape(1, -1)
+        _, _, Vh2 = torch.linalg.svd(Ap, full_matrices=False)
+        w2 = Vh2[0] / Vh2[0].norm()
+        R2, own2 = [], 0.0
+        for k in keys:
+            Mk = mats[k][0] - mats[k][0].mean(dim=0, keepdim=True)
+            R2.append(Mk - (Mk @ mats[k][1].reshape(-1, 1)) @ mats[k][1].reshape(1, -1))
+            own2 += float((Mk ** 2).sum())
+        strat[sname] = {**g, "banks": list(keys),
+                        "new_orth_dir_vs_each_banks_d_surface":
+                            {k: abs(float(torch.dot(w2, mats[k][1]))) for k in mats},
+                        "residual_after_removing_each_banks_own_d_surface":
+                            float((torch.cat(R2, 0) ** 2).sum()) / own2}
     # CONTROL 1 -- pooling three identical copies of one bank
     dup = torch.cat([mats["carrot_bomb"][0]] * 3, 0)
     dup_geo = geometry(dup, ref_u)
@@ -116,7 +144,7 @@ def main() -> int:
     cross = {f"{a}|{b}": abs(float(torch.dot(mats[a][1], mats[b][1])))
              for i, a in enumerate(mats) for b in list(mats)[i + 1:]}
 
-    doc = {"layer": L, "per_bank": per, "pooled": pooled_geo,
+    doc = {"layer": L, "per_bank": per, "pooled": pooled_geo, "strategies": strat,
            "control_1_three_identical_copies": dup_geo,
            "control_2_new_orthogonal_direction_vs_each_banks_d_surface": cos_w,
            "control_3_residual_after_removing_each_banks_own_d_surface": {
@@ -126,6 +154,14 @@ def main() -> int:
                "note": "the two pooled normalisations differ only in whether between-bank offsets sit "
                        "in the denominator; the conclusion is the same under both"},
            "cross_bank_d_surface_cosines": cross,
+           "VERDICT_ALL_STRATEGIES": (
+               "NO pooling strategy delivers the design C-13 asked for. One-factor-at-a-time pooling "
+               "looks better on the headline number (b_orth 0.2842 concept-varies / 0.2648 "
+               "codeword-varies, vs 0.2070 for all three) but fails the same controls: the direction "
+               "carrying the new dose is the OTHER bank's surface contrast (cos 0.79 and 0.74 "
+               "respectively), and the residual after removing every bank's own d_surface is 0.1398 "
+               "and 0.1802 against the single bank's 0.1598 -- i.e. no meaningful non-surface variance "
+               "is added by any of them. Pooling more banks simply averages more surface contrasts."),
            "VERDICT": ("Pooling does NOT deliver the design C-13 asked for. Control 1: three identical "
                        "copies leave the geometry unchanged, so pooling per se buys nothing -- the gain "
                        "is entirely that the banks' d_surface directions are non-collinear. Control 2: "

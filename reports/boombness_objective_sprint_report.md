@@ -320,6 +320,29 @@ does **not** move the design toward the stated goal of cells whose dominant vari
 surface contrast. The arithmetic in the table above reproduces exactly; it is the actionable drawn from
 it that was wrong.
 
+**Extended to every pooling strategy (2026-08-22).** Audit #11 killed the three-bank recommendation;
+the obvious follow-up is whether pooling **one factor at a time** does better. On the headline number
+it does — and it fails the same controls, so the answer is a complete negative rather than a partial
+one:
+
+| strategy | cells | b (max orthogonal dose) | new direction's cos with the *other* bank's own `d_surface` | residual after removing every bank's own `d_surface` |
+|---|---|---|---|---|
+| single bank | 4 | 0.1143 | — | **0.1598** |
+| **concept varies, codeword fixed** | 8 | **0.2842** | **0.79** | 0.1398 |
+| **codeword varies, concept fixed** | 8 | 0.2648 | **0.74** | 0.1802 |
+| all three | 12 | 0.2070 | 0.67 | 0.1614 |
+
+**Every strategy fails the same way.** The direction carrying the extra orthogonal dose is, in each
+case, **another bank's surface contrast** (cos 0.67–0.79), and no strategy adds meaningful non-surface
+variance — the residual stays at the single bank's 0.1598 within ±0.02 throughout. Pooling more banks
+simply averages more surface contrasts; it does not introduce a different *kind* of variation, which is
+what C-13 asked for.
+
+**So the recommendation is a negative, and it is the useful kind:** do not spend compute pooling
+existing banks in any arrangement. The design that would answer the question needs cells whose
+dominant variation is **not** a surface contrast at all — which no rearrangement of these three banks
+can produce, because all three vary the surface word by construction.
+
 ⚠ Also: the forced-\|cos\| row assumes a vanishing cross term. The true Pareto frontier gives ≈0.63
 single / ≈0.38 pooled, so those figures **overstate** the collinearity forced on a half-dose control —
 conservative, but "forced" is the wrong word for an upper bound.
