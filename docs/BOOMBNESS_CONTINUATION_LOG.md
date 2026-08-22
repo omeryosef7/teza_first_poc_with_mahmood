@@ -8221,3 +8221,55 @@ exactly.
 | 468 | 2026-08-22 | unioned disjoint judge shards in the triage | **COULD_CHANGE 19 → 34**, underpowered 27 → 0 |
 | 469 | 2026-08-22 | seed added to control identity | `additional_control_draw` split from `replicate_of_cited` |
 | 470 | 2026-08-22 | `p_t_one_sided` renamed to `p_t_two_sided`; git provenance fixed | no number moved |
+
+## The pre-registered test for the depth dissociation was on disk, judged, and never analysed
+
+Audit #13's shard fix un-hid twelve full-strength arms. Ten are in-subspace controls, and analysing
+them answers a question the sprint had been arguing about from theory.
+
+**First, what these runs cannot do.** All ten were judged in sessions containing **no baseline and no
+`d_surface` arm**. Every delta from them is cross-session, and the measured judge drift is **0.0057**.
+So differences *among* the controls (they span 0.057–0.075 ASR) are inside the noise and I do not rank
+them. Control-vs-arm gaps of ~0.04 are 7–9× the drift and are interpretable. The script refuses the
+first comparison explicitly rather than printing a tidy table that invites both readings.
+
+**`in_subspace_orth` is inert at every layer.** −0.0081 … +0.0101, all within 1.8× drift, against a
+`d_surface` arm of +0.0182…+0.0424 (gaps 3.2–8.8× drift). Worth noting against R-23, which retracted on
+the grounds that an in-subspace direction *reproduces* the arm: the direction that does so is the
+**angle sweep's maximum** (+0.0182 at L8), not the single canonical orthogonal direction, which does
+nothing. A hard null built on one canonical direction would have looked far stronger than the sweep,
+for no reason except which direction got picked.
+
+**`cell_span` at L8 ties the arm exactly (+0.0424, gap 0.0000) — and that is not a finding.** The spec
+is the full `cell_span0+1+2`, and cos(`d_surface`, b0/b1/b2) = −0.9555 / 0.1565 / −0.2500, so the
+removed span **contains `d_surface` exactly**. Reproducing the arm is arithmetic, not evidence. I
+nearly wrote it up as a result before checking the containment.
+
+**Then the real one.** `signals.cell_span_basis_direction`'s docstring **pre-registers** the
+discriminating test for the depth dissociation, with its decision rule stated in advance: ablate the
+entire 3-d concept subspace at both depths; *if the full span moves ASR at L8 and does nothing at L31,
+the late null is architectural and the anti-alignment claim must be weakened; if it moves at L31 too,
+late ablation CAN act and `d_surface`'s late null is a fact about that direction.* **Both arms were run,
+judged, and never analysed.**
+
+Observed: **L8 +0.0424** (7.4× drift), **L31 −0.0040** (0.70× drift). Read naively that is the first
+branch — architectural, dissociation weakened.
+
+**That reading is wrong, and the same batch is what refutes it.** The rule's premise is that an L31
+projection has almost no computation left to amplify it, so late edits are generically weak.
+`unembed_refusal:project_out:31-31` gives **+0.1111 — 19× the drift, the largest shift in the table.**
+An L31 projection *can* act, decisively. So the cell-span's L31 null is not architecture; it is a fact
+about that subspace at that depth. **Second branch. The dissociation survives**, and now on evidence
+rather than on the assumption that late ablation is weak.
+
+**Not claimed.** Pooled binary deltas only. I do not quote a domain-clustered p for these arms: with no
+within-session baseline it would imply more precision than the design supports. Drift is the honest
+scale here.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 471 | 2026-08-22 | analysed the 10 arms audit #13 un-hid | all cross-session; refused the comparisons drift cannot support |
+| 472 | 2026-08-22 | `in_subspace_orth` inert at L6/L8/L10/L12 | the sweep's **max** reproduces the arm, not a canonical orthogonal direction |
+| 473 | 2026-08-22 | checked containment before writing up `cell_span` | span **contains `d_surface` exactly** — the L8 tie is arithmetic, **not a finding** |
+| 474 | 2026-08-22 | found the **pre-registered depth test** unanalysed on disk | L8 +0.0424, L31 −0.0040 |
+| 475 | 2026-08-22 | its premise falsified by `unembed_refusal` L31 **+0.1111 (19× drift)** | late ablation **can** act → **dissociation survives**, second branch |

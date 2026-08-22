@@ -1,0 +1,246 @@
+{
+  "question": "do the in-subspace CONTROL arms that audit #13 un-hid reproduce the d_surface effect?",
+  "baseline": {
+    "prefix": "abg_base_",
+    "asr": 0.06464646464646465,
+    "n": 495
+  },
+  "judge_session_drift": 0.005746910094736185,
+  "REFUSED_COMPARISON": "these controls were all judged in sessions containing NO baseline and NO d_surface arm, so every delta here is cross-session. Differences AMONG the controls (they span ~0.057-0.075 ASR) are inside the 0.0057 drift and are NOT interpretable -- do not rank them.",
+  "SUPPORTED_COMPARISON": "control-vs-arm gaps of ~0.04 are ~8x the drift and ARE interpretable.",
+  "DEPTH_DISSOCIATION_the_preregistered_test_was_on_disk_unanalysed": {
+    "what": "signals.cell_span_basis_direction's docstring pre-registers the discriminating test for the depth dissociation: ablate the ENTIRE 3-d concept subspace at both depths. Its rule -- 'if the full span moves ASR at L8 and does nothing at L31, the late null is architectural and the anti-alignment claim must be weakened; if it moves ASR at L31 too, late ablation CAN act and d_surface's late null is a fact about that direction'. Both arms were run and judged and never analysed.",
+    "cell_span_full_L8": 0.0424,
+    "cell_span_full_L31": -0.004,
+    "naive_reading": "full span moves at L8, nothing at L31 -> first branch -> ARCHITECTURAL, dissociation weakened.",
+    "why_that_reading_is_WRONG": "the rule's premise is that a projection at L31 has almost no computation left to amplify it, so late edits are generically weak. The SAME batch falsifies that premise directly: unembed_refusal:project_out:31-31 gives +0.1111, 19x the judge-session drift and the largest shift in this table. An L31 projection CAN act. So the cell-span's L31 null is not architecture -- it is a fact about that subspace at that depth, which is the SECOND branch. The dissociation survives.",
+    "d_surface_fraction_inside_removed_span": {
+      "L8": 1.0,
+      "L31": 1.0,
+      "note": "cos(d_surface, b0/b1/b2) = -0.9555/0.1565/-0.2500 at L8; the full span contains d_surface exactly, so cell_span L8 tying the arm (+0.0424, gap 0.0000) is EXPECTED and is not evidence about the subspace."
+    },
+    "not_done": "pooled binary deltas only. A domain-clustered p is not reported because these arms have no within-session baseline; quoting one would imply more precision than the design supports. Drift (0.0057) is the honest scale."
+  },
+  "orth_is_not_the_angle_sweep": "in_subspace_orth is ONE canonical direction in the complement; in_subspace_angle SWEEPS it. The sweep's max reaches +0.0182 at L8 while the single orthogonal direction sits near zero. A hard null built on one canonical direction would look far stronger than the sweep, for no reason but which direction got picked.",
+  "rows": [
+    {
+      "label": "in_subspace_orth L6",
+      "spec": "in_subspace_orth:project_out:6-6:1.0",
+      "n": 495,
+      "asr": 0.06464646464646465,
+      "sessions": [
+        "20260821_025400"
+      ],
+      "shards": [
+        "vL6J0_20260821_025400_547812",
+        "vL6J1_20260821_025400_547813"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": 0.0,
+      "delta_over_drift": 0.0,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.01818181818181818,
+      "control_vs_arm_gap": 0.01818181818181818,
+      "gap_over_drift": 3.163755458515282,
+      "max_angle_control_same_layer": 0.010101010101010102
+    },
+    {
+      "label": "in_subspace_orth L8 (a)",
+      "spec": "in_subspace_orth:project_out:8-8:1.0",
+      "n": 495,
+      "asr": 0.06262626262626263,
+      "sessions": [
+        "20260821_045406"
+      ],
+      "shards": [
+        "vD8J0_20260821_045406_668753",
+        "vD8J1_20260821_045406_668754"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.0020202020202020193,
+      "delta_over_drift": 0.35152838427947564,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.04242424242424243,
+      "control_vs_arm_gap": 0.044444444444444446,
+      "gap_over_drift": 7.733624454148467,
+      "max_angle_control_same_layer": 0.01818181818181818
+    },
+    {
+      "label": "in_subspace_orth L8 (b)",
+      "spec": "in_subspace_orth:project_out:8-8:1.0",
+      "n": 495,
+      "asr": 0.05656565656565657,
+      "sessions": [
+        "20260821_012704"
+      ],
+      "shards": [
+        "vmcJ0_20260821_012704_433016",
+        "vmcJ1_20260821_012704_433017",
+        "vmcJ2_20260821_012704_433018"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.008080808080808077,
+      "delta_over_drift": 1.4061135371179025,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.04242424242424243,
+      "control_vs_arm_gap": 0.050505050505050504,
+      "gap_over_drift": 8.788209606986895,
+      "max_angle_control_same_layer": 0.01818181818181818
+    },
+    {
+      "label": "in_subspace_orth L10",
+      "spec": "in_subspace_orth:project_out:10-10:1.0",
+      "n": 495,
+      "asr": 0.06262626262626263,
+      "sessions": [
+        "20260821_025400"
+      ],
+      "shards": [
+        "vL10J0_20260821_025400_547817",
+        "vL10J1_20260821_025400_547818"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.0020202020202020193,
+      "delta_over_drift": 0.35152838427947564,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.03232323232323232,
+      "control_vs_arm_gap": 0.03434343434343434,
+      "gap_over_drift": 5.975982532751088,
+      "max_angle_control_same_layer": 0.0
+    },
+    {
+      "label": "in_subspace_orth L12 (a)",
+      "spec": "in_subspace_orth:project_out:12-12:1.0",
+      "n": 495,
+      "asr": 0.06060606060606061,
+      "sessions": [
+        "20260821_045406"
+      ],
+      "shards": [
+        "vD12J0_20260821_045406_668758",
+        "vD12J1_20260821_045406_668759"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.004040404040404039,
+      "delta_over_drift": 0.7030567685589513,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.03636363636363636,
+      "control_vs_arm_gap": 0.0404040404040404,
+      "gap_over_drift": 7.0305676855895145,
+      "max_angle_control_same_layer": 0.010101010101010102
+    },
+    {
+      "label": "in_subspace_orth L12 (b)",
+      "spec": "in_subspace_orth:project_out:12-12:1.0",
+      "n": 495,
+      "asr": 0.07474747474747474,
+      "sessions": [
+        "20260821_025400"
+      ],
+      "shards": [
+        "vL12J0_20260821_025400_547823",
+        "vL12J1_20260821_025400_547824"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": 0.010101010101010097,
+      "delta_over_drift": 1.7576419213973782,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.03636363636363636,
+      "control_vs_arm_gap": 0.026262626262626265,
+      "gap_over_drift": 4.569868995633185,
+      "max_angle_control_same_layer": 0.010101010101010102
+    },
+    {
+      "label": "unembed_refusal L8",
+      "spec": "unembed_refusal:project_out:8-8:1.0",
+      "n": 495,
+      "asr": 0.06262626262626263,
+      "sessions": [
+        "20260821_092909"
+      ],
+      "shards": [
+        "unJ8_0_20260821_092909_944626",
+        "unJ8_1_20260821_092909_944627"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.0020202020202020193,
+      "delta_over_drift": 0.35152838427947564,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": 0.04242424242424243,
+      "control_vs_arm_gap": 0.044444444444444446,
+      "gap_over_drift": 7.733624454148467,
+      "max_angle_control_same_layer": 0.01818181818181818
+    },
+    {
+      "label": "unembed_refusal L31",
+      "spec": "unembed_refusal:project_out:31-31:1.0",
+      "n": 495,
+      "asr": 0.17575757575757575,
+      "sessions": [
+        "20260821_092909"
+      ],
+      "shards": [
+        "unJ31_0_20260821_092909_944631",
+        "unJ31_1_20260821_092909_944632"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": 0.1111111111111111,
+      "delta_over_drift": 19.334061135371165,
+      "interpretable_vs_baseline": true,
+      "d_surface_arm_same_layer": null,
+      "control_vs_arm_gap": null,
+      "gap_over_drift": null,
+      "max_angle_control_same_layer": null
+    },
+    {
+      "label": "cell_span L8",
+      "spec": "cell_span0:project_out:8-8:1.0+cell_span1:project_out:8-8:1.0+cell_span2:project_out:8-8:1.0",
+      "n": 495,
+      "asr": 0.10707070707070707,
+      "sessions": [
+        "20260821_074038"
+      ],
+      "shards": [
+        "spanJ8_0_20260821_074038_831714",
+        "spanJ8_1_20260821_074038_831715"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": 0.04242424242424242,
+      "delta_over_drift": 7.38209606986899,
+      "interpretable_vs_baseline": true,
+      "d_surface_arm_same_layer": 0.04242424242424243,
+      "control_vs_arm_gap": 6.938893903907228e-18,
+      "gap_over_drift": 1.20741299054997e-15,
+      "max_angle_control_same_layer": 0.01818181818181818
+    },
+    {
+      "label": "cell_span L31",
+      "spec": "cell_span0:project_out:31-31:1.0+cell_span1:project_out:31-31:1.0+cell_span2:project_out:31-31:1.0",
+      "n": 495,
+      "asr": 0.06060606060606061,
+      "sessions": [
+        "20260821_074038"
+      ],
+      "shards": [
+        "spanJ31_0_20260821_074038_831719",
+        "spanJ31_1_20260821_074038_831720"
+      ],
+      "shards_overlap": false,
+      "delta_vs_baseline_CROSS_SESSION": -0.004040404040404039,
+      "delta_over_drift": 0.7030567685589513,
+      "interpretable_vs_baseline": false,
+      "d_surface_arm_same_layer": null,
+      "control_vs_arm_gap": null,
+      "gap_over_drift": null,
+      "max_angle_control_same_layer": null
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "src/boombness/orth_control_arms.py",
+      "--out",
+      "outputs/boombness/orth_control_arms.json"
+    ],
+    "git_commit": "fd75e0cf9875cc745cbfb7ff7a28c90a6879df1b"
+  }
+}
