@@ -8822,10 +8822,24 @@ exactly orthogonal to the arm, removing **4.5506%** at L8 in the deterministic-b
 Holm table actually uses) was built and run. **Run at all four `d_surface` profile depths with a deterministic basis and one judging session,
 the arm beats it every time and ALL FOUR survive Holm** (arm − control: L6 +0.0127, L8 +0.0319,
 L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**).
-✅ **SUPERSEDED AND STRENGTHENED 2026-08-22 (review #12):** that single-draw result has been replaced
-by **20 systematically spaced orthogonal controls per depth, all on one seed-matched baseline**
-(80 control runs). **At every depth, 0 of 20 controls reach the arm** (rank p = 0.0476, the design
-floor, identical under the clustered and pooled estimators):
+✅ **SUPERSEDED AND STRENGTHENED (final form, 2026-08-23):** the single-draw result is replaced by a
+**complete 24-point angular grid per depth** — every position on the half-circle, 96 control runs —
+with contrasts computed by the **paired** estimator (the baseline cancels algebraically) and the L12
+arm re-judged at the matched seed. Two tests, both reported because they answer different questions:
+
+| depth | arm Δ (p) | rank: ctl ≥ arm | **paired: beats at p<0.05** | **worst-case control** |
+|---|---|---|---|---|
+| **L6** | +0.0192 (0.029) | 0/24 | ⛔ **13 / 24** | p 0.678 |
+| **L8** | +0.0313 (0.009) | 0/24 | ⚠ **17 / 24** | p 0.104 |
+| **L10** | +0.0209 (0.026) | 0/24 | ✅ **24 / 24** | ✅ **p 0.0244** |
+| **L12** | +0.0307 (0.006) | 0/24 | ✅ **24 / 24** | ✅ **p 0.0183** |
+
+⚠ **The rank test is uniform (p = 1/25 = 0.0400 at every depth, the design floor) and the paired test
+is not.** The defensible claim is their conjunction: **at L10 and L12 the arm is ahead of all 24
+orthogonal directions *and* significantly above each one; at L6 and L8 it is ahead of all 24 but
+significantly above only half to two-thirds.** ⛔ An interim claim that L6 was *refuted* was withdrawn
+(a baseline-seed artifact of mine), and an interim "only L10 separates" was withdrawn too (I had used
+a quadrature SE where the shared baseline requires a paired one). Superseded numbers follow:
 
 | depth | arm | strongest control | **t vs strongest** | nearest as % of arm |
 |---|---|---|---|---|
