@@ -8689,3 +8689,56 @@ quantity that decides L6.
 | 516 | 2026-08-23 | last night's near-match **confirmed an artifact** | of half-judged runs, not a real reconciliation |
 | 517 | 2026-08-23 | ruled out coverage, partial data, session and baseline | disagreement is **real and unexplained** |
 | 518 | 2026-08-23 | recorded it as a **reproducibility** gap, not a verdict | their figure has no committed script or artifact |
+
+## The null has converged, which is the answer to the objection it was built for
+
+L12's last four angles finished. Every layer now carries the **full 24 in-subspace controls** with
+`n_common: 495` and `population_matched: True`.
+
+| layer | k | arm | ceiling | margin | ratio |
+|---|---|---|---|---|---|
+| L6 | 24 | 9p | 5p | **4.0p** | 1.80× |
+| L8 | 24 | 21p | 9p | 12.0p | 2.33× |
+| L10 | 24 | 16p | 0p | 16.0p | n/a |
+| L12 | 24 | 18p | 5p | 13.0p | 3.60× |
+
+**The finding is what did *not* happen.** Comparing against the earlier artifact:
+
+| layer | old k | old ceiling | new k | new ceiling | moved? |
+|---|---|---|---|---|---|
+| L6 | 12 | 5p | 24 | 5p | **no** |
+| L8 | 12 | 9p | 24 | 9p | **no** |
+| L12 | 8 | 5p | 24 | 5p | **no** |
+| L10 | **4** | 0p | 24 | 0p | **no** |
+
+Refinements of 2×, 2×, 3× and **6×**, and the maximum control delta is identical in every case.
+
+**This is the answer to the objection the null was built around.** R-25 and everything after it turned
+on the null being *a sample, not a bound* — the worry that a denser grid would keep turning up stronger
+controls, so "the arm exceeds every control" only meant "every control we happened to run". Between 12
+and 24 controls per layer, the ceiling is stable. At L10 that holds across a **six-fold** refinement
+from four controls to twenty-four.
+
+It does not prove a bound — 24 directions in a 2-d complement is still a sample, and a pathological
+direction between the sampled angles is not excluded by anything here. But the concern was empirical
+and it now has an empirical answer at this resolution.
+
+**The disagreement with the concurrent line sharpens rather than resolves.** They report the ceiling
+*growing* with density (L6 +0.0118 → +0.0172, "+46%", offered as "direct empirical vindication" of the
+sample-not-a-bound retraction). My computation disagrees at **both** endpoints: I get +0.0101 at 12
+angles and +0.0101 at 24. One of these is wrong and it cannot be settled from committed material,
+because their figure has no script or artifact behind it. Recorded, not adjudicated.
+
+**L6 is unaffected** — 4-prompt margin against a 2.8-prompt judge, 1.41×, withdrawn. Convergence makes
+the *ceiling* trustworthy; it does not make a four-prompt margin large.
+
+Audit #14 is running in parallel; its findings land next tick.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 519 | 2026-08-23 | L12's last four angles finished | **all four layers at 24/24**, populations full |
+| 520 | 2026-08-23 | wrote to a **new** artifact path | avoids overwriting the file audit #14 is verifying |
+| 521 | 2026-08-23 | compared ceilings across refinements | **identical at every layer** — 2×, 2×, 3×, and 6× at L10 |
+| 522 | 2026-08-23 | **the null has converged** | the empirical answer to "a sample, not a bound" |
+| 523 | 2026-08-23 | concurrent claim of a growing ceiling | disagrees at **both** endpoints; not reproducible; recorded |
+| 524 | 2026-08-23 | spawned **audit #14** | running |
