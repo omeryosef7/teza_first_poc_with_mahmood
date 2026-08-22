@@ -7861,3 +7861,37 @@ redaction rule.
 | 433 | 2026-08-22 | named the substitution I had been making | "inapplicable metric" ≠ "on-topic completions" |
 | 434 | 2026-08-22 | built and ran the applicable version | **L12 0.784 / L8 0.823 vs a 0.115 floor; 0% zero-overlap** |
 | 435 | 2026-08-22 | recorded the scope limit | rules out R-20's mode, says nothing about correctness |
+
+## Putting an interval on the p-value itself
+
+Tick 2026-08-22. Audit #12's last open recommendation, and its sharpest: *"With n=2 I can say L12 is
+stable and L8 is not. With n=5 you could put an interval on the p-value itself, which — given that
+every p in this report sits exactly at its attainable floor — is the quantity a reader actually
+needs."*
+
+That is exactly right, and it follows from something the report already states without following
+through on. Every arm's flips are one-directional, so `p = 2/2ᵏ` where k is the number of **informative
+domains**. The p is therefore a *count*, and moving one prompt across the 0.5 threshold can move a
+whole domain in or out. Measured fragility: pushing each layer above 0.05 needs **2 rows (L10), 3 (L8),
+4 (L12)** out of 495 — and observed judge noise between two passes was **0–2 rows**.
+
+So the honest object is not "p = 0.0039" but a **distribution over p**, and I have been quoting a point
+estimate of a quantity I already knew was that unstable.
+
+**Submitted passes 3 and 4** (jobs 774240-774245): baseline, L8 and L12 re-judged on **byte-identical**
+generations at seeds 20260825/20260826. No GPU generation — this is judge-only, which is why it is
+worth doing rather than arguing about. With passes 1–2 already on disk that gives **n=4**, enough for a
+range on both the delta and the p, and enough to say whether L12's stability is real or was itself a
+coin flip.
+
+**Pre-committing the reading**, since the whole point is that I already know the statistic is
+unstable: if L12's p stays at **0.0039** across all four passes, the L12-only claim is as solid as this
+design permits and I will say so. If it moves the way L8's did (0.0078→0.0273 on **zero** arm-row
+changes), then **no layer survives** and the AdvBench headline becomes a directional observation with
+no significance claim attached. I would rather find that now than have a reader find it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 436 | 2026-08-22 | accepted audit #12's recommendation #5 | every p sits at its floor, so the p is a count and 1–2 rows move it |
+| 437 | 2026-08-22 | submitted passes 3 and 4 (774240-774245) | judge-only on byte-identical gens; **n=4** when they land |
+| 438 | 2026-08-22 | pre-committed both readings | stable → L12-only stands; unstable → **no significance claim survives** |
