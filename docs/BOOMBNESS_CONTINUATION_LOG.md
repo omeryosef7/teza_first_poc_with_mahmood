@@ -7713,3 +7713,54 @@ a JSON object.
 | 420 | 2026-08-22 | checked plan §20's "no unlabeled outputs" | **26 of 55 cited artifacts** unlabelled or unprovenanced |
 | 421 | 2026-08-22 | labelled them with the report's own citing sentence | never an invented description |
 | 422 | 2026-08-22 | proved no published value moved | checksum over non-`_` keys **identical** |
+
+## ⛔ Audit #12 — the headline is L12-only, and the replicate proving it was already on disk
+
+Tick 2026-08-22. Audit #12 was briefed as an **external reviewer** rather than a bug hunt. It found the
+most consequential defect of the whole sprint, and it found it in data I had generated myself.
+
+### An independent judge replicate existed for L6/L8/L10 and I used only L12's
+
+`abrep_base`, `abrep_L6`, `abrep_L8`, `abrep_L10` — a second judge pass over **byte-identical**
+generations — have been on disk since 08-21. `unanalysed_inventory.json`, my own tool, lists 78 such
+runs. I used `abrep_L12` and never ran the other three.
+
+| layer | Δ | pass 1 | pass 2 | rows disagreeing | |
+|---|---|---|---|---|---|
+| L6 | +0.0182 | 0.0625 | 0.0625 | 1/495 | ns both |
+| **L8** | +0.0424 | **0.0078** | **0.0273** | **0/495** | 3.5× move |
+| **L10** | +0.0323 | **0.0156** | **0.0312** | 2/495 | 2× move |
+| **L12** | +0.0364 | **0.0039** | **0.0039** | 1/495 | **stable** |
+
+**L8's p moved 3.5× with zero rows changing in the arm** — the row that moved was in the *baseline*.
+Only **L12 reproduces**. §0a claimed "cluster-significant uncorrected at L8/L10/L12" for days while the
+evidence against two thirds of that sat unanalysed in my own inventory.
+
+### And my Holm number was wrong in the direction of my claim
+
+§0a asserted **0.035** and explicitly overrode the artifact's 0.043 as *"an earlier revision"*. The
+artifact was right. L12's p is **rank 1** among the tested layers, so Holm at m=11 is **0.0429**; 0.035
+requires rank 3, which happens only if arms C and D are in the family — in which case m is 13, not 11.
+**I took m from one family and rank from another, and overrode a correct number to do it.**
+
+The family is also **12, not 11**: `abL15_B` was generated, **judged twice at 495 rows**, is a null
+(**+0.0020, p=1.00**), and was excluded from the profile. At m=12, Holm is **0.0468**. The verdict
+survives; the margin roughly halves, and the excluded arm is the kind whose exclusion always helps.
+
+### What this costs and what it does not
+
+Both deliverables now state the effect as **L12-only**. The negative half of the sprint is untouched —
+refusal dominance, G2's retraction, the objective's verdict — and the reviewer accepted those without
+caveat. What is gone is the "four-layer band" framing: the four layers share **22 prompts** at Jaccard
+0.70–0.77, so it was one observation viewed four times, not four observations.
+
+**The uncomfortable part is not the error, it is where it was.** I built `unanalysed_inventory.json`
+specifically to stop unexamined runs from hiding, cited it in the report, and then did not read my own
+inventory. Three of the 78 runs it lists contradicted a headline claim.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 423 | 2026-08-22 | ran the three unanalysed `abrep_*` replicates | **L8 0.0078→0.0273, L10 0.0156→0.0312, L12 stable** |
+| 424 | 2026-08-22 | rewrote §0a and the short update as **L12-only** | the four-layer band framing is withdrawn |
+| 425 | 2026-08-22 | corrected Holm to **0.0429** (m=11) / **0.0468** (m=12 incl. L15) | I had overridden the artifact's correct 0.043 with a wrong 0.035 |
+| 426 | 2026-08-22 | recorded that L15 was judged twice, is null, and was excluded | m=11 was never the honest family |
