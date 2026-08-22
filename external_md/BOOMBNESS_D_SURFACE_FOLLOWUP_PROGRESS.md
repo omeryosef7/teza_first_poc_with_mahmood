@@ -6676,6 +6676,57 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ✅✅ THE COMPLETE FOUR-DEPTH PICTURE — 20 controls per depth, one seed-matched baseline, both estimators
+
+**Artifacts:** `angle_band_COMMON_baseline.json` (L6/L8) and `angle_band_L10_L12_COMMON.json`
+(L10/L12). 80 control runs and 4 arms, every delta formed against **one** baseline judged at the
+same seed as every numerator — the fix that overturned the L6 "refutation".
+
+| depth | arm Δ | max control | ctl ≥ arm | rank p | **arm − strongest ctl** | **t** | nearest ctl as % of arm |
+|---|---|---|---|---|---|---|---|
+| **L6** | +0.019193 | **+0.017171** | 0/20 | 0.0476 | +0.002022 | ⚠ **+0.17** | ⚠ **89.5%** |
+| **L8** | +0.031288 | +0.014700 | 0/20 | 0.0476 | +0.016589 | +1.35 | 47.0% |
+| **L10** | +0.020919 | ✅ **−0.001709** | 0/20 | 0.0476 | **+0.022627** | ✅ **+2.61** | ✅ **−8.2%** |
+| **L12** | +0.031367 | +0.011834 | 0/20 | 0.0476 | +0.019534 | +1.58 | 37.7% |
+
+Identical verdicts under `delta_pooled` at all four depths (0/20, p 0.0476).
+
+### ✅ The pre-registered worry did NOT materialise — densification overturned nothing
+
+I predicted that if densification raised the control envelope at L10/L12 as it did at L6/L8, the
+flagship profile might reduce to L8 alone. **It did not.** No depth was flipped by adding 8–16 new
+directions. ⚠ And the one depth that *appeared* flipped — L6 — turned out to have been flipped by
+**my own baseline-seed artifact**, not by the new controls.
+
+### ⚠ But "all four pass" is the weakest possible reading of a uniform 0.0476
+
+**Every depth sits exactly at the rank floor of 1/21.** That is the *smallest p this design can
+produce*, so a uniform pass across four depths carries much less information than four independent
+significant results would: it says only "no control reached the arm anywhere", which is one bit per
+depth. The separation, which the rank test discards, is where the depths actually differ:
+
+- ✅ **L10 is the strongest depth in the profile** — **every one of its 20 orthogonal controls moves
+  the opposite way** (max −0.0017), t = **+2.61**. It is also the depth that had been tested least
+  (4 angles until today), so the densification *strengthened* the one it might have destroyed.
+- **L12 (t 1.58) and L8 (t 1.35)** are moderate and not individually resolved.
+- ⚠ **L6 remains the weakest by a wide margin** — nearest control at **89.5%** of the arm,
+  t = **+0.17**. It is no longer *refuted*, but it is the one depth where the arm is essentially
+  indistinguishable from the best orthogonal direction. **The earlier judgement that L6 is the weak
+  depth survives; only the word "refuted" was wrong.**
+
+### The honest statement for the paper
+
+**`d_surface`'s causal effect is direction-specific at L8, L10 and L12, and weakest — arguably
+absent — at L6.** Across 20 systematically spaced orthogonal directions per depth, none reaches the
+arm at any depth (rank p 0.0476, the design floor, robust to estimator). Only **L10** separates from
+its strongest control at conventional levels (t 2.61); L8 and L12 do not (t 1.35, 1.58); L6 does not
+at all (t 0.17).
+
+⚠ Two limits that must travel with it: the rank test is **not** a clean permutation null (the arm
+carries dose ≈0.84 against the controls' ≈0.11), and the angular grid covers 7.5° only up to 112.5°
+— **k = 17,19,21,23 were never run** — so the control envelope is better characterised in the lower
+half of the half-circle than the upper.
+
 ## 4h Code and Output Review — Review #12 (2026-08-22 20:50) — BOTH DIRECTIONS OF CORRECTION WERE WRONG
 
 Three parallel auditors: the F-3 control band, the L6/L8 rank test, and an unsupported-claim sweep
