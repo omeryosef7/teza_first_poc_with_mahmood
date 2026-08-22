@@ -5056,6 +5056,33 @@ reported.
 
 
 
+## ⚠ WHY THE TWO TRACKS NEEDED DIFFERENT CONTROL DESIGNS — and why "just use random seeds" would be a bug here
+
+Worth pinning down, because the F-3 work used **random draws** and the ablation work uses
+**systematic angles**, and a reader could reasonably ask why the two were not made consistent.
+They must not be, and the reason is geometric.
+
+| track | where the control lives | right design | why the other one fails |
+|---|---|---|---|
+| **F-3 add, L18** | `random` in the **full R⁴⁰⁹⁶** | **independent draws** | two random vectors in 4096-D are near-orthogonal, so seeds really are a band — which is why 4 draws exposed the single-draw claim |
+| **ablation, L6/L8/L12** | the **2-D orthogonal complement** of the arm inside the rank-3 span | **systematic angles** | ⛔ random draws in 2-D are **not independent**: mean \|cos\| between two of them is 2/π ≈ 0.64, and measured on this payload three "independent" seeds gave cos **1.000 / 0.912 / 0.996** with each other |
+
+⛔ **So seeding a "control band" in the 2-D complement would produce three vectors that are nearly
+the same vector, reported as independent evidence** — the R-12 mistake in a new costume, and exactly
+the failure that review #11 caught at L18 where it happened by a different route (same seed rather
+than degenerate geometry).
+
+✅ **Both tracks converged on the same requirement — more than one control — but the correct
+implementation is opposite in the two geometries.** Random seeds are the right band in 4096-D and
+the wrong one in 2-D; systematic angles are the right cover in 2-D and would be arbitrary in 4096-D.
+Recorded here so that a later pass "harmonising" the two designs does not silently break one of them.
+
+⚠ **And the angle sweep is still a SAMPLE, not a bound** — the sprint retracted that claim once and
+it stays retracted at 20 angles. ASR(θ) is a step function (greedy decoding, judge thresholded at
+0.5), so no finite set of angles bounds the supremum; measured at L8, the control effect traverses
+**0.0173** inside one unsampled 45° interval, larger than the **0.0129** maximum at any sampled
+point. Twenty angles buy resolution and a rank test, not a guarantee.
+
 ## 🔬 DENSIFICATION LAUNCHED — 20 controls per depth at L6 and L8 (774123–774138)
 
 **Decision taken, and on what basis.** I flagged the compute choice twice and had no answer; the
