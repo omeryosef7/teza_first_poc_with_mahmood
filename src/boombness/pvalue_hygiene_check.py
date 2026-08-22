@@ -29,7 +29,22 @@ import sys
 DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",
     "reports/boombness_objective_sprint_short_update.md",
+    # ⛔ THREE GUARDS, THREE DIFFERENT SCOPE DECISIONS ABOUT ONE FILE (audit #11, 2026-08-22).
+    # `docs/BOOMBNESS_CONTINUATION_LOG.md` is swept IN FULL by retraction_sweep (whose comment calls it
+    # "the LIVE board"), checked by markdown_structure_check, and was EXCLUDED here on the grounds that
+    # "the logs are a record". Both cannot be right, and the cost was real: the log's own Gate table --
+    # a live surface it re-derives and cites -- carried `p=0.0109` and `p=0.0010` bare, the second
+    # below the 0.031 floor a 6-domain design can attain.
+    #
+    # Resolved the way retraction_sweep already resolved it: sweep the LIVE HEAD, leave the dated tick
+    # entries alone. One policy, stated once, for a file three guards disagreed about.
+    "docs/BOOMBNESS_CONTINUATION_LOG.md",
 ]
+
+#: file -> heading at which the live region ends (mirrors retraction_sweep.LIVE_PREFIX_ENDS_AT)
+LIVE_PREFIX_ENDS_AT = {
+    "docs/BOOMBNESS_CONTINUATION_LOG.md": "## Defect table — external critique's 31 findings",
+}
 # a p-value at or below this is small enough that its design's clustering matters
 THRESHOLD = 0.031
 # also catch "p <= 0.0004" and "p-value of 0.0004" (audit #11 P3/P4)
@@ -75,6 +90,15 @@ def main() -> int:
             text = open(path, encoding="utf-8").read()
         except OSError:
             continue
+        stop = LIVE_PREFIX_ENDS_AT.get(path)
+        if stop:
+            m = re.search(r"^" + re.escape(stop) + r"\s*$", text, re.M)
+            if not m or text[:m.start()].count("\n") < 20:
+                print(f"  {path}: REFUSING — live-prefix boundary {stop!r} not found as a heading, "
+                      f"or the prefix collapsed. Fix the boundary; do not trust this run.")
+                bad += 1
+                continue
+            text = text[:m.start()]
         hits = 0
         for ln, blk in blocks(text):
             smalls = []

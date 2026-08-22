@@ -41,7 +41,7 @@ source file this tick. The board has been stale twice; it is not a document to e
 | claim | status | backing |
 |---|---|---|
 | Removing `d_surface` raises attack success on an external harmful set | **supported** | +0.0422 vs a **5-draw band** at +0.0012 (sd 0.0026); replicated under an independent judge at 4 layers; 17–18 real refusal→compliance flips, longer refusals contribute **+0.0000**; disruption-matched control at 48.9% perturbation gives +0.0020 |
-| The effect is localized to a contiguous band | **supported, descriptively + shape test** | scan statistic **p=0.0109**; **no single layer survives Holm** |
+| The effect is localized to a contiguous band | **supported, descriptively + shape test** | scan statistic **p=0.0109**; **no single layer survives Holm** | ⚠ *(this is a **permutation** p over layer labels, not a cluster p — the 6-domain cluster floor of 0.031 does not apply to it; see report §0b)*
 | Meaning is retrieved from the demonstrations | **supported on the diagonal only** | 2 of 4 (context × scope) cells sign-robust across 13 layer-sets |
 | Arm D replicates on a second model | **supported** | topical outcome, control inert on both |
 | Cutting demo attention edges does ~nothing | **supported, both models** | ≤2.6% of the deletion ceiling |
@@ -57,7 +57,7 @@ source file this tick. The board has been stale twice; it is not a document to e
 
 | gate | question | current answer | strength |
 |---|---|---|---|
-| §2.6 | does any intervention preserve comprehension? | **ANSWERED for `project_out`: it IMPROVES it** | Δ +0.2795, p=0.0010, control −0.0041 (p=0.63), on the corrected readout |
+| §2.6 | does any intervention preserve comprehension? | **ANSWERED for `project_out`: it IMPROVES it** | Δ +0.2795, p=0.0010, control −0.0041 (p=0.63), on the corrected readout | ⚠ *(**bootstrap/parametric**, not clustered evidence: this design has 6 domains, so the attainable cluster floor is **0.031**. Quote the CI [+0.175, +0.384]; see report §0b)*
 | §13 | may we claim "we found the mechanism"? | **NO** | six criteria, not all met |
 | §12 | build the GCG objective? | **REOPENED, undecided** | the report states this both ways; see Tier-3 |
 
@@ -7567,3 +7567,39 @@ the reason is recorded rather than left as an apparent oversight.
 | 404 | 2026-08-22 | added the **C-series registry**; extended `registry_check` to both series | 9 cited ids, **0 rows** before; `C-99` now fails the build |
 | 405 | 2026-08-22 | hardened live-prefix, p-qualifier, and `check_all` output | each adversarially tested |
 | 406 | 2026-08-22 | declined to install a pre-commit hook, with the reason | it would block a **shared** repo's other session |
+
+## One scope policy for a file three guards disagreed about — audit #11 now fully closed
+
+Tick 2026-08-22. The last open finding was a **disagreement between my own guards**.
+`docs/BOOMBNESS_CONTINUATION_LOG.md` was swept **in full** by `retraction_sweep` — whose comment calls
+it *"the LIVE board"* — checked by `markdown_structure_check`, and **excluded entirely** by
+`pvalue_hygiene_check` on the grounds that *"the logs are a record"*. Both rationales are written down,
+in my own words, and they cannot both be right.
+
+**The cost was real.** This log's own **Gate table** — a surface it re-derives and cites — carried
+`p=0.0109` and `p=0.0010` bare, the second **below the 0.031 floor** a 6-domain design can attain. The
+guard written to catch exactly that could not see the file.
+
+Resolved the way `retraction_sweep` had already resolved it: **sweep the live head, leave the dated
+tick entries alone.** One policy, stated once, mirroring the existing `LIVE_PREFIX_ENDS_AT` mechanism
+including its refusal to run on a collapsed prefix.
+
+**Both flagged p-values annotated accurately rather than generically**, which is the part worth doing
+properly: `p=0.0109` is a **permutation** p over layer labels, so the cluster floor does not apply to
+it at all — the honest qualifier is the method name, not a floor it was never subject to. `p=0.0010`
+*is* a 6-domain clustered claim below its floor, so it is marked bootstrap/parametric with the CI to
+quote instead. Applying one boilerplate note to both would have been faster and wrong about one of
+them.
+
+**Tested both sides of the boundary**: a bare `p=0.0002` planted in the live head → exit **1**; the
+same line appended to the dated record → exit **0**.
+
+**Audit #11 is now fully closed** — twelve findings, all actioned. Five guards, one policy each, all
+adversarially tested.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 407 | 2026-08-22 | found three guards disagreeing about one file's scope | two rationales, both mine, mutually exclusive |
+| 408 | 2026-08-22 | unified on the live-head policy | the log's Gate table is now in scope for all three |
+| 409 | 2026-08-22 | annotated the two flagged p's **by method**, not boilerplate | permutation p ≠ cluster p; only one had a floor to violate |
+| 410 | 2026-08-22 | tested both sides of the boundary | live head exit 1, record exit 0 |
