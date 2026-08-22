@@ -8436,3 +8436,56 @@ apart — **within-day drift is one prompt**, versus three across days.
 | 488 | 2026-08-22 | dense null, **20 controls at all four layers** | no control reaches the arm anywhere; rank p at the 1/21 floor |
 | 489 | 2026-08-22 | expressed margins in prompts vs drift | **L6 = 4 prompts against a 3-prompt judge** |
 | 490 | 2026-08-22 | within-day drift measured | **1 prompt**, vs 3 across days |
+
+## Quoting baseline drift as the noise scale was too generous — and it was my number
+
+Chasing the L6 disagreement one level further. First, a correction to my own framing: **within my
+construction the baseline cancels.** All deltas use one baseline, so `arm − control` is
+baseline-independent, and the disagreement with the concurrent 20-control result cannot come from
+baseline arithmetic. It has to live in the ASR values themselves.
+
+So I looked at them. Per-control deltas at L6, in prompts out of 495:
+
+| session | n | mean | max | own baseline? |
+|---|---|---|---|---|
+| `20260821_124554` | 4 | +1.8 | +5 | ✗ |
+| `20260821_162827` | 6 | +2.7 | +4 | ✗ |
+| `20260821_173739` | 2 | −0.5 | 0 | ✗ |
+| `20260822_163302` | 5 | **+0.4** | +2 | ✅ |
+| `20260822_165021` | 3 | **+5.0** | +5 | ✗ |
+
+The last two are **17 minutes apart, in the same submission wave**, and their means differ by 4.6
+prompts. The session that sets L6's ceiling has **no baseline of its own**; the one that does have a
+baseline sits at the bottom.
+
+**Which makes the noise scale I quoted last tick too generous, and it was my own number.** I reported
+margins as multiples of the 0.0057 baseline drift — 4.22× at L8 and so on. Baseline drift is measured
+on byte-identical *baseline* text and is a **lower** bound. The relevant scale for a ceiling built from
+controls is the spread of per-session **mean control** deltas, which is judge noise *plus* whatever is
+genuinely different about that wave's angles, and therefore an upper bound:
+
+| layer | margin | session-mean spread | verdict |
+|---|---|---|---|
+| **L6** | 4p | **5.5p** | ⛔ **inside noise** |
+| L8 | 12p | 8.0p | exceeds — but by **1.5×**, not 4.22× |
+| L10 | 16p | 3.3p | exceeds |
+| L12 | 13p | 3.5p | exceeds |
+
+**L6 fails on a third independent route** (session-mixing, the concurrent 20-control test, and now
+ceiling concentration), which is as settled as it is going to get without a re-judge. And **L8 is less
+comfortable than I said** — 1.5× a conservative bound, not 4.2× a permissive one. The verdicts are
+unchanged; the confidence attached to L8 should be lower than last tick's number implied.
+
+**What this cannot separate, stated plainly.** Session is confounded with *which angles* were judged in
+it — a wave is both a set of angles and a session — so a session-mean difference is not proof of judge
+drift. It could be a real property of those angles. Resolving it needs the same angles judged twice in
+different sessions, which no committed data supports. The artifact says so rather than picking the
+reading I prefer.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 491 | 2026-08-22 | realised the baseline **cancels** in my arm-vs-control comparison | the disagreement is in the ASRs, not the arithmetic |
+| 492 | 2026-08-22 | grouped L6 controls by judging session | ceiling session **+5.0p mean, no baseline**; baselined session **+0.4p**, 17 min apart |
+| 493 | 2026-08-22 | **replaced my own too-generous noise scale** | baseline drift is a lower bound; session-mean spread is the honest upper one |
+| 494 | 2026-08-22 | L6 margin 4p vs spread 5.5p | ⛔ **inside noise — third independent route to the same withdrawal** |
+| 495 | 2026-08-22 | L8 margin exceeds by **1.5×**, not 4.22× | verdict unchanged, **confidence lowered** |
