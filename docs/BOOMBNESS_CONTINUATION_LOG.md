@@ -7248,3 +7248,41 @@ apply-where-pointed pattern audit #10 named.
 | 370 | 2026-08-22 | escaped code-span pipes generically; repaired 6 historical rows | **all 514 tables render** |
 | 371 | 2026-08-22 | adversarially tested the new guard | exit 1 planted / 0 clean |
 | 372 | 2026-08-22 | added the 6-domain floor caveat to all three tables that needed it | audit #10 finding #7 closed |
+
+## Audit #10 closed — including the estimand discipline I applied to the small effect and not the large
+
+Tick 2026-08-22. Cleared the last of audit #10's eighteen findings.
+
+**The estimand asymmetry is the one worth naming.** §0a spends a paragraph disambiguating
+binary-vs-continuous and pooled-vs-clustered for the **+0.0424** effect — that discipline was forced on
+me by audit #8 — and then quotes the two *large* arms as bare **+0.2061 / +0.2869** with no label,
+while §18 quotes the same arms as **+0.190 / +0.254**. A reader comparing the two sections sees four
+numbers for two arms and no key. Measured, all four estimands:
+
+| arm | binary pooled | binary clustered | continuous pooled | continuous clustered |
+|---|---|---|---|---|
+| C (refusal) | **+0.2061** | +0.2024 | +0.1967 | +0.1895 |
+| D (both) | **+0.2869** | +0.2710 | +0.2722 | +0.2544 |
+
+All four are now in §0a with the estimand named. **The discipline existed and I applied it only where
+an auditor had pointed** — the same pattern as the p-rule last tick, and as audit #10's own summary of
+me. It is the third instance this week, so I am recording it as a habit rather than three separate
+oversights: *a rule I adopt under correction gets applied at the site of the correction, and nowhere
+else, unless I deliberately sweep.*
+
+**Three smaller ones closed.** §0b carried a dangling *"see 'not established' below"* — that subsection
+moved **above** during the §0a/§0b split, the only dangling pointer the split created. The
+refusal-flip row claimed verification "at all four layers" when **only L12 is pinned to a committed
+artifact**; the other three are regenerable but unpinned, and the row now says so. And the process
+section's counts had been stale since 08-19 (*"sixteen retractions, ten corrections, seven dead
+guards"* against R-1…R-27, fourteen corrections, twelve dead guards), while the header's
+"latest audits" line still named **#5/#6/#7** with #8, #9 and #10 already folded in.
+
+**Audit #10 is fully actioned: 18 findings, all confirmed or cleared.** Four guards green.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 373 | 2026-08-22 | measured all four estimands for arms C and D | **+0.2061 / +0.2024 / +0.1967 / +0.1895** and **+0.2869 / +0.2710 / +0.2722 / +0.2544** |
+| 374 | 2026-08-22 | labelled them in §0a | the discipline audit #8 forced on the small effect now applies to the large one |
+| 375 | 2026-08-22 | named the habit rather than logging a third oversight | rules adopted under correction get applied only at the correction site |
+| 376 | 2026-08-22 | fixed the split's dangling pointer, the provenance overstatement, and three stale counts | **audit #10 fully closed** |
