@@ -6676,6 +6676,55 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ✅✅✅ DEFINITIVE — COMPLETE 24-POINT GRID, PAIRED ESTIMATOR, SEED-MATCHED ARMS
+
+Every angular position on the half-circle is now sampled at every depth: **24 controls per depth, no
+gaps**, contrasts computed with `paired_diff` (baseline cancels algebraically), and the L12 arm
+re-judged at the matched seed.
+
+| depth | arm Δ (p) | **beats at p<0.05** | vs strongest control | **worst-case control** | verdict |
+|---|---|---|---|---|---|
+| **L6** | +0.01919 (0.029) | ⛔ **13 / 24** | +0.00202, p 0.678 | **p 0.678** | ⛔ not established |
+| **L8** | +0.03129 (0.009) | ⚠ **17 / 24** | +0.01659, p 0.104 | **p 0.104** | ⚠ not established |
+| **L10** | +0.02092 (0.026) | ✅ **24 / 24** | +0.02263, p 0.0244 | ✅ **p 0.0244** | ✅ **established** |
+| **L12** | +0.03068 (0.006) | ✅ **24 / 24** | +0.01884, p 0.0040 | ✅ **p 0.0183** | ✅ **established** |
+
+### ✅ The pre-registered L6 test resolved, and the boundary caveat is discharged
+
+I pre-registered: *"if any of the four new L6 angles exceeds +0.0192 (the arm), L6 is no longer ahead
+of every control… If none does, L6's lead survives a complete grid and the boundary caveat is
+discharged."* **None did.** L6's strongest control is still `k15` (112.5°), and the four angles above
+it (127.5°–172.5°) are all weaker — so the maximum was **not** an artifact of stopping at the edge of
+coverage. ✅ **That caveat is now closed by measurement.**
+
+### ⚠ Densification found a stronger control again — and it still did not break L12
+
+L12's worst-case control moved from **p 0.0089** (20 controls) to **p 0.0183** (24 controls): the new
+`k20` angle is stronger than anything in the 20-point grid. **Fourth time densification has raised
+the control envelope** — and the first time it has done so without changing a verdict. The
+"sample, not a bound" retraction keeps being vindicated: more angles keep finding more, and the
+right response is to report the worst case rather than the maximum found so far.
+
+### The two tests disagree, and both belong in the report
+
+- **Rank test:** 0 of 24 controls exceed the arm at **all four** depths → p = 1/25 = **0.0400**
+  everywhere. Uniform, and at the design floor.
+- **Paired test:** only **L10 and L12** beat *every* control at p<0.05. L8 manages 17/24, L6 13/24.
+
+They answer different questions — "does any direction beat the arm?" versus "is the arm reliably
+above each direction?" — and reporting only the kinder one is the error that produced three F-3
+downgrades. **The defensible claim is the conjunction: at L10 and L12 the arm is ahead of all 24
+orthogonal directions *and* significantly so against each; at L6 and L8 it is ahead of all 24 but
+significantly so against only half to two-thirds.**
+
+### ⛔ And the dose caveat still governs all of it
+
+Even at L10/L12 this compares a **high-dose** intervention (0.81–0.88 of the cell-mean spread) with
+twenty-four **low-dose** ones (≤0.13). `insubspace_null_by_layer.json` states a dose-matched
+in-subspace control **cannot exist**. So the citable claim remains **"no low-dose direction in the
+concept subspace reproduces the effect at L10/L12"** — not that causation is specific to the
+`d_surface` direction. **More angles cannot fix this; it is structural.**
+
 ## ⚠ MY VERIFICATION METHOD RAISED A FALSE ALARM — line-based grep on line-wrapped text
 
 Checking that review #13's corrections had actually landed, my sweep reported **0 occurrences** of a
