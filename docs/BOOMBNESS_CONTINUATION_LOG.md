@@ -7487,3 +7487,40 @@ replacing an adjective with numbers; the numbers were right and the advice was w
 | 395 | 2026-08-22 | over-corrected first, then restored `corrected` | 26 legitimate correction paragraphs flagged before I found the right line |
 | 396 | 2026-08-22 | restored the §0 table's header/separator | the **FINAL outcome label** was rendering as loose text; a 4-cell row became visible |
 | 397 | 2026-08-22 | withdrew the pooled-design actionable | arithmetic right, **advice worse than none** |
+
+## Fixing the guards audit #11 mutation-tested, and each fix immediately found something
+
+Tick 2026-08-22. Audit #11's remaining findings were all guard defects. Fixed three, and **every one of
+them caught a live defect the moment it existed** — which is the strongest evidence the audit's
+mutation-testing approach was right.
+
+**`markdown_structure_check` now detects a pipe-run with no separator**, which its docstring already
+claimed. It only ever entered a table *when it saw a separator*, so a table lacking one was invisible —
+the live cost being four §0 gate rows, including the **FINAL outcome label**, rendering as prose while
+the guard printed "0 problems". Also made whitespace-tolerant, which **surfaced four previously
+unexamined tables** (all clean). Planted a 2-line pipe-run with no separator → exit **1**.
+
+**`canonical_figures` now checks presence for `SCOPE_REPORT_ONLY`**, which had none — and **five of
+eight** registry entries are REPORT_ONLY, including all three §0a state figures. Worse, check (b) was
+gated on the regex matching, so rewording a figure away silently disabled its **artifact-drift** check
+too, printing `(not quoted)` on a line indistinguishable from a healthy one. The new check
+**immediately flagged `state_L8_arm_delta` as declared REPORT_ONLY while quoted in both documents** —
+the declaration was simply wrong, and nothing had been able to say so.
+
+**`verify_report_numbers`'s `retracted` status verified nothing about the report still asserting the
+claim.** It recorded a number as withdrawn and then checked only its artifact. Now a retracted needle
+present in the report must sit on a retraction-marked line. On first run it flagged **all three**
+retracted figures as *"STILL ASSERTED UNMARKED"* — **10 lines** across the report carrying −0.0062,
++0.0449 and 0.399 as live evidence. I had struck exactly one of them (§0's) last tick and assumed that
+was the instance; it was one of eleven.
+
+That last point is the tick's lesson. Last tick I fixed the §0 occurrence an auditor pointed at and did
+not sweep for the rest — **the same habit I named two ticks ago and mechanised one tick ago**. The
+mechanisation worked: a guard found the other ten. The habit did not go away because I named it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 398 | 2026-08-22 | separator detection + whitespace tolerance | 4 more tables now examined; planted case → exit 1 |
+| 399 | 2026-08-22 | REPORT_ONLY presence check | **immediately caught a wrong scope declaration** (5 of 8 entries were unguarded) |
+| 400 | 2026-08-22 | retracted-status assertion check | flagged **10 lines** still asserting retracted figures |
+| 401 | 2026-08-22 | marked all ten | I had fixed 1 of 11 last tick and assumed it was the instance |

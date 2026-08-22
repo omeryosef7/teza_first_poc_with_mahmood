@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import re
 import subprocess
 import sys
 
@@ -122,14 +123,28 @@ def main() -> int:
         ok_val = abs(actual - expected) <= tol
         # a retracted claim must still MATCH its artifact (drift detection) but must NOT be required
         # to appear in the report -- requiring that is what made this checker fight the corrections.
+        # ⛔ V3 (audit #11): `retracted` set ok_txt=True unconditionally, so the field recorded that a
+        # number is withdrawn and then checked NOTHING about whether the report still asserts it. That
+        # was live for -0.0062, which sat in §0 as an inert control for days. The fix that stopped the
+        # checker REQUIRING retracted claims left the opposite direction unguarded.
+        #
+        # Now a retracted needle present in the report must appear inside a retraction-marked line.
         ok_txt = True if status == "retracted" else (needle in report)
-        verdict = ("RETRACTED (artifact ok)" if (status == "retracted" and ok_val)
+        if status == "retracted" and needle in report:
+            unmarked = [l for l in report.split("\n")
+                        if needle in l and not re.search(
+                            r"retract|withdraw|supersed|⛔|~~|struck|was:|no longer", l, re.I)]
+            if unmarked:
+                ok_txt = False
+                needle = f"{needle} (asserted UNMARKED on {len(unmarked)} line(s))"
+        verdict = ("RETRACTED — STILL ASSERTED UNMARKED" if (status == "retracted" and not ok_txt)
+                   else "RETRACTED (artifact ok)" if (status == "retracted" and ok_val)
                    else "RETRACTED — ARTIFACT DRIFTED" if status == "retracted"
                    else "ok") if status == "retracted" else "ok" if (ok_val and ok_txt) else (
             "VALUE MISMATCH" if not ok_val else f"NOT IN REPORT: {needle!r}")
         if verdict.startswith("RETRACTED"):
-            # a retracted check is not a failure unless its ARTIFACT drifted
-            if "DRIFTED" in verdict:
+            # a retracted check fails if its artifact drifted OR the report still asserts it unmarked
+            if "DRIFTED" in verdict or "STILL ASSERTED" in verdict:
                 bad += 1
             else:
                 retracted += 1

@@ -157,7 +157,9 @@ FIGURE_SCOPE = {
     # because it happens to be where they currently sit.
     "e12_cross_concept_cos": SCOPE_REPORT_ONLY,
     "e12_knife_causal_delta": SCOPE_REPORT_ONLY,
-    "state_L8_arm_delta": SCOPE_REPORT_ONLY,
+    # declared REPORT_ONLY, but the short update quotes 0.0424 too -- caught by the new REPORT_ONLY
+    # presence check the moment it existed (audit #11). The declaration was simply wrong.
+    "state_L8_arm_delta": SCOPE_ALL,
     "state_L12_arm_delta": SCOPE_REPORT_ONLY,
     "state_mde": SCOPE_REPORT_ONLY,
     "layer_shape_p": SCOPE_ALL,
@@ -218,6 +220,14 @@ def main() -> int:
                                         f"{os.path.basename(apat)} says {av:.5f}")
         # (c) ABSENCE. A figure declared SCOPE_ALL that a deliverable does not quote is a lag, which
         # is the failure mode that motivated this module. Checks (a) and (b) are both silent on it.
+        #
+        # ⛔ AND SCOPE_REPORT_ONLY HAD NO PRESENCE CHECK AT ALL (audit #11, 2026-08-22). FIVE of the
+        # eight registry entries are REPORT_ONLY -- including all three §0a state figures -- so
+        # rewording any of them out of the report made the entry silently vacuous. Worse, check (b) is
+        # gated on `allvals`, so once the regex stopped matching the ARTIFACT-DRIFT check stopped
+        # running too, and the guard printed `(not quoted)` on a line indistinguishable from a healthy
+        # one. That is this module's own documented failure -- "detecting disagreement is not
+        # detecting absence" -- surviving inside the exception to its own rule.
         scope = FIGURE_SCOPE.get(name, SCOPE_ALL)
         entry["scope"] = scope
         if scope == SCOPE_ALL:
@@ -226,6 +236,17 @@ def main() -> int:
                     problems.append(f"{name}: declared SCOPE_ALL but NOT QUOTED in "
                                     f"{os.path.basename(f)} -- deliverable lag, or the regex no "
                                     f"longer matches that file's wording")
+        elif scope == SCOPE_REPORT_ONLY:
+            rep = DELIVERABLES[0]
+            if rep not in quoted:
+                problems.append(f"{name}: declared SCOPE_REPORT_ONLY but NOT QUOTED in the report "
+                                f"-- the figure was reworded away, and with it this entry's "
+                                f"artifact-drift check")
+            others = [f for f in quoted if f != rep]
+            if others:
+                problems.append(f"{name}: declared SCOPE_REPORT_ONLY but ALSO quoted in "
+                                f"{', '.join(os.path.basename(o) for o in others)} -- the "
+                                f"declaration and the documents disagree")
         elif name not in FIGURE_SCOPE:
             problems.append(f"{name}: no declared scope")
         report[name] = entry

@@ -980,7 +980,7 @@ control the retracted version lacked. That claim read a within-prompt gradient a
 content without asking whether a prompt containing no concept content shows the same gradient. It does.
 
 **Why keeping the levels separate mattered.** Prompt-level Boombness *rises* with demonstrations
-(L8 +0.0138 → +0.0449 over k=1→16) and correlates with ASR. Token-level, the final occurrence is
+(L8 +0.0138 → +0.0449 over k=1→16) and correlates with ASR. Token-level, the final occurrence is ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 *lower* than earlier ones. Merged, those two would have been reported as one incoherent trend or —
 worse — the prompt-level rise would have been narrated as "the codeword accumulates bombness as the
 prompt proceeds", which the token-level data directly contradicts.
@@ -1283,7 +1283,7 @@ C−A contrast on `d_surface|L|cos`, surface held constant at `carrot`, cluster-
 
 | band | behaviour |
 |---|---|
-| **L4–L12** | positive, **strictly monotone** in demo count (4/4 steps); L8 grows **+0.0138 → +0.0449 (3.3×)** from k=1 to k=16 |
+| **L4–L12** | positive, **strictly monotone** in demo count (4/4 steps); L8 grows **+0.0138 → +0.0449 (3.3×)** from k=1 to k=16 | ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 | **L16–L24** | **negative**, magnitude dose-dependent, **saturating at k=8** (L20 −0.051, easing to −0.042 at k=16) |
 | **L31** | **FLAT** across a 16× dose change (+0.0485/+0.0457/+0.0485/+0.0438/+0.0499; t = +5.9…+10.2) |
 
@@ -1593,7 +1593,7 @@ against real goals (post-R-14), analysed by the same committed `analyze_external
 |---|---|---|---|---|---|---|---|
 | baseline | — | 0.0646 | 0.9313 | — | — | — | — |
 | **B** | remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
-| **Bctrl** | random direction @L8 | 0.0626 | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert |
+| **Bctrl** | random direction @L8 | 0.0626 | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert | ⚠ **RETRACTED figure (R-23/R-25 — the 4096-d random band is far too weak a null); shown for the record, not as evidence.**
 | **Cctrl** | random direction @L18 | 0.0606 | 0.9354 | −0.0033 | −0.0021 | 0.292 | [−0.0063, +0.0020] — inert |
 | **Dctrl** | two random directions | 0.0667 | 0.9313 | +0.0015 | +0.0031 | 0.330 | [−0.0034, +0.0096] — inert |
 | **C** | remove refusalness @L18 | **0.2707** | 0.7091 | +0.1967 | +0.1895 | 0.0001 | [+0.1097, +0.2692] ✓ |
@@ -1643,7 +1643,7 @@ checked rather than asserted.
 
 #### ⛔ The control is inert — **arm B is `d_surface`-specific is WITHDRAWN**: that control is the 4096-d random direction **retracted** by R-23/R-25, and specificity itself is retracted by R-26
 
-A norm-matched **random** projection at the same layer and seed moves ASR by **−0.0062**
+A norm-matched **random** projection at the same layer and seed moves ASR by **−0.0062** ⚠ **RETRACTED figure (R-23/R-25 — the 4096-d random band is far too weak a null); shown for the record, not as evidence.**
 (p_cl=0.539, CI [−0.027, +0.015]) — flat, and if anything slightly negative, against arm B's
 **+0.0305**. So the effect is not "removing any direction at L8"; it is this direction.
 
@@ -1791,7 +1791,7 @@ norm-matched random-projection control at the same depth**
 |---|---|---|---|---|
 | L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
 | L6 | +0.0159 | 0.0567 *(marginal)* | −0.0033 | 0.745 |
-| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 | ⚠ **RETRACTED figure (R-23/R-25 — the 4096-d random band is far too weak a null); shown for the record, not as evidence.**
 | **L10** | **+0.0223** | **0.0190** ✓ | +0.0047 | 0.250 |
 | **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
 | L13 | +0.0138 | 0.0901 | −0.0002 | 0.873 |
@@ -1840,8 +1840,8 @@ procedure. Substituting them into arm B's exact intervention at L8
 
 | direction @L8 | cos with `d_surface` | what it separates | ASR | **Δ clustered** | **p_cl** |
 |---|---|---|---|---|---|
-| `random` | ~0 | nothing | 0.0626 | −0.0062 | 0.539 |
-| **`d_context`** | **0.188** | benign vs harmful **context** | 0.0646 | **+0.0045** | **0.399** |
+| `random` | ~0 | nothing | 0.0626 | −0.0062 | 0.539 | ⚠ **RETRACTED figure (R-23/R-25 — the 4096-d random band is far too weak a null); shown for the record, not as evidence.**
+| **`d_context`** | **0.188** | benign vs harmful **context** | 0.0646 | **+0.0045** | **0.399** | ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 | **`d_surface`** | 1.000 | codeword surface vs concept | 0.1071 | **+0.0305** | **0.0089** ✓ |
 | **`d_naive`** | **0.945** *(heldout; **dev = 0.961**, and dev is what ran)* | the same contrast, uncontrolled | **0.1232** | **+0.0449** ⚠ *retracted as specificity evidence (R-26)* | **0.0089** ✓ |
 
@@ -1850,7 +1850,7 @@ procedure. Substituting them into arm B's exact intervention at L8
 evidence in the report that the effect belongs to a **particular direction** rather than to the act of
 projecting something out at L8.
 
-⚠ **`d_naive` slightly exceeds `d_surface`** (+0.0449 vs +0.0305, identical p). `d_naive` is the *less*
+⚠ **`d_naive` slightly exceeds `d_surface`** (+0.0449 vs +0.0305, identical p). `d_naive` is the *less* ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 controlled contrast, so the 2×2's controls remove variance that is apparently also behaviourally
 active. Anyone treating `d_surface` as the canonical direction should carry that.
 
@@ -2315,7 +2315,7 @@ uses **slot 3 only, at n_examples ≤ 8**, which is what the R-18 power block do
 
 **Two experiments were added after this list was written** and are reported in §7f: the **layer
 profile** (is the effect localized in depth? — yes, a band **~L6–L14**, shape test p=0.0109) and the **direction-specificity
-test** (is it about `d_surface` or any bank-fitted direction? — `d_context` moves ASR by +0.0045, CI [−0.0066, +0.0157], p=0.399 — i.e. not distinguishable from zero).
+test** (is it about `d_surface` or any bank-fitted direction? — `d_context` moves ASR by +0.0045, CI [−0.0066, +0.0157], p=0.399 — i.e. not distinguishable from zero). ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 
 **E1 — Re-judge every external-set arm against a real goal (R-14).** *Cost: API only, no GPU.* Both
 banks now emit `final_query_text`, regenerated with **every `prompt_id` preserved and no other value
@@ -2473,7 +2473,7 @@ retracted; this is its replacement, computed with the control it lacked.
 **3. How many examples are needed before Boombness rises?**
 **One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
 (+0.0485 → +0.0499, t = +5.9…+10.2) — one demonstration achieves the whole output-layer effect. L4–L12
-grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and
+grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 then saturate. ⚠ Pooled over query kinds; see C7.
 
 **4. Does Boombness vary enough across prompts to support optimization?**

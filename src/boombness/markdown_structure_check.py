@@ -28,30 +28,51 @@ DELIVERABLES = [
     "docs/BOOMBNESS_SPRINT_PROGRESS.md",
     "docs/BOOMBNESS_CONTINUATION_LOG.md",
 ]
-SEP = re.compile(r"^\|[-: |]+\|$")
+SEP = re.compile(r"^\s*\|[-: |]+\|\s*$")
 CELL = re.compile(r"(?<!\\)\|")
 
 
 def check(path):
+    """Also flags a RUN OF PIPE LINES WITH NO SEPARATOR (audit #11).
+
+    The docstring promised this and the code did not do it: `check()` only entered a table when it saw
+    a separator, so a pipe-run without one was invisible. The live cost was four §0 gate rows --
+    including the FINAL outcome label -- rendering as a run-on paragraph of pipe characters while this
+    guard printed "76 tables, 0 problems". Restoring that table's header immediately exposed a 4-cell
+    row the guard had never been able to see.
+
+    Also whitespace-tolerant now (`lines[i].startswith("|")` skipped indented tables entirely, leaving
+    three live tables unexamined), matching `retraction_sweep`'s `stripped.startswith("|")`.
+    """
     try:
         lines = open(path, encoding="utf-8").read().split("\n")
     except OSError:
         return [], 0
     problems, n_tables, i = [], 0, 0
     while i < len(lines) - 1:
-        if lines[i].startswith("|") and SEP.match(lines[i + 1] or ""):
+        s_i = lines[i].strip()
+        if s_i.startswith("|") and SEP.match(lines[i + 1] or ""):
             n_tables += 1
             hdr = len(CELL.findall(lines[i])) - 1
             sep = len(CELL.findall(lines[i + 1])) - 1
             if sep != hdr:
                 problems.append((i + 2, f"separator has {sep} cells, header has {hdr}"))
             j = i + 2
-            while j < len(lines) and lines[j].startswith("|"):
+            while j < len(lines) and lines[j].strip().startswith("|"):
                 c = len(CELL.findall(lines[j])) - 1
                 if c != hdr:
                     problems.append((j + 1, f"row has {c} cells, header has {hdr}"
                                             f" :: {lines[j][:70]}"))
                 j += 1
+            i = j
+        elif s_i.startswith("|") and not SEP.match(lines[i + 1] or ""):
+            # a pipe-run with no separator: renders as prose, not a table
+            j = i
+            while j < len(lines) and lines[j].strip().startswith("|"):
+                j += 1
+            if j - i >= 2:                      # two or more consecutive pipe lines
+                problems.append((i + 1, f"{j - i} consecutive pipe lines with NO separator row — "
+                                        f"renders as prose, not a table :: {lines[i][:60]}"))
             i = j
         else:
             i += 1
