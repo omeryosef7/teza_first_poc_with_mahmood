@@ -8923,17 +8923,30 @@ L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**).
 with contrasts computed by the **paired** estimator (the baseline cancels algebraically) and the L12
 arm re-judged at the matched seed. Two tests, both reported because they answer different questions:
 
-| depth | arm Δ (p) | rank: ctl ≥ arm | **paired: beats at p<0.05** | **worst-case control** |
-|---|---|---|---|---|
-| **L6** | +0.0192 (0.029) | 0/24 | ⛔ **13 / 24** | p 0.678 |
-| **L8** | +0.0313 (0.009) | 0/24 | ⚠ **17 / 24** | p 0.104 |
-| **L10** | +0.0209 (0.026) | 0/24 | ✅ **24 / 24** | ✅ **p 0.0244** |
-| **L12** | +0.0307 (0.006) | 0/24 | ✅ **24 / 24** | ✅ **p 0.0183** |
+| depth | arm Δ (p) | rank: ctl ≥ arm | paired: beats at p<0.05 | worst-case control | **Holm (depth family, m=4)** |
+|---|---|---|---|---|---|
+| **L6** | +0.0192 (0.029) | 0/24 | ⛔ 13 / 24 | p 0.678 | 0.6783 |
+| **L8** | +0.0313 (0.009) | 0/24 | ⚠ 17 / 24 | p 0.104 | 0.2070 |
+| **L10** | +0.0209 (0.026) | 0/24 | 24 / 24 | p 0.0244 | ⛔ **0.0732** |
+| **L12** | +0.0307 (0.006) | 0/24 | 24 / 24 | p 0.0183 | ⛔ **0.0732** |
 
-⚠ **The rank test is uniform (p = 1/25 = 0.0400 at every depth, the design floor) and the paired test
-is not.** The defensible claim is their conjunction: **at L10 and L12 the arm is ahead of all 24
-orthogonal directions *and* significantly above each one; at L6 and L8 it is ahead of all 24 but
-significantly above only half to two-thirds.** ⛔ An interim claim that L6 was *refuted* was withdrawn
+*(final column: Holm over the **depth family**, m=4 — the correction
+`analyze_control_recheck.py` applies by policy: "the family is the depth set". At m=11, the honest
+family given that these four were selected as the top four of eleven **by this same statistic**,
+the adjusted values are 0.2014 / 0.2440 / 0.9315 / 1.0000.)*
+
+⛔ **NO DEPTH SURVIVES THE SPRINT'S OWN MULTIPLICITY POLICY.** An interim "✅ established at L10 and
+L12" was withdrawn on 2026-08-23 — the same answer the sprint got when it corrected the layer profile
+at m=11 and Holm rejected nothing. ⚠ The *within*-depth headline needs no correction ("beats all 24"
+is an intersection–union test whose max-p is already valid); the correction is required because the
+claim is made at **four** depths.
+
+**What survives:** across a complete 24-point angular grid, **no orthogonal direction in the concept
+subspace exceeds the arm at any depth** (0/24 × 4), and at L10/L12 the arm is above every control at
+**raw** p < 0.05. ⛔ **That is not "direction-specific causation":** the arm removes 0.81–0.88 of the
+cell-mean spread against every control's ≤0.13, a **dose-matched in-subspace control cannot exist**,
+and arms and controls are **not session-matched** (measured drift up to 0.0040, which exceeds every
+L6 margin). Producing artifact: `angle24_specificity_FULL.json`. ⛔ An interim claim that L6 was *refuted* was withdrawn
 (a baseline-seed artifact of mine), and an interim "only L10 separates" was withdrawn too (I had used
 a quadrature SE where the shared baseline requires a paired one). Superseded numbers follow:
 
@@ -9256,6 +9269,12 @@ own.
 | R12-2 | "the F-3 band settles it against the claim" | **over-retracted**; verdict flips with the metric (3/4 vs 4/4) and a random-effects test on the same draws gives p 0.037. Correct verdict: **not established, not settled** |
 | R12-3 | "+6.0× judge noise" separation at L8 | a single re-judge (one flipped row) used as a dispersion; proper contrast t = **+1.35** |
 | R12-4 | "the design cannot produce a significant result" (F-3, n=4) | false — true only of the rank statistic, the least powerful available |
+| R13-1 | "only L10 separates from its strongest control" | **quadrature SE** where the shared baseline requires a **paired** one; corrected, L12 and L10 both beat every control at raw p<0.05 |
+| R13-2 | the L12 arm's cell | judged at **seed 20260821** against a 20260816 baseline and 20 seed-matched controls — the same defect R12-1 fixed on the baseline side only. Re-judged; verdict unchanged |
+| **R14-1** | **"✅ established at L10 and L12" (24-control grid)** | ⛔ **no depth survives Holm over the depth family** (m=4: 0.0732 / 0.0732; m=11: 0.2014 / 0.2440) — the correction `analyze_control_recheck.py` applies by policy, and which I omitted |
+| R14-2 | "the new k20 angle is stronger than anything in the 20-point grid" | false — k20 +0.011241 vs k0 **+0.011834**; k20 merely has the largest p (an SE effect) |
+| R14-3 | "fourth time densification raised the control envelope" | false at L12 — the envelope is **unchanged** (k0 in both grids); all four new angles are weaker |
+| R14-4 | the 24-control table itself | had **no producing artifact**; emitted as `angle24_specificity_FULL.json` |
 
 ⚠ **This table was itself materially incomplete until review #9** — it stopped at review #5 and
 omitted every item from reviews #6 and #7 and every 08-21 result, including four claims this report
