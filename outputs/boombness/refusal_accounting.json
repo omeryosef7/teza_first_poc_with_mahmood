@@ -66,8 +66,9 @@
     "git_commit": "88e2b7373f65b33e67ad0058a9bee68b14f64a93"
   },
   "CORRECTION_2026_08_22": {
-    "problem": "The headline 'delta ASR = -delta refusal EXACTLY' is close to arithmetically forced. `refused` is NOT derived from the score -- it is an independent keyword detector (judge_boombness.py:414, bj.kw_refusal(text)) -- but empirically it agrees with (score < 0.5) on 3942 of 3960 rows (99.55%). Two instruments that agree 99.55% of the time necessarily have near-equal-and-opposite deltas, so the equality is evidence about the INSTRUMENTS, not about mechanism. I presented it as the latter.",
+    "problem": "The headline 'delta ASR = -delta refusal EXACTLY' is close to arithmetically forced. `refused` is NOT derived from the score -- it is an independent keyword detector (judge_boombness.py:414, bj.kw_refusal(text)) -- but empirically it agrees with (score < 0.5) on 3432 of 3465 rows (99.05%) across the seven core arms. Two instruments that agree 99.55% of the time necessarily have near-equal-and-opposite deltas, so the equality is evidence about the INSTRUMENTS, not about mechanism. I presented it as the latter.",
     "what_actually_survives": "The DISAGREEMENT counts, which is where the two instruments carry independent information. Rows that are not-refused but still low-scoring (partial or off-topic compliance): baseline 2, d_surface L8 2 (ZERO added), refusal-alone 10 (+8), both 13 (+11). So removing refusal produces compliance that is not useful, and removing d_surface does not. That is the real content of the '100% vs 92% conversion' asymmetry.",
-    "unaffected": "The capability-channel closure stands on a separate observation -- d_surface produces no gain on prompts that were already not refusing -- which does not depend on the two instruments agreeing."
+    "unaffected": "The capability-channel closure stands on a separate observation -- d_surface produces no gain on prompts that were already not refusing -- which does not depend on the two instruments agreeing.",
+    "audit9_note": "the originally published '3942 of 3960 (99.55%)' does not reproduce; 3960 = 8x495 but no 8-arm subset yields 18 disagreements. Corrected above. All disagreements are one-directional (refused=False with a low score); ZERO rows are refused=True with score >= 0.5."
   }
 }

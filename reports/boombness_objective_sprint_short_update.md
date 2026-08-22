@@ -126,7 +126,7 @@ and the `d_surface`-specific part is its weak half.
 ASR gain and the refusal-rate drop are **equal and opposite to the last digit** (L8 +0.0424 / −0.0424;
 L6, L10, L12 likewise), and **100%** of the prompts that stop refusing become successes. ⚠ **Corrected within a tick:** that equality is
 **near-forced** — `refused` is an independent keyword detector but agrees with `score < 0.5` on
-**99.55%** of rows, so the two deltas are arithmetically tied and the result is about the
+**99.05%** of rows (the first published 99.55% did not reproduce), so the two deltas are arithmetically tied and the result is about the
 **instruments**, not mechanism. **What survives is the disagreement:** rows that stop refusing but
 still score low number 2 at baseline, **2** under `d_surface` (**0 added**), **10** under refusal alone
 (**+8**) and 13 under both — so refusal removal produces *unusable* compliance and `d_surface` removal
@@ -138,10 +138,13 @@ refusal mechanism.
 
 **"Distinct channel" and "interacting channels" are different claims, and they go opposite ways
 (added 2026-08-22).** Of the 21 prompts that flip when `d_surface` is removed at L8, **19 also flip
-when refusal alone is removed** (chance expectation 4.6, p=1.1e-11) — so the evidence that `d_surface`
+when refusal alone is removed** (chance expectation **14.8**, p ≈ **0.022** — the first published "4.6 / 1e-11" wrongly assumed uniformity over all 463 baseline-refusing prompts when only ~143 are flippable at all) — so the evidence that `d_surface`
 reaches anything refusal does not is **2 prompts**, and "distinct second channel" is **not supported**.
-But removing **both** unlocks **40** flips that neither unlocks alone (28% of that arm), against **1**
-for the random triple — so "interacting" **is** supported. ⚠ Containment does not prove `d_surface`
+⛔ I also wrote that removing **both** unlocks **40** flips neither unlocks alone, so "interacting" is
+supported — **withdrawn (audit #9)**. That 40 is what **no** interaction predicts: D's flip set is a
+near-superset of B∪C ((B∪C)\D = 1 of 104), so pure nesting under a bigger perturbation predicts 39.
+Net interaction evidence: **one prompt**. "Interacting" is **cannot determine** — there is no
+dose-matched two-direction comparator here. ⚠ Containment does not prove `d_surface`
 acts *through* refusal; both arms may recruit the same fragile prompts.
 
 **Two things worth knowing before you act on any of this.** At matched dose, **`d_naive` beats

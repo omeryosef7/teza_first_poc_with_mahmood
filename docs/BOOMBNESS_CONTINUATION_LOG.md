@@ -6784,3 +6784,69 @@ survives any multiplicity correction.
 | 320 | 2026-08-22 | filed **C-14**; corrected report, short update, and the artifact | mechanism claim withdrawn; instrument claim stated |
 | 321 | 2026-08-22 | isolated what the instruments disagree about | `d_surface` **+0** unusable compliance, arm C **+8** |
 | 322 | 2026-08-22 | launched **audit #9** at four unaudited cross-arm analyses | briefed with the pooled-vs-cluster mismatch I most suspect |
+
+## Audit #9: both of my last two headline claims were arithmetic I had not finished doing
+
+Tick 2026-08-22. Audit #9 returned on the four cross-arm analyses I produced without an auditor. It
+confirmed the machinery and dismantled two of the conclusions. I verified both myself.
+
+### "Interacting IS supported" — withdrawn (F1)
+
+I reported that arm D unlocks **40** flips neither arm produces alone, and called it the surviving half
+of the two-channel story. **It is what *no* interaction predicts.**
+
+`(B ∪ C) \ D = 1 of 104` — D's flip set is a near-perfect **superset** of B ∪ C. Pure monotone nesting
+under a larger perturbation predicts `|D| − |B∪C|` = **39** novel flips. Observed **40**. **Net
+interaction evidence: one prompt.** And D *is* the larger perturbation: it changes **91.5%** of
+generations against B's 38.2% and C's 88.9%.
+
+Worse, the 40 was offered as independent corroboration of §14-SA's super-additivity. It is the **same
+arithmetic**: |D|−|B|−|C| = 20 = 40−19−1. I presented a statistic as a second witness to itself.
+
+### The containment p was off by nine orders of magnitude (F2)
+
+Published: chance expectation 4.63, hypergeometric **p = 1.1e-11**. That null assumes B's 21 flips are
+uniform over all 463 baseline-refusing prompts — but only **~143** are flippable by *any* perturbation.
+Conditioning on that pool: E[overlap] = **14.83**, observed 19, **p = 0.0224**. Generic flippability
+alone predicts ~15 of the 19.
+
+**The direction survives, the strength does not.** 90.5% containment stands; "far above chance" does
+not. And the artifact's own caveat — *both arms may recruit the same fragile prompts* — was sitting
+directly beside a p-value that contradicted it. I wrote both in the same commit.
+
+### Three more, all confirmed
+
+- **F3.** "An order of magnitude larger" compares arm B at L8 with arm C at L18 — **38.2% vs 88.9%** of
+  generations changed. Not dose-matched. **This is precisely the defect R-25 and R-26 were retracted
+  for**, applied rigorously inside the `d_surface` family and then abandoned for the headline
+  cross-channel line, which is the one a collaborator will quote.
+- **F4.** **No multiplicity correction anywhere in the new work** (15 tests). Holm leaves arm D, arm C
+  and containment; **§14-SA fails (0.0076 → 0.083)** and **L12 moves 0.043 → 0.047**, or 0.070 with the
+  layer family. **Nothing in the `d_surface` story survives family-wise correction over my own tick.**
+- **F5/F6.** My "99.55%" agreement figure does not reproduce (actual **99.05%**); `abg_Bctrl` — the one
+  control *matched* to the six `d_surface` rows — was **missing** from a table headed "every live
+  AdvBench arm"; and "random triple" is a **double**.
+
+### What the audit cleared, including my own main worry
+
+The sign-flip machinery is **sound on all four sub-questions**, including the one I flagged as most
+suspect: `obs` and the null use the **same** pooled denominator, so statistic and null match exactly.
+Zero-net clusters verified numerically irrelevant; `>=` is correct (strict `>` returns p=0 for every
+arm). Reproduction is digit-for-digit throughout.
+
+**But it added a caveat I had missed and should have seen:** for every arm, `p` **equals its attainable
+floor exactly**, because flips are one-directional. So `p` is a deterministic function of the *number
+of informative domains* and carries **no** information about effect size — D (+0.2869) and C (+0.2061)
+get identical p because both have 14 informative domains. Since generation here is deterministic, this
+is really a **sign test over the 16 domains**: it asks whether the effect generalises across domains,
+not whether it exists.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 323 | 2026-08-22 | verified F1 | `(B∪C)\D = 1`; nesting predicts **39** of the 40 — interaction evidence is **1 prompt** |
+| 324 | 2026-08-22 | verified F2 with a fragility-aware null | E=**14.8**, p=**0.022**, not 1e-11 |
+| 325 | 2026-08-22 | withdrew "interacting IS supported" to **cannot determine** | no dose-matched two-direction comparator exists |
+| 326 | 2026-08-22 | added the dose caveat to the cross-channel comparison | 38.2% vs 88.9% generations changed |
+| 327 | 2026-08-22 | recorded that **nothing survives Holm over my own 15 tests** | SA 0.083; L12 0.047–0.070 |
+| 328 | 2026-08-22 | fixed 99.55%→**99.05%**, added the missing `abg_Bctrl` row, relabelled "triple"→double | completeness claim was false |
+| 329 | 2026-08-22 | recorded that `p` = attainable floor for every arm | the test is a **sign test over domains**, not over effect size |

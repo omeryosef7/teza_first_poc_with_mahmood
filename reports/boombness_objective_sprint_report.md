@@ -64,6 +64,8 @@ Every AdvBench arm re-tested with the **exact cluster sign-flip** test, so the w
 instrument rather than a mix of CR1, percentile bootstrap and permutation
 (`arm_signflip_hierarchy.json`):
 
+⚠ **Two properties of this test, both from audit #9.** (i) **No multiplicity correction is applied across these tests.** Holm over the 15 inferential tests in this tick's four artifacts leaves arm D, arm C and containment; **§14-SA's super-additivity fails (0.0076 → 0.083)** and **L12 moves to 0.047** — 0.070 if the 10-layer profile family is included. **Nothing in the `d_surface` story survives family-wise correction over the sprint's own tick.** (ii) For **every** arm here `p` equals its attainable floor exactly, because flips are one-directional. So `p` is a deterministic function of the **number of informative domains** and carries no information about effect size — arms D (+0.2869) and C (+0.2061) get identical p because both have 14 informative domains. Since generation is deterministic in this repo, this is best read as a **sign test over the 16 domains** — i.e. does the effect generalise across domains — not as a randomization test of "no effect".
+
 | arm | Δ ASR | net flips | informative clusters | exact cluster p | |
 |---|---|---|---|---|---|
 | **`d_surface` + refusal (D)** | **+0.2869** | 142 | 14/16 | **0.0001** | **SIG** |
@@ -72,16 +74,20 @@ instrument rather than a mix of CR1, percentile bootstrap and permutation
 | `d_surface` alone, L8 | +0.0424 | 21 | 8/16 | 0.0078 | SIG (uncorrected only) |
 | `d_surface` alone, L10 | +0.0323 | 16 | 7/16 | 0.0156 | SIG (uncorrected only) |
 | `d_surface` alone, L6 | +0.0182 | 9 | 5/16 | 0.0625 | **ns** |
-| random triple control | +0.0020 | 1 | 1/16 | 1.00 | inert ✓ |
-| random single control | −0.0040 | −2 | 2/16 | 0.50 | inert ✓ |
+| random **double** control (L8+L18, matched to D) | +0.0020 | 1 | 1/16 | 1.00 | inert ✓ |
+| random control @L18 (matched to C) | −0.0040 | −2 | 2/16 | 0.50 | inert ✓ |
+| **random control @L8 (matched to the `d_surface` rows)** | **−0.0020** | −1 | 3/16 | 1.00 | inert ✓ |
 
-**Read the magnitudes, not just the stars.** The refusal channel is **an order of magnitude larger**
+⚠ The third row was **missing** from an earlier version of a table headed "every live AdvBench arm" — and it is the one control matched to the six `d_surface` rows the table is about (audit #9). The first row was also mislabelled "triple": it is **two** random projections.
+
+⚠ **The cross-channel comparison is NOT dose-matched (audit #9).** Arm B is `d_surface:project_out:8-8`, arm C is `refusalness:project_out:18-18` — different direction, different layer, and measurably different perturbation size: **38.2%** of generations changed vs **88.9%**. Comparing their effect sizes is comparing two interventions at different strengths, which is **exactly the defect R-25/R-26 were retracted for** within the `d_surface` family. The report applied that standard rigorously there and then dropped it for the headline cross-channel line. Read the row below as a statement about **these two interventions**, not about **channels**.
+
+**Read the magnitudes, not just the stars.** The refusal arm is **an order of magnitude larger**
 than the `d_surface` channel and is significant with 14 of 16 domains informative; both random
 controls are properly inert. Every `d_surface`-specific claim is small (+0.018…+0.042), marginal
 (only L12 survives multiplicity), and **dose-confounded** (R-25/R-26/R-27).
 
-**So the sprint's robust behavioural finding is about REFUSAL, and the `d_surface`-specific part is
-the weak half of it.** That was visible in the numbers all along; stating it plainly is new.
+**So the sprint's largest and most robust behavioural effect is the refusal arm, and the `d_surface` arm is far smaller and far more marginal** — stated as a fact about these interventions, not as an inference about channels (see the dose caveat above).
 
 ### "Distinct channel" vs "interacting channels" — the report conflates them (added 2026-08-22)
 
@@ -93,18 +99,26 @@ claims and the flip sets settle them in **opposite directions**
 |---|---|
 | arm B (`d_surface` alone) | 21 |
 | arm C (refusal alone) | 102 |
-| **B ∩ C** | **19** — *chance expectation 4.6, hypergeometric p = 1.1e-11* |
+| **B ∩ C** | **19** — ⚠ *corrected: chance expectation **14.8**, p ≈ **0.022**. The published "4.6 / 1.1e-11" assumed B's flips are uniform over all 463 baseline-refusing prompts, but only **~143** are flippable by **any** perturbation; conditioning on that pool, generic flippability alone predicts ~15 of the 19 (audit #9).* |
 | **B \ C** — flips `d_surface` produces that refusal does not | **2** |
 | arm D (both) | 143 |
 | B ∪ C | 104 |
 | **D \ (B ∪ C)** — flips *neither* arm produces alone | **40** |
 
-**"Distinct" is not supported.** 90% of what removing `d_surface` achieves is already achieved by
-removing refusal. The direct evidence that it reaches anything refusal does not is **two prompts**.
+**"Distinct" is not supported** — and this half survives audit #9. 90.5% of what removing `d_surface`
+achieves is already achieved by removing refusal; the direct evidence that it reaches anything refusal
+does not is **two prompts**. The *strength* of that evidence is weaker than first published (p ≈ 0.022,
+not 1e-11), but its direction is unchanged, and the artifact's own caveat — that both arms may recruit
+the same fragile prompts — is now the measured reading rather than a hedge.
 
-**"Interacting" IS supported.** Removing both unlocks **40** flips that neither unlocks alone — 28% of
-arm D's total, and the thing the §14-SA super-additivity number is measuring. The random triple
-produces **1** flip.
+⛔ **"Interacting" — WITHDRAWN to CANNOT DETERMINE (audit #9, 2026-08-22).** I wrote that removing
+both unlocks **40** flips neither unlocks alone. That is what **no interaction** predicts:
+**(B ∪ C) \ D = 1 of 104**, so D's flip set is a near-perfect *superset* of B ∪ C, and pure monotone
+nesting under a larger perturbation predicts **39** novel flips. Observed 40. **Net interaction
+evidence: one prompt.** D *is* a larger perturbation — it changes **91.5%** of generations against B's
+38.2% and C's 88.9%. And the 40 is not independent corroboration of §14-SA: it is the same arithmetic
+(|D|−|B|−|C| = 20 = 40−19−1), presented as a second witness to itself. This design has **no
+dose-matched two-direction comparator**, so interaction is neither supported nor refuted here.
 
 ⚠ **Containment does not prove `d_surface` acts *through* refusal.** Both arms may simply recruit the
 most fragile prompts — the same alternative R-23 raised for the angle controls, and it is not

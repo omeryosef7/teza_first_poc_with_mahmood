@@ -18,10 +18,15 @@
     "hypergeometric_p": 1.137e-11,
     "B_only": 2
   },
-  "VERDICT": "TWO findings pointing opposite ways, both real. (1) d_surface's flips are almost entirely CONTAINED in refusal's: 19 of 21, against 4.6 expected by chance (p=1.1e-11). The direct evidence that d_surface is a channel refusal does not already cover is TWO prompts. (2) But arm D produces 40 flips that NEITHER arm produces alone, which is genuine synergy and is what the super-additivity number measures.",
+  "VERDICT": "SUPERSEDED by CORRECTION_2026_08_22_audit9 -- see that field.",
   "reading": "'d_surface is a distinct second channel' is NOT supported -- 90% of its effect is inside the refusal effect. 'The two interact' IS supported -- removing both unlocks flips neither unlocks alone. The report's \u00a718 conflates these.",
   "caveat": "Containment does not by itself prove d_surface acts THROUGH refusal; both arms may simply recruit the most fragile prompts, the same alternative raised in R-23 for the angle controls. What it does rule out is the claim that d_surface's behavioural effect is largely separate.",
   "provenance": {
     "git_commit": "6571ac5ce10b50fcc2b794bfb7b280a1f1e74754"
+  },
+  "CORRECTION_2026_08_22_audit9": {
+    "F1_interaction_withdrawn": "'40 flips neither arm produces alone' is what NO interaction predicts. (B\u222aC)\\D = 1 of 104, so D's flip set is a near-perfect SUPERSET of B\u222aC; pure monotone nesting under a larger perturbation predicts |D|-|B\u222aC| = 39 novel flips and 40 were observed. Net interaction evidence: ONE prompt. D is also unambiguously a larger perturbation (91.5% of generations changed vs B 38.2%, C 88.9%). And the 40 is not independent corroboration of \u00a714-SA -- it is the same arithmetic (|D|-|B|-|C| = 20 = 40-19-1).",
+    "F2_containment_p_corrected": "The published hypergeometric null (uniform over 463 baseline-refusing prompts, E=4.63, p=1.1e-11) is wrong: only ~143/463 prompts are flippable by ANY perturbation. Conditional on D's flip pool: N=143, K=101, n=21, E[overlap]=14.83, observed 19, p=0.0224. Generic flippability alone predicts ~15 of the 19.",
+    "revised_verdict": "'Distinct second channel' remains UNSUPPORTED (19/21 = 90.5% contained; the descriptive fact is unchanged), but the evidence is p~0.02 against a fragility-aware null, not 1e-11. 'The two interact' is NOT supported and NOT refuted -- CANNOT DETERMINE, because this design has no dose-matched two-direction comparator."
   }
 }
