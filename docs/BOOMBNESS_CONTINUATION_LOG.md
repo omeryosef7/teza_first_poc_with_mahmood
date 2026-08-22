@@ -7320,3 +7320,40 @@ floor. None of them existed before the failure they guard against.
 | 378 | 2026-08-22 | first run | **13 unqualified blocks** against the 4 I had fixed by hand |
 | 379 | 2026-08-22 | annotated all 13, six-domain blocks with their specific floor | includes one block whose own sentence states the floor it violates |
 | 380 | 2026-08-22 | adversarially tested the guard | exit 1 planted / 0 clean; **all five guards green** |
+
+## One entry point for the five guards
+
+Tick 2026-08-22. Until now I ran the guards as an ad-hoc shell loop, by hand, once per tick — and on at
+least one tick ran **four of the five**. A guard you have to remember to run is a guard you will
+eventually not run, which is the same class of problem as a rule applied only where an auditor pointed.
+
+`check_all.py` runs all five and exits non-zero if any fails, printing what each one guards against so
+the list explains itself:
+
+| guard | guards against |
+|---|---|
+| `retraction_sweep` | a retracted claim resurfacing in a live document |
+| `canonical_figures` | a headline figure drifting between the two deliverables |
+| `verify_report_numbers` | a quoted number no longer matching its committed artifact |
+| `markdown_structure_check` | a cell rendering in the wrong column |
+| `pvalue_hygiene_check` | a small p quoted without its design's attainable floor |
+
+Deliberately **no `--skip`**: a guard worth disabling is worth deleting, and a failing guard is exactly
+when you want the build red.
+
+**Tested with two simultaneous planted failures** — a bare `p=0.0002` and a 3-cell row under a
+2-column header. It failed both, named both, and returned 0 after restore.
+
+**Where the sprint stands.** Every gate row has now been tested with the exact instrument; every audit
+finding through #10 is actioned; the deliverables carry §0a/§0b, the p-rule, the effect hierarchy and
+all retractions; and the plan's §19 answers are present and current. The substantive open question —
+whether `d_surface` names anything beyond a high-variance direction of the bank's cell-mean structure —
+**cannot be answered on this bank**, by C-13's bound: at high dose there is only one direction up to a
+small rotation. That is a design conclusion, not a compute one, and more runs against this bank will
+not move it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 381 | 2026-08-22 | wrote `check_all.py` | five guards, one entry point, one exit code |
+| 382 | 2026-08-22 | tested with two simultaneous planted failures | both caught and named; clean → 0 |
+| 383 | 2026-08-22 | recorded the sprint's standing position | the open question is **design-bound**, not compute-bound |
