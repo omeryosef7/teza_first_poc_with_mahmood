@@ -5148,7 +5148,7 @@ already covered. This is not optional tidying — **L6 was refuted only because 
 L10/L12 sit inside the citable profile at exactly the resolution that proved misleading.
 
 ⚠ **Pre-registered, and the bad branch is the likely one.** Densification raised the control envelope
-**+46% at L6 and +23% at L8**. If it does the same at L12 (current band max +0.0120 against an arm
+**+46.1% at L6 and +24.0% at L8** (corrected from +23%, a 4-dp rounding slip). If it does the same at L12 (current band max +0.0120 against an arm
 of +0.0316) the max would land near +0.0175 — still short of the arm. At **L10** the current band max
 is only **−0.0025** from 4 angles, so there is a great deal of unmeasured space and the largest
 uncertainty of the four depths. **If a control at either depth reaches its arm, the flagship profile
@@ -5303,7 +5303,7 @@ They must not be, and the reason is geometric.
 | track | where the control lives | right design | why the other one fails |
 |---|---|---|---|
 | **F-3 add, L18** | `random` in the **full R⁴⁰⁹⁶** | **independent draws** | two random vectors in 4096-D are near-orthogonal, so seeds really are a band — which is why 4 draws exposed the single-draw claim |
-| **ablation, L6/L8/L12** | the **2-D orthogonal complement** of the arm inside the rank-3 span | **systematic angles** | ⛔ random draws in 2-D are **not independent**: mean \|cos\| between two of them is 2/π ≈ 0.64, and measured on this payload three "independent" seeds gave cos **1.000 / 0.912 / 0.996** with each other |
+| **ablation, L6/L8/L12** | the **2-D orthogonal complement** of the arm inside the rank-3 span | **systematic angles** | ⛔ random draws in 2-D are **not independent**: mean \|cos\| between two of them is 2/π ≈ 0.64, and three "independent" seeds are recorded as giving cos **1.000 / 0.912 / 0.996** ⚠ *(asserted in `signals.py`'s docstring; not re-measured by me and no artifact records it — the 2/π ≈ 0.64 expectation beside it is a mathematical fact and needs none)* |
 
 ⛔ **So seeding a "control band" in the 2-D complement would produce three vectors that are nearly
 the same vector, reported as independent evidence** — the R-12 mistake in a new costume, and exactly
@@ -5373,7 +5373,7 @@ free. That check saved 16 GPU jobs.
 |---|---|---|---|---|---|---|---|---|
 | **L6** | +0.0157 | **12** | [−0.0036, +0.0118] | 0.0053 | **+2.08** | 0/12 | 0.0769 | ⚠ **75.0%** |
 | **L8** | +0.0278 | **12** | [−0.0134, +0.0112] | 0.0094 | **+3.11** | 0/12 | 0.0769 | **40.2%** |
-| *F-3 add (retracted)* | −0.0276 | 4 | [−0.0219, +0.0157] | 0.0149 | −2.08 | 0/4 | 0.200 | ⛔ **79.0%** |
+| *F-3 add (retracted)* | −0.0276 | 4 | [−0.0219, +0.0157] | 0.0149 | −2.08 | 0/4 | 0.200 | ⛔ **79.2%** |
 
 ### ⚠ The L6 flag was not small-n — it is stable and it matches the retracted case exactly
 
@@ -5382,7 +5382,7 @@ L8 z 3.54 → **3.11**, nearest 34.0% → 40.2%). So the earlier flag was real, 
 controls.
 
 ⛔ **And L6's numbers are the F-3 numbers.** Arm z **+2.08** against F-3's **−2.08**; nearest control
-**75.0%** of the arm against F-3's **79.0%**. On the statistic that decided F-3, these two are the
+**75.0%** of the arm against F-3's **79.2%**. On the statistic that decided F-3, these two are the
 same case — and the sprint **retracted** F-3 on it. **Consistency requires treating L6 the same
 way.** Three independent lines now agree: the angle sweep (2 of 4 angles, worst case p 0.242), the
 4-control band, and this 12-control band.
@@ -5431,7 +5431,7 @@ disk. No new compute.
 | **L8** | +0.0278 | 4 | [−0.0129, +0.0094] | 0.0086 | **+3.54** | 0/4 | 34.0% |
 | **L10** | +0.0211 | 4 | [−0.0123, −0.0025] | 0.0039 | **+7.64** | 0/4 | **−11.8%** |
 | **L12** | +0.0316 | 8 | [−0.0107, +0.0120] | 0.0064 | **+4.71** | 0/8 | 38.1% |
-| *F-3 add (for contrast)* | −0.0276 | 4 | [−0.0219, +0.0157] | 0.0149 | −2.08 | 0/4 | ⛔ **79.0%** |
+| *F-3 add (for contrast)* | −0.0276 | 4 | [−0.0219, +0.0157] | 0.0149 | −2.08 | 0/4 | ⛔ **79.2%** |
 
 ### ✅ L8, L10 and L12 survive the lens that killed F-3
 
@@ -5630,8 +5630,14 @@ table."*
 
 ## ⛔✅ EXPERIMENT 7 CLOSES AS AN EVALUATED NEGATIVE — and the magnitude-matched asymmetry got sharper
 
-**Artifact:** `outputs/boombness/coherence/f3_gate_dsurface_full.json`. Six doses of
-`d_surface:add:8`, magnitudes printed by the run-time diagnostic (gap L8 = 6.054948):
+**Artifacts** (review #12 corrected a single-file citation — the six rows live in four files):
+`f3_gate_dsurface_full.json` (0.0625, 0.125, 0.75 + the 0.75 control), `f3_gate_dsurface_g05.json`
+(0.5), **`f3_gate_dsurface_g025.json` (0.25 — gated in review #12; this row had been markdown-only
+and is load-bearing for the monotonicity argument. Measured: uniq 0.873, 3-gram 0.005, truncated
+0.01, scorable 0.331, 331/495 short — reproducing the published values exactly)**,
+`f3_gate_alpha1.json` (baseline) and `f3_gate_addS.json` (1.0). Gap L8 = **6.054948**.
+⚠ **Magnitudes for the 0.25 and 1.0 rows are hand-multiplications, not diagnostic output** — those
+runs predate `_report_add_magnitude`; the other four were printed at run time.
 
 | dose (gap) | magnitude | uniq | 3-gram | truncated | **scorable** | gate |
 |---|---|---|---|---|---|---|
@@ -5673,9 +5679,10 @@ differed.
 ⛔ **Still not calling it a finding, and this time I am fixing the reason rather than only naming
 it.** It rests on **one random vector** (seed 20260816) — precisely the defect review #11 caught in
 the F-3 control, where two "independent" controls turned out to be the same draw. **Launched
-773708–773710: `random:add:8-8:0.75` at seeds 20260901/2/3.** If all three pass the gate while the
-`d_surface` arm fails, the asymmetry rests on a band of four draws instead of one, and *then* it is
-reportable — as a **coherence** result, which is still not the behavioural claim the sprint is
+773708–773710: `random:add:8-8:0.75` at seeds 20260901/2/3.** ✅ **RESULT:** scorable
+**0.8303 / 0.9778 / 0.9919**, plus the original seed-20260816 draw at **0.9131** — **4 of 4 pass**,
+band [0.830, 0.992], against the `d_surface` arm's **0.364**. The asymmetry rests on four draws, and
+is reportable — as a **coherence** result, which is still not the behavioural claim the sprint is
 after.
 
 This is the review #11 lesson applied before an auditor has to apply it: **the repair is cheap and
