@@ -8489,3 +8489,46 @@ reading I prefer.
 | 493 | 2026-08-22 | **replaced my own too-generous noise scale** | baseline drift is a lower bound; session-mean spread is the honest upper one |
 | 494 | 2026-08-22 | L6 margin 4p vs spread 5.5p | ⛔ **inside noise — third independent route to the same withdrawal** |
 | 495 | 2026-08-22 | L8 margin exceeds by **1.5×**, not 4.22× | verdict unchanged, **confidence lowered** |
+
+## Running the one experiment that can settle it, with the rule fixed in advance
+
+The session-vs-angle confound is now the blocking item for **two** verdicts — L6's withdrawal and L8's
+confidence — so I checked whether it could be resolved from disk. It cannot: **no angle in the sweep
+has ever been judged twice (0 of 80).** That is not a workaround-able gap; separating a session effect
+from an angle effect requires the same angles judged in two sessions, and nothing on disk has that.
+
+So I ran it. Job **774501** (`cpu-killable`, not the login node) re-judges all eight L6 angles —
+k=1,3,5,7,9 (originally session `163302`, mean +0.4p) and k=11,13,15 (originally `165021`, mean +5.0p,
+the ceiling) — **together in one new session, with a baseline judged in that same session**.
+
+**Why this design is clean.** The generations are byte-identical to what was judged before, and all
+eight were produced in a single generation wave (15:37–15:42), so generation conditions cannot explain
+a group difference. The only thing that differed between the two groups was which judging session they
+landed in.
+
+**The rule, fixed before the numbers exist** — written into the analysis script, not chosen afterwards:
+
+> session artifact if the new between-group gap is **under 2 prompts**; a real angle effect if
+> **over 4**; ambiguous in between.
+
+**Both answers are worth having.** If the gap survives, L6's ceiling is a property of the angles and
+its 4-prompt margin is real as measured — the withdrawal stands on the margin being small, not on an
+artifact. If the gap collapses, the ceiling was a session artifact, and since **only one control
+session in the entire sweep has a baseline of its own**, that implicates the cross-session construction
+of the null at *every* layer, not just L6.
+
+I judged nothing for several ticks — twice declining because the work duplicated the concurrent
+session, once because a free measurement already answered the question. None of those applies here: the
+crossover is not being run by anyone else, and no measurement on disk can substitute for it.
+
+The analysis script refuses a partial read (it exits non-zero until all nine runs reach 495 rows)
+rather than reporting a number over whatever has finished — the same failure that produced the C-11
+half-shard bug.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 496 | 2026-08-22 | checked whether the confound is resolvable from disk | **no angle judged twice, 0 of 80** — it is not |
+| 497 | 2026-08-22 | submitted the crossover re-judge, job **774501** | 8 angles + baseline, one session, `cpu-killable` |
+| 498 | 2026-08-22 | verified every input before spending an API call | 495 rows and DONE on all nine, else the batch refuses |
+| 499 | 2026-08-22 | **pre-committed the decision rule** | gap <2p = session artifact, >4p = real, else ambiguous |
+| 500 | 2026-08-22 | analysis script written and made to refuse partial data | exits non-zero until all nine reach 495 rows |
