@@ -7021,6 +7021,54 @@ carries dose ≈0.84 against the controls' ≈0.11), and the angular grid covers
 — **k = 17,19,21,23 were never run** — so the control envelope is better characterised in the lower
 half of the half-circle than the upper.
 
+## ⚠✅ THE DRIFT NUMBER I USED WAS WRONG — the concurrent line corrected it, and it changes my session argument
+
+The other session working this repo found that the judge-drift figure **0.0057** — which the audit
+chain then handed me as a **0.0040** envelope — was computed by **differencing raw ASRs across judge
+passes with different denominators**, and that its maximum came from a **truncated run**
+(`ab_base_20260819_002240`, 483 of 495 rows, a contiguous tail = killed job, no `DONE.json`).
+Excluding partial passes and scoring on the intersection of prompt ids:
+
+> **drift 0.0057 → 0.0020** (one prompt, not 2.8), across 10 complete passes.
+
+⚠ **I used the inflated number to argue that L6's rank margins sat inside session noise.** Recomputed
+against the corrected drift, using my own estimand (paired arm-minus-strongest-control, domain
+clustered):
+
+| depth | margin | **margin / drift** | above the artifact's 2× rule? |
+|---|---|---|---|
+| **L6** | +0.002022 | **1.00×** | ⛔ **NO** |
+| L8 | +0.016589 | **8.21×** | ✅ yes |
+| L10 | +0.022627 | **11.20×** | ✅ yes |
+| L12 | +0.018844 | **9.33×** | ✅ yes |
+
+### ✅ What this changes, and what it does not
+
+✅ **The session-noise objection is removed for L8, L10 and L12** — their margins are 8–11× the
+corrected drift, comfortably clear of the artifact's own "below 2× cannot be distinguished" rule.
+My earlier statement that arms and controls being cross-session threatens those depths was based on
+a number that was 2.8× too large, and I withdraw it for those three.
+
+⛔ **It is not removed for L6**, whose margin is **1.00× the drift** — exactly at it. The artifact's
+verdict field still applies there verbatim: *"Margins below 2× the drift cannot be distinguished from
+judging-session assignment."*
+
+⛔ **And it does not touch the multiplicity result.** The depth-family Holm (0.0732 at L10 and L12)
+is an **independent** objection: it is about testing four depths, not about judge noise. **L10 and
+L12 remain "not established"** — one of the two reasons I gave has been removed, and the other, which
+was decisive, stands.
+
+⚠ **Note the direction of this correction: it favours my results, and I am stating its limits at the
+same length I state limits that hurt.** It restores nothing beyond the drift comparison. L6 remains
+the weakest depth on every reproducible measure (nearest control at 89.5% of the arm; 13 of 24
+controls beaten; Holm 0.6783), and the corrected drift makes it *exactly* borderline rather than
+clearly inside noise — which is a smaller improvement than "no layer is inside judge noise" would
+suggest if quoted alone.
+
+✅ **Credit where due:** this correction came from the concurrent session, not from me or my audits.
+Its root cause is the same class this log keeps finding — **a guard added to one code path and not
+its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
+
 ## 4h Code and Output Review — Review #14 (2026-08-23 02:20) — STOCKTAKE: WHAT SURVIVES FIVE REVERSALS
 
 Five headline reversals in two days, **every one toward a weaker claim**. That pattern is worth
