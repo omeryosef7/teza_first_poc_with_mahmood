@@ -5056,6 +5056,57 @@ reported.
 
 
 
+## ✅ I CHECKED MY OWN HEADLINE FOR AN ARTIFACT — it survives, but the statistic to report changed
+
+**The worry.** All three L6 controls that reach the arm are **new** controls, judged in today's
+session against today's baseline, while the arm and the other 12 controls come from yesterday's. If
+today's judging ran hotter, "3 of 20 controls beat the arm" would be a session artifact rather than
+a refutation — and it would be *my own* design choice that produced it.
+
+**The check.** The baseline generations were judged in both sessions, which gives a direct
+measurement rather than an assumption:
+
+| | ASR@0.5 | mean StrongReject |
+|---|---|---|
+| baseline, 08-21 session | 0.0667 | 0.0654 |
+| baseline, 08-22 session (identical generations) | 0.0646 | 0.0631 |
+| **session offset** | −0.0020 | **−0.0023** |
+
+✅ **The artifact does not arise, for a structural reason:** every delta is
+`(arm − ITS OWN baseline)` with both judged in the same session, so a uniform session shift
+**cancels inside each delta**. That is exactly why the baseline was re-judged today, and this
+measurement confirms the design worked.
+
+⛔ **But it exposes something the raw rank count was hiding.** The residual per-run judge noise is
+**≈0.0023** (measured on identical text), and the margins at L6 are *smaller than that*:
+
+| depth | arm | band max | margin | **margin ÷ judge noise** | arm's percentile in its own band | ctl within 1 noise-width |
+|---|---|---|---|---|---|---|
+| **L6** | +0.0157 | **+0.0172** | **−0.0015** | **−0.7×** | **85th** | **3/20** |
+| **L8** | +0.0278 | +0.0138 | +0.0139 | **+6.0×** | **100th** | 0/20 |
+
+### The corrected way to state both results
+
+⚠ **"3 of 20 controls beat the L6 arm" is noise-sensitive and should not be quoted as a count.**
+Re-judging could plausibly make it 1 or 5. **What is robust is that the L6 arm sits at the 85th
+percentile of its own control band, with three controls inside one noise-width of it** — i.e. the
+arm is *embedded in* the distribution of directions it is supposed to be special against. The
+refutation stands; the statistic supporting it is the percentile, not the tally.
+
+✅ **L8 is robust on the same scale**: margin **6.0× the judge noise**, 100th percentile, not a
+single control within a noise-width. Its rank p = 0.0476 is not resting on a coin-flip ordering.
+
+**And the fragility is itself diagnostic.** A rank test is unstable exactly when the arm is
+embedded in the band and stable when it is separated — so *the instability at L6 and the stability
+at L8 carry the same message as the p-values*, from a direction that does not depend on the
+multiplicity family at all.
+
+⚠ This noise scale (≈0.0023) should be applied to the L10/L12 results when they land: L12's arm is
++0.0316 and its current band max +0.0120, a margin of 8.5× noise, so it has room to survive a
++23–46% envelope increase. **L10's arm is +0.0211 against a band max of −0.0025 from only 4
+angles** — the margin looks large but is measured against almost no coverage, which is precisely the
+situation L6 was in before densification.
+
 ## 🔬 L10 AND L12 DENSIFIED TO 20 CONTROLS (774260–774287) — the debt the L6 result created
 
 **28 jobs**: L12 gains 12 angles (8 → 20), L10 gains 16 (4 → 20), all at `of24` positions not
