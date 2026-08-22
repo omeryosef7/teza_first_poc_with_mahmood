@@ -7524,3 +7524,46 @@ mechanisation worked: a guard found the other ten. The habit did not go away bec
 | 399 | 2026-08-22 | REPORT_ONLY presence check | **immediately caught a wrong scope declaration** (5 of 8 entries were unguarded) |
 | 400 | 2026-08-22 | retracted-status assertion check | flagged **10 lines** still asserting retracted figures |
 | 401 | 2026-08-22 | marked all ten | I had fixed 1 of 11 last tick and assumed it was the instance |
+
+## Audit #11 fully closed — including the C-series nobody had ever checked
+
+Tick 2026-08-22. Cleared the last six findings. All five guards green; every fix adversarially tested.
+
+**The pooled-design artifact now has a producing script.** Six figures in the section that ends with a
+directive to future work rested on an ad-hoc computation with **no script** — violating the bar quoted
+in `verify_report_numbers.py`'s own header. `pooled_design_check.py` regenerates them **and runs the
+three controls that killed the recommendation**, so a reader cannot see the encouraging first table
+without the verdict beneath it.
+
+Writing it surfaced an estimand choice I had made silently: control 3's residual is **0.1225** dividing
+by the pooled-centred total and **0.1614** dividing by the sum of each bank's own — audit #11 quoted
+the second, a first pass here computed the first. Both are now reported with the choice named. The
+conclusion is identical either way, but publishing one without saying which is the estimand error this
+sprint has already made twice.
+
+**The C-series had never been checked.** Nine C-ids were cited in the report and **not one had a
+registry row** — the same unverifiable state that produced the R-14/R-15 collision, in the series
+nobody thought to look at. `registry_check` covered `R-\d+` only. Now it covers both, a correction
+registry exists, and citing an untabled `C-99` fails the build. Four older rows (C-1, C-5, C-8, C-9)
+are tabled **from their citation context and marked as not re-derived** — an ID with no row is what
+lets a second meaning attach to it later, which is the whole reason the R-series got a registry.
+
+**Three more guard hardenings, each tested:** the live-prefix boundary now requires a real heading and
+**refuses to run** on an implausibly short prefix rather than passing vacuously (a prose mention of the
+boundary string used to collapse it silently); `pvalue_hygiene`'s qualifier no longer accepts a bare
+citation like `[3]` as an interval, and its p-matcher now catches `p ≤ x` and `p-value of x`; and
+`check_all` prints **findings** rather than the last six lines, which for `retraction_sweep` were a
+four-line essay about heuristics — observed showing zero findings on three planted mutations.
+
+**One thing I deliberately did not do.** Three guard docstrings say *"so this can gate a commit"*, and
+there is no `pre-commit` hook. Installing one would block **the concurrent session's** commits on files
+it never touched, in a repo we share. That is not my call to impose, so the hook stays uninstalled and
+the reason is recorded rather than left as an apparent oversight.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 402 | 2026-08-22 | wrote `pooled_design_check.py` | artifact regenerable; the three killing controls run with it |
+| 403 | 2026-08-22 | named a silent estimand choice in control 3 | **0.1225** vs **0.1614** — both reported, conclusion unchanged |
+| 404 | 2026-08-22 | added the **C-series registry**; extended `registry_check` to both series | 9 cited ids, **0 rows** before; `C-99` now fails the build |
+| 405 | 2026-08-22 | hardened live-prefix, p-qualifier, and `check_all` output | each adversarially tested |
+| 406 | 2026-08-22 | declined to install a pre-commit hook, with the reason | it would block a **shared** repo's other session |

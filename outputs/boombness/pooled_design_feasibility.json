@@ -1,34 +1,63 @@
 {
-  "question": "C-13 said separating direction-identity from dose needs a different design. Does pooling concept/codeword variants actually deliver one?",
   "layer": 8,
-  "single_bank": {
-    "cells": 4,
-    "dose_d_surface": 0.8402006196015032,
-    "max_orthogonal_dose": 0.11429965311195878,
-    "top_eigenvalue_share": 0.841,
-    "cos_d_surface_PC1": 0.9998
+  "per_bank": {
+    "carrot_bomb": {
+      "dose_d_surface": 0.8402006196015032,
+      "max_orthogonal_dose": 0.11429965311195878,
+      "top_eigenvalue_share": 0.8405391064139681,
+      "n_cells": 4,
+      "fit": "full_20260816_185942_1008673"
+    },
+    "carrot_knife": {
+      "dose_d_surface": 0.891137169682323,
+      "max_orthogonal_dose": 0.06784591521474112,
+      "top_eigenvalue_share": 0.8912244733525572,
+      "n_cells": 4,
+      "fit": "knifefit_20260821_135218_4045492"
+    },
+    "button_bomb": {
+      "dose_d_surface": 0.7943293337474299,
+      "max_orthogonal_dose": 0.1444526849558339,
+      "top_eigenvalue_share": 0.7964041329319227,
+      "n_cells": 4,
+      "fit": "buttonfit_20260821_150557_1157907"
+    }
   },
-  "pooled_three_banks": {
-    "cells": 12,
+  "pooled": {
     "dose_d_surface": 0.5242904909216867,
     "max_orthogonal_dose": 0.2070210479934083,
-    "top_eigenvalue_share": 0.527,
-    "cos_d_surface_PC1": 0.9968,
-    "banks": [
-      "carrot->bomb",
-      "carrot->knife",
-      "button->bomb"
-    ]
+    "top_eigenvalue_share": 0.527041761417306,
+    "n_cells": 12
   },
-  "VERDICT": "Pooling helps materially but does NOT dissolve the entanglement. d_surface's dose falls 0.840 -> 0.524 and the best ORTHOGONAL direction rises 0.114 -> 0.207 (1.8x), so a control can now carry real dose instead of scraps. But d_surface is still essentially PC1 (cos 0.9968), so the highest-dose direction remains d_surface-like and the top-dose region stays entangled.",
-  "actionable": "A pooled multi-concept/multi-codeword bank is a genuinely better design for this question -- it is the cheapest available improvement and needs no new generations, only a refit over the existing three banks' cells. It is not sufficient on its own: dissolving the entanglement needs cells whose dominant variation is NOT the surface contrast.",
+  "control_1_three_identical_copies": {
+    "dose_d_surface": 0.8402005569245803,
+    "max_orthogonal_dose": 0.11429967093880528,
+    "top_eigenvalue_share": 0.8405392759051824,
+    "n_cells": 12
+  },
+  "control_2_new_orthogonal_direction_vs_each_banks_d_surface": {
+    "carrot_bomb": 7.450580596923828e-09,
+    "carrot_knife": 0.6742614507675171,
+    "button_bomb": 0.6109009385108948
+  },
+  "control_3_residual_after_removing_each_banks_own_d_surface": {
+    "pooled_over_pooled_centred_total": 0.12251323739751314,
+    "pooled_over_sum_of_own_centred_totals": 0.16139634414086884,
+    "single_bank": 0.15979938039849684,
+    "note": "the two pooled normalisations differ only in whether between-bank offsets sit in the denominator; the conclusion is the same under both"
+  },
+  "cross_bank_d_surface_cosines": {
+    "carrot_bomb|carrot_knife": 0.606813907623291,
+    "carrot_bomb|button_bomb": 0.6615768074989319,
+    "carrot_knife|button_bomb": 0.1695346236228943
+  },
+  "VERDICT": "Pooling does NOT deliver the design C-13 asked for. Control 1: three identical copies leave the geometry unchanged, so pooling per se buys nothing -- the gain is entirely that the banks' d_surface directions are non-collinear. Control 2: the direction carrying the new orthogonal dose is itself a surface contrast. Control 3: pooling adds essentially no non-surface variance. A control built to reach the pooled b would most likely be another codeword's surface contrast, which is the confound C-13 flagged.",
   "provenance": {
-    "git_commit": "5ee2d33a5940318d139e90379e9363bdc42b5176"
-  },
-  "CORRECTION_2026_08_22_audit11": {
-    "actionable_withdrawn": "The 'treat b=0.207 as the dose a legitimate control must reach' instruction is withdrawn. Two controls: (1) pooling three IDENTICAL copies of the bomb bank leaves dose 0.8402 and max orthogonal dose 0.1143 unchanged, so pooling per se buys nothing -- all the gain comes from the three banks' d_surface being non-collinear (cos 0.607/0.662/0.170); (2) the direction carrying the new 0.207 dose is ITSELF a surface contrast (cos 0.66 with knife's d_surface, 0.61-0.63 with button's), and removing every bank's own d_surface from its own cells leaves 0.1614 of pooled spread against the single bank's 0.1598 -- pooling adds NO non-surface variance.",
-    "corrected_reading": "Pooling three codewords whose surface directions sit 50-80 degrees apart lets a bomb-orthogonal control carry OTHER codewords' surface dose. It does not move the design toward cells whose dominant variation is not the surface contrast, which was the stated goal.",
-    "arithmetic_unaffected": "All eight published numbers reproduce to 4 decimals; the error is in the actionable drawn from them, not the computation.",
-    "frontier_note": "The forced-|cos| row assumes a vanishing cross term; the true Pareto frontier gives ~0.63 single / ~0.38 pooled, so the published figures overstate the forced collinearity."
+    "argv": [
+      "src/boombness/pooled_design_check.py",
+      "--out",
+      "outputs/boombness/pooled_design_feasibility.json"
+    ],
+    "git_commit": "a314034d65dac1f2ff766ad7f2cd75340f2bf999"
   }
 }

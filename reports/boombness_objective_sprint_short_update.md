@@ -727,7 +727,7 @@ one measured.
    and the mid-layer negative band is a **semantic/comprehension-prompt phenomenon that does not
    survive multiplicity correction**. Quoting raw clustered p while the artifact's own Holm field
    says no was over-claiming. Both rows come from the committed `reanalyze_corrected.py`.
-3. **Process.** Seven retractions and ten corrections, every one from independent audit, and all
+3. **Process.** ⚠ **R-1…R-27 retractions and C-1…C-14 corrections** *(this read "seven retractions and ten corrections" and was stale since 08-19)*, every one from independent audit, and all
    one family: *the manipulated and measured quantities were not the same thing*, or *the best of
    mine was compared against a fixed instance of yours*. **Three** guards written to prevent
    exactly this were themselves silently inoperative: a coherence gate that keyed on the wrong

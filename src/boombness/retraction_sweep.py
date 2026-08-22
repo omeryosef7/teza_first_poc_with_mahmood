@@ -266,8 +266,23 @@ def sweep(paths):
         except OSError:
             continue
         stop = LIVE_PREFIX_ENDS_AT.get(f)
-        if stop and stop in text:
-            text = text[:text.index(stop)]
+        if stop:
+            # ⛔ `text.index(stop)` took the FIRST occurrence anywhere, including inside prose or a
+            # table cell (audit #11). One line above the boundary mentioning the heading by name would
+            # silently collapse the live prefix to a few lines and the guard would still print "clean".
+            # BOOMBNESS_SPRINT_PROGRESS.md already contains that exact string inside a table cell.
+            # Require a real HEADING, and refuse to run on an implausibly short prefix rather than
+            # passing vacuously.
+            m2 = re.search(r"^" + re.escape(stop) + r"\s*$", text, re.M)
+            if m2:
+                prefix = text[:m2.start()]
+                if prefix.count("\n") < 20:
+                    print(f"[sweep] REFUSING to sweep {f}: the live prefix collapsed to "
+                          f"{prefix.count(chr(10))} lines -- the boundary heading "
+                          f"{stop!r} was matched too early. Fix the boundary, do not trust this run.",
+                          file=sys.stderr)
+                    return [(f, 0, "live-prefix collapsed", "boundary matched too early")]
+                text = prefix
         # BLOCKS ARE BLANK-LINE PARAGRAPHS, EXCEPT THAT EVERY TABLE ROW **AND EVERY LIST ITEM** IS
         # ITS OWN BLOCK. List items were added 2026-08-22 (audit #11): a run of bullets with no blank
         # line between them is one block, so ONE bullet saying "was" whitelisted all of its siblings --
@@ -349,17 +364,21 @@ def registry_check(path):
         # A row label may cover a RANGE ("| R-1 … R-5 |"), which tables every id in it. Without
         # this, closing the registry with a range row leaves the checker reporting the very ids the
         # row exists to cover.
-        m = re.match(r"\s*\|\s*\*{0,2}(R-\d+)\*{0,2}\s*(?:[.…]{1,3}|-|to)\s*\*{0,2}(R-\d+)\*{0,2}\s*\|", line)
+        # C-SERIES TOO (audit #11, 2026-08-22). Nine C-ids were cited in this report and NOT ONE had
+        # a registry row -- the same unverifiable state that produced the R-14/R-15 collision, in the
+        # series nobody had checked. Both series are now covered by the same code.
+        m = re.match(r"\s*\|\s*\*{0,2}([RC]-\d+)\*{0,2}\s*(?:[.…]{1,3}|-|to)\s*\*{0,2}([RC]-\d+)\*{0,2}\s*\|", line)
         if m:
+            pfx = m.group(1).split("-")[0]
             for i in range(int(m.group(1).split("-")[1]), int(m.group(2).split("-")[1]) + 1):
-                tabled.add(f"R-{i}")
+                tabled.add(f"{pfx}-{i}")
             continue
-        m = re.match(r"\s*\|\s*\*{0,2}(R-\d+)\*{0,2}\s*\|", line)
+        m = re.match(r"\s*\|\s*\*{0,2}([RC]-\d+)\*{0,2}\s*\|", line)
         if m:
             tabled.add(m.group(1))
             continue
-        cited.update(re.findall(r"\bR-\d+\b", line))
-    key = lambda x: int(x.split("-")[1])
+        cited.update(re.findall(r"\b[RC]-\d+\b", line))
+    key = lambda x: (x.split("-")[0], int(x.split("-")[1]))
     problems = [f"{r} is cited in the body but has NO ROW in the registry table"
                 for r in sorted(cited - tabled, key=key)]
 

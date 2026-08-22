@@ -32,10 +32,15 @@ DELIVERABLES = [
 ]
 # a p-value at or below this is small enough that its design's clustering matters
 THRESHOLD = 0.031
-PVAL = re.compile(r"p(?:_cl|_perm|_boot)?\s*[=<]\s*\*{0,2}(\d?\.\d+|\d+\.?\d*e-\d+)", re.I)
+# also catch "p <= 0.0004" and "p-value of 0.0004" (audit #11 P3/P4)
+PVAL = re.compile(r"p(?:-value)?(?:_cl|_perm|_boot)?\s*(?:of\s*)?[=<≤]{1,2}?\s*"
+                  r"\*{0,2}(\d?\.\d+|\d+\.?\d*e-\d+)", re.I)
+# `\[\+?[-−]?\d` matched ANY bracketed number -- including a citation like "[3]" (audit #11). An
+# interval qualifies only if it looks like one: two numbers separated by a comma inside brackets.
 QUALIFIER = re.compile(
-    r"floor|bootstrap|parametric|uncorrected|not clustered|CI\s*\[|\[\+?[-−]?\d|"
-    r"retract|withdraw|⛔|supersed|sign-flip|permutation|delta method|attainable", re.I)
+    r"floor|bootstrap|parametric|uncorrected|not clustered|attainable|"
+    r"CI\s*\[|\[\s*[-−+]?\d*\.?\d+\s*,\s*[-−+]?\d*\.?\d+\s*\]|"
+    r"retract|withdraw|⛔|supersed|sign-flip|permutation|delta method", re.I)
 
 
 def blocks(text):

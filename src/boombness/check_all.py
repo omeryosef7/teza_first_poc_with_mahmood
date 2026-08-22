@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 
@@ -53,8 +54,15 @@ def main() -> int:
         print(f"  {name:26s} {r.returncode:5d}  {why}" + ("" if r.returncode == 0 else "   <-- " + mark))
         if r.returncode != 0:
             failed.append(name)
-            tail = [l for l in (r.stdout or "").split("\n") if l.strip()][-6:]
-            for l in tail:
+            # ⛔ This printed the last 6 non-empty lines (audit #11). `retraction_sweep` prints its
+            # FINDINGS first and a 4-line essay about heuristics last, so the tail showed the essay and
+            # zero findings -- observed directly on three planted mutations. Prefer lines that look
+            # like findings; fall back to the tail only if none match.
+            out = [l for l in (r.stdout or "").split("\n") if l.strip()]
+            findings = [l for l in out if re.search(
+                r"UNQUALIFIED|PROBLEM|FAIL|MISMATCH|NOT QUOTED|NOT COMMITTED|STILL ASSERTED|"
+                r"row has|separator|cells|REFUSING", l)]
+            for l in (findings[:6] if findings else out[-6:]):
                 print(f"        {l[:150]}")
         elif args.verbose:
             print((r.stdout or "").rstrip())

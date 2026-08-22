@@ -2123,7 +2123,31 @@ one measured.
 ---
 
 
-## 8. Process — sixteen retractions, ten corrections, seven dead guards
+### Correction registry (C-series) — added 2026-08-22
+
+Audit #11: **nine C-ids were cited across this report and not one had a registry row.** That is exactly
+the unverifiable state that produced the R-14/R-15 ID collision on the R-series, and the reason the
+R-series got a registry in the first place. `registry_check` now covers C-ids as well as R-ids, so a
+cited-but-untabled correction fails the build.
+
+| id | what was corrected | where it is discussed |
+|---|---|---|
+| **C-1** | the earliest numbered correction; cited only in the §8 process heading, content not re-derived | §8 |
+| **C-5** | the codeword's **capitalised form** and its first-subtoken behaviour in the tokenization audit | §19 Q1 region |
+| **C-6** | the G1 readout instrument defect — **discharged**: the old readout gave +68.1% vs +68.9%, so the defect did not change G1 | §5 / G1 |
+| **C-8** | a **permutation mistaken for a null distribution** | §8 audit table |
+| **C-9** | whether `n_examples` confounds G2 — answered "no" on the unfiltered 234 rows, and **superseded** once those rows were shown contaminated (R-18) | §9 / N16 |
+| **C-11** | a **population mismatch I published**: judge shards `_0`/`_1` are disjoint halves, not replicates, so the null was measured on 248 prompts and the arm on 495 | §0b, hard-null table |
+| **C-12** | §14-D **corrected a figure and re-asserted it three sentences later**; `+0.0425` matched no artifact | §14-D |
+| **C-13** | an **over-claim caught within one tick** — `cos(d_surface, d_naive) = 0.96` is a rotation, not a rival direction; produced the dose↔identity bound | §0b |
+| **C-14** | a **near-tautology read as a mechanism** — `refused` and `score<0.5` agree on 99.05% of rows, so their deltas are arithmetically tied | §0b, refusal accounting |
+
+⚠ **C-1, C-5, C-8 and C-9 are tabled from their citation context**, not re-derived. They predate this
+session and their full statements live in the sections named. They are listed so the registry is
+*complete* — an ID with no row is what allows a second meaning to be attached to it later.
+
+
+## 8. Process — **R-1…R-27** retractions, **C-1…C-14** corrections, **twelve** dead guards ⚠ *(this heading read "sixteen retractions, ten corrections, seven dead guards" and had been stale since 2026-08-19; audit #11 found it)*
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
 *the manipulated and the measured quantity were not the same thing*, or *the best of mine was
