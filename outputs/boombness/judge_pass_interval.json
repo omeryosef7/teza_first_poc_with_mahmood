@@ -103,6 +103,6 @@
       "--out",
       "outputs/boombness/judge_pass_interval.json"
     ],
-    "git_commit": "3018852ef930c5f60586f2347a022788219cfec0"
+    "git_commit": "84e22225495780ab9147561ce562c7314f87530a"
   }
 }

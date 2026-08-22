@@ -125,7 +125,7 @@
       },
       "z_vs_in_subspace_null": 3.372725847450125,
       "clears_hard_null_z2": true,
-      "p_t_one_sided": 0.006222139582611693,
+      "p_t_two_sided": 0.006222139582611693,
       "rank_p_one_sided": 0.07692307692307693,
       "rank_p_floor": 0.07692307692307693,
       "n_angles_used": 12,
@@ -254,7 +254,7 @@
       },
       "z_vs_in_subspace_null": 3.1682933532701747,
       "clears_hard_null_z2": true,
-      "p_t_one_sided": 0.008945772176705946,
+      "p_t_two_sided": 0.008945772176705946,
       "rank_p_one_sided": 0.07692307692307693,
       "rank_p_floor": 0.07692307692307693,
       "n_angles_used": 12,
@@ -318,7 +318,7 @@
       },
       "z_vs_in_subspace_null": 12.727922061357855,
       "clears_hard_null_z2": true,
-      "p_t_one_sided": 0.0010462380081266527,
+      "p_t_two_sided": 0.0010462380081266527,
       "rank_p_one_sided": 0.2,
       "rank_p_floor": 0.2,
       "n_angles_used": 4,
@@ -398,7 +398,7 @@
       },
       "z_vs_in_subspace_null": 6.228295647018265,
       "clears_hard_null_z2": true,
-      "p_t_one_sided": 0.00043317121426124367,
+      "p_t_two_sided": 0.00043317121426124367,
       "rank_p_one_sided": 0.1111111111111111,
       "rank_p_floor": 0.1111111111111111,
       "n_angles_used": 8,
@@ -425,6 +425,6 @@
       "--out",
       "outputs/boombness/insubspace_null_by_layer.json"
     ],
-    "git_commit": "5bf987956d78a9f2114cfca550162b1a199e93a8"
+    "git_commit": "84e22225495780ab9147561ce562c7314f87530a"
   }
 }

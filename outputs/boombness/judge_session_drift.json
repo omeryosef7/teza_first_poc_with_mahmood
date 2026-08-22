@@ -7,7 +7,7 @@
   "drift_groups": [
     {
       "gens": "ab_base_20260818_185458_3888976",
-      "n_sessions": 8,
+      "n_sessions": 9,
       "asr_min": 0.06464646464646465,
       "asr_max": 0.07039337474120083,
       "drift": 0.005746910094736185,
@@ -59,6 +59,12 @@
           "judge": "rjp4_base_20260822_174313_3913444",
           "asr": 0.06666666666666667,
           "n": 495
+        },
+        {
+          "session": "20260822_192851",
+          "judge": "a24b_base_20260822_192851_1136219",
+          "asr": 0.06666666666666667,
+          "n": 495
         }
       ]
     },
@@ -106,15 +112,6 @@
     }
   ],
   "excluded_partial_runs": [
-    {
-      "session": "20260822_192851",
-      "judge": "a24b_base_20260822_192851_1136219",
-      "asr": 0.058823529411764705,
-      "n": 323,
-      "gens": "ab_base_20260818_185458_3888976",
-      "coverage": 0.653,
-      "why": "n=323 is 65% of the best coverage (495) for these generations: in-flight or a disjoint half, not drift"
-    },
     {
       "session": "20260821_182849",
       "judge": "q3dec_base_20260821_182849_1074900",
@@ -194,6 +191,6 @@
       "--out",
       "outputs/boombness/judge_session_drift.json"
     ],
-    "git_commit": "aa9d0af9333ffdb9cf87935b63815bc6b158a36e"
+    "git_commit": "84e22225495780ab9147561ce562c7314f87530a"
   }
 }

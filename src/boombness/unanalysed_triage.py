@@ -48,8 +48,9 @@ HEADLINE_BANKS = ("advbench_heldout_495", "clearharm", "boombness_prompt_bank")
 
 
 def _asr(d: str):
-    """Mean `malicious_at_0.5` over a judge run. Numeric field only."""
+    """Mean `malicious_at_0.5` and the prompt-id SET over a judge run. Numeric/categorical only."""
     n = k = 0
+    ids = set()
     try:
         for line in open(os.path.join(d, "results.jsonl"), encoding="utf-8"):
             try:
@@ -61,9 +62,12 @@ def _asr(d: str):
                 continue
             n += 1
             k += 1 if v else 0
+            pid = r.get("prompt_id")
+            if pid is not None:
+                ids.add(pid)
     except OSError:
-        return None, 0
-    return (k / n if n else None), n
+        return None, 0, set()
+    return (k / n if n else None), n, ids
 
 
 def _gens_info(judge_dir: str) -> dict:
@@ -170,7 +174,7 @@ def main() -> int:
             continue
         info = _gens_info(d)
         g = info["cfg"]
-        asr, n = _asr(d)
+        asr, n, ids = _asr(d)
         b = os.path.basename(d)
         jt, gt = _tag(b), info["gens_tag"]
         via = ("artifact_path" if b in cited
@@ -186,12 +190,64 @@ def main() -> int:
             "model": info["model"],
             "bank": _bank_id(g.get("bank")),
             "spec": g.get("intervene") or None,
+            # SEED IS PART OF A CONTROL'S IDENTITY. Two independent draws of `random:project_out:...`
+            # share a spec string but are different directions; calling the second a "replicate that
+            # cannot reverse a sign" is false -- adding control draws is exactly what refuted L6.
+            "seed": g.get("seed"),
             "cited": via is not None,
             "consumed_via": via,
+            "_ids": ids,
         })
 
+    # JUDGE SHARDS ARE DISJOINT HALVES, NOT SEPARATE RUNS -- the C-11 bug class, which this script
+    # reproduced. `dsL29J0` (248 rows) and `dsL29J1` (247 rows) have ZERO prompt-id overlap and union
+    # to exactly 495: one full run of `d_surface:project_out:29-29:1.0`, split across two judge dirs.
+    # Triaging each half against the 400-row threshold marked twelve fully-powered, genuinely
+    # unanalysed arms as "underpowered" -- an UNDER-estimate of what needs attention, i.e. the unsafe
+    # direction, in a script whose docstring claimed it erred the safe way.
+    #
+    # So: group by the generation run and spec, union the prompt ids, and triage the LOGICAL run.
+    # Overlapping ids mean a genuine re-judge, not a shard, and are kept separate.
+    def _merge_shards(runs):
+        groups = {}
+        for r in runs:
+            groups.setdefault((r["gens_tag"], r["model"], r["bank"], r["spec"]), []).append(r)
+        merged = []
+        for gk, v in groups.items():
+            if len(v) == 1:
+                v[0]["n_union"] = v[0]["n"]
+                v[0]["shards"] = [v[0]["judge"]]
+                merged.append(v[0])
+                continue
+            union, overlap = set(), False
+            for r in v:
+                if union & r["_ids"]:
+                    overlap = True
+                union |= r["_ids"]
+            if overlap:
+                # a real re-judge of the same prompts: keep the shards distinct
+                for r in v:
+                    r["n_union"] = r["n"]
+                    r["shards"] = [r["judge"]]
+                    r["note"] = "re-judge (prompt ids overlap a sibling), not a shard"
+                    merged.append(r)
+                continue
+            head = dict(v[0])
+            head["n_union"] = len(union) or sum(x["n"] for x in v)
+            head["shards"] = sorted(x["judge"] for x in v)
+            head["n"] = sum(x["n"] for x in v)
+            tot = sum(x["n"] for x in v)
+            head["asr"] = (sum((x["asr"] or 0) * x["n"] for x in v) / tot) if tot else None
+            head["cited"] = any(x["cited"] for x in v)
+            head["consumed_via"] = next((x["consumed_via"] for x in v if x["consumed_via"]), None)
+            head["note"] = f"{len(v)} disjoint judge shards unioned to {head['n_union']} rows"
+            merged.append(head)
+        return merged
+
+    runs = _merge_shards(runs)
+
     def key(r):
-        return (r["model"], r["bank"], r["spec"])
+        return (r["model"], r["bank"], r["spec"], r.get("seed"))
 
     cited_keys = {key(r) for r in runs if r["cited"]}
     cited_by_key = {}
@@ -206,15 +262,17 @@ def main() -> int:
         v, why = None, None
         if r["spec"] is None:
             v, why = "base_or_control", "no intervention: a baseline, consumed by whatever cites it"
-        elif r["n"] < args.min_analysable:
-            v, why = "underpowered", f"{r['n']} rows < {args.min_analysable}"
+        elif r.get("n_union", r["n"]) < args.min_analysable:
+            v, why = "underpowered", (f"{r.get('n_union', r['n'])} rows (union of "
+                                      f"{len(r.get('shards', []))} shard(s)) < {args.min_analysable}")
         elif not any(b in r["bank"] for b in HEADLINE_BANKS):
             v, why = "off_headline_population", f"bank {r['bank']} is not a headline population"
         elif key(r) in cited_keys:
             twin = cited_by_key[key(r)][0]
             gap = (None if (r["asr"] is None or twin["asr"] is None)
                    else round(r["asr"] - twin["asr"], 4))
-            v = "replicate_of_cited"
+            v = ("additional_control_draw" if "random" in str(r["spec"]).lower()
+                 else "replicate_of_cited")
             why = (f"identical (model, bank, spec) is cited as {twin['judge']}; "
                    f"ASR gap vs that twin = {gap}")
             r["twin"] = twin["judge"]
@@ -226,11 +284,11 @@ def main() -> int:
         r["verdict"], r["why"] = v, why
         triaged.append(r)
 
-    order = ["COULD_CHANGE", "replicate_of_cited", "off_headline_population",
-             "underpowered", "base_or_control"]
+    order = ["COULD_CHANGE", "additional_control_draw", "replicate_of_cited",
+             "off_headline_population", "underpowered", "base_or_control"]
     counts = {v: sum(1 for r in triaged if r["verdict"] == v) for v in order}
     could = [r for r in triaged if r["verdict"] == "COULD_CHANGE"]
-    reps = [r for r in triaged if r["verdict"] == "replicate_of_cited"
+    reps = [r for r in triaged if r["verdict"] in ("replicate_of_cited", "additional_control_draw")
             and r.get("asr_gap_vs_twin") is not None]
     worst = max((abs(r["asr_gap_vs_twin"]) for r in reps), default=None)
 
@@ -264,6 +322,8 @@ def main() -> int:
             "therefore an OVER-estimate of what is unanalysed, which is the safe direction."),
         "provenance": {"argv": sys.argv, "git_commit": git_commit_safe()},
     }
+    for r in runs:
+        r.pop("_ids", None)
     with open(args.out, "w") as f:
         json.dump(out, f, indent=2)
 

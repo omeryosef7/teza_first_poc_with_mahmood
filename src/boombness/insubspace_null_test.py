@@ -459,9 +459,16 @@ def main() -> int:
             # dressing a 4-point null up as a precise one.
             try:
                 from analyze_g8 import t_sf
-                rec["p_t_one_sided"] = t_sf(z, len(v) - 1) if z is not None else None
+                # NAME MATCHES THE VALUE. `t_sf` is TWO-sided ("Two-sided survival for Student-t"),
+                # so the field this used to call `p_t_one_sided` was two-sided in every layer --
+                # verified against the artifact: L6 0.006222 == 2*sf(3.3727, 11), and likewise L8,
+                # L10, L12. The direction was conservative (reported p too large, no claim
+                # inflated), but a one-sided label invites someone to double it again. Renamed
+                # rather than halved: halving would make every claim stronger, which is not a
+                # change to make as a side effect of a naming fix. Found by audit #13.
+                rec["p_t_two_sided"] = t_sf(z, len(v) - 1) if z is not None else None
             except Exception:
-                rec["p_t_one_sided"] = None
+                rec["p_t_two_sided"] = None
             rec["rank_p_one_sided"] = (
                 (sum(1 for x in v if x >= rec["arm"]["delta"]) + 1) / (len(v) + 1))
             rec["rank_p_floor"] = 1.0 / (len(v) + 1)
@@ -543,7 +550,7 @@ def main() -> int:
               f"(k={r.get('n_angles_used', '?')})" if "mean" in nl else "n/a")
         z = r["z_vs_in_subspace_null"]
         rc = r["random_control_same_layer"]
-        pv = r.get("p_t_one_sided"); rp = r.get("rank_p_one_sided")
+        pv = r.get("p_t_two_sided"); rp = r.get("rank_p_one_sided")
         mc = r.get("max_control_delta"); am = r.get("arm_over_max_control")
         print(f"  {L:6s} {r['arm']['delta']:+9.4f} {r['arm']['net_flips']:>6d} | {ns:>21s} "
               f"{(f'{z:+.2f}({r.get(chr(100)+chr(102))})' if z is not None else 'n/a'):>11s} "

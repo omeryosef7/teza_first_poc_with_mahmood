@@ -26,6 +26,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import read_jsonl  # noqa: E402
+from unanalysed_inventory import git_commit_safe  # noqa: E402
 
 J = "outputs/boombness/judge"
 
@@ -110,8 +111,12 @@ def main() -> int:
         print(f"      p range {min(ps):.4f}–{max(ps):.4f} "
               f"({(max(ps)/min(ps) if min(ps) else float('nan')):.1f}×), "
               f"significant in all {len(ps)} passes: {all(p <= 0.05 for p in ps)}")
-    doc["provenance"] = {"argv": sys.argv, "git_commit": subprocess.run(
-        ["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()}
+    # THE THIRD PATH. `git rev-parse HEAD` raises FileNotFoundError on batch nodes (no git binary),
+    # and this call sits between the analysis and the only `open(out, "w")` -- so the run dies before
+    # writing and the artifact silently keeps its PREVIOUS contents while sacct says FAILED. That has
+    # already fired twice in this repo; `git_commit_safe` was written to end it and was threaded into
+    # two of the three scripts that need it. This was the third. Found by audit #13.
+    doc["provenance"] = {"argv": sys.argv, "git_commit": git_commit_safe()}
     with open(args.out, "w") as f:
         json.dump(doc, f, indent=2)
     if incomplete:

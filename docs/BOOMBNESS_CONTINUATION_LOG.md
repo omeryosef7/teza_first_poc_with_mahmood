@@ -8157,3 +8157,67 @@ published L6 comparison uninformative, which is a different and weaker statement
 | 462 | 2026-08-22 | measured drift on byte-identical text | **0.0057** (8 sessions); **0.0056 / 0.0061** on two other sets |
 | 463 | 2026-08-22 | **L6 margin = 1.41× drift** → withdrawn; L8/L10/L12 4.2–5.6× → hold | corrected 4 sites in the report, 2 in the short update |
 | 464 | 2026-08-22 | my v2 exclusion rule flipped the headline; **discarded it** | dropped a 97.6%-coverage run that carried the highest ASR |
+
+## Audit #13: it killed the result I published one tick ago
+
+Five findings, all reproduced independently before acceptance. The first one retracts my own headline
+from the previous tick, which is the correct outcome for an audit and the reason the cadence exists.
+
+**A-13.1 (high) — the refusal ladder is WITHDRAWN.** I reported "adding `d_surface` drives refusal UP
+(+138 at gain 0.5) while a gap-matched random direction drives it DOWN (+39)". The regex was evaluated
+**only inside the `w < SHORT_WORDS` branch**. Long outputs were never tested. So the counter measured
+*refusals-AND-short*, not refusals — and the arms differ 4–8× in how much mass sits in the untested
+long bucket (baseline 268 long, `add_g05` 58, `rand_g075` 452). **The baseline alone has 234 long
+refusal-shaped outputs, half of all its refusals, excluded from every comparison.** Counting at all
+lengths reverses both claims:
+
+| | published | actual (length-free) |
+|---|---|---|
+| gain 0.5 | arm **+138** vs control **+39** | arm **−67** vs control **−31** — both signs flip |
+| gain 0.75 | arm **+88**, band all-negative, "outside it" | arm **−1**, band (+6, +27, −124, −75) — **inside** it |
+
+What survives is narrower: `d_surface` makes refusals **terser** (short refusals 227→365 at gain 0.5
+while long refusals fall 234→29). That is a *length* effect, not a refusal-rate effect, and it supports
+no disinhibition claim. **There is no clean refusal-rate signal in this ladder.** The lesson is exact:
+*a count conditioned on a property the intervention changes is not a measurement of anything else.*
+Refusal is now counted length-invariantly, and the short/long split is retained only as description,
+explicitly marked not-to-be-differenced.
+
+**A-13.2 (high) — the triage under-reported itself, in the direction it claimed it could not.**
+`dsL29J0` (248 rows) and `dsL29J1` (247) have **zero prompt-id overlap and union to exactly 495**:
+disjoint judge shards of one full run. Triaging each half against the 400-row threshold marked **12
+fully-powered, genuinely unanalysed arms** as `underpowered` — including `in_subspace_orth` at four
+layers, directly on the question the sprint is adjudicating right now. This is the **C-11 shard-vs-
+replicate class**, reproduced in a script I wrote *after* fixing C-11 elsewhere. Worse, the artifact
+asserted it was "an OVER-estimate of what is unanalysed, which is the safe direction"; this defect ran
+the other way. Fixed by unioning shards into logical runs (overlapping ids = a real re-judge, kept
+separate). **COULD_CHANGE 19 → 34, underpowered 27 → 0.**
+
+**A-13.3 (medium) — seed is part of a control's identity.** `(model, bank, spec)` omitted the seed, so
+two independent draws of `random:project_out:8-8:1.0` collided and the second was dismissed as a
+replicate that "cannot reverse a sign". False here specifically: **adding control draws is exactly what
+refuted L6.** Seed added to the key; new `additional_control_draw` verdict.
+
+**A-13.4 (medium) — `p_t_one_sided` was two-sided.** `t_sf` is documented two-sided; the field matched
+`2·sf(z, df)` in all four layers. Conservative, so nothing was inflated. **Renamed, not halved** —
+halving makes every claim stronger, which is not a change to make as a side effect of a naming fix.
+
+**A-13.5 (low) — the third path.** `judge_pass_interval.py` called bare `git rev-parse HEAD` between
+the analysis and the only write. On a batch node that raises, the run dies before writing, and the
+stale artifact reads as current. Already fired twice; the fix had been threaded into two of the three
+scripts that need it. Now three.
+
+**Found sound** (so coverage is on record): the angle resolver — 52 distinct angles across four tag
+families, every alias resolving to the same directory set, 0 failures; `judge_pass_interval`'s shard
+handling (no `_0`/`_1` half anywhere, all 12 globs single-directory); `analyze_qwen3_decomposition`'s
+pairing and clustered inference, with the interaction and both specific-excess figures reproducing
+exactly.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 465 | 2026-08-22 | audit #13 returned 5 findings | all reproduced before acceptance |
+| 466 | 2026-08-22 | **withdrew the add-ladder refusal result** | regex ran only on short outputs; **both signs flip** |
+| 467 | 2026-08-22 | refusal now counted length-invariantly | surviving claim: refusals get **terser**, not more frequent |
+| 468 | 2026-08-22 | unioned disjoint judge shards in the triage | **COULD_CHANGE 19 → 34**, underpowered 27 → 0 |
+| 469 | 2026-08-22 | seed added to control identity | `additional_control_draw` split from `replicate_of_cited` |
+| 470 | 2026-08-22 | `p_t_one_sided` renamed to `p_t_two_sided`; git provenance fixed | no number moved |
