@@ -1,0 +1,108 @@
+{
+  "question": "how much does a layer's significance depend on WHICH judge pass is quoted?",
+  "why": "flips are one-directional, so p = 2/2^k with k = informative domains; the p is a count and 1-2 rows of judge noise can move a domain in or out",
+  "threshold": 0.5,
+  "incomplete_passes": [],
+  "by_layer": {
+    "L12": {
+      "passes": {
+        "pass1": {
+          "n": 495,
+          "delta": 0.03636363636363636,
+          "net": 18,
+          "k": 9,
+          "p": 0.00390625,
+          "floor": 0.00390625
+        },
+        "pass2_abrep": {
+          "n": 495,
+          "delta": 0.03636363636363636,
+          "net": 18,
+          "k": 9,
+          "p": 0.00390625,
+          "floor": 0.00390625
+        },
+        "pass3": {
+          "n": 495,
+          "delta": 0.03838383838383838,
+          "net": 19,
+          "k": 10,
+          "p": 0.001953125,
+          "floor": 0.001953125
+        },
+        "pass4": {
+          "n": 495,
+          "delta": 0.03434343434343434,
+          "net": 17,
+          "k": 8,
+          "p": 0.0078125,
+          "floor": 0.0078125
+        }
+      },
+      "n_passes": 4,
+      "p_min": 0.001953125,
+      "p_max": 0.0078125,
+      "p_range_factor": 4.0,
+      "delta_min": 0.03434343434343434,
+      "delta_max": 0.03838383838383838,
+      "informative_clusters_min": 8,
+      "informative_clusters_max": 10,
+      "significant_in_all_passes": true,
+      "median_p": 0.00390625
+    },
+    "L8": {
+      "passes": {
+        "pass1": {
+          "n": 495,
+          "delta": 0.04242424242424243,
+          "net": 21,
+          "k": 8,
+          "p": 0.0078125,
+          "floor": 0.0078125
+        },
+        "pass2_abrep": {
+          "n": 495,
+          "delta": 0.04040404040404041,
+          "net": 20,
+          "k": 9,
+          "p": 0.02734375,
+          "floor": 0.00390625
+        },
+        "pass3": {
+          "n": 495,
+          "delta": 0.044444444444444446,
+          "net": 22,
+          "k": 9,
+          "p": 0.00390625,
+          "floor": 0.00390625
+        },
+        "pass4": {
+          "n": 495,
+          "delta": 0.04040404040404041,
+          "net": 20,
+          "k": 9,
+          "p": 0.02734375,
+          "floor": 0.00390625
+        }
+      },
+      "n_passes": 4,
+      "p_min": 0.00390625,
+      "p_max": 0.02734375,
+      "p_range_factor": 7.0,
+      "delta_min": 0.04040404040404041,
+      "delta_max": 0.044444444444444446,
+      "informative_clusters_min": 8,
+      "informative_clusters_max": 9,
+      "significant_in_all_passes": true,
+      "median_p": 0.017578125
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/judge_pass_interval.py",
+      "--out",
+      "outputs/boombness/judge_pass_interval.json"
+    ],
+    "git_commit": "3018852ef930c5f60586f2347a022788219cfec0"
+  }
+}

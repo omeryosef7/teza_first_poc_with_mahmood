@@ -51,7 +51,7 @@ domains?"*, not *"how big is it?"*. Quote the CI for magnitude. Full rule in §0
 
 | claim | evidence | caveat that must travel with it |
 |---|---|---|
-| **Projecting out `d_surface` raises AdvBench attack success — at L12; the other layers do not reproduce.** ⛔ **REWRITTEN 2026-08-22 (audit #12).** This row said the effect is "cluster-significant uncorrected at L8/L10/L12" with Holm **0.035**; both were wrong. An **independent judge replicate on byte-identical generations was already on disk, cited by no artifact** — table below. **Only L12 reproduces** (p=0.0039 on both passes); L8 moves 0.0078→**0.0273** with **zero arm rows changing**, L10 0.0156→0.0312. **Holm corrected:** L12 is **rank 1**, so m=11 gives **0.0429** — the artifact's own figure, which the previous revision overrode by taking rank from a family that included arms C and D. The family is **12, not 11** (`abL15_B` was judged twice, is null at **+0.0020, p=1.00**, and was excluded), giving Holm **0.0468**. Verdict holds; margin roughly halves. Deltas, **binary ASR pooled**: L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495; the L8 binary domain-clustered figure is +0.0306. | `insubspace_null_by_layer.json`, `abrep_*` | ⚠ see the replicate table below |
+| **Projecting out `d_surface` raises AdvBench attack success; L12 is the strongest layer.** ⛔ **REWRITTEN 2026-08-22 (audit #12).** This row said the effect is "cluster-significant uncorrected at L8/L10/L12" with Holm **0.035**; both were wrong. An **independent judge replicate on byte-identical generations was already on disk, cited by no artifact** — table below. ⚠ **Updated at n=4:** with **four** independent judge passes, **both L8 and L12 are significant in every pass** — the earlier "only L12 reproduces" was an **n=2 artifact and is withdrawn**. L12's p ranges **0.0020–0.0078** (survives Holm in **3 of 4** passes); L8's ranges **0.0039–0.0273** (**1 of 4**). Deltas are stable throughout (L12 +0.0343…+0.0384, L8 +0.0404…+0.0444). **Holm corrected:** L12 is **rank 1**, so m=11 gives **0.0429** — the artifact's own figure, which the previous revision overrode by taking rank from a family that included arms C and D. The family is **12, not 11** (`abL15_B` was judged twice, is null at **+0.0020, p=1.00**, and was excluded), giving Holm **0.0468**. Verdict holds; margin roughly halves. Deltas, **binary ASR pooled**: L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495; the L8 binary domain-clustered figure is +0.0306. | `insubspace_null_by_layer.json`, `abrep_*` | ⚠ see the replicate table below |
 | The arm exceeds **every** in-subspace control at all four layers | `insubspace_null_by_layer.json` | Ratio **1.80× / 2.33× / 3.60×** at L6 / L8 / L12; **at L10 it is undefined** because every control there is ≤0 — so "1.80×–3.60×" (an earlier revision) covered 3 of 4 layers, corrected 2026-08-22. Null strength is also **uneven**: 12 angles at L6/L8, 8 at L12, only **4 at L10**, whose rank-p can never fall below 0.20. The earlier "~16 band-sds" scored against a 4096-d random band and is **withdrawn** on the same grounds as R-23 (that band is far too weak a null); ⚠ note R-23's registry row names the *~7* figure, so this withdrawal is recorded here and in §14-B, not as a separate ID. |
 | The gain is **real refusal→compliance flips**, not the judge rewarding longer refusals | `refusal_accounting.json`, `results.jsonl` `n_chars` | ⚠ **Evidence replaced 2026-08-22 (audit #12).** This row cited *"+0.0000 exactly on the 440–451 both-refused rows"*. That zero is **arithmetically forced**: of the 440 both-refused rows at L8, **0 score ≥0.5 at baseline and 0 in the arm**, and `refused` agrees with `score<0.5` on 99% of rows — the near-tautology **C-14** was opened for, left standing in this row. **The real evidence is stronger and was not being used:** the 21 L8 flips go from a median of **67 characters** at baseline to **2474** in the arm (range 2067–2674, all at the 512-token cap), against a median of **67** across all 495 baseline rows. Those are refusal→full-answer conversions, not judge jitter on borderline text. |
 | The dose-response is **saturating** | `dose_curve_L8.json` | ⚠ **"Monotone" struck 2026-08-22.** It is monotone over dose 0.046→0.68 and **falls at the top rung** (+0.0444 at dose 0.7969 → +0.0424 at 0.8402, one net flip). Only the *isotonic fit* is monotone, which is what a monotone fit does. Saturating is correct and unaffected: from 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
@@ -88,18 +88,30 @@ question asked, not fluent text that happens to score well.
 matter, not quality. It rules out the R-20 failure mode specifically, which is what it was run for.
 No generation text leaves the script; the artifact holds scalars only.
 
-#### The judge replicate (added 2026-08-22, audit #12)
+#### Four independent judge passes — the interval on the p-value (updated 2026-08-22)
 
-Two independent judge passes over **byte-identical** generations. Only `abrep_L12` had ever been used; `abrep_base`, `abrep_L6`, `abrep_L8` and `abrep_L10` sat unanalysed.
+⚠ **This supersedes the two-pass table, and corrects an over-correction of mine.** On n=2 I concluded
+"L8 does not reproduce" and rewrote the headline as **L12-only**. At **n=4** that was too strong:
+**both layers are cluster-significant in every one of four independent judge passes** over
+byte-identical generations.
 
-| layer | Δ | pass 1 | pass 2 (replicate) | rows disagreeing | |
-|---|---|---|---|---|---|
-| L6 | +0.0182 | 0.0625 | 0.0625 | 1/495 | ns on both |
-| **L8** | +0.0424 | **0.0078** | **0.0273** | **0/495** | 3.5× move — the changed row is in the *baseline* |
-| **L10** | +0.0323 | **0.0156** | **0.0312** | 2/495 | 2× move |
-| **L12** | **+0.0364** | **0.0039** | **0.0039** | 1/495 | **stable — the only one** |
+| pass | L12 p | Holm (m=12) | L8 p | Holm (m=12) |
+|---|---|---|---|---|
+| 1 | 0.0039 | 0.047 ✅ | 0.0078 | 0.086 ✗ |
+| 2 (`abrep`) | 0.0039 | 0.047 ✅ | 0.0273 | 0.301 ✗ |
+| 3 | **0.0020** | 0.023 ✅ | 0.0039 | 0.043 ✅ |
+| 4 | **0.0078** | 0.094 ✗ | 0.0273 | 0.301 ✗ |
+| **range** | **0.0020–0.0078 (4×)** | **3 of 4 survive** | **0.0039–0.0273 (7×)** | **1 of 4** |
 
-**Why this matters more than the p-values suggest.** Every p here sits exactly at its attainable floor (2/2ᵏ), so it is a count of informative domains, and moving 1–2 rows out of 495 moves a domain in or out. The minimum number of rows that must be judged differently to push each layer above 0.05 is **2 (L10), 3 (L8), 4 (L12)** — that is the fragility budget, and judge noise is 0–2 rows.
+**Deltas are far more stable than p-values**: L12 **+0.0343…+0.0384**, L8 **+0.0404…+0.0444**. That is
+the point. The p is `2/2ᵏ` with k = informative domains, so it is a *count* that one prompt crossing
+the 0.5 threshold can move; the effect size barely moves while the p swings 4–7×.
+
+**The defensible statement at n=4:** uncorrected, **both L8 and L12 are significant in all four
+passes** — "L8 does not reproduce" was an n=2 artifact and is withdrawn. Under Holm over the 12-arm
+family, **L12 survives in 3 of 4 passes and L8 in 1 of 4**, so L12 is the stronger claim but
+"survives Holm" is itself pass-dependent and must not be quoted from a single pass, which is what this
+report did for days. **Quote the delta; quote the p as a range.**
 
 ### What was retracted this session
 

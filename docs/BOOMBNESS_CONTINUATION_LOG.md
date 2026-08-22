@@ -7895,3 +7895,47 @@ no significance claim attached. I would rather find that now than have a reader 
 | 436 | 2026-08-22 | accepted audit #12's recommendation #5 | every p sits at its floor, so the p is a count and 1–2 rows move it |
 | 437 | 2026-08-22 | submitted passes 3 and 4 (774240-774245) | judge-only on byte-identical gens; **n=4** when they land |
 | 438 | 2026-08-22 | pre-committed both readings | stable → L12-only stands; unstable → **no significance claim survives** |
+
+## n=4: the interval on the p-value, and a correction to my own correction
+
+Tick 2026-08-22. Passes 3 and 4 landed. Four independent judge passes now exist over **byte-identical**
+generations, and the pre-committed reading applies — including to the part I got wrong.
+
+| pass | L12 p | Holm (m=12) | L8 p | Holm (m=12) |
+|---|---|---|---|---|
+| 1 | 0.0039 | 0.047 ✅ | 0.0078 | 0.086 ✗ |
+| 2 (`abrep`) | 0.0039 | 0.047 ✅ | 0.0273 | 0.301 ✗ |
+| 3 | **0.0020** | 0.023 ✅ | 0.0039 | 0.043 ✅ |
+| 4 | **0.0078** | 0.094 ✗ | 0.0273 | 0.301 ✗ |
+| **range** | **0.0020–0.0078 (4×)** | **3 of 4** | **0.0039–0.0273 (7×)** | **1 of 4** |
+
+**I over-corrected two ticks ago and this withdraws it.** On **n=2** I concluded *"L8 does not
+reproduce"* and rewrote the headline as **L12-only**. At n=4, **both L8 and L12 are cluster-significant
+in every single pass**. Pass 2 — the one the reviewer surfaced — was L8's outlier, not its true value.
+I turned one replicate into a retraction, which is the same error as turning one pass into a
+significance claim, pointed the other way.
+
+**What the four passes actually establish, and it is the more useful thing:** the **deltas are stable**
+(L12 +0.0343…+0.0384, L8 +0.0404…+0.0444) while the **p swings 4–7×**. That is exactly what the design
+predicts — `p = 2/2ᵏ` with k the informative-domain count, so the p is a *count* that one prompt
+crossing a threshold can move, while the effect size barely notices. **The effect is more reproducible
+than its significance.**
+
+**And "survives Holm" is itself pass-dependent:** L12 clears in 3 of 4 passes, L8 in 1 of 4. The report
+quoted a single pass's Holm verdict as a property of the model for days.
+
+Both deliverables now say: **quote the delta; quote the p as a range.** L12 remains the stronger layer,
+but the L12-only framing is gone.
+
+**One process note.** My first attempt at this edit replaced everything from the section heading to the
+next one, silently deleting the MDE figure and G2's permutation p. `canonical_figures` and
+`verify_report_numbers` both went red immediately; I reverted with `git stash` and redid it with
+explicit bounds. Two guards caught a destructive edit within one command — which is the first time the
+suite has protected me from myself rather than from a stale claim.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 439 | 2026-08-22 | passes 3 and 4 landed; assembled n=4 | L12 **0.0020–0.0078**, L8 **0.0039–0.0273** |
+| 440 | 2026-08-22 | **withdrew my own "L8 does not reproduce"** | an **n=2 artifact**; both layers significant in all 4 passes |
+| 441 | 2026-08-22 | recorded that deltas are stable while p swings 4–7× | **the effect reproduces better than its significance does** |
+| 442 | 2026-08-22 | over-broad edit deleted two pinned figures; guards caught it | reverted and redone with explicit bounds |

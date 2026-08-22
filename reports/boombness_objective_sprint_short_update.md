@@ -91,7 +91,7 @@ authoritative flat version; this is the same content, shorter.
 attack success: L8 **+0.0424** (21 flips), L12 +0.0364, L10 +0.0323, L6 +0.0182, n=495 — all
 **binary ASR at threshold 0.5, pooled**; the L8 binary domain-clustered figure is **+0.0306**. ⚠ The
 **+0.0305 / p_cl=0.0089** quoted elsewhere is the **continuous StrongReject** clustered mean, a
-*different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039 — the only layer that reproduces**: Holm over the layer family gives **0.0429** at m=11 and **0.0468** at m=12 — the honest family size, since `abL15_B` was judged twice, is null (+0.0020) and had been excluded. ⛔ **L8 and L10 do NOT reproduce (audit #12):** an independent judge replicate on byte-identical generations moves L8 0.0078→**0.0273** (with **zero arm rows changing**) and L10 0.0156→**0.0312**, while L12 is stable at 0.0039. Treat the effect as **L12-only**. Which family is right is a judgment call. **Arm C and arm D survive every family
+*different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039 — the only layer that reproduces**: Holm over the layer family gives **0.0429** at m=11 and **0.0468** at m=12 — the honest family size, since `abL15_B` was judged twice, is null (+0.0020) and had been excluded. ⚠ **Judge-pass variability, measured at n=4 (updated):** across **four** independent judge passes on byte-identical generations, **both L8 and L12 are significant in every pass**. L12's p ranges **0.0020–0.0078** and survives Holm in **3 of 4**; L8's ranges **0.0039–0.0273** and survives in **1 of 4**. Deltas are stable (L12 +0.0343…+0.0384). An earlier revision said "L8 does not reproduce" on the strength of **n=2** — withdrawn. **Quote the delta; quote the p as a range.** Which family is right is a judgment call. **Arm C and arm D survive every family
 tried**; nothing else in the `d_surface` story survives any defensible one; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
 significant *only uncorrected*; **L6 p=0.0625 is not significant at all**. The four layers were
 themselves the **top four of eleven** by this same statistic, which is why Holm is applied at all.
@@ -124,7 +124,7 @@ largest effect it produced was **+0.0222**, so those nulls are uninformative abo
 **The effect hierarchy, one consistent test (exact cluster sign-flip, added 2026-08-22).**
 Removing `d_surface` **and** refusal: **+0.2869** (142 flips, 14/16 domains informative, p=1e-4).
 Removing **refusal alone**: **+0.2061** (102 flips, p=1e-4). Removing **`d_surface` alone**:
-**+0.018…+0.042** (5–9 domains informative; significant at **L12**; L8 and L10 do not reproduce under a second judge pass (audit #12), **Holm only at
+**+0.018…+0.042** (5–9 domains informative; significant at L8 and L12 in all four judge passes; L12 survives Holm in 3 of 4, L8 in 1 of 4, **Holm only at
 L12**, ns at L6). Both random controls inert (p=1.00, p=0.50). **The refusal channel is an order of
 magnitude larger than the `d_surface` channel** — the robust behavioural result here is about refusal,
 and the `d_surface`-specific part is its weak half.
