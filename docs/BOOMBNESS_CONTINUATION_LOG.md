@@ -7007,3 +7007,38 @@ that understate most, which is the direction that matters.
 | 344 | 2026-08-22 | found `g3()` uses **no** clustering while `g1()` in the same file does | A11-12's fix was applied to one sibling only |
 | 345 | 2026-08-22 | re-computed G3 with the domain bootstrap | widths ×0.78–×1.68; the two claim-carrying arms understate most |
 | 346 | 2026-08-22 | corrected my own over-general verdict before publishing | three arms are *narrower* clustered, not wider |
+
+## Fixing G3's inference in the script rather than leaving a recommendation
+
+Tick 2026-08-22. Last tick I found that `g3()` used family-level SEM while `g1()`, in the same file,
+used a domain bootstrap — and I recorded a *recommendation* that it should be fixed. A recommendation
+in a log is not a fix, so I made it.
+
+`_domain_boot_delta` now resamples **domains** for every G3 arm and emits `ci95` (clustered, citable)
+alongside `ci95_family_level_UNDERSTATES`, under the **same names** the G1 path already uses — so the
+two halves of the script are finally readable side by side, and the next person cannot mistake which
+inference a given gate row rests on. Artifact regenerated.
+
+| arm | Δ | clustered CI95 | family CI95 | ratio |
+|---|---|---|---|---|
+| **`no_demo_text`** | −17.879 | [−21.53, −14.58] | [−19.98, −15.78] | **1.65** |
+| **`all_layers_demo`** | −13.437 | [−15.14, −11.48] | [−14.98, −11.89] | **1.18** |
+| `positive_control` | +0.258 | [−0.43, +0.92] | [−0.34, +0.86] | 1.12 |
+| `topk_demo` | +0.020 | [−0.018, +0.070] | [−0.013, +0.052] | 1.36 |
+| `bottomk_demo` | −0.003 | [−0.008, +0.000] | [−0.008, +0.003] | 0.78 |
+| `random_demo` | +0.001 | [−0.005, +0.008] | [−0.006, +0.008] | 0.92 |
+
+**A check worth stating explicitly: every null control's clustered CI still contains zero.** G3's null
+claims — that localized knockouts do nothing — survive the wider inference, which is the outcome that
+was not guaranteed. The two arms carrying the positive claim widen most (×1.65, ×1.18) and both remain
+far from zero.
+
+The `dynamic_range_established = False` warning still fires, unchanged and correctly: the positive
+control does not dominate `no_demo_text`, which the script has flagged since 2026-08-17 and which the
+gate row already discloses.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 347 | 2026-08-22 | implemented `_domain_boot_delta` and wired it into `g3()` | recommendation from last tick turned into a fix |
+| 348 | 2026-08-22 | regenerated the artifact with both intervals per arm | same field names as the G1 path, so the file is self-consistent |
+| 349 | 2026-08-22 | checked the null controls under clustering | **all still contain zero** — G3's nulls survive |

@@ -249,6 +249,50 @@ def g1(run: str, readout: str = "semantic_logodds") -> Dict:
     return out
 
 
+
+def _domain_boot_delta(rows, base, arm, readout, n_boot: int = 20000, seed: int = 20260822) -> Dict:
+    """Percentile CI for a G3 arm's mean delta. Resamples the DOMAIN, not the family.
+
+    WHY THIS EXISTS (2026-08-22). `_paired_boot_frac` above gave G1 domain-level inference after audit
+    11 (A11-12) found that a family-level bootstrap treats families sharing a stem, a demo pool and a
+    target as independent units. **That fix was applied to `g1()` and not to `g3()`, in this same
+    file** -- so one script published domain-clustered intervals for one gate row and family-level SEM
+    for the other, for three days, with no marker anywhere saying so.
+
+    Measured difference on the committed G3 run: widths change x0.78-x1.68, and they UNDERSTATE most
+    for exactly the two arms that carry G3's claim (`no_demo_text` x1.68, `all_layers_demo` x1.21).
+    Several near-null arms come out NARROWER, so it is not a uniform correction -- a first draft of
+    the write-up said it was, and was wrong.
+
+    Returns both intervals under the same names the G1 path uses, so the two halves of the script are
+    now readable side by side: `ci95` (clustered, citable) and `ci95_family_level_UNDERSTATES`.
+    """
+    import random as _random
+    d, dom = [], {}
+    for r in rows:
+        if r.get("arm") != arm or r["prompt_id"] not in base:
+            continue
+        v = r[readout] - base[r["prompt_id"]]
+        d.append(v)
+        dom.setdefault(r.get("domain"), []).append(v)
+    if len(d) < 2 or len(dom) < 2:
+        return {"ci95": [float("nan")] * 2, "ci95_family_level_UNDERSTATES": [float("nan")] * 2,
+                "n_domains": len(dom), "n_families": len(d)}
+    m, s, n = mean_sem(d)
+    rng = _random.Random(seed)
+    doms = sorted(dom)
+    bs = []
+    for _ in range(n_boot):
+        vals = [v for _ in doms for v in dom[rng.choice(doms)]]
+        bs.append(sum(vals) / len(vals))
+    bs.sort()
+    lo, hi = bs[int(0.025 * len(bs))], bs[int(0.975 * len(bs))]
+    return {"ci95": [lo, hi],
+            "ci95_family_level_UNDERSTATES": [m - 1.96 * s, m + 1.96 * s],
+            "clustered_over_family_width": ((hi - lo) / (2 * 1.96 * s)) if s > 0 else None,
+            "n_domains": len(doms), "n_families": n}
+
+
 def g3(run: str, readout: str = "semantic_logodds") -> Dict:
     rows = read_jsonl(os.path.join(run, "results.jsonl"))
     base = {r["prompt_id"]: r[readout] for r in rows if r["arm"] == "none"}
@@ -258,7 +302,9 @@ def g3(run: str, readout: str = "semantic_logodds") -> Dict:
         d = [r[readout] - base[r["prompt_id"]] for r in ss if r["prompt_id"] in base]
         m, s, n = mean_sem(d)
         ec, _, _ = mean_sem([r.get("n_edges_cut", 0) for r in ss])
-        out["arms"][arm] = {"delta_mean": m, "delta_sem": s, "n": n, "mean_edges_cut": ec}
+        boot = _domain_boot_delta(rows, base, arm, readout)
+        out["arms"][arm] = {"delta_mean": m, "delta_sem": s, "n": n, "mean_edges_cut": ec,
+                            **boot}
     # BUG FIXED 2026-08-17 (independent audit, B4c). This `max` was taken over the SIGNED deltas.
     # Every real arm here is negative, so it returned `random_nondemo` = +0.031 — a NULL CONTROL —
     # as "the largest non-control effect", and the guard then certified |3.53| > 3*|0.031| = True.
