@@ -7816,7 +7816,7 @@ pointing at §0a.
 
 | # | time | action | outcome |
 |---|---|---|---|
-| 427 | 2026-08-22 | verified `d_context`'s eval-set dose | **34.9% vs 38.2%** — 91% of the rate, **zero** flips |
+| 427 | 2026-08-22 | verified `d_context`'s eval-set dose | **34.9% vs 38.2%** — 91% of the rate, **zero** flips — ⚠ this is the **eval-set** dose metric reinstated under the R-26 *narrowing*, not the withdrawn cell-mean-spread claim |
 | 428 | 2026-08-22 | narrowed **R-26** from a blanket withdrawal | the two dose metrics disagree; this design cannot adjudicate |
 | 429 | 2026-08-22 | named the asymmetry in my own favour-against-myself direction | same defect as R-13/R-15, pointed inward |
 | 430 | 2026-08-22 | replaced the forced +0.0000 with the length evidence | **67 → 2474 chars** on the 21 flips |
