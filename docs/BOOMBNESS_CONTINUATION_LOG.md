@@ -6574,3 +6574,42 @@ candidate list tried with fallback. Now carries the same caveat and its measured
 | 299 | 2026-08-22 | tested Holm robustness to the family-size choice | **L12 survives at both m=10 (0.039) and m=11 (0.043)**; nothing else does |
 | 300 | 2026-08-22 | surfaced the **CR1 vs sign-flip** disagreement instead of picking one | both stated; sign-flip preferred, with the reason |
 | 301 | 2026-08-22 | propagated the judge-provenance caveat to the short update | the two deliverables now say the same thing about the judge |
+
+## Applying the lesson without being told: §14-SA under the exact test
+
+Tick 2026-08-22. Last tick established that **CR1-clustered inference is anti-conservative when few
+clusters are informative**, and that the exact cluster sign-flip test is the better instrument. The
+obvious consequence is that *other* live claims resting on CR1 or bootstrap inference deserve the same
+treatment — so I went looking rather than waiting for an audit to find them.
+
+**§14-SA (super-additivity) was the one live headline claim with all four arms judged and never
+sign-flip tested.** Result, both estimands:
+
+| contrast | Δ (continuous) | Δ (binary) | informative clusters | exact cluster p | |
+|---|---|---|---|---|---|
+| **super-additivity** (D−B−C+base) | **+0.0333** | +0.0384 | 13 / 10 | **0.0076 / 0.0078** | **SIG** |
+| random-triple control | +0.0066 | +0.0081 | 6 / 3 | 0.25 | inert ✓ |
+| **SA − its control** | **+0.0268** | +0.0303 | 14 / 12 | **0.0551 / 0.0557** | **ns** |
+
+**The claim survives, and its framing does not.** The interaction is real by the exact test, and the
+matched random triple is properly inert. But the row asserted it is *"Established … against its own
+control"*, and the **direct contrast against that control is p ≈ 0.055 — narrowly short.**
+"Significant, with an inert control" and "significantly greater than its control" are different
+statements, and the report was making the stronger one.
+
+**A useful by-product: the estimand question is now settled for this claim.** The continuous figures
+reproduce the report's published **+0.0333** and **+0.0268** exactly, confirming that §14-SA's numbers
+— like §14-B's — are continuous-score, not binary ASR. Both estimands agree on every verdict here,
+which is worth knowing given how much trouble that distinction caused elsewhere.
+
+I want to note the shape of this tick because it is the opposite of most of the recent ones: nothing
+here was found by an auditor. The last audit taught me which instrument to distrust, and the work was
+to carry that to the claims it had not touched. That is cheaper than waiting to be caught.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 302 | 2026-08-22 | swept for live claims resting on CR1/bootstrap inference | §14-SA was the untested one with all arms judged |
+| 303 | 2026-08-22 | exact cluster sign-flip, both estimands | interaction **SIG** (p=0.0076), control **inert** (p=0.25) |
+| 304 | 2026-08-22 | tested the headline framing directly | **SA − control p=0.055 — not significant** |
+| 305 | 2026-08-22 | narrowed §14-SA in the gate row and the body | claim kept, over-strong framing withdrawn |
+| 306 | 2026-08-22 | confirmed §14-SA's published numbers are **continuous** | +0.0333 / +0.0268 reproduce exactly |

@@ -1,0 +1,59 @@
+{
+  "question": "does \u00a714-SA's super-additivity survive an EXACT cluster sign-flip test?",
+  "why": "the report establishes it with CR1/bootstrap inference, which R-27(f) showed is anti-conservative when few clusters are informative",
+  "n": 495,
+  "n_domains": 16,
+  "results": {
+    "binary_ASR": {
+      "super_additivity": {
+        "delta": 0.03838383838383838,
+        "informative_clusters": 10,
+        "p_cluster_signflip": 0.0078125,
+        "min_attainable_p": 0.001953125,
+        "significant": true
+      },
+      "random_triple_control": {
+        "delta": 0.00808080808080808,
+        "informative_clusters": 3,
+        "p_cluster_signflip": 0.25,
+        "min_attainable_p": 0.25,
+        "significant": false
+      },
+      "SA_minus_control": {
+        "delta": 0.030303030303030304,
+        "informative_clusters": 12,
+        "p_cluster_signflip": 0.0556640625,
+        "min_attainable_p": 0.00048828125,
+        "significant": false
+      }
+    },
+    "continuous_strongreject": {
+      "super_additivity": {
+        "delta": 0.03333333333333333,
+        "informative_clusters": 13,
+        "p_cluster_signflip": 0.007568359375,
+        "min_attainable_p": 0.000244140625,
+        "significant": true
+      },
+      "random_triple_control": {
+        "delta": 0.0065656565656565654,
+        "informative_clusters": 6,
+        "p_cluster_signflip": 0.25,
+        "min_attainable_p": 0.03125,
+        "significant": false
+      },
+      "SA_minus_control": {
+        "delta": 0.026767676767676767,
+        "informative_clusters": 14,
+        "p_cluster_signflip": 0.0550537109375,
+        "min_attainable_p": 0.0001220703125,
+        "significant": false
+      }
+    }
+  },
+  "VERDICT": "Super-additivity itself SURVIVES (binary ASR +0.0384, 10 informative clusters, exact cluster p=0.0078) and its random-triple control is inert (p=0.25). But the report's HEADLINE framing -- that it exceeds the matched control -- is the SA-minus-control contrast, which gives p=0.0557: narrowly NOT significant at cluster level.",
+  "estimand_note": "binary ASR at 0.5 gives +0.0384 / +0.0303; the report quotes +0.0333 / +0.0268, which are the continuous-score figures. Same direction, different estimand -- the distinction audit #8 forced elsewhere applies here too.",
+  "provenance": {
+    "git_commit": "03e754ea96ba4537e1d6d7cd0d3f8c34ed72336a"
+  }
+}
