@@ -191,6 +191,6 @@
       "--out",
       "outputs/boombness/judge_session_drift.json"
     ],
-    "git_commit": "84e22225495780ab9147561ce562c7314f87530a"
+    "git_commit": "c7822daf210e918a62b01c6eb1d11da0b988ad43"
   }
 }

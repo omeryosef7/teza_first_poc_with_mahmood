@@ -8384,3 +8384,55 @@ on some of the same arms.
 | 483 | 2026-08-22 | **two of my own "matched" controls were overdosed 6.05× and 14.79×** | withdrawn as controls, kept and labelled |
 | 484 | 2026-08-22 | the one dose-matched contrast | `d_surface` add **suppresses** ASR 0.0081 vs 0.0626, p at floor |
 | 485 | 2026-08-22 | removing refusalness undoes it | **+0.1798**, 12/12 domains, p at floor → effect runs **through refusal** |
+
+## The guard I built two days ago earned its keep, and the null is now 20 controls at every layer
+
+Queue empty; the concurrent session finished judging the of-24 sweep (a24 judge runs 17 → 46). That
+lands the data for the gap their own commit flagged as unpaid: *"L10 still rests on 4 angles and L12 on
+8, both inside the citable profile… until they are tested at this resolution, L8 is the one depth with
+a distribution-free result."*
+
+**The guard fired first.** The new wave uses a **fifth** tag prefix, `a24b_`. Running the dense null
+raised:
+
+> `[hardnull] SPELLING LIST IS INCOMPLETE for angle 1/24 at L10.` … *Someone invented a new tag prefix.*
+
+That is `assert_spelling_complete`, written two days ago for exactly this, doing exactly this. Without
+it, **16 L10 and 12 L12 angles would have dropped silently out of the null** — and a sparser null makes
+the effect look *stronger*, so the failure would have flattered the result. Fixed by wildcarding to
+`a24*_L{L}k{k}_*`, so a sixth wave is reached automatically while the two-spellings-two-directories
+check still raises if one angle ever resolves to two runs.
+
+**All four layers now carry 20 controls**, and no control reaches the arm at any of them (rank p =
+0.0476 = 1/21, the floor, everywhere).
+
+Margins are clearest in **prompts**, because judge drift is best understood that way: across 9 sessions
+the baseline takes only three distinct values — 32, 33 and 34 successes out of 495 — so the **0.0057
+drift is 2.8 prompts.**
+
+| layer | k | arm | max control | margin | margin in prompts | ÷ drift |
+|---|---|---|---|---|---|---|
+| **L6** | 20 | +0.0182 | +0.0101 | 0.0081 | **4.0** | **1.41×** |
+| L8 | 20 | +0.0424 | +0.0182 | 0.0242 | 12.0 | 4.22× |
+| L10 | 20 | +0.0323 | +0.0000 | 0.0323 | 16.0 | 5.62× |
+| L12 | 20 | +0.0364 | +0.0101 | 0.0263 | 13.0 | 4.57× |
+
+**L6's entire margin is four prompts, against a judge that moves three.** That is the same conclusion I
+reached last tick by a different route, now at full resolution rather than at 12 angles.
+
+**My L6 still disagrees with theirs, and the reason is unchanged.** They report 3 of 20 controls
+reaching the arm and a control at 109.7% of it; I get max control 1.80× *below* the arm. Every delta of
+mine is against a single baseline (`abg_base`); theirs are session-matched. I am not claiming either is
+right — I am recording that a four-prompt margin is exactly the size that baseline choice decides,
+which is itself the finding.
+
+**Also measured:** `a24b_base` completed at 0.0667 against `a24_base`'s 0.0646 the same day, 3.5 hours
+apart — **within-day drift is one prompt**, versus three across days.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 486 | 2026-08-22 | of-24 judging finished (17 → 46 runs) | L10/L12 dense data landed |
+| 487 | 2026-08-22 | **`assert_spelling_complete` caught a fifth prefix** `a24b_` | prevented **28 angles** dropping silently — in the flattering direction |
+| 488 | 2026-08-22 | dense null, **20 controls at all four layers** | no control reaches the arm anywhere; rank p at the 1/21 floor |
+| 489 | 2026-08-22 | expressed margins in prompts vs drift | **L6 = 4 prompts against a 3-prompt judge** |
+| 490 | 2026-08-22 | within-day drift measured | **1 prompt**, vs 3 across days |

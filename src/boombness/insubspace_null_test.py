@@ -140,7 +140,13 @@ def angle_spellings(layer: int, k: int, n_angles: int) -> list:
             # invented by whichever sweep ran first. Chasing spellings is a losing game, which is
             # why `assert_spelling_complete` below cross-checks this list against a scan by DECLARED
             # SPEC and fails loudly the next time someone invents a fifth.
-            out.append(f"{JUDGE}/a24_L{layer}k{k2}_*")
+            # FIFTH prefix. `a24b_` appeared when the of-24 sweep was extended to L10/L12 in a second
+            # wave. `assert_spelling_complete` caught it -- it raised on angle 1/24 at L10 rather than
+            # letting 16 L10 and 12 L12 angles drop silently out of the null, which is exactly the
+            # failure it was written for two days earlier. Wildcarded so a sixth wave (`a24c_`) is
+            # reached automatically; the two-spellings-two-directories check below still raises if
+            # one angle ever resolves to two different runs.
+            out.append(f"{JUDGE}/a24*_L{layer}k{k2}_*")
             out.append(f"{JUDGE}/angJ{layer}k{k2}of{n2}_*")
         else:
             out.append(f"{JUDGE}/angJ{layer}k{k2}of{n2}_*")
