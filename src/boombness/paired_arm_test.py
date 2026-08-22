@@ -40,6 +40,50 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import read_jsonl  # noqa: E402
 
 
+def git_commit_safe() -> str:
+    """Provenance that cannot kill the analysis (2026-08-22).
+
+    `git rev-parse HEAD` raises FileNotFoundError on batch nodes -- they have no git binary -- and
+    callers put it INSIDE the dict literal that builds the artifact, so the run dies before writing
+    and leaves a stale file that reads as current. SLURM wrappers export BOOMB_GIT_COMMIT from the
+    submitting host; absent that this degrades to an explicit marker rather than to silence.
+    """
+    import os as _os
+    import subprocess as _sp
+    env = _os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO") or globals().get("REPO_ROOT")
+        if _repo:
+            _kw["cwd"] = _repo
+        r = _sp.run(["git", "rev-parse", "HEAD"], **_kw)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
+def git_dirty_safe(*args):
+    """Dirty-flag companion. Returns True/False, or None when git is unavailable.
+
+    NOTE the three-state return: None means "could not determine", which is deliberately NOT False.
+    A batch node with no git must not report a dirty tree as clean.
+    """
+    import subprocess as _sp
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO") or globals().get("REPO_ROOT")
+        if _repo:
+            _kw["cwd"] = _repo
+        return bool(_sp.run(["git", "status", "--porcelain", *args], **_kw).stdout.strip())
+    except (FileNotFoundError, OSError):
+        return None
+
+
+
 def _rows(pat):
     m = {}
     for d in sorted(glob.glob(pat)):
@@ -141,8 +185,7 @@ def main() -> int:
            "p_exact_sign_test_on_discordant": _sign_test(up, down),
            "note": "the inference rests on the %d discordant prompts, not on %d; the sign test is "
                    "the assumption-free companion to the bootstrap" % (up + down, len(ids)),
-           "provenance": {"argv": sys.argv, "git_commit": subprocess.run(
-               ["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()}}
+           "provenance": {"argv": sys.argv, "git_commit": git_commit_safe()}}
     with open(args.out, "w") as f:
         json.dump(doc, f, indent=2)
 

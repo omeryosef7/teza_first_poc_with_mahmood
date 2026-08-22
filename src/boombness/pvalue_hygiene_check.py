@@ -1,0 +1,98 @@
+"""pvalue_hygiene_check.py — is every small p-value in the deliverables qualified?
+
+WHY THIS EXISTS. On 2026-08-22 I wrote a rule ("how to read every p-value in this report": with k
+informative clusters the attainable two-sided floor is 2/2^k; a p below its design's floor is
+bootstrap/parametric, not clustered evidence; quote the CI for magnitude) and then applied it to ONE
+gate row. An audit found three further tables that declare themselves "domain-clustered over 6
+domains" and print p-values below the resulting 0.031 floor, uncaveated.
+
+That is the third instance in a week of the same habit -- a rule adopted under correction, applied at
+the site of the correction and nowhere else. A habit cannot be fixed by intending to remember it, so
+it is mechanised here.
+
+WHAT IT CHECKS. Any p-value below THRESHOLD quoted in a deliverable must have a qualifier within the
+same block: a floor mention, an explicit "bootstrap"/"parametric"/"uncorrected", a CI alongside, or a
+retraction marker. This is deliberately a LINT, not a proof -- it cannot know a claim's k. It is
+calibrated to catch the specific failure that has already happened three times: a small p presented
+bare, in a section whose design cannot produce it.
+
+DELIBERATELY NOISY-SIDE-SAFE. It runs on the two DELIVERABLES only, not the logs: the logs are a
+record of what was believed when, and linting them would flag history. Same reasoning as
+`retraction_sweep`'s LIVE_PREFIX_ENDS_AT.
+"""
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+
+DELIVERABLES = [
+    "reports/boombness_objective_sprint_report.md",
+    "reports/boombness_objective_sprint_short_update.md",
+]
+# a p-value at or below this is small enough that its design's clustering matters
+THRESHOLD = 0.031
+PVAL = re.compile(r"p(?:_cl|_perm|_boot)?\s*[=<]\s*\*{0,2}(\d?\.\d+|\d+\.?\d*e-\d+)", re.I)
+QUALIFIER = re.compile(
+    r"floor|bootstrap|parametric|uncorrected|not clustered|CI\s*\[|\[\+?[-−]?\d|"
+    r"retract|withdraw|⛔|supersed|sign-flip|permutation|delta method|attainable", re.I)
+
+
+def blocks(text):
+    out, cur, start = [], [], 1
+    for i, line in enumerate(text.split("\n"), 1):
+        if line.startswith("|"):                 # table rows are their own block
+            if cur:
+                out.append((start, "\n".join(cur))); cur = []
+            out.append((i, line)); start = i + 1
+            continue
+        if not line.strip():
+            if cur:
+                out.append((start, "\n".join(cur))); cur = []
+            start = i + 1
+        else:
+            if not cur:
+                start = i
+            cur.append(line)
+    if cur:
+        out.append((start, "\n".join(cur)))
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--paths", nargs="*", default=DELIVERABLES)
+    ap.add_argument("--threshold", type=float, default=THRESHOLD)
+    args = ap.parse_args()
+    bad = 0
+    for path in args.paths:
+        try:
+            text = open(path, encoding="utf-8").read()
+        except OSError:
+            continue
+        hits = 0
+        for ln, blk in blocks(text):
+            smalls = []
+            for m in PVAL.finditer(blk):
+                try:
+                    v = float(m.group(1))
+                except ValueError:
+                    continue
+                if v <= args.threshold:
+                    smalls.append(m.group(0))
+            if smalls and not QUALIFIER.search(blk):
+                hits += 1
+                bad += 1
+                print(f"  {path}:{ln}  UNQUALIFIED small p {smalls[:3]}")
+                print(f"      {blk.strip()[:110]}")
+        print(f"  {path:52s} {hits} unqualified small p-value block(s)")
+    if bad:
+        print(f"\n[p-hygiene] {bad} block(s) quote a p <= {args.threshold} with no floor, interval, "
+              f"method or retraction marker. The rule is in report §0b.")
+        return 1
+    print(f"\n[p-hygiene] every p <= {args.threshold} in the deliverables carries a qualifier")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -115,6 +115,19 @@ def git_commit_safe() -> str:
         return f"unavailable:{type(exc).__name__}"
 
 
+def git_dirty_safe(*args):
+    """Dirty-flag companion. True/False, or None when git is unavailable."""
+    import subprocess as _sp
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO") or globals().get("REPO_ROOT")
+        if _repo:
+            _kw["cwd"] = _repo
+        return bool(_sp.run(["git", "status", "--porcelain", *args], **_kw).stdout.strip())
+    except (FileNotFoundError, OSError):
+        return None
+
+
 SCORE = "strongreject_score"
 FLAG = "malicious_at_0.5"
 
@@ -403,9 +416,7 @@ def main() -> None:
         "git_commit": git_commit_safe(),
         "script_sha16": hashlib.sha256(open(os.path.abspath(__file__), "rb").read()
                                        ).hexdigest()[:16],
-        "working_tree_dirty": bool(subprocess.run(["git", "status", "--porcelain", "--", __file__],
-                                                  cwd=REPO, capture_output=True,
-                                                  text=True).stdout.strip()),
+        "working_tree_dirty": git_dirty_safe("--", __file__),
         "bank": args.bank, "condition_filter": args.condition or None,
         "thresholds": {"min_asr_rise": args.min_asr_rise,
                        "min_absolute_overlap": args.min_absolute_overlap},
