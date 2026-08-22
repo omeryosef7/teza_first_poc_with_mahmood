@@ -83,6 +83,18 @@ JUDGE = "outputs/boombness/judge"
 
 
 
+def rejudge_runs(layer):
+    """Deliberate re-judgings at `layer` -- excluded from the sweep, but named so they are visible."""
+    out = []
+    for d, s in sorted(done_specs().items()):
+        b = os.path.basename(d)
+        if not is_rejudge(b) or not s:
+            continue
+        if s.startswith("in_subspace_angle") and f":{layer}-{layer}:" in s:
+            out.append({"run": b, "declares": s})
+    return out
+
+
 def unused_angle_runs(layer, used_dirs):
     """Judge runs that DECLARE an in-subspace angle at `layer` but did not enter the null.
 
@@ -110,6 +122,43 @@ def unused_angle_runs(layer, used_dirs):
 # Tag families that have ever been used for an angle sweep. An angle theta = pi*k/n is the SAME
 # direction whichever family names it, so these are spellings, not distinct runs.
 ANGLE_FAMILIES = (4, 8, 12, 24)
+
+# DELIBERATE RE-JUDGINGS, excluded from the sweep by design rather than by omission.
+#
+# `xL6_*` is the crossover experiment (job 774501): eight L6 angles already in the sweep, re-judged
+# together in one session to test whether the null's ceiling was a judging artifact. They are
+# SECOND judgings of angles that are already present, so including them would put two directories
+# on one angle -- which `angle_glob` correctly raises on as a double-count.
+#
+# The fix is NOT to add another spelling. It is to say out loud that these runs exist and are not
+# sweep members. `assert_spelling_complete` ignores them; the artifact records them under
+# `deliberate_rejudge_runs_excluded` so "the guard is silent" never means "nobody looked".
+REJUDGE_PREFIXES = ("xL6_",)
+
+
+def is_rejudge(basename: str) -> bool:
+    return basename.startswith(REJUDGE_PREFIXES)
+
+
+_DONE_SPEC_CACHE = None
+
+
+def done_specs():
+    """{abs_dir: declared_spec} for every DONE judge run, built once.
+
+    `assert_spelling_complete` and `rejudge_runs` each walked the whole judge tree and re-read every
+    config.json. At 24 angles x 4 layers that is ~100 full scans with file I/O, and the null went from
+    seconds to over two minutes. The scan is identical every time, so it is done once.
+    """
+    global _DONE_SPEC_CACHE
+    if _DONE_SPEC_CACHE is None:
+        cache = {}
+        for d in sorted(glob.glob(f"{JUDGE}/*")):
+            if not os.path.isdir(d) or not os.path.exists(os.path.join(d, "DONE.json")):
+                continue
+            cache[os.path.abspath(d)] = declared_spec(d)
+        _DONE_SPEC_CACHE = cache
+    return _DONE_SPEC_CACHE
 
 
 def angle_spellings(layer: int, k: int, n_angles: int) -> list:
@@ -184,12 +233,8 @@ def assert_spelling_complete(layer: int, k: int, n_angles: int, resolved: list) 
     data supports. So compare them and raise.
     """
     want = acceptable_specs(layer, k, n_angles)
-    by_spec = set()
-    for d in glob.glob(f"{JUDGE}/*"):
-        if not os.path.isdir(d) or not os.path.exists(os.path.join(d, "DONE.json")):
-            continue
-        if declared_spec(d) in want:
-            by_spec.add(os.path.abspath(d))
+    by_spec = {d for d, s in done_specs().items()
+               if s in want and not is_rejudge(os.path.basename(d))}
     missed = by_spec - {os.path.abspath(x) for x in resolved}
     if missed:
         raise SystemExit(
@@ -311,6 +356,22 @@ def _rows(pat, expect_spec=None):
     hits = sorted(glob.glob(pat))
     if not hits:
         return None, None
+    # A JUDGE RUN WITHOUT `DONE.json` IS A TRUNCATED PREFIX, NOT A SMALL RUN.
+    #
+    # This was consuming in-flight judge runs. On 2026-08-22 the `a24d_*` wave was mid-judging at
+    # 335-350 of 495 rows; the null ingested them, the common-prompt intersection collapsed from 495
+    # to 297, and it reported a completely different L6 (arm +0.0236 vs +0.0182, ceiling +0.0168 vs
+    # +0.0101) computed over 60% of the bank. Nothing refused the input -- `population_matched: False`
+    # recorded the damage after the fact, which is not the same as declining to do the arithmetic.
+    #
+    # `unanalysed_inventory` calls this class "the one that matters most: a score computed over a
+    # truncated prefix". Excluded here, and NAMED in the return so an angle does not quietly vanish.
+    incomplete = [os.path.basename(h) for h in hits
+                  if not os.path.exists(os.path.join(h, "DONE.json"))]
+    hits = [h for h in hits if os.path.exists(os.path.join(h, "DONE.json"))]
+    if not hits:
+        # rows=None so the caller's `if a:` sends this angle to `missing`; the label carries WHY.
+        return f"ALL RUNS INCOMPLETE (no DONE.json): {', '.join(incomplete)}", None
     if expect_spec is not None:
         bad = [(os.path.basename(h), declared_spec(h)) for h in hits
                if declared_spec(h) not in (None, expect_spec)]
@@ -334,6 +395,8 @@ def _rows(pat, expect_spec=None):
         f"{len(hits)} shards: {', '.join(os.path.basename(h) for h in hits)}"
     if dupes:
         label += f" [{dupes} overlapping ids, later run wins]"
+    if incomplete:
+        label += f" [EXCLUDED {len(incomplete)} run(s) without DONE.json: {', '.join(incomplete)}]"
     return label, merged
 
 
@@ -447,6 +510,7 @@ def main() -> int:
         rec["unused_angle_runs_at_this_layer"] = unused_angle_runs(
             L, [h for h in glob.glob(armpat)] +
                [h for k in angs for h in glob.glob(angle_glob(L, k, n_ang))])
+        rec["deliberate_rejudge_runs_excluded"] = rejudge_runs(L)
         nulls = {f"angle{k}": _delta(base, a, args.threshold, ids=common)["delta"]
                  for k, (_, a) in angs.items()}
         rec["in_subspace_null"] = {"deltas": nulls, "missing": missing}

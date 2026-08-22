@@ -8586,3 +8586,56 @@ the data warranted.
 | 504 | 2026-08-22 | **restored L8's confidence** — 12p vs 2.8p = **4.2×** | last tick's walk-back withdrawn |
 | 505 | 2026-08-22 | L6 withdrawal re-footed on margin size, not artifact | 4p vs 2.8p = 1.41× |
 | 506 | 2026-08-22 | cross-session null construction **vindicated** | every angle stable to ≤2 prompts across sessions |
+
+## The null was eating half-judged runs, and it nearly gave me the answer I wanted
+
+A sixth tag prefix appeared tonight — `a24d_` — supplying L6 angles 17/19/21/23 and L8's 17/19. The
+`a24*` wildcard reached them automatically, which is what wildcarding was for. Running the null at 24
+angles produced a striking result:
+
+| | 20 angles | "24 angles" |
+|---|---|---|
+| L6 arm | +0.0182 | +0.0236 |
+| L6 ceiling | +0.0101 | **+0.0168** |
+
+**+0.0168 is within 0.2 prompts of the concurrent session's +0.0172** — the disagreement I have been
+unable to explain for four ticks, apparently resolved by the completed sweep. That is exactly the shape
+of result I had been looking for, which is the reason to check it rather than write it up.
+
+**It was computed on 297 of 495 prompts.** The `a24d_` runs are still being judged — 335–350 rows,
+**no `DONE.json`** — and the null ingested them anyway. The common-prompt intersection collapsed from
+495 to 297 and every L6 and L8 number changed, including the arm, which no amount of added *controls*
+should move. `population_matched: False` recorded the damage after the arithmetic instead of refusing
+to do it.
+
+**The bug: `_rows` never required `DONE.json`.** It globbed directories and read whatever
+`results.jsonl` held. `unanalysed_inventory`'s docstring calls this class *"the one that matters most:
+a score computed over a truncated prefix"* — and the null, the sprint's central instrument, had it.
+Fixed: runs without `DONE.json` are excluded and **named** in the label, and an angle whose every run
+is incomplete goes to `missing` rather than silently contributing a partial column.
+
+Two further guards fired correctly on the way:
+
+* `assert_spelling_complete` caught `xL6_*` — **my own crossover re-judgings**. The right answer was
+  not a sixth spelling (that would put two directories on one angle) but an explicit
+  `REJUDGE_PREFIXES` exclusion, with the excluded runs listed per layer in the artifact so "the guard
+  is silent" never means "nobody looked". Eight are recorded at L6.
+* Adding those scans made the null exceed two minutes; the judge-tree walk is now built once.
+
+**Standing numbers are unchanged** — L6 +0.0182 vs ceiling +0.0101, L8 +0.0424 vs +0.0182, all four
+layers at k=20 with `population_matched: True`. The 24-angle result is **not** reported, because it
+does not exist yet.
+
+**And the disagreement with the concurrent result is still open.** Tonight's near-match was an artifact
+of partial data. Whether the complete sweep reproduces it is a real question, answerable next tick when
+`a24djudge` finishes — with the difference that I now know what the answer is likely to look like,
+which is a reason to be more careful with it, not less.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 507 | 2026-08-22 | sixth prefix `a24d_` appeared; wildcard reached it | L6 briefly showed 24/24 coverage |
+| 508 | 2026-08-22 | 24-angle run seemed to **resolve** the 4-tick disagreement | ceiling +0.0168 vs their +0.0172 |
+| 509 | 2026-08-22 | checked instead of writing it up | **n_common 297/495** — computed on partial judgings |
+| 510 | 2026-08-22 | **fixed `_rows`: `DONE.json` now required** | truncated-prefix class, in the sprint's central instrument |
+| 511 | 2026-08-22 | `xL6_*` excluded via `REJUDGE_PREFIXES`, recorded per layer | guard was right; a sixth spelling would have double-counted |
+| 512 | 2026-08-22 | cached the judge-tree scan | null back under time; standing numbers unchanged |
