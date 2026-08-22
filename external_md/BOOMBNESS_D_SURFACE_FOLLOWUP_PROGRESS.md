@@ -5177,7 +5177,71 @@ garbage argsfiles deleted.
 cardinality. `launched == expected` is one line and it is the only reason this was caught in seconds
 rather than surfacing later as eight controls with impossible angles.
 
-## ⛔✅ THE 20-CONTROL RANK TEST — L6 is REFUTED, L8 PASSES distribution-free for the first time
+## ⛔⛔ RETRACTED BY REVIEW #12 — "L6 IS REFUTED" WAS A BASELINE-SEED ARTIFACT OF MY OWN MAKING
+
+> ⛔ **The L6 refutation below is WITHDRAWN.** An audit found the cause and I verified it: the old
+> baseline `abrep_base` was judged with **`--seed 20260821`**, while the new baseline, **both arms,
+> all 12 old controls and all 8 new controls** used **20260816**. `abrep_base` is the *only* run in
+> the entire set at a different seed.
+>
+> ⛔ **And I had checked for exactly this and got the sign backwards.** My check measured the
+> baseline difference (−0.0023) and then argued *"every delta is (arm − ITS OWN baseline) … so a
+> uniform shift cancels."* That is false here: a shift in the **subtrahend only** transfers 1:1 into
+> every delta of that block. The 13 deltas built on `abrep_base` — **including the arm's** — were
+> biased **downward** by ≈0.0023, while the 8 new ones were unbiased. All three L6 controls "beat"
+> the arm by **+0.000024, +0.001233, +0.001511** — every margin smaller than the offset I had
+> already measured and then dismissed.
+>
+> ✅ **Fixed at zero compute cost:** every arm and control was *already* seed-matched to `a24_base`,
+> so re-pairing all 42 runs against that single common baseline removes the confound with no new
+> judging.
+>
+> | depth | estimator | arm | max ctl | ctl ≥ arm | rank p |
+> |---|---|---|---|---|---|
+> | **L6** | clustered | +0.019193 | +0.017171 | **0/20** | **0.0476** |
+> | **L6** | pooled | +0.020707 | +0.011111 | **0/20** | **0.0476** |
+> | **L8** | clustered | +0.031288 | +0.014700 | **0/20** | **0.0476** |
+> | **L8** | pooled | +0.043182 | +0.018182 | **0/20** | **0.0476** |
+>
+> **L6 is not refuted. Both depths rank first among 21 directions, under both estimators.**
+
+## ⚠ BUT THE CORRECTED RESULT IS WEAKER THAN EITHER VERSION I PUBLISHED
+
+Ranking first is not the same as being separated, and the audit was right about that too.
+
+| depth | arm − strongest control | SE of the difference | **t** |
+|---|---|---|---|
+| L6 | +0.002022 | 0.011811 | **+0.17** |
+| L8 | +0.016589 | 0.012282 | **+1.35** |
+
+⛔ **My "+6.0× judge noise" claim is withdrawn.** The 0.0023 divisor was a **single paired re-judge
+of one run** — a net change of *one* flagged prompt out of 495. That is a **bias estimate with ~100%
+relative uncertainty, used as if it were a dispersion**, while the artifacts already carried the
+right scale: the arm's own clustered SE is 0.0117 (L8) and 0.0076 (L6), 3–5× larger. Against the
+proper SE the L8 margin is **t = +1.35**, not 6σ.
+
+### The honest position on the flagship profile
+
+✅ **At L6 and L8 the arm is the most extreme of 21 directions** (rank p = 0.0476, the design floor,
+robust to estimator and to the baseline fix).
+⛔ **At neither depth is the arm distinguishable from the strongest control** (t = +0.17, +1.35).
+⚠ **And the rank test is not the clean permutation null I implied**: `signals.py` records that
+`d_surface` carries dose ≈0.84 while complement directions carry ≈0.11, with ρ(dose, effect) = 0.961
+inside the control family. The arm is not exchangeable with its controls **by construction** — it is
+a high-dose intervention ranked against twenty low-dose ones, so p = 0.0476 is not evidence about
+*direction* alone.
+
+**Net: the four-depth profile is not established by this analysis, and it is not refuted either.
+What the 20-control bands actually show is that no orthogonal direction reaches the arm, with the
+arm's advantage over the runner-up unresolved at both depths.**
+
+⚠ Two further defects recorded rather than buried: the densified grid covers **7.5° over [0°,112.5°]
+but only 15° above it** — k = 17,19,21,23 were never run — and **L6's maximum sits at k=15 = 112.5°,
+the last densified point, with the new-block sequence still rising monotonically into it.** By this
+document's own "sample, not a bound" logic that is the worst possible place for a maximum to sit.
+The L8 densification increase is **+24.0%**, not the +23% I quoted from rounded values.
+
+## ⛔ (RETRACTED HEADLINE) THE 20-CONTROL RANK TEST — L6 is REFUTED, L8 PASSES distribution-free for the first time
 
 **Artifacts:** `angle_band24_new.json` + `angle_band_L{6,8}_full.json`. Twenty distinct controls per
 depth (12 at multiples of 15°, 8 at odd multiples of 7.5°), each delta formed against a baseline
