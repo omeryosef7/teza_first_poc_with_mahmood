@@ -2359,6 +2359,8 @@ records that `carrot` alone is 2 tokens while ` carrot` is 1, which is exactly t
 
 The plan asks these to be answered directly, so they are, each with its status and its caveat.
 
+⚠ **How to read the p-values in this section (added 2026-08-22).** Several answers below quote p-values **smaller than their design's attainable cluster floor** — e.g. **p<0.0001**, **0.0001** and **0.0077** on bank-based analyses that cluster on **6 domains**, where the smallest attainable two-sided cluster p is **2/2⁶ = 0.031**. Those are **bootstrap or parametric** p-values, legitimate as such, and they must **not** be read as clustered evidence. Per §0b's rule: quote the **confidence interval** for magnitude, and treat a cluster p only as a statement about cross-domain consistency. AdvBench answers cluster on **16** domains (floor 3.1e-5), so their p-values are attainable — but §14-B's `p_cl=0.0089` is a CR1 statistic, and the exact sign-flip value for that arm is **0.0078** (§0b). **No answer below changes as a result; the strength of several does.** *(An earlier draft of this note also listed **0.0014** as an example — that figure belongs to the **retracted** 4-draw band, not to any live answer here, and `retraction_sweep.py` caught the slip.)*
+
 **1. Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?**
 **Partly, and much less than the model's own behaviour suggests.** On the identified axis the doublespeak
 codeword moves only a few percent toward the concept (C−A ≈ +0.015 to +0.027 at L4–L12), while the

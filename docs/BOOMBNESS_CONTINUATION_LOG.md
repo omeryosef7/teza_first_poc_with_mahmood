@@ -7077,3 +7077,39 @@ one. §0b exists so the next finding has somewhere to go.
 | 351 | 2026-08-22 | split into §0a (71 lines) + §0b (199), nothing deleted | 4 + 6 = 10 sections preserved |
 | 352 | 2026-08-22 | verified tooling and figure resolution after the move | sweep / verifier / registry all green |
 | 353 | 2026-08-22 | recorded it as a process failure with a named cause | "read first" and "contains everything" are incompatible |
+
+## Applying the p-rule to the plan's own §19, and the guard catching me doing it wrong
+
+Tick 2026-08-22. Audit #10 launched at the restructured deliverables (§0a/§0b split, the sign-flip
+inference, the G3 fix, the p-rule, the `verify_report_numbers` status change). While it runs I checked
+the thing the loop is ultimately about — **the plan itself**.
+
+**Plan §19 requires eleven questions answered directly, and the report answers all eleven.** That part
+is done. But applying last tick's p-rule to that section shows several answers quote p-values
+**smaller than their design's attainable cluster floor**: bank-based analyses cluster on **6 domains**,
+where the floor is 2/2⁶ = **0.031**, and §19 quotes **p<0.0001**, **0.0001** and **0.0077**. Those are
+bootstrap or parametric numbers — legitimate as such, and now marked as such — not clustered evidence.
+AdvBench answers cluster on 16 domains (floor 3.1e-5) so their p-values are attainable, though §14-B's
+`p_cl=0.0089` is CR1 where the exact sign-flip value is 0.0078. **No answer changes; the stated
+strength of several does.**
+
+**And the guard caught me making the exact error I was documenting.** My first draft of that note
+listed **0.0014** among the live sub-floor p-values. `retraction_sweep.py` flagged it, and the flag was
+right: **0.0014 is the retracted 4-draw band's figure**, which inside §19 appears only in a retraction
+paragraph. I had cited a retracted number as an example of a live one, in a note whose whole purpose is
+telling readers how to treat numbers carefully.
+
+My first instinct was that the pattern was over-broad — it matches the bare literal `0.0014`, and the
+file's own comments record narrowing a different pattern for exactly that reason. Checking first showed
+the opposite: every legitimate occurrence of 0.0014 already sits in a markered paragraph, so the bare
+pattern only ever fires on *new* uses, which is precisely when it should. **The guard was right and my
+instinct to loosen it was wrong** — worth recording, because loosening it would have been a
+one-character change that silently removed a working check.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 354 | 2026-08-22 | launched **audit #10** at the restructured deliverables | §0a/§0b split, G3 fix, p-rule, verifier status change |
+| 355 | 2026-08-22 | checked plan §19's eleven required answers | **all present**; several quote sub-floor p-values |
+| 356 | 2026-08-22 | added the reading note to §19 | bank answers: floor **0.031**, so p<0.0001/0.0001/0.0077 are not clustered evidence |
+| 357 | 2026-08-22 | sweep flagged my note; **the flag was correct** | I had cited the **retracted** 0.0014 as a live example |
+| 358 | 2026-08-22 | checked before loosening the pattern, and did not loosen it | every legitimate use is already markered — the bare pattern fires only on new ones |
