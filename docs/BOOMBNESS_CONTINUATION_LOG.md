@@ -7939,3 +7939,53 @@ suite has protected me from myself rather than from a stale claim.
 | 440 | 2026-08-22 | **withdrew my own "L8 does not reproduce"** | an **n=2 artifact**; both layers significant in all 4 passes |
 | 441 | 2026-08-22 | recorded that deltas are stable while p swings 4–7× | **the effect reproduces better than its significance does** |
 | 442 | 2026-08-22 | over-broad edit deleted two pinned figures; guards caught it | reverted and redone with explicit bounds |
+
+## The angle resolver could not name half the sweep that was being generated
+
+Same tick. A concurrent session submitted a **24-angle** in-subspace sweep (28 jobs, `a24_*`). Before
+its data lands, I checked whether my resolver could actually *read* it. It could not.
+
+`angle_glob` special-cased n=4, n=8 and n=12 and fell through to a generic `angJ{L}k{k}of24_*` for
+anything else. But **16 of the 24 angles are aliases of directions already run under a different
+spelling** — `6of24 == 1of4` (`angJ12k1_*`), `2of24 == 1of12`, `3of24 == 1of8` (`a8J12k1_*`). The
+generic glob matched none of them. This is the failure the function's own docstring warns about, one
+denominator later: *a run you cannot name is a run you silently drop.*
+
+**Why it would have mattered.** Dropped angles do not error — they shrink the null. A sparser null has
+a smaller k, a coarser attainable p and a wider band, so the effect looks **stronger** than the data
+supports. Silent omission biases in the flattering direction, which is the direction I am least likely
+to question.
+
+**Fix.** Resolve by **angle**, not spelling: enumerate every family the angle is expressible in, keep
+the spellings that match a directory, and **raise** if two spellings point at two different directories
+rather than picking a favourite (that is the double-count).
+
+**Then the fix's own reporting caught a second thing.** Rerunning surfaced eight `a24_L6k*` runs under
+`unused_angle_runs` — the of-24 sweep uses a **fourth prefix**, `a24_L{L}k{k}_*`, that I still did not
+emit. Four prefixes now exist for one concept (`angJ`, `a8J`, `…of12`, `a24_`), each invented by
+whichever sweep ran first. So chasing spellings is a losing game, and I stopped playing it: the
+spelling list is now cross-checked against a scan by **declared spec** (ground truth), and
+`assert_spelling_complete` raises the moment a run declares an angle no glob reaches. The same
+angle-derived logic replaced three hand-written `if n_ang == …` blocks in the spec check, which had no
+of-24 case at all.
+
+**No committed number moves.** Back-compat is verified on all **68** existing angles; rerunning the
+null at the recorded resolution reproduces every statistic exactly (L6 +0.0182 z=3.37(11), L8 +0.0424
+z=3.17(11), L10 z=12.73(3), L12 z=6.23(7)). Only provenance and the `unused_angle_runs` field changed.
+**52** of-24 angles are now reachable that were not.
+
+New guard `src/boombness/test_angle_resolver.py` checks equivalence across denominators, back-compat
+against the old resolver reimplemented as an oracle, and — because a guard that has never been tested
+against a case it should fail is not a guard — a synthetic angle with two spellings and two different
+directories, which must raise. It does.
+
+**Not run: the denser n=24 null.** L6 has 8 of its 12 odd-of-24 angles judged; 17/19/21/23 are still in
+the queue. Running it now would repeat exactly the partial-data error `judge_pass_interval` refuses.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 443 | 2026-08-22 | audited resolver against the in-flight 24-angle sweep | **16 of 24 angles unnameable**; would have silently shrunk the null |
+| 444 | 2026-08-22 | resolve by angle; raise on two-spellings-two-dirs | back-compat verified on **68** angles, **no statistic moves** |
+| 445 | 2026-08-22 | fix's own reporting exposed a **fourth** prefix `a24_` | added, plus `assert_spelling_complete` cross-check vs declared spec |
+| 446 | 2026-08-22 | new guard `test_angle_resolver.py`, incl. a must-fail case | PASS; 52 of-24 angles now reachable |
+| 447 | 2026-08-22 | deferred the n=24 null | L6 8/12 odd angles judged; **will not run on partial data** |

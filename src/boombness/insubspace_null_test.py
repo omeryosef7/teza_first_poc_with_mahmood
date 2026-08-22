@@ -107,34 +107,127 @@ def unused_angle_runs(layer, used_dirs):
     return out
 
 
-def angle_glob(layer: int, k: int, n_angles: int) -> str:
-    """Glob for the judge run of angle k-of-n_angles at `layer`.
+# Tag families that have ever been used for an angle sweep. An angle theta = pi*k/n is the SAME
+# direction whichever family names it, so these are spellings, not distinct runs.
+ANGLE_FAMILIES = (4, 8, 12, 24)
 
-    THE SAME DIRECTION HAS TWO NAMES. The original sweep ran `n_angles=4` and tagged its runs
-    `angJ<L>k{0,1,2,3}`; the dense sweep runs `n_angles=12` tagged `angJ<L>k{k}of12`. Because the
-    angles are theta = pi*k/n, **k-of-4 and 3k-of-12 are the same direction** -- verified on CPU
-    before the dense sweep was submitted: `k=3of12` vs `k=1of4` gave cos **1.0000**. So the four
-    original runs ARE angles 0/3/6/9 of 12 and must be reused, not re-run.
 
-    Resolve by ANGLE, not by filename: an index divisible by 3 is asked for under its of-4 name.
-    Addressing these by "whichever tag happens to exist" is how the same direction ends up counted
-    twice, or a real draw silently dropped.
+def angle_spellings(layer: int, k: int, n_angles: int) -> list:
+    """Every tag glob that could name the angle theta = pi*k/n_angles at `layer`.
+
+    THE SAME DIRECTION HAS SEVERAL NAMES, and which name it got depends only on which sweep
+    happened to run it first. k-of-4 == 2k-of-8 == 3k-of-12 == 6k-of-24. Enumerate the equivalent
+    (k', n') for every family and let the CALLER pick the one that exists, rather than assuming the
+    requested denominator is the one on disk.
     """
-    if n_angles == 4:
-        return f"{JUDGE}/angJ{layer}k{k}_*"
-    if n_angles == 12 and k % 3 == 0:
-        return f"{JUDGE}/angJ{layer}k{k // 3}_*"
-    # n=8: the EVEN indices are the of-4 sweep again (k-of-4 == 2k-of-8), and the ODD ones were run
-    # under a DIFFERENT TAG PREFIX -- `a8J12k1_*`, not `angJ12k1of8_*`. Audit #6 found four completed
-    # L12 controls that no `--n-angles` setting could address, because the resolver only ever emitted
-    # the `angJ...of{n}` spelling. A run you cannot name is a run you silently drop, which is the same
-    # failure as naming the wrong one, pointing the other way.
-    if n_angles == 8:
-        return (f"{JUDGE}/angJ{layer}k{k // 2}_*" if k % 2 == 0
-                else f"{JUDGE}/a8J{layer}k{k}_*")
+    out = []
+    for n2 in ANGLE_FAMILIES:
+        if (k * n2) % n_angles:
+            continue                      # not expressible in this family
+        k2 = (k * n2) // n_angles
+        if n2 == 4:
+            out.append(f"{JUDGE}/angJ{layer}k{k2}_*")
+        elif n2 == 8:
+            # The of-8 sweep's ODD indices were tagged with a DIFFERENT PREFIX -- `a8J`, not `angJ`.
+            # Audit #6 found four completed L12 controls that no `--n-angles` setting could address,
+            # because the resolver only ever emitted the `angJ...of{n}` spelling. Even indices are
+            # the of-4 sweep again and are already covered by the n2==4 branch above.
+            if k2 % 2:
+                out.append(f"{JUDGE}/a8J{layer}k{k2}_*")
+        elif n2 == 24:
+            # FOURTH spelling. The of-24 sweep tags `a24_L{L}k{k}_*`, not `angJ{L}k{k}of24_*`.
+            # That is four prefixes for one concept (`angJ`, `a8J`, `angJ...of12`, `a24_`), each
+            # invented by whichever sweep ran first. Chasing spellings is a losing game, which is
+            # why `assert_spelling_complete` below cross-checks this list against a scan by DECLARED
+            # SPEC and fails loudly the next time someone invents a fifth.
+            out.append(f"{JUDGE}/a24_L{layer}k{k2}_*")
+            out.append(f"{JUDGE}/angJ{layer}k{k2}of{n2}_*")
+        else:
+            out.append(f"{JUDGE}/angJ{layer}k{k2}of{n2}_*")
+    seen, uniq = set(), []
+    for g in out:
+        if g not in seen:
+            seen.add(g); uniq.append(g)
+    return uniq
+
+
+def acceptable_specs(layer: int, k: int, n_angles: int) -> set:
+    """Every `--intervene` spec a run for angle k-of-n_angles may legitimately declare.
+
+    Equivalent angles are the SAME direction and are accepted; anything else is not. This used to be
+    three hand-written `if n_ang == ...` special cases, which meant the check was only as complete as
+    the denominators someone had thought of -- and it silently had no of-24 case at all.
+    """
+    want = set()
+    for n2 in ANGLE_FAMILIES:
+        if (k * n2) % n_angles:
+            continue
+        k2 = (k * n2) // n_angles
+        want.add(f"in_subspace_angle{k2}of{n2}:project_out:{layer}-{layer}:1.0")
+        if n2 == 4:                      # of-4 tags spell the angle without a denominator
+            want.add(f"in_subspace_angle{k2}:project_out:{layer}-{layer}:1.0")
+    return want
+
+
+def assert_spelling_complete(layer: int, k: int, n_angles: int, resolved: list) -> None:
+    """Fail if a run DECLARES this angle but no spelling in `angle_spellings` reaches it.
+
+    The spelling list is a guess about filenames; the declared spec is ground truth. When they
+    disagree, the spelling list is the one that is wrong, and the failure mode is silent omission --
+    the angle just quietly leaves the null, making it look sparser (and the claim stronger) than the
+    data supports. So compare them and raise.
+    """
+    want = acceptable_specs(layer, k, n_angles)
+    by_spec = set()
+    for d in glob.glob(f"{JUDGE}/*"):
+        if not os.path.isdir(d) or not os.path.exists(os.path.join(d, "DONE.json")):
+            continue
+        if declared_spec(d) in want:
+            by_spec.add(os.path.abspath(d))
+    missed = by_spec - {os.path.abspath(x) for x in resolved}
+    if missed:
+        raise SystemExit(
+            f"[hardnull] SPELLING LIST IS INCOMPLETE for angle {k}/{n_angles} at L{layer}.\n"
+            f"  These runs declare this angle but no glob reaches them:\n    "
+            + "\n    ".join(sorted(os.path.basename(m) for m in missed))
+            + "\n  Someone invented a new tag prefix. Add it to `angle_spellings`; do NOT let the\n"
+              "  angle drop silently out of the null."
+        )
+
+
+def angle_glob(layer: int, k: int, n_angles: int) -> str:
+    """Glob for the judge run of angle k-of-n_angles at `layer`, RESOLVED BY ANGLE.
+
+    Addressing these by "whichever tag happens to exist" is how the same direction ends up counted
+    twice, or a real draw silently dropped. So: enumerate every spelling of this angle, keep the
+    ones that actually match a directory, and
+
+      * return that one if exactly one spelling matches;
+      * RAISE if two spellings match DIFFERENT directories -- that is the double-count, and it must
+        never be resolved by picking a favourite;
+      * fall back to the canonical spelling if none matches, so a missing run reads as missing.
+
+    The previous version hard-coded n=4/8/12 and fell through to a generic `of{n}` spelling for
+    anything else. That was silently wrong for **n=24**: 16 of its 24 angles are aliases of
+    directions already run under an of-4, of-8 or of-12 tag, so the generic glob matched nothing and
+    those angles vanished from the null -- making the null look sparser than the data actually is.
+    """
+    cands = angle_spellings(layer, k, n_angles)
+    hits = {g: sorted(glob.glob(g)) for g in cands}
+    live = {g: v for g, v in hits.items() if v}
+    if len(live) > 1:
+        # Same angle, two tag families, two different directories on disk.
+        dirsets = {tuple(v) for v in live.values()}
+        if len(dirsets) > 1:
+            raise RuntimeError(
+                f"angle {k}/{n_angles} at L{layer} resolves to MULTIPLE DISTINCT runs: "
+                + "; ".join(f"{g} -> {v}" for g, v in live.items())
+                + ". Two spellings of one direction were both run; counting either silently "
+                  "double-counts or drops. Resolve by deleting/retagging the duplicate."
+            )
+    if live:
+        return next(iter(live))
     return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
-
-
 
 
 def cellmean_dose(payload, layer, v=None):
@@ -304,13 +397,8 @@ def main() -> int:
             g = angle_glob(L, k, n_ang)
             # what the run for this angle MUST declare. of-4 tags spell the angle without the
             # denominator, so both spellings of the same direction are accepted -- by angle, not tag.
-            want = {f"in_subspace_angle{k}of{n_ang}:project_out:{L}-{L}:1.0"}
-            if n_ang == 12 and k % 3 == 0:
-                want.add(f"in_subspace_angle{k // 3}:project_out:{L}-{L}:1.0")
-            if n_ang == 4:
-                want.add(f"in_subspace_angle{k}:project_out:{L}-{L}:1.0")
-            if n_ang == 8 and k % 2 == 0:
-                want.add(f"in_subspace_angle{k // 2}:project_out:{L}-{L}:1.0")
+            want = acceptable_specs(L, k, n_ang)
+            assert_spelling_complete(L, k, n_ang, sorted(glob.glob(g)))
             lab, a = None, None
             for h in sorted(glob.glob(g)):
                 ds = declared_spec(h)

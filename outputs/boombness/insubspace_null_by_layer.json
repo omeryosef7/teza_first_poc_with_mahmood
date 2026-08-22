@@ -69,7 +69,40 @@
       },
       "dose_gap_arm_over_max_control": 10.956022453748322,
       "dose_confounded": true,
-      "unused_angle_runs_at_this_layer": [],
+      "unused_angle_runs_at_this_layer": [
+        {
+          "run": "a24_L6k11_20260822_165021_1129216",
+          "declares": "in_subspace_angle11of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k13_20260822_165021_1129217",
+          "declares": "in_subspace_angle13of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k15_20260822_165021_1129218",
+          "declares": "in_subspace_angle15of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k1_20260822_163302_1127803",
+          "declares": "in_subspace_angle1of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k3_20260822_163302_1127804",
+          "declares": "in_subspace_angle3of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k5_20260822_163302_1127805",
+          "declares": "in_subspace_angle5of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k7_20260822_163302_1127806",
+          "declares": "in_subspace_angle7of24:project_out:6-6:1.0"
+        },
+        {
+          "run": "a24_L6k9_20260822_163302_1127807",
+          "declares": "in_subspace_angle9of24:project_out:6-6:1.0"
+        }
+      ],
       "in_subspace_null": {
         "deltas": {
           "angle0": -0.00202020202020202,
@@ -165,7 +198,40 @@
       },
       "dose_gap_arm_over_max_control": 7.361120708920929,
       "dose_confounded": true,
-      "unused_angle_runs_at_this_layer": [],
+      "unused_angle_runs_at_this_layer": [
+        {
+          "run": "a24_L8k11_20260822_170732_1130639",
+          "declares": "in_subspace_angle11of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k13_20260822_170732_1130640",
+          "declares": "in_subspace_angle13of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k15_20260822_170732_1130641",
+          "declares": "in_subspace_angle15of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k1_20260822_165021_1129219",
+          "declares": "in_subspace_angle1of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k3_20260822_165021_1129220",
+          "declares": "in_subspace_angle3of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k5_20260822_165021_1129221",
+          "declares": "in_subspace_angle5of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k7_20260822_170732_1130637",
+          "declares": "in_subspace_angle7of24:project_out:8-8:1.0"
+        },
+        {
+          "run": "a24_L8k9_20260822_170732_1130638",
+          "declares": "in_subspace_angle9of24:project_out:8-8:1.0"
+        }
+      ],
       "in_subspace_null": {
         "deltas": {
           "angle0": 0.00202020202020202,
@@ -359,6 +425,6 @@
       "--out",
       "outputs/boombness/insubspace_null_by_layer.json"
     ],
-    "git_commit": "bc26234ccbe2795170fb57f9f66ced9a1110d1f4"
+    "git_commit": "5bf987956d78a9f2114cfca550162b1a199e93a8"
   }
 }
