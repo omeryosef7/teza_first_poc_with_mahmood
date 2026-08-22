@@ -1501,7 +1501,7 @@ held a median **4.4e-05** of next-token mass — any curve through that is a cur
 whole-answer run gives **median option mass 0.3155**, so this is the first §8 comprehension curve that
 is a forced choice.
 
-| `n_examples` | Boombness (`d_surface|L12|proj`) | ASR | refusal | comprehension log-odds (coded−literal) |
+| `n_examples` | Boombness (`d_surface\|L12\|proj`) | ASR | refusal | comprehension log-odds (coded−literal) |
 |---|---|---|---|---|
 | 0 | −3.402 *(degenerate CI)* | +0.240 | 0.500 *(degenerate)* | **+0.184** *(degenerate)* |
 | 1 | −3.670 | +0.115 | 0.000 | **−2.237** |
@@ -2283,7 +2283,7 @@ All five original layers judged. AdvBench 495, arm B's exact intervention at eac
 |---|---|---|---|---|
 | L4 | 0.0667 | +0.0021 | 0.0662 | 0.9313 |
 | **L8** *(where `d_surface` is fitted for interventions)* | **0.1071** | **+0.0425** | 0.1056 | 0.8889 |
-| **L12** *(where `d_surface\|L12\|proj` was G2's headline column)* | **0.1010** | **+0.0364** | 0.0997 | 0.8949 |
+| **L12** *(where `d_surface\\|L12\\|proj` was G2's headline column)* | **0.1010** | **+0.0364** | 0.0997 | 0.8949 |
 | L18 | 0.0667 | +0.0021 | 0.0657 | 0.9333 |
 | L24 | **0.0646** | **+0.0000** | 0.0636 | 0.9333 |
 
@@ -2334,8 +2334,8 @@ L12. Recomputed on both row sets:
 
 | metric | full n=234 | **clean n=90** | sign |
 |---|---|---|---|
-| `direction_boombness` (`d_surface\|L12\|proj`) | **+0.3067** *(retracted)* | **+0.0860** | positive on both |
-| `logit_lens` (`ll\|L12\|boombness`) | **−0.1658** | **−0.0865** | negative on both |
+| `direction_boombness` (`d_surface\\|L12\\|proj`) | **+0.3067** *(retracted)* | **+0.0860** | positive on both |
+| `logit_lens` (`ll\\|L12\\|boombness`) | **−0.1658** | **−0.0865** | negative on both |
 
 **The disagreement holds on clean rows.** ⚠ But it now has a different character: on the clean set
 **both correlations are near zero** (+0.086 / −0.087), so what survives is *"two metrics of the same
@@ -3688,7 +3688,7 @@ because on AdvBench "what the goal asked for" and "what the prompt asked for" ar
 
 The same measurement, run on the sprint's own bank, is less comfortable:
 
-| |distinctive words| | rows (`natural_doublespeak`, n=500) |
+| \|distinctive words\| | rows (`natural_doublespeak`, n=500) |
 |---|---|
 | 0 (inapplicable) | 72 |
 | **exactly 1** | **428** |
@@ -7214,4 +7214,37 @@ declares authoritative.
 | 364 | 2026-08-22 | ran `generation_change.py` over arms C, D and all three controls | 38.2 / 88.9 / 91.5% reproduce; **now regenerable** |
 | 365 | 2026-08-22 | added the control footprints to the report | randoms change **22–34%** — context the caveat lacked |
 | 366 | 2026-08-22 | fixed the registry table's 4-vs-3 column mismatch | 22 of 24 rows had rendered with an empty `why` |
-| 367 | 2026-08-22 | repaired §14-D's missing pipe and R-27's `\|cos\|` | whole-report table scan: **0 mismatches** |
+| 367 | 2026-08-22 | repaired §14-D's missing pipe and R-27's `\\|cos\\|` | whole-report table scan: **0 mismatches** |
+
+## A guard for whether a number renders in the right cell
+
+Tick 2026-08-22. Last tick's ad-hoc scan found three broken tables, including the retraction registry.
+An ad-hoc scan is not a guard, so it is now `markdown_structure_check.py`.
+
+**The gap it fills.** `retraction_sweep` reads text, `canonical_figures` reads numbers,
+`verify_report_numbers` reads numbers — **nothing checked whether a reader would see the cell a number
+sits in.** A figure that renders into the wrong column misleads exactly as much as a wrong figure, and
+it is far cheaper to introduce: one unescaped pipe.
+
+**First run: 22 problems across 514 tables.** The two *deliverables* were clean; all 22 were in the
+internal docs, and most were unescaped pipes inside code spans in **my own rows** — `` `d_surface|L12|proj` ``,
+`` |D_dir| ``, and an audit row of mine that rendered 12 cells into a 6-column table. Escaped
+generically, then six genuinely malformed historical rows repaired by hand. **All 514 tables now
+render.**
+
+**Tested against a case it must fail**: a planted 3-cell row under a 2-column header → exit **1** with
+the line number; removed → exit **0**.
+
+**Also cleared audit #10's finding #7.** Three tables in the report declare themselves
+*"domain-clustered over 6 domains"* and print p-values below the resulting **0.031** floor,
+uncaveated — in the sections the p-rule names. Each now carries the floor and points at §0b's rule.
+The rule existed; it had been applied to one gate row and nowhere else, which is the same
+apply-where-pointed pattern audit #10 named.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 368 | 2026-08-22 | wrote `markdown_structure_check.py` | the ad-hoc scan is now a guard |
+| 369 | 2026-08-22 | first run over 514 tables | **22 problems**, deliverables clean, most from my own unescaped pipes |
+| 370 | 2026-08-22 | escaped code-span pipes generically; repaired 6 historical rows | **all 514 tables render** |
+| 371 | 2026-08-22 | adversarially tested the new guard | exit 1 planted / 0 clean |
+| 372 | 2026-08-22 | added the 6-domain floor caveat to all three tables that needed it | audit #10 finding #7 closed |

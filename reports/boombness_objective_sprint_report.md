@@ -874,7 +874,7 @@ result **inverts** the intuition the prompt-level one invites.
 
 ### Does the final codeword occurrence become more concept-like than earlier ones? **No — less.**
 Within-prompt paired contrast: same prompt, same surface word, only the occurrence position differs.
-Domain-clustered over 6 domains, n=246 doublespeak behavioural prompts with ≥2 occurrences:
+Domain-clustered over 6 domains, n=246 doublespeak behavioural prompts with ≥2 occurrences: ⚠ **Six domains means the attainable two-sided cluster-p floor is 2/2⁶ = 0.031** — any p below that in this table is a **bootstrap/parametric** number, not clustered evidence. Quote the CI for magnitude (§0b's rule). Added 2026-08-22.
 
 | L | 4 | 8 | 12 | 16 | 20 | 24 | 31 |
 |---|---|---|---|---|---|---|---|
@@ -1110,7 +1110,7 @@ it. It now exists, and it reorders the intervention arms.
 
 Readout: `comprehension_logodds` = log p("coded") − log p("literal") on `comprehension_usage` rows;
 positive means the model still reports the codeword as meaning the coded thing. 60 doublespeak prompts
-with ≥1 demonstration, common to all arms, domain-clustered over 6 domains:
+with ≥1 demonstration, common to all arms, domain-clustered over 6 domains: ⚠ **Six domains means the attainable two-sided cluster-p floor is 2/2⁶ = 0.031** — any p below that in this table is a **bootstrap/parametric** number, not clustered evidence. Quote the CI for magnitude (§0b's rule). Added 2026-08-22.
 
 | arm | Δ comprehension | p | frac still "coded" | verdict |
 |---|---|---|---|---|
@@ -1818,7 +1818,7 @@ not rest on them; its **edges** are currently uncontrolled measurements.
 > real and reproducible, not because it supports the objective.
 
 Everything below is at a matched 512-token budget, n = 420, every arm complete and coherence-gated on
-the doublespeak population, domain-clustered over 6 domains.
+the doublespeak population, domain-clustered over 6 domains. ⚠ **Six domains means the attainable two-sided cluster-p floor is 2/2⁶ = 0.031** — any p below that in this table is a **bootstrap/parametric** number, not clustered evidence. Quote the CI for magnitude (§0b's rule). Added 2026-08-22.
 
 | arm | ASR | refusal | Δ score vs baseline | p_cl |
 |---|---|---|---|---|
