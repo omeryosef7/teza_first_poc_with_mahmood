@@ -1,0 +1,1270 @@
+{
+  "question": "which committed artifacts have findings that reach no deliverable?",
+  "method": "fingerprint every artifact's floats at 3 and 4 decimals, keep only fingerprints occurring in exactly ONE artifact corpus-wide, and look for those in the report and short update. Filename citation also counts.",
+  "v1_did_not_work": "v1 used any 3-4 decimal float and counted one match as written-up. It found 0 silent of 93, with 64 artifacts matching 10+ fingerprints -- saturating on values like 0.5000 that recur everywhere. A check that cannot go red is not a check.",
+  "why_not_filenames_alone": "53 of 114 artifacts are uncited by name, but a finding can be written up without naming its file. Absence of the filename is not absence of the finding.",
+  "a_hit_is_a_prompt_not_a_verdict": "infrastructure, indexes and deliberately superseded artifacts SHOULD be silent and are exempted by name. For the rest, this asks whether silence was chosen or merely happened.",
+  "exempted": [
+    "bank_join_recheck.json",
+    "canonical_figures.json",
+    "how_to_read_the_p_values.json",
+    "judge_session_drift.json",
+    "multiplicity_families.json",
+    "population_index.json",
+    "replicate_noise.json",
+    "shard_citation_check.json",
+    "unanalysed_inventory.json",
+    "unanalysed_triage.json",
+    "unwritten_findings_check.json",
+    "*_SUPERSEDED*",
+    "*_JUDGE_ARTIFACT*",
+    "*reanalyze_*",
+    "*_cos.json*"
+  ],
+  "n_artifacts_checked": 93,
+  "n_silent": 11,
+  "min_rare_fingerprints_for_a_verdict": 5,
+  "n_untestable_too_few_rare_numbers": 13,
+  "untestable": [
+    {
+      "artifact": "advbench_superadd_control.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "advbench_topicality_L8.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_arm_D.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_band_fixed.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "headline_replicate_decomposition.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "insubspace_null_dense20.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "naive_vs_ladder_replication.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "orth_control_arms.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L10.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L12.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L13.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L6.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L8.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    }
+  ],
+  "silent": [
+    {
+      "artifact": "g8_comprehension_DF_arms.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 77,
+      "n_fingerprints_tested": 77,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_armD_natural_doublespeak.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 32,
+      "n_fingerprints_tested": 32,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g11_role_full.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 27,
+      "n_fingerprints_tested": 27,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_armD_benign_literal.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 25,
+      "n_fingerprints_tested": 25,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_decomposition.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 16,
+      "n_fingerprints_tested": 16,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "coherence_lenfair.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 13,
+      "n_fingerprints_tested": 13,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "condition_profile_llama_projout.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 11,
+      "n_fingerprints_tested": 11,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g3_dynrange.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "insubspace_null_by_layer_rep1.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g3_wholeanswer_codeword24.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 8,
+      "n_fingerprints_tested": 8,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_armD_direct_harmful.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 5,
+      "n_fingerprints_tested": 5,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    }
+  ],
+  "all": [
+    {
+      "artifact": "add_ladder_refusal.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_band.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 15,
+      "n_fingerprints_tested": 15,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_decomposition.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 24,
+      "n_fingerprints_tested": 24,
+      "n_fingerprints_found": 14,
+      "example_hits": [
+        "0.0638",
+        "0.1097",
+        "0.1895",
+        "0.1967",
+        "0.2692"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_decomposition_qwen3.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 6,
+      "n_fingerprints_tested": 6,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.9111",
+        "0.9212",
+        "0.9374"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_direction_specificity.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 6,
+      "n_fingerprints_tested": 6,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.399"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_layer_profile.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 36,
+      "n_fingerprints_tested": 36,
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "0.0567",
+        "0.0901",
+        "0.201",
+        "0.288"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_superadd_control.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "advbench_topicality_L12.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 4,
+      "n_fingerprints_tested": 4,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.784"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "advbench_topicality_L8.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "arm_signflip_hierarchy.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "channel_containment.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "channel_matched_contrasts.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 15,
+      "n_fingerprints_tested": 15,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.1798",
+        "1.5137"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "clearharm_arm_D.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_band_fixed.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_decomposition.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 16,
+      "n_fingerprints_tested": 16,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "clearharm_decomposition_qwen3.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 35,
+      "n_fingerprints_tested": 35,
+      "n_fingerprints_found": 11,
+      "example_hits": [
+        "0.0416",
+        "0.1201",
+        "0.1306",
+        "0.1341",
+        "0.2793"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "clearharm_decomposition_regoal.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 37,
+      "n_fingerprints_tested": 37,
+      "n_fingerprints_found": 16,
+      "example_hits": [
+        "0.0587",
+        "0.0831",
+        "0.1024",
+        "0.1440",
+        "0.1899"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "clearharm_supplement.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 6,
+      "n_fingerprints_tested": 6,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.0922"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "cluster_power.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 3,
+      "n_fingerprints_tested": 3,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "coherence_fuS_ladder.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 35,
+      "n_fingerprints_tested": 35,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.245",
+        "0.853"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "coherence_lenfair.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 13,
+      "n_fingerprints_tested": 13,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "coherence_steering.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "comprehension_signflip.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 3,
+      "n_fingerprints_tested": 3,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0502",
+        "2.4528"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "concept_pair_screen.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "condition_profile_llama_len_B.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 10,
+      "n_fingerprints_tested": 10,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0560",
+        "0.862"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "condition_profile_llama_projout.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 11,
+      "n_fingerprints_tested": 11,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "depth_profile_matched.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 3,
+      "n_fingerprints_tested": 3,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.0494",
+        "0.0619",
+        "0.1253"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "direction_cosines.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 66,
+      "n_fingerprints_tested": 66,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.9390",
+        "0.9452"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "dose_curve_L8.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 15,
+      "n_fingerprints_tested": 15,
+      "n_fingerprints_found": 6,
+      "example_hits": [
+        "0.0135",
+        "0.1881",
+        "0.3456",
+        "0.5224",
+        "0.683"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "dose_vs_effect.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 49,
+      "n_fingerprints_tested": 49,
+      "n_fingerprints_found": 7,
+      "example_hits": [
+        "0.2066",
+        "0.759",
+        "0.890",
+        "0.8903",
+        "0.955"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "e12_causal_knife.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "e12_codeword_control_cosines.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 125,
+      "n_fingerprints_tested": 125,
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "0.5253",
+        "0.553",
+        "0.5539",
+        "0.571"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "e12_concept_swap_cosines.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 114,
+      "n_fingerprints_tested": 114,
+      "n_fingerprints_found": 13,
+      "example_hits": [
+        "0.4948",
+        "0.495",
+        "0.5264",
+        "0.561",
+        "0.572"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "e12_insubspace_null.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 4,
+      "n_fingerprints_tested": 4,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "e6_button_knockout.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 50,
+      "n_fingerprints_tested": 50,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0571",
+        "0.663"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g11_role_full.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 27,
+      "n_fingerprints_tested": 27,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g11_role_full_benign.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 18,
+      "n_fingerprints_tested": 18,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.0094"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g1_g3_analysis.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 255,
+      "n_fingerprints_tested": 255,
+      "n_fingerprints_found": 5,
+      "example_hits": [
+        "0.0306",
+        "0.412",
+        "0.717",
+        "0.9992",
+        "1.058"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g1_stratified.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 254,
+      "n_fingerprints_tested": 254,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.2888",
+        "0.345",
+        "1.972"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g1_whole_answer_absolute.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 68,
+      "n_fingerprints_tested": 68,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "11.755",
+        "14.426",
+        "3.682"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g1_wholeanswer_sow.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 45,
+      "n_fingerprints_tested": 45,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.309",
+        "0.710"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g2_analysis_POWER.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 152,
+      "n_fingerprints_tested": 152,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.0518",
+        "0.285",
+        "0.475"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g2_analysis_cwpos.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 149,
+      "n_fingerprints_tested": 149,
+      "n_fingerprints_found": 5,
+      "example_hits": [
+        "0.2618",
+        "0.319",
+        "0.442",
+        "0.538",
+        "0.979"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g2_analysis_cwpos_CLEAN.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 160,
+      "n_fingerprints_tested": 160,
+      "n_fingerprints_found": 5,
+      "example_hits": [
+        "0.0468",
+        "0.361",
+        "0.396",
+        "0.417",
+        "0.472"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g2_analysis_lastpos.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 124,
+      "n_fingerprints_tested": 124,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.211",
+        "0.389",
+        "0.826"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g3_clustered_intervals.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 49,
+      "n_fingerprints_tested": 49,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.783"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g3_dstfix.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 4,
+      "n_fingerprints_tested": 4,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "g3_dynrange.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g3_edgematch.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 8,
+      "n_fingerprints_tested": 8,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "g3_wholeanswer_block24.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 27,
+      "n_fingerprints_tested": 27,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "g3_wholeanswer_codeword24.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 8,
+      "n_fingerprints_tested": 8,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g8_comprehension_DF_arms.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 77,
+      "n_fingerprints_tested": 77,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "g8_comprehension_by_nexamples.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 92,
+      "n_fingerprints_tested": 92,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "g9_three_predictor_cwpos.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 60,
+      "n_fingerprints_tested": 60,
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "0.0189",
+        "0.0283",
+        "0.0743",
+        "0.1759"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g9_three_predictor_cwpos_CLEAN.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 80,
+      "n_fingerprints_tested": 80,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.0441",
+        "0.0575",
+        "0.274"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "g9_three_predictor_lastpos.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 91,
+      "n_fingerprints_tested": 91,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.720"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "generation_change.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "generation_change_arms.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "headline_effect_decomposition.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0202",
+        "0.7692"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "headline_replicate_decomposition.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "insubspace_null_by_layer.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 14,
+      "n_fingerprints_tested": 14,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "insubspace_null_by_layer_rep1.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "insubspace_null_dense20.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "insubspace_null_full24.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 3,
+      "n_fingerprints_tested": 3,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "judge_pass_interval.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.0273"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "judge_retest_advbench.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "judge_retest_floor.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 14,
+      "n_fingerprints_tested": 14,
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "0.0708",
+        "0.0917",
+        "0.1258",
+        "0.1364"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "layer_profile_shape_test.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "llama_arms_topical.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 3,
+      "n_fingerprints_tested": 3,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.2190",
+        "0.2690",
+        "0.5476"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "naive_vs_ladder_replication.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "null_ceiling_session_check.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 28,
+      "n_fingerprints_tested": 28,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.0545"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "orth_control_arms.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L10.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L12.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L13.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L6.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "paired_naive_vs_ladder_L8.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "pooled_design_feasibility.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 26,
+      "n_fingerprints_tested": 26,
+      "n_fingerprints_found": 6,
+      "example_hits": [
+        "0.1398",
+        "0.1614",
+        "0.1802",
+        "0.2648",
+        "0.2842"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "position_2x2.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 23,
+      "n_fingerprints_tested": 23,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0847",
+        "0.339"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "q3dec_decomposition_L11.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 88,
+      "n_fingerprints_tested": 88,
+      "n_fingerprints_found": 7,
+      "example_hits": [
+        "0.0157",
+        "0.0429",
+        "0.1248",
+        "0.1410",
+        "0.2562"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "qwen3_armD_benign_literal.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 25,
+      "n_fingerprints_tested": 25,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_armD_direct_harmful.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 5,
+      "n_fingerprints_tested": 5,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_armD_natural_doublespeak.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 32,
+      "n_fingerprints_tested": 32,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
+      "artifact": "qwen3_channel_test.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "qwen3_g2_analysis.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 127,
+      "n_fingerprints_tested": 127,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.315"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "refusal_accounting.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 10,
+      "n_fingerprints_tested": 10,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "role_analysis.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 35,
+      "n_fingerprints_tested": 35,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "section14_topical_asr.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "section4b_whole_answer.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 10,
+      "n_fingerprints_tested": 10,
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.384",
+        "2.407",
+        "2.4073"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "steering_analysis.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 84,
+      "n_fingerprints_tested": 84,
+      "n_fingerprints_found": 2,
+      "example_hits": [
+        "0.0179",
+        "0.147"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "steering_band_real.json",
+      "named_in_deliverable": false,
+      "n_rare_fingerprints_tested": 56,
+      "n_fingerprints_tested": 56,
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "-0.062",
+        "-0.0620",
+        "-0.102",
+        "-0.1023"
+      ],
+      "written_up": true
+    },
+    {
+      "artifact": "superadditivity_signflip.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    },
+    {
+      "artifact": "xL6_crossover.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 2,
+      "n_fingerprints_tested": 2,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "src/boombness/unwritten_findings_check.py",
+      "--out",
+      "outputs/boombness/unwritten_findings_check.json"
+    ],
+    "git_commit": "189bf3c0f91a5fca2959c660f937d0999561d40b"
+  }
+}

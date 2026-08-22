@@ -8960,3 +8960,50 @@ it, and a coverage guard that checks citation cannot see that — §19 was "cove
 | 546 | 2026-08-23 | Q9: Qwen3 **does** replicate (+0.3810, null hard control) | with the specificity caveat stated |
 | 547 | 2026-08-23 | Q10: §12.1 gains its **dose-matched** control | ascending this direction ascends toward refusal |
 | 548 | 2026-08-23 | Q4: dose window bounded **0.125–0.5** by gate data | under two doublings wide |
+
+## Built a detector for the failure mode I named, and it immediately found a §8 result
+
+Last tick I named the sprint's recurring failure: over-generating evidence and under-writing it, with a
+coverage guard that cannot see it because it checks *citation*. So I built the instrument that can.
+
+**The first version did not work, and it failed in the way I keep warning about.**
+`unwritten_findings_check` v1 fingerprinted any 3–4 decimal float in each artifact and counted an
+artifact as written up on **one** match. Result: **0 silent of 93** — and the histogram showed **64
+artifacts matching 10+ fingerprints**, i.e. it was saturating on values like 0.5000 and 0.0646 that
+recur everywhere. *A check that cannot go red is not a check*, which is my own standing rule, and I had
+just shipped one that was green by construction.
+
+Rebuilt on **artifact-unique** fingerprints: only values occurring in exactly one artifact corpus-wide,
+so a match is evidence about *that* artifact rather than about the corpus. Plus a floor — an artifact
+with fewer than 5 unique numbers cannot be *shown* silent, and calling it silent would manufacture
+findings from thin evidence. Those are reported separately as untestable.
+
+**12 genuinely silent artifacts. Top of the list: `g8_comprehension_by_nexamples.json` — 92
+artifact-unique numbers, not one of them anywhere in either deliverable.** Committed 08-17. It is plan
+**§8**, a section `plan_coverage_check` has been reporting as covered the whole time.
+
+What it says, and it is a clean result:
+
+| condition | slope / doubling of `n_examples` | 95% CI | p |
+|---|---|---|---|
+| **`natural_doublespeak`** | **+0.370** | [+0.260, +0.480] | 0.0003 |
+| **`benign_literal`** | **−0.847** | [−1.319, −0.375] | 0.0058 |
+| `direct_harmful` | −0.710 | [−1.651, +0.232] | 0.110 ns |
+| `concept_in_benign_ctx` | −0.163 | [−0.663, +0.337] | 0.440 ns |
+
+**Demonstrations improve comprehension exactly where the mapping has to be learned, and degrade it
+where it does not.** The two null conditions are what stop this being a generic "more context helps"
+story. Written into the report with both caveats it needs: the **n=0 level is excluded** (one effective
+prompt per condition — a curve through it would be a curve through a single prompt, so the trend is
+fitted on [1,2,4,8,16]), and the **p-values are parametric, below the 2/2⁶ = 0.031 cluster floor** for
+6 domains, so the intervals are what to quote.
+
+Eleven silent artifacts remain, `g8_comprehension_DF_arms` (0/77) next.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 549 | 2026-08-23 | built `unwritten_findings_check.py` | v1 found 0 of 93 — **saturated, green by construction** |
+| 550 | 2026-08-23 | rebuilt on **artifact-unique** fingerprints + evidence floor | **12 silent**, 13 untestable |
+| 551 | 2026-08-23 | top hit: **§8 comprehension curve, 92 unique numbers, zero in the report** | committed 08-17, never written |
+| 552 | 2026-08-23 | wrote it in with its exclusion and p-floor caveats | doublespeak **+0.370** vs benign_literal **−0.847** |
+| 553 | 2026-08-23 | rescan | 12 → **11** silent |

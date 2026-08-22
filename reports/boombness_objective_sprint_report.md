@@ -2665,6 +2665,33 @@ retracted; this is its replacement, computed with the control it lacked.
 grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 then saturate. ⚠ Pooled over query kinds; see C7.
 
+**3b. What do demonstrations do to COMPREHENSION? (added 2026-08-23 — committed since 08-17, never written up)**
+**A double dissociation: demonstrations improve comprehension exactly where the mapping has to be
+learned, and degrade it where it does not.** Slope per *doubling* of `n_examples`, four conditions,
+clustered on 6 domains (`g8_comprehension_by_nexamples.json`):
+
+| condition | slope / doubling | 95% CI | p |
+|---|---|---|---|
+| **`natural_doublespeak`** | **+0.370** | [+0.260, +0.480] | 0.0003 |
+| **`benign_literal`** | **−0.847** | [−1.319, −0.375] | 0.0058 |
+| `direct_harmful` | −0.710 | [−1.651, +0.232] | 0.110 **ns** |
+| `concept_in_benign_ctx` | −0.163 | [−0.663, +0.337] | 0.440 **ns** |
+
+Only the doublespeak condition rises, and it is the only condition where the codeword's meaning must be
+inferred from the demonstrations; `benign_literal` — where the word already means what it says — moves
+the other way. The two null conditions keep that contrast from being a general "more context helps"
+story.
+
+⚠ **The n=0 level is excluded and that matters.** At zero demonstrations each condition has **one**
+effective prompt (`effective_n_by_level`), so the level is degenerate; the trend is fitted on
+**[1, 2, 4, 8, 16]** only (`degenerate_levels: [0]`, `trend_fitted_on_levels`). A curve drawn through
+the n=0 point would be drawing through a single prompt.
+
+⚠ **These p-values are parametric, not exact cluster p's.** With 6 domains the smallest attainable
+two-sided cluster p is **2/2⁶ = 0.031**, so **0.0003 and 0.0058 are below the design's floor** and must
+be read as t-based, per this report's own rule in §19's preamble. Quote the intervals: both exclude
+zero comfortably, and they exclude each other.
+
 **4. Does Boombness vary enough across prompts to support optimization?**
 **It varies, but the usable dose window is narrow enough to be a problem.** Within-arm sd is non-trivial
 and the correlation with ASR is real. But steering at α=1 destroys generation (55% trigram repeats,
