@@ -277,6 +277,33 @@ Clustering at families would give a floor of ~1e-7 — and would be **the pseudo
 retracted for**, since families within a domain share demonstrations. The floor is a real constraint of
 the bank's design, not a choice that can be optimised away.
 
+### What design would actually answer the open question (added 2026-08-22)
+
+C-13 showed that on this bank, *"remove `d_surface`"* and *"remove a lot of cell-mean variance"* are
+geometrically inseparable, and recommended "a different design". That recommendation is only useful if
+it names one, so here is a costed candidate, measured on fits already on disk
+(`pooled_design_feasibility.json`, L8).
+
+**Pool the cells of the concept and codeword variants** — `carrot→bomb`, `carrot→knife`,
+`button→bomb` — into one 12-cell design instead of three 4-cell ones:
+
+| | cells | top-eigenvalue share | dose(`d_surface`) | **max dose orthogonal to `d_surface`** | \|cos\| forced at half the arm's dose |
+|---|---|---|---|---|---|
+| single bank | 4 | 0.841 | 0.8402 | 0.1143 | 0.649 |
+| **pooled** | **12** | **0.527** | **0.5243** | **0.2070** | **0.417** |
+
+**It helps materially and it is free.** Orthogonal directions carry **1.8×** more dose, so a control
+can be built that removes real variance instead of scraps, and the collinearity *forced* on a
+half-dose control drops from 0.649 to **0.417**. No new generations are required — the cells already
+exist; it is a refit.
+
+**It is not sufficient on its own.** `d_surface` remains essentially PC1 even pooled (cos **0.9968**),
+so the highest-dose region stays entangled. Fully dissolving it needs cells whose dominant variation is
+**not** the surface contrast — a design choice, not a pooling trick.
+
+**So the recommendation to anyone continuing this is specific:** refit over the pooled cells before
+running anything new, and treat the pooled `b = 0.207` as the dose a legitimate control must reach.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 

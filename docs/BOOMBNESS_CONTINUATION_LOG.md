@@ -7357,3 +7357,40 @@ not move it.
 | 381 | 2026-08-22 | wrote `check_all.py` | five guards, one entry point, one exit code |
 | 382 | 2026-08-22 | tested with two simultaneous planted failures | both caught and named; clean → 0 |
 | 383 | 2026-08-22 | recorded the sprint's standing position | the open question is **design-bound**, not compute-bound |
+
+## Turning "needs a different design" into a specific, costed one
+
+Tick 2026-08-22. Last tick I closed with *"answering it needs a bank whose cell-mean spectrum is not
+dominated by a single component"* — which is true and, on its own, not much use to anyone. A
+recommendation that names no design is a way of ending a paragraph, not a finding. So I measured a
+candidate on fits already on disk.
+
+**Pool the three banks' cells** — `carrot→bomb`, `carrot→knife`, `button→bomb` — into one 12-cell
+design (L8):
+
+| | cells | top-eig share | dose(`d_surface`) | **max orthogonal dose** | \|cos\| forced at half-dose |
+|---|---|---|---|---|---|
+| single bank | 4 | 0.841 | 0.8402 | 0.1143 | 0.649 |
+| **pooled** | **12** | **0.527** | **0.5243** | **0.2070** | **0.417** |
+
+**It helps materially, and it costs nothing.** The spectrum flattens (top share 0.84 → 0.53),
+`d_surface`'s dose falls to 0.52, and — the number that matters — **orthogonal directions carry 1.8×
+more dose**. A control can finally be built that removes real variance rather than scraps, and the
+collinearity *forced* on a half-dose control drops from 0.649 to **0.417**. No new generations: the
+cells exist, it is a refit.
+
+**And it is not sufficient, which is the part I would rather not have found.** `d_surface` is still
+essentially PC1 even pooled (**cos 0.9968**), so the top-dose region stays entangled. Pooling buys a
+better control regime, not a clean separation. Dissolving the entanglement needs cells whose *dominant*
+variation is not the surface contrast — a design choice, not a pooling trick.
+
+That is now in the report as a concrete instruction: **refit over the pooled cells before running
+anything new, and treat `b = 0.207` as the dose a legitimate control must reach.** It is the first
+forward-looking recommendation in this sprint that comes with numbers instead of an adjective.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 384 | 2026-08-22 | measured the pooled 12-cell design on existing fits | top-eig share **0.841 → 0.527**, dose **0.840 → 0.524** |
+| 385 | 2026-08-22 | computed what it buys a control | orthogonal dose **1.8×**; forced \|cos\| **0.649 → 0.417** |
+| 386 | 2026-08-22 | recorded what it does **not** buy | `d_surface` is still ≈PC1 pooled (cos 0.9968) |
+| 387 | 2026-08-22 | wrote it into the report as a costed instruction | refit first; `b = 0.207` is the bar a control must clear |

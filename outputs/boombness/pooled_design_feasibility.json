@@ -1,0 +1,28 @@
+{
+  "question": "C-13 said separating direction-identity from dose needs a different design. Does pooling concept/codeword variants actually deliver one?",
+  "layer": 8,
+  "single_bank": {
+    "cells": 4,
+    "dose_d_surface": 0.8402006196015032,
+    "max_orthogonal_dose": 0.11429965311195878,
+    "top_eigenvalue_share": 0.841,
+    "cos_d_surface_PC1": 0.9998
+  },
+  "pooled_three_banks": {
+    "cells": 12,
+    "dose_d_surface": 0.5242904909216867,
+    "max_orthogonal_dose": 0.2070210479934083,
+    "top_eigenvalue_share": 0.527,
+    "cos_d_surface_PC1": 0.9968,
+    "banks": [
+      "carrot->bomb",
+      "carrot->knife",
+      "button->bomb"
+    ]
+  },
+  "VERDICT": "Pooling helps materially but does NOT dissolve the entanglement. d_surface's dose falls 0.840 -> 0.524 and the best ORTHOGONAL direction rises 0.114 -> 0.207 (1.8x), so a control can now carry real dose instead of scraps. But d_surface is still essentially PC1 (cos 0.9968), so the highest-dose direction remains d_surface-like and the top-dose region stays entangled.",
+  "actionable": "A pooled multi-concept/multi-codeword bank is a genuinely better design for this question -- it is the cheapest available improvement and needs no new generations, only a refit over the existing three banks' cells. It is not sufficient on its own: dissolving the entanglement needs cells whose dominant variation is NOT the surface contrast.",
+  "provenance": {
+    "git_commit": "5ee2d33a5940318d139e90379e9363bdc42b5176"
+  }
+}
