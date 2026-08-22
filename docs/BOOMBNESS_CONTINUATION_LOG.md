@@ -7394,3 +7394,38 @@ forward-looking recommendation in this sprint that comes with numbers instead of
 | 385 | 2026-08-22 | computed what it buys a control | orthogonal dose **1.8×**; forced \|cos\| **0.649 → 0.417** |
 | 386 | 2026-08-22 | recorded what it does **not** buy | `d_surface` is still ≈PC1 pooled (cos 0.9968) |
 | 387 | 2026-08-22 | wrote it into the report as a costed instruction | refit first; `b = 0.207` is the bar a control must clear |
+
+## Plan §20's "exact next commands" — the one requirement never written
+
+Tick 2026-08-22. Audit #11 launched at the **guards themselves**, since the "uncorrected" defect showed
+a green guard can be silently blind and I have added three more since. While it runs I checked plan
+**§20**, which lists six things to do if the sprint stops.
+
+Five were satisfied. **Item 5 — "write exact next commands" — had never been written**, in a sprint
+whose whole handover value is that someone else can continue it. Item 6 checks out: **all 126 python
+files carry a substantive module docstring**, verified by AST rather than by grep.
+
+**Every command in the new section was executed before being listed.** That matters more than it
+sounds, because my first attempt to verify them reported **five of six scripts FAILING** — and the
+scripts were fine. The loop ran `$PY $c` with `c="script.py --help"`, and **this shell does not
+word-split unquoted variables**, so python received one nonexistent filename. That is a hazard already
+in my notes, and I still wrote it. Had I not looked at the actual error I would have documented five
+working scripts as broken.
+
+The section says four things: verify with `check_all.py`; regenerate the six headline artifacts
+(CPU-only, all from committed inputs); **the one substantive experiment worth running next** — the
+pooled refit, which needs a `--fit-dirs` mode `extract_boombness.py` does not have, and no new
+generations; and **what not to do** — do not re-run the `d_naive` comparison on this bank (MDE ≈+0.03
+against a largest observed +0.0222), and do not add layers expecting the headline to firm up, since the
+four tested are already the top four of eleven and more only worsens the correction.
+
+The last part is the one I would have omitted a week ago. A handover that lists what to run and not
+what to avoid hands the next person the same dead ends I already paid for.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 388 | 2026-08-22 | launched **audit #11** at the five guards | a passing guard is not an effective guard |
+| 389 | 2026-08-22 | checked plan §20's six stopping requirements | five met; **"exact next commands" never written** |
+| 390 | 2026-08-22 | verified §20 item 6 by AST | **126/126** python files have substantive docstrings |
+| 391 | 2026-08-22 | wrote the section, executing every command first | my first verification wrongly said 5 of 6 scripts fail — **zsh word-splitting**, a hazard already in my notes |
+| 392 | 2026-08-22 | included a "what NOT to do" list | MDE ≈+0.03; adding layers worsens multiplicity |

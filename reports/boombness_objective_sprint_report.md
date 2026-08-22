@@ -304,6 +304,43 @@ so the highest-dose region stays entangled. Fully dissolving it needs cells whos
 **So the recommendation to anyone continuing this is specific:** refit over the pooled cells before
 running anything new, and treat the pooled `b = 0.207` as the dose a legitimate control must reach.
 
+### Exact next commands (plan §20, added 2026-08-22)
+
+Plan §20 requires *"write exact next commands"* if the sprint stops. It had not been written. Every
+command below was **executed to confirm it runs** before being listed. `PY` is the environment's
+python: `/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`.
+
+**1. Verify the deliverables still hold together** — run this first, and after any edit:
+```
+$PY src/boombness/check_all.py
+```
+Five guards, one exit code. Non-zero names which failed and why.
+
+**2. Regenerate every headline artifact** (all read committed inputs; none need a GPU):
+```
+$PY src/boombness/insubspace_null_test.py --n-angles default=4,6=12,8=12,12=8 \
+      --out outputs/boombness/insubspace_null_by_layer.json
+$PY src/boombness/dose_vs_effect.py   --out outputs/boombness/dose_vs_effect.json
+$PY src/boombness/dose_curve.py       --out outputs/boombness/dose_curve_L8.json
+$PY src/boombness/cluster_power.py    --out outputs/boombness/cluster_power.json
+$PY src/boombness/verify_bank_join.py --out outputs/boombness/bank_join_recheck.json
+$PY scripts/verify_report_numbers.py
+```
+
+**3. The one substantive experiment worth running next**, and it needs code that does not exist yet.
+Per "What design would actually answer the open question" above: **refit the 2×2 estimator over the
+POOLED cells** of `carrot→bomb`, `carrot→knife` and `button→bomb` rather than each bank separately.
+`extract_boombness.py --stage fit` currently fits one bank; pooling needs a `--fit-dirs` mode that
+concatenates cell means across fits before estimating. All three fits are on disk, so **no generation
+is required** — this is CPU-only. Then re-run step 2 against the pooled fit and compare
+`max_dose_in_complement` against the single-bank **0.1143**; the pooled value should be ≈**0.207**.
+
+**4. What NOT to do.** Do not re-run the `d_naive`-vs-rung comparison on this bank expecting
+resolution: `cluster_power.json` gives a minimum detectable effect of **≈+0.03** against a largest
+observed effect of **+0.0222**. And do not add layers to the L6/L8/L10/L12 set expecting the headline
+to firm up — those four are already the top four of eleven by the statistic being tested, so adding
+more moves the multiplicity correction against you.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 
