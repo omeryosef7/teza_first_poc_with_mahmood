@@ -5056,6 +5056,40 @@ reported.
 
 
 
+## ⚠ THIRD "FAILURE THAT LOOKS LIKE SUCCESS" IN ONE DAY — caught before it ran
+
+The L10/L12 judging batch reads a 28-line manifest. I wrote that manifest to
+`/tmp/claude-47249/` on the **login node** and the job runs on **rack-iscb-31**. `/tmp` is
+**node-local**, so the file would simply not exist there.
+
+⛔ **The failure mode is the dangerous kind.** `while IFS=: read -r ... done < missing_file` under
+`set -euo pipefail` does **not** abort — the redirect fails, the loop body never executes, `i` stays
+0, and the script prints **`=== a24b judging done: 0 controls ===`** and **exits 0**. A green job,
+a normal-looking log, and **zero controls judged.** The next step would then have aggregated
+whatever was already on disk and reported a band silently missing its 28 new members.
+
+**Caught before it ran** — the job was cancelled during its baseline judge, the manifest moved to
+`outputs/boombness/argsfiles/` on the shared filesystem, and the script now reads from `$R/...`.
+This hazard is in my own memory as `feedback_slurm_argsfile_shared_fs`, and I wrote the `/tmp` path
+anyway.
+
+### Three instances today, all the same shape
+
+| # | failure | external signature |
+|---|---|---|
+| 1 | judge batch died on a hung `import openai` | **0-byte log**, no processes — looked like "nothing ran" |
+| 2 | analysis crashed on `git` absent from a batch node | `sacct` FAILED, but the **stale artifact on disk read as current** |
+| 3 | manifest on node-local `/tmp` | would have printed **"done: 0 controls"** and exited **0** |
+
+⚠ **The pattern is not "I keep making shell mistakes."** All three are cases where the *absence* of
+work is indistinguishable from the *completion* of work unless something asserts a count or a
+freshness. That is why the fan-out cardinality assertion added after the zsh incident earned its
+keep within one day: **the manifest was verified at 28 lines in Python before submission**, which is
+also what made the `/tmp` problem obvious enough to catch by inspection.
+
+**Guard added rather than lesson noted:** the manifest is built, asserted at 28 entries, and written
+to the shared filesystem in one Python step; the shell script only consumes it.
+
 ## ✅ I CHECKED MY OWN HEADLINE FOR AN ARTIFACT — it survives, but the statistic to report changed
 
 **The worry.** All three L6 controls that reach the arm are **new** controls, judged in today's
