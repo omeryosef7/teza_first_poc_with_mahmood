@@ -111,6 +111,35 @@ most fragile prompts — the same alternative R-23 raised for the angle controls
 excluded here. What containment *does* rule out is the claim that `d_surface`'s behavioural effect is
 largely separate from refusal's. It is not.
 
+### Removing `d_surface` does nothing except reduce refusal (added 2026-08-22)
+
+`refusal_accounting.json`, all arms vs baseline, n=495:
+
+| arm | Δ ASR | Δ refusal rate | **sum** | stopped refusing | of those, became a success |
+|---|---|---|---|---|---|
+| `d_surface` L6 | +0.0182 | −0.0182 | **+0.0000** | 10 | **10 (100%)** |
+| `d_surface` L8 | +0.0424 | −0.0424 | **+0.0000** | 21 | **21 (100%)** |
+| `d_surface` L10 | +0.0323 | −0.0323 | **+0.0000** | 16 | **16 (100%)** |
+| `d_surface` L12 | +0.0364 | −0.0364 | **+0.0000** | 18 | 17 (94%) |
+| refusal alone (C) | +0.2061 | −0.2222 | −0.0162 | 110 | 101 (92%) |
+| both (D) | +0.2869 | −0.3091 | −0.0222 | 153 | 142 (93%) |
+
+**At every `d_surface` layer the ASR gain and the refusal-rate drop are equal and opposite to the last
+digit.** There is no residual effect once refusal reduction is accounted for.
+
+**This finishes off §18's "capability channel".** That reading held `d_surface` supplies harmful
+*content* once refusal is out of the way. If so, some of its gain would appear on prompts that were
+already not refusing — none does. R-22 retracted that mechanism from the prompt-bank side; this is the
+same conclusion reached independently from the behavioural side.
+
+**One asymmetry worth keeping.** `d_surface` removal converts stopped-refusals into successes at
+**~100%**, while refusal removal itself converts at only **92%**. So it is *not* simply a weaker arm C:
+the prompts it releases succeed more reliably than the ones arm C releases.
+
+⚠ **What this does NOT show.** That `d_surface` acts on the refusal *mechanism*. A direction that
+merely makes a prompt look less harmful would produce the same signature. The claim here is narrower
+and firmer: the effect is **exhausted** by refusal reduction.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 **Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded

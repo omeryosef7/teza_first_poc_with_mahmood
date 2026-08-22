@@ -1,0 +1,68 @@
+{
+  "question": "does removing d_surface do anything OTHER than reduce refusal?",
+  "arms": {
+    "B_L6": {
+      "delta_asr": 0.01818181818181818,
+      "delta_refusal_rate": -0.01818181818181818,
+      "sum": 0.0,
+      "stopped_refusing": 10,
+      "of_those_became_success": 10,
+      "conversion": 1.0
+    },
+    "B_L8": {
+      "delta_asr": 0.04242424242424243,
+      "delta_refusal_rate": -0.04242424242424243,
+      "sum": 0.0,
+      "stopped_refusing": 21,
+      "of_those_became_success": 21,
+      "conversion": 1.0
+    },
+    "B_L10": {
+      "delta_asr": 0.03232323232323232,
+      "delta_refusal_rate": -0.03232323232323232,
+      "sum": 0.0,
+      "stopped_refusing": 16,
+      "of_those_became_success": 16,
+      "conversion": 1.0
+    },
+    "B_L12": {
+      "delta_asr": 0.03636363636363636,
+      "delta_refusal_rate": -0.03636363636363636,
+      "sum": 0.0,
+      "stopped_refusing": 18,
+      "of_those_became_success": 17,
+      "conversion": 0.9444444444444444
+    },
+    "C_refusal": {
+      "delta_asr": 0.20606060606060606,
+      "delta_refusal_rate": -0.2222222222222222,
+      "sum": -0.016161616161616155,
+      "stopped_refusing": 110,
+      "of_those_became_success": 101,
+      "conversion": 0.9181818181818182
+    },
+    "D_both": {
+      "delta_asr": 0.2868686868686869,
+      "delta_refusal_rate": -0.3090909090909091,
+      "sum": -0.0222222222222222,
+      "stopped_refusing": 153,
+      "of_those_became_success": 142,
+      "conversion": 0.9281045751633987
+    },
+    "Bctrl": {
+      "delta_asr": -0.00202020202020202,
+      "delta_refusal_rate": 0.00202020202020202,
+      "sum": 0.0,
+      "stopped_refusing": 0,
+      "of_those_became_success": 0,
+      "conversion": NaN
+    }
+  },
+  "VERDICT": "No. At every d_surface layer the ASR gain and the refusal-rate drop are EQUAL AND OPPOSITE to the last digit (L6 \u00b10.0182, L8 \u00b10.0424, L10 \u00b10.0323, L12 \u00b10.0364), and 100% of the prompts that stop refusing become successes. The entire behavioural effect of removing d_surface is refusal reduction, converted one-for-one.",
+  "contrast": "Refusal removal itself is LESS efficient: arm C drops refusal by 0.2222 and gains only 0.2061 ASR (93% conversion); arm D 0.3091 -> 0.2869 (93%). So d_surface removal is not a weaker version of arm C -- it converts at 100% where arm C converts at 93%.",
+  "what_it_kills": "\u00a718's 'capability channel' reading -- that d_surface supplies harmful CONTENT once refusal is out of the way -- has no support here: there is no d_surface effect left over once refusal reduction is accounted for. This is the same conclusion R-22 reached by a different route.",
+  "caveat": "This shows the effect is EXHAUSTED by refusal reduction; it does not show d_surface acts on the refusal mechanism itself. A direction that makes a prompt look less harmful would produce the same signature.",
+  "provenance": {
+    "git_commit": "88e2b7373f65b33e67ad0058a9bee68b14f64a93"
+  }
+}

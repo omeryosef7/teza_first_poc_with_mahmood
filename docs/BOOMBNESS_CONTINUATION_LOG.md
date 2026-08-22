@@ -6694,3 +6694,43 @@ presented apart. Both times the numbers were already on disk.
 | 312 | 2026-08-22 | measured the converse | arm D unlocks **40** flips neither arm produces alone (control: 1) |
 | 313 | 2026-08-22 | split §18's claim in two | **"distinct" unsupported (2 prompts); "interacting" supported** |
 | 314 | 2026-08-22 | recorded the fragile-pool caveat against my own finding | containment ≠ mechanism |
+
+## The `d_surface` effect is exhausted by refusal reduction — exactly, at every layer
+
+Tick 2026-08-22. Last tick left one alternative open: `d_surface`'s flips are 90% contained in
+refusal's, but containment alone does not say whether it *acts through* refusal or merely recruits the
+same fragile prompts. Refusal **rates** discriminate, and the `refused` field was already on disk.
+
+| arm | Δ ASR | Δ refusal rate | **sum** | stopped refusing | became a success |
+|---|---|---|---|---|---|
+| `d_surface` L6 | +0.0182 | −0.0182 | **+0.0000** | 10 | **10 (100%)** |
+| `d_surface` L8 | +0.0424 | −0.0424 | **+0.0000** | 21 | **21 (100%)** |
+| `d_surface` L10 | +0.0323 | −0.0323 | **+0.0000** | 16 | **16 (100%)** |
+| `d_surface` L12 | +0.0364 | −0.0364 | **+0.0000** | 18 | 17 (94%) |
+| refusal alone (C) | +0.2061 | −0.2222 | −0.0162 | 110 | 101 (92%) |
+| both (D) | +0.2869 | −0.3091 | −0.0222 | 153 | 142 (93%) |
+
+**Equal and opposite to the last digit, at all four layers.** Nothing is left over once refusal
+reduction is accounted for.
+
+**That closes §18's "capability channel" from a second direction.** The reading was that `d_surface`
+supplies harmful *content* once refusal is removed — if so, part of its gain should land on prompts
+that were not refusing to begin with. **None does.** R-22 retracted that mechanism from the
+prompt-bank side; this reaches it from the behavioural side, independently.
+
+**And one asymmetry I did not expect, which argues the other way.** `d_surface` removal converts
+stopped-refusals into successes at **~100%**; refusal removal itself converts at **92%**. So it is not
+simply a weaker arm C — the prompts it releases succeed *more* reliably than the ones arm C releases.
+That is a real difference between the two arms and it is the strongest remaining thing to say for
+`d_surface` being its own object.
+
+⚠ **The caveat, again against my own finding.** This shows the effect is **exhausted** by refusal
+reduction. It does **not** show `d_surface` acts on the refusal mechanism: a direction that merely
+makes a prompt look less harmful would produce an identical signature.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 315 | 2026-08-22 | compared refusal rates across every arm | Δ ASR = −Δ refusal **exactly** at all four `d_surface` layers |
+| 316 | 2026-08-22 | checked conversion of stopped-refusals | **100%** for `d_surface`, **92%** for arm C |
+| 317 | 2026-08-22 | closed the "capability channel" from the behavioural side | no gain on already-non-refusing prompts |
+| 318 | 2026-08-22 | recorded the caveat and the one pro-`d_surface` asymmetry | exhausted ≠ mechanism; 100% vs 92% is real |

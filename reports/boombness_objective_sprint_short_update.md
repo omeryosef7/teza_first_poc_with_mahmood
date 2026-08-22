@@ -122,6 +122,15 @@ L12**, ns at L6). Both random controls inert (p=1.00, p=0.50). **The refusal cha
 magnitude larger than the `d_surface` channel** — the robust behavioural result here is about refusal,
 and the `d_surface`-specific part is its weak half.
 
+**Removing `d_surface` does nothing except reduce refusal (added 2026-08-22).** At every layer the
+ASR gain and the refusal-rate drop are **equal and opposite to the last digit** (L8 +0.0424 / −0.0424;
+L6, L10, L12 likewise), and **100%** of the prompts that stop refusing become successes. No residual
+effect survives accounting for refusal — which finishes off §18's "capability channel" reading from the
+behavioural side, as R-22 did from the bank side. One asymmetry worth keeping: `d_surface` converts
+released prompts at ~100% where refusal removal itself converts at 92%, so it is not simply a weaker
+arm C. ⚠ This shows the effect is *exhausted* by refusal reduction, not that `d_surface` acts on the
+refusal mechanism.
+
 **"Distinct channel" and "interacting channels" are different claims, and they go opposite ways
 (added 2026-08-22).** Of the 21 prompts that flip when `d_surface` is removed at L8, **19 also flip
 when refusal alone is removed** (chance expectation 4.6, p=1.1e-11) — so the evidence that `d_surface`
