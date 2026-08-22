@@ -8639,3 +8639,53 @@ which is a reason to be more careful with it, not less.
 | 510 | 2026-08-22 | **fixed `_rows`: `DONE.json` now required** | truncated-prefix class, in the sprint's central instrument |
 | 511 | 2026-08-22 | `xL6_*` excluded via `REJUDGE_PREFIXES`, recorded per layer | guard was right; a sixth spelling would have double-counted |
 | 512 | 2026-08-22 | cached the judge-tree scan | null back under time; standing numbers unchanged |
+
+## The sweep is complete, and it does not reproduce the number I hoped it would
+
+`a24djudge` finished L6, L8 and L10 (L12's last four are still judging and the new `DONE.json`
+requirement excludes them automatically, holding L12 at 20). Re-running with full populations
+(`n_common: 495`, `population_matched: True` everywhere):
+
+| layer | k | arm | ceiling | ratio | rank p |
+|---|---|---|---|---|---|
+| L6 | **24** | +0.0182 (9p) | **+0.0101 (5p)** | 1.80× | 0.04 |
+| L8 | **24** | +0.0424 (21p) | +0.0182 (9p) | 2.33× | 0.04 |
+| L10 | **24** | +0.0323 (16p) | +0.0000 (0p) | n/a | 0.04 |
+| L12 | 20 | +0.0364 (18p) | +0.0101 (5p) | 3.60× | 0.05 |
+
+**Completing L6 from 20 to 24 angles moved the ceiling by nothing.** The four new angles score **+3, 0,
+0 and −1 prompts** against a ceiling of +5. So last night's +0.0168 — which sat 0.2 prompts from the
+concurrent session's +0.0172 and looked like the resolution of a four-tick disagreement — was **purely
+an artifact of ingesting half-judged runs**. The complete sweep does not reproduce it.
+
+**Which means the disagreement is real, and I have now ruled out every explanation I can test:**
+
+* **not angle coverage** — L6 is complete at 24/24 and the ceiling is unchanged;
+* **not partial data** — every layer at `n_common: 495`, `population_matched: True`;
+* **not judge session** — the crossover moved eight L6 angles by ≤2 prompts across a fresh session;
+* **not baseline choice** — the baseline cancels in an arm-vs-control comparison, and in any case
+  per-session baselines could only *lower* control deltas: no measured baseline is below 32/495, so
+  none can push a control's delta up by the 3.5 prompts required.
+
+Their arm is also 1.2 prompts *below* mine (+0.0157 vs +0.0182) while their ceiling is 3.5 prompts
+*above* (+0.0172 vs +0.0101). A single baseline shift moves both the same way, so no baseline choice
+produces that pattern.
+
+**So the honest statement is a reproducibility one, not a scientific one.** Their commit changed one
+markdown file; no script or artifact backs the figure, so it cannot be regenerated — which is the
+standing rule in this repo (*every number must be regenerable by a committed script from a committed
+artifact*). I am not claiming their number is wrong; I am recording that mine is reproducible from
+committed code and data and theirs currently is not, and that the two disagree by 3.5 prompts on the
+quantity that decides L6.
+
+**L6's verdict is unchanged either way** — 4-prompt margin against a 2.8-prompt judge, 1.41×, withdrawn
+— and it is now final rather than provisional, since the sweep it was waiting on is complete.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 513 | 2026-08-23 | `a24djudge` completed L6/L8/L10 | 24 angles each, full 495 populations |
+| 514 | 2026-08-23 | L12's four partials excluded by the new `DONE.json` rule | held at 20 — the fix working unattended |
+| 515 | 2026-08-23 | **completing L6 did not move the ceiling** | new angles +3/0/0/−1 vs a +5 ceiling |
+| 516 | 2026-08-23 | last night's near-match **confirmed an artifact** | of half-judged runs, not a real reconciliation |
+| 517 | 2026-08-23 | ruled out coverage, partial data, session and baseline | disagreement is **real and unexplained** |
+| 518 | 2026-08-23 | recorded it as a **reproducibility** gap, not a verdict | their figure has no committed script or artifact |
