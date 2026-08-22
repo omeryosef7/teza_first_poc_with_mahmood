@@ -7,6 +7,7 @@ WHY. Five guards now exist, each added after a failure it would have caught:
   verify_report_numbers     a quoted number no longer matching its committed artifact
   markdown_structure_check  a cell rendering in the wrong column
   pvalue_hygiene_check      a small p quoted without its design's attainable floor
+  plan_coverage_check       a plan section silently dropped from the report
 
 Until now I ran them as an ad-hoc shell loop, by hand, once per tick -- and on at least one tick ran
 four of the five. A guard you have to remember to run is a guard you will eventually not run, which is
@@ -39,6 +40,8 @@ GUARDS = [
      "a cell rendering in the wrong column"),
     ("pvalue_hygiene_check", [sys.executable, os.path.join(HERE, "pvalue_hygiene_check.py")],
      "a small p quoted without its design's floor"),
+    ("plan_coverage_check", [sys.executable, os.path.join(HERE, "plan_coverage_check.py")],
+     "a plan section silently dropped from the report"),
 ]
 
 

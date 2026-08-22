@@ -7640,3 +7640,43 @@ only the one being recommended, so the next person cannot repeat my mistake eith
 | 412 | 2026-08-22 | ran the three controls **before** writing a recommendation | new direction is the other bank's surface contrast (cos 0.74–0.79) |
 | 413 | 2026-08-22 | recorded a complete negative | no pooling arrangement adds non-surface variance |
 | 414 | 2026-08-22 | made the script run controls for **every** strategy | not just the one being recommended |
+
+## Making "the plan is fully addressed" checkable instead of asserted
+
+Tick 2026-08-22. Two things this tick, one of which was deciding **not** to do work.
+
+**§0b was checked and left alone.** §0a is stable at **72 lines**; §0b has grown to **310** across
+eight subsections. But §0b is *billed* as "supporting detail", and 310 lines of detail is consistent
+with that billing — the failure I fixed was §0a claiming to be a one-screen summary while being 237
+lines. Splitting §0b would be reorganising for its own sake, which is its own failure mode and one I
+have already flagged. Checked, no action, recorded so the next tick does not re-open it.
+
+**"The plan is fully addressed" was an assertion, repeated for several ticks.** The plan has 21
+numbered sections and the report is 3,089 lines; nobody had checked the mapping mechanically. Given
+this sprint's record on assertions-not-checked, that is not a claim to keep making for free.
+
+`plan_coverage_check.py` maps every plan section to its citations in the report. Result: **all 14
+research sections are cited**; the three uncited (§1 repo setup, §16 directory structure, §17 execution
+order) are setup/process and excluded by name rather than by omission. A section deliberately not built
+— §12's GCG objective — counts as covered, because *"documented negative"* is an outcome.
+
+It is now the **sixth guard** in `check_all`, so a section quietly vanishing between revisions fails
+the build. **Tested against a case it must fail**: hiding §11's citations → exit **1**.
+
+That takes the suite to six, and it is the first one that guards the *plan* rather than the prose:
+
+| guard | guards against |
+|---|---|
+| `retraction_sweep` | a retracted claim resurfacing |
+| `canonical_figures` | a figure drifting between deliverables |
+| `verify_report_numbers` | a number not matching its artifact |
+| `markdown_structure_check` | a cell rendering in the wrong column |
+| `pvalue_hygiene_check` | a small p without its design's floor |
+| **`plan_coverage_check`** | **a plan section silently dropped** |
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 415 | 2026-08-22 | measured §0b and **declined to split it** | 310 lines is consistent with "supporting detail"; §0a stable at 72 |
+| 416 | 2026-08-22 | wrote `plan_coverage_check.py` | "fully addressed" is now checkable, not asserted |
+| 417 | 2026-08-22 | ran it | **14/14 research sections cited**; 3 uncited are setup, excluded by name |
+| 418 | 2026-08-22 | added it to `check_all` and tested it | six guards; hiding §11 → exit 1 |
