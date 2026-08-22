@@ -2,7 +2,8 @@
 
 WHY. The dense null reports, per layer, an arm delta and the largest control delta, and the whole
 "the arm exceeds every control" claim is a comparison against that ceiling. `judge_session_drift.py`
-showed the judge moves ~2.8 prompts in 495 between sessions. If the controls that SET the ceiling all
+showed the judge moves ~1 prompt in 495 between sessions (corrected 2026-08-23, audit #14; the
+earlier 2.8 came from a truncated judge pass). If the controls that SET the ceiling all
 come from one judging session, the ceiling is partly a property of that session rather than of any
 direction -- and at L6 the arm-vs-ceiling margin is only 4 prompts, so a session offset of 2-3 prompts
 is decisive.
@@ -105,7 +106,7 @@ def main() -> int:
         gap = (min(stats[s]["mean_prompts"] for s in setter_sessions)
                - (sum(others) / len(others))) if others else None
         # TWO BOUNDS ON THE NOISE, because neither alone is honest.
-        #   lower: baseline drift, 2.8 prompts -- pure judge noise, measured on byte-identical text.
+        #   lower: baseline drift, 1 prompt -- pure judge noise, measured on byte-identical text.
         #   upper: the spread of per-session MEAN control deltas -- judge noise PLUS whatever is
         #          really different about the angles judged in that wave. It over-states noise.
         # A margin below the upper bound is not safe; a margin above it is. Sessions contributing a
@@ -133,7 +134,7 @@ def main() -> int:
         "question": "is the null's ceiling concentrated in one judging session, and does that session "
                     "have a baseline of its own?",
         "baseline_asr": base, "baseline_pattern": a.baseline, "n_rows": N_ROWS,
-        "judge_drift_prompts": 2.8,
+        "judge_drift_prompts": 1.0,
         "CONFOUND_NOT_RESOLVED": (
             "session is confounded with WHICH ANGLES were judged in it -- the sweeps were submitted in "
             "waves, and a wave is both a set of angles and a session. A session mean differing from "
@@ -146,7 +147,7 @@ def main() -> int:
     with open(a.out, "w") as f:
         json.dump(out, f, indent=2)
 
-    print(f"baseline {base:.4f} = {base*N_ROWS:.0f}/{N_ROWS}   judge drift ~2.8 prompts\n")
+    print(f"baseline {base:.4f} = {base*N_ROWS:.0f}/{N_ROWS}   judge drift ~1 prompt\n")
     for L, v in out_layers.items():
         print(f"{L}: arm {v['arm_delta_prompts']}p   ceiling {v['ceiling_prompts']}p   "
               f"margin {v['margin_prompts']}p")

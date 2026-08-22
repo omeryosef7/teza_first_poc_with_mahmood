@@ -1,6 +1,6 @@
 {
   "question": "at equal dose, in the same judging session, does d_surface differ from a magnitude-matched random direction?",
-  "why_this_was_missing": "every previous late-layer contrast was cross-session (carrying 0.0057 judge drift) or matched to a random direction at a different depth. These arms were run correctly and never analysed.",
+  "why_this_was_missing": "every previous late-layer contrast was cross-session (carrying judge drift, 0.0020 after the audit #14 correction) or matched to a random direction at a different depth. These arms were run correctly and never analysed.",
   "dose_unit_field_is_unreliable": "score_behavior writes `dose_unit` as an unconditional literal on every intervened run, so it reads 'gap' even on refusalness arms that are dosed in their own unit norm. The field is reported with an _UNRELIABLE suffix; the dose verdicts below come from reconstructed magnitudes, not from it. Found by audit #14.",
   "dose_checked_by_RECONSTRUCTED_MAGNITUDE_not_alpha": "score_behavior dozes refusalness in its own unit norm (alpha == magnitude) and every other direction in d_surface-gap units (magnitude = alpha * gap). gap(L8)=6.0549, gap(L18)=14.7925. So `refusalness:add:18:1.0` injects 1.0 while `random:add:18:1.0` injects 14.79 -- identical-looking flags, a 14.79x overdose. Two of the five contrasts below are mismatched that way and are marked DOSE-MISMATCHED rather than deleted.",
   "only_dose_matched_contrast": "d_surface:add:8:0.25 vs random:add:8:0.25 -- both gap-dosed, both magnitude 1.5137.",
@@ -261,6 +261,6 @@
       "--out",
       "outputs/boombness/channel_matched_contrasts.json"
     ],
-    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
+    "git_commit": "8ceba11a3bd77ff38c294040465df842732925df"
   }
 }

@@ -2,7 +2,8 @@
 
 WHY THIS ONE IS BETTER THAN THE ONES BEFORE IT.
 
-`judge_session_drift.py` showed the judge moves 0.0057 between sessions on byte-identical text, and
+`judge_session_drift.py` showed the judge moves 0.0020 -- one prompt in 495 -- between sessions on
+byte-identical text (corrected 2026-08-23, audit #14; the earlier 0.0057 came from a truncated pass), and
 that every delta in the in-subspace null is cross-session. That is a real limit on precision, and the
 previous two analyses had to work around it by reporting drift-scaled readings instead of tests.
 

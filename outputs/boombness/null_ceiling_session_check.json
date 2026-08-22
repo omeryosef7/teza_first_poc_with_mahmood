@@ -3,7 +3,7 @@
   "baseline_asr": 0.06464646464646465,
   "baseline_pattern": "outputs/boombness/judge/abg_base_*",
   "n_rows": 495,
-  "judge_drift_prompts": 2.8,
+  "judge_drift_prompts": 1.0,
   "CONFOUND_NOT_RESOLVED": "session is confounded with WHICH ANGLES were judged in it -- the sweeps were submitted in waves, and a wave is both a set of angles and a session. A session mean differing from another is therefore NOT proof of judge drift; it could be a real property of those angles. Separating them needs the same angles judged in two sessions, which no committed data supports.",
   "layers": {
     "L6": {
@@ -1061,6 +1061,6 @@
       "--out",
       "outputs/boombness/null_ceiling_session_check.json"
     ],
-    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
+    "git_commit": "8ceba11a3bd77ff38c294040465df842732925df"
   }
 }

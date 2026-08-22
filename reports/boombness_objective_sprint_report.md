@@ -341,6 +341,48 @@ reported drift-scaled with no test. The refusalness arms are magnitude-matched t
 not to `d_surface`, so this is "refusal projection beats a matched random projection at these depths",
 not a direct channel-vs-channel contest at equal dose.
 
+### The right noise scale is REPLICATE noise, not judge drift (added 2026-08-23)
+
+Every margin in this report has been calibrated against judge drift — the spread from re-judging
+byte-identical generations, **0.0020, one prompt in 495** after the audit-#14 correction. That is the
+wrong scale, and it is wrong in the flattering direction. An arm and a control are not the same
+generations judged twice; they are **two separate end-to-end runs**, generate *then* judge. Judge drift
+is only the last and smallest component of the noise that separates them.
+
+`replicate_noise.py` measures the whole thing: pairs of runs with **identical** model, bank,
+`--intervene` spec, seed, `fit_dir`, `max_new` and `query_kinds` — differing only in when the job ran —
+scored on the intersection of their prompt ids.
+
+| | prompts (of 495) |
+|---|---|
+| same-config pairs found | **17** on the 495 bank (18 incl. one 960-row pair) |
+| median absolute difference | **1** |
+| 15 of 17 pairs | **≤ 2** |
+| maximum | **7** (`in_subspace_orth:project_out:12`) |
+
+**Against the null's margins:**
+
+| layer | margin | replicate pairs exceeding it |
+|---|---|---|
+| **L6** | **4p** | **1 of 17** |
+| L8 | 12p | 0 of 17 |
+| L12 | 13p | 0 of 17 |
+| L10 | 16p | 0 of 17 |
+
+So L6 is the one layer whose margin sits inside the observed tail of run-to-run variability, while the
+other three are clear of every pair by a factor of ~2 or more. That is the same conclusion the (wrong)
+0.0057 drift reached and the (corrected) 0.0020 drift reversed — now on a measurement of the quantity
+that actually applies.
+
+⚠ **Limits.** Seventeen pairs is a spread, not a distribution; the single 7 could be a fluke or a heavy
+tail, and with this n the maximum is unstable — which is why the median is reported beside it. Both
+runs in each pair share a seed, so this cannot separate GPU/batching nondeterminism from sampling.
+
+✅ **One confound checked and cleared.** Runs differing in `max_new` (192 vs 512) diverge by **6–57
+prompts** — far more than any replicate pair — so mixing that parameter across an arm and its control
+would be fatal. Verified it is not mixed anywhere in the null: the baseline, all four arms and all 24
+controls at every layer are `max_new=512`, `query_kinds=behavioral`.
+
 ### How to read every p-value in this report (added 2026-08-22)
 
 

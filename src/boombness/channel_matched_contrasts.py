@@ -3,7 +3,7 @@ in the SAME judging session.
 
 WHY THIS IS THE COMPARISON THAT WAS MISSING.
 
-Every late-layer result in this sprint so far has been either cross-session (and so carried a 0.0057
+Every late-layer result in this sprint so far has been either cross-session (and so carried a judge-drift
 judge-drift uncertainty) or matched to a random direction at a different depth. The previous tick's
 depth profile could say "refusal projection beats a matched random projection", but not which channel
 is larger at equal dose, because nothing had been run that way.
@@ -229,7 +229,8 @@ def main() -> int:
         "question": "at equal dose, in the same judging session, does d_surface differ from a "
                     "magnitude-matched random direction?",
         "why_this_was_missing": (
-            "every previous late-layer contrast was cross-session (carrying 0.0057 judge drift) or "
+            "every previous late-layer contrast was cross-session (carrying judge drift, 0.0020 after the "
+            "audit #14 correction) or "
             "matched to a random direction at a different depth. These arms were run correctly and "
             "never analysed."),
         "dose_unit_field_is_unreliable": (

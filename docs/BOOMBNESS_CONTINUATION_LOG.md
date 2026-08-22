@@ -8814,3 +8814,62 @@ over-match and `REJUDGE_PREFIXES` cannot exclude a sweep member.
 | 529 | 2026-08-23 | rewrote a self-contradictory §0 row (C-12 shape) | 5139 → 2963 chars, one coherent statement |
 | 530 | 2026-08-23 | `dose_unit` marked unreliable, dead helper deleted | dose verdicts unaffected |
 | 531 | 2026-08-23 | grid adequacy withheld on incomplete grids | all four layers 7.5°, complete |
+
+## I had been calibrating against the wrong noise all along
+
+Propagating audit #14's drift correction turned up something bigger than the correction. `orth_control_arms`
+still asserted that differences among the controls were "inside the 0.0057 drift and NOT interpretable".
+At the corrected drift of **0.0020** a 9-prompt spread is nowhere near inside noise — so that refusal
+was built on the bad number too, and I had declined to look at something I could have looked at.
+
+Looking at it: `in_subspace_orth:project_out:12-12:1.0` appears **twice**, and the two runs differ by
+**7 prompts** with *identical* config — same spec, same seed 20260901, same `fit_dir`, same bank, same
+`max_new`. That is not judge drift. That is the whole pipeline run twice.
+
+**Which exposes the real error in my accounting.** Every margin in this report has been compared
+against judge drift — the spread from re-judging byte-identical text. But an arm and a control are
+**two separate end-to-end runs**. Judge drift is the last and smallest component of what separates
+them, and I had been using it as the whole thing. The error runs in the flattering direction.
+
+New `replicate_noise.py` measures it properly — pairs identical in model, bank, spec, seed, `fit_dir`,
+`max_new`, `query_kinds`, scored on common prompt ids:
+
+| | prompts of 495 |
+|---|---|
+| same-config pairs | **17** |
+| median | **1** |
+| 15 of 17 | **≤ 2** |
+| max | **7** |
+
+| layer | margin | replicate pairs exceeding it |
+|---|---|---|
+| **L6** | **4p** | **1 of 17** |
+| L8 / L12 / L10 | 12p / 13p / 16p | **0 of 17** |
+
+**L6 lands back where it started, for the third time and finally on the right measurement.** It was
+withdrawn on a drift number that was wrong, retracted when that number was fixed, and is now the one
+layer whose margin sits inside the observed tail of run-to-run variation. The other three clear every
+pair by ~2× or better.
+
+**The C-11 shard bug, for the third time — in a script I wrote an hour ago.** The first version of
+`replicate_noise.py` kept only the first judge dir per generation run, reasoning that a second judging
+would inject judge drift into a replicate estimate. But `vL12J0` + `vL12J1` are **disjoint halves**
+(248 + 247), not two judgings, so keeping one left 248 rows, which fell under the row threshold and the
+run vanished — silently dropping exactly the `in_subspace_orth` pairs that motivated writing the
+script. Correct rule now: union judge dirs whose prompt ids are **disjoint**; only an overlap is a
+re-judging. This is the same bug C-11 was raised for and the same one audit #13 found in
+`unanalysed_triage`. I reintroduce it every time I write a new script that walks judge directories.
+
+**One confound checked and cleared.** Runs differing only in `max_new` (192 vs 512) diverge by **6–57
+prompts** — far larger than any replicate pair — so mixing it across an arm and its control would be
+fatal. It is not mixed: baseline, all four arms and all 24 controls at every layer are `max_new=512`,
+`query_kinds=behavioral`.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 532 | 2026-08-23 | propagated the drift fix into 4 scripts' hardcoded text | found a refusal built on the bad number |
+| 533 | 2026-08-23 | same-config run appears twice, **7 prompts apart** | judge drift cannot explain it |
+| 534 | 2026-08-23 | **the noise scale was wrong all along** | arm vs control is two end-to-end runs, not one judged twice |
+| 535 | 2026-08-23 | measured replicate noise: **median 1, max 7** over 17 pairs | L6 margin exceeded by 1 of 17; others by none |
+| 536 | 2026-08-23 | **C-11 shard bug, third occurrence**, in my hour-old script | it silently dropped the very pairs it was written to find |
+| 537 | 2026-08-23 | `max_new` confound (6–57 prompts) checked | **not mixed** anywhere in the null |

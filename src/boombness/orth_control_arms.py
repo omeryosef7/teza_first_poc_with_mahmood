@@ -10,7 +10,10 @@ each. Twelve fully-powered arms were hidden that way, ten of them in-subspace co
 WHAT THEY CAN AND CANNOT ANSWER. Every one of these was judged in a session containing ONLY control
 arms -- no baseline, no `d_surface` arm (sessions 20260821_012704 / _025400 / _045406 / _074038 /
 _092909). So every delta available from them is CROSS-SESSION, and `judge_session_drift.py` measured
-that noise floor at 0.0057 on byte-identical text. Consequences, stated rather than glossed:
+that noise floor at 0.0020 (ONE prompt in 495) on byte-identical text -- corrected 2026-08-23 by
+audit #14; the 0.0057 this file used to quote came from a truncated judge pass. The scale that
+actually applies to an arm-vs-control comparison is END-TO-END replicate noise, measured in
+`replicate_noise.py`: median 1 prompt, max 7 over 17 same-config pairs. Consequences:
 
   * differences AMONG these controls (they span roughly 0.057-0.075 ASR) are inside the drift and are
     NOT interpretable -- do not rank them;
@@ -176,7 +179,10 @@ def main() -> int:
         "REFUSED_COMPARISON": (
             "these controls were all judged in sessions containing NO baseline and NO d_surface arm, "
             "so every delta here is cross-session. Differences AMONG the controls (they span ~0.057-"
-            "0.075 ASR) are inside the 0.0057 drift and are NOT interpretable -- do not rank them."),
+            "0.075 ASR) span ~9 prompts. ⚠ An earlier revision called that 'inside the 0.0057 drift, do not "
+            "rank them'; with the corrected drift (0.0020) and measured replicate noise (median 1, "
+            "max 7 prompts) a 9-prompt spread is NOT inside noise, so that refusal was based on a "
+            "wrong number. Ranking them is defensible; the ordering is simply not the point here."),
         "SUPPORTED_COMPARISON": (
             "control-vs-arm gaps of ~0.04 are ~8x the drift and ARE interpretable."),
         "DEPTH_DISSOCIATION_the_preregistered_test_was_on_disk_unanalysed": {
@@ -203,7 +209,7 @@ def main() -> int:
                         "0.0000) is EXPECTED and is not evidence about the subspace."},
             "not_done": "pooled binary deltas only. A domain-clustered p is not reported because "
                         "these arms have no within-session baseline; quoting one would imply more "
-                        "precision than the design supports. Drift (0.0057) is the honest scale.",
+                        "precision than the design supports. Replicate noise (median 1, max 7 prompts) is the honest scale.",
         },
         "orth_is_not_the_angle_sweep": (
             "in_subspace_orth is ONE canonical direction in the complement; in_subspace_angle SWEEPS "

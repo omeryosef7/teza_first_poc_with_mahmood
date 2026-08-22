@@ -6,7 +6,7 @@
     "n": 495
   },
   "judge_session_drift": 0.0020202020202020193,
-  "REFUSED_COMPARISON": "these controls were all judged in sessions containing NO baseline and NO d_surface arm, so every delta here is cross-session. Differences AMONG the controls (they span ~0.057-0.075 ASR) are inside the 0.0057 drift and are NOT interpretable -- do not rank them.",
+  "REFUSED_COMPARISON": "these controls were all judged in sessions containing NO baseline and NO d_surface arm, so every delta here is cross-session. Differences AMONG the controls (they span ~0.057-0.075 ASR) span ~9 prompts. \u26a0 An earlier revision called that 'inside the 0.0057 drift, do not rank them'; with the corrected drift (0.0020) and measured replicate noise (median 1, max 7 prompts) a 9-prompt spread is NOT inside noise, so that refusal was based on a wrong number. Ranking them is defensible; the ordering is simply not the point here.",
   "SUPPORTED_COMPARISON": "control-vs-arm gaps of ~0.04 are ~8x the drift and ARE interpretable.",
   "DEPTH_DISSOCIATION_the_preregistered_test_was_on_disk_unanalysed": {
     "what": "signals.cell_span_basis_direction's docstring pre-registers the discriminating test for the depth dissociation: ablate the ENTIRE 3-d concept subspace at both depths. Its rule -- 'if the full span moves ASR at L8 and does nothing at L31, the late null is architectural and the anti-alignment claim must be weakened; if it moves ASR at L31 too, late ablation CAN act and d_surface's late null is a fact about that direction'. Both arms were run and judged and never analysed.",
@@ -19,7 +19,7 @@
       "L31": 1.0,
       "note": "cos(d_surface, b0/b1/b2) = -0.9555/0.1565/-0.2500 at L8; the full span contains d_surface exactly, so cell_span L8 tying the arm (+0.0424, gap 0.0000) is EXPECTED and is not evidence about the subspace."
     },
-    "not_done": "pooled binary deltas only. A domain-clustered p is not reported because these arms have no within-session baseline; quoting one would imply more precision than the design supports. Drift (0.0057) is the honest scale."
+    "not_done": "pooled binary deltas only. A domain-clustered p is not reported because these arms have no within-session baseline; quoting one would imply more precision than the design supports. Replicate noise (median 1, max 7 prompts) is the honest scale."
   },
   "orth_is_not_the_angle_sweep": "in_subspace_orth is ONE canonical direction in the complement; in_subspace_angle SWEEPS it. The sweep's max reaches +0.0182 at L8 while the single orthogonal direction sits near zero. A hard null built on one canonical direction would look far stronger than the sweep, for no reason but which direction got picked.",
   "rows": [
@@ -241,6 +241,6 @@
       "--out",
       "outputs/boombness/orth_control_arms.json"
     ],
-    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
+    "git_commit": "8ceba11a3bd77ff38c294040465df842732925df"
   }
 }
