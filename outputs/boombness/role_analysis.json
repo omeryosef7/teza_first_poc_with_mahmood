@@ -65,5 +65,12 @@
     "r2_both": 0.18332957650683723,
     "role_adds_over_boombness": 0.02247128806114229,
     "boombness_adds_over_role": 0.15830894166005194
+  },
+  "_cited_as": "$PY src/boombness/analyze_g2.py --judge <JUDGE> --extract <EXTRACT_CW> --score <GENS> \\ --refusalness <REFUSAL_CW> --extract-position codeword_last --cluster-by domain \\ --out outputs/boombness/g2_analysis_cwpos.json $PY src/boombness/analyze_position.py --judge <JUDGE> \\ --extract-codeword <EXTRACT_CW> --extract-last <EXTRACT_LAST> \\ --refusalness-codeword <REFUSAL_CW> --refusalness-last <REFUSAL",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact",
+  "_provenance_added": {
+    "by": "label_artifacts.py",
+    "git_commit": "ffc42c26e56f1d8537f56c215dc9de4ef3cb05e2",
+    "note": "this artifact predates the provenance convention; the commit here is when the label was added, NOT when the artifact was produced"
   }
 }

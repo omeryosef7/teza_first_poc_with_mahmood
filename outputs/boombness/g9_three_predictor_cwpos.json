@@ -648,5 +648,7 @@
     "p_cr1": "p_cr1_pooled_beta",
     "p_within_domain_perm": "p_perm_within_domain_beta"
   },
-  "caveat": "Role is NOT in the fitted model when role_identifiability.identified is false. The descriptive role means are a family-set contrast, not a role effect, and must not be reported as one (this is the retraction-#6 failure mode). When it IS identified the role terms are fitted on the crossed subset only, and with G <= k the CR1 p-values are suppressed rather than reported: the omnibus style test on this same crossed design is analyze_g11.py's job and already exists."
+  "caveat": "Role is NOT in the fitted model when role_identifiability.identified is false. The descriptive role means are a family-set contrast, not a role effect, and must not be reported as one (this is the retraction-#6 failure mode). When it IS identified the role terms are fitted on the crossed subset only, and with G <= k the CR1 p-values are suppressed rather than reported: the omnibus style test on this same crossed design is analyze_g11.py's job and already exists.",
+  "_cited_as": "It was also never regenerable: the pair 0.144/0.028 appears in no committed artifact, while `g9_three_predictor_cwpos.json` has carried the matched-df values in all four of its committed versions.",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

@@ -1,1721 +1,1723 @@
 {
- "models": [
-  "meta-llama/Llama-3.1-8B-Instruct",
-  "Qwen/Qwen3-14B"
- ],
- "per_model": {
-  "meta-llama/Llama-3.1-8B-Instruct": {
-   "apple": {
-    "ids": {
-     "apple": [
-      23182
-     ],
-     " apple": [
-      24149
-     ],
-     "Apple": [
-      27665
-     ],
-     " Apple": [
-      8325
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Apple",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "basket": {
-    "ids": {
-     "basket": [
-      60864
-     ],
-     " basket": [
-      14351
-     ],
-     "Basket": [
-      74749
-     ],
-     " Basket": [
-      34217
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Basket",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "bomb": {
-    "ids": {
-     "bomb": [
-      79444
-     ],
-     " bomb": [
-      13054
-     ],
-     "Bomb": [
-      92826
-     ],
-     " Bomb": [
-      33909
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Bomb",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "button": {
-    "ids": {
-     "button": [
-      2208
-     ],
-     " button": [
-      3215
-     ],
-     "Button": [
-      1597
-     ],
-     " Button": [
-      6739
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Button",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "candle": {
-    "ids": {
-     "candle": [
-      66,
-      3397
-     ],
-     " candle": [
-      38899
-     ],
-     "Candle": [
-      34,
-      3397
-     ],
-     " Candle": [
-      73997
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Candle",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "carrot": {
-    "ids": {
-     "carrot": [
-      7063,
-      4744
-     ],
-     " carrot": [
-      75294
-     ],
-     "Carrot": [
-      9028,
-      4744
-     ],
-     " Carrot": [
-      3341,
-      4744
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Car",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "drug": {
-    "ids": {
-     "drug": [
-      73821
-     ],
-     " drug": [
-      5623
-     ],
-     "Drug": [
-      78893
-     ],
-     " Drug": [
-      26166
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Drug",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "grenade": {
-    "ids": {
-     "grenade": [
-      75365,
-      1037
-     ],
-     " grenade": [
-      67681
-     ],
-     "Grenade": [
-      38,
-      1466,
-      1037
-     ],
-     " Grenade": [
-      39224,
-      1037
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Gren",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "gun": {
-    "ids": {
-     "gun": [
-      13562
-     ],
-     " gun": [
-      6166
-     ],
-     "Gun": [
-      65007
-     ],
-     " Gun": [
-      22450
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Gun",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "kettle": {
-    "ids": {
-     "kettle": [
-      74,
-      48726
-     ],
-     " kettle": [
-      73418
-     ],
-     "Kettle": [
-      42,
-      48726
-     ],
-     " Kettle": [
-      735,
-      48726
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "K",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "knife": {
-    "ids": {
-     "knife": [
-      43820
-     ],
-     " knife": [
-      22145
-     ],
-     "Knife": [
-      57505
-     ],
-     " Knife": [
-      62302
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Knife",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "ladder": {
-    "ids": {
-     "ladder": [
-      75,
-      21473
-     ],
-     " ladder": [
-      36865
-     ],
-     "Ladder": [
-      43,
-      21473
-     ],
-     " Ladder": [
-      445,
-      21473
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "L",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "lantern": {
-    "ids": {
-     "lantern": [
-      10946,
-      4253
-     ],
-     " lantern": [
-      74265
-     ],
-     "Lantern": [
-      43,
-      276,
-      4253
-     ],
-     " Lantern": [
-      68592
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Lantern",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "marble": {
-    "ids": {
-     "marble": [
-      5730,
-      901
-     ],
-     " marble": [
-      42390
-     ],
-     "Marble": [
-      12331,
-      901
-     ],
-     " Marble": [
-      73621
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Marble",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "missile": {
-    "ids": {
-     "missile": [
-      1869,
-      458
-     ],
-     " missile": [
-      26290
-     ],
-     "Missile": [
-      36412,
-      458
-     ],
-     " Missile": [
-      68870
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Missile",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "muffin": {
-    "ids": {
-     "muffin": [
-      76,
-      1386,
-      258
-     ],
-     " muffin": [
-      55404,
-      258
-     ],
-     "Muffin": [
-      44,
-      1386,
-      258
-     ],
-     " Muffin": [
-      386,
-      1386,
-      258
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "M",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "pebble": {
-    "ids": {
-     "pebble": [
-      375,
-      60980
-     ],
-     " pebble": [
-      1069,
-      60980
-     ],
-     "Pebble": [
-      47,
-      3141,
-      901
-     ],
-     " Pebble": [
-      90005,
-      901
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Peb",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "pencil": {
-    "ids": {
-     "pencil": [
-      79,
-      17438
-     ],
-     " pencil": [
-      47218
-     ],
-     "Pencil": [
-      47,
-      17438
-     ],
-     " Pencil": [
-      393,
-      17438
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "P",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "pillow": {
-    "ids": {
-     "pillow": [
-      50946,
-      363
-     ],
-     " pillow": [
-      43425
-     ],
-     "Pillow": [
-      47,
-      97023
-     ],
-     " Pillow": [
-      81835
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Pillow",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "poison": {
-    "ids": {
-     "poison": [
-      5481,
-      3416
-     ],
-     " poison": [
-      21109
-     ],
-     "Poison": [
-      34004,
-      3416
-     ],
-     " Poison": [
-      52212
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Poison",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "teapot": {
-    "ids": {
-     "teapot": [
-      668,
-      91001
-     ],
-     " teapot": [
-      1028,
-      91001
-     ],
-     "Teapot": [
-      6777,
-      91001
-     ],
-     " Teapot": [
-      2722,
-      91001
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Te",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "toxin": {
-    "ids": {
-     "toxin": [
-      998,
-      59866
-     ],
-     " toxin": [
-      98534
-     ],
-     "Toxin": [
-      1271,
-      59866
-     ],
-     " Toxin": [
-      2057,
-      59866
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "To",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "tulip": {
-    "ids": {
-     "tulip": [
-      115089,
-      575
-     ],
-     " tulip": [
-      62036,
-      575
-     ],
-     "Tulip": [
-      51,
-      360,
-      575
-     ],
-     " Tulip": [
-      43316,
-      575
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Tul",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "virus": {
-    "ids": {
-     "virus": [
-      85,
-      17402
-     ],
-     " virus": [
-      17188
-     ],
-     "Virus": [
-      53,
-      17402
-     ],
-     " Virus": [
-      65092
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Virus",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "weapon": {
-    "ids": {
-     "weapon": [
-      23722
-     ],
-     " weapon": [
-      10500
-     ],
-     "Weapon": [
-      29314
-     ],
-     " Weapon": [
-      28877
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Weapon",
-    "cap_first_subtoken_is_wordlike": false
-   }
-  },
-  "Qwen/Qwen3-14B": {
-   "apple": {
-    "ids": {
-     "apple": [
-      22377
-     ],
-     " apple": [
-      23268
-     ],
-     "Apple": [
-      26567
-     ],
-     " Apple": [
-      8162
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Apple",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "basket": {
-    "ids": {
-     "basket": [
-      59764
-     ],
-     " basket": [
-      14024
-     ],
-     "Basket": [
-      73649
-     ],
-     " Basket": [
-      33117
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Basket",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "bomb": {
-    "ids": {
-     "bomb": [
-      78344
-     ],
-     " bomb": [
-      12764
-     ],
-     "Bomb": [
-      91726
-     ],
-     " Bomb": [
-      32809
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Bomb",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "button": {
-    "ids": {
-     "button": [
-      2159
-     ],
-     " button": [
-      3137
-     ],
-     "Button": [
-      1567
-     ],
-     " Button": [
-      6601
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Button",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "candle": {
-    "ids": {
-     "candle": [
-      66,
-      3316
-     ],
-     " candle": [
-      37799
-     ],
-     "Candle": [
-      34,
-      3316
-     ],
-     " Candle": [
-      72897
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Candle",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "carrot": {
-    "ids": {
-     "carrot": [
-      6918,
-      4640
-     ],
-     " carrot": [
-      74194
-     ],
-     "Carrot": [
-      8852,
-      4640
-     ],
-     " Carrot": [
-      3261,
-      4640
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Car",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "drug": {
-    "ids": {
-     "drug": [
-      72721
-     ],
-     " drug": [
-      5506
-     ],
-     "Drug": [
-      77793
-     ],
-     " Drug": [
-      25109
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Drug",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "grenade": {
-    "ids": {
-     "grenade": [
-      74265,
-      1021
-     ],
-     " grenade": [
-      66581
-     ],
-     "Grenade": [
-      38,
-      1440,
-      1021
-     ],
-     " Grenade": [
-      38124,
-      1021
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Gren",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "gun": {
-    "ids": {
-     "gun": [
-      13259
-     ],
-     " gun": [
-      6038
-     ],
-     "Gun": [
-      63907
-     ],
-     " Gun": [
-      21707
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Gun",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "kettle": {
-    "ids": {
-     "kettle": [
-      74,
-      47626
-     ],
-     " kettle": [
-      72318
-     ],
-     "Kettle": [
-      42,
-      47626
-     ],
-     " Kettle": [
-      730,
-      47626
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "K",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "knife": {
-    "ids": {
-     "knife": [
-      42720
-     ],
-     " knife": [
-      21430
-     ],
-     "Knife": [
-      56405
-     ],
-     " Knife": [
-      61202
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Knife",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "ladder": {
-    "ids": {
-     "ladder": [
-      75,
-      20808
-     ],
-     " ladder": [
-      35765
-     ],
-     "Ladder": [
-      43,
-      20808
-     ],
-     " Ladder": [
-      444,
-      20808
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "L",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "lantern": {
-    "ids": {
-     "lantern": [
-      10715,
-      4160
-     ],
-     " lantern": [
-      73165
-     ],
-     "Lantern": [
-      43,
-      276,
-      4160
-     ],
-     " Lantern": [
-      67492
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Lantern",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "marble": {
-    "ids": {
-     "marble": [
-      5612,
-      891
-     ],
-     " marble": [
-      41290
-     ],
-     "Marble": [
-      12061,
-      891
-     ],
-     " Marble": [
-      72521
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Marble",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "missile": {
-    "ids": {
-     "missile": [
-      1831,
-      457
-     ],
-     " missile": [
-      25224
-     ],
-     "Missile": [
-      35312,
-      457
-     ],
-     " Missile": [
-      67770
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Missile",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "muffin": {
-    "ids": {
-     "muffin": [
-      76,
-      1362,
-      258
-     ],
-     " muffin": [
-      54304,
-      258
-     ],
-     "Muffin": [
-      44,
-      1362,
-      258
-     ],
-     " Muffin": [
-      386,
-      1362,
-      258
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "M",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "pebble": {
-    "ids": {
-     "pebble": [
-      375,
-      59880
-     ],
-     " pebble": [
-      1051,
-      59880
-     ],
-     "Pebble": [
-      47,
-      3065,
-      891
-     ],
-     " Pebble": [
-      88905,
-      891
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Peb",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "pencil": {
-    "ids": {
-     "pencil": [
-      79,
-      17005
-     ],
-     " pencil": [
-      46118
-     ],
-     "Pencil": [
-      47,
-      17005
-     ],
-     " Pencil": [
-      393,
-      17005
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "P",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "pillow": {
-    "ids": {
-     "pillow": [
-      49846,
-      363
-     ],
-     " pillow": [
-      42325
-     ],
-     "Pillow": [
-      47,
-      95923
-     ],
-     " Pillow": [
-      80735
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Pillow",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "poison": {
-    "ids": {
-     "poison": [
-      5368,
-      3335
-     ],
-     " poison": [
-      20476
-     ],
-     "Poison": [
-      32904,
-      3335
-     ],
-     " Poison": [
-      51112
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Poison",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "teapot": {
-    "ids": {
-     "teapot": [
-      665,
-      89901
-     ],
-     " teapot": [
-      1013,
-      89901
-     ],
-     "Teapot": [
-      6639,
-      89901
-     ],
-     " Teapot": [
-      2655,
-      89901
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Te",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "toxin": {
-    "ids": {
-     "toxin": [
-      983,
-      58766
-     ],
-     " toxin": [
-      97434
-     ],
-     "Toxin": [
-      1249,
-      58766
-     ],
-     " Toxin": [
-      2014,
-      58766
-     ]
-    },
-    "n_single_token_variants": 1,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "To",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "tulip": {
-    "ids": {
-     "tulip": [
-      83,
-      360,
-      573
-     ],
-     " tulip": [
-      60936,
-      573
-     ],
-     "Tulip": [
-      51,
-      360,
-      573
-     ],
-     " Tulip": [
-      42216,
-      573
-     ]
-    },
-    "n_single_token_variants": 0,
-    "bare_single": false,
-    "space_single": false,
-    "cap_single": false,
-    "space_cap_single": false,
-    "cap_first_subtoken": "Tul",
-    "cap_first_subtoken_is_wordlike": true
-   },
-   "virus": {
-    "ids": {
-     "virus": [
-      85,
-      16972
-     ],
-     " virus": [
-      16770
-     ],
-     "Virus": [
-      53,
-      16972
-     ],
-     " Virus": [
-      63992
-     ]
-    },
-    "n_single_token_variants": 2,
-    "bare_single": false,
-    "space_single": true,
-    "cap_single": false,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Virus",
-    "cap_first_subtoken_is_wordlike": false
-   },
-   "weapon": {
-    "ids": {
-     "weapon": [
-      22873
-     ],
-     " weapon": [
-      10288
-     ],
-     "Weapon": [
-      28214
-     ],
-     " Weapon": [
-      27777
-     ]
-    },
-    "n_single_token_variants": 4,
-    "bare_single": true,
-    "space_single": true,
-    "cap_single": true,
-    "space_cap_single": true,
-    "cap_first_subtoken": "Weapon",
-    "cap_first_subtoken_is_wordlike": false
-   }
-  }
- },
- "clean_codewords": [
-  "apple",
-  "lantern",
-  "basket",
-  "candle",
-  "pillow",
-  "button",
-  "marble"
- ],
- "clean_concepts": [
-  "bomb",
-  "virus",
-  "poison",
-  "weapon",
-  "gun",
-  "knife",
-  "drug",
-  "missile"
- ],
- "clean_pairs": [
-  {
-   "codeword": "apple",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "virus",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "apple",
-   "concept": "poison",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "apple",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "missile",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "bomb",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "lantern",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "lantern",
-   "concept": "weapon",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "gun",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "knife",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "drug",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "lantern",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "virus",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "basket",
-   "concept": "poison",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "basket",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "missile",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "bomb",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "candle",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "candle",
-   "concept": "weapon",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "gun",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "knife",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "drug",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "candle",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "bomb",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "pillow",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "weapon",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "pillow",
-   "concept": "gun",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "pillow",
-   "concept": "knife",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "pillow",
-   "concept": "drug",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "pillow",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "virus",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "button",
-   "concept": "poison",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "button",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "missile",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "bomb",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "marble",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "marble",
-   "concept": "weapon",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "gun",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "knife",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "drug",
-   "variant_counts_symmetric": false
-  },
-  {
-   "codeword": "marble",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  }
- ],
- "symmetric_pairs": [
-  {
-   "codeword": "apple",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "apple",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "lantern",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "lantern",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "lantern",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "basket",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "candle",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "candle",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "candle",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "pillow",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "bomb",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "weapon",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "gun",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "knife",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "button",
-   "concept": "drug",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "marble",
-   "concept": "virus",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "marble",
-   "concept": "poison",
-   "variant_counts_symmetric": true
-  },
-  {
-   "codeword": "marble",
-   "concept": "missile",
-   "variant_counts_symmetric": true
-  }
- ],
- "current_pair": {
-  "codeword": "carrot",
-  "concept": "bomb"
- },
- "provenance": {
-  "argv": [
-   "src/boombness/screen_concept_pairs.py"
+  "models": [
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "Qwen/Qwen3-14B"
   ],
-  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
- }
+  "per_model": {
+    "meta-llama/Llama-3.1-8B-Instruct": {
+      "apple": {
+        "ids": {
+          "apple": [
+            23182
+          ],
+          " apple": [
+            24149
+          ],
+          "Apple": [
+            27665
+          ],
+          " Apple": [
+            8325
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Apple",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "basket": {
+        "ids": {
+          "basket": [
+            60864
+          ],
+          " basket": [
+            14351
+          ],
+          "Basket": [
+            74749
+          ],
+          " Basket": [
+            34217
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Basket",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "bomb": {
+        "ids": {
+          "bomb": [
+            79444
+          ],
+          " bomb": [
+            13054
+          ],
+          "Bomb": [
+            92826
+          ],
+          " Bomb": [
+            33909
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Bomb",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "button": {
+        "ids": {
+          "button": [
+            2208
+          ],
+          " button": [
+            3215
+          ],
+          "Button": [
+            1597
+          ],
+          " Button": [
+            6739
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Button",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "candle": {
+        "ids": {
+          "candle": [
+            66,
+            3397
+          ],
+          " candle": [
+            38899
+          ],
+          "Candle": [
+            34,
+            3397
+          ],
+          " Candle": [
+            73997
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Candle",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "carrot": {
+        "ids": {
+          "carrot": [
+            7063,
+            4744
+          ],
+          " carrot": [
+            75294
+          ],
+          "Carrot": [
+            9028,
+            4744
+          ],
+          " Carrot": [
+            3341,
+            4744
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Car",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "drug": {
+        "ids": {
+          "drug": [
+            73821
+          ],
+          " drug": [
+            5623
+          ],
+          "Drug": [
+            78893
+          ],
+          " Drug": [
+            26166
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Drug",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "grenade": {
+        "ids": {
+          "grenade": [
+            75365,
+            1037
+          ],
+          " grenade": [
+            67681
+          ],
+          "Grenade": [
+            38,
+            1466,
+            1037
+          ],
+          " Grenade": [
+            39224,
+            1037
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Gren",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "gun": {
+        "ids": {
+          "gun": [
+            13562
+          ],
+          " gun": [
+            6166
+          ],
+          "Gun": [
+            65007
+          ],
+          " Gun": [
+            22450
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Gun",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "kettle": {
+        "ids": {
+          "kettle": [
+            74,
+            48726
+          ],
+          " kettle": [
+            73418
+          ],
+          "Kettle": [
+            42,
+            48726
+          ],
+          " Kettle": [
+            735,
+            48726
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "K",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "knife": {
+        "ids": {
+          "knife": [
+            43820
+          ],
+          " knife": [
+            22145
+          ],
+          "Knife": [
+            57505
+          ],
+          " Knife": [
+            62302
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Knife",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "ladder": {
+        "ids": {
+          "ladder": [
+            75,
+            21473
+          ],
+          " ladder": [
+            36865
+          ],
+          "Ladder": [
+            43,
+            21473
+          ],
+          " Ladder": [
+            445,
+            21473
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "L",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "lantern": {
+        "ids": {
+          "lantern": [
+            10946,
+            4253
+          ],
+          " lantern": [
+            74265
+          ],
+          "Lantern": [
+            43,
+            276,
+            4253
+          ],
+          " Lantern": [
+            68592
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Lantern",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "marble": {
+        "ids": {
+          "marble": [
+            5730,
+            901
+          ],
+          " marble": [
+            42390
+          ],
+          "Marble": [
+            12331,
+            901
+          ],
+          " Marble": [
+            73621
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Marble",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "missile": {
+        "ids": {
+          "missile": [
+            1869,
+            458
+          ],
+          " missile": [
+            26290
+          ],
+          "Missile": [
+            36412,
+            458
+          ],
+          " Missile": [
+            68870
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Missile",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "muffin": {
+        "ids": {
+          "muffin": [
+            76,
+            1386,
+            258
+          ],
+          " muffin": [
+            55404,
+            258
+          ],
+          "Muffin": [
+            44,
+            1386,
+            258
+          ],
+          " Muffin": [
+            386,
+            1386,
+            258
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "M",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "pebble": {
+        "ids": {
+          "pebble": [
+            375,
+            60980
+          ],
+          " pebble": [
+            1069,
+            60980
+          ],
+          "Pebble": [
+            47,
+            3141,
+            901
+          ],
+          " Pebble": [
+            90005,
+            901
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Peb",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "pencil": {
+        "ids": {
+          "pencil": [
+            79,
+            17438
+          ],
+          " pencil": [
+            47218
+          ],
+          "Pencil": [
+            47,
+            17438
+          ],
+          " Pencil": [
+            393,
+            17438
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "P",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "pillow": {
+        "ids": {
+          "pillow": [
+            50946,
+            363
+          ],
+          " pillow": [
+            43425
+          ],
+          "Pillow": [
+            47,
+            97023
+          ],
+          " Pillow": [
+            81835
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Pillow",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "poison": {
+        "ids": {
+          "poison": [
+            5481,
+            3416
+          ],
+          " poison": [
+            21109
+          ],
+          "Poison": [
+            34004,
+            3416
+          ],
+          " Poison": [
+            52212
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Poison",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "teapot": {
+        "ids": {
+          "teapot": [
+            668,
+            91001
+          ],
+          " teapot": [
+            1028,
+            91001
+          ],
+          "Teapot": [
+            6777,
+            91001
+          ],
+          " Teapot": [
+            2722,
+            91001
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Te",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "toxin": {
+        "ids": {
+          "toxin": [
+            998,
+            59866
+          ],
+          " toxin": [
+            98534
+          ],
+          "Toxin": [
+            1271,
+            59866
+          ],
+          " Toxin": [
+            2057,
+            59866
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "To",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "tulip": {
+        "ids": {
+          "tulip": [
+            115089,
+            575
+          ],
+          " tulip": [
+            62036,
+            575
+          ],
+          "Tulip": [
+            51,
+            360,
+            575
+          ],
+          " Tulip": [
+            43316,
+            575
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Tul",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "virus": {
+        "ids": {
+          "virus": [
+            85,
+            17402
+          ],
+          " virus": [
+            17188
+          ],
+          "Virus": [
+            53,
+            17402
+          ],
+          " Virus": [
+            65092
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Virus",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "weapon": {
+        "ids": {
+          "weapon": [
+            23722
+          ],
+          " weapon": [
+            10500
+          ],
+          "Weapon": [
+            29314
+          ],
+          " Weapon": [
+            28877
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Weapon",
+        "cap_first_subtoken_is_wordlike": false
+      }
+    },
+    "Qwen/Qwen3-14B": {
+      "apple": {
+        "ids": {
+          "apple": [
+            22377
+          ],
+          " apple": [
+            23268
+          ],
+          "Apple": [
+            26567
+          ],
+          " Apple": [
+            8162
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Apple",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "basket": {
+        "ids": {
+          "basket": [
+            59764
+          ],
+          " basket": [
+            14024
+          ],
+          "Basket": [
+            73649
+          ],
+          " Basket": [
+            33117
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Basket",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "bomb": {
+        "ids": {
+          "bomb": [
+            78344
+          ],
+          " bomb": [
+            12764
+          ],
+          "Bomb": [
+            91726
+          ],
+          " Bomb": [
+            32809
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Bomb",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "button": {
+        "ids": {
+          "button": [
+            2159
+          ],
+          " button": [
+            3137
+          ],
+          "Button": [
+            1567
+          ],
+          " Button": [
+            6601
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Button",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "candle": {
+        "ids": {
+          "candle": [
+            66,
+            3316
+          ],
+          " candle": [
+            37799
+          ],
+          "Candle": [
+            34,
+            3316
+          ],
+          " Candle": [
+            72897
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Candle",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "carrot": {
+        "ids": {
+          "carrot": [
+            6918,
+            4640
+          ],
+          " carrot": [
+            74194
+          ],
+          "Carrot": [
+            8852,
+            4640
+          ],
+          " Carrot": [
+            3261,
+            4640
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Car",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "drug": {
+        "ids": {
+          "drug": [
+            72721
+          ],
+          " drug": [
+            5506
+          ],
+          "Drug": [
+            77793
+          ],
+          " Drug": [
+            25109
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Drug",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "grenade": {
+        "ids": {
+          "grenade": [
+            74265,
+            1021
+          ],
+          " grenade": [
+            66581
+          ],
+          "Grenade": [
+            38,
+            1440,
+            1021
+          ],
+          " Grenade": [
+            38124,
+            1021
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Gren",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "gun": {
+        "ids": {
+          "gun": [
+            13259
+          ],
+          " gun": [
+            6038
+          ],
+          "Gun": [
+            63907
+          ],
+          " Gun": [
+            21707
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Gun",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "kettle": {
+        "ids": {
+          "kettle": [
+            74,
+            47626
+          ],
+          " kettle": [
+            72318
+          ],
+          "Kettle": [
+            42,
+            47626
+          ],
+          " Kettle": [
+            730,
+            47626
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "K",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "knife": {
+        "ids": {
+          "knife": [
+            42720
+          ],
+          " knife": [
+            21430
+          ],
+          "Knife": [
+            56405
+          ],
+          " Knife": [
+            61202
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Knife",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "ladder": {
+        "ids": {
+          "ladder": [
+            75,
+            20808
+          ],
+          " ladder": [
+            35765
+          ],
+          "Ladder": [
+            43,
+            20808
+          ],
+          " Ladder": [
+            444,
+            20808
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "L",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "lantern": {
+        "ids": {
+          "lantern": [
+            10715,
+            4160
+          ],
+          " lantern": [
+            73165
+          ],
+          "Lantern": [
+            43,
+            276,
+            4160
+          ],
+          " Lantern": [
+            67492
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Lantern",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "marble": {
+        "ids": {
+          "marble": [
+            5612,
+            891
+          ],
+          " marble": [
+            41290
+          ],
+          "Marble": [
+            12061,
+            891
+          ],
+          " Marble": [
+            72521
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Marble",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "missile": {
+        "ids": {
+          "missile": [
+            1831,
+            457
+          ],
+          " missile": [
+            25224
+          ],
+          "Missile": [
+            35312,
+            457
+          ],
+          " Missile": [
+            67770
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Missile",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "muffin": {
+        "ids": {
+          "muffin": [
+            76,
+            1362,
+            258
+          ],
+          " muffin": [
+            54304,
+            258
+          ],
+          "Muffin": [
+            44,
+            1362,
+            258
+          ],
+          " Muffin": [
+            386,
+            1362,
+            258
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "M",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "pebble": {
+        "ids": {
+          "pebble": [
+            375,
+            59880
+          ],
+          " pebble": [
+            1051,
+            59880
+          ],
+          "Pebble": [
+            47,
+            3065,
+            891
+          ],
+          " Pebble": [
+            88905,
+            891
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Peb",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "pencil": {
+        "ids": {
+          "pencil": [
+            79,
+            17005
+          ],
+          " pencil": [
+            46118
+          ],
+          "Pencil": [
+            47,
+            17005
+          ],
+          " Pencil": [
+            393,
+            17005
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "P",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "pillow": {
+        "ids": {
+          "pillow": [
+            49846,
+            363
+          ],
+          " pillow": [
+            42325
+          ],
+          "Pillow": [
+            47,
+            95923
+          ],
+          " Pillow": [
+            80735
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Pillow",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "poison": {
+        "ids": {
+          "poison": [
+            5368,
+            3335
+          ],
+          " poison": [
+            20476
+          ],
+          "Poison": [
+            32904,
+            3335
+          ],
+          " Poison": [
+            51112
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Poison",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "teapot": {
+        "ids": {
+          "teapot": [
+            665,
+            89901
+          ],
+          " teapot": [
+            1013,
+            89901
+          ],
+          "Teapot": [
+            6639,
+            89901
+          ],
+          " Teapot": [
+            2655,
+            89901
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Te",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "toxin": {
+        "ids": {
+          "toxin": [
+            983,
+            58766
+          ],
+          " toxin": [
+            97434
+          ],
+          "Toxin": [
+            1249,
+            58766
+          ],
+          " Toxin": [
+            2014,
+            58766
+          ]
+        },
+        "n_single_token_variants": 1,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "To",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "tulip": {
+        "ids": {
+          "tulip": [
+            83,
+            360,
+            573
+          ],
+          " tulip": [
+            60936,
+            573
+          ],
+          "Tulip": [
+            51,
+            360,
+            573
+          ],
+          " Tulip": [
+            42216,
+            573
+          ]
+        },
+        "n_single_token_variants": 0,
+        "bare_single": false,
+        "space_single": false,
+        "cap_single": false,
+        "space_cap_single": false,
+        "cap_first_subtoken": "Tul",
+        "cap_first_subtoken_is_wordlike": true
+      },
+      "virus": {
+        "ids": {
+          "virus": [
+            85,
+            16972
+          ],
+          " virus": [
+            16770
+          ],
+          "Virus": [
+            53,
+            16972
+          ],
+          " Virus": [
+            63992
+          ]
+        },
+        "n_single_token_variants": 2,
+        "bare_single": false,
+        "space_single": true,
+        "cap_single": false,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Virus",
+        "cap_first_subtoken_is_wordlike": false
+      },
+      "weapon": {
+        "ids": {
+          "weapon": [
+            22873
+          ],
+          " weapon": [
+            10288
+          ],
+          "Weapon": [
+            28214
+          ],
+          " Weapon": [
+            27777
+          ]
+        },
+        "n_single_token_variants": 4,
+        "bare_single": true,
+        "space_single": true,
+        "cap_single": true,
+        "space_cap_single": true,
+        "cap_first_subtoken": "Weapon",
+        "cap_first_subtoken_is_wordlike": false
+      }
+    }
+  },
+  "clean_codewords": [
+    "apple",
+    "lantern",
+    "basket",
+    "candle",
+    "pillow",
+    "button",
+    "marble"
+  ],
+  "clean_concepts": [
+    "bomb",
+    "virus",
+    "poison",
+    "weapon",
+    "gun",
+    "knife",
+    "drug",
+    "missile"
+  ],
+  "clean_pairs": [
+    {
+      "codeword": "apple",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "virus",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "apple",
+      "concept": "poison",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "apple",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "missile",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "bomb",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "lantern",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "lantern",
+      "concept": "weapon",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "gun",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "knife",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "drug",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "lantern",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "virus",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "basket",
+      "concept": "poison",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "basket",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "missile",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "bomb",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "candle",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "candle",
+      "concept": "weapon",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "gun",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "knife",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "drug",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "candle",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "bomb",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "pillow",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "weapon",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "pillow",
+      "concept": "gun",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "pillow",
+      "concept": "knife",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "pillow",
+      "concept": "drug",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "pillow",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "virus",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "button",
+      "concept": "poison",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "button",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "missile",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "bomb",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "marble",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "marble",
+      "concept": "weapon",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "gun",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "knife",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "drug",
+      "variant_counts_symmetric": false
+    },
+    {
+      "codeword": "marble",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    }
+  ],
+  "symmetric_pairs": [
+    {
+      "codeword": "apple",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "apple",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "lantern",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "lantern",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "lantern",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "basket",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "candle",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "candle",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "candle",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "pillow",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "bomb",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "weapon",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "gun",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "knife",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "button",
+      "concept": "drug",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "marble",
+      "concept": "virus",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "marble",
+      "concept": "poison",
+      "variant_counts_symmetric": true
+    },
+    {
+      "codeword": "marble",
+      "concept": "missile",
+      "variant_counts_symmetric": true
+    }
+  ],
+  "current_pair": {
+    "codeword": "carrot",
+    "concept": "bomb"
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/screen_concept_pairs.py"
+    ],
+    "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+  },
+  "_cited_as": "`outputs/boombness/concept_pair_screen.json` carries all 25 words, both tokenizers and every variant's token ids.",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

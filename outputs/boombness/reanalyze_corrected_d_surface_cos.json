@@ -1619,5 +1619,12 @@
       "t_naive": 8.27304992181127,
       "t_cluster": 10.462148306030567
     }
+  },
+  "_cited_as": "Sensitivity table and all three rejection sets are in `outputs/boombness/reanalyze_corrected_d_surface_cos.json` under `holm_rejected_by_family`.) So the defensible claim is that the naive direction inflates ~2× where both agree; the mid-band attenuation is a semantic/comprehension-prompt effect that does not survive multiplicity correction.",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact",
+  "_provenance_added": {
+    "by": "label_artifacts.py",
+    "git_commit": "ffc42c26e56f1d8537f56c215dc9de4ef3cb05e2",
+    "note": "this artifact predates the provenance convention; the commit here is when the label was added, NOT when the artifact was produced"
   }
 }

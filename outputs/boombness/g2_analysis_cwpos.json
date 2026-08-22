@@ -1347,5 +1347,7 @@
       "n_boombness_cols": 1,
       "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     }
-  }
+  },
+  "_cited_as": "$PY src/boombness/analyze_g2.py --judge <JUDGE> --extract <EXTRACT_CW> --score <GENS> \\ --refusalness <REFUSAL_CW> --extract-position codeword_last --cluster-by domain \\ --out outputs/boombness/g2_analysis_cwpos.json $PY src/boombness/analyze_position.py --judge <JUDGE> \\ --extract-codeword <EXTRACT_CW> --extract-last <EXTRACT_LAST> \\ --refusalness-codeword <REFUSAL_CW> --refusalness-last <REFUSAL",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

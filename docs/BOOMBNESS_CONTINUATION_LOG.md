@@ -7680,3 +7680,36 @@ That takes the suite to six, and it is the first one that guards the *plan* rath
 | 416 | 2026-08-22 | wrote `plan_coverage_check.py` | "fully addressed" is now checkable, not asserted |
 | 417 | 2026-08-22 | ran it | **14/14 research sections cited**; 3 uncited are setup, excluded by name |
 | 418 | 2026-08-22 | added it to `check_all` and tested it | six guards; hiding §11 → exit 1 |
+
+## Plan §20's "no unlabeled outputs" — the half I had not checked
+
+Tick 2026-08-22. Audit #12 launched, briefed differently from the previous eleven: not *"find a bug in
+the newest script"* but **"would a skeptical external reviewer accept the surviving claim set?"** —
+including whether the retraction record is honest or defensive, and whether anything has been narrowed
+repeatedly until it became unfalsifiable rather than being dropped. Eleven audits have each found real
+defects in specific mechanisms; the question that has never been asked is whether the whole thing holds
+together for someone with no stake in it.
+
+While it runs I closed the other half of plan §20 item 6. I had verified *"no undocumented scripts"*
+(126/126 carry a substantive module docstring) and **never checked "no unlabeled outputs"**.
+
+**26 of the 55 artifacts cited in the deliverables carried no statement of what question they answer,
+and/or no provenance block.** A reader following a citation landed on a wall of numbers with no way to
+tell what it was for.
+
+**The fix is constrained in a way that matters.** `label_artifacts.py` **adds keys prefixed with `_`
+and never touches an existing key** — adding a key cannot alter a number, rewriting one could. And the
+label is **not invented**: it is the report's own citing sentence, so each artifact carries the claim
+it is actually used for rather than a description written afterwards. Where a citation is
+uninformative, that shows up in the label, which is itself worth knowing.
+
+**Verified rather than asserted:** a sha256 over every non-`_` key across all 102 committed artifacts
+is **identical before and after** (`60952d448a43b72c`). Twenty-five labelled, one skipped for not being
+a JSON object.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 419 | 2026-08-22 | launched **audit #12** as an external reviewer, not a bug hunt | asks whether the claim set holds for someone with no stake |
+| 420 | 2026-08-22 | checked plan §20's "no unlabeled outputs" | **26 of 55 cited artifacts** unlabelled or unprovenanced |
+| 421 | 2026-08-22 | labelled them with the report's own citing sentence | never an invented description |
+| 422 | 2026-08-22 | proved no published value moved | checksum over non-`_` keys **identical** |

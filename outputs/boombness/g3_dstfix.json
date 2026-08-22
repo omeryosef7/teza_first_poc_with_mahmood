@@ -83,5 +83,10 @@
       "identified": false,
       "note": "layer spread and edge count are perfectly confounded; a depth-redundancy reading is NOT identified without an edge-count-matched arm (subsampled_all_layers_demo) or a layer-matched dense arm (dense_two_layer)."
     }
+  },
+  "_provenance_added": {
+    "by": "label_artifacts.py",
+    "git_commit": "ffc42c26e56f1d8537f56c215dc9de4ef3cb05e2",
+    "note": "this artifact predates the provenance convention; the commit here is when the label was added, NOT when the artifact was produced"
   }
 }

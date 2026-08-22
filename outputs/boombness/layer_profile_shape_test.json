@@ -68,5 +68,7 @@
       "outputs/boombness/layer_profile_shape_test.json"
     ],
     "git_commit": "1bb77f2081b462a994329dd9a5a2241d97c3ccdd"
-  }
+  },
+  "_cited_as": "A monotone rise-and-fall across ordered layers with a hard edge is a different kind of evidence — and that is now **tested rather than asserted** (`layer_profile_test.py`, `outputs/boombness/layer_profile_shape_test.json`).",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

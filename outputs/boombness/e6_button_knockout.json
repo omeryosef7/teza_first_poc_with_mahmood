@@ -2,7 +2,7 @@
   "plan_section": "14 / E6",
   "codeword": "button",
   "concept": "bomb",
-  "directions_fitted_on": "the CARROT bank \u2014 E6 tests transfer, not refitting",
+  "directions_fitted_on": "the CARROT bank — E6 tests transfer, not refitting",
   "runs": {
     "llama/first_codeword": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_firstcw_20260820_175656_3768488",
     "llama/first_neighbor": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_firstnbr_20260820_175806_2796999",
@@ -412,5 +412,7 @@
       "outputs/boombness/e6_button_knockout.json"
     ],
     "git_commit": "defec9746b0b520a90a0560586042a56c6980dea"
-  }
+  },
+  "_cited_as": "`e6_button_knockout.json` | | **E7** | matched-length cross-model replication | ✅ **DONE** — Qwen3 at 512; the channels are *reversed* between models (§7c) | | **E8** | decide plan §4.1's designed variance | ✅ **DONE** — documented and excluded (N12), and R-18 showed it had contaminated G2 | | **E9** | the §5.2 alpha sweep at α=0.25 | ✅ **DONE** — +103% harm_ctx, +145% benign_ctx; §6b | | **E10** ",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

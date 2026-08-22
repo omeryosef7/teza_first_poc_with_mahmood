@@ -28,7 +28,7 @@
     "n_compared": 495,
     "n_byte_identical": 495,
     "n_different": 0,
-    "verdict": "JUDGE noise \u2014 generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
+    "verdict": "JUDGE noise — generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
   },
   "provenance": {
     "argv": [
@@ -47,5 +47,7 @@
       "outputs/boombness/judge_retest_advbench.json"
     ],
     "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
-  }
+  },
+  "_cited_as": "**The floor is population-specific, and on the headline's own population it is ~10× smaller** (measured 2026-08-21, `outputs/boombness/judge_retest_advbench.json`).",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

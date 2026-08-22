@@ -58,7 +58,7 @@
     "n_compared": 660,
     "n_byte_identical": 660,
     "n_different": 0,
-    "verdict": "JUDGE noise \u2014 generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
+    "verdict": "JUDGE noise — generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
   },
   "provenance": {
     "argv": [
@@ -77,5 +77,7 @@
       "outputs/boombness/judge_retest_floor.json"
     ],
     "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
-  }
+  },
+  "_cited_as": "Comparing them on identical prompts (`judge_retest.py`, `outputs/boombness/judge_retest_floor.json`) measures the run-to-run floor under every ASR delta in this document, which nothing previously disclosed:",
+  "_label_note": "added by label_artifacts.py: this is the REPORT'S OWN citing sentence, not a description written after the fact"
 }

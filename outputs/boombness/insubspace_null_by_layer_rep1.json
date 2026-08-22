@@ -1,0 +1,141 @@
+{
+  "question": "Does removing d_surface beat a null of OTHER directions in the same rank-3 cell-mean subspace, at each layer where the effect was claimed to replicate?",
+  "why": "R-23: the sprint's significance came from a 4096-d random band (sd 0.0026). The in-subspace null is ~5x wider and is the null that matches the intervention.",
+  "judge_replicate_used": "1",
+  "judge_replicate_policy": "one pass per angle; pooling near-duplicate replicates would shrink the null's sd in the direction that flatters the headline",
+  "inference_caveat": "The null has n=4, so sd is estimated from four points: the ratio is a t with df=3, not a z, and the assumption-free rank test cannot fall below 1/5=0.20 with four controls. More angle draws are the fix; quoting the z alone would dress a 4-point null as a precise one.",
+  "threshold": 0.5,
+  "baseline_run": "abg_base_20260819_011714_1480836",
+  "layers": {
+    "L6": {
+      "arm_run": "abgL6_B_20260819_081115_1663775",
+      "arm": {
+        "n": 495,
+        "delta": 0.01818181818181818,
+        "net_flips": 9
+      },
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": -0.008097165991902834,
+          "angle1": -0.004048582995951417,
+          "angle2": 0.008097165991902834,
+          "angle3": 0.0
+        },
+        "missing": [],
+        "mean": -0.0010121457489878543,
+        "sd": 0.006914271771902563,
+        "n": 4
+      },
+      "z_vs_in_subspace_null": 2.7759921165963273,
+      "clears_hard_null_z2": true,
+      "p_t_df3_one_sided": 0.06922154837974459,
+      "rank_p_one_sided": 0.2,
+      "rank_p_floor": 0.2,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.00202020202020202,
+        "net_flips": 1
+      }
+    },
+    "L8": {
+      "arm_run": "abg_B_20260819_013447_1506491",
+      "arm": {
+        "n": 495,
+        "delta": 0.04242424242424243,
+        "net_flips": 21
+      },
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.00202020202020202,
+          "angle1": 0.01818181818181818,
+          "angle2": -0.00404040404040404,
+          "angle3": -0.012121212121212121
+        },
+        "missing": [],
+        "mean": 0.0010101010101010099,
+        "sd": 0.012830005981991683,
+        "n": 4
+      },
+      "z_vs_in_subspace_null": 3.22791286865109,
+      "clears_hard_null_z2": true,
+      "p_t_df3_one_sided": 0.04829244190243095,
+      "rank_p_one_sided": 0.2,
+      "rank_p_floor": 0.2,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": -0.00202020202020202,
+        "net_flips": -1
+      }
+    },
+    "L10": {
+      "arm_run": "abgL10_B_20260819_083136_1669413",
+      "arm": {
+        "n": 495,
+        "delta": 0.03232323232323232,
+        "net_flips": 16
+      },
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.0,
+          "angle1": -0.008097165991902834,
+          "angle2": -0.008097165991902834,
+          "angle3": -0.004048582995951417
+        },
+        "missing": [],
+        "mean": -0.005060728744939271,
+        "sd": 0.0038762231083252557,
+        "n": 4
+      },
+      "z_vs_in_subspace_null": 9.64442964799401,
+      "clears_hard_null_z2": true,
+      "p_t_df3_one_sided": 0.00236637066098205,
+      "rank_p_one_sided": 0.2,
+      "rank_p_floor": 0.2,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.00202020202020202,
+        "net_flips": 1
+      }
+    },
+    "L12": {
+      "arm_run": "abgL12_B_20260819_072331_1641327",
+      "arm": {
+        "n": 495,
+        "delta": 0.03636363636363636,
+        "net_flips": 18
+      },
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.008097165991902834,
+          "angle1": -0.008097165991902834,
+          "angle2": -0.004048582995951417,
+          "angle3": 0.008097165991902834
+        },
+        "missing": [],
+        "mean": 0.0010121457489878543,
+        "sd": 0.008346367663193644,
+        "n": 4
+      },
+      "z_vs_in_subspace_null": 4.235553960861778,
+      "clears_hard_null_z2": true,
+      "p_t_df3_one_sided": 0.024087821035007513,
+      "rank_p_one_sided": 0.2,
+      "rank_p_floor": 0.2,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.0,
+        "net_flips": 0
+      }
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/insubspace_null_test.py",
+      "--replicate",
+      "1",
+      "--out",
+      "outputs/boombness/insubspace_null_by_layer_rep1.json"
+    ],
+    "git_commit": "27bd4c120e23e5dd0cc4a096e559e052627f932a"
+  }
+}
