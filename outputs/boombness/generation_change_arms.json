@@ -1,0 +1,65 @@
+{
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_base_20260818_185458_3888976",
+  "n_baseline": 495,
+  "arms": {
+    "L8_d_surface": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_B_20260818_185458_3888974",
+      "n_common": 495,
+      "n_changed": 189,
+      "frac_changed": 0.38181818181818183
+    },
+    "L18_refusalness": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_C_20260818_190458_3890686",
+      "n_common": 495,
+      "n_changed": 440,
+      "frac_changed": 0.8888888888888888
+    },
+    "L8+L18_both": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_D_20260818_190458_3890685",
+      "n_common": 495,
+      "n_changed": 453,
+      "frac_changed": 0.9151515151515152
+    },
+    "L8_random_ctrl": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_Bctrl_20260819_015525_1619046",
+      "n_common": 495,
+      "n_changed": 109,
+      "frac_changed": 0.2202020202020202
+    },
+    "L18_random_ctrl": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_Cctrl_20260819_020527_2227659",
+      "n_common": 495,
+      "n_changed": 113,
+      "frac_changed": 0.22828282828282828
+    },
+    "random_double_ctrl": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_Dctrl_20260819_020525_1107800",
+      "n_common": 495,
+      "n_changed": 170,
+      "frac_changed": 0.3434343434343434
+    }
+  },
+  "note": "a changed generation is a byte difference against the baseline completion for the same prompt_id; generation is deterministic here (verified 660/660 identical across two runs of the same config), so a difference is the intervention, not noise",
+  "provenance": {
+    "argv": [
+      "src/boombness/generation_change.py",
+      "--baseline",
+      "outputs/boombness/score_behavior/ab_base_20260818*",
+      "--arm",
+      "L8_d_surface:outputs/boombness/score_behavior/ab_B_20260818*",
+      "--arm",
+      "L18_refusalness:outputs/boombness/score_behavior/ab_C_20260818*",
+      "--arm",
+      "L8+L18_both:outputs/boombness/score_behavior/ab_D_20260818*",
+      "--arm",
+      "L8_random_ctrl:outputs/boombness/score_behavior/ab_Bctrl_2026*",
+      "--arm",
+      "L18_random_ctrl:outputs/boombness/score_behavior/ab_Cctrl_2026*",
+      "--arm",
+      "random_double_ctrl:outputs/boombness/score_behavior/ab_Dctrl_2026*",
+      "--out",
+      "outputs/boombness/generation_change_arms.json"
+    ],
+    "git_commit": "39b4b8e3377c86903ad502fbe98f5f5a9c021abb"
+  }
+}

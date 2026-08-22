@@ -7171,3 +7171,47 @@ guard mattering more than the individual fixes.
 | 361 | 2026-08-22 | struck §14-B's retracted band comparator | replaced with the in-subspace 1.80×–3.60× and exact p |
 | 362 | 2026-08-22 | fixed 99.55%→99.05%, the p-rule example, m=16, ×1.65/×1.18, 4.9–6.8× | **four of the wrong numbers were mine from this session** |
 | 363 | 2026-08-22 | struck the withdrawn claims in the short update's top box, §7c and §18 | 7 further re-assertions removed |
+
+## Making the bottom line regenerable, and repairing the "authoritative" table
+
+Tick 2026-08-22. Cleared audit #10's two most substantive remaining findings.
+
+### The dose caveat in §0a's bottom line had no artifact behind it
+
+§0a ends its bottom line with *"that cross-channel comparison is **not dose-matched**"*, supported by
+**38.2% vs 88.9%** of generations changed. Those numbers — and the 91.5% for arm D — existed **only as
+prose inside a JSON string**. `generation_change.json`, the one committed artifact that computes
+`frac_changed`, held three arms and **neither C nor D**. So the sprint's own standing rule — *every
+number must be regenerable by a committed script from a committed artifact* — was violated on the
+**bottom line**.
+
+Ran the committed script over the missing arms. It reproduces all three exactly:
+
+| arm | changed | | arm | changed |
+|---|---|---|---|---|
+| `d_surface` L8 | **38.2%** | | random @L8 | 22.0% |
+| refusalness L18 | **88.9%** | | random @L18 | 22.8% |
+| both | **91.5%** | | random double | 34.3% |
+
+The numbers were right; they were just unbacked. And the artifact supplies **context I did not have
+before**: the random controls change **22–34%**, so arm B's 38.2% is only modestly above a random
+projection's footprint while arm C's 88.9% is far above it. That sharpens the dose caveat rather than
+softening it, and it is now in the report.
+
+### The retraction registry — the table the header calls "authoritative" — did not render
+
+A **4-column header** over rows carrying **3 cells**: 22 of 24. So `status` and `why` merged and the
+`why` column was empty for every row a reader would check. Fixed by making the header match the rows
+(3 columns) and merging the two 4-cell outliers, rather than inventing a fourth cell for 22 rows.
+
+Two further malformed rows, both mine from this session: **§14-D lost its trailing pipe** (2 cells vs
+3), and **R-27 carried an unescaped `|cos|`** (5 cells). Whole-report scan now shows **zero** table
+mismatches — the first time I have checked that, and it found problems in the one table the document
+declares authoritative.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 364 | 2026-08-22 | ran `generation_change.py` over arms C, D and all three controls | 38.2 / 88.9 / 91.5% reproduce; **now regenerable** |
+| 365 | 2026-08-22 | added the control footprints to the report | randoms change **22–34%** — context the caveat lacked |
+| 366 | 2026-08-22 | fixed the registry table's 4-vs-3 column mismatch | 22 of 24 rows had rendered with an empty `why` |
+| 367 | 2026-08-22 | repaired §14-D's missing pipe and R-27's `\|cos\|` | whole-report table scan: **0 mismatches** |
