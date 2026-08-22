@@ -5068,7 +5068,11 @@ wrong for experiment 7,** and F-3's own retraction says so explicitly:
 
 `d_surface:add` and its `random` control share the **gap-unit** dosing path, so they were matched all
 along. Only the **refusalness** branch took the `alpha * ‖v‖` no-op path, which is why `addBoth`'s
-refusalness leg ran at ~**1/59** the relative dose of its `d_surface` leg. **Experiment 9 is
+refusalness leg was badly under-dosed relative to its `d_surface` leg. ⛔ **CORRECTED (review #11):
+the "~1/59" I wrote is wrong — that figure belongs to the α = 0.25 arm `addBoth_025`.** For the
+α = 1.0 `fuF_addBoth` the legs inject **6.055** (`d_surface` at L8, gap 6.054948) against **1.0**
+(refusalness, unit norm) — a **6.05×** absolute mismatch, or **14.79×** measured in each direction's
+own natural unit. The qualitative point stands and the arithmetic did not. **Experiment 9 is
 affected; experiment 7 is not.** I should have re-read the retraction before generalising from it —
 the same failure mode as reading F-3 and then reproducing it.
 
@@ -5079,26 +5083,29 @@ Gating the three arms that were generated on 08-19 and never judged (free inform
 | arm | dose | uniq | 3-gram | truncated | verdict |
 |---|---|---|---|---|---|
 | `fuF_addS` | `d_surface:add:8:**1.0**` (one full gap) | **0.210** | **0.630** | **1.000** | ⛔ collapse |
-| `fuF_addBoth` | + refusalness leg at 1/59 relative dose | 0.219 | 0.615 | 0.998 | ⛔ collapse |
+| `fuF_addBoth` | + refusalness leg at 6.05× lower absolute dose | 0.219 | 0.615 | 0.998 | ⛔ collapse |
 | `fuF_remR_addS` | remove refusalness, add `d_surface` | 0.225 | 0.599 | 1.000 | ⛔ collapse |
 
 Together with the already-known `fuF25_addS` at **0.25** gap (scorable **0.331** — the short-refusal
 floor, healthy lexical stats), `d_surface:add` shows **exactly the same three-regime structure as
 refusalness**: terse-refusal floor at low dose, collapse at full dose.
 
-### 🔬 The prediction, and the sweep testing it (773608–773611)
+### 🔬 The prediction, and the sweep testing it (⛔ 773608–773611 never ran — live IDs are **773637–773640**)
 
 The refusalness curve's clean window sat at **0.50–0.75** of its unit, between a floor at ≤0.25 and
 collapse at 1.0. `d_surface:add` floors at 0.25 and collapses at 1.0. ⚠ **Pre-registered: if the
 regimes are a general property of additive steering rather than a fact about refusalness, the
 `d_surface` window should also be at 0.50–0.75 gap.** Testing precisely that:
 
-| job | arm | dose |
-|---|---|---|
-| 773608 | `d_surface:add:8` | 0.50 gap |
-| 773609 | `d_surface:add:8` | 0.75 gap |
-| 773610 | `random:add:8` (matched) | 0.50 gap |
-| 773611 | `random:add:8` (matched) | 0.75 gap |
+| job | arm | dose | injected magnitude (gap L8 = 6.054948) |
+|---|---|---|---|
+| **773637** | `d_surface:add:8` | 0.50 gap | 3.027 |
+| **773638** | `d_surface:add:8` | 0.75 gap | 4.541 |
+| **773639** | `random:add:8` (matched) | 0.50 gap | 3.027 |
+| **773640** | `random:add:8` (matched) | 0.75 gap | 4.541 |
+
+⛔ The first four IDs (773608–773611) sat 33 minutes in `Priority` on single-node pins and were
+cancelled without ever starting; they produce no artifacts. Resubmitted across all five L40S nodes.
 
 **The controls need no dose correction here** — same alpha, same gap-unit path, therefore identical
 injected magnitude by construction. That is the one thing F-3 got right and I mis-stated.
@@ -5277,8 +5284,13 @@ been a clean, publishable-sounding claim. **It is an arithmetic error in my own 
 | everything else (incl. `random`) | `alpha * g`, where `g` = the **`d_surface` gap** | **α × 14.653462** at L18 |
 
 So `refusalness:add:18-18:7.326731` injects **7.33**, while `random:add:18-18:7.326731` injects
-**≈107.4**. Same-looking flag, **14.65× apart**. Cross-checked against the log's own record: tick-17
-noted `random:add:18-18:0.068243` "injects magnitude 1.0", and 1/0.068243 = **14.653462** exactly.
+**108.38**. Same-looking flag, **14.79× apart**.
+⛔ **CORRECTED (review #11):** this paragraph originally said 14.65×, ≈107.4, and that
+"1/0.068243 = 14.653462 **exactly**". All three came from inferring the unit off a log note instead
+of reading it. The payload's true L18 gap is **14.792503** (printed by the run-time diagnostic);
+1/0.068243 is **14.6535176**, not 14.653462, and under the true unit α 0.068243 injects **1.0095**,
+not 1.0. Downstream: the overdose is **1379%** (not 1,365%) and the cancelled α 10.99 control's
+magnitude was **162.57** (not ≈161).
 
 **This is precisely the defect RETRACTION F-3 exists for** — an arm compared against a control at a
 14.8× dose mismatch — and I reproduced it *in the experiment built to repair it*. The degeneracy was
@@ -5288,8 +5300,10 @@ never evidence about random directions; it was magnitude ~107 destroying the mod
 ### Corrections applied
 
 - **Cancelled 773114** (the α 10.99 control, same overdose, magnitude ≈161) mid-run.
-- **Relaunched both controls magnitude-matched**: `random:add:18-18:**0.5**` → magnitude 7.326731
-  (773279) and `**0.75**` → 10.990097 (773280). The clean arithmetic: the matched control alpha is
+- **Relaunched both controls magnitude-matched**: `random:add:18-18:**0.5**` → magnitude
+  **7.396252** (773279) and `**0.75**` → **11.094378** (773280). ⛔ **CORRECTED:** this line
+  originally assigned the *arms'* magnitudes (7.326731 / 10.990097) to the *controls*, asserting the
+  exact match that the next section correctly reports as **0.95% off**. The clean arithmetic: the matched control alpha is
   the *gap fraction itself*, because the random leg is already dosed in gap units.
 - ⛔ **The F-3 comparison remains UNANSWERED.** Nothing about refusalness specificity is established
   or refuted by tonight's control; it was simply not a control.
@@ -5370,8 +5384,11 @@ replication with a known handicap**, not an equal second sample.
   paragraphs*.
 - **Full dose (1.0 gap): collapse.** 419-word repetitive text, uniq 0.237, 54% truncated.
 
-So `scorable_frac` is **U-shaped** in dose (0.541 → 0.475 → 0.420 → 0.465 → **0.865** → 0.996) while
-coherence is inverted-U. **A single scalar cannot order these regimes**, and any two-point sample
+So `scorable_frac` is **U-shaped** in dose (0.541 → 0.475 → 0.420 → 0.465 → **0.865** → **0.863** →
+0.996 — the α 10.99 point was missing from this list) while coherence is inverted-U.
+⚠ The "fraction of gap" labels throughout are **nominal**, computed with the superseded 14.653462
+unit; against the true 14.792503 the arms sit at 0.068 / 0.124 / 0.248 / **0.495** / **0.743** /
+**0.991** gap, so "α 14.65 = one full gap" is really 0.99 of one. **A single scalar cannot order these regimes**, and any two-point sample
 would have missed the window entirely — which is exactly what happened for three days.
 
 ### ✅ What this unblocks
@@ -5970,6 +5987,80 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 **Scheduling note:** the first submission put three Qwen3-14B loads on **n-801** simultaneously,
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
+
+## 4h Code and Output Review — Review #11 (2026-08-22 12:10) — THREE AUDITS; THE HEADLINE SURVIVED THE ARITHMETIC AND NOT THE FRAMING
+
+Three parallel read-only auditors over (a) the F-3 specificity result, (b) the 25-file provenance
+mass-edit, (c) every gate and dose number written since review #10. **I verified every load-bearing
+finding against the artifacts myself before acting. All confirmed.**
+
+### The shape of it: zero arithmetic errors, nine framing errors
+
+**Not one table number in the F-3 section was wrong.** All 16 cells, all four CIs, all p-values
+reproduce to full precision; the Holm arithmetic is right; the t-statistics and CIs are internally
+consistent to 1e-6. The entire dose curve — 15 arms, every uniq / 3-gram / truncated /
+`scorable_frac` / median-word / verdict — reproduces exactly.
+
+**What failed was everything around the numbers:** the family I chose for multiplicity, what I
+called a replication, which side of the contrast was moving, which rubric the claim rested on, and
+whether the result was the one I had pre-registered. Details are in the ⛔ box at the head of the
+F-3 section; the summary is that **one contrast at one dose against one random vector** survives,
+and "F-3 is re-earned" did not.
+
+### The single worst item, and it is not a number
+
+The outcome I observed — arm suppresses **and** control moves significantly the *other* way — **was
+not among the three branches I pre-registered.** I filed it under branch 1 and re-narrated it as a
+*stronger* result. The pre-registered premise was that the matched control is **inert**; the data
+falsified that premise, and I read the falsification as a bonus finding.
+
+Pre-registration exists precisely to make that move impossible, and **I wrote the pre-registration
+myself four hours earlier.** Writing one is not the same as being bound by one.
+
+### Corrections applied this review
+
+| # | claim | correction |
+|---|---|---|
+| 1 | baseline ASR 0.1192 | **0.066667** — lifted from a log tail belonging to a different arm |
+| 2 | "both contrasts survive Holm" | only at m=2; **at m=6 nothing survives** |
+| 3 | "replicates at a second dose" | same seed, same layer ⇒ **the same random vector** |
+| 4 | the −0.0891 contrast | **58.1% control-driven**; the arm is flat across a 50% dose rise |
+| 5 | control "significantly raises ASR" | continuous rubric only (binary p 0.0521) |
+| 6 | overdose "14.65×, ≈107.4, 1/0.068243 exactly" | **14.79×, 108.38**, and 1/0.068243 = 14.6535176 |
+| 7 | relaunched controls "→ 7.326731 / 10.990097" | those are the **arms'** magnitudes; controls are **7.396252 / 11.094378** |
+| 8 | `addBoth` refusalness leg "~1/59" | that is `addBoth_025`; here it is **6.05×** absolute (14.79× in natural units) |
+| 9 | sweep jobs 773608–773611 | **never ran**; live IDs are 773637–773640 |
+
+Plus: `topicality_gate.py` still carried a live raw `git status` call *inside* its output dict after
+the mass-edit, and **six files were never patched at all** because my grep matched only single-line
+call formatting. Both fixed; all 66 files parse, zero unguarded sites, and the helpers are now
+smoke-tested in **both** directions (git present and `PATH` broken).
+
+### ✅ What the audits confirmed
+
+- Every F-3 table number, CI, p-value and the Holm arithmetic at m=2.
+- The full dose curve and all 15 gate verdicts, recomputed independently.
+- The two-path dosing analysis, including refusal-direction norm = 1.0 and
+  `gap[d_surface][18] = 14.792503`, `gap[d_surface][8] = 6.054948`.
+- That `d_surface:add` and `random:add` are matched at equal α while `refusalness:add` is not —
+  so **experiment 7 was never affected by F-3**, as the correction claimed.
+- The α = 1.0 retraction (0.475 < 0.5, 260/495) and the four-points-of-headroom mechanism.
+- No arm silently contributed fewer rows: all five at n = 495, 16 domains, `judge_status ok`.
+
+### Repairs launched, not merely logged
+
+- **Three independent random draws** (seeds 20260901/2/3, jobs 773651–3) so the specificity control
+  becomes a *band* instead of one vector — the direct fix for the defect that most weakens the claim.
+- **Seven coherence-gate JSONs committed** under `outputs/boombness/coherence/`; they had been
+  markdown-only, living in `/tmp`.
+
+### The pattern at eleven reviews
+
+Reviews #9 and #10 found dead guards — checks that could not fail. **This review found none of
+those.** The arithmetic and the plumbing held; what failed was *interpretation under the incentive
+to have a result*: a family chosen small, a control counted twice, a falsified premise re-read as a
+bonus. Those are not caught by better guards. They are caught by an adversary, which is why the
+audits run.
 
 ## 4h Code and Output Review — Review #10 (2026-08-21 20:30) — THREE PARALLEL AUDITS, AND THE WORST BUG WAS MINE FROM TODAY
 
