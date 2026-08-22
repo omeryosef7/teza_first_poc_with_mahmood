@@ -5056,6 +5056,71 @@ reported.
 
 
 
+## ✅⚠ THE LENS THAT KILLED F-3, APPLIED TO THE SPRINT'S FLAGSHIP RESULT — it mostly holds, and it flags L6
+
+The right response to "one control draw certified nothing" is not to stop at the claim it killed.
+**The `d_surface` project-out result — the sprint's strongest behavioural evidence — rests on the
+same kind of comparison**, so I ran the same lens over it using the angle-sweep controls already on
+disk. No new compute.
+
+| depth | arm Δ | n controls | band range | band sd | **arm z** | ctl ≥ arm | nearest control, as % of arm |
+|---|---|---|---|---|---|---|---|
+| **L6** | +0.0157 | 4 | [−0.0022, +0.0118] | 0.0050 | **+2.19** | 0/4 | ⚠ **75.0%** |
+| **L8** | +0.0278 | 4 | [−0.0129, +0.0094] | 0.0086 | **+3.54** | 0/4 | 34.0% |
+| **L10** | +0.0211 | 4 | [−0.0123, −0.0025] | 0.0039 | **+7.64** | 0/4 | **−11.8%** |
+| **L12** | +0.0316 | 8 | [−0.0107, +0.0120] | 0.0064 | **+4.71** | 0/8 | 38.1% |
+| *F-3 add (for contrast)* | −0.0276 | 4 | [−0.0219, +0.0157] | 0.0149 | −2.08 | 0/4 | ⛔ **79.0%** |
+
+### ✅ L8, L10 and L12 survive the lens that killed F-3
+
+The statistic that mattered for F-3 was not the p-value but **how close the nearest control came**:
+79% of the arm. At L8, L10 and L12 the nearest control reaches **34%, −11.8% and 38%** — at L10
+*every* control moves the opposite way. Those arms sit 3.5–7.6 band-sd outside their controls
+against F-3's 2.08. **The flagship result is not the F-3 situation**, and now that has been checked
+rather than assumed.
+
+### ⚠ L6 has exactly the F-3 profile, and independent evidence already said so
+
+L6's nearest control reaches **75% of the arm** at z = +2.19 — the same shape as F-3's 79% at 2.08.
+⚠ **This converges with what the angle sweep found independently**: at L6 the arm beat only **2 of 4**
+orthogonal directions, worst case +0.0039 at **p 0.242**, and the sprint already recorded L6
+direction-specificity as *"not established"*. **Two unrelated analyses now single out the same
+depth**, which is worth more than either alone.
+
+⛔ So the profile's honest reading is **L8/L10/L12 established, L6 not** — and the citable band is
+three depths, not four. The four-depth Holm table (adjusted 0.0347 / 0.0276 / 0.0347 / 0.0136)
+remains arithmetically correct and should be read with L6 marked.
+
+### ⚠ The rank statistic is design-limited everywhere, including here
+
+With 4 controls the minimum achievable rank p is 1/5 = 0.20; with 8 it is 1/9 = 0.111. **No depth
+can produce a significant rank test under this design**, so the z / nearest-control figures above are
+reported as **descriptive separation, not as significance**. The angle-sweep controls are also a
+*systematic cover* of the 2-D complement rather than random draws, so exchangeability is not strictly
+the right null for them — which is an argument for reading them as coverage, and another reason not
+to dress the rank number up as a p-value.
+
+## ⏸ DECISION: NOT running the 20-draw F-3 band — reasoning recorded, and I want your call
+
+Plan-wise this is a stage I am choosing **not** to run, so per the standing instruction here is why:
+
+1. **The existing data predicts it fails.** One draw in four already reached 79% of the arm. If that
+   rate is representative, ~5 of 20 draws would land near the arm and the arm would not be the
+   extreme of 21.
+2. **The design cannot pay off cheaply.** A rank test needs the arm to be the single most extreme of
+   n+1 to reach p < 0.05, i.e. **n ≥ 20 draws and a clean sweep** — about 20 GPU jobs and ~10,000
+   judge calls for a result the current data suggests will be null.
+3. **The add-track is already closed as negative on other grounds** — `d_surface:add` has no coherent
+   dose at all, and refusalness-add suppresses but is not draw-specific. A tighter null on a closed
+   track is low value.
+4. **The same compute is worth more on the ablation track**, where the arms are 3.5–7.6 band-sd out
+   and a larger control band could turn descriptive separation into a real test — including a
+   properly powered check on **L6**, the one depth both analyses flag.
+
+⚠ **This is a judgement call about spending your compute, not a scientific conclusion**, so I am
+flagging rather than deciding it: if you would rather have the definitive F-3 null on record, say so
+and I will run the 20 draws.
+
 ## ⛔⛔⛔ F-3 SPECIFICITY IS **NOT** ESTABLISHED — the control band settles it, and against the claim
 
 **Artifact:** `outputs/boombness_followup/f3_control_band.json` (job 773876). Arm and **four**
