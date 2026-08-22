@@ -6676,6 +6676,70 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ⛔⛔ REVIEW #13 — THE SE WAS WRONG, AND CORRECTING IT REVERSES MY HEADLINE (in the result's favour)
+
+An audit of the just-updated citable section found three verdict-changing defects. I verified the
+two decisive ones myself. **Both confirmed.**
+
+### ⛔ 1. I used the wrong SE — and silently switched estimators while doing it
+
+I computed `t = (arm − strongest control) / sqrt(arm_se² + ctl_se²)`. That treats the two cells as
+independent. **They are not:** both are `(cell − baseline)` against **the same baseline rows**, so
+quadrature double-counts the baseline's judge noise and throws away the positive covariance the
+shared baseline induces. The repo already owns the right estimator and its docstring says so
+verbatim — `paired_diff`: *"the baseline term cancels algebraically … this contrast is IMMUNE to
+baseline judge noise."*
+
+⛔ **Worse: the 4-angle result I was replacing used the paired estimator throughout.** I swapped to
+quadrature without noting it, and **the swap is what manufactured the "only L10 separates" verdict.**
+
+**Recomputed with `paired_diff` over all 20 controls at each depth** (same module, same domain
+clustering, G−1 df; point estimates are algebraically identical, only the SE changes):
+
+| depth | vs strongest control | paired p | **worst-case control** | **controls beaten at p < 0.05** |
+|---|---|---|---|---|
+| **L6** | +0.00202 | 0.678 | 0.678 | ⛔ **10 / 20** |
+| **L8** | +0.01659 | 0.104 | 0.104 | ⚠ **13 / 20** |
+| **L10** | +0.02263 | **0.0244** | **0.0244** | ✅ **20 / 20** |
+| **L12** | +0.01953 | **0.0043** | **0.0091** | ✅ **20 / 20** |
+
+### ✅ The corrected profile — stronger than either version I published
+
+- ✅ **L12 and L10 beat every one of their 20 orthogonal controls at p < 0.05**, worst case
+  **p 0.0091** and **p 0.0244**. That is a far stronger statement than "ranks first", and it is what
+  the quadrature SE was hiding.
+- ⛔ **L12, not L10, is the best-separated depth** — the reverse of what I published two ticks ago.
+- ⚠ **L8 beats 13 of 20** (worst case p 0.104) — not established.
+- ⛔ **L6 beats 10 of 20 — literally half.** Worst case p 0.678. L6 is not merely "weakest"; against a
+  complete control band **it is a coin flip.**
+
+### ⛔ 2. The L12 arm was judged at the wrong seed — the exact defect R12-1 claims to have fixed
+
+`abrep_L12` carries **`seed 20260821`** while its baseline and all 20 of its controls carry
+**20260816**. It is the *only* mismatched cell among the 56 judge dirs in both files. **I fixed the
+baseline side of this artifact and missed the arm side**, four rows above a retraction row that
+describes exactly this failure. Re-judge at the matched seed launched (**774503**); the L12 numbers
+above are provisional until it lands.
+
+### ⛔ 3. Further defects accepted from the audit, not yet all repaired
+
+| # | claim | correction |
+|---|---|---|
+| a | "all on **one** seed-matched baseline" | **two** baselines (`a24_base` for L6/L8, `a24b_base` for L10/L12) differing by **0.0025** in mean. Within-depth rankings are unaffected; the **cross-depth ordering is not on a common footing** |
+| b | Finding 4: "inert at **all four** depths" | false at L8 — three controls are individually significant (**p 0.0364 / 0.0440 / 0.0477**). Defensible claim is only "none reaches the arm" |
+| c | "largest \|Δ\| 0.0129, smallest p 0.113" attributed to the 80-control set | those are from a **12-cell** run on the **retracted** baseline. True over 80 controls: **0.0172** and **p 0.0364** |
+| d | Finding 4's headline "causation is concentrated on the `d_surface` axis" | ⛔ the producing artifact carries an explicit `DOSE_CAVEAT`: the arm removes 0.81–0.88 of the cell-mean spread against every control's ≤0.13, a **6–11× dose gap**, and states *"read arm/max_control as **NOT** separating direction-identity from dose."* **The report does not mention dose anywhere.** This is the single most important omission in the section |
+| e | "4 of the 11 depths, not all of them" | true but incomplete: those four were **selected as the top four by the very statistic being re-tested**, post hoc and uncorrected |
+| f | §12 item 1's Holm list | ordered **backwards** relative to the header's list, neither labelled, and carrying no superseded marker |
+| g | §12 item 6 "controls are generating" | stale — `f3_dose_specificity.json` has been committed since 13:16 |
+
+⚠ **(d) is the one that most changes what this profile can be cited for.** Even with all 20 controls
+beaten at L10/L12, the comparison is between a high-dose intervention and twenty low-dose ones. The
+honest reading is **"no low-dose direction in the complement reproduces the effect"**, not
+"causation is specific to the `d_surface` direction". A dose-matched in-subspace control **cannot
+exist** — the artifact says so — which is a structural limit on this design, not a gap to be filled
+by more angles.
+
 ## 🔬 COMPLETING THE GRID — 24 controls per depth, no angular gaps (774478–774493)
 
 I have now flagged the angular coverage limit twice without fixing it. Mapping it properly showed it
