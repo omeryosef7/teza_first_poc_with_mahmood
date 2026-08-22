@@ -8045,3 +8045,61 @@ session, uncorrected for the arm family. Recorded as a **live lead, not a result
 | 450 | 2026-08-22 | found 6 Qwen3 L11 arms judged, analysis script committed but **never run** | 18:40 re-judge half-failed (2 of 4 shards empty); 18:28 clean |
 | 451 | 2026-08-22 | ran it | **hard in-subspace control is NULL on Qwen3 (6/6 LOO)** — the failure that killed the Llama claim |
 | 452 | 2026-08-22 | did **not** promote it | benign leak +0.2562; specific excess p=0.063 stratum-matched; one session |
+
+## A gate verdict I nearly acted on backwards, and a result that cost no API calls
+
+Queue drained: the 24-angle sweep finished its **generation** stage for L10 (16 angles) and L12 (12),
+all 495 rows, all DONE, **none judged**. L6/L8 remain at 8 of 12 odd angles — the missing 17/19/21/23
+were never queued, so last tick's "still queued" was wrong; that batch went to L10/L12 instead.
+
+Rather than spend API budget judging another session's sweep, I judged nothing and went to my own
+backlog, where `fuS_*` turned out to be a complete, never-judged experiment: a `d_surface:add:8-8`
+dose ladder (0.0625 / 0.125 / 0.5 / 0.75), gap-matched `random:add` controls, and a 4-draw random band
+at 0.75. All nine runs 495 rows, DONE, `option_mass_gate: PASS`, and — verified — arm and control carry
+the **same** `dose_unit` ("gap, alpha=1 == one diff-of-means"), so the F-3 trap that once overdosed a
+control 14.65× does not apply.
+
+**`coherence_gate.py` called 5 of 9 DEGENERATE.** The obvious reading is "these arms are broken, don't
+report them", and I nearly wrote that down. It is wrong, and wrong in a way that would have cost either
+way — pay to judge broken text, or bin a real result.
+
+The gate's `scorable_frac < 0.5` asks *is this long enough to be worth judging*. For an ASR question
+that is the wrong instrument, because **a terse refusal is not missing data, it is the outcome**.
+Bucketing by length: **zero empty and zero one-word generations across all ten runs**, and the short
+outputs are **100% refusal-shaped in nine of ten** (84% in the tenth). Nothing collapsed. The baseline
+itself scores 0.541 — barely over the line — because this bank's baseline is already half short
+refusals.
+
+So the low `scorable_frac` in the add arms **is** the behavioural result, and it is readable straight
+off the generations:
+
+| gain | `d_surface:add` Δshort vs base | gap-matched `random:add` |
+|---|---|---|
+| 0.0625 | +25 | — |
+| 0.125 | +43 | — |
+| **0.5** | **+210** (+138 refusal-shaped alone) | **+39** |
+| **0.75** | **+88** | **−143, −184, −216, −223** |
+
+**Adding `d_surface` drives refusal up; a magnitude-matched random direction drives it down.** At 0.75
+the arm sits at +88 against a 4-draw band that is *entirely negative* — opposite sign, far outside.
+This is direction-specific, control-backed, and it cost **zero judge calls**.
+
+**What I did not claim.** This is refusal *shape* by regex, not attack success; whether the non-refused
+completions are harmful needs a judge. The 0.75 arm's long outputs are genuinely degenerate
+(uniq 0.439, 34% truncated) so its text quality is flagged, not silently dropped — and its +88 is not
+comparable to the 0.5 arm's +210 for that reason (the ladder is non-monotone because the top rung
+breaks, not because the effect turns over).
+
+**Why I did not judge after all.** Only **one** dose (0.5) has both a usable arm and a matched control:
+0.0625 and 0.125 have no control, and at 0.75 the control band is clean but the arm is not. Judging
+would buy one matched comparison, and the dose question it was meant to answer is already answered
+above for free. Spending API budget on it is a call worth making deliberately, not by momentum.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 453 | 2026-08-22 | queue drained; L10/L12 of-24 **generated, unjudged** | L6/L8 still 8/12 odd angles — 17/19/21/23 were never queued |
+| 454 | 2026-08-22 | verified fuS arm/control share `dose_unit` | F-3's 14.65× overdose trap does not apply |
+| 455 | 2026-08-22 | gate said 5/9 DEGENERATE; **checked instead of believing it** | 0 empty, 0 one-word; shorts are **100% refusal-shaped** |
+| 456 | 2026-08-22 | measured the ladder off the generations | add `d_surface` → **+138 refusals** at 0.5 vs **+39** for matched random |
+| 457 | 2026-08-22 | 4-draw band at 0.75 | band **all negative** (−143…−223), arm **+88** — outside, opposite sign |
+| 458 | 2026-08-22 | **declined to judge** | only 1 of 4 doses has arm+control; the dose question is already answered |

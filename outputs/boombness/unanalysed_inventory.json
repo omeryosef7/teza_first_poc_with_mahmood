@@ -1,7 +1,7 @@
 {
   "root": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness",
   "min_rows": 100,
-  "n_generation_runs": 254,
+  "n_generation_runs": 265,
   "n_judge_runs": 331,
   "generated_but_never_judged": [
     {
@@ -11,33 +11,99 @@
       "judged_by": []
     },
     {
+      "run": "ang10k10of24_20260822_184658_3923289",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k11of24_20260822_184758_1549850",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k13of24_20260822_184758_1549851",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k14of24_20260822_184758_3923975",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k15of24_20260822_184758_3923973",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k16of24_20260822_184758_3923970",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k17of24_20260822_184758_3923972",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k19of24_20260822_184758_3923974",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
       "run": "ang10k1of24_20260822_183557_3920587",
-      "n_gens": 231,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang10k2of24_20260822_183557_3920447",
-      "n_gens": 231,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang10k3of24_20260822_183658_3921589",
-      "n_gens": 177,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang10k4of24_20260822_183658_3921591",
-      "n_gens": 176,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang10k5of24_20260822_183658_3921590",
-      "n_gens": 178,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k7of24_20260822_184056_77955",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k8of24_20260822_184408_3130884",
+      "n_gens": 495,
+      "done": true,
+      "judged_by": []
+    },
+    {
+      "run": "ang10k9of24_20260822_184557_3131451",
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
@@ -48,14 +114,14 @@
     },
     {
       "run": "ang12k11of24_20260822_182336_1534115",
-      "n_gens": 219,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang12k13of24_20260822_182336_1534114",
-      "n_gens": 219,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
@@ -66,14 +132,14 @@
     },
     {
       "run": "ang12k16of24_20260822_183357_3129893",
-      "n_gens": 325,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
       "run": "ang12k17of24_20260822_183557_3920448",
-      "n_gens": 217,
-      "done": false,
+      "n_gens": 495,
+      "done": true,
       "judged_by": []
     },
     {
@@ -1653,6 +1719,6 @@
       "--out",
       "outputs/boombness/unanalysed_inventory.json"
     ],
-    "git_commit": "a6ce5269f0944d1cf0baea3f9ca6c2250b562266"
+    "git_commit": "bcc83ede30630d786ab20154529eab562c7c116b"
   }
 }

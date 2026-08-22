@@ -1,0 +1,353 @@
+[
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_base_20260818_185458_3888976",
+    "n_scored": 268,
+    "n_considered": 495,
+    "n_dropped_short": 227,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.5414141414141415,
+    "condition": null,
+    "truncated_frac": 0.05656565656565657,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8411042764394766,
+    "trigram_repeat": 0.009528162021871841,
+    "top_word_frac": 0.11165724781092688,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_add_g00625_20260822_123009_3880350",
+    "n_scored": 243,
+    "n_considered": 495,
+    "n_dropped_short": 252,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.4909090909090909,
+    "condition": null,
+    "truncated_frac": 0.03838383838383838,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8609145200376073,
+    "trigram_repeat": 0.006399826307005286,
+    "top_word_frac": 0.1152205245724748,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [
+      "scorable_frac 0.491 < 0.5: 252/495 generations are under 8 words, so these ratios describe an unrepresentative long tail (the dropped rows are the short ones \u2014 the refusal/collapse mode)"
+    ],
+    "coherent": false
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_add_g0125_20260822_123009_3880349",
+    "n_scored": 225,
+    "n_considered": 495,
+    "n_dropped_short": 270,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.45454545454545453,
+    "condition": null,
+    "truncated_frac": 0.026262626262626262,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8654149120484473,
+    "trigram_repeat": 0.0060277231258460936,
+    "top_word_frac": 0.11842610918326837,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [
+      "scorable_frac 0.455 < 0.5: 270/495 generations are under 8 words, so these ratios describe an unrepresentative long tail (the dropped rows are the short ones \u2014 the refusal/collapse mode)"
+    ],
+    "coherent": false
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_add_g05_20260822_113423_1339685",
+    "n_scored": 58,
+    "n_considered": 495,
+    "n_dropped_short": 437,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.11717171717171718,
+    "condition": null,
+    "truncated_frac": 0.006060606060606061,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8532866688660792,
+    "trigram_repeat": 0.011929411200331575,
+    "top_word_frac": 0.09818978991634335,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [
+      "scorable_frac 0.117 < 0.5: 437/495 generations are under 8 words, so these ratios describe an unrepresentative long tail (the dropped rows are the short ones \u2014 the refusal/collapse mode)"
+    ],
+    "coherent": false
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_add_g075_20260822_113423_1339686",
+    "n_scored": 180,
+    "n_considered": 495,
+    "n_dropped_short": 315,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.36363636363636365,
+    "condition": null,
+    "truncated_frac": 0.3434343434343434,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.4390178155803782,
+    "trigram_repeat": 0.24498733885960966,
+    "top_word_frac": 0.0700690474748633,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [
+      "scorable_frac 0.364 < 0.5: 315/495 generations are under 8 words, so these ratios describe an unrepresentative long tail (the dropped rows are the short ones \u2014 the refusal/collapse mode)",
+      "uniq_word_ratio 0.439 < 0.45"
+    ],
+    "coherent": false
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_rand_g05_20260822_114838_1342439",
+    "n_scored": 229,
+    "n_considered": 495,
+    "n_dropped_short": 266,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.4626262626262626,
+    "condition": null,
+    "truncated_frac": 0.12121212121212122,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8058280103606543,
+    "trigram_repeat": 0.0283923858411268,
+    "top_word_frac": 0.08491431577789914,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [
+      "scorable_frac 0.463 < 0.5: 266/495 generations are under 8 words, so these ratios describe an unrepresentative long tail (the dropped rows are the short ones \u2014 the refusal/collapse mode)"
+    ],
+    "coherent": false
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_rand_g075_20260822_114838_1342440",
+    "n_scored": 452,
+    "n_considered": 495,
+    "n_dropped_short": 43,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.9131313131313131,
+    "condition": null,
+    "truncated_frac": 0.37777777777777777,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.7445791386203788,
+    "trigram_repeat": 0.06803366756973807,
+    "top_word_frac": 0.08434091019902881,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_randS01_g075_20260822_124400_3882841",
+    "n_scored": 411,
+    "n_considered": 495,
+    "n_dropped_short": 84,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.8303030303030303,
+    "condition": null,
+    "truncated_frac": 0.05858585858585859,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.8863046757045578,
+    "trigram_repeat": 0.010229414098848732,
+    "top_word_frac": 0.09448835277427865,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_randS02_g075_20260822_124400_3882842",
+    "n_scored": 484,
+    "n_considered": 495,
+    "n_dropped_short": 11,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.9777777777777777,
+    "condition": null,
+    "truncated_frac": 0.09898989898989899,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.6942100723515059,
+    "trigram_repeat": 0.07268998868313806,
+    "top_word_frac": 0.05791344326244062,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/fuS_randS03_g075_20260822_124400_3882843",
+    "n_scored": 491,
+    "n_considered": 495,
+    "n_dropped_short": 4,
+    "n_rows_in_gens_file": 495,
+    "n_malformed_gens_lines": 0,
+    "scorable_frac": 0.9919191919191919,
+    "condition": null,
+    "truncated_frac": 0.43232323232323233,
+    "truncation_check": {
+      "status": "applied",
+      "n_rows": 495,
+      "max_truncated_frac": 0.9
+    },
+    "sample_thresholds": {
+      "min_scorable_frac": 0.5,
+      "min_scored_rows": 30,
+      "min_words_scorable": 8
+    },
+    "uniq_word_ratio": 0.7372133724060596,
+    "trigram_repeat": 0.04918310180059662,
+    "top_word_frac": 0.07706507592857686,
+    "checks_applied": [
+      "sample",
+      "uniq_word_ratio",
+      "trigram_repeat",
+      "top_word_frac",
+      "truncated_frac"
+    ],
+    "checks_skipped": [],
+    "failures": [],
+    "coherent": true
+  }
+]
