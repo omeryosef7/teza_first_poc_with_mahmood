@@ -2670,6 +2670,17 @@ then saturate. ⚠ Pooled over query kinds; see C7.
 and the correlation with ASR is real. But steering at α=1 destroys generation (55% trigram repeats,
 100% truncated) and the judge scores the degenerate loop as harmful — an artifact we nearly reported. An
 optimizer maximizing this projection has no reason to stop at 0.25.
+⬆ **The usable window measured directly (2026-08-23, `coherence_fuS_ladder.json`,
+`add_ladder_refusal.json`).** A four-rung `d_surface:add:8` ladder (0.0625 / 0.125 / 0.5 / 0.75)
+with gap-matched random controls was generated, gated and never judged. Its gate profile bounds the
+window from both ends: at **0.5** only **58 of 495** generations are ≥8 words — the model has gone
+terse rather than incoherent (`uniq_word_ratio` 0.853, healthy) — and at **0.75** the long outputs
+*are* degenerate (`uniq` **0.439**, **34%** truncated). Below that, 0.0625 and 0.125 barely move
+anything. So the interval where the intervention is both non-degenerate and non-trivial is roughly
+**0.125–0.5**, under two doublings wide, and it sits immediately below a dose that breaks the model.
+⚠ Not claimed: an earlier refusal-*rate* reading of this same ladder was **withdrawn** by audit #13 —
+the regex ran only on short outputs, so it measured refusal shortening. These are gate statistics
+(length and degeneracy), which that defect does not touch.
 
 **5. Does Boombness predict ASR?**
 ⛔ **RETRACTED (R-18) — not established.** The "yes, modestly" answer rested on ρ = **+0.307**
@@ -2722,7 +2733,7 @@ categorical proxy — no Userness/CoTness probe was fitted.
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
   to **raise** attack success, not lower it.
-⚠ Single-model: this does not replicate on Qwen3-14B (see §14).
+⚠ **Single-model claim UPDATED 2026-08-23 — it does replicate on Qwen3, with a specificity caveat.** `analyze_qwen3_decomposition.py` had been written for the `q3dec_` batch and **never run**; the runs were judged and cited by nothing until the audit-#13 shard fix surfaced them (`q3dec_decomposition_L11.json`). On Qwen3-14B at **L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard `in_subspace_orth` control is **null** (−0.0119, p=0.60; p>0.05 in **6 of 6** leave-one-domain-out folds). That is notable because R-23 killed the Llama causal reading precisely because an in-subspace direction *reproduced* the effect — on Qwen3 it does not. ⚠ **But two-thirds of it is non-specific:** the same arm moves *benign_literal* ASR **+0.2562 (p=0.002)**, so the doublespeak-attributable excess is **+0.1248 (p=0.032)**, which falls to **p=0.063** under stratum matching and holds in only 4 of 6 folds. One judging session, uncorrected. So: the ASR effect replicates on a second model; its *specificity* does not clear the bar. Recorded as a live lead, not a result.
 
 **10. Can we turn Boombness into a useful GCG objective?**
 **No — and the reasoning has been corrected twice, so read the whole answer.** The first "no" was reached
@@ -2731,6 +2742,16 @@ The answer is **no**, for the reasons below.
 - **§12.1 (maximise Boombness alone): still NO** — but for a *demonstrated* reason rather than the one I
   gave. Adding `+0.25` alone drives refusal 0.057 → **0.676** and ASR *down* to 0.088. My original reason
   ("no directional causal support") was **wrong**: there is directional support, it was masked by refusal.
+  ⬆ **Now confirmed against a magnitude-matched control, on AdvBench (2026-08-23,
+  `channel_matched_contrasts.json`).** The bank figures above had no dose-matched comparator. In one
+  judging session, `d_surface:add:8:0.25` and `random:add:8:0.25` — **identical injected magnitude
+  1.5137**, reconstructed from the fit payload rather than trusted from the flag — give ASR **0.0081
+  vs 0.0626**, Δ **−0.0545** (clustered −0.0302, p at its 0.0156 floor). So adding `d_surface`
+  *suppresses* attack success **direction-specifically**, not merely as a side effect of perturbation.
+  And the suppression runs **through refusal**: removing `refusalness` on top of the same addition
+  takes ASR 0.0081 → **0.1879** (+0.1798, all 12 informative domains agreeing), while adding
+  refusalness on top changes nothing (−0.0020, k=1). **An objective that ascends this direction
+  ascends toward refusal** — which is the clearest statement of why §12.1 is not buildable.
 - **§12.2 (Boombness MINUS refusal): NO.** Composing the two takes ASR 0.243 → **0.548** (p<0.0001) on
   the bank, where neither manipulation alone raises it — but the gain is *not conditional on the
   doublespeak mapping* (+0.267 where the mapping is **never taught**, largest at zero demonstrations) and

@@ -8916,3 +8916,47 @@ What it removes is the ability to not know.
 | 541 | 2026-08-23 | session taken from shard 0 — right by luck | now records all shards and **raises** if they span sessions |
 | 542 | 2026-08-23 | rescan | **0 findings** |
 | 543 | 2026-08-23 | caught a withdrawn metric still asserting a verdict | marked WITHDRAWN, points to replicate noise |
+
+## Back to the plan: §19's answers had gone stale under me
+
+`plan_coverage_check` reports all 21 plan sections cited (the three it marks NO are setup/process:
+clone instructions, directory layout, execution order). But that guard checks **citation, not
+answering** — and §19 is literally *"Important questions to answer in the report"*. The eleven answers
+were written days ago, and a great deal has moved since. Three were out of date, in the direction of
+understating what the sprint now knows.
+
+**Q9 — "does not replicate on Qwen3-14B" is no longer true.** `analyze_qwen3_decomposition.py` had been
+written for the `q3dec_` batch and **never run**; the audit-#13 shard fix surfaced it. On Qwen3 at
+**L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard
+`in_subspace_orth` control is **null** (−0.0119, p=0.60, 6/6 LOO folds) — notable because R-23 killed
+the Llama causal reading precisely *because* an in-subspace direction reproduced the effect. ⚠ But
+two-thirds is non-specific: the same arm moves *benign* ASR **+0.2562**, leaving a doublespeak-specific
+excess of **+0.1248 (p=0.032 → 0.063 stratum-matched, 4/6 folds)**. So the ASR effect replicates on a
+second model; its **specificity** does not clear the bar. The answer now says both halves.
+
+**Q10 — the §12.1 argument gained its missing control.** The bank figures ("adding +0.25 drives ASR down
+to 0.088") had **no dose-matched comparator**, which after the F-3 retraction is exactly the gap that
+matters. It exists now: `d_surface:add:8:0.25` vs `random:add:8:0.25` at **identical injected magnitude
+1.5137** — reconstructed from the fit payload, not trusted from the flag — in one judging session, gives
+**0.0081 vs 0.0626**. Adding `d_surface` suppresses attack success **direction-specifically**, and
+removing refusalness on top restores it (**+0.1798**, 12/12 domains). **An objective that ascends this
+direction ascends toward refusal.** That is a sharper reason for "not buildable" than the report had.
+
+**Q4 — the dose window is now bounded from both ends by measurement.** The `fuS` ladder's gate profile:
+at **0.5** only **58 of 495** generations reach 8 words (terse, not incoherent — `uniq` 0.853), and at
+**0.75** the long outputs *are* degenerate (`uniq` **0.439**, 34% truncated). The usable interval is
+roughly **0.125–0.5**, under two doublings wide, sitting immediately below a dose that breaks the model.
+⚠ Deliberately restricted to gate statistics — the refusal-*rate* reading of this same ladder was
+withdrawn by audit #13, and length/degeneracy figures are untouched by that defect.
+
+**The pattern worth naming.** All three updates existed as committed artifacts before this tick; none
+was in the deliverable. The sprint's failure mode has been over-generating evidence and under-writing
+it, and a coverage guard that checks citation cannot see that — §19 was "covered" the whole time.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 544 | 2026-08-23 | plan coverage: **21/21 sections cited** | but citation ≠ answered |
+| 545 | 2026-08-23 | audited §19's eleven answers against current results | **three stale**, all understating |
+| 546 | 2026-08-23 | Q9: Qwen3 **does** replicate (+0.3810, null hard control) | with the specificity caveat stated |
+| 547 | 2026-08-23 | Q10: §12.1 gains its **dose-matched** control | ascending this direction ascends toward refusal |
+| 548 | 2026-08-23 | Q4: dose window bounded **0.125–0.5** by gate data | under two doublings wide |
