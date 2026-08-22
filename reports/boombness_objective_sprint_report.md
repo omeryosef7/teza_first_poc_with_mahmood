@@ -58,6 +58,24 @@ dropping one domain, 3/6 domains). And the concept-transfer test failed both pre
 (R-23/R-24), so **`d_surface` names an estimator and is not shown to name a concept**. Everything above
 is `carrot↔bomb`, Llama-3.1-8B, one judge.
 
+### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
+
+**Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded
+`bank_join.hash_verdict.ok = false` with reason *"no `*_meta.json` for the bank"*. That message was
+**accurate when written** — the runs executed 2026-08-19 between 01:17 and 07:23 and the bank's
+`_meta.json` was created at 12:36 that day, so the check looked for a file that did not exist yet.
+Re-checked retrospectively (`verify_bank_join.py` → `bank_join_recheck.json`):
+**`bank_rows_sha16 = 81961bb8738a59d5` is identical across all five runs and the bank on disk now.**
+Every headline number was computed on the same 495 prompts. The two `ok=false` verdicts come solely
+from a *file reformat* between 08-18 and 08-19 (`bank_file_sha16` 2dfc439a → 3113465f) that changed no
+row. A standing "unverified" caveat has been replaced with an answer.
+
+**Code provenance: genuinely weak, and not fixable retrospectively.** Every one of those runs recorded
+`git_dirty = true`, and `RUNMETA.git_commit` (written at start) differs from `metadata.git_commit`
+(written at finish) *within the same run* — the loop commits between them. So the recorded commit does
+**not** pin the code that ran. Nothing can recover it now; it is disclosed rather than described as
+reproducible.
+
 ### What was retracted this session
 
 **R-23** E12's causal half · **R-24** E12's representational half · **R-25** the in-subspace null's
@@ -1188,7 +1206,7 @@ Same 72 prompts, target = the §2.6 comprehension log-odds:
 
 `direction_boombness` is a projection on `d_surface`. The extraction also fits `d_naive` — the same
 contrast without the 2×2's controls — and the two are **nearly collinear at every depth**
-(`outputs/boombness/direction_cosines.json`, heldout fit): cos = **0.9452 at L8**, **0.9390 at L12**,
+(`outputs/boombness/direction_cosines.json`, **heldout** fit): cos = **0.9452 at L8**, **0.9390 at L12**, ⚠ **but every intervention in this report ran from the DEV fit** (`score_behavior.py:527` loads `directions_fit_dev.pt`), where the same cosine is **0.9613 at L8** (and cos(`d_surface`,`d_context`) is **0.2066**, not 0.1884). Both are honest measurements of the same quantity on different family splits, but the one published beside the behavioural results was the one **no run used** — and R-27's algebra elsewhere in this report uses the dev value, so the document carried two numbers for one quantity. Labelled 2026-08-22 (audit #8).
 0.93–0.97 throughout. By contrast `d_context` and `d_inter` are near-orthogonal to `d_surface`
 (|cos| ≤ 0.24, mostly ≤ 0.19).
 
@@ -1551,10 +1569,10 @@ procedure. Substituting them into arm B's exact intervention at L8
 | `random` | ~0 | nothing | 0.0626 | −0.0062 | 0.539 |
 | **`d_context`** | **0.188** | benign vs harmful **context** | 0.0646 | **+0.0045** | **0.399** |
 | **`d_surface`** | 1.000 | codeword surface vs concept | 0.1071 | **+0.0305** | **0.0089** ✓ |
-| **`d_naive`** | **0.945** | the same contrast, uncontrolled | **0.1232** | **+0.0449** | **0.0089** ✓ |
+| **`d_naive`** | **0.945** *(heldout; **dev = 0.961**, and dev is what ran)* | the same contrast, uncontrolled | **0.1232** | **+0.0449** ⚠ *retracted as specificity evidence (R-26)* | **0.0089** ✓ |
 
 **The behavioural effect tracks the cosine with `d_surface`** — a dose-response *in direction space*.
-Near-zero cosine gives nothing; cos 0.945 and cos 1.0 both give the full effect. This is the strongest
+⛔ **Reading RETRACTED (R-26).** Was: "Near-zero cosine gives nothing; cos 0.945 and cos 1.0 both give the full effect. This is the strongest" — the near-zero-cosine direction (`d_context`) is inert because its **dose is 6× lower**, not because its cosine is low, so the row is a dose gradient misread as a cosine gradient. Original text follows. This is the strongest
 evidence in the report that the effect belongs to a **particular direction** rather than to the act of
 projecting something out at L8.
 

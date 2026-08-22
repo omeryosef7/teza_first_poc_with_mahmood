@@ -6492,3 +6492,46 @@ was specifically looking for estimand errors. Both deliverables now state all fo
 | 290 | 2026-08-22 | **my first guard test verified nothing** (planted on a non-needle) | redone on a real needle: exit 1 / 0 |
 | 291 | 2026-08-22 | measured all four estimands directly | the labelled pair mixed **binary pooled** with **continuous clustered** |
 | 292 | 2026-08-22 | both deliverables now state all four | binary +0.0424/+0.0306, continuous +0.0422/+0.0305 |
+
+## Turning two standing caveats into one answer and one honest admission
+
+Tick 2026-08-22. Cleared the last audit #8 findings.
+
+**The published cosine described a fit no run used.** `direction_cosines.json` is the **heldout**
+split — cos(`d_surface`,`d_naive`) = **0.9452**, quoted in the report and *verified green* by
+`verify_report_numbers.py`. But `score_behavior.py:527` loads `directions_fit_dev.pt`, and every
+intervention ran from it, where the same cosine is **0.9613** — which is the value R-27's algebra uses
+elsewhere in the same document. Two numbers for one quantity, and the machine-checked one was the one
+describing no experiment. Both splits are now labelled in the report and **both are pinned in the
+checker**, so the discrepancy cannot be reintroduced silently. Also struck the "cos 0.945 and cos 1.0
+both give the full effect" reading: the near-zero-cosine direction is inert because its **dose is 6×
+lower** (R-26), so that row is a dose gradient misread as a cosine gradient.
+
+**The bank-identity flag was a false alarm, and chasing it produced a better answer than the caveat.**
+All five headline runs record `ok = false`, *"no `*_meta.json` for the bank"*. My first instinct was
+that the lookup was buggy — the file is right there. It is not buggy: the runs executed 01:17–07:23 on
+2026-08-19 and the meta file was created at **12:36** the same day. The check was correct and the
+message was true when written.
+
+But it is answerable **now**, so I answered it instead of carrying "unverified" into the report:
+
+| | `bank_rows_sha16` | `bank_file_sha16` |
+|---|---|---|
+| all five headline runs | **81961bb8738a59d5** | 2dfc439a (×2, 08-18) / 3113465f (×3, 08-19) |
+| bank on disk today | **81961bb8738a59d5** | 3113465f |
+
+**Row identity is identical everywhere.** Every headline number was computed on the same 495 prompts;
+the file was merely *reformatted* mid-sprint, which moves the byte hash and not a single row.
+
+**And the part that is genuinely weak, disclosed rather than dressed up.** Every headline run has
+`git_dirty = true`, and `RUNMETA.git_commit` (start) ≠ `metadata.git_commit` (finish) **within the same
+run**, because this loop commits between the two. The recorded commit does not pin the code that ran,
+and nothing recovers it retrospectively. That one gets stated as a limitation, not solved.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 293 | 2026-08-22 | found the published cosine is the **heldout** fit; interventions used **dev** | 0.9452 vs **0.9613** — the verified number described no run |
+| 294 | 2026-08-22 | labelled both splits; **pinned both** in the checker | 15 LIVE checks; discrepancy cannot silently return |
+| 295 | 2026-08-22 | struck the "cosine gradient" reading | it is a **dose** gradient (R-26) |
+| 296 | 2026-08-22 | wrote `verify_bank_join.py`; re-checked retrospectively | **row hash identical across all 5 runs and the bank** |
+| 297 | 2026-08-22 | disclosed the code-provenance gap as unfixable | `git_dirty=true`, start≠finish commit, stated not solved |

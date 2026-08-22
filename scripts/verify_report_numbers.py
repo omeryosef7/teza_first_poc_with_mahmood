@@ -71,6 +71,13 @@ CHECKS = [
      ["paired_vs_baseline", "d_naive", "delta_cluster_mean"], 0.0449, 0.0005, "+0.0449", "retracted"),
     ("14-D d_context is null", "advbench_direction_specificity.json",
      ["paired_vs_baseline", "d_context", "p_cl"], 0.3991, 0.002, "0.399", "retracted"),
+    # BOTH SPLITS ARE NOW PINNED (audit #8). The report published only the HELDOUT cosine next to
+    # behavioural results, while every intervention loaded the DEV fit -- so the verified number
+    # described a fit no run used, and R-27's algebra elsewhere used the other one. Pinning one split
+    # made the checker vouch for the wrong value; pinning both makes the discrepancy impossible to
+    # reintroduce silently.
+    ("cos(d_surface, d_naive) @L8 DEV (the fit that ran)", "dose_vs_effect.json",
+     ["verdict", "cos_naive_surface"], 0.9613, 0.0005, "0.961"),
     ("cos(d_surface, d_naive) @L8", "direction_cosines.json",
      ["by_layer", "8", "d_naive"], 0.9452, 0.001, "0.945"),
     ("cos(d_surface, d_context) @L8", "direction_cosines.json",

@@ -1,0 +1,186 @@
+{
+  "why": "the headline runs predate the bank's _meta.json (runs 01:17-07:23, meta 12:36 on 2026-08-19), so their recorded verdict is 'no *_meta.json' -- accurate then, checkable now",
+  "runs": {
+    "abg_base_20260819_011714_1480836": {
+      "status": "checked",
+      "bank": "advbench_heldout_495.jsonl",
+      "meta_source": "outputs/boombness/score_behavior/ab_base_20260818_185458_3888976/metadata.json",
+      "verdict": {
+        "run_bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/external/advbench_heldout_495.jsonl",
+        "run": {
+          "bank_file_sha16": "2dfc439ae9b141a2",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "bank": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "checked": [
+          "bank_file_sha16",
+          "bank_rows_sha16"
+        ],
+        "mismatched": [
+          "bank_file_sha16"
+        ],
+        "unknown": [],
+        "n_rows": {
+          "run": 495,
+          "bank": 495
+        },
+        "checked_weak": [
+          "bank_n_rows"
+        ],
+        "ok": false,
+        "mismatched_fatal": [],
+        "mismatched_benign": [
+          "bank_file_sha16"
+        ],
+        "benign_note": "file bytes differ but row identity matches: the bank file was rewritten without changing which prompts it contains (e.g. R-14 adding `final_query_text`). The join is sound."
+      }
+    },
+    "abg_B_20260819_013447_1506491": {
+      "status": "checked",
+      "bank": "advbench_heldout_495.jsonl",
+      "meta_source": "outputs/boombness/score_behavior/ab_B_20260818_185458_3888974/metadata.json",
+      "verdict": {
+        "run_bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/external/advbench_heldout_495.jsonl",
+        "run": {
+          "bank_file_sha16": "2dfc439ae9b141a2",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "bank": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "checked": [
+          "bank_file_sha16",
+          "bank_rows_sha16"
+        ],
+        "mismatched": [
+          "bank_file_sha16"
+        ],
+        "unknown": [],
+        "n_rows": {
+          "run": 495,
+          "bank": 495
+        },
+        "checked_weak": [
+          "bank_n_rows"
+        ],
+        "ok": false,
+        "mismatched_fatal": [],
+        "mismatched_benign": [
+          "bank_file_sha16"
+        ],
+        "benign_note": "file bytes differ but row identity matches: the bank file was rewritten without changing which prompts it contains (e.g. R-14 adding `final_query_text`). The join is sound."
+      }
+    },
+    "abgL6_B_20260819_081115_1663775": {
+      "status": "checked",
+      "bank": "advbench_heldout_495.jsonl",
+      "meta_source": "outputs/boombness/score_behavior/abL6_B_20260819_073537_3351336/metadata.json",
+      "verdict": {
+        "run_bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/external/advbench_heldout_495.jsonl",
+        "run": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "bank": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "checked": [
+          "bank_file_sha16",
+          "bank_rows_sha16"
+        ],
+        "mismatched": [],
+        "unknown": [],
+        "n_rows": {
+          "run": 495,
+          "bank": 495
+        },
+        "checked_weak": [
+          "bank_n_rows"
+        ],
+        "ok": true,
+        "mismatched_fatal": [],
+        "mismatched_benign": []
+      }
+    },
+    "abgL10_B_20260819_083136_1669413": {
+      "status": "checked",
+      "bank": "advbench_heldout_495.jsonl",
+      "meta_source": "outputs/boombness/score_behavior/abL10_B_20260819_073537_3351267/metadata.json",
+      "verdict": {
+        "run_bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/external/advbench_heldout_495.jsonl",
+        "run": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "bank": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "checked": [
+          "bank_file_sha16",
+          "bank_rows_sha16"
+        ],
+        "mismatched": [],
+        "unknown": [],
+        "n_rows": {
+          "run": 495,
+          "bank": 495
+        },
+        "checked_weak": [
+          "bank_n_rows"
+        ],
+        "ok": true,
+        "mismatched_fatal": [],
+        "mismatched_benign": []
+      }
+    },
+    "abgL12_B_20260819_072331_1641327": {
+      "status": "checked",
+      "bank": "advbench_heldout_495.jsonl",
+      "meta_source": "outputs/boombness/score_behavior/abL12_B_20260819_063539_2455409/metadata.json",
+      "verdict": {
+        "run_bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/external/advbench_heldout_495.jsonl",
+        "run": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "bank": {
+          "bank_file_sha16": "3113465f938aaa54",
+          "bank_rows_sha16": "81961bb8738a59d5"
+        },
+        "checked": [
+          "bank_file_sha16",
+          "bank_rows_sha16"
+        ],
+        "mismatched": [],
+        "unknown": [],
+        "n_rows": {
+          "run": 495,
+          "bank": 495
+        },
+        "checked_weak": [
+          "bank_n_rows"
+        ],
+        "ok": true,
+        "mismatched_fatal": [],
+        "mismatched_benign": []
+      }
+    }
+  },
+  "n_ok": 3,
+  "n_not_certified": 2,
+  "reading": "an 'unknown' verdict still means unknown: a run that recorded no bank hash cannot certify a join, and this script does not pretend otherwise",
+  "provenance": {
+    "argv": [
+      "src/boombness/verify_bank_join.py",
+      "--out",
+      "outputs/boombness/bank_join_recheck.json"
+    ],
+    "git_commit": "a8dd73f4021087de0307d3dcb57f5218f98e2126"
+  }
+}
