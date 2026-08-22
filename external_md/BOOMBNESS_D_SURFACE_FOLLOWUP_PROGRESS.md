@@ -8623,12 +8623,25 @@ A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept 
 exactly orthogonal to the arm, removing **4.5506%** at L8 in the deterministic-basis run that the
 Holm table actually uses) was built and run. **Run at all four `d_surface` profile depths with a deterministic basis and one judging session,
 the arm beats it every time and ALL FOUR survive Holm** (arm − control: L6 +0.0127, L8 +0.0319,
-L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**). ⚠ **That is the
-single-draw result, and the angle sweep does not sustain it uniformly** (review #9, B5): swept
-against every orthogonal direction, the margin holds at L12 and L10, at 3 of 4 angles at L8, and
-**fails at L6** (worst case +0.0039, p 0.242). So `d_surface`'s causal direction-specificity is
-established with correction **at L10 and L12, suggestive at L8, and not established at L6** — and
-over **4 of the 11 depths** in its profile, not all of them. ⛔ The
+L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**).
+✅ **SUPERSEDED AND STRENGTHENED 2026-08-22 (review #12):** that single-draw result has been replaced
+by **20 systematically spaced orthogonal controls per depth, all on one seed-matched baseline**
+(80 control runs). **At every depth, 0 of 20 controls reach the arm** (rank p = 0.0476, the design
+floor, identical under the clustered and pooled estimators):
+
+| depth | arm | strongest control | **t vs strongest** | nearest as % of arm |
+|---|---|---|---|---|
+| L6 | +0.0192 | **+0.0172** | ⚠ **+0.17** | ⚠ **89.5%** |
+| L8 | +0.0313 | +0.0147 | +1.35 | 47.0% |
+| **L10** | +0.0209 | ✅ **−0.0017** | ✅ **+2.61** | ✅ **−8.2%** |
+| L12 | +0.0314 | +0.0118 | +1.58 | 37.7% |
+
+⚠ **The rank floor means "all four pass" is one bit per depth, not four independent results.** The
+separation is what distinguishes them: **only L10 separates from its strongest control at
+conventional levels**; L8 and L12 do not; **L6 does not at all** (its best orthogonal direction
+reaches 89.5% of the arm). ⛔ An interim claim that L6 was *refuted* is withdrawn — it was a
+baseline-seed artifact of my own making — but L6 remains the weak depth. And this covers **4 of the
+11 depths** in the profile, not all of them. ⛔ The
 earlier "L12 control nearly fired at p 0.062" is **withdrawn** — that draw came from an
 environment-dependent SVD basis; the deterministic replacement is 55% stronger and lands at
 −0.0048, p 0.24. Every claim OUTSIDE the `d_surface` profile — the refusalness profile, Phase F's
@@ -8827,20 +8840,27 @@ own.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
 4. **Within L6–L12, causation is concentrated on the `d_surface` axis, by a SUBSET and a SUPERSET
    control.** A random axis in the same 2×2 span, exactly orthogonal to `d_surface`, is inert at
-   **all four depths, every one surviving Holm** (arm − control: L6 +0.0127, L8 +0.0319, L10 +0.0303,
-   L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
-   basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
+   **all four depths** — and, since 2026-08-22, against **20 orthogonal controls per depth on one
+   seed-matched baseline**: **0 of 20 reach the arm at every depth** (rank p 0.0476 under both
+   estimators). ⚠ Separation differs sharply: **L10 t +2.61 (every control moves the opposite way),
+   L12 +1.58, L8 +1.35, L6 +0.17** — so only L10 is individually resolved, and L6's best control
+   reaches **89.5%** of the arm. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
    of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
    ✅ **All four depths are swept at four angles each over the 2-D orthogonal complement — a
-   systematic SAMPLE, not a bound. Not one of the sixteen orthogonal directions moves ASR**
+   systematic SAMPLE, not a bound. Not one of the **eighty** orthogonal directions (20 per depth)
+   moves ASR past the arm**
    (largest |Δ| 0.0129, smallest p 0.113), and at L12 a densification to eight angles left all
    eight controls null. ⛔ "Exhaustive / a bound, not a sample" is **withdrawn**: ASR(θ) is a step
    function, and the measured function moves further *between* grid points (0.0137 at 22.5°
    spacing) than the largest value it takes *at* them (0.0120) — halving the spacing made that
-   ratio worse, 1.02 → 1.13, which is what sampling a step function looks like. ⛔ **But the margin claim does not hold uniformly, and the single-draw Holm table
-   over-stated it:** the arm beats **every** orthogonal direction at **L12** (worst case p 0.0043)
-   and **L10** (p 0.018), **3 of 4** at L8 (worst case p 0.073), and **only 2 of 4 at L6, where the
-   worst case is +0.0039 at p 0.242 — not established.**
+   ratio worse, 1.02 → 1.13, which is what sampling a step function looks like. ⛔ **The margin claim does not hold uniformly.** On the 4-angle
+   sweep the arm beat every orthogonal direction at **L12** and **L10**, 3 of 4 at L8, and only
+   2 of 4 at L6. ✅ **At 20 controls per depth (2026-08-22) the arm is ahead of every control at
+   every depth**, but the *separation* is what differs and it reproduces the same ordering:
+   **L10 t +2.61 > L12 +1.58 > L8 +1.35 > L6 +0.17.** ⚠ **L6 is still the depth where the claim
+   does not hold** — its best orthogonal direction reaches **89.5%** of the arm — and it is the only
+   depth flagged as weak by *both* the angle sweep and the 20-control band, which is worth more than
+   either alone.
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
    privileged in it** — an orthogonal axis predicts ASR at **83.0–118.8%** of its strength across three
    seeds and three layers, and `d_inter` (cos 0.015–0.084) predicts equally with the opposite sign.
@@ -8911,6 +8931,10 @@ own.
 | — | "exhaustive / a bound, not a sample" | ASR(θ) is a step function; refuted by densification |
 | — | "L6 direction-specificity is established" | only 2 of 4 angles; worst case p 0.242 |
 | R9-* | **all of review #9's findings below** | 20 corrections to this report; see the review section |
+| R12-1 | "L6 direction-specificity is REFUTED" (interim, 08-22) | a **baseline-seed artifact of mine**: `abrep_base` judged at seed 20260821 while every arm and control used 20260816. Corrected: 0/20, rank p 0.0476 |
+| R12-2 | "the F-3 band settles it against the claim" | **over-retracted**; verdict flips with the metric (3/4 vs 4/4) and a random-effects test on the same draws gives p 0.037. Correct verdict: **not established, not settled** |
+| R12-3 | "+6.0× judge noise" separation at L8 | a single re-judge (one flipped row) used as a dispersion; proper contrast t = **+1.35** |
+| R12-4 | "the design cannot produce a significant result" (F-3, n=4) | false — true only of the rank statistic, the least powerful available |
 
 ⚠ **This table was itself materially incomplete until review #9** — it stopped at review #5 and
 omitted every item from reviews #6 and #7 and every 08-21 result, including four claims this report
