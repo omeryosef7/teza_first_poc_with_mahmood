@@ -1,0 +1,45 @@
+{
+  "question": "does the surviving d_surface headline survive multiplicity, and under which family?",
+  "raw_cluster_signflip_p": {
+    "L12": 0.0039,
+    "L8": 0.0078,
+    "L10": 0.0156,
+    "L6": 0.0625,
+    "armD": 0.0001,
+    "armC": 0.0001
+  },
+  "holm_by_family_definition": {
+    "A_tested_layers_only_m4": {
+      "L12": 0.0156,
+      "L8": 0.0234,
+      "survivors": [
+        "L12",
+        "L8",
+        "L10"
+      ],
+      "why_wrong": "the four layers were SELECTED as the top four of eleven, so m=4 ignores the selection"
+    },
+    "B_profile_family_m11": {
+      "L12": 0.0429,
+      "L8": 0.078,
+      "survivors": [
+        "L12"
+      ],
+      "why": "the natural family for a per-layer claim: the 11 layer arms actually run"
+    },
+    "C_layers_plus_this_sessions_cross_arm_tests_m16": {
+      "L12": 0.0546,
+      "L8": 0.0988,
+      "survivors": [
+        "armD",
+        "armC"
+      ],
+      "why": "the same author ran all of these on the same data in one session -- the classic garden-of-forking-paths family"
+    }
+  },
+  "VERDICT": "L12 sits exactly on the boundary. It SURVIVES Holm over the layer family (0.043) and FAILS if the session's cross-arm tests are pooled into the family (0.055). Which family is right is a judgment call, not a fact: the cross-arm tests answer different questions, but they were run by the same author on the same data in the same session. Under NO defensible family does anything else in the d_surface story survive -- L8, L10 and L6 fail everywhere except the m=4 family, which is indefensible because the layers were outcome-selected.",
+  "robust_regardless": "arm D and arm C survive every family definition tried (Holm-adjusted <= 0.002).",
+  "provenance": {
+    "git_commit": "5b75e2ccf942e078a2c00a47724235ee48bf1599"
+  }
+}

@@ -6850,3 +6850,38 @@ not whether it exists.
 | 327 | 2026-08-22 | recorded that **nothing survives Holm over my own 15 tests** | SA 0.083; L12 0.047–0.070 |
 | 328 | 2026-08-22 | fixed 99.55%→**99.05%**, added the missing `abg_Bctrl` row, relabelled "triple"→double | completeness claim was false |
 | 329 | 2026-08-22 | recorded that `p` = attainable floor for every arm | the test is a **sign test over domains**, not over effect size |
+
+## The headline sits exactly on the multiplicity boundary, and which side depends on a judgment call
+
+Tick 2026-08-22. Audit #9's F4 said "nothing in the `d_surface` story survives family-wise correction
+over the sprint's own tick". §0a still read *"only L12 survives multiplicity (Holm 0.043)"*. Those
+cannot both stand, so I worked out exactly what the family is.
+
+| family | m | L12 Holm-adjusted | survivors |
+|---|---|---|---|
+| A. the four tested layers | 4 | 0.0156 | L12, L8, L10 |
+| **B. the 11 layer arms actually run** | **11** | **0.0429 — survives** | **L12 only** |
+| **C. B + this session's 12 cross-arm tests** | **16** | **0.0546 — fails** | **arm D, arm C only** |
+
+**Family A is indefensible** — the four layers were *selected as the top four of eleven*, so m=4 prices
+in none of the selection. That leaves B and C, and the choice between them is a **judgment call rather
+than a fact**: the cross-arm tests answer different questions (containment, super-additivity, arm
+hierarchy), which argues for a separate family, but the same author ran all of them on the same data in
+the same session, which is the textbook garden-of-forking-paths case.
+
+**So the honest statement is that L12 sits exactly on the boundary: 0.043 under the family for a
+per-layer claim, 0.055 once the session's other tests are pooled.** I have written it that way in both
+deliverables rather than picking the family that gives the answer I would prefer — and I note that the
+family I would prefer (B) is also the more standard one, which is precisely when it is worth showing
+the alternative.
+
+**Two things are not on the boundary.** Nothing else in the `d_surface` story survives *any* defensible
+family — L8, L10 and L6 pass only under the indefensible m=4. And **arm C and arm D survive every
+family tried** at Holm ≤ 0.002. The robust part of this sprint remains the refusal arm.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 330 | 2026-08-22 | computed Holm under three family definitions | L12: **0.016 / 0.043 / 0.055** |
+| 331 | 2026-08-22 | ruled out the m=4 family | the four layers were outcome-selected from eleven |
+| 332 | 2026-08-22 | restated §0a and the short update as a **boundary**, not a verdict | did not pick the family that flatters the claim |
+| 333 | 2026-08-22 | recorded what is not marginal | arm C / arm D survive everything (≤0.002) |

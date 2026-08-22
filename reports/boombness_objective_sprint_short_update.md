@@ -84,8 +84,10 @@ authoritative flat version; this is the same content, shorter.
 attack success: L8 **+0.0424** (21 flips), L12 +0.0364, L10 +0.0323, L6 +0.0182, n=495 — all
 **binary ASR at threshold 0.5, pooled**; the L8 binary domain-clustered figure is **+0.0306**. ⚠ The
 **+0.0305 / p_cl=0.0089** quoted elsewhere is the **continuous StrongReject** clustered mean, a
-*different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039,
-Holm 0.043 at m=11, 0.039 at m=10 → survives either way**; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
+*different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039 — on the multiplicity boundary**: Holm over the 11 layer
+arms gives **0.043 (survives)**, but pooling this session's 12 cross-arm tests into the family gives
+**0.055 (fails)**. Which family is right is a judgment call. **Arm C and arm D survive every family
+tried**; nothing else in the `d_surface` story survives any defensible one; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
 significant *only uncorrected*; **L6 p=0.0625 is not significant at all**. The four layers were
 themselves the **top four of eleven** by this same statistic, which is why Holm is applied at all.
 ⚠ The header block above says *"no single layer survives Holm"* — that is the **CR1-clustered t on the
