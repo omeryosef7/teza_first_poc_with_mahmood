@@ -5056,6 +5056,59 @@ reported.
 
 
 
+## ⛔✅ EXPERIMENT 7 CLOSES AS AN EVALUATED NEGATIVE — and the magnitude-matched asymmetry got sharper
+
+**Artifact:** `outputs/boombness/coherence/f3_gate_dsurface_full.json`. Six doses of
+`d_surface:add:8`, magnitudes printed by the run-time diagnostic (gap L8 = 6.054948):
+
+| dose (gap) | magnitude | uniq | 3-gram | truncated | **scorable** | gate |
+|---|---|---|---|---|---|---|
+| 0 (baseline) | 0 | 0.841 | 0.010 | 0.06 | **0.541** | ✅ |
+| 0.0625 | 0.378 | 0.861 | 0.006 | 0.04 | **0.491** | ⛔ |
+| 0.125 | 0.757 | 0.865 | 0.006 | 0.03 | 0.455 | ⛔ |
+| 0.25 | 1.514 | 0.873 | 0.005 | 0.01 | 0.331 | ⛔ |
+| 0.5 | 3.027 | 0.853 | 0.012 | 0.01 | 0.117 | ⛔ |
+| 0.75 | 4.541 | **0.439** | 0.245 | 0.34 | 0.364 | ⛔ (now uniq too) |
+| 1.0 | 6.055 | 0.210 | 0.630 | 1.00 | — | ⛔ collapse |
+
+### ⛔ There is no coherent dose. Experiment 7 is an evaluated negative.
+
+**Every dose fails, including the smallest tried** — 0.0625 gap, magnitude 0.378, lands at
+scorable **0.491**, nine thousandths under the threshold, against a baseline of 0.541. The mechanism
+is the one identified for refusalness and it bites harder here: **the AdvBench baseline has only
+four points of scorable headroom, and any `d_surface` addition consumes it.** Going lower would work
+only by injecting a magnitude so small (≲3% of one gap) that it reproduces the α = 1.0 refusalness
+problem — coherent because it does nothing.
+
+So plan §8 **experiment 7 closes as a measured negative with a mechanism**: `d_surface` has **no
+coherent operating range as an additive intervention on this setup.** That is a statement about the
+intervention and the dataset's headroom, not about `d_surface`'s causal status — the *ablation*
+results (project-out) are untouched by this and remain the sprint's strongest behavioural evidence.
+
+### ⚠→ The asymmetry sharpened, and is now worth a proper control family
+
+At the 0.75-gap dose the comparison stops being "two broken runs":
+
+| at magnitude **4.541** | uniq | 3-gram | scorable | gate |
+|---|---|---|---|---|
+| `d_surface:add:8` | **0.439** | 0.245 | 0.364 | ⛔ **FAILS** |
+| `random:add:8` (exactly matched) | 0.745 | 0.068 | **0.913** | ✅ **PASSES** |
+
+**Same injected magnitude, same layer, same operation — the arm breaks generation and the control
+does not.** This is a cleaner contrast than the 0.5-gap case, where both failed and only the degree
+differed.
+
+⛔ **Still not calling it a finding, and this time I am fixing the reason rather than only naming
+it.** It rests on **one random vector** (seed 20260816) — precisely the defect review #11 caught in
+the F-3 control, where two "independent" controls turned out to be the same draw. **Launched
+773708–773710: `random:add:8-8:0.75` at seeds 20260901/2/3.** If all three pass the gate while the
+`d_surface` arm fails, the asymmetry rests on a band of four draws instead of one, and *then* it is
+reportable — as a **coherence** result, which is still not the behavioural claim the sprint is
+after.
+
+This is the review #11 lesson applied before an auditor has to apply it: **the repair is cheap and
+the claim is worthless without it, so run the repair first and write the claim afterwards.**
+
 ## ⛔ THE PREDICTION FAILED — `d_surface`'s window is NOT where refusalness's was, and the regimes are not a general law
 
 **Artifact:** `outputs/boombness/coherence/f3_gate_dsurface_g05.json`. Both arms at
