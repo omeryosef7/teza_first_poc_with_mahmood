@@ -568,11 +568,26 @@ def main() -> int:
                 if len(ring) > 2 else []
             if jumps:
                 rec["max_adjacent_jump"] = max(jumps)
-                rec["grid_resolution_deg"] = 180.0 / len(ring)
+                # GRID FIELDS DESCRIBE THE DECLARED GRID, NOT THE ANGLES THAT HAPPENED TO EXIST.
+                # Audit #14: with L12 at 20 of 24 angles these reported 9.0 deg (=180/20) for a grid
+                # that is really 7.5 deg with three-step gaps, and `max_adjacent_jump` was measured
+                # across intervals three times wider than claimed -- silently, which is the problem.
+                # Resolution now comes from the DECLARED denominator, and when any angle is missing
+                # the adequacy fields are withheld rather than computed over a grid that does not exist.
+                rec["grid_resolution_deg"] = 180.0 / n_ang
+                rec["grid_complete"] = (len(ring) == n_ang)
                 # is the arm's margin over the sampled max large next to what one gap can hide?
                 rec["margin_over_max_control"] = rec["arm"]["delta"] - max(v)
-                rec["margin_exceeds_max_jump"] = (
-                    rec["margin_over_max_control"] > max(jumps))
+                if rec["grid_complete"]:
+                    rec["margin_exceeds_max_jump"] = (
+                        rec["margin_over_max_control"] > max(jumps))
+                else:
+                    rec["margin_exceeds_max_jump"] = None
+                    rec["max_adjacent_jump"] = None
+                    rec["grid_adequacy_withheld"] = (
+                        f"{len(ring)} of {n_ang} angles present; adjacent-jump adequacy is not "
+                        f"computable over a grid with gaps and is withheld rather than computed "
+                        f"across intervals wider than the declared {180.0 / n_ang:.1f} deg.")
         else:
             rec["in_subspace_null"]["status"] = "TOO FEW angle runs to estimate a null (need >=3)"
             rec["z_vs_in_subspace_null"] = None

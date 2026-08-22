@@ -19,10 +19,21 @@ and session `20260819_214330` contains `m_fuF_remS_addR` with two matched random
 layers it touches. Arm and control judged together means the session term cancels exactly, so these
 are paired cluster tests rather than drift-scaled readings.
 
-DOSE UNITS. All of these are dosed in GAP units (`alpha=1 == one diff-of-means`), verified from each
-run's own `summary.json` rather than inferred from the flag -- the F-3 retraction happened because a
-control dosed in the wrong units was overdosed 14.65x, and "the flag says 0.25 on both" is not
-evidence that the magnitudes match.
+DOSE UNITS -- and a correction to what this docstring used to claim (audit #14).
+
+It said the units were "verified from each run's own `summary.json`". That verification never
+happened: the `dose_unit` field is written by `score_behavior` as an UNCONDITIONAL string literal on
+every intervened run, before the intervention is even built, so it reads "gap (alpha=1 == one
+diff-of-means) for mode=add" even on `refusalness:add` runs, which are dosed in their own unit norm
+instead. The field is therefore wrong exactly where it matters, and the helper that read it was never
+called. Both are recorded here rather than quietly deleted, because a field that contradicts the
+analysis is worse than a missing one.
+
+What actually protects this comparison is `applied_magnitude()`, which RECONSTRUCTS the injected
+magnitude from the fit payload: refusalness at its own norm (alpha == magnitude), everything else at
+alpha x gap(layer), with gap(L8)=6.0549 and gap(L18)=14.7925. That is what identifies the one
+dose-matched contrast here and the two that are overdosed 6.05x and 14.79x -- the F-3 trap, which
+exists because "the flag says 1.0 on both" is not evidence that the magnitudes match.
 
 RELATION TO THE RETRACTED REFUSAL LADDER. Last tick I withdrew a claim about `d_surface:add` and
 refusal rate: it was counted with a regex that only ran on short outputs, so it measured refusal
@@ -120,19 +131,6 @@ def specs_of(prefix, root="outputs/boombness/judge"):
     return [], None
 
 
-def dose_unit(prefix, root="outputs/boombness/judge"):
-    """The run's OWN recorded dose unit, not the flag. See the F-3 note in the docstring."""
-    for d in sorted(glob.glob(os.path.join(root, prefix + "*"))):
-        try:
-            cfg = json.load(open(os.path.join(d, "config.json")))
-            g = str((cfg.get("args", cfg) or {}).get("gens") or "").rstrip("/")
-            g = os.path.dirname(g) if g.endswith("gens.jsonl") else g
-            s = json.load(open(os.path.join(g, "summary.json")))
-            return s.get("dose_unit"), s.get("option_mass_gate")
-        except Exception:
-            continue
-    return None, None
-
 
 def signflip(by_dom):
     vals = [v for v in by_dom.values() if abs(v) > 1e-12]
@@ -217,7 +215,10 @@ def main() -> int:
             "arm_shards": ad, "ref_shards": bd,
             "arm_asr": sum(v[0] for v in A.values()) / len(A),
             "ref_asr": sum(v[0] for v in B.values()) / len(B),
-            "dose_unit_arm": du_a, "dose_unit_ref": du_b,
+            # RECORDED BUT NOT TRUSTED: see the docstring. `dose_unit` is a literal emitted on every
+            # run regardless of direction, so it claims "gap" even for refusalness arms dosed in
+            # their own norm. Kept only so the contradiction is visible next to the reconstruction.
+            "dose_unit_arm_UNRELIABLE": du_a, "dose_unit_ref_UNRELIABLE": du_b,
             "arm_add_magnitudes": ma, "ref_add_magnitudes": mb,
             "dose_matched": matched_dose,
             "ref_over_arm_magnitude_ratio": ratio,
@@ -231,6 +232,11 @@ def main() -> int:
             "every previous late-layer contrast was cross-session (carrying 0.0057 judge drift) or "
             "matched to a random direction at a different depth. These arms were run correctly and "
             "never analysed."),
+        "dose_unit_field_is_unreliable": (
+            "score_behavior writes `dose_unit` as an unconditional literal on every intervened run, "
+            "so it reads 'gap' even on refusalness arms that are dosed in their own unit norm. The "
+            "field is reported with an _UNRELIABLE suffix; the dose verdicts below come from "
+            "reconstructed magnitudes, not from it. Found by audit #14."),
         "dose_checked_by_RECONSTRUCTED_MAGNITUDE_not_alpha": (
             "score_behavior dozes refusalness in its own unit norm (alpha == magnitude) and every "
             "other direction in d_surface-gap units (magnitude = alpha * gap). gap(L8)=6.0549, "

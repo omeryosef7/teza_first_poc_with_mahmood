@@ -218,6 +218,7 @@
       "arm_exceeds_all_controls": true,
       "max_adjacent_jump": 0.00404040404040404,
       "grid_resolution_deg": 7.5,
+      "grid_complete": true,
       "margin_over_max_control": 0.008080808080808079,
       "margin_exceeds_max_jump": true,
       "random_control_same_layer": {
@@ -363,6 +364,7 @@
       "arm_exceeds_all_controls": true,
       "max_adjacent_jump": 0.00808080808080808,
       "grid_resolution_deg": 7.5,
+      "grid_complete": true,
       "margin_over_max_control": 0.024242424242424246,
       "margin_exceeds_max_jump": true,
       "random_control_same_layer": {
@@ -508,6 +510,7 @@
       "arm_exceeds_all_controls": true,
       "max_adjacent_jump": 0.00808080808080808,
       "grid_resolution_deg": 7.5,
+      "grid_complete": true,
       "margin_over_max_control": 0.03232323232323232,
       "margin_exceeds_max_jump": true,
       "random_control_same_layer": {
@@ -653,6 +656,7 @@
       "arm_exceeds_all_controls": true,
       "max_adjacent_jump": 0.00808080808080808,
       "grid_resolution_deg": 7.5,
+      "grid_complete": true,
       "margin_over_max_control": 0.02626262626262626,
       "margin_exceeds_max_jump": true,
       "random_control_same_layer": {
@@ -670,6 +674,6 @@
       "--out",
       "outputs/boombness/insubspace_null_full24.json"
     ],
-    "git_commit": "5dc1b84bd7c29576de08e36be0e7a0fd952f1be0"
+    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
   }
 }

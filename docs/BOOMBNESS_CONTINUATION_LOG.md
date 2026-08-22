@@ -8742,3 +8742,75 @@ Audit #14 is running in parallel; its findings land next tick.
 | 522 | 2026-08-23 | **the null has converged** | the empirical answer to "a sample, not a bound" |
 | 523 | 2026-08-23 | concurrent claim of a growing ceiling | disagrees at **both** endpoints; not reproducible; recorded |
 | 524 | 2026-08-23 | spawned **audit #14** | running |
+
+## Audit #14 killed my drift number, and with it the reason I withdrew L6
+
+**A-14.1 (high) — the judge-drift figure was wrong, and my written justification for it was false.**
+The **0.0057** drift is the noise scale this report has been quoting since 2026-08-22. It was computed
+by differencing raw ASRs across judge passes with **different denominators**, and its maximum came from
+`ab_base_20260819_002240`: **no `DONE.json`**, 483 rows, missing exactly positions **483–494** — a
+contiguous tail, i.e. a killed job. **None of the 12 dropped rows is malicious**, so the truncation
+alone inflates that pass by **+0.0016** with no judge involvement.
+
+I had kept that run deliberately, on the written justification that 483/495 was *"a complete run
+missing 12 rows, NOT an in-flight one."* That was false, and I wrote it while rejecting an exclusion
+rule for dropping it. Two ticks ago I described discarding that rule as avoiding "a result being
+chosen" — the rule was right and my reason for overriding it was wrong.
+
+It is also my own **one-of-two-code-paths** bug: I added the `DONE.json` requirement to
+`insubspace_null_test._rows` and did not add it to the drift script.
+
+Corrected — require `DONE.json`, and score every pass on the **intersection** of prompt ids:
+
+| | old | corrected |
+|---|---|---|
+| passes used | 9 (one truncated) | **10 complete** |
+| scoring | raw, mixed denominators | **495 common ids** |
+| AdvBench baseline | — | only ever **32/495 or 33/495** |
+| **drift** | 0.0057 (2.8 prompts) | **0.0020 (1 prompt)** |
+
+**Consequence: L6's withdrawal is retracted.** Margins ÷ drift become **L6 4.00×**, L8 12.0×, L10
+16.0×, L12 13.0× — **no layer is inside judge noise**. The withdrawal rested on 1.41×, which came from
+the bad number.
+
+**This reversal favours my own result, so its limits are flat.** It restores nothing beyond the drift
+comparison. L6 is still the weakest layer on every reproducible measure — arm/ceiling **1.80×**, a
+**4-prompt** margin, both smallest of four — and the concurrent line's control-exceeding-the-arm result
+is still unreconciled and still unreproducible. I have not called L6 confirmed; I have removed a reason
+for doubting it that turned out to be my own arithmetic.
+
+Cleaning up left the §0 row self-contradictory — it asserted the retraction and, further down, still
+said *"L6's margin is genuinely 4.0 prompts = 1.41× drift, so its withdrawal stands."* That is the C-12
+failure exactly (correct a figure, re-assert it a few sentences later). The whole cell was rewritten as
+one coherent statement, 5139 → 2963 characters.
+
+**A-14.2 (medium) — a published field contradicts its own analysis.** `score_behavior` writes
+`dose_unit` as an unconditional literal on every intervened run, so it reads "gap (alpha=1 == one
+diff-of-means)" even on `refusalness:add` arms, which are dosed in their **own unit norm**. A reader
+trusting it would conclude the 6.05× and 14.79× overdoses do not exist. My docstring's claim that units
+were *"verified from each run's own summary.json"* was vacuous — that helper was never called, dead
+code. Field renamed `_UNRELIABLE`, helper deleted, docstring corrected to say what actually protects
+the comparison: the reconstructed magnitude. **The dose-matched verdict is unaffected** — the auditor
+independently confirmed ‖v‖=1.0000 for the refusal directions and gap(L8)=6.054948, gap(L18)=14.792503.
+
+**A-14.3 (low) — grid adequacy was measured over a grid that did not exist.** With L12 at 20 of 24
+angles, `grid_resolution_deg` reported 9.0° (=180/20) for a grid that is really 7.5° with three-step
+gaps, so `max_adjacent_jump` spanned intervals three times wider than claimed. Now taken from the
+**declared** denominator, with the adequacy fields **withheld** when any angle is missing rather than
+computed across phantom intervals. All four layers now report 7.5°, `grid_complete: True`.
+
+**Found sound:** the auditor independently rebuilt the entire null from declared specs — never tags —
+across 387 judge dirs and reproduced every headline number exactly; verified `OLD_DELTA_PROMPTS` against
+the original runs (all eight correct, so "REAL ANGLE EFFECT" stands); confirmed `malicious_at_0.5` and
+`strongreject_score ≥ 0.5` disagree on **0 of 495** rows; and confirmed the `a24*` wildcard cannot
+over-match and `REJUDGE_PREFIXES` cannot exclude a sweep member.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 525 | 2026-08-23 | audit #14 returned 3 findings | verified all three independently before acting |
+| 526 | 2026-08-23 | **drift 0.0057 → 0.0020** | truncated pass excluded; passes scored on common ids |
+| 527 | 2026-08-23 | **L6 withdrawal RETRACTED** | its 1.41× basis was my own arithmetic error |
+| 528 | 2026-08-23 | stated the reversal's limits | L6 still weakest; external disagreement still open |
+| 529 | 2026-08-23 | rewrote a self-contradictory §0 row (C-12 shape) | 5139 → 2963 chars, one coherent statement |
+| 530 | 2026-08-23 | `dose_unit` marked unreliable, dead helper deleted | dose verdicts unaffected |
+| 531 | 2026-08-23 | grid adequacy withheld on incomplete grids | all four layers 7.5°, complete |

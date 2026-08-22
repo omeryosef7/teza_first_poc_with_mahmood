@@ -1,6 +1,6 @@
 {
   "question": "how do refusalness- and d_surface-projection effects vary with DEPTH, measured against controls judged alongside them?",
-  "judge_session_drift": 0.005746910094736185,
+  "judge_session_drift": 0.0020202020202020193,
   "baseline": {
     "prefix": "abg_base_",
     "n": 495,
@@ -130,7 +130,7 @@
         "p_cluster_signflip": 1.0,
         "min_attainable_cluster_p": 1.0
       },
-      "delta_over_drift": 0.35152838427947575,
+      "delta_over_drift": 1.0000000000000004,
       "why": "no control judged in this arm's session; cross-session, drift-scaled, no paired test quoted as a result"
     },
     {
@@ -153,7 +153,7 @@
         "p_cluster_signflip": 1.0,
         "min_attainable_cluster_p": 1.0
       },
-      "delta_over_drift": 0.35152838427947575,
+      "delta_over_drift": 1.0000000000000004,
       "why": "no control judged in this arm's session; cross-session, drift-scaled, no paired test quoted as a result"
     },
     {
@@ -208,6 +208,6 @@
       "--out",
       "outputs/boombness/depth_profile_matched.json"
     ],
-    "git_commit": "1079662fb17a01a1b88258e6c9e3c34736bc8c8f"
+    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
   }
 }
