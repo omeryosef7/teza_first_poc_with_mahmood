@@ -1,3 +1,16 @@
+> ⛔ **SUPERSEDED — do not read this as current (marked 2026-08-22).**
+> This document is dated **2026-08-19** and titles itself a complete handover record. Everything
+> in it predates retractions **R-23…R-27** and corrections **C-11…C-14**, and predates audit #12's
+> finding that the AdvBench effect reproduces at **L12 only**. A reader who works through its 6,600
+> lines because it is called "the handover" will absorb at least five claims that have since been
+> withdrawn.
+>
+> **Read instead:** `reports/boombness_objective_sprint_report.md` **§0a** (current state, one
+> screen) and **§0b** (supporting detail). This file is kept as a dated record of what was believed
+> on 08-19, not as guidance.
+
+---
+
 # The Boombness Objective Sprint — complete handover record, 2026-08-16 → 2026-08-19
 
 **Project:** Tel Aviv University MSc research (Omer Yosef; advisor Mahmood Sharif; in collaboration with

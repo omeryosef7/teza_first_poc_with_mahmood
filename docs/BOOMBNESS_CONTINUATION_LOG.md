@@ -7764,3 +7764,60 @@ inventory. Three of the 78 runs it lists contradicted a headline claim.
 | 424 | 2026-08-22 | rewrote §0a and the short update as **L12-only** | the four-layer band framing is withdrawn |
 | 425 | 2026-08-22 | corrected Holm to **0.0429** (m=11) / **0.0468** (m=12 incl. L15) | I had overridden the artifact's correct 0.043 with a wrong 0.035 |
 | 426 | 2026-08-22 | recorded that L15 was judged twice, is null, and was excluded | m=11 was never the honest family |
+
+## Reinstating what I over-retracted, and replacing a forced zero with real evidence
+
+Tick 2026-08-22. Audit #12's reviewer said the report is *"more punishing to itself than the data
+warrants"* in one place. Being willing to reinstate is the same discipline as being willing to
+retract, so I checked, and the reviewer is right.
+
+### R-26 was an over-retraction — narrowed, not restored wholesale
+
+R-26 withdrew §14-D's specificity conclusion because `d_context` removes only **0.13** of the cell-mean
+spread against `d_surface`'s **0.84**, so its null "is what the dose account predicts". But that is a
+property of the **fitting bank**. On the **evaluation set**:
+
+| direction @L8 | cos with `d_surface` | generations changed | net flips |
+|---|---|---|---|
+| `d_surface` | 1.00 | **38.2%** | +21 |
+| **`d_context`** | **0.188** | **34.9%** | **0** |
+| random @L8 | ~0 | 22.0% | −1 |
+
+**A near-orthogonal direction perturbing the model at 91% of `d_surface`'s rate produces exactly zero
+flips.** That is a dose-matched inert control on the metric that bears on behaviour.
+
+**And the asymmetry is the part worth naming.** §0b uses `generation_change_arms.json` as a dose metric
+where it *undercuts* a claim — "the cross-channel comparison is not dose-matched, 38.2% vs 88.9%" — and
+refused it where it would *support* one. That is the same asymmetric evidential standard R-13 and R-15
+were retracted for, pointed at myself this time. Being harsh on my own result is not the same as being
+rigorous.
+
+Narrowed rather than reversed: **the two dose metrics disagree and this design cannot adjudicate**, so
+specificity is supported on the eval-set metric and not on the cell-mean-spread one. Both stated.
+
+### The both-refused +0.0000 was arithmetically forced
+
+The row cited *"+0.0000 exactly on the 440–451 both-refused rows"* as evidence the judge is not
+rewarding longer refusals. Checked: of the 440 both-refused rows at L8, **0 score ≥0.5 at baseline and
+0 in the arm**. Conditioning on `refused` in both arms *guarantees* a zero delta, because `refused` and
+`score<0.5` agree on 99% of rows — **the exact near-tautology C-14 was opened for, left standing in the
+row above it.**
+
+The real evidence is stronger and I was not using it: the 21 L8 flips go from a median of **67
+characters** to **2474** (range 2067–2674, all at the token cap), against a median of 67 across all 495
+baseline rows. Refusal→full-answer conversions, not judge jitter.
+
+### The 531 KB handover is now marked superseded
+
+`BOOMBNESS_SPRINT_HANDOVER_2026-08-16_TO_08-19.md` calls itself a complete handover record, is dated
+08-19, and predates R-23…R-27, C-11…C-14 and the L12-only finding. A successor reading it *because it
+is called the handover* would absorb at least five withdrawn claims. It now opens with a banner
+pointing at §0a.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 427 | 2026-08-22 | verified `d_context`'s eval-set dose | **34.9% vs 38.2%** — 91% of the rate, **zero** flips |
+| 428 | 2026-08-22 | narrowed **R-26** from a blanket withdrawal | the two dose metrics disagree; this design cannot adjudicate |
+| 429 | 2026-08-22 | named the asymmetry in my own favour-against-myself direction | same defect as R-13/R-15, pointed inward |
+| 430 | 2026-08-22 | replaced the forced +0.0000 with the length evidence | **67 → 2474 chars** on the 21 flips |
+| 431 | 2026-08-22 | marked the 531 KB handover superseded | it would have taught a successor five retracted claims |
