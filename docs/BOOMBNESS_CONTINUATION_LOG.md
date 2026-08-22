@@ -6535,3 +6535,42 @@ and nothing recovers it retrospectively. That one gets stated as a limitation, n
 | 295 | 2026-08-22 | struck the "cosine gradient" reading | it is a **dose** gradient (R-26) |
 | 296 | 2026-08-22 | wrote `verify_bank_join.py`; re-checked retrospectively | **row hash identical across all 5 runs and the bank** |
 | 297 | 2026-08-22 | disclosed the code-provenance gap as unfixable | `git_dirty=true`, start≠finish commit, stated not solved |
+
+## Two tests disagree about the headline, and the disagreement is the finding
+
+Tick 2026-08-22. Closed audit #8's remaining consistency items. One of them turned out to matter more
+than it looked.
+
+**Family size: both numbers were real.** The report says "10-layer family"; the short update says
+"eleven depths"; the artifact has **11** L-arms of which **10** carry a clustered p (**L16** has none).
+So neither document was wrong, they were counting different things. More usefully, the verdict is
+**unchanged either way** — L12's Holm-adjusted p is **0.039 at m=10** and **0.043 at m=11**, and
+nothing else survives under either. Recorded rather than "resolved", because there is nothing to
+resolve.
+
+**But reconciling it exposed a genuine disagreement between two tests.** §14-L says *"no single layer
+survives Holm"*. Last tick I wrote that **L12 survives Holm**. Both statements are in the same report
+and they are not the same test:
+
+| | statistic | on | verdict |
+|---|---|---|---|
+| §14-L | **CR1-clustered t** | the **continuous** StrongReject score | nothing survives Holm |
+| this tick | **exact cluster sign-flip** | **binary** ASR at 0.5 | **L12 survives** (0.039–0.043) |
+
+The temptation was to quietly keep the one I like. Instead both are stated, with a reason to prefer
+one: **CR1 is anti-conservative when few clusters are informative** — precisely the R-27(f) defect that
+made the percentile bootstrap report p=0.021 for data whose floor was 0.125 — while the sign-flip test
+is exact. So the sign-flip is the better instrument here, and it is the one that gives the *more*
+favourable answer, which is exactly the situation where I should show my work rather than assert it.
+Neither test licenses per-layer p-values for L6/L8/L10.
+
+**Also closed:** the short update stated the judge model as fact (`via gpt-4o-mini`) while the report's
+header already disclosed that **the model that actually answered is never recorded** — only a
+candidate list tried with fallback. Now carries the same caveat and its measured bound (drift ≤0.002).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 298 | 2026-08-22 | reconciled "10-layer" vs "eleven depths" | **11 arms, 10 with a clustered p**; both documents were counting real things |
+| 299 | 2026-08-22 | tested Holm robustness to the family-size choice | **L12 survives at both m=10 (0.039) and m=11 (0.043)**; nothing else does |
+| 300 | 2026-08-22 | surfaced the **CR1 vs sign-flip** disagreement instead of picking one | both stated; sign-flip preferred, with the reason |
+| 301 | 2026-08-22 | propagated the judge-provenance caveat to the short update | the two deliverables now say the same thing about the judge |

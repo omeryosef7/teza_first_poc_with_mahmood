@@ -85,9 +85,12 @@ attack success: L8 **+0.0424** (21 flips), L12 +0.0364, L10 +0.0323, L6 +0.0182,
 **binary ASR at threshold 0.5, pooled**; the L8 binary domain-clustered figure is **+0.0306**. ⚠ The
 **+0.0305 / p_cl=0.0089** quoted elsewhere is the **continuous StrongReject** clustered mean, a
 *different estimand* that agrees to three decimals by coincidence (audit #8). Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039,
-Holm over the 11-layer family 0.043 → survives**; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
+Holm 0.043 at m=11, 0.039 at m=10 → survives either way**; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
 significant *only uncorrected*; **L6 p=0.0625 is not significant at all**. The four layers were
-themselves the **top four of eleven** by this same statistic, which is why Holm uses m=11. The arm
+themselves the **top four of eleven** by this same statistic, which is why Holm is applied at all.
+⚠ The header block above says *"no single layer survives Holm"* — that is the **CR1-clustered t on the
+continuous score**; this is an **exact cluster sign-flip test on binary ASR**. They disagree because
+CR1 is anti-conservative when few clusters are informative (see R-27). Prefer the sign-flip test. The arm
 beats every direction in the same rank-3 cell-mean subspace (1.80× / 2.33× / 3.60× at L6/L8/L12;
 undefined at L10, where every control is ≤0). The gain is real refusal→compliance flips, not longer
 refusals (+0.0000 on the 440–451 both-refused rows, verified at all four layers). The dose-response is
@@ -695,7 +698,7 @@ none — only the full report did. Finding 13.1.)*
 
 **Dual-use scope.** This characterises why a known jailbreak family works. It produces no operational
 harmful instructions; harmful content is benchmark material behind project abstractions and all harm
-labels are automated (StrongReject rubric via `gpt-4o-mini`). No completion text appears in this
+labels are automated (StrongReject rubric; ⚠ the judge model that actually answered is **never recorded** — runs store only a candidate list `gpt-4o-mini` → `gpt-3.5-turbo` tried with fallback. Measured cross-pass drift ≤0.002, so this is a provenance gap, not a live confound). No completion text appears in this
 report, in any commit message, or in any analysis artifact. Only the local open-weight model was
 attacked — the API is used as a *judge*, never as a target.
 
