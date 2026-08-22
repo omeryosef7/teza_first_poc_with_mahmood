@@ -424,7 +424,7 @@ the GENUINE 4-draw band (n_draws=4, so the Welch df is ~7, not ~235):
 | −0.25 | -0.0620 ± 0.0391 | -1.59 | **0.168** | does **not** clear |
 
 So "the axis is not inert" holds for **+0.25 only**. The −0.25 arm sits essentially *on* the band —
-revision 1's blended "2–3× the controls" overstated it. One line: **adding concept-ness to the
+revision 1's blended "2–3× the controls" overstated it. One line: **adding concept-ness to the ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 codeword triggers refusal; removing it just damages the model like any other perturbation of that
 size.**
 

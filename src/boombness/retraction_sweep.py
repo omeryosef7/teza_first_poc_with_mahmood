@@ -233,9 +233,29 @@ DELIVERABLES = [
 #
 # This is the file's OWN documented failure mode ("a 17-line table hid four retracted headlines behind
 # one word") recurring through a regex detail rather than through block scoping.
+# ⛔ WEAK MARKERS WHITELISTED A THIRD OF EVERY DOCUMENT (audit #11, 2026-08-22). `MARKER` exempts a
+# whole block, and it used to accept `was`, `rather than`, `earlier`, `previously`, `instead of`,
+# `corrected` and `revision N` -- ordinary English, not retraction vocabulary. Measured on the real
+# documents: 29-31% of blocks were exempt, and 13-14% on a WEAK marker alone (`was` 78x in the report,
+# `rather than` 40x).
+#
+# The live cost was report §0's paragraph asserting the RETRACTED -0.0062 control and the RETRACTED
+# specificity conclusion as fact. `retraction_sweep`'s own C-12 pattern matched it; the block was
+# exempted because the sentence happened to contain "rather than".
+#
+# Now: only STRONG markers exempt -- vocabulary that cannot appear by accident in a live claim. This
+# is the third narrowing of this mechanism (bare `0.070`, then `corrected` inside `uncorrected`, now
+# the weak set) and the first that removes a whole class rather than patching one word.
+# Kept: vocabulary that marks a claim as dead. Dropped: `was`, `rather than`, `instead of`, and bare
+# `earlier`/`previously`/`revision N` -- ordinary English that appears inside live claims. `corrected`
+# stays (with the left-boundary guard, so "uncorrected" does not match) because a registry row reading
+# "**CORRECTED** to L1, L4 and L31" is a genuine marker; a first pass that dropped it flagged 26
+# legitimate correction paragraphs, which is how I learned the line sits between "weak" and "strong"
+# rather than between "long" and "short".
 MARKER = re.compile(
-    r"retract|withdraw|supersed|⛔|previously|earlier|revision \d|\bwas\b|fake|not reportable|"
-    r"instead of|rather than|naive one-way|no longer|(?<![a-z])corrected", re.I)
+    r"retract|withdraw|supersed|⛔|~~|struck|fake|not reportable|no longer|"
+    r"(?<![a-z])corrected|\bwrong\b|"
+    r"previously (?:said|read|quoted|stated)|earlier (?:revision|draft|version)|an earlier", re.I)
 
 
 def sweep(paths):
@@ -248,7 +268,10 @@ def sweep(paths):
         stop = LIVE_PREFIX_ENDS_AT.get(f)
         if stop and stop in text:
             text = text[:text.index(stop)]
-        # BLOCKS ARE BLANK-LINE PARAGRAPHS, **EXCEPT THAT EVERY TABLE ROW IS ITS OWN BLOCK.**
+        # BLOCKS ARE BLANK-LINE PARAGRAPHS, EXCEPT THAT EVERY TABLE ROW **AND EVERY LIST ITEM** IS
+        # ITS OWN BLOCK. List items were added 2026-08-22 (audit #11): a run of bullets with no blank
+        # line between them is one block, so ONE bullet saying "was" whitelisted all of its siblings --
+        # the table-row bug recurring verbatim in a construct nobody had scoped.
         #
         # WHY (audit 2026-08-21, and it is the worst miss this checker has had). The exemption is
         # paragraph-scoped: a block containing any MARKER word is treated as marking its own
@@ -278,6 +301,12 @@ def sweep(paths):
             if stripped.startswith("|"):
                 _flush()
                 blocks.append((line_no, line))     # each table row stands alone
+                start = line_no + 1
+            elif re.match(r"^(?:[-*+]|\d+[.)])\s", stripped):
+                # each LIST ITEM stands alone too -- see the block comment above. A bullet run has no
+                # blank lines, so without this one sibling's marker exempted the whole run.
+                _flush()
+                blocks.append((line_no, line))
                 start = line_no + 1
             elif stripped == "":
                 _flush()

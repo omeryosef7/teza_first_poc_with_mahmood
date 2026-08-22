@@ -301,8 +301,28 @@ exist; it is a refit.
 so the highest-dose region stays entangled. Fully dissolving it needs cells whose dominant variation is
 **not** the surface contrast — a design choice, not a pooling trick.
 
-**So the recommendation to anyone continuing this is specific:** refit over the pooled cells before
-running anything new, and treat the pooled `b = 0.207` as the dose a legitimate control must reach.
+⛔ **The recommendation that stood here is WITHDRAWN (audit #11, 2026-08-22).** It read: *"refit over
+the pooled cells before running anything new, and treat the pooled `b = 0.207` as the dose a
+legitimate control must reach."* Two controls kill it:
+
+- **Pooling per se buys nothing.** Three identical copies of the bomb bank leave dose at 0.8402 and
+  max orthogonal dose at **0.1143** — unchanged. **All** of the gain comes from the three banks'
+  `d_surface` directions being non-collinear (cos 0.607 / 0.662 / 0.170).
+- **The direction carrying the new 0.207 dose is itself a surface contrast** — cos **0.66** with
+  knife's own `d_surface`, **0.61–0.63** with button's. And removing every bank's own `d_surface` from
+  its own cells leaves **0.1614** of pooled spread against the single bank's **0.1598**. **Pooling adds
+  no non-surface variance at all.**
+
+So a control built to reach `b = 0.207` would most likely be *another codeword's surface contrast* —
+precisely the confound C-13 flagged. **The corrected statement:** pooling three codewords whose surface
+directions sit 50–80° apart lets a bomb-orthogonal control carry *other codewords'* surface dose; it
+does **not** move the design toward the stated goal of cells whose dominant variation is not the
+surface contrast. The arithmetic in the table above reproduces exactly; it is the actionable drawn from
+it that was wrong.
+
+⚠ Also: the forced-\|cos\| row assumes a vanishing cross term. The true Pareto frontier gives ≈0.63
+single / ≈0.38 pooled, so those figures **overstate** the collinearity forced on a half-dose control —
+conservative, but "forced" is the wrong word for an upper bound.
 
 ### Exact next commands (plan §20, added 2026-08-22)
 
@@ -426,7 +446,7 @@ removing `d_surface` **alone** raises attack success by **+0.0305 (p_cl=0.0089, 
 `d_surface` was fitted entirely on the carrot/bomb 2×2, so this **excludes the prompt-bank artifact
 explanation** — the most serious threat to every late finding here.
 
-A norm-matched **random** projection at the same layer is **inert** (−0.0062, p_cl=0.539, CI
+⛔ **RETRACTED (R-23/R-25 for the control, R-26 for the conclusion), struck 2026-08-22.** This paragraph read: *"A norm-matched **random** projection at the same layer is **inert** (−0.0062, p_cl=0.539, CI
 [−0.027, +0.015]), so the effect is specific to this direction rather than to removing any direction.
 
 **And the two channels interact.** Removing `d_surface` and refusalness together exceeds the sum of
@@ -520,9 +540,11 @@ counted. The robust flag is `d_naive`, which sits where the ladder is dense and 
 by the fit-free comparison above.
 
 ⛔ **RETRACTED (R-27).** The surviving summary is much thinner: **the dose-response is monotone and saturating, and nothing beyond that is established.** `d_naive` is a rung of the same family at a rotated complement angle, its residual is 1.13 SD of the real held-out scatter, and no comparison here survives cluster-level inference (4 informative domains at L8 ⇒ minimum attainable p = 0.125). `d_context` — fitted by the same 2×2 on the same rows, near-orthogonal (cos 0.188 @L8) — moves ASR by **+0.0045, CI [−0.0066, +0.0157], p=0.399, G=16** at L8 while changing a large fraction of generations. ⚠ **Corrected 2026-08-21 (estimand switch).** This previously read "**exactly 0.0000**", which is the *pooled* delta (0.00025); every other number in this table is **domain-clustered**, and the clustered mean is +0.0045. The conclusion is unchanged — the interval covers zero and p=0.399 — but "exactly zero" overstated it, and mixing a pooled estimate into a clustered table is the estimand switch this sprint has already retracted for twice. Source: `advbench_direction_specificity.json` `paired_vs_baseline.d_context`. It changes **34.9%** of generations (173/495) — that figure appeared in **no artifact** when the audit swept every float under `outputs/`, and is now produced by `generation_change.py` into `outputs/boombness/generation_change.json`, where it reproduces exactly. Companion figures from the same artifact: **29.5%** (146/495) for the out-of-band L16 arm and **38.2%** (189/495) for `d_surface` at L8. Same bank, same fit, same layer, same operation, comparable perturbation of the text, **+0.0305 vs +0.0045** in behaviour (domain-clustered, matching the rest of this table). ⚠ **Second correction, 2026-08-21:** this sentence previously read "**+0.0425 vs +0.0000**" — it re-asserted the *same* retracted pooled zero that the first half of this very cell had just corrected, and **+0.0425 is in no artifact at all** (`paired_vs_baseline.d_surface` gives `delta_pooled` 0.0422 and `delta_cluster_mean` 0.0305; 0.0425 traces to a superseded L8 table in the continuation log). The pooled pair, if wanted, is +0.0422 vs +0.0003. The specificity conclusion holds — a ~7× clustered gap with `d_context`'s interval covering zero — but it is 7×, not the ∞ the struck sentence implied. A stronger control than any random projection, because `d_context` is structured and demonstrably potent. |
+| gate | question | verdict |
+|---|---|---|
 | **§14-L** | **Where in the network does the effect live?** | **A contiguous band, ~L6–L14** (scan-statistic window; permutation **p=0.0109** under layer-label exchangeability). ⚠ **No single layer survives Holm** over the 10-layer family, so per-layer p-values are uncorrected and not quotable as results; the *shoulder* is graded, not a hard edge. Individually strongest: L8, L10, L12. Superseded per-layer text: ~~Significant at **L8 (p=0.0089)**, **L10 (p=0.0190)** and **L12 (p=0.0056)**, marginal at L6, and **null from L16 outward** — L16 is exactly baseline. **Matched controls at five depths are all inert** (−0.0066 to +0.0007). And L16 is not a failed intervention: it changes **29.5%** of generations while changing compliance on **none**. |
 | **§14-SA** | Is the joint arm super-additive? | **NARROWED 2026-08-22 (exact cluster test).** Super-additivity **survives**: +0.0333 continuous / +0.0384 binary, **13 / 10 informative clusters**, exact cluster sign-flip **p = 0.0076 / 0.0078**, and its random-triple control is **inert** (+0.0066, p=0.25). ⚠ **But the headline framing — that it *exceeds the matched control* — does NOT reach significance**: the SA-minus-control contrast is +0.0268 continuous / +0.0303 binary at **p = 0.055**, narrowly short. "Significant, with an inert control" is a weaker statement than "significantly greater than its control", and the row previously asserted the latter. `superadditivity_signflip.json`. Original text follows. **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
-| **§2.6** | Does any intervention preserve comprehension? | ⚠ **p RESTATED 2026-08-22.** The effect **survives** an exact cluster sign-flip test and the test discriminates properly: arm **+0.2795** (reproduces exactly) at **p=0.0312**, double-random control at **p=0.8750**. But the published **p=0.00099 is below the attainable floor** for a 6-domain design (2/2⁶ = **0.03125**), so it is a bootstrap/parametric p and **must not be read as clustered evidence** — quote the CI [+0.175, +0.384], or p ≤ 0.031. ⚠ On the *semantic* readout the cluster test is **uninformative**: arm **+2.4528** and inert control **+0.0502** both return p=0.0312, since with 6 domains the floor is hit whenever all cluster nets share a sign — a 50× difference in effect size is invisible to it. `comprehension_signflip.json`. Original verdict follows. | **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` moves the model's reading of the codeword **for this concept pair**, on an instrument that can represent both answers. ⚠ **Narrowed 2026-08-21:** this row previously said "does what its name claims". It does not license that — R-24 shows a pure codeword swap moves `d_surface` further than a pure concept swap, and all evidence in this row is `carrot↔bomb`. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
+| **§2.6** | Does any intervention preserve comprehension? | ⚠ **p RESTATED 2026-08-22.** The effect **survives** an exact cluster sign-flip test and the test discriminates properly: arm **+0.2795** (reproduces exactly) at **p=0.0312**, double-random control at **p=0.8750**. But the published **p=0.00099 is below the attainable floor** for a 6-domain design (2/2⁶ = **0.03125**), so it is a bootstrap/parametric p and **must not be read as clustered evidence** — quote the CI [+0.175, +0.384], or p ≤ 0.031. ⚠ On the *semantic* readout the cluster test is **uninformative**: arm **+2.4528** and inert control **+0.0502** both return p=0.0312, since with 6 domains the floor is hit whenever all cluster nets share a sign — a 50× difference in effect size is invisible to it. `comprehension_signflip.json`. Original verdict follows. **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` moves the model's reading of the codeword **for this concept pair**, on an instrument that can represent both answers. ⚠ **Narrowed 2026-08-21:** this row previously said "does what its name claims". It does not license that — R-24 shows a pure codeword swap moves `d_surface` further than a pure concept swap, and all evidence in this row is `carrot↔bomb`. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
 | **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
 
 ### §18: the outcome label, settled
@@ -893,7 +915,7 @@ all-or-nothing.
 
 This is the question `dense_two_layer` was built for and can never answer: it is **structurally
 infeasible** (it needs ≥16 chosen layers, at which point it is not a two-layer arm), and the pre-fix
-code met that by silently delivering 7,264 of 56,832 edges — 87% short — while still reporting the arm
+code met that by silently delivering 7,264 of 56,832 edges — 87% short — while still reporting the arm ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 as edge-count-matched. It is now skipped **deliberately**, with the reason recorded in `summary.json`
 and charged to the FailureLedger. The tie is broken from the feasible side instead.
 
@@ -2506,7 +2528,7 @@ categorical proxy — no Userness/CoTness probe was fitted.
   is uninterpretable. Fixed; re-run outstanding.
 - **By direction projection: the ASR effect stands; the comprehension half is ⛔ WITHDRAWN (R-6).**
   `project_out d_surface` at L8 was reported to leave comprehension **statistically unchanged**
-  (Δ +0.088, p=0.681 — "the only one of five arms that does"). That p is a log-odds between two tokens
+  (Δ +0.088, p=0.681 — "the only one of five arms that does"). That p is a log-odds between two tokens ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
   holding a median 4.4e-05 of the next-token mass, so it is not evidence either way. Coherence intact,
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
@@ -2663,7 +2685,7 @@ R-24 this is the expected result rather than a surprise, since both estimators a
 codeword token.
 
 **2. This gives §14-D's specificity control a live alternative explanation.** That control leans on
-`d_context` moving ASR by ~zero. But `d_context` is estimated far less reliably than `d_surface` — a
+`d_context` moving ASR by ~zero. But `d_context` is estimated far less reliably than `d_surface` — a ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 within-concept split ceiling of **0.83–0.92** against `d_surface`'s **0.995**. A noisier direction is a
 weaker intervention, so "`d_context` does nothing" and "`d_context` is measured badly" are **not
 separated** by that control as designed. Disclosed 2026-08-21; not previously connected in either

@@ -24,5 +24,11 @@
   "actionable": "A pooled multi-concept/multi-codeword bank is a genuinely better design for this question -- it is the cheapest available improvement and needs no new generations, only a refit over the existing three banks' cells. It is not sufficient on its own: dissolving the entanglement needs cells whose dominant variation is NOT the surface contrast.",
   "provenance": {
     "git_commit": "5ee2d33a5940318d139e90379e9363bdc42b5176"
+  },
+  "CORRECTION_2026_08_22_audit11": {
+    "actionable_withdrawn": "The 'treat b=0.207 as the dose a legitimate control must reach' instruction is withdrawn. Two controls: (1) pooling three IDENTICAL copies of the bomb bank leaves dose 0.8402 and max orthogonal dose 0.1143 unchanged, so pooling per se buys nothing -- all the gain comes from the three banks' d_surface being non-collinear (cos 0.607/0.662/0.170); (2) the direction carrying the new 0.207 dose is ITSELF a surface contrast (cos 0.66 with knife's d_surface, 0.61-0.63 with button's), and removing every bank's own d_surface from its own cells leaves 0.1614 of pooled spread against the single bank's 0.1598 -- pooling adds NO non-surface variance.",
+    "corrected_reading": "Pooling three codewords whose surface directions sit 50-80 degrees apart lets a bomb-orthogonal control carry OTHER codewords' surface dose. It does not move the design toward cells whose dominant variation is not the surface contrast, which was the stated goal.",
+    "arithmetic_unaffected": "All eight published numbers reproduce to 4 decimals; the error is in the actionable drawn from them, not the computation.",
+    "frontier_note": "The forced-|cos| row assumes a vanishing cross term; the true Pareto frontier gives ~0.63 single / ~0.38 pooled, so the published figures overstate the forced collinearity."
   }
 }

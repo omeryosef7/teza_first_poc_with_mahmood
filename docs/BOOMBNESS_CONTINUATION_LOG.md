@@ -351,7 +351,7 @@ log-odds while the norm-matched control is flat.
 
 **The semantic row is the mechanistically important one.** Removing the surface-identity direction
 moves the model **+2.41 log-odds** toward answering with the **concept** rather than the **codeword** —
-the first direct confirmation that `d_surface` does what its name claims, on an instrument that can
+the first direct confirmation that `d_surface` does what its name claims, on an instrument that can ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 represent both answers (the previous one structurally could not, since `carrot` has no capitalised
 single-token form). Together with the ClearHarm decomposition: `project_out d_surface` raises attack
 success, increases the coded reading, and increases the concept reading, while its control does none
@@ -559,7 +559,7 @@ So for every external row: `q = row.get("final_query_text") or ""` → `""` → 
 **Why nobody saw it.** The pre-fix `make_goal` returned a bare string with no status, so an empty goal
 was recorded as `judge_status: "ok"` and counted in ASR exactly like a real one. And an empty-goal
 StrongReject score still tracks *how harmful the response looks*, so the numbers moved with the
-refusal rate and looked entirely reasonable — arm D's 0.101 → 0.542 against refusal 0.877 → 0.447 is
+refusal rate and looked entirely reasonable — arm D's 0.101 → 0.542 against refusal 0.877 → 0.447 is ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 a coherent-looking table produced by an instrument that was never given the question.
 
 ### Proof, not inference
@@ -978,7 +978,7 @@ identifiable, and `role_style` is confounded with `family_id` in the bank as gen
 honest reading of the plan's intent, and it is recorded rather than silently skipped.
 
 **G2 survives the T5/T6 fixes.** The regenerated `g2_analysis_cwpos.json` still gives rho_pooled
-**0.3067** and within-domain **0.2618**, and now carries the multiplicity correction the layer selection
+**0.3067** and within-domain **0.2618**, and now carries the multiplicity correction the layer selection ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 never had: **maxT family-wise p = 0.0015**, `holm_rejected_within_domain = True`. The headline was
 selected over ~20 layers and it survives being told so.
 
@@ -1038,7 +1038,7 @@ widen --layers instead of silently cutting 12% of the target.
 ```
 
 The code comment records what the pre-2026-08-17 version did instead: **"on the real run it delivered
-7,264 of a needed 56,832 (87% short) while still being reported as the layer-matched dense arm."**
+7,264 of a needed 56,832 (87% short) while still being reported as the layer-matched dense arm."** ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 `dense_two_layer` exists to break the tie between *depth redundancy* and *edge count* — and it was
 8× short, so it broke nothing.
 
@@ -2723,7 +2723,7 @@ layer on the same prompts**; only the direction differs.
 | **`d_surface`** | **1.000** | 0.1071 | **+0.0305** | **0.0089** ✓ |
 | **`d_naive`** | **0.945** | **0.1232** | **+0.0449** | **0.0089** ✓ |
 
-**The behavioural effect tracks the cosine with `d_surface`.** Near-zero cosine → no effect; cos 0.945
+**The behavioural effect tracks the cosine with `d_surface`.** Near-zero cosine → no effect; cos 0.945 ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 → full effect; cos 1.0 → full effect. That is a dose-response *in direction space*, and it is the
 strongest evidence in the sprint that the effect belongs to a particular direction rather than to the
 act of projecting something out at L8.
@@ -3178,7 +3178,7 @@ carrots therefore scores as a successful bomb jailbreak.
 2. **`q3_D20` is the one arm with a real content change** (54.3% harmful keywords vs 0.0% everywhere
    else). That is a genuine effect and it is the *only* Qwen3 number worth anything here.
 3. **The Llama results are not affected by observation, not by assumption.** On Llama the benign
-   control for arm D was **+0.003**, i.e. the inflation did not fire there. The artifact is
+   control for arm D was **+0.003**, i.e. the inflation did not fire there. The artifact is ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
    model-specific in its manifestation, and the ClearHarm arms judge against the *actual* instruction
    (no codeword, no substitution), so their goal always matches the prompt.
 4. **§14 remains OPEN.** Arm D has still not been shown to replicate or fail to replicate on a second
@@ -3850,7 +3850,7 @@ the check forced, both of which are the check being right and my first draft bei
    was excised entirely will correctly have no other mention. Only "cited but not tabled" breaks the
    registry, so only that direction fails now.
 2. **Two numbering series exist**, which nothing had said out loud. R-1…R-5 belong to the sprint's
-   **first** series, recorded in `BOOMBNESS_SPRINT_PROGRESS.md` (R-5 = the "Boombness beats
+   **first** series, recorded in `BOOMBNESS_SPRINT_PROGRESS.md` (R-5 = the "Boombness beats ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
    refusalness 3.7×" claim), and the report's table starts at R-6. An ID below R-6 means a *different*
    series. That is now a row in the table, so the registry is closed rather than merely tidier — and
    the checker understands range labels so closing it that way actually satisfies it.
@@ -4636,7 +4636,7 @@ this tick because each needs care:
   corrected result.
 * **The short update is a modern head on a body three retractions old** — below the fold it still has
   G2 predictive, arm F doubling ASR, §18=B, and G3's superseded arithmetic.
-* **R-8 denotes two different things** (G1's +84% supersession, and "the capability channel").
+* **R-8 denotes two different things** (G1's +84% supersession, and "the capability channel"). ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
   `registry_check` cannot catch this: it verifies a cited ID *has a row*, not that the row is *about
   the same thing*.
 * **A third `#N` numbering series exists** (#3, #6, #7, #9), so §0's claim that the registry is closed
@@ -4726,7 +4726,7 @@ still found:
 
 | passage | said | now |
 |---|---|---|
-| §13 scoring | "Boombness predicts ASR (**met**)"; comprehension "**not established**"; controls "a **4-draw band**" | **rescored**: criterion 1 is **NO (R-18)**; comprehension **improves, +0.2795 p=0.0010**; the 4-draw band was **R-12**, one draw repeated — genuine bands now exist on both external sets |
+| §13 scoring | "Boombness predicts ASR (**met**)"; comprehension "**not established**"; controls "a **4-draw band**" | **rescored**: criterion 1 is **NO (R-18)**; comprehension **improves, +0.2795 p=0.0010**; the 4-draw band was **R-12**, one draw repeated — genuine bands now exist on both external sets | ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 | interaction | "Neither manipulation alone raises attack success — **together they more than double it**", +0.400 p=0.0001 | ⛔ **R-20** — a judge artifact, ~94% style; paired gain **+0.017, CI [−0.005, +0.038]**, control +0.012 |
 | G1 maturity | "**G1 is a pilot**: n=8 families from 2 domains" | **no longer a pilot** — 24 families, 6 domains; arm-selection caveat kept |
 | G1 query transplant | −71% | **−57.0%**, and flagged **sign-robust only on the diagonal** (13/13 negative in a harmful context, **5/13 positive** in a benign one) |
@@ -5097,7 +5097,7 @@ direction is lexical". I state it because it is true, but it cuts the same way: 
 **What this costs the sprint.** Nothing that was independently established. The surviving claim set is
 unchanged and was never routed through E12: removing `d_surface` at L8 raises ASR on AdvBench by
 **+0.0424 / 21 flips**, clearing both the 5-draw random band and the hard in-subspace null (z = 3.23),
-replicated at four layers under an independent judge, with a disruption-matched control at +0.0020.
+replicated at four layers under an independent judge, with a disruption-matched control at +0.0020. ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 What is gone is the *generality* gloss I put on it for one tick. **`d_surface` is demonstrated for
 `carrot↔bomb`. It is not demonstrated to be a concept axis, and this sprint has now tested that twice
 and failed both times.**
@@ -5701,7 +5701,7 @@ asked for. Judging submitted (772993-772998).
 
 **I wrote and committed `dose_curve.py` while the judge jobs were still running.** That is deliberate.
 Everything in this thread since R-23 has been a claim of mine failing a control, and the failure mode
-common to several of them was choosing how to read a number *after* seeing it — the "~7 band-sds"
+common to several of them was choosing how to read a number *after* seeing it — the "~7 band-sds" ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 framing, the effect-ratio pairing, the "smooth unimodal hump" reading. The cheapest guard against
 doing it again is to fix the analysis in a commit that predates the data. The only inputs available
 when it was written were the ladder's geometry (dose and cos per rung, computed on CPU) and the
@@ -5875,7 +5875,7 @@ Against the in-subspace null the arm exceeds every control at all four layers, b
 not sixteen sds.
 
 **My own sweep did not catch it, for the third time in this file, and for the same reason.** The R-23
-pattern pinned the literal `(?:7|~7)\s*band-sds`, because "~7 band-sds" was the phrasing in front of me
+pattern pinned the literal `(?:7|~7)\s*band-sds`, because "~7 band-sds" was the phrasing in front of me ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
 when I wrote it. The report said "~16". Widened to `~?\d+(?:\.\d+)?\s*band-sds` — **any** band-sd
 count, since every such claim is scored against the same discredited band. **Tested against a planted
 case**: an unqualified "~16 band-sds" appended to the short update → exit **1**; removed → exit **0**.
@@ -7429,3 +7429,61 @@ what to avoid hands the next person the same dead ends I already paid for.
 | 390 | 2026-08-22 | verified §20 item 6 by AST | **126/126** python files have substantive docstrings |
 | 391 | 2026-08-22 | wrote the section, executing every command first | my first verification wrongly said 5 of 6 scripts fail — **zsh word-splitting**, a hazard already in my notes |
 | 392 | 2026-08-22 | included a "what NOT to do" list | MDE ≈+0.03; adding layers worsens multiplicity |
+
+## Audit #11 — the guards were leaky, and my newest recommendation was actively harmful
+
+Tick 2026-08-22. Audit #11 mutation-tested all five guards and re-derived the pooled-design analysis.
+**Twelve findings, all confirmed.** The four that mattered most, verified myself:
+
+### A retracted control and a retracted conclusion, stated as fact in §0
+
+Report §0 read: *"A norm-matched **random** projection at the same layer is **inert** (−0.0062,
+p_cl=0.539), so the effect is specific to this direction rather than to removing any direction."*
+**Both halves are retracted** — the control by R-23/R-25 (far too weak a null), the conclusion by R-26
+— and the short update has said so since 08-22. The sweep's own C-12 pattern matches that sentence. It
+was exempted **because the sentence contains the words "rather than"**.
+
+### The exemption whitelisted a third of every document
+
+`MARKER` accepted `was` (78× in the report), `rather than` (40×), `earlier`, `previously`,
+`instead of`, `revision N` — ordinary English, not retraction vocabulary. Measured: **29–31% of blocks
+exempt, 13–14% on a weak marker alone.** And **list items were never scoped** the way table rows are,
+so one bullet saying "was" whitelisted its whole run — the table-row bug recurring verbatim in a
+construct nobody had scoped.
+
+Dropped the weak set, scoped list items. **My first attempt cut too deep** — removing `corrected`
+outright flagged 26 legitimate correction paragraphs, including registry rows reading
+"**CORRECTED** to L1, L4 and L31". Restored it with the left-boundary guard. The line sits between
+*weak* and *strong*, not between *long* and *short*, and I only learned that by over-correcting first.
+Now: every mutation the audit slipped past the old guard (S1, S3, S4, bare "was") is caught, strong
+markers still exempt, and **17 genuinely unmarked mentions** surfaced and were annotated.
+
+### A live broken table in §0 — including the FINAL outcome label
+
+Four gate rows sat with **no header and no separator**, rendering as a run-on paragraph of pipes:
+§14-L, §14-SA, §2.6 and **FINAL (§18) outcome label**. `markdown_structure_check` reported *"76 tables,
+0 problems"* because it only enters a table when it sees a separator — so a table without one is
+invisible, and its docstring claims it checks for exactly that. Restoring the header **immediately
+exposed a 4-cell row** the guard had never been able to see.
+
+### My pooled-design recommendation was wrong in the actionable, not the arithmetic
+
+All eight numbers reproduce to four decimals. But two controls the audit ran kill the instruction:
+**pooling three identical copies of the bomb bank changes nothing** (dose 0.8402, orthogonal 0.1143 —
+all the gain comes from the three banks' `d_surface` being non-collinear), and **the direction carrying
+the new 0.207 dose is itself a surface contrast** (cos 0.66 with knife's `d_surface`). Removing every
+bank's own `d_surface` leaves **0.1614** of pooled spread against the single bank's **0.1598** —
+**pooling adds no non-surface variance at all.**
+
+So *"treat `b = 0.207` as the dose a legitimate control must reach"* would have sent the next person to
+build **another codeword's surface contrast** — exactly the confound C-13 flagged. Withdrawn, with the
+corrected reading in its place. I wrote that instruction one tick ago while congratulating myself for
+replacing an adjective with numbers; the numbers were right and the advice was worse than none.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 393 | 2026-08-22 | struck §0's retracted control + specificity conclusion | exempted by the words **"rather than"** |
+| 394 | 2026-08-22 | dropped weak markers, scoped list items | **29–31% of blocks** had been exempt; 17 unmarked mentions surfaced |
+| 395 | 2026-08-22 | over-corrected first, then restored `corrected` | 26 legitimate correction paragraphs flagged before I found the right line |
+| 396 | 2026-08-22 | restored the §0 table's header/separator | the **FINAL outcome label** was rendering as loose text; a 4-cell row became visible |
+| 397 | 2026-08-22 | withdrew the pooled-design actionable | arithmetic right, **advice worse than none** |
