@@ -6676,6 +6676,32 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ✅ THE L12 SEED FIX LANDED — a real defect, correctly fixed, and it changed nothing
+
+`abrep_L12` was the only cell among 56 judge dirs judged at seed 20260821. Re-judged at the matched
+seed (job 774503, 495 rows):
+
+| | Δ vs baseline | se | p |
+|---|---|---|---|
+| old arm (seed 20260821) | +0.031367 | 0.009776 | 0.0059 |
+| **new arm (seed 20260816)** | **+0.030678** | 0.009491 | **0.0056** |
+
+| paired contrast over 20 controls | beats at p<0.05 | vs strongest | worst case |
+|---|---|---|---|
+| old arm | 20/20 | +0.01953, p 0.0043 | p 0.0091 |
+| **new arm** | **20/20** | **+0.01884, p 0.0040** | **p 0.0089** |
+
+✅ **L12's result is robust to the defect**: the arm moves by 0.0007 and every verdict is unchanged.
+
+⚠ **Worth stating plainly because the incentive runs the other way.** I found the mismatch, fixed
+it, and it made no difference — which is a *less* interesting outcome than either "the result
+collapsed" or "the result was fine all along and the worry was silly". Both of those are stories;
+this is neither. The defect was real (it invalidated a comparison), the fix was necessary (nobody
+could have known it was immaterial without doing it), and the answer is boring. **Reporting boring
+fix outcomes is how a reader learns which defects in this log actually moved numbers** — the
+baseline-seed artifact at L6 moved a verdict, this one at L12 did not, and that difference is only
+visible if both are written down.
+
 ## ⛔⛔ REVIEW #13 — THE SE WAS WRONG, AND CORRECTING IT REVERSES MY HEADLINE (in the result's favour)
 
 An audit of the just-updated citable section found three verdict-changing defects. I verified the
@@ -8935,9 +8961,20 @@ own.
 2. **`d_surface` is not harm-specific** — the category it was fitted on ranks seventh of the eight
    that move at all, and 8/8 movable categories are positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
-4. **Within L6–L12, causation is concentrated on the `d_surface` axis, by a SUBSET and a SUPERSET
-   control.** A random axis in the same 2×2 span, exactly orthogonal to `d_surface`, is inert at
-   **all four depths** — and, since 2026-08-22, against **20 orthogonal controls per depth on one
+4. **Within L6–L12, no low-dose direction in the concept subspace reproduces the effect** — by a
+   SUBSET and a SUPERSET control. ⛔ **NOT "causation is concentrated on the `d_surface` axis"**:
+   the producing artifact (`insubspace_null_by_layer.json → DOSE_CAVEAT`) states that `d_surface` is
+   essentially **PC1 of the cell-mean span** (cos 0.9998–1.0000), so the arm removes **0.81–0.88** of
+   that spread while every in-subspace control removes **≤0.13** — a **6–11× dose gap unrelated to
+   concept content**, with ρ(dose, effect) = **0.961** inside the control family. **A dose-matched
+   in-subspace control cannot exist** (the complement holds only ~0.16 of the spread in total), so
+   this is a **structural limit of the design, not a gap more angles can close**. The artifact's own
+   instruction is to *"read arm/max_control as NOT separating direction-identity from dose"*, and
+   this report omitted that entirely until review #13.
+   ⚠ **Depth selection:** L6/L8/L10/L12 are the top four of eleven **ranked by the very statistic
+   being re-tested**, chosen post hoc and uncorrected. A random axis in the same 2×2 span, exactly orthogonal to `d_surface`, **does not reach the arm at
+   any of the four depths** ⚠ (*not* "inert": at L8 three controls are individually significant
+   against baseline, p **0.0364 / 0.0440 / 0.0477**) — and, since 2026-08-22, against **20 orthogonal controls per depth on one
    seed-matched baseline**: **0 of 20 reach the arm at every depth** (rank p 0.0476 under both
    estimators). ⚠ Separation differs sharply: **L10 t +2.61 (every control moves the opposite way),
    L12 +1.58, L8 +1.35, L6 +0.17** — so only L10 is individually resolved, and L6's best control
@@ -8946,7 +8983,9 @@ own.
    ✅ **All four depths are swept at four angles each over the 2-D orthogonal complement — a
    systematic SAMPLE, not a bound. Not one of the **eighty** orthogonal directions (20 per depth)
    moves ASR past the arm**
-   (largest |Δ| 0.0129, smallest p 0.113), and at L12 a densification to eight angles left all
+   ⚠ (largest |Δ| **0.0172**, smallest p **0.0364** over the 80 controls on the common baselines —
+   the 0.0129 / 0.113 previously quoted here came from a **12-cell** run on the **retracted**
+   seed-20260821 baseline), and at L12 a densification to eight angles left all
    eight controls null. ⛔ "Exhaustive / a bound, not a sample" is **withdrawn**: ASR(θ) is a step
    function, and the measured function moves further *between* grid points (0.0137 at 22.5°
    spacing) than the largest value it takes *at* them (0.0120) — halving the spacing made that
