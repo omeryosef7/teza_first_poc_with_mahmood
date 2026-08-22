@@ -6885,3 +6885,41 @@ family tried** at Holm ≤ 0.002. The robust part of this sprint remains the ref
 | 331 | 2026-08-22 | ruled out the m=4 family | the four layers were outcome-selected from eleven |
 | 332 | 2026-08-22 | restated §0a and the short update as a **boundary**, not a verdict | did not pick the family that flatters the claim |
 | 333 | 2026-08-22 | recorded what is not marginal | arm C / arm D survive everything (≤0.002) |
+
+## §2.6 under the exact test — the claim survives, its p-value does not
+
+Tick 2026-08-22. The sweep had covered every AdvBench arm; **§2.6 (comprehension)** was the last live
+gate row never tested with the exact instrument. Its artifact records `n_clusters: 6`, and with six
+clusters the attainable floor is 2/2⁶ = **0.03125** — so the published **p = 0.00099** is *below what
+any cluster-level test on this design can return*. That is the R-27(f) shape again, so I checked it.
+
+| readout | arm | Δ | exact cluster p | control Δ | control p |
+|---|---|---|---|---|---|
+| **comprehension** | `project_out d_surface` | **+0.2795** | **0.0312** | −0.0041 | **0.8750** |
+| semantic forced-choice | same | +2.4528 | 0.0312 | +0.0502 | **0.0312** |
+
+**The comprehension claim survives, and the test discriminates properly there** — the arm sits at the
+floor while its double-random control returns 0.875. The delta reproduces the published +0.2795
+exactly. What does not survive is the **p-value**: 0.00099 is a bootstrap/parametric number and cannot
+be read as clustered evidence on 6 domains. The gate row now says to quote the CI, or p ≤ 0.031.
+
+**On the semantic readout the exact test is useless, and that is worth seeing.** The arm (+2.4528) and
+its inert control (+0.0502) return **the same p = 0.0312** — a fiftyfold difference in effect size is
+invisible, because with 6 domains the floor is reached whenever all cluster nets share a sign. This is
+audit #9's F7 caveat in its sharpest form: on small cluster counts the sign-flip p measures *how many
+domains agree*, not *how large the effect is*. The CI is the thing that carries magnitude, and it is
+what the row should cite.
+
+**One thing I got wrong on the way, and it is worth recording because I nearly reported it.** My first
+pass concluded the arm and baseline shared **no prompts** — which would have been a serious defect in
+§2.6's comparison base. It was my own bug: comprehension rows use `comprehension_logodds`, and I had
+loaded `semantic_logodds`. Both runs share all 288 prompt_ids. I checked before writing it up rather
+than after, which is the only reason it is a footnote instead of a retraction.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 334 | 2026-08-22 | noticed §2.6's p is below its own cluster floor | 0.00099 vs floor 0.03125 on 6 domains |
+| 335 | 2026-08-22 | ran the exact test | **claim survives** (arm 0.0312, control **0.8750**), delta reproduces exactly |
+| 336 | 2026-08-22 | restated the gate row to cite the CI, not p=0.00099 | a 6-domain design cannot support that p |
+| 337 | 2026-08-22 | found the semantic readout's test **cannot discriminate** | arm +2.45 and control +0.05 both at floor |
+| 338 | 2026-08-22 | caught my own "no shared prompts" error before publishing it | wrong field; all 288 ids shared |

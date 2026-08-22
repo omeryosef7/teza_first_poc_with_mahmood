@@ -1,0 +1,48 @@
+{
+  "question": "does \u00a72.6's comprehension claim survive an exact cluster sign-flip test?",
+  "published": {
+    "comprehension": "+0.2795, CI [0.175,0.384], p=0.00099, n_clusters=6",
+    "control": "-0.0041, p=0.63"
+  },
+  "results": {
+    "comprehension_usage|project_out_d_surface": {
+      "n": 288,
+      "domains": 6,
+      "informative": 6,
+      "delta": 0.27947553790484864,
+      "exact_cluster_p": 0.03125,
+      "attainable_floor": 0.03125
+    },
+    "comprehension_usage|Dctrl_double_random": {
+      "n": 288,
+      "domains": 6,
+      "informative": 6,
+      "delta": -0.004092160819305314,
+      "exact_cluster_p": 0.875,
+      "attainable_floor": 0.03125
+    },
+    "semantic_forced_choice|project_out_d_surface": {
+      "n": 288,
+      "domains": 6,
+      "informative": 6,
+      "delta": 2.4528198449665473,
+      "exact_cluster_p": 0.03125,
+      "attainable_floor": 0.03125
+    },
+    "semantic_forced_choice|Dctrl_double_random": {
+      "n": 288,
+      "domains": 6,
+      "informative": 6,
+      "delta": 0.05022182036191225,
+      "exact_cluster_p": 0.03125,
+      "attainable_floor": 0.03125
+    }
+  },
+  "VERDICT": "\u00a72.6's comprehension claim SURVIVES the exact cluster test and the test discriminates properly there: arm +0.2795 (reproduces the published value exactly) at p=0.0312, its double-random control at p=0.8750. But the PUBLISHED p=0.00099 is below the attainable floor for a 6-domain design (2/2^6 = 0.03125), so it cannot be a cluster-level p -- it is a bootstrap/parametric p and should not be read as clustered evidence. Quote the CI, or p <= 0.031, not 0.00099.",
+  "reading": "\u00a72.6 should be quoted with its bootstrap CI, which does carry magnitude information, and NOT with a cluster-level p -- 6 domains cannot support one. This is the audit #9 F7 caveat (p is a function of informative-cluster count, not effect size) in its sharpest form.",
+  "not_a_defect": "my first pass reported 'no shared prompts' -- that was my own error (comprehension rows use comprehension_logodds, not semantic_logodds). Both runs share all 288 prompt_ids.",
+  "provenance": {
+    "git_commit": "51310507c12f44d63c9e34fa2075bff0997da291"
+  },
+  "semantic_readout_caveat": "On semantic_forced_choice the exact test is UNINFORMATIVE: the arm (+2.4528) and its inert control (+0.0502) both return p=0.0312, because all 6 cluster nets share a sign in both cases and the floor is hit regardless of magnitude. With 6 domains a cluster sign-flip test cannot distinguish a 50x difference in effect size. This is audit #9's F7 caveat in its sharpest form, and it is why the CI -- which does carry magnitude -- is the right thing to quote for that readout."
+}
