@@ -136,6 +136,29 @@ same conclusion reached independently from the behavioural side.
 **~100%**, while refusal removal itself converts at only **92%**. So it is *not* simply a weaker arm C:
 the prompts it releases succeed more reliably than the ones arm C releases.
 
+⚠ **CORRECTED within one tick (2026-08-22).** The "equal and opposite to the last digit" framing above
+is **much weaker than it reads**. `refused` is not derived from the score — it is an independent
+keyword detector (`judge_boombness.py:414`) — but it agrees with `score < 0.5` on **3942 of 3960 rows
+(99.55%)**. Two instruments agreeing 99.55% of the time *must* have near-equal-and-opposite deltas, so
+the equality is a fact about the **instruments**, not about mechanism. I presented it as mechanism.
+
+**What survives is the disagreement, which is where the instruments carry independent information** —
+rows that stop refusing but still score low (partial or off-topic compliance):
+
+| arm | not-refused but low-scoring | added vs baseline |
+|---|---|---|
+| baseline | 2 | — |
+| `d_surface` L8 | 2 | **0** |
+| refusal alone (C) | 10 | **+8** |
+| both (D) | 13 | **+11** |
+
+**Removing refusal produces compliance that is not useful; removing `d_surface` produces none of it.**
+That is the real content of the "100% vs 92% conversion" asymmetry, and it is a genuine difference
+between the arms rather than an artifact of two near-duplicate measures.
+
+The capability-channel closure is **unaffected**: it rests on `d_surface` producing no gain on prompts
+that were *already not refusing*, which does not depend on the two instruments agreeing.
+
 ⚠ **What this does NOT show.** That `d_surface` acts on the refusal *mechanism*. A direction that
 merely makes a prompt look less harmful would produce the same signature. The claim here is narrower
 and firmer: the effect is **exhausted** by refusal reduction.

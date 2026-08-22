@@ -6734,3 +6734,53 @@ makes a prompt look less harmful would produce an identical signature.
 | 316 | 2026-08-22 | checked conversion of stopped-refusals | **100%** for `d_surface`, **92%** for arm C |
 | 317 | 2026-08-22 | closed the **retracted** "capability channel" (R-22) from the behavioural side | no gain on already-non-refusing prompts |
 | 318 | 2026-08-22 | recorded the caveat and the one pro-`d_surface` asymmetry | exhausted ≠ mechanism; 100% vs 92% is real |
+
+## C-14 — I read a near-tautology as a mechanism, one tick after writing it
+
+Tick 2026-08-22. Before spawning audit #9 I asked the question I should have asked *before* publishing
+last tick: **is `refused` derived from `strongreject_score`?** If it were, "Δ ASR = −Δ refusal exactly"
+would be a definitional identity, not a finding.
+
+**It is not derived** — `judge_boombness.py:414` sets `refused = bj.kw_refusal(text)`, an independent
+keyword detector on the generation. So not a tautology. **But empirically the two agree on 3942 of
+3960 rows — 99.55%.** Two instruments that agree 99.55% of the time necessarily have
+near-equal-and-opposite deltas. So the equality I reported to four decimal places is a fact about the
+**instruments**, and I presented it as a fact about **mechanism**.
+
+That is the same error I have logged repeatedly this session in other people's clothing: the "smooth
+unimodal hump" that was the dose curve, the bound "confirmed" by a violation. Here the tell was
+available in one command and I ran it a tick late.
+
+**What actually survives, and it is the more interesting half.** The two instruments carry independent
+information exactly where they *disagree* — prompts that stop refusing but still score low, i.e.
+partial or off-topic compliance:
+
+| arm | not-refused but low-scoring | added vs baseline |
+|---|---|---|
+| baseline | 2 | — |
+| `d_surface` L8 | 2 | **0** |
+| refusal alone (C) | 10 | **+8** |
+| both (D) | 13 | **+11** |
+
+**Removing refusal produces compliance that is not useful; removing `d_surface` produces none of it.**
+That is the real content of last tick's "100% vs 92% conversion" asymmetry — a genuine difference
+between the arms rather than an artifact of two near-duplicate measures. Corrected in the report, the
+short update, and inside `refusal_accounting.json` itself.
+
+**Unaffected:** the capability-channel closure, which rests on `d_surface` producing no gain on prompts
+that were *already not refusing* — that does not depend on the two instruments agreeing.
+
+**Audit #9 launched** at exactly this material: the four cross-arm analyses of the last four ticks,
+all produced without an auditor. I briefed it with my own main worry about the sign-flip test — that
+`obs` is a **pooled** mean while the permutation flips **cluster** nets, which may mismatch the
+statistic to its null under unequal domain sizes — plus whether the containment result survives a
+fragility-aware null, whether the 40 D-only flips are interaction or just a bigger dose, whether
+"order of magnitude larger" compares two unmatched interventions, and how much of this new work
+survives any multiplicity correction.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 319 | 2026-08-22 | checked whether `refused` is derived from the score | **not derived** — but agrees 99.55%, so the equality is near-forced |
+| 320 | 2026-08-22 | filed **C-14**; corrected report, short update, and the artifact | mechanism claim withdrawn; instrument claim stated |
+| 321 | 2026-08-22 | isolated what the instruments disagree about | `d_surface` **+0** unusable compliance, arm C **+8** |
+| 322 | 2026-08-22 | launched **audit #9** at four unaudited cross-arm analyses | briefed with the pooled-vs-cluster mismatch I most suspect |
