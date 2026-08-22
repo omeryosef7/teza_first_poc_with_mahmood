@@ -1,0 +1,27 @@
+{
+  "question": "is d_surface a DISTINCT channel from refusal, as \u00a718 claims?",
+  "n": 495,
+  "baseline_non_compliant": 463,
+  "flips": {
+    "B_d_surface_L8": 21,
+    "C_refusal": 102,
+    "D_both": 143,
+    "B_union_C": 104,
+    "D_only_novel": 40,
+    "random_triple_ctrl": 1
+  },
+  "containment": {
+    "B_in_C": 19,
+    "B_total": 21,
+    "pct": 90.5,
+    "expected_by_chance": 4.6,
+    "hypergeometric_p": 1.137e-11,
+    "B_only": 2
+  },
+  "VERDICT": "TWO findings pointing opposite ways, both real. (1) d_surface's flips are almost entirely CONTAINED in refusal's: 19 of 21, against 4.6 expected by chance (p=1.1e-11). The direct evidence that d_surface is a channel refusal does not already cover is TWO prompts. (2) But arm D produces 40 flips that NEITHER arm produces alone, which is genuine synergy and is what the super-additivity number measures.",
+  "reading": "'d_surface is a distinct second channel' is NOT supported -- 90% of its effect is inside the refusal effect. 'The two interact' IS supported -- removing both unlocks flips neither unlocks alone. The report's \u00a718 conflates these.",
+  "caveat": "Containment does not by itself prove d_surface acts THROUGH refusal; both arms may simply recruit the most fragile prompts, the same alternative raised in R-23 for the angle controls. What it does rule out is the claim that d_surface's behavioural effect is largely separate.",
+  "provenance": {
+    "git_commit": "6571ac5ce10b50fcc2b794bfb7b280a1f1e74754"
+  }
+}

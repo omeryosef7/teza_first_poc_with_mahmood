@@ -83,6 +83,34 @@ controls are properly inert. Every `d_surface`-specific claim is small (+0.018�
 **So the sprint's robust behavioural finding is about REFUSAL, and the `d_surface`-specific part is
 the weak half of it.** That was visible in the numbers all along; stating it plainly is new.
 
+### "Distinct channel" vs "interacting channels" — the report conflates them (added 2026-08-22)
+
+§18 and the FINAL gate call `d_surface` *"a distinct and interacting second channel"*. Those are two
+claims and the flip sets settle them in **opposite directions**
+(`channel_containment.json`, L8, n=495, 463 baseline-non-compliant):
+
+| | flips |
+|---|---|
+| arm B (`d_surface` alone) | 21 |
+| arm C (refusal alone) | 102 |
+| **B ∩ C** | **19** — *chance expectation 4.6, hypergeometric p = 1.1e-11* |
+| **B \ C** — flips `d_surface` produces that refusal does not | **2** |
+| arm D (both) | 143 |
+| B ∪ C | 104 |
+| **D \ (B ∪ C)** — flips *neither* arm produces alone | **40** |
+
+**"Distinct" is not supported.** 90% of what removing `d_surface` achieves is already achieved by
+removing refusal. The direct evidence that it reaches anything refusal does not is **two prompts**.
+
+**"Interacting" IS supported.** Removing both unlocks **40** flips that neither unlocks alone — 28% of
+arm D's total, and the thing the §14-SA super-additivity number is measuring. The random triple
+produces **1** flip.
+
+⚠ **Containment does not prove `d_surface` acts *through* refusal.** Both arms may simply recruit the
+most fragile prompts — the same alternative R-23 raised for the angle controls, and it is not
+excluded here. What containment *does* rule out is the claim that `d_surface`'s behavioural effect is
+largely separate from refusal's. It is not.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 **Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded

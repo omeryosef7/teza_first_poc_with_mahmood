@@ -6652,3 +6652,45 @@ it, so it is now stated in §0a and the short update rather than left to be infe
 | 308 | 2026-08-22 | assembled every arm into one table under one test | `arm_signflip_hierarchy.json` |
 | 309 | 2026-08-22 | stated the hierarchy plainly in both deliverables | refusal channel is **~10×** the `d_surface` channel |
 | 310 | 2026-08-22 | recorded that the numbers are old and only the comparison is new | the presentation, not the data, was hiding it |
+
+## "Distinct" and "interacting" are two claims, and they go opposite ways
+
+Tick 2026-08-22. Last tick's hierarchy raised an obvious question the report had never asked: if the
+refusal channel is ~10× the `d_surface` channel, **is the `d_surface` effect anything refusal does not
+already do?** §18 and the FINAL gate assert *"a distinct and interacting second channel"*. That is two
+claims. The flip sets settle them in opposite directions.
+
+| | flips |
+|---|---|
+| arm B (`d_surface` alone, L8) | 21 |
+| arm C (refusal alone) | 102 |
+| **B ∩ C** | **19** — chance expectation **4.6**, hypergeometric **p = 1.1e-11** |
+| **B \ C** | **2** |
+| arm D (both) | 143 |
+| B ∪ C | 104 |
+| **D \ (B ∪ C)** | **40** |
+
+**"Distinct" collapses.** Ninety percent of what removing `d_surface` achieves is already achieved by
+removing refusal, far above chance. The direct evidence that it reaches anything refusal does not is
+**two prompts**. A sprint built on `d_surface` being its own channel rests, behaviourally, on two
+AdvBench prompts.
+
+**"Interacting" holds, and holds well.** Arm D unlocks **40** flips that neither arm produces alone —
+28% of its total — against **1** for the random triple. That is what §14-SA's super-additivity number
+is measuring, and it is the one part of the two-channel story the data support.
+
+**The honest caveat, which cuts against my own new finding.** Containment does **not** prove
+`d_surface` acts *through* refusal. Both arms may simply recruit the most fragile prompts — the same
+alternative I raised in R-23 for the angle controls, and it is not excluded here. What containment
+rules out is narrower and still worth stating: `d_surface`'s behavioural effect is **not largely
+separate** from refusal's.
+
+This is the second tick running where the useful move was to compare things the report had only ever
+presented apart. Both times the numbers were already on disk.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 311 | 2026-08-22 | asked whether `d_surface`'s flips are inside refusal's | **19 of 21**, chance 4.6, p=1.1e-11 |
+| 312 | 2026-08-22 | measured the converse | arm D unlocks **40** flips neither arm produces alone (control: 1) |
+| 313 | 2026-08-22 | split §18's claim in two | **"distinct" unsupported (2 prompts); "interacting" supported** |
+| 314 | 2026-08-22 | recorded the fragile-pool caveat against my own finding | containment ≠ mechanism |

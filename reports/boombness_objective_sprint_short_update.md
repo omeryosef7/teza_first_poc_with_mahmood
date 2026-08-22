@@ -122,6 +122,14 @@ L12**, ns at L6). Both random controls inert (p=1.00, p=0.50). **The refusal cha
 magnitude larger than the `d_surface` channel** — the robust behavioural result here is about refusal,
 and the `d_surface`-specific part is its weak half.
 
+**"Distinct channel" and "interacting channels" are different claims, and they go opposite ways
+(added 2026-08-22).** Of the 21 prompts that flip when `d_surface` is removed at L8, **19 also flip
+when refusal alone is removed** (chance expectation 4.6, p=1.1e-11) — so the evidence that `d_surface`
+reaches anything refusal does not is **2 prompts**, and "distinct second channel" is **not supported**.
+But removing **both** unlocks **40** flips that neither unlocks alone (28% of that arm), against **1**
+for the random triple — so "interacting" **is** supported. ⚠ Containment does not prove `d_surface`
+acts *through* refusal; both arms may recruit the same fragile prompts.
+
 **Two things worth knowing before you act on any of this.** At matched dose, **`d_naive` beats
 `d_surface` by 38%** (+0.0586 / 29 flips vs +0.0424 / 21) — the 2×2's identification step moved *off*
 the stronger direction. And the scope is **one model, one concept pair**: the Qwen3-14B replication is
