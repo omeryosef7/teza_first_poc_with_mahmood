@@ -7069,7 +7069,54 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
-## 4h Code and Output Review — Review #14 (2026-08-23 02:20) — STOCKTAKE: WHAT SURVIVES FIVE REVERSALS
+## ⛔⛔ THE STOCKTAKE'S FRAMING WAS WRONG IN SEVEN PLACES — and one of them contradicts my own section headers
+
+> A framing audit — arithmetic explicitly excluded — found seven material defects in the stocktake
+> below. I verified the three decisive ones. **All confirmed.**
+>
+> ### ⛔ 1. "Five reversals, every one toward a weaker claim" is FALSE, and my own headings say so
+> **Review #12's title, three screens above, is literally "BOTH DIRECTIONS OF CORRECTION WERE
+> WRONG".** Review #13's is **"REVERSES MY HEADLINE (in the result's favour)"** and its text reads
+> *"the corrected profile — stronger than either version I published"*. At least **two of the five
+> reversals strengthened** a claim I had over-retracted. ⛔ **The monotone-subtraction story is what
+> licensed the whole "converging on truth" frame and the closing "self-review missed framing"
+> lesson.** Corrected: *three weakened a claim, two strengthened one I had over-retracted — the loop
+> is not monotone, it corrects in whichever direction my current story runs.*
+>
+> ### ⛔ 2. The one surviving direction-specificity claim is the one that was never stress-tested
+> Row 3 (Qwen3) is credited because *"the control could fail and didn't"*. Verified: it rests on
+> **one** subspace-matched control (`B11ctrl`), at **one** layer (L11), in **one** judging session —
+> **exactly the attempt-1 design that §B calls worthless** ("one draw certifies nothing, R5-7"). On
+> Llama that design became 4 → 12 → 20 → 24 controls and the claim died. ⛔ **So the organising
+> sentence "the durable results are localisation and dissociation, not direction-specificity" is
+> true only because the surviving instance is the untested one.**
+>
+> ### ⛔ 3. "A useful negative, not a failure" upgrades an INCONCLUSIVE into a result
+> Two paragraphs above it I wrote that the design *"cannot distinguish"* a small real effect from an
+> absent one. **That is inconclusive, not negative.** And **"no experiment we could construct
+> isolates direction from dose" is a one-directional argument**: the artifact proves the *control's*
+> dose cannot be **raised** (the complement holds 0.16 against the arm's 0.84). It says nothing
+> about **lowering the arm's** dose — which this repo does routinely with α-scaled interventions.
+> ✅ **That experiment is now running (774803–774806): `d_surface:project_out:12` at α = 0.10 / 0.15 /
+> 0.20 / 0.30, to bring the arm into the controls' ≤0.13 dose band at the strongest depth.** If a
+> dose-matched arm still beats its controls, direction matters; if it does not, the effect was dose.
+> **I declared this impossible while the means to test it were already in the codebase.**
+>
+> ### The remaining four, accepted
+> | # | defect | correction |
+> |---|---|---|
+> | 4 | §B holds **one** casualty while §11 lists ~35 retractions, several still live (F-3, R5-6, R4-3) | an 8-survivor/1-casualty ledger is not the shape of the record |
+> | 5 | "correction-resistant (rows 1–3)" | **none of rows 1–3 has ever been placed in a multiplicity family** — the thing that killed every other claim. "Correction-resistant" means *not yet corrected* |
+> | 6 | row 1's "+0.9949, largest by two orders of magnitude" | ⛔ **units error**: that is a `semantic_logodds` readout compared against ASR *probability* deltas. Also "carries most of" has **no all-position comparator** (B8), and the "replication" is on `carrot`, the codeword that **failed** the tokenisation audit |
+> | 7 | row 6 "no causal handle at L6–L12" | drops the stated limit: **n = 15**, so 0/15 has a **95% upper bound ≈ 0.20**. "No *detectable* handle" is the defensible form |
+>
+> ⚠ **And one over-retraction, for symmetry:** §B's last row says "nothing rejects" without the
+> qualification the Final Report gives in the same breath — **the within-depth IUT stands at raw
+> p 0.0183 (L12) and 0.0244 (L10)**; the depth-family correction applies because I made the claim at
+> four depths, not because the within-depth test failed. That result is neither in the survivor list
+> nor stated as a casualty.
+
+## ⛔ (FRAMING CORRECTED ABOVE) Review #14 — STOCKTAKE: WHAT SURVIVES FIVE REVERSALS
 
 Five headline reversals in two days, **every one toward a weaker claim**. That pattern is worth
 stopping on: a loop that only ever subtracts is either converging on the truth or eating itself, and
