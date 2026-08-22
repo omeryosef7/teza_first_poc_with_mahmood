@@ -58,6 +58,31 @@ dropping one domain, 3/6 domains). And the concept-transfer test failed both pre
 (R-23/R-24), so **`d_surface` names an estimator and is not shown to name a concept**. Everything above
 is `carrot↔bomb`, Llama-3.1-8B, one judge.
 
+### The effect hierarchy, under one consistent test (added 2026-08-22)
+
+Every AdvBench arm re-tested with the **exact cluster sign-flip** test, so the whole table uses one
+instrument rather than a mix of CR1, percentile bootstrap and permutation
+(`arm_signflip_hierarchy.json`):
+
+| arm | Δ ASR | net flips | informative clusters | exact cluster p | |
+|---|---|---|---|---|---|
+| **`d_surface` + refusal (D)** | **+0.2869** | 142 | 14/16 | **0.0001** | **SIG** |
+| **refusal alone (C)** | **+0.2061** | 102 | 14/16 | **0.0001** | **SIG** |
+| `d_surface` alone, L12 | +0.0364 | 18 | 9/16 | 0.0039 | SIG (**survives Holm**) |
+| `d_surface` alone, L8 | +0.0424 | 21 | 8/16 | 0.0078 | SIG (uncorrected only) |
+| `d_surface` alone, L10 | +0.0323 | 16 | 7/16 | 0.0156 | SIG (uncorrected only) |
+| `d_surface` alone, L6 | +0.0182 | 9 | 5/16 | 0.0625 | **ns** |
+| random triple control | +0.0020 | 1 | 1/16 | 1.00 | inert ✓ |
+| random single control | −0.0040 | −2 | 2/16 | 0.50 | inert ✓ |
+
+**Read the magnitudes, not just the stars.** The refusal channel is **an order of magnitude larger**
+than the `d_surface` channel and is significant with 14 of 16 domains informative; both random
+controls are properly inert. Every `d_surface`-specific claim is small (+0.018…+0.042), marginal
+(only L12 survives multiplicity), and **dose-confounded** (R-25/R-26/R-27).
+
+**So the sprint's robust behavioural finding is about REFUSAL, and the `d_surface`-specific part is
+the weak half of it.** That was visible in the numbers all along; stating it plainly is new.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 **Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded

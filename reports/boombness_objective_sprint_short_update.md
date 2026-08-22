@@ -114,6 +114,14 @@ geometric bound that was **algebraically false**.
 significance at any of five layers — but that design's **minimum detectable effect is ≈+0.03** and the
 largest effect it produced was **+0.0222**, so those nulls are uninformative about absence.
 
+**The effect hierarchy, one consistent test (exact cluster sign-flip, added 2026-08-22).**
+Removing `d_surface` **and** refusal: **+0.2869** (142 flips, 14/16 domains informative, p=1e-4).
+Removing **refusal alone**: **+0.2061** (102 flips, p=1e-4). Removing **`d_surface` alone**:
+**+0.018…+0.042** (5–9 domains informative; significant uncorrected at L8/L10/L12, **Holm only at
+L12**, ns at L6). Both random controls inert (p=1.00, p=0.50). **The refusal channel is an order of
+magnitude larger than the `d_surface` channel** — the robust behavioural result here is about refusal,
+and the `d_surface`-specific part is its weak half.
+
 **Two things worth knowing before you act on any of this.** At matched dose, **`d_naive` beats
 `d_surface` by 38%** (+0.0586 / 29 flips vs +0.0424 / 21) — the 2×2's identification step moved *off*
 the stronger direction. And the scope is **one model, one concept pair**: the Qwen3-14B replication is

@@ -6613,3 +6613,42 @@ to carry that to the claims it had not touched. That is cheaper than waiting to 
 | 304 | 2026-08-22 | tested the headline framing directly | **SA − control p=0.055 — not significant** |
 | 305 | 2026-08-22 | narrowed §14-SA in the gate row and the body | claim kept, over-strong framing withdrawn |
 | 306 | 2026-08-22 | confirmed §14-SA's published numbers are **continuous** | +0.0333 / +0.0268 reproduce exactly |
+
+## One test across every arm, and the hierarchy it exposes
+
+Tick 2026-08-22. Finished the sweep started last tick: **every** live AdvBench arm now re-tested with
+the same exact cluster sign-flip test, so the table uses one instrument instead of a mix of CR1,
+percentile bootstrap and permutation.
+
+| arm | Δ ASR | net flips | informative clusters | exact cluster p | |
+|---|---|---|---|---|---|
+| **`d_surface` + refusal (D)** | **+0.2869** | 142 | 14/16 | **0.0001** | SIG |
+| **refusal alone (C)** | **+0.2061** | 102 | 14/16 | **0.0001** | SIG |
+| `d_surface` alone, L12 | +0.0364 | 18 | 9/16 | 0.0039 | SIG, survives Holm |
+| `d_surface` alone, L8 | +0.0424 | 21 | 8/16 | 0.0078 | SIG uncorrected only |
+| `d_surface` alone, L10 | +0.0323 | 16 | 7/16 | 0.0156 | SIG uncorrected only |
+| `d_surface` alone, L6 | +0.0182 | 9 | 5/16 | 0.0625 | ns |
+| random triple control | +0.0020 | 1 | 1/16 | 1.00 | inert ✓ |
+| random single control | −0.0040 | −2 | 2/16 | 0.50 | inert ✓ |
+
+**§10.4-D survives decisively** — 14 of 16 domains informative, p=1e-4, with an inert control. So does
+arm C. Neither is marginal in the way the `d_surface`-alone arms are.
+
+**And putting them in one table makes the shape of the sprint's result hard to miss: the refusal
+channel is an order of magnitude larger than the `d_surface` channel.** +0.2061 against +0.018…+0.042.
+The large effect is robust with 14 informative domains; the small one has 5–9, survives multiplicity at
+one layer, and is dose-confounded (R-25/R-26/R-27) on top of that.
+
+I want to be careful about what is new here. **None of these numbers are new** — arm C's +0.2061 has
+been in the artifacts since 08-19. What is new is that they now sit in one table under one test, and
+that comparison says something the per-section presentation obscured: **the sprint's robust behavioural
+finding is about refusal, and the `d_surface`-specific part is its weak half.** The report has spent
+months on the weak half. That is worth a collaborator's attention more than any individual p-value in
+it, so it is now stated in §0a and the short update rather than left to be inferred.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 307 | 2026-08-22 | sign-flip tested arms D, C and both random controls | D **+0.2869 p=1e-4**, C **+0.2061 p=1e-4**, controls inert |
+| 308 | 2026-08-22 | assembled every arm into one table under one test | `arm_signflip_hierarchy.json` |
+| 309 | 2026-08-22 | stated the hierarchy plainly in both deliverables | refusal channel is **~10×** the `d_surface` channel |
+| 310 | 2026-08-22 | recorded that the numbers are old and only the comparison is new | the presentation, not the data, was hiding it |
