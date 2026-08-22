@@ -5483,7 +5483,49 @@ Plan-wise this is a stage I am choosing **not** to run, so per the standing inst
 flagging rather than deciding it: if you would rather have the definitive F-3 null on record, say so
 and I will run the 20 draws.
 
-## ⛔⛔⛔ F-3 SPECIFICITY IS **NOT** ESTABLISHED — the control band settles it, and against the claim
+## ⚠ REVIEW #12 — I OVER-CORRECTED F-3. "Settles it against the claim" is itself withdrawn.
+
+> ⛔ **After being caught over-claiming, I over-retracted — and that is the same failure mirrored.**
+> An audit checked the retraction below and found two load-bearing problems. I verified both.
+>
+> **1. The whole retraction rests on `seed03`, and `seed03` flips with the metric.** Holm at m=4:
+>
+> | metric | rejects | `seed03` adjusted p |
+> |---|---|---|
+> | `strongreject_score` | **3 of 4** | **0.05867** |
+> | `malicious_at_0.5` | ⚠ **4 of 4** | **0.04996** |
+>
+> Both sit on the knife-edge of 0.05, in opposite directions. **I reported only the metric on which
+> it fails** — which is precisely the selective reporting this section was written to condemn.
+>
+> **2. "The design CANNOT produce a significant result no matter what the arm does" is false.**
+> That is true only of the *rank* statistic, which is the least powerful one available and which
+> throws away magnitude. A random-effects test over the same four paired contrasts — treating draw
+> as the random effect, which is the natural model for "is this special among directions?" —
+> gives mean −0.030973, sd 0.017197, **t = −3.602, df 3, p ≈ 0.037**. Same data, same question,
+> rejects at 0.05.
+>
+> **3. "Against that vector the arm shows essentially no specificity at all" overstates.** The
+> `seed03` contrast is −0.005737 with **se 0.002803 — a fifth of the other three SEs**. It is a
+> small, tightly estimated effect (21% of the arm's own Δ), significant on the binary metric. Small
+> is not absent.
+>
+> **4. "Did not survive a second judging session" overstates.** The move was **two flipped rows**
+> (arm 5→6 of 495, baseline 33→32), a shift of ≈0.37 SE, against the repo's own pre-measured judge
+> drift of **0.00575**. The two sessions **agree within known noise**; only the 0.05 threshold moved.
+>
+> ⚠ Also corrected: the band cost ≈**1.2–1.8 GPU-hours**, not the "four" I claimed (~3.4× over);
+> the arm's magnitude is **7.326731**, 0.94% *below* the controls' 7.396252, so the cell label
+> `refusalness_m7.40` in the artifact is wrong (it is m7.33) and "all four printed the same ADD DOSE"
+> is true of the **controls only** — the arm's run predates the diagnostic.
+>
+> ✅ **What survives, and it is the honest verdict: F-3 specificity is NOT ESTABLISHED — and not
+> settled either way.** One draw in four genuinely does 79.2% of the arm's job, on a real band of
+> four verified-independent near-orthogonal vectors (pairwise cos 0.003–0.036). But the evidence is
+> **mixed, not against**: rank p 0.20, random-effects p 0.037, 3/4 or 4/4 depending on metric. **n=4
+> is too small to settle it**, which is what the ≥20-draw recommendation was for.
+
+## ⛔ (OVER-CORRECTED HEADLINE) F-3 SPECIFICITY IS NOT ESTABLISHED — the control band, and against the claim
 
 **Artifact:** `outputs/boombness_followup/f3_control_band.json` (job 773876). Arm and **four**
 independent random draws, every one at the measured magnitude **7.396252**, all six judged in one
