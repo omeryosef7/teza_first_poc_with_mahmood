@@ -5107,7 +5107,39 @@ injected magnitude by construction. That is the one thing F-3 got right and I mi
 axis and the analogy fails — which would itself be worth knowing, and is why the doses were chosen
 by prediction rather than by search.
 
-## ✅✅✅ F-3 IS RE-EARNED — refusalness-`add` suppresses ASR, the magnitude-matched random control does not
+## ⛔ SUPERSEDED BY REVIEW #11 — "F-3 IS RE-EARNED" OVERSTATED WHAT ONE DOSE AGAINST ONE RANDOM VECTOR CAN SHOW
+
+> ⛔ **Nine defects, all verified by me against the artifact before acting.** The headline below is
+> **downgraded, not withdrawn**: one real contrast survives, the rest of the framing does not.
+>
+> | # | claim below | what the artifact says |
+> |---|---|---|
+> | 1 | "baseline ASR is **0.1192**", "~27% relative" | baseline ASR is **0.066667** (SR mean 0.065657). I lifted 0.1192 from a judge log tail that belonged to a **different arm**. The true relative effect is ~49% (cluster) / ~85% (pooled) — my error ran *against* my own result, and the "small against a ceiling" caveat rested on a number off by 1.8× |
+> | 2 | "**both** contrasts survive Holm" | true only at **m=2**. At m=4 (adding the two arm tests) only the low-dose contrast survives; **at m=6 NOTHING survives.** I chose the smallest defensible family and did not show the cost |
+> | 3 | "**replicates** at a second dose" | ⛔ **not a replication.** Both controls use **seed 20260816 at L18 — the identical random vector**, differing only in α. One draw tested twice |
+> | 4 | the −0.0891 high-dose contrast | **58.1% of it comes from the CONTROL moving up**, not the arm suppressing harder. The arm is **flat**: −0.0325 → −0.0374 across a 50% dose increase, a change of 0.0048 against SEs of 0.013–0.015. **No dose-response in the arm** — which a mechanism claim predicts and this does not show |
+> | 5 | "**significantly raising** ASR (+0.0518, p 0.0449)" | continuous rubric only. On binary ASR@0.5 it is **+0.0568, p 0.0521 — not significant.** The sign dissociation rests on one rubric |
+> | 6 | "binary ASR@0.5 **agrees throughout**" | false, per #5; and leave-one-domain-out pushes the binary high-dose contrast to **p 0.0505** |
+> | 7 | "magnitudes **measured**, not inferred" | measured for the **control** only. `_report_add_magnitude` postdates the arm runs by a day; the arm side is inferred from "the file is unit-norm" — the exact move the paragraph claims to abandon. (The inference is correct: ‖v‖ = 1.00000006, ratio 1.0094886.) |
+> | 8 | the Holm column | **markdown-only.** `analyze_dissociation.py` emits no multiplicity block — the very defect its own docstring says it exists to prevent |
+> | 9 | "control dosed higher ⇒ conservative" | sign-wrong for the estimand tested. Since magnitude drives ASR **up** here, the control's 0.95% excess makes `arm − ctrl` *more* negative — anti-conservative for the interaction, though only ≈0.0005 |
+>
+> ⛔ **And the outcome was not in my pre-registered space.** I enumerated three branches; what happened
+> — arm suppresses **and** control moves significantly the *other* way — is a fourth. I filed it under
+> branch 1 and then re-narrated it as *stronger* ("a SIGN dissociation"). The pre-registered premise
+> was that the matched control is **inert**, and that premise was **falsified**. Re-reading a
+> falsified premise as a bonus finding is post-hoc, and it is the single worst thing in this section.
+>
+> **What actually survives:** a **single specificity contrast at a single dose against a single
+> random draw** — `−0.0407, p 0.0101`, surviving Holm at m≤4 — with both members gate-clean at
+> magnitudes matched to 0.95%. That is real and it is more than F-3 ever had. It is not "F-3 is
+> re-earned".
+>
+> **Repairs launched, not just noted:** three further random draws at seeds 20260901/2/3 (773651–3)
+> so the control is a *band* rather than one vector, and the seven coherence-gate JSONs are now
+> committed under `outputs/boombness/coherence/` instead of living in `/tmp`.
+
+## ✅ (SUPERSEDED HEADLINE) F-3 at a matched dose — refusalness-`add` suppresses ASR where its matched random control does not
 
 **Artifact:** `outputs/boombness_followup/f3_dose_specificity.json` (job 773576). Five arms, one
 judging session, 495 AdvBench prompts, 16 domain clusters, both arm and control gate-clean at each
