@@ -297,6 +297,50 @@ that were *already not refusing*, which does not depend on the two instruments a
 merely makes a prompt look less harmful would produce the same signature. The claim here is narrower
 and firmer: the effect is **exhausted** by refusal reduction.
 
+### The two channels separate in DEPTH — from within-session matched controls (added 2026-08-22)
+
+The one late-layer comparison in this sprint where **arm and control were judged in the same session**,
+so the judge-session term cancels rather than being carried as a 0.0057 uncertainty. Judging session
+`20260819_194551` contains the `refusalness:project_out` arms at L14/L16/L20 *and* their
+magnitude-matched random controls; the `fu2_*` batch pairs `d_surface:project_out:15` with its own.
+These arms were judged days ago and cited by no artifact until now — surfaced by the shard fix from
+audit #13.
+
+| arm | matched control? | ASR | control | Δ | domain-clustered Δ | cluster p | attainable floor |
+|---|---|---|---|---|---|---|---|
+| `refusalness` **L14** | ✅ same session | 0.1253 | 0.0646 | **+0.0606** | +0.0494 | 0.0039 | 0.0039 |
+| `refusalness` **L16** | ✅ same session | 0.1879 | 0.0667 | **+0.1212** | +0.1180 | 0.0005 | 0.0005 |
+| `refusalness` **L20** | ✅ same session | 0.1374 | 0.0667 | **+0.0707** | +0.0619 | 0.0039 | 0.0039 |
+| `d_surface` **L15** | ✅ same session | 0.0667 | 0.0667 | **+0.0000** | +0.0012 | 1.000 | 0.500 |
+| `d_surface` L29 / L30 / L31 | ✗ none in session | 0.0667 / 0.0626 / 0.0646 | — | +0.002 / −0.002 / 0.000 | — | *not quoted* | — |
+
+⚠ **All three refusalness p-values sit exactly at their attainable floor** (2/2⁹ = 0.0039 at k=9,
+2/2¹² = 0.0005 at k=12): every informative domain agrees in sign, which is the most the design can
+say. A p at its floor carries no effect-size information, so **quote the deltas, not the p's** — the
+same rule this report applies to the judge-pass interval.
+
+**The profile, put together with the in-subspace null's early layers:**
+
+| depth | `d_surface:project_out` | `refusalness:project_out` |
+|---|---|---|
+| L6 – L12 | **+0.0182 … +0.0424** | ~0 (L12: +0.0000) |
+| L14 – L20 | **+0.0000** (L15) | **+0.0606 / +0.1212 / +0.0707** |
+| L29 – L31 | ~0 | **+0.1111** (`unembed_refusal` L31) |
+
+The two channels are **anti-aligned in depth**: `d_surface` acts early and is dead from L15 onward;
+`refusalness` is dead at L12 and acts from L14 outward, still strong at the last layer. The crossover
+is sharp — one layer.
+
+This is also what rescues the depth dissociation from the architectural explanation. The full 3-d
+concept-span ablation moves ASR at L8 (**+0.0424**) and does nothing at L31 (**−0.0040**), which taken
+alone reads as "late edits cannot act". `unembed_refusal` at **L31 = +0.1111, 19× the judge drift**,
+shows they can. So `d_surface`'s late null is a fact about that direction, not about depth.
+
+⚠ **Not established here.** The L29/L30/L31 `d_surface` arms have no control in their session and are
+reported drift-scaled with no test. The refusalness arms are magnitude-matched to a *random* direction,
+not to `d_surface`, so this is "refusal projection beats a matched random projection at these depths",
+not a direct channel-vs-channel contest at equal dose.
+
 ### How to read every p-value in this report (added 2026-08-22)
 
 

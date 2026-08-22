@@ -8273,3 +8273,57 @@ scale here.
 | 473 | 2026-08-22 | checked containment before writing up `cell_span` | span **contains `d_surface` exactly** — the L8 tie is arithmetic, **not a finding** |
 | 474 | 2026-08-22 | found the **pre-registered depth test** unanalysed on disk | L8 +0.0424, L31 −0.0040 |
 | 475 | 2026-08-22 | its premise falsified by `unembed_refusal` L31 **+0.1111 (19× drift)** | late ablation **can** act → **dissociation survives**, second branch |
+
+## The two channels separate in depth, and for once the controls were judged alongside the arms
+
+Continuing through the arms audit #13 un-hid. Two coherent families were left: a `d_surface:project_out`
+late-layer set (L15/L29/L30/L31) and a `refusalness:project_out` sweep (L12/L14/L16/L20).
+
+**These do not need the drift workaround.** Judging session `20260819_194551` contains the refusalness
+arms at L14/L16/L20 **and their magnitude-matched random controls**; the `fu2_*` batch pairs
+`d_surface` L15 with its own. Arm and control judged together on the same prompts means the session
+term cancels — the first late-layer comparison in this sprint where a paired cluster test is actually
+legitimate rather than drift-scaled.
+
+| arm | matched | Δ | clustered Δ | p | floor | k |
+|---|---|---|---|---|---|---|
+| `refusalness` L14 | ✅ | **+0.0606** | +0.0494 | 0.0039 | 0.0039 | 9 |
+| `refusalness` L16 | ✅ | **+0.1212** | +0.1180 | 0.0005 | 0.0005 | 12 |
+| `refusalness` L20 | ✅ | **+0.0707** | +0.0619 | 0.0039 | 0.0039 | 9 |
+| `d_surface` L15 | ✅ | **+0.0000** | +0.0012 | 1.000 | 0.500 | 2 |
+| `d_surface` L29/30/31 | ✗ | +0.002 / −0.002 / 0.000 | — | *not quoted* | — | — |
+
+**Every refusalness p is exactly at its attainable floor** — 2/2⁹ and 2/2¹². Every informative domain
+agrees in sign, which is the most this design can say, and a p at its floor carries no effect-size
+information. Quote the deltas. This is the same rule I applied to the judge-pass interval, and it
+applies here for the same reason.
+
+**The profile:**
+
+| depth | `d_surface` | `refusalness` |
+|---|---|---|
+| L6–L12 | **+0.0182 … +0.0424** | ~0 |
+| L14–L20 | **0.0000** (L15) | **+0.0606 / +0.1212 / +0.0707** |
+| L29–L31 | ~0 | **+0.1111** (`unembed_refusal`) |
+
+**Anti-aligned in depth, with a one-layer crossover.** `d_surface` acts early and is dead from L15;
+`refusalness` is dead at L12 and acts from L14 outward, still strong at the last layer. This is also
+what rescues last tick's dissociation from the architectural reading: the concept-span ablation does
+nothing at L31, but `unembed_refusal` at L31 moves ASR **+0.1111 (19× drift)** — late edits can act, so
+`d_surface`'s late null is about the direction.
+
+Written into the report as a new subsection (inserted before a unique heading rather than replacing
+anything — the over-broad replacement that deleted two pinned figures earlier in this session is not a
+mistake worth repeating).
+
+**Not established.** L29/30/31 have no in-session control and get no test. And the refusalness arms are
+matched to a *random* direction, not to `d_surface` at equal dose — so this is "refusal projection
+beats a matched random projection at these depths", not a channel-vs-channel contest.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 476 | 2026-08-22 | found L14/L16/L20 arms judged **with** their matched controls | session term cancels — a legitimate paired test at last |
+| 477 | 2026-08-22 | refusalness depth profile | **+0.0606 / +0.1212 / +0.0707**, peak at L16 |
+| 478 | 2026-08-22 | all three p's **at the attainable floor** | quote deltas, not p's |
+| 479 | 2026-08-22 | `d_surface` L15 null **against its own control** | +0.0000 — dead by L15 |
+| 480 | 2026-08-22 | report subsection added by insertion, not replacement | 6/6 guards green |
