@@ -6676,6 +6676,52 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ⛔✅ PLAN §8 IS CLOSED — experiment 9 falls by implication, and the unjudged inventory is accounted for
+
+### Experiment 9 (add both) closes without a new run
+
+`addBoth` = `d_surface:add` **+** `refusalness:add`. Its `d_surface` leg has now been tested at
+**seven** doses spanning 0.0625 → 1.0 gap, and **every one fails the coherence gate**:
+
+| dose (gap) | scorable | uniq | gate |
+|---|---|---|---|
+| 0.0625 | 0.491 | 0.861 | ⛔ |
+| 0.125 | 0.455 | 0.865 | ⛔ |
+| 0.25 | 0.331 | 0.873 | ⛔ |
+| 0.5 | 0.117 | 0.853 | ⛔ |
+| 0.75 | 0.364 | 0.439 | ⛔ |
+| 1.0 | 1.000 | **0.210** | ⛔ |
+| 1.0 composed (`remR_addS`) | 1.000 | 0.225 | ⛔ |
+
+**0 of 7 coherent.** A composed arm cannot be coherent when one of its legs is degenerate alone, and
+the direct evidence agrees: `fuF_addBoth` at α = 1.0 gates at **uniq 0.219, 99.8% truncated**.
+
+⛔ **So plan §8's experiments 7 and 9 both close as evaluated negatives** — `d_surface` has no
+coherent operating range as an *additive* intervention on this setup, and neither does anything
+containing it. **Experiment 8 (add refusalness) is the only add-arm with a coherent window**
+(0.50–0.75 of one diff-of-means), and its specificity is **not established** (F-3, n=4 draws, mixed
+evidence). ✅ **Plan §8 is now fully answered: every one of its ten interventions has a verdict.**
+
+⚠ **This says nothing against `d_surface` itself.** The *ablation* (project-out) results are
+untouched and remain the sprint's strongest behavioural evidence. What is closed is the additive
+direction of the same axis.
+
+### The unjudged inventory, accounted for rather than left dangling
+
+46 `score_behavior` runs have never been judged; **13 are from 08-21…23** and every one is
+deliberate:
+
+| runs | why unjudged |
+|---|---|
+| `fuF_addR_g04`, `g08`, `fuF_addRand_g02`, `fuS_add_g00625/g0125/g05/g075`, `fuS_rand_g05` | ⛔ **failed the coherence gate** — the house rule forbids computing ASR on them, and not judging saved ~4,000 calls |
+| `q3determ` | ✅ a **byte-comparison** probe; judging was never part of its design |
+| `fuS_randS01/02/03_g075`, `fuS_rand_g075` | ⚠ **gate-CLEAN but deliberately unjudged**: they are the magnitude-matched random band at L8/0.75-gap, and **the arm they would be compared against is itself degenerate** (uniq 0.439). Judging them would produce ASR numbers with **no valid comparator** |
+
+⚠ The last row is the one worth stating explicitly, because four gate-clean runs sitting unjudged
+looks like an oversight and is not. Their only purpose was the **coherence** asymmetry (4 of 4 pass
+while the arm fails), which is a gate-level claim and needs no judging. **If the ASR question is ever
+revisited it needs a coherent `d_surface:add` arm, and this sprint has established there isn't one.**
+
 ## ✅✅✅ DEFINITIVE — COMPLETE 24-POINT GRID, PAIRED ESTIMATOR, SEED-MATCHED ARMS
 
 Every angular position on the half-circle is now sampled at every depth: **24 controls per depth, no
