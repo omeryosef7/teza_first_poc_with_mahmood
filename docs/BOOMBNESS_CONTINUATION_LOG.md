@@ -8103,3 +8103,57 @@ above for free. Spending API budget on it is a call worth making deliberately, n
 | 456 | 2026-08-22 | measured the ladder off the generations | add `d_surface` → **+138 refusals** at 0.5 vs **+39** for matched random |
 | 457 | 2026-08-22 | 4-draw band at 0.75 | band **all negative** (−143…−223), arm **+88** — outside, opposite sign |
 | 458 | 2026-08-22 | **declined to judge** | only 1 of 4 doses has arm+control; the dose question is already answered |
+
+## The deltas were never session-controlled, and L6 dies on it
+
+A concurrent line of work committed "L6 REFUTED" from a 20-control rank test with session-matched
+baselines. My own null at 20 angles does **not** reproduce it — I get L6 arm +0.0182 against a best
+control of +0.0101, 1.80×, no control exceeding the arm. Two results, opposite verdicts. Rather than
+adopt a commit message or dismiss it, I looked for the difference, and it is in one clause of theirs:
+*each delta formed against a baseline judged in its own session.*
+
+Mine are not. **At L6 the 20 controls span five judging sessions** (20260821_124554 / _162827 /
+_173739, 20260822_163302 / _165021) and every one is differenced against a baseline judged in a
+**sixth** (`abg_base`, 08-19). Every delta in `insubspace_null_by_layer.json` is
+`arm_ASR − baseline_ASR` across sessions, and nothing ever checked that the judge is stable between
+them.
+
+**It is not.** Judging the *same generation directory* repeatedly — byte-identical text, so any
+difference is the judge — the AdvBench baseline scores **0.0646 … 0.0704 across 8 sessions**: a drift
+of **0.0057**. Two other generation sets give **0.0056** and **0.0061** independently. A consistent
+noise floor of roughly six-tenths of a point.
+
+| layer | arm − best control | ÷ drift | verdict |
+|---|---|---|---|
+| **L6** | **0.0081** | **1.41×** | ⛔ **inside session noise** |
+| L8 | 0.0242 | 4.22× | survives |
+| L10 | 0.0323 | 5.62× | survives |
+| L12 | 0.0263 | 4.57× | survives |
+
+So L6's "the arm beats every control" is not a fact about the model; it is within the range that
+re-judging the same text produces. That corroborates the concurrent result **by an independent route**
+and explains why theirs flipped: with session-matched baselines the drift stops cancelling in L6's
+favour. Corrected in four places in the report and two in the short update, including R-25's surviving
+clause, which rested on exactly this.
+
+**A rule of mine flipped the headline, and I threw it out.** Building the drift script I wrote three
+exclusion rules. v1 dropped judgings under 400 rows as "truncated" — false, ClearHarm's bank *is* 179
+rows. v2 dropped anything below the best row count for the same generations, which removed `ab_base` at
+**483/495 = 97.6%** — a complete run missing twelve rows, not an in-flight one — and `ab_base` happened
+to carry the **highest** ASR in the group. Drift collapsed 0.0057 → 0.0020 and **L6 flipped back to
+"survives at 4×"**. An exclusion rule invented mid-analysis that removes the inconvenient point is not
+a rule, it is a result being chosen. v3 keeps ≥90% of best coverage, is declared rather than tuned, and
+all three versions are recorded in the artifact because the choice moved the headline.
+
+**Not claimed.** Drift is measured on baseline runs; I have not shown the *arm* runs drift by the same
+amount, though there is no reason they would not. And this does not make L6 null — it makes the
+published L6 comparison uninformative, which is a different and weaker statement.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 459 | 2026-08-22 | audit #13 auditor spawned | running |
+| 460 | 2026-08-22 | concurrent session says L6 REFUTED; **my rerun disagreed** | chased the difference instead of picking a side |
+| 461 | 2026-08-22 | found L6's 20 controls span **5 judging sessions**, baseline from a **6th** | the null was never session-controlled |
+| 462 | 2026-08-22 | measured drift on byte-identical text | **0.0057** (8 sessions); **0.0056 / 0.0061** on two other sets |
+| 463 | 2026-08-22 | **L6 margin = 1.41× drift** → withdrawn; L8/L10/L12 4.2–5.6× → hold | corrected 4 sites in the report, 2 in the short update |
+| 464 | 2026-08-22 | my v2 exclusion rule flipped the headline; **discarded it** | dropped a 97.6%-coverage run that carried the highest ASR |

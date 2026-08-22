@@ -23,7 +23,7 @@
 >   unlabelled reads as a contradiction. ⛔ "against a matched random projection that is inert
 >   (−0.0062)" is **retracted (R-23/R-25)**: a random direction in 4096-d is near-orthogonal to
 >   everything and barely perturbs the model, so it is far too weak a null. Against directions inside
->   the *same* rank-3 cell-mean subspace the arm still wins at all four layers, but by
+>   the *same* rank-3 cell-mean subspace the arm still wins at **L8/L10/L12** — ⛔ **no longer at L6**, whose margin (0.0081) is **1.41×** the measured judge-session drift (0.0057) — but by
 >   **1.80×–3.60×**, not against an inert control.
 > * The effect is **localized to a band of layers, ~L6–L14 with a core at L8–L12** (scan-statistic
 >   window, permutation p=0.011 under layer-label exchangeability; no single layer survives Holm),
@@ -98,7 +98,7 @@ themselves the **top four of eleven** by this same statistic, which is why Holm 
 ⚠ The header block above says *"no single layer survives Holm"* — that is the **CR1-clustered t on the
 continuous score**; this is an **exact cluster sign-flip test on binary ASR**. They disagree because
 CR1 is anti-conservative when few clusters are informative (see R-27). Prefer the sign-flip test. The arm
-beats every direction in the same rank-3 cell-mean subspace (1.80× / 2.33× / 3.60× at L6/L8/L12; ⚠ this comparison is **dose-confounded** — R-25 **retracted** the reading that it shows *content* rather than *magnitude*;
+beats every direction in the same rank-3 cell-mean subspace at **L8/L10/L12** (2.33× / 3.60× at L8/L12; ⛔ **L6's 1.80× is withdrawn** — its margin is 1.41× judge-session drift, and its 20 controls span five judging sessions differenced against a baseline from a sixth); ⚠ this comparison is **dose-confounded** — R-25 **retracted** the reading that it shows *content* rather than *magnitude*;
 undefined at L10, where every control is ≤0). The gain is real refusal→compliance flips, not longer
 refusals (+0.0000 on the 440–451 both-refused rows, verified at all four layers). The dose-response is
 **saturating** (and monotone except at the top rung, where it falls by one flip).
