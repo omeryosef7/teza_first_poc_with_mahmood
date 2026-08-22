@@ -8327,3 +8327,60 @@ beats a matched random projection at these depths", not a channel-vs-channel con
 | 478 | 2026-08-22 | all three p's **at the attainable floor** | quote deltas, not p's |
 | 479 | 2026-08-22 | `d_surface` L15 null **against its own control** | +0.0000 — dead by L15 |
 | 480 | 2026-08-22 | report subsection added by insertion, not replacement | 6/6 guards green |
+
+## The equal-dose channel test existed all along — and two of its "controls" were overdosed 6× and 15×
+
+Last tick I said the missing experiment was a channel-vs-channel contest at equal dose. It had been
+run. Judging session `20260819_231331` holds `d_surface:add:8:0.25`, its `random:add:8:0.25` control,
+and two variants, **all judged together on the same prompts** — so the session term cancels exactly and
+a paired cluster test is legitimate.
+
+**But "equal dose" had to be earned, not assumed.** `score_behavior._report_add_magnitude` records that
+`refusalness` is dosed in its **own unit norm** (alpha == magnitude) while **every other direction is
+dosed in `d_surface`-gap units** (magnitude = alpha × gap). With gap(L8) = 6.0549 and gap(L18) =
+14.7925, identical-looking flags mean very different physical edits. These runs predate the `ADD DOSE`
+log line (added 2026-08-22), so I reconstructed the magnitudes from the fit payload:
+
+| contrast | arm magnitude | control magnitude | matched |
+|---|---|---|---|
+| `d_surface` add 0.25 vs `random` add 0.25 (L8) | 1.5137 | 1.5137 | ✅ **1.00×** |
+| `refusalness` add 1.0 vs `random` add 1.0 (L8) | 1.0 | 6.0549 | ❌ **6.05×** |
+| `refusalness` add 1.0 vs `random` add 1.0 (L18) | 1.0 | 14.7925 | ❌ **14.79×** |
+
+The last two are the F-3 trap verbatim, and my own script had labelled them "MATCHED RANDOM". Their
+controls sit at ASR 0.1778 and 0.1293 against a 0.0646 baseline — the overdosed random direction is
+degrading the model, not controlling for anything. **Withdrawn as controls, kept in the artifact and
+labelled**, because deleting them hides the trap instead of documenting it.
+
+**What the one genuinely dose-matched contrast says:**
+
+| contrast | arm | ref | Δ | clustered Δ | p | floor | k |
+|---|---|---|---|---|---|---|---|
+| `d_surface` add vs matched random, L8 | 0.0081 | 0.0626 | **−0.0545** | −0.0302 | 0.0156 | 0.0156 | 7 |
+| remove refusalness + add `d_surface` vs add `d_surface` | 0.1879 | 0.0081 | **+0.1798** | +0.1489 | 0.00049 | 0.00049 | 12 |
+| add both vs add `d_surface` alone | 0.0061 | 0.0081 | −0.0020 | −0.0016 | 1.00 | 1.00 | 1 |
+
+**Adding `d_surface` suppresses attack success against a magnitude-matched random direction** — 0.0081
+vs 0.0626 at identical injected magnitude, same layer, same session. That is direction-specific, and it
+is the mirror of the headline: removing `d_surface` raises ASR, adding it lowers ASR.
+
+**And the suppression is mediated by refusal.** Removing `refusalness` on top of the same `d_surface`
+addition takes ASR from 0.0081 to **0.1879** — a +0.1798 swing, every one of 12 informative domains
+agreeing in sign. Adding refusalness on top changes nothing (−0.0020, k=1). So `d_surface`'s additive
+effect runs *through* the refusal channel rather than alongside it, which is what the sprint's
+refusal-suppression conclusion predicts.
+
+Both surviving p's are **exactly at their attainable floor**, so quote the deltas.
+
+**This is not a rehabilitation of the ladder I retracted last tick.** That claim counted refusal with a
+regex that only ran on short outputs and measured refusal *shortening*. This is judged ASR against a
+magnitude-matched control in the same session — a different instrument answering a different question,
+on some of the same arms.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 481 | 2026-08-22 | found the equal-dose contest already run and judged | session `20260819_231331`, four arms together |
+| 482 | 2026-08-22 | reconstructed applied magnitudes rather than trusting alphas | gap(L8)=6.0549, gap(L18)=14.7925 |
+| 483 | 2026-08-22 | **two of my own "matched" controls were overdosed 6.05× and 14.79×** | withdrawn as controls, kept and labelled |
+| 484 | 2026-08-22 | the one dose-matched contrast | `d_surface` add **suppresses** ASR 0.0081 vs 0.0626, p at floor |
+| 485 | 2026-08-22 | removing refusalness undoes it | **+0.1798**, 12/12 domains, p at floor → effect runs **through refusal** |
