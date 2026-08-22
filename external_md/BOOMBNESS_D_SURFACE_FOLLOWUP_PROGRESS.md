@@ -5056,6 +5056,46 @@ reported.
 
 
 
+## 🔬 DENSIFICATION LAUNCHED — 20 controls per depth at L6 and L8 (774123–774138)
+
+**Decision taken, and on what basis.** I flagged the compute choice twice and had no answer; the
+loop instruction was re-issued instead. Blocking a third time would stall the sprint over a question
+that is **not** an authorization matter — this is routine compute in the sprint's own established
+methodology (angle sweeps already exist at L6/L8/L12), it is reversible, and it is the option I
+recommended. **So I ran my own recommendation and did not run the one I advised against:** the
+20-draw F-3 band remains **not launched**.
+
+**Design.** Eight new angles per depth at `k ∈ {1,3,5,7,9,11,13,15} of 24`. The existing 12 controls
+sit at even positions of a 24-grid, so the odd positions are all **new directions**, giving
+**20 distinct controls per depth**. Everything else replicates the existing angle runs exactly
+(AdvBench 495, same `fit_dir`, `max_new` 512, `whole_answer`, seed 20260816).
+
+**Why 20 and not 16 or 24:** the rank test's floor is 1/(n+1). At 12 controls that is 0.0769 —
+unreachable. At 20 it is **1/21 = 0.0476**, the smallest band that can clear 0.05 at all. Sizing the
+band to the test is the lesson from the F-3 design flaw, where I picked n=4 for a test whose floor
+was 0.20.
+
+### ⚠ Pre-registered, and the awkward branch is named first
+
+- **L6's arm stops being the extreme** (any of the 8 new angles reaches +0.0157) ⇒ rank p ≥ 2/21 =
+  0.095. **L6 is definitively not established**, consistent with everything else.
+- **L6's arm remains the extreme of 21** ⇒ rank p = 0.0476, which would make L6 *pass* a
+  distribution-free test. ⚠ **That would CONTRADICT the angle sweep's finding** (arm beats only 2 of
+  4 angles, worst case p 0.242) and the 75%-of-arm nearest control. **If that happens I must
+  reconcile the two, not adopt the favourable one** — the rank test and the paired contrast measure
+  different things, and a depth that passes one while failing the other is not "established", it is
+  *inconsistent*, and the inconsistency is the finding.
+- **L8's arm remains the extreme of 21** ⇒ rank p = 0.0476: **L8's direction-specificity would clear
+  a distribution-free bar for the first time**, having so far rested only on paired contrasts against
+  controls chosen one at a time.
+- **Any new angle exceeds the L8 arm** ⇒ L8 joins L6 as not established, and the flagship profile
+  reduces to L10/L12.
+
+⚠ **Whatever lands, the rank test does not retire the paired contrasts** — it answers "is this
+direction extreme among directions in the complement?", while the paired contrast answers "does this
+direction differ from that one?". Both belong in the report. Reporting only whichever is kinder is
+exactly the error review #11 caught.
+
 ## ⚠⚠ L6 IS QUANTITATIVELY THE F-3 CASE — verified at 12 controls, not 4, and at zero GPU cost
 
 **Artifacts:** `angle_band_L6_full.json`, `angle_band_L8_full.json`. Before launching a densification
