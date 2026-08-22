@@ -7286,3 +7286,37 @@ guards"* against R-1…R-27, fourteen corrections, twelve dead guards), while th
 | 374 | 2026-08-22 | labelled them in §0a | the discipline audit #8 forced on the small effect now applies to the large one |
 | 375 | 2026-08-22 | named the habit rather than logging a third oversight | rules adopted under correction get applied only at the correction site |
 | 376 | 2026-08-22 | fixed the split's dangling pointer, the provenance overstatement, and three stale counts | **audit #10 fully closed** |
+
+## Mechanising the habit instead of promising to remember it
+
+Tick 2026-08-22. Last tick I named a habit: *a rule I adopt under correction gets applied at the site
+of the correction and nowhere else, unless I deliberately sweep.* The useless response is to intend to
+do better. So I encoded the rule as a check.
+
+`pvalue_hygiene_check.py` flags any **p ≤ 0.031** quoted in a deliverable whose block carries no
+qualifier — no floor, no interval, no method name, no retraction marker. It is a **lint, not a proof**:
+it cannot know a claim's k, and it is calibrated to catch the one failure that has already happened
+three times, a small p presented bare in a section whose design cannot produce it.
+
+**First run: 13 unqualified blocks** — 11 in the report, 2 in the short update. I had applied the rule
+in **four** places and thirteen more needed it. That is the habit measured rather than asserted.
+
+One of them is worth quoting, because it is the rule failing in its own words: the short update says
+*"Domain-clustered (**6 domains**): arm B beats the random control by +0.109 (**p=0.025**)"* — a
+p **below** the 0.031 floor its own sentence establishes, one clause later.
+
+All 13 now carry the floor and point at §0b, with the six-domain ones getting the specific floor rather
+than the generic note. **Tested against a case it must fail**: a planted bare "p=0.0001" → exit **1**;
+removed → exit **0**.
+
+**The deliverables now have five guards**, each covering a distinct failure this sprint actually
+committed: retracted claims resurfacing, figures drifting between documents, numbers not matching
+artifacts, cells rendering in the wrong column, and now small p-values presented without their design's
+floor. None of them existed before the failure they guard against.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 377 | 2026-08-22 | wrote `pvalue_hygiene_check.py` | the named habit is now mechanical |
+| 378 | 2026-08-22 | first run | **13 unqualified blocks** against the 4 I had fixed by hand |
+| 379 | 2026-08-22 | annotated all 13, six-domain blocks with their specific floor | includes one block whose own sentence states the floor it violates |
+| 380 | 2026-08-22 | adversarially tested the guard | exit 1 planted / 0 clean; **all five guards green** |

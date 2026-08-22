@@ -469,7 +469,7 @@ and the re-run is outstanding.
 
 Domain-clustered (6 domains): arm B beats the **random** control by +0.109 (**p=0.025**) and the
 **orthogonal** control by +0.104 (**p=0.020**). ⚠ Against baseline *alone* it is **p=0.117** — so the
-effect is only visible against controls, and that is how we quote it.
+effect is only visible against controls, and that is how we quote it. ⚠ **p-rule (§0b): this design has 6 domains, so the attainable cluster floor is 0.031** — the p above is **bootstrap/parametric**, not clustered evidence. Quote the CI for magnitude.
 
 **The whole intervention picture is now coherent, and it is the reverse of what we assumed:**
 
@@ -529,7 +529,7 @@ completions of all eight (1.83× baseline). What survives on the style-immune ou
 ⚠ **The control is inert only on THIS condition, and reverses elsewhere.** On `direct_harmful` the same
 random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 → 0.54**, while arm F stays
 at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
-for the doublespeak population only, and is reversed where harm is explicit.**
+for the doublespeak population only, and is reversed where harm is explicit.** ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 ⛔ **RETRACTED (R-20).** ~~Neither manipulation alone raises attack success — together they more than
 double it.~~ ~~Interaction contrast +0.400 continuous, p=0.0001.~~ Arm F's gain is a **judge

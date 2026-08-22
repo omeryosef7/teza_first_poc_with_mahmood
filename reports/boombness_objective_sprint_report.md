@@ -418,7 +418,7 @@ here.
 | **G2** (§9) | Does Boombness predict attack success? | ⛔ **RETRACTED (R-18) — a null replicated across three independent clean samples.** `analyze_g2` filtered on `condition` only, so the published n=234 was 31% sibling families sharing demonstrations and 31% experimentally-manipulated rows. Within-domain ρ on clean rows: **−0.083** (n=60), **−0.052** (n=90), and **−0.066, p=0.493** (n=108, the powered re-run on a purpose-built block of rows whose demonstrations are disjoint from every existing family). The published **+0.2618 (p=5e-4)** is recoverable only by putting the contaminated rows back. |
 | **G3** (§10) | Can it be removed surgically? | ⚠ **Inference narrowed 2026-08-22.** G3's committed artifact reports **family-level SEM over 24 families in 6 domains**, with **no domain clustering** — the A11-12 fix that switched **G1** to a domain-level bootstrap was **never applied to G3**, so the two halves of one script use different inference. **FIXED in the script 2026-08-22**, not merely recomputed: `g3()` now calls a `_domain_boot_delta` bootstrap and emits `ci95` (clustered, citable) plus `ci95_family_level_UNDERSTATES` for **every** arm, under the same names the G1 path already used, so the two halves of the file are readable side by side. Re-computed with the domain bootstrap (`g3_clustered_intervals.json`), interval widths change by **×0.78–×1.65**: they **understate** most for the two arms that carry the claim (`no_demo_text` **×1.65**, `all_layers_demo` **×1.18**) ⚠ *(an earlier revision cited ×1.68/×1.21 from a one-off script; the regenerated canonical artifact gives ×1.65/×1.18, and ×1.21 was a different arm, `subsampled_all_layers_demo`)* and slightly *overstate* for several near-null arms. **Every delta is unchanged and the directional conclusions stand** — only the widths move, and **every null control's clustered CI still contains zero**, so G3's null claims survive clustering too. Original verdict follows. **Established, re-derived 2026-08-19** on 24 families with the ranking at `readout_pos` (R-7 discharged). Cutting **all** demo edges at all layers recovers **75.2%** of the deletion ceiling; **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001); and **6.25% of the edges does nothing however distributed** — the redundancy is in **edge count**, not depth. Codeword-scope cuts move the readout the **wrong way** (+1.33), so the meaning is in the demonstration **block**. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
-| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. | ⚠ **p-rule (§0b): this design has 6 domains, so the attainable cluster floor is 0.031** — the p above is **bootstrap/parametric**, not clustered evidence. Quote the CI for magnitude.
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — ⛔ **the comparator in this row is RETRACTED (R-23/R-25), struck 2026-08-22.** It read: *"+0.0422 against a 5-draw control band at +0.0012 (between-draw sd 0.0026), ≈16 band-sds, 16 clusters; the band is the citable comparator (plan §2.5)"*. That band is a **4096-d random** direction, near-orthogonal to everything and far too weak a null. Against directions **inside the same rank-3 cell-mean subspace** the arm still wins at every layer tested, but by **1.80×–3.60×**, not sixteen sds — and its exact cluster sign-flip p at L8 is **0.0078** (§0b). ⚠ The per-layer figure ~~+0.0305, p_cl=0.0089~~ is **uncorrected** — one of a 10-layer family in which **nothing survives Holm** — and must not be quoted as a result. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
 | **E12** | **Is `d_surface` a concept axis, or a `carrot↔bomb` estimator?** | ⛔ **An estimator — the transfer test FAILED, twice, and both failures are the result.** Behaviourally (R-23): an in-subspace direction **orthogonal** to `d_surface` (cos 0.0000) reproduces the knife-fitted arm exactly at L8 (+0.0182, 9 flips), and the knife arm does not clear that null (z=1.34; the bomb arm does, z=3.23). Representationally (R-24): holding the concept fixed and swapping only the **codeword** moves `d_surface` *further* (cos **0.5539**) than swapping only the concept (0.6117), against a 0.995 split ceiling and with identical family sets — so the 0.61 is not concept overlap. Both controls were pre-committed. `e12_insubspace_null.json`, `e12_codeword_control_cosines.json`. |
 | **§14-D** | **Is the effect specific to `d_surface`?** | ⛔ **RETRACTED (R-26) — the specificity control is confounded by DOSE.** The row's evidence was "`d_context` moves ASR by ~zero". But `d_context` removes only **0.13** of the cell-mean spread while `d_surface` removes **0.84** — a 6× dose gap, and 0.13 sits *inside the in-subspace controls' own dose range*, where nothing moves ASR regardless of meaning. The dose-matched comparison, from runs already on disk: **`d_naive` carries 94% of `d_surface`'s dose and produces a 38% LARGER effect** (+0.0586 / 29 flips vs +0.0424 / 21) — read narrowly: **cos(`d_surface`, `d_naive`) = 0.9613**, a ~16° rotation, not a rival direction. That near-collinearity is *forced*: a direction at this dose must have \|cos\| ≥ ~0.95 with `d_surface` (see the bound below). **Revised 2026-08-21 by the pre-registered dose ladder:** the identification step does not merely "buy nothing" — it moves you **off the stronger direction**. A ladder rung matched to `d_naive` on *both* dose (0.7969 vs 0.7919) and cosine-with-`d_surface` (0.9749 vs 0.9613) yields **+0.0444 / 22 flips** against `d_naive`'s **+0.0586 / 29**. `d_naive` beats every dose-and-cosine matched mixture of `d_surface` with the complement. The specificity retraction rests on `d_context`, not on this. `outputs/boombness/dose_vs_effect.json`. |
@@ -465,14 +465,14 @@ by the fit-free comparison above.
 
 Both things that blocked this decision have landed — **R-6 is resolved** (`project_out` does not damage
 comprehension; it *improves* the coded reading, +0.2795, p=0.0010) and **R-7 is discharged** (G3 re-derived
-at the correct token). So the label is decided here rather than deferred again.
+at the correct token). So the label is decided here rather than deferred again. ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 **The honest answer is C, and it needs an amendment the plan's four-way taxonomy has no box for.**
 
 | plan §18 option | verdict | why |
 |---|---|---|
 | **A. Strong positive** | **No** | *Adding* Boombness does not increase attack behaviour — steering the axis suppresses ASR at **both** signs (G4), and no GCG objective was built or should be. |
-| **B. Mechanistic but not causal** | **No** | B requires that "interventions do not affect ASR **or** destroy comprehension". **Both clauses fail.** Removing `d_surface` raises external-set ASR (+0.0305, p_cl=0.0089, 16 clusters, inert control), and comprehension is not destroyed — it *improves* (R-6). |
+| **B. Mechanistic but not causal** | **No** | B requires that "interventions do not affect ASR **or** destroy comprehension". **Both clauses fail.** Removing `d_surface` raises external-set ASR (+0.0305, p_cl=0.0089, 16 clusters, inert control), and comprehension is not destroyed — it *improves* (R-6). | ⚠ **p-rule (§0b): this design has 6 domains, so the attainable cluster floor is 0.031** — the p above is **bootstrap/parametric**, not clustered evidence. Quote the CI for magnitude.
 | **C. Refusal-only story** | **Closest** | On Llama refusal is the dominant channel: +0.190 against `d_surface`'s +0.031 on AdvBench. |
 | **D. Negative** | **No — but the margin narrowed on 2026-08-19** | ⛔ The original reason was *"G2 survives multiplicity correction and control for `n_examples`"*. **That reason is gone: G2 is retracted (R-18).** D is still rejected, but now only on the **intervention** evidence, which is the stronger ground anyway: `d_surface` is not "unstable, non-predictive or confounded after alignment fixes" — **removing it causally raises attack success on 495 external harmful prompts against an inert matched control** (§7c), it interacts with the refusal channel, and **G1 and G3 are both established** on independent core-design rows with the corrected readout. What D would require is that the metric fail to *do* anything; it does something, reliably, off-bank. What it does **not** do is *predict* — which is why the label is C-amended and not A. |
 
@@ -885,7 +885,7 @@ Domain-clustered over 6 domains, n=246 doublespeak behavioural prompts with ≥2
 The identical comparison in `benign_literal` — where there is **no** concept meaning at all — gives the
 **same sign and comparable magnitude** (n=162: L16 −0.105, L31 −0.131, all p < 0.004). At some layers
 doublespeak is more negative, at others benign is; there is **no consistent doublespeak-specific
-excess**.
+excess**. ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 **So this is a POSITION effect, not a semantic one:** the last occurrence of a word sits differently on
 the axis than earlier occurrences regardless of what it means. ⛔ The earlier
@@ -1354,7 +1354,7 @@ were adjacent and unlabelled until 2026-08-18; see the estimand note in the proc
 
 | layer | logit_lens ρ_within | direction ρ_within | probe ρ_within |
 |---|---|---|---|
-| 0 | **+0.274** (p=0.005) | +0.185 (0.099) | **+0.215** (0.034) |
+| 0 | **+0.274** (p=0.005) | +0.185 (0.099) | **+0.215** (0.034) | ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 | 4 | −0.211 (0.086) | **+0.324** (0.008) | +0.145 (0.243) |
 | 8 | −0.171 (0.154) | **+0.297** (0.015) | +0.087 (0.455) |
 | **12** | **−0.026** (0.818) | +0.228 (0.076) | **+0.284** (0.010) |
@@ -1624,7 +1624,7 @@ eighth. **An intervention cannot be measured against a floor.**
 made on **pooled** estimates, and neither Qwen3 number survives clustered inference (p=0.181, p=0.657).
 
 ✅ **What survives is Llama-specific and solid:** arm B on AdvBench, **+0.0305, p_cl=0.0089**, inert
-control (§7c above).
+control (§7c above). ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 ⚠ **Open, not negative:** whether `d_surface` is causal on Qwen3 at all. Its ClearHarm point estimate
 is large (ASR 0.134 → 0.279, refusal 0.749 → 0.564) and merely under-powered; AdvBench is a floor.
@@ -1794,7 +1794,7 @@ lived. So at one and the same layer:
 
 > `d_surface`'s projection **does not predict** attack success (within-domain ρ = **−0.066**, p = 0.49,
 > n = 108 independent prompts) — and **ablating that direction causally raises it** (+0.0322,
-> p = 0.0056, against an inert matched control).
+> p = 0.0056, against an inert matched control). ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 That is the report's central result, localized. A direction can be causally load-bearing at a depth
 where the scalar you read off it carries no predictive signal, because ablation and regression are
@@ -1830,11 +1830,11 @@ the doublespeak population, domain-clustered over 6 domains. ⚠ **Six domains m
 ⚠ **The control is inert only on THIS condition, and reverses elsewhere.** On `direct_harmful` the same
 random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 → 0.54**, while arm F stays
 at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
-for the doublespeak population only, and is reversed where harm is explicit.**
+for the doublespeak population only, and is reversed where harm is explicit.** ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 **Neither manipulation alone raises attack success — together they more than double it.**
 Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
-ASR thresholds 0.25 / 0.50 / 0.75.
+ASR thresholds 0.25 / 0.50 / 0.75. ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 ⚠ **That +0.400 is ~45% a mechanical artifact.** Arm A refuses on 284/420 rows, each scored exactly 0.0 by
 construction. On the rows where A did *not* refuse, **A−base = +0.094 (positive)** and the interaction falls
@@ -1953,7 +1953,7 @@ and those happen to be one benign (`benign_literal`, n=324, CI ±0.017) and one 
 **What is actually established** is the narrow claim:
 
 > Removing the concept component from the codeword position raises attack success **on natural
-> doublespeak prompts** (+0.056, p=0.0077, against an inert control).
+> doublespeak prompts** (+0.056, p=0.0077, against an inert control). ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 The earlier reading — "wherever there is an attack, and does nothing where there is not" — is
 withdrawn, and describing it as "a *stronger* statement" was backwards: it was a weaker-evidenced one.
@@ -2511,7 +2511,7 @@ evidence:
 | # | criterion | met? |
 |---|---|---|
 | 1 | Boombness predicts ASR across prompts | ⛔ **NO — RETRACTED (R-18).** ~~ρ=+0.307~~, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
-| 2 | Adding Boombness increases behaviour or relevant internal scores | **YES, once refusal is removed** — alone it *decreases* ASR by triggering refusal (0.057→0.676), but composed with refusal-removal it takes ASR 0.243→**0.548** (p<0.0001) where neither manipulation alone raises it. The earlier **NO** was a ceiling effect of refusal. ⚠ The gain is not conditional on the doublespeak mapping, so this is scored on behaviour, not on mechanism. |
+| 2 | Adding Boombness increases behaviour or relevant internal scores | **YES, once refusal is removed** — alone it *decreases* ASR by triggering refusal (0.057→0.676), but composed with refusal-removal it takes ASR 0.243→**0.548** (p<0.0001) where neither manipulation alone raises it. The earlier **NO** was a ceiling effect of refusal. ⚠ The gain is not conditional on the doublespeak mapping, so this is scored on behaviour, not on mechanism. | ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 | 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now properly controlled.** On AdvBench, +0.0422 against a **5-draw control band** at +0.0012 (sd 0.0026), ~~+0.056 (p=0.0077)~~ superseded on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
 | 4 | Comprehension is preserved | **YES, and better than 'preserved'.** ⛔ ~~p=0.681~~ is **R-6** (a 4.4e-05 tail). On the corrected whole-answer readout `project_out` **improves** comprehension: **+0.2795, p=0.0010**, control −0.0041 (p=0.63). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **YES for the projection result, PARTIAL for the additive one.** ⛔ The p=0.0014 figure previously quoted here came from a band whose four "independent draws" were byte-identical (retraction #7); on a **genuine** 4-draw band it is **p=0.043**. Where controls are unambiguous: the **projection control is inert on every condition** (−0.018 vs baseline, p=0.26) while the arm moves harmful conditions by +0.056; and the **composed random control** does nothing on doublespeak (p=0.116) — though it *reverses* on `direct_harmful` (+0.389), so specificity there is scoped, not general. |
