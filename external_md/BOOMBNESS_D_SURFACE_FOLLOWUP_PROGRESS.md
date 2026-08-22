@@ -6676,6 +6676,32 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## ⚠ MY VERIFICATION METHOD RAISED A FALSE ALARM — line-based grep on line-wrapped text
+
+Checking that review #13's corrections had actually landed, my sweep reported **0 occurrences** of a
+fix I had just applied and whose patch had reported success. Two candidate explanations: the patch
+silently failed, or the check is wrong.
+
+**The check was wrong.** The replacement text wraps across a line break, and a line-oriented `grep`
+cannot match a phrase spanning one. Re-running with whitespace normalised
+(`re.sub(r'\s+',' ',text)`) found all of them.
+
+✅ All review-#13 corrections confirmed present in the citable section: the `DOSE_CAVEAT` and its
+6–11× gap, the PC1 framing, "top four of eleven ranked by the statistic being re-tested", "does not
+reach the arm at any of the four depths", the three significant L8 controls
+(p 0.0364 / 0.0440 / 0.0477), and the corrected 0.0172 / 0.0364 envelope with its 12-cell
+provenance note. The two stale phrases that still appear (`causation is concentrated…`,
+`inert at L31`) survive **only** inside an explicit retraction quote and a correct unrelated row.
+
+⚠ **This is the third time today a verification step has been the thing that was broken** — after
+the baseline-seed check whose sign I inverted, and the `/tmp` manifest whose absence would have read
+as success. **A false alarm is the benign version of the same failure**: this time the check said
+"broken" when the work was fine; at L6 it said "fine" when the work was broken. Both come from
+trusting a check without testing the check.
+
+**Adopted:** whitespace-normalised matching for all future markdown verification sweeps, since
+every substantive edit in this log is line-wrapped prose.
+
 ## ✅ THE L12 SEED FIX LANDED — a real defect, correctly fixed, and it changed nothing
 
 `abrep_L12` was the only cell among 56 judge dirs judged at seed 20260821. Re-judged at the matched
