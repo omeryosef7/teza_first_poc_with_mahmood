@@ -6923,3 +6923,45 @@ than after, which is the only reason it is a footnote instead of a retraction.
 | 336 | 2026-08-22 | restated the gate row to cite the CI, not p=0.00099 | a 6-domain design cannot support that p |
 | 337 | 2026-08-22 | found the semantic readout's test **cannot discriminate** | arm +2.45 and control +0.05 both at floor |
 | 338 | 2026-08-22 | caught my own "no shared prompts" error before publishing it | wrong field; all 288 ids shared |
+
+## Stating the p-value rule once, because two audits found the same misreading
+
+Tick 2026-08-22. Audits #8 and #9 each found a version of the same error, and last tick found a third:
+a p-value being read as evidence of **effect size** when the test it came from measures **cross-domain
+consistency**. Rather than patch a fourth instance later, I wrote the rule down and applied it to the
+whole document.
+
+**The constraint is structural.** With k informative clusters the smallest attainable two-sided
+sign-flip p is 2/2ᵏ:
+
+| k | 5 | **6** | 8 | 9 | 14 | **16** |
+|---|---|---|---|---|---|---|
+| floor | 0.063 | **0.031** | 0.0078 | 0.0039 | 1.2e-4 | **3.1e-5** |
+
+**And the sprint's designs sit at exactly the awkward end.** The bank-based claims — G1 and §2.6 —
+cluster at **6 domains**. Clustering at their 24 *families* would drop the floor to ~1e-7 and would be
+**precisely the pseudo-replication R-18 was retracted for**, since families within a domain share
+demonstrations. So the floor is a property of the bank's design, not a knob.
+
+**The demonstration is what makes this concrete rather than pedantic.** On the semantic forced-choice
+readout the real arm (**+2.4528**) and its inert control (**+0.0502**) both return **p = 0.0312**. A
+fiftyfold difference in effect size is invisible to the test. On the comprehension readout the same
+test *does* discriminate — arm 0.0312, control **0.8750**. **The way to tell which case you are in is
+to look at the control's p**, which is not something I had been doing.
+
+So both deliverables now carry three rules: quote the **CI** for magnitude and the cluster p only for
+cross-domain consistency; treat a **p equal to its floor** as carrying no size information (every
+AdvBench arm here does, because their flips are one-directional); and treat any **published p below its
+design's floor** — §2.6's 0.00099, §14-B's 0.0089 — as bootstrap or parametric, legitimate as such but
+not clustered evidence.
+
+This is the cheapest thing I have done in several ticks and probably the most useful: it tells a reader
+how to read *every* number in the document, rather than correcting them one at a time after an auditor
+points at each.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 339 | 2026-08-22 | surveyed cluster counts across the headline artifacts | bank claims **G=6**, AdvBench **G=16** |
+| 340 | 2026-08-22 | computed attainable floors and why families cannot be the cluster | family-level clustering **is** R-18's retracted error |
+| 341 | 2026-08-22 | wrote the reading rule into both deliverables | CI for magnitude, cluster p for consistency, control's p to check discrimination |
+| 342 | 2026-08-22 | flagged the two published sub-floor p's as non-clustered | §2.6 0.00099, §14-B 0.0089 |

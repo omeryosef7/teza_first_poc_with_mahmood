@@ -1,0 +1,37 @@
+{
+  "question": "how should every p-value in this sprint be read, given its clustering?",
+  "why": "Two ticks running, the exact cluster sign-flip test turned out to answer a different question than the report's p-values implied. This states the rule once instead of per-claim.",
+  "attainable_floor_by_informative_clusters": {
+    "4": 0.125,
+    "5": 0.0625,
+    "6": 0.03125,
+    "7": 0.015625,
+    "8": 0.0078125,
+    "9": 0.00390625,
+    "10": 0.00195312,
+    "14": 0.00012207,
+    "16": 3.052e-05
+  },
+  "design_facts": {
+    "bank_based_claims_G1_and_2.6": {
+      "domains": 6,
+      "families": 24,
+      "floor_at_domain_level": 0.03125,
+      "why_not_cluster_at_families": "families within a domain share demonstrations; clustering there is the pseudo-replication R-18 was retracted for (its 'three independent clean samples' shared all 60 core rows)"
+    },
+    "advbench_claims": {
+      "domains": 16,
+      "floor": 3.05e-05,
+      "observed": "every arm's p EQUALS its floor, because flips are one-directional"
+    }
+  },
+  "THE_RULE": "In this sprint the cluster p answers 'does the effect point the same way in enough domains?' and NOT 'how large is the effect?'. Demonstrated: on the semantic readout an arm of +2.4528 and an inert control of +0.0502 both return p=0.0312, because with 6 domains the floor is reached whenever all cluster nets share a sign. So quote the CONFIDENCE INTERVAL for magnitude and the cluster p only for cross-domain consistency.",
+  "consequences": [
+    "A 6-domain claim can never show p < 0.031 at cluster level, however large the effect.",
+    "A p equal to its floor is uninformative about size -- check the control's p to see whether the test discriminated at all (comprehension: control 0.875, so it did; semantic: control 0.0312, so it did not).",
+    "Published p-values below a design's floor (\u00a72.6's 0.00099, \u00a714-B's 0.0089) are bootstrap or parametric, not clustered, and must not be described as clustered evidence."
+  ],
+  "provenance": {
+    "git_commit": "56555c9bf8e01ab54ada096fea70940b8c5f40ec"
+  }
+}

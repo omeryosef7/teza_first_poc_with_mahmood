@@ -154,6 +154,14 @@ acts *through* refusal; both arms may recruit the same fragile prompts.
 the stronger direction. And the scope is **one model, one concept pair**: the Qwen3-14B replication is
 **retracted (R-17)** and the concept swap failed both pre-committed controls (R-23/R-24).
 
+**How to read the p-values here.** The cluster p answers *"does this point the same way in enough
+domains?"*, not *"how big is it?"*. With k informative clusters the smallest attainable p is 2/2ᵏ —
+**0.031 at 6 domains**, 3.1e-5 at 16 — and every AdvBench arm in the full report sits exactly at its
+floor. Demonstrated: on one readout a real arm (+2.4528) and an inert control (+0.0502) both return
+p=0.0312. **Quote the CI for magnitude; check the control's p to see whether the test discriminated at
+all.** Published p's below a design's floor (§2.6's 0.00099 on 6 domains) are bootstrap numbers, not
+clustered evidence.
+
 **The objective.** Unchanged: **do not build it.** R-26 is fresh evidence against, not for.
 
 ---

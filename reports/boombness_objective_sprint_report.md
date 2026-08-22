@@ -177,6 +177,38 @@ that were *already not refusing*, which does not depend on the two instruments a
 merely makes a prompt look less harmful would produce the same signature. The claim here is narrower
 and firmer: the effect is **exhausted** by refusal reduction.
 
+### How to read every p-value in this report (added 2026-08-22)
+
+Two consecutive audits found the same misreading, so the rule is stated once here rather than
+per-claim (`how_to_read_the_p_values.json`).
+
+**The cluster p answers *"does the effect point the same way in enough domains?"* — not *"how large is
+it?"*** With k informative clusters the smallest attainable two-sided p is 2/2ᵏ:
+
+| informative clusters | 5 | **6** | 8 | 9 | 14 | **16** |
+|---|---|---|---|---|---|---|
+| attainable floor | 0.063 | **0.031** | 0.0078 | 0.0039 | 1.2e-4 | **3.1e-5** |
+
+**Demonstrated, not argued.** On the semantic forced-choice readout the real arm (**+2.4528**) and its
+inert double-random control (**+0.0502**) both return **p = 0.0312** — a fiftyfold difference in effect
+size is invisible, because with 6 domains the floor is reached whenever all cluster nets share a sign.
+On the comprehension readout the same test *does* discriminate (arm 0.0312, control **0.8750**). The
+way to tell which case you are in is **to look at the control's p**, not the arm's.
+
+**Three consequences a reader should apply throughout:**
+
+1. **Quote the confidence interval for magnitude, the cluster p only for cross-domain consistency.**
+2. **A p equal to its floor carries no size information.** Every AdvBench arm in this report sits
+   exactly at its floor, because their flips are one-directional.
+3. **Any published p below its design's floor is not clustered evidence.** §2.6's 0.00099 (6 domains,
+   floor 0.031) and §14-B's 0.0089 are bootstrap or parametric numbers; they are legitimate as such and
+   must not be described as clustered.
+
+**Why the bank-based claims are stuck at 6.** G1 and §2.6 cluster at **6 domains** (24 families).
+Clustering at families would give a floor of ~1e-7 — and would be **the pseudo-replication R-18 was
+retracted for**, since families within a domain share demonstrations. The floor is a real constraint of
+the bank's design, not a choice that can be optimised away.
+
 ### Reproducibility, stated rather than assumed (added 2026-08-22, audit #8)
 
 **Bank identity: RESOLVED, and it is clean.** All five headline judge runs recorded
