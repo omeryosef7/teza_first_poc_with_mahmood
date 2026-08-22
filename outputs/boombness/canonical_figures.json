@@ -46,6 +46,39 @@
       "artifact_value": 0.01818181818181818,
       "scope": "report_only"
     },
+    "state_L8_arm_delta": {
+      "regex": "L8 \\*\\*\\+(0\\.0\\d{3,4})\\*\\* \\(21 flips\\)",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0424"
+        ],
+        "reports/boombness_objective_sprint_short_update.md": [
+          "0.0424"
+        ]
+      },
+      "artifact_value": 0.04242424242424243,
+      "scope": "report_only"
+    },
+    "state_L12_arm_delta": {
+      "regex": "L12 \\*\\*\\+(0\\.0\\d{3,4})\\*\\* \\(18\\)",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0364"
+        ]
+      },
+      "artifact_value": 0.03636363636363636,
+      "scope": "report_only"
+    },
+    "state_mde": {
+      "regex": "minimum detectable effect at 80%\\s*\\n?\\s*power is \\*\\*\u2248 \\+(0\\.0\\d{1,3})\\*\\*",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.03"
+        ]
+      },
+      "artifact_value": 0.03,
+      "scope": "report_only"
+    },
     "layer_shape_p": {
       "regex": "permutation\\D{0,12}p\\s*=\\s*(0\\.0\\d{2,4})",
       "quoted_in": {
@@ -68,6 +101,6 @@
       "--out",
       "outputs/boombness/canonical_figures.json"
     ],
-    "git_commit": "190459f2ca2e0c107b903dc3668e784abffbc694"
+    "git_commit": "e4286c0dac54d3927cb0cecb71bb2da36ad6a875"
   }
 }

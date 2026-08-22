@@ -4662,7 +4662,7 @@ asymmetric-standard defect it has already retracted three claims for.
 
 | where | was | now |
 |---|---|---|
-| §0 headline | +0.0322 (**p=0.0056**) | +0.0322 vs a **5-draw band** at +0.0012 (sd 0.0026), ≈16 band-sds; per-layer p labelled **uncorrected, not quotable**; band licensed by the **shape test, p=0.0109** |
+| §0 headline | +0.0322 (**p=0.0056**) | ⛔ **the ≈16 band-sds comparator here is RETRACTED (R-23/R-25)** — +0.0322 vs a **5-draw band** at +0.0012 (sd 0.0026), ≈16 band-sds; per-layer p labelled **uncorrected, not quotable**; band licensed by the **shape test, p=0.0109** |
 | gate §14-L | "~L6–L12, **with a hard edge**"; "significant at L8/L10/L12" | "~L6–L14" (scan window), **no layer survives Holm**, shoulder **graded not hard** |
 | gate §14-B | +0.0305, **p_cl=0.0089** | **+0.0422 vs the band**, per-layer figure struck as uncorrected |
 
@@ -7113,3 +7113,61 @@ one-character change that silently removed a working check.
 | 356 | 2026-08-22 | added the reading note to §19 | bank answers: floor **0.031**, so p<0.0001/0.0001/0.0077 are not clustered evidence |
 | 357 | 2026-08-22 | sweep flagged my note; **the flag was correct** | I had cited the **retracted** 0.0014 as a live example |
 | 358 | 2026-08-22 | checked before loosening the pattern, and did not loosen it | every legitimate use is already markered — the bare pattern fires only on new ones |
+
+## Audit #10 — the sweep was disarmed by the word "uncorrected", and eight numbers were wrong
+
+Tick 2026-08-22. Audit #10 returned 18 findings on the restructured deliverables. The first one I
+verified explains most of the others.
+
+### The guard was blind, and the blind spot was one missing word boundary
+
+`MARKER` matched **`corrected`** with no left boundary — so any block containing **"un­corrected"**
+matched, and was skipped **wholesale**. The word that means *"NOT corrected"* disarmed the retraction
+guard. That is exactly how the **§14-B gate row** kept asserting the retracted *"≈16 band-sds … the
+band is the citable comparator"* while the sweep reported **clean** for days: the row calls its own
+p-value "uncorrected", and that single word exempted the block containing a retracted headline.
+
+This is the file's own documented failure mode — *"a 17-line table hid four retracted headlines behind
+one word"* — recurring through a regex detail instead of through block scoping. Fixed with
+`(?<![a-z])corrected` and `\bwas\b`. **Re-running immediately surfaced five hidden occurrences**,
+including §14-B. All five now marked.
+
+### Eight numbers were wrong, four of them mine from this session
+
+- **§14-B's comparator** — the retracted 4096-d band, still presented as *"the citable comparator"*.
+  Struck; the in-subspace comparison (1.80×–3.60×, exact p 0.0078 at L8) replaces it.
+- **99.55% → 99.05%.** I fixed this in the short update and the artifact two ticks ago and **left the
+  report stale**. The audit notes the report was the stale document, which is the reverse of the usual
+  direction and worth recording.
+- **My own p-rule's worked example was wrong.** It cited §14-B's `p_cl=0.0089` as a sub-floor p — but
+  §14-B clusters on **16** domains (floor 3.1e-5, 8 informative at L8 → 0.0078), so 0.0089 is *above*
+  both floors and is not an instance of the rule. **The example a reader would apply to the surviving
+  headline was the wrong one.**
+- **Multiplicity arithmetic.** I wrote "11 layer arms + 12 cross-arm tests" for the family giving
+  0.055. That is m=23, which gives 0.082. The 0.055 comes from **m=16**, which is what the artifact
+  actually names. Holm at m=11 is **0.035**, not the 0.043 I published.
+- **§0b contradicted itself**: it quoted L12 at **0.047** and concluded *"nothing survives family-wise
+  correction"* — 0.047 clears 0.05.
+- **G3 ratios**: I cited ×1.68/×1.21 from a one-off script; the regenerated canonical artifact gives
+  **×1.65/×1.18**, and **×1.21 was a different arm** (`subsampled_all_layers_demo`).
+- **"Order of magnitude"** overstates by ~2×: the real ratios are **4.9×** and **6.8×**, reaching 11×
+  only against L6.
+
+### Three documents were still asserting claims withdrawn elsewhere
+
+The short update's **top box** — the first thing a collaborator reads — still said *"the two channels
+interact"* and *"a **distinct and interacting** second channel"*, 100 lines above its own withdrawal.
+§7c and §18 re-asserted the same three claims in five more places, including a heading reading
+*"super-additivity is **ESTABLISHED**"*. Only the gate row had been narrowed. All struck.
+
+**The pattern across all of it:** I narrowed claims where the audit pointed and did not sweep for the
+same claim elsewhere — which is the two-deliverables failure at document scale, and the reason the
+guard mattering more than the individual fixes.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 359 | 2026-08-22 | verified the `MARKER` boundary defect | **"uncorrected" disarmed the guard**; §14-B hid behind it |
+| 360 | 2026-08-22 | fixed the boundaries; re-swept | **5 hidden occurrences** surfaced and marked |
+| 361 | 2026-08-22 | struck §14-B's retracted band comparator | replaced with the in-subspace 1.80×–3.60× and exact p |
+| 362 | 2026-08-22 | fixed 99.55%→99.05%, the p-rule example, m=16, ×1.65/×1.18, 4.9–6.8× | **four of the wrong numbers were mine from this session** |
+| 363 | 2026-08-22 | struck the withdrawn claims in the short update's top box, §7c and §18 | 7 further re-assertions removed |

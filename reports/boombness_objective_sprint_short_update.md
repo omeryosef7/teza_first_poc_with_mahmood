@@ -37,13 +37,20 @@
 >   in-subspace direction is inert regardless of meaning*. So its near-zero ASR says nothing about
 >   specificity. Its clustered delta is **+0.0045**, not zero (the pooled 0.00025 was the estimand
 >   switch C-12 retracted twice).
-> * Removing `d_surface` **and** refusal together exceeds the sum of the parts by
->   **+0.0268 [+0.0029, +0.0584]** beyond a matched random triple — the two channels interact.
+> * ⛔ **WITHDRAWN (2026-08-22), see the current-state block below.** Was: *"Removing `d_surface`
+>   **and** refusal together exceeds the sum of the parts by **+0.0268 [+0.0029, +0.0584]** beyond a
+>   matched random triple — the two channels interact."* The super-additivity itself survives an exact
+>   cluster test (p=0.0076) but the **contrast against that control is p=0.055**, and Holm over the
+>   session's tests takes it to **0.083**. "Interacting" is **cannot determine**: arm D's flip set is a
+>   near-superset of the other two, so pure dose predicts 39 of its 40 "novel" flips. The control is
+>   also **two** random projections, not a triple.
 > * **G1** (meaning lives in the demonstrations, not the codeword) and **G3** (the retrieval is
 >   attention-carried and massively redundant) both re-derived on a corrected readout.
 >
-> **§18 outcome label: C, amended** — refusal is the dominant channel on Llama, but `d_surface` is a
-> distinct and interacting second channel the label understates, and on Qwen3-14B the picture inverts.
+> **§18 outcome label: C, amended** — refusal is the dominant channel on Llama; ⛔ the clause that
+> followed — *"but `d_surface` is a **distinct and interacting** second channel the label
+> understates"* — is **withdrawn (2026-08-22)**: 19 of `d_surface`'s 21 flips are also refusal's, so
+> "distinct" rests on **2 prompts**, and "interacting" is cannot-determine (see above), and on Qwen3-14B the picture inverts.
 > ⛔ *An earlier revision of this document said "§18 settles at B". That is withdrawn: B requires that
 > interventions neither affect ASR nor destroy comprehension, and **both clauses fail.***
 
@@ -93,7 +100,7 @@ themselves the **top four of eleven** by this same statistic, which is why Holm 
 ⚠ The header block above says *"no single layer survives Holm"* — that is the **CR1-clustered t on the
 continuous score**; this is an **exact cluster sign-flip test on binary ASR**. They disagree because
 CR1 is anti-conservative when few clusters are informative (see R-27). Prefer the sign-flip test. The arm
-beats every direction in the same rank-3 cell-mean subspace (1.80× / 2.33× / 3.60× at L6/L8/L12;
+beats every direction in the same rank-3 cell-mean subspace (1.80× / 2.33× / 3.60× at L6/L8/L12; ⚠ this comparison is **dose-confounded** — R-25 **retracted** the reading that it shows *content* rather than *magnitude*;
 undefined at L10, where every control is ≤0). The gain is real refusal→compliance flips, not longer
 refusals (+0.0000 on the 440–451 both-refused rows, verified at all four layers). The dose-response is
 **saturating** (and monotone except at the top rung, where it falls by one flip).

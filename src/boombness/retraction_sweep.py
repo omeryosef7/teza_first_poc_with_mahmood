@@ -225,9 +225,17 @@ DELIVERABLES = [
 # four lines below its own retraction, inside a paragraph containing "Corrected", so this sweep passed
 # it and an independent audit caught it instead. The exemption is a heuristic, not a proof; claim-level
 # patterns (below) are the defence, because they match the assertion rather than the number.
+# ⛔ WORD BOUNDARIES ARE LOad-BEARING HERE (audit #10, 2026-08-22). `corrected` had no left boundary,
+# so **UNCORRECTED** matched it -- the word that means "not corrected" DISARMED the guard. That is how
+# the §14-B gate row kept asserting the retracted "≈16 band-sds" while the sweep reported clean: the
+# row says its own p is "uncorrected", and that one word exempted the whole block. Same hazard for
+# `corrected` inside `uncorrected`/`incorrected`, and for bare `was` inside `washed`/`wasted`.
+#
+# This is the file's OWN documented failure mode ("a 17-line table hid four retracted headlines behind
+# one word") recurring through a regex detail rather than through block scoping.
 MARKER = re.compile(
-    r"retract|withdraw|supersed|⛔|previously|earlier|revision \d|was\b|fake|not reportable|"
-    r"instead of|rather than|naive one-way|no longer|corrected", re.I)
+    r"retract|withdraw|supersed|⛔|previously|earlier|revision \d|\bwas\b|fake|not reportable|"
+    r"instead of|rather than|naive one-way|no longer|(?<![a-z])corrected", re.I)
 
 
 def sweep(paths):
