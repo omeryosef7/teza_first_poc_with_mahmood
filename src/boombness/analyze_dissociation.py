@@ -102,8 +102,36 @@ def main() -> None:
             **{f: paired_diff(base, provenance[x], provenance[y], f) for f in FIELDS},
         }
 
+    # ---- multiplicity over the interaction family, IN THE ARTIFACT.
+    # Review #11: the Holm column for the F-3 result was computed offline and lived only in the
+    # markdown -- the exact defect this script's docstring says it exists to prevent. It is now
+    # emitted here, and it reports EVERY family a reader might reasonably choose, because the
+    # choice of family did more work than any number in that table: at m=2 both contrasts survived,
+    # at m=6 nothing did, and only the small family was shown.
+    def _holm(pv):
+        items = sorted(((k, v) for k, v in pv.items() if v is not None), key=lambda kv: kv[1])
+        m, run, adj = len(items), 0.0, {}
+        for i, (k, v) in enumerate(items):
+            run = max(run, (m - i) * v)
+            adj[k] = min(1.0, run)
+        return {"m": m, "adjusted": adj,
+                "rejects_at_0.05": sorted(k for k, v in adj.items() if v < 0.05)}
+
+    multiplicity = {}
+    for f in FIELDS:
+        fam_inter = {k: v[f].get("p_cl") for k, v in inter.items()}
+        fam_cells = {k: v[f].get("p_cl") for k, v in cells.items() if f in v}
+        multiplicity[f] = {
+            "interactions_only": _holm(fam_inter),
+            "interactions_plus_all_cells": _holm({**fam_inter, **fam_cells}),
+            "note": "the narrow family (interactions only) is the pre-registered estimand; the wide "
+                    "family is what a reader gets if every reported test counts. Both are given so "
+                    "the family choice is visible rather than implicit.",
+        }
+
     out = {
         "script": "src/boombness/analyze_dissociation.py",
+        "multiplicity_holm": multiplicity,
         "purpose": "commit the L8/L31 double-dissociation cells that review #8 found were "
                    "markdown-only, and test the interaction rather than two marginal p-values",
         "estimand": "paired per prompt vs the same baseline, domain-clustered (G-1 df); identical "

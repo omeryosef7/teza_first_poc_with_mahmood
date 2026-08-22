@@ -5056,6 +5056,43 @@ reported.
 
 
 
+## ✅ THE F-3 CONTROL IS NOW A BAND OF FOUR, AND THE HOLM FAMILY IS IN THE ARTIFACT
+
+Two of review #11's findings repaired with runs and code rather than with wording.
+
+### The control band: three independent draws, all gate-clean at the identical magnitude
+
+| draw | seed | effective magnitude | uniq | 3-gram | scorable | gate |
+|---|---|---|---|---|---|---|
+| original | 20260816 | 7.396252 | 0.909 | 0.015 | 0.925 | ✅ |
+| new | 20260901 | **7.396252** | 0.918 | 0.009 | **0.974** | ✅ |
+| new | 20260902 | **7.396252** | 0.839 | 0.033 | **0.804** | ✅ |
+| new | 20260903 | **7.396252** | 0.929 | 0.014 | **0.848** | ✅ |
+
+All four printed the same `ADD DOSE … EFFECTIVE MAGNITUDE 7.396252`, so the band is magnitude-matched
+by measurement, not by assumption. **Judging all six arms in one session (773811)** — baseline, the
+refusalness arm, and the four controls — because judging the new draws separately would put arm and
+control in different sessions on the very contrast that carries the claim (R6-6).
+
+### ✅ The Holm family is now emitted by the producing script, and BOTH families are reported
+
+`analyze_dissociation.py` now writes a `multiplicity_holm` block. It reproduces the hand computation
+exactly, and it deliberately publishes the wide family alongside the narrow one:
+
+| family | m | Holm-adjusted | rejects |
+|---|---|---|---|
+| interactions only (pre-registered) | 2 | 0.0202 / 0.0229 | **both** |
+| interactions + all six cells | 6 | best **0.0605**, rest 0.1108–0.2821 | **none** |
+
+⛔ **This is the number that matters most and it was the one missing.** Review #11 found that the
+Holm column existed only in this markdown — in a script whose own docstring says it exists to stop
+exactly that — and that I had shown only the family in which the result survives. **Now a reader
+sees both without having to ask**, which is the only honest way to report a result whose
+significance is family-dependent.
+
+The code comment says why in one line: *"the choice of family did more work than any number in that
+table."*
+
 ## ⛔✅ EXPERIMENT 7 CLOSES AS AN EVALUATED NEGATIVE — and the magnitude-matched asymmetry got sharper
 
 **Artifact:** `outputs/boombness/coherence/f3_gate_dsurface_full.json`. Six doses of
