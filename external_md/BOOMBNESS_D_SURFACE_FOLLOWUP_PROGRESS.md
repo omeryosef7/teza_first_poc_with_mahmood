@@ -6676,6 +6676,39 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
 
+## 🔬 COMPLETING THE GRID — 24 controls per depth, no angular gaps (774478–774493)
+
+I have now flagged the angular coverage limit twice without fixing it. Mapping it properly showed it
+is **uniform across all four depths**, not an L6/L8 quirk: every depth covers **20 of the 24**
+positions on the half-circle and each is missing **four positions in the upper range**
+(127.5°–172.5°).
+
+| depth | missing k (of 24) | degrees |
+|---|---|---|
+| L6, L8 | 17, 19, 21, 23 | 127.5, 142.5, 157.5, 172.5 |
+| L10 | 20, 21, 22, 23 | 150.0, 157.5, 165.0, 172.5 |
+| L12 | 19, 20, 22, 23 | 142.5, 150.0, 165.0, 172.5 |
+
+**16 jobs fill every gap**, giving a **complete, uniform 24-point grid at all four depths** — no
+interpolation assumptions anywhere on the half-circle, and the rank floor drops from 1/21 = 0.0476
+to **1/25 = 0.0400**.
+
+⚠ **Why this is worth the compute rather than a footnote.** L6's strongest control sits at
+**k = 15 = 112.5°, the last point of its dense region, with the sequence still rising monotonically
+into it** (−0.0019, +0.0014, +0.0094, +0.0103, +0.0130, +0.0157, +0.0169, **+0.0172**). A maximum at
+the edge of coverage is the one configuration this document's own "sample, not a bound" argument says
+you cannot extrapolate from — **the true envelope at L6 may be higher than measured, and L6 is
+already the depth where the arm leads by only 89.5%**. This is the cheapest way to find out.
+
+⚠ **Pre-registered:** if any of the four new L6 angles exceeds **+0.0192** (the arm), L6's arm is no
+longer ahead of every control and the honest verdict moves from "weakest depth" to "not ahead of its
+band". If none does, L6's lead survives a complete grid and the "maximum at the boundary" caveat is
+discharged. The same test applies at the other three depths, where the arms lead by more.
+
+**Guard applied:** the launch was Python-driven with an explicit `assert len(launched) == 16` — the
+cardinality check added after the zsh word-split incident, which has now caught or prevented two
+fan-out failures.
+
 ## ✅✅ THE COMPLETE FOUR-DEPTH PICTURE — 20 controls per depth, one seed-matched baseline, both estimators
 
 **Artifacts:** `angle_band_COMMON_baseline.json` (L6/L8) and `angle_band_L10_L12_COMMON.json`
