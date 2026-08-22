@@ -5056,6 +5056,59 @@ reported.
 
 
 
+## ⛔✅ THE 20-CONTROL RANK TEST — L6 is REFUTED, L8 PASSES distribution-free for the first time
+
+**Artifacts:** `angle_band24_new.json` + `angle_band_L{6,8}_full.json`. Twenty distinct controls per
+depth (12 at multiples of 15°, 8 at odd multiples of 7.5°), each delta formed against a baseline
+judged in its own session.
+
+| depth | arm Δ | n ctl | band range | **ctl ≥ arm** | **rank p** | nearest ctl, % of arm | arm z |
+|---|---|---|---|---|---|---|---|
+| **L6** | +0.0157 | 20 | [−0.0036, **+0.0172**] | ⛔ **3/20** | **0.1905** | ⛔ **109.7%** | +1.35 |
+| **L8** | +0.0278 | 20 | [−0.0134, +0.0138] | ✅ **0/20** | ✅ **0.0476** | 49.9% | +2.71 |
+
+### ⛔ L6: REFUTED. Three controls reach the arm and one EXCEEDS it
+
+The densified grid found orthogonal directions at **+0.0169 and +0.0172** — the second is **109.7%
+of the arm's own effect**. Three of twenty controls reach or beat it, so rank p = **0.1905**. This is
+the pre-registered branch 1, and it is now the **fourth independent line** on L6: the angle sweep
+(2 of 4, worst p 0.242), the 4-control band (nearest 75%), the 12-control band (nearest 75%), and
+now a control that simply **outperforms the arm**.
+
+⛔ **`d_surface` direction-specificity at L6 is not established, and should be stated as refuted
+rather than merely unproven.** The citable profile is **L8/L10/L12**.
+
+### ✅ L8: passes, and it is the first distribution-free result of the sprint
+
+Zero of twenty controls reach +0.0278; the strongest gets to **49.9%**. Rank p = **0.0476**.
+Until now L8's specificity rested on paired contrasts against controls chosen one at a time — the
+design that produced three F-3 downgrades. It now clears a test that makes no distributional
+assumption at all.
+
+⚠ **But 0.0476 is the design FLOOR** (1/21), i.e. the smallest p this band can produce. The result
+is maximally significant *and* barely under 0.05, and **a single additional control reaching the arm
+would move it to 0.095.** It should be reported as "passes at the minimum achievable p with 20
+controls", never as "p < 0.05" without that context.
+
+### ⚠⚠ THE METHODOLOGICAL FINDING — denser grids find STRONGER controls, at both depths
+
+| depth | max control, 12-angle grid | max control, +8 new angles | increase |
+|---|---|---|---|
+| L6 | +0.0118 | **+0.0172** | **+46%** |
+| L8 | +0.0112 | **+0.0138** | **+23%** |
+
+**The coarse grid understated the control envelope at both depths**, and L6's arm z fell from **+2.08
+to +1.35** once the missed controls were included. This is direct empirical vindication of the
+"**sample, not a bound**" retraction: doubling the resolution did not converge on a limit, it found
+larger values — precisely the signature of the step function that argument was retracted over.
+
+⛔ **This has a consequence the sprint has not yet paid for: L10 still rests on 4 angles and L12 on
+8.** If densification raises the control envelope 23–46% at L6 and L8, **L10's band [−0.0123,
+−0.0025] and L12's are very likely understated too**, and both are inside the citable profile. Their
+rank floors are also unreachable (1/5 = 0.20 and 1/9 = 0.11). **Neither has been tested at the
+resolution that just refuted L6**, and until they are, the honest statement is that L8 is the one
+depth with a distribution-free result — not that L8/L10/L12 all have one.
+
 ## ⚠ WHY THE TWO TRACKS NEEDED DIFFERENT CONTROL DESIGNS — and why "just use random seeds" would be a bug here
 
 Worth pinning down, because the F-3 work used **random draws** and the ablation work uses
