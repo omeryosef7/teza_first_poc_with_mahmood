@@ -5056,6 +5056,57 @@ reported.
 
 
 
+## PLAN §8 EXPERIMENTS 7 & 9 — a correction to my own framing, and the `d_surface`-add window predicted from the refusalness curve
+
+### ⛔ First, correcting myself: experiment 7 was NEVER affected by F-3
+
+I wrote last tick that experiments 7 and 9 "remain retracted for the same dose mismatch". **That is
+wrong for experiment 7,** and F-3's own retraction says so explicitly:
+
+> "**NOT affected: the bidirectional `d_surface` result.** Both `d_surface:add:8-8:0.25` and
+> `random:add:8-8:0.25` go through the same `:221` gap-unit path, injecting an identical [magnitude]"
+
+`d_surface:add` and its `random` control share the **gap-unit** dosing path, so they were matched all
+along. Only the **refusalness** branch took the `alpha * ‖v‖` no-op path, which is why `addBoth`'s
+refusalness leg ran at ~**1/59** the relative dose of its `d_surface` leg. **Experiment 9 is
+affected; experiment 7 is not.** I should have re-read the retraction before generalising from it —
+the same failure mode as reading F-3 and then reproducing it.
+
+### ⛔ But experiment 7 is still unanswered, for a different reason: every dose tried is degenerate
+
+Gating the three arms that were generated on 08-19 and never judged (free information, no compute):
+
+| arm | dose | uniq | 3-gram | truncated | verdict |
+|---|---|---|---|---|---|
+| `fuF_addS` | `d_surface:add:8:**1.0**` (one full gap) | **0.210** | **0.630** | **1.000** | ⛔ collapse |
+| `fuF_addBoth` | + refusalness leg at 1/59 relative dose | 0.219 | 0.615 | 0.998 | ⛔ collapse |
+| `fuF_remR_addS` | remove refusalness, add `d_surface` | 0.225 | 0.599 | 1.000 | ⛔ collapse |
+
+Together with the already-known `fuF25_addS` at **0.25** gap (scorable **0.331** — the short-refusal
+floor, healthy lexical stats), `d_surface:add` shows **exactly the same three-regime structure as
+refusalness**: terse-refusal floor at low dose, collapse at full dose.
+
+### 🔬 The prediction, and the sweep testing it (773608–773611)
+
+The refusalness curve's clean window sat at **0.50–0.75** of its unit, between a floor at ≤0.25 and
+collapse at 1.0. `d_surface:add` floors at 0.25 and collapses at 1.0. ⚠ **Pre-registered: if the
+regimes are a general property of additive steering rather than a fact about refusalness, the
+`d_surface` window should also be at 0.50–0.75 gap.** Testing precisely that:
+
+| job | arm | dose |
+|---|---|---|
+| 773608 | `d_surface:add:8` | 0.50 gap |
+| 773609 | `d_surface:add:8` | 0.75 gap |
+| 773610 | `random:add:8` (matched) | 0.50 gap |
+| 773611 | `random:add:8` (matched) | 0.75 gap |
+
+**The controls need no dose correction here** — same alpha, same gap-unit path, therefore identical
+injected magnitude by construction. That is the one thing F-3 got right and I mis-stated.
+
+⚠ If the window is *not* at 0.50–0.75, the three-regime structure is specific to the refusalness
+axis and the analogy fails — which would itself be worth knowing, and is why the doses were chosen
+by prediction rather than by search.
+
 ## ✅✅✅ F-3 IS RE-EARNED — refusalness-`add` suppresses ASR, the magnitude-matched random control does not
 
 **Artifact:** `outputs/boombness_followup/f3_dose_specificity.json` (job 773576). Five arms, one
