@@ -6965,3 +6965,45 @@ points at each.
 | 340 | 2026-08-22 | computed attainable floors and why families cannot be the cluster | family-level clustering **is** R-18's retracted error |
 | 341 | 2026-08-22 | wrote the reading rule into both deliverables | CI for magnitude, cluster p for consistency, control's p to check discrimination |
 | 342 | 2026-08-22 | flagged the two published sub-floor p's as non-clustered | §2.6 0.00099, §14-B 0.0089 |
+
+## Applying the new rule to G1 and G3 — one is clean, one uses a different inference to its own sibling
+
+Tick 2026-08-22. Last tick's rule says to check each claim's **control p** to see whether its test
+discriminated. Applying it to the two oldest live gate rows turned up something different but related.
+
+**G1 is clean, and better than I expected.** It publishes `frac_ci95` = **[+51%, +97%]**, which is the
+**domain-clustered** paired bootstrap. Its narrower family-level interval is present in the artifact,
+correctly named `frac_ci95_family_level_UNDERSTATES` = [+56%, +83%], and is **not** quoted anywhere.
+Audit 11 (A11-12) found that defect and fixed it properly.
+
+**G3 never got the same fix, in the same script.** `_paired_boot_frac` — the domain bootstrap — is
+called only in the G1 path; `g3()` computes `delta_mean` and `delta_sem` over **24 families** with no
+clustering at all. So one file uses domain-level inference for G1 and family-level inference for G3,
+and the families sit in **6 domains** sharing stems, demo pools and targets — the exact structure that
+retracted R-18.
+
+**Re-computed with the domain bootstrap:**
+
+| arm | Δ | family CI width | clustered width | factor |
+|---|---|---|---|---|
+| **`no_demo_text`** | −17.879 | 4.204 | **7.060** | **×1.68** |
+| **`all_layers_demo`** | −13.437 | 3.086 | **3.728** | **×1.21** |
+| `topk_demo` | +0.020 | 0.065 | 0.088 | ×1.36 |
+| `bottomk_demo` | −0.003 | 0.011 | 0.008 | ×0.78 |
+| `random_demo` | +0.001 | 0.014 | 0.013 | ×0.92 |
+
+**Not a uniform understatement — and I had written that it was.** My first draft of the artifact's
+verdict said "family-level intervals understate for every arm". Three arms are *narrower* when
+clustered. Corrected before publishing, but it is the same reflex I keep catching: writing the verdict
+I expect and then checking.
+
+**What actually changes: widths, not conclusions.** Every delta is unchanged, and the two large arms
+are far from zero on either interval. But the two arms that **carry** G3's claim are precisely the two
+that understate most, which is the direction that matters.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 343 | 2026-08-22 | checked G1's published CI against its artifact | **clean** — quotes the clustered [+51%, +97%]; family-level correctly labelled and unused |
+| 344 | 2026-08-22 | found `g3()` uses **no** clustering while `g1()` in the same file does | A11-12's fix was applied to one sibling only |
+| 345 | 2026-08-22 | re-computed G3 with the domain bootstrap | widths ×0.78–×1.68; the two claim-carrying arms understate most |
+| 346 | 2026-08-22 | corrected my own over-general verdict before publishing | three arms are *narrower* clustered, not wider |

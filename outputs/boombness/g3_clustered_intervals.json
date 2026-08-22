@@ -1,0 +1,182 @@
+{
+  "question": "G3's committed artifact reports family-level SEM over 24 families in 6 domains, with no domain clustering -- the fix audit 11 (A11-12) applied to G1 was never applied to G3. How much does it understate?",
+  "arms": {
+    "all_demo": {
+      "delta": 0.1523858904838562,
+      "sem_family_level": 0.15409748882122296,
+      "ci95_family_level": [
+        -0.1496451876057408,
+        0.4544169685734532
+      ],
+      "ci95_domain_clustered": [
+        -0.12178774178028107,
+        0.44868268072605133
+      ],
+      "width_family": 0.604062156179194,
+      "width_clustered": 0.5704704225063324,
+      "widening_factor": 0.9443902695621,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "all_layers_demo": {
+      "delta": -13.436758967737356,
+      "sem_family_level": 0.7871295626202158,
+      "ci95_family_level": [
+        -14.97953291047298,
+        -11.893985025001733
+      ],
+      "ci95_domain_clustered": [
+        -15.13959817836682,
+        -11.411411195993423
+      ],
+      "width_family": 3.085547885471246,
+      "width_clustered": 3.728186982373396,
+      "widening_factor": 1.2082739016717614,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "bottomk_demo": {
+      "delta": -0.0028310430546601615,
+      "sem_family_level": 0.0027553812236715937,
+      "ci95_family_level": [
+        -0.008231590253056486,
+        0.0025695041437361625
+      ],
+      "ci95_domain_clustered": [
+        -0.008313761403163275,
+        0.00014814361929893494
+      ],
+      "width_family": 0.010801094396792648,
+      "width_clustered": 0.00846190502246221,
+      "widening_factor": 0.783430336927242,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "no_demo_text": {
+      "delta": -17.878933541476727,
+      "sem_family_level": 1.0723362138257304,
+      "ci95_family_level": [
+        -19.980712520575157,
+        -15.777154562378295
+      ],
+      "ci95_domain_clustered": [
+        -21.506576113402843,
+        -14.446345403790474
+      ],
+      "width_family": 4.203557958196863,
+      "width_clustered": 7.0602307096123695,
+      "widening_factor": 1.6795844805339357,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "positive_control": {
+      "delta": 0.25832821801304817,
+      "sem_family_level": 0.30582513639192227,
+      "ci95_family_level": [
+        -0.3410890493151195,
+        0.8577454853412159
+      ],
+      "ci95_domain_clustered": [
+        -0.42262378583351773,
+        0.9526596628129482
+      ],
+      "width_family": 1.1988345346563354,
+      "width_clustered": 1.375283448646466,
+      "widening_factor": 1.1471837095856705,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "random_demo": {
+      "delta": 0.0008226409554481506,
+      "sem_family_level": 0.0034899071281141083,
+      "ci95_family_level": [
+        -0.006017577015655502,
+        0.007662858926551803
+      ],
+      "ci95_domain_clustered": [
+        -0.005052690704663594,
+        0.007562528053919475
+      ],
+      "width_family": 0.013680435942207305,
+      "width_clustered": 0.012615218758583069,
+      "widening_factor": 0.922135728121222,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "random_nondemo": {
+      "delta": -0.04368058840433756,
+      "sem_family_level": 0.03691928100698149,
+      "ci95_family_level": [
+        -0.1160423791780213,
+        0.02868120236934616
+      ],
+      "ci95_domain_clustered": [
+        -0.14064391454060873,
+        0.01630703608194987
+      ],
+      "width_family": 0.14472358154736745,
+      "width_clustered": 0.1569509506225586,
+      "widening_factor": 1.0844877451515333,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "same_head_random": {
+      "delta": 0.0032694973051548004,
+      "sem_family_level": 0.023111996033191837,
+      "ci95_family_level": [
+        -0.0420300149199012,
+        0.0485690095302108
+      ],
+      "ci95_domain_clustered": [
+        -0.038723853727181755,
+        0.05328242232402166
+      ],
+      "width_family": 0.090599024450112,
+      "width_clustered": 0.09200627605120341,
+      "widening_factor": 1.0155327456297978,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "subsampled_all_layers_demo": {
+      "delta": 0.07944651693105698,
+      "sem_family_level": 0.09020775356381118,
+      "ci95_family_level": [
+        -0.09736068005401294,
+        0.2562537139161269
+      ],
+      "ci95_domain_clustered": [
+        -0.13026361167430878,
+        0.29930562029282254
+      ],
+      "width_family": 0.35361439397013983,
+      "width_clustered": 0.4295692319671313,
+      "widening_factor": 1.2147956624282814,
+      "n_families": 24,
+      "n_domains": 6
+    },
+    "topk_demo": {
+      "delta": 0.019611094146966934,
+      "sem_family_level": 0.01651856791271365,
+      "ci95_family_level": [
+        -0.012765298961951818,
+        0.05198748725588569
+      ],
+      "ci95_domain_clustered": [
+        -0.01811342438062032,
+        0.07015471781293552
+      ],
+      "width_family": 0.0647527862178375,
+      "width_clustered": 0.08826814219355583,
+      "widening_factor": 1.3631558941202833,
+      "n_families": 24,
+      "n_domains": 6
+    }
+  },
+  "VERDICT": "G3's committed artifact reports family-level SEM over 24 families in 6 domains, with no domain clustering -- the A11-12 fix applied to G1 was never applied to G3. Clustering changes interval widths by x0.78 to x1.68. It UNDERSTATES most for the two arms that carry the claim (no_demo_text x1.68, all_layers_demo x1.21) and slightly OVERSTATES for several near-null arms (bottomk x0.78, random_demo x0.92, all_demo x0.94) -- so this is not a uniform understatement, and an earlier draft of this field said it was.",
+  "note": "G3's DIRECTIONAL conclusions (which arms move the readout) are unaffected -- the deltas are unchanged and the large ones are far from zero on either interval. What changes is the width of every published interval.",
+  "provenance": {
+    "git_commit": "12e7997c7455834c129545f7b74859626271ef26"
+  },
+  "what_changes": "Interval widths only. Every delta is unchanged, and the large arms sit far from zero on either interval, so G3's directional conclusions stand.",
+  "recommendation": "g3() in analyze_g1_g3.py should call the same _paired_boot_frac domain bootstrap the G1 path uses, so the two halves of one script stop using different inference."
+}
