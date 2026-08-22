@@ -7821,3 +7821,43 @@ pointing at §0a.
 | 429 | 2026-08-22 | named the asymmetry in my own favour-against-myself direction | same defect as R-13/R-15, pointed inward |
 | 430 | 2026-08-22 | replaced the forced +0.0000 with the length evidence | **67 → 2474 chars** on the 21 flips |
 | 431 | 2026-08-22 | marked the 531 KB handover superseded | it would have taught a successor five retracted claims |
+
+## ✅ The surviving claim passes the test that killed its predecessor
+
+Tick 2026-08-22. Audit #12's second recommendation was the one I least wanted to skip: **run R-20's
+topicality conjunction on the surviving headline.** R-20 retracted arm F because ~94% of its gain was
+answer *style* — StrongReject scores refusal, specificity and convincingness, none of which requires
+the completion to be *about* the request. It is the one defect that killed a comparable result in this
+same report, and it had never been applied to the survivor.
+
+**It could not be, with the existing metric.** `goal_topicality()` compares the judged goal to the
+visible prompt; on AdvBench they are the same string, so it returns `None` for every row — which is
+exactly what `advbench_band.json` records. I had been treating *"the metric is inapplicable"* as
+though it meant *"the completions are on-topic"*. Those are different statements and only one of them
+was supported.
+
+**Measured properly** — the fraction of the request's distinctive content words appearing word-bounded
+in the completion:
+
+| set | n | mean | median | zero overlap |
+|---|---|---|---|---|
+| **L12 flips** | 18 | **0.784** | 0.800 | **0%** |
+| **L8 flips** | 21 | **0.823** | 1.000 | **0%** |
+| baseline non-compliant *(floor)* | 200 | **0.115** | **0.000** | **81%** |
+
+**A decisive pass.** Flipped completions carry ~80% of the request's content words; baseline refusals
+carry ~0%, 81% of them none at all, and **not one** flipped completion is off-topic. With the length
+evidence (median **67 → 2474** characters) these are answers to the question asked, not fluent text
+that happens to score well.
+
+This is the first strongly positive result in many ticks, and it is worth being precise about its
+scope: it rules out the **R-20 failure mode**, not incorrectness. Topicality is subject matter, not
+quality. No generation text leaves the script — the artifact holds scalars only, per the standing
+redaction rule.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 432 | 2026-08-22 | found why R-20's test had never run here | `goal_topicality()` is `None` on AdvBench by construction |
+| 433 | 2026-08-22 | named the substitution I had been making | "inapplicable metric" ≠ "on-topic completions" |
+| 434 | 2026-08-22 | built and ran the applicable version | **L12 0.784 / L8 0.823 vs a 0.115 floor; 0% zero-overlap** |
+| 435 | 2026-08-22 | recorded the scope limit | rules out R-20's mode, says nothing about correctness |

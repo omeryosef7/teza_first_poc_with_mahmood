@@ -167,6 +167,15 @@ p=0.0312. **Quote the CI for magnitude; check the control's p to see whether the
 all.** Published p's below a design's floor (§2.6's 0.00099 on 6 domains) are bootstrap numbers, not
 clustered evidence.
 
+**The surviving claim passed the test that killed its predecessor (added 2026-08-22).** R-20
+retracted arm F for being ~94% answer *style* — high scores on completions that were never about the
+request. That test had never been applied to the headline, because `goal_topicality()` returns `None`
+on AdvBench (goal == prompt). Measured properly — what fraction of the request's distinctive content
+words appear in the completion — the **L12 flips score 0.784 mean / 0.800 median with 0% zero-overlap**
+(L8: 0.823 / 1.000), against **0.115 mean / 0.000 median and 81% zero-overlap** for baseline refusals.
+Not one flipped completion is off-topic. With the length data (median **67 → 2474** characters), these
+are answers to the question asked.
+
 **The objective.** Unchanged: **do not build it.** R-26 is fresh evidence against, not for.
 
 ---

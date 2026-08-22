@@ -57,6 +57,37 @@ domains?"*, not *"how big is it?"*. Quote the CI for magnitude. Full rule in §0
 | The dose-response is **saturating** | `dose_curve_L8.json` | ⚠ **"Monotone" struck 2026-08-22.** It is monotone over dose 0.046→0.68 and **falls at the top rung** (+0.0444 at dose 0.7969 → +0.0424 at 0.8402, one net flip). Only the *isotonic fit* is monotone, which is what a monotone fit does. Saturating is correct and unaffected: from 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
 | **Dose and direction-identity are entangled in this bank** | `dose_vs_effect.json` (`dose_identity_bound`, exact) | A direction removing 70% of cell-mean spread must have \|cos\| ≥ **0.88–0.91** with `d_surface`. Separating them needs a **different design**, not more compute. |
 
+#### ✅ The R-20 topicality test, finally applied to the surviving headline (added 2026-08-22)
+
+R-20 retracted arm F because ~94% of its gain was answer **style** — StrongReject scores refusal,
+specificity and convincingness, none of which requires the completion to be *about* the request. Audit
+#12 pointed out that this test, the one defect that killed a comparable result in this same report, had
+never been applied to the headline.
+
+It could not be, with the existing metric: `goal_topicality()` compares the judged goal to the visible
+prompt, and on AdvBench those are the same string, so it returns `None` for every row — which is what
+`advbench_band.json` records. **"The metric is inapplicable" is not "the completions are on-topic",**
+and the report had been leaning on the first as though it were the second.
+
+`advbench_topicality.py` measures the applicable thing: what fraction of the **request's** distinctive
+content words appear, word-bounded, in the completion.
+
+| set | n | mean | median | zero overlap | below 0.10 |
+|---|---|---|---|---|---|
+| **L12 refusal→compliance flips** | 18 | **0.784** | 0.800 | **0%** | **0%** |
+| **L8 refusal→compliance flips** | 21 | **0.823** | 1.000 | **0%** | **0%** |
+| every row scored ≥0.5 in the L12 arm | 50 | 0.737 | 0.800 | 0% | 0% |
+| baseline non-compliant rows *(reference floor)* | 200 | **0.115** | **0.000** | **81%** | 81% |
+
+**The headline passes decisively.** Flipped completions carry ~80% of the request's distinctive content
+words; baseline refusals carry ~0%, with 81% containing none at all. **Not one** flipped completion has
+zero overlap. Combined with the length evidence (median 67 → 2474 characters), these are answers to the
+question asked, not fluent text that happens to score well.
+
+⚠ **What this does not show:** that the answers are *correct* or *useful* — topicality is about subject
+matter, not quality. It rules out the R-20 failure mode specifically, which is what it was run for.
+No generation text leaves the script; the artifact holds scalars only.
+
 #### The judge replicate (added 2026-08-22, audit #12)
 
 Two independent judge passes over **byte-identical** generations. Only `abrep_L12` had ever been used; `abrep_base`, `abrep_L6`, `abrep_L8` and `abrep_L10` sat unanalysed.
