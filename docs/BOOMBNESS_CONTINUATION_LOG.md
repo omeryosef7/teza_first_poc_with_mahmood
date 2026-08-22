@@ -6713,7 +6713,7 @@ same fragile prompts. Refusal **rates** discriminate, and the `refused` field wa
 **Equal and opposite to the last digit, at all four layers.** Nothing is left over once refusal
 reduction is accounted for.
 
-**That closes §18's "capability channel" from a second direction.** The reading was that `d_surface`
+**That closes §18's already-**retracted** "capability channel" (R-22) from a second direction.** The reading was that `d_surface`
 supplies harmful *content* once refusal is removed — if so, part of its gain should land on prompts
 that were not refusing to begin with. **None does.** R-22 retracted that mechanism from the
 prompt-bank side; this reaches it from the behavioural side, independently.
@@ -6732,5 +6732,5 @@ makes a prompt look less harmful would produce an identical signature.
 |---|---|---|---|
 | 315 | 2026-08-22 | compared refusal rates across every arm | Δ ASR = −Δ refusal **exactly** at all four `d_surface` layers |
 | 316 | 2026-08-22 | checked conversion of stopped-refusals | **100%** for `d_surface`, **92%** for arm C |
-| 317 | 2026-08-22 | closed the "capability channel" from the behavioural side | no gain on already-non-refusing prompts |
+| 317 | 2026-08-22 | closed the **retracted** "capability channel" (R-22) from the behavioural side | no gain on already-non-refusing prompts |
 | 318 | 2026-08-22 | recorded the caveat and the one pro-`d_surface` asymmetry | exhausted ≠ mechanism; 100% vs 92% is real |

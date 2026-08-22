@@ -125,8 +125,8 @@ and the `d_surface`-specific part is its weak half.
 **Removing `d_surface` does nothing except reduce refusal (added 2026-08-22).** At every layer the
 ASR gain and the refusal-rate drop are **equal and opposite to the last digit** (L8 +0.0424 / −0.0424;
 L6, L10, L12 likewise), and **100%** of the prompts that stop refusing become successes. No residual
-effect survives accounting for refusal — which finishes off §18's "capability channel" reading from the
-behavioural side, as R-22 did from the bank side. One asymmetry worth keeping: `d_surface` converts
+effect survives accounting for refusal — which finishes off the **retracted** §18 "capability channel" reading (R-22) from the
+behavioural side, as R-22 itself did from the bank side. One asymmetry worth keeping: `d_surface` converts
 released prompts at ~100% where refusal removal itself converts at 92%, so it is not simply a weaker
 arm C. ⚠ This shows the effect is *exhausted* by refusal reduction, not that `d_surface` acts on the
 refusal mechanism.
