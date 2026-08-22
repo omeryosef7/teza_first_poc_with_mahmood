@@ -5056,6 +5056,62 @@ reported.
 
 
 
+## ⛔ THE PREDICTION FAILED — `d_surface`'s window is NOT where refusalness's was, and the regimes are not a general law
+
+**Artifact:** `outputs/boombness/coherence/f3_gate_dsurface_g05.json`. Both arms at
+**exactly matched magnitude 3.027474** — the run-time diagnostic printed
+`alpha=0.5 x unit=6.054948` for *both*, confirming from the code path what F-3's retraction asserted
+and what I had mis-stated: `d_surface:add` and `random:add` share the gap-unit path and are matched
+by construction at equal α.
+
+| arm at 0.5 gap (magnitude 3.027) | uniq | 3-gram | truncated | **scorable** | gate |
+|---|---|---|---|---|---|
+| `d_surface:add:8` | 0.853 | 0.012 | 0.01 | **0.117** | ⛔ |
+| `random:add:8` (exactly matched) | 0.806 | 0.028 | 0.12 | **0.463** | ⛔ |
+
+### ⛔ The pre-registered prediction is REFUTED
+
+I predicted, from the refusalness curve, that if the three regimes were *"a general property of
+additive steering rather than a fact about refusalness"*, `d_surface`'s clean window would also sit
+at **0.50–0.75 gap**. It does not. At 0.5 gap `d_surface:add` is **deep in the floor**
+(scorable 0.117, 437 of 495 outputs under 8 words) — worse than refusalness at *any* dose it was
+tried at. **The regimes are not a general law of additive steering.**
+
+And the direction of failure is informative. For `d_surface`, `scorable_frac` runs
+**0.541 (baseline) → 0.331 (0.25 gap) → 0.117 (0.5 gap) → 1.000-but-broken (1.0 gap)**: it *falls
+monotonically* with dose through the usable range, where refusalness *recovered* at 0.5. So if a
+clean `d_surface` window exists at all it is **below 0.25 gap**, not above — the opposite end from
+where the analogy pointed. **Launched 773669 (0.125 gap, magnitude 0.757) and 773670 (0.0625 gap,
+magnitude 0.378)**, arms only: a control is worth compute only once an arm passes the gate.
+
+### ⚠ A magnitude-matched asymmetry — recorded, deliberately NOT called a finding
+
+At **identical injected magnitude**, `d_surface` collapses outputs to short far harder than a random
+direction does (scorable **0.117 vs 0.463**, a 4× gap). Unlike the asymmetry I nearly published
+yesterday, **the confound that killed that one is excluded here** — the diagnostic printed the same
+3.027474 for both arms, so this is not an overdose artifact.
+
+⛔ **I am still not calling it a result, for three reasons:**
+1. **Both arms fail the gate.** A comparison between two degenerate runs is a comparison of degrees
+   of brokenness, and this repo's own rule says such numbers do not support causal claims.
+2. **It is a single random draw** (seed 20260816), which is exactly the defect review #11 caught in
+   the F-3 control. One vector is not a control family.
+3. **It is a coherence claim, not a behavioural one.** "Perturbing along `d_surface` disrupts
+   generation more than a random direction of equal size" is about text length, not about ASR, and
+   the sprint's question is behavioural.
+
+It is written here so that if a later run makes it citable, the observation is on record with its
+caveats attached rather than discovered post-hoc.
+
+### What plan §8 experiment 7 now stands at
+
+**Still unanswered, and now bounded on both sides.** Every `d_surface:add` dose tried — 0.25, 0.5,
+1.0 gap — fails the coherence gate, in the short-refusal mode at the two lower doses and the
+long-repetitive mode at the top. The two runs in flight test whether a window exists below 0.25.
+If they also fail, experiment 7 closes as an evaluated negative: **`d_surface` cannot be added at
+any coherent dose on this setup**, which is a statement about the intervention and worth recording
+as one.
+
 ## PLAN §8 EXPERIMENTS 7 & 9 — a correction to my own framing, and the `d_surface`-add window predicted from the refusalness curve
 
 ### ⛔ First, correcting myself: experiment 7 was NEVER affected by F-3
