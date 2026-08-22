@@ -85,9 +85,27 @@ def main() -> int:
             v, n, dirs = asr_of(M.angle_glob(L, k, a.n_angles))
             if v is None or not n:
                 continue
+            # RECORD EVERY SHARD, AND CHECK THEY SHARE A SESSION.
+            #
+            # `asr_of` unions all matching dirs, so the ASR was always over the full population -- but
+            # this record named only `dirs[0]`, which `shard_citation_check.py` flagged as 16 artifacts
+            # citing 248 of 495 rows. The number was right and the provenance was half of it.
+            #
+            # It also mattered beyond bookkeeping: this script GROUPS BY SESSION, and the session was
+            # taken from shard 0 alone. Every sharded run here happens to have both shards in one
+            # session, so no grouping was wrong -- but nothing checked that, so it was luck. Now it
+            # is asserted.
+            sessions = sorted({sess_of(x) for x in dirs})
             ctrls.append({"k_of_24": k, "asr": v, "n": n,
                           "delta_prompts": round((v - base) * N_ROWS),
-                          "session": sess_of(dirs[0]), "run": dirs[0]})
+                          "session": sessions[0], "runs": dirs, "n_shards": len(dirs),
+                          "shards_span_multiple_sessions": len(sessions) > 1,
+                          "all_sessions": sessions})
+            if len(sessions) > 1:
+                raise SystemExit(
+                    f"[ceiling] angle {k}/24 at L{L} has shards judged in DIFFERENT sessions "
+                    f"{sessions}: grouping this run under one session would be arbitrary. "
+                    f"Runs: {[os.path.basename(x) for x in dirs]}")
         if not ctrls:
             continue
         arm = (dense.get(f"L{L}", {}).get("arm") or {}).get("delta")
@@ -117,9 +135,17 @@ def main() -> int:
         out_layers[f"L{L}"] = {
             "session_mean_spread_prompts": spread,
             "n_sessions_with_2plus_controls": len(multi),
-            "noise_bounds_prompts": {"lower_baseline_drift": 2.8, "upper_session_spread": spread},
-            "margin_exceeds_upper_bound": (None if spread is None or arm_p is None
-                                           else (arm_p - ceiling) > spread),
+                "SESSION_SPREAD_BOUND_WITHDRAWN": (
+                "the per-session mean spread was once proposed here as a stricter noise bound. It is "
+                "WITHDRAWN: the xL6 crossover re-judged eight L6 angles in a fresh session and moved "
+                "every one by <=2 prompts, showing the spread is mostly REAL variation between "
+                "directions, not judge noise. It is retained as a descriptive statistic only. The "
+                "noise scale that applies to an arm-vs-control margin is END-TO-END replicate noise "
+                "-- see replicate_noise.json: median 1 prompt, max 7 over 17 same-config pairs."),
+            "noise_bounds_prompts": {"lower_baseline_drift": 1.0,
+                                     "upper_session_spread_WITHDRAWN": spread},
+            "margin_exceeds_upper_bound_WITHDRAWN_METRIC": (
+                None if spread is None or arm_p is None else (arm_p - ceiling) > spread),
             "arm_delta_prompts": arm_p, "ceiling_prompts": ceiling,
             "margin_prompts": (arm_p - ceiling) if arm_p is not None else None,
             "ceiling_set_by_sessions": setter_sessions,
@@ -155,8 +181,9 @@ def main() -> int:
               f"{v['ceiling_set_by_sessions']}  own_baseline={list(v['ceiling_sessions_have_own_baseline'].values())}")
         sp = v.get("session_mean_spread_prompts")
         if isinstance(sp, float):
-            print(f"   session-mean spread {sp:.1f}p (n>=2 sessions)  -> margin "
-                  f"{'EXCEEDS' if v['margin_exceeds_upper_bound'] else 'INSIDE'} the upper noise bound")
+            print(f"   session-mean spread {sp:.1f}p (n>=2 sessions) -- DESCRIPTIVE ONLY; this bound "
+                  f"was WITHDRAWN (the crossover showed it is real angle variation, not noise). "
+                  f"Use replicate noise: median 1p, max 7p.")
         g = v["ceiling_session_mean_minus_others_prompts"]
         if isinstance(g, float):
             print(f"   that session's mean is {g:+.1f} prompts vs the other sessions")

@@ -8873,3 +8873,46 @@ fatal. It is not mixed: baseline, all four arms and all 24 controls at every lay
 | 535 | 2026-08-23 | measured replicate noise: **median 1, max 7** over 17 pairs | L6 margin exceeded by 1 of 17; others by none |
 | 536 | 2026-08-23 | **C-11 shard bug, third occurrence**, in my hour-old script | it silently dropped the very pairs it was written to find |
 | 537 | 2026-08-23 | `max_new` confound (6–57 prompts) checked | **not mixed** anywhere in the null |
+
+## Went looking for where the shard bug had already landed; found provenance rot, not bad numbers
+
+The C-11 shard class has now been found three times — C-11 itself, audit #13 in `unanalysed_triage`,
+and yesterday in `replicate_noise.py` an hour after I wrote it. **Fifty scripts** in this repo read
+`results.jsonl`, most with their own shard handling, so it will recur. Retrofitting fifty scripts in
+one tick would be reckless; instead I went looking for where it has **already** landed.
+
+New `shard_citation_check.py`: find every judged run split across judge dirs whose prompt ids are
+**disjoint** (real shards, not re-judgings), then flag every committed artifact that names one shard
+and not its siblings.
+
+**29 sharded runs; 16 hits, all in one artifact — and the numbers were fine.**
+`null_ceiling_session_check.json` named `dirs[0]` as "the run" while its `asr_of` had been unioning all
+shards all along. So the ASRs were over the full 495 and the provenance said 248.
+
+**But the same shortcut reached further than bookkeeping.** That script's entire purpose is grouping
+controls **by judging session**, and it took the session from shard 0 alone. Every sharded run there
+happens to have both shards in one session, so no grouping was ever wrong — **but nothing checked
+that, so it was luck.** It now records every shard and raises if a run's shards span sessions, because
+"grouping this run under one session would be arbitrary".
+
+Rescanned: **0 findings.**
+
+**A contradiction the rerun exposed.** The script still printed a "session-mean spread" noise bound and
+now reported L8's margin as *inside* it — a bound I **withdrew two ticks ago**, when the crossover
+showed that spread is mostly real variation between directions rather than judge noise. A committed
+artifact was about to assert something the report denies. The field is now explicitly marked withdrawn
+and descriptive-only, pointing at the measurement that replaced it: replicate noise, median 1 prompt,
+max 7 over 17 same-config pairs.
+
+**Why this is not a guard.** A hit here is not automatically an error — an artifact may cite one shard
+as provenance, or analyse shards separately on purpose. So it reports rather than passes or fails.
+What it removes is the ability to not know.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 538 | 2026-08-23 | surveyed the blast radius | **50 scripts** read `results.jsonl`, most hand-rolling shard logic |
+| 539 | 2026-08-23 | built `shard_citation_check.py` | 29 disjoint-sharded runs found |
+| 540 | 2026-08-23 | 16 hits, one artifact | **numbers correct** (ASR unioned), **provenance half** |
+| 541 | 2026-08-23 | session taken from shard 0 — right by luck | now records all shards and **raises** if they span sessions |
+| 542 | 2026-08-23 | rescan | **0 findings** |
+| 543 | 2026-08-23 | caught a withdrawn metric still asserting a verdict | marked WITHDRAWN, points to replicate noise |

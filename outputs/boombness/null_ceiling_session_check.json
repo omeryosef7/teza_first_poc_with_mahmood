@@ -9,11 +9,12 @@
     "L6": {
       "session_mean_spread_prompts": 5.5,
       "n_sessions_with_2plus_controls": 6,
+      "SESSION_SPREAD_BOUND_WITHDRAWN": "the per-session mean spread was once proposed here as a stricter noise bound. It is WITHDRAWN: the xL6 crossover re-judged eight L6 angles in a fresh session and moved every one by <=2 prompts, showing the spread is mostly REAL variation between directions, not judge noise. It is retained as a descriptive statistic only. The noise scale that applies to an arm-vs-control margin is END-TO-END replicate noise -- see replicate_noise.json: median 1 prompt, max 7 over 17 same-config pairs.",
       "noise_bounds_prompts": {
-        "lower_baseline_drift": 2.8,
-        "upper_session_spread": 5.5
+        "lower_baseline_drift": 1.0,
+        "upper_session_spread_WITHDRAWN": 5.5
       },
-      "margin_exceeds_upper_bound": false,
+      "margin_exceeds_upper_bound_WITHDRAWN_METRIC": false,
       "arm_delta_prompts": 9,
       "ceiling_prompts": 5,
       "margin_prompts": 4,
@@ -72,7 +73,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260822_165021",
-          "run": "a24_L6k11_20260822_165021_1129216"
+          "runs": [
+            "a24_L6k11_20260822_165021_1129216"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 12,
@@ -80,7 +88,15 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260821_124554",
-          "run": "angJ6k2_0_20260821_124554_1220597"
+          "runs": [
+            "angJ6k2_0_20260821_124554_1220597",
+            "angJ6k2_1_20260821_124554_1220598"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 13,
@@ -88,7 +104,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260822_165021",
-          "run": "a24_L6k13_20260822_165021_1129217"
+          "runs": [
+            "a24_L6k13_20260822_165021_1129217"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 15,
@@ -96,7 +119,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260822_165021",
-          "run": "a24_L6k15_20260822_165021_1129218"
+          "runs": [
+            "a24_L6k15_20260822_165021_1129218"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 10,
@@ -104,7 +134,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260821_162827",
-          "run": "angJ6k5of12_20260821_162827_4087287"
+          "runs": [
+            "angJ6k5of12_20260821_162827_4087287"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 14,
@@ -112,7 +149,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260821_162827",
-          "run": "angJ6k7of12_20260821_162827_4087288"
+          "runs": [
+            "angJ6k7of12_20260821_162827_4087288"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 16,
@@ -120,7 +164,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260821_162827",
-          "run": "angJ6k8of12_20260821_162827_4087290"
+          "runs": [
+            "angJ6k8of12_20260821_162827_4087290"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 8,
@@ -128,7 +179,14 @@
           "n": 495,
           "delta_prompts": 3,
           "session": "20260821_162827",
-          "run": "angJ6k4of12_20260821_162827_4087289"
+          "runs": [
+            "angJ6k4of12_20260821_162827_4087289"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 17,
@@ -136,7 +194,14 @@
           "n": 495,
           "delta_prompts": 3,
           "session": "20260822_233012",
-          "run": "a24d_L6k17_20260822_233012_1151087"
+          "runs": [
+            "a24d_L6k17_20260822_233012_1151087"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         },
         {
           "k_of_24": 9,
@@ -144,7 +209,14 @@
           "n": 495,
           "delta_prompts": 2,
           "session": "20260822_163302",
-          "run": "a24_L6k9_20260822_163302_1127807"
+          "runs": [
+            "a24_L6k9_20260822_163302_1127807"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_163302"
+          ]
         },
         {
           "k_of_24": 18,
@@ -152,7 +224,15 @@
           "n": 495,
           "delta_prompts": 2,
           "session": "20260821_124554",
-          "run": "angJ6k3_0_20260821_124554_1220602"
+          "runs": [
+            "angJ6k3_0_20260821_124554_1220602",
+            "angJ6k3_1_20260821_124554_1220603"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 4,
@@ -160,7 +240,14 @@
           "n": 495,
           "delta_prompts": 1,
           "session": "20260821_162827",
-          "run": "angJ6k2of12_20260821_162827_4087291"
+          "runs": [
+            "angJ6k2of12_20260821_162827_4087291"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 6,
@@ -168,7 +255,15 @@
           "n": 495,
           "delta_prompts": 1,
           "session": "20260821_124554",
-          "run": "angJ6k1_0_20260821_124554_1220592"
+          "runs": [
+            "angJ6k1_0_20260821_124554_1220592",
+            "angJ6k1_1_20260821_124554_1220593"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 7,
@@ -176,7 +271,14 @@
           "n": 495,
           "delta_prompts": 1,
           "session": "20260822_163302",
-          "run": "a24_L6k7_20260822_163302_1127806"
+          "runs": [
+            "a24_L6k7_20260822_163302_1127806"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_163302"
+          ]
         },
         {
           "k_of_24": 2,
@@ -184,7 +286,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260821_162827",
-          "run": "angJ6k1of12_20260821_162827_4087286"
+          "runs": [
+            "angJ6k1of12_20260821_162827_4087286"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_162827"
+          ]
         },
         {
           "k_of_24": 3,
@@ -192,7 +301,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_163302",
-          "run": "a24_L6k3_20260822_163302_1127804"
+          "runs": [
+            "a24_L6k3_20260822_163302_1127804"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_163302"
+          ]
         },
         {
           "k_of_24": 5,
@@ -200,7 +316,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_163302",
-          "run": "a24_L6k5_20260822_163302_1127805"
+          "runs": [
+            "a24_L6k5_20260822_163302_1127805"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_163302"
+          ]
         },
         {
           "k_of_24": 19,
@@ -208,7 +331,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_233012",
-          "run": "a24d_L6k19_20260822_233012_1151088"
+          "runs": [
+            "a24d_L6k19_20260822_233012_1151088"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         },
         {
           "k_of_24": 20,
@@ -216,7 +346,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260821_173739",
-          "run": "angJ6k10of12_20260821_173739_4121283"
+          "runs": [
+            "angJ6k10of12_20260821_173739_4121283"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_173739"
+          ]
         },
         {
           "k_of_24": 21,
@@ -224,7 +361,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_233012",
-          "run": "a24d_L6k21_20260822_233012_1151089"
+          "runs": [
+            "a24d_L6k21_20260822_233012_1151089"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         },
         {
           "k_of_24": 0,
@@ -232,7 +376,15 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260821_124554",
-          "run": "angJ6k0_0_20260821_124554_1220587"
+          "runs": [
+            "angJ6k0_0_20260821_124554_1220587",
+            "angJ6k0_1_20260821_124554_1220588"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 1,
@@ -240,7 +392,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_163302",
-          "run": "a24_L6k1_20260822_163302_1127803"
+          "runs": [
+            "a24_L6k1_20260822_163302_1127803"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_163302"
+          ]
         },
         {
           "k_of_24": 22,
@@ -248,7 +407,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260821_173739",
-          "run": "angJ6k11of12_20260821_173739_4121282"
+          "runs": [
+            "angJ6k11of12_20260821_173739_4121282"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_173739"
+          ]
         },
         {
           "k_of_24": 23,
@@ -256,18 +422,26 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_233012",
-          "run": "a24d_L6k23_20260822_233012_1151090"
+          "runs": [
+            "a24d_L6k23_20260822_233012_1151090"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         }
       ]
     },
     "L8": {
       "session_mean_spread_prompts": 13.666666666666668,
       "n_sessions_with_2plus_controls": 6,
+      "SESSION_SPREAD_BOUND_WITHDRAWN": "the per-session mean spread was once proposed here as a stricter noise bound. It is WITHDRAWN: the xL6 crossover re-judged eight L6 angles in a fresh session and moved every one by <=2 prompts, showing the spread is mostly REAL variation between directions, not judge noise. It is retained as a descriptive statistic only. The noise scale that applies to an arm-vs-control margin is END-TO-END replicate noise -- see replicate_noise.json: median 1 prompt, max 7 over 17 same-config pairs.",
       "noise_bounds_prompts": {
-        "lower_baseline_drift": 2.8,
-        "upper_session_spread": 13.666666666666668
+        "lower_baseline_drift": 1.0,
+        "upper_session_spread_WITHDRAWN": 13.666666666666668
       },
-      "margin_exceeds_upper_bound": false,
+      "margin_exceeds_upper_bound_WITHDRAWN_METRIC": false,
       "arm_delta_prompts": 21,
       "ceiling_prompts": 9,
       "margin_prompts": 12,
@@ -338,7 +512,14 @@
           "n": 495,
           "delta_prompts": 9,
           "session": "20260821_180923",
-          "run": "angJ8k2of12_20260821_180923_3015652"
+          "runs": [
+            "angJ8k2of12_20260821_180923_3015652"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_180923"
+          ]
         },
         {
           "k_of_24": 6,
@@ -346,7 +527,14 @@
           "n": 495,
           "delta_prompts": 9,
           "session": "20260821_105123",
-          "run": "angJ8k1_20260821_105123_1042519"
+          "runs": [
+            "angJ8k1_20260821_105123_1042519"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_105123"
+          ]
         },
         {
           "k_of_24": 3,
@@ -354,7 +542,14 @@
           "n": 495,
           "delta_prompts": 8,
           "session": "20260822_165021",
-          "run": "a24_L8k3_20260822_165021_1129220"
+          "runs": [
+            "a24_L8k3_20260822_165021_1129220"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 5,
@@ -362,7 +557,14 @@
           "n": 495,
           "delta_prompts": 8,
           "session": "20260822_165021",
-          "run": "a24_L8k5_20260822_165021_1129221"
+          "runs": [
+            "a24_L8k5_20260822_165021_1129221"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 8,
@@ -370,7 +572,14 @@
           "n": 495,
           "delta_prompts": 8,
           "session": "20260821_183856",
-          "run": "angJ8k4of12_20260821_183856_4137481"
+          "runs": [
+            "angJ8k4of12_20260821_183856_4137481"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 2,
@@ -378,7 +587,14 @@
           "n": 495,
           "delta_prompts": 7,
           "session": "20260821_180750",
-          "run": "angJ8k1of12_20260821_180750_4131488"
+          "runs": [
+            "angJ8k1of12_20260821_180750_4131488"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_180750"
+          ]
         },
         {
           "k_of_24": 7,
@@ -386,7 +602,14 @@
           "n": 495,
           "delta_prompts": 7,
           "session": "20260822_170732",
-          "run": "a24_L8k7_20260822_170732_1130637"
+          "runs": [
+            "a24_L8k7_20260822_170732_1130637"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_170732"
+          ]
         },
         {
           "k_of_24": 9,
@@ -394,7 +617,14 @@
           "n": 495,
           "delta_prompts": 7,
           "session": "20260822_170732",
-          "run": "a24_L8k9_20260822_170732_1130638"
+          "runs": [
+            "a24_L8k9_20260822_170732_1130638"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_170732"
+          ]
         },
         {
           "k_of_24": 1,
@@ -402,7 +632,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260822_165021",
-          "run": "a24_L8k1_20260822_165021_1129219"
+          "runs": [
+            "a24_L8k1_20260822_165021_1129219"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_165021"
+          ]
         },
         {
           "k_of_24": 10,
@@ -410,7 +647,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260821_183856",
-          "run": "angJ8k5of12_20260821_183856_4137480"
+          "runs": [
+            "angJ8k5of12_20260821_183856_4137480"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 0,
@@ -418,7 +662,14 @@
           "n": 495,
           "delta_prompts": 1,
           "session": "20260821_105123",
-          "run": "angJ8k0_20260821_105123_1042515"
+          "runs": [
+            "angJ8k0_20260821_105123_1042515"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_105123"
+          ]
         },
         {
           "k_of_24": 11,
@@ -426,7 +677,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_170732",
-          "run": "a24_L8k11_20260822_170732_1130639"
+          "runs": [
+            "a24_L8k11_20260822_170732_1130639"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_170732"
+          ]
         },
         {
           "k_of_24": 23,
@@ -434,7 +692,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_234550",
-          "run": "a24d_L8k23_20260822_234550_1152340"
+          "runs": [
+            "a24d_L8k23_20260822_234550_1152340"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234550"
+          ]
         },
         {
           "k_of_24": 22,
@@ -442,7 +707,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260821_183856",
-          "run": "angJ8k11of12_20260821_183856_4137478"
+          "runs": [
+            "angJ8k11of12_20260821_183856_4137478"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 12,
@@ -450,7 +722,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260821_105123",
-          "run": "angJ8k2_20260821_105123_1042523"
+          "runs": [
+            "angJ8k2_20260821_105123_1042523"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_105123"
+          ]
         },
         {
           "k_of_24": 21,
@@ -458,7 +737,14 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260822_234550",
-          "run": "a24d_L8k21_20260822_234550_1152339"
+          "runs": [
+            "a24d_L8k21_20260822_234550_1152339"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234550"
+          ]
         },
         {
           "k_of_24": 13,
@@ -466,7 +752,14 @@
           "n": 495,
           "delta_prompts": -4,
           "session": "20260822_170732",
-          "run": "a24_L8k13_20260822_170732_1130640"
+          "runs": [
+            "a24_L8k13_20260822_170732_1130640"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_170732"
+          ]
         },
         {
           "k_of_24": 14,
@@ -474,7 +767,14 @@
           "n": 495,
           "delta_prompts": -6,
           "session": "20260821_183856",
-          "run": "angJ8k7of12_20260821_183856_4137479"
+          "runs": [
+            "angJ8k7of12_20260821_183856_4137479"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 18,
@@ -482,7 +782,14 @@
           "n": 495,
           "delta_prompts": -6,
           "session": "20260821_105123",
-          "run": "angJ8k3_20260821_105123_1042527"
+          "runs": [
+            "angJ8k3_20260821_105123_1042527"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_105123"
+          ]
         },
         {
           "k_of_24": 20,
@@ -490,7 +797,14 @@
           "n": 495,
           "delta_prompts": -6,
           "session": "20260821_183856",
-          "run": "angJ8k10of12_20260821_183856_4137477"
+          "runs": [
+            "angJ8k10of12_20260821_183856_4137477"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 16,
@@ -498,7 +812,14 @@
           "n": 495,
           "delta_prompts": -7,
           "session": "20260821_183856",
-          "run": "angJ8k8of12_20260821_183856_4137476"
+          "runs": [
+            "angJ8k8of12_20260821_183856_4137476"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_183856"
+          ]
         },
         {
           "k_of_24": 17,
@@ -506,7 +827,14 @@
           "n": 495,
           "delta_prompts": -7,
           "session": "20260822_233012",
-          "run": "a24d_L8k17_20260822_233012_1151091"
+          "runs": [
+            "a24d_L8k17_20260822_233012_1151091"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         },
         {
           "k_of_24": 19,
@@ -514,7 +842,14 @@
           "n": 495,
           "delta_prompts": -7,
           "session": "20260822_233012",
-          "run": "a24d_L8k19_20260822_233012_1151092"
+          "runs": [
+            "a24d_L8k19_20260822_233012_1151092"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_233012"
+          ]
         },
         {
           "k_of_24": 15,
@@ -522,18 +857,26 @@
           "n": 495,
           "delta_prompts": -8,
           "session": "20260822_170732",
-          "run": "a24_L8k15_20260822_170732_1130641"
+          "runs": [
+            "a24_L8k15_20260822_170732_1130641"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_170732"
+          ]
         }
       ]
     },
     "L10": {
       "session_mean_spread_prompts": 3.333333333333333,
       "n_sessions_with_2plus_controls": 5,
+      "SESSION_SPREAD_BOUND_WITHDRAWN": "the per-session mean spread was once proposed here as a stricter noise bound. It is WITHDRAWN: the xL6 crossover re-judged eight L6 angles in a fresh session and moved every one by <=2 prompts, showing the spread is mostly REAL variation between directions, not judge noise. It is retained as a descriptive statistic only. The noise scale that applies to an arm-vs-control margin is END-TO-END replicate noise -- see replicate_noise.json: median 1 prompt, max 7 over 17 same-config pairs.",
       "noise_bounds_prompts": {
-        "lower_baseline_drift": 2.8,
-        "upper_session_spread": 3.333333333333333
+        "lower_baseline_drift": 1.0,
+        "upper_session_spread_WITHDRAWN": 3.333333333333333
       },
-      "margin_exceeds_upper_bound": true,
+      "margin_exceeds_upper_bound_WITHDRAWN_METRIC": true,
       "arm_delta_prompts": 16,
       "ceiling_prompts": 0,
       "margin_prompts": 16,
@@ -592,7 +935,15 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260821_124554",
-          "run": "angJ10k0_0_20260821_124554_1220607"
+          "runs": [
+            "angJ10k0_0_20260821_124554_1220607",
+            "angJ10k0_1_20260821_124554_1220608"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 1,
@@ -600,7 +951,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_202236",
-          "run": "a24b_L10k1_20260822_202236_1139731"
+          "runs": [
+            "a24b_L10k1_20260822_202236_1139731"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 5,
@@ -608,7 +966,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_202236",
-          "run": "a24b_L10k5_20260822_202236_1139735"
+          "runs": [
+            "a24b_L10k5_20260822_202236_1139735"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 8,
@@ -616,7 +981,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_203929",
-          "run": "a24b_L10k8_20260822_203929_1140958"
+          "runs": [
+            "a24b_L10k8_20260822_203929_1140958"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 3,
@@ -624,7 +996,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_202236",
-          "run": "a24b_L10k3_20260822_202236_1139733"
+          "runs": [
+            "a24b_L10k3_20260822_202236_1139733"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 4,
@@ -632,7 +1011,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_202236",
-          "run": "a24b_L10k4_20260822_202236_1139734"
+          "runs": [
+            "a24b_L10k4_20260822_202236_1139734"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 6,
@@ -640,7 +1026,15 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260821_124554",
-          "run": "angJ10k1_0_20260821_124554_1220612"
+          "runs": [
+            "angJ10k1_0_20260821_124554_1220612",
+            "angJ10k1_1_20260821_124554_1220613"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 7,
@@ -648,7 +1042,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_202236",
-          "run": "a24b_L10k7_20260822_202236_1139736"
+          "runs": [
+            "a24b_L10k7_20260822_202236_1139736"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 9,
@@ -656,7 +1057,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_203929",
-          "run": "a24b_L10k9_20260822_203929_1140959"
+          "runs": [
+            "a24b_L10k9_20260822_203929_1140959"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 11,
@@ -664,7 +1072,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_203929",
-          "run": "a24b_L10k11_20260822_203929_1140961"
+          "runs": [
+            "a24b_L10k11_20260822_203929_1140961"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 13,
@@ -672,7 +1087,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_203929",
-          "run": "a24b_L10k13_20260822_203929_1140962"
+          "runs": [
+            "a24b_L10k13_20260822_203929_1140962"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 19,
@@ -680,7 +1102,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_205635",
-          "run": "a24b_L10k19_20260822_205635_1142124"
+          "runs": [
+            "a24b_L10k19_20260822_205635_1142124"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_205635"
+          ]
         },
         {
           "k_of_24": 21,
@@ -688,7 +1117,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_234550",
-          "run": "a24d_L10k21_20260822_234550_1152342"
+          "runs": [
+            "a24d_L10k21_20260822_234550_1152342"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234550"
+          ]
         },
         {
           "k_of_24": 22,
@@ -696,7 +1132,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_234550",
-          "run": "a24d_L10k22_20260822_234550_1152343"
+          "runs": [
+            "a24d_L10k22_20260822_234550_1152343"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234550"
+          ]
         },
         {
           "k_of_24": 23,
@@ -704,7 +1147,14 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260822_234550",
-          "run": "a24d_L10k23_20260822_234550_1152344"
+          "runs": [
+            "a24d_L10k23_20260822_234550_1152344"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234550"
+          ]
         },
         {
           "k_of_24": 2,
@@ -712,7 +1162,14 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260822_202236",
-          "run": "a24b_L10k2_20260822_202236_1139732"
+          "runs": [
+            "a24b_L10k2_20260822_202236_1139732"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_202236"
+          ]
         },
         {
           "k_of_24": 10,
@@ -720,7 +1177,14 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260822_203929",
-          "run": "a24b_L10k10_20260822_203929_1140960"
+          "runs": [
+            "a24b_L10k10_20260822_203929_1140960"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 12,
@@ -728,7 +1192,15 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260821_124554",
-          "run": "angJ10k2_0_20260821_124554_1220617"
+          "runs": [
+            "angJ10k2_0_20260821_124554_1220617",
+            "angJ10k2_1_20260821_124554_1220618"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 18,
@@ -736,7 +1208,15 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260821_124554",
-          "run": "angJ10k3_0_20260821_124554_1220622"
+          "runs": [
+            "angJ10k3_0_20260821_124554_1220622",
+            "angJ10k3_1_20260821_124554_1220623"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_124554"
+          ]
         },
         {
           "k_of_24": 20,
@@ -744,7 +1224,14 @@
           "n": 495,
           "delta_prompts": -3,
           "session": "20260822_234551",
-          "run": "a24d_L10k20_20260822_234551_1152341"
+          "runs": [
+            "a24d_L10k20_20260822_234551_1152341"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_234551"
+          ]
         },
         {
           "k_of_24": 14,
@@ -752,7 +1239,14 @@
           "n": 495,
           "delta_prompts": -4,
           "session": "20260822_203929",
-          "run": "a24b_L10k14_20260822_203929_1140963"
+          "runs": [
+            "a24b_L10k14_20260822_203929_1140963"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_203929"
+          ]
         },
         {
           "k_of_24": 15,
@@ -760,7 +1254,14 @@
           "n": 495,
           "delta_prompts": -5,
           "session": "20260822_205635",
-          "run": "a24b_L10k15_20260822_205635_1142121"
+          "runs": [
+            "a24b_L10k15_20260822_205635_1142121"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_205635"
+          ]
         },
         {
           "k_of_24": 16,
@@ -768,7 +1269,14 @@
           "n": 495,
           "delta_prompts": -6,
           "session": "20260822_205635",
-          "run": "a24b_L10k16_20260822_205635_1142122"
+          "runs": [
+            "a24b_L10k16_20260822_205635_1142122"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_205635"
+          ]
         },
         {
           "k_of_24": 17,
@@ -776,18 +1284,26 @@
           "n": 495,
           "delta_prompts": -7,
           "session": "20260822_205635",
-          "run": "a24b_L10k17_20260822_205635_1142123"
+          "runs": [
+            "a24b_L10k17_20260822_205635_1142123"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_205635"
+          ]
         }
       ]
     },
     "L12": {
       "session_mean_spread_prompts": 6.0,
       "n_sessions_with_2plus_controls": 7,
+      "SESSION_SPREAD_BOUND_WITHDRAWN": "the per-session mean spread was once proposed here as a stricter noise bound. It is WITHDRAWN: the xL6 crossover re-judged eight L6 angles in a fresh session and moved every one by <=2 prompts, showing the spread is mostly REAL variation between directions, not judge noise. It is retained as a descriptive statistic only. The noise scale that applies to an arm-vs-control margin is END-TO-END replicate noise -- see replicate_noise.json: median 1 prompt, max 7 over 17 same-config pairs.",
       "noise_bounds_prompts": {
-        "lower_baseline_drift": 2.8,
-        "upper_session_spread": 6.0
+        "lower_baseline_drift": 1.0,
+        "upper_session_spread_WITHDRAWN": 6.0
       },
-      "margin_exceeds_upper_bound": true,
+      "margin_exceeds_upper_bound_WITHDRAWN_METRIC": true,
       "arm_delta_prompts": 18,
       "ceiling_prompts": 5,
       "margin_prompts": 13,
@@ -864,7 +1380,15 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260821_114815",
-          "run": "angJ12k0_0_20260821_114815_1136790"
+          "runs": [
+            "angJ12k0_0_20260821_114815_1136790",
+            "angJ12k0_1_20260821_114815_1136791"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_114815"
+          ]
         },
         {
           "k_of_24": 19,
@@ -872,7 +1396,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260823_000124",
-          "run": "a24d_L12k19_20260823_000124_1153939"
+          "runs": [
+            "a24d_L12k19_20260823_000124_1153939"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260823_000124"
+          ]
         },
         {
           "k_of_24": 20,
@@ -880,7 +1411,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260823_000124",
-          "run": "a24d_L12k20_20260823_000124_1153940"
+          "runs": [
+            "a24d_L12k20_20260823_000124_1153940"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260823_000124"
+          ]
         },
         {
           "k_of_24": 22,
@@ -888,7 +1426,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260823_000124",
-          "run": "a24d_L12k22_20260823_000124_1153941"
+          "runs": [
+            "a24d_L12k22_20260823_000124_1153941"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260823_000124"
+          ]
         },
         {
           "k_of_24": 23,
@@ -896,7 +1441,14 @@
           "n": 495,
           "delta_prompts": 5,
           "session": "20260823_000124",
-          "run": "a24d_L12k23_20260823_000124_1153942"
+          "runs": [
+            "a24d_L12k23_20260823_000124_1153942"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260823_000124"
+          ]
         },
         {
           "k_of_24": 2,
@@ -904,7 +1456,14 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260822_194636",
-          "run": "a24b_L12k2_20260822_194636_1136763"
+          "runs": [
+            "a24b_L12k2_20260822_194636_1136763"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194636"
+          ]
         },
         {
           "k_of_24": 3,
@@ -912,7 +1471,15 @@
           "n": 495,
           "delta_prompts": 4,
           "session": "20260821_141317",
-          "run": "a8J12k1_0_20260821_141317_1418218"
+          "runs": [
+            "a8J12k1_0_20260821_141317_1418218",
+            "a8J12k1_1_20260821_141317_1418219"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_141317"
+          ]
         },
         {
           "k_of_24": 17,
@@ -920,7 +1487,14 @@
           "n": 495,
           "delta_prompts": 3,
           "session": "20260822_200429",
-          "run": "a24b_L12k17_20260822_200429_1138099"
+          "runs": [
+            "a24b_L12k17_20260822_200429_1138099"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200429"
+          ]
         },
         {
           "k_of_24": 18,
@@ -928,7 +1502,15 @@
           "n": 495,
           "delta_prompts": 3,
           "session": "20260821_114816",
-          "run": "angJ12k3_0_20260821_114816_1136805"
+          "runs": [
+            "angJ12k3_0_20260821_114816_1136805",
+            "angJ12k3_1_20260821_114816_1136806"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_114816"
+          ]
         },
         {
           "k_of_24": 21,
@@ -936,7 +1518,15 @@
           "n": 495,
           "delta_prompts": 3,
           "session": "20260821_141317",
-          "run": "a8J12k7_0_20260821_141317_1418233"
+          "runs": [
+            "a8J12k7_0_20260821_141317_1418233",
+            "a8J12k7_1_20260821_141317_1418234"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_141317"
+          ]
         },
         {
           "k_of_24": 1,
@@ -944,7 +1534,14 @@
           "n": 495,
           "delta_prompts": 2,
           "session": "20260822_194636",
-          "run": "a24b_L12k1_20260822_194636_1136762"
+          "runs": [
+            "a24b_L12k1_20260822_194636_1136762"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194636"
+          ]
         },
         {
           "k_of_24": 5,
@@ -952,7 +1549,14 @@
           "n": 495,
           "delta_prompts": 2,
           "session": "20260822_194637",
-          "run": "a24b_L12k5_20260822_194637_1136765"
+          "runs": [
+            "a24b_L12k5_20260822_194637_1136765"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194637"
+          ]
         },
         {
           "k_of_24": 16,
@@ -960,7 +1564,14 @@
           "n": 495,
           "delta_prompts": 2,
           "session": "20260822_200428",
-          "run": "a24b_L12k16_20260822_200428_1138098"
+          "runs": [
+            "a24b_L12k16_20260822_200428_1138098"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200428"
+          ]
         },
         {
           "k_of_24": 4,
@@ -968,7 +1579,14 @@
           "n": 495,
           "delta_prompts": 1,
           "session": "20260822_194636",
-          "run": "a24b_L12k4_20260822_194636_1136764"
+          "runs": [
+            "a24b_L12k4_20260822_194636_1136764"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194636"
+          ]
         },
         {
           "k_of_24": 6,
@@ -976,7 +1594,15 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260821_114815",
-          "run": "angJ12k1_0_20260821_114815_1136795"
+          "runs": [
+            "angJ12k1_0_20260821_114815_1136795",
+            "angJ12k1_1_20260821_114815_1136796"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_114815"
+          ]
         },
         {
           "k_of_24": 7,
@@ -984,7 +1610,14 @@
           "n": 495,
           "delta_prompts": 0,
           "session": "20260822_194636",
-          "run": "a24b_L12k7_20260822_194636_1136766"
+          "runs": [
+            "a24b_L12k7_20260822_194636_1136766"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194636"
+          ]
         },
         {
           "k_of_24": 8,
@@ -992,7 +1625,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_194636",
-          "run": "a24b_L12k8_20260822_194636_1136767"
+          "runs": [
+            "a24b_L12k8_20260822_194636_1136767"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_194636"
+          ]
         },
         {
           "k_of_24": 9,
@@ -1000,7 +1640,15 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260821_141317",
-          "run": "a8J12k3_0_20260821_141317_1418223"
+          "runs": [
+            "a8J12k3_0_20260821_141317_1418223",
+            "a8J12k3_1_20260821_141317_1418224"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_141317"
+          ]
         },
         {
           "k_of_24": 10,
@@ -1008,7 +1656,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_200427",
-          "run": "a24b_L12k10_20260822_200427_1138094"
+          "runs": [
+            "a24b_L12k10_20260822_200427_1138094"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200427"
+          ]
         },
         {
           "k_of_24": 11,
@@ -1016,7 +1671,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_200428",
-          "run": "a24b_L12k11_20260822_200428_1138095"
+          "runs": [
+            "a24b_L12k11_20260822_200428_1138095"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200428"
+          ]
         },
         {
           "k_of_24": 12,
@@ -1024,7 +1686,15 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260821_114816",
-          "run": "angJ12k2_0_20260821_114816_1136800"
+          "runs": [
+            "angJ12k2_0_20260821_114816_1136800",
+            "angJ12k2_1_20260821_114816_1136801"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_114816"
+          ]
         },
         {
           "k_of_24": 13,
@@ -1032,7 +1702,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_200427",
-          "run": "a24b_L12k13_20260822_200427_1138096"
+          "runs": [
+            "a24b_L12k13_20260822_200427_1138096"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200427"
+          ]
         },
         {
           "k_of_24": 14,
@@ -1040,7 +1717,14 @@
           "n": 495,
           "delta_prompts": -1,
           "session": "20260822_200428",
-          "run": "a24b_L12k14_20260822_200428_1138097"
+          "runs": [
+            "a24b_L12k14_20260822_200428_1138097"
+          ],
+          "n_shards": 1,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260822_200428"
+          ]
         },
         {
           "k_of_24": 15,
@@ -1048,7 +1732,15 @@
           "n": 495,
           "delta_prompts": -2,
           "session": "20260821_141317",
-          "run": "a8J12k5_0_20260821_141317_1418228"
+          "runs": [
+            "a8J12k5_0_20260821_141317_1418228",
+            "a8J12k5_1_20260821_141317_1418229"
+          ],
+          "n_shards": 2,
+          "shards_span_multiple_sessions": false,
+          "all_sessions": [
+            "20260821_141317"
+          ]
         }
       ]
     }
@@ -1061,6 +1753,6 @@
       "--out",
       "outputs/boombness/null_ceiling_session_check.json"
     ],
-    "git_commit": "8ceba11a3bd77ff38c294040465df842732925df"
+    "git_commit": "b9c574a782f9c14dc270535d8fea04cfb4c0e021"
   }
 }
