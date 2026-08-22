@@ -27,6 +27,51 @@ from typing import Dict, List
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_g2 import spearman  # noqa: E402
 
+
+def git_commit_safe() -> str:
+    """Provenance that cannot kill the analysis. Added 2026-08-22 after two crashes.
+
+    `git rev-parse HEAD` raises FileNotFoundError on the batch nodes -- they have no git binary --
+    and callers invoke it INSIDE the literal that builds the output dict, so the run dies before
+    writing anything and the artifact on disk silently keeps its previous contents while `sacct`
+    says FAILED. A stale file that reads as current is the worst failure mode available, and it
+    happened twice: to analyze_qwen3_decomposition.py, then to analyze_dissociation.py after only
+    the first was fixed and its siblings left alone.
+
+    The SLURM wrappers export BOOMB_GIT_COMMIT from the submitting host, so real provenance is
+    preserved; absent that this degrades to an explicit marker rather than to silence.
+    """
+    import os as _os
+    import subprocess as _sp
+    env = _os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO")
+        if _repo:
+            _kw["cwd"] = _repo
+        r = _sp.run(["git", "rev-parse", "HEAD"], **_kw)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
+def git_dirty_safe(*args) -> object:
+    """Companion for the `git status --porcelain` dirty-flag calls. Never raises."""
+    import subprocess as _sp
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO")
+        if _repo:
+            _kw["cwd"] = _repo
+        return bool(_sp.run(["git", "status", "--porcelain", *args], **_kw).stdout.strip())
+    except (FileNotFoundError, OSError):
+        return None
+
+
 HEADLINE = "d_surface|L12|proj"
 ARM = "natural_doublespeak"
 EXPECT_N = 234
@@ -221,9 +266,8 @@ def main() -> int:
         "plots": [os.path.abspath(p) for p in made],
     }
     try:
-        git = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-        dirty = bool(subprocess.run(["git", "status", "--porcelain"], capture_output=True,
-                                    text=True).stdout.strip())
+        git = git_commit_safe()
+        dirty = git_dirty_safe()
     except Exception:
         git, dirty = None, None
     summary["provenance"] = {"argv": sys.argv, "git_commit": git, "git_dirty": dirty,

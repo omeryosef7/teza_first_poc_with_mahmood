@@ -5056,6 +5056,75 @@ reported.
 
 
 
+## ✅✅✅ F-3 IS RE-EARNED — refusalness-`add` suppresses ASR, the magnitude-matched random control does not
+
+**Artifact:** `outputs/boombness_followup/f3_dose_specificity.json` (job 773576). Five arms, one
+judging session, 495 AdvBench prompts, 16 domain clusters, both arm and control gate-clean at each
+dose. **This is the experiment RETRACTION F-3 said should have been run, and it has never been run
+until now.**
+
+| arm | effective magnitude | ΔStrongReject | 95% CI | p |
+|---|---|---|---|---|
+| **refusalness** | 7.326731 | **−0.0325** | [−0.0597, −0.0054] | **0.0222** |
+| random (matched) | 7.396252 | +0.0082 | [−0.0075, +0.0238] | 0.282 |
+| **refusalness** | 10.990097 | **−0.0374** | [−0.0688, −0.0059] | **0.0230** |
+| random (matched) | 11.094378 | **+0.0518** | [+0.0013, +0.1022] | 0.0449 |
+
+| **specificity contrast (arm − control, paired per prompt)** | Δ | p | **Holm (m=2)** |
+|---|---|---|---|
+| at magnitude ≈7.3 | **−0.0407** | 0.0101 | **0.0202** ✅ |
+| at magnitude ≈11.0 | **−0.0891** | 0.0229 | **0.0229** ✅ |
+
+**Both contrasts survive Holm.** The binary ASR@0.5 outcome agrees throughout (−0.0328 / −0.0378 for
+the arms; contrasts −0.0416 p 0.0097 and −0.0946 p 0.0261), so this is not an artifact of the
+continuous rubric.
+
+### It is a SIGN dissociation, not merely "arm moves, control doesn't"
+
+Adding **refusalness** *suppresses* ASR at both doses. The magnitude-matched **random** direction
+does the opposite of suppressing: null at the lower dose (+0.0082) and **significantly raising** ASR
+at the higher one (+0.0518, p 0.0449). So a random perturbation of the same size at the same layer
+slightly *disrupts* refusal behaviour, while the refusal direction *strengthens* it. The contrast is
+not a comparison of a signal against nothing — it is two effects pointing opposite ways.
+
+⚠ **This is what F-3 originally claimed and could not support.** The α = 1.0 version asserted a sign
+reversal against a control that was **14.8× its dose**; that was correctly retracted. At properly
+matched magnitude the claim holds — **and it replicates at a second dose.**
+
+### ✅ Why this one is trustworthy where the previous attempts were not
+
+1. **Magnitudes measured, not inferred.** The run-time `ADD DOSE` diagnostic reports 7.326731 vs
+   **7.396252** and 10.990097 vs **11.094378** — matched to **0.95%**, not exactly. The mismatch runs
+   **in the conservative direction**: the *control* is dosed slightly *higher* than the arm, so if
+   dose alone drove the effect the control should show more of it, not less.
+2. **Both members of each pair are gate-clean** (arm uniq 0.940/0.750, control 0.909/0.731). No ASR
+   here is the judge reacting to broken text — the failure mode that invalidated the α = 14.65 run.
+3. **One judging session** for all five arms (R6-6), and the contrast is paired per prompt, so it is
+   immune to baseline judge noise regardless.
+4. **The control could fail and its sibling did.** The first control attempt (overdosed 14.65×)
+   produced uniq 0.066 and 100% truncation; this one is coherent. The apparatus distinguishes them.
+
+### ⚠ Limits, stated plainly
+
+- **One model, one dataset, one layer** (Llama-3.1-8B / AdvBench / L18). Nothing here is cross-model.
+- **The absolute effect is small against a ceiling.** AdvBench baseline ASR is **0.1192**, so
+  −0.0325 is a ~27% relative reduction with limited downward room. Baseline refusal is already 93.1%.
+- **The higher-dose pair is closer to collapse** (uniq 0.750 / 0.731). Its larger contrast
+  (−0.0891) should not be read as a cleaner result than the −0.0407 at the safer dose; both members
+  degraded together, which keeps the contrast fair but not pristine.
+- **m = 2 Holm** over the two pre-registered contrasts. Had the four per-arm tests been folded into
+  the family, the arms' own p-values (0.0222, 0.0230) would sit near the boundary.
+
+### What this changes
+
+- **RETRACTION F-3 moves from "retracted" to "re-earned at a matched dose."** The retraction stands
+  as a description of the *original* experiment; the underlying claim is now supported by one it did
+  not have.
+- **Plan §8's add-arms are no longer an evaluated negative.** Experiment 8 (add refusalness) has a
+  real, replicated, control-backed answer. Experiments 7 and 9 (add `d_surface`, add both) remain
+  open — their α = 1.0 versions are still retracted for the same dose mismatch, **and the same fix
+  is now available to them**: dose them in gap units and re-gate.
+
 ## ✅✅ F-3 IS RUNNABLE — magnitude-matched controls are CLEAN, and the "asymmetry" is refuted
 
 The relaunched controls, dosed in **gap units** (α = the gap fraction) rather than in refusal-norm
@@ -7806,7 +7875,7 @@ own.
 |---|---|---|
 | F-1 | Phase B gradient as a doublespeak result | no control; `benign_literal` shows the same |
 | F-2 | the gradient is surface-specific | `d_context` carries 45–67% |
-| F-3 | "sign reversal against a matched control" | 14.8× dose mismatch |
+| F-3 | "sign reversal against a matched control" | 14.8× dose mismatch — ✅ **RE-EARNED 2026-08-22** at matched magnitude: arm −0.0325/−0.0374, matched control +0.0082/+0.0518, contrasts −0.0407 (Holm 0.0202) and −0.0891 (Holm 0.0229) |
 | C-1 | my cancellation of a peer's jobs "because they would fail" | false by 17 seconds |
 | — | "bfloat16 is inadmissible" | miscalibrated guard, not bad arithmetic |
 | R4-2 | "no prompt in any arm moves down" | false outside `base_refused` |

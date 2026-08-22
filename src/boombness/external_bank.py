@@ -37,6 +37,51 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import rows_sha16  # noqa: E402
 
+
+def git_commit_safe() -> str:
+    """Provenance that cannot kill the analysis. Added 2026-08-22 after two crashes.
+
+    `git rev-parse HEAD` raises FileNotFoundError on the batch nodes -- they have no git binary --
+    and callers invoke it INSIDE the literal that builds the output dict, so the run dies before
+    writing anything and the artifact on disk silently keeps its previous contents while `sacct`
+    says FAILED. A stale file that reads as current is the worst failure mode available, and it
+    happened twice: to analyze_qwen3_decomposition.py, then to analyze_dissociation.py after only
+    the first was fixed and its siblings left alone.
+
+    The SLURM wrappers export BOOMB_GIT_COMMIT from the submitting host, so real provenance is
+    preserved; absent that this degrades to an explicit marker rather than to silence.
+    """
+    import os as _os
+    import subprocess as _sp
+    env = _os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO")
+        if _repo:
+            _kw["cwd"] = _repo
+        r = _sp.run(["git", "rev-parse", "HEAD"], **_kw)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
+def git_dirty_safe(*args) -> object:
+    """Companion for the `git status --porcelain` dirty-flag calls. Never raises."""
+    import subprocess as _sp
+    try:
+        _kw = {"capture_output": True, "text": True}
+        _repo = globals().get("REPO")
+        if _repo:
+            _kw["cwd"] = _repo
+        return bool(_sp.run(["git", "status", "--porcelain", *args], **_kw).stdout.strip())
+    except (FileNotFoundError, OSError):
+        return None
+
+
 SOURCES = {
     "clearharm": ("data/clearharm/clearharm_179.csv", "instruction", "category"),
     "advbench_heldout": ("data/manifests/heldout_495.csv", "instruction", "category"),
@@ -139,8 +184,7 @@ def main() -> int:
     for r in rows:
         doms_count[r["domain"]] = doms_count.get(r["domain"], 0) + 1
     try:
-        git = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
-                             text=True).stdout.strip()
+        git = git_commit_safe()
     except Exception:
         git = None
     with open(meta_path, "w") as f:
