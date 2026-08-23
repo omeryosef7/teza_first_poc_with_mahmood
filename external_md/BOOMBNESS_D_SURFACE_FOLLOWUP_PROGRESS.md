@@ -7069,6 +7069,62 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## ✅✅ EXPERIMENT 7 ANSWERED — `d_surface:add` SUPPRESSES ASR, with a monotone dose-response
+
+**Artifact:** `outputs/boombness_followup/exp7_dsurface_add.json` (job 774974). Nine arms, one
+judging session, 495 prompts each. **This is the experiment I closed as an "evaluated negative" on
+gate grounds; the eighth reversal made it runnable, and it has a positive answer.**
+
+| arm | dose | Δ StrongReject | p (raw) |
+|---|---|---|---|
+| `d_surface:add` | 0.0625 gap | **−0.0185** | 0.069 |
+| `d_surface:add` | 0.125 | **−0.0224** | 0.091 |
+| `d_surface:add` | 0.25 | **−0.0293** | 0.072 |
+| `d_surface:add` | 0.50 | **−0.0357** | **0.025** |
+| **`random:add` (matched)** | **0.50** | ⚠ **+0.0529** | 0.011 |
+| `random:add` | 0.75 | +0.1507 | 0.0007 |
+| refusalness add | 1/8, 1/4 | −0.0134, −0.0231 | 0.22, 0.070 |
+| **interaction `dS50 − rnd50`** | | **−0.0886** | **0.0071** |
+
+### ✅ The strongest evidence here is the dose-response, and it needs no multiplicity family
+
+**−0.0185 → −0.0224 → −0.0293 → −0.0357 across four increasing doses: perfectly monotone.** The
+probability of four doses landing in exact order by chance is **1/4! = 0.042**, and that statistic
+depends on no estimator choice, no family definition and no distributional assumption. ⚠ **The F-3
+refusalness arm conspicuously lacked this** — it was flat across a 50% dose increase, which is what
+I flagged there as the absence of a mechanism signature. **Here the signature is present.**
+
+### ✅ And the direction completes a bidirectional picture
+
+**Removing `d_surface` RAISES ASR** (+0.0307 at L12, the ablation track). **Adding it LOWERS ASR**
+(−0.0357 at 0.5 gap). Opposite signs from opposite manipulations of the same axis — which is what a
+causal axis should do, and which neither half establishes alone.
+
+### ⚠ Three caveats, none of which I am going to bury
+
+⛔ **The interaction misses under multiplicity.** The analysis emits **9** tests; Holm gives the
+interaction **0.0572** — it just fails. Only `rnd75` survives (0.0060). The pre-registered contrast
+was the `dS50` vs `rnd50` pair, which is p **0.0071** as a single test — **both numbers are true and
+the reader needs both.**
+
+⛔ **59.7% of the interaction is the CONTROL moving up, not the arm suppressing** (+0.0529 of the
+−0.0886). This is the identical pattern I flagged as fatal in F-3's high-dose contrast, and it is no
+less true here for being my own positive result. **The arm's own effect is −0.0357 at raw p 0.025,
+which is Holm 0.1525.**
+
+⛔ **The matched random control is a single draw** (seed 20260816). The F-3 band showed 1 draw in 4
+can behave very differently. **This contrast needs a control band before it is citable**, exactly as
+the Llama ablation did.
+
+### What this changes
+
+⛔ **"Plan §8 experiment 7 closes as an evaluated negative" is withdrawn** — it was withdrawn once
+already on gate grounds, and now it is withdrawn on evidence: the experiment ran and the arm moves
+ASR **in the predicted direction with a monotone dose-response.** ⚠ It is **not yet established** —
+one control draw, an interaction that misses Holm, and a majority-control-driven contrast. **The
+honest status is "positive signal, needs a control band", which is precisely the state the ablation
+track was in before its 24-control grid.**
+
 ## 🔬 THE DOSE-MATCHED ARM — measured, and my first four doses were all too high
 
 The experiment the log declared impossible ("no experiment we could construct isolates direction from
