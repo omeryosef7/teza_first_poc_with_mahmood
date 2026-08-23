@@ -1356,9 +1356,30 @@ maximizing this projection has no reason to stop at 0.25 and will find the degen
 
 ## 4b. The §2.6 comprehension control, and what it does to every intervention claim (added 2026-08-17)
 
+⛔ **THIS ENTIRE SECTION IS BUILT ON THE READOUT R-6 WITHDREW (marked 2026-08-23).** R-6 withdraws
+*"`project_out` is the only arm that leaves comprehension unchanged (p=0.681)", **and every other §4b
+verdict***: the readout scored `' literal'`/`' coded'` at a position where the model emits neither —
+median option mass **4.4e-05**, **0/288** rows above 1%. Every verdict below is an ordering **inside that
+tail**. Until 2026-08-23 only *one* of the seven rows carried that marker, so a reader scanning the table
+saw six live-looking verdicts; the section intro called it *"it reorders the intervention arms"* with no
+caveat at all. The numbers are left in place because deleting them would hide what was published, but
+**not one verdict column below is usable**.
+
+**What the corrected whole-answer readout gives, for the two arms that have been re-run**
+(`section4b_whole_answer.json`, n=288, 6 domain clusters, median option mass **0.297**):
+
+| arm | Δ comprehension | 95% CI | p |
+|---|---|---|---|
+| `project_out` `d_surface` | **+0.2795** | [+0.1752, +0.3838] | **0.00099** |
+| double-random control | −0.0041 | [−0.0246, +0.0164] | 0.630 |
+
+So `project_out` does not merely leave comprehension "unchanged" — it **improves** it, against a control
+that does nothing. **The other five arms have not been re-run**; R-6's re-run is still outstanding, so
+their corrected values are unknown rather than confirmed.
+
 The plan's §2.6 forbids reading a lowered ASR as causal without checking the model still understands the
 prompt. **That control was missing for the whole sprint** until an independent plan-coverage sweep found
-it. It now exists, and it reorders the intervention arms.
+it. ⛔ The version below was the first attempt at it and is withdrawn.
 
 Readout: `comprehension_logodds` = log p("coded") − log p("literal") on `comprehension_usage` rows;
 positive means the model still reports the codeword as meaning the coded thing. 60 doublespeak prompts
@@ -1366,12 +1387,12 @@ with ≥1 demonstration, common to all arms, domain-clustered over 6 domains: �
 
 | arm | Δ comprehension | p | frac still "coded" | verdict |
 |---|---|---|---|---|
-| `d_surface` **+0.25** | +0.643 | 0.006 | 0.733 | improves |
-| **random +0.25** | **+1.065** | 0.001 | 0.800 | improves MORE |
-| `d_surface` **−0.25** | **−0.792** | 0.040 | **0.500** | **degrades below zero** |
-| **random −0.25** | **−1.470** | 0.004 | **0.383** | degrades MORE |
-| **`project_out`** | **+0.088** | **0.681** | 0.683 | **unchanged** |
-| arm C (remove refusalness) | +0.207 | 0.001 | 0.717 | improves |
+| `d_surface` **+0.25** | +0.643 | 0.006 | 0.733 | ⛔ ~~improves~~ — R-6, verdict inside a 4.4e-05 tail; not re-run |
+| **random +0.25** | **+1.065** | 0.001 | 0.800 | ⛔ ~~improves MORE~~ — R-6; not re-run |
+| `d_surface` **−0.25** | **−0.792** | 0.040 | **0.500** | ⛔ ~~degrades below zero~~ — R-6; not re-run |
+| **random −0.25** | **−1.470** | 0.004 | **0.383** | ⛔ ~~degrades MORE~~ — R-6; not re-run |
+| **`project_out`** | ~~+0.088~~ | ~~0.681~~ | ~~0.683~~ | ⛔ ~~unchanged~~ — R-6. Re-run: **+0.2795**, p **0.00099** — it *improves* |
+| arm C (remove refusalness) | +0.207 | 0.001 | 0.717 | ⛔ ~~improves~~ — R-6; not re-run |
 | arm F (add Boombness + remove refusalness) | +0.863 | 0.002 | 0.783 | ⛔ **see R-20 — its ASR gain is ~94% answer style** |
 
 **Three consequences, one of them a retraction of my own claim.**

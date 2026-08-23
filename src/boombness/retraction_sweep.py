@@ -89,7 +89,8 @@ RETRACTED = [
     # ---- R-20 / R-21 (2026-08-20; renumbered 08-21 — R-14/R-15 were already taken): arm F's behavioural gain is ~94% answer style. Added the same
     # day, because the two previous times this sweep reported CLEAN the pattern list was the weak
     # link, not the documents.
-    # BROADENED 2026-08-23 (audit #18). The first version keyed on the LABEL "arm F" within 60 chars of
+    # BROADENED 2026-08-23 (self-found while chasing sourcing flags -- NOT an audit finding;
+    # an earlier draft of this comment credited a nonexistent "audit #18"). The first version keyed on the LABEL "arm F" within 60 chars of
     # the figure. But an arm's identity is its INTERVENTION -- add d_surface + remove refusalness -- and
     # the report states that claim three times WITHOUT ever writing "arm F": "Composing the two takes ASR
     # 0.243 -> 0.548", the same pair inside decision-gate row 2, and a purely prose form ("a second,

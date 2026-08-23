@@ -10367,3 +10367,48 @@ appear in no named artifact are worth chasing even when the explanation sounds b
 | 698 | 2026-08-23 | R-20 pattern keyed on the label "arm F" | missed **3 sites** for 3 days, incl. the short update |
 | 699 | 2026-08-23 | broadened to content-keyed; tested pre-fix | 6 hits → 2 self-inflicted FPs → **4 genuine → 0** |
 | 700 | 2026-08-23 | **decision gate 2 rescored YES → NO** | no demonstrated behavioural increase; suppression only |
+
+## A guard I built, measured, and did not ship — and the section it found on the way
+
+Last tick's R-20 miss was a *class* problem: the sweep's patterns are a second, hand-maintained record of
+what was retracted, and it can silently fall behind the registry. So I tried to remove the hand: derive
+the fingerprints from the retraction registry itself.
+
+It does not work, and the measurement is the point — **139 flags, 1 genuine**. Two reasons, both found by
+running it rather than by reasoning about it:
+
+- **striking a phrase strikes live numbers with it.** `0.0305` registers as retracted only because it sits
+  inside a struck comparator at report:671 — while `+0.0305` is a live §14-B result quoted approvingly
+  three lines later. The harvest cannot separate them.
+- **bare values collide.** R-20's effect size `+0.305` matched two unrelated **p-values** of 0.305 in a
+  layer table.
+
+This is the **third** time this repo has learned that a number is not an identity; the §19 sourcing check
+learned it twice, and its own artifact still carries the sentence *"numeric coverage carries no
+information."* I rebuilt the same mistake in a new costume. Shipping it as a blocking guard would have
+trained its reader to ignore it — so it stays a hand-run diagnostic with the precision written into its
+docstring.
+
+Two smaller things it got right on the way: it **refused to run** when only 8 figures parsed out of the
+registry (the claim column is mostly prose), instead of passing vacuously on a near-empty pattern set; and
+a first draft that stored `84%` as bare `84` was caught before it could accuse a line number.
+
+**The one genuine hit was worth the whole exercise.** Report **§4b** — a section whose stated job is *"the
+§2.6 comprehension control, and what it does to every intervention claim"* — is built entirely on the
+readout **R-6 withdrew**: option mass **4.4e-05**, **0/288** rows above 1%, every verdict an ordering
+inside that tail. **Only 1 of its 7 rows carried the marker** (arm F's, and only because R-20 put it
+there). The section intro read *"it now exists, and it reorders the intervention arms"* — no caveat.
+
+Now marked at section level and per row. Where the corrected whole-answer readout has been run
+(`section4b_whole_answer.json`, median option mass **0.297**), `project_out` does not leave comprehension
+"unchanged" — it **improves** it, **+0.2795 [+0.1752, +0.3838], p 0.00099**, against a double-random
+control at **−0.0041, p 0.630**. The other five arms have **not** been re-run, so they are marked unknown
+rather than quietly restated.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 701 | 2026-08-23 | derived retraction fingerprints from the registry | **139 flags, 1 genuine — premise false** |
+| 702 | 2026-08-23 | diagnosed why | struck *phrases* kill live numbers; bare values collide |
+| 703 | 2026-08-23 | **not wired into `check_all`**, precision in the docstring | a noisy guard trains you to ignore it |
+| 704 | 2026-08-23 | the one hit: **§4b runs on R-6's withdrawn readout** | 1 of 7 rows marked → **all 7 + section banner** |
+| 705 | 2026-08-23 | corrected readout, 2 arms available | `project_out` **+0.2795 p 0.00099**; 5 arms still un-rerun |
