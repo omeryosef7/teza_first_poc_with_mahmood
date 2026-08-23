@@ -693,6 +693,36 @@ carries it.
 
 ---
 
+### R-U (00:41) — Phase 4 prerequisite: **the knockout CAN fire on Qwen3.** Tokenizer audit, no GPU.
+
+Before spending a GPU on a cross-model null, the mandatory question is whether the intervention is
+even *addressable* on the second model. `demo_key_positions` locates the demonstration block by
+CHARACTER OFFSET into the templated prompt, so a tokenizer with different specials could fail to
+find it and every downstream number would still look healthy — the exact silent-no-op shape this
+phase has guards against.
+
+Ran the repo's own `sb.demo_key_positions` over the **exact Phase-2 population** (bank
+`boombness_prompt_bank.jsonl`, `condition=natural_doublespeak`, blocks `core2x2,core2x2_slot3`,
+`n_examples ∈ {1,2,4,8}`, `query_kind=behavioral`) under `Qwen/Qwen3-14B`'s tokenizer:
+
+| | |
+|---|---|
+| population rows | **96** (exactly `--expect-n 96`, so the Phase-2 population is model-independent) |
+| demo block located | **96 / 96** |
+| failures | **none** — `{}` |
+| demo tokens per row (min/median/max) | **8 / 44 / 120** |
+
+**The Phase 4 knockout is addressable on Qwen3.** Llama needs a HF token to re-audit from scratch,
+but it is proven by construction: the Phase-2/Phase-3 runs located the block and the liveness gate
+(`KNOCKOUT_MIN_LIVE_FRAC = 0.99`) passed on every arm.
+
+This does *not* yet clear Phase 4. The remaining gate is **N13 headroom**: Qwen3 complies with only
+**0.8% of AdvBench (4/495)**, and an intervention cannot be measured against a floor. Phase 4's first
+GPU spend is therefore arm A alone — Qwen3's baseline compliance on *this* bank — and the knockout
+arms are only worth running if that baseline is off the floor.
+
+---
+
 ### 🔬 PHASE 3 LAUNCHED (23:21) — does the retrieval effect run THROUGH refusal, or beside it?
 
 Phase 2 answered *whether* demonstration retrieval is causally necessary (R-R: yes, −0.1562 against
