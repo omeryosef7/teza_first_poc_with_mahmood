@@ -269,7 +269,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
 | RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** (R-P/R-Q/R-R) | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
-| XMODEL | 4 | Llama vs Qwen3 matched | 🔬 **current** — N13 headroom gate first | Headroom + dose |
+| XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | 🟡 gate measured (R-S): 1.5–1.9× realizable, banks built + audited | Bank gate |
 | CONCEPT | 6 | concept generality on BANK2 | ⬜ blocked on Phase 5 | — |
 | OBJ | 7 | new objective | ⬜ | 6 gates; **Gate 6 looks unreachable via `d_surface`** |
@@ -690,6 +690,95 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ★★★★★ R-AB (03:05) — **PHASE 4 RESULT: the retrieval knockout REPLICATES on Qwen3-14B. And the all-layers arm is DEGENERATE on both models — the S8 caveat, recorded before the numbers, was the right call.**
+
+**Artifact:** judge session **777134**, all four Qwen3 cells judged together, COMPLETED 8:10,
+`n_common = 96`. Llama column is session **776893**, likewise all-in-one, `n_common = 96`.
+
+#### The two models, side by side
+
+| | **Llama-3.1-8B** (32 blocks) | **Qwen3-14B** (40 blocks) |
+|---|---|---|
+| baseline **A** | 0.2292 | **0.1771** |
+| **C_band** | **0.0521** (L6–14) | **0.0104** (L7–17) |
+| Δ band | **−0.1771** | **−0.1667** |
+| **% of baseline removed** | **77.3%** | **94.1%** |
+| **D_ctrl** | 0.2083 (L20–31) | 0.1146 (L25–39) |
+| Δ control | −0.0208 | −0.0625 |
+| **C_all** | **0.0000** (L0–31) | **0.0000** (L0–39) |
+
+**The mechanism crosses models.** A depth-matched knockout of demonstration attention at
+**0.19–0.44 of depth** removes **77% of attack success on Llama and 94% on Qwen3**, while the *same
+demonstration keys* cut at late layers removes far less on both. This answers Phase 4's question:
+the two models are not merely both jailbreakable — **the same intervention, at the same relative
+depth, on the same token set, does the same thing to both.**
+
+Qwen3 A → C_band, exact paired cluster sign-flip: **Δ = −0.1667, p = 0.1250, 4 informative domains,
+floor 0.1250.** Per-domain: `game_manual −0.500, city_bridge −0.250, news_report −0.125,
+instructional −0.125, farm_storage 0, lab_safety 0`. **Four negative, none positive.**
+
+#### ⛔ C_all is DEGENERATE on BOTH models. Its ASR = 0.0000 is not suppression.
+
+| arm | Llama uniq_frac | Qwen3 uniq_frac |
+|---|---|---|
+| A baseline | 0.875 (84/96) | 0.927 (89/96) |
+| **C_all** | **0.229 (22/96)** | **0.104 (10/96)** |
+| C_band | 0.802 (77/96) | 0.781 (75/96) |
+| D_ctrl | 0.875 (84/96) | 0.917 (88/96) |
+
+**Both C_all arms collapse generation into a handful of templates** — 10 distinct completion lengths
+across 96 prompts on Qwen3. For scale, this project has previously called `uniq 0.439` degenerate and
+`uniq 0.853` acceptable; **0.104 is far below anything ever accepted here.** An ASR of 0.0000 from a
+model producing ten distinct outputs is a **broken model, not a blocked attack**, and must not be
+reported as 100% suppression.
+
+This is exactly the **S8** caveat entered in REVIEW-3 *before these numbers existed*: `lo = max(0, kp − past)`
+blocks each demonstration token from attending to itself and to earlier demonstration tokens, so at
+all-layers the arm destroys the demonstrations' own computation rather than blocking retrieval of it.
+**The prediction was registered in advance and the data confirmed it.** It also retroactively
+justifies R-R having built the Phase 2 headline on `C_band` and never quoting `C_all`.
+
+⚠ **This qualifies an older prior, not a result of this phase.** The status board's note that
+*"G3's `all_layers_demo` recovered 75.2% of the deletion ceiling while sparse knockout did not"* was
+the stated reason all-layers was "the arm with a prior". That prior now looks like it was reading
+degeneracy. Nothing in Phases 2–4 depends on it.
+
+#### ⚠ Where the Qwen3 evidence is WEAKER than Llama's, stated plainly
+
+The **arm-versus-control** contrast — the sharpest form of the claim — is much weaker on Qwen3:
+
+```
+QWEN3  C_band - D_ctrl = -0.1042   p = 0.5000   only 2 informative domains (floor 0.5000)
+  game_manual  -0.5625 | instructional -0.0625 | the other four domains  0.0000
+```
+
+**C_band drives ASR to exactly 0.0000 in five of six domains**, so there is no variance left for the
+contrast to be tested on, and what remains is carried almost entirely by `game_manual`. On Llama the
+same contrast had **arm − control = −0.1562** spread across five informative domains. So:
+
+* **The A → C_band suppression replicates**, and is the quotable Qwen3 result.
+* **The arm-vs-control separation does *not* replicate at comparable statistical strength.** It points
+  the same way (band 0.0104 vs control 0.1146, a 11× gap in level) but with 2 informative clusters it
+  cannot be given a p below 0.5. **Reported as directionally consistent, not as independently
+  significant.**
+
+⚠ Also note **Qwen3's late-layer control is not inert**: −0.0625, i.e. it removes **35% of Qwen3's
+baseline** versus Llama's control removing **9%** of Llama's. The depth specificity is therefore
+**sharper on Llama than on Qwen3**, the opposite of the headline direction, and it is recorded here
+rather than left out.
+
+⚠ **Judge drift is visible and small.** The same baseline arm scored **0.1875** in the headroom
+session (777118) and **0.1771** in the contrast session (777134) — one row of 96. Harmless here
+because every contrast is within-session, and a concrete demonstration of why this project does not
+quote cross-session comparisons.
+
+#### Status
+
+**Phase 4 is answered.** Same mechanism, same depth signature, both models — with the all-layers arm
+excluded as degenerate on both and the arm-vs-control strength honestly weaker on Qwen3.
 
 ---
 
