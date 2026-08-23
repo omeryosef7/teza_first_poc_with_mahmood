@@ -490,6 +490,111 @@ class AttentionKnockout:
 
 
 # --------------------------------------------------------------------------- #
+# Attention knockout that SURVIVES GENERATION (Phase 2 of the d_surface next phase)
+# --------------------------------------------------------------------------- #
+class AllQueryAttentionKnockout:
+    """Block attention onto `blocked_keys` from EVERY query row, at prefill AND at decode.
+
+    WHY THIS EXISTS, AND WHY `AttentionKnockout` COULD NOT BE REUSED.
+    `AttentionKnockout` addresses query rows by ABSOLUTE prompt position. Under KV-cached
+    autoregressive decoding the additive mask has shape [1, H, 1, kv_len]: there is exactly ONE
+    query row, so `am.shape[2] == 1`, and its guard
+
+        if qp >= am.shape[2]: continue
+
+    skips every absolute query position on every decode step. The knockout therefore applies
+    during prefill and silently switches itself off for the whole generation. Its own test
+    asserts this as intended behaviour (tests/test_attnknockout_synthetic.py:185-192, "a query
+    index past the current seq (e.g. a decode step) is skipped, not an error") -- correct for the
+    teacher-forced readout it was built for, fatal for a behavioural experiment.
+
+    A second, independent break in the same method: the causality guard `0 <= kp <= qp` compares
+    an ABSOLUTE key index against a CACHE-LOCAL query index (0 on a decode step), so even a query
+    row that survived the first guard would reject every demonstration key.
+
+    The consequence if this had gone unnoticed is the reason the class is written rather than the
+    guard patched: the run still emits rows, still reports `n_edges_cut`, still exits 0, and
+    yields "full demonstration-block knockout does not change jailbreak ASR" -- a statement about
+    a hook that turned itself off after the first generated token. That is this repo's documented
+    absolute-position-index bug class (feedback_absolute_position_index_bug), which has already
+    landed twice.
+
+    THE INDEX ALGEBRA. KV-cache columns are ABSOLUTE positions, so `kp` indexes `am[..., kp]`
+    directly at every step. Query row `r` of the current chunk is absolute position
+    `past + r` where `past = am.shape[3] - am.shape[2]`. Causality permits row `r` to see key
+    `kp` iff `past + r >= kp`, i.e. `r >= kp - past`. So the first blockable row is
+    `lo = max(0, kp - past)` and every row from `lo` onward is blocked. At prefill `past == 0`
+    and this reduces to the lower triangle; at decode `am.shape[2] == 1` and `lo == 0` whenever
+    `kp <= past`, which is exactly the case that matters.
+
+    `AttentionKnockout` IS DELIBERATELY LEFT UNTOUCHED. surgical_knockout.py and the G1/G3
+    artifacts depend on its skip semantics; changing it would silently re-score published results.
+
+    LIVENESS INSTRUMENTATION IS NOT OPTIONAL. `stats` counts decode-step forwards and decode-step
+    edits so a caller can PROVE the mask fired during generation instead of assuming it. A run
+    whose `n_decode_edits` is 0 is void, and the caller is expected to refuse to report it.
+    """
+
+    def __init__(self, model, layer_idxs, blocked_keys,
+                 heads=None, stats=None):
+        self.layers = [dc._get_layers(model)[i] for i in layer_idxs]
+        self.k = sorted(set(int(x) for x in blocked_keys))
+        self.heads = None if heads is None else list(heads)
+        self.n_heads = int(model.config.num_attention_heads)
+        self._handles = []
+        self.stats = stats if stats is not None else {}
+        for key in ("n_forward", "n_decode_forward", "n_edits", "n_decode_edits", "n_prefill_forward"):
+            self.stats.setdefault(key, 0)
+
+    def _pre(self, mod, args, kwargs):
+        am = kwargs.get("attention_mask")
+        if am is None or am.dim() != 4:
+            raise RuntimeError("expected a 4-D additive attention mask; is the model loaded with "
+                               "attn_implementation='eager'? Under SDPA/flash the mask edit is "
+                               "discarded and the knockout is a silent no-op.")
+        if am.shape[0] != 1:
+            raise NotImplementedError("AllQueryAttentionKnockout supports batch size 1 only")
+        am = am.clone()
+        if self.heads is not None and am.shape[1] == 1:
+            am = am.expand(-1, self.n_heads, -1, -1).clone()
+        min_val = torch.finfo(am.dtype).min
+        hs = range(am.shape[1]) if self.heads is None else self.heads
+        n_q, kv_len = am.shape[2], am.shape[3]
+        past = kv_len - n_q                     # absolute position of query row 0
+        is_decode = (n_q == 1)
+        n_edits = 0
+        for kp in self.k:
+            if kp >= kv_len:
+                continue                        # key not in the cache yet
+            lo = max(0, kp - past)              # first query row that may causally see kp
+            if lo >= n_q:
+                continue
+            for h in hs:
+                am[0, h, lo:, kp] = min_val
+            n_edits += (n_q - lo) * (len(list(hs)) if self.heads is not None else am.shape[1])
+        kwargs["attention_mask"] = am
+        self.stats["n_forward"] += 1
+        self.stats["n_decode_forward"] += int(is_decode)
+        self.stats["n_prefill_forward"] += int(not is_decode)
+        self.stats["n_edits"] += n_edits
+        if is_decode:
+            self.stats["n_decode_edits"] += n_edits
+        return args, kwargs
+
+    def __enter__(self):
+        for layer in self.layers:
+            self._handles.append(
+                layer.self_attn.register_forward_pre_hook(self._pre, with_kwargs=True))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Per-head z capture / patch (NEXT5 W4 tier-B — attention-head circuit)
 # --------------------------------------------------------------------------- #
 # The attention OUTPUT before o_proj is the concatenation of per-QUERY-head outputs z:

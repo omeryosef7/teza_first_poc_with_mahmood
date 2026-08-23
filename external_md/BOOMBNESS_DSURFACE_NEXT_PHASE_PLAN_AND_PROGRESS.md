@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | 🔬 judging (**peer job 776368**) | Gate E7 |
 | DOSE-L12 | 1B | **nine-point** L12 dose ladder | 🔬 generating 776391/776392 | Gate DOSE |
 | SESSION | 1C | one-session canonical control artifact | ⬜ waits on 776391/776392 | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ⬜ | Gate RETRIEVAL |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | 🔬 **unblocked** — hook fixed + 10/10 tests; wiring next | Gate RETRIEVAL |
 | RETR-REF | 3 | retrieval × refusal composition | ⬜ | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ⬜ | — |
 | BANK2 | 5 | new non-PC1-dominated bank | ⬜ | Bank gate |
@@ -298,13 +298,122 @@ Every job submitted by this phase, with the commit its tree will execute.
 
 ## 6. RESULTS
 
-*(appended as results arrive; every entry records question, hypothesis, intervention, model,
-dataset, population, layer, direction source, split, seed, job id, commit, output dir, judge run,
-n, controls, result, interpretation, caveats, next decision)*
+### ★★★ R-A (17:42) — PHASE 2 WAS UNRUNNABLE, AND THE FAILURE WOULD HAVE BEEN SILENT
+
+**Question.** Can the G3 demonstration-block attention knockout be run *under generation* on
+behavioural prompts, so that the retrieval mechanism can be tied to jailbreak behaviour?
+
+**Answer: NO, not with the existing code — and running it anyway would have produced a
+clean-looking, publishable, WRONG null.** Five independent audits converged on the same two
+defects in `doublespeak_causality/pair_common.py:463-476`.
+
+**Defect 1 — the knockout is prefill-only.** `AttentionKnockout` addresses query rows by
+**absolute prompt position**. Under KV-cached decoding the additive mask has shape
+`[1, H, 1, kv_len]`, so `am.shape[2] == 1` and the guard
+
+```python
+if qp >= am.shape[2]: continue
+```
+
+**skips every absolute query position on every decode step.** The block applies during prefill and
+then switches itself off for the entire generation. This is asserted as *intended* behaviour by the
+existing test (`tests/test_attnknockout_synthetic.py:185-192`: "a query index past the current seq
+(e.g. a decode step) is skipped, not an error") — correct for the teacher-forced readout it was
+built for, fatal for a behavioural experiment.
+
+**Defect 2 — the causality guard compares incompatible index spaces.** `if 0 <= kp <= qp` tests an
+**absolute** key index against a **cache-local** query index (which is `0` on a decode step), so
+even a query row that survived defect 1 would reject every demonstration key.
+
+**Why this matters more than an ordinary bug.** The run would still emit rows, still report
+`n_edges_cut`, still exit 0, and yield *"full demonstration-block knockout does not change
+jailbreak ASR."* That reads as the plan's "negative but informative" branch — representation ≠
+behaviour at a deeper mechanistic level — and it would be a statement about **a hook that turned
+itself off after the first generated token.** This is the repo's documented
+`feedback_absolute_position_index_bug` class, which has now landed three times.
+
+**Two further blockers found by the same audits:**
+* `src/boombness/surgical_knockout.py` **has no generation path at all** — no `.generate`, no
+  `gens.jsonl`; it terminates in `signals.string_option_readout`, teacher-forced with
+  `use_cache=False`. The only `.generate` in `src/boombness` is `score_behavior.py:646`.
+* `score_behavior.py:468` **hardcodes `attn_implementation="sdpa"`**, under which a custom 4-D
+  additive mask is discarded without error. A knockout run under SDPA is not a weak result, it is a
+  **void** result.
+
+**And the reference repo cannot help.** `external_repos/interp-jailbreak` (arXiv 2506.12880) is
+**entirely observational** — a full grep for `hook_fn` / `add_hook` / `run_with_hooks` returns
+nothing. There is no causal-intervention machinery to reuse. We build it.
+
+**FIX IMPLEMENTED (17:43).** New class `AllQueryAttentionKnockout` in
+`doublespeak_causality/pair_common.py:495`, alive at prefill **and** decode. The index algebra:
+KV-cache columns are absolute, so `kp` indexes `am[..., kp]` directly; query row `r` is absolute
+position `past + r` with `past = am.shape[3] - am.shape[2]`, so the first causally-blockable row is
+`lo = max(0, kp - past)` and every row from `lo` on is masked. At prefill this reduces to the lower
+triangle; at decode `lo == 0` whenever `kp <= past`, which is the case that matters.
+
+It carries **liveness instrumentation** (`n_decode_forward`, `n_decode_edits`) precisely so that a
+caller can *prove* the mask fired during generation instead of assuming it. A run whose
+`n_decode_edits` is 0 is void and must refuse to report.
+
+`AttentionKnockout` is **deliberately left untouched** — `surgical_knockout.py` and every committed
+G1/G3 artifact depend on its skip semantics, and changing it in place would silently re-score
+published results.
+
+**Tests: 10/10 pass** (`doublespeak_causality/tests/test_allquery_attnknockout.py`), including
+`test_old_class_is_dead_at_decode_THIS_IS_THE_REGRESSION_GUARD`, which asserts the **pre-fix**
+class's failure directly — the repo's standing rule that a guard must ship with a test that fails
+the old code. The pre-existing suite still passes 17/17, so G1/G3 are not disturbed.
+
+**Status:** Phase 2 is now *buildable*. It was not, ninety minutes ago, and nothing in the written
+plan would have revealed that — only reading the hook did.
 
 ---
 
 ## 7. BUGS / RETRACTIONS / CORRECTIONS (this phase)
+
+### ⛔ P-0 (17:45) — THE THIRD WRITER SWEPT MY IN-PROGRESS FILES INTO ITS COMMIT
+
+At **17:40:43** the unattributed writer (§0.4) committed `9672cf04`, "the figure I promoted into a
+banner had no script behind it" — a commit about the §4b recompute. It contains **eight** files, two
+of which are mine and have nothing to do with its subject:
+
+* `scripts/judge_p1a.sh` (61 lines) — the Gate E7 judging driver I wrote at 17:36
+* `src/boombness/slurm/run_p1a_judge.sh` (14 lines) — its sbatch wrapper
+
+That is a broad `git add -A`. **Verified consequences:** my files were committed *intact* —
+`git diff HEAD` for both is empty and both still pass `bash -n` — and job 776397 had already read
+the script at launch, so nothing running was affected. **Unverified-but-real risk:** had the sweep
+landed sixty seconds earlier it would have committed a half-written script, and a SLURM job reading
+the tree at runtime would have executed it. That is the precise hazard this phase's own protocol
+(§0.4, "stage by explicit path, never `git add -A`") exists to prevent, arriving from the direction
+the protocol could not defend against — someone else's sweep, not mine.
+
+**Standing mitigation for the rest of this phase:** commit own work promptly to minimise the window;
+`git log` immediately before every commit (HEAD moved twice in 35 minutes); and after any commit,
+`git diff HEAD` the files just written to confirm the committed bytes are the intended bytes. The
+provenance cost is already paid and not recoverable: my Gate E7 driver is attributed to a commit
+message about §4b.
+
+### ⚠ P-1 (17:43) — PROCESS: I twice came close to cancelling a healthy job on inference
+
+Job 776368 (not mine, now unowned) sat at **0 bytes of log and 0 RunDirs for 22 minutes**. Against
+the documented signature *"a 0-byte log under `set -e` means HANG, not nothing ran"*, that looked
+decisive, and I drafted a cancellation.
+
+**It was wrong, twice over.** (a) `scripts/judge_band2.sh` has **no progress echo at all** — its
+only `echo` is *after* `wait`. A 0-byte log is that script's expected behaviour until it finishes;
+my own job looked different solely because I added echoes to mine. (b) I then fell back on "0
+RunDirs = never started" — but my own healthy job also showed 0 RunDirs at the same point, so the
+comparison proved nothing.
+
+Both times the tell was that I was reading a **proxy** (log bytes) shaped by a property of the
+*script* rather than of the *job*, and treating a difference between two scripts as a difference
+between two jobs. That is the same shape as the FM1 dead-guard family: addressing something by an
+incidental property instead of by identity.
+
+**776368 was left running.** It is expected to produce a genuine cross-session replicate of
+`dd12a008`/`dd12a006`, which is useful rather than wasteful. C-1 in the follow-up log — four jobs
+cancelled on a reason false by seventeen seconds — is the precedent this avoided repeating.
 
 ### ⚠ C-1 (17:25) — "the controls' ≤0.13 band" is a CROSS-LAYER maximum, and it is the wrong comparator at L12
 
