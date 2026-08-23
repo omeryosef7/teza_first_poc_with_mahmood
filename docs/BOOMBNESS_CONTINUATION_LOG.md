@@ -9189,3 +9189,44 @@ Silent artifacts: 8 → **7**.
 | 570 | 2026-08-23 | rebuilt from the re-judged artifact | `d_surface` alone **p=0.210 ns**; super-additivity **not established** |
 | 571 | 2026-08-23 | kept what survives | C **+0.394** (p=0.041), D **+0.460** (p=0.020), control **−0.0007** |
 | 572 | 2026-08-23 | exempted retracted artifacts from my own detector | it had been steering me at withdrawn numbers |
+
+## The coherence gate excluded one of my own control draws, and that flattered the arm
+
+Audit #15 is running (retracted-figure leakage). While it works, the concurrent session committed a
+sweep of **all 26 gate verdicts** in the repo: 12 pass, **8 fail on `scorable_frac` alone**, 6 fail on
+real degeneracy — and **six of the eight scorable-only failures are lexically healthier than the
+untreated model** (baseline uniq 0.8411, trigram 0.0095). Two are my `fuS` arms. Their transferable
+point is exactly the one I reached on the fuS ladder from the other direction: *`scorable_frac` is a
+length proxy wearing a coherence label*, and where the intervention's predicted effect **is** to shorten
+outputs, it discards precisely the runs that would show the effect.
+
+**Two consequences in my own deliverable.**
+
+**(1) A clause I wrote yesterday was unsupported.** Q4 said the two low doses "barely move anything".
+They were **never judged**, so that was a statement about gate statistics dressed as one about
+behaviour — and the gate data says the opposite: `fuS_add_g00625` (uniq 0.861, trigram 0.0064) and
+`fuS_add_g0125` (uniq 0.865, trigram 0.0060) are healthier than baseline. They are **coherent short
+refusals**, not a floor. Corrected. It does not rescue them as an attack objective — a coherent refusal
+is still a refusal — but the claim as written was not supported by anything measured.
+
+**(2) A control-band draw of mine was excluded for the wrong reason, in the flattering direction.**
+`ab_Bband_20260903` was dropped from arm B's band on `scorable_frac 0.446`, and my own note conceded
+its degeneracy statistics were healthy (uniq 0.833, trigram 0.014). By the sweep, that is the same
+error: excluded for being terse, not broken. **Excluding a draw shrinks the band, which makes the arm
+look further above it.**
+
+Its generations were complete — 495 rows, `DONE` — and simply never judged. So this is fixable rather
+than merely flaggable: job **774973** is judging them now, with a baseline **in the same session**, so
+its delta will be session-matched rather than cross-session like the other five draws. The band figures
+are marked provisional until it lands.
+
+The existing five draws sit at +0.0020, +0.0020, +0.0020, +0.0040, −0.0020 against baseline 0.0646.
+Whether a sixth widens that is exactly the question, and I have deliberately not predicted it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 573 | 2026-08-23 | spawned **audit #15** on retracted-figure leakage | running |
+| 574 | 2026-08-23 | concurrent sweep: **8 of 26 gate fails are `scorable_frac`-only** | 6 of them healthier than baseline |
+| 575 | 2026-08-23 | **corrected an unsupported clause I wrote yesterday** | low doses are coherent refusals, not a floor |
+| 576 | 2026-08-23 | found a **band draw of mine excluded for the wrong reason** | shrinking a band flatters the arm |
+| 577 | 2026-08-23 | submitted job **774973** to judge it, session-matched | band figures marked provisional |

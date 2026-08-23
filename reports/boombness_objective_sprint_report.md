@@ -2702,8 +2702,7 @@ optimizer maximizing this projection has no reason to stop at 0.25.
 with gap-matched random controls was generated, gated and never judged. Its gate profile bounds the
 window from both ends: at **0.5** only **58 of 495** generations are ≥8 words — the model has gone
 terse rather than incoherent (`uniq_word_ratio` 0.853, healthy) — and at **0.75** the long outputs
-*are* degenerate (`uniq` **0.439**, **34%** truncated). Below that, 0.0625 and 0.125 barely move
-anything. So the interval where the intervention is both non-degenerate and non-trivial is roughly
+*are* degenerate (`uniq` **0.439**, **34%** truncated). ⚠ **Corrected 2026-08-23:** an earlier revision said the two low doses "barely move anything". They were **never judged**, so that was a statement about gate statistics dressed as one about behaviour — and it is the wrong reading. A concurrent sweep of all 26 gate verdicts in the repo found `fuS_add_g00625` (uniq **0.861**, trigram **0.0064**) and `fuS_add_g0125` (uniq **0.865**, trigram **0.0060**) are **lexically healthier than the untreated model** (baseline uniq 0.8411, trigram 0.0095) while failing the gate on `scorable_frac` alone. They are not a floor; they are **coherent short refusals**, which is what adding a refusal-adjacent direction should produce. That does not rescue them as an attack objective — a coherent refusal is still a refusal — but "barely moves anything" was not supported by anything measured. So the interval where the intervention is both non-degenerate and non-trivial is roughly
 **0.125–0.5**, under two doublings wide, and it sits immediately below a dose that breaks the model.
 ⚠ Not claimed: an earlier refusal-*rate* reading of this same ladder was **withdrawn** by audit #13 —
 the regex ran only on short outputs, so it measured refusal shortening. These are gate statistics
@@ -3091,6 +3090,8 @@ are otherwise healthy (uniq 0.833, trigram 0.014): a random direction at that se
 into terse refusals rather than into repetition, so its ASR would be computed over a population of
 stubs. **Random directions are not uniformly benign**, which is itself a reason a band of one draw
 cannot be trusted.
+
+⚠ **That exclusion is now under re-examination (2026-08-23), and it was made for the wrong reason.** A repo-wide sweep of all **26** gate verdicts has since shown `scorable_frac` is a **length proxy wearing a coherence label**: of 8 runs it failed, **6 are lexically healthier than the untreated model** (baseline uniq 0.8411, trigram 0.0095). This draw is one of that shape — uniq 0.833, trigram 0.014, healthy — so it was excluded for **being terse**, i.e. for refusing, not for being broken. **Excluding a draw shrinks the band, which flatters the arm**, so the direction of the error is the unfavourable one for this report. Its generations were complete (495 rows, `DONE`) and simply never judged; job **774973** is judging them now, together with a baseline **in the same session** so the resulting delta is session-matched rather than differenced across sessions like the other five draws. The band figures above should be treated as provisional until that lands.
 
 ### ✅ Is the control matched on what matters? A disruption-matched comparison (added 2026-08-21)
 
