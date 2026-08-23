@@ -674,20 +674,6 @@ def main() -> int:
         want = {int(c.strip()) for c in args.n_examples.split(",") if c.strip()}
         rows = [r for r in rows if int(r.get("n_examples", -1)) in want]
         _pop_filter["n_examples"] = sorted(want)
-    # A COUNT IS NOT A DESCRIPTION OF A SAMPLE (FM4b). Record the composition, not just the size.
-    _pop_composition = {
-        "n": len(rows),
-        "by_condition": dict(collections.Counter(r.get("condition") for r in rows)),
-        "by_bank_block": dict(collections.Counter(r.get("bank_block") for r in rows)),
-        "by_domain": dict(collections.Counter(r.get("domain") for r in rows)),
-        "by_split": dict(collections.Counter(r.get("split") for r in rows)),
-        "by_n_examples": dict(collections.Counter(r.get("n_examples") for r in rows)),
-        "n_families": len({r.get("family_id") for r in rows}),
-    }
-    print(f"[score] population filter {_pop_filter} -> {_pop_composition}", flush=True)
-    if args.expect_n and len(rows) != args.expect_n:
-        raise SystemExit(f"REFUSING: population is {len(rows)} rows, --expect-n says "
-                         f"{args.expect_n}. A silently-shrunken sample is how R-18 happened.")
     if args.limit:
         # STRATIFIED, not the first N. Taking a prefix of the bank returns only n_examples=0
         # rows, because that is how the generator orders its blocks - and those are the
@@ -711,6 +697,42 @@ def main() -> int:
             if len(picked) >= args.limit or not added:
                 break
         rows = picked[:args.limit]
+
+    # COMPOSITION AND --expect-n ARE COMPUTED **AFTER** --limit (review finding S3).
+    # They used to run before it, so every smoke artifact recorded `n: 96` while scoring 8 rows --
+    # the provenance field said one thing and the run did another, which is the exact failure the
+    # field exists to prevent. A count is not a description of a sample (FM4b), and a description of
+    # a DIFFERENT sample is worse than no description.
+    _pop_composition = {
+        "n": len(rows),
+        "by_condition": dict(collections.Counter(r.get("condition") for r in rows)),
+        "by_bank_block": dict(collections.Counter(r.get("bank_block") for r in rows)),
+        "by_domain": dict(collections.Counter(r.get("domain") for r in rows)),
+        "by_split": dict(collections.Counter(r.get("split") for r in rows)),
+        "by_n_examples": dict(collections.Counter(r.get("n_examples") for r in rows)),
+        "n_families": len({r.get("family_id") for r in rows}),
+        "limit_applied": int(args.limit) or None,
+    }
+    print(f"[score] population filter {_pop_filter} -> {_pop_composition}", flush=True)
+    if args.expect_n and len(rows) != args.expect_n:
+        raise SystemExit(f"REFUSING: population is {len(rows)} rows, --expect-n says "
+                         f"{args.expect_n}. A silently-shrunken sample is how R-18 happened.")
+
+    # M1 -- THE CEILING MUST NOT BE ONE PROMPT REPORTED AS n ROWS.
+    # `final_query_text` takes only TWO distinct values across all 1152 behavioral rows of the main
+    # bank, so a 96-row --demo-deleted arm is ONE prompt replicated 96 times. Judged, it produced a
+    # single distinct generation and a single distinct score, and the Phase 2 recovery fraction
+    # (ASR_A - ASR_arm)/(ASR_A - ASR_B) then read 1.000 -- "recovers 100%% of the deletion ceiling" --
+    # off a denominator with n_eff = 1, carrying an iid Wilson CI of +/-0.04 that looks tight.
+    # Refuse rather than warn: this number is publishable-looking and wrong.
+    if args.demo_deleted:
+        _nq = len({(r.get("final_query_text") or "") for r in rows})
+        if _nq < len(rows):
+            raise SystemExit(
+                f"REFUSING: --demo-deleted scores {len(rows)} rows but they carry only {_nq} distinct "
+                f"final_query_text. The ceiling would be {_nq} independent draw(s) reported as "
+                f"{len(rows)}, and any recovery fraction built on it is a ratio with n_eff={_nq}. "
+                f"Use a population whose queries differ, or report the ceiling as n={_nq}.")
 
     run = RunDir("score_behavior", args, tag=args.tag)
     # POPULATION PROVENANCE IS RECORDED FOR EVERY ARM, NOT ONLY INTERVENED ONES.

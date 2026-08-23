@@ -194,3 +194,55 @@ def test_the_dose_metrics_disagree_below_alpha_one():
               for a in (0.05, 0.1, 0.3, 0.6, 1.0)]
     assert ratios == sorted(ratios, reverse=True), ratios
     assert ratios[0] > 1.5 * ratios[-1]
+
+
+# --------------------------------------------------------------------------- #
+# M1 / S3 — review #2 findings. The ceiling must not be one prompt reported as n rows.
+# --------------------------------------------------------------------------- #
+def test_M1_guard_exists_and_refuses_a_degenerate_ceiling():
+    """The Phase 2 recovery fraction read 1.000 off a ceiling with n_eff = 1.
+
+    `final_query_text` has only TWO distinct values across all 1152 behavioral rows of the main
+    bank, so a 96-row --demo-deleted arm is ONE prompt replicated. Judged, it gave a single distinct
+    generation and a single distinct score, and (ASR_A - ASR_arm)/(ASR_A - ASR_B) then read
+    "recovers 100% of the deletion ceiling" with an iid Wilson CI of +/-0.04 that looks tight.
+    """
+    import os
+    src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                            "src", "boombness", "score_behavior.py")).read()
+    # NB: search for a substring that survives f-string splitting. An earlier version of this test
+    # looked for "distinct final_query_text", which the source splits across two f-string fragments,
+    # so the test failed while the guard was perfectly fine. Testing source text is brittle; the
+    # guard itself lives in main() and cannot be called without loading a model.
+    assert "--demo-deleted scores" in src, "the M1 ceiling guard is gone"
+    i = src.index("--demo-deleted scores")
+    assert "REFUSING" in src[max(0, i - 200):i + 200], "the M1 guard no longer refuses"
+    assert "n_eff=" in src[i:i + 600], "the M1 guard no longer explains the n_eff consequence"
+
+
+def test_M1_would_have_caught_the_real_p2B_run():
+    """Regression against the actual artifact: p2B scored 96 rows on 1 distinct query."""
+    import glob, json, os
+    here = os.path.dirname(os.path.abspath(__file__))
+    bank = os.path.join(here, "..", "data", "boombness_prompts", "boombness_prompt_bank.jsonl")
+    if not os.path.exists(bank):
+        pytest.skip("bank not present")
+    rows = [json.loads(l) for l in open(bank)]
+    beh = [r for r in rows if r.get("query_kind") == "behavioral"]
+    nq = len({(r.get("final_query_text") or "") for r in beh})
+    assert nq < len(beh), "final_query_text is no longer degenerate — re-check M1's premise"
+    assert nq <= 4, f"expected a handful of distinct queries, got {nq}"
+
+
+def test_S3_composition_is_computed_after_the_limit_block():
+    """Every 8-row smoke used to record `n: 96`: the provenance field said one thing and the run
+    did another, which is the exact failure the field exists to prevent."""
+    import os
+    src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                            "src", "boombness", "score_behavior.py")).read()
+    i_limit = src.index("if args.limit:")
+    i_comp = src.index("_pop_composition = {")
+    i_expect = src.index("if args.expect_n and")
+    assert i_limit < i_comp, "composition is computed BEFORE --limit (S3 regression)"
+    assert i_limit < i_expect, "--expect-n is checked BEFORE --limit (S3 regression)"
+    assert "limit_applied" in src, "the composition no longer records limit_applied"

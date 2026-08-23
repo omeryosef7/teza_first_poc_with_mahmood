@@ -23,14 +23,34 @@ N=$(grep -c ':' "$MANIFEST")
 echo "[p2] manifest has $N rows (expected $EXPECTED)"
 [ "$N" -eq "$EXPECTED" ] || { echo "[p2] REFUSING: cardinality $N != $EXPECTED" >&2; exit 2; }
 date '+[p2] start %H:%M:%S'
-i=0
+i=0; PIDS=""; TAGS=""
+# reap: wait on each PID individually so a non-zero exit is seen. `wait` with no args cannot fail.
+reap() {
+  for pid in $PIDS; do
+    if ! wait "$pid"; then echo "[p2] REFUSING: judge pid $pid exited non-zero" >&2; exit 3; fi
+  done
+  PIDS=""
+}
 while IFS=: read -r tag gens; do
   [ -n "$tag" ] || continue
   i=$((i+1))
   date "+[p2] launching $i/$N tag=p2j_${tag} at %H:%M:%S"
   python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "p2j_${tag}" &
+  PIDS="$PIDS $!"; TAGS="$TAGS p2j_${tag}"
   sleep 15
-  if [ $((i % 3)) -eq 0 ]; then echo "[p2] wave boundary at $i"; wait; fi
+  if [ $((i % 3)) -eq 0 ]; then echo "[p2] wave boundary at $i"; reap; fi
 done < "$MANIFEST"
-wait
+reap
+# A bare `wait` returns 0 unconditionally even under `set -euo pipefail`, so a judge that died
+# mid-wave was invisible: the script printed ALL DONE and exited 0, and the analysis then silently
+# omitted an arm. Review finding S1. Reap each PID individually and assert the count.
+[ "$i" -eq "$N" ] || { echo "[p2] REFUSING: launched $i of $N" >&2; exit 4; }
+for t in $TAGS; do
+  d=$(ls -dt "$R/outputs/boombness/judge/${t}_"*/ 2>/dev/null | head -1)
+  [ -n "$d" ] || { echo "[p2] REFUSING: no judge dir for $t" >&2; exit 5; }
+  [ -f "$d/DONE.json" ] || { echo "[p2] REFUSING: $t has no DONE.json" >&2; exit 5; }
+  n=$(wc -l < "$d/results.jsonl")
+  [ "$n" -eq 96 ] || { echo "[p2] REFUSING: $t has $n rows, expected 96" >&2; exit 5; }
+  echo "  verified $t ($n rows)"
+done
 date "+[p2] ALL DONE, $i runs, %H:%M:%S"
