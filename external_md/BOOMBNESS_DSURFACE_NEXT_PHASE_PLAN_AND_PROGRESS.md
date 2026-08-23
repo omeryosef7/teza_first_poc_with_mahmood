@@ -547,6 +547,34 @@ before any judging spend, so no result is contaminated by the decision.
 
 ---
 
+## 8b. WHAT GATE DOSE'S NEGATIVE DOES TO THE REST OF THE PLAN (D-8, 18:30)
+
+R-C is a negative for **direction identity**, not for the phase. It changes the ordering, and the
+reasoning is worth stating so a successor does not re-derive it or, worse, quietly ignore it.
+
+**If the L12 ASR effect is dose-driven — and at matched dose it is exactly zero — then:**
+
+| phase | effect of R-C | new standing |
+|---|---|---|
+| **Phase 2** retrieval knockout | **None. It does not involve `d_surface` at all.** It asks whether the *demonstration-retrieval pathway* is causally necessary for behaviour. | ⬆ **Becomes the main line of the phase** |
+| **Phase 3** retrieval × refusal | Unaffected, same reason | ⬆ Follows Phase 2 directly |
+| **Phase 4** Llama vs Qwen3 | Partly affected: the Qwen3 `d_surface` result (+0.3810 at L11) now carries the *same* dose question, and nobody has asked it there. Add a Qwen3 dose ladder before quoting that number as direction-specific. | → unchanged priority, **one new prerequisite** |
+| **Phase 5** new non-PC1 bank | R-C is the strongest argument yet FOR it. The current bank cannot separate identity from dose *as a matter of geometry*, and we have now measured what that costs: the entire specificity claim. | ⬆⬆ **Promoted** — it is the fix for the thing that just broke |
+| **Phase 6** concept generality | Asks whether *this direction* generalises. If direction identity does not drive the effect, generality of the direction is close to moot until Phase 5 supplies a bank where identity can matter. | ⬇ **Demoted below Phase 5** |
+| **Phase 7** objective | A dose-driven effect offers **no optimization direction**: "maximise the perturbation magnitude" is not an attack objective, it is a description of breaking the model. | ⬇ Gate 6 (optimization direction) now looks unreachable *via `d_surface`* |
+
+**This is not a reason to stop, and it is explicitly not a reason to go looking for a
+significant p.** The plan's own instruction governs: *"The goal is not to rescue the old
+hypothesis."* R-C removes one candidate mechanism and leaves the phase's primary question —
+**is demonstration retrieval causally necessary for the behavioural jailbreak?** — completely
+untouched, because that question never ran through `d_surface`.
+
+⚠ **Not yet acted on beyond ordering.** R-C is preliminary in one specific way: it is read in the
+**variance** metric only. The **norm**-matched arms (α 0.30 already generated, α 0.38 running) are
+in the ladder and unjudged. If the norm-matched arm shows an effect where the variance-matched one
+does not, the conclusion narrows to "matched in variance units" and the ordering above is revisited.
+**No phase is being cancelled on a half-read gate.**
+
 ## 9. OPEN QUESTIONS
 
 1. Does the exp-7 directional effect survive a real 3-draw control band? *(Gate E7, in flight)*
