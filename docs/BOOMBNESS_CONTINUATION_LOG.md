@@ -9096,3 +9096,50 @@ Silent artifacts: 10 → **9**.
 | 561 | 2026-08-23 | reconciled against the L11 Qwen3 claim | replication claims must name **layer and arm** |
 | 562 | 2026-08-23 | recovered the **3.50×** clustered-vs-IID CI ratio | the number behind refusing IID intervals |
 | 563 | 2026-08-23 | documented a **bias in my own detector** | it strips the numbers a writer would actually quote |
+
+## §11 had a properly identified design sitting unused, and it answers Q8 with a NO
+
+`g11_role_full.json` — 27 artifact-unique numbers, none in either deliverable, committed 08-18. It is
+plan **§11**, and its design is much stronger than what the report has been describing: **5 styles × 36
+stems, fully crossed, content byte-identical within stem**, so role is genuinely identified *among
+these styles*. (Still not identified against `plain`, which shares no families with any role style —
+the artifact says so itself.)
+
+| style | Δ Boombness | 95% CI | Δ ASR |
+|---|---|---|---|
+| **`tool`** | **+0.080** | [+0.017, +0.143] | −0.007 |
+| `system_like_quoted` | +0.015 | [−0.038, +0.068] | −0.049 |
+| **`cot_like`** | **−0.004** | [−0.095, +0.086] | +0.028 |
+| **`user_like`** | **−0.042** | [−0.121, +0.038] | +0.059 |
+| `assistant_like` | −0.049 | [−0.100, +0.002] | −0.031 |
+
+**Two things this settles.**
+
+**The ASR half is no longer "unresolved".** Q8 has been saying *"whether role framing changes ASR
+remains unresolved (F = 1.94, p = 0.087)"*. Permuting style labels within stem gives **Boombness
+p = 0.0005, ASR p = 0.363**, and every individual style's ASR interval contains zero. Role framing moves
+the **representation** and not the **behaviour** — the sprint's central dissociation, on a design where
+the content is byte-identical.
+
+**And the question as literally asked gets a NO.** It names user-like and CoT-like framings, and those
+are precisely the two that do nothing (−0.042 and −0.004, both intervals straddling zero). The only
+style that moves Boombness is **`tool`**, upward. Across the five style means the Boombness↔ASR
+correlation is **negative** (r = −0.257) — descriptive at n=5, but pointing the wrong way for anyone
+hoping role framing is a lever.
+
+**A guard caught a genuine ambiguity, not just my phrasing.** `canonical_figures` went red: its
+`layer_shape_p` matcher is `permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})`, and my *"Omnibus
+permutation: Boombness p = 0.0005"* sat exactly 12 characters inside that window, so the role p was
+being checked against the layer-profile artifact's 0.01087. The repo now has **two** permutation
+p-values over **different randomisations** — style labels within stem, and layer labels — and the
+report had not been saying which was which. Rephrased to name the randomisation and to note the
+distinction explicitly, which is better writing than the version that tripped it.
+
+Silent artifacts: 9 → **8**.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 564 | 2026-08-23 | `g11_role_full.json` (0/27), silent since 08-18 | **5 styles × 36 stems, byte-identical content** — role identified |
+| 565 | 2026-08-23 | ASR half **resolved**: p = 0.363, all intervals span zero | representation moves, behaviour does not |
+| 566 | 2026-08-23 | Q8 as literally asked → **NO** | `user_like` and `cot_like` both null; only `tool` moves it |
+| 567 | 2026-08-23 | `canonical_figures` red on a **real ambiguity** | two permutation p's, different randomisations, unlabelled |

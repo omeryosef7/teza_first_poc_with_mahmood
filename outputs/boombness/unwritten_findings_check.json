@@ -22,7 +22,7 @@
     "*_cos.json*"
   ],
   "n_artifacts_checked": 93,
-  "n_silent": 9,
+  "n_silent": 8,
   "min_rare_fingerprints_for_a_verdict": 5,
   "n_untestable_too_few_rare_numbers": 13,
   "untestable": [
@@ -150,15 +150,6 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 32,
       "n_fingerprints_tested": 32,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "g11_role_full.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 27,
-      "n_fingerprints_tested": 27,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
@@ -623,12 +614,12 @@
     },
     {
       "artifact": "g11_role_full.json",
-      "named_in_deliverable": false,
+      "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 27,
       "n_fingerprints_tested": 27,
       "n_fingerprints_found": 0,
       "example_hits": [],
-      "written_up": false
+      "written_up": true
     },
     {
       "artifact": "g11_role_full_benign.json",
@@ -836,12 +827,13 @@
       "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 60,
       "n_fingerprints_tested": 60,
-      "n_fingerprints_found": 4,
+      "n_fingerprints_found": 5,
       "example_hits": [
         "0.0189",
         "0.0283",
         "0.0743",
-        "0.1759"
+        "0.1759",
+        "0.257"
       ],
       "written_up": true
     },
@@ -1258,6 +1250,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "654d82e3333cbcc6ecb4f888c4d2bbdac583747d"
+    "git_commit": "ea7f4edc50a4bfe7df1f64b1de52b03556958636"
   }
 }

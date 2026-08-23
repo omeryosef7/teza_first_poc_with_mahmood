@@ -2743,8 +2743,21 @@ effect is **small but reliable** — largest pairwise gap 4.1% of the grand mean
 within-stem test on the perfectly-crossed design gives **F(5,355) = 20.30, p = 8.1e-18**. The claim that
 content, domain, demo count and query were "held fixed" was **false for that pooled analysis** — `plain`
 and the five role styles occupy disjoint `bank_block`s with zero family overlap. Whether role framing
-changes *ASR* remains unresolved (F = 1.94, p = 0.087; largest pair ≈ 0.105 Bonferroni). `role_style` is a
-categorical proxy — no Userness/CoTness probe was fitted.
+⬆ **RESOLVED, and the question as literally asked gets a NO (added 2026-08-23; `g11_role_full.json`, committed 08-18, never written up).** A fully-crossed design — **5 styles × 36 stems**, content **byte-identical within stem**, so role is genuinely identified *among these styles* (still not identified against `plain`, which shares no families with any role style). Boombness read as `d_surface|L12|proj`, n=180, within-stem, clustered on 6 domains:
+
+| style | Δ Boombness | 95% CI | Δ ASR |
+|---|---|---|---|
+| **`tool`** | **+0.080** | [+0.017, +0.143] | −0.007 |
+| `system_like_quoted` | +0.015 | [−0.038, +0.068] | −0.049 |
+| **`cot_like`** | **−0.004** | [−0.095, +0.086] | +0.028 |
+| **`user_like`** | **−0.042** | [−0.121, +0.038] | +0.059 |
+| `assistant_like` | −0.049 | [−0.100, +0.002] | −0.031 |
+
+**Omnibus test, permuting style labels within stem — Boombness p = 0.0005; ASR p = 0.363.** (Distinct from §14-L's layer-profile permutation, which randomises layer labels; the two are different randomisations and must not be conflated.) Role framing moves the *representation* and not the *behaviour* — the ASR question is no longer unresolved, it is **null**, and every style's ASR interval contains zero.
+
+**The two framings the question names are the two that do nothing.** `user_like` (−0.042) and `cot_like` (−0.004) are both null; the only style that moves Boombness is **`tool`**, upward. Read literally — *do user-like / CoT-like framings increase Boombness?* — the answer is **no**. Across the five style means the Boombness↔ASR correlation is **negative** (r = −0.257), descriptive only at n=5.
+
+⚠ `tool`'s p = 0.023 sits below the six-domain cluster floor of 2/2⁶ = 0.031, so it is parametric — the **interval** [+0.017, +0.143] is the evidence. The omnibus permutation randomises stems rather than domains and is not floor-limited the same way. `role_style` remains a categorical proxy — no Userness/CoTness probe was ever fitted, so this says which *framings* move the axis, not which *latent* does.
 
 **9. Can we surgically remove Boombness without destroying comprehension?**
 ⚠ **UPDATED — the answer depends on which instrument you use, and the two disagree.**
