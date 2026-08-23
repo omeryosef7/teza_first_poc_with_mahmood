@@ -7069,6 +7069,46 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## 🔬 THE DOSE-MATCHED ARM — measured, and my first four doses were all too high
+
+The experiment the log declared impossible ("no experiment we could construct isolates direction from
+dose") is a **down-dosed arm**: scale `project_out`'s α until the arm removes as little of the
+cell-mean spread as the controls do. Measured directly from the payload at L12 (centred cell-mean
+spread, total squared norm 62.79):
+
+| α | **fraction of spread removed** | vs the controls' ≤0.13 |
+|---|---|---|
+| 1.00 | **0.8204** | 6.3× above — the standard arm |
+| 0.30 | 0.4184 | 3.2× above |
+| 0.20 | 0.2954 | 2.3× above |
+| 0.15 | 0.2277 | 1.8× above |
+| 0.10 | **0.1559** | ⚠ **1.2× above — still not matched** |
+| **0.08** | **0.1260** | ✅ **inside the band** |
+| 0.06 | ≈0.095 | ✅ below the band |
+
+⛔ **All four doses I launched an hour ago (0.10–0.30) are above the control ceiling.** I picked them
+by eye, assuming α scaled the removal roughly linearly. It does not: `project_out` scales the
+*component*, so the removed variance goes as **1 − (1−α)²**, i.e. ~2α for small α. At α = 0.10 that is
+0.156, and I would have compared a 0.156-dose arm against ≤0.13 controls **and called it
+dose-matched**.
+
+✅ **Caught by measuring instead of assuming** — the same discipline that caught the 14.65× overdose,
+and the same failure mode (an intervention's dose inferred from its flag rather than computed).
+**Launched α = 0.08 (0.1260, inside the band) and α = 0.06 (≈0.095, below it)** as jobs
+774865 / 774866, so the matched comparison is bracketed rather than resting on one point.
+
+⚠ **Pre-registered:** if the dose-matched arm (α ≈ 0.08) still beats the 24 orthogonal controls at
+L12, direction matters independently of dose and the `DOSE_CAVEAT` is answered rather than merely
+acknowledged. If it does not, the L12 effect is a dose effect and the sprint's central
+direction-specificity question has a **negative answer** — which would be the first time it has an
+answer at all rather than an "unable to determine".
+
+⚠ **Expected to be underpowered, said now:** the full-dose arm gives +0.0307; if the effect is
+linear-ish in removed fraction, a 0.126-dose arm gives ≈+0.005, against a control band whose
+strongest member is +0.0118. **The matched arm may well lose to controls simply because it is weak,
+which is not the same as direction not mattering.** I will report the point estimate and its CI
+rather than a verdict if that is what the data supports.
+
 ## 🔬 THE UNLOCK — plan §8 experiment 7 becomes TESTABLE, and is now being tested (774835)
 
 The eighth reversal's practical consequence: **five runs excluded as "degenerate" are usable**, so
