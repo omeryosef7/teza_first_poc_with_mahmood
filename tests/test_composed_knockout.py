@@ -149,3 +149,23 @@ def test_nondemo_random_refuses_when_it_cannot_be_count_matched():
     import score_behavior as sb
     with pytest.raises(SystemExit, match="count-matched"):
         sb.knockout_key_set("nondemo_random", list(range(1, 20)), 12, 1)
+
+
+def test_a_pure_knockout_spec_needs_no_fitted_direction_file():
+    """Regression: `p` (the direction file) is None for a mask-edit arm.
+
+    The payload load was guarded for this and the very next line -- an f-string calling
+    os.path.basename(p) -- was not, so an 8-prompt smoke died after loading the model with
+    "TypeError: expected str, bytes or os.PathLike object, not NoneType". Same one-of-two-paths
+    shape as the control_seed and demo_keys drops, this time in a print statement.
+    """
+    import os
+    assert (os.path.basename(None) if None else "(no fitted direction: mask-edit arm)") \
+        == "(no fitted direction: mask-edit arm)"
+    import score_behavior as sb
+    # and the arm itself still builds without any payload
+    pc = _PC()
+    spec = {"direction": "demo_all", "mode": "attn_knockout", "layers": [0], "alpha": 1.0}
+    ctxs = sb.make_intervention(None, pc, _LM(), spec, None, control_seed=1,
+                                demo_keys=DEMO_KEYS, seq_len=SEQ_LEN, knock_stats={})
+    assert len(ctxs) == 1 and pc.made[0].blocked_keys == DEMO_KEYS

@@ -724,7 +724,12 @@ def main() -> int:
                                        "disagree about dose-matching by ~10x in alpha (C-2)."),
                      dose_unit=("gap (alpha=1 == one diff-of-means) for mode=add; "
                                 "for mode=project_out see realized_dose, NOT alpha"))
-        print(f"[score] intervention {spec} from {os.path.basename(p)}")
+        # `p` is None for a PURE attention knockout: it edits the attention mask, so there is no
+        # fitted-direction file to name. The payload load two blocks up was guarded for this and
+        # this line was not -- the one-of-two-paths shape again, in a print statement. Caught by the
+        # 8-prompt smoke before any full arm ran, which is what the smoke is for.
+        print(f"[score] intervention {spec} from "
+              f"{os.path.basename(p) if p else '(no fitted direction: mask-edit arm)'}")
 
     # LIVENESS ACCUMULATOR for attn_knockout. Counted per row so the run can PROVE the mask fired
     # during decoding. Without this a prefill-only knockout reports a perfectly healthy null.
