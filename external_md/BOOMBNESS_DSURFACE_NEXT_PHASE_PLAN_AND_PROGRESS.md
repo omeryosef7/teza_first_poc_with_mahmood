@@ -637,6 +637,58 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★★ R-S (22:52) — **GATE DOSE: ANSWERED, AND IT IS A CLEAN NEGATIVE. Only the full-dose arm moves ASR at all.**
+
+**Artifact:** `outputs/boombness_followup/gate_dose_ladder.json`, job **776797**, all 14 arms in ONE
+session against one baseline, AdvBench-495, `n_common = 495`.
+
+| α | realized variance dose | Δ ASR (clustered) | p_cl | verdict |
+|---|---|---|---|---|
+| **1.00** | 0.8204 | **+0.0319** | **0.0054** | ✅ significant |
+| 0.38 | 0.5051 | +0.0086 | 0.0961 | n.s. |
+| 0.30 | 0.4184 | +0.0071 | 0.1474 | n.s. |
+| 0.20 | 0.2954 | +0.0045 | 0.2575 | n.s. |
+| 0.15 | 0.2277 | +0.0052 | 0.1899 | n.s. |
+| 0.10 | 0.1559 | +0.0039 | 0.2806 | n.s. |
+| 0.08 | 0.1260 | +0.0025 | 0.4974 | n.s. |
+| 0.06 | 0.0955 | +0.0039 | 0.2728 | n.s. |
+| 0.056 | 0.0893 | +0.0030 | 0.4300 | n.s. |
+| 0.045 | 0.0722 | +0.0039 | 0.2806 | n.s. |
+| 0.03 | 0.0485 | +0.0021 | 0.5910 | n.s. |
+| `ctrlrnd` (random, full dose) | — | −0.0018 | 0.3504 | n.s. |
+| `ctrlort` (in-subspace ⊥, full dose) | — | **+0.0102** | 0.0640 | n.s. |
+
+**Only α = 1.0 is significant. All ten reduced-dose arms are n.s., and the point estimate collapses
+immediately** — α = 0.38 already gives **+0.0086** against full dose's **+0.0319**, while still
+removing **62%** as much variance.
+
+#### This closes C-2's metric question decisively — and the answer is that it did not matter
+
+C-2 warned that the variance and norm metrics disagree by ~10× in α about which arm is
+"dose-matched", and I treated that as potentially load-bearing. It is not: the **norm**-matched arms
+(α 0.30, 0.38) are **just as null** as the **variance**-matched ones (α 0.056, 0.06). **The two
+metrics disagreed about which arm was matched and agreed completely about the answer.**
+
+#### Two corroborating details
+
+* **Refusal is flat at 0.9313** — identical to baseline — for every arm at α ≤ 0.10. These arms do
+  not merely fail to raise ASR; they do nothing at all.
+* **`ctrlort` (+0.0102) is LARGER than every reduced-dose `d_surface` arm.** A direction *orthogonal*
+  to `d_surface`, at full dose, beats `d_surface` itself at reduced dose. **Dose beats direction
+  identity** — precisely what R-M's geometry predicts and the sharpest single line against the
+  specificity story.
+
+#### 🚦 Gate verdict
+
+**GATE DOSE FAILS for direction specificity.** R-C's two-point preliminary is confirmed and greatly
+strengthened: the L12 effect tracks **how much of the cell-mean spread is removed**, not **which
+direction removes it**. Combined with **Gate E7's** failure (R-F: the suppression was a length
+collapse), **both Phase 1 gates are now negatives**, which is exactly why D-8 promoted Phase 5 —
+and why R-M's crossed bank, where the arm/control dose gap falls from 6–12× to a realizable
+1.5–1.9×, is the only route by which this question becomes answerable at all.
+
+---
+
 ### ★★★★ R-R (22:30) — **THE PHASE 2 RESULT: knocking out demonstration attention at L6–14 drops ASR from 0.2292 to 0.0521, against an identically-count-matched control at 0.2083**
 
 This is the contrast M1 does **not** touch — it never uses the broken ceiling. Same demonstration key

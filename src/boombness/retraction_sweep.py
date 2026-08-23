@@ -226,6 +226,14 @@ DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",
     "reports/boombness_objective_sprint_short_update.md",
     "docs/BOOMBNESS_SPRINT_PROGRESS.md",   # live prefix only -- see LIVE_PREFIX_ENDS_AT
+    # ADDED 2026-08-23 (review finding S7). The d_surface next-phase log calls itself "the
+    # authoritative live research log for this phase" and every result of that phase lives ONLY
+    # there -- so until now the phase's entire output was invisible to every guard in this repo. A
+    # retracted figure could resurface in it and nothing would notice, which is the exact defect
+    # this sweep exists for, applied to the one file it did not cover.
+    # Verified BEFORE wiring in, not after: a --paths dry-run over it reports 0 unqualified
+    # occurrences, so this addition does not turn the build red on arrival.
+    "external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md",
     # NOT swept (2026-08-21): the two mid-session sanity checks are DATED SNAPSHOTS of what was
     # believed on 2026-08-17/18, superseded in full by the continuation log. Sweeping them flags the
     # historical record as a defect -- the same reason BOOMBNESS_SPRINT_PROGRESS.md is excluded.
