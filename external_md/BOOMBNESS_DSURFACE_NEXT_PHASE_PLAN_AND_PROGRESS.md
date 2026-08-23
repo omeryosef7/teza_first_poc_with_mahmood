@@ -270,8 +270,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** (R-P/R-Q/R-R) | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
-| BANK2 | 5 | new non-PC1-dominated bank | 🟡 gate measured (R-S): 1.5–1.9× realizable, banks built + audited | Bank gate |
-| CONCEPT | 6 | concept generality on BANK2 | ⬜ blocked on Phase 5 | — |
+| BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
+| CONCEPT | 6 | concept generality on BANK2 | 🔬 **UNBLOCKED** by R-AC | — |
 | OBJ | 7 | new objective | ⬜ | 6 gates; **Gate 6 looks unreachable via `d_surface`** |
 
 ---
@@ -690,6 +690,90 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ★★★★★ R-AC (03:38) — **🚦 THE BANK ACCEPTANCE GATE PASSES.** The crossed design has three comparable components where the single-pair design had one dominant axis.
+
+**Artifact:** `outputs/boombness/extract_boombness/x2fit_button_bomb_20260824_015451_272450`, job
+**777160**, COMPLETED 6:50 — the fourth cell — plus the three sibling fits. All four `directions_fit_dev.pt`.
+
+#### 1. The fourth bank fails on its own, exactly as R-W's structural argument predicted
+
+| bank | L10 | L12 | L14 |
+|---|---|---|---|
+| `basket_bomb` | 4.20× | 4.56× | 5.35× |
+| `basket_knife` | 6.88× | 6.37× | 11.12× |
+| `button_knife` | 5.42× | 5.80× | 9.57× |
+| **`button_bomb`** *(new)* | **4.34×** | **4.81×** | **5.29×** |
+
+`arm/best-orthogonal` dose ratio, rank 3 in every case. **A fourth independent bank, built and
+measured after the prediction was written, fails the gate the same way.** R-W's claim that this is
+structural — 4 cells → rank 3 → small complement, regardless of which words are used — is now
+confirmed on a bank that did not exist when the claim was made.
+
+#### 2. The 16-cell crossed design PASSES, and the result does not depend on the arm chosen
+
+| L | rank | arm dose | best orth | **arm/best** |
+|---|---|---|---|---|
+| 10 | 12 | 0.2924 | 0.2849 | **1.03×** |
+| 12 | 12 | 0.3108 | 0.2772 | **1.12×** |
+| 14 | 12 | 0.3069 | 0.2993 | **1.03×** |
+
+*(arm = mean `d_surface` over the four banks)*. **Robustness — using each single bank's `d_surface`
+as the arm instead:** ratios span **0.63× – 1.20×** across all four choices at all three layers, never
+exceeding 1.2×. So "comparable attainable doses" is a property of the design, **not an artifact of
+which direction is nominated as the arm** — and at several choices the best orthogonal direction is
+*stronger* than the arm.
+
+#### 3. What the components ARE — the decomposition the fourth cell made possible
+
+At L12, 16 cells, total spread 224.567:
+
+```
+singular^2 / total, top 8:  0.3607  0.2738  0.2151  0.0805  0.0268  0.0167  0.0130  0.0086
+effective rank (>1% of total): 7        numeric rank: 12
+```
+
+**Three comparable leading components (0.36 / 0.27 / 0.22)** where every single-pair bank had one
+axis at **0.76–0.89**. That is the gate's requirement — *PC1 does not dominate* — met directly.
+
+Balanced variance decomposition:
+
+| factor | fraction of spread |
+|---|---|
+| **CELL** identity (the 2×2 design axes A/B/C/E) | **0.4055** |
+| **BANK / pair** identity (4 pairs) | 0.2783 |
+| **CONCEPT** identity (`bomb` \| `knife`) | **0.1443** |
+| **CODEWORD** identity (`basket` \| `button`) | **0.1331** |
+| `d_surface` (mean of 4 banks), rank-1 | 0.3108 |
+
+**Codeword identity 0.1331 and concept identity 0.1443 are nearly equal — that is what the fourth
+cell bought.** With only three banks, `basket` appeared twice and `button` once, so codeword and pair
+identity were confounded and neither main effect was estimable. The design is now balanced and both
+are.
+
+#### 🚦 Gate verdict, against the plan's three stated criteria
+
+| criterion | verdict |
+|---|---|
+| PC1 does **not** dominate the cell-mean span | ✅ 0.3607 vs 0.76–0.89 on every single-pair bank |
+| multiple identified directions have **comparable attainable doses** | ✅ arm/best-orth **1.03–1.12×**, robust 0.63–1.20× across arm choices |
+| tokenization / alignment / grammar audits pass | ✅ 0 alignment violations on all four banks; `button_bomb` audited on Qwen3 at 2736 ok / 0 bad / 0 ambiguous |
+
+**All three pass. Phase 6 is unblocked** — for the first time in this project there is a bank on which
+*same dose, different direction* is testable, which is the precondition for any specificity claim.
+
+⚠ **The caveat that does NOT go away.** These are still **four independently fitted banks**, not one
+jointly-fitted crossed prompt set, so the **0.2783 "bank/pair identity" component contains between-bank
+nuisance** — different prompts, different content — and not only designed factors. The **codeword and
+concept components are designed and balanced**, and those are the ones a specificity claim should use.
+A single jointly-generated crossed bank would remove the nuisance term entirely and remains the
+stronger version of this.
+
+⚠ Numeric rank is **12**, i.e. exactly 4 banks × 3 — the between-bank offsets lie inside the union of
+the within-bank spans rather than adding 3 further dimensions. Recorded because it is a real property
+of the pooled matrix, not an error; it does not affect the gate, which turns on the *ratio*.
 
 ---
 
