@@ -614,7 +614,11 @@ to **+0.222**. The **refusal-free** contrasts — **F−C = +0.272** and **F−F
 `d_surface` does **two opposing things at once**:
 1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
    *suppresses* ASR;
-2. **a second, refusal-independent channel** raises judged harmfulness once refusal is removed.
+2. ⛔ **a second, refusal-independent channel** raises judged harmfulness once refusal is removed —
+   **RETRACTED (R-20).** This is arm F's gain stated without its label, and it is a **judge artifact**:
+   under an outcome the rubric cannot inflate (`strongreject ≥ 0.5` AND `goal_topicality > 0`) the paired
+   gain is **+0.0167, CI [−0.0048, +0.0381]** — interval containing zero — against its own control at
+   **+0.0119 [+0.0071, +0.0143]** (`llama_arms_topical.json`, n=420, 6 clusters). Only claim (1).
    ⛔ **We have NOT established that this is a "capability" channel.** The gain is *largest where the
    doublespeak mapping is weakest* — **+0.361 at `n_examples=0`** (no demonstrations at all) and **+0.267 on
    `benign_remap`**, where carrot→bomb is **never taught** — and it is **absent on explicitly harmful

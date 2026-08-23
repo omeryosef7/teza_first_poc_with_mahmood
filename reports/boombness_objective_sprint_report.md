@@ -2098,7 +2098,11 @@ to **+0.222**. The **refusal-free** contrasts — **F−C = +0.272** and **F−F
 `d_surface` does **two opposing things at once**:
 1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
    *suppresses* ASR;
-2. **a second, refusal-independent channel** raises judged harmfulness once refusal is removed.
+2. ⛔ **a second, refusal-independent channel** raises judged harmfulness once refusal is removed —
+   **RETRACTED (R-20).** This is arm F's gain stated without its label, and it is a **judge artifact**:
+   under an outcome the rubric cannot inflate (`strongreject ≥ 0.5` AND `goal_topicality > 0`) the paired
+   gain is **+0.0167, CI [−0.0048, +0.0381]** — interval containing zero — against its own control at
+   **+0.0119 [+0.0071, +0.0143]** (`llama_arms_topical.json`, n=420, 6 clusters). Only claim (1).
    ⛔ **We have NOT established that this is a "capability" channel.** The gain is *largest where the
    doublespeak mapping is weakest* — **+0.361 at `n_examples=0`** (no demonstrations at all) and **+0.267 on
    `benign_remap`**, where carrot→bomb is **never taught** — and it is **absent on explicitly harmful
@@ -3106,11 +3110,17 @@ The answer is **no**, for the reasons below.
   takes ASR 0.0081 → **0.1879** (+0.1798, all 12 informative domains agreeing), while adding
   refusalness on top changes nothing (−0.0020, k=1). **An objective that ascends this direction
   ascends toward refusal** — which is the clearest statement of why §12.1 is not buildable.
-- **§12.2 (Boombness MINUS refusal): NO.** Composing the two takes ASR 0.243 → **0.548** (p<0.0001) on
-  the bank, where neither manipulation alone raises it — but the gain is *not conditional on the
-  doublespeak mapping* (+0.267 where the mapping is **never taught**, largest at zero demonstrations) and
-  **does not transfer to explicitly harmful prompts** (+0.000). An attack objective needs both properties
-  and this has neither, so "reopened, worth building" is withdrawn.
+- **§12.2 (Boombness MINUS refusal): NO — and as of 2026-08-23 for a stronger reason than the one this
+  bullet used to give.** The old text argued from the bank composition: ASR 0.243 → **0.548** (p<0.0001),
+  the gain *not conditional on the doublespeak mapping* (+0.267 where the mapping is never taught) and not
+  transferring to explicitly harmful prompts (+0.000). ⛔ **That 0.243 → 0.548 is arm F's gain, and R-20
+  retracted it as a judge artifact** — the bullet simply never wrote the words "arm F", which is why the
+  retraction sweep missed it for three days. On a topicality-gated outcome the paired gain is **+0.0167,
+  CI [−0.0048, +0.0381]**, against its own control at **+0.0119 [+0.0071, +0.0143]**
+  (`llama_arms_topical.json`, n=420, 6 clusters; plain means **0.2429** baseline → **0.5476** arm F).
+  So the correct statement is not "the gain is real but unconditional" — it is **there is no
+  demonstrated gain to be conditional on**. The answer stays **NO**; "reopened, worth building" remains
+  withdrawn, now on an interval containing zero rather than on a generalisation failure.
 - **What IS causal is a different intervention with the opposite sign.** Off-bank, *removing* `d_surface`
   raises attack success (§7c: AdvBench +0.0305, p_cl=0.0089, inert control). That is a real causal channel,
   but it is **subtraction, not maximisation** — it gives an objective nothing to ascend.
@@ -3161,7 +3171,7 @@ evidence:
 | # | criterion | met? |
 |---|---|---|
 | 1 | Boombness predicts ASR across prompts | ⛔ **NO — RETRACTED (R-18).** ~~ρ=+0.307~~, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
-| 2 | Adding Boombness increases behaviour or relevant internal scores | **YES, once refusal is removed** — alone it *decreases* ASR by triggering refusal (0.057→0.676), but composed with refusal-removal it takes ASR 0.243→**0.548** (p<0.0001) where neither manipulation alone raises it. The earlier **NO** was a ceiling effect of refusal. ⚠ The gain is not conditional on the doublespeak mapping, so this is scored on behaviour, not on mechanism. | ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
+| 2 | Adding Boombness increases behaviour or relevant internal scores | ⛔ **Rescored NO 2026-08-23 (was "YES, once refusal is removed").** The YES rested on ASR 0.243→**0.548** under refusal-removal — **arm F's gain, retracted by R-20 as a judge artifact**. Stated without the label "arm F", it survived the retraction sweep in this very table. Topicality-gated, the paired gain is **+0.0167, CI [−0.0048, +0.0381]** vs its own control **+0.0119 [+0.0071, +0.0143]** (`llama_arms_topical.json`). What survives is only the *suppressive* half: adding Boombness alone *decreases* ASR by triggering refusal (0.057→0.676), direction-specifically against a magnitude-matched control (§12.1). **No demonstrated increase in behaviour.** | ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 | 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now properly controlled.** On AdvBench, +0.0422 against a **5-draw control band** at +0.0012 (sd 0.0026), ~~+0.056 (p=0.0077)~~ superseded on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
 | 4 | Comprehension is preserved | **YES, and better than 'preserved'.** ⛔ ~~p=0.681~~ is **R-6** (a 4.4e-05 tail). On the corrected whole-answer readout `project_out` **improves** comprehension: **+0.2795, p=0.0010**, control −0.0041 (p=0.63). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **YES for the projection result, PARTIAL for the additive one.** ⛔ The p=0.0014 figure previously quoted here came from a band whose four "independent draws" were byte-identical (retraction #7); on a **genuine** 4-draw band it is **p=0.043**. Where controls are unambiguous: the **projection control is inert on every condition** (−0.018 vs baseline, p=0.26) while the arm moves harmful conditions by +0.056; and the **composed random control** does nothing on doublespeak (p=0.116) — though it *reverses* on `direct_harmful` (+0.389), so specificity there is scoped, not general. |

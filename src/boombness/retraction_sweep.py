@@ -89,10 +89,25 @@ RETRACTED = [
     # ---- R-20 / R-21 (2026-08-20; renumbered 08-21 — R-14/R-15 were already taken): arm F's behavioural gain is ~94% answer style. Added the same
     # day, because the two previous times this sweep reported CLEAN the pattern list was the weak
     # link, not the documents.
+    # BROADENED 2026-08-23 (audit #18). The first version keyed on the LABEL "arm F" within 60 chars of
+    # the figure. But an arm's identity is its INTERVENTION -- add d_surface + remove refusalness -- and
+    # the report states that claim three times WITHOUT ever writing "arm F": "Composing the two takes ASR
+    # 0.243 -> 0.548", the same pair inside decision-gate row 2, and a purely prose form ("a second,
+    # refusal-independent channel raises judged harmfulness once refusal is removed") carrying no figure
+    # at all. The sweep reported CLEAN on all three. This is the repo's own rule -- address things by
+    # identity, not by an incidental property -- violated inside the guard meant to enforce it, and it is
+    # the same narrowness failure the R23 comment above already records.
     ("R20 arm F behavioural gain (judge artifact)",
      r"\+?0\.863|more than doubl\w+[^\n]{0,30}ASR|"
      r"arm F[^\n]{0,60}\+?0\.(?:548|305|417)|"
-     r"\+?0\.(?:548|417)[^\n]{0,40}arm F"),
+     r"\+?0\.(?:548|417)[^\n]{0,40}arm F|"
+     # content-keyed: the composition stated without the label
+     r"0\.243[^\n]{0,20}(?:→|->|to)[^\n]{0,10}\*{0,2}0\.548|"
+     # \b matters: "deCOMPOSED ... refusal-removal arms" is the DISRUPTION decomposition, a different
+     # claim, and the first draft of this alternative flagged it twice.
+     r"\bcomposed with[^\n]{0,40}refusal[- ]removal|"
+     r"Composing the two[^\n]{0,40}ASR|"
+     r"refusal-independent channel[^\n]{0,60}rais\w+"),
     ("R21 Llama exempted from the style artifact",
      r"Llama results are (?:not|un)affected|inflation did not fire"),
     # ---- R-23 / R-24 (2026-08-21): E12 retracted in full. Added in the SAME tick as the retraction,

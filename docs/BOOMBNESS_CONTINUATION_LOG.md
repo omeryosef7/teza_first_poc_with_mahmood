@@ -10322,3 +10322,48 @@ All 13 answers are sourced.
 | 694 | 2026-08-23 | `g2_analysis_cwpos_CORE2X2.json`, n=60, 6 clusters | **−0.08319 / 0.5722 — exact match** |
 | 695 | 2026-08-23 | cite `clustered_inference`, not `headline` (p 0.5537) | field named; argv is the only bank-filter record |
 | 696 | 2026-08-23 | sourcing check rerun | flagged **7 → 6**; **all 13 answers sourced** |
+
+## A decision gate scored YES on a retracted figure, because the retraction was filed under a label
+
+Chasing the last "under-cited" sourcing flags — the ones I had **triaged rather than resolved**, which is
+exactly the posture that hid Q5 — Q10 turned out not to be under-cited at all.
+
+Q10's §12.2 bullet argued from the bank composition **ASR 0.243 → 0.548 (p<0.0001)**. Those are arm F's
+numbers: `llama_arms_topical.json` gives baseline plain **0.2429** and `F_addS_remR` plain **0.5476**. And
+**R-20 retracted arm F's behavioural gain as a judge artifact** on 2026-08-20. Topicality-gated, the paired
+gain is **+0.0167, CI [−0.0048, +0.0381]** — interval containing zero — against its own control at
+**+0.0119 [+0.0071, +0.0143]**.
+
+The retraction sweep had reported CLEAN on this for three days. Its R-20 pattern required the literal
+string **"arm F"** within 60 characters of the figure. The report states the same claim three times without
+ever writing the label:
+
+| site | how it was stated |
+|---|---|
+| Q10 §12.2 | ⛔ RETRACTED (R-20): "Composing the two takes ASR 0.243 → **0.548**" |
+| **decision gate row 2** | ⛔ RETRACTED (R-20): "composed with refusal-removal it takes ASR 0.243→**0.548**" |
+| §mechanism (report **and** short update) | ⛔ RETRACTED (R-20): "a second, refusal-independent channel raises judged harmfulness" — **no figure at all** |
+
+An arm's identity is its **intervention** — add `d_surface`, remove `refusalness` — not the letter it was
+filed under. Keying the guard to the letter is the repo's own rule ("address things by identity, not by an
+incidental property") **violated inside the guard written to enforce it**, and the R23 comment three lines
+above in the same file already records this identical narrowness failure.
+
+**The worst consequence: decision gate 2 was scored `YES, once refusal is removed`** on that figure. It is
+now **NO** — the only surviving half is the *suppressive* one, where adding Boombness decreases ASR
+direction-specifically against a magnitude-matched control. There is no demonstrated increase in behaviour.
+
+Broadened the pattern to key on content, and confirmed it fires on the unfixed text **before** fixing it —
+6 hits. Two were false positives of my own making: `compos\w+` matched "de**compos**ed … refusal-removal
+arms", the disruption decomposition, a different claim. `\bcomposed with` fixes it. 4 genuine, now 0.
+
+Note what the sourcing check actually bought here. Its verdict on Q10 was "under-cited" — mild, and my
+triage accepted it. The verdict was **wrong about the severity** and right about the smell: figures that
+appear in no named artifact are worth chasing even when the explanation sounds boring.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 697 | 2026-08-23 | chased Q10's 8 "under-cited" figures | 0.243→0.548 **is arm F**, retracted by R-20 |
+| 698 | 2026-08-23 | R-20 pattern keyed on the label "arm F" | missed **3 sites** for 3 days, incl. the short update |
+| 699 | 2026-08-23 | broadened to content-keyed; tested pre-fix | 6 hits → 2 self-inflicted FPs → **4 genuine → 0** |
+| 700 | 2026-08-23 | **decision gate 2 rescored YES → NO** | no demonstrated behavioural increase; suppression only |
