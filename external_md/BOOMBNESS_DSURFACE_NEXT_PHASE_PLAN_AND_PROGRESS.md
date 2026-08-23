@@ -637,6 +637,44 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### 🔬 PHASE 3 LAUNCHED (23:21) — does the retrieval effect run THROUGH refusal, or beside it?
+
+Phase 2 answered *whether* demonstration retrieval is causally necessary (R-R: yes, −0.1562 against
+its own matched control). Phase 3 asks *how*. It is a 2×2 and **two cells already exist**:
+
+| cell | arm | status |
+|---|---|---|
+| **A** | baseline | ✅ `p2A`, ASR 0.2292 |
+| **C** | retrieval knockout, `demo_all:attn_knockout:6-14:1.0` | ✅ `p2C_band`, ASR 0.0521 |
+| **R** | refusal removal, `refusalness:project_out:12-12:1.0` | 🔬 **777002** |
+| **C+R** | both, composed | 🔬 **777003** |
+
+`refusalness:project_out:12-12:1.0` is the sprint's canonical refusal-removal spec (`abR12_C`), reused
+verbatim rather than re-specified, so Phase 3's R cell is directly comparable to every prior arm-C
+number in the report.
+
+#### The pre-registered reading, fixed before the arms land
+
+| outcome | interpretation |
+|---|---|
+| **C+R ≈ C** (ASR stays low) | retrieval acts **independently of** refusal — removing the refusal brake does **not** rescue compliance once the mapping is gone |
+| **C+R ≈ R** (ASR high) | retrieval acts **through** refusal — the knockout worked by engaging the refusal channel |
+| C+R between | partial mediation; report the fraction, do not round it to either story |
+
+**Phase 2's data already tilts this, which is why the prediction is being written down now rather
+than after.** `C_band` cut ASR 0.2292 → 0.0521 **while refusal FELL** 0.031 → 0.010. A knockout that
+worked *through* refusal would have raised it. So the pre-registered expectation is **C+R ≈ C**, i.e.
+independence — and if C+R instead comes back high, that prediction is wrong and will be recorded as
+wrong.
+
+⚠ **`p3CR` exercises the composed intervention path**, which has dropped a threaded argument twice
+historically (`control_seed`, then `demo_keys`). It is now covered by
+`tests/test_composed_knockout.py`, and `make_intervention` **raises** rather than silently building a
+keyless knockout — but this is the first *real* composed knockout arm, so the liveness block and the
+`keys == n_demo_positions` identity must both be checked on it before its number is read.
+
+---
+
 ### ★★★★★ R-S (22:52) — **GATE DOSE: ANSWERED, AND IT IS A CLEAN NEGATIVE. Only the full-dose arm moves ASR at all.**
 
 **Artifact:** `outputs/boombness_followup/gate_dose_ladder.json`, job **776797**, all 14 arms in ONE
