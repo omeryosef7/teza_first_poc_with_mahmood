@@ -9828,3 +9828,49 @@ per-readout flag as blanket. Documented in the module rather than papered over.
 | 639 | 2026-08-23 | v2 **over-narrow** — skipped the two artifacts it was built for | no `provenance` ⇒ producer `None` ⇒ silently exonerated |
 | 640 | 2026-08-23 | now flags unknown producers instead of skipping | "unknown" must not read as "fine" |
 | 641 | 2026-08-23 | it flagged **my own correction**; I checked | override is per-readout — comprehension mass **0.31–0.33**, sound |
+
+## Reconciled four counts of one thing, and built a fix I then refused to wire in
+
+**A-16.5 — §8 carried four different counts of "dead guards": twelve (heading), three-plus-a-fourth
+(body), six (FM1), three (§15).** The heading had been stale twice — audit #11 corrected it from
+"seven" to "twelve", and **twelve has no enumeration anywhere in the repo**. FM1 is the only place that
+actually lists them.
+
+So FM1 is now the canonical count, extended to **seven** with one of mine: `unwritten_findings_check`
+v1 counted an artifact as written-up on **one** matching 3–4 decimal number, saturating on values like
+0.5000 — it reported 0 silent of 93 and was **green by construction**, and it was committed that way.
+*(An eighth, `readout_gate_check` v2, which skipped the two artifacts it was built for, was caught
+before commit and stays in the log.)* Every other site now **points at FM1 instead of restating a
+number**, which is what let four figures drift apart in the first place. **Six of the seven** matched
+on an incidental property.
+
+**Then the shared scanner limitation.** Both data-side scanners answer "is this tainted artifact live in
+a deliverable?" by substring, so an artifact keeps reading as LIVE precisely *because* it was correctly
+withdrawn — the retraction notice names it. I built `citation_context.py` to classify each mention as a
+citation or a withdrawal.
+
+**Testing it before wiring it in is what saved it from being a mistake.** Two failures:
+
+* a **substring collision** — `clearharm_decomposition` matched inside
+  `clearharm_decomposition_regoal`, so the retracted artifact inherited a "live" hit from its own
+  replacement. Fixed with a boundary assertion.
+* the one that matters: **a retraction notice names two artifacts — the withdrawn one and its
+  replacement.** Proximity cannot separate them, so `clearharm_decomposition_regoal.json` and
+  `qwen3_l20_regoal.json` — both **live** — classify as `withdrawn_only`. That is the opposite of the
+  truth, and it is not a tuning problem.
+
+**So I did not wire it into the scanners.** It would have traded their over-reporting — harmless and
+annoying — for under-reporting, which is silent, in the one place whose entire job is finding what
+nobody noticed. It ships as an explanatory helper with that reasoning in its docstring, and both
+scanners keep reporting every hit.
+
+A heuristic made *fatal* trains the reader to ignore it, which this repo already says. A heuristic made
+*suppressive* trains nobody, because there is nothing left to read.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 642 | 2026-08-23 | four counts of dead guards reconciled to FM1 | heading no longer carries an unenumerated number |
+| 643 | 2026-08-23 | FM1 extended to **seven** with a guard of mine | `unwritten_findings_check` v1 was **green by construction** |
+| 644 | 2026-08-23 | built `citation_context.py` for the shared LIVE over-report | tested before wiring |
+| 645 | 2026-08-23 | found it misclassifies **live replacements** as withdrawn | proximity cannot separate the two names in one notice |
+| 646 | 2026-08-23 | **refused to wire it in** | over-reporting is annoying; under-reporting is silent |

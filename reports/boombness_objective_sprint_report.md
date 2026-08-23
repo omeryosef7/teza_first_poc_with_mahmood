@@ -2316,7 +2316,7 @@ session and their full statements live in the sections named. They are listed so
 *complete* — an ID with no row is what allows a second meaning to be attached to it later.
 
 
-## 8. Process — **R-1…R-27** retractions, **C-1…C-14** corrections, **twelve** dead guards ⚠ *(this heading read "sixteen retractions, ten corrections, seven dead guards" and had been stale since 2026-08-19; audit #11 found it)*
+## 8. Process — **R-1…R-27** retractions, **C-1…C-14** corrections, dead guards **enumerated in FM1 below** ⚠ *(this heading has now been stale twice: it read "sixteen retractions, ten corrections, seven dead guards" until audit #11, then "twelve dead guards" — a figure with no enumeration anywhere — until audit #16 found four different counts in this section. It no longer carries a number; FM1 holds the list.)*
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
 *the manipulated and the measured quantity were not the same thing*, or *the best of mine was
@@ -2334,7 +2334,7 @@ Corrections: C1 (L8 norm contamination → L12), C2 (40× → 3.7×, then retrac
 controls" is sign-dependent), C4 (clustered p, 1.7e-06 → 5.0e-04), C5/C6 (wrong column for the
 per-domain count; population mismatch between headline table and headline correlation).
 
-**Three guards were found to have never executed:**
+**Three of them, in the order they were found** (the full enumerated list is **FM1** in §8c — do not take a count from here):
 1. the **coherence gate** — keyed on a `score_behavior` dirname while arms were named from judge tags, so every lookup missed and `None` passed as "checked";
 2. the **dynamic-range check** — `max` over *signed* deltas returned a null control (+0.031) as "the largest effect" and certified itself;
 3. the **control band** — selected `ctrl_rand_s*` while the runs were tagged `ctrlband_s*`; **zero** arms ever matched.
@@ -2386,7 +2386,7 @@ overturned two of its claims and found three more it had missed.
 Not a list of bugs. These are the **recurring shapes**; each one bit this project more than once, which
 is the reason for writing them down rather than the individual fixes.
 
-**FM1 — The dead guard.** A guard whose condition can never be true. **Six** so far: the coherence gate
+**FM1 — The dead guard.** A guard whose condition can never be true. **Seven enumerated** — this list is the canonical count; every other mention of dead guards in this report points here rather than restating a number, after audit #16 found four different figures (twelve, three-plus-a-fourth, six, three) for one quantity. They are: the coherence gate
 (keyed on a dirname while arms were named from judge tags); the dynamic-range check (`max` over *signed*
 deltas certified a null control as the largest effect); the control-band selector (matched `ctrl_rand_s*`
 against runs tagged `ctrlband_s*` — **zero** arms ever matched); a phase-board edit addressing rows by
@@ -2394,9 +2394,9 @@ line index; `probes`' own leakage guard (at K=1 the z-score is `excess/NaN`, yie
 run whose stopping rule was never evaluable wrote `DONE.json` and exited 0 — **shipped while fixing dead
 guards**); and `analyze_g9`'s role-identifiability gate, which tests family overlap on a `family_id`
 string that *embeds the style name*, so overlap is 0 by construction and the gate would refuse even a
-correct design. **Countermeasure, now mandatory: every guard ships with a test that fails the pre-fix
-code.** Five of the six matched on an incidental property — a filename, a tag prefix, an mtime, a line
-number — rather than on identity.
+correct design. And a **seventh, mine, 2026-08-23**: `unwritten_findings_check` v1 counted an artifact as written up on **one** matching 3–4 decimal number, which saturates on values like 0.5000 that recur everywhere — it reported **0 silent of 93** and was **green by construction**. It was committed in that state. *(An eighth, `readout_gate_check` v2 — which skipped exactly the two artifacts it was built for, because they carry no `provenance` key — was caught before commit and is recorded in the log, not here.)*
+
+**Countermeasure, now mandatory: every guard ships with a test that fails the pre-fix code.** **Six of the seven** matched on an incidental property — a filename, a tag prefix, an mtime, a line number, a JSON key's presence — rather than on identity.
 
 **FM2 — The one-of-two-paths miss.** A fix applied to the single-spec path and dropped on the composed or
 recursive path. Three occurrences, most recently **R-12**: `score_behavior.py:123` recursed into composed
@@ -3060,7 +3060,7 @@ Four things, in order of durability:
    is the finding worth following.
 3. **A documented negative on the objective**, with the specific reason: correlation without
    sign-following intervention. Do not build on this axis; target the demonstration-retrieval pathway.
-4. **The failure catalogue** — five retractions, three guards that never executed, and four transferable
+4. **The failure catalogue** — five retractions, the dead guards enumerated in FM1, and four transferable
    rules: test guards against cases they should fail; address things by identity not by
    filename/tag/mtime/line-number; resampling *rows* cannot rescue a comparison whose arms sit in
    different *places*; and when correcting an error verify the *measured thing* changed, not just the
