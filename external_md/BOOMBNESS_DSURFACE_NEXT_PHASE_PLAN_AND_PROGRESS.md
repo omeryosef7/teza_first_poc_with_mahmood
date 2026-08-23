@@ -637,6 +637,61 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ⛔➡✅ R-L (20:56) — **R-J's "VOID" VERDICT IS RETRACTED. THE INSTRUMENT IS PROVEN.** My check-6 proxy was wrong.
+
+**Artifact:** `outputs/boombness/p2_instrument_generation_change.json`, produced by
+`src/boombness/generation_change.py` — a tool the repo **already had**, against the same-bank
+un-intervened baseline `r18pow_base`.
+
+| arm | generations changed vs baseline |
+|---|---|
+| `allpast` at **L18–19** (776438) | **8/8 = 100.0%** |
+| `allpast` at **all 32 layers** (776775) | **8/8 = 100.0%** |
+
+**The mask reaches the computation.** A hook writing into a tensor the model never consumes would
+give **0%**; 100% rules that out, and that discrimination is exactly what R-J said was missing.
+
+#### ⛔ What I got wrong
+
+R-J declared the run **VOID** because generation length barely moved (median 790 → 810 at L18–19,
+790 → 666 all-layers). **Length was a bad operationalisation of "visibly wrecked."** The model can
+emit a completely different 800-character answer; length is nearly uninformative about whether the
+computation changed. My own pre-registration named the right alternative — *"and/or near-total
+greedy-token disagreement"* — and I then implemented only the weak half of it, **and did not look
+for the existing tool that computes the strong half.**
+
+**The corrected instrument verdict, check by check:**
+
+| # | check | result |
+|---|---|---|
+| 1 | `hook_n_decode_edits > 0` every row | ✅ `frac_rows_decode_live = 1.0`, median **592,864** edits all-layers (17× the 2-layer run, matching 32 vs 2 layers) |
+| 2 | forwards identity | ✅ `min_decode_forwards = 6112 = (192−1)×32` exactly |
+| 3 | run-level gate | ✅ passes |
+| 4 | eager | ✅ |
+| 5 | pre-flight | ✅ 8 rows, 2 per `n_examples` level, 0 refusals |
+| 6 | **computation actually changed** | ✅ **100% of generations changed at both depths** |
+| — | right keys blocked | ✅ `edits/forward = seq_len − 2` **exactly on every row of both runs** — precisely `allpast = range(1, n−1)` |
+
+#### What is now established, and what is still not
+
+**Established:** the `AllQueryAttentionKnockout` instrument is live during decoding, blocks exactly
+the intended key set, runs under eager, and demonstrably changes the model's computation. **Phase 2
+is unblocked.**
+
+⚠ **Still NOT established, and worth stating because 100% is easier to achieve than it looks:** under
+greedy decoding *any* perturbation flips a near-tie, so 100% change proves the edit is *consumed*, not
+that it has the *intended magnitude*. Zeroing attention mass onto the blocked keys is only directly
+verified by reading attention weights (`diagnose_knockout.py`), which remains the stronger check if a
+Phase 2 null ever needs defending.
+
+⚠ And R-J's **scientific** observation survives its own retraction: L18–19 changes 100% of
+generations while leaving the length distribution ~unchanged, whereas all-layers shifts **8/8 rows
+to `length` stops** (baseline: 4 `eos` / 4 `length`) and cuts median length to 0.84×. Both depths
+change the computation; only the deeper one visibly degrades the *behaviour*. That is consistent with
+G3's redundancy result and is a real datapoint, not an artifact of the failed proxy.
+
+---
+
 ### ★★★ R-K (20:52) — PHASE 5 PIPELINE VALIDATED END-TO-END, AND THE FOURTH PAIR CONTINUES THE TREND
 
 **The Phase 5 path now runs whole**: generate bank → §2.4 tokenization audit → extract → fit →
