@@ -1,0 +1,202 @@
+{
+  "question": "which committed artifacts rest on judge runs scored against an EMPTY GOAL (R-14)?",
+  "test": "a run is empty-goal iff NO row carries `goal_status` (the field postdates it) AND its judge config has `bank: null`. Pre-field runs that DID pass a bank recover the goal through the join and are clean -- 'field absent' alone is not evidence.",
+  "why_not_a_figure_pattern": "R-14 was policed by a retraction_sweep rule matching ClearHarm's specific numbers, so the identical defect in the Qwen3 L20 arms passed clean and was published. A guard tied to figures cannot generalise to the next instance of its own defect.",
+  "n_empty_goal_runs": 15,
+  "empty_goal_runs": [
+    {
+      "run": "ab_C_20260819_002240_1397246",
+      "why": "no goal_status on any of 482 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ab_base_20260819_002240_1397245",
+      "why": "no goal_status on any of 483 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ch_B_20260818_183415_219575",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ch_C_20260818_183416_219574",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ch_D_20260818_180038_196460",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ch_Dctrl_20260818_174921_186339",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ch_base_20260818_174921_186338",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ctrlband_s20260901_20260818_183415_219576",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ctrlband_s20260902_20260818_184725_228939",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ctrlband_s20260903_20260818_184725_228943",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ctrlbandfix_s20260901_20260819_002240_1397244",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "ctrlbandfix_s20260902_20260819_002952_1402992",
+      "why": "no goal_status on any of 179 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "q3_C20_20260818_174110_179027",
+      "why": "no goal_status on any of 960 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "q3_D20_20260818_181444_206322",
+      "why": "no goal_status on any of 960 rows AND bank is null: goal was EMPTY"
+    },
+    {
+      "run": "q3_D20ctrl_20260818_174110_179028",
+      "why": "no goal_status on any of 960 rows AND bank is null: goal was EMPTY"
+    }
+  ],
+  "n_prefield_but_banked_and_therefore_clean": 36,
+  "n_artifacts_resting_on_them": 9,
+  "artifacts": [
+    {
+      "artifact": "clearharm_arm_D.json",
+      "empty_goal_runs_cited": [
+        "ch_D_20260818_180038_196460",
+        "ch_Dctrl_20260818_174921_186339",
+        "ch_base_20260818_174921_186338"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "clearharm_band_fixed.json",
+      "empty_goal_runs_cited": [
+        "ch_B_20260818_183415_219575",
+        "ch_D_20260818_180038_196460",
+        "ch_Dctrl_20260818_174921_186339",
+        "ch_base_20260818_174921_186338",
+        "ctrlbandfix_s20260901_20260819_002240_1397244",
+        "ctrlbandfix_s20260902_20260819_002952_1402992"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "clearharm_decomposition.json",
+      "empty_goal_runs_cited": [
+        "ch_B_20260818_183415_219575",
+        "ch_C_20260818_183416_219574",
+        "ch_D_20260818_180038_196460",
+        "ch_Dctrl_20260818_174921_186339",
+        "ch_base_20260818_174921_186338",
+        "ctrlband_s20260901_20260818_183415_219576",
+        "ctrlband_s20260902_20260818_184725_228939",
+        "ctrlband_s20260903_20260818_184725_228943"
+      ],
+      "artifact_named_in_a_deliverable": true
+    },
+    {
+      "artifact": "clearharm_supplement.json",
+      "empty_goal_runs_cited": [
+        "ch_B_20260818_183415_219575",
+        "ch_C_20260818_183416_219574",
+        "ch_D_20260818_180038_196460",
+        "ch_base_20260818_174921_186338"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "qwen3_armD_benign_literal.json",
+      "empty_goal_runs_cited": [
+        "q3_C20_20260818_174110_179027",
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "qwen3_armD_direct_harmful.json",
+      "empty_goal_runs_cited": [
+        "q3_C20_20260818_174110_179027",
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "qwen3_armD_natural_doublespeak.json",
+      "empty_goal_runs_cited": [
+        "q3_C20_20260818_174110_179027",
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": false
+    },
+    {
+      "artifact": "qwen3_channel_test.json",
+      "empty_goal_runs_cited": [
+        "q3_C20_20260818_174110_179027",
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": true
+    },
+    {
+      "artifact": "section14_topical_asr.json",
+      "empty_goal_runs_cited": [
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": true
+    }
+  ],
+  "LIVE_in_a_deliverable": [
+    {
+      "artifact": "clearharm_decomposition.json",
+      "empty_goal_runs_cited": [
+        "ch_B_20260818_183415_219575",
+        "ch_C_20260818_183416_219574",
+        "ch_D_20260818_180038_196460",
+        "ch_Dctrl_20260818_174921_186339",
+        "ch_base_20260818_174921_186338",
+        "ctrlband_s20260901_20260818_183415_219576",
+        "ctrlband_s20260902_20260818_184725_228939",
+        "ctrlband_s20260903_20260818_184725_228943"
+      ],
+      "artifact_named_in_a_deliverable": true
+    },
+    {
+      "artifact": "qwen3_channel_test.json",
+      "empty_goal_runs_cited": [
+        "q3_C20_20260818_174110_179027",
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": true
+    },
+    {
+      "artifact": "section14_topical_asr.json",
+      "empty_goal_runs_cited": [
+        "q3_D20_20260818_181444_206322",
+        "q3_D20ctrl_20260818_174110_179028"
+      ],
+      "artifact_named_in_a_deliverable": true
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "src/boombness/empty_goal_leakage_check.py",
+      "--out",
+      "outputs/boombness/empty_goal_leakage_check.json"
+    ],
+    "git_commit": "6f3e4e6e63498767e946b5056cc0c3422b4ed5e4"
+  }
+}

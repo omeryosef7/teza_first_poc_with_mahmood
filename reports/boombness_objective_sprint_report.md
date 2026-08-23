@@ -2834,6 +2834,28 @@ from 0.0000 to **0.2222** against a control at 0.0093, so about a fifth of *beni
 prompts become judge-flagged. That is a real specificity problem — and it is **an order of magnitude
 smaller** than the empty-goal version implied.
 
+**Topicality, recomputed — and it is the strongest form of this result.** A class-level scan
+(`empty_goal_leakage_check.json`) found the same empty-goal runs underneath **two more** artifacts:
+`qwen3_channel_test.json` (3 of 4 arms) and the **Qwen3 half** of `section14_topical_asr.json`. Those
+runs do not merely have an empty goal — they **lack the `goal_topicality` field entirely**, so a
+"topical success" conjunction computed over them had no topicality signal at all. The re-judged runs
+carry it. Recomputed on `natural_doublespeak`, n=420:
+
+| arm | ASR (plain) | ASR (topical) | share of successes that are on-topic |
+|---|---|---|---|
+| baseline | 0.1714 | 0.0214 | 12.5% |
+| `C20` | 0.1667 | 0.0143 | 8.6% |
+| **`D20`** | 0.5190 | **0.4667** | **89.9%** |
+| `D20ctrl` | 0.1857 | 0.0143 | 7.7% |
+
+**This is the direct answer to R-13's objection that the rubric scores style.** Baseline and control
+"successes" are 8–13% on-topic — i.e. mostly style artifacts, exactly as R-13 feared. `D20`'s are
+**90%** on-topic, and topical ASR separates it from its matched control by **+0.4524** (0.4667 vs
+0.0143). The effect survives the conjunction that was designed to kill style artifacts.
+
+⚠ The **Llama** half of `section14_topical_asr.json` uses clean, banked runs throughout and is
+unaffected; only its Qwen3 half was tainted.
+
 ⚠ The **3.50×** clustered-vs-IID CI ratio quoted here on 2026-08-23 was computed on the empty-goal rows
 and is withdrawn with them. The general point (IID intervals understate) stands on other artifacts.
 
@@ -3098,7 +3120,9 @@ into terse refusals rather than into repetition, so its ASR would be computed ov
 stubs. **Random directions are not uniformly benign**, which is itself a reason a band of one draw
 cannot be trusted.
 
-⚠ **That exclusion is now under re-examination (2026-08-23), and it was made for the wrong reason.** A repo-wide sweep of all **26** gate verdicts has since shown `scorable_frac` is a **length proxy wearing a coherence label**: of 8 runs it failed, **6 are lexically healthier than the untreated model** (baseline uniq 0.8411, trigram 0.0095). This draw is one of that shape — uniq 0.833, trigram 0.014, healthy — so it was excluded for **being terse**, i.e. for refusing, not for being broken. **Excluding a draw shrinks the band, which flatters the arm**, so the direction of the error is the unfavourable one for this report. Its generations were complete (495 rows, `DONE`) and simply never judged; job **774973** is judging them now, together with a baseline **in the same session** so the resulting delta is session-matched rather than differenced across sessions like the other five draws. The band figures above should be treated as provisional until that lands.
+⚠ **That exclusion is now under re-examination (2026-08-23), and it was made for the wrong reason.** A repo-wide sweep of all **26** gate verdicts has since shown `scorable_frac` is a **length proxy wearing a coherence label**: of 8 runs it failed, **6 are lexically healthier than the untreated model** (baseline uniq 0.8411, trigram 0.0095). This draw is one of that shape — uniq 0.833, trigram 0.014, healthy — so it was excluded for **being terse**, i.e. for refusing, not for being broken. **Excluding a draw shrinks the band, which flatters the arm**, so the direction of the error is the unfavourable one for this report. Its generations were complete (495 rows, `DONE`) and simply never judged, so it was fixable rather than merely flaggable. **Judged 2026-08-23** (job 774973) together with a baseline **in the same session**, giving it the only session-matched delta in the band: **+0.0020, one prompt in 495.**
+
+**It changes nothing, and that is the result.** The draw sits in the middle of the existing five (−0.0020, +0.0020, +0.0020, +0.0020, +0.0040): band max stays **+0.0040**, band min stays **−0.0020**, and arm B's margin over the band maximum is **+0.0382 either way**. So the exclusion was made for the wrong reason and had **no effect on the conclusion** — the band is now six draws instead of five, which makes it slightly better evidence than before. Its `scorable_frac` of 0.446 with an ordinary ASR is itself the point: 274 terse refusals and a perfectly unremarkable attack rate is what "short because refusing" looks like, as against "short because broken".
 
 ### ✅ Is the control matched on what matters? A disruption-matched comparison (added 2026-08-21)
 
