@@ -9983,3 +9983,47 @@ it isolated the single genuine gap from the noise.
 | 657 | 2026-08-23 | traced Q5 and Q7 | **a pair each** — withdrawn n=234 vs clean n=90 |
 | 658 | 2026-08-23 | named which figure comes from which artifact | quoting both without saying which is **R-9's error** |
 | 659 | 2026-08-23 | flagged answers **5 → 1** | **12 of 13 sourced**; only Q2 genuinely untraceable |
+
+## Q2 closed: wrote the missing analysis, and it reproduces every figure exactly
+
+Q2 was the last §19 answer whose numbers traced to no artifact. The extract run carries everything
+needed — `occurrence_index`, `is_final_occurrence`, `prompt_id`, `domain`, per-layer projections — so
+the analysis was written (`occurrence_contrast.py`) rather than left flagged.
+
+**First attempt did not match**, and the prompt count said why before the figures did: Q2 reports
+**n=246** doublespeak prompts, I got **480**. That is a filter mismatch, not a refutation, and treating
+it as one would have been the mistake. `query_kind = behavioral` gives **exactly 246** — pooling all
+three kinds is correction **C7**'s complaint, and here it does not merely widen intervals, it **flips
+the sign at L8 and L31**.
+
+**Second attempt matched the t and not the magnitudes** — t_cl −10.47 against Q2's −10.5, but delta
+−1.74 against −0.154. The t is scale-invariant, so that pinned the estimand as correct and the readout
+as wrong. Switching `|proj` → `|cos`:
+
+| figure | published | recomputed |
+|---|---|---|
+| L16, doublespeak | −0.154 | **−0.1544** |
+| t_cl at L16 | −10.5 | **−10.45** |
+| p at L16 | 0.0001 | **0.00014** |
+| L8 / L31 | −0.082 / −0.080 | **−0.0819 / −0.0798** |
+| `benign_literal` L16 / L31 | −0.105 / −0.131 | **−0.1051 / −0.1313** |
+| n | 246 | **246** |
+
+Every quoted figure, to the quoted precision. **Q2 was right all along** — what it lacked was the
+ability to be checked, which is now supplied.
+
+**The method is worth keeping.** Match the stated **n** first to find the filter; match the **t** next
+to confirm the estimand, since it is scale-free; only then expect the magnitudes to agree. Each of
+those three matched a different thing, and each failure was informative rather than a dead end.
+
+**13 of 13 §19 answers are now sourced.** The sourcing check reports **0 flagged**, and for once that
+zero means something — it was 5 two ticks ago and every one was resolved by finding or writing the
+analysis, not by relaxing the check.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 660 | 2026-08-23 | wrote the missing occurrence-contrast analysis | Q2's estimand, from the committed extract |
+| 661 | 2026-08-23 | n=480 vs the stated 246 → **filter** mismatch | `query_kind=behavioral`; pooling **flips the sign** at L8/L31 (C7) |
+| 662 | 2026-08-23 | t matched, magnitudes did not → **readout** mismatch | `cos` not `proj`; t is scale-invariant |
+| 663 | 2026-08-23 | **every figure reproduces exactly** | Q2 verified, not merely probably right |
+| 664 | 2026-08-23 | §19 sourcing **0 flagged** | 13 of 13; was 5 flagged two ticks ago |

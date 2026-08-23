@@ -2,16 +2,8 @@
   "question": "does each \u00a719 answer name the committed artifact its numbers come from?",
   "why_not_number_matching": "two earlier versions tried to infer provenance from numeric coverage. v1 called nearly everything traceable including Q2, which traces to nothing; v2's permutation null came out at ~0.90 for every answer, random figures scoring as well as real ones. With ~200 artifacts holding tens of thousands of floats, numeric coverage carries no information.",
   "n_answers": 14,
-  "n_flagged": 1,
-  "flagged": [
-    {
-      "answer": "2",
-      "title": "Does the final `carrot` become more `bomb`-like than earlier `carrot`s?",
-      "artifacts_named": [],
-      "n_distinct_figures_quoted": 9,
-      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
-    }
-  ],
+  "n_flagged": 0,
+  "flagged": [],
   "all": [
     {
       "answer": "1",
@@ -26,9 +18,11 @@
     {
       "answer": "2",
       "title": "Does the final `carrot` become more `bomb`-like than earlier `carrot`s?",
-      "artifacts_named": [],
-      "n_distinct_figures_quoted": 9,
-      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+      "artifacts_named": [
+        "occurrence_contrast.json"
+      ],
+      "n_distinct_figures_quoted": 14,
+      "verdict": "sourced"
     },
     {
       "answer": "3",
@@ -155,6 +149,6 @@
       "--out",
       "outputs/boombness/answer_sourcing_check.json"
     ],
-    "git_commit": "239d92de0b62a9df50cd672cdb25375a27fec08b"
+    "git_commit": "147145aab58e8fe6476e54f06d189c10f8e99c8e"
   }
 }

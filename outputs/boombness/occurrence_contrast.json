@@ -1,0 +1,107 @@
+{
+  "question": "does the FINAL occurrence of the codeword sit further along d_surface than EARLIER occurrences of the same word in the same prompt?",
+  "why": "\u00a719 Q2 quotes this contrast, and the 2026-08-23 sourcing audit found its figures in no committed artifact. Recomputed here so the answer is verifiable rather than merely probably right.",
+  "estimand": "within prompt: mean(final) - mean(earlier), prompts with >=2 occurrences; prompt deltas aggregated to DOMAIN cluster means; t(G-1), two-sided",
+  "control_logic": "benign_literal is the control that settles it -- there is no bomb meaning there for a final occurrence to approach, so an effect of the same sign and size means the contrast is positional, not semantic",
+  "run": "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+  "metric": "d_surface",
+  "readout": "cos",
+  "query_kind": "behavioral",
+  "rows_used": 2436,
+  "conditions": {
+    "natural_doublespeak": {
+      "n_prompts_with_2plus_occurrences": 246,
+      "layers": {
+        "L8": {
+          "mean": -0.08194803038143222,
+          "se": 0.013178839588503565,
+          "t": -6.21815220005552,
+          "p": 0.0015725416600278176,
+          "n_domains": 6,
+          "ci95": [
+            -0.10777855597489922,
+            -0.05611750478796523
+          ],
+          "n_prompts": 246
+        },
+        "L16": {
+          "mean": -0.15439268910894402,
+          "se": 0.014773802294966934,
+          "t": -10.450436930616146,
+          "p": 0.00013833806669746553,
+          "n_domains": 6,
+          "ci95": [
+            -0.18334934160707922,
+            -0.12543603661080882
+          ],
+          "n_prompts": 246
+        },
+        "L31": {
+          "mean": -0.07976165581955964,
+          "se": 0.021591842799159926,
+          "t": -3.694064307594113,
+          "p": 0.014085993360966609,
+          "n_domains": 6,
+          "ci95": [
+            -0.1220816677059131,
+            -0.03744164393320619
+          ],
+          "n_prompts": 246
+        }
+      }
+    },
+    "benign_literal": {
+      "n_prompts_with_2plus_occurrences": 162,
+      "layers": {
+        "L8": {
+          "mean": -0.09348693907398868,
+          "se": 0.01007308289419403,
+          "t": -9.280866647873324,
+          "p": 0.0002442315803878421,
+          "n_domains": 6,
+          "ci95": [
+            -0.11323018154660898,
+            -0.07374369660136838
+          ],
+          "n_prompts": 162
+        },
+        "L16": {
+          "mean": -0.10507965062020554,
+          "se": 0.013989322698990347,
+          "t": -7.511418020815937,
+          "p": 0.0006615572621571724,
+          "n_domains": 6,
+          "ci95": [
+            -0.13249872311022662,
+            -0.07766057813018445
+          ],
+          "n_prompts": 162
+        },
+        "L31": {
+          "mean": -0.13128660501406333,
+          "se": 0.023771815591409427,
+          "t": -5.522784093172388,
+          "p": 0.0026662411024156356,
+          "n_domains": 6,
+          "ci95": [
+            -0.1778793635732258,
+            -0.08469384645490086
+          ],
+          "n_prompts": 162
+        }
+      }
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/occurrence_contrast.py",
+      "--run",
+      "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+      "--readout",
+      "cos",
+      "--out",
+      "outputs/boombness/occurrence_contrast.json"
+    ],
+    "git_commit": "147145aab58e8fe6476e54f06d189c10f8e99c8e"
+  }
+}

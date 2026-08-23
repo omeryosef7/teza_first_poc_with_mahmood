@@ -2655,10 +2655,10 @@ answers deliberately contrast the **withdrawn n=234** composition against the **
 `g2_analysis_cwpos` vs `_CLEAN`, and `g9_three_predictor_cwpos` vs `_CLEAN`. Those pairs are now
 named per figure, because quoting them without saying which is which is R-9's error.
 
-⛔ **Q2 remains the single exception, and it is the real one.** Its figures were searched for across
-every artifact and every subdirectory and found in **none** — the apparent matches are float
-collisions in unrelated files. **12 of 13 answers are sourced; Q2 is not, and its magnitudes stay
-provisional.**
+✅ **Q2 closed the same day: 13 of 13 answers are now sourced.** It was the one genuine gap — its
+figures existed in no artifact — so the analysis was written and run, and it reproduces every
+quoted figure exactly (L16 −0.1544 against −0.154; t_cl −10.45 against −10.5; n=246 against 246).
+See Q2. **No §19 answer now quotes a figure that cannot be regenerated.**
 
 ⚠ **How to read the p-values in this section (added 2026-08-22).** Several answers below quote p-values **smaller than their design's attainable cluster floor** — e.g. **p<0.0001**, **0.0001** and **0.0077** on bank-based analyses that cluster on **6 domains**, where the smallest attainable two-sided cluster p is **2/2⁶ = 0.031**. Those are **bootstrap or parametric** p-values, legitimate as such, and they must **not** be read as clustered evidence. Per §0b's rule: quote the **confidence interval** for magnitude, and treat a cluster p only as a statement about cross-domain consistency. AdvBench answers cluster on **16** domains (floor 3.1e-5), so their p-values are attainable — but §14-B's `p_cl=0.0089` is a CR1 statistic, and the exact sign-flip value for that arm is **0.0078** (§0b). **No answer below changes as a result; the strength of several does.** *(An earlier draft of this note also listed **0.0014** as an example — that figure belongs to the **retracted** 4-draw band, not to any live answer here, and `retraction_sweep.py` caught the slip.)*
 
@@ -2683,21 +2683,26 @@ simply sits differently on the axis than earlier occurrences, regardless of mean
 consistent doublespeak-specific excess. ⛔ The earlier "later-carrot-more-bomb-like" claim (P4.3) stays
 retracted; this is its replacement, computed with the control it lacked.
 
-⚠ **These figures are NOT currently regenerable from a committed artifact (flagged 2026-08-23).**
-The standing rule for this report is that every number be reproducible by a committed script from a
-committed artifact. I searched every `outputs/boombness/*.json` and every artifact subdirectory for
-the final-vs-earlier occurrence contrast and found **none** — the numeric matches that turn up for
-−0.154 / −0.082 / −0.105 are float collisions inside unrelated large artifacts, not this analysis.
-`followup_token_level.py` is the nearest script and had **never been run** into a committed
-directory; running it now (`token_level_occurrence/`) produces **per-role means per layer**
-(`demo_first` / `demo_last` / `demo_middle` / `query`), **not** the within-prompt paired
-Δ(final − earlier) with a clustered t that this answer quotes.
+✅ **SOURCED AND REPRODUCED EXACTLY (2026-08-23, `occurrence_contrast.json`).** These figures were
+flagged earlier the same day as traceable to no committed artifact — correctly: none existed. The
+analysis has now been written (`occurrence_contrast.py`) and run against the committed extract, and it
+reproduces **every** quoted figure:
 
-**This does not make the answer wrong** — the analysis was evidently run, and the control argument
-it rests on is the part that matters. It makes it **unverifiable**, which after this week is not a
-distinction worth blurring: three §19 answers written from artifacts I did not first check turned
-out to be wrong. Treat Q2's magnitudes as provisional until the contrast is recomputed and
-committed; the *sign* and the *control* claim are separately supported by §7's token-level section.
+| figure | as published | recomputed |
+|---|---|---|
+| L16, doublespeak | −0.154 | **−0.1544** |
+| t_cl at L16 | −10.5 | **−10.45** |
+| p at L16 | 0.0001 | **0.00014** |
+| L8 / L31 | −0.082 / −0.080 | **−0.0819 / −0.0798** |
+| `benign_literal` L16 / L31 | −0.105 / −0.131 | **−0.1051 / −0.1313** |
+| n, doublespeak prompts | 246 | **246** |
+
+**Two details were needed to match, and both are load-bearing.** The contrast is restricted to
+`query_kind = behavioral` — pooling all three query kinds gives **480** prompts instead of 246 and
+changes the sign at L8 and L31, which is correction **C7**'s complaint made concrete. And the readout is
+`d_surface|cos`, not `|proj`: the **t-statistic is identical either way** (scale-invariant), but the raw
+projection makes the L16 delta −1.74 rather than −0.154. Matching the stated **n** is what identified
+the filter, and matching the **t** is what confirmed the estimand before the magnitudes agreed.
 
 **3. How many examples are needed before Boombness rises?**
 **One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
