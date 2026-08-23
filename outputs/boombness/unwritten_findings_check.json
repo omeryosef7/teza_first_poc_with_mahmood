@@ -22,7 +22,7 @@
     "*_cos.json*"
   ],
   "n_artifacts_checked": 93,
-  "n_silent": 10,
+  "n_silent": 9,
   "min_rare_fingerprints_for_a_verdict": 5,
   "n_untestable_too_few_rare_numbers": 13,
   "untestable": [
@@ -159,15 +159,6 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 27,
       "n_fingerprints_tested": 27,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "qwen3_armD_benign_literal.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 25,
-      "n_fingerprints_tested": 25,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
@@ -1130,9 +1121,13 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 25,
       "n_fingerprints_tested": 25,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
+      "n_fingerprints_found": 3,
+      "example_hits": [
+        "0.8796",
+        "0.9537",
+        "0.9938"
+      ],
+      "written_up": true
     },
     {
       "artifact": "qwen3_armD_direct_harmful.json",
@@ -1263,6 +1258,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "ac582f925f21b861f3daceeae7b5e9cd89f27a34"
+    "git_commit": "654d82e3333cbcc6ecb4f888c4d2bbdac583747d"
   }
 }

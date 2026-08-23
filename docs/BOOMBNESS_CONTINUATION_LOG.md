@@ -9053,3 +9053,46 @@ Silent artifacts: 11 → **10**.
 | 556 | 2026-08-23 | arm F: **control beats arm** | random add +1.12→+2.26 vs `d_surface` +0.18→+0.77 |
 | 557 | 2026-08-23 | consistent with the equal-dose ASR result | adding `d_surface` suppresses **both** ASR and comprehension |
 | 558 | 2026-08-23 | `pvalue_hygiene_check` **failed my new prose** | floor caveat was a paragraph away; now inline |
+
+## A Qwen3 result that looked spectacular and is a negative
+
+Next silent artifacts: the `qwen3_armD_*` trio. They contain the L20 arms on Qwen3 with a matched
+random control, paired and domain-clustered, committed 08-18 and never written up.
+
+| condition | n | baseline | `q3_C20` | `q3_D20` | **`q3_D20ctrl` (matched random)** |
+|---|---|---|---|---|---|
+| `natural_doublespeak` | 420 | 0.1595 | **0.8881** | 0.7738 | **0.8881** |
+| `benign_literal` | 324 | 0.0031 | **0.9938** | 0.8796 | **0.9537** |
+| `direct_harmful` | 72 | 0.0139 | 0.0139 | 0.0833 | 0.0139 |
+
+**The matched random control equals or beats the arm in both non-trivial conditions.** Whatever drives
+a +0.61 to +0.88 jump, it is not the identity of the directions removed. And the tell is
+`benign_literal` going **0.003 → 0.95–0.99**: the intervention makes the model emit judge-flagged
+content on prompts that are benign *by construction*. That is a model being broken, not attacked.
+
+**It sits directly against the Qwen3 claim I strengthened two ticks ago**, and both are Qwen3, so the
+distinction has to be explicit: at **L11** the `d_surface` projection has a **null** hard in-subspace
+control (−0.0119, p=0.60) — direction-specific; at **L20** the removal has a control that **matches the
+arm** — not direction-specific, and destructive of benign behaviour. Any "it replicates on Qwen3"
+sentence must name the layer and the arm, because the two point opposite ways. The report now says so.
+
+Also recovered from the same artifact: the domain-clustered CI is **3.50×** wider than the IID Wilson
+interval on the same rows — the concrete number behind this report's refusal to quote IID intervals.
+
+**A limit of my own detector, observed in use.** After writing the finding up,
+`qwen3_armD_natural_doublespeak` **still** reports 0 of 32 rare numbers found. The reason is
+structural: its headline values (0.1595, 0.8881, 0.7738) also appear in sibling Qwen3 artifacts, so the
+uniqueness filter strips out exactly the numbers a writer would quote and leaves 32 incidentals —
+Wilson bounds, `mean_score` — that nobody would. The check measures **number** presence, not **finding**
+presence, and is biased against artifacts with siblings. Documented in the script so a future reader
+does not respond to it by quoting a Wilson bound.
+
+Silent artifacts: 10 → **9**.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 559 | 2026-08-23 | `qwen3_armD_*` trio, unwritten since 08-18 | matched control **equals or beats** the arm |
+| 560 | 2026-08-23 | `benign_literal` **0.003 → 0.99** under the arm | the model is broken, not attacked |
+| 561 | 2026-08-23 | reconciled against the L11 Qwen3 claim | replication claims must name **layer and arm** |
+| 562 | 2026-08-23 | recovered the **3.50×** clustered-vs-IID CI ratio | the number behind refusing IID intervals |
+| 563 | 2026-08-23 | documented a **bias in my own detector** | it strips the numbers a writer would actually quote |

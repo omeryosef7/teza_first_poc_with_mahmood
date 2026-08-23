@@ -22,6 +22,14 @@ showed 64 of them matching 10+ fingerprints, i.e. the test was saturating on val
 fingerprints: only values that occur in exactly ONE artifact across the whole corpus are used, which
 makes a match evidence about that artifact rather than about the corpus.
 
+A LIMIT OBSERVED IN USE (2026-08-23). `qwen3_armD_natural_doublespeak.json` still reports 0 of 32
+rare numbers found AFTER its finding was written into the report. The reason is structural: its
+HEADLINE values (0.1595, 0.8881, 0.7738) also occur in sibling Qwen3 artifacts, so the uniqueness
+filter excludes exactly the numbers a writer would quote, leaving 32 incidentals (Wilson bounds,
+mean_score) that nobody would. So this measures NUMBER presence, not FINDING presence, and it is
+biased against artifacts that share a family. Treat a persistent hit on a written-up artifact as noise,
+not as an instruction to quote a Wilson bound.
+
 WHAT A HIT MEANS. Not "this must be written up". Infrastructure files (`canonical_figures`,
 `population_index`), indexes (`unanalysed_inventory`, this file) and deliberately superseded artifacts
 SHOULD be silent. The list is a prompt to decide, one artifact at a time, whether silence was chosen or

@@ -2760,6 +2760,35 @@ categorical proxy — no Userness/CoTness probe was fitted.
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
   to **raise** attack success, not lower it.
+⛔ **A Qwen3 negative that had never been written up (added 2026-08-23; committed since 08-18,
+`qwen3_armD_*.json`).** The L20 arms on Qwen3 look spectacular and are **not direction-specific**.
+Paired, domain-clustered:
+
+| condition | n | baseline | `q3_C20` (remove refusalness) | `q3_D20` (remove both) | **`q3_D20ctrl` (matched random)** |
+|---|---|---|---|---|---|
+| `natural_doublespeak` | 420 | 0.1595 | **0.8881** | 0.7738 | **0.8881** |
+| `benign_literal` | 324 | 0.0031 | **0.9938** | 0.8796 | **0.9537** |
+| `direct_harmful` | 72 | 0.0139 | 0.0139 | 0.0833 | 0.0139 |
+
+**The matched random control equals or beats the arm in both non-trivial conditions** — 0.8881 vs
+0.7738 on doublespeak, 0.9537 vs 0.8796 on benign. Whatever drives the +0.61 to +0.88 jumps, it is not
+the identity of the directions removed. And `benign_literal` running from **0.003 to 0.95–0.99** is the
+tell: the intervention makes the model produce judge-flagged content on prompts that are *benign by
+construction*. That is a model being broken, not a model being attacked.
+
+**Why this matters next to the L11 result above.** They point opposite ways and both are Qwen3, so the
+distinction is worth stating: at **L11** the `d_surface` projection has a **null** hard in-subspace
+control (−0.0119, p=0.60) — direction-specific; at **L20** the removal has a control that **matches the
+arm** — not direction-specific, and destructive of benign behaviour. A Qwen3 replication claim must say
+*which layer and which arm*, because the two disagree.
+
+⚠ The artifact declares its own limit and it is worth repeating: `control_band: n_draws = 0` — "fewer
+than 3 independent control draws; between-draw variance is unestimated". So the control here is a
+single draw, which is enough to say the arm is **not** clearly above it, but not enough to put an
+interval on the gap. Also recorded there: the domain-clustered CI is **3.50×** wider than the IID
+Wilson interval on the same rows (`ci_width_ratio_clustered_over_iid`), which is why IID intervals are
+not quoted anywhere in this report.
+
 ⬆ **The direct comprehension test, with matched controls, added 2026-08-23 — committed 08-18, never
 written up** (`g8_comprehension_DF_arms.json`). Paired, n=288, clustered on 6 domains, comprehension
 delta at each `n_examples` level:
