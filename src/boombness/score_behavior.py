@@ -140,8 +140,71 @@ def _report_add_magnitude(name: str, layer: int, alpha: float, unit: float, eff:
           f"(alpha is NOT a common unit across directions; compare magnitudes, not alphas)")
 
 
+def demo_key_positions(tok, row, templated):
+    """Absolute token indices of the demonstration block inside `templated`.
+
+    Located by CHARACTER OFFSET of the recorded `demo_block` inside the templated prompt, exactly
+    as surgical_knockout.py does, so the span cannot drift from the generator's own notion of what
+    the demonstrations are. `templated` MUST be the string resolve_occurrences tokenised, not a
+    re-templating: a second templating path can disagree with the first (different
+    enable_thinking, different specials) and the mask would then block an arbitrary window of the
+    prompt while every downstream number looked healthy.
+
+    Returns (positions, reason_or_None). No causality filter — see knockout_key_set.
+    """
+    blk = row.get("demo_block") or ""
+    if not blk:
+        return [], "no_demo_block"
+    ci = templated.find(blk)
+    if ci < 0:
+        return [], "demo_block_not_found_in_templated"
+    enc = tok(templated, add_special_tokens=False, return_offsets_mapping=True)
+    lo, hi = ci, ci + len(blk)
+    pos = [i for i, (a, b) in enumerate(enc["offset_mapping"]) if a >= lo and b <= hi and b > a]
+    if not pos:
+        return [], "demo_block_empty_after_offset_map"
+    return pos, None
+
+
+#: Arms for `attn_knockout`. The NAME field of the --intervene spec selects the key set; the mode
+#: field is always `attn_knockout` and alpha is always 1.0.
+KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast")
+
+
+def knockout_key_set(name, demo_keys, seq_len, control_seed):
+    """Which KEY positions this arm blocks. Returns a sorted list of absolute token indices.
+
+    NO CAUSALITY FILTER IS APPLIED HERE, and that is a deliberate difference from
+    surgical_knockout.pick_edges. There, destinations are fixed prompt positions and sources must
+    satisfy `src < max(dsts)`. Under GENERATION the destination is every future token, so every
+    demonstration token is a legal source and truncating the set would silently under-cut the block
+    — the T3b defect in a new costume. The hook applies causality per forward pass instead.
+    """
+    import random as _random
+    dk = sorted(set(int(x) for x in (demo_keys or [])))
+    n = int(seq_len or 0)
+    if name == "demo_all":
+        return dk
+    if name == "allpast":
+        # POSITIVE CONTROL: every prompt key except BOS. Must visibly wreck generation; if it does
+        # not, the mask is not reaching the computation and the whole run is void.
+        return [i for i in range(1, max(0, n - 1))]
+    if name == "nondemo_random":
+        # MATCHED CONTROL: same COUNT as demo_all, drawn from outside the demo block and off the
+        # final prompt token. Seeded from control_seed so three draws are three DIFFERENT draws --
+        # the byte-identical-gens failure is what happens when this seed does not reach the draw.
+        pool = [i for i in range(1, max(0, n - 1)) if i not in set(dk)]
+        if len(pool) < len(dk):
+            raise SystemExit(f"nondemo_random: pool {len(pool)} < demo count {len(dk)}; "
+                             f"the control cannot be count-matched on this row")
+        rng = _random.Random(int(control_seed))
+        return sorted(rng.sample(pool, len(dk)))
+    raise SystemExit(f"unknown attn_knockout arm '{name}'; known arms: {KNOCKOUT_ARMS}")
+
+
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
-                      control_seed: int = 20260816):
+                      control_seed: int = 20260816,
+                      demo_keys=None, seq_len=None, knock_stats=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -176,8 +239,14 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     if "composed" in spec:
         out = []
         for i, sub in enumerate(spec["composed"]):
+            # EVERY threaded argument must be forwarded here. `control_seed` was dropped on this
+            # exact line twice (see the block above), each time producing a "control band" that was
+            # secretly n=1. `demo_keys`/`seq_len`/`knock_stats` are threaded for the same reason and
+            # are covered by tests/test_composed_knockout.py, which fails if this line drops them.
             out.extend(make_intervention(dc, pc, lm, sub, payload,
-                                         control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE))
+                                         control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
+                                         demo_keys=demo_keys, seq_len=seq_len,
+                                         knock_stats=knock_stats))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -188,6 +257,28 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # direction on B−A would make it a reparameterisation of d_naive and the comparison circular.
     # Only layers 12/14/16/18/20 exist, so a band outside those yields no hooks and the caller's
     # existing "produced no hooks" guard fires.
+    # ATTENTION-EDGE KNOCKOUT UNDER GENERATION (Phase 2). Unlike every other mode here this one
+    # needs no `payload`: it edits the attention mask, not the residual stream.
+    #
+    # It uses pc.AllQueryAttentionKnockout, NOT pc.AttentionKnockout. The latter addresses query
+    # rows by absolute prompt position and therefore applies at prefill and silently switches off
+    # for every decoded token (pair_common.py:463-476). Using it here would produce a clean-looking
+    # null that is a statement about the hook rather than about the model.
+    if mode == "attn_knockout":
+        if abs(float(alpha) - 1.0) > 1e-9:
+            raise SystemExit("attn_knockout takes alpha=1.0 — a mask edit is not dosable; "
+                             f"got {alpha}")
+        if demo_keys is None:
+            raise SystemExit(
+                "attn_knockout reached make_intervention with demo_keys=None. The composed "
+                "recursion dropped it — this is the one-of-two-paths failure that has already "
+                "hit `control_seed` twice on that exact line.")
+        keys = knockout_key_set(name, demo_keys, seq_len, control_seed)
+        if not keys:
+            raise SystemExit(f"attn_knockout arm '{name}' produced an EMPTY key set; a no-op "
+                             f"knockout must fail loudly, never score as a null")
+        return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
+                                             stats=knock_stats)]
     if name == "refusalness":
         import refusalness as _rf
         # pass the model so the per-model direction file is chosen, and assert the width
@@ -465,7 +556,18 @@ def main() -> int:
     ledger = FailureLedger()
 
     model_id = args.model or dc.PRIMARY_MODEL
-    lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation="sdpa")
+    # ATTENTION IMPLEMENTATION IS RESULT-BEARING, NOT A PERFORMANCE KNOB.
+    # Under SDPA/flash a custom 4-D additive mask is not applied verbatim, so an attention-edge
+    # knockout becomes a SILENT NO-OP and every "the knockout changed nothing" number is vacuous.
+    # This is refused rather than warned about: a void run that looks like a null is worse than a
+    # crash. surgical_knockout.py forces eager for the same reason (:701-702).
+    _wants_knockout = bool(args.intervene) and ":attn_knockout:" in args.intervene
+    _attn_impl = "eager" if _wants_knockout else "sdpa"
+    lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
+    if _wants_knockout and getattr(getattr(lm.model, "config", None), "_attn_implementation",
+                                   "eager") != "eager":
+        raise SystemExit("REFUSING: attn_knockout requested but the model did not load with "
+                         "attn_implementation='eager'; the mask edit would be discarded silently.")
 
     # SELF-CHECK that --enable-thinking actually changed the RENDERING, not just the argparse
     # namespace. It was silently inert once: the flag reached the readout templating and not
@@ -502,7 +604,7 @@ def main() -> int:
              min_option_mass=args.min_option_mass)
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
-                   attn_implementation="sdpa", num_layers=lm.num_layers)
+                   attn_implementation=_attn_impl, num_layers=lm.num_layers)
 
     spec = None
     payload = None
@@ -520,17 +622,30 @@ def main() -> int:
             specs.append({"direction": name, "mode": mode,
                           "layers": list(range(lo, hi + 1)), "alpha": float(alpha_s)})
         spec = specs[0] if len(specs) == 1 else {"composed": specs}
-        if not args.fit_dir:
+        # A pure attention knockout needs no fitted direction: it edits the attention mask, not
+        # the residual stream. Requiring --fit-dir for it would force a spurious dependency on a
+        # direction the arm never uses, and would make the arm's provenance claim a lie.
+        _all_knockout = all(sp["mode"] == "attn_knockout" for sp in specs)
+        if not args.fit_dir and not _all_knockout:
             raise SystemExit("--intervene requires --fit-dir")
         # Cross-fit is not meaningful for an intervention applied to every row, so the
         # direction used is recorded explicitly instead of being silently chosen.
-        p = os.path.join(args.fit_dir, "directions_fit_dev.pt")
-        if not os.path.exists(p):
-            p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
-        payload = torch.load(p, map_location="cpu", weights_only=False)
+        p = None
+        payload = None
+        if args.fit_dir:
+            p = os.path.join(args.fit_dir, "directions_fit_dev.pt")
+            if not os.path.exists(p):
+                p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
+            payload = torch.load(p, map_location="cpu", weights_only=False)
         run.note(intervention=spec, intervention_specs=specs, intervention_direction_file=p,
+                 attn_implementation=_attn_impl,
                  dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
         print(f"[score] intervention {spec} from {os.path.basename(p)}")
+
+    # LIVENESS ACCUMULATOR for attn_knockout. Counted per row so the run can PROVE the mask fired
+    # during decoding. Without this a prefill-only knockout reports a perfectly healthy null.
+    knock_live = {"n_rows": 0, "n_rows_decode_live": 0, "n_demo_positions": [],
+                  "decode_edits": [], "decode_forwards": []}
 
     concept = rows[0]["concept"]
     codeword = rows[0]["codeword"]
@@ -597,14 +712,27 @@ def main() -> int:
         # must not be silently scored (plan §2.2).
         try:
             # pass OUR thinking mode; the callee's module global is a different variable (A11-9)
-            resolve_occurrences(dc, lm.tokenizer, row, enable_thinking=ENABLE_THINKING)
+            # The return value was DISCARDED before Phase 2. `templated_r` is the exact string the
+            # prompt ids came from, and it is the only sound basis for locating the demo block.
+            templated_r, ids_r, _last_r, _foll_r, _nsub_r = resolve_occurrences(
+                dc, lm.tokenizer, row, enable_thinking=ENABLE_THINKING)
         except ValueError as e:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
 
+        dk, dk_reason = ([], None)
+        if _wants_knockout:
+            dk, dk_reason = demo_key_positions(lm.tokenizer, row, templated_r)
+            if dk_reason:
+                ledger.fail(f"demokeys:{dk_reason}", row["prompt_id"])
+                continue
+
+        knock_stats = {} if _wants_knockout else None
         try:
             ctxs = make_intervention(dc, pc, lm, spec, payload,
-                                     control_seed=args.seed)
+                                     control_seed=args.seed,
+                                     demo_keys=dk, seq_len=len(ids_r),
+                                     knock_stats=knock_stats)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:
@@ -678,6 +806,23 @@ def main() -> int:
                                 print(f"[score] thinking-off VERIFIED ON OUTPUT: only "
                                       f"{think_probe['unclosed']}/{think_probe['n']} of the first "
                                       f"completions are unclosed thoughts", flush=True)
+                        if _wants_knockout:
+                            ks = knock_stats or {}
+                            de = int(ks.get("n_decode_edits", 0))
+                            df = int(ks.get("n_decode_forward", 0))
+                            knock_live["n_rows"] += 1
+                            knock_live["n_rows_decode_live"] += int(de > 0)
+                            knock_live["n_demo_positions"].append(len(dk))
+                            knock_live["decode_edits"].append(de)
+                            knock_live["decode_forwards"].append(df)
+                            base = {**base, "n_demo_positions": len(dk),
+                                    "demo_key_min": (min(dk) if dk else None),
+                                    "demo_key_max": (max(dk) if dk else None),
+                                    "seq_len": len(ids_r),
+                                    "hook_n_forward": int(ks.get("n_forward", 0)),
+                                    "hook_n_decode_forward": df,
+                                    "hook_n_edits": int(ks.get("n_edits", 0)),
+                                    "hook_n_decode_edits": de}
                         gens_fh.write(json.dumps({**base, "generation": text,
                                                   "n_chars": len(text), "n_new_tokens": n_new,
                                                   "stop_reason": stop}) + "\n")
@@ -731,8 +876,24 @@ def main() -> int:
         if med < args.min_option_mass:
             tail_fail.append(f"{kind}: median option mass {med:.4g} < {args.min_option_mass}")
 
+    knock_summary = None
+    if _wants_knockout:
+        import statistics as _st
+        nr = knock_live["n_rows"]
+        frac_live = (knock_live["n_rows_decode_live"] / nr) if nr else 0.0
+        knock_summary = {
+            "n_rows": nr,
+            "frac_rows_decode_live": frac_live,
+            "median_decode_edits": (_st.median(knock_live["decode_edits"]) if nr else 0),
+            "min_decode_forwards": (min(knock_live["decode_forwards"]) if nr else 0),
+            "median_n_demo_positions": (_st.median(knock_live["n_demo_positions"]) if nr else 0),
+            "attn_implementation": _attn_impl,
+        }
+        print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
+
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
                         "option_mass": mass_summary,
+                        "knockout_liveness": knock_summary,
                         "option_mass_gate": ("PASS" if not tail_fail else
                                              "OVERRIDDEN — NOT REPORTABLE: " + "; ".join(tail_fail)),
                         "answer_prefix": args.answer_prefix,
@@ -741,6 +902,20 @@ def main() -> int:
                         "intervention": spec,
                         "note": "ASR is NOT computed here — run judge_boombness.py on gens.jsonl"},
                ledger=ledger)
+
+    # THE LIVENESS GATE. A knockout that did not fire during decode makes every ASR number in this
+    # run a statement about the hook rather than about the model, and it fails in the direction
+    # that looks like a clean scientific null. It is refused AFTER run.finish() -- same discipline
+    # as the tail gate below -- so the artifact exists and records why it is not reportable, and
+    # the process still exits non-zero so no caller can mistake it for a result.
+    if _wants_knockout:
+        _fl = (knock_summary or {}).get("frac_rows_decode_live", 0.0)
+        if _fl < 0.99:
+            raise SystemExit(
+                f"REFUSING: the attention knockout fired during decoding on only {_fl:.3f} of "
+                f"rows. This is the prefill-only failure (pair_common AttentionKnockout vs "
+                f"AllQueryAttentionKnockout). The ASR from this run would describe the hook, not "
+                f"the model. See summary.json knockout_liveness.")
     print(f"[score] {dict(counts)} -> {run.path}")
     print(f"[score] failures: {ledger.as_dict()['failure_reasons']}")
 
