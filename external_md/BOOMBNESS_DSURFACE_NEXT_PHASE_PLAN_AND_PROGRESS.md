@@ -560,6 +560,87 @@ before any judging spend, so no result is contaminated by the decision.
 
 ---
 
+### ★★★ R-C (18:14) — GATE DOSE, PRELIMINARY: THE L12 EFFECT IS DOSE-DRIVEN. AT MATCHED DOSE IT IS EXACTLY ZERO.
+
+**Source:** job **776368** (`bnd2_*`), six runs, one session, common baseline
+`ab_base_20260818_185458_3888976`, AdvBench-495, binary ASR@0.5 pooled. All six at n=495.
+
+| arm | realized removal (variance) | Δ ASR@0.5 | net flips of 495 |
+|---|---|---|---|
+| baseline | — | — | (0.064646 absolute) |
+| **`dd12a006`** α=0.06 — **inside** the L12 control band 0.0594–0.1202 | **0.095500** | **+0.000000** | **0** |
+| **`dd12a008`** α=0.08 — just above the band | 0.126020 | **+0.002020** | **1** |
+| full-dose L12 arm (α=1.0), for reference | 0.820443 | +0.036364 | 18 |
+
+**Bring the dose down into the range the in-subspace controls occupy and the effect does not
+shrink — it disappears.** Zero net flips, and one.
+
+**This is not a judge artifact, and the generations say so independently.** The low-dose arms barely
+perturb the model at all:
+
+| arm | median chars | mean chars | frac < 80 chars |
+|---|---|---|---|
+| baseline | 67 | 242.2 | 0.786 |
+| `dd12a006` | **67** | **240.2** | **0.780** |
+| `dd12a008` | **67** | **241.9** | **0.776** |
+
+Byte-length distributions indistinguishable from the untreated model. A null in ASR accompanied by a
+null in text is a coherent null, not a measurement failure.
+
+**Interpretation, at the strength the design supports.** The pre-registered reading (Gate DOSE, §2)
+was: *"If the effect vanishes at matched dose, that is evidence that much of the previous
+specificity story may have been dose-driven."* It vanishes. The L12 ASR effect tracks **how much of
+the cell-mean spread is removed**, not **which direction removes it** — which is what R-25's
+`DOSE_CAVEAT` warned about and what the `arm/max_control` ratios could never test, since the arm
+removes 6.8× more than any control.
+
+⚠ **Stated as an exclusion bound, per the pre-registration, not as "no effect".** With 0 net flips
+of 495 the rule-of-three 95% upper bound is ≈ **+0.0074**. So at a dose inside the control band we
+can **exclude any effect larger than about a fifth of the full-dose +0.0364**. That is a bound, not
+a proof of zero.
+
+⚠ **Metric caveat (C-2) travels with this.** These two arms are dose-matched in the **variance**
+metric. In the **norm** metric they are 0.0543 and 0.0725 against a control band of 0.2437–0.3467 —
+i.e. far *below* the controls, not matched to them. The norm-matched arms are α=0.30 (0.2717,
+already generated as `dd12a03`) and α=0.38 (job 776471). **Gate DOSE is not closed until both
+metrics are read**, and if they disagree that disagreement is the finding.
+
+---
+
+### ★★ R-D (18:14) — GATE E7, PRELIMINARY: THE "MATCHED RANDOM CONTROL" IS ENORMOUSLY DISPERSED
+
+Same session. Three seed-matched `random:add:8-8:0.5` draws — the control band that experiment 7's
+interaction was resting on **one** draw of:
+
+| draw | seed | Δ ASR@0.5 | prompts |
+|---|---|---|---|
+| `r01` | 20260901 | +0.008081 | +4 |
+| `r02` | 20260902 | **−0.054545** | **−27** |
+| `r03` | 20260903 | **+0.113131** | **+56** |
+| | | **mean +0.022222, sd 0.084728** | **range 0.168 = 83 prompts** |
+
+**Three draws of the same intervention at the same dose span 83 prompts of 495.** For comparison,
+the whole published experiment-7 arm effect is −0.0357 (18 prompts).
+
+* The published arm `dS50` (−0.035719) sits at **z = −0.68** against this band.
+* The single control draw the −0.0886 interaction was computed against (`rnd50`, +0.052924) sits at
+  **z = +0.36** — an unremarkable member of a very wide band, which happened to fall on the high
+  side.
+
+The controls are also **not** gentle: median completion length goes 67 → 97 / 148 / 101 and the
+short-answer fraction 0.786 → 0.479 / 0.293 / 0.438. `random:add` at half a gap is a **large,
+high-variance perturbation**, not a light touch, and a single draw of it cannot support an
+interaction claim.
+
+⚠ **NOT YET A VERDICT, and deliberately so.** The arm here comes from the older `unlk` session while
+the band comes from `bnd2` — a **cross-session arm-vs-control contrast**, which is exactly the
+confound I criticised in this job's design and which does not cancel the way a paired
+arm-vs-baseline delta does. n=3 draws also gives the sd only 2 df. **The definitive read is job
+776397**, where all seven arms (`base`, `dS50`, `rnd50`, `rnd75`, `r01`, `r02`, `r03`) are judged in
+**one** session. Gate E7 will be decided there and nowhere else.
+
+---
+
 ### R-B (18:00) — the Phase 2 population is defined, balanced, and family-disjoint
 
 The filter, now expressible because `score_behavior.py` grew `--conditions` / `--bank-blocks` /

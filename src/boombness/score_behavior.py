@@ -676,9 +676,54 @@ def main() -> int:
             payload = torch.load(p, map_location="cpu", weights_only=False)
         run.note(population_filter=_pop_filter, population_composition=_pop_composition)
     if spec is not None:
+        # REALIZED DOSE, RECORDED RATHER THAN RECOMPUTED LATER (C-2).
+        # Until now a project_out run recorded ONLY its alpha: frac_cellmean_spread_removed is
+        # emitted on the in_subspace control branch and nowhere else, so the six partial-alpha
+        # arms of the L12 ladder carry no dose at all and every reader has to re-derive it from a
+        # fit payload. Worse, each was stamped dose_unit="gap ... for mode=add", boilerplate
+        # written unconditionally and inapplicable to project_out.
+        #
+        # BOTH metrics are recorded, deliberately. dose_cellmean_frac is a VARIANCE (squared)
+        # quantity; at alpha=1 the norm metric is its square root, a monotone transform, so every
+        # rank argument in this repo has been metric-invariant BY ACCIDENT. Partial alpha breaks
+        # that: variance removed goes as 1-(1-a)^2 ~ 2a while the perturbation NORM the model
+        # actually sees goes as a*sqrt(frac). At L12 the two disagree by an order of magnitude in
+        # alpha about which arm is "dose-matched" to the controls. Recording one and not the other
+        # would silently pick a side of that question.
+        dose_records = {}
+        if payload is not None:
+            try:
+                import math as _math
+                from insubspace_null_test import cellmean_dose as _cmd
+                for sp in specs:
+                    if sp["mode"] != "project_out":
+                        continue
+                    dname, alpha_v = sp["direction"], float(sp["alpha"])
+                    for L in sp["layers"]:
+                        vec = (payload.get(dname) or {}).get(L)
+                        if vec is None:
+                            continue
+                        frac = _cmd(payload, L, vec)
+                        if frac is None:
+                            continue
+                        dose_records[f"{dname}|L{L}|alpha{alpha_v:g}"] = {
+                            "alpha": alpha_v,
+                            "cellmean_frac_at_alpha1": frac,
+                            "realized_variance_frac_removed": frac * (1.0 - (1.0 - alpha_v) ** 2),
+                            "realized_norm_frac_removed": alpha_v * _math.sqrt(max(frac, 0.0)),
+                        }
+            except Exception as _e:      # never let provenance kill the run
+                dose_records = {"UNAVAILABLE": repr(_e)}
+            if dose_records:
+                print(f"[score] REALIZED DOSE {dose_records}", flush=True)
         run.note(intervention=spec, intervention_specs=specs, intervention_direction_file=p,
                      attn_implementation=_attn_impl,
-                     dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
+                     realized_dose=dose_records,
+                     dose_metric_note=("variance = frac*(1-(1-alpha)^2); norm = alpha*sqrt(frac). "
+                                       "They are NOT monotone-equivalent at partial alpha and they "
+                                       "disagree about dose-matching by ~10x in alpha (C-2)."),
+                     dose_unit=("gap (alpha=1 == one diff-of-means) for mode=add; "
+                                "for mode=project_out see realized_dose, NOT alpha"))
         print(f"[score] intervention {spec} from {os.path.basename(p)}")
 
     # LIVENESS ACCUMULATOR for attn_knockout. Counted per row so the run can PROVE the mask fired
