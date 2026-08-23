@@ -693,6 +693,48 @@ carries it.
 
 ---
 
+### ✅ R-Z (02:05) — **Review finding S6 CLOSED**, and a latent trap found on the way (affects no result)
+
+S6 was: *the three new banks were audited on Llama only.* Closed by running the repo's own
+`sb.demo_key_positions` over all three under the **Qwen3** tokenizer:
+
+| bank | rows | behavioral + natural_doublespeak | located | failures | demo tokens min/med/max |
+|---|---|---|---|---|---|
+| `basket_bomb` | 2736 | 468 | 456 | `no_demo_block` ×12 | 8 / 55 / 232 |
+| `basket_knife` | 2736 | 468 | 456 | `no_demo_block` ×12 | 9 / 62 / 279 |
+| `button_knife` | 2736 | 468 | 456 | `no_demo_block` ×12 | 9 / 62 / 279 |
+
+**All 12 failures per bank are `n_examples = 0` rows** — zero-shot, no demonstrations to block. Benign
+and expected. **S6 is closed: the new banks tokenize correctly on both models.**
+
+#### ⚠ The trap the audit surfaced — `demo_block` is non-empty on rows with ZERO demonstrations
+
+Chasing why only 12 of the 36 zero-shot rows failed turned up this, identically in the **main bank**
+and in all three new banks:
+
+```
+bank_block=core2x2    n_examples=0  ->  demo_block EMPTY      (12 rows)  ✅ consistent
+bank_block=strength   n_examples=0  ->  demo_block NON-EMPTY  (24 rows)  ⚠  51-167 chars
+```
+
+And `n_examples == n_demos_emitted` in **0 mismatches across all 2736 rows** of every bank — so this
+is *not* a miscount. The `strength` block varies instruction forcefulness
+(`strength ∈ {weak, medium, strong, aggressive}`, 24 rows each, `consistency='consistent'` throughout)
+and **that instruction text is stored in `demo_block`** even when zero demonstrations were emitted.
+
+**Why it is a trap.** `demo_all:attn_knockout` masks exactly the `demo_block` span. On a `strength`
+row it would therefore mask **the instruction, not demonstrations** — while the liveness gate, the
+pre-flight, and every downstream number all looked perfectly healthy, because the span exists and is
+locatable. An arm named "demonstration retrieval knockout" would be cutting something else entirely.
+
+**It affects nothing in this phase, twice over.** Phases 2, 3 and 4 all pass
+`--bank-blocks core2x2,core2x2_slot3`, which excludes `strength` outright; and they pass
+`--n-examples 1,2,4,8`, which excludes every zero-shot row regardless of block. R-U independently
+confirms the phase population is **96/96 located with zero failures**. Recorded so that the next
+person to widen `--bank-blocks` sees it before running, rather than after.
+
+---
+
 ### ✅ R-X (01:52) — **The knockout FIRES on Qwen3.** Smoke passed; the null-interpretation precondition is met before any arm is read.
 
 **Artifact:** `outputs/boombness/score_behavior/p4smokeC_20260824_010019_266131`, job **777061**,
