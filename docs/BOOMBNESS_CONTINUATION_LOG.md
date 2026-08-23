@@ -9952,3 +9952,34 @@ discriminate is exactly the thing a later reader would cite.
 | 653 | 2026-08-23 | recognised the shape: **number-matching cannot source claims here** | third check of mine to saturate |
 | 654 | 2026-08-23 | v3: does the answer **name** its artifact | deterministic, cannot saturate |
 | 655 | 2026-08-23 | **5 answers quote figures and name nothing** | Q1, Q2, Q3, Q5, Q7 — exactly the pre-08-22 ones |
+
+## Four of the five unsourced answers were traceable all along
+
+Yesterday's check flagged five §19 answers quoting figures with no artifact named. Today: **four of the
+five were traceable** — they had simply never said so. That is a documentation gap, not a provenance
+gap, and the distinction is worth having made rather than assumed.
+
+* **Q1** (+0.015…+0.027) and **Q3** (0.0138 / 0.0449 / 0.0485 / 0.0499) → `reanalyze_corrected_d_surface_cos.json`,
+  same run and contrast. ⚠ An **uncorrected twin** holds identical figures from the same run; the
+  corrected artifact is now the one cited, and the twin is named so nobody re-derives from it.
+* **Q5** and **Q7** → **a pair each**, and this is the interesting part. Their figures split cleanly
+  across the **withdrawn n=234** composition and the **clean n=90** one: ρ +0.307 / +0.2618 from
+  `g2_analysis_cwpos`, the −0.0518 / −0.0832 nulls from `_CLEAN`; incremental R² 0.0743 / 0.1091 from
+  `g9_three_predictor_cwpos`, +0.0378 / +0.0441 from `_CLEAN`. **Both answers are about what survives
+  cleaning**, so quoting both is correct — but they must never be compared as if from one row set,
+  which is R-9's error, and the citations now say which figure is which.
+
+**Q2 is the single remaining exception, and it is the real one.** Searched across every artifact and
+subdirectory; found in none. **12 of 13 answers sourced.**
+
+The shape here is worth naming: the sourcing check found five gaps, four dissolved on inspection, and
+the one that survived was the one I had already found by hand. A check whose hits are mostly benign is
+still worth running — it cost one tick to convert four unverifiable answers into verifiable ones, and
+it isolated the single genuine gap from the noise.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 656 | 2026-08-23 | traced Q1 and Q3 | `reanalyze_corrected_d_surface_cos`; uncorrected twin named |
+| 657 | 2026-08-23 | traced Q5 and Q7 | **a pair each** — withdrawn n=234 vs clean n=90 |
+| 658 | 2026-08-23 | named which figure comes from which artifact | quoting both without saying which is **R-9's error** |
+| 659 | 2026-08-23 | flagged answers **5 → 1** | **12 of 13 sourced**; only Q2 genuinely untraceable |

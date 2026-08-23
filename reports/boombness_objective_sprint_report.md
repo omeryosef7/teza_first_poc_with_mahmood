@@ -2648,10 +2648,17 @@ figures and name nothing** — **Q1, Q2, Q3, Q5, Q7**. (Q6 quotes no figures and
 legitimately name nothing.) The seven that are sourced are, without exception, the ones written or
 revised since 2026-08-22 — the older answers predate the practice.
 
-**Q2 is the one where this has been checked by hand, and it traces to nothing**: its figures were
-searched for across every artifact and every subdirectory and found in none, the apparent matches
-being float collisions in unrelated files. The other four are **unaudited, not disproven**. Treat a
-quoted magnitude in Q1, Q3, Q5 or Q7 as provisional until sourced.
+⬆ **Resolved 2026-08-23, same day: Q1, Q3, Q5 and Q7 are now sourced.** All four were traceable —
+they had simply never named their artifacts, which is a documentation gap, not a provenance one.
+Q1 and Q3 to `reanalyze_corrected_d_surface_cos.json`; **Q5 and Q7 to a PAIR each**, because both
+answers deliberately contrast the **withdrawn n=234** composition against the **clean n=90** one —
+`g2_analysis_cwpos` vs `_CLEAN`, and `g9_three_predictor_cwpos` vs `_CLEAN`. Those pairs are now
+named per figure, because quoting them without saying which is which is R-9's error.
+
+⛔ **Q2 remains the single exception, and it is the real one.** Its figures were searched for across
+every artifact and every subdirectory and found in **none** — the apparent matches are float
+collisions in unrelated files. **12 of 13 answers are sourced; Q2 is not, and its magnitudes stay
+provisional.**
 
 ⚠ **How to read the p-values in this section (added 2026-08-22).** Several answers below quote p-values **smaller than their design's attainable cluster floor** — e.g. **p<0.0001**, **0.0001** and **0.0077** on bank-based analyses that cluster on **6 domains**, where the smallest attainable two-sided cluster p is **2/2⁶ = 0.031**. Those are **bootstrap or parametric** p-values, legitimate as such, and they must **not** be read as clustered evidence. Per §0b's rule: quote the **confidence interval** for magnitude, and treat a cluster p only as a statement about cross-domain consistency. AdvBench answers cluster on **16** domains (floor 3.1e-5), so their p-values are attainable — but §14-B's `p_cl=0.0089` is a CR1 statistic, and the exact sign-flip value for that arm is **0.0078** (§0b). **No answer below changes as a result; the strength of several does.** *(An earlier draft of this note also listed **0.0014** as an example — that figure belongs to the **retracted** 4-draw band, not to any live answer here, and `retraction_sweep.py` caught the slip.)*
 
@@ -2662,6 +2669,8 @@ model's *reported meaning* of that codeword travels **59%** of the way from lite
 semantics move far more than the representation. It is not the same representation, and the gap between
 "what the model says the word means" and "where the token sits on the axis" is the sprint's most robust
 qualitative finding.
+
+**Sourced 2026-08-23:** `reanalyze_corrected_d_surface_cos.json` (`d_surface|cos`, contrast **C−A**, run `full_20260816_185942`) carries the +0.015…+0.027 range. ⚠ An uncorrected twin `reanalyze_d_surface_cos.json` holds the same figures from the same run; the **corrected** artifact is the one this answer cites.
 
 **2. Does the final `carrot` become more `bomb`-like than earlier `carrot`s?**
 **NO — it becomes LESS so, and the effect is positional rather than semantic.** Within-prompt paired
@@ -2694,7 +2703,7 @@ committed; the *sign* and the *control* claim are separately supported by §7's 
 **One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
 (+0.0485 → +0.0499, t = +5.9…+10.2) — one demonstration achieves the whole output-layer effect. L4–L12
 grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
-then saturate. ⚠ Pooled over query kinds; see C7.
+then saturate. ⚠ Pooled over query kinds; see C7. **Sourced 2026-08-23:** all four figures (0.0138, 0.0449, 0.0485, 0.0499) are in `reanalyze_corrected_d_surface_cos.json`, same run and contrast as Q1.
 
 **3b. What do demonstrations do to COMPREHENSION?** ⛔ **THIS ANSWER IS RETRACTED (2026-08-23, audit
 #16) — I published it five days after this report withdrew the instrument it uses.**
@@ -2758,6 +2767,8 @@ demonstrations** and **31% rows whose codeword readability was experimentally ma
 alone (n=60) it is **−0.0832 (p = 0.572)**. Two clean subsets, both null. n=90 cannot exclude a small
 effect, so this is a **null, not a proof of absence**, and a power experiment is running. Unaffected:
 G1, G3 and the probes, which filter on `bank_block`.
+
+**Sourced 2026-08-23, and the split matters.** The **retracted** headline figures (ρ +0.307, within-domain +0.2618, p 0.658) come from `g2_analysis_cwpos.json` — the **n=234** row set R-18 withdrew. The **clean** nulls (−0.0518; −0.0832 on `core2x2`) come from `g2_analysis_cwpos_CLEAN.json` — **n=90**, `slot0_only`. Quoting them side by side is the point of the answer; quoting either alone would misrepresent it.
 
 **5b. The same question at the OTHER readout position, like-for-like (added 2026-08-23).**
 `g9_three_predictor_lastpos.json` surfaced as an unwritten artifact and, on inspection, **should stay
@@ -2841,6 +2852,8 @@ refusalness **5 predictors against Boombness's 1** (R-13), and the corrected 1-v
 ~0.04 on n=90. **At matched df on clean rows neither predictor dominates**, and since Q5 is itself a
 null this question does not currently have a positive answer to give. @last token refusalness adds
 nothing (4.5e-07), which remains a position fact.
+
+**Sourced 2026-08-23, same split as Q5.** The incremental-R² figures **+0.0378 / +0.0441** are from `g9_three_predictor_cwpos_CLEAN.json` (**n=90**, post-R-18); **0.0743 / 0.1091 / 0.007** are from `g9_three_predictor_cwpos.json` (**n=234**, the withdrawn composition). Both are quoted deliberately — the answer is about what survives cleaning — but they must never be compared as if from one row set, which is R-9's error.
 
 **8. Do user-like / CoT-like framings increase Boombness?**
 ⛔ **RETRACTED — the answer is YES, by a little (retraction #6).** I reported a tight null; the paired
