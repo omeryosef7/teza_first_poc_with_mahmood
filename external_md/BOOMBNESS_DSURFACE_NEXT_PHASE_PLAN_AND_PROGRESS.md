@@ -637,6 +637,116 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ⛔⛔⛔ REVIEW-2 (22:20) — **THE PHASE 2 CEILING IS n=1. The headline it would have produced is "100% of the deletion ceiling" and it would have been WRONG.**
+
+Six adversarial reviewers, run *before* any Phase 2 number was published. All five `p2j_*` judge dirs
+are DONE at 96/96.
+
+#### ⛔ M1 — arm B's ceiling is ONE prompt replicated 96 times
+
+`row["final_query_text"]` takes **exactly 2 distinct values across all 1152 behavioral rows** of the
+bank (912× one hash, 240× another). The 96-row `--demo-deleted` population is therefore **one
+prompt**. Measured on the artifacts by hash (no text read):
+
+| arm | rows | **distinct generations** | distinct judge scores | **ASR@0.5** |
+|---|---|---|---|---|
+| `p2A` baseline | 96 | **96** | 8 | **0.2292** |
+| `p2B` ceiling | 96 | **1** | **1** | **0.0000** |
+| `p2C_all` (L0–31) | 96 | **24** | 1 | **0.0000** |
+| `p2C_band` (L6–14) | 96 | **96** | 4 | **0.0521** |
+| `p2D_ctrl` (L20–31) | 96 | **95** | 8 | **0.2083** |
+
+**The headline was already computable and already wrong:**
+`(0.2292 − 0) / (0.2292 − 0) = 1.000` — *"demonstration knockout recovers 100% of the
+deletion ceiling"* — with a **ceiling that is a single Bernoulli draw** and a numerator arm that
+collapses to 24 distinct outputs. `clustered_proportion_ci` degenerates and returns the iid Wilson
+`[0.0000, 0.0385]`, i.e. **±0.04 for n_eff = 1**. It does print a DEGENERATE warning, so this was
+loud-ish rather than fully silent — but the *published field* would have looked like a tight CI.
+
+#### ★ And the review simultaneously revealed where the REAL signal is
+
+The recovery fraction is broken, but **the arm-versus-matched-control contrast does not use the
+ceiling at all**:
+
+| arm | ASR | distinct generations |
+|---|---|---|
+| baseline | 0.2292 | 96 |
+| **`C_band` L6–14** | **0.0521** | **96** — non-degenerate |
+| **`D_ctrl` L20–31** (identical key set) | **0.2083** | 95 — non-degenerate |
+
+**Same demonstration tokens, different layers: 0.0521 against 0.2083.** Both arms keep 95–96 distinct
+generations, so neither is degenerate. That is the exactly-count-matched contrast D-10 was designed
+for, and it is *not* contaminated by M1.
+
+⚠ **`C_all` (all layers) is the degenerate one** — ASR 0.0000 but only **24 distinct generations**
+from 96 rows. Its zero is the `d_surface:add` failure mode again: the model stops producing varied
+output. **The all-layers arm must not be read as a mechanism result**, and the band arm must be
+checked for the same pathology before anything is claimed. **No Phase 2 number is being published in
+this tick.**
+
+#### ⛔ M2 — the in-subspace control this repo BUILDS cannot be dose-matched on a crossed bank
+
+`signals.py:594-598` constructs controls as `cos θ·basis[0] + sin θ·basis[1]` — a **2-D**
+Gram-Schmidt slice — and its rank guard fires only when rank **< 2**, never when rank **> 2**.
+
+* Single-pair bank: complement rank **2**, so the slice *is* the whole complement → the 6.2–12.4×
+  column is exactly attainable and **correct**.
+* Pooled 6-pair cloud: complement rank **15**, slice captures only **0.334–0.363** of it.
+
+| L | reported gap | **best-angle gap** | worst-angle gap |
+|---|---|---|---|
+| 6 | 1.354 | **1.626** | 10.00 |
+| 8 | 1.432 | **1.722** | 6.42 |
+| 10 | 1.605 | **1.946** | 5.45 |
+| 12 | 1.616 | **1.929** | 5.87 |
+| 18 | 1.353 | **1.516** | 10.34 |
+
+So the like-for-like improvement is 6.2–12.4× → **1.5–1.9×**, not 1.35–1.62×, and an arbitrary sweep
+index lands at **5–10×** — as unmatched as the single-pair bank. **On the real Phase 5 bank the
+in-subspace null would silently sweep 2 of 15 complement dimensions while calling itself a systematic
+sweep.** This is the most consequential *forward-looking* defect found today.
+
+#### ⛔ M3 — "24 cells" is false: 17 distinct, rank 16
+
+Cells B (`direct_harmful`) and E (`concept_in_benign_ctx`) carry **no codeword**, so they are
+byte-identical across banks sharing a concept (`maxabsdiff = 0.000e+00`). 24 rows → **17 distinct, 7
+duplicates**, which is why the artifact's spectrum has a 16th component at ~2e-7. Deduplicated:
+PC1 0.321–0.344, gap **1.25–1.34**, and `n_pcs_ge_0.10` drops 4→3 at L12. **Dedup makes the gate
+better**, so the PASS is not at risk — but R-M's three-digit numbers and its "4 comparable
+components" row describe an object no single bank can be.
+
+#### ✅ R-M's headline SURVIVES, and my own worry was refuted cleanly
+
+I asked the reviewers to test whether the PC1 drop is just an artifact of more cells. **It is not.**
+At matched n=8: pooling carrot_bomb dev + heldout (**zero crossing**) gives PC1 **0.77–0.88**, gap
+**5.1–10.1×** — the single-pair regime. Pooling carrot_bomb + button_knife at the *same* n=8 gives
+PC1 **0.40–0.42**, gap **1.4–1.7×**. 24 iid Gaussian rows give PC1 **0.049**. Doubling 24→48 cells
+moves PC1 by ≤0.013. **Crossing is the cause, not cell count.** Also confirmed: pairs sharing a
+codeword are much weaker (carrot_bomb + carrot_knife: PC1 0.604–0.650), and a **carrot-free**
+{button,basket}×{bomb,knife} bank still passes.
+
+**Verdict on R-M: NARROWED, not retracted.** The gate passes under every re-parameterisation tried
+— refit arm, dedup, carrot dropped, heldout added, narrower realizable family. What does **not**
+survive is the precision and the phrase *"nearly free"*: the honest figure is **1.5–1.9×
+realizable**, and the arm a crossed bank would actually fit has **cos 0.706–0.731** with the one I
+used and removes ~27% rather than ~84% of its bank's spread.
+
+#### Other confirmed findings
+
+**S3 — `--expect-n` is checked BEFORE `--limit` rewrites the rows**, and `run.note` then writes the
+**pre-limit** composition. So every 8-row smoke artifact records `n: 96`. The guard S1's fix exists
+for is defeated by `--limit`.
+**S1 — `judge_p2.sh` cannot see a dead judge**: bare `wait` returns 0 under `set -euo pipefail`
+(reproduced: a child exiting 7 still gives `ALL DONE`, script exit 0), and there is no `i == N`
+check. A judge dying mid-wave yields a missing arm the analysis silently omits.
+**S5 — `consistency='mixed'` demos never substitute the codeword** (`prompt_families.py:330-339`);
+latent since Aug 20. Zero blast radius on R-M (fits are core-2×2) but any consistency-axis result is
+broken.
+**S6 — the three new banks were audited on Llama only**, not both models; R-M's audit row is
+overstated.
+
+---
+
 ### ✅ R-Q (21:50) — THE PRIMARY PHASE 2 ARM IS GENERATED AND VERIFIED AT FULL SCALE
 
 **`p2C_all`** (job 776872, `demo_all:attn_knockout:0-31:1.0`, n=96):
