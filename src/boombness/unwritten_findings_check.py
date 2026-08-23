@@ -85,6 +85,27 @@ RETRACTED_ARTIFACTS = {
 }
 
 
+def empty_goal_tainted(path="outputs/boombness/empty_goal_leakage_check.json"):
+    """Artifacts resting on empty-goal judge runs, learned from the class-level scanner.
+
+    WHY THIS IS READ RATHER THAN HAND-LISTED. `RETRACTED_ARTIFACTS` below is maintained by hand, and a
+    hand-maintained list is what failed: it named only ClearHarm, so when the identical empty-goal
+    defect appeared in the Qwen3 arms this check offered them up as findings that SHOULD be written --
+    and they were. `empty_goal_leakage_check.py` decides the same question from the DATA (no
+    `goal_status` on any row AND `bank: null`), so consulting it means a newly-discovered tainted
+    artifact is suppressed here the moment the scanner sees it, without anyone remembering to edit a
+    list. Six artifacts are currently tainted-but-unquoted; those are precisely the ones a detector
+    like this would otherwise hand to a writer.
+    """
+    try:
+        d = json.load(open(path))
+    except Exception:
+        return {}
+    return {a["artifact"]: f"rests on {len(a['empty_goal_runs_cited'])} empty-goal judge run(s) "
+                           f"(R-14 class): {', '.join(a['empty_goal_runs_cited'][:3])}"
+            for a in d.get("artifacts", [])}
+
+
 def numbers_of(obj, out, depth=0):
     """Distinctive floats: 3+ decimals, not 0/1, not obviously an index."""
     if depth > 6:
@@ -124,6 +145,7 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
+    tainted = empty_goal_tainted()
     text = ""
     for p in ("reports/boombness_objective_sprint_report.md",
               "reports/boombness_objective_sprint_short_update.md"):
@@ -138,7 +160,8 @@ def main() -> int:
     per_art, counts = {}, {}
     for p in sorted(glob.glob("outputs/boombness/*.json")):
         b = os.path.basename(p)
-        if b in EXEMPT_EXACT or b in RETRACTED_ARTIFACTS or any(s in b for s in EXEMPT_SUBSTR):
+        if (b in EXEMPT_EXACT or b in RETRACTED_ARTIFACTS or b in tainted
+                or any(s in b for s in EXEMPT_SUBSTR)):
             continue
         try:
             blob = json.load(open(p))
@@ -211,6 +234,7 @@ def main() -> int:
             "exempted by name. For the rest, this asks whether silence was chosen or merely happened."),
         "exempted": sorted(EXEMPT_EXACT) + [f"*{s}*" for s in EXEMPT_SUBSTR],
         "exempted_because_retracted": RETRACTED_ARTIFACTS,
+        "exempted_because_empty_goal_tainted": tainted,
         "n_artifacts_checked": len(rows),
         "n_silent": len(silent),
         "min_rare_fingerprints_for_a_verdict": a.min_rare,

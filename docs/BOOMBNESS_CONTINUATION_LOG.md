@@ -9335,3 +9335,41 @@ attack rate is what *short because refusing* looks like.
 | 586 | 2026-08-23 | two live leaks were **new** | `qwen3_channel_test`, Qwen3 half of `section14_topical_asr` |
 | 587 | 2026-08-23 | those runs lack `goal_topicality` **entirely** | the conjunction had no topicality signal |
 | 588 | 2026-08-23 | recomputed → **strongest form of the result** | D20 **90% on-topic**, +0.4524 over its control |
+
+## Closed the loop: the detector now learns tainted artifacts from the scanner
+
+The class-level scanner still reported **3 live** empty-goal defects, and it was right to. My
+correction block sits in §14, but the **original citation sites** — lines 751 and 2248 — still
+presented the tainted tables with no warning. A reader arriving at either one would have taken them at
+face value. Both are now annotated in place.
+
+**One thing the annotation had to get right.** `goal_topicality` in these artifacts is computed from
+the **generations** (is the distinctive concept word present?), not from the judge's goal field — which
+is why topicality values exist even for runs whose judge output lacks the field, and why I nearly
+concluded the topical column was safe. It is not: **`ASR topical` is a conjunction whose first term is
+the tainted StrongReject score**, so both columns fall. The artifact's own
+`instrument_resolution` also declares `degenerate_single_bit: True` — topicality here is one token, a
+bool, with binomial CIs and no ability to resolve partial topicality.
+
+**The conclusion at line 751 survives its numbers.** The item claims that on Qwen3 refusal-removal alone
+does nothing while `d_surface` removal does the work. Re-judged: `C20` **0.1667** against a **0.1714**
+baseline — still nothing. The claim stands; the figures under it do not, and the annotation says
+exactly that rather than withdrawing the item wholesale.
+
+**Then the systematic half.** `unwritten_findings_check` kept a **hand-maintained** list of retracted
+artifacts, and a hand-maintained list is precisely what failed — it named only ClearHarm, so when the
+same defect appeared on Qwen3 the detector offered those artifacts up as findings that *should* be
+written, and I wrote one. It now **reads `empty_goal_leakage_check.json`** and exempts whatever the
+scanner has found. **Nine artifacts are exempted that way**, six of them tainted-but-unquoted — exactly
+the set a detector like this would otherwise hand to a writer. A newly-discovered tainted artifact is
+now suppressed the moment the scanner sees it, with no one needing to remember to edit a list.
+
+Silent artifacts: **6**, and the two largest (`g9_three_predictor_lastpos` 0/92,
+`null_ceiling_session_check` 0/28) only became visible after yesterday's sign-aware fix.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 589 | 2026-08-23 | annotated both tainted citation sites in place | a reader at line 751 or 2248 is now warned |
+| 590 | 2026-08-23 | checked whether topicality escapes the taint | **it does not** — its first conjunct is the tainted score |
+| 591 | 2026-08-23 | verified the line-751 **conclusion** against re-judged runs | `C20` 0.1667 vs 0.1714 — claim survives, figures do not |
+| 592 | 2026-08-23 | detector now **learns** taint from the scanner | 9 exempted, 6 of them tainted-but-unquoted |
