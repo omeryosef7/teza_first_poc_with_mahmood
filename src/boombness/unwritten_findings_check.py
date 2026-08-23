@@ -79,6 +79,14 @@ RETRACTED_ARTIFACTS = {
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json":
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "g8_comprehension_by_nexamples.json":
+        "RETRACTED (audit #16, R-6 class): computed on a forced-choice readout with median option "
+        "mass 4.4e-05, ~1000x below the fatal --min-option-mass 0.05 gate. Superseded by "
+        "g8_comprehension_by_nexamples_GATEPASS.json, on which the headline's SIGN REVERSES.",
+    "g8_comprehension_DF_arms.json":
+        "RETRACTED (audit #16, R-6 class): same sub-gate readout (option mass 4.2-7.0e-05). "
+        "Superseded by g8_comprehension_DF_arms_GATEPASS.json, on which the control row becomes a "
+        "flat null instead of -0.085..-0.135.",
     "coherence_lenfair.json":
         "a GATE artifact, not a finding: per-run coherence statistics for the len_* arms, whose role "
         "is to license or block other analyses. Its numbers belong next to whichever arm they gate, "

@@ -65,6 +65,18 @@ DELIVERABLES = ("reports/boombness_objective_sprint_report.md",
 READOUT_SCRIPTS = ("analyze_g8.py", "analyze_g2.py", "analyze_g9.py", "analyze_position.py",
                    "summarize_section8.py", "summarize_section9.py")
 
+#: A hit on these is about a COMPONENT the script does not use in its headline, so it over-reports.
+#: Checked 2026-08-23 rather than assumed: `analyze_g2` reads `semantic_logodds` -- a forced-choice
+#: readout, so the gate genuinely applies to it -- but the code EXCLUDES it from the analysed family
+#: ("semantic_logodds is EXCLUDED because it is read on a different prompt"), and the headline
+#: correlates the d_surface PROJECTION against ASR, which option mass does not touch. So a g2 hit
+#: means "one excluded component came from a sub-gate run", not "this result is unreportable".
+#: Recorded rather than suppressed: the hit is still true, its consequence is just smaller.
+PARTIAL_DEPENDENCE = {
+    "analyze_g2.py": "uses semantic_logodds, but excludes it from the analysed family; the headline "
+                     "is a projection-vs-ASR correlation, unaffected by option mass",
+}
+
 
 def option_mass(run_dir):
     """Median p_coded+p_literal over rows that have both. None if the readout is absent."""
@@ -160,6 +172,8 @@ def main() -> int:
                 (runs[r]["median_option_mass"] for r in cited
                  if runs[r]["median_option_mass"] is not None), default=None),
             "artifact_named_in_a_deliverable": (b in text or b.replace(".json", "") in text),
+            "producer": producer,
+            "partial_dependence_note": PARTIAL_DEPENDENCE.get(producer),
         })
 
     live = [f for f in flagged if f["artifact_named_in_a_deliverable"]]
@@ -184,6 +198,29 @@ def main() -> int:
         "readout_scripts": list(READOUT_SCRIPTS),
         "named_a_sub_gate_run_but_gate_does_not_apply": skipped,
         "LIVE_in_a_deliverable": live,
+        # EVERY LIVE HIT, TRIAGED. A bare count reads as an alarm; these six were each checked on
+        # 2026-08-23 and none is an unreported defect. Kept as a map so a new hit stands out against
+        # a known set rather than disappearing into a number.
+        "live_triage": {
+            "g8_comprehension_by_nexamples.json":
+                "RETRACTED (audit #16). Appears live only because the report NAMES it inside its own "
+                "retraction notice -- the documented limitation of substring citation-detection. "
+                "Superseded by the _GATEPASS artifact, on which the headline's sign reverses.",
+            "g8_comprehension_DF_arms.json":
+                "RETRACTED (audit #16), same reason; superseded by the _GATEPASS artifact.",
+            "g8_comprehension_DF_arms_GATEPASS.json":
+                "FALSE POSITIVE. Flagged because wa_D is OVERRIDDEN -- but the override names the "
+                "SEMANTIC readout (mass 0.01205), while this analysis uses COMPREHENSION, where all "
+                "three runs measure 0.31-0.33, an order of magnitude above the gate. Verified.",
+            "g2_analysis_cwpos.json":
+                "PARTIAL. g2's forced-choice component (semantic_logodds) is excluded from its "
+                "analysed family; the headline is a projection-vs-ASR correlation, unaffected.",
+            "g2_analysis_cwpos_CLEAN.json": "PARTIAL, same as g2_analysis_cwpos.",
+            "coherence_steering.json":
+                "UNKNOWN PRODUCER -- no provenance and the name matches no readout script, so it is "
+                "flagged rather than skipped by design. Its content is coherence statistics, which do "
+                "not use the forced-choice readout; low priority, not yet formally cleared.",
+        },
         "runs": runs,
         "provenance": {"argv": sys.argv, "git_commit": git_commit_safe()},
     }

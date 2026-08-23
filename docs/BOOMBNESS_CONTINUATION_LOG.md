@@ -10056,3 +10056,44 @@ non-zero status from me in this sprint. Re-run without the pipe: exit **1**, as 
 | 665 | 2026-08-23 | built `guarded_commit.sh` — guards gate the commit | not a hook; the concurrent session is unaffected |
 | 666 | 2026-08-23 | tested it against a failing guard | prints `REFUSING`, exits **1**, git untouched |
 | 667 | 2026-08-23 | the test's own `rc` came from `tail` | **third** pipeline-hidden exit code this sprint |
+
+## Ran all five scanners together for the first time, and two had moved
+
+The data-side scanners were built at different times and had never been run in one pass. Doing so:
+
+| scanner | result |
+|---|---|
+| `shard_citation_check` | 0 partial-shard citations |
+| `answer_regenerability_check` | 0 flagged — 13/13 §19 answers sourced |
+| `empty_goal_leakage_check` | no new leakage |
+| `unwritten_findings_check` | **0 → 2 silent** |
+| `readout_gate_check` | **5 → 6 live** |
+
+**The two silent artifacts were the retracted sub-gate ones** — `g8_comprehension_by_nexamples` and
+`g8_comprehension_DF_arms`. Their silence is *correct*: I withdrew their content and replaced them with
+`_GATEPASS` versions. But the detector had no way to know that, so they read as gaps to be filled —
+the same trap that produced three re-published retractions. Both are now marked retracted, with the
+consequence recorded (the headline's **sign reverses** on the replacement, and the control row becomes
+a flat null). Silent back to **0**.
+
+**The new gate hit was `g2_analysis_cwpos_CLEAN`, which I cited in Q5 last tick** — so the scanner
+immediately tested my own newest citation. I had put `analyze_g2.py` on the readout-dependent list by
+assumption, so I checked it rather than trusting either the flag or the assumption. `analyze_g2` **does**
+read a forced-choice readout (`semantic_logodds`), so the gate genuinely applies to it — but the code
+**explicitly excludes** it from the analysed family (*"semantic_logodds is EXCLUDED because it is read
+on a different prompt"*), and the headline correlates the `d_surface` **projection** against ASR, which
+option mass does not touch. **Q5's citation stands; the scanner over-reports g2.** Recorded as a
+partial-dependence note rather than suppressed — the hit is true, its consequence is just smaller.
+
+**And all six live gate hits are now triaged in the artifact**: two retracted-and-named-in-their-own-
+notice, one verified false positive (the override names the *semantic* readout, not comprehension), two
+partial-dependence, one unknown-producer flagged by design. A bare "6 LIVE" reads as an alarm; a triaged
+six lets a *seventh* stand out instead of vanishing into a count.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 668 | 2026-08-23 | ran all five scanners in one pass, a first | two had moved since their last run |
+| 669 | 2026-08-23 | 2 silent = the **retracted** sub-gate artifacts | marked; the detector was offering them up again |
+| 670 | 2026-08-23 | new gate hit was **my own Q5 citation** from last tick | checked the assumption behind it |
+| 671 | 2026-08-23 | `analyze_g2` excludes its forced-choice component | **Q5 stands**; scanner over-reports, noted not suppressed |
+| 672 | 2026-08-23 | triaged all six live hits in the artifact | so a seventh stands out rather than joining a number |

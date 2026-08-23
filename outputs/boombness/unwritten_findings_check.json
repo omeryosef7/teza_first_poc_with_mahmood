@@ -25,6 +25,8 @@
     "qwen3_armD_natural_doublespeak.json": "R-14 class: treatment arms judged with --bank null (empty goal) against a real-goal baseline. Superseded by qwen3_l20_regoal.json (from q3rj2_*).",
     "qwen3_armD_benign_literal.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "g8_comprehension_by_nexamples.json": "RETRACTED (audit #16, R-6 class): computed on a forced-choice readout with median option mass 4.4e-05, ~1000x below the fatal --min-option-mass 0.05 gate. Superseded by g8_comprehension_by_nexamples_GATEPASS.json, on which the headline's SIGN REVERSES.",
+    "g8_comprehension_DF_arms.json": "RETRACTED (audit #16, R-6 class): same sub-gate readout (option mass 4.2-7.0e-05). Superseded by g8_comprehension_DF_arms_GATEPASS.json, on which the control row becomes a flat null instead of -0.085..-0.135.",
     "coherence_lenfair.json": "a GATE artifact, not a finding: per-run coherence statistics for the len_* arms, whose role is to license or block other analyses. Its numbers belong next to whichever arm they gate, and it was used exactly that way on 2026-08-23 to verify the runs behind the \u00a719 Q6b specificity table (both OK: uniq 0.712/0.723, trigram 0.021/0.018).",
     "insubspace_null_by_layer_rep1.json": "superseded: an n=4-angle null (its own caveat: 'sd is estimated from four points ... a t with df=3'). The live null carries 24 controls per layer -- insubspace_null_full24.json.",
     "null_ceiling_session_check.json": "its headline metric (per-session mean spread as a noise bound) was WITHDRAWN after the xL6 crossover showed the spread is real angle variation, not judge noise. Its ceiling/margin figures duplicate insubspace_null_full24.json. Silence here is correct.",
@@ -42,10 +44,10 @@
     "qwen3_channel_test.json": "rests on 3 empty-goal judge run(s) (R-14 class): q3_C20_20260818_174110_179027, q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028",
     "section14_topical_asr.json": "rests on 2 empty-goal judge run(s) (R-14 class): q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028"
   },
-  "n_artifacts_checked": 83,
+  "n_artifacts_checked": 86,
   "n_silent": 0,
   "min_rare_fingerprints_for_a_verdict": 5,
-  "n_untestable_too_few_rare_numbers": 11,
+  "n_untestable_too_few_rare_numbers": 12,
   "untestable": [
     {
       "artifact": "advbench_superadd_control.json",
@@ -145,6 +147,15 @@
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
+    },
+    {
+      "artifact": "readout_gate_check.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
     }
   ],
   "silent": [],
@@ -235,11 +246,10 @@
     {
       "artifact": "advbench_topicality_L12.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 5,
-      "n_fingerprints_tested": 5,
-      "n_fingerprints_found": 2,
+      "n_rare_fingerprints_tested": 4,
+      "n_fingerprints_tested": 4,
+      "n_fingerprints_found": 1,
       "example_hits": [
-        "0.400",
         "0.784"
       ],
       "written_up": true
@@ -252,6 +262,15 @@
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
+    },
+    {
+      "artifact": "answer_sourcing_check.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": true
     },
     {
       "artifact": "arm_signflip_hierarchy.json",
@@ -288,9 +307,9 @@
     {
       "artifact": "clearharm_decomposition_qwen3.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 35,
-      "n_fingerprints_tested": 35,
-      "n_fingerprints_found": 13,
+      "n_rare_fingerprints_tested": 34,
+      "n_fingerprints_tested": 34,
+      "n_fingerprints_found": 12,
       "example_hits": [
         "-0.0100",
         "0.0416",
@@ -305,7 +324,7 @@
       "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 44,
       "n_fingerprints_tested": 44,
-      "n_fingerprints_found": 16,
+      "n_fingerprints_found": 17,
       "example_hits": [
         "-0.0007",
         "0.0587",
@@ -329,13 +348,13 @@
       "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 37,
       "n_fingerprints_tested": 37,
-      "n_fingerprints_found": 6,
+      "n_fingerprints_found": 5,
       "example_hits": [
-        "0.0060",
         "0.0064",
         "0.245",
         "0.8411",
-        "0.853"
+        "0.853",
+        "0.861"
       ],
       "written_up": true
     },
@@ -371,7 +390,7 @@
     },
     {
       "artifact": "condition_profile_llama_len_B.json",
-      "named_in_deliverable": false,
+      "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 10,
       "n_fingerprints_tested": 10,
       "n_fingerprints_found": 4,
@@ -386,14 +405,11 @@
     {
       "artifact": "condition_profile_llama_projout.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 11,
-      "n_fingerprints_tested": 11,
-      "n_fingerprints_found": 4,
+      "n_rare_fingerprints_tested": 12,
+      "n_fingerprints_tested": 12,
+      "n_fingerprints_found": 1,
       "example_hits": [
-        "-0.0207",
-        "-0.1422",
-        "0.1283",
-        "0.1529"
+        "-0.0015"
       ],
       "written_up": true
     },
@@ -440,8 +456,8 @@
     {
       "artifact": "dose_vs_effect.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 50,
-      "n_fingerprints_tested": 50,
+      "n_rare_fingerprints_tested": 49,
+      "n_fingerprints_tested": 49,
       "n_fingerprints_found": 6,
       "example_hits": [
         "-0.0092",
@@ -464,8 +480,8 @@
     {
       "artifact": "e12_codeword_control_cosines.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 130,
-      "n_fingerprints_tested": 130,
+      "n_rare_fingerprints_tested": 129,
+      "n_fingerprints_tested": 129,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.5253",
@@ -477,15 +493,15 @@
     {
       "artifact": "e12_concept_swap_cosines.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 118,
-      "n_fingerprints_tested": 118,
-      "n_fingerprints_found": 14,
+      "n_rare_fingerprints_tested": 121,
+      "n_fingerprints_tested": 121,
+      "n_fingerprints_found": 15,
       "example_hits": [
+        "0.429",
         "0.4948",
         "0.495",
         "0.5264",
-        "0.561",
-        "0.572"
+        "0.561"
       ],
       "written_up": true
     },
@@ -501,12 +517,10 @@
     {
       "artifact": "e6_button_knockout.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 54,
-      "n_fingerprints_tested": 54,
-      "n_fingerprints_found": 1,
-      "example_hits": [
-        "0.0571"
-      ],
+      "n_rare_fingerprints_tested": 52,
+      "n_fingerprints_tested": 52,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
       "written_up": true
     },
     {
@@ -521,8 +535,8 @@
     {
       "artifact": "g11_role_full.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 28,
-      "n_fingerprints_tested": 28,
+      "n_rare_fingerprints_tested": 27,
+      "n_fingerprints_tested": 27,
       "n_fingerprints_found": 2,
       "example_hits": [
         "-0.123",
@@ -544,25 +558,27 @@
     {
       "artifact": "g1_g3_analysis.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 256,
-      "n_fingerprints_tested": 256,
+      "n_rare_fingerprints_tested": 257,
+      "n_fingerprints_tested": 257,
       "n_fingerprints_found": 5,
       "example_hits": [
-        "-0.023",
         "0.0306",
         "0.412",
         "0.717",
-        "0.9992"
+        "0.9992",
+        "1.135"
       ],
       "written_up": true
     },
     {
       "artifact": "g1_stratified.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 258,
-      "n_fingerprints_tested": 258,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
+      "n_rare_fingerprints_tested": 265,
+      "n_fingerprints_tested": 265,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.359"
+      ],
       "written_up": true
     },
     {
@@ -590,35 +606,37 @@
     {
       "artifact": "g2_analysis_POWER.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 156,
-      "n_fingerprints_tested": 156,
-      "n_fingerprints_found": 2,
+      "n_rare_fingerprints_tested": 159,
+      "n_fingerprints_tested": 159,
+      "n_fingerprints_found": 4,
       "example_hits": [
-        "-0.068",
-        "0.475"
+        "-0.135",
+        "0.297",
+        "0.475",
+        "0.493"
       ],
       "written_up": true
     },
     {
       "artifact": "g2_analysis_cwpos.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 149,
-      "n_fingerprints_tested": 149,
+      "n_rare_fingerprints_tested": 146,
+      "n_fingerprints_tested": 146,
       "n_fingerprints_found": 4,
       "example_hits": [
         "0.2618",
         "0.319",
-        "0.442",
-        "0.538"
+        "0.410",
+        "0.442"
       ],
       "written_up": true
     },
     {
       "artifact": "g2_analysis_cwpos_CLEAN.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 160,
-      "n_fingerprints_tested": 160,
-      "n_fingerprints_found": 7,
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 169,
+      "n_fingerprints_tested": 169,
+      "n_fingerprints_found": 8,
       "example_hits": [
         "-0.0518",
         "-0.052",
@@ -644,10 +662,11 @@
     {
       "artifact": "g3_clustered_intervals.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 49,
-      "n_fingerprints_tested": 49,
-      "n_fingerprints_found": 1,
+      "n_rare_fingerprints_tested": 52,
+      "n_fingerprints_tested": 52,
+      "n_fingerprints_found": 2,
       "example_hits": [
+        "0.354",
         "0.783"
       ],
       "written_up": true
@@ -664,11 +683,13 @@
     {
       "artifact": "g3_dynrange.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 9,
-      "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 1,
+      "n_rare_fingerprints_tested": 56,
+      "n_fingerprints_tested": 56,
+      "n_fingerprints_found": 3,
       "example_hits": [
-        "-0.784"
+        "-0.0832",
+        "-0.784",
+        "1.065"
       ],
       "written_up": true
     },
@@ -684,8 +705,8 @@
     {
       "artifact": "g3_wholeanswer_block24.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 26,
-      "n_fingerprints_tested": 26,
+      "n_rare_fingerprints_tested": 25,
+      "n_fingerprints_tested": 25,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": true
@@ -693,8 +714,8 @@
     {
       "artifact": "g3_wholeanswer_codeword24.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 8,
-      "n_fingerprints_tested": 8,
+      "n_rare_fingerprints_tested": 7,
+      "n_fingerprints_tested": 7,
       "n_fingerprints_found": 1,
       "example_hits": [
         "-0.110"
@@ -702,25 +723,22 @@
       "written_up": true
     },
     {
-      "artifact": "g8_comprehension_DF_arms.json",
+      "artifact": "g8_comprehension_DF_arms_GATEPASS.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 79,
-      "n_fingerprints_tested": 79,
-      "n_fingerprints_found": 8,
+      "n_rare_fingerprints_tested": 26,
+      "n_fingerprints_tested": 26,
+      "n_fingerprints_found": 2,
       "example_hits": [
-        "-0.088",
-        "-0.094",
-        "-0.120",
-        "0.401",
-        "1.116"
+        "0.347",
+        "0.415"
       ],
       "written_up": true
     },
     {
-      "artifact": "g8_comprehension_by_nexamples.json",
+      "artifact": "g8_comprehension_by_nexamples_GATEPASS.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 94,
-      "n_fingerprints_tested": 94,
+      "n_rare_fingerprints_tested": 0,
+      "n_fingerprints_tested": 0,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": true
@@ -740,9 +758,9 @@
     },
     {
       "artifact": "g9_three_predictor_cwpos_CLEAN.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 70,
-      "n_fingerprints_tested": 70,
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 72,
+      "n_fingerprints_tested": 72,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.0441",
@@ -754,8 +772,8 @@
     {
       "artifact": "g9_three_predictor_lastpos_CLEAN.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 98,
-      "n_fingerprints_tested": 98,
+      "n_rare_fingerprints_tested": 97,
+      "n_fingerprints_tested": 97,
       "n_fingerprints_found": 6,
       "example_hits": [
         "-0.0129",
@@ -808,8 +826,8 @@
     {
       "artifact": "insubspace_null_by_layer.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 14,
-      "n_fingerprints_tested": 14,
+      "n_rare_fingerprints_tested": 13,
+      "n_fingerprints_tested": 13,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": true
@@ -877,8 +895,8 @@
     {
       "artifact": "llama_arms_topical.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 6,
-      "n_fingerprints_tested": 6,
+      "n_rare_fingerprints_tested": 5,
+      "n_fingerprints_tested": 5,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.2190",
@@ -895,6 +913,21 @@
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
+    },
+    {
+      "artifact": "occurrence_contrast.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 36,
+      "n_fingerprints_tested": 36,
+      "n_fingerprints_found": 7,
+      "example_hits": [
+        "-0.0798",
+        "-0.0819",
+        "-0.1051",
+        "-0.1313",
+        "-0.154"
+      ],
+      "written_up": true
     },
     {
       "artifact": "orth_control_arms.json",
@@ -980,8 +1013,8 @@
     {
       "artifact": "q3dec_decomposition_L11.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 91,
-      "n_fingerprints_tested": 91,
+      "n_rare_fingerprints_tested": 92,
+      "n_fingerprints_tested": 92,
       "n_fingerprints_found": 7,
       "example_hits": [
         "-0.0119",
@@ -995,11 +1028,10 @@
     {
       "artifact": "qwen3_g2_analysis.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 130,
-      "n_fingerprints_tested": 130,
-      "n_fingerprints_found": 3,
+      "n_rare_fingerprints_tested": 132,
+      "n_fingerprints_tested": 132,
+      "n_fingerprints_found": 2,
       "example_hits": [
-        "-0.051",
         "0.315",
         "0.433"
       ],
@@ -1021,6 +1053,15 @@
       "written_up": true
     },
     {
+      "artifact": "readout_gate_check.json",
+      "named_in_deliverable": true,
+      "n_rare_fingerprints_tested": 1,
+      "n_fingerprints_tested": 1,
+      "n_fingerprints_found": 0,
+      "example_hits": [],
+      "written_up": false
+    },
+    {
       "artifact": "refusal_accounting.json",
       "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 10,
@@ -1038,8 +1079,8 @@
     {
       "artifact": "role_analysis.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 35,
-      "n_fingerprints_tested": 35,
+      "n_rare_fingerprints_tested": 38,
+      "n_fingerprints_tested": 38,
       "n_fingerprints_found": 6,
       "example_hits": [
         "-0.2807",
@@ -1065,23 +1106,23 @@
     {
       "artifact": "steering_analysis.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 86,
-      "n_fingerprints_tested": 86,
-      "n_fingerprints_found": 6,
+      "n_rare_fingerprints_tested": 87,
+      "n_fingerprints_tested": 87,
+      "n_fingerprints_found": 5,
       "example_hits": [
         "-0.0306",
         "-0.0366",
-        "-0.080",
         "0.0049",
-        "0.0179"
+        "0.0179",
+        "0.147"
       ],
       "written_up": true
     },
     {
       "artifact": "steering_band_real.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 56,
-      "n_fingerprints_tested": 56,
+      "n_rare_fingerprints_tested": 53,
+      "n_fingerprints_tested": 53,
       "n_fingerprints_found": 2,
       "example_hits": [
         "-0.0620",
@@ -1114,6 +1155,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "31baca2516ff50bf7460b7c712aeca901707ef72"
+    "git_commit": "ad06c13781beb8a84d47a58a5abb62088fe62aef"
   }
 }

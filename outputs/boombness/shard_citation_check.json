@@ -363,6 +363,6 @@
       "--out",
       "outputs/boombness/shard_citation_check.json"
     ],
-    "git_commit": "b9c574a782f9c14dc270535d8fea04cfb4c0e021"
+    "git_commit": "ad06c13781beb8a84d47a58a5abb62088fe62aef"
   }
 }

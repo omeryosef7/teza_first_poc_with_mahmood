@@ -149,6 +149,6 @@
       "--out",
       "outputs/boombness/answer_sourcing_check.json"
     ],
-    "git_commit": "147145aab58e8fe6476e54f06d189c10f8e99c8e"
+    "git_commit": "ad06c13781beb8a84d47a58a5abb62088fe62aef"
   }
 }

@@ -25,7 +25,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "UNKNOWN (no provenance, name unmatched) -- flagged, not skipped",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g2_analysis_MIXED_FOOTING_SUPERSEDED.json",
@@ -33,7 +35,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": false
+      "artifact_named_in_a_deliverable": false,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g2_analysis_POWER.json",
@@ -41,7 +45,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": false
+      "artifact_named_in_a_deliverable": false,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g2_analysis_cwpos.json",
@@ -49,7 +55,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g2_analysis_cwpos_CLEAN.json",
@@ -57,7 +65,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": false
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g2_analysis_lastpos.json",
@@ -65,7 +75,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": false
+      "artifact_named_in_a_deliverable": false,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g8_comprehension_DF_arms.json",
@@ -77,7 +89,9 @@
         "compFctrl_20260818_150952_3852348"
       ],
       "worst_median_option_mass": 4.14728911515283e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g8_comprehension_DF_arms_GATEPASS.json",
@@ -85,7 +99,9 @@
         "wa_D_20260818_190957_3891689"
       ],
       "worst_median_option_mass": null,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g8_comprehension_by_nexamples.json",
@@ -97,7 +113,9 @@
         "comp_rand_20260817_170557_1440154"
       ],
       "worst_median_option_mass": 3.193672864654218e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     }
   ],
   "readout_scripts": [
@@ -137,7 +155,9 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "UNKNOWN (no provenance, name unmatched) -- flagged, not skipped",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g2_analysis_cwpos.json",
@@ -145,7 +165,19 @@
         "base_20260816_203355_3985444"
       ],
       "worst_median_option_mass": 4.399710269353818e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+    },
+    {
+      "artifact": "g2_analysis_cwpos_CLEAN.json",
+      "sub_gate_runs_cited": [
+        "base_20260816_203355_3985444"
+      ],
+      "worst_median_option_mass": 4.399710269353818e-05,
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g2.py",
+      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
     },
     {
       "artifact": "g8_comprehension_DF_arms.json",
@@ -157,7 +189,9 @@
         "compFctrl_20260818_150952_3852348"
       ],
       "worst_median_option_mass": 4.14728911515283e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g8_comprehension_DF_arms_GATEPASS.json",
@@ -165,7 +199,9 @@
         "wa_D_20260818_190957_3891689"
       ],
       "worst_median_option_mass": null,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     },
     {
       "artifact": "g8_comprehension_by_nexamples.json",
@@ -177,9 +213,19 @@
         "comp_rand_20260817_170557_1440154"
       ],
       "worst_median_option_mass": 3.193672864654218e-05,
-      "artifact_named_in_a_deliverable": true
+      "artifact_named_in_a_deliverable": true,
+      "producer": "analyze_g8.py",
+      "partial_dependence_note": null
     }
   ],
+  "live_triage": {
+    "g8_comprehension_by_nexamples.json": "RETRACTED (audit #16). Appears live only because the report NAMES it inside its own retraction notice -- the documented limitation of substring citation-detection. Superseded by the _GATEPASS artifact, on which the headline's sign reverses.",
+    "g8_comprehension_DF_arms.json": "RETRACTED (audit #16), same reason; superseded by the _GATEPASS artifact.",
+    "g8_comprehension_DF_arms_GATEPASS.json": "FALSE POSITIVE. Flagged because wa_D is OVERRIDDEN -- but the override names the SEMANTIC readout (mass 0.01205), while this analysis uses COMPREHENSION, where all three runs measure 0.31-0.33, an order of magnitude above the gate. Verified.",
+    "g2_analysis_cwpos.json": "PARTIAL. g2's forced-choice component (semantic_logodds) is excluded from its analysed family; the headline is a projection-vs-ASR correlation, unaffected.",
+    "g2_analysis_cwpos_CLEAN.json": "PARTIAL, same as g2_analysis_cwpos.",
+    "coherence_steering.json": "UNKNOWN PRODUCER -- no provenance and the name matches no readout script, so it is flagged rather than skipped by design. Its content is coherence statistics, which do not use the forced-choice readout; low priority, not yet formally cleared."
+  },
   "runs": {
     "a8L12k1_20260821_134734_1125126": {
       "state": "PASS",
@@ -1843,6 +1889,6 @@
       "--out",
       "outputs/boombness/readout_gate_check.json"
     ],
-    "git_commit": "203a18f8b6b6c42445862a11ed5df88329113f1e"
+    "git_commit": "ad06c13781beb8a84d47a58a5abb62088fe62aef"
   }
 }
