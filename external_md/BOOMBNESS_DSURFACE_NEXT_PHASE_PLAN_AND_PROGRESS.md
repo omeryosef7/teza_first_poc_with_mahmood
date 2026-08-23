@@ -693,6 +693,97 @@ carries it.
 
 ---
 
+### ★★★★★ R-AD (03:52) — **PHASE 6: `d_surface` is NOT one direction. It is the sum of two orthogonal, equal-magnitude components — one carrying the CODEWORD, one carrying the CONCEPT.**
+
+The first Phase-6 tests need no GPU: the four `directions_fit_dev.pt` / `directions_fit_heldout.pt`
+already on disk answer them. **Neutral names throughout (`d_surface_pairX`), as the plan requires
+until invariance is established.**
+
+#### The split-half ceiling first — so nothing below can be dismissed as noise
+
+`cos(dev, heldout)` for the *same* pair, i.e. the same direction fitted on disjoint halves:
+
+| L | pair1 | pair2 | pair3 | pair4 | **mean ceiling** |
+|---|---|---|---|---|---|
+| 10 | 0.9858 | 0.9896 | 0.9872 | 0.9865 | **0.9873** |
+| 12 | 0.9875 | 0.9884 | 0.9886 | 0.9869 | **0.9879** |
+| 14 | 0.9902 | 0.9918 | 0.9927 | 0.9886 | **0.9908** |
+
+**These directions are measured almost noiselessly.** Any cross-pair cosine below the ceiling is a
+real difference, not estimation error.
+
+#### The structure — cross-pair cosines, dev fits, at L12
+
+| relationship | mean cos | **as fraction of ceiling** | pairs |
+|---|---|---|---|
+| same **CODEWORD**, different concept | 0.5308 | **0.5373** | p1~p2 0.5245, p3~p4 0.5371 |
+| same **CONCEPT**, different codeword | 0.5114 | **0.5177** | p1~p4 0.6083, p2~p3 0.4145 |
+| **differ in BOTH** | 0.0592 | **0.0599** | p1~p3 0.0919, p2~p4 0.0265 |
+
+**Sharing either factor gives ≈ ½ the ceiling. Sharing neither gives ≈ 0.** Identical picture at L10
+(0.498 / 0.508 / 0.014) and L14 (0.529 / 0.506 / 0.031).
+
+That is the exact signature of `d = (W + N)/√2` with **W ⟂ N**: same-codeword → 0.5,
+same-concept → 0.5, neither → 0.
+
+#### Fitting the model directly confirms it, and it holds at EVERY layer
+
+Decomposing the four unit directions as `d_pairX ≈ g + s_cw·W + s_cn·N`
+(W = the basket−button contrast, N = the bomb−knife contrast):
+
+| L | ‖W‖ | ‖N‖ | **cos(W,N)** | W var | N var | interaction | cos(d, rec) |
+|---|---|---|---|---|---|---|---|
+| 12 | 0.4900 | 0.4799 | **−0.0348** | 0.5115 | 0.4859 | 0.0652 | 0.9982 |
+| 14 | 0.4979 | 0.4864 | **−0.0178** | 0.5110 | 0.4870 | 0.0393 | 0.9993 |
+| 18 | 0.4992 | 0.4938 | **−0.0192** | 0.5057 | 0.4934 | 0.0382 | 0.9994 |
+| 22 | 0.5012 | 0.4992 | **−0.0226** | 0.5017 | 0.4977 | 0.0231 | 0.9998 |
+| 28 | 0.4973 | 0.4995 | **−0.0073** | 0.4970 | 0.5018 | 0.0299 | 0.9996 |
+| 31 | 0.5176 | 0.4934 | **−0.0064** | 0.5230 | 0.4753 | 0.0348 | 0.9994 |
+
+*(every layer 12–31 measured; the table samples it. `cos(W,N)` never leaves [−0.035, −0.004] and the
+interaction never exceeds 0.065.)*
+
+#### ⚠ What is BY CONSTRUCTION and what is not — this distinction is the whole result
+
+A saturated 2×2 has 4 cells and 4 degrees of freedom (`g`, `W`, `N`, interaction). So **these follow
+automatically and are NOT evidence**:
+* the residual *is* the interaction term;
+* its norm is identical across all four cells (it is ±the same vector);
+* `cos(d, rec)` is high **given** a small interaction.
+
+**These do not follow from anything and are the actual findings**:
+1. **`cos(W, N) ≈ −0.02`** — the codeword axis and the concept axis are **orthogonal**. Nothing forces
+   two contrasts of the same four vectors to be perpendicular.
+2. **`‖W‖ ≈ ‖N‖ ≈ 0.50`** and **W var ≈ N var ≈ 0.50** — the two factors contribute **equally**.
+3. **The interaction is only 2.3–6.5% and shrinks with depth** — the structure is genuinely additive,
+   not merely parameterisable.
+4. **Independent confirmation:** the cross-pair cosines above (0.53 / 0.51 / 0.06) were computed
+   **without fitting W or N at all**, and they match the additive prediction (0.5 / 0.5 / 0.0). Two
+   routes to the same structure.
+
+#### What this answers, and what it overturns
+
+**Phase 6 asked whether `d_surface` generalises across concepts. The answer is that the question was
+mis-posed.** It does not generalise and it is not concept-specific either — **it decomposes**, into a
+codeword-identity component and a concept-identity component of equal size, at right angles.
+
+**And this retro-explains R-C, R-V and R-W in one stroke.** On a single-pair bank there is one
+codeword and one concept, so W and N **cannot be separated** — they collapse into a single axis, which
+is exactly why `d_surface` absorbed **76–90% of a rank-3 span** on every single-pair bank and why no
+orthogonal control could be dose-matched. **The PC1 dominance was never a property of the model. It
+was a property of a design with one level per factor.**
+
+⚠ **The limit, stated plainly.** This is **2 codewords × 2 concepts**. `W` is *the basket-vs-button
+axis*, not "the codeword axis" in general, and `N` is *the bomb-vs-knife axis*. With two levels per
+factor, a main effect and its single contrast are the same thing. **The claim that these are general
+codeword/concept axes is NOT established** and requires a third level on at least one factor — which
+is the concrete next experiment, and is a bank-generation job of exactly the kind just done for
+`button_bomb`.
+
+⚠ Measured on **Llama** fits (`x2fit_*` carry `model: null` → `PRIMARY_MODEL`). Not yet checked on Qwen3.
+
+---
+
 ### ★★★★★ R-AC (03:38) — **🚦 THE BANK ACCEPTANCE GATE PASSES.** The crossed design has three comparable components where the single-pair design had one dominant axis.
 
 **Artifact:** `outputs/boombness/extract_boombness/x2fit_button_bomb_20260824_015451_272450`, job
