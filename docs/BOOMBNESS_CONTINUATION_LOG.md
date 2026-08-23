@@ -10462,3 +10462,47 @@ row's **own strikethrough of a different number** exempted the whole row.
 | 709 | 2026-08-23 | notice-scoped + per-occurrence narrowing | 17 → **2, both genuine** |
 | 710 | 2026-08-23 | `+0.056, p=0.0077` live in 2 places, **struck in gate 3** | superseded; ClearHarm arm B **p_cl 0.210 ns** |
 | 711 | 2026-08-23 | gate 3 cited ⛔ RETRACTED (R-6) ~~p=0.681~~ as live support | removed; row's own `~~` had exempted it |
+
+## The intervention pushed the instrument under its own gate
+
+Following last tick's hand-authored artifact into its class: of 125 tracked artifacts, exactly **one**
+carries an explicit hand-authored marker (`argv == ["-"]`, already fixed). The other 49 "suspect" ones
+are pre-provenance script outputs, and "no committed script names it" over-flags because output paths
+arrive via `--out`. So the class is smaller than the scan implied — but one member mattered:
+**`comprehension_signflip.json` has no provenance block at all, and I quoted its p=0.0312 / p=0.8750
+into decision-gate row 4 *this session*.** Same defect, committed by me, one tick after writing about it.
+
+`section4b_recompute.py` now regenerates that too. All six figures reproduce exactly, including both
+semantic arms.
+
+**Then the regeneration found something the report had wrong.** §2.6 cited the semantic effect as
+**+2.4073**. That is a *pooled* figure over two readouts, and the pooling hides a gate failure:
+
+| run | `comprehension_usage` | `semantic_forced_choice` | `semantic_one_word` |
+|---|---|---|---|
+| baseline | 0.3146 | 0.6014 | 0.0598 |
+| **`project_out` (the arm)** | 0.3056 | 0.6057 | **0.0253 — SUB-GATE** |
+| double-random control | 0.3083 | 0.5839 | 0.0526 |
+
+`semantic_one_word` supplies **816 of the 1104 rows (74%)** behind +2.4073, and it sits **below the 0.05
+option-mass gate on the `project_out` run alone** — baseline and control both clear it. **The
+intervention being measured is what pushes the instrument under its own gate.** That is R-6's failure
+mode exactly, on the semantic side rather than the comprehension side, and it was invisible because
+nobody checked the gate on the *arm* run: checking it on the baseline is not checking it.
+
+The conclusion **survives**. On the gate-passing readout alone (`semantic_forced_choice`, mass 0.61 on
+the arm) the effect is **+2.4528** — marginally *stronger* than the pooled number. Only the figure to
+quote changes. Report updated.
+
+**And I reproduced the bug I was fixing, inside the fix.** The gate display iterated a hardcoded readout
+tuple, which duplicated `comprehension_usage` and **omitted `semantic_one_word`** — the one readout the
+block exists to expose. Caught it in its own first output. It now enumerates whatever readouts the run
+actually has, which is what "address things by identity" means here.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 712 | 2026-08-23 | swept 125 artifacts for placeholder provenance | 1 explicit; the scan's other 49 over-flag |
+| 713 | 2026-08-23 | `comprehension_signflip.json` has **no provenance** — and I cited it this session | now regenerated; all 6 figures exact |
+| 714 | 2026-08-23 | option-mass gate checked **per run**, not just baseline | `semantic_one_word` **0.0253 SUB-GATE on the arm only** |
+| 715 | 2026-08-23 | that readout is **74%** of the pooled **+2.4073** | quote **+2.4528** (gate-passing); conclusion survives |
+| 716 | 2026-08-23 | my gate display omitted the readout it exists to expose | fixed to enumerate what the run has |

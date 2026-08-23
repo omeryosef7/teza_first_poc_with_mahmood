@@ -11,6 +11,7 @@ Pairing is on `prompt_id`; the estimand is the paired arm-minus-baseline mean ov
 rows, clustered on `domain`.
 """
 import argparse
+import itertools
 import json
 import math
 import os
@@ -23,6 +24,18 @@ ARMS = {
     "Dctrl_double_random": "outputs/boombness/score_behavior/wa_Dctrl_20260818_185458_3888977",
 }
 PUBLISHED = "outputs/boombness/section4b_whole_answer.json"
+# comprehension_signflip.json has NO provenance block at all, and this session quoted its
+# p=0.0312 / p=0.8750 into decision-gate row 4. Same defect as the hand-authored artifact above, so it
+# is regenerated here rather than trusted.
+SIGNFLIP = "outputs/boombness/comprehension_signflip.json"
+READOUTS = ("comprehension_usage", "semantic_forced_choice")
+
+
+# The two readouts carry DIFFERENT log-odds fields: comprehension rows have `comprehension_logodds`,
+# semantic rows have `semantic_logodds`. Hardcoding the comprehension field is the same blind spot
+# `readout_gate_check` had -- a function written for one readout, silently applied to another.
+LOGODDS = {"comprehension_usage": "comprehension_logodds",
+           "semantic_forced_choice": "semantic_logodds"}
 
 
 def rows(run, kind="comprehension_usage"):
@@ -36,8 +49,25 @@ def rows(run, kind="comprehension_usage"):
             r = json.loads(line)
             if r.get("query_kind") != kind:
                 continue
-            out[r["prompt_id"]] = (r["comprehension_logodds"], r["domain"])
+            out[r["prompt_id"]] = (r[LOGODDS[kind]], r["domain"])
     return out
+
+
+def exact_cluster_signflip(deltas_by_domain):
+    """Exact two-sided sign-flip over the 2^k assignments of cluster-mean signs.
+
+    With k informative clusters the smallest attainable two-sided p is 2/2^k -- 0.03125 at k=6. A p AT
+    the floor carries no effect-size information, which is exactly why the report may not quote the
+    parametric 0.00099 as clustered evidence.
+    """
+    means = [sum(v) / len(v) for v in deltas_by_domain.values()]
+    k = len(means)
+    obs = abs(sum(means) / k)
+    hits = 0
+    for signs in itertools.product((1, -1), repeat=k):
+        if abs(sum(s * m for s, m in zip(signs, means)) / k) >= obs - 1e-12:
+            hits += 1
+    return hits / (2 ** k), 2.0 / (2 ** k), k
 
 
 def cluster_stats(deltas_by_domain):
@@ -120,7 +150,57 @@ def main() -> int:
         print(f"  {name:26s} delta {m:+.4f}  CI [{ci[0]:+.4f}, {ci[1]:+.4f}]  "
               f"p {p:.5f}  n {len(common)}  k {k}")
 
+    # ---- option-mass gate, PER RUN and PER READOUT.
+    # Checking the gate on the BASELINE only is not a check: the intervention is exactly what can push
+    # a readout under it. Measured here -- `semantic_one_word` is 0.0598 at baseline and 0.0526 on the
+    # control, but 0.0253 on the `project_out` arm, i.e. sub-gate on the arm alone. That readout is
+    # 816 of the 1104 rows behind the pooled semantic figure the report used to quote.
+    import statistics
+    print("  option-mass gate (median per run x readout; gate 0.05):")
+    for label, run in [("base", BASE)] + list(ARMS.items()):
+        by = defaultdict(list)
+        with open(os.path.join(run, "results.jsonl")) as fh:
+            for line in fh:
+                r = json.loads(line)
+                by[r["query_kind"]].append(r["option_mass"])
+        # ⛔ Enumerate whatever readouts the run ACTUALLY has. A first version iterated a hardcoded
+        # tuple, which duplicated `comprehension_usage` and omitted `semantic_one_word` -- the one
+        # readout this block exists to expose. A gate display blind to the readout it is reporting on
+        # is the same defect as `readout_gate_check`'s, reproduced while writing its fix.
+        cells = []
+        for kind in sorted(by):
+            med = statistics.median(by[kind])
+            cells.append(f"{kind}={med:.4f}{' SUB-GATE' if med < 0.05 else ''}")
+        print(f"    {label:24s} " + "  ".join(cells))
+
+    # ---- exact sign-flip, both readouts, regenerating comprehension_signflip.json
+    sf_pub = json.load(open(SIGNFLIP))["results"]
+    signflip = {}
+    for kind in READOUTS:
+        base_k = rows(BASE, kind)
+        for name, run in ARMS.items():
+            arm_k = rows(run, kind)
+            common = sorted(set(base_k) & set(arm_k))
+            by_dom = defaultdict(list)
+            for pid in common:
+                by_dom[base_k[pid][1]].append(arm_k[pid][0] - base_k[pid][0])
+            pex, floor, k = exact_cluster_signflip(by_dom)
+            delta = sum(sum(v) / len(v) for v in by_dom.values()) / k
+            key = f"{kind}|{name}"
+            signflip[key] = {"delta": delta, "exact_cluster_p": pex,
+                             "attainable_floor": floor, "n": len(common), "domains": k}
+            want = sf_pub.get(key)
+            if want:
+                for field in ("delta", "exact_cluster_p"):
+                    if abs(signflip[key][field] - want[field]) > a.tol:
+                        mismatches.append(f"signflip {key}.{field}: recomputed "
+                                          f"{signflip[key][field]!r} vs published {want[field]!r}")
+            at_floor = " AT FLOOR (carries no effect size)" if abs(pex - floor) < 1e-12 else ""
+            print(f"  signflip {key:48s} delta {delta:+.4f}  p_exact {pex:.5f}{at_floor}")
+
     json.dump({"plan_section": "2.6 / report 4b",
+               "signflip": signflip,
+               "regenerates_signflip": SIGNFLIP,
                "regenerates": PUBLISHED,
                "estimand": "paired arm-minus-baseline comprehension_logodds, clustered on domain",
                "arms": result,
