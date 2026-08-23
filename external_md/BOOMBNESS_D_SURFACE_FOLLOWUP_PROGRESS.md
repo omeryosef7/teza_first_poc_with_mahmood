@@ -7069,6 +7069,40 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## 🔬 THE UNLOCK — plan §8 experiment 7 becomes TESTABLE, and is now being tested (774835)
+
+The eighth reversal's practical consequence: **five runs excluded as "degenerate" are usable**, so
+the experiment I closed as an evaluated negative can actually be run. Judging **9 arms in one
+session**:
+
+| tag | arm | gate status | why it is usable |
+|---|---|---|---|
+| `base` | untreated | ✅ pass (0.5414, by 0.041) | reference |
+| `dS0625` / `dS125` / `dS25` / `dS50` | `d_surface:add:8` at 0.0625 / 0.125 / 0.25 / 0.5 gap | ⛔ scorable-only | **uniq 0.853–0.873 > baseline 0.841** |
+| **`rnd50`** | `random:add:8` at **0.5 gap** | ⛔ scorable-only | **the magnitude-matched control** (same alpha, same gap-unit path) |
+| `rnd75` | `random:add:8` at 0.75 gap | ✅ pass | gate-clean control |
+| `refA` / `refB` | refusalness add at 1/8 and 1/4 gap | ⛔ scorable-only | uniq 0.874 / 0.903 |
+
+✅ **`dS50` vs `rnd50` is a properly magnitude-matched pair** (both α = 0.5 through the identical
+gap-unit path, both printed 3.027474 by the run-time diagnostic). That is the comparison experiment 7
+requires and has never had.
+
+⚠ **Pre-registered, before any judging returns:**
+- **`d_surface:add` suppresses ASR and the matched random control does not** ⇒ experiment 7 has a
+  positive answer, and it would be consistent with rows 4/5 (`d_surface` acting through the refusal
+  gate), since these arms shorten outputs.
+- **Both suppress** ⇒ it is a magnitude effect, not a `d_surface` effect.
+- **Neither moves** ⇒ experiment 7 closes as a *measured* negative for the first time — which is what
+  I claimed prematurely, on gate grounds, and will only now have earned.
+- ⚠ **ASR on these arms is floored by construction**: the baseline is already 0.0667 and these arms
+  *increase* refusal, so the measurable direction is **downward** with very little room. A null here
+  is weak evidence, and I am recording that before seeing it rather than as an excuse afterwards.
+
+⚠ **Waste I introduced and am not hiding:** the judging script hard-codes a baseline pass *and* my
+manifest also lists `base`, so the baseline is judged twice — **495 wasted calls**. Harmless to the
+result (each delta uses one baseline), but it is exactly the kind of duplicate a cardinality
+assertion would have caught if I had asserted on the *union* rather than the manifest alone.
+
 ## ⛔⛔ EIGHTH REVERSAL — THE COHERENCE GATE FLAGS REFUSAL, AND IT HAS BEEN EXCLUDING GOOD RUNS ALL SPRINT
 
 The seventh reversal's mechanism is not local to `d_surface:add`. I swept **every** gate verdict in
