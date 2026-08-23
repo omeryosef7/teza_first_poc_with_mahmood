@@ -632,6 +632,107 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★ R-F (18:52) — GATE E7 RESOLVED, AND THE `d_surface:add` SUPPRESSION IS A LENGTH COLLAPSE
+
+**Artifact:** `outputs/boombness_followup/gate_e7_band.json`, job **776397**, all seven arms judged
+in **one** session against one baseline, `n_common = 495`.
+
+**The band is real.** Four draws, four **distinct** source-generation fingerprints
+(`750f6d2c015ac672`, `6582903fb7777534`, `259d53ffb4b6ac6b`, `202512807893cee7`) — the R-12 guard
+passed, so this is not one draw restated. Absolute ASR@0.5:
+
+| draw | ASR | | |
+|---|---|---|---|
+| `rnd50` | 0.1292929292929293 | **mean** | **0.09848484848484848** |
+| `r01` | 0.07272727272727272 | **between-draw sd** | **0.07230282051179249** |
+| `r02` | 0.012121212121212121 | sem | 0.036151410255896244 |
+| `r03` | 0.1797979797979798 | baseline | 0.06464646464646465 |
+
+**The arm is the extreme of five but cannot clear the design's floor.** `dS50` ASR = **0.004040**,
+below all four controls. Δ pooled **−0.059848**, Δ clustered **−0.035719**, p_cl 0.025415,
+CI [−0.0664, −0.0050] — significant against *baseline*. Against the *band*: z = **−1.31**, and with
+four draws the best attainable rank-p is **1/5 = 0.20**. Note also `rnd75` = **+0.1909** pooled
+(p_cl 0.000637): random addition at 0.75 gap massively **raises** ASR.
+
+#### ⛔ And then the check that changes the reading
+
+`d_surface:add` does not make the model refuse. **It makes the model stop talking.**
+
+| arm | median chars | mean chars | frac < 80 ch | `scorable_frac` |
+|---|---|---|---|---|
+| baseline | 67 | 242.2 | 0.786 | 0.5414 |
+| **`dS50`** | **25** | **68.0** | **0.939** | **0.1172** |
+
+**The exp-7 "monotone dose-response" tracks length as tightly as it tracks dose.** Over the four
+rungs:
+
+| dose | ΔASR | median ch | frac<80 | `scorable_frac` |
+|---|---|---|---|---|
+| 0.0625 | −0.018476 | 33 | 0.830 | 0.4909 |
+| 0.125 | −0.022430 | 33 | 0.861 | 0.4545 |
+| 0.25 | −0.029272 | 33 | 0.929 | 0.3313 |
+| 0.50 | −0.035719 | 25 | 0.939 | 0.1172 |
+
+**r(dose, ΔASR) = −0.9775. r(frac_short, ΔASR) = −0.9623.** The "assumption-free" 1/4! = 0.042
+ordering argument cannot separate *"adding `d_surface` suppresses harmful compliance"* from
+*"adding `d_surface` progressively truncates the output, and a judge scores near-empty text as
+non-compliant."* Both are monotone in the same parameter.
+
+#### ★ The free, decisive test — condition the ASR on length (no GPU, no judging)
+
+Paired on `prompt_id`, both arms' completions ≥ T characters:
+
+| T | rows kept | baseline ASR | arm ASR | Δ |
+|---|---|---|---|---|
+| 0 | 495 | 0.064646 | 0.004040 | **−0.060606** |
+| 40 | 51 | 0.137255 | 0.039216 | −0.098039 |
+| **80** | **22** | **0.090909** | **0.090909** | **+0.000000** |
+| 120 | 21 | 0.095238 | 0.095238 | +0.000000 |
+| 200 | 19 | 0.105263 | 0.105263 | +0.000000 |
+| 400 | 15 | 0.133333 | 0.133333 | +0.000000 |
+
+**Exactly zero at every threshold from 80 characters up.** And the mechanism is explicit: of the
+**32** baseline successes, **30 have an arm completion under 80 characters** — the judge was scoring
+near-empty text — and only **2** still score ≥ 0.5.
+
+⚠ **The honest caveat, stated because it cuts against the neatness of the above.** Completion length
+is a **post-treatment** variable, so conditioning on it conditions on a **collider**: restricting to
+rows where the arm still produced long output preferentially selects rows where the intervention did
+little. So this does **not** prove the effect is an artifact. What it does establish is what the
+effect **is made of**: the suppression lives entirely in rows where the model emitted almost nothing.
+"Truncation" may be the mechanism rather than the confound — but then the finding is *"adding
+`d_surface` truncates generation"*, which is a very different claim from *"it suppresses jailbreak
+behaviour"*, and it is not a mechanism anybody would want to optimise.
+
+#### ★ The two directions are NOT symmetric, so the "bidirectional picture" does not survive
+
+| direction | ΔASR | median ch | mean ch | frac<80 |
+|---|---|---|---|---|
+| **removal** `project_out` L12 α=1.0 | **+0.036364** | **67** (= baseline) | **329.7** (> baseline 242.2) | 0.749 (< baseline 0.786) |
+| **addition** `add` 0.5 gap | −0.035719 | **25** | **68.0** | **0.939** |
+
+Removal makes the model talk **more** — consistent with the established refusal→full-answer
+conversion (median 67 → 2474 chars on the flips). Addition makes it talk **less**. These are not two
+faces of one axis; one is a behavioural conversion and the other is a length collapse. **The claim
+that removal and addition give a coherent bidirectional causal picture of `d_surface` is withdrawn
+here.**
+
+#### Gate E7 verdict, against its pre-registered criteria (§2)
+
+| criterion | verdict |
+|---|---|
+| survives the full control band | **NO** — extreme of five, but z = −1.31 and rank-p floor 0.20 at four draws |
+| stable sign | yes |
+| not driven by one pathological control | correct — the band is genuinely dispersed, sd 0.0723 |
+| meaningful under multiplicity | **NO** |
+| **not explained by generic perturbation magnitude** | **NOT SEPARABLE — and worse, it is explained by output length** |
+
+**⛔ Gate E7 FAILS. Experiment 7 is labelled exploratory/null and the phase moves on**, exactly as
+the pre-registration directed. This supersedes the follow-up line's "EXPERIMENT 7 ANSWERED —
+`d_surface:add` SUPPRESSES ASR, with a monotone dose-response."
+
+---
+
 ### ★★★ R-C (18:14) — GATE DOSE, PRELIMINARY: THE L12 EFFECT IS DOSE-DRIVEN. AT MATCHED DOSE IT IS EXACTLY ZERO.
 
 **Source:** job **776368** (`bnd2_*`), six runs, one session, common baseline
