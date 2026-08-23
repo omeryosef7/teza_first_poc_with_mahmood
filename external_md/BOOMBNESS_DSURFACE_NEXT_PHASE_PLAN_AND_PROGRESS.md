@@ -693,6 +693,64 @@ carries it.
 
 ---
 
+### 🔬 PHASE 6c LAUNCHED (04:56) — a **fourth codeword**, with the prediction written first
+
+R-AE registered that the ideal next test is a **third concept**, to ask whether `N` is a real axis or
+merely the single available chord of a *concept subspace*. That requires authoring a new demonstration
+pool, which is the expensive side. **A cheaper test of the same underlying model is available and is
+being run first**, reusing both existing pools: a **fourth codeword**.
+
+The model R-AE arrived at says identity is a **(K−1)-dimensional subspace** for a K-level factor. With
+K = 3 codewords that predicted rank 2 with two comparable components, and it held. **With K = 4 it
+predicts rank 3 with THREE comparable components** — a prediction that cannot be satisfied by the
+existing data and that the 3-codeword fit could not have been tuned to.
+
+**Pre-registered, before the fits land:**
+1. Codeword-mean matrix has **rank 3**, with three **comparable** singular² fractions (none dominant,
+   roughly 0.4 / 0.33 / 0.27) — *not* one large and two small.
+2. Mutual cosines of the four centred identities approach **−1/3**, the value four equidistant
+   zero-sum points must have (the 3-codeword case approached −0.5 and did: −0.539 / −0.505 / −0.454
+   at L18).
+3. **`cos(u_window, N) ≈ 0`** — the new codeword's identity is orthogonal to the concept axis.
+4. **`N` estimated from `{window}` alone still matches `N` from the other three at ≈ the split-half
+   ceiling** — an independent out-of-sample repeat of Test 1 on a codeword that did not exist when
+   `N` was named.
+
+**If (1) instead shows one dominant component, the (K−1)-subspace model is wrong** and R-AE's
+correction of R-AD would itself need correcting. That is the falsifier.
+
+**Codeword selection.** Re-screened 30 further candidates on the Qwen3 tokenizer for 1 token in all six
+surface forms; only **`window`** was both clean and unused (`bridge`/`tunnel` collide with the
+`city_bridge` domain; everything else splits). Banks: **2736 rows, 336 families, 0 alignment
+violations, 0 duplicate rows**, audits **2736 ok / 0 bad / 0 ambiguous / 0 violations** each.
+Jobs **777214** (`window_knife`), **777215** (`window_bomb`).
+
+#### ⚠ A generator refusal I walked into, and what it protected
+
+`window_bomb` **failed to generate on the first attempt** and the fit I had already queued for it
+(**777213**) **died in 20 s** rather than running on a missing file:
+
+```
+[prompt_families] REFUSING: 1 pool sentence(s) already contain 'window' incidentally, which breaks
+the exact-word-swap invariant for the families that draw them: ['news_report|harm[35]'].
+```
+
+The bomb pool contains **`windows`** — the *plural* — twice, and my `--incidental-replace window=pane`
+does an exact word swap, so it did not match. Corrected to **`windows=panes`**; the bank then built
+with `incidental_collisions_after_repair []`.
+
+**Two things worth recording.** First, **the guard did its job**: an incidental occurrence of the
+codeword inside a demonstration would have silently broken the exact-word-swap invariant the whole 2×2
+rests on, and it refused rather than producing a subtly wrong bank. Second, **I queued a fit for a
+bank that did not exist** — a sequencing error on my part. It cost 20 seconds because the SLURM
+wrapper failed loudly on the missing argsfile target, but the correct order is generate → verify →
+audit → submit, and the loop I wrote did not check the generator's exit status between steps.
+
+**`window_knife` is unaffected**: `grep -oiE "windows?"` over `demo_pools_knife.json` returns nothing,
+so no repair was needed there and 777214's bank is valid as built.
+
+---
+
 ### ★★★★★ R-AE / C-4 (04:22) — **PHASE 6b: the CONCEPT axis is real and invariant. The CODEWORD "axis" is not an axis. R-AD is half confirmed, half corrected — as pre-registered.**
 
 **Artifacts:** `x2fit_ticket_bomb_20260824_023003_275540` (job 777199, 6:55) and
