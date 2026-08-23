@@ -10201,3 +10201,46 @@ detail, and a missing pin for the +0.0560 successor figure) are verified and que
 | 682 | 2026-08-23 | Q2 sign is **behavioral-only**; other kinds positive | control claim survives in all three — the answer is still NO |
 | 683 | 2026-08-23 | withdrew my **"t is scale-invariant"** justification | false; only L16 matched, the layer I checked |
 | 684 | 2026-08-23 | Q5b renamed to the **CLEAN** artifact | it had cited the one it withdraws |
+
+## Upgraded the sourcing check from "names a file" to "the numbers are in that file"
+
+Audit #17's two mis-attributions — Q5 putting the clean p on the retracted artifact, Q5b naming the
+artifact its own paragraph withdraws — shared a cause: my sourcing check tested only whether **a
+filename appears near an answer**. Both answers named *a* file, so both scored "sourced" and the check
+reported 0 flagged. **Naming a file is not sourcing a number.**
+
+Now each quoted figure is checked against **the artifacts that answer names**. The corpus-wide
+float-collision problem that killed two earlier attempts does not arise, because the search space is
+the handful of files the answer points at rather than all ~200.
+
+**It flags 7, and they are not all defects — so I triaged them rather than shipping a count:**
+
+* **GENUINE — Q5's `0.0832` / `0.572`.** The core2x2 pair is in no artifact. This is audit #17's hit
+  and the reason for the upgrade.
+* **Under-cited — Q9, Q10, and Q5b (now fixed).** These quote figures from *more* sources than they
+  name. Q5b now names **both** CLEAN artifacts — it previously named only the retracted one and never
+  named its codeword-position source at all.
+* **Benign by construction — Q8's `0.175`/`0.972`** (the *retracted* F and p, quoted as withdrawn: a
+  retracted figure should not be in a live artifact), **Q4's `0.0625`/`0.125`** (dose parameters, not
+  measurements), **Q3b's `0.031`** (the 2/2⁶ cluster floor), **Q2's `0.004`** (a threshold).
+
+The triage is recorded in the artifact so a **new** hit stands out against a known set, rather than
+joining a number — the same treatment the gate scanner's six live hits got.
+
+**And the figure registry caught me twice in one edit.** Audit #17 noted that when the +0.0902 pin was
+deleted with its retracted figure, the **successor** (+0.0560, now live in both deliverables) inherited
+the property the pin existed for — and the pin did not transfer. Adding it: first attempt had **no
+capture group** and crashed the registry; second declared `SCOPE_REPORT_ONLY`, and the registry
+immediately reported the figure is quoted in the short update too — which is precisely what made it
+worth pinning. Corrected to `SCOPE_ALL`.
+
+Audit #17's findings 6 (the gate scanner computes a comprehension-only option mass and is blind to a
+sub-gate *semantic* readout) and 7 (`analyze_g2`'s `semantic_logodds` is excluded from the maxT family
+but **included** in the Holm family, verified not to change any decision) remain queued.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 685 | 2026-08-23 | upgraded sourcing: figures must be **in the named artifact** | filename-presence missed both audit-#17 mis-attributions |
+| 686 | 2026-08-23 | 7 hits, triaged rather than counted | 1 genuine, 3 under-cited, 3 benign by construction |
+| 687 | 2026-08-23 | Q5b now names **both** CLEAN artifacts | it had named the retracted one and omitted the other entirely |
+| 688 | 2026-08-23 | added the successor pin the deleted one predicted | **registry caught my missing capture group, then my wrong scope** |

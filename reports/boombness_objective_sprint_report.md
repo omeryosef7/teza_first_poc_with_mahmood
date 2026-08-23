@@ -2804,7 +2804,7 @@ error of putting two different row sets side by side.
 So the clean counterpart was generated instead — `--position last --slot0-only` with the identical
 block restriction, giving **the same 90 rows** (`core2x2` 60 + `role_style` 30) at both positions:
 
-**Every figure in this table is from `g9_three_predictor_lastpos_CLEAN.json`** (added 2026-08-23, audit #17 — this section previously named only the **retracted** `g9_three_predictor_lastpos.json`, the artifact its own paragraph withdraws).
+**Sources for this table:** the `last`-position column is from `g9_three_predictor_lastpos_CLEAN.json` and the `codeword_last` column from `g9_three_predictor_cwpos_CLEAN.json` — the two CLEAN artifacts, same 90 rows. (Added 2026-08-23, audit #17: this section previously named only the **retracted** `g9_three_predictor_lastpos.json`, the artifact its own paragraph withdraws, and never named the codeword-position source at all.)
 
 | | `codeword_last` | `last` |
 |---|---|---|

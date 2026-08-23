@@ -141,6 +141,15 @@ FIGURES = {
         r"`natural_doublespeak`\s*\|\s*420\s*\|\s*0\.1714\s*\|\s*0\.1667\s*\|\s*\*\*(0\.\d{3,4})\*\*",
         "outputs/boombness/qwen3_l20_regoal.json",
         ["table", "natural_doublespeak", "D20"], 5e-4),
+    # ADDED 2026-08-23 (audit #17). When the +0.0902 pin was deleted with its retracted figure, the
+    # SUCCESSOR figure inherited the property that pin existed for: +0.0560 is the live per-condition
+    # doublespeak delta and it now appears in BOTH deliverables, so it is the one that can diverge
+    # between them. The deleted entry's own comment said as much about its predecessor; the pin did
+    # not transfer with the claim.
+    "llama_condition_profile_doublespeak": (
+        r"\*\*\+?(0\.0560)\*\*[^|\n]{0,40}\|[^|\n]{0,30}\*\*\+?4\.30\*\*",
+        "outputs/boombness/condition_profile_llama_len_B.json",
+        ["conditions", "natural_doublespeak", "delta"], 5e-4),
     "layer_shape_p": (
         r"permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})",
         "outputs/boombness/layer_profile_shape_test.json", ["p_perm"], 2e-3),
@@ -175,6 +184,10 @@ FIGURE_SCOPE = {
     "state_L12_arm_delta": SCOPE_REPORT_ONLY,
     "state_mde": SCOPE_REPORT_ONLY,
     "qwen3_l20_D20_doublespeak": SCOPE_REPORT_ONLY,   # the corrected Qwen3 table lives only in the full report
+    # SCOPE_ALL, not REPORT_ONLY: I declared report-only and the registry immediately caught that
+    # the figure (with its +4.30 t-anchor) is quoted in the short update too -- which is exactly
+    # the property that made it worth pinning.
+    "llama_condition_profile_doublespeak": SCOPE_ALL,
     "layer_shape_p": SCOPE_ALL,
 }
 
