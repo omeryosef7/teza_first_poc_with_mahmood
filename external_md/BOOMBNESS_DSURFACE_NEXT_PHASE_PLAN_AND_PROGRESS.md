@@ -632,6 +632,66 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★ R-I (19:56) — THE PHASE 5 CROSSED BANK IS BUILT AND AUDITED CLEAN (CPU only, no new harmful content)
+
+R-H validated the design; this builds it. The factorial is **{carrot, basket, button} × {bomb,
+knife}** — six banks, 2736 rows each — of which **three already existed**, so only three were
+generated.
+
+**No new demonstration content was authored.** The demo pools are **concept**-specific
+(`demo_pools.json` → bomb, `demo_pools_knife.json` → knife) while the codeword is a free
+`--codeword` argument. Crossing *codewords* against the two existing concepts therefore needs
+**zero** new harmful text — only pool reuse. That is why the crossing runs over codewords rather
+than over the five extra concepts the screen offers.
+
+| bank | rows | alignment violations | incidental repairs |
+|---|---|---|---|
+| carrot × bomb *(existing)* | 2736 | **0** | — |
+| carrot × knife *(existing)* | 2736 | **0** | `knife → peeler` |
+| button × bomb *(existing)* | 2736 | **0** | {} |
+| **basket × bomb** *(new)* | 2736 | **0** | `basket → crate` |
+| **basket × knife** *(new)* | 2736 | **0** | `basket → crate`, `knife → peeler` |
+| **button × knife** *(new)* | 2736 | **0** | `button → switch`, `knife → peeler` |
+
+**Mandatory §2.4 tokenization audit, both models, all three new banks:** `rows ok=2736 bad=0
+ambiguous=0`, `token-alignment violations=0`, 312 of 1008 families checked (696 skipped as
+incomplete 2×2, the usual forced-choice split). Artifacts:
+`outputs/boombness/tokenization_audit/x2_{basket_bomb,basket_knife,button_knife}_*`.
+
+**Article-agreement check, run explicitly rather than assumed.** The apple bank was voided for
+**2,938 ungrammatical "a apple"** across 1,569 of 2,736 rows, so every inserted word in this
+factorial was checked for `a`+vowel / `an`+consonant across all six banks:
+**0 ungrammatical usages in all 16,416 rows.** `basket`, `button` and the repair words `crate`,
+`switch`, `peeler` are all consonant-initial, so the failure mode cannot arise — but it was measured,
+not argued.
+
+#### Two guards fired during the build, and both were right
+
+1. `prompt_families` **REFUSED** all three banks on the first attempt: `basket` occurs incidentally
+   in 4 farm_storage pool sentences and `button` in 1 game_manual sentence, which breaks the
+   exact-word-swap invariant. Fixed with `--incidental-replace`, which rewords **in memory** so
+   `demo_pools.json` stays byte-identical and every existing `pools_sha16` join remains valid.
+2. My first regeneration of the two **knife** banks still emitted **14 alignment violations each**,
+   because the knife *pool* needs its own `knife → peeler` repair regardless of the codeword — the
+   original knife bank used it and I had applied only the codeword repair. ⚠ **Those two banks were
+   written to disk with violations before I checked the meta**; they have been overwritten by clean
+   regenerations. A bank whose `n_alignment_violations` is nonzero must never be extracted from.
+
+**Status.** The bank half of Phase 5 is done and audited. The remaining half — extracting activations
+over the six banks and measuring the *real* crossed-bank spectrum (rather than R-H's pooled
+simulation of it) — **needs GPU and is blocked behind fair-share**.
+
+#### Operational: the second SLURM account is not a way out
+
+`sacctmgr` lists a second association, `gpu-students`, whose FairShare is **0.987162** against
+`gpu-research`'s **0.008108** (RawUsage 26,346,086 vs 0) — a ~120× better share, and my pending jobs
+sit at priority 100000408 against 100002939 for the jobs ahead of them. It is **not usable**: its
+partition `studentkillable` carries only `geforce_rtx_2080` (11 GB) and `titan` (~12 GB), so it holds
+**no L40S** and could not fit Llama-3.1-8B in bf16 even if the wrapper's hardware guard allowed it.
+Recorded so nobody re-derives this. The queue simply has to drain.
+
+---
+
 ### ★★★★ R-H (19:34) — PHASE 5's PREMISE IS CORRECT, AND IT IS ALREADY MEASURABLE: CROSSING PAIRS BREAKS PC1 DOMINANCE
 
 Phase 5 asks for a bank whose cell-mean covariance has **multiple comparable components**, so that
