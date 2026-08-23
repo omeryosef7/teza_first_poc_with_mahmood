@@ -374,6 +374,62 @@ plan would have revealed that — only reading the hook did.
 
 ## 7. BUGS / RETRACTIONS / CORRECTIONS (this phase)
 
+### ⛔⛔ C-2 (18:06) — MY OWN DOSE CLAIM IS HALF REFUTED: "dose-matched" IS METRIC-DEPENDENT
+
+An adversarial re-derivation (instructed to default to refuting me) **confirmed** the arithmetic of
+C-1 and then **broke the conclusion I drew from it**. Both halves matter.
+
+**CONFIRMED, and upgraded from extrapolation to measurement.** The L12 control band really is
+**0.0593825775943842 (angle23) – 0.120174685705822 (angle11)**, the ARM really is
+**0.820442884781259**, and "≤ 0.13" really is L10's `0.13155342189253746`. The removals I had
+*extrapolated* were re-derived by applying the actual hook algebra to the actual cell means and
+agree to **5e-8**: α 0.08 → **0.126020091450253**, α 0.06 → **0.0954995141712899**. The hook is
+linear (`h → h − α(h·u)u`), so `frac·(1−(1−α)²)` is exact, not an assumption. **dd12a008 is above
+the L12 ceiling and dd12a006 is inside it — that stands.** A bonus: the L12 complement's *geometric*
+ceiling is 0.120197429500161, so the sampled 24-angle max is **99.98%** of the attainable maximum —
+at L12 the ceiling is a hard bound, not a sampling artifact.
+
+**⛔ REFUTED — "α 0.0459 is mid-band" is wrong.** 0.073588 sits above only **8 of 24** controls: the
+**33rd percentile**, i.e. low-band. The true median and range-midpoint coincide at
+**0.0897786**, which is **α = 0.056298**.
+
+**⛔⛔ AND THE DEEPER PROBLEM, which neither C-1 nor the follow-up log saw.** `dose_cellmean_frac`
+is a **variance** (squared) metric. At α = 1 the norm metric is its square root — a monotone
+transform — so every rank and isotonic argument in this repo has been **metric-invariant by
+accident**. **Partial α is the first place that invariance breaks**, because variance removed goes
+as `1−(1−α)² ≈ 2α` while the perturbation *norm* the model actually experiences goes as `α·|proj|`.
+Measured at L12:
+
+| metric | 24 controls span | arm α=0.08 | arm α=0.30 | α needed to match the band |
+|---|---|---|---|---|
+| **cell-mean variance removed** (the repo's `dose`) | 0.0594 – 0.1202 | **0.1260** | 0.4184 | **0.0369 – 0.0699** |
+| **cell-mean spread removed, Frobenius NORM** | 0.2437 – 0.3467 | 0.0725 | **0.2717** | **0.2690 – 0.3827** |
+| fraction of uncentred activation norm removed | 0.1360 – 0.2198 | — | — | 0.3213 – 0.5193 |
+
+**The arm-versus-control comparison — the entire point of dose matching — moves by roughly an order
+of magnitude in α depending on which metric is chosen.** Worse, the third metric is not even
+monotone with the first: it re-ranks the controls among themselves (argmax becomes angle15, not
+angle11). Ordering *within* the ladder is safe (all three are monotone in α); only the
+arm-vs-control matching flips.
+
+**DECISION D-7 — pre-register both metrics, and note the ladder already brackets both.** This is
+pre-registered now, before any of these arms has an ASR (verified: **none of the six `dd12a*` runs
+has a judge run**, so there is nothing yet to rank and nothing to select on):
+
+* **Variance-matched arm: `dd12a006`** (0.0955, inside 0.0594–0.1202) — and α **0.0563** submitted
+  to sit exactly at the band median 0.0898.
+* **Norm-matched arm: `dd12a03`** — α 0.30 gives norm 0.2717, which is **already inside** the norm
+  band 0.2437–0.3467. It was generated as a "too high" throwaway and turns out to be the
+  norm-matched point. α **0.38** submitted for the band's upper edge.
+* **Gate DOSE will be reported under BOTH metrics, separately labelled, and a disagreement between
+  them is itself the finding** — not something to resolve by choosing the flattering one.
+
+⚠ Two provenance defects found in passing: the six `dd12a*` runs record **only α** — no dose, no
+cosine, because `frac_cellmean_spread_removed` is emitted on the in-subspace control branch only —
+and every one of them is stamped `dose_unit = "gap (alpha=1 == one diff-of-means) for mode=add"`,
+boilerplate written unconditionally and **inapplicable to `mode=project_out`**. A reader could take
+α for a gap-unit dose.
+
 ### ⛔ P-0 (17:45) — THE THIRD WRITER SWEPT MY IN-PROGRESS FILES INTO ITS COMMIT
 
 At **17:40:43** the unattributed writer (§0.4) committed `9672cf04`, "the figure I promoted into a
