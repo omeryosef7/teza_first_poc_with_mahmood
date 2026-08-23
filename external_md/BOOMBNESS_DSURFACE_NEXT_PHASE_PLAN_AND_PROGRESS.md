@@ -637,6 +637,67 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★ R-R (22:30) — **THE PHASE 2 RESULT: knocking out demonstration attention at L6–14 drops ASR from 0.2292 to 0.0521, against an identically-count-matched control at 0.2083**
+
+This is the contrast M1 does **not** touch — it never uses the broken ceiling. Same demonstration key
+set, different layers, one judging session (776893), `n_common = 96`.
+
+| arm | ASR@0.5 | Δ vs baseline | refused | median chars | distinct lengths |
+|---|---|---|---|---|---|
+| **A** baseline | **0.2292** | — | 0.031 | 788 | 84/96 |
+| **C_band** L6–14 | **0.0521** | **−0.1771** | **0.010** | 771 | 77/96 |
+| **D_ctrl** L20–31 *(identical keys)* | **0.2083** | −0.0208 | 0.042 | 793 | 84/96 |
+
+**Arm minus control: −0.1562.** The control, cutting the *same* demonstration tokens at late layers,
+is nearly inert (−0.0208); the same cut at L6–14 removes three quarters of the attack success.
+
+**Per-domain, exact paired cluster sign-flip:**
+
+| domain | C_band | D_ctrl | net |
+|---|---|---|---|
+| city_bridge | 0.1250 | 0.3125 | −0.1875 |
+| farm_storage | 0.0625 | 0.1250 | −0.0625 |
+| game_manual | 0.0625 | 0.5625 | **−0.5000** |
+| instructional | 0.0000 | 0.0000 | 0.0000 |
+| lab_safety | 0.0625 | 0.1250 | −0.0625 |
+| news_report | 0.0000 | 0.1250 | −0.1250 |
+
+**5 of 6 domains negative, none positive. p = 2/32 = 0.0625.**
+
+⚠ **That p is EXACTLY the attainable floor.** With 5 informative domains the smallest two-sided
+cluster p this design can produce is 2/2⁵ = 0.0625, so **it cannot reach ≤ 0.05 no matter how large
+the effect is.** Per the sprint's own p-rule the honest statement is *"every informative domain moves
+the same way, at the design's floor"*, and the **magnitude** (−0.1562) is what should be quoted.
+
+#### What the effect is NOT — each checked rather than assumed
+
+* **Not degeneracy.** C_band keeps **77/96** distinct completion lengths (baseline 84/96). Contrast
+  `C_all` at all layers, which collapses to **24 distinct generations** and is excluded for exactly
+  this reason.
+* **Not a refusal effect.** Refusal *falls*, 0.031 → **0.010**. The model refuses **less** while
+  complying harmfully less.
+* **Not truncation.** Median 788 → **771**. This is not the `d_surface:add` length collapse (R-F),
+  where the median fell 67 → 25.
+
+#### ⛔ And the instrument that would normally settle "what are these completions?" cannot be used here
+
+`goal_topicality` is **0.0000 on the baseline too** (median 0.0000, `frac_zero` 0.990), and 1.000 on
+both intervened arms. That is **expected by construction on a doublespeak bank and not a red flag**:
+the goal is the carrot query with `carrot → bomb` substituted, so its distinctive word is *bomb* —
+and a *successful* doublespeak attack complies **while still speaking in the codeword**, so the
+completion never contains it. `goal_status` is `substituted` on 96/96 rows in all three arms, so the
+substitution fired; the metric simply cannot discriminate on this bank.
+
+**Consequence, stated plainly: what those completions actually contain is UNCHARACTERISED.** The
+effect is real, sizeable, controlled, and not explained by refusal, truncation or degeneracy — but
+the mechanism claim *"the model loses the carrot→bomb mapping and answers the literal question"* is a
+**hypothesis, not a finding**, and `goal_topicality` cannot test it here. A bank-appropriate
+instrument is needed before that sentence is written down as a result.
+
+**Status: the strongest causal result of the phase, and deliberately not over-claimed.**
+
+---
+
 ### ⛔⛔⛔ REVIEW-2 (22:20) — **THE PHASE 2 CEILING IS n=1. The headline it would have produced is "100% of the deletion ceiling" and it would have been WRONG.**
 
 Six adversarial reviewers, run *before* any Phase 2 number was published. All five `p2j_*` judge dirs
