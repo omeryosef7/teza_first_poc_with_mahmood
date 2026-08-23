@@ -9373,3 +9373,48 @@ Silent artifacts: **6**, and the two largest (`g9_three_predictor_lastpos` 0/92,
 | 590 | 2026-08-23 | checked whether topicality escapes the taint | **it does not** — its first conjunct is the tainted score |
 | 591 | 2026-08-23 | verified the line-751 **conclusion** against re-judged runs | `C20` 0.1667 vs 0.1714 — claim survives, figures do not |
 | 592 | 2026-08-23 | detector now **learns** taint from the scanner | 9 exempted, 6 of them tainted-but-unquoted |
+
+## The detector flagged an artifact that should stay silent — and that revealed a missing analysis
+
+`g9_three_predictor_lastpos.json` was the largest remaining silent artifact (0 of 92 rare numbers). It
+should **stay** silent: `row_composition` shows **n=234, `slot0_only: false`, `require_bank_block:
+null`**, with 36+36 sibling-family rows — **exactly the composition R-18 retracted**. Writing it up
+would have republished R-18's defect, and comparing it against the CLEAN codeword set would have
+repeated R-9's error of placing two different row sets side by side. Marked retracted.
+
+**But the reason it was silent pointed at a real gap:** there was no *clean* last-position counterpart
+at all, so the position contrast the report leans on in C8 had never been done like-for-like on the
+3-predictor model. `analyze_g9.py` takes `--slot0-only` and `--require-bank-block`, so it was one
+command away.
+
+Generated. **Same 90 rows at both positions** (`core2x2` 60 + `role_style` 30):
+
+| | `codeword_last` | `last` |
+|---|---|---|
+| boombness alone, R² | 0.0575 | **0.0043** |
+| refusalness alone, R² | 0.0513 | **0.0038** |
+| `n_examples` alone, R² | **0.0689** | **0.0689** |
+| boombness incremental over refusalness + `n_examples` | **+0.0460** | **+0.0077** |
+
+**`n_examples` comes out identical to four decimals**, which it must — same rows, and a predictor that
+cannot depend on where the readout is taken. That is a free internal check that the two fits differ
+*only* in the representational terms, and both collapse ~13×.
+
+**It strengthens C8 rather than restating it.** C8 asks whether the codeword-position finding is signal
+or estimation quality. The existing counter was that `refusalness`, fitted for a last-token readout,
+ought to do *better* at `last` and instead is a flat null. Now that holds on **identical rows with a
+matched fit**: refusalness falls 0.0513 → 0.0038, as far as boombness does. Whatever the codeword
+position has, both directions have it, and neither has it at the last token.
+
+**And at the last position there is nothing left to explain.** Controlling for demonstration count the
+boombness coefficient goes **−0.0129 → +0.0011** (permutation p **0.82 → 0.60**); the script's own
+verdict is **COLLAPSES**; `n_examples` adds **+0.0708** over both representational predictors combined,
+which add **+0.002** over each other. R-18's null, confirmed at a second readout position on clean rows.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 593 | 2026-08-23 | largest silent artifact inspected | **R-18-retracted composition** — should stay silent, marked |
+| 594 | 2026-08-23 | its silence exposed a **missing analysis**, not a missing write-up | no clean last-position 3-predictor fit existed |
+| 595 | 2026-08-23 | generated it, same 90 rows both positions | `n_examples` identical to 4 dp — a free validity check |
+| 596 | 2026-08-23 | both representational predictors collapse **~13×** at `last` | C8's argument now holds like-for-like |
+| 597 | 2026-08-23 | last-position verdict: **COLLAPSES** | R-18's null confirmed at a second position, clean rows |

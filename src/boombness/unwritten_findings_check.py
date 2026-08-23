@@ -79,6 +79,10 @@ RETRACTED_ARTIFACTS = {
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json":
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "g9_three_predictor_lastpos.json":
+        "R-18 composition: n=234 with slot0_only=false and require_bank_block=null, i.e. includes "
+        "sibling-family rows (36+36) and unrestricted blocks -- exactly what R-18 retracted. "
+        "Superseded by g9_three_predictor_lastpos_CLEAN.json (same 90 rows as the cwpos CLEAN set).",
     "clearharm_decomposition.json":
         "R-14: judged against an empty goal (goal_status None on all 179 rows). "
         "Superseded by clearharm_decomposition_regoal.json.",

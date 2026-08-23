@@ -2721,6 +2721,41 @@ alone (n=60) it is **−0.0832 (p = 0.572)**. Two clean subsets, both null. n=90
 effect, so this is a **null, not a proof of absence**, and a power experiment is running. Unaffected:
 G1, G3 and the probes, which filter on `bank_block`.
 
+**5b. The same question at the OTHER readout position, like-for-like (added 2026-08-23).**
+`g9_three_predictor_lastpos.json` surfaced as an unwritten artifact and, on inspection, **should stay
+unwritten**: it is computed on the **R-18-retracted row composition** (n=234, `slot0_only: false`,
+`require_bank_block: null`, including 36+36 sibling-family rows). Its numbers inherit exactly the
+defect R-18 was raised for, and comparing them to the CLEAN codeword-position set would repeat R-9's
+error of putting two different row sets side by side.
+
+So the clean counterpart was generated instead — `--position last --slot0-only` with the identical
+block restriction, giving **the same 90 rows** (`core2x2` 60 + `role_style` 30) at both positions:
+
+| | `codeword_last` | `last` |
+|---|---|---|
+| boombness alone, R² | 0.0575 | **0.0043** |
+| refusalness alone, R² | 0.0513 | **0.0038** |
+| `n_examples` alone, R² | **0.0689** | **0.0689** |
+| all three, R² | 0.1149 | 0.0766 |
+| boombness **incremental** over refusalness + `n_examples` | **+0.0460** | **+0.0077** |
+
+**`n_examples` is identical to four decimals at both positions**, which it must be — the same rows, and
+a predictor that does not depend on where the readout is taken. That is a free internal check that the
+two fits differ *only* in the representational predictors, and both collapse by a factor of ~13.
+
+**This strengthens C8's argument rather than restating it.** C8 concerns whether the codeword-position
+finding is really about signal or merely about estimation quality. The existing counter was that
+`refusalness`, fitted for a *last-token* readout, should by that story do **better** at `last` — and is
+a flat null there. Now the same claim holds on **identical rows with a matched fit**: refusalness falls
+0.0513 → 0.0038, as far as boombness does. Whatever the codeword position has, both directions have it
+and neither has it at the last token.
+
+⚠ **At the last position there is simply nothing to explain.** Controlling for demonstration count, the
+boombness coefficient goes **−0.0129 → +0.0011** (permutation p **0.82 → 0.60**), and the script's own
+verdict is **COLLAPSES**. `n_examples` adds **+0.0708** over both representational predictors combined,
+which add **+0.002** over each other. This is R-18's null, confirmed at a second readout position on
+clean rows.
+
 **6. Does Boombness predict ASR better than refusalness?**
 **No.** ⛔ The 3.7× is retracted — it compared the two probes at *different tokens*. At matched footing
 neither dominates: ratio **1.54** [0.64, 3.60] @last and **0.75** [0.33, 1.13] @codeword_last, both CIs
