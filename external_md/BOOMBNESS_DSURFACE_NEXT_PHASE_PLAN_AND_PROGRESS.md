@@ -693,6 +693,95 @@ carries it.
 
 ---
 
+### ★★★★★ R-V / C-3 (00:58) — **The Qwen3 `d_surface` control is not a hard control. It is geometrically incapable of being one, and the +0.3810 headline inherits the dose confound.**
+
+Phase 4's stated prerequisite was "add a Qwen3 dose ladder before quoting +0.3810 as
+direction-specific." **The ladder is not needed to settle it.** The answer is available in closed form
+from the fit payload, costs no GPU, and does not depend on a seed.
+
+**Provenance.** Fit `outputs/boombness/extract_boombness/qwen3depth_cw_20260817_185906_1242529/directions_fit_dev.pt`
+(`Qwen/Qwen3-14B`, `codeword_last`, `enable_thinking=false`) — named as `fit_dir` by BOTH the arm run
+`outputs/boombness/score_behavior/q3B11_20260821_155952_4084982`
+(`--intervene d_surface:project_out:11-11:1.0`) and the control run
+`outputs/boombness/score_behavior/q3B11ctrl_20260821_160051_2982112`
+(`--intervene in_subspace_orth:project_out:11-11:1.0`, `seed 20260901`). The control direction is
+deterministic: `control_seed = args.seed` (`score_behavior.py:1028`) and the draw uses
+`seed = control_seed + L = 20260912`. **`git log a6ce5269..HEAD -- src/boombness/signals.py` is empty**,
+so the function reproduced below is byte-identical to the one that ran.
+
+#### The geometry
+
+The centred cell-mean matrix (4 cells A/B/C/E) has **rank 3**. Projecting out `d_surface` at L11
+removes **0.899699** of its total spread. Therefore:
+
+| quantity | value | vs the arm |
+|---|---|---|
+| **ARM** `d_surface` @ L11 | **0.899699** | — |
+| **CEILING** — the most *any* direction orthogonal to `d_surface` inside the span can remove | **0.100301** | **8.97× less** |
+| **BEST POSSIBLE** single orthogonal direction (top PC of the residual) | **0.064025** | **14.05× less** |
+| **ACTUALLY USED** `in_subspace_orth`, seed 20260912 | **0.036289** | **24.79× less** |
+| isotropic `random` control, for reference | 0.000083 | 10 800× less |
+
+Residual spectrum after removing the arm axis: **[0.064025, 0.036276, 0, 0]** — only two non-zero
+components exist, and **the control landed on the weaker of the two.** `cos(control, arm) = −0.00000`,
+so the orthogonality is exact; the weakness is not a bug in the control, it is the whole complement
+being small.
+
+#### What that means in the arm's own units
+
+Converting each control dose to the `alpha` of `d_surface` that would realize it
+(`frac·(1−(1−α)²)`):
+
+* the control actually used ≡ projecting out `d_surface` at **α = 0.0204**
+* even the **best attainable** orthogonal control ≡ **α = 0.0362**
+
+On Llama — the one model where we *have* a ladder (R-N, job 776797, n=495) — **α = 0.03 gave
++0.0021 (p = 0.59) and α = 0.045 gave +0.0039 (p = 0.28), both n.s.** The Qwen3 control sits squarely
+in the range where, on the model we can check, *nothing happens at all.*
+
+#### C-3 — the correction
+
+> **"On Qwen3-14B at L11, `d_surface:project_out` raises doublespeak ASR +0.3810 (p=0.00031) while
+> the hard `in_subspace_orth` control is null (−0.0119, p=0.60; 6/6 LOO folds)."**
+> — superseded quotation; sources `reports/boombness_objective_sprint_report.md:3071`, `docs/BOOMBNESS_CONTINUATION_LOG.md:8930`,
+> `external_md/BOOMBNESS_D_SURFACE_FOLLOWUP_PROGRESS.md:6366`
+
+**The delta and the p-value are correct. The word "hard" is not, and the inference the sentence
+invites does not follow.** The control removed **25× less** of the design's variance than the arm.
+Its nullity is the expected behaviour of a 2%-dose intervention, not evidence that direction
+*identity* is what matters.
+
+**And this one cannot be repaired by choosing a better control.** Because `d_surface` absorbs 89.97%
+of a rank-3 span, **every** direction orthogonal to it is capped at 0.1003 — a dose-matched
+orthogonal control at L11 **does not exist**. This is the Llama PC1-dominance problem (R-C) appearing
+on Qwen3 in a *more* severe form: Llama's arm/control gap was 6–12×, Qwen3's floor is **8.97× and its
+realized gap 24.79×**.
+
+#### Consequences for the plan
+
+1. **Phase 4's Qwen3 dose ladder is CANCELLED as a specificity test, and the reason is recorded
+   rather than the stage being silently skipped.** A ladder varies α along the arm; it cannot
+   manufacture an orthogonal direction with a comparable dose, because none exists. Running it would
+   spend GPU to re-derive a fact already settled in closed form. *(A ladder would still answer a
+   different question — is the Qwen3 effect dose-graded like Llama's, or does it appear at low α? That
+   is worth knowing and is cheap, but it is a **mechanism** question, not the specificity gate, and it
+   is not what line 566 asked for.)*
+2. **Phase 5 is now load-bearing for BOTH models.** The bank-acceptance gate ("PC1 does not dominate;
+   multiple directions with comparable attainable doses") is not a Llama nicety — it is the only route
+   to a specificity claim on either model.
+3. **The cross-model story survives, and is arguably strengthened.** Llama and Qwen3 fail
+   identification *the same way and for the same geometric reason*. That is itself a finding about
+   this bank's design, and it is exactly what Phase 5 was written to fix.
+4. **The retrieval-knockout line (Phases 2–3) is untouched.** It involves no fitted direction and
+   therefore no dose confound — which is why R-C promoted it to the main line.
+
+⚠ **Scope.** This concerns the *specificity* claim only. It does not retract the measured Qwen3
+effect, the p-value, or the LOO folds. It also does not touch the separately-recorded caveat that
+**benign_literal shows +0.2562 (p = 0.0023)** — roughly two thirds of the effect reproducing on
+prompts with no doublespeak content — which points the same way from independent evidence.
+
+---
+
 ### R-U (00:41) — Phase 4 prerequisite: **the knockout CAN fire on Qwen3.** Tokenizer audit, no GPU.
 
 Before spending a GPU on a cross-model null, the mandatory question is whether the intervention is

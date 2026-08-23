@@ -55,6 +55,14 @@ RETRACTED = [
     ("C3  sign-blind '2-3x the controls'",   r"2[–-]3\s*[×x]\s*the\s*controls"),
     ("C6  wrong-population figures",         r"refusal rate[^|\n]*0\.583|\+7\.30\s*pp"),
     ("C9  depth-mismatched L31 claim",       r"L31 effect replicates"),
+    # ---- 2026-08-24. The Qwen3 L11 specificity claim called `in_subspace_orth` a HARD control.
+    # Measured from the same fit the run used: the control removes 0.036289 of the cell-mean
+    # spread against the arm's 0.899699 (24.79x less), and because d_surface absorbs 89.97% of a
+    # rank-3 span, EVERY orthogonal direction is capped at 0.100301 -- a dose-matched orthogonal
+    # control at L11 does not exist. The delta (+0.3810) and p (0.00031) are NOT retracted and
+    # are deliberately NOT matched here; only the "hard control" framing is.
+    ("C10 Qwen3 'hard' in_subspace_orth control",
+                                             r"hard\s+`?in_subspace_orth`?\s+control"),
     ("G1  chimera CI",                       r"\+23%\s*to\s*\+?135%"),
     ("superseded arm-F value",               r"arm F[^\n]{0,80}0\.474|0\.474[^\n]{0,40}arm F"),
     # ---- 2026-08-18 CONTINUATION SESSION. Five new retractions/corrections, added the SAME DAY

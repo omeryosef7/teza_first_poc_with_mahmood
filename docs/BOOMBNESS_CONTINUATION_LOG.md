@@ -8928,7 +8928,7 @@ understating what the sprint now knows.
 **Q9 — "does not replicate on Qwen3-14B" is no longer true.** `analyze_qwen3_decomposition.py` had been
 written for the `q3dec_` batch and **never run**; the audit-#13 shard fix surfaced it. On Qwen3 at
 **L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard
-`in_subspace_orth` control is **null** (−0.0119, p=0.60, 6/6 LOO folds) — notable because R-23 killed
+`in_subspace_orth` control is **null** (−0.0119, p=0.60, 6/6 LOO folds) ⛔ **CORRECTED 2026-08-24: "hard" is withdrawn.** That control realizes cell-mean dose **0.036289** vs the arm's **0.899699** (24.79× less), and since `d_surface` absorbs 89.97% of a **rank-3** span every orthogonal direction is capped at **0.100301** — a dose-matched orthogonal control at L11 does not exist. The delta and p stand; the specificity inference does not. See `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md` §R-V. — notable because R-23 killed
 the Llama causal reading precisely *because* an in-subspace direction reproduced the effect. ⚠ But
 two-thirds is non-specific: the same arm moves *benign* ASR **+0.2562**, leaving a doublespeak-specific
 excess of **+0.1248 (p=0.032 → 0.063 stratum-matched, 4/6 folds)**. So the ASR effect replicates on a
