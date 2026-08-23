@@ -637,6 +637,45 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ✅ R-Q (21:50) — THE PRIMARY PHASE 2 ARM IS GENERATED AND VERIFIED AT FULL SCALE
+
+**`p2C_all`** (job 776872, `demo_all:attn_knockout:0-31:1.0`, n=96):
+
+```
+PRE-FLIGHT: {'n_rows': 96, 'no_demo_block': 0, 'infeasible_control': 0,
+             'by_n_examples': {'1':{n:24,ok:24,bad:0}, '2':…, '4':…, '8':…}}
+LIVENESS  : {'n_rows': 96, 'frac_rows_decode_live': 1.0,
+             'median_decode_edits': 125440.0, 'min_decode_forwards': 384,
+             'median_n_demo_positions': 38.5, 'attn_implementation': 'eager'}
+```
+
+| check | result |
+|---|---|
+| pre-flight over the whole population | ✅ 96 rows, **24 per `n_examples` level**, 0 bad |
+| liveness | ✅ **1.000** of rows fired during decode |
+| **keys blocked == `n_demo_positions`** | ✅ **96 / 96 rows exactly** |
+| paired with arm A | ✅ **96 / 96** common `prompt_id`s |
+| kernel | ✅ eager, matching arms A and B |
+| `population_composition` | ✅ n=96 recorded (the S1 fix) |
+| median chars | A **788** → C_all **714** |
+
+The per-row key identity now holds at full scale, not just on the 8-prompt smoke: on every one of 96
+rows the mask blocked exactly the demonstration block and nothing else.
+
+#### Phase 2 judging armed — one session, five arms
+
+`scripts/judge_p2.sh` + `run_p2_judge.sh` fire automatically once all five arms are `DONE`, with a
+cardinality assert at 5 and a per-arm assert at 96 rows.
+
+**Why one session matters more here than anywhere else in the phase.** The headline is a **recovery
+fraction**, `(ASR_A − ASR_arm) / (ASR_A − ASR_B)`. **Both** the numerator and the denominator are
+**arm-vs-arm** contrasts, and cross-session judge drift does **not** cancel in those — it cancels
+only in a paired arm-vs-baseline delta, where the baseline is removed algebraically. Gate E7 was
+rendered unreadable by exactly this, and job 776368's design repeated it. **A ratio built from two
+contrasts is twice as exposed**, so all five arms are judged together or not at all.
+
+---
+
 ### ✅ R-P (21:41) — ARM C SMOKE PASSES, AND IT VERIFIES THE ONE THING THE `allpast` PROOF COULD NOT
 
 Job **776492** finally completed after **two preemptions** on `killable`. It is the cross-check on
