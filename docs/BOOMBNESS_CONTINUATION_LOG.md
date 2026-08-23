@@ -9418,3 +9418,48 @@ which add **+0.002** over each other. R-18's null, confirmed at a second readout
 | 595 | 2026-08-23 | generated it, same 90 rows both positions | `n_examples` identical to 4 dp — a free validity check |
 | 596 | 2026-08-23 | both representational predictors collapse **~13×** at `last` | C8's argument now holds like-for-like |
 | 597 | 2026-08-23 | last-position verdict: **COLLAPSES** | R-18's null confirmed at a second position, clean rows |
+
+## The specificity table the sprint needed was already committed
+
+Triaged the remaining silent artifacts. Two are **correctly** silent and are now marked as such with
+reasons: `insubspace_null_by_layer_rep1.json` is an **n=4-angle** null superseded by the 24-control
+version (its own caveat says "sd is estimated from four points … a t with df=3"), and
+`null_ceiling_session_check.json` computes the **per-session mean spread**, a noise bound I **withdrew**
+once the xL6 crossover showed that spread is real angle variation. Silence is the right state for both.
+
+**`condition_profile_llama_projout.json` was not.** Llama-3.1-8B, `project_out d_surface` against a
+**random-projection control**, paired by prompt id, differenced arm−control, domain-clustered, n=960
+across all six bank conditions:
+
+| condition | Δ (arm − control) | 95% CI | p_cl |
+|---|---|---|---|
+| **`natural_doublespeak`** | **+0.0902** | **[+0.0275, +0.1529]** | **0.0141** |
+| `direct_harmful` | +0.0556 | [−0.0873, +0.1984] | 0.363 |
+| `benign_remap` | +0.0417 | [−0.0275, +0.1108] | 0.182 |
+| `concept_in_benign_ctx` | +0.0399 | [−0.0272, +0.1071] | 0.187 |
+| `direct_codeword` | −0.0069 | [−0.1422, +0.1283] | 0.900 |
+| **`benign_literal`** | **−0.0015** | [−0.0207, +0.0176] | 0.844 |
+
+**Significant on exactly one condition, and it is the right one.** Every other interval contains zero,
+and `benign_literal` — where the codeword means what it says and there is nothing to decode — is **flat
+at −0.0015** with the tightest interval in the table. Removing `d_surface` raises attack success
+**specifically where the doublespeak mapping is in play**, not as a generic consequence of perturbing
+the residual stream.
+
+**This is the counterpart to the Qwen3 specificity failure.** There, `D20` moves `benign_literal` from
+0.0000 to **+0.2222** against a control at 0.0093. Here the same family of intervention on Llama moves
+benign by **−0.0015**. The two models genuinely differ on specificity, and until now the report had the
+bad half written up and the good half sitting in an uncited file.
+
+⚠ `p_cl = 0.0141` is below the six-domain floor of 2/2⁶ = 0.031, so it is a t on cluster means rather
+than an exact cluster p — the interval carries the claim. And this is the sprint bank, not AdvBench: it
+speaks to specificity across conditions, not to external-set magnitude.
+
+Silent artifacts: 5 → **2** (the other three now marked correct-silence).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 598 | 2026-08-23 | triaged the remaining silent artifacts | 2 **correctly** silent, marked with reasons |
+| 599 | 2026-08-23 | `condition_profile_llama_projout` was **not** | the per-condition specificity profile, uncited |
+| 600 | 2026-08-23 | significant on **one** condition, the right one | doublespeak **+0.0902**, benign **−0.0015** |
+| 601 | 2026-08-23 | paired against the Qwen3 specificity failure | report had the bad half written and the good half uncited |

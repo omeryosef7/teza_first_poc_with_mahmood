@@ -2762,6 +2762,36 @@ neither dominates: ratio **1.54** [0.64, 3.60] @last and **0.75** [0.33, 1.13] @
 straddling 1. ⚠ And the between-probe selection freedom is not matched (20 vs 10 candidate columns),
 which biases those ratios toward Boombness.
 
+**6b. Is the removal effect SPECIFIC to doublespeak? The per-condition profile (added 2026-08-23;
+`condition_profile_llama_projout.json`, committed and never written up).** Llama-3.1-8B,
+`project_out d_surface` against a **random-projection control**, paired by prompt id, differenced
+arm−control, aggregated to domain cluster means, n=960 across all six bank conditions:
+
+| condition | Δ (arm − control) | 95% CI (domain-clustered) | p_cl |
+|---|---|---|---|
+| **`natural_doublespeak`** | **+0.0902** | **[+0.0275, +0.1529]** | **0.0141** |
+| `direct_harmful` | +0.0556 | [−0.0873, +0.1984] | 0.363 |
+| `benign_remap` | +0.0417 | [−0.0275, +0.1108] | 0.182 |
+| `concept_in_benign_ctx` | +0.0399 | [−0.0272, +0.1071] | 0.187 |
+| `direct_codeword` | −0.0069 | [−0.1422, +0.1283] | 0.900 |
+| **`benign_literal`** | **−0.0015** | [−0.0207, +0.0176] | 0.844 |
+
+**The effect is significant on exactly one condition, and it is the right one.** Every other interval
+contains zero, and `benign_literal` — where the codeword means what it says and there is nothing to
+decode — is **flat at −0.0015** with the tightest interval in the table. So on Llama, removing
+`d_surface` raises attack success **specifically where the doublespeak mapping is in play**, not as a
+generic consequence of perturbing the residual stream.
+
+**Read this against the Qwen3 arm in §14.** There, `D20` moves `benign_literal` from 0.0000 to
+**+0.2222** against a control at 0.0093 — a real specificity failure. Here the same family of
+intervention on Llama moves benign by **−0.0015**. The two models differ on specificity, and this table
+is the cleanest statement of the Llama side.
+
+⚠ `p_cl = 0.0141` is **below the six-domain cluster floor of 2/2⁶ = 0.031**, so it is a t-statistic on
+cluster means, not an exact cluster p. **The interval is the evidence** — and it excludes zero with
+room. ⚠ This is arm-minus-control on the *sprint bank*, not AdvBench; it speaks to specificity across
+conditions, not to the external-set magnitude.
+
 **7. Does Boombness add predictive power beyond refusalness?**
 ⛔ **Superseded twice; the current answer is "neither dominates, on a null."** Three drafts were wrong
 here: one from a mixed-footing artifact, one from a table labelled "matched footing" that gave

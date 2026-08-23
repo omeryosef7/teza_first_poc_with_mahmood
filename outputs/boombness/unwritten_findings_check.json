@@ -25,6 +25,8 @@
     "qwen3_armD_natural_doublespeak.json": "R-14 class: treatment arms judged with --bank null (empty goal) against a real-goal baseline. Superseded by qwen3_l20_regoal.json (from q3rj2_*).",
     "qwen3_armD_benign_literal.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "insubspace_null_by_layer_rep1.json": "superseded: an n=4-angle null (its own caveat: 'sd is estimated from four points ... a t with df=3'). The live null carries 24 controls per layer -- insubspace_null_full24.json.",
+    "null_ceiling_session_check.json": "its headline metric (per-session mean spread as a noise bound) was WITHDRAWN after the xL6 crossover showed the spread is real angle variation, not judge noise. Its ceiling/margin figures duplicate insubspace_null_full24.json. Silence here is correct.",
     "g9_three_predictor_lastpos.json": "R-18 composition: n=234 with slot0_only=false and require_bank_block=null, i.e. includes sibling-family rows (36+36) and unrestricted blocks -- exactly what R-18 retracted. Superseded by g9_three_predictor_lastpos_CLEAN.json (same 90 rows as the cwpos CLEAN set).",
     "clearharm_decomposition.json": "R-14: judged against an empty goal (goal_status None on all 179 rows). Superseded by clearharm_decomposition_regoal.json."
   },
@@ -39,8 +41,8 @@
     "qwen3_channel_test.json": "rests on 3 empty-goal judge run(s) (R-14 class): q3_C20_20260818_174110_179027, q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028",
     "section14_topical_asr.json": "rests on 2 empty-goal judge run(s) (R-14 class): q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028"
   },
-  "n_artifacts_checked": 86,
-  "n_silent": 5,
+  "n_artifacts_checked": 84,
+  "n_silent": 2,
   "min_rare_fingerprints_for_a_verdict": 5,
   "n_untestable_too_few_rare_numbers": 11,
   "untestable": [
@@ -146,15 +148,6 @@
   ],
   "silent": [
     {
-      "artifact": "null_ceiling_session_check.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 28,
-      "n_fingerprints_tested": 28,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
       "artifact": "coherence_lenfair.json",
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 13,
@@ -164,25 +157,7 @@
       "written_up": false
     },
     {
-      "artifact": "condition_profile_llama_projout.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 11,
-      "n_fingerprints_tested": 11,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
       "artifact": "g3_dynrange.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 9,
-      "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "insubspace_null_by_layer_rep1.json",
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 9,
       "n_fingerprints_tested": 9,
@@ -228,15 +203,15 @@
     {
       "artifact": "advbench_decomposition_qwen3.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 8,
-      "n_fingerprints_tested": 8,
-      "n_fingerprints_found": 5,
+      "n_rare_fingerprints_tested": 9,
+      "n_fingerprints_tested": 9,
+      "n_fingerprints_found": 6,
       "example_hits": [
+        "-0.0010",
         "-0.0032",
         "-0.0089",
         "0.9111",
-        "0.9212",
-        "0.9374"
+        "0.9212"
       ],
       "written_up": true
     },
@@ -278,10 +253,11 @@
     {
       "artifact": "advbench_topicality_L12.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 4,
-      "n_fingerprints_tested": 4,
-      "n_fingerprints_found": 1,
+      "n_rare_fingerprints_tested": 5,
+      "n_fingerprints_tested": 5,
+      "n_fingerprints_found": 2,
       "example_hits": [
+        "0.400",
         "0.784"
       ],
       "written_up": true
@@ -423,11 +399,12 @@
     {
       "artifact": "condition_profile_llama_len_B.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 9,
-      "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 3,
+      "n_rare_fingerprints_tested": 10,
+      "n_fingerprints_tested": 10,
+      "n_fingerprints_found": 4,
       "example_hits": [
         "-0.067",
+        "0.0069",
         "0.0560",
         "0.862"
       ],
@@ -435,12 +412,17 @@
     },
     {
       "artifact": "condition_profile_llama_projout.json",
-      "named_in_deliverable": false,
+      "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 11,
       "n_fingerprints_tested": 11,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
+      "n_fingerprints_found": 4,
+      "example_hits": [
+        "-0.0207",
+        "-0.1422",
+        "0.1283",
+        "0.1529"
+      ],
+      "written_up": true
     },
     {
       "artifact": "depth_profile_matched.json",
@@ -858,15 +840,6 @@
       "written_up": true
     },
     {
-      "artifact": "insubspace_null_by_layer_rep1.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 9,
-      "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
       "artifact": "insubspace_null_dense20.json",
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 2,
@@ -907,8 +880,8 @@
     {
       "artifact": "judge_retest_floor.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 13,
-      "n_fingerprints_tested": 13,
+      "n_rare_fingerprints_tested": 15,
+      "n_fingerprints_tested": 15,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.0917",
@@ -944,15 +917,6 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 0,
       "n_fingerprints_tested": 0,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "null_ceiling_session_check.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 28,
-      "n_fingerprints_tested": 28,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
@@ -1175,6 +1139,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "0e9e7995942b7c5f56fb6beab0e09b296af91fe2"
+    "git_commit": "0d288bcd7e97615d333ed58493ef878a8d0234b0"
   }
 }

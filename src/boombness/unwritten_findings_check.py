@@ -79,6 +79,13 @@ RETRACTED_ARTIFACTS = {
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json":
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "insubspace_null_by_layer_rep1.json":
+        "superseded: an n=4-angle null (its own caveat: 'sd is estimated from four points ... a t "
+        "with df=3'). The live null carries 24 controls per layer -- insubspace_null_full24.json.",
+    "null_ceiling_session_check.json":
+        "its headline metric (per-session mean spread as a noise bound) was WITHDRAWN after the xL6 "
+        "crossover showed the spread is real angle variation, not judge noise. Its ceiling/margin "
+        "figures duplicate insubspace_null_full24.json. Silence here is correct.",
     "g9_three_predictor_lastpos.json":
         "R-18 composition: n=234 with slot0_only=false and require_bank_block=null, i.e. includes "
         "sibling-family rows (36+36) and unrestricted blocks -- exactly what R-18 retracted. "
