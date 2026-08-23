@@ -9874,3 +9874,37 @@ A heuristic made *fatal* trains the reader to ignore it, which this repo already
 | 644 | 2026-08-23 | built `citation_context.py` for the shared LIVE over-report | tested before wiring |
 | 645 | 2026-08-23 | found it misclassifies **live replacements** as withdrawn | proximity cannot separate the two names in one notice |
 | 646 | 2026-08-23 | **refused to wire it in** | over-reporting is annoying; under-reporting is silent |
+
+## Checked a §19 answer nobody had revisited, and its numbers do not trace to any artifact
+
+Three of the §19 answers I touched this week turned out to be wrong, so the ones I had **not** touched
+deserved the same treatment. Q2 — *"does the final `carrot` become more `bomb`-like?"* — is the
+least-revisited, carrying a confident **NO** with specific figures (L16 **−0.154**, t_cl **−10.5**,
+p 0.0001; L8 −0.082; L31 −0.080) and a `benign_literal` control (−0.105, −0.131).
+
+**None of it traces to a committed artifact.** I searched every `outputs/boombness/*.json` and every
+artifact subdirectory. The numeric hits for −0.154 / −0.082 / −0.105 are **float collisions inside
+unrelated large artifacts** — `clearharm_band_fixed`, `g1_g3_analysis` and so on — not this analysis;
+no single artifact carries the set, and none carries the contrast at all.
+
+`followup_token_level.py` is the nearest script and had **never been run into a committed directory**.
+I ran it (8472 token rows, sanity gate passed) — and it produces **per-role means per layer**
+(`demo_first`/`demo_last`/`demo_middle`/`query`), **not** the within-prompt paired Δ(final − earlier)
+with a clustered t that Q2 quotes. So the statistic in the answer is not the statistic this script
+computes, and the script that did compute it is not identifiable from the repo.
+
+**This does not make Q2 wrong.** The analysis was clearly run, and the part that carries the argument —
+that the same contrast appears in `benign_literal`, where there is no bomb meaning — is a *control*
+claim, separately supported in §7. What it makes Q2 is **unverifiable**, and after this week that is
+not a distinction worth blurring: the standing rule exists because three answers written from
+unchecked artifacts turned out to be wrong. Flagged in place, magnitudes marked provisional.
+
+The regenerated token-level artifact is committed regardless — it is the first time that analysis has
+existed in the repo as output rather than as prose.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 647 | 2026-08-23 | audited the §19 answers **nobody** revisited this week | Q2 is the least-touched |
+| 648 | 2026-08-23 | searched every artifact and subdirectory for its contrast | **none** — the numeric hits are float collisions |
+| 649 | 2026-08-23 | ran `followup_token_level.py`, never before committed | produces **per-role means**, not the paired contrast |
+| 650 | 2026-08-23 | flagged Q2's magnitudes **provisional, unverifiable** | the sign and control claim stand on §7 separately |

@@ -2663,6 +2663,22 @@ simply sits differently on the axis than earlier occurrences, regardless of mean
 consistent doublespeak-specific excess. ⛔ The earlier "later-carrot-more-bomb-like" claim (P4.3) stays
 retracted; this is its replacement, computed with the control it lacked.
 
+⚠ **These figures are NOT currently regenerable from a committed artifact (flagged 2026-08-23).**
+The standing rule for this report is that every number be reproducible by a committed script from a
+committed artifact. I searched every `outputs/boombness/*.json` and every artifact subdirectory for
+the final-vs-earlier occurrence contrast and found **none** — the numeric matches that turn up for
+−0.154 / −0.082 / −0.105 are float collisions inside unrelated large artifacts, not this analysis.
+`followup_token_level.py` is the nearest script and had **never been run** into a committed
+directory; running it now (`token_level_occurrence/`) produces **per-role means per layer**
+(`demo_first` / `demo_last` / `demo_middle` / `query`), **not** the within-prompt paired
+Δ(final − earlier) with a clustered t that this answer quotes.
+
+**This does not make the answer wrong** — the analysis was evidently run, and the control argument
+it rests on is the part that matters. It makes it **unverifiable**, which after this week is not a
+distinction worth blurring: three §19 answers written from artifacts I did not first check turned
+out to be wrong. Treat Q2's magnitudes as provisional until the contrast is recomputed and
+committed; the *sign* and the *control* claim are separately supported by §7's token-level section.
+
 **3. How many examples are needed before Boombness rises?**
 **One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
 (+0.0485 → +0.0499, t = +5.9…+10.2) — one demonstration achieves the whole output-layer effect. L4–L12
