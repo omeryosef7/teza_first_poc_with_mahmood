@@ -10140,3 +10140,64 @@ the new text *quotes* "revision 4" inside the note explaining the fix. Checked b
 | 675 | 2026-08-23 | **P7.2 asserted a retracted result (R-6) as live DONE** | while P7.4 carried the retraction — for six days |
 | 676 | 2026-08-23 | P8.2 said RETRACTED and "should be built" in one row | **C-12 shape, third instance this week** |
 | 677 | 2026-08-23 | P4.4 repointed to the corrected artifact; P8.5 rev 4/6 → **7** | |
+
+## Audit #17: the sentence written to prevent R-9's error committed it
+
+Eight findings. The three that matter are all mine, from the last two ticks.
+
+**A-17.1 (high) — Q5's sourcing sentence put the clean p-value on the retracted side.** I wrote that
+ρ +0.307, +0.2618 and **p 0.658** come from the withdrawn **n=234** artifact. Verified: that file's
+`p_perm_within_domain_rho` is **5.0e-04**; **0.658 is `_CLEAN`'s** — the p that makes the null a null.
+The one sentence whose entire purpose was to stop R-9's mixing of row sets **mixed them**. Corrected.
+
+**And the `core2x2` pair (−0.0832, p 0.572) is in no artifact at all.** `_CLEAN` is built with
+`--require-bank-block core2x2,extra_conditions,role_style,families` → n=90 and contains no core2x2-only
+subset. So the §19 preamble's *"no answer now quotes a figure that cannot be regenerated"* was **false
+when I wrote it, one tick ago**. Corrected to 12 of 13, with the reason the check missed it: it tests
+whether a **filename appears near an answer**, never whether the quoted figures are **in** that file.
+"0 flagged" was weaker assurance than it read.
+
+**A-17.2 / A-17.5 — Q2 is narrowed twice over.** First, `is_query_occurrence == is_final_occurrence` on
+**all 8280** multi-occurrence rows, zero exceptions: every "earlier" occurrence is in the demonstration
+block and every "final" one is the query. The contrast is **query-vs-demonstration**, role confounded
+with position **by construction** — "positional" was simply the wrong word. Second, that explains the
+sign:
+
+| query kind | doublespeak (L8/L16/L31) | benign_literal |
+|---|---|---|
+| **behavioral** | −0.082 / −0.154 / −0.080 | −0.093 / −0.105 / −0.131 |
+| `semantic_one_word` | **+0.117 / +0.092 / +0.202** | **+0.138 / +0.205 / +0.289** |
+| `comprehension_usage` | **+0.134 / +0.099 / +0.197** | **+0.156 / +0.214 / +0.308** |
+
+**Behavioral is the only kind with a negative sign**, and it is the one the published answer used.
+"Becomes LESS bomb-like" is a statement about behavioral prompts. **What survives is the part that
+carried the argument**: `benign_literal` tracks doublespeak in *every* kind, same sign, comparable or
+larger — so there is no doublespeak-specific excess under any format, and the answer is still **NO**.
+
+**And my "reproduced exactly" was an overstatement.** Two free choices — the query-kind filter and the
+`cos` readout — were each identified *by matching the published output*. That is a reconstruction. The
+report now says so.
+
+**A-17.3 — a claim of mine that was simply false.** I justified `cos` over `proj` by saying the
+t-statistic is *identical either way*. `cos = proj/‖h‖` with ‖h‖ varying **per row**: L8 t **−6.22** vs
+**−4.04**, L31 **−3.69** vs **−5.41**, p's differing 5–6×. **Only L16 matched — the one layer I
+checked** — so "the t pinned the estimand" was luck presented as a diagnostic. Deleted; `cos` now
+justified on its merits, with the sign unchanged either way.
+
+**A-17.4 — Q5b named the retracted artifact.** Its table is entirely from
+`g9_three_predictor_lastpos_CLEAN.json`, which appeared **nowhere** in the report; the section named
+only the withdrawn `..._lastpos.json` — the artifact its own paragraph says should stay unwritten. Named
+correctly now.
+
+Findings 6–8 (the gate scanner's comprehension-only mass computation, the `analyze_g2` Holm-family
+detail, and a missing pin for the +0.0560 successor figure) are verified and queued.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 678 | 2026-08-23 | audit #17, 8 findings | three high-value ones from my last two ticks |
+| 679 | 2026-08-23 | **Q5 sourcing put the clean p on the retracted side** | the anti-R-9 sentence committed R-9 |
+| 680 | 2026-08-23 | `core2x2` pair sourced to **nothing** | preamble's "all regenerable" was false one tick after writing |
+| 681 | 2026-08-23 | Q2: **query==final on all 8280 rows** | contrast is query-vs-demonstration; "positional" withdrawn |
+| 682 | 2026-08-23 | Q2 sign is **behavioral-only**; other kinds positive | control claim survives in all three — the answer is still NO |
+| 683 | 2026-08-23 | withdrew my **"t is scale-invariant"** justification | false; only L16 matched, the layer I checked |
+| 684 | 2026-08-23 | Q5b renamed to the **CLEAN** artifact | it had cited the one it withdraws |

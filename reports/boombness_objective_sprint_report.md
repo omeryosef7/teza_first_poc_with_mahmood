@@ -2658,7 +2658,7 @@ named per figure, because quoting them without saying which is which is R-9's er
 ✅ **Q2 closed the same day: 13 of 13 answers are now sourced.** It was the one genuine gap — its
 figures existed in no artifact — so the analysis was written and run, and it reproduces every
 quoted figure exactly (L16 −0.1544 against −0.154; t_cl −10.45 against −10.5; n=246 against 246).
-See Q2. **No §19 answer now quotes a figure that cannot be regenerated.**
+See Q2. ⚠ **That claim was false when written (audit #17).** Q5's `core2x2` pair (**−0.0832**, p **0.572**) is in **no** committed artifact — `_CLEAN` is built with `--require-bank-block core2x2,extra_conditions,role_style,families` → n=90 and holds no core2x2-only subset. **12 of 13 answers are fully sourced; Q5 has two unsourced figures.** The sourcing check could not catch this because it tests only whether a **filename appears near an answer**, never whether the quoted figures are in that file — so "0 flagged" is weaker assurance than it reads.
 
 ⚠ **How to read the p-values in this section (added 2026-08-22).** Several answers below quote p-values **smaller than their design's attainable cluster floor** — e.g. **p<0.0001**, **0.0001** and **0.0077** on bank-based analyses that cluster on **6 domains**, where the smallest attainable two-sided cluster p is **2/2⁶ = 0.031**. Those are **bootstrap or parametric** p-values, legitimate as such, and they must **not** be read as clustered evidence. Per §0b's rule: quote the **confidence interval** for magnitude, and treat a cluster p only as a statement about cross-domain consistency. AdvBench answers cluster on **16** domains (floor 3.1e-5), so their p-values are attainable — but §14-B's `p_cl=0.0089` is a CR1 statistic, and the exact sign-flip value for that arm is **0.0078** (§0b). **No answer below changes as a result; the strength of several does.** *(An earlier draft of this note also listed **0.0014** as an example — that figure belongs to the **retracted** 4-draw band, not to any live answer here, and `retraction_sweep.py` caught the slip.)*
 
@@ -2673,7 +2673,23 @@ qualitative finding.
 **Sourced 2026-08-23:** `reanalyze_corrected_d_surface_cos.json` (`d_surface|cos`, contrast **C−A**, run `full_20260816_185942`) carries the +0.015…+0.027 range. ⚠ An uncorrected twin `reanalyze_d_surface_cos.json` holds the same figures from the same run; the **corrected** artifact is the one this answer cites.
 
 **2. Does the final `carrot` become more `bomb`-like than earlier `carrot`s?**
-**NO — it becomes LESS so, and the effect is positional rather than semantic.** Within-prompt paired
+⚠ **RESTATED 2026-08-23 (audit #17). The answer is still NO, but for a narrower reason than I gave, and "positional" was the wrong word.**
+
+**(a) The contrast is query-vs-demonstration, not position.** `is_query_occurrence == is_final_occurrence` on **all 8280** multi-occurrence rows — 1272 query-final, 7008 neither, **zero exceptions**. So every "earlier" occurrence is inside the demonstration block and every "final" one is the query. Role is perfectly confounded with position **by construction**, and no purely positional claim is licensed by these data.
+
+**(b) The sign is set by the query FORMAT** (`occurrence_contrast_by_query_kind.json`). Δ at L8 / L16 / L31, `d_surface|cos`:
+
+| query kind | `natural_doublespeak` | `benign_literal` |
+|---|---|---|
+| **behavioral** | −0.082 / −0.154 / −0.080 | −0.093 / −0.105 / −0.131 |
+| `semantic_one_word` | **+0.117 / +0.092 / +0.202** | **+0.138 / +0.205 / +0.289** |
+| `comprehension_usage` | **+0.134 / +0.099 / +0.197** | **+0.156 / +0.214 / +0.308** |
+
+The published answer used **`behavioral` only**, which is the one kind giving a negative sign. "The final `carrot` becomes LESS bomb-like" is therefore a statement about behavioral prompts, not a general one.
+
+**(c) What survives is the part that carried the argument.** `benign_literal` tracks doublespeak in **every** query kind — same sign, comparable or **larger** magnitude. There is no doublespeak-specific excess under any format, which is the actual answer to the question asked: **NO**, and the contrast is about the codeword's role in the prompt, not about bomb meaning.
+
+**Original claim, narrowed:** ~~it becomes LESS so, and the effect is positional rather than semantic~~ → Within-prompt paired
 (same prompt, same word, only position differs), domain-clustered, n=246 doublespeak prompts:
 Δ(final − earlier) is **negative at every layer** (L16 **−0.154**, t_cl = −10.5, p = 0.0001; L8 −0.082,
 p = 0.0016; L31 −0.080, p = 0.014). **The control is what settles the interpretation:** the same
@@ -2683,7 +2699,7 @@ simply sits differently on the axis than earlier occurrences, regardless of mean
 consistent doublespeak-specific excess. ⛔ The earlier "later-carrot-more-bomb-like" claim (P4.3) stays
 retracted; this is its replacement, computed with the control it lacked.
 
-✅ **SOURCED AND REPRODUCED EXACTLY (2026-08-23, `occurrence_contrast.json`).** These figures were
+⚠ **SOURCED, AND RECONSTRUCTED — not independently reproduced (2026-08-23; narrowed same day by audit #17).** The figures match, but **two free choices were identified by matching the published output**: the `query_kind=behavioral` filter (chosen because it yields the stated n=246) and the `cos` readout (chosen because it yields the stated magnitudes). That is a reconstruction of the original analysis, and calling it an independent reproduction overstated it. These figures were
 flagged earlier the same day as traceable to no committed artifact — correctly: none existed. The
 analysis has now been written (`occurrence_contrast.py`) and run against the committed extract, and it
 reproduces **every** quoted figure:
@@ -2699,10 +2715,9 @@ reproduces **every** quoted figure:
 
 **Two details were needed to match, and both are load-bearing.** The contrast is restricted to
 `query_kind = behavioral` — pooling all three query kinds gives **480** prompts instead of 246 and
-changes the sign at L8 and L31, which is correction **C7**'s complaint made concrete. And the readout is
-`d_surface|cos`, not `|proj`: the **t-statistic is identical either way** (scale-invariant), but the raw
-projection makes the L16 delta −1.74 rather than −0.154. Matching the stated **n** is what identified
-the filter, and matching the **t** is what confirmed the estimand before the magnitudes agreed.
+changes the sign at L8 and L31, which is correction **C7**'s complaint made concrete. And the readout is `d_surface|cos`, not `|proj`.
+
+⛔ **I justified that with a claim that is false (audit #17).** I wrote that the t-statistic is *identical either way* because the transform is a scale change. It is not: `cos = proj/‖h‖` with ‖h‖ varying **per row**, so it is not a global scale. Measured: L8 t **−6.22** (cos) vs **−4.04** (proj), L31 **−3.69** vs **−5.41** — p-values differing by 5–6×. **Only L16 matched (−10.45 vs −10.47), and that is the one layer I checked.** The reasoning "the t is scale-invariant, so it pinned the estimand" was luck presented as a diagnostic. `cos` is justified on its merits — it is norm-normalised and is the readout every other `d_surface` analysis in this sprint uses — and the **sign and direction are unchanged at all three layers either way**, so Q2's conclusion does not turn on it.
 
 **3. How many examples are needed before Boombness rises?**
 **One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
@@ -2773,7 +2788,11 @@ alone (n=60) it is **−0.0832 (p = 0.572)**. Two clean subsets, both null. n=90
 effect, so this is a **null, not a proof of absence**, and a power experiment is running. Unaffected:
 G1, G3 and the probes, which filter on `bank_block`.
 
-**Sourced 2026-08-23, and the split matters.** The **retracted** headline figures (ρ +0.307, within-domain +0.2618, p 0.658) come from `g2_analysis_cwpos.json` — the **n=234** row set R-18 withdrew. The **clean** nulls (−0.0518; −0.0832 on `core2x2`) come from `g2_analysis_cwpos_CLEAN.json` — **n=90**, `slot0_only`. Quoting them side by side is the point of the answer; quoting either alone would misrepresent it.
+**Sourced 2026-08-23; corrected 2026-08-23 by audit #17 — the first version got the split backwards.** The **retracted** figures (ρ **+0.307**, within-domain **+0.2618**, `p_perm_within_domain_rho` = **5.0e-04**, which is the "p<5e-4" the body quotes) are from `g2_analysis_cwpos.json`, **n=234**, the composition R-18 withdrew. The **clean** null (**−0.0518**, `p_perm` **0.658**) is from `g2_analysis_cwpos_CLEAN.json`, **n=90**, `slot0_only`.
+
+⛔ **My first sourcing sentence assigned p = 0.658 to the retracted artifact.** It is the *clean* p — the one that makes the null a null. Written into the one sentence whose entire purpose was to stop R-9's error of mixing row sets, it committed it.
+
+⚠ **And the `core2x2` pair (−0.0832, p 0.572) is in no committed artifact.** `_CLEAN` is built with `--require-bank-block core2x2,extra_conditions,role_style,families` → n=90 and holds no core2x2-only subset. Those two numbers remain **unsourced**; the §19 preamble's claim that no answer quotes an unregenerable figure was false when written and is corrected there.
 
 **5b. The same question at the OTHER readout position, like-for-like (added 2026-08-23).**
 `g9_three_predictor_lastpos.json` surfaced as an unwritten artifact and, on inspection, **should stay
@@ -2784,6 +2803,8 @@ error of putting two different row sets side by side.
 
 So the clean counterpart was generated instead — `--position last --slot0-only` with the identical
 block restriction, giving **the same 90 rows** (`core2x2` 60 + `role_style` 30) at both positions:
+
+**Every figure in this table is from `g9_three_predictor_lastpos_CLEAN.json`** (added 2026-08-23, audit #17 — this section previously named only the **retracted** `g9_three_predictor_lastpos.json`, the artifact its own paragraph withdraws).
 
 | | `codeword_last` | `last` |
 |---|---|---|
