@@ -632,6 +632,42 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### 🔒 PRE-REGISTERED (20:22) — how the Phase 2 smoke will be read, written BEFORE the result exists
+
+Job **776438** (`allpast:attn_knockout:18-19:1.0`, 8 prompts, arm `P_allpast_smoke`) is mid model-load
+on n-802 at commit `338e13fd`. Its population already resolved correctly to **n=96** before the
+`--limit 8` stratified draw. The criteria below are fixed now so the result cannot be read
+post-hoc — the plan's rule is *never interpret a null without first proving the intervention fired*,
+and that proof has to have a threshold agreed in advance.
+
+**This is a POSITIVE control.** `allpast` blocks every prompt key except BOS at L18–19. It is
+*supposed* to wreck generation. It is not a scientific arm; it exists to prove the mask reaches the
+computation.
+
+| # | check | PASS requires | why it is the right check |
+|---|---|---|---|
+| 1 | `hook_n_decode_edits` per row | **> 0 on every row** | THE number. Zero means the knockout applied at prefill and switched off for the whole generation — the failure the entire `AllQueryAttentionKnockout` rewrite exists to prevent |
+| 2 | `hook_n_decode_forward` per row | **== `n_new_tokens`** | a shortfall means hooks are torn down mid-generation or the cache is rebuilt |
+| 3 | `knockout_liveness.frac_rows_decode_live` | **1.000** (gate refuses < 0.99) | the run-level guard, now itself tested |
+| 4 | `metadata.json.attn_implementation` | **`eager`** | under sdpa the 4-D mask edit is silently discarded and the run is void, not weak |
+| 5 | pre-flight | prints a feasibility table and does **not** refuse | `allpast` is always feasible, so a refusal here means the pre-flight itself is wrong |
+| 6 | generation vs baseline | **visibly wrecked** — median completion length far from the baseline's 67 chars, and/or near-total greedy-token disagreement | if blocking *everything but BOS* leaves generation looking normal, the mask is not reaching the computation and checks 1–3 are measuring a counter rather than a model |
+
+**Check 6 is the one that cannot be faked by instrumentation.** Checks 1–3 read counters that the
+hook itself increments; if the hook were writing into a tensor the model never consumes, they would
+all still pass. Only a change in the *output* proves the edit reached the computation. That is
+exactly the §10 failure this repo already paid for once, where a positive control blocked 7,392
+edges and moved the readout by 0.086 log-odds — physically impossible if the mask had landed.
+
+**If checks 1–5 pass but 6 fails: the run is VOID, not negative**, and the next step is
+`diagnose_knockout.py` on attention weights, not any scientific conclusion.
+
+⚠ **What this smoke does NOT establish**, stated now so it is not claimed later: it says nothing
+about whether the *demonstration-block* arm (`demo_all`) does anything, and nothing about ASR — 8
+prompts cannot support either. It establishes only that the instrument is live during decoding.
+
+---
+
 ### ✅ R-H-CHECK (20:19) — R-H's pooling assumption tested, and a centring convention I had not made explicit
 
 R-H carried the caveat that *"pooling three separately-fitted banks assumes comparable activation
