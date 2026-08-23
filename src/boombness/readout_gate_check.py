@@ -73,26 +73,53 @@ READOUT_SCRIPTS = ("analyze_g8.py", "analyze_g2.py", "analyze_g9.py", "analyze_p
 #: means "one excluded component came from a sub-gate run", not "this result is unreportable".
 #: Recorded rather than suppressed: the hit is still true, its consequence is just smaller.
 PARTIAL_DEPENDENCE = {
-    "analyze_g2.py": "uses semantic_logodds, but excludes it from the analysed family; the headline "
-                     "is a projection-vs-ASR correlation, unaffected by option mass",
+    "analyze_g2.py": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit "
+                     "#17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm "
+                     "family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a "
+                     "sub-gate-derived p sits in the multiplicity family that gates every other "
+                     "predictor. Verified by recomputation that removing it changes NO Holm decision "
+                     "in either committed artifact, and the headline d_surface|L12|proj keeps its "
+                     "status. The conclusion (gate does not bear on the headline) holds; the earlier "
+                     "reason for it was wrong.",
 }
 
 
 def option_mass(run_dir):
-    """Median p_coded+p_literal over rows that have both. None if the readout is absent."""
+    """Median option mass PER READOUT, and the worst of them.
+
+    THE BUG THIS REPLACES (audit #17). v1 medianed `p_coded + p_literal` -- fields that exist **only
+    on comprehension rows**. Semantic rows carry `p_codeword`/`p_concept` instead, so the scanner
+    computed a comprehension-only mass and was structurally blind to a sub-gate SEMANTIC readout,
+    which is the readout R-6 actually withdrew. Concretely, `wa_D_20260818_184457` was classified
+    ABSENT_OK on its comprehension median of 0.333 while its `semantic_one_word` median is **0.0120**,
+    sub-gate by 4x.
+
+    Every row carries an `option_mass` field, so it is grouped by `query_kind` and the WORST readout
+    decides. Which readout tripped it is reported, mirroring the `OVERRIDDEN` string, because "this
+    run is sub-gate" without naming the readout is what let the blind spot survive.
+    """
     f = os.path.join(run_dir, "results.jsonl")
     if not os.path.exists(f):
-        return None, 0
-    ms = []
+        return None, {}
+    per = {}
     for line in open(f, encoding="utf-8"):
         try:
             r = json.loads(line)
         except Exception:
             continue
-        pc, pl = r.get("p_coded"), r.get("p_literal")
-        if pc is not None and pl is not None:
-            ms.append(pc + pl)
-    return (statistics.median(ms) if ms else None), len(ms)
+        m = r.get("option_mass")
+        if m is None:
+            pc, pl = r.get("p_coded"), r.get("p_literal")
+            cw, cn = r.get("p_codeword"), r.get("p_concept")
+            m = (pc + pl) if (pc is not None and pl is not None) else \
+                ((cw + cn) if (cw is not None and cn is not None) else None)
+        if m is None:
+            continue
+        per.setdefault(str(r.get("query_kind")), []).append(float(m))
+    meds = {k: statistics.median(v) for k, v in per.items() if v}
+    if not meds:
+        return None, {}
+    return min(meds.values()), meds
 
 
 def classify(run_dir):
@@ -107,10 +134,12 @@ def classify(run_dir):
         return "OVERRIDDEN", gate, None
     if gate == "PASS":
         return "PASS", gate, None
-    med, n = option_mass(run_dir)
+    med, per = option_mass(run_dir)
     if med is None:
         return "NO_READOUT", gate, None      # no forced-choice readout: the gate does not apply
-    return ("ABSENT_SUB_GATE" if med < MIN_OPTION_MASS else "ABSENT_OK"), gate, med
+    worst = min(per, key=per.get) if per else None
+    detail = {"worst_readout": worst, "median_by_readout": {k: round(v, 4) for k, v in per.items()}}
+    return ("ABSENT_SUB_GATE" if med < MIN_OPTION_MASS else "ABSENT_OK"), gate, (med, detail)
 
 
 def main() -> int:
@@ -122,7 +151,11 @@ def main() -> int:
     for d in sorted(glob.glob("outputs/boombness/score_behavior/*")):
         if os.path.isdir(d):
             st, gate, med = classify(d)
-            runs[os.path.basename(d)] = {"state": st, "gate": gate, "median_option_mass": med}
+            detail = None
+            if isinstance(med, tuple):
+                med, detail = med
+            runs[os.path.basename(d)] = {"state": st, "gate": gate, "median_option_mass": med,
+                                         "per_readout": detail}
 
     bad = {k for k, v in runs.items() if v["state"] in ("OVERRIDDEN", "ABSENT_SUB_GATE")}
 
@@ -209,9 +242,17 @@ def main() -> int:
             "g8_comprehension_DF_arms.json":
                 "RETRACTED (audit #16), same reason; superseded by the _GATEPASS artifact.",
             "g8_comprehension_DF_arms_GATEPASS.json":
-                "FALSE POSITIVE. Flagged because wa_D is OVERRIDDEN -- but the override names the "
-                "SEMANTIC readout (mass 0.01205), while this analysis uses COMPREHENSION, where all "
-                "three runs measure 0.31-0.33, an order of magnitude above the gate. Verified.",
+                "FALSE POSITIVE, re-verified after the 2026-08-23 per-readout fix. Flagged because "
+                "wa_D is OVERRIDDEN -- but the override names the SEMANTIC readout (semantic_one_word "
+                "median 0.0120), while this analysis uses COMPREHENSION, whose median is 0.3327 on "
+                "that run and 0.31-0.33 on all three. Six-fold above the gate.",
+            "_per_readout_fix_2026_08_23":
+                "v1 medianed p_coded+p_literal, fields present ONLY on comprehension rows, so it was "
+                "blind to sub-gate SEMANTIC readouts -- the readout R-6 withdrew. Now grouped by "
+                "query_kind with the WORST readout deciding. Effect: ABSENT_OK 1 -> 0 (that lone run "
+                "WAS the blind spot: comprehension 0.3327, semantic_one_word 0.0120), sub-gate 14 -> "
+                "15, affected artifacts 4 -> 9. LIVE stayed at 6 -- no new defect surfaced, and no "
+                "published conclusion moves.",
             "g2_analysis_cwpos.json":
                 "PARTIAL. g2's forced-choice component (semantic_logodds) is excluded from its "
                 "analysed family; the headline is a projection-vs-ASR correlation, unaffected.",

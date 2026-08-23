@@ -12,11 +12,10 @@
   "run_state_counts": {
     "PASS": 257,
     "NO_READOUT": 56,
-    "ABSENT_SUB_GATE": 14,
-    "OVERRIDDEN": 3,
-    "ABSENT_OK": 1
+    "ABSENT_SUB_GATE": 15,
+    "OVERRIDDEN": 3
   },
-  "n_runs_not_reportable": 17,
+  "n_runs_not_reportable": 18,
   "n_artifacts_resting_on_them": 9,
   "artifacts": [
     {
@@ -24,7 +23,7 @@
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "UNKNOWN (no provenance, name unmatched) -- flagged, not skipped",
       "partial_dependence_note": null
@@ -34,50 +33,50 @@
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": false,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g2_analysis_POWER.json",
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": false,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g2_analysis_cwpos.json",
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g2_analysis_cwpos_CLEAN.json",
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g2_analysis_lastpos.json",
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": false,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g8_comprehension_DF_arms.json",
@@ -88,7 +87,7 @@
         "compF_20260818_150952_3852347",
         "compFctrl_20260818_150952_3852348"
       ],
-      "worst_median_option_mass": 4.14728911515283e-05,
+      "worst_median_option_mass": 3.659732927065e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g8.py",
       "partial_dependence_note": null
@@ -112,7 +111,7 @@
         "comp_projout_20260817_170557_1440151",
         "comp_rand_20260817_170557_1440154"
       ],
-      "worst_median_option_mass": 3.193672864654218e-05,
+      "worst_median_option_mass": 4.336483821892889e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g8.py",
       "partial_dependence_note": null
@@ -154,7 +153,7 @@
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "UNKNOWN (no provenance, name unmatched) -- flagged, not skipped",
       "partial_dependence_note": null
@@ -164,20 +163,20 @@
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g2_analysis_cwpos_CLEAN.json",
       "sub_gate_runs_cited": [
         "base_20260816_203355_3985444"
       ],
-      "worst_median_option_mass": 4.399710269353818e-05,
+      "worst_median_option_mass": 5.595252090845326e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g2.py",
-      "partial_dependence_note": "uses semantic_logodds, but excludes it from the analysed family; the headline is a projection-vs-ASR correlation, unaffected by option mass"
+      "partial_dependence_note": "uses semantic_logodds, which IS gate-relevant. Corrected 2026-08-23 (audit #17): it is excluded from the maxT SELECTION family but INCLUDED in the Holm family -- `holm_family.m` = 29 with semantic_logodds among the members -- so a sub-gate-derived p sits in the multiplicity family that gates every other predictor. Verified by recomputation that removing it changes NO Holm decision in either committed artifact, and the headline d_surface|L12|proj keeps its status. The conclusion (gate does not bear on the headline) holds; the earlier reason for it was wrong."
     },
     {
       "artifact": "g8_comprehension_DF_arms.json",
@@ -188,7 +187,7 @@
         "compF_20260818_150952_3852347",
         "compFctrl_20260818_150952_3852348"
       ],
-      "worst_median_option_mass": 4.14728911515283e-05,
+      "worst_median_option_mass": 3.659732927065e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g8.py",
       "partial_dependence_note": null
@@ -212,7 +211,7 @@
         "comp_projout_20260817_170557_1440151",
         "comp_rand_20260817_170557_1440154"
       ],
-      "worst_median_option_mass": 3.193672864654218e-05,
+      "worst_median_option_mass": 4.336483821892889e-06,
       "artifact_named_in_a_deliverable": true,
       "producer": "analyze_g8.py",
       "partial_dependence_note": null
@@ -221,7 +220,8 @@
   "live_triage": {
     "g8_comprehension_by_nexamples.json": "RETRACTED (audit #16). Appears live only because the report NAMES it inside its own retraction notice -- the documented limitation of substring citation-detection. Superseded by the _GATEPASS artifact, on which the headline's sign reverses.",
     "g8_comprehension_DF_arms.json": "RETRACTED (audit #16), same reason; superseded by the _GATEPASS artifact.",
-    "g8_comprehension_DF_arms_GATEPASS.json": "FALSE POSITIVE. Flagged because wa_D is OVERRIDDEN -- but the override names the SEMANTIC readout (mass 0.01205), while this analysis uses COMPREHENSION, where all three runs measure 0.31-0.33, an order of magnitude above the gate. Verified.",
+    "g8_comprehension_DF_arms_GATEPASS.json": "FALSE POSITIVE, re-verified after the 2026-08-23 per-readout fix. Flagged because wa_D is OVERRIDDEN -- but the override names the SEMANTIC readout (semantic_one_word median 0.0120), while this analysis uses COMPREHENSION, whose median is 0.3327 on that run and 0.31-0.33 on all three. Six-fold above the gate.",
+    "_per_readout_fix_2026_08_23": "v1 medianed p_coded+p_literal, fields present ONLY on comprehension rows, so it was blind to sub-gate SEMANTIC readouts -- the readout R-6 withdrew. Now grouped by query_kind with the WORST readout deciding. Effect: ABSENT_OK 1 -> 0 (that lone run WAS the blind spot: comprehension 0.3327, semantic_one_word 0.0120), sub-gate 14 -> 15, affected artifacts 4 -> 9. LIVE stayed at 6 -- no new defect surfaced, and no published conclusion moves.",
     "g2_analysis_cwpos.json": "PARTIAL. g2's forced-choice component (semantic_logodds) is excluded from its analysed family; the headline is a projection-vs-ASR correlation, unaffected.",
     "g2_analysis_cwpos_CLEAN.json": "PARTIAL, same as g2_analysis_cwpos.",
     "coherence_steering.json": "UNKNOWN PRODUCER -- no provenance and the name matches no readout script, so it is flagged rather than skipped by design. Its content is coherence statistics, which do not use the forced-choice readout; low priority, not yet formally cleared."
@@ -230,1657 +230,2079 @@
     "a8L12k1_20260821_134734_1125126": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "a8L12k3_20260821_134734_1125125": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "a8L12k5_20260821_134710_2975225": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "a8L12k7_20260821_135218_4045493": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abK_B_20260821_140717_1134826": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abK_Bctrl_20260821_140717_1134825": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL10_B_20260819_073537_3351267": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL10_Bctrl_20260819_093910_3553155": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL10_naive_20260821_230553_4186275": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL12_B_20260819_063539_2455409": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL12_Bctrl_20260819_070536_3345737": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL12_naive_20260821_213454_4177347": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL13_B_20260819_100346_3572866": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL13_Bctrl_20260819_100346_3572867": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL13_naive_20260821_230553_4186277": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL14_B_20260819_101848_3587249": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL14_Bctrl_20260819_101848_3587250": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL15_B_20260819_162312_494292": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL15_Bctrl_20260819_162312_494287": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL16_B_20260819_073537_3351400": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL16_Bctrl_20260819_093910_3553157": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL18_B_20260819_065037_1658878": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL18_Bctrl_20260819_070536_3345736": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL24_B_20260819_065037_1658879": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL24_Bctrl_20260819_071538_3348711": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL28_B_20260819_073537_3351401": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL28_Bctrl_20260819_093910_3553156": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL4_B_20260819_063539_2455602": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL4_Bctrl_20260819_070536_3345693": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL6_B_20260819_073537_3351336": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL6_Bctrl_20260819_093910_3553158": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL6_naive_20260821_213454_4177349": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL8_context_20260819_093910_3553154": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abL8_naive_20260819_093910_3553159": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abR12_C_20260819_162312_494291": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abR24_C_20260819_162312_494289": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abR28_C_20260819_162312_494288": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abR8_C_20260819_162312_494290": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abVMC2_20260821_010052_955575": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "abVMC_20260821_003746_943096": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_B_20260818_185458_3888974": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bband_20260902_20260819_035529_1775730": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bband_20260903_20260819_040029_1413029": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bband_20260904_20260821_083626_2945262": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bband_20260905_20260821_083626_2945261": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bband_20260906_20260821_083653_3984901": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Bctrl_20260819_015525_1619046": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_C_20260818_190458_3890686": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Cctrl_20260819_020527_2227659": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_D_20260818_190458_3890685": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_Dctrl_20260819_020525_1107800": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ab_base_20260818_185458_3888976": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k0_20260821_121911_2965190": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k10of24_20260822_184658_3923289": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k11of24_20260822_184758_1549850": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k13of24_20260822_184758_1549851": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k14of24_20260822_184758_3923975": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k15of24_20260822_184758_3923973": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k16of24_20260822_184758_3923970": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k17of24_20260822_184758_3923972": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k19of24_20260822_184758_3923974": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k1_20260821_121911_2965192": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k1of24_20260822_183557_3920587": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k20of24_20260822_222917_1605454": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k21of24_20260822_222920_95157": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k22of24_20260822_222920_95158": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k23of24_20260822_222922_3185076": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k2_20260821_121911_2965189": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k2of24_20260822_183557_3920447": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k3_20260821_121911_2965193": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k3of24_20260822_183658_3921589": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k4of24_20260822_183658_3921591": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k5of24_20260822_183658_3921590": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k7of24_20260822_184056_77955": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k8of24_20260822_184408_3130884": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang10k9of24_20260822_184557_3131451": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k0_20260821_112220_1100872": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k10of24_20260822_181658_3128539": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k11of24_20260822_182336_1534115": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k13of24_20260822_182336_1534114": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k14of24_20260822_182856_77026": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k16of24_20260822_183357_3129893": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k17of24_20260822_183557_3920448": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k19of24_20260822_222922_3185075": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k1_20260821_112220_1100871": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k1of24_20260822_181658_3917529": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k20of24_20260822_222922_3185074": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k22of24_20260822_223453_1607438": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k23of24_20260822_224758_4021660": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k2_20260821_112209_4017318": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k2of24_20260822_181658_3917532": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k3_20260821_112209_4017317": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k4of24_20260822_181658_3917531": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k5of24_20260822_181658_3917480": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k7of24_20260822_181658_3917530": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang12k8of24_20260822_181656_76095": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k0_20260821_121911_1107757": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k10of12_20260821_170722_4107865": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k11of12_20260821_170722_4107864": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k11of24_20260822_153747_3900609": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k13of24_20260822_153747_3900606": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k15of24_20260822_154205_66256": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k17of24_20260822_222916_4018495": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k19of24_20260822_222915_4018491": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k1_20260821_121911_1107758": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k1of12_20260821_153854_4075953": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k1of24_20260822_153720_3114711": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k21of24_20260822_222915_4018492": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k23of24_20260822_222915_4018496": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k2_20260821_121911_1107759": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k2of12_20260821_153900_4076441": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k3_20260821_121911_2965191": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k3of24_20260822_153720_3114712": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k4of12_20260821_153854_4075954": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k5of12_20260821_153854_4075952": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k5of24_20260822_153747_3900610": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k7of12_20260821_153855_4076276": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k7of24_20260822_153747_3900608": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k8of12_20260821_153854_4076177": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang6k9of24_20260822_153747_3900607": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k0_20260821_102514_2954521": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k10of12_20260821_180727_4131491": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k11of12_20260821_180727_4131492": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k11of24_20260822_155458_1413277": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k13of24_20260822_155557_3117544": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k15of24_20260822_155557_3117543": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k17of24_20260822_222915_4018490": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k19of24_20260822_222915_4018497": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k1_20260821_102514_2954520": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k1of12_20260821_173724_4121285": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k1of24_20260822_154204_3116075": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k21of24_20260822_222917_1605452": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k23of24_20260822_222917_1605453": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k2_20260821_102707_4010958": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k2of12_20260821_173724_4121284": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k3_20260821_102707_4010959": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k3of24_20260822_154157_1409653": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k4of12_20260821_173724_4121286": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k5of12_20260821_173724_3007396": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k5of24_20260822_154559_1411476": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k7of12_20260821_180727_4131490": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k7of24_20260822_155657_3118334": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k8of12_20260821_180727_4131489": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ang8k9of24_20260822_160014_1414595": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "b104_C_20260817_182412_1493642": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "b104_F_20260817_182338_1214791": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "band2_s20260901_20260817_193207_1547343": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "band2_s20260902_20260817_193206_1261039": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "band2_s20260903_20260817_193206_1261037": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "band2_s20260904_20260817_193206_1261038": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "base_20260816_203355_3985444": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 4.399710269353818e-05
+      "median_option_mass": 5.595252090845326e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "baserole_20260817_042050_249499": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "bng_B_20260820_055743_617416": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "bng_Bctrl_20260820_055744_617417": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "bng_C_20260820_055743_617419": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "bng_base_20260820_055743_617412": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "c104_C_20260817_180527_1472638": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 7.013973277025798e-05
+      "median_option_mass": 5.447453659712664e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "c104_F_20260817_180527_1472639": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 0.0001145402700331033
+      "median_option_mass": 4.136867961190838e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "ch_B_20260818_181455_3884527": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_Bctrl_20260819_045543_2226268": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_C_20260818_181455_3884549": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_D_20260818_172957_3878935": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_D_20260818_173456_3879863": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_Dctrl_20260818_172957_3878938": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_Dctrl_20260818_173456_3879864": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_base_20260818_172957_375977": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ch_base_20260818_173501_376767": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "compD_20260818_150016_3849691": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 7.005495399425854e-05
+      "median_option_mass": 3.659732927065e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "compDctrl_20260818_150016_3849692": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 4.14728911515283e-05
+      "median_option_mass": 5.64569068716228e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "compF_20260818_150952_3852347": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 0.0001145402700331033
+      "median_option_mass": 4.136867961190838e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "compFctrl_20260818_150952_3852348": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 0.00014959416989768215
+      "median_option_mass": 1.6732557535893526e-05,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "comp_neg_20260817_170557_1440152": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 3.193672864654218e-05
+      "median_option_mass": 2.515446710789186e-05,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "comp_pos_20260817_170557_1440153": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 7.605307357039237e-05
+      "median_option_mass": 5.2250454611185715e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "comp_projout_20260817_170557_1440151": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 4.442834847395716e-05
+      "median_option_mass": 4.336483821892889e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "comp_rand_20260817_170557_1440154": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 9.795517689781263e-05
+      "median_option_mass": 1.9820700989177115e-05,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0001
+        }
+      }
     },
     "comp_rand_neg_20260817_185932_3730532": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 2.963529785215968e-05
+      "median_option_mass": 4.224655896716326e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "ctrl_orth_a025_20260817_020009_85819": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_orth_a025_20260817_020445_91739": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_L8_a1_20260816_233438_4131599": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_a025_20260817_020009_85798": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_a025_20260817_020445_91740": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260817_20260817_042112_3090179": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260818_20260817_042112_3090180": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260819_20260817_042112_3090181": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260819_20260817_050531_3094323": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260820_20260817_042112_3090178": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrl_rand_s20260820_20260817_050531_3094324": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260901_20260818_182455_3885656": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260901_20260818_190957_3891690": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260902_20260818_183456_3886530": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260902_20260818_190957_3891646": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260903_20260818_183456_3886531": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "ctrlband_s20260903_20260818_191458_3892825": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a006_20260823_043816_1746077": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a008_20260823_043816_1746076": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a015_20260823_034204_1728050": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a01_20260823_031117_1718593": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a02_20260823_035358_1732276": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dd12a03_20260823_040601_1736089": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm10k1_20260821_230553_4186276": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm12k1_20260821_213454_4177348": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm13k1_20260821_230553_4186211": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm6k1_20260821_213454_4177350": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k0_20260821_234053_4189414": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k1_20260821_200456_4159655": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k2_20260821_200456_4159657": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k3_20260821_200456_4159660": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k4_20260821_200456_4159658": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k5_20260821_200456_4159659": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k6_20260821_200456_4159656": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dm8k7_20260821_234053_4189436": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dsL29_20260821_055018_2931997": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dsL30_20260821_055018_2931998": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "dsL31_20260821_055018_2931999": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "e7rnd01_20260823_051617_1757623": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "e7rnd02_20260823_051617_1757622": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "e7rnd03_20260823_051617_1757624": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_addBoth_20260819_224348_3668745": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_addBoth_CTRL_20260820_055744_617418": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_addCtrl8_20260819_224348_3668595": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_addS_20260819_224403_580365": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_remR_addS_20260819_224348_3668594": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF25_remR_addS_CTRL_20260820_055743_617415": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addBoth_20260819_204413_3655578": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addCtrl18_20260819_204413_3655581": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addCtrl8_20260819_204413_3655582": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_20260819_204413_3655580": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_g02_20260821_211859_1247621": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_g04_20260821_201346_3034028": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_g075_20260821_211859_1247622": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_g08_20260821_201111_4162011": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addR_gapdose_20260820_055743_3693541": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRandM_g02_20260822_001803_3059406": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRandM_g075_20260822_001803_3059407": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRandS01_20260822_120657_1348001": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRandS02_20260822_120829_3876740": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRandS03_20260822_121655_3877532": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRand_g02_20260821_215204_1252827": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addRand_g075_20260821_223129_3048964": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_addS_20260819_204413_3655579": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_remR_addS_20260819_205407_532706": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_remS_addR_20260819_205407_532707": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_remS_addR_CTRL2_20260820_055743_3693542": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuF_remS_addR_CTRL_20260819_221402_576761": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR12_Cctrl_20260819_191548_3650550": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR14_C_20260819_185236_3647712": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR14_Cctrl_20260819_185236_3647902": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR16_C_20260819_185642_3648447": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR16_Cctrl_20260819_185658_2605578": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR20_C_20260819_185658_2605577": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuR20_Cctrl_20260819_185704_2606431": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_add_g00625_20260822_123009_3880350": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_add_g0125_20260822_123009_3880349": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_add_g05_20260822_113423_1339685": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_add_g075_20260822_113423_1339686": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_randS01_g075_20260822_124400_3882841": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_randS02_g075_20260822_124400_3882842": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_randS03_g075_20260822_124400_3882843": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_rand_g05_20260822_114838_1342439": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "fuS_rand_g075_20260822_114838_1342440": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_A_20260817_221624_3713162": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_B_20260818_040518_187486": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_Bctrl_20260818_040518_187482": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_C_20260817_210621_4078907": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_D_20260818_103518_4120749": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_D_20260818_111006_343424": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_D_20260818_111554_3804129": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_Dctrl_20260818_103518_4120748": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_Dctrl_20260818_110947_3803147": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_F_20260817_210621_4078906": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_Fctrl_20260817_221624_3713161": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "len_base_20260817_210621_4078908": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "nopfx_smoke_20260818_170956_3861590": {
       "state": "OVERRIDDEN",
       "gate": "OVERRIDDEN \u2014 NOT REPORTABLE: comprehension: median option mass 5.637e-05 < 0.05; semantic: median option mass 0.0001671 < 0.05",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "pfx_smoke_20260818_170959_373262": {
       "state": "OVERRIDDEN",
       "gate": "OVERRIDDEN \u2014 NOT REPORTABLE: comprehension: median option mass 0.02684 < 0.05",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "phaseD_base_20260820_184915_2800944": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "projctrl_20260817_221624_692142": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "projout_beh_20260817_173516_1177067": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3B11_20260821_155952_4084982": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3B11ctrl_20260821_160051_2982112": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_C20_20260818_154112_366026": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_C_20260818_151452_3853327": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_D20_20260818_154112_366027": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_D20ctrl_20260818_154112_366028": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_D_20260818_151452_3853326": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_Dctrl_20260818_151452_3853328": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_projctrl_20260818_043506_3751474": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3_projout_20260818_013510_171291": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ab_B_20260819_023527_2285495": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ab_Bctrl_20260819_023527_2285497": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ab_C_20260819_031027_2290753": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ab_D_20260819_031027_2290754": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ab_base_20260819_023527_2285494": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_B_20260819_010523_2191087": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_Bctrl_20260901_20260819_050533_2236683": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_Bctrl_20260902_20260819_051033_2241374": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_Bctrl_20260903_20260819_051033_2241375": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_C_20260819_011557_2208102": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_D_20260819_011557_2208101": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_Dctrl_20260819_012539_2192827": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_base_20260819_003521_2189316": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3ch_smoke_20260819_003022_2188738": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3determ_20260821_181227_3016888": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "q3smoke_20260821_155921_1180659": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "qwen3_base_20260817_140633_3382348": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "qwen3nt_base_20260817_160556_1434592": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "qwen3nt_base_20260817_163110_3560487": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "r18pow_base_20260819_061034_2248507": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "rolebeh_20260818_120012_1411658": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "smoke2_20260816_194943_3949678": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 2.406766691365192e-05
+      "median_option_mass": 4.991281443267326e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "smoke_20260816_193523_2926143": {
       "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 2.406766691365192e-05
+      "median_option_mass": 4.991281443267326e-06,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.0,
+          "comprehension_usage": 0.0
+        }
+      }
     },
     "span31_20260821_071516_2938471": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "span8_20260821_071516_1028239": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "steer_L8_a010_20260817_010842_25616": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "steer_L8_a025_20260817_010937_27410": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "steer_L8_a1_20260816_233438_1276120": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "steer_L8_a2_20260816_233438_4131597": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "steer_neg_a025_20260817_020039_3079154": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "unemb31_20260821_083653_3984900": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "unemb8_20260821_083653_3984902": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "vmcD12_20260821_042623_2925728": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "vmcD8_20260821_042623_2925729": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "vmcL10_20260821_022618_2917443": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "vmcL12_20260821_022618_2917442": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "vmcL6_20260821_022618_979356": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_D_20260818_184457_3887694": {
-      "state": "ABSENT_OK",
+      "state": "ABSENT_SUB_GATE",
       "gate": null,
-      "median_option_mass": 0.3326928703476132
+      "median_option_mass": 0.012002289295196533,
+      "per_readout": {
+        "worst_readout": "semantic_one_word",
+        "median_by_readout": {
+          "semantic_one_word": 0.012,
+          "semantic_forced_choice": 0.5579,
+          "comprehension_usage": 0.3327
+        }
+      }
     },
     "wa_D_20260818_190957_3891689": {
       "state": "OVERRIDDEN",
       "gate": "OVERRIDDEN \u2014 NOT REPORTABLE: semantic/semantic_one_word: median option mass 0.01205 < 0.05",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_Dctrl_20260818_185458_3888977": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_base_20260818_184457_3887695": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_projout_20260818_185458_3888975": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_smoke_20260818_172008_374416": {
       "state": "NO_READOUT",
       "gate": null,
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     },
     "wa_smoke_20260818_172502_375200": {
       "state": "PASS",
       "gate": "PASS",
-      "median_option_mass": null
+      "median_option_mass": null,
+      "per_readout": null
     }
   },
   "provenance": {
@@ -1889,6 +2311,6 @@
       "--out",
       "outputs/boombness/readout_gate_check.json"
     ],
-    "git_commit": "ad06c13781beb8a84d47a58a5abb62088fe62aef"
+    "git_commit": "042206fdc2a595d502c59b7d1600bd7aa598a825"
   }
 }

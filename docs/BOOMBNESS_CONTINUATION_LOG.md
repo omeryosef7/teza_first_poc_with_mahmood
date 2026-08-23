@@ -10244,3 +10244,49 @@ but **included** in the Holm family, verified not to change any decision) remain
 | 686 | 2026-08-23 | 7 hits, triaged rather than counted | 1 genuine, 3 under-cited, 3 benign by construction |
 | 687 | 2026-08-23 | Q5b now names **both** CLEAN artifacts | it had named the retracted one and omitted the other entirely |
 | 688 | 2026-08-23 | added the successor pin the deleted one predicted | **registry caught my missing capture group, then my wrong scope** |
+
+## The gate scanner was blind to the readout its own retraction was about
+
+Audit #17's last two findings, both on guards I wrote.
+
+**A-17.6 — `readout_gate_check` computed a comprehension-only option mass.** It medianed
+`p_coded + p_literal`, and those fields exist **only on comprehension rows**; semantic rows carry
+`p_codeword`/`p_concept`. So the scanner built to catch sub-gate forced-choice readouts was
+**structurally blind to sub-gate *semantic* readouts** — which is the readout **R-6 actually
+withdrew**. A guard aimed at a retraction, unable to see that retraction's own subject.
+
+Verified on `wa_D_20260818_184457`:
+
+| readout | median option mass | |
+|---|---|---|
+| `comprehension_usage` | 0.3327 | fine |
+| `semantic_forced_choice` | 0.5579 | fine |
+| **`semantic_one_word`** | **0.0120** | **sub-gate, 4× under** |
+
+The scanner reported `ABSENT_OK` on the 0.3327 and never looked at the 0.0120. Every row carries an
+`option_mass` field, so it is now grouped by `query_kind` with the **worst** readout deciding, and the
+tripping readout is named — because "this run is sub-gate" without saying *which* readout is what let
+the blind spot survive.
+
+**Effect: `ABSENT_OK` 1 → 0** — that lone run *was* the blind spot — sub-gate 14 → 15, affected
+artifacts 4 → 9. **LIVE stayed at 6**: no new defect surfaced and **no published conclusion moves**.
+The `_GATEPASS` false positive was re-verified against the new numbers and still holds (comprehension
+0.3327 on that run, six-fold above gate; the override names the semantic readout).
+
+**A-17.7 — my triage gave a correct conclusion for a wrong reason.** I wrote that `analyze_g2`
+"excludes `semantic_logodds` from the analysed family". It excludes it from the **maxT selection**
+family but **includes** it in the **Holm** family — `holm_family.m` = 29 with it among the members — so
+a sub-gate-derived p sits in the multiplicity family gating every other predictor. The auditor
+recomputed Holm with and without it: **no rejection decision changes** in either artifact and the
+headline keeps its status. So the conclusion stands and the reason is now stated correctly.
+
+Both are the same shape as the sprint's recurring failure, applied to guards rather than results: the
+verdict was right, the justification was not checked, and nobody would have noticed because the verdict
+was right.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 689 | 2026-08-23 | A-17.6: gate scanner read comprehension-only fields | **blind to sub-gate semantic readouts — R-6's own subject** |
+| 690 | 2026-08-23 | per-readout mass, worst decides, tripping readout named | `ABSENT_OK` **1 → 0**; that run was the blind spot |
+| 691 | 2026-08-23 | LIVE unchanged at 6 | no new defect, **no conclusion moves** |
+| 692 | 2026-08-23 | A-17.7: `semantic_logodds` is in the **Holm** family | conclusion holds, **reason corrected**; no decision changes |
