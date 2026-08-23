@@ -2669,32 +2669,43 @@ retracted; this is its replacement, computed with the control it lacked.
 grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and ⚠ **RETRACTED figure (R-26 — §14-D's specificity conclusion); shown for the record, not as evidence.**
 then saturate. ⚠ Pooled over query kinds; see C7.
 
-**3b. What do demonstrations do to COMPREHENSION? (added 2026-08-23 — committed since 08-17, never written up)**
-**A double dissociation: demonstrations improve comprehension exactly where the mapping has to be
-learned, and degrade it where it does not.** Slope per *doubling* of `n_examples`, four conditions,
-clustered on 6 domains (`g8_comprehension_by_nexamples.json`):
+**3b. What do demonstrations do to COMPREHENSION?** ⛔ **THIS ANSWER IS RETRACTED (2026-08-23, audit
+#16) — I published it five days after this report withdrew the instrument it uses.**
+
+The version posted on 2026-08-23 reported a **double dissociation**: `natural_doublespeak` **+0.370**
+[+0.260, +0.480] rising while `benign_literal` fell −0.847, i.e. *"demonstrations improve comprehension
+exactly where the mapping has to be learned"*. **That is an artifact of reading an ordering inside a
+4.4e-05 tail.**
+
+The runs behind it carry a **median option mass of 4.4e-05** (`compD` 7.0e-05, `compDctrl` 4.2e-05).
+`score_behavior.py` sets `--min-option-mass 0.05` and calls falling below it **fatal**, marking such a
+run *"NOT reportable as a comprehension or semantic result"* — these sit **~1000× below** the gate.
+**R-6 withdrew exactly this readout**, and this report states the objection twice, once **five
+paragraphs above** the table I published.
+
+**Gate-passing counterparts were on disk and unused.** `wa_base` (median option mass **0.315**,
+`option_mass_gate: PASS`) is the same bank and design with `--answer-prefix "Answer:"`. Re-running the
+committed `analyze_g8.py` on it (`g8_comprehension_by_nexamples_GATEPASS.json`):
 
 | condition | slope / doubling | 95% CI | p |
 |---|---|---|---|
-| **`natural_doublespeak`** | **+0.370** | [+0.260, +0.480] | 0.0003 |
-| **`benign_literal`** | **−0.847** | [−1.319, −0.375] | 0.0058 |
-| `direct_harmful` | −0.710 | [−1.651, +0.232] | 0.110 **ns** |
-| `concept_in_benign_ctx` | −0.163 | [−0.663, +0.337] | 0.440 **ns** |
+| `benign_literal` | **−0.633** | [−0.897, −0.369] | 0.0016 |
+| `direct_harmful` | **−0.636** | [−0.993, −0.279] | 0.0060 |
+| `concept_in_benign_ctx` | **−0.599** | [−0.845, −0.353] | 0.0015 |
+| **`natural_doublespeak`** | **−0.227** | [−0.404, −0.051] | 0.0212 |
 
-Only the doublespeak condition rises, and it is the only condition where the codeword's meaning must be
-inferred from the demonstrations; `benign_literal` — where the word already means what it says — moves
-the other way. The two null conditions keep that contrast from being a general "more context helps"
-story.
+**All four conditions FALL. The sign of the headline reverses.** More demonstrations make comprehension
+*worse* everywhere, and the doublespeak condition is simply the one that degrades **least** (−0.23
+against −0.60 to −0.64). That is a graded difference, not a dissociation, and the two "null control"
+conditions that made the original story work are not null at all on the reportable instrument.
 
-⚠ **The n=0 level is excluded and that matters.** At zero demonstrations each condition has **one**
-effective prompt (`effective_n_by_level`), so the level is degenerate; the trend is fitted on
-**[1, 2, 4, 8, 16]** only (`degenerate_levels: [0]`, `trend_fitted_on_levels`). A curve drawn through
-the n=0 point would be drawing through a single prompt.
+⚠ **What survives is much weaker and worth stating exactly:** among four conditions that all decline,
+the one where the mapping must be inferred declines least, and its interval does not overlap the other
+three. That is consistent with demonstrations doing *something* specific for doublespeak, and it is not
+evidence that they *improve* comprehension anywhere.
 
-⚠ **These p-values are parametric, not exact cluster p's.** With 6 domains the smallest attainable
-two-sided cluster p is **2/2⁶ = 0.031**, so **0.0003 and 0.0058 are below the design's floor** and must
-be read as t-based, per this report's own rule in §19's preamble. Quote the intervals: both exclude
-zero comfortably, and they exclude each other.
+⚠ The n=0 level remains excluded on both instruments (one effective prompt per condition), and these
+p-values remain parametric, below the 2/2⁶ = 0.031 six-domain floor.
 
 **4. Does Boombness vary enough across prompts to support optimization?**
 **It varies, but the usable dose window is narrow enough to be a problem.** Within-arm sd is non-trivial
@@ -2928,35 +2939,33 @@ unaffected; only its Qwen3 half was tainted.
 ⚠ The **3.50×** clustered-vs-IID CI ratio quoted here on 2026-08-23 was computed on the empty-goal rows
 and is withdrawn with them. The general point (IID intervals understate) stands on other artifacts.
 
-⬆ **The direct comprehension test, with matched controls, added 2026-08-23 — committed 08-18, never
-written up** (`g8_comprehension_DF_arms.json`). Paired, n=288, clustered on 6 domains, comprehension
-delta at each `n_examples` level:
+⛔ **The comprehension table posted here on 2026-08-23 is RETRACTED and replaced (audit #16).** It
+used `compD`/`compDctrl`, whose **median option mass is 4.2–7.0e-05** — ~1000× below the
+`--min-option-mass 0.05` gate that `score_behavior.py` calls fatal, and the readout **R-6 already
+withdrew**. Its control row (`−0.085 … −0.135`, *"intervals exclude zero at every level"*) does not
+survive. Recomputed on the **gate-passing** `wa_*` runs (median option mass **0.315**,
+`option_mass_gate: PASS`), `g8_comprehension_DF_arms_GATEPASS.json`, 288 paired rows:
 
-| arm | spec | n=1 | n=2 | n=4 | n=8 | n=16 |
-|---|---|---|---|---|---|---|
-| **D** | `d_surface:project_out:8` + `refusalness:project_out:18` | **+0.527** | +0.493 | +0.401 | +0.420 | +0.381 |
-| **Dctrl** | `random:project_out:8` + `random:project_out:18` | **−0.085** | −0.098 | −0.088 | −0.120 | −0.135 |
-| **F** | `d_surface:add:8:0.25` + `refusalness:project_out:18` | +0.665 | +0.434 | +0.175 | +0.260 | +0.768 |
-| **Fctrl** | `random:add:8:0.25` + `refusalness:project_out:18` | **+1.116** | +1.366 | +1.835 | +2.082 | **+2.256** |
+| arm | n=1 | n=2 | n=4 | n=8 | n=16 |
+|---|---|---|---|---|---|
+| **D** (`d_surface:project_out:8` + `refusalness:project_out:18`) | **+0.424** | +0.359 | +0.347 | +0.382 | +0.415 |
+| **Dctrl** (two matched random projections) | −0.023 | −0.005 | +0.015 | −0.031 | −0.011 |
 
-**This is the cleanest answer the sprint has to the question as asked.** Removing `d_surface` together
-with refusalness **raises** comprehension at every dose (+0.38 to +0.53; every level p<0.01, but those are **parametric** p's below this design's 2/2⁶ = 0.031 six-domain cluster floor — the **intervals** are the evidence, e.g. n=1 [+0.221, +0.832]), while
-removing *two magnitude-matched random directions* **lowers** it (−0.085 to −0.135; intervals exclude zero at every level, e.g. n=16 [−0.176, −0.094]). The arm and its control sit ~0.5 apart with the opposite sign, so this is
-direction-specific and not a generic consequence of perturbing the residual stream. **Removing
-Boombness does not destroy comprehension; it improves it.**
+**The arm survives; the control claim does not.** D raises comprehension by **+0.35 to +0.42** at every
+dose, every interval excluding zero (n=4: [+0.252, +0.441]). But **Dctrl is a flat null** — every
+interval covers zero — not the negative effect I published. So the sentence *"the arm and its control
+sit ~0.5 apart with the opposite sign"* is withdrawn; the correct statement is that the arm raises
+comprehension **while its matched control does nothing**, which is a cleaner result and a weaker one.
 
-⛔ **Arm F is a control-beats-arm negative, and it is worth stating plainly.** F and Fctrl both remove
-refusalness, so the contrast isolates the *added* direction — and they are magnitude-matched by
-construction (both gap-dosed at 0.25 → 1.5137). The **random** addition produces a **larger, monotone**
-comprehension gain (+1.12 → +2.26) than `d_surface` does (+0.18 to +0.77, non-monotone, two levels
-n.s.). So F's comprehension effect is **not attributable to `d_surface`**: a matched random direction
-does 2–3× more. Read together with the equal-dose ASR result (adding `d_surface` at the same magnitude
-*suppresses* ASR, 0.0081 vs 0.0626), the picture is consistent — **adding `d_surface` suppresses both
-attack success and comprehension relative to a matched random direction.**
+**Removing Boombness still does not destroy comprehension — it improves it**, and that conclusion is
+unchanged, now on the reportable instrument.
 
-⚠ **Caveats.** The n=0 level is excluded (2 effective prompts); levels 1–16 have `n_effective` 48. All
-p-values here are **parametric and below the 6-domain cluster floor of 2/2⁶ = 0.031**, so quote the
-intervals, which are wide apart for D vs Dctrl and for F vs Fctrl alike.
+⚠ **The F arms cannot be rechecked.** No gate-passing `wa_F`/`wa_Fctrl` runs exist, and judging is
+blocked on credits, so the F/Fctrl comparison — where the *control* out-performed the arm — rests
+entirely on the sub-gate readout and is **withdrawn pending regeneration**, not merely caveated.
+
+⚠ One `wa_D` run (`…184457`) has **no `DONE.json`** and `analyze_g8` refused it; the complete
+`…190957` run was used instead. The refusal is the guard working.
 
 ⚠ **Single-model claim UPDATED 2026-08-23 — it does replicate on Qwen3, with a specificity caveat.** `analyze_qwen3_decomposition.py` had been written for the `q3dec_` batch and **never run**; the runs were judged and cited by nothing until the audit-#13 shard fix surfaced them (`q3dec_decomposition_L11.json`). On Qwen3-14B at **L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard `in_subspace_orth` control is **null** (−0.0119, p=0.60; p>0.05 in **6 of 6** leave-one-domain-out folds). That is notable because R-23 killed the Llama causal reading precisely because an in-subspace direction *reproduced* the effect — on Qwen3 it does not. ⚠ **But two-thirds of it is non-specific:** the same arm moves *benign_literal* ASR **+0.2562 (p=0.002)**, so the doublespeak-attributable excess is **+0.1248 (p=0.032)**, which falls to **p=0.063** under stratum matching and holds in only 4 of 6 folds. One judging session, uncorrected. So: the ASR effect replicates on a second model; its *specificity* does not clear the bar. Recorded as a live lead, not a result.
 

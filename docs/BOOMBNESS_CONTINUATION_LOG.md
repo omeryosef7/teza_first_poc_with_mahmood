@@ -9678,3 +9678,59 @@ Deliberately **not** launching further judging: each attempt burns an allocation
 | 623 | 2026-08-23 | my band job finished 05:07 — **an hour of luck** | that result survived; nothing else can be judged |
 | 624 | 2026-08-23 | recorded the blocker in **both** deliverables | with an explicit table of what it stops |
 | 625 | 2026-08-23 | **withdrew a "decision" I had been offering** | re-judging is blocked, not undecided |
+
+## Audit #16: I published two sections on a readout this report had already withdrawn
+
+Five findings, two high. Both high ones are mine, from the last ten ticks, and the first is the worst
+error of the sprint so far.
+
+**A-16.1 (high) — §19 Q3b and the Q9 comprehension table were computed on a sub-gate readout.** The
+runs behind them carry a **median option mass of 4.4e-05** (`compD` 7.0e-05, `compDctrl` 4.2e-05).
+`score_behavior.py` sets `--min-option-mass 0.05` and calls falling below it **fatal**, marking such a
+run *"NOT reportable as a comprehension or semantic result"*. These are **~1000× below** it. **R-6
+withdrew exactly this readout**, and the report says so **five paragraphs above** the table I posted.
+
+Gate-passing counterparts (`wa_*`, median option mass **0.315**, `option_mass_gate: PASS`) were on disk
+and unused. Rerunning the committed `analyze_g8.py` on them:
+
+| condition | published | gate-passing |
+|---|---|---|
+| **`natural_doublespeak`** | **+0.370** | **−0.227** [−0.404, −0.051] |
+| `benign_literal` | −0.847 | −0.633 |
+| `direct_harmful` | −0.710 ns | −0.636 |
+| `concept_in_benign_ctx` | −0.163 ns | −0.599 |
+
+**All four fall. The headline's sign reverses and the "double dissociation" does not exist.** More
+demonstrations make comprehension worse everywhere; doublespeak simply degrades **least** (−0.23 vs
+−0.60…−0.64). The two "null controls" that made the story work are not null on the reportable
+instrument. What survives is graded, not dissociative, and is written that way now.
+
+The Q9 half: the **arm survives** (+0.35…+0.42, every interval excluding zero) but **Dctrl is a flat
+null** — every interval covers zero — not the −0.085…−0.135 I published. So *"arm and control ~0.5
+apart with the opposite sign"* is withdrawn; *"the arm improves comprehension while its control does
+nothing"* is the correct and cleaner statement. **F/Fctrl cannot be rechecked** — no gate-passing runs
+exist and judging is blocked — so that comparison is **withdrawn**, not caveated.
+
+`analyze_g8` also **refused** a `wa_D` run lacking `DONE.json` mid-recheck. The guard working.
+
+**A-16.4 (low-med) — a repoint I said I made, and did not.** Last tick's commit and log both state that
+two figure pins were repointed from `insubspace_null_by_layer.json` to `insubspace_null_full24.json`.
+The diff contains **only additions**; both globs still read `by_layer`. I described a fix I had not
+applied, in the same commit whose subject line was about pins being stale. Actually repointed now.
+
+Findings 2 (Q6b re-publishes a retracted reading and conflicts with §7e), 3 (`g3_dynrange.json` is a
+pre-fix artifact: `established` is really **False**, ratio **0.099×** not 3000×) and 5 (three
+inconsistent guard counts) are verified and queued for the next tick.
+
+**The pattern across A-16.1 and A-16.4 is the same one:** I moved fast on artifacts that had been
+sitting uncited, and did not check whether the report had already ruled on them. The unwritten-findings
+detector is good at finding *unused* data and has no idea whether that data is *usable*.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 626 | 2026-08-23 | audit #16 returned 5 findings | verified independently before acting |
+| 627 | 2026-08-23 | Q3b/Q9 ran on a readout **1000× below** a fatal gate | the one R-6 withdrew, stated 5 paragraphs above |
+| 628 | 2026-08-23 | recomputed on gate-passing runs | **sign reverses**; no double dissociation |
+| 629 | 2026-08-23 | Q9 arm survives, **control claim withdrawn** | Dctrl is a flat null, not −0.085…−0.135 |
+| 630 | 2026-08-23 | F/Fctrl **withdrawn** — no gate-passing runs, judging blocked | |
+| 631 | 2026-08-23 | **repointed the pins I had claimed to repoint** | the previous commit described a fix it did not make |

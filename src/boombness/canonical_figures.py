@@ -119,11 +119,11 @@ FIGURES = {
     # cross-deliverable drift this registry exists for.
     "state_L8_arm_delta": (
         r"L8 \*\*\+(0\.0\d{3,4})\*\* \(21 flips\)",
-        "outputs/boombness/insubspace_null_by_layer.json",
+        "outputs/boombness/insubspace_null_full24.json",
         ["layers", "L8", "arm", "delta"], 5e-4),
     "state_L12_arm_delta": (
         r"L12 \*\*\+(0\.0\d{3,4})\*\* \(18\)",
-        "outputs/boombness/insubspace_null_by_layer.json",
+        "outputs/boombness/insubspace_null_full24.json",
         ["layers", "L12", "arm", "delta"], 5e-4),
     "state_mde": (
         r"minimum detectable effect at 80%\s*\n?\s*power is \*\*≈ \+(0\.0\d{1,3})\*\*",
