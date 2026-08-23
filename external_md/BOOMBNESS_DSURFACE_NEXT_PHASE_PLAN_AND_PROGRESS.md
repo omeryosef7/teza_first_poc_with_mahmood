@@ -693,6 +693,69 @@ carries it.
 
 ---
 
+### ★★★★★ R-W (01:34) — **The three new single-pair banks FAIL the acceptance gate. Crossing them PASSES it. The fix is structural, not lexical.**
+
+R-V invented a sharper form of the bank gate than the plan had: instead of asking whether PC1
+"dominates", ask **what dose the best possible orthogonal control can attain**, since that is the
+ceiling on any specificity claim. Applying it to every fit on disk — no GPU, closed form:
+
+| bank | L | rank | arm dose | ceiling | **best orth** | **arm/best** |
+|---|---|---|---|---|---|---|
+| CURRENT (Llama) | 12 | 3 | 0.8204 | 0.1796 | 0.1202 | **6.83×** |
+| CURRENT (Qwen3) | 11 | 3 | 0.8997 | 0.1003 | 0.0640 | **14.05×** |
+| NEW `basket_bomb` | 10 | 3 | 0.7559 | 0.2441 | 0.1800 | **4.20×** |
+| NEW `basket_bomb` | 12 | 3 | 0.7722 | 0.2278 | 0.1694 | 4.56× |
+| NEW `basket_bomb` | 14 | 3 | 0.8108 | 0.1892 | 0.1515 | 5.35× |
+| NEW `basket_knife` | 10 | 3 | 0.8340 | 0.1660 | 0.1212 | 6.88× |
+| NEW `basket_knife` | 12 | 3 | 0.8215 | 0.1785 | 0.1289 | 6.37× |
+| NEW `basket_knife` | 14 | 3 | 0.8907 | 0.1093 | 0.0801 | 11.12× |
+| NEW `button_knife` | 10 | 3 | 0.8036 | 0.1964 | 0.1482 | 5.42× |
+| NEW `button_knife` | 12 | 3 | 0.8079 | 0.1921 | 0.1393 | 5.80× |
+| NEW `button_knife` | 14 | 3 | 0.8748 | 0.1252 | 0.0914 | 9.57× |
+
+**Every new bank fails.** The best cell anywhere is `basket_bomb` @ L10 at **4.20×** — better than the
+current bank's 6.83×, and not remotely "comparable attainable doses".
+
+**And the reason is structural, which is why swapping the codeword could never have fixed it.** Every
+one of these is a 2×2 single-pair design: **4 cells → rank 3 after centring**. In a rank-3 span with
+one axis carrying 76–89%, the entire orthogonal complement is small *by construction*. Changing
+`bomb`→`knife` or `apple`→`basket` changes which words are involved; it cannot change the rank.
+
+#### The crossed design passes, decisively
+
+Pooling the **12** cells from the three pairs into one design — codewords × concepts rather than one
+pair — and measuring the same quantity:
+
+| L | rank | arm dose | best orth | **arm/best** | n_cells |
+|---|---|---|---|---|---|
+| 10 | **9** | 0.3225 | 0.3170 | **1.02×** | 12 |
+| 12 | **9** | 0.3290 | 0.3043 | **1.08×** | 12 |
+| 14 | **9** | 0.3131 | 0.3447 | **0.91×** | 12 |
+
+**Rank goes 3 → 9, the arm's share collapses 0.82 → 0.32, and arm and control become dose-matched to
+within 2–9%.** At L14 the best orthogonal direction is *stronger* than the arm. This is exactly the
+gate's requirement — *same dose, different direction* — and it is the first configuration in this
+project that meets it.
+
+⚠ **This is a SIMULATION, not a measured bank, and the distinction matters.** The 12 cells come from
+**three independently fitted banks**, not one jointly-fitted crossed prompt set, and the arm
+direction used is `basket_bomb`'s `d_surface` applied to the pooled cells rather than a `d_surface`
+defined on the crossed design. Some of the rank-9 spread is **between-bank** variance (different
+prompts, different content), which a genuinely crossed bank would not automatically reproduce. It
+bounds the achievable, it does not deliver it. This is the same caveat R-S carried, now with the
+sharper metric.
+
+#### What this makes concrete for Phase 5
+
+The three banks are **`basket_bomb`, `basket_knife`, `button_knife`** — i.e. codewords
+{`basket`, `button`} × concepts {`bomb`, `knife`} with **`button_bomb` missing**. They are 3 of the 4
+cells of a full 2×2 crossing. **Building the fourth bank and fitting all four jointly on one prompt
+set is the concrete Phase 5 deliverable**, and it is a bank-generation job, not new analysis code —
+the three existing banks were built by the same generator and audited at 2736 rows with 0 alignment
+violations each.
+
+---
+
 ### 📌 REPRODUCIBILITY GAP CLOSED (01:20) — the argsfiles are **gitignored**; here they are
 
 `.gitignore:11` ignores `outputs/`, and every argsfile this phase has used lives under
