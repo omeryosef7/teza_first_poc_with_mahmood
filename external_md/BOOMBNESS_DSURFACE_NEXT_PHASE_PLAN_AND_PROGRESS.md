@@ -632,6 +632,51 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★ R-G (19:26) — ALL SEVEN GATE-E7 ARMS, LENGTH-CONDITIONED: the "matched random control" is a lottery, and `d_surface:add` is the only arm that is inert on comparable text
+
+One judging session (776397), `n_common = 495`, every field taken from `results.jsonl`
+(`malicious_at_0.5`, `n_chars`, `refused` — no join needed).
+
+| arm | median ch | refused | ASR (all) | Δ (all) | rows ≥80ch | base ASR | arm ASR | **Δ on ≥80ch** |
+|---|---|---|---|---|---|---|---|---|
+| baseline | 67 | 0.931 | 0.0646 | — | 106 | 0.3019 | 0.3019 | — |
+| **`dS50`** (`d_surface:add` 0.5) | **25** | 0.796 | 0.0040 | **−0.0606** | **22** | 0.0909 | 0.0909 | **+0.0000** |
+| `rnd50` (random, same dose) | 29 | 0.865 | 0.1293 | +0.0646 | 77 | 0.4156 | 0.4935 | **+0.0779** |
+| `r01` (random, seed 20260901) | 97 | 0.927 | 0.0727 | +0.0081 | 89 | 0.3371 | 0.3258 | −0.0112 |
+| `r02` (random, seed 20260902) | 148 | **0.986** | 0.0121 | −0.0525 | 96 | 0.2812 | 0.0625 | **−0.2188** |
+| `r03` (random, seed 20260903) | 101 | 0.814 | 0.1798 | +0.1152 | 94 | 0.3404 | 0.4468 | **+0.1064** |
+| `rnd75` (random, 0.75) | 150 | 0.774 | 0.2727 | +0.2081 | 96 | 0.3333 | 0.4792 | **+0.1458** |
+
+**Three findings, and only the first was expected.**
+
+**1. The length collapse is specific to `d_surface:add`.** Every random draw at the same magnitude
+makes the model talk *more* (median 97–150 chars vs baseline 67); `d_surface:add` is the only one
+that makes it talk *less* (25). So R-F's confound is not a generic property of `add` at this dose —
+it is a property of this direction.
+
+**2. Random directions at "matched" magnitude are a LOTTERY, not a control.** On length-matched rows
+the four same-dose random draws span **−0.2188 to +0.1064** — a range of **0.325**, against a
+published arm effect of 0.036. `r02` drives refusal *up* to **0.986** (from 0.931) and ASR down by
+0.22 on rows where it is still writing 148-character answers: a large, genuine, behavioural effect
+produced by a **random** direction. Any single-draw "matched random control" at this magnitude is
+uninterpretable, and the earlier −0.0886 interaction was arm-minus-one-lottery-ticket.
+
+**3. `d_surface:add` is the ONLY arm that is exactly inert on comparable text.** Δ = +0.0000 where
+every random draw moves compliance by 0.01–0.22. Read carefully, that inverts the inherited claim:
+`d_surface:add` does not suppress jailbreak behaviour — **on rows where the model still produces a
+substantive answer it does nothing at all**, and its whole apparent effect is that it stops the model
+producing substantive answers.
+
+⚠ **The limitation that bites hardest exactly where the claim is strongest.** Conditioning on
+completion length is conditioning on a **post-treatment collider**, and it is *not* symmetric across
+arms: `dS50` retains only **22** rows because it truncates nearly everything, while the random arms
+retain 77–96. So `dS50`'s Δ = 0 rests on a small, heavily selected subset and is **not** a
+well-powered null. What the table does establish, and what does not depend on the collider, is the
+**cross-arm contrast under identical conditioning**: with every arm filtered the same way, the random
+draws move and this one does not.
+
+---
+
 ### ⛔⛔ REVIEW-1 (19:05) — ADVERSARIAL CODE REVIEW FOUND FOUR MUST-FIX DEFECTS IN MY OWN PHASE 2 CODE
 
 Six reviewers, run **before** any full GPU matrix. Every number below I **re-measured myself** on the
