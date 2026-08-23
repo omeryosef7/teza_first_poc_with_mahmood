@@ -9787,3 +9787,44 @@ The tell was in my own text: I wrote *"the positive control recovers only ~10% o
 | 634 | 2026-08-23 | retracted Q6b in report **and** short update | the +0.0902 pin went red and was removed with it |
 | 635 | 2026-08-23 | regenerated `g3_dynrange` with current code | `established` **False**; ratio **0.099×**, not 3000× |
 | 636 | 2026-08-23 | claim re-founded on `readout_movable` / `null_claims_interpretable` | §10's nulls still readable |
+
+## Built the check that would have caught the worst error mechanically
+
+Three re-published retractions in a week — the Qwen3 empty-goal table, the sub-gate comprehension
+readout, and Q6b — all from writing up uncited artifacts without checking whether the report had
+already ruled on them. The empty-goal class already has a data-side scanner. The **sub-gate** class did
+not, and it was mechanically detectable from each run's own `summary.json`.
+
+New `readout_gate_check.py`. Across 331 generation runs: **257 PASS, 56 no-readout, 14 ABSENT_SUB_GATE,
+3 OVERRIDDEN, 1 ABSENT_OK.** The middle state is the trap — a run predating the gate records **no**
+field, so it is silent, and that is exactly where the failure lived. For those the option mass is
+**computed**, not assumed.
+
+**Building it went wrong twice, in the two ways this repo keeps documenting.**
+
+**(1) Over-broad.** The first version flagged any artifact *naming* a sub-gate run — 12 artifacts, 7
+live, including `judge_session_drift` and `unanalysed_inventory`, which merely enumerate runs and
+compute ASR. A check that cries wolf gets ignored; `canonical_figures` says so twice from its own
+history.
+
+**(2) Then over-narrow, on the motivating case.** Scoping by producing script looked right — until
+`g8_comprehension_by_nexamples` and `g8_comprehension_DF_arms` **dropped off the list entirely**,
+because they carry no `provenance` key, so the producer read as `None` and they were skipped. **The
+check exonerated the two artifacts it was written for.** Keying on "does this record its producer" is
+address-by-incidental-property again. Now: fall back to the artifact's name, and when neither
+identifies a producer, **flag rather than skip** — "unknown" must not read as "fine".
+
+**And it immediately made a claim about my own correction, which I checked rather than believed.** It
+flagged `g8_comprehension_DF_arms_GATEPASS.json` — yesterday's fix — because `wa_D` is marked
+`OVERRIDDEN`. But the override names the readout: *"semantic/semantic_one_word: median option mass
+0.01205"*. My analysis uses **comprehension**, and all three runs measure **0.31–0.33** there, an order
+of magnitude *above* the gate. **The correction is sound**, and the scanner is imprecise: it treats a
+per-readout flag as blanket. Documented in the module rather than papered over.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 637 | 2026-08-23 | built `readout_gate_check.py` for the sub-gate class | 257 PASS / **14 silent sub-gate** / 3 overridden |
+| 638 | 2026-08-23 | v1 **over-broad** — flagged index artifacts that only name runs | scoped to the producing script |
+| 639 | 2026-08-23 | v2 **over-narrow** — skipped the two artifacts it was built for | no `provenance` ⇒ producer `None` ⇒ silently exonerated |
+| 640 | 2026-08-23 | now flags unknown producers instead of skipping | "unknown" must not read as "fine" |
+| 641 | 2026-08-23 | it flagged **my own correction**; I checked | override is per-readout — comprehension mass **0.31–0.33**, sound |
