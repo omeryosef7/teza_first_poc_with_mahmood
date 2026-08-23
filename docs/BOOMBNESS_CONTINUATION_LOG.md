@@ -10097,3 +10097,46 @@ six lets a *seventh* stand out instead of vanishing into a count.
 | 670 | 2026-08-23 | new gate hit was **my own Q5 citation** from last tick | checked the assumption behind it |
 | 671 | 2026-08-23 | `analyze_g2` excludes its forced-choice component | **Q5 stands**; scanner over-reports, noted not suppressed |
 | 672 | 2026-08-23 | triaged all six live hits in the artifact | so a seventh stands out rather than joining a number |
+
+## The phase board had been carrying a retracted result as DONE for six days
+
+Audit #17 spawned. While it runs: the loop asks each tick to update the **phase status board**, and I
+have been updating the tick log and the audit table and treating the board as static. It was not
+static, it was **stale**, in four ways — and one of them is the failure this sprint keeps repeating.
+
+**P7.2 stated a retracted result as a live DONE.** It read *"role → Boombness F=0.175, **p=0.972** — a
+tight null, not an underpowered one"*. That is **R-6**, withdrawn on 08-17 for using a between-stem
+denominator where the within-stem residual was correct. **P7.4, four rows below, has carried the
+retraction the whole time** — so the board asserted a claim and its withdrawal simultaneously for six
+days. Now retracted in place, with the live answer: role framing **does** move Boombness (`tool`
+**+0.080** [+0.017, +0.143], omnibus **p=0.0005**) and **not** ASR (**p=0.363**), with `user_like` and
+`cot_like` both null.
+
+**P8.2 contradicted itself inside one row.** Status said ⛔ RETRACTED; the Evidence cell still ended
+*"**This objective should be built.**"* That is the C-12 shape — a correction sitting beside the claim
+it corrects — and it is the third instance this week. It now says it should **not** be built, with §19
+Q10's demonstrated reason: at equal injected magnitude, adding `d_surface` **suppresses** ASR (0.0081
+vs 0.0626 for a matched random direction), and removing refusalness restores it (+0.1798, 12/12
+domains) — an objective ascending this direction ascends toward refusal.
+
+**P4.4 cited the superseded artifact** (`reanalyze_d_surface_cos.json`), which I established two ticks
+ago has a **corrected** twin. Repointed, with the twin named so nobody re-derives from it.
+
+**P8.5 held two stale values at once** — Status "rev 6", Evidence "revision 4", against an actual
+**rev 7**.
+
+**The pattern is worth naming:** every one of these is a *pointer* that decayed while the thing it
+points at moved. The tick log is append-only so it cannot rot; the board is a summary, and summaries
+are where this sprint's errors go to live. It has now been checked once — which is once more than in
+the preceding twenty ticks.
+
+⚠ My own verification of the fix then produced a false positive: it flagged P8.5 as still stale because
+the new text *quotes* "revision 4" inside the note explaining the fix. Checked before believing it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 673 | 2026-08-23 | spawned **audit #17** | running |
+| 674 | 2026-08-23 | audited the **phase board**, untouched for ~20 ticks | four stale rows |
+| 675 | 2026-08-23 | **P7.2 asserted a retracted result (R-6) as live DONE** | while P7.4 carried the retraction — for six days |
+| 676 | 2026-08-23 | P8.2 said RETRACTED and "should be built" in one row | **C-12 shape, third instance this week** |
+| 677 | 2026-08-23 | P4.4 repointed to the corrected artifact; P8.5 rev 4/6 → **7** | |
