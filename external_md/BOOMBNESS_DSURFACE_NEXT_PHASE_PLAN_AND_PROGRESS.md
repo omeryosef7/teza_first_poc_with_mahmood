@@ -637,6 +637,62 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★★ R-T (00:22) — **PHASE 3: RETRIEVAL AND REFUSAL ARE INDEPENDENT CHANNELS. The pre-registered prediction was correct.**
+
+**Artifact:** judge session **777030**, all four 2×2 cells judged together, `n_common = 96`.
+
+| cell | ASR@0.5 | refused | Δ vs A |
+|---|---|---|---|
+| **A** baseline | 0.2292 | 0.0312 | — |
+| **C** retrieval knockout (L6–14) | 0.0521 | 0.0104 | **−0.1771** |
+| **R** refusal removed (`refusalness:project_out:12-12`) | 0.1979 | 0.0417 | −0.0312 |
+| **C+R** both | **0.0208** | 0.0208 | −0.2083 |
+
+#### The decisive number
+
+| contrast | before | after | effect |
+|---|---|---|---|
+| knockout **with refusal intact** (A → C) | 0.2292 | 0.0521 | **−0.1771** |
+| knockout **with refusal removed** (R → C+R) | 0.1979 | 0.0208 | **−0.1771** |
+
+**The retrieval effect is the same size whether or not the refusal channel is present** — in fact
+**exactly 17 flips of 96 in both cases.** Against the pre-registration:
+`|C+R − C| = 0.0312` (close to C) versus `|C+R − R| = 0.1771` (far from R). **The prediction written
+before the arms landed — C+R ≈ C, i.e. independence — is confirmed.**
+
+Exact paired cluster sign-flip on the **(C+R vs R)** contrast — *does the knockout still work once
+refusal is already gone?* — over 5 informative domains: **p = 2/32 = 0.0625**, every informative
+domain negative (city_bridge −0.0625, farm_storage −0.0625, game_manual −0.5625, instructional
+−0.1875, lab_safety −0.1875, news_report 0.0000). ⚠ **0.0625 is the attainable floor** for 5
+informative clusters; the magnitude is the quotable quantity.
+
+#### Interpretation, at the strength the design supports
+
+**Removing demonstration retrieval and removing refusal are ADDITIVE, not redundant.** Knocking out
+retrieval removes the same ~17 prompts of attack success regardless of refusal state, so the two are
+**separate causal routes to compliance** on this bank.
+
+**And refusal removal barely does anything here (−0.0312).** That is *not* a contradiction of the
+report's arm C (+0.2061 on AdvBench) — it is the expected result and it sharpens the picture: on the
+doublespeak bank the baseline refusal rate is already **0.0312**, i.e. the attack succeeds *by not
+triggering refusal in the first place*. There is almost no refusal left to remove. **Doublespeak
+does not overpower the refusal channel; it routes around it** — and the retrieval pathway is what
+carries it.
+
+⚠ **Limits, stated rather than buried.**
+1. **p is at the design's floor** (0.0625, 5 informative domains). Every domain agrees in sign;
+   nothing stronger is attainable at 6 clusters.
+2. **The exact −0.1771 match is partly luck.** Both contrasts happen to move exactly 17 rows of 96;
+   at this n the honest word is **"indistinguishable"**, not "identical". Additivity is supported,
+   not measured to four decimals.
+3. **R−A is slightly NEGATIVE (−0.0312)** and n.s. Removing refusal did not raise ASR on this bank.
+   Not interpreted here beyond the floor-effect reading above.
+4. **R-R's open question stands**: what the knocked-out completions *contain* is still
+   uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
+5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
 ### 🔬 PHASE 3 LAUNCHED (23:21) — does the retrieval effect run THROUGH refusal, or beside it?
 
 Phase 2 answered *whether* demonstration retrieval is causally necessary (R-R: yes, −0.1562 against
