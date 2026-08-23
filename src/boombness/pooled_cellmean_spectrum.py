@@ -62,15 +62,32 @@ def max_complement_dose(M, u):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--layers", default="6,8,10,12,18")
+    # Fits are an ARGUMENT, not a constant, so the measurement grows as extractions land instead of
+    # requiring an edit (and a stale hardcoded list is its own defect class here).
+    ap.add_argument("--fit", action="append", default=[], metavar="NAME=RUNDIR",
+                    help="repeatable; overrides DEFAULT_FITS entirely when given")
     ap.add_argument("--arm-pair", default="carrot_bomb", help="whose d_surface is the arm")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     layers = [int(x) for x in a.layers.split(",")]
-    P = {k: torch.load(os.path.join(REPO, "outputs/boombness/extract_boombness", v,
-                                    "directions_fit_dev.pt"), map_location="cpu",
-                       weights_only=False) for k, v in DEFAULT_FITS.items()}
+    fits = dict(DEFAULT_FITS)
+    if a.fit:
+        fits = {}
+        for spec in a.fit:
+            if "=" not in spec:
+                raise SystemExit(f"--fit needs NAME=RUNDIR, got {spec!r}")
+            k, v = spec.split("=", 1)
+            fits[k] = v
+    P = {}
+    for k, v in fits.items():
+        rd = os.path.join(REPO, "outputs/boombness/extract_boombness", v)
+        if not os.path.exists(os.path.join(rd, "DONE.json")):
+            raise SystemExit(f"REFUSING: {v} has no DONE.json -- an unfinished extraction must not "
+                             f"be fitted from (require_done discipline)")
+        P[k] = torch.load(os.path.join(rd, "directions_fit_dev.pt"), map_location="cpu",
+                          weights_only=False)
     out = {"question": "does crossing codeword/concept pairs break PC1 dominance of the cell-mean cloud?",
-           "fits": DEFAULT_FITS, "arm_pair": a.arm_pair, "layers": layers,
+           "fits": fits, "arm_pair": a.arm_pair, "layers": layers,
            "caveat": ("pooling three separately-fitted banks is not the same object as one bank with "
                       "crossed pairs; each was centred within its own row-set. Same model/layers/"
                       "extraction config makes it reasonable, but a real Phase 5 bank must be built "
@@ -88,7 +105,7 @@ def main() -> int:
             d = out["single_pair"][pair][f"L{L}"]
             d["arm_over_max_complement"] = d["arm_dose"] / d["max_complement_dose"]
         Mp = torch.stack([P[p]["cell_means"][c][L].reshape(-1)
-                          for p in DEFAULT_FITS for c in sorted(P[p]["cell_means"])]).double()
+                          for p in fits for c in sorted(P[p]["cell_means"])]).double()
         Mp = Mp - Mp.mean(0, keepdim=True)
         fr = spectrum(Mp)
         out["pooled"][f"L{L}"] = {

@@ -637,6 +637,45 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★ R-K (20:52) — PHASE 5 PIPELINE VALIDATED END-TO-END, AND THE FOURTH PAIR CONTINUES THE TREND
+
+**The Phase 5 path now runs whole**: generate bank → §2.4 tokenization audit → extract → fit →
+spectrum. Job **776774** (`x2fit_basket_bomb`) completed in **6:41**: 2736 rows, `failures: {}`,
+`DONE.json` present, both `directions_fit_dev.pt` and `directions_fit_heldout.pt` written,
+`n_per_cell = {A:30, B:30, C:30, E:30}` — balanced across all four cells, 32 layers.
+
+This is the first pair fitted from a bank **this phase generated**, so it validates the whole chain
+rather than reusing inherited fits.
+
+#### The spectrum with four pairs
+
+| layer | single pair PC1 | 3-pair PC1 | **4-pair PC1** | single gap | 3-pair gap | **4-pair gap** |
+|---|---|---|---|---|---|---|
+| L6 | 0.8769 | 0.5157 | **0.4689** | 10.9× | 2.28× | **2.27×** |
+| L8 | 0.8405 | 0.5270 | **0.4750** | 7.4× | 2.53× | **2.37×** |
+| L10 | 0.8116 | 0.5289 | **0.4756** | 6.2× | 2.71× | **2.56×** |
+| L12 | 0.8205 | 0.5260 | **0.4716** | 6.8× | 2.57× | **2.47×** |
+| L18 | 0.9067 | 0.5243 | **0.4729** | 12.4× | 2.11× | **2.18×** |
+
+**PC1 falls again, 0.52 → 0.47**, and the arm/max-control gap holds around **2.2–2.6×** against the
+single-pair **6.2–12.4×**. The trend is monotone in the number of crossed pairs, which is the
+prediction the Phase 5 design rests on — and it is now supported by a pair that did not exist when
+R-H was written, rather than by re-slicing the same three.
+
+Extractions for the remaining two pairs (`basket×knife` **776799**, `button×knife` **776800**) are
+queued; at six pairs the design target of **`arm/max_control ≤ ~2.5×`** should be met with margin,
+and PC1 is on track for ~0.42–0.45.
+
+#### Reuse note
+
+`pooled_cellmean_spectrum.py` now takes `--fit NAME=RUNDIR` repeatably instead of a hardcoded list,
+so the measurement grows as extractions land rather than requiring an edit — a stale hardcoded list
+being its own defect class here. It also **refuses any run directory without `DONE.json`**, so an
+unfinished extraction cannot be fitted from. Artifact:
+`outputs/boombness/pooled_cellmean_spectrum_4pair.json`.
+
+---
+
 ### ⛔ R-J (20:32) — PHASE 2 SMOKE: THE INSTRUMENT IS LIVE, BUT THE POSITIVE CONTROL DOES NOT FIRE. NOTHING IS INTERPRETABLE YET.
 
 Job **776438**, `allpast:attn_knockout:18-19:1.0`, 8 prompts, arm `P_allpast_smoke`, commit
