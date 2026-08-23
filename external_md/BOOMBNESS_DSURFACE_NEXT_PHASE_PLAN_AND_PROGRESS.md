@@ -632,6 +632,75 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ⛔ R-J (20:32) — PHASE 2 SMOKE: THE INSTRUMENT IS LIVE, BUT THE POSITIVE CONTROL DOES NOT FIRE. NOTHING IS INTERPRETABLE YET.
+
+Job **776438**, `allpast:attn_knockout:18-19:1.0`, 8 prompts, arm `P_allpast_smoke`, commit
+`338e13fd`, n-802, L40S. Read against the six criteria fixed at `fc3a04a1` **before** the result
+existed.
+
+#### Checks 1–5: PASS, and two of them are exact identities rather than approximate matches
+
+```
+KNOCKOUT LIVENESS: {'n_rows': 8, 'frac_rows_decode_live': 1.0,
+                    'median_decode_edits': 34609.0, 'min_decode_forwards': 322,
+                    'median_n_demo_positions': 44.0, 'attn_implementation': 'eager'}
+KNOCKOUT PRE-FLIGHT: {'n_rows': 8, 'no_demo_block': 0, 'infeasible_control': 0,
+                      'by_n_examples': {'1':{n:2,ok:2,bad:0}, '2':…, '4':…, '8':…}}
+```
+
+* **decode_forwards = n_new × 2 − 2 in all 8 rows.** ×2 for the two hooked layers; **−2** because the
+  first generated token comes from the *prefill* forward, not a decode step. My pre-registration said
+  `== n_new_tokens`, which was wrong on both counts — the observed relation is a deterministic
+  identity, which is a stronger pass than the one I asked for.
+* **edits / forward = seq_len − 2 in all 8 rows** (64/80/108/162/68/86/113/168 against seq_len
+  66/82/110/164/70/88/115/170). That is exactly `allpast = range(1, n−1)`. The arm blocked precisely
+  what it is defined to block, on every row.
+
+#### ⛔ Check 6: FAIL — generation is essentially unchanged
+
+⚠ **First, a population error I nearly made.** The "baseline median 67 chars" figure everywhere in
+this log is **AdvBench** (`ab_base`). This smoke runs on the **internal bank**. Comparing them is the
+C-11 population-mismatch defect. The correct comparator is
+`r18pow_base_20260819_061034_2248507` — same bank, same query kind, un-intervened — paired on
+`prompt_id`:
+
+| | baseline | arm P |
+|---|---|---|
+| median chars | **790** | **810** |
+| mean chars | 799.1 | 785.9 |
+| **ratio of medians** | — | **1.03×** |
+| rows longer in arm | — | **2 of 8** |
+
+Blocking **every prompt key except BOS** changes generation by **3%**. Under the pre-registered rule
+(*"if 1–5 pass and 6 fails the run is VOID, not negative"*), **nothing in Phase 2 is interpretable
+from this run.**
+
+#### The diagnosis is NOT "the hook is broken" — and G3 already predicted it
+
+A two-layer knockout at **L18–19** leaves layers 0–17 to have already carried prompt information
+into the residual stream at each position. Blocking attention at L18–19 prevents *further* retrieval,
+not what is already there. **That is exactly G3's established redundancy result**: cutting demo-block
+edges across **all** layers recovers 75.2% of the deletion ceiling while **sparse/partial knockout
+does not work**. A 2-layer positive control is under-powered *by the sprint's own prior finding*, and
+I chose it anyway.
+
+**So the smoke has separated two hypotheses down to one test:** either the hook never reaches the
+computation (instrument broken), or two layers is simply too few (control mis-specified). Submitted
+**776775** — `allpast:attn_knockout:0-31:1.0`, all 32 layers, same 8 prompts. If that wrecks
+generation, the instrument is proven and L18–19 was merely weak; if it does not, the hook is not
+reaching the computation and `diagnose_knockout.py` on attention weights is next.
+
+**What this does NOT license, restated:** no claim about `demo_all`, and no claim about ASR.
+
+#### Why this is the pre-registration paying for itself
+
+Checks 1–5 all read counters the hook increments. Had check 6 not been fixed in advance, the honest
+reading of `frac_rows_decode_live = 1.0`, `eager`, 34,609 decode edits and a clean pre-flight is
+*"the instrument is proven"* — and it is not. This is the §10 failure in its original costume: a
+positive control that blocked 7,392 edges and moved the readout by 0.086 log-odds.
+
+---
+
 ### 🔒 PRE-REGISTERED (20:22) — how the Phase 2 smoke will be read, written BEFORE the result exists
 
 Job **776438** (`allpast:attn_knockout:18-19:1.0`, 8 prompts, arm `P_allpast_smoke`) is mid model-load
