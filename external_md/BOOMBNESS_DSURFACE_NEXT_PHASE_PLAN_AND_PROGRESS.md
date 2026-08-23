@@ -264,15 +264,15 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | id | phase | experiment | status | gate |
 |---|---|---|---|---|
 | P0 | 0 | reproduction + audit + guard suite | ✅ PASS | — |
-| E7-BAND | 1A | exp-7 random control band (3 draws) | 🔬 judging (**peer job 776368**) | Gate E7 |
-| DOSE-L12 | 1B | **nine-point** L12 dose ladder | 🔬 generating 776391/776392 | Gate DOSE |
-| SESSION | 1C | one-session canonical control artifact | ⬜ waits on 776391/776392 | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | 🔬 **unblocked** — hook fixed + 10/10 tests; wiring next | Gate RETRIEVAL |
-| RETR-REF | 3 | retrieval × refusal composition | ⬜ | — |
-| XMODEL | 4 | Llama vs Qwen3 matched | ⬜ | — |
-| BANK2 | 5 | new non-PC1-dominated bank | ⬜ | Bank gate |
-| CONCEPT | 6 | concept generality on BANK2 | ⬜ | — |
-| OBJ | 7 | new objective | ⬜ | 6 gates |
+| E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
+| DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
+| SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** (R-P/R-Q/R-R) | Gate RETRIEVAL **PASSED** |
+| RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
+| XMODEL | 4 | Llama vs Qwen3 matched | 🔬 **current** — N13 headroom gate first | Headroom + dose |
+| BANK2 | 5 | new non-PC1-dominated bank | 🟡 gate measured (R-S): 1.5–1.9× realizable, banks built + audited | Bank gate |
+| CONCEPT | 6 | concept generality on BANK2 | ⬜ blocked on Phase 5 | — |
+| OBJ | 7 | new objective | ⬜ | 6 gates; **Gate 6 looks unreachable via `d_surface`** |
 
 ---
 
