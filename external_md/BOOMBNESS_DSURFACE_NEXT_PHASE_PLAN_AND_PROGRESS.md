@@ -637,6 +637,66 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★★ R-M (21:02) — **PHASE 5 BANK-ACCEPTANCE GATE PASSES.** The identification problem that killed direction-specificity is solved by the crossed bank.
+
+**Artifact:** `outputs/boombness/pooled_cellmean_spectrum_6pair.json`. All six pairs of the
+**{carrot, button, basket} × {bomb, knife}** factorial are now fitted — three of them from banks
+**this phase generated and audited** (`x2fit_basket_bomb`, `x2fit_basket_knife`,
+`x2fit_button_knife`). 24 cells.
+
+| pairs | PC1 | PCs ≥ 0.10 | **arm / max attainable control dose** |
+|---|---|---|---|
+| **1** (the design every sprint result rests on) | 0.8116 – 0.9067 | **1** | **6.2× – 12.4×** |
+| 3 (R-H, simulated from inherited fits) | ~0.52 | 3 | 2.11× – 2.71× |
+| 4 (+ `basket×bomb`, first new fit) | ~0.47 | 3 | 2.18× – 2.56× |
+| **6 (full factorial)** | **0.3330 – 0.3497** | **4** | **1.35× – 1.62×** |
+
+Per-layer spectra at six pairs — four comparable components instead of one dominant one:
+
+| layer | PC1 | PC2 | PC3 | PC4 | gap |
+|---|---|---|---|---|---|
+| L6 | 0.3401 | 0.2228 | 0.1870 | 0.1588 | **1.35×** |
+| L8 | 0.3478 | 0.2198 | 0.1752 | 0.1453 | **1.43×** |
+| L10 | 0.3497 | 0.2013 | 0.1664 | 0.1498 | **1.61×** |
+| L12 | 0.3441 | 0.1979 | 0.1697 | 0.1582 | **1.62×** |
+| L18 | 0.3330 | 0.2349 | 0.1948 | 0.1785 | **1.35×** |
+
+#### 🚦 Gate verdict
+
+| criterion (§2 Phase 5) | single pair | **six pairs** |
+|---|---|---|
+| PC1 does not almost completely dominate | ✗ 0.81–0.91 | **✅ 0.33–0.35** |
+| multiple directions with comparable attainable dose | ✗ 6–12× gap | **✅ 1.35–1.62×**, target was ≤ 2.5× |
+| tokenization / alignment / grammar audits | ✓ | **✅** all six: 0 violations, 0 token failures, 0 article errors |
+
+**GATE PASSES with margin.** At a gap of **1.35×** the arm removes only a third more of the
+cell-mean spread than the *best* orthogonal direction can — so **"same dose, different direction" is
+not merely constructible, it is nearly free.**
+
+#### Why this is the most consequential Phase 5 result
+
+Every negative that killed direction-specificity traces to the *same* geometric fact: on the
+single-pair bank `d_surface` is essentially PC1, so no orthogonal control can approach its dose.
+**R-25** (the in-subspace null was never dose-matched), **C-2** (dose-matching is metric-dependent
+and the metrics disagree by ~10× in α), and **R-C** (at matched dose the L12 effect is exactly zero,
+0 net flips of 495) are all consequences of a 6–12× dose gap that the *bank* imposed, not the model.
+
+**On this bank that gap is 1.35×.** The question "is the effect about *this direction* or about
+*how much variance it removes*" — which the report calls not answerable on the current bank *"not for
+want of compute, but because the two are geometrically entangled"* — **is answerable on this one.**
+
+⚠ **Three limits, unchanged and load-bearing.**
+1. Still a **pooled** spectrum over six separately-fitted banks, not one bank with crossed pairs in a
+   single row-set. Six real fits is far stronger than R-H's three-fit simulation, but the object
+   Phase 5 will ultimately intervene on is one bank, and it must be built and measured.
+2. This is **geometry**. It does **not** show a dose-matched control yields a different scientific
+   answer — that needs causal runs on the new bank, which is the next GPU item.
+3. `carrot` is 2 tokens unspaced and is in 2 of the 6 pairs. It adds diversity but breaks
+   tokenization symmetry; a fully screened rebuild would drop it, at the cost of continuity with
+   every `d_surface_carrot_bomb` number in the sprint.
+
+---
+
 ### ⛔➡✅ R-L (20:56) — **R-J's "VOID" VERDICT IS RETRACTED. THE INSTRUMENT IS PROVEN.** My check-6 proxy was wrong.
 
 **Artifact:** `outputs/boombness/p2_instrument_generation_change.json`, produced by
