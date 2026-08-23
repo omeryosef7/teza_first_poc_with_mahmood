@@ -7069,6 +7069,85 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## ⛔⛔⛔ SIXTH AND SEVENTH REVERSALS — the surviving-claims list itself does not survive
+
+A second audit took the eight "survives every correction" rows and applied the **same four
+corrections that killed direction-specificity** (multiplicity, dose, session-matching, estimator).
+**Two rows fail outright. Two more carry evidence clauses this log had already retracted and the
+table silently restored.** I verified both reversals.
+
+### ⛔ SIXTH — row 5 (refusal gate) fails the repo's own multiplicity policy
+
+The policy is *"the family is the set of tests the script runs in one pass"*. `analyze_e4_pathway.py`
+emits **15** p-values in one pass (4 arms × 2 strata × 2 metrics). Holm on the claimed contrast:
+
+| family | m | Holm-adjusted | |
+|---|---|---|---|
+| score only, non-degenerate arms | 7 | **0.0499** | ⚠ knife-edge |
+| **everything the script emits** | **15** | **0.1030** | ⛔ **fails** |
+
+✅ **What is clean:** the 461-row stratum is **not** a post-hoc selection — it splits on the
+*baseline's* refusal state, a pre-treatment covariate, and stratifying **weakens** the p
+(unstratified +0.0305, p 0.0089). I checked this specifically because it is the obvious suspicion.
+
+⛔ **What is not:** it sits exactly on the knife-edge `multiplicity_families.json` already calls
+*"a judgment call, not a fact"*, and **rows 4 and 5 are not independent** — both summarise the *same
+24 movers* in the same arm (`refusal_transitions: True→False = 21`). An 8-row survivor table
+containing both overstates the evidence base.
+
+### ⛔ SEVENTH — "0 of 7 `d_surface:add` doses coherent" is a gate artifact
+
+| dose | scorable | uniq | 3-gram | what actually fails |
+|---|---|---|---|---|
+| **baseline (untreated)** | **0.5414** | **0.8411** | 0.0095 | — passes by **0.041** |
+| 0.0625 | 0.4909 | **0.8609** | 0.0064 | scorable only |
+| 0.125 | 0.4545 | **0.8654** | 0.0060 | scorable only |
+| 0.25 | 0.3313 | **0.8733** | 0.0049 | scorable only |
+| 0.5 | 0.1172 | **0.8533** | 0.0119 | scorable only |
+| 0.75 | 0.3636 | 0.4390 | 0.2450 | scorable + uniq |
+| 1.0 (×2) | 1.0000 | 0.21–0.23 | 0.60–0.63 | genuinely degenerate |
+
+⛔ **Four of the seven fail *only* the short-output proxy — and are lexically HEALTHIER than the
+untreated model** (uniq 0.853–0.873 vs 0.841; trigram 0.005–0.012 vs 0.0095). The gate's own error
+string names what it is dropping: *"the dropped rows are the short ones — **the refusal/collapse
+mode**"*. **A refusal is short.**
+
+⛔ **So the honest tally is 3 of 7 genuinely degenerate, not 7 of 7** — and the four "failures" are an
+intervention **increasing refusal**, which is what rows 4 and 5 claim `d_surface` does. **I discarded
+the predicted positive result as an instrument failure.** The matched random control at the same dose
+also fails the same gate (`fuS_rand_g05`, scorable 0.463), so the gate does not discriminate arm from
+control here at all.
+
+⛔ **Consequence: plan §8 experiment 7 is NOT an "evaluated negative".** It is **untested** — the
+instrument cannot score an intervention whose effect is to shorten outputs. "§8 fully answered" is
+withdrawn.
+
+### ⛔ Two evidence-column regressions, corrected in place
+
+- **Row 3 (Qwen3):** the direction-specificity clause is **struck**. Its control is **one** draw at
+  **one** layer with a **24.8× dose gap** (arm removes 89.97% of the cell-mean spread, control
+  3.63%) — *worse* than the Llama gap the `DOSE_CAVEAT` says cannot separate direction from dose.
+  **The decomposition claim (+0.3810) stands; the "control could fail and didn't" rationale does
+  not.**
+- **Row 8 (Gate C):** "AUROC 1.0 at every layer (token identity)" is the **uncorrected** form that
+  review #9 B11 already fixed. True range: **1.0000 for d1–d4; 0.9587–0.9861 for the
+  surface-matched d5/d6** — and *token identity cannot solve d5/d6 by construction*, so the
+  mechanism gloss does not apply to the two regimes that matter.
+- **Row 4:** "ranks 7th of 8" is **not an interpretable statistic** — `weapons` and
+  `identity_theft` tie at +0.025000000, and four of the eight movable categories moved by **exactly
+  one prompt**, so the ordering is `1/n_prompts`, i.e. it measures **category size**. The defensible
+  claim is the sign test (8/8 positive, p 0.0039) against an inert control.
+
+### What the survivor list looks like after this
+
+**Rows 1 and 2 survive all four corrections** (row 1 with "most of" and "two orders of magnitude"
+struck; row 2 is the cleanest thing in the sprint). **Row 3 survives as a decomposition, not as
+direction-specificity. Rows 5 and 7 do not survive. Rows 4, 6 and 8 survive only in weakened form.**
+
+⚠ **Eight survivors became two-and-a-half.** That is the third time in this sprint that a
+"what survives" list has shrunk under adversarial reading, and the pattern is now unmistakable:
+**every list I write of my own strongest results is systematically too long.**
+
 ## ⛔⛔ THE STOCKTAKE'S FRAMING WAS WRONG IN SEVEN PLACES — and one of them contradicts my own section headers
 
 > A framing audit — arithmetic explicitly excluded — found seven material defects in the stocktake
