@@ -176,3 +176,20 @@ def test_a_pure_knockout_spec_needs_no_fitted_direction_file():
     ctxs = sb.make_intervention(None, pc, _LM(), spec, None, control_seed=1,
                                 demo_keys=DEMO_KEYS, seq_len=SEQ_LEN, knock_stats={})
     assert len(ctxs) == 1 and pc.made[0].blocked_keys == DEMO_KEYS
+
+
+def test_arm_B_and_a_knockout_are_mutually_exclusive():
+    """--demo-deleted generates from final_query_text (no demonstrations) while attn_knockout masks
+    demo positions computed from the FULL prompt. Combined, the mask addresses different text than
+    the model reads, and the liveness block would still look healthy. It must refuse.
+
+    Asserted at source level because the check lives in main()'s argument handling, which cannot be
+    driven without loading a model.
+    """
+    import os
+    src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                            "src", "boombness", "score_behavior.py")).read()
+    assert "args.demo_deleted and _wants_knockout" in src, \
+        "the arm-B / knockout mutual-exclusion guard is gone"
+    i = src.index("args.demo_deleted and _wants_knockout")
+    assert "REFUSING" in src[i:i + 400], "the guard no longer refuses"

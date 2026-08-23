@@ -630,6 +630,14 @@ def main() -> int:
     # arm-vs-baseline contrast in Phase 2 would have confounded the mask edit with a KERNEL SWAP.
     # Under greedy bf16 decoding a sub-ulp difference on a near-tie refuse/comply token branches into
     # a different completion and a different judged ASR. Run the references under eager too.
+    # PHASE 2 ARM B -- the behavioural text-deletion CEILING.
+    # Generates from `final_query_text` (the query with the demonstration block absent) instead of
+    # `full_prompt`. Semantics lifted verbatim from surgical_knockout.py's `no_demo_text` arm
+    # (:978-988) so the behavioural ceiling and the readout ceiling are the SAME operation -- G3
+    # reports "75.2% of the deletion ceiling", and a fraction of a ceiling measured a different way
+    # is not comparable to it.
+    ap.add_argument("--demo-deleted", action="store_true",
+                    help="arm B: generate from final_query_text, i.e. the demonstrations removed")
     ap.add_argument("--attn-impl", default="sdpa", choices=["sdpa", "eager"],
                     help="eager is REQUIRED for attn_knockout and is forced there; set it "
                          "explicitly on the reference arms so a contrast is kernel-matched")
@@ -714,6 +722,16 @@ def main() -> int:
     # This is refused rather than warned about: a void run that looks like a null is worse than a
     # crash. surgical_knockout.py forces eager for the same reason (:701-702).
     _wants_knockout = bool(args.intervene) and ":attn_knockout:" in args.intervene
+    # ARM B AND A KNOCKOUT ARE MUTUALLY EXCLUSIVE, and the failure would be silent.
+    # demo_key_positions locates the demonstration span inside the templated FULL prompt, while
+    # --demo-deleted generates from final_query_text, which has no demonstrations in it. Combining
+    # them masks token indices that address entirely different text -- a prompt/mask mismatch that
+    # produces a healthy-looking liveness block and a meaningless arm.
+    if args.demo_deleted and _wants_knockout:
+        raise SystemExit("REFUSING: --demo-deleted removes the demonstrations from the prompt while "
+                         "attn_knockout masks demonstration positions computed from the FULL "
+                         "prompt. The mask would address different text than the model reads. Arm B "
+                         "is a prompt swap, not a hook, and takes no --intervene.")
     _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
     if _wants_knockout and getattr(getattr(lm.model, "config", None), "_attn_implementation",
@@ -789,7 +807,8 @@ def main() -> int:
             if not os.path.exists(p):
                 p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
             payload = torch.load(p, map_location="cpu", weights_only=False)
-        run.note(population_filter=_pop_filter, population_composition=_pop_composition)
+        run.note(population_filter=_pop_filter, population_composition=_pop_composition,
+             demo_deleted=bool(args.demo_deleted))
     if spec is not None:
         # REALIZED DOSE, RECORDED RATHER THAN RECOMPUTED LATER (C-2).
         # Until now a project_out run recorded ONLY its alpha: frac_cellmean_spread_removed is
@@ -1018,7 +1037,20 @@ def main() -> int:
                         # run was byte-identical in structure to the thinking-on one (both 100%
                         # opening <think> at index 0, medians 157 vs 156 words). Same shape as the
                         # phantom-cell bug — a flag threaded into one of two paths that must agree.
-                        g = dc.generate(lm, row["full_prompt"], max_new_tokens=args.max_new,
+                        # ARM B swaps the PROMPT, not the hooks: the demonstrations are absent
+                        # from the text rather than masked. A row with no final_query_text cannot
+                        # carry this arm and is charged to the ledger rather than silently falling
+                        # back to full_prompt -- that fallback would make arm B secretly arm A and
+                        # the ceiling would read as zero effect.
+                        _gen_prompt = row["full_prompt"]
+                        if args.demo_deleted:
+                            _q = (row.get("final_query_text") or "").strip()
+                            if not _q:
+                                ledger.fail("demo_deleted:missing_final_query_text",
+                                            row["prompt_id"])
+                                continue
+                            _gen_prompt = _q
+                        g = dc.generate(lm, _gen_prompt, max_new_tokens=args.max_new,
                                         templated=True, enable_thinking=ENABLE_THINKING)
                         # ds_common.generate returns {"completion", "n_new_tokens",
                         # "stop_reason", ...}. The first draft read g["text"], which does not
