@@ -17,8 +17,12 @@ conda activate poc_stage2
 if [ -f "$R/.env" ]; then set -a; source "$R/.env"; set +a; fi
 export PYTHONPATH="$R/src/boombness:${PYTHONPATH:-}"
 BANK=$R/data/boombness_prompts/boombness_prompt_bank.jsonl
-MANIFEST=$R/outputs/boombness/argsfiles/p2_arms.txt
-EXPECTED=5
+# PARAMETERISED so one driver serves several phases. A near-copy of this file for Phase 3 is how two
+# scripts drift apart and one quietly keeps an old assertion.
+MANIFEST=${P2_MANIFEST:-$R/outputs/boombness/argsfiles/p2_arms.txt}
+EXPECTED=${P2_EXPECTED:-5}
+PREFIX=${P2_PREFIX:-p2j}
+EXPECT_ROWS=${P2_EXPECT_ROWS:-96}
 N=$(grep -c ':' "$MANIFEST")
 echo "[p2] manifest has $N rows (expected $EXPECTED)"
 [ "$N" -eq "$EXPECTED" ] || { echo "[p2] REFUSING: cardinality $N != $EXPECTED" >&2; exit 2; }
@@ -35,8 +39,8 @@ while IFS=: read -r tag gens; do
   [ -n "$tag" ] || continue
   i=$((i+1))
   date "+[p2] launching $i/$N tag=p2j_${tag} at %H:%M:%S"
-  python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "p2j_${tag}" &
-  PIDS="$PIDS $!"; TAGS="$TAGS p2j_${tag}"
+  python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "${PREFIX}_${tag}" &
+  PIDS="$PIDS $!"; TAGS="$TAGS ${PREFIX}_${tag}"
   sleep 15
   if [ $((i % 3)) -eq 0 ]; then echo "[p2] wave boundary at $i"; reap; fi
 done < "$MANIFEST"
@@ -50,7 +54,7 @@ for t in $TAGS; do
   [ -n "$d" ] || { echo "[p2] REFUSING: no judge dir for $t" >&2; exit 5; }
   [ -f "$d/DONE.json" ] || { echo "[p2] REFUSING: $t has no DONE.json" >&2; exit 5; }
   n=$(wc -l < "$d/results.jsonl")
-  [ "$n" -eq 96 ] || { echo "[p2] REFUSING: $t has $n rows, expected 96" >&2; exit 5; }
+  [ "$n" -eq "$EXPECT_ROWS" ] || { echo "[p2] REFUSING: $t has $n rows, expected $EXPECT_ROWS" >&2; exit 5; }
   echo "  verified $t ($n rows)"
 done
 date "+[p2] ALL DONE, $i runs, %H:%M:%S"
