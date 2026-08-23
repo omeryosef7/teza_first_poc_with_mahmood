@@ -7069,6 +7069,45 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## ⛔ BLOCKED — OPENAI CREDITS EXHAUSTED (2026-08-23 06:05). Judging cannot proceed.
+
+The `bnd2` batch — the **control band for experiment 7** and the **dose-matched arms** — failed with
+**402 × `RateLimitError: You have no credits remaining`**. Zero of six runs completed. Job cancelled
+rather than left burning wall-clock on errors.
+
+### ✅ Nothing is lost; the blocker is narrow
+
+| | status |
+|---|---|
+| **generations** for all pending work (5 runs) | ✅ **on disk, 495 rows each** — no GPU rework needed |
+| committed artifacts (`exp7_dsurface_add`, `angle24_specificity_FULL`, `f3_control_band`, …) | ✅ intact, verified readable |
+| partial judge dirs from the failed batch | ⚠ 453–473 of 495 rows — **must be discarded, not reused** |
+| everything already concluded | ✅ unaffected — all of it was judged before credits ran out |
+
+⚠ **The partial dirs are the dangerous residue.** Each holds 453–473 rows and would flow through
+`load()` and produce a plausible number. The `expect=` guard added after review #6 exists precisely
+for this and will refuse them — but **they should be deleted rather than left to be found later by
+a `newest()`-style lookup**, which is the exact failure mode of the `abgL6_B` 40-row incident.
+
+### What is pending on credits
+
+1. **The experiment-7 control band** (3 draws at the matched 0.5 gap). Without it the −0.0886
+   interaction rests on **one** control draw, which the F-3 band showed is not enough. **This is the
+   single most important pending item** — it decides whether the positive result stands.
+2. **The dose-matched arms** (α 0.08 / 0.06 at L12, removal 0.126 / 0.095 inside the controls' ≤0.13
+   band) — the test of whether direction matters independently of dose, which the log wrongly
+   declared impossible.
+
+### What can still proceed without credits
+
+Analysis of already-judged data, code review, documentation, and any GPU generation. ⚠ **But every
+open scientific question in this sprint now needs judging**, so the useful work without credits is
+consolidation, not new results.
+
+**Action needed from the user: add OpenAI credits.** Until then I will not launch further judging —
+each attempt burns a SLURM allocation to produce only errors, and the two batches above are already
+queued behind it.
+
 ## ✅✅ EXPERIMENT 7 ANSWERED — `d_surface:add` SUPPRESSES ASR, with a monotone dose-response
 
 **Artifact:** `outputs/boombness_followup/exp7_dsurface_add.json` (job 774974). Nine arms, one
