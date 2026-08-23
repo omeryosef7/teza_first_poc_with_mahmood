@@ -21,10 +21,13 @@
     "*reanalyze_*",
     "*_cos.json*"
   ],
-  "n_artifacts_checked": 93,
-  "n_silent": 8,
+  "exempted_because_retracted": {
+    "clearharm_decomposition.json": "R-14: judged against an empty goal (goal_status None on all 179 rows). Superseded by clearharm_decomposition_regoal.json."
+  },
+  "n_artifacts_checked": 92,
+  "n_silent": 7,
   "min_rare_fingerprints_for_a_verdict": 5,
-  "n_untestable_too_few_rare_numbers": 13,
+  "n_untestable_too_few_rare_numbers": 12,
   "untestable": [
     {
       "artifact": "advbench_superadd_control.json",
@@ -49,15 +52,6 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 0,
       "n_fingerprints_tested": 0,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "clearharm_band_fixed.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 2,
-      "n_fingerprints_tested": 2,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
@@ -150,15 +144,6 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 32,
       "n_fingerprints_tested": 32,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "clearharm_decomposition.json",
-      "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 16,
-      "n_fingerprints_tested": 16,
       "n_fingerprints_found": 0,
       "example_hits": [],
       "written_up": false
@@ -279,14 +264,15 @@
     {
       "artifact": "advbench_layer_profile.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 36,
-      "n_fingerprints_tested": 36,
-      "n_fingerprints_found": 4,
+      "n_rare_fingerprints_tested": 37,
+      "n_fingerprints_tested": 37,
+      "n_fingerprints_found": 5,
       "example_hits": [
         "0.0567",
         "0.0901",
         "0.201",
-        "0.288"
+        "0.288",
+        "0.413"
       ],
       "written_up": true
     },
@@ -361,20 +347,13 @@
     {
       "artifact": "clearharm_band_fixed.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 2,
-      "n_fingerprints_tested": 2,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "clearharm_decomposition.json",
-      "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 16,
-      "n_fingerprints_tested": 16,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
+      "n_rare_fingerprints_tested": 8,
+      "n_fingerprints_tested": 8,
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "0.1047"
+      ],
+      "written_up": true
     },
     {
       "artifact": "clearharm_decomposition_qwen3.json",
@@ -394,8 +373,8 @@
     {
       "artifact": "clearharm_decomposition_regoal.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 37,
-      "n_fingerprints_tested": 37,
+      "n_rare_fingerprints_tested": 38,
+      "n_fingerprints_tested": 38,
       "n_fingerprints_found": 16,
       "example_hits": [
         "0.0587",
@@ -429,8 +408,8 @@
     {
       "artifact": "coherence_fuS_ladder.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 35,
-      "n_fingerprints_tested": 35,
+      "n_rare_fingerprints_tested": 36,
+      "n_fingerprints_tested": 36,
       "n_fingerprints_found": 2,
       "example_hits": [
         "0.245",
@@ -650,8 +629,8 @@
     {
       "artifact": "g1_stratified.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 254,
-      "n_fingerprints_tested": 254,
+      "n_rare_fingerprints_tested": 255,
+      "n_fingerprints_tested": 255,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.2888",
@@ -701,8 +680,8 @@
     {
       "artifact": "g2_analysis_cwpos.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 149,
-      "n_fingerprints_tested": 149,
+      "n_rare_fingerprints_tested": 150,
+      "n_fingerprints_tested": 150,
       "n_fingerprints_found": 5,
       "example_hits": [
         "0.2618",
@@ -731,8 +710,8 @@
     {
       "artifact": "g2_analysis_lastpos.json",
       "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 124,
-      "n_fingerprints_tested": 124,
+      "n_rare_fingerprints_tested": 125,
+      "n_fingerprints_tested": 125,
       "n_fingerprints_found": 4,
       "example_hits": [
         "0.135",
@@ -801,8 +780,8 @@
     {
       "artifact": "g8_comprehension_DF_arms.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 77,
-      "n_fingerprints_tested": 77,
+      "n_rare_fingerprints_tested": 78,
+      "n_fingerprints_tested": 78,
       "n_fingerprints_found": 5,
       "example_hits": [
         "0.401",
@@ -1250,6 +1229,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "ea7f4edc50a4bfe7df1f64b1de52b03556958636"
+    "git_commit": "156eee5ef14f4c943463a337ace35fceaa369245"
   }
 }

@@ -9143,3 +9143,49 @@ Silent artifacts: 9 → **8**.
 | 565 | 2026-08-23 | ASR half **resolved**: p = 0.363, all intervals span zero | representation moves, behaviour does not |
 | 566 | 2026-08-23 | Q8 as literally asked → **NO** | `user_like` and `cot_like` both null; only `tool` moves it |
 | 567 | 2026-08-23 | `canonical_figures` red on a **real ambiguity** | two permutation p's, different randomisations, unlabelled |
+
+## My unwritten-findings detector pointed me at a retracted artifact, and another guard stopped me
+
+Next silent artifact was `clearharm_decomposition.json` — ClearHarm, a second explicitly-harmful bank,
+with what looked like the strongest decomposition in the sprint: `d_surface` alone **+0.1061**,
+refusalness **+0.2402**, both **+0.4413**, against a 3-draw control band at +0.0154, and a **+0.095
+super-additive** excess. I verified the arm specs from run configs, drafted the section, and
+`check_all` went red.
+
+**`retraction_sweep` flagged it as R-14 — "ClearHarm ASR from an empty goal".** The `ch_*` judge runs
+behind that artifact have **`goal_status: None` on all 179 rows**: every completion scored against an
+empty goal, so StrongReject was rating how harmful the *response* was with no request to compare it to.
+The live artifact is `clearharm_decomposition_regoal.json`, labelled *"re-judged (R-14) with a REAL
+3-draw control band (R-12 fix)"*.
+
+**Both of my draft's headline claims collapse on the corrected numbers:**
+
+| claim | retracted artifact | re-judged artifact |
+|---|---|---|
+| `d_surface` alone | **+0.1061**, read as solid | +0.084 clustered, CI **[−0.066, +0.235]**, **p_cl = 0.210 ns** |
+| super-additivity | **+0.095** | +0.068, CI **[−0.218, +0.123]**, `established: **false**` (28% of draws ≤ 0) |
+
+What does survive is still worth having: removing refusalness (**+0.394** clustered, p_cl = 0.041) and
+removing both (**+0.460**, p_cl = 0.020) raise ASR on a second harmful bank, the matched control is
+flatly inert (**−0.0007**), and refusal falls monotonically 0.877 → 0.760 → 0.615 → **0.447** while
+every control sits at 0.872. The section now says that, and says which artifact is retracted and why.
+
+**The interaction between the two checks is the lesson.** `unwritten_findings_check` is built to find
+findings that never reached a reader — and for a retracted artifact, "never reached a reader" is the
+system working. My detector was actively steering me toward publishing withdrawn numbers, and the only
+thing between it and the report was a guard written for a different purpose. Retracted artifacts are now
+exempted **by name with their reason and their replacement**, so the next reader is told rather than
+tempted.
+
+I have said several times that these numbers ran in the flattering direction. This is the clearest
+instance: the retracted version is *more* favourable on both counts.
+
+Silent artifacts: 8 → **7**.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 568 | 2026-08-23 | drafted the ClearHarm decomposition from the silent artifact | looked like the sprint's strongest result |
+| 569 | 2026-08-23 | **`retraction_sweep` went red — R-14, empty goal** | `goal_status: None` on **all 179 rows** |
+| 570 | 2026-08-23 | rebuilt from the re-judged artifact | `d_surface` alone **p=0.210 ns**; super-additivity **not established** |
+| 571 | 2026-08-23 | kept what survives | C **+0.394** (p=0.041), D **+0.460** (p=0.020), control **−0.0007** |
+| 572 | 2026-08-23 | exempted retracted artifacts from my own detector | it had been steering me at withdrawn numbers |

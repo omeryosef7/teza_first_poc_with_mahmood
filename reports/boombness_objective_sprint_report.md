@@ -2773,6 +2773,35 @@ and the five role styles occupy disjoint `bank_block`s with zero family overlap.
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
   to **raise** attack success, not lower it.
+⬆ **ClearHarm — a second harmful bank (added 2026-08-23; `clearharm_decomposition_regoal.json`).**
+Llama-3.1-8B, `clearharm_direct`, n=179, paired and domain-clustered. Baseline ASR **0.1061**, refusal
+**0.877**:
+
+| arm | spec | ASR | Δ pooled | Δ clustered | 95% CI | p_cl | refusal |
+|---|---|---|---|---|---|---|---|
+| `B` | `d_surface:project_out:8` | 0.1899 | +0.0831 | +0.0843 | [−0.066, +0.235] | **0.210 ns** | 0.760 |
+| `C` | `refusalness:project_out:18` | 0.3631 | +0.2402 | +0.3941 | [+0.024, +0.764] | 0.041 | 0.615 |
+| **`D`** | **both** | **0.5140** | **+0.3911** | **+0.4603** | [+0.109, +0.812] | **0.020** | **0.447** |
+| `Dctrl` + band ×3 | two matched random projections | 0.095–0.117 | −0.0007 | +0.0009 | [−0.003, +0.004] | 0.530 | 0.872 |
+
+**What holds:** removing refusalness (C) and removing both (D) raise ASR on a *second, explicitly
+harmful* bank, against a **real 3-draw control band** (three independent seeds with distinct generation
+and judge fingerprints — not one draw wearing three labels, the failure behind a retracted p=0.0014).
+The matched control is flatly inert (−0.0007). And refusal falls monotonically across the arms,
+0.877 → 0.760 → 0.615 → **0.447**, while every control stays at 0.872.
+
+⛔ **What does NOT hold, and I nearly published the opposite.** `d_surface` **alone is not significant
+here** — +0.084 clustered, CI **[−0.066, +0.235]**, p_cl = 0.210. And **super-additivity is not
+established**: joint minus the sum of singles is **+0.068** with clustered CI **[−0.218, +0.123]**, and
+the artifact's own `established` flag is **false** (28% of bootstrap draws are ≤ 0).
+
+⚠ **Provenance note, because it nearly went wrong.** There are two ClearHarm decomposition artifacts.
+The older `clearharm_decomposition.json` is **retracted under R-14** — its `ch_*` judge runs have
+`goal_status: None` on all 179 rows, i.e. every completion scored against an **empty goal**. Its
+figures are more flattering (B +0.1061 "significant", super-additivity +0.095) and they are not real.
+The live artifact is the **re-judged** `clearharm_decomposition_regoal.json` used above. `retraction_sweep`
+caught the draft that used the wrong one.
+
 ⛔ **A Qwen3 negative that had never been written up (added 2026-08-23; committed since 08-18,
 `qwen3_armD_*.json`).** The L20 arms on Qwen3 look spectacular and are **not direction-specific**.
 Paired, domain-clustered:

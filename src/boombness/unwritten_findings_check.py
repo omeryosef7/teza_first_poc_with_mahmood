@@ -58,6 +58,21 @@ EXEMPT_EXACT = {
 }
 EXEMPT_SUBSTR = ("_SUPERSEDED", "_JUDGE_ARTIFACT", "reanalyze_", "_cos.json")
 
+#: Artifacts that are SILENT ON PURPOSE because they are retracted or superseded, with the reason and
+#: the artifact that replaced them. Silence here is correct and must not be read as a gap.
+#:
+#: This list exists because the check pointed me at `clearharm_decomposition.json` and I began writing
+#: it up before `retraction_sweep` stopped me: its `ch_*` judge runs carry `goal_status: None` on all
+#: 179 rows -- every completion scored against an EMPTY GOAL, retraction R-14. Its numbers are more
+#: flattering than the truth (d_surface alone "significant" at +0.1061; super-additivity +0.095), and
+#: both claims collapse in the re-judged artifact. A detector that says "this finding never reached a
+#: reader" is, for a retracted artifact, saying the system worked.
+RETRACTED_ARTIFACTS = {
+    "clearharm_decomposition.json":
+        "R-14: judged against an empty goal (goal_status None on all 179 rows). "
+        "Superseded by clearharm_decomposition_regoal.json.",
+}
+
 
 def numbers_of(obj, out, depth=0):
     """Distinctive floats: 3+ decimals, not 0/1, not obviously an index."""
@@ -112,7 +127,7 @@ def main() -> int:
     per_art, counts = {}, {}
     for p in sorted(glob.glob("outputs/boombness/*.json")):
         b = os.path.basename(p)
-        if b in EXEMPT_EXACT or any(s in b for s in EXEMPT_SUBSTR):
+        if b in EXEMPT_EXACT or b in RETRACTED_ARTIFACTS or any(s in b for s in EXEMPT_SUBSTR):
             continue
         try:
             blob = json.load(open(p))
@@ -163,6 +178,7 @@ def main() -> int:
             "infrastructure, indexes and deliberately superseded artifacts SHOULD be silent and are "
             "exempted by name. For the rest, this asks whether silence was chosen or merely happened."),
         "exempted": sorted(EXEMPT_EXACT) + [f"*{s}*" for s in EXEMPT_SUBSTR],
+        "exempted_because_retracted": RETRACTED_ARTIFACTS,
         "n_artifacts_checked": len(rows),
         "n_silent": len(silent),
         "min_rare_fingerprints_for_a_verdict": a.min_rare,
