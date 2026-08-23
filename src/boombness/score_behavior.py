@@ -482,6 +482,16 @@ def main() -> int:
                          "traces with NO answer — judging those scores the wrong object entirely.")
     ap.add_argument("--query-kinds", default="semantic_one_word,comprehension_usage,behavioral")
     ap.add_argument("--limit", type=int, default=0)
+    # POPULATION FILTERS (added for Phase 2). Until now the only row selector was --query-kinds
+    # plus a stratified --limit, so a clean core-2x2 subset could not be requested at all. That
+    # matters here: R-18 retracted a headline because a sample silently mixed sibling families and
+    # experimentally-manipulated rows, and "31% of n=234" was invisible because nobody could
+    # express the filter. --expect-n makes a silently-shrunken population fail loudly.
+    ap.add_argument("--conditions", default="", help="comma list; empty = all")
+    ap.add_argument("--bank-blocks", default="", help="comma list; empty = all")
+    ap.add_argument("--n-examples", default="", help="comma list of ints; empty = all")
+    ap.add_argument("--expect-n", type=int, default=0,
+                    help="REFUSE if the filtered population is not exactly this size")
     ap.add_argument("--max-new", type=int, default=192)
     ap.add_argument("--no-generate", action="store_true",
                     help="skip the behavioral generation pass (forward readouts only)")
@@ -528,6 +538,33 @@ def main() -> int:
     rows = read_jsonl(args.bank)
     kinds = [k.strip() for k in args.query_kinds.split(",") if k.strip()]
     rows = [r for r in rows if r["query_kind"] in kinds]
+    _pop_filter = {"query_kinds": kinds}
+    if args.conditions:
+        want = {c.strip() for c in args.conditions.split(",") if c.strip()}
+        rows = [r for r in rows if r.get("condition") in want]
+        _pop_filter["conditions"] = sorted(want)
+    if args.bank_blocks:
+        want = {c.strip() for c in args.bank_blocks.split(",") if c.strip()}
+        rows = [r for r in rows if r.get("bank_block") in want]
+        _pop_filter["bank_blocks"] = sorted(want)
+    if args.n_examples:
+        want = {int(c.strip()) for c in args.n_examples.split(",") if c.strip()}
+        rows = [r for r in rows if int(r.get("n_examples", -1)) in want]
+        _pop_filter["n_examples"] = sorted(want)
+    # A COUNT IS NOT A DESCRIPTION OF A SAMPLE (FM4b). Record the composition, not just the size.
+    _pop_composition = {
+        "n": len(rows),
+        "by_condition": dict(collections.Counter(r.get("condition") for r in rows)),
+        "by_bank_block": dict(collections.Counter(r.get("bank_block") for r in rows)),
+        "by_domain": dict(collections.Counter(r.get("domain") for r in rows)),
+        "by_split": dict(collections.Counter(r.get("split") for r in rows)),
+        "by_n_examples": dict(collections.Counter(r.get("n_examples") for r in rows)),
+        "n_families": len({r.get("family_id") for r in rows}),
+    }
+    print(f"[score] population filter {_pop_filter} -> {_pop_composition}", flush=True)
+    if args.expect_n and len(rows) != args.expect_n:
+        raise SystemExit(f"REFUSING: population is {len(rows)} rows, --expect-n says "
+                         f"{args.expect_n}. A silently-shrunken sample is how R-18 happened.")
     if args.limit:
         # STRATIFIED, not the first N. Taking a prefix of the bank returns only n_examples=0
         # rows, because that is how the generator orders its blocks - and those are the
@@ -637,9 +674,11 @@ def main() -> int:
             if not os.path.exists(p):
                 p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
             payload = torch.load(p, map_location="cpu", weights_only=False)
+        run.note(population_filter=_pop_filter, population_composition=_pop_composition)
+    if spec is not None:
         run.note(intervention=spec, intervention_specs=specs, intervention_direction_file=p,
-                 attn_implementation=_attn_impl,
-                 dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
+                     attn_implementation=_attn_impl,
+                     dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
         print(f"[score] intervention {spec} from {os.path.basename(p)}")
 
     # LIVENESS ACCUMULATOR for attn_knockout. Counted per row so the run can PROVE the mask fired

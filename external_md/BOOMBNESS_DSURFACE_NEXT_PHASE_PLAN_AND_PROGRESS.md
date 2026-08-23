@@ -285,6 +285,9 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | **776368** | **peer** | `run_band2_judge.sh` — judges base + e7rnd01/02/03 + dd12a008 + dd12a006 in one session (6 × 495 = 2,970 calls) | 17:16 | `91e30a62` | `outputs/boombness/judge/bnd2_*` | RUNNING |
 | **776391** | this | generate `d_surface:project_out:12-12:**0.045**` on AdvBench-495 (tag `dd12a45`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a45_*` | PENDING |
 | **776392** | this | generate `d_surface:project_out:12-12:**0.03**` on AdvBench-495 (tag `dd12a3`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a3_*` | PENDING |
+| **776397** | this | **Gate E7 in ONE session**: base + dS50 + rnd50 + rnd75 + e7rnd01/02/03, 7 × 495 (`scripts/judge_p1a.sh`) | 17:34 | `50e5d7e8` | `outputs/boombness/judge/p1a_*` | RUNNING |
+| **776437** | this | **Phase 2 smoke, arm C** — `demo_all:attn_knockout:18-19:1.0`, 8 prompts | 18:01 | `54c66143` | `.../score_behavior/p2smokeC_*` | PENDING |
+| **776438** | this | **Phase 2 smoke, arm P** — `allpast:attn_knockout:18-19:1.0` (positive control), 8 prompts | 18:01 | `54c66143` | `.../score_behavior/p2smokeP_*` | PENDING |
 
 ---
 
@@ -501,11 +504,44 @@ before any judging spend, so no result is contaminated by the decision.
 
 ---
 
+### R-B (18:00) — the Phase 2 population is defined, balanced, and family-disjoint
+
+The filter, now expressible because `score_behavior.py` grew `--conditions` / `--bank-blocks` /
+`--n-examples` / `--expect-n`:
+
+```
+query_kind == "behavioral" AND condition == "natural_doublespeak"
+AND bank_block in {core2x2, core2x2_slot3} AND n_examples in {1,2,4,8}
+```
+
+**n = 96**, and it is unusually clean:
+
+| | |
+|---|---|
+| distinct families | **96** — one row per family, so family-disjoint *by construction*; sibling-family leakage (the R-18 defect) cannot recur here |
+| domains | 6 × **16** each, exactly balanced |
+| splits | dev 48 / heldout 48 |
+| demo counts | 24 each at `n_examples` 1 / 2 / 4 / 8 |
+| `demo_block` integrity | **0** rows missing it; **0** rows where it fails to appear exactly once in `full_prompt` |
+
+Deliberately excluded: `n_examples ∈ {0, 16}` (0 is demo-free and structurally ineligible; 16
+reintroduces cross-slot demo sharing) and every manipulation block (`strength`, `consistency`,
+`position`, `role_style`, `families`) — the two halves of R-18.
+
+⚠ **Power, stated before the result rather than after.** At a baseline ASR near 0.19 this is ~18
+successes over 24 informative clusters. A knockout-to-floor effect is detectable; a 25% partial
+effect is not. **Pre-registered: a non-significant result here is reportable only as "we can
+exclude a reduction larger than X", never as "the pathway is not causal for behaviour."**
+
+---
+
 ## 10. CANONICAL ARTIFACTS OF THIS PHASE
 
 | artifact | produced by | holds |
 |---|---|---|
-| *(to be created)* | | |
+| `outputs/boombness/judge/p1a_*` | job 776397 | Gate E7, one session, 7 arms |
+| `outputs/boombness/judge/bnd2_*` | job 776368 (orphan) | independent cross-session replicate of dd008/dd006 |
+| `.../score_behavior/p2smoke{C,P}_*` | jobs 776437/776438 | Phase 2 liveness smoke |
 
 ---
 
