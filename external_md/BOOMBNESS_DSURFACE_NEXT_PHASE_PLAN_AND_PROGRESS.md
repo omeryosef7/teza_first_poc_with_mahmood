@@ -669,6 +669,50 @@ arm-vs-baseline delta does. n=3 draws also gives the sd only 2 df. **The definit
 
 ---
 
+### ✅ R-E (18:29) — THE COHERENCE GATE FLAGS *REFUSAL*, NOT INCOHERENCE — INDEPENDENTLY CONFIRMED
+
+Inherited as a claim; **re-derived here from the artifacts and it reproduces exactly**, including the
+six runs by name. 26 unique verdicts across 13 coherence files:
+
+| | count |
+|---|---|
+| `coherent = True` | 12 |
+| **fail on `scorable_frac` ONLY** | **8** — of which **6 are lexically HEALTHIER than the untreated baseline** |
+| fail a real degeneracy only (`uniq_word_ratio` < 0.45 or `trigram_repeat` > 0.3) | 4 |
+| fail both | 2 |
+
+The six that fail the gate while being *cleaner* than the untreated model:
+
+| run | scorable_frac | uniq_word_ratio | trigram_repeat |
+|---|---|---|---|
+| `fuF25_addS` | 0.3313 | **0.8733** | **0.00492** |
+| `fuF_addR` | 0.4747 | 0.8640 | 0.00616 |
+| `fuF_addR_g04` | 0.4646 | **0.9029** | **0.00483** |
+| `fuF_addR_g08` | 0.4202 | 0.8741 | 0.00579 |
+| `fuS_add_g00625` | 0.4909 | 0.8609 | 0.00640 |
+| `fuS_add_g0125` | 0.4545 | 0.8654 | 0.00603 |
+| *baseline `ab_base`* | *0.5414* | *0.8411* | *0.00953* |
+
+**`scorable_frac` is a LENGTH proxy, not a coherence measure.** It is the fraction of rows with at
+least `min_words_scorable = 8` words — and the untreated baseline itself **drops 227 of 495 rows**
+as too short to score, clearing the 0.5 floor by only **0.0414**. Any intervention that shortens
+output fails this gate without being degenerate. Where the predicted effect *is* shortening —
+refusal — **the gate is anti-correlated with the effect under study**, and every one of those six
+runs is lexically *better* than the model it is being compared against.
+
+**CONSEQUENCE FOR PHASE 2, and it is why this was worth re-deriving.** Demonstration-block knockout
+is expected to *increase refusal* on some rows, i.e. to shorten output. Under this gate an arm that
+worked would be discarded as "incoherent". **Pre-registered: Phase 2 arms are judged on
+`uniq_word_ratio` and `trigram_repeat` only. `scorable_frac` is recorded and explicitly NOT used as
+a gate,** and any arm excluded on it would be reported as excluded rather than silently dropped.
+
+⚠ **Process note on how I got here.** My first pass at this scan reported "0 real degeneracies" and
+disagreed with the inherited claim. That was my scan, not the claim: I guessed the field names
+(`uniq_frac`, `trigram_rep`) instead of reading them, so both always resolved to `None` and the
+degeneracy test could never fire. The real names are `uniq_word_ratio` and `trigram_repeat`. Third
+instance this session of addressing something by a guessed property rather than its identity — the
+same shape as the FM1 dead guards, and the same shape as the two monitor filters I had to rewrite.
+
 ### R-B (18:00) — the Phase 2 population is defined, balanced, and family-disjoint
 
 The filter, now expressible because `score_behavior.py` grew `--conditions` / `--bank-blocks` /
