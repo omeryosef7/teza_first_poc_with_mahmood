@@ -145,9 +145,16 @@ def test_unknown_arm_raises():
 
 
 def test_nondemo_random_refuses_when_it_cannot_be_count_matched():
-    """Better to fail than to ship a control that is quietly smaller than its arm."""
+    """Better to fail than to ship a control that is quietly smaller than its arm.
+
+    CONTRACT CHANGED 2026-08-23 (review finding M2): this used to raise SystemExit. SystemExit is a
+    BaseException, so it escaped the per-row `except Exception` and killed the run mid-file, leaving
+    a partial, judgeable gens.jsonl with no DONE.json -- and judge_boombness reads gens.jsonl. It is
+    now InfeasibleControl, a normal Exception, and feasibility is pre-flighted over the whole
+    population before the first row is generated.
+    """
     import score_behavior as sb
-    with pytest.raises(SystemExit, match="count-matched"):
+    with pytest.raises(sb.InfeasibleControl):
         sb.knockout_key_set("nondemo_random", list(range(1, 20)), 12, 1)
 
 

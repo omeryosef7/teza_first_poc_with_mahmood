@@ -166,12 +166,112 @@ def demo_key_positions(tok, row, templated):
     return pos, None
 
 
+def realized_dose_record(frac, alpha):
+    """The two realized-dose numbers for a project_out arm, as they are written to the artifact.
+
+    A module-level function so a test can CALL it. The first test of these formulas re-typed them
+    and therefore tested the algebra rather than the code -- mutating the source left it green.
+
+    variance = frac*(1-(1-a)^2) is the fraction of cell-mean VARIANCE removed;
+    norm     = a*sqrt(frac)     is the fraction removed in Frobenius NORM.
+    They are NOT monotone-equivalent below alpha=1 and they disagree about which arm is
+    "dose-matched" to the in-subspace controls by roughly 10x in alpha (correction C-2).
+    """
+    import math as _m
+    a = float(alpha); f = float(frac)
+    return {
+        "alpha": a,
+        "cellmean_frac_at_alpha1": f,
+        "realized_variance_frac_removed": f * (1.0 - (1.0 - a) ** 2),
+        "realized_norm_frac_removed": a * _m.sqrt(max(f, 0.0)),
+    }
+
+
+#: A knockout run is only reportable if the mask fired during DECODING on essentially every row.
+KNOCKOUT_MIN_LIVE_FRAC = 0.99
+
+
+def knockout_liveness_summary(knock_live, attn_impl):
+    """Reduce the per-row liveness counters to the block written into summary.json."""
+    import statistics as _st
+    nr = int(knock_live.get("n_rows", 0))
+    de = list(knock_live.get("decode_edits", []))
+    df = list(knock_live.get("decode_forwards", []))
+    dp = list(knock_live.get("n_demo_positions", []))
+    return {
+        "n_rows": nr,
+        "frac_rows_decode_live": (knock_live.get("n_rows_decode_live", 0) / nr) if nr else 0.0,
+        "median_decode_edits": (_st.median(de) if de else 0),
+        "min_decode_forwards": (min(df) if df else 0),
+        "median_n_demo_positions": (_st.median(dp) if dp else 0),
+        "attn_implementation": attn_impl,
+    }
+
+
+def assert_knockout_live(summary):
+    """Raise unless the knockout demonstrably fired during decoding.
+
+    THE GUARD THIS WHOLE COMMIT SERIES EXISTS FOR, and until 2026-08-23 it had NO TEST -- an
+    adversarial review mutated the threshold to `< 0.0` and all 44 tests stayed green, which is the
+    FM1 dead-guard shape in the guard against the FM1 dead-guard shape. It is a module-level
+    function purely so it can be tested; inlining it in main() is what made it untestable.
+
+    n_rows == 0 is a FAILURE, not a pass. A run that generated nothing has not demonstrated
+    liveness, and returning True there is exactly how a vacuous guard passes.
+    """
+    nr = int(summary.get("n_rows", 0))
+    fl = float(summary.get("frac_rows_decode_live", 0.0))
+    if nr == 0:
+        raise SystemExit("REFUSING: knockout liveness has zero rows -- the run generated nothing, "
+                         "so the mask was never observed to fire. This is not a pass.")
+    if fl < KNOCKOUT_MIN_LIVE_FRAC:
+        raise SystemExit(
+            f"REFUSING: the attention knockout fired during decoding on only {fl:.3f} of rows "
+            f"(threshold {KNOCKOUT_MIN_LIVE_FRAC}). This is the prefill-only failure "
+            f"(pair_common AttentionKnockout vs AllQueryAttentionKnockout). The ASR from this run "
+            f"would describe the hook, not the model. See summary.json knockout_liveness.")
+    return True
+
+
+class InfeasibleControl(Exception):
+    """A control that cannot be built on this row. A normal Exception on purpose -- see the note in
+    knockout_key_set: raising SystemExit here killed the run mid-file and left judgeable partials."""
+
+
 #: Arms for `attn_knockout`. The NAME field of the --intervene spec selects the key set; the mode
 #: field is always `attn_knockout` and alpha is always 1.0.
 KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast")
 
 
-def knockout_key_set(name, demo_keys, seq_len, control_seed):
+def query_span_positions(tok, row, templated, demo_keys):
+    """Token indices that a CONTROL must never block: the harmful request and everything after it.
+
+    WHY THIS EXISTS (review finding M1, 2026-08-23). The first `nondemo_random` drew from every
+    non-demo index in [1, seq_len-1). Measured on the real n=96 population with the real Llama
+    tokenizer, the non-demo pool is a near-CONSTANT ~53 tokens -- it is the chat template plus the
+    ~90-character request plus the assistant generation header -- while the demo block grows
+    12 -> 25.5 -> 53.5 -> 106 tokens across n_examples 1/2/4/8. So a count-matched draw blocked a
+    median 25% of post-demo tokens at n_examples=1 and ~98% at n_examples=4: the "control" was
+    deleting the question the model is being asked to answer, with a dose that scales with the arm's
+    own dose.
+
+    The failure would have been SILENT and it has a name here: "random control >= demo knockout,
+    therefore the effect is not demonstration-specific" is a conclusion this project has already
+    retracted once.
+    """
+    q = (row.get("final_query_text") or "").strip()
+    if not q:
+        return set()
+    ci = templated.rfind(q)
+    if ci < 0:
+        return set()
+    enc = tok(templated, add_special_tokens=False, return_offsets_mapping=True)
+    lo = ci
+    # everything from the first token of the request onward, including the generation header
+    return {i for i, (a, b) in enumerate(enc["offset_mapping"]) if b > lo and b > a}
+
+
+def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None):
     """Which KEY positions this arm blocks. Returns a sorted list of absolute token indices.
 
     NO CAUSALITY FILTER IS APPLIED HERE, and that is a deliberate difference from
@@ -190,13 +290,19 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed):
         # not, the mask is not reaching the computation and the whole run is void.
         return [i for i in range(1, max(0, n - 1))]
     if name == "nondemo_random":
-        # MATCHED CONTROL: same COUNT as demo_all, drawn from outside the demo block and off the
-        # final prompt token. Seeded from control_seed so three draws are three DIFFERENT draws --
-        # the byte-identical-gens failure is what happens when this seed does not reach the draw.
-        pool = [i for i in range(1, max(0, n - 1)) if i not in set(dk)]
+        # MATCHED CONTROL: same COUNT as demo_all, drawn from outside the demo block AND outside the
+        # request/generation span (see query_span_positions -- without that exclusion this control
+        # deletes the question). Seeded so three draws are three DIFFERENT draws.
+        prot = set(protected or ())
+        pool = [i for i in range(1, max(0, n - 1)) if i not in set(dk) and i not in prot]
         if len(pool) < len(dk):
-            raise SystemExit(f"nondemo_random: pool {len(pool)} < demo count {len(dk)}; "
-                             f"the control cannot be count-matched on this row")
+            # RAISE A NORMAL EXCEPTION, NOT SystemExit. SystemExit is a BaseException, so the
+            # per-row `except Exception` guard does not catch it: the process died mid-file and left
+            # a PARTIAL, JUDGEABLE gens.jsonl with no DONE.json -- and judge_boombness reads
+            # gens.jsonl, not DONE.json. Feasibility is now pre-flighted before the model loads
+            # (see preflight_knockout_feasibility), so this is a backstop, not the gate.
+            raise InfeasibleControl(
+                f"nondemo_random: query-protected pool {len(pool)} < demo count {len(dk)}")
         rng = _random.Random(int(control_seed))
         return sorted(rng.sample(pool, len(dk)))
     raise SystemExit(f"unknown attn_knockout arm '{name}'; known arms: {KNOCKOUT_ARMS}")
@@ -204,7 +310,7 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed):
 
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
-                      demo_keys=None, seq_len=None, knock_stats=None):
+                      demo_keys=None, seq_len=None, knock_stats=None, protected=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -246,7 +352,7 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             out.extend(make_intervention(dc, pc, lm, sub, payload,
                                          control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
                                          demo_keys=demo_keys, seq_len=seq_len,
-                                         knock_stats=knock_stats))
+                                         knock_stats=knock_stats, protected=protected))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -273,7 +379,7 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                 "attn_knockout reached make_intervention with demo_keys=None. The composed "
                 "recursion dropped it — this is the one-of-two-paths failure that has already "
                 "hit `control_seed` twice on that exact line.")
-        keys = knockout_key_set(name, demo_keys, seq_len, control_seed)
+        keys = knockout_key_set(name, demo_keys, seq_len, control_seed, protected=protected)
         if not keys:
             raise SystemExit(f"attn_knockout arm '{name}' produced an EMPTY key set; a no-op "
                              f"knockout must fail loudly, never score as a null")
@@ -518,6 +624,15 @@ def main() -> int:
     ap.add_argument("--allow-tail-readout", action="store_true",
                     help="override --min-option-mass deliberately (the run is then NOT reportable "
                          "as a comprehension or semantic result, and says so in summary.json)")
+    # ATTENTION IMPLEMENTATION IS A RESULT-BEARING CHOICE, SO IT MUST BE EXPRESSIBLE.
+    # A knockout arm is FORCED to eager (under sdpa the 4-D mask edit is silently discarded). Before
+    # this flag existed, the baseline and text-deletion arms could ONLY run sdpa -- so every
+    # arm-vs-baseline contrast in Phase 2 would have confounded the mask edit with a KERNEL SWAP.
+    # Under greedy bf16 decoding a sub-ulp difference on a near-tie refuse/comply token branches into
+    # a different completion and a different judged ASR. Run the references under eager too.
+    ap.add_argument("--attn-impl", default="sdpa", choices=["sdpa", "eager"],
+                    help="eager is REQUIRED for attn_knockout and is forced there; set it "
+                         "explicitly on the reference arms so a contrast is kernel-matched")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
@@ -599,7 +714,7 @@ def main() -> int:
     # This is refused rather than warned about: a void run that looks like a null is worse than a
     # crash. surgical_knockout.py forces eager for the same reason (:701-702).
     _wants_knockout = bool(args.intervene) and ":attn_knockout:" in args.intervene
-    _attn_impl = "eager" if _wants_knockout else "sdpa"
+    _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
     if _wants_knockout and getattr(getattr(lm.model, "config", None), "_attn_implementation",
                                    "eager") != "eager":
@@ -706,12 +821,8 @@ def main() -> int:
                         frac = _cmd(payload, L, vec)
                         if frac is None:
                             continue
-                        dose_records[f"{dname}|L{L}|alpha{alpha_v:g}"] = {
-                            "alpha": alpha_v,
-                            "cellmean_frac_at_alpha1": frac,
-                            "realized_variance_frac_removed": frac * (1.0 - (1.0 - alpha_v) ** 2),
-                            "realized_norm_frac_removed": alpha_v * _math.sqrt(max(frac, 0.0)),
-                        }
+                        dose_records[f"{dname}|L{L}|alpha{alpha_v:g}"] = \
+                            realized_dose_record(frac, alpha_v)
             except Exception as _e:      # never let provenance kill the run
                 dose_records = {"UNAVAILABLE": repr(_e)}
             if dose_records:
@@ -733,6 +844,52 @@ def main() -> int:
 
     # LIVENESS ACCUMULATOR for attn_knockout. Counted per row so the run can PROVE the mask fired
     # during decoding. Without this a prefill-only knockout reports a perfectly healthy null.
+    # ------------------------------------------------------------------ #
+    # PRE-FLIGHT the knockout over the WHOLE population before a single row is generated.
+    #
+    # WHY IT IS HERE AND NOT LATER. The infeasible-control case used to raise mid-loop. Because
+    # gens_fh.flush() runs every row, the process died leaving a PARTIAL, JUDGEABLE gens.jsonl with
+    # no DONE.json and no summary -- and judge_boombness reads gens.jsonl, not DONE.json. The
+    # partial file is not random either: rows are ordered by n_examples, so it would have contained
+    # exactly the weak-demonstration half.
+    #
+    # WHY IT IS AFTER THE MODEL LOAD. It needs the tokenizer, and using lm.tokenizer guarantees the
+    # pre-flight measures the SAME tokenizer the run will use. Nothing has been written at this
+    # point, so the poison-partial risk is already gone.
+    # ------------------------------------------------------------------ #
+    if _wants_knockout:
+        _arm_names = [sp["direction"] for sp in specs if sp["mode"] == "attn_knockout"]
+        _feas = {"n_rows": 0, "no_demo_block": 0, "infeasible_control": 0, "by_n_examples": {}}
+        _bad = []
+        for _r in rows:
+            _t, _ids, *_ = resolve_occurrences(dc, lm.tokenizer, _r,
+                                               enable_thinking=ENABLE_THINKING)
+            _dk, _why = demo_key_positions(lm.tokenizer, _r, _t)
+            _ne = str(_r.get("n_examples"))
+            _b = _feas["by_n_examples"].setdefault(_ne, {"n": 0, "ok": 0, "bad": 0})
+            _b["n"] += 1
+            _feas["n_rows"] += 1
+            if _why:
+                _feas["no_demo_block"] += 1; _b["bad"] += 1; _bad.append((_r["prompt_id"], _why)); continue
+            _prot = query_span_positions(lm.tokenizer, _r, _t, _dk)
+            try:
+                for _nm in _arm_names:
+                    knockout_key_set(_nm, _dk, len(_ids), args.seed, protected=_prot)
+            except InfeasibleControl as _e:
+                _feas["infeasible_control"] += 1; _b["bad"] += 1
+                _bad.append((_r["prompt_id"], str(_e))); continue
+            _b["ok"] += 1
+        run.note(knockout_feasibility=_feas)
+        print(f"[score] KNOCKOUT PRE-FLIGHT: {_feas}", flush=True)
+        if _bad:
+            raise SystemExit(
+                f"REFUSING before generating: {len(_bad)} of {_feas['n_rows']} rows cannot carry "
+                f"this knockout ({_feas['no_demo_block']} without a demo block, "
+                f"{_feas['infeasible_control']} whose control cannot be built). Per n_examples: "
+                f"{_feas['by_n_examples']}. Fix the arm or the population -- do NOT rescope to the "
+                f"feasible rows, because demo length IS the dose variable and dropping the long-demo "
+                f"rows silently changes the experiment.")
+
     knock_live = {"n_rows": 0, "n_rows_decode_live": 0, "n_demo_positions": [],
                   "decode_edits": [], "decode_forwards": []}
 
@@ -809,19 +966,20 @@ def main() -> int:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
 
-        dk, dk_reason = ([], None)
+        dk, dk_reason, prot = ([], None, None)
         if _wants_knockout:
             dk, dk_reason = demo_key_positions(lm.tokenizer, row, templated_r)
             if dk_reason:
                 ledger.fail(f"demokeys:{dk_reason}", row["prompt_id"])
                 continue
+            prot = query_span_positions(lm.tokenizer, row, templated_r, dk)
 
         knock_stats = {} if _wants_knockout else None
         try:
             ctxs = make_intervention(dc, pc, lm, spec, payload,
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
-                                     knock_stats=knock_stats)
+                                     knock_stats=knock_stats, protected=prot)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:
@@ -967,17 +1125,7 @@ def main() -> int:
 
     knock_summary = None
     if _wants_knockout:
-        import statistics as _st
-        nr = knock_live["n_rows"]
-        frac_live = (knock_live["n_rows_decode_live"] / nr) if nr else 0.0
-        knock_summary = {
-            "n_rows": nr,
-            "frac_rows_decode_live": frac_live,
-            "median_decode_edits": (_st.median(knock_live["decode_edits"]) if nr else 0),
-            "min_decode_forwards": (min(knock_live["decode_forwards"]) if nr else 0),
-            "median_n_demo_positions": (_st.median(knock_live["n_demo_positions"]) if nr else 0),
-            "attn_implementation": _attn_impl,
-        }
+        knock_summary = knockout_liveness_summary(knock_live, _attn_impl)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
 
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
@@ -998,13 +1146,7 @@ def main() -> int:
     # as the tail gate below -- so the artifact exists and records why it is not reportable, and
     # the process still exits non-zero so no caller can mistake it for a result.
     if _wants_knockout:
-        _fl = (knock_summary or {}).get("frac_rows_decode_live", 0.0)
-        if _fl < 0.99:
-            raise SystemExit(
-                f"REFUSING: the attention knockout fired during decoding on only {_fl:.3f} of "
-                f"rows. This is the prefill-only failure (pair_common AttentionKnockout vs "
-                f"AllQueryAttentionKnockout). The ASR from this run would describe the hook, not "
-                f"the model. See summary.json knockout_liveness.")
+        assert_knockout_live(knock_summary or {})
     print(f"[score] {dict(counts)} -> {run.path}")
     print(f"[score] failures: {ledger.as_dict()['failure_reasons']}")
 

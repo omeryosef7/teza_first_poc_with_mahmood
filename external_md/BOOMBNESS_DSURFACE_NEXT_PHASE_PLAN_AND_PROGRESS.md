@@ -632,6 +632,95 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ⛔⛔ REVIEW-1 (19:05) — ADVERSARIAL CODE REVIEW FOUND FOUR MUST-FIX DEFECTS IN MY OWN PHASE 2 CODE
+
+Six reviewers, run **before** any full GPU matrix. Every number below I **re-measured myself** on the
+real n=96 population with the real Llama-3.1-8B tokenizer before acting on it.
+
+#### M1 — `nondemo_random` was not a control. It was a second, harsher knockout of the REQUEST.
+
+The non-demo pool is a near-**constant ~53 tokens** — it *is* the chat template plus the ~90-char
+harmful request plus the assistant generation header — while the demo block grows with `n_examples`:
+
+| n_examples | rows | median seq_len | median \|demo_keys\| | median pool | **INFEASIBLE** |
+|---|---|---|---|---|---|
+| 1 | 24 | 67.0 | 12.0 | 53.0 | 0 |
+| 2 | 24 | 80.5 | 25.5 | 53.0 | 0 |
+| 4 | 24 | 108.5 | 53.5 | 53.0 | **12** |
+| 8 | 24 | 161.0 | 106.0 | 53.0 | **24** |
+| | | | | | **36 / 96** |
+
+Where it *was* feasible it blocked a median **25%** (n_ex=1) to **~98%** (n_ex=4) of post-demo
+tokens — **the control was deleting the question the model is asked to answer, with a dose that
+scales with the arm's own dose.** Every artifact would have looked healthy. The conclusion it would
+have produced — *"random control ≥ demo knockout, therefore the effect is not
+demonstration-specific"* — is one this project has already retracted once.
+
+#### M2 — the infeasible case raised `SystemExit`, which is a `BaseException`
+
+Confirmed: `issubclass(SystemExit, Exception)` is **False**, so it escaped the per-row
+`except Exception`. Because `gens_fh.flush()` runs every row, the process would die mid-file leaving
+a **partial, judgeable `gens.jsonl` with no `DONE.json`** — and `judge_boombness` reads `gens.jsonl`,
+not `DONE.json`. Rows are ordered by `n_examples`, so the surviving partial would have been exactly
+the **weak-demonstration half**.
+
+#### M3 — every knockout arm ran eager, every reference arm ran SDPA, and no flag could change it
+
+`_attn_impl` was keyed purely on `":attn_knockout:" in args.intervene`, and there was no
+attention flag at all. Arms A (baseline) and B (text-deletion ceiling) — the two references Gate
+RETRIEVAL reads C against — **could not be run under eager**. Under greedy bf16 a sub-ulp kernel
+difference on a near-tie refuse/comply token branches into a different completion and a different
+judged ASR, so every Phase 2 contrast would have confounded the mask edit with a **kernel swap**.
+
+#### M4 — the liveness gate, the span resolver and both dose formulas had ZERO test coverage
+
+The worst finding, and it is mine. Three reviewers independently mutated the gate to `if _fl < 0.0`,
+the resolver to `pos = [i+1 …]`, and the dose to `frac * alpha` — **44/44 tests stayed green every
+time.** `tests/test_realized_dose.py` never imported `score_behavior`; it re-typed the formulas, so
+it tested my algebra rather than my code. **The guard built to prevent the FM1 dead-guard shape was
+itself an FM1 dead guard.**
+
+#### Fixes applied, and mutation-tested
+
+| fix | |
+|---|---|
+| `query_span_positions()` protects the request + generation header; the control can no longer touch it | M1 |
+| `InfeasibleControl(Exception)` replaces `SystemExit`; **pre-flight** now checks the whole population before a single row is generated, and refuses with the per-`n_examples` feasibility table | M2 |
+| `--attn-impl {sdpa,eager}` added, so the reference arms can be kernel-matched to the knockout arms | M3 |
+| liveness and dose extracted to `knockout_liveness_summary` / `assert_knockout_live` / `realized_dose_record` — module-level **so they can be tested at all** — plus `tests/test_knockout_liveness_gate.py` | M4 |
+
+**Mutation-tested, the four the old suite let through at 44/44 green:**
+
+| mutation | old suite | new suite |
+|---|---|---|
+| liveness threshold 0.99 → 0.0 | green | **3 failed** |
+| demo span shifted `+1` | green | **2 failed** |
+| dose variance → `frac*alpha` | green | **2 failed** |
+| control ignores the protected span | green | **2 failed** |
+
+**77 tests pass.** `n_rows == 0` is now an explicit FAILURE in the gate, because that is exactly how
+a vacuous guard passes.
+
+#### 🚦 D-10 — the matched control is redesigned, and it costs no new code
+
+With the query span protected the pool is ~15 tokens, so **nothing at `n_examples` ≥ 2 can be
+count-matched by a non-demo key set**. That arm is retained only where it is feasible
+(`n_examples` ∈ {1,2}) and pre-flight refuses otherwise. The primary matched control becomes the
+**same demo key set applied at CONTROL LAYERS** outside the retrieval band — expressible today as
+`demo_all:attn_knockout:28-31:1.0` with **zero new code**. It is exactly count-matched (identical
+keys, identical edge count), always feasible at every `n_examples`, and it isolates *"these tokens
+at these layers"* from *"these tokens anywhere"*.
+
+#### ⛔ And the repo overruled my own D-9
+
+The widened-nodelist smoke (776656) **failed in 39 s**: `ERROR need L40S got 'NVIDIA RTX A5000'`.
+The wrapper carries a standing hardware guard. My D-9 reasoning — that hardware cannot matter for a
+code-path smoke — was **wrong to act on unilaterally**: the repo has a deliberate protection saying
+hardware consistency is not mine to trade away for latency, and it won. **The smoke waits for L40S
+like everything else.** Recorded rather than worked around.
+
+---
+
 ### ★★★★ R-F (18:52) — GATE E7 RESOLVED, AND THE `d_surface:add` SUPPRESSION IS A LENGTH COLLAPSE
 
 **Artifact:** `outputs/boombness_followup/gate_e7_band.json`, job **776397**, all seven arms judged
