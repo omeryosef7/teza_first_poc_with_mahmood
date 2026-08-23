@@ -1114,6 +1114,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "3fa614539c30c073bc21310e6a89e48e90f00750"
+    "git_commit": "31baca2516ff50bf7460b7c712aeca901707ef72"
   }
 }

@@ -355,7 +355,7 @@ scored on the intersection of their prompt ids.
 
 | | prompts (of 495) |
 |---|---|
-| same-config pairs found | **17** on the 495 bank (18 incl. one 960-row pair) |
+| same-config pairs found | **17** on the 495 bank (**19** incl. two larger-bank pairs; refreshed 2026-08-23) |
 | median absolute difference | **1** |
 | 15 of 17 pairs | **≤ 2** |
 | maximum | **7** (`in_subspace_orth:project_out:12`) |

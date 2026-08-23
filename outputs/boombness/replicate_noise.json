@@ -12,10 +12,11 @@
     "model"
   ],
   "scored_on": "intersection of prompt ids",
-  "n_replicate_pairs": 18,
+  "n_replicate_pairs": 19,
   "median_abs_diff_prompts": 0.9999999999999996,
   "max_abs_diff_prompts": 7.999999999999998,
   "all_diffs_prompts": [
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -288,6 +289,20 @@
       "abs_diff": 0.0,
       "abs_diff_prompts": 0.0,
       "config_fields_that_differ": null
+    },
+    {
+      "spec": "random:project_out:8-8:1.0",
+      "model": "Llama-3.1-8B-Instruct",
+      "bank": "advbench_heldout_495.jsonl",
+      "seed": 20260903,
+      "run_a": "ab_Bband_20260903_20260819_040029_1413029",
+      "run_b": "ab_Bband_20260903_20260819_040029_1413029",
+      "n_common": 495,
+      "asr_a": 0.06666666666666667,
+      "asr_b": 0.06666666666666667,
+      "abs_diff": 0.0,
+      "abs_diff_prompts": 0.0,
+      "config_fields_that_differ": null
     }
   ],
   "excluded_not_true_replicates": [
@@ -490,8 +505,8 @@
     "argv": [
       "src/boombness/replicate_noise.py",
       "--out",
-      "outputs/boombness/replicate_noise.json"
+      "/tmp/repro/replicate_noise.json"
     ],
-    "git_commit": "8ceba11a3bd77ff38c294040465df842732925df"
+    "git_commit": "31baca2516ff50bf7460b7c712aeca901707ef72"
   }
 }

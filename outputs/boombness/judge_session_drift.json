@@ -7,7 +7,7 @@
   "drift_groups": [
     {
       "gens": "ab_base_20260818_185458_3888976",
-      "n_sessions": 10,
+      "n_sessions": 13,
       "n_common": 495,
       "asr_min": 0.06464646464646465,
       "asr_max": 0.06666666666666667,
@@ -89,6 +89,30 @@
         {
           "session": "20260822_231355",
           "judge": "a24d_base_20260822_231355_1150276",
+          "asr": 0.06464646464646465,
+          "n": 495,
+          "done": true,
+          "asr_common": 0.06464646464646465
+        },
+        {
+          "session": "20260823_040456",
+          "judge": "unlk_base_20260823_040456_1170923",
+          "asr": 0.06464646464646465,
+          "n": 495,
+          "done": true,
+          "asr_common": 0.06464646464646465
+        },
+        {
+          "session": "20260823_042000",
+          "judge": "unlk_base_20260823_042000_1171998",
+          "asr": 0.06464646464646465,
+          "n": 495,
+          "done": true,
+          "asr_common": 0.06464646464646465
+        },
+        {
+          "session": "20260823_050751",
+          "judge": "b903_base_20260823_050751_1213052",
           "asr": 0.06464646464646465,
           "n": 495,
           "done": true,
@@ -687,8 +711,8 @@
     "argv": [
       "src/boombness/judge_session_drift.py",
       "--out",
-      "outputs/boombness/judge_session_drift.json"
+      "/tmp/repro/judge_session_drift.json"
     ],
-    "git_commit": "ea0413dc937a3ebf182b25ae0dbf5889138f5d9f"
+    "git_commit": "31baca2516ff50bf7460b7c712aeca901707ef72"
   }
 }

@@ -9600,3 +9600,41 @@ this one now demonstrably catches the specific regression that already happened 
 | 613 | 2026-08-23 | pinned the corrected Qwen3 figure **0.5190** | reinstating the retracted 0.7738 now fails the build |
 | 614 | 2026-08-23 | pinned the one figure quoted in **both** deliverables | +0.0902, scope ALL — the only one that can diverge |
 | 615 | 2026-08-23 | **tested the pins against a case they must reject** | fires on 0.7738, green on restore |
+
+## End-to-end reproducibility check: rerun everything I wrote this week
+
+The standing rule is that every number must be **regenerable by a committed script from a committed
+artifact**. I have written a dozen scripts since 08-21 and never checked that they all still run, let
+alone reproduce. So: reran each to a temporary path and diffed against its committed artifact, ignoring
+provenance.
+
+**8 of 11 byte-identical.** `add_ladder_refusal`, `channel_matched_contrasts`, `depth_profile_matched`,
+`empty_goal_leakage_check`, `orth_control_arms`, `qwen3_l20_regoal`, `shard_citation_check` and
+`xL6_crossover_analysis` all reproduce exactly. Nothing has rotted under the week's edits.
+
+**3 differ, all because new data landed — and none moves a conclusion:**
+
+| artifact | change | consequence |
+|---|---|---|
+| `judge_session_drift` | 10 → **13** sessions | **drift unchanged at 0.0020**; no layer's `inside_session_noise` flips |
+| `replicate_noise` | 18 → **19** pairs | median **1.0**, max **8.0** — both unchanged |
+| `unanalysed_triage` | COULD_CHANGE **34 → 8** | shrank because the findings got written up |
+
+**The drift result surviving three more judging sessions is worth having.** It is the noise scale
+everything else is measured against, it was wrong twice before, and it has now been re-derived on 13
+sessions rather than 10 without moving. The replicate-noise distribution is likewise stable at a
+nineteenth pair.
+
+And the triage falling from 34 to 8 is the clearest single number for what the past week actually did:
+that count is "runs whose analysis could still change a conclusion", and most of the drop is findings
+that are now in the report.
+
+Refreshed all three committed artifacts and the two counts the report quotes from them.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 616 | 2026-08-23 | reran every script authored this week | **8 of 11 byte-identical** — nothing rotted |
+| 617 | 2026-08-23 | 3 differ, all from new data | **no conclusion moves** |
+| 618 | 2026-08-23 | drift re-derived on **13** sessions, not 10 | **0.0020 unchanged** — the twice-wrong number holds |
+| 619 | 2026-08-23 | replicate noise stable at 19 pairs | median 1.0, max 8.0 |
+| 620 | 2026-08-23 | triage **34 → 8** | the week's write-up work, quantified |
