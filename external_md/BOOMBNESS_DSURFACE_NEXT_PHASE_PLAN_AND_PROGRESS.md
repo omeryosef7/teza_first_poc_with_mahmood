@@ -632,6 +632,47 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ✅ R-H-CHECK (20:19) — R-H's pooling assumption tested, and a centring convention I had not made explicit
+
+R-H carried the caveat that *"pooling three separately-fitted banks assumes comparable activation
+scale across banks."* Assumption tested rather than left standing.
+
+**Scale is comparable.** Frobenius norm of each pair's centred cell-mean cloud:
+
+| layer | carrot×bomb | carrot×knife | button×bomb | max/min |
+|---|---|---|---|---|
+| L6 | 5.583 | 4.654 | 5.095 | **1.200×** |
+| L8 | 6.619 | 5.323 | 5.933 | **1.244×** |
+| L10 | 7.029 | 5.450 | 6.247 | **1.290×** |
+| L12 | 7.924 | 6.237 | 7.028 | **1.271×** |
+| L18 | 15.537 | 13.314 | 13.962 | **1.167×** |
+
+A 1.17–1.29× spread. Scale-normalising each pair before pooling changes nothing qualitative, and
+moves the headline in the **conservative** direction — the gap gets *smaller*, i.e. better for the
+Phase 5 case:
+
+| layer | PC1 raw | PC1 scale-normed | gap raw | gap normed |
+|---|---|---|---|---|
+| L6 | 0.5812 | 0.5584 | 2.37× | **1.98×** |
+| L8 | 0.5828 | 0.5593 | 2.66× | **2.15×** |
+| L10 | 0.5726 | 0.5480 | 2.81× | **2.26×** |
+| L12 | 0.5729 | 0.5503 | 2.72× | **2.27×** |
+| L18 | 0.5926 | 0.5728 | 2.19× | **1.88×** |
+
+⚠ **But note these PC1 values (0.573–0.593) are not R-H's (0.516–0.529), and the difference is a
+CENTRING CONVENTION I had not stated.** R-H stacks all 12 cells and centres **once globally**, which
+retains the between-pair mean offsets. This check centres **each pair's 4 cells separately** before
+concatenating, which removes them. Both are defensible; they answer slightly different questions.
+
+**R-H's convention is the right one for the purpose**, because a real crossed bank has all cells in
+one row-set and its cell means would be centred once — so the global centring is the better
+simulation of the object Phase 5 will actually build. The two conventions bracket the answer at
+**PC1 0.52–0.59** and **gap 1.9×–2.8×**, against a single-pair **PC1 0.78–0.95** and **gap
+6.2×–12.4×**. **The conclusion is unchanged under every variant tried**; only the third significant
+figure moves.
+
+---
+
 ### ★★ R-I (19:56) — THE PHASE 5 CROSSED BANK IS BUILT AND AUDITED CLEAN (CPU only, no new harmful content)
 
 R-H validated the design; this builds it. The factorial is **{carrot, basket, button} × {bomb,
