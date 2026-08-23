@@ -693,6 +693,65 @@ carries it.
 
 ---
 
+### 📌 REPRODUCIBILITY GAP CLOSED (01:20) — the argsfiles are **gitignored**; here they are
+
+`.gitignore:11` ignores `outputs/`, and every argsfile this phase has used lives under
+`outputs/boombness/argsfiles/`. **So the exact command line of every run in this phase — Phase 2,
+Phase 3 and Phase 4 alike — has never been in version control.** The run dirs record `argv` in their
+own `RUNMETA.json`, but those are under `outputs/` too. This document is therefore the only durable
+record, and until now it did not contain the literal strings either.
+
+All arms ran `python -u src/boombness/score_behavior.py $BOOMB_ARGS` via
+`src/boombness/slurm/run_boombness.sh`, submitted as:
+
+```
+sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$REPO/outputs/boombness/argsfiles/<NAME>.txt \
+       src/boombness/slurm/run_boombness.sh
+```
+
+The wrapper pins `--partition=killable --account=gpu-research --gpus=1 --mem=48G --time=06:00:00
+--nodelist=n-801,n-802,n-803,n-805,t-806`, sets `HF_HUB_OFFLINE=1`, and **hard-fails unless the GPU
+reports `*L40S*`**. `--intervene` grammar is `name:mode:lo-hi:alpha`, `+`-joined for composed arms,
+band inclusive (`range(lo, hi+1)`, `score_behavior.py:820-824`).
+
+```text
+# p2_A.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --attn-impl eager --arm A_baseline --tag p2A
+
+# p2_B.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --attn-impl eager --demo-deleted --arm B_demo_deleted --tag p2B
+
+# p2_C_all.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --intervene demo_all:attn_knockout:0-31:1.0 --arm C_demo_all_L0_31 --tag p2C_all
+
+# p2_C_band.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --intervene demo_all:attn_knockout:6-14:1.0 --arm C_demo_all_L6_14 --tag p2C_band
+
+# p2_D_ctrl.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --intervene demo_all:attn_knockout:20-31:1.0 --arm D_demo_all_CTRL_L20_31 --tag p2D_ctrl
+
+# p3_R.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --fit-dir $REPO/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --attn-impl eager --intervene refusalness:project_out:12-12:1.0 --arm R_refusal_removed --tag p3R
+
+# p3_CR.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 96 --max-new 192 --dtype bfloat16 --seed 20260823 --fit-dir $REPO/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --intervene refusalness:project_out:12-12:1.0+demo_all:attn_knockout:6-14:1.0 --arm CR_both --tag p3CR
+
+# p4_q3_smoke_C.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --max-new 192 --dtype bfloat16 --seed 20260823 --model Qwen/Qwen3-14B --enable-thinking false --limit 8 --intervene demo_all:attn_knockout:18-19:1.0 --arm C_smoke_q3 --tag p4smokeC
+
+# p4_q3_A.txt
+--bank $REPO/data/boombness_prompts/boombness_prompt_bank.jsonl --query-kinds behavioral --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3 --n-examples 1,2,4,8 --max-new 192 --dtype bfloat16 --seed 20260823 --model Qwen/Qwen3-14B --enable-thinking false --expect-n 96 --attn-impl eager --arm A_baseline --tag p4q3A
+```
+
+Two things a reader should not have to rediscover. **`--attn-impl` is recorded misleadingly**: the
+knockout arms omit the flag, so `config.json` says `"attn_impl": "sdpa"` while
+`_attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager")` (`score_behavior.py:766`)
+forces eager — `metadata.json` and the log carry the truth. **Every Phase-2 arm actually ran eager,
+bf16.** And `--limit` was never passed on the full arms; the population is pinned by the filter flags
+plus `--expect-n 96`, which hard-refuses if the filter does not yield exactly 96 rows.
+
+---
+
 ### 🔬 PHASE 4 LAUNCHED (01:14) — porting the retrieval knockout, not `d_surface`, to Qwen3
 
 R-V settles why: `d_surface` on Qwen3 cannot be identified against a control at L11, so porting *that*
