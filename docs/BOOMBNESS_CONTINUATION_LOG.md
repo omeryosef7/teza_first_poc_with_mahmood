@@ -10290,3 +10290,35 @@ was right.
 | 690 | 2026-08-23 | per-readout mass, worst decides, tripping readout named | `ABSENT_OK` **1 → 0**; that run was the blind spot |
 | 691 | 2026-08-23 | LIVE unchanged at 6 | no new defect, **no conclusion moves** |
 | 692 | 2026-08-23 | A-17.7: `semantic_logodds` is in the **Holm** family | conclusion holds, **reason corrected**; no decision changes |
+
+## The quoted analysis had never been run
+
+Audit #17's last residual: Q5 quoted a `core2x2`-only pair — ρ **−0.0832**, p **0.572**, n=60 — that
+existed in **no committed artifact**. `_CLEAN` is built with
+`--require-bank-block core2x2,extra_conditions,role_style,families` → n=90, and holds no core2x2-only
+subset. The figures were quoted as though an analysis had produced them; none had.
+
+Ran it: `analyze_g2.py --require-bank-block core2x2` → `g2_analysis_cwpos_CORE2X2.json`, **n=60**, **6**
+clusters. Both figures reproduce **to the digit** — `clustered_inference.rho_within_domain` =
+**−0.08319**, `p_perm_within_domain_rho` = **0.5722**.
+
+So the numbers were **right**. That is the uncomfortable part: for six days a correct result sat in the
+report with nothing behind it, and it would have read exactly the same had it been wrong. Being right
+is not the same as being checked, and only one of those is visible to a reader.
+
+Two details worth citing precisely:
+
+- the artifact's `layer_selection.headline` carries p **0.5537** from the maxT selection pass, not the
+  quoted **0.5722**; the body quotes `clustered_inference`, which is the correct field to cite;
+- the bank filter is recoverable **only from `provenance.argv`** — there is no dedicated field — so the
+  citation points at the argv line.
+
+Q5 now reads **sourced**; flagged answers **7 → 6**, the remaining six being the already-triaged set.
+All 13 answers are sourced.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 693 | 2026-08-23 | Q5's `core2x2` pair was in no artifact | ran the analysis that had only ever been quoted |
+| 694 | 2026-08-23 | `g2_analysis_cwpos_CORE2X2.json`, n=60, 6 clusters | **−0.08319 / 0.5722 — exact match** |
+| 695 | 2026-08-23 | cite `clustered_inference`, not `headline` (p 0.5537) | field named; argv is the only bank-filter record |
+| 696 | 2026-08-23 | sourcing check rerun | flagged **7 → 6**; **all 13 answers sourced** |
