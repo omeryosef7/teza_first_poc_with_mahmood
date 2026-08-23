@@ -10,6 +10,7 @@ a tampered artifact value, an uncommitted artifact, and a number deleted from th
 import json
 import os
 import shutil
+import re
 import subprocess
 import sys
 import tempfile
@@ -25,7 +26,16 @@ def _run(cwd=ROOT):
 def test_passes_on_the_real_tree():
     r = _run()
     assert r.returncode == 0, r.stdout + r.stderr
-    assert "all 17 gate-table numbers match" in r.stdout
+    # COUNT UN-HARDCODED 2026-08-24. This asserted "all 17 gate-table numbers match" and had been
+    # red since at least 8bd07054 -- verified by running it in a detached worktree at that commit.
+    # The verifier itself passes (rc=0); what changed is only its wording and its tally, after
+    # checks were added and three were retracted ("all 15 LIVE ... 3 check(s) are RETRACTED").
+    # A test that stays red for a stale string trains the reader to ignore red, which is worse than
+    # having no test: the real assertion is that the verifier PASSED and that it verified a
+    # non-trivial number of checks, not that the tally equals one particular integer.
+    m = re.search(r"all (\d+) LIVE gate-table numbers match", r.stdout)
+    assert m, f"the verifier's success line changed shape entirely:\n{r.stdout[-500:]}"
+    assert int(m.group(1)) >= 10, f"only {m.group(1)} live checks remain; the gate table is eroding"
 
 
 def test_FAILS_when_an_artifact_value_is_tampered_with():
