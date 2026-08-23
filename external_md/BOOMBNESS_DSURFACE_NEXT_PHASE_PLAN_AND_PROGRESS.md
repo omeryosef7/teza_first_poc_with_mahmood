@@ -693,6 +693,51 @@ carries it.
 
 ---
 
+### 🔬 PHASE 4 LAUNCHED (01:14) — porting the retrieval knockout, not `d_surface`, to Qwen3
+
+R-V settles why: `d_surface` on Qwen3 cannot be identified against a control at L11, so porting *that*
+arm would import a known confound. The **retrieval knockout uses no fitted direction at all**, which
+is precisely why R-C promoted it, and it is what Phase 4 ports.
+
+**Two jobs, deliberately in this order.**
+
+| job | argsfile | what it settles |
+|---|---|---|
+| **777061** | `p4_q3_smoke_C.txt` — `--limit 8`, `demo_all:attn_knockout:18-19:1.0` | **does the hook fire on Qwen3?** Liveness gate `KNOCKOUT_MIN_LIVE_FRAC = 0.99` must pass before any sweep. R-U proved the block is *addressable*; this proves the mask is *applied*. |
+| **777062** | `p4_q3_A.txt` — `--expect-n 96`, no intervention | **N13 headroom.** Qwen3 complies with only 4/495 of AdvBench; if its baseline on this bank is also at the floor, no knockout effect is measurable and the arms are not worth running. |
+
+Both carry `--model Qwen/Qwen3-14B --enable-thinking false`, matching every prior Qwen3 boombness run
+(`q3B11` used `enable_thinking "false"`), on the otherwise byte-identical Phase-2 arg string.
+
+**Model-specific changes required, and why each is not optional** (from a provenance audit of the
+Phase-2 recipe):
+
+1. `--model` — omitting it silently runs Llama, because `model_id = args.model or dc.PRIMARY_MODEL`
+   (`score_behavior.py:749`) and `PRIMARY_MODEL = "meta-llama/Llama-3.1-8B-Instruct"`.
+2. **Qwen3-14B has 40 blocks, Llama 32.** So Phase-2's `0-31` is *not* "all layers" on Qwen3 (it
+   covers 32/40) and `20-31` is no longer the top of the stack. Nothing in the code validates a band
+   against `num_layers`: an over-range index would `IndexError`, but an **under-range band fails
+   silently as a weaker knockout** — the exact silent-no-op shape this phase guards against.
+   The headline band `6-14` is a **depth-fraction claim** (0.19–0.44 of depth), not a transferable
+   index; on 40 blocks that is ≈ **L7–L17**, and the late control ≈ **L25–L39**. Those bands are
+   deferred until the smoke and the headroom gate return, so a band choice is never the thing that
+   explains a null.
+3. `--enable-thinking` — untouched on Llama, but Qwen3 is a thinking model and the flag changes the
+   templated string the demo-block character-offset search runs against. Set explicitly.
+
+⚠ **Recorded now, before the results:** a Qwen3 replication of Phase 3 will need a *different refusal
+layer*. `refusalness:project_out:12-12` is Llama-only — the Qwen3 refusal directions on disk exist
+only at **L20, L25, L28** (`outputs/stage_gcg_full/refusal_direction_qwen3_L{20,25,28}.pt`, 5120-d).
+`expect_dim` makes a width mismatch a hard error, so this cannot go silently wrong, but it does mean
+Phase 3's exact composed spec will hard-fail on Qwen3 and must be re-specified rather than re-used.
+
+⚠ **Provenance note for the write-up.** The five Phase-2 Llama arms were **not all built from one
+commit** (`ebc0913` for A/B, `98e5f89` for C_all, `a2681b6` for C_band and D_ctrl, `4564f08` for the
+Phase-3 pair). For the cross-model comparison to be clean, all Qwen3 arms are being run from a single
+pinned tree.
+
+---
+
 ### ★★★★★ R-V / C-3 (00:58) — **The Qwen3 `d_surface` control is not a hard control. It is geometrically incapable of being one, and the +0.3810 headline inherits the dose confound.**
 
 Phase 4's stated prerequisite was "add a Qwen3 dose ladder before quoting +0.3810 as
