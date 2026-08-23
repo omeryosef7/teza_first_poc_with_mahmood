@@ -637,6 +637,47 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ✅ R-O (21:38) — ARMS A AND B COMPLETE AT FULL SCALE, AND THE CEILING IS CLEAN
+
+| job | arm | rows | failures | median chars | `attn_impl` | `population_composition` |
+|---|---|---|---|---|---|---|
+| 776853 | **A** baseline | 96 | {} | **788** | eager | ✅ n=96, families=96 |
+| 776854 | **B** ceiling (`--demo-deleted`) | 96 | {} | **98** | eager | ✅ n=96, families=96 |
+
+* `--expect-n 96` passed on both, so the population is asserted rather than assumed.
+* **The S1 fix works**: both artifacts now carry `population_composition`, and `demo_deleted` reads
+  `False` / `True` correctly. Arm B's smoke could not have shown this — it predates the fix.
+* **Paired A↔B on 96/96 common `prompt_id`s.** No population mismatch, so the ceiling is measured on
+  exactly the rows the baseline was measured on.
+* **B is shorter than A on 96 of 96 rows** (median 788 → 98). The ceiling is uniform canned refusal,
+  as the smoke predicted.
+
+#### Arms C and its matched control launched
+
+| job | arm | layers | role |
+|---|---|---|---|
+| **776872** | `C_demo_all_L0_31` | **0–31** | primary. G3's `all_layers_demo` recovered **75.2%** of the deletion ceiling while sparse knockout did **not** work, so all-layers is the arm with a prior rather than an arbitrary depth |
+| **776873** | `C_demo_all_L6_14` | 6–14 | the retrieval band |
+| **776874** | `D_demo_all_CTRL_L20_31` | 20–31 | **exactly count-matched control**: identical key set, different layers |
+
+**Why the control is a layer swap and not a random key set (D-10).** Once the query span is
+protected, a non-demo key set **cannot be count-matched at `n_examples` ≥ 2** — the non-demo pool is
+a near-constant ~53 tokens while the demo block grows to 106, so the pre-flight refuses on 36 of 96
+rows (M1). Holding the **keys** fixed and moving the **layers** gives a control that is exactly
+count-matched, always feasible, and isolates *"these tokens at these layers"* from *"these tokens
+anywhere"*. `776775` (`allpast`, all layers) additionally bounds the arm from above.
+
+⚠ Arm C's 8-prompt smoke (776492) has now been **preempted twice** and is 67 minutes in. The full
+arms were launched without waiting for it because the protections it would provide are already in
+place and stronger: the **pre-flight** runs `demo_key_positions` over all 96 rows before generating,
+the **liveness gate** refuses a run whose mask did not fire during decode, `knockout_key_set` is
+unit-tested, and **R-L already proved the instrument at both depths**. The smoke is left running as a
+free cross-check rather than a blocker.
+
+**Dose ladder at 9/14.**
+
+---
+
 ### 🔬 PHASE 2 MATRIX OPENED (21:20) — arms A and B launched at full scale
 
 With the instrument proven (R-L) and the ceiling smoke-validated (R-N), the two arms that do **not**
