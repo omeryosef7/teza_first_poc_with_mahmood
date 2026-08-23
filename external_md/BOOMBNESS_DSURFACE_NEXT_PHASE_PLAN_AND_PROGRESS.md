@@ -283,7 +283,12 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | job id | owner | what | submitted | tree commit | output | status |
 |---|---|---|---|---|---|---|
 | **776368** | **peer** | `run_band2_judge.sh` — judges base + e7rnd01/02/03 + dd12a008 + dd12a006 in one session (6 × 495 = 2,970 calls) | 17:16 | `91e30a62` | `outputs/boombness/judge/bnd2_*` | RUNNING |
-| **776391** | this | generate `d_surface:project_out:12-12:**0.045**` on AdvBench-495 (tag `dd12a45`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a45_*` | PENDING |
+| **776391** | this | generate `d_surface:project_out:12-12:**0.045**` on AdvBench-495 (tag `dd12a45`) | 17:26 | `91e30a62` | `.../score_behavior/dd12a45_*` | ✅ COMPLETED 495 rows |
+| **776470 / 776471** | this | dose arms α **0.056** / **0.38** (the variance-band median and the norm-band upper edge) | 18:06 | `91e30a62` | `.../score_behavior/dd12a{56,38}_*` | ✅ COMPLETED 495 rows each |
+| **776797** | this | **P1B: the 14-arm L12 dose ladder, ONE session** (`run_p1b_judge.sh`) — manifest cardinality assert passed at exactly 14 | 20:46 | `28708342` | `outputs/boombness/judge/p1b_*` | 🔬 RUNNING |
+| **776775** | this | **the instrument verdict** — `allpast:attn_knockout:**0-31**:1.0`, all 32 layers, same 8 prompts | 20:32 | `28708342` | `.../score_behavior/p2smokePall_*` | PENDING |
+| **776492** | this | Phase 2 smoke arm C, `demo_all` at **L18–19** ⚠ now known under-powered per R-J; kept for the L18–19 datapoint | 18:23 | current tree | `.../score_behavior/p2smokeC_*` | 🔬 RUNNING |
+| **776774** | this | **Phase 5** extraction, `basket × bomb` (validates the path on one new bank before the other two) | 20:22 | `fc3a04a1` | `.../extract_boombness/x2fit_basket_bomb_*` | 🔬 RUNNING |
 | **776392** | this | generate `d_surface:project_out:12-12:**0.03**` on AdvBench-495 (tag `dd12a3`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a3_*` | PENDING |
 | **776397** | this | **Gate E7 in ONE session**: base + dS50 + rnd50 + rnd75 + e7rnd01/02/03, 7 × 495 (`scripts/judge_p1a.sh`) | 17:34 | `50e5d7e8` | `outputs/boombness/judge/p1a_*` | RUNNING |
 | **776437** | this | **Phase 2 smoke, arm C** — `demo_all:attn_knockout:18-19:1.0`, 8 prompts | 18:01 | `54c66143` | `.../score_behavior/p2smokeC_*` | PENDING |
