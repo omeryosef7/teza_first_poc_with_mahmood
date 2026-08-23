@@ -693,6 +693,88 @@ carries it.
 
 ---
 
+### 🔍 REVIEW-3 (02:40) — adversarial code review of the Qwen3 port. **Two real defects fixed, two clean bills of health, one known defect re-confirmed.**
+
+Every claim below was **re-verified by me against the source and the bank** before acting; the review
+is an input, not an authority.
+
+#### ⛔ S1 — arm B (777122) is dead on arrival, and this is a KNOWN defect, not a new one
+
+**Verified independently:** the Phase-2/4 population is **96 rows with exactly 1 distinct
+`final_query_text`** (all 88 chars). The M1 guard at `score_behavior.py:728-734` therefore refuses
+`--demo-deleted` before `RunDir` is created. Confirmed the guard commit `f5715852` (22:23) is **not**
+an ancestor of `ebc0913`, the commit the Llama `p2B` ran at (21:20) — so the Llama ceiling on disk is
+exactly the artifact the guard now forbids.
+
+**This was already found and recorded** — see REVIEW-2's **M1** in this same document, which states
+the ceiling is `n_distinct = 1` and that *"the recovery fraction is broken, but the arm-versus-matched-
+control contrast does not use the ceiling."* The review rediscovered it and framed it as new. **No
+Phase 2 headline depends on it**, and the standing retraction stands.
+
+**Decision D-11: arm B is NOT ported to Qwen3.** A ceiling of one Bernoulli draw is not a ceiling on
+either model, and a recovery fraction is not among Phase 4's claims. 777122 is left to run so its
+refusal is *logged evidence* rather than my assertion. **Phase 4 reports the arm-vs-matched-control
+contrast (C_band vs D_ctrl), which needs no ceiling.**
+
+#### ✅ S2 FIXED — a refusal that left a judgeable partial
+
+The thinking-off probe raised `SystemExit`, a **BaseException**, from inside the per-row `try`. The
+blanket `except Exception` does not catch it, so the process died mid-loop with ~24 rows already
+flushed to `gens.jsonl` and **no `DONE.json`** — and `judge_boombness` reads `gens.jsonl`. **Exactly
+the `InfeasibleControl` defect already fixed once this phase**, in a different place. It is armed
+**only on Qwen3** (on Llama the probe can never fire), and the 8-row smoke could not have caught it
+because the check fires at `think_probe["n"] == 24`.
+
+Containment existed — `scripts/judge_p2.sh:55` refuses a dir with no `DONE.json` — but that is the
+**driver's** guard, not the script's, and a direct judge call bypasses it. **Fixed** by writing an
+`ABORTED.json` before raising, reusing `judge_boombness`'s own T12 precedent (`run.abort()`), which
+`common.require_done` refuses **by name**. The `SystemExit` is deliberately **not** downgraded: the run
+must still die, since a catchable exception would be swallowed per-row and generation would continue
+producing rows with no answer in them — worse than the original bug.
+
+#### ✅ S3 FIXED — nothing validated an `--intervene` band against model depth
+
+Two asymmetric failure directions, and only one was loud:
+* `hi >= num_layers` → `IndexError` **inside** the per-row try → 96 silent ledger failures and a
+  written `summary.json` before `assert_knockout_live` finally raises on `n_rows == 0`.
+* a band **too narrow** → fails **silently as a weaker intervention**. This is the dangerous one, and
+  it is precisely what porting Llama's `0-31` to a 40-block Qwen3 would have done: an "all layers" arm
+  covering **32/40 = 80%**, scoring as a clean partial null.
+
+**Fixed** with a bounds check *and* an echo of the resolved band and its depth fraction — because no
+exception can catch the narrow case, only a human reading the log can.
+
+#### ✅ Clean bills of health (recorded because a negative finding is a finding)
+
+* **Grouped-query attention — no defect.** `transformers 5.12.1` `eager_mask` builds the mask with
+  `head_arange = torch.arange(1)`, so the head axis is **1**, and `am[0, 0, lo:, kp]` broadcasts over
+  all 40 query heads. `num_key_value_heads = 8` is irrelevant: the mask is added **after** `repeat_kv`.
+  One cosmetic consequence — `n_edits` counts key-rows, not head-edges, so **`median_decode_edits` is
+  not comparable across models with different head counts** and must not be quoted as one.
+* **Sliding window — none.** Qwen3-14B config has `sliding_window: null`, `use_sliding_window: false`,
+  every `layer_types` entry `full_attention`. And this is settled **empirically, not by inference**:
+  the smoke reports `frac_rows_decode_live = 1.0` on Qwen3 under this exact transformers version.
+* **No Llama constant leaks into the Qwen3 path**: EOS comes from `generation_config.eos_token_id`;
+  readout ids are re-resolved per tokenizer (Qwen3 ids 12764/74194, not Llama's); every tokenization
+  path uses `add_special_tokens=False` on the same `apply_template` output, so the Llama-adds-BOS /
+  Qwen3-adds-nothing asymmetry cannot bite; `--fit-dir` is correctly waived for pure-knockout arms.
+
+#### ⚠ S8 — a wording constraint on the finding, not a bug
+
+`lo = max(0, kp - past)` blocks every query row from `kp` **inclusive**, so a demonstration token is
+blocked from attending to *itself and to earlier demonstration tokens*. At `0-39` that destroys the
+demo block's own internal computation at every layer — **closer to "ablate the demonstrations'
+computation" than to "block demonstration retrieval."** It is identical on Llama, so the cross-model
+contrast is fair, but **the all-layers arm must not be described as retrieval-specific.** The `7-17`
+band is the arm that supports the retrieval reading. This constrains how Phase 4's result may be
+phrased, and is recorded **before** the numbers.
+
+**Guards added:** `tests/test_band_range_and_abort.py`, 9 tests. **Mutation-tested both ways** —
+removing the band check turns 4 red, removing the abort marker turns 2 red, restoring turns all 9
+green. Not green-by-construction.
+
+---
+
 ### ★★★★ R-AA (02:14) — **N13 HEADROOM GATE PASSES.** Qwen3 and Llama are behaviourally comparable on this bank.
 
 **Artifact:** `outputs/boombness/judge/p4hj_p4q3A_20260824_012128_1285426`, judge job **777118**,

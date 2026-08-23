@@ -820,6 +820,26 @@ def main() -> int:
         for part in args.intervene.split("+"):
             name, mode, band_s, alpha_s = part.split(":")
             lo, hi = (int(x) for x in band_s.split("-"))
+            # BAND RANGE CHECK (review 2026-08-24, finding S3). Nothing validated a band against the
+            # model's depth, and the two failure directions are asymmetric:
+            #   hi >= num_layers -> IndexError inside AllQueryAttentionKnockout.__init__, which is
+            #     INSIDE the per-row try, so it becomes 96 silent ledger failures and a written
+            #     summary.json before assert_knockout_live finally raises on n_rows == 0. Loud
+            #     eventually, but it burns the whole allocation and writes an artifact first.
+            #   band NARROWER than intended -> fails SILENTLY as a weaker intervention. This is the
+            #     dangerous one, and it is exactly what porting Llama's 0-31 to a 40-block Qwen3
+            #     would have done: a "all layers" arm covering 32/40 and scoring as a clean partial
+            #     null. No exception can catch that, so the band is ECHOED, not just bounds-checked.
+            if not (0 <= lo <= hi):
+                raise SystemExit(f"[score] REFUSING: malformed band {band_s!r} (need 0 <= lo <= hi)")
+            if hi >= lm.num_layers:
+                raise SystemExit(
+                    f"[score] REFUSING: --intervene band {band_s!r} addresses block {hi} but "
+                    f"{model_id} has only {lm.num_layers} blocks (0-{lm.num_layers - 1}). A band "
+                    f"copied from a model of a different depth is the silent-weaker-knockout bug.")
+            print(f"[score] band {band_s} -> blocks {lo}..{hi} of {lm.num_layers} "
+                  f"(depth {lo / lm.num_layers:.3f}-{(hi + 1) / lm.num_layers:.3f}, "
+                  f"{hi - lo + 1} blocks)", flush=True)
             specs.append({"direction": name, "mode": mode,
                           "layers": list(range(lo, hi + 1)), "alpha": float(alpha_s)})
         spec = specs[0] if len(specs) == 1 else {"composed": specs}
@@ -1104,6 +1124,26 @@ def main() -> int:
                             if think_probe["n"] == 24:
                                 frac = think_probe["unclosed"] / think_probe["n"]
                                 if frac > 0.25:
+                                    # ABORT MARKER FIRST (review 2026-08-24, finding S2). This
+                                    # SystemExit is a BaseException, so the per-row `except
+                                    # Exception` below does not catch it and the process dies
+                                    # mid-loop -- with ~24 rows already flushed to gens.jsonl and no
+                                    # DONE.json. judge_boombness reads gens.jsonl, so that is a
+                                    # judgeable partial. Same shape as the InfeasibleControl defect
+                                    # already fixed once this phase. scripts/judge_p2.sh:55 refuses
+                                    # a dir without DONE.json, but that is the DRIVER's guard, not
+                                    # this script's; a direct judge invocation bypasses it. So mark
+                                    # the dir explicitly, reusing judge_boombness's T12 precedent:
+                                    # ABORTED.json instead of DONE.json, which common.require_done
+                                    # refuses by name.
+                                    try:
+                                        gens_fh.flush()
+                                        run.abort(f"enable_thinking=False not binding: "
+                                                  f"{think_probe['unclosed']}/{think_probe['n']} "
+                                                  f"unclosed reasoning traces")
+                                    except Exception as _e:      # never mask the real refusal
+                                        print(f"[score] (could not write ABORTED.json: {_e})",
+                                              flush=True)
                                     raise SystemExit(
                                         f"[score] REFUSING: --enable-thinking false, but "
                                         f"{think_probe['unclosed']}/{think_probe['n']} of the first "
