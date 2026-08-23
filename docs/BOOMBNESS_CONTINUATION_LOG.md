@@ -10027,3 +10027,32 @@ analysis, not by relaxing the check.
 | 662 | 2026-08-23 | t matched, magnitudes did not → **readout** mismatch | `cos` not `proj`; t is scale-invariant |
 | 663 | 2026-08-23 | **every figure reproduces exactly** | Q2 verified, not merely probably right |
 | 664 | 2026-08-23 | §19 sourcing **0 flagged** | 13 of 13; was 5 flagged two ticks ago |
+
+## Made the guards gate the commit, because reading them was not reliable
+
+Twice in three days I pushed a commit while a guard was failing: the `assert` whose output scrolled
+past on 08-22, and yesterday's broken table row, where `markdown_structure_check` caught unescaped
+pipes in `\|cos` / `\|proj` and I read `check_all`'s exit code **after** the push. Both times the guard
+worked. Both times the failure was on screen. **Running a guard is not the same as reading it**, and a
+check whose result gates nothing depends on my attention at exactly the moment I have least of it.
+
+`scripts/guarded_commit.sh` runs the six deliverable guards and **commits only if they pass**; on
+failure it prints the guard output and exits 1 without touching git.
+
+**Not a pre-commit hook, deliberately.** A concurrent session shares this repo, and a hook would block
+its commits as well as mine — the same reason one was declined earlier. This gates only my own commits,
+by being the thing I call instead of `git commit`.
+
+**Tested against a case it must refuse**, per the standing rule: an unescaped pipe was injected into
+the progress doc, and the wrapper printed `REFUSING TO COMMIT` and exited **1**, leaving the working
+tree untouched. Restored afterwards.
+
+⚠ **And the test itself nearly lied.** My first run reported `rc=0` — because the exit code came from
+`tail` at the end of a pipe, not from the script. That is the *third* time a pipeline has hidden a
+non-zero status from me in this sprint. Re-run without the pipe: exit **1**, as intended.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 665 | 2026-08-23 | built `guarded_commit.sh` — guards gate the commit | not a hook; the concurrent session is unaffected |
+| 666 | 2026-08-23 | tested it against a failing guard | prints `REFUSING`, exits **1**, git untouched |
+| 667 | 2026-08-23 | the test's own `rc` came from `tail` | **third** pipeline-hidden exit code this sprint |
