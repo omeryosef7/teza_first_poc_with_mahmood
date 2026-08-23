@@ -10506,3 +10506,44 @@ actually has, which is what "address things by identity" means here.
 | 714 | 2026-08-23 | option-mass gate checked **per run**, not just baseline | `semantic_one_word` **0.0253 SUB-GATE on the arm only** |
 | 715 | 2026-08-23 | that readout is **74%** of the pooled **+2.4073** | quote **+2.4528** (gate-passing); conclusion survives |
 | 716 | 2026-08-23 | my gate display omitted the readout it exists to expose | fixed to enumerate what the run has |
+
+## Auditing the gate across every run, and finding mostly good news
+
+Last tick's finding — an intervention pushing its own readout under the option-mass gate — is a general
+hazard, so I checked it everywhere rather than assuming §4b was special.
+
+**Scope first, because it bounds everything else.** Of **313** completed `score_behavior` runs, **289
+are generation-only** (no forced-choice readout, so the gate does not apply), **7** emit `option_mass`
+natively, and **14** carry readout rows *without* the field. For those 14 the mass is **reconstructable**
+as `p_coded+p_literal` / `p_codeword+p_concept`, so nothing is actually unmeasurable — which is better
+than the "303 unchecked runs" the first cut of this scan suggested.
+
+**Reconstructed, the §2.6-era runs are uniformly sub-gate by three orders of magnitude** — 3.2e-05 to
+1.5e-04 on comprehension, ~5e-06 on semantic, across all twelve arms and controls. That is R-6's 4.4e-05
+confirmed independently and extended to every arm rather than just `project_out`.
+
+**And that is where the good news is: it is already handled.** Audit #16 retracted the `compD`/`compDctrl`
+table and replaced it with the gate-passing `wa_*` recompute, and the report says so with the mass
+quoted. My sweep found **no unhandled case** beyond last tick's. A check that confirms prior work is a
+cheaper outcome than one that finds a defect, and worth the same amount of trust.
+
+**What was missing was in the artifacts, not the report.** `g8_comprehension_DF_arms.json` and
+`g8_comprehension_by_nexamples.json` are still committed with nothing inside them saying so — a reader
+who opens the JSON sees a clean analysis and would have to find the right paragraph three thousand lines
+into the report. `stamp_subgate_artifacts.py` now writes an `_OPTION_MASS_SUBGATE` block into each,
+carrying the **recomputed** mass, the runs checked, and the successor.
+
+One nuance the stamp forced me to get right: **the gate applies to the readout an analysis uses**, not to
+every readout its runs contain. The DF successor's `semantic_one_word` is **0.0120 — sub-gate**, but it
+analyses comprehension at **0.3083**, so the pointer is valid; a naive all-readouts-must-pass rule would
+have condemned the correct replacement. The stamp therefore **verifies the successor on the operative
+readout before redirecting**, and refuses otherwise — tested by naming `semantic_one_word` as the
+readout, which correctly returns **rc=2** with the failing runs listed instead of writing a bad pointer.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 717 | 2026-08-23 | gate scope: 313 DONE runs | 289 generation-only, 7 native, **14 reconstructable** |
+| 718 | 2026-08-23 | reconstructed the §2.6-era mass for all 12 arms | uniformly **3e-05–1.5e-04 — sub-gate** |
+| 719 | 2026-08-23 | checked against the report | **already handled (audit #16); no new defect** |
+| 720 | 2026-08-23 | artifacts carried no internal status | `_OPTION_MASS_SUBGATE` stamped into 2 files |
+| 721 | 2026-08-23 | successor verified on the **operative** readout | refusal tested → **rc=2**, no bad pointer written |
