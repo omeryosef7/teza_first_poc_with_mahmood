@@ -693,6 +693,78 @@ carries it.
 
 ---
 
+### ✅ R-X (01:52) — **The knockout FIRES on Qwen3.** Smoke passed; the null-interpretation precondition is met before any arm is read.
+
+**Artifact:** `outputs/boombness/score_behavior/p4smokeC_20260824_010019_266131`, job **777061**,
+COMPLETED in 8:49. `--limit 8`, `demo_all:attn_knockout:18-19:1.0`, `Qwen/Qwen3-14B`.
+
+```
+KNOCKOUT PRE-FLIGHT: n_rows 8, no_demo_block 0, infeasible_control 0,
+                     by_n_examples {1: 2/2 ok, 2: 2/2, 4: 2/2, 8: 2/2}
+KNOCKOUT LIVENESS:   frac_rows_decode_live = 1.0        (gate is 0.99)
+                     median_decode_edits   = 5533.0
+                     min_decode_forwards   = 110
+                     median_n_demo_positions = 44.0
+                     attn_implementation   = eager
+```
+
+`frac_rows_decode_live = 1.0` means the mask was applied **at every decode step of every row** — not
+just at prefill, which is the failure `AllQueryAttentionKnockout` was written to fix and which would
+have made any Qwen3 null uninterpretable. **The standing rule "never interpret a null without first
+proving the intervention fired" is therefore satisfied in advance for the Qwen3 arms.**
+
+### ✅ R-Y (01:52) — Qwen3 baseline arm is clean, and its population is **identical** to Llama's
+
+**Artifact:** `outputs/boombness/score_behavior/p4q3A_20260824_010910_267084`, job **777062**,
+COMPLETED 10:38, **96 rows**, `status ok`.
+
+```
+population -> n=96
+  by_domain      farm_storage 16, city_bridge 16, lab_safety 16,
+                 news_report 16, game_manual 16, instructional 16
+  by_bank_block  core2x2 48, core2x2_slot3 48
+  by_split       dev 48, heldout 48
+  by_n_examples  1:24  2:24  4:24  8:24
+  n_families 96, limit_applied None
+```
+
+**Cell-for-cell identical to the Llama Phase-2 population**, so the cross-model contrast is on matched
+prompts, not merely matched counts.
+
+Thinking mode is verified on the **output**, not just the template:
+`enable_thinking=False: template renders differently for the two modes (len 207 vs 226)` and then
+`thinking-off VERIFIED ON OUTPUT: only 0/24 of the first completions are unclosed thoughts`. That
+second line is the binding check — the first alone was the tautological-guard shape this phase already
+retracted once.
+
+### 🔬 PHASE 4 ARMS LAUNCHED (01:52) — four arms, depth-matched bands
+
+Judge **777118** is scoring the baseline alone for the **N13 headroom gate**. The arms were launched
+in parallel rather than idling a cycle, on an explicit and falsifiable prior: **Qwen3's baseline on
+`natural_doublespeak` was measured at 0.15952** (n=420, `q3dec_decomposition_L11.json` — the same
+artifact R-V audits), which is far off the floor that sank the AdvBench comparison (4/495 = 0.008).
+**If 777118 returns a baseline at the floor, these arms are discarded unjudged** and that decision is
+recorded here rather than the arms being quietly read anyway.
+
+| job | arm | band | Llama counterpart | depth fraction |
+|---|---|---|---|---|
+| **777119** | `C_demo_all_L0_39` | 0–39 | `0-31` | all blocks |
+| **777120** | `C_demo_all_L7_17` | **7–17** | `6-14` | 0.19–0.44 |
+| **777121** | `D_demo_all_CTRL_L25_39` | **25–39** | `20-31` | 0.63–0.97 |
+| **777122** | `B_demo_deleted` | — | `--demo-deleted` | text-deletion ceiling |
+
+⚠ **The band mapping is depth-matched, not count-matched, and the two differ.** Llama's `6-14` is 9
+blocks of 32; the depth-equivalent on 40 blocks is 7.5–17.5, taken inclusively as **7–17 = 11
+blocks**. So the Qwen3 band is *wider in layer count* while matched in depth fraction. That asymmetry
+is **conservative for a positive result and permissive for a negative one**: a wider band can only
+make the knockout stronger, so if Qwen3 shows *less* suppression than Llama it cannot be blamed on
+having cut too little. Recorded now, before the numbers, so it cannot be chosen after them.
+
+`0-39` is the genuine all-blocks arm on Qwen3 — Phase-2's `0-31` would have covered only 32 of 40 and,
+per the launch note, an under-range band **fails silently as a weaker knockout**.
+
+---
+
 ### ★★★★★ R-W (01:34) — **The three new single-pair banks FAIL the acceptance gate. Crossing them PASSES it. The fix is structural, not lexical.**
 
 R-V invented a sharper form of the bank gate than the plan had: instead of asking whether PC1
