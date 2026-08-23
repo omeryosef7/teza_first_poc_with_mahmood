@@ -632,6 +632,78 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ★★★★ R-H (19:34) — PHASE 5's PREMISE IS CORRECT, AND IT IS ALREADY MEASURABLE: CROSSING PAIRS BREAKS PC1 DOMINANCE
+
+Phase 5 asks for a bank whose cell-mean covariance has **multiple comparable components**, so that
+"same dose, different direction" becomes constructible. That premise was an argument. It is now a
+measurement — **computed on CPU from three fitted payloads that already exist**, zero new runs:
+
+* `full_20260816_185942_1008673` — **carrot × bomb**
+* `knifefit_20260821_135218_4045492` — **carrot × knife**
+* `buttonfit_20260821_150557_1157907` — **button × bomb**
+
+i.e. most of a 2×2 crossing of codeword against concept, all Llama-3.1-8B dev fits.
+
+#### The spectrum of the centred cell-mean cloud
+
+| layer | single pair PC1 / PC2 / PC3 | **pooled 3 pairs** PC1 / PC2 / PC3 | PCs ≥ 0.10 |
+|---|---|---|---|
+| L6 | 0.8769 / 0.0801 / 0.0430 | **0.5157 / 0.2242 / 0.1636** | 3 |
+| L8 | 0.8405 / 0.1141 / 0.0454 | **0.5270 / 0.2064 / 0.1487** | 3 |
+| L10 | 0.8116 / 0.1318 / 0.0566 | **0.5289 / 0.1933 / 0.1396** | 3 |
+| L12 | 0.8205 / 0.1202 / 0.0593 | **0.5260 / 0.2033 / 0.1363** | 3 |
+| L18 | 0.9067 / 0.0733 / 0.0199 | **0.5243 / 0.2469 / 0.1619** | 3 |
+
+Single-pair PC1 is **0.78–0.95** — one direction is essentially the whole cloud. Pooled, PC1 falls to
+**~0.52** and **three** components clear 0.10, with PC1/PC2 down from ~7–13× to **2.1–2.7×**.
+
+#### The quantity the bank-acceptance gate actually turns on
+
+Not the spectrum itself but **the best dose any direction ORTHOGONAL to the arm can reach** — the
+ceiling an in-subspace control can attain:
+
+| layer | single-pair arm | single-pair max control | **gap** | pooled arm | pooled max control | **gap** |
+|---|---|---|---|---|---|---|
+| L6 | 0.8768 | 0.0801 | **10.9×** | 0.5136 | 0.2249 | **2.28×** |
+| L8 | 0.8402 | 0.1143 | **7.4×** | 0.5243 | 0.2070 | **2.53×** |
+| L10 | 0.8114 | 0.1319 | **6.2×** | 0.5264 | 0.1939 | **2.71×** |
+| L12 | 0.8204 | 0.1202 | **6.8×** | 0.5237 | 0.2035 | **2.57×** |
+| L18 | 0.9067 | 0.0734 | **12.4×** | 0.5228 | 0.2473 | **2.11×** |
+
+The single-pair column **independently reproduces the standing `DOSE_CAVEAT` figure of 6–11×**, which
+is a useful check that this computation is the same object the sprint has been arguing about.
+Crossing pairs cuts the entanglement by **3–4×**: from a regime where no orthogonal control can get
+within an order of magnitude of the arm's dose, to one where a **dose-matched direction control is
+constructible for the first time**.
+
+#### 🚦 Bank-acceptance gate, provisionally
+
+| criterion | single pair | pooled 3 pairs |
+|---|---|---|
+| PC1 does not almost completely dominate | ✗ 0.82–0.91 | **✓ ~0.52** |
+| multiple directions with comparable attainable dose | ✗ 6–12× gap | **✓ 2.1–2.7× gap** |
+| tokenization / alignment / grammar audits | ✓ (all three banks: 0 failures, 2736 rows) | ✓ |
+
+⚠ **Four limits, because this is evidence for a design, not yet a result.**
+1. These three pairs **share** `carrot` and `bomb` — it is the minimum informative set, not a full
+   crossing. The screen supports two fully-crossed factorials
+   (`{apple, basket, button} × {bomb, weapon, gun, knife, drug}` and
+   `{lantern, candle, pillow, marble} × {virus, poison, missile}`), which should do better still.
+2. **Pooling three separate banks is not the same object as one bank with crossed pairs.** Each was
+   centred within its own row-set; pooling assumes comparable activation scale across banks. Same
+   model, same layers, same extraction config makes that reasonable, but the real Phase 5 bank must
+   be built and measured, not simulated this way.
+3. This shows the **geometry** improves. It does **not** show a dose-matched control yields a
+   different scientific answer — that needs the causal runs, and those need GPU.
+4. `carrot` is absent from `clean_codewords` (it is 2 tokens unspaced), so a properly screened bank
+   **drops carrot entirely** — gaining tokenization symmetry, losing direct continuity with every
+   `d_surface_carrot_bomb` number in the sprint. That trade should be made deliberately.
+
+**Status:** Phase 5's premise is validated and its target is now quantitative — build for
+`arm/max_control ≤ ~2.5×` rather than for a vague "less PC1-dominated".
+
+---
+
 ### ★★★ R-G (19:26) — ALL SEVEN GATE-E7 ARMS, LENGTH-CONDITIONED: the "matched random control" is a lottery, and `d_surface:add` is the only arm that is inert on comparable text
 
 One judging session (776397), `n_common = 495`, every field taken from `results.jsonl`
