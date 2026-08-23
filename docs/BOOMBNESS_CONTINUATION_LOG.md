@@ -9463,3 +9463,57 @@ Silent artifacts: 5 → **2** (the other three now marked correct-silence).
 | 599 | 2026-08-23 | `condition_profile_llama_projout` was **not** | the per-condition specificity profile, uncited |
 | 600 | 2026-08-23 | significant on **one** condition, the right one | doublespeak **+0.0902**, benign **−0.0015** |
 | 601 | 2026-08-23 | paired against the Qwen3 specificity failure | report had the bad half written and the good half uncited |
+
+## The unwritten-artifact sweep is finished, and the last one checked my own new table
+
+**Zero silent artifacts remain.** The sweep that started five ticks ago at **12** is done: seven were
+written up, five were marked correctly-silent with reasons (retracted composition, empty-goal taint,
+superseded n=4 null, a withdrawn metric, and a gate artifact).
+
+**`coherence_lenfair.json` earned its keep on the way out.** It showed `projctrl` at **50.5%
+truncation**, and a `projctrl` run is the control in the specificity table I published *last tick*. So
+I checked the runs that table actually used rather than assuming they were fine:
+
+| run | uniq | trigram | truncated | verdict |
+|---|---|---|---|---|
+| `projout_beh` (arm) | 0.712 | 0.021 | 0.43 | **OK** |
+| `projctrl` (control) | 0.723 | 0.018 | 0.36 | **OK** |
+
+Both pass. The 50.5% figure is the `natural_doublespeak` **subset**; over all 960 rows it is 36%.
+Truncation is high in both, but comparable — and the **arm's is higher than the control's** (0.43 vs
+0.36), which is conservative for a positive arm−control delta. The table stands, now verified rather
+than assumed. `coherence_lenfair` is marked as what it is: a **gate** artifact whose numbers belong
+next to whichever arm they license, which is exactly how it was just used.
+
+**`g3_dynrange.json` was the last real finding, and §10's nulls depend on it.** A null from an
+instrument that cannot move is worth nothing:
+
+| arm | edges cut | Δ semantic log-odds |
+|---|---|---|
+| `no_demo_text` | — | **−11.509** |
+| `positive_control` | 7264 | **−1.135** |
+| `all_layers_demo` | 4096 | −0.784 |
+| `all_demo` | 256 | −0.093 |
+| `topk_demo` | 16 | −0.025 |
+| `none` | 0 | **+0.000** |
+
+**Monotone in edges cut**, positive control **3000×** the largest non-control arm,
+`dynamic_range_established: true`. So a 16-edge null is a real null at that scale.
+
+⚠ **What it licenses is narrower than it looks.** `topk_demo` (−0.025) barely separates from
+`random_demo` (−0.018) and `same_head_random` (−0.011), which would be a strong redundancy claim —
+except **R-7 retracted the edge ranking**, so the set `topk_demo` chose is not known to be the
+important one. The defensible statement is about **scale**: cutting 16 edges of any kind does
+essentially nothing, cutting 4096 does a great deal.
+
+⚠ And the ceiling is worth saying out loud: deleting the demonstration text outright is **−11.5**, so
+the 7264-edge positive control recovers only **~10%** of it. Attention-edge surgery is a weak
+instrument relative to what it is trying to localise.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 602 | 2026-08-23 | `coherence_lenfair` flagged 50.5% truncation in a `projctrl` | prompted a check of **last tick's** published table |
+| 603 | 2026-08-23 | verified the runs that table used | both **OK**; arm truncation **higher** than control — conservative |
+| 604 | 2026-08-23 | wrote up `g3_dynrange` | instrument **monotone**, positive control **3000×** the arms |
+| 605 | 2026-08-23 | scoped the claim to R-7 | a statement about **scale**, not about which edges matter |
+| 606 | 2026-08-23 | **sweep complete: 12 → 0 silent artifacts** | 7 written up, 5 marked correctly-silent with reasons |

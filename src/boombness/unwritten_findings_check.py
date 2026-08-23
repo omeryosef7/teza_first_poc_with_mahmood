@@ -79,6 +79,11 @@ RETRACTED_ARTIFACTS = {
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json":
         "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "coherence_lenfair.json":
+        "a GATE artifact, not a finding: per-run coherence statistics for the len_* arms, whose role "
+        "is to license or block other analyses. Its numbers belong next to whichever arm they gate, "
+        "and it was used exactly that way on 2026-08-23 to verify the runs behind the §19 Q6b "
+        "specificity table (both OK: uniq 0.712/0.723, trigram 0.021/0.018).",
     "insubspace_null_by_layer_rep1.json":
         "superseded: an n=4-angle null (its own caveat: 'sd is estimated from four points ... a t "
         "with df=3'). The live null carries 24 controls per layer -- insubspace_null_full24.json.",

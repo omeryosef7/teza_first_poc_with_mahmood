@@ -25,6 +25,7 @@
     "qwen3_armD_natural_doublespeak.json": "R-14 class: treatment arms judged with --bank null (empty goal) against a real-goal baseline. Superseded by qwen3_l20_regoal.json (from q3rj2_*).",
     "qwen3_armD_benign_literal.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "qwen3_armD_direct_harmful.json": "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "coherence_lenfair.json": "a GATE artifact, not a finding: per-run coherence statistics for the len_* arms, whose role is to license or block other analyses. Its numbers belong next to whichever arm they gate, and it was used exactly that way on 2026-08-23 to verify the runs behind the \u00a719 Q6b specificity table (both OK: uniq 0.712/0.723, trigram 0.021/0.018).",
     "insubspace_null_by_layer_rep1.json": "superseded: an n=4-angle null (its own caveat: 'sd is estimated from four points ... a t with df=3'). The live null carries 24 controls per layer -- insubspace_null_full24.json.",
     "null_ceiling_session_check.json": "its headline metric (per-session mean spread as a noise bound) was WITHDRAWN after the xL6 crossover showed the spread is real angle variation, not judge noise. Its ceiling/margin figures duplicate insubspace_null_full24.json. Silence here is correct.",
     "g9_three_predictor_lastpos.json": "R-18 composition: n=234 with slot0_only=false and require_bank_block=null, i.e. includes sibling-family rows (36+36) and unrestricted blocks -- exactly what R-18 retracted. Superseded by g9_three_predictor_lastpos_CLEAN.json (same 90 rows as the cwpos CLEAN set).",
@@ -41,8 +42,8 @@
     "qwen3_channel_test.json": "rests on 3 empty-goal judge run(s) (R-14 class): q3_C20_20260818_174110_179027, q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028",
     "section14_topical_asr.json": "rests on 2 empty-goal judge run(s) (R-14 class): q3_D20_20260818_181444_206322, q3_D20ctrl_20260818_174110_179028"
   },
-  "n_artifacts_checked": 84,
-  "n_silent": 2,
+  "n_artifacts_checked": 83,
+  "n_silent": 0,
   "min_rare_fingerprints_for_a_verdict": 5,
   "n_untestable_too_few_rare_numbers": 11,
   "untestable": [
@@ -146,26 +147,7 @@
       "written_up": false
     }
   ],
-  "silent": [
-    {
-      "artifact": "coherence_lenfair.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 13,
-      "n_fingerprints_tested": 13,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
-      "artifact": "g3_dynrange.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 9,
-      "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    }
-  ],
+  "silent": [],
   "all": [
     {
       "artifact": "add_ladder_refusal.json",
@@ -358,15 +340,6 @@
       "written_up": true
     },
     {
-      "artifact": "coherence_lenfair.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 13,
-      "n_fingerprints_tested": 13,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
-    {
       "artifact": "coherence_steering.json",
       "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 9,
@@ -491,8 +464,8 @@
     {
       "artifact": "e12_codeword_control_cosines.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 129,
-      "n_fingerprints_tested": 129,
+      "n_rare_fingerprints_tested": 130,
+      "n_fingerprints_tested": 130,
       "n_fingerprints_found": 3,
       "example_hits": [
         "0.5253",
@@ -504,8 +477,8 @@
     {
       "artifact": "e12_concept_swap_cosines.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 117,
-      "n_fingerprints_tested": 117,
+      "n_rare_fingerprints_tested": 118,
+      "n_fingerprints_tested": 118,
       "n_fingerprints_found": 14,
       "example_hits": [
         "0.4948",
@@ -629,8 +602,8 @@
     {
       "artifact": "g2_analysis_cwpos.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 148,
-      "n_fingerprints_tested": 148,
+      "n_rare_fingerprints_tested": 149,
+      "n_fingerprints_tested": 149,
       "n_fingerprints_found": 4,
       "example_hits": [
         "0.2618",
@@ -690,12 +663,14 @@
     },
     {
       "artifact": "g3_dynrange.json",
-      "named_in_deliverable": false,
+      "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 9,
       "n_fingerprints_tested": 9,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
+      "n_fingerprints_found": 1,
+      "example_hits": [
+        "-0.784"
+      ],
+      "written_up": true
     },
     {
       "artifact": "g3_edgematch.json",
@@ -1005,8 +980,8 @@
     {
       "artifact": "q3dec_decomposition_L11.json",
       "named_in_deliverable": true,
-      "n_rare_fingerprints_tested": 88,
-      "n_fingerprints_tested": 88,
+      "n_rare_fingerprints_tested": 91,
+      "n_fingerprints_tested": 91,
       "n_fingerprints_found": 7,
       "example_hits": [
         "-0.0119",
@@ -1139,6 +1114,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "0d288bcd7e97615d333ed58493ef878a8d0234b0"
+    "git_commit": "3fa614539c30c073bc21310e6a89e48e90f00750"
   }
 }

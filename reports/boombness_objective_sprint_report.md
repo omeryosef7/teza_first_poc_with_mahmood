@@ -2960,6 +2960,41 @@ intervals, which are wide apart for D vs Dctrl and for F vs Fctrl alike.
 
 ⚠ **Single-model claim UPDATED 2026-08-23 — it does replicate on Qwen3, with a specificity caveat.** `analyze_qwen3_decomposition.py` had been written for the `q3dec_` batch and **never run**; the runs were judged and cited by nothing until the audit-#13 shard fix surfaced them (`q3dec_decomposition_L11.json`). On Qwen3-14B at **L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard `in_subspace_orth` control is **null** (−0.0119, p=0.60; p>0.05 in **6 of 6** leave-one-domain-out folds). That is notable because R-23 killed the Llama causal reading precisely because an in-subspace direction *reproduced* the effect — on Qwen3 it does not. ⚠ **But two-thirds of it is non-specific:** the same arm moves *benign_literal* ASR **+0.2562 (p=0.002)**, so the doublespeak-attributable excess is **+0.1248 (p=0.032)**, which falls to **p=0.063** under stratum matching and holds in only 4 of 6 folds. One judging session, uncorrected. So: the ASR effect replicates on a second model; its *specificity* does not clear the bar. Recorded as a live lead, not a result.
 
+**9b. Does the knockout instrument have any dynamic range at all? (added 2026-08-23;
+`g3_dynrange.json`, committed and never written up.)** A null from an instrument that cannot move is
+worth nothing, so §10's nulls need this check before they can be read. Semantic log-odds readout,
+n=6 per arm, ordered by edges cut:
+
+| arm | edges cut | Δ semantic log-odds |
+|---|---|---|
+| `no_demo_text` (delete the demonstrations) | — | **−11.509** |
+| `positive_control` | 7264 | **−1.135** |
+| `all_layers_demo` | 4096 | −0.784 |
+| `all_demo` | 256 | −0.093 |
+| `topk_demo` | 16 | −0.025 |
+| `random_demo` | 16 | −0.018 |
+| `same_head_random` | 16 | −0.011 |
+| `random_nondemo` | 16 | −0.004 |
+| `none` | 0 | **+0.000** |
+| `bottomk_demo` | 16 | +0.0004 |
+
+**The instrument works, and it is monotone in edges cut** — 0 → 16 → 256 → 4096 → 7264 edges maps to
+0.000 → ~0.02 → 0.093 → 0.784 → 1.135. `dynamic_range_established: true`, with the positive control
+**3000×** the largest non-control arm. So a 16-edge null is a **real** null at that scale, not an
+instrument failure, and §10's localized knockouts can be read as measurements.
+
+⚠ **But what that null licenses is narrower than it looks, because of R-7.** `topk_demo` (−0.025) is
+barely separated from `random_demo` (−0.018) and `same_head_random` (−0.011) — the *targeted* 16-edge
+cut does little that a *random* 16-edge cut does not. That would be a strong redundancy claim, except
+that **R-7 retracted the edge ranking** (it was measured at the wrong token), so the set `topk_demo`
+selected is not known to be the important one. The defensible statement is: **cutting 16 edges of any
+kind does essentially nothing, while cutting 4096 does a great deal** — a statement about scale, not
+about which edges matter.
+
+⚠ Also worth stating from this table: the full-text deletion ceiling is **−11.5**, so even the
+7264-edge positive control recovers only **~10%** of what removing the demonstrations outright achieves.
+Attention-edge surgery is a weak instrument relative to the thing it is trying to localise.
+
 **10. Can we turn Boombness into a useful GCG objective?**
 **No — and the reasoning has been corrected twice, so read the whole answer.** The first "no" was reached
 by faulty reasoning; a later draft over-corrected to "§12.2 is reopened"; that too is ⛔ **withdrawn**.
