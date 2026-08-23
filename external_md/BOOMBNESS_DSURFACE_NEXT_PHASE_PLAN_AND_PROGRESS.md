@@ -693,6 +693,65 @@ carries it.
 
 ---
 
+### 🔬 PHASE 5 (03:20) — the missing fourth cell is BUILT and AUDITED; its fit is running (777160)
+
+R-W identified the concrete deliverable: the three existing banks are codewords {`basket`, `button`}
+× concepts {`bomb`, `knife`} with **`button_bomb` missing** — 3 of the 4 cells of a full crossing.
+Built with the siblings' own generator and recipe, no new code:
+
+```
+python src/boombness/prompt_families.py --preset main --seed 20260816 \
+  --codeword button --concept bomb \
+  --pools $REPO/data/boombness_prompts/demo_pools.json \
+  --incidental-replace button=switch \
+  --out $REPO/data/boombness_prompts/boombness_prompt_bank_button_bomb.jsonl
+```
+
+The recipe is **derived from the siblings' metadata, not guessed**: `basket_bomb` uses
+`demo_pools.json` (`pools_sha16 b5e399712b996b7d`) with `incidental_repairs {basket: crate}`;
+`button_knife` uses `demo_pools_knife.json` with `{button: switch, knife: peeler}`. So `button_bomb`
+takes the **bomb** pool and the **button→switch** repair, and inherits `seed 20260816` and
+`preset main` from all three.
+
+**Structurally identical to its siblings, which is the point of a crossed design:**
+
+```
+rows 2736     2x2 families checked 336     alignment violations 0     duplicate rows dropped 0
+by_condition {benign_literal 816, benign_remap 72, concept_in_benign_ctx 384,
+              direct_codeword 72, direct_harmful 384, natural_doublespeak 1008}
+by_block     {consistency 72, core2x2 1152, core2x2_slot3 384, extra_conditions 144,
+              families 144, position 24, role_style 720, strength 96}
+```
+
+Every one of those counts **matches all three existing banks exactly**.
+
+**Mandatory tokenization audit passed** (the plan requires it *before* any expensive run) —
+`outputs/boombness/tokenization_audit/bb_audit_20260824_015410_3833042`, `Qwen/Qwen3-14B`:
+
+```
+rows ok=2736  bad=0  ambiguous=0
+families=1008 checked=312 skipped_incomplete=696  token-alignment violations=0
+button: 'button'/' button'/'Button'/' Button'/'buttons'/' buttons'/'BUTTON'  all 1 token
+bomb:   'bomb'/' bomb'/'Bomb'/' Bomb'/' bombs'  1 token; 'bombs' -> 2, 'BOMB' -> 2
+```
+
+Both codeword and concept are single-token in every form the bank actually uses. (The two 2-token
+variants, bare `bombs` and all-caps `BOMB`, are the same on the sibling banks and are not the surfaces
+the 2×2 turns on.)
+
+**Fit launched: job 777160**, `x2fit_button_bomb`, byte-identical flags to the three siblings
+(`--stage both --layers all --position codeword_last`).
+
+⚠ **What this will and will not settle.** Once the fit lands, the 16-cell spectrum can be measured
+against R-W's 12-cell simulation (rank 9, arm/best-orth **1.02×**). **The between-bank caveat from
+R-W still stands** and completing the crossing does not remove it: the cells still come from four
+independently fitted banks rather than one jointly-fitted prompt set, so part of the rank is
+between-bank variance. What the fourth cell *does* buy is that the codeword×concept design is now
+**balanced** — `basket` and `button` each appear with both `bomb` and `knife` — so pair identity and
+codeword identity are no longer confounded, which they were with three cells.
+
+---
+
 ### ★★★★★ R-AB (03:05) — **PHASE 4 RESULT: the retrieval knockout REPLICATES on Qwen3-14B. And the all-layers arm is DEGENERATE on both models — the S8 caveat, recorded before the numbers, was the right call.**
 
 **Artifact:** judge session **777134**, all four Qwen3 cells judged together, COMPLETED 8:10,
