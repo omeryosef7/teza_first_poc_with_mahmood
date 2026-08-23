@@ -9517,3 +9517,44 @@ instrument relative to what it is trying to localise.
 | 604 | 2026-08-23 | wrote up `g3_dynrange` | instrument **monotone**, positive control **3000×** the arms |
 | 605 | 2026-08-23 | scoped the claim to R-7 | a statement about **scale**, not about which edges matter |
 | 606 | 2026-08-23 | **sweep complete: 12 → 0 silent artifacts** | 7 written up, 5 marked correctly-silent with reasons |
+
+## The collaborator-facing document was a day and four findings behind
+
+With the artifact sweep closed, the obvious remaining gap was the **short update** — the document Matan
+and Mahmood actually read. It stood at **revision 6, dated 08-22**, and a keyword check found **zero**
+mentions of the completed 24-control sweep, the Qwen3 empty-goal retraction, the corrected `q3rj2`
+figures, or the Llama specificity table. Everything from this week had gone into the 3,000-line report
+and none of it into the two-page one.
+
+Brought to **revision 7** with a *What changed since revision 6* block covering four items, **two of
+which correct what revision 6 told them**:
+
+* **the null converged** — 24 controls at every layer (was 12/12/8/**4**), and refining the grid moved
+  the ceiling at **no** layer, which is the empirical answer to "a sample, not a bound";
+* ⛔ **a Qwen3 result is retracted** — L20 arms judged against an **empty goal**; corrected, `D20`
+  **beats** its control (+0.3333) so Qwen3 L20 **agrees** with L11 rather than contradicting it, but
+  moves benign prompts to **0.2222**;
+* ✅ **Llama does not have that specificity problem** — `+0.0902` on doublespeak, **−0.0015** on benign;
+  the two models genuinely differ, so "it replicates" must name model, layer and arm;
+* **the noise scale I gave them was wrong twice** — judge drift was inflated by a truncated pass
+  (0.0057 → **0.0020**), and judge drift is anyway the wrong scale: an arm and a control are two
+  *end-to-end* runs, and measured replicate noise is **median 1, max 7 prompts**.
+
+**And I rewrote the L6 line, which had become unreadable.** Successive corrections had left it as a
+single sentence carrying three superseded figures inline — the exact C-12 shape, where a correction is
+appended rather than absorbed. It now states the current position once: the arm wins at all four
+layers by 1.80×–3.60×, L6's margin is **4 prompts** against replicate noise of median 1 / max 7, and
+**1 of 17 same-config pairs exceeds it while none comes near the other three**. The parenthetical says
+plainly that revisions 4–6 moved L6 three times on three different noise estimates, and that this is
+the measured one.
+
+That last point is worth being direct about with collaborators rather than burying: **L6's status
+changed three times in four days**, and the reason was never the data — it was that I was comparing a
+4-prompt margin against successively better estimates of what 4 prompts means.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 607 | 2026-08-23 | checked the short update against this week | **revision 6, zero mentions** of four major items |
+| 608 | 2026-08-23 | **revision 7** with a *what changed* block | 2 of the 4 items **correct** what revision 6 said |
+| 609 | 2026-08-23 | rewrote the L6 line (C-12 shape: corrections appended, not absorbed) | one current statement, superseded figures removed |
+| 610 | 2026-08-23 | stated the L6 history plainly to collaborators | changed 3× in 4 days, on noise estimates not data |

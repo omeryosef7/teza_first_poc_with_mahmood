@@ -1,9 +1,56 @@
 # Boombness sprint — short update
 
-**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-19, **revision 6 — 2026-08-22**
+**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-19, **revision 7 — 2026-08-23**
 **Full report:** `reports/boombness_objective_sprint_report.md` ·
 **Live log:** `docs/BOOMBNESS_CONTINUATION_LOG.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint`
+
+## What changed since revision 6 (2026-08-22 → 08-23)
+
+Four things, two of which are corrections to what revision 6 told you.
+
+**1. The in-subspace null is complete and it CONVERGED.** All four layers now carry the **full 24
+controls** (was 12 / 12 / 8 / **4**). The point is what did *not* happen: refining L6 12→24, L8 12→24,
+L12 8→24 and **L10 4→24** left the maximum control **identical in every case** (5 / 9 / 5 / 0 prompts
+of 495). The standing worry about this null was that it is *a sample, not a bound* — that denser grids
+keep finding stronger controls. Between 12 and 24 they do not. It is still a sample; 24 directions in a
+2-d complement cannot exclude a pathological direction between them.
+
+**2. ⛔ A Qwen3 result revision 6 may have led you to expect is RETRACTED.** The Qwen3 L20 arms were
+judged with `--bank null`, so StrongReject scored each completion against an **empty goal** (retraction
+R-14's defect, recurring) — while the baseline had a real bank. A correct re-judge existed the whole
+time and was cited by nothing. Corrected, on 960 paired prompts:
+
+| condition | baseline | `D20` | matched control | Δ |
+|---|---|---|---|---|
+| `natural_doublespeak` | 0.1714 | **0.5190** | 0.1857 | **+0.3333** |
+| `benign_literal` | 0.0000 | **0.2222** | 0.0093 | +0.2130 |
+
+The arm **beats** its control, so Qwen3 L20 **agrees** with L11 rather than contradicting it. But `D20`
+moves *benign-by-construction* prompts to 0.2222 — a real specificity problem on Qwen3.
+
+**3. ✅ Llama does NOT have that specificity problem, and the table was sitting uncited.** Same family
+of intervention, per condition, arm minus a random-projection control, n=960:
+
+| condition | Δ (arm − control) | 95% CI | p_cl |
+|---|---|---|---|
+| **`natural_doublespeak`** | **+0.0902** | **[+0.0275, +0.1529]** | 0.0141 |
+| `benign_literal` | **−0.0015** | [−0.0207, +0.0176] | 0.844 |
+
+Significant on exactly one condition — the right one — and flat where there is nothing to decode. **The
+two models differ on specificity**, and any "it replicates" sentence has to name the model, the layer
+and the arm.
+
+**4. The noise scale I gave you was wrong, twice, and is now measured properly.** Revision 6 compared
+margins against *judge drift*. That figure (0.0057) was itself inflated by a truncated judge pass; the
+real drift is **0.0020, one prompt in 495**. More importantly, judge drift is the **wrong scale** — an
+arm and a control are two separate *end-to-end* runs, not one text judged twice. Measured over 17
+same-config pairs, **end-to-end replicate noise is median 1 prompt, max 7**. Against that, L6's
+4-prompt margin is exceeded by 1 of 17 pairs; L8/L10/L12 (12/16/13 prompts) by none. **L6 remains the
+one fragile layer** — a conclusion that has now survived being reached, reversed, and re-reached on
+three different measurements.
+
+**Nothing in "The result, stated once" below changes.**
 
 > ## The result, stated once
 >
@@ -23,8 +70,12 @@
 >   unlabelled reads as a contradiction. ⛔ "against a matched random projection that is inert
 >   (−0.0062)" is **retracted (R-23/R-25)**: a random direction in 4096-d is near-orthogonal to
 >   everything and barely perturbs the model, so it is far too weak a null. Against directions inside
->   the *same* rank-3 cell-mean subspace the arm still wins at **L8/L10/L12** — ⛔ **no longer at L6**, whose margin (0.0081) is the smallest of the four (arm/ceiling 1.80×) — ⚠ an earlier revision called it 1.41× a drift of 0.0057; that drift was wrong (audit #14), the corrected figure is 0.0020 and the margin is 4.00× it — but by
->   **1.80×–3.60×**, not against an inert control.
+>   the *same* rank-3 cell-mean subspace the arm wins at **all four layers** — but by only
+>   **1.80× / 2.33× / 3.60×** at L6 / L8 / L12 (undefined at L10, where every control is ≤0), not
+>   against an inert control. **L6 is the fragile one**: its margin is **4 prompts of 495**, and
+>   end-to-end replicate noise is median 1, max 7 — so 1 of 17 same-config pairs exceeds it, while
+>   none comes near L8/L10/L12 (12 / 16 / 13 prompts). *(Revisions 4–6 moved L6 between "withdrawn" and
+>   "retained" three times on three different noise estimates; this is the measured one.)*
 > * The effect is **localized to a band of layers, ~L6–L14 with a core at L8–L12** (scan-statistic
 >   window, permutation p=0.011 under layer-label exchangeability; no single layer survives Holm),
 >   with a matched
