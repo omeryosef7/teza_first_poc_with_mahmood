@@ -1,0 +1,409 @@
+# `d_surface` NEXT PHASE — plan, decision gates, and live progress log
+
+**File:** `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md`
+**Opened:** 2026-08-23 17:20 IDT
+**Repo:** `first_poc/teza_first_poc_with_mahmood`, branch `behavioral-causality-sprint`
+**HEAD at open:** `91e30a62` ("section 4b was running on the readout R-6 withdrew", 2026-08-23 17:09:38)
+**Owner of this phase:** this Claude session. SLURM submissions for this phase are owned here and
+logged in §5. Peer sessions notified 17:19 — see §0.4.
+
+> **This file is the authoritative live research log for this phase.** It is append-oriented:
+> superseded conclusions are marked `⛔ RETRACTED — reason` with the corrected statement beside
+> them, never silently overwritten.
+
+---
+
+## 0. STARTING STATE (Phase 0 gate)
+
+### 0.1 What is already known — read before citing any old number
+
+The original chain
+`Boombness → predicts ASR → causally increases jailbreak behaviour → becomes a GCG/MAC objective`
+**did not survive.** The current state, condensed from
+`reports/SPRINT_SUMMARY_2026-08-16_TO_08-23.md` (commit `8bd07054`, itself written by re-deriving
+445 figures from committed artifacts):
+
+* **G2 is RETRACTED (R-18).** `d_surface` does not predict attack success on clean rows.
+  Published n=234 ρ_within = +0.26178047909981317 (p 0.0004997501249375312) → clean n=90
+  **−0.05180076147796621** (p 0.657671164417791); powered n=108 **−0.06601851932290928**
+  (p 0.49325337331334335).
+* **G4 is a directional null.** Both signs of `d_surface` steering suppress ASR. **Do not build the
+  original GCG objective.**
+* **Removing `d_surface` raises ASR** on AdvBench-495 held-out: L8 **+0.04242424242424243** (21 net
+  flips), L12 **+0.03636363636363636** (18), L10 +0.03232323232323232, L6 +0.01818181818181818.
+  Continuous domain-clustered at L8: **+0.030519369707034255**, p_cl 0.008929531014546195,
+  CI [+0.00885299048927438, +0.052185748924794134]. Band ≈ **L6–L14**, core L8–L12.
+* **Refusal is the far larger Llama channel:** arm C **+0.2061** (102 flips), arm D **+0.2869**
+  (142 net / 143 gross).
+* **Qwen3-14B is qualitatively different:** `d_surface`@L11 gives **+0.38095238095238093**
+  (p_cl 0.00030870570185738953) while refusalness@L20 does nothing (`C20` = 0.16666666666666666
+  against a 0.17142857142857143 baseline).
+* **G1 strong:** meaning comes from the demonstration block. `demos_only|L18` transplant
+  **+0.6887043836439078** of span, CI [+0.5127769879731333, +0.9741707744164648]; `query_only`
+  **−0.5700186200834122** (wrong direction); whole-prompt null.
+* **G3 strong and redundant:** full demo-block attention knockout recovers **75.15%** of the
+  text-deletion ceiling (−13.436758967737356 of −17.878933541476727) at **81,706.67** edges cut;
+  sparse top-k does **not** work (+0.019611094146966934, sem 0.016518567912713653).
+* **DOSE CONFOUND (R-25):** `d_surface` is essentially **PC1** of the cell-mean span
+  (cos 0.9998–1.0000). It removes 0.81–0.88 of the cell-mean spread; every in-subspace control
+  removes ≤ 0.13. `dose_gap_arm_over_max_control` = 10.96 / 7.36 / 6.17 / 6.83 at L6/L8/L10/L12,
+  `dose_confounded: true` at all four.
+* **No concept transfer (R-23/R-24).** E12 retracted in full. Call it `d_surface_carrot_bomb`, not
+  "Boombness" and not a "bombness direction".
+* **The methodological gap this phase exists to close:** G1/G3 are measured on
+  `semantic_one_word` / readout prompts; behavioural ASR is measured on `behavioral` prompts.
+  **Nobody has knocked out the retrieval pathway and measured jailbreak behaviour on the same rows.**
+* **The final multiplicity verdict on direction specificity is negative.**
+  `outputs/boombness_followup/angle24_specificity_FULL.json` →
+  `multiplicity_over_depth_family.holm_m4` = L12 0.0732219168023166, L10 0.0732219168023166,
+  L8 0.20706049565437049, L6 0.6782717805522958; `rejects_at_0.05` is **empty**. The
+  0.0136/0.0276/0.0347/0.0347 tail widely quoted elsewhere is **single-draw and superseded**.
+
+### 0.2 Phase 0 checks — RESULTS
+
+| check | result |
+|---|---|
+| branch / HEAD | `behavioral-causality-sprint` @ `91e30a62`; remote is at the same commit |
+| uncommitted result-changing modifications | **none** — `git status --porcelain -uno` empty, 0 untracked |
+| guard suite (`check_all.py`) | **6/6 pass** (run 17:05 and 17:16 at HEAD) — retraction_sweep, canonical_figures, verify_report_numbers, markdown_structure_check, pvalue_hygiene_check, plan_coverage_check all exit 0 |
+| SLURM queue | **EMPTY** for the account at 17:19. No jobs of ours or a peer's running |
+| **OpenAI credits** | ⬆ **RESTORED.** `POST /v1/chat/completions` with `gpt-4o-mini` using the repo `.env` key returned **HTTP 200** at 17:18. **The 2026-08-23 06:14 blocker is over.** |
+| partial judge directories | none — all 40 most recent judge dirs are at 495 rows; the 453–473-row `bnd2` residue was already deleted |
+| empty-goal leakage | `empty_goal_leakage_check.json`: 15 tainted runs, 9 dependent artifacts, **3 live in a deliverable** (`clearharm_decomposition.json`, `qwen3_channel_test.json`, `section14_topical_asr.json` Qwen3 half). None of them is an input to this phase |
+| judge provenance | `strongreject_rubric via poc_stage3.strongreject_scoring`; candidates `["openai/gpt-4o-mini","openai/gpt-3.5-turbo"]` tried in order with fallback. ⚠ **Which model answered a given row is not recorded and is not one model** (`judge_boombness.py:465`). Never attribute a score to gpt-4o-mini |
+
+**Phase 0 gate: PASS.** Cleared for GPU/judge work at 17:20.
+
+### 0.3 ⬆ Two Phase-0 discoveries that change the plan's sequencing
+
+**(a) Credits are back, so Phase 1 is executable today.** The plan was written assuming Phase 1 was
+blocked. It is not. Phase 1 moves to immediate execution.
+
+**(b) There are SIX dose-matched L12 arms already generated, not two.** The follow-up log names only
+`dd12a008` and `dd12a006`. A scan of every `project_out:12-12` run found a complete generated ladder,
+all 495 rows, all `DONE`:
+
+| run | α | intended realized removal fraction |
+|---|---|---|
+| `abL12_B_20260819_063539_2455409` | 1.00 | 0.820443 (the standard full-dose arm) |
+| `dd12a03_20260823_040601_1736089` | 0.30 | 0.418426 |
+| `dd12a02_20260823_035358_1732276` | 0.20 | 0.295359 |
+| `dd12a015_20260823_034204_1728050` | 0.15 | 0.227673 |
+| `dd12a01_20260823_031117_1718593` | 0.10 | 0.155884 |
+| **`dd12a008_20260823_043816_1746076`** | **0.08** | **0.126020 — see C-1 below: this is ABOVE the L12 ceiling** |
+| **`dd12a006_20260823_043816_1746077`** | **0.06** | **0.095500 — the only genuinely in-band arm at L12** |
+
+This turns Phase 1B from a two-point underpowered test into a **seven-point dose–response curve at
+one layer**, spanning the full arm down toward the control ceiling, at **zero additional GPU cost**
+(two further points were generated to bracket the band properly — see C-1).
+That is a strictly better instrument for the `DOSE_CAVEAT` than what the plan anticipated, and it is
+the single highest-value thing available right now.
+
+⚠ The realized fractions above are **nominal** (recomputed from `directions_fit_dev.pt` during the
+08-23 audit, using removal = `0.820443 · (1 − (1−α)²)`). Phase 1B **must re-verify realized dose from
+the run payloads**, not trust α — that is the plan's explicit instruction and the exact failure that
+made the first four doses wrong.
+
+### 0.4 Concurrency ownership
+
+Two peer Claude sessions are alive (both idle at 17:19): `BOOMBNESS_D_SURFACE_FOLLOWUP
+implementation` and `c-002-stateless-hare`.
+
+⛔ **CORRECTED 17:24 — `91e30a62` is UNATTRIBUTED.** This file first recorded it as the follow-up
+session's commit. That session replied that it is not theirs (their last commit was the 06:05
+credits writeup), and it is not this session's either — this session has made exactly one commit,
+`8bd07054`. So a **third actor** committed to the shared branch at 17:09:38. Its content (a
+retraction-fingerprint guard experiment, 139 flags / 1 genuine, deliberately NOT wired into
+`check_all`) is coherent and harmless, and its one genuine finding — that report §4b is built on the
+readout R-6 withdrew — is real. But **nobody in contact owns it.** Treat the shared branch as having
+an unreachable writer. Concretely: re-check `git log` before every commit, and never assume the tree
+you read is the tree you last wrote.
+
+**Protocol declared at 17:19 and messaged to the follow-up session:**
+* This session owns SLURM submissions for this phase; every job id, its tree commit and its output
+  dir go in §5 below.
+* **No `scancel` by anyone without first verifying the exact tree the target job will execute** —
+  correction C-1 in the follow-up log is the precedent (four jobs cancelled on a reason that was
+  false by seventeen seconds).
+* Commits are staged **by explicit path**, never `git add -A`, so no peer's in-progress file is swept.
+* A peer that needs to submit should report its job ids here so they are recorded as theirs and not
+  treated as strays.
+
+**Peer accepted all four points at 17:23** and independently re-verified the credit restoration and
+the empty queue rather than taking them on trust. It also reported one job of its own — recorded in
+§5 as **776368 (peer-owned)** — and confirmed it deleted the six partial `bnd2_*` judge dirs
+(453–473 of 495 rows) left by the credit failure. **Nothing in this phase may glob `bnd2_*`
+expecting those partials; they are intentionally gone,** and that is the correct end state (a
+partial dir flows through `load()` and produces a plausible number).
+
+---
+
+## 1. PRIMARY GOAL OF THIS PHASE
+
+Not to rescue the old hypothesis. To determine **what the surviving mechanism actually is**, and
+whether this chain can be established cleanly:
+
+```
+demonstrations → retrieval / remapping mechanism → internal state / refusal interaction → harmful behaviour
+```
+
+Two questions dominate:
+
+1. **Is the demonstration-retrieval mechanism (G1/G3) causally necessary for the behavioural
+   jailbreak itself** — measured on behavioural prompts, with behavioural outcomes?
+2. **Does `d_surface` have any causal specificity beyond intervention dose?**
+
+Only a mechanism that passes strong causal *and* predictive gates earns a GCG/MAC objective later.
+
+---
+
+## 2. THE PLAN — phases and decision gates
+
+### PHASE 0 — reproduction, audit, clean start
+**Status: ✅ COMPLETE, gate PASS (§0.2).**
+
+### PHASE 1 — finish the already-generated pending experiments
+Highest priority: the generations exist, only judging is missing, and credits are back.
+
+**1A — Experiment 7 random-control band.** Judge `e7rnd01/02/03` (three matched `random:add:8-8:0.5`
+draws at seeds 20260901/02/03) and ask whether the exp-7 directional effect survives a real
+between-seed band rather than one draw.
+**1B — Dose-matched `d_surface` arms.** Judge the full seven-point L12 ladder (§0.3b) and re-verify
+realized dose from the payloads. Tests the `DOSE_CAVEAT` directly.
+**1C — Session-matched baseline/control cleanup.** Everything in 1A/1B is judged in **one session
+against one baseline**, producing a canonical artifact with consistent populations.
+
+#### 🚦 Decision Gate E7 (1A)
+PASS only if the effect (i) survives the full control band, (ii) has a stable sign, (iii) is not
+driven mostly by one pathological control draw, (iv) remains meaningful under the pre-registered
+multiplicity family, and (v) is not explained by generic perturbation magnitude.
+Otherwise: label **exploratory / null** and move on.
+
+#### 🚦 Decision Gate DOSE (1B)
+* If the effect **vanishes** at realized dose ≤ 0.13 → much of the specificity story was dose-driven.
+  A clean, publishable negative.
+* If it **persists** → direction identity matters independently of dose, and the standing
+  `DOSE_CAVEAT` is answered rather than acknowledged.
+* Pre-registered: these arms are **underpowered**; report point estimate + CI + the dose–response
+  shape, **not** a bare verdict. Do not overclaim a null.
+
+### PHASE 2 — behavioural-prompt demonstration-retrieval knockout  ← the key new experiment
+Close the G1/G3-vs-behaviour gap. Arms, on matched **behavioural** natural-doublespeak prompts:
+
+| arm | intervention | role |
+|---|---|---|
+| A | baseline | reference |
+| B | demonstration **text deletion** | behavioural ceiling |
+| C | **full demo-block attention knockout** (the G3 arm that worked) | primary mechanistic arm |
+| D | matched random attention knockout (same edge count) | matched control |
+| E | sparse top-ranked edges/heads | tests whether redundancy holds behaviourally |
+| F | bottom-k / random sparse | matched sparse control |
+
+Outcomes on the **same rows**: StrongReject continuous, binary ASR, refusal rate, refusal→compliance
+and compliance→refusal flips, answer length, topicality, comprehension. **Where feasible, preserve
+the G3 readout on the same rows** so the row-level question can be asked directly: *does destruction
+of the retrieved binding predict destruction of attack behaviour?*
+
+Sampling: ≥ 20 independent examples per meaningful comparison (far more for judge-based ASR),
+family-disjoint splits, multiple domains, pooled **and** clustered estimands reported separately.
+Log the actual sample composition — a count is not a description.
+
+#### 🚦 Decision Gate RETRIEVAL (2D)
+* **Strong positive** — knockout destroys the internal mapping **and** lowers doublespeak ASR toward
+  a meaningful fraction of the text-deletion ceiling, preserves unrelated capability better than
+  deleting the text, and matched controls are substantially weaker → first clean chain
+  `demonstrations → retrieval → jailbreak behaviour`. Headline result.
+* **Negative but informative** — mapping disappears, ASR unchanged → representation ≠ behaviour at a
+  deeper mechanistic level. **Publish it; do not hide it.**
+* **Failed intervention** — neither moves → first prove the pathway was actually cut (positive
+  control) before interpreting any null.
+
+### PHASE 3 — connect retrieval to refusal
+Composition on matched populations: `baseline` / `retrieval knockout` / `refusal removal` /
+`retrieval knockout + refusal removal`, to separate
+*retrieval → refusal → behaviour* from *parallel channels* from *refusal-independent*.
+Measure refusal-direction projection by layer, and whether refusal change is larger among rows that
+flip. **Do not infer mediation from correlation alone.**
+
+### PHASE 4 — Llama vs Qwen3
+Run the strongest Phase-2 experiment on both `meta-llama/Llama-3.1-8B-Instruct` and `Qwen/Qwen3-14B`.
+**Choose external sets by measurable baseline headroom** — Qwen3 complies with only **0.8% of
+AdvBench (4/495)** vs 13.4% of ClearHarm, and an intervention cannot be measured against a floor
+(N13). **Always report baseline compliance beside every delta** (N14).
+Question: *do the two models jailbreak through the same semantic-remapping mechanism but gate it
+through different behavioural channels?*
+
+### PHASE 5 — fix the direction-vs-dose identification problem
+Build a **new identification bank** whose cell-mean covariance has multiple comparable components
+instead of one dominant PC1. Multiple codewords × multiple harmful concepts, clean 2×2, no grammar
+or tokenization asymmetries (no repeat of `a apple`), family-disjoint splits, mandatory tokenization
+audit on **both** models before any expensive run.
+
+#### 🚦 Bank acceptance gate
+Do not proceed to large causal runs unless PC1 does **not** dominate the cell-mean span, multiple
+identified directions have **comparable attainable doses**, and the bank passes
+tokenization/alignment/grammar audits. The point is *same dose, different direction*.
+
+### PHASE 6 — re-test concept generality properly
+Only on the improved bank. Within-concept-across-codeword vs within-codeword-across-concept
+similarity, split-half ceilings, cross-pair causal transfer, off-bank and behavioural transfer.
+**Neutral names (`d_surface_pairX`) until the invariance tests pass.**
+
+### PHASE 7 — only then, a new objective
+Six independent gates: **measurement · prediction · causality · specificity · transfer · optimization
+direction**. The promising candidate is a *retrieval-strength* or *retrieval-driven refusal
+suppression* quantity, **not** raw codeword-token `d_surface`. Reuse `external_repos/interp-jailbreak`
+and our prior GCG/MAC infra rather than rewriting.
+
+---
+
+## 3. EXPERIMENT STATUS BOARD
+
+Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted · ⏸ blocked
+
+| id | phase | experiment | status | gate |
+|---|---|---|---|---|
+| P0 | 0 | reproduction + audit + guard suite | ✅ PASS | — |
+| E7-BAND | 1A | exp-7 random control band (3 draws) | 🔬 judging (**peer job 776368**) | Gate E7 |
+| DOSE-L12 | 1B | **nine-point** L12 dose ladder | 🔬 generating 776391/776392 | Gate DOSE |
+| SESSION | 1C | one-session canonical control artifact | ⬜ waits on 776391/776392 | — |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ⬜ | Gate RETRIEVAL |
+| RETR-REF | 3 | retrieval × refusal composition | ⬜ | — |
+| XMODEL | 4 | Llama vs Qwen3 matched | ⬜ | — |
+| BANK2 | 5 | new non-PC1-dominated bank | ⬜ | Bank gate |
+| CONCEPT | 6 | concept generality on BANK2 | ⬜ | — |
+| OBJ | 7 | new objective | ⬜ | 6 gates |
+
+---
+
+## 4. RUNNING JOBS
+
+*(ownership: this session unless marked otherwise)*
+
+| job id | owner | what | submitted | tree commit | output | status |
+|---|---|---|---|---|---|---|
+| **776368** | **peer** | `run_band2_judge.sh` — judges base + e7rnd01/02/03 + dd12a008 + dd12a006 in one session (6 × 495 = 2,970 calls) | 17:16 | `91e30a62` | `outputs/boombness/judge/bnd2_*` | RUNNING |
+| **776391** | this | generate `d_surface:project_out:12-12:**0.045**` on AdvBench-495 (tag `dd12a45`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a45_*` | PENDING |
+| **776392** | this | generate `d_surface:project_out:12-12:**0.03**` on AdvBench-495 (tag `dd12a3`) | 17:26 | `91e30a62` | `outputs/boombness/score_behavior/dd12a3_*` | PENDING |
+
+---
+
+## 5. SLURM JOB LEDGER
+
+Every job submitted by this phase, with the commit its tree will execute.
+
+*(appended as jobs are submitted)*
+
+---
+
+## 6. RESULTS
+
+*(appended as results arrive; every entry records question, hypothesis, intervention, model,
+dataset, population, layer, direction source, split, seed, job id, commit, output dir, judge run,
+n, controls, result, interpretation, caveats, next decision)*
+
+---
+
+## 7. BUGS / RETRACTIONS / CORRECTIONS (this phase)
+
+### ⚠ C-1 (17:25) — "the controls' ≤0.13 band" is a CROSS-LAYER maximum, and it is the wrong comparator at L12
+
+The standing framing — repeated in the follow-up log, in the peer's message, and in the first draft
+of §0.3b of this file — is that the in-subspace controls remove **≤ 0.13** of the cell-mean spread,
+so an arm at 0.126 or 0.095 is "inside the control band". **0.13 is the maximum over all four
+layers.** Recomputed per layer from `insubspace_null_full24.json` `dose_cellmean_frac` (24 controls
+each):
+
+| layer | ARM removal | control min | **control max** | arm/max |
+|---|---|---|---|---|
+| L6 | 0.876824 | 0.043145 | 0.080031 | 10.96× |
+| L8 | 0.840201 | 0.045659 | **0.114140** | 7.36× |
+| L10 | 0.811446 | 0.057001 | **0.131553** | 6.17× |
+| **L12** | **0.820443** | **0.059383** | **0.120175** | 6.83× |
+
+The 0.13 figure is L10's. **At L12, where the dose-matched arms actually run, the control band is
+0.059383 – 0.120175.** Consequences for Gate DOSE:
+
+* `dd12a008` (α 0.08, removal **0.126020**) is **above** the L12 control ceiling by 1.05×. It is
+  *near*-matched, not matched. It cannot carry a clean "same dose, different direction" claim.
+* `dd12a006` (α 0.06, removal **0.095500**) **is** inside the L12 band, at roughly its midpoint.
+  **This is the decisive arm**, and it is the one the log treated as the throwaway "below the band"
+  point.
+* Nothing yet sits at the band's **median** or **below** it. Solving `removal = 0.820443·(1−(1−α)²)`
+  gives α **0.0459** → 0.0736 (mid-band) and α **0.0310** → 0.0500 (below the band's minimum).
+
+**Action taken:** submitted jobs **776391** (α 0.045) and **776392** (α 0.03) so the ladder brackets
+the L12 control band on both sides instead of approaching it from above only. Cost: two 495-prompt
+generations, no judging until they join the same session as the rest.
+
+⚠ This correction does **not** overturn any published result. It refines the design of a test that
+has not been read out yet — which is the only time a correction is cheap.
+
+---
+
+## 8. DECISIONS AND WHY
+
+**D-1 (17:20) — Phase 1 runs first and runs today, not later.** The plan assumed judging was blocked.
+It is not (§0.2). Judging already-generated runs is zero-GPU, answers two standing gates, and
+produces the session-matched baseline every later comparison needs. Deferring it to start Phase 2
+would leave five completed GPU runs unused and Phase 2's controls unmatched.
+
+**D-2 (17:20) — judge the full seven-point L12 ladder, not the two arms named in the log.** §0.3b.
+Same cost class, strictly more information, and it converts an underpowered two-point test into a
+dose–response curve that can distinguish "the effect decays with dose" from "the effect vanishes at
+the control ceiling". These two hypotheses are not separable with two points.
+
+**D-3 (17:20) — one judging session for all of Phase 1, against one baseline.**
+`ab_base_20260818_185458_3888976` is the baseline the exp-7 arms already used. Judging the new
+controls, the dose ladder, the full-dose reference arm and the baseline in a single session removes
+the cross-session confound that produced the L6 reversal and the F-3 retraction. This *is* Phase 1C,
+executed as part of 1A/1B rather than as a separate later cleanup.
+
+**D-4 (17:20) — smoke before sweep.** One arm at `--limit 8` first, inspect the rows, verify goal
+status and row counts, then launch the full manifest. Required by the engineering rules and cheap.
+
+**D-5 (17:26) — do NOT duplicate peer job 776368; complement it.** The peer submitted the exact 1A
+manifest before this file existed. Re-running it would burn 2,970 duplicate judge calls and create
+colliding tag dirs. This session instead owns the **ladder completion**: the four higher-dose arms
+(α 0.10/0.15/0.20/0.30), the full-dose reference (`abL12_B`, α 1.0), the two new bracketing arms
+(α 0.045/0.03), and a re-judge of α 0.08/0.06 **inside this session** so the ladder is internally
+session-matched. The re-judge is deliberate duplication of two arms, for two reasons: (i) a ladder
+whose points come from two judging sessions is exactly the cross-session confound that produced the
+L6 reversal, and (ii) it yields an independent judge test–retest on the two arms that decide Gate
+DOSE, which is worth 990 calls on its own.
+
+**D-6 (17:26) — bracket the control band before reading it out.** See C-1. A dose-matching test whose
+arms all sit above the control ceiling cannot answer "same dose, different direction"; it can only
+answer "slightly less dose". Two generations fix that for ~40 GPU-minutes, and they were submitted
+before any judging spend, so no result is contaminated by the decision.
+
+---
+
+## 9. OPEN QUESTIONS
+
+1. Does the exp-7 directional effect survive a real 3-draw control band? *(Gate E7, in flight)*
+2. Does `d_surface` removal still move behaviour at realized dose ≤ 0.13? *(Gate DOSE, in flight)*
+3. Is demonstration retrieval causally necessary for behavioural jailbreak? *(Phase 2)*
+4. How much of any retrieval effect is mediated by refusal? *(Phase 3)*
+5. Do Llama and Qwen3 share the mechanism but differ in the behavioural gate? *(Phase 4)*
+6. Can a bank be built that separates direction identity from removed variance? *(Phase 5)*
+7. Does anything generalise across concepts/codewords? *(Phase 6)*
+8. Is there a justified monotonic causal objective worth optimizing? *(Phase 7 — if no, say so)*
+
+---
+
+## 10. CANONICAL ARTIFACTS OF THIS PHASE
+
+| artifact | produced by | holds |
+|---|---|---|
+| *(to be created)* | | |
+
+---
+
+## 11. NEXT ACTIONS
+
+1. Smoke-test the judge on one arm (`--limit 8`), inspect output. *(in progress)*
+2. Submit the single-session Phase 1 judging manifest to `cpu-killable`.
+3. While judging runs: build the Phase 2 behavioural knockout arm list by reading
+   `src/boombness/surgical_knockout.py` and confirming which arms are reusable unchanged.
+4. Analyse 1A/1B, decide Gates E7 and DOSE, write results into §6.
