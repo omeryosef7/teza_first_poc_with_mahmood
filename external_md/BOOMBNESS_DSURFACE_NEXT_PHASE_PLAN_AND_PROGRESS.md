@@ -693,6 +693,99 @@ carries it.
 
 ---
 
+### ★★★★★ R-AE / C-4 (04:22) — **PHASE 6b: the CONCEPT axis is real and invariant. The CODEWORD "axis" is not an axis. R-AD is half confirmed, half corrected — as pre-registered.**
+
+**Artifacts:** `x2fit_ticket_bomb_20260824_023003_275540` (job 777199, 6:55) and
+`x2fit_ticket_knife_20260824_023658_276323` (job 777200, 7:17), joined to the four existing fits.
+Six banks = **3 codewords × 2 concepts**. Split-half ceiling over all six: **0.9869 (L12), 0.9897
+(L14), 0.9940 (L18)**.
+
+#### ✅ TEST 1 — the concept axis IS invariant. It passes at the noise ceiling.
+
+`N` = the bomb−knife contrast, estimated **separately from each codeword**:
+
+| L | N_basket~N_button | N_basket~N_ticket | N_button~N_ticket | **PRE-REGISTERED: N{basket,button} ~ N{ticket}** |
+|---|---|---|---|---|
+| 12 | 0.9638 | 0.9702 | 0.9727 | **0.9803** = **0.9933 of ceiling** |
+| 14 | 0.9870 | 0.9883 | 0.9862 | **0.9905** = **1.0007 of ceiling** |
+| 18 | 0.9887 | 0.9915 | 0.9887 | **0.9929** = **0.9989 of ceiling** |
+
+**The bomb−knife direction is the same direction no matter which codeword carries it — at L14 it is
+*at* the split-half ceiling, i.e. as similar as the same direction fitted on two halves of the same
+data.** This is a genuine out-of-sample test: `ticket` did not exist when R-AD named `N`.
+**"Concept axis" is the right name, and it is the strongest single claim in this phase.**
+
+#### ⛔ TEST 2 — the codeword "axis" is a **2-dimensional subspace**. C-4 corrects R-AD.
+
+Three centred codeword identities, `u_c = mean(d over that codeword's banks) − grand mean`:
+
+| L | singular² fractions of the codeword-mean matrix | rank |
+|---|---|---|
+| 12 | **0.617 / 0.383** / 0.0 | 2 |
+| 14 | 0.582 / 0.418 / 0.0 | 2 |
+| 18 | **0.533 / 0.467** / 0.0 | 2 |
+
+**Two comparable dimensions, not one.** And the three identities sit close to a **simplex** — mutual
+cosines converging on the −0.5 that three equidistant zero-sum points must have:
+
+| L | basket~button | basket~ticket | button~ticket | ‖u‖ (basket/button/ticket) |
+|---|---|---|---|---|
+| 12 | −0.6050 | −0.5757 | −0.3028 | 0.588 / 0.505 / 0.492 |
+| 18 | **−0.5391** | **−0.5053** | **−0.4544** | 0.578 / 0.560 / 0.547 |
+
+**Each codeword has its own identity direction, roughly equidistant from the others and of roughly
+equal magnitude.** `W` in R-AD was simply *the basket−button contrast* — one arbitrary chord of a
+2-simplex, not a factor axis. **This is exactly the falsifier written into the pre-registration**
+("if `basket`, `button` and `ticket` are mutually near-orthogonal, codeword identity is a *subspace*,
+not an axis — and the R-AD naming needs weakening"). It fired.
+
+#### The corrected model
+
+> **`d_surface_pair(c, n) ≈ g + u_c + s_n · N`**
+> where `{u_c}` are per-codeword identity vectors spanning a **2-dimensional** (in general,
+> *K−1*-dimensional) subspace, and **`N` is a single concept axis orthogonal to that whole subspace**.
+
+Orthogonality is now established against **every** codeword, not just one contrast:
+`cos(u_c, N)` = **−0.013 / +0.044 / −0.030** (L12) and **+0.004 / +0.047 / −0.052** (L18) — zero for
+all three, at all layers.
+
+Variance accounting over the six banks:
+
+| component | df | fraction of between-bank spread | **per dimension** |
+|---|---|---|---|
+| concept axis `N` | 1 | 0.4290 – 0.4440 | **≈ 0.44** |
+| codeword subspace | 2 | 0.5529 – 0.5722 | **≈ 0.28** |
+| *total* | 3 | **≈ 0.99** | — |
+
+The two together explain essentially all of it. And note the reversal R-AD could not have seen:
+**R-AD called the two "equal", but per dimension the concept axis is roughly TWICE as strong as any
+codeword dimension.** The codeword side only looked equal because it had two degrees of freedom.
+
+#### What survives, what changes
+
+* **R-AD's central claim survives and is strengthened**: `d_surface` is not one direction; it splits
+  into concept and codeword parts that are **orthogonal**, and the concept part is a real, invariant,
+  named axis.
+* **C-4 corrects the codeword half**: "codeword axis `W`" is withdrawn in favour of "codeword
+  subspace". Any specificity experiment must project out the **whole subspace**, not one contrast —
+  projecting out `W` alone would leave most codeword identity intact while appearing to control for it.
+* **R-AD's "equal magnitude" is corrected** to *equal in total, ~2:1 in favour of concept per
+  dimension*.
+* The **retro-explanation of R-C / R-V / R-W is unaffected** and in fact sharpens: a single-pair bank
+  has one codeword and one concept, so a 1-dimensional codeword contribution and the concept axis
+  collapse together — hence 76–90% on a rank-3 span.
+
+⚠ **Remaining limit.** Still only **2 concepts**, so `N` is the bomb−knife contrast and the *concept*
+factor has 1 df. Test 1 shows `N` is invariant across codewords; it does **not** show that a third
+concept would lie on the same axis. By the symmetry of what just happened to `W`, **the honest prior is
+that it would not** — that concept identity is also a subspace, and `N` is its single available chord.
+A third concept requires a new demo pool, which is why it was not the cheap side. **This is the next
+experiment, and the prediction is registered here before it runs.**
+
+⚠ Llama fits only (`x2fit_*` carry `model: null` → `PRIMARY_MODEL`). Unreplicated on Qwen3.
+
+---
+
 ### 🔬 PHASE 6b LAUNCHED (04:06) — a **third codeword**, to test whether R-AD's axes are general or just contrasts
 
 R-AD's own stated limit is that with **two levels per factor a main effect and its single contrast are
