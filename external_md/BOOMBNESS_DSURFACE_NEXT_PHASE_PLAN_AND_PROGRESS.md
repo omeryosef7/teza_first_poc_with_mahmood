@@ -575,6 +575,50 @@ in the ladder and unjudged. If the norm-matched arm shows an effect where the va
 does not, the conclusion narrows to "matched in variance units" and the ordering above is revisited.
 **No phase is being cancelled on a half-read gate.**
 
+## 8c. EXECUTION CADENCE AND OPERATIONAL DECISIONS
+
+**Loop armed 18:41.** Recurring job `d5849024`, cron `7,37 * * * *` — every 30 minutes, deliberately
+off the :00/:30 marks. Each tick: check the queue, analyse what landed into this file with exact
+numbers and producing artifact, launch the next planned experiment (smoke before sweep), reuse
+existing code, commit by explicit path after `check_all.py`. Session-only, auto-expires in 7 days;
+`CronDelete d5849024` cancels.
+
+**Adversarial code+output review** launched 18:40 on the new Phase 2 code, before any full GPU
+matrix. Six reviewers: index algebra, composed path, arms/controls, the tests themselves
+(green-by-construction hunt), reuse/duplication, and an independent recomputation of the `bnd2_*`
+outputs.
+
+### D-9 (18:44) — widen the nodelist for the SMOKE, never for the dose ladder
+
+All five allowed L40S nodes read `mix`, not full, and every pending job's reason is **`Priority`** —
+**fair-share throttling, not capacity**, which matches the standing note that fair-share is the real
+blocker here. `n-502` (a5000) sits **idle**.
+
+The tempting fix is to widen `--nodelist`. It is correct for one job and wrong for the others:
+
+* **Dose-ladder arms (776470 α=0.056, 776471 α=0.38): NOT widened.** The ladder is read as a
+  **curve** across rungs. Rungs generated on a different GPU architecture would put hardware
+  *inside* the curve, and any non-monotonicity could then be silicon rather than dose. The existing
+  rungs (α 0.06/0.08/0.10/0.15/0.20/0.30/1.0) all ran on the restricted L40S list. Consistency beats
+  latency here.
+* **Phase 2 smoke: widened** (776656, adding n-501/502/503). The smoke's question is
+  *"does `hook_n_decode_edits` exceed 0 during decoding?"* — a code-path fact, not a numeric result,
+  so hardware is irrelevant to it. Submitted as an ADDITIONAL job rather than cancel-and-resubmit,
+  because cancelling a pending job to re-place it is how correction C-1 happened.
+
+⚠ Widening did not help: 776656 is also `Priority`. That confirms the diagnosis — the account is
+fair-share limited, not node limited — and means the queue simply has to drain. No further
+resubmission is warranted, and repeatedly resubmitting would make it worse.
+
+### Housekeeping note (18:40)
+
+`outputs/boombness/score_behavior/p2smokeC_20260823_182046_2048774/` is the shell left by FAILED job
+776437. It holds `config.json` and `RUNMETA.json` and **no `gens.jsonl`, no `results.jsonl`, no
+`DONE.json`**. **Left in place deliberately**, not deleted: it carries zero rows, so unlike the
+credit-failure partials (453–473 real rows, which genuinely had to go) it cannot flow through
+`load()` and produce a plausible number, and every consumer in this repo gates on `require_done`.
+Recorded here so a future `newest()`-style lookup that trips over it has an explanation.
+
 ## 9. OPEN QUESTIONS
 
 1. Does the exp-7 directional effect survive a real 3-draw control band? *(Gate E7, in flight)*
