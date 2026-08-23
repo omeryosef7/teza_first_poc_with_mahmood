@@ -1,0 +1,177 @@
+{
+  "question": "does each \u00a719 answer name the committed artifact its numbers come from?",
+  "why_not_number_matching": "two earlier versions tried to infer provenance from numeric coverage. v1 called nearly everything traceable including Q2, which traces to nothing; v2's permutation null came out at ~0.90 for every answer, random figures scoring as well as real ones. With ~200 artifacts holding tens of thousands of floats, numeric coverage carries no information.",
+  "n_answers": 14,
+  "n_flagged": 5,
+  "flagged": [
+    {
+      "answer": "1",
+      "title": "Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 2,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "2",
+      "title": "Does the final `carrot` become more `bomb`-like than earlier `carrot`s?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 9,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "3",
+      "title": "How many examples are needed before Boombness rises?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 4,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "5",
+      "title": "Does Boombness predict ASR?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 6,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "7",
+      "title": "Does Boombness add predictive power beyond refusalness?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 5,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    }
+  ],
+  "all": [
+    {
+      "answer": "1",
+      "title": "Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 2,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "2",
+      "title": "Does the final `carrot` become more `bomb`-like than earlier `carrot`s?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 9,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "3",
+      "title": "How many examples are needed before Boombness rises?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 4,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "3b",
+      "title": "What do demonstrations do to COMPREHENSION?",
+      "artifacts_named": [
+        "g8_comprehension_by_nexamples.json",
+        "g8_comprehension_by_nexamples_GATEPASS.json"
+      ],
+      "n_distinct_figures_quoted": 22,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "4",
+      "title": "Does Boombness vary enough across prompts to support optimization?",
+      "artifacts_named": [
+        "add_ladder_refusal.json",
+        "coherence_fuS_ladder.json"
+      ],
+      "n_distinct_figures_quoted": 10,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "5",
+      "title": "Does Boombness predict ASR?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 6,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "5b",
+      "title": "The same question at the OTHER readout position, like-for-like (added 2026-08-23).",
+      "artifacts_named": [
+        "g9_three_predictor_lastpos.json"
+      ],
+      "n_distinct_figures_quoted": 13,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "6",
+      "title": "Does Boombness predict ASR better than refusalness?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 0,
+      "verdict": "no figures quoted -- nothing to source"
+    },
+    {
+      "answer": "6b",
+      "title": "Is the removal effect SPECIFIC to doublespeak?",
+      "artifacts_named": [
+        "condition_profile_llama_len_B.json",
+        "condition_profile_llama_projout.json"
+      ],
+      "n_distinct_figures_quoted": 6,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "7",
+      "title": "Does Boombness add predictive power beyond refusalness?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 5,
+      "verdict": "QUOTES FIGURES BUT NAMES NO ARTIFACT"
+    },
+    {
+      "answer": "8",
+      "title": "Do user-like / CoT-like framings increase Boombness?",
+      "artifacts_named": [
+        "g11_role_full.json"
+      ],
+      "n_distinct_figures_quoted": 24,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "9",
+      "title": "Can we surgically remove Boombness without destroying comprehension?",
+      "artifacts_named": [
+        "clearharm_decomposition.json",
+        "clearharm_decomposition_regoal.json",
+        "empty_goal_leakage_check.json",
+        "g3_dynrange.json",
+        "g8_comprehension_DF_arms.json",
+        "g8_comprehension_DF_arms_GATEPASS.json",
+        "q3dec_decomposition_L11.json",
+        "qwen3_channel_test.json",
+        "qwen3_l20_regoal.json",
+        "section14_topical_asr.json"
+      ],
+      "n_distinct_figures_quoted": 90,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "10",
+      "title": "Can we turn Boombness into a useful GCG objective?",
+      "artifacts_named": [
+        "channel_matched_contrasts.json"
+      ],
+      "n_distinct_figures_quoted": 20,
+      "verdict": "sourced"
+    },
+    {
+      "answer": "11",
+      "title": "What exactly should Matan/Mahmood take from this sprint?",
+      "artifacts_named": [],
+      "n_distinct_figures_quoted": 0,
+      "verdict": "no figures quoted -- nothing to source"
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "src/boombness/answer_regenerability_check.py",
+      "--out",
+      "outputs/boombness/answer_sourcing_check.json"
+    ],
+    "git_commit": "dfb7fa917d1b00eb0baf46eed9790c78f3d6943d"
+  }
+}

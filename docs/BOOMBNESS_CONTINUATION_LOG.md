@@ -9908,3 +9908,47 @@ existed in the repo as output rather than as prose.
 | 648 | 2026-08-23 | searched every artifact and subdirectory for its contrast | **none** — the numeric hits are float collisions |
 | 649 | 2026-08-23 | ran `followup_token_level.py`, never before committed | produces **per-role means**, not the paired contrast |
 | 650 | 2026-08-23 | flagged Q2's magnitudes **provisional, unverifiable** | the sign and control claim stand on §7 separately |
+
+## Two broken checks before one that works, and the answer it gave
+
+Last tick I found Q2's figures trace to no artifact, by hand, in a whole tick — with four other answers
+unchecked. Mechanising it took three attempts, and the two failures are worth more than the success.
+
+**v1 asked "do this answer's numbers appear in some artifact?"** It reported nearly every answer
+traceable — **including Q2**, which I had proved traces to nothing the day before. Its best match for
+almost every answer was the per-layer summary I had just generated: 32 layers × 6 metrics × 4 roles of
+floats. An artifact that large matches any set of 3–4 decimal numbers by chance.
+
+**v2 scored that coverage against a permutation null.** The null median came out at **~0.90 for every
+answer** — random figures scoring as well as real ones — so v2 flagged *everything*, including answers
+I had verified by hand as exactly traceable. First version could not go red; second could not go green.
+
+**The lesson is not "tune the threshold".** With ~200 artifacts holding tens of thousands of floats,
+**number-matching cannot establish provenance in this corpus**. `unwritten_findings_check` v1 failed
+this way too, and I rebuilt it twice before noticing the shape.
+
+**v3 asks a deterministic question instead: does the answer name its artifact?** That is the provenance
+link the rule actually asks for, it cannot saturate, and it is already how everything written since
+08-22 is sourced.
+
+| | answers |
+|---|---|
+| **sourced** | 3b, 4, 5b, 6b, 8, 9, 10 — **every one written or revised since 2026-08-22** |
+| **quotes figures, names nothing** | **Q1, Q2, Q3, Q5, Q7** |
+| legitimately unsourced | Q6 (no figures), Q11 (advice) |
+
+**The split is exactly the practice boundary.** Every answer sourced is one I touched this week; every
+unsourced one predates it. Q2 is the only one checked by hand, and it traces to nothing — the other
+four are **unaudited, not disproven**, and the §19 preamble now says so and marks their magnitudes
+provisional.
+
+The failed numeric artifact was deleted rather than left on disk, since a scoring file that cannot
+discriminate is exactly the thing a later reader would cite.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 651 | 2026-08-23 | v1: numeric coverage | called **Q2 traceable** — the answer proven untraceable a day earlier |
+| 652 | 2026-08-23 | v2: permutation null | null median **~0.90 for every answer**; flagged everything |
+| 653 | 2026-08-23 | recognised the shape: **number-matching cannot source claims here** | third check of mine to saturate |
+| 654 | 2026-08-23 | v3: does the answer **name** its artifact | deterministic, cannot saturate |
+| 655 | 2026-08-23 | **5 answers quote figures and name nothing** | Q1, Q2, Q3, Q5, Q7 — exactly the pre-08-22 ones |
