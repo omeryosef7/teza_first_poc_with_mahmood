@@ -2773,35 +2773,37 @@ neither dominates: ratio **1.54** [0.64, 3.60] @last and **0.75** [0.33, 1.13] @
 straddling 1. ⚠ And the between-probe selection freedom is not matched (20 vs 10 candidate columns),
 which biases those ratios toward Boombness.
 
-**6b. Is the removal effect SPECIFIC to doublespeak? The per-condition profile (added 2026-08-23;
-`condition_profile_llama_projout.json`, committed and never written up).** Llama-3.1-8B,
-`project_out d_surface` against a **random-projection control**, paired by prompt id, differenced
-arm−control, aggregated to domain cluster means, n=960 across all six bank conditions:
+**6b. Is the removal effect SPECIFIC to doublespeak?** ⛔ **RETRACTED (2026-08-23, audit #16). This is
+answered by §7e, and answered the other way.**
 
-| condition | Δ (arm − control) | 95% CI (domain-clustered) | p_cl |
+The version posted on 2026-08-23 gave a per-condition table and concluded *"significant on exactly one
+condition, and it is the right one … removing `d_surface` raises attack success specifically where the
+doublespeak mapping is in play"*. **That is R-15's reading, which §7e withdraws in this same document.**
+§7e runs the identical design — same n=960, same per-condition cells (324/36/72/420/72/36), same
+estimator — and concludes: *"the 'clean split' was a **power artifact** … every 36–72-row cell is
+uninformative in **both** directions, so these data **cannot** discriminate 'harm-general' from
+'doublespeak-specific'"*. Negative-result **N7** records it as *"Not established, and the data cannot
+answer it. Only 1 of 6 condition cells is distinguishable from zero."*
+
+**"Only 1 of 6 cells is distinguishable" is the same fact I re-read as evidence of specificity.** With
+420 prompts on `natural_doublespeak` against 36–72 on every other condition, one significant cell is
+what insufficient power *looks like*, not what specificity looks like.
+
+**And I used the worse of two available measurements of the same quantity:**
+
+| source | `natural_doublespeak` | `benign_literal` | truncation (arm / control) |
 |---|---|---|---|
-| **`natural_doublespeak`** | **+0.0902** | **[+0.0275, +0.1529]** | **0.0141** |
-| `direct_harmful` | +0.0556 | [−0.0873, +0.1984] | 0.363 |
-| `benign_remap` | +0.0417 | [−0.0275, +0.1108] | 0.182 |
-| `concept_in_benign_ctx` | +0.0399 | [−0.0272, +0.1071] | 0.187 |
-| `direct_codeword` | −0.0069 | [−0.1422, +0.1283] | 0.900 |
-| **`benign_literal`** | **−0.0015** | [−0.0207, +0.0176] | 0.844 |
+| §7e, `len_B` / `len_Bctrl` — length-fair 512-token | **+0.0560**, p_cl 0.0077 | +0.0069 | **0.00 / 0.00** |
+| Q6b as posted, `projout_beh` / `projctrl` — 192-token | +0.0902, p_cl 0.0141 | −0.0015 | **0.60 / 0.50** |
 
-**The effect is significant on exactly one condition, and it is the right one.** Every other interval
-contains zero, and `benign_literal` — where the codeword means what it says and there is nothing to
-decode — is **flat at −0.0015** with the tightest interval in the table. So on Llama, removing
-`d_surface` raises attack success **specifically where the doublespeak mapping is in play**, not as a
-generic consequence of perturbing the residual stream.
+§7e describes the `len_*` pair as *"length-matched by construction"*; the pair I used truncates 50–60%
+of its generations. So the report briefly carried **two values for one contrast**, ~650 lines apart,
+with neither citing the other, and the larger one came from the less controlled runs. ⚠ My own
+coherence check on that pair reported the arm truncating *more* than the control and called it
+"conservative" — true, but beside the point when a zero-truncation pair was available.
 
-**Read this against the Qwen3 arm in §14.** There, `D20` moves `benign_literal` from 0.0000 to
-**+0.2222** against a control at 0.0093 — a real specificity failure. Here the same family of
-intervention on Llama moves benign by **−0.0015**. The two models differ on specificity, and this table
-is the cleanest statement of the Llama side.
-
-⚠ `p_cl = 0.0141` is **below the six-domain cluster floor of 2/2⁶ = 0.031**, so it is a t-statistic on
-cluster means, not an exact cluster p. **The interval is the evidence** — and it excludes zero with
-room. ⚠ This is arm-minus-control on the *sprint bank*, not AdvBench; it speaks to specificity across
-conditions, not to the external-set magnitude.
+**The live answer is §7e's: not established, and these data cannot establish it.** The
+`condition_profile_llama_projout.json` figures are superseded by `condition_profile_llama_len_B.json`.
 
 **7. Does Boombness add predictive power beyond refusalness?**
 ⛔ **Superseded twice; the current answer is "neither dominates, on a null."** Three drafts were wrong
@@ -2987,10 +2989,25 @@ n=6 per arm, ordered by edges cut:
 | `none` | 0 | **+0.000** |
 | `bottomk_demo` | 16 | +0.0004 |
 
-**The instrument works, and it is monotone in edges cut** — 0 → 16 → 256 → 4096 → 7264 edges maps to
-0.000 → ~0.02 → 0.093 → 0.784 → 1.135. `dynamic_range_established: true`, with the positive control
-**3000×** the largest non-control arm. So a 16-edge null is a **real** null at that scale, not an
-instrument failure, and §10's localized knockouts can be read as measurements.
+**The instrument is monotone in edges cut** — 0 → 16 → 256 → 4096 → 7264 edges maps to 0.000 → ~0.02
+→ 0.093 → 0.784 → 1.135, and a 16-edge null is a **real** null at that scale rather than an
+instrument failure.
+
+⛔ **Corrected 2026-08-23 (audit #16): the two numbers I first gave for this were both wrong.** The
+artifact cited was produced by the **pre-fix** `analyze_g1_g3.g3()`, whose defect that script itself
+documents — it took a `max` over **signed** deltas and so returned a null control as "the largest
+non-control effect", certifying the guard vacuously (the second entry in this report's own
+dead-guard list). Regenerated with the current code:
+
+* `dynamic_range_established` is **False**, not `true`;
+* the largest non-control arm is **`no_demo_text` at −11.509**, so the positive control is **0.099×**
+  it — not **3000×**. That figure was the ratio to `bottomk_demo` (+0.0004), the *smallest* arm.
+
+**The substantive claim survives, on fields the stale artifact did not contain**:
+`readout_movable: **true**` (moved by `all_demo`, `all_layers_demo`, `no_demo_text`,
+`positive_control`) and `null_claims_interpretable: **true**` against
+`largest_null_control_abs = **0.0248**`. So §10's localized knockouts can be read as measurements —
+but via a movability check, not via a "dynamic range established" flag that is False.
 
 ⚠ **But what that null licenses is narrower than it looks, because of R-7.** `topk_demo` (−0.025) is
 barely separated from `random_demo` (−0.018) and `same_head_random` (−0.011) — the *targeted* 16-edge
@@ -3000,8 +3017,10 @@ selected is not known to be the important one. The defensible statement is: **cu
 kind does essentially nothing, while cutting 4096 does a great deal** — a statement about scale, not
 about which edges matter.
 
-⚠ Also worth stating from this table: the full-text deletion ceiling is **−11.5**, so even the
-7264-edge positive control recovers only **~10%** of what removing the demonstrations outright achieves.
+⚠ And the reason the flag is False is the same fact stated plainly: the full-text deletion ceiling is
+**−11.5**, so even the 7264-edge positive control recovers only **~10%** of what removing the
+demonstrations outright achieves. The first version of this section quoted that sentence **six lines
+after** claiming a 3000× dynamic range, without noticing the two could not both be true.
 Attention-edge surgery is a weak instrument relative to the thing it is trying to localise.
 
 **10. Can we turn Boombness into a useful GCG objective?**

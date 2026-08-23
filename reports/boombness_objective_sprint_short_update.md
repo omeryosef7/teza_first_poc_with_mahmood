@@ -40,17 +40,15 @@ time and was cited by nothing. Corrected, on 960 paired prompts:
 The arm **beats** its control, so Qwen3 L20 **agrees** with L11 rather than contradicting it. But `D20`
 moves *benign-by-construction* prompts to 0.2222 — a real specificity problem on Qwen3.
 
-**3. ✅ Llama does NOT have that specificity problem, and the table was sitting uncited.** Same family
-of intervention, per condition, arm minus a random-projection control, n=960:
-
-| condition | Δ (arm − control) | 95% CI | p_cl |
-|---|---|---|---|
-| **`natural_doublespeak`** | **+0.0902** | **[+0.0275, +0.1529]** | 0.0141 |
-| `benign_literal` | **−0.0015** | [−0.0207, +0.0176] | 0.844 |
-
-Significant on exactly one condition — the right one — and flat where there is nothing to decode. **The
-two models differ on specificity**, and any "it replicates" sentence has to name the model, the layer
-and the arm.
+**3. ⛔ A specificity claim I sent you on 08-23 is RETRACTED the same day.** I wrote that Llama shows
+the removal effect *"specifically where the doublespeak mapping is in play"* (+0.0902 on doublespeak,
+−0.0015 on benign). **The full report already answers this the other way**, in §7e: with 420 prompts on
+doublespeak against 36–72 on every other condition, *one significant cell is what insufficient power
+looks like*, not what specificity looks like — *"these data cannot discriminate harm-general from
+doublespeak-specific"* (negative result N7). I also used the **192-token** runs, which truncate 50–60%
+of generations, rather than the **length-fair 512-token** pair §7e uses (0% truncation), which gives
+**+0.0560** on doublespeak and **+0.0069** on benign. **Live answer: not established, and these data
+cannot establish it.**
 
 **4. The noise scale I gave you was wrong, twice, and is now measured properly.** Revision 6 compared
 margins against *judge drift*. That figure (0.0057) was itself inflated by a truncated judge pass; the

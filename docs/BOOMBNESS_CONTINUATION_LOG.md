@@ -9734,3 +9734,56 @@ detector is good at finding *unused* data and has no idea whether that data is *
 | 629 | 2026-08-23 | Q9 arm survives, **control claim withdrawn** | Dctrl is a flat null, not −0.085…−0.135 |
 | 630 | 2026-08-23 | F/Fctrl **withdrawn** — no gate-passing runs, judging blocked | |
 | 631 | 2026-08-23 | **repointed the pins I had claimed to repoint** | the previous commit described a fix it did not make |
+
+## Audit #16, part two: a second re-publication of a retracted reading, and a stale artifact
+
+**A-16.2 (high) — §19 Q6b is RETRACTED. It is §7e's question, answered the other way, in the same
+document.** I posted a per-condition table concluding the removal effect is *"specifically where the
+doublespeak mapping is in play"*. §7e runs the identical design — same n=960, same cells
+(324/36/72/420/72/36), same estimator — and concludes the opposite: *"the 'clean split' was a **power
+artifact** … these data **cannot** discriminate harm-general from doublespeak-specific"*, recorded as
+negative result **N7**.
+
+**"Only 1 of 6 cells is distinguishable from zero" is the fact I re-read as evidence of specificity.**
+With 420 prompts on doublespeak against 36–72 elsewhere, one significant cell is what insufficient
+power *looks like*.
+
+**And I used the worse of two measurements of one quantity:**
+
+| source | doublespeak | benign | truncation (arm/ctrl) |
+|---|---|---|---|
+| §7e, `len_B`/`len_Bctrl` — length-fair 512-token | **+0.0560** p 0.0077 | +0.0069 | **0.00 / 0.00** |
+| Q6b as posted, `projout`/`projctrl` — 192-token | +0.0902 p 0.0141 | −0.0015 | **0.60 / 0.50** |
+
+The report briefly carried **two values for one contrast** ~650 lines apart, neither citing the other,
+and the larger came from runs truncating 50–60% of their generations. My own coherence check on that
+pair noted the arm truncating *more* than the control and called it "conservative" — true, and beside
+the point when a zero-truncation pair was on disk.
+
+Retracted in the report **and** in the short update, which had carried it to Matan and Mahmood for
+about a day. The canonical-figures pin I added for +0.0902 **went red** the moment the figure left the
+report — the guard doing exactly its job — and has been removed with the claim.
+
+**A-16.3 (medium-high) — `g3_dynrange.json` was a pre-fix artifact and both numbers were wrong.** It
+was produced by the old `analyze_g1_g3.g3()`, whose defect that script documents: a `max` over
+**signed** deltas returned a null control as "the largest non-control effect" and certified the guard
+vacuously — the second entry in this report's own dead-guard list. Regenerated:
+
+* `dynamic_range_established` is **False**, not `true`;
+* the largest non-control arm is **`no_demo_text` −11.509**, so the positive control is **0.099×** it,
+  not **3000×**. My 3000× was the ratio to `bottomk_demo` (+0.0004) — the *smallest* arm.
+
+**The substantive claim survives on fields the stale artifact lacked**: `readout_movable: true` and
+`null_claims_interpretable: true` against `largest_null_control_abs = 0.0248`. §10's nulls are readable,
+via a movability check rather than a flag that is False.
+
+The tell was in my own text: I wrote *"the positive control recovers only ~10% of the deletion ceiling"*
+**six lines after** claiming a 3000× dynamic range, and did not notice the two cannot both be true.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 632 | 2026-08-23 | verified Q6b against §7e | **same design, opposite conclusion**, recorded as N7 |
+| 633 | 2026-08-23 | found two values for one contrast, ~650 lines apart | used the **50–60% truncated** pair over the length-fair one |
+| 634 | 2026-08-23 | retracted Q6b in report **and** short update | the +0.0902 pin went red and was removed with it |
+| 635 | 2026-08-23 | regenerated `g3_dynrange` with current code | `established` **False**; ratio **0.099×**, not 3000× |
+| 636 | 2026-08-23 | claim re-founded on `readout_movable` / `null_claims_interpretable` | §10's nulls still readable |
