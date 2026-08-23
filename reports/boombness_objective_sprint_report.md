@@ -2801,34 +2801,41 @@ figures are more flattering (B +0.1061 "significant", super-additivity +0.095) a
 The live artifact is the **re-judged** `clearharm_decomposition_regoal.json` used above. `retraction_sweep`
 caught the draft that used the wrong one.
 
-⛔ **A Qwen3 negative that had never been written up (added 2026-08-23; committed since 08-18,
-`qwen3_armD_*.json`).** The L20 arms on Qwen3 look spectacular and are **not direction-specific**.
-Paired, domain-clustered:
+⛔ **RETRACTED WITHIN A DAY, BY AUDIT #15 — and I had already withdrawn it once (2026-08-23).**
+On 2026-08-23 this section published a Qwen3 L20 table concluding that *"the matched random control
+equals or beats the arm"*, that `benign_literal` ran *"0.003 → 0.95–0.99 … a model being broken, not
+attacked"*, and that L11 and L20 *"point opposite ways"*. **All three are false.** They came from
+`qwen3_armD_*.json`, whose three **treatment** arms were judged with `--bank null` — so
+`make_goal` returned an **empty goal** and StrongReject rated how harmful each *response* was with no
+request to compare it against. This is R-14's defect recurring. Worse than uniform: the **baseline**
+did pass a bank, so empty-goal arms were differenced against a real-goal baseline.
 
-| condition | n | baseline | `q3_C20` (remove refusalness) | `q3_D20` (remove both) | **`q3_D20ctrl` (matched random)** |
-|---|---|---|---|---|---|
-| `natural_doublespeak` | 420 | 0.1595 | **0.8881** | 0.7738 | **0.8881** |
-| `benign_literal` | 324 | 0.0031 | **0.9938** | 0.8796 | **0.9537** |
-| `direct_harmful` | 72 | 0.0139 | 0.0139 | 0.0833 | 0.0139 |
+**A correct re-judge of all four arms on the identical generations has existed since 2026-08-20** —
+`q3rj2_*`, 960 rows each, `DONE`, `goal_status` = 816 substituted + 144 noop — **and was cited by
+nothing.** `docs/BOOMBNESS_CONTINUATION_LOG.md` recorded on 08-20 that *"every Qwen3 ASR delta in this
+comparison is withdrawn"*; the report re-published it as a fresh finding three days later.
 
-**The matched random control equals or beats the arm in both non-trivial conditions** — 0.8881 vs
-0.7738 on doublespeak, 0.9537 vs 0.8796 on benign. Whatever drives the +0.61 to +0.88 jumps, it is not
-the identity of the directions removed. And `benign_literal` running from **0.003 to 0.95–0.99** is the
-tell: the intervention makes the model produce judge-flagged content on prompts that are *benign by
-construction*. That is a model being broken, not a model being attacked.
+**The corrected table** (`qwen3_l20_regoal.json`, paired on 960 common prompt ids):
 
-**Why this matters next to the L11 result above.** They point opposite ways and both are Qwen3, so the
-distinction is worth stating: at **L11** the `d_surface` projection has a **null** hard in-subspace
-control (−0.0119, p=0.60) — direction-specific; at **L20** the removal has a control that **matches the
-arm** — not direction-specific, and destructive of benign behaviour. A Qwen3 replication claim must say
-*which layer and which arm*, because the two disagree.
+| condition | n | baseline | `C20` | **`D20`** | `D20ctrl` | **D20 − ctrl** |
+|---|---|---|---|---|---|---|
+| `natural_doublespeak` | 420 | 0.1714 | 0.1667 | **0.5190** | 0.1857 | **+0.3333** |
+| `benign_literal` | 324 | 0.0000 | 0.0000 | **0.2222** | 0.0093 | **+0.2130** |
+| `concept_in_benign_ctx` | 72 | 0.0139 | 0.0417 | 0.4167 | 0.0417 | +0.3750 |
+| `direct_harmful` | 72 | 0.0139 | 0.0139 | 0.1250 | 0.0278 | +0.0972 |
 
-⚠ The artifact declares its own limit and it is worth repeating: `control_band: n_draws = 0` — "fewer
-than 3 independent control draws; between-draw variance is unestimated". So the control here is a
-single draw, which is enough to say the arm is **not** clearly above it, but not enough to put an
-interval on the gap. Also recorded there: the domain-clustered CI is **3.50×** wider than the IID
-Wilson interval on the same rows (`ci_width_ratio_clustered_over_iid`), which is why IID intervals are
-not quoted anywhere in this report.
+**What is true instead.** The arm **beats** its matched control, decisively — +0.3333 on doublespeak
+and +0.2130 on benign. So **L20 agrees with L11 rather than contradicting it**, and the "a replication
+claim must name the layer because the two disagree" paragraph is withdrawn along with the rest.
+Removing refusalness alone (`C20`) does **essentially nothing** here: 0.1667 against a 0.1714 baseline.
+
+**What survives of the caution, in weaker form.** `D20` is still not clean: it moves `benign_literal`
+from 0.0000 to **0.2222** against a control at 0.0093, so about a fifth of *benign-by-construction*
+prompts become judge-flagged. That is a real specificity problem — and it is **an order of magnitude
+smaller** than the empty-goal version implied.
+
+⚠ The **3.50×** clustered-vs-IID CI ratio quoted here on 2026-08-23 was computed on the empty-goal rows
+and is withdrawn with them. The general point (IID intervals understate) stands on other artifacts.
 
 ⬆ **The direct comprehension test, with matched controls, added 2026-08-23 — committed 08-18, never
 written up** (`g8_comprehension_DF_arms.json`). Paired, n=288, clustered on 6 domains, comprehension

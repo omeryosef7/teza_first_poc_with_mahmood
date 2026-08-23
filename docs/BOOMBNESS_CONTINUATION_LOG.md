@@ -9230,3 +9230,61 @@ Whether a sixth widens that is exactly the question, and I have deliberately not
 | 575 | 2026-08-23 | **corrected an unsupported clause I wrote yesterday** | low doses are coherent refusals, not a floor |
 | 576 | 2026-08-23 | found a **band draw of mine excluded for the wrong reason** | shrinking a band flatters the arm |
 | 577 | 2026-08-23 | submitted job **774973** to judge it, session-matched | band figures marked provisional |
+
+## Audit #15: I republished a finding I had already withdrawn, three days later
+
+**A-15.1 (high) — the Qwen3 L20 block is retracted within a day of publishing it.** Two ticks ago I
+wrote that *"the matched random control equals or beats the arm"*, that `benign_literal` ran
+*"0.003 → 0.95–0.99 … a model being broken, not attacked"*, and that L11 and L20 *"point opposite
+ways"*. **All three are false.** The three **treatment** arms were judged with `--bank null`, so
+`make_goal` returned an **empty goal** — R-14's defect, recurring — while the **baseline had a real
+bank**, so empty-goal arms were differenced against a real-goal baseline. Verified directly:
+`goal_status` is `None` on all 960 rows of each treatment arm, and their configs carry `bank: null`.
+
+**The correct re-judge has existed since 2026-08-20** (`q3rj2_*`, 960 rows, DONE, 816 substituted +
+144 noop) **and was cited by nothing.** Worse: this log recorded on 08-20 that *"every Qwen3 ASR delta
+in this comparison is withdrawn"*. I republished it as a fresh finding three days later, having written
+the withdrawal myself.
+
+| condition | n | baseline | `C20` | **`D20`** | `D20ctrl` | **D20 − ctrl** |
+|---|---|---|---|---|---|---|
+| `natural_doublespeak` | 420 | 0.1714 | 0.1667 | **0.5190** | 0.1857 | **+0.3333** |
+| `benign_literal` | 324 | 0.0000 | 0.0000 | **0.2222** | 0.0093 | **+0.2130** |
+
+The arm **beats** its control decisively, so **L20 agrees with L11** rather than contradicting it, and
+the whole "a replication claim must name the layer" paragraph goes with it. `C20` alone does nothing
+(0.1667 vs 0.1714). What survives, weaker: `D20` still moves benign from 0.0000 to **0.2222** against a
+control at 0.0093 — a real specificity problem, an order of magnitude smaller than the empty-goal
+version implied. New `qwen3_l20_regoal.py` recomputes it and **refuses** any run whose rows lack
+`goal_status`; tested against `q3_C20_` (refused) and `q3rj2_C20_` (accepted).
+
+**A-15.2 (medium) — my guards were scoped to a figure, not a defect class.** `retraction_sweep`'s R-14
+pattern matches ClearHarm's specific numbers, so it ran clean while the report published the identical
+defect on Qwen3. And `unwritten_findings_check` listed only ClearHarm as retracted, so it offered the
+tainted Qwen3 trio to me as findings that *should* be written up — which is exactly what I did. Worst
+of all, its docstring told the reader to treat that artifact's persistent flag as **noise**. That
+instruction is deleted: the flagged artifact was the one genuinely tainted set in the corpus. All three
+`qwen3_armD_*` files are now listed as retracted, with reason and replacement.
+
+**A-15.3 (medium) — the detector could return a false "written up", and it took two fixes.** The
+fingerprint match was an unanchored substring: `"0.720"` matched inside `"0.7207"` from a different
+artifact. Anchoring on digit boundaries was **not enough** — the positive fingerprint `"0.0302"` then
+matched inside the report's `−0.0302`, again a different artifact, because the lookbehind excluded
+digits and dots but not minus signs. Now sign-aware: a positive fingerprint must not be preceded by a
+minus, a negative one must be. `g9_three_predictor_lastpos.json` moves from "written up" on a
+non-existent hit to **0 of 92** — genuinely silent, as the audit predicted — and
+`null_ceiling_session_check.json` (0/28) surfaced from behind the same collision.
+
+**Found sound** (worth recording, given the above): the full 397-run `goal_status` census shows the
+genuinely empty-goal set is 15 runs, and everything except the three Qwen3 ones was already retracted
+or confined to exempt index artifacts. The ClearHarm, §11 role, and §8 comprehension sections I wrote
+this week reproduce **exactly**, figure for figure.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 578 | 2026-08-23 | audit #15 returned 3 findings; verified all independently | |
+| 579 | 2026-08-23 | **Qwen3 L20 block retracted** — empty-goal arms vs real-goal baseline | every conclusion reversed |
+| 580 | 2026-08-23 | **I had withdrawn this myself on 08-20** and republished it | the withdrawal was in my own log |
+| 581 | 2026-08-23 | rebuilt from `q3rj2_*`; new gate refuses runs lacking `goal_status` | tested on a case it must reject |
+| 582 | 2026-08-23 | guards were figure-scoped, not class-scoped | 3 artifacts marked retracted; "treat as noise" deleted |
+| 583 | 2026-08-23 | detector false-clear fixed in **two** stages | anchored, then sign-aware; silent 5 → **6** |

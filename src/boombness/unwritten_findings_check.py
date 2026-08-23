@@ -22,13 +22,17 @@ showed 64 of them matching 10+ fingerprints, i.e. the test was saturating on val
 fingerprints: only values that occur in exactly ONE artifact across the whole corpus are used, which
 makes a match evidence about that artifact rather than about the corpus.
 
-A LIMIT OBSERVED IN USE (2026-08-23). `qwen3_armD_natural_doublespeak.json` still reports 0 of 32
-rare numbers found AFTER its finding was written into the report. The reason is structural: its
-HEADLINE values (0.1595, 0.8881, 0.7738) also occur in sibling Qwen3 artifacts, so the uniqueness
-filter excludes exactly the numbers a writer would quote, leaving 32 incidentals (Wilson bounds,
-mean_score) that nobody would. So this measures NUMBER presence, not FINDING presence, and it is
-biased against artifacts that share a family. Treat a persistent hit on a written-up artifact as noise,
-not as an instruction to quote a Wilson bound.
+A LIMIT OBSERVED IN USE, AND THE INSTRUCTION IT WRONGLY GAVE (2026-08-23, corrected same day).
+`qwen3_armD_natural_doublespeak.json` reported 0 of 32 rare numbers found AFTER its finding was written
+up, because its headline values recur in sibling Qwen3 artifacts and the uniqueness filter strips
+exactly the numbers a writer would quote. On that basis this docstring told the reader to treat a
+persistent hit on a written-up artifact as NOISE.
+
+That instruction was wrong, and audit #15 showed why: `qwen3_armD_*` was the one genuinely tainted set
+in the corpus -- judged with `--bank null`, i.e. against an EMPTY GOAL -- and telling the reader to
+ignore its flag is the opposite of what the flag was worth. The measurement limitation is real (this
+detects NUMBER presence, not FINDING presence, and is biased against artifacts with siblings); the
+advice drawn from it was not. A persistent hit means LOOK AGAIN, never "ignore".
 
 WHAT A HIT MEANS. Not "this must be written up". Infrastructure files (`canonical_figures`,
 `population_index`), indexes (`unanalysed_inventory`, this file) and deliberately superseded artifacts
@@ -68,6 +72,13 @@ EXEMPT_SUBSTR = ("_SUPERSEDED", "_JUDGE_ARTIFACT", "reanalyze_", "_cos.json")
 #: both claims collapse in the re-judged artifact. A detector that says "this finding never reached a
 #: reader" is, for a retracted artifact, saying the system worked.
 RETRACTED_ARTIFACTS = {
+    "qwen3_armD_natural_doublespeak.json":
+        "R-14 class: treatment arms judged with --bank null (empty goal) against a real-goal "
+        "baseline. Superseded by qwen3_l20_regoal.json (from q3rj2_*).",
+    "qwen3_armD_benign_literal.json":
+        "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
+    "qwen3_armD_direct_harmful.json":
+        "R-14 class: same empty-goal defect. Superseded by qwen3_l20_regoal.json.",
     "clearharm_decomposition.json":
         "R-14: judged against an empty goal (goal_status None on all 179 rows). "
         "Superseded by clearharm_decomposition_regoal.json.",
@@ -93,7 +104,7 @@ def fingerprints(vals, k=40):
     """Render each value the way a report would, at 3 and 4 decimals."""
     seen, out = set(), []
     for v in vals:
-        for s in (f"{v:.4f}", f"{v:.3f}"):
+        for s in (f"{v:.4f}", f"{v:.3f}"):   # sign included: +x and -x are different values
             if s.endswith("000") or s in seen:
                 continue
             seen.add(s)
@@ -143,7 +154,28 @@ def main() -> int:
     rows = []
     for b, fps in per_art.items():
         rare = sorted(s for s in fps if counts.get(s) == 1)
-        hits = [s for s in rare if s in hay]
+        # ANCHORED AND SIGN-AWARE. Two collisions, found one after the other.
+        #
+        # (a) Audit #15: an unanchored substring match let a rare 3-decimal fingerprint match inside a
+        #     longer number -- "0.720" inside "0.7207", which belongs to a different artifact.
+        # (b) Anchoring alone was not enough: the lookbehind excluded digits and dots but not MINUS
+        #     signs, so the positive fingerprint "0.0302" still matched inside the report's "-0.0302",
+        #     which is a different number from a different artifact. +x and -x are not the same value
+        #     and must not count as each other.
+        #
+        # So: a POSITIVE fingerprint must not be preceded by any minus (ASCII, Unicode, en-dash), and a
+        # NEGATIVE one must be. Every 4-decimal number in the report otherwise supplies a spurious
+        # 3-decimal prefix, so the false-clear rate grew with the report.
+        MINUS = r"\-\u2212\u2013"
+
+        def _hit(s):
+            neg = s.startswith("-")
+            body = re.escape(s[1:] if neg else s)
+            if neg:
+                return re.search(r"(?<![\d.])[" + MINUS + r"]" + body + r"(?![\d])", hay) is not None
+            return re.search(r"(?<![\d." + MINUS + r"])" + body + r"(?![\d])", hay) is not None
+
+        hits = [s for s in rare if _hit(s)]
         fps = rare
         rows.append({
             "artifact": b,
