@@ -693,6 +693,63 @@ carries it.
 
 ---
 
+### 🔬 PHASE 6b LAUNCHED (04:06) — a **third codeword**, to test whether R-AD's axes are general or just contrasts
+
+R-AD's own stated limit is that with **two levels per factor a main effect and its single contrast are
+the same thing**, so `W` is *the basket-vs-button axis*, not "the codeword axis". The fix is a third
+level, and adding a **codeword** is the cheap side: it reuses both existing concept pools unchanged.
+
+**Codeword chosen by tokenization and by semantics, before generating anything.** Screened 30
+candidates on the Qwen3 tokenizer requiring **1 token in all six surface forms** (bare / leading-space
+/ capitalised / both / plural / plural-with-space):
+
+* Only **`anchor`, `ticket`, `folder`, `bucket`** passed. Everything else splits — `lantern` is 2/1/3/1/3/2, `pebble` 2/2/3/2/3/3.
+* **`anchor` rejected on a domain collision** — the bank has a **`news_report`** domain where "anchor"
+  is a common noun.
+* **`bucket` rejected as a near-synonym of `basket`** — both containers, so the codeword contrast would
+  be small **by construction** and the test would be rigged toward "the axis is tiny".
+* **`folder` rejected** — collides with the `instructional` domain.
+* **`ticket` chosen**: semantically distant from both `basket` and `button`, inert across all six
+  domains. For parity, `ticket` is 1-token in all six forms — matching `button`, and *better* than
+  `basket`, whose bare plural is 2 tokens.
+
+**Both banks generated and audited, no new code:**
+
+```
+prompt_families.py --preset main --seed 20260816 --codeword ticket --concept {bomb|knife} \
+  --pools demo_pools{,_knife}.json --incidental-replace ticket=voucher[,knife=peeler]
+```
+
+| bank | rows | 2×2 families | alignment violations | dup rows dropped | audit (Qwen3) |
+|---|---|---|---|---|---|
+| `ticket_bomb` | 2736 | 336 | **0** | 0 | 2736 ok / 0 bad / **0 ambiguous** / 0 violations |
+| `ticket_knife` | 2736 | 336 | **0** | 0 | 2736 ok / 0 bad / **0 ambiguous** / 0 violations |
+
+`grep -i ticket` over both demo pools returns **nothing**, so the incidental-replace had no work to do
+and cannot have perturbed the pools' content hash.
+
+**Fits launched: 777199 (`ticket_bomb`), 777200 (`ticket_knife`)** — flags byte-identical to all four
+existing `x2fit_*` runs.
+
+#### What the 3 × 2 design will settle, written before the data
+
+With three codewords the codeword factor gains a **second degree of freedom**, which makes two things
+testable that a 2×2 cannot express:
+
+1. **Is the concept axis `N` invariant to which codewords estimate it?** Estimate the bomb−knife
+   contrast from `{basket, button}` and again from `{ticket}`; if `N` is a real concept axis the two
+   should be near-parallel, and near the 0.988 split-half ceiling. **If they are not, "concept axis" is
+   the wrong name** and R-AD's decomposition is specific to the pair set.
+2. **Is the codeword subspace genuinely 2-dimensional?** Three codewords span at most 2 dimensions
+   after centring. If `basket`, `button` and `ticket` are mutually near-orthogonal, "codeword identity"
+   is a *subspace*, not an axis — and the R-AD naming needs weakening again.
+
+**Pre-registered:** if (1) fails, R-AD is downgraded from "codeword + concept" to "two contrasts of
+this particular four-bank set", and that will be recorded as a correction rather than quietly
+reframed.
+
+---
+
 ### ★★★★★ R-AD (03:52) — **PHASE 6: `d_surface` is NOT one direction. It is the sum of two orthogonal, equal-magnitude components — one carrying the CODEWORD, one carrying the CONCEPT.**
 
 The first Phase-6 tests need no GPU: the four `directions_fit_dev.pt` / `directions_fit_heldout.pt`
