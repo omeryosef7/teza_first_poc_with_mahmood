@@ -637,6 +637,35 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### 🔬 PHASE 2 MATRIX OPENED (21:20) — arms A and B launched at full scale
+
+With the instrument proven (R-L) and the ceiling smoke-validated (R-N), the two arms that do **not**
+depend on arm C's smoke are running at the full pre-registered population:
+
+| job | arm | invocation |
+|---|---|---|
+| **776853** | **A** baseline | `--arm A_baseline --attn-impl eager` |
+| **776854** | **B** text-deletion ceiling | `--demo-deleted --arm B_demo_deleted --attn-impl eager` |
+
+Both carry **`--expect-n 96`**, so a silently-shrunken population refuses instead of scoring quietly
+— the R-18 lesson wired into the invocation rather than trusted to a later check. Both run under
+**eager**, kernel-matched to the knockout arms, which is the entire reason review finding M3 added
+that flag: without it every Phase 2 contrast would confound the mask edit with a kernel swap.
+
+⚠ **`776492` (arm C smoke at L18–19) was PREEMPTED AND REQUEUED.** It reports 48 minutes elapsed but
+its run directory was created at **21:16:32** — `killable` preempts, and this repo has recorded that
+before. Two consequences worth carrying:
+1. Elapsed time in `squeue` is **not** time-on-task for a preempted job, so it is useless as a
+   progress signal there.
+2. **Multiple `p2smokeC_*` directories now exist** — one from the FAILED 776437, one per attempt of
+   776492. A `newest()`-style lookup will pick the last, which is right, but any glob that assumes a
+   single match is wrong. The failed 776437 shell still carries no `gens.jsonl` and no `DONE.json`,
+   so `require_done` excludes it.
+
+**Dose ladder at 4/14 judged** (776797, 34 min in).
+
+---
+
 ### ✅ R-N (21:06) — ARM B WORKS, AND IT IMMEDIATELY EXPOSED A REVIEW FINDING I HAD DEFERRED
 
 **Arm B smoke (776840, `--demo-deleted`, 8 prompts, commit `ff0ced07`, eager):** completed, 8 rows,
