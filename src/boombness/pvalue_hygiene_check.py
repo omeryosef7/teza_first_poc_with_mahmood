@@ -52,10 +52,42 @@ PVAL = re.compile(r"p(?:-value)?(?:_cl|_perm|_boot)?\s*(?:of\s*)?[=<≤]{1,2}?\s
                   r"\*{0,2}(\d?\.\d+|\d+\.?\d*e-\d+)", re.I)
 # `\[\+?[-−]?\d` matched ANY bracketed number -- including a citation like "[3]" (audit #11). An
 # interval qualifies only if it looks like one: two numbers separated by a comma inside brackets.
+# ⛔ SPLIT 2026-08-23. `retract|withdraw|⛔|supersed` used to sit in this one list, so ANY retraction
+# marker anywhere in a block exempted EVERY small p in it -- including live ones. Measured: 32 of 135
+# blocks with a small p (24%) were riding on a retraction marker alone.
+#
+# The live cost was decision-gate row 3, which strikes ~~+0.056 (p=0.0077)~~ and then, in the same row,
+# cites "comprehension unchanged (p=0.681)" as SUPPORT -- the R-6 figure, computed on a readout whose
+# options held 4.4e-05 of next-token mass. `retraction_sweep`'s R6 pattern matches `p=0.681` exactly;
+# it never fired because that row's OWN strikethrough of a different number exempted the whole row.
+# This is the file-level failure mode this repo has now hit at paragraph scope (audit #11), at table
+# scope (the 17-line table), and here at row scope: one marker vouching for its neighbours.
+#
+# Now: a retraction marker exempts a p only if THAT p is itself struck through. A live p needs a real
+# floor/interval qualifier, which is what §0b actually asks for.
 QUALIFIER = re.compile(
     r"floor|bootstrap|parametric|uncorrected|not clustered|attainable|"
     r"CI\s*\[|\[\s*[-−+]?\d*\.?\d+\s*,\s*[-−+]?\d*\.?\d+\s*\]|"
-    r"retract|withdraw|⛔|supersed|sign-flip|permutation|delta method", re.I)
+    r"sign-flip|permutation|delta method", re.I)
+
+STRUCK_SPAN = re.compile(r"~~[^~\n]{1,200}?~~")
+
+# A block whose OPENING announces a retraction is a retraction notice: the dead p is its SUBJECT, and
+# demanding a floor caveat there is noise. A marker buried mid-row is a different thing -- it refers to
+# some other figure and must not vouch for a live p beside it. First measurement of the split rule:
+# 17 flags with no leading-announcement exemption, of which 16 were legitimate notices.
+ANNOUNCE = re.compile(r"(⛔|RETRACT|WITHDRAW|SUPERSED)", re.I)
+
+
+def _is_notice(blk):
+    head = blk[:120]
+    # skip a leading table-cell prefix like "| 5 | Random controls fail | " so the announcement is
+    # still "leading" inside a row.
+    return bool(ANNOUNCE.search(head))
+
+
+def _struck_ranges(blk):
+    return [(m.start(), m.end()) for m in STRUCK_SPAN.finditer(blk)]
 
 
 def blocks(text):
@@ -101,7 +133,7 @@ def main() -> int:
             text = text[:m.start()]
         hits = 0
         for ln, blk in blocks(text):
-            smalls = []
+            smalls, small_pos = [], []
             for m in PVAL.finditer(blk):
                 try:
                     v = float(m.group(1))
@@ -109,6 +141,19 @@ def main() -> int:
                     continue
                 if v <= args.threshold:
                     smalls.append(m.group(0))
+                    small_pos.append(m.start())
+            if smalls and not QUALIFIER.search(blk):
+                # a struck p is a dead p: it needs no floor caveat.
+                if _is_notice(blk):
+                    continue
+                struck = _struck_ranges(blk)
+                # PER-OCCURRENCE, not per-block: a p described in its own immediate context as dead
+                # ("the failure behind a retracted p=0.0014") needs no floor caveat, while a live p
+                # elsewhere in the same block still does. Block-level exemption is what caused the
+                # 24% over-exemption this rule replaced; re-introducing it here would undo the fix.
+                smalls = [s for s, pos in zip(smalls, small_pos)
+                          if not any(a <= pos < b for a, b in struck)
+                          and not ANNOUNCE.search(blk[max(0, pos - 40):pos])]
             if smalls and not QUALIFIER.search(blk):
                 hits += 1
                 bad += 1

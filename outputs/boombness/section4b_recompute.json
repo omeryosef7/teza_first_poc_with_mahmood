@@ -1,0 +1,32 @@
+{
+ "plan_section": "2.6 / report 4b",
+ "regenerates": "outputs/boombness/section4b_whole_answer.json",
+ "estimand": "paired arm-minus-baseline comprehension_logodds, clustered on domain",
+ "arms": {
+  "project_out_d_surface": {
+   "delta": 0.27947553790484864,
+   "ci95_domain_clustered": [
+    0.1751993760423065,
+    0.38375169976739076
+   ],
+   "p_vs_0": 0.0009862773201398277,
+   "n": 288,
+   "n_clusters": 6
+  },
+  "Dctrl_double_random": {
+   "delta": -0.004092160819305314,
+   "ci95_domain_clustered": [
+    -0.024579125399040308,
+    0.016394803760429684
+   ],
+   "p_vs_0": 0.6295055210798961,
+   "n": 288,
+   "n_clusters": 6
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/section4b_recompute.py"
+  ]
+ }
+}

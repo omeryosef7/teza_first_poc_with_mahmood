@@ -10412,3 +10412,53 @@ rather than quietly restated.
 | 703 | 2026-08-23 | **not wired into `check_all`**, precision in the docstring | a noisy guard trains you to ignore it |
 | 704 | 2026-08-23 | the one hit: **§4b runs on R-6's withdrawn readout** | 1 of 7 rows marked → **all 7 + section banner** |
 | 705 | 2026-08-23 | corrected readout, 2 arms available | `project_out` **+0.2795 p 0.00099**; 5 arms still un-rerun |
+
+## The figure I promoted into a banner had no script behind it
+
+Last tick I put `+0.2795, p 0.00099` into §4b's new banner as the corrected replacement for R-6. This
+tick I checked where it comes from: `section4b_whole_answer.json` carries **`provenance.argv == ["-"]`**.
+Hand-authored. The Q5 defect exactly — and I had just *amplified* it rather than caught it.
+
+Wrote `section4b_recompute.py`, which rebuilds the figures from the run dirs (paired on `prompt_id`,
+clustered on `domain`) and **refuses if they disagree**. They agree to the digit:
+
+| arm | Δ | CI95 | p | n | k |
+|---|---|---|---|---|---|
+| `project_out d_surface` | **+0.2795** | [+0.1752, +0.3838] | 0.00099 | 288 | 6 |
+| double-random control | −0.0041 | [−0.0246, +0.0164] | 0.630 | 288 | 6 |
+
+Tested the refusal path by perturbing the published delta to 0.312 → **rc=1** with the mismatch named,
+and rc=0 after restore. It also refuses any run dir lacking `DONE.json` — `wa_D_20260818_184457_3887694`
+in that same directory has none.
+
+**Then the p-floor rule caught what the recompute could not.** `pvalue_hygiene_check` had
+`retract|withdraw|⛔|supersed` sitting in the *same* qualifier list as `floor|CI|bootstrap`, so **any**
+retraction marker anywhere in a block exempted **every** small p in it. Measured: **32 of 135 blocks
+(24%)** were riding on a retraction marker alone. That is this repo's signature failure — one marker
+vouching for its neighbours — now found at paragraph scope (audit #11), table scope (the 17-line table),
+and row scope, in three different files.
+
+Splitting the list flagged 17, of which 16 were legitimate retraction *notices* where the dead p is the
+subject. Two narrowings fixed that without restoring the hole: a block whose **opening** announces a
+retraction is a notice, and — **per occurrence, never per block** — a p described in its own immediate
+context as retracted is dead. **17 → 2, both genuine.**
+
+**What the two genuine flags turned out to be is the real finding.** `+0.056, p=0.0077` is asserted as
+live support in two places, including the *"What is actually established"* blockquote — while decision
+gate 3 **strikes the same pair as superseded**. The same figure, live and dead in one document. It was
+superseded because the ClearHarm re-run puts that arm at **+0.0843, CI [−0.066, +0.235], p_cl 0.210 —
+not significant**. So the claim now rests on **AdvBench alone** (+0.0422 vs a 5-draw band at +0.0012),
+and the superseded pair had made it look like it replicated on a second harmful bank. It does not.
+
+And gate row 3 was still citing ⛔ ~~"comprehension unchanged (p=0.681)"~~ as support — **retracted** as R-6, an ordering
+inside a 4.4e-05 tail. The sweep's R6 pattern matches `p=0.681` exactly; it never fired because that
+row's **own strikethrough of a different number** exempted the whole row.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 706 | 2026-08-23 | §4b's banner figure traced to `argv == ["-"]` | hand-authored — I had amplified it |
+| 707 | 2026-08-23 | `section4b_recompute.py` + tested refusal path | **reproduces to the digit**; rc=1 when perturbed |
+| 708 | 2026-08-23 | retraction markers were p-floor qualifiers | **32/135 blocks (24%)** over-exempted |
+| 709 | 2026-08-23 | notice-scoped + per-occurrence narrowing | 17 → **2, both genuine** |
+| 710 | 2026-08-23 | `+0.056, p=0.0077` live in 2 places, **struck in gate 3** | superseded; ClearHarm arm B **p_cl 0.210 ns** |
+| 711 | 2026-08-23 | gate 3 cited ⛔ RETRACTED (R-6) ~~p=0.681~~ as live support | removed; row's own `~~` had exempted it |

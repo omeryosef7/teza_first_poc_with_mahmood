@@ -2231,7 +2231,10 @@ and those happen to be one benign (`benign_literal`, n=324, CI ±0.017) and one 
 **What is actually established** is the narrow claim:
 
 > Removing the concept component from the codeword position raises attack success **on natural
-> doublespeak prompts** (+0.056, p=0.0077, against an inert control). ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
+> doublespeak prompts** (⛔ ~~+0.056, p=0.0077~~ **SUPERSEDED 2026-08-23** — that pair is gate-3's
+> struck figure. Current evidence: AdvBench **+0.0422** against a **5-draw** control band at +0.0012
+> (sd 0.0026); on ClearHarm the same arm is **+0.0843, p_cl 0.210 — not significant**
+> (`clearharm_decomposition_regoal.json`), so the claim rests on AdvBench alone). ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
 
 The earlier reading — "wherever there is an attack, and does nothing where there is not" — is
 withdrawn, and describing it as "a *stronger* statement" was backwards: it was a weaker-evidenced one.
@@ -2717,7 +2720,9 @@ The published answer used **`behavioral` only**, which is the one kind giving a 
 **Original claim, narrowed:** ~~it becomes LESS so, and the effect is positional rather than semantic~~ → Within-prompt paired
 (same prompt, same word, only position differs), domain-clustered, n=246 doublespeak prompts:
 Δ(final − earlier) is **negative at every layer** (L16 **−0.154**, t_cl = −10.5, p = 0.0001; L8 −0.082,
-p = 0.0016; L31 −0.080, p = 0.014). **The control is what settles the interpretation:** the same
+p = 0.0016; L31 −0.080, p = 0.014). ⚠ **p-rule (§0b):** these cluster on **6 domains**, whose attainable
+two-sided floor is 2/2⁶ = **0.031** — so all three are **parametric** t p-values, not clustered evidence.
+Read the magnitudes, not the p's. **The control is what settles the interpretation:** the same
 comparison in `benign_literal` — where there is no bomb meaning at all — gives effects of the **same
 sign and comparable size** (L16 −0.105, L31 −0.131, all p < 0.004). So the last occurrence of a word
 simply sits differently on the axis than earlier occurrences, regardless of meaning. There is no
@@ -2942,9 +2947,12 @@ and the five role styles occupy disjoint `bank_block`s with zero family overlap.
   `project_out d_surface` at L8 was reported to leave comprehension **statistically unchanged**
   (Δ +0.088, p=0.681 — "the only one of five arms that does"). That p is a log-odds between two tokens ⚠ **Marked 2026-08-22 (audit #11): this sentence names a RETRACTED figure or claim — see the retraction registry in §0.**
   holding a median 4.4e-05 of the next-token mass, so it is not evidence either way. Coherence intact,
-  while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
-  *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
-  to **raise** attack success, not lower it.
+  while beating an inert projection control by ⛔ ~~+0.056, p=0.0077~~ — **SUPERSEDED 2026-08-23**, the
+  same figure gate 3 strikes. On the ClearHarm re-run that arm is **+0.0843, CI [−0.066, +0.235],
+  p_cl 0.210 — not significant**; what carries the claim now is AdvBench **+0.0422** against a 5-draw
+  band at +0.0012 (sd 0.0026). So a *surgical removal that preserves comprehension* does exist **on
+  AdvBench**, it is not an edge cut, and its effect is to **raise** attack success — but it does **not**
+  reproduce on the second harmful bank, which the superseded pair had made it look like it did.
 ⬆ **ClearHarm — a second harmful bank (added 2026-08-23; `clearharm_decomposition_regoal.json`).**
 Llama-3.1-8B, `clearharm_direct`, n=179, paired and domain-clustered. Baseline ASR **0.1061**, refusal
 **0.877**:
@@ -3193,8 +3201,8 @@ evidence:
 |---|---|---|
 | 1 | Boombness predicts ASR across prompts | ⛔ **NO — RETRACTED (R-18).** ~~ρ=+0.307~~, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
 | 2 | Adding Boombness increases behaviour or relevant internal scores | ⛔ **Rescored NO 2026-08-23 (was "YES, once refusal is removed").** The YES rested on ASR 0.243→**0.548** under refusal-removal — **arm F's gain, retracted by R-20 as a judge artifact**. Stated without the label "arm F", it survived the retraction sweep in this very table. Topicality-gated, the paired gain is **+0.0167, CI [−0.0048, +0.0381]** vs its own control **+0.0119 [+0.0071, +0.0143]** (`llama_arms_topical.json`). What survives is only the *suppressive* half: adding Boombness alone *decreases* ASR by triggering refusal (0.057→0.676), direction-specifically against a magnitude-matched control (§12.1). **No demonstrated increase in behaviour.** | ⚠ **p-rule (§0b):** with k informative clusters the attainable two-sided cluster floor is 2/2ᵏ — **0.031 at 6 domains**, 3.1e-5 at 16. A p below its design's floor is **bootstrap or parametric**, not clustered evidence; quote the CI for magnitude.
-| 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now properly controlled.** On AdvBench, +0.0422 against a **5-draw control band** at +0.0012 (sd 0.0026), ~~+0.056 (p=0.0077)~~ superseded on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
-| 4 | Comprehension is preserved | **YES, and better than 'preserved'.** ⛔ ~~p=0.681~~ is **R-6** (a 4.4e-05 tail). On the corrected whole-answer readout `project_out` **improves** comprehension: **+0.2795, p=0.0010**, control −0.0041 (p=0.63). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
+| 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now properly controlled.** On AdvBench, +0.0422 against a **5-draw control band** at +0.0012 (sd 0.0026), ~~+0.056 (p=0.0077)~~ superseded on harmful conditions, ≈0 on benign. ⛔ This row also used to cite *"comprehension unchanged (p=0.681)"* as support — that is **R-6**, an ordering inside a 4.4e-05 tail, removed 2026-08-23. On the corrected whole-answer readout comprehension is not "unchanged": `project_out` **improves** it, +0.2795 [+0.1752, +0.3838] (`section4b_recompute.py`). ⚠ Single-model — does not replicate on Qwen3. |
+| 4 | Comprehension is preserved | **YES, and better than 'preserved'.** ⛔ ~~p=0.681~~ is **R-6** (a 4.4e-05 tail). On the corrected whole-answer readout `project_out` **improves** comprehension: **+0.2795, CI [+0.1752, +0.3838]**, control −0.0041 [−0.0246, +0.0164]. ⚠ The published p=0.00099 is **parametric** and sits below this 6-domain design's 0.031 floor; the exact sign-flip gives **p=0.0312** (arm) vs **0.8750** (control). Regenerable: `section4b_recompute.py`. +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **YES for the projection result, PARTIAL for the additive one.** ⛔ The p=0.0014 figure previously quoted here came from a band whose four "independent draws" were byte-identical (retraction #7); on a **genuine** 4-draw band it is **p=0.043**. Where controls are unambiguous: the **projection control is inert on every condition** (−0.018 vs baseline, p=0.26) while the arm moves harmful conditions by +0.056; and the **composed random control** does nothing on doublespeak (p=0.116) — though it *reverses* on `direct_harmful` (+0.389), so specificity there is scoped, not general. |
 | 6 | Replicates across prompt families or models | **PARTIAL, and mostly NO for the causal claims.** Replicates: the ~2× confound (median 1.74 on Qwen3), the token-level positional result, the final-layer effect at matched depth (Llama L31 +0.047 vs Qwen3 L39 +0.052). Does NOT replicate: **G2's correlation** (1 of 6 domains on Qwen3) and **the projection causal result** (mirror-image condition profile). Across *prompt families* the projection result replicates well — it holds on all three harmful conditions. |
 
