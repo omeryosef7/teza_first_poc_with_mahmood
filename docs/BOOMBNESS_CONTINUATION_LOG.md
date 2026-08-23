@@ -9638,3 +9638,43 @@ Refreshed all three committed artifacts and the two counts the report quotes fro
 | 618 | 2026-08-23 | drift re-derived on **13** sessions, not 10 | **0.0020 unchanged** — the twice-wrong number holds |
 | 619 | 2026-08-23 | replicate noise stable at 19 pairs | median 1.0, max 8.0 |
 | 620 | 2026-08-23 | triage **34 → 8** | the week's write-up work, quantified |
+
+## Judging is blocked on credits, which re-scopes what I have been asking for
+
+Audit #16 spawned (eight ticks since #15). While it runs, the git log turned up something more
+consequential than anything I would have done this tick: **`BLOCKED: OpenAI credits exhausted`**, from
+the concurrent session, at **06:14 today**. A batch failed with `402 — no credits remaining`, zero of
+six runs completed, and the job was cancelled rather than left burning wall-clock on errors.
+
+**My band-draw job finished at 05:07, about an hour before the cutoff.** That was luck, not planning.
+
+**Nothing is lost:** all generations are on disk at 495 rows, so no GPU rework is needed, and everything
+already concluded was judged in time. The six partial judge dirs (453–473 of 495) were **deleted**
+rather than left on disk — correct, because a `newest()`-style lookup would have found them and
+produced plausible numbers, which is the `abgL6_B` 40-row failure exactly.
+
+**Why this matters for what I have been telling the user.** For several ticks I have closed with
+"re-judging the ten control arms is a decision for you". It is not a decision any more — it is
+**blocked**. Offering a choice that cannot currently be acted on is worse than saying nothing, so the
+progress doc and the short update now both carry the blocker with an explicit table of what it stops:
+
+* re-judging the in-subspace control arms with a session-matched baseline — **blocked**;
+* the experiment-7 control band, three draws at the matched 0.5 gap — **blocked**, and without it the
+  −0.0886 interaction rests on **one** control draw, which the F-3 band already showed is not enough;
+* the dose-matched arms at α 0.08/0.06 — **blocked**, and that is the test of whether direction matters
+  independently of dose;
+* any new ASR measurement at all.
+
+**What still works:** analysis of already-judged data, code review, documentation, guard work, GPU
+generation. Which is to say the last several ticks' mode — consolidation — is now the *only* mode, and
+I should stop implying otherwise.
+
+Deliberately **not** launching further judging: each attempt burns an allocation to produce only errors.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 621 | 2026-08-23 | spawned **audit #16** | running |
+| 622 | 2026-08-23 | found `BLOCKED: OpenAI credits exhausted` at 06:14 | judging cannot proceed |
+| 623 | 2026-08-23 | my band job finished 05:07 — **an hour of luck** | that result survived; nothing else can be judged |
+| 624 | 2026-08-23 | recorded the blocker in **both** deliverables | with an explicit table of what it stops |
+| 625 | 2026-08-23 | **withdrew a "decision" I had been offering** | re-judging is blocked, not undecided |

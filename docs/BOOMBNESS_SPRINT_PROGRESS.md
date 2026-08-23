@@ -75,6 +75,34 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 
 Every 4h an independent agent audits code + outputs for result-affecting bugs. Findings land here.
 
+## ⛔ BLOCKER: OpenAI credits exhausted (2026-08-23 06:14)
+
+**Judging cannot proceed.** A concurrent batch failed with `402 RateLimitError — "You have no credits
+remaining"`; zero of six runs completed and the job was cancelled rather than left burning wall-clock
+on errors. Six partial judge dirs (453–473 of 495 rows) were deleted rather than left on disk, since a
+`newest()`-style lookup would have found them and produced plausible numbers — the `abgL6_B` 40-row
+failure mode.
+
+**Nothing is lost.** All generations are on disk at 495 rows, so no GPU rework is needed, and
+everything already concluded was judged before credits ran out. My own band-draw job (774973) completed
+at 05:07, about an hour before the cutoff.
+
+**What this blocks, stated plainly, because several of these have been offered as open decisions:**
+
+| item | status |
+|---|---|
+| Re-judging the ten in-subspace control arms with a session-matched baseline | ⛔ **blocked**, not merely undecided |
+| The experiment-7 control band (3 draws at matched 0.5 gap) | ⛔ blocked — the −0.0886 interaction currently rests on **one** control draw |
+| Dose-matched arms at α 0.08 / 0.06 | ⛔ blocked — the test of whether direction matters independently of dose |
+| Any new ASR measurement whatsoever | ⛔ blocked |
+
+**What still works:** analysis of already-judged data, code review, documentation, guard work, and GPU
+generation. So the useful mode is **consolidation, not new results** — which is what the last several
+ticks have been doing anyway.
+
+**Deliberately not launching further judging**: each attempt burns an allocation to produce only
+errors.
+
 | Date | Auditor | Finding | Severity | Fix | Rerun needed? |
 |---|---|---|---|---|---|
 | 2026-08-16 | self-review workflow, `review:directions` lens | **`all_first_ids` put the generic token `car` on the codeword side of every logit-lens score.** `word_token_ids` took the FIRST id of each surface variant. On Llama-3.1-8B `" carrot"`→`[' carrot']` but `"carrot"`→`['car','rot']`, `"Carrot"`→`['Car','rot']`, `" Carrot"`→`[' Car','rot']` — so **3 of carrot's 4 "first ids" are car-the-vehicle**, one of the most frequent tokens in the vocabulary, while all 4 of bomb's variants genuinely spell bomb. | **result-corrupting** | Added `signals.readout_ids` / `readout_id_pair`. Default `primary` mode = the single leading-space whole-word token per side (`' bomb'` vs `' carrot'`) — exactly symmetric, and exactly the token that appears in our prompts. Multi-token variants are recorded under `rejected_first_ids` instead of scored. Raises if the leading-space form is not single-token. | **YES — cancelled job 760596 mid-run at 600/1464 rows and resubmitted as 760598.** Direction metrics (`d_*`) were unaffected (they use no token ids); the `ll\\|*` logit-lens columns were. |

@@ -5,6 +5,17 @@
 **Live log:** `docs/BOOMBNESS_CONTINUATION_LOG.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint`
 
+## ⛔ Blocked on OpenAI credits (2026-08-23 06:14)
+
+**No further judging is possible.** A batch failed with `402 — no credits remaining`. Generations are
+all on disk at 495 rows, so nothing is lost and no GPU rework is needed; everything reported below was
+judged before the cutoff. But **every remaining open question needs judging**, so until credits are
+added the useful mode is consolidation rather than new results.
+
+Specifically blocked: the experiment-7 control band (the interaction currently rests on **one** control
+draw), the dose-matched arms at α 0.08/0.06, and re-judging the in-subspace control arms with a
+session-matched baseline.
+
 ## What changed since revision 6 (2026-08-22 → 08-23)
 
 Four things, two of which are corrections to what revision 6 told you.
