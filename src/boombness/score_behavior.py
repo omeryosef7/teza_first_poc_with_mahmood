@@ -713,6 +713,15 @@ def main() -> int:
         rows = picked[:args.limit]
 
     run = RunDir("score_behavior", args, tag=args.tag)
+    # POPULATION PROVENANCE IS RECORDED FOR EVERY ARM, NOT ONLY INTERVENED ONES.
+    # This note used to sit inside `if args.intervene:`, so a BASELINE or a --demo-deleted ceiling
+    # arm recorded no population at all -- exactly finding S1 of the 2026-08-23 review, which I
+    # filed as should-fix and did not fix. It bit immediately: the arm-B smoke's artifact carried no
+    # population_filter, and that is the one field making an arm-vs-baseline population mismatch
+    # checkable after the fact. An arm and its ceiling scoring different row sets is a composition
+    # effect wearing an intervention effect's clothes, which is R-18's shape.
+    run.note(population_filter=_pop_filter, population_composition=_pop_composition,
+             demo_deleted=bool(args.demo_deleted))
     ledger = FailureLedger()
 
     model_id = args.model or dc.PRIMARY_MODEL
@@ -807,8 +816,6 @@ def main() -> int:
             if not os.path.exists(p):
                 p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
             payload = torch.load(p, map_location="cpu", weights_only=False)
-        run.note(population_filter=_pop_filter, population_composition=_pop_composition,
-             demo_deleted=bool(args.demo_deleted))
     if spec is not None:
         # REALIZED DOSE, RECORDED RATHER THAN RECOMPUTED LATER (C-2).
         # Until now a project_out run recorded ONLY its alpha: frac_cellmean_spread_removed is

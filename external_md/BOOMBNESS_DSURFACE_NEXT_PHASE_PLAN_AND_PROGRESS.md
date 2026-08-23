@@ -637,6 +637,53 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ✅ R-N (21:06) — ARM B WORKS, AND IT IMMEDIATELY EXPOSED A REVIEW FINDING I HAD DEFERRED
+
+**Arm B smoke (776840, `--demo-deleted`, 8 prompts, commit `ff0ced07`, eager):** completed, 8 rows,
+`failures: {}`.
+
+| | baseline (`r18pow_base`, same ids) | **arm B** |
+|---|---|---|
+| median chars | **790** | **98** |
+| n_new_tokens | varies | **23 on every row** |
+| stop_reason | 4 `eos` / 4 `length` | **8/8 `eos`** |
+
+All eight rows are **byte-identical in length**. That is not a bug — with the demonstrations deleted
+the prompt is the bare harmful request, the model emits its canned refusal, and every row gets the
+same one. **This is exactly what a text-deletion ceiling should look like**, and it predicts ASR ≈ 0
+at the ceiling, which is what makes the recovery fraction well-defined.
+
+⚠ It ran in **29 s** including model load, which is implausible on a cold cache; the node had just
+loaded the same weights for another job, so this is page-cache warmth rather than a run that skipped
+work. Verified it genuinely generated: 8 rows, real token counts, real stop reasons.
+
+#### ⛔ And the provenance gap it exposed was predicted and deferred by me
+
+The arm-B artifact recorded **no `population_filter` and no `population_composition` at all**.
+Cause: `run.note(population_filter=…)` sat inside `if args.intervene:`, and arm B is a **prompt
+swap with no `--intervene`**. That is **finding S1 of the 21:05 review verbatim**, which I filed as
+SHOULD-FIX and did not fix — and it bit within the hour, on the first arm that has no intervention.
+
+Why it matters rather than being cosmetic: `population_composition` is the field that makes an
+**arm-vs-baseline population mismatch checkable after the fact**. An arm and its ceiling that scored
+different row sets produce a composition effect wearing an intervention effect's clothes — **R-18's
+shape**, and R-18 cost this project a headline.
+
+**Fixed:** the note is hoisted out of the `if` and now runs for **every** arm, immediately after the
+`RunDir` exists, carrying `demo_deleted` too. Ordering verified: `_pop_filter` at :664,
+`RunDir` at :715, note at :723. 26 tests pass.
+
+⚠ **The arm-B smoke artifact itself keeps the gap** — it was written before the fix. Its provenance
+survives only via `RUNMETA.argv` and `args.demo_deleted = True`. It is a smoke, not a result, so it
+is not being re-run; but **no Phase 2 result may be quoted from an artifact lacking
+`population_composition`.**
+
+**Lesson, recorded because it is the second time this session:** a review finding filed as
+"SHOULD-FIX, does not corrupt this run" is a prediction about *the next* run, and the next run
+arrived in fifty minutes.
+
+---
+
 ### ★★★★★ R-M (21:02) — **PHASE 5 BANK-ACCEPTANCE GATE PASSES.** The identification problem that killed direction-specificity is solved by the crossed bank.
 
 **Artifact:** `outputs/boombness/pooled_cellmean_spectrum_6pair.json`. All six pairs of the
