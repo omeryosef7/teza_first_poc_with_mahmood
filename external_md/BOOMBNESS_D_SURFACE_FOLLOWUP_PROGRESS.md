@@ -7069,6 +7069,69 @@ suggest if quoted alone.
 Its root cause is the same class this log keeps finding — **a guard added to one code path and not
 its sibling** (`DONE.json` was required in `insubspace_null_test._rows` and not in the drift script).
 
+## ⛔⛔ EIGHTH REVERSAL — THE COHERENCE GATE FLAGS REFUSAL, AND IT HAS BEEN EXCLUDING GOOD RUNS ALL SPRINT
+
+The seventh reversal's mechanism is not local to `d_surface:add`. I swept **every** gate verdict in
+the repo:
+
+| | count |
+|---|---|
+| gate verdicts examined | **26** |
+| PASS | 12 |
+| fail on `scorable_frac` **only** | **8** |
+| fail on a real degeneracy (uniq / trigram) | 6 |
+
+⛔ **Six of the eight `scorable_frac`-only failures are lexically HEALTHIER than the untreated
+model** — uniq above the baseline's 0.8411 *and* trigram repeat below its 0.0095:
+
+| run | scorable | uniq | 3-gram |
+|---|---|---|---|
+| `fuF25_addS` (0.25 gap) | 0.331 | **0.873** | 0.0049 |
+| **`fuF_addR` (α = 1.0 refusalness)** | **0.475** | **0.864** | 0.0062 |
+| `fuF_addR_g04` | 0.465 | **0.903** | 0.0048 |
+| `fuF_addR_g08` | 0.420 | **0.874** | 0.0058 |
+| `fuS_add_g00625` | 0.491 | **0.861** | 0.0064 |
+| `fuS_add_g0125` | 0.455 | **0.865** | 0.0060 |
+
+**Six runs were excluded from analysis as "degenerate" while being more lexically diverse and less
+repetitive than the model with no intervention at all.**
+
+### ⛔ This reverses one of MY OWN retractions
+
+I retracted F-3's α = 1.0 result — *"the −0.0111 was never citable, and 'coherent' is wrong by the
+repo's own criterion"* — **solely because that arm returned `DEGENERATE: scorable_frac 0.475`**. Its
+uniq is **0.864** and trigram **0.0062**, both better than the untreated baseline. ✅ **That arm is
+not degenerate. It is refusing.** The retraction was correct about the gate verdict and wrong about
+what the gate verdict means, and **the −0.0111 (n.s.) is citable after all.**
+
+⚠ **Stated plainly because the framing audit caught me claiming all my reversals weakened claims:
+this one RESTORES a result I had removed.** It is the second such (after R12-1) and it is why
+"every reversal went one way" was false.
+
+### What this does and does not change
+
+⛔ **Does not rescue:** the F-3 *specificity* verdict (that rests on the 4-draw band and the
+metric-flip, not on the gate) or the depth-family Holm result. Those are untouched.
+
+⛔ **Does change:** the "three regimes" framing of the refusalness dose curve. The low-dose arms were
+never a "terse-refusal *floor*" to be excluded — they are **coherent short refusals**, which is the
+intended effect of adding a refusal direction. The regime boundary I drew at 0.5 gap is a boundary
+in **output length**, not in usability, and the "usable window" language overstates what the gate
+licensed.
+
+⚠ **And it re-opens plan §8 experiments 7–9**, whose closure as "evaluated negatives" rested on
+counting these exclusions as failures. **The correct status is UNTESTED**, and testing them needs a
+scorability criterion that separates *short-because-refusing* from *short-because-broken* — which the
+current gate does not.
+
+### The methodological point, which is the transferable one
+
+`scorable_frac` is a **length** proxy wearing a coherence label. On a task where the intervention's
+predicted effect **is** to shorten outputs, it is not merely noisy — **it is anti-correlated with the
+effect under study**, so it systematically discards exactly the runs that would show the effect.
+✅ **The two real degeneracy metrics (uniq, trigram) behaved correctly throughout**: every genuinely
+broken run failed one of them, and no healthy run did.
+
 ## ⛔⛔⛔ SIXTH AND SEVENTH REVERSALS — the surviving-claims list itself does not survive
 
 A second audit took the eight "survives every correction" rows and applied the **same four
