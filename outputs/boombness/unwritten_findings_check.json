@@ -22,7 +22,7 @@
     "*_cos.json*"
   ],
   "n_artifacts_checked": 93,
-  "n_silent": 11,
+  "n_silent": 10,
   "min_rare_fingerprints_for_a_verdict": 5,
   "n_untestable_too_few_rare_numbers": 13,
   "untestable": [
@@ -145,15 +145,6 @@
     }
   ],
   "silent": [
-    {
-      "artifact": "g8_comprehension_DF_arms.json",
-      "named_in_deliverable": false,
-      "n_rare_fingerprints_tested": 77,
-      "n_fingerprints_tested": 77,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
-    },
     {
       "artifact": "qwen3_armD_natural_doublespeak.json",
       "named_in_deliverable": false,
@@ -760,8 +751,9 @@
       "named_in_deliverable": false,
       "n_rare_fingerprints_tested": 124,
       "n_fingerprints_tested": 124,
-      "n_fingerprints_found": 3,
+      "n_fingerprints_found": 4,
       "example_hits": [
+        "0.135",
         "0.211",
         "0.389",
         "0.826"
@@ -826,12 +818,18 @@
     },
     {
       "artifact": "g8_comprehension_DF_arms.json",
-      "named_in_deliverable": false,
+      "named_in_deliverable": true,
       "n_rare_fingerprints_tested": 77,
       "n_fingerprints_tested": 77,
-      "n_fingerprints_found": 0,
-      "example_hits": [],
-      "written_up": false
+      "n_fingerprints_found": 5,
+      "example_hits": [
+        "0.401",
+        "1.116",
+        "1.366",
+        "1.835",
+        "2.082"
+      ],
+      "written_up": true
     },
     {
       "artifact": "g8_comprehension_by_nexamples.json",
@@ -1265,6 +1263,6 @@
       "--out",
       "outputs/boombness/unwritten_findings_check.json"
     ],
-    "git_commit": "189bf3c0f91a5fca2959c660f937d0999561d40b"
+    "git_commit": "ac582f925f21b861f3daceeae7b5e9cd89f27a34"
   }
 }

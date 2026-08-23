@@ -9007,3 +9007,49 @@ Eleven silent artifacts remain, `g8_comprehension_DF_arms` (0/77) next.
 | 551 | 2026-08-23 | top hit: **§8 comprehension curve, 92 unique numbers, zero in the report** | committed 08-17, never written |
 | 552 | 2026-08-23 | wrote it in with its exclusion and p-floor caveats | doublespeak **+0.370** vs benign_literal **−0.847** |
 | 553 | 2026-08-23 | rescan | 12 → **11** silent |
+
+## Q9's cleanest answer had been sitting on disk since 08-18
+
+Next silent artifact: `g8_comprehension_DF_arms.json`, 77 artifact-unique numbers, none in either
+deliverable. Its `curve` block duplicates the one I wrote up last tick — which is why the uniqueness
+filter isolated the part that is actually new: the **arms**, with their matched controls. Specs
+verified from the run configs rather than from memory:
+
+* **D** = `d_surface:project_out:8` + `refusalness:project_out:18`, control = two matched random
+  projections;
+* **F** = `d_surface:add:8:0.25` + `refusalness:project_out:18`, control = `random:add:8:0.25` +
+  the same refusalness removal — so F vs Fctrl isolates the **added** direction, and both are gap-dosed
+  at 0.25, i.e. magnitude-matched at 1.5137.
+
+| arm | n=1 | n=2 | n=4 | n=8 | n=16 |
+|---|---|---|---|---|---|
+| **D** | **+0.527** | +0.493 | +0.401 | +0.420 | +0.381 |
+| **Dctrl** | **−0.085** | −0.098 | −0.088 | −0.120 | −0.135 |
+| **F** | +0.665 | +0.434 | +0.175 | +0.260 | +0.768 |
+| **Fctrl** | **+1.116** | +1.366 | +1.835 | +2.082 | **+2.256** |
+
+**This is the cleanest answer the sprint has to Q9 as the plan actually asks it.** Removing `d_surface`
+with refusalness *raises* comprehension at every dose while removing two magnitude-matched random
+directions *lowers* it — opposite signs, ~0.5 apart, intervals excluding zero on both sides. So the
+removal is direction-specific and **does not destroy comprehension; it improves it.**
+
+⛔ **Arm F is a control-beats-arm negative.** Its matched random addition produces a **larger and
+monotone** comprehension gain (+1.12 → +2.26) than `d_surface` does (+0.18 to +0.77, non-monotone, two
+levels n.s.). F's comprehension effect is therefore **not attributable to `d_surface`**. That fits the
+equal-dose ASR result exactly: at the same injected magnitude, adding `d_surface` suppresses **both**
+attack success and comprehension relative to a matched random direction.
+
+**The p-value guard caught me writing it up carelessly.** My first draft quoted "every level p<0.01"
+with the floor caveat in a *later* paragraph, so the block containing the small p had none.
+`pvalue_hygiene_check` went red immediately; the qualifier is now inline, with intervals quoted. That
+guard has now fired on my own prose twice, which is the only way to know it works.
+
+Silent artifacts: 11 → **10**.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 554 | 2026-08-23 | next silent artifact, specs verified from configs not memory | D = remove-both, F = add-`d_surface` + remove-refusal |
+| 555 | 2026-08-23 | **Q9 answered directly with matched controls** | D **+0.38…+0.53** vs Dctrl **−0.085…−0.135**, opposite signs |
+| 556 | 2026-08-23 | arm F: **control beats arm** | random add +1.12→+2.26 vs `d_surface` +0.18→+0.77 |
+| 557 | 2026-08-23 | consistent with the equal-dose ASR result | adding `d_surface` suppresses **both** ASR and comprehension |
+| 558 | 2026-08-23 | `pvalue_hygiene_check` **failed my new prose** | floor caveat was a paragraph away; now inline |

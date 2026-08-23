@@ -2760,6 +2760,36 @@ categorical proxy — no Userness/CoTness probe was fitted.
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
   to **raise** attack success, not lower it.
+⬆ **The direct comprehension test, with matched controls, added 2026-08-23 — committed 08-18, never
+written up** (`g8_comprehension_DF_arms.json`). Paired, n=288, clustered on 6 domains, comprehension
+delta at each `n_examples` level:
+
+| arm | spec | n=1 | n=2 | n=4 | n=8 | n=16 |
+|---|---|---|---|---|---|---|
+| **D** | `d_surface:project_out:8` + `refusalness:project_out:18` | **+0.527** | +0.493 | +0.401 | +0.420 | +0.381 |
+| **Dctrl** | `random:project_out:8` + `random:project_out:18` | **−0.085** | −0.098 | −0.088 | −0.120 | −0.135 |
+| **F** | `d_surface:add:8:0.25` + `refusalness:project_out:18` | +0.665 | +0.434 | +0.175 | +0.260 | +0.768 |
+| **Fctrl** | `random:add:8:0.25` + `refusalness:project_out:18` | **+1.116** | +1.366 | +1.835 | +2.082 | **+2.256** |
+
+**This is the cleanest answer the sprint has to the question as asked.** Removing `d_surface` together
+with refusalness **raises** comprehension at every dose (+0.38 to +0.53; every level p<0.01, but those are **parametric** p's below this design's 2/2⁶ = 0.031 six-domain cluster floor — the **intervals** are the evidence, e.g. n=1 [+0.221, +0.832]), while
+removing *two magnitude-matched random directions* **lowers** it (−0.085 to −0.135; intervals exclude zero at every level, e.g. n=16 [−0.176, −0.094]). The arm and its control sit ~0.5 apart with the opposite sign, so this is
+direction-specific and not a generic consequence of perturbing the residual stream. **Removing
+Boombness does not destroy comprehension; it improves it.**
+
+⛔ **Arm F is a control-beats-arm negative, and it is worth stating plainly.** F and Fctrl both remove
+refusalness, so the contrast isolates the *added* direction — and they are magnitude-matched by
+construction (both gap-dosed at 0.25 → 1.5137). The **random** addition produces a **larger, monotone**
+comprehension gain (+1.12 → +2.26) than `d_surface` does (+0.18 to +0.77, non-monotone, two levels
+n.s.). So F's comprehension effect is **not attributable to `d_surface`**: a matched random direction
+does 2–3× more. Read together with the equal-dose ASR result (adding `d_surface` at the same magnitude
+*suppresses* ASR, 0.0081 vs 0.0626), the picture is consistent — **adding `d_surface` suppresses both
+attack success and comprehension relative to a matched random direction.**
+
+⚠ **Caveats.** The n=0 level is excluded (2 effective prompts); levels 1–16 have `n_effective` 48. All
+p-values here are **parametric and below the 6-domain cluster floor of 2/2⁶ = 0.031**, so quote the
+intervals, which are wide apart for D vs Dctrl and for F vs Fctrl alike.
+
 ⚠ **Single-model claim UPDATED 2026-08-23 — it does replicate on Qwen3, with a specificity caveat.** `analyze_qwen3_decomposition.py` had been written for the `q3dec_` batch and **never run**; the runs were judged and cited by nothing until the audit-#13 shard fix surfaced them (`q3dec_decomposition_L11.json`). On Qwen3-14B at **L11**, `d_surface:project_out` raises doublespeak ASR **+0.3810 (p=0.00031)** while the hard `in_subspace_orth` control is **null** (−0.0119, p=0.60; p>0.05 in **6 of 6** leave-one-domain-out folds). That is notable because R-23 killed the Llama causal reading precisely because an in-subspace direction *reproduced* the effect — on Qwen3 it does not. ⚠ **But two-thirds of it is non-specific:** the same arm moves *benign_literal* ASR **+0.2562 (p=0.002)**, so the doublespeak-attributable excess is **+0.1248 (p=0.032)**, which falls to **p=0.063** under stratum matching and holds in only 4 of 6 folds. One judging session, uncorrected. So: the ASR effect replicates on a second model; its *specificity* does not clear the bar. Recorded as a live lead, not a result.
 
 **10. Can we turn Boombness into a useful GCG objective?**
