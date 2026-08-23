@@ -9558,3 +9558,45 @@ changed three times in four days**, and the reason was never the data — it was
 | 608 | 2026-08-23 | **revision 7** with a *what changed* block | 2 of the 4 items **correct** what revision 6 said |
 | 609 | 2026-08-23 | rewrote the L6 line (C-12 shape: corrections appended, not absorbed) | one current statement, superseded figures removed |
 | 610 | 2026-08-23 | stated the L6 history plainly to collaborators | changed 3× in 4 days, on noise estimates not data |
+
+## This week's results were unprotected, and two pins were verifying a superseded artifact
+
+The figure registry is what stops a number drifting between the report and the short update. It had
+**8 entries** — none of them covering the ~10 sections added this week. Every figure I have published
+since 08-19 was unprotected, which is the exact failure the registry exists for.
+
+**Worse: two of the eight were pointing at a dead artifact.** `state_L8_arm_delta` and
+`state_L12_arm_delta` verified against `insubspace_null_by_layer.json`, the **12-angle** null,
+superseded days ago by the 24-control `insubspace_null_full24.json`. They passed only because the arm
+delta happens not to change when controls are added — so the guard was green for the wrong reason, and
+would not have noticed if the live artifact moved. Repointed.
+
+**Two pins added**, chosen for what can actually go wrong rather than for importance:
+
+* **`qwen3_l20_D20_doublespeak` → 0.5190**, pinned to the **re-judged** artifact. Its predecessor read
+  **0.7738**, computed against an empty goal. Pinning the corrected value means a future edit that
+  reinstates the retracted one **fails the build** instead of passing quietly — which matters here
+  because I *did* publish 0.7738, from an artifact I had myself withdrawn three days earlier.
+* **`llama_specificity_doublespeak` → +0.0902**, scoped **ALL**. It is the only new figure quoted in
+  **both** deliverables, so it is the only one that can diverge between them, which is precisely what
+  the registry checks.
+
+Each regex was verified to match **exactly once** in each deliverable it is scoped to, because the
+module's own history records two entries that were too broad and cried wolf.
+
+**And the pins were tested against a case they must reject.** Reinstating the retracted **0.7738** in
+the report:
+
+> `[figures] 1 PROBLEM(S): qwen3_l20_D20_doublespeak: deliverables quote 0.7738 but
+> qwen3_l20_regoal.json says 0.51905`
+
+then green again on restore. A guard never tested against a failure it should catch is not a guard, and
+this one now demonstrably catches the specific regression that already happened once.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 611 | 2026-08-23 | audited registry coverage of this week's sections | **zero** of ~10 new sections protected |
+| 612 | 2026-08-23 | found 2 pins verifying a **superseded** artifact | green for the wrong reason; repointed to `full24` |
+| 613 | 2026-08-23 | pinned the corrected Qwen3 figure **0.5190** | reinstating the retracted 0.7738 now fails the build |
+| 614 | 2026-08-23 | pinned the one figure quoted in **both** deliverables | +0.0902, scope ALL — the only one that can diverge |
+| 615 | 2026-08-23 | **tested the pins against a case they must reject** | fires on 0.7738, green on restore |

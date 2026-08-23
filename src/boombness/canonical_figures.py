@@ -129,6 +129,24 @@ FIGURES = {
         r"minimum detectable effect at 80%\s*\n?\s*power is \*\*≈ \+(0\.0\d{1,3})\*\*",
         "outputs/boombness/cluster_power.json",
         ["minimum_detectable_effect_at_80pct_power"], 1e-3),
+    # ADDED 2026-08-23. This week's sections were unprotected: ten of them landed with no registry
+    # entry, so a number could drift between the report and the short update unnoticed -- which is the
+    # exact failure this registry exists for. Two pins added, each verified to match EXACTLY ONCE in
+    # each deliverable it is scoped to, because the two prior entries here were both too broad.
+    #
+    # The Qwen3 L20 figure is pinned to the RE-JUDGED artifact. Its predecessor was computed against an
+    # empty goal (R-14 class) and read 0.7738; pinning the corrected 0.5190 means a future edit that
+    # reinstates the old number fails the build rather than passing quietly.
+    "qwen3_l20_D20_doublespeak": (
+        r"`natural_doublespeak`\s*\|\s*420\s*\|\s*0\.1714\s*\|\s*0\.1667\s*\|\s*\*\*(0\.\d{3,4})\*\*",
+        "outputs/boombness/qwen3_l20_regoal.json",
+        ["table", "natural_doublespeak", "D20"], 5e-4),
+    # The Llama specificity delta is the one figure this week that appears in BOTH deliverables, so it
+    # is the one that can actually diverge between them. Scoped ALL for that reason.
+    "llama_specificity_doublespeak": (
+        r"\*\*`natural_doublespeak`\*\*\s*\|\s*\*\*\+(0\.\d{3,4})\*\*\s*\|\s*\*\*\[\+0\.0275",
+        "outputs/boombness/condition_profile_llama_projout.json",
+        ["conditions", "natural_doublespeak", "delta"], 5e-4),
     "layer_shape_p": (
         r"permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})",
         "outputs/boombness/layer_profile_shape_test.json", ["p_perm"], 2e-3),
@@ -162,6 +180,8 @@ FIGURE_SCOPE = {
     "state_L8_arm_delta": SCOPE_ALL,
     "state_L12_arm_delta": SCOPE_REPORT_ONLY,
     "state_mde": SCOPE_REPORT_ONLY,
+    "qwen3_l20_D20_doublespeak": SCOPE_REPORT_ONLY,   # the corrected Qwen3 table lives only in the full report
+    "llama_specificity_doublespeak": SCOPE_ALL,       # quoted in both; the only new figure that can diverge
     "layer_shape_p": SCOPE_ALL,
 }
 
