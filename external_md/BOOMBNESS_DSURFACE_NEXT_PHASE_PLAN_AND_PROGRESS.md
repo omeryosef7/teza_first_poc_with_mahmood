@@ -637,6 +637,43 @@ Recorded here so a future `newest()`-style lookup that trips over it has an expl
 
 ---
 
+### ✅ R-P (21:41) — ARM C SMOKE PASSES, AND IT VERIFIES THE ONE THING THE `allpast` PROOF COULD NOT
+
+Job **776492** finally completed after **two preemptions** on `killable`. It is the cross-check on
+`demo_all` specifically — `allpast` (R-L) proved the *hook*, but not that the **demonstration** key
+set is resolved correctly on real prompts.
+
+```
+PRE-FLIGHT: {'n_rows': 8, 'no_demo_block': 0, 'infeasible_control': 0,
+             'by_n_examples': {'1':{n:2,ok:2,bad:0}, '2':…, '4':…, '8':…}}
+LIVENESS  : {'frac_rows_decode_live': 1.0, 'median_decode_edits': 16808.0,
+             'min_decode_forwards': 316, 'attn_implementation': 'eager'}
+```
+
+**The decisive per-row identity:**
+
+| row | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|---|
+| keys blocked / forward | 11 | 27 | 55 | 109 | 15 | 33 | 60 | 115 |
+| `n_demo_positions` | 11 | 27 | 55 | 109 | 15 | 33 | 60 | 115 |
+
+**Identical on every row.** `demo_all` blocks exactly the demonstration block — no more, no fewer —
+and the count tracks `n_examples` as it must (11 → 115 as the block grows). This is the check that
+`allpast` structurally could not provide, since `allpast` ignores the demo span entirely.
+
+**Generations changed: 7/8 = 87.5%** against the same-bank baseline — lower than `allpast`'s 100%,
+which is the right direction: `demo_all` blocks 11–115 keys where `allpast` blocks 64–168, so one
+row landing unchanged is expected rather than alarming.
+
+**Length: baseline 790 → 799**, i.e. unchanged, consistent with R-J's observation that two layers
+changes the computation without degrading behaviour.
+
+**Consequence:** launching the full arms before this smoke returned (R-O) was the right call, and is
+now *retroactively* justified rather than merely defended — the smoke confirms exactly what the
+pre-flight and liveness gate were already asserting over all 96 rows.
+
+---
+
 ### ✅ R-O (21:38) — ARMS A AND B COMPLETE AT FULL SCALE, AND THE CEILING IS CLEAN
 
 | job | arm | rows | failures | median chars | `attn_impl` | `population_composition` |

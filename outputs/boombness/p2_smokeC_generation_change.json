@@ -1,0 +1,25 @@
+{
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/r18pow_base_20260819_061034_2248507",
+  "n_baseline": 1152,
+  "arms": {
+    "demo_all_L18_19": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/p2smokeC_20260823_211632_2093662",
+      "n_common": 8,
+      "n_changed": 7,
+      "frac_changed": 0.875
+    }
+  },
+  "note": "a changed generation is a byte difference against the baseline completion for the same prompt_id; generation is deterministic here (verified 660/660 identical across two runs of the same config), so a difference is the intervention, not noise",
+  "provenance": {
+    "argv": [
+      "src/boombness/generation_change.py",
+      "--baseline",
+      "outputs/boombness/score_behavior/r18pow_base_20260819_061034_2248507",
+      "--arm",
+      "demo_all_L18_19:outputs/boombness/score_behavior/p2smokeC_20260823_211632_2093662/",
+      "--out",
+      "outputs/boombness/p2_smokeC_generation_change.json"
+    ],
+    "git_commit": "98e5f890ed2738f189f88fe15ee75e90bfb24076"
+  }
+}
