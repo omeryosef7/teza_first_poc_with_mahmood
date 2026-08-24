@@ -415,9 +415,58 @@ class InfeasibleControl(Exception):
     knockout_key_set: raising SystemExit here killed the run mid-file and left judgeable partials."""
 
 
+# --------------------------------------------------------------------------- #
+# SAME-BAND, NON-DEMO-KEY CONTROL DRAWS (Phase 1, plan section 4)
+# --------------------------------------------------------------------------- #
+# WHAT THE CONTROL HAS TO BE. A Phase 1 arm masks attention to the DEMO block across a layer band.
+# The matched control must mask the SAME NUMBER of key positions in the SAME band (the band is the
+# spec's `layers` field, so both arms are run with an identical band and nothing here touches it)
+# but OUTSIDE the demo block, so the contrast isolates "these tokens" from "this many tokens at
+# these layers".
+#
+# TWO FAILURES THIS DESIGN IS PAYING OFF, both of which the repo has already published against:
+#
+#  * prev-REVIEW-1 M1 -- the pool. The non-demo pool is a near-CONSTANT ~53 tokens (chat template +
+#    the ~90-char request + the generation header) while the demo block grows 12 -> 25.5 -> 53.5 ->
+#    106 tokens across n_examples 1/2/4/8. An unprotected count-matched draw therefore deletes the
+#    QUESTION THE MODEL IS ASKED TO ANSWER, with a dose that scales with the arm's own dose. The
+#    protection already exists as `query_span_positions` and is REUSED here, not re-derived.
+#  * prev-R-G / prev-R-D -- the lottery. A SINGLE random draw at a large magnitude is not a control:
+#    four same-dose draws spanned 0.325 in ASR against a published arm effect of 0.036. So the
+#    control is a BAND of NONDEMO_CONTROL_N_DRAWS independent, separately-seeded draws, each of
+#    which is its own arm and its own run; the read-out is the spread across them.
+#
+#: How many independent draws make up the control band. Three is the floor, not the target.
+NONDEMO_CONTROL_N_DRAWS = 3
+#: Stride between the seeds of two draws. Large, non-round, and DIFFERENT from COMPOSED_SEED_STRIDE
+#: so a draw index can never land on a composed leg's offset: that collision would make two
+#: "independent" draws the same draw, which is retraction #7's shape (a control band that is
+#: secretly n=1, with a between-draw sd that cannot be wrong in a detectable way).
+NONDEMO_DRAW_SEED_STRIDE = 7_919_777
+
+#: policy -> arm-name prefix. THE POLICY IS IN THE ARM NAME ON PURPOSE.
+#:
+#:   strict  count-matched or nothing. If the query-protected complement cannot supply |demo|
+#:           positions the row RAISES InfeasibleControl -- pre-flighted over the whole population
+#:           before the model generates anything, and charged to the FailureLedger by the per-row
+#:           guard if it ever fires later. This is the DEFAULT and the reportable arm.
+#:   capped  best effort: draws min(|demo|, |pool|) and records the ACHIEVED match ratio on every
+#:           row. It exists because strict is infeasible at large n_examples (see the pool
+#:           arithmetic above) and "just drop the infeasible rows" is not available either -- demo
+#:           length IS the dose variable, so rescoping to the feasible rows silently changes the
+#:           experiment (the same argument the knockout pre-flight already makes).
+#:
+#: A count-matched control and a pool-capped one are DIFFERENT EXPERIMENTS. Under-matching hidden
+#: behind a shared arm name is the dose confound in a new costume, so it is impossible to name a
+#: capped run as if it were matched, and `control_draw_match_ratio` is written on every single row
+#: of both.
+NONDEMO_DRAW_PREFIX = {"strict": "nondemo_matched_d", "capped": "nondemo_capped_d"}
+NONDEMO_DRAW_ARMS = tuple(f"{pref}{k}" for pref in NONDEMO_DRAW_PREFIX.values()
+                          for k in range(1, NONDEMO_CONTROL_N_DRAWS + 1))
+
 #: Arms for `attn_knockout`. The NAME field of the --intervene spec selects the key set; the mode
 #: field is always `attn_knockout` and alpha is always 1.0.
-KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast")
+KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast") + NONDEMO_DRAW_ARMS
 
 
 def query_span_positions(tok, row, templated, demo_keys):
@@ -448,7 +497,90 @@ def query_span_positions(tok, row, templated, demo_keys):
     return {i for i, (a, b) in enumerate(enc["offset_mapping"]) if b > lo and b > a}
 
 
-def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None):
+def parse_nondemo_draw_arm(name):
+    """(policy, draw_index) for a control-draw arm name, else None. 1-based index."""
+    for policy, pref in NONDEMO_DRAW_PREFIX.items():
+        if isinstance(name, str) and name.startswith(pref):
+            tail = name[len(pref):]
+            if tail.isdigit() and 1 <= int(tail) <= NONDEMO_CONTROL_N_DRAWS:
+                return policy, int(tail)
+    return None
+
+
+def nondemo_draw_seed(control_seed, draw_index):
+    """The seed HANDED TO THE RNG for draw `draw_index` of a run whose --seed is `control_seed`.
+
+    Explicit and pure, so the positions in an artifact can be regenerated from two integers that
+    the artifact itself records (`control_seed` and `draw_index`, plus the row's spans).
+    """
+    return int(control_seed) + int(draw_index) * NONDEMO_DRAW_SEED_STRIDE
+
+
+def nondemo_control_draw(demo_keys, seq_len, protected=None, *, seed, policy="strict", log=None):
+    """ONE seeded draw of non-demo key positions, count-matched to the demo block on THIS row.
+
+    Returns (positions, record). `record` carries everything needed to audit the draw after the
+    fact -- the seed, the pool size, the demo count, the achieved count, the match ratio and the
+    EXACT POSITIONS (integers, never text). `log`, if given, is updated in place with the record
+    even on the infeasible path, so the pre-flight can report WHY a row cannot carry the control
+    rather than only that it cannot.
+
+    THE POOL IS THE PROTECTED COMPLEMENT: every index in [1, seq_len-1) that is neither a demo key
+    nor inside `query_span_positions` (the request and everything after it, including the
+    generation header). Drawing from the unprotected complement is review finding M1 and it is not
+    available here at any policy.
+
+    DETERMINISM. The pool is built in ascending order and sampled with `random.Random(seed)`, so
+    the same (row spans, seed) always yields the same positions and two different seeds are two
+    genuinely different draws.
+    """
+    import random as _random
+    if policy not in NONDEMO_DRAW_PREFIX:
+        raise SystemExit(f"unknown non-demo control policy {policy!r}; "
+                         f"known: {sorted(NONDEMO_DRAW_PREFIX)}")
+    dk = sorted({int(x) for x in (demo_keys or [])})
+    n = int(seq_len or 0)
+    prot = {int(x) for x in (protected or ())}
+    dks = set(dk)
+    pool = [i for i in range(1, max(0, n - 1)) if i not in dks and i not in prot]
+    want = len(dk)
+    rec = {"policy": policy, "draw_seed": int(seed), "seq_len": n, "n_demo_keys": want,
+           "n_protected": len(prot), "n_pool": len(pool), "n_drawn": 0,
+           "match_ratio": 0.0, "positions": []}
+
+    def _fail(msg):
+        if log is not None:
+            log.clear(); log.update(rec)
+        exc = InfeasibleControl(msg)
+        exc.record = dict(rec)
+        return exc
+
+    if want == 0:
+        raise _fail("nondemo control draw: the demo block is EMPTY on this row, so there is "
+                    "nothing to count-match to; a zero-key control scores as a clean null")
+    if policy == "strict" and len(pool) < want:
+        # STRICT NEVER UNDER-MATCHES. Silently drawing fewer keys than the arm is the dose
+        # confound this control exists to remove, so the row is refused instead -- InfeasibleControl
+        # is a NORMAL Exception (see its docstring), caught by the per-row guard and charged to the
+        # FailureLedger, and pre-flighted over the whole population before anything is generated.
+        raise _fail(f"nondemo control draw ({policy}, seed {int(seed)}): query-protected pool "
+                    f"{len(pool)} < demo count {want}. Count-matching is impossible on this row; "
+                    f"use a capped arm and read control_draw_match_ratio, or shorten the demos.")
+    k = min(want, len(pool))
+    if k == 0:
+        raise _fail(f"nondemo control draw ({policy}, seed {int(seed)}): the query-protected pool "
+                    f"is EMPTY, so the control would mask nothing at all")
+    rng = _random.Random(int(seed))
+    pos = sorted(rng.sample(pool, k))
+    rec["n_drawn"] = k
+    rec["match_ratio"] = k / float(want)
+    rec["positions"] = pos
+    if log is not None:
+        log.clear(); log.update(rec)
+    return pos, rec
+
+
+def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None, draw_log=None):
     """Which KEY positions this arm blocks. Returns a sorted list of absolute token indices.
 
     NO CAUSALITY FILTER IS APPLIED HERE, and that is a deliberate difference from
@@ -482,13 +614,34 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None):
                 f"nondemo_random: query-protected pool {len(pool)} < demo count {len(dk)}")
         rng = _random.Random(int(control_seed))
         return sorted(rng.sample(pool, len(dk)))
+    _draw = parse_nondemo_draw_arm(name)
+    if _draw is not None:
+        # SAME-BAND NON-DEMO CONTROL, one draw of the band (plan section 4). Reached like any other
+        # arm -- `--intervene nondemo_matched_d2:attn_knockout:<band>:1.0` -- so it inherits the
+        # band check, the scope, the head subset, the liveness gate and the pre-flight unchanged.
+        policy, idx = _draw
+        _log = {}
+        try:
+            pos, _rec = nondemo_control_draw(dk, n, protected,
+                                             seed=nondemo_draw_seed(control_seed, idx),
+                                             policy=policy, log=_log)
+        finally:
+            # RECORDED EVEN WHEN THE DRAW REFUSED: "this row could not carry the control, and here
+            # is the pool arithmetic that says so" is the auditable form of an infeasible row.
+            if draw_log is not None and _log:
+                # KEYED BY (arm, seed), not by arm: a composed spec runs each leg at an OFFSET
+                # seed, and keying by name alone would let leg 2 overwrite leg 1's positions --
+                # an artifact that names two draws and stores one.
+                draw_log[f"{name}@seed{int(control_seed)}"] = {
+                    **_log, "arm": name, "draw_index": idx, "control_seed": int(control_seed)}
+        return pos
     raise SystemExit(f"unknown attn_knockout arm '{name}'; known arms: {KNOCKOUT_ARMS}")
 
 
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
-                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE):
+                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -535,7 +688,8 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                                          control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
                                          demo_keys=demo_keys, seq_len=seq_len,
                                          knock_stats=knock_stats, protected=protected,
-                                         knock_heads=knock_heads, knock_scope=knock_scope))
+                                         knock_heads=knock_heads, knock_scope=knock_scope,
+                                         draw_log=draw_log))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -562,7 +716,8 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                 "attn_knockout reached make_intervention with demo_keys=None. The composed "
                 "recursion dropped it — this is the one-of-two-paths failure that has already "
                 "hit `control_seed` twice on that exact line.")
-        keys = knockout_key_set(name, demo_keys, seq_len, control_seed, protected=protected)
+        keys = knockout_key_set(name, demo_keys, seq_len, control_seed, protected=protected,
+                                draw_log=draw_log)
         if not keys:
             raise SystemExit(f"attn_knockout arm '{name}' produced an EMPTY key set; a no-op "
                              f"knockout must fail loudly, never score as a null")
@@ -804,7 +959,11 @@ def main() -> int:
                     help="skip the behavioral generation pass (forward readouts only)")
     ap.add_argument("--fit-dir", default=None, help="needed only with --intervene")
     ap.add_argument("--intervene", default="",
-                    help='e.g. "d_surface:project_out:8-21:1.0" or "d_surface:add:8-21:2.0"')
+                    help='e.g. "d_surface:project_out:8-21:1.0" or "d_surface:add:8-21:2.0"; '
+                         'attn_knockout arms take alpha=1.0 and are named by KNOCKOUT_ARMS, e.g. '
+                         '"demo_all:attn_knockout:0-31:1.0" or a same-band non-demo control draw '
+                         '"nondemo_matched_d2:attn_knockout:0-31:1.0" (run d1/d2/d3 as three '
+                         'separate runs: the control is a BAND of draws, never one ticket)')
     ap.add_argument("--arm", default="base", help="label written on every row")
     ap.add_argument("--readout-ids", default="whole_answer",
                     choices=["primary", "full_word", "whole_answer"],
@@ -1191,6 +1350,11 @@ def main() -> int:
         _feas = {"n_rows": 0, "no_demo_block": 0, "infeasible_control": 0, "dead_scope_span": 0,
                  "knockout_scope": _knock_scope, "by_n_examples": {}}
         _bad = []
+        # ACHIEVED COUNT-MATCH, per (control arm, n_examples), measured on the real population
+        # before anything is generated. A control that is quietly smaller than its arm is the dose
+        # confound this control exists to remove, so the ratio is measured rather than assumed --
+        # and it is measured PER n_examples because |demo| is the dose variable and the pool is not.
+        _draw_ratios = collections.defaultdict(list)
         for _r in rows:
             _t, _ids, *_ = resolve_occurrences(dc, lm.tokenizer, _r,
                                                enable_thinking=ENABLE_THINKING)
@@ -1210,13 +1374,38 @@ def main() -> int:
                 _b["bad"] += 1
                 _bad.append((_r["prompt_id"], f"scope {_knock_scope}: no query rows resolve"))
                 continue
+            _dl = {}
             try:
                 for _nm in _arm_names:
-                    knockout_key_set(_nm, _dk, len(_ids), args.seed, protected=_prot)
+                    knockout_key_set(_nm, _dk, len(_ids), args.seed, protected=_prot, draw_log=_dl)
             except InfeasibleControl as _e:
                 _feas["infeasible_control"] += 1; _b["bad"] += 1
-                _bad.append((_r["prompt_id"], str(_e))); continue
+                _bad.append((_r["prompt_id"], str(_e)))
+                for _v in _dl.values():
+                    _draw_ratios[(_v["arm"], _ne)].append(_v["match_ratio"])
+                continue
+            for _v in _dl.values():
+                _draw_ratios[(_v["arm"], _ne)].append(_v["match_ratio"])
             _b["ok"] += 1
+        if _draw_ratios:
+            _feas["control_draw_match_ratio"] = {
+                f"{_a}|n_examples={_ne}": {
+                    "n": len(_v), "min": min(_v), "mean": sum(_v) / len(_v),
+                    "n_below_1": sum(1 for _x in _v if _x < 1.0)}
+                for (_a, _ne), _v in sorted(_draw_ratios.items())}
+            _feas["control_draw_seeds"] = {
+                _a: nondemo_draw_seed(args.seed, parse_nondemo_draw_arm(_a)[1])
+                for _a in _arm_names if parse_nondemo_draw_arm(_a)}
+            _feas["control_draw_note"] = (
+                "match_ratio = drawn keys / demo keys, per row. A `strict` (nondemo_matched_d*) arm "
+                "cannot report < 1.0: it refuses the row instead. A `capped` (nondemo_capped_d*) arm "
+                "can, and every row carries its own ratio in control_draw_match_ratio.")
+            _short = {_k: _v for _k, _v in _feas["control_draw_match_ratio"].items()
+                      if _v["n_below_1"]}
+            if _short:
+                print(f"[score] CONTROL IS NOT COUNT-MATCHED ON SOME ROWS -- the dose is smaller "
+                      f"than the arm's there, and the comparison is one-sided on those rows: "
+                      f"{_short}", flush=True)
         run.note(knockout_feasibility=_feas)
         print(f"[score] KNOCKOUT PRE-FLIGHT: {_feas}", flush=True)
         if _bad:
@@ -1318,12 +1507,17 @@ def main() -> int:
             prot = query_span_positions(lm.tokenizer, row, templated_r, dk)
 
         knock_stats = {} if _wants_knockout else None
+        # THE DRAW IS PERSISTED, not only seeded. `knock_draw` comes back holding the exact key
+        # positions each control draw used on THIS row, so the control is auditable after the fact
+        # rather than only reproducible in principle.
+        knock_draw = {} if _wants_knockout else None
         try:
             ctxs = make_intervention(dc, pc, lm, spec, payload,
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
                                      knock_stats=knock_stats, protected=prot,
-                                     knock_heads=_knock_heads, knock_scope=_knock_scope)
+                                     knock_heads=_knock_heads, knock_scope=_knock_scope,
+                                     draw_log=knock_draw)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:
@@ -1443,7 +1637,18 @@ def main() -> int:
                             # null is uninterpretable without knowing which rows the mode had to
                             # work with, and `prot`/`dk` are the very objects the hook was given.
                             _pl = sorted(prot or ())
-                            base = {**base, "n_demo_positions": len(dk),
+                            # The CONTROL DRAW travels on the row: which positions, drawn under
+                            # which seed, and what fraction of the arm's own count they matched.
+                            # `None` on every non-control arm, which is the honest value there.
+                            _cd = dict(knock_draw or {})
+                            _cd_ratio = (min(_v["match_ratio"] for _v in _cd.values())
+                                         if _cd else None)
+                            base = {**base,
+                                    "control_draw": (_cd or None),
+                                    "control_draw_match_ratio": _cd_ratio,
+                                    "n_control_draw_positions": (
+                                        sum(_v["n_drawn"] for _v in _cd.values()) if _cd else None),
+                                    "n_demo_positions": len(dk),
                                     "demo_key_min": (min(dk) if dk else None),
                                     "demo_key_max": (max(dk) if dk else None),
                                     "seq_len": len(ids_r),

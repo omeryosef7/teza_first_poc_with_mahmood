@@ -952,8 +952,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama first | 🔬 **779477–779482 queued** | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
 | P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
-| P2B | 2B | completion phenotype instrument | 🔬 building (blinded, two views, agreement reported) | — |
-| P2C | 2C | row-wise demo-deletion control | 🔬 building; **first measuring whether the bank can even support 96 distinct deleted prompts** | — |
+| P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
+| P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
 | P4A | 4 | fourth demonstration pool (`club`), frozen confirmatory | ⬜ | analysis frozen first |
 | P4B | 4 | regenerate pools at 8–10 **domains**, one bank per pool | ⬜ | domains accepted on audit, never on effect size |
@@ -982,6 +982,90 @@ stay visible)*
 ## B5. RESULTS
 
 *(`R-` ids, newest first)*
+
+### ⛔⛔ R-7 (03:05) — **THE DEMONSTRATION-DELETION CEILING IS NOT RECONSTRUCTIBLE ON THIS BANK, BY ANY DELETION RULE. Phase 2C cannot run here, and that is a property of the bank rather than of the old code.**
+
+**Producing module:** `src/boombness/demo_deletion_control.py` (new). **Verified independently by me**
+with a hash-only census — no prompt text read out.
+
+Canonical Phase-1 population (`behavioral` ∧ `natural_doublespeak` ∧ `bank_block ∈
+{core2x2, core2x2_slot3}` ∧ `n_examples ∈ {1,2,4,8}`), **n = 96**:
+
+| quantity | distinct values |
+|---|---|
+| `full_prompt` | **96** |
+| `demo_block` | **96** |
+| prefix (text before the demo span) | **1** |
+| suffix (text after the demo span) | **1** |
+| **deleted prompt (prefix + suffix)** | **1** ← the ceiling population |
+| rows where the demo block is not uniquely locatable | 0 |
+
+**The 96 rows differ ONLY inside their demonstration blocks**, which are **68.0 %** of the prompt by
+characters; everything outside is byte-identical across all 96. Widening to the whole behavioral bank
+(1152 rows), the demo-free residue takes **9** distinct values.
+
+> **Deleting the demonstrations is precisely the operation that deletes all between-row variation.**
+> The ceiling is one Bernoulli draw *regardless of implementation quality*.
+
+**This reframes prev-REVIEW-2's M1.** That finding — `final_query_text` takes only 2 distinct values
+bank-wide, so the 96-row `--demo-deleted` arm was one prompt — was read as a defect in the arm.
+**Fixing the arm does not recover a population.** A row-specific, structure-preserving deletion built
+correctly still yields **one** prompt, because the rows never differed outside their demo blocks in the
+first place. **A deletion ceiling requires a bank whose rows vary OUTSIDE the demo block** — varied
+queries, wrappers or surfaces per cell.
+
+**D-6 — Phase 2C is descoped on this bank, not deleted from the plan.** The module is kept and is
+written to work unchanged on a bank that does vary outside the demo block; its guard passes once ≥ 90 %
+of transformed prompts are distinct. ⚠ **That 0.90 floor was chosen by the implementer, not by the
+plan** — it is stated and defended in the module docstring and asserted at the 18/20-vs-17/20 boundary
+in tests, and the plan should ratify or change it before 2C is ever scheduled.
+📌 **Opportunity, recorded for later:** **Phase 4B** (regenerate pools at 8–10 domains) and **Phase 5**
+(the joint crossed bank) are both bank-generation jobs. **If either varies the query surface outside the
+demo block, the deletion ceiling becomes reconstructible for free.** That is a design requirement worth
+carrying into those phases rather than discovering afterwards.
+
+---
+
+### ⚠⚠ R-6 (03:00) — **A COUNT-MATCHED, QUERY-PROTECTED SAME-BAND NON-DEMO CONTROL DOES NOT EXIST AT HIGH DOSE. The plan's §4 control is only runnable at low `n_examples`.**
+
+**Code:** `src/boombness/score_behavior.py` (+215/−10, additive), arms
+`nondemo_matched_d1..d3` (strict) and `nondemo_capped_d1..d3` (capped), seeded from the run's own
+`--seed` by a stride distinct from the composed-leg stride so a draw index can never collide with a
+composed offset — prev-retraction-#7's shape.
+
+**The geometry is the whole finding.** The demonstration block **grows** with `n_examples` while the
+non-demo pool is a near-constant ~53 tokens, of which the request and generation header are
+**protected** (`query_span_positions`, the existing prev-REVIEW-1 M1 fix, reused rather than
+re-derived). Measured per row on the real bank:
+
+| `n_examples` | rows | fraction where a **strict** count-matched control EXISTS | median achieved ratio when capped |
+|---|---|---|---|
+| 1 | 96 | **1.000** | 1.00 |
+| 2 | 264 | **0.898** | 1.00 |
+| **4** | 342 | **0.000** | **0.60** |
+| **8** | 306 | **0.000** | **0.30** |
+
+⚠ **My own coarse cross-check disagrees at `n_examples = 2` and I am recording the disagreement rather
+than picking a side.** Using prev-M1's *published* token constants (|demo_keys| 12 / 25.5 / 53.5 / 106
+against a ~15-token protected pool) I get n=2 **infeasible** with a max ratio of 0.59, and capped ratios
+of 0.28 / 0.14 at n=4 / n=8 — roughly half the measured ones. The per-row measurement is the better
+instrument (my check substitutes one published constant for a per-row quantity), **and the two agree
+completely on the load-bearing conclusion: strict count-matching is impossible at `n_examples` 4 and 8.**
+
+**Consequence for inference, stated now:** at `n_examples` 4 and 8 the available control is
+**under-dosed**, so it can support *"control ≥ arm, therefore not demo-specific"* but **never the
+reverse**. The arm name carries the policy (`matched` vs `capped`) so a capped run cannot be filed as a
+matched one, and every row records `control_draw_match_ratio` plus the exact integer positions drawn.
+
+**D-7 — the primary matched control remains the LAYER SWAP, exactly as prev-D-10 already decided.**
+This result independently re-derives and quantifies the reasoning behind that decision: the same demo
+key set applied at control layers is exactly count-matched by construction, always feasible at every
+`n_examples`, and isolates *"these tokens at these layers"* from *"these tokens anywhere"*. The
+same-band non-demo draws are a **secondary** control, reported where strict matching exists and clearly
+labelled capped where it does not. **The plan's §4 asks for them; the bank can only partly supply them,
+and the honest answer is to say so rather than to run a capped arm under a matched name.**
+
+---
 
 ### 📌 COMPUTE (02:40) — **fair-share, not capacity, and I am not resubmitting.** Measured before acting.
 
