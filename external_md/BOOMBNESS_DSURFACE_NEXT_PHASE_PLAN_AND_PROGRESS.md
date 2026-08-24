@@ -742,6 +742,42 @@ carries it.
 
 ---
 
+### 📌 R-BB REFINED AGAIN (22:31) — **the measurement-depth gap I flagged is real but modest; the corrected prediction, built on the OBSERVED gun arm, is P = 0.941**
+
+The Phase 10 interim flagged that R-BB's simulation *"assumed the new pool would have the same
+measurement depth as the old ones."* **Quantified now, before the Llama arm lands.**
+
+**Measured from the data:** across the four `(model, bank)` measurements inside each existing cluster,
+the within-cluster spread is **sd = 0.0626**. So a depth-4 cluster has `se = 0.0313`; a depth-2 cluster
+(2 models × **1** bank, which is all the gun pool will have) has `se = 0.0443`. **Extra variance:
+0.00098** — against a between-cluster variance of `0.1643² = 0.027`, i.e. **~3.6 % added.** Small, but
+not nothing.
+
+**Corrected k=18 predictions:**
+
+| template for the 6 new gun clusters | equal depth *(R-BB)* | **with depth-2 noise** |
+|---|---|---|
+| A — like the BOMB pool | 0.998 | **0.998** *(unchanged)* |
+| B — like the KNIFE pool | 0.929 | **0.807** ⬇ 12 points |
+| **B\* — the OBSERVED Qwen3 gun arm** `[−0.0625, −0.0625, −0.250, 0, 0, 0]` | 0.983 | **0.941** |
+
+> **📌 SHARPEST PRE-REGISTRATION: P(k=18 calibrated t-CI excludes zero) = 0.941**, using the **actual
+> measured gun clusters** rather than a proxy template, and carrying the depth penalty. **This
+> supersedes R-BB's 0.92–0.999 range** — that range used bomb/knife templates as stand-ins because no
+> gun data existed; now some does.
+
+**Note B\* beats B** (0.941 vs 0.807) even though the gun arm looked "knife-like" on its mean. The
+reason is `game_manual −0.250`: the observed gun pool has **one strongly negative cluster**, which the
+flat knife template lacks. **The mean was the wrong summary to match templates on** — the interim's
+"closer to the knife pool" reading was right about the mean and misleading about the distribution.
+**Recorded as a correction to my own interim, one tick later.**
+
+⚠ **Still a projection.** B\* treats the Qwen3-only values as the pool's cluster means; the Llama arm
+(job 778793, queued) will move all six. **The prediction is registered at 0.941 and will be scored
+against the real k=18 result, not re-derived after it.**
+
+---
+
 ### 🔬 PHASE 10 INTERIM (22:02) — **the GUN pool's first arm looks KNIFE-like, i.e. the pessimistic branch. Holding the k=18 analysis until Llama lands.**
 
 **Artifact:** judge **778938** (`ALL DONE`, both `verified … (96 rows)`), arms
