@@ -10,7 +10,12 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-805,t-806
+# WIDENED 2026-08-24: n-804 was missing. `sinfo -N` shows SIX L40S nodes in killable
+# (n-801..n-805, t-806); this list had five, so every job queued against 5/6 of the available
+# hardware for no reason. n-804 also appears in the gpu-sharifm partition, which is group-gated
+# and rejects this user -- but the NODE is reachable through killable like any other.
+# Do NOT "fix" queueing by adding --exclude on the sbatch line: that nullifies this directive.
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
 #
 # Generic wrapper for every GPU stage of the Boombness sprint
 # (docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md). One script, selected by BOOMB_SCRIPT.

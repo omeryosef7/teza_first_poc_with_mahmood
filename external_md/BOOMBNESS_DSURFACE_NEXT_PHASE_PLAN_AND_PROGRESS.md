@@ -693,6 +693,50 @@ carries it.
 
 ---
 
+### ⚠ COMPUTE DIAGNOSED (13:05) — **fair-share is the SOLE constraint. Widening the nodelist does not help, and I tested that before acting on it.**
+
+The earlier note said `gpu-sharifm` was the fix. Investigating further changes the picture:
+
+**1. `n-804` is in `killable` too, and my wrapper was excluding it.** `sinfo -N` shows **six** L40S nodes
+in `killable` — `n-801 … n-805`, `t-806` — while `run_boombness.sh` pinned **five**. Every job this
+phase queued against 5/6 of the available hardware for no reason. **Fixed** (and the fix carries the
+warning that adding `--exclude` on the sbatch line nullifies the directive — the trap recorded earlier).
+
+**2. But widening it changes nothing, and I verified that rather than assuming it.** I submitted **one**
+job under the six-node list before touching the queue — **it went straight to `PD (Priority)` like the
+rest.** So node availability is not the binding constraint. *(Last tick I cancelled three jobs before
+testing a submission and had to undo it; this time the test came first. The duplicate that test created
+was then cancelled, leaving the wide-nodelist copy and no double-run.)*
+
+**3. The actual cause is fair-share, and it is not marginal:**
+
+```
+sshare -U:   gpu-research  omeryosef   NormShares 0.000912   RawUsage 25,178,404   FairShare 0.008446
+```
+
+All six L40S nodes are `mix` — partially allocated to other users (`niskhizov`, `talbenyish`,
+`galbarak2`, `evyatarore`). At **FairShare 0.008446** I sit behind all of them, and no `--nodelist`,
+`--partition` or batching change alters that.
+
+**4. `cpu-killable` is NOT affected** — the Llama judge submitted at 12:53 **started within seconds**.
+So the throttle is GPU-specific, and CPU-side work (judging, pool generation, all analysis) continues at
+full speed.
+
+| lever | effect |
+|---|---|
+| widen nodelist 5→6 L40S | **none** — tested, still `PD (Priority)` |
+| `gpu-sharifm` partition | **rejected** — group-gated (recorded 12:05) |
+| `studentkillable` | **unusable** — titan/2080, no L40S |
+| `cpu-killable` | **unaffected** — judging and analysis run immediately |
+
+**Consequence for the plan:** the five queued GPU jobs (2 `gun` fits, 3 Llama arms) are the *only*
+blocked work. **Everything that can be done without a GPU is being done** — the `gun` banks are built
+and audited, the `gun` pool is generated, the regression suite is written, and the Llama pair that
+finished before the throttle is being judged on CPU right now. **The single unblock is the
+`gpu-sharifm` group membership**, which is an account change, not a configuration one.
+
+---
+
 ### ✅ PHASE 9 BANKS BUILT (12:41) — third concept `gun`, third pool hash, both banks audited clean
 
 **Pool: `data/boombness_prompts/demo_pools_gun.json`**, job **777569**, COMPLETED 7:08.
