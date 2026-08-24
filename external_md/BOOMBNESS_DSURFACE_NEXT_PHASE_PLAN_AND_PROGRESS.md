@@ -693,6 +693,89 @@ carries it.
 
 ---
 
+### ★★★★★ R-AY (16:41) — **LLAMA REPLICATES ON THE INFORMATIVE BANK, and R-AT's null is explained. Two models, eight populations.**
+
+**Artifacts:** judges **778067** / **778068** (`ALL DONE, 2 runs` each) plus the earlier **777664**.
+Both knockout arms verified live first: `frac_rows_decode_live = 1.0` on jobs 777565 and 777567.
+
+#### The Llama cross-bank result
+
+| Llama bank | baseline | knockout | Δ | relative | down/up |
+|---|---|---|---|---|---|
+| **`ticket_bomb`** ← *R-AT's designated test* | **0.2500** | 0.0729 | **−0.1771** | **71 %** | **22 / 5** |
+| `main` *(R-R, for reference)* | 0.2292 | 0.0521 | −0.1771 | 77 % | 20 / 3 |
+| `button_knife` | 0.0938 | 0.1042 | +0.0104 | — | 6 / 7 |
+| `window_knife` | 0.0208 | 0.0000 | −0.0208 | 100 % | 2 / 0 |
+
+**`ticket_bomb` reproduces the main-bank effect to four decimal places (−0.1771 both).** R-AT reserved
+judgement on Llama pending exactly this bank, and it replicates. **The `button_knife` null stands as
+R-AU explained it** — that cell's attackable prompts are near-disjoint from the ones the mechanism acts
+on, and its 6-down/7-up is churn rather than absence.
+
+Pooled over the three new Llama banks: **30 down / 12 up, exact binomial p = 0.0079.**
+
+#### Both models together — 8 populations, calibrated intervals only (C-14)
+
+| clustering unit | k | Δ | **calibrated t-CI95** | |
+|---|---|---|---|---|
+| **model × pool × domain** ← **pre-registered in C-11** | 24 | −0.1016 | **[−0.1740, −0.0292]** | **excludes 0** |
+| model × bank × domain | 48 | −0.1016 | [−0.1528, −0.0503] | excludes 0 *(anticonservative — banks share pools)* |
+| pool × domain *(models pooled)* | 12 | −0.1016 | [−0.2060, **+0.0029**] | includes 0 |
+| domain only | 6 | −0.1016 | [−0.2127, **+0.0095**] | includes 0 |
+| model × pool | 4 | −0.1016 | [−0.2514, **+0.0483**] | includes 0 |
+
+**Prompt-level, both models, 8 populations: 96 down / 18 up, exact binomial p = 4.7e-14.**
+
+#### ⚠ How I am stating this, given four prior over-claims
+
+**The pre-registered unit excludes zero.** `model × pool × domain` was committed in **C-11, before any
+Llama data existed**, precisely so the unit could not be chosen after seeing results — and it gives
+**[−0.1740, −0.0292]** under a calibrated interval.
+
+**But I am not calling that decisive, for a reason I can state:** the units that collapse the model axis
+(k = 12, 6, 4) all include zero. Treating `model` as independent is defensible — two different
+architectures, separately fitted — **but the two models share the same 96 prompts and the same domain
+main effect**, so k=24 is not 24 fully independent units either. **The honest summary is a range: the
+effect excludes zero at the pre-registered unit and at finer ones, and includes zero at every unit that
+discards the model axis.**
+
+**What does not depend on the clustering at all:**
+* **`ticket_bomb` on Llama reproduces `main` on Llama exactly** (−0.1771 vs −0.1771), and Qwen3's
+  `ticket_bomb` gives −0.2083 — **the high-headroom banks agree across both models.**
+* **96 down-flips against 18 up-flips** over 8 populations.
+* Every arm verified live before reading; no fitted direction anywhere, so **no dose confound is
+  possible.**
+
+⚠ The two low-headroom knife-pool banks contribute the ambiguity in both models (`button_knife` +0.0104
+on Llama, −0.0625 on Qwen3; `window_knife` −0.0208 and −0.0104). **The effect is carried by the
+bomb-pool banks in both models**, which is the same pool asymmetry S8 flagged.
+
+---
+
+### ✅ R-AX REPLICATES on a second codeword (16:30)
+
+`x2fit_button_gun_20260824_155704_687071` (job 777613) completed, giving `gun` a second lexical context.
+
+| codeword | PC1 @L12 / L18 / L24 | null PC1 = 0.5075 [0.5015, 0.5173] |
+|---|---|---|
+| `basket` | 0.7132 / 0.6275 / 0.6070 | far above |
+| **`button`** | **0.6657 / 0.6020 / 0.6004** | **far above** |
+
+**And each concept contrast reproduces across codewords at close to the measurement ceiling (~0.988):**
+
+| contrast | cos( from `basket` , from `button` ) |
+|---|---|
+| `bomb − knife` | **+0.9638** |
+| `bomb − gun` | **+0.9671** |
+| `knife − gun` | **+0.9720** |
+
+**The concept subspace is codeword-invariant.** R-AX's structure — ≥2-dimensional, partially collinear,
+PC1 far above the isotropic null — is not an artifact of one lexical context. This is the concept-side
+analogue of P4's codeword-invariance result for `N`, now established for **the whole subspace rather
+than one chord.**
+
+---
+
 ### ★★★★★ R-AX (16:12) — **PHASE 9 RESULT: concept identity is NOT one axis — R-AE's prediction confirmed. But the three concepts are PARTIALLY COLLINEAR, which the null was needed to see.**
 
 **Artifact:** `x2fit_basket_gun_20260824_153129_4095530` (job **777663**, COMPLETED 20:49), against
