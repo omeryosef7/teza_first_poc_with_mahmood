@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR/C-11: 2 pools × 2 codewords, 2 models, 13/13 negative, **p = 1.56e-02** (pool×domain) | Gate RETRIEVAL **PASSED** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR/C-11/C-12: 2 pools, 4 codewords, 2 models; **46 down vs 3 up (p=7.0e-11)**, cluster-robust **p=1.56e-02** | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,68 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### 🔍 REVIEW-5 / C-12 (11:35) — **the adversarial review CONFIRMED C-11 independently and found four more defects. All fixed. The right statistic turned out to be prompt-level, not cluster-level.**
+
+**REVIEW-5 reproduced every arithmetic claim in R-AR exactly** and returned 8 explicit SOUND findings
+(arms comparable across all 8 runs; the `attn_impl` config discrepancy is cosmetic — `score_behavior.py`
+forces eager for knockouts and all 8 ran eager; liveness 1.0 everywhere; one judge session per pair;
+the fixed-zeros choice provably harmless; **no degeneracy** — `uniq_frac` 0.781–0.938 with zero empty
+generations; data integrity 96/96 rows, zero null scores; and refusal *falls* in every knockout arm, so
+refusal is not the mediator, consistent with R-T).
+
+**It independently confirmed C-11 (its S1)** and quantified what I had not: the four banks' 6-domain
+delta profiles correlate at **r = 0.90–0.98**, and `main`/`ticket_bomb` share **12 baseline-successful
+prompt_ids** against 4.5 expected under independence (hypergeometric P(≥12) = 2.4e-05). **The banks fail
+and succeed on the same items.**
+
+#### Four further defects, all CONFIRMED and all now addressed
+
+| # | defect | fix |
+|---|---|---|
+| **S2** | **`main` is the discovery sample reused in the confirmatory test** — its −0.1667 was already known, and I chose bank×domain clustering *after* seeing the 6-domain p floored at 0.0625. Dropping it: 3 banks, 18 clusters, **p = 0.0078**. | recorded; the pool-level headline no longer leans on it |
+| **S3** | **the sign-flip test is sign-only**, so `window_knife/game_manual` — **one flipped prompt** — carries the same factor of 2 as `ticket_bomb/game_manual` with ten. Two informative clusters rest on exactly 1 prompt. | **prompt-level test added**, which weights by evidence |
+| **S4** | **p is exactly `2/2^k_informative`** — a deterministic function of headroom, not effect strength, and 64× threshold-sensitive | **all three thresholds now reported** |
+| **S5** | **no persisted artifact.** The number existed only as markdown. `paired_arm_test.py` clusters on `domain` only and structurally cannot express this design | **`src/boombness/crossbank_knockout_test.py`** written; artifact + provenance |
+| **S6** | main-bank knockout halves completion length (143→84 tokens) and StrongREJECT penalises truncation | survives both-EOS stratification (review's own check); `n_both_terminated` now recorded per bank |
+
+#### ✅ The artifact, and the statistic that actually answers the question
+
+**`outputs/boombness/crossbank_knockout_test/xbtest_20260824_112921_236746/crossbank_test.json`**
+
+| threshold | **pool × domain** (cluster-robust) | **prompt-level exact binomial** |
+|---|---|---|
+| 0.25 | 2.34e-02 | **56 down / 5 up, p = 5.6e-12** |
+| **0.50** | **1.56e-02** | **46 down / 3 up, p = 7.0e-11** |
+| 0.75 | 1.25e-01 | **28 down / 2 up, p = 8.7e-07** |
+
+**The prompt-level test is stable across the whole threshold range (1e-6 … 1e-12) while the cluster p
+swings 8× and crosses 0.05.** That is S3 and S4 answered together: the cluster test throws away the
+magnitude that distinguishes a 10-flip cluster from a 1-flip cluster, and its p is pinned to how many
+clusters have *any* headroom.
+
+**Both are now reported, with what each assumes stated:**
+* **`p = 0.0156` (pool × domain)** — **cluster-robust**, survives the non-independence C-11 found, but
+  floored by informative-cluster count and threshold-fragile.
+* **46 down vs 3 up, `p = 7.0e-11`** — weights by evidence and is threshold-stable, but **assumes
+  prompt-level independence, which the shared 96-prompt skeleton partly violates.** It is *not*
+  cluster-robust and must not be quoted as if it were.
+
+**Neither number alone is the result. The result is that they agree in direction and that the direction
+is nearly unanimous at every threshold: 46:3, 56:5, 28:2.**
+
+> **Final form of the claim.** The demonstration-retrieval knockout suppresses the doublespeak attack:
+> **two models, two independent demonstration corpora, four codewords, 74–100 % relative suppression
+> per bank, 46 down-flips against 3 up-flips across 385 paired prompts, cluster-robust p = 0.0156 and
+> threshold-stable prompt-level p = 7.0e-11.** No fitted direction anywhere in the arm, so no dose
+> confound is possible; every arm verified live before reading.
+
+⚠ **REVIEW-5's own bottom line, recorded verbatim because it is the fair summary:** *"The effect is real
+and robustly signed … What is not supported is p = 2.441e-04."* **Phase 8 did not escape its p-floor at
+the cluster level — it escaped it only by adopting a clustering unit its own bank metadata contradicts.**
+The prompt-level test is what genuinely escapes it, and it was the review that forced me to compute it.
 
 ---
 
