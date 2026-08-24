@@ -272,7 +272,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
 | CONCEPT | 6 | concept generality on BANK2 | 🔬 **UNBLOCKED** by R-AC | — |
-| OBJ | 7 | new objective | ⬜ | 6 gates; **Gate 6 looks unreachable via `d_surface`** |
+| OBJ | 7 | new objective | ⛔ **BLOCKED** — R-AH: specificity fails at matched dose on 2 banks | Gate 4 (specificity) **FAILED** |
 
 ---
 
@@ -690,6 +690,72 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔⛔⛔ R-AH (07:52) — **THE REPAIR ARMS SETTLE IT: R-AG's effect is DOSE, not identity. Third consecutive specificity negative, and this one is clean.**
+
+**Artifacts:** judge **777289** (`basket_bomb`, 4 arms, one session) and **777290** (`button_knife`,
+5 arms, one session). `n_common = 96` each, 96/96 scored. Real dose = `cell_residual_frac_removed`
+on cell C, **recorded by the runs themselves** via the C-6 code fix.
+
+#### `basket_bomb` — matching the real dose ABOLISHES the difference
+
+| arm | **real dose** (frac of ‖m_C‖) | ASR | Δ vs A | cluster p |
+|---|---|---|---|---|
+| `A_baseline` | — | 0.2812 | — | — |
+| `N_concept_axis` @1.00 | 0.0831 | 0.2708 | **−0.0104** | 1.0000 |
+| **`W_codeword` @0.12** | **0.0658** | 0.2917 | **+0.0104** | **1.0000** |
+| `W_codeword` @1.00 | **0.5484** | 0.5729 | **+0.2917** | 0.0625 |
+
+**The codeword direction, at a real dose BELOW the concept arm's, does nothing: +0.0104, p = 1.0000.**
+The +0.2917 appears only at **6.6× more removed residual**. Ordering the three interventions by real
+dose — 0.0658, 0.0831, 0.5484 — the effects are **+0.0104, −0.0104, +0.2917**. **Effect tracks dose;
+it does not track identity.**
+
+#### `button_knife` — R-AG does not replicate at all, even at 4× the matched dose
+
+| arm | **real dose** | ASR | Δ vs A |
+|---|---|---|---|
+| `A_baseline` | — | 0.1042 | — |
+| `N` @1.00 | 0.0982 | 0.0938 | −0.0104 |
+| `U` @0.20 | 0.0828 | 0.1042 | **+0.0000** |
+| `U` @0.30 | 0.1241 | 0.1146 | +0.0104 |
+| `U` @1.00 | **0.4138** | 0.1250 | **+0.0208** |
+
+**Every arm is within ±0.021 of baseline.** Removing **41 % of the residual at every token** moves ASR
+by **two prompts of 96**. Whatever produced +0.2917 on `basket_bomb` is **not a property of the
+codeword direction as such** — it is specific to that bank, and it needs a very large dose.
+
+#### The verdict
+
+> ⛔ **R-AG is retracted in full as a specificity result.** The pre-registered alternative — *"If
+> `U@0.30` is inert and only `U@1.0` moves, the effect is dose-graded and R-AG's separation is weaker
+> than it looked"* — **is what happened, in its stronger form.** At matched real dose the concept and
+> codeword directions are **indistinguishable, and both inert.**
+
+**This is the third consecutive specificity negative** (R-C, R-V/R-W, now R-AH) — but it is the first
+one that is *clean*. The earlier two ended in "the control was 6–25× weaker, so identity is
+unidentifiable." **This one ran the control at a dose genuinely below the arm and got a null.** That is
+an answer, not an inability to ask.
+
+**What the phase actually established, after all retractions:**
+
+1. ✅ **The demonstration-retrieval knockout is causal and cross-model** (R-P/R-R/R-T/R-AB) —
+   −0.1771 on Llama, −0.1667 on Qwen3, no fitted direction, no dose confound possible.
+2. ✅ **A concept axis `N` exists and is invariant across four codewords at the split-half ceiling**
+   (P4, R-AE/R-AF, surviving C-7) — cos 0.984–0.989 against a null whose \|max\| is 0.0569.
+3. ✅ **The crossed bank passes the acceptance gate** (R-AC) and makes `N` measurable at all.
+4. ⛔ **`d_surface`, its components, and every direction derived from them remain behaviourally
+   non-specific.** Four attempts, four dose confounds or nulls.
+
+**The honest summary of the whole `d_surface` line: it is a real, reproducible, well-characterised
+representational object with no demonstrated causal role in the behaviour.** That is a finding, and it
+is the same dissociation the earlier sprint recorded as "complete representation ≠ behaviour".
+
+⚠ Judge drift between sessions, for the record: `basket_bomb` baseline 0.2917 (session 777260) →
+0.2812 (777289), and `W@1.0` 0.5625 → 0.5729. One row of 96 each. All contrasts above are
+within-session.
 
 ---
 
