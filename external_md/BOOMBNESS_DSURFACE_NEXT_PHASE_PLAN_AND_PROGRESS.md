@@ -742,6 +742,57 @@ carries it.
 
 ---
 
+### 🔬 PHASE 10 INTERIM (22:02) — **the GUN pool's first arm looks KNIFE-like, i.e. the pessimistic branch. Holding the k=18 analysis until Llama lands.**
+
+**Artifact:** judge **778938** (`ALL DONE`, both `verified … (96 rows)`), arms
+`gnQA_20260824_211613_7851` / `gnQC_20260824_212117_2346666` (jobs 778790/778791). Knockout verified
+live first: `frac_rows_decode_live = 1.0`, band `7-17 -> blocks 7..17 of 40 (depth 0.175-0.450)`,
+pre-flight 96 rows clean.
+
+| Qwen3, `basket_gun` (GUN pool) | value |
+|---|---|
+| baseline | **0.0938** ⚠ low headroom — 9 prompts of 96 |
+| knockout `L7–17` | 0.0312 |
+| Δ | **−0.0625** |
+| relative suppression | **67 %** |
+| prompt-level | **8 down / 2 up** |
+
+Per-domain: `game_manual −0.250`, `city_bridge −0.0625`, `farm_storage −0.0625`, three at 0.
+**Gun-pool cluster mean = −0.0625.**
+
+#### Which branch this points to
+
+| template | mean |
+|---|---|
+| bomb pool | −0.1823 |
+| **knife pool** | **−0.0208** |
+| **gun (Qwen3 only, so far)** | **−0.0625** |
+
+**Closer to the knife template** (gap 0.042) than the bomb one (gap 0.120) — **Branch B, the pessimistic
+one.** R-BB-refined predicted Branch B still excludes zero with **P = 0.921**, so this does not
+contradict the pre-registration; it selects its least favourable arm.
+
+#### ⛔ Why I am NOT computing k=18 yet
+
+**Each existing pool cluster averages 4 measurements** (2 models × 2 banks). **The gun pool currently
+has 1** (Qwen3 × `basket_gun`). Dropping a 1-measurement pool alongside 4-measurement pools would make
+the new clusters ~4× noisier than the old ones and **inflate the between-cluster SD for a reason that
+has nothing to do with the effect** — which is precisely the variance term the whole power argument
+turns on. **Jobs 778792/778793 (Llama `basket_gun`) are still queued; the analysis waits for them.**
+
+Computing the favourable-looking subset now is the failure mode C-17 named, and this is the first time
+in this phase I have had the opportunity and declined it. **Recorded so the decision is auditable rather
+than invisible.**
+
+⚠ **A caveat the power analysis did not anticipate.** `basket_gun`'s Qwen3 **baseline is 0.0938 — nine
+prompts.** R-BB's simulation resampled *cluster values*, which implicitly covers low-headroom clusters
+(the knife template is exactly that), **but it assumed the new pool would have the same measurement
+depth as the old ones.** If the gun pool ends up thinner in headroom as well as weaker in effect, k=18
+may buy less than the 0.921 figure suggests. **That is a real gap in R-BB, stated now rather than after
+the number arrives.**
+
+---
+
 ### ★★★★★ R-BC (21:14) — **PHASE 9b RESULT: the concept subspace is a DOMINANT PLANE with real but smaller third-direction structure. Neither 2-D nor random-3-D — the intermediate branch, pre-registered.**
 
 **Artifacts:** `x2fit_basket_club_20260824_205649_2344014` (job **778194**, 20:13) and
