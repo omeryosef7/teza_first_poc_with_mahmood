@@ -61,8 +61,40 @@ R-BB's within-cluster sd of 0.0626 as not reproducing (the obvious reading gives
 S4 and fixed** in `059e819f` — `n_independent_pools` now reads 3, and the artifact carries ten
 model-keyed ASR rows.
 
+### And a second correction, one hour later: **R-BE — the axis this window spent three phases adding was the wrong axis**
+
+Committed `7838dcd2` (2026-08-25 00:21). After C-18 the only defensible unit is the **domain marginal**:
+
+| domain | Δ over all 10 populations |
+|---|---|
+| `game_manual` | **−0.2562** |
+| `news_report` | −0.0938 |
+| `city_bridge` | −0.0875 |
+| `instructional` | −0.0750 |
+| `farm_storage` | −0.0063 |
+| `lab_safety` | **+0.0000** |
+
+**k = 6, mean −0.0865, sd 0.0927, Cohen's d = 0.933, CI upper +0.0108 — includes zero.** Holding that
+mean and sd, the projection is **8 domains → −0.0090 (excludes zero)**, 10 → −0.0202, 12 → −0.0276.
+
+> **The binding constraint was always the number of DOMAINS — not banks, not pools, not models, not
+> concepts.** Phase 8 had already stated it in its own words (*"the sign-flip test operates on domain
+> clusters, and there are 6, so the p-floor is 2/2⁶ no matter how many prompts each domain holds"*),
+> and Phases 8, 9, 10 and 10b then added four banks, a third pool, a second model and a fourth
+> concept — **all of them reusing the same six domains.** C-11, C-15 and C-18 killed the pool, model
+> and pool×domain axes for exactly this reason.
+
+⚠ **Carry the author's own caveat:** the projection holds mean and sd fixed while the effect is
+concentrated (`game_manual` −0.2562 against a −0.0865 mean; `lab_safety` exactly 0.0000). New domains
+could be `lab_safety`-like, raising sd as they lower the mean. **"8 domains" is the optimistic read, not
+a guarantee.**
+
+The untried route, and it is cheap: `src/boombness/demo_pools.py` takes its domain list from a
+module-level `DOMAINS` dict (~line 60) and records it in `_meta.domains`, so regenerating pools at
+8–10 domains and rebuilding one bank per pool is an ordinary bank-generation job.
+
 **Successor phase:** `external_md/DEMONSTRATION_RETRIEVAL_BEHAVIORAL_CAUSALITY_NEXT_PHASE_PLAN_AND_PROGRESS.md`
-opens against the corrected state.
+opens against the corrected state and carries R-BE into its Phase-4 decision.
 
 ---
 
@@ -226,7 +258,7 @@ demonstrations → retrieval / remapping mechanism → internal state / refusal 
 | **5** | build a bank whose cell means are **not** PC1-dominated | **bank acceptance** | ✅ PASSES (R-AC) |
 | **6** | re-test concept generality on that bank | — | ✅ decomposition established; ⛔ specificity fails (R-AH) |
 | **7** | only then, a new objective | 6 sub-gates | ⛔ **BLOCKED** — both candidate scalars closed |
-| **8/9/10** | *(added in-flight)* power the causal claim by adding banks, then concepts, then pools | — | ✅ ends excluding zero (R-BD) |
+| **8/9/10** | *(added in-flight)* power the causal claim by adding banks, then concepts, then pools | — | ⛔ **R-BD retracted by C-18**; and R-BE shows the added axis was the wrong one — see below |
 
 Two standing rules governed everything and are worth carrying: **(a) never interpret a null without
 first proving the intervention fired**, and **(b) write the reading of a result down before the result

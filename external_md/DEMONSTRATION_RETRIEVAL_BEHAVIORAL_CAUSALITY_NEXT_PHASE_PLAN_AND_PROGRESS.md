@@ -30,7 +30,9 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
-| **The demonstration-attention knockout suppresses the doublespeak attack — DIRECTION** | **113 down / 30 up** over 10 populations (exact binomial p = 1.577e-12); both-arms-EOS control **30 / 1** (p = 2.98e-08); replicates on the high-headroom bank of **both** models (**−0.1771** Llama, **−0.2083** Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY; ledger row survives C-18 |
+| **The demonstration-attention knockout suppresses the doublespeak attack — DIRECTION, on the bomb corpus** | ⚠ **AMENDED by R-2.** The pooled 113 / 30 (p = 1.577e-12) is **one demonstration corpus**: bomb **81/11 p = 2.50e-14**, knife **15/7 p = 0.134**, gun **17/12 p = 0.458**; **drop bomb → 32/19, p = 0.092**. The 143 comparisons come from **67 distinct prompt_ids**. Replicates on the high-headroom bank of **both** models (**−0.1771** Llama, **−0.2083** Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY; **amended R-2** |
+| ⚠ **…and the binding constraint is the number of DOMAINS, not banks/pools/models** | domain marginal k=6: `game_manual` −0.2562, `news_report` −0.0938, `city_bridge` −0.0875, `instructional` −0.0750, `farm_storage` −0.0063, `lab_safety` +0.0000; mean −0.0865, sd 0.0927, d = 0.933, **CI upper +0.0108 → includes zero**. Projection at fixed mean/sd: **8 domains → −0.0090 (excludes zero)**, 10 → −0.0202, 12 → −0.0276 | **prev-R-BE** (`7838dcd2`), inherited; see **D-4** |
+| **The both-EOS control is not a 10-population control** | reproduces at 30/1 (p = 2.98e-08) but **5 of 10 populations contribute zero both-EOS discordant rows** | **R-2** |
 | ⚠ **…but NO calibrated cluster test of MAGNITUDE excludes zero** | `pool × domain` k=18 was a **crossed 3×6 table on one shared 96-prompt set**; both marginals include zero (**k=3 pools [−0.3043, +0.1516]**, **k=6 domains [−0.1649, +0.0121]**); crossed random-effects CI **[−0.2796, +0.1268]** at df 2.53 | **C-18 / REVIEW-8** — *R-BD RETRACTED* |
 | Retrieval and refusal are **independent channels** on Llama | knockout Δ = −0.1771 with refusal intact **and** with refusal removed; refusal removal alone includes zero | R-T ⚠ aggregate-level only (see DEAD row on "the same 17 prompts") |
 | **The mechanism is layer-redundant** | all 40 heads of Qwen3 L8 = **+0.0104**; ≥8 contiguous layers needed for a large effect | R-AM, R-AQ (D-12) |
@@ -759,15 +761,41 @@ treated as real.** Baseline reproduced at `059e819f` with the project env:
 assertions (`test_estimand` ×5, `test_g2_selection` ×6, `test_analyze_steering::test_T2_...` ×1).
 Per §1.3 the second group is **not** environment noise and is not dismissed.
 
+**D-4 (00:35) — ⚠ PHASE 4's AXIS IS WRONG, AND I AM FLAGGING IT TO THE USER RATHER THAN SILENTLY SWAPPING IT.**
+Plan §9 says the next confirmatory increment is **a fourth demonstration pool** (`club`). Two findings
+that landed *after* the plan was written say that cannot work:
+
+* **prev-R-BE** (`7838dcd2`, inherited): all four axes the previous phase added — banks, pools, models,
+  concepts — **reuse the same six domains**, and the sign-flip test clusters on domains, so its p-floor
+  is `2/2⁶` *regardless of how many prompts, banks or pools each domain holds*. Phase 8 stated this in
+  its own words before Phases 8/9/10/10b spent four banks, a third pool, a second model and a fourth
+  concept on the wrong axis.
+* **R-2** (this phase): pool is **perfectly confounded with concept** here, and the pooled direction is
+  carried by a single corpus. A fourth pool adds a fourth concept, not a fourth independent replicate
+  of the domain structure.
+
+**The untried route is domains.** `src/boombness/demo_pools.py` holds its domain list in a module-level
+`DOMAINS` dict (~line 60) and records it in `_meta.domains`, so regenerating pools at 8–10 domains and
+rebuilding one bank per pool is an ordinary bank-generation job — no new machinery.
+⚠ **Carry prev-R-BE's own caveat:** the projection holds mean and sd fixed while the effect is
+concentrated (`game_manual` −0.2562 against a −0.0865 mean, `lab_safety` exactly 0.0000). **New domains
+could be `lab_safety`-like, raising sd as they lower the mean. "8 domains" is optimistic, not
+guaranteed.**
+
+**Decision:** Phase 4 is **not started** and **not silently redefined**. It is downstream of Phases 1–3
+anyway, so nothing is blocked by deferring it. The question for the user is whether Phase 4 becomes
+*"add a fourth demonstration pool"* as written, *"regenerate pools at 8–10 domains"* per R-BE, or both.
+**Phases 1, 2 and 3 are unaffected and proceed.**
+
 ## B3. EXPERIMENT STATUS BOARD
 
 Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted · ⏸ blocked
 
 | id | phase | experiment | status | gate |
 |---|---|---|---|---|
-| P0.1 | 0 | independent re-derivation of the cross-bank result from raw artifacts | ⬜ | — |
-| P0.2 | 0 | live artifact defects (summary overwrite, pool counting, strict generation, metric names, judge provenance, incomplete dirs) | ⬜ | — |
-| P0.3 | 0 | full test suite triage — 18 failures classified and repaired | 🔬 | **Phase-0 exit** |
+| P0.1 | 0 | independent re-derivation of the cross-bank result from raw artifacts | ✅ **R-1** — reproduces prev-C-18 to the digit; **R-2** is new and amends the headline | — |
+| P0.2 | 0 | live artifact defects (summary overwrite, pool counting, strict generation, metric names, judge provenance, incomplete dirs) | 🔬 4 prev-C-18 fixes verified in code+artifact but **none pinned by a test**; 4 items still open | — |
+| P0.3 | 0 | full test suite triage — 18 failures classified and repaired | 🔬 all 18 diagnosed (6 session-pollution, 12 provenance); repairs in flight | **Phase-0 exit** |
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ⬜ | — |
 | P1.2 | 1 | 8-row liveness smoke, both models | ⬜ | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
@@ -796,7 +824,92 @@ stay visible)*
 
 *(`R-` ids, newest first)*
 
-*(none yet)*
+### ⛔⛔ R-2 / C-1 (00:29) — **THE HEADLINE DIRECTION IS ONE DEMONSTRATION CORPUS. Drop the bomb pool and the prompt-level effect is p = 0.092.** First correction of this phase, and it is to the claim the whole phase inherits.
+
+**Artifact:** `outputs/boombness/rederive_crossbank/rederive10_20260825_002934_2201570/rederive_crossbank.json`
+**Producing script:** `src/boombness/rederive_crossbank.py` (new, this phase)
+**Command:** see §B9. Threshold 0.50, 10 populations, 143 discordant comparisons.
+
+The surviving inherited claim is *"the direction is well supported — 113 down against 30 up,
+p = 1.577e-12."* **Decomposed by demonstration pool, that p is one corpus:**
+
+| demonstration pool | concept | down / up | **exact two-sided binomial p** |
+|---|---|---|---|
+| **`b5e399712b996b7d`** | **bomb** | **81 / 11** | **2.50151e-14** |
+| `5d3080f60af987c6` | knife | 15 / 7 | **0.133801** |
+| `79e93dbb2b65c820` | gun | 17 / 12 | **0.458258** |
+
+| leave-one-pool-out | down / up | p |
+|---|---|---|
+| drop knife | 98 / 23 | 3.23986e-12 |
+| drop gun | 96 / 18 | 4.72143e-14 |
+| **drop bomb** | **32 / 19** | **0.0919145** |
+
+> **The effect is significant on one of three demonstration corpora and null on the other two.**
+> That is a materially different claim from *"113 down against 30 up over 10 populations"*, and it is
+> the claim the artifact supports.
+
+⚠ **And `pool` is perfectly confounded with target CONCEPT here** — b5e3 = bomb, 5d30 = knife,
+79e9 = gun. So "three independent demonstration pools" and "three target concepts" are **the same
+factor**. The pool main effect in the ANOVA below is also a concept main effect and cannot be
+separated at k=3. Nothing in the previous phase says this.
+
+**Two further composition defects in the same statistic, both confirmed:**
+
+* **The n is inflated by design-slot reuse.** The 143 discordant comparisons come from only
+  **67 distinct `prompt_id`s** of 96 — the ten populations are the same 96 design slots with different
+  lexical fill, so one slot can contribute up to 10 comparisons. The binomial assumes prompt
+  independence, which this violates by construction.
+* **The both-arms-EOS control is not a 10-population control.** It reproduces numerically
+  (**30 down / 1 up, p = 2.9802322387695312e-08**) but **5 of the 10 populations contribute zero
+  both-EOS discordant rows**: `Q|window_knife`, `L|ticket_bomb`, `L|button_knife`, `L|window_knife`,
+  `L|basket_gun`. Truncation is heavily asymmetric on Llama, so the control is carried by the same
+  populations as the effect.
+
+**Status:** the LIVE ledger's direction row is amended, not deleted. Direction still holds *as a
+direction*; what is withdrawn is the implication that 10 populations, 5 banks and 3 pools are
+independent support for it.
+
+---
+
+### ★★★★ R-1 (00:29) — **PHASE-0 §2.1 SATISFIED: an independent re-derivation reproduces prev-C-18 to the digit, including the number C-18 could not have taken from the repo's own table.**
+
+**Artifact:** as R-2 above. **The path is genuinely independent** — `rederive_crossbank.py` imports
+`common` only (for `RunDir` / `FailureLedger`) and does its own arithmetic; it never imports
+`crossbank_knockout_test`. Agreement is therefore evidence, not tautology.
+
+| quantity | prev-C-18 | **this re-derivation** |
+|---|---|---|
+| all 10 populations are the same 96 `prompt_id`s | asserted | **CONFIRMED** — all 45 pairwise intersections = 96, union = 96 |
+| distinct demonstration pools | 3 | **3** (proved from bank `_meta.pools_sha16`, not bank names) |
+| pool main effect | SS 0.10102, df 2, 30.2 % | **0.10101996528, df 2, 30.207657 %** |
+| domain main effect | SS 0.10655, df 5, 31.9 % | **0.10655381944, df 5, 31.862427 %** |
+| interaction | SS 0.12684, 37.9 % | **0.12684461806, df 10, 37.929916 %** |
+| **share that is double-counted main effects** | 62.1 % | **62.0701 %** |
+| k=18 crossed cells *(the retracted unit)* | [−0.1461, −0.0066] | **[−0.1461364242, −0.0066413536]**, excludes 0 |
+| k=3 pool marginal | [−0.3043, +0.1516] | **[−0.3043121512, +0.1515343734]**, includes 0 |
+| k=6 domain marginal | [−0.1649, +0.0121] | **[−0.1648382480, +0.0120604702]**, includes 0 |
+| crossed random-effects interval | [−0.2796, +0.1268] at df 2.53 | **[−0.2795835881, +0.1268058104] at df 2.5294593771** |
+
+**One thing this pins that was previously unverifiable.** The crossed random-effects interval
+reproduces *only* with a real t distribution (`scipy.stats.t.ppf`); the repo's own shipped `_T`
+interpolation gives t = 3.7095 at df 2.53 and hence [−0.28901, +0.13623]. **So prev-C-18's published
+number did not come from the tool's table**, and if that interval is ever moved into an artifact the
+two paths would disagree by 0.0095 on the lower limit. Recorded so the discrepancy is a known
+convention rather than a future correction.
+
+⚠ **An ambiguity in "the domain marginal" that someone must resolve.** There are two of them, and the
+previous phase quotes both. **Pool-balanced** (mean the 3 pool cells per domain, then the 6 domains):
+mean **−0.0763888889**, CI **[−0.1648382480, +0.0120604702]** — what this artifact reports.
+**Population-weighted** (mean the 10 population cells per domain): mean **−0.0865**, CI upper
+**+0.0108** — what prev-R-BE reports. **Both include zero, so the conclusion is identical**, but the
+numbers differ and adjacent tables in the previous log quote the k=6 CI from one and the k=6 p from the
+other. **This phase uses the pool-balanced version and says so**, because pool is the independence
+axis C-11 established.
+
+**Judge hygiene, checked rather than assumed:** `judge_status == "ok"` on all 96 rows of all 20 judge
+dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired prompt_ids, 0 null scores,
+0 missing `stop_reason` across all 10 populations (960 paired rows).
 
 ## B6. CORRECTIONS / RETRACTIONS
 
@@ -907,13 +1020,20 @@ $PY -m pytest tests/ -q
 # the knockout instrument (CPU-only, ~26 s)
 $PY -m pytest -q doublespeak_causality/tests/test_allquery_attnknockout.py \
                  doublespeak_causality/tests/test_attnknockout_synthetic.py
+
+# R-1 / R-2 -- the independent re-derivation of the cross-bank result (CPU, ~30 s, no GPU, no API).
+# Does NOT import crossbank_knockout_test; all arithmetic is local, so agreement is evidence.
+$PY src/boombness/rederive_crossbank.py \
+    --manifest outputs/boombness/argsfiles/xb_manifest10.txt \
+    --thresholds 0.25,0.5,0.75 --tag rederive10
+# -> outputs/boombness/rederive_crossbank/rederive10_<stamp>/rederive_crossbank.json
 ```
 
 ## B10. CANONICAL ARTIFACTS OF THIS PHASE
 
 | artifact | produced by | holds |
 |---|---|---|
-| *(none yet)* | | |
+| `outputs/boombness/rederive_crossbank/rederive10_20260825_002934_2201570/rederive_crossbank.json` | `src/boombness/rederive_crossbank.py` | **R-1 / R-2** — population identity, pool proof, per-population ASR, crossed ANOVA + both marginals + crossed random-effects interval, prompt-level binomial **decomposed by demonstration pool**, both-EOS composition |
 
 ---
 
