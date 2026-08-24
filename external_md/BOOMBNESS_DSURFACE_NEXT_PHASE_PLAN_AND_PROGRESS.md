@@ -693,6 +693,86 @@ carries it.
 
 ---
 
+### ★★★★★ R-AF / C-5 (05:18) — **PHASE 6c: all four pre-registered predictions CONFIRMED at K=4. And one of my own earlier arguments was near-circular; C-5 corrects it.**
+
+**Artifacts:** `x2fit_window_bomb_20260824_025944_2154051` (777215, 13:26) and
+`x2fit_window_knife_20260824_025340_634443` (777214, 8:38), joined to the six existing fits.
+**8 banks = 4 codewords × 2 concepts.** Split-half ceiling over all eight: **0.9867 / 0.9896 / 0.9941**
+at L12 / L14 / L18.
+
+#### ✅ P1 — rank 3 with three COMPARABLE components. The (K−1)-subspace model holds at K=4.
+
+| L | singular² fractions of the 4 codeword-means | rank |
+|---|---|---|
+| 12 | **0.4527 / 0.2961 / 0.2512** / 0.0 | 3 |
+| 14 | 0.4147 / 0.3146 / 0.2707 / 0.0 | 3 |
+| 18 | **0.3699 / 0.3410 / 0.2891** / 0.0 | 3 |
+
+Predicted "roughly 0.4 / 0.33 / 0.27, none dominant" — **observed 0.45 / 0.30 / 0.25, tightening to
+0.37 / 0.34 / 0.29 by L18.** Rank 3 is forced by having 4 centred points; **three *comparable*
+singular values is not** — the data could have returned 0.9 / 0.06 / 0.04 and refuted the model. It
+did not. **The falsifier was available and did not fire.**
+
+#### ⚠ C-5 — P2's headline number is NEAR-FORCED, and R-AE leaned on the same argument
+
+For K centred vectors of equal norm, `‖Σu‖ = 0` gives `Σ_{i<j} cos_ij = −K/2` exactly, hence
+**mean cos = −1/(K−1)** identically: −0.5 at K=3, −0.3333 at K=4. So observing a mean of −0.3288 is
+**almost arithmetic, not evidence.**
+
+**R-AE presented the K=3 convergence toward −0.5 as support for the simplex reading. That argument was
+near-circular and is withdrawn.** The conclusion survives, but it must rest on the two quantities that
+are *not* forced — the **spread** of the cosines and the **equality of the norms**:
+
+| L | mean cos | **sd of cos** | min … max | **norm CV** | norms (bas/but/tic/win) |
+|---|---|---|---|---|---|
+| 12 | −0.3288 | 0.1085 | −0.483 … −0.198 | 0.1113 | 0.625 0.511 0.521 0.492 |
+| 18 | −0.3329 | **0.0573** | −0.416 … −0.254 | **0.0341** | 0.609 0.578 0.590 0.562 |
+| 24 | −0.3332 | **0.0317** | −0.368 … −0.294 | **0.0211** | 0.597 0.567 0.581 0.584 |
+
+**That is the real result: the spread collapses from 0.109 to 0.032 and the norm CV from 0.111 to
+0.021 with depth.** A *regular* simplex — four codeword identities of equal magnitude, mutually
+equidistant — is what the mid-to-late layers converge to, and neither the equal norms nor the small
+spread is forced by centring.
+
+#### ✅ P3 — the new codeword's identity is orthogonal to the concept axis
+
+`cos(u_window, N)` = **+0.0307 (L12), +0.0410 (L14), +0.0115 (L18)**, with the other three at
+−0.011/+0.031/−0.046, −0.011/+0.018/−0.045, +0.002/+0.044/−0.056. **Zero for all four codewords at
+every layer.**
+
+#### ✅ P4 — the concept axis replicates out-of-sample a SECOND time, at the ceiling
+
+`N` estimated from the other three codewords vs `N` estimated from `{window}` alone:
+
+| L | cos | **as fraction of ceiling** |
+|---|---|---|
+| 12 | 0.9790 | **0.9922** |
+| 14 | 0.9897 | **1.0001** |
+| 18 | 0.9937 | **0.9996** |
+
+`window` did not exist when `N` was named, and this is the **second independent codeword** to reproduce
+it at the measurement ceiling (`ticket` was the first, R-AE Test 1). **`N` is the most robust object
+this project has found.**
+
+#### Where the model now stands
+
+> **`d_surface(c, n) ≈ g + u_c + s_n · N`** — `{u_c}` a **(K−1)-dimensional** codeword subspace whose
+> members form a near-regular simplex of equal-norm, mutually-equidistant identities; **`N` a single
+> concept axis, orthogonal to that entire subspace, invariant across every codeword tested.**
+
+Confirmed at **K = 3** (R-AE) and now independently at **K = 4**, with the K=4 prediction written down
+before the fits ran.
+
+⚠ **The limit is unchanged and is now the only thing left**: still **2 concepts**. `N` has 1 df, so
+"concept axis" remains untested as a *subspace* claim. R-AE registered the prediction that a third
+concept would reveal `N` as one chord of a concept subspace, exactly as `W` turned out to be. **Nothing
+in Phase 6b or 6c tests that**, because both added codewords, not concepts. A third concept requires
+authoring a new demonstration pool — the one remaining expensive step.
+
+⚠ Llama fits only. Unreplicated on Qwen3.
+
+---
+
 ### 🔬 PHASE 6c LAUNCHED (04:56) — a **fourth codeword**, with the prediction written first
 
 R-AE registered that the ideal next test is a **third concept**, to ask whether `N` is a real axis or
@@ -783,8 +863,11 @@ Three centred codeword identities, `u_c = mean(d over that codeword's banks) −
 | 14 | 0.582 / 0.418 / 0.0 | 2 |
 | 18 | **0.533 / 0.467** / 0.0 | 2 |
 
-**Two comparable dimensions, not one.** And the three identities sit close to a **simplex** — mutual
-cosines converging on the −0.5 that three equidistant zero-sum points must have:
+**Two comparable dimensions, not one.** And the three identities sit close to a **simplex**.
+⚠ **The mean cosine argument below is WITHDRAWN by C-5** — for K centred equal-norm vectors the mean
+pairwise cosine is forced to −1/(K−1), so "converging on −0.5" is arithmetic, not evidence. The
+simplex reading survives on the *spread* and the *norm equality*, quantified in R-AF. The cosines are
+retained here as data:
 
 | L | basket~button | basket~ticket | button~ticket | ‖u‖ (basket/button/ticket) |
 |---|---|---|---|---|
