@@ -63,7 +63,29 @@ def fixed_module():
     return _load(os.path.join(SRC, "analyze_steering.py"), "new_analyze_steering")
 
 
-def _make_run(root: str, tag: str, *, done: bool = True, shift: float = 0.0, n: int = 60):
+# The 2026-08-20 TOPICALITY GATE (R-13) reads `summary.json["goal_topicality"]` from every arm's
+# run directory and treats a MISSING assessment as fatal -- "not assessed is not the same as
+# passed", the same lesson the coherence gate above it had to learn. This fixture was written
+# 2026-08-18 and emitted no `summary.json` at all, so every arm it built looked unassessed and the
+# fixed module exited before the JSON write that T2 exists to check.
+#
+# THE GATE IS CORRECT AND IS NOT TOUCHED. The FIXTURE is what was out of date: a synthetic arm that
+# declines to say whether its generations were on topic is exactly the input the gate must refuse.
+# `_make_run` now writes the summary the real judge writes (scalar fields only), so T2 clears the
+# gate ON THE MERITS rather than by passing --allow-missing-topicality, and
+# `test_T3_the_topicality_gate_is_still_fatal_when_the_assessment_is_absent` keeps the refusal path
+# under test by building an arm that omits it.
+_SENTINEL = object()
+
+
+def _topicality_summary(median: float = 0.5, n_applicable: int = 60, frac_zero: float = 0.0):
+    """The shape `judge_boombness._topicality_summary` writes. Scalars only, no prompt text."""
+    return {"n_applicable": n_applicable, "median": median, "mean": median,
+            "frac_zero": frac_zero}
+
+
+def _make_run(root: str, tag: str, *, done: bool = True, shift: float = 0.0, n: int = 60,
+              topicality=_SENTINEL):
     d = os.path.join(root, f"{tag}_20260818_000000_1")
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "results.jsonl"), "w") as f:
@@ -77,6 +99,12 @@ def _make_run(root: str, tag: str, *, done: bool = True, shift: float = 0.0, n: 
                                 "domain": DOMAINS[i % len(DOMAINS)]}) + "\n")
     with open(os.path.join(d, "config.json"), "w") as f:
         json.dump({"args": {}}, f)
+    # `topicality=None` means "this run wrote no assessment", i.e. a pre-R-13 judge run: no
+    # summary.json is written at all, which is the case the gate must refuse.
+    t = _topicality_summary() if topicality is _SENTINEL else topicality
+    if t is not None:
+        with open(os.path.join(d, "summary.json"), "w") as f:
+            json.dump({"goal_topicality": t}, f)
     if done:
         with open(os.path.join(d, "DONE.json"), "w") as f:
             json.dump({"ok": True}, f)
@@ -118,6 +146,28 @@ def test_T2_print_loop_key_and_json_written(prefix_module, fixed_module, capsys)
             assert r["ci_width_ratio_clustered_over_iid"] > 0
         # the iid interval must never be shown as if it were the clustered one
         assert "domain-clustered" in printed and "UNDERSTATES" in printed
+        # ...and the run got past the R-13 topicality gate because it was ASSESSED, not because
+        # the gate was waived: no --allow-missing-topicality is passed anywhere in _run.
+        for r in rep["rows"]:
+            assert r["topicality"] is not None, r["arm"]
+
+
+def test_T3_the_topicality_gate_is_still_fatal_when_the_assessment_is_absent(fixed_module):
+    """R-13, 2026-08-20. The fixture above now SATISFIES this gate, so the gate itself needs its
+    own case or the fixture repair would have silently disarmed it: an arm whose run wrote no
+    `goal_topicality` must stop the report, and must not write JSON. Absent is not pass."""
+    with tempfile.TemporaryDirectory() as root:
+        base = _make_run(root, "base")
+        arms = [_make_run(root, "steer_a025", shift=-0.1, topicality=None),
+                _make_run(root, "steer_neg_a025", shift=-0.05)]
+        out = os.path.join(root, "new.json")
+        with pytest.raises(SystemExit) as ei:
+            _run(fixed_module, base, arms, out)
+        assert "goal-topicality" in str(ei.value) and "steer_a025" in str(ei.value)
+        assert not os.path.exists(out)
+        # and the documented override still works, so the gate is a refusal-by-default, not a wall
+        assert _run(fixed_module, base, arms, out, extra=("--allow-missing-topicality",)) == 0
+        assert os.path.exists(out)
 
 
 def test_T2b_require_done_enforced_on_intervention_arms(prefix_module, fixed_module):

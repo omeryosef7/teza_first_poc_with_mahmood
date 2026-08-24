@@ -893,15 +893,39 @@ def main() -> int:
 
     rows, stats = generate_bank(pools, args.codeword, args.concept, args.preset, args.seed)
 
-    n = write_jsonl(args.out, rows)
+    # WRITE TO SIBLING TEMPORARIES, VALIDATE, THEN RENAME. The previous order wrote the bank and
+    # its meta straight to their final paths and only afterwards ran the alignment report, so a
+    # --strict failure still left a violating bank AND a meta describing it as legitimate on disk.
+    # Anything keying off file existence rather than exit status then consumed it -- the mechanism
+    # behind the rejected `arrow` banks. Temporaries are siblings, so os.replace is atomic.
     meta_path = args.out.replace(".jsonl", "_meta.json")
-    with open(meta_path, "w") as f:
+    tmp_out = f"{args.out}.tmp.{os.getpid()}"
+    tmp_meta = f"{meta_path}.tmp.{os.getpid()}"
+    n = write_jsonl(tmp_out, rows)
+    with open(tmp_meta, "w") as f:
         json.dump({"preset": args.preset, "seed": args.seed, "codeword": args.codeword,
                    "concept": args.concept, "pools_sha16": obj["_meta"]["content_sha16"],
                    "pools_path": args.pools, "stats": stats,
                    "incidental_repairs": repairs,
                    "incidental_collisions_after_repair": collisions,
                    **ds().env_metadata()}, f, indent=2)
+
+    if stats["n_alignment_violations"] and args.strict:
+        for v in stats["alignment_violations"][:10]:
+            print(f"  VIOLATION {v}", file=sys.stderr)
+        for t in (tmp_out, tmp_meta):
+            try:
+                os.remove(t)
+            except FileNotFoundError:
+                pass
+        print(f"[prompt_families] REFUSING: {stats['n_alignment_violations']} alignment violation(s) "
+              f"under --strict. NOTHING was written to {args.out} or {meta_path}; the temporary "
+              f"files were removed. No bank exists at the target path for a downstream step to "
+              f"pick up.", file=sys.stderr)
+        return 1
+
+    os.replace(tmp_out, args.out)
+    os.replace(tmp_meta, meta_path)
 
     print(f"[prompt_families] preset={args.preset} rows={n} -> {args.out}")
     print(f"[prompt_families] 2x2 families checked={stats['n_2x2_families_checked']} "
@@ -912,10 +936,9 @@ def main() -> int:
     for k in ("by_condition", "by_block", "by_query_kind", "by_n_examples"):
         print(f"  {k}: {stats[k]}")
     if stats["n_alignment_violations"]:
+        # Non-strict: unchanged behaviour -- the bank is written anyway and violations reported.
         for v in stats["alignment_violations"][:10]:
             print(f"  VIOLATION {v}")
-        if args.strict:
-            return 1
     return 0
 
 

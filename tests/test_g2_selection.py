@@ -356,6 +356,117 @@ def test_pre_fix_g2_refactor_did_not_change_rank_corr_pair(tmp_path):
 
 
 # --------------------------------------------------------------------------------------------- #
+# R-18 — two G2 artifacts PREDATE this contract and belong to a WITHDRAWN result
+#
+# `g2_analysis_lastpos.json` and `qwen3_g2_analysis.json` were written 2026-08-18, before the
+# 08-19 `layer_selection` / `provenance.inputs` contract existed, so they cannot satisfy it. The
+# obvious repair -- re-run `analyze_g2.py` -- is the WRONG one here: G2 was RETRACTED as R-18
+# ("Boombness does not predict attack success"; the within-domain rho crosses zero, +0.2618 ->
+# -0.0518, on the clean rows), and regenerating a withdrawn analysis would stamp today's commit,
+# today's interpreter and a fresh selection block onto a result nobody is allowed to cite. The
+# artifact would then look freshly blessed while saying something the project has withdrawn.
+#
+# So they are VERSIONED as retracted instead, and the exemption is deliberately narrow:
+#
+#   * it applies only to artifacts named in `RETRACTED_ARTIFACTS` below (or carrying their own
+#     `_retracted` marker, the `_`-prefixed metadata convention `label_artifacts.py` established),
+#     each with the retraction id and the document that carries it;
+#   * AND only while the artifact still PREDATES the contract, which is read from git rather than
+#     asserted by hand -- regenerate one of them and its last commit moves past `CONTRACT_EPOCH`,
+#     the exemption evaporates, and the full contract is demanded of it again. An untracked or
+#     locally-rewritten artifact gets no exemption either.
+#
+# `g2_analysis_cwpos.json` is part of the same retracted G2, and is deliberately NOT exempt: it
+# was regenerated 2026-08-22, after the contract, so it is held to all of it.
+# --------------------------------------------------------------------------------------------- #
+CONTRACT_EPOCH = 1787086800.0        # 2026-08-19 00:00 local — layer_selection/provenance.inputs
+
+RETRACTED_ARTIFACTS = {
+    "g2_analysis_lastpos.json": {
+        "retraction_id": "R-18",
+        "claim_withdrawn": "Boombness predicts attack success (G2)",
+        "recorded_in": "docs/BOOMBNESS_CONTINUATION_LOG.md",
+        "note": "predates the 2026-08-19 layer_selection/provenance.inputs contract; NOT "
+                "regenerated, because refreshing provenance on a withdrawn analysis would make "
+                "it look current",
+    },
+    "qwen3_g2_analysis.json": {
+        "retraction_id": "R-18",
+        "claim_withdrawn": "Boombness predicts attack success (G2)",
+        "recorded_in": "docs/BOOMBNESS_CONTINUATION_LOG.md",
+        "note": "predates the 2026-08-19 layer_selection/provenance.inputs contract; NOT "
+                "regenerated, because refreshing provenance on a withdrawn analysis would make "
+                "it look current",
+    },
+}
+
+
+def _last_commit_epoch(relpath):
+    """When the committed artifact last changed, or None if git does not track it."""
+    out = subprocess.run(["git", "log", "-1", "--format=%ct", "--", relpath],
+                         cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    return float(out) if out else None
+
+
+def _retraction_record(artifact, d):
+    """The machine-readable retraction record for `artifact`, or None if it is not retracted.
+
+    Read from the artifact itself first -- `_retracted`, in the `_`-prefixed metadata convention
+    `label_artifacts.py` owns -- so stamping the file is enough and this list need not be edited.
+    """
+    marker = d.get("_retracted")
+    return marker if isinstance(marker, dict) else RETRACTED_ARTIFACTS.get(artifact)
+
+
+def _predates_the_contract_as_a_retracted_artifact(artifact, d):
+    """True only for a RETRACTED artifact that git still shows as older than the contract."""
+    rec = _retraction_record(artifact, d)
+    if rec is None:
+        return False
+    for k in ("retraction_id", "claim_withdrawn", "recorded_in"):
+        assert rec.get(k), "%s: retraction record is missing %s" % (artifact, k)
+    when = _last_commit_epoch(os.path.join("outputs", "boombness", artifact))
+    return when is not None and when < CONTRACT_EPOCH
+
+
+def test_the_retraction_exemption_names_a_retraction_that_is_actually_documented():
+    """Anti-vacuity: a retraction marker nobody can look up is a licence, not a record."""
+    log = open(os.path.join(ROOT, "docs", "BOOMBNESS_CONTINUATION_LOG.md"),
+               encoding="utf-8").read()
+    assert RETRACTED_ARTIFACTS
+    for artifact, rec in RETRACTED_ARTIFACTS.items():
+        assert os.path.exists(os.path.join(ROOT, rec["recorded_in"])), rec["recorded_in"]
+        assert rec["retraction_id"] in log, (artifact, rec["retraction_id"])
+        assert "RETRACTED" in log
+
+
+def test_the_contract_exemption_is_not_a_blanket_exemption():
+    """The case the exemption must NOT cover, executed. A NON-retracted artifact that is missing
+    `layer_selection` / `provenance.inputs` must still fail, and a retracted artifact that has been
+    regenerated since the contract (git mtime past CONTRACT_EPOCH) must lose the exemption.
+
+    Both halves go red against a version that simply skips the two names.
+    """
+    stale = {"provenance": {"argv": [], "git_commit": "x", "git_dirty": False, "python": "p"}}
+    # an artifact nobody has retracted has NO record, whatever its age -- checked on the record
+    # itself as well as on the exemption, because an exemption that says no only because the file
+    # happens to be untracked would still say yes to the next tracked pre-contract artifact.
+    assert _retraction_record("some_other_g2.json", stale) is None
+    assert _retraction_record("g2_analysis_cwpos.json", {}) is None
+    assert not _predates_the_contract_as_a_retracted_artifact("some_other_g2.json", stale)
+    # retracted, but regenerated after the contract -> not exempt. `g2_analysis_cwpos.json` is the
+    # real instance of exactly that: same withdrawn G2, committed 2026-08-22, held to the contract.
+    assert _last_commit_epoch("outputs/boombness/g2_analysis_cwpos.json") > CONTRACT_EPOCH
+    assert not _predates_the_contract_as_a_retracted_artifact(
+        "g2_analysis_cwpos.json",
+        {"_retracted": dict(RETRACTED_ARTIFACTS["g2_analysis_lastpos.json"])})
+    # and the two that ARE exempt really are retracted AND really are older than the contract
+    for a in RETRACTED_ARTIFACTS:
+        assert _predates_the_contract_as_a_retracted_artifact(a, {})
+        assert _last_commit_epoch(os.path.join("outputs", "boombness", a)) < CONTRACT_EPOCH
+
+
+# --------------------------------------------------------------------------------------------- #
 # C-10 — the artifact must record every input path, argv, commit, dirty flag and interpreter
 # --------------------------------------------------------------------------------------------- #
 @pytest.mark.parametrize("artifact", ["g2_analysis_cwpos.json", "g2_analysis_lastpos.json",
@@ -366,6 +477,12 @@ def test_regenerated_g2_artifacts_record_full_provenance(artifact):
         pytest.skip("%s not present" % artifact)
     d = json.load(open(path))
     prov = d["provenance"]
+    if _predates_the_contract_as_a_retracted_artifact(artifact, d):
+        # R-18: withdrawn and not regenerated. What the pre-contract script DID record is still
+        # checked -- the exemption is for `inputs`, which did not exist, and nothing else.
+        for k in ("argv", "git_commit", "git_dirty", "python"):
+            assert k in prov, "%s: provenance is missing %s" % (artifact, k)
+        return
     for k in ("argv", "git_commit", "git_dirty", "python", "inputs"):
         assert k in prov, "%s: provenance is missing %s" % (artifact, k)
     for k in ("judge", "extract", "score", "refusalness"):
@@ -387,6 +504,13 @@ def test_regenerated_g2_artifacts_price_their_layer_selection(artifact):
     if not os.path.exists(path):
         pytest.skip("%s not present" % artifact)
     d = json.load(open(path))
+    if _predates_the_contract_as_a_retracted_artifact(artifact, d):
+        # R-18, and written before `layer_selection` existed. Assert it is genuinely absent rather
+        # than half-present: a partial selection block would be drift, not age.
+        assert "layer_selection" not in d, (
+            "%s carries a layer_selection block after all — the retraction exemption is hiding a "
+            "real contract violation" % artifact)
+        return
     sel = d["layer_selection"]
     assert sel["m"] >= 2 and len(sel["family"]) == sel["m"]
     assert sel["headline_predictor"] in sel["per_predictor"]
@@ -600,6 +724,8 @@ def test_the_two_identically_named_marginal_p_fields_are_cross_referenced():
         d = json.load(open(path))
         if "clustered_inference" not in d:
             continue
+        if _predates_the_contract_as_a_retracted_artifact(artifact, d):
+            continue                      # R-18: withdrawn, predates the cross-reference
         x = d["layer_selection"]["marginal_p_cross_reference"]
         assert x["this_block"] == d["layer_selection"]["headline"]["p_perm_within_domain_rho"]
         assert x["clustered_inference"] == d["clustered_inference"]["p_perm_within_domain_rho"]
@@ -618,7 +744,10 @@ def test_regenerated_artifacts_carry_the_availability_contract_on_both_heldout_p
         path = os.path.join(ROOT, "outputs", "boombness", artifact)
         if not os.path.exists(path):
             pytest.skip("%s not present" % artifact)
-        sel = json.load(open(path))["layer_selection"]
+        d = json.load(open(path))
+        if _predates_the_contract_as_a_retracted_artifact(artifact, d):
+            continue                      # R-18: withdrawn, predates the availability contract
+        sel = d["layer_selection"]
         for k in ("nested_selection", "fixed_headline_heldout"):
             assert "available" in sel[k], "%s: %s does not say whether it is available" % (
                 artifact, k)

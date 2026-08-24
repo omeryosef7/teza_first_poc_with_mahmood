@@ -148,6 +148,21 @@ CANONICAL_RUNS: Dict[str, List[str]] = {
         "--require-bank-block", "core2x2,extra_conditions,role_style,families",
         "--out", "outputs/boombness/g9_three_predictor_cwpos_CLEAN.json",
     ],
+    # The `last`-position counterpart of the CLEAN fit, generated and committed 2026-08-23 (commit
+    # 0d288bcd) without a recipe entry -- the artifact is NEWER than this record, so nothing
+    # drifted; the record was simply never extended. The argv below is transcribed from that
+    # artifact's own `provenance.argv[1:]`, not reconstructed by hand, and
+    # `tests/test_estimand.py::test_the_committed_recipe_actually_regenerates_the_artifact`
+    # replays it leaf-for-leaf.
+    "g9_three_predictor_lastpos_CLEAN.json": [
+        "--judge", "outputs/boombness/judge/base_20260816_210948_3024689",
+        "--extract", "outputs/boombness/extract_boombness/lastpos_20260817_071318_453596",
+        "--refusalness", "outputs/boombness/refusalness/lastpos_20260817_120828_1414147",
+        "--position", "last",
+        "--slot0-only",
+        "--require-bank-block", "core2x2,extra_conditions,role_style,families",
+        "--out", "outputs/boombness/g9_three_predictor_lastpos_CLEAN.json",
+    ],
 }
 
 CANONICAL_PYTHON = "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"

@@ -58,7 +58,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from common import RunDir, FailureLedger      # noqa: E402
+from common import RunDir, FailureLedger, require_done      # noqa: E402
 
 
 def load(d):
@@ -77,6 +77,45 @@ def load_stop(d):
         raise SystemExit(f"[xb] REFUSING: stop_reason is None on every row of {d} -- the "
                          f"both-terminated stratification would silently not stratify.")
     return out
+
+
+# Calibrated interval -- THE ONE TO QUOTE (C-14). t table for the k this repo actually uses.
+# DENSE 1..30 then selected. The sparse version had no df=17 -- exactly the k=18 the headline
+# used -- and fell back to 1.96+2.4/df = 2.1012 against a true 2.10982, i.e. ANTICONSERVATIVE by
+# 4.3% of the reported margin. "Never below the normal value" was true and irrelevant: it is
+# compared against the t value. (REVIEW-8 finding 5.)
+# 5 dp, ROUNDED UP (2026-08-25). At 4 dp, 20 of the 40 entries in 1..40 sat BELOW the true t --
+# df=17 held 2.1098 against 2.10981558, df=1 held 12.706 against 12.70620474. Tiny, but it is the
+# same direction as the sparse table this one replaced: the correction was still anticonservative,
+# by rounding instead of by fallback. Ceiling at 5 dp makes "never below the true t" true rather
+# than nearly true, at a cost of <=1e-5 on any interval half-width.
+_T = {1: 12.70621, 2: 4.30266, 3: 3.18245, 4: 2.77645, 5: 2.57059, 6: 2.44692, 7: 2.36463,
+      8: 2.30601, 9: 2.26216, 10: 2.22814, 11: 2.20099, 12: 2.17882, 13: 2.16037, 14: 2.14479,
+      15: 2.13145, 16: 2.11991, 17: 2.10982, 18: 2.10093, 19: 2.09303, 20: 2.08597, 21: 2.07962,
+      22: 2.07388, 23: 2.06866, 24: 2.06390, 25: 2.05954, 26: 2.05553, 27: 2.05184, 28: 2.04841,
+      29: 2.04523, 30: 2.04228, 35: 2.03011, 40: 2.02108, 47: 2.01175, 59: 2.00100, 119: 1.98010}
+
+
+def t_crit_95(df):
+    """Two-sided 95% t critical value for `df`, from the table above.
+
+    Interpolate rather than fall back to a formula: any df not in the table used to be
+    anticonservative against the true t. Above 120, 1.96 is correct to 3 dp, so the last entry is
+    held. df <= 0 is not answerable -- `cluster_bootstrap` returns a degenerate record before it
+    would get here -- and raises rather than dividing by zero as the inline version did.
+
+    Module-level so a test can check the TABLE the tool actually uses (df=17 present, monotone,
+    never below scipy's t) instead of a copy of it.
+    """
+    if df < 1:
+        raise ValueError(f"t_crit_95 needs df >= 1, got {df}: fewer than two clusters carries no "
+                         f"width information and must be reported as degenerate, not as a number.")
+    if df in _T:
+        return _T[df]
+    ks = sorted(_T)
+    lo = max([x for x in ks if x < df], default=ks[0])
+    hi = min([x for x in ks if x > df], default=None)
+    return _T[lo] if hi is None else _T[lo] + (_T[hi] - _T[lo]) * (df - lo) / (hi - lo)
 
 
 def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
@@ -101,34 +140,31 @@ def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
     import random
     rnd = random.Random(seed)
     k = len(cluster_vals)
+    if k < 2:
+        # A SINGLE CLUSTER USED TO CRASH THE TOOL (found 2026-08-25). df = k-1 = 0 is in neither
+        # the table nor its interpolation range: `lo` fell back to 1 and `hi` came out 1 as well,
+        # so the interpolation divided by (hi - lo) == 0. Any threshold at which only one pool x
+        # domain cell survives would take the whole run down with a ZeroDivisionError, after the
+        # judge/gens loading was already done. One cluster carries no width information at all, so
+        # the honest answer is a DEGENERATE, infinitely wide record -- never a finite interval, and
+        # never `t_excludes_zero`.
+        m = statistics.mean(cluster_vals) if k else float("nan")
+        return {"mean": m, "n_clusters": k, "n_boot": 0, "degenerate": True,
+                "t_ci95_lo": float("-inf"), "t_ci95_hi": float("inf"), "t_df": max(k - 1, 0),
+                "t_excludes_zero": False,
+                "ci95_lo": float("-inf"), "ci95_hi": float("inf"),
+                "ci95_NOTE": "DEGENERATE: fewer than 2 clusters -- no interval is estimable",
+                "frac_boot_ge_zero": None, "tail_floor": 1.0, "tail_is_at_floor": True}
     means = []
     for _ in range(n_boot):
         means.append(statistics.mean([cluster_vals[rnd.randrange(k)] for _ in range(k)]))
     means.sort()
     m = statistics.mean(cluster_vals)
-    # Calibrated interval -- THE ONE TO QUOTE (C-14). t table for the k this repo actually uses.
-    # DENSE 1..30 then selected. The sparse version had no df=17 -- exactly the k=18 the headline
-    # used -- and fell back to 1.96+2.4/df = 2.1012 against a true 2.10982, i.e. ANTICONSERVATIVE by
-    # 4.3% of the reported margin. "Never below the normal value" was true and irrelevant: it is
-    # compared against the t value. (REVIEW-8 finding 5.)
-    _T = {1: 12.706, 2: 4.3027, 3: 3.1824, 4: 2.7764, 5: 2.5706, 6: 2.4469, 7: 2.3646, 8: 2.3060,
-          9: 2.2622, 10: 2.2281, 11: 2.2010, 12: 2.1788, 13: 2.1604, 14: 2.1448, 15: 2.1314,
-          16: 2.1199, 17: 2.1098, 18: 2.1009, 19: 2.0930, 20: 2.0860, 21: 2.0796, 22: 2.0739,
-          23: 2.0687, 24: 2.0639, 25: 2.0595, 26: 2.0555, 27: 2.0518, 28: 2.0484, 29: 2.0452,
-          30: 2.0423, 35: 2.0301, 40: 2.0211, 47: 2.0117, 59: 2.0010, 119: 1.9799}
     df = k - 1
-    # Interpolate rather than fall back to a formula: any df not in the table used to be
-    # anticonservative against the true t. Above 120, 1.96 is correct to 3 dp.
-    if df in _T:
-        tcrit = _T[df]
-    else:
-        ks = sorted(_T)
-        lo = max([x for x in ks if x < df], default=ks[0])
-        hi = min([x for x in ks if x > df], default=None)
-        tcrit = _T[lo] if hi is None else _T[lo] + (_T[hi] - _T[lo]) * (df - lo) / (hi - lo)
+    tcrit = t_crit_95(df)
     se = (statistics.stdev(cluster_vals) / math.sqrt(k)) if k > 1 else float("inf")
     nz = sum(1 for v in cluster_vals if abs(v) <= 1e-12)
-    return {"mean": m, "n_clusters": k, "n_boot": n_boot,
+    return {"mean": m, "n_clusters": k, "n_boot": n_boot, "degenerate": False,
             "t_ci95_lo": m - tcrit * se, "t_ci95_hi": m + tcrit * se, "t_df": df,
             "t_excludes_zero": (m + tcrit * se) < 0 or (m - tcrit * se) > 0,
             "ci95_lo": means[int(0.025 * n_boot)], "ci95_hi": means[int(0.975 * n_boot)],
@@ -136,6 +172,53 @@ def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
             "frac_boot_ge_zero": sum(1 for x in means if x >= 0) / n_boot,
             "tail_floor": (nz / k) ** k if k else 1.0,
             "tail_is_at_floor": abs(sum(1 for x in means if x >= 0) / n_boot - (nz / k) ** k) < 5e-5}
+
+
+def distinct_pools(entries):
+    """The INDEPENDENT pools named by a manifest, sorted.
+
+    e = (model, bank, pool, Ajudge, Cjudge, Agens, Cgens), so the pool is field 3 = e[2]. main()
+    read e[1] -- the BANK -- so every artifact this script ever wrote reported
+    n_independent_pools = n_banks, which is the single number the C-11 independence argument turns
+    on. Extracted so a test can call THE code main() uses rather than a copy of the expression.
+    """
+    return sorted({e[2] for e in entries})
+
+
+def asr_rows(banks):
+    """summary.json's per-population ASR rows, keyed by MODEL **and** bank.
+
+    Keyed on bank alone the second model in the manifest silently overwrote the first, so a
+    10-population run emitted 5 asr rows and nothing in the artifact said so. Extracted so a test
+    can drive the real comprehension with two models on one bank name.
+    """
+    return {f"asr_{b['model']}_{b['bank']}": [b["baseline_asr"], b["knockout_asr"]] for b in banks}
+
+
+def require_inputs_done(entries, allow_partial=False):
+    """Every judge/gens dir a manifest row names must be a FINISHED run (gap closed 2026-08-25).
+
+    `common.require_done` was added on 2026-08-17 because "no analyzer checks this", and
+    judge_boombness wired itself to it -- but this tool, which turns those very runs into the
+    sprint's headline p, loaded four directories per manifest row and checked none of them. A
+    killed generation or judge leaves a truncated prefix of unknown length; the ASRs, the flips
+    and the clustered p would all be computed over an ORDER-DEPENDENT prompt subset and this
+    script would then write a perfectly clean DONE.json over the top. Same
+    asserted-at-one-end/never-checked-at-the-other shape as the rest of this sprint's dead guards.
+
+    Returns {dir: {role, rows_written, run_id, status}} so the row counts of the INPUTS travel
+    into the artifact as provenance.
+    """
+    prov = {}
+    for model, bank, pool, da, dc, ga, gc in entries:
+        for role, d in (("judge_A", da), ("judge_C", dc), ("gens_A", ga), ("gens_C", gc)):
+            payload = require_done(d, allow_partial=allow_partial) or {}
+            prov.setdefault(d, {"roles": [], "rows_written": payload.get("rows_written"),
+                                "run_id": payload.get("run_id"),
+                                "status": payload.get("status")})
+            if role not in prov[d]["roles"]:
+                prov[d]["roles"].append(role)
+    return prov
 
 
 def exact_sign_flip(vals):
@@ -270,6 +353,10 @@ def main() -> int:
     ap.add_argument("--manifest", required=True)
     ap.add_argument("--thresholds", default="0.25,0.5,0.75")
     ap.add_argument("--tag", default="xbtest")
+    ap.add_argument("--allow-partial-inputs", action="store_true",
+                    help="analyse manifest rows whose judge/gens runs never wrote DONE.json. "
+                         "Off by default: a truncated input would silently produce a headline "
+                         "over a prompt subset.")
     args = ap.parse_args()
 
     entries = []
@@ -291,10 +378,16 @@ def main() -> int:
     # e = (model, bank, pool, Ajudge, Cjudge, Agens, Cgens). The pool is e[2]; this read e[1], the
     # BANK, so every artifact this script ever wrote reported n_independent_pools = n_banks. That is
     # the single number the C-11 independence argument turns on. (Found by REVIEW-8.)
-    pools = sorted({e[2] for e in entries})
+    pools = distinct_pools(entries)
     run.note(n_banks=len(entries), n_pools=len(pools), pools=pools,
              independence_note="banks sharing a pools_sha16 are NOT independent replications (C-11); "
                                "the POOL-level clustering is the defensible headline")
+
+    # LOAD-SITE COMPLETENESS GUARD. Done once for all four dirs of every row, before any
+    # statistic is computed, so a truncated input kills the run instead of shrinking its N.
+    input_provenance = require_inputs_done(entries, allow_partial=args.allow_partial_inputs)
+    run.note(n_input_dirs=len(input_provenance), input_provenance=input_provenance,
+             allow_partial_inputs=bool(args.allow_partial_inputs))
 
     out = {"banks": [], "by_threshold": {}}
     for thr in [float(x) for x in args.thresholds.split(",")]:
@@ -404,13 +497,19 @@ def main() -> int:
                                                for m, r in permodel.items()}
         out["by_threshold"][f"{thr:g}"] = {"levels": lv, "cells": dict(cellmeta)}
 
+    _l05 = out["by_threshold"]["0.5"]["levels"]
+    # `headline_p_pool_x_domain` is KEPT for backward compatibility, but it names a statistic C-18
+    # retracted, and summary.json is the file a reader greps first -- so the retraction now travels
+    # with it, and the defensible marginal is what `headline_p` points at.
     summ = {"n_banks": len(entries), "n_independent_pools": len(pools),
-            "headline_p_pool_x_domain": out["by_threshold"]["0.5"]["levels"]["pool_x_domain"]["p"],
-            "headline_prompt_level_p": out["by_threshold"]["0.5"]["levels"]["prompt_level_binomial"]["p"],
+            "headline_p_pool_x_domain": _l05["pool_x_domain"]["p"],
+            "p_pool_x_domain_RETRACTED_C18": _l05["pool_x_domain"]["p"],
+            "headline_p": _l05["domain_only"]["p"],
+            "headline_estimand": "domain_only (defensible marginal, C-17/C-18)",
+            "headline_prompt_level_p": _l05["prompt_level_binomial"]["p"],
             # keyed by MODEL+bank: keyed on bank alone the second model silently overwrote the
             # first, so a 10-population run emitted 5 asr rows. Same defect as the `cells` key.
-            **{f"asr_{b['model']}_{b['bank']}": [b["baseline_asr"], b["knockout_asr"]]
-               for b in out["banks"]}}
+            **asr_rows(out["banks"])}
     with open(os.path.join(run.path, "crossbank_test.json"), "w") as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(summ, indent=1), flush=True)

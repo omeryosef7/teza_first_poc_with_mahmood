@@ -664,6 +664,17 @@ def test_the_committed_recipe_actually_regenerates_the_artifact(tmp_path, artifa
     got = json.load(open(tmp_path / artifact))
     want = json.load(open(path))
     got.pop("provenance"), want.pop("provenance")
+    # `_`-prefixed TOP-LEVEL keys are labels, not results: `label_artifacts.py` stamps `_cited_as`
+    # and `_label_note` onto a committed artifact AFTER the analysis wrote it, so a replay can
+    # never produce them and their absence is not drift. Only those are dropped, and only at the
+    # top level -- everything the script itself emits is still compared leaf-for-leaf, and a label
+    # key that appeared in the REPLAY would mean the script started emitting labels, which is a
+    # real change and is asserted against below.
+    labels = sorted(k for k in want if k.startswith("_"))
+    for k in labels:
+        want.pop(k)
+    assert not [k for k in got if k.startswith("_")], (
+        "the replay emitted label keys; labels belong to label_artifacts.py, not to the script")
     # `judge`/`extract`/`refusalness` are stored as os.path.abspath, i.e. they carry the absolute
     # path of whichever checkout produced the file. Comparing those verbatim would make this test
     # go red for anyone who clones the repo to a different directory, for a reason that has nothing

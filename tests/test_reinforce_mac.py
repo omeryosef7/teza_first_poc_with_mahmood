@@ -127,8 +127,56 @@ def reward_fn_prefers(harmful_text):
 # Import purity
 # ---------------------------------------------------------------------------
 
+def _import_pulls_in_torch(*module_names):
+    """Import ``module_names`` in a FRESH interpreter; return True iff that
+    import pulled ``torch`` into the CHILD's ``sys.modules``.
+
+    This probe must run out-of-process. pytest imports every collected test
+    module before running any test, and several sibling test modules import
+    torch at module scope, so an in-process ``"torch" in sys.modules`` check
+    would assert a property of the SESSION rather than of the module under
+    test. The child gets the repo root and ``scripts/`` on PYTHONPATH, exactly
+    like the in-process import above. Any child failure that is not the
+    torch question itself is raised loudly, so an ImportError can never be
+    silently read as "torch-free".
+    """
+    import os
+    import subprocess
+
+    _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _child = (
+        "import importlib, sys\n"
+        "for _name in sys.argv[1:]:\n"
+        "    importlib.import_module(_name)\n"
+        "print('TORCH' if 'torch' in sys.modules else 'NOTORCH')\n"
+    )
+    _env = dict(os.environ)
+    _pp = [_root, os.path.join(_root, "scripts")]
+    if _env.get("PYTHONPATH"):
+        _pp.append(_env["PYTHONPATH"])
+    _env["PYTHONPATH"] = os.pathsep.join(_pp)
+    _proc = subprocess.run(
+        [sys.executable, "-c", _child, *module_names],
+        capture_output=True,
+        text=True,
+        env=_env,
+    )
+    _lines = _proc.stdout.strip().splitlines()
+    _verdict = _lines[-1].strip() if _lines else ""
+    if _proc.returncode != 0 or _verdict not in ("TORCH", "NOTORCH"):
+        raise AssertionError(
+            "torch-free probe subprocess failed for {!r} (returncode={})\n"
+            "--- child stdout ---\n{}\n--- child stderr ---\n{}".format(
+                list(module_names), _proc.returncode, _proc.stdout, _proc.stderr
+            )
+        )
+    return _verdict == "TORCH"
+
+
 def test_module_imports_without_torch():
-    assert "torch" not in sys.modules, "importing reinforce_mac must not pull in torch"
+    assert not _import_pulls_in_torch(
+        "reinforce_objective.reinforce_mac"
+    ), "importing reinforce_mac must not pull in torch"
 
 
 # ---------------------------------------------------------------------------

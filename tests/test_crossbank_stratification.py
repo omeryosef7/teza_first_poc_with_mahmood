@@ -256,3 +256,228 @@ def test_aggregations_unpack_the_three_part_key():
     s = open(SRC).read()
     for pat in ("for (mo, b, d), v in cells.items()", "lambda k: (k[1], k[2])"):
         assert pat in s, f"an aggregation still assumes the 2-part key: {pat!r} missing"
+
+
+# =========================================================================== #
+# C-18 CLOSURE (2026-08-25). Commit 059e819f fixed four defects in this tool and pinned NONE of
+# them: the only two tests that mentioned the model-keying bug were string-greps over the source,
+# which by construction cannot catch a VALUE regression -- the grep passes whether the number is
+# right or wrong. What follows drives the real code.
+#
+# Fixtures are built from SCALAR FIELDS ONLY (prompt_id, strongreject_score, domain, stop_reason);
+# no prompt or completion text is written anywhere in this file.
+# =========================================================================== #
+def _write_judge(d, ids, score, domains):
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "results.jsonl"), "w") as f:
+        for i, pid in enumerate(ids):
+            f.write(json.dumps({"prompt_id": pid, "strongreject_score": score,
+                                "domain": domains[i % len(domains)]}) + "\n")
+    return d
+
+
+def _write_gens(d, ids, stops):
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "gens.jsonl"), "w") as f:
+        for i, pid in enumerate(ids):
+            f.write(json.dumps({"prompt_id": pid, "stop_reason": stops[i % len(stops)]}) + "\n")
+    return d
+
+
+def _mark_done(d, n):
+    with open(os.path.join(d, "DONE.json"), "w") as f:
+        json.dump({"schema": "DONE/1", "status": "ok", "rows_written": n,
+                   "run_id": os.path.basename(d)}, f)
+    return d
+
+
+def _build_manifest(root, mark_done=True):
+    """4 bank NAMES over 2 pool hashes and 2 models -> n_banks 4, n_independent_pools 2."""
+    rows = [("Qwen3", "main", "poolAAAAAAAAAAAA"), ("Qwen3", "ticket_bomb", "poolAAAAAAAAAAAA"),
+            ("Llama", "button_knife", "poolBBBBBBBBBBBB"), ("Llama", "window_knife", "poolBBBBBBBBBBBB")]
+    doms = ["d1", "d2"]
+    lines = []
+    for model, bank, pool in rows:
+        ids = [f"{model}_{bank}_{i}" for i in range(6)]
+        dirs = []
+        for arm, score in (("A", 0.9), ("C", 0.1)):
+            j = _write_judge(os.path.join(root, f"judge_{model}_{bank}_{arm}"), ids, score, doms)
+            g = _write_gens(os.path.join(root, f"gens_{model}_{bank}_{arm}"), ids, ["eos", "eos", "length"])
+            if mark_done:
+                _mark_done(j, len(ids))
+                _mark_done(g, len(ids))
+            dirs += [j, g]
+        # manifest order is model:bank:pool:Ajudge:Cjudge:Agens:Cgens
+        ja, ga, jc, gc = dirs[0], dirs[1], dirs[2], dirs[3]
+        lines.append(":".join([model, bank, pool, ja, jc, ga, gc]))
+    mf = os.path.join(root, "manifest.txt")
+    with open(mf, "w") as f:
+        f.write("\n".join(lines) + "\n")
+    return mf
+
+
+def _run_tool(manifest, out_root, extra_argv=()):
+    """Run the REAL main() with outputs redirected into tmp. Returns the run dir."""
+    import glob
+    import common
+    import crossbank_knockout_test as xb
+    old_root, old_argv = common.OUT_ROOT, sys.argv
+    common.OUT_ROOT = str(out_root)
+    sys.argv = ["crossbank_knockout_test.py", "--manifest", str(manifest), "--tag", "pytest"] \
+        + list(extra_argv)
+    try:
+        assert xb.main() == 0
+    finally:
+        common.OUT_ROOT, sys.argv = old_root, old_argv
+    runs = glob.glob(os.path.join(str(out_root), "crossbank_knockout_test", "*"))
+    assert len(runs) == 1, runs
+    return runs[0]
+
+
+@pytest.fixture(scope="module")
+def xb_run(tmp_path_factory):
+    root = str(tmp_path_factory.mktemp("xb_inputs"))
+    mf = _build_manifest(root)
+    run = _run_tool(mf, str(tmp_path_factory.mktemp("xb_out")))
+    with open(os.path.join(run, "summary.json")) as f:
+        summ = json.load(f)
+    with open(os.path.join(run, "crossbank_test.json")) as f:
+        art = json.load(f)
+    with open(os.path.join(run, "metadata.json")) as f:
+        meta = json.load(f)
+    return {"run": run, "summary": summ, "artifact": art, "metadata": meta}
+
+
+# --------------------------------------------------------------- C-18 fix 1
+def test_n_independent_pools_counts_POOLS_not_banks(xb_run):
+    """The manifest tuple is (model, bank, pool, ...) and the count read field 2, the BANK, so every
+    artifact this tool ever wrote reported n_independent_pools == n_banks -- the one number the C-11
+    independence argument turns on."""
+    s = xb_run["summary"]
+    assert s["n_banks"] == 4, s
+    assert s["n_independent_pools"] == 2, (
+        "4 bank names over 2 pool hashes must report 2 independent pools; "
+        f"got {s['n_independent_pools']} -- the count is reading the bank field again")
+
+
+def test_distinct_pools_helper_reads_field_three():
+    """Same defect at the unit the tool actually calls (not a copy of the expression)."""
+    from crossbank_knockout_test import distinct_pools
+    entries = [("Q", "main", "pA", "1", "2", "3", "4"), ("Q", "ticket", "pA", "1", "2", "3", "4"),
+               ("L", "knife", "pB", "1", "2", "3", "4"), ("L", "window", "pB", "1", "2", "3", "4")]
+    assert distinct_pools(entries) == ["pA", "pB"]
+
+
+# --------------------------------------------------------------- C-18 fix 2
+def test_asr_rows_are_keyed_by_model_AND_bank_with_distinct_values():
+    """Keyed on bank alone the second model SILENTLY OVERWROTE the first, so a 10-population run
+    emitted 5 asr rows under a 10-population label.
+
+    The two rows carry deliberately DIFFERENT values: a same-value fixture would pass under the bug.
+    """
+    from crossbank_knockout_test import asr_rows
+    banks = [{"model": "Q", "bank": "main", "baseline_asr": 0.90, "knockout_asr": 0.10},
+             {"model": "L", "bank": "main", "baseline_asr": 0.20, "knockout_asr": 0.15}]
+    r = asr_rows(banks)
+    assert len(r) == 2, f"one bank name over two models collapsed to {len(r)} row(s): {r}"
+    assert r["asr_Q_main"] == [0.90, 0.10]
+    assert r["asr_L_main"] == [0.20, 0.15]
+
+
+def test_the_written_summary_carries_one_asr_row_per_population(xb_run):
+    s = xb_run["summary"]
+    rows = {k: v for k, v in s.items() if k.startswith("asr_")}
+    assert len(rows) == 4, f"4 populations must write 4 asr rows, got {sorted(rows)}"
+    assert set(rows) == {"asr_Qwen3_main", "asr_Qwen3_ticket_bomb",
+                         "asr_Llama_button_knife", "asr_Llama_window_knife"}
+
+
+# --------------------------------------------------------------- C-18 fix 3
+def test_t_table_has_df_17_and_is_monotone():
+    """df=17 is the k=18 the headline used; the sparse table had no entry and fell back to a formula
+    that was anticonservative by 4.3% of the reported margin."""
+    from crossbank_knockout_test import _T, t_crit_95
+    assert 17 in _T, "df=17 is missing again -- that is exactly the k the headline used"
+    ts = [t_crit_95(k - 1) for k in range(2, 201)]
+    assert all(a >= b - 1e-12 for a, b in zip(ts, ts[1:])), \
+        "the critical value must never RISE with df; the interpolation is running backwards"
+
+
+def test_t_table_is_never_below_the_true_t():
+    """An interval built on a t below the true one is anticonservative, which is the entire defect
+    C-14 and REVIEW-8 finding 5 were about."""
+    try:
+        from scipy.stats import t as _t
+    except Exception:                                    # pragma: no cover
+        pytest.skip("scipy not available")
+    from crossbank_knockout_test import t_crit_95
+    for df in range(1, 41):
+        assert t_crit_95(df) >= _t.ppf(0.975, df) - 1e-9, \
+            f"df={df}: table {t_crit_95(df)} < true {_t.ppf(0.975, df)} -- ANTICONSERVATIVE"
+
+
+def test_a_single_cluster_does_not_CRASH_the_tool():
+    """df = k-1 = 0 is in neither the table nor its interpolation range: `lo` fell back to 1 and `hi`
+    came out 1, so the interpolation divided by zero and took the whole run down."""
+    from crossbank_knockout_test import cluster_bootstrap
+    r = cluster_bootstrap([-0.25], n_boot=100)
+    assert r["degenerate"] is True
+    assert r["n_clusters"] == 1 and r["t_df"] == 0
+    assert r["t_ci95_lo"] == float("-inf") and r["t_ci95_hi"] == float("inf")
+    assert r["t_excludes_zero"] is False, \
+        "one cluster can never exclude zero; a degenerate record must not claim significance"
+    assert cluster_bootstrap([], n_boot=10)["degenerate"] is True
+
+
+# --------------------------------------------------------------- C-18 fix 4
+def test_the_C18_verdict_is_IN_THE_JSON_at_every_threshold(xb_run):
+    """A warning that is only printed dies with the terminal scrollback. The retraction has to be in
+    the artifact a reader opens."""
+    blocks = xb_run["artifact"]["by_threshold"]
+    assert set(blocks) == {"0.25", "0.5", "0.75"}, sorted(blocks)
+    for thr, blk in blocks.items():
+        v = blk["levels"]["pool_x_domain"]["VERDICT"]
+        assert "C-18" in v, f"threshold {thr}: pool_x_domain carries no C-18 verdict ({v!r})"
+        assert "NOT a defensible headline" in v, f"threshold {thr}: the retraction is gone ({v!r})"
+
+
+# --------------------------------------------------------------- gap 5
+def test_an_input_without_DONE_is_REFUSED_by_default(tmp_path):
+    """require_done existed since 2026-08-17 and this tool -- which turns those runs into the
+    headline p -- checked none of the four directories each manifest row names."""
+    root = str(tmp_path / "in")
+    os.makedirs(root)
+    mf = _build_manifest(root, mark_done=False)
+    with pytest.raises(SystemExit) as e:
+        _run_tool(mf, str(tmp_path / "out1"))
+    assert "DONE" in str(e.value), str(e.value)[:200]
+
+
+def test_the_same_input_is_accepted_with_allow_partial_inputs(tmp_path):
+    root = str(tmp_path / "in")
+    os.makedirs(root)
+    mf = _build_manifest(root, mark_done=False)
+    run = _run_tool(mf, str(tmp_path / "out2"), extra_argv=["--allow-partial-inputs"])
+    assert os.path.exists(os.path.join(run, "summary.json"))
+
+
+def test_input_row_counts_travel_into_the_artifact_as_provenance(xb_run):
+    """A headline over a truncated input must be detectable from the artifact alone."""
+    prov = xb_run["metadata"]["input_provenance"]
+    assert len(prov) == 16, f"4 rows x 4 dirs = 16 inputs, got {len(prov)}"
+    assert all(v["rows_written"] == 6 for v in prov.values()), prov
+    assert xb_run["metadata"]["allow_partial_inputs"] is False
+
+
+# --------------------------------------------------------------- gap 6
+def test_summary_marks_the_retracted_statistic_and_names_a_defensible_headline(xb_run):
+    """`headline_p_pool_x_domain` is the key a reader greps, and C-18 retracted the statistic it
+    names. The key stays (backward compatibility) but the retraction now travels with it."""
+    s = xb_run["summary"]
+    assert "headline_p_pool_x_domain" in s, "an existing artifact key was removed"
+    assert s["p_pool_x_domain_RETRACTED_C18"] == s["headline_p_pool_x_domain"], \
+        "the retraction marker must carry the SAME value, or it marks nothing"
+    assert s["headline_estimand"] == "domain_only (defensible marginal, C-17/C-18)"
+    assert s["headline_p"] == \
+        xb_run["artifact"]["by_threshold"]["0.5"]["levels"]["domain_only"]["p"], \
+        "headline_p must be the domain_only marginal at threshold 0.5"

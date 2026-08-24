@@ -895,8 +895,12 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | id | phase | experiment | status | gate |
 |---|---|---|---|---|
 | P0.1 | 0 | independent re-derivation of the cross-bank result from raw artifacts | ✅ **R-1** — reproduces prev-C-18 to the digit; **R-2** is new and amends the headline | — |
-| P0.2 | 0 | live artifact defects (summary overwrite, pool counting, strict generation, metric names, judge provenance, incomplete dirs) | 🔬 4 prev-C-18 fixes verified in code+artifact but **none pinned by a test**; 4 items still open | — |
-| P0.3 | 0 | full test suite triage — 18 failures classified and repaired | 🔬 all 18 diagnosed (6 session-pollution, 12 provenance); repairs in flight | **Phase-0 exit** |
+| P0.2a | 0 | prev-C-18 fixes pinned by regression tests + `require_done` on inputs + k=1 guard | ✅ done | — |
+| P0.2b | 0 | atomic `--strict` bank write | ✅ done — validation now precedes the rename | — |
+| P0.2c | 0 | judge backend pinning + per-row provenance | ⬜ **still open** | — |
+| P0.2d | 0 | `EXCLUDED_RUNS.json` for the 5 dirs without `DONE.json` | ⬜ **still open** | — |
+| P0.2e | 0 | metric renames (`uniq_frac`, `delta_pooled`, bare `dose`) | ⬜ **still open** | — |
+| P0.3 | 0 | full test suite triage — 18 failures classified and repaired | ✅ **760 passed, 0 failed, 7 skipped** (was 721/18/7) | **Phase-0 exit** |
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ⬜ | — |
 | P1.2 | 1 | 8-row liveness smoke, both models | ⬜ | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
@@ -1018,7 +1022,68 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
 
-*(none yet)*
+### ⛔⛔ C-2 (00:42) — **TWO CONCURRENT PYTEST RUNS CORRUPTED A COMMITTED SCIENTIFIC ARTIFACT, and the corruption survived both runs' restore logic. Caused by my own parallelisation.**
+
+**What happened.** `tests/test_verify_report_numbers.py` contains two guard tests that **mutate real,
+committed files in place** and restore them in a `finally`:
+
+* `test_FAILS_when_an_artifact_value_is_tampered_with` writes `0.9999` into
+  `outputs/boombness/advbench_decomposition.json` → `paired_vs_baseline.B.delta_cluster_mean`;
+* `test_FAILS_when_the_number_is_removed_from_the_report` rewrites `+0.0333` → `+0.0999` in
+  `reports/boombness_objective_sprint_report.md`.
+
+Both are correctly written for **serial** execution: `shutil.copy2` to a `.testbak`, mutate, assert the
+guard catches it, `finally: shutil.move(backup, original)`, then a final
+`assert _run().returncode == 0, "restore failed; the tree is left dirty"`.
+
+**They are not safe under concurrency, and I ran them concurrently.** Four repair agents were editing
+disjoint file sets, and at least two of them ran `pytest tests/` at the same time as I did. The race is
+the obvious one: run A copies a clean backup and mutates the file; run B then copies **the already
+mutated file** as *its* backup; A restores its clean copy; B restores its dirty one. **The last writer
+wins and the tamper value is left on disk.**
+
+**Detected, not stumbled into.** The next serial run failed `test_passes_on_the_real_tree` with
+`14-B arm B clustered delta … expected 0.0305, actual 0.9999 VALUE MISMATCH` — the tamper constant
+itself, sitting in a committed artifact. `check_all.py` then reported
+`1 of 6 guards FAILED: verify_report_numbers`.
+
+**Blast radius, measured rather than assumed.** Both files are **tracked**, so `git status` showed them
+modified and `git checkout --` restored them exactly:
+`delta_cluster_mean` is back to **0.030519369707034255**, which is bit-identical to the value Part I
+§6.1 publishes, and the report again contains **4** occurrences of `+0.0333`. `check_all.py` is green.
+No `.testbak` files remain anywhere in the tree. **No result of this phase read either file while it
+was corrupt** — R-1/R-2 use `rederive_crossbank.json`, which touches neither.
+
+⚠ **A stale `.git/index.lock` (0 bytes, 00:38:54) blocked the first restore attempt** — a git process
+from a killed agent. Verified no `git` binary was running before removing it, per git's own message.
+
+#### Standing rules adopted, and they bind the rest of this phase
+
+1. **Never run `pytest tests/` concurrently with anything else in this repo** — not another agent, not
+   a second shell. The suite mutates tracked files by design. Full-suite runs are **serial and
+   exclusive**, and the §18 4-hour review must schedule them that way.
+2. **Parallel agents may not run the full suite.** They run only the subset covering their own files.
+   *(This is a correction to my own workflow instructions, which told four agents to "run the full
+   suite" — three of them did, simultaneously.)*
+3. **After any full-suite run, check `git status outputs/ reports/`.** A clean run leaves nothing dirty;
+   anything dirty is a corrupted artifact, not a stale file.
+4. **Proposed hardening, not yet implemented** (recorded so it is not lost): these two tests should
+   operate on a **copy in `tmp_path`** with the verifier pointed at it, rather than mutating the real
+   tree — or take an exclusive lock. Filed as an open item rather than fixed now, because changing a
+   guard's mechanism during a repair pass is how the previous phase produced its dead guards.
+
+**This is the third time in two phases that a defect has been caught only by cross-checking two
+computations of the same thing** (prev-R-BD's silent overwrite, prev-C-18's crossed table, now this).
+The pattern is worth naming: **the corruption was invisible inside either run and obvious the moment a
+third, independent run read the same file.**
+
+---
+
+### ⚠ C-1 — see **R-2** in §B5
+
+The amendment to the inherited headline direction (the effect is carried by one demonstration corpus)
+is recorded as R-2 rather than duplicated here, because it is a *result* of this phase's own
+re-derivation rather than a correction to something this phase published.
 
 ## B7. FAILED / VOID RUNS
 
