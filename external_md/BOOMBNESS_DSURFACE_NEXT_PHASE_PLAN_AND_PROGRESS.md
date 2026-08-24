@@ -693,6 +693,67 @@ carries it.
 
 ---
 
+### ★★★★★ R-AK (09:05) — **ATTENTION MASS ANTI-PREDICTS CAUSAL IMPORTANCE ON QWEN3. The retrieval-strength scalar is dead as an objective, and it dies by dissociation rather than by null.**
+
+**Artifact:** `outputs/boombness/retrieval_strength/rsQwen3_20260824_053156_648275`, job **777301**,
+COMPLETED 8:28, **96/96 rows, 0 skipped**. Causal numbers are R-AB's, **same 96-prompt population**.
+
+#### The dissociation
+
+| Qwen3-14B, same demo positions | demo attention | knockout effect on ASR |
+|---|---|---|
+| **band L7–17** (the causal band) | **0.03163** | **−0.1667** |
+| **late L25–39** (the control band) | **0.04158** | −0.0625 |
+| band > late | **6 of 96 rows (6.3 %)** | — |
+
+**The band that attends LESS to the demonstrations is the band whose knockout destroys the attack.**
+Baseline ASR 0.1771 → 0.0104 when cutting the low-attention band, → 0.1146 when cutting the
+high-attention band.
+
+On Llama the two agreed — band had **more** attention (91.7 % of rows) *and* the stronger knockout. **So
+the agreement on Llama was a coincidence of that model, not a property of the mechanism.** One model was
+never enough to notice.
+
+#### The measurement itself is sound — which is what makes this a dissociation and not a bug
+
+Raw demonstration attention in the causal band grows monotonically with demonstration count on Qwen3
+too: **0.01448 / 0.02665 / 0.03768 / 0.04770** at `n_examples` 1 / 2 / 4 / 8. The instrument works. It
+is the **band-versus-late contrast** that reverses, and it reverses on the exact contrast the causal
+experiment is built from.
+
+#### What this rules out
+
+> ⛔ **Attention mass to the demonstration block is not a measure of the causally relevant retrieval.**
+> The knockout does not work because those layers attend most to the demonstrations — it works because
+> of **what those layers do with the demonstration information**. An objective that ascends
+> "retrieval strength" defined as attention mass would, on Qwen3, be **ascending the wrong band.**
+
+Combined with R-AJ (the Llama scalar's apparent prediction was entirely the `n_examples` confound), the
+attention-mass candidate fails **measurement-validity** as well as **prediction**:
+
+| Phase 7 gate | `d_surface` | retrieval-strength (attention mass) |
+|---|---|---|
+| measurement | ✅ | ✅ instrument sane, monotone in demo count on both models |
+| prediction | — | ⛔ **R-AJ** — vanishes within `n_examples` strata (3 of 4 exactly 0.0000) |
+| causality | ⛔ R-AH | ✅ the *knockout* is causal and cross-model (R-AB) |
+| specificity | ⛔ **R-AH** — fails at matched dose on 2 banks | ✅ layer-specific on both models |
+| transfer | — | ⛔ **R-AK** — the scalar's relation to causality **reverses** across models |
+| optimization direction | ⛔ | ⛔ — would ascend the wrong band on Qwen3 |
+
+**Both Phase 7 candidate quantities are now closed, each for a different and well-evidenced reason.**
+
+⚠ **What survives is the intervention, not any scalar.** The demonstration-retrieval **knockout**
+remains this phase's solid result: causal, cross-model, layer-specific, dose-confound-free (it fits no
+direction), and scaling with demonstration count on both models (R-AI). **What has failed every time is
+the attempt to reduce it to a number that could be optimized.**
+
+⚠ **Limit.** One layer-band pair per model, one bank, `n = 96`, single measurement position (the final
+prompt token). The reversal is large (6.3 % vs 91.7 % of rows) and is measured on the same population as
+the causal result, but a different query position or a per-head decomposition could behave differently
+and has not been tested.
+
+---
+
 ### ★★★ R-AJ (08:48) — **MEASUREMENT gate PASSES, PREDICTION gate FAILS under stratification. The scalar is a proxy for `n_examples`, and nothing more.**
 
 **Artifact:** `outputs/boombness/retrieval_strength/rsLlama_20260824_052352_290248`, job **777300**,
