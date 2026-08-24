@@ -693,6 +693,41 @@ carries it.
 
 ---
 
+### 🛡 PROCESS FIX (15:12) — **a commit is now blocked while `check_all` is red, because running the guard and ignoring it is worse than not running it**
+
+**The failure:** committing R-AW, I ran `check_all.py`, it printed
+`[check-all] 1 of 6 guards FAILED: retraction_sweep`, **and I committed anyway.** The shell lines were
+newline-separated rather than `&&`-chained, so nothing gated the commit on the exit status. The standing
+instruction is *"run check_all.py before each commit"* — I did run it, which is exactly what makes this
+worse: **it produced a log line that looked like diligence while the guard's verdict was discarded.**
+The bad commit stands in history (`fba11847`); the tree was repaired in the next one.
+
+**The fix:** `scripts/install_commit_guard.sh` installs a `.git/hooks/pre-commit` that runs
+`check_all.py` and **refuses the commit** on a non-zero exit. `.git/hooks` is not versioned, so the
+**installer** is versioned instead and the protection is reproducible for anyone on the branch rather
+than living in my working copy.
+
+**Verified by mutation, not by inspection** — the way everything else in this phase is verified:
+
+```
+planted a retracted figure in a deliverable
+  -> [check-all] 1 of 6 guards FAILED: retraction_sweep
+  -> git commit -m "THIS COMMIT MUST BE BLOCKED"
+  -> [pre-commit] REFUSING: check_all.py exited 1. Fix the guard, or use --no-verify deliberately.
+  -> restored; [check-all] all 6 deliverable guards pass
+```
+
+`tests/test_commit_guard.py`, **6 tests**, pinning that the hook runs `check_all`, **branches on its
+exit status**, and **exits 1** — plus one that would have caught the subtler version of my own bug:
+the hook uses `set -uo pipefail`, **not `set -e`**, because with `set -e` the `OUT=$(...)` capture
+aborts the hook before `RC` is read, so **a red `check_all` would exit 0 through the hook and the
+commit would proceed** — the identical "status silently discarded" failure, one level down.
+
+⚠ **`--no-verify` still works, deliberately.** A guard that cannot be bypassed gets uninstalled the
+first time it is wrong; one that can be bypassed makes bypassing a visible, deliberate act.
+
+---
+
 ### 🏆🏆 R-AW (14:38) — **APPLYING C-13's METHOD TO THE WHOLE PHASE: every knockout arm excludes zero, every control includes it. The arm-vs-control separation the sign-flip tests could never show.**
 
 C-13 established that the bootstrap CI survives the clustering choice while the sign-flip p does not.
