@@ -693,6 +693,83 @@ carries it.
 
 ---
 
+### ★★★★ R-AU (13:48) — **ATTACKABILITY IS A (BANK × MODEL) PROPERTY, NOT A PROMPT PROPERTY. And R-AT's "null" is really 6 removed + 7 created.** No GPU used — all from existing artifacts.
+
+All banks share the **same 96 `prompt_id`s** (C-11), so "which prompts are attackable" is directly
+comparable across banks and models. It turns out to be almost entirely non-transferable.
+
+#### Baseline-successful prompt sets barely overlap
+
+| pair | successes | **shared prompt_ids** |
+|---|---|---|
+| Llama `main` (22) ∩ Llama `button_knife` (9) | — | **1** |
+| Llama `button_knife` (9) ∩ **Qwen3** `button_knife` (6) | *same bank, different model* | **1** |
+| Llama `main` (22) ∩ Qwen3 `button_knife` (6) | — | 3 |
+
+**Two models on the identical bank agree on 1 of 9 attackable prompts.** Attack success is not a
+property of the design cell — it is a property of the (bank, model) pair. This is a substantive finding
+in its own right and it constrains every cross-bank claim in this phase, including R-AR's.
+
+#### It explains most of R-AT
+
+Of Llama's **20 down-flips on the main bank**, only **1** is even baseline-successful on `button_knife`.
+**The knockout's known effect on Llama operates on a prompt set essentially disjoint from the one
+`button_knife` makes attackable.** There was little chance of observing the same effect there.
+
+#### ⚠ But "null" was the wrong word, and the right one is more interesting
+
+Decomposing the ±:
+
+| | down-flips | up-flips | net |
+|---|---|---|---|
+| **Qwen3** `button_knife` | **6** | **0** | −0.0625 |
+| **Llama** `button_knife` | **6** | **7** | +0.0104 |
+
+**The knockout removed exactly the same number of successes on both models — 6.** The difference is
+entirely that **Llama also gained 7 new ones.** So on Llama/`button_knife` the intervention is
+**destabilising rather than inert**: it churns which prompts succeed instead of leaving them alone.
+A net of +0.0104 hides 13 changed rows.
+
+**That is a different phenomenon from "no effect", and R-AT's framing is corrected accordingly.** The
+suppressive component is present on Llama at the same magnitude as on Qwen3; what differs is an
+additional generative component that Qwen3 does not show on this bank.
+
+#### Consistency check that came out right
+
+Baseline successes by `n_examples` — R-AI predicts more demonstrations → more attack success:
+
+| | n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|
+| Llama `main` | 4 | 4 | 6 | **8** | ✅ monotone |
+| Llama `button_knife` | 2 | 2 | 3 | 2 | flat (only 9 successes total) |
+| Qwen3 `button_knife` | 1 | 2 | 1 | 2 | flat (only 6) |
+
+**The monotone `n_examples` profile appears only where there are enough successes to see it** — 22 on
+Llama-main. The two 6–9-success cells are too thin to express it either way, which is consistent rather
+than contradictory.
+
+⚠ **Still one Llama bank.** `ticket_bomb` (jobs 777565/777567) remains the informative test and is
+queued. R-AT's caution stands: **nothing here says the mechanism is Qwen3-specific**, and the up-flip
+finding is 7 prompts.
+
+---
+
+### 📌 COMPUTE, corrected (13:40) — the cluster is SATURATED, not merely fair-share ordered
+
+My 13:05 note blamed fair-share alone. Checking `scontrol show node`:
+
+```
+n-801 8/8   n-802 8/8   n-803 8/8   n-804 8/8   n-805 8/8   t-806 8/8
+```
+
+**All 48 L40S GPUs are allocated.** Fair-share sets my *position* in the queue, but the immediate cause
+is that **there are zero free L40S GPUs cluster-wide** — which is why widening the nodelist to six nodes
+changed nothing, and would not have even at a high fair-share. The `gpu-sharifm` membership would still
+help (it is a separate queue on the same saturated hardware, but `n-804` had one job on it earlier), yet
+**the honest statement is that the hardware is full, not that I am merely deprioritised.**
+
+---
+
 ### ⚠⚠ R-AT (13:22) — **FIRST LLAMA CROSS-BANK CELL IS A NULL, and headroom does not explain it away.** One cell, tiny n; the informative test is still queued.
 
 **Artifact:** judge **777664** (`ALL DONE, 2 runs`, both `verified … (96 rows)`), arms
