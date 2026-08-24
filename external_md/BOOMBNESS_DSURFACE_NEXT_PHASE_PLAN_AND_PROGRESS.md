@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE, MARGINAL** — C-14: **Δ=−0.1120, t-CI95 [−0.2206,−0.0034], p=0.0443** at pool×domain; direction 46:3 (7e-11). Does **not** survive domain/bank clustering | Gate RETRIEVAL **PASSED (marginal)** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ⚠ **POSITIVE IN DIRECTION, NOT CLUSTER-SIGNIFICANT** — C-15: 2 models, 8 populations, **Δ=−0.1016, t-CI95 [−0.2060,+0.0029]** at pool×domain (includes 0 by 0.003); direction **96:18, p=4.7e-14** | Gate RETRIEVAL **PASSED on direction** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,65 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔ C-15 (18:14) — **`model` is NOT an independent axis. R-AY's headline unit is inflated, and at the defensible unit the interval includes zero — by 0.0029.** Found by testing my own caveat instead of leaving it as prose.
+
+R-AY attached a caveat and did not test it: *"treating `model` as independent is defensible … but the
+two models share the same 96 prompts and the same domain main effect, so k=24 is not 24 fully
+independent units either."* **Tested now, with the method that survived C-14.**
+
+#### The test
+
+| | value |
+|---|---|
+| raw `corr(Llama, Qwen3)` over the 24 bank × domain cells | **+0.6767** |
+| **after removing the domain main effect** | **+0.5654** |
+| **null** — independent models, identical centering, 4 000 draws | median −0.1200, 95 % **[−0.5377, +0.3153]** |
+
+**+0.5654 sits far above the null's upper bound of +0.3153.** The two models covary well beyond the
+shared domain effect — the same banks and the same domains move together in both. **`model` is not a
+replication axis; it is a correlated re-measurement.**
+
+#### The consequence
+
+| unit | k | calibrated t-CI95 | |
+|---|---|---|---|
+| **model × pool × domain** — *R-AY's headline* | 24 | [−0.1740, −0.0292] | ⛔ **inflated — model isn't independent** |
+| bank × domain, models pooled | 24 | [−0.1704, −0.0327] | ⚠ still anticonservative (C-11: banks share pools) |
+| **pool × domain, models pooled** ← **the defensible unit** | **12** | **[−0.2060, +0.0029]** | **includes 0** |
+| domain only | 6 | [−0.2127, +0.0095] | includes 0 |
+| bank only | 4 | [−0.2507, +0.0475] | includes 0 |
+
+> ⛔ **RETRACTED: R-AY's "the pre-registered unit excludes zero."** The unit was pre-registered, which
+> protects against choosing it after the fact — **but pre-registering a unit does not make it valid.**
+> `model × pool × domain` assumes an independence the data refutes.
+
+**At the defensible unit the upper bound is +0.0029.** It fails to exclude zero by **three thousandths**
+— genuinely knife-edge, and I am reporting it as failing rather than rounding it into success.
+
+#### ⚠ And adding the second model made the cluster-level result slightly WORSE, not better
+
+C-14's Qwen3-only figure at pool × domain was **[−0.2206, −0.0034], excluding zero.** With Llama added
+it becomes **[−0.2060, +0.0029], including zero.** **The extra data did not strengthen the clustered
+estimate — it weakened it**, because Llama's two knife-pool banks (`button_knife` +0.0104,
+`window_knife` −0.0208) contribute near-null cells. **A larger dataset that lowers your confidence is
+information, not noise**, and it is the opposite of what I expected when launching the Llama arms.
+
+#### What is unaffected
+
+* **Prompt-level: 96 down / 18 up over 8 populations, exact binomial p = 4.7e-14** — direction only, not
+  cluster-robust, unchanged.
+* **`ticket_bomb` replicates across both models** — −0.1771 (Llama) and −0.2083 (Qwen3), and Llama's
+  `ticket_bomb` matches Llama's `main` to four decimals. **The high-headroom banks agree; the
+  low-headroom ones carry all the ambiguity, in both models.**
+* Every arm verified live; no fitted direction, so no dose confound is possible.
+
+⚠ **Fifth correction, and the first I found by testing a caveat I had already written down.** The
+previous four came from reading harder or from review. **The lesson I am taking: a caveat stated in
+prose is not a caveat until it is computed** — I had written the right doubt and left it uncomputed
+while quoting the number it undermines.
 
 ---
 
