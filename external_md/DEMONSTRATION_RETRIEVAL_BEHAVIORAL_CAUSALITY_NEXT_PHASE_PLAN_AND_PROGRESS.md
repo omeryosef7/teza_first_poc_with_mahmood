@@ -952,8 +952,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama first | 🔬 **779477–779482 queued** | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
 | P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
-| P2B | 2B | completion phenotype instrument | ⬜ | — |
-| P2C | 2C | row-wise demo-deletion control | ⬜ | — |
+| P2B | 2B | completion phenotype instrument | 🔬 building (blinded, two views, agreement reported) | — |
+| P2C | 2C | row-wise demo-deletion control | 🔬 building; **first measuring whether the bank can even support 96 distinct deleted prompts** | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
 | P4A | 4 | fourth demonstration pool (`club`), frozen confirmatory | ⬜ | analysis frozen first |
 | P4B | 4 | regenerate pools at 8–10 **domains**, one bank per pool | ⬜ | domains accepted on audit, never on effect size |
@@ -982,6 +982,36 @@ stay visible)*
 ## B5. RESULTS
 
 *(`R-` ids, newest first)*
+
+### 📌 COMPUTE (02:40) — **fair-share, not capacity, and I am not resubmitting.** Measured before acting.
+
+Smoke jobs 779479–779482 have been `PENDING (Priority)` for **65 minutes**. Diagnosed rather than
+assumed:
+
+| evidence | value |
+|---|---|
+| L40S nodes | `n-801`…`n-805` **mixed** (partially allocated), `t-806` **allocated** |
+| pending jobs in `killable` | **56** |
+| top pending priority | **100002365** (another user), then 100001218 ×2 |
+| **our priority** | **100000441** — last |
+| our `gpu-research` FairShare | **0.050676 / 0.370270** |
+
+**We are behind 56 jobs on priority, and the nodes are `mixed` rather than full, so this is the
+fair-share ordering the previous phase already diagnosed as the sole constraint** — where widening the
+`--nodelist` was *tested with one submission before acting* and changed nothing.
+
+**Actions deliberately NOT taken:**
+* **No `scancel`.** Standing rule of this phase, and a blanket cancel on this account destroyed three
+  jobs once already.
+* **No resubmission.** Re-queueing loses position and, with 56 jobs ahead, makes it strictly worse.
+* **No switch to `gpu-students`** despite its FairShare of **0.987162** — `studentkillable` carries no
+  L40S, and `run_boombness.sh` hard-fails unless the GPU reports `*L40S*`. Already established; not
+  re-derived.
+
+**The queue simply has to drain.** All CPU-side work continues at full speed, which is what the tick
+below spends its time on.
+
+---
 
 ### 🔬 R-5 PARTIAL (02:10) — **the bridge arm fires correctly on a real model, and the derived prefill counter is confirmed off the toy harness.** 2 of 6 smoke arms landed; the four decisive ones are still throttled.
 
