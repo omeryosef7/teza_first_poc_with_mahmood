@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR: 4 banks, 2 models, 24 clusters, 13/13 negative, **p = 2.44e-04** | Gate RETRIEVAL **PASSED** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR/C-11: 2 pools × 2 codewords, 2 models, 13/13 negative, **p = 1.56e-02** (pool×domain) | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,69 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔ C-11 (11:41) — **R-AR's p = 2.44e-04 is ANTICONSERVATIVE. There are only TWO demonstration pools, not four independent banks. Corrected p = 1.56e-02.**
+
+**I found this in my own robustness check, one tick after publishing R-AR and before the adversarial
+review returned.** Phase 8's whole argument was that the four banks are *"genuine independent
+replications … a defensible clustering unit rather than a way of manufacturing degrees of freedom."*
+**That claim was wrong, and I did not check it before making it.**
+
+#### The bank structure, from the banks' own metadata
+
+| bank | codeword | concept | **`pools_sha16`** |
+|---|---|---|---|
+| `main` | carrot | bomb | **b5e399712b996b7d** |
+| `ticket_bomb` | ticket | bomb | **b5e399712b996b7d** ← same |
+| `button_knife` | button | knife | **5d3080f60af987c6** |
+| `window_knife` | window | knife | **5d3080f60af987c6** ← same |
+
+**Two demonstration pools, each used by two banks that differ only in the substituted codeword.**
+Demo-block *text* is 100 % distinct pairwise (0 of 96 shared in every pairing — the codeword swap makes
+every block textually unique), which is why this passed a naive check. But **the underlying
+demonstration sentences are the same within a pool**, and all **96 prompt_ids are identical across all
+four banks** — they are the same design cells with different lexical fill. **The 24 clusters are not
+exchangeable.**
+
+#### The corrected numbers
+
+| clustering | clusters | informative | Δ | **p** |
+|---|---|---|---|---|
+| (a) bank × domain — **as published in R-AR** | 24 | 13 | −0.11198 | **2.441e-04** ⛔ |
+| **(b) POOL × domain — the honest one** | **12** | **7** | −0.11198 | **1.562e-02** ✅ |
+| (c) domain only, pooling all banks | 6 | 5 | −0.11198 | 6.250e-02 |
+| (d) headroom banks only (`main` + `ticket_bomb`) | 12 | 10 | −0.18750 | 1.953e-03 ⚠ *same pool* |
+
+> ⛔ **RETRACTED: "p = 2.44e-04".** ✅ **The defensible figure is p = 1.56e-02**, clustering on
+> **pool × domain**, which collapses each pair of same-pool banks into one unit per domain.
+> **Row (d) is also anticonservative** — `main` and `ticket_bomb` share the bomb pool — so it cannot be
+> used as the headline either, despite being the most attractive number on the table.
+
+#### What survives, and it is still the phase's best result
+
+* **p = 1.56e-02 is the first sub-0.05 result anywhere in this phase.** Every prior contrast was pinned
+  at its 0.0625 or 0.03125 floor. Phase 8's premise — that power comes from more *banks* rather than more
+  *prompts* — **was correct**; I simply over-counted how many independent banks I had.
+* **13 of 13 informative clusters negative, 0 positive**, unchanged.
+* **Relative suppression 74–100 % on all four banks**, unchanged.
+* **Two models** (R-AB), **two demonstration pools**, **four codewords**, no fitted direction and hence
+  no possible dose confound, every arm verified live.
+
+#### The lesson, recorded
+
+**I asserted independence as a premise of the design instead of measuring it, in the very section whose
+purpose was to fix a power problem.** The check that caught it — comparing `pools_sha16` and
+demo-block hashes across banks — takes seconds and should have run *before* Phase 8 was launched, not
+after its result was written up. **A replication is only independent in the dimension you actually
+varied**, and here I varied the codeword while holding the demonstration pool fixed.
+
+⚠ **Consequence for the Llama extension now running** (jobs 777525–777530, same three banks):
+it adds a second *model*, which is a genuinely independent axis — but it adds **no new pools**. The
+Llama arms must therefore be clustered as **model × pool × domain (2 × 2 × 6 = 24)**, *not* model × bank
+× domain (48). **Recorded before those results land**, so the clustering cannot be chosen after seeing
+them.
 
 ---
 
