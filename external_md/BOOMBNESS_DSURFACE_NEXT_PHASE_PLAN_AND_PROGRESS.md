@@ -693,6 +693,42 @@ carries it.
 
 ---
 
+### ✅ PHASE 9b RECOVERED (17:52) — `club` banks built clean under `--strict`; fits queued
+
+**Pool:** `demo_pools_club.json`, job **778163**, COMPLETED 5:22 — **24 pools, sha16
+`2fc70fe498d7c775`**, a **fifth** distinct pool hash (bomb `b5e3997`, knife `5d3080f`, gun `79e93db`,
+arrow `bb8bcc4`, club `2fc70fe`).
+
+**Generated with `--strict` this time** — the flag R-AZ found I had never been passing, which *"exits
+non-zero if any alignment invariant is violated"* instead of printing a warning and writing the bank
+anyway:
+
+| bank | 2×2 families | **violations** | strict rc | audit | **token-alignment violations** |
+|---|---|---|---|---|---|
+| `basket_club` | 336 | **0** | **0** | 2736 ok / 0 bad / 0 ambiguous | **0** |
+| `button_club` | 336 | **0** | **0** | 2736 ok / 0 bad / 0 ambiguous | **0** |
+
+**And the specific test `arrow` failed:**
+
+| bank | `a X` | `an X` |
+|---|---|---|
+| `basket_club` | `a basket` 2120, **`a club` 914** | **none** |
+| `button_club` | `a button` 2120, **`a club` 914** | **none** |
+| *(rejected)* `basket_arrow` | — | **`a arrow` × 528** ⛔ |
+
+**Zero `an` anywhere.** `club` is consonant-initial and the article invariant holds, so the exact-word
+swap is clean.
+
+**Fits queued: 778194 (`basket_club`), 778195 (`button_club`)**, flags byte-identical to all ten
+existing `x2fit_*` runs. Throttled behind fair-share.
+
+**The pre-registered null is unchanged and still governs**: with 4 concepts, PC3 median **0.3246**,
+95 % **[0.3170, 0.3297]** under isotropy. **If the concept subspace is exactly 2-dimensional, PC3 lands
+near zero; if it is ≥3-dimensional, PC3 is substantial.** That prediction was fixed before `arrow`
+existed and is untouched by the concept swap.
+
+---
+
 ### ⛔ R-AZ (17:26) — **`arrow` REJECTED: it is vowel-initial and produced 528 ungrammatical "a arrow". This is the `a apple` trap the plan explicitly warned about, and I walked into it.**
 
 The `arrow` pool generated fine (**24 pools, sha16 `bb8bcc403f35b7f4`**, a fourth distinct hash). **The
