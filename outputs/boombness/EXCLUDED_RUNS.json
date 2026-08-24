@@ -1,0 +1,675 @@
+{
+  "schema": "EXCLUDED_RUNS/1",
+  "written_at": "2026-08-25T01:13:40",
+  "written_by_commit": "487efa0cfb8379a605028b87bc51c115275c40b8",
+  "outputs_root": "outputs/boombness",
+  "experiments_scanned": [
+    "crossbank_knockout_test",
+    "score_behavior",
+    "judge",
+    "extract_boombness",
+    "retrieval_strength",
+    "rederive_crossbank",
+    "tokenization_audit"
+  ],
+  "per_experiment": {
+    "crossbank_knockout_test": {
+      "n_dirs": 12,
+      "n_missing_done": 5,
+      "n_excluded": 5
+    },
+    "score_behavior": {
+      "n_dirs": 393,
+      "n_missing_done": 21,
+      "n_excluded": 21
+    },
+    "judge": {
+      "n_dirs": 499,
+      "n_missing_done": 31,
+      "n_excluded": 31
+    },
+    "extract_boombness": {
+      "n_dirs": 36,
+      "n_missing_done": 2,
+      "n_excluded": 3
+    },
+    "retrieval_strength": {
+      "n_dirs": 7,
+      "n_missing_done": 1,
+      "n_excluded": 1
+    },
+    "rederive_crossbank": {
+      "n_dirs": 2,
+      "n_missing_done": 1,
+      "n_excluded": 1
+    },
+    "tokenization_audit": {
+      "n_dirs": 32,
+      "n_missing_done": 0,
+      "n_excluded": 0
+    }
+  },
+  "n_excluded": 62,
+  "runs": [
+    {
+      "run_dir": "outputs/boombness/crossbank_knockout_test/xb10rev8_20260824_233207_2056485",
+      "run_id": "xb10rev8_20260824_233207_2056485",
+      "experiment": "crossbank_knockout_test",
+      "reason": "empty_skeleton",
+      "detail": "plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "xb10rev8_20260824_235105_2109370",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/crossbank_knockout_test/xb10rev8_20260824_233400_2060569",
+      "run_id": "xb10rev8_20260824_233400_2060569",
+      "experiment": "crossbank_knockout_test",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1488 B), config.json (342 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "xb10rev8_20260824_235105_2109370",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/crossbank_knockout_test/xb8_20260824_192038_1604620",
+      "run_id": "xb8_20260824_192038_1604620",
+      "experiment": "crossbank_knockout_test",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1446 B), config.json (321 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "xb8_20260824_192145_1606684",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/crossbank_knockout_test/xb8_20260824_192125_1606107",
+      "run_id": "xb8_20260824_192125_1606107",
+      "experiment": "crossbank_knockout_test",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1445 B), config.json (321 B), crossbank_test.json (12213 B), plots/ (0 files)",
+      "has_partial_results": true,
+      "superseded_by": "xb8_20260824_192145_1606684",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/crossbank_knockout_test/xbtest2_20260824_115110_313287",
+      "run_id": "xbtest2_20260824_115110_313287",
+      "experiment": "crossbank_knockout_test",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1436 B), config.json (337 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "xbtest2_20260824_115138_314173",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/extract_boombness/full_20260816_184034_1002476",
+      "run_id": "full_20260816_184034_1002476",
+      "experiment": "extract_boombness",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1676 B), cache/ (0 files), config.json (570 B), directions_fit_dev.pt (4267777 B), directions_fit_heldout.pt (4268889 B), plots/ (0 files), results.jsonl (55422382 B)",
+      "has_partial_results": true,
+      "superseded_by": "full_20260816_184609_1003374",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/extract_boombness/lastpos_20260817_050957_308631",
+      "run_id": "lastpos_20260817_050957_308631",
+      "experiment": "extract_boombness",
+      "reason": "aborted",
+      "detail": "ABORTED.json (311 B), DONE.json (248 B), RUNMETA.json (2028 B), cache/ (1 files), config.json (620 B), directions_fit_dev.pt (1329349 B), directions_fit_heldout.pt (1329741 B), metadata.json (4556 B), plots/ (0 files), results.jsonl (85383450 B), summary.json (3508 B)",
+      "has_partial_results": true,
+      "superseded_by": "lastpos_20260817_071318_453596",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/extract_boombness/roleblk_20260818_113854_422461",
+      "run_id": "roleblk_20260818_113854_422461",
+      "experiment": "extract_boombness",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2166 B), cache/ (0 files), config.json (740 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "roleblk_20260818_114425_1408585",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/ab_C_20260819_002240_1397246",
+      "run_id": "ab_C_20260819_002240_1397246",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1358 B), config.json (299 B), plots/ (0 files), results.jsonl (315108 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/ab_base_20260819_002240_1397245",
+      "run_id": "ab_base_20260819_002240_1397245",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1376 B), config.json (308 B), plots/ (0 files), results.jsonl (315318 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/abgL16_B_20260819_080434_1661745",
+      "run_id": "abgL16_B_20260819_080434_1661745",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1660 B), config.json (488 B), plots/ (0 files), results.jsonl (28051 B)",
+      "has_partial_results": true,
+      "superseded_by": "abgL16_B_20260819_081115_1663774",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/abgL6_B_20260819_080434_1661744",
+      "run_id": "abgL6_B_20260819_080434_1661744",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1654 B), config.json (485 B), plots/ (0 files), results.jsonl (28764 B)",
+      "has_partial_results": true,
+      "superseded_by": "abgL6_B_20260819_081115_1663775",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/ctrlbandfix_s20260903_20260819_003630_1408405",
+      "run_id": "ctrlbandfix_s20260903_20260819_003630_1408405",
+      "experiment": "judge",
+      "reason": "aborted",
+      "detail": "ABORTED.json (184 B), RUNMETA.json (1453 B), config.json (347 B), metadata.json (572 B), plots/ (0 files), results.jsonl (109914 B), summary.json (2257 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/fu_abL15_B_20260819_171502_2016716",
+      "run_id": "fu_abL15_B_20260819_171502_2016716",
+      "experiment": "judge",
+      "reason": "aborted",
+      "detail": "ABORTED.json (184 B), RUNMETA.json (1408 B), config.json (374 B), metadata.json (846 B), plots/ (0 files), results.jsonl (316650 B), summary.json (2315 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/fu_abL15_Bctrl_20260819_171502_2016720",
+      "run_id": "fu_abL15_Bctrl_20260819_171502_2016720",
+      "experiment": "judge",
+      "reason": "aborted",
+      "detail": "ABORTED.json (184 B), RUNMETA.json (1432 B), config.json (386 B), metadata.json (858 B), plots/ (0 files), results.jsonl (316655 B), summary.json (2319 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/fu_abR12_C_20260819_171502_2016724",
+      "run_id": "fu_abR12_C_20260819_171502_2016724",
+      "experiment": "judge",
+      "reason": "aborted",
+      "detail": "ABORTED.json (184 B), RUNMETA.json (1408 B), config.json (374 B), metadata.json (846 B), plots/ (0 files), results.jsonl (316644 B), summary.json (2315 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR12_Cctrl_20260819_194319_2116306",
+      "run_id": "j_fuR12_Cctrl_20260819_194319_2116306",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1688 B), config.json (502 B), plots/ (0 files), results.jsonl (28766 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR14_C_20260819_194319_2116310",
+      "run_id": "j_fuR14_C_20260819_194319_2116310",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1664 B), config.json (490 B), plots/ (0 files), results.jsonl (28056 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR14_Cctrl_20260819_194319_2116314",
+      "run_id": "j_fuR14_Cctrl_20260819_194319_2116314",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1688 B), config.json (502 B), plots/ (0 files), results.jsonl (30190 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR16_C_20260819_194319_2116319",
+      "run_id": "j_fuR16_C_20260819_194319_2116319",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1664 B), config.json (490 B), plots/ (0 files), results.jsonl (30199 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR16_Cctrl_20260819_194319_2116324",
+      "run_id": "j_fuR16_Cctrl_20260819_194319_2116324",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1688 B), config.json (502 B), plots/ (0 files), results.jsonl (30912 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR20_C_20260819_194319_2116328",
+      "run_id": "j_fuR20_C_20260819_194319_2116328",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1664 B), config.json (490 B), plots/ (0 files), results.jsonl (28771 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/j_fuR20_Cctrl_20260819_194319_2116333",
+      "run_id": "j_fuR20_Cctrl_20260819_194319_2116333",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1688 B), config.json (502 B), plots/ (0 files), results.jsonl (31649 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/phaseD_judge_20260820_221932_2779357",
+      "run_id": "phaseD_judge_20260820_221932_2779357",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1670 B), config.json (499 B), plots/ (0 files), results.jsonl (66110 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_B11_20260821_184017_1946889",
+      "run_id": "q3dec_B11_20260821_184017_1946889",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1742 B), config.json (519 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_B11_20260821_184017_1946891",
+      "run_id": "q3dec_B11_20260821_184017_1946891",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1746 B), config.json (521 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_B11ctrl_20260821_184017_1946926",
+      "run_id": "q3dec_B11ctrl_20260821_184017_1946926",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1766 B), config.json (531 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_B11ctrl_20260821_184017_1946927",
+      "run_id": "q3dec_B11ctrl_20260821_184017_1946927",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1770 B), config.json (533 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_C20_20260821_184017_1946719",
+      "run_id": "q3dec_C20_20260821_184017_1946719",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1742 B), config.json (519 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_C20_20260821_184017_1946721",
+      "run_id": "q3dec_C20_20260821_184017_1946721",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1746 B), config.json (521 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_D20_20260821_184017_1946754",
+      "run_id": "q3dec_D20_20260821_184017_1946754",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1742 B), config.json (519 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_D20_20260821_184017_1946756",
+      "run_id": "q3dec_D20_20260821_184017_1946756",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1746 B), config.json (521 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_D20ctrl_20260821_184017_1946855",
+      "run_id": "q3dec_D20ctrl_20260821_184017_1946855",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1765 B), config.json (531 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_D20ctrl_20260821_184017_1946856",
+      "run_id": "q3dec_D20ctrl_20260821_184017_1946856",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1770 B), config.json (533 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_base_20260821_184017_1946635",
+      "run_id": "q3dec_base_20260821_184017_1946635",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1760 B), config.json (528 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3dec_base_20260821_184017_1946636",
+      "run_id": "q3dec_base_20260821_184017_1946636",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1764 B), config.json (530 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3rj_C20_20260820_201224_2562031",
+      "run_id": "q3rj_C20_20260820_201224_2562031",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1651 B), config.json (490 B), plots/ (0 files), results.jsonl (411065 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3rj_D20_20260820_201224_2562032",
+      "run_id": "q3rj_D20_20260820_201224_2562032",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1651 B), config.json (490 B), plots/ (0 files), results.jsonl (417219 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/q3rj_D20ctrl_20260820_201224_2562033",
+      "run_id": "q3rj_D20ctrl_20260820_201224_2562033",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1676 B), config.json (502 B), plots/ (0 files), results.jsonl (413110 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/rederive_crossbank/rederive10_20260825_002905_2199605",
+      "run_id": "rederive10_20260825_002905_2199605",
+      "experiment": "rederive_crossbank",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1374 B), config.json (310 B), plots/ (0 files), rederive_crossbank.json (25653 B)",
+      "has_partial_results": true,
+      "superseded_by": "rederive10_20260825_002934_2201570",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/retrieval_strength/rsmoke_20260824_052119_289467",
+      "run_id": "rsmoke_20260824_052119_289467",
+      "experiment": "retrieval_strength",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1794 B), config.json (623 B), plots/ (0 files), retrieval.jsonl (2674 B)",
+      "has_partial_results": true,
+      "superseded_by": "rsmoke_20260824_052300_289870",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/abR24_C_20260819_162312_494289",
+      "run_id": "abR24_C_20260819_162312_494289",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2326 B), config.json (861 B), gens.jsonl (0 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/abR28_C_20260819_162312_494288",
+      "run_id": "abR28_C_20260819_162312_494288",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2325 B), config.json (861 B), gens.jsonl (0 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/abR8_C_20260819_162312_494290",
+      "run_id": "abR8_C_20260819_162312_494290",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2317 B), config.json (857 B), gens.jsonl (0 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/abVMC_20260821_003746_943096",
+      "run_id": "abVMC_20260821_003746_943096",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2323 B), config.json (860 B), gens.jsonl (303338 B), plots/ (0 files), results.jsonl (245515 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/ctrl_orth_a025_20260817_020009_85819",
+      "run_id": "ctrl_orth_a025_20260817_020009_85819",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2142 B), config.json (757 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "ctrl_orth_a025_20260817_020445_91739",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/ctrl_rand_a025_20260817_020009_85798",
+      "run_id": "ctrl_rand_a025_20260817_020009_85798",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2133 B), config.json (753 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "ctrl_rand_a025_20260817_020445_91740",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/ctrl_rand_s20260819_20260817_042112_3090181",
+      "run_id": "ctrl_rand_s20260819_20260817_042112_3090181",
+      "experiment": "score_behavior",
+      "reason": "aborted",
+      "detail": "ABORTED.json (95 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "ctrl_rand_s20260819_20260817_050531_3094323",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/ctrl_rand_s20260820_20260817_042112_3090178",
+      "run_id": "ctrl_rand_s20260820_20260817_042112_3090178",
+      "experiment": "score_behavior",
+      "reason": "aborted",
+      "detail": "ABORTED.json (95 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "ctrl_rand_s20260820_20260817_050531_3094324",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/fuF_addRand_g075_20260821_223129_3048964",
+      "run_id": "fuF_addRand_g075_20260821_223129_3048964",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2454 B), config.json (873 B), gens.jsonl (1525307 B), plots/ (0 files), results.jsonl (328178 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/len_D_20260818_103518_4120749",
+      "run_id": "len_D_20260818_103518_4120749",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2240 B), config.json (731 B), gens.jsonl (431313 B), plots/ (0 files), results.jsonl (167931 B)",
+      "has_partial_results": true,
+      "superseded_by": "len_D_20260818_111554_3804129",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/len_D_20260818_111006_343424",
+      "run_id": "len_D_20260818_111006_343424",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2238 B), config.json (730 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "len_D_20260818_111554_3804129",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/len_Dctrl_20260818_103518_4120748",
+      "run_id": "len_Dctrl_20260818_103518_4120748",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2240 B), config.json (731 B), gens.jsonl (575862 B), plots/ (0 files), results.jsonl (311657 B)",
+      "has_partial_results": true,
+      "superseded_by": "len_Dctrl_20260818_110947_3803147",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/p2smokeC_20260823_182046_2048774",
+      "run_id": "p2smokeC_20260823_182046_2048774",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2335 B), config.json (867 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "p2smokeC_20260823_211632_2093662",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/q3_C_20260818_151452_3853327",
+      "run_id": "q3_C_20260818_151452_3853327",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2284 B), config.json (723 B), gens.jsonl (130906 B), plots/ (0 files), results.jsonl (75154 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/q3_D_20260818_151452_3853326",
+      "run_id": "q3_D_20260818_151452_3853326",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2348 B), config.json (755 B), gens.jsonl (121970 B), plots/ (0 files), results.jsonl (67637 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/q3_Dctrl_20260818_151452_3853328",
+      "run_id": "q3_Dctrl_20260818_151452_3853328",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (2348 B), config.json (755 B), gens.jsonl (0 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/q3smoke_20260821_155921_1180659",
+      "run_id": "q3smoke_20260821_155921_1180659",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/qwen3_base_20260817_140633_3382348",
+      "run_id": "qwen3_base_20260817_140633_3382348",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1805 B), config.json (528 B), gens.jsonl (1106813 B), plots/ (0 files), results.jsonl (467689 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/qwen3nt_base_20260817_160556_1434592",
+      "run_id": "qwen3nt_base_20260817_160556_1434592",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1884 B), config.json (564 B), gens.jsonl (181709 B), plots/ (0 files), results.jsonl (76049 B)",
+      "has_partial_results": true,
+      "superseded_by": "qwen3nt_base_20260817_163110_3560487",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/wa_D_20260818_184457_3887694",
+      "run_id": "wa_D_20260818_184457_3887694",
+      "experiment": "score_behavior",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (2289 B), config.json (877 B), gens.jsonl (0 B), plots/ (0 files), results.jsonl (1265604 B)",
+      "has_partial_results": true,
+      "superseded_by": "wa_D_20260818_190957_3891689",
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/score_behavior/wa_smoke_20260818_172008_374416",
+      "run_id": "wa_smoke_20260818_172008_374416",
+      "experiment": "score_behavior",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1948 B), config.json (688 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": "wa_smoke_20260818_172502_375200",
+      "safe_to_delete": false
+    }
+  ]
+}
