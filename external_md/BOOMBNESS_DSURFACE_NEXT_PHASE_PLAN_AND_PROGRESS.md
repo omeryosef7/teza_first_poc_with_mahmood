@@ -693,6 +693,71 @@ carries it.
 
 ---
 
+### 🔬🔬 PHASE 8 LAUNCHED (14:26) — **the power fix R-AQ needed, and it is not more prompts**
+
+R-AQ closed band-localisation as unresolvable and said it would need *"a materially larger population,
+not more arms."* **I checked whether that population exists, and it does not:**
+
+```
+behavioral + natural_doublespeak, whole bank:            468 rows
+  ... in core2x2+slot3 AND carrying a demo_block:        108 rows   <- the ceiling
+  ... currently used:                                     96 rows
+domains available:                                          6       <- the real constraint
+```
+
+The remaining blocks are unusable or unsafe: **`strength` (48 rows) has non-empty `demo_block` on
+zero-demonstration rows (R-Z)**, and `role_style` (180) / `families` (72) / `consistency` (36) are
+*different design factors* — merging them is the R-18 population-contamination shape. **So the bank tops
+out at 108 safe rows, a 12 % increase, which resolves nothing.**
+
+**And more prompts was never the binding constraint anyway.** The exact paired sign-flip test operates on
+**domain clusters**, and there are **6**, so its p-floor is `2/2⁶ = 0.03125` *no matter how many prompts
+each domain holds*. Every "p at the floor" in this phase was floored by the **number of domains**, not
+the sample size. **Adding prompts could never have fixed it.** That is a structural property of the
+design and I am recording it plainly so the next person does not spend a week discovering it.
+
+#### The fix: replicate across BANKS, and cluster on bank × domain
+
+Phase 5/6 built **8 crossed banks**, each independently generated, audited, and — verified just now —
+each carrying its **own 96-row, 6-domain, 16-per-domain population with identical structure**:
+
+| bank | n | domains | per domain |
+|---|---|---|---|
+| `basket_bomb` / `button_knife` / `ticket_bomb` / `window_knife` | 96 each | 6 | 16 |
+
+Clustering on **(bank × domain)** instead of domain alone:
+
+| banks | clusters | exact sign-flip p-floor |
+|---|---|---|
+| 1 | 6 | 0.03125 |
+| 2 | 12 | 4.88e-04 |
+| **3** | **18** | **7.63e-06** |
+| 4 | 24 | 1.19e-07 |
+
+**This is the first design in the project capable of giving its central causal claim a properly powered
+test.** The banks are genuine independent replications — different codewords, different concepts,
+separately fitted, separately audited — so bank × domain is a defensible clustering unit rather than a
+way of manufacturing degrees of freedom.
+
+**Launched: 6 arms, jobs 777385–777390** — `baseline` and `demo_all:attn_knockout:7-17` on each of
+**`button_knife`, `ticket_bomb`, `window_knife`** (Qwen3, depth-matched band, `--expect-n 96`). Together
+with the existing main-bank pair (`p4q3A` / `p4q3C_band`) that is **4 populations × 6 domains = 24
+clusters.**
+
+#### 📌 PRE-REGISTERED
+
+* **If the knockout replicates on all four banks**, the headline result graduates from *"−0.1667, p at
+  the 0.0625 floor"* to a magnitude estimate with a p-floor of **1.2e-07** — the first non-floored
+  significance test in this phase.
+* **If it replicates on some banks and not others**, that is bank-dependence and must be reported as
+  such — the crossed banks differ in codeword *and* concept, so a split would localise the effect to
+  particular lexical content.
+* ⚠ **This tests the CAUSAL claim, not the localisation one.** D-12 stands: I am **not** re-running the
+  sub-band arms, because more clusters do not fix differences smaller than the measurement's own
+  reproducibility.
+
+---
+
 ### ⛔⛔ R-AQ / C-10 (14:02) — **R-AP's LAW IS RETRACTED. `L7-9` is not inert, and I have been building structure on 1-3 prompt differences. Stopping the subdivision.**
 
 **Artifact:** judge **777372**, five arms in **one session** (the within-session test R-AP itself named
