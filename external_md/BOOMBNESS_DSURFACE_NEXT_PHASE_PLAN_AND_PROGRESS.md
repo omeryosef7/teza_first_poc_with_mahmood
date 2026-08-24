@@ -56,8 +56,9 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
   to test whether the concept subspace is exactly 2-D. **Null pre-registered before the data exists:**
   PC3 median **0.3246**, 95 % [0.3170, 0.3297].
 * `basket_gun` behavioural arms, both models (**778790–778793**, queued) — **Phase 10**, a **third
-  demonstration pool**. R-BB shows k=18 would let a calibrated CI exclude zero **if** `gun` resembles the
-  bomb pool; both branches pre-registered.
+  demonstration pool**, taking `pool × domain` from k=12 to k=18. **Predicted to exclude zero with
+  P = 0.92–0.999 under every branch** (R-BB refined); **failure would be the surprising, informative
+  outcome.**
 
 ---
 
@@ -738,6 +739,42 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### 📌 R-BB REFINED (20:34) — **the pre-registration is now quantitative, and my own caveat was too PESSIMISTIC.** Phase 10 should exclude zero under every branch.
+
+R-BB's caveat was qualitative — *"if `gun` behaves like the knife pool it may not be enough."*
+**Simulated properly, that is wrong in the conservative direction.** Resampling six new clusters from
+each pool's observed values, 4 000 sims per branch, and recomputing the calibrated t-CI at k=18:
+
+| branch | **P(CI excludes 0)** | median CI upper |
+|---|---|---|
+| **A — `gun` behaves like the BOMB pool** | **0.999** | −0.0413 |
+| **B — `gun` behaves like the KNIFE pool** *(the weak one)* | **0.921** | −0.0057 |
+| C — `gun` ≈ average of both | 0.980 | −0.0210 |
+
+**Even the pessimistic branch excludes zero 92 % of the time.** The reason is arithmetic and I had not
+thought it through: the knife clusters are **[−0.0625, −0.0312, −0.0312, 0, 0, 0]** — tightly bunched
+near zero. Adding six of those pulls the mean toward zero (to ≈ −0.075) **but also cuts the SD**, which
+is currently **0.1643** and driven almost entirely by the bomb pool's spread (−0.5625 … 0). **`se = sd/√k`
+falls on both counts, and the second effect dominates.**
+
+> **Sharpened pre-registration: Phase 10 (k=18) is predicted to exclude zero with probability 0.92–0.999
+> under every branch I can construct from existing data. If it does NOT, that is a genuinely surprising
+> result** — it would mean `gun` behaves unlike *both* existing pools, and that heterogeneity, not
+> sample size, is the binding constraint. **That would be the informative outcome, and it is now a
+> falsifiable prediction rather than a hedge.**
+
+⚠ **What the simulation does not capture.** It resamples from **six** observed values per pool, three of
+the knife ones exactly 0. **A genuinely new pool carries uncertainty beyond resampling an existing one** —
+`gun` could be more variable than either, which would widen rather than narrow the interval. The
+simulation bounds the *between-pool-mean* uncertainty, not the *new-pool-variance* uncertainty.
+
+⚠ **Recorded because the direction of the error matters.** Every previous correction in this phase moved
+a claim of mine **downward**; this one moves a caveat **upward**. I stated a hedge without computing it,
+exactly as C-15 caught me doing — **the failure is "not computing the caveat", and it is symmetric,
+not a bias toward optimism.**
 
 ---
 
