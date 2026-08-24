@@ -693,6 +693,65 @@ carries it.
 
 ---
 
+### ⚠⚠ R-AT (13:22) — **FIRST LLAMA CROSS-BANK CELL IS A NULL, and headroom does not explain it away.** One cell, tiny n; the informative test is still queued.
+
+**Artifact:** judge **777664** (`ALL DONE, 2 runs`, both `verified … (96 rows)`), arms
+`lbA_button_knife_20260824_114612_2280721` / `lbC_button_knife_20260824_115545_2282473` (jobs
+777525/777526).
+
+#### The intervention fired — checked BEFORE reading the null, as the standing rule requires
+
+```
+band 6-14 -> blocks 6..14 of 32 (depth 0.188-0.469, 9 blocks)
+KNOCKOUT PRE-FLIGHT: n_rows 96, no_demo_block 0, infeasible_control 0, 24/24 ok at every n_examples
+KNOCKOUT LIVENESS:   frac_rows_decode_live 1.0, median_decode_edits 67135.5,
+                     min_decode_forwards 1359, median_n_demo_positions 44.5, attn eager
+```
+
+**Live on every row. The null is a measurement, not a dead hook.**
+
+#### The result
+
+| | baseline | knockout | Δ | prompt-level | refused |
+|---|---|---|---|---|---|
+| **Llama** `button_knife` L6–14 | 0.0938 | 0.1042 | **+0.0104** | **6 down / 7 up** | 0.0521 → 0.0000 |
+| *Qwen3, same bank*, L7–17 | 0.0625 | **0.0000** | −0.0625 | **6 down / 0 up** | — |
+| *Llama, MAIN bank*, L6–14 | 0.2292 | 0.0521 | −0.1771 | — | — |
+
+Per-domain on Llama: `game_manual +0.250`, `lab_safety −0.125`, `instructional −0.0625`, three at 0.
+**Scattered around zero.**
+
+#### ⚠ The tempting explanation, and why I am not using it
+
+The obvious move is *"this bank has no headroom on Llama"* — baseline 0.0938 is **9 successful prompts
+of 96**, so the largest expressible effect is 9 flips. **That explanation does not survive the
+comparison**: **Qwen3 had LESS headroom on the same bank — 6 prompts — and flipped 6 of 6 to zero.**
+A cell with *more* room to move showed nothing while a cell with less showed complete suppression.
+
+**So this is a genuine model × bank interaction, not a floor artifact, and I am recording it as such
+rather than explaining it away.**
+
+#### ⚠ What must NOT be concluded from this
+
+1. **NOT "the mechanism is Qwen3-specific."** Llama shows −0.1771 on the main bank (R-R, R-AB) with the
+   same arm and the same band — a result that replicated across sessions. One null on one bank does not
+   overturn it.
+2. **NOT "R-AR is undermined."** R-AR is a Qwen3 claim over four banks; this adds a *Llama* cell and
+   changes nothing about the Qwen3 evidence.
+3. **NOT anything quantitative.** 9 versus 6 prompts of headroom, 13 discordant rows total. **This cell
+   cannot support an effect-size statement in either direction.**
+
+#### What would settle it
+
+**`ticket_bomb` is the informative Llama bank** — it carries the highest baseline of the four on Qwen3
+(0.2812), so it is the one with room to show an effect. **Its Llama arms are jobs 777565/777567, still
+`PD (Priority)`.** Until they land, the honest position is: **the Llama cross-bank replication has one
+cell, it is null, the intervention demonstrably fired, and headroom does not account for it.**
+
+⚠ Recorded now, before those jobs run, so the interpretation cannot be adjusted after seeing them.
+
+---
+
 ### ⚠ COMPUTE DIAGNOSED (13:05) — **fair-share is the SOLE constraint. Widening the nodelist does not help, and I tested that before acting on it.**
 
 The earlier note said `gpu-sharifm` was the fix. Investigating further changes the picture:
