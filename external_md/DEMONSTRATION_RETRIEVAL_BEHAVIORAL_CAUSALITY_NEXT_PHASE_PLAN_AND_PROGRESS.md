@@ -727,7 +727,81 @@ started with.**
 *(Each entry is fixed before the corresponding result exists and is never edited afterwards; a
 superseded pre-registration gets a new entry that says so.)*
 
-*(none yet)*
+### 🔒 PR-1 (00:58) — **PHASE 1: the same-session scoped decomposition.** Written before any scoped arm exists, before any code for it is merged, and before any judging.
+
+**Primary estimand.** Paired ASR@0.5 delta against the *same-session* baseline `A`, on the canonical
+96-row behavioural population, per model. **Paired**, because the inherited judge-reliability finding
+(same generations re-judged: identical binary label on only **78/96** rows) means only paired
+aggregates are stable.
+
+**Primary comparison.** `C_response_query_only` versus `C_legacy_full_scope`. Everything else in the
+arm list exists to interpret that one contrast.
+
+**Unit of independence.** The **domain** (k = 6). Not the prompt (the 96 slots are one shared design —
+R-1), not the bank, not the model. The attainable two-sided sign-flip floor at 6 informative domains is
+`2/2⁶ = 0.03125`, and **any p at or near that floor is reported as a sign test, with the floor quoted
+beside it**. The magnitude and its calibrated interval are the quotable quantities.
+
+**THE EQUIVALENCE MARGIN, fixed now.** Two arms are called **equivalent** when
+`|Δ_arm1 − Δ_arm2| ≤ 0.03125`, i.e. **3 prompts of 96**. Justification, in advance: the previous
+phase's own within-session re-measurement spread on identical arms was **2–3 prompts of 96**
+(prev-C-10's table: `L7–9` −0.0208 → −0.0625; `L10–12` −0.0312 → −0.0625), and prev-R-BE's cross-session
+judge drift is ~1 row. **A difference smaller than 3 prompts is below this instrument's demonstrated
+reproducibility and will not be interpreted, in either direction.** An arm is called **weak** when
+`|Δ| ≤ 0.03125` and **large** when it reaches ≥ 50 % of the legacy arm's Δ in the same session.
+
+**Expected outcomes and what each would mean** — the plan's Outcomes A–E, with the margin applied:
+
+| outcome | pattern | reading |
+|---|---|---|
+| **A** | `response_query_only` ≈ legacy (within margin) **and** `demo_processing_only` weak | the causal path is **response/query access to the demonstrations**. The strongest available result, and the one that would license the wording the project has been using loosely |
+| **B** | `demo_processing_only` large, `response_query_only` weak | ⛔ **retract the "generated answer retrieval" wording.** The result becomes *disrupting the demonstrations' own encoding suppresses the attack* — still publishable, differently worded |
+| **C** | `query_prefill_only` large, `decode_only` weak | the retrieval event is concentrated in constructing the final query state **before** generation |
+| **D** | `decode_only` large | genuinely ongoing retrieval **during** autoregressive generation |
+| **E** | legacy large, **every** scoped arm weak | the legacy effect needs interacting disruption across prompt **and** response computation. **State it directly; do not average the scoped arms into a preferred story** |
+
+**Falsifier for the phase's headline hypothesis.** The chain
+*demonstrations → response-time retrieval → behaviour* is **falsified** if `response_query_only` is
+weak (|Δ| ≤ 0.03125) while the legacy arm is large **on both models**. That is Outcome B or E and it
+will be reported as a falsification, not as a scoping caveat.
+
+**Stopping rule.** One 7-arm session per model. **No arm is added after seeing a number.** If a mode's
+liveness gate fails, that arm is **VOID** and is re-run after the hook is fixed — it is never reported
+with a caveat.
+
+**Secondary analyses allowed** (declared now, so nothing is added later): thresholds 0.25 / 0.75;
+per-domain deltas; refusal rate; the generation-health block in §4.2 of the plan; and the
+`n_examples` monotonicity check that prev-R-AI ran. **Not allowed:** per-prompt "the same prompts
+flipped" claims, any leave-one-out that was not declared here, and any re-clustering after seeing the
+result.
+
+#### ⚠ Two design blockers established BEFORE implementation, both from the adversarial review
+
+**(1) The liveness gate will refuse two of the five modes by construction.**
+`assert_knockout_live` requires `frac_rows_decode_live ≥ 0.99` (`KNOCKOUT_MIN_LIVE_FRAC`). But
+`query_prefill_only` and `demo_processing_only` **make no decode edits at all** — that is their
+definition. Left as-is the gate would either abort them or, worse, they would be reported as clean
+nulls from a hook that never fired at decode because it was never supposed to. **Resolution, fixed
+now:** liveness becomes **mode-aware** — each mode declares which counter is its proof
+(`prefill_edits > 0` for the prefill-scoped modes, `decode_edits > 0` for the decode-scoped ones, both
+for `response_query_only` and `legacy_all_query`) and the gate asserts *that* counter. **A mode whose
+declared counter is zero is VOID.** The gate must not be loosened to "either counter", which would let
+a genuinely dead decode hook pass on its prefill edits.
+
+**(2) `decode_only` cannot affect the first generated token.** Verified, not assumed: the prefill mask
+is unmodified and decoding is greedy (`do_sample=False`), so token 1 comes from the final prefill query
+state and is **bit-identical to baseline** by construction. **Consequence for interpretation:** a small
+`decode_only` effect is *not* evidence that decode-time retrieval is unimportant if the behavioural
+fork is decided at token 1. ⚠ The review also measured that the fork is **not** normally at token 1 on
+this population (median `n_new_tokens` = 117.5, min 29, **fraction with ≤ 3 new tokens = 0.000**), so
+the confound is real but is not the typical case. **Both facts go in the write-up; neither is used to
+explain away a null.**
+
+**Pre-registered instrument check, before any scientific arm.** The 8-row smoke must show, per mode:
+the intended query rows edited and no others; the intended key positions and no others; the declared
+liveness counter non-zero on **100 %** of rows; generations changed versus baseline; and
+`legacy_all_query` **byte-identical** to today's behaviour. **If any of these fails the arm does not
+run.**
 
 ## B2. DECISIONS
 
@@ -787,6 +861,33 @@ anyway, so nothing is blocked by deferring it. The question for the user is whet
 *"add a fourth demonstration pool"* as written, *"regenerate pools at 8–10 domains"* per R-BE, or both.
 **Phases 1, 2 and 3 are unaffected and proceed.**
 
+**D-5 (00:52) — USER RULING ON D-4: do BOTH. Phase 4 keeps the fourth demonstration pool *and* gains a
+domain-expansion arm.** Asked directly (D-4 laid out fourth-pool / more-domains / both); the answer was
+**both**. So Phase 4 splits into two independently-reportable sub-phases, and the ordering matters
+because they answer different questions:
+
+* **4A — fourth pool (`club`), as plan §9 wrote it.** Confirmatory, frozen analysis, the `club` corpus
+  already exists and is audited. It tests *"does the effect hold on a corpus it was not discovered
+  on?"* — and after **R-2** that question is sharper than when the plan was written, because the
+  pooled direction is currently carried by the bomb corpus alone (81/11) while knife (15/7, p = 0.134)
+  and gun (17/12, p = 0.458) are null. **`club` is therefore a genuine test, not a formality: if it
+  behaves like knife and gun, the honest claim becomes "the effect is a property of the bomb corpus".**
+  ⚠ It adds **no** domain clusters, so it cannot move the k=6 marginal — that is not its job.
+* **4B — regenerate pools at 8–10 domains, one bank per pool.** This is the axis prev-R-BE identifies
+  as the binding one, and it is the only untried route to a domain marginal that could exclude zero.
+  `src/boombness/demo_pools.py` holds `DOMAINS` at module level (~line 60) and records it in
+  `_meta.domains`, so this is an ordinary bank-generation job with no new machinery.
+  ⚠ Carry prev-R-BE's caveat verbatim: the 8-domain projection holds mean and sd fixed while the effect
+  is **concentrated** (`game_manual` −0.2562 against a −0.0865 mean; `lab_safety` exactly 0.0000). New
+  domains may be `lab_safety`-like and raise sd as they lower the mean. **Pre-register that the new
+  domains are accepted or rejected on their audit, never on their effect size**, or 4B becomes a search
+  for domains that help.
+
+**Both remain downstream of Phases 1–3** and neither is started. The scoped-knockout decomposition
+(Phase 1) is still the sprint's highest-priority experiment, because 4A and 4B both measure *an
+intervention whose scope is not yet isolated* — running either before Phase 1 would spend a corpus and
+a bank-generation cycle on the legacy arm.
+
 ## B3. EXPERIMENT STATUS BOARD
 
 Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted · ⏸ blocked
@@ -803,7 +904,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P2B | 2B | completion phenotype instrument | ⬜ | — |
 | P2C | 2C | row-wise demo-deletion control | ⬜ | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
-| P4 | 4 | fourth demonstration pool (`club`), frozen confirmatory | ⬜ | analysis frozen first |
+| P4A | 4 | fourth demonstration pool (`club`), frozen confirmatory | ⬜ | analysis frozen first |
+| P4B | 4 | regenerate pools at 8–10 **domains**, one bank per pool | ⬜ | domains accepted on audit, never on effect size |
 | P5 | 5 | joint crossed bank | ⬜ | strict acceptance |
 | P5B | 5B | geometry on both models | ⬜ | — |
 | P6 | 6 | Qwen3 retrieval × refusal | ⬜ | identifiability gate |
