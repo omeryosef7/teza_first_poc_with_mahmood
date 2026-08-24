@@ -693,6 +693,66 @@ carries it.
 
 ---
 
+### ★★★★★ R-AL / C-8 (09:41) — **R-AK's reversal IS an averaging artifact. Correcting myself: at HEAD granularity the causal band wins on Qwen3, and one head carries it.**
+
+**Artifacts:** `rsLlamaH_20260824_055248_2170973` (job **777320**) and
+`rsQwen3H_20260824_060002_2170972` (job **777321**), 96/96 rows each, 0 skipped.
+
+**The pre-registered first branch is what happened — the branch I explicitly flagged as less likely.**
+
+| | MEAN band > late | binomial p | **HEAD-MAX band > late** | binomial p |
+|---|---|---|---|---|
+| **Llama** | **88/96 = 0.9167** | 3.67e-18 ✅ | 55/96 = 0.5729 | **0.184 — n.s.** |
+| **Qwen3** | **6/96 = 0.0625** | 2.50e-20 ❌ *wrong direction* | **71/96 = 0.7396** | **2.87e-06** ✅ |
+
+`band_head_max` vs `late_head_max`: Llama **0.2956 / 0.2893** (barely apart); Qwen3
+**0.5639 / 0.4253** (clearly apart).
+
+#### ⛔ C-8 — what I withdraw
+
+> **R-AK concluded:** *"attention mass to the demonstrations is not the causally relevant quantity at
+> any granularity tested."* ⛔ **That sentence is withdrawn.** It was written when only the band mean had
+> been measured, and the very next granularity overturns it: on Qwen3 the causal band's **top head**
+> exceeds the late band's in **74 % of rows at p = 2.9e-06**, while its *mean* was lower. **The
+> reversal was an averaging artifact**, exactly as branch 1 of the pre-registration allowed.
+
+R-AK's *measured numbers* stand; its **generalisation over granularities** did not survive the test it
+itself named. And I had recorded an early warning pointing the **wrong way** — the 8-row smoke's
+`3 of 8` on Llama, which I flagged as making branch 2 "more likely". **At n=96 that became 55/96;
+the smoke figure was small-n noise and my inference from it was wrong.**
+
+#### 🔍 The mechanism is CONCENTRATED on Qwen3 and DISTRIBUTED on Llama — that is why no single statistic works on both
+
+Most frequent top band head, by row:
+
+| model | top head, occurrences of 96 |
+|---|---|
+| **Qwen3** | **L8 head 22 — 72 / 96 (75 %)**, then L14h19 (7), L14h15 (5), L7h7 (4) |
+| Llama | L6h22 (27), L13h3 (23), L7h21 (18), L7h24 (16) — **no head above 28 %** |
+
+**Qwen3 routes demonstration attention through one head; Llama spreads it over at least four.** That
+explains the whole pattern: a *mean* detects the distributed case and is diluted in the concentrated
+one; a *max* detects the concentrated case and is noisy in the distributed one. **Neither statistic is
+wrong — each matches a different architecture of the same mechanism.**
+
+#### Where this leaves Phase 7
+
+**Still no single quantity separates on both models** (`mean` fails Qwen3, `head-max` is n.s. on Llama),
+so the objective search is **not** reopened on this evidence. But R-AK's stronger claim is gone, and
+something better has appeared: **a named, concrete, testable object — Qwen3 `L8 head 22`**, the top
+demonstration-attention head in 75 % of prompts, sitting inside the band whose knockout removes 94 % of
+attack success.
+
+**Next experiment, and it is a sharp one:** knock out **only that head** and compare against (a) the
+full-band knockout (−0.1667) and (b) count-matched random heads in the same band. If one head of 40 in
+one layer of 40 reproduces a meaningful share of the band effect, that is the most localised causal
+claim this project has made.
+
+⚠ Llama has no equivalent single target — **the same experiment is not available there**, and that
+asymmetry is itself the finding, not a gap to paper over.
+
+---
+
 ### 🔬 PHASE 7c LAUNCHED (09:22) — per-HEAD retrieval, testing R-AK's own stated limit
 
 R-AK's limit was explicit: the reversal is measured on a **band average**, and *"a per-head
