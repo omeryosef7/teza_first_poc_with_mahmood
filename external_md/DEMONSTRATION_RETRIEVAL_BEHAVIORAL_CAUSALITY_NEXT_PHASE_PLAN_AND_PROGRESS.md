@@ -897,11 +897,11 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P0.1 | 0 | independent re-derivation of the cross-bank result from raw artifacts | ✅ **R-1** — reproduces prev-C-18 to the digit; **R-2** is new and amends the headline | — |
 | P0.2a | 0 | prev-C-18 fixes pinned by regression tests + `require_done` on inputs + k=1 guard | ✅ done | — |
 | P0.2b | 0 | atomic `--strict` bank write | ✅ done — validation now precedes the rename | — |
-| P0.2c | 0 | judge backend pinning + per-row provenance | ⬜ **still open** | — |
-| P0.2d | 0 | `EXCLUDED_RUNS.json` for the 5 dirs without `DONE.json` | ⬜ **still open** | — |
+| P0.2c | 0 | judge backend pinning + per-row provenance | 🔬 implementing | — |
+| P0.2d | 0 | `EXCLUDED_RUNS.json` for the dirs without `DONE.json` | 🔬 implementing | — |
 | P0.2e | 0 | metric renames (`uniq_frac`, `delta_pooled`, bare `dose`) | ⬜ **still open** | — |
 | P0.3 | 0 | full test suite triage — 18 failures classified and repaired | ✅ **760 passed, 0 failed, 7 skipped** (was 721/18/7) | **Phase-0 exit** |
-| P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ⬜ | — |
+| P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | 🔬 implementing | — |
 | P1.2 | 1 | 8-row liveness smoke, both models | ⬜ | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
 | P2 | 2 | semantic binding probe + causal intervention on it | ⬜ | — |
@@ -922,7 +922,7 @@ stay visible)*
 
 | job id | owner | what | submitted | tree commit | output | status |
 |---|---|---|---|---|---|---|
-| **779083 / 779084** | ⚠ **UNATTRIBUTED** | `boomb`, submitted **2026-08-24 23:20:23**, `killable`, `n-801`, `WorkDir` = this repo. Read from the previous log as Phase 10b Qwen3 `button_gun`. **Nobody in contact claims them.** | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | **RUNNING** at 00:41 (47 min). **Left alone.** Not this phase's; results not consumed by this phase without re-verifying provenance |
+| **779083 / 779084** | ⚠ **UNATTRIBUTED — now identified** | `boomb`, submitted **2026-08-24 23:20:23**, `killable`, `n-801`, `WorkDir` = this repo. Read from the previous log as Phase 10b Qwen3 `button_gun`. **Nobody in contact claims them.** | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | ✅ **COMPLETED 01:29:56**, both, exit 0:0. **Left alone throughout; never cancelled.** Owner identified at 00:47 as `bridge:session_014rrdKYhbejM6zf4W2mjomM`, which has since stopped and explicitly disowned them. **Not consumed by this phase** — and their scientific value is moot regardless, because prev-C-18 invalidated the *unit*, not the number, so equalising the gun pool's depth cannot rescue prev-R-BD |
 | 779085 / 779086 | ⚠ unattributed | Llama half of the same pair; reported COMPLETED in the previous log | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | COMPLETED (per prev-log) |
 | 776368 | peer (`…FOLLOWUP implementation`) | `run_band2_judge.sh`, `cpu-killable` | 2026-08-23 17:16 | `91e30a62` | `.../judge/bnd2_*` | peer has stopped and is not analysing it |
 
