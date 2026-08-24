@@ -693,6 +693,60 @@ carries it.
 
 ---
 
+### 🔬🔬 PHASE 6d LAUNCHED (05:40) — **the first genuinely DOSE-MATCHED specificity test this project has ever been able to run**
+
+This is what the whole phase was for. R-C, R-V and R-W each ended the same way: an arm and its
+"control" differed in **realized dose by 6× to 25×**, so nothing about *direction identity* could be
+concluded. R-AF finally supplies two directions that are **named, orthogonal, and comparable in dose**.
+
+Doses measured with the repo's own `cellmean_dose`, on the **`basket_bomb`** cell means — the bank the
+arms actually run on:
+
+| direction @ L14 | dose | cos with N |
+|---|---|---|
+| `d_surface` (this bank's own) | 0.8108 | — |
+| **`N` — the concept axis** | **0.2045** | 1.0000 |
+| **`W_pc1` — top codeword-subspace PC** | **0.2392** | **+0.0098** |
+| codeword PC2 / PC3 | 0.0027 / 0.0077 | +0.05 / +0.01 |
+| `u_basket` (this codeword's own identity) | 0.2456 | −0.0111 |
+
+**Dose ratio 0.2392 / 0.2045 = 1.17×, at cos = +0.0098.** Compare every prior control in this project:
+Llama L12 **6.83×**, Qwen3 L11 **24.79×**, best-possible-orthogonal on a single-pair bank **14.05×**.
+**A 1.17× ratio between orthogonal directions is a different kind of experiment.**
+
+*(PC2 and PC3 have near-zero dose here, correctly: they encode differences among the OTHER codewords,
+which do not vary inside a `basket_bomb` prompt set. Only PC1, which carries `basket`'s own identity,
+acts on this bank — and its dose 0.2392 ≈ `u_basket`'s 0.2456, as it should.)*
+
+**Arms — jobs 777243 / 777244 / 777245**, one bank, one population (`n = 96`), `--attn-impl eager`,
+all three to be judged in **one session**:
+
+| job | arm | intervention |
+|---|---|---|
+| **777243** | `A_baseline` | none |
+| **777244** | `N_concept_axis` | `d_surface:project_out:14-14:1.0` against `fitN_concept` |
+| **777245** | `W_codeword_pc1` | `d_surface:project_out:14-14:1.0` against `fitW_codeword` |
+
+**No new analysis code.** The two arms are ordinary `project_out` runs; the only construction is a fit
+payload whose `d_surface` entry has been **replaced** by the cross-bank direction, with `cell_means`
+left as `basket_bomb`'s so that `score_behavior` computes and records the realized dose itself
+(`meta.derived` records the substitution). Both dirs carry `DONE.json`.
+
+#### 📌 PRE-REGISTERED, before any generation finishes
+
+* **If the doublespeak attack works by remapping the CONCEPT**, removing `N` should suppress ASR
+  **more** than removing `W_pc1` at matched dose.
+* **If it works through the CODEWORD's surface identity**, the reverse.
+* **If both move together**, the effect is dose-driven and **direction identity still does not matter**
+  — which would be the third consecutive negative on specificity, and the cleanest one, because for the
+  first time the doses actually match. **That outcome is a real possibility and is being recorded as
+  such in advance, not treated as a failure of the setup.**
+
+⚠ Whatever lands, the **null-interpretation rule applies**: `project_out` arms must show a non-zero
+realized dose in their own run metadata before any null is read.
+
+---
+
 ### ★★★★★ R-AF / C-5 (05:18) — **PHASE 6c: all four pre-registered predictions CONFIRMED at K=4. And one of my own earlier arguments was near-circular; C-5 corrects it.**
 
 **Artifacts:** `x2fit_window_bomb_20260824_025944_2154051` (777215, 13:26) and
