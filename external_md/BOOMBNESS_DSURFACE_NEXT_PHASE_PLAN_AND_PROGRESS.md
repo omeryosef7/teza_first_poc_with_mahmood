@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR/C-11/C-12: 2 pools, 4 codewords, 2 models; **46 down vs 3 up (p=7.0e-11)**, cluster-robust **p=1.56e-02** | Gate RETRIEVAL **PASSED** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** — R-AV: **Δ=−0.1120, CI95 [−0.2292,−0.0339]** at the most conservative unit, zero excluded at every unit and threshold; cluster p **not quotable** (0.0625 at the right unit) | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,70 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### 🏆🏆 R-AV / C-13 (14:11) — **THE CLUSTER p CANNOT ESTABLISH THIS AT ANY UNIT. THE BOOTSTRAP CI CAN, AND DOES, AT EVERY UNIT.** Final form of the statistic.
+
+R-AU left a contradiction: REVIEW-5 argued the banks are non-independent from **r = 0.90–0.98** between
+their domain delta-profiles, while R-AU found their **attackable prompts barely overlap** (Jaccard
+0.000–0.387). Both are true. Resolving it changes the right clustering unit — **against my own headline
+again.**
+
+#### The r = 0.90–0.98 is the DOMAIN MAIN EFFECT, not bank redundancy
+
+Domain main effect, averaged across all four Qwen3 banks:
+
+```
+city -0.109   farm -0.031   game -0.391   inst -0.078   lab 0.000   news -0.062
+```
+
+**Every bank shows the same domain ranking** — `game_manual` largest, `lab_safety` exactly zero. Removing
+that shared profile collapses the correlations and mostly **reverses** them:
+
+| pair | raw r | **after removing the domain effect** |
+|---|---|---|
+| main ~ ticket_bomb | +0.975 | +0.813 |
+| main ~ button_knife | +0.949 | **−0.559** |
+| main ~ window_knife | +0.950 | **−0.957** |
+| ticket ~ button | +0.899 | **−0.815** |
+| ticket ~ window | +0.918 | **−0.903** |
+| button ~ window | +0.980 | +0.560 |
+
+**Once domain is accounted for, the banks are if anything anti-correlated.** So REVIEW-5's correlation
+argument does not show that *pools* are the dependence — **it shows that DOMAIN is.** And the domain
+effect spans **all four banks regardless of pool**, so the conservative unit is **domain (6)**, which is
+*stricter* than the pool × domain (12) I adopted in C-11.
+
+#### The consequence, computed at every candidate unit
+
+| clustering unit | **bootstrap CI95** | frac ≥ 0 | sign-flip p |
+|---|---|---|---|
+| bank × domain (24) | [−0.1849, −0.0521] | 0.0000 | 2.44e-04 |
+| pool × domain (12) | [−0.2161, −0.0365] | 0.0000 | 1.56e-02 |
+| **DOMAIN only (6)** — *the defensible unit* | **[−0.2292, −0.0339]** | **0.0000** | **6.25e-02** |
+| bank only (4) | [−0.1875, −0.0365] | 0.0000 | 1.25e-01 |
+
+**Two things fall out, and they point opposite ways:**
+
+1. ⛔ **The sign-flip p is entirely an artifact of the clustering choice** — 2.4e-04 → 0.0156 → **0.0625**
+   → 0.125 across units, spanning **500×**. At the defensible unit it is **0.0625, exactly the floor**.
+   **So Phase 8 never escaped its p-floor at the cluster level, under any honest unit.** C-11 said the
+   defensible p was 0.0156; **C-13 corrects that to 0.0625, i.e. no cluster-level significance at all.**
+2. ✅ **The bootstrap CI excludes zero at EVERY unit, including bank-only with just 4 clusters**
+   (`frac_boot ≥ 0 = 0.0000` in all four). The point estimate is identical throughout (−0.1120); only the
+   width moves, and never enough to touch zero.
+
+> **Final form. The effect size is Δ = −0.1120 with CI95 [−0.2292, −0.0339] at the most conservative
+> defensible clustering (domain), excluding zero at every unit tried and at every StrongREJECT threshold.
+> The cluster sign-flip p is NOT quotable — it is 0.0625 at the right unit and its apparent significance
+> elsewhere was a clustering artifact.** The prompt-level 46:3 remains as a direction statement only.
+
+⚠ **This is the third successive downward correction of my own headline** — 2.44e-04 (R-AR) → 0.0156
+(C-11) → **no cluster p at all** (C-13). Each was found by looking harder at the same data, twice by me
+and once by review. **The effect has survived every one of them; only my characterisation of its
+strength kept being wrong.** The pattern is consistent: I reached for the most favourable admissible
+statistic each time rather than the most defensible one.
 
 ---
 
