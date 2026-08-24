@@ -125,14 +125,20 @@ def main() -> int:
         q = seq_len - 1                       # the position that emits the first generated token
         d_idx = torch.tensor(dk, device=o.attentions[0].device)
         c_idx = (torch.tensor(ctrl, device=o.attentions[0].device) if ctrl is not None else None)
-        def _mass(layers, idx):
-            v = []
+        def _mass(layers, idx, per_head=False):
+            v, ph = [], {}
             for L in layers:
                 a = o.attentions[L][0, :, q, :]        # (heads, kv)
-                v.append(float(a[:, idx].sum(-1).mean()))
-            return v
-        dmass = _mass(band, d_idx)
-        lmass = _mass(late, d_idx)                     # SAME positions, late band
+                h = a[:, idx].sum(-1)                  # (heads,)
+                v.append(float(h.mean()))
+                if per_head:
+                    ph[str(L)] = [float(x) for x in h]
+            return (v, ph) if per_head else v
+        # PER-HEAD, added after R-AK. Band-level mass ANTI-predicts causal importance on Qwen3
+        # (band 0.0316 vs late 0.0416 while the band knockout is 2.7x stronger). A band average can
+        # hide a small set of heads that do carry retrieval, so the head vectors are kept.
+        dmass, dhead = _mass(band, d_idx, per_head=True)
+        lmass, lhead = _mass(late, d_idx, per_head=True)   # SAME positions, late band
         cmass = _mass(band, c_idx) if ctrl is not None else []
         dm = sum(dmass) / len(dmass)
         lm_ = sum(lmass) / len(lmass)
@@ -145,7 +151,10 @@ def main() -> int:
                     "retrieval_ratio": (dm / lm_) if lm_ > 0 else None,
                     "ctrl_mass_band_REFERENCE_ONLY": cm,
                     "per_layer_demo_band": dict(zip(map(str, band), dmass)),
-                    "per_layer_demo_late": dict(zip(map(str, late), lmass))})
+                    "per_layer_demo_late": dict(zip(map(str, late), lmass)),
+                    "per_head_band": dhead, "per_head_late": lhead,
+                    "band_head_max": max(max(v) for v in dhead.values()),
+                    "late_head_max": max(max(v) for v in lhead.values())})
         if (i + 1) % 24 == 0:
             print(f"[retr] {i+1}/{len(rows)}", flush=True)
         del o
@@ -160,7 +169,11 @@ def main() -> int:
             "demo_mass_band_mean": sum(ds) / len(ds),
             "demo_mass_late_mean": sum(ls) / len(ls),
             "retrieval_strength_mean": sum(ds) / len(ds) - sum(ls) / len(ls),
-            "frac_rows_band_gt_late": sum(1 for x in out if x["demo_mass_band"] > x["demo_mass_late"]) / len(out)}
+            "frac_rows_band_gt_late": sum(1 for x in out if x["demo_mass_band"] > x["demo_mass_late"]) / len(out),
+            "band_head_max_mean": sum(x["band_head_max"] for x in out) / len(out),
+            "late_head_max_mean": sum(x["late_head_max"] for x in out) / len(out),
+            "frac_rows_bandHeadMax_gt_lateHeadMax":
+                sum(1 for x in out if x["band_head_max"] > x["late_head_max"]) / len(out)}
     print(f"[retr] {json.dumps(summ)}", flush=True)
     run.finish(summary=summ, ledger=ledger)
     print(f"[retr] -> {run.path}", flush=True)

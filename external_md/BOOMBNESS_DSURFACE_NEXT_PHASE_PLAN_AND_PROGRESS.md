@@ -693,6 +693,39 @@ carries it.
 
 ---
 
+### 🔬 PHASE 7c LAUNCHED (09:22) — per-HEAD retrieval, testing R-AK's own stated limit
+
+R-AK's limit was explicit: the reversal is measured on a **band average**, and *"a per-head
+decomposition could behave differently and has not been tested."* A mean over 9–11 layers × 32–40 heads
+can hide a small set of heads that genuinely carry retrieval. That is the one refinement that could
+rescue a measurable quantity, so it runs before the objective search is declared closed.
+
+**Change:** `retrieval_strength.py` now keeps the per-head vector instead of only its mean, and reports
+`band_head_max` / `late_head_max` per row. **No other computation touched** — the 8-row smoke (job
+777319) returns `demo_mass_band_mean 0.05419582790798611` and `demo_mass_late_mean 0.03773943583170573`,
+**byte-identical to the pre-change run 777298b**, which is the regression check that the addition did
+not perturb the existing measurement.
+
+Jobs **777320** (Llama, band 6–14 vs late 20–31) and **777321** (Qwen3, 7–17 vs 25–39).
+
+#### 📌 PRE-REGISTERED
+
+* **If a small head-set carries retrieval**, the band's **top head** should exceed the late band's top
+  head **on Qwen3**, even though the band *mean* is lower (0.03163 vs 0.04158). That would mean R-AK's
+  reversal is an averaging artifact and a head-restricted scalar is still viable.
+* **If `band_head_max` also fails to separate on Qwen3**, the anti-prediction is not an artifact of
+  averaging, and **attention mass to the demonstrations is not the causally relevant quantity at any
+  granularity tested.** Phase 7's objective search then closes on evidence rather than on exhaustion.
+
+⚠ **An early warning against the first branch, from the smoke itself.** On **Llama** — where the band
+mean *does* favour the band (0.0542 vs 0.0377) — the head-max statistic already points the other way:
+`band_head_max_mean 0.2544` vs `late_head_max_mean 0.2912`, with the band's top head larger in only
+**3 of 8 rows**. **The max-head statistic disagrees with the mean on the model where the mean agreed
+with causality.** Recorded now, before the full runs, because it makes the second branch the more
+likely one and I do not want that noted only afterwards.
+
+---
+
 ### ★★★★★ R-AK (09:05) — **ATTENTION MASS ANTI-PREDICTS CAUSAL IMPORTANCE ON QWEN3. The retrieval-strength scalar is dead as an objective, and it dies by dissociation rather than by null.**
 
 **Artifact:** `outputs/boombness/retrieval_strength/rsQwen3_20260824_053156_648275`, job **777301**,
