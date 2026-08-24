@@ -166,6 +166,40 @@ def demo_key_positions(tok, row, templated):
     return pos, None
 
 
+def cell_residual_frac_removed(payload, layer, d, alpha, cells):
+    """The fraction of the ACTUAL residual that project_out deletes, per run cell. (C-6)
+
+    WHY THIS EXISTS. `cellmean_dose` -- and therefore both numbers in `realized_dose_record` --
+    measures against the CENTRED cell means, i.e. the cross-cell contrast. But the hook
+    (`AllPositionProjectOut`) subtracts alpha*(h.u)u from the real, UN-CENTRED residual at every
+    position. Those differ by the grand mean, and the grand mean is exactly where two directions can
+    be wildly asymmetric while looking matched.
+
+    That is not hypothetical. R-AG reported two arms as "dose-matched to 1.17x" on the centred
+    metric; on the single cell those runs actually generated from (`natural_doublespeak` = cell C)
+    they remove 8.31% and 54.84% of ||m_C|| -- a 6.60x gap, because cos(grand_mean, W) = 0.389
+    against cos(grand_mean, N) = 0.140. The centred metric could not see it, so a dose confound of
+    exactly the kind this phase retracted three times was reported as its absence.
+
+    Returns {cell: alpha*|m_cell . u| / ||m_cell||} for each cell the run's population covers.
+    """
+    import torch as _t
+    cm = (payload or {}).get("cell_means") or {}
+    out = {}
+    dv = d.double().reshape(-1)
+    dv = dv / dv.norm()
+    for c in cells:
+        m = cm.get(c, {}).get(layer)
+        if m is None:
+            continue
+        mv = m.double().reshape(-1)
+        n = float(mv.norm())
+        if n <= 0:
+            continue
+        out[str(c)] = float(alpha) * abs(float(mv @ dv)) / n
+    return out
+
+
 def realized_dose_record(frac, alpha):
     """The two realized-dose numbers for a project_out arm, as they are written to the artifact.
 
@@ -889,8 +923,14 @@ def main() -> int:
                         frac = _cmd(payload, L, vec)
                         if frac is None:
                             continue
-                        dose_records[f"{dname}|L{L}|alpha{alpha_v:g}"] = \
-                            realized_dose_record(frac, alpha_v)
+                        _rec = realized_dose_record(frac, alpha_v)
+                        # C-6: the metric the hook actually implements. The two above are measured
+                        # on CENTRED cell means; the hook edits the UN-CENTRED residual, and the
+                        # difference is the grand mean. Recorded per cell the population covers.
+                        _cells = sorted({(r.get("cell") or "?") for r in rows})
+                        _rec["cell_residual_frac_removed"] = cell_residual_frac_removed(
+                            payload, L, vec, alpha_v, _cells)
+                        dose_records[f"{dname}|L{L}|alpha{alpha_v:g}"] = _rec
             except Exception as _e:      # never let provenance kill the run
                 dose_records = {"UNAVAILABLE": repr(_e)}
             if dose_records:

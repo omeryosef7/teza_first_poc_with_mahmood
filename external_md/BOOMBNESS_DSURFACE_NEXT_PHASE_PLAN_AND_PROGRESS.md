@@ -693,6 +693,151 @@ carries it.
 
 ---
 
+### ⛔⛔⛔ C-6 (06:58) — **R-AG's HEADLINE IS RETRACTED. The arms were NOT dose-matched. I measured dose in a space the intervention does not act in.**
+
+**REVIEW-4 (adversarial, 4-hourly) found this and it is right. I re-derived every number myself
+before accepting it.**
+
+#### The error
+
+`cellmean_dose` measures a direction against the **centred** cell means — the cross-cell contrast.
+The hook `AllPositionProjectOut` subtracts `α(h·u)u` from the **actual, un-centred residual** at every
+position and every decode step. **The two differ by the grand mean, and the grand mean is exactly
+where the asymmetry lived.**
+
+All three p7 runs used `--conditions natural_doublespeak`, i.e. **cell C only**. On cell C at L14
+(`basket_bomb`, `‖m_C‖ = 9.4263`):
+
+| arm | `m_C · u` | **fraction of ‖m_C‖ removed** |
+|---|---|---|
+| `N_concept_axis` | −0.7833 | **8.31 %** |
+| `W_codeword_pc1` | +5.1696 | **54.84 %** |
+
+**The real dose ratio is 6.60×, not 1.17×.** The centred metrics were blind to it because
+`cos(grand_mean, W) = 0.3885` against `cos(grand_mean, N) = 0.1402` — a 2.8× asymmetry that vanishes
+under centring.
+
+#### What is retracted, and what survives
+
+> ⛔ **RETRACTED:** *"Two orthogonal directions, matched in dose to 1.17× in variance and 1.08× in
+> norm, produce behavioural effects differing by a factor of 26"* and the conclusion *"at matched dose,
+> direction identity decides the behaviour."*
+
+**The W arm deletes over half the residual at every token. "Ablating 55 % of the residual makes the
+model comply more" is a dose statement, not an identity statement.** This is the *same* failure that
+killed R-C, R-V and R-W — 6.83×, 24.79×, 14.05× — and I reported its absence while it sat in a metric
+nobody was measuring. **That is worse than the original defect, because it was dressed as the fix.**
+
+**Survives, unchanged:** the measured ASRs (0.2917 / 0.3021 / 0.5625), the identical refusal rates,
+the absence of degeneracy, the orthogonality `cos(N, W) = +0.0098`, and the finding that `N` at
+`α = 1` is behaviourally inert on this bank. What does **not** follow is any claim about identity
+*versus* dose.
+
+#### ⛔ Phase 6e's pre-registration is FALSIFIED AS WRITTEN — flagged before its judge is read
+
+I claimed `U@0.30` was *"strictly below N on both metrics … dominated on both, so no choice of metric
+can rescue a dose explanation."* On `button_knife` cell C at L14 (`‖m_C‖ = 8.6898`):
+
+| arm | fraction of ‖m_C‖ removed |
+|---|---|
+| `N` @1.00 | **9.82 %** |
+| `U` @1.00 | 41.38 % |
+| **`U` @0.30** | **12.41 % — still 1.26× MORE than N** |
+
+**Not dominated.** `U` must run at **α < 0.2373** to genuinely undercut `N`. **The Phase 6e read-out
+cannot use the sentence "dose is excluded outright" as written**, and this is recorded *before* job
+777275's numbers are looked at.
+
+#### The repair, launched
+
+| job | arm | α | fraction of ‖m_C‖ removed | vs N |
+|---|---|---|---|---|
+| **777278** | `W_codeword_UNDERdosed` (`basket_bomb`) | **0.12** | **6.58 %** | **below N's 8.31 %** ✅ |
+| **777279** | `U_codeword_UNDER2` (`button_knife`) | **0.20** | ~8.3 % | **below N's 9.82 %** ✅ |
+
+**If the codeword arm still moves ASR while removing LESS of the actual residual than the inert
+concept arm, the identity claim survives on the correct metric. If it goes inert, R-AG was dose all
+along and will be recorded as a third specificity negative.** Registered now, before either lands.
+
+#### Code fix
+
+`score_behavior.py` now emits **`cell_residual_frac_removed`** inside every `project_out` dose record —
+`α·|m_cell·u| / ‖m_cell‖`, per cell the run's population actually covers. **The metric the hook
+implements was recorded nowhere in this repo until now**, which is how a 6.6× gap was reported as 1.17×.
+
+⚠ **Two further REVIEW-4 findings on R-AF, both verified and both accepted** — see C-7 below.
+
+---
+
+### ⛔ C-7 (07:10) — **R-AF's geometry evidence is largely GENERIC. The concept axis survives; the simplex framing does not.**
+
+Two more REVIEW-4 findings, both re-derived by me before acceptance.
+
+#### (a) P3 was partly an algebraic identity of my own preprocessing
+
+I unit-normalized each pair's `d_surface` **before** forming `m_c = (v_bomb + v_knife)/2` and
+`N ∝ (v_bomb − v_knife)`. For unit `a, b`: **`(a+b)·(a−b) = ‖a‖² − ‖b‖² = 0` exactly.** Verified on
+random unit vectors: `cos = 3.7e-17`. So the *per-codeword* half of "cos(u_c, N) ≈ 0 for all four at
+every layer" is **arithmetic, not measurement**. Under gap-scaling instead of unit-norm the residual
+roughly doubles but stays small (~0.05), so the claim survives **only in the weakened form**: *after
+centring, the cross-codeword residual is orthogonal to `N` to within ≈0.05.*
+
+#### (b) P1 and C-5's "non-forced" evidence are reproduced by an isotropic random null
+
+I claimed three comparable singular values could have come back 0.9 / 0.06 / 0.04 and refuted the
+model. **They could not.** Four random unit vectors in ℝ⁴⁰⁹⁶, centred, 200 draws:
+
+| | singular² (median) | norm CV | sd of pairwise cos |
+|---|---|---|---|
+| **random null** | **0.3419 / 0.3331 / 0.3244** | **0.0066** | **0.0123** |
+| observed (L14 / L18) | 0.4147 / 0.3146 / 0.2707 | 0.0341 | 0.0573 |
+
+**The null is MORE regular than the data on every one of the three quantities.** P1's stated falsifier
+could not fire, and C-5's fallback — "neither the equal norms nor the small spread is forced" — is also
+wrong: both are the generic outcome for any four mutually-decorrelated vectors in high dimension.
+
+> ⛔ **WITHDRAWN:** the "**near-regular simplex**" framing, P1 as evidence for the (K−1)-subspace model,
+> and C-5's spread/norm argument. In ℝ⁴⁰⁹⁶ nearly *anything* decorrelated looks like a regular simplex.
+
+#### ✅ What survives — and it is the strongest claim, untouched
+
+**1. The objects are real, not noise.** Split-half `cos(dev, heldout)`:
+
+| L | `u_basket` / `u_button` / `u_ticket` / `u_window` | `N` |
+|---|---|---|
+| 12 | 0.9898 / 0.9899 / 0.9846 / 0.9866 | 0.9839 |
+| 24 | 0.9963 / 0.9969 / 0.9947 / 0.9963 | 0.9947 |
+
+A null gives ~0. **Four reproducible codeword directions and one reproducible concept direction exist.**
+
+**2. P4 — the concept axis is invariant across codewords — is immune to every critique above.**
+
+| | cos(N_a, N_b), all 6 pairs @L14 |
+|---|---|
+| **observed** | **0.987, 0.988, 0.984, 0.986, 0.989, 0.984** |
+| **isotropic null** (1200 draws) | median **−0.0007**, \|max\| **0.0569** |
+
+**The null never exceeds 0.057; every observed pair is above 0.98.** No normalization identity and no
+high-dimensional genericity produces that — a *difference* direction reproducing across four
+independently-fitted banks at the split-half ceiling is a measurement, not geometry. **This is the
+finding of the phase and it stands.**
+
+#### Net effect on the record
+
+* **R-AD / R-AE / R-AF's central claim survives**: `d_surface` decomposes into a per-codeword part and
+  a single **concept axis `N`**, and `N` is invariant across all four codewords at the noise ceiling.
+* **R-AE's Test 2 conclusion survives on different evidence**: `W` was one contrast rather than a
+  factor axis — that follows from the four `u_c` being *distinct, reproducible* objects (split-half
+  0.985–0.997), **not** from the singular spectrum, which is generic.
+* **Withdrawn**: the simplex regularity, the singular-value "comparability" argument, and the strong
+  form of P3.
+* **Lesson, recorded**: three of my four "pre-registered" predictions were satisfied by chance geometry
+  in 4096 dimensions. **A prediction is only a test if a null model can fail it — and I did not run a
+  null model until an adversarial review made me.** Every future geometric claim in this phase gets an
+  isotropic null first.
+
+---
+
 ### 🔬 PHASE 6e LAUNCHED (06:30) — replicating R-AG on a second bank, with a **strictly underdosed** codeword arm
 
 R-AG's named limit was one bank. This replicates on **`button_knife`** — different codeword *and*
