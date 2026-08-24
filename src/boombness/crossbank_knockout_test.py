@@ -46,6 +46,7 @@ import argparse
 import collections
 import itertools
 import json
+import math
 import os
 import statistics
 import sys
@@ -74,7 +75,24 @@ def load_stop(d):
 
 
 def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
-    """Resample CLUSTERS with replacement -> CI on the mean delta, robust to within-cluster dependence."""
+    """Resample CLUSTERS with replacement -> CI on the mean delta.
+
+    ⛔ ANTICONSERVATIVE AT SMALL k (C-14). A percentile bootstrap of a mean carries no small-sample
+    correction: it is roughly +/- 1.96*s/sqrt(k) where the calibrated interval is
+    t_{.975,k-1}*s/sqrt(k). At k=6 that is ~30% too narrow. Measured false-positive rate of
+    "CI excludes zero" against this study's own null: 6.4% at k=24, 8.6% at k=12, 14.2% at k=6,
+    18.6% at k=4, against a nominal 5%.
+
+    I published "the CI excludes zero at EVERY clustering unit" on the strength of this function.
+    Under the calibrated interval it excludes zero at k=24 and k=12 and INCLUDES zero at k=6 and k=4.
+    So `t_ci95` is returned alongside and is what should be quoted; `ci95_*` is retained only so the
+    retracted figures remain reproducible.
+
+    ⛔ AND THE TAIL COUNT IS OFTEN FORCED. `frac_boot_ge_zero` cannot go below (n_zero/k)^k, because a
+    resample mean can only reach 0 by drawing the zero-valued clusters every time. With one zero
+    cluster of six that floor is (1/6)^6 = 2.14e-05. A reported "0 of 40000" may be arithmetic rather
+    than evidence, so `tail_floor` is returned to make that visible.
+    """
     import random
     rnd = random.Random(seed)
     k = len(cluster_vals)
@@ -82,9 +100,22 @@ def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
     for _ in range(n_boot):
         means.append(statistics.mean([cluster_vals[rnd.randrange(k)] for _ in range(k)]))
     means.sort()
-    return {"mean": statistics.mean(cluster_vals), "n_clusters": k, "n_boot": n_boot,
+    m = statistics.mean(cluster_vals)
+    # Calibrated interval -- THE ONE TO QUOTE (C-14). t table for the k this repo actually uses.
+    _T = {1: 12.706, 2: 4.3027, 3: 3.1824, 4: 2.7764, 5: 2.5706, 7: 2.3646, 11: 2.2010,
+          15: 2.1314, 23: 2.0687, 29: 2.0452, 47: 2.0117}
+    df = k - 1
+    tcrit = _T.get(df, 1.96 + 2.4 / max(df, 1))          # crude but never below the normal value
+    se = (statistics.stdev(cluster_vals) / math.sqrt(k)) if k > 1 else float("inf")
+    nz = sum(1 for v in cluster_vals if abs(v) <= 1e-12)
+    return {"mean": m, "n_clusters": k, "n_boot": n_boot,
+            "t_ci95_lo": m - tcrit * se, "t_ci95_hi": m + tcrit * se, "t_df": df,
+            "t_excludes_zero": (m + tcrit * se) < 0 or (m - tcrit * se) > 0,
             "ci95_lo": means[int(0.025 * n_boot)], "ci95_hi": means[int(0.975 * n_boot)],
-            "frac_boot_ge_zero": sum(1 for m in means if m >= 0) / n_boot}
+            "ci95_NOTE": "percentile bootstrap, ANTICONSERVATIVE at small k -- quote t_ci95 (C-14)",
+            "frac_boot_ge_zero": sum(1 for x in means if x >= 0) / n_boot,
+            "tail_floor": (nz / k) ** k if k else 1.0,
+            "tail_is_at_floor": abs(sum(1 for x in means if x >= 0) / n_boot - (nz / k) ** k) < 5e-5}
 
 
 def exact_sign_flip(vals):

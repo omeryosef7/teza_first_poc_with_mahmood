@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** — R-AV: **Δ=−0.1120, CI95 [−0.2292,−0.0339]** at the most conservative unit, zero excluded at every unit and threshold; cluster p **not quotable** (0.0625 at the right unit) | Gate RETRIEVAL **PASSED** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE, MARGINAL** — C-14: **Δ=−0.1120, t-CI95 [−0.2206,−0.0034], p=0.0443** at pool×domain; direction 46:3 (7e-11). Does **not** survive domain/bank clustering | Gate RETRIEVAL **PASSED (marginal)** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,103 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔⛔⛔⛔ C-14 / REVIEW-6 (15:44) — **R-AV AND R-AW ARE BOTH RETRACTED. The bootstrap CI was ~30 % too narrow, the tail counts were forced arithmetic, and C-13's decomposition confirmed the very dependence it claimed to refute.** Fourth downward correction of the same headline.
+
+**Every fatal claim below I re-derived myself before accepting.**
+
+#### ⛔ S1 — the bootstrap percentile CI is ANTICONSERVATIVE, and worse at the unit I called "defensible"
+
+A percentile bootstrap of a mean over `k` clusters carries no small-sample correction; the calibrated
+interval is `t_{.975,k−1}·s/√k`. At `k = 6` the bootstrap is **~30 % too narrow.** Recomputed:
+
+| unit | k | bootstrap CI95 *(what I published)* | **calibrated t-CI95** | verdict |
+|---|---|---|---|---|
+| bank × domain | 24 | [−0.1849, −0.0521] | **[−0.1850, −0.0390]** | excludes 0 |
+| **pool × domain** | 12 | [−0.2161, −0.0365] | **[−0.2206, −0.0034]** | **excludes 0** |
+| **DOMAIN** *(my "defensible unit")* | 6 | [−0.2292, −0.0339] | **[−0.2606, +0.0367]** | ⛔ **INCLUDES 0** |
+| bank | 4 | [−0.1875, −0.0365] | **[−0.2573, +0.0334]** | ⛔ **INCLUDES 0** |
+
+The review measured the actual false-positive rate of "bootstrap CI excludes zero" against this study's
+own null: **6.4 % at k=24, 8.6 % at k=12, 14.2 % at k=6, 18.6 % at k=4.** **My move from 12 clusters to
+6, presented as more conservative, made the surviving statistic ~3× more liberal.**
+
+> ⛔ **RETRACTED: "the bootstrap CI excludes zero at EVERY unit."** It excludes zero at 24 and 12 and
+> **includes zero at 6 and 4** once the interval is calibrated. R-AV's headline
+> `CI95 [−0.2292, −0.0339]` should read **[−0.2606, +0.0367]**.
+
+#### ⛔ S2 — R-AW's tail counts are arithmetic, not evidence
+
+The bootstrap resamples cluster *values*. **If every cluster value is ≤ 0, no resample mean can exceed
+0** except when the single zero-cluster is drawn all `k` times: `P = (n_zero/k)^k`. For domain-6 with
+one zero cluster (`lab_safety`), that is **(1/6)⁶ = 2.14e-05 → 0.86 of 40 000.**
+
+**My reported "0 and 1 of 40 000" are exactly that lattice floor.** They would read identically if the
+effect were −0.001. And every control "includes zero" solely because at least one of its six domains has
+a positive mean. **The whole arm-vs-control pattern reduces to "does any one of 6 domain means have a
+positive sign?" — strictly less information than the sign-flip test I said it replaced.**
+
+> ⛔ **RETRACTED: R-AW's "every knockout arm excludes zero, every control includes it" as evidence.**
+
+#### ⛔ S3 — C-13's decomposition is a centering artifact, and its own numbers REVERSE its conclusion
+
+Centering 4 profiles on their per-domain mean forces `Σ residual = 0` at each domain, hence expected
+pairwise residual `r = −1/(k−1) = −1/3`. **Simulated under pure independence: −0.3044. My observed
+mean: −0.3102.** Indistinguishable. **"After removing domain, the banks are anti-correlated" carries no
+information whatsoever.**
+
+**And the reversal:** the two residual correlations that stay **positive** are exactly the **same-pool**
+pairs — `main ~ ticket_bomb` **+0.813** (pool `b5e3997`) and `button_knife ~ window_knife` **+0.560**
+(pool `5d3080f`). All four cross-pool pairs are negative. **C-13's own table is a confirmation of the
+pool dependence C-11 and REVIEW-5 identified — and I read it as a refutation.**
+
+> ⛔ **RETRACTED: C-13's demotion of pool × domain to domain.** **Pool × domain (12) is the correct
+> unit**, exactly as C-11 had it before I "corrected" it.
+
+#### ⛔ S5 — two of R-AW's eight rows are the same generations judged twice
+
+`p2j_p2A` and `p3j_p2A` both judge `p2A_20260823_212414_245187`; `p2j_p2C_band` and `p3j_p2C_band` both
+judge `p2C_band_20260823_214819_248269` — **verified from their configs.** Same 96 prompts, same
+generations, same point estimate (−0.1771) — and the tail count moves **106 → 1**, a 100× swing **on
+judge re-scoring alone.** The table's "8 contrasts" is really ~6, and the statistic defining its pattern
+is not stable to re-judging identical text.
+
+#### ⛔ S6 — I computed R-AW in an ad-hoc snippet with no artifact
+
+`git show --stat` on both commits: **the .md only.** No script, no run dir, no JSON, and nothing records
+whether `n_boot` was 20 000 (the function default) or the 40 000 I claimed. **This is precisely the
+defect `crossbank_knockout_test.py` was written to fix three hours earlier**, whose own docstring opens
+by describing it.
+
+#### ✅ Where I push back — S7 is a FALSE ALARM
+
+The review flagged an `attn_impl` confound: `p2A`/`p3R` eager, `p2C_band`/`p3CR` sdpa. **Checked: the
+`config.json` field is the raw flag, not what ran.** `metadata.json` records **`eager` for all four**,
+because `score_behavior.py:766` forces eager whenever a knockout is requested — the same cosmetic
+discrepancy REVIEW-5 already cleared. **There is no backend confound.** *(S8's point that
+`window_knife` contributes one discordant prompt of 96, and that the pool means are −0.1875 vs −0.0365,
+stands and is accepted.)*
+
+#### ✅ The honest position, after four corrections
+
+| statistic | value | status |
+|---|---|---|
+| prompt-level direction | **46 down / 3 up**, exact binomial **7e-11**; **22:1** on both-EOS | ✅ stands — *direction only, not cluster-robust* |
+| **pool × domain, calibrated t** | **Δ −0.1120, CI95 [−0.2206, −0.0034], p = 0.0443** | ✅ **the defensible headline** |
+| bank × domain, calibrated t | p = 0.0042 | ⚠ anticonservative (C-11: pools shared) |
+| domain (6) / bank (4) | **CI includes zero** | ⛔ does not survive |
+
+> **Final: the effect is real in direction and reaches p ≈ 0.044 at the correct clustering unit. It is
+> marginal, not strong, and every stronger number I have published for it has been wrong.**
+
+⚠ **The pattern, stated plainly: 2.44e-04 → 0.0156 → "no cluster p" → 0.0443.** Four corrections, three
+of them found by adversarial review, **each time because I adopted the statistic that made the result
+look strongest among those I could defend in the moment.** C-13 was the worst instance — I used a
+centering artifact to overturn a correct finding and moved to the one clustering unit where the answer
+is null under a calibrated interval. **The effect has survived all four. My characterisation has not
+survived any of them.**
 
 ---
 

@@ -98,3 +98,54 @@ def test_bootstrap_ci_widens_with_fewer_clusters():
     few = cluster_bootstrap([-0.2, -0.1, -0.3, -0.15], n_boot=4000)
     many = cluster_bootstrap([-0.2, -0.1, -0.3, -0.15] * 4, n_boot=4000)
     assert (few["ci95_hi"] - few["ci95_lo"]) > (many["ci95_hi"] - many["ci95_lo"])
+
+
+# --------------------------------------------------------------------------- C-14
+def test_bootstrap_reports_a_CALIBRATED_interval_too():
+    """C-14 S1. A percentile bootstrap of a mean is ~30% too narrow at k=6.
+
+    I published "the CI excludes zero at EVERY clustering unit" on the strength of the percentile
+    interval. Under a t-interval it excludes zero at k=24 and k=12 and INCLUDES zero at k=6 and k=4.
+    """
+    from crossbank_knockout_test import cluster_bootstrap
+    v = [-0.1094, -0.3906, 0.0, -0.0781, -0.0625, -0.0312]      # the real domain-6 cell means
+    r = cluster_bootstrap(v, n_boot=20000)
+    assert "t_ci95_lo" in r and "t_ci95_hi" in r, "the calibrated interval is gone"
+    assert r["t_ci95_hi"] > 0 > r["ci95_hi"], (
+        "on the real domain-6 data the percentile CI must exclude zero while the t-CI includes it; "
+        "if this stops holding the anticonservatism this test exists for has vanished")
+    assert r["t_excludes_zero"] is False
+
+
+def test_the_t_interval_is_wider_than_the_percentile_one_at_small_k():
+    from crossbank_knockout_test import cluster_bootstrap
+    v = [-0.20, -0.10, -0.30, -0.15, -0.05, -0.25]
+    r = cluster_bootstrap(v, n_boot=20000)
+    assert (r["t_ci95_hi"] - r["t_ci95_lo"]) > (r["ci95_hi"] - r["ci95_lo"]), \
+        "the calibrated interval is not wider than the percentile one; the correction is inert"
+
+
+def test_tail_floor_is_reported_and_detected():
+    """C-14 S2. If every cluster value is <= 0 the tail cannot go below (n_zero/k)^k.
+
+    My reported "0 and 1 of 40000" were exactly that floor and would read the same at an effect of
+    -0.001, so the artifact must be visible in the output.
+    """
+    from crossbank_knockout_test import cluster_bootstrap
+    v = [-0.1094, -0.3906, 0.0, -0.0781, -0.0625, -0.0312]
+    r = cluster_bootstrap(v, n_boot=40000)
+    assert abs(r["tail_floor"] - (1 / 6) ** 6) < 1e-12, "the tail floor is miscomputed"
+    assert r["tail_is_at_floor"] is True, "the at-floor condition is not detected on the real data"
+
+
+def test_a_tiny_effect_hits_the_same_floor_which_is_the_whole_point():
+    """The floor is reached by SIGN, not by magnitude -- so it is not evidence of effect size."""
+    from crossbank_knockout_test import cluster_bootstrap
+    tiny = [-0.001, -0.001, 0.0, -0.001, -0.001, -0.001]
+    big = [-0.30, -0.40, 0.0, -0.25, -0.35, -0.20]
+    a = cluster_bootstrap(tiny, n_boot=40000)
+    b = cluster_bootstrap(big, n_boot=40000)
+    assert a["tail_is_at_floor"] and b["tail_is_at_floor"]
+    assert abs(a["frac_boot_ge_zero"] - b["frac_boot_ge_zero"]) < 1e-4, (
+        "a 300x difference in effect size must produce the SAME tail count; that identity is exactly "
+        "why the tail count is not evidence")
