@@ -52,9 +52,12 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
 | R-AK "attention mass irrelevant at **any** granularity" | at head granularity the causal band wins on Qwen3 | **C-8** |
 
 ### 🔬 IN FLIGHT
-`x2fit_basket_club` / `x2fit_button_club` (jobs 778194/778195, queued) — **Phase 9b**, a fourth concept
-to test whether the concept subspace is exactly 2-D. **Null pre-registered before the data exists:**
-PC3 median **0.3246**, 95 % [0.3170, 0.3297].
+* `x2fit_basket_club` / `x2fit_button_club` (**778194/778195**, queued) — **Phase 9b**, a fourth concept
+  to test whether the concept subspace is exactly 2-D. **Null pre-registered before the data exists:**
+  PC3 median **0.3246**, 95 % [0.3170, 0.3297].
+* `basket_gun` behavioural arms, both models (**778790–778793**, queued) — **Phase 10**, a **third
+  demonstration pool**. R-BB shows k=18 would let a calibrated CI exclude zero **if** `gun` resembles the
+  bomb pool; both branches pre-registered.
 
 ---
 
@@ -735,6 +738,57 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ★★★★ R-BB (20:11) — **POWER ANALYSIS: the study is ONE POOL short, and that pool already exists as a generated corpus.** Phase 10 queued.
+
+C-17 left the position *"direction well supported, no calibrated cluster test of magnitude excludes
+zero."* **The decision-relevant question is what would settle it** — and it is cheap to answer.
+
+**Observed at `pool × domain`, models pooled:**
+
+```
+k = 12   mean = -0.1016   sd = 0.1643   cluster-level Cohen's d = 0.618
+```
+
+**Required k for a calibrated t-CI to exclude zero**, holding that mean and sd (`k = n_pools × 6`):
+
+| pools | k | t-CI95 upper | |
+|---|---|---|---|
+| **2** *(today)* | 12 | **+0.0029** | includes 0 |
+| **3** | **18** | **−0.0198** | **EXCLUDES 0** |
+| 4 | 24 | −0.0322 | excludes 0 |
+| 5 | 30 | −0.0402 | excludes 0 |
+
+**Three demonstration pools would suffice.** The study has behavioural arms on **two** (bomb, knife) —
+but **five corpora have been generated** (bomb, knife, **gun**, arrow *(rejected, R-AZ)*, **club**), and
+`basket_gun` / `button_gun` are **already built and audited** (R-AX). **The missing pool needs no new
+content — only behavioural arms.**
+
+#### 🔬 PHASE 10 QUEUED — jobs 778790–778793
+
+Baseline + `demo_all:attn_knockout` on **`basket_gun`**, on **both models** (Qwen3 `7–17`, Llama `6–14`),
+`--expect-n 96`. That adds a **third pool** and takes `pool × domain` from k=12 to **k=18**.
+
+#### 📌 PRE-REGISTERED — and the honest caveat is the important part
+
+⚠ **This calculation holds the observed mean and sd fixed, and the two existing pools differ by 5×:**
+bomb-pool mean **−0.1875**, knife-pool **−0.0365**. **If `gun` behaves like the bomb pool the CI will
+exclude zero comfortably; if it behaves like the knife pool it may not, and the added variance could
+widen the interval rather than narrow it.** So:
+
+* **If `gun` resembles the bomb pool** → k=18 excludes zero and the magnitude claim is finally
+  supportable.
+* **If `gun` resembles the knife pool** → the mean drops toward −0.07 and k=18 will **not** be enough;
+  the honest conclusion becomes that the effect is real in direction but too heterogeneous across pools
+  to pin a magnitude at any feasible k.
+* **Either way this is informative**, and I am recording both branches now so the outcome cannot be
+  framed after the fact — the failure mode named in C-17.
+
+⚠ **A third pool is not a free win.** It adds a cluster axis but also a *source of heterogeneity*: the
+between-pool spread is itself the thing making the CI wide. **More pools help only if the effect is
+consistent across them**, which the existing 5× gap gives real reason to doubt.
 
 ---
 
