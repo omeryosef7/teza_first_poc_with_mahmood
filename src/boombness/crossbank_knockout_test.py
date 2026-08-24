@@ -190,13 +190,34 @@ def cluster_permutation_on_counts(cluster_flips):
             "n_discordant": sum(len(v) for v in cluster_flips.values())}
 
 
-def leave_one_cluster_out(cluster_flips):
-    """Is the result carried by one cluster? Returns the WORST p over all single-cluster drops."""
+def leave_one_cluster_out(cluster_flips, groups=None):
+    """Robustness drops. Returns the WORST p over single-cluster drops AND over GROUP drops.
+
+    ⛔ SINGLE-CLUSTER DROPS ARE THE WEAKEST TEST AVAILABLE (C-17). Dropping one cluster from an
+    all-same-sign set leaves an all-same-sign set, so the p is forced to 2/2^(k-1) whatever the effect
+    size. R-BA reported "worst LOO 0.0313, robust" on exactly this, and it was incapable of failing.
+
+    The drops that actually bite are GROUP drops -- by model, by pool. On the real data:
+        drop the knife pool (10% of |T|)  -> p 0.1250
+        Llama only                        -> p 0.1094
+        Qwen3 only                        -> p 0.0156
+    i.e. the pooled result is Qwen3's, and leave-one-MODEL-out fails. `groups` takes
+    {name: [cluster_key, ...]} and each named group is dropped in turn; pass it, and read `worst_p_group`
+    rather than `worst_p`.
+    """
     out = {}
     for k in cluster_flips:
         sub = {kk: v for kk, v in cluster_flips.items() if kk != k}
         out[str(k)] = cluster_permutation_on_counts(sub)["p"]
-    return {"per_drop_p": out, "worst_p": max(out.values()) if out else 1.0}
+    gout = {}
+    for gname, keys in (groups or {}).items():
+        drop = set(keys)
+        sub = {kk: v for kk, v in cluster_flips.items() if kk not in drop}
+        gout[gname] = cluster_permutation_on_counts(sub)["p"] if sub else 1.0
+    return {"per_drop_p": out, "worst_p": max(out.values()) if out else 1.0,
+            "per_group_p": gout, "worst_p_group": max(gout.values()) if gout else None,
+            "NOTE": "single-cluster drops are forced to 2/2^(k-1) when signs agree (C-17); "
+                    "quote worst_p_group, not worst_p"}
 
 
 def binom_two_sided(k, n, p=0.5):

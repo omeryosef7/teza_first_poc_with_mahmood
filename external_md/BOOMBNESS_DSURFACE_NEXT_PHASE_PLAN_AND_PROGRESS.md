@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ⚠ **POSITIVE IN DIRECTION, NOT CLUSTER-SIGNIFICANT** — C-15: 2 models, 8 populations, **Δ=−0.1016, t-CI95 [−0.2060,+0.0029]** at pool×domain (includes 0 by 0.003); direction **96:18, p=4.7e-14** | Gate RETRIEVAL **PASSED on direction** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ⚠ **DIRECTION ONLY** — C-17: 96:18 across 8 populations, replicates on both models' high-headroom bank (−0.1771 / −0.2083). **No calibrated cluster test of magnitude excludes zero** (t-CI [−0.2060,+0.0029]; nets [−17.46,+0.13]) | Gate RETRIEVAL **PASSED on direction only** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,77 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔⛔ C-17 / REVIEW-7 (19:41) — **R-BA is withdrawn entirely. It fails leave-one-MODEL-out, collapses when 10 % of the evidence is removed, and its code was never wired in.** Seventh correction.
+
+**REVIEW-7 reproduced R-BA exactly** (9 clusters, 7 informative, 114 discordant, T = −78, p = 0.015625,
+worst LOO 0.03125) and confirmed **C-16 independently** (findings 1, 2, 4, 7 — the sign-only p, the
+vacuous LOO, the worthless "no cluster negative", the 9-vs-12 count). **It then found three things I
+did not**, all verified by me:
+
+#### ⛔ F3 — the sub-0.05 p is carried by the three SMALLEST clusters, and I never ran the drops that matter
+
+| held out | share of \|T\| removed | T | **p** |
+|---|---|---|---|
+| — (R-BA as published) | — | −78 | **0.0156** |
+| **knife pool** (3 clusters, n = 4/14/4) | **8 of 78 = 10 %** | −70 | **0.1250** ⛔ |
+| bomb pool | 90 % | −8 | 0.2500 |
+| **LLAMA only** | — | −35 | **0.1094** ⛔ |
+| QWEN3 only | — | −43 | **0.0156** |
+
+**Removing 10 % of the evidence destroys the result** — because the p counts *clusters*, not flips.
+**And leave-one-MODEL-out fails: Llama alone gives p = 0.1094.** The pooled p = 0.0156 **is Qwen3's
+p**, with three tiny Llama knife clusters supplying the extra factors of 2. **`leave_one_cluster_out`
+was the weakest drop available and it is the only one I ran.**
+
+#### ⛔ F5 — "Persisted, not ad-hoc (S6's lesson)" was FALSE
+
+`cluster_permutation_on_counts` (line 141) and `leave_one_cluster_out` (line 193) **are never called
+from `main()`** — verified by grep; only the latter calls the former. **No artifact anywhere contains
+T = −78.** The script has **no notion of `model`** and its manifest holds only the four Qwen3 banks, so
+there is no committed path from any manifest to the 8-population analysis at all. **I persisted the
+code and not the result, and the code was not even reachable.** That is S6 repeated verbatim inside the
+commit that claimed to have fixed it.
+
+#### ✅ And one place I can go further than the review
+
+REVIEW-7 offered *"cluster bootstrap on the nets: mean +8.67, CI95 [+2.89, +16.67], excludes 0"* as a
+better statistic. **That is the percentile bootstrap C-14 showed is ~30 % too narrow at small k.**
+Recomputed with a calibrated t-interval on the same 9 nets:
+
+```
+mean = -8.667    t-CI95 = [-17.464, +0.131]    INCLUDES ZERO
+```
+
+**The reviewer's own replacement statistic also fails under calibration** — by 0.131. I am recording
+this rather than adopting the friendlier number, because adopting it would be the exact behaviour that
+produced the previous six corrections.
+
+#### ✅ REVIEW-7's negative findings, which matter and are accepted
+
+* **The whole-cluster sign-flip null is correctly calibrated** — measured FPR of "p ≤ 0.05" is **4.67 %**
+  against nominal 5 %, and **2.35 %** under a stricter within-cluster null. **Unlike `cluster_bootstrap`
+  (C-14), this test is not miscalibrated.** The problem is what it certifies, not its validity.
+* **Pooling the models is correct, and my C-15 worry was over-stated in one respect:** under a
+  whole-cluster sign flip, arbitrary *within*-cluster dependence — including the +0.5654 model
+  correlation — **is fully absorbed**, because both models' measurements flip together.
+* **Truncation control holds** at threshold 0.5: both-arms-EOS subset (190/768 rows) gives p = 0.0078.
+
+#### The honest position, seventh iteration
+
+> **The direction is well supported: 96 down against 18 up, every informative cluster agreeing, and the
+> effect replicating on the high-headroom bank of both models (−0.1771 Llama, −0.2083 Qwen3).
+> NO cluster-level test of MAGNITUDE reaches significance under a calibrated interval** — `pool × domain`
+> t-CI **[−0.2060, +0.0029]**, cluster nets t-CI **[−17.464, +0.131]**, both including zero by a hair.
+> **R-BA added nothing** except a robustness check provably incapable of failing.
+
+⚠ **Seventh correction. The through-line across all seven is one habit:** I reach for the statistic that
+makes the result look strongest among those I can defend *in the moment*, and I stop testing once it
+does. **C-16 was the first time I broke that pattern by testing my own claim; F3 shows I still stopped
+one drop too early** — I ran leave-one-*cluster*-out and not leave-one-*model*-out, and the latter is
+the one C-15 had already told me mattered.
 
 ---
 

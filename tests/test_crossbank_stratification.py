@@ -191,3 +191,32 @@ def test_leave_one_out_is_floor_determined_and_says_so():
     assert abs(loo["worst_p"] - 2 / 2 ** 6) < 1e-12, (
         f"worst LOO p is {loo['worst_p']}, expected the 6-informative floor 2/2^6; if it is no longer "
         "at the floor the LOO analysis has become informative and C-16's caveat can be relaxed")
+
+
+def test_group_drops_exist_and_are_the_ones_to_quote():
+    """C-17. Single-cluster drops are forced to 2/2^(k-1) when signs agree, so they cannot fail.
+
+    R-BA reported "worst LOO 0.0313, robust" on exactly that. The drops that bite are by MODEL and by
+    POOL: on the real data the knife pool is 10% of |T| and dropping it takes p from 0.0156 to 0.1250,
+    and Llama alone gives 0.1094 against Qwen3's 0.0156.
+    """
+    from crossbank_knockout_test import leave_one_cluster_out
+    cl = {('b', 'a'): [-1] * 14 + [1] * 2, ('b', 'b'): [-1] * 3 + [1] * 3, ('b', 'c'): [-1] * 37 + [1],
+          ('b', 'd'): [-1] * 9 + [1], ('b', 'e'): [-1] * 3 + [1] * 3, ('b', 'f'): [-1] * 15 + [1],
+          ('k', 'c'): [-1] * 8 + [1] * 6, ('k', 'd'): [-1] * 4, ('k', 'e'): [-1] * 3 + [1]}
+    groups = {'knife': [k for k in cl if k[0] == 'k'], 'bomb': [k for k in cl if k[0] == 'b']}
+    r = leave_one_cluster_out(cl, groups=groups)
+    assert "per_group_p" in r and "worst_p_group" in r, "group drops are gone"
+    assert r["worst_p_group"] > r["worst_p"], (
+        "the group drop must be STRICTLY harder than the single-cluster drop on this data; if it is "
+        "not, the weak test is being presented as robustness again")
+    assert r["per_group_p"]["knife"] > 0.05, \
+        "dropping the knife pool must lose significance; that is C-17's finding F3"
+
+
+def test_single_cluster_drop_is_documented_as_weak():
+    from crossbank_knockout_test import leave_one_cluster_out
+    import inspect
+    src = inspect.getsource(leave_one_cluster_out)
+    assert "WEAKEST TEST" in src or "incapable of failing" in src, \
+        "the docstring no longer warns that single-cluster drops cannot fail"
