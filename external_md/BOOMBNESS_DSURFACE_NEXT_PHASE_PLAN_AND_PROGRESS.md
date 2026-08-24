@@ -13,6 +13,51 @@ logged in §5. Peer sessions notified 17:19 — see §0.4.
 
 ---
 
+## ⚠️ READ THIS FIRST — LIVE CLAIMS LEDGER *(rebuilt 2026-08-24 19:40)*
+
+**This log is 5 670 lines, 108 sections, 70 results and 17 corrections, newest first. Several headline
+numbers have been retracted two and three levels deep.** Do not quote a figure from this file without
+checking it here. If a claim is not in the LIVE table, treat it as dead.
+
+### ✅ LIVE — what currently stands
+
+| claim | evidence | where |
+|---|---|---|
+| **The demonstration-retrieval knockout suppresses the doublespeak attack** | **96 down / 18 up** over 8 populations; replicates on the high-headroom bank of **both** models (−0.1771 Llama, −0.2083 Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY |
+| ⚠ **…but no calibrated cluster test of MAGNITUDE excludes zero** | `pool × domain` t-CI **[−0.2060, +0.0029]**; cluster nets t-CI **[−17.46, +0.13]**; Llama alone p = 0.109 | **C-15, C-17** |
+| Retrieval and refusal are **independent channels** | knockout = −0.1771 with refusal intact *and* removed; refusal removal alone includes zero | R-T |
+| **A concept axis `N` is invariant across 4 codewords** at the split-half ceiling | cos 0.984–0.989 vs an isotropic null with \|max\| 0.057 | R-AE P4, survives C-7 |
+| **Concept identity is ≥2-dimensional and partially collinear**, and codeword-invariant | PC1 0.61–0.71 vs null 0.5075 [0.5015, 0.5173]; contrasts reproduce across codewords at 0.964–0.972 | **R-AX**, replicated R-AY |
+| **Codeword identity is a (K−1)-dim subspace, not an axis** | four distinct reproducible `u_c` (split-half 0.985–0.997) | R-AE Test 2 *(spectrum argument withdrawn by C-7; reproducibility argument stands)* |
+| **The crossed bank passes the acceptance gate** | rank 3→9, arm/best-orth 6.83× → **1.02×** | R-AC |
+| **`d_surface` fails specificity at matched dose** | codeword arm below the concept arm on the real metric does nothing | R-AH |
+| **The retrieval scalar fails prediction and transfer** | vanishes within `n_examples` strata; band-mean anti-predicts on Qwen3 | R-AJ, R-AK |
+| **L8 in full is dispensable; band localisation is unresolvable at n=96** | all 40 heads of L8 = +0.0104; sub-band arms move 2–3 prompts on re-measurement | R-AM, **R-AQ (D-12)** |
+| **Attackability is a (bank × model) property** | two models on the same bank share **1 of 9** attackable prompts | R-AU |
+| `arrow` rejected as a concept | vowel-initial → 528 ungrammatical "a arrow" | R-AZ |
+
+### ⛔ DEAD — do not quote these
+
+| retracted claim | why | superseded by |
+|---|---|---|
+| **R-AR `p = 2.44e-04`** and its bank×domain clustering | banks share only 2 demo pools; then bootstrap miscalibration; then model non-independence | **C-11 → C-13 → C-14 → C-17** |
+| **R-AV "the CI excludes zero at EVERY unit"** | percentile bootstrap ~30 % too narrow at small k; calibrated, k=6 and k=4 include zero | **C-14** |
+| **R-AW "every arm excludes zero, every control includes it"** | the tail counts are the arithmetic floor `(n_zero/k)^k` | **C-14** |
+| **R-BA** (`p = 0.0156` "weights by evidence", "robust to any drop") | p is sign-only; LOO provably cannot fail; fails leave-one-**model**-out (0.109) | **C-16, C-17** |
+| **C-13's** "banks anti-correlated after removing domain" | centering forces r ≈ −1/3; its own positives were the same-pool pairs | **C-14 S3** |
+| **R-AN/R-AO/R-AP** layer laws (super-additive, L10–17 localisation, count law) | fitted to 1–3 prompt differences smaller than the measurement's own reproducibility | **C-10** |
+| **R-AG** "at matched dose, identity decides behaviour" | dose measured in a space the hook does not act in (6.6× real gap) | **C-6** |
+| Qwen3 "**hard** `in_subspace_orth` control" | 24.79× weaker; a dose-matched orthogonal control at L11 cannot exist | **C-3** |
+| "the codeword axis `W`" / "the concept axis `N`" as **axes** | both are chords of subspaces | **C-4**, **R-AX** |
+| R-AK "attention mass irrelevant at **any** granularity" | at head granularity the causal band wins on Qwen3 | **C-8** |
+
+### 🔬 IN FLIGHT
+`x2fit_basket_club` / `x2fit_button_club` (jobs 778194/778195, queued) — **Phase 9b**, a fourth concept
+to test whether the concept subspace is exactly 2-D. **Null pre-registered before the data exists:**
+PC3 median **0.3246**, 95 % [0.3170, 0.3297].
+
+---
+
 ## 0. STARTING STATE (Phase 0 gate)
 
 ### 0.1 What is already known — read before citing any old number
