@@ -693,6 +693,46 @@ carries it.
 
 ---
 
+### 🔬 PHASE 6e LAUNCHED (06:30) — replicating R-AG on a second bank, with a **strictly underdosed** codeword arm
+
+R-AG's named limit was one bank. This replicates on **`button_knife`** — different codeword *and*
+different concept — and adds an arm designed to kill the one objection R-AG cannot fully answer.
+
+**The problem with a plain replication.** On `button_knife` at L14 the two directions are *not* as
+well matched: `N` reaches **0.1784** and `u_button` **0.3022**, a **1.69×** gap — and the gap favours
+the codeword arm. If the codeword arm wins again, "it simply had more dose" is available. A layer scan
+found L3 matches at 1.11×, but changing bank *and* layer would weaken the replication; L24 gives 1.26×.
+**Neither fixes the logic, only the optics.**
+
+**So the design gives the codeword arm LESS dose than the concept arm, on BOTH metrics:**
+
+| arm @ L14 | α | variance dose | norm dose |
+|---|---|---|---|
+| `N_concept_axis` | 1.00 | **0.1784** | **0.4224** |
+| `U_codeword_full` | 1.00 | 0.3022 | 0.5497 |
+| **`U_codeword_UNDERdosed`** | **0.30** | **0.1541** | **0.1649** |
+
+`U@0.30` is **strictly below `N` on both the variance and the norm metric** — 0.1541 < 0.1784 and
+0.1649 < 0.4224. C-2 warns those two metrics disagree at partial α about what "matched" means; this
+design sidesteps the disagreement by being **dominated on both**, so no choice of metric can rescue a
+dose explanation.
+
+#### 📌 PRE-REGISTERED
+
+* **If `U@0.30` still moves ASR while `N@1.0` does not, dose is excluded outright** — the codeword arm
+  would be doing more with strictly less perturbation, on either metric. That is the strongest form of
+  R-AG's claim.
+* **If `U@0.30` is inert and only `U@1.0` moves**, the effect is dose-graded and R-AG's separation is
+  weaker than it looked — the honest reading would become "the codeword direction needs a large dose,
+  the concept direction does nothing at any dose tested".
+* **If `N` moves on this bank**, R-AG does not replicate and is bank-specific. **Recorded in advance.**
+
+Jobs **777265** (A), **777266** (N), **777267** (U full), **777268** (U underdosed). One bank, one
+population `n = 96`, all four to be judged in one session — **with `P2_BANK` now pointing at
+`button_knife`**, the parameterisation added an hour ago after the guard caught exactly this mistake.
+
+---
+
 ### 🏆🏆 R-AG (06:12) — **THE FIRST POSITIVE SPECIFICITY RESULT IN THIS PROJECT. At matched dose, direction identity decides the behaviour — and the causal direction is the CODEWORD, not the concept.**
 
 **Artifact:** judge session **777260**, all three arms in one session, `n_common = 96`, 96/96 scored.
