@@ -344,7 +344,8 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None):
 
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
-                      demo_keys=None, seq_len=None, knock_stats=None, protected=None):
+                      demo_keys=None, seq_len=None, knock_stats=None, protected=None,
+                      knock_heads=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -386,7 +387,8 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             out.extend(make_intervention(dc, pc, lm, sub, payload,
                                          control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
                                          demo_keys=demo_keys, seq_len=seq_len,
-                                         knock_stats=knock_stats, protected=protected))
+                                         knock_stats=knock_stats, protected=protected,
+                                         knock_heads=knock_heads))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -417,8 +419,13 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         if not keys:
             raise SystemExit(f"attn_knockout arm '{name}' produced an EMPTY key set; a no-op "
                              f"knockout must fail loudly, never score as a null")
+        # HEADS (added after R-AL). heads=None blocks EVERY head -- the behaviour every arm in
+        # Phases 2-4 used, so the default is unchanged. A head subset is the R-AL follow-up: Qwen3
+        # L8h22 is the top demonstration-attention head in 75% of prompts, and the question is
+        # whether one head of 40 reproduces a share of the band effect. The hook expands the head
+        # axis itself (pair_common.py:558) because the eager mask has head-dim 1.
         return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
-                                             stats=knock_stats)]
+                                             heads=knock_heads, stats=knock_stats)]
     if name == "refusalness":
         import refusalness as _rf
         # pass the model so the per-model direction file is chosen, and assert the width
@@ -672,6 +679,9 @@ def main() -> int:
     # is not comparable to it.
     ap.add_argument("--demo-deleted", action="store_true",
                     help="arm B: generate from final_query_text, i.e. the demonstrations removed")
+    ap.add_argument("--knockout-heads", default="",
+                    help="comma list of head indices for attn_knockout arms; empty = ALL heads, "
+                         "which is the Phase 2-4 behaviour. Added for the R-AL follow-up.")
     ap.add_argument("--attn-impl", default="sdpa", choices=["sdpa", "eager"],
                     help="eager is REQUIRED for attn_knockout and is forced there; set it "
                          "explicitly on the reference arms so a contrast is kernel-matched")
@@ -843,6 +853,11 @@ def main() -> int:
 
     spec = None
     payload = None
+    _knock_heads = None
+    if args.knockout_heads.strip() and not args.intervene:
+        raise SystemExit("[score] REFUSING: --knockout-heads given with no --intervene. The flag "
+                         "only reaches attn_knockout arms, so it would silently do nothing and the "
+                         "run would be filed under a head-restricted name while blocking nothing.")
     if args.intervene:
         # MULTI-SPEC, added 2026-08-17 for plan §10.4. The plan mandates six arms, three of which
         # COMPOSE two manipulations at once — most importantly arm F, "add Boombness AND remove
@@ -877,6 +892,22 @@ def main() -> int:
             specs.append({"direction": name, "mode": mode,
                           "layers": list(range(lo, hi + 1)), "alpha": float(alpha_s)})
         spec = specs[0] if len(specs) == 1 else {"composed": specs}
+        # HEAD SELECTION (R-AL follow-up). Validated against the model, not assumed: an out-of-range
+        # head index would otherwise index the expanded mask silently or IndexError deep in the hook.
+        _knock_heads = None
+        if args.knockout_heads.strip():
+            if not any(sp["mode"] == "attn_knockout" for sp in specs):
+                raise SystemExit("[score] REFUSING: --knockout-heads given but no attn_knockout "
+                                 "spec; it would silently do nothing.")
+            _nh = int(getattr(lm.model.config, "num_attention_heads", 0))
+            _knock_heads = [int(x) for x in args.knockout_heads.split(",") if x.strip() != ""]
+            _bad = [h for h in _knock_heads if not (0 <= h < _nh)]
+            if _bad:
+                raise SystemExit(f"[score] REFUSING: head(s) {_bad} outside 0-{_nh-1} for {model_id}")
+            if len(set(_knock_heads)) != len(_knock_heads):
+                raise SystemExit(f"[score] REFUSING: duplicate heads in {_knock_heads}")
+            print(f"[score] knockout restricted to {len(_knock_heads)} of {_nh} heads: "
+                  f"{sorted(_knock_heads)}", flush=True)
         # A pure attention knockout needs no fitted direction: it edits the attention mask, not
         # the residual stream. Requiring --fit-dir for it would force a spurious dependency on a
         # direction the arm never uses, and would make the arm's provenance claim a lie.
@@ -1087,7 +1118,8 @@ def main() -> int:
             ctxs = make_intervention(dc, pc, lm, spec, payload,
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
-                                     knock_stats=knock_stats, protected=prot)
+                                     knock_stats=knock_stats, protected=prot,
+                                     knock_heads=_knock_heads)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:

@@ -693,6 +693,55 @@ carries it.
 
 ---
 
+### 🔬🔬 PHASE 7d LAUNCHED (10:12) — **can ONE head of 40 reproduce the band effect?** The most localised causal test this project has attempted
+
+R-AL named a concrete target: **Qwen3 `L8 head 22`**, the top demonstration-attention head in **72 of
+96 prompts**, inside the band whose knockout removes 94 % of attack success. This asks whether it is
+causally load-bearing or merely the most visible.
+
+**New capability, guarded.** `AllQueryAttentionKnockout` has always accepted `heads=`, but
+`score_behavior` never passed it — **every Phase 2–4 arm blocked all heads**. Added `--knockout-heads`,
+threaded through both the single-spec and the composed-recursion paths.
+
+Three ways it could have lied silently, each now guarded and **mutation-tested** (dropping
+`knock_heads` from the hook call turns 2 tests red; restored, 19 pass including the 12 pre-existing
+composed-knockout tests, so Phases 2–4 are unaffected):
+
+| silent failure | guard |
+|---|---|
+| flag accepted but never reaches the hook → an arm named "head 22" blocks all 40 and reproduces the band effect trivially | `test_heads_reach_the_hook`, and `test_default_is_still_all_heads` pins `heads=None` for every existing arm |
+| flag given with no `--intervene` → reaches nothing, run filed under a head-restricted name | **REFUSES** at argument time |
+| out-of-range head → `IndexError` inside the per-row try = 96 silent ledger failures | **REFUSES**, range taken from `config.num_attention_heads`, not assumed |
+
+**Smoke (job 777325) before the sweep**, as required: `knockout restricted to 1 of 40 heads: [22]`,
+`frac_rows_decode_live = 1.0`, pre-flight 8/8 clean.
+
+| job | arm | intervention |
+|---|---|---|
+| **777326** | `H22_L8h22` | `demo_all:attn_knockout:8-8` restricted to **head 22** |
+| **777327** | `H30_L8h30_CTRL` | same, restricted to **head 30** — a **seeded** control, `random.Random(20260824).choice([h for h in range(40) if h != 22])` |
+| **777328** | `L8ALL_ceiling` | all 40 heads at L8 — the single-layer ceiling |
+
+Reference points already measured on this exact population: **baseline 0.1771**, **full band L7–17
+(all heads) 0.0104, effect −0.1667** (R-AB). All arms judged in one session with those two.
+
+#### 📌 PRE-REGISTERED
+
+* **If `H22` moves ASR substantially while `H30` does not**, one head of 40 in one layer of 40 carries
+  a real share of the mechanism — the most localised causal claim this project has made, and the first
+  quantity in Phase 7 with a plausible optimization handle.
+* **If `H22` ≈ `H30` ≈ 0**, demonstration attention is **distributed even where it looks concentrated**,
+  and R-AL's 75 %-of-rows dominance is a *readout* property, not a *causal* one. **That would be a
+  genuine finding, not a failure** — it would say the single-head visibility is epiphenomenal.
+* **If `L8ALL` ≈ 0 too**, then L8 is simply not a sufficient layer and the band effect is genuinely
+  spread across L7–17; the head question would then be ill-posed at this layer and would need re-asking
+  across the whole band.
+
+⚠ The control head is **one draw**, not a distribution. If `H22` and `H30` differ, a proper multi-head
+control band is required before the difference is quoted as head-specific.
+
+---
+
 ### ★★★★★ R-AL / C-8 (09:41) — **R-AK's reversal IS an averaging artifact. Correcting myself: at HEAD granularity the causal band wins on Qwen3, and one head carries it.**
 
 **Artifacts:** `rsLlamaH_20260824_055248_2170973` (job **777320**) and
