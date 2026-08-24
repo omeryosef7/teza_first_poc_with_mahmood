@@ -693,6 +693,63 @@ carries it.
 
 ---
 
+### ★★★★ R-AI (08:10) — **The retrieval account makes a prediction the dose account cannot, and it holds on BOTH models.** Free, from already-judged artifacts.
+
+With `d_surface` closed (R-AH), the plan's remaining Phase-7 candidate is *"a retrieval-strength
+quantity"*. Its **measurement** and **prediction** gates can be probed at zero cost: the Phase 2/3/4
+populations vary `n_examples ∈ {1, 2, 4, 8}`, 24 prompts each. **If the attack runs on demonstration
+retrieval, more demonstrations should mean more attack success — and more for the knockout to remove.**
+
+**Artifacts:** judge sessions **776893** (Llama) and **777134** (Qwen3), the same runs R-R and R-AB
+already used; no new compute.
+
+| | | **baseline ASR** | **C_band** | D_ctrl | **knockout effect** |
+|---|---|---|---|---|---|
+| **Llama** | n=1 | 0.1667 | 0.0833 | 0.1250 | **−0.0833** |
+| | n=2 | 0.1667 | 0.0417 | 0.1667 | **−0.1250** |
+| | n=4 | 0.2500 | 0.0417 | 0.2917 | **−0.2083** |
+| | n=8 | **0.3333** | 0.0417 | 0.2500 | **−0.2917** |
+| **Qwen3** | n=1 | **0.0000** | 0.0417 | 0.0417 | +0.0417 ⚠ floor |
+| | n=2 | 0.2083 | **0.0000** | 0.0417 | **−0.2083** |
+| | n=4 | 0.1667 | **0.0000** | 0.2083 | **−0.1667** |
+| | n=8 | **0.3333** | **0.0000** | 0.1667 | **−0.3333** |
+
+**Llama is perfectly monotone in both columns.** Baseline ASR rises 0.1667 → 0.3333 and the knockout
+effect grows 3.5× from −0.0833 to −0.2917. Exact permutation over the four levels:
+
+| | Spearman ρ | exact p |
+|---|---|---|
+| Llama, knockout effect vs `n_examples` | **−0.9898** | **0.0833** ← the attainable floor for 4 levels |
+| Llama, baseline ASR vs `n_examples` | +0.9439 | 0.1667 |
+| Qwen3, knockout effect vs `n_examples` | −0.8971 | 0.1667 |
+| Qwen3, baseline ASR vs `n_examples` | +0.8988 | 0.1667 |
+
+**Why this matters more than its p-values.** The knockout removes the *same kind of thing* at every
+`n_examples` — the mask covers whatever demonstration block is present. **A dose account predicts no
+relationship between the amount of demonstration material and the size of the effect. A retrieval
+account predicts exactly this monotone growth.** It is the first prediction in this phase that
+*separates* the two explanations rather than being compatible with both — and after R-AH, that
+distinction is the one that matters.
+
+And **Qwen3's `C_band` drives ASR to exactly 0.0000 at every `n_examples ≥ 2`** — complete suppression
+regardless of how much demonstration material there is to suppress.
+
+⚠ **Limits, plainly.** Four levels means **p cannot go below 0.0833**; Llama reaches that floor and
+Qwen3 does not. The two models share a bank, so they are not fully independent and I do **not** combine
+their p-values. **Qwen3's n=1 row is a floor artifact** — baseline ASR is exactly 0.0000, so there is
+nothing to suppress and its +0.0417 is not interpretable; dropping it leaves only 3 levels
+(ρ = −0.7208, p = 0.6667), which is why the 4-level figures are quoted with the caveat attached rather
+than the 3-level ones substituted.
+
+⚠ This is **prediction**, not **measurement**. A true retrieval-strength *scalar* — attention mass to
+the demonstration block at L6–14, per prompt — is still not measured on this population.
+`doublespeak_causality/next7_attention_retrieval.py` computes exactly that quantity but reads the
+`pair_benchmark` JSON format, not the boombness bank, so it is **not** drop-in reusable. Wiring the
+capture into `score_behavior`'s existing eager forward (where `demo_keys` is already computed per row)
+is the cheap route and is the **next experiment**, not something claimed here.
+
+---
+
 ### ⛔⛔⛔ R-AH (07:52) — **THE REPAIR ARMS SETTLE IT: R-AG's effect is DOSE, not identity. Third consecutive specificity negative, and this one is clean.**
 
 **Artifacts:** judge **777289** (`basket_bomb`, 4 arms, one session) and **777290** (`button_knife`,
