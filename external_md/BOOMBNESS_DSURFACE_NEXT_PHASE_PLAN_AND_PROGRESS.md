@@ -742,6 +742,67 @@ carries it.
 
 ---
 
+### ★★★★★ R-BE (00:41) — **THE BINDING CONSTRAINT IS THE NUMBER OF DOMAINS, AND IT ALWAYS WAS. Phase 8 said so and I then spent three phases adding the wrong thing.**
+
+After C-18 the defensible unit is the **domain marginal**. Computed over all 10 populations:
+
+| domain | pooled Δ |
+|---|---|
+| `game_manual` | **−0.2562** |
+| `news_report` | −0.0938 |
+| `city_bridge` | −0.0875 |
+| `instructional` | −0.0750 |
+| `farm_storage` | −0.0063 |
+| `lab_safety` | **+0.0000** |
+
+```
+k = 6   mean = -0.0865   sd = 0.0927   Cohen's d = 0.933   CI upper = +0.0108  -> includes zero
+```
+
+**What would actually settle it — holding this mean and sd:**
+
+| domains | CI upper | | sign-flip floor |
+|---|---|---|---|
+| **6** *(today)* | **+0.0108** | includes 0 | 3.1e-02 |
+| **8** | **−0.0090** | **EXCLUDES 0** | 7.8e-03 |
+| 10 | −0.0202 | excludes 0 | 2.0e-03 |
+| 12 | −0.0276 | excludes 0 | 4.9e-04 |
+
+**Two more domains would do it.** Not more banks, not more pools, not more models — **domains.**
+
+#### ⚠ This is exactly what Phase 8 concluded, and I did not act on it
+
+Phase 8's own words: *"more prompts was never the binding constraint … the exact paired sign-flip test
+operates on **domain clusters**, and there are **6**, so its p-floor is `2/2⁶` **no matter how many
+prompts each domain holds**. Every 'p at the floor' in this phase was floored by the **number of
+domains**, not the sample size."*
+
+**I wrote that, then spent Phases 8, 9, 10 and 10b adding four more banks, a third pool, a second model
+and a fourth concept** — every one of which **shares the same six domains**. C-15 and C-18 then
+established, on the model axis and the pool axis respectively, that those additions **cannot legitimately
+multiply the cluster count**, because they all sit on one shared 96-prompt, 6-domain design.
+
+> **The last three phases could not have escaped the floor, and Phase 8's own analysis said so before
+> they started.** Adding banks/pools/models was not wasted — it produced the cross-model replication,
+> the pool structure, R-AX's concept geometry and R-AU's attackability finding — **but none of it could
+> ever have made the magnitude claim significant.**
+
+#### The concrete path, for whoever continues
+
+`demo_pools.py` takes its domain list from `_meta.domains`
+(`farm_storage, city_bridge, lab_safety, news_report, game_manual, instructional`). **Regenerating the
+pools with 8–10 domains and rebuilding one bank per pool is the only route that changes the answer.**
+It is a bank-generation job of exactly the kind already done five times — **and it is the one thing
+nobody has tried.**
+
+⚠ **A caveat on the projection.** The calculation holds the current mean and sd fixed, and **the effect
+is concentrated**: `game_manual` alone is −0.2562 against a −0.0865 mean, and `lab_safety` is exactly
+zero. **New domains could easily be `lab_safety`-like**, which would lower the mean and raise the sd
+together. **8 domains is the optimistic reading of this table, not a guarantee** — the same error I made
+in R-BB and had to correct twice.
+
+---
+
 ### ✅ C-18 CODE CLOSURE (00:12) — **all four defects fixed and verified in a fresh artifact; the tool now warns about its own statistic**
 
 **Artifact:** `outputs/boombness/crossbank_knockout_test/xb10rev8_20260824_235105_2109370`, all three
