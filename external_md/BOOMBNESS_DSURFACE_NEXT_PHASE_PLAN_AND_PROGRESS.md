@@ -693,6 +693,54 @@ carries it.
 
 ---
 
+### ★★★★★ R-AN (11:52) — **THE EFFECT IS SUPER-ADDITIVE IN LAYERS. Six of eleven band layers achieve 7 % of what all eleven achieve.**
+
+**Artifact:** judge **777340**, six arms in **one session**, `n_common = 96`, 96/96 each. All four new
+arms verified live first (`frac_rows_decode_live = 1.0`).
+
+| arm | layers | ASR | Δ | **% of full band** | cluster p |
+|---|---|---|---|---|---|
+| `A_baseline` | 0 | 0.1771 | — | — | — |
+| **L13 only** | 1 | 0.1250 | −0.0521 | **33.3 %** | 0.1250 |
+| **L17 only** | 1 | 0.1458 | −0.0312 | 20.0 % | 0.3750 |
+| **L7–9** | 3 | 0.1562 | −0.0208 | 13.3 % | 0.5000 |
+| **L7–12** | 6 | 0.1667 | **−0.0104** | **6.7 %** | 1.0000 |
+| **L7–17** | **11** | **0.0208** | **−0.1562** | **100 %** | 0.1875 |
+
+No degeneracy anywhere: `uniq_frac` 0.927 / 0.906 / 0.948 / 0.948 / 0.917 / 0.781.
+
+#### The headline, stated at the strength the data supports
+
+**Cutting demonstration attention at 6 of the 11 band layers achieves 6.7 % of the effect of cutting it
+at all 11 — a 15× gap.** The mechanism is **super-additive**: it is not that each layer contributes a
+share, it is that **partial removal is almost fully compensated** and only near-complete removal breaks
+it. This is a much stronger form of R-AM's redundancy claim than R-AM could establish, and it is the
+pre-registered "threshold in layer count" branch.
+
+⚠ **What I will NOT claim.** The ordering is **non-monotone** — `L13` alone (−0.0521) nominally beats
+`L7–12` (−0.0104), i.e. one layer beating six. **That is a 4-prompt difference between two arms with
+p = 0.125 and p = 1.0000, and it is noise.** I am not building a story on it. **Every sub-band arm is
+non-significant**, and so, at 5 informative clusters, is the full band here (p = 0.1875). **The robust
+statement is the magnitude gap — no sub-band tested reaches even 34 % of the full effect, and the
+6-layer arm reaches 7 %.**
+
+#### What the data points at next, as a sharp prediction
+
+`L7–12` excludes 13–17 and does **nothing** (6.7 %). `L13` alone gives 33 % and `L17` alone 20 %.
+**If any sub-band carries the effect, it is the upper one — and it was not tested.** Two arms launched
+to settle it:
+
+| job | arm | layers |
+|---|---|---|
+| **777344** | `S_L13_17` | **13–17** (5 layers) — the untested upper half |
+| **777345** | `S_L10_17` | **10–17** (8 layers) — how much of the lower band is dispensable |
+
+**Pre-registered:** if `L13–17` recovers most of −0.1562, the mechanism is **localised to the upper
+band** and R-AM/R-AN's "needs the whole band" is too strong. If it too lands near zero while only the
+full 11 layers work, super-additivity is confirmed against its sharpest available alternative.
+
+---
+
 ### 🔬 PHASE 7e LAUNCHED (11:14) — the layer sweep R-AM's own scope demanded
 
 R-AM established that **L8 in full is dispensable** but explicitly limited itself: *"L8 ALL being null
