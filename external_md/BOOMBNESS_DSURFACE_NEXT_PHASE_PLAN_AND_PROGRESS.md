@@ -693,6 +693,57 @@ carries it.
 
 ---
 
+### 🏆🏆 R-AW (14:38) — **APPLYING C-13's METHOD TO THE WHOLE PHASE: every knockout arm excludes zero, every control includes it. The arm-vs-control separation the sign-flip tests could never show.**
+
+C-13 established that the bootstrap CI survives the clustering choice while the sign-flip p does not.
+**Every headline in Phases 2–4 was reported with a sign-flip p pinned at or near its floor and no
+effect-size interval at all.** Applying the surviving method to all of them — domain-clustered, 40 000
+resamples, no GPU:
+
+| contrast | Δ | **CI95** | **frac ≥ 0** | sign-flip p |
+|---|---|---|---|---|
+| **R-R Llama P2 · `C_band` vs A** | −0.1771 | **[−0.3229, −0.0521]** | **0.0027** | 0.0938 |
+| R-R Llama P2 · `D_ctrl` vs A *(control)* | −0.0208 | [−0.1042, **+0.0625**] | 0.3707 | 0.8750 |
+| **R-AB Qwen3 P4 · `C_band` vs A** | −0.1667 | **[−0.3125, −0.0417]** | **0.0014** | 0.1250 |
+| R-AB Qwen3 P4 · `D_ctrl` vs A *(control)* | −0.0625 | [−0.1458, **+0.0104**] | 0.0768 | 0.3750 |
+| **R-T P3 · `C` vs A** | −0.1771 | **[−0.2917, −0.0729]** | **0.0000** | 0.0625 |
+| R-T P3 · `R` refusal-off vs A *(control)* | −0.0312 | [−0.0833, **+0.0208**] | 0.1857 | 0.5000 |
+| **R-T P3 · `C+R` vs A** | −0.2083 | **[−0.3333, −0.1146]** | **0.0000** | 0.0312 |
+| **R-T P3 · `C+R` vs `R`** ← *the independence test* | −0.1771 | **[−0.3438, −0.0521]** | **0.0000** | 0.0625 |
+
+#### The pattern is exact and it is the phase's cleanest evidence
+
+**Every knockout arm excludes zero** (`frac ≥ 0` = 0.0000–0.0027). **Every control includes zero**
+(0.0768–0.3707). **On both models.** The sign-flip p could never show this — it read
+0.0938 / 0.8750 for the Llama pair and 0.1250 / 0.3750 for the Qwen3 pair, none below 0.05, so arm and
+control were formally indistinguishable in every published contrast of this phase.
+
+#### R-T's independence claim is now properly supported
+
+R-T argued the retrieval and refusal channels are independent because the knockout's effect was
+**−0.1771 with refusal intact and −0.1771 with refusal removed**. That rested on two point estimates and
+a p of 0.0625 at the floor. Now:
+
+* knockout **with** refusal intact: −0.1771, **CI [−0.2917, −0.0729]**, excludes zero
+* knockout **with** refusal removed (`C+R` vs `R`): −0.1771, **CI [−0.3438, −0.0521]**, excludes zero
+* refusal removal **alone**: −0.0312, **CI [−0.0833, +0.0208]**, **includes zero**
+
+**The suppressive effect is present and interval-separated from zero in both refusal conditions, while
+refusal removal by itself is not distinguishable from nothing.** That is a materially stronger form of
+R-T than R-T itself could state.
+
+⚠ **What this does NOT do.** It does not add data — same 96 prompts, same six domains, same judging
+sessions. It replaces a statistic that could not resolve the question with one that can. **The CIs are
+wide** (Llama's spans −0.32 to −0.05) and the bootstrap over **6 clusters** is itself approximate at that
+count. **No p-value is claimed anywhere in this table**; `frac_boot ≥ 0` is a bootstrap tail mass, not a
+significance test, and I am not converting it into one.
+
+⚠ **Consistency with C-13:** the same method, applied to the same kind of data, gave a *downward*
+correction there and an *upward* one here. **That is what a method that does not chase the favourable
+answer looks like**, and it is the reason I trust this table more than the p-values it replaces.
+
+---
+
 ### 🏆🏆 R-AV / C-13 (14:11) — **THE CLUSTER p CANNOT ESTABLISH THIS AT ANY UNIT. THE BOOTSTRAP CI CAN, AND DOES, AT EVERY UNIT.** Final form of the statistic.
 
 R-AU left a contradiction: REVIEW-5 argued the banks are non-independent from **r = 0.90–0.98** between
