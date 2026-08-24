@@ -75,12 +75,26 @@ def test_gens_rows_carry_stop_reason_and_it_VARIES():
     assert c["length"] >= 5, f"only {c['length']} truncated rows; the control has nothing to remove"
 
 
-def test_manifest_requires_the_generation_dirs():
-    """The gens dirs are what make the stratification possible; a 4-field manifest must refuse."""
+def test_manifest_arity_is_checked_and_matches_the_documented_format():
+    """The gens dirs make the stratification possible and `model` makes the 2-model analysis possible;
+    a short manifest must refuse rather than mis-parse.
+
+    UPDATED 2026-08-24 (C-17 F5): the format gained a leading `model` field, 6 -> 7. The check no
+    longer hardcodes a number -- it reads the arity the code enforces and asserts the DOCUMENTED
+    format in the module docstring has exactly that many colon-separated fields, so the two can never
+    drift apart again.
+    """
+    import re
     s = open(SRC).read()
-    assert "len(parts) != 6" in s, "the manifest arity check is gone"
-    i = s.index("len(parts) != 6")
-    assert "REFUSING" in s[i:i + 300]
+    m = re.search(r"len\(parts\) != (\d+)", s)
+    assert m, "the manifest arity check is gone"
+    n = int(m.group(1))
+    i = s.index(m.group(0))
+    assert "REFUSING" in s[i:i + 400], "a wrong-arity manifest no longer refuses"
+    doc = re.search(r"Manifest lines:\s*(.+)", s)          # whole line: "<A judge>" contains a space
+    assert doc, "the manifest format is no longer documented in the docstring"
+    n_doc = doc.group(1).strip().count(":") + 1
+    assert n_doc == n, f"docstring documents {n_doc} fields but the code enforces {n}"
 
 
 def test_bootstrap_resamples_CLUSTERS_not_prompts():

@@ -38,7 +38,12 @@ Scalars only; no prompt or completion text is read or written.
 
 Run:
   python src/boombness/crossbank_knockout_test.py --manifest <file> --tag xbtest
-Manifest lines:  bank:pool_sha16:<A judge dir>:<C judge dir>:<A gens dir>:<C gens dir>
+Manifest lines:  model:bank:pool_sha16:<A judge>:<C judge>:<A gens>:<C gens>
+
+  MODEL ADDED 2026-08-24 (C-17 finding F5). The script had no notion of `model`, so the 8-population
+  two-model analysis every recent claim rests on could not be expressed by any manifest -- and the
+  cluster-permutation functions were never called from main() at all. The numbers lived only in
+  markdown. That is review finding S6 for the third time; this closes it.
 """
 from __future__ import annotations
 
@@ -241,9 +246,10 @@ def main() -> int:
         if not line or line.startswith("#"):
             continue
         parts = line.split(":")
-        if len(parts) != 6:
-            raise SystemExit(f"[xb] REFUSING: manifest line needs 6 fields "
-                             f"(bank:pool:Ajudge:Cjudge:Agens:Cgens), got {len(parts)}: {line[:80]}")
+        if len(parts) != 7:
+            raise SystemExit(f"[xb] REFUSING: manifest line needs 7 fields "
+                             f"(model:bank:pool:Ajudge:Cjudge:Agens:Cgens), got {len(parts)}: "
+                             f"{line[:80]}")
         entries.append(tuple(parts))
     if not entries:
         raise SystemExit("[xb] REFUSING: empty manifest")
@@ -259,7 +265,8 @@ def main() -> int:
     for thr in [float(x) for x in args.thresholds.split(",")]:
         hit = lambda r: (r.get("strongreject_score") or 0) >= thr        # noqa: E731
         cells, cellmeta, prompt_flips, prompt_flips_eos = {}, {}, [], []
-        for bank, pool, da, dc, ga, gc in entries:
+        cflips = collections.defaultdict(list)
+        for model, bank, pool, da, dc, ga, gc in entries:
             A, C = load(da), load(dc)
             SA, SC = load_stop(ga), load_stop(gc)
             common = sorted(set(A) & set(C))
@@ -270,6 +277,9 @@ def main() -> int:
                 dm[A[p]["domain"]].append(d)
                 if d != 0:
                     prompt_flips.append(d)
+                    # C-17: per-prompt flips keyed by (model, pool, domain) so the cluster-permutation
+                    # test and its GROUP drops (by model, by pool) can be computed and PERSISTED.
+                    cflips[(model, pool, A[p]["domain"])].append(d)
                 if p in both_eos:
                     prompt_flips_eos.append(d)
             for dom, v in dm.items():
@@ -281,7 +291,7 @@ def main() -> int:
             if thr == 0.5:
                 a = sum(hit(A[p]) for p in common) / len(common)
                 c = sum(hit(C[p]) for p in common) / len(common)
-                out["banks"].append({"bank": bank, "pool_sha16": pool, "n": len(common),
+                out["banks"].append({"model": model, "bank": bank, "pool_sha16": pool, "n": len(common),
                                      "baseline_asr": a, "knockout_asr": c, "delta": c - a,
                                      "relative_suppression": (1 - c / a) if a > 0 else None,
                                      "n_both_terminated": len(both_eos),
@@ -324,6 +334,27 @@ def main() -> int:
             "n_up": sum(1 for d in d2 if d > 0),
             "p": binom_two_sided(min(sum(1 for d in d2 if d < 0), sum(1 for d in d2 if d > 0)), len(d2)),
             "VERDICT": "S6 control: both arms terminated on EOS"}
+        # ---- C-17: the cluster-permutation test, now actually CALLED and persisted ----
+        pooled = collections.defaultdict(list)          # models pooled -> pool x domain
+        for (m, po, dom), v in cflips.items():
+            pooled[(po, dom)].extend(v)
+        perm = cluster_permutation_on_counts(dict(pooled))
+        groups = {}
+        for po in {k[0] for k in pooled}:
+            groups[f"drop_pool_{po}"] = [k for k in pooled if k[0] == po]
+        # model drops need the UNPOOLED keys, so recompute per-model sets
+        permodel = {}
+        for m in {k[0] for k in cflips}:
+            sub = collections.defaultdict(list)
+            for (mm, po, dom), v in cflips.items():
+                if mm == m:
+                    sub[(po, dom)].extend(v)
+            permodel[m] = cluster_permutation_on_counts(dict(sub))
+        lv["cluster_permutation_on_counts"] = perm
+        lv["cluster_permutation_drops"] = leave_one_cluster_out(dict(pooled), groups=groups)
+        lv["cluster_permutation_per_model"] = {m: {"T": r["T"], "p": r["p"],
+                                                   "n_informative": r["n_informative"]}
+                                               for m, r in permodel.items()}
         out["by_threshold"][f"{thr:g}"] = {"levels": lv, "cells": dict(cellmeta)}
 
     summ = {"n_banks": len(entries), "n_independent_pools": len(pools),
@@ -336,6 +367,21 @@ def main() -> int:
     for thr, blk in out["by_threshold"].items():
         print(f"\n--- StrongREJECT threshold {thr}")
         for k, v in blk["levels"].items():
+            if not isinstance(v, dict):
+                continue
+            if k == "cluster_permutation_on_counts":
+                print(f"    {k:24s} T={v['T']:+d} p={v['p']:.4e} floor={v['p_floor']:.4e} "
+                      f"sign_only={v['p_is_sign_only']} ({v['n_informative']}/{v['n_clusters']} inf, "
+                      f"{v['n_discordant']} discordant)")
+                continue
+            if k == "cluster_permutation_drops":
+                print(f"    {k:24s} worst single-cluster p={v['worst_p']:.4e}  "
+                      f"WORST GROUP p={v['worst_p_group']}  groups={v['per_group_p']}")
+                continue
+            if k == "cluster_permutation_per_model":
+                print(f"    {k:24s} " + "  ".join(f"{m}: T={r['T']:+d} p={r['p']:.4e}"
+                                                  for m, r in sorted(v.items())))
+                continue
             if "ci95_lo" in v:
                 print(f"    {k:24s} mean={v['mean']:+.4f} CI95=[{v['ci95_lo']:+.4f},{v['ci95_hi']:+.4f}] "
                       f"frac_boot>=0={v['frac_boot_ge_zero']:.4f}")

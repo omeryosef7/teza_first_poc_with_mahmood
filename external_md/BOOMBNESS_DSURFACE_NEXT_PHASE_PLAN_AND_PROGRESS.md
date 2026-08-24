@@ -693,6 +693,56 @@ carries it.
 
 ---
 
+### ✅ F5 CLOSED (19:26) — **the 8-population analysis is now reproducible from a manifest, and every C-17 number reproduces from the artifact**
+
+C-17's F5: the cluster-permutation functions **were never called from `main()`**, the script had **no
+notion of `model`**, and no artifact contained `T = −78`. **That was review finding S6 for the third
+time.** Closed now, not claimed closed:
+
+* **Manifest gains a `model` field** (`model:bank:pool:Ajudge:Cjudge:Agens:Cgens`) — arity check
+  updated to refuse 6-field lines, so an old manifest fails loudly rather than mis-parsing.
+* **`cluster_permutation_on_counts`, `leave_one_cluster_out` (with group drops) and a per-model
+  breakdown are now called from `main()`** and written into `crossbank_test.json`.
+* **Artifact:** `outputs/boombness/crossbank_knockout_test/xb8_20260824_192145_1606684/`,
+  from `xb_manifest8.txt`, **8 populations, both models.**
+
+**Everything C-17 asserted by hand now comes out of the run:**
+
+```
+cluster_permutation_on_counts  T=-78  p=1.5625e-02  floor=1.5625e-02  sign_only=True  (7/9 inf, 114 discordant)
+cluster_permutation_drops      worst single-cluster p=3.1250e-02   WORST GROUP p=0.25
+                               groups={knife pool: 0.125, bomb pool: 0.25}
+cluster_permutation_per_model  L: T=-35 p=1.0938e-01     Q: T=-43 p=1.5625e-02
+```
+
+**`sign_only=True` and `worst_p_group = 0.25` are printed by the tool itself**, so the two facts that
+retract R-BA can no longer be omitted by whoever reads the artifact next.
+
+The same run also records, at threshold 0.5 over all 8 populations:
+
+| statistic | value |
+|---|---|
+| `pool × domain` sign-flip on cluster **means** | p = **0.1094** (8/12 informative) |
+| `domain only` | p = 0.0938 (6/6) |
+| `bank × domain` | p = 0.0239 *(anticonservative — C-11)* |
+| prompt-level binomial | 96 down / 18 up, p = 4.7e-14 |
+| both-arms-EOS control | 28 / 1, p = 1.1e-07 |
+| `pool × domain` **percentile** bootstrap | [−0.1953, −0.0052] ⚠ *anticonservative at k=12 (C-14) — the calibrated t-CI is [−0.2060, +0.0029]* |
+
+⚠ **One thing the artifact makes newly visible:** the `pool × domain` sign-flip on cluster **means** is
+**p = 0.1094**, while the same clustering with the **counts** statistic gives 0.0156. **They disagree
+because 8 clusters are informative under means and only 7 under counts** — a cluster whose mean is
+non-zero can still have a zero net. Neither is wrong; **both are sign tests at their own floors**, and
+the disagreement is a further reason not to quote either as the headline.
+
+⚠ A zsh trap on the way, worth recording: `ls $DIR/$var` where `$var` holds a glob **does not expand in
+zsh** — parameter expansion is not followed by filename generation without `${~var}`. The first manifest
+build silently produced 8 rows of empty paths and the script died on `results.jsonl` not found.
+**It failed loudly, but only because the loader opens the file immediately**; a lazier loader would have
+produced an empty analysis. Manifest rows are now verified (`8 rows, 7 fields each`) before use.
+
+---
+
 ### ⛔⛔ C-17 / REVIEW-7 (19:41) — **R-BA is withdrawn entirely. It fails leave-one-MODEL-out, collapses when 10 % of the evidence is removed, and its code was never wired in.** Seventh correction.
 
 **REVIEW-7 reproduced R-BA exactly** (9 clusters, 7 informative, 114 discordant, T = −78, p = 0.015625,
