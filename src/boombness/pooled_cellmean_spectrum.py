@@ -21,8 +21,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 
 import torch
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# P0.2e: one definition of the units-explicit dose siblings, imported, never re-typed.
+from insubspace_null_test import DOSE_UNITS_CELLMEAN, dose_fields, read_dose  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_FITS = {
@@ -92,6 +97,7 @@ def main() -> int:
                       "crossed pairs; each was centred within its own row-set. Same model/layers/"
                       "extraction config makes it reasonable, but a real Phase 5 bank must be built "
                       "and measured rather than simulated this way."),
+           "dose_units": DOSE_UNITS_CELLMEAN,
            "single_pair": {}, "pooled": {}}
     for L in layers:
         u = P[a.arm_pair]["d_surface"][L]
@@ -99,11 +105,14 @@ def main() -> int:
             M = _centred(pl, L)
             out["single_pair"].setdefault(pair, {})[f"L{L}"] = {
                 "pc_fractions": spectrum(M),
-                "arm_dose": dose_of(M, pl["d_surface"][L]),
-                "max_complement_dose": max_complement_dose(M, pl["d_surface"][L]),
+                **dose_fields(dose_of(M, pl["d_surface"][L]), "arm_dose"),
+                **dose_fields(max_complement_dose(M, pl["d_surface"][L]),
+                              "max_complement_dose"),
             }
             d = out["single_pair"][pair][f"L{L}"]
-            d["arm_over_max_complement"] = d["arm_dose"] / d["max_complement_dose"]
+            # consumer prefers the units-explicit keys, falls back to the historical ones (P0.2e)
+            d["arm_over_max_complement"] = (read_dose(d, "arm_dose")
+                                            / read_dose(d, "max_complement_dose"))
         Mp = torch.stack([P[p]["cell_means"][c][L].reshape(-1)
                           for p in fits for c in sorted(P[p]["cell_means"])]).double()
         Mp = Mp - Mp.mean(0, keepdim=True)
@@ -111,7 +120,8 @@ def main() -> int:
         out["pooled"][f"L{L}"] = {
             "n_cells": int(Mp.shape[0]), "pc_fractions": fr,
             "n_pcs_ge_0.10": sum(1 for f in fr if f >= 0.10),
-            "arm_dose": dose_of(Mp, u), "max_complement_dose": max_complement_dose(Mp, u),
+            **dose_fields(dose_of(Mp, u), "arm_dose"),
+            **dose_fields(max_complement_dose(Mp, u), "max_complement_dose"),
             "arm_over_max_complement": dose_of(Mp, u) / max_complement_dose(Mp, u),
         }
     os.makedirs(os.path.dirname(a.out), exist_ok=True)

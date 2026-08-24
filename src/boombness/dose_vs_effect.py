@@ -33,6 +33,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import read_jsonl  # noqa: E402
+# P0.2e: one definition of the units-explicit dose siblings, imported, never re-typed.
+from insubspace_null_test import DOSE_UNITS_CELLMEAN, dose_fields, read_dose  # noqa: E402
 
 
 def git_commit_safe() -> str:
@@ -235,7 +237,9 @@ def frontier_gap(payload, layer, name, n_phi=1441):
                                  + math.sin(math.pi * j / n_phi) * B[1]))
                for j in range(n_phi))
     d = A_of(x)
-    return {"cos_with_d_surface": c, "dose": d, "max_dose_at_this_cos": best,
+    return {"cos_with_d_surface": c, **dose_fields(d),
+            "max_dose_at_this_cos": best,
+            f"max_dose_at_this_cos_{DOSE_UNITS_CELLMEAN}": best,
             "frontier_gap": best - d, "on_frontier": bool(best - d < 5e-3)}
 
 
@@ -274,12 +278,15 @@ def main() -> int:
         dose = float(((M @ u.reshape(-1, 1)) ** 2).sum()) / tot
         arm = _rows(pat)
         if not arm:
-            out[name] = {"layer": L, "dose": dose, "status": f"no judge run matching {pat}"}
+            out[name] = {"layer": L, **dose_fields(dose),
+                         "status": f"no judge run matching {pat}"}
             continue
         ids = sorted(set(base) & set(arm))
         suc = lambda r: 1 if r["strongreject_score"] >= args.threshold else 0
         d = [suc(arm[i]) - suc(base[i]) for i in ids]
-        out[name] = {"layer": L, "dose_cellmean_frac": dose, "n": len(ids),
+        out[name] = {"layer": L, "dose_cellmean_frac": dose,
+                     **{k: v for k, v in dose_fields(dose).items() if k != "dose"},
+                     "n": len(ids),
                      "delta": sum(d) / len(d), "net_flips": sum(d),
                      "delta_over_dose": (sum(d) / len(d)) / dose if dose else None,
                      "judge_run": os.path.basename(sorted(glob.glob(pat))[-1])}
@@ -288,8 +295,10 @@ def main() -> int:
     _u = lambda v: (v.float().reshape(-1) / v.float().reshape(-1).norm())
     cos_ns = float(torch.dot(_u(pl["d_surface"][8]), _u(pl["d_naive"][8])))
     verdict = None
-    if ds.get("dose_cellmean_frac") and dn.get("dose_cellmean_frac"):
-        ratio = dn["dose_cellmean_frac"] / ds["dose_cellmean_frac"]
+    # consumers prefer the units-explicit key and fall back to the historical one (P0.2e)
+    _dose_of_arm = lambda a: read_dose(a, legacy="dose_cellmean_frac")
+    if _dose_of_arm(ds) and _dose_of_arm(dn):
+        ratio = _dose_of_arm(dn) / _dose_of_arm(ds)
         verdict = {
             "dose_ratio_naive_over_surface": ratio,
             "dose_matched": abs(1 - ratio) < 0.15,

@@ -42,6 +42,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import read_jsonl  # noqa: E402
+# P0.2e: one definition of the units-explicit dose siblings, imported, never re-typed.
+from insubspace_null_test import DOSE_UNITS_CELLMEAN, dose_fields, read_dose  # noqa: E402
 
 
 def git_commit_safe() -> str:
@@ -226,7 +228,7 @@ def main() -> int:
         v, how = sg.dose_mix_direction(pl, L, k, n_steps=args.n_steps)
         pat = LADDER_PAT.get(k, f"{JUDGE}/dmJ{L}k{k}_*")
         r = _delta(base, _rows(pat), args.threshold)
-        ladder[k] = {"how": how, "dose": dose_of(v), "glob": pat,
+        ladder[k] = {"how": how, **dose_fields(dose_of(v)), "glob": pat,
                      **(r or {"status": "no judge run"})}
 
     # ---- HELD OUT: other constructions at the same layer
@@ -238,17 +240,17 @@ def main() -> int:
             continue
         r = _delta(base, _rows(pat), args.threshold)
         if r:
-            held[name] = {"dose": dose_of(v), **r}
+            held[name] = {**dose_fields(dose_of(v)), **r}
     for k in range(12):
         g = (f"{JUDGE}/angJ{L}k{k // 3}_*" if k % 3 == 0 else f"{JUDGE}/angJ{L}k{k}of12_*")
         r = _delta(base, _rows(g), args.threshold)
         if r:
             v, _h = sg.in_subspace_angle_direction(pl, L, k, n_angles=12)
-            held[f"angle{k}of12"] = {"dose": dose_of(v), **r}
+            held[f"angle{k}of12"] = {**dose_fields(dose_of(v)), **r}
 
     have = {k: v for k, v in ladder.items() if "delta" in v}
     doc = {"layer": L, "threshold": args.threshold, "ladder": ladder, "held_out": held,
-           "preregistered": True,
+           "preregistered": True, "dose_units": DOSE_UNITS_CELLMEAN,
            "provenance": {"argv": sys.argv, "git_commit": git_commit_safe()}}
 
     # ---- plumbing checks (geometry-derived, not data-derived)
@@ -301,7 +303,7 @@ def main() -> int:
         c.get("gens_identical") for c in checks.values())
 
     if len(have) >= 4:
-        xs = [have[k]["dose"] for k in sorted(have)]
+        xs = [read_dose(have[k]) for k in sorted(have)]
         ys = [have[k]["delta"] for k in sorted(have)]
         fit = isotonic(xs, ys)
         doc["ladder_fit"] = {f"{x:.4f}": fit[x] for x in sorted(fit)}
@@ -315,8 +317,10 @@ def main() -> int:
         doc["ladder_scatter_max_loo_resid"] = scatter
         res = {}
         for nm, h in held.items():
-            pred = curve_at(fit, h["dose"])
-            res[nm] = {"dose": h["dose"], "observed": h["delta"], "curve": pred,
+            # consumer prefers the units-explicit key; falls back for pre-P0.2e payloads
+            hd = read_dose(h)
+            pred = curve_at(fit, hd)
+            res[nm] = {**dose_fields(hd), "observed": h["delta"], "curve": pred,
                        "residual": h["delta"] - pred,
                        "above_curve_beyond_scatter": bool(
                            scatter is not None and (h["delta"] - pred) > scatter)}

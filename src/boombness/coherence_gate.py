@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import hashlib
 import json
 import math
 import os
@@ -75,6 +76,41 @@ MAX_TRUNCATED_FRAC = 0.90
 # says what population it was computed on.
 MIN_SCORABLE_FRAC = 0.50
 MIN_SCORED_ROWS = 30
+
+
+def completion_uniqueness(texts: List[str]) -> Dict[str, Optional[float]]:
+    """The two DIFFERENT things "unique completions" has meant, both named, neither inferred.
+
+    WHY THIS EXISTS (P0.2e, metric renames). The sprint log reports a column headed `uniq_frac` and
+    reads it as "fraction of distinct completions". It is not: `grep -rn uniq_frac src/ scripts/`
+    returns nothing -- there was no producer at all -- and every published cell reproduces exactly as
+    `len(set(n_chars))/n`, i.e. distinct completion **LENGTHS**. The two quantities are far apart on
+    real arms: two cells the log calls 0.875 and 0.802 are 96/96 = 1.000 distinct by TEXT. So the
+    concept stops being prose-only here, and it is emitted under two names that each say what they
+    are:
+
+      * `n_distinct_completion_lengths_frac` -- the HISTORICAL quantity the `uniq_frac` column holds,
+        so an old table can be checked against a computed number;
+      * `n_distinct_completions_frac` -- distinct completions by CONTENT, via sha256 of the text.
+
+    The text is HASHED, never stored: this repo's artifacts must not carry generations.
+
+    RELATIONSHIP, which holds by construction and is asserted in tests: two completions of different
+    length are necessarily different completions, so
+        n_distinct_completion_lengths_frac <= n_distinct_completions_frac
+    always. A gap between them is the interesting state (many completions sharing a length), and
+    reading the smaller number as the larger one -- what `uniq_frac` invited -- understates diversity.
+
+    Empty population -> None for both, not 0.0: "no completions" is not "all identical".
+    """
+    n = len(texts)
+    if not n:
+        return {"n_distinct_completion_lengths_frac": None, "n_distinct_completions_frac": None}
+    return {
+        "n_distinct_completion_lengths_frac": len({len(t) for t in texts}) / n,
+        "n_distinct_completions_frac":
+            len({hashlib.sha256(t.encode("utf-8")).hexdigest() for t in texts}) / n,
+    }
 
 
 def degeneracy(text: str) -> Optional[Dict[str, float]]:
@@ -137,6 +173,7 @@ def assess(run_dir: str, condition: Optional[str] = None,
     if keep_ids is not None:
         rows = [r for r in rows if r.get("prompt_id") in keep_ids]
     n_considered = len(rows)
+    texts = [r.get("generation", "") or "" for r in rows]
     stats = [degeneracy(r.get("generation", "")) for r in rows]
     stats = [s for s in stats if s]
     # THE TRUNCATION CRITERION COULD SILENTLY NOT RUN (silent-failure audit, 2026-08-19).
@@ -175,7 +212,13 @@ def assess(run_dir: str, condition: Optional[str] = None,
                                 "max_truncated_frac": MAX_TRUNCATED_FRAC},
            "sample_thresholds": {"min_scorable_frac": min_scorable_frac,
                                  "min_scored_rows": min_scored_rows,
-                                 "min_words_scorable": 8}}
+                                 "min_words_scorable": 8},
+           # Reported, NOT gated. These two are the `uniq_frac` column given a producer and two
+           # honest names (see `completion_uniqueness`); wiring either into `fails` would change
+           # committed verdicts, which a renaming task must not do.
+           **completion_uniqueness(texts),
+           "completion_uniqueness_denominator": "n_considered (every row of the reported "
+                                                "population, not only the >=8-word scorable ones)"}
     for k in ("uniq_word_ratio", "trigram_repeat", "top_word_frac"):
         out[k] = st.mean(s[k] for s in stats) if stats else float("nan")
     fails = []

@@ -176,6 +176,52 @@ def arm_stats(rows: Dict[str, dict], common: List[str]) -> dict:
     }
 
 
+#: The two things `delta_pooled` has meant in this repo, as an enum written next to every value.
+DELTA_POOLED_UNITS = ("mean_score", "asr")
+
+
+def delta_pooled_fields(value, field: str) -> dict:
+    """`delta_pooled` under a name that says its UNITS, beside the historical key. (P0.2e)
+
+    THE DEFECT. Three writers emit a key called `delta_pooled` and they do not all mean the same
+    thing: this module's is a mean STRONGREJECT-SCORE delta, while `consolidate_deliverables.py` and
+    `analyze_control_recheck.py` call the same function with `field="malicious_at_0.5"`, where the
+    per-prompt difference is a 0/1 flip and the pooled mean is an **ASR** delta. A reader (or a
+    consumer with a `.get`) cannot tell a +0.24 in score units from a +0.24 in ASR units by the key.
+
+    So each value now also appears as `delta_pooled_mean_score` or `delta_pooled_asr` -- exactly one
+    of them, chosen from the FIELD the delta was taken on, never from the caller's intent -- with
+    `delta_pooled_units` naming which. `delta_pooled` itself is retained BIT-IDENTICAL: historical
+    artifacts must keep loading and no existing key may change meaning. Consumers prefer the explicit
+    key with `.get(new, old)`.
+
+    The boolean-flag field is the ASR one; every other field here is a continuous score.
+    """
+    units = "asr" if field == FLAG else "mean_score"
+    return {"delta_pooled": value, f"delta_pooled_{units}": value,
+            "delta_pooled_units": units, "delta_pooled_field": field}
+
+
+def read_delta_pooled(rec: dict, units: Optional[str] = None):
+    """The consumer side of `delta_pooled_fields`: prefer the explicit key, fall back to the old one.
+
+    A pre-P0.2e artifact carries only the ambiguous `delta_pooled`, so the fallback is what keeps
+    every committed artifact readable. `units` pins which meaning the caller wants and makes a
+    mismatch visible (None rather than a number in the wrong units) instead of silently returning
+    an ASR delta to a caller that wanted score units.
+    """
+    if units is not None:
+        if f"delta_pooled_{units}" in rec:
+            return rec[f"delta_pooled_{units}"]
+        if any(f"delta_pooled_{u}" in rec for u in DELTA_POOLED_UNITS):
+            return None            # the record states its units and they are NOT the ones asked for
+        return rec.get("delta_pooled")          # pre-P0.2e artifact: units unstated, caller decides
+    for u in DELTA_POOLED_UNITS:
+        if f"delta_pooled_{u}" in rec:
+            return rec[f"delta_pooled_{u}"]
+    return rec.get("delta_pooled")
+
+
 def paired_delta(arm: Dict[str, dict], base: Dict[str, dict], common: List[str]) -> dict:
     """Paired per-prompt delta, reported BOTH ways because on an imbalanced set they differ a lot.
 
@@ -191,7 +237,7 @@ def paired_delta(arm: Dict[str, dict], base: Dict[str, dict], common: List[str])
     for p in common:
         byd[arm[p].get("domain")].append(diffs[p])
     cl = cluster_mean_ci({k: v for k, v in byd.items() if v})
-    return {"delta_pooled": st.mean(list(diffs.values())) if diffs else float("nan"),
+    return {**delta_pooled_fields(st.mean(list(diffs.values())) if diffs else float("nan"), SCORE),
             "delta_cluster_mean": cl["mean"],
             "se": cl["se"], "ci95_domain_clustered": cl["ci"],
             "p_cl": cl["p_vs_0"], "n_domains": cl["n_clusters"],
@@ -425,7 +471,8 @@ def main() -> int:
             "  ***" if d["p_cl"] < 0.01 else "  *" if d["p_cl"] < 0.05 else "  n.s.")
         print("%-10s%9.4f%9.4f%10s%10s%9s   %s%s" % (
             k, st_["asr_at_0.5"], st_["refusal"],
-            "—" if not d else "%+.4f" % d["delta_pooled"],
+            # prefer the units-explicit key, fall back for artifacts written before P0.2e
+            "—" if not d else "%+.4f" % read_delta_pooled(d, "mean_score"),
             "—" if not d else "%+.4f" % d["delta_cluster_mean"],
             "—" if not d or d["p_cl"] is None else "%.4f" % d["p_cl"],
             "—" if not ci else "[%+.4f, %+.4f]" % (ci[0], ci[1]), sig))

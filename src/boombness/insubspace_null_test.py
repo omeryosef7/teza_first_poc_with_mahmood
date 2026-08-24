@@ -281,6 +281,41 @@ def angle_glob(layer: int, k: int, n_angles: int) -> str:
     return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
 
 
+#: What a bare `dose` in this repo's cell-mean family actually is: the fraction of the CENTRED
+#: cell-mean variance that projecting the direction out removes, at alpha=1. Written next to every
+#: dose number so no reader has to guess between variance / norm / residual.
+DOSE_UNITS_CELLMEAN = "cellmean_variance_frac_centred"
+
+
+def dose_fields(value, prefix: str = "dose") -> dict:
+    """A dose number under a name that says WHICH dose it is, beside the historical key. (P0.2e)
+
+    THE DEFECT AND WHY IT IS LOAD-BEARING. "dose" is written by several producers and names at least
+    three different quantities: a VARIANCE fraction (`frac*(1-(1-a)^2)`), a NORM fraction
+    (`a*sqrt(frac)`) -- the two disagree about which arm is dose-matched by ~10x in alpha (C-2) --
+    and the fraction of the UN-CENTRED per-cell RESIDUAL the hook actually subtracts. Mixing the
+    last two is not hypothetical: prev-C-6 reported a real 6.60x dose gap as a matched 1.17x by
+    quoting the CENTRED `cellmean_dose` for arms whose hook acts on the un-centred residual.
+
+    Every value passed here is the CENTRED cell-mean VARIANCE fraction at alpha=1, so it gets the
+    suffix `_cellmean_variance_frac_centred` and a `dose_units` enum. It is NOT the residual
+    quantity: for that, see `score_behavior.cell_residual_frac_removed`, and for the alpha-scaled
+    variance/norm pair see `score_behavior.realized_dose_record`. The bare key is retained
+    unchanged so historical artifacts keep loading.
+    """
+    return {prefix: value, f"{prefix}_{DOSE_UNITS_CELLMEAN}": value,
+            "dose_units": DOSE_UNITS_CELLMEAN}
+
+
+def read_dose(rec: dict, prefix: str = "dose", legacy: str = None):
+    """The consumer side of `dose_fields`: prefer the units-explicit key, fall back to the old one.
+
+    `legacy` names the historical key when it is not simply `prefix` (e.g. `dose_cellmean_frac`),
+    so artifacts written before P0.2e stay readable without a second code path.
+    """
+    return rec.get(f"{prefix}_{DOSE_UNITS_CELLMEAN}", rec.get(legacy or prefix))
+
+
 def cellmean_dose(payload, layer, v=None):
     """Fraction of the cell-mean spread that projecting out `v` removes at `layer`.
 
@@ -504,6 +539,10 @@ def main() -> int:
                 except Exception:
                     pass
             rec["dose_cellmean_frac"] = {"ARM": arm_dose, **doses}
+            # P0.2e: same numbers under a key that says which dose this is (centred cell-mean
+            # VARIANCE fraction, not the un-centred residual the hook acts on). Old key retained.
+            rec[f"dose_{DOSE_UNITS_CELLMEAN}"] = {"ARM": arm_dose, **doses}
+            rec["dose_units"] = DOSE_UNITS_CELLMEAN
             if arm_dose and doses:
                 rec["dose_gap_arm_over_max_control"] = arm_dose / max(doses.values())
                 rec["dose_confounded"] = rec["dose_gap_arm_over_max_control"] > 2.0

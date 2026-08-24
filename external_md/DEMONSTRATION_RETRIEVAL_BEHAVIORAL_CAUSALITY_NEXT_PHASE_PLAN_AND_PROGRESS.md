@@ -727,6 +727,53 @@ started with.**
 *(Each entry is fixed before the corresponding result exists and is never edited afterwards; a
 superseded pre-registration gets a new entry that says so.)*
 
+### 🔒 PR-2 (02:45) — **PHASE 2: which probe rows carry the headline.** Fixed before the probe is run against any model, and before Phase 1 has resolved.
+
+**The instrument is SELECTION, not synthesis** — and that is a finding about the bank, not a
+convenience. `src/boombness/semantic_binding_probe.py` constructs no prompt text at all. The bank
+already carries the plan-§5.1 probe:
+
+| query_kind | rows |
+|---|---|
+| `behavioral` | 1152 |
+| `semantic_one_word` | 1008 |
+| `semantic_forced_choice` | 288 |
+| `comprehension_usage` | 288 |
+
+**Verified independently by me** (after first getting it wrong — see the note below): joining on
+`(family_id minus its trailing query_kind field, condition)`, all **1584** probe rows pair **1:1** with
+a behavioural row — **0 orphans, 0 duplicate behavioural keys, and the `demo_block` is BYTE-IDENTICAL
+across the pair in 1584 / 1584 cases.** So the probe asks about *the same demonstrations the
+behavioural row uses*, which is the whole point: the same mask can be applied to both and compared.
+Synthesising prompts would have broken the bank's `prompt_sha16` / `bank_rows_sha16` provenance chain,
+required its own tokenization audit, and produced a demo block that is **not** the behavioural row's.
+
+#### 📌 PRE-REGISTERED, before any probe run
+
+1. **The headline group is `probe_tests_binding = True` on `natural_doublespeak`.**
+   **240 of the 1008** `semantic_one_word` rows (cells B and E, `query_surface == "concept"`) ask about
+   the **concept word itself**, so `target_surface == target_semantic` and **no codeword→concept
+   binding is tested at all**. They are not a weaker version of the measure — they are a different
+   measure.
+2. **The `probe_tests_binding = False` rows are the CONTROL**, and their role is fixed now: they answer
+   *"did the intervention simply break generic in-context readout?"* — plan §5.3's specificity question.
+   An intervention that destroys binding **and** destroys the concept-itself readout has not
+   demonstrated anything about binding.
+3. **The 156 probe rows with an empty `demo_block`** (`n_examples = 0`) are **excluded**, consistent
+   with the behavioural population, which excludes `n_examples = 0` as structurally ineligible (R-B).
+   A probe with no demonstrations cannot test retrieval from demonstrations.
+4. **These three groups are never averaged together.** `summarize()` refuses to, and the artifact flags
+   each row.
+
+⚠ **Recorded against myself:** my first independent check of the 1:1 join reported **168/1584** matched
+demo blocks and 6 duplicate keys, and I nearly filed it as a correction against the agent. **My check
+was the broken one** — `family_id` is **pipe**-delimited (`farm_storage|dev|slot0|…|behavioral`) and I
+split on `_`, so my stem function returned `None` for all 2736 rows and collapsed every key. The agent
+used `rpartition("|")` and was right. **The lesson is the one this project keeps relearning: a
+disagreement between two computations locates a bug, but says nothing about which side holds it.**
+
+---
+
 ### 🔒 PR-1 (00:58) — **PHASE 1: the same-session scoped decomposition.** Written before any scoped arm exists, before any code for it is merged, and before any judging.
 
 **Primary estimand.** Paired ASR@0.5 delta against the *same-session* baseline `A`, on the canonical
@@ -899,12 +946,12 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P0.2b | 0 | atomic `--strict` bank write | ✅ done — validation now precedes the rename | — |
 | P0.2c | 0 | judge backend pinning + per-row provenance | ✅ opt-in mode, default byte-identical | — |
 | P0.2d | 0 | `EXCLUDED_RUNS.json` | ✅ **R-4** — 62 dirs across 6 experiments | — |
-| P0.2e | 0 | metric renames (`uniq_frac`, `delta_pooled`, bare `dose`) | ⬜ **still open** | — |
+| P0.2e | 0 | metric renames | ✅ done — `uniq_frac` had **no producer at all**; one added | — |
 | P0.3 | 0 | full test suite triage — 18 failures classified and repaired | ✅ **760 passed, 0 failed, 7 skipped** (was 721/18/7) | **Phase-0 exit** |
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, Llama first | 🔬 **779477–779482 queued** | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
-| P2 | 2 | semantic binding probe + causal intervention on it | ⬜ | — |
+| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
 | P2B | 2B | completion phenotype instrument | ⬜ | — |
 | P2C | 2C | row-wise demo-deletion control | ⬜ | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |

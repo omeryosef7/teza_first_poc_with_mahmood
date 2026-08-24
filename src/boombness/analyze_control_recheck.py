@@ -43,6 +43,9 @@ from typing import Dict, List
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_g8 import cluster_mean_ci  # noqa: E402
+# P0.2e: the ONE definition of the units-explicit delta_pooled siblings, imported rather than
+# re-typed so the three writers cannot drift apart again.
+from analyze_external_arms import delta_pooled_fields  # noqa: E402
 from common import read_jsonl, REPO_ROOT as REPO  # noqa: E402
 
 
@@ -138,7 +141,10 @@ def paired(base: Dict[str, dict], arm: Dict[str, dict], field: str) -> dict:
     r = cluster_mean_ci(dict(cl), n_effective=len(d))
     return {"n": len(d), "delta_cluster_mean": r.get("mean"), "se": r.get("se"),
             "ci95_domain_clustered": r.get("ci"), "p_cl": r.get("p_vs_0"),
-            "n_domains": r.get("n_clusters"), "delta_pooled": st.mean(d.values()) if d else None}
+            "n_domains": r.get("n_clusters"),
+            # `delta_pooled` here is an ASR delta when `field` is the 0/1 flag and a mean-score delta
+            # otherwise -- the ambiguity P0.2e closes. Historical key retained unchanged.
+            **delta_pooled_fields(st.mean(d.values()) if d else None, field)}
 
 
 def paired_diff(base, arm, ctrl, field: str) -> dict:
