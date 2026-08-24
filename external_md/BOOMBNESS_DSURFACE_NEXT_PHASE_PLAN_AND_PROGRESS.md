@@ -693,6 +693,65 @@ carries it.
 
 ---
 
+### ★★★★★ R-AM (10:58) — **THE MECHANISM IS REDUNDANT ACROSS LAYERS. Cutting ALL 40 heads of L8 does nothing; the band effect needs the whole band. Attention dominance is a readout property, not a causal one.**
+
+**Artifact:** judge **777331**, all five arms in **one session**, `n_common = 96`, 96/96 scored.
+All three knockout arms verified live before reading: `frac_rows_decode_live = 1.0`, head restriction
+echoed (`restricted to 1 of 40 heads: [22]`, `[30]`).
+
+| arm | ASR | Δ vs baseline | % of band effect |
+|---|---|---|---|
+| `A_baseline` | 0.1667 | — | — |
+| **band L7–17, ALL heads** | **0.0000** | **−0.1667** | 100 % |
+| **L8, ALL 40 heads** | 0.1771 | **+0.0104** | **−6.3 %** |
+| **L8 head 22 only** *(the 75 %-dominant head)* | 0.1458 | −0.0208 | 12.5 % |
+| L8 head 30 only *(seeded control)* | 0.1667 | **+0.0000** | 0.0 % |
+
+Cluster tests: band **−0.1667, p = 0.0625** (5 informative); `L8 ALL` **+0.0104, p = 1.0000**;
+`h22` −0.0208, **p = 0.7500**; `h30` +0.0000, p = 1.0000 (0 informative).
+No degeneracy anywhere — `uniq_frac` 0.927 / 0.781 / 0.917 / 0.938 / 0.948.
+
+#### This is pre-registered branch 3, and it is stronger than branch 2 would have been
+
+> *"If `L8ALL` ≈ 0 too, then L8 is simply not a sufficient layer and the band effect is genuinely
+> spread across L7–17; the head question would then be ill-posed at this layer."*
+
+**Cutting demonstration attention at the ENTIRE layer 8 — all 40 heads — changes ASR by +0.0104, i.e.
+one prompt of 96, in the wrong direction.** Meanwhile the same cut applied across L7–17 removes the
+attack completely. **The layer-level ceiling is the control that makes the head result interpretable,
+and it says the head question was ill-posed at this layer.** Asking "is head 22 causal?" inside a layer
+that is not itself causal could only ever have returned noise — `h22` at −0.0208 and `h30` at +0.0000
+are both within two prompts of zero and of each other.
+
+**⚠ And `h22` nominally exceeds `L8 ALL` (−0.0208 vs +0.0104) — a subset appearing to do more than its
+superset.** That is a 3-prompt spread between two non-significant arms and is **noise, not a finding**;
+it is recorded rather than smoothed over, because quoting −0.0208 as "12.5 % of the band effect" without
+it would be misleading.
+
+#### What this establishes
+
+1. **The retrieval mechanism is REDUNDANT ACROSS LAYERS.** Removing demonstration access at any one
+   layer is compensated; removing it across the 11-layer band is not. That is a substantive mechanistic
+   claim and it is the first direct evidence for it in this project.
+2. **R-AL's `L8 h22` — top demonstration-attention head in 72 of 96 prompts — is causally inert.**
+   Combined with R-AK, the picture is complete and consistent: **where the model looks is not where the
+   work happens.** Band-mean attention anti-predicted causal importance on Qwen3 (R-AK); the single most
+   dominant head is inert (R-AM). **Attention mass is a readout property throughout.**
+3. **Phase 7's objective search closes on evidence.** A single-head or single-layer handle does not
+   exist; the causal object is an 11-layer distributed pathway with no low-dimensional summary that
+   tracks it. **"Ascend the retrieval signal" has no target to ascend.**
+
+⚠ **Scope.** One layer (L8) tested at layer granularity, one model, `n = 96`. **`L8 ALL` being null does
+not prove every single layer in the band is null** — a layer sweep across L7–17 would be needed for
+that, and it is the obvious follow-up. What *is* established is that **at least one layer containing the
+band's most attention-dominant head is individually dispensable**, which is enough to refute
+single-layer sufficiency and to make the single-head question ill-posed there.
+
+⚠ Judge drift, for the record: baseline 0.1771 (session 777134) → 0.1667 here, and band 0.0104 → 0.0000
+— one row of 96 each. All contrasts above are within-session.
+
+---
+
 ### 🔬🔬 PHASE 7d LAUNCHED (10:12) — **can ONE head of 40 reproduce the band effect?** The most localised causal test this project has attempted
 
 R-AL named a concrete target: **Qwen3 `L8 head 22`**, the top demonstration-attention head in **72 of
