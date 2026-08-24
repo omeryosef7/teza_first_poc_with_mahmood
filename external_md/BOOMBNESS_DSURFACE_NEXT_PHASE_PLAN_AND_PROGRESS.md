@@ -693,6 +693,75 @@ carries it.
 
 ---
 
+### ⛔⛔ R-AQ / C-10 (14:02) — **R-AP's LAW IS RETRACTED. `L7-9` is not inert, and I have been building structure on 1-3 prompt differences. Stopping the subdivision.**
+
+**Artifact:** judge **777372**, five arms in **one session** (the within-session test R-AP itself named
+as its weakest link), `n_common = 96`, all five `verified … (96 rows)`.
+
+| arm | layers | total | "effective" (≥L10) | ASR | Δ | cluster p |
+|---|---|---|---|---|---|---|
+| `A_baseline` | — | 0 | 0 | 0.2083 | — | — |
+| **L7–9** | 7–9 | 3 | **0** | 0.1458 | **−0.0625** | 0.2500 |
+| L7–12 | 7–12 | 6 | 3 | 0.1667 | −0.0417 | 0.6250 |
+| **L10–12** | 10–12 | 3 | **3** | 0.1458 | **−0.0625** | 0.3750 |
+| **L10–17** | 10–17 | 8 | 8 | 0.0312 | **−0.1771** | **0.0625** |
+
+#### ⛔ C-10 — both pillars of R-AP's law fail
+
+1. **"L7–9 contribute nothing" is FALSE.** `L7–9` gives **−0.0625 — identical to `L10–12`.** The law
+   assigned it *zero* effective layers. Test (1) was the law's own prediction and it failed outright.
+2. **The accelerating count law does not survive within-session.** `L7–12` (6 layers) gives **−0.0417**,
+   *less* than either 3-layer window inside or overlapping it. No monotone function of layer count fits.
+
+> ⛔ **RETRACTED: R-AP's "super-additive in the count of layers at or above L10, position irrelevant"
+> law, and R-AO's "L7–9 are inert" claim that R-AP built on.** The percentages in R-AP's table were
+> real measurements; the *law fitted to them* was not.
+
+#### The actual reason I got this wrong three times
+
+Pooling **every** layer arm measured, each against its own session's baseline:
+
+| arm | layers | s777340 | s777351 | s777363 | s777372 |
+|---|---|---|---|---|---|
+| L7–9 | 3 | −0.0208 | — | — | **−0.0625** |
+| L13 | 1 | −0.0521 | — | — | — |
+| L17 | 1 | −0.0312 | — | — | — |
+| L7–12 | 6 | −0.0104 | −0.0104 | — | **−0.0417** |
+| L10–12 | 3 | — | — | −0.0312 | **−0.0625** |
+| L10–14 | 5 | — | — | −0.0729 | — |
+| L13–17 | 5 | — | −0.0625 | −0.0937 | — |
+| **L10–17** | **8** | — | **−0.1250** | **−0.1771** | **−0.1771** |
+| **L7–17** | **11** | **−0.1562** | **−0.1354** | **−0.1979** | — |
+
+**The same arm re-measured moves by 2–3 prompts** (`L7–9`: −0.0208 → −0.0625; `L10–12`: −0.0312 →
+−0.0625). **Every sub-8-layer arm sits inside a −0.01 … −0.09 band that its own session-to-session
+spread cannot resolve.** R-AN, R-AO and R-AP each fitted a different structure to differences *smaller
+than the measurement's own reproducibility.* That is the error, and it is mine three times over.
+
+#### ✅ What is actually established, and it is not nothing
+
+| claim | evidence |
+|---|---|
+| **≥8 contiguous layers of demonstration knockout produces a large effect** | `L10–17` −0.1250 / −0.1771 / −0.1771 and `L7–17` −0.1562 / −0.1354 / −0.1979 — **six measurements, three sessions, two bands, all large** |
+| **Any window of ≤6 layers produces a small effect** | eight measurements, all in −0.01 … −0.09 |
+| **Position within the band is not resolvable** | `L7–9` ≈ `L10–12` (identical), `L10–14` ≈ `L13–17` (1 prompt) |
+| **The lower band is NOT inert** | `L7–9` alone = −0.0625 |
+
+**So the reading returns to something close to R-AN's original one, minus the mechanism story: the
+knockout needs a broad span, sub-spans are individually weak, and this design cannot resolve *which*
+layers matter.** `L10–17` reaching 89–92 % of the full band while `L7–12` reaches 7–21 % is the one
+asymmetry that recurs — but with `L7–9` alone at −0.0625 it cannot be attributed to L7–9 being inert.
+
+#### 🛑 Decision D-12: stop subdividing the band
+
+Further layer arms at this `n` will keep producing 1–3 prompt differences that invite exactly the
+over-fitting above. **The band-localisation question is closed as unresolvable at n = 96 with 6 domain
+clusters**, and reopening it would need a materially larger population, not more arms. The **causal
+result that survives every session** — broad-span knockout suppresses the attack on both models — is
+already recorded in R-R, R-T and R-AB and needs no further subdivision to stand.
+
+---
+
 ### ★★★★★ R-AP (13:18) — **A QUANTITATIVE LAW: the effect is super-additive in the count of knocked-out layers AT OR ABOVE L10, and position within that range does not matter.**
 
 **Artifact:** judge **777363**, six arms in **one session**, `n_common = 96`, all six `verified … (96
