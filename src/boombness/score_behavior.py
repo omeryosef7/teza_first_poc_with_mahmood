@@ -224,14 +224,114 @@ def realized_dose_record(frac, alpha):
 #: A knockout run is only reportable if the mask fired during DECODING on essentially every row.
 KNOCKOUT_MIN_LIVE_FRAC = 0.99
 
+#: --knockout-scope default. It routes to `pc.AllQueryAttentionKnockout`, the class every committed
+#: Phase 2-4 knockout artifact was produced with, so every existing recipe and argsfile keeps its
+#: exact behaviour: the flag's default changes NOTHING, not even which class is constructed.
+#: The name is `pc.SCOPED_KNOCKOUT_MODES[0]`, validated against that tuple in main() rather than
+#: re-declared, so the two cannot drift.
+DEFAULT_KNOCKOUT_SCOPE = "legacy_all_query"
 
-def knockout_liveness_summary(knock_live, attn_impl):
-    """Reduce the per-row liveness counters to the block written into summary.json."""
+
+def knockout_row_stats(stats):
+    """The per-row hook counters that the gate and the artifact both read, with ONE derived field.
+
+    `AllQueryAttentionKnockout` (the `legacy_all_query` path) does not write `n_prefill_edits`;
+    `ScopedAttentionKnockout` does, and it is a counter `LIVENESS_REQUIREMENT["legacy_all_query"]`
+    requires. `pc.scoped_liveness_violations` reads `stats.get(key, 0)`, so a key the hook never
+    wrote is indistinguishable there from a real zero — i.e. the legacy hook would be reported as
+    dead at prefill on every row. The two classes share the invariant
+
+        n_edits == n_prefill_edits + n_decode_edits            (pair_common, both classes)
+
+    so the missing counter is DERIVED here, in one place, rather than left absent. This is the
+    mirror image of the dead-guard failure the liveness gate exists for: a fabricated liveness
+    FAILURE is as useless as a fabricated pass, and both are silent if the key is simply missing.
+    """
+    ks = dict(stats or {})
+    if "n_prefill_edits" not in ks:
+        ks["n_prefill_edits"] = int(ks.get("n_edits", 0)) - int(ks.get("n_decode_edits", 0))
+    return ks
+
+
+def scoped_span_is_dead(scope, query_span, demo_span):
+    """True if `scope` resolves to NO query rows on EITHER half of the computation for this row.
+
+    Such a row is a no-op knockout, and a no-op knockout scores as a perfectly healthy null.
+    `ScopedAttentionKnockout` refuses an empty required span in its constructor, but the hook is
+    constructed INSIDE the per-row `try`, so that refusal would arrive as a silent ledger failure
+    and a quietly shrunken population -- the same shape as the InfeasibleControl defect already
+    fixed once this phase, which is why knockout feasibility is pre-flighted at all.
+
+    The row set comes from `pc.resolve_scoped_query_rows`, the SAME function the hook itself uses,
+    so this cannot drift from the mode it is checking. `None` means "every row" and is never dead.
+    """
+    pc = pair()
+    pre = pc.resolve_scoped_query_rows(scope, False, query_span, demo_span)
+    dec = pc.resolve_scoped_query_rows(scope, True, query_span, demo_span)
+    return (pre is not None and not pre) and (dec is not None and not dec)
+
+
+def new_knockout_live():
+    """The empty per-row liveness accumulator. One definition, so a test can build a real one."""
+    return {"n_rows": 0, "n_rows_decode_live": 0, "n_demo_positions": [],
+            "decode_edits": [], "decode_forwards": [],
+            # PREFILL counters and the per-mode verdict, added with --knockout-scope. The verdict
+            # itself comes from pc.scoped_liveness_violations, never from a rule re-typed here:
+            # two modes are silent at decode BY DESIGN, and a hand-written gate is exactly the
+            # failure the centralised mode table exists to prevent.
+            "prefill_edits": [], "prefill_forwards": [],
+            "n_rows_scope_live": 0, "scope_violations": {}}
+
+
+def record_knockout_row(knock_live, scope, stats, n_demo_positions=0):
+    """Fold ONE row's hook counters into `knock_live`; return (normalised stats, violations).
+
+    A module-level function so the gate's test drives the ACCUMULATOR main() actually uses instead
+    of re-typing "a row is live iff ..." beside it. Re-typing the rule is how this repo's guards
+    have gone green against mutated implementations twice.
+    """
+    pc = pair()
+    ks = knockout_row_stats(stats)
+    de = int(ks.get("n_decode_edits", 0))
+    df = int(ks.get("n_decode_forward", 0))
+    pe = int(ks.get("n_prefill_edits", 0))
+    pf = int(ks.get("n_prefill_forward", 0))
+    bad = pc.scoped_liveness_violations(scope, ks)
+    knock_live["n_rows"] += 1
+    knock_live["n_rows_decode_live"] += int(de > 0)
+    knock_live["n_rows_scope_live"] += int(not bad)
+    for b in bad:
+        knock_live["scope_violations"][b] = knock_live["scope_violations"].get(b, 0) + 1
+    knock_live["n_demo_positions"].append(int(n_demo_positions))
+    knock_live["decode_edits"].append(de)
+    knock_live["decode_forwards"].append(df)
+    knock_live["prefill_edits"].append(pe)
+    knock_live["prefill_forwards"].append(pf)
+    return ks, bad
+
+
+def knockout_liveness_summary(knock_live, attn_impl, scope=DEFAULT_KNOCKOUT_SCOPE):
+    """Reduce the per-row liveness counters to the block written into summary.json.
+
+    `scope` defaults to the legacy mode so a caller that predates --knockout-scope is unchanged.
+    The mode's own liveness contract is COPIED OUT OF pair_common (never restated) so the artifact
+    records which counters this run was judged on — a null whose gate is unknown is unreadable.
+    """
     import statistics as _st
+    pc = pair()
+    if scope not in pc.LIVENESS_REQUIREMENT:
+        raise SystemExit(f"unknown knockout scope {scope!r}; known: {pc.SCOPED_KNOCKOUT_MODES}")
     nr = int(knock_live.get("n_rows", 0))
     de = list(knock_live.get("decode_edits", []))
     df = list(knock_live.get("decode_forwards", []))
     dp = list(knock_live.get("n_demo_positions", []))
+    pe = list(knock_live.get("prefill_edits", []))
+    pf = list(knock_live.get("prefill_forwards", []))
+    # None, NOT 0.0, when the caller recorded no per-mode verdict at all: a summary built before
+    # the scoped counters existed cannot be judged against them, and assert_knockout_live refuses
+    # any non-legacy scope on such a summary rather than reading the absence as a pass.
+    fsl = ((int(knock_live.get("n_rows_scope_live", 0)) / nr) if nr else 0.0) \
+        if "n_rows_scope_live" in knock_live else None
     return {
         "n_rows": nr,
         "frac_rows_decode_live": (knock_live.get("n_rows_decode_live", 0) / nr) if nr else 0.0,
@@ -239,11 +339,23 @@ def knockout_liveness_summary(knock_live, attn_impl):
         "min_decode_forwards": (min(df) if df else 0),
         "median_n_demo_positions": (_st.median(dp) if dp else 0),
         "attn_implementation": attn_impl,
+        # ---- scoped knockout (added with --knockout-scope) --------------------------------- #
+        "knockout_scope": scope,
+        "liveness_required": list(pc.LIVENESS_REQUIREMENT[scope]),
+        "liveness_must_be_zero": list(pc.LIVENESS_MUST_BE_ZERO[scope]),
+        "frac_rows_scope_live": fsl,
+        "median_prefill_edits": (_st.median(pe) if pe else 0),
+        "min_prefill_forwards": (min(pf) if pf else 0),
+        "total_prefill_edits": sum(pe),
+        "total_decode_edits": sum(de),
+        # the violation STRINGS, persisted: "which rows were dead" is the whole diagnosis and it
+        # must not live only in a log line.
+        "scope_violations": dict(knock_live.get("scope_violations", {})),
     }
 
 
 def assert_knockout_live(summary):
-    """Raise unless the knockout demonstrably fired during decoding.
+    """Raise unless the knockout demonstrably fired where THIS SCOPE says it must.
 
     THE GUARD THIS WHOLE COMMIT SERIES EXISTS FOR, and until 2026-08-23 it had NO TEST -- an
     adversarial review mutated the threshold to `< 0.0` and all 44 tests stayed green, which is the
@@ -252,13 +364,44 @@ def assert_knockout_live(summary):
 
     n_rows == 0 is a FAILURE, not a pass. A run that generated nothing has not demonstrated
     liveness, and returning True there is exactly how a vacuous guard passes.
+
+    MODE-AWARENESS (added with --knockout-scope) IS NOT A LOOSENING. Two of the five scopes
+    (`query_prefill_only`, `demo_processing_only`) make ZERO decode edits BY DEFINITION, so the
+    single global "decode edits or void" rule would abort them for working as specified. The fix is
+    NOT "either counter is non-zero" -- that would let a genuinely dead decode hook pass on its
+    prefill edits, which is the precise failure this gate exists to prevent. Instead the per-row
+    verdict comes from `pc.scoped_liveness_violations`, which asserts the mode's REQUIRED counters
+    are > 0 AND its FORBIDDEN counters are exactly 0, and the historical `frac_rows_decode_live`
+    rule is still applied on top for every mode that declares decode edits.
     """
+    pc = pair()
     nr = int(summary.get("n_rows", 0))
     fl = float(summary.get("frac_rows_decode_live", 0.0))
+    scope = summary.get("knockout_scope", DEFAULT_KNOCKOUT_SCOPE)
+    if scope not in pc.LIVENESS_REQUIREMENT:
+        raise SystemExit(f"REFUSING: unknown knockout scope {scope!r} in the liveness summary; "
+                         f"known: {pc.SCOPED_KNOCKOUT_MODES}")
     if nr == 0:
         raise SystemExit("REFUSING: knockout liveness has zero rows -- the run generated nothing, "
                          "so the mask was never observed to fire. This is not a pass.")
-    if fl < KNOCKOUT_MIN_LIVE_FRAC:
+    fsl = summary.get("frac_rows_scope_live")
+    if fsl is None:
+        # Only the legacy scope can be judged from a summary that carries decode information
+        # alone (pre-scope callers). A scoped mode without its own verdict is refused, never
+        # waved through on the decode fraction it was never supposed to satisfy.
+        if scope != DEFAULT_KNOCKOUT_SCOPE:
+            raise SystemExit(
+                f"REFUSING: scope {scope!r} but the liveness summary carries no per-mode verdict "
+                f"(frac_rows_scope_live is absent). The run cannot be shown to have fired where "
+                f"this mode says it must.")
+    elif float(fsl) < KNOCKOUT_MIN_LIVE_FRAC:
+        raise SystemExit(
+            f"REFUSING: scope {scope!r} satisfied its liveness contract on only {float(fsl):.3f} "
+            f"of rows (threshold {KNOCKOUT_MIN_LIVE_FRAC}). Required > 0: "
+            f"{list(pc.LIVENESS_REQUIREMENT[scope])}; required == 0: "
+            f"{list(pc.LIVENESS_MUST_BE_ZERO[scope])}. Violations seen: "
+            f"{summary.get('scope_violations')}. See summary.json knockout_liveness.")
+    if "n_decode_edits" in pc.LIVENESS_REQUIREMENT[scope] and fl < KNOCKOUT_MIN_LIVE_FRAC:
         raise SystemExit(
             f"REFUSING: the attention knockout fired during decoding on only {fl:.3f} of rows "
             f"(threshold {KNOCKOUT_MIN_LIVE_FRAC}). This is the prefill-only failure "
@@ -345,7 +488,7 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None):
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
-                      knock_heads=None):
+                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -384,11 +527,15 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             # exact line twice (see the block above), each time producing a "control band" that was
             # secretly n=1. `demo_keys`/`seq_len`/`knock_stats` are threaded for the same reason and
             # are covered by tests/test_composed_knockout.py, which fails if this line drops them.
+            # `knock_scope` is the newest passenger and the most dangerous one to drop: losing it
+            # here silently demotes a scoped leg to the all-query knockout, i.e. a LARGER
+            # intervention reported under the scoped arm's name. tests/test_scoped_knockout_wiring.py
+            # fails if this line drops it.
             out.extend(make_intervention(dc, pc, lm, sub, payload,
                                          control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
                                          demo_keys=demo_keys, seq_len=seq_len,
                                          knock_stats=knock_stats, protected=protected,
-                                         knock_heads=knock_heads))
+                                         knock_heads=knock_heads, knock_scope=knock_scope))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -424,8 +571,21 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         # L8h22 is the top demonstration-attention head in 75% of prompts, and the question is
         # whether one head of 40 reproduces a share of the band effect. The hook expands the head
         # axis itself (pair_common.py:558) because the eager mask has head-dim 1.
-        return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
-                                             heads=knock_heads, stats=knock_stats)]
+        #
+        # SCOPE (added with --knockout-scope). The legacy scope keeps constructing the SAME CLASS
+        # it always did: `ScopedAttentionKnockout("legacy_all_query")` is asserted bit-identical to
+        # it, but "asserted equivalent" and "is literally the object every committed knockout
+        # artifact was produced with" are not the same guarantee, and the default must be the
+        # second one. Any other scope routes to the scoped hook, which needs the SPANS as well as
+        # the keys: `protected` is the final-query span and `demo_keys` the demonstration block,
+        # and both are passed separately from `keys` because a CONTROL arm's keys are neither.
+        if knock_scope == DEFAULT_KNOCKOUT_SCOPE:
+            return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
+                                                 heads=knock_heads, stats=knock_stats)]
+        return [pc.ScopedAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
+                                           mode=knock_scope,
+                                           query_span=protected, demo_span=demo_keys,
+                                           heads=knock_heads, stats=knock_stats)]
     if name == "refusalness":
         import refusalness as _rf
         # pass the model so the per-model direction file is chosen, and assert the width
@@ -682,6 +842,17 @@ def main() -> int:
     ap.add_argument("--knockout-heads", default="",
                     help="comma list of head indices for attn_knockout arms; empty = ALL heads, "
                          "which is the Phase 2-4 behaviour. Added for the R-AL follow-up.")
+    # WHICH QUERY ROWS the knockout edits. The all-query knockout answers "does the model need the
+    # demonstration keys AT ALL?" and cannot say WHERE the dependence lives; these modes split that
+    # one edit into its addressable pieces (pair_common.SCOPED_KNOCKOUT_MODES). The value is NOT
+    # validated with argparse `choices` because the authoritative tuple lives in pair_common, which
+    # is imported below -- restating the five names here is exactly the drift the mode table is
+    # centralised to prevent, so the check is against pc.SCOPED_KNOCKOUT_MODES itself.
+    ap.add_argument("--knockout-scope", default=DEFAULT_KNOCKOUT_SCOPE,
+                    help="query-row scope for attn_knockout arms: legacy_all_query (default, "
+                         "byte-identical to every Phase 2-4 arm), query_prefill_only, decode_only, "
+                         "response_query_only, demo_processing_only. Two of these make zero DECODE "
+                         "edits by design; the liveness gate is per-mode accordingly.")
     ap.add_argument("--attn-impl", default="sdpa", choices=["sdpa", "eager"],
                     help="eager is REQUIRED for attn_knockout and is forced there; set it "
                          "explicitly on the reference arms so a contrast is kernel-matched")
@@ -702,6 +873,13 @@ def main() -> int:
     seed_everything(args.seed)
 
     dc, pc = ds(), pair()
+    # THE SCOPE IS VALIDATED AGAINST THE HOOK'S OWN TABLE, AT ARGUMENT TIME. `ScopedAttentionKnockout`
+    # raises ValueError on an unknown mode, but it is constructed INSIDE the per-row `try`, so that
+    # raise would become N silent ledger failures and a written summary.json rather than a refusal.
+    _knock_scope = args.knockout_scope.strip()
+    if _knock_scope not in pc.SCOPED_KNOCKOUT_MODES:
+        raise SystemExit(f"[score] REFUSING: unknown --knockout-scope {args.knockout_scope!r}; "
+                         f"known: {list(pc.SCOPED_KNOCKOUT_MODES)}")
     rows = read_jsonl(args.bank)
     kinds = [k.strip() for k in args.query_kinds.split(",") if k.strip()]
     rows = [r for r in rows if r["query_kind"] in kinds]
@@ -858,6 +1036,11 @@ def main() -> int:
         raise SystemExit("[score] REFUSING: --knockout-heads given with no --intervene. The flag "
                          "only reaches attn_knockout arms, so it would silently do nothing and the "
                          "run would be filed under a head-restricted name while blocking nothing.")
+    if _knock_scope != DEFAULT_KNOCKOUT_SCOPE and not args.intervene:
+        raise SystemExit("[score] REFUSING: --knockout-scope given with no --intervene. The flag "
+                         "only reaches attn_knockout arms, so it would silently do nothing and the "
+                         "run would be filed under a scoped name while the model was never "
+                         "intervened on at all.")
     if args.intervene:
         # MULTI-SPEC, added 2026-08-17 for plan §10.4. The plan mandates six arms, three of which
         # COMPOSE two manipulations at once — most importantly arm F, "add Boombness AND remove
@@ -894,6 +1077,13 @@ def main() -> int:
         spec = specs[0] if len(specs) == 1 else {"composed": specs}
         # HEAD SELECTION (R-AL follow-up). Validated against the model, not assumed: an out-of-range
         # head index would otherwise index the expanded mask silently or IndexError deep in the hook.
+        if _knock_scope != DEFAULT_KNOCKOUT_SCOPE:
+            if not any(sp["mode"] == "attn_knockout" for sp in specs):
+                raise SystemExit("[score] REFUSING: --knockout-scope given but no attn_knockout "
+                                 "spec; it would silently do nothing.")
+            print(f"[score] knockout scope: {_knock_scope} (liveness required > 0: "
+                  f"{list(pc.LIVENESS_REQUIREMENT[_knock_scope])}; required == 0: "
+                  f"{list(pc.LIVENESS_MUST_BE_ZERO[_knock_scope])})", flush=True)
         _knock_heads = None
         if args.knockout_heads.strip():
             if not any(sp["mode"] == "attn_knockout" for sp in specs):
@@ -998,7 +1188,8 @@ def main() -> int:
     # ------------------------------------------------------------------ #
     if _wants_knockout:
         _arm_names = [sp["direction"] for sp in specs if sp["mode"] == "attn_knockout"]
-        _feas = {"n_rows": 0, "no_demo_block": 0, "infeasible_control": 0, "by_n_examples": {}}
+        _feas = {"n_rows": 0, "no_demo_block": 0, "infeasible_control": 0, "dead_scope_span": 0,
+                 "knockout_scope": _knock_scope, "by_n_examples": {}}
         _bad = []
         for _r in rows:
             _t, _ids, *_ = resolve_occurrences(dc, lm.tokenizer, _r,
@@ -1011,6 +1202,14 @@ def main() -> int:
             if _why:
                 _feas["no_demo_block"] += 1; _b["bad"] += 1; _bad.append((_r["prompt_id"], _why)); continue
             _prot = query_span_positions(lm.tokenizer, _r, _t, _dk)
+            # THE SPANS ARE PART OF FEASIBILITY, not only the keys: a scoped mode whose rows
+            # resolve to nothing on this row is a no-op knockout, and a no-op knockout scores as a
+            # clean null. Checked here so it costs a pre-flight, not a written artifact.
+            if scoped_span_is_dead(_knock_scope, _prot, _dk):
+                _feas["dead_scope_span"] += 1
+                _b["bad"] += 1
+                _bad.append((_r["prompt_id"], f"scope {_knock_scope}: no query rows resolve"))
+                continue
             try:
                 for _nm in _arm_names:
                     knockout_key_set(_nm, _dk, len(_ids), args.seed, protected=_prot)
@@ -1024,13 +1223,14 @@ def main() -> int:
             raise SystemExit(
                 f"REFUSING before generating: {len(_bad)} of {_feas['n_rows']} rows cannot carry "
                 f"this knockout ({_feas['no_demo_block']} without a demo block, "
-                f"{_feas['infeasible_control']} whose control cannot be built). Per n_examples: "
+                f"{_feas['infeasible_control']} whose control cannot be built, "
+                f"{_feas['dead_scope_span']} on which scope {_knock_scope!r} resolves to no query "
+                f"rows at all). Per n_examples: "
                 f"{_feas['by_n_examples']}. Fix the arm or the population -- do NOT rescope to the "
                 f"feasible rows, because demo length IS the dose variable and dropping the long-demo "
                 f"rows silently changes the experiment.")
 
-    knock_live = {"n_rows": 0, "n_rows_decode_live": 0, "n_demo_positions": [],
-                  "decode_edits": [], "decode_forwards": []}
+    knock_live = new_knockout_live()
 
     concept = rows[0]["concept"]
     codeword = rows[0]["codeword"]
@@ -1091,6 +1291,10 @@ def main() -> int:
                  "example_position", "role_style", "target_surface", "n_target_occurrences")}
         base["arm"] = args.arm
         base["model"] = lm.model_id
+        # ON EVERY ROW, not only the knockout ones: an arm that does not say which query rows its
+        # mask edited cannot be compared with one that does, and `None` is the honest value for a
+        # run with no mask at all.
+        base["knockout_scope"] = (_knock_scope if _wants_knockout else None)
 
         # Position sanity: the readouts below are prompt-level, but a row whose occurrences
         # cannot be resolved is one whose bank metadata disagrees with the tokenizer, and it
@@ -1119,7 +1323,7 @@ def main() -> int:
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
                                      knock_stats=knock_stats, protected=prot,
-                                     knock_heads=_knock_heads)
+                                     knock_heads=_knock_heads, knock_scope=_knock_scope)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:
@@ -1227,22 +1431,36 @@ def main() -> int:
                                       f"{think_probe['unclosed']}/{think_probe['n']} of the first "
                                       f"completions are unclosed thoughts", flush=True)
                         if _wants_knockout:
-                            ks = knock_stats or {}
+                            # THE PER-ROW VERDICT COMES FROM THE HOOK'S OWN TABLE, via the shared
+                            # accumulator (record_knockout_row), never from a rule restated here.
+                            ks, _bad = record_knockout_row(knock_live, _knock_scope, knock_stats,
+                                                           n_demo_positions=len(dk))
                             de = int(ks.get("n_decode_edits", 0))
                             df = int(ks.get("n_decode_forward", 0))
-                            knock_live["n_rows"] += 1
-                            knock_live["n_rows_decode_live"] += int(de > 0)
-                            knock_live["n_demo_positions"].append(len(dk))
-                            knock_live["decode_edits"].append(de)
-                            knock_live["decode_forwards"].append(df)
+                            pe = int(ks.get("n_prefill_edits", 0))
+                            pf = int(ks.get("n_prefill_forward", 0))
+                            # The RESOLVED SPANS go on the row, not only into the hook: a scoped
+                            # null is uninterpretable without knowing which rows the mode had to
+                            # work with, and `prot`/`dk` are the very objects the hook was given.
+                            _pl = sorted(prot or ())
                             base = {**base, "n_demo_positions": len(dk),
                                     "demo_key_min": (min(dk) if dk else None),
                                     "demo_key_max": (max(dk) if dk else None),
                                     "seq_len": len(ids_r),
                                     "hook_n_forward": int(ks.get("n_forward", 0)),
                                     "hook_n_decode_forward": df,
+                                    "hook_n_prefill_forward": pf,
                                     "hook_n_edits": int(ks.get("n_edits", 0)),
-                                    "hook_n_decode_edits": de}
+                                    "hook_n_decode_edits": de,
+                                    "hook_n_prefill_edits": pe,
+                                    "hook_n_query_rows_edited": ks.get("n_query_rows_edited"),
+                                    "hook_n_keys_masked": ks.get("n_keys_masked"),
+                                    "hook_n_blocked_keys": ks.get("n_blocked_keys"),
+                                    "hook_liveness_violations": _bad,
+                                    "n_query_span_positions": len(_pl),
+                                    "query_span_bounds": ([_pl[0], _pl[-1]] if _pl else None),
+                                    "n_demo_span_positions": len(dk),
+                                    "demo_span_bounds": ([min(dk), max(dk)] if dk else None)}
                         gens_fh.write(json.dumps({**base, "generation": text,
                                                   "n_chars": len(text), "n_new_tokens": n_new,
                                                   "stop_reason": stop}) + "\n")
@@ -1298,7 +1516,7 @@ def main() -> int:
 
     knock_summary = None
     if _wants_knockout:
-        knock_summary = knockout_liveness_summary(knock_live, _attn_impl)
+        knock_summary = knockout_liveness_summary(knock_live, _attn_impl, scope=_knock_scope)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
 
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
@@ -1309,7 +1527,12 @@ def main() -> int:
                         "answer_prefix": args.answer_prefix,
                         "counts": dict(counts), "n_generations": n_gen,
                         "gens_path": gens_path if n_gen else None,
-                        "intervention": spec,
+                        # THE SCOPE TRAVELS WITH THE INTERVENTION BLOCK. Two runs of the same
+                        # `--intervene` string under different scopes are different experiments,
+                        # and an artifact whose intervention block cannot tell them apart is the
+                        # same class of hole as an unrecorded seed.
+                        "intervention": (spec if not (_wants_knockout and spec is not None)
+                                         else {**spec, "knockout_scope": _knock_scope}),
                         "note": "ASR is NOT computed here — run judge_boombness.py on gens.jsonl"},
                ledger=ledger)
 

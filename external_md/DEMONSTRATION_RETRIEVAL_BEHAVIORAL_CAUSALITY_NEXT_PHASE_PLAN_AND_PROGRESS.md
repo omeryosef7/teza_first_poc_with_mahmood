@@ -897,11 +897,11 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P0.1 | 0 | independent re-derivation of the cross-bank result from raw artifacts | ✅ **R-1** — reproduces prev-C-18 to the digit; **R-2** is new and amends the headline | — |
 | P0.2a | 0 | prev-C-18 fixes pinned by regression tests + `require_done` on inputs + k=1 guard | ✅ done | — |
 | P0.2b | 0 | atomic `--strict` bank write | ✅ done — validation now precedes the rename | — |
-| P0.2c | 0 | judge backend pinning + per-row provenance | 🔬 implementing | — |
-| P0.2d | 0 | `EXCLUDED_RUNS.json` for the dirs without `DONE.json` | 🔬 implementing | — |
+| P0.2c | 0 | judge backend pinning + per-row provenance | ✅ opt-in mode, default byte-identical | — |
+| P0.2d | 0 | `EXCLUDED_RUNS.json` | ✅ **R-4** — 62 dirs across 6 experiments | — |
 | P0.2e | 0 | metric renames (`uniq_frac`, `delta_pooled`, bare `dose`) | ⬜ **still open** | — |
 | P0.3 | 0 | full test suite triage — 18 failures classified and repaired | ✅ **760 passed, 0 failed, 7 skipped** (was 721/18/7) | **Phase-0 exit** |
-| P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | 🔬 implementing | — |
+| P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, both models | ⬜ | must fire exactly as designed |
 | P1.3 | 1 | same-session 7-arm decomposition, both models | ⬜ | Outcomes A–E |
 | P2 | 2 | semantic binding probe + causal intervention on it | ⬜ | — |
@@ -929,6 +929,104 @@ stay visible)*
 ## B5. RESULTS
 
 *(`R-` ids, newest first)*
+
+### ★★★★ R-3 (01:20) — **PHASE 1 INSTRUMENT BUILT: five scoped modes, purely additive, and the legacy path still constructs the ORIGINAL class.** No scientific arm has run.
+
+**Code:** `doublespeak_causality/pair_common.py` **+225 / −0** — `git diff --numstat` confirms **zero
+deleted lines**, so `AttentionKnockout` and `AllQueryAttentionKnockout` are byte-for-byte untouched and
+every committed G1/G3/Phase-2-4 artifact keeps its producing semantics.
+
+**The five modes** (`pc.SCOPED_KNOCKOUT_MODES`), all differing only in *which query rows* are filtered
+on top of the existing `lo = max(0, kp − past)` algebra:
+
+| mode | prefill | decode |
+|---|---|---|
+| `legacy_all_query` | every row | every row |
+| `query_prefill_only` | final-query span only | — |
+| `decode_only` | *(untouched)* | every generated row |
+| `response_query_only` | final-query span | every generated row |
+| `demo_processing_only` | rows **inside** the demo block | — |
+
+**The design decision that matters most:** `--knockout-scope` defaults to `legacy_all_query`, and that
+default **routes to `pc.AllQueryAttentionKnockout`, not to the new class**
+(`score_behavior.py:583`). So existing recipes are unchanged *by construction* rather than by test —
+the strongest available guarantee, and it means no argsfile in the repo changes behaviour.
+
+**Mode-aware liveness, and the trap PR-1 predicted.** Two modes make **zero decode edits by
+definition**, so the inherited `frac_rows_decode_live ≥ 0.99` gate would have aborted them or, worse,
+reported them as clean nulls. The contract now lives in one place — `LIVENESS_REQUIREMENT` (counters
+that must be > 0) and `LIVENESS_MUST_BE_ZERO` (counters that must be exactly 0) — and
+`scoped_liveness_violations(mode, stats)` asserts **both directions**. I verified by reading it that it
+is **not** the forbidden "either counter is non-zero" form: a decode-scoped mode with zero decode edits
+still fails.
+
+#### ⚠ The subtle bug this could have had, found and handled
+
+`AllQueryAttentionKnockout` **does not write `n_prefill_edits`**, but
+`LIVENESS_REQUIREMENT["legacy_all_query"]` requires it > 0, and `scoped_liveness_violations` reads
+`stats.get(key, 0)` — so **a key the legacy hook never wrote is indistinguishable from a real zero, and
+every legacy arm would have been reported as dead at prefill.** A *fabricated liveness failure* is as
+useless as a fabricated pass, and both are silent. It is derived instead, in one place, from the
+invariant both classes share: `n_edits == n_prefill_edits + n_decode_edits`.
+
+**I did not take that invariant on trust.** Driven independently through the repo's own toy harness on
+three geometries (1 prefill + n decode steps):
+
+| layers / seq / decode steps | legacy `n_edits` | legacy `n_decode_edits` | derived `n_prefill_edits` | scoped `n_prefill_edits` |
+|---|---|---|---|---|
+| 2 / 8 / 3 | 34 | 12 | **22** | **22** ✅ |
+| 3 / 12 / 5 | 123 | 45 | **78** | **78** ✅ |
+| 1 / 6 / 1 | 5 | 1 | **4** | **4** ✅ |
+
+`n_edits` and `n_decode_edits` are identical between the two classes on all three, the gate **passes**
+the derived legacy stats, and — the check that matters — it still **catches** a hand-injected dead
+decode hook (`n_decode_edits = 0` → violation). **The legacy liveness verdict is sound and is not
+fabricated in either direction.**
+
+**Tests:** 52 new synthetic tests reusing the existing `ToyModel` harness rather than re-implementing
+it, including legacy **byte-identity** at prefill and every decode step, zero-decode-edits for both
+prefill-only modes, `decode_only` leaving the prefill mask `torch.equal` to baseline, and the
+**disjointness** test that makes the decomposition a decomposition:
+`query_prefill_only` and `demo_processing_only` edit **disjoint** query-row sets whose union is a subset
+of legacy's. Both absolute-vs-cache-local coordinate-confusion directions are tested.
+**Verified by me, serially: 194 passed** across the 10 new and affected files.
+
+⚠ **What this is NOT.** No arm has run, no GPU has been used, and nothing here says anything about
+behaviour. The next step is PR-1's 8-row liveness smoke, and **no scientific arm runs until every mode
+fires exactly as designed.**
+
+---
+
+### ★★★ R-4 (01:16) — **THE INCOMPLETE-RUN PROBLEM IS 12× BIGGER THAN THE AUDIT FOUND: 62 directories, not 5 — and one of them is my own.**
+
+**Artifact:** `outputs/boombness/EXCLUDED_RUNS.json` (schema `EXCLUDED_RUNS/1`, tracked).
+**Producing script:** `src/boombness/excluded_runs.py`.
+
+The Part-II audit found **5 of 12** incomplete dirs under `crossbank_knockout_test/`. Scanning **every**
+experiment directory instead:
+
+| experiment | dirs lacking `DONE.json` |
+|---|---|
+| `judge` | **31** |
+| `score_behavior` | **21** |
+| `crossbank_knockout_test` | 5 |
+| `extract_boombness` | 3 |
+| `retrieval_strength` | 1 |
+| `rederive_crossbank` | **1 — mine** |
+| **total** | **62** |
+
+By reason: **28** `no_done_json`, **27** `empty_skeleton`, **7** `aborted`. **33 carry partial results**
+— the dangerous shape, because a partial dir flows through a `newest()`-style lookup and produces a
+plausible number. **Nothing is marked `safe_to_delete`; nothing was deleted.** The skeletons are
+evidence of a debugging sequence.
+
+**The scanner immediately earned its keep by catching my own debris:**
+`rederive_crossbank/rederive10_20260825_002905_2199605` — the run that died on the repo's
+`FailureLedger` guard while I was building R-1 — is classified `no_done_json`, `has_partial_results:
+true`, `superseded_by: rederive10_20260825_002934_2201570`. **A glob over that experiment directory
+would have had two candidates and no way to tell them apart.**
+
+---
 
 ### ⛔⛔ R-2 / C-1 (00:29) — **THE HEADLINE DIRECTION IS ONE DEMONSTRATION CORPUS. Drop the bomb pool and the prompt-level effect is p = 0.092.** First correction of this phase, and it is to the claim the whole phase inherits.
 

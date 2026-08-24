@@ -595,6 +595,231 @@ class AllQueryAttentionKnockout:
 
 
 # --------------------------------------------------------------------------- #
+# SCOPED attention knockout — the WHICH-QUERY-ROWS decomposition of the above
+# --------------------------------------------------------------------------- #
+# `AllQueryAttentionKnockout` answers one question: "does the model need the demonstration
+# keys AT ALL?" It blocks them from EVERY query row, so a positive result cannot say WHERE
+# the dependence lives — the demo tokens' own self-processing, the final-query rows at
+# prefill, or the generated rows at decode are all cut at once. These five modes split that
+# single edit into its addressable pieces WITHOUT touching either existing class: the
+# `legacy_all_query` mode is asserted byte-identical to `AllQueryAttentionKnockout`, which is
+# the bridge from every committed knockout artifact to the scoped ones.
+#
+# TWO MODES LEGITIMATELY MAKE ZERO DECODE EDITS, so the single global "n_decode_edits > 0 or
+# the run is void" gate that guards the all-query hook would reject them as dead when they
+# are working exactly as specified. That gate must therefore be per-mode, and it must read
+# the SAME table the hook is written against — hence `LIVENESS_REQUIREMENT` /
+# `LIVENESS_MUST_BE_ZERO` live here, next to the hook, and the consumer imports them rather
+# than restating them at the call site where they can drift.
+SCOPED_KNOCKOUT_MODES = (
+    "legacy_all_query",       # every query row, prefill AND decode == AllQueryAttentionKnockout
+    "query_prefill_only",     # prefill only, only the final-query span rows
+    "decode_only",            # decode only; prefill left completely alone
+    "response_query_only",    # final-query rows at prefill + every generated row at decode
+    "demo_processing_only",   # prefill only, only the rows INSIDE the demonstration block
+)
+
+# mode -> counters that MUST be > 0 for the run to be reportable (PROOF OF LIFE)
+LIVENESS_REQUIREMENT: Dict[str, tuple] = {
+    "legacy_all_query":     ("n_prefill_edits", "n_decode_edits"),
+    "query_prefill_only":   ("n_prefill_edits",),
+    "decode_only":          ("n_decode_edits",),
+    "response_query_only":  ("n_prefill_edits", "n_decode_edits"),
+    "demo_processing_only": ("n_prefill_edits",),
+}
+
+# mode -> counters that MUST be exactly 0; a non-zero one means the scoping leaked and the
+# mode is secretly a different (larger) intervention than the one being reported.
+LIVENESS_MUST_BE_ZERO: Dict[str, tuple] = {
+    "legacy_all_query":     (),
+    "query_prefill_only":   ("n_decode_edits",),
+    "decode_only":          ("n_prefill_edits",),
+    "response_query_only":  (),
+    "demo_processing_only": ("n_decode_edits",),
+}
+
+
+def resolve_scoped_query_rows(mode: str, is_decode: bool,
+                              query_span: Optional[frozenset],
+                              demo_span: Optional[frozenset]):
+    """Which ABSOLUTE query positions `mode` may edit on THIS forward pass.
+
+    Returns None for "every row of this chunk" (no per-row filter), otherwise a set of
+    absolute positions — possibly EMPTY, which means "edit nothing on this forward".
+    None and empty are deliberately different: None is the legacy all-rows behaviour, empty
+    is a scoped mode that is switched off for this half of the computation.
+
+    Split out as a module-level function so the tests can mutate/probe the span algebra
+    directly instead of restating it, and so the hook and any consumer share one definition.
+    """
+    if mode == "legacy_all_query":
+        return None
+    if mode == "decode_only":
+        return None if is_decode else frozenset()
+    if mode == "response_query_only":
+        return None if is_decode else (query_span or frozenset())
+    if mode == "query_prefill_only":
+        return frozenset() if is_decode else (query_span or frozenset())
+    if mode == "demo_processing_only":
+        return frozenset() if is_decode else (demo_span or frozenset())
+    raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
+
+
+def scoped_liveness_violations(mode: str, stats: Dict[str, Any]) -> List[str]:
+    """[] iff `stats` satisfies this mode's proof-of-life contract. The gate, in one place.
+
+    Callers do `if scoped_liveness_violations(mode, stats): refuse to report`. Do NOT restate
+    the ">0 / ==0" rules at the call site: two modes make zero decode edits by design and a
+    hand-written gate has already been the failure mode this whole class exists to avoid.
+    """
+    if mode not in LIVENESS_REQUIREMENT:
+        raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
+    bad: List[str] = []
+    for key in LIVENESS_REQUIREMENT[mode]:
+        if int(stats.get(key, 0)) <= 0:
+            bad.append(f"{key}==0 (mode {mode} requires it > 0)")
+    for key in LIVENESS_MUST_BE_ZERO[mode]:
+        if int(stats.get(key, 0)) != 0:
+            bad.append(f"{key}=={int(stats.get(key, 0))} (mode {mode} requires it == 0)")
+    return bad
+
+
+class ScopedAttentionKnockout:
+    """`AllQueryAttentionKnockout` restricted to a chosen set of QUERY ROWS (see the modes above).
+
+    Keys are addressed exactly as in `AllQueryAttentionKnockout`: `blocked_keys` are ABSOLUTE
+    token positions and KV-cache columns are absolute, so `kp` indexes `am[..., kp]` at every
+    step. Query row `r` of the current chunk is absolute position `past + r` with
+    `past = am.shape[3] - am.shape[2]`, and the first causally-blockable row is
+    `lo = max(0, kp - past)`. The ONLY thing this class adds is a per-row filter applied on top
+    of `lo`, expressed in ABSOLUTE positions — mixing that filter up with the cache-local row
+    index `r` is this repo's documented absolute-position-index bug class and is tested for.
+
+    `query_span` / `demo_span` are ABSOLUTE token positions, supplied the way score_behavior
+    already computes them: `query_span` is `query_span_positions(...)` (the harmful request plus
+    the generation header — already a set there), `demo_span` is `demo_key_positions(...)[0]`
+    (the demonstration block — the same list that becomes `blocked_keys` for the demo_all arm,
+    passed separately because a CONTROL arm's keys are not the demo block).
+
+    A mode that needs a span and is not given one RAISES: an empty span would silently degrade
+    to a no-op knockout that scores as a clean null, which is the exact failure this file's
+    other two classes are written to prevent.
+    """
+
+    def __init__(self, model, layer_idxs, blocked_keys, mode: str = "legacy_all_query",
+                 query_span=None, demo_span=None, heads=None, stats=None):
+        if mode not in SCOPED_KNOCKOUT_MODES:
+            raise ValueError(f"unknown scoped knockout mode {mode!r}; "
+                             f"known: {SCOPED_KNOCKOUT_MODES}")
+        self.mode = mode
+        self.layers = [dc._get_layers(model)[i] for i in layer_idxs]
+        self.k = sorted(set(int(x) for x in blocked_keys))
+        self.query_span = None if query_span is None else frozenset(int(x) for x in query_span)
+        self.demo_span = None if demo_span is None else frozenset(int(x) for x in demo_span)
+        if mode in ("query_prefill_only", "response_query_only") and not self.query_span:
+            raise ValueError(f"mode {mode!r} needs a non-empty query_span (absolute positions of "
+                             f"the final-query span); an empty one is a no-op knockout")
+        if mode == "demo_processing_only" and not self.demo_span:
+            raise ValueError(f"mode {mode!r} needs a non-empty demo_span (absolute positions of "
+                             f"the demonstration block); an empty one is a no-op knockout")
+        self.heads = None if heads is None else list(heads)
+        self.n_heads = int(model.config.num_attention_heads)
+        self._handles = []
+        self.stats = stats if stats is not None else {}
+        for key in ("n_forward", "n_decode_forward", "n_prefill_forward",
+                    "n_edits", "n_decode_edits", "n_prefill_edits",
+                    "n_query_rows_edited", "n_keys_masked"):
+            self.stats.setdefault(key, 0)
+        # RESOLVED SPANS GO IN THE ARTIFACT, not only in a log line: a null is uninterpretable
+        # without knowing which rows the mode actually had to work with.
+        self.stats["mode"] = mode
+        self.stats["n_blocked_keys"] = len(self.k)
+        self.stats["n_query_span_positions"] = (0 if self.query_span is None
+                                                else len(self.query_span))
+        self.stats["n_demo_span_positions"] = (0 if self.demo_span is None
+                                               else len(self.demo_span))
+        self.stats["query_span_bounds"] = (None if not self.query_span
+                                           else [min(self.query_span), max(self.query_span)])
+        self.stats["demo_span_bounds"] = (None if not self.demo_span
+                                          else [min(self.demo_span), max(self.demo_span)])
+        self.stats["liveness_required"] = list(LIVENESS_REQUIREMENT[mode])
+        self.stats["liveness_must_be_zero"] = list(LIVENESS_MUST_BE_ZERO[mode])
+
+    def _pre(self, mod, args, kwargs):
+        am = kwargs.get("attention_mask")
+        if am is None or am.dim() != 4:
+            raise RuntimeError("expected a 4-D additive attention mask; is the model loaded with "
+                               "attn_implementation='eager'? Under SDPA/flash the mask edit is "
+                               "discarded and the knockout is a silent no-op.")
+        if am.shape[0] != 1:
+            raise NotImplementedError("ScopedAttentionKnockout supports batch size 1 only")
+        am = am.clone()
+        if self.heads is not None and am.shape[1] == 1:
+            am = am.expand(-1, self.n_heads, -1, -1).clone()
+        min_val = torch.finfo(am.dtype).min
+        hs = range(am.shape[1]) if self.heads is None else self.heads
+        n_heads_edited = am.shape[1] if self.heads is None else len(self.heads)
+        n_q, kv_len = am.shape[2], am.shape[3]
+        past = kv_len - n_q                     # absolute position of query row 0
+        is_decode = (n_q == 1)
+        allowed = resolve_scoped_query_rows(self.mode, is_decode, self.query_span, self.demo_span)
+        n_edits = 0
+        n_keys_masked = 0
+        rows_touched = set()
+        if allowed is None or allowed:          # an empty set means: edit nothing this forward
+            for kp in self.k:
+                if kp >= kv_len:
+                    continue                    # key not in the cache yet
+                lo = max(0, kp - past)          # first query row that may causally see kp
+                if lo >= n_q:
+                    continue
+                if allowed is None:
+                    # LEGACY PATH, kept as a contiguous slice so the produced mask (and n_edits)
+                    # are identical to AllQueryAttentionKnockout's.
+                    for h in hs:
+                        am[0, h, lo:, kp] = min_val
+                    n_rows = n_q - lo
+                    rows_touched.update(range(lo, n_q))
+                else:
+                    rows = [r for r in range(lo, n_q) if (past + r) in allowed]
+                    if not rows:
+                        continue
+                    ridx = torch.tensor(rows, device=am.device, dtype=torch.long)
+                    for h in hs:
+                        am[0, h, ridx, kp] = min_val
+                    n_rows = len(rows)
+                    rows_touched.update(rows)
+                n_edits += n_rows * n_heads_edited
+                n_keys_masked += 1
+        kwargs["attention_mask"] = am
+        self.stats["n_forward"] += 1
+        self.stats["n_decode_forward"] += int(is_decode)
+        self.stats["n_prefill_forward"] += int(not is_decode)
+        self.stats["n_edits"] += n_edits
+        self.stats["n_decode_edits"] += n_edits if is_decode else 0
+        self.stats["n_prefill_edits"] += 0 if is_decode else n_edits
+        self.stats["n_query_rows_edited"] += len(rows_touched)
+        self.stats["n_keys_masked"] += n_keys_masked
+        return args, kwargs
+
+    def liveness_violations(self) -> List[str]:
+        """[] iff this hook's own stats satisfy its mode's contract (same table as the gate)."""
+        return scoped_liveness_violations(self.mode, self.stats)
+
+    def __enter__(self):
+        for layer in self.layers:
+            self._handles.append(
+                layer.self_attn.register_forward_pre_hook(self._pre, with_kwargs=True))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Per-head z capture / patch (NEXT5 W4 tier-B — attention-head circuit)
 # --------------------------------------------------------------------------- #
 # The attention OUTPUT before o_proj is the concatenation of per-QUERY-head outputs z:
