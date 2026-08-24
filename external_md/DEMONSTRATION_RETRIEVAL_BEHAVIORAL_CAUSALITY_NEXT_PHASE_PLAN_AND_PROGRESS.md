@@ -924,8 +924,8 @@ stay visible)*
 |---|---|---|---|---|---|---|
 | **779083 / 779084** | ⚠ **UNATTRIBUTED — now identified** | `boomb`, submitted **2026-08-24 23:20:23**, `killable`, `n-801`, `WorkDir` = this repo. Read from the previous log as Phase 10b Qwen3 `button_gun`. **Nobody in contact claims them.** | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | ✅ **COMPLETED 01:29:56**, both, exit 0:0. **Left alone throughout; never cancelled.** Owner identified at 00:47 as `bridge:session_014rrdKYhbejM6zf4W2mjomM`, which has since stopped and explicitly disowned them. **Not consumed by this phase** — and their scientific value is moot regardless, because prev-C-18 invalidated the *unit*, not the number, so equalising the gun pool's depth cannot rescue prev-R-BD |
 | 779085 / 779086 | ⚠ unattributed | Llama half of the same pair; reported COMPLETED in the previous log | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | COMPLETED (per prev-log) |
-| **779477** | this | **P1.2 smoke** `A_baseline`, Llama, `--limit 8` | 01:32 | `802d73ef` | `.../score_behavior/s1A_*` | PENDING (Priority) |
-| **779478** | this | smoke `legacy_all_query` — the bridge arm | 01:32 | `802d73ef` | `.../score_behavior/s1_legacy_all_query_*` | PENDING (Priority) |
+| **779477** | this | **P1.2 smoke** `A_baseline`, Llama, `--limit 8` | 01:32 | `802d73ef` | `s1A_20260825_015705_731547` | ✅ COMPLETED 6:19, 0:0 |
+| **779478** | this | smoke `legacy_all_query` — the bridge arm | 01:32 | `802d73ef` | `s1_legacy_all_query_20260825_020636_732499` | ✅ COMPLETED 1:12, 0:0 — **R-5 partial** |
 | **779479** | this | smoke `query_prefill_only` — **must show 0 decode edits** | 01:32 | `802d73ef` | `.../score_behavior/s1_query_prefill_only_*` | PENDING (Priority) |
 | **779480** | this | smoke `decode_only` — **must show 0 prefill edits** | 01:32 | `802d73ef` | `.../score_behavior/s1_decode_only_*` | PENDING (Priority) |
 | **779481** | this | smoke `response_query_only` — **the primary arm of the phase** | 01:32 | `802d73ef` | `.../score_behavior/s1_response_query_only_*` | PENDING (Priority) |
@@ -935,6 +935,56 @@ stay visible)*
 ## B5. RESULTS
 
 *(`R-` ids, newest first)*
+
+### 🔬 R-5 PARTIAL (02:10) — **the bridge arm fires correctly on a real model, and the derived prefill counter is confirmed off the toy harness.** 2 of 6 smoke arms landed; the four decisive ones are still throttled.
+
+**Artifacts:** `outputs/boombness/score_behavior/s1A_20260825_015705_731547` (baseline, job 779477,
+COMPLETED 6:19) and `s1_legacy_all_query_20260825_020636_732499` (job 779478, COMPLETED 1:12). Both
+carry `DONE.json`.
+
+**`legacy_all_query` liveness block, verbatim from `summary.json`:**
+
+| field | value |
+|---|---|
+| `n_rows` | 8 |
+| `frac_rows_decode_live` | **1.0** |
+| **`frac_rows_scope_live`** | **1.0** ← the new per-mode gate |
+| `liveness_required` | `["n_prefill_edits", "n_decode_edits"]` |
+| `liveness_must_be_zero` | `[]` |
+| **`scope_violations`** | **`{}`** |
+| `median_prefill_edits` | 19 354.5 |
+| `median_decode_edits` | 64 948.5 |
+| `min_prefill_forwards` | 9 *(= the 9 band layers, one prefill forward each)* |
+| `min_decode_forwards` | 1 368 |
+| `total_prefill_edits` / `total_decode_edits` | 250 065 / 698 733 |
+| `attn_implementation` | `eager` |
+
+**The derived-counter path is confirmed on a real model, not just the toy.** R-3 verified
+`n_edits == n_prefill_edits + n_decode_edits` on three toy geometries; the legacy arm routes to
+`AllQueryAttentionKnockout`, which never writes `n_prefill_edits`, so this run exercises the derivation
+against Llama-3.1-8B. Per row, from `gens.jsonl` (scalar fields only):
+
+| row | `hook_n_edits` | `hook_n_decode_edits` | derived prefill | recorded prefill |
+|---|---|---|---|---|
+| 0 | 21 087 | 18 018 | **3 069** | **3 069** ✅ |
+| 1 | 55 890 | 46 413 | **9 477** | **9 477** ✅ |
+| 2 | 120 780 | 94 545 | **26 235** | **26 235** ✅ |
+
+**Rows violating the invariant: 0 of 8.** So the legacy liveness verdict is a measurement on the real
+model, not an artifact of the derivation.
+
+**Auditability holds:** `intervention.knockout_scope = "legacy_all_query"` is in `summary.json`, and
+every `gens.jsonl` row carries `knockout_scope`, `hook_n_prefill_edits`, `hook_n_query_rows_edited` and
+`hook_liveness_violations`. A scope is not distinguishable only by a flag that appears nowhere.
+
+⚠ **This is NOT the smoke passing.** The two arms that carry the whole design — `query_prefill_only`
+(must show **zero** decode edits) and `decode_only` (must show **zero** prefill edits) — are jobs
+779479 and 779480, still `PENDING (Priority)`, along with `response_query_only` (779481) and
+`demo_processing_only` (779482). **A mode that silently collapsed into another would look perfectly
+healthy in the block above.** The smoke is read as a whole or not at all, and no scientific arm runs
+until it is.
+
+---
 
 ### ★★★★ R-3 (01:20) — **PHASE 1 INSTRUMENT BUILT: five scoped modes, purely additive, and the legacy path still constructs the ORIGINAL class.** No scientific arm has run.
 
