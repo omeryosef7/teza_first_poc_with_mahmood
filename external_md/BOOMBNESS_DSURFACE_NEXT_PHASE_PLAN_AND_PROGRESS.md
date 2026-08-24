@@ -693,6 +693,70 @@ carries it.
 
 ---
 
+### ★★★★★ R-AX (16:12) — **PHASE 9 RESULT: concept identity is NOT one axis — R-AE's prediction confirmed. But the three concepts are PARTIALLY COLLINEAR, which the null was needed to see.**
+
+**Artifact:** `x2fit_basket_gun_20260824_153129_4095530` (job **777663**, COMPLETED 20:49), against
+`x2fit_basket_bomb_…` and `x2fit_basket_knife_…`. **Codeword held FIXED at `basket`** — only the concept
+varies, so no codeword contribution can contaminate the contrast. Split-half ceiling **0.988–0.995**.
+
+#### The isotropic null FIRST, per the C-7 rule
+
+C-7's recorded lesson was *"every future geometric claim in this phase gets an isotropic null first."*
+3 random unit vectors in ℝ⁴⁰⁹⁶, centred, 4 000 draws:
+
+| null quantity | value |
+|---|---|
+| PC1 fraction of the centred spread | **median 0.5075**, 95 % range **[0.5015, 0.5173]** |
+| `cos` between two random unit vectors | +0.0005 |
+| **`cos(a−b, a−c)`** | **+0.4999** ← forced: the two contrasts share `a` |
+
+**That last row would have trapped me.** The observed `cos(bomb−knife, bomb−gun) = +0.6495` looks like
+strong alignment; the null for *any three vectors whatsoever* is **+0.50**. Nearly all of it is the
+shared term.
+
+#### The result, read against the null
+
+| L | PC1 fraction | PC2 fraction | vs null PC1 0.5075 [0.5015, 0.5173] |
+|---|---|---|---|
+| 12 | **0.7132** | 0.2868 | **far above** |
+| 14 | 0.6979 | 0.3021 | far above |
+| 18 | 0.6275 | 0.3725 | above |
+| 24 | 0.6070 | 0.3930 | above |
+
+**Two findings, and they pull in opposite directions — both are real:**
+
+1. ✅ **Concept identity is NOT a single axis.** One axis requires PC1 = 1.0; observed is **0.61–0.71**,
+   with a second component carrying **29–39 %**. **`gun` does not lie on the `bomb`–`knife` line.**
+   **R-AE's registered prediction — that a third concept would expose `N` as one chord of a concept
+   subspace, by symmetry with C-4's codeword result — is CONFIRMED.**
+2. ⚠ **But the concepts are not randomly arranged either.** PC1 at 0.61–0.71 sits **far outside the
+   null's [0.5015, 0.5173]**, so the three are **substantially more collinear than chance**. A random
+   triple would put 49 % on the second component; these put 29–39 %.
+
+> **`d_surface`'s concept part is a ≥2-dimensional subspace whose members are partially collinear —
+> neither the single axis R-AD/R-AE named `N`, nor an unstructured cloud.**
+
+Pairwise cosines at L12 (codeword fixed, so these are concept similarity): `bomb~knife` **0.5245**,
+`bomb~gun` **0.7509**, `knife~gun` **0.7225`. **`gun` is closer to each of the other two than they are to
+each other** — the arrangement of a point lying *between* them, which is what the elevated PC1 measures.
+That is a sensible semantic result: an explosive and a blade are the extremes, a firearm sits between.
+
+#### What this does to the earlier claims
+
+* **R-AE/R-AF's `N` survives as a real, reproducible direction** — it reproduced across four codewords at
+  the split-half ceiling (P4), and nothing here touches that.
+* **But "the concept axis" is the wrong name**, exactly as "the codeword axis" was (C-4). `N` is the
+  **bomb–knife chord** of a concept subspace, and with `gun` in hand it is now demonstrably not the whole
+  story. **The symmetry with C-4 is complete: both factors are subspaces, and both were named as axes
+  because the design had only two levels.**
+
+⚠ **Limits.** One codeword (`basket`), one model (Llama), three concepts. `button_gun`'s fit
+(job 777613) is running and will give a second codeword; until then the concept geometry is measured on
+a single lexical context. **Three points can only ever span 2 dimensions**, so "≥2-dimensional" is the
+strongest form available — a fourth concept would be needed to ask whether it is exactly 2.
+
+---
+
 ### ⛔⛔⛔⛔ C-14 / REVIEW-6 (15:44) — **R-AV AND R-AW ARE BOTH RETRACTED. The bootstrap CI was ~30 % too narrow, the tail counts were forced arithmetic, and C-13's decomposition confirmed the very dependence it claimed to refute.** Fourth downward correction of the same headline.
 
 **Every fatal claim below I re-derived myself before accepting.**
