@@ -693,6 +693,68 @@ carries it.
 
 ---
 
+### ★★★★★ R-AO / C-9 (12:34) — **THE MECHANISM IS LOCALISED TO L10–17. My super-additivity reading in R-AN was too strong — the pre-registered falsifier fired.**
+
+**Artifact:** judge **777351**, five arms in **one session**, `n_common = 96`, all `verified … (96 rows)`
+by the driver. Both new arms live first (`frac_rows_decode_live = 1.0`).
+
+| arm | layers | ASR | Δ | **% of full band** | cluster p |
+|---|---|---|---|---|---|
+| `A_baseline` | — | 0.1562 | — | — | — |
+| **L7–12** (6 *lower*) | 7–12 | 0.1458 | −0.0104 | **7.7 %** | 1.0000 |
+| **L13–17** (5 *upper*) | 13–17 | 0.0938 | −0.0625 | **46.2 %** | 0.4375 |
+| **L10–17** (8 *upper*) | 10–17 | 0.0312 | **−0.1250** | **92.3 %** | 0.2500 |
+| **L7–17** (11 full) | 7–17 | 0.0208 | −0.1354 | 100 % | 0.3750 |
+
+#### ⛔ C-9 — what I withdraw from R-AN
+
+> **R-AN concluded:** *"The mechanism is **super-additive**… partial removal is almost fully compensated
+> and only near-complete removal breaks it."* ⛔ **The "needs the whole band" reading is withdrawn.**
+
+**`L10–17` — 8 of 11 layers — recovers 92.3 % of the full effect.** Adding `L7–9` back buys only
+**7.7 percentage points**. R-AN's `L7–12` arm did look like "six layers do nothing", and that number
+stands — **but it was the wrong six layers, not evidence of super-additivity.** The pattern is not a
+threshold in layer *count*; it is **coverage of L10–17**:
+
+| coverage of L10–17 | arm | % of full |
+|---|---|---|
+| 3 of 8 layers (10–12 only, via L7–12) | L7–12 | 7.7 % |
+| 5 of 8 (13–17) | L13–17 | 46.2 % |
+| 8 of 8 | L10–17 | **92.3 %** |
+| 8 of 8 + three spare | L7–17 | 100 % |
+
+**Monotone in upper-band coverage, and not in layer count** — `L13–17` has *five* layers and beats
+`L7–12`'s *six* by 6×. That is the coherent reading, and it is a *localisation* result rather than a
+redundancy one.
+
+**R-AM survives unchanged**: L8 in full is still dispensable — it now has a reason, since L8 sits in the
+nearly-irrelevant lower stretch.
+
+⚠ **Caveat I am not burying.** Every arm here is **non-significant** at 6 clusters (p 0.25–1.0),
+including the full band (0.3750). The claim rests on **magnitudes and their monotone ordering across
+four arms**, not on any single p-value. And the two strongest arms are the **least diverse**:
+`uniq_frac` 0.740 (`L10–17`) and 0.781 (`L7–17`) against baseline 0.927. That is well above the 0.44
+this project has called degenerate, but the direction is worth stating — the largest effects come with
+somewhat less varied generations.
+
+⚠ Judge drift: baseline 0.1771 (777340) → **0.1562** here, and the full band −0.1562 → −0.1354. Two
+rows of 96. All contrasts within-session.
+
+#### Next, launched — narrowing inside L10–17
+
+`L13–17` (5 layers) gives 46.2 % and `L10–17` (8) gives 92.3 %, so **L10–12 must contribute roughly the
+other 46 points.** Two arms to test whether there is a *core* or whether the effect is spread evenly:
+
+| job | arm | layers |
+|---|---|---|
+| **777354** | `S_L10_12` | **10–12** (3 layers) — if ≈46 %, the effect is spread evenly over L10–17 with no core |
+| **777355** | `S_L10_14` | **10–14** (5 layers) — matched in *count* to L13–17, differing only in position |
+
+**`L10–14` vs `L13–17` is the clean test**: same number of layers, different position. If they differ,
+position matters within the upper band; if they match, only the count of upper-band layers does.
+
+---
+
 ### ★★★★★ R-AN (11:52) — **THE EFFECT IS SUPER-ADDITIVE IN LAYERS. Six of eleven band layers achieve 7 % of what all eleven achieve.**
 
 **Artifact:** judge **777340**, six arms in **one session**, `n_common = 96`, 96/96 each. All four new
