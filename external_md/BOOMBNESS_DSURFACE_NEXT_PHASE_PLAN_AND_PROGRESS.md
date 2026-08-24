@@ -693,6 +693,76 @@ carries it.
 
 ---
 
+### ★★★ R-AJ (08:48) — **MEASUREMENT gate PASSES, PREDICTION gate FAILS under stratification. The scalar is a proxy for `n_examples`, and nothing more.**
+
+**Artifact:** `outputs/boombness/retrieval_strength/rsLlama_20260824_052352_290248`, job **777300**,
+96/96 rows measured, **0 skipped**. New script `src/boombness/retrieval_strength.py`.
+
+#### ⚠ The first design was WRONG, and the 8-row smoke caught it before any sweep
+
+Draft 1 scored the demo block against `knockout_key_set("nondemo_random", …)` — the repo's own
+count-matched, demo-disjoint control. Job **777298** refuted it in 23 seconds:
+
+```
+demo_mass 0.0374   ctrl_mass 0.2489   demo > ctrl in 0 of 4 rows   4 of 8 rows infeasible_control
+```
+
+**A count-matched draw matches SIZE but not POSITION**, and attention is dominated by the BOS sink and
+by recency — so the "control" was harvesting sink mass while the demonstrations sit in the middle
+distance. **It was measuring position, not retrieval.** This is exactly why the plan says smoke before
+sweeping; had it run on 96 rows the artifact would have shown a large, confident, meaningless negative.
+
+**Redesigned around the contrast the causal experiment already validated**: the *same* demo positions,
+in the *same* prompt, in the band where the knockout works (**L6–14**) versus the late band where the
+identical knockout is nearly inert (**L20–31**, Phase 2's `D_ctrl`). Positional priors are shared and
+largely cancel, no draw can be infeasible, and the scalar is aligned with the causal claim it measures.
+Re-smoke: **8/8 rows, `frac_rows_band_gt_late = 1.0`.**
+
+#### ✅ MEASUREMENT gate — the scalar is real and behaves as it must
+
+Full population: `demo_mass(band) = 0.06295`, `demo_mass(late) = 0.03864`,
+**`retrieval_strength = +0.02431`**, and **`band > late` in 88 of 96 rows (91.7 %)**. Demonstration
+attention *is* concentrated in the causal band.
+
+And it is perfectly monotone in the amount of demonstration material:
+
+| `n_examples` | 1 | 2 | 4 | 8 |
+|---|---|---|---|---|
+| mean `retrieval_strength` | +0.00571 | +0.01688 | +0.03028 | **+0.04439** |
+
+#### ⛔ PREDICTION gate — the apparent effect is the `n_examples` confound
+
+Median split on `retrieval_strength` looks decisive:
+
+| group | baseline ASR | knockout ASR | knockout effect |
+|---|---|---|---|
+| **HIGH** retrieval (n=48) | **0.3125** | 0.0208 | **−0.2917** |
+| **LOW** retrieval (n=48) | 0.1458 | 0.0833 | −0.0625 |
+
+**It does not survive conditioning on `n_examples`:**
+
+| within-stratum | n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|
+| baseline ASR, high − low | **+0.0000** | **+0.0000** | +0.1667 | **+0.0000** |
+
+**Three of four strata show exactly zero.** The median-split result is `n_examples` wearing a different
+name — and R-AI already established that `n_examples` predicts ASR. **The attention scalar adds no
+predictive information beyond the count of demonstrations.**
+
+> ⛔ **Phase 7's prediction gate FAILS for this retrieval-strength scalar.** It measures something real
+> (91.7 % band-over-late, perfectly monotone in demo count) but its correlation with behaviour is
+> entirely mediated by how many demonstrations are present.
+
+⚠ **Power, stated rather than assumed.** The within-stratum test splits 24 prompts into 12 vs 12, so
+one prompt is 0.083 and only large effects are detectable. **The correct claim is "not demonstrable at
+this n", not "proven absent".** What *is* solid is that the between-strata component — the part driving
+the median split — is fully accounted for by `n_examples`.
+
+⚠ Llama only so far; the Qwen3 measurement (job 777301, band 7–17 vs 25–39) is still running and will
+be recorded whichever way it lands.
+
+---
+
 ### ★★★★ R-AI (08:10) — **The retrieval account makes a prediction the dose account cannot, and it holds on BOTH models.** Free, from already-judged artifacts.
 
 With `d_surface` closed (R-AH), the plan's remaining Phase-7 candidate is *"a retrieval-strength
