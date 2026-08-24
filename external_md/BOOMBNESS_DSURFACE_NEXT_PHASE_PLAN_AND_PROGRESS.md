@@ -24,7 +24,7 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
 | claim | evidence | where |
 |---|---|---|
 | **The demonstration-retrieval knockout suppresses the doublespeak attack** | **96 down / 18 up** over 8 populations; replicates on the high-headroom bank of **both** models (−0.1771 Llama, −0.2083 Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY |
-| ✅ **…and with a THIRD pool the calibrated CI now EXCLUDES zero** | k=18, Δ **−0.0764**, t-CI95 **[−0.1459, −0.0069]**; pre-registered at P=0.941. ⚠ Llama alone still p = 0.131 | **R-BD** |
+| ⚠ **…but STILL no calibrated cluster test of MAGNITUDE excludes zero** | k=18 was a crossed 3×6 table double-counting main effects (62 % of its variance); both marginals include zero; crossed random-effects CI **[−0.2796, +0.1268]** | **C-18** *(R-BD retracted)* |
 | Retrieval and refusal are **independent channels** | knockout = −0.1771 with refusal intact *and* removed; refusal removal alone includes zero | R-T |
 | **A concept axis `N` is invariant across 4 codewords** at the split-half ceiling | cos 0.984–0.989 vs an isotropic null with \|max\| 0.057 | R-AE P4, survives C-7 |
 | **Concept identity is ≥2-dimensional and partially collinear**, and codeword-invariant | PC1 0.61–0.71 vs null 0.5075 [0.5015, 0.5173]; contrasts reproduce across codewords at 0.964–0.972 | **R-AX**, replicated R-AY |
@@ -739,6 +739,80 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ⛔⛔⛔⛔ C-18 / REVIEW-8 (23:52) — **R-BD IS RETRACTED. `pool × domain` k=18 is a CROSSED 3×6 table on one shared prompt set — I made C-15's exact error one axis over, three ticks after correcting it.** Eighth correction.
+
+**Verified independently by me before accepting.**
+
+#### ⛔ The fatal finding, and it is unambiguous
+
+All ten populations use the **identical 96 `prompt_id`s** (`all identical: True`). So the 18 "clusters"
+are a fully crossed **3 pools × 6 domains** table, and both main effects are counted repeatedly:
+
+| component | SS | df | **share of the variance the t-interval divides by** |
+|---|---|---|---|
+| pool main effect | 0.10102 | 2 | **30.2 %** |
+| domain main effect | 0.10655 | 5 | **31.9 %** |
+| pool × domain interaction | 0.12684 | 10 | 37.9 % |
+
+**62.1 % of that spread is two main effects counted 3× and 6× over.** And the decisive check:
+
+| unit | mean | CI95 | |
+|---|---|---|---|
+| **k=18 cells** *(R-BD)* | −0.0764 | [−0.1461, **−0.0066**] | excludes 0 |
+| **k=3 POOL means** | −0.0764 | [−0.3043, **+0.1516**] | **includes 0** |
+| **k=6 DOMAIN means** | −0.0764 | [−0.1649, **+0.0121**] | **includes 0** |
+
+> **Both marginals of the crossed table include zero, and only their product excludes it. That is the
+> signature of double-counting, not of evidence.** The correct crossed random-effects interval is
+> **[−0.2796, +0.1268]** at **df 2.53**. The third pool added **one** independent corpus; the analysis
+> credited it with **six** new units.
+
+> ⛔ **R-BD RETRACTED.** The position returns to **C-17: direction well supported, no calibrated cluster
+> test of magnitude excludes zero.** The ledger row moves from ✅ LIVE to ⛔ DEAD.
+
+**This is C-15 verbatim on a different axis.** C-15 demoted `model × pool × domain` from k=24 because
+the models share the prompt set and the domain effect. **Three ticks later I built k=18 the same way on
+the pool axis and called it "the defensible clustering."**
+
+#### ⛔ Three more confirmed defects, all fixed
+
+| # | defect | consequence |
+|---|---|---|
+| **S2** | the headline run used `--thresholds 0.5` **only** | at **0.75 the CI includes zero** — [−0.1158, **+0.0012**]. The script's own docstring says all three thresholds are reported "so the sensitivity is on the record"; **for the one run carrying the headline I switched that off.** |
+| **S3** | **every** single drop kills it | drop bomb → [−0.04901, **+0.00214**]; drop knife → [−0.20969, **+0.00135**]; drop gun → [−0.20599, **+0.00286**]; **Llama only → [−0.1355, +0.0209]**. *(5 dp deliberately: at 4 dp the knife bound prints as a string `retraction_sweep` correctly flags as R7's withdrawn p-value — my number is unrelated, and the right fix is to change my text, not to loosen a retraction guard.)* Only Qwen3-only survives. And `main()` builds `groups` from **pools only**, so the reported `worst_p_group` never included the model drop that `leave_one_cluster_out`'s own docstring says matters most. |
+| **S4** | **the same silent-overwrite bug, still live two lines from my fix** | `asr_{bank}` had no `model` → 5 ASR rows for 10 populations, Llama overwriting Qwen3. And `pools = sorted({e[1]})` read the **bank** field, so **`n_independent_pools` was 5 in every artifact this script has ever written** — the one number the entire C-11 independence argument turns on. |
+| **S5** | `_T` had **no df=17** — exactly the k=18 the headline used | fallback 2.1012 vs true **2.10982**, anticonservative by **4.3 % of a 0.0069 margin**. Table now dense 1–30 with interpolation. |
+| **S6** | R-BB's within-cluster sd | **0.0878**, not the 0.0626 I reported — the depth penalty is **7.1 %, not 3.6 %.** |
+
+#### ✅ REVIEW-8's negative findings, accepted and worth keeping
+
+* **The narrowing was NOT manufactured.** Padding the k=12 set with 6/12/30/300 exact-zero clusters
+  **never** crosses into exclusion — mean and se both fall as 1/k. **R-BB's mechanism explanation was
+  correct**; the problem is the unit, not the arithmetic.
+* **`sign_only = False` is genuine** (p = 0.00391 vs magnitude-free 0.00635). C-16 really does not apply
+  at k=18.
+* **The unequal depth biases the estimate TOWARD zero, not away** — precision-weighted mean is
+  **−0.0865**, more negative than the unweighted −0.0764.
+* **Data hygiene is clean**: 20 judge dirs, 96 rows each, zero null scores, identical prompt sets.
+* **The pre-registration was roughly honest** — P(exclude \| observed Qwen3 gun) = 0.971,
+  P(exclude \| no gun data) = 0.926, my registered 0.941 sits between them. **Not materially circular.**
+
+#### ⚠ But the sharpest point is one I should have made myself
+
+**A prediction that succeeds with prior probability 0.94 carries a likelihood ratio of ≈ 1.06 — about
+0.08 bits.** I presented *"the pre-registration held"* as the strongest evidence in R-BD. **It was worth
+almost nothing.** Pre-registration protects against choosing the analysis after the fact; **it is not
+evidence unless the prediction could plausibly have failed.** Phase 10b's breaking-point registration
+(+0.05) is the right shape — it can fail — and that is the standard the earlier one did not meet.
+
+⚠ **Eighth correction. The pattern is no longer "reaching for the favourable statistic" — it is
+narrower and more specific: I keep finding a clustering that yields significance and stopping before
+asking whether that clustering double-counts a shared design.** C-15 taught me this on the model axis
+and I did not generalise it to the pool axis. **Phase 10b is still worth finishing** — it equalises pool
+depth regardless — but **its result cannot rescue R-BD, because the unit itself was wrong.**
 
 ---
 

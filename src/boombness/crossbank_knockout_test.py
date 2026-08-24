@@ -107,10 +107,25 @@ def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
     means.sort()
     m = statistics.mean(cluster_vals)
     # Calibrated interval -- THE ONE TO QUOTE (C-14). t table for the k this repo actually uses.
-    _T = {1: 12.706, 2: 4.3027, 3: 3.1824, 4: 2.7764, 5: 2.5706, 7: 2.3646, 11: 2.2010,
-          15: 2.1314, 23: 2.0687, 29: 2.0452, 47: 2.0117}
+    # DENSE 1..30 then selected. The sparse version had no df=17 -- exactly the k=18 the headline
+    # used -- and fell back to 1.96+2.4/df = 2.1012 against a true 2.10982, i.e. ANTICONSERVATIVE by
+    # 4.3% of the reported margin. "Never below the normal value" was true and irrelevant: it is
+    # compared against the t value. (REVIEW-8 finding 5.)
+    _T = {1: 12.706, 2: 4.3027, 3: 3.1824, 4: 2.7764, 5: 2.5706, 6: 2.4469, 7: 2.3646, 8: 2.3060,
+          9: 2.2622, 10: 2.2281, 11: 2.2010, 12: 2.1788, 13: 2.1604, 14: 2.1448, 15: 2.1314,
+          16: 2.1199, 17: 2.1098, 18: 2.1009, 19: 2.0930, 20: 2.0860, 21: 2.0796, 22: 2.0739,
+          23: 2.0687, 24: 2.0639, 25: 2.0595, 26: 2.0555, 27: 2.0518, 28: 2.0484, 29: 2.0452,
+          30: 2.0423, 35: 2.0301, 40: 2.0211, 47: 2.0117, 59: 2.0010, 119: 1.9799}
     df = k - 1
-    tcrit = _T.get(df, 1.96 + 2.4 / max(df, 1))          # crude but never below the normal value
+    # Interpolate rather than fall back to a formula: any df not in the table used to be
+    # anticonservative against the true t. Above 120, 1.96 is correct to 3 dp.
+    if df in _T:
+        tcrit = _T[df]
+    else:
+        ks = sorted(_T)
+        lo = max([x for x in ks if x < df], default=ks[0])
+        hi = min([x for x in ks if x > df], default=None)
+        tcrit = _T[lo] if hi is None else _T[lo] + (_T[hi] - _T[lo]) * (df - lo) / (hi - lo)
     se = (statistics.stdev(cluster_vals) / math.sqrt(k)) if k > 1 else float("inf")
     nz = sum(1 for v in cluster_vals if abs(v) <= 1e-12)
     return {"mean": m, "n_clusters": k, "n_boot": n_boot,
@@ -256,7 +271,10 @@ def main() -> int:
 
     run = RunDir("crossbank_knockout_test", args=args, tag=args.tag)
     ledger = FailureLedger()
-    pools = sorted({e[1] for e in entries})
+    # e = (model, bank, pool, Ajudge, Cjudge, Agens, Cgens). The pool is e[2]; this read e[1], the
+    # BANK, so every artifact this script ever wrote reported n_independent_pools = n_banks. That is
+    # the single number the C-11 independence argument turns on. (Found by REVIEW-8.)
+    pools = sorted({e[2] for e in entries})
     run.note(n_banks=len(entries), n_pools=len(pools), pools=pools,
              independence_note="banks sharing a pools_sha16 are NOT independent replications (C-11); "
                                "the POOL-level clustering is the defensible headline")
@@ -369,7 +387,10 @@ def main() -> int:
     summ = {"n_banks": len(entries), "n_independent_pools": len(pools),
             "headline_p_pool_x_domain": out["by_threshold"]["0.5"]["levels"]["pool_x_domain"]["p"],
             "headline_prompt_level_p": out["by_threshold"]["0.5"]["levels"]["prompt_level_binomial"]["p"],
-            **{f"asr_{b['bank']}": [b["baseline_asr"], b["knockout_asr"]] for b in out["banks"]}}
+            # keyed by MODEL+bank: keyed on bank alone the second model silently overwrote the
+            # first, so a 10-population run emitted 5 asr rows. Same defect as the `cells` key.
+            **{f"asr_{b['model']}_{b['bank']}": [b["baseline_asr"], b["knockout_asr"]]
+               for b in out["banks"]}}
     with open(os.path.join(run.path, "crossbank_test.json"), "w") as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(summ, indent=1), flush=True)
