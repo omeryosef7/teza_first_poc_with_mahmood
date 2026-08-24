@@ -52,9 +52,9 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
 | R-AK "attention mass irrelevant at **any** granularity" | at head granularity the causal band wins on Qwen3 | **C-8** |
 
 ### 🔬 IN FLIGHT
-* `x2fit_basket_club` / `x2fit_button_club` (**778194/778195**, queued) — **Phase 9b**, a fourth concept
-  to test whether the concept subspace is exactly 2-D. **Null pre-registered before the data exists:**
-  PC3 median **0.3246**, 95 % [0.3170, 0.3297].
+* ✅ **Phase 9b COMPLETE** (R-BC): four concepts give **PC3 = 0.164–0.249**, below the pre-registered
+  null's [0.3170, 0.3297] and above zero — **a dominant plane with real third-direction structure**,
+  replicated on both codewords.
 * `basket_gun` behavioural arms, both models (**778790–778793**, queued) — **Phase 10**, a **third
   demonstration pool**, taking `pool × domain` from k=12 to k=18. **Predicted to exclude zero with
   P = 0.92–0.999 under every branch** (R-BB refined); **failure would be the surprising, informative
@@ -739,6 +739,72 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### ★★★★★ R-BC (21:14) — **PHASE 9b RESULT: the concept subspace is a DOMINANT PLANE with real but smaller third-direction structure. Neither 2-D nor random-3-D — the intermediate branch, pre-registered.**
+
+**Artifacts:** `x2fit_basket_club_20260824_205649_2344014` (job **778194**, 20:13) and
+`x2fit_button_club_20260824_210112_3163` (**778195**, 12:25), joined to the bomb / knife / gun fits.
+**Codeword held fixed**, four concepts, split-half ceiling **0.983–0.995**.
+
+**Null, fixed before `club` or even `arrow` existed:** PC1 0.3420 [0.3370, 0.3498], PC2 0.3333
+[0.3285, 0.3385], **PC3 0.3246 [0.3170, 0.3297]**.
+
+| codeword | L | PC1 | PC2 | **PC3** | vs null PC3 |
+|---|---|---|---|---|---|
+| `basket` | 12 | 0.4601 | 0.3759 | **0.1640** | **far below [0.3170, 0.3297]** |
+| | 18 | 0.3961 | 0.3785 | **0.2254** | far below |
+| | 24 | 0.3927 | 0.3634 | **0.2438** | below |
+| **`button`** | 12 | 0.4619 | 0.3507 | **0.1874** | **far below** |
+| | 18 | 0.3906 | 0.3665 | **0.2429** | far below |
+| | 24 | 0.3978 | 0.3530 | **0.2492** | below |
+
+#### The pre-registered branches, and which one fired
+
+* ⛔ **"exactly 2-dimensional"** would need **PC3 ≈ 0**. Observed **0.164–0.249**. **Not 2-D.**
+* ⛔ **"≥3-D and no more structured than random"** would need PC3 ≈ 0.3246. **Every value is below the
+  null's lower bound of 0.3170**, on both codewords, at every layer. **Not random-3-D.**
+* ✅ **The intermediate branch — *"a dominant plane with real but smaller third-direction structure"* —
+  is what happened**, exactly as written before the data existed. PC1+PC2 carry **0.836** at L12
+  (`basket`); PC3 carries the rest and is **suppressed relative to chance but not absent.**
+
+**And it replicates across codewords**: 0.1640 vs 0.1874 at L12, 0.2438 vs 0.2492 at L24. The concept
+geometry is codeword-invariant here as it was in R-AY.
+
+⚠ **PC3 GROWS with depth** — 0.164 → 0.225 → 0.244 on `basket`, 0.187 → 0.243 → 0.249 on `button`.
+**The subspace becomes more genuinely 3-dimensional deeper in the network**, i.e. the planar
+approximation is best early and degrades. Recorded as an observation; three layers is not a trend
+analysis and I am not fitting one.
+
+#### The semantic arrangement is sensible
+
+Pairwise `cos` at L12 (`basket`, codeword fixed so these are concept similarity):
+
+| pair | cos |
+|---|---|
+| `bomb` ~ `gun` | **0.7509** |
+| `knife` ~ `gun` | 0.7225 |
+| `gun` ~ `club` | 0.6277 |
+| `knife` ~ `club` | 0.5649 |
+| `bomb` ~ `knife` | 0.5245 |
+| **`bomb` ~ `club`** | **0.4936** |
+
+**`gun` is central** — highest similarity to everything — while **`bomb` and `club` are the extremes**.
+Explosive versus blunt instrument are the most dissimilar pair; a firearm sits between them and the
+blade. **That is a coherent semantic ordering the geometry was not told about**, and it is the same
+centrality `gun` showed in R-AX with three concepts.
+
+#### Where this leaves the concept line
+
+> **Concept identity in `d_surface` is a subspace of dimension ≥ 2, well approximated by a plane
+> (84 % at L12), with a third direction that is real, suppressed relative to chance, and growing with
+> depth.** R-AD/R-AE's single "concept axis `N`" is a chord of that plane — **and `N` remains the one
+> object here that reproduces across four codewords at the noise ceiling.**
+
+⚠ **Four concepts span at most 3 dimensions**, so "≥2, plane-dominated, PC3 real" is the strongest form
+available at K=4. A fifth concept would be needed to ask whether PC4 is also suppressed — and the `arrow`
+episode (R-AZ) shows concept selection is the bottleneck, not compute.
 
 ---
 
