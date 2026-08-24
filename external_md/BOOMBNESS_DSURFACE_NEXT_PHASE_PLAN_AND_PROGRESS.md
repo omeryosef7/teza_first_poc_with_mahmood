@@ -24,7 +24,7 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
 | claim | evidence | where |
 |---|---|---|
 | **The demonstration-retrieval knockout suppresses the doublespeak attack** | **96 down / 18 up** over 8 populations; replicates on the high-headroom bank of **both** models (−0.1771 Llama, −0.2083 Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY |
-| ⚠ **…but no calibrated cluster test of MAGNITUDE excludes zero** | `pool × domain` t-CI **[−0.2060, +0.0029]**; cluster nets t-CI **[−17.46, +0.13]**; Llama alone p = 0.109 | **C-15, C-17** |
+| ✅ **…and with a THIRD pool the calibrated CI now EXCLUDES zero** | k=18, Δ **−0.0764**, t-CI95 **[−0.1459, −0.0069]**; pre-registered at P=0.941. ⚠ Llama alone still p = 0.131 | **R-BD** |
 | Retrieval and refusal are **independent channels** | knockout = −0.1771 with refusal intact *and* removed; refusal removal alone includes zero | R-T |
 | **A concept axis `N` is invariant across 4 codewords** at the split-half ceiling | cos 0.984–0.989 vs an isotropic null with \|max\| 0.057 | R-AE P4, survives C-7 |
 | **Concept identity is ≥2-dimensional and partially collinear**, and codeword-invariant | PC1 0.61–0.71 vs null 0.5075 [0.5015, 0.5173]; contrasts reproduce across codewords at 0.964–0.972 | **R-AX**, replicated R-AY |
@@ -739,6 +739,76 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### 🏆🏆 R-BD (23:05) — **PHASE 10: the third pool lands and the calibrated CI EXCLUDES ZERO. The prediction registered at P = 0.941 held.** Plus a silent-overwrite bug in my own tool, found by cross-checking.
+
+**Artifact:** `outputs/boombness/crossbank_knockout_test/xb10final_20260824_230323_1997748`, from
+`xb_manifest10.txt` — **10 populations, 3 pools, 2 models.** Judges **778938** / **779038**, both
+`ALL DONE` with all arms `verified (96 rows)`. Knockouts live first: `frac_rows_decode_live = 1.0`
+(jobs 778791, 778793).
+
+#### The gun pool
+
+| model | `basket_gun` baseline → knockout | Δ |
+|---|---|---|
+| Qwen3 | 0.0938 → 0.0312 | **−0.0625** |
+| Llama | 0.1042 → 0.1146 | **+0.0104** ⚠ another churn cell |
+
+Gun clusters: `[−0.0625, −0.0312, −0.0938, 0, +0.0625, −0.0312]` — **including the first positive
+cluster in the pooled set.**
+
+#### ✅ The registered prediction held
+
+| | k | mean | **calibrated t-CI95** | |
+|---|---|---|---|---|
+| 2 pools *(before)* | 12 | −0.1016 | [−0.2060, **+0.0029**] | includes 0 |
+| **3 pools** | **18** | **−0.0764** | **[−0.1459, −0.0069]** | **EXCLUDES 0** |
+
+**R-BB-refined-again registered P = 0.941 that this would exclude zero, using the observed gun arm and
+the depth penalty. It did.** This is **the first time in the phase a calibrated cluster test of
+MAGNITUDE excludes zero.**
+
+**And the mean fell as predicted** — −0.1016 → −0.0764, because the gun pool is weak. **The CI excludes
+zero not because the effect grew but because six more clusters cut the standard error faster than the
+weaker pool diluted the mean** — exactly the arithmetic R-BB-refined identified.
+
+#### Other statistics at k=18, from the same artifact
+
+| statistic | value |
+|---|---|
+| `pool × domain` sign-flip | **p = 6.84e-03** |
+| `cluster_permutation_on_counts` | T = −83, **p = 3.91e-03**, **`sign_only = False`** ← magnitudes now matter |
+| worst **GROUP** drop | **0.0625** (dropping the bomb pool) |
+| per model | **Qwen3 p = 1.95e-03**, **Llama p = 0.131** |
+| prompt-level | **113 down / 30 up**, p = 1.6e-12 |
+| both-EOS control | 30 / 1, p = 3.0e-08 |
+
+**`sign_only = False` is a genuine improvement over R-BA** — with a positive gun cluster present, `|T|`
+is no longer maximal, so the magnitudes actually enter the p. C-16's saturation critique does not apply
+at k=18.
+
+⚠ **Llama alone is still p = 0.131**, and the worst group drop is 0.0625. **The result remains carried
+by Qwen3 and by the bomb+gun pools.** The claim is "excludes zero at the defensible clustering", not
+"robust to dropping either model".
+
+#### ⛔ A silent-overwrite bug in the tool I built to be authoritative
+
+Cross-checking the tool against my own snippet showed **mean −0.0573 (tool) vs −0.0764 (snippet)**.
+The tool was wrong: `cells[(bank, dom)] = …` **had no `model` in the key**, so with two models per bank
+**the second silently overwrote the first** — the tool computed a **Llama-only** analysis and labelled it
+10 populations. Introduced when I added the `model` field for F5 and did not update the key.
+
+**Consequence:** the `cells`-based statistics in artifacts **`xb8_…`** and **`xb10_…` are wrong** and are
+superseded by `xb10final_…`. The `cflips`-based ones (cluster permutation, per-model) were always keyed
+by `(model, pool, domain)` and are unaffected. **My hand-computed C-15/C-17/R-AY numbers came from
+snippets keyed correctly and stand.**
+
+⚠ **This is the third time a silent overwrite/no-op has appeared in code I wrote this phase**
+(`truncated`, dead functions, now this). **It was caught only because I ran two independent computations
+and compared** — the tool alone would have shipped a plausible wrong number, and the artifact would have
+made it look authoritative.
 
 ---
 

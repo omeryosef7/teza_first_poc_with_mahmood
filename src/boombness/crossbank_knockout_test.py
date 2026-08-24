@@ -283,9 +283,13 @@ def main() -> int:
                 if p in both_eos:
                     prompt_flips_eos.append(d)
             for dom, v in dm.items():
-                cells[(bank, dom)] = statistics.mean(v)
-                cellmeta[f"{bank}|{dom}"] = {
-                    "pool": pool, "n_prompts": len(v),
+                # KEY MUST INCLUDE model (defect found 2026-08-24). Keyed on (bank, dom) alone, the
+                # second model in the manifest SILENTLY OVERWROTE the first, so a 10-population run
+                # reported a single-model analysis under a 10-population label. Introduced when the
+                # model field was added and the key was not.
+                cells[(model, bank, dom)] = statistics.mean(v)
+                cellmeta[f"{model}|{bank}|{dom}"] = {
+                    "model": model, "pool": pool, "n_prompts": len(v),
                     "n_down": sum(1 for x in v if x < 0), "n_up": sum(1 for x in v if x > 0),
                     "mean_delta": statistics.mean(v)}
             if thr == 0.5:
@@ -300,19 +304,24 @@ def main() -> int:
                                      "judge_dir_A": da, "judge_dir_C": dc})
         lv = {}
         # (1) bank x domain  -- what R-AR reported; retained so the inflation is visible
-        o, p, ni, nc = exact_sign_flip(cells.values())
+        def _agg(fn):
+            g = collections.defaultdict(list)
+            for kk, vv in cells.items():
+                g[fn(kk)].append(vv)
+            return [statistics.mean(x) for x in g.values()]
+        o, p, ni, nc = exact_sign_flip(_agg(lambda k: (k[1], k[2])))   # bank x domain, models pooled
         lv["bank_x_domain"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
                                "VERDICT": "ANTICONSERVATIVE -- banks share pools (C-11)"}
         # (2) pool x domain  -- the defensible one
         byp = collections.defaultdict(list)
-        for (b, d), v in cells.items():
-            byp[(cellmeta[f"{b}|{d}"]["pool"], d)].append(v)
+        for (mo, b, d), v in cells.items():
+            byp[(cellmeta[f"{mo}|{b}|{d}"]["pool"], d)].append(v)
         o, p, ni, nc = exact_sign_flip([statistics.mean(v) for v in byp.values()])
         lv["pool_x_domain"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
                                "VERDICT": "DEFENSIBLE HEADLINE"}
         # (3) domain only -- most conservative
         byd = collections.defaultdict(list)
-        for (b, d), v in cells.items():
+        for (mo, b, d), v in cells.items():
             byd[d].append(v)
         o, p, ni, nc = exact_sign_flip([statistics.mean(v) for v in byd.values()])
         lv["domain_only"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
@@ -383,8 +392,11 @@ def main() -> int:
                                                   for m, r in sorted(v.items())))
                 continue
             if "ci95_lo" in v:
-                print(f"    {k:24s} mean={v['mean']:+.4f} CI95=[{v['ci95_lo']:+.4f},{v['ci95_hi']:+.4f}] "
-                      f"frac_boot>=0={v['frac_boot_ge_zero']:.4f}")
+                print(f"    {k:24s} mean={v['mean']:+.4f}  "
+                      f"t-CI95=[{v['t_ci95_lo']:+.4f},{v['t_ci95_hi']:+.4f}] "
+                      f"{'EXCLUDES 0' if v['t_excludes_zero'] else 'includes 0'}   "
+                      f"(percentile CI [{v['ci95_lo']:+.4f},{v['ci95_hi']:+.4f}] "
+                      f"is ANTICONSERVATIVE at small k -- C-14)")
                 continue
             print(f"    {k:24s} p={v['p']:.4e}  " +
                   (f"clusters={v['clusters']} informative={v['informative']}  " if 'clusters' in v

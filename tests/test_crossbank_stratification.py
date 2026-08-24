@@ -234,3 +234,25 @@ def test_single_cluster_drop_is_documented_as_weak():
     src = inspect.getsource(leave_one_cluster_out)
     assert "WEAKEST TEST" in src or "incapable of failing" in src, \
         "the docstring no longer warns that single-cluster drops cannot fail"
+
+
+def test_cells_are_keyed_by_MODEL_too():
+    """A silent overwrite found 2026-08-24 by cross-checking the tool against a hand computation.
+
+    `cells[(bank, dom)] = ...` had no `model` in the key, so with two models per bank the second
+    SILENTLY OVERWROTE the first: a 10-population run computed a Llama-only analysis and reported it
+    under a 10-population label. Tool said mean -0.0573; the correct value is -0.0764.
+    """
+    s = open(SRC).read()
+    assert "cells[(model, bank, dom)]" in s, \
+        "cells lost `model` from its key; two models per bank will silently overwrite"
+    assert 'cellmeta[f"{model}|{bank}|{dom}"]' in s, "cellmeta key must match the cells key"
+    assert "cells[(bank, dom)]" not in s, "the un-keyed assignment is back"
+
+
+def test_aggregations_unpack_the_three_part_key():
+    """If the key gains a field, every consumer must unpack it -- otherwise ValueError at best,
+    wrong grouping at worst."""
+    s = open(SRC).read()
+    for pat in ("for (mo, b, d), v in cells.items()", "lambda k: (k[1], k[2])"):
+        assert pat in s, f"an aggregation still assumes the 2-part key: {pat!r} missing"
