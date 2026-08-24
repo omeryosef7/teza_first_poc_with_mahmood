@@ -693,6 +693,78 @@ carries it.
 
 ---
 
+### ★★★★ R-BA (18:41) — **a test that weights by evidence AND respects clustering: p = 0.0156, robust to dropping any single cluster.** Both prior statistics failed in opposite ways.
+
+C-14 and C-15 left two statistics, each broken in a way the other fixes:
+
+| statistic | weights by evidence? | respects clustering? |
+|---|---|---|
+| cluster sign-flip on cluster **means** | ⛔ no — a 1-flip cluster counts as much as a 38-flip one (S3) | ✅ yes |
+| prompt-level binomial | ✅ yes | ⛔ no — C-15 showed models correlate at +0.5654 beyond domain |
+
+**Neither is the right test.** This one is: the statistic is `T = Σ_clusters (n_down − n_up)`, so a
+38-flip cluster contributes 38; the null **flips the sign of whole clusters**, so exchangeability is at
+the cluster level. **Clusters are `pool × domain` with models pooled**, exactly as C-15 requires.
+
+```
+clusters: 9 pool x domain (7 informative)      discordant prompts: 114  (96 down / 18 up)
+observed T = -78
+exact cluster sign-flip p = 1.5625e-02          (floor 2/2^7 = 1.5625e-02)
+```
+
+Per-cluster net (`down − up`), all in the suppressive direction:
+
+| cluster | n | down/up | net |
+|---|---|---|---|
+| bomb-pool `game_manual` | 38 | 37 / 1 | **+36** |
+| bomb-pool `news_report` | 16 | 15 / 1 | +14 |
+| bomb-pool `city_bridge` | 16 | 14 / 2 | +12 |
+| bomb-pool `instructional` | 10 | 9 / 1 | +8 |
+| knife-pool `instructional` | 4 | 4 / 0 | +4 |
+| knife-pool `game_manual` | 14 | 8 / 6 | +2 |
+| knife-pool `lab_safety` | 4 | 3 / 1 | +2 |
+| bomb-pool `farm_storage` / `lab_safety` | 6 / 6 | 3/3, 3/3 | 0, 0 |
+
+**No cluster is negative.**
+
+#### ✅ Leave-one-cluster-out — checked BEFORE reporting it as a result
+
+`game_manual` contributes 36 of the 78, so the obvious objection is that one domain carries it:
+
+| dropped | T | p |
+|---|---|---|
+| **bomb-pool `game_manual`** *(the biggest)* | **−42** | **0.0313** |
+| bomb-pool `city_bridge` | −66 | 0.0313 |
+| bomb-pool `news_report` | −64 | 0.0313 |
+| every other single cluster | −70 … −78 | 0.0156 – 0.0313 |
+
+**Worst case across all nine drops: p = 0.0313.** The result survives removing any single cluster,
+including the dominant one.
+
+#### ⚠ This does NOT overturn C-15, and I am not presenting it as if it does
+
+**The t-CI on cluster means still includes zero: [−0.2060, +0.0029].** These two disagree, and the
+reason is substantive, not a bug: **the t-CI weights every cluster equally**, so the 6-prompt
+`lab_safety` cluster counts as much as the 38-prompt `game_manual`; **this test weights by prompt
+count.** Both are defensible; they answer different questions —
+*"is the average cluster effect non-zero?"* versus *"is the aggregate prompt-level effect non-zero,
+allowing for cluster dependence?"*
+
+**Reporting both, and neither is the headline on its own:**
+* **Cluster-mean effect size:** Δ = −0.1016, t-CI95 **[−0.2060, +0.0029]** — includes zero by 0.003.
+* **Count-weighted cluster test:** **p = 0.0156**, worst leave-one-out **0.0313**, no cluster negative.
+
+⚠ **The p is AT its floor** (`2/2⁷`), so it is a *sign* statistic — it cannot go below 0.0156 with 7
+informative clusters, and the leave-one-out values are likewise floor-determined. **What the floor being
+0.0156 buys is that the floor itself is under 0.05**, which was not true at 6 clusters (0.0313) or 5
+(0.0625).
+
+**Persisted, not ad-hoc** (S6's lesson): `cluster_permutation_on_counts` and `leave_one_cluster_out` are
+now functions in `crossbank_knockout_test.py`, with the floor and the at-floor flag returned so the
+sign-test limitation cannot be quoted away.
+
+---
+
 ### ⛔ C-15 (18:14) — **`model` is NOT an independent axis. R-AY's headline unit is inflated, and at the defensible unit the interval includes zero — by 0.0029.** Found by testing my own caveat instead of leaving it as prose.
 
 R-AY attached a caveat and did not test it: *"treating `model` as independent is defensible … but the

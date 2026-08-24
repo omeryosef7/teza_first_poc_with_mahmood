@@ -138,6 +138,52 @@ def exact_sign_flip(vals):
     return obs, cnt / (2 ** len(inf)), len(inf), len(vals)
 
 
+def cluster_permutation_on_counts(cluster_flips):
+    """Sign-flip whole CLUSTERS, but score with PROMPT COUNTS. (R-BA)
+
+    The two statistics this repo had both failed, in opposite ways:
+      * the cluster sign-flip on cluster MEANS respects clustering but discards magnitude, so a
+        cluster resting on one flipped prompt carries the same weight as one resting on thirty-eight
+        (review finding S3);
+      * the prompt-level binomial weights by evidence but assumes prompt independence, which C-15
+        showed is false -- the two models correlate at +0.5654 beyond the domain effect.
+
+    This does both: the statistic is T = sum over clusters of (n_down - n_up), so a 38-flip cluster
+    contributes 38; the null flips the SIGN OF WHOLE CLUSTERS, so exchangeability is at the cluster
+    level. Exact enumeration over 2^n_informative.
+
+    ⚠ It is still a SIGN test, so its p floors at 2/2^n_informative. Report the floor beside it.
+
+    `cluster_flips`: {cluster_key: [+1/-1, ...]} -- one entry per DISCORDANT prompt.
+    """
+    S = {k: sum(v) for k, v in cluster_flips.items()}
+    inf = [k for k in S if S[k] != 0]
+    T = sum(S.values())
+    if not inf:
+        return {"T": T, "p": 1.0, "n_informative": 0, "n_clusters": len(S), "p_floor": 1.0}
+    if len(inf) > 22:
+        raise SystemExit(f"[xb] REFUSING: {len(inf)} informative clusters is too many to enumerate "
+                         f"exactly; a sampled p must be labelled as such.")
+    cnt = 0
+    for sg in itertools.product([1, -1], repeat=len(inf)):
+        if abs(sum(S[k] * g for k, g in zip(inf, sg))) >= abs(T):
+            cnt += 1
+    return {"T": T, "p": cnt / 2 ** len(inf), "n_informative": len(inf),
+            "n_clusters": len(S), "p_floor": 2 / 2 ** len(inf),
+            "p_is_at_floor": abs(cnt / 2 ** len(inf) - 2 / 2 ** len(inf)) < 1e-12,
+            "per_cluster_net": {str(k): S[k] for k in sorted(S, key=str)},
+            "n_discordant": sum(len(v) for v in cluster_flips.values())}
+
+
+def leave_one_cluster_out(cluster_flips):
+    """Is the result carried by one cluster? Returns the WORST p over all single-cluster drops."""
+    out = {}
+    for k in cluster_flips:
+        sub = {kk: v for kk, v in cluster_flips.items() if kk != k}
+        out[str(k)] = cluster_permutation_on_counts(sub)["p"]
+    return {"per_drop_p": out, "worst_p": max(out.values()) if out else 1.0}
+
+
 def binom_two_sided(k, n, p=0.5):
     from math import comb
     if n == 0:
