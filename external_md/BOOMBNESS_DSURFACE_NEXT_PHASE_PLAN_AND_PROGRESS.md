@@ -693,6 +693,61 @@ carries it.
 
 ---
 
+### ⛔ R-AZ (17:26) — **`arrow` REJECTED: it is vowel-initial and produced 528 ungrammatical "a arrow". This is the `a apple` trap the plan explicitly warned about, and I walked into it.**
+
+The `arrow` pool generated fine (**24 pools, sha16 `bb8bcc403f35b7f4`**, a fourth distinct hash). **The
+banks did not.**
+
+```
+prompt_families: 2x2 families checked=336  violations=8      (every previous bank: 0)
+tokenization_audit: rows ok=2736 bad=0 ambiguous=0
+                    token-alignment violations=306           (every previous bank: 0)
+```
+
+#### The cause, diagnosed rather than guessed
+
+`arrow` tokenizes cleanly in every context (`'arrow'`→1, `' arrow'`→1, `'the arrow'`→2 as expected).
+The break is **article agreement**:
+
+| bank | `a X` | `an X` |
+|---|---|---|
+| **`basket_arrow`** | **`a arrow` × 528** ⛔ | `an arrow` × 1180 |
+| `basket_bomb` | `a bomb` × 1228 | — |
+| `basket_gun` | `a gun` × 1470 | — |
+| `basket_knife` | `a knife` × 1902 | — |
+
+**`arrow` is vowel-initial.** The exact-word-swap invariant substitutes it where `carrot`/`basket` stood
+after "a", producing **528 ungrammatical "a arrow"** — a lexical cue that has nothing to do with the
+concept and would contaminate every direction fitted from the bank.
+
+**This is precisely the failure the Phase 5 plan names**: *"no grammar or tokenization asymmetries (no
+repeat of `a apple`)"*. **It was written in the plan I am executing, and I selected a vowel-initial word
+anyway** — my screen tested tokenization and semantic category and never checked the article. **The
+audit caught it before a single GPU-second was spent, which is the only reason this is a delay rather
+than a retraction.**
+
+#### Two fixes
+
+1. **Concept re-selected: `club`.** Consonant-initial, single-token in all four singular forms, and a
+   fourth genuinely distinct weapon category — **explosive / blade / firearm / blunt instrument**.
+   Re-screened consonant-initial candidates only; `club`, `chain`, `rock`, `stone`, `pipe`, `wire`,
+   `bullet`, `gas` all tokenize cleanly, and `club` is the one that is a weapon in its own right without
+   being entangled with an existing concept (`bullet` is definitionally tied to `gun`) or a different
+   category (`gas`, `wire`). **Pool job 778163.**
+2. **`prompt_families.py --strict` will be used from now on.** It *"exits non-zero if any alignment
+   invariant is violated"* — **it exists, and I was not passing it.** Without it the generator reports
+   `violations=8` and **writes the bank anyway**; I only caught this because I grepped the output.
+   A guard that reports without refusing is one `| tail` away from being invisible.
+
+**The invalid `arrow` banks are deleted.** The pool is kept as evidence — the pool itself is sound; only
+its interaction with the article is not.
+
+⚠ **Registered for the record:** the null in Phase 9b was fixed before any data existed and **still
+applies unchanged** — PC3 median 0.3246, 95 % [0.3170, 0.3297]. Swapping `arrow` for `club` changes the
+concept, not the null, and the pre-registration stands as written.
+
+---
+
 ### 🔬 PHASE 9b LAUNCHED (17:02) — a **fourth concept**, to answer R-AX's own stated limit, with the null fixed first
 
 R-AX's limit was explicit: *"Three points can only ever span 2 dimensions, so '≥2-dimensional' is the
