@@ -742,6 +742,47 @@ carries it.
 
 ---
 
+### ✅ C-18 CODE CLOSURE (00:12) — **all four defects fixed and verified in a fresh artifact; the tool now warns about its own statistic**
+
+**Artifact:** `outputs/boombness/crossbank_knockout_test/xb10rev8_20260824_235105_2109370`, all three
+thresholds, 10 populations.
+
+| defect | before | **after (verified in the artifact)** |
+|---|---|---|
+| `pools = sorted({e[1]})` read the **bank** field | `n_independent_pools = 5` | **`= 3`** ✅ |
+| `asr_{bank}` had no model → Llama overwrote Qwen3 | 5 ASR rows for 10 populations | **`asr_Q_main`, `asr_Q_ticket_bomb`, … — 10 rows** ✅ |
+| `_T` had no df=17 | fallback 2.1012 (anticonservative) | dense 1–30 + interpolation ✅ |
+| `pool_x_domain` labelled "DEFENSIBLE HEADLINE" | — | **`⛔ C-18: a CROSSED pool × domain table double-counts both main effects; NOT a defensible headline`** ✅ |
+
+**The tool now carries C-18's verdict inside every artifact it writes**, so the statistic cannot be
+quoted from the JSON without the warning attached.
+
+**A fifth fix, from my own guard firing.** The 3-threshold run initially **died**:
+`REFUSING: 21 informative clusters is too many to enumerate exactly; a Monte-Carlo p must be labelled as
+such, not silently swapped in.` **The guard was right in spirit and left no legitimate path at all** —
+so `exact_sign_flip` now returns a **labelled** MC p (200k seeded draws) above 20 clusters, with
+`p_is_exact` travelling into the artifact and the printer appending `[MC 200k, NOT exact]`. *(At these
+thresholds every level still enumerated exactly — all three flags are `True`.)*
+
+#### The threshold sweep the headline run had switched off
+
+| threshold | `pool × domain` *(the retracted crossed unit)* | **`domain_only` — the defensible marginal** |
+|---|---|---|
+| 0.25 | [−0.1626, −0.0075] excludes 0 | **p = 0.0625** |
+| 0.50 | [−0.1461, −0.0066] excludes 0 | **p = 0.0625** |
+| **0.75** | **[−0.1158, +0.0012] includes 0** | **p = 0.1875** |
+
+**REVIEW-8's S2 is confirmed independently by the tool.** And the row that matters after C-18 is the
+right-hand one: **at the defensible marginal the p is 0.0625 / 0.0625 / 0.1875 — at or above its floor
+at every threshold, never below 0.05.** That is the C-17 position, unchanged.
+
+⚠ **Phase 10b status.** Llama `button_gun` (779085/779086) **COMPLETED**; Qwen3 (779083/779084) is at
+**32 min and 15 % of weight loading** — the node-contention pattern from the SLURM notes (slow, not
+hung; the progress bar is advancing). *(A `CANCELLED` row under `779085_1` in `sacct` is **another
+user's array job** named `6fran`, not mine — both my arms are `boomb` and exited 0:0.)*
+
+---
+
 ### ⛔⛔⛔⛔ C-18 / REVIEW-8 (23:52) — **R-BD IS RETRACTED. `pool × domain` k=18 is a CROSSED 3×6 table on one shared prompt set — I made C-15's exact error one axis over, three ticks after correcting it.** Eighth correction.
 
 **Verified independently by me before accepting.**

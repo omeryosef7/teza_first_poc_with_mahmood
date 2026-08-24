@@ -139,15 +139,32 @@ def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
 
 
 def exact_sign_flip(vals):
-    """Exact paired cluster sign-flip. Returns (observed_mean, p, n_informative, n_clusters)."""
+    """Paired cluster sign-flip. Returns (mean, p, n_informative, n_clusters, p_is_exact).
+
+    Exact enumeration up to 20 informative clusters; above that a LABELLED Monte-Carlo (200k draws,
+    seeded) with `p_is_exact=False`. An exact p and a sampled p must never be interchangeable in a
+    table, so the flag travels with the number into the artifact.
+    """
     vals = list(vals)
     inf = [i for i, v in enumerate(vals) if abs(v) > 1e-12]
     obs = statistics.mean(vals)
     if not inf:
-        return obs, 1.0, 0, len(vals)
-    if len(inf) > 20:                      # keep it exact or say so
-        raise SystemExit(f"[xb] REFUSING: {len(inf)} informative clusters is too many to enumerate "
-                         f"exactly; a Monte-Carlo p must be labelled as such, not silently swapped in.")
+        return obs, 1.0, 0, len(vals), True
+    if len(inf) > 20:
+        # LABELLED Monte-Carlo, never a silent swap. The guard used to refuse outright, which was
+        # right in spirit -- an exact p and a sampled p must not be interchangeable in a table -- but
+        # it left no legitimate path at all, so a 3-threshold run simply died. The p is now returned
+        # with `exact=False` and the draw count, and callers that print it say "MC".
+        import random as _rnd
+        rnd = _rnd.Random(20260824)
+        N = 200000
+        cnt = 0
+        for _ in range(N):
+            w = [vals[i] * (1 if rnd.random() < 0.5 else -1) if i in set(inf) else vals[i]
+                 for i in range(len(vals))]
+            if abs(statistics.mean(w)) >= abs(obs) - 1e-12:
+                cnt += 1
+        return obs, (cnt + 1) / (N + 1), len(inf), len(vals), False
     cnt = 0
     for signs in itertools.product([1, -1], repeat=len(inf)):
         w = list(vals)
@@ -155,7 +172,7 @@ def exact_sign_flip(vals):
             w[i] = vals[i] * s
         if abs(statistics.mean(w)) >= abs(obs) - 1e-12:
             cnt += 1
-    return obs, cnt / (2 ** len(inf)), len(inf), len(vals)
+    return obs, cnt / (2 ** len(inf)), len(inf), len(vals), True
 
 
 def cluster_permutation_on_counts(cluster_flips):
@@ -327,23 +344,26 @@ def main() -> int:
             for kk, vv in cells.items():
                 g[fn(kk)].append(vv)
             return [statistics.mean(x) for x in g.values()]
-        o, p, ni, nc = exact_sign_flip(_agg(lambda k: (k[1], k[2])))   # bank x domain, models pooled
+        o, p, ni, nc, ex = exact_sign_flip(_agg(lambda k: (k[1], k[2])))  # bank x domain, models pooled
         lv["bank_x_domain"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
+                               "p_is_exact": ex,
                                "VERDICT": "ANTICONSERVATIVE -- banks share pools (C-11)"}
         # (2) pool x domain  -- the defensible one
         byp = collections.defaultdict(list)
         for (mo, b, d), v in cells.items():
             byp[(cellmeta[f"{mo}|{b}|{d}"]["pool"], d)].append(v)
-        o, p, ni, nc = exact_sign_flip([statistics.mean(v) for v in byp.values()])
+        o, p, ni, nc, ex = exact_sign_flip([statistics.mean(v) for v in byp.values()])
         lv["pool_x_domain"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
-                               "VERDICT": "DEFENSIBLE HEADLINE"}
+                               "p_is_exact": ex,
+                               "VERDICT": "⛔ C-18: a CROSSED pool x domain table double-counts both "
+                                          "main effects; NOT a defensible headline"}
         # (3) domain only -- most conservative
         byd = collections.defaultdict(list)
         for (mo, b, d), v in cells.items():
             byd[d].append(v)
-        o, p, ni, nc = exact_sign_flip([statistics.mean(v) for v in byd.values()])
+        o, p, ni, nc, ex = exact_sign_flip([statistics.mean(v) for v in byd.values()])
         lv["domain_only"] = {"clusters": nc, "informative": ni, "mean_delta": o, "p": p,
-                             "VERDICT": "MOST CONSERVATIVE"}
+                             "p_is_exact": ex, "VERDICT": "MOST CONSERVATIVE -- a true marginal"}
         # (4) PROMPT-LEVEL exact binomial -- weights by evidence, not cluster membership (S3/S4)
         down = sum(1 for d in prompt_flips if d < 0)
         up = sum(1 for d in prompt_flips if d > 0)
@@ -419,7 +439,8 @@ def main() -> int:
                       f"(percentile CI [{v['ci95_lo']:+.4f},{v['ci95_hi']:+.4f}] "
                       f"is ANTICONSERVATIVE at small k -- C-14)")
                 continue
-            print(f"    {k:24s} p={v['p']:.4e}  " +
+            _ex = "" if v.get("p_is_exact", True) else " [MC 200k, NOT exact]"
+            print(f"    {k:24s} p={v['p']:.4e}{_ex}  " +
                   (f"clusters={v['clusters']} informative={v['informative']}  " if 'clusters' in v
                    else f"down={v['n_down']} up={v['n_up']} n={v['n_discordant']}  ") + v["VERDICT"])
     run.finish(summary=summ, ledger=ledger)
