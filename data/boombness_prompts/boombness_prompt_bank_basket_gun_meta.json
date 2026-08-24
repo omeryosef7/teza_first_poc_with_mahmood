@@ -1,0 +1,85 @@
+{
+  "preset": "main",
+  "seed": 20260816,
+  "codeword": "basket",
+  "concept": "gun",
+  "pools_sha16": "79e93dbb2b65c820",
+  "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools_gun.json",
+  "stats": {
+    "bank_rows_sha16": "568dd040942ce573",
+    "n_rows": 2736,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 72,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 336,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 816,
+      "benign_remap": 72,
+      "concept_in_benign_ctx": 384,
+      "direct_codeword": 72,
+      "direct_harmful": 384,
+      "natural_doublespeak": 1008
+    },
+    "by_block": {
+      "consistency": 72,
+      "core2x2": 1152,
+      "core2x2_slot3": 384,
+      "extra_conditions": 144,
+      "families": 144,
+      "position": 24,
+      "role_style": 720,
+      "strength": 96
+    },
+    "by_query_kind": {
+      "behavioral": 1152,
+      "comprehension_usage": 288,
+      "semantic_forced_choice": 288,
+      "semantic_one_word": 1008
+    },
+    "by_n_examples": {
+      "0": 288,
+      "1": 288,
+      "16": 192,
+      "2": 576,
+      "4": 732,
+      "8": 660
+    },
+    "by_domain": {
+      "city_bridge": 456,
+      "farm_storage": 456,
+      "game_manual": 456,
+      "instructional": 456,
+      "lab_safety": 456,
+      "news_report": 456
+    },
+    "by_split": {
+      "dev": 1464,
+      "heldout": 1272
+    },
+    "by_role_style": {
+      "assistant_like": 144,
+      "cot_like": 144,
+      "plain": 2016,
+      "system_like_quoted": 144,
+      "tool": 144,
+      "user_like": 144
+    }
+  },
+  "incidental_repairs": {
+    "basket": "crate"
+  },
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "359f7a8e86611b4612445ffb3c38e4aca721b43b",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-08-24T12:20:10"
+}
