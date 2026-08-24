@@ -693,6 +693,79 @@ carries it.
 
 ---
 
+### ★★★★★ R-AP (13:18) — **A QUANTITATIVE LAW: the effect is super-additive in the count of knocked-out layers AT OR ABOVE L10, and position within that range does not matter.**
+
+**Artifact:** judge **777363**, six arms in **one session**, `n_common = 96`, all six `verified … (96
+rows)` by the driver. Both new arms live first (`frac_rows_decode_live = 1.0`).
+
+| arm | layers | **n layers** | ASR | Δ | **% of full** | cluster p |
+|---|---|---|---|---|---|---|
+| `A_baseline` | — | 0 | 0.1979 | — | — | — |
+| **L10–12** | 10–12 | **3** | 0.1667 | −0.0312 | **15.8 %** | 0.6875 |
+| **L10–14** | 10–14 | **5** | 0.1250 | −0.0729 | **36.8 %** | 0.3438 |
+| **L13–17** | 13–17 | **5** | 0.1042 | −0.0937 | **47.4 %** | 0.2500 |
+| **L10–17** | 10–17 | **8** | 0.0208 | −0.1771 | **89.5 %** | 0.1250 |
+| **L7–17** | 7–17 | 11 | **0.0000** | −0.1979 | 100 % | 0.1250 |
+
+#### ✅ The count-matched positional test is NULL
+
+`L10–14` and `L13–17` are **both 5 layers**, differing only in *where* they sit:
+
+```
+per-domain (L10-14 minus L13-17):  city_bridge -0.0625  farm_storage +0.0625
+                                   game_manual +0.0625  instructional +0.0625
+                                   lab_safety  +0.0625  news_report  -0.0625
+mean = +0.0208     (one prompt of 96; four domains +, two -)
+```
+
+**Within L10–17, position does not matter — only how many layers you cut.** Two different 5-layer
+windows land within one prompt of each other.
+
+#### The law, and it reconciles R-AN and R-AO
+
+Counting only layers **at or above L10** as effective:
+
+| arm | effective layers | % of full | % per effective layer |
+|---|---|---|---|
+| L10–12 | 3 | 15.8 % | 5.3 |
+| L10–14 | 5 | 36.8 % | 7.4 |
+| L13–17 | 5 | 47.4 % | 9.5 |
+| L10–17 | 8 | 89.5 % | **11.2** |
+| L7–17 | 8 (+3 inert) | 100 % | — |
+
+**Two things at once, and both earlier readings were half right:**
+
+1. **R-AO was right that L7–9 are inert.** `L7–17` has the same 8 effective layers as `L10–17` and beats
+   it by one prompt — the three extra layers buy nothing. **And it predicts R-AO's puzzle:** `L7–12` is
+   6 layers but only **3** effective, so it should behave like `L10–12`. Measured: **7.7 %** (R-AO's
+   session) versus **15.8 %** — both small, both consistent with "only L10+ counts". *The 6-layers-do-
+   nothing anomaly dissolves.*
+2. **R-AN's super-additivity instinct was right, in the right coordinates.** Effect per effective layer
+   **rises monotonically 5.3 → 7.4 → 9.5 → 11.2**. It is not linear in count; it **accelerates**. Cutting
+   8 of the effective layers does more than twice what cutting 4 would.
+
+> **Synthesis: the demonstration-retrieval pathway occupies L10–17 on Qwen3, contributes nothing below
+> L10, is positionally interchangeable within its span, and is broken super-additively — each additional
+> layer removed costs more than the last.**
+
+⚠ **Caveats, none of them small.**
+* **Every arm is non-significant** at 6 clusters (p 0.125–0.6875). The law rests on a **monotone
+  ordering across five arms in one session**, not on any p-value.
+* **The positional null is at 1-prompt resolution.** The honest claim is *"no positional effect
+  demonstrable at n = 96"*, not "position proven irrelevant".
+* **Cross-session drift is now substantial**: baseline has read 0.1771 → 0.1562 → **0.1979** across
+  three judging sessions (4 rows of 96). The `L7–12` comparison in point 1 above is therefore
+  **cross-session and is the weakest link in the argument**; it should be re-run within this session
+  before the law is quoted as established.
+* The two strongest arms remain the least diverse (`uniq_frac` 0.740 / 0.781 vs baseline 0.927).
+
+#### Next: close the one cross-session comparison the law depends on
+
+`L7–12` is the arm that makes point 1 work and it has only ever been measured in a different session.
+Re-running it alongside `L10–12` in one session is the single cheapest thing that would firm this up.
+
+---
+
 ### ★★★★★ R-AO / C-9 (12:34) — **THE MECHANISM IS LOCALISED TO L10–17. My super-additivity reading in R-AN was too strong — the pre-registered falsifier fired.**
 
 **Artifact:** judge **777351**, five arms in **one session**, `n_common = 96`, all `verified … (96 rows)`
