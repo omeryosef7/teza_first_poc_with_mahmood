@@ -693,6 +693,41 @@ carries it.
 
 ---
 
+### 🔬 PHASE 7e LAUNCHED (11:14) — the layer sweep R-AM's own scope demanded
+
+R-AM established that **L8 in full is dispensable** but explicitly limited itself: *"L8 ALL being null
+does not prove every single layer in the band is null — a layer sweep across L7–17 would be needed."*
+This runs it, and adds the question R-AM could not ask: **how many layers does the effect actually
+need?**
+
+| job | arm | band | question |
+|---|---|---|---|
+| **777333** | `S_L13` | **13–13** | is a *middle* layer individually sufficient? (L8 was not) |
+| **777334** | `S_L17` | **17–17** | is the *top* of the band individually sufficient? |
+| **777335** | `S_L7_9` | **7–9** (3 layers) | does a short sub-band do anything? |
+| **777336** | `S_L7_12` | **7–12** (6 layers) | does half the band recover half the effect? |
+
+Judged in one session with `A_baseline` and the full band, whose values on this exact population are
+**0.1667** and **0.0000 (−0.1667)**.
+
+#### 📌 PRE-REGISTERED
+
+* **If L13 and L17 are also ≈ 0 while L7–12 is large**, redundancy is *complete at single-layer
+  granularity* and the mechanism has a **threshold in layer count** — the strongest form of R-AM's
+  claim, and a genuinely unusual mechanistic result.
+* **If some single layer IS sufficient**, R-AM's "redundant across layers" is **too strong** and must be
+  narrowed to "L8 specifically is dispensable". I would rather find that now than have it found later.
+* **If L7–9 ≈ L7–12 ≈ full band**, the effect saturates early and the 11-layer band is overkill — which
+  would *re-open* the localisation question that R-AM appeared to close, at sub-band rather than
+  single-layer granularity.
+
+⚠ This is **4 arms on one bank, one model, `n = 96`**, with the same 6-cluster p-floor as every other
+contrast in this phase. It is a **coarse** sweep — 4 of 11 layers, chosen to span the band — not an
+exhaustive one; a layer that matters but sits at 10, 11, 14, 15 or 16 would be missed. Stated now so
+the coverage is not later described as complete.
+
+---
+
 ### ★★★★★ R-AM (10:58) — **THE MECHANISM IS REDUNDANT ACROSS LAYERS. Cutting ALL 40 heads of L8 does nothing; the band effect needs the whole band. Attention dominance is a readout property, not a causal one.**
 
 **Artifact:** judge **777331**, all five arms in **one session**, `n_common = 96`, 96/96 scored.
