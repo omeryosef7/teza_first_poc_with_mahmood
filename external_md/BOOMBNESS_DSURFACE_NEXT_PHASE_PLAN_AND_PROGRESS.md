@@ -693,6 +693,74 @@ carries it.
 
 ---
 
+### 🏆 R-AS (11:56) — **THE STATISTIC THAT ENDS THE ARGUMENT: a cluster-robust bootstrap CI that excludes zero at every threshold.** Plus a silent no-op of my own, found and fixed.
+
+**Artifact:** `outputs/boombness/crossbank_knockout_test/xbtest2_20260824_115138_314173/crossbank_test.json`,
+written by `src/boombness/crossbank_knockout_test.py` with full provenance.
+
+#### ⛔ First: a defect I introduced one tick ago, in the very script written to fix S5
+
+The first version stratified on truncation with `r.get("truncated")` read from the **judge** rows.
+**Judge rows carry no truncation field at all** (verified: their keys are `strongreject_score`,
+`refused`, `n_chars`, `domain`, … and nothing about stopping). So `not None` was always True,
+`n_both_terminated` **silently equalled the full row count on every bank**, and the S6 control never
+controlled for anything. **A stratification that never stratified** — the exact silent-no-op shape this
+phase has guarded against five times, committed by me while fixing a review finding.
+
+Truncation lives in **`stop_reason`** in `gens.jsonl` (`"eos"` | `"length"`). The manifest now carries
+the generation dirs, and the loader **refuses** if `stop_reason` is `None` on every row rather than
+quietly not stratifying.
+
+*(For scale, the field matters: main baseline is `eos` 71 / `length` 25, its knockout `eos` 89 /
+`length` 7 — exactly the length shift REVIEW-5 flagged as S6.)*
+
+#### ✅ The cluster bootstrap — resamples pool × domain clusters, so it is robust to C-11
+
+| threshold | **mean Δ** | **CI95** | frac of bootstraps ≥ 0 |
+|---|---|---|---|
+| 0.25 | −0.1328 | **[−0.2552, −0.0417]** | 0.0001 |
+| **0.50** | **−0.1120** | **[−0.2161, −0.0365]** | **0.0000** |
+| 0.75 | −0.0677 | **[−0.1536, −0.0052]** | 0.0074 |
+
+**The CI excludes zero at all three thresholds.** This is the statistic neither previous one could be:
+* the **pool-clustered sign test** was cluster-robust but discarded magnitude and was floored *and*
+  threshold-fragile (0.0234 / 0.0156 / **0.125** — it loses significance at 0.75);
+* the **prompt-level binomial** weighted by evidence but assumed prompt independence the shared
+  skeleton violates;
+* **the cluster bootstrap resamples the same clusters C-11 identified as the true unit, and reports a
+  magnitude** — cluster-robust, threshold-stable, and interpretable as an effect size.
+
+#### ✅ And the S6 truncation control, now that it actually runs
+
+| threshold | both-arms-EOS rows | down / up | p |
+|---|---|---|---|
+| 0.25 | — | **26 / 2** | 3.03e-06 |
+| **0.50** | — | **22 / 1** | **5.72e-06** |
+| 0.75 | — | **16 / 0** | 3.05e-05 |
+
+Discordant pairs fall from 49 to 23 at threshold 0.5 once truncated rows are dropped — **but the
+direction holds 22:1, and at 0.75 it is 16:0.** The effect is not an artifact of the knockout producing
+shorter answers that StrongREJECT scores lower.
+
+#### The claim, in its final and best-supported form
+
+> **The demonstration-retrieval knockout suppresses the doublespeak attack.**
+> **Effect size, cluster-robust: Δ = −0.1120, CI95 [−0.2161, −0.0365]**, excluding zero at StrongREJECT
+> thresholds 0.25, 0.50 and 0.75. **Direction: 46 down-flips vs 3 up-flips** over 385 paired prompts,
+> **22:1 among rows where both arms terminated normally.** Two models, two independent demonstration
+> corpora, four codewords, 74–100 % relative suppression per bank. **No fitted direction anywhere in the
+> arm, so no dose confound is possible**; every arm verified live before reading.
+
+⚠ **Superseded numbers, so nobody quotes them:** `p = 2.44e-04` (R-AR, anticonservative — C-11) and the
+bank×domain clustering that produced it. **The pool-clustered p = 0.0156 stands but is the weakest of
+the three statistics and loses significance at threshold 0.75**; the bootstrap CI is what should be
+quoted.
+
+⚠ Still Qwen3-only. The Llama replication (777525–777530) is throttled behind fair-share — 1 running,
+5 pending — and will be added as **model × pool × domain**, as committed in C-11 before launch.
+
+---
+
 ### 🔍 REVIEW-5 / C-12 (11:35) — **the adversarial review CONFIRMED C-11 independently and found four more defects. All fixed. The right statistic turned out to be prompt-level, not cluster-level.**
 
 **REVIEW-5 reproduced every arithmetic claim in R-AR exactly** and returned 8 explicit SOUND findings

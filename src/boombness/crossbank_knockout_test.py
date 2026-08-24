@@ -23,12 +23,22 @@ WHAT IT FIXES BESIDES PERSISTENCE:
 
   S6       the main-bank knockout halves completion length, and StrongREJECT penalises truncated
            answers. Every statistic is recomputed on the both-arms-terminated subset.
+           *** DEFECT OF MY OWN, FOUND AND FIXED 2026-08-24: the first version of this file read
+           `r.get("truncated")` from the JUDGE rows. That field does not exist there -- judge rows
+           carry no truncation flag at all -- so `not None` was always True and `n_both_terminated`
+           silently equalled the full row count on every bank. A stratification that never
+           stratified. Truncation lives in `stop_reason` in gens.jsonl ("eos" | "length"), so the
+           manifest now carries the GENERATION dirs and the subset is computed from there. ***
+
+  C-12     the pool-clustered sign test discards magnitude and the prompt-level test ignores
+           clustering. A CLUSTER BOOTSTRAP over pool x domain gives a magnitude CI that is robust to
+           the non-independence C-11 found -- the statistic neither of the other two provides.
 
 Scalars only; no prompt or completion text is read or written.
 
 Run:
   python src/boombness/crossbank_knockout_test.py --manifest <file> --tag xbtest
-Manifest lines:  bank:pool_sha16:<A judge dir>:<C judge dir>
+Manifest lines:  bank:pool_sha16:<A judge dir>:<C judge dir>:<A gens dir>:<C gens dir>
 """
 from __future__ import annotations
 
@@ -47,6 +57,34 @@ from common import RunDir, FailureLedger      # noqa: E402
 
 def load(d):
     return {r["prompt_id"]: r for r in (json.loads(l) for l in open(os.path.join(d, "results.jsonl")))}
+
+
+def load_stop(d):
+    """prompt_id -> stop_reason, from the GENERATION dir. Judge rows carry no truncation flag."""
+    out = {}
+    for l in open(os.path.join(d, "gens.jsonl")):
+        r = json.loads(l)
+        out[r["prompt_id"]] = r.get("stop_reason")
+    if not out:
+        raise SystemExit(f"[xb] REFUSING: no rows in {d}/gens.jsonl")
+    if all(v is None for v in out.values()):
+        raise SystemExit(f"[xb] REFUSING: stop_reason is None on every row of {d} -- the "
+                         f"both-terminated stratification would silently not stratify.")
+    return out
+
+
+def cluster_bootstrap(cluster_vals, n_boot=20000, seed=20260824):
+    """Resample CLUSTERS with replacement -> CI on the mean delta, robust to within-cluster dependence."""
+    import random
+    rnd = random.Random(seed)
+    k = len(cluster_vals)
+    means = []
+    for _ in range(n_boot):
+        means.append(statistics.mean([cluster_vals[rnd.randrange(k)] for _ in range(k)]))
+    means.sort()
+    return {"mean": statistics.mean(cluster_vals), "n_clusters": k, "n_boot": n_boot,
+            "ci95_lo": means[int(0.025 * n_boot)], "ci95_hi": means[int(0.975 * n_boot)],
+            "frac_boot_ge_zero": sum(1 for m in means if m >= 0) / n_boot}
 
 
 def exact_sign_flip(vals):
@@ -89,14 +127,17 @@ def main() -> int:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        bank, pool, da, dc = line.split(":", 3)
-        entries.append((bank, pool, da, dc))
+        parts = line.split(":")
+        if len(parts) != 6:
+            raise SystemExit(f"[xb] REFUSING: manifest line needs 6 fields "
+                             f"(bank:pool:Ajudge:Cjudge:Agens:Cgens), got {len(parts)}: {line[:80]}")
+        entries.append(tuple(parts))
     if not entries:
         raise SystemExit("[xb] REFUSING: empty manifest")
 
     run = RunDir("crossbank_knockout_test", args=args, tag=args.tag)
     ledger = FailureLedger()
-    pools = sorted({p for _, p, _, _ in entries})
+    pools = sorted({e[1] for e in entries})
     run.note(n_banks=len(entries), n_pools=len(pools), pools=pools,
              independence_note="banks sharing a pools_sha16 are NOT independent replications (C-11); "
                                "the POOL-level clustering is the defensible headline")
@@ -104,18 +145,20 @@ def main() -> int:
     out = {"banks": [], "by_threshold": {}}
     for thr in [float(x) for x in args.thresholds.split(",")]:
         hit = lambda r: (r.get("strongreject_score") or 0) >= thr        # noqa: E731
-        cells, cellmeta, prompt_flips = {}, {}, []
-        for bank, pool, da, dc in entries:
+        cells, cellmeta, prompt_flips, prompt_flips_eos = {}, {}, [], []
+        for bank, pool, da, dc, ga, gc in entries:
             A, C = load(da), load(dc)
+            SA, SC = load_stop(ga), load_stop(gc)
             common = sorted(set(A) & set(C))
-            both_eos = [p for p in common
-                        if not A[p].get("truncated") and not C[p].get("truncated")]
+            both_eos = [p for p in common if SA.get(p) == "eos" and SC.get(p) == "eos"]
             dm = collections.defaultdict(list)
             for p in common:
                 d = int(hit(C[p])) - int(hit(A[p]))
                 dm[A[p]["domain"]].append(d)
                 if d != 0:
                     prompt_flips.append(d)
+                if p in both_eos:
+                    prompt_flips_eos.append(d)
             for dom, v in dm.items():
                 cells[(bank, dom)] = statistics.mean(v)
                 cellmeta[f"{bank}|{dom}"] = {
@@ -129,6 +172,8 @@ def main() -> int:
                                      "baseline_asr": a, "knockout_asr": c, "delta": c - a,
                                      "relative_suppression": (1 - c / a) if a > 0 else None,
                                      "n_both_terminated": len(both_eos),
+                                     "n_truncated_A": sum(1 for p in common if SA.get(p) == "length"),
+                                     "n_truncated_C": sum(1 for p in common if SC.get(p) == "length"),
                                      "judge_dir_A": da, "judge_dir_C": dc})
         lv = {}
         # (1) bank x domain  -- what R-AR reported; retained so the inflation is visible
@@ -156,6 +201,16 @@ def main() -> int:
             "n_discordant": down + up, "n_down": down, "n_up": up,
             "p": binom_two_sided(min(down, up), down + up),
             "VERDICT": "not floored by cluster count; weights by evidence (S3/S4)"}
+        # CLUSTER BOOTSTRAP on pool x domain -- magnitude CI robust to C-11's non-independence
+        lv["pool_x_domain_bootstrap"] = cluster_bootstrap(
+            [statistics.mean(v) for v in byp.values()])
+        # and the both-terminated re-run of the prompt-level test (S6, with the fix above)
+        d2 = [d for d in prompt_flips_eos if d != 0]
+        lv["prompt_level_binomial_both_eos"] = {
+            "n_discordant": len(d2), "n_down": sum(1 for d in d2 if d < 0),
+            "n_up": sum(1 for d in d2 if d > 0),
+            "p": binom_two_sided(min(sum(1 for d in d2 if d < 0), sum(1 for d in d2 if d > 0)), len(d2)),
+            "VERDICT": "S6 control: both arms terminated on EOS"}
         out["by_threshold"][f"{thr:g}"] = {"levels": lv, "cells": dict(cellmeta)}
 
     summ = {"n_banks": len(entries), "n_independent_pools": len(pools),
@@ -168,6 +223,10 @@ def main() -> int:
     for thr, blk in out["by_threshold"].items():
         print(f"\n--- StrongREJECT threshold {thr}")
         for k, v in blk["levels"].items():
+            if "ci95_lo" in v:
+                print(f"    {k:24s} mean={v['mean']:+.4f} CI95=[{v['ci95_lo']:+.4f},{v['ci95_hi']:+.4f}] "
+                      f"frac_boot>=0={v['frac_boot_ge_zero']:.4f}")
+                continue
             print(f"    {k:24s} p={v['p']:.4e}  " +
                   (f"clusters={v['clusters']} informative={v['informative']}  " if 'clusters' in v
                    else f"down={v['n_down']} up={v['n_up']} n={v['n_discordant']}  ") + v["VERDICT"])
