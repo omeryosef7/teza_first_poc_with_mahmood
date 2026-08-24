@@ -152,7 +152,15 @@ def cluster_permutation_on_counts(cluster_flips):
     contributes 38; the null flips the SIGN OF WHOLE CLUSTERS, so exchangeability is at the cluster
     level. Exact enumeration over 2^n_informative.
 
-    ⚠ It is still a SIGN test, so its p floors at 2/2^n_informative. Report the floor beside it.
+    ⛔ AND ITS p IS SIGN-ONLY (C-16). The magnitudes enter T but CANNOT enter the p: when every
+    informative cluster agrees in sign, |T| is already the maximum attainable under any sign
+    assignment, so exactly 2 assignments match it and p = 2/2^n_informative REGARDLESS of magnitude.
+    Verified by shrinking every cluster net to +-1 on the real data: p was 0.0156 before and after.
+    So this function does NOT "weight by evidence" -- I claimed that in R-BA and it was wrong. What it
+    legitimately fixes is the CLUSTERING unit, nothing else.
+
+    `magnitude_free_p` is returned alongside: the same test with every net replaced by its sign. If it
+    equals `p`, the p carries no magnitude information and must not be described as if it does.
 
     `cluster_flips`: {cluster_key: [+1/-1, ...]} -- one entry per DISCORDANT prompt.
     """
@@ -168,7 +176,14 @@ def cluster_permutation_on_counts(cluster_flips):
     for sg in itertools.product([1, -1], repeat=len(inf)):
         if abs(sum(S[k] * g for k, g in zip(inf, sg))) >= abs(T):
             cnt += 1
+    # C-16: the same test with magnitudes destroyed. If this equals p, the p is sign-only.
+    Ssign = {k: (1 if v > 0 else -1 if v < 0 else 0) for k, v in S.items()}
+    Tsign = sum(Ssign.values())
+    csign = sum(1 for sg in itertools.product([1, -1], repeat=len(inf))
+                if abs(sum(Ssign[k] * g for k, g in zip(inf, sg))) >= abs(Tsign))
     return {"T": T, "p": cnt / 2 ** len(inf), "n_informative": len(inf),
+            "magnitude_free_p": csign / 2 ** len(inf),
+            "p_is_sign_only": abs(cnt - csign) < 1e-9,
             "n_clusters": len(S), "p_floor": 2 / 2 ** len(inf),
             "p_is_at_floor": abs(cnt / 2 ** len(inf) - 2 / 2 ** len(inf)) < 1e-12,
             "per_cluster_net": {str(k): S[k] for k in sorted(S, key=str)},

@@ -149,3 +149,45 @@ def test_a_tiny_effect_hits_the_same_floor_which_is_the_whole_point():
     assert abs(a["frac_boot_ge_zero"] - b["frac_boot_ge_zero"]) < 1e-4, (
         "a 300x difference in effect size must produce the SAME tail count; that identity is exactly "
         "why the tail count is not evidence")
+
+
+# --------------------------------------------------------------------------- C-16
+def test_permutation_p_is_flagged_as_sign_only():
+    """C-16. I claimed cluster_permutation_on_counts 'weights by evidence'. It does not.
+
+    When every informative cluster agrees in sign, |T| is already the maximum attainable under any
+    sign assignment, so exactly 2 assignments match and p = 2/2^k REGARDLESS of the magnitudes. On the
+    real data, shrinking every cluster net from (+36,+14,+12,+8,+4,+2,+2) to +-1 left p at 0.0156.
+    """
+    from crossbank_knockout_test import cluster_permutation_on_counts
+    real = {'a': [-1] * 14 + [1] * 2, 'b': [-1] * 3 + [1] * 3, 'c': [-1] * 37 + [1],
+            'd': [-1] * 9 + [1], 'e': [-1] * 3 + [1] * 3, 'f': [-1] * 15 + [1],
+            'g': [-1] * 8 + [1] * 6, 'h': [-1] * 4, 'i': [-1] * 3 + [1]}
+    r = cluster_permutation_on_counts(real)
+    assert "magnitude_free_p" in r, "the magnitude-free comparison is gone"
+    assert r["p_is_sign_only"] is True, (
+        "on this data the p MUST be flagged sign-only; if it is not, either the flag broke or the "
+        "saturation condition changed and R-BA's retraction needs revisiting")
+    assert abs(r["p"] - r["magnitude_free_p"]) < 1e-12
+
+
+def test_the_flag_goes_FALSE_when_magnitudes_actually_matter():
+    """The flag must discriminate, or it is decoration. Mixed signs -> |T| is not maximal -> the
+    magnitudes change which assignments beat it."""
+    from crossbank_knockout_test import cluster_permutation_on_counts
+    mixed = {'a': [-1] * 30, 'b': [1] * 2, 'c': [-1] * 3, 'd': [1] * 1}
+    r = cluster_permutation_on_counts(mixed)
+    assert r["p_is_sign_only"] is False, \
+        "with mixed signs and unequal magnitudes the p must depend on magnitude; the flag is inert"
+
+
+def test_leave_one_out_is_floor_determined_and_says_so():
+    """C-16: every LOO p came back at 2/2^6. That shows sign agreement survives, not effect size."""
+    from crossbank_knockout_test import cluster_permutation_on_counts, leave_one_cluster_out
+    real = {'a': [-1] * 14 + [1] * 2, 'b': [-1] * 3 + [1] * 3, 'c': [-1] * 37 + [1],
+            'd': [-1] * 9 + [1], 'e': [-1] * 3 + [1] * 3, 'f': [-1] * 15 + [1],
+            'g': [-1] * 8 + [1] * 6, 'h': [-1] * 4, 'i': [-1] * 3 + [1]}
+    loo = leave_one_cluster_out(real)
+    assert abs(loo["worst_p"] - 2 / 2 ** 6) < 1e-12, (
+        f"worst LOO p is {loo['worst_p']}, expected the 6-informative floor 2/2^6; if it is no longer "
+        "at the floor the LOO analysis has become informative and C-16's caveat can be relaxed")

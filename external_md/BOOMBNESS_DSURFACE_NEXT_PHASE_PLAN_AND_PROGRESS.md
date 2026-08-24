@@ -693,6 +693,62 @@ carries it.
 
 ---
 
+### ⛔ C-16 (19:08) — **R-BA does NOT "weight by evidence". Its p is sign-only, proven by shrinking every cluster to ±1 and getting the identical number.** Self-found, one hour after publishing it.
+
+R-BA's central claim was that it fixed both prior defects: *"the statistic is `T = Σ (n_down − n_up)`,
+so a 38-flip cluster contributes 38"* — i.e. weights by evidence — *"while the null flips the sign of
+whole clusters"* — i.e. respects clustering. **The second half is true. The first is not.**
+
+#### The test that refutes it
+
+Replace every cluster's net with **±1**, destroying all magnitude information while preserving signs:
+
+| data | p |
+|---|---|
+| real nets (`+36, +14, +12, +8, +4, +2, +2, 0, 0`) | **0.0156** |
+| **same signs, every net shrunk to ±1** | **0.0156 — identical** |
+| one cluster's sign flipped | 0.2188 |
+
+**The p is unchanged when `game_manual`'s +36 becomes +1.** The magnitude enters `T` but **cannot enter
+the p**: when all informative clusters agree in sign, the observed `|T|` is already the maximum
+attainable under any sign assignment, so the count of sign assignments matching it is 2 — the floor —
+**regardless of the magnitudes**. **This is C-14's S2 failure in a new costume, and I rebuilt it while
+explicitly trying to fix it.**
+
+> ⛔ **RETRACTED: R-BA's claim to weight by evidence.** It is a **cluster sign test**, exactly like the
+> one it was built to replace. What it legitimately fixes is C-15's clustering problem (models pooled,
+> `pool × domain`), and nothing else.
+
+#### Two further self-findings
+
+**The "no cluster is negative" observation carries no information.** Given the overall 96:18 split
+assigned at random to the observed cluster sizes, **P(no cluster nets the wrong way) = 0.9638.** With
+96 down against 18 up, of course no cluster reverses. **Withdrawn as evidence.**
+
+**The cluster count is 12, not 9.** `pool × domain` is 2 × 6; three knife-pool cells
+(`city_bridge`, `farm_storage`, `news_report`) have **zero** discordant prompts and never get created
+by the `defaultdict`. **The p is unaffected** — an all-zero cluster contributes 0 to `T` and is excluded
+from the enumeration either way — but **"9 clusters" understates the design**, and a reader comparing
+against the 12-cluster figures elsewhere would be misled.
+
+#### What actually survives
+
+**`p = 0.0156` stands as a valid cluster sign test** on `pool × domain` with models pooled, at its floor
+`2/2⁷`, meaning **all 7 informative clusters agree in direction.** That is a real result and it is
+genuinely better than the earlier 6-cluster version — **not because it weights by evidence, but because
+pooling the models produced 7 informative clusters instead of 5, dropping the floor from 0.0625 to
+0.0156.** The improvement is in the *floor*, not in the statistic's sensitivity.
+
+Leave-one-out is likewise **floor-determined** (0.0313 = `2/2⁶` in every drop), so it shows only that
+*sign agreement* survives removing any one cluster — **not that the effect size does.**
+
+⚠ **Sixth correction, second self-found.** The failure mode is now legible enough to name: **I keep
+building statistics whose p saturates, then reading the saturated value as strength.** C-14 caught it in
+the bootstrap tail; this is the same thing in a permutation test. **The check that catches it is cheap
+and I now run it by default: destroy the magnitudes, keep the signs, and see whether the p moves.**
+
+---
+
 ### ★★★★ R-BA (18:41) — **a test that weights by evidence AND respects clustering: p = 0.0156, robust to dropping any single cluster.** Both prior statistics failed in opposite ways.
 
 C-14 and C-15 left two statistics, each broken in a way the other fixes:
