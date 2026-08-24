@@ -693,6 +693,55 @@ carries it.
 
 ---
 
+### 🔬 PHASE 9b LAUNCHED (17:02) — a **fourth concept**, to answer R-AX's own stated limit, with the null fixed first
+
+R-AX's limit was explicit: *"Three points can only ever span 2 dimensions, so '≥2-dimensional' is the
+strongest form available — a fourth concept would be needed to ask whether it is exactly 2."* This asks
+it. **Same operation the user approved for the third concept, for the same question**; flagged rather
+than assumed.
+
+**Concept chosen against the bar the existing three actually meet** — not a stricter invented one.
+`bomb` is `[1,1,1,1,2,1]` and `knife` `[1,1,1,1,2,2]`, i.e. **all singular forms 1 token, plurals may
+split.** Screened 20 candidates on that bar:
+
+| candidate | profile | verdict |
+|---|---|---|
+| **`arrow`** | `[1,1,1,1,2,1]` — identical to `bomb` | ✅ **chosen** |
+| `bullet` | `[1,1,1,1,2,1]` | rejected — semantically entangled with `gun` (a gun fires bullets), so collinearity would be partly definitional |
+| `drug` | `[1,1,1,1,2,1]` | rejected — changes semantic **category**, which is the thing R-AX holds fixed |
+| everything else (`rifle`, `pistol`, `grenade`, `dagger`, `sword`, `poison`, `blade`, …) | splits a singular form | ✗ |
+
+`arrow` is a fourth **distinct weapon category** — explosive / blade / firearm / projectile — keeping
+category fixed while varying the concept, exactly as R-AX requires.
+
+**Pool generation: job 778140**, same generator, model and seed as the other three.
+
+#### 📌 PRE-REGISTERED, with the null computed BEFORE the data exists
+
+Isotropic null for **4** centred unit vectors in ℝ⁴⁰⁹⁶ (3 000 draws):
+
+| | median | 95 % range |
+|---|---|---|
+| null PC1 | 0.3420 | [0.3370, 0.3498] |
+| null PC2 | 0.3333 | [0.3285, 0.3385] |
+| **null PC3** | **0.3246** | **[0.3170, 0.3297]** |
+
+* **If the concept subspace is exactly 2-dimensional**, adding `arrow` leaves **PC3 ≈ 0**, far below the
+  null's 0.3246. The three-concept PC1/PC2 split (≈0.65/0.35) should persist with PC3 negligible.
+* **If it is ≥3-dimensional**, PC3 will be substantial — and if it approaches 0.32 the concepts are no
+  more structured than random at that rank.
+* **Intermediate PC3** — the outcome I actually expect, by extension of R-AX's partial collinearity —
+  would say the subspace has a dominant plane with real but smaller third-direction structure.
+
+⚠ **The null is fixed now, before `arrow` exists**, because C-7's lesson was that I claimed
+"comparable singular values" as evidence when the isotropic null produces exactly that. **A number is
+only evidence against a null that was specified in advance.**
+
+⚠ Two banks (`basket_arrow`, `button_arrow`) will follow the same generate → audit → fit path, and the
+comparison is only valid against fits from the identical pipeline.
+
+---
+
 ### ★★★★★ R-AY (16:41) — **LLAMA REPLICATES ON THE INFORMATIVE BANK, and R-AT's null is explained. Two models, eight populations.**
 
 **Artifacts:** judges **778067** / **778068** (`ALL DONE, 2 runs` each) plus the earlier **777664**.
