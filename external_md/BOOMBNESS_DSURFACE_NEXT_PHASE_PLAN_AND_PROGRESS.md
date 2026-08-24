@@ -742,6 +742,40 @@ carries it.
 
 ---
 
+### 🔬 PHASE 10b LAUNCHED (23:24) — **equalising the gun pool's depth, with the breaking point computed FIRST**
+
+R-BD's own caveat: the gun pool has **1 bank × 2 models = 2 measurements** per cluster, while bomb and
+knife have **2 × 2 = 4**. `button_gun` is already built and audited (R-AX), so the asymmetry is
+removable. **Jobs 779083–779086** — baseline + knockout on `button_gun`, both models.
+
+**This removes a caveat rather than testing a hypothesis — so the honest thing is to state in advance
+what would overturn R-BD.** Each gun cluster becomes `(current + button_gun)/2`. Sweeping a uniform
+`button_gun` value:
+
+| if `button_gun` clusters average… | k=18 mean | **CI upper** | |
+|---|---|---|---|
+| −0.20 | −0.1054 | −0.0392 | excludes 0 |
+| −0.10 | −0.0887 | −0.0219 | excludes 0 |
+| −0.0625 *(= the Qwen3 gun arm)* | −0.0825 | −0.0149 | excludes 0 |
+| **0.0000** *(completely inert)* | −0.0720 | **−0.0025** | **excludes 0, barely** |
+| **+0.05** | −0.0637 | **+0.0079** | ⛔ **INCLUDES 0** |
+| +0.10 | −0.0554 | +0.0187 | includes 0 |
+
+> **📌 PRE-REGISTERED BREAKING POINT: R-BD survives if `button_gun`'s clusters average below ≈ +0.02,
+> and FAILS if they average ≥ +0.05.** Even a completely inert `button_gun` leaves the CI excluding zero
+> — but only by 0.0025.
+
+⚠ **This is not a remote possibility.** Both Llama churn cells so far — `button_knife` **+0.0104** and
+`basket_gun` **+0.0104** — are positive. **If Llama `button_gun` behaves the same and Qwen3's is weak,
+the pool average could plausibly land near or above the +0.05 threshold.** R-BD is genuinely at risk
+here, and I would rather that be on the record before the numbers than discovered afterwards.
+
+⚠ **And note what the sweep exposes about R-BD itself:** at `button_gun = 0` the CI upper is **−0.0025**.
+**R-BD's margin is three thousandths.** It is a real result at the defensible clustering, and it is
+**one weak cell from not being one.** That fragility is a property of the result, not of this test.
+
+---
+
 ### 🏆🏆 R-BD (23:05) — **PHASE 10: the third pool lands and the calibrated CI EXCLUDES ZERO. The prediction registered at P = 0.941 held.** Plus a silent-overwrite bug in my own tool, found by cross-checking.
 
 **Artifact:** `outputs/boombness/crossbank_knockout_test/xb10final_20260824_230323_1997748`, from
