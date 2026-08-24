@@ -267,7 +267,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | E7-BAND | 1A | exp-7 random control band (3 draws) | ✅ **NEGATIVE** (R-M) | Gate E7 **FAILED** |
 | DOSE-L12 | 1B | nine-point L12 dose ladder, one session, job 776797 | ✅ **NEGATIVE** (R-N) — only α=1.00 clears; every α≤0.38 n.s. | Gate DOSE **FAILED** |
 | SESSION | 1C | one-session canonical control artifact | ✅ `outputs/boombness_followup/gate_dose_ladder.json` | — |
-| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED** (R-P/R-Q/R-R) | Gate RETRIEVAL **PASSED** |
+| RETR-BEH | 2 | behavioural demo-retrieval knockout | ✅ **POSITIVE + CONTROLLED + POWERED** — R-AR: 4 banks, 2 models, 24 clusters, 13/13 negative, **p = 2.44e-04** | Gate RETRIEVAL **PASSED** |
 | RETR-REF | 3 | retrieval × refusal composition, job 777030 | ✅ **INDEPENDENT CHANNELS** (R-T); pre-registered prediction held | — |
 | XMODEL | 4 | Llama vs Qwen3 matched | ✅ **REPLICATES** (R-AB) — band −0.1667 on Qwen3 vs −0.1771 on Llama; `C_all` degenerate on both | Headroom **PASSED** (R-AA) |
 | BANK2 | 5 | new non-PC1-dominated bank | ✅ **GATE PASSES** (R-AC) — 4th cell built; crossed design 1.03–1.12×, PC1 0.36 | Bank gate **PASSED** |
@@ -690,6 +690,82 @@ carries it.
 4. **R-R's open question stands**: what the knocked-out completions *contain* is still
    uncharacterised, and `goal_topicality` cannot answer it on a doublespeak bank.
 5. No cell is degenerate — distinct completion lengths 84 / 77 / 89 / 75 of 96.
+
+---
+
+### 🏆🏆🏆 R-AR (15:31) — **THE CENTRAL CAUSAL CLAIM NOW HAS A REAL p-VALUE: p = 2.44e-04 across 24 bank×domain clusters, 13 informative, ALL 13 NEGATIVE, ZERO POSITIVE.**
+
+**Artifacts:** judges **777489 / 777490 / 777491** (one session per bank, `ALL DONE, 2 runs` each) plus
+the existing main-bank session **777331**. Every knockout arm proven live first
+(`frac_rows_decode_live = 1.0`, jobs 777386/777388/777390).
+
+#### Per bank — four independent populations, 96 rows each
+
+| bank | baseline | knockout `L7–17` | Δ | **relative suppression** |
+|---|---|---|---|---|
+| **main** | 0.1667 | **0.0000** | −0.1667 | **100 %** |
+| **ticket_bomb** | **0.2812** | 0.0729 | **−0.2083** | **74 %** |
+| button_knife | 0.0625 | **0.0000** | −0.0625 | 100 % |
+| window_knife | 0.0104 | **0.0000** | −0.0104 | 100 % |
+
+**Three of four banks go to exactly 0.0000.** Relative suppression is **74–100 % on every bank.**
+
+#### The clustered test
+
+```
+BANK x DOMAIN CLUSTERS      24
+pooled cluster-mean delta   -0.111979
+informative clusters        13 of 24        (11 clusters are exactly 0.000)
+clusters negative           13
+clusters positive            0
+EXACT sign-flip p           2/8192 = 2.441e-04
+```
+
+**Every informative cluster points the same way.** `p = 2.44e-04` is the *most extreme outcome
+attainable* at 13 informative clusters — and the attainable floor is now **2.4e-04 instead of 0.031**,
+which is the entire point of Phase 8. **The project's central causal claim has, for the first time, a
+significance test that is not floored at the design's own resolution.**
+
+Per-cluster deltas:
+
+```
+main          city -0.188  farm -0.062  game -0.562  inst -0.125  lab 0.000  news -0.062
+ticket_bomb   city -0.250  farm -0.062  game -0.625  inst -0.125  lab 0.000  news -0.188
+button_knife  city  0.000  farm  0.000  game -0.312  inst -0.062  lab 0.000  news  0.000
+window_knife  city  0.000  farm  0.000  game -0.062  inst  0.000  lab 0.000  news  0.000
+```
+
+#### ⚠ The caveat that governs how this must be quoted
+
+**The four banks differ enormously in baseline — 0.0104 to 0.2812 — and the effect size tracks that
+headroom, as it must.** `window_knife` starts at **one prompt of 96**; its −0.0104 is a floor artifact
+carrying no information, and `button_knife` at 0.0625 is nearly the same. **The pooled absolute delta
+(−0.1120) is therefore diluted by two banks that had almost no attack success to remove, and should NOT
+be quoted as the effect size.**
+
+**The two defensible summaries are:**
+1. **Relative suppression: 74–100 % on all four banks** — the knockout removes essentially all attack
+   success wherever there is any to remove.
+2. **The sign test: 13/13 informative clusters negative, p = 2.44e-04** — which is unaffected by the
+   headroom differences because it uses only the direction of each cluster's delta.
+
+**The absolute magnitude remains best estimated from the two banks with real headroom: −0.1667 (main)
+and −0.2083 (ticket_bomb).**
+
+⚠ `lab_safety` is 0.000 in **all four banks** — it contributes nothing anywhere, consistent with its
+baseline ASR of 0.0 noted back in R-AA. `game_manual` carries the largest effect in all four
+(−0.562 / −0.625 / −0.312 / −0.062), the same domain flagged in R-AA and R-T.
+
+#### What this settles
+
+> **The demonstration-retrieval knockout causally suppresses the doublespeak attack.** Two models
+> (R-AB), four independently generated and audited banks with different codewords *and* concepts,
+> 24 clusters, unanimous direction, **p = 2.44e-04**, no fitted direction anywhere in the arm so **no
+> dose confound is possible**, and every arm verified live before reading.
+
+**This is the phase's result.** Everything built around it — `d_surface` specificity (R-AH), the
+retrieval scalar (R-AJ/R-AK), single-head and single-layer localisation (R-AM/R-AQ) — failed. **The
+intervention is what survived, and it is now properly powered.**
 
 ---
 
