@@ -16,7 +16,16 @@ source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate poc_stage2
 if [ -f "$R/.env" ]; then set -a; source "$R/.env"; set +a; fi
 export PYTHONPATH="$R/src/boombness:${PYTHONPATH:-}"
-BANK=$R/data/boombness_prompts/boombness_prompt_bank.jsonl
+# PARAMETERISED 2026-08-24. This was hardcoded to the main bank while MANIFEST/EXPECTED/PREFIX/
+# EXPECT_ROWS were already env-overridable -- so the moment a phase ran on one of the crossed banks
+# (basket_bomb etc.) the driver silently pointed judge_boombness at the WRONG bank. It did not produce
+# wrong numbers: compare_bank_hashes refused the join outright
+#   ("REFUSING: the run consumed a DIFFERENT bank ... 113fc7b6f792f1c6 vs 4cd9157399aa1b3c"),
+# which is retraction R1's guard doing exactly its job. Parameterising closes the gap that made the
+# guard fire, rather than working around the guard.
+BANK=${P2_BANK:-$R/data/boombness_prompts/boombness_prompt_bank.jsonl}
+[ -f "$BANK" ] || { echo "[p2] REFUSING: bank not found: $BANK" >&2; exit 6; }
+echo "[p2] bank = $BANK"
 # PARAMETERISED so one driver serves several phases. A near-copy of this file for Phase 3 is how two
 # scripts drift apart and one quietly keeps an old assertion.
 MANIFEST=${P2_MANIFEST:-$R/outputs/boombness/argsfiles/p2_arms.txt}
