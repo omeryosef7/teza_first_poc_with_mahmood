@@ -1154,6 +1154,12 @@ def main() -> int:
     # validated with argparse `choices` because the authoritative tuple lives in pair_common, which
     # is imported below -- restating the five names here is exactly the drift the mode table is
     # centralised to prevent, so the check is against pc.SCOPED_KNOCKOUT_MODES itself.
+    ap.add_argument("--rescue-donor", choices=("clean", "self"), default="clean",
+                    help="Where the donated activations come from. 'clean' = an unhooked forward "
+                         "(the RESCUE). 'self' = a forward under the SAME hooks as the arm, the "
+                         "classical identity control: writing a run's own activations back into it "
+                         "must reproduce it EXACTLY. If 'self' changes the output, the patch is not "
+                         "writing what it read and no rescue number means anything.")
     ap.add_argument("--rescue-layer", type=int, default=None,
                     help="Section 20 Q3 RESCUE. Capture resid_post at this layer from a CLEAN "
                          "forward over the demo-block positions, then write it back during the "
@@ -1725,25 +1731,6 @@ def main() -> int:
                 continue
             prot = query_span_positions(lm.tokenizer, row, templated_r, dk)
 
-        # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) ------------
-        # The donor is captured from a CLEAN forward over the SAME templated string, so donor and
-        # recipient positions are identical by construction rather than by recomputation. DonorPatch
-        # re-checks token identity over the span anyway, because "identical by construction" is what
-        # the two prior absolute-index defects in this repo also believed.
-        _donor = None
-        if args.rescue_layer is not None:
-            if not _wants_knockout or not dk:
-                ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
-                continue
-            with torch.no_grad():
-                with ActivationCapture(lm.model, args.rescue_layer, dk) as _cap:
-                    lm.model(input_ids=torch.tensor([ids_r], device=lm.model.device))
-            if _cap.acts is None:
-                ledger.fail("rescue:donor_capture_empty", row["prompt_id"])
-                continue
-            _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(dk),
-                                acts=_cap.acts, input_ids=list(ids_r))
-
         knock_stats = {} if _wants_knockout else None
         # THE DRAW IS PERSISTED, not only seeded. `knock_draw` comes back holding the exact key
         # positions each control draw used on THIS row, so the control is auditable after the fact
@@ -1757,8 +1744,30 @@ def main() -> int:
                                      knock_heads=_knock_heads, knock_scope=_knock_scope,
                                      draw_log=knock_draw)
             import contextlib
+            # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) --------
+            # ORDERING MATTERS AND IT BIT ME. An earlier draft captured the donor BEFORE
+            # `make_intervention` returned `ctxs`. Under `--rescue-donor self` that reads `ctxs`
+            # from the PREVIOUS loop iteration -- still bound in function scope -- so the donor
+            # would be captured under the previous ROW's hooks, silently and plausibly. The capture
+            # therefore lives here, after `ctxs` exists for THIS row, and nowhere else.
             _rescue_ctx = None
-            if _donor is not None:
+            if args.rescue_layer is not None:
+                if not _wants_knockout or not dk:
+                    ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
+                    continue
+                _cap = ActivationCapture(lm.model, args.rescue_layer, dk)
+                with torch.no_grad():
+                    with contextlib.ExitStack() as _dst:
+                        if args.rescue_donor == "self":
+                            for _c in ctxs:
+                                _dst.enter_context(_c)
+                        _dst.enter_context(_cap)
+                        lm.model(input_ids=torch.tensor([ids_r], device=lm.model.device))
+                if _cap.acts is None:
+                    ledger.fail("rescue:donor_capture_empty", row["prompt_id"])
+                    continue
+                _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(dk),
+                                    acts=_cap.acts, input_ids=list(ids_r))
                 _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
                 ctxs = list(ctxs) + [_rescue_ctx]
             with contextlib.ExitStack() as st:

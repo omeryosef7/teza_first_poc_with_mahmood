@@ -1951,6 +1951,59 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔎 DR-3 (20:20, 4h DEEP REVIEW) — **Suite 1368/0. Pool-B provenance verified and DISCRIMINATING. R-29 recomputed exactly. And I made a silent cross-row bug while closing R-31's gap, caught it with my own ordering check, and turned it into a test.**
+
+**Suite:** `1368 passed, 7 skipped, 0 failed`, serial and exclusive; `git status outputs/ reports/
+data/` clean before and after.
+
+**Pool-B bank provenance (not covered by DR-2, which predated pool B):**
+
+| arm | rows | not in bank B | sha mismatch | **also matches bank A** |
+|---|---|---|---|---|
+| all four `p6b*` | 160 each | **0** | **0** | **0** |
+
+**`also_matches_bank_A = 0` is the part that matters** — it proves the check *discriminates*. A
+provenance test that would pass against either bank tests nothing; this one would have caught a
+bank mix-up.
+
+**R-29 recomputed from raw rows, no helper shared with the original:** baseline `1/160 = 0.0063`;
+`demoproc` **32/160 = 0.2000, rise +0.1938 ABOVE margin**; `legacy` 4/160 (+0.0188, within);
+`respq` 2/160 (+0.0063, within). **Exact match.**
+
+**Saturation / floor check on the headline.** Finest resolvable step is `1/160 = 0.00625`; the margin
+is 8.3 rows. The three C1 rises are **26, 21 and 31 rows** — **2.5-3.7× the margin, nowhere near the
+floor, and nowhere near saturation** (the largest arm rate is 0.2000, far from 1.0). **No structure is
+being fitted below the measurement floor.**
+
+**Pool-B truncation** matches pool A's pattern (baseline 91/160 at cap, `demoproc` 114/160),
+consistent with DR-2 and already carried as a stated limitation.
+
+#### 🔴 A bug I made this tick, caught by my own check
+
+Closing R-31's flagged gap meant adding `--rescue-donor self` — the classical identity control, where
+a run's own activations are written back into it and **must reproduce it exactly**. My first
+implementation captured the donor **before** `ctxs = make_intervention(...)` existed.
+
+**Python would not have raised.** `ctxs` is function-scoped and still bound from the **previous loop
+iteration**, so under `--rescue-donor self` the donor would have been captured **under the previous
+ROW's hooks** — silently, plausibly, and wrong. **It is the absolute-position-index bug class wearing
+a different costume: state from one example reused on another.**
+
+Caught by grepping the line numbers of the build site and the capture site rather than by trusting the
+patch. **Fixed** by moving the capture to after `ctxs` exists, and **converted into a static
+regression test** (`test_donor_capture_happens_after_ctxs_is_built`) because the failure is one of
+**source order**, not of behaviour on any single row — no row-level test would have caught it.
+
+Two further guards added: every rescue statement is asserted to live under
+`if args.rescue_layer is not None:`, and the identity-control option is asserted to exist at all.
+**`test_donor_patch.py` 13/13; the four knockout suites 137/137.**
+
+**Still zero science.** Both smokes (`781006` rescue, and the identity control submitted this tick) are
+**queued behind fair-share**; `781006` has been PENDING on Priority since 19:40 and **has not been
+cancelled**, per the standing instruction.
+
+---
+
 ### R-31 (19:45) — **The rescue is wired into `score_behavior` ADDITIVELY, and the inertness is PROVEN by diff rather than asserted. Smoke job 781006 submitted; nothing read yet.**
 
 **The integration.** `--rescue-layer L` (default `None`). When set, before the intervention context is

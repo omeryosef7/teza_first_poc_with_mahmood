@@ -108,3 +108,42 @@ def test_hook_is_removed_on_exit(patched_ds_common):
         pass
     out = model.layers[0](torch.zeros(1, 2, 4))
     assert torch.equal(out[0, 1], torch.zeros(4)), "patch still active after __exit__"
+
+
+# --- ordering regression guard (a real bug, made and caught 2026-08-25) --------------------- #
+
+def _score_behavior_src():
+    return open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "src", "boombness", "score_behavior.py")).read()
+
+
+def test_donor_capture_happens_after_ctxs_is_built():
+    """`--rescue-donor self` captures under `ctxs`. If the capture sits ABOVE the line that builds
+    `ctxs`, Python still resolves the name -- to the PREVIOUS loop iteration's value, because it is
+    function-scoped. The donor would then be captured under the previous ROW's hooks: silent,
+    plausible, and wrong. This exact mistake was made and caught during the deep review of
+    2026-08-25; the guard is static because the failure is one of source order, not of behaviour on
+    a single row."""
+    src = _score_behavior_src()
+    i_build = src.index("ctxs = make_intervention(")
+    i_cap = src.index("_cap = ActivationCapture(")
+    assert i_build < i_cap, (
+        "donor capture appears BEFORE `ctxs = make_intervention(...)`; under --rescue-donor self "
+        "this reads the previous row's hooks")
+
+
+def test_rescue_is_inert_without_the_flag():
+    """Every rescue statement must sit inside `if args.rescue_layer is not None:`."""
+    src = _score_behavior_src()
+    assert "if args.rescue_layer is not None:" in src
+    guard = src.index("if args.rescue_layer is not None:")
+    for token in ("_cap = ActivationCapture(", "DonorBlock(", "DonorPatch(lm.model"):
+        assert src.index(token, guard) > guard, f"{token} is not under the rescue guard"
+
+
+def test_identity_control_option_exists():
+    """Without a `self` donor there is no end-to-end identity control, and a rescue instrument
+    without one cannot show it writes what it read."""
+    src = _score_behavior_src()
+    assert 'choices=("clean", "self")' in src
+    assert 'args.rescue_donor == "self"' in src
