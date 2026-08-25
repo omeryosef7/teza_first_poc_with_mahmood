@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
 | ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
@@ -1944,6 +1945,64 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### R-26 (15:50) — **The capped control: UNINFORMATIVE where under-matched, as PR-10 said it would be — but at `n_examples = 2` it happens to be 0.989-matched, and there `demo_processing_only` separates from it cleanly. Demonstration-specificity gets ONE powered, matched dose. Not more.**
+
+**Artifacts:** arms `p5_capped_d{1,2,3}` (jobs 780300-780302), judging `p5j_capped_d*` (job **780390**).
+**Provenance:** `openai/gpt-4o-mini` on **480/480** rows, completion-hash joins **480/480**.
+**Draws verified independent** — seeds 28180602 / 36100379 / 44020156, and the three arms produce
+different generations on ~37% of rows (identical on 101, 106 and 100 of 160 pairwise), so d1/d3
+sharing a total edit count is a count coincidence, not a seed collision. All three:
+`frac_rows_scope_live = 1.0`, `scope_violations = {}`, `total_decode_edits = 0`.
+
+**ΔASR against the same `p4bj_A` baseline, per dose, with the capped arm's own match ratio:**
+
+| dose | attacks | `demoproc` | cap d1 | cap d2 | cap d3 | **cap mean** | **match ratio** |
+|---|---|---|---|---|---|---|---|
+| 1 | 2/40 | −0.0500 | +0.0500 | +0.1500 | +0.0000 | **+0.0667** | **1.000** |
+| **2** | **5/40** | **−0.1250** | −0.0250 | +0.0000 | −0.0250 | **−0.0167** | **0.989** |
+| 4 | 8/40 | −0.1750 | −0.1500 | −0.1250 | −0.0750 | −0.1167 | 0.547 |
+| 8 | 10/40 | −0.2500 | −0.1000 | −0.1000 | −0.0250 | −0.0750 | 0.272 |
+
+**Overall: capped mean ΔASR −0.0354, INSIDE the 0.0521 margin**, against `demoproc`'s −0.1500.
+**Per PR-10 that overall null is UNINFORMATIVE and is not being quoted as support** — the capped arm
+masks 27-55% as many positions at the high doses, and under-masking trivially predicts no effect.
+
+#### The one cell that is both matched and powered
+
+**At `n_examples = 2` the capped draw is 0.989-matched** (mean; min 0.857, only **5 of 40 rows** below
+1.0). That is close enough to call a matched control, and PR-9's own power rule admits the dose —
+baseline **5 attacks in 40 rows = 0.125 ≥ 0.10**.
+
+> **`demo_processing_only` removed 5 of the 5 attacks. The count-matched non-demo control removed
+> 0.67 of 5 on average** (1, 0, 1 across three independent draws). **Gap 0.1083, clearing the 0.0417
+> arm-vs-arm margin by 2.6x.**
+
+**That is the demonstration-specificity comparison R-25 said could not be built — and it exists at
+exactly one dose, by accident of the capped policy rather than by design.** Masking the same number
+of positions somewhere else does **not** reproduce the effect there.
+
+#### ⛔ What this does NOT do
+
+* **It does not overturn R-25.** At `n = 4` (ratio 0.547) and `n = 8` (ratio 0.272) the control is
+  under-matched and its partial effect is **exactly what under-masking predicts**, so those doses stay
+  **UNTESTED**. The effect is largest there, and that is where the comparison is still missing.
+* **It does not rest on the `n = 1` cell**, which is fully matched (1.000) but has **2 attacks** and
+  shows the control moving the *wrong* way (+0.0667). **R-9 declined that cell in advance and it stays
+  declined** — I am not quoting a +0.0667 as anything.
+* **It is one dose, 5 attacks, one model.** A gap of 0.1083 built on 5 attacks is **suggestive, not
+  established.** The honest summary is: *the only powered matched comparison available favours
+  demonstration-specificity, and there is exactly one of them.*
+
+**No follow-up is launched to manufacture more matched doses.** Doing so requires the longer-context
+bank recorded in R-25, which is a bank-design change. **The phase's stated limitation stands, now with
+one supporting data point rather than none.**
+
+⚠ Capped refusal rates are 0.0500 / 0.0375 / 0.0375 against a 0.0563 baseline — **all three at or
+below baseline**, consistent with R-19/R-21: only `demo_processing_only` restores refusal, and
+non-demo masking does not.
 
 ---
 
