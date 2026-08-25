@@ -38,6 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
+| 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
 | ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
 | 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
@@ -1949,6 +1950,59 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-35 (21:57) — **PR-13 OUTCOME C on ASR — and the refusal column separates. Handing back the clean demonstration activations UNDOES 69% OF THE REFUSAL RESTORATION WHILE LEAVING THE ATTACK REMOVAL INTACT. The two effects have different substrates, shown causally.**
+
+**Artifacts:** arms `p7_rescue_L14` (781211) / `p7_rescue_L5` (781212); judging `p7j_*` (781255).
+**Provenance:** `openai/gpt-4o-mini` on **320/320** rows, hash joins **320/320**.
+**PR-13 precondition met:** `rescue_liveness.fired` on **320/320** rows, `n_positions_written`
+9/43/128 identical at both layers, knockout `scope_live = 1.0`, no violations.
+**PR-13 was committed at `8ab1eb05` before either job existed.**
+
+| arm | ASR | vs clean | vs knockout | **refusal** |
+|---|---|---|---|---|
+| clean baseline | 0.1562 | — | +0.1500 | 9/160 = 0.0563 |
+| knockout-only | 0.0063 | −0.1500 | — | **35/160 = 0.2188** |
+| **rescue L14 (primary)** | 0.0312 | −0.1250 | **+0.0250** | **17/160 = 0.1062** |
+| rescue L5 (control) | 0.0125 | −0.1437 | +0.0063 | **35/160 = 0.2188** |
+
+#### On ASR: OUTCOME C — NULL
+
+`|L14 − knockout| = 0.0250`, **inside the 0.0521 margin.** The rescue recovers **16.7%** of the
+knockout's ASR effect and is **statistically indistinguishable from not rescuing at all.**
+
+> **The information the knockout destroys to remove the attack is NOT carried in the demonstration
+> positions' residual stream at the top of its own band.** Handing those activations back, verifiably
+> and per-position, does not bring the attack back. **The damage travels by another route.**
+
+#### 🔴 On refusal: the same patch nearly abolishes the effect
+
+`|L14 − knockout| = 0.1125`, **more than 2× the margin.** The rescue removes **69.2%** of the
+knockout's refusal rise — **35 rows → 17** — and the **L5 below-band control moves it by exactly
+0.0000 (35 → 35 rows)**, which is what a specificity control must do.
+
+> **One intervention, one layer, one set of positions. It gives back the refusal and does not give
+> back the attack.**
+
+**This is the third independent demonstration of C-12, and the first CAUSAL one.** R-19/R-20 showed
+the two effects co-occur; R-23 showed they are dose-independent; **R-35 shows a targeted intervention
+can restore one without restoring the other.** Correlational dissociation has become a causal one.
+
+#### ⚠ Where the numbers are thin, stated plainly
+
+* **`|L14 refusal − clean refusal| = 0.0500` clears the 0.0521 margin by 0.0021 — about a THIRD OF ONE
+  ROW** of 160. **"Restored to clean levels" is therefore NOT a claim I am making.** The defensible
+  claim is the one against knockout-only (0.1125, >2× margin): **the rescue substantially undoes the
+  refusal restoration.** Whether it goes all the way back to clean is below this instrument's
+  resolution.
+* **`rescue L14` truncates more than any other arm** — 130/160 at the 192-token cap vs 116 for
+  knockout-only and 93 for clean (DR-2's limitation, carried).
+* **Llama only; one layer pair; no layer sweep was run**, per PR-13 — so "L14 specifically" is not
+  established against layers 6-13, only against L5 and against not patching.
+* Outcome **D was tested and not triggered**: `|L5 − L14| = 0.0187`, and L5 does not recover, so the
+  patch is not nonspecific.
 
 ---
 
