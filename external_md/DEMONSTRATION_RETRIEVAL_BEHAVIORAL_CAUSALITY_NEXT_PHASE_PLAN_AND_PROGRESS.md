@@ -1956,6 +1956,42 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-16 (00:38) — **Pre-registered: the fourth cell. Llama × pool B completes the model × pool design for the causal dissociation.**
+
+The dissociation holds in **Llama/A** (R-35), **Qwen3/A** (R-36) and **Qwen3/B** (R-37). **The missing
+cell is Llama × pool B**, and filling it turns three scattered replications into a complete **2 × 2 over
+model family and demonstration pool** — the design that separates "this is a property of the mechanism"
+from "this is a property of Llama, or of pool A".
+
+**Cheap by construction:** Llama pool-B **baseline and knockout already exist and are already judged**
+(`p6bj_A`, `p6bj_demoproc`, from R-29). **Only two new arms are needed** — `p8b_rescue_L14` (781643)
+and the below-band control `p8b_rescue_L5` (781644). **Two arms, not four**, which also keeps
+concurrent 14B/8B loads at two and avoids the NFS contention logged at 23:40.
+
+**⚠ One thing I am NOT doing, and it matters:** the baseline and knockout come from a **different
+judging session** than the rescue arms will. Every prior cell measured all arms in one session. **The
+judge's own re-scoring drift is 78/96 binary agreement across sessions**, and PR-3's margin
+`MARGIN_VS_BASELINE = 0.0521` was measured to absorb exactly that. **So this cell is reported as
+CROSS-SESSION and is the weakest of the four by construction**, and I am saying so before reading it
+rather than after.
+
+**Conditions, identical to PR-14's (no new thresholds invented for a fourth look):**
+1. `|L14 refusal − knockout refusal| > 0.0521`, direction = **less refusal**.
+2. `|L5 refusal − knockout refusal| ≤ 0.0521` — the below-band control is inert.
+
+**Refuted if** 1 fails. **Invalid** if 2 fails.
+
+**⛔ Pre-committed:**
+* **The ASR column does not count here either.** R-37 killed the ASR rescue on its own confirmatory
+  test; **a Llama pool-B ASR number is not a second chance for it.**
+* **No comparison to clean refusal** — declined on Llama/A and Qwen3, declined here in advance.
+* **Preconditions:** `rescue_liveness.fired` true on every row of both arms or the arm is
+  **UNMEASURED, not null**; judge pinned; truncation reported.
+* **If this holds, the claim becomes "3 of 4 cells same-session plus 1 cross-session"** — not "4/4
+  clean". The asymmetry in evidence quality travels with the result.
+
+---
+
 ### ⛔ R-37 (00:25) — **PR-15 DOES NOT CONFIRM. The Qwen3 ASR rescue fails its own pre-registered threshold on an independent pool — so the unregistered observation is NOT promoted. The REFUSAL dissociation replicates a third time.**
 
 **Artifacts:** arms `q6b*` (781410-781413), judging `q6bj_*` (781548).
