@@ -38,6 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
+| ⚖️ **LOCALISATION + A LIMIT ON IT: the attack damage is reachable from the QUERY span (+0.0563, clears margin; control inert) but NOT from the demonstration positions.** However the query patch also removes **96.2%** of the refusal rise, so it is **not selective** — this is a **SINGLE dissociation, not a double one**, and the "separate loci" reading is excluded | ASR recovery only **37.5%**, still above margin from clean: partial, not restoration | **R-39** |
 | 🏆🏆🏆 **COMPLETE 2x2 — MODEL FAMILY x DEMONSTRATION POOL, 4/4.** The patch gives back the refusal in every cell (**69.2%** Llama/A, **81.0%** Qwen3/A, **92.3%** Qwen3/B, **58.1%** Llama/B; gaps 0.1125/0.1062/0.0750/0.1125, all >margin) and the below-band control moves it by **exactly 0.0000 in all four** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
@@ -1953,6 +1954,66 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⚖️ R-39 (02:47) — **PR-17 OUTCOME A: the attack damage IS in the query span. But the risk I flagged against my own C9 MATERIALISED — the query patch restores BOTH effects, so this is a SINGLE dissociation, not a double one.**
+
+**Artifacts:** arms `p9_rescue_qpos_L14` (781849) / `p9_rescue_qpos_L5` (781850); judging `p9j_*`
+(781899). **Provenance:** `openai/gpt-4o-mini` **320/320**, hash joins **320/320**. `fired` **320/320**,
+`rescue_positions = query`, **24 positions on every row**, knockout `scope_live = 1.0`.
+**PR-17 committed at `9b20e40e` before the arms existed.**
+
+| arm | ASR | refusal rows | refusal |
+|---|---|---|---|
+| clean baseline | 0.1562 | 9/160 | 0.0563 |
+| knockout-only | 0.0063 | 35/160 | 0.2188 |
+| rescue **DEMO** positions L14 (R-35) | 0.0312 | 17/160 | 0.1062 |
+| **rescue QUERY positions L14 (new)** | **0.0625** | **10/160** | **0.0625** |
+| rescue QUERY positions L5 (control) | 0.0187 | 35/160 | 0.2188 |
+
+**ASR: `L14 − knockout = +0.0563` > 0.0521; control `+0.0125`, inert. → OUTCOME A.**
+**The attack damage is reachable from the query span and was not reachable from the demonstration
+positions.** That is a genuine localisation: two position sets, same layer, same donor, same knockout,
+opposite results on ASR.
+
+#### ⛔ But read the recovery fractions, not just the verdict
+
+* **ASR recovery is 37.5%**, not restoration. `|query − clean| = 0.0937`, **still above margin** — the
+  attack comes back **partially**. (Demo positions: 16.6%.) **"Outcome A" means it cleared the
+  pre-registered threshold, NOT that the attack was restored.**
+* **The refusal risk I pre-registered as a threat to C9 HAPPENED.** The query patch moves refusal by
+  **0.1562 — MORE than the demo patch's 0.1125** — taking it **35 → 10 rows**, i.e. **96.2% of the
+  rise removed** and `|query refusal − clean| = 0.0062`, **within margin of clean.**
+
+#### 🔴 What this costs, stated plainly
+
+**This is NOT a double dissociation, and I am not going to write it as one.** The picture is:
+
+| position set patched | refusal | attack |
+|---|---|---|
+| **demonstration block** | restored (69.3%) | **NOT restored** (16.6%, within margin of knockout) |
+| **query span** | restored (96.2%) | **partially restored** (37.5%, clears margin) |
+
+**The query span restores everything it touches.** It sits downstream and aggregates; a patch there is
+**not selective** and cannot be used to argue that attack and refusal have separate substrates.
+
+**C9 is NOT weakened as stated** — its claim is about the **demonstration positions**, and there the
+selectivity is intact and replicated 4/4: **restoring them gives back the refusal and not the attack.**
+**What is now excluded is the stronger claim I never made but might have drifted toward** — that the
+two effects live at *separate loci*. **They do not. One locus is selective; the other is not.**
+
+**The defensible mechanistic statement, and it is narrower than last tick's:**
+
+> **By the top of the knockout band, the demonstration positions still carry what the refusal decision
+> needs but no longer carry what the attack needs; the query positions carry both. Restoring the
+> demonstrations gives back the refusal alone — restoring the query span gives back some of each.**
+
+⚠ Llama only; PR-17 authorised cross-model only on Outcome A, which holds — **but given the
+non-selectivity, replicating a non-specific patch is low value and is NOT being launched.** ⚠ Query
+span is a constant 24 positions vs the demo block's 9-128; **the two patches are not size-matched**,
+and a 24-position patch achieving more refusal removal than a 43-median-position one is itself
+evidence that position *identity*, not count, is doing the work. ⚠ Truncation per DR-2.
 
 ---
 
