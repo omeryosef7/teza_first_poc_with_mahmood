@@ -1952,6 +1952,52 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-13 (21:10) — **Pre-registered before any rescue number is read: what a rescue would and would not demonstrate, and the control that separates the two.**
+
+**The gate is open** (R-33: identity control 8/8 byte-identical) and **the hook is now provably live**
+(smoke `781168`: `fired = 8/8`, `n_positions_written` 11-123 tracking demo-block size across
+`n_examples`, one write at prefill, layer 14, `rescue_donor = clean`). **So the instrument is sound
+and the question can finally be asked.**
+
+**The question.** `demo_processing_only` masks demo→demo attention across layers 6-14, and the attack
+dies. **Is the information it destroys carried in the demonstration positions' residual stream at the
+top of that band?** If so, handing those activations back — captured from a clean forward at the same
+positions — should bring the attack back.
+
+**Arms (Llama, d10 bank, 160 rows each):**
+* **`p7_rescue_L14`** — primary. Rescue at **layer 14**, the top of the knockout band, so every
+  downstream layer reads the demo positions as the clean run left them.
+* **`p7_rescue_L5`** — **specificity control**. Rescue at **layer 5, BELOW the band.** Clean
+  activations are written in, and then layers 6-14 mask them again. **A rescue that "works" here is
+  not restoring band-specific information — it is doing something nonspecific, and would invalidate
+  the L14 reading.**
+* Baselines already on disk: `p4bA` (clean) and `p4b_demo_processing_only` (knockout-only), same bank,
+  same rows, same session.
+
+**Outcomes, fixed now:**
+
+| outcome | pattern | reading |
+|---|---|---|
+| **A — localised** | L14 ASR returns to within `MARGIN_VS_BASELINE = 0.0521` of clean, **and** L5 does not | The information the knockout destroys **is** in the demo-position residuals at the top of the band |
+| **B — partial** | L14 recovers, but the gap to clean exceeds 0.0521 | Some of it is there; the rest is carried elsewhere. **Report the fraction, do not round it to "localised"** |
+| **C — null** | L14 stays within 0.0521 of **knockout-only** | The demo-position residual at L14 is **not** what the knockout destroys — the damage travels by another route |
+| **D — invalid** | L5 recovers as much as L14 | The patch is nonspecific; **no localisation claim from either arm** |
+
+**⛔ Pre-committed constraints.**
+* **Refusal is reported beside ASR, never instead of it.** C-12 established these are separable
+  effects; a rescue could restore one and not the other, and **that dissociation is itself a result**.
+* **`rescue_liveness.fired` must be true on every row of every arm**, or the arm is reported as
+  UNMEASURED rather than null — R-32 is exactly why this is a stated precondition.
+* **Truncation travels with every number** (DR-2: Llama is 58-73% capped at 192 tokens).
+* **No layer sweep.** Two layers, chosen for a reason, fixed in advance. **Scanning layers until one
+  "rescues" is how a floor becomes a search** — and with 160 rows and a 0.0521 margin (8.3 rows) a
+  sweep would find something.
+* **Llama only.** Cross-model comes only if Outcome A or B holds.
+
+**Judging:** pinned `openai/gpt-4o-mini`, prefix `p7j`, joined by `completion_sha256_16` as always.
+
+---
+
 ### ✅ R-33 (20:50) — **THE IDENTITY CONTROL PASSES, 8/8 BYTE-IDENTICAL. The rescue instrument writes exactly what it read. The gate that blocked every rescue number is now open.**
 
 **Job 781047**, `--rescue-donor self`: capture the arm's activations **under the arm's own hooks**,
