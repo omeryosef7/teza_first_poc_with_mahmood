@@ -1951,6 +1951,50 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-31 (19:45) — **The rescue is wired into `score_behavior` ADDITIVELY, and the inertness is PROVEN by diff rather than asserted. Smoke job 781006 submitted; nothing read yet.**
+
+**The integration.** `--rescue-layer L` (default `None`). When set, before the intervention context is
+entered, a **clean forward over the same `templated_r`** captures `resid_post` at layer L over the
+demo-block positions `dk`; the resulting `DonorBlock` is applied as one more context manager appended
+to the existing `ExitStack`. **Every existing path — `resolve_occurrences`, `demo_key_positions`,
+`make_intervention`, liveness, judging, provenance — is reused unchanged.**
+
+**Why donor and recipient cannot drift:** both use **the same `templated_r` and the same `ids_r`**, and
+`dk` is computed **once** and passed to both. Positions are identical by construction — **and
+`DonorPatch` re-verifies token identity over the span anyway**, because "identical by construction" is
+what both prior absolute-index defects in this repo also believed.
+
+**Inertness, proven not claimed:**
+
+| check | result |
+|---|---|
+| lines **deleted** from `score_behavior.py` | **0** |
+| lines added | 31 |
+| added lines outside a rescue guard or the new flag's help text | **0** (all 12 unfiltered ones are help-string continuations or bodies of `if args.rescue_layer is not None:`) |
+| behaviour without `--rescue-layer` | **unchanged by construction** — the only new statements are inside that guard |
+| affected suites | `test_scoped_knockout_wiring`, `test_readout_liveness`, `test_nondemo_control_draws`, `test_donor_patch`, `test_metric_names` — **147 passed** |
+
+**Two refusals built in, both charged to the ledger rather than silently skipped:**
+* `rescue:no_knockout_or_no_demo_keys` — **rescuing a run that was never knocked out is a no-op dressed
+  as an experiment.**
+* `rescue:donor_capture_empty` — a donor that captured nothing must not proceed as if it had.
+
+**Smoke (job 781006):** 8 rows, Llama, `demo_processing_only`, band 6-14, **rescue at layer 14** — the
+top of the knockout band, so downstream layers read demo positions as the clean run left them.
+**PENDING at tick close under fair-share; no number is read until it lands.**
+
+**⛔ Still not claimed.** No rescue result exists. The smoke's job is only to show the patch **fires**
+(`DonorPatch.liveness()['fired']`) and that generations **change** versus knockout-only. **A
+pre-registration fixing what a rescue would and would not demonstrate comes before any sweep.**
+
+⚠ **Deferred instrument check, recorded so it is not forgotten:** the classical α=0 identity control
+(patch a run's own activations into itself → must reproduce it byte-identically) is **blocked by my own
+`no_knockout` refusal**. Unit tests cover write-correctness and locality on a fake model, and
+`strict_ids` covers alignment on the real one, but **the end-to-end identity control has not been run**
+and that is a gap in the instrument's validation, not a gap in the science yet.
+
+---
+
 ### R-30 (19:15) — **§20 Q3 restarted. The rescue primitive is built and mutation-verified; NO science is claimed yet. Also: why `LayerPatch` could not be reused, and why the alignment guard is the whole design.**
 
 **Decision first (step 2 of the cadence).** Of the three unrun §20 questions, current evidence

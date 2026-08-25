@@ -39,6 +39,7 @@ from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 
 ENABLE_THINKING = None   # None = model default; see --enable-thinking
 from extract_boombness import resolve_occurrences  # noqa: E402
+from donor_patch import ActivationCapture, DonorBlock, DonorPatch  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 
@@ -1153,6 +1154,13 @@ def main() -> int:
     # validated with argparse `choices` because the authoritative tuple lives in pair_common, which
     # is imported below -- restating the five names here is exactly the drift the mode table is
     # centralised to prevent, so the check is against pc.SCOPED_KNOCKOUT_MODES itself.
+    ap.add_argument("--rescue-layer", type=int, default=None,
+                    help="Section 20 Q3 RESCUE. Capture resid_post at this layer from a CLEAN "
+                         "forward over the demo-block positions, then write it back during the "
+                         "knocked-out generation. Requires a knockout arm: rescuing a run that was "
+                         "never knocked out is a no-op dressed as an experiment, and is refused. "
+                         "Donor and recipient are the SAME templated string, and DonorPatch "
+                         "re-verifies token identity over the patched span before writing.")
     ap.add_argument("--knockout-scope", default=DEFAULT_KNOCKOUT_SCOPE,
                     help="query-row scope for attn_knockout arms: legacy_all_query (default, "
                          "byte-identical to every Phase 2-4 arm), query_prefill_only, decode_only, "
@@ -1717,6 +1725,25 @@ def main() -> int:
                 continue
             prot = query_span_positions(lm.tokenizer, row, templated_r, dk)
 
+        # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) ------------
+        # The donor is captured from a CLEAN forward over the SAME templated string, so donor and
+        # recipient positions are identical by construction rather than by recomputation. DonorPatch
+        # re-checks token identity over the span anyway, because "identical by construction" is what
+        # the two prior absolute-index defects in this repo also believed.
+        _donor = None
+        if args.rescue_layer is not None:
+            if not _wants_knockout or not dk:
+                ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
+                continue
+            with torch.no_grad():
+                with ActivationCapture(lm.model, args.rescue_layer, dk) as _cap:
+                    lm.model(input_ids=torch.tensor([ids_r], device=lm.model.device))
+            if _cap.acts is None:
+                ledger.fail("rescue:donor_capture_empty", row["prompt_id"])
+                continue
+            _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(dk),
+                                acts=_cap.acts, input_ids=list(ids_r))
+
         knock_stats = {} if _wants_knockout else None
         # THE DRAW IS PERSISTED, not only seeded. `knock_draw` comes back holding the exact key
         # positions each control draw used on THIS row, so the control is auditable after the fact
@@ -1730,6 +1757,10 @@ def main() -> int:
                                      knock_heads=_knock_heads, knock_scope=_knock_scope,
                                      draw_log=knock_draw)
             import contextlib
+            _rescue_ctx = None
+            if _donor is not None:
+                _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
+                ctxs = list(ctxs) + [_rescue_ctx]
             with contextlib.ExitStack() as st:
                 for c in ctxs:
                     st.enter_context(c)
