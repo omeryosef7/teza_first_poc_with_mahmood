@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
 | ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
@@ -1945,6 +1946,73 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🔎 DR-2 (16:10, 4h DEEP REVIEW) — **Full suite 1358/0. Provenance verified at CONTENT level on all 13 arms. One real exposure found: on Llama, 93/160 baseline rows hit the 192-token cap, and the untruncated subgroup is too small to test the effect. Qwen3 is barely truncated and the effect holds there cleanly.**
+
+**Suite:** `1358 passed, 7 skipped, 0 failed` (299 s, serial and exclusive per C-2). `git status
+outputs/ reports/ data/` clean before and after — **no repeat of C-2's artifact corruption.**
+
+**Provenance, checked by CONTENT and not by filename.** My first sweep read `summary.json['args']`,
+found `None`, and reported the bank as unknown on all 13 arms — **that was my check being wrong, not a
+provenance gap**; the bank path lives in `config.json` / `RUNMETA.json` / `metadata.json`. Redone
+properly by joining every result row's `prompt_sha16` against **both** banks, so a row from the wrong
+bank would be detectable:
+
+| check | result |
+|---|---|
+| arms verified | **13/13** (5 Llama, 5 Qwen3, 3 capped controls) |
+| rows not present in the d10 bank | **0** |
+| `prompt_sha16` mismatches | **0** |
+| d10 bank sha256[:16] | `368566acecdc350f` — **matches C-10's recorded value** |
+| duplicate judge tags (silent-overwrite hunt) | **0** across `p4bj`, `q4bj`, `p5j` |
+| models | Llama-3.1-8B-Instruct ×8, Qwen3-14B ×5 — **no cross-contamination** |
+
+#### ⚠ The exposure: every ASR in this phase is the ASR of the first 192 tokens
+
+| arm | rows at the 192-token cap |
+|---|---|
+| **Llama baseline** | **93/160 (58%)** |
+| Llama `demo_processing_only` | **116/160 (73%)** |
+| Qwen3 baseline | 42/160 (26%) |
+| Qwen3 `demo_processing_only` | 99/160 (62%) |
+
+**A majority of Llama baseline completions never finished.** StrongREJECT is therefore scoring a
+truncated answer on most rows, and `demo_processing_only` truncates *more* than baseline on both
+models — a mechanism by which an ASR could fall without the model refusing anything.
+
+**Diagnostic (⚠ conditions on `stop_reason`, which is POST-TREATMENT — a collider. This cannot settle
+causality and is not offered as an estimator):** restricting to rows where **both** baseline and arm
+ended on EOS:
+
+| model | arm | full ΔASR | both-EOS n | baseline attacks there | both-EOS ΔASR |
+|---|---|---|---|---|---|
+| **Qwen3** | `demoproc` | −0.0875 | **51** | 7 | **−0.1176** |
+| **Qwen3** | `legacy` | −0.1062 | **111** | 13 | **−0.0901** |
+| **Qwen3** | `respq` | −0.1125 | **114** | 14 | **−0.1053** |
+| Llama | `demoproc` | −0.1500 | 22 | **3** | −0.1364 |
+| Llama | `legacy` | −0.1250 | 26 | **0** | **+0.0000 — undefined** |
+| Llama | `respq` | −0.1062 | 45 | 7 | −0.0667 |
+
+**On Qwen3 the untruncated subgroup is large (111 and 114 rows) and every effect survives at
+essentially full size.** That is the reassuring half, and it is the half that matters for the
+cross-model claims: **the model with only 26% truncation reproduces the effects.**
+
+**On Llama it cannot be tested.** The both-EOS subsets hold 3, **0** and 7 baseline attacks.
+**`legacy`'s `+0.0000` is not evidence of no effect — there were no attacks in that subset to remove**,
+and reporting it as a null would be exactly the empty-denominator error `coherence_gate`'s header
+warns about in another guise.
+
+**Ledger consequence, recorded rather than argued away:** every Llama ASR in R-19, R-22, R-23 and R-26
+is **an ASR over 192-token completions with 58-73% truncation**, and its truncation-robustness is
+**untestable on that model with this cap**. **The cross-model results are what carry the phase**, and
+they carry it from the *less* truncated model. **No number is retracted; the scope of "ASR" is now
+stated.**
+
+**Not fixed by re-running at a larger cap**, and I am not launching that: it would change the measured
+quantity, so old and new arms would not be comparable, and the phase's conclusions are cross-model
+ones that already rest on the clean side. **Recorded as a bank/config limitation alongside R-25's.**
 
 ---
 
