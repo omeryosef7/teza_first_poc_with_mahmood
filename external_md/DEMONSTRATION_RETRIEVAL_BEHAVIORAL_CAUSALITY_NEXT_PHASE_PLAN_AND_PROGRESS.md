@@ -1125,7 +1125,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
-| P1.4 | 1 | Qwen3 replication — smoke then 8 arms at L7–17 | 🔬 **779733–779738 (smoke) queued** | **PR-5**: three conditions, all must hold |
+| P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ smoke PASS (**R-11**); 🔬 **779742–779749 queued** | **PR-5**: three conditions, all must hold |
 | P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
@@ -1680,6 +1680,67 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
+
+### ★★★★ R-11 (06:40) — **THE QWEN3 SMOKE PASSES, and it independently CONFIRMS C-3b's corrected mechanism on a second model — a prediction the discarded explanation could not have made.**
+
+**Artifact:** `outputs/boombness/scoped_smoke_verdict/s2verdict_20260825_063809_2764586/scoped_smoke_verdict.json`
+— **PASS, 5 arms, 0 failures.** Jobs 779733–779738, all COMPLETED `0:0`, band **L7–17**,
+`--enable-thinking false`.
+
+| arm | prefill edits | decode edits | min forwards where FORBIDDEN | gens changed |
+|---|---|---|---|---|
+| `legacy_all_query` | 324 335 | 368 247 | — | 8/8 |
+| `query_prefill_only` | 130 900 | **0** | `decode_forward: 605` | 8/8 |
+| `decode_only` | **0** | 419 958 | **`prefill_forward: 11`** | 8/8 |
+| `response_query_only` | 130 900 | 442 475 | — | 8/8 |
+| `demo_processing_only` | 188 760 | **0** | `decode_forward: 957` | 8/8 |
+
+**`decode_only`'s `prefill_forward = 11`** is the depth mapping doing its job: **11 band layers on
+Qwen3's 40 blocks against 9 on Llama's 32.** The hook was called at every one and edited nothing.
+
+#### 🎯 C-3b's corrected mechanism predicted the Qwen3 slack, and the discarded one could not
+
+The 4-hour review corrected my explanation of the prefill slack: it is **not** "the chat template and
+preamble" (which contribute exactly zero, being unable to attend to a demo key that comes after them)
+but **one inter-span seam token per prompt**, i.e. `n_layers × Σ n_demo_positions × 1`.
+
+**That is a prediction, and it holds across models on the same 8 prompts:**
+
+| model | band layers | slack | slack ÷ layers |
+|---|---|---|---|
+| Llama-3.1-8B | 9 | 3 825 | **425** |
+| **Qwen3-14B** | **11** | **4 675** | **425** |
+
+**Identical `Σ n_demo_positions = 425`, and the slack scales exactly with layer count.** The
+explanation I originally published predicts nothing and would not scale this way. **A corrected
+mechanism that then predicts a number on a different model is worth more than the correction itself**,
+and it is recorded here rather than left in the correction that produced it.
+
+Subset check holds on Qwen3 too: `130 900 + 188 760 = 319 660 ≤ 324 335`, slack 4 675.
+
+---
+
+### 🔬 P1.4 LAUNCHED (06:41) — the Qwen3 8-arm replication at n = 96
+
+Jobs **779742–779749**, band **L7–17**, `--expect-n 96`, to be judged in ONE pinned session.
+**Read against PR-5's three conditions, which were fixed before these were submitted.**
+
+| job | arm | band |
+|---|---|---|
+| 779742 | `A_baseline` | — |
+| 779743 | `C_legacy_all_query` | 7–17 |
+| **779744** | **`C_response_query_only`** | 7–17 |
+| 779745 | `C_query_prefill_only` | 7–17 |
+| 779746 | `C_decode_only` | 7–17 |
+| 779747 | `C_demo_processing_only` | 7–17 |
+| 779748 | `D_late_depth` | **25–39** — depth-matched to Llama's 20–31 (0.625–1.0) |
+| 779749 | `D_late_count` | **25–35** — **layer-count** matched to the arm's 11 blocks |
+
+**Two late controls again, for the reason C-3e recorded on Llama:** a depth-matched late band is not
+layer-count matched, and the Llama pair differed by exactly 12/9. Running both here means the Qwen3
+comparison is matched on each axis without having to choose which one matters after seeing the result.
+
+---
 
 ### 🏆🏆🏆 R-10 (05:41) — **PHASE 1 RESULT: OUTCOME B. The causal path is NOT response-time retrieval. Corrupting the demonstrations' OWN encoding carries 92 % of the effect; masking the response's access to them carries 46 %; and masking the final query's prefill access moves ASR the WRONG WAY.**
 
