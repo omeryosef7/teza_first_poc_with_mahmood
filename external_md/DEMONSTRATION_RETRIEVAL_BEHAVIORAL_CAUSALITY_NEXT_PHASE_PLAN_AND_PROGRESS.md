@@ -973,8 +973,8 @@ stay visible)*
 | 779085 / 779086 | ⚠ unattributed | Llama half of the same pair; reported COMPLETED in the previous log | 23:20 | presumed `3e3000a0` | `.../score_behavior/` | COMPLETED (per prev-log) |
 | **779477** | this | **P1.2 smoke** `A_baseline`, Llama, `--limit 8` | 01:32 | `802d73ef` | `s1A_20260825_015705_731547` | ✅ COMPLETED 6:19, 0:0 |
 | **779478** | this | smoke `legacy_all_query` — the bridge arm | 01:32 | `802d73ef` | `s1_legacy_all_query_20260825_020636_732499` | ✅ COMPLETED 1:12, 0:0 — **R-5 partial** |
-| **779479** | this | smoke `query_prefill_only` — **must show 0 decode edits** | 01:32 | `802d73ef` | `.../score_behavior/s1_query_prefill_only_*` | PENDING (Priority) |
-| **779480** | this | smoke `decode_only` — **must show 0 prefill edits** | 01:32 | `802d73ef` | `.../score_behavior/s1_decode_only_*` | PENDING (Priority) |
+| **779479** | this | smoke `query_prefill_only` | 01:32 | `802d73ef` | `s1_query_prefill_only_20260825_025641_395899` | ✅ COMPLETED — **R-8 PASS** |
+| **779480** | this | smoke `decode_only` | 01:32 | `802d73ef` | `s1_decode_only_20260825_030140_398148` | ✅ COMPLETED — **R-8 PASS** |
 | **779481** | this | smoke `response_query_only` — **the primary arm of the phase** | 01:32 | `802d73ef` | `.../score_behavior/s1_response_query_only_*` | PENDING (Priority) |
 | **779482** | this | smoke `demo_processing_only` | 01:32 | `802d73ef` | `.../score_behavior/s1_demo_processing_only_*` | PENDING (Priority) |
 | 776368 | peer (`…FOLLOWUP implementation`) | `run_band2_judge.sh`, `cpu-killable` | 2026-08-23 17:16 | `91e30a62` | `.../judge/bnd2_*` | peer has stopped and is not analysing it |
@@ -982,6 +982,71 @@ stay visible)*
 ## B5. RESULTS
 
 *(`R-` ids, newest first)*
+
+### ★★★★★ R-8 (03:10) — **THE TWO ARMS THAT COULD HAVE SILENTLY COLLAPSED DO NOT. Both zero-counter assertions hold exactly, and one of them would have been ABORTED by the inherited gate.**
+
+**Artifacts:** `s1_query_prefill_only_20260825_025641_395899` (job 779479, COMPLETED 0:55) and
+`s1_decode_only_20260825_030140_398148` (job 779480, COMPLETED 0:59). Both `DONE.json`, both n=8.
+
+| | `query_prefill_only` | `decode_only` |
+|---|---|---|
+| `liveness_required` | `["n_prefill_edits"]` | `["n_decode_edits"]` |
+| `liveness_must_be_zero` | `["n_decode_edits"]` | `["n_prefill_edits"]` |
+| **total prefill edits** | **91 800** | **0** ✅ |
+| **total decode edits** | **0** ✅ | **686 061** |
+| median prefill / decode edits | 9 504.0 / **0.0** | **0.0** / 74 358.0 |
+| per-row prefill edits (min–max) | 2 376 – 24 840 | **0 – 0** |
+| per-row decode edits (min–max) | **0 – 0** | 18 909 – 196 650 |
+| `frac_rows_scope_live` | **1.0** | **1.0** |
+| `scope_violations` | **`{}`** | **`{}`** |
+| rows with any liveness violation | **0 / 8** | **0 / 8** |
+
+#### The number that makes this a pass rather than a coincidence
+
+**`query_prefill_only` reports `min_decode_forwards = 1152`, and `decode_only` reports
+`min_prefill_forwards = 9`.** The hook was **called** 1152 times at decode and at all 9 prefill layers
+respectively — **and edited nothing there.** That is the distinction the whole design turns on:
+
+> **a correctly-scoped hook and a dead hook produce the same zero.** The forward counters separate them,
+> and they say the hook was live, was asked, and declined. A mode that had silently collapsed into
+> another would have shown edits where these show zeros; a mode whose hook never attached would have
+> shown zero *forwards*, not zero *edits*.
+
+#### ⚠ The inherited gate would have killed a correct arm
+
+`query_prefill_only` has **`frac_rows_decode_live = 0.0`**, against the inherited
+`KNOCKOUT_MIN_LIVE_FRAC = 0.99`. **Under the pre-existing gate this arm aborts — or, worse, is read as
+a clean null from a hook that "did not fire".** It fires perfectly; it simply has nothing to do at
+decode by definition. This is exactly the blocker PR-1 recorded **before the code existed**, and the
+mode-aware gate resolves it without loosening: `frac_rows_scope_live = 1.0` and `scope_violations = {}`
+come from asserting the *required* counters are positive **and** the *forbidden* ones are exactly zero.
+
+#### Status of the smoke — still not passed, and deliberately so
+
+| arm | job | state |
+|---|---|---|
+| `A_baseline` | 779477 | ✅ COMPLETED |
+| `legacy_all_query` | 779478 | ✅ COMPLETED (R-5) |
+| `query_prefill_only` | 779479 | ✅ **COMPLETED — R-8** |
+| `decode_only` | 779480 | ✅ **COMPLETED — R-8** |
+| **`response_query_only`** | **779481** | 🔬 PENDING — **the phase's primary arm** |
+| `demo_processing_only` | 779482 | 🔬 PENDING |
+
+**PR-1 says the smoke is read as a whole or not at all**, and the outstanding pair carries the two
+checks these two cannot supply: `response_query_only` must show **both** counters positive (it is the
+only mode besides legacy that spans prefill and decode), and `demo_processing_only` is needed for the
+**disjointness** check — that it and `query_prefill_only` edit disjoint query-row sets whose union sits
+inside legacy's. Until then the decomposition is demonstrated on the synthetic harness and on two of
+its four scoped arms.
+
+⚠ **A real-data cross-check that will be available once 779482 lands**, recorded now so it is not
+invented afterwards: legacy's **250 065** total prefill edits should upper-bound the sum of
+`query_prefill_only`'s **91 800** and `demo_processing_only`'s prefill edits on the same rows.
+*(Only an upper bound, not an equality: the arms generate different text, so their decode lengths and
+therefore their totals legitimately differ — legacy's 698 733 decode edits against `decode_only`'s
+686 061 is that effect, not a discrepancy.)*
+
+---
 
 ### ⛔⛔ R-7 (03:05) — **THE DEMONSTRATION-DELETION CEILING IS NOT RECONSTRUCTIBLE ON THIS BANK, BY ANY DELETION RULE. Phase 2C cannot run here, and that is a property of the bank rather than of the old code.**
 
