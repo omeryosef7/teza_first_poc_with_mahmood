@@ -1944,6 +1944,47 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-9 (14:05) — **Pre-registered before running: do REFUSAL RESTORATION and ATTACK REMOVAL move together across dose, or do they come apart?**
+
+R-22 handed this phase a natural experiment it did not have to run: on Llama, `demo_processing_only`
+restores **exactly zero** refusal at `n_examples = 1` and **+0.3500** at `n = 8`. **The dose axis
+therefore contains a cell where the proposed route is switched OFF while the intervention is still
+fully applied.** That is a far better test of "refusal restoration is the route" than conditioning on
+which rows refused, which would condition on a **post-treatment collider**.
+
+**The question.** At `n_examples = 1` on Llama, where refusal restoration is zero, **is the ASR drop
+also zero?**
+
+**Prediction if refusal restoration IS the route:** ΔASR at `n = 1` is **within `MARGIN_VS_BASELINE
+= 0.0521` of zero**, and the ASR drop grows with `n_examples` alongside the refusal rise.
+
+**Prediction if they are SEPARATE:** ΔASR at `n = 1` is **below −0.0521** — the attack is removed at a
+dose where **no refusal was restored at all**. That would mean `demo_processing_only` has **two
+distinct effects**, and the refusal restoration is a **co-occurring phenomenon rather than the
+mechanism of attack removal**.
+
+**⛔ I am pre-committing that the second outcome is the one that would most change the story, and that
+I will report it as such.** R-19 through R-22 have been accumulating support for a refusal-based
+route; **this is the cell that can take it apart**, and it exists only because R-22's dose cut created
+it. **A result here that separates the two would narrow every "route" claim in this phase to "one of
+at least two effects".**
+
+**Controls, pre-specified.** The same per-dose ΔASR curve for `legacy_all_query` and
+`response_query_only` — arms with **zero** refusal restoration at every dose (R-21/R-22). **Whatever
+they do at `n = 1` is what attack removal looks like with the refusal route definitionally absent**,
+and is the correct comparison for `demoproc`'s `n = 1` cell.
+
+**⛔ Power, stated first.** 40 rows/cell, finest step **0.025**, margin ≈ **2.1 rows**. Baseline ASR is
+itself dose-dependent and at `n = 1` may be low enough that **there is little attack to remove** — in
+which case ΔASR near zero is **uninformative, not confirmatory**. **I will report the per-dose
+baseline ASR beside every delta, and if the `n = 1` baseline is under ~0.10 (4 rows) I will call the
+cell UNDERPOWERED and decline the inference in both directions.**
+
+Qwen3 is reported too, but PR-8 already refuted the dose ordering there, so **Qwen3 cannot confirm or
+refute this and is descriptive only.** Zero new compute.
+
+---
+
 ### R-22 (13:40) — **PR-8 SPLITS BY MODEL: a textbook dose-response on Llama (0 -> +0.3500, monotone, 6.7x the margin), and a REFUTATION on Qwen3 by my own endpoint rule. Reported as one confirmation and one refutation, not as a trend.**
 
 **Artifacts:** re-cut of `p4bj_*` and `q4bj_*` (no new compute). Cells verified balanced: **40 rows per
