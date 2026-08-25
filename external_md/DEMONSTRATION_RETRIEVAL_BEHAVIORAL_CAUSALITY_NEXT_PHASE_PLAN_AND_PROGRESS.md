@@ -727,6 +727,76 @@ started with.**
 *(Each entry is fixed before the corresponding result exists and is never edited afterwards; a
 superseded pre-registration gets a new entry that says so.)*
 
+### 🔒 PR-3 (04:30) — **SUPERSEDES PR-1's MARGIN AND ITS p-FLOOR. Both were wrong, both are corrected BEFORE any Phase-1 arm is judged, and PR-1 is left standing unedited beside this.**
+
+The 4-hour review checked PR-1's own justification against the artifacts it cited. **It does not hold.**
+Two arms of P1.3 were still generating when this was written and **nothing has been judged**, so this
+is the last moment at which correcting it costs nothing.
+
+#### ⛔ Defect 1 — the equivalence margin was justified by a quantity that was never measured
+
+PR-1 set the margin at **0.03125 (3 prompts of 96)** on the grounds that *"the previous phase's own
+**within-session** re-measurement spread on identical arms was 2–3 prompts"*, citing prev-C-10's table.
+
+**Every one of those "re-measurements" is the same generation directory re-judged in a different
+session.** Verified from judge `RUNMETA`/`config`: for each of the 10 repeated arms the number of
+distinct `config.args.gens` directories is **exactly 1**. There is **zero re-generation** in that
+table — it is pure judge noise, and the within-session spread PR-1 leans on **was never measured at
+all**.
+
+**And the measured spread is larger than the margin.** Same-arm Δ re-measurement gaps, n = 15 pairs,
+in prompts of 96:
+
+```
+[0, 0, 1, 2, 3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 6]      median 3   max 6
+```
+
+> **The margin equals the MEDIAN gap, and 5 of 15 (33 %) of same-arm re-judgings of byte-identical
+> text exceed it.** A margin at the median of the noise calls a third of pure noise "a real
+> difference" — and, worse for this phase, would call genuinely different arms equivalent whenever
+> they sit inside it.
+
+#### ⛔ Defect 2 — one margin was applied to two quantities with different noise
+
+Pooled within-arm re-judge **sd of ASR = 0.0137** (1.32 prompts of 96). That implies
+
+| comparison | 95 % band | in prompts |
+|---|---|---|
+| **Δ vs Δ** (arm minus baseline, cross-session) | **± 0.0480** | 4.6 |
+| **arm vs arm** (same session, baseline cancels) | **± 0.0380** | 3.65 |
+
+**PR-1 used a single number for both, and the noisier of the two is what its falsifier depends on.**
+
+#### ⛔ Defect 3 — the declared p-floor is unattainable on this design
+
+PR-1 declares the attainable two-sided floor at k = 6 domains to be `2/2⁶ = 0.03125`. **A domain whose
+net is exactly zero drops out of a sign test**, and `lab_safety` is **exactly 0.0000** on this bank —
+it has been in every phase. The real floor is **`2/2⁵ = 0.0625`**, and the inherited headline is
+**already pinned exactly at it** (domain-clustered 5/0, p = 0.0625). The repo's own
+`outputs/boombness/how_to_read_the_p_values.json` states this. **A pre-registered floor that the design
+cannot reach is not a guard; it is a licence to read a floored p as evidence.**
+
+#### 📌 THE CORRECTED PRE-REGISTRATION, fixed now
+
+1. **Equivalence margin, arm vs arm (the PRIMARY comparison `response_query_only` vs `legacy`), judged
+   in ONE session so the baseline cancels: `|ΔASR_arm1 − ΔASR_arm2| ≤ 0.0417` (4 prompts of 96)** —
+   above the measured ±0.0380 band, expressed in the natural unit.
+2. **Margin for any arm-vs-baseline statement: `0.0521` (5 prompts)** — above the measured ±0.0480.
+3. **"Weak" means `|Δ| ≤ 0.0521`; "large" means ≥ 50 % of the legacy arm's Δ in the same session.**
+4. **The attainable domain-cluster floor is `0.0625`, not 0.03125**, and **any p at 0.0625 is reported
+   as a sign test at its floor**, never as evidence of magnitude.
+5. **Every cluster-level p is published with its informative-cluster count and its floor beside it.**
+
+⚠ **What does NOT change:** the primary comparison, the unit of independence, Outcomes A–E, the
+falsifier's *shape*, and the stopping rule. **Only the thresholds move, and they move because they were
+measured rather than assumed.** PR-1 remains in this file unedited; this entry supersedes it.
+
+⚠ **The falsifier is restated at the corrected margin:** the chain
+*demonstrations → response-time retrieval → behaviour* is falsified if `response_query_only` is weak
+(`|Δ| ≤ 0.0521`) while the legacy arm is large, **on both models**.
+
+---
+
 ### 🔒 PR-2 (02:45) — **PHASE 2: which probe rows carry the headline.** Fixed before the probe is run against any model, and before Phase 1 has resolved.
 
 **The instrument is SELECTION, not synthesis** — and that is a finding about the bank, not a
@@ -1499,6 +1569,87 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
+
+### ⛔⛔ C-3 (04:30) — **THE 4-HOUR REVIEW: all 31 headline numbers reproduce EXACTLY, and three of my NARRATIVES around them do not. Five corrections, one of them a blocker in the tool I wrote to catch exactly this bug.**
+
+**Full suite:** `tests/` + `doublespeak_causality/tests/` → **1298 passed, 23 skipped, 0 failed**, run
+serially and exclusively; `git status outputs/ reports/` clean afterwards, which is the check that C-2's
+tamper tests restore correctly when not raced.
+
+**Numeric verdict: 31 of 31 headline figures reproduce to full precision by independent arithmetic**
+(R-1/R-2's identity, pool proof, ANOVA, all four intervals, every per-pool binomial; R-7's hash census;
+R-9's every counter, plus closed forms that reproduce each arm's edit count row-exactly). **Zero numeric
+mismatches.** What follows are defects in the surrounding claims and code, not in the numbers.
+
+#### ⛔ C-3a (BLOCKER, fixed) — I reproduced prev-C-18's silent-overwrite bug inside the tool written to catch it
+
+`scoped_smoke_verdict.py` keyed its per-arm results dict by knockout **MODE**. The P1.3 session has
+**seven arms and two of them run the same mode**: `C_response_query_only` at band 6–14 and
+`D_response_query_late_control` at 20–31. **The second would have silently overwritten the first**, and
+the tool's own mode-name validation made a distinct key impossible. The primary-arm check would then
+have run on whichever was written last.
+
+> **This is the exact defect prev-C-18 retracted R-BD over — `cells[(bank, dom)]` with no model — and I
+> rebuilt it while writing the instrument whose stated purpose is that "a mode that silently collapsed
+> into another looks perfectly healthy arm-by-arm".**
+
+**Fixed:** `--arm LABEL=MODE=RUNDIR`; the **label** is the key and must be unique, the **mode** is the
+scope, and a duplicate label is refused. Old `MODE=RUNDIR` still parses. **Verified by mutation:** two
+arms sharing `response_query_only` now both survive (`['late', 'respq']`), the primary check reports
+`arm_labels_checked: ['late','respq']` and asserts *all* of them span both halves; a duplicate label
+prints `REFUSING: duplicate arm label 'x'`. The s1 verdict re-runs **PASS, 5 arms, 0 failures**.
+
+#### ⛔ C-3b — R-9's explanation of the 3 825-edit slack is FACTUALLY WRONG
+
+I wrote that the slack is *"the chat template and preamble, which `legacy_all_query` masks and neither
+scoped mode does."* **Those rows contribute exactly ZERO.** In all 8 smoke rows the demo span starts at
+index 30, so positions 0–29 **precede every demonstration key and cannot causally attend to one**.
+
+**The entire slack is one token per prompt** — the single position in the seam between the demo span and
+the query span:
+
+```
+9 layers x sum(n_demo_positions) x 1 = 9 x 425 = 3825      exactly
+```
+
+and `query_span_start − demo_span_end − 1 = 1` on every row. A closed form giving the preamble zero
+weight reproduces legacy's own counter **exactly on all 8 rows** (3069, 78480, 85905, 26235, 9477,
+12474, 29970, 4455). **The decomposition is therefore exact up to a single seam token** — a stronger and
+more precise statement than the one I published. The inequality framing stands (an equality would mean
+the seam token had vanished), but the mechanism I gave for it was hand-waving that happened to be wrong.
+
+#### ⛔ C-3c — the both-EOS control conditions on a POST-TREATMENT variable
+
+`stop_reason` is measured **after** the intervention, and the intervention moves it violently and in
+**opposite directions** across populations: `Q|main` 26.0 % → 7.3 % truncated, while `L|ticket_bomb`
+69.8 % → 91.7 % and `L|window_knife` 87.5 % → **100 %** (96/96). So the both-EOS subsample is a
+**collider selection**, not a truncation control. **Three populations contribute literally zero
+both-EOS rows** because their knockout arm truncates everything, and the surviving 30/1 is **80 % one
+demonstration pool**. It should be reported as *"the effect holds on the subset where both arms
+terminated"*, never as *"truncation is ruled out"*.
+
+#### ⛔ C-3d — R-2's amendment is stated at one unit and reverses at others
+
+R-2 says the direction is carried by the bomb pool (81/11, p = 2.50e-14) and that dropping it gives
+p = 0.0919. Both reproduce. **But the bomb p is at its floor at every clustering §1.1 permits** —
+population-clustered it is 4/0, **p = 0.125 = 2/2⁴, exactly the floor**; domain-clustered 4/0, also
+0.125. And **"drop bomb → 0.0919" is not robust to the test**: two-sided 0.0919, one-sided 0.0460,
+prompt-clustered 0.1221, domain-clustered 0.0625 **at floor**, population-clustered 0.6875 — and the
+**domain-mean t-CI [−0.0438, −0.0014] EXCLUDES zero**. Over an order of magnitude, in both directions.
+**Pool heterogeneity is nonetheless real at the prompt level** (3×2 χ² = 13.357, df 2, p = 0.001258;
+bomb-vs-rest Fisher p = 5.72e-04), so R-2's *conclusion* survives — **its single quoted p does not**, and
+the honest form is the heterogeneity test plus the range.
+
+#### ⛔ C-3e — the late control is key-matched but not layer-matched
+
+`p1_late` masks **12 blocks (20–31)** where every C arm masks **9 (6–14)**. Measured:
+`p1_late` 1 357 632 prefill edits vs `p1_query_prefill_only` 1 018 224 — ratio **exactly 1.33333 = 12/9**.
+The plan's *"exactly count-matched by construction"* is true of **keys**, not of mask-edit dose.
+*(The same ratio independently confirms that `response_query_only` and `query_prefill_only` edit the
+identical prefill row set, as the resolver specifies.)* **Action: a 9-block late control is submitted
+below**, so the comparison is matched on both.
+
+---
 
 ### ⛔⛔ C-2 (00:42) — **TWO CONCURRENT PYTEST RUNS CORRUPTED A COMMITTED SCIENTIFIC ARTIFACT, and the corruption survived both runs' restore logic. Caused by my own parallelisation.**
 

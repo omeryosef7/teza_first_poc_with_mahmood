@@ -112,7 +112,13 @@ def check_arm(mode, rows, live):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--baseline", required=True)
-    ap.add_argument("--arm", action="append", default=[], metavar="MODE=RUNDIR")
+    ap.add_argument("--arm", action="append", default=[], metavar="LABEL=MODE=RUNDIR",
+                    help="LABEL=MODE=RUNDIR. LABEL is the KEY and must be unique; MODE is the "
+                         "knockout scope. They are separate because two arms can legitimately run "
+                         "the SAME mode at different bands -- the Phase-1 session has "
+                         "C_response_query_only at 6-14 and D_response_query_late_control at 20-31. "
+                         "Keying by mode alone would silently drop one of them, which is prev-C-18's "
+                         "defect reproduced inside the tool written to catch it.")
     ap.add_argument("--tag", default="smokeverdict")
     ap.add_argument("--experiment", default="scoped_smoke_verdict")
     args = ap.parse_args()
@@ -123,13 +129,24 @@ def main():
     base = load_rows(args.baseline)
     arms, per_arm = {}, {}
     for spec in args.arm:
-        mode, _, d = spec.partition("=")
+        parts = spec.split("=", 2)
+        if len(parts) == 3:
+            label, mode, d = parts
+        elif len(parts) == 2:                    # back-compat: MODE=RUNDIR, label defaults to mode
+            mode, d = parts
+            label = mode
+        else:
+            raise SystemExit(f"[verdict] REFUSING: --arm needs LABEL=MODE=RUNDIR, got {spec!r}")
         if mode not in pc.SCOPED_KNOCKOUT_MODES:
             raise SystemExit(f"[verdict] REFUSING: unknown mode {mode!r}")
+        if label in per_arm:
+            raise SystemExit(f"[verdict] REFUSING: duplicate arm label {label!r}. Labels are the "
+                             f"dict key; a collision would silently drop an arm.")
         rows = load_rows(d)
         live = (json.load(open(os.path.join(d, "summary.json"))).get("knockout_liveness") or {})
-        arms[mode] = rows
+        arms[label] = rows
         rec = check_arm(mode, rows, live)
+        rec["arm_label"] = label
         # (3) generations changed vs the session's own baseline, by hash
         common_ids = [p for p in base if p in rows]
         rec["n_common_with_baseline"] = len(common_ids)
@@ -140,14 +157,19 @@ def main():
         for p in base:
             ledger.ok() if p in rows else ledger.fail("prompt_missing_from_arm", f"{mode}:{p}")
         rec["run_dir"] = d
-        per_arm[mode] = rec
+        per_arm[label] = rec
 
     checks = {}
     # (4) disjointness / subset, as an INEQUALITY (see the module docstring)
-    if all(m in per_arm for m in ("legacy_all_query", "query_prefill_only", "demo_processing_only")):
-        lp = per_arm["legacy_all_query"]["total_prefill_edits"]
-        qp = per_arm["query_prefill_only"]["total_prefill_edits"]
-        dp = per_arm["demo_processing_only"]["total_prefill_edits"]
+    def by_mode(m):
+        """The arms running mode ``m``. A list, because two arms may share a mode at different bands."""
+        return [r for r in per_arm.values() if r["mode"] == m]
+
+    trio = {m: by_mode(m) for m in ("legacy_all_query", "query_prefill_only", "demo_processing_only")}
+    if all(len(v) == 1 for v in trio.values()):
+        lp = trio["legacy_all_query"][0]["total_prefill_edits"]
+        qp = trio["query_prefill_only"][0]["total_prefill_edits"]
+        dp = trio["demo_processing_only"][0]["total_prefill_edits"]
         checks["prefill_subset"] = {
             "legacy": lp, "query_prefill_only": qp, "demo_processing_only": dp,
             "sum_scoped": qp + dp, "slack": lp - (qp + dp), "holds": (qp + dp) <= lp,
@@ -155,12 +177,18 @@ def main():
                      "(template/preamble). An equality would be wrong."),
         }
     # (5) the primary arm spans both halves
-    if "response_query_only" in per_arm:
-        r = per_arm["response_query_only"]
+    rq = by_mode("response_query_only")
+    if rq:
+        # If two arms share this mode (arm vs late control), check EVERY one of them rather than
+        # whichever happened to be written last.
+        r = min(rq, key=lambda x: x["arm_label"])
         checks["primary_arm_spans_both"] = {
+            "arm_labels_checked": sorted(x["arm_label"] for x in rq),
+            "all_span_both": all(x["total_prefill_edits"] > 0 and x["total_decode_edits"] > 0
+                                 for x in rq),
             "total_prefill_edits": r["total_prefill_edits"],
             "total_decode_edits": r["total_decode_edits"],
-            "holds": r["total_prefill_edits"] > 0 and r["total_decode_edits"] > 0,
+            "holds": all(x["total_prefill_edits"] > 0 and x["total_decode_edits"] > 0 for x in rq),
         }
 
     all_fails = [f for r in per_arm.values() for f in r["fails"]]
