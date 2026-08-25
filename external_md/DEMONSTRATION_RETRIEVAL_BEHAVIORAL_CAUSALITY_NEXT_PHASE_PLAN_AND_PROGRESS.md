@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
 | ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
@@ -1943,6 +1944,64 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ R-25 (15:08) — **GATE FAILED, BRANCH STOPPED. The strict count-matched non-demo control is feasible at ONE dose, and it is the dose with 2 attacks in 40 rows. Demonstration-specificity CANNOT be tested by this control on this bank.**
+
+**Jobs 780297-780299 (all three strict draws): FAILED, refusing before generating.** My PR-10 smoke
+saw only 8 rows from a single domain (`warehouse_logistics`) and reported n=1 and n=2 both feasible.
+**On the full 10-domain population that is false:**
+
+| n_examples | rows OK | rows infeasible | `match_ratio` min / mean |
+|---|---|---|---|
+| **1** | **40/40** | 0 | **1.0 / 1.0** |
+| **2** | 35/40 | **5** | **0.0 / 0.875** |
+| 4 | — | all | 0.0 / 0.0 (R-24) |
+| 8 | — | all | 0.0 / 0.0 (R-24) |
+
+**⛔ And the obvious workaround is explicitly forbidden by the module itself.** Its refusal message:
+
+> *"Fix the arm or the population — do NOT rescope to the feasible rows, because demo length IS the
+> dose variable and dropping the long-demo rows silently changes the experiment."*
+
+**That is correct and I am obeying it.** Keeping the 35 feasible rows at `n = 2` would select on demo
+length *within* a dose level — the shorter demo blocks are exactly the feasible ones — manufacturing a
+control population that differs from the arm population on the variable under study.
+
+**So the strict control is feasible only at `n_examples = 1`, in full.** And `n = 1` is the cell
+**R-23 already declined as underpowered**: Llama baseline there is **2 attacks in 40 rows**. A
+count-matched control at that dose could distinguish nothing; both arm and control are inside the
+margin by construction.
+
+#### The branch is stopped, not rescued
+
+Per the standing instruction — *"if a gate fails, say so and stop that branch of the plan rather than
+rescuing it"* — **I am not running the `n = 1` strict control to have a number.** It would be a cell
+that cannot discriminate, published next to a question it cannot answer.
+
+**The finding is the infeasibility itself, and it is a real constraint on the paper:**
+
+> **On this bank, a count-matched non-demonstration attention control cannot be constructed at any
+> dose where the effect is measurable.** The demonstration block grows 12 → 106 tokens while the
+> unprotected non-demonstration pool is near-constant at ~53, most of which is the query span a
+> control must not touch. **By construction, there is nothing left to match against.**
+
+**Consequence for every claim in this phase:** the scoped-knockout results establish *where* in the
+sequence masking matters (demo span vs query prefill vs response), because those scopes are all
+matched to each other. **They do NOT establish that masking the demonstrations specifically differs
+from masking an equal amount of anything else — and on this bank that comparison is not
+constructible.** This is now a stated limitation, not an open to-do.
+
+**What still runs:** the three `capped` draws (780300-780302, all four doses), under PR-10's
+**one-sided** rule — informative only if they *do* remove attack. **A null from them will not be
+reported as support for demonstration-specificity.**
+
+**Design note for any future bank.** The control is not impossible in principle, it is impossible
+*here*: it needs a bank whose non-demonstration context is long enough to match a 106-token demo block
+without touching the query — e.g. a neutral filler passage sized to the largest `n_examples`. **That
+is a bank-design change, not an analysis change**, and it is recorded as such rather than attempted
+now.
 
 ---
 
