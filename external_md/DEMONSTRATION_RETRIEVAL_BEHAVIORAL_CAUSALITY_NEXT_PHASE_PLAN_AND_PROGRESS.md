@@ -1951,6 +1951,53 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-30 (19:15) — **§20 Q3 restarted. The rescue primitive is built and mutation-verified; NO science is claimed yet. Also: why `LayerPatch` could not be reused, and why the alignment guard is the whole design.**
+
+**Decision first (step 2 of the cadence).** Of the three unrun §20 questions, current evidence
+justifies **only Q3**. **Q6** (joint crossed Qwen3 factorization) is **dropped**: its motivating
+hypothesis, `d_surface` as an objective, is closed, and the cross-model representation question it
+targets is already answered by R-17's Qwen3 within-family bridge. **Q4** is gated on Q3 and stays
+gated. **Q3 survives because it is the only route to the one thing this phase measured and did not
+explain** — what carries the coherent non-compliance in R-21.
+
+**Why existing code could not be reused.** `ds_common.LayerPatch` writes **one vector, shaped
+`[hidden]`, to every requested position**. A rescue asks a different question — *give the knocked-out
+run back exactly the activations the clean run had at each demonstration position* — which needs a
+**`[n_positions, hidden]`** donor block. `patched_generate` likewise only stacks `LayerPatch` tuples
+and cannot compose with a knockout context manager. **So this is a genuine build, not a re-cut, and it
+is reported as such.** `src/boombness/donor_patch.py` is a **sibling** of `LayerPatch`; nothing
+existing was edited.
+
+**⛔ The bug class this file was written against.** Donor and recipient are **two different forward
+passes**. This repo has twice shipped a defect where a position computed on one example is reused as
+an absolute index on another, and a donor patch is the ideal host for it: **if the two tokenisations
+differ by one token, the patch writes the right activations to the wrong places and still returns a
+plausible number — a null that looks like evidence the information was not there.**
+
+Three guards, all mutation-verified rather than asserted:
+
+| mutation | result |
+|---|---|
+| misaligned recipient, `strict_ids` **ON** | **REFUSED** — guard is load-bearing |
+| same misalignment, `strict_ids` **OFF** | **wrote 2 positions** — so the guard is the *only* thing preventing a silently misaligned rescue |
+| donor positions past the sequence end | `liveness() = {'n_positions_written': 0, 'fired': False}` — a rescue that never fired **reports** it rather than being inferred to have worked |
+
+`DonorBlock` additionally refuses row/position count mismatches, non-2-D activations, and **duplicate
+positions** (two rows targeting one position makes the written value depend on write order).
+
+**Tests:** `tests/test_donor_patch.py`, **10/10 pass** — locality (positions 0 and 3 untouched),
+hook removal on `__exit__`, the short-recipient refusal, and the no-`input_ids` refusal.
+
+**⛔ Explicitly NOT claimed.** No rescue has been run. No model has been loaded. **This tick delivers a
+verified instrument and nothing else**, which is the correct order for a causal experiment in a hot
+path — the phase's own C-6 and C-8 were both instruments that looked fine and were not.
+
+**Next:** capture donor activations from the clean run at the knockout's own band (6-14 on Llama),
+apply them under `demo_processing_only`, and ask whether the attack returns — **pre-registered before
+any arm is submitted, and smoked before any sweep.**
+
+---
+
 ### 🏆🏆🏆 R-29 (18:35) — **PR-12 PASSES BOTH CONDITIONS. C1 replicates on a demonstration pool that shares NO sentences with the original. The refusal-restoration result now stands in three independent settings.**
 
 **Artifacts:** arms `p6b*` (jobs 780892-780895), judging `p6bj_*` (job **780928**), bank
