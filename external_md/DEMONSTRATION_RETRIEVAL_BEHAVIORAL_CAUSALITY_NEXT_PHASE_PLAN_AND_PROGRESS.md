@@ -1949,6 +1949,52 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-11 (16:40) — **Pre-registered: when the attack dies, does the MAPPING stop being used? And a pre-commitment NOT to use the 5-way phenotype cascade on this data.**
+
+C-12 left the phase with an effect and no mechanism. R-16/R-17 showed the mapping **survives** in a
+forced-choice probe; this asks the complementary behavioural question: **in the completions where the
+attack was killed, does the model still talk about the CONCEPT, or has it fallen back to the
+CODEWORD's literal meaning?**
+
+**⛔ First, an instrument I am refusing to use.** `completion_phenotype.lexical_phenotype` is an
+ordered cascade in which `truncated` is tested **before** concept terms, so any row ending on
+`stop_reason == "length"` becomes category 4 (`garbled_or_nonanswer`) regardless of content. **DR-2
+measured 58-73% truncation on Llama.** The 5-way distribution would therefore be **dominated by the
+cap, not by the intervention**, and its category-4 mass would be an artifact of `--max-new 192`.
+**The cascade is not used here, and no 5-way phenotype number will be quoted for this phase.** (Its
+own docstring already forbids it as a primary estimator until reliability is measured; truncation is a
+second, independent reason.)
+
+**What IS used:** the two **truncation-independent booleans** from the same module,
+`has_codeword` and `n_concept_terms_hit` — deterministic substring tests, no API, no session drift,
+unaffected by where the completion stops.
+
+**The question, on KILLED attacks only** (baseline jailbroken, arm not):
+
+* **`concept_used`** — completion contains a concept term.
+* **`codeword_only`** — contains the codeword and no concept term.
+
+**Prediction if killing the attack works by breaking the mapping:** killed rows should be
+**`codeword_only`** — the model reads `carrot` as a carrot. **This would CONTRADICT R-16/R-17**, which
+found the binding intact, and I flag that in advance: **the two instruments measure different things
+(forced-choice probe vs free generation) and a disagreement is a real result, not an error to
+reconcile away.**
+
+**Prediction if the mapping is intact and only the compliance changed:** killed rows still reference
+the concept at rates comparable to the baseline's jailbroken rows — **the model knows what `carrot`
+means and declines to help anyway.**
+
+**⛔ Confound stated first.** The prompt itself contains the codeword, so any completion that echoes
+the question scores `has_codeword` **without that meaning anything about the mapping**. Therefore
+**`codeword_only` is only interpretable against the baseline's own rate**, never in absolute terms,
+and the baseline rate is reported in every table. **Concept-term presence carries the inference; the
+codeword flag is context for it.**
+
+Zero new compute. Both models. Killed-row counts are 15-25 per cell (R-21), so this is **descriptive
+with small denominators and will be labelled as such.**
+
+---
+
 ### 🔎 DR-2 (16:10, 4h DEEP REVIEW) — **Full suite 1358/0. Provenance verified at CONTENT level on all 13 arms. One real exposure found: on Llama, 93/160 baseline rows hit the 192-token cap, and the untruncated subgroup is too small to test the effect. Qwen3 is barely truncated and the effect holds there cleanly.**
 
 **Suite:** `1358 passed, 7 skipped, 0 failed` (299 s, serial and exclusive per C-2). `git status
