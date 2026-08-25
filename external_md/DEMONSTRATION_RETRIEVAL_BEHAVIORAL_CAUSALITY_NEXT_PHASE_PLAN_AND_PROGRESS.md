@@ -30,6 +30,8 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆🏆 **THREE SCOPES, SAME KILL COUNT, THREE ROUTES.** `demo_processing_only` kills 25 attacks of which **56% are outright refusals** (refusal rate 0.2188 vs 0.0563 baseline); `legacy` and `respq` kill 24 each with **0% refusals**. A single ASR number calls these identical | k=10, n=160, all 10 domains negative for demoproc, p=0.00195 | **R-19** |
+| ⚠️ **WITHDRAWN: "response_query_only is a weak partial" (R-10, Outcome B).** At k=10 respq is **85%** of legacy, gap 0.0188, which PASSES the same pre-registered margin it failed at k=6 | partial non-replication, reported rather than resolved by picking a bank | **R-19** |
 | 🏆🏆🏆 **BOTH MODELS, WITHIN-FAMILY: in 6/6 arm×model cells, binding loss carries NO positive information about attack death** — 3 flat, 3 pointing the wrong way | Qwen3 `demo_processing_only`: **0/10** killed lost binding vs **5/38** not-killed; `legacy` flattens 28/48 | **R-17** |
 | 🏆🏆🏆 **WITHIN-FAMILY: the attack dies where the mapping survives.** `demo_processing_only` kills **7** attacks and loses binding on **0 of 48** families (rule-of-three ≤ 0.0625); `query_prefill_only` loses binding on **8/41** families whose attack survived and **0/7** of those it killed — **anti-associated** | 48 families, each one behavioural row + one probe row sharing a byte-identical demo block | **R-16** |
 | 🏆🏆🏆 **THE BINDING SURVIVES THE INTERVENTION THAT KILLS THE BEHAVIOUR.** `demo_processing_only` removes ~75 % of attack success (Δ −0.1250 Llama / −0.1562 Qwen3) yet takes binding accuracy **0.8750 → 1.0000**, rescuing **all 6** failing rows (0 down / 6 up, McNemar p = 0.0312 **at its floor**), while the late control moves **0/0**. **Representation and behaviour are separable at the exact point the intervention works** | 5 arms × 48 forced-choice rows, Llama, option mass 0.37–0.60, `frac_rows_scope_live` 1.0 | **R-15** |
@@ -1936,6 +1938,76 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-19 (11:38) — **PHASE 4B AT k=10: three scopes remove the SAME amount of attack by THREE DIFFERENT ROUTES. `demo_processing_only` works by RESTORING REFUSAL; `legacy` and `response_query_only` kill just as many attacks with ZERO refusals.**
+
+**Artifact:** `outputs/boombness/phase1_decomposition/p4bdec_20260825_113813_3430676/phase1_decomposition.json`
+**Judging:** job 779926, prefix `p4bj`. **Provenance closed:** `judge_model_used = openai/gpt-4o-mini`
+on **800/800** rows and `completion_sha256_16` joins the generation on **800/800** rows, all five arms.
+
+#### The headline table (baseline ASR 0.1562, n = 160, 10 domains x 16)
+
+| arm | ASR | delta | down/up | informative domains | p | floor | at floor? |
+|---|---|---|---|---|---|---|---|
+| **`demo_processing_only`** | 0.0063 | **−0.1500** | 25/1 | **10/10 all negative** | **0.00195** | 0.00195 | **yes** |
+| `legacy_all_query` | 0.0312 | −0.1250 | 24/4 | 8/10, 7 negative | **0.0703** | 0.0078 | no |
+| `response_query_only` | 0.0500 | −0.1062 | 24/7 | 6/10 all negative | 0.0312 | 0.0312 | yes |
+| `query_prefill_only` | 0.1313 | −0.0250 | 18/14 | 6/10, 4 negative | **0.6875** | 0.0312 | no |
+
+**The floor moved and the result survived it.** At k = 6 the sign test could not return anything
+below 0.0625. At k = 10, `demo_processing_only` is negative in **all ten domains** — the maximum
+evidence this design can produce — and `query_prefill_only` is now a **measured null (p = 0.6875)**
+rather than an untestable one. That is what Phase 4B was for.
+
+#### 🔴 The route is not the same, and this is the actual finding
+
+The three effective arms remove **almost identical amounts of attack** (25, 24, 24 rows killed). They
+do it by **completely different means**. `refused` here is `judge_boombness.kw_refusal()` — a
+**deterministic keyword detector, not the LLM judge** — so unlike every ASR in this sprint it carries
+**none** of the judge's measured session drift.
+
+| arm | attacks killed | **of which judged REFUSAL** | new refusals overall | arm refusal rate |
+|---|---|---|---|---|
+| **`demo_processing_only`** | 25 | **14 (56%)** | **28** | **0.2188** |
+| `legacy_all_query` | 24 | **0 (0%)** | 4 | 0.0312 |
+| `response_query_only` | 24 | **0 (0%)** | 0 | 0.0125 |
+| — baseline — | — | — | — | 0.0563 |
+
+> **Knocking out demonstration processing does not quietly disable the attack — it puts the refusal
+> back.** The other two scopes suppress exactly as much attack while leaving the refusal rate at or
+> *below* baseline. **A single ASR number would have called these three arms the same result.**
+
+**This is the same locus the sprint already found from the other direction.** The V2 continuation
+concluded that **refusal-suppression, not the concept representation, is the causal locus**. R-16 and
+R-17 then showed the concept mapping **survives** `demo_processing_only` on both models. R-19 supplies
+the missing half: **the arm that preserves the mapping is the arm that restores refusal.** Three
+independent measurements, one mechanism.
+
+#### ⛔ Corrections and limits — including one against a previous result
+
+**⚠ The PR-1 primary comparison FLIPS on this bank, and I am reporting it as a partial
+non-replication rather than choosing the bank I prefer.** R-10 (k = 6) found
+`response_query_only` at **46%** of legacy with gap **0.0729 > 0.0417**, and declared the primary
+comparison **NOT equivalent** (Outcome B). Here respq is **85%** of legacy with gap **0.0188**, which
+**passes** the same pre-registered margin. **Outcome B does not replicate at k = 10.** The
+n_examples-matched, domain-balanced bank is the better-powered instrument, but the two banks are not
+the same population, and I am not entitled to retro-fit which one counts. **The claim "response-query
+knockout is a weak partial" is hereby WITHDRAWN.**
+
+**⚠ `demo_processing_only`'s margin over legacy is length-carried; its refusal signature is not.**
+Its delta falls from **−0.150 raw to −0.076** conditioning at ≥120 chars, while legacy (−0.125 →
+−0.132) and respq (−0.106 → −0.115) are flat. It also has **27 rows under 120 chars** against 4 in
+baseline, and **141/160 distinct completions** (7 duplicate groups, largest 7 identical 98-char
+EOS completions) against 160/160 for baseline and respq. **All 27 short rows are keyword-refusals and
+none scored ≥ 0.5** — so this is a stereotyped refusal collapse, not garbled generation. Length is
+**post-treatment**: conditioning on it conditions on a **collider**, so neither number is the headline
+alone. **The defensible statement is the refusal table, which needs no length conditioning at all.**
+
+⚠ Llama only — Qwen3 Phase 4B not run. ⚠ Lexical G = 1. ⚠ `demo_processing_only`'s p is **at** its
+floor: every informative domain agrees in direction and the magnitude cannot enter the p. It is a
+sign test, a much stronger one than at k = 6, but still a sign test.
 
 ---
 
