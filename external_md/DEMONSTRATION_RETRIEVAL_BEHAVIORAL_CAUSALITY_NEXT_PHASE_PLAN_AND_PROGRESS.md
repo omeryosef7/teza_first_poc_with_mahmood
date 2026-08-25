@@ -1955,6 +1955,49 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-15 (23:05) — **Pre-registered: the confirmatory test of R-36's UNREGISTERED OBSERVATION — does the Qwen3 ASR rescue survive on an INDEPENDENT demonstration pool?**
+
+R-36 recorded, and refused to claim, that on Qwen3 the L17 patch appears to restore the **attack**
+(knockout 0.0437 → 0.1062 vs clean 0.1313), where the same design on Llama gave a null. R-36 stated
+what claiming it would require: **its own pre-registration fixing margin and direction, plus an
+independent replication.** This is that pre-registration, written before the arms exist, and the
+replication runs on **pool B — the bank whose 40 demonstration pools share ZERO sentence sets with
+pool A** (R-28).
+
+**Why pool B and not a re-run.** Re-running the same bank would test session noise, not the finding.
+**Pool B changes the demonstration text entirely while holding the design, the model, the band and the
+patch fixed** — so a survival there is a statement about the mechanism rather than about these
+particular demonstrations.
+
+**Arms (Qwen3-14B, bank B, band 7-17, 160 rows each):** `q6bA` (clean), `q6b_demo_processing_only`
+(knockout-only), `q6b_rescue_L17` (primary), `q6b_rescue_L5` (below-band specificity control).
+**All four are new** — Qwen3 has never been run on pool B, so the baseline and knockout cannot be
+borrowed and are measured in the same session as the arms.
+
+**The claim, and it CONFIRMS only if ALL THREE hold:**
+1. **`L17 ASR − knockout ASR > +0.0521`** — the patch restores attack, direction fixed in advance.
+2. **`|L5 ASR − knockout ASR| ≤ 0.0521`** — the below-band control does **not**.
+3. **`|L17 refusal − knockout refusal| > 0.0521`, direction = less refusal** — the refusal
+   dissociation (R-36's *registered* result) also reproduces on pool B, so the ASR effect is not
+   arriving in place of it.
+
+**Refuted if** condition 1 fails. **Invalid (no claim either way) if** condition 2 fails — a control
+that also rescues means the patch is nonspecific on this bank.
+
+**⛔ Pre-committed limits.**
+* **This tests ONE model.** Even on success the ASR rescue is **Qwen3-only**, and Llama's Outcome C
+  (R-35) stands unchanged. **The cross-model asymmetry is the finding, not an inconvenience to
+  resolve by finding a Llama layer that works** — no Llama layer sweep will be run.
+* **`|L17 − clean|` is NOT a test here.** On Llama that comparison cleared its margin by a third of a
+  row and I declined it; declining it again, in advance.
+* **Preconditions:** `rescue_liveness.fired` true on every row of both rescue arms or the arm is
+  **UNMEASURED, not null**; judge pinned to `openai/gpt-4o-mini`; truncation reported beside every
+  number.
+* **If this confirms, it is still ONE pool-pair on ONE model** and will be labelled replicated, not
+  established.
+
+---
+
 ### 🏆🏆🏆 R-36 (22:50) — **PR-14 PASSES BOTH CONDITIONS: the causal dissociation replicates on Qwen3. And the ASR column shows something I pre-committed NOT to claim — so I am not claiming it.**
 
 **Artifacts:** arms `q7_rescue_L17` (781290) / `q7_rescue_L5` (781291); judging `q7j_*` (781361).
