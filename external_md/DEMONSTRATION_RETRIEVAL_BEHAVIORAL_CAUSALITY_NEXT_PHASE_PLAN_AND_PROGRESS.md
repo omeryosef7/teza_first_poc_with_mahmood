@@ -38,7 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
-| 🏆🏆🏆 **THE CAUSAL DISSOCIATION HOLDS IN THREE SETTINGS — two model families, two pools sharing no sentences.** Refusal rise removed: **69.2%** (Llama/A), **81.0%** (Qwen3/A), **92.3%** (Qwen3/B); below-band control **exactly 0.0000 in all three** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
+| 🏆🏆🏆 **COMPLETE 2x2 — MODEL FAMILY x DEMONSTRATION POOL, 4/4.** The patch gives back the refusal in every cell (**69.2%** Llama/A, **81.0%** Qwen3/A, **92.3%** Qwen3/B, **58.1%** Llama/B; gaps 0.1125/0.1062/0.0750/0.1125, all >margin) and the below-band control moves it by **exactly 0.0000 in all four** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
@@ -1953,6 +1953,57 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-38 (01:20) — **PR-16 CONFIRMS. The 2 × 2 over model family × demonstration pool is COMPLETE: in all four cells the patch gives back the refusal, and in all four the below-band control moves it by EXACTLY 0.0000.**
+
+**Artifacts:** arms `p8b_rescue_L14` (781643) / `p8b_rescue_L5` (781644); judging `p8bj_*` (781727).
+**Provenance:** `openai/gpt-4o-mini` on **320/320**, hash joins **320/320**; bank B content-verified,
+`matchesA = 0`; `fired` **320/320**, layers 14 and 5. **PR-16 committed at `55c5e66b` first.**
+
+| arm | ASR | refusal rows | refusal |
+|---|---|---|---|
+| clean *(R-29, other session)* | 0.1688 | 1/160 | 0.0063 |
+| knockout *(R-29, other session)* | 0.0375 | **32/160** | **0.2000** |
+| **rescue L14 (primary)** | 0.0688 | **14/160** | **0.0875** |
+| rescue L5 (control) | 0.0437 | **32/160** | **0.2000** |
+
+**Condition 1 — HOLDS.** `|L14 − knockout| = 0.1125`, **2.2× margin**, less refusal: **32 → 14 rows**.
+**Condition 2 — HOLDS.** Control at **exactly 0.0000** — **32 → 32 rows**.
+
+#### ✅ The completed design
+
+| cell | model | pool | knockout → rescue | \|gap\| | refusal rise removed | control |
+|---|---|---|---|---|---|---|
+| R-35 | Llama-3.1-8B | A | 35 → 17 | 0.1125 | 69.2% | **0.0000** |
+| R-36 | Qwen3-14B | A | 23 → 6 | 0.1062 | 81.0% | **0.0000** |
+| R-37 | Qwen3-14B | B | 15 → 3 | 0.0750 | 92.3% | **0.0000** |
+| **R-38** | **Llama-3.1-8B** | **B** | **32 → 14** | **0.1125** | **58.1%** | **0.0000** |
+
+> **Two model families × two demonstration pools sharing no sentences. Four for four on the effect,
+> four for four on the control being exactly inert.**
+
+#### 🔍 The cross-session caveat I declared — and what the data says about it
+
+PR-16 flagged, before reading, that this cell's baseline and knockout come from a **different judging
+session** than its rescue arms, making it the weakest of the four by construction.
+
+**The control arm settles it.** `p8b_rescue_L5` was judged in the **new** session and returns
+**32/160** refusals — **identical, to the row, to the knockout arm's 32/160 from the old session.**
+**The very comparison the caveat was about is reproduced exactly across sessions**, so for this metric
+the session boundary moved nothing.
+
+**I am not withdrawing the caveat** — one metric agreeing across two sessions is not a general licence,
+and the judge's 78/96 binary drift was measured on a different quantity. **But the cell is no longer
+"weakest by construction" in the way I predicted, and saying so is the honest update.** The
+`kw_refusal` detector is deterministic, which is very likely why: **it is the one instrument in this
+phase that cannot drift between sessions.**
+
+⚠ **58.1% is the lowest of the four** — the effect size varies across cells (58-92%) even though every
+cell clears its margin. **The margin test replicates 4/4; the magnitude does not, and should not be
+quoted as a single number.** ⚠ The ASR column is not counted here (PR-16), and R-37 already closed the
+ASR rescue.
 
 ---
 
