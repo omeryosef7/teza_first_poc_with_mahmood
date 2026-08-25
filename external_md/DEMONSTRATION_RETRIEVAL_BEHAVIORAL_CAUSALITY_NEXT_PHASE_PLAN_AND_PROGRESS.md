@@ -1152,7 +1152,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | ⏸ **BLOCKED on TWO counts** — **C-6** liveness is ledgered only on the generation branch (fix in progress); **C-7** the probe kind fails the option-mass gate at median 0.031 (kind being re-chosen on the gate, jobs 779771/779772) | **PR-2** |
+| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 **UNBLOCKED** (C-6 and C-7 both closed); probe smoke v2 **779795–779798** on `semantic_forced_choice` | **PR-2**, **D-9** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1927,6 +1927,53 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ✅ R-13 / C-7 CLOSED (08:40) — **the probe kind is chosen ON THE GATE: `semantic_forced_choice` clears it by 15×. Phase 2 is unblocked on both counts.**
+
+Jobs **779771 / 779772**, baseline only, no intervention, `natural_doublespeak`, n = 16 — run
+**before** any intervention arm, so the instrument is selected on its validity rather than on its
+effect.
+
+| query kind | median option mass | p90 | max | frac > 1 % | gate |
+|---|---|---|---|---|---|
+| `semantic_one_word` *(what I originally picked)* | **0.0310** | 0.0820 | 0.0820 | 0.625 | ⛔ **BELOW** |
+| **`semantic_forced_choice`** | **0.4687** | 0.8938 | 0.9257 | **1.000** | ✅ **OK** |
+| `comprehension_usage` | **0.3443** | 0.4572 | 0.5181 | **1.000** | ✅ **OK** |
+
+**`--min-option-mass` is 0.05.** Forced choice clears it by **15×** on the median and puts **every**
+row above 1 %, against the unforced variant's 62.5 %. This is the concentration
+`prompt_families.QUERY_KINDS` already documented (`as_is 1.4e-2 → forced 0.979` on the direct arm) —
+now measured on the **headline condition**, which had never been measured.
+
+> **📌 DECISION D-9: `semantic_forced_choice` is Phase 2's PRIMARY probe; `comprehension_usage` is the
+> secondary readout for §5.3's specificity question.** Both clear the gate, so neither choice is being
+> made on an effect size. `semantic_one_word` is **dropped** — not because it gave an unwelcome answer,
+> but because a 3 % option mass cannot carry a decision margin at all.
+
+⚠ **`--allow-low-option-mass` was not used and will not be.** C-7 said an instrument that fails its own
+gate is a finding about the bank, not a threshold to lower. The instrument turned out to exist; had it
+not, the honest output would have been that Phase 2's primary measurement is unavailable here.
+
+#### Phase 2's blockers are now both resolved
+
+| blocker | status |
+|---|---|
+| **C-6** — liveness ledgered only on the generation branch | ✅ **CLOSED** — hook proven to apply by AST; reduced contract with `n_prefill_forward` as proof-of-life; 124 tests |
+| **C-7** — probe kind failed the option-mass gate | ✅ **CLOSED** — `semantic_forced_choice` at median 0.4687 |
+
+**Probe smoke v2 launched: jobs 779795–779798** — baseline plus the **three prefill-measurable modes**
+(`legacy_all_query`, `query_prefill_only`, `demo_processing_only`) on forced-choice rows, band L6–14,
+`--limit 8`. `decode_only` and `response_query_only` are **not** submitted: C-6's fix refuses them at
+argument time on a forward-only readout, the second because its reduction is identical to
+`query_prefill_only` and would misname the intervention.
+
+**The question this is being built to answer, restated before any number exists:** R-10 and R-12 show
+`demo_processing_only` carries the behavioural effect on both models **while raising refusal 20×**.
+**Does it also destroy the codeword→concept binding, or does it leave the mapping intact and simply
+make the model refuse?** Those two answers mean very different things, and the probe is the only
+instrument that separates them.
 
 ---
 
