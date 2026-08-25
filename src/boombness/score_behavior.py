@@ -1651,13 +1651,23 @@ def main() -> int:
 
     def _semantic(templated):
         if args.readout_ids == "whole_answer":
-            return sg.string_option_readout(lm, templated + args.answer_prefix, sem_variants)
+        # BATCH-1 UNDER INTERVENTION (2026-08-25, correction C-8). `string_option_readout` runs
+        # ONE BATCHED forward over up to `max_batch` (16) option variants, while every knockout hook
+        # in pair_common raises `NotImplementedError: ... supports batch size 1 only` -- both
+        # constraints are documented, and nobody had joined them, so every probe row died at scoring
+        # time with a healthy pre-flight behind it. Forcing batch 1 keeps the `whole_answer` scoring
+        # mode the repo deliberately adopted on 2026-08-18 instead of silently falling back to the
+        # weaker `primary` readout to dodge the constraint. It costs <=16x more forwards on the probe
+        # population, which is 96 rows.
+            return sg.string_option_readout(lm, templated + args.answer_prefix, sem_variants,
+                                             max_batch=(1 if _wants_knockout else 16))
         return next_token_readout(lm, templated, {"concept": c_ids, "codeword": w_ids},
                                   answer_prefix=args.answer_prefix)
 
     def _comprehension(templated):
         if args.readout_ids == "whole_answer":
-            return sg.string_option_readout(lm, templated + args.answer_prefix, comp_variants)
+            return sg.string_option_readout(lm, templated + args.answer_prefix, comp_variants,
+                                             max_batch=(1 if _wants_knockout else 16))
         return next_token_readout(lm, templated, {w: comp_ids[w] for w in COMPREHENSION_WORDS},
                                   answer_prefix=args.answer_prefix)
     run.note(readout_ids=id_meta, comprehension_readout_ids=comp_meta,

@@ -1152,7 +1152,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 **UNBLOCKED** (C-6 and C-7 both closed); probe smoke v2 **779795–779798** on `semantic_forced_choice` | **PR-2**, **D-9** |
+| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 **C-8**: scorer batches vs batch-1 hook; fixed, arms re-submitted **779838–779840** | **PR-2**, **D-9** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1927,6 +1927,54 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ C-8 (09:15) — **THE PROBE'S SCORER BATCHES AND EVERY KNOCKOUT HOOK IS BATCH-1. Both constraints were documented; nobody had joined them, and the pre-flight passed clean right before every row died.**
+
+Probe smoke v2 (jobs **779796–779798**) **FAILED `1:0`**, all three knockout arms, **8 of 8 rows**:
+
+```
+failure_reasons: {"semantic_forced_choice:NotImplementedError:
+                  ScopedAttentionKnockout supports batch size 1 only": 8}
+n_generations: 0   n_result_rows: 0
+```
+
+**The C-6 fix is working** — `liveness_readout_only: True` appears in every summary, so the reduced
+contract was recognised — and **the pre-flight passed clean** immediately before:
+`{'n_rows': 8, 'no_demo_block': 0, 'infeasible_control': 0, 'dead_scope_span': 0}`. **Spans resolve
+perfectly on forced-choice rows; the rows die at SCORING time.**
+
+#### The collision, and both halves were written down
+
+| side | fact | where |
+|---|---|---|
+| the scorer | `string_option_readout(..., max_batch: int = 16)` — *"One batched forward over `context + variant` per variant"* | `signals.py` |
+| the hook | `raise NotImplementedError("... supports batch size 1 only")` — in **three** classes: `SubmodulePatch`, `AttentionKnockout`, `AllQueryAttentionKnockout` (and now `ScopedAttentionKnockout`) | `pair_common.py:320, 463, 556` |
+
+**Neither is a bug. The defect is that nothing joined them**, and the `whole_answer` scoring mode that
+batches has been the **default since 2026-08-18**. So the very first attempt to run *any* intervention
+against *any* forced-choice readout was always going to fail — and this is the first time in the
+project that anyone has tried.
+
+#### The fix, and the option I deliberately did not take
+
+`max_batch=(1 if _wants_knockout else 16)` at both readout call sites.
+
+⚠ **The tempting alternative was `--readout-ids primary`**, which is batch-1 already and would have
+made the error disappear without touching anything. **I did not take it.** `whole_answer` became the
+default on 2026-08-18 *because* the single-token readouts were shown to live in a 1e-5 tail — falling
+back to `primary` to dodge a batching constraint would have silently reinstated the weaker instrument
+that C-7 has just finished ruling out on option mass. **Forcing batch 1 keeps the instrument the repo
+chose and pays ≤16× more forwards on a 96-row population, which is nothing.**
+
+Un-batched arms re-submitted as **779838–779840**. The baseline (779795) is unaffected — it never
+requested a knockout, so it already ran at `max_batch=16` and stands.
+
+⚠ **Recorded as the fourth guard-caught failure of this phase**, and the pattern is now explicit:
+prev-C-6's dose metric, C-5's stale handle, C-6's missing ledger, C-7's option mass, and now this. **In
+every case a guard refused rather than producing a plausible number, and in every case the guard was
+right and my configuration was wrong.**
 
 ---
 
