@@ -731,6 +731,58 @@ started with.**
 *(Each entry is fixed before the corresponding result exists and is never edited afterwards; a
 superseded pre-registration gets a new entry that says so.)*
 
+### 🔒 PR-5 (06:10) — **WHAT COUNTS AS QWEN3 REPLICATING OUTCOME B.** Fixed before the Qwen3 arms are submitted, and before any of them is judged.
+
+R-10 ends with *"Outcome B is a claim about Llama-3.1-8B on this bank until it replicates."* **The
+criteria for that are fixed here, in advance, because "did it replicate?" is the single easiest
+question in this project to answer after the fact.**
+
+**Design.** The identical 96-row population and the identical 8 arms, on `Qwen/Qwen3-14B`, at the
+**depth-matched** band **L7–17** (11 of 40 blocks = 0.175–0.450 of depth, against Llama's 9 of 32 =
+0.188–0.469) with late controls at **L25–39**. `--enable-thinking false`, as every prior Qwen3
+boombness run. **The band is NOT retuned on the outcome** — it is the depth mapping the previous phase
+already fixed, and prev-R-AB used exactly it.
+
+⚠ **The depth match is not a count match, and the asymmetry is recorded now**: 11 blocks vs 9. Per
+prev-Phase-4's own note this is *conservative for a positive result and permissive for a negative one*
+— a wider band can only make a knockout stronger, so **if Qwen3 shows LESS suppression it cannot be
+blamed on having cut too little.**
+
+#### 📌 Outcome B replicates on Qwen3 if, and only if, ALL THREE hold
+
+1. **`demo_processing_only` is the larger scoped arm**, i.e. `|Δ_demoproc| − |Δ_respq| > 0.0417`
+   (PR-3's arm-vs-arm margin). *Direction of the inequality is what matters, not its size.*
+2. **The primary comparison fails equivalence the same way**: `|Δ_respq − Δ_legacy| > 0.0417`, with
+   `Δ_respq` recovering **less than half** of `Δ_legacy`.
+3. **`query_prefill_only` does not suppress**: `Δ_qpre ≥ −0.0521` (PR-3's vs-baseline margin), i.e. it
+   is inert or positive, never a real suppression.
+
+#### 📌 And what each failure mode would mean — written now so it cannot be reframed later
+
+* **All three hold** → Outcome B is a cross-model property of the mechanism, not of Llama. **That is
+  the paper claim.**
+* **(1) reverses** — `response_query_only` larger on Qwen3 → **the two models use different halves of
+  the computation**, which is a genuine and publishable dissociation and *not* a failure. Report it as
+  such; do **not** average the models.
+* **(3) reverses** — `query_prefill_only` suppresses on Qwen3 → the Llama `+0.0625` is model-specific
+  and must be reported as such rather than as a general finding about query-side access.
+* **All arms weak on Qwen3** → check headroom FIRST. Qwen3's baseline on this bank was **0.1875**
+  (prev-R-AA) so headroom exists, but if this session's baseline lands near the floor the arms are
+  **uninterpretable, not null**, and the honest output is *"not measurable at this baseline"*.
+
+#### 📌 Everything else is inherited unchanged
+
+PR-3's margins and floors, PR-4's reporting rules (every ASR beside its truncation fraction and median
+`n_chars`; the length-conditioned sweep; the collider caveat), one pinned judging session for all
+arms, and the smoke-before-sweep rule.
+
+⚠ **The smoke is NOT skipped just because it passed on Llama.** prev-REVIEW-3 found two real
+Qwen3-specific defects in the previous port (a `SystemExit` from the thinking-probe leaving a judgeable
+partial, and no band validation against model depth), and the modes resolve spans under a **different
+tokenizer**. **The Qwen3 smoke runs first and its verdict gates the full arms.**
+
+---
+
 ### 🔒 PR-4 (04:40) — **HOW THE PHASE-1 ASR WILL BE READ, given that the generation cap binds on half to three-quarters of EVERY arm and one arm shows a length collapse. Written before the judging session is submitted.**
 
 The 4-hour review's truncation track (C-4 below) found two facts that make a raw ASR comparison
@@ -1073,6 +1125,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
+| P1.4 | 1 | Qwen3 replication — smoke then 8 arms at L7–17 | 🔬 **779733–779738 (smoke) queued** | **PR-5**: three conditions, all must hold |
 | P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
@@ -1106,6 +1159,12 @@ stay visible)*
 | **779609** | this | P1.3 `C_decode_only` | 03:42 | `d8989dfc` | `.../score_behavior/p1_decode_only_*` | queued |
 | **779610** | this | P1.3 `C_demo_processing_only` | 03:42 | `d8989dfc` | `.../score_behavior/p1_demo_processing_only_*` | queued |
 | **779611** | this | P1.3 `D_response_query_late_control` | 03:42 | `d8989dfc` | `.../score_behavior/p1_late_*` | queued |
+| **779733** | this | Qwen3 smoke `A_baseline`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2A_*` | queued |
+| **779734** | this | Qwen3 smoke `legacy_all_query`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2_legacy_all_query_*` | queued |
+| **779735** | this | Qwen3 smoke `query_prefill_only`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2_query_prefill_only_*` | queued |
+| **779736** | this | Qwen3 smoke `decode_only`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2_decode_only_*` | queued |
+| **779737** | this | Qwen3 smoke `response_query_only`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2_response_query_only_*` | queued |
+| **779738** | this | Qwen3 smoke `demo_processing_only`, band 7–17, `--limit 8` | 06:10 | `f7879eb1` | `.../score_behavior/s2_demo_processing_only_*` | queued |
 | 776368 | peer (`…FOLLOWUP implementation`) | `run_band2_judge.sh`, `cpu-killable` | 2026-08-23 17:16 | `91e30a62` | `.../judge/bnd2_*` | peer has stopped and is not analysing it |
 
 ## B5. RESULTS
