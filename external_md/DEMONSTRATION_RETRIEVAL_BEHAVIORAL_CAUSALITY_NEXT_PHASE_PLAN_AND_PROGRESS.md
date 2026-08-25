@@ -1939,6 +1939,90 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### C-10 (11:15) — **Expanding `DOMAINS` for Phase 4B silently broke the reproduction of the CANONICAL carrot bank. Caught by the test suite; fixed; both banks now regenerate byte-identically.**
+
+**What broke.** `prompt_families._blocks()` read the module-level `demo_pools.DOMAINS` constant while
+`build_demo_block()` indexes the **pools dict it was handed**. Taking `DOMAINS` from 6 to 10 for
+Phase 4B (R-18) therefore made the generator ask a 6-domain pools file for a 10-domain domain list:
+
+```
+KeyError: 'warehouse_logistics|benign'
+```
+
+**This is worse than a test failure.** The canonical bank behind *every* result in this sprint —
+`boombness_prompt_bank.jsonl` — **could no longer be regenerated from its own `demo_pools.json`**, and
+regenerating it is precisely what §19's reproduction manifest requires. **A bank generator whose
+output depends on a module constant rather than on its input is not reproducible.**
+
+**How it was caught.** Not by inspection — by `tests/test_prompt_families_strict.py` going
+`5 failed / 33 passed` in the tick's fast-test step, on a suite that was green at the previous commit.
+**The value of running the science-critical tests every tick is that they fail on the commit that
+breaks them, not three commits later.**
+
+**The fix.** `_blocks(preset, domains=None)` now takes the domain list as an argument, and
+`generate_bank` derives it from the pools actually loaded (`[d for d in DOMAINS if f"{d}|benign" in
+pools]`, in `DOMAINS` order so row order is untouched, plus any pool domain not in the constant).
+The `None` default falls back to the constant, so every existing caller is unchanged.
+
+**Verification — byte-identity, not "it runs":**
+
+| bank | committed sha256[:16] | regenerated sha256[:16] | families / violations |
+|---|---|---|---|
+| `boombness_prompt_bank.jsonl` (6 dom) | `7bf21cfbdc1966b0` | **`7bf21cfbdc1966b0`** | 336 / **0** |
+| `boombness_prompt_bank_d10.jsonl` (10 dom) | `368566acecdc350f` | **`368566acecdc350f`** | 560 / **0** |
+
+**No result is affected.** The d10 bank is byte-identical to the one jobs 779915-779919 already ran
+against, so Phase 4B needs no resubmission, and the carrot bank was never regenerated during the
+window in which the generator was broken. `test_prompt_families_strict.py` 5/5 pass; the four
+science-critical suites 112/112.
+
+---
+
+### R-18 (11:07) — **D-10's gate: the four new domains are ACCEPTED, on their audit and before any effect size was computed.**
+
+**Artifacts:** bank `data/boombness_prompts/boombness_prompt_bank_d10.jsonl` (+ `_meta.json`);
+audit `outputs/boombness/tokenization_audit/audit_20260825_104550_1349216` (job 779914).
+
+D-10 pre-registered that new domains are accepted or rejected **on their audit and never on their
+effect size**, because choosing domains by how much they help is how a floor becomes a search. Both
+gates were run and read **before a single behavioural number existed**:
+
+* **alignment (`prompt_families.py --strict`)** — `2x2 families checked=560 violations=0`,
+  `duplicate prompt_id rows dropped=0`. Exit 0.
+* **tokenization (`tokenization_audit.py`)** — `rows ok=4560 bad=0`, **`token-alignment violations=0`**,
+  `families=1680 checked=520 skipped_incomplete=1160`, `ambiguous=7`.
+
+**Bank shape:** 4560 rows, **10 domains balanced at exactly 456 each**, conditions
+`natural_doublespeak 1680 / benign_literal 1360 / direct_harmful 640 / concept_in_benign_ctx 640 /
+direct_codeword 120 / benign_remap 120`. The behavioural population filter yields **160 rows = 10
+domains x 16**, against 96 = 6 x 16 on the carrot bank.
+
+**Why this run exists at all.** The Phase-1 domain sign test is **at its attainable floor**: with 6
+domains and `lab_safety` netting zero, k = 5 and the floor is 0.0625, so *no arrangement of the data
+could have produced a smaller p*. That is a SIGN TEST, not a p-value. At k = 10 the floor falls to
+**2/2^10 = 0.00195**, so this is the run that lets the effect be *measured* rather than merely
+signed. **It cannot rescue a null and it is not being run to: the estimator, the unit of
+independence and the margins are all unchanged and were fixed in PR-1/PR-3.**
+
+**Arms (jobs 779915-779919, all COMPLETED, all 160 rows, 16 per domain in all ten):**
+
+| arm | scope_live | decode_live | prefill edits | decode edits | stop=length |
+|---|---|---|---|---|---|
+| `p4bA` baseline | — | — | — | — | 93/160 |
+| `legacy_all_query` | 1.0 | 1.0 | 4,879,044 | 13,299,048 | 106/160 |
+| `query_prefill_only` | 1.0 | **0.0** | 1,787,400 | **0** | 72/160 |
+| `demo_processing_only` | 1.0 | **0.0** | 3,017,169 | **0** | 116/160 |
+| `response_query_only` | 1.0 | 1.0 | 1,787,400 | 12,351,771 | 78/160 |
+
+`scope_violations = {}` on every arm. **PR-1's subset check holds on this bank too:**
+`qpre 1,787,400 + demoproc 3,017,169 = 4,804,569 <= legacy 4,879,044`, slack 74,475 — an inequality,
+never an equality, for the reason C-3b established.
+
+Judging is job **779926**, prefix `p4bj`, backend **pinned** to `openai/gpt-4o-mini` with the
+pre-flight canary returning `1.0000` on all arms. **No result is read until it lands.**
+
+---
+
 ### 🏆🏆🏆 R-17 (10:42) — **THE WITHIN-FAMILY BRIDGE REPLICATES ON QWEN3, AND MORE SHARPLY: `demo_processing_only` kills 10 attacks and loses binding on 0 of them, while losing binding on 5 families whose attack SURVIVED.**
 
 **Artifact:** `outputs/boombness/binding_behaviour_bridge/qbridge_20260825_104155_3190213/binding_behaviour_bridge.json`
@@ -2738,6 +2822,17 @@ re-derivation rather than a correction to something this phase published.
 *(kept visible on purpose)*
 
 *(none yet from this phase)*
+
+* **11:08 — `run_judge_cpu.sh` silently ignores every `P2_*` variable (job 779923).** I submitted the
+  Phase-4B judging through it with a full `--export` of `P2_MANIFEST/P2_PREFIX/P2_BANK/...`. Line 31 of
+  that wrapper is a **hardcoded** `bash scripts/judge_qwen3_decomposition.sh` — it takes no manifest
+  and re-judges its own baked-in arm list. **The env vars were accepted and discarded in silence.**
+  Caught by tailing the job's stdout instead of trusting the submission, and the wiring was confirmed
+  by grep before resubmitting. The correct wrapper is `src/boombness/slurm/run_p2_judge.sh`
+  (job **779926**). 779923 was **not** cancelled, per the standing instruction; it writes fresh
+  `${STAMP}_${tag}` directories, so it cannot overwrite or collide with `p4bj_*` — the cost is wasted
+  CPU and judge API calls, not a corrupted artifact. **Lesson: a wrapper that accepts `--export=ALL`
+  is not a wrapper that reads your variables.**
 
 ## B7b. PROCESS NOTES
 

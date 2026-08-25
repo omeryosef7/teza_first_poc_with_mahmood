@@ -513,9 +513,19 @@ def check_alignment(rows_by_condition: Dict[str, Dict], codeword: str, concept: 
 # --------------------------------------------------------------------------- #
 # Bank presets
 # --------------------------------------------------------------------------- #
-def _blocks(preset: str) -> List[Dict]:
-    """Each block is a designed sub-experiment; the bank is their union (deduplicated)."""
-    domains = list(DOMAINS)
+def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
+    """Each block is a designed sub-experiment; the bank is their union (deduplicated).
+
+    ``domains`` comes from the POOLS FILE BEING GENERATED FROM, not from the module-level
+    ``DOMAINS`` constant.  On 2026-08-25 the constant grew from 6 domains to 10 for Phase 4B, and
+    because this function read the constant while ``build_demo_block`` indexes the pools dict, the
+    canonical 6-domain carrot bank could no longer be regenerated from its own
+    ``demo_pools.json``: it died on ``KeyError: 'warehouse_logistics|benign'``.  A bank generator
+    whose output depends on a constant rather than on its input is not reproducible, and the
+    reproduction manifest (S19) depends on exactly this command still working.  Falling back to the
+    constant keeps every existing caller behaving as before.
+    """
+    domains = list(DOMAINS) if domains is None else list(domains)
     if preset == "smoke":
         return [dict(name="core2x2", domains=domains[:1], splits=["dev"], conditions=list(CORE_2X2),
                      n_examples=[4], strengths=["none"], consistencies=["consistent"],
@@ -684,7 +694,11 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
     dup_by_condition: Dict[str, int] = {}
     dup_by_block: Dict[str, int] = {}
 
-    for block in _blocks(preset):
+    # Domains present in the pools we were actually handed, in DOMAINS order so the bank's row
+    # order is unchanged for any pools file that carries the full set.
+    pool_domains = [d for d in DOMAINS if f"{d}|benign" in pools]
+    pool_domains += sorted({k.split("|", 1)[0] for k in pools} - set(pool_domains))
+    for block in _blocks(preset, pool_domains):
         for domain in block["domains"]:
             for split in block["splits"]:
                 for n_ex in block["n_examples"]:
