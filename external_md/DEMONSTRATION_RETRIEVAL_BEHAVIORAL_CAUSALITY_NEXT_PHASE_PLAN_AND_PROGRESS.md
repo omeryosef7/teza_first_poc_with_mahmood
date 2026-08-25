@@ -1943,6 +1943,40 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-8 (13:35) — **Pre-registered before running: DOSE-RESPONSE. If the demonstrations are what suppress refusal, then knocking out demo processing should restore MORE refusal when there are MORE demonstrations to knock out.**
+
+R-19/R-20/R-21 establish **that** `demo_processing_only` restores refusal and no other scope does.
+They do not say **why**. The mechanistic reading is: *the demonstrations suppress refusal while they
+are being processed, and masking demo->demo attention prevents that suppression.* **That reading makes
+a quantitative prediction the existing data can already test**, because `n_examples ∈ {1, 2, 4, 8}` is
+a bank axis and every arm is balanced across it (40 rows per level, 160 total).
+
+**Prediction (fixed before looking).** The refusal rise under `demo_processing_only`, measured against
+the same-`n_examples` baseline, is **monotonically non-decreasing in `n_examples`**, and is **larger at
+`n_examples = 8` than at `n_examples = 1`** by more than the arm-vs-baseline margin
+`MARGIN_VS_BASELINE = 0.0521`.
+
+**Refuted if** the rise is flat across levels (within margin end to end), or **decreasing**. A flat
+dose-response would mean the effect is about the *presence* of a demo block rather than its *content
+volume*, which is a different mechanism and would have to be reported as such.
+
+**Control arms, pre-specified.** The same curve is computed for `legacy_all_query` and
+`response_query_only`. Those arms restore **zero** refusal overall (R-21: 0/24, 0/24, 0/19, 0/20), so
+their curves should be **flat at zero**. If a control curve also rises with `n_examples`, the effect is
+about prompt length or demo-block size and **not** about demonstration processing.
+
+**⛔ Power is the binding constraint here and I am stating it before, not after.** Each cell is **40
+rows**, so the finest resolvable step is **1/40 = 0.025** and a single row moves a cell by that much.
+`MARGIN_VS_BASELINE = 0.0521` is **≈ 2.1 rows**. **A monotone-looking curve built from steps of one or
+two rows is inside the noise and will be reported as SUGGESTIVE ONLY.** I will report the endpoint
+contrast (n=8 vs n=1) against the margin as the primary read, and the shape as description.
+
+**Both models, and they are separate tests.** Llama and Qwen3 are reported independently; a result on
+one is not a result on both. Zero new GPU: this is a re-cut of artifacts already committed
+(`p4bj_*`, `q4bj_*`).
+
+---
+
 ### 🏆 R-21 (13:12) — **PR-7 OUTCOME A: the degeneracy control HOLDS in all 8 cells. The zero-refusal arms kill by COHERENT NON-COMPLIANCE, not by breaking the generator. My own R-20 caveat does not bite.**
 
 **Artifact:** `outputs/boombness/kill_route_breakdown/krb_20260825_131040_3620206/kill_route_breakdown.json`
