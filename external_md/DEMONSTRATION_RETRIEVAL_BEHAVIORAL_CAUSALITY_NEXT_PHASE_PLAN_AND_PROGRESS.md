@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
 | 🏆🏆🏆 **THREE SCOPES REMOVE A STATISTICALLY INDISTINGUISHABLE AMOUNT OF ATTACK BY DIFFERENT ROUTES.** ASR gaps demoproc-vs-legacy **0.0250** and legacy-vs-respq **0.0188** are both INSIDE the pre-registered 0.0417 margin; the arms separate only on **refusal** — demoproc **14/25 (56%)** killed-by-refusal at rate **0.2188**, vs **0/24** and **0/24** at 0.0312 and 0.0125, baseline 0.0563 | k=10, n=160; refusal measured by deterministic `kw_refusal`, not the LLM judge | **R-19**, **C-11** |
@@ -1940,6 +1941,76 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### R-22 (13:40) — **PR-8 SPLITS BY MODEL: a textbook dose-response on Llama (0 -> +0.3500, monotone, 6.7x the margin), and a REFUTATION on Qwen3 by my own endpoint rule. Reported as one confirmation and one refutation, not as a trend.**
+
+**Artifacts:** re-cut of `p4bj_*` and `q4bj_*` (no new compute). Cells verified balanced: **40 rows per
+`n_examples` level, 4 domains per level, on both models.**
+
+#### LLAMA — confirmed, and the shape is the finding
+
+Refusal rise under `demo_processing_only` vs the **same-`n_examples`** baseline:
+
+| n_examples | baseline | demoproc | rise | **step, in rows** |
+|---|---|---|---|---|
+| **1** | 3/40 | 3/40 | **+0.0000** | **+0 rows** |
+| 2 | 3/40 | 6/40 | +0.0750 | +3 rows |
+| 4 | 2/40 | 11/40 | +0.2250 | +9 rows |
+| **8** | 1/40 | 15/40 | **+0.3500** | **+14 rows** |
+
+**Monotone non-decreasing: TRUE. Endpoint contrast +0.3500 — 6.7x the 0.0521 margin.** The steps are
+0, 3, 9 and 14 rows, far outside the one-to-two-row wobble PR-8 declared as noise in advance.
+
+**The most informative cell is `n_examples = 1`, where the rise is EXACTLY ZERO.** With a single
+demonstration, knocking out demonstration processing restores **no refusal at all**. **The effect is
+not a property of having a demo block — it is a property of having ACCUMULATED demonstrations**, and
+it grows with how many there are.
+
+**Controls behave as pre-specified**: `legacy` end-to-end **−0.0000** and `respq` **+0.0500**, both
+**within margin**, both non-monotone, both hovering at or below zero at every level. **Prompt length
+and demo-block size therefore do not explain the Llama curve** — those grow with `n_examples` for the
+control arms too, and the control arms do nothing.
+
+#### ⛔ QWEN3 — REFUTED by the rule I wrote before looking
+
+| n_examples | baseline | demoproc | rise | step, in rows |
+|---|---|---|---|---|
+| 1 | 0/40 | 7/40 | **+0.1750** | +7 rows |
+| 2 | 1/40 | 2/40 | **+0.0250** | +1 row |
+| 4 | 1/40 | 6/40 | +0.1250 | +5 rows |
+| 8 | 0/40 | 8/40 | +0.2000 | +8 rows |
+
+**Monotone: FALSE. Endpoint contrast +0.0250 — WITHIN the 0.0521 margin.** PR-8 states plainly:
+*"Refuted if the rise is flat across levels (within margin end to end), or decreasing."* **It is flat
+end to end. The dose-response hypothesis is REFUTED on Qwen3, and I am applying my own rule rather
+than reaching for the reading I would prefer.**
+
+**What is nonetheless true on Qwen3, and must not be inflated into a rescue:** the rise is **positive
+at all four levels** (+7, +1, +5, +8 rows), which is consistent with R-20's overall +0.1312 and shows
+the refusal restoration is real at every dose. **What fails is the ORDERING, not the effect.** The
+non-monotonicity is driven by the `n=2` cell at **+1 row**, which is *precisely* the one-row wobble
+PR-8 pre-declared as unresolvable — **but a curve whose shape depends on cells that thin cannot be
+claimed as a dose-response either way.** The honest verdict is the pre-registered one: **refuted.**
+
+#### What this does and does not change
+
+* **R-19/R-20/R-21 are untouched.** They claim `demo_processing_only` restores refusal and no other
+  scope does. R-22 tested a *mechanism* for that, not the effect itself, and the effect is positive at
+  every dose on both models.
+* **The mechanism is established on Llama only.** *"Demonstrations suppress refusal cumulatively, and
+  masking their processing lifts that suppression in proportion to how much of it there was"* now has
+  strong single-model evidence and **an explicit cross-model failure**. It cannot be stated as a
+  two-model result. **This is exactly the asymmetry R-20 warned about in the other direction**, where
+  the ASR ordering reversed between models while refusal held.
+* **No follow-up is launched to rescue the Qwen3 curve.** Per the standing instruction, a failed gate
+  stops that branch. Raising Qwen3 cell counts to resolve a one-row wobble would be a search for a
+  result, not a test of one.
+
+⚠ 40 rows/cell; finest resolvable step 0.025. ⚠ `kw_refusal` is lexical. ⚠ Llama baseline refusal
+*falls* with `n_examples` (3, 3, 2, 1 of 40) while the demoproc rise climbs — so the two move apart,
+but the baseline trend is itself only a 2-row spread and is not interpreted.
 
 ---
 
