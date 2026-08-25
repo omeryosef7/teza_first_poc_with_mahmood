@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆🏆 **BOTH MODELS, WITHIN-FAMILY: in 6/6 arm×model cells, binding loss carries NO positive information about attack death** — 3 flat, 3 pointing the wrong way | Qwen3 `demo_processing_only`: **0/10** killed lost binding vs **5/38** not-killed; `legacy` flattens 28/48 | **R-17** |
 | 🏆🏆🏆 **WITHIN-FAMILY: the attack dies where the mapping survives.** `demo_processing_only` kills **7** attacks and loses binding on **0 of 48** families (rule-of-three ≤ 0.0625); `query_prefill_only` loses binding on **8/41** families whose attack survived and **0/7** of those it killed — **anti-associated** | 48 families, each one behavioural row + one probe row sharing a byte-identical demo block | **R-16** |
 | 🏆🏆🏆 **THE BINDING SURVIVES THE INTERVENTION THAT KILLS THE BEHAVIOUR.** `demo_processing_only` removes ~75 % of attack success (Δ −0.1250 Llama / −0.1562 Qwen3) yet takes binding accuracy **0.8750 → 1.0000**, rescuing **all 6** failing rows (0 down / 6 up, McNemar p = 0.0312 **at its floor**), while the late control moves **0/0**. **Representation and behaviour are separable at the exact point the intervention works** | 5 arms × 48 forced-choice rows, Llama, option mass 0.37–0.60, `frac_rows_scope_live` 1.0 | **R-15** |
 | ⚠ **…and across arms the two quantities move in OPPOSITE directions** | margin loss `legacy` −2.557, `qpre` −2.172, `demoproc` **−0.897** (smallest) — the arm that hurts behaviour most hurts the mapping least | **R-15** |
@@ -1935,6 +1936,53 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-17 (10:42) — **THE WITHIN-FAMILY BRIDGE REPLICATES ON QWEN3, AND MORE SHARPLY: `demo_processing_only` kills 10 attacks and loses binding on 0 of them, while losing binding on 5 families whose attack SURVIVED.**
+
+**Artifact:** `outputs/boombness/binding_behaviour_bridge/qbridge_20260825_104155_3190213/binding_behaviour_bridge.json`
+**Same script as R-16, zero changes** — `src/boombness/binding_behaviour_bridge.py`, pointed at the Qwen3
+behavioural judge dirs (`q1j_*`, the R-12 session) and the Qwen3 probe arms (`q2*`).
+
+| arm | families | killed | **lost \| killed** | lost \| NOT killed | reads as |
+|---|---|---|---|---|---|
+| **`demo_processing_only`** | 48 | **10** | **0 / 10 = 0.0000** | 5 / 38 = 0.1316 | **anti-associated** |
+| `legacy_all_query` | 48 | 10 | 6 / 10 = 0.6000 | 22 / 38 = 0.5789 | independent, and a sledgehammer |
+| `query_prefill_only` | 48 | 7 | 1 / 7 = 0.1429 | 6 / 41 = 0.1463 | independent to three decimals |
+
+#### What replicates, and what is new
+
+**The Qwen3 result is stronger than Llama's on the axis that mattered.** R-16's `0/7` rested on a thin
+denominator. Here `demo_processing_only` kills **10** attacks and loses the binding on **none of
+them** — while demonstrably being *able* to cost binding, since it took the mapping from **5 families
+whose attack it did not kill**. On Llama the arm lost binding nowhere at all, so a sceptic could
+answer "it simply never damages binding". **Qwen3 removes that escape: the arm damages binding, just
+never on the families it disarms.**
+
+**`legacy_all_query` is exposed as indiscriminate.** It loses the binding on **28 of 48 families**
+(0.60 vs 0.58) — it is not selecting anything, it is flattening the demonstrations. That is the
+arm the paper's original knockout used, and it is why an unscoped knockout cannot separate these two
+things.
+
+**`query_prefill_only` lands at 0.1429 vs 0.1463** — independence to three decimals.
+
+#### The unified statement across both models
+
+**In 6 of 6 arm×model cells, binding loss carries no positive information about attack death.**
+Three cells are flat (independent), three point the wrong way (binding lost *more often* where the
+attack survived). **Not one cell shows the positive association that "the mechanism runs through the
+mapping" requires.**
+
+> Within byte-identical demonstrations, on two model families, the intervention that disarms the
+> attack is not the intervention that costs the concept mapping — and the arm that costs the mapping
+> most (legacy) is the one that discriminates least.
+
+⚠ Both models: probe is a forced-choice readout, not behaviour; lexical G = 1 (C-9d); the killed
+counts (7–10 of 48) remain small, which is why the load is carried by the *not-killed* column.
+Qwen3 probe liveness: `frac_rows_scope_live = 1.0`, `min_prefill_forwards = 44`,
+`total_prefill_edits = 4,014,032`, `total_decode_edits = 0`, `scope_violations = {}`,
+option-mass gate **PASS** (median 0.9990).
 
 ---
 
