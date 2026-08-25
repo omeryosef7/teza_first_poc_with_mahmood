@@ -30,7 +30,11 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
-| 🏆🏆 **OUTCOME B REPLICATES ACROSS TWO MODEL FAMILIES.** Qwen3: `demoproc` **−0.1562** vs `respq` **−0.0729** (PR-5 cond. 1 holds by +0.0833); primary fails equivalence (gap 0.0937, respq = 43.8 % of legacy). **And only the arms touching the demonstrations' OWN processing beat their matched control: `legacy` −0.0937, `demoproc` −0.0833, while BOTH response-side arms are EXACTLY +0.0000 against it** | 8 arms, one pinned session, n=96, Qwen3 L7–17, baseline 0.1771 | **R-12** |
+| 🏆🏆 **OUTCOME B REPLICATES ACROSS TWO MODEL FAMILIES.** Qwen3: `demoproc` **−0.1562** vs `respq` **−0.0729** (PR-5 cond. 1 holds by +0.0833); primary fails equivalence (gap 0.0937, respq = 43.8 % of legacy). **Neither response-side arm is DISTINGUISHABLE from its late-layer control** (`respq − late11` CI [−0.0572, +0.0572]) ⚠ *amended by C-9a: the +0.0000 is a balanced tie, NOT per-prompt identity — 88/96 same label, 4up/4down, 0/96 identical generations* | 8 arms, one pinned session, n=96, Qwen3 L7–17, baseline 0.1771 | **R-12**, amended **C-9** |
+| ✅ **`demo_processing_only`'s effect is NOT refusal, NOT truncation, and NOT dose** | down-flips decompose 15 = 3 refused + 3 short + **12 neither** (Llama) and 17 = 4 + 4 + **12 neither** (Qwen3); non-refused Δ **−0.1200 / −0.1358**; it makes output **longer** (ratio 1.14) and still beats its control length-matched (**−0.1310 vs −0.0714**); Spearman(edits, Δ) = −0.40 / −0.30 | **C-9b**, **C-9** |
+| ⚠ **`legacy_all_query`'s Qwen3 advantage IS length-carried** | median length ratio **0.6461**, 56/96 rows shortened ≥30 %, 13 of 17 down-flips length-collapsed; length-matched **−0.0750 vs control −0.0714** — it no longer beats its control | **C-9b** |
+| ⛔ **At the bank's real unit (24 nested demonstration cells) the arm-vs-control contrast does not replicate** | **Llama `demoproc` p = 0.0063** (the phase's first sub-0.05 at a defensible unit); **Qwen3 p = 0.2188** for both `legacy` and `demoproc` | **C-9c** |
+| ⛔ **EVERYTHING in Phase 1 is lexical G = 1** | one `codeword`, one `concept`, one `condition`, one `role_style` — n_distinct = 1 on all ten design fields across all 96 prompts and all 6 domains | **C-9d** |
 | ⚠ **`query_prefill_only` is model-specific and non-specific**: Llama **+0.0625** (wrong way), Qwen3 **−0.0729** but **exactly equal to its late control** | PR-5 condition 3 fails; its meaning was fixed before the run | **R-12**, PR-5 |
 | ✅ **The refusal signature is cross-model; the length collapse is not** | `demoproc` refuses 0.208 (Llama) / **0.156** (Qwen3) vs legacy 0.010 / 0.000; rows <200 chars 20 (Llama) vs **1** (Qwen3) | R-10, **R-12** |
 | 🏆 **OUTCOME B: the causal path is NOT response-time retrieval.** Corrupting the demonstrations' own prefill encoding carries **92.3 %** of the legacy effect (Δ −0.1250 vs −0.1354); masking the response's access carries **46.2 %** (−0.0625); the primary comparison **fails equivalence** (gap 0.0729 > margin 0.0417). Masking the final query's prefill access moves ASR **the wrong way, +0.0625** | 8 arms, one pinned judging session, n=96, Llama L6–14; effect **survives** length conditioning (−0.1200 at T=200) | **R-10** |
@@ -1927,6 +1931,96 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔⛔⛔ C-9 (10:10) — **THE SECOND 4-HOUR REVIEW: all ~40 scalars of R-10 and R-12 reproduce at full precision, and FOUR of the claims built on them are withdrawn or narrowed. The core ordering survives and is in one respect strengthened.**
+
+**Arithmetic and provenance are clean.** Every claimed scalar recomputed independently from the 16
+`results.jsonl` files without touching the artifacts: both baselines, all 15 arm deltas, every
+down/up count, both refusal sets, both primary gaps, every domain sign test and its floor — **all
+MATCH.** Integrity: 16/16 judge dirs `DONE`, 96 rows, 0 duplicate `prompt_id`s, 0 null scores,
+`judge_model_used = openai/gpt-4o-mini` on 96/96 of every arm, and
+**`judge.completion_sha256_16 == sha256(gens.generation)[:16]` in 96/96 rows across all 16 arm/gens
+pairings.** *(That last check is new and is the strongest provenance evidence this project has: the
+judged text is provably the generated text, row by row.)*
+
+#### ⛔ C-9a — "EXACTLY equal to the late-layer control — to the prompt" is WITHDRAWN
+
+R-12 asserted identity and then extended it to mechanism (*"doing the same thing at layers 25–35 does
+the same thing"*). **It is a balanced-discordance tie, not identity:**
+
+| pair | same label | discordant | identical generations |
+|---|---|---|---|
+| `respq` vs `late11` | **88/96** | **4 up / 4 down** | **0/96** |
+| `qpre` vs `late11` | **92/96** | 2 / 2 | **0/96** |
+
+**And a tie is the most likely single outcome under the null:** P(exact tie | 8 discordants) =
+**0.2734**, P(tie | 4) = **0.3750**; both arms landing on zero jointly ≈ **0.10 with no shared
+mechanism at all.** Exact CIs: `respq − late11` **[−0.0572, +0.0572]**, `qpre − late11`
+**[−0.0360, +0.0360]**.
+
+> **The surviving statement is the weaker one: neither response-side arm is DISTINGUISHABLE from its
+> late-layer control at n = 96.** The "to the prompt" wording and the mechanistic gloss are withdrawn.
+> ✅ *Also checked and negative:* `respq` and `qpre` are **not** the same arm misconfigured — 86/96 same
+> label, 1/96 identical generation, distinct flip sets.
+
+#### ⛔ C-9b — on Qwen3, `legacy`'s "beat" is carried by a LENGTH COLLAPSE. `demo_processing_only`'s is NOT.
+
+Paired median completion-length ratio vs baseline, and rows shortened ≥ 30 %:
+
+| arm | median ratio | rows shortened ≥30 % | **length-matched Δ (ratio ≥ 0.7)** |
+|---|---|---|---|
+| `legacy_all_query` | **0.6461** | **56/96** | **−0.0750** (n=40) |
+| `respq` | 0.6447 | 55/96 | −0.0488 |
+| `qpre` | 0.6965 | 49/96 | −0.0213 |
+| **`demo_processing_only`** | **1.1424** ⬆ | **12/96** | **−0.1310** (n=84) |
+| `late11` (control) | 1.0000 | 12/96 | −0.0714 (n=84) |
+
+**13 of `legacy`'s 17 down-flips are length-collapsed rows**, and once length is matched `legacy`
+(−0.0750) **no longer beats its control** (−0.0714). ⚠ PR-4's collider caveat applies to that
+comparison as always.
+
+**But `demo_processing_only` makes output *longer* (ratio 1.14) and shortens only 12 of 96 — the same
+as the control — and it still beats the control on length-matched rows (−0.1310 vs −0.0714).**
+**So the length confound that eats `legacy`'s Qwen3 advantage does not touch the decisive arm.** This
+is a *strengthening* of the R-12 ordering, arrived at by a check designed to break it.
+
+#### ⛔ C-9c — at the bank's REAL clustering unit, the Qwen3 arm-vs-control contrast does not survive
+
+The bank is **6 domains × 2 bank_blocks × 2 family slots = 24 demonstration cells**, with the four
+`n_examples` levels **NESTED** inside each cell (the smaller-n demo block is a *prefix* of the larger-n
+one in **72/72** adjacent pairs). **So 96 prompts are not 96 units, and the domain is not the finest
+honest cluster either.** Cell-clustered exact sign test on **arm minus matched control**:
+
+| | Llama | Qwen3 |
+|---|---|---|
+| `legacy_all_query` | **p = 0.0117** | p = 0.2188 |
+| **`demo_processing_only`** | **p = 0.0063** | p = 0.2188 |
+| `respq` / `qpre` | 0.2668 / 0.7744 | 1.0000 / 1.0000 |
+
+**On Llama, `demo_processing_only` beats its matched control at p = 0.0063 — the first sub-0.05 result
+at a defensible unit anywhere in this phase.** On Qwen3 neither arm clears. **The cross-model claim is
+therefore: the ORDERING replicates, the arm-vs-control significance does not.**
+
+#### ⛔ C-9d — the entire result is lexical G = 1, and I never said so
+
+Over all 96 prompts: `codeword`, `concept`, `demo_surface`, `query_surface`, `target_semantic`,
+`condition`, `strength`, `consistency`, `role_style`, `query_kind` each have **n_distinct = 1**.
+**One codeword, one concept, one framing — across all six "independent" domains.** The previous sprint
+retracted E12 over exactly this (*"call it `d_surface_carrot_bomb`"*). **Every Phase-1 statement is a
+statement about one lexical pair**, and that belongs beside the headline, not in a limits paragraph.
+
+#### ✅ And two checks that came out FOR the result
+
+* **`demo_processing_only`'s effect is not mostly refusal or truncation.** Decomposing its down-flips:
+  Llama **15 = 3 refused + 3 length-collapsed + 12 NEITHER**, non-refused Δ **−0.1200** (n=75);
+  Qwen3 **17 = 4 + 4 + 12 NEITHER**, non-refused Δ **−0.1358** (n=81). **The refusal elevation is real
+  but it is not the mechanism** — most flips are neither.
+* **Dose does not drive the ordering.** Spearman(median `hook_n_edits`, Δ) over the five treatment arms
+  = **−0.40** (Llama), **−0.30** (Qwen3). The arm with the most edits is not the arm with the biggest
+  effect — which is what the previous sprint's entire dose-confound literature would have predicted if
+  it did.
 
 ---
 
