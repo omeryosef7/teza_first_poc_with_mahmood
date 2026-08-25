@@ -38,6 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
+| ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
 | 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
 | 🏆🏆🏆 **THREE SCOPES REMOVE A STATISTICALLY INDISTINGUISHABLE AMOUNT OF ATTACK BY DIFFERENT ROUTES.** ASR gaps demoproc-vs-legacy **0.0250** and legacy-vs-respq **0.0188** are both INSIDE the pre-registered 0.0417 margin; the arms separate only on **refusal** — demoproc **14/25 (56%)** killed-by-refusal at rate **0.2188**, vs **0/24** and **0/24** at 0.0312 and 0.0125, baseline 0.0563 | k=10, n=160; refusal measured by deterministic `kw_refusal`, not the LLM judge | **R-19**, **C-11** |
@@ -1948,6 +1949,45 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ✅ R-33 (20:50) — **THE IDENTITY CONTROL PASSES, 8/8 BYTE-IDENTICAL. The rescue instrument writes exactly what it read. The gate that blocked every rescue number is now open.**
+
+**Job 781047**, `--rescue-donor self`: capture the arm's activations **under the arm's own hooks**,
+then write them straight back. **If the patch is sound this must reproduce the arm exactly.**
+
+| comparison | identical rows |
+|---|---|
+| **identity control vs knockout-only** | **8 / 8** |
+| identity control vs rescue (clean donor) | **0 / 8** |
+
+**Per-row `n_chars` match exactly on all eight**, including the outlier `d3668c5c` at **119 / 119** —
+the short-refusal row. **A misaligned or partial write could not reproduce a 119-character refusal
+character-for-character.**
+
+**What this rules out**, which is the whole reason the control exists:
+
+* the patch writing to the **wrong positions** (would perturb 8/8),
+* writing the **wrong dtype/device-cast** values (would perturb),
+* firing on the **wrong forward pass** or the wrong layer (would perturb),
+* **not firing at all** (would also give 8/8 — but then `rescue` vs `identity` would be 8/8 too, and
+  it is **0/8**). **The two comparisons together are what make the result airtight: identical where it
+  must be, different where it must be.**
+
+**So the instrument is validated end-to-end on the real model**, complementing the fake-model unit
+tests (write-correctness, locality, hook removal) and `strict_ids` (alignment). **R-31's flagged gap
+is closed and R-32's gate is open.**
+
+#### Where §20 Q3 now stands
+
+The rescue **fires** and is **sound**. What it does is not yet measured: the 8-row smoke shows rescue
+differing from both knockout-only and clean on 8/8, with one suggestive row (`d3668c5c`: 119 chars
+knocked out → 760 rescued). **n=8, unjudged, and nothing is claimed.**
+
+**Next, in order:** re-read the resubmitted smoke (`781168`) for the now-recorded `rescue_liveness`
+field → **pre-register what a rescue would and would not demonstrate** → then the sweep at 160 rows
+with judging. **No rescue number is read before that pre-registration exists.**
 
 ---
 
