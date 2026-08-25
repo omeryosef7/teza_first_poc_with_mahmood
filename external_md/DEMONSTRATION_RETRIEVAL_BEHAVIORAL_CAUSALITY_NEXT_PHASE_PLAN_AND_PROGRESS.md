@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
@@ -1946,6 +1947,62 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ R-27 (16:45) — **PR-11 IS UNINFORMATIVE, and I am reporting it as such rather than as the headline it briefly looked like. Concept-term usage is CONFOUNDED WITH THE OUTCOME: in this bank the concept terms ARE the harmful content.**
+
+**What it looked like at first.** Among killed attacks, concept-term usage **collapses**:
+
+| | baseline **jailbroken** | `demoproc` killed | `legacy` killed | `respq` killed |
+|---|---|---|---|---|
+| **Llama** | **64%** (16/25) | **0%** (0/25) | **0%** (0/24) | 4% (1/24) |
+| **Qwen3** | **81%** (17/21) | **0%** (0/20) | 11% (2/19) | 5% (1/20) |
+
+Read naively that says *the model stops using the mapping when the attack dies* — which would
+**contradict R-16/R-17**, where the binding survived the same intervention. PR-11 pre-flagged that a
+disagreement between the probe and free generation would be a real result. **It is not one. The
+comparison is broken.**
+
+#### The check that killed it
+
+PR-11's own confound clause required the baseline's own rate. **The correct comparison is not
+baseline-jailbroken but baseline-NOT-jailbroken** — rows where no intervention was applied and the
+attack simply did not land:
+
+| | baseline NOT jailbroken | **killed rows (all arms)** |
+|---|---|---|
+| **Llama** | **6%** (8/135) | **0-4%** |
+| **Qwen3** | **10%** (14/139) | **0-11%** |
+
+**Killed rows look exactly like untreated rows that were never jailbroken.** The concept-usage drop is
+**entirely explained by jailbreak status**, which is true in the baseline with no intervention at all.
+
+> **In this bank, "mentions bomb/explosive/detonate" and "is a successful jailbreak" are close to the
+> same event.** StrongREJECT scores a row ≥ 0.5 largely *because* it produced that content. **So
+> "killed rows contain less concept language" is very nearly a restatement of "killed rows scored
+> lower" — a measure confounded with the outcome it is being used to explain.**
+
+#### The verdict
+
+**PR-11 is answered NO — it cannot be answered with this instrument.** The lexical concept flag cannot
+separate *"the mapping stopped being used"* from *"the harmful content is absent"*, because in this
+bank they are the same tokens. **No claim about mapping usage in free generation is made, and R-16 /
+R-17 are neither supported nor contradicted by it.**
+
+**What I nearly published.** A 64% → 0% collapse across two models, with a ready-made story about
+representation and use. **The tautology check was in PR-11 as a pre-committed confound clause, and
+running it is the only reason this is a null instead of a headline.** Recorded here as an instrument
+failure, in the same register as a result.
+
+**A version that WOULD work, recorded rather than attempted:** the flag would have to be a concept
+term that is **not** itself harmful content — the mapping expressed in a benign register. That is a
+bank-design requirement (a codeword whose concept has neutral vocabulary), joining R-25's
+longer-context requirement on the list of things this bank cannot answer. **Not attempted now.**
+
+⚠ Also observed, too thin to interpret: the still-jailbroken cells hold **n = 0, 1, 2** rows — these
+arms killed nearly every attack they touched, so there is no surviving-attack population to compare
+against.
 
 ---
 
