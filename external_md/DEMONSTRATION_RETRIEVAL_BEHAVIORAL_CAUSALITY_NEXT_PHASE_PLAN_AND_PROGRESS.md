@@ -1950,6 +1950,51 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-12 (17:40) — **Pre-registered: §20 Q5's fourth independent demonstration pool, run as a CONFIRMATORY test of C1 on entirely new demonstration sentences.**
+
+**This is the gap the handoff refused to call "superseded".** Both a fourth pool and more domains were
+requested; only the domain expansion (R-18) was delivered. **This closes it.**
+
+**What "independent pool" means here, stated precisely.** Same concept/codeword (`bomb`/`carrot`), same
+10 domains, same design, same generator (GPT-4o-mini via `prepare_demos.gen_demos`) — **a different
+generator seed, hence entirely different demonstration SENTENCES.** That is the axis §20 Q5 asks
+about: the mechanism must not depend on the particular demo text the pool happened to contain.
+Job **780821**, seed `20260825` against the incumbent `20260816`.
+
+**One code change, additive.** `run_demo_pools.sh` hardcoded `--seed 20260816`; it now reads `DP_SEED`
+**defaulting to that same value**, so every prior invocation reproduces byte-for-byte. No other file
+is touched.
+
+**⛔ This is CONFIRMATORY, and the claim under test is fixed before the pool exists.** The claim is
+**C1**, the phase's strongest result:
+
+> `demo_processing_only` restores refusal; the other scopes do not.
+
+**Replication requires BOTH:**
+1. `demo_processing_only`'s keyword-refusal rate exceeds the **pool-B baseline's** by more than
+   `MARGIN_VS_BASELINE = 0.0521`.
+2. `legacy_all_query` and `response_query_only` each stay **within** 0.0521 of that baseline.
+
+**Refuted if** either fails. **The pool-B baseline is read from pool B's own baseline arm and is not
+assumed equal to** the d10 baseline (0.0563 Llama).
+
+**⛔ Pre-committed as NOT counting**, consistent with PR-6 and C-11:
+* **ASR magnitudes and any ranking of arms.** C-11 established these sit inside the margin; a different
+  ordering on pool B is not evidence of anything.
+* **The domain sign test's p or floor.** Baseline ASR will differ, so attainable evidence differs.
+* **Refusal dose-response.** That is C6, single-model and separately refuted on Qwen3 (R-22); pool B is
+  not being used to relitigate it.
+
+**Model: Llama only**, as §20 Q5 specifies ("especially on Llama"), and because C1's Llama refusal rise
+(+0.1625) is the larger of the two and therefore the more falsifiable target.
+
+**Gates before any arm is submitted**, in order, each of which can stop this branch:
+`prompt_families.py --strict` (0 violations) → `tokenization_audit.py` (0 alignment violations) →
+**pool B must differ from pool A** (a seed that silently produced identical sentences would make this
+a re-run of R-19 wearing a new name, and I will check the sentence-set hashes, not the file names).
+
+---
+
 ### ⛔ R-27 (16:45) — **PR-11 IS UNINFORMATIVE, and I am reporting it as such rather than as the headline it briefly looked like. Concept-term usage is CONFOUNDED WITH THE OUTCOME: in this bank the concept terms ARE the harmful content.**
 
 **What it looked like at first.** Among killed attacks, concept-term usage **collapses**:

@@ -21,6 +21,11 @@ if [ -f .env ]; then set -a; source .env; set +a; fi
 : "${DP_CONCEPT:?DP_CONCEPT not set}"
 : "${DP_CODEWORD:?DP_CODEWORD not set}"
 : "${DP_OUT:?DP_OUT not set}"
-echo "[dpools] concept=$DP_CONCEPT codeword=$DP_CODEWORD -> $DP_OUT"
+# DP_SEED defaults to the value this script hardcoded until 2026-08-25, so every prior invocation
+# reproduces byte-for-byte. It is a parameter now because Section 20 Q5 asks whether the mechanism
+# survives an INDEPENDENT demonstration pool, and independence here means new demonstration
+# SENTENCES from the same design -- which is exactly what a different generator seed produces.
+: "${DP_SEED:=20260816}"
+echo "[dpools] concept=$DP_CONCEPT codeword=$DP_CODEWORD seed=$DP_SEED -> $DP_OUT"
 python -u src/boombness/demo_pools.py \
-  --concept "$DP_CONCEPT" --codeword "$DP_CODEWORD" --seed 20260816 --out "$DP_OUT"
+  --concept "$DP_CONCEPT" --codeword "$DP_CODEWORD" --seed "$DP_SEED" --out "$DP_OUT"
