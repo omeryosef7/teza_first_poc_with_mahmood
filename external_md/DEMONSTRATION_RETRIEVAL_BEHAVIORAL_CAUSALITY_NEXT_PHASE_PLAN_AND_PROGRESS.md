@@ -1941,6 +1941,45 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-6 (12:30) — **Pre-registered BEFORE the Qwen3 Phase-4B judge output was read. Fixes what would count as replication of R-19, and what would refute it.**
+
+Written while job **780012** was still judging; the artifacts existed but no scalar from them had been
+loaded. R-19's surviving claim (as corrected by C-11) is **not** about effect magnitudes, so this
+pre-registration is not either.
+
+**The claim under test.** *Scopes that remove comparable amounts of attack do so by different routes,
+and `demo_processing_only` is the one that works by restoring refusal.*
+
+**Replication requires ALL THREE:**
+
+1. **`demo_processing_only` raises the keyword-refusal rate above the Qwen3 baseline**, by more than
+   the arm-vs-baseline margin `MARGIN_VS_BASELINE = 0.0521`.
+2. **`legacy_all_query` and `response_query_only` do NOT** — each within ±0.0521 of the Qwen3
+   baseline refusal rate.
+3. **The refusal share among killed attacks is ordered `demoproc > legacy` and `demoproc > respq`**,
+   with `demoproc` above 25% and both others below it.
+
+**Refuted if:** `demoproc`'s refusal rate is within margin of baseline, **or** either other arm also
+rises above margin (which would make refusal-restoration a generic knockout effect, not a
+demo-processing one).
+
+**Explicitly NOT part of replication** — pre-committed so a favourable reading cannot be adopted after
+the fact:
+
+* **ASR deltas and their ordering.** C-11 established these sit inside the margin on Llama and cannot
+  rank arms. **A different ordering on Qwen3 is not evidence of anything and will not be reported as
+  such.**
+* **The domain sign test reaching its floor.** Llama's `demoproc` hit `p = 0.00195` with all 10
+  domains negative. **Qwen3 falling short of that is not a failed replication**, since the two models
+  have different baseline ASRs and therefore different attainable evidence.
+* **Any claim resting on `demoproc` vs `respq`**, which cleared the margin by 0.0020 on Llama.
+
+**Population.** Same d10 bank (`368566acecdc350f`), same 160 rows, Qwen3-14B at band 7-17 with
+`enable_thinking=false` — the band and flag used by the Qwen3 Phase-1 session, not re-tuned here.
+**Baseline refusal rate is read from `q4bj_A` and is not assumed equal to Llama's 0.0563.**
+
+---
+
 ### C-11 (12:20, 4h DEEP REVIEW) — **I ranked the arms by an ASR ordering that sits BELOW my own pre-registered margin. `demo_processing_only` and `legacy_all_query` are EQUIVALENT on ASR; only the refusal route separates them.**
 
 **Found by:** the deep review's independent recomputation — every R-19 scalar re-derived from the raw
