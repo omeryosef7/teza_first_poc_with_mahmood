@@ -1952,6 +1952,36 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-34 (21:12) — **Smoke `781168` re-read under the fixed code: the rescue hook is PROVABLY live from the artifact, not by inference. Sweep submitted (781211 / 781212).**
+
+**Run dir:** `outputs/boombness/score_behavior/p7smoke_rescue_L14_20260825_204132_870233`.
+
+| recorded field | value |
+|---|---|
+| rows carrying `rescue_liveness` | **8 / 8** |
+| `fired` | **8 / 8** |
+| `n_positions_written` (min / median / max) | **11 / 43 / 123** |
+| `n_forward_calls` | 192 on every row |
+| `rescue_layer` / `rescue_donor` | `14` / `clean` on every row |
+
+**The `n_positions_written` spread is the check that matters.** It runs **11 → 123** across eight rows
+drawn from `n_examples ∈ {1,2,4,8}` — **it tracks the demonstration block's own size**, exactly as a
+correct per-position donor must, and is not a constant. A patch writing a fixed count, or writing
+nothing, or writing everywhere, would all be visible here and none of them is what happened.
+`n_forward_calls = 192` with a single write per row confirms the write lands at **prefill** and the
+hook correctly declines the 191 decode steps (where `seq_len = 1` is past every donor position).
+
+**R-32's defect is closed by evidence rather than by assertion:** the run now says what it did.
+
+**Sweep submitted under PR-13**, committed at `8ab1eb05` **before either job existed**:
+`p7_rescue_L14` (**781211**, primary) and `p7_rescue_L5` (**781212**, the below-band specificity
+control). 160 rows each, Llama, d10 bank, `demo_processing_only` 6-14.
+
+**Nothing is read until both land, judging completes, and `rescue_liveness.fired` is verified true on
+every row of both arms** — PR-13 makes that a precondition, not a courtesy.
+
+---
+
 ### PR-13 (21:10) — **Pre-registered before any rescue number is read: what a rescue would and would not demonstrate, and the control that separates the two.**
 
 **The gate is open** (R-33: identity control 8/8 byte-identical) and **the hook is now provably live**
