@@ -49,6 +49,11 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 | 7 | Non-demo control — strict | smoke 780231, arms 780297-780299 | **all refused; R-24, R-25** |
 | 8 | Non-demo control — capped ×3 draws | 780300-780302 + judge 780390 | R-26 |
 | 9 | Fourth independent pool, Llama | pool 780821, audit 780879, arms 780892-780895, judge 780928 | R-29 |
+| 10 | §20 Q3 rescue: instrument build + identity control | smoke 781006/781047/781168 | R-30…R-34 |
+| 11 | Rescue sweep, Llama pool A (+ below-band control) | 781211/781212, judge 781255 | R-35 |
+| 12 | Rescue, Qwen3 pool A | 781290/781291, judge 781361 | R-36 |
+| 13 | Qwen3 ASR-rescue confirmatory test, pool B | 781410-781413, judge 781548 | **R-37 (does not confirm)** |
+| 14 | Rescue, Llama pool B — completes the 2×2 | 781643/781644, judge 781727 | R-38 |
 
 ## 5. Where we won
 
@@ -79,7 +84,16 @@ on repeated-phrase/single-word text, not on coherent prose); worst real row scor
 pre-registered 0.0417 margin except marginal `qpre` pairs. This is the **control that makes W1
 meaningful**: same attack removed, different route.
 
-**W5 — raising domains 6 → 10 made the sign test a real test.** At k=6 the attainable floor was 0.0625;
+**W5 — the dissociation is CAUSAL, and it replicates across a complete 2 × 2.** A per-position
+activation patch that hands back the clean demonstration activations at the top of the knockout band
+removes **58-92%** of the refusal rise in **all four** model × pool cells (gaps 0.1125 / 0.1062 /
+0.0750 / 0.1125, every one clearing the 0.0521 margin) — **while leaving the attack removal intact on
+Llama** (recovers only 16.7%, inside the margin). The **below-band control at the same positions moves
+refusal by exactly 0.0000 in all four cells**, and the identity control (`--rescue-donor self`)
+reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
+attack.**
+
+**W6 — raising domains 6 → 10 made the sign test a real test.** At k=6 the attainable floor was 0.0625;
 at k=10 it is **0.00195**, and `demo_processing_only` on Llama is negative in **all ten domains**.
 
 ## 6. Where we failed, and what we withdrew
@@ -106,8 +120,15 @@ In this bank "mentions bomb" ≈ "is a jailbreak", so the measure is confounded 
 margin; **exactly zero at n=1**, so the effect needs *accumulated* demonstrations). Qwen3 is
 non-monotone with endpoint +0.0250, **inside the margin — refuted by the pre-registered rule.**
 
-**F5 — three §20 questions were never run:** activation-patching rescue (Q3), its low-rank follow-up
-(Q4), and the joint crossed Qwen3 factorization (Q6).
+**F5 — the ASR rescue failed its own confirmatory test.** A Qwen3 ASR rescue appeared on pool A
+(+0.0625, above margin) and **missed the pre-registered threshold on pool B** (+0.0437, needed
+>0.0521 — short by ~1.3 rows of 160). It was **recorded as an unregistered observation and never
+claimed**, so this is a non-event rather than a retraction — **which is the entire point of having
+declared the ASR column irrelevant before seeing it.**
+
+**F6 — two §20 questions were never run:** its low-rank follow-up (Q4) — now differently motivated,
+since there is no successful ASR rescue to decompose — and the joint crossed Qwen3 factorization (Q6),
+dropped as no longer justified by current evidence.
 
 ## 7. Corrections issued against our own work
 
@@ -117,17 +138,22 @@ non-monotone with endpoint +0.0250, **inside the margin — refuted by the pre-r
 | C-11 | I ranked arms by an ASR ordering **inside my own 0.0417 margin** — in the document that defines the margin | Ranking withdrawn; the refusal contrast (order-of-magnitude clear) is what carries |
 | C-12 | See F1 | Headline mechanism withdrawn |
 | R-19 | Outcome B (`respq` a "weak partial", 46% of legacy) does not replicate at k=10 (85%, gap 0.0188) | Withdrawn rather than resolved by picking a bank |
+| R-32 | I built `DonorPatch.liveness()` and **never recorded it** — the smoke completed cleanly and could not prove the patch had fired | Wired onto every row + a test asserting it is *called* **and** *recorded*; smoke re-run |
+| DR-3 | Donor capture was placed **above** the line building `ctxs` — Python would not raise, it would silently read the **previous row's** hooks | Moved after `ctxs`; a **static** regression test guards source order, since no row-level test could |
+| DR-4 | Published 92.4% for pool B; row-exact is **92.3%** (rates were rounded before dividing) | Corrected in place in log and handoff |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
 
 ## 8. Final claims
 
 See `RESEARCH_HANDOFF.md` §4 for the full table with n, independence unit, test and artifact.
-Summary: **C1 confirmatory** (3 settings) · **C2, C3, C4, C5 replicated** on two models · **C6, C8
-single-model** · **C7 unresolved** (one dose).
+Summary: **C1 confirmatory** (3 settings) · **C9 confirmatory** (4/4 cells, causal) · **C2, C3, C4, C5
+replicated** on two models · **C10 instrument-verified** · **C6, C8 single-model** · **C7 unresolved**.
 
 > **Doublespeak's demonstration block does two separable things. Masking demo→demo attention during
 > prefill removes the attack *and* restores refusal — and the second does not cause the first. The
-> concept mapping survives the intervention that removes the behaviour.**
+> concept mapping survives the intervention that removes the behaviour. Handing the demonstration
+> activations back gives the refusal back without giving the attack back, in all four model × pool
+> cells, while a below-band control at the same positions does exactly nothing.**
 
 ## 9. Limitations
 

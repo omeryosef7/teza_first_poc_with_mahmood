@@ -24,10 +24,12 @@ as much attack, and on Qwen3 more. The concept binding **survives** the interven
 **Net: the intervention has two separable effects — it removes the attack, and it restores refusal —
 and the second is not the mechanism of the first.**
 
-## 2. Strongest result
+## 2. Strongest results
 
-**`demo_processing_only` uniquely restores refusal, across two model families, measured with a
-deterministic instrument.** Refusal here is `judge_boombness.kw_refusal` — a keyword detector, **not
+**Two, and the second is causal.**
+
+**(a) `demo_processing_only` uniquely restores refusal**, across two model families and two
+demonstration pools, measured with a deterministic instrument. Refusal here is `judge_boombness.kw_refusal` — a keyword detector, **not
 the LLM judge** — so it carries none of the judge's measured session drift (78/96 binary agreement
 across sessions).
 
@@ -41,6 +43,14 @@ across sessions).
 demonstration pool** in **PR-12** (2/2 conditions held; Llama pool B rise **+0.1938**, baseline
 refusal 0.0063 — R-29). ⚠ On pool B `legacy` and `respq` each show **1** killed-by-refusal row rather
 than 0; both remain inside the margin, but "exactly zero in every cell" is no longer accurate.
+
+**(b) A per-position activation patch separates the two effects causally (C9).** Handing back the
+clean demonstration activations at the top of the knockout band removes **58-92%** of the refusal rise
+in **all four** model × pool cells (gaps 0.1125 / 0.1062 / 0.0750 / 0.1125, every one clearing the
+0.0521 margin) **while leaving the attack removal intact on Llama** (Outcome C, recovers 16.7%). The
+**below-band control at the same positions moves refusal by exactly 0.0000 in all four cells**, and the
+identity control reproduces its own arm **8/8 byte-identical**. **This converts C2 from a
+correlational dissociation into a causal one.**
 
 ## 3. ⛔ Retracted / withdrawn — DO NOT REVIVE
 
@@ -68,6 +78,8 @@ Status key: **R** replicated (2 models) · **S** single-model · **N** evaluated
 | C6 | Refusal restoration scales with demonstration count | **Llama only** | d10, by `n_examples` | 40/cell | prompt | +0.0000 → +0.3500, monotone | endpoint vs 0.0521, 6.7× | same | `legacy`/`respq` flat at ≤0 | **S** |
 | C7 | Attack removal is demonstration-specific | Llama | `n_examples`=2 only | 40 rows, 5 attacks | prompt, 3 draws | demoproc 5/5 vs control 0.67/5, gap 0.1083 | arm-vs-arm 0.0417, 2.6× | same | count-matched non-demo mask (ratio 0.989) | **U** (one dose) |
 | C8 | `query_prefill_only` is a measured null | Llama | d10 | 160 | domain | −0.0250, p=0.6875 | sign test, floor 0.0312 | attn knockout, query prefill rows | other scopes | **S** (negative) |
+| **C9** | **Handing back the clean demonstration activations at the top of the knockout band gives back the REFUSAL and not the ATTACK** | Llama + Qwen3, **2 pools** | d10 / d10-poolB behavioural | 160 × 4 cells | prompt | refusal gaps **0.1125 / 0.1062 / 0.0750 / 0.1125**, all > margin; **58-92%** of the refusal rise removed. ASR: Llama Outcome **C** (null, recovers 16.7%) | vs `MARGIN_VS_BASELINE` 0.0521; PR-13 / PR-14 / PR-16, each committed before its data | per-position `DonorPatch` at L14 (Llama) / L17 (Qwen3), donor = clean forward, same `templated_r` | **below-band L5 patch: moves refusal by EXACTLY 0.0000 in all four cells**; identity control (`--rescue-donor self`) 8/8 byte-identical | **CONFIRMATORY (4/4)** |
+| C10 | The rescue instrument writes exactly what it read | Llama | smoke | 8 | row | identity vs arm **8/8 identical**; rescue vs identity **0/8** | byte comparison | `--rescue-donor self` | the two comparisons jointly exclude "never fired" | **verified** |
 
 ## 5. ⛔ Limitations that are properties of the BANK, not of the analysis
 
@@ -143,6 +155,9 @@ and read committed artifacts; the arms need SLURM + GPU.
 | C1/C2/C3/C8 decomposition | `python src/boombness/phase1_decomposition.py --baseline A=<judge> --arm <lab>=<judge> ... --gens <lab>=<gens> ... --tag p4bdec` |
 | C4 kill routes | `python src/boombness/kill_route_breakdown.py --cell <model>:<arm>:<judge_base>:<judge_arm>:<gens_arm> ... --tag krb` |
 | C5 within-family bridge | `python src/boombness/binding_behaviour_bridge.py --bank <bank> --beh-baseline <j> --beh-arm <lab>=<j> --probe-baseline <run> --probe-arm <lab>=<run> --tag bridge` |
+| C9 rescue arms | `sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$PWD/runargs/p7/p7_rescue_L14.txt src/boombness/slurm/run_boombness.sh` (argsfiles: `runargs/p7`, `runargs/p8`) |
+| C10 identity control | same, with `--rescue-donor self` in the argsfile (`runargs/p7/p7smoke_identity_L14.txt`) |
+| C9 readout | join `p*bj_A` / `p*bj_demoproc` / `p7j_rescueL*` by `prompt_id`; refusal is the judge row's `refused` field (`kw_refusal`), **not** the LLM judge |
 | all deliverable guards | `python src/boombness/check_all.py` |
 | full suite | `python -m pytest tests/ doublespeak_causality/tests/ -q -p no:randomly` — **serial and exclusive** (C-2: concurrent runs corrupt committed artifacts) |
 
