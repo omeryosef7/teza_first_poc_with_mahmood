@@ -30,6 +30,8 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆🏆 **THE BINDING SURVIVES THE INTERVENTION THAT KILLS THE BEHAVIOUR.** `demo_processing_only` removes ~75 % of attack success (Δ −0.1250 Llama / −0.1562 Qwen3) yet takes binding accuracy **0.8750 → 1.0000**, rescuing **all 6** failing rows (0 down / 6 up, McNemar p = 0.0312 **at its floor**), while the late control moves **0/0**. **Representation and behaviour are separable at the exact point the intervention works** | 5 arms × 48 forced-choice rows, Llama, option mass 0.37–0.60, `frac_rows_scope_live` 1.0 | **R-15** |
+| ⚠ **…and across arms the two quantities move in OPPOSITE directions** | margin loss `legacy` −2.557, `qpre` −2.172, `demoproc` **−0.897** (smallest) — the arm that hurts behaviour most hurts the mapping least | **R-15** |
 | 🏆🏆 **OUTCOME B REPLICATES ACROSS TWO MODEL FAMILIES.** Qwen3: `demoproc` **−0.1562** vs `respq` **−0.0729** (PR-5 cond. 1 holds by +0.0833); primary fails equivalence (gap 0.0937, respq = 43.8 % of legacy). **Neither response-side arm is DISTINGUISHABLE from its late-layer control** (`respq − late11` CI [−0.0572, +0.0572]) ⚠ *amended by C-9a: the +0.0000 is a balanced tie, NOT per-prompt identity — 88/96 same label, 4up/4down, 0/96 identical generations* | 8 arms, one pinned session, n=96, Qwen3 L7–17, baseline 0.1771 | **R-12**, amended **C-9** |
 | ✅ **`demo_processing_only`'s effect is NOT refusal, NOT truncation, and NOT dose** | down-flips decompose 15 = 3 refused + 3 short + **12 neither** (Llama) and 17 = 4 + 4 + **12 neither** (Qwen3); non-refused Δ **−0.1200 / −0.1358**; it makes output **longer** (ratio 1.14) and still beats its control length-matched (**−0.1310 vs −0.0714**); Spearman(edits, Δ) = −0.40 / −0.30 | **C-9b**, **C-9** |
 | ⚠ **`legacy_all_query`'s Qwen3 advantage IS length-carried** | median length ratio **0.6461**, 56/96 rows shortened ≥30 %, 13 of 17 down-flips length-collapsed; length-matched **−0.0750 vs control −0.0714** — it no longer beats its control | **C-9b** |
@@ -1156,7 +1158,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | ✅ instrument LIVE (**R-14**); 🔬 full probe **779864–779868**, 5 arms × 48 rows | **PR-2**, **D-9** |
+| P2 | 2 | semantic binding probe + causal intervention on it | ✅ **R-15: THE BINDING SURVIVES** — 0.875 → 1.000 under the arm that suppresses behaviour | **PR-2**, **D-9** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1931,6 +1933,79 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-15 (10:15) — **PHASE 2 RESULT: THE BINDING SURVIVES. The arm that removes ~75 % of attack success does NOT destroy the codeword→concept mapping — it takes it from 0.875 to 1.000. This is a representation ≠ behaviour dissociation AT THE POINT WHERE THE INTERVENTION WORKS.**
+
+**Artifacts:** `outputs/boombness/score_behavior/p2{A,_legacy_all_query,_query_prefill_only,_demo_processing_only,_late}_20260825_*`
+— 5 arms × **48 rows** (the full `semantic_forced_choice` ∧ `natural_doublespeak` core-2×2 population),
+Llama, band L6–14, all COMPLETED `0:0`, **`frac_rows_scope_live = 1.0`, zero scope violations, zero
+failures on every arm.** Option mass **0.368–0.599** — every arm above C-7's 0.05 gate, so every number
+below is a real decision margin rather than a tail ordering.
+
+**The probe asks what the codeword means, from the same demonstration block the behavioural row uses.
+Binding = the model answers with the mapped CONCEPT rather than the literal codeword.**
+
+| arm | binding accuracy | Δ | median margin | Δ margin (paired, 95 % CI) | option mass | down/up |
+|---|---|---|---|---|---|---|
+| `A_baseline` | **0.8750** | — | 3.4234 | — | 0.5414 | — |
+| `legacy_all_query` | 0.8542 | −0.0208 | 1.0816 | **−2.557 [−3.244, −1.871]** | 0.3681 | 6/5 |
+| `query_prefill_only` | 0.7708 | −0.1042 | 1.2103 | **−2.172 [−2.923, −1.420]** | 0.4311 | 8/3 |
+| **`demo_processing_only`** | **1.0000** | **+0.1250** | 2.6589 | −0.897 [−1.580, −0.214] | 0.5987 | **0/6** |
+| `late` control (20–28, same scope) | 0.8750 | +0.0000 | 3.2015 | −0.166 [−0.263, −0.069] | 0.5303 | **0/0** |
+
+#### The decisive row, and it goes the opposite way to the hypothesis
+
+**`demo_processing_only` is the arm that suppresses the attack** — Δ ASR **−0.1250** on Llama and
+**−0.1562** on Qwen3, ~75–94 % of the legacy effect, and the only arm that beats its matched control
+after C-9's length correction. **On the binding probe it does not degrade the mapping at all. It
+rescues every row that was failing:**
+
+```
+baseline binding failures: 6 of 48
+demo_processing_only:      0 down / 6 up   ->  accuracy 0.8750 -> 1.0000
+late control:              0 down / 0 up
+McNemar exact: p = 0.0312  (= 2/2^6, the attainable floor at 6 discordants -> a SIGN TEST)
+```
+
+**All six rescued rows were near the boundary and are pushed decisively positive** (baseline margins
+−0.31 … −1.36 → +0.39 … +3.39), **while the late control leaves the same six negative** (−0.53 …
+−1.57). So the rescue is band-specific, not a generic consequence of masking demonstration attention
+somewhere.
+
+> **The chain `demonstrations → response-time retrieval → binding → behaviour` does not hold. The
+> intervention that removes three quarters of the attack leaves the semantic mapping fully intact —
+> indeed perfect — and the late control shows the same intervention outside the band does neither.**
+> **Representation and behaviour are separable *at the exact point where the causal intervention
+> works*.** That is the same dissociation the previous sprint recorded for `d_surface`, now found for
+> the retrieval mechanism itself rather than for a fitted direction.
+
+#### ⚠ Where the arms DO cost something, and why it is not the mapping
+
+Every arm reduces the *confidence* margin — `legacy` **−2.557**, `qpre` **−2.172** — and both of those
+arms also lose binding accuracy (0.854, 0.771). **`demo_processing_only` has the smallest margin loss
+of the three treatment arms (−0.897) and the only positive accuracy change.** So the arm that hurts
+behaviour most hurts the mapping least. **The two quantities are not merely dissociated; they move in
+opposite directions across arms.**
+
+#### ⛔ What this does NOT establish — stated before anyone quotes it
+
+* **One model.** Llama only. Qwen3 has not been run on the probe, and R-12 is what made
+  `demo_processing_only` decisive in the first place — **the dissociation is not cross-model until it
+  is.**
+* **A different population from the behavioural result.** 48 forced-choice rows against 96 behavioural
+  rows. They share families and demonstration blocks by construction (PR-2's 1:1 join), **but no row is
+  in both**, so this is a between-population comparison, not a within-row one. **A within-row link is
+  the stronger design and it has not been run.**
+* **The p is at its floor.** `p = 0.0312 = 2/2⁶` on six discordants — **a sign test.** The magnitude
+  cannot enter it, and PR-3's rule applies: quote the effect, quote the floor beside the p.
+* **No probe-specific margin was pre-registered.** PR-2 fixed the *group*; it did not fix an equivalence
+  margin for binding. **So the accuracy and margin figures are reported as magnitudes with CIs, and no
+  pass/fail verdict is claimed on them.**
+* **Lexical G = 1** (C-9d) applies here unchanged: one codeword, one concept.
+* **Accuracy 1.0000 is a ceiling.** With baseline at 0.875 there were only six rows available to move,
+  so "perfect binding" describes 48 rows of one lexical pair, not a general property.
 
 ---
 
