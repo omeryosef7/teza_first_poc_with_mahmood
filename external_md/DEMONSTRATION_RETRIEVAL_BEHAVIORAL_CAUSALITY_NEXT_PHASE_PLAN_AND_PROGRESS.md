@@ -1945,6 +1945,55 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-10 (14:40) — **Pre-registered: the control C-12 makes unavoidable. Is ANY of this about DEMONSTRATIONS, or does masking an equal number of ARBITRARY positions remove the attack just as well?**
+
+C-12 removed the mechanism this phase thought it had. What remains is: *four attention-masking scopes
+all remove attack by coherent non-compliance, and one additionally restores refusal.* **Nothing in
+that sentence yet establishes that the DEMONSTRATIONS are what matters.** If masking a count-matched
+set of **non-demonstration** positions removes the attack just as well, then the whole scoped-knockout
+result is about **removing attention mass**, not about demonstration retrieval — and the phase's
+headline collapses to a much weaker claim.
+
+**This control has never been run behaviourally.** `score_behavior` has carried
+`nondemo_matched_d1..d3` and `nondemo_capped_d1..d3` since review finding M1 (2026-08-23), but every
+historical invocation was a `semantic_one_word` readout (`g3wa_block`, jobs 766664-766672). **The code
+exists and has never been pointed at the behavioural population.**
+
+**Design, matched on everything that could otherwise explain a difference.** Identical bank (d10),
+identical arm population, identical layer band 6-14, identical `--knockout-scope
+demo_processing_only` — so the **query rows are the same demo-span rows**, and only the **KEY SET**
+changes: `demo_all` masks the demonstration positions, `nondemo_matched_d*` masks **the same NUMBER**
+of positions drawn from elsewhere. **Three independent draws (d1, d2, d3)**, because a single draw
+that happens to hit nothing is a lucky draw, not a control.
+
+**Prediction if the effect is demonstration-specific:** the non-demo control's ΔASR is **within
+`MARGIN_VS_BASELINE = 0.0521` of zero**, against `demo_processing_only`'s **−0.1500**.
+
+**Prediction if the effect is about attention mass:** the control's ΔASR is comparable to `demoproc`'s
+— gap within the arm-vs-arm margin **0.0417**. **In that case the scoped-knockout finding is not about
+demonstrations and every "demonstration processing" claim in this phase must be renamed.**
+
+**⛔ The known failure mode, and why a smoke runs first.** `query_span_positions`' own docstring
+records that the naive version of this control blocked **~98% of post-demo tokens at n_examples = 4** —
+it was deleting the question being asked, with a dose that scaled with the arm's own dose, and the
+docstring notes *"'random control ≥ demo knockout, therefore the effect is not demonstration-specific'
+is a conclusion this project has already retracted once."* The strict policy protects the query span,
+which means **the draw pool may be too small to count-match at high `n_examples`** (the demo block
+grows 12 → 106 tokens while the unprotected non-demo pool is near-constant). **Job 780231 is an
+8-row smoke whose only purpose is to read the pre-flight's `infeasible_control` count per
+`n_examples` before any sweep is submitted.**
+
+**Pre-committed handling of infeasibility:** if strict count-matching is infeasible at some doses, the
+control is reported **only at the doses where it is feasible**, with `control_draw_match_ratio` quoted
+on every row. **A `capped` draw will NOT be silently substituted for a `matched` one** — the module
+enforces separate arm names for exactly this reason, and an under-matched control that "shows no
+effect" would be an artifact of under-matching. **If the control is infeasible precisely where the
+effect lives (`n_examples` 4 and 8), I will say the control cannot be run there and the
+demonstration-specificity claim is UNTESTED at those doses, rather than quoting the low-dose cells as
+if they settled it.**
+
+---
+
 ### 🔴🔴🔴 R-23 / C-12 (14:10) — **PR-9's SECOND OUTCOME. Refusal restoration is NOT the route by which the attack is removed. At matched dose, arms that restore ZERO refusal remove exactly as much attack — and on Qwen3, MORE. "`demo_processing_only` works BY restoring refusal" is REFUTED.**
 
 **Artifacts:** re-cut of `p4bj_*` / `q4bj_*`; no new compute. **PR-9 was committed (`696cef65`) before
