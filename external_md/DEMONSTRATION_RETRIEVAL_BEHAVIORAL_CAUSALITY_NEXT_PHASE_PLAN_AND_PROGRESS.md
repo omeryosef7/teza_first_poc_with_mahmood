@@ -727,6 +727,54 @@ started with.**
 *(Each entry is fixed before the corresponding result exists and is never edited afterwards; a
 superseded pre-registration gets a new entry that says so.)*
 
+### 🔒 PR-4 (04:40) — **HOW THE PHASE-1 ASR WILL BE READ, given that the generation cap binds on half to three-quarters of EVERY arm and one arm shows a length collapse. Written before the judging session is submitted.**
+
+The 4-hour review's truncation track (C-4 below) found two facts that make a raw ASR comparison
+confounded on this population. **Both are recorded and their handling fixed here, before any arm is
+judged**, because prev-Gate-E7 is the precedent: `d_surface:add` looked like a −0.06 ASR suppression
+and was **a collapse to 25-character completions with the judge scoring near-empty text as
+non-compliant**.
+
+**Fact 1 — the cap binds everywhere, unevenly.** Median `n_new_tokens` is **192, the `--max-new` cap**,
+in four of five completed arms. Fraction at the cap: `query_prefill` 0.500, `late` 0.542,
+`legacy` 0.552, `decode_only` 0.635, `demo_processing` 0.719 — **a 22-point spread**. StrongREJECT's
+specificity and convincingness sub-scores are content-volume sensitive, so part of any ASR difference
+is *how much text each arm was allowed to emit*.
+
+**Fact 2 — one arm collapses.** `C_demo_processing_only` puts **20 of 96** rows under 200 characters
+(other arms: 1–4) and 3 under 80 (min 23; every other arm's minimum is 98–119). **The same 20
+`prompt_id`s have median 776–877 chars in the other arms, so it is the ARM, not the prompts**, and the
+collapse is dose-responsive in `n_examples` (1/3/6/10 short rows at n=1/2/4/8, permutation
+p = 0.00095). **Up to 20.8 ASR points are available to a pure output-length artifact in that arm alone.**
+
+#### 📌 PRE-REGISTERED, before the judge runs
+
+1. **Every ASR in Phase 1 is published beside its arm's truncation fraction and median `n_chars`.**
+   An ASR quoted without them is not quotable.
+2. **The primary comparison is unchanged** — `response_query_only` vs `legacy`, at PR-3's margin
+   (0.0417 arm-vs-arm). Both sit mid-range on truncation (0.552 vs one not yet measured), so it is the
+   comparison least exposed to Fact 1; that is stated now, not discovered later.
+3. **`C_demo_processing_only`'s ASR is reported as CONFOUNDED and does not carry Outcome B on its own.**
+   If that arm is the one that looks large, the honest reading is *"an arm that also truncates 21 % of
+   its rows shows a large ASR drop"*, which is prev-Gate-E7's finding restated, not a mechanism result.
+   **Outcome B requires the effect to survive the length-conditioned view below.**
+4. **A length-conditioned secondary analysis is run for every arm**: paired ASR restricted to rows where
+   **both** the arm and the baseline exceed a threshold T, swept over T ∈ {0, 80, 120, 200, 400}
+   characters — exactly prev-R-F's table.
+   ⚠ **And its caveat is fixed here too:** completion length is a **post-treatment** variable, so
+   conditioning on it conditions on a **collider**, and the retained subset is not the population. It
+   can show *what an effect is made of*; it **cannot** prove an effect is or is not an artifact. Neither
+   the raw nor the conditioned number is the headline alone — **both are reported, always together.**
+5. **Nothing in the pipeline currently gates on length** (`analyze_phase_d.py` reads neither `n_chars`
+   nor `stop_reason`), so this analysis is done explicitly rather than assumed.
+
+⚠ **The clean fix is out of scope and is recorded as an open item, not attempted:** re-running every arm
+with a larger `--max-new` would remove Fact 1 at its source, but it would also break comparability with
+every inherited number in this project, all of which used 192. **Raising the cap is a separate
+experiment, not a repair to this one.**
+
+---
+
 ### 🔒 PR-3 (04:30) — **SUPERSEDES PR-1's MARGIN AND ITS p-FLOOR. Both were wrong, both are corrected BEFORE any Phase-1 arm is judged, and PR-1 is left standing unedited beside this.**
 
 The 4-hour review checked PR-1's own justification against the artifacts it cited. **It does not hold.**
@@ -1569,6 +1617,38 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
+
+### ⛔⛔ C-4 (04:40) — **PRE-JUDGING COMPARABILITY GATE: the generation cap binds on 50–72 % of every arm, and `demo_processing_only` collapses 21 % of its rows. Handling fixed in PR-4 before judging.**
+
+From the 4-hour review's truncation track, on the five arms complete at the time.
+
+| arm | fraction at the `--max-new 192` cap | rows < 200 chars | min `n_chars` |
+|---|---|---|---|
+| `query_prefill_only` | 0.500 | 1 | 119 |
+| `late` | 0.542 | 3 | 98 |
+| `legacy_all_query` | 0.552 | 3 | ~100 |
+| `decode_only` | 0.635 | 4 | ~100 |
+| **`demo_processing_only`** | **0.719** | **20** | **23** |
+
+**`demo_processing_only`'s collapse is a property of the ARM, not of the prompts:** the same 20
+`prompt_id`s have median **776–877** characters in the other four arms against **98** here, and the
+collapse is dose-responsive in `n_examples` (1 / 3 / 6 / 10 short rows at n = 1 / 2 / 4 / 8,
+permutation **p = 0.00095**). **Up to 20.8 ASR points in that arm are available to a pure length
+artifact.**
+
+**Three supporting defects, all accepted:**
+* **Nothing between `gens.jsonl` and the headline ASR conditions on length or termination.**
+  `judge_boombness.py` writes `n_chars` and `results.jsonl` carries `stop_reason` / `gen_truncated`, but
+  `analyze_phase_d.py` reads none of them. The fields exist and are populated; nothing consumes them.
+* **No arm is degenerate** by the previous phase's 96 → 24 standard, so this is truncation, not collapse
+  into templates.
+* **`legacy_all_query`'s per-row masking cannot be audited**: `hook_n_keys_masked`,
+  `hook_n_blocked_keys` and `hook_n_query_rows_edited` are `null` on all 96 rows, because that scope
+  routes to `AllQueryAttentionKnockout`, which predates those counters. **This is the cost of the
+  by-construction guarantee in R-3** — the incumbent class is byte-identical *and* less instrumented,
+  and I am recording the trade rather than pretending it is free. The scoped arms all populate them.
+
+---
 
 ### ⛔⛔ C-3 (04:30) — **THE 4-HOUR REVIEW: all 31 headline numbers reproduce EXACTLY, and three of my NARRATIVES around them do not. Five corrections, one of them a blocker in the tool I wrote to catch exactly this bug.**
 

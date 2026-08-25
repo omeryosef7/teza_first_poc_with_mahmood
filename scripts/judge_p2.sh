@@ -60,7 +60,7 @@ reap() {
 while IFS=: read -r tag gens; do
   [ -n "$tag" ] || continue
   i=$((i+1))
-  date "+[p2] launching $i/$N tag=p2j_${tag} at %H:%M:%S"
+  date "+[p2] launching $i/$N tag=${PREFIX}_${tag} at %H:%M:%S"
   python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "${PREFIX}_${tag}" $PIN &
   PIDS="$PIDS $!"; TAGS="$TAGS ${PREFIX}_${tag}"
   sleep 15
