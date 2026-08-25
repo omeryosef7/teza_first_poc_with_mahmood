@@ -30,6 +30,10 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆 **OUTCOME B: the causal path is NOT response-time retrieval.** Corrupting the demonstrations' own prefill encoding carries **92.3 %** of the legacy effect (Δ −0.1250 vs −0.1354); masking the response's access carries **46.2 %** (−0.0625); the primary comparison **fails equivalence** (gap 0.0729 > margin 0.0417). Masking the final query's prefill access moves ASR **the wrong way, +0.0625** | 8 arms, one pinned judging session, n=96, Llama L6–14; effect **survives** length conditioning (−0.1200 at T=200) | **R-10** |
+| ⚠ **…and the winning arm suppresses through REFUSAL, not through losing the mapping** | `demo_processing_only` refusal **0.208** against `legacy` 0.010 and `response_query_only` 0.021 — 20× | **R-10** |
+| ⛔ **No arm reaches significance at the pre-registered unit** | domain-clustered p = 0.3750 / **0.1250 at floor** / 0.6250 / 1.0000; attainable floor 0.0625–0.1250, so magnitude cannot enter the p | **R-10**, predicted by **PR-3** |
+| ✅ **Judge provenance is closed for the first time** | `judge_model_used = openai/gpt-4o-mini` on **768/768** rows, pre-flight canary matched the pinned model on every arm | R-10 |
 | **The demonstration-attention knockout suppresses the doublespeak attack — DIRECTION, on the bomb corpus** | ⚠ **AMENDED by R-2.** The pooled 113 / 30 (p = 1.577e-12) is **one demonstration corpus**: bomb **81/11 p = 2.50e-14**, knife **15/7 p = 0.134**, gun **17/12 p = 0.458**; **drop bomb → 32/19, p = 0.092**. The 143 comparisons come from **67 distinct prompt_ids**. Replicates on the high-headroom bank of **both** models (**−0.1771** Llama, **−0.2083** Qwen3); every arm verified live; **no fitted direction, so no dose confound is possible** | R-R, R-T, R-AB, R-AY; **amended R-2** |
 | ⚠ **…and the binding constraint is the number of DOMAINS, not banks/pools/models** | domain marginal k=6: `game_manual` −0.2562, `news_report` −0.0938, `city_bridge` −0.0875, `instructional` −0.0750, `farm_storage` −0.0063, `lab_safety` +0.0000; mean −0.0865, sd 0.0927, d = 0.933, **CI upper +0.0108 → includes zero**. Projection at fixed mean/sd: **8 domains → −0.0090 (excludes zero)**, 10 → −0.0202, 12 → −0.0276 | **prev-R-BE** (`7838dcd2`), inherited; see **D-4** |
 | **The both-EOS control is not a 10-population control** | reproduces at 30/1 (p = 2.98e-08) but **5 of 10 populations contribute zero both-EOS discordant rows** | **R-2** |
@@ -1068,7 +1072,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P0.3 | 0 | full test suite triage — 18 failures classified and repaired | ✅ **760 passed, 0 failed, 7 skipped** (was 721/18/7) | **Phase-0 exit** |
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
-| P1.3 | 1 | same-session 7-arm decomposition, Llama | 🔬 **779605–779611 queued** | Outcomes A–E, margin 0.03125 |
+| P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
@@ -1618,6 +1622,99 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
 
+### 🏆🏆🏆 R-10 (05:41) — **PHASE 1 RESULT: OUTCOME B. The causal path is NOT response-time retrieval. Corrupting the demonstrations' OWN encoding carries 92 % of the effect; masking the response's access to them carries 46 %; and masking the final query's prefill access moves ASR the WRONG WAY.**
+
+**Artifact:** `outputs/boombness/phase1_decomposition/p1dec_final_20260825_054056_2706137/phase1_decomposition.json`
+**Producing script:** `src/boombness/phase1_decomposition.py`. **Judging:** job **779712**, all 8 arms in
+ONE session, `ALL DONE`, every arm `verified (96 rows)`, backend **pinned** — `judge_model_used =
+openai/gpt-4o-mini` on **768 of 768 rows**, and `judge_model_pinned` likewise. **This is the first
+result in the project whose judge is a single recorded model rather than an unrecorded fallthrough.**
+
+Llama-3.1-8B, band **L6–14**, n = 96, baseline ASR **0.1667**, threshold 0.5.
+
+| arm | ASR | **Δ** | down/up | refused | median chars | frac at cap | rows <200ch | uniq texts | domain p | floor |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **`legacy_all_query`** | 0.0312 | **−0.1354** | 16/3 | 0.010 | 771 | 0.552 | 1 | 96/96 | 0.3750 | 0.0625 |
+| **`demo_processing_only`** | 0.0417 | **−0.1250** | 15/3 | **0.208** | 776 | 0.719 | **20** | 86/96 | 0.1250 | 0.1250 |
+| **`response_query_only`** | 0.1042 | **−0.0625** | 14/8 | 0.021 | 773 | 0.490 | 2 | 96/96 | 0.6250 | 0.1250 |
+| `decode_only` | 0.1771 | **+0.0104** | 8/9 | 0.031 | 788 | 0.635 | 3 | 96/96 | 1.0000 | 0.0625 |
+| **`query_prefill_only`** | 0.2292 | **+0.0625** | 11/17 | 0.031 | 782 | 0.500 | 3 | 96/96 | 0.6250 | 0.1250 |
+| `late` control (20–31, 12 blocks) | 0.1979 | +0.0312 | 9/12 | 0.042 | 792 | 0.542 | 4 | 95/96 | 0.6250 | 0.1250 |
+| `late9` control (20–28, 9 blocks) | 0.2188 | +0.0521 | 8/13 | 0.042 | 806 | 0.594 | 4 | 94/96 | 0.6875 | 0.0312 |
+
+#### 🚦 The pre-registered primary comparison FAILS equivalence
+
+```
+delta(response_query_only) = -0.0625      delta(legacy_all_query) = -0.1354
+|gap| = 0.0729   >   PR-3 margin 0.0417   ->  NOT equivalent
+response_query_only recovers 46.2 % of the legacy arm
+```
+
+**Outcome A required `response_query_only` ≈ legacy AND `demo_processing_only` weak. Both halves
+fail.** `demo_processing_only` is not weak — it is **92.3 %** of legacy — and `response_query_only` is
+less than half. **This is Outcome B**, the branch PR-1 wrote as *"⛔ retract the 'generated answer
+retrieval' wording; the result becomes: disrupting the demonstrations' internal representation
+suppresses the attack."*
+
+> **The wording this project has used loosely — *"generated answer tokens need to retrieve information
+> from the demonstrations"* — is not supported. The scoped decomposition says the opposite: most of the
+> effect is in what the demonstrations do to THEMSELVES during prefill.**
+
+#### ⚠ And the arm that moves the wrong way is the sharpest single line
+
+**`query_prefill_only` gives Δ = +0.0625** — blocking the **final query's** prefill access to the
+demonstrations makes the attack **MORE** successful, by 6 prompts of 96, with 11 down against **17 up**.
+Its per-domain pattern is genuinely mixed (`farm_storage` +0.1875, `instructional` +0.1875,
+`lab_safety` +0.125, `city_bridge` −0.125), i.e. not one domain driving it. **Combined with
+`decode_only`'s +0.0104, neither half of "the response computation reads the demonstrations" suppresses
+anything.**
+
+#### ✅ PR-4's length check: NOT a truncation artifact — for any arm
+
+Every arm's Δ is **stable** across the length-conditioned sweep, which is the check prev-Gate-E7 failed
+(where `d_surface:add` went to **exactly 0.0000** at T = 80):
+
+| arm | T=0 | T=80 | T=200 | T=400 |
+|---|---|---|---|---|
+| `demo_processing_only` | −0.1250 | −0.1183 | **−0.1200** (n=75) | −0.1200 |
+| `legacy_all_query` | −0.1354 | −0.1354 | −0.1398 | −0.1398 |
+| `response_query_only` | −0.0625 | −0.0526 | −0.0543 | −0.0549 |
+| `query_prefill_only` | +0.0625 | +0.0625 | +0.0769 | +0.0778 |
+
+**`demo_processing_only`'s effect survives conditioning**, so C-4's collapse concern is answered: the
+20 short rows are real but they are **not** what produces the ASR drop. ⚠ PR-4's collider caveat still
+travels with this — conditioning on a post-treatment variable cannot *prove* an effect genuine; it can
+only show the effect is not *made of* the truncated rows. **Both views are reported; neither alone is
+the headline.**
+
+#### ⚠ But `demo_processing_only` suppresses through REFUSAL, and that changes what it means
+
+| arm | refusal rate |
+|---|---|
+| `legacy_all_query` | 0.010 |
+| `response_query_only` | 0.021 |
+| **`demo_processing_only`** | **0.208** |
+
+**A 20× increase over the legacy arm, and 10× over the baseline's own refusal.** So the winning arm does
+not suppress the attack the way the legacy arm does. **Corrupting the demonstrations' own encoding makes
+the model REFUSE; masking the response's access to them does not.** That is a mechanistic difference the
+ASR column alone hides, and it is why Phase 2's semantic-binding probe and Phase 2B's phenotype
+instrument are now the decisive next measurements rather than optional ones.
+
+#### ⛔ What is NOT established — the statistics, stated plainly
+
+**No arm reaches significance at the pre-registered unit.** Domain-clustered sign tests:
+`legacy` p = 0.3750, `demo_processing_only` **p = 0.1250 — exactly its floor**, `response_query_only`
+p = 0.6250, `decode_only` p = 1.0000. **PR-3 predicted this**: with 6 domains and `lab_safety`
+frequently netting zero, the attainable floor is 0.0625–0.1250 and **nothing can go below it however
+large the effect**. The magnitudes and their **ordering** are the quotable content; the p-values are
+not, and are reported here only with their floors attached.
+
+⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
+next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
 ### ⛔ C-5 (05:08) — **THE FIRST JUDGING SESSION DIED ON AN NFS STALE FILE HANDLE AFTER LAUNCHING ALL EIGHT ARMS, LEAVING A 4-ROW PARTIAL JUDGE DIR. Re-judged in full rather than patched.**
 
 **Job 779701 FAILED, exit `2:0`, after 10:19.** Cause, from its own `.err`:
@@ -1993,6 +2090,8 @@ block, never from `population_composition`.**
 
 | artifact | produced by | holds |
 |---|---|---|
+| `outputs/boombness/phase1_decomposition/p1dec_final_20260825_054056_2706137/phase1_decomposition.json` | `src/boombness/phase1_decomposition.py` | **R-10** — the Phase-1 decomposition: per-arm ASR/Δ, PR-4 generation health, length-conditioned sweep, domain sign tests with floors, and the PR-1/PR-3 primary comparison |
+| `outputs/boombness/scoped_smoke_verdict/s1verdict_20260825_033930_2556360/scoped_smoke_verdict.json` | `src/boombness/scoped_smoke_verdict.py` | **R-9** — the smoke verdict, read as a whole |
 | `outputs/boombness/rederive_crossbank/rederive10_20260825_002934_2201570/rederive_crossbank.json` | `src/boombness/rederive_crossbank.py` | **R-1 / R-2** — population identity, pool proof, per-population ASR, crossed ANOVA + both marginals + crossed random-effects interval, prompt-level binomial **decomposed by demonstration pool**, both-EOS composition |
 
 ---
