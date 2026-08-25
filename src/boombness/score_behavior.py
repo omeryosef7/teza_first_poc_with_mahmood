@@ -283,12 +283,19 @@ def new_knockout_live():
             "n_rows_scope_live": 0, "scope_violations": {}}
 
 
-def record_knockout_row(knock_live, scope, stats, n_demo_positions=0):
+def record_knockout_row(knock_live, scope, stats, n_demo_positions=0, readout=False):
     """Fold ONE row's hook counters into `knock_live`; return (normalised stats, violations).
 
     A module-level function so the gate's test drives the ACCUMULATOR main() actually uses instead
     of re-typing "a row is live iff ..." beside it. Re-typing the rule is how this repo's guards
     have gone green against mutated implementations twice.
+
+    `readout=True` folds a row scored by a SINGLE FORWARD PASS (no decode step at all). It is the
+    same accumulator and the same counters -- only the per-row verdict is taken from
+    `readout_liveness_violations`, i.e. from this mode's contract as reduced by
+    `readout_liveness_contract`. There is deliberately no second accounting path: before this,
+    the forward-only readouts ledgered NOTHING, `n_rows` stayed 0, and `assert_knockout_live`
+    voided every such run -- correctly, because nothing had been observed to fire.
     """
     pc = pair()
     ks = knockout_row_stats(stats)
@@ -296,7 +303,11 @@ def record_knockout_row(knock_live, scope, stats, n_demo_positions=0):
     df = int(ks.get("n_decode_forward", 0))
     pe = int(ks.get("n_prefill_edits", 0))
     pf = int(ks.get("n_prefill_forward", 0))
-    bad = pc.scoped_liveness_violations(scope, ks)
+    # `readout=True` is the FORWARD-ONLY path (semantic/comprehension), which has no decode step;
+    # its verdict comes from the reduced contract, still derived from pair_common's tables. The
+    # default is the generation path, byte-identical to before.
+    bad = (readout_liveness_violations(scope, ks) if readout
+           else pc.scoped_liveness_violations(scope, ks))
     knock_live["n_rows"] += 1
     knock_live["n_rows_decode_live"] += int(de > 0)
     knock_live["n_rows_scope_live"] += int(not bad)
@@ -310,17 +321,132 @@ def record_knockout_row(knock_live, scope, stats, n_demo_positions=0):
     return ks, bad
 
 
-def knockout_liveness_summary(knock_live, attn_impl, scope=DEFAULT_KNOCKOUT_SCOPE):
+#: Query kinds scored by a SINGLE FORWARD PASS over the templated prompt (`_semantic` /
+#: `_comprehension` in main()). There is no decode step on this path at all: the hook sees exactly
+#: one prefill forward per row and never a decode one. Every liveness statement about these rows is
+#: therefore a statement about prefill, and the mode contract has to be read accordingly.
+READOUT_QUERY_KINDS = ("semantic_one_word", "semantic_forced_choice", "comprehension_usage")
+
+
+def readout_liveness_contract(scope, query_kinds=()):
+    """`scope`'s liveness contract AS IT APPLIES WHERE THERE IS NO DECODE STEP -- or a refusal.
+
+    Returns ``(required_gt_zero, must_be_zero)``, both DERIVED from `pair_common`'s tables; the
+    per-mode counter lists are never retyped here. The derivation is exactly two moves:
+
+      * drop ``n_decode_edits`` from the REQUIREMENT -- a counter that cannot be incremented on a
+        path with no decode step is not evidence of anything, in either direction;
+      * add it to the FORBIDDEN set -- if it is somehow non-zero here, the row was not the
+        forward-only readout this contract assumes and the verdict must not stand;
+      * add ``n_prefill_forward`` to the REQUIREMENT. THIS IS THE POINT. Dropping the decode
+        requirement without adding a proof-of-life counter would be an exemption, not a contract:
+        it would let a hook that was never entered at all pass as "correctly scoped, edited
+        nothing". On this path the hook's own forward counter is the discriminator between the two.
+
+    TWO MODES ARE REFUSED, and both refusals are derived from the hook's OWN row resolver
+    (`pc.resolve_scoped_query_rows`) rather than from a hand-kept list of mode names:
+
+      * a mode that resolves to NO prefill rows (`decode_only`) edits literally nothing here;
+      * a mode that REQUIRES decode edits and, at prefill, resolves to exactly the same rows as
+        some mode that does not (`response_query_only` vs `query_prefill_only`). Admitting it
+        would file the run under a name that misdescribes the intervention actually performed.
+
+    `legacy_all_query` survives both tests: its prefill half addresses EVERY query row, which is
+    not what any other mode does, so it remains a distinct, measurable intervention here and is
+    admitted under the reduced contract (recorded in summary.json as `liveness_readout_only`).
+    """
+    pc = pair()
+    if scope not in pc.LIVENESS_REQUIREMENT:
+        raise SystemExit(f"[score] REFUSING: unknown knockout scope {scope!r}; "
+                         f"known: {list(pc.SCOPED_KNOCKOUT_MODES)}")
+    _kinds = ", ".join(query_kinds) if query_kinds else "forward-only readout"
+    # WHICH ROWS each mode may edit at prefill, asked of the hook's own resolver with sentinel
+    # spans. Only the SHAPE of the answer matters (all rows / the query span / the demo span /
+    # nothing), never the particular positions.
+    _q, _d = frozenset({1, 2}), frozenset({7, 8})
+
+    def _prefill_rows(mode):
+        return pc.resolve_scoped_query_rows(mode, False, _q, _d)
+
+    mine = _prefill_rows(scope)
+    if mine is not None and not mine:
+        raise SystemExit(
+            f"[score] REFUSING: --knockout-scope {scope!r} edits nothing at prefill, and the "
+            f"requested query kind(s) ({_kinds}) are FORWARD-ONLY readouts with no decode step. "
+            f"This mode is unsatisfiable there: it would edit zero positions on every row and the "
+            f"liveness gate would (correctly) void the run. Score behavioral rows for this mode, "
+            f"or use a prefill-scoped one.")
+    if "n_decode_edits" in pc.LIVENESS_REQUIREMENT[scope]:
+        twin = next((m for m in pc.SCOPED_KNOCKOUT_MODES
+                     if m != scope and _prefill_rows(m) == mine
+                     and "n_decode_edits" not in pc.LIVENESS_REQUIREMENT[m]), None)
+        if twin is not None:
+            raise SystemExit(
+                f"[score] REFUSING: --knockout-scope {scope!r} requires decode edits, but the "
+                f"requested query kind(s) ({_kinds}) are FORWARD-ONLY readouts with no decode "
+                f"step. Stripped of its decode half this mode edits exactly the rows {twin!r} "
+                f"edits, so the run would be filed under {scope!r} while performing {twin!r}. Ask "
+                f"for {twin!r} explicitly, or score behavioral rows.")
+    req = tuple(k for k in pc.LIVENESS_REQUIREMENT[scope] if k != "n_decode_edits")
+    req = req + ("n_prefill_forward",)
+    zero = tuple(pc.LIVENESS_MUST_BE_ZERO[scope])
+    if "n_decode_edits" not in zero:
+        zero = zero + ("n_decode_edits",)
+    return req, zero
+
+
+def readout_liveness_violations(scope, stats):
+    """[] iff one FORWARD-ONLY readout row satisfies `scope`'s readout contract.
+
+    The >0/==0 arithmetic is still `pc.scoped_liveness_violations` -- the hook's own evaluator,
+    reading the hook's own tables. The only thing done here is to EXCUSE the single counter the
+    missing decode step makes unreachable, and to add back the two readout-specific checks the
+    contract above declares. `readout_liveness_contract` is called first precisely so that an
+    unsatisfiable mode cannot be waved through by that excuse: on `decode_only` it refuses.
+    """
+    pc = pair()
+    # ONE source of truth: the counters checked below are the ones the contract DECLARES, so a
+    # contract list and a verdict cannot drift apart (an early draft hard-coded the extra checks
+    # here, and dropping `n_prefill_forward` from the contract then left the gate unchanged --
+    # i.e. the declared contract was decoration). This call also refuses the unsatisfiable modes,
+    # so the excuse below can never turn `decode_only` into a vacuous pass.
+    req, zero = readout_liveness_contract(scope)
+    ks = knockout_row_stats(stats)
+    probe = dict(ks)
+    if "n_decode_edits" in pc.LIVENESS_REQUIREMENT[scope]:
+        probe["n_decode_edits"] = 1           # EXCUSE the one counter this path cannot reach
+    bad = list(pc.scoped_liveness_violations(scope, probe))
+    # ... and then apply, in the same >0/==0 sense, the counters the READOUT contract adds on top
+    # of the mode's own table (which pc's evaluator, reading that table, cannot know about).
+    for key in req:
+        if key not in pc.LIVENESS_REQUIREMENT[scope] and int(ks.get(key, 0)) <= 0:
+            bad.append(f"{key}==0 (mode {scope} on a forward-only readout requires it > 0: the "
+                       f"hook was never entered, so nothing was observed to fire)")
+    for key in zero:
+        if key not in pc.LIVENESS_MUST_BE_ZERO[scope] and int(ks.get(key, 0)) != 0:
+            bad.append(f"{key}=={int(ks.get(key, 0))} (mode {scope} on a forward-only readout "
+                       f"requires it == 0; this row is not the forward-only row assumed)")
+    return list(dict.fromkeys(bad))           # stable order, no duplicate strings
+
+
+def knockout_liveness_summary(knock_live, attn_impl, scope=DEFAULT_KNOCKOUT_SCOPE,
+                              readout=False):
     """Reduce the per-row liveness counters to the block written into summary.json.
 
     `scope` defaults to the legacy mode so a caller that predates --knockout-scope is unchanged.
     The mode's own liveness contract is COPIED OUT OF pair_common (never restated) so the artifact
     records which counters this run was judged on — a null whose gate is unknown is unreadable.
+
+    `readout=True` records the FORWARD-ONLY variant of that contract (see
+    `readout_liveness_contract`) and flags it as such, so a reader can never mistake a run judged
+    without a decode step for one judged with it. Default False: unchanged for every existing run.
     """
     import statistics as _st
     pc = pair()
     if scope not in pc.LIVENESS_REQUIREMENT:
         raise SystemExit(f"unknown knockout scope {scope!r}; known: {pc.SCOPED_KNOCKOUT_MODES}")
+    _req, _zero = ((pc.LIVENESS_REQUIREMENT[scope], pc.LIVENESS_MUST_BE_ZERO[scope])
+                   if not readout else readout_liveness_contract(scope))
     nr = int(knock_live.get("n_rows", 0))
     de = list(knock_live.get("decode_edits", []))
     df = list(knock_live.get("decode_forwards", []))
@@ -341,8 +467,12 @@ def knockout_liveness_summary(knock_live, attn_impl, scope=DEFAULT_KNOCKOUT_SCOP
         "attn_implementation": attn_impl,
         # ---- scoped knockout (added with --knockout-scope) --------------------------------- #
         "knockout_scope": scope,
-        "liveness_required": list(pc.LIVENESS_REQUIREMENT[scope]),
-        "liveness_must_be_zero": list(pc.LIVENESS_MUST_BE_ZERO[scope]),
+        "liveness_required": list(_req),
+        "liveness_must_be_zero": list(_zero),
+        # WHICH CONTRACT THIS RUN WAS JUDGED ON. A forward-only readout has no decode step, so its
+        # rows are judged on the reduced contract; saying so in the artifact is the difference
+        # between "no decode edits, correctly" and "no decode edits, silently".
+        "liveness_readout_only": bool(readout),
         "frac_rows_scope_live": fsl,
         "median_prefill_edits": (_st.median(pe) if pe else 0),
         "min_prefill_forwards": (min(pf) if pf else 0),
@@ -378,6 +508,12 @@ def assert_knockout_live(summary):
     nr = int(summary.get("n_rows", 0))
     fl = float(summary.get("frac_rows_decode_live", 0.0))
     scope = summary.get("knockout_scope", DEFAULT_KNOCKOUT_SCOPE)
+    # A run whose rows had NO DECODE STEP (forward-only readouts). Its per-row verdicts were taken
+    # from the reduced contract, so the decode-fraction rule below cannot apply -- but nothing else
+    # is relaxed: n_rows == 0 is still void, the per-mode verdict is still mandatory (and, unlike
+    # the legacy path, cannot be absent), and the reduced contract still REQUIRES prefill edits and
+    # a prefill forward, so a hook that never fired still fails here.
+    readout = bool(summary.get("liveness_readout_only"))
     if scope not in pc.LIVENESS_REQUIREMENT:
         raise SystemExit(f"REFUSING: unknown knockout scope {scope!r} in the liveness summary; "
                          f"known: {pc.SCOPED_KNOCKOUT_MODES}")
@@ -385,6 +521,12 @@ def assert_knockout_live(summary):
         raise SystemExit("REFUSING: knockout liveness has zero rows -- the run generated nothing, "
                          "so the mask was never observed to fire. This is not a pass.")
     fsl = summary.get("frac_rows_scope_live")
+    if fsl is None and readout:
+        raise SystemExit(
+            f"REFUSING: scope {scope!r} was judged on forward-only readout rows but the liveness "
+            f"summary carries no per-mode verdict (frac_rows_scope_live is absent). On that path "
+            f"the decode counters are zero BY CONSTRUCTION, so a summary without the per-mode "
+            f"verdict carries no evidence of liveness at all.")
     if fsl is None:
         # Only the legacy scope can be judged from a summary that carries decode information
         # alone (pre-scope callers). A scoped mode without its own verdict is refused, never
@@ -397,11 +539,15 @@ def assert_knockout_live(summary):
     elif float(fsl) < KNOCKOUT_MIN_LIVE_FRAC:
         raise SystemExit(
             f"REFUSING: scope {scope!r} satisfied its liveness contract on only {float(fsl):.3f} "
-            f"of rows (threshold {KNOCKOUT_MIN_LIVE_FRAC}). Required > 0: "
-            f"{list(pc.LIVENESS_REQUIREMENT[scope])}; required == 0: "
-            f"{list(pc.LIVENESS_MUST_BE_ZERO[scope])}. Violations seen: "
+            f"of rows (threshold {KNOCKOUT_MIN_LIVE_FRAC})"
+            f"{' [forward-only readout contract]' if readout else ''}. Required > 0: "
+            f"{summary.get('liveness_required', list(pc.LIVENESS_REQUIREMENT[scope]))}; "
+            f"required == 0: "
+            f"{summary.get('liveness_must_be_zero', list(pc.LIVENESS_MUST_BE_ZERO[scope]))}. "
+            f"Violations seen: "
             f"{summary.get('scope_violations')}. See summary.json knockout_liveness.")
-    if "n_decode_edits" in pc.LIVENESS_REQUIREMENT[scope] and fl < KNOCKOUT_MIN_LIVE_FRAC:
+    if (not readout) and "n_decode_edits" in pc.LIVENESS_REQUIREMENT[scope] \
+            and fl < KNOCKOUT_MIN_LIVE_FRAC:
         raise SystemExit(
             f"REFUSING: the attention knockout fired during decoding on only {fl:.3f} of rows "
             f"(threshold {KNOCKOUT_MIN_LIVE_FRAC}). This is the prefill-only failure "
@@ -1144,6 +1290,30 @@ def main() -> int:
                          "attn_knockout masks demonstration positions computed from the FULL "
                          "prompt. The mask would address different text than the model reads. Arm B "
                          "is a prompt swap, not a hook, and takes no --intervene.")
+    # FORWARD-ONLY READOUTS HAVE NO DECODE STEP (correction C-6).
+    # `--query-kinds semantic_one_word` (and the other readout kinds) score one forward pass over
+    # the templated prompt: the hook is entered exactly once per row, at prefill, and never at
+    # decode. Two consequences, both settled HERE rather than 20 s into a job:
+    #   * a mode that needs decode edits is unsatisfiable on such a run. It used to produce a
+    #     zero-decode-edit run that tripped the liveness gate after the model had loaded;
+    #   * mixing readout and generating rows under one knockout would put two different contracts
+    #     into one summary, so `liveness_required` would describe only half the rows. Refused.
+    # Which modes survive, and under which reduced contract, is decided by
+    # `readout_liveness_contract` from the hook's own tables -- never by a list of names here.
+    _readout_kinds = [k for k in kinds if k in READOUT_QUERY_KINDS]
+    _decode_kinds = ([k for k in kinds if k == "behavioral"] if not args.no_generate else [])
+    _readout_only = bool(_wants_knockout and _readout_kinds and not _decode_kinds)
+    if _wants_knockout and _readout_kinds and _decode_kinds:
+        raise SystemExit(
+            f"[score] REFUSING: --query-kinds mixes forward-only readout kind(s) "
+            f"{_readout_kinds} with generating kind(s) {_decode_kinds} under an attn_knockout. "
+            f"The two halves have different liveness contracts (the readout rows have no decode "
+            f"step at all), and one summary.json can only declare one. Score them in two runs.")
+    if _readout_only:
+        _rreq, _rzero = readout_liveness_contract(_knock_scope, _readout_kinds)
+        print(f"[score] forward-only readout ({', '.join(_readout_kinds)}): no decode step, so "
+              f"scope {_knock_scope} is judged on the reduced contract (required > 0: "
+              f"{list(_rreq)}; required == 0: {list(_rzero)})", flush=True)
     _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
     if _wants_knockout and getattr(getattr(lm.model, "config", None), "_attn_implementation",
@@ -1421,6 +1591,37 @@ def main() -> int:
 
     knock_live = new_knockout_live()
 
+    def _readout_knock_fields(knock_stats, dk, prot, seq_len):
+        """Ledger ONE forward-only readout row into the accumulator, and return its row fields.
+
+        THE SAME `record_knockout_row` the generation path uses -- there is exactly one accounting
+        path. Until correction C-6 this branch ledgered nothing at all: `knock_live["n_rows"]`
+        stayed 0 on any `--query-kinds semantic_one_word` knockout run and `assert_knockout_live`
+        voided it, because a mask that is never observed is not a mask that fired.
+        """
+        ks, bad = record_knockout_row(knock_live, _knock_scope, knock_stats,
+                                      n_demo_positions=len(dk), readout=True)
+        _pl = sorted(prot or ())
+        return {"n_demo_positions": len(dk),
+                "demo_key_min": (min(dk) if dk else None),
+                "demo_key_max": (max(dk) if dk else None),
+                "seq_len": seq_len,
+                "hook_n_forward": int(ks.get("n_forward", 0)),
+                "hook_n_decode_forward": int(ks.get("n_decode_forward", 0)),
+                "hook_n_prefill_forward": int(ks.get("n_prefill_forward", 0)),
+                "hook_n_edits": int(ks.get("n_edits", 0)),
+                "hook_n_decode_edits": int(ks.get("n_decode_edits", 0)),
+                "hook_n_prefill_edits": int(ks.get("n_prefill_edits", 0)),
+                "hook_n_query_rows_edited": ks.get("n_query_rows_edited"),
+                "hook_n_keys_masked": ks.get("n_keys_masked"),
+                "hook_n_blocked_keys": ks.get("n_blocked_keys"),
+                "hook_liveness_violations": bad,
+                "hook_liveness_readout_only": True,
+                "n_query_span_positions": len(_pl),
+                "query_span_bounds": ([_pl[0], _pl[-1]] if _pl else None),
+                "n_demo_span_positions": len(dk),
+                "demo_span_bounds": ([min(dk), max(dk)] if dk else None)}
+
     concept = rows[0]["concept"]
     codeword = rows[0]["codeword"]
     # Symmetric, validated readout ids (signals.readout_ids): one whole-word token per side.
@@ -1533,7 +1734,11 @@ def main() -> int:
                     # diagnostic, and is meaningless when both terms are in the tail.
                     rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
                     rec["semantic_margin_p_diff"] = rec["p_concept"] - rec["p_codeword"]
-                    run.log_row({**base, "readout": "semantic", **rec})
+                    # LEDGER THE HOOK (C-6). The readout above ran INSIDE the ExitStack, i.e.
+                    # under the intervention; recording nothing left the mask unobservable.
+                    _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
+                        if _wants_knockout else {}
+                    run.log_row({**base, **_kf, "readout": "semantic", **rec})
                     option_mass[f"semantic/{row['query_kind']}"].append(rec["option_mass"])
                     counts["semantic"] += 1
 
@@ -1541,7 +1746,10 @@ def main() -> int:
                     rec = _comprehension(templated)
                     rec["comprehension_logodds"] = rec["logp_coded"] - rec["logp_literal"]
                     rec["comprehension_margin_p_diff"] = rec["p_coded"] - rec["p_literal"]
-                    run.log_row({**base, "readout": "comprehension", **rec})
+                    # LEDGER THE HOOK (C-6) -- see the semantic branch above.
+                    _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
+                        if _wants_knockout else {}
+                    run.log_row({**base, **_kf, "readout": "comprehension", **rec})
                     option_mass[f"comprehension/{row['query_kind']}"].append(rec["option_mass"])
                     counts["comprehension"] += 1
 
@@ -1721,7 +1929,8 @@ def main() -> int:
 
     knock_summary = None
     if _wants_knockout:
-        knock_summary = knockout_liveness_summary(knock_live, _attn_impl, scope=_knock_scope)
+        knock_summary = knockout_liveness_summary(knock_live, _attn_impl, scope=_knock_scope,
+                                                  readout=_readout_only)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
 
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),

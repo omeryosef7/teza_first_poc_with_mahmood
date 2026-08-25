@@ -1930,6 +1930,65 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✅ C-6 CLOSED (08:40) — **the hook DID apply during the readout; only the ledger was missing. The serious branch is ruled out.**
+
+C-6 named two possibilities and said which mattered: *"if the hook is not even entered on that path, any
+forward-only 'intervention' result ever produced was actually a baseline."* **It was entered.**
+**Verified independently by me, by AST rather than by reading:**
+
+```
+ExitStack `with` (the intervention contexts) spans lines 1723-1899
+   INSIDE: _semantic()      at 1732
+   INSIDE: _comprehension() at 1746
+   INSIDE: dc.generate()    at 1780
+readout calls OUTSIDE any ExitStack: NONE
+```
+
+**All three scoring branches run inside the same context stack.** So the mask really was applied during
+the readout forward pass, and **no historical forward-only intervention result was secretly a
+baseline.** The defect was exactly and only that `record_knockout_row` was called in the generation
+branch alone, so `knock_live["n_rows"]` stayed 0 and the gate voided the run — **the gate was right, the
+ledger was absent.** A new test pins the structure: it goes red if either readout call ever moves
+outside the `ExitStack`.
+
+#### The fix, and why it is not an exemption
+
+A forward-only readout has no decode step, so the mode contract is **reduced, not waived**:
+`readout_liveness_contract(scope, query_kinds)` derives it from `pc.LIVENESS_REQUIREMENT` /
+`LIVENESS_MUST_BE_ZERO` — never restating the rules — by dropping `n_decode_edits` from the requirement,
+**adding it to the forbidden set**, and **adding `n_prefill_forward` to the requirement as the
+replacement proof-of-life counter.** That last clause is the whole point: on this path a correctly
+scoped hook and a dead one both report zero decode edits, and **`n_prefill_forward > 0` is what
+separates them.**
+
+**Which modes are measurable is DERIVED, not listed** — from `pc.resolve_scoped_query_rows`:
+
+| mode | on a forward-only readout |
+|---|---|
+| `query_prefill_only`, `demo_processing_only` | ✅ measurable |
+| `legacy_all_query` | ✅ admitted under the reduced contract — its prefill half addresses *every* query row, which no other mode does, and it is the default scope |
+| `decode_only` | ⛔ refused — resolves to **no prefill rows at all** |
+| `response_query_only` | ⛔ refused — **its readout reduction is IDENTICAL to `query_prefill_only`**, so running it would misname the intervention. The refusal names the mode to use instead |
+
+**Refusal happens at argument time, before `dc.load_model`**, rather than 20 seconds into a run.
+
+#### The mutation round is worth recording, because it caught a decorative contract
+
+Six mutations against a pristine copy. **M3 — "exempt the readout path by dropping `n_prefill_forward`
+from the contract" — initially turned only ONE shape test red**, because the first implementation
+hard-coded the extra checks inside the evaluator: **the declared contract was decoration, and the gate
+would not have noticed it changing.** Rewired so the evaluator reads its counters off the contract;
+M3 now correctly kills **9** tests including all three `test_a_DEAD_hook_still_FAILS_on_the_readout_path`
+and all three `test_dead_and_scoped_empty_are_DISTINGUISHABLE`. **A contract that the gate does not
+actually consult is the dead-guard shape this project has paid for repeatedly**, and it was caught by
+mutating rather than by reading.
+
+M5 (leaking the readout contract into the generation path) turns **three pre-existing** generation-path
+tests red, which is the evidence that the generation path is untouched. **124 tests pass**, verified by
+me on a serial run.
+
+---
+
 ### ⛔ C-7 (08:10) — **THE PHASE-2 PROBE USED THE WRONG QUERY KIND, and the repo's own option-mass gate caught it in one run. The measurement it would have produced sits in a 3 % tail.**
 
 Job **779755** (the probe **baseline**) exited `4:0` — **not a crash**. It produced its 8 rows with
