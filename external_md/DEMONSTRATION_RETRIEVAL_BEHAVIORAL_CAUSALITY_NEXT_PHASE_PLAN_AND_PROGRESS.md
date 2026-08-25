@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆🏆 **WITHIN-FAMILY: the attack dies where the mapping survives.** `demo_processing_only` kills **7** attacks and loses binding on **0 of 48** families (rule-of-three ≤ 0.0625); `query_prefill_only` loses binding on **8/41** families whose attack survived and **0/7** of those it killed — **anti-associated** | 48 families, each one behavioural row + one probe row sharing a byte-identical demo block | **R-16** |
 | 🏆🏆🏆 **THE BINDING SURVIVES THE INTERVENTION THAT KILLS THE BEHAVIOUR.** `demo_processing_only` removes ~75 % of attack success (Δ −0.1250 Llama / −0.1562 Qwen3) yet takes binding accuracy **0.8750 → 1.0000**, rescuing **all 6** failing rows (0 down / 6 up, McNemar p = 0.0312 **at its floor**), while the late control moves **0/0**. **Representation and behaviour are separable at the exact point the intervention works** | 5 arms × 48 forced-choice rows, Llama, option mass 0.37–0.60, `frac_rows_scope_live` 1.0 | **R-15** |
 | ⚠ **…and across arms the two quantities move in OPPOSITE directions** | margin loss `legacy` −2.557, `qpre` −2.172, `demoproc` **−0.897** (smallest) — the arm that hurts behaviour most hurts the mapping least | **R-15** |
 | 🏆🏆 **OUTCOME B REPLICATES ACROSS TWO MODEL FAMILIES.** Qwen3: `demoproc` **−0.1562** vs `respq` **−0.0729** (PR-5 cond. 1 holds by +0.0833); primary fails equivalence (gap 0.0937, respq = 43.8 % of legacy). **Neither response-side arm is DISTINGUISHABLE from its late-layer control** (`respq − late11` CI [−0.0572, +0.0572]) ⚠ *amended by C-9a: the +0.0000 is a balanced tie, NOT per-prompt identity — 88/96 same label, 4up/4down, 0/96 identical generations* | 8 arms, one pinned session, n=96, Qwen3 L7–17, baseline 0.1771 | **R-12**, amended **C-9** |
@@ -1158,7 +1159,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | ✅ **R-15: THE BINDING SURVIVES** — 0.875 → 1.000 under the arm that suppresses behaviour | **PR-2**, **D-9** |
+| P2 | 2 | semantic binding probe + causal intervention on it | ✅ **R-15 + R-16 (within-family)** — the attack dies where the mapping survives | **PR-2**, **D-9** |
+| P4B | 4B | regenerate pools at **10 domains**, one bank per pool | 🔬 pool gen **779902**; **D-10** pre-registers accept-on-audit | prev-R-BE |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1933,6 +1935,55 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-16 (10:16) — **THE WITHIN-FAMILY BRIDGE: the families whose ATTACK dies are NOT the families that lose their BINDING. The dissociation holds inside the same demonstrations, not merely on average.**
+
+**Artifact:** `outputs/boombness/binding_behaviour_bridge/bridge_20260825_101613_3117657/binding_behaviour_bridge.json`
+**Producing script:** `src/boombness/binding_behaviour_bridge.py` (new). **No GPU** — pure analysis over
+artifacts already on disk.
+
+**Why this design and not R-15's.** R-15 compared 48 probe rows against 96 behavioural rows *in
+aggregate*, which can only say "binding survived on average while behaviour collapsed on average".
+The bank makes the stronger design free: every probe row joins **1:1** to a behavioural row on the
+family stem with a **byte-identical demo block**, and the 48 probe families are a strict **subset** of
+the 96 behavioural ones (verified). **So each family contributes one behavioural row and one probe row,
+under the same arm and the same demonstrations** — turning the dissociation into a 2×2 per family.
+
+| arm | families | attacks killed | **binding lost \| attack killed** | binding lost \| attack NOT killed |
+|---|---|---|---|---|
+| **`demo_processing_only`** | 48 | 7 | **0 / 7 = 0.0000** | **0 / 41 = 0.0000** |
+| `legacy_all_query` | 48 | 7 | 2 / 7 = 0.2857 | 4 / 41 = 0.0976 |
+| `query_prefill_only` | 48 | 7 | **0 / 7 = 0.0000** | **8 / 41 = 0.1951** |
+
+#### The two rows that matter
+
+**`demo_processing_only` kills 7 attacks and loses binding on ZERO of 48 families.** Not zero among the
+killed — **zero overall.** Its full contingency table has exactly two non-empty cells:
+`attack_killed|binding_kept: 7` and `attack_not_killed|binding_kept: 41`. **There is no family anywhere
+in the population where this arm cost the mapping.** Rule-of-three upper bound on its binding-loss
+rate: **≤ 0.0625**.
+
+**`query_prefill_only` is the sharpest, because it points the wrong way.** It loses binding on **8 of
+the 41 families whose attack it did NOT kill**, and on **0 of the 7 it did**. **Binding loss and attack
+death are not merely independent here — they are anti-associated.** An arm that damaged behaviour *by*
+damaging the mapping could not produce that table.
+
+> **Within the same demonstrations, the attack dies where the mapping survives.** R-15 established the
+> dissociation between two populations; this establishes it **family by family**, which is the design
+> the plan asked for and the one a reviewer would demand.
+
+#### ⛔ The limit, and it is the honest one
+
+**Only 7 of 48 families had an attack to kill.** The probe families are a subset chosen by query kind,
+not by attackability, and baseline ASR on them is low. **`0/7` is a small denominator**, and on its own
+it would be weak evidence. What carries the result is the *other* column: **`demo_processing_only` loses
+binding on 0 of 48**, and `query_prefill_only`'s losses land entirely among families whose attack
+survived. **Those are 48-family statements, not 7-family ones.**
+
+⚠ Llama only; lexical G = 1 (C-9d); binding is a forced-choice readout, not a behavioural measure. The
+Qwen3 probe (779891–779895) is running and will be put through the identical script.
 
 ---
 

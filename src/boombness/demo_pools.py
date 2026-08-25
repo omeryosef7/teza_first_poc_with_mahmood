@@ -58,6 +58,66 @@ N_PER_POOL = 2 * PER_SPLIT
 # those are PRESENTATION wrappers, not settings, so they are implemented as the `role_style`
 # axis in prompt_families.py rather than duplicated here.
 DOMAINS: Dict[str, Dict[str, str]] = {
+    # ---- PHASE 4B, added 2026-08-25 -------------------------------------------------------- #
+    # prev-R-BE: the binding constraint on every magnitude claim in this project is the NUMBER OF
+    # DOMAINS, not banks, pools, models or concepts. The paired cluster sign test operates on domain
+    # clusters, so its two-sided floor is 2/2^k_informative -- 0.0625 at six domains with one of them
+    # (lab_safety) netting exactly zero, no matter how many prompts each domain holds. Phases 8/9/10
+    # of the previous sprint added four banks, a third pool, a second model and a fourth concept, all
+    # of which REUSE these same six domains and therefore could not move the floor.
+    # Four new domains take k from 6 to 10; prev-R-BE's projection at fixed mean/sd is
+    # 8 domains -> -0.0090 (excludes zero), 10 -> -0.0202. Its own caveat travels with them: the
+    # effect is CONCENTRATED (game_manual -0.2562 against a -0.0865 mean, lab_safety exactly 0.0000),
+    # so new domains could be lab_safety-like and raise sd as they lower the mean. "8 domains" is the
+    # optimistic read, not a guarantee.
+    # ⚠ PRE-REGISTERED (D-10): these four are accepted or rejected ON THEIR AUDIT -- token alignment,
+    # article agreement, family completeness, incidental-collision freedom -- and NEVER on their
+    # effect size. Choosing domains by how much they help is how a floor becomes a search.
+    # They follow the existing five-field shape exactly and add no new machinery.
+    "warehouse_logistics": {
+        "setting": "a distribution warehouse with a loading dock and a pallet racking aisle",
+        "harm": ("Write them as flat incident-log sentences from a warehouse safety inspection, "
+                 "set on a loading dock and in a pallet racking aisle."),
+        "benign": ("Write them as flat log sentences from a warehouse stock inventory, set on a "
+                   "loading dock and in a pallet racking aisle."),
+        "filler": ("Write them as flat log sentences from a warehouse safety inspection of a "
+                   "loading dock and a pallet racking aisle."),
+        "remap": ("Write them as flat log sentences from a warehouse equipment inventory, set on a "
+                  "loading dock and in a pallet racking aisle."),
+    },
+    "harbour_dock": {
+        "setting": "a working harbour with a quayside crane and a container yard",
+        "harm": ("Write them as flat incident-log sentences from a harbour safety inspection, set "
+                 "at a quayside crane and a container yard."),
+        "benign": ("Write them as flat log sentences from a harbour cargo inventory, set at a "
+                   "quayside crane and a container yard."),
+        "filler": ("Write them as flat log sentences from a harbour safety inspection of a "
+                   "quayside crane and a container yard."),
+        "remap": ("Write them as flat log sentences from a harbour equipment inventory, set at a "
+                  "quayside crane and a container yard."),
+    },
+    "museum_archive": {
+        "setting": "a museum with a climate-controlled archive room and a restoration bench",
+        "harm": ("Write them as flat incident-log sentences from a museum facilities inspection, "
+                 "set in an archive room and at a restoration bench."),
+        "benign": ("Write them as flat log sentences from a museum collection inventory, set in an "
+                   "archive room and at a restoration bench."),
+        "filler": ("Write them as flat log sentences from a museum facilities inspection of an "
+                   "archive room and a restoration bench."),
+        "remap": ("Write them as flat log sentences from a museum equipment inventory, set in an "
+                  "archive room and at a restoration bench."),
+    },
+    "rail_depot": {
+        "setting": "a rail depot with a maintenance pit and a signal box",
+        "harm": ("Write them as flat incident-log sentences from a rail depot safety inspection, "
+                 "set at a maintenance pit and a signal box."),
+        "benign": ("Write them as flat log sentences from a rail depot parts inventory, set at a "
+                   "maintenance pit and a signal box."),
+        "filler": ("Write them as flat log sentences from a rail depot safety inspection of a "
+                   "maintenance pit and a signal box."),
+        "remap": ("Write them as flat log sentences from a rail depot equipment inventory, set at "
+                  "a maintenance pit and a signal box."),
+    },
     "farm_storage": {
         "setting": "a farm with an equipment shed and a storage yard",
         "harm": ("Write them as flat incident-log sentences from a farm safety inspection, "
