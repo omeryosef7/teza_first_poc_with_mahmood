@@ -158,3 +158,28 @@ def test_rescue_liveness_is_recorded_on_the_row():
     assert "_rescue_ctx.liveness()" in src, "DonorPatch.liveness() is never called"
     assert '"rescue_liveness": _rl' in src, "rescue liveness never reaches the emitted row"
     assert '"rescue_layer": args.rescue_layer' in src
+
+
+def test_rescue_positions_come_from_this_rows_own_spans():
+    """`--rescue-positions query` donates the query span instead of the demo block. Both `dk` and
+    `prot` are computed above from THIS row's templated string; neither may be recomputed at the
+    capture site (that is how spans drift) nor carried from a previous iteration (DR-3's bug)."""
+    src = _score_behavior_src()
+    assert 'choices=("demo", "query")' in src
+    assert '_rpos = sorted(prot or ()) if args.rescue_positions == "query" else list(dk)' in src
+    # ordering: both span computations must precede the donor capture
+    assert src.index("prot = query_span_positions") < src.index("_rpos = sorted(prot")
+    assert src.index("dk, dk_reason = demo_key_positions") < src.index("_rpos = sorted(prot")
+
+
+def test_empty_position_set_is_refused_not_silently_skipped():
+    """An empty donor set would make DonorBlock a no-op that still reports fired=False, which reads
+    as 'the information was not there'. It must be charged to the ledger instead."""
+    src = _score_behavior_src()
+    assert 'ledger.fail(f"rescue:no_{args.rescue_positions}_positions"' in src
+
+
+def test_rescue_positions_and_count_reach_the_row():
+    src = _score_behavior_src()
+    assert '"rescue_positions": (args.rescue_positions' in src
+    assert '"n_rescue_positions": (len(_rpos)' in src

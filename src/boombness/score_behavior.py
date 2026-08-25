@@ -1154,6 +1154,13 @@ def main() -> int:
     # validated with argparse `choices` because the authoritative tuple lives in pair_common, which
     # is imported below -- restating the five names here is exactly the drift the mode table is
     # centralised to prevent, so the check is against pc.SCOPED_KNOCKOUT_MODES itself.
+    ap.add_argument("--rescue-positions", choices=("demo", "query"), default="demo",
+                    help="WHICH positions receive the donated activations. 'demo' = the "
+                         "demonstration block, the positions the knockout directly corrupts. "
+                         "'query' = the query span (the harmful request onward), which the knockout "
+                         "damages only INDIRECTLY, by way of what it reads from the demonstrations. "
+                         "This is a different POSITION SET at the same layer, not a layer sweep: "
+                         "PR-13 forbade sweeping layers until one rescues, and this does not.")
     ap.add_argument("--rescue-donor", choices=("clean", "self"), default="clean",
                     help="Where the donated activations come from. 'clean' = an unhooked forward "
                          "(the RESCUE). 'self' = a forward under the SAME hooks as the arm, the "
@@ -1755,7 +1762,14 @@ def main() -> int:
                 if not _wants_knockout or not dk:
                     ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
                     continue
-                _cap = ActivationCapture(lm.model, args.rescue_layer, dk)
+                # WHICH positions are donated. `dk` is the demo block; `prot` is the query span,
+                # both computed ABOVE from this row's own templated string -- neither is recomputed
+                # here, and neither is carried over from a previous iteration.
+                _rpos = sorted(prot or ()) if args.rescue_positions == "query" else list(dk)
+                if not _rpos:
+                    ledger.fail(f"rescue:no_{args.rescue_positions}_positions", row["prompt_id"])
+                    continue
+                _cap = ActivationCapture(lm.model, args.rescue_layer, _rpos)
                 with torch.no_grad():
                     with contextlib.ExitStack() as _dst:
                         if args.rescue_donor == "self":
@@ -1766,7 +1780,7 @@ def main() -> int:
                 if _cap.acts is None:
                     ledger.fail("rescue:donor_capture_empty", row["prompt_id"])
                     continue
-                _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(dk),
+                _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(_rpos),
                                     acts=_cap.acts, input_ids=list(ids_r))
                 _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
                 ctxs = list(ctxs) + [_rescue_ctx]
@@ -1915,6 +1929,10 @@ def main() -> int:
                                     "rescue_layer": args.rescue_layer,
                                     "rescue_donor": (args.rescue_donor
                                                      if args.rescue_layer is not None else None),
+                                    "rescue_positions": (args.rescue_positions
+                                                         if args.rescue_layer is not None else None),
+                                    "n_rescue_positions": (len(_rpos)
+                                                           if args.rescue_layer is not None else None),
                                     "control_draw": (_cd or None),
                                     "control_draw_match_ratio": _cd_ratio,
                                     "n_control_draw_positions": (

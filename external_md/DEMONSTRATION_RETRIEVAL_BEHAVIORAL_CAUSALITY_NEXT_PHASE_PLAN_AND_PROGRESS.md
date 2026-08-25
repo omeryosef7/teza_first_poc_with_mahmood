@@ -1956,6 +1956,47 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-17 (02:10) — **Pre-registered: if the attack damage is NOT in the demonstration positions, is it in the QUERY positions that read from them?**
+
+R-35 returned **Outcome C** on Llama: handing back the clean demonstration activations at the top of
+the band restores the refusal but **not** the attack. **So the ASR damage is somewhere else** — and
+the obvious somewhere is the positions the demonstrations are read *into*: the query span, which
+`demo_processing_only` never touches directly and can only damage **indirectly**, through what those
+positions attend to.
+
+**This is a different POSITION SET at the same layer — not a layer sweep.** PR-13 forbade scanning
+layers until one rescues; this does not scan anything. `--rescue-positions query` donates
+`query_span_positions` (the harmful request onward) instead of the demonstration block, at the **same
+L14**, from the **same clean donor**, under the **same knockout**.
+
+**Arms (Llama, d10 bank, 160 rows):** `p9_rescue_qpos_L14` (primary) and `p9_rescue_qpos_L5`
+(below-band control). Baseline `p4bA` and knockout `p4b_demo_processing_only` already exist **in the
+same judging session as R-35's arms**, so this cell is same-session, unlike R-38's.
+
+**Outcomes, fixed now:**
+
+| outcome | pattern | reading |
+|---|---|---|
+| **A — the damage is in the query span** | `L14 ASR − knockout > +0.0521`, and L5 does not | The knockout removes the attack by corrupting what the query positions carry, **not** the demonstrations' own representation |
+| **B — null** | `\|L14 ASR − knockout\| ≤ 0.0521` | Neither position set at this layer holds it. **Combined with R-35 that is a substantive negative: the ASR effect is not recoverable by restoring either span at the top of the band** |
+| **C — invalid** | L5 recovers as much as L14 | Nonspecific patch; no claim |
+
+**⛔ Pre-committed.**
+* **Outcome B is a real result and will be reported as one, not buried.** Two position sets, both
+  restored, neither bringing the attack back, is informative about where the effect is *not*.
+* **Refusal is reported beside ASR** — and note the prediction differs: patching the **query** span
+  should NOT undo the refusal restoration if the refusal effect lives in the demonstration positions
+  (R-35/36/37/38). **A query-span patch that also removes the refusal rise would weaken C9's
+  positional specificity**, and I flag that risk before running.
+* **Preconditions:** `fired` true on every row (`n_rescue_positions` now recorded per row too), judge
+  pinned, truncation reported.
+* **Llama only.** Cross-model only if Outcome A.
+
+**Smoke before sweep**, per the standing rule — 8 rows first, to confirm the query span resolves and
+the patch fires on a position set that is **not** the demo block.
+
+---
+
 ### 🏆🏆🏆 R-38 (01:20) — **PR-16 CONFIRMS. The 2 × 2 over model family × demonstration pool is COMPLETE: in all four cells the patch gives back the refusal, and in all four the below-band control moves it by EXACTLY 0.0000.**
 
 **Artifacts:** arms `p8b_rescue_L14` (781643) / `p8b_rescue_L5` (781644); judging `p8bj_*` (781727).
