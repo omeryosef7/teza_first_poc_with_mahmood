@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
@@ -1942,6 +1943,55 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### R-24 (14:52) — **PR-10's smoke: the count-matched non-demo control is INFEASIBLE at exactly the doses where the effect lives. Reported as a limit, not routed around.**
+
+**Job 780231** (8 rows, Llama, d10). **State: FAILED — and that is the correct outcome.** The module
+**refused before generating** rather than emitting an under-matched control:
+
+```
+REFUSING before generating: 4 of 8 rows cannot carry this knockout
+(0 without a demo block, 4 whose control cannot be built, 0 with no query rows)
+```
+
+**`control_draw_match_ratio`, per dose** (drawn keys / demo keys):
+
+| n_examples | min | mean | rows below 1.0 | feasible? |
+|---|---|---|---|---|
+| 1 | **1.0** | 1.0 | 0 | **YES** |
+| 2 | **1.0** | 1.0 | 0 | **YES** |
+| **4** | **0.0** | 0.0 | 2 | **NO** |
+| **8** | **0.0** | 0.0 | 2 | **NO** |
+
+**Ratio 0.0 means not one position could be drawn.** The demo block grows 12 → 106 tokens while the
+unprotected non-demo pool is near-constant (~53 tokens, mostly the protected query span), so by
+`n_examples = 4` there is **nothing left to count-match with**.
+
+**⛔ This is the pre-committed bad case.** PR-10: *"If the control is infeasible precisely where the
+effect lives (n_examples 4 and 8), I will say the control cannot be run there and the
+demonstration-specificity claim is UNTESTED at those doses."* **The effect lives there** —
+`demo_processing_only`'s ΔASR is −0.1750 at n=4 and −0.2500 at n=8, against −0.0500 at n=1 (a 2-row
+cell R-23 already declined as underpowered). **So the strict control can only speak where the effect
+is weakest or unmeasurable.**
+
+**What is being run, and the inference rule fixed in advance for each:**
+
+* **`p5_matched_d1/d2/d3` (jobs 780297-780299)** — strict, count-matched, restricted to
+  `n_examples ∈ {1, 2}` where `match_ratio = 1.0`. **80 rows.** These are a fair test **at low dose
+  only.**
+* **`p5_capped_d1/d2/d3` (jobs 780300-780302)** — capped, all four doses, **named `capped` and never
+  reported as `matched`**, with `control_draw_match_ratio` quoted per dose. **The capped arm is
+  ONE-SIDED and will be read only in the direction it can support:** it masks **fewer** positions than
+  the arm, so **if it still removes the attack, that is evidence the effect is not
+  demonstration-specific**; **if it does not, that is uninformative**, because under-masking trivially
+  predicts no effect. **A null from the capped arm will not be quoted as support for
+  demonstration-specificity.**
+
+**Nothing here is a rescue of the strict control.** At `n_examples` 4 and 8, **demonstration-
+specificity remains UNTESTED**, and that will be stated in the phase's conclusions rather than
+softened by the low-dose cells.
 
 ---
 
