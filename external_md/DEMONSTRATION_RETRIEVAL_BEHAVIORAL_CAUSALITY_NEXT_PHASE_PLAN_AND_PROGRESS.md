@@ -30,6 +30,9 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆 **OUTCOME B REPLICATES ACROSS TWO MODEL FAMILIES.** Qwen3: `demoproc` **−0.1562** vs `respq` **−0.0729** (PR-5 cond. 1 holds by +0.0833); primary fails equivalence (gap 0.0937, respq = 43.8 % of legacy). **And only the arms touching the demonstrations' OWN processing beat their matched control: `legacy` −0.0937, `demoproc` −0.0833, while BOTH response-side arms are EXACTLY +0.0000 against it** | 8 arms, one pinned session, n=96, Qwen3 L7–17, baseline 0.1771 | **R-12** |
+| ⚠ **`query_prefill_only` is model-specific and non-specific**: Llama **+0.0625** (wrong way), Qwen3 **−0.0729** but **exactly equal to its late control** | PR-5 condition 3 fails; its meaning was fixed before the run | **R-12**, PR-5 |
+| ✅ **The refusal signature is cross-model; the length collapse is not** | `demoproc` refuses 0.208 (Llama) / **0.156** (Qwen3) vs legacy 0.010 / 0.000; rows <200 chars 20 (Llama) vs **1** (Qwen3) | R-10, **R-12** |
 | 🏆 **OUTCOME B: the causal path is NOT response-time retrieval.** Corrupting the demonstrations' own prefill encoding carries **92.3 %** of the legacy effect (Δ −0.1250 vs −0.1354); masking the response's access carries **46.2 %** (−0.0625); the primary comparison **fails equivalence** (gap 0.0729 > margin 0.0417). Masking the final query's prefill access moves ASR **the wrong way, +0.0625** | 8 arms, one pinned judging session, n=96, Llama L6–14; effect **survives** length conditioning (−0.1200 at T=200) | **R-10** |
 | ⚠ **…and the winning arm suppresses through REFUSAL, not through losing the mapping** | `demo_processing_only` refusal **0.208** against `legacy` 0.010 and `response_query_only` 0.021 — 20× | **R-10** |
 | ⛔ **No arm reaches significance at the pre-registered unit** | domain-clustered p = 0.3750 / **0.1250 at floor** / 0.6250 / 1.0000; attainable floor 0.0625–0.1250, so magnitude cannot enter the p | **R-10**, predicted by **PR-3** |
@@ -1148,8 +1151,8 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.1 | 1 | scoped attention-knockout semantics (5 modes) + synthetic tests | ✅ **R-3** — +225/−0, 52 tests, 194 passed | — |
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
-| P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ smoke PASS (**R-11**); 🔬 **779742–779749 queued** | **PR-5**: three conditions, all must hold |
-| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 probe smoke **779755–779757** queued; **D-8** adds `demo_processing_only` per R-10 | **PR-2** fixes the headline group |
+| P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
+| P2 | 2 | semantic binding probe + causal intervention on it | ⏸ **BLOCKED (C-6)** — liveness is ledgered only on the generation branch; 2 of 5 modes are structurally unmeasurable on a forward-only readout | **PR-2** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1704,6 +1707,75 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
 
+### 🏆🏆🏆 R-12 (07:40) — **OUTCOME B REPLICATES ON QWEN3-14B, and the control contrast makes it sharper than PR-5 asked for: only the arms that touch the demonstrations' OWN processing beat their matched control. Both response-side arms are EXACTLY equal to it.**
+
+**Artifact:** `outputs/boombness/phase1_decomposition/q1dec_20260825_073814_2825688/phase1_decomposition.json`
+**Judging:** job **779754**, all 8 arms in ONE pinned session, `ALL DONE`, every arm `verified (96 rows)`.
+Qwen3-14B, band **L7–17**, baseline ASR **0.1771** (healthy headroom, matching prev-R-AA's 0.1875).
+
+| arm | ASR | **Δ** | down/up | refused | median chars | domain p | floor |
+|---|---|---|---|---|---|---|---|
+| **`legacy_all_query`** | 0.0104 | **−0.1667** | 17/1 | 0.000 | 319 | 0.0625 | 0.0625 |
+| **`demo_processing_only`** | 0.0208 | **−0.1562** | 17/2 | **0.156** | 805 | 0.3750 | 0.0625 |
+| `response_query_only` | 0.1042 | **−0.0729** | 11/4 | 0.000 | 324 | 0.1250 | 0.1250 |
+| `query_prefill_only` | 0.1042 | **−0.0729** | 10/3 | 0.000 | 381 | 0.1250 | 0.1250 |
+| `decode_only` | 0.1458 | −0.0312 | 7/4 | 0.010 | 523 | 0.2500 | 0.2500 |
+| `late_depth` (25–39) | 0.1146 | −0.0625 | 9/3 | 0.010 | 586 | 0.2500 | 0.2500 |
+| `late_count` (25–35, 11 blocks) | 0.1042 | −0.0729 | 9/2 | 0.010 | 598 | 0.1250 | 0.1250 |
+
+#### 🚦 PR-5's three conditions, scored exactly as written before these arms were submitted
+
+| # | condition | value | verdict |
+|---|---|---|---|
+| 1 | `demoproc` larger than `respq` by > 0.0417 | 0.1562 − 0.0729 = **+0.0833** | ✅ **HOLDS** |
+| 2 | primary fails equivalence AND `respq` < half of legacy | gap **0.0937**; frac **0.438** | ✅ **HOLDS** |
+| 3 | `query_prefill_only` does NOT suppress (≥ −0.0521) | **−0.0729** | ⛔ **FAILS** |
+
+**Conditions 1 and 2 hold, so the core of Outcome B replicates across two model families.**
+Condition 3 fails, and PR-5 already wrote what that means: *"the Llama +0.0625 is model-specific and
+must be reported as such rather than as a general finding about query-side access."* **It is.**
+
+#### 🎯 But the matched control turns condition 3 into something much stronger
+
+Subtracting each arm's **layer-count-matched** late control (`late_count`, 11 blocks, the arm that
+exists only because C-3e caught the 12-vs-9 mismatch on Llama):
+
+| arm | Δ | **Δ − late_count** |
+|---|---|---|
+| `legacy_all_query` | −0.1667 | **−0.0937** |
+| `demo_processing_only` | −0.1562 | **−0.0833** |
+| `response_query_only` | −0.0729 | **+0.0000** |
+| `query_prefill_only` | −0.0729 | **+0.0000** |
+| `decode_only` | −0.0312 | +0.0417 |
+
+> **Both response-side arms are EXACTLY equal to the late-layer control — to the prompt.** Their
+> −0.0729 is not band-specific suppression at all: doing the same thing at layers 25–35 does the same
+> thing. **Only `legacy_all_query` and `demo_processing_only` — the two arms that touch the
+> demonstrations' own processing — exceed their matched control.**
+
+**So `query_prefill_only`'s Qwen3 "suppression" is entirely non-specific, and the honest cross-model
+statement is stronger than PR-5 anticipated:** on both models, *nothing that scopes the intervention to
+the response side produces band-specific suppression* — on Llama it moved the wrong way, on Qwen3 it
+matches its own control.
+
+#### The refusal signature replicates too, and the length collapse does NOT
+
+`demo_processing_only` refuses on **0.156** of rows against `legacy`'s **0.000** — the same 20×-ish
+elevation R-10 found on Llama (0.208 vs 0.010). **But its Llama length collapse does not replicate**:
+median 805 chars with **1** row under 200, against Llama's 20. **So the collapse was Llama-specific
+while the refusal elevation is cross-model** — which is evidence that the refusal, not the truncation,
+is the arm's real signature. *(C-4 flagged the collapse as a confound; R-10 showed the effect survived
+conditioning; this shows the confound itself does not cross models.)*
+
+#### ⛔ Statistics, stated plainly
+
+`legacy_all_query` reaches **p = 0.0625, exactly its floor** (5 informative domains, all negative).
+Everything else is at or above its own floor. **As on Llama, no arm goes below the design's attainable
+floor**, and PR-3 predicted that. The magnitudes, their ordering, and the arm-minus-control contrast
+are the quotable content.
+
+---
+
 ### ★★★★ R-11 (06:40) — **THE QWEN3 SMOKE PASSES, and it independently CONFIRMS C-3b's corrected mechanism on a second model — a prediction the discarded explanation could not have made.**
 
 **Artifact:** `outputs/boombness/scoped_smoke_verdict/s2verdict_20260825_063809_2764586/scoped_smoke_verdict.json`
@@ -1855,6 +1927,54 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ C-6 (07:40) — **D-8(a) IS HALF WRONG: `score_behavior` has the readout AND the hook, but ledgers knockout liveness ONLY on the generation branch — so the Phase-2 probe arms were correctly REFUSED. And two of the five modes are structurally unmeasurable on a forward-only readout.**
+
+**Jobs 779756 / 779757 FAILED `1:0` in 20 s**, with the gate speaking for itself:
+
+```
+REFUSING: knockout liveness has zero rows -- the run generated nothing, so the mask was never
+observed to fire. This is not a pass.
+{'n_rows': 0, 'frac_rows_decode_live': 0.0, ...}
+```
+
+**This is the liveness gate doing exactly the job it exists for**, and it is the third time this phase
+that a guard has refused rather than let an unverified intervention be read as a null.
+
+**The mechanism.** `record_knockout_row` is called at `score_behavior.py:1630`, **inside the generation
+branch**, after `dc.generate`. The `semantic_one_word` path takes the **forward-only** readout branch at
+`:1531` (`rec = _semantic(templated)`), which never ledgers a row — so `knock_live["n_rows"]` stays 0 and
+`assert_knockout_live` refuses the run.
+
+> **D-8(a) said `score_behavior` "already has both" the readout and the hook. It has both, but not
+> joined**: the liveness ledger — and therefore any proof the mask fired — is wired only into the path
+> that generates. **Phase 2 needs a small, real change, not a config change**, and I recorded the
+> opposite one tick ago.
+
+#### ⚠ And a structural limit that no amount of wiring removes
+
+The semantic probe is **forward-only: there is no decode at all.** Therefore:
+
+| mode | measurable on the probe? |
+|---|---|
+| `query_prefill_only` | ✅ prefill-only |
+| **`demo_processing_only`** | ✅ prefill-only — **and it is the arm R-10/R-12 make decisive** |
+| `legacy_all_query` | ⚠ partially — its prefill half only |
+| `decode_only` | ⛔ **structurally impossible** — nothing to hook |
+| `response_query_only` | ⛔ **impossible as specified** — it requires both halves |
+
+**This is fortunate rather than limiting:** the arm the behavioural result singles out
+(`demo_processing_only`) is exactly the one the probe *can* test. But **`response_query_only` cannot be
+run on the probe as defined**, so the Phase-2 comparison must be stated over the prefill-scoped modes
+and that limit belongs in the write-up, not discovered at analysis time.
+
+*(Job 779755, the probe **baseline**, exited `4:0` after producing its 8 rows and `failures: {}` — a
+separate non-liveness gate, to be diagnosed before the full probe run.)*
+
+**Phase 2 status: BLOCKED on this wiring, not on compute.** No probe number exists and none will be
+quoted until the mask is proven to fire on the readout path.
 
 ---
 
@@ -2233,6 +2353,7 @@ block, never from `population_composition`.**
 
 | artifact | produced by | holds |
 |---|---|---|
+| `outputs/boombness/phase1_decomposition/q1dec_20260825_073814_2825688/phase1_decomposition.json` | `src/boombness/phase1_decomposition.py` | **R-12** — the Qwen3 replication, same estimator |
 | `outputs/boombness/phase1_decomposition/p1dec_final_20260825_054056_2706137/phase1_decomposition.json` | `src/boombness/phase1_decomposition.py` | **R-10** — the Phase-1 decomposition: per-arm ASR/Δ, PR-4 generation health, length-conditioned sweep, domain sign tests with floors, and the PR-1/PR-3 primary comparison |
 | `outputs/boombness/scoped_smoke_verdict/s1verdict_20260825_033930_2556360/scoped_smoke_verdict.json` | `src/boombness/scoped_smoke_verdict.py` | **R-9** — the smoke verdict, read as a whole |
 | `outputs/boombness/rederive_crossbank/rederive10_20260825_002934_2201570/rederive_crossbank.json` | `src/boombness/rederive_crossbank.py` | **R-1 / R-2** — population identity, pool proof, per-population ASR, crossed ANOVA + both marginals + crossed random-effects interval, prompt-level binomial **decomposed by demonstration pool**, both-EOS composition |
