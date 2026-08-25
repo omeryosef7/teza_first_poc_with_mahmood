@@ -1152,7 +1152,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | ⏸ **BLOCKED (C-6)** — liveness is ledgered only on the generation branch; 2 of 5 modes are structurally unmeasurable on a forward-only readout | **PR-2** |
+| P2 | 2 | semantic binding probe + causal intervention on it | ⏸ **BLOCKED on TWO counts** — **C-6** liveness is ledgered only on the generation branch (fix in progress); **C-7** the probe kind fails the option-mass gate at median 0.031 (kind being re-chosen on the gate, jobs 779771/779772) | **PR-2** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1927,6 +1927,56 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ C-7 (08:10) — **THE PHASE-2 PROBE USED THE WRONG QUERY KIND, and the repo's own option-mass gate caught it in one run. The measurement it would have produced sits in a 3 % tail.**
+
+Job **779755** (the probe **baseline**) exited `4:0` — **not a crash**. It produced its 8 rows with
+`failures: {}` and then said:
+
+```
+[score] TAIL GATE FAILED — the run is written and its healthy readouts are usable,
+        but these are NOT reportable:
+[score] option mass semantic/semantic_one_word:
+        median=0.03097  p90=0.08201  max=0.08201  frac>1%=0.625   BELOW GATE
+```
+
+**`--min-option-mass` defaults to 0.05 and the median is 0.031.** A log-odds between two options is a
+valid decision margin **only if those two options are plausibly what comes next**; here they hold ~3 %
+of the next-token distribution. This gate exists because of external-critique finding 1 (2026-08-18):
+on the committed baseline the option pair held a **median 5.6e-06** of next-token mass for semantic
+readouts, *"i.e. every published forced-choice verdict was an ordering inside a 1e-5 tail, and an
+intervention that destroyed the answer while leaving the tail ordered would have been certified
+comprehension preserved."*
+
+#### The repo had already measured the fix, and I did not read it before choosing
+
+`prompt_families.QUERY_KINDS` records, for `semantic_forced_choice`:
+
+```
+direct    as_is 1.4e-2  ->  forced 0.979
+benign    as_is 1.2e-8  ->  forced 7.4e-6
+```
+
+**Naming both candidates and forcing the answer slot concentrates the mass by ~70× on the direct arm.**
+`semantic_one_word` — the kind I picked — is the *unforced* variant. **The instrument was chosen
+without reading the measurement the repo already had.**
+
+⚠ **And the fix is not automatic**: the `benign` arm stays at **7.4e-6 even when forced**, so option
+mass is a function of **query kind × condition**, and the headline condition here is
+`natural_doublespeak`, for which **no measurement exists**.
+
+#### 📌 Decided on the gate, not on the result
+
+Jobs **779771 / 779772** measure option mass for **`semantic_forced_choice`** and
+**`comprehension_usage`** on `natural_doublespeak`, **baseline only, no intervention**, n = 16.
+**The probe kind for Phase 2 is chosen by whichever clears `--min-option-mass`, before any
+intervention arm is run on it** — never by which produces a bigger effect.
+
+**If neither clears the gate, Phase 2's primary instrument does not exist on this bank**, and that is a
+finding about the bank of the same kind as R-7's deletion-ceiling result — not a licence to lower the
+threshold. **`--allow-low-option-mass` exists and will not be used to manufacture a reportable number.**
 
 ---
 
