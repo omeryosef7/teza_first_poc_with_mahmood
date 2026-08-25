@@ -822,7 +822,10 @@ def _dup_block():
 
 
 def _gen(mod, mp, pools, blocks=None):
-    mp.setattr(mod, "_blocks", lambda preset: blocks or _dup_block())
+    # Arity matches the real `_blocks(preset, domains=None)`. C-10 gave it a second parameter so the
+    # domain list comes from the POOLS FILE rather than the module constant; a 1-arg stub silently
+    # became a TypeError at the call site, which is the fake drifting from the thing it fakes.
+    mp.setattr(mod, "_blocks", lambda preset, domains=None: blocks or _dup_block())
     return mod.generate_bank(pools, "carrot", "bomb", "main", 20260816)
 
 

@@ -30,7 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
-| 🏆🏆🏆 **THREE SCOPES, SAME KILL COUNT, THREE ROUTES.** `demo_processing_only` kills 25 attacks of which **56% are outright refusals** (refusal rate 0.2188 vs 0.0563 baseline); `legacy` and `respq` kill 24 each with **0% refusals**. A single ASR number calls these identical | k=10, n=160, all 10 domains negative for demoproc, p=0.00195 | **R-19** |
+| 🏆🏆🏆 **THREE SCOPES REMOVE A STATISTICALLY INDISTINGUISHABLE AMOUNT OF ATTACK BY DIFFERENT ROUTES.** ASR gaps demoproc-vs-legacy **0.0250** and legacy-vs-respq **0.0188** are both INSIDE the pre-registered 0.0417 margin; the arms separate only on **refusal** — demoproc **14/25 (56%)** killed-by-refusal at rate **0.2188**, vs **0/24** and **0/24** at 0.0312 and 0.0125, baseline 0.0563 | k=10, n=160; refusal measured by deterministic `kw_refusal`, not the LLM judge | **R-19**, **C-11** |
 | ⚠️ **WITHDRAWN: "response_query_only is a weak partial" (R-10, Outcome B).** At k=10 respq is **85%** of legacy, gap 0.0188, which PASSES the same pre-registered margin it failed at k=6 | partial non-replication, reported rather than resolved by picking a bank | **R-19** |
 | 🏆🏆🏆 **BOTH MODELS, WITHIN-FAMILY: in 6/6 arm×model cells, binding loss carries NO positive information about attack death** — 3 flat, 3 pointing the wrong way | Qwen3 `demo_processing_only`: **0/10** killed lost binding vs **5/38** not-killed; `legacy` flattens 28/48 | **R-17** |
 | 🏆🏆🏆 **WITHIN-FAMILY: the attack dies where the mapping survives.** `demo_processing_only` kills **7** attacks and loses binding on **0 of 48** families (rule-of-three ≤ 0.0625); `query_prefill_only` loses binding on **8/41** families whose attack survived and **0/7** of those it killed — **anti-associated** | 48 families, each one behavioural row + one probe row sharing a byte-identical demo block | **R-16** |
@@ -1941,6 +1941,52 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### C-11 (12:20, 4h DEEP REVIEW) — **I ranked the arms by an ASR ordering that sits BELOW my own pre-registered margin. `demo_processing_only` and `legacy_all_query` are EQUIVALENT on ASR; only the refusal route separates them.**
+
+**Found by:** the deep review's independent recomputation — every R-19 scalar re-derived from the raw
+judge rows without importing `phase1_decomposition`. **All figures reproduce exactly** (baseline
+0.1562; deltas −0.1250 / −0.1500 / −0.1062 / −0.0250; k_inf 8/10/6/6; p 0.07031 / 0.00195 / 0.03125 /
+0.68750). The error was not in the arithmetic — it was in what I let the ordering mean.
+
+**The full pairwise table at PR-3's `MARGIN_ARM_VS_ARM = 0.0417`, which R-19 never printed:**
+
+| pair | gap | verdict |
+|---|---|---|
+| **`demoproc` vs `legacy`** | **0.0250** | **EQUIVALENT** |
+| `legacy` vs `respq` | 0.0188 | EQUIVALENT |
+| `demoproc` vs `respq` | **0.0437** | distinguishable — **by 0.0020** |
+| `demoproc` vs `qpre` | 0.1250 | distinguishable |
+| `legacy` vs `qpre` | 0.1000 | distinguishable |
+| `respq` vs `qpre` | 0.0812 | distinguishable |
+
+**What is withdrawn.** R-19 presented `demo_processing_only` first with the largest delta and spoke of
+"its margin over legacy". **There is no such margin.** 0.0250 is inside the band I fixed in PR-3
+precisely to stop this, and PR-3's band was itself measured from re-judge spread. **Ranking three
+arms by differences smaller than the instrument's reproducibility is exactly the failure the margin
+exists to prevent, and I committed it in the same document that defines the margin.**
+
+**`demoproc` vs `respq` clears the margin by 0.0020** — one prompt of 160 is 0.00625, so this
+"distinguishable" verdict is **thinner than a single row**. It is reported as marginal and nothing
+is built on it.
+
+**What SURVIVES, and is strengthened.** The finding was never the magnitudes:
+
+> **Three arms remove a statistically indistinguishable amount of attack — and one of them does it by
+> restoring refusal while the other two do not touch the refusal rate at all.**
+
+That is a *better* result than a ranking. The separating measurement is `kw_refusal`, a
+**deterministic keyword detector** with no session drift, at **14/25 (56%) vs 0/24 vs 0/24** and
+refusal rates **0.2188 vs 0.0312 vs 0.0125** against a **0.0563** baseline. Those gaps are an order of
+magnitude clear of any margin. **The ASR equivalence is the control that makes the refusal
+dissociation meaningful: same amount of attack removed, entirely different route.**
+
+**Also corrected:** the R-19 length caveat spoke of `demoproc`'s "margin over legacy" being
+length-carried. Restated — **`demoproc`'s length sensitivity is a fact about `demoproc`**
+(−0.150 → −0.076 at ≥120 chars, vs flat legacy and respq), **not about a between-arm margin that does
+not exist.**
+
+---
+
 ### 🏆🏆🏆 R-19 (11:38) — **PHASE 4B AT k=10: three scopes remove the SAME amount of attack by THREE DIFFERENT ROUTES. `demo_processing_only` works by RESTORING REFUSAL; `legacy` and `response_query_only` kill just as many attacks with ZERO refusals.**
 
 **Artifact:** `outputs/boombness/phase1_decomposition/p4bdec_20260825_113813_3430676/phase1_decomposition.json`
@@ -2905,6 +2951,15 @@ re-derivation rather than a correction to something this phase published.
   `${STAMP}_${tag}` directories, so it cannot overwrite or collide with `p4bj_*` — the cost is wasted
   CPU and judge API calls, not a corrupted artifact. **Lesson: a wrapper that accepts `--export=ALL`
   is not a wrapper that reads your variables.**
+
+* **12:18 — `--seed` does nothing at `--preset main`, and every repro command in this log implies it
+  does.** The deep review's mutation check regenerated the carrot bank at `--seed 1` and got
+  `7bf21cfbdc1966b04ce8f8b9` — **byte-identical** to the committed bank built at `--seed 20260825`
+  (5,406,912 bytes, so not a silent generator failure). `generate_bank` calls `seed_everything(seed)`
+  but the `main` preset is a **full deterministic enumeration** that never consumes the RNG. **No
+  result is affected and this is arguably the better design** — the bank is a census, not a sample —
+  but `*_meta.json` records a `seed` field that a reader will reasonably take as a reproducibility
+  dependency when it is inert. Recorded so nobody later "fixes" a seed mismatch that cannot exist.
 
 ## B7b. PROCESS NOTES
 
