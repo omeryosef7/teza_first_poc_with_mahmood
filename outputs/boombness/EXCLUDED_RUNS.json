@@ -1,7 +1,7 @@
 {
   "schema": "EXCLUDED_RUNS/1",
-  "written_at": "2026-08-25T01:13:40",
-  "written_by_commit": "487efa0cfb8379a605028b87bc51c115275c40b8",
+  "written_at": "2026-08-25T05:09:32",
+  "written_by_commit": "56d2e651cc9ceaf91940a8c3e666bcc72c75446c",
   "outputs_root": "outputs/boombness",
   "experiments_scanned": [
     "crossbank_knockout_test",
@@ -19,14 +19,14 @@
       "n_excluded": 5
     },
     "score_behavior": {
-      "n_dirs": 393,
+      "n_dirs": 407,
       "n_missing_done": 21,
       "n_excluded": 21
     },
     "judge": {
-      "n_dirs": 499,
-      "n_missing_done": 31,
-      "n_excluded": 31
+      "n_dirs": 507,
+      "n_missing_done": 33,
+      "n_excluded": 33
     },
     "extract_boombness": {
       "n_dirs": 36,
@@ -49,7 +49,7 @@
       "n_excluded": 0
     }
   },
-  "n_excluded": 62,
+  "n_excluded": 64,
   "runs": [
     {
       "run_dir": "outputs/boombness/crossbank_knockout_test/xb10rev8_20260824_233207_2056485",
@@ -277,6 +277,26 @@
       "experiment": "judge",
       "reason": "no_done_json",
       "detail": "RUNMETA.json (1688 B), config.json (502 B), plots/ (0 files), results.jsonl (31649 B)",
+      "has_partial_results": true,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/p1j_late9_20260825_045005_1338021",
+      "run_id": "p1j_late9_20260825_045005_1338021",
+      "experiment": "judge",
+      "reason": "empty_skeleton",
+      "detail": "RUNMETA.json (1910 B), config.json (614 B), plots/ (0 files)",
+      "has_partial_results": false,
+      "superseded_by": null,
+      "safe_to_delete": false
+    },
+    {
+      "run_dir": "outputs/boombness/judge/p1j_late_20260825_044955_1337884",
+      "run_id": "p1j_late_20260825_044955_1337884",
+      "experiment": "judge",
+      "reason": "no_done_json",
+      "detail": "RUNMETA.json (1904 B), config.json (611 B), plots/ (0 files), results.jsonl (4157 B)",
       "has_partial_results": true,
       "superseded_by": null,
       "safe_to_delete": false

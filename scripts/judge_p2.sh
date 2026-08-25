@@ -57,7 +57,21 @@ reap() {
   done
   PIDS=""
 }
-while IFS=: read -r tag gens; do
+# MANIFEST READ INTO MEMORY FIRST (2026-08-25). Job 779701 died with
+#   scripts/judge_p2.sh: error reading input file: Stale file handle
+# partway through `done < "$MANIFEST"` on NFS, AFTER launching all 8 arms: the parent's death took
+# its children with it, leaving 6 complete arms, one 4-row PARTIAL judge dir and one empty. A partial
+# judge dir is the shape this repo has a manifest for -- it flows through load() and produces a
+# plausible number. Slurping the manifest closes the descriptor before any child starts, so the loop
+# can no longer be interrupted by the filesystem.
+MANIFEST_LINES=()
+while IFS= read -r _ln || [ -n "$_ln" ]; do
+  [ -n "$_ln" ] && MANIFEST_LINES+=("$_ln")
+done < "$MANIFEST"
+[ "${#MANIFEST_LINES[@]}" -eq "$N" ] || {
+  echo "[p2] REFUSING: slurped ${#MANIFEST_LINES[@]} lines but counted $N" >&2; exit 7; }
+for _row in "${MANIFEST_LINES[@]}"; do
+  IFS=: read -r tag gens <<< "$_row"
   [ -n "$tag" ] || continue
   i=$((i+1))
   date "+[p2] launching $i/$N tag=${PREFIX}_${tag} at %H:%M:%S"
@@ -65,7 +79,7 @@ while IFS=: read -r tag gens; do
   PIDS="$PIDS $!"; TAGS="$TAGS ${PREFIX}_${tag}"
   sleep 15
   if [ $((i % 3)) -eq 0 ]; then echo "[p2] wave boundary at $i"; reap; fi
-done < "$MANIFEST"
+done
 reap
 # A bare `wait` returns 0 unconditionally even under `set -euo pipefail`, so a judge that died
 # mid-wave was invisible: the script printed ALL DONE and exited 0, and the analysis then silently

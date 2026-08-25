@@ -1618,6 +1618,61 @@ dirs; zero null `strongreject_score`; the `FailureLedger` records 0 unpaired pro
 *(`C-` ids, newest first. This phase's numbering starts at C-1 and is namespaced to this file; the
 previous phase's C-1…C-18 are referenced by name, e.g. "prev-C-18".)*
 
+### ⛔ C-5 (05:08) — **THE FIRST JUDGING SESSION DIED ON AN NFS STALE FILE HANDLE AFTER LAUNCHING ALL EIGHT ARMS, LEAVING A 4-ROW PARTIAL JUDGE DIR. Re-judged in full rather than patched.**
+
+**Job 779701 FAILED, exit `2:0`, after 10:19.** Cause, from its own `.err`:
+
+```
+scripts/judge_p2.sh: error reading input file: Stale file handle
+```
+
+The driver reads the manifest with `done < "$MANIFEST"` — the descriptor stays open for the whole
+loop — and NFS invalidated it partway through. The log shows *"launching 8/8"* had already printed, so
+**all eight arms were launched and the parent's death took its children with it.**
+
+**State it left behind:**
+
+| | |
+|---|---|
+| arms with `DONE.json` | **6 of 8** — A, legacy, respq, qpre, dec, demoproc |
+| `p1j_late` | **4 rows of 96, no `DONE.json`** ← the dangerous shape |
+| `p1j_late9` | config + RUNMETA only, no results |
+
+**A 4-row judge dir is exactly the artifact this project has a manifest for:** it flows through a
+`newest()`-style lookup and produces a plausible number from 4 % of the population.
+
+#### The decision, and why it is a re-run rather than a patch
+
+**Re-judging only the two missing arms would have put them in a DIFFERENT session from the other six —
+precisely the cross-session confound PR-1 exists to forbid**, and judge re-scoring on this repo's own
+data flips **6.88 %** of binary labels (165 of 2400 across 25 repeated pairs). The six completed arms
+are individually fine; **mixing them with a second session is what would not be.**
+
+> **All eight re-judged in one fresh session — job 779712, prefix `p1k`, backend pinned.** Cost: ~10
+> minutes and 768 judge calls. The alternative was a headline built from two sessions, which this
+> project has already retracted results over.
+
+#### Containment, verified rather than assumed
+
+* Both failed dirs are in `outputs/boombness/EXCLUDED_RUNS.json` (now **64** entries):
+  `p1j_late` → `no_done_json`, `has_partial_results: true`; `p1j_late9` → `empty_skeleton`.
+* **The real guard was tested, not trusted:** `require_done` on the 4-row dir raises
+  `REFUSING: ... has no DONE.json, so the run did not finish`. Nothing can consume it silently.
+
+#### The fix to the driver
+
+The manifest is now **slurped into memory before any child starts**, with a cardinality re-check against
+the independently-counted `N`, so the loop can no longer be interrupted by the filesystem. This is a
+hardening against an **observed** failure, not a speculative one.
+
+⚠ **And a second defect the same job exposed**, minor but the same class: the driver's progress line
+hardcoded `tag=p2j_${tag}` while the invocation two lines later passed `--tag "${PREFIX}_${tag}"`. With
+`P2_PREFIX` overridden **the log named a directory that does not exist.** The dirs were always correct;
+the log was not. Caught only because I checked the artifact against the message instead of reading the
+message. Fixed.
+
+---
+
 ### ⛔⛔ C-4 (04:40) — **PRE-JUDGING COMPARABILITY GATE: the generation cap binds on 50–72 % of every arm, and `demo_processing_only` collapses 21 % of its rows. Handling fixed in PR-4 before judging.**
 
 From the 4-hour review's truncation track, on the five arms complete at the time.
