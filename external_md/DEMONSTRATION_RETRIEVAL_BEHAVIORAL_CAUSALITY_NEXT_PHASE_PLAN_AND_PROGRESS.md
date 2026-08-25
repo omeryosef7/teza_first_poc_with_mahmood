@@ -1953,6 +1953,43 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-14 (22:05) — **Pre-registered: does R-35's CAUSAL dissociation replicate on Qwen3?**
+
+R-35 is the phase's first causal separation of the two effects and it is **Llama-only**. C1 and C2 are
+both cross-model; **their causal version must be too, or it is a single-model curiosity.**
+
+**Note on PR-13's cross-model clause.** PR-13 said cross-model follows "only if Outcome A or B holds",
+i.e. if the **ASR** rescue worked. It did not — Outcome C. **But the finding that emerged is the
+refusal result, which PR-13 explicitly pre-authorised as reportable** ("a rescue could restore one and
+not the other, and that dissociation is itself a result"). **I am therefore replicating the refusal
+dissociation, not the ASR rescue, and saying so before reading anything.**
+
+**Arms (Qwen3-14B, d10 bank, 160 rows each), band 7-17 as in every prior Qwen3 arm:**
+* **`q7_rescue_L17`** — primary. Rescue at **layer 17**, the top of Qwen3's knockout band (the
+  positional analogue of Llama's L14 at the top of 6-14).
+* **`q7_rescue_L5`** — **below-band specificity control** (Qwen3's band starts at 7).
+
+**Replication requires BOTH:**
+1. **Refusal:** `|L17 − knockout|` **exceeds** `MARGIN_VS_BASELINE = 0.0521`, in the direction of
+   *less* refusal — i.e. the patch removes a substantial part of Qwen3's refusal rise (+0.1312, R-20).
+2. **Specificity:** `|L5 − knockout|` stays **within** 0.0521 — the below-band control does not.
+
+**Refuted if** the L17 patch leaves refusal within margin of knockout-only, **or** if L5 moves it as
+much as L17.
+
+**⛔ Pre-committed as NOT counting:**
+* **The ASR column.** Llama gave Outcome C and there is no reason to expect otherwise; **a Qwen3 ASR
+  rescue would be a new finding requiring its own pre-registration, not a bonus read off this one.**
+* **Any comparison to CLEAN refusal.** R-35's clean comparison cleared the margin by **a third of a
+  row** and I declined it there; **I decline it here in advance**, whichever way it falls.
+* **Recovery percentages** as headline numbers — 69.2% on Llama is a ratio of two small row counts.
+  The pre-registered test is the margin comparison, not the ratio.
+
+**Preconditions, same as PR-13:** `rescue_liveness.fired` true on **every row of both arms** or the arm
+is **UNMEASURED, not null**; judge pinned; truncation reported beside every number.
+
+---
+
 ### 🏆🏆🏆 R-35 (21:57) — **PR-13 OUTCOME C on ASR — and the refusal column separates. Handing back the clean demonstration activations UNDOES 69% OF THE REFUSAL RESTORATION WHILE LEAVING THE ATTACK REMOVAL INTACT. The two effects have different substrates, shown causally.**
 
 **Artifacts:** arms `p7_rescue_L14` (781211) / `p7_rescue_L5` (781212); judging `p7j_*` (781255).
