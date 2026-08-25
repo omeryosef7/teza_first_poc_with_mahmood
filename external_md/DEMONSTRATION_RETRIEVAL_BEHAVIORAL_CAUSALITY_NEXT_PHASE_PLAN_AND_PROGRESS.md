@@ -1152,7 +1152,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ **REPLICATES (R-12)** — PR-5 conditions 1,2 HOLD; 3 fails and is model-specific | **PR-5** |
-| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 **C-8**: scorer batches vs batch-1 hook; fixed, arms re-submitted **779838–779840** | **PR-2**, **D-9** |
+| P2 | 2 | semantic binding probe + causal intervention on it | ✅ instrument LIVE (**R-14**); 🔬 full probe **779864–779868**, 5 arms × 48 rows | **PR-2**, **D-9** |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
@@ -1927,6 +1927,58 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ✅ C-8 CLOSED / R-14 (09:38) — **the mask now fires on the forward-only readout path. Phase 2's instrument is live for the first time, and every guard that blocked it was right.**
+
+Jobs **779838–779840**, all COMPLETED `0:0`, forced-choice probe rows, band L6–14, `--limit 8`:
+
+| arm | rows | `frac_rows_scope_live` | prefill edits | `min_prefill_forwards` | violations | failures |
+|---|---|---|---|---|---|---|
+| `legacy_all_query` | 8 | **1.0** | 1 172 385 | 36 | `{}` | 0 |
+| `query_prefill_only` | 8 | **1.0** | 489 600 | 36 | `{}` | 0 |
+| `demo_processing_only` | 8 | **1.0** | 617 760 | 36 | `{}` | 0 |
+
+**Subset check holds on the readout path too:** `489 600 + 617 760 = 1 107 360 ≤ 1 172 385`.
+
+**`min_prefill_forwards = 36` rather than 9** is the C-8 fix visible in the artifact: with
+`max_batch = 1` the scorer runs one forward per option variant, so 9 band layers × 4 variants = 36
+hooked prefill forwards per row. **The number is a consequence of the fix, not a coincidence.**
+
+> **Three guards stood between Phase 2 and a wrong number, and all three were right:** C-6's liveness
+> ledger (would have reported a scoped intervention as a null), C-7's option-mass gate (would have
+> produced a decision margin inside a 3 % tail), and C-8's batch-1 collision (would have crashed, and
+> the tempting fix would have silently reinstated the instrument C-7 had just ruled out). **The phase
+> has produced no probe number yet precisely because it refused to produce a wrong one.**
+
+---
+
+### 🔬 PHASE 2 FULL PROBE LAUNCHED (09:40) — jobs 779864–779868
+
+Five arms × **48 rows** (the full `semantic_forced_choice` ∧ `natural_doublespeak` ∧ core-2×2 population),
+Llama, band L6–14, `--expect-n 48`:
+
+| job | arm | note |
+|---|---|---|
+| 779864 | `A_baseline` | — |
+| 779865 | `C_legacy_all_query` | the incumbent scope |
+| 779866 | `C_query_prefill_only` | |
+| **779867** | **`C_demo_processing_only`** | **the arm R-10/R-12 make decisive** |
+| 779868 | `D_late_demoproc` | **20–28, SAME scope as the decisive arm, layer-count matched (9 blocks)** |
+
+**The late control is at the decisive arm's own scope**, not at `response_query_only`'s — because after
+R-12 the comparison that matters is *"does `demo_processing_only` destroy the binding **more than the
+same intervention at control layers does**"*. A control at a different scope would not answer that.
+
+📌 **The pre-registered question, restated before any probe number exists:** `demo_processing_only`
+carries the behavioural effect on **both** models (−0.1250 Llama, −0.1562 Qwen3) **while raising
+refusal ~20×**. **If it also destroys the codeword→concept binding**, the chain
+*demonstrations → binding → behaviour* has its first direct evidence. **If the binding survives while
+behaviour collapses**, the suppression never went through the semantics at all — and that is the more
+interesting result, because it would say the attack's representation and its behaviour are separable
+even at the point where the intervention works. **Both outcomes are publishable; neither is the one to
+hope for.**
 
 ---
 
