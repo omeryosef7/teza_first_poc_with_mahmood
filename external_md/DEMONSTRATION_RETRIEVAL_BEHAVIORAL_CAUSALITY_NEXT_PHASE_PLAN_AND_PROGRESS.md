@@ -38,7 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
-| 🏆🏆🏆 **THE CAUSAL DISSOCIATION HOLDS IN THREE SETTINGS — two model families, two pools sharing no sentences.** Refusal rise removed: **69.2%** (Llama/A), **81.0%** (Qwen3/A), **92.4%** (Qwen3/B); below-band control **exactly 0.0000 in all three** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
+| 🏆🏆🏆 **THE CAUSAL DISSOCIATION HOLDS IN THREE SETTINGS — two model families, two pools sharing no sentences.** Refusal rise removed: **69.2%** (Llama/A), **81.0%** (Qwen3/A), **92.3%** (Qwen3/B); below-band control **exactly 0.0000 in all three** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
@@ -1956,6 +1956,48 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔎 DR-4 (00:45, 4h DEEP REVIEW) — **Suite 1372/0. All three dissociation cells recomputed exactly from raw rows. One published figure corrected (92.4% → 92.3%), and one near-miss on judge-directory namespacing.**
+
+**Suite:** `1372 passed, 7 skipped, 0 failed`, serial and exclusive; `outputs/ reports/ data/` clean.
+
+**Independent recomputation of the headline, from raw judge rows, in ROWS rather than rates:**
+
+| cell | n | clean | knockout | rescue | control | \|rescue−knock\| | \|control−knock\| | removed |
+|---|---|---|---|---|---|---|---|---|
+| Llama/A | 160 | 9 | 35 | **17** | 35 | **0.1125** | **0.0000** | 69.2% |
+| Qwen3/A | 160 | 2 | 23 | **6** | 23 | **0.1062** | **0.0000** | 81.0% |
+| Qwen3/B | 160 | 2 | 15 | **3** | 15 | **0.0750** | **0.0000** | **92.3%** |
+
+**Every rescue gap clears the margin; every control gap is EXACTLY 0.0000 — not "small", exact.** The
+control arms produce byte-identical refusal counts to knockout-only in all three cells, which is the
+strongest form the specificity check can take.
+
+**Floor / saturation:** finest step `1/160 = 0.00625`, margin = 8.3 rows; the three gaps are **18, 17
+and 12 rows** — **1.4-2.2× the margin.** Not at the floor, not saturated.
+
+#### ✏️ Correction: 92.4% → 92.3%
+
+R-37 published **92.4%** for pool B's refusal-rise removal. **Recomputed from rows it is 12/13 =
+92.3%.** The 92.4 came from dividing **rounded rates** (`(0.0938−0.0187)/(0.0938−0.0125)`) rather than
+counts. **Difference: 0.07 percentage points, changes nothing** — but it is a published figure that did
+not reproduce exactly, so it is corrected in place rather than left. **Row counts are the honest
+denominator here and rates should not have been rounded before dividing.**
+
+#### ⚠ Near-miss: judge-prefix namespacing
+
+`ls outputs/boombness/judge/p7j_*` returns **five** directories, not two: `p7j_rescueL14`,
+`p7j_rescueL5` — **and `p7j_p7A`, `p7j_p7N`, `p7j_p7W` from a different sprint on 2026-08-24.** The
+prefix `p7j` was reused. **No collision occurred** (max directories per tag = **1** across all seven
+prefixes this phase created: `p4bj q4bj p5j p6bj p7j q7j q6bj`), because the *tags* differ — but a
+glob-by-prefix analysis would have silently pooled a prior sprint's arms with this one's.
+**Every analysis in this phase joins by explicit run directory, not by prefix glob**, which is why it
+did not bite. **Recorded so the next person globbing `p7j_*` knows it is not a clean namespace.**
+
+**Provenance re-confirmed:** 0 duplicate tags across all seven prefixes; bank B content-verified with
+`matchesA = 0` on all four `q6b` arms (R-37).
+
+---
+
 ### PR-16 (00:38) — **Pre-registered: the fourth cell. Llama × pool B completes the model × pool design for the causal dissociation.**
 
 The dissociation holds in **Llama/A** (R-35), **Qwen3/A** (R-36) and **Qwen3/B** (R-37). **The missing
@@ -2032,7 +2074,7 @@ needs the margin moved is not an effect.**
 
 #### 🏆 What DID replicate, for the third time
 
-**Condition 3 holds and holds hard.** `L17` removes **92.4%** of pool B's refusal rise —
+**Condition 3 holds and holds hard.** `L17` removes **92.3%** of pool B's refusal rise —
 **15 rows → 3** — while the below-band control moves it by **exactly 0.0000** (15 → 15).
 
 **The causal dissociation now stands in three independent settings:**
@@ -2041,7 +2083,7 @@ needs the margin moved is not an effect.**
 |---|---|---|---|---|
 | R-35 | Llama-3.1-8B | A | **69.2%** | 0.0000 |
 | R-36 | Qwen3-14B | A | **81.0%** | 0.0000 |
-| **R-37** | **Qwen3-14B** | **B** | **92.4%** | **0.0000** |
+| **R-37** | **Qwen3-14B** | **B** | **92.3%** | **0.0000** |
 
 **Two model families, two demonstration pools sharing no sentences, and in every one the same patch
 gives back the refusal while the below-band control at the same positions does nothing.**
