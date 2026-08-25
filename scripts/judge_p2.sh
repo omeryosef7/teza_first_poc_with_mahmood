@@ -32,6 +32,19 @@ MANIFEST=${P2_MANIFEST:-$R/outputs/boombness/argsfiles/p2_arms.txt}
 EXPECTED=${P2_EXPECTED:-5}
 PREFIX=${P2_PREFIX:-p2j}
 EXPECT_ROWS=${P2_EXPECT_ROWS:-96}
+# JUDGE BACKEND PINNING, added 2026-08-25 for Phase 1. OFF unless P2_PIN_JUDGE_MODEL is set, so every
+# historical recipe that sources this driver is byte-identical. When set, judge_boombness pre-flights
+# the named backend on a canary, pins it for the whole session, records the responder per row, and
+# ABORTS on a mid-run model switch. Without it strong_reject silently falls through its ordered
+# default ("openai/gpt-4o-mini", "openai/gpt-3.5-turbo") PER ROW, so one "session" can be two models
+# and nothing records which answered -- the standing provenance gap this phase set out to close.
+PIN=""
+if [ -n "${P2_PIN_JUDGE_MODEL:-}" ]; then
+  PIN="--pin-judge-model ${P2_PIN_JUDGE_MODEL}"
+  echo "[p2] judge backend PINNED to ${P2_PIN_JUDGE_MODEL}"
+else
+  echo "[p2] judge backend NOT pinned (strong_reject default fallthrough; responder not recorded)"
+fi
 N=$(grep -c ':' "$MANIFEST")
 echo "[p2] manifest has $N rows (expected $EXPECTED)"
 [ "$N" -eq "$EXPECTED" ] || { echo "[p2] REFUSING: cardinality $N != $EXPECTED" >&2; exit 2; }
@@ -48,7 +61,7 @@ while IFS=: read -r tag gens; do
   [ -n "$tag" ] || continue
   i=$((i+1))
   date "+[p2] launching $i/$N tag=p2j_${tag} at %H:%M:%S"
-  python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "${PREFIX}_${tag}" &
+  python -u src/boombness/judge_boombness.py --gens "$gens" --bank "$BANK" --tag "${PREFIX}_${tag}" $PIN &
   PIDS="$PIDS $!"; TAGS="$TAGS ${PREFIX}_${tag}"
   sleep 15
   if [ $((i % 3)) -eq 0 ]; then echo "[p2] wave boundary at $i"; reap; fi
