@@ -1950,6 +1950,35 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-28 (18:00) — **PR-12's three pre-arm gates ALL PASS. Pool B is genuinely independent — 0 of 40 pools share a sentence set with pool A — and the confirmatory arms are submitted.**
+
+**Pool B:** `data/boombness_prompts/demo_pools_d10_poolB.json` (job **780821**, seed `20260825`).
+**Bank B:** `data/boombness_prompts/boombness_prompt_bank_d10_poolB.jsonl`.
+
+| gate | check | result |
+|---|---|---|
+| **3 (run first)** | pools with identical sentence sets, by **sha256 of the sentence list** | **0 / 40** — all 40 differ |
+| **1** | `prompt_families.py --strict` | `families checked=560 violations=0`, `duplicates dropped=0`, exit 0 |
+| **2** | `tokenization_audit.py` (job **780879**) | `rows ok=4560 bad=0 ambiguous=0`, **`token-alignment violations=0`** |
+| — | bank identity | A `368566acecdc350f` vs B **`b3e256a0fd0cc296`** — differ |
+
+**Gate 3 was run FIRST and deliberately so.** A seed that silently produced the same sentences would
+have made this a re-run of R-19 under a new filename, and every downstream number would have looked
+like a replication while being the same data. **Checking sentence-set hashes rather than file paths is
+the difference between testing independence and assuming it.** `ambiguous=0` on pool B against
+`ambiguous=7` on pool A is incidental, not a quality signal, and nothing is read from it.
+
+**Submitted (Llama, jobs 780892-780895):** `p6bA` baseline, `p6b_demo_processing_only`,
+`p6b_legacy_all_query`, `p6b_response_query_only` — the baseline plus exactly the three arms PR-12's
+two conditions require. `query_prefill_only` is **not** run: PR-12 tests C1, and `qpre` appears in
+neither condition. Argsfiles are committed under `runargs/p6/` and were **grepped back** to confirm no
+bank-A path leaked through the substitution.
+
+**No result is read until all four land.** PR-12's conditions, its pool-B-baseline rule, and its list
+of what does **not** count were fixed at commit `abbfb621`, before the pool existed.
+
+---
+
 ### PR-12 (17:40) — **Pre-registered: §20 Q5's fourth independent demonstration pool, run as a CONFIRMATORY test of C1 on entirely new demonstration sentences.**
 
 **This is the gap the handoff refused to call "superseded".** Both a fourth pool and more domains were
