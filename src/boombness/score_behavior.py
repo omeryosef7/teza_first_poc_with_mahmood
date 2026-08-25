@@ -1898,10 +1898,23 @@ def main() -> int:
                             # The CONTROL DRAW travels on the row: which positions, drawn under
                             # which seed, and what fraction of the arm's own count they matched.
                             # `None` on every non-control arm, which is the honest value there.
+                            # RESCUE LIVENESS ON THE ROW. DonorPatch counts what it wrote, and
+                            # that count must travel with the row for the same reason every other
+                            # hook's does: a rescue that never fired produces a null identical to
+                            # "the information was not there", and the two are only separable if
+                            # the artifact says which happened. Built and then NOT recorded in the
+                            # first draft of this feature -- caught in the smoke, when the run
+                            # completed cleanly and could not prove it had done anything.
+                            _rl = (_rescue_ctx.liveness() if _rescue_ctx is not None else None)
+
                             _cd = dict(knock_draw or {})
                             _cd_ratio = (min(_v["match_ratio"] for _v in _cd.values())
                                          if _cd else None)
                             base = {**base,
+                                    "rescue_liveness": _rl,
+                                    "rescue_layer": args.rescue_layer,
+                                    "rescue_donor": (args.rescue_donor
+                                                     if args.rescue_layer is not None else None),
                                     "control_draw": (_cd or None),
                                     "control_draw_match_ratio": _cd_ratio,
                                     "n_control_draw_positions": (

@@ -147,3 +147,14 @@ def test_identity_control_option_exists():
     src = _score_behavior_src()
     assert 'choices=("clean", "self")' in src
     assert 'args.rescue_donor == "self"' in src
+
+
+def test_rescue_liveness_is_recorded_on_the_row():
+    """A rescue that never fired produces a null identical to "the information was not there".
+    The two are only separable if the artifact says which happened, so DonorPatch.liveness() must
+    reach the row. The first draft of this feature built liveness and never recorded it; the smoke
+    completed cleanly and could not prove the patch had done anything."""
+    src = _score_behavior_src()
+    assert "_rescue_ctx.liveness()" in src, "DonorPatch.liveness() is never called"
+    assert '"rescue_liveness": _rl' in src, "rescue liveness never reaches the emitted row"
+    assert '"rescue_layer": args.rescue_layer' in src

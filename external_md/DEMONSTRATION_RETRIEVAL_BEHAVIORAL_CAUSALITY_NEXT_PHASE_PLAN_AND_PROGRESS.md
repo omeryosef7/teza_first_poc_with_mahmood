@@ -1951,6 +1951,51 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-32 (20:45) — **The rescue smoke ran and the patch FIRES — but the run could not PROVE it, because I built `DonorPatch.liveness()` and never recorded it. Fixed, tested, and the smoke resubmitted. Still no science.**
+
+**Job 781006** (8 rows, Llama, `demo_processing_only` 6-14, rescue at layer 14): **COMPLETED**,
+`failures: {}`, knockout liveness healthy (`min_decode_forwards = 1719`, `median_n_demo_positions =
+36.5`). Run dir `outputs/boombness/score_behavior/p7smoke_rescue_L14_20260825_203342_868912`.
+
+**Did the patch fire? Yes — but I had to infer it from generations, which is exactly the wrong way.**
+
+| comparison | identical rows |
+|---|---|
+| rescue vs **knockout-only** | **0 / 8** |
+| rescue vs **clean baseline** | **0 / 8** |
+
+So the patch changed the computation and did **not** trivially restore the clean run. One row is
+suggestive on its own: `d3668c5c` produced **119 chars under the knockout** (the short refusal
+signature) and **760 chars under the rescue**. **n=8, unjudged, and nothing is claimed from it.**
+
+#### 🔴 The defect: an instrument that cannot prove it fired
+
+**I wrote `DonorPatch.liveness()` in R-30, and then never wired it into the artifact.** The run
+completed cleanly, wrote 8 rows, reported no failures — **and contained no field that could
+distinguish "the patch fired" from "the patch silently did nothing".**
+
+**That is precisely the failure this phase's whole liveness discipline exists to prevent**, and it is
+the third time in this sprint an instrument looked healthy and was not (C-6: the readout hook never
+recorded; C-8: batch collision; DR-3: the cross-row donor capture). **A rescue that never fired
+produces a null indistinguishable from "the information was not there" — the most dangerous null
+available in this experiment.**
+
+**Fixed:** every row now carries `rescue_liveness` (`n_positions_written`, `n_forward_calls`,
+`fired`), plus `rescue_layer` and `rescue_donor`. **0 lines deleted.** A test asserts
+`_rescue_ctx.liveness()` is called *and* that its value reaches the emitted row —
+`test_rescue_liveness_is_recorded_on_the_row`. Suites: **57 passed**.
+
+**Smoke resubmitted** under the fixed code, because a smoke whose only job is to prove the hook fires
+must be run by the version that records it. **The earlier run is not deleted and is not used as
+evidence.**
+
+⚠ **Gate still closed.** The identity control (`781047`, `--rescue-donor self`) is **PENDING with an
+estimated start of 2026-08-26** under fair-share. It has **not** been cancelled. **Until it passes —
+writing a run's own activations back must reproduce it byte-identically — no rescue number will be
+read, because a patch that does not write what it read makes every rescue result meaningless.**
+
+---
+
 ### 🔎 DR-3 (20:20, 4h DEEP REVIEW) — **Suite 1368/0. Pool-B provenance verified and DISCRIMINATING. R-29 recomputed exactly. And I made a silent cross-row bug while closing R-31's gap, caught it with my own ordering check, and turned it into a test.**
 
 **Suite:** `1368 passed, 7 skipped, 0 failed`, serial and exclusive; `git status outputs/ reports/
