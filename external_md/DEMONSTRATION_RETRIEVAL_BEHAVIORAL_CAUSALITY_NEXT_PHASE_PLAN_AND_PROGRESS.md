@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
@@ -1941,6 +1942,83 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🔴🔴🔴 R-23 / C-12 (14:10) — **PR-9's SECOND OUTCOME. Refusal restoration is NOT the route by which the attack is removed. At matched dose, arms that restore ZERO refusal remove exactly as much attack — and on Qwen3, MORE. "`demo_processing_only` works BY restoring refusal" is REFUTED.**
+
+**Artifacts:** re-cut of `p4bj_*` / `q4bj_*`; no new compute. **PR-9 was committed (`696cef65`) before
+these cells were read, and pre-declared this outcome as "the one that would most change the story".**
+
+#### The decisive cell: Llama, `n_examples = 4`
+
+| arm | refusal rise | **ΔASR** |
+|---|---|---|
+| **`demo_processing_only`** | **+0.2250** (9 rows) | **−0.1750** |
+| `legacy_all_query` | −0.0500 | **−0.1750** |
+| `response_query_only` | −0.0500 | **−0.1750** |
+
+**Baseline: 8 attacks in 40 rows. All three arms removed the same 7 of 8.** Arm-vs-arm gaps are
+**0.0000** — not "within margin", *identical*. **One arm restored nine rows of refusal and two
+restored none, and it bought exactly zero additional attack removal.**
+
+#### The full dose-matched picture
+
+**LLAMA** (refusal rise / ΔASR):
+
+| dose | attacks | `demoproc` | `legacy` | `respq` |
+|---|---|---|---|---|
+| 1 | 2/40 | +0.0000 / −0.0500 | −0.0250 / −0.0250 | −0.0750 / +0.0000 |
+| 2 | 5/40 | +0.0750 / −0.1250 | +0.0000 / −0.1000 | −0.0250 / −0.0750 |
+| **4** | 8/40 | **+0.2250 / −0.1750** | **−0.0500 / −0.1750** | **−0.0500 / −0.1750** |
+| 8 | 10/40 | +0.3500 / −0.2500 | −0.0250 / −0.2000 | −0.0250 / −0.1750 |
+
+**QWEN3 — and here it points the other way:**
+
+| dose | attacks | `demoproc` | `legacy` | `respq` |
+|---|---|---|---|---|
+| **8** | 8/40 | **+0.2000 / −0.1500** | **+0.0000 / −0.2000** | **+0.0000 / −0.2000** |
+
+**At the highest Qwen3 dose, the arm restoring +0.2000 refusal removes LESS attack (−0.1500) than the
+two arms restoring none (−0.2000 each), and both gaps (0.0500) clear the 0.0417 margin.** Refusal
+restoration is not merely unnecessary there — it coincides with *less* removal.
+
+#### ⛔ What is corrected
+
+**C-12. The claim "`demo_processing_only` works by restoring refusal" is WITHDRAWN.** R-19 introduced
+that framing ("*knocking out demonstration processing does not quietly disable the attack — it puts
+the refusal back*") and R-20/R-22 built on it. **It does put the refusal back. That is not how it
+removes the attack.**
+
+**What SURVIVES, unchanged and still cross-model:**
+
+* `demo_processing_only` is the **only** scope of four, on **either** model, that restores any refusal
+  at all — **14/25 and 8/20 killed-by-refusal against 0 in all six other cells** (R-19, R-20, R-21).
+* On Llama that restoration is a clean monotone dose-response, **+0.0000 → +0.3500** (R-22).
+* The concept binding **survives** the intervention on both models (R-16, R-17).
+
+**What is now REFUTED:**
+
+* That refusal restoration is the **mechanism of attack removal**. **It is a second, distinct effect of
+  the same intervention** — real, unique to `demoproc`, dose-scaling on Llama, and **causally
+  disconnected from the ASR drop it was assumed to explain.**
+
+**At `n = 8` on Llama `demoproc` does remove more than the controls** (−0.2500 vs −0.2000/−0.1750,
+gaps 0.0500/0.0750, both clearing margin). **So refusal may contribute at the top dose.** But the bulk
+of removal is present at every dose in arms with zero refusal, and the Qwen3 sign is opposite. **A
+contribution at one cell of one model is not a mechanism.**
+
+#### On the cell PR-9 was actually designed around
+
+**`n = 1` is UNDERPOWERED and the inference is declined, exactly as pre-registered.** Llama baseline
+there is **2 attacks in 40 rows (0.0500 < 0.10)**; `demoproc` removed both, which is simultaneously
+"100% of the attack" and "2 rows". **PR-9 committed in advance to declining this cell in both
+directions, and it is declined** — the verdict above rests on the well-powered `n = 4` and `n = 8`
+cells and the pre-specified control arms, not on it.
+
+⚠ 40 rows/cell. ⚠ `kw_refusal` is lexical. ⚠ Controls are not inert: R-21 showed they remove attack by
+**coherent non-compliance**, which remains unexplained — **this phase now has a mechanism for the
+refusal it can no longer attribute the attack removal to, and no mechanism for the removal itself.**
 
 ---
 
