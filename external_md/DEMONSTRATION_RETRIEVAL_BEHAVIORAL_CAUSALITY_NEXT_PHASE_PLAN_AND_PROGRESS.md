@@ -1082,6 +1082,29 @@ anyway, so nothing is blocked by deferring it. The question for the user is whet
 *"add a fourth demonstration pool"* as written, *"regenerate pools at 8–10 domains"* per R-BE, or both.
 **Phases 1, 2 and 3 are unaffected and proceed.**
 
+**D-8 (07:10) — Phase 2 runs its intervention through `score_behavior`, NOT through the probe module; and R-10 CHANGES WHICH ARMS IT MUST TEST.**
+
+**(a) Reuse, not new plumbing.** `src/boombness/semantic_binding_probe.py` contains **zero** references
+to `intervene` or `knockout` — it is a pure measurement instrument that loads a model and does a
+next-token readout. `score_behavior.py` already has **both** the readout machinery
+(`next_token_readout`, `--readout-ids`, `--min-option-mass`) **and** `--intervene` / `--knockout-scope`.
+**So the probe rows are run through `score_behavior` with `--query-kinds semantic_one_word`**, and the
+probe module keeps its role as the selector/scorer. Adding an intervention path to the probe would have
+duplicated a hook plumbing this repo has already dropped a threaded argument on twice
+(`control_seed`, then `demo_keys`).
+
+**(b) The arm set changes because of R-10.** Plan §5.2 names *"baseline, validated
+`response_query_only`, late-layer control, same-band non-demo controls"*. **That list was written when
+`response_query_only` was the presumed causal arm.** R-10 shows it carries **46.2 %** of the effect
+while `demo_processing_only` carries **92.3 %**. **Running the probe only on `response_query_only`
+would measure the semantic consequence of the arm that does NOT carry the behaviour.** Phase 2
+therefore tests **both**, and `demo_processing_only` is the one the headline question now attaches to:
+*does the arm that suppresses the attack also destroy the codeword→concept mapping, or does it merely
+make the model refuse?* — the question R-10's **0.208 refusal rate** raises and cannot answer.
+
+**Smoke first, as always:** jobs **779755–779757**, three arms × 8 probe rows on Llama, band L6–14,
+`--max-new 8` (a one-word readout needs no more). The full probe run is gated on it.
+
 **D-5 (00:52) — USER RULING ON D-4: do BOTH. Phase 4 keeps the fourth demonstration pool *and* gains a
 domain-expansion arm.** Asked directly (D-4 laid out fourth-pool / more-domains / both); the answer was
 **both**. So Phase 4 splits into two independently-reportable sub-phases, and the ordering matters
@@ -1126,7 +1149,7 @@ Legend: ⬜ not started · 🔬 running · ✅ complete · ⛔ failed/retracted 
 | P1.2 | 1 | 8-row liveness smoke, Llama | ✅ **PASS (R-9)** — 5 arms, 0 failures | **GATE PASSED** |
 | P1.3 | 1 | same-session 8-arm decomposition, Llama | ✅ **OUTCOME B (R-10)** | primary comparison FAILS equivalence |
 | P1.4 | 1 | Qwen3 replication — 8 arms at L7–17 | ✅ smoke PASS (**R-11**); 🔬 **779742–779749 queued** | **PR-5**: three conditions, all must hold |
-| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 instrument BUILT (not run); **PR-2** fixes the headline group | — |
+| P2 | 2 | semantic binding probe + causal intervention on it | 🔬 probe smoke **779755–779757** queued; **D-8** adds `demo_processing_only` per R-10 | **PR-2** fixes the headline group |
 | P2B | 2B | completion phenotype instrument | ✅ built (blinded, two views, agreement + confusion matrix persisted); **not a causal estimator until its reliability is measured** | — |
 | P2C | 2C | row-wise demo-deletion control | ⛔ **DESCOPED on this bank (R-7)** — the deleted population is 1 prompt by construction | — |
 | P3 | 3 | full-state rescue, then retrieval-effect subspace | ⬜ | full-state first |
