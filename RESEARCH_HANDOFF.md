@@ -1,6 +1,6 @@
 # RESEARCH HANDOFF — Demonstration Retrieval → Behavioral Causality phase
 
-**Branch:** `behavioral-causality-sprint` · **HEAD at writing:** `a1d99d27`
+**Branch:** `behavioral-causality-sprint` · **HEAD at writing:** `423fcc61`+ (see git log; R-29 added 2026-08-25 18:35)
 **Live log (authoritative, chronological):** `external_md/DEMONSTRATION_RETRIEVAL_BEHAVIORAL_CAUSALITY_NEXT_PHASE_PLAN_AND_PROGRESS.md`
 **Date:** 2026-08-25
 
@@ -36,8 +36,11 @@ across sessions).
 | Llama-3.1-8B-Instruct | 0.0563 | **0.2188** | **+0.1625** | **14/25 (56%)** | **0/24, 0/24, 0/18** |
 | Qwen3-14B | 0.0125 | **0.1437** | **+0.1312** | **8/20 (40%)** | **0/19, 0/20, 0/15** |
 
-**Eight arm×model cells; exactly one restores any refusal at all.** Pre-registered in **PR-6** before
-the Qwen3 data was read, and all three of its conditions held.
+**Eight arm×model cells on pool A; exactly one restores any refusal at all.** Pre-registered in
+**PR-6** before the Qwen3 data was read (3/3 conditions held), and **replicated on an independent
+demonstration pool** in **PR-12** (2/2 conditions held; Llama pool B rise **+0.1938**, baseline
+refusal 0.0063 — R-29). ⚠ On pool B `legacy` and `respq` each show **1** killed-by-refusal row rather
+than 0; both remain inside the margin, but "exactly zero in every cell" is no longer accurate.
 
 ## 3. ⛔ Retracted / withdrawn — DO NOT REVIVE
 
@@ -56,7 +59,7 @@ Status key: **R** replicated (2 models) · **S** single-model · **N** evaluated
 
 | # | Claim | Model(s) | Population | n | Independence unit | Effect | Test / margin | Intervention | Control | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
-| C1 | `demo_processing_only` restores refusal; no other scope does | Llama + Qwen3 | d10 behavioural, natural_doublespeak | 160/model | prompt (rate), domain (sign) | +0.1625 / +0.1312 refusal | vs `MARGIN_VS_BASELINE` 0.0521; PR-6 3/3 conditions | attn knockout, demo→demo prefill | 3 other scopes, all ≤ baseline | **R** |
+| C1 | `demo_processing_only` restores refusal; no other scope does | Llama + Qwen3, **2 independent pools** | d10 behavioural, natural_doublespeak | 160 × 3 settings | prompt (rate), domain (sign) | **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B) | vs `MARGIN_VS_BASELINE` 0.0521; PR-6 3/3 **and** PR-12 2/2 | attn knockout, demo→demo prefill | 3 other scopes, all within margin | **CONFIRMATORY** |
 | C2 | Refusal restoration is **not** the route to attack removal | Llama + Qwen3 | same | 160/model | prompt, dose-matched | Llama n=4 gaps **0.0000**; Qwen3 n=8 refusal arm **worse** | arm-vs-arm 0.0417 | same | zero-refusal arms at matched dose | **R** (negative) |
 | C3 | The four scopes remove indistinguishable amounts of attack | Llama + Qwen3 | same | 160/model | prompt | all pairwise gaps ≤ 0.0417 except marginal `qpre` pairs | arm-vs-arm 0.0417 | same | each other | **R** |
 | C4 | Attack removal proceeds by **coherent non-compliance**, not degeneration | Llama + Qwen3 | killed attacks | 165 across 8 cells | killed row | **0** degenerate rows; `frac_scorable` 1.000 | `coherence_gate` thresholds, mutation-verified | same | positive/negative detector controls | **R** |
@@ -92,7 +95,7 @@ every effect survives there at full size** — the cross-model claims rest on th
 | 2 | When suppressed, **what changes**? | **Coherent non-compliance** in every arm (C4), plus **restored refusal** in `demo_processing_only` alone (C1). Not degeneration; not loss of binding (C5). |
 | 3 | Causal rescue by activation patching? | **NOT RUN.** Deprioritised after C-12 removed the mechanism it was designed to test. **Open.** |
 | 4 | Low-rank or distributed? | **NOT RUN** — gated on Q3. **Open.** |
-| 5 | Fourth demonstration pool? | **NOT RUN — an OPEN GAP, not a superseded one.** Both a fourth pool *and* more domains were requested; **only the domain expansion was delivered** (R-18: k 6→10, sign-test floor 0.0625 → 0.00195). The fourth-pool replication remains outstanding and is the cheapest unrun item in this phase. |
+| 5 | Fourth demonstration pool? | **ANSWERED — C1 replicates (R-29).** Pool B shares **0 of 40** sentence sets with pool A; `demoproc` rise **+0.1938** (3.7× margin), other scopes within margin. Domain expansion also delivered (R-18: k 6→10, floor 0.0625 → 0.00195). |
 | 6 | Codeword/concept factorization on Qwen3, joint crossed? | **NOT RUN.** **Open.** |
 | 7 | Llama retrieval/refusal independence on Qwen3? | **ANSWERED, and it replicates** (C1, C2) — refusal restoration is Qwen3-present, and its independence from attack removal is Qwen3-confirmed. |
 | 8 | Legitimate GCG/MAC objective? | **BLOCKED and correctly so.** No stable, specific, transferable low-dimensional handle was produced. |

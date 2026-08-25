@@ -38,6 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
+| 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
 | 🏆🏆🏆 **THREE SCOPES REMOVE A STATISTICALLY INDISTINGUISHABLE AMOUNT OF ATTACK BY DIFFERENT ROUTES.** ASR gaps demoproc-vs-legacy **0.0250** and legacy-vs-respq **0.0188** are both INSIDE the pre-registered 0.0417 margin; the arms separate only on **refusal** — demoproc **14/25 (56%)** killed-by-refusal at rate **0.2188**, vs **0/24** and **0/24** at 0.0312 and 0.0125, baseline 0.0563 | k=10, n=160; refusal measured by deterministic `kw_refusal`, not the LLM judge | **R-19**, **C-11** |
 | ⚠️ **WITHDRAWN: "response_query_only is a weak partial" (R-10, Outcome B).** At k=10 respq is **85%** of legacy, gap 0.0188, which PASSES the same pre-registered margin it failed at k=6 | partial non-replication, reported rather than resolved by picking a bank | **R-19** |
@@ -1947,6 +1948,58 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-29 (18:35) — **PR-12 PASSES BOTH CONDITIONS. C1 replicates on a demonstration pool that shares NO sentences with the original. The refusal-restoration result now stands in three independent settings.**
+
+**Artifacts:** arms `p6b*` (jobs 780892-780895), judging `p6bj_*` (job **780928**), bank
+`boombness_prompt_bank_d10_poolB.jsonl` (`b3e256a0fd0cc296`).
+**Provenance:** `openai/gpt-4o-mini` on **640/640** rows; `completion_sha256_16` joins **640/640**.
+All arms `frac_rows_scope_live = 1.0`, `scope_violations = {}`.
+**PR-12 was committed at `abbfb621`, before pool B existed.**
+
+**Pool B baseline: ASR 0.1688, keyword-refusal 0.0063** — read from pool B's own baseline arm, as
+pre-registered, and **notably lower than pool A's 0.0563**, which is exactly why the rule said not to
+assume it.
+
+| arm | ΔASR | refusal | **rise vs pool-B baseline** | vs 0.0521 | killed | by refusal |
+|---|---|---|---|---|---|---|
+| **`demo_processing_only`** | −0.1313 | **0.2000** | **+0.1938** | **ABOVE** | 24 | **9 (38%)** |
+| `legacy_all_query` | −0.1375 | 0.0250 | +0.0188 | within | 26 | 1 (4%) |
+| `response_query_only` | −0.1187 | 0.0125 | +0.0063 | within | 23 | 1 (4%) |
+
+**Condition 1 — HOLDS.** `demoproc` rise **+0.1938**, **3.7× the margin**, and the **largest of the
+three settings measured** (Llama pool A +0.1625, Qwen3 pool A +0.1312).
+**Condition 2 — HOLDS.** legacy **+0.0188** and respq **+0.0063**, both well inside margin.
+✅ **C1 REPLICATES on an independent demonstration pool.**
+
+#### What C1 now rests on
+
+| setting | model | pool | baseline refusal | `demoproc` rise | others |
+|---|---|---|---|---|---|
+| 1 | Llama-3.1-8B | A | 0.0563 | **+0.1625** | all within margin |
+| 2 | Qwen3-14B | A | 0.0125 | **+0.1312** | all within margin |
+| 3 | **Llama-3.1-8B** | **B** | **0.0063** | **+0.1938** | all within margin |
+
+**Two model families and two demonstration pools sharing no sentences.** Across all three, the same
+single scope of four restores refusal and no other does. **§20 Q5 is answered: the mechanism survives
+an independent demonstration pool.**
+
+#### ⚠ Honest annotations
+
+* **`legacy` and `respq` are no longer at exactly zero** — 1 killed-by-refusal each (4%), against 0/0
+  in both pool-A settings. **Both are still inside the margin and the contrast with demoproc's 38% is
+  unchanged**, but "exactly zero in every cell" is no longer accurate and should not be written.
+* **Pool B's baseline refusal is 0.0063 (1 row of 160)** — nearly a floor. A rise measured against a
+  near-zero baseline is easier to clear, which is a reason to weight setting 1 (baseline 0.0563) most
+  heavily, not least.
+* **ASR magnitudes are NOT part of this replication** — PR-12 pre-committed that. Descriptively they
+  again cluster (−0.1313 / −0.1375 / −0.1187, all pairwise gaps ≤ 0.0188 < 0.0417), which is
+  **consistent with C3 but is not a pre-registered test of it here** and is recorded as description
+  only.
+* **`query_prefill_only` was not run** on pool B — it appears in neither PR-12 condition. C8 remains a
+  single-pool result.
 
 ---
 
