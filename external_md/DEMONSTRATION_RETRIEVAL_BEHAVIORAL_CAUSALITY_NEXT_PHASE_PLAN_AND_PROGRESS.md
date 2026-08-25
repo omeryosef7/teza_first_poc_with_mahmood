@@ -38,8 +38,9 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
-| 🏆🏆🏆 **THE CAUSAL DISSOCIATION IS CROSS-MODEL.** Clean demo activations handed back at the top of the band remove **69.2%** (Llama) / **81.0%** (Qwen3) of the refusal rise, both >2x margin, while the below-band control moves refusal by **exactly 0.0000 on both models** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
-| ⚠️ **UNREGISTERED OBSERVATION, NOT CLAIMED: on Qwen3 the same patch also appears to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
+| 🏆🏆🏆 **THE CAUSAL DISSOCIATION HOLDS IN THREE SETTINGS — two model families, two pools sharing no sentences.** Refusal rise removed: **69.2%** (Llama/A), **81.0%** (Qwen3/A), **92.4%** (Qwen3/B); below-band control **exactly 0.0000 in all three** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
+| ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
+| ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
 | ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
 | 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
@@ -1952,6 +1953,65 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ R-37 (00:25) — **PR-15 DOES NOT CONFIRM. The Qwen3 ASR rescue fails its own pre-registered threshold on an independent pool — so the unregistered observation is NOT promoted. The REFUSAL dissociation replicates a third time.**
+
+**Artifacts:** arms `q6b*` (781410-781413), judging `q6bj_*` (781548).
+**Provenance:** `openai/gpt-4o-mini` on **640/640**, hash joins **640/640**. Bank B verified at content
+level with **`matchesA = 0`** on all four arms. Rescue `fired` **160/160** on both rescue arms, layers
+17 and 5. **PR-15 committed at `c7598bf7` before the arms existed.**
+
+| arm | ASR | refusal rows | refusal |
+|---|---|---|---|
+| clean baseline | 0.1375 | 2/160 | 0.0125 |
+| knockout-only | 0.0437 | **15/160** | **0.0938** |
+| **rescue L17 (primary)** | **0.0875** | **3/160** | **0.0187** |
+| rescue L5 (control) | 0.0312 | **15/160** | **0.0938** |
+
+| condition | value | verdict |
+|---|---|---|
+| **1 — ASR rescue** | `L17 − knockout = +0.0437`, needed **> 0.0521** | **FAILS** |
+| 2 — control inert | `|L5 − knockout| = 0.0125` | HOLDS |
+| 3 — refusal dissociation | `|L17 − knockout| = 0.0750`, less refusal | HOLDS |
+
+#### ⛔ The ASR rescue is NOT promoted
+
+On pool A it was **+0.0625** (above margin); on pool B it is **+0.0437** (below). **It misses the
+pre-registered threshold by 0.0084 — about 1.3 rows of 160.** The direction is the same in both pools
+and the magnitudes differ by **3 rows**, so this is **not a clean refutation either** — it is exactly
+what an underpowered effect looks like when you demand it clear a threshold twice.
+
+**By the rule I wrote before seeing any of it, the Qwen3 ASR rescue is NOT established, and it does not
+enter the claim table.** It stays an **UNREGISTERED OBSERVATION that failed its confirmatory test.**
+
+> **This is the pre-registration doing precisely the job it exists for.** In R-36 the ASR column was
+> the most exciting number on the page, sitting in a column I had declared irrelevant. Had I claimed it
+> then, this tick would have been a retraction. Instead it was never a claim.
+
+**Not rescued, and I am not looking for a rescue.** No layer sweep, no third pool, no relaxed margin.
+`MARGIN_VS_BASELINE = 0.0521` was measured from re-judge spread (PR-3), not chosen; **an effect that
+needs the margin moved is not an effect.**
+
+#### 🏆 What DID replicate, for the third time
+
+**Condition 3 holds and holds hard.** `L17` removes **92.4%** of pool B's refusal rise —
+**15 rows → 3** — while the below-band control moves it by **exactly 0.0000** (15 → 15).
+
+**The causal dissociation now stands in three independent settings:**
+
+| setting | model | pool | refusal rise removed | control |
+|---|---|---|---|---|
+| R-35 | Llama-3.1-8B | A | **69.2%** | 0.0000 |
+| R-36 | Qwen3-14B | A | **81.0%** | 0.0000 |
+| **R-37** | **Qwen3-14B** | **B** | **92.4%** | **0.0000** |
+
+**Two model families, two demonstration pools sharing no sentences, and in every one the same patch
+gives back the refusal while the below-band control at the same positions does nothing.**
+
+⚠ Pool B knockout refusal is **15/160** and the rescued arm **3/160** — small counts; the percentages
+are ratios of few rows and the margin test, not the ratio, is what carries. ⚠ Truncation per DR-2.
 
 ---
 
