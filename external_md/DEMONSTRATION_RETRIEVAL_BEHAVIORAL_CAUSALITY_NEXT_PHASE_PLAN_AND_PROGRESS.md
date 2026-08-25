@@ -30,6 +30,7 @@ status attached. Every row names the correction that last touched it.
 
 | claim | evidence | where |
 |---|---|---|
+| 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
 | 🏆🏆🏆 **THREE SCOPES REMOVE A STATISTICALLY INDISTINGUISHABLE AMOUNT OF ATTACK BY DIFFERENT ROUTES.** ASR gaps demoproc-vs-legacy **0.0250** and legacy-vs-respq **0.0188** are both INSIDE the pre-registered 0.0417 margin; the arms separate only on **refusal** — demoproc **14/25 (56%)** killed-by-refusal at rate **0.2188**, vs **0/24** and **0/24** at 0.0312 and 0.0125, baseline 0.0563 | k=10, n=160; refusal measured by deterministic `kw_refusal`, not the LLM judge | **R-19**, **C-11** |
 | ⚠️ **WITHDRAWN: "response_query_only is a weak partial" (R-10, Outcome B).** At k=10 respq is **85%** of legacy, gap 0.0188, which PASSES the same pre-registered margin it failed at k=6 | partial non-replication, reported rather than resolved by picking a bank | **R-19** |
 | 🏆🏆🏆 **BOTH MODELS, WITHIN-FAMILY: in 6/6 arm×model cells, binding loss carries NO positive information about attack death** — 3 flat, 3 pointing the wrong way | Qwen3 `demo_processing_only`: **0/10** killed lost binding vs **5/38** not-killed; `legacy` flattens 28/48 | **R-17** |
@@ -1938,6 +1939,72 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-20 (12:40) — **PR-6 REPLICATES ON QWEN3, ON ALL THREE PRE-REGISTERED CONDITIONS. `demo_processing_only` is the ONLY scope of four, on EITHER model, that restores refusal — and on Qwen3 it does so while having the SMALLEST ASR effect and a NULL sign test.**
+
+**Artifacts:** arms `q4b*` (jobs 779947-779951), judging `q4bj_*` (job **780012**).
+**Provenance closed:** `openai/gpt-4o-mini` on **800/800** rows, `completion_sha256_16` joins on
+**800/800**. **PR-6 was committed (`3d8f331c`) before any scalar below was loaded.**
+
+**Qwen3 baseline: ASR 0.1313, keyword-refusal rate 0.0125** (read from `q4bj_A`, not assumed).
+
+| arm | ΔASR | refusal rate | rise vs baseline | vs 0.0521 margin | killed | **of which refusal** |
+|---|---|---|---|---|---|---|
+| **`demo_processing_only`** | −0.0875 | **0.1437** | **+0.1312** | **ABOVE** | 20 | **8 (40%)** |
+| `legacy_all_query` | −0.1062 | **0.0000** | −0.0125 | within | 19 | **0 (0%)** |
+| `response_query_only` | −0.1125 | **0.0000** | −0.0125 | within | 20 | **0 (0%)** |
+| `query_prefill_only` | −0.0625 | **0.0000** | −0.0125 | within | 15 | **0 (0%)** |
+
+**PR-6 condition 1 — HOLDS.** `demoproc` rise **+0.1312**, 2.5x the 0.0521 margin.
+**PR-6 condition 2 — HOLDS.** legacy and respq both at **−0.0125**, well inside margin. So is `qpre`.
+**PR-6 condition 3 — HOLDS.** `demoproc` **40% > 25%**; legacy and respq both **0%**.
+**Refutation conditions: neither triggered.** ✅ **REPLICATED.**
+
+#### 🔴 Why this replication is worth more than a matching table
+
+**On Qwen3, `demo_processing_only` has the SMALLEST ASR effect of the three effective arms
+(−0.0875 vs −0.1062 and −0.1125) and its domain sign test is a flat NULL (`p = 1.00000`, 5 of 9
+informative domains negative).** On Llama it had the largest delta and `p = 0.00195` with all ten
+domains negative. **The ASR story between the two models is not merely different, it is reversed —
+and the refusal story is identical.**
+
+**PR-6 pre-committed both of those as NOT counting**, before they were seen. That is the entire value
+of having written it first: the magnitudes were declared irrelevant while they were still unknown, and
+they turned out to point the other way. **A post-hoc reading of this data could have told either
+story.**
+
+Every ASR pair on Qwen3 is **EQUIVALENT** at the 0.0417 margin except `qpre` vs legacy (0.0437) and
+`qpre` vs respq (0.0500) — both marginal. **So on Qwen3 the four scopes are essentially
+indistinguishable by ASR, and completely separated by refusal.**
+
+> **Across two model families and four scopes — eight arm-model cells — exactly one thing restores
+> refusal, and it is knocking out demonstration processing. Every other scope removes comparable
+> amounts of attack with the refusal rate at or BELOW baseline.**
+
+#### ⚠ A new caveat, pointing at the OTHER arms
+
+The degeneracy pattern **inverts between models**, and on Qwen3 it lands on legacy/respq:
+
+| arm | distinct completions | median n_chars | stop=length |
+|---|---|---|---|
+| baseline | 159/160 | 584 | 42 |
+| **`demo_processing_only`** | **159/160** | **817** | 99 |
+| `legacy_all_query` | **144/160** | **356** | 14 |
+| `response_query_only` | **134/160** | **322** | 7 |
+
+**On Qwen3 it is `legacy` and `respq` whose completions collapse** — 16 and 26 duplicate rows, medians
+roughly *half* the baseline — while `demoproc` stays as distinct as baseline and runs *longer*. On
+Llama the collapse was `demoproc`'s (141/160, 27 short rows, all keyword-refusals). **So the "kill" in
+the zero-refusal arms is at least partly generation degradation, on at least one model.** That is a
+caveat against `legacy`/`respq` being clean, not against the refusal finding — but it means **"same
+amount of attack removed" is doing less work than the raw ASR equality suggests**, and it is recorded
+here rather than left for a reviewer.
+
+⚠ `demoproc`'s Qwen3 ASR effect is a **null on the domain sign test**; only its refusal effect
+replicates. ⚠ Lexical G = 1 throughout. ⚠ Refusal is `kw_refusal`, deterministic and drift-free, but
+**lexical** — it detects refusal *markers*, not refusal.
 
 ---
 
