@@ -4406,6 +4406,18 @@ re-derivation rather than a correction to something this phase published.
   but `*_meta.json` records a `seed` field that a reader will reasonably take as a reproducibility
   dependency when it is inert. Recorded so nobody later "fixes" a seed mismatch that cannot exist.
 
+* **23:40 — four concurrent Qwen3-14B weight loads starved each other, even at the 2-per-node cap.**
+  Jobs 781410-781413 (PR-15) showed **0 rows written after 16-28 minutes**, which is the shape of a
+  hung job. It was not one. Diagnosed the documented way — **by the weight-loading bar in `.err`, not
+  by `squeue`** — and every bar was advancing (367→368 of 443 on n-802; 237→240 on n-803). **Weight
+  load was taking 23+ minutes against a normal 2-6.**
+  The standing rule of **≤2 model-loading jobs per node was respected** (2 on n-802, 2 on n-803) and
+  **was not sufficient**: with a 14B model the bottleneck is **shared NFS, not the node**, so four
+  concurrent loads contend wherever they are placed. **The rule should be read as ≤2 concurrent 14B
+  loads in TOTAL, not per node.** No job was cancelled (standing instruction) and none needed to be —
+  all four went on to generate normally. **Recorded because "0 rows for half an hour" will otherwise
+  be misread as a stall and provoke a resubmission that makes the contention worse.**
+
 ## B7b. PROCESS NOTES
 
 ### ⚠⚠ P-1 (00:41) — **THE THIRD WRITER IS CONFIRMED BY A SECOND, INDEPENDENT ROUTE. I attributed a job pair, a log file and a tool to a session that has never touched any of them.**
