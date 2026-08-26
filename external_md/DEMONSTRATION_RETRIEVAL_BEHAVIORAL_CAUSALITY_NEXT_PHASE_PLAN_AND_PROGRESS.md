@@ -1965,6 +1965,40 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔎 DR-9 (23:45, DEEP REVIEW) — **1422/0. Found an UNCOMMITTED instrument change that R-55's selection table already quoted — caught only because the C-2 check is now scoped.**
+
+**Suite:** `1419 passed, 7 skipped, 0 failed` plus the three bank-regeneration tests run separately
+(**3 passed**) — **1422 total, 0 failures.** The bank tests are deselected from the main run because
+they regenerate two full banks and pushed the suite past a 10-minute budget; **they are not skipped,
+they are run in their own invocation.**
+
+#### 🔴 The find: an instrument change that was never committed
+
+`src/boombness/control_feasibility.py` was **modified but uncommitted** — the `max_n_demo`,
+`min_drawable_pool` and `pool_deficit_vs_max_demo` fields added while measuring the Qwen3 deficit.
+**R-55's selection table quotes those numbers.** So the working tree emitted them while **the
+committed instrument did not**, and anyone reproducing from the repo would have got an artifact
+missing the fields the decision was justified by.
+
+**It was caught only because the C-2 status check is now scoped to my own paths** (18:45). Against
+the unscoped check it would have sat invisible under the concurrent writer's 1,187-line diff.
+**Narrowing that check three ticks ago paid for itself here.** Committed at `cf4745d9`.
+
+#### Provenance sweep
+
+**23 banks, all tracked, none untracked.** The three this phase created carry distinct hashes —
+`longctx 4d888074`, `longpre d163e28c`, `longpre10 87343411`, `longpreQ14 a12427b9` — and `d10`
+still hashes `368566acecdc350f`, matching C-10's recorded value from two days ago.
+
+⚠ **One incidental observation, not mine to fix:** `boombness_prompt_bank_button.jsonl` and
+`boombness_prompt_bank_button_bomb.jsonl` are **byte-identical** (`95a3a8017f9ab180`). They predate
+this phase and nothing here joins to them. **Recorded, not touched** — a duplicate in another
+sprint's artifacts is that sprint's to reconcile.
+
+**My paths are clean; nothing unpushed.**
+
+---
+
 ### R-56 (23:20) — **Power check on `longpreQ14` BEFORE spending the sweep: PROCEED, but `n_examples = 4` sits exactly ON PR-23's threshold.**
 
 C-18 was caused by assuming a bank property measured on another model. **So the 14-sentence bank was
