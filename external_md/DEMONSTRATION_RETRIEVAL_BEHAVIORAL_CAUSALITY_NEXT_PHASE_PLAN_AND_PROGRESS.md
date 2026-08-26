@@ -2004,6 +2004,15 @@ measurable power back.** If anything the count fell.
 > test, and that trade is not tunable by preamble length.** R-50 raised this as a possibility; R-52
 > establishes it by having tried the obvious remedy and measured the result.
 
+**✅ The causal attribution is VERIFIED, not assumed (17:10).** That sentence blames the preamble, and
+that is only sound if the banks are otherwise identical. Checked row by row on the 200 behavioural
+core rows: **`full_prompt(longpre10) == preamble + "\n\n" + full_prompt(d10)` on 200/200**, with
+`demo_block`, `final_query_text`, `demo_valence`, `n_examples`, `domain` and `family_slot` **identical
+on 200/200**; `longpre12` vs `longpre10` differ **only** in preamble line count (12 vs 10) with
+`demo_block` identical on 200/200. **So the ASR drop cannot be a bank-difference confound — the
+preamble is the only thing that changed.** Pinned by `tests/test_preamble_is_the_only_difference.py`
+(15 assertions, mutation-verified) so a future regeneration cannot quietly invalidate R-52.
+
 **⛔ Branch stopped.** No third preamble length, no pooling of doses, no relaxed underpower rule.
 **C7 remains UNRESOLVED**, now with a sharper reason than "the control cannot be built": **the control
 can be built, and building it costs the phenomenon.** Any future attempt needs a way to add
