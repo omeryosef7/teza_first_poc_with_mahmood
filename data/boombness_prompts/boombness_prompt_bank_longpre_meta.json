@@ -1,0 +1,87 @@
+{
+  "preset": "main_longpre",
+  "seed": 20260825,
+  "codeword": "carrot",
+  "concept": "bomb",
+  "pools_sha16": "b517b5a62e23a727",
+  "pools_path": "data/boombness_prompts/demo_pools_d10.json",
+  "stats": {
+    "bank_rows_sha16": "bc47c607a298fbea",
+    "n_rows": 4560,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 120,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 560,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 1360,
+      "benign_remap": 120,
+      "concept_in_benign_ctx": 640,
+      "direct_codeword": 120,
+      "direct_harmful": 640,
+      "natural_doublespeak": 1680
+    },
+    "by_block": {
+      "consistency": 120,
+      "core2x2": 1920,
+      "core2x2_slot3": 640,
+      "extra_conditions": 240,
+      "families": 240,
+      "position": 40,
+      "role_style": 1200,
+      "strength": 160
+    },
+    "by_query_kind": {
+      "behavioral": 1920,
+      "comprehension_usage": 480,
+      "semantic_forced_choice": 480,
+      "semantic_one_word": 1680
+    },
+    "by_n_examples": {
+      "0": 480,
+      "1": 480,
+      "16": 320,
+      "2": 960,
+      "4": 1220,
+      "8": 1100
+    },
+    "by_domain": {
+      "city_bridge": 456,
+      "farm_storage": 456,
+      "game_manual": 456,
+      "harbour_dock": 456,
+      "instructional": 456,
+      "lab_safety": 456,
+      "museum_archive": 456,
+      "news_report": 456,
+      "rail_depot": 456,
+      "warehouse_logistics": 456
+    },
+    "by_split": {
+      "dev": 2440,
+      "heldout": 2120
+    },
+    "by_role_style": {
+      "assistant_like": 240,
+      "cot_like": 240,
+      "plain": 3360,
+      "system_like_quoted": 240,
+      "tool": 240,
+      "user_like": 240
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "70f00f82fd94249465169d4e7828557821a0473a",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-08-26T13:09:56"
+}

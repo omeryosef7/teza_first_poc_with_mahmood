@@ -358,7 +358,8 @@ def _interleave(a: List[str], b: List[str]) -> List[str]:
 
 
 def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
-                 n_filler: int = 6, filler_near: bool = False) -> Dict:
+                 n_filler: int = 6, filler_near: bool = False,
+                 n_preamble: int = 0) -> Dict:
     """Assemble one prompt and every piece of bookkeeping the plan asks a row to carry.
 
     filler_near: DEFAULT FALSE, and the default must not change -- every committed bank was built
@@ -403,7 +404,26 @@ def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
 
     qspec = QUERY_KINDS[ax.query_kind]
     query = str(qspec["template"]).format(W=qsurface, CODEWORD=codeword, CONCEPT=concept)
+
+    # NEUTRAL PREAMBLE (R-48). Emitted into `full_prompt` but deliberately NOT into `body`, so it
+    # lands OUTSIDE the recorded `demo_block` and therefore inside the pool a count-matched non-demo
+    # control draws from. That distinction is the entire point: R-46's attempt used `filler_near`,
+    # which appends to `body` and so grew the demonstration block instead -- the opposite of what
+    # R-25 needs. Measured requirement: >=116 non-demo, non-query tokens at n_examples=8 against a
+    # drawable pool of 30-40, i.e. a deficit of >=76 (R-48).
+    #
+    # Sentences come from the SAME vetted filler pool as in-body filler, chosen by `family_slot`,
+    # which is shared across the 2x2 -- so all four cells receive a byte-identical preamble and the
+    # exact-word-swap invariant is untouched. `--strict` is the check on that, not this comment.
+    # Default 0 keeps every existing caller byte-identical.
+    preamble_lines: List[str] = []
+    if n_preamble:
+        preamble_lines = _take(pools[f"{ax.domain}|filler"][ax.split], n_preamble, ax.family_slot)
+    preamble = "\n".join(preamble_lines)
+
     full = f"{wrapped}\n\n{query}" if wrapped else query
+    if preamble:
+        full = f"{preamble}\n\n{full}"
 
     n_code = full.lower().count(codeword.lower())
     n_conc = full.lower().count(concept.lower())
@@ -421,7 +441,14 @@ def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
     pid = hashlib.sha256((fam + "|" + ax.condition).encode()).hexdigest()[:16]
     psha = hashlib.sha256(full.encode()).hexdigest()[:16]
 
+    # THE PREAMBLE FIELDS ARE CONDITIONAL, and that is not cosmetic. Adding them unconditionally
+    # changed the JSON of EVERY row and broke `main`'s byte-identity on the first attempt -- caught
+    # by test_bank_regenerates_byte_identically before anything was committed. A bank that grows a
+    # key silently is a bank whose sha no longer matches the artifacts joined to it.
+    _extra = ({"preamble": preamble, "n_preamble_lines": len(preamble_lines)}
+              if preamble_lines else {})
     return {
+        **_extra,
         "prompt_id": pid,
         "prompt_sha16": psha,
         "family_id": fam,
@@ -526,6 +553,19 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
     constant keeps every existing caller behaving as before.
     """
     domains = list(DOMAINS) if domains is None else list(domains)
+    if preset == "main_longpre":
+        # R-48's specification, implemented. Same intent as `main_longctx` and the OPPOSITE
+        # mechanism: neutral sentences go into `full_prompt` OUTSIDE `demo_block`, not into `body`
+        # inside it. 12 sentences of ~12-14 tokens is ~150 drawable tokens against a ~116-token
+        # demo block at n_examples=8, comfortably over the measured >=76 deficit, and the filler
+        # pools hold 20 per split so `_take` never wraps into repetition.
+        # `main` and `main_longctx` are both left untouched.
+        blocks = _blocks("main", domains)
+        for b in blocks:
+            if b.get("name") in ("core2x2", "core2x2_slot3"):
+                b["n_preamble"] = 12
+        return blocks
+
     if preset == "main_longctx":
         # R-25's bank-design fix, and the ONLY reason this preset exists.
         #
@@ -752,7 +792,8 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
                                                 r = build_prompt(
                                                     pools, ax, codeword, concept,
                                                     n_filler=block.get("n_filler", 6),
-                                                    filler_near=block.get("filler_near", False))
+                                                    filler_near=block.get("filler_near", False),
+                                                    n_preamble=block.get("n_preamble", 0))
                                                 r["bank_block"] = block["name"]
                                                 fam_rows[cond] = r
                                                 if r["prompt_id"] in seen:
@@ -913,7 +954,7 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "phase_d"],
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "phase_d"],
                     default="main")
     ap.add_argument("--codeword", default="carrot")
     ap.add_argument("--concept", default="bomb")

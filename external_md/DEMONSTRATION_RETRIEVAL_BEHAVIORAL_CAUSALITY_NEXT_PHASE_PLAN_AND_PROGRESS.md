@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| 🏆 **C7 UNBLOCKED: a preamble emitted OUTSIDE `demo_block` gives match_ratio 1.000 (min AND mean) at ALL FOUR doses**, pool 30 → 160, with `demo_block` byte-unchanged and `main` still regenerating byte-identically. Demonstration-specificity is testable at n=4 and n=8 for the first time in the phase | **R-49**; supersedes the failed `main_longctx` approach | **R-49** |
 | ⛔ **THE LONG-CONTEXT FIX FAILED: `filler_near` grows the DEMONSTRATION BLOCK (638→1644 chars at n=8) while the drawable outside stays at 90 chars on both banks.** Strictly worse. A working version must emit context OUTSIDE `demo_block`, which changes a field every bank and arm joins on — not a preset | **R-46**; `control_feasibility.py` also disagrees with ground truth and is quarantined | **R-46** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
 | ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
@@ -1956,6 +1957,53 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆 R-49 (13:20) — **THE BANK IS FIXED. A neutral preamble emitted OUTSIDE `demo_block` makes the count-matched control feasible at EVERY dose — 1.000 min and mean. C7, the phase's only unresolved claim, is unblocked.**
+
+R-48 specified the requirement (**≥76 more non-demo, non-query tokens at `n_examples`=8, emitted
+outside `demo_block`**). This implements it. `main_longpre` (12 filler sentences) writes them into
+`full_prompt` but **not** into `body` — the opposite of R-46's `main_longctx`, which appended to
+`body` and grew the demonstration block instead.
+
+| bank | pool | n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|---|
+| d10 | 30 | 1.000 | 0.875 | **0.000** | **0.000** |
+| longctx (R-46) | 30 | **0.000** | 0.000 | 0.000 | 0.000 |
+| **longpre** | **160** | **1.000** | **1.000** | **1.000** | **1.000** |
+
+**`min` and `mean` are both 1.000 at every dose** — not a mean that hides refused rows. **The strict
+count-matched control can now be built on every row of the population.**
+
+#### Verified structurally, not just by the ratio
+
+| check | result |
+|---|---|
+| `demo_block` unchanged | **78 → 78** (n=1), **638 → 638** (n=8) — the preamble is provably outside it |
+| drawable outside | 90 → **840** chars |
+| preamble contains codeword / concept | **False / False** — it cannot perturb the target counts |
+| 2×2 preamble invariant | **640 core families checked, 0 with a non-identical preamble** |
+| `--strict` | 560 families, **0 violations** |
+| tokenization audit | `rows ok=4560 bad=0`, **0 alignment violations** |
+| `main` + `main_longctx` regression | **3/3 byte-identical** |
+
+#### 🔴 The regression that fired, and why it mattered
+
+My first version added `preamble` and `n_preamble_lines` to **every** row. That changed the JSON of
+every bank — **including `main`'s — and broke byte-identity immediately.**
+`test_bank_regenerates_byte_identically` caught it **before anything was committed**, which is
+precisely the guard R-42/R-43 built for. **A bank that silently grows a key is a bank whose sha no
+longer matches the artifacts joined to it.** The fields are now emitted **only when a preamble
+exists**, and the reason is written at the call site rather than left to be rediscovered.
+
+**Nothing else is touched:** `main` and `main_longctx` regenerate byte-identically, and 3 lines were
+replaced (the signature, the `full` assembly, and the block-key passthrough) with the new fields
+conditional.
+
+**Next: pre-register the C7 experiment on this bank before any arm is submitted.** The claim under
+test is demonstration-specificity **at `n_examples` 4 and 8** — the doses R-25 declared untestable and
+that have been untestable for the whole phase.
 
 ---
 
