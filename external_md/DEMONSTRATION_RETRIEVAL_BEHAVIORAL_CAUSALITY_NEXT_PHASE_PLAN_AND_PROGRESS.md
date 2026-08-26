@@ -1963,6 +1963,40 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-22 (18:25) — **Pre-registered: does C13 — neutral context suppressing the attack — hold on Qwen3?**
+
+C13 (R-53) is the phase's newest claim and it is **Llama-only**: ~10 neutral sentences that touch
+neither the demonstrations nor the query cut ASR from **27/160 to 7/160**. **Every other headline in
+this phase that survived was tested on a second model family**, and C13 has not been.
+
+**It is also the cheapest cross-model test available** — one arm. Qwen3's d10 baseline (`q4bA`) is
+already on disk, so only the preamble-bank baseline needs generating.
+
+**Arms:** `q13A` — Qwen3-14B, `boombness_prompt_bank_longpre10.jsonl`, 160 rows, no intervention.
+Bank chosen as **R-51's feasibility-selected minimum**, not by which gave the larger Llama effect
+(−21 vs −20 rows were equivalent, so nothing is being selected on).
+
+**Judging:** `q13A` and a **re-judge of `q4bA`'s existing generations** submitted together, each
+against its own bank, so the comparison is within one wall-clock window — the design R-53 established
+after `compare_bank_hashes` refused a single-bank shortcut.
+
+**CONFIRMS if** `ASR(Qwen3, d10) − ASR(Qwen3, longpre10) > MARGIN_VS_BASELINE = 0.0521`, in the same
+window.
+**REFUTED if** the gap falls within the margin — C13 would then be **Llama-specific**, and the claim
+must be restated as such.
+
+**⛔ Pre-committed:**
+* **Qwen3's d10 baseline is 21/160 (0.1313)**, so there is real attack to lose; **if the re-judge puts
+  it below 8 rows I will declare the test UNDERPOWERED and decline it**, per the rule used in PR-19.
+* **Drift is measured, not assumed:** the `q4bA` re-judge doubles as a drift check against its
+  original `q4bj_A` reading, exactly as R-53's did (2-4 rows on Llama).
+* **This cannot rescue C7.** R-52's decline rests on within-bank counts; a cross-model result about
+  C13 says nothing about demonstration-specificity.
+* **No magnitude is compared to Llama's.** The two models have different baselines; the test is
+  whether the *direction and margin* hold, not whether the effect is the same size.
+
+---
+
 ### 🏆 R-53 (18:05) — **PR-21 CONFIRMS. Same judging window, each arm against its own bank: the preamble lowers ASR by ~20 rows, and measured drift is 2-4. C-15's withdrawal was right procedure; the claim now stands on evidence.**
 
 **Artifacts:** `xj_d10` (783389), `xj_pre12` (783418), `xj_pre10` (783419) — all re-judging
