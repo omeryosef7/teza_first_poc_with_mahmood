@@ -1957,6 +1957,46 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-18 (03:15) — **Pre-registered: SIZE-MATCHING the two patches. Is R-39's contrast about which positions are restored, or just how many?**
+
+R-39 compared a **24-position** query patch against a **9-128-position** demo patch (median 43) and
+**could not separate position identity from position count.** I flagged that in R-39 rather than
+leaving it; this settles it.
+
+**⛔ First, why the free version of this test does not work.** The obvious move is to condition R-35 on
+`n_examples`, since the demo patch spans **9-18 positions at n=1** (below the query span's 24) up to
+**91-128 at n=8**. **That analysis is invalid here**, and running it would have been a mistake:
+**R-22 measured the knockout's own refusal rise at `n_examples = 1` as exactly `+0.0000`.** At small
+patch sizes **there is no refusal restoration for a rescue to undo** — so patch size and effect size
+are **the same variable**, and a null at n=1 would be uninterpretable. **No re-cut of existing data can
+answer this; it needs a new arm.**
+
+**The design.** At **`n_examples = 8` only** — the best-powered cell, where the knockout's refusal rise
+is **+0.3500** (R-22) and the demo block is **91-128 positions** — donate **exactly 24 randomly drawn
+demonstration positions**, size-matched to the query span. Draw is **seeded by `prompt_id`**, so each
+row always donates the same subset and the draw is auditable after the fact; a row with fewer than 24
+positions is **REFUSED, never silently under-matched** (R-24/R-26 already paid for that lesson).
+
+**Arms (Llama, d10, `--n-examples 8`, 40 rows):** `p10_demo24_L14` (primary) and `p10_demo24_L5`
+(below-band control). Comparators, all same-session: knockout-only and the **full** demo patch, both
+restricted to the same `n_examples = 8` rows.
+
+**Outcomes, fixed now:**
+
+| outcome | pattern | reading |
+|---|---|---|
+| **A — identity** | 24 demo positions still remove refusal **> 0.0521** and still fail to restore ASR | **Position identity, not count.** R-39's contrast stands and C9 is size-robust |
+| **B — count** | 24 demo positions remove **no** refusal (within margin of knockout) | **The demo patch's effect needed its size.** R-39's identity reading is **withdrawn**, and C9 must be restated as requiring the whole block |
+| **C — partial** | removes refusal but by markedly less than the full patch | Report the fraction; **claim neither identity nor count** |
+
+**⛔ Pre-committed.** This is a **40-row cell** — a quarter of the usual n. `MARGIN_VS_BASELINE = 0.0521`
+is **2.1 rows at n=40**, so **the margin is doing much less work here and I will say so beside every
+number.** The knockout's n=8 refusal rise of +0.3500 (14 rows of 40) is the largest available, which is
+why this cell and no other. **If the result is Outcome C, no third arm is run to break the tie** — a
+tie broken by a third look is not a result.
+
+---
+
 ### ⚖️ R-39 (02:47) — **PR-17 OUTCOME A: the attack damage IS in the query span. But the risk I flagged against my own C9 MATERIALISED — the query patch restores BOTH effects, so this is a SINGLE dissociation, not a double one.**
 
 **Artifacts:** arms `p9_rescue_qpos_L14` (781849) / `p9_rescue_qpos_L5` (781850); judging `p9j_*`

@@ -27,6 +27,7 @@ import argparse
 import collections
 import json
 import os
+import random
 import sys
 from typing import Dict, List, Optional, Sequence
 
@@ -1154,6 +1155,15 @@ def main() -> int:
     # validated with argparse `choices` because the authoritative tuple lives in pair_common, which
     # is imported below -- restating the five names here is exactly the drift the mode table is
     # centralised to prevent, so the check is against pc.SCOPED_KNOCKOUT_MODES itself.
+    ap.add_argument("--rescue-n-positions", type=int, default=None,
+                    help="SIZE-MATCH the donor. Donate only K positions, drawn deterministically "
+                         "from the chosen set (seeded per row by prompt_id, so the draw is "
+                         "reproducible and auditable). Exists because R-39 compared a 24-position "
+                         "query patch against a 9-128-position demo patch and could not separate "
+                         "position IDENTITY from position COUNT. Conditioning on n_examples cannot "
+                         "settle it either: the knockout's own refusal rise is 0.0000 at "
+                         "n_examples=1, so small patches co-occur with no effect to undo. A row "
+                         "with fewer than K positions is REFUSED, never silently under-matched.")
     ap.add_argument("--rescue-positions", choices=("demo", "query"), default="demo",
                     help="WHICH positions receive the donated activations. 'demo' = the "
                          "demonstration block, the positions the knockout directly corrupts. "
@@ -1769,6 +1779,16 @@ def main() -> int:
                 if not _rpos:
                     ledger.fail(f"rescue:no_{args.rescue_positions}_positions", row["prompt_id"])
                     continue
+                if args.rescue_n_positions is not None:
+                    # SIZE-MATCHED DRAW. Seeded by prompt_id so the same row always donates the same
+                    # positions, and an under-sized row is REFUSED rather than quietly donating
+                    # fewer -- an under-matched donor that shows no effect is an artifact of the
+                    # under-matching, which is prev-R-24/R-26's lesson in a new place.
+                    if len(_rpos) < args.rescue_n_positions:
+                        ledger.fail("rescue:too_few_positions_to_size_match", row["prompt_id"])
+                        continue
+                    _rng = random.Random(f"{row['prompt_id']}|{args.rescue_n_positions}")
+                    _rpos = sorted(_rng.sample(list(_rpos), args.rescue_n_positions))
                 _cap = ActivationCapture(lm.model, args.rescue_layer, _rpos)
                 with torch.no_grad():
                     with contextlib.ExitStack() as _dst:
@@ -1931,6 +1951,7 @@ def main() -> int:
                                                      if args.rescue_layer is not None else None),
                                     "rescue_positions": (args.rescue_positions
                                                          if args.rescue_layer is not None else None),
+                                    "rescue_n_positions_requested": args.rescue_n_positions,
                                     "n_rescue_positions": (len(_rpos)
                                                            if args.rescue_layer is not None else None),
                                     "control_draw": (_cd or None),

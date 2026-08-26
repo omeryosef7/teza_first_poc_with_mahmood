@@ -183,3 +183,30 @@ def test_rescue_positions_and_count_reach_the_row():
     src = _score_behavior_src()
     assert '"rescue_positions": (args.rescue_positions' in src
     assert '"n_rescue_positions": (len(_rpos)' in src
+
+
+def test_size_matched_draw_is_seeded_by_prompt_id_and_refuses_undersized_rows():
+    """R-39 compared a 24-position query patch against a 9-128-position demo patch and could not
+    separate position IDENTITY from position COUNT. --rescue-n-positions size-matches them. The
+    draw must be seeded per row (so it is reproducible and auditable) and an under-sized row must be
+    REFUSED: an under-matched donor showing no effect is an artifact of the under-matching, which is
+    the lesson R-24/R-26 already paid for once."""
+    src = _score_behavior_src()
+    assert 'random.Random(f"{row[\'prompt_id\']}|{args.rescue_n_positions}")' in src
+    assert 'ledger.fail("rescue:too_few_positions_to_size_match"' in src
+    assert '"rescue_n_positions_requested": args.rescue_n_positions' in src
+
+
+def test_size_matched_draw_is_deterministic_and_correctly_sized():
+    """The seeding scheme itself, exercised directly."""
+    import random as _r
+    pool = list(range(100, 240))
+    for pid in ("abc123", "def456"):
+        a = sorted(_r.Random(f"{pid}|24").sample(pool, 24))
+        b = sorted(_r.Random(f"{pid}|24").sample(pool, 24))
+        assert a == b, "same row must donate the same positions"
+        assert len(a) == 24 and len(set(a)) == 24
+        assert set(a) <= set(pool)
+    x = sorted(_r.Random("abc123|24").sample(pool, 24))
+    y = sorted(_r.Random("def456|24").sample(pool, 24))
+    assert x != y, "different rows must not all donate the identical subset"
