@@ -132,6 +132,14 @@ def main():
             "n_below_1": sum(1 for r in rs if r < 1.0),
             "feasible_strict": all(r >= 1.0 for r in rs),
             "median_n_demo": statistics.median(x["n_demo"] for x in per_dose[v]),
+            # THE MAX IS THE CRITERION, NOT THE MEDIAN (C-18). A strict control must be buildable on
+            # EVERY row, so the pool has to clear the LONGEST demo block at the dose. n_preamble=8
+            # once gave a pool of 118 against a median of 114 and still failed, because the longest
+            # rows reach 128; its mean ratio read a comfortable 0.650 while its min was 0.000.
+            "max_n_demo": max(x["n_demo"] for x in per_dose[v]),
+            "min_drawable_pool": min(x["n_drawable_pool"] for x in per_dose[v]),
+            "pool_deficit_vs_max_demo": max(0, max(x["n_demo"] for x in per_dose[v])
+                                            - min(x["n_drawable_pool"] for x in per_dose[v])),
             "median_drawable_pool": statistics.median(x["n_drawable_pool"] for x in per_dose[v]),
             "n_refused_by_strict_policy": infeasible.get(v, 0),
         }
@@ -147,8 +155,9 @@ def main():
     run.finish(summary={"all_doses_feasible": out["all_doses_feasible"]}, ledger=ledger)
     print(f"[feas] wrote {path}")
     for v, c in out_doses.items():
-        print(f"  n_examples={v:>2}: rows={c['n_rows']:3d} demo~{c['median_n_demo']:.0f} "
-              f"pool~{c['median_drawable_pool']:.0f} ratio min={c['match_ratio_min']:.3f} "
+        print(f"  n_examples={v:>2}: rows={c['n_rows']:3d} demo med/MAX={c['median_n_demo']:.0f}/{c['max_n_demo']} "
+              f"pool med/MIN={c['median_drawable_pool']:.0f}/{c['min_drawable_pool']} "
+              f"deficit={c['pool_deficit_vs_max_demo']} ratio min={c['match_ratio_min']:.3f} "
               f"mean={c['match_ratio_mean']:.3f} feasible={c['feasible_strict']}")
     return 0
 
