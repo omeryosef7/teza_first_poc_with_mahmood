@@ -5943,6 +5943,22 @@ re-derivation rather than a correction to something this phase published.
   ⚠ Also note `feedback_git_stash_shared_branch`: a third writer's stash sits on this branch's stack.
   **No stash operation of any kind is safe here.**
 
+* **19:15 — SLURM control-plane OUTAGE; PR-23 is pre-registered but UNSUBMITTED.**
+  `sbatch` returns `Batch job submission failed: Unexpected message received`, and `squeue`,
+  `sinfo` fail the same way while `scontrol ping` hangs to timeout. **The whole scheduler is down,
+  not just my queue.** Two submissions were refused; **I retried once after 30 s and stopped** —
+  retrying into a dead control plane is noise, not diagnosis.
+
+  **Nothing is lost and nothing is at risk.** PR-23 is committed at `490b0995` **before** any data
+  exists, which is the point of pre-registering; the argsfiles are committed; and every completed
+  artifact lives on disk independently of the scheduler — all five `xj_*` judge dirs verified
+  **160/160 with `DONE.json`**.
+
+  **This also retro-justifies C-16's fix.** That defect was my wait loop trusting `sacct`; **within
+  the hour the same service failed outright.** Polling the artifact rather than the scheduler is not
+  defensive coding, it is the difference between "the job finished" and "the thing that tells me
+  about jobs is reachable". **PR-23 submits on the next tick that `sbatch` answers.**
+
 ## B7b. PROCESS NOTES
 
 ### ⚠⚠ P-1 (00:41) — **THE THIRD WRITER IS CONFIRMED BY A SECOND, INDEPENDENT ROUTE. I attributed a job pair, a log file and a tool to a session that has never touched any of them.**
