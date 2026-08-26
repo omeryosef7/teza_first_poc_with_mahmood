@@ -74,7 +74,7 @@ Status key: **R** replicated (2 models) · **S** single-model · **N** evaluated
 | C4 | Attack removal proceeds by **coherent non-compliance**, not degeneration | Llama + Qwen3 | killed attacks | 165 across 8 cells | killed row | **0** degenerate rows; `frac_scorable` 1.000 | `coherence_gate` thresholds, mutation-verified | same | positive/negative detector controls | **R** |
 | C5 | Concept binding **survives** the intervention | Llama + Qwen3 | forced-choice probe | 48 families/model | family (within-family 2×2) | Llama 0/48 binding lost; Qwen3 0/10 killed lost | McNemar / contingency | same | `legacy` loses 28/48 (Qwen3) | **R** |
 | C6 | Refusal restoration scales with demonstration count | **Llama only** | d10, by `n_examples` | 40/cell | prompt | +0.0000 → +0.3500, monotone | endpoint vs 0.0521, 6.7× | same | `legacy`/`respq` flat at ≤0 | **S** |
-| C7 | Attack removal is demonstration-specific | Llama | longpre bank, `n_examples` 4 and 8 | 40 rows/dose, **4 attacks each** | prompt, 3 independent draws | **n=8: demoproc −0.1000, controls +0.0000/+0.0500/+0.0000, separation 0.1167 (2.8×)** · **n=4: a control removed as much as demoproc** | PR-19 required BOTH doses | `demo_processing_only` 6-14 | **strict count-matched non-demo mask, `match_ratio` 1.000 on all 480 rows** | **U** (PR-19 does not confirm; n=8 alone would be choosing the dose that worked) |
+| C7 | Attack removal is demonstration-specific | Llama | longpre12, `n_examples` 4 and 8 (longpre10 re-run **DECLINED**, underpowered — R-52) | 40 rows/dose, **4 attacks each** | prompt, 3 independent draws | **n=8: demoproc −0.1000, controls +0.0000/+0.0500/+0.0000, separation 0.1167 (2.8×)** · **n=4: a control removed as much as demoproc** | PR-19 required BOTH doses | `demo_processing_only` 6-14 | **strict count-matched non-demo mask, `match_ratio` 1.000 on all 480 rows** | **U** (PR-19 does not confirm; n=8 alone would be choosing the dose that worked) |
 | C8 | `query_prefill_only` is a measured null | Llama | d10 | 160 | domain | −0.0250, p=0.6875 | sign test, floor 0.0312 | attn knockout, query prefill rows | other scopes | **S** (negative) |
 | **C9** | **Handing back the clean demonstration activations at the top of the knockout band gives back the REFUSAL and not the ATTACK** | Llama + Qwen3, **2 pools** | d10 / d10-poolB behavioural | 160 × 4 cells | prompt | refusal rows removed **18 / 17 / 12 / 18** vs an **8.3-row margin** (1.44-2.16x); as % of rise 58-92%, **inverted relative to the evidence — see DR-5**. ASR: Llama Outcome **C** (null, recovers 16.7%) | vs `MARGIN_VS_BASELINE` 0.0521; PR-13 / PR-14 / PR-16, each committed before its data | per-position `DonorPatch` at L14 (Llama) / L17 (Qwen3), donor = clean forward, same `templated_r` | **below-band L5 patch: moves refusal by EXACTLY 0.0000 in all four cells**; identity control (`--rescue-donor self`) 8/8 byte-identical | **CONFIRMATORY (4/4)** |
 | C12 | **The demo/query contrast is position IDENTITY, not position count — but demo-patch magnitude also scales with count** | Llama | d10, `n_examples`=8 | **40** | prompt | at **24 positions each**: demo removes **4** refusal rows and **0.0000** ASR; query removes **13** and **+0.0500** ASR. 24 of ~114 demo positions = **36.4%** of the full effect | PR-18; ⚠ margin is **2.1 rows** at n=40 | size-matched seeded `DonorPatch` draw | below-band L5, **exactly inert (15→15)** | **S** (single-model, thin) |
@@ -95,10 +95,14 @@ Two independent tests are **not constructible** here. Both need a new bank; neit
    **Fix built and it works mechanically (R-49):** `main_longpre` emits a neutral preamble OUTSIDE
    `demo_block`, giving `match_ratio` **1.000 (min and mean) at every dose**, pool 30 → 160, with
    `demo_block` byte-unchanged and `main` still regenerating byte-identically.
-   ⚠ **But the fix has a cost that was not foreseeable before running it (R-50): the preamble halves
-   the attack.** Baseline ASR 0.1562 (d10) → **0.0625** (longpre), leaving **4 attack rows per dose**
-   — so C7 is now *testable* but *underpowered*, and PR-19 did not confirm.
-   **Making the control constructible and keeping the attack strong may be in tension.**
+   ⛔ **But the fix costs the phenomenon, and that is now established rather than suspected
+   (R-50 → R-52).** Baseline ASR **0.1562 (d10) → 0.0625 (preamble 12) → 0.0437 (preamble 10)**.
+   Cutting the preamble to the principled minimum recovered **nothing measurable** (3 rows against an
+   8.3-row margin), and on that bank both decisive doses fall **below the underpower threshold** (3
+   and 1 attack rows) and are **DECLINED**. **The control can be built, and building it costs the
+   attack it is meant to test — a trade that is NOT tunable by preamble length.**
+   **Any future attempt needs non-demonstration context that does not dilute the attack**, which is a
+   different design question from the one R-25 posed.
 2. **Mapping-usage in free generation (R-27).** The concept vocabulary *is* the harmful content, so the
    flag is confounded with the outcome. **Fix: a codeword whose concept has a benign register.**
 
