@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| ⚖️ **C13 IS LLAMA-SPECIFIC (PR-22).** Qwen3 d10 **21/160** vs longpre10 **23/160** — gap **+2 rows**, inside margin and pointing the wrong way, on **21 baseline attacks** (powered) with **0 rows** of drift. 🟢 **Consequence: C7's power blocker is Llama's, not the method's — Qwen3 keeps its attack on the preamble bank where match_ratio is 1.000 at every dose** | **R-54** | **R-54** |
 | 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
 | ⛔ **THE PREAMBLE PATH IS A DEAD END FOR C7.** Making the control constructible costs the attack: baseline ASR **0.1562 (d10) → 0.0625 (pre12) → 0.0437 (pre10)**, and cutting the preamble on a principled criterion recovered **nothing** (3 rows, inside noise). Both decisive doses on pre10 are **DECLINED as underpowered** (3 and 1 attack rows vs the rule's 4) | **R-52**; the trade is not tunable by preamble length | **R-52** |
 | ⚖️ **C7 TESTED AT LAST — AND STILL UNRESOLVED.** PR-19 required both n=4 and n=8; **n=8 holds all three conditions** (demoproc −0.1000, controls +0.0000/+0.0500/+0.0000, separation **2.8x margin**) while **n=4 fails** (a control removed as much as demoproc). Both cells rest on **4 baseline attacks of 40**, and the preamble halved baseline ASR (0.1562 → 0.0625) | **R-50**; the fix that enabled the test also weakened the attack | **R-50** |
@@ -1960,6 +1961,53 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ R-54 / C-16 (19:00) — **PR-22 DOES NOT CONFIRM: C13 is LLAMA-SPECIFIC. Qwen3's attack is untouched by the preamble — which unexpectedly means C7 may be POWERED on Qwen3. And I nearly reported this from a partial judge read.**
+
+**Artifacts:** arm `q13A` (783439); judging `xj_q_pre10` (783458), `xj_q_d10` (783459) — submitted
+together, each against its own bank. **Provenance 320/320**, hash joins **320/320**.
+
+| model | d10 | longpre10 | gap |
+|---|---|---|---|
+| Llama (R-53) | 27/160 = 0.1688 | **7/160 = 0.0437** | **−20 rows** |
+| **Qwen3** | **21/160 = 0.1313** | **23/160 = 0.1437** | **+2 rows** |
+
+**Gap −0.0125, inside the 0.0521 margin, and pointing the wrong way. Baseline 21 attack rows, so this
+is a POWERED negative, not a decline.** Drift on identical `q4bA` completions: **0 rows.**
+
+> **C13 is restated as LLAMA-SPECIFIC.** Ten neutral sentences that touch neither the demonstrations
+> nor the query cut Llama's attack by two thirds and do **nothing** to Qwen3's.
+
+#### 🟢 The consequence nobody was looking for: C7 may be testable on Qwen3
+
+R-52 closed C7 because **the preamble that makes the count-matched control constructible also removes
+the attack** — leaving 3 and 1 attack rows on Llama. **That trade is Llama's, not the method's.**
+**Qwen3 on `longpre10` keeps 23/160 attacks**, and `match_ratio` is 1.000 at every dose on that bank
+(R-49/R-51, verified against a live arm).
+
+**So the exact obstacle R-52 declared — "the control can be built, and building it costs the
+phenomenon" — does not apply to Qwen3.** That is not rescuing a failed branch by retrying it; **it is
+a different population where the documented blocker is measured to be absent.** Recorded as the
+evidence-backed next step, not started this tick.
+
+#### 🔴 C-16: I read a partial judge output and it agreed with the truth
+
+My wait loop polls `sacct`. **SLURM's control plane threw `Protocol authentication error` on both
+`sacct` and `squeue`**, my loop's `grep -c` on the error output returned 0 running jobs, and it exited
+**treating a query failure as job completion.** I then read **141 and 135 rows of 160** and computed a
+verdict from them.
+
+**The partial read gave the same answer as the complete one — and that is luck, not process.** It is
+C-5's defect class (a partial judge dir flowing through and producing a plausible number), and this
+time the plausible number happened to be right. **A process that is correct only when the truncation
+is benign is not a process.**
+
+**Fixed:** the wait now polls **the artifact** — `ALL DONE` in the judge log and the row count —
+**never the scheduler.** Row counts climbing 141 → 153 → 160 is what actually revealed it.
+**A completion signal must come from the thing completing, not from a service that can fail
+independently.**
 
 ---
 
