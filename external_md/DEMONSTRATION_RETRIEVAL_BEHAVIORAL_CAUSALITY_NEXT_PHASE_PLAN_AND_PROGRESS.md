@@ -1964,6 +1964,49 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔴 C-17 (20:40) — **My "failed" `sbatch` calls DID create jobs. I concluded they had not, resubmitted, and ran two arms twice. No scientific harm — determinism absorbed it — but the reasoning was wrong and the check I invented was worthless.**
+
+**What happened.** During the 19:15 SLURM outage, two `sbatch` calls returned
+`Batch job submission failed: Unexpected message received`. At 19:38 I saw two PENDING jobs, checked
+whether they were mine, and concluded they were the **concurrent writer's**. **They were mine:**
+
+| job | tag | origin |
+|---|---|---|
+| **783468** | **`q14_demoproc`** | the "failed" submission |
+| **783495** | **`q14_matched_d1`** | the "failed" submission |
+| 783595 | `q14_demoproc` | my resubmission — **duplicate** |
+| 783596 | `q14_matched_d1` | my resubmission — **duplicate** |
+
+**Both of my "failed" calls succeeded.** The error was returned to me while the request was still
+accepted; the jobs were stamped with the **processing** time (19:22), not my call time.
+
+**Why my check failed, precisely.** I used two pieces of evidence and both were void:
+1. *"Submit time 19:22 is after my attempts"* — **the timestamp records when the recovering control
+   plane processed the request, not when it was made.** It cannot distinguish owners.
+2. *"No `q14_*` run dir exists"* — **a PENDING job has no run dir.** Absence of a directory is
+   absence of a *started* job, not of a job.
+
+**I wrote at 19:38 that checking this "stops a duplicate arm from quietly doubling a control draw" —
+and then the check I used let exactly that happen.**
+
+#### What it cost, and what it did not
+
+**No scientific harm.** The two `q14_demoproc` runs are **byte-identical**
+(`gens_sha = e5d04bd9d4247819` on both, 160 rows each) — same argsfile, same seed, deterministic
+decoding. The same will hold for the `matched_d1` pair, because a control draw is seeded by
+`prompt_id` and the draw index.
+
+**The cost is wasted GPU**, plus a real trap avoided by luck: **`q14_matched_d1` will exist twice, and
+counting it as two of PR-23's three independent draws would be a fabricated control.** PR-23 requires
+`d1`, `d2`, `d3` — **three different seeds, not three directories.**
+
+**The correct check, used from here:** `grep -l "<tag>" outputs/boombness/logs/boomb_*.out` — **ask
+what the jobs actually ran, never infer ownership from timestamps or from the absence of output.**
+The redundant duplicate (783596) is **not cancelled** per the standing instruction; its result will
+be **discarded, not averaged in**.
+
+---
+
 ### PR-23 (19:10) — **Pre-registered: C7 on QWEN3, where R-52's power blocker is measured to be ABSENT.**
 
 R-52 closed C7 on Llama because the preamble that makes the count-matched control constructible also
