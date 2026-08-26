@@ -61,6 +61,10 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 | 19 | CPU feasibility instrument, quarantined then fixed and validated twice | 782597-782609, 782774 | R-47, R-48 |
 | 20 | Preamble bank (`longpre`) + C7 test at every dose | 782836-782840, judge 782891 | **R-49, R-50** |
 | 21 | Minimum-preamble selection + mandated re-run | 783028-783030, 783039-783043, judge 783116 | **R-51, R-52** |
+| 22 | C13 cross-model test (neutral context on Qwen3) | 783439, judge 783458/783459 | **R-54** |
+| 23 | C7 on Qwen3 — first attempt, **refused at pre-flight** | 783595/783596, 783712/783713 | **C-18** |
+| 24 | Qwen3-correct preamble bank (`longpreQ14`) + power check | 783828-783831, 783849, judge 783886 | R-55, R-56 |
+| 25 | **C7 on Qwen3 — CONFIRMS** | 783849/783903/783904/783945/783946, judge 784128 | **🏆 R-58** |
 
 ## 5. Where we won
 
@@ -100,6 +104,16 @@ to the evidence — see the correction table.* The **below-band control at the s
 refusal by exactly 0.0000 in all four cells**, and the identity control (`--rescue-donor self`)
 reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
 attack.**
+
+**W9 — 🏆 C7 IS RESOLVED: attack removal is DEMONSTRATION-SPECIFIC.** On Qwen3, masking the
+demonstration positions removes **5 of 5** attacks at `n_examples`=4 and **5 of 7** at n=8, while
+**three independent count-matched masks of the same size, drawn from elsewhere in the same prompt**,
+remove **1, 2, 2** and **2, −2, −1** — every one inside the pre-registered ±0.0521 margin. Separation
+**2.0×** and **3.2×** the arm-vs-arm margin, **all three PR-23 conditions holding at both decisive
+doses**, with `match_ratio` **1.000 on all 480 control rows** and **3/3 distinct draws**.
+**Masking N demonstration positions kills the attack; masking the same N elsewhere does not.**
+⚠ **Qwen3 only** — Llama's version was **declined for power (F6), never refuted** — and it rests on
+5 and 7 baseline attacks, i.e. **5 rows against a 2.1-row margin**.
 
 **W8 — the count-matched control was finally BUILT, after three attempts and a measured
 specification.** R-25 left "demonstration-specificity is not constructible" as a qualitative limit.
@@ -155,8 +169,9 @@ and 8; on the 12-sentence bank **n=8 held all three conditions** (demoproc −0.
 Cutting the preamble to the principled minimum (R-51, chosen on feasibility alone) **recovered
 nothing measurable** — 3 rows against an 8.3-row margin — and left both decisive doses **below the
 underpower threshold**, so the re-run was **DECLINED**. **The trade is not tunable by preamble
-length.** **C7 remains UNRESOLVED**, now for a sharper reason: *the control can be built, and building
-it costs the phenomenon.*
+length.** **On LLAMA C7 remains undecided — declined for power, never refuted** — for a sharper
+reason than before: *the control can be built, and building it costs the phenomenon.* **C7 was
+subsequently RESOLVED on Qwen3 (W9), where that trade does not apply.**
 
 **F5 — the ASR rescue failed its own confirmatory test.** A Qwen3 ASR rescue appeared on pool A
 (+0.0625, above margin) and **missed the pre-registered threshold on pool B** (+0.0437, needed
@@ -193,7 +208,7 @@ dropped as no longer justified by current evidence.
 See `RESEARCH_HANDOFF.md` §4 for the full table with n, independence unit, test and artifact.
 Summary: **C1 confirmatory** (3 settings) · **C9 confirmatory** (4/4 cells, causal) · **C2, C3, C4, C5
 replicated** on two models · **C10 instrument-verified** · **C6, C8, C11, C12 single-model** · **C7
-UNRESOLVED — now testable but not powerable (F6)**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1-row margin at n=40.**
+RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1-row margin at n=40.**
 
 > **Doublespeak's demonstration block does two separable things. Masking demo→demo attention during
 > prefill removes the attack *and* restores refusal — and the second does not cause the first. The
