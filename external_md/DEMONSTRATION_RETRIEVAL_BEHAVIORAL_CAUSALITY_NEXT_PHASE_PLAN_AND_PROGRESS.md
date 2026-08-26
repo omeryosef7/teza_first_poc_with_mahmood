@@ -1961,6 +1961,44 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔎 DR-8 (15:15, DEEP REVIEW) — **1406/1 → 1407/0. My own argsfile guard cried wolf during a live sweep, which is a defect in the guard. Fixed, and the repo hygiene that feeds the C-2 check is repaired.**
+
+**Suite:** `1406 passed, 1 failed` → **`1407 passed, 0 failed`** after the fix below.
+
+#### 🔴 The guard failed on nothing, which is worse than not failing
+
+`test_argsfiles_match_runs` (R-43) reported a mismatch during the full-suite run — and **passed on its
+own minutes later.** The cause: **a run directory appears the moment a job starts, but `RUNMETA.json`
+is written at the end.** The `p13` arms (PR-20's mandated re-run) were mid-generation, so the guard
+compared against runs that had not recorded their `argv` yet and called it a mismatch.
+
+**That is a false alarm precisely when the suite is most likely to be run — during a sweep.** A guard
+that cries wolf whenever arms are in flight is a guard that gets ignored, which is the failure mode
+that makes guards worthless. **Fixed: run dirs without a `DONE.json` are SKIPPED, not failed** —
+in-flight is "not comparable yet", not "wrong".
+
+**Mutation-verified that it did not become toothless:** on a *completed* run the real args still
+match and a mutated `--max-new 999` still fires; **3 in-flight dirs are currently skipped.**
+
+#### Repo hygiene, because it feeds a real check
+
+* **35 MB of rejected candidate banks removed** (`pre6`, `pre8`, `pre10`). Verified safe first:
+  **0 of them were tracked**, `pre10` is **byte-identical** to the committed `longpre10`
+  (`87343411e3d60ed6`), and **R-51's evidence survives independently** in the
+  `control_feasibility` artifacts (pool 96 / 118 / 138, `n=8` min 0.000 / 0.000 / 1.000).
+  **The measurements are the evidence; the rejected bank files are not.**
+* **`tmp*/` added to `.gitignore`.** PyTorch writes an RPC scratch dir into the repo root on every
+  test run that imports torch. It carries no research content, **but an untracked directory dirties
+  `git status`, which this project reads every tick to detect artifact corruption (C-2).**
+  Verified: a torch-importing test now leaves the tree clean, and `git check-ignore` confirms the
+  rule. **A check that is routinely noisy is a check that gets ignored** — the same principle as the
+  guard fix above, arriving twice in one review.
+
+**Kept banks:** `d10`, `longpre` (12), `longpre10` (10, the PR-20 winner). Byte-identity tests still
+**3/3**; `check_all` 6/6.
+
+---
+
 ### 🔧 R-51 (15:05) — **PR-20 resolved on feasibility alone: `n_preamble = 10` is the principled minimum. The re-run it mandates is submitted, and I am honouring that commitment even though the expected gain is small.**
 
 | `n_preamble` | pool | n=1 | n=2 | n=4 | **n=8** | feasible everywhere? |

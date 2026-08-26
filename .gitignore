@@ -18,3 +18,10 @@ logs/
 
 # Boombness sprint: activation caches are large (~500MB/run) and reproducible from the run config
 outputs/boombness/**/cache/
+
+# PyTorch RPC scratch dirs (`_remote_module_non_scriptable.py`) created in the repo root by
+# every pytest run that imports torch. They are regenerable and carry no research content,
+# but an untracked directory dirties `git status` -- which this project uses every tick to
+# detect artifact corruption (C-2, where a concurrent test run rewrote a committed result).
+# A check that is routinely noisy is a check that gets ignored.
+tmp*/

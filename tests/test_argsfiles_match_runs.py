@@ -32,6 +32,12 @@ def _pairs():
         tag = toks[toks.index("--tag") + 1]
         dirs = sorted(glob.glob(os.path.join(
             REPO, "outputs", "boombness", "score_behavior", f"{tag}_2026*")))
+        # IN-FLIGHT RUNS ARE SKIPPED, NOT FAILED. A run dir appears as soon as the job starts, but
+        # RUNMETA.json is written at the end, so comparing an unfinished run reports a mismatch that
+        # is really "not written yet". Measured 2026-08-26: this guard failed spuriously during a
+        # full-suite run while the p13 arms were generating, and passed on its own minutes later.
+        # A guard that cries wolf whenever a sweep is running is a guard that gets ignored.
+        dirs = [d for d in dirs if os.path.exists(os.path.join(d, "DONE.json"))]
         if dirs:
             out.append((os.path.relpath(f, REPO), toks, dirs[-1]))
     return out
