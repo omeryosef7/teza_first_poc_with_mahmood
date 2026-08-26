@@ -1958,6 +1958,53 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔧 R-45 (08:50) — **R-25's bank-design fix, built. It needed NO new machinery — the mechanism already existed and was simply switched off. Two gates pass; the decisive feasibility check is queued.**
+
+**Decision:** the user chose the **longer-context bank** (over the benign-register concept, or both).
+That unblocks **C7 — the phase's only UNRESOLVED claim.**
+
+#### The fix is a preset, not a rewrite
+
+R-25 concluded the control needs *"a bank whose non-demonstration context is long enough to match a
+106-token demo block without touching the query."* **`build_prompt` has emitted exactly that since
+before this phase**: `n_filler` neutral sentences drawn from `pools[domain|filler]`, which are
+**non-demo, non-query positions — precisely the pool `nondemo_control_draw` draws from.** They were
+simply **empty**, because `filler_near` defaults to `False` and the behavioural blocks sit at
+`example_position="near"`.
+
+**So the "bank-design change" is one preset that turns them on for the two behavioural blocks.**
+
+**`main` is deliberately untouched** — every committed bank was built with the current defaults and
+`bank_rows_sha16` is joined on. **Verified, not asserted:** `test_bank_regenerates_byte_identically`
+still passes 3/3, so the carrot and d10 banks regenerate **byte-identically**. **0 lines deleted.**
+
+**Sizing, and why 16:** filler sentences are ~12-14 tokens, so 16 gives **~200 drawable tokens**
+against a 106-token demo block at `n_examples=8`; the filler pools hold **20 per split**, so `_take`
+never wraps into repetition. Filler is selected by `family_slot`, **shared across the 2×2**, so all
+four cells receive the same filler and the exact-word-swap invariant is untouched — **`--strict` is
+the check on that, not this reasoning.**
+
+#### Gates so far
+
+| gate | result |
+|---|---|
+| `prompt_families --strict` | `families checked=560 violations=0`, `duplicates dropped=0` |
+| `tokenization_audit` (job 782571) | `rows ok=4560 bad=0`, **`token-alignment violations=0`** |
+| `main` preset regression | **3/3 byte-identical** |
+| shape | 4560 rows, same as d10; median prompt at `n_examples=8` **726 → 1726 chars** |
+
+#### ⛔ The check that decides whether this worked at all
+
+**Job 782572** (PENDING under fair-share): a 16-row smoke with `nondemo_matched_d1`, whose **only**
+purpose is the pre-flight `control_draw_match_ratio` per dose. **On the d10 bank that ratio was
+1.0 / 1.0 / 0.0 / 0.0 across `n_examples` 1/2/4/8, and the arm refused before generating (R-24, R-25).**
+
+**If it is not ~1.0 at n=4 and n=8 on this bank, the redesign did not work and I will say so** — more
+filler would then be a search for a number rather than a fix, and R-25's branch stays closed.
+**Nothing behavioural is submitted until that ratio is read.**
+
+---
+
 ### 🔎 DR-7 (08:10, 4h DEEP REVIEW) — **Suite 1402/0, and the first EXHAUSTIVE liveness sweep of the phase: all 31 knockout arms pass their own declared contract. One edit count independently corroborates R-33.**
 
 **Suite:** `1402 passed, 7 skipped, 0 failed`, serial and exclusive; working tree clean.

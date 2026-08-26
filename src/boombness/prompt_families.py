@@ -526,6 +526,40 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
     constant keeps every existing caller behaving as before.
     """
     domains = list(DOMAINS) if domains is None else list(domains)
+    if preset == "main_longctx":
+        # R-25's bank-design fix, and the ONLY reason this preset exists.
+        #
+        # A count-matched non-demonstration attention control needs as many maskable non-demo
+        # positions as the demonstration block. Measured on the d10 bank: the demo block grows
+        # 12 -> 106 tokens across n_examples 1..8 while the unprotected non-demo pool is
+        # near-constant at ~53, most of which is the query span a control must never touch. So
+        # `control_draw_match_ratio` is 1.0 at n_examples=1 and **0.0 at 4 and 8** -- there is
+        # literally nothing left to match against, and demonstration-specificity is UNTESTABLE at
+        # exactly the doses where the effect lives (R-24, R-25).
+        #
+        # The fix needs no new machinery: `build_prompt` already emits `n_filler` neutral filler
+        # sentences from `pools[domain|filler]`, and they are non-demo, non-query positions --
+        # precisely the pool a control draws from. They are simply EMPTY for `near` blocks, because
+        # `filler_near` defaults False. This preset turns them on for the two behavioural blocks
+        # and nothing else.
+        #
+        # `main` IS NOT TOUCHED, deliberately: every committed bank was built with the current
+        # defaults and `bank_rows_sha16` is joined on. This is a sibling preset, so the carrot and
+        # d10 banks keep regenerating byte-identically (asserted by
+        # tests/test_bank_regenerates_byte_identically.py).
+        #
+        # 16 sentences of ~12-14 tokens each is ~200 tokens of drawable context against a 106-token
+        # demo block at n_examples=8, and the filler pools hold 20 per split, so `_take` never
+        # wraps into repetition. The filler is selected by `family_slot`, which is shared across the
+        # 2x2, so all four cells receive the SAME filler and the exact-word-swap invariant is
+        # untouched -- `--strict` is the check on that, not this comment.
+        blocks = _blocks("main", domains)
+        for b in blocks:
+            if b.get("name") in ("core2x2", "core2x2_slot3"):
+                b["filler_near"] = True
+                b["n_filler"] = 16
+        return blocks
+
     if preset == "smoke":
         return [dict(name="core2x2", domains=domains[:1], splits=["dev"], conditions=list(CORE_2X2),
                      n_examples=[4], strengths=["none"], consistencies=["consistent"],
@@ -879,7 +913,8 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "phase_d"], default="main")
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "phase_d"],
+                    default="main")
     ap.add_argument("--codeword", default="carrot")
     ap.add_argument("--concept", default="bomb")
     ap.add_argument("--seed", type=int, default=20260816)
