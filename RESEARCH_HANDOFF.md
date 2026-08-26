@@ -158,6 +158,7 @@ and read committed artifacts; the arms need SLURM + GPU.
 | C9 rescue arms | `sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$PWD/runargs/p7/p7_rescue_L14.txt src/boombness/slurm/run_boombness.sh` (argsfiles: `runargs/p7`, `runargs/p8`) |
 | C10 identity control | same, with `--rescue-donor self` in the argsfile (`runargs/p7/p7smoke_identity_L14.txt`) |
 | **C9 / C11 / C12 table** | `python src/boombness/rescue_dissociation_table.py --cell NAME:BASE:KNOCK:RESCUE:CONTROL [--cell ...] [--n-examples 8] --tag c9` — emits rows, margin-in-rows, ×margin, control and percentage together. **Verified 2026-08-26 to reproduce DR-5's hand audit exactly** (18/2.16×, 17/2.04×, 12/1.44×, 18/2.16×, 25/3.00×, C12 4/1.92×, all controls 0) |
+| **C6 / C7 per-dose breakdown** | `python src/boombness/dose_breakdown.py --baseline <judge> --arm LABEL=<judge> [--gens LABEL=<gens>] --tag dose` — emits cell size, margin-in-rows, **both** ASR and refusal, and `control_draw_match_ratio` per dose. **Verified 2026-08-26** to reproduce R-22 (Llama `[0,3,9,14]` monotone; Qwen3 `[7,1,5,8]` non-monotone) and R-26 (n=2: demoproc −5 of 5 attacks vs capped mean −0.67, match ratio 0.989; 0.547 / 0.272 at n=4 / n=8) |
 | all deliverable guards | `python src/boombness/check_all.py` |
 | full suite | `python -m pytest tests/ doublespeak_causality/tests/ -q -p no:randomly` — **serial and exclusive** (C-2: concurrent runs corrupt committed artifacts) |
 

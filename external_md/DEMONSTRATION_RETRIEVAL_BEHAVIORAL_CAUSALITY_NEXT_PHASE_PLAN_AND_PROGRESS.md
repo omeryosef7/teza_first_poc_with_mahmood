@@ -1958,6 +1958,51 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-42 (06:12) — **Manifest coverage audit: C6 and C7 had NO reproduction command at all. Both now have one, and both reproduce their published numbers exactly. Coverage is 12/12.**
+
+C-13 tested three manifest commands and found a defect; R-41 replaced a prose row with a script.
+**This tick asked the prior question: does every claim even HAVE a row?** It did not.
+
+| claim | had a command? |
+|---|---|
+| C1-C5, C8-C12 | yes |
+| **C6** (refusal dose-response, R-22) | ❌ **none** |
+| **C7** (demonstration-specificity at `n_examples`=2, R-26) | ❌ **none** |
+
+**Both were computed inline in a shell heredoc and never scripted** — the same "reconstruct a method
+from prose" that §19-E forbids and that C-13 had just shown the cost of. **Two of the twelve
+paper-level claims were unreproducible except by re-deriving the analysis from the log.**
+
+**`src/boombness/dose_breakdown.py`** (new) covers both, since both are arm-vs-baseline **per dose**.
+It reproduces the published numbers **exactly**:
+
+| claim | published | regenerated |
+|---|---|---|
+| C6 Llama refusal rows by dose | `+0, +3, +9, +14` (monotone) | **`[0, 3, 9, 14]`, monotone True** |
+| C6 Qwen3 | `+7, +1, +5, +8` (non-monotone) | **`[7, 1, 5, 8]`, monotone False** |
+| C6 Llama controls | flat at/below zero | **legacy `[-1,0,-2,-1]`, respq `[-3,-1,-2,-1]`** |
+| C7 at n=2 | demoproc 5/5 attacks; capped 0.67/5; ratio 0.989 | **demoproc −5 of 5; capped mean −0.67; ratio 0.98885** |
+| C7 under-matching at n=4 / n=8 | 0.547 / 0.272 | **0.547 / 0.272** |
+
+**What the script enforces**, so the caveats cannot be dropped by whoever runs it next:
+* **cell size and margin-in-rows per dose** — at n=40 the margin is **2.1 rows**, and a per-dose
+  number without its cell size is not interpretable;
+* **both ASR and refusal, always** — C-12 established they are separable, so an arm that moves one
+  and not the other is the interesting case and must not be hidden;
+* **`control_draw_match_ratio` travels** — R-24/R-26: an under-matched control showing no effect is
+  an artifact of the under-matching;
+* **monotonicity is reported, not tested** — R-22 was refuted on Qwen3 by a pre-registered
+  **endpoint** rule, and re-testing it as monotonicity would quietly change the hypothesis.
+
+**Manifest coverage is now 12/12**, verified by a script rather than by reading. Of the thirteen
+manifest rows, **seven have now been executed and confirmed** (`phase1_decomposition`, `kill_route_breakdown`,
+`binding_behaviour_bridge`, `rescue_dissociation_table`, `dose_breakdown`, the `tokenization_audit`
+re-run as job 782071 reproducing R-18's `rows ok=4560 bad=0 ambiguous=7, violations=0` exactly, plus
+bank regeneration via its byte-identity test); the remainder are GPU/API arms whose argsfiles are
+committed and were the ones actually run.
+
+---
+
 ### R-41 (05:40) — **C9 now has a COMMAND instead of a prose instruction, and it reproduces DR-5's hand audit exactly.**
 
 C-13 established what an untested prose manifest row costs. **The very next row was one:** C9 — the
