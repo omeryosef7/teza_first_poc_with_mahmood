@@ -1959,6 +1959,51 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 📐 R-48 (12:45) — **R-25's limitation is now a NUMBER: the bank needs ≥76 more non-demo tokens at `n_examples=8`, and no existing mechanism can supply them. Every lever was measured, not argued.**
+
+With a validated 49-second instrument (R-47), "it needs a bank redesign" can be replaced by a
+specification. **Three questions, all answered empirically:**
+
+**1. What is actually outside `demo_block`?** Read off a row directly: **nothing precedes it**
+(`demo_block` starts at character 0), and the 90 characters after it are **the query** — the span a
+control must never touch. **So the entire drawable pool of ~30 tokens is chat template.** The bank
+has, effectively, no neutral context at all.
+
+**2. Does the filler lever work?** No — **it lands inside `demo_block`** (R-46), which is why the
+long-context bank is infeasible at *every* dose including the one that previously worked.
+
+**3. Does the role-style lever work?** `wrap_role` genuinely emits text **outside** `demo_block`, so
+this was the one remaining cheap path. **Measured on the bank's own `role_style` block, 100 rows per
+dose:**
+
+| dose | demo tokens | pool, `plain` | pool, role wrapper | feasible? |
+|---|---|---|---|---|
+| 2 | ~26 | 30 → mean **0.875** | **40** → **1.000, feasible** | ✅ improved |
+| 4 | ~56 | 30 → 0.000 | **40** → 0.030 | ❌ |
+| 8 | ~116 | 30 → 0.000 | **40** → **0.000** | ❌ |
+
+**The wrappers buy exactly 10 tokens.** That is enough to lift `n_examples=2` from 0.875 to a clean
+1.000 — a real gain — and **nowhere near enough for the doses where the effect lives.**
+
+#### The specification
+
+> **To test demonstration-specificity at `n_examples = 8`, the bank must carry ≥ 116 non-demo,
+> non-query tokens. It carries 40 at best. The deficit is ≥ 76 tokens**, and it must be emitted
+> **outside `demo_block`** — which is a change to `build_prompt`'s output contract and to what every
+> committed bank and every knockout arm treats as the demo span.
+
+**Every cheaper option is now excluded by measurement rather than by argument:** filler (inside the
+block), role wrappers (+10 tokens), and shorter demos (would change the dose, which *is* the
+variable). **This is the whole answer to "what would it take", and it cost about three minutes of
+CPU.**
+
+⚠ **One genuine, small win worth keeping:** at `n_examples = 2` a role-style wrapper makes the strict
+control **fully feasible (1.000 vs 0.875)**. **But C7's cell is `plain`**, and swapping role style to
+buy feasibility would confound the arm with a design factor the bank varies deliberately — **so it is
+recorded as available, not used.**
+
+---
+
 ### ✅ R-47 (12:15) — **The quarantined instrument is fixed and now reproduces the real pre-flight EXACTLY. The cause was not what I guessed — it was `len()` on a returned tuple.**
 
 R-46 quarantined `control_feasibility.py` for disagreeing with reality and offered a **guessed**

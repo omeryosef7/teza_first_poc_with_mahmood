@@ -85,12 +85,16 @@ Status key: **R** replicated (2 models) · **S** single-model · **N** evaluated
 
 Two independent tests are **not constructible** here. Both need a new bank; neither is an analysis fix.
 
-1. **Demonstration-specificity at the doses where the effect lives (R-25).** A count-matched non-demo
-   attention control needs as many maskable non-demo positions as the demo block. The demo block grows
-   **12 → 106 tokens**; the unprotected non-demo pool is near-constant at **~53** (the rest is the query
-   span, which a control must not touch). `match_ratio` is **1.0 at n_examples=1, 0.0 at 4 and 8**.
-   Rescoping to feasible rows is **forbidden** — demo length *is* the dose variable.
-   **Fix: a bank with neutral filler context sized to the largest `n_examples`.**
+1. **Demonstration-specificity at the doses where the effect lives (R-25, quantified in R-48).**
+   A count-matched non-demo control needs as many maskable non-demo positions as the demo block.
+   **Measured:** demo is **~13 / 28 / 56 / 116 tokens** at `n_examples` 1/2/4/8, while the drawable
+   pool is **30 tokens (`plain`) or 40 (role-wrapped)** — and the pool is **entirely chat template**,
+   since nothing precedes `demo_block` and everything after it is the protected query.
+   `match_ratio` is **1.0 at n=1, 0.875 at n=2, 0.000 at n=4 and n=8**. Rescoping to feasible rows is
+   **forbidden** — demo length *is* the dose variable.
+   **Fix, now specified: ≥76 additional non-demo, non-query tokens at n=8, emitted OUTSIDE
+   `demo_block`.** ⛔ Every cheaper lever is excluded by measurement: filler lands *inside*
+   `demo_block` (R-46), and role-style wrappers buy only **+10 tokens** (R-48).
 2. **Mapping-usage in free generation (R-27).** The concept vocabulary *is* the harmful content, so the
    flag is confounded with the outcome. **Fix: a codeword whose concept has a benign register.**
 
