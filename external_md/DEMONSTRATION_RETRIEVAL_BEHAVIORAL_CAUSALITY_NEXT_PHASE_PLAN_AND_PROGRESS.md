@@ -38,6 +38,7 @@ status attached. Every row names the correction that last touched it.
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
 | ⚖️ **DOSE-RESPONSE: CONFIRMED ON LLAMA, REFUTED ON QWEN3.** Llama rise **+0.0000 / +0.0750 / +0.2250 / +0.3500** across n_examples 1/2/4/8, monotone, endpoint 6.7x margin, and **exactly zero at n=1**; Qwen3 non-monotone with endpoint **+0.0250, within margin**. Mechanism is single-model | controls flat at/below zero on both models, so not prompt length | **R-22**, **PR-8** |
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
+| ⚖️ **SIZE-MATCHED: identity, not count — but not identity ALONE.** At 24 positions each, a DEMO patch removes 4 refusal rows and restores **no** attack, while a QUERY patch removes **13** and restores attack (+0.0500). R-39's contrast survives size-matching. But 24 of ~114 demo positions buys only **36.4%** of the full effect, so magnitude scales with count too | **PR-18's outcomes A and C overlapped and both fired — reported as both, defect owned** | **R-40** |
 | ⚖️ **LOCALISATION + A LIMIT ON IT: the attack damage is reachable from the QUERY span (+0.0563, clears margin; control inert) but NOT from the demonstration positions.** However the query patch also removes **96.2%** of the refusal rise, so it is **not selective** — this is a **SINGLE dissociation, not a double one**, and the "separate loci" reading is excluded | ASR recovery only **37.5%**, still above margin from clean: partial, not restoration | **R-39** |
 | 🏆🏆🏆 **COMPLETE 2x2 — MODEL FAMILY x DEMONSTRATION POOL, 4/4.** The patch gives back the refusal in every cell (**69.2%** Llama/A, **81.0%** Qwen3/A, **92.3%** Qwen3/B, **58.1%** Llama/B; gaps 0.1125/0.1062/0.0750/0.1125, all >margin) and the below-band control moves it by **exactly 0.0000 in all four** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
@@ -1954,6 +1955,64 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⚖️ R-40 (03:42) — **PR-18: at MATCHED SIZE the two position sets behave completely differently, so R-39's contrast is NOT a size artifact. But the outcome satisfies TWO of my own outcome definitions at once — a defect in PR-18 that I am owning rather than resolving in my favour.**
+
+**Artifacts:** `p10_demo24_L14` (781930) / `p10_demo24_L5` (781931); judging `p10j_*` (781956).
+**Preconditions:** `fired` **80/80**, `rescue_n_positions_requested = 24` and `n_rescue_positions = 24`
+on **every** row, all rows `n_examples = 8`, knockout live, no violations. **Provenance 80/80.**
+**PR-18 committed at `d9669e82` first.**
+
+**All arms restricted to the same 40 rows (`n_examples = 8`). ⚠ At n = 40 the 0.0521 margin is 2.1
+rows — it is doing much less work here than at n = 160.**
+
+| arm | positions | ASR | refusal rows | refusal |
+|---|---|---|---|---|
+| clean baseline | — | 0.2500 | 1/40 | 0.0250 |
+| knockout-only | — | 0.0000 | **15/40** | 0.3750 |
+| rescue FULL demo | 91-128 | 0.0250 | **4/40** | 0.1000 |
+| **rescue DEMO, 24 positions** | **24** | **0.0000** | **11/40** | **0.2750** |
+| rescue DEMO 24, L5 control | 24 | 0.0000 | **15/40** | 0.3750 |
+| rescue QUERY, 24 positions (R-39) | **24** | **0.0500** | **2/40** | **0.0500** |
+
+#### ✅ The size confound is answered: identity, not count
+
+**The two 24-position patches — same count, same layer, same rows, same donor — do completely
+different things:**
+
+| 24 positions from… | refusal removed | ASR |
+|---|---|---|
+| **demonstration block** | 4 rows (0.1000) | **+0.0000 — no attack restored** |
+| **query span** | **13 rows (0.3250)** | **+0.0500 — attack partially restored** |
+
+**R-39's contrast survives size-matching.** A 24-position query patch removes **more than three times**
+the refusal of a 24-position demo patch **and** restores attack, which the demo patch does not. **The
+selectivity of the demonstration positions is a property of WHICH positions they are.**
+
+Note also: **24 query positions remove more refusal (0.3250) than 91-128 demo positions do (0.2750).**
+The query span is **more potent per position on both effects** — it is downstream and aggregates.
+
+#### ⛔ My pre-registration had overlapping outcomes, and I am not choosing the flattering one
+
+PR-18 defined **A** as *"still removes refusal > 0.0521 **and** still fails to restore ASR"* and **C**
+as *"removes refusal but by markedly less than the full patch"*. **This result satisfies both.** It
+clears the threshold (0.1000 vs 0.0521) with ASR untouched (**+0.0000**) — **and** it achieves only
+**36.4%** of the full patch's refusal removal (4 rows of 11).
+
+**Those definitions should have been mutually exclusive and were not. That is a defect in PR-18, not
+a finding**, and picking A because it reads better would be exactly the failure pre-registration
+exists to prevent. **Both are reported:**
+
+> **A on the threshold, C on the magnitude.** Position identity is established — a size-matched demo
+> patch behaves nothing like a size-matched query patch. **But the demo effect also clearly scales
+> with count**: 24 of ~114 positions (21%) buys 36.4% of the effect. **It is identity AND count, not
+> identity alone**, and no claim of all-or-none locality is made.
+
+⚠ **n = 40; the demo-24 refusal effect is 4 rows against a 2.1-row margin** — it clears by under two
+rows and is the thinnest number in this arc. ⚠ The L5 control is **exactly inert again** (15 → 15).
+⚠ Llama only. ⚠ **No third arm will be run to sharpen this**, per PR-18.
 
 ---
 
