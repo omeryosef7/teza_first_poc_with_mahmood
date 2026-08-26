@@ -1958,6 +1958,49 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔎 DR-7 (08:10, 4h DEEP REVIEW) — **Suite 1402/0, and the first EXHAUSTIVE liveness sweep of the phase: all 31 knockout arms pass their own declared contract. One edit count independently corroborates R-33.**
+
+**Suite:** `1402 passed, 7 skipped, 0 failed`, serial and exclusive; working tree clean.
+
+**Liveness had only ever been checked arm-by-arm as arms landed.** This is the first sweep over
+**every knockout arm the phase produced** — 31 of them, spanning both models, three banks, controls,
+rescues and smokes — each checked against the contract `pair_common` declares **for its own scope**
+(`LIVENESS_REQUIREMENT` / `LIVENESS_MUST_BE_ZERO`), not against a rule restated in the audit.
+
+| check | result |
+|---|---|
+| arms swept | **31** |
+| `frac_rows_scope_live` = 1.0 | **31/31** |
+| `scope_violations` non-empty | **0** |
+| arms failing their **own** declared contract | **0** |
+| `total_decode_edits` = 0 where the scope requires it | **all prefill-only scopes** |
+
+**Nothing in this phase is a null-without-firing.** Every scope that had to edit did; every scope that
+had to leave a half alone did.
+
+#### The number that corroborates R-33 without being designed to
+
+The two smokes differ by **exactly 2×**:
+
+| smoke | prefill edits |
+|---|---|
+| `p7smoke_rescue_L14` (clean donor) | **146,322** |
+| `p7smoke_identity_L14` (`--rescue-donor self`) | **292,644** |
+
+**292,644 / 146,322 = 2.000 exactly.** Under `--rescue-donor self` the donor-capture forward runs
+**under the arm's own hooks**, so the knockout fires **once more** than in the clean-donor case.
+**That is the mechanical signature of the identity control actually capturing under the arm** — which
+is precisely the property that makes R-33's 8/8 byte-identical result meaningful. **It was never
+designed as a check and I did not look for it; it falls out of a sweep that had a different purpose.**
+
+**Cross-arm consistency also holds where it must:** `p7_rescue_L14`, `p7_rescue_L5` and
+`p4b_demo_processing_only` all report **3,017,169** prefill edits — same knockout, same rows, the
+rescue patch being a separate hook — and the `q6b` trio all report **3,848,944**. **A rescue arm whose
+knockout edit count drifted from its own knockout-only arm would mean the two were not comparable**,
+and none did.
+
+---
+
 ### ✅ R-44 (07:42) — **Systematic sweep: ALL EIGHT distinct published percentages are row-exact. C-14 was the only instance of the class, and the class is now guarded by a test.**
 
 C-14 showed the round-then-divide defect is **live** — three occurrences now (DR-4; C-14; and DR-4's
