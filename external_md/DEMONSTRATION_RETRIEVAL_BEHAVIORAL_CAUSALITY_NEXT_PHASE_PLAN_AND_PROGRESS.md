@@ -5967,6 +5967,27 @@ re-derivation rather than a correction to something this phase published.
   failed `sbatch` calls really did fail; none created a phantom job.** Checking that before
   resubmitting is what stops a duplicate arm from quietly doubling a control draw.
 
+* **20:20 — PREEMPTION on `killable` leaves ORPHAN PARTIAL run dirs, and my manifest one-liners
+  pick dirs by TIMESTAMP alone.** `q14_demoproc` now has **two** run directories: `..._200426_...`
+  with **34 rows** (preempted mid-generation) and `..._201505_...` with **31** (the restart, still
+  running). `squeue` had shown the job PENDING while both dirs already existed — **the scheduler's
+  view and the filesystem's disagreed again**, which is C-16's lesson recurring.
+
+  **The exposure:** every manifest I have built this phase used
+  `ls -1dt outputs/.../TAG_2026* | head -1` — **newest by mtime, with no completeness test.** If a
+  restart is preempted while an earlier attempt completed, that picks the **partial** one.
+
+  **What saves it, and what does not.** The row-count guards DO catch it: `score_behavior`'s
+  `--expect-n` refuses a wrong population, and `judge_p2.sh` refuses any judge dir whose row count
+  is not `EXPECT_ROWS` (`REFUSING: $t has $n rows, expected $EXPECT_ROWS`). **So a partial dir
+  cannot reach a result** — it fails loudly at judging. **But it fails AFTER a GPU arm has been
+  spent**, and the failure looks like a submission error rather than a stale-glob error.
+
+  **Fixed going forward: manifests select the newest run dir THAT HAS `DONE.json`**, not merely the
+  newest. `tests/test_argsfiles_match_runs.py` already does this (DR-8); my shell one-liners did
+  not. **The orphan dirs are left in place — they are evidence of what happened, and deleting run
+  directories to tidy a glob is how provenance gets lost.**
+
 ## B7b. PROCESS NOTES
 
 ### ⚠⚠ P-1 (00:41) — **THE THIRD WRITER IS CONFIRMED BY A SECOND, INDEPENDENT ROUTE. I attributed a job pair, a log file and a tool to a session that has never touched any of them.**
