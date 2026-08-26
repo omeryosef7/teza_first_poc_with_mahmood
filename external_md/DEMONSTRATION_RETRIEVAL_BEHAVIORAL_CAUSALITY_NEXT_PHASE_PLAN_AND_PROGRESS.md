@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| ⛔ **PR-23 GATE FAILED (C-18): the Qwen3 control is NOT constructible at n=8 on either preamble bank** — Qwen3 pool **112/133** vs a 114-token demo block, so the arms refused before generating. R-49/R-51's feasibility was a **Llama** measurement (`--model` defaulted); the claim was generalised to a method it never covered | arms produced no generations; nothing to salvage | **C-18** |
 | ⚖️ **C13 IS LLAMA-SPECIFIC (PR-22).** Qwen3 d10 **21/160** vs longpre10 **23/160** — gap **+2 rows**, inside margin and pointing the wrong way, on **21 baseline attacks** (powered) with **0 rows** of drift. 🟢 **Consequence: C7's power blocker is Llama's, not the method's — Qwen3 keeps its attack on the preamble bank where match_ratio is 1.000 at every dose** | **R-54** | **R-54** |
 | 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
 | ⛔ **THE PREAMBLE PATH IS A DEAD END FOR C7.** Making the control constructible costs the attack: baseline ASR **0.1562 (d10) → 0.0625 (pre12) → 0.0437 (pre10)**, and cutting the preamble on a principled criterion recovered **nothing** (3 rows, inside noise). Both decisive doses on pre10 are **DECLINED as underpowered** (3 and 1 attack rows vs the rule's 4) | **R-52**; the trade is not tunable by preamble length | **R-52** |
@@ -1961,6 +1962,58 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ C-18 (22:05) — **PR-23's GATE FAILED. The Qwen3 control arms refused before generating, because "the control is constructible on `longpre10`" was a LLAMA measurement I generalised to a method.**
+
+**The arms did exactly what they should.** `q14_matched_d2`'s pre-flight:
+
+```
+CONTROL IS NOT COUNT-MATCHED ON SOME ROWS ... 'nondemo_matched_d2|n_examples=8':
+   {'n': 40, 'min': 0.0, 'mean': 0.525, 'n_below_1': 19}
+REFUSING before generating: 19 of 160 rows cannot carry this knockout
+```
+
+**The cause is mine, and it is a defaults bug in how I used my own instrument.**
+`control_feasibility.py` has `--model` **defaulting to `meta-llama/Llama-3.1-8B-Instruct`**, and
+**none of my argsfiles ever set it.** So R-49's "`match_ratio` 1.000 at every dose" and R-51's
+selection of `n_preamble = 10` were **Llama statements**. I then wrote PR-23 asserting the control
+"is fully constructible on that bank" and applied it to **Qwen3**.
+
+**Re-measured with the Qwen3 tokenizer:**
+
+| bank | pool (Llama) | pool (**Qwen3**) | demo @ n=8 | Qwen3 n=8 |
+|---|---|---|---|---|
+| `longpre10` | 138 | **112** | 114 | **INFEASIBLE** (min 0.000, mean 0.525) |
+| `longpre` (12) | 160 | **133** | 114 | **INFEASIBLE** (min 0.000, mean 0.925) |
+
+**Qwen3's tokenizer yields a smaller drawable pool for the same text**, and at `n_examples = 8` the
+demo block overtakes it. **Neither existing preamble bank supports the strict control on Qwen3 at the
+decisive dose.**
+
+**PR-23 cannot be completed as specified.** Its precondition — *"`match_ratio` must be 1.000 on every
+control row"* — is unmet at n=8, and PR-23 requires n=4 **and** n=8. **Gate failed; the run is
+stopped, not patched into a partial claim.** The `d1`/`d2`/`d3` arms that refused produced **no
+generations**, so there is nothing to salvage and nothing that could leak into a result.
+
+#### What this is, and what it is not
+
+**It is not a scientific negative.** Nothing was learned about demonstration-specificity; **an
+instrument was mis-parameterised.** The distinction matters for what happens next: R-52's branch was
+stopped because the *phenomenon* vanished, and that stayed stopped. **This one failed because I read a
+Llama number and called it a property of the bank.**
+
+**The honest repair is the same discipline as PR-20:** re-derive the preamble length **with the
+Qwen3 tokenizer**, on **feasibility alone**. **And R-54 removes the usual objection** — on Qwen3 the
+preamble does **not** cost attack (21/160 → 23/160), so a longer preamble carries **no measured power
+penalty on that model**. That is a fact established *before* this failure, not an argument invented
+after it.
+
+**⛔ Third instance of the same class this session**, and worth naming: C-13 (a bank argument that
+silently subset), C-16 (a scheduler query that silently meant nothing), and now **a `--model` default
+that silently scoped a measurement to one tokenizer.** **Every one was a default or an absence
+behaving as though it were a decision.**
 
 ---
 

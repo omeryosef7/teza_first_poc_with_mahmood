@@ -59,7 +59,13 @@ from score_behavior import (demo_key_positions, nondemo_control_draw,  # noqa: E
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--bank", required=True)
-    ap.add_argument("--model", default="meta-llama/Llama-3.1-8B-Instruct")
+    # NO DEFAULT (C-18, 2026-08-26). It used to default to Llama, and every argsfile I wrote
+    # omitted it -- so R-49/R-51's "feasible at every dose" was a LLAMA measurement that I then
+    # generalised to the method and applied to Qwen3, where the pool is 112 tokens against a
+    # 114-token demo block and the control cannot be built at all. Feasibility is a property of
+    # (bank, TOKENIZER), never of a bank alone, so the model must be stated every time.
+    ap.add_argument("--model", required=True,
+                    help="REQUIRED: feasibility depends on the tokenizer, so it cannot be defaulted.")
     ap.add_argument("--n-examples", default="1,2,4,8")
     ap.add_argument("--conditions", default="natural_doublespeak")
     ap.add_argument("--query-kinds", default="behavioral")
