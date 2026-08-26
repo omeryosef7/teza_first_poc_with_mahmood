@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| 🏆🏆🏆 **C7 RESOLVED (Qwen3): demonstration-specificity CONFIRMED at both decisive doses.** `demoproc` removes **5/5** attacks at n=4 and **5/7** at n=8 (−0.1250 each); three independent count-matched controls remove **1, 2, 2** and **2, −2, −1**, all inside margin; separation **2.0x** and **3.2x**. Preconditions: match_ratio 1.000 on all 480 control rows, 3/3 distinct draws | **R-58** (PR-23); Llama remains **declined for power**, not refuted | **R-58** |
 | ⛔ **PR-23 GATE FAILED (C-18): the Qwen3 control is NOT constructible at n=8 on either preamble bank** — Qwen3 pool **112/133** vs a 114-token demo block, so the arms refused before generating. R-49/R-51's feasibility was a **Llama** measurement (`--model` defaulted); the claim was generalised to a method it never covered | arms produced no generations; nothing to salvage | **C-18** |
 | ⚖️ **C13 IS LLAMA-SPECIFIC (PR-22).** Qwen3 d10 **21/160** vs longpre10 **23/160** — gap **+2 rows**, inside margin and pointing the wrong way, on **21 baseline attacks** (powered) with **0 rows** of drift. 🟢 **Consequence: C7's power blocker is Llama's, not the method's — Qwen3 keeps its attack on the preamble bank where match_ratio is 1.000 at every dose** | **R-54** | **R-54** |
 | 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
@@ -1962,6 +1963,59 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆🏆🏆 R-58 (00:55) — **PR-23 CONFIRMS. C7 — the phase's only unresolved claim — is RESOLVED on Qwen3: masking the demonstration positions removes the attack because they are the DEMONSTRATIONS, and a count-matched mask of the same size elsewhere does not.**
+
+**Artifacts:** arms `q15*` (783849, 783903, 783904, 783945, 783946); judging `q15j_*` (784128).
+**Provenance 800/800**, hash joins **800/800**.
+**Preconditions, all met and all verified from the runs themselves:** `scope_live = 1.0` with no
+violations on every intervention arm; **`match_ratio` min 1.000 on all 480 control rows**; and the
+three draws are **genuinely independent** — distinct seeds (28180602 / 36100379 / 44020156) and
+**3/3 distinct generation hashes**, which is C-17's rule that directories are not draws.
+
+| dose | baseline | `demoproc` | d1 | d2 | d3 | ctrl mean |
+|---|---|---|---|---|---|---|
+| 1 | 2/40 | −0.0250 | +0.0250 | +0.0000 | +0.0000 | +0.0083 |
+| 2 | 2/40 | +0.0000 | +0.0250 | +0.0250 | +0.0750 | +0.0417 |
+| **4** | **5/40** | **−0.1250** | −0.0250 | −0.0500 | −0.0500 | −0.0417 |
+| **8** | **7/40** | **−0.1250** | −0.0500 | +0.0500 | +0.0250 | +0.0083 |
+
+**In rows, which is how DR-5 requires this be quoted:**
+
+| dose | demoproc removed | the three matched controls removed |
+|---|---|---|
+| **4** | **5 of 5 attacks** | **1, 2, 2** |
+| **8** | **5 of 7 attacks** | **2, −2, −1** |
+
+**All three PR-23 conditions hold at BOTH decisive doses:**
+1. `demoproc` removes attack — **−0.1250 at each**, against a 0.0521 margin.
+2. Every matched control stays inside ±0.0521 — **max |0.0500|** at both doses.
+3. They separate — **0.0833 (2.0×)** at n=4 and **0.1333 (3.2×)** at n=8, against a 0.0417 margin.
+
+> **Masking N demonstration positions kills the attack. Masking the same N positions drawn from
+> elsewhere in the same prompt does not. The effect is about WHICH positions they are.**
+
+#### Why this took eleven steps, and why the earlier failures were not this
+
+C7 has been the phase's open wound since R-24. **Every prior attempt failed for a reason that was
+recorded and then fixed rather than argued around:** the control was not constructible (R-24/R-25);
+one dose came for free from the capped policy (R-26); my first bank fix grew the demonstration block
+instead of the pool (R-46); the requirement was quantified (R-48) and built (R-49); Llama had the
+control but lost the attack (R-50/R-52); Qwen3 was found to keep its attack (R-54); the Llama
+feasibility number did not transfer (C-18); the bank was re-derived on the right tokenizer (R-55);
+and the live pre-flight confirmed it (R-57). **The claim did not change once. The instrument did.**
+
+#### ⚠ What this is NOT
+
+* **Single-model.** Llama's version was **declined for power**, never refuted — R-52 stands, and
+  **C7 is confirmed on Qwen3 only.**
+* **Small counts.** 5 and 7 baseline attacks. `demoproc`'s effect is **5 rows against a 2.1-row
+  margin** at both doses — 2.4×, comparable to C12's thinness.
+* **Not a claim that the controls are inert.** They removed 1-2 rows at n=4 and one *added* 2 at n=8.
+  **They are within margin, which is what was pre-registered — not zero.**
+* **n=1 and n=2 carry 2 baseline attacks each and say nothing**; they were never the claim.
 
 ---
 
