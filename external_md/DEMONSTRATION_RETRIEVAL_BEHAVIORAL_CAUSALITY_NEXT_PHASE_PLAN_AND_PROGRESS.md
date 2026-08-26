@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
 | ⛔ **THE PREAMBLE PATH IS A DEAD END FOR C7.** Making the control constructible costs the attack: baseline ASR **0.1562 (d10) → 0.0625 (pre12) → 0.0437 (pre10)**, and cutting the preamble on a principled criterion recovered **nothing** (3 rows, inside noise). Both decisive doses on pre10 are **DECLINED as underpowered** (3 and 1 attack rows vs the rule's 4) | **R-52**; the trade is not tunable by preamble length | **R-52** |
 | ⚖️ **C7 TESTED AT LAST — AND STILL UNRESOLVED.** PR-19 required both n=4 and n=8; **n=8 holds all three conditions** (demoproc −0.1000, controls +0.0000/+0.0500/+0.0000, separation **2.8x margin**) while **n=4 fails** (a control removed as much as demoproc). Both cells rest on **4 baseline attacks of 40**, and the preamble halved baseline ASR (0.1562 → 0.0625) | **R-50**; the fix that enabled the test also weakened the attack | **R-50** |
 | 🏆 **C7 UNBLOCKED: a preamble emitted OUTSIDE `demo_block` gives match_ratio 1.000 (min AND mean) at ALL FOUR doses**, pool 30 → 160, with `demo_block` byte-unchanged and `main` still regenerating byte-identically. Demonstration-specificity is testable at n=4 and n=8 for the first time in the phase | **R-49**; supersedes the failed `main_longctx` approach | **R-49** |
@@ -117,7 +118,7 @@ starting truth below is stated against `059e819f`.
 
 **Reading order:** (1) `reports/SPRINT_SUMMARY_2026-08-23_TO_08-24_PART_II.md`;
 (2) `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md`, especially its LIVE CLAIMS
-LEDGER; (3) `reports/SPRINT_SUMMARY_2026-08-16_TO_08-23.md`;
+LEDGER; (3) `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md`;
 (4) `reports/boombness_objective_sprint_report.md`; (5) the existing causal-intervention code
 (`doublespeak_causality/pair_common.py`, `src/boombness/score_behavior.py`,
 `src/boombness/surgical_knockout.py`); (6) `external_repos/interp-jailbreak` (Matan/Mor), reusing its
@@ -1959,6 +1960,57 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🏆 R-53 (18:05) — **PR-21 CONFIRMS. Same judging window, each arm against its own bank: the preamble lowers ASR by ~20 rows, and measured drift is 2-4. C-15's withdrawal was right procedure; the claim now stands on evidence.**
+
+**Artifacts:** `xj_d10` (783389), `xj_pre12` (783418), `xj_pre10` (783419) — all re-judging
+**existing generations**, no new GPU.
+
+| bank | same-window ASR | vs d10 |
+|---|---|---|
+| d10 | **27/160 = 0.1688** | — |
+| longpre12 | **6/160 = 0.0375** | **−21 rows (−0.1313)** |
+| longpre10 | **7/160 = 0.0437** | **−20 rows (−0.1250)** |
+
+**Both gaps clear the 0.0521 margin by ~2.5×.**
+
+#### The confound I withdrew for is now MEASURED, and it is 10× too small
+
+Re-judging **identical completions** across sessions:
+
+| bank | old session | PR-21 window | drift |
+|---|---|---|---|
+| d10 | 25 | 27 | **2 rows** |
+| longpre12 | 10 | 6 | **4 rows** |
+| longpre10 | 7 | 7 | **0 rows** |
+
+**Maximum observed drift: 4 rows. The effect being explained: 20-21 rows.** The judge-session
+confound was a real thing to worry about and is **an order of magnitude too small** to account for
+the difference.
+
+> **F6 is a finding, not an accounting note: ~10 neutral sentences that touch neither the
+> demonstrations nor the query cut the doublespeak attack rate by roughly two thirds.** Verified at
+> 17:10 that the banks differ *only* by that preamble, so the attribution is by construction.
+
+**C-15's withdrawal was correct even though the claim survived.** When I asserted it, it rested on
+three numbers from three sessions and violated PR-19's own within-bank rule. **Withdrawing an
+unestablished claim and then establishing it is the right order**; the reverse would have been
+publishing first and checking after.
+
+#### 🔴 And the repo caught me mid-design
+
+My first submission judged all three arms against **one** bank, reasoning that identical `prompt_id`s
+and byte-identical `final_query_text` (4560/4560 verified) made it safe and even preferable.
+**`compare_bank_hashes` REFUSED**: *"the run consumed a DIFFERENT bank than the one it is being
+joined against."* **The guard does not accept reasoning, and it is right not to** — that is exactly
+C-13's defect class, and this repo already had a guard for it where my own bridge script did not.
+Re-run correctly with each arm against its own bank.
+
+⚠ "Same session" here is **three jobs in one wall-clock window with the same pinned model**, not one
+process. That is weaker than a single invocation and far stronger than two days apart — and **the
+drift table above bounds what that weakness could cost at 4 rows.**
 
 ---
 
