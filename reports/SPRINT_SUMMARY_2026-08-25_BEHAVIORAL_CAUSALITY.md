@@ -54,6 +54,8 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 | 12 | Rescue, Qwen3 pool A | 781290/781291, judge 781361 | R-36 |
 | 13 | Qwen3 ASR-rescue confirmatory test, pool B | 781410-781413, judge 781548 | **R-37 (does not confirm)** |
 | 14 | Rescue, Llama pool B — completes the 2×2 | 781643/781644, judge 781727 | R-38 |
+| 15 | Query-span rescue + below-band control, Llama | 781849/781850, judge 781899 | R-39 |
+| 16 | Size-matched 24-position demo rescue (`n_examples`=8) | 781930/781931, judge 781956 | R-40 |
 
 ## 5. Where we won
 
@@ -86,12 +88,24 @@ meaningful**: same attack removed, different route.
 
 **W5 — the dissociation is CAUSAL, and it replicates across a complete 2 × 2.** A per-position
 activation patch that hands back the clean demonstration activations at the top of the knockout band
-removes **58-92%** of the refusal rise in **all four** model × pool cells (gaps 0.1125 / 0.1062 /
-0.0750 / 0.1125, every one clearing the 0.0521 margin) — **while leaving the attack removal intact on
-Llama** (recovers only 16.7%, inside the margin). The **below-band control at the same positions moves
+removes **12-18 refusal rows** in **all four** model × pool cells, every one clearing the **8.3-row**
+margin (**1.44-2.16×**) — **while leaving the attack removal intact on Llama** (16.6% recovery, inside
+the margin). *As percentages of the rise that is 58-92%, but those figures are* ***inverted*** *relative
+to the evidence — see the correction table.* The **below-band control at the same positions moves
 refusal by exactly 0.0000 in all four cells**, and the identity control (`--rescue-donor self`)
 reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
 attack.**
+
+**W7 — the two effects are localised differently, and it is position IDENTITY not count.** The attack
+damage is reachable from the **query span** (+0.0563 ASR, clears margin; below-band control inert) but
+**not** from the demonstration positions. Size-matched at **24 positions each**, a demo patch removes 4
+refusal rows and restores **no** attack while a query patch removes **13** and restores attack — same
+count, same layer, same rows, opposite behaviour.
+
+**⛔ And its limit, in the same breath:** the query patch restores **both** effects, so this is a
+**single** dissociation, not a double one. **The two effects do not live at separate loci** — one locus
+is selective, the other is not. The demo patch's magnitude also scales with count (24 of ~114 positions
+buys 36.4% of the effect), so **no all-or-none locality is claimed**.
 
 **W6 — raising domains 6 → 10 made the sign test a real test.** At k=6 the attainable floor was 0.0625;
 at k=10 it is **0.00195**, and `demo_processing_only` on Llama is negative in **all ten domains**.
@@ -141,13 +155,17 @@ dropped as no longer justified by current evidence.
 | R-32 | I built `DonorPatch.liveness()` and **never recorded it** — the smoke completed cleanly and could not prove the patch had fired | Wired onto every row + a test asserting it is *called* **and** *recorded*; smoke re-run |
 | DR-3 | Donor capture was placed **above** the line building `ctxs` — Python would not raise, it would silently read the **previous row's** hooks | Moved after `ctxs`; a **static** regression test guards source order, since no row-level test could |
 | DR-4 | Published 92.4% for pool B; row-exact is **92.3%** (rates were rounded before dividing) | Corrected in place in log and handoff |
+| DR-5 | **The "% of refusal rise removed" figures are INVERTED relative to the evidence.** The 92.3% cell is **12 rows / 1.44× margin** (weakest); the 69.2% cell is **18 rows / 2.16×** (joint strongest). A near-zero clean baseline (2 rows of 160) inflates the ratio | Nothing retracted — every cell clears its pre-registered margin, and the margin was always the registered test. **Rows and ×margin now travel with every percentage** |
+| this file | Quoted **16.7%** for the Llama ASR recovery; exact is **16.6%** — the same round-then-divide slip as DR-4 | Corrected here |
+| PR-18 | My own pre-registration defined outcomes **A and C so that both could fire** — and both did | Reported as **both** (A on threshold, C on magnitude) rather than choosing the flattering one |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
 
 ## 8. Final claims
 
 See `RESEARCH_HANDOFF.md` §4 for the full table with n, independence unit, test and artifact.
 Summary: **C1 confirmatory** (3 settings) · **C9 confirmatory** (4/4 cells, causal) · **C2, C3, C4, C5
-replicated** on two models · **C10 instrument-verified** · **C6, C8 single-model** · **C7 unresolved**.
+replicated** on two models · **C10 instrument-verified** · **C6, C8, C11, C12 single-model** · **C7
+unresolved**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1-row margin at n=40.**
 
 > **Doublespeak's demonstration block does two separable things. Masking demo→demo attention during
 > prefill removes the attack *and* restores refusal — and the second does not cause the first. The
@@ -163,6 +181,10 @@ replicated** on two models · **C10 instrument-verified** · **C6, C8 single-mod
 4. `kw_refusal` is lexical: it detects refusal *markers*, not refusal.
 5. Lexical generality G = 1 (one codeword) throughout this phase.
 6. Coherent non-compliance is a **residual** category and is not itself explained.
+7. **Never quote a "% of the rise removed" figure alone (DR-5)** — rows and ×margin must travel with it.
+8. All rescue work is at **one layer per model** (top of the knockout band) and **no layer sweep was
+   run**, deliberately: PR-13 forbade scanning layers until one rescues. **So "the top of the band
+   specifically" is established only against the below-band control, not against layers 6-13.**
 
 ## 10. Canonical artifacts and reproduction
 
