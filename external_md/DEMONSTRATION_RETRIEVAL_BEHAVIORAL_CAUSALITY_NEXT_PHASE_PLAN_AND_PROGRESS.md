@@ -1965,6 +1965,35 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✅ R-57 (00:12) — **C-18's loop is CLOSED: the live Qwen3 pre-flight on `longpreQ14` reports `match_ratio` 1.000 at every dose, min and mean, with zero infeasible rows.**
+
+The failure mode that killed PR-23 was a Qwen3 arm refusing at pre-flight. **The same arm on the
+repaired bank reports:**
+
+| dose | n | min | mean | rows below 1.0 |
+|---|---|---|---|---|
+| 1 | 40 | **1.000** | 1.000 | **0** |
+| 2 | 40 | **1.000** | 1.000 | **0** |
+| 4 | 40 | **1.000** | 1.000 | **0** |
+| **8** | 40 | **1.000** | 1.000 | **0** |
+
+`infeasible_control: 0`. **Refusals: 0.**
+
+**This is the validation that matters, and it is not the one I already had.** R-55 predicted
+feasibility from the **CPU instrument**; this is the **live arm's own pre-flight**, on the real
+tokenizer, in the real run — the exact measurement whose disagreement produced C-18. **The
+one-token headroom (pool min 129 vs demo max 128) held on all 160 rows.**
+
+**PR-23's precondition is therefore met for `d1`** — and it will be read the same way for `d2` and
+`d3` before any result is computed, since PR-23 requires it **on every control row of every draw**,
+not on one arm.
+
+⚠ **Still nothing read.** The arm has passed its pre-flight; it has not finished generating. **A
+precondition passing is not a result**, and the C7 verdict needs all three draws plus judging in one
+window.
+
+---
+
 ### 🔎 DR-9 (23:45, DEEP REVIEW) — **1422/0. Found an UNCOMMITTED instrument change that R-55's selection table already quoted — caught only because the C-2 check is now scoped.**
 
 **Suite:** `1419 passed, 7 skipped, 0 failed` plus the three bank-regeneration tests run separately
