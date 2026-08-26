@@ -1958,6 +1958,35 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✏️ C-14 (07:12) — **I corrected a figure BACKWARDS. The Llama ASR recovery is 16.7%, not 16.6% — my "fix" was itself the round-then-divide artifact, committed in the same breath as the rule against it.**
+
+**What happened.** In `cca3e996` I recorded that the sprint summary "quoted **16.7%** for the Llama ASR
+recovery; exact is **16.6%** — the same round-then-divide slip as DR-4", and changed it. **That is
+inverted.** Recomputed from rows on the final consistency pass:
+
+| method | value |
+|---|---|
+| **rows (honest)**: `(5 − 1) / (25 − 1)` attack rows | **16.67% → 16.7%** |
+| rates: `(0.0312 − 0.0063) / (0.1562 − 0.0063)` | 16.61% → 16.6% |
+
+**The published ASR rates are themselves rounded** — 5/160, 1/160 and 25/160 are 0.03125, 0.00625 and
+0.15625, shown to four places. **Dividing those rounded rates is exactly the artifact DR-4 identified,
+and it is what produced my "exact" 16.6%.** The original 16.7% was right.
+
+**So I applied the round-then-divide error while writing the rule against it**, and labelled the
+result a correction. **The correction is WITHDRAWN. 16.7% stands**, restored in the handoff (3
+occurrences) and in the summary, whose corrections table now carries C-14 instead of the bogus row.
+
+**Nothing else moves** — 16.7% vs 16.6% changes no verdict; the ASR rescue was Outcome C either way,
+and the recovery figure was never a registered quantity.
+
+**Why it is logged at all:** DR-4 and DR-5 both concluded *"row counts are the honest denominator"*,
+and I then failed to apply it to the one number I was actively editing. **The lesson is that a rule
+stated is not a rule applied**, and the only reason this surfaced is that the final pass recomputed
+the figure from rows instead of trusting the correction that had just been committed.
+
+---
+
 ### ✅ R-43 (06:40) — **The manifest's GPU rows verified end-to-end: all 38 committed argsfiles still match the `argv` their runs actually executed. 0 differences, 0 orphans — and it is now a test.**
 
 The manifest points at `runargs/*/*.txt` for every GPU arm, and **those files are the only record of

@@ -89,7 +89,7 @@ meaningful**: same attack removed, different route.
 **W5 — the dissociation is CAUSAL, and it replicates across a complete 2 × 2.** A per-position
 activation patch that hands back the clean demonstration activations at the top of the knockout band
 removes **12-18 refusal rows** in **all four** model × pool cells, every one clearing the **8.3-row**
-margin (**1.44-2.16×**) — **while leaving the attack removal intact on Llama** (16.6% recovery, inside
+margin (**1.44-2.16×**) — **while leaving the attack removal intact on Llama** (16.7% recovery, inside
 the margin). *As percentages of the rise that is 58-92%, but those figures are* ***inverted*** *relative
 to the evidence — see the correction table.* The **below-band control at the same positions moves
 refusal by exactly 0.0000 in all four cells**, and the identity control (`--rescue-donor self`)
@@ -156,7 +156,7 @@ dropped as no longer justified by current evidence.
 | DR-3 | Donor capture was placed **above** the line building `ctxs` — Python would not raise, it would silently read the **previous row's** hooks | Moved after `ctxs`; a **static** regression test guards source order, since no row-level test could |
 | DR-4 | Published 92.4% for pool B; row-exact is **92.3%** (rates were rounded before dividing) | Corrected in place in log and handoff |
 | DR-5 | **The "% of refusal rise removed" figures are INVERTED relative to the evidence.** The 92.3% cell is **12 rows / 1.44× margin** (weakest); the 69.2% cell is **18 rows / 2.16×** (joint strongest). A near-zero clean baseline (2 rows of 160) inflates the ratio | Nothing retracted — every cell clears its pre-registered margin, and the margin was always the registered test. **Rows and ×margin now travel with every percentage** |
-| this file | Quoted **16.7%** for the Llama ASR recovery; exact is **16.6%** — the same round-then-divide slip as DR-4 | Corrected here |
+| ~~this file~~ **C-14** | I "corrected" the Llama ASR recovery from **16.7%** to **16.6%** — **backwards.** Row-exact is `4/24 = 16.7%`; the 16.6% came from dividing **rounded rates**, i.e. the exact round-then-divide artifact DR-4 warned about, committed while fixing that class | **The correction is withdrawn; 16.7% stands.** Caught by the final consistency pass |
 | PR-18 | My own pre-registration defined outcomes **A and C so that both could fire** — and both did | Reported as **both** (A on threshold, C on magnitude) rather than choosing the flattering one |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
 
