@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| ⚖️ **C7 TESTED AT LAST — AND STILL UNRESOLVED.** PR-19 required both n=4 and n=8; **n=8 holds all three conditions** (demoproc −0.1000, controls +0.0000/+0.0500/+0.0000, separation **2.8x margin**) while **n=4 fails** (a control removed as much as demoproc). Both cells rest on **4 baseline attacks of 40**, and the preamble halved baseline ASR (0.1562 → 0.0625) | **R-50**; the fix that enabled the test also weakened the attack | **R-50** |
 | 🏆 **C7 UNBLOCKED: a preamble emitted OUTSIDE `demo_block` gives match_ratio 1.000 (min AND mean) at ALL FOUR doses**, pool 30 → 160, with `demo_block` byte-unchanged and `main` still regenerating byte-identically. Demonstration-specificity is testable at n=4 and n=8 for the first time in the phase | **R-49**; supersedes the failed `main_longctx` approach | **R-49** |
 | ⛔ **THE LONG-CONTEXT FIX FAILED: `filler_near` grows the DEMONSTRATION BLOCK (638→1644 chars at n=8) while the drawable outside stays at 90 chars on both banks.** Strictly worse. A working version must emit context OUTSIDE `demo_block`, which changes a field every bank and arm joins on — not a preset | **R-46**; `control_feasibility.py` also disagrees with ground truth and is quarantined | **R-46** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
@@ -1957,6 +1958,60 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⚖️ R-50 (14:55) — **PR-19 DOES NOT CONFIRM. It required both doses; `n_examples=8` holds all three conditions cleanly and `n_examples=4` fails. And the bank that made the test possible also halved the attack it was meant to test.**
+
+**Artifacts:** arms `p12*` (782836-782840), judging `p12j_*` (782891).
+**Provenance 800/800**; hash joins **800/800**. **Preconditions met:** `scope_live = 1.0`, no
+violations, and **`control_draw_match_ratio` min = 1.000 on all 480 control rows** — the count-matched
+control that has been impossible for the whole phase was real on every row.
+
+| dose | baseline attacks | `demoproc` ΔASR | ctrl d1 | ctrl d2 | ctrl d3 | ctrl mean |
+|---|---|---|---|---|---|---|
+| 1 | 1/40 | −0.0250 | −0.0250 | +0.0000 | −0.0250 | −0.0167 |
+| 2 | 1/40 | −0.0250 | −0.0250 | +0.0250 | +0.0250 | +0.0083 |
+| **4** | **4/40** | **−0.1000** | **−0.1000** | −0.0750 | −0.0500 | −0.0750 |
+| **8** | **4/40** | **−0.1000** | +0.0000 | +0.0500 | +0.0000 | **+0.0167** |
+
+**`n_examples = 8` — all three conditions HOLD.** `demoproc` −0.1000 clears the 0.0521 margin; all
+three controls sit within it (+0.0000 / +0.0500 / +0.0000); separation **0.1167**, **2.8× the
+arm-vs-arm margin**. **A count-matched mask of the same size elsewhere did not remove the attack, and
+the demonstration mask did.**
+
+**`n_examples = 4` — FAILS.** Control draw d1 removed **exactly as much as `demoproc`** (−0.1000
+each). Conditions 2 and 3 both fail.
+
+#### ⛔ The verdict is the pre-registered one
+
+PR-19 states: *"CONFIRMS only if ALL THREE hold, at `n_examples` 4 **AND** 8."* **One dose of two is
+not that. PR-19 does not confirm, and C7 stays UNRESOLVED.** Reporting the n=8 cell alone as C7
+confirmed would be choosing the dose that worked after seeing both — the thing the pre-registration
+exists to stop.
+
+#### 🔴 Why this is thin, and the bank's own cost
+
+**Both decisive cells rest on 4 baseline attack rows of 40.** PR-19's underpower rule was "< 4 rows",
+so 4 does **not** trigger it — **it sits exactly on the boundary.** `demoproc`'s −0.1000 is 4 rows
+against a 2.1-row margin: **1.9×**, as thin as C12.
+
+**And the preamble that made the control constructible also weakened the attack it was testing:**
+
+| bank | overall baseline ASR | n1 | n2 | n4 | n8 |
+|---|---|---|---|---|---|
+| d10 | 25/160 = **0.1562** | 2/40 | 5/40 | 8/40 | **10/40** |
+| **longpre** | 10/160 = **0.0625** | 1/40 | 1/40 | **4/40** | **4/40** |
+
+**The attack rate more than halved.** That is not a confound in the comparison — every PR-19 contrast
+is within-bank, as pre-committed — **but it is the reason the test is underpowered, and it is a
+property of the fix itself.** ~840 characters of neutral context between the reader and the
+demonstrations dilutes the attack. **Making the control constructible and keeping the attack strong
+may be in tension**, and that possibility was not visible before this run.
+
+**Not rescued.** No fourth draw, no dose pooling, no relaxed margin. **The honest next step is more
+rows at n=8 on this bank** — the only cell that behaved — to see whether it survives real power. That
+is a decision about spending GPU on a thin cell, and I am not taking it unilaterally.
 
 ---
 
