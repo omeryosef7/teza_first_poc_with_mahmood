@@ -157,7 +157,7 @@ and read committed artifacts; the arms need SLURM + GPU.
 | C5 within-family bridge | `python src/boombness/binding_behaviour_bridge.py --bank data/boombness_prompts/boombness_prompt_bank.jsonl --beh-baseline <p1k_A> --beh-arm <lab>=<p1k_*> --probe-baseline <p2A> --probe-arm <lab>=<p2_*> --tag bridge` — ⚠ **the bank MUST be the one those runs came from.** The carrot bank's ids are a strict subset of d10's, so a mismatched pairing silently drops rows; the script now refuses it (C-13) |
 | C9 rescue arms | `sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$PWD/runargs/p7/p7_rescue_L14.txt src/boombness/slurm/run_boombness.sh` (argsfiles: `runargs/p7`, `runargs/p8`) |
 | C10 identity control | same, with `--rescue-donor self` in the argsfile (`runargs/p7/p7smoke_identity_L14.txt`) |
-| C9 readout | join `p*bj_A` / `p*bj_demoproc` / `p7j_rescueL*` by `prompt_id`; refusal is the judge row's `refused` field (`kw_refusal`), **not** the LLM judge |
+| **C9 / C11 / C12 table** | `python src/boombness/rescue_dissociation_table.py --cell NAME:BASE:KNOCK:RESCUE:CONTROL [--cell ...] [--n-examples 8] --tag c9` — emits rows, margin-in-rows, ×margin, control and percentage together. **Verified 2026-08-26 to reproduce DR-5's hand audit exactly** (18/2.16×, 17/2.04×, 12/1.44×, 18/2.16×, 25/3.00×, C12 4/1.92×, all controls 0) |
 | all deliverable guards | `python src/boombness/check_all.py` |
 | full suite | `python -m pytest tests/ doublespeak_causality/tests/ -q -p no:randomly` — **serial and exclusive** (C-2: concurrent runs corrupt committed artifacts) |
 

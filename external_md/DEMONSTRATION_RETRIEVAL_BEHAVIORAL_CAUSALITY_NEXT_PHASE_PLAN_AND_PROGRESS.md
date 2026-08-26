@@ -1958,6 +1958,44 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-41 (05:40) — **C9 now has a COMMAND instead of a prose instruction, and it reproduces DR-5's hand audit exactly.**
+
+C-13 established what an untested prose manifest row costs. **The very next row was one:** C9 — the
+phase's strongest claim — was documented as *"join the judge dirs by `prompt_id` and read the
+`refused` field."* **That is prose, and §19-E forbids exactly that for an important result.**
+
+**`src/boombness/rescue_dissociation_table.py`** (new) emits the whole table, and it **reproduces the
+hand audit in DR-5 to the row**:
+
+| cell | n | effect (rows) | margin (rows) | ×margin | control | % of rise |
+|---|---|---|---|---|---|---|
+| Llama/A | 160 | 18 | 8.3 | **2.16** | **0** | 69.2% |
+| Qwen3/A | 160 | 17 | 8.3 | **2.04** | **0** | 81.0% |
+| Qwen3/B | 160 | 12 | 8.3 | **1.44** | **0** | 92.3% |
+| Llama/B | 160 | 18 | 8.3 | **2.16** | **0** | 58.1% |
+| C11 query span | 160 | 25 | 8.3 | **3.00** | **0** | 96.2% |
+| C12 demo-24 (`n_examples`=8) | 40 | **4** | **2.1** | **1.92** | **0** | 28.6% |
+
+**The script enforces the discipline rather than relying on me to remember it:**
+* **a percentage can never be emitted without `effect_rows` and `effect_x_margin` beside it** — DR-5's
+  finding is baked into the artifact and into the printed line, and `PCT_CAVEAT` travels in the JSON;
+* **the control is reported per cell and counted** (`n_cells_control_inert`), because a rescue number
+  without its below-band control is not evidence of localisation;
+* **refusal is read from the judge row's `refused` field** (`kw_refusal`), never the LLM judge;
+* malformed specs, **duplicate cell names**, and an **empty four-way intersection** are all refused
+  rather than reported as zero.
+
+⚠ **One denominator distinction, so it is not conflated later.** This script's `pct_of_rise_removed`
+divides by **(knockout − clean)**. **R-40's 36.4% divided by (knockout − full-demo-patch)** — a
+different and, for the size question, more relevant denominator. **The C12 cell therefore reads 28.6%
+here and 36.4% in R-40, and both are correct for what they measure.** Neither is a correction of the
+other.
+
+**Six tests** pin the behaviour, including that the percentage cannot travel alone and that the
+control is never averaged away. **Manifest row replaced with the real command.**
+
+---
+
 ### 🔴 C-13 / DR-6 (05:15) — **I EXECUTED the reproduction manifest instead of trusting it, and it found a silent-subsetting defect in `binding_behaviour_bridge`. No published result is affected; the instrument is now guarded.**
 
 §19-E promises *"one command/script path that regenerates its compact analysis artifact"* and
