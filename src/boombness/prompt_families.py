@@ -54,6 +54,11 @@ import sys
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Sequence, Tuple
 
+#: Set from --n-preamble in main(); None means the preset's own default. The required preamble
+#: length is a property of (bank, TOKENIZER), not of the preset: 10 is the LLAMA minimum and 14 the
+#: QWEN3 one, because Qwen3's drawable pool is 112 tokens where Llama's is 138 (C-18).
+_N_PREAMBLE_OVERRIDE = None
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, rows_sha16, write_jsonl, seed_everything, ds  # noqa: E402
 from demo_pools import DOMAINS, POOL_PATH, REMAP_SOURCE_WORD, load_pools  # noqa: E402
@@ -571,7 +576,7 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                 # on the longest rows while its mean ratio still reads 0.650.
                 # The value was NEVER revisited in light of the attack rate it yields -- that would
                 # be selecting on the outcome, which is what D-10 forbids for the domains.
-                b["n_preamble"] = 10
+                b["n_preamble"] = _N_PREAMBLE_OVERRIDE or 10
         return blocks
 
     if preset == "main_longctx":
@@ -964,6 +969,10 @@ def main() -> int:
     ap.add_argument("--pools", default=POOL_PATH)
     ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "phase_d"],
                     default="main")
+    ap.add_argument("--n-preamble", type=int, default=None,
+                    help="Override main_longpre's preamble length. Required length depends on the "
+                         "TOKENIZER (10 for Llama, 14 for Qwen3 -- C-18). Selected on feasibility "
+                         "alone per PR-20/PR-24, never tuned against the attack rate it yields.")
     ap.add_argument("--codeword", default="carrot")
     ap.add_argument("--concept", default="bomb")
     ap.add_argument("--seed", type=int, default=20260816)
@@ -989,6 +998,8 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
+    global _N_PREAMBLE_OVERRIDE
+    _N_PREAMBLE_OVERRIDE = args.n_preamble
     rows, stats = generate_bank(pools, args.codeword, args.concept, args.preset, args.seed)
 
     # WRITE TO SIBLING TEMPORARIES, VALIDATE, THEN RENAME. The previous order wrote the bank and

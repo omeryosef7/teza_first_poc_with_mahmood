@@ -1965,6 +1965,80 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔧 R-55 (22:30) — **PR-24 resolved: `n_preamble = 14` is the Qwen3 minimum. It clears by ONE token, and the parameter is now explicit instead of hardcoded.**
+
+| `n_preamble` (Qwen3 tokenizer) | pool MIN | demo MAX @ n=8 | deficit | feasible everywhere? |
+|---|---|---|---|---|
+| 10 (Llama's pick) | 112 | 128 | **16** | ❌ |
+| 12 | 113 | 128 | **15** | ❌ |
+| **14** | **129** | 128 | **0** | ✅ **selected** |
+| 16 | 151 | 128 | 0 | ✅ but 22 tokens of surplus |
+
+**Selected on feasibility alone, per PR-24 and PR-20 before it.**
+
+⚠ **14 clears by exactly ONE token (129 vs 128), and that is worth saying plainly.** It is
+**deterministic for this bank** — the same 160 rows, the same tokenizer, so it will not drift between
+runs — **but it has no headroom.** Any change to the pools, the domains, the query template or the
+chat template could break it, and the failure mode is the good one: **the arm refuses before
+generating, as C-18's did.** **16 is the fallback and is recorded as such.**
+
+**The parameter is no longer hardcoded.** `--n-preamble` now overrides the preset, because **the
+required length is a property of (bank, TOKENIZER) and not of the preset** — the exact confusion that
+caused C-18. The default path is untouched:
+
+* `main`, `main_longctx`, `d10` and the carrot bank still regenerate **byte-identically (3/3)**;
+* `main_longpre` **with no flag reproduces `longpre10` byte-identically**;
+* `--n-preamble 14` reproduces the candidate bank that was actually feasibility-tested, **verified by
+  sha rather than assumed**.
+
+**Housekeeping:** the `pre14`/`pre16` candidate banks are deleted — `pre14` was byte-identical to the
+committed `longpreQ14`, and `pre16`'s measurements survive in its feasibility artifact. **The
+measurements are the evidence; the rejected bank files are not** (same rule as R-51's cleanup).
+
+**Next: re-run PR-23's arms on `longpreQ14`.** PR-23's conditions are unchanged — **a new bank does
+not license new thresholds** — and its precondition (`match_ratio` 1.000 on every control row) will
+be read from each run's own pre-flight, which is exactly what caught C-18.
+
+---
+
+### PR-24 (22:15) — **Pre-registered: re-derive the preamble length with the QWEN3 tokenizer, on feasibility alone. Same rule as PR-20, correct model this time.**
+
+C-18 failed PR-23 because R-51's `n_preamble = 10` was chosen against **Llama's** tokenizer. This
+re-derives it for Qwen3, and the instrument now reports the quantity the criterion actually depends
+on:
+
+| Qwen3, `longpre` (12) | n=1 | n=2 | n=4 | **n=8** |
+|---|---|---|---|---|
+| demo median / **MAX** | 13/19 | 28/36 | 56/66 | **114/128** |
+| pool median / **MIN** | 133/113 | 133/113 | 133/113 | **133/113** |
+| **deficit (max demo − min pool)** | 0 | 0 | 0 | **15** |
+
+**15 tokens short, and the shortfall is on the LONGEST rows** — the mean ratio reads a comfortable
+**0.925** while the min is **0.000**. **`max_n_demo`, `min_drawable_pool` and
+`pool_deficit_vs_max_demo` are now emitted for exactly this reason**: PR-20 already learned once that
+selecting on the mean picks a bank which silently refuses its longest rows.
+
+**The rule, unchanged from PR-20 and applied with the right tokenizer:**
+
+> **Choose the SMALLEST `n_preamble` whose Qwen3 `match_ratio` is 1.000 (min AND mean) at every dose.
+> Selected on FEASIBILITY ALONE, never revisited against the attack rate it yields.**
+
+**Candidates: 14 and 16.** Pool grows ~10.5 tokens/sentence (112 → 133 for 10 → 12), so 14 should
+clear a 15-token deficit; 16 is the fallback. The filler pools hold **20 per split**, so neither wraps
+into repetition.
+
+**⛔ Pre-committed:**
+* **R-54 removes the usual objection *in advance*, and that matters here.** On Qwen3 the preamble does
+  **not** cost attack (21/160 → 23/160), so a longer preamble carries **no measured power penalty on
+  this model**. That was established **before** C-18, not invented to justify lengthening.
+* **This is a Qwen3 bank.** `longpre10` remains the Llama bank; **no bank is re-selected for Llama**,
+  and R-50/R-52's Llama results are untouched.
+* **If neither 14 nor 16 is feasible, the branch stops** — C7 on Qwen3 joins C7 on Llama as
+  structurally blocked, and no third candidate is tried.
+* **PR-23's conditions are unchanged.** A new bank does not license new thresholds.
+
+---
+
 ### ⛔ C-18 (22:05) — **PR-23's GATE FAILED. The Qwen3 control arms refused before generating, because "the control is constructible on `longpre10`" was a LLAMA measurement I generalised to a method.**
 
 **The arms did exactly what they should.** `q14_matched_d2`'s pre-flight:
