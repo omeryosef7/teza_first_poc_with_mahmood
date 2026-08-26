@@ -1958,6 +1958,44 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✅ R-44 (07:42) — **Systematic sweep: ALL EIGHT distinct published percentages are row-exact. C-14 was the only instance of the class, and the class is now guarded by a test.**
+
+C-14 showed the round-then-divide defect is **live** — three occurrences now (DR-4; C-14; and DR-4's
+original) — and that I caught two of them **by accident**. So rather than assume the rest are fine,
+every distinct percentage in both deliverables was **recomputed from row counts**:
+
+| published | claim | row-exact | rows |
+|---|---|---|---|
+| 69.2% | C9 Llama/A refusal removed | **69.23%** | 18/26 |
+| 81.0% | C9 Qwen3/A | **80.95%** | 17/21 |
+| 92.3% | C9 Qwen3/B | **92.31%** | 12/13 |
+| 58.1% | C9 Llama/B | **58.06%** | 18/31 |
+| 96.2% | C11 query-span refusal removed | **96.15%** | 25/26 |
+| 16.7% | C9 Llama/A ASR recovery | **16.67%** | 4/24 |
+| 37.5% | C11 query-span ASR recovery | **37.50%** | 9/24 |
+| 36.4% | C12 demo-24 vs full demo patch | **36.36%** | 4/11 |
+
+**8 / 8 correct.** **C-14's 16.6% was the only bad figure the class ever produced here, and it was
+mine, introduced during the fix and withdrawn on the next pass.**
+
+**Made permanent: `tests/test_published_percentages_are_row_exact.py`.** It recomputes each figure
+from the judge rows and asserts the deliverable still agrees — so a figure edited to a wrong value,
+**or an artifact regenerated differently**, fires. Three design points:
+* it **skips** when `outputs/` is absent, guarding a working tree rather than a checkout;
+* it asserts the guard covers **≥ 7 cells**, because a vacuous guard passes forever (the R-21 /
+  `coherence_gate` lesson, met for the third time this sprint);
+* it has a dedicated test that **`16.6%` may appear only inside the C-14 correction that explains
+  it** — a withdrawn figure creeping back as a live number is exactly how retractions get undone.
+
+**Mutation-verified:** 69.23% passes against a published 69.2 and fails against a fabricated 71.0.
+
+> **The audit arc is closed.** Across C-13, R-41, R-42, R-43, C-14 and R-44 it produced: one silent
+> subsetting defect, two claims with no reproduction command at all, one backwards correction, and
+> four permanent guards. **Every one of those existed before the audit began and none would have
+> been found by reading.**
+
+---
+
 ### ✏️ C-14 (07:12) — **I corrected a figure BACKWARDS. The Llama ASR recovery is 16.7%, not 16.6% — my "fix" was itself the round-then-divide artifact, committed in the same breath as the rule against it.**
 
 **What happened.** In `cca3e996` I recorded that the sprint summary "quoted **16.7%** for the Llama ASR
