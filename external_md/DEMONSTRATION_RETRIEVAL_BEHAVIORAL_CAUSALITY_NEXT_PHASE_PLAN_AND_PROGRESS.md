@@ -1962,6 +1962,50 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✏️ C-15 / PR-21 (17:40) — **I overreached: "neutral context weakens the attack" is a CROSS-BANK, CROSS-SESSION comparison that my own PR-19 forbade. Correcting it, and running the clean test.**
+
+**The overreach.** R-52 and my summary of it presented **0.1562 → 0.0625 → 0.0437** as evidence that
+the preamble weakens the attack, and I went further, calling it *"a result about the attack itself."*
+
+**PR-19 pre-committed the opposite:** *"**Within-bank only.** `longpre` prompts are ~840 characters
+longer than d10's; **its baseline ASR is its own and no magnitude is compared across banks.**"*
+
+**And the comparison is confounded a second way.** The three baselines were judged in **three
+different sessions across two days** — `p4bj_A` 2026-08-25 11:10, `p12j_A` 2026-08-26 14:08,
+`p13j_A` 2026-08-26 16:13 — and this repo's **measured** cross-session judge drift is **78/96 binary
+agreement**, i.e. ~19% of rows can flip. **On 25 baseline attacks that is several rows, and the
+d10 → longpre12 gap is 15 rows.**
+
+**What survives without qualification, because it never needed the cross-bank comparison:**
+* **R-52's DECLINE.** `longpre10`'s decisive doses carry **3 and 1 attack rows** — that is a
+  within-bank count, and PR-19's underpower rule applies to it directly.
+* **R-50's within-bank C7 contrasts** on `longpre12`. Every arm there shares one bank and one
+  judging session.
+* **The attribution verified at 17:10** — that the banks differ *only* by the preamble. That is a
+  statement about the **prompts**, not about ASR, and is unaffected.
+
+**What is withdrawn pending test: the claim that the preamble CAUSES lower ASR.** It may well; it is
+simply not established by three numbers from three sessions.
+
+#### PR-21 — the clean test, pre-registered before it runs
+
+**Re-judge the three baselines' EXISTING generations in ONE session**, so bank is the only thing that
+varies. No new GPU: `p4bA`, `p12A` and `p13A` gens are all on disk. Prefix `xj`, pinned
+`openai/gpt-4o-mini`, hash-joined.
+
+**CONFIRMS the preamble lowers ASR if:** `ASR(d10) − ASR(longpre12) > MARGIN_VS_BASELINE = 0.0521`
+**in the same session**, and the same holds for `longpre10`.
+**REFUTED if** the same-session gap falls within the margin — in which case the apparent drop was
+**session drift plus bank noise**, and F6's power story must be restated as "these banks happen to
+have fewer attacks" rather than "the preamble removes the attack."
+
+**⛔ Pre-committed:** this **cannot rescue C7** — R-52's decline stands on within-bank counts either
+way. **It can only decide whether F6 is a finding about the attack or an accounting note about power.**
+**A same-session re-judge of identical generations is exactly the measurement this repo uses to
+quantify judge drift**, so it is the right instrument and not a new one.
+
+---
+
 ### ⛔ R-52 (16:30) — **PR-20's mandated re-run is DECLINED, not refuted: both decisive doses fall below PR-19's own underpower threshold. Cutting the preamble 12 → 10 recovered nothing. The preamble path is a dead end for C7, and that is the finding.**
 
 **Artifacts:** arms `p13*` (783039-783043), judging `p13j_*` (783116). **Provenance 800/800**, hash
