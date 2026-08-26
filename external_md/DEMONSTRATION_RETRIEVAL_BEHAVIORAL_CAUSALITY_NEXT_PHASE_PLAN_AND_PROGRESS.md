@@ -5959,6 +5959,14 @@ re-derivation rather than a correction to something this phase published.
   defensive coding, it is the difference between "the job finished" and "the thing that tells me
   about jobs is reachable". **PR-23 submits on the next tick that `sbatch` answers.**
 
+  **✅ 19:38 — SLURM recovered and PR-23's first two arms are submitted** (`q14_demoproc` 783595,
+  `q14_matched_d1` 783596). **Before submitting I checked whether any of my failed attempts had
+  actually landed:** two jobs were PENDING (783468, 783495) running the same `run_boombness.sh`, but
+  their submit times are **19:22**, after all three of my errored attempts, and **no `q14_*` run dir
+  exists** — so they belong to the **concurrent writer** (18:45 note), not to me. **Every one of my
+  failed `sbatch` calls really did fail; none created a phantom job.** Checking that before
+  resubmitting is what stops a duplicate arm from quietly doubling a control draw.
+
 ## B7b. PROCESS NOTES
 
 ### ⚠⚠ P-1 (00:41) — **THE THIRD WRITER IS CONFIRMED BY A SECOND, INDEPENDENT ROUTE. I attributed a job pair, a log file and a tool to a session that has never touched any of them.**
