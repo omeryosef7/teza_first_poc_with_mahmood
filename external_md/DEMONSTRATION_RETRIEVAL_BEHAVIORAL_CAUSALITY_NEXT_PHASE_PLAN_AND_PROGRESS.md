@@ -1961,6 +1961,85 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔧 R-51 (15:05) — **PR-20 resolved on feasibility alone: `n_preamble = 10` is the principled minimum. The re-run it mandates is submitted, and I am honouring that commitment even though the expected gain is small.**
+
+| `n_preamble` | pool | n=1 | n=2 | n=4 | **n=8** | feasible everywhere? |
+|---|---|---|---|---|---|---|
+| 6 | 96 | 1.000 | 1.000 | 1.000 | **min 0.000** (mean 0.175) | ❌ |
+| 8 | 118 | 1.000 | 1.000 | 1.000 | **min 0.000** (mean 0.650) | ❌ |
+| **10** | **138** | 1.000 | 1.000 | 1.000 | **1.000** | ✅ **selected** |
+| 12 (incumbent) | 160 | 1.000 | 1.000 | 1.000 | 1.000 | ✅ but 22 tokens of surplus |
+
+**`n_preamble = 8` is the instructive failure.** Its pool of **118 exceeds the median demo block of
+114** — and it still fails, because at `n_examples = 8` the demo block reaches **128 tokens on the
+longest rows.** Its **mean** ratio reads a respectable **0.650** while its **min** is **0.000**.
+**Selecting on the mean would have picked a bank that silently refuses its longest rows**, which is
+R-24/R-26's under-matching lesson arriving through a new door. **The criterion is the min, and this is
+why.**
+
+**Selected on feasibility alone, per PR-20, and never revisited against the attack rate it yields** —
+that would be selecting on the outcome, which is what D-10 forbids for the domains. The value is now
+in the preset with the measurements written beside it.
+
+**Verified:** the preset-built bank is **byte-identical** to the standalone candidate
+(`87343411e3d60ed6`), `--strict` gives 560 families / **0 violations**, and `main` + `main_longctx`
+still regenerate **byte-identically (3/3)**.
+
+#### ⛔ Honouring a pre-registration that is now inconvenient
+
+PR-20 committed: *"If the winner is smaller than 12, C7's PR-19 test must be RE-RUN on it from
+scratch."* **The winner is smaller. So the re-run is submitted** — five arms on `longpre10`.
+
+**I want to be explicit that I expect little from it.** The change is **2 sentences of ~110
+characters**, and `longpre10` prompts are still **~2.2× d10's length**, so most of the dilution that
+halved the attack remains. **PR-20 also pre-committed that a smaller preamble is not expected to
+rescue PR-19 and cannot undo its failure at n=4.**
+
+**I am running it anyway because the commitment was made before the winner was known**, and honouring
+pre-registrations only when they are cheap is not honouring them. **If the test is still underpowered,
+that is the answer** — PR-20 pre-committed that too.
+
+---
+
+### PR-20 (15:20) — **Pre-registered: pick the MINIMUM sufficient preamble, on feasibility alone, before any ASR is measured.**
+
+R-50 found that the preamble which made the control constructible **halved the attack**
+(baseline ASR 0.1562 → 0.0625), leaving 4 attack rows per dose and an underpowered test.
+
+**Part of that is my own arbitrary choice.** R-48 measured the requirement as **≥116 non-demo tokens
+at `n_examples`=8**; I set `n_preamble = 12`, which delivered a pool of **160** — about **44 tokens
+more than needed**. **Every one of those surplus tokens dilutes the attack for no methodological
+gain.**
+
+**The rule, fixed before any bank is built or any ASR is seen:**
+
+> **Choose the SMALLEST `n_preamble` whose `match_ratio` is 1.000 (min AND mean) at every dose.
+> The choice is made on FEASIBILITY ALONE and is NEVER revisited in light of the attack rate it
+> yields.**
+
+**This is D-10's discipline applied to a continuous parameter** — the same reason the ten domains
+were accepted on their audit and never on their effect size. **Selecting a preamble length by which
+one preserves the most attack would be selecting on the outcome**, and would invalidate C7 on the
+resulting bank just as surely as a relaxed margin would.
+
+**Method (CPU only, ~1 minute per candidate):** build banks at `n_preamble ∈ {6, 8, 10}` and run
+`control_feasibility.py` on each. The incumbent is 12. **The winner is the smallest candidate that is
+feasible at all four doses; if none of 6/8/10 is feasible, 12 stands** and R-50's power limit is
+intrinsic rather than self-inflicted.
+
+**⛔ Pre-committed:**
+* **No ASR is computed on any candidate bank before the choice is made.** The selection uses
+  `match_ratio` only.
+* **If the winner is smaller than 12, C7's PR-19 test must be RE-RUN on it from scratch** — the R-50
+  numbers belong to the 12-sentence bank and are not transferable.
+* **A smaller preamble is not expected to rescue PR-19.** It may recover some power; **it cannot
+  change the fact that PR-19 already failed at n=4 on a bank where the control was valid.** That
+  result stands regardless.
+* **This is not a search for a bank that confirms C7.** If the minimum-sufficient bank still gives an
+  underpowered test, that is the answer and it will be reported as one.
+
+---
+
 ### ⚖️ R-50 (14:55) — **PR-19 DOES NOT CONFIRM. It required both doses; `n_examples=8` holds all three conditions cleanly and `n_examples=4` fails. And the bank that made the test possible also halved the attack it was meant to test.**
 
 **Artifacts:** arms `p12*` (782836-782840), judging `p12j_*` (782891).

@@ -563,7 +563,15 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
         blocks = _blocks("main", domains)
         for b in blocks:
             if b.get("name") in ("core2x2", "core2x2_slot3"):
-                b["n_preamble"] = 12
+                # 10, not 12, and chosen on FEASIBILITY ALONE (PR-20). Measured pools:
+                # 6 -> 96 (infeasible at n=8), 8 -> 118 (infeasible), 10 -> 138 (feasible at all
+                # four doses, min AND mean 1.000), 12 -> 160 (feasible, and 22 tokens of surplus
+                # dilution for no methodological gain). Note the criterion is the MIN row, not the
+                # median: at n_examples=8 the demo block reaches 128 tokens, so a pool of 118 fails
+                # on the longest rows while its mean ratio still reads 0.650.
+                # The value was NEVER revisited in light of the attack rate it yields -- that would
+                # be selecting on the outcome, which is what D-10 forbids for the domains.
+                b["n_preamble"] = 10
         return blocks
 
     if preset == "main_longctx":
