@@ -2390,6 +2390,12 @@ no check", and it does.** ⚠ **The cause guessed here — a templating mismatch
 The real defect was `len()` on a returned `(positions, record)` tuple. **The refusal to report its
 ratios until validated was correct; the diagnosis offered alongside it was not.**
 
+**✅ Closed 15:40:** the instrument is now validated **twice** — against R-24's historical d10
+pre-flight (1.0 / 0.875 / 0.0 / 0.0, reproduced exactly) **and against a LIVE arm on a bank it was
+not tuned against**: `p13_matched_d1` on `longpre10`, where the CPU prediction of **min 1.000 at all
+four doses** matches the arm's own recorded pre-flight **exactly, 40 rows per dose.** R-47's
+outstanding `--verify-against` caveat is discharged by a real run rather than a flag.
+
 **The R-46 conclusion above does NOT depend on that script.** It rests on `demo_block` character
 counts read directly from the two bank files, and on the 17-line `demo_block` containing 16 filler
 sentences. **The bad instrument is reported as a defect; the finding stands without it.**

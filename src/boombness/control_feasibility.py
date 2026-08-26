@@ -11,6 +11,13 @@ arms exactly), which is precisely why the numbers looked plausible.
 The fix takes `match_ratio` from the record the function itself computes rather than recomputing it
 here -- a derived quantity should be read from the thing that derived it, not re-derived beside it.
 
+VALIDATED TWICE, 2026-08-26. (a) Against R-24's historical pre-flight on the d10 bank: 1.0 / 0.875 /
+0.0 / 0.0 across n_examples 1/2/4/8, reproduced exactly including the 0.875 mean. (b) Against a
+LIVE arm on a different bank -- `p13_matched_d1` on `longpre10` -- where this script predicted
+min 1.000 at all four doses and the arm's own pre-flight recorded min 1.000 at all four doses, 40
+rows each. A prediction that matches a real run on a bank it was not tuned against is the strongest
+check available without re-burning the GPU time.
+
 WHY THIS EXISTS. `control_draw_match_ratio` decides whether demonstration-specificity is testable
 at a given dose (R-24, R-25), and until now the only way to read it was to submit a GPU arm and let
 `score_behavior`'s pre-flight print it -- which on 2026-08-26 meant waiting 3+ hours in a
