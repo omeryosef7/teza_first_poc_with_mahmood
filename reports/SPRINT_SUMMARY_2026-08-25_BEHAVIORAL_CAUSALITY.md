@@ -56,6 +56,11 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 | 14 | Rescue, Llama pool B — completes the 2×2 | 781643/781644, judge 781727 | R-38 |
 | 15 | Query-span rescue + below-band control, Llama | 781849/781850, judge 781899 | R-39 |
 | 16 | Size-matched 24-position demo rescue (`n_examples`=8) | 781930/781931, judge 781956 | R-40 |
+| 17 | Reproduction-manifest audit: executed the commands instead of trusting them | (analysis only) | C-13, R-41, R-42, R-43, R-44 |
+| 18 | Long-context bank via in-body filler — **failed, made it worse** | (analysis only) | R-45, R-46 |
+| 19 | CPU feasibility instrument, quarantined then fixed and validated twice | 782597-782609, 782774 | R-47, R-48 |
+| 20 | Preamble bank (`longpre`) + C7 test at every dose | 782836-782840, judge 782891 | **R-49, R-50** |
+| 21 | Minimum-preamble selection + mandated re-run | 783028-783030, 783039-783043, judge 783116 | **R-51, R-52** |
 
 ## 5. Where we won
 
@@ -96,6 +101,14 @@ refusal by exactly 0.0000 in all four cells**, and the identity control (`--resc
 reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
 attack.**
 
+**W8 — the count-matched control was finally BUILT, after three attempts and a measured
+specification.** R-25 left "demonstration-specificity is not constructible" as a qualitative limit.
+R-48 turned it into a number (**≥76 non-demo, non-query tokens at `n_examples`=8**, measured, with
+every cheaper lever excluded); R-46 showed in-body filler makes it **worse** (it grows `demo_block`);
+R-49 delivered a bank where **`match_ratio` is 1.000 (min and mean) at all four doses**, pool 30 →
+160, with `demo_block` byte-unchanged. **A control that had been impossible for the whole phase
+became real on every row of 480.**
+
 **W7 — the two effects are localised differently, and it is position IDENTITY not count.** The attack
 damage is reachable from the **query span** (+0.0563 ASR, clears margin; below-band control inert) but
 **not** from the demonstration positions. Size-matched at **24 positions each**, a demo patch removes 4
@@ -134,6 +147,17 @@ In this bank "mentions bomb" ≈ "is a jailbreak", so the measure is confounded 
 margin; **exactly zero at n=1**, so the effect needs *accumulated* demonstrations). Qwen3 is
 non-monotone with endpoint +0.0250, **inside the margin — refuted by the pre-registered rule.**
 
+**F6 — and building the control COST THE PHENOMENON, which is the deeper limit.** The preamble that
+makes the control constructible also removes the attack it is meant to test: baseline ASR
+**0.1562 (d10) → 0.0625 (preamble 12) → 0.0437 (preamble 10)**. PR-19 required both `n_examples` 4
+and 8; on the 12-sentence bank **n=8 held all three conditions** (demoproc −0.1000, controls
++0.0000/+0.0500/+0.0000, separation **2.8× margin**) while **n=4 failed**, so PR-19 did not confirm.
+Cutting the preamble to the principled minimum (R-51, chosen on feasibility alone) **recovered
+nothing measurable** — 3 rows against an 8.3-row margin — and left both decisive doses **below the
+underpower threshold**, so the re-run was **DECLINED**. **The trade is not tunable by preamble
+length.** **C7 remains UNRESOLVED**, now for a sharper reason: *the control can be built, and building
+it costs the phenomenon.*
+
 **F5 — the ASR rescue failed its own confirmatory test.** A Qwen3 ASR rescue appeared on pool A
 (+0.0625, above margin) and **missed the pre-registered threshold on pool B** (+0.0437, needed
 >0.0521 — short by ~1.3 rows of 160). It was **recorded as an unregistered observation and never
@@ -158,6 +182,10 @@ dropped as no longer justified by current evidence.
 | DR-5 | **The "% of refusal rise removed" figures are INVERTED relative to the evidence.** The 92.3% cell is **12 rows / 1.44× margin** (weakest); the 69.2% cell is **18 rows / 2.16×** (joint strongest). A near-zero clean baseline (2 rows of 160) inflates the ratio | Nothing retracted — every cell clears its pre-registered margin, and the margin was always the registered test. **Rows and ×margin now travel with every percentage** |
 | ~~this file~~ **C-14** | I "corrected" the Llama ASR recovery from **16.7%** to **16.6%** — **backwards.** Row-exact is `4/24 = 16.7%`; the 16.6% came from dividing **rounded rates**, i.e. the exact round-then-divide artifact DR-4 warned about, committed while fixing that class | **The correction is withdrawn; 16.7% stands.** Caught by the final consistency pass |
 | PR-18 | My own pre-registration defined outcomes **A and C so that both could fire** — and both did | Reported as **both** (A on threshold, C on magnitude) rather than choosing the flattering one |
+| C-13 | `binding_behaviour_bridge` silently **subset** the population when handed a bank the runs did not come from (96 of 160 rows kept, a plausible different answer) | Found by **executing** the manifest rather than reading it. Guarded; no published result affected |
+| C-14 | I "corrected" a figure **backwards** — 16.7% → 16.6% — using the very round-then-divide artifact I was writing the rule against | Correction withdrawn; **16.7% stands**; all 8 published percentages then verified row-exact and guarded by a test |
+| R-46 | My first long-context bank grew the **demonstration block** instead of the drawable pool — the opposite of the requirement | Branch stopped; the failed preset kept as a record of what cannot work |
+| R-52 | My readout script applied PR-19's three conditions but **not its underpower rule**, and would have reported a refutation where a **decline** was mandated | Corrected before the numbers were written down |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
 
 ## 8. Final claims
@@ -165,7 +193,7 @@ dropped as no longer justified by current evidence.
 See `RESEARCH_HANDOFF.md` §4 for the full table with n, independence unit, test and artifact.
 Summary: **C1 confirmatory** (3 settings) · **C9 confirmatory** (4/4 cells, causal) · **C2, C3, C4, C5
 replicated** on two models · **C10 instrument-verified** · **C6, C8, C11, C12 single-model** · **C7
-unresolved**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1-row margin at n=40.**
+UNRESOLVED — now testable but not powerable (F6)**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1-row margin at n=40.**
 
 > **Doublespeak's demonstration block does two separable things. Masking demo→demo attention during
 > prefill removes the attack *and* restores refusal — and the second does not cause the first. The
@@ -175,7 +203,12 @@ unresolved**. ⚠ **C12 is the thinnest claim in the phase: 4 rows against a 2.1
 
 ## 9. Limitations
 
-1. Demonstration-specificity untestable where the effect lives (F2) — **needs a longer-context bank**.
+1. **Demonstration-specificity: testable now, but not powerable (F2 → F6).** The longer-context bank
+   was built and the count-matched control is real at every dose (`match_ratio` 1.000 on 480 rows) —
+   **but the added context removes the attack**, taking baseline ASR from 0.1562 to 0.0437 and both
+   decisive doses below the underpower threshold. **A future attempt needs non-demonstration context
+   that does not dilute the attack**, which is a different design question from the one this phase
+   posed. ⛔ **Do not retry by varying preamble LENGTH** — measured, and it recovers nothing.
 2. Mapping usage unreadable (F3) — **needs a benign-register concept vocabulary**.
 3. All ASR is over the first 192 tokens (DR-2).
 4. `kw_refusal` is lexical: it detects refusal *markers*, not refusal.
