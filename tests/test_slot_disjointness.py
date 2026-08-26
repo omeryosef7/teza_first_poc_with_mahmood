@@ -46,8 +46,13 @@ def test_slot3_is_NOT_disjoint_at_n16_which_is_why_the_block_omits_it():
 def test_the_power_block_exists_and_uses_only_the_safe_levels():
     specs = pf.bank_specs(sorted(pf.DOMAINS), preset="main") if hasattr(pf, "bank_specs") else None
     src = open(os.path.join(ROOT, "src", "boombness", "prompt_families.py")).read()
-    assert "core2x2_slot3" in src
-    i = src.index("core2x2_slot3")
+    # Anchor on the block DEFINITION, not on any mention of the name. The `main_longctx` preset
+    # (R-45) refers to "core2x2_slot3" by name when overriding its filler, and it appears earlier
+    # in the file, so `src.index("core2x2_slot3")` used to land on that reference and inspect the
+    # wrong 400 characters. A guard that cannot tell a definition from a mention breaks the moment
+    # anyone names the block anywhere else.
+    assert 'dict(name="core2x2_slot3"' in src, "the core2x2_slot3 block definition is gone"
+    i = src.index('dict(name="core2x2_slot3"')
     block = src[i:i + 400]
     assert "slots=[3]" in block
     assert "n_examples=[1, 2, 4, 8]" in block

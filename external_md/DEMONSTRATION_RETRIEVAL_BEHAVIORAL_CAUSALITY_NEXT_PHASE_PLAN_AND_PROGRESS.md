@@ -1959,6 +1959,73 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✅ R-47 (12:15) — **The quarantined instrument is fixed and now reproduces the real pre-flight EXACTLY. The cause was not what I guessed — it was `len()` on a returned tuple.**
+
+R-46 quarantined `control_feasibility.py` for disagreeing with reality and offered a **guessed**
+cause: a templating mismatch. **That guess was wrong, and the guess is corrected here rather than
+left standing.**
+
+**First, what was NOT wrong.** The script's demonstration-position counts matched the real arms
+**row for row** — median **13 / 28 / 56 / 114** across `n_examples` 1/2/4/8, identical to the
+`rescue_liveness.n_positions_written` recorded by `p7_rescue_L14`. **Templating, `resolve_occurrences`
+and `demo_key_positions` were all correct all along**, which is exactly why the wrong numbers looked
+plausible.
+
+**The actual defect:** `nondemo_control_draw` returns a **tuple `(positions, record)`**, and the
+script did `len(drawn) / len(dk)`. **`len()` of that tuple is 2.** Every ratio was `2 / n_demo_keys`:
+**2/18 = 0.111** and **2/13 = 0.154** — precisely the `min=0.111, mean=0.158` it reported.
+
+**The fix reads `match_ratio` and `n_pool` from the record the function itself computes**, rather than
+re-deriving them beside it. **A derived quantity should come from the thing that derived it.**
+
+#### Validation against ground truth
+
+| bank / dose | real pre-flight (R-24/R-25, job 780231 + 780297) | fixed script |
+|---|---|---|
+| d10, n=1 | min 1.0, mean 1.0, 40/40 feasible | **1.000 / 1.000, feasible=True** |
+| d10, n=2 | 35/40 feasible, **mean 0.875** | **min 0.000, mean 0.875** |
+| d10, n=4 | 0.0 / 0.0 | **0.000 / 0.000** |
+| d10, n=8 | 0.0 / 0.0 | **0.000 / 0.000** |
+
+**Exact agreement, including the 0.875 mean at n=2** — a number nothing in the script could have
+produced by coincidence. **Quarantine lifted.**
+
+#### R-46 independently confirmed, now by a trustworthy instrument
+
+| bank | n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|
+| d10 | demo 13, pool 30 → **1.000** | 28 / 30 → 0.875 | 56 / 30 → **0.000** | 114 / 30 → **0.000** |
+| **longctx** | demo **188**, pool **30** → **0.000** | 200 / 30 → 0.000 | 228 / 30 → 0.000 | **285** / 30 → **0.000** |
+
+**The long-context bank is infeasible at EVERY dose, including `n_examples = 1` where d10 was fine.**
+It did not merely fail to help — **it destroyed the one dose that previously worked**, exactly as
+R-46's character counts predicted. **The pool is 30 on both banks; only the demo block moved.**
+
+#### Two source-scanning guards had to be narrowed, and the product was checked FIRST
+
+Adding the `main_longctx` preset broke `test_slot_disjointness.py`, and the new
+`test_control_feasibility.py` failed on its own docstring. **Neither was a product defect, and both
+were confirmed so before either test was touched:**
+
+* `core2x2_slot3` still carries `slots=[3]`, and **both banks contain 640 slot-3 rows.** The guard
+  did `src.index("core2x2_slot3")` and my preset **mentions that name earlier in the file** when
+  overriding its filler, so it inspected the wrong 400 characters. **Re-anchored on
+  `dict(name="core2x2_slot3"` — the definition, not a mention.**
+* The feasibility test forbade the string `len(drawn)` anywhere, but the module docstring **quotes
+  the defect on purpose.** **Scoped to code, past the docstring** — a guard that cannot tell an
+  explanation from the thing it explains would forbid documenting the bug.
+
+**Both re-verified by mutation:** `slots=[2]` still fires the first; a reintroduced `len(drawn)`
+still fires the second. **The tests were narrowed, not weakened, and in both cases I checked the
+product was right before deciding the test was wrong.** Full suite: **1407 passed, 0 failed.**
+
+**Value of the CPU path:** this answer took **49 seconds** on `cpu-killable`. The GPU smoke submitted
+to obtain the same number (**782572**) sat PENDING for **three hours** and then **FAILED** — it would
+have been the fourth arm to refuse before generating. **A number that needs no model should never
+wait on a GPU queue.**
+
+---
+
 ### ⛔ R-46 (12:00) — **THE LONG-CONTEXT BANK FAILS ITS OWN GATE, and it fails in the opposite direction: `filler_near` grows the DEMONSTRATION BLOCK, not the drawable pool. Branch stopped. Also: my feasibility script disagrees with ground truth and is NOT to be trusted yet.**
 
 #### The finding, read straight off the bank files
@@ -2011,9 +2078,9 @@ disagrees with measured reality and must not be used:**
 | d10, `n_examples`=1 | **1.0** (40/40 rows feasible) | **0.111 min / 0.158 mean, feasible=False** |
 
 **Its own docstring says "a feasibility check that disagrees with the thing it predicts is worse than
-no check", and it does.** The likely cause is a templating mismatch — my `--enable-thinking` default
-versus `score_behavior`'s — which would shift every position, but **I have not proved that and will
-not report its ratios until `--verify-against` reproduces a real pre-flight.**
+no check", and it does.** ⚠ **The cause guessed here — a templating mismatch — was WRONG; see R-47.**
+The real defect was `len()` on a returned `(positions, record)` tuple. **The refusal to report its
+ratios until validated was correct; the diagnosis offered alongside it was not.**
 
 **The R-46 conclusion above does NOT depend on that script.** It rests on `demo_block` character
 counts read directly from the two bank files, and on the 17-line `demo_block` containing 16 filler

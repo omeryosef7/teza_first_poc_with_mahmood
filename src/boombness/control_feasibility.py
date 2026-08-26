@@ -1,12 +1,15 @@
 """Can a count-matched non-demonstration control be BUILT on this bank? CPU-only, no GPU.
 
-*** QUARANTINED 2026-08-26 (R-46). DO NOT QUOTE THIS SCRIPT'S RATIOS. ***
-It disagrees with measured reality: on the d10 bank at n_examples=1 the real `score_behavior`
-pre-flight (job 780231) reported match_ratio 1.0 with 40/40 rows feasible, and this script reports
-0.111 min / 0.158 mean and feasible=False. The likely cause is a templating mismatch -- this
-script's `--enable-thinking` default versus the one the real arm ran under -- which would shift
-every position, but that is UNPROVEN. Until `--verify-against` reproduces a real pre-flight
-row-for-row, the numbers here are not evidence of anything.
+*** QUARANTINED AND THEN FIXED, 2026-08-26 (R-46 -> R-47). ***
+The first version reported 0.111/0.158 where the real pre-flight reported 1.0, and it was
+quarantined with a GUESSED cause (a templating mismatch). **That guess was wrong.**
+`nondemo_control_draw` returns a TUPLE `(positions, record)`, and this script did `len(drawn)` --
+which is 2, the tuple's length. Every ratio was therefore `2 / n_demo_keys`: 2/18 = 0.111,
+2/13 = 0.154. The demo positions themselves were always correct (13/28/56/114, matching the real
+arms exactly), which is precisely why the numbers looked plausible.
+
+The fix takes `match_ratio` from the record the function itself computes rather than recomputing it
+here -- a derived quantity should be read from the thing that derived it, not re-derived beside it.
 
 WHY THIS EXISTS. `control_draw_match_ratio` decides whether demonstration-specificity is testable
 at a given dose (R-24, R-25), and until now the only way to read it was to submit a GPU arm and let
@@ -88,16 +91,22 @@ def main():
             ledger.fail(f"demokeys:{reason}", row["prompt_id"])
             continue
         prot = query_span_positions(tok, row, templated, dk)
+        rec = {}
         try:
-            drawn = nondemo_control_draw(dk, len(ids), protected=prot,
-                                         seed=args.seed, policy="strict")
-            ratio = len(drawn) / len(dk) if dk else None
-        except Exception:                            # noqa: BLE001
-            # the strict policy REFUSES a row it cannot match; that refusal IS ratio 0.
-            ratio = 0.0
+            # NOTE THE UNPACK. This returns (positions, record); `len()` on the tuple is 2 and was
+            # the whole of the original defect. `match_ratio` is read from the record the function
+            # itself computed -- never re-derived here.
+            _pos, rec = nondemo_control_draw(dk, len(ids), protected=prot,
+                                             seed=args.seed, policy="strict", log=rec)
+            ratio = float(rec.get("match_ratio", 0.0))
+        except Exception as exc:                     # noqa: BLE001
+            # strict REFUSES a row it cannot count-match; that refusal IS ratio 0, and the
+            # function attaches its record to the exception so the reason survives.
+            rec = dict(getattr(exc, "record", {}) or {})
+            ratio = float(rec.get("match_ratio", 0.0))
             infeasible[row["n_examples"]] += 1
         ledger.ok()
-        pool = max(0, len(ids) - len(dk) - len(set(prot) - set(dk)))
+        pool = int(rec.get("n_pool", 0))   # the function's own pool size, not a re-derivation
         per_dose[row["n_examples"]].append(
             {"n_demo": len(dk), "n_drawable_pool": pool, "match_ratio": ratio})
 
