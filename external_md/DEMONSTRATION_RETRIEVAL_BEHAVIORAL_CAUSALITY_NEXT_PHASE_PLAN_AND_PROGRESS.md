@@ -1958,6 +1958,48 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### ✅ R-43 (06:40) — **The manifest's GPU rows verified end-to-end: all 38 committed argsfiles still match the `argv` their runs actually executed. 0 differences, 0 orphans — and it is now a test.**
+
+The manifest points at `runargs/*/*.txt` for every GPU arm, and **those files are the only record of
+how an arm was invoked.** Nothing stopped one from being edited after its job was submitted — at which
+point the manifest would name a command **that never ran**, silently and permanently. Since
+`RUNMETA.json` records each run's real `argv`, the two can be compared.
+
+| check | result |
+|---|---|
+| argsfiles with a matching run on disk | **38** |
+| **argsfiles whose committed args differ from the run** | **0** |
+| argsfiles with no corresponding run (orphans) | **0** |
+
+**So every committed argsfile is the one that produced its artifact** — the GPU rows of the manifest
+are now verified in the only sense available without re-burning the GPU time.
+
+**Made permanent as `tests/test_argsfiles_match_runs.py`**, with two properties worth noting:
+* it **skips cleanly** when `outputs/` is absent (that directory is gitignored, so a fresh clone has
+  no run dirs) — this guards a *working tree*, not a checkout;
+* it asserts **`len(pairs) >= 20`**, because a guard that silently matches nothing passes forever.
+  **A vacuous check is worse than no check**, and this sprint has already met that failure twice
+  (`coherence_gate`'s empty-population pass, and my own all-clean degeneracy result in R-21 which
+  needed mutation-verification before it meant anything).
+
+**Mutation-verified:** the real pairing matches; the same file with `--max-new 999` appended does not.
+
+#### Manifest verification, complete
+
+| rows | status |
+|---|---|
+| analysis commands (5) | **executed, reproduce published numbers exactly** (C-13, R-41, R-42) |
+| bank regeneration | **byte-identity test** |
+| tokenization audit | **re-executed (782071), reproduces R-18 exactly** |
+| GPU/API arms | **argsfiles verified against real `argv`, 38/38** |
+| claim coverage | **12/12**, checked by script |
+
+**§19-E is now satisfied in fact rather than in prose.** The audit cost four ticks and produced one
+real defect (C-13), two missing commands (R-42), and this guard — **all of which existed before the
+audit and none of which would have been found by reading the manifest.**
+
+---
+
 ### R-42 (06:12) — **Manifest coverage audit: C6 and C7 had NO reproduction command at all. Both now have one, and both reproduce their published numbers exactly. Coverage is 12/12.**
 
 C-13 tested three manifest commands and found a defect; R-41 replaced a prose row with a script.
