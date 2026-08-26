@@ -1965,6 +1965,40 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-56 (23:20) — **Power check on `longpreQ14` BEFORE spending the sweep: PROCEED, but `n_examples = 4` sits exactly ON PR-23's threshold.**
+
+C-18 was caused by assuming a bank property measured on another model. **So the 14-sentence bank was
+not assumed to retain the attack — it was measured, with one baseline arm, before any intervention
+arm was submitted.** Smoke before sweep.
+
+| Qwen3 bank | total | n=1 | n=2 | **n=4** | **n=8** |
+|---|---|---|---|---|---|
+| d10 | 21/160 = 0.1313 | 3 | 3 | **7** | **8** |
+| longpre10 (10) | 23/160 = 0.1437 | 3 | 5 | **6** | **9** |
+| **longpreQ14 (14)** | **17/160 = 0.1062** | 3 | 3 | **4** | **7** |
+
+**PR-23's rule — ≥4 baseline attack rows per decisive dose — is met: `n=4` has 4, `n=8` has 7.
+Proceeding.**
+
+⚠ **But `n = 4` is exactly ON the threshold, not above it**, and that is the same position PR-19's
+Llama `n=4` cell occupied before it failed. **PR-23 requires BOTH doses**, so if that cell is noisy
+the test can fail for power reasons again rather than for scientific ones. **Stated now, so that
+outcome is not later described as a refutation.**
+
+⚠ **The longer preamble does cost some attack on Qwen3** — 17/160 against d10's 21/160 — **but 4 rows
+is inside the 8.3-row margin, so this is not a contradiction of R-54's "no measured cost"**; it is the
+same null, measured on a longer preamble. **No cross-bank magnitude claim is made from it.**
+
+**Now submitted:** `q15_demoproc` and `q15_matched_d1` on `longpreQ14`, two at a time per the
+NFS-contention lesson. **PR-23's conditions and preconditions are unchanged.**
+
+**Orphaned by C-18 and recorded so it is not silently reused:** `q14_demoproc` is a complete, valid
+Qwen3 `demo_processing_only` arm on `longpre10` (160 rows, twice, byte-identical) — **but its controls
+cannot be built on that bank, so it cannot serve PR-23.** It is not deleted and it is not evidence for
+anything on its own.
+
+---
+
 ### 🔧 R-55 (22:30) — **PR-24 resolved: `n_preamble = 14` is the Qwen3 minimum. It clears by ONE token, and the parameter is now explicit instead of hardcoded.**
 
 | `n_preamble` (Qwen3 tokenizer) | pool MIN | demo MAX @ n=8 | deficit | feasible everywhere? |
