@@ -1966,6 +1966,74 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-59 (01:45) — **PR-25 gates 1-3 PASS on pool B. And the `deficit` field I added yesterday turned out to be a conservative BOUND, not a per-row test — clarified before it could be misread.**
+
+| gate | result |
+|---|---|
+| 1 · `--strict` | `families checked=560 violations=0`, duplicates 0 |
+| 2 · `tokenization_audit` (784309) | `rows ok=4560 bad=0 ambiguous=0`, **0 alignment violations** |
+| 3 · **Qwen3 feasibility** (784310) | **`match_ratio` min 1.000 at ALL four doses**, `feasible=True` |
+| — | bank `b2903479258a0f68`, 4560 rows, **differs from the pool-A bank** |
+
+**Gate 3 was the one expected to be at risk** — `n_preamble = 14` cleared pool A by a single token
+(129 vs 128), and pool B has different demo lengths. **It passed with room: pool min 122 against the
+longest row's own pool, `match_ratio_min` 1.000 everywhere.** No fallback to 16 needed.
+
+#### ⚠ A metric of mine that reads like a contradiction, and is not
+
+Pool B at `n_examples = 8` reports **`deficit = 10` while `match_ratio_min = 1.000`.** That looks
+inconsistent and is not: **`pool_deficit_vs_max_demo` compares the LONGEST demo block at the dose
+against the SMALLEST pool at the dose — and those are usually DIFFERENT ROWS.** The 132-token demo
+row has a pool larger than 122; the row with the 122-token pool has a shorter demo. **The bound is
+conservative, not a per-row diagnosis.**
+
+**Fixed before it could mislead anyone, including me:** the field now carries that explanation at its
+definition, and a genuinely per-row companion — **`n_rows_demo_exceeds_own_pool`** — is emitted
+alongside it. **`match_ratio_min` remains the criterion; the deficit is for seeing how close a bank is
+to trouble.** I introduced this field one day ago while diagnosing C-18 and had already begun reading
+it as if it were the test.
+
+**Gate 4 (power) is running:** `q16A`, the pool-B baseline. **≥4 baseline attack rows at n=4 AND n=8
+or the branch stops** — the rule that declined R-52 and that R-56 flagged as marginal at exactly 4.
+
+---
+
+### PR-25 (01:15) — **Pre-registered: replicate C7 on pool B — an independent demonstration pool, the same move that took C1 from one setting to three.**
+
+C7 (R-58) is **one model, one pool**. **Every claim in this phase that survived was replicated on a
+second independent setting** — C1 across two model families and two pools (R-29), C9 across a 2×2
+(R-38). **C7 has not been, and it is the phase's newest and most fought-over result.**
+
+**Llama is not the vehicle** — R-52 established that the preamble costs Llama its attack, and R-58's
+Qwen3 result is single-model precisely because of that. **The available independent axis is the
+demonstration pool**: `demo_pools_d10_poolB.json`, whose 40 pools share **0 of 40 sentence sets** with
+pool A (R-28).
+
+**Gates, in order, each able to stop this before the next GPU hour is spent:**
+1. **`--strict`** on the pool-B `main_longpre --n-preamble 14` bank → 0 violations.
+2. **`tokenization_audit`** → 0 alignment violations.
+3. **Qwen3 feasibility** (`control_feasibility --model Qwen/Qwen3-14B`) → **`match_ratio` min 1.000 at
+   every dose.** ⚠ **14 was chosen with one token of headroom on pool A (129 vs 128); a different pool
+   has different demo lengths, so this gate may fail and 16 is the recorded fallback** — selected on
+   feasibility alone, never on the attack rate.
+4. **Power**: one baseline arm, then **≥4 baseline attack rows at n=4 AND n=8**, or the branch stops.
+
+**Only if all four pass** do the four intervention arms run.
+
+**⛔ Conditions are PR-23's, unchanged. A new pool does not license new thresholds.** CONFIRMS only if
+all three hold at `n_examples` **4 and 8**: `demoproc` clears ±0.0521; each of three independent
+matched controls stays within it; separation exceeds 0.0417.
+
+**REFUTED if** the matched controls remove attack comparably **on a powered population** — which would
+mean R-58 was pool-specific, and **C7 would revert to unresolved rather than staying confirmed on one
+pool.** Stated before the bank exists.
+
+**⛔ Also pre-committed:** the three draws must be **genuinely independent** — distinct seeds **and**
+distinct generation hashes, per C-17, because that check is what stops a duplicated directory
+masquerading as a draw.
+
+---
+
 ### 🏆🏆🏆 R-58 (00:55) — **PR-23 CONFIRMS. C7 — the phase's only unresolved claim — is RESOLVED on Qwen3: masking the demonstration positions removes the attack because they are the DEMONSTRATIONS, and a count-matched mask of the same size elsewhere does not.**
 
 **Artifacts:** arms `q15*` (783849, 783903, 783904, 783945, 783946); judging `q15j_*` (784128).

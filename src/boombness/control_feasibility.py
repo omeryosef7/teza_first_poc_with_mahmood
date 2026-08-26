@@ -138,8 +138,17 @@ def main():
             # rows reach 128; its mean ratio read a comfortable 0.650 while its min was 0.000.
             "max_n_demo": max(x["n_demo"] for x in per_dose[v]),
             "min_drawable_pool": min(x["n_drawable_pool"] for x in per_dose[v]),
+            # CONSERVATIVE BOUND, NOT A PER-ROW DIAGNOSIS. This compares the LONGEST demo block at
+            # the dose against the SMALLEST pool at the dose -- and those are usually DIFFERENT ROWS.
+            # So it can be positive while every individual row is feasible: on pool B at
+            # n_examples=8 it reads 10 (max demo 132 vs min pool 122) while match_ratio_min is
+            # 1.000, because the 132-token row has a larger pool than 122. Use it to see how close
+            # the bank is to trouble; use match_ratio_min to decide feasibility.
             "pool_deficit_vs_max_demo": max(0, max(x["n_demo"] for x in per_dose[v])
                                             - min(x["n_drawable_pool"] for x in per_dose[v])),
+            # THE PER-ROW VERSION, which is the one that actually implies infeasibility.
+            "n_rows_demo_exceeds_own_pool": sum(1 for x in per_dose[v]
+                                                if x["n_demo"] > x["n_drawable_pool"]),
             "median_drawable_pool": statistics.median(x["n_drawable_pool"] for x in per_dose[v]),
             "n_refused_by_strict_policy": infeasible.get(v, 0),
         }
