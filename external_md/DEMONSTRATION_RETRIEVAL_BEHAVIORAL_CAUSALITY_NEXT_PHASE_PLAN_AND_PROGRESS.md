@@ -5836,6 +5836,26 @@ re-derivation rather than a correction to something this phase published.
   all four went on to generate normally. **Recorded because "0 rows for half an hour" will otherwise
   be misread as a stall and provoke a resubmission that makes the contention worse.**
 
+* **18:45 — a CONCURRENT WRITER is active in this repo, and it breaks my C-2 check.**
+  `git status` showed `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md` and
+  `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` modified — **1,187 insertions**, timestamps 17:37
+  and 17:52, i.e. **during this session**. **Neither is mine**; mine are the
+  `DEMONSTRATION_RETRIEVAL_...` log and `SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md`.
+  **They have not been touched and must not be.**
+
+  **Two consequences, both acted on:**
+  1. **The standing rule "stage explicit paths only, never `git add -A`" just paid off concretely.**
+     A single `git add -A` at any point in the last hour would have swept 1,187 lines of another
+     agent's work-in-progress into one of my commits. **The rule is not hygiene theatre.**
+  2. **My C-2 corruption check — "`git status` on `outputs/ reports/` is clean" — is no longer a
+     reliable signal**, because another writer produces persistent noise in `reports/`. **From here
+     the check is scoped to the paths this phase owns**, so a real corruption of *my* artifacts still
+     stands out instead of being lost in someone else's diff. An unscoped check that is always dirty
+     is the same failure as DR-8's guard that always cried wolf.
+
+  ⚠ Also note `feedback_git_stash_shared_branch`: a third writer's stash sits on this branch's stack.
+  **No stash operation of any kind is safe here.**
+
 ## B7b. PROCESS NOTES
 
 ### ⚠⚠ P-1 (00:41) — **THE THIRD WRITER IS CONFIRMED BY A SECOND, INDEPENDENT ROUTE. I attributed a job pair, a log file and a tool to a session that has never touched any of them.**
