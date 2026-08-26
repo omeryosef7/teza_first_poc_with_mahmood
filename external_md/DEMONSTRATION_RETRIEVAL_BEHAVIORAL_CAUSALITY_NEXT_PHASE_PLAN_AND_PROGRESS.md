@@ -1964,6 +1964,45 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-23 (19:10) — **Pre-registered: C7 on QWEN3, where R-52's power blocker is measured to be ABSENT.**
+
+R-52 closed C7 on Llama because the preamble that makes the count-matched control constructible also
+removes the attack. **R-54 measured that this is a Llama property, not a property of the method.**
+A per-dose power check, run **before committing any GPU**, confirms it at exactly the cells that
+failed:
+
+| bank | n=1 | n=2 | **n=4** | **n=8** | verdict |
+|---|---|---|---|---|---|
+| Llama longpre10 | 1/40 | 0/40 | **3/40** | **3/40** | R-52's decline |
+| **Qwen3 longpre10** | 3/40 | 5/40 | **6/40** | **9/40** | **both decisive doses ≥ 4 rows** |
+
+**Qwen3 keeps its attack on the very bank where the control is fully constructible** (`match_ratio`
+1.000 at every dose, R-49/R-51, validated against a live arm). **This is not retrying a closed
+branch: it is the same test in a population where the documented obstacle is measured to be gone.**
+
+**Arms (Qwen3-14B, `longpre10`, band 7-17, 160 rows):** `q14_demoproc`, and three strict
+count-matched controls `q14_matched_d1/d2/d3`. **Baseline `q13A` already exists** and will be
+**re-judged in the same window** as the new arms, per R-53's design.
+
+**⛔ Conditions are PR-19's, unchanged — no new thresholds for a new model.** CONFIRMS only if all
+three hold at **`n_examples` 4 AND 8**:
+1. `demoproc` removes attack: `|ΔASR| > 0.0521`.
+2. Each matched control stays within **±0.0521** of baseline.
+3. They separate: `|Δdemoproc − Δcontrol_mean| > 0.0417`.
+
+**REFUTED if** the matched control removes attack comparably — **and on a properly powered population
+that would be a real negative for demonstration-specificity, not a decline.** I am stating that
+before the data exists: **this is the first time C7 can actually be refuted rather than declined.**
+
+**⛔ Pre-committed:**
+* **`match_ratio` must be 1.000 on every control row**, read from each run's own pre-flight.
+* **Per-dose underpower rule still applies** — any dose under 4 baseline attack rows is declined even
+  though the pre-check says otherwise, because the re-judge may move counts by a row or two.
+* **≤2 concurrent Qwen3 loads**, per the NFS-contention lesson: two arms now, two next.
+* **No cross-model magnitude comparison with Llama** — C7 is a within-bank, within-model claim.
+
+---
+
 ### ⛔ R-54 / C-16 (19:00) — **PR-22 DOES NOT CONFIRM: C13 is LLAMA-SPECIFIC. Qwen3's attack is untouched by the preamble — which unexpectedly means C7 may be POWERED on Qwen3. And I nearly reported this from a partial judge read.**
 
 **Artifacts:** arm `q13A` (783439); judging `xj_q_pre10` (783458), `xj_q_d10` (783459) — submitted
