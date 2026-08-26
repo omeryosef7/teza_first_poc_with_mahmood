@@ -2005,6 +2005,13 @@ what the jobs actually ran, never infer ownership from timestamps or from the ab
 The redundant duplicate (783596) is **not cancelled** per the standing instruction; its result will
 be **discarded, not averaged in**.
 
+**⚠ Amended 21:10 — the "redundant" duplicate turned out to be NECESSARY.** Job 783495, the original
+`q14_matched_d1`, left a run dir with **0 rows and no `DONE.json`** — it never generated. So 783596,
+the duplicate I planned to discard, is now **the only route to a complete `d1`**. **The duplication
+was still an error and C-17 stands; it simply happened to be load-bearing.** The rule is unchanged
+and is about the counting, not the running: **`d1` contributes ONE draw to PR-23 no matter how many
+directories carry its tag.**
+
 ---
 
 ### PR-23 (19:10) — **Pre-registered: C7 on QWEN3, where R-52's power blocker is measured to be ABSENT.**
