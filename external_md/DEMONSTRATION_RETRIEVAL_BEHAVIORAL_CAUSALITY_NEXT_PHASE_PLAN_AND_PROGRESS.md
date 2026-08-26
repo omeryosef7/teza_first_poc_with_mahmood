@@ -1966,6 +1966,33 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### R-60 (02:20) — **PR-25 gate 4 PASSES: the pool-B bank keeps enough attack. All four gates clear; the sweep is submitted. `n=4` is again exactly ON the threshold.**
+
+| Qwen3 bank | total | n=1 | n=2 | **n=4** | **n=8** |
+|---|---|---|---|---|---|
+| pool A (`longpreQ14`) | 17/160 | 3 | 3 | **4** | **7** |
+| **pool B (`longpreQ14B`)** | **12/160 = 0.0750** | 0 | 2 | **4** | **6** |
+
+**Gate 4's rule — ≥4 baseline attack rows at n=4 and n=8 — is met (4 and 6).**
+
+⚠ **`n = 4` sits at exactly 4 rows for the second time**, as it did on pool A (R-56). PR-25 requires
+**both** doses, so a single row moving in the judge could take that cell under the threshold and turn
+a confirmation into a decline. **Said before the arms run, not after.**
+
+⚠ **Pool B carries less attack overall than pool A** (12/160 vs 17/160), and **`n=1` has zero
+baseline attacks** — that dose is vacuous here and was never part of the claim. **The 5-row
+difference is inside the 8.3-row margin, so no cross-pool magnitude claim is made**; it is recorded
+because it is the power the test has to work with.
+
+**All four gates now clear:** `--strict` 0 violations · audit 0 alignment violations · **Qwen3
+`match_ratio` min 1.000 at every dose** · power 4 and 6.
+
+**Submitted:** `q16_demoproc` and `q16_matched_d1`, two at a time per the NFS-contention lesson;
+`d2`/`d3` follow when these clear. **PR-23's conditions apply unchanged — a new pool licenses no new
+thresholds — and the three draws must be independent by seed AND by generation hash (C-17).**
+
+---
+
 ### R-59 (01:45) — **PR-25 gates 1-3 PASS on pool B. And the `deficit` field I added yesterday turned out to be a conservative BOUND, not a per-row test — clarified before it could be misread.**
 
 | gate | result |
