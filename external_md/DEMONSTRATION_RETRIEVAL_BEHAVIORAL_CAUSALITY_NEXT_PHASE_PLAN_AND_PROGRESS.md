@@ -40,7 +40,7 @@ status attached. Every row names the correction that last touched it.
 | 🏆 **PR-7 OUTCOME A: 0 degenerate rows in 165 killed attacks across 8 cells, `frac_scorable`=1.000 everywhere.** The zero-refusal arms kill by COHERENT NON-COMPLIANCE; mutation-verified detector; worst real row 0.640 vs a 0.45 threshold | the R-20 caveat against my own headline does not bite; leg (b) stands | **R-21** |
 | ⚖️ **SIZE-MATCHED: identity, not count — but not identity ALONE.** At 24 positions each, a DEMO patch removes 4 refusal rows and restores **no** attack, while a QUERY patch removes **13** and restores attack (+0.0500). R-39's contrast survives size-matching. But 24 of ~114 demo positions buys only **36.4%** of the full effect, so magnitude scales with count too | **PR-18's outcomes A and C overlapped and both fired — reported as both, defect owned** | **R-40** |
 | ⚖️ **LOCALISATION + A LIMIT ON IT: the attack damage is reachable from the QUERY span (+0.0563, clears margin; control inert) but NOT from the demonstration positions.** However the query patch also removes **96.2%** of the refusal rise, so it is **not selective** — this is a **SINGLE dissociation, not a double one**, and the "separate loci" reading is excluded | ASR recovery only **37.5%**, still above margin from clean: partial, not restoration | **R-39** |
-| 🏆🏆🏆 **COMPLETE 2x2 — MODEL FAMILY x DEMONSTRATION POOL, 4/4.** The patch gives back the refusal in every cell (**69.2%** Llama/A, **81.0%** Qwen3/A, **92.3%** Qwen3/B, **58.1%** Llama/B; gaps 0.1125/0.1062/0.0750/0.1125, all >margin) and the below-band control moves it by **exactly 0.0000 in all four** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
+| 🏆🏆🏆 **COMPLETE 2x2 — MODEL FAMILY x DEMONSTRATION POOL, 4/4.** Refusal rows removed **18 / 17 / 12 / 18** against an **8.3-row margin** (**2.16x / 2.04x / 1.44x / 2.16x**); as percentages of the rise that is 69.2 / 81.0 / 92.3 / 58.1%, **but see DR-5: the percentages are inverted relative to the evidence** because a near-zero clean baseline inflates them. Control **exactly 0 rows in all four** | PR-14 both conditions HOLD, committed before the jobs existed | **R-36** |
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
@@ -1955,6 +1955,58 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### 🔎 DR-5 (04:10, 4h DEEP REVIEW) — **Suite 1377/0. A floor audit of the whole rescue arc in ROWS — and it shows the percentages I have been quoting are INVERTED relative to the evidence.**
+
+**Suite:** `1377 passed, 7 skipped, 0 failed`, serial and exclusive; working tree clean.
+
+**Every rescue-arc claim, restated in rows against the margin in rows:**
+
+| claim | n | knockout | rescue | effect (rows) | margin (rows) | **× margin** | control |
+|---|---|---|---|---|---|---|---|
+| C9 Llama/A | 160 | 35 | 17 | 18 | 8.3 | **2.16** | **0** |
+| C9 Qwen3/A | 160 | 23 | 6 | 17 | 8.3 | **2.04** | **0** |
+| **C9 Qwen3/B** | 160 | 15 | 3 | **12** | 8.3 | **1.44** ⚠ | **0** |
+| C9 Llama/B | 160 | 32 | 14 | 18 | 8.3 | **2.16** | **0** |
+| C11 query span | 160 | 35 | 10 | 25 | 8.3 | **3.00** | **0** |
+| **C12 demo-24** | **40** | 15 | 11 | **4** | **2.1** | **1.92** ⚠ | **0** |
+
+**All six clear the margin. Every control is exactly 0 rows.** But two sit under 2×, and one of them is
+the cell I have been describing most enthusiastically.
+
+#### 🔴 The percentages are inverted relative to the evidence
+
+| cell | headline % | effect in rows | × margin |
+|---|---|---|---|
+| Qwen3/B | **92.3%** — the largest | **12** | **1.44 — the smallest** |
+| Llama/A | 69.2% — the smallest | **18** | **2.16 — joint largest** |
+
+**The cell with the highest percentage has the weakest absolute evidence, and the cell with the lowest
+percentage has the strongest.** The reason is arithmetic and I should have flagged it when I wrote
+R-37: **"% of the refusal rise removed" divides by (knockout − clean), and Qwen3/B's clean baseline is
+2 rows of 160.** A near-zero denominator inflates the ratio. **92.3% is not a bigger effect than 69.2%;
+it is a smaller effect over a smaller rise.**
+
+**Nothing is retracted** — every cell clears its pre-registered margin, and the margin test, not the
+ratio, was always the registered quantity (PR-14 explicitly pre-committed recovery percentages as
+**not** the test). **But the percentages have been leading every summary table, and they mislead.**
+**From here the ledger and handoff carry rows-and-×margin beside every percentage.**
+
+#### What C9 actually rests on
+
+**Not any single cell's magnitude.** It rests on **4/4 replication across two model families and two
+demonstration pools**, with **every control at exactly 0 rows** — a specificity result that no single
+cell provides and that a percentage cannot express.
+
+#### ⛔ Recommendation on continuing this arc
+
+**The arc's returns are falling and its numbers are thinning**: 18 → 17 → 12 → 18 → 25 → **4** rows.
+**C12 rests on 4 rows against a 2.1-row margin.** PR-18 already forbade a third arm to sharpen it, and
+that was right. **Further single-cell rescue arms on this bank are not justified by current evidence**
+— the next real gain needs the longer-context bank (R-25) or a benign-register concept (R-27), both
+**bank-design changes awaiting the user's go-ahead**, not more patches.
 
 ---
 
