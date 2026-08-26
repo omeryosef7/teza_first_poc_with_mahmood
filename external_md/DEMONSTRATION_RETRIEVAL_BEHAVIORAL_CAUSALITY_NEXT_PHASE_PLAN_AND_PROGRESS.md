@@ -1960,6 +1960,49 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### PR-19 (13:40) — **Pre-registered: C7 at last. Is the demonstration knockout DEMONSTRATION-SPECIFIC at the doses where the effect lives?**
+
+**This is the question the whole phase has been unable to ask.** R-24/R-25 established that a
+count-matched non-demonstration control **cannot be built** at `n_examples` 4 or 8 on any prior bank;
+R-26 got one suggestive cell at n=2 by accident of the capped policy; R-46 built the wrong fix; R-48
+specified the right one; R-49 delivered a bank where **`match_ratio` is 1.000 (min and mean) at every
+dose.** Now the control exists and the claim can be tested properly.
+
+**The claim.** *Masking the demonstration positions removes the attack because they are the
+DEMONSTRATIONS, not because masking that many positions anywhere would do it.*
+
+**Arms (Llama, `boombness_prompt_bank_longpre.jsonl`, band 6-14, 160 rows each):**
+`p12A` (clean), `p12_demoproc` (`demo_processing_only`), and **three independent strict
+count-matched controls** `p12_matched_d1/d2/d3` (`nondemo_matched_d*`) — three, because a single
+draw that happens to hit nothing is a lucky draw rather than a control.
+
+**⛔ CONFIRMS only if ALL THREE hold, at `n_examples` 4 AND 8 (the doses that were untestable):**
+1. **`demoproc` removes attack:** `|ΔASR| > MARGIN_VS_BASELINE = 0.0521`.
+2. **The matched control does NOT:** each draw within **±0.0521** of baseline.
+3. **They separate:** `|Δdemoproc − Δcontrol_mean| > MARGIN_ARM_VS_ARM = 0.0417`.
+
+**REFUTED if** the matched control removes attack comparably — that would mean the effect is about
+**masking N positions**, not about the demonstrations, and **every "demonstration retrieval" framing
+in this phase would need renaming.** I am stating that consequence now, before the data exists.
+
+**⛔ Pre-committed limits.**
+* **Within-bank only.** `longpre` prompts are ~840 characters longer than d10's; **its baseline ASR
+  is its own** and no magnitude is compared across banks. C7 is a statement about this population.
+* **Per-dose underpower rule:** a dose whose baseline carries **< 4 attack rows of 40** is declared
+  **UNDERPOWERED and declined in both directions** — the rule that made me decline R-23's n=1 cell.
+* **`match_ratio` must be 1.000 on every row of every control arm**, verified from the run's own
+  pre-flight, not assumed from R-49. An under-matched control that shows no effect is an artifact of
+  the under-matching (R-24, R-26).
+* **`rescue_liveness` is irrelevant here; `knockout_liveness` is not** — `frac_rows_scope_live` must
+  be 1.0 with no violations on all four intervention arms or that arm is **UNMEASURED, not null**.
+* **n=1 and n=2 are reported but are NOT the claim** — they were already testable and R-26 already
+  spoke to n=2.
+
+**Judging:** pinned `openai/gpt-4o-mini`, prefix `p12j`, hash-joined as always. **No number is read
+until all five arms land and the match ratios are checked.**
+
+---
+
 ### 🏆 R-49 (13:20) — **THE BANK IS FIXED. A neutral preamble emitted OUTSIDE `demo_block` makes the count-matched control feasible at EVERY dose — 1.000 min and mean. C7, the phase's only unresolved claim, is unblocked.**
 
 R-48 specified the requirement (**≥76 more non-demo, non-query tokens at `n_examples`=8, emitted
