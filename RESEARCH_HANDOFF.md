@@ -154,7 +154,7 @@ and read committed artifacts; the arms need SLURM + GPU.
 | judging | `sbatch --export=ALL,P2_MANIFEST=...,P2_PREFIX=p4bj,P2_EXPECT_ROWS=160,P2_BANK=...,P2_PIN_JUDGE_MODEL=openai/gpt-4o-mini src/boombness/slurm/run_p2_judge.sh` ⚠ **not** `run_judge_cpu.sh`, which ignores every `P2_*` variable |
 | C1/C2/C3/C8 decomposition | `python src/boombness/phase1_decomposition.py --baseline A=<judge> --arm <lab>=<judge> ... --gens <lab>=<gens> ... --tag p4bdec` |
 | C4 kill routes | `python src/boombness/kill_route_breakdown.py --cell <model>:<arm>:<judge_base>:<judge_arm>:<gens_arm> ... --tag krb` |
-| C5 within-family bridge | `python src/boombness/binding_behaviour_bridge.py --bank <bank> --beh-baseline <j> --beh-arm <lab>=<j> --probe-baseline <run> --probe-arm <lab>=<run> --tag bridge` |
+| C5 within-family bridge | `python src/boombness/binding_behaviour_bridge.py --bank data/boombness_prompts/boombness_prompt_bank.jsonl --beh-baseline <p1k_A> --beh-arm <lab>=<p1k_*> --probe-baseline <p2A> --probe-arm <lab>=<p2_*> --tag bridge` — ⚠ **the bank MUST be the one those runs came from.** The carrot bank's ids are a strict subset of d10's, so a mismatched pairing silently drops rows; the script now refuses it (C-13) |
 | C9 rescue arms | `sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$PWD/runargs/p7/p7_rescue_L14.txt src/boombness/slurm/run_boombness.sh` (argsfiles: `runargs/p7`, `runargs/p8`) |
 | C10 identity control | same, with `--rescue-donor self` in the argsfile (`runargs/p7/p7smoke_identity_L14.txt`) |
 | C9 readout | join `p*bj_A` / `p*bj_demoproc` / `p7j_rescueL*` by `prompt_id`; refusal is the judge row's `refused` field (`kw_refusal`), **not** the LLM judge |

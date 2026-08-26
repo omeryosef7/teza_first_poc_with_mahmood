@@ -101,6 +101,22 @@ def main():
                 for r in load_rows(os.path.join(d, "results.jsonl"))}
 
     b0, p0 = beh(args.beh_baseline), probe(args.probe_baseline)
+
+    # *** THE BANK MUST BE THE POPULATION THE RUNS CAME FROM ***
+    # `fam` is keyed by prompt_id, and the join below silently skips any row whose id the bank does
+    # not know. Measured 2026-08-26: the carrot bank's 2736 ids are a strict SUBSET of the d10
+    # bank's 4560, so pointing this script at the carrot bank while handing it d10 judge dirs keeps
+    # 96 of 160 rows and prints a complete-looking answer with different numbers. Nothing in the
+    # original version noticed. A bank argument that silently subsets the population is the same
+    # defect class as every other silent-subset bug this sprint has paid for, so it is now refused.
+    for _name, _ids in (("beh_baseline", b0), ("probe_baseline", p0)):
+        _missing = [q for q in _ids if q not in fam]
+        if _missing:
+            raise SystemExit(
+                f"[bridge] REFUSING: {len(_missing)} of {len(_ids)} {_name} rows are not in "
+                f"--bank {args.bank!r} (first: {_missing[:3]}). The bank must be the one those runs "
+                f"were generated from; joining against a different bank silently drops rows and "
+                f"still prints a plausible result.")
     beh_arms = {s.split("=", 1)[0]: beh(s.split("=", 1)[1]) for s in args.beh_arm}
     probe_arms = {s.split("=", 1)[0]: probe(s.split("=", 1)[1]) for s in args.probe_arm}
 

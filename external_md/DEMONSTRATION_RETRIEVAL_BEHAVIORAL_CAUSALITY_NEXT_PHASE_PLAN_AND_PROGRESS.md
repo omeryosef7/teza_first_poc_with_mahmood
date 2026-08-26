@@ -1958,6 +1958,61 @@ next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it
 
 ---
 
+### 🔴 C-13 / DR-6 (05:15) — **I EXECUTED the reproduction manifest instead of trusting it, and it found a silent-subsetting defect in `binding_behaviour_bridge`. No published result is affected; the instrument is now guarded.**
+
+§19-E promises *"one command/script path that regenerates its compact analysis artifact"* and
+*"no important result should require reconstructing a method from prose."* **That promise had never
+been tested.** Testing it is this tick's work.
+
+| manifest command | reproduces? |
+|---|---|
+| `phase1_decomposition.py` → `p4bdec` | ✅ **byte-identical** (ignoring dir paths) |
+| `kill_route_breakdown.py` → `krb` | ✅ **all 8 cells' counts identical** |
+| `binding_behaviour_bridge.py` → `bridge` | ❌ **DID NOT REPRODUCE** |
+
+#### The defect
+
+The bridge builds `fam` from `--bank` and the join **silently skips any row whose `prompt_id` the
+bank does not know.** Measured:
+
+* the carrot bank's **2736** ids are a **strict subset** of the d10 bank's **4560**;
+* so handing it **d10 judge dirs** with the **carrot bank** keeps **96 of 160 rows**…
+* …and prints a **complete-looking result with different numbers**: `demoproc` contingency
+  **7/41 became 10/38**. **No warning, no row count, nothing.**
+
+**This is the silent-subset class this sprint has already paid for twice** (R-24's under-matched
+control, R-26's capped draw), now in an analysis script rather than an intervention.
+
+#### ✅ No published result is affected — verified, not assumed
+
+R-16's and R-17's **actual** pairings were re-checked against the carrot bank:
+
+| run | rows | rows NOT in the bank |
+|---|---|---|
+| R-16 beh baseline / demoproc | 96 / 96 | **0 / 0** |
+| R-17 beh baseline / demoproc | 96 / 96 | **0 / 0** |
+| R-16 / R-17 probe baselines | 48 / 48 | **0 / 0** |
+
+**Every published bridge number came from a correctly matched pairing.** And with the guard in place
+**R-16 reproduces exactly on all three arms** — `demoproc` 7/41, `legacy` 5/2/37/4, `qpre` 7/33/8.
+
+#### The fix
+
+The bridge now **refuses** any run whose rows are not all in `--bank`, checking **both** the
+behavioural and probe populations, **before any arm is read** (refusing later would still emit a
+partial artifact). Mutation-verified: the previously-silent mismatch now fails with
+`REFUSING: 64 of 160 beh_baseline rows are not in --bank`. Three tests pin the behaviour, including
+that the guard covers both populations and runs early.
+
+**Manifest also corrected:** the C5 row now names **which** bank pairs with which judge dirs, since
+"pass a bank" was exactly the under-specification that let this happen.
+
+⚠ **The lesson is the method, not the bug:** two of three manifest commands reproduced perfectly, and
+the third would have looked fine forever if the manifest had stayed a written promise. **A
+reproduction manifest that has never been run is a hypothesis.**
+
+---
+
 ### 🔎 DR-5 (04:10, 4h DEEP REVIEW) — **Suite 1377/0. A floor audit of the whole rescue arc in ROWS — and it shows the percentages I have been quoting are INVERTED relative to the evidence.**
 
 **Suite:** `1377 passed, 7 skipped, 0 failed`, serial and exclusive; working tree clean.
