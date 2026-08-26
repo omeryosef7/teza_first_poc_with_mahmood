@@ -33,6 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
+| ⛔ **THE LONG-CONTEXT FIX FAILED: `filler_near` grows the DEMONSTRATION BLOCK (638→1644 chars at n=8) while the drawable outside stays at 90 chars on both banks.** Strictly worse. A working version must emit context OUTSIDE `demo_block`, which changes a field every bank and arm joins on — not a preset | **R-46**; `control_feasibility.py` also disagrees with ground truth and is quarantined | **R-46** |
 | ⛔ **GATE FAILED / BRANCH STOPPED: demonstration-specificity is NOT CONSTRUCTIBLE on this bank.** Strict control feasible at **n_examples=1 only** (40/40), where the baseline is **2 attacks in 40 rows**; n=2 is 35/40 and rescoping to feasible rows is forbidden because demo length IS the dose. Needs a longer-context bank, a design change not an analysis one | jobs 780297-780299 all refused before generating | **R-25** |
 | ⛔ **DEMONSTRATION-SPECIFICITY IS UNTESTED WHERE THE EFFECT LIVES.** The count-matched non-demo control has `match_ratio` **1.0 at n_examples 1-2** but **0.0 at 4 and 8** — the unprotected pool is empty once the demo block exceeds it. The arm refused before generating rather than under-matching silently | strict control runs at n=1,2 only; capped control read one-sided | **R-24**, **PR-10** |
 | 🔴🔴🔴 **REFUTED: refusal restoration is NOT the route to attack removal.** Llama n=4: refusal rise **+0.2250 vs −0.0500 / −0.0500**, ΔASR **−0.1750 / −0.1750 / −0.1750 — identical**. Qwen3 n=8: the +0.2000-refusal arm removes **LESS** (−0.1500 vs −0.2000, gap clears margin). `demo_processing_only` restores refusal AND removes attack; the second is not carried by the first | dose-matched, pre-registered as the story-changing outcome in **PR-9** before reading | **R-23 / C-12** |
@@ -1955,6 +1956,68 @@ not, and are reported here only with their floors attached.
 
 ⚠ **Single model, single band, single bank, n = 96, one judging session.** The Qwen3 replication is the
 next experiment. **Outcome B is a claim about Llama-3.1-8B on this bank until it replicates.**
+
+---
+
+### ⛔ R-46 (12:00) — **THE LONG-CONTEXT BANK FAILS ITS OWN GATE, and it fails in the opposite direction: `filler_near` grows the DEMONSTRATION BLOCK, not the drawable pool. Branch stopped. Also: my feasibility script disagrees with ground truth and is NOT to be trusted yet.**
+
+#### The finding, read straight off the bank files
+
+`demo_block` is the span the knockout masks **and** the span a count-matched control must match. The
+control draws from **outside** it, minus the protected query span. Median characters:
+
+| n_examples | d10 `demo_block` | d10 **outside** | longctx `demo_block` | longctx **outside** |
+|---|---|---|---|---|
+| 1 | 78 | **90** | **1080** | **90** |
+| 2 | 154 | **90** | 1159 | **90** |
+| 4 | 318 | **90** | 1328 | **90** |
+| 8 | 638 | **90** | **1644** | **90** |
+
+**The outside is 90 characters on both banks, at every dose. It did not move.** What moved is the
+demonstration block, from 638 to **1644** characters at `n_examples = 8`.
+
+**Cause, confirmed by inspection:** with `example_position = "near"`, `build_prompt` places filler
+**in front of the demo sentences inside the same context block**, and `demo_block` is recorded as that
+**whole block** — the longctx row's `demo_block` is 17 lines: **16 filler + 1 demonstration.** So
+turning filler on adds text to the exact span the control is trying to match against.
+
+> **The redesign makes the problem strictly worse.** It was supposed to grow the drawable pool; it
+> grew the thing the pool has to match. `match_ratio` cannot improve and can only fall.
+
+**⛔ Branch stopped, not rescued.** More filler, a different `example_position`, or a bigger
+`n_filler` all move the same text into the same block. **R-25's requirement stands unmet**, and the
+requirement is now sharper than R-25 could state it:
+
+> **The added context must be emitted OUTSIDE `demo_block`** — a separate preamble field the generator
+> records as not-demonstration. That is a change to `build_prompt`'s output contract and to what every
+> downstream consumer treats as the demo span, **not a preset.** It is a real piece of work and it is
+> **not** started without a decision, because it changes a field that every committed bank and every
+> knockout arm in this repo joins on.
+
+**Artifacts kept, not deleted:** `boombness_prompt_bank_longctx.jsonl` and the `main_longctx` preset
+remain committed and pass `--strict` (560 families, 0 violations) and the tokenization audit
+(`rows ok=4560 bad=0`, 0 alignment violations, job 782571). **They are a valid bank that is simply
+useless for this purpose**, and the preset is the record of an approach that was tried and why it
+cannot work.
+
+#### 🔴 And a defect in my own instrument, before anyone quotes its numbers
+
+`src/boombness/control_feasibility.py` (new, CPU-only) was written to read `match_ratio` without a
+GPU — job 782572 had been PENDING for **three hours** for a number that needs no model. **It
+disagrees with measured reality and must not be used:**
+
+| bank / dose | real pre-flight (R-24, job 780231) | my script |
+|---|---|---|
+| d10, `n_examples`=1 | **1.0** (40/40 rows feasible) | **0.111 min / 0.158 mean, feasible=False** |
+
+**Its own docstring says "a feasibility check that disagrees with the thing it predicts is worse than
+no check", and it does.** The likely cause is a templating mismatch — my `--enable-thinking` default
+versus `score_behavior`'s — which would shift every position, but **I have not proved that and will
+not report its ratios until `--verify-against` reproduces a real pre-flight.**
+
+**The R-46 conclusion above does NOT depend on that script.** It rests on `demo_block` character
+counts read directly from the two bank files, and on the 17-line `demo_block` containing 16 filler
+sentences. **The bad instrument is reported as a defect; the finding stands without it.**
 
 ---
 
