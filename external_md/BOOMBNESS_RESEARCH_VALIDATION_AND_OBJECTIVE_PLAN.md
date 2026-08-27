@@ -659,3 +659,78 @@ so this is not refusal and not length collapse.**
 n_examples 4/8; the cap-192 pool A/B numbers remain relabelled). Entry 6 stays **NEEDS RERUN** but
 now has a positive prior — the rerun is expected to confirm, which makes a failure the informative
 outcome.
+
+---
+
+## §6.0 — THE `n_examples = 12` CELL *(user-directed; Phase 6 prerequisite)*
+
+**Bank:** `data/boombness_prompts/boombness_prompt_bank_ne12.jsonl`
+`bank_rows_sha16 = d471aa8935ead6c5` · `pools_sha16 = b5e399712b996b7d` · preset `main_ne12` · seed 20260816
+**Command:** `python src/boombness/prompt_families.py --preset main_ne12 --codeword carrot --concept bomb --seed 20260816 --strict --out data/boombness_prompts/boombness_prompt_bank_ne12.jsonl`
+
+§1 recorded that `n_examples = 12` occurs in **zero rows in zero banks**, and provisionally adopted
+`{0,1,2,4,8,16}`. The user directed that the 12 cell be added, so it has been.
+
+### It is a derived preset, not an edit to the constant
+
+`N_EXAMPLES` is consumed at **exactly one site** — the `main` preset's `core2x2` block. Appending 12
+to it would silently change what `main` generates and turn
+`tests/test_bank_regenerates_byte_identically.py` red for **every canonical bank**, while never
+touching a bank file: a change to the meaning of every historical `bank_rows_sha16` **at a
+distance**. This repo has already been bitten by that exact shape (**C-10**: `DOMAINS` grew 6 → 10
+and the canonical carrot bank stopped regenerating from its own pools).
+
+`main_ne12` therefore **derives** from `main` via `_blocks("main", domains)` and widens one field.
+That is also already the house idiom — `main_longpre` and `main_longctx` do the same — so this is
+the conventional shape here, not a new one.
+
+| check | result |
+|---|---|
+| `main_ne12` vs `main`, all 8 blocks | differs in `n_examples` and **nothing else** |
+| `N_EXAMPLES` | **untouched**, still `(0,1,2,4,8,16)` |
+| `test_bank_regenerates_byte_identically` | **3/3 pass** — canonical banks unaffected |
+| existing bank files overwritten | **none** — written under a new name |
+
+### The bank
+
+| | |
+|---|---|
+| rows | **2928** (vs `main`'s 2736 — the difference is **exactly** the 192 new `n_examples=12` rows) |
+| `by_n_examples` | 0:288 · 1:288 · 2:576 · 4:732 · 8:660 · **12:192** · 16:192 |
+| 2×2 families checked / violations | **384 / 0** |
+| duplicate `prompt_id` rows dropped | **0** |
+| **leakage probe** (§1.1) | **432 complete families, `d_surface` byte-identical after masking on all of them**; masked surface-arm accuracy **0.5000** vs baseline 0.5000 |
+| **tokenization audit** (job 787201, cpu-killable) | **rows ok=2928, bad=0, ambiguous=0, token-alignment violations=0** |
+
+Phase 6 can now run the brief's sweep as specified — `{0,1,2,4,8,12}` — and additionally at 16.
+
+### A mutation that reported green, and was not
+
+Four mutations were applied to the preset. One ("the preset copies `main` instead of deriving from
+it") came back **green**, which would have been a false all-clear. The cause was the **harness**, not
+the test: the line `blocks = _blocks("main", domains)` occurs **three times** in the file, so
+replacing the first occurrence mutated `main_longpre` instead of `main_ne12`. Re-applied against the
+`main_ne12` body specifically, it fails two tests as it should. **An unfired mutation is not a
+passed mutation**, and a mutation harness that silently targets the wrong code is exactly as
+misleading as a test that cannot fail.
+
+---
+
+## §R.2 — TICK LOG, 2026-08-27 21:15–21:55
+
+**Landed:** §0.4 (judge noise floor, and a correction to V-2's framing) · §0.5 (C7 repointed; the
+sprint's first sprint-grade result) · §6.0 (the `n_examples=12` cell). Commits `c1a9cb2d`,
+`3421bb44`, `466cd8a8`.
+
+**Running:** `787102` v3_C1024 — **148/495 rows** at ~8.7 rows/min, ETA ~40 min. `787186` v3_base1024,
+`787187` v3_D1024, `787188` v3_W640 — PENDING on `(Priority)`. The first submission
+(`787101/787103/787104`) passed 30 minutes pending and was cancelled and resubmitted across a
+**5-node** list excluding `n-804`, where `787102` is already resident (per the per-node weight-load
+contention rule). `787201` tokenization audit — **COMPLETE, clean**.
+
+**Not yet started:** the entry-6 retrieval-knockout reruns (waiting on queue capacity — holding at
+≤6), Phase 2, Phase 7.
+
+**Currently supported by this sprint:** §0.2, §0.3a, §0.1, §1, §1.1, §0.4, and now **§0.5 — the
+first result that clears `--sprint-grade`**. Still **no claim about boombness itself**, and none is
+due until the 1024 arms land.
