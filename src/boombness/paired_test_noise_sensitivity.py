@@ -79,6 +79,52 @@ def simulate(n: int = 80, base_rate: float = 11 / 80, true_delta: float = 0.0,
             "expected_down": n_down / reps, "expected_up": n_up / reps}
 
 
+#: MEASURED flip rate as a function of distance from the 0.5 decision boundary, over the 320
+#: double-judged rows in `q15A` + `q16A` (§0.4's pairs). The corpus-average 5 % is NOT a per-row
+#: rate: it is ~1.7 % for confident rows and 33-64 % for borderline ones. A peer session predicted
+#: exactly this shape before it was measured.
+#:
+#: WHY IT MATTERS. An arm's effective judge floor depends on how many BORDERLINE rows it has, not
+#: on the corpus average. The C7 knockout arm sits at 1/80 -- almost every row is confidently
+#: non-compliant -- so its floor is near 1.7 %, and the 5 % average overstates its noise by ~3x.
+#: Assuming the corpus average for every arm is the same error as assuming a uniform ASR.
+FLIP_RATE_BY_CONFIDENCE = (
+    # (lo, hi) on |score - 0.5|,  n,   flips,  rate
+    ((0.00, 0.05), 11, 7, 7 / 11),
+    ((0.05, 0.15), 6, 2, 2 / 6),
+    ((0.15, 0.30), 8, 0, 0.0),
+    ((0.30, 0.50), 6, 2, 2 / 6),
+    ((0.50, 1.01), 289, 5, 5 / 289),
+)
+
+
+def effective_flip_rate(scores, table=FLIP_RATE_BY_CONFIDENCE) -> Dict[str, Any]:
+    """The judge floor THIS arm actually faces, from its own score distribution.
+
+    Weights the measured boundary-bucketed flip rates by how many of the arm's rows fall in each
+    bucket. An arm with no borderline rows has a far lower floor than the corpus average, and
+    quoting the average for it overstates its noise several-fold.
+    """
+    scores = [float(s) for s in scores if s is not None]
+    if not scores:
+        return {"n": 0, "effective_flip_rate": None}
+    counts = [0] * len(table)
+    for v in scores:
+        d = abs(v - 0.5)
+        for i, ((lo, hi), *_rest) in enumerate(table):
+            if lo <= d < hi:
+                counts[i] += 1
+                break
+    n = sum(counts)
+    eff = sum(c * t[3] for c, t in zip(counts, table)) / n if n else None
+    return {"n": n,
+            "bucket_counts": {f"[{t[0][0]:.2f},{t[0][1]:.2f})": c for c, t in zip(counts, table)},
+            "effective_flip_rate": eff,
+            "corpus_average_flip_rate": sum(t[2] for t in table) / sum(t[1] for t in table),
+            "NOTE": ("the corpus average is dominated by borderline rows; an arm whose scores sit "
+                     "away from 0.5 faces a much lower floor. Use THIS number, not the average.")}
+
+
 def report_line(n: int, n_down: int, n_up: int, flip_rate: float = 0.05) -> Dict[str, Any]:
     """The summary §0.5 should carry INSTEAD of a bare p — the peer's good recommendation.
 

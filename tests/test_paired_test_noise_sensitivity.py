@@ -78,3 +78,52 @@ def test_report_line_carries_the_counts_and_the_floor_not_just_a_p():
     assert r["exact_two_sided_p"] == pytest.approx(0.006348, abs=5e-5)
     assert "expected_discordant_from_noise_alone" in r
     assert "judge_flip_rate_assumed" in r
+
+
+# --------------------------------------------------------------------------- #
+# the per-arm effective floor
+# --------------------------------------------------------------------------- #
+
+def test_the_measured_table_reproduces_the_corpus_average():
+    """Sanity: the buckets must sum back to the 16/320 = 5.00% that was measured."""
+    n = sum(t[1] for t in ns.FLIP_RATE_BY_CONFIDENCE)
+    f = sum(t[2] for t in ns.FLIP_RATE_BY_CONFIDENCE)
+    assert n == 320 and f == 16
+    assert f / n == pytest.approx(0.05)
+
+
+def test_flips_concentrate_near_the_decision_boundary():
+    """The robust half of the finding: 289 confident rows flip at 1.7%, 17 borderline rows at 53%.
+    Bucket-level rates are noisy (n = 11, 6, 8, 6), but this CONTRAST is not."""
+    tbl = {t[0]: t for t in ns.FLIP_RATE_BY_CONFIDENCE}
+    near_n = tbl[(0.00, 0.05)][1] + tbl[(0.05, 0.15)][1]
+    near_f = tbl[(0.00, 0.05)][2] + tbl[(0.05, 0.15)][2]
+    far = tbl[(0.50, 1.01)]
+    assert near_f / near_n > 0.4          # ~0.53
+    assert far[2] / far[1] < 0.03         # ~0.017
+    assert (near_f / near_n) > 10 * (far[2] / far[1])
+
+
+def test_effective_flip_rate_is_lower_for_an_arm_with_no_borderline_rows():
+    confident = [0.0] * 79 + [0.99]
+    borderline = [0.5] * 40 + [0.0] * 40
+    a = ns.effective_flip_rate(confident)["effective_flip_rate"]
+    b = ns.effective_flip_rate(borderline)["effective_flip_rate"]
+    assert a < 0.03 < b, (a, b)
+
+
+def test_effective_flip_rate_can_EXCEED_the_corpus_average():
+    """It is not a discount factor. An arm with many borderline rows faces a HIGHER floor, and the
+    real C7 baseline (0.0598) does exceed the 0.0500 average — so this must not be assumed downward."""
+    r = ns.effective_flip_rate([0.5] * 80)
+    assert r["effective_flip_rate"] > r["corpus_average_flip_rate"]
+
+
+def test_effective_flip_rate_handles_an_empty_or_all_none_arm():
+    assert ns.effective_flip_rate([])["effective_flip_rate"] is None
+    assert ns.effective_flip_rate([None, None])["effective_flip_rate"] is None
+
+
+def test_every_score_lands_in_exactly_one_bucket():
+    r = ns.effective_flip_rate([0.0, 0.5, 0.499, 0.51, 0.65, 1.0])
+    assert sum(r["bucket_counts"].values()) == 6

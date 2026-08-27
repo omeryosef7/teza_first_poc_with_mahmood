@@ -806,3 +806,71 @@ floor and the net alongside the p, and §0.5 should be quoted as:
 The peer also declined to adopt this statistic *for their own claim* because they had pre-committed
 against it — refusing a test at the moment it favours them. That is the right instinct even though
 the technical premise turned out to be mistaken, and it is recorded here as such.
+
+---
+
+## §0.7 — THE JUDGE FLOOR IS NOT A CONSTANT: it lives at the decision boundary
+
+**Script:** `src/boombness/paired_test_noise_sensitivity.py` (`FLIP_RATE_BY_CONFIDENCE`,
+`effective_flip_rate`) · **Tests:** 16, 2 real mutations caught + 1 no-op (below)
+
+§0.4 measured a ~5 % judge flip rate. The peer session predicted — *before* it was measured — that
+this would concentrate near the 0.5 decision boundary, and suggested bucketing by `|score − 0.5|`.
+They explicitly did not ask for it. It is cheap, and it turns a corpus constant into a per-arm
+quantity, so it was run. **320 double-judged rows (`q15A` + `q16A`), byte-identical generations.**
+
+| `\|score − 0.5\|` | n | flips | flip rate |
+|---|---|---|---|
+| [0.00, 0.05) | 11 | 7 | **0.6364** |
+| [0.05, 0.15) | 6 | 2 | 0.3333 |
+| [0.15, 0.30) | 8 | 0 | 0.0000 |
+| [0.30, 0.50) | 6 | 2 | 0.3333 |
+| **[0.50, 1.01)** | **289** | **5** | **0.0173** |
+| **all** | **320** | **16** | **0.0500** |
+
+**The prediction is confirmed.** The 5 % corpus average is not a per-row rate: it is **~1.7 % for
+confident rows and ~53 % for the 17 rows within 0.15 of the boundary** — a 30× contrast. The average
+is simply the mixture.
+
+**Honesty about the table's precision:** the individual bucket rates rest on n = 11, 6, 8, 6. The
+`0/8` in [0.15, 0.30) is obviously not a true zero, and [0.30, 0.50) sitting at 0.33 breaks
+monotonicity. **Only the coarse contrast — 9/17 near versus 5/289 far — is well determined**, and
+that is what `test_flips_concentrate_near_the_decision_boundary` asserts.
+
+### Consequence: the floor is per-arm, and it does not always go down
+
+`effective_flip_rate` weights the measured buckets by an arm's own score distribution. On the C7 640
+arms:
+
+| arm | rows within 0.15 of boundary | **effective floor** | vs 5 % average |
+|---|---|---|---|
+| `A_baseline` | 7 / 80 | **0.0598** | **HIGHER** |
+| `demo_processing_only` | 1 / 80 | **0.0252** | half |
+
+**This is not a discount factor**, and that matters: the baseline's floor *exceeds* the corpus
+average. An arm concentrated away from the boundary (a knockout at 1/80) faces a much smaller floor
+than one with borderline mass. Quoting 5 % for every arm is the same category of error as quoting a
+single ASR for every arm.
+
+### It also explains §0.6's residual
+
+§0.6 noted that a 5 % model predicts ~13 down / ~4 up while §0.5 observed **11 down / 1 up**.
+Simulating at the confident-row rate:
+
+| flip | E[down] | E[up] |
+|---|---|---|
+| 0.000 | 10.87 | 0.85 |
+| **0.020** | **11.80** | **2.17** |
+| 0.050 | 13.08 | 4.04 |
+
+**Observed 11 / 1 sits at the low-flip end, consistent with the ~0.025–0.060 arm-specific floors and
+not with the 5 % average.** Stated with appropriate restraint: a single draw of 12 discordant pairs
+cannot pin a rate, so this is consistency, not estimation.
+
+### A mutation that survived, and why it is not a gap
+
+Three mutations were applied. Two were caught. The third — removing the `break` from the bucketing
+loop — **survived, and correctly so: it is a semantic no-op.** The buckets are disjoint half-open
+intervals, so a score matches exactly one regardless; the `break` is a loop optimisation, not a
+correctness guard. Recorded rather than counted as a pass, because "3 of 3 mutations caught" would
+have been a false claim about test strength.
