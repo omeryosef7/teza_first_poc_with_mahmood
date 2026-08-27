@@ -1151,3 +1151,65 @@ including re-introducing the refuse-on-warn-band bug.
 *(A second, smaller correction: the `n_common == 0` case was special-cased ahead of the diagnosis,
 so the empty-comparison path raised a different message and skipped the verdict entirely — two code
 paths for one decision. `diagnose(None)` now returns `NO_COMPARISON` and there is exactly one.)*
+
+---
+
+## §0.11 — `arm_report.py`: the four instruments joined, so they cannot be quoted apart
+
+**Script:** `src/boombness/arm_report.py` · **Tests:** 8, 4 mutations caught
+**Artifact:** `outputs/boombness/arm_report/e6base_20260827_223307_3767713/arm_report.json`
+
+This sprint has built four instruments, each because a number was once quoted without it:
+
+| instrument | what it refuses to let you omit |
+|---|---|
+| `asr_protocol` | the cap and the length/truncation diagnostics |
+| `cap_natural_experiment` | the paired exact test, and the effect the design could detect |
+| `paired_test_noise_sensitivity` | the **per-arm** judge floor, from that arm's own scores |
+| `intervention_liveness` | whether the hook *mattered*, not merely fired |
+
+**Reported separately they get separated**, and a peer session named the concrete failure that
+follows: **an ASR delta of −1 row means opposite things at 96/96 divergence and at 5/96.** At 96/96
+it is a dissociation — the intervention changed everything the model wrote and behaviour did not
+move. At 5/96 it is a dead intervention that never had a chance. **Only the pair distinguishes
+them.** `arm_report` emits one row carrying all of it and adds no statistics of its own; it is a
+join that exists so the join cannot be forgotten.
+
+Applied to the five entry-6 populations (**cap 192 — these remain "ASR within first 192 generated
+tokens"**, and the artifact carries `cap_binds` and `asr_label` per arm so that cannot be dropped):
+
+| population | ASR base → arm | net down | exact p | **net / noise SD** | **divergence** |
+|---|---|---|---|---|---|
+| `main` | 22/96 → 5/96 | **+17** | 0.0005 | **5.18** | 96/96 `OK` |
+| `ticket_bomb` | 24/96 → 7/96 | **+17** | 0.0015 | **5.53** | 96/96 `OK` |
+| `window_knife` | 2/96 → 0/96 | +2 | 0.5000 | 0.97 | 96/96 `OK` |
+| `basket_gun` | 10/96 → 11/96 | **−1** | 1.0000 | −0.35 | **96/96 `OK`** |
+| `button_knife` | 9/96 → 10/96 | **−1** | 1.0000 | −0.37 | **96/96 `OK`** |
+
+Same numbers as §0.8, now inseparable from the divergence that licenses reading them. The bottom two
+rows are the case the module exists for: **net −1 at full divergence is a dissociation, not a dead
+arm**, and the table now says so on its own face.
+
+---
+
+## §R.3 — TICK LOG, 2026-08-27 22:10–22:35
+
+**Landed:** §4.1 + §4.1a (the `did-the-hook-matter` invariant, and its corrected exact-zero
+predicate) · §0.10 (the denominator rule applied ledger-wide) · §0.11 (`arm_report`). Commits
+`b16a6233`, `b0b88fb7`, and this one.
+
+**GPU/CPU:**
+* `v3_C1024` — **DONE, 495 rows at cap 1024.** Judging pinned as **787254**.
+* `v3_W640` — **DONE, 96 rows at cap 640, 0 failures.** Its baseline `g3A640` already had a pinned
+  judge run, but from a *different session*, and §0.4's floor applies to cross-session deltas. So
+  **787350 re-judges BOTH arms in one invocation** — 192 rows to remove the exposure rather than
+  caveat it.
+* `v3_base1024` (401/495) and `v3_D1024` (151/495) still generating.
+* Entry-6 argsfiles staged for `main` / `ticket_bomb` / `basket_gun`, both arms explicitly eager at
+  cap 640.
+
+**Peer session has closed out.** Its phase is complete; no further findings expected from that side.
+The instrument corrections it drove (§0.4, §0.6, §0.7, §4.1a, §0.10) are all landed and attributed.
+
+**Still no claim about boombness itself, and none is due until the cap-1024 arms are judged.**
+Phase 7 gate remains closed.
