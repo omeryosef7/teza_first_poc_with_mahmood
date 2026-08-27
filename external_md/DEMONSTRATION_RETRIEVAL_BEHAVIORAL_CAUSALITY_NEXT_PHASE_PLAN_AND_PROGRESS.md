@@ -7087,6 +7087,57 @@ identities are the reason they were struck and those numbers have not changed.
 primary condition. 160/160 rows, `frac_rows_scope_live=1.0`, `scope_violations={}`, `fired` 160/160 at
 **28** positions, truncation 0.344.
 
+
+### ✅⛔ R-68 (06:40) — **C-20 is CONFIRMED by the same-session test — and the same test shows MY OWN REPLACEMENT CONTROL was vacuous too. The boundary is `layer ≤ lo`, not `layer < lo`.**
+
+`q9_ko_20260827_061835_724429` — knockout-only, this session, 160/160 rows, `failures: 0`,
+`frac_rows_scope_live=1.0`, `scope_violations={}`. Every comparison below is **within one session**, so
+the cross-session artifact that invalidated R-67's test does not apply.
+
+| arm | layer | band 7-17 | vs `q9_ko` |
+|---|---|---|---|
+| `q9_qpos_L5` | 5 | below | **160/160 identical** |
+| **`q9_qpos_L7`** | **7** | **bottom of band** | **160/160 identical** |
+| `q9_qpos_L17` | 17 | top of band | **4/160** |
+
+**C-20 is confirmed.** The below-band arm is a bit-exact no-op against a knockout-only arm from its own
+session, while the top-of-band arm changes 156 of 160 generations. The four historical identities were
+not a coincidence, and the struck citations in the handoff and summary stay struck — permanently now,
+not pending.
+
+**And the replacement control I pre-registered ninety minutes ago is ALSO vacuous.** I wrote that a
+sound control must sit *inside* the band and chose **L7**, the band's bottom layer. L7 is inside the
+band by any reading of "7-17" and it is **byte-identical on 160/160 rows** — exactly the failure it was
+built to fix.
+
+**The corrected rule, which the data now pins precisely.** `DonorPatch` writes the residual stream
+**entering** block `rescue_layer` — equivalently the output of block `rescue_layer − 1`. The knockout
+masks attention *within* blocks `lo..hi`. So the input to block `lo` is the output of block `lo − 1`
+and is **untouched**:
+
+> **A clean-donor patch at prompt positions is vacuous for every `rescue_layer ≤ lo`, and can only
+> differ from the recipient at `lo + 1` or above.**
+
+That fits every measurement: Qwen3 (`lo=7`) vacuous at 5 and **7**, real at 17; Llama (`lo=6`) vacuous
+at 5, real at 14. **"In-band" was the wrong predicate; `> lo` is the right one.** The test committed
+with C-20 encoded `>= lo` and was therefore wrong in exactly the way I was wrong; it now encodes
+`> lo`, plus a dedicated case for the band-floor trap that caught me.
+
+**Why this kept happening, stated plainly.** Both times I reasoned from what the intervention was
+*named* — "below-band control", "in-band control" — instead of from what it *writes*. Liveness said
+`fired: true` both times and was correct both times: the hook ran and wrote 28 positions. **A hook that
+writes the value already present is live and useless, and no liveness field can distinguish those two.
+The only thing that can is comparing generations against a same-session control**, which is now the
+standing check.
+
+**Launched: `q9_qpos_L12`, job `784906`** — mid-band, `lo + 5`, far from both boundaries. It is
+pre-registered as PR-27's condition-3 control **and** as a test of the corrected rule: if the rule
+holds it must differ materially from `q9_ko`. **If `L12` also comes back byte-identical, the rule is
+still wrong and PR-27's specificity condition is abandoned rather than patched a third time.**
+
+**PR-27's primary conditions are untouched** by any of this: `q9_qpos_L17` is a real intervention
+(4/160), in-band, liveness 1.0, `fired` 160/160 at 28 positions.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
