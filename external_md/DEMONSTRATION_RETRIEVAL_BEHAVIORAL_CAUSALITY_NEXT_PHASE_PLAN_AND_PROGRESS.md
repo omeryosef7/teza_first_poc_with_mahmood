@@ -53,8 +53,9 @@ status attached. Every row names the correction that last touched it.
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
 | ⛔ **LAYER-SPECIFICITY DOES NOT REPLICATE — the rescue effect is NOT specific to the top of the band.** Llama mid-band (L10) restores refusal **−0.0688, p=0.019**, clearing the margin, where Qwen3 mid-band (L12) gave **−0.0375, p=0.21**. PR-28's condition 2 fails. Separation holds in both (0.0875 p=0.00052; 0.0562 p=0.0117) but all three conditions were required | **C9/C11/C12 do not get their specificity leg back** (C-20 removed it; their primary effects never rested on it). R-70's L12/L17 observation withdrawn as a candidate claim. **No layer sweep run — that would be rescuing a failed gate** | **R-71** (PR-28) |
+| ✅ **REFUSAL METRICS HAVE NO MEASURABLE JUDGE OR TRUNCATION NOISE — only population sampling.** `kw_refusal` disagrees on **0/160** rows of byte-identical text (DR-10), and between a 192- and a 640-token cap **81/96 completions changed while 0 refusal decisions moved** (R-75). Every claim in this branch is a refusal claim | So C1 (4 settings), R-70 and R-71 need **no per-claim truncation check**; ASR keeps both caveats. ⚠ cap-invariance measured on **one bank, one model** — strong evidence, not proof | **DR-11**, **R-75**, **DR-10** |
 | ⚠️ **THE LLM JUDGE FLIPS 9/160 ROWS ON BYTE-IDENTICAL TEXT (0.0563), while `kw_refusal` flips 0/160.** Not threshold adjacency — only 6/160 rows are score-adjacent to the cut and **four flips swing 0.0 ↔ ≥0.5**. Per-dose churn is **2,3,1,3 rows per 40-row cell**, against C7 per-cell effects of **3-7 rows** | **Net** churn is 1 row so PR-3's margins stand and no number moves; but **no single 40-row cell is decisive alone** — C7 is carried by **three independent populations agreeing in sign at both doses** | **R-70**, **DR-10** |
-| 🏆 **§20 Q7 ANSWERED: C11's refusal half and its dissociation REPLICATE on Qwen3-14B.** Query-span rescue at L17 moves refusal **−0.0937 (−15 rows, 71.4% of the knockout's rise)** while ASR moves **−0.0062 (−1 row, −7.7% recovery)**; dissociation **0.0875** vs a 0.0417 margin. Llama gave −0.1562 / 96.2%. **The ASR half DECLINES for power** (inside ±0.0521), per PR-27's rule — not refuted | judge 800 rows 0 nulls; all arms same bank + same session; layer-specificity read is **EXPLORATORY** (no criterion was pre-registered for L12) | **R-70** (PR-27) |
+| 🏆 **§20 Q7 ANSWERED: C11's refusal half and its dissociation REPLICATE on Qwen3-14B.** Query-span rescue at L17 moves refusal **−0.09375 (−15/160) (−15 rows, 71.4% of the knockout's rise)** while ASR moves **−0.0062 (−1 row, −7.7% recovery)**; dissociation **0.0875** vs a 0.0417 margin. Llama gave −0.1562 / 96.2%. **The ASR half DECLINES for power** (inside ±0.0521), per PR-27's rule — not refuted | judge 800 rows 0 nulls; all arms same bank + same session; layer-specificity read is **EXPLORATORY** (no criterion was pre-registered for L12) | **R-70** (PR-27) |
 | ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
 | 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
 | 🏆🏆🏆 **TWO MODELS, FOUR SCOPES, EIGHT CELLS: exactly ONE restores refusal — `demo_processing_only`.** Qwen3 rise **+0.1312** (2.5x margin) vs **−0.0125** for all three others; killed-by-refusal **40%** vs **0% / 0% / 0%**. On Qwen3 it does this with the SMALLEST ASR effect and a NULL sign test, both pre-committed as non-counting in **PR-6** before reading | PR-6 all three conditions HOLD; provenance 800/800 | **R-20** |
@@ -1781,7 +1782,7 @@ exists only because C-3e caught the 12-vs-9 mismatch on Llama):
 
 | arm | Δ | **Δ − late_count** |
 |---|---|---|
-| `legacy_all_query` | −0.1667 | **−0.0937** |
+| `legacy_all_query` | −0.1667 | **−0.09375 (−15/160)** |
 | `demo_processing_only` | −0.1562 | **−0.0833** |
 | `response_query_only` | −0.0729 | **+0.0000** |
 | `query_prefill_only` | −0.0729 | **+0.0000** |
@@ -7231,12 +7232,12 @@ C-21's confound cannot touch the read. n = **160 common rows**.
 
 | condition | requirement | result |
 |---|---|---|
-| **1 — refusal restored from the query span** | `|Δrefusal| > 0.0521` | **−0.0937 (−15 rows), 71.4% of the rise** ✅ |
+| **1 — refusal restored from the query span** | `|Δrefusal| > 0.0521` | **−0.09375 (−15/160) (−15 rows), 71.4% of the rise** ✅ |
 | **2 — the dissociation holds** | refusal move exceeds ASR move by `> 0.0417` | **0.0875** ✅ |
 | ASR half | declared thin; inside ±0.0521 ⇒ **DECLINE**, not refutation | **−0.0062 (−1 row), recovery −7.7%** → **DECLINE** |
 
 **C11 replicates in its strong half.** Llama gave refusal −0.1562 (96.2% of the rise); Qwen3 gives
-**−0.0937 (71.4%)**. Both clear the margin, both in the same direction, and in both models the same
+**−0.09375 (−15/160) (71.4%)**. Both clear the margin, both in the same direction, and in both models the same
 patch leaves the attack alone. **Handing the clean query-span activations back gives the refusal back
 and not the attack — on two model families.**
 
@@ -7249,7 +7250,7 @@ models' ASR halves consistent: one is 1.08× its margin and the other is null.
 #### ⚠ The layer-specificity read is EXPLORATORY, not pre-registered
 
 L12 (mid-band, `lo+5`, a real intervention — 16/160) moves refusal **−0.0375 (28.6%)**, *inside* the
-margin, against L17's −0.0937. The L17−L12 refusal gap is **0.0562**, above 0.0417.
+margin, against L17's −0.09375 (−15/160). The L17−L12 refusal gap is **0.0562**, above 0.0417.
 
 **That looks like the layer-specificity result C-20 took away, and I am not claiming it.** PR-27's
 condition 3 was written for a below-band control, that control turned out vacuous (C-20), its
@@ -7439,7 +7440,7 @@ back 6 rows *inside* the margin at **p = 0.21**, i.e. nothing detectable:
 
 | | mid band | top of band | separation |
 |---|---|---|---|
-| Qwen3 (7-17) | −0.0375, p=0.21 | −0.0937, p=0.00073 | 0.0562, p=0.0117 |
+| Qwen3 (7-17) | −0.0375, p=0.21 | −0.09375 (−15/160), p=0.00073 | 0.0562, p=0.0117 |
 | Llama (6-14) | **−0.0688, p=0.019** | −0.1562, p=1.6e-06 | 0.0875, p=0.00052 |
 
 **The two models disagree on exactly the condition that would have made this a claim.** Condition 3 —
@@ -7825,6 +7826,60 @@ a list tuned to produce an effect. That is the next tick's work, as PR-31.
 `demo_pools` with a benign concept via `run_demo_pools.sh` (`DP_CONCEPT`/`DP_CODEWORD` are already
 parameters). **The authorisation is not being spent until it is needed**, which is the same judgement
 that turned limitation 5 into a `--bank` swap rather than a build.
+
+
+### 🔎 DR-11 (20:05, 4h DEEP REVIEW) — **Suite 1085/0. Every number published since DR-10 recomputes EXACTLY from artifacts. One rendering nit fixed. And R-75 licenses retiring a whole class of caveat: refusal metrics are truncation-invariant by measurement.**
+
+**Suite** `1085 passed, 7 skipped` (434s). Queue empty; no FAILED/CANCELLED job this phase owns.
+
+**Independent recompute of everything published since DR-10** — read from `results.jsonl`, not from
+the log:
+
+| result | published | recomputed |
+|---|---|---|
+| R-70 `L17` refusal Δ | −0.0937 | **−15/160 = −0.09375** ✅ |
+| R-70 discordant / p | 17/2, p=0.00073 | **17/2, p=0.00072861** ✅ |
+| R-71 `L14` Δ | −0.1562 | **−0.1562** ✅ |
+| R-71 `L10` Δ, discordant, p | −0.0688, 15/4, p=0.019211 | **−0.0688, 15/4, p=0.019211** ✅ |
+| R-73 (192 cap) | +0.1250, 1/13, p=0.0018 | **2→14, +0.1250, 1/13, p=0.0018311** ✅ |
+| R-75 (640 cap) | +0.1250, 1/13, p=0.0018 | **2→14, +0.1250, 1/13, p=0.0018311** ✅ |
+
+**One rendering nit, fixed rather than argued.** R-70's Δ is **exactly 15/160 = 0.09375** — a true
+half-way case. I rendered it `−0.0937` (truncation); round-half-up gives `−0.0938`. **Neither changes
+any decision** (the margin is 0.0521 and the effect clears it either way), and this is *not* a C-14
+situation — there is no round-then-divide artifact, just an exactly-representable half. **The fix is to
+stop rendering it at 4 dp at all**: all 7 occurrences now read **`−0.09375 (−15/160)`**, which is
+DR-5's rule — rows travel with the rate.
+
+**Liveness, provenance, overwrites — 13 post-DR-10 arms swept.** Every intervention arm
+`frac_rows_scope_live = 1.0`, `scope_violations = {}`; every arm `DONE` at its expected row count;
+`n_failed = 0`; **exactly one run directory per tag**; banks correct per family (`d10` for the Q7/PR-28
+work, `basket_bomb` for PR-29/30).
+
+#### 🏆 The review's real finding: R-75 retires the truncation caveat for an entire metric class
+
+R-75 measured that between a 192- and a 640-token cap, **81 of 96 completions changed and not one
+refusal decision moved** (14 refusals, the *same 14 rows*; baseline 2, the *same 2 rows*). Combined
+with DR-10's measurement that `kw_refusal` disagrees on **0/160** rows of byte-identical text:
+
+> **A refusal count has no measurable noise from the judge and none from the generation cap. Its only
+> uncertainty is population sampling.**
+
+That matters across the phase, because **every claim in this branch is a refusal claim**: C1 in all
+four settings, R-70's condition 1, R-71's conditions. **Their truncation exposure is nil, and it no
+longer needs a per-claim check** — which is why `p11_qpos_L10`'s 0.562 truncation, flagged by this
+sweep, does **not** require a PR-26-style rerun.
+
+**⚠ Scope of that generalisation, stated rather than glossed:** the cap-invariance was measured on
+**one bank and one model** (`basket_bomb`, Llama). It is **strong evidence, not proof**, that refusal
+detection is cap-insensitive in general. The mechanism is transparent — refusal markers occur at the
+*start* of a completion — but the honest label is *measured once, argued generally*.
+
+**By contrast, ASR keeps its caveats**: 9/160 judge flips on identical text (DR-10) **and** a genuine
+cap sensitivity that C7 needed PR-26 to clear. **The phase's ASR claims and its refusal claims do not
+sit on the same evidential footing, and the write-ups should say so.**
+
+**No correction issued this round** beyond the rendering fix. Recorded explicitly.
 
 ---
 
