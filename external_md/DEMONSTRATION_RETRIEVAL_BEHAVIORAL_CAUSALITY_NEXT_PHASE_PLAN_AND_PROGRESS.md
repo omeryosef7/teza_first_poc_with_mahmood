@@ -7950,6 +7950,44 @@ nothing to knock out and this DECLINES for power** (R-52's rule), and limitation
 measure — that is the entire point), the 5-way phenotype cascade (PR-11 forbade it and DR-2's
 truncation reason still holds), and any per-dose cell read alone.
 
+
+### ⛔ C-22 (20:40) — **PR-31's intervention arm was INCOHERENTLY SPECIFIED and the pre-flight refused it: I asked a demonstration-knockout to run on 20 rows that have no demonstrations. Caught by the instrument, before any outcome existed.**
+
+`br_dp` (job `786870`) **FAILED in 7 minutes**, before generating a single row:
+
+> `REFUSING before generating: 20 of 60 rows cannot carry this knockout (20 without a demo block…).
+> Per n_examples: {'0': {'n': 20, 'ok': 0, 'bad': 20}, '4': {…'ok': 20…}, '8': {…'ok': 20…}}.
+> Fix the arm or the population — do NOT rescope to the feasible rows…`
+
+**The guard is right and the error is mine.** PR-31 specified *"two arms: baseline and
+`demo_processing_only`"* at `--expect-n 60`, but `n_examples = 0` rows have **no demonstration block**,
+so `demo_processing_only` is not merely infeasible there — **it is undefined.** You cannot knock out
+demonstrations that do not exist.
+
+**Why this is a specification fix and NOT a rescue of a failed gate.** The standing rule is that a
+failed gate stops a branch. This was not a scientific gate: nothing was measured, no outcome was read,
+and **PR-31's analysis section already specified the correct populations** —
+
+> *"`n = 0` teaches no mapping and is the NATURAL FLOOR"* … *"Primary population is `n ∈ {4,8}`
+> POOLED (40 rows)"*
+
+The **floor comes from the baseline arm**, which correctly ran all 60 rows (verified: 60/60,
+`n_failed = 0`, 20 per dose). The **intervention arm never needed `n = 0` at all.** So the argsfile
+contradicted the pre-registration it was supposed to implement, and the fix **restores** PR-31 rather
+than amending it. `br_dp` is resubmitted at `--n-examples 4,8 --expect-n 40`. **No condition, margin,
+population or flag changes.**
+
+**⚠ What made this safe to fix rather than fatal:** the failure happened **before generation**, so
+there is no outcome to have been influenced by the correction. Had the arm silently rescoped itself to
+the 40 feasible rows — which is exactly what the guard's message forbids — **I would have compared a
+40-row intervention against a 60-row baseline and never noticed**, and the floor rows would have been
+folded into an effect estimate. That guard was written for a different sprint's mistake and it just
+paid for itself again.
+
+**The lesson, which is the same one C-19 and PR-29 taught in a different costume:** I wrote the correct
+design in the analysis section and then wrote an argsfile that did not match it. **A pre-registration
+and the command that implements it are two artifacts, and only one of them runs.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
