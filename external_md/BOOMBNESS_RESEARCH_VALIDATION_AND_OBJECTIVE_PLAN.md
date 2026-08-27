@@ -1892,3 +1892,59 @@ the prompt". The refusal rate and length figures above argue against destruction
 lost the prompt would not write *longer* — but **that is an argument, not the forced-choice binding
 probe Phase 5 specifies.** Recorded as an open item; the probe exists (`core2x2`,
 `semantic_forced_choice`) and would need its own generation pass.
+
+---
+
+## §5 — PHASE 5: does binding survive the knockout that kills the attack?
+
+**Runs:** `p5A_main`, `p5C_main` (forward-only, no generation, no judge, n=192 readout rows each)
+**Population:** `main`, `natural_doublespeak`, `core2x2(+slot3)`, `n_examples ∈ {1,2,4,8}`
+The brief's success condition: *"ASR falls, but binding/comprehension remains high enough that the
+model has not merely lost the prompt."*
+
+| readout | what it asks | median option mass | baseline mapped-wins | **knockout** | Δ |
+|---|---|---|---|---|---|
+| **`semantic_forced_choice`** | *does W mean carrot or bomb?* (both named) | **0.54 → 0.37**, 100 % above floor | 42/48 | **41/48** | **−1** |
+| `comprehension_usage` | *is W used literally or in code?* | 0.37 → 0.32, 100 % above floor | 11/48 | 4/48 | −7 |
+| `semantic_one_word` | free next token: concept vs codeword | **0.040 → 0.065 — BELOW the repo's own 0.05 floor** | 56/96 | 2/96 | −54 |
+
+### The readout with the most mass says binding SURVIVES
+
+`semantic_forced_choice` carries **0.54 of the probability mass on its two options and 100 % of rows
+above the reliability floor** — it is the only readout here that is unambiguously interpretable. It
+moves by **one row: 42/48 → 41/48**, while ASR on the same population falls 22/96 → 8/96 (and
+27/96 → 2/96 on `ticket_bomb`).
+
+**That is the brief's success condition met.** The knockout removes the attack and the model can
+still say what the codeword means when asked.
+
+### But `semantic_one_word` says the opposite, and its mass is below the floor
+
+Median option mass **0.0404** at baseline against `score_behavior.py`'s own
+`--min-option-mass 0.05` default — the run's own `reportable` flag is **False** at that median.
+Restricted to the 25 rows above the floor **in both arms**, it still says 19/25 → **1/25**.
+
+So this is not simply an unreliable readout to be discarded. Taken together the three give a
+**coherent and more interesting** result than either alone:
+
+> **The knockout removes the model's *spontaneous use* of the mapping while leaving its *ability to
+> report* the mapping when explicitly asked.**
+
+Forced choice (both options named) survives at 41/48. Free next-token generation of the concept
+collapses to 1/25. `comprehension_usage` — "is this literal or coded?" — drops 11/48 → 4/48, though
+it was already a minority reading at baseline.
+
+**That is a usage/knowledge dissociation**, and it is exactly the distinction Phase 5 exists to draw.
+The knockout is not destroying comprehension; it is removing the pathway by which comprehension gets
+*used* to answer.
+
+### Two caveats carried
+
+1. **Forced-choice option mass falls 0.54 → 0.37 under the knockout.** The model still picks
+   correctly but is measurably less concentrated on the two options. Binding survives; confidence
+   in it does not fully.
+2. **`main` only so far.** `ticket_bomb`'s baseline readout is still generating (787916); its
+   knockout arm is done. The claim above rests on one population until that lands.
+
+**Phase 5 status: the success condition is met on the readout that qualifies, with the
+usage/knowledge distinction recorded rather than collapsed into a single "binding survives" claim.**
