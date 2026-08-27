@@ -984,3 +984,55 @@ Note this sharpens §0.8 rather than softening it: `basket_gun` and `button_knif
 firing on 96/96 rows with ~68 000 edits each and producing **net −1** — the intervention is
 demonstrably live and demonstrably does nothing there. That is a real dissociation, not a failed
 intervention.
+
+---
+
+## §0.10 — THE DENOMINATOR RULE, applied across the ledger
+
+A peer session generalised §0.8 into a diagnostic worth carrying, and it is cheap enough to apply to
+the whole ledger without re-running anything:
+
+> **Does a no-headroom population enter the DENOMINATOR?**
+> * An **effect size averaged over populations** is vulnerable. A population with no headroom
+>   contributes ≈0 *and still carries weight in the mean*, dragging the aggregate toward the null
+>   while looking like evidence for a small effect. That is `window_knife` in entry 6.
+> * A **proportion over the affected rows** is immune. If the denominator is *killed rows*, a
+>   population with no kills contributes nothing to the numerator **and** nothing to the
+>   denominator. It cannot dilute — it simply is not represented.
+
+So the question is not "how many populations?" but "what is in the denominator?"
+
+### Applying it
+
+| ledger entry | statistic shape | no-headroom unit in the denominator? | verdict |
+|---|---|---|---|
+| **6 — retrieval knockout (96 down / 18 up)** | effect size **pooled over 8 populations** | **YES** — `window_knife` at baseline 2/96 | ⛔ **FAILS. Per-population reporting mandatory** (§0.8) |
+| **11 — token-level dynamics** | paired mean **over 6 domains** | vulnerable shape — checked below | ✅ **PASSES on inspection** |
+| 13 — binding survives the attack-killing intervention | proportion whose denominator is **killed rows** | NO — a family with no kill enters neither numerator nor denominator | ✅ immune by construction |
+| 12 — C7 | counts reported **per cell**, never averaged across cells | NO | ✅ immune (not pooled) |
+| 4, 5, 7 | single-population effect sizes | N/A — nothing pooled | not applicable |
+| 1, 2, 3 | geometric (cosines, dose fractions) | no behavioural headroom concept | not applicable |
+
+### Entry 11 checked, not assumed
+
+Entry 11 has exactly the vulnerable shape — a paired mean over six domains — so it was opened rather
+than waved through. `paired_per_domain_mean`, `paired_n = 294`:
+
+| domain | L8 | L16 | L31 |
+|---|---|---|---|
+| city_bridge | 0.1023 | 0.1630 | 0.2391 |
+| farm_storage | 0.0925 | 0.1393 | 0.1225 |
+| game_manual | 0.1805 | 0.2207 | 0.2666 |
+| instructional | 0.0870 | 0.2054 | 0.3097 |
+| lab_safety | 0.0719 | 0.1825 | 0.1983 |
+| news_report | 0.1016 | 0.2394 | 0.2543 |
+| **pooled** | **0.1060** | **0.1917** | **0.2317** |
+
+**All six domains positive at all three layers**, spread 0.072–0.181 (L8), 0.139–0.239 (L16),
+0.122–0.310 (L31). **No domain contributes ≈0 and none points the wrong way** — the exact opposite
+of entry 6, where 2 of 5 populations carried everything and 2 pointed backwards.
+
+**So the rule discriminates rather than merely flagging everything**: it condemns entry 6 and clears
+entry 11 on the same test. That is what makes it worth keeping. Entry 11's `KEEP_NARROWED` is
+reaffirmed on stronger grounds than it had before — the pooled number is a fair summary of six
+concordant domains, not a mean over a mixture.

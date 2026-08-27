@@ -369,5 +369,32 @@
   },
   "verdict": "ALL THREE EXIST. The `bad_paths` field of the verification schema is UNRELIABLE and its contents are not propagated into the ledger's verdicts. One of the three (src/boombness/semantic_binding_probe.py) was a legitimate MIS-CITATION -- the artifact's RUNMETA.json names src/boombness/binding_behaviour_bridge.py as the producing script -- but that is a wrong-producer error, not a missing file, and the verifier filed it in the wrong field. The other two are simply incorrect.",
   "lesson": "A subagent's structured-output field is data, not a finding. This one was checked because the sprint rule says so; had it been propagated, the ledger would have asserted that three existing artifacts are missing."
+ },
+ "denominator_rule_audit_2026-08-27": {
+  "rule": "Does a no-headroom population enter the DENOMINATOR? An effect size averaged over populations is vulnerable (a no-headroom population contributes ~0 and still carries weight); a proportion whose denominator is the affected rows is immune (such a population enters neither numerator nor denominator).",
+  "origin": "generalised from this sprint's entry-6 finding by a concurrent session; applied here to the whole ledger",
+  "results": {
+   "entry_6_retrieval_knockout": {
+    "shape": "effect size pooled over 8 populations",
+    "fails": true,
+    "why": "window_knife baseline ASR is 2/96 -- no headroom -- yet carries equal weight in the mean",
+    "action": "per-population reporting mandatory before quoting; see section 0.8"
+   },
+   "entry_11_token_level_dynamics": {
+    "shape": "paired mean over 6 domains",
+    "fails": false,
+    "why": "checked rather than assumed: all 6 domains positive at L8/L16/L31, spread 0.072-0.181 / 0.139-0.239 / 0.122-0.310, none near zero, none reversed",
+    "action": "KEEP_NARROWED reaffirmed on stronger grounds"
+   },
+   "entry_13_binding_survival": {
+    "shape": "proportion over KILLED rows",
+    "fails": false,
+    "why": "denominator is killed rows, so a population with no kills is simply unrepresented"
+   },
+   "entry_12_C7": {
+    "shape": "counts reported per cell, never averaged",
+    "fails": false
+   }
+  }
  }
 }
