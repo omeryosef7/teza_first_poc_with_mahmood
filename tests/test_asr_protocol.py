@@ -65,6 +65,10 @@ def _mk_run(tmp_path, name, n, cap, trunc_frac, score_fn, chars=200,
               open(judge / "config.json", "w"))
     json.dump({"judge": "strongreject_rubric", "judge_null_frac": 0.0},
               open(judge / "summary.json", "w"))
+    # The completeness contract: a readable run has DONE.json on BOTH the judge and gens dirs.
+    for dd in (judge, gens):
+        json.dump({"schema": "DONE/1", "status": "ok", "rows_written": n},
+                  open(dd / "DONE.json", "w"))
     return str(judge)
 
 
@@ -224,3 +228,72 @@ def test_pin_is_read_from_the_rows_not_the_config(tmp_path):
     json.dump(c, open(cfg, "w"))                      # config CLAIMS a pin
     e = ap.build_entry(j)
     assert e["judge_pinned"] is False                 # rows say otherwise, and rows win
+
+
+# --------------------------------------------------------------------------- #
+# 5. completeness — a partial or excluded run must not be readable at all
+# --------------------------------------------------------------------------- #
+
+def test_a_run_without_DONE_is_refused(tmp_path):
+    """V-1's sweep read every dir on disk and ingested a 482-row partial under a complete run's
+    tag. `common.require_done` already existed for exactly this; the consumer just never called it."""
+    j = _mk_run(tmp_path, "partial", 10, 512, 0.0, lambda i: 0.0)
+    os.remove(os.path.join(j, "DONE.json")) if os.path.exists(os.path.join(j, "DONE.json")) else None
+    with pytest.raises(ap.ExcludedRunError, match="did not finish|no DONE"):
+        ap.build_entry(j)
+
+
+def test_an_ABORTED_run_is_refused(tmp_path):
+    j = _mk_run(tmp_path, "aborted", 10, 512, 0.0, lambda i: 0.0)
+    json.dump({"status": "aborted"}, open(os.path.join(j, "ABORTED.json"), "w"))
+    with pytest.raises(ap.ExcludedRunError, match="ABORTED"):
+        ap.build_entry(j)
+
+
+def test_require_done_signals_with_SystemExit_and_is_still_caught(tmp_path):
+    """`require_done` raises SystemExit, a BaseException that `except Exception` does NOT catch.
+    The first draft of the wrapper caught Exception only, so ONE unfinished dir killed a 617-dir
+    sweep instead of being skipped. This pins that the wrapper catches the right base class."""
+    j = _mk_run(tmp_path, "sysexit", 10, 512, 0.0, lambda i: 0.0)
+    d = os.path.join(j, "DONE.json")
+    if os.path.exists(d):
+        os.remove(d)
+    try:
+        ap.build_entry(j)
+    except ap.ExcludedRunError:
+        pass                      # correct: converted, not propagated
+    except SystemExit:            # pragma: no cover
+        pytest.fail("SystemExit leaked out of build_entry — it would kill any sweep")
+
+
+def test_allow_partial_is_opt_in_and_marks_the_entry(tmp_path):
+    """Deliberately inspecting a running job stays possible, but must be asked for and is stamped."""
+    j = _mk_run(tmp_path, "running", 10, 512, 0.0, lambda i: 0.0)
+    d = os.path.join(j, "DONE.json")
+    if os.path.exists(d):
+        os.remove(d)
+    e = ap.build_entry(j, allow_partial=True)
+    assert e["run_status"] == "allowed_partial"
+
+
+def test_a_complete_run_is_stamped_done(tmp_path):
+    e = ap.build_entry(_mk_run(tmp_path, "good", 10, 512, 0.0, lambda i: 0.0))
+    assert e["run_status"] == "done"
+
+
+def test_a_run_on_the_EXCLUSION_LIST_is_refused(tmp_path, monkeypatch):
+    """The concrete V-1 failure: `ab_C_20260819_002240_1397246` is named in EXCLUDED_RUNS.json,
+    has 482 rows to the complete run's 495, and carries the SAME tag — so the sweep reported the
+    partial one's number under the good one's name."""
+    j = _mk_run(tmp_path, "excluded_one", 10, 512, 0.0, lambda i: 0.0)
+    name = os.path.basename(j)
+    monkeypatch.setattr(ap, "_excluded_run_ids", lambda root=None: {name})
+    with pytest.raises(ap.ExcludedRunError, match="EXCLUDED_RUNS"):
+        ap.build_entry(j)
+
+
+def test_the_exclusion_list_is_actually_read_from_disk():
+    """Parsing must find real run ids in the real file, or the check is decorative."""
+    ids = ap._excluded_run_ids()
+    assert len(ids) > 0, "EXCLUDED_RUNS.json parsed to an empty set — the regex or path is wrong"
+    assert "ab_C_20260819_002240_1397246" in ids

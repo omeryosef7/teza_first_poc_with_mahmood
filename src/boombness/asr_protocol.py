@@ -53,7 +53,57 @@ import sys
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import OUT_ROOT, FailureLedger, RunDir, read_jsonl  # noqa: E402
+from common import OUT_ROOT, FailureLedger, RunDir, read_jsonl, require_done  # noqa: E402
+
+
+class ExcludedRunError(ValueError):
+    """A run that must not be read: partial, aborted, or on the exclusion list.
+
+    ADDED 2026-08-27 as a CORRECTION. The first corpus sweep (V-1) scored every judge dir on disk
+    without checking either the DONE contract or `EXCLUDED_RUNS.json`, and duly ingested
+    `ab_C_20260819_002240_1397246` -- a 482-row partial that is on the exclusion list -- alongside
+    the complete 495-row `abg_C`. Both carry `tag: ab_C`, so the sweep reported the partial one's
+    number under the good one's name.
+
+    `common.require_done` already existed for exactly this, and its own docstring says it was added
+    "after the mid-session sweep found that NO analyzer checked this ... an invariant asserted at
+    one end of a contract and never checked at the other". I wrote a new consumer and reproduced the
+    bug the repo had already fixed once. The brief is explicit: "If a run is partial, mark it
+    excluded and make sure lookup code cannot accidentally ingest it."
+    """
+
+
+def _excluded_run_ids(root: Optional[str] = None) -> set:
+    """Run ids named by `outputs/boombness/EXCLUDED_RUNS.json`, best-effort and never fatal."""
+    import re
+    path = os.path.join(root or OUT_ROOT, "EXCLUDED_RUNS.json")
+    if not os.path.exists(path):
+        return set()
+    try:
+        return set(re.findall(r"[A-Za-z0-9_]+_2026\d{4}_\d{6}_\d+", open(path).read()))
+    except Exception:
+        return set()
+
+
+def check_run_readable(run_dir: str, allow_partial: bool = False) -> Dict[str, Any]:
+    """Refuse a run dir that is aborted, unfinished, or explicitly excluded."""
+    name = os.path.basename(os.path.abspath(run_dir).rstrip("/"))
+    if os.path.exists(os.path.join(run_dir, "ABORTED.json")):
+        raise ExcludedRunError(f"{name}: ABORTED.json present — this run was aborted, not finished")
+    if name in _excluded_run_ids():
+        raise ExcludedRunError(f"{name}: named in EXCLUDED_RUNS.json")
+    if not allow_partial:
+        try:
+            done = require_done(run_dir)
+        except SystemExit as e:
+            # `require_done` signals refusal with SystemExit, which is a BaseException and is NOT
+            # caught by `except Exception`. The first draft of this wrapper caught Exception only,
+            # so a single unfinished run dir killed the whole corpus sweep instead of being skipped.
+            raise ExcludedRunError(f"{name}: {str(e)[:200]}") from None
+        except Exception as e:
+            raise ExcludedRunError(f"{name}: {e}") from None
+        return {"run_status": "done", "rows_written": (done or {}).get("rows_written")}
+    return {"run_status": "allowed_partial", "rows_written": None}
 
 SCHEMA = "ASR_PROTOCOL/1"
 
@@ -219,12 +269,15 @@ def _frac(k: int, n: int) -> Optional[float]:
 
 
 def build_entry(judge_dir: str, label: Optional[str] = None,
-                gens_dir: Optional[str] = None) -> Dict[str, Any]:
+                gens_dir: Optional[str] = None, allow_partial: bool = False) -> Dict[str, Any]:
     """Compute the full publishable ASR entry for one judged arm.
 
     NOTE the absence of any filtering argument. That is the point of this module.
     """
     judge_dir = os.path.abspath(judge_dir)
+    # COMPLETENESS FIRST. A partial or excluded run must not be readable at all -- see
+    # ExcludedRunError for what happened when this check was absent.
+    run_status = check_run_readable(judge_dir, allow_partial=allow_partial)
     jcfg_path = os.path.join(judge_dir, "config.json")
     jcfg = json.load(open(jcfg_path)) if os.path.exists(jcfg_path) else {}
     jargs = jcfg.get("args", {})
@@ -239,6 +292,7 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
             from common import REPO_ROOT
             gens_dir = os.path.join(REPO_ROOT, gens_dir)
 
+    check_run_readable(gens_dir, allow_partial=allow_partial)
     gi = load_gens_index(gens_dir)
     gidx = gi["index"]
 
@@ -339,6 +393,7 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
         "judge_model_candidates": jsum.get("judge_model_candidates") if not judge_models else None,
         "judge_null_frac": jsum.get("judge_null_frac"),
         "primary_threshold": PRIMARY_THRESHOLD,
+        **run_status,
     }
     # Relabel rather than silently mislabel. The caller can still be refused by the guard if the
     # cap binds hard enough that the arm is not worth quoting at all.

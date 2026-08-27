@@ -1269,3 +1269,63 @@ comparison whose two halves have different cap-binding status is not one I will 
 **But the number itself is not quotable as ASR until 787377/787378 land.** Entry 5 stays
 **NEEDS RERUN** until then. Recorded now because the guard firing on a result I wanted is worth more
 than the result.
+
+---
+
+## §0.2.5 — ⛔ CORRECTION TO §0.2: the first corpus sweep ingested partial and excluded runs
+
+**Artifact:** `outputs/boombness/asr_protocol/corpus_sweep_20260827_v2.json` **supersedes**
+`corpus_sweep_20260827.json`. **Do not quote the V-1 numbers.**
+
+### How it surfaced
+
+Building the refusal arm's cap pair, `ab_C` read as **134/495** — but §0.2's sweep had recorded it
+as **133/482**. Chasing the discrepancy: there are **two** judge dirs carrying `tag: ab_C`.
+`abg_C_20260819_011714_1480835` is complete (495 rows, `DONE.json`). `ab_C_20260819_002240_1397246`
+is a **482-row partial**, has no `DONE.json`, and **is named in `EXCLUDED_RUNS.json`**. My sweep
+scored it and reported its number under the good run's tag.
+
+**`common.require_done` already existed for exactly this**, and its own docstring says it was added
+"after the mid-session sweep found that NO analyzer checked this … an invariant asserted at one end
+of a contract and never checked at the other." **I wrote a new consumer and reproduced the bug the
+repo had already fixed once** — against a brief that says in terms: *"If a run is partial, mark it
+excluded and make sure lookup code cannot accidentally ingest it."*
+
+### The corrected numbers
+
+`build_entry` now refuses an `ABORTED` run, a run without `DONE.json`, or a run named in
+`EXCLUDED_RUNS.json` — on **both** the judge dir and its gens dir — with `allow_partial` as an
+explicit opt-in that stamps `run_status: allowed_partial`.
+
+| | V-1 (defective) | **V-20 (corrected)** |
+|---|---|---|
+| scored | 596 | **566** |
+| **excluded** | **0 — not checked** | **51** (45 on the list · 4 ABORTED · 2 no DONE) |
+| errors | 18 | **0** |
+| cap=192 | 242 dirs / 69 904 rows / 91.3 % bind | **226 dirs / 59 455 rows / 90.7 % bind** |
+| cap=512 | 349 / 146 798 / 14.6 % | **332 / 142 282 / 13.3 %** |
+| cap=640 | 5 / 432 | 7 / 624 |
+| cap=1024 | — | **1 / 495** (new) |
+| quotable as plain ASR | 324 dirs / 135 867 rows | **316 dirs / 132 803 rows** |
+| quotable only as "ASR within N" | 271 dirs / 81 088 rows | **250 dirs / 70 053 rows** |
+| guard-refused | 1 | **0** (the refused dir was ABORTED and is now excluded upstream) |
+
+**The qualitative finding is unchanged** — the 192-cap stratum still binds on ~91 % of dirs — but
+**10 449 of the rows attributed to it came from runs that should never have been read**, and every
+row count in §0.2 was inflated. §0.2's *conclusion* stands; its *numbers* are superseded here.
+
+### A second bug, in the fix itself
+
+The first version of the wrapper caught `except Exception`. **`require_done` signals refusal with
+`SystemExit`, which is a `BaseException` and is not caught by that** — so a single unfinished dir
+killed the entire 617-dir sweep instead of being skipped. It took three silent failures to notice,
+two of them masked by `/tmp` having become unwritable on this node. Now caught explicitly, and
+pinned by `test_require_done_signals_with_SystemExit_and_is_still_caught`.
+
+**45 tests, 4 mutations caught** — including one that initially survived because every fixture lives
+in `tmp_path`, where no exclusion file applies, so the exclusion-list branch was never exercised. A
+test that reads the real `EXCLUDED_RUNS.json` and asserts the offending id is in it closes that.
+
+**What this changes for the sprint:** nothing in the ledger, and no conclusion. What it changes is
+that the instrument which polices every other number in this sprint was itself unpoliced for its
+first nineteen commits.
