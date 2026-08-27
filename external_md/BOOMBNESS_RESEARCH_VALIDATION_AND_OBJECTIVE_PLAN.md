@@ -1562,3 +1562,76 @@ verdict.
 discriminating, not flagging heaviness — the control pairs bind on up to **94 %** of rows at the low
 cap and resolve *completely* at the high one, while mine binds on 30 % and resolves *not at all*.
 Without this control the classifier would rest on a single case.
+
+---
+
+## §0.15 — ENTRY 7 RESOLVED (refusal channel) and ENTRY 6's FIRST POPULATION — both sprint-grade
+
+**Artifact:** `outputs/boombness/arm_report/e67_20260828_001917_4064232/arm_report.json`
+All arms pinned `openai/gpt-4o-mini`; **entry-7's three arms judged in ONE invocation** (787449),
+**entry-6's two in ONE invocation** (787613).
+
+### Entry 7 — refusal projection, `advbench_heldout_495`, cap 1024, **n=495**
+
+| arm | ASR | at cap | median tok | refusal kw | judge floor |
+|---|---|---|---|---|---|
+| `base` | **33/495** | 0.0040 | 18 | **0.9313** | 0.0185 |
+| **C** `refusalness:project_out:18-18` | **133/495** | 0.0182 | 21 | 0.7091 | 0.0349 |
+| **D** joint `d_surface`@L8 + `refusalness`@L18 | **171/495** | 0.0162 | 24 | 0.6222 | 0.0412 |
+
+| contrast | delta | up / down | exact p | net/SD | divergence |
+|---|---|---|---|---|---|
+| **C vs base** | **+0.2020** | **100 / 0** | ~0 | −19.44 | 440/495 `OK` |
+| **D vs base** | **+0.2788** | **139 / 1** | ~0 | −25.38 | 453/495 `OK` |
+
+**The cap does not bind on any arm** (0.004–0.018) and both arms pass `assert_sprint_grade`.
+
+**This replicates the old numbers almost exactly** — and that is the striking part:
+
+| | old (cap 512, binding, cross-session judge) | **new (cap 1024, non-binding, pinned, one invocation)** |
+|---|---|---|
+| arm C | +0.2061 | **+0.2020** |
+| arm D | +0.2869 | **+0.2788** |
+
+Two independent measurements four rows apart on n=495, under protocols that differ in cap, judge
+pinning and session structure. **Ledger entry 7 moves NEEDS RERUN → KEEP.** The §0.2 truncation
+concern was legitimate to raise and is now answered: it did not move this estimate.
+
+`C` is **100 up / 0 down** — perfectly one-directional, which is what removing a refusal direction
+should look like. Refusal keyword rate falls 0.9313 → 0.7091 (C) → 0.6222 (D), so the intervention
+does what it says on the tin.
+
+### Entry 6 — retrieval knockout, population `main`, cap 640, n=96
+
+| arm | ASR | at cap | median tok | refusal kw |
+|---|---|---|---|---|
+| `A_baseline` | **22/96** | **0.0000** | 202.0 | 3/96 |
+| `C_band_L6_14` (demo-block attention knockout) | **8/96** | **0.0000** | 201.5 | 1/96 |
+
+**delta −0.1458 · 7 up / 21 down · exact p = 0.0125 · net/SD = 4.05 · divergence 96/96 · MDE 0.125**
+
+**Neither arm truncates at all**, so this is plain `ASR` with no relabelling — the first entry-6
+measurement that is. Against cap 192 (22/96 → 5/96, net +17) the effect **replicates** at
+22/96 → 8/96, net +14.
+
+**Ledger entry 6: one of three populations confirms.** `ticket_bomb` and `basket_gun` are queued.
+Per §0.8 the claim was never about the pooled average — `main` and `ticket_bomb` carried it while
+two populations pointed the other way — so **this confirms the half that was real, and `basket_gun`
+remains the informative test** (a population *with* headroom that showed nothing at 192).
+
+Note the effect sits just above its own detection threshold (0.1458 against MDE 0.125), so `main`
+alone is not a strong result; it is one concordant cell.
+
+### The two channels, side by side, both now at non-binding caps
+
+| intervention | direction | magnitude | n |
+|---|---|---|---|
+| remove **refusal** (L18) | **raises** ASR | +0.2020 | 495 |
+| remove **refusal + `d_surface`** | **raises** ASR | +0.2788 | 495 |
+| remove **`d_surface`** (L14, §0.14) | **raises** ASR | +0.3229 | 96 |
+| **knock out demo retrieval** (L6–14) | **lowers** ASR | −0.1458 | 96 |
+
+**Every direction-removal raises ASR; only the attention knockout lowers it.** That asymmetry is the
+sprint's clearest structural finding so far, and it points away from "`d_surface` carries the
+attack" and toward "the demonstration-retrieval *pathway* carries it, while the fitted directions are
+suppressors whose deletion disinhibits the model."
