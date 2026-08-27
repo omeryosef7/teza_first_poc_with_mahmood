@@ -178,6 +178,54 @@ def assert_publishable(entry: Dict[str, Any]) -> None:
             "at a larger cap or set asr_label accordingly.")
 
 
+#: Cap-binding has TWO causes and they need opposite responses. Measured 2026-08-27 on the
+#: `d_surface` project-out arm: at cap 640 it bound on 29/96 rows; at cap 1536 it bound on
+#: **the same 29 rows**, 100 % overlap, zero resolved by 2.4x more room, every one landing on
+#: exactly 1536 tokens. Its baseline bound on 0/96 at both caps.
+#:
+#:   TRUNCATION  the answer needed more room. A larger cap fixes it. Re-run larger.
+#:   DEGENERACY  the generation never terminates. NO cap fixes it. Re-running larger is a
+#:               treadmill, and a rule that says "re-run larger" refuses such an arm forever.
+#:
+#: The first `assert_sprint_grade` conflated them and would have refused a real result in
+#: perpetuity. Degeneracy is a property OF THE INTERVENTION and must be disclosed, not chased.
+BINDING_TRUNCATION = "truncation_resolvable_by_larger_cap"
+BINDING_DEGENERACY = "degeneracy_no_cap_will_fix"
+BINDING_MIXED = "mixed"
+
+
+def classify_cap_binding(entry_lo: Dict[str, Any], entry_hi: Dict[str, Any],
+                         rows_lo: Optional[set] = None,
+                         rows_hi: Optional[set] = None) -> Dict[str, Any]:
+    """Given the SAME arm at two caps, say why its cap binds.
+
+    `rows_lo`/`rows_hi` are the sets of at-cap prompt_ids; when supplied the overlap decides,
+    which is far stronger than comparing two fractions that could coincide by accident.
+    """
+    lo, hi = entry_lo.get("frac_at_cap"), entry_hi.get("frac_at_cap")
+    if lo is None or hi is None:
+        return {"binding_kind": None, "reason": "a frac_at_cap is missing"}
+    resolved = lo - hi
+    overlap = None
+    if rows_lo is not None and rows_hi is not None and rows_lo:
+        overlap = len(rows_lo & rows_hi) / len(rows_lo)
+    if hi <= CAP_BIND_MAX:
+        kind, why = BINDING_TRUNCATION, "the larger cap resolved the binding"
+    elif overlap is not None and overlap >= 0.95:
+        kind, why = (BINDING_DEGENERACY,
+                     f"{len(rows_lo & rows_hi)}/{len(rows_lo)} of the at-cap rows are THE SAME rows "
+                     "at both caps: they do not terminate, and no cap will fix that")
+    elif abs(resolved) < 0.02:
+        kind, why = (BINDING_DEGENERACY,
+                     f"frac_at_cap is cap-invariant ({lo:.4f} -> {hi:.4f}); the generations do not "
+                     "terminate")
+    else:
+        kind, why = BINDING_MIXED, f"the larger cap resolved {resolved:.4f} but binding remains"
+    return {"binding_kind": kind, "reason": why, "frac_at_cap_lo": lo, "frac_at_cap_hi": hi,
+            "cap_lo": entry_lo.get("max_new"), "cap_hi": entry_hi.get("max_new"),
+            "at_cap_row_overlap": overlap}
+
+
 def assert_sprint_grade(entry: Dict[str, Any]) -> None:
     """The stricter tier every ASR produced BY THIS SPRINT must meet.
 
@@ -202,10 +250,22 @@ def assert_sprint_grade(entry: Dict[str, Any]) -> None:
             "which stamps judge_model_used on every row and aborts on a mid-run model switch. "
             "Without it the ASR may be an average over two different judges.")
     if entry.get("cap_binds"):
+        kind = entry.get("binding_kind")
+        if kind == BINDING_DEGENERACY:
+            # NOT a cap failure. The arm produces non-terminating generations, which no cap fixes.
+            # Demanding a bigger cap here is a treadmill; the honest requirement is DISCLOSURE.
+            if entry.get("degenerate_rows") is None:
+                raise PublicationGuardError(
+                    f"ASR entry '{entry.get('label', '?')}': binding is classified as DEGENERACY, "
+                    "so it must disclose `degenerate_rows` — the count of non-terminating rows is "
+                    "part of the result, not a footnote.")
+            return
         raise PublicationGuardError(
             f"ASR entry '{entry.get('label', '?')}': the cap binds on {entry['frac_at_cap']:.4f} "
             f"of rows at max_new={entry['max_new']}. Sprint-grade ASR must be measured at a cap "
-            "that does not bind; re-run larger rather than relabelling new work.")
+            "that does not bind; re-run larger rather than relabelling new work. (If a SECOND cap "
+            "shows the same rows still binding, classify with `classify_cap_binding` and stamp "
+            "`binding_kind` — non-termination is degeneracy, not truncation, and no cap fixes it.)")
 
 
 def assert_table_publishable(table: Dict[str, Any]) -> None:

@@ -1378,3 +1378,67 @@ brief demanded on principle and what this now supports on evidence.
 **Phase 2.1/2.2 status: the separation is established.** What remains is whether *either* predicts
 heldout ASR beyond `n_examples`/refusal/length/domain — and that needs the fixed-protocol ASR now
 being generated, not more geometry.
+
+---
+
+## §0.13 — CAP-BINDING HAS TWO CAUSES, AND §0.2'S RULE ONLY HANDLED ONE
+
+**Artifact:** `outputs/boombness/score_behavior/v3_{A,W}1536_*` · **Tests:** 50, 3 further mutations caught
+
+§0.12's `d_surface` project-out arm was refused by `--require-sprint-grade` because its cap bound on
+0.302 of rows. §0.2's pre-registered response is *"run a larger cap"*, so both arms were re-run at
+**1536** (2.4× the room). The result:
+
+| | at cap, 640 | at cap, 1536 | median tokens |
+|---|---|---|---|
+| `A_baseline` | **0/96** | **0/96** | 308.5 (both) |
+| `W` (`d_surface` removed) | **29/96 = 0.3021** | **29/96 = 0.3021** | 346.5 (both) |
+
+**Identical fraction, and the same 29 rows — 100 % overlap, zero resolved.** All 29 land on exactly
+1536 tokens. The 67 rows that ended at 640 have byte-identical token counts at 1536 (greedy
+determinism confirmed).
+
+**Removing `d_surface` makes ~30 % of generations never terminate.** That is not truncation and no
+cap will fix it. §0.2's rule — raise the cap until it stops binding — would have refused this arm
+**in perpetuity**, sending the sprint on a treadmill.
+
+### The protocol now distinguishes them
+
+`classify_cap_binding(entry_lo, entry_hi, rows_lo, rows_hi)` returns:
+
+* **`truncation_resolvable_by_larger_cap`** — the larger cap resolved it. Re-run larger. *(This is
+  what §0.3a found for the refusal arm: 0.243 → 0.018.)*
+* **`degeneracy_no_cap_will_fix`** — the same rows bind at both caps. **Disclose, do not chase.**
+  Row-identity overlap decides where available, because two caps can bind on the same *fraction* for
+  different rows.
+
+`assert_sprint_grade` now accepts a degeneracy-classified entry **only if it discloses
+`degenerate_rows`** — the non-terminating count is part of the result, not a footnote — and still
+refuses plain truncation exactly as before.
+
+### Does the degeneracy explain §0.12's +0.27? **No.** *(diagnostic split, not an estimator)*
+
+| stratum | n | ASR base | ASR arm | up | down | **net** |
+|---|---|---|---|---|---|---|
+| **W rows that terminate** | **67** | 24/67 | 49/67 | 29 | 4 | **+25** |
+| W rows that never terminate | 29 | 6/29 | 7/29 | 6 | 5 | **+1** |
+| all | 96 | 30/96 | 56/96 | 35 | 9 | +26 |
+
+**25 of the 26 net upward flips are in rows that terminate normally.** Only 6 of the 35 upward flips
+fall in the degenerate stratum, and they are nearly cancelled by 5 downward ones. The ASR increase is
+**not** an artifact of rambling completions giving the judge more surface to score — which was the
+obvious worry and is now excluded.
+
+*(This is a length-conditioned split. The brief permits that as a DIAGNOSTIC and forbids it as an
+estimator; it is used here only to test an alternative explanation, and the headline remains the
+unconditioned 30/96 → 56/96.)*
+
+### What this does and does not license
+
+* **The effect survives its most serious alternative explanation.**
+* **The intervention is degenerate on ~30 % of rows**, and that is now a disclosed property of the
+  arm rather than a cap complaint. For Phase 3's criteria — *"if no aggressive patch can move
+  behaviour without degeneracy, record the negative"* — this is a **partial** degeneracy: behaviour
+  moves, and it moves in the non-degenerate stratum.
+* Entry 5 stays **NEEDS RERUN** until `j1536_A`/`j1536_W` (job 787539) are judged and the arm is
+  scored with `binding_kind` and `degenerate_rows` stamped.

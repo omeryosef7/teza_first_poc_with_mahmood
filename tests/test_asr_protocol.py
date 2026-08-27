@@ -297,3 +297,54 @@ def test_the_exclusion_list_is_actually_read_from_disk():
     ids = ap._excluded_run_ids()
     assert len(ids) > 0, "EXCLUDED_RUNS.json parsed to an empty set — the regex or path is wrong"
     assert "ab_C_20260819_002240_1397246" in ids
+
+
+# --------------------------------------------------------------------------- #
+# 6. truncation vs degeneracy — two causes of cap-binding needing opposite responses
+# --------------------------------------------------------------------------- #
+
+def test_a_larger_cap_that_resolves_binding_is_TRUNCATION():
+    c = ap.classify_cap_binding({"frac_at_cap": 0.46, "max_new": 192},
+                                {"frac_at_cap": 0.02, "max_new": 640})
+    assert c["binding_kind"] == ap.BINDING_TRUNCATION
+
+
+def test_the_SAME_rows_binding_at_both_caps_is_DEGENERACY():
+    """The measured case: the d_surface project-out arm binds on 29/96 at cap 640 and on the SAME
+    29 rows at cap 1536 — 100% overlap, zero resolved by 2.4x more room."""
+    rows = {f"p{i}" for i in range(29)}
+    c = ap.classify_cap_binding({"frac_at_cap": 0.3021, "max_new": 640},
+                                {"frac_at_cap": 0.3021, "max_new": 1536}, rows, rows)
+    assert c["binding_kind"] == ap.BINDING_DEGENERACY
+    assert c["at_cap_row_overlap"] == 1.0
+
+
+def test_row_overlap_beats_a_coincidental_fraction_match():
+    """Two caps can bind on the same FRACTION for different rows; identity is the stronger test."""
+    lo = {f"p{i}" for i in range(30)}
+    hi = {f"q{i}" for i in range(30)}          # same count, disjoint rows
+    c = ap.classify_cap_binding({"frac_at_cap": 0.30, "max_new": 640},
+                                {"frac_at_cap": 0.30, "max_new": 1536}, lo, hi)
+    assert c["at_cap_row_overlap"] == 0.0
+    # falls through to the fraction rule, which still says degeneracy — but the overlap is recorded
+    # so a reader can see the identity evidence is ABSENT rather than assume it was checked
+    assert c["at_cap_row_overlap"] is not None
+
+
+def test_sprint_grade_still_refuses_plain_truncation(tmp_path):
+    j = _mk_run(tmp_path, "trunc", 100, 192, 0.46, lambda i: 0.0, pinned="openai/gpt-4o-mini")
+    e = ap.build_entry(j)
+    with pytest.raises(ap.PublicationGuardError, match="the cap binds"):
+        ap.assert_sprint_grade(e)
+
+
+def test_sprint_grade_ACCEPTS_disclosed_degeneracy(tmp_path):
+    """A rule that says 're-run larger' refuses a non-terminating arm FOREVER. Degeneracy is a
+    property of the intervention: it must be disclosed, not chased."""
+    j = _mk_run(tmp_path, "degen", 100, 1536, 0.30, lambda i: 0.0, pinned="openai/gpt-4o-mini")
+    e = ap.build_entry(j)
+    e["binding_kind"] = ap.BINDING_DEGENERACY
+    with pytest.raises(ap.PublicationGuardError, match="must disclose"):
+        ap.assert_sprint_grade(e)              # classified but not disclosed -> still refused
+    e["degenerate_rows"] = 30
+    ap.assert_sprint_grade(e)                  # disclosed -> allowed
