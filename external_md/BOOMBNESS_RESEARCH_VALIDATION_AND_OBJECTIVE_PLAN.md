@@ -2157,3 +2157,70 @@ Either outcome is worth having:
 * **`demoproc` survives on `ticket_bomb`** → the **scope decomposition** is what carries binding
   survival, which is a *stronger* result than either of us currently claims: the unscoped mask
   destroys comprehension and the scoped one does not.
+
+---
+
+## §0.17 — ENTRY 6 COMPLETE: `basket_gun` is null, and the dissociation holds at a usable cap
+
+**Artifact:** `outputs/boombness/arm_report/e6g_20260828_024252_196300/arm_report.json`
+Cap 640 · n=96 · pinned · both arms in one invocation
+
+| arm | ASR | at cap | median tokens | refusal kw |
+|---|---|---|---|---|
+| `A_baseline` | 10/96 | 0.0104 | 347.5 | 5/96 |
+| `C_band_L6_14` | 7/96 | 0.0000 | 362.5 | 0/96 |
+
+**delta −0.0312 · 4 up / 7 down · p = 0.5488 · net/SD 1.18 · MDE 0.09375 · divergence 96/96**
+
+**This is the null §0.8 predicted, and it is an informative one rather than an underpowered one:**
+the design detects ≥0.094, and the two confirming populations both exceed that (−0.146, −0.260)
+while this observes −0.031. **And divergence is 96/96 — the intervention fired and changed every
+single generation, and ASR did not move.** Live and inert.
+
+### Entry 6, all three populations at non-binding caps
+
+| population | baseline → arm | delta | p | net/SD | divergence | verdict |
+|---|---|---|---|---|---|---|
+| `main` | 22/96 → 8/96 | −0.1458 | 0.0125 | 4.05 | 96/96 | **confirms** |
+| `ticket_bomb` | 27/96 → 2/96 | −0.2604 | ~0 | 9.66 | 96/96 | **confirms** |
+| `basket_gun` | 10/96 → 7/96 | −0.0312 | 0.5488 | 1.18 | 96/96 | **null** |
+
+**§0.8's decomposition is confirmed exactly.** The pooled "96 down / 18 up over 8 populations" was
+carried by a subset, and the population that showed nothing at cap 192 shows nothing at cap 640 —
+with the hook demonstrably live. **The effect is real and population-specific, not universal.**
+
+---
+
+## §5.5 — THE DECIDING CELL: binding survival is SCOPE-dependent, not bank-dependent
+
+`demo_processing_only` on `ticket_bomb` had never been run. It is the cell that separates *scope*
+from *bank*, and it resolves cleanly. **All three arms fully reportable.**
+
+**Forced-choice probe, `ticket_bomb`, n=48:**
+
+| arm | mapped-wins | median option mass |
+|---|---|---|
+| baseline | **45/48** | 0.5534 |
+| `legacy_all_query` (unscoped) | **15/48** | **0.1152** |
+| **`demo_processing_only` (scoped)** | **45/48** | **0.5201** |
+
+**`demo_processing_only` preserves binding completely** — identical to baseline at 45/48, with option
+mass essentially unchanged. The unscoped mask collapses both.
+
+`comprehension_usage` agrees and goes further: baseline 11/48, legacy 3/48, **demoproc 17/48** — the
+scoped knockout *raises* the coded reading.
+
+### What this settles
+
+* **§5.2's collapse is a property of the SCOPE, not the bank.** My correction was right that I had
+  over-generalised from one population, but wrong about the axis — it is `legacy_all_query` that
+  destroys comprehension, on both banks.
+* **The other session's C5 (`demo_processing_only`) is vindicated and now extends to a second bank.**
+* **The scope decomposition is what carries binding survival** — which is the stronger of the two
+  outcomes flagged in §5.4, and stronger than either session had claimed: *the unscoped mask destroys
+  comprehension and the scoped one does not.*
+
+**The remaining question is whether the scoped knockout also removes the attack.** If it kills ASR on
+`ticket_bomb` while holding binding at 45/48, that is Phase 5's success condition met cleanly on the
+population where the unscoped mask failed it. Job **788144** is judging baseline / legacy / demoproc
+**in one invocation** to answer it.
