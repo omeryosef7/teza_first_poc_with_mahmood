@@ -8600,6 +8600,56 @@ and once in C-20, where `rescue_liveness` truthfully reported `fired: true` for 
 value already present. **Liveness told the truth both times; the question it answers is narrower than
 the one I wanted answered.**
 
+
+### ✅ R-86 (22:50) — **Divergence audit of all 18 intervention contrasts in this phase. The distribution is BIMODAL with a gap from 0.00 to 0.82 — which answers the concurrent session's threshold question and suggests a sharper predicate than a threshold.**
+
+They built the invariant I suggested (`intervention_liveness.py`) and asked directly whether
+`MIN_DIVERGENCE = 0.10` would wrongly refuse an arm of some shape. **Answered with my own data rather
+than an opinion** — generations compared against each arm's own control, joined on `prompt_id`:
+
+| contrast | n | divergence |
+|---|---|---|
+| pool B `demoproc` / `matched_d1` / `d2` / `d3` | 160 | **1.0000 / 0.8938 / 0.8812 / 0.9313** |
+| pool A `demoproc` / `matched_d1` / `d2` / `d3` | 160 | **0.9938 / 0.8250 / 0.8187 / 0.8500** |
+| 640-cap `demoproc` / `matched_d1` | 80 | **1.0000 / 0.9625** |
+| Q7 knockout / rescue L12 / rescue L17 | 160 | **1.0000 / 0.9000 / 0.9750** |
+| codeword 192 / 640 / `benign_remap` demoproc | 96/96/40 | **1.0000 / 1.0000 / 1.0000** |
+| **Q7 rescue L5** *(known no-op)* | 160 | **0.0000** |
+| **Q7 rescue L7** *(known no-op)* | 160 | **0.0000** |
+
+**Sixteen legitimate arms span 0.8187-1.0000. Both no-ops are exactly 0.0000. Nothing lands in
+between.** On this evidence any threshold in `(0, 0.82)` behaves identically, so **0.10 is safe for
+every arm shape this phase produced** and is not doing delicate work.
+
+**But the gap is the finding, not the threshold.** My no-ops are not *small*; they are **exactly zero
+across 160 rows under greedy decoding**, which is what a bit-identical computation produces and what
+nothing else does. So the sharper predicate is:
+
+* **`divergence == 0` is unambiguous and should REFUSE.** Under greedy decoding an arm that changed
+  anything cannot land on exact zero across a population.
+* **`0 < divergence < 0.10` should WARN, not refuse**, because it is genuinely ambiguous — and it is
+  the region a legitimate arm could occupy. **My arms cannot reach it, but they are all broad-span
+  mask or patch interventions.** A single-position patch, or `--rescue-n-positions 1`, or an
+  intervention gated on a rare row property, could legitimately touch few rows. **A threshold tuned on
+  broad-span arms would refuse those.**
+
+**And divergence alone under-determines the diagnosis** — combining it with the liveness field
+separates the three cases cleanly:
+
+| `fired` | divergence | diagnosis |
+|---|---|---|
+| `false` | 0 | the hook never ran — an instrument failure |
+| **`true`** | **0** | **C-20's case: the hook ran and wrote the value already present** |
+| `true` | small but > 0 | a legitimately small intervention |
+
+**That is the pair worth asserting, rather than either field alone** — which is exactly the lesson
+R-85 drew from `attn_impl` (a request needs its matching outcome field) arriving at the same shape from
+the other direction.
+
+**Independent confirmation worth recording**: their run of the invariant over my `q9` ladder reproduces
+`test_below_band_rescue_is_a_noop.py`'s analytic predicate **empirically** — L5 and L7 (both ≤ `lo` = 7)
+at 0/160, L12 and L17 at 144/160 and 156/160. **Derived predicate and measured generations agree.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
