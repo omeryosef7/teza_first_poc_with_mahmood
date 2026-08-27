@@ -500,14 +500,14 @@ codeword and the concept, `masked(B)` must equal `masked(C)` **byte for byte**, 
 must equal `masked(A)`. A byte-equality test is far stronger than any classifier accuracy and
 cannot be argued with: if it holds, there is *no lexical difference left* for `d_surface` to carry.
 
-### Result —  is lexically clean
+### Result — `d_surface` is lexically clean
 
 **23 of 24 banks pass**, on 384–640 complete families each. The 24th, `phase_d`, has **0 core-2×2
 rows by construction** (it is the single-condition aggressiveness bank), so it is not a failure.
 
 | measurement | result | reading |
 |---|---|---|
-| ** pairs byte-identical after masking** | **100 % on 23/24 banks** | the contrast carries no topic, domain or valence |
+| **`d_surface` pairs byte-identical after masking** | **100 % on 23/24 banks** | the contrast carries no topic, domain or valence |
 | **surface arm predicted from masked text** | **0.5000 on every bank, majority baseline 0.5000, lift 0.0000** | a lexical classifier cannot beat chance |
 | surface arm predicted from **unmasked** text | **1.0000** | the instrument works — this is the sanity check |
 | **valence** predicted from masked text | **0.9167–0.9375** vs majority 0.5000 (**lift ≈ +0.43**) | `d_context` IS heavily lexical, as the design openly admits |
