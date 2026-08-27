@@ -8650,6 +8650,50 @@ the other direction.
 `test_below_band_rescue_is_a_noop.py`'s analytic predicate **empirically** — L5 and L7 (both ≤ `lo` = 7)
 at 0/160, L12 and L17 at 144/160 and 156/160. **Derived predicate and measured generations agree.**
 
+
+### ⛔ C-26 (23:05) — **The test I committed as C-20's guard is a TAUTOLOGY: it passes with the production code broken. Found by mutation-testing my own test, prompted by the concurrent session reporting the same pattern twice today.**
+
+They recorded that two of their mutations *"came back green and the fault was mine, not the code's"* —
+an unfired mutation reading as a passed one. **That is worth more as a pattern than as an instance, so
+I applied it to the test I wrote today.**
+
+**`tests/test_below_band_rescue_is_a_noop.py` imports only `pytest`.** Its predicate,
+`patch_can_differ_from_recipient`, is **defined inside the test file**. Verified by mutation — renaming
+`DonorPatch.liveness` in `src/boombness/donor_patch.py`:
+
+| | before the fix | after |
+|---|---|---|
+| all tests with `donor_patch.py` broken | **11 passed** ⛔ | **1 failed, 11 passed** ✅ |
+
+**It could not fail for any change to the code it purports to guard.** I committed it under C-20 as the
+thing that "stops a below-band layer being described as a control again", and it does no such thing
+mechanically.
+
+**What it actually is, now labelled as such.** It encodes a **rule**, and the rule has already been
+re-derived wrong twice — C-20 first wrote it as *"below the band"*, then R-68 measured the band
+**floor** to be vacuous too and corrected it to `layer > lo`. **Documentation against that specific
+recurrence is real value.** Calling it a regression guard was not.
+
+**Fixes applied, both minimal:**
+
+1. The module docstring now states plainly that it is a rule, **not** a regression guard, that it
+   passes with `donor_patch.py` broken, and that `tests/test_donor_patch.py` is the file that actually
+   exercises the production code (`strict_ids`, write, liveness, hook teardown).
+2. **One binding assertion added** — `DonorPatch` and `DonorPatch.liveness` must exist. The rule is a
+   statement *about* that class; if it disappears the rule describes nothing and the file should fail
+   rather than keep passing quietly. **The mutation that was green is now red.**
+
+**Why the empirical version is not available**: `outputs/` is gitignored (`.gitignore:11`), so the fact
+behind the rule — L5/L7 byte-identical to their control, L12/L17 not — **cannot be pinned in-repo**.
+That is a real limit and is now stated in the file rather than left as an implicit "surely someone
+would notice".
+
+**The general shape, which is C-20's own lesson turned on my tooling.** C-20 was *a hook that reported
+firing while changing nothing.* This is *a test that reported passing while checking nothing.*
+**Both were true statements about a narrower question than the one I was asking**, and in both cases
+the only thing that exposed it was **comparing against something that should have differed** — a
+control's generations there, a mutated module here.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*

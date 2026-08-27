@@ -8,9 +8,19 @@ already present: `rescue_liveness` reports `fired: true` and the generations do 
 Measured 2026-08-26/27 on four independent arms -- two models, two position modes, three sessions --
 every one byte-identical to its own session's knockout-only arm, while every IN-band arm differed.
 
-C9, C11 and C12 each published this arm as a layer-specificity control. It cannot serve as one. This
-test stops a below-band layer being described as a control again, by asserting the rule that makes it
-vacuous rather than by re-reading run directories (which are not part of the repo).
+C9, C11 and C12 each published this arm as a layer-specificity control. It cannot serve as one.
+
+⚠ WHAT THIS FILE IS, AND IS NOT (added after mutation-testing it, C-26).
+It encodes a RULE. It is NOT a regression guard, and it must not be counted as one: the predicate it
+checks is defined in this file, so it passes even when `donor_patch.py` is broken (verified — renaming
+`DonorPatch.liveness` leaves all of these green). Run directories are gitignored, so the empirical
+fact behind the rule (L5/L7 byte-identical to their control, L12/L17 not) cannot be pinned here.
+
+Its value is that it stops the rule being RE-DERIVED WRONG — twice already: C-20 first wrote it as
+"below the band", then R-68 measured the band FLOOR to be vacuous too and corrected it to `layer > lo`.
+The production code is covered by tests/test_donor_patch.py, which exercises the real DonorPatch
+(strict_ids, write, liveness, hook teardown). The one binding assertion below fails if that API
+disappears, so the rule cannot outlive the thing it describes in silence.
 """
 
 import pytest
@@ -71,3 +81,21 @@ def test_the_band_floor_itself_is_vacuous(model, layer):
     exactly like the below-band L5 arm it was meant to replace.
     """
     assert not patch_can_differ_from_recipient(model, layer)
+
+
+def test_the_rule_has_something_to_describe():
+    """The one assertion here that touches production code.
+
+    The rule above is a statement ABOUT `DonorPatch`: that it writes the residual stream entering a
+    block, and that it reports firing whether or not the write changed anything (C-20). If that class
+    or its liveness contract disappears, the rule is describing nothing and this file should fail
+    rather than keep passing quietly.
+    """
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                    "src", "boombness"))
+    import donor_patch
+    assert hasattr(donor_patch, "DonorPatch"), "DonorPatch is gone; the rule describes nothing"
+    assert hasattr(donor_patch.DonorPatch, "liveness"), (
+        "DonorPatch.liveness is gone — C-20's whole point is that this field reports `fired: true` "
+        "for a write that changed nothing, so the rule is meaningless without it")
