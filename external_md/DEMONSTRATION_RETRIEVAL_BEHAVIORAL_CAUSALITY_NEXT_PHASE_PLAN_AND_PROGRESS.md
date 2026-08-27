@@ -7782,6 +7782,50 @@ deliverables' 37 artifact paths and 74 job ids all resolve (R-74), and the day's
 **The honest statement is that the phase is finished pending one decision, and this entry makes it
 rather than manufacturing a fifth codeword to look busy.**
 
+
+### 📌 R-77 (11:50) — **Limitation 2 authorised. Scoping it first: the benign-register mapping ALREADY EXISTS in the bank as the `benign_remap` condition, and the concept-usage flag is already parameterised. This may need no bank build at all — the same surprise as limitation 5.**
+
+The user authorised R-27's bank-design change. **Before building anything I read the code**, and the
+instrument R-27 prescribed is largely already present.
+
+**R-27's requirement, verbatim:** *"the flag would have to be a concept term that is **not** itself
+harmful content — the mapping expressed in a benign register."*
+
+**What already exists:**
+
+* **`benign_remap` (cell F)** in `CONDITIONS`, described in the source as *"benign-valence sentences
+  from a DIFFERENT domain remapped onto the codeword, so the structure and the remapping are present
+  but the taught meaning is harmless."* Concretely (`prompt_families.py:319-323`) it draws from the
+  `<domain>|remap` pool — sentences about **`bicycle`** in an *equipment-inventory* register — and
+  substitutes `bicycle → carrot`. **So the demos teach `carrot` behaves like a bicycle, in a benign
+  register, with no harmful vocabulary anywhere.**
+* **The flag is already parameterised**: `completion_phenotype.lexical_phenotype(text, stop_reason,
+  codeword, concept_terms)` takes `concept_terms` as an argument. Pointing it at bicycle vocabulary
+  instead of bomb vocabulary is a call-site change, not a code change.
+* **A built-in floor**: `benign_remap` exists at `n_examples ∈ {0, 4, 8}`. **The `n = 0` rows teach no
+  mapping at all**, so they are a natural negative control for concept usage rather than an assumed one.
+
+**Why this dissolves R-27's confound.** R-27 was uninformative because *"mentions bomb/explosive/
+detonate"* and *"is a successful jailbreak"* were nearly the same event, so concept usage was
+confounded with the outcome. **`bicycle` is not harmful content and does not move StrongREJECT**, so
+"did the model use the mapping" becomes measurable independently of "did it comply."
+
+**Population, counted not assumed:** `benign_remap` has **120 rows** in `d10` — 60 `behavioral` and 60
+`semantic_one_word`, at `n_examples ∈ {0, 4, 8}`, all in the `extra_conditions` block. So the
+behavioural population is **60 rows, 20 per dose.** That is **small** — the margin at n = 20 is
+**1.0 row** — and it is the honest constraint on this branch, replacing "we need a new bank" with
+"we have an instrument but a thin population."
+
+**⛔ Nothing is run and nothing is pre-registered yet, deliberately.** The one real design decision is
+**which terms count as bicycle vocabulary**, and that list must be fixed **before** any completion is
+read — and derived from the **remap pool's own sentences**, never from the completions, or it becomes
+a list tuned to produce an effect. That is the next tick's work, as PR-31.
+
+**If the population proves too thin**, the fallback is the bank build the user authorised — generating
+`demo_pools` with a benign concept via `run_demo_pools.sh` (`DP_CONCEPT`/`DP_CODEWORD` are already
+parameters). **The authorisation is not being spent until it is needed**, which is the same judgement
+that turned limitation 5 into a `--bank` swap rather than a build.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
