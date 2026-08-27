@@ -874,3 +874,69 @@ loop — **survived, and correctly so: it is a semantic no-op.** The buckets are
 intervals, so a score matches exactly one regardless; the `break` is a loop optimisation, not a
 correctness guard. Recorded rather than counted as a pass, because "3 of 3 mutations caught" would
 have been a false claim about test strength.
+
+---
+
+## §0.8 — PLANNING ENTRY 6 BEFORE SPENDING GPU: the knockout effect is carried by 2 of 5 populations
+
+A peer session suggested using the §0.7 per-arm floor as a **GPU selection criterion** — prefer
+populations whose *baseline* has low borderline mass, since the baseline dominates the paired noise.
+That is a planning step the sprint did not have, so it was run before submitting anything.
+
+### First, is a cap-192 measurement even usable for planning a cap-640 run?
+
+The borderline mass would be read off the existing cap-192 judge runs, and truncation plausibly
+*creates* ambiguity. Tested on the two row-matched cap pairs:
+
+| pair | near @192 | near @640 | rows becoming borderline | ceasing to be |
+|---|---|---|---|---|
+| Llama `basket_bomb` `A_baseline` (n=96) | 7/96 | 8/96 | 8 | 7 |
+| Qwen3 `longpreQ14B` `A_baseline` (n=80) | 7/80 | 7/80 | 3 | 3 |
+
+**Borderline mass is essentially cap-invariant**, so cap-192 mass validly predicts cap-640 mass and
+the criterion is usable. Note the *identities* churn (8 in / 7 out) while the *count* holds — itself
+consistent with §0.7: which rows are borderline is noisy, how many is not.
+
+### The five Llama populations behind ledger entry 6
+
+Paired noise SD computed as `sqrt(E[flips_A] + E[flips_C])`, using the §0.7 per-arm floors:
+
+| population | n | A.near | A.floor | C.near | C.floor | **ASR A** | **ASR C** | down | up | net | noise SD | **net/SD** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **`ticket_bomb`** | 96 | 7 | 0.0524 | 6 | 0.0462 | 24 | 7 | 22 | 5 | **+17** | 3.08 | **5.53** |
+| **`main`** | 96 | 12 | 0.0754 | 2 | 0.0366 | 22 | 5 | 20 | 3 | **+17** | 3.28 | **5.18** |
+| `window_knife` | 96 | 2 | 0.0270 | 0 | 0.0173 | **2** | 0 | 2 | 0 | +2 | 2.06 | 0.97 |
+| `basket_gun` | 96 | 6 | 0.0435 | 6 | 0.0402 | 10 | 11 | 9 | 10 | **−1** | 2.83 | −0.35 |
+| `button_knife` | 96 | 2 | 0.0299 | 4 | 0.0463 | 9 | 10 | 6 | 7 | **−1** | 2.71 | −0.37 |
+
+### What this says about entry 6's headline
+
+**"96 down / 18 up over 8 populations" is carried by 2 of the 5 Llama populations.** `ticket_bomb`
+and `main` contribute +17 each at >5 SD. The other three contribute **+2, −1, −1** — and two of them
+point the *wrong way*.
+
+And `window_knife` is not a null, it is **an underpowered population with no headroom**: baseline
+ASR is **2/96**. There is essentially no attack there to knock out, so its near-zero result carries
+no information in either direction. That is consistent with the prior sprint's own R-AU
+("attackability is a bank × model property"), which the aggregate headline does not reflect.
+
+### Consequence for the rerun design
+
+Re-running all five at 640 would spend ~60 % of the GPU on populations that either have no headroom
+(`window_knife`) or show no effect (`basket_gun`, `button_knife`). The informative design instead
+reruns:
+
+* **`ticket_bomb` and `main`** — where the effect lives. *Can it disappear at a non-binding cap?*
+* **`basket_gun`** — a genuine null *with* headroom (baseline 10/96). *Can the rerun detect an effect
+  where 192 saw none?* Without at least one such arm the rerun cannot demonstrate it is capable of
+  detecting absence, only of confirming presence.
+
+`window_knife` is **declined for the same reason Llama's C7 branch was declined: no headroom.**
+
+### Caveat, stated because it is load-bearing
+
+The near/far flip rates are **measured on Qwen3 (`q15A`/`q16A`) and transplanted onto Llama arms as
+a mixture model.** The borderline **counts** are measured directly on each Llama arm and are not
+transplanted; the **rates** are. A population whose boundary behaviour differs from Qwen3's would
+move the `net/SD` column. The ranking is robust to this (the gap between 5.5 and −0.4 is not a rate
+artifact); the absolute SDs are not.
