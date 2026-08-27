@@ -1329,3 +1329,52 @@ test that reads the real `EXCLUDED_RUNS.json` and asserts the offending id is in
 **What this changes for the sprint:** nothing in the ledger, and no conclusion. What it changes is
 that the instrument which polices every other number in this sprint was itself unpoliced for its
 first nineteen commits.
+
+---
+
+## §2 — TOKEN-LEVEL AND PROMPT-LEVEL BOOMBNESS ARE GENUINELY TWO OBJECTS
+
+**Artifact:** `outputs/boombness/token_vs_prompt_level/tvp1_20260827_231721_3877437/token_vs_prompt_level.json`
+**Script:** `src/boombness/token_vs_prompt_level.py` · **Tests:** 7, 3 mutations caught
+**Population:** `extract_boombness/full_20260816_185942_1008673`, `condition=natural_doublespeak`,
+`query_kind=behavioral`, **246 multi-occurrence prompts** (24 single-occurrence excluded)
+
+The brief *instructs* that the two be kept apart. **Nothing in this repo had ever measured whether
+they are actually distinct** — the instruction was being followed on faith. This measures it.
+
+Both are computed from the same per-occurrence rows, so they are not independent by construction.
+The question is whether the prompt-level aggregate carries anything the final-token reading does not.
+
+| field | `token_final ~ prompt_mean` | `~ prompt_max` | `~ prompt_demo_mean` |
+|---|---|---|---|
+| **`d_surface\|L12\|proj`** | **0.2869** | **0.0576** | 0.1077 |
+| `d_surface\|L8\|proj` | 0.5840 | 0.4852 | 0.4519 |
+| `d_surface\|L31\|proj` | 0.5240 | 0.2814 | 0.3645 |
+| `ll\|L12\|boombness` | 0.5689 | 0.2275 | 0.3389 |
+| `ll\|L31\|boombness` | 0.5972 | 0.6657 | 0.3814 |
+
+**They are two objects, not one.** Every correlation sits well below 1, and at **L12 — the layer the
+retracted G2 claim used — the two share only ρ = 0.287**, i.e. about 8 % of rank variance. The
+`max` aggregate at L12 is ρ = 0.058, essentially unrelated to the final token.
+
+**Single-occurrence prompts are excluded and this matters:** with one codeword occurrence the two
+metrics are *literally the same number*, so including the 24 such prompts would manufacture
+agreement and bias every correlation toward the "one object" conclusion. A test asserts the
+exclusion, and a mutation that includes them goes red.
+
+### The consequence for Phase 7, which is not the obvious one
+
+**G2's retraction does not automatically extend to a prompt-level claim.** G2 measured
+`d_surface|L12|proj` **at the final codeword token** and found it does not predict ASR
+(clean n=90, ρ = −0.052). At L12 the prompt-level aggregate shares **ρ = 0.287** with that
+quantity — so a prompt-level metric at L12 is largely a *different variable that was never tested*,
+not a restatement of the retracted one.
+
+That does **not** resurrect G2, and nothing here says a prompt-level metric predicts anything. It
+says the question is **OPEN rather than settled negative**, and that Phase 7 must treat token-level
+and prompt-level as **two candidate objectives requiring separate evaluation** — which is what the
+brief demanded on principle and what this now supports on evidence.
+
+**Phase 2.1/2.2 status: the separation is established.** What remains is whether *either* predicts
+heldout ASR beyond `n_examples`/refusal/length/domain — and that needs the fixed-protocol ASR now
+being generated, not more geometry.
