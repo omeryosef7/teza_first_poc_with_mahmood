@@ -28,7 +28,7 @@ import asr_protocol as ap  # noqa: E402
 # --------------------------------------------------------------------------- #
 
 def _mk_run(tmp_path, name, n, cap, trunc_frac, score_fn, chars=200,
-            refused_frac=0.0, drop_from_gens=0):
+            refused_frac=0.0, drop_from_gens=0, pinned=None):
     """Build a matched (score_behavior, judge) pair with fully controlled diagnostics."""
     gens = tmp_path / "score_behavior" / name
     judge = tmp_path / "judge" / name
@@ -46,9 +46,11 @@ def _mk_run(tmp_path, name, n, cap, trunc_frac, score_fn, chars=200,
                          "n_new_tokens": cap if truncated else min(cap, 40),
                          "stop_reason": "length" if truncated else "eos",
                          "arm": name, "model": "test/model"})
-        judge_rows.append({"prompt_id": pid, "strongreject_score": score_fn(i),
-                           "judge_status": "ok", "refused": i < n_ref,
-                           "judge_model_used": "gpt-4o-mini"})
+        jr = {"prompt_id": pid, "strongreject_score": score_fn(i),
+              "judge_status": "ok", "refused": i < n_ref}
+        if pinned:
+            jr["judge_model_used"] = pinned          # written only on the pinned path
+        judge_rows.append(jr)
 
     with open(gens / "gens.jsonl", "w") as fh:
         for r in gen_rows[drop_from_gens:]:
@@ -59,7 +61,8 @@ def _mk_run(tmp_path, name, n, cap, trunc_frac, score_fn, chars=200,
     with open(judge / "results.jsonl", "w") as fh:
         for r in judge_rows:
             fh.write(json.dumps(r) + "\n")
-    json.dump({"args": {"gens": str(gens), "tag": name}}, open(judge / "config.json", "w"))
+    json.dump({"args": {"gens": str(gens), "tag": name, "pin_judge_model": pinned}},
+              open(judge / "config.json", "w"))
     json.dump({"judge": "strongreject_rubric", "judge_null_frac": 0.0},
               open(judge / "summary.json", "w"))
     return str(judge)
@@ -180,3 +183,44 @@ def test_no_public_function_accepts_a_length_filter(fn):
     passed by accident, so the ABSENCE of these parameters is asserted, not just documented."""
     params = set(inspect.signature(fn).parameters)
     assert not (params & set(BANNED)), f"{fn.__name__} grew a filtering parameter: {params}"
+
+
+# --------------------------------------------------------------------------- #
+# 4. the sprint-grade tier — pinned judge, non-binding cap
+# --------------------------------------------------------------------------- #
+
+def test_sprint_grade_accepts_a_pinned_nonbinding_arm(tmp_path):
+    j = _mk_run(tmp_path, "new", 100, 512, 0.05, lambda i: 0.9 if i < 10 else 0.0,
+                pinned="openai/gpt-4o-mini")
+    e = ap.build_entry(j)
+    assert e["judge_pinned"] is True and e["judge_model_used"] == ["openai/gpt-4o-mini"]
+    ap.assert_sprint_grade(e)                         # must not raise
+
+
+def test_sprint_grade_refuses_an_unpinned_judge(tmp_path):
+    """Historical runs are unpinned; that is a fact about them, and new work may not inherit it."""
+    j = _mk_run(tmp_path, "old", 100, 512, 0.05, lambda i: 0.0)     # no pin
+    e = ap.build_entry(j)
+    assert e["judge_pinned"] is False
+    ap.assert_publishable(e)                          # still passes the FLOOR
+    with pytest.raises(ap.PublicationGuardError, match="WITHOUT a pinned judge model"):
+        ap.assert_sprint_grade(e)                     # but not the sprint tier
+
+
+def test_sprint_grade_refuses_a_binding_cap_even_when_relabelled(tmp_path):
+    """Relabelling rescues an OLD number. New work must be re-run larger instead."""
+    j = _mk_run(tmp_path, "new192", 100, 192, 0.46, lambda i: 0.0, pinned="openai/gpt-4o-mini")
+    e = ap.build_entry(j)
+    ap.assert_publishable(e)                          # relabelled, floor is satisfied
+    with pytest.raises(ap.PublicationGuardError, match="the cap binds"):
+        ap.assert_sprint_grade(e)
+
+
+def test_pin_is_read_from_the_rows_not_the_config(tmp_path):
+    """A pin the backend ignored would leave the config asking and the rows silent. Trust rows."""
+    j = _mk_run(tmp_path, "liar", 100, 512, 0.0, lambda i: 0.0)     # rows carry no responder
+    cfg = os.path.join(j, "config.json")
+    c = json.load(open(cfg)); c["args"]["pin_judge_model"] = "openai/gpt-4o-mini"
+    json.dump(c, open(cfg, "w"))                      # config CLAIMS a pin
+    e = ap.build_entry(j)
+    assert e["judge_pinned"] is False                 # rows say otherwise, and rows win

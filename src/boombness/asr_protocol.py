@@ -128,6 +128,36 @@ def assert_publishable(entry: Dict[str, Any]) -> None:
             "at a larger cap or set asr_label accordingly.")
 
 
+def assert_sprint_grade(entry: Dict[str, Any]) -> None:
+    """The stricter tier every ASR produced BY THIS SPRINT must meet.
+
+    `assert_publishable` is the floor: it says a number can be honestly quoted with its
+    diagnostics. This adds the two provenance requirements the sprint brief imposes on NEW work
+    and which the 596 historical judge dirs cannot retroactively satisfy:
+
+      * the judge model is PINNED, proved from the rows (`judge_model_used` is written only on
+        `judge_boombness.py --pin-judge-model`'s path, after a pre-flight canary and with an abort
+        on any mid-run model switch), not merely requested in the config;
+      * the cap does not bind at all, so the number is ASR rather than ASR-within-N.
+
+    Historical artifacts are deliberately NOT run through this; re-scoring them under the floor is
+    how §0.3 compares old to new, and holding them to a standard that did not exist would just
+    delete the comparison.
+    """
+    assert_publishable(entry)
+    if not entry.get("judge_pinned"):
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}' was judged WITHOUT a pinned judge model. "
+            "Sprint-grade ASR requires `judge_boombness.py --pin-judge-model openai/gpt-4o-mini`, "
+            "which stamps judge_model_used on every row and aborts on a mid-run model switch. "
+            "Without it the ASR may be an average over two different judges.")
+    if entry.get("cap_binds"):
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}': the cap binds on {entry['frac_at_cap']:.4f} "
+            f"of rows at max_new={entry['max_new']}. Sprint-grade ASR must be measured at a cap "
+            "that does not bind; re-run larger rather than relabelling new work.")
+
+
 def assert_table_publishable(table: Dict[str, Any]) -> None:
     """Guard a whole ASR table, and additionally refuse a table whose arms are not comparable."""
     entries = table.get("entries") or []
@@ -299,7 +329,14 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
         "n_length_rows": n_len,
         "n_duplicate_prompt_ids_in_gens": gi["n_duplicate_prompt_ids"],
         "judge": jsum.get("judge"),
-        "judge_model_used": sorted(judge_models) or jsum.get("judge_model_candidates"),
+        "judge_model_used": sorted(judge_models) or None,
+        # A pin the backend ignores is worse than no pin, so `judge_pinned` reflects what the ROWS
+        # say (a per-row `judge_model_used` exists only on the pinned path), never what the config
+        # asked for. Historical runs predate the flag and are pinned=False; that is a fact about
+        # them, not a defect to be papered over.
+        "judge_pinned": bool(judge_models) and jargs.get("pin_judge_model") is not None,
+        "judge_model_pinned": jargs.get("pin_judge_model"),
+        "judge_model_candidates": jsum.get("judge_model_candidates") if not judge_models else None,
         "judge_null_frac": jsum.get("judge_null_frac"),
         "primary_threshold": PRIMARY_THRESHOLD,
     }
@@ -339,6 +376,9 @@ def main() -> int:
     ap.add_argument("--tag", default="asr")
     ap.add_argument("--check", default="",
                     help="guard mode: validate an existing ASR table artifact and exit")
+    ap.add_argument("--sprint-grade", action="store_true",
+                    help="additionally require a pinned judge model and a non-binding cap, i.e. "
+                         "the standard every ASR produced by THIS sprint must meet")
     ap.add_argument("--allow-unpublishable", action="store_true",
                     help="write the artifact even if the guard refuses it (the artifact is "
                          "stamped publishable=false; it may not be quoted)")
@@ -348,6 +388,9 @@ def main() -> int:
         table = json.load(open(args.check))
         try:
             assert_table_publishable(table)
+            if args.sprint_grade:
+                for e in table["entries"]:
+                    assert_sprint_grade(e)
         except PublicationGuardError as e:
             print(f"[asr-guard] REFUSED {args.check}\n  {e}")
             return 1
@@ -367,10 +410,14 @@ def main() -> int:
     publishable, why = True, None
     try:
         assert_table_publishable(table)
+        if args.sprint_grade:
+            for e in table["entries"]:
+                assert_sprint_grade(e)
     except PublicationGuardError as e:
         publishable, why = False, str(e)
         ledger.fail("guard_refused", str(e)[:200])
     table["publishable"] = publishable
+    table["sprint_grade_checked"] = bool(args.sprint_grade)
     table["guard_refusal"] = why
 
     for e in table["entries"]:
