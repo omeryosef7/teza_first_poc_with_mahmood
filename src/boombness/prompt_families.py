@@ -695,6 +695,30 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                  positions=["near"],
                  role_styles=[x for x in ROLE_STYLES if x != "plain"]),
         ]
+    if preset == "main_ne12":
+        # PHASE 6, 2026-08-27. The research-validation sprint's brief asks for a demonstration-count
+        # sweep over n_examples {0,1,2,4,8,12}. `12` occurs in ZERO rows in ZERO banks: `N_EXAMPLES`
+        # is (0,1,2,4,8,16), so the brief's sweep does not exist here and the nearest available one
+        # skips straight from 8 to 16.
+        #
+        # WHY THIS IS A PRESET AND NOT AN EDIT TO `N_EXAMPLES`. That constant is consumed at exactly
+        # ONE site -- the `main` preset's core2x2 block below -- so appending 12 to it would silently
+        # change what `main` generates. `tests/test_bank_regenerates_byte_identically.py` regenerates
+        # the CANONICAL banks from their pools and asserts sha equality, so that edit would turn the
+        # test red for every existing bank while never overwriting a bank file: a change to the
+        # meaning of every historical `bank_rows_sha16` at a distance. This repo has already been
+        # bitten by exactly that shape (C-10: `DOMAINS` grew 6 -> 10 and the canonical carrot bank
+        # stopped regenerating). A derived preset leaves every existing preset byte-stable.
+        #
+        # It DERIVES from `main` rather than copying it, so it cannot drift from `main` later; only
+        # the core2x2 block's n_examples is widened.
+        blocks = _blocks("main", domains)
+        out = []
+        for b in blocks:
+            if b.get("name") == "core2x2":
+                b = dict(b, n_examples=sorted(set(list(b["n_examples"]) + [12])))
+            out.append(b)
+        return out
     # main
     return [
         # (1) The 2x2 across every domain, split and example count — the identification core.
@@ -967,7 +991,8 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "phase_d"],
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre",
+                                         "phase_d", "main_ne12"],
                     default="main")
     ap.add_argument("--n-preamble", type=int, default=None,
                     help="Override main_longpre's preamble length. Required length depends on the "

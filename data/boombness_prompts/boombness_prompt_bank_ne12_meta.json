@@ -1,0 +1,84 @@
+{
+  "preset": "main_ne12",
+  "seed": 20260816,
+  "codeword": "carrot",
+  "concept": "bomb",
+  "pools_sha16": "b5e399712b996b7d",
+  "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+  "stats": {
+    "bank_rows_sha16": "d471aa8935ead6c5",
+    "n_rows": 2928,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 72,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 384,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 864,
+      "benign_remap": 72,
+      "concept_in_benign_ctx": 432,
+      "direct_codeword": 72,
+      "direct_harmful": 432,
+      "natural_doublespeak": 1056
+    },
+    "by_block": {
+      "consistency": 72,
+      "core2x2": 1344,
+      "core2x2_slot3": 384,
+      "extra_conditions": 144,
+      "families": 144,
+      "position": 24,
+      "role_style": 720,
+      "strength": 96
+    },
+    "by_query_kind": {
+      "behavioral": 1200,
+      "comprehension_usage": 336,
+      "semantic_forced_choice": 336,
+      "semantic_one_word": 1056
+    },
+    "by_n_examples": {
+      "0": 288,
+      "1": 288,
+      "12": 192,
+      "16": 192,
+      "2": 576,
+      "4": 732,
+      "8": 660
+    },
+    "by_domain": {
+      "city_bridge": 488,
+      "farm_storage": 488,
+      "game_manual": 488,
+      "instructional": 488,
+      "lab_safety": 488,
+      "news_report": 488
+    },
+    "by_split": {
+      "dev": 1560,
+      "heldout": 1368
+    },
+    "by_role_style": {
+      "assistant_like": 144,
+      "cot_like": 144,
+      "plain": 2208,
+      "system_like_quoted": 144,
+      "tool": 144,
+      "user_like": 144
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "3421bb444b8f837452129f5b962ff7e073dcf257",
+  "python": "3.13.13",
+  "torch": null,
+  "transformers": null,
+  "cuda_available": null,
+  "gpu": null,
+  "timestamp": "2026-08-27T21:50:35"
+}
