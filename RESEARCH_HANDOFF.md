@@ -28,12 +28,22 @@ and the second is not the mechanism of the first.**
 
 **Three, and C7 was the phase's longest-running open question.**
 
-**(0) Attack removal is DEMONSTRATION-SPECIFIC (C7, R-58).** On Qwen3, masking the demonstration
-positions removes **5 of 5** attacks at `n_examples`=4 and **5 of 7** at n=8, while **three
-independent count-matched masks of the same size drawn from elsewhere** remove **1, 2, 2** and
-**2, −2, −1** — all inside the pre-registered margin. Separation **2.0×** and **3.2×** the arm-vs-arm
-margin. **The effect is about which positions they are, not how many.** ⚠ Single-model: Llama's
-version was **declined for power** (R-52), never refuted.
+**(0) Attack removal is DEMONSTRATION-SPECIFIC (C7, R-58 + R-62).** On Qwen3, masking the
+demonstration positions removes **5 of 5** attacks at `n_examples`=4 and **5 of 7** at n=8, while
+**three independent count-matched masks of the same size drawn from elsewhere** remove **1, 2, 2**
+and **2, −2, −1** — all inside the pre-registered margin. Separation **2.0×** and **3.2×** the
+arm-vs-arm margin. **Replicated on an independent pool** (R-62, PR-25): **4 of 4** and **5 of 6**,
+controls **+1, +1, +1** and **0, −1, −2**, separation **3.0×** and **1.8×**. **The effect is about
+which positions they are, not how many.**
+
+⚠ Single-model: Llama's version was **declined for power** (R-52), never refuted.
+
+⚠ **Truncation-robustness is UNMEASURED (C-19), not established.** Every number above is an ASR over
+the **first 192 generated tokens**. The `demoproc` arm terminates on only **0.325/0.300** of its rows
+against **0.519–0.606** for its own controls, and the subgroup where baseline and arm both terminate is
+**3, 1, 1 and 0 rows** at the decisive doses — too small to test the effect on either pool.
+Conditioning on termination is conditioning on a **collider**, so this is not evidence of an artifact;
+it means the check has not been run. **PR-26** re-generates the contrast at a 640-token cap to run it.
 
 **(a) `demo_processing_only` uniquely restores refusal**, across two model families and two
 demonstration pools, measured with a deterministic instrument. Refusal here is `judge_boombness.kw_refusal` — a keyword detector, **not
@@ -81,7 +91,7 @@ Status key: **R** replicated (2 models) · **S** single-model · **N** evaluated
 | C4 | Attack removal proceeds by **coherent non-compliance**, not degeneration | Llama + Qwen3 | killed attacks | 165 across 8 cells | killed row | **0** degenerate rows; `frac_scorable` 1.000 | `coherence_gate` thresholds, mutation-verified | same | positive/negative detector controls | **R** |
 | C5 | Concept binding **survives** the intervention | Llama + Qwen3 | forced-choice probe | 48 families/model | family (within-family 2×2) | Llama 0/48 binding lost; Qwen3 0/10 killed lost | McNemar / contingency | same | `legacy` loses 28/48 (Qwen3) | **R** |
 | C6 | Refusal restoration scales with demonstration count | **Llama only** | d10, by `n_examples` | 40/cell | prompt | +0.0000 → +0.3500, monotone | endpoint vs 0.0521, 6.7× | same | `legacy`/`respq` flat at ≤0 | **S** |
-| **C7** | **Attack removal is DEMONSTRATION-SPECIFIC** | **Qwen3-14B** (Llama **declined for power**, not refuted — R-52) | `longpreQ14`, `n_examples` **4 and 8** | 40/dose; **5 and 7** baseline attacks | prompt, **3 independent draws** | `demoproc` removes **5/5** and **5/7** attacks (−0.1250 each); controls remove **1,2,2** and **2,−2,−1**, all within ±0.0521; separation **2.0×** and **3.2×** | PR-23, committed before the bank existed; all three conditions at **both** doses | `demo_processing_only` 7-17 | **strict count-matched non-demo mask, `match_ratio` 1.000 on all 480 control rows**, 3/3 distinct draws | **S → RESOLVED** (single-model) |
+| **C7** | **Attack removal is DEMONSTRATION-SPECIFIC** | **Qwen3-14B** (Llama **declined for power**, not refuted — R-52) | `longpreQ14`, `n_examples` **4 and 8** | 40/dose; **5 and 7** baseline attacks | prompt, **3 independent draws** | `demoproc` removes **5/5** and **5/7** attacks (−0.1250 each); controls remove **1,2,2** and **2,−2,−1**, all within ±0.0521; separation **2.0×** and **3.2×**. **Pool B (R-62): −4/4 and −5/6, controls +1,+1,+1 and 0,−1,−2, separation 3.0× and 1.8×** | PR-23, committed before the bank existed; all three conditions at **both** doses | `demo_processing_only` 7-17 | **strict count-matched non-demo mask, `match_ratio` 1.000 on all 480 control rows**, 3/3 distinct draws | **S → RESOLVED** (single-model, **replicated on a 2nd pool** R-62); ⚠ **truncation-robustness UNMEASURED, C-19** |
 | C8 | `query_prefill_only` is a measured null | Llama | d10 | 160 | domain | −0.0250, p=0.6875 | sign test, floor 0.0312 | attn knockout, query prefill rows | other scopes | **S** (negative) |
 | **C9** | **Handing back the clean demonstration activations at the top of the knockout band gives back the REFUSAL and not the ATTACK** | Llama + Qwen3, **2 pools** | d10 / d10-poolB behavioural | 160 × 4 cells | prompt | refusal rows removed **18 / 17 / 12 / 18** vs an **8.3-row margin** (1.44-2.16x); as % of rise 58-92%, **inverted relative to the evidence — see DR-5**. ASR: Llama Outcome **C** (null, recovers 16.7%) | vs `MARGIN_VS_BASELINE` 0.0521; PR-13 / PR-14 / PR-16, each committed before its data | per-position `DonorPatch` at L14 (Llama) / L17 (Qwen3), donor = clean forward, same `templated_r` | **below-band L5 patch: moves refusal by EXACTLY 0.0000 in all four cells**; identity control (`--rescue-donor self`) 8/8 byte-identical | **CONFIRMATORY (4/4)** |
 | **C13** | **Neutral context that touches neither the demonstrations nor the query suppresses the doublespeak attack — LLAMA-SPECIFIC** | Llama only (**Qwen3 tested and NEGATIVE**: 21/160 → 23/160, +2 rows, powered, 0 drift — R-54) | d10 vs longpre12 vs longpre10 baselines, same judging window | 160 each | prompt | **27/160 → 6/160 and 7/160**, i.e. **−21 and −20 rows** vs an 8.3-row margin (~2.5×) | PR-21, committed before the re-judge; cross-session drift measured at **2-4 rows** on identical completions | ~10 neutral sentences prepended **outside `demo_block`** | banks verified to differ **only** by the preamble (200/200 rows, `tests/test_preamble_is_the_only_difference.py`) | **S** (single-model) |
