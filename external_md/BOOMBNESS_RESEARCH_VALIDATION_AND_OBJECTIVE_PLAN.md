@@ -481,3 +481,67 @@ bidirectional at the row level), §0.1 (the ledger), §1 (Phase 1 is largely a n
 
 **Peer session:** a concurrent session owns job 787099 (`dpools`, cpu-killable). Path and job
 ownership exchanged; both findings above sent to it so its summary does not quote a 192-cap ASR.
+---
+
+## §1.1 — THE LEAKAGE PROBE *(user-directed: "reuse, plus one new leakage probe")*
+
+**Artifact:** `outputs/boombness/bank_leakage_probe/leak2_20260827_212632_3593613/bank_leakage_probe.json` · **Script:** `src/boombness/bank_leakage_probe.py`
+**Tests:** `tests/test_bank_leakage_probe.py` (12, 5 mutations caught)
+**Command:** `python src/boombness/bank_leakage_probe.py --tag leak2` · 24 banks, no GPU
+
+§1 argued Phase 1 is a no-op. The user's instruction was: reuse the banks, **but first try to break
+them** — if a lexical baseline can separate the cells, the alignment is not what the code claims.
+
+### The test is deterministic, not a classifier accuracy
+
+`d_surface = ½[(B−C) + (E−A)]`, and **both** of those differences hold valence fixed and swap only
+the target word. So if the design is what it claims, then after masking every occurrence of the
+codeword and the concept, `masked(B)` must equal `masked(C)` **byte for byte**, and `masked(E)`
+must equal `masked(A)`. A byte-equality test is far stronger than any classifier accuracy and
+cannot be argued with: if it holds, there is *no lexical difference left* for `d_surface` to carry.
+
+### Result —  is lexically clean
+
+**23 of 24 banks pass**, on 384–640 complete families each. The 24th, `phase_d`, has **0 core-2×2
+rows by construction** (it is the single-condition aggressiveness bank), so it is not a failure.
+
+| measurement | result | reading |
+|---|---|---|
+| ** pairs byte-identical after masking** | **100 % on 23/24 banks** | the contrast carries no topic, domain or valence |
+| **surface arm predicted from masked text** | **0.5000 on every bank, majority baseline 0.5000, lift 0.0000** | a lexical classifier cannot beat chance |
+| surface arm predicted from **unmasked** text | **1.0000** | the instrument works — this is the sanity check |
+| **valence** predicted from masked text | **0.9167–0.9375** vs majority 0.5000 (**lift ≈ +0.43**) | `d_context` IS heavily lexical, as the design openly admits |
+| **domain** predicted from masked text | 0.8472–1.0000 | topic is highly readable — and orthogonal to `d_surface` |
+
+**The asymmetry is the point, and it is now quantitative rather than asserted: lift 0.00 for the
+`d_surface` factor against +0.43 for the `d_context` factor.** The brief's topic-leakage concern
+is real for `d_context` and for `domain` — and does **not** reach `d_surface`.
+
+### An internal consistency check that came out exactly right
+
+The `d_context` pairs are identical after masking on **48/384 = 12.5 %** of families. That is not
+noise, and predicting it in advance is how one knows the instrument works: broken down by
+`n_examples`, it is **48/48 identical at `n_examples=0` and 0/336 at every `n_examples ≥ 1`.**
+With zero demonstrations there is no demo block, so valence *cannot* differ and the cells collapse.
+
+### The probe found a bug in itself first — recorded, because it nearly became a finding
+
+The first run reported **11 of 24 banks leaking**, concentrated suspiciously in every `knife` bank.
+Rather than write that up, the violations were opened: they were exactly `{Knife: 8, Basket: 8}`.
+**The masking was case-sensitive**, so a sentence-initial target survived and the pair compared
+unequal — while the swap itself had been performed correctly. **A probe that manufactures alignment
+violations is worse than no probe at all.** The mask is now case-insensitive; the regression is
+pinned by a test; and because case-folding *gives something up*, a separate `capitalisation_audit`
+recovers it — a genuine case mismatch **between** arms (which changes tokenization) is still
+reported. It finds **0–2 families per bank**, concentrated in the knife banks: small, real, and
+worth knowing before anyone fits a direction on a knife bank.
+
+**Grammar:** 15–82 article disagreements per bank (`a` before a vowel). The masked-identity test is
+structurally **blind** to this class — masking makes both arms identical exactly where the article
+disagreement lives — which is why it is audited separately. This is the class that killed `arrow`
+as a concept (R-AZ, 528 rows).
+
+### Verdict
+
+**The banks are reused.** The leakage probe the user asked for was run, it tried hard to break the
+alignment, and the alignment held on the one contrast the sprint's central quantity depends on.
