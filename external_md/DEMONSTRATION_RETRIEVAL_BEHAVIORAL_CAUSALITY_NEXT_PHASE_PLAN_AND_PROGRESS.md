@@ -8473,6 +8473,52 @@ floor measured on these arms**, and the 3.6× would move if the boundary rates d
 The direction of the borderline counts (0 near-rows in `demoproc`) is directly measured on my own data
 and is not transplanted.
 
+
+### 🔎 DR-12 (22:15) — **Per-arm floor applied to EVERY ASR contrast in the phase, not just C7. They separate into two clean tiers, and nothing sits below its floor.**
+
+R-83 applied the per-arm judge floor to C7 only. The user's standing review item is *"verify no
+structure is being fitted below the measurement reproducibility floor"* — so it belongs on every
+ASR-based contrast, including the ones where the answer might be unwelcome.
+
+Method as R-83: `near` = rows with |score − 0.5| < 0.15; expected flips = `near×0.5294 +
+far×0.0173`; symmetric flips move the paired net by ±1 so `Var(net) = total expected flips` (C-25).
+
+| contrast | n | baseline | arm | net | noise SD | **ratio** |
+|---|---|---|---|---|---|---|
+| Phase-1 `legacy_all_query` | 96 | 16 | 3 | **−13** | 3.08 | **4.23×** |
+| Phase-1 `demo_processing_only` | 96 | 16 | 4 | **−12** | 3.24 | **3.70×** |
+| **C7 pool B, decisive doses** | 80 | 10 | 1 | **−9** | 2.52 | **3.57×** |
+| Phase-1 `response_query_only` | 96 | 16 | 10 | −6 | 3.47 | **1.73×** |
+| Phase-1 `query_prefill_only` | 96 | 16 | 22 | +6 | 3.82 | **1.57×** |
+
+**Two tiers, and the split is not arbitrary — it matches which claims the phase already treats as
+strong.** `legacy`, `demoproc` and C7 sit at **3.6-4.2×** their own measured noise. `respq` and `qpre`
+sit at **~1.6×**, which is exactly why PR-1's primary comparison came out as an equivalence and why
+C-11 withdrew any ranking among them: **those two arms were never separable from noise, and now that
+is a measured statement rather than a margin-based one.**
+
+**Nothing is fitted below its floor.** The weakest published contrast is 1.57×, and the claims resting
+on the weak arms are **null/equivalence claims** (C3's "indistinguishable", C8's "measured null"),
+which is the direction a low ratio supports rather than undermines.
+
+**⚠ Two scope statements, so this is not read as more than it is.**
+
+1. **C8 is NOT tested here.** C8 is `d10`, **160 rows**, a **domain sign test** (−0.0250, p=0.6875);
+   the rows above are the Phase-1 **96-row** bank (`boombness_prompt_bank.jsonl`). Different
+   population, different estimator. I checked before assuming the numbers spoke to it — they do not.
+2. **C3 already carries this.** Its row reads *"all pairwise gaps ≤ 0.0417 **except marginal `qpre`
+   pairs**"*. The floor analysis **agrees with** the exception that was already recorded; it does not
+   discover a new one.
+
+**And the same transplant caveat as R-83**: the near/far rates are the concurrent session's
+measurement on `q15A`/`q16A`, imported as a mixture model. The **borderline counts** driving each
+arm's floor are measured on my own rows; the **rates** are not. A ratio would move if boundary
+behaviour differs by population — the tiering (4× vs 1.6×) is robust to that, individual ratios less
+so.
+
+**No correction issued.** Recorded because a floor audit that finds nothing is only informative if it
+says what it covered.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
