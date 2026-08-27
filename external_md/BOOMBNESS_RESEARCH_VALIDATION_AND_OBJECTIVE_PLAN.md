@@ -940,3 +940,47 @@ a mixture model.** The borderline **counts** are measured directly on each Llama
 transplanted; the **rates** are. A population whose boundary behaviour differs from Qwen3's would
 move the `net/SD` column. The ranking is robust to this (the gap between 5.5 and −0.4 is not a rate
 artifact); the absolute SDs are not.
+
+---
+
+## §0.9 — A CONFOUND I SUSPECTED IN ENTRY 6, AND WHY IT IS NOT ONE *(plus a real audit trap)*
+
+Preparing the entry-6 rerun argsfiles, I read the five populations' configs and found the A arms
+recording `attn_impl: "eager"` and the C arms `attn_impl: "sdpa"`. Under greedy bf16 decoding a
+sub-ulp kernel difference on a near-tie refuse/comply token branches into a different completion and
+a different judged ASR — so on its face the entire A-vs-C contrast would confound the mask edit with
+a **kernel swap**. No matched eager/sdpa pair exists anywhere in the corpus (458 config groups, **0**
+spanning both), so it could not be measured away.
+
+**It is not a confound. The code already handles it, deliberately, and I was reading the wrong
+field.** `score_behavior.py:1348` forces `eager` whenever a knockout is requested, and 1350–1353
+aborts if the model did not actually come up eager, because "under sdpa the 4-D mask edit is
+silently discarded". The comment at 1136–1140 shows the authors hit exactly this and fixed it:
+*"every arm-vs-baseline contrast in Phase 2 would have confounded the mask edit with a KERNEL SWAP …
+Run the references under eager too."* That is why the A arms explicitly pass `--attn-impl eager`.
+
+### The real finding here is an audit trap
+
+**`config.json`'s `attn_impl` records what was REQUESTED, not what was USED.** The actual
+implementation is recorded elsewhere, in `summary.json → knockout_liveness.attn_implementation`.
+Anyone auditing configs the way I just did will conclude the arms are implementation-confounded when
+they are not. Recorded so the next reader — including a later me — does not re-derive this alarm.
+
+### Knockout liveness, all five populations *(the brief's §4.1 requirement, verified)*
+
+| population | requested | **ACTUAL** | rows | **frac rows decode-live** | median decode edits | min decode forwards |
+|---|---|---|---|---|---|---|
+| `main` | sdpa | **eager** | 96 | **1.0** | 52 641 | 234 |
+| `ticket_bomb` | sdpa | **eager** | 96 | **1.0** | 60 228 | 657 |
+| `button_knife` | sdpa | **eager** | 96 | **1.0** | 67 135.5 | 1 359 |
+| `window_knife` | sdpa | **eager** | 96 | **1.0** | 76 495.5 | 1 719 |
+| `basket_gun` | sdpa | **eager** | 96 | **1.0** | 68 760 | 1 719 |
+
+**The hook fired on every row of every population**, with tens of thousands of attention entries
+edited per row. Entry 6's *mechanism* is live and verified; what remains in question is only whether
+its **behavioural effect** survives a non-binding generation cap — which is what the rerun tests.
+
+Note this sharpens §0.8 rather than softening it: `basket_gun` and `button_knife` show the knockout
+firing on 96/96 rows with ~68 000 edits each and producing **net −1** — the intervention is
+demonstrably live and demonstrably does nothing there. That is a real dissociation, not a failed
+intervention.
