@@ -28,6 +28,7 @@ import collections
 import json
 import os
 import random
+import statistics
 import sys
 from typing import Dict, List, Optional, Sequence
 
@@ -2017,11 +2018,34 @@ def main() -> int:
         if not vals:
             continue
         v = sorted(vals)
+        # `med` is the UPPER-MIDDLE element, not the median: for even n the median averages the two
+        # middles. Measured 2026-08-28 on p5A_main, semantic_one_word, n=96 -- v[48] = 0.042891
+        # against a true median of 0.040421. Swept over the corpus: 28 runs carry an option_mass
+        # block, 32 readouts differ (median discrepancy 0.001376, max 0.042581), and 0 gate verdicts
+        # would flip.
+        #
+        # `median` IS DELIBERATELY LEFT UNCHANGED. It appears in every historical summary.json and
+        # other analyses quote it; mutating it would move published values retroactively, which is
+        # correcting a figure by changing the thing that produced it. `median_true` is added
+        # alongside, and THE GATE NOW READS median_true.
+        #
+        # Why the gate and not just the field: v[n//2] >= true median by construction, so the old
+        # gate was biased TOWARD PASSING. Every historical BELOW-GATE verdict is therefore safe a
+        # fortiori and only near-threshold PASSes were ever suspect -- but the next readout landing
+        # just under the floor is exactly the one it would have wrongly passed. Fixing it now is
+        # free precisely because no verdict changes; after one flips it would mean changing a
+        # verdict and a definition in the same commit.
         med = v[len(v) // 2]
-        mass_summary[kind] = {"n": len(v), "median": med, "p10": v[int(0.10 * len(v))],
+        med_true = statistics.median(v)
+        mass_summary[kind] = {"n": len(v), "median": med, "median_true": med_true,
+                              "p10": v[int(0.10 * len(v))],
                               "p90": v[int(0.90 * len(v))], "max": v[-1],
                               "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v),
-                              "reportable": med >= args.min_option_mass}
+                              "reportable": med_true >= args.min_option_mass,
+                              "median_note": ("`median` is the upper-middle element and is kept for "
+                                              "continuity with historical runs; `median_true` is the "
+                                              "actual median and is what `reportable` is computed "
+                                              "from.")}
         print(f"[score] option mass {kind}: median={med:.4g} "
               f"p90={mass_summary[kind]['p90']:.4g} max={v[-1]:.4g} "
               f"frac>1%={mass_summary[kind]['frac_above_1pct']:.3f} "

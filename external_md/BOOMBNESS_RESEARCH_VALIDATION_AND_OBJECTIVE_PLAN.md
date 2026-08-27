@@ -2074,3 +2074,86 @@ reason it is a footnote rather than a hole. The lesson generalises past this ins
 message is not evidence that the change landed**, and a heredoc that dies at parse time is silent —
 `check_all.py` passed, the pre-commit hook passed, and the push succeeded. Verify the artifact, not
 the exit code.
+
+---
+
+## §5.3 — The option-mass gate now reads the true median (shared code, non-mutating fix)
+
+§5.1 found `score_behavior.py` computing `med = v[len(v)//2]` — the upper-middle element, not the
+median — and left it alone pending the other stakeholder's view, because `median` appears in every
+historical `summary.json`.
+
+**The concurrent session supplied the argument that settles it, and it is better than my framing:**
+`v[n//2] >= median` **by construction**, so the gate was **biased toward passing**. Therefore every
+historical `BELOW GATE` verdict is safe *a fortiori* — the exposure was only ever near-threshold
+**passes**. That is a far smaller audit surface than "32 affected readouts" suggested, and it is
+exactly why "0 verdicts flip today" was reassuring but not sufficient: the next readout landing just
+under 0.05 is the one it would wrongly pass.
+
+**Fix, as agreed and deliberately non-mutating:**
+
+* `median` — **unchanged**, still the upper-middle element, still in every artifact. Mutating it
+  would move published values retroactively, which is correcting a figure by changing the thing that
+  produced it.
+* `median_true` — **added**, `statistics.median(v)`.
+* **`reportable` now computed from `median_true`.** The gate stops being biased.
+* `median_note` in every artifact says which field is which.
+
+Doing this **now** is free precisely because no verdict changes; after one flips it would mean
+changing a verdict and a definition in the same commit.
+
+**6 tests, 3 mutations caught**, including a boundary case the *old* gate would have wrongly passed:
+`[0.01, 0.048, 0.051, 0.9]` has a true median below 0.05 and an upper-middle above it. Full suite
+green under the conda interpreter.
+
+---
+
+## §5.4 — ⛔ SCOPE QUALIFICATION: my "retrieval knockout" is the UNSCOPED `legacy_all_query` mask
+
+A concurrent session matched my option masses against its own scope decomposition and found them
+**identical to four decimals**:
+
+| arm | `knockout_scope` | forced-choice option mass |
+|---|---|---|
+| `p2A` baseline | — | **0.5416** ← my baseline, exactly |
+| `p2_demo_processing_only` | `demo_processing_only` | 0.6021 — mass **RISES** |
+| **`p2_legacy_all_query`** | **`legacy_all_query`** | **0.3689** ← **my knockout, exactly** |
+| `p2_query_prefill_only` | `query_prefill_only` | 0.4365 |
+
+**Verified on my side:** every knockout arm I have run this sprint carries
+`knockout_scope: legacy_all_query` — `score_behavior.py:235`'s `DEFAULT_KNOCKOUT_SCOPE`, which I
+never overrode. The `--intervene` string is identical across all four scopes; only the scope differs.
+
+**So "the entry-6 retrieval knockout" is the unscoped mask**, and everything this sprint has reported
+about it — §0.16's `ticket_bomb` result, §5's binding survival on `main`, §5.2's collapse on
+`ticket_bomb` — is **about `legacy_all_query`, not about demonstration-processing specifically.**
+That qualification now travels with all three.
+
+It is also a **clean cross-session reproduction**: two sessions, independent runs, matching to four
+decimals on a probe neither designed for the other.
+
+### What it does to §5.2's correction
+
+**Less than I thought, and in an interesting direction.** The other session's binding-survival claim
+rests on `demo_processing_only`, where option mass *rises* (0.5416 → 0.6021). My collapse is a
+**sibling scope**. So my `main` result **agrees with their `legacy_all_query` arm** rather than
+contradicting their headline — §5.2's correction stands as a correction of *my own* over-broad
+generalisation, not of theirs.
+
+### The deciding cell is empty, and I have launched it
+
+Nobody has run **`demo_processing_only` on `ticket_bomb`**. My collapse is `legacy` on `ticket_bomb`;
+their survival is `demoproc` on `main`. The cell that separates *scope* from *bank* has never been
+measured, and the five-fold mass collapse I found (0.5695 → 0.1162) is much larger than anything the
+scoped arms produce — so whether it survives scoping is a real question, not a formality.
+
+**Jobs 788047 (behavioural, cap 640) and 788048 (probe) are running it.** Its baseline already
+exists at cap 640 (`e6A_ticket_bomb`), so this is two cheap arms for a cell both sessions flagged as
+the most informative available.
+
+Either outcome is worth having:
+* **`demoproc` also collapses on `ticket_bomb`** → binding survival is **bank**-dependent, and the
+  other session's C5 needs narrowing well beyond one bank.
+* **`demoproc` survives on `ticket_bomb`** → the **scope decomposition** is what carries binding
+  survival, which is a *stronger* result than either of us currently claims: the unscoped mask
+  destroys comprehension and the scoped one does not.
