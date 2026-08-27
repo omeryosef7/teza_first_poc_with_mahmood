@@ -82,9 +82,11 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 Killed-by-refusal: **14/25, 8/20, 9/24** for `demoproc`; **0, 0, 1** for the controls.
 Setting 4 is a **second codeword** (`basket`, R-73/PR-29) — a new generality axis, not another pool —
 lifting **lexical G from 1 to 2 for C1 only**; every other claim, C7 included, stays at G = 1.
-⚠ Setting 4's **truncation-robustness is UNMEASURED**: that bank truncates **0.938** at baseline
-(vs 0.581 for the same model on d10) and the both-terminated subgroup is **1 row**. PR-30 re-runs it
-at a 640-token cap; if it fails, lexical generality reverts to G = 1. Pre-registered
+Setting 4 is **truncation-robust (R-75/PR-30)**, and unusually sharply: that bank truncates **0.938**
+at baseline under the 192-token cap, but re-running at **640** — where both arms stop on length
+**0.000** of the time — gives **the identical +0.1250 on exactly the same 14 rows**, while **81 of 96
+completions changed**. Refusal decisions did not move at all. **DR-2's truncation caveat is an ASR
+caveat, not a refusal caveat**, and C1 is a refusal claim in all four settings. Pre-registered
 twice before reading (**PR-6** 3/3 conditions, **PR-12** 2/2). Pool B shares **0 of 40** sentence sets
 with pool A.
 
