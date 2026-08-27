@@ -348,3 +348,54 @@ def test_sprint_grade_ACCEPTS_disclosed_degeneracy(tmp_path):
         ap.assert_sprint_grade(e)              # classified but not disclosed -> still refused
     e["degenerate_rows"] = 30
     ap.assert_sprint_grade(e)                  # disclosed -> allowed
+
+
+# --------------------------------------------------------------------------- #
+# 7. reportability is not completeness — the producer's verdict must reach the consumer
+# --------------------------------------------------------------------------- #
+
+def _mk_scored(tmp_path, name, gate=None, readouts=None):
+    d = tmp_path / name
+    d.mkdir(parents=True)
+    s = {"option_mass": readouts or {}}
+    if gate is not None:
+        s["option_mass_gate"] = gate
+    json.dump(s, open(d / "summary.json", "w"))
+    return str(d)
+
+
+def test_reportability_surfaces_the_producers_verdict(tmp_path):
+    """`p5A_main` (job 787914) shows FAILED in sacct because ONE readout fell below its option-mass
+    floor, while the run is complete and its other two readouts are fine. A consumer checking files
+    would call it success; one checking exit status would call it total loss. Both are wrong."""
+    d = _mk_scored(tmp_path, "run",
+                   gate="OVERRIDDEN — NOT REPORTABLE: semantic/semantic_one_word: 0.04289 < 0.05",
+                   readouts={"semantic/semantic_one_word": {"n": 96, "median": 0.04289,
+                                                            "reportable": False},
+                             "semantic/semantic_forced_choice": {"n": 48, "median": 0.5416,
+                                                                 "reportable": True}})
+    r = ap.readout_reportability(d)
+    assert r["unreportable"] == ["semantic/semantic_one_word"]
+    assert r["by_readout"]["semantic/semantic_forced_choice"]["reportable"] is True
+    assert "NOT REPORTABLE" in r["gate"]
+
+
+def test_a_fully_reportable_run_lists_nothing_unreportable(tmp_path):
+    d = _mk_scored(tmp_path, "good",
+                   readouts={"a": {"n": 10, "median": 0.5, "reportable": True}})
+    assert ap.readout_reportability(d)["unreportable"] == []
+
+
+def test_reportability_is_separate_from_completeness(tmp_path):
+    """A run can be COMPLETE and partly UNREPORTABLE. Conflating them loses usable readouts."""
+    j = _mk_run(tmp_path, "complete", 10, 512, 0.0, lambda i: 0.0)
+    ap.build_entry(j)                       # completeness passes
+    json.dump({"option_mass": {"x": {"n": 4, "median": 0.01, "reportable": False}},
+               "option_mass_gate": "NOT REPORTABLE"}, open(os.path.join(j, "summary.json"), "w"))
+    assert ap.readout_reportability(j)["unreportable"] == ["x"]   # reportability still flags it
+
+
+def test_missing_summary_is_not_an_error(tmp_path):
+    d = tmp_path / "bare"
+    d.mkdir()
+    assert ap.readout_reportability(str(d)) == {"gate": None, "by_readout": {}, "unreportable": []}

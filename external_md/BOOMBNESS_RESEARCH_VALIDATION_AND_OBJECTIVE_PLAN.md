@@ -1906,7 +1906,7 @@ model has not merely lost the prompt."*
 |---|---|---|---|---|---|
 | **`semantic_forced_choice`** | *does W mean carrot or bomb?* (both named) | **0.54 → 0.37**, 100 % above floor | 42/48 | **41/48** | **−1** |
 | `comprehension_usage` | *is W used literally or in code?* | 0.37 → 0.32, 100 % above floor | 11/48 | 4/48 | −7 |
-| `semantic_one_word` | free next token: concept vs codeword | **0.040 → 0.065 — BELOW the repo's own 0.05 floor** | 56/96 | 2/96 | −54 |
+| `semantic_one_word` | free next token: concept vs codeword | **0.0429 → BELOW the repo's own 0.05 floor** | 56/96 | 2/96 | −54 |
 
 ### The readout with the most mass says binding SURVIVES
 
@@ -1920,8 +1920,9 @@ still say what the codeword means when asked.
 
 ### But `semantic_one_word` says the opposite, and its mass is below the floor
 
-Median option mass **0.0404** at baseline against `score_behavior.py`'s own
-`--min-option-mass 0.05` default — the run's own `reportable` flag is **False** at that median.
+Median option mass **0.04289** at baseline against `score_behavior.py`'s own
+`--min-option-mass 0.05` default — the run's own `reportable` flag is **False**, and its tail gate
+stamped `option_mass_gate: "OVERRIDDEN — NOT REPORTABLE"` and exited non-zero (§5.1).
 Restricted to the 25 rows above the floor **in both arms**, it still says 19/25 → **1/25**.
 
 So this is not simply an unreliable readout to be discarded. Taken together the three give a
@@ -1948,3 +1949,56 @@ The knockout is not destroying comprehension; it is removing the pathway by whic
 
 **Phase 5 status: the success condition is met on the readout that qualifies, with the
 usage/knowledge distinction recorded rather than collapsed into a single "binding survives" claim.**
+
+---
+
+## §5.1 — "FAILED" that means UNREPORTABLE, not incomplete — and an off-by-one in a shared gate
+
+A peer session flagged that job **787914** (`p5A_main`) shows `FAILED` in `sacct`. It is worth
+recording exactly what that means, because **both obvious readings of it are wrong**:
+
+* The run **did not crash.** It wrote 192 rows, `failures: {}`, and a valid `DONE.json`.
+* Its tail gate then **exited non-zero on purpose**, stamping
+  `option_mass_gate: "OVERRIDDEN — NOT REPORTABLE: semantic/semantic_one_word: median option mass
+  0.04289 < 0.05"`.
+
+So: **checking output files would call it a success; checking exit status would call it a total
+loss.** The honest state is a complete run with **one readout of three** below its reliability floor —
+and the other two (`semantic_forced_choice` at 0.5416, `comprehension_usage` at 0.3722) are exactly
+the ones §5's conclusion rests on.
+
+### The gap this exposed in my own consumer
+
+**Completeness and reportability are different properties, and my code only checked one.**
+`require_done` passes this run — correctly, it is complete — and `check_run_readable` passes it too.
+But `summary.json` carries a per-readout `reportable` flag and a gate verdict that **nothing was
+reading**. That is the V-20 shape from a third angle: an invariant recorded at the producer and
+never read at the consumer.
+
+`readout_reportability(run_dir)` now surfaces it. §5's conclusion is **unaffected** — I had derived
+the same restriction independently by computing option mass — but I got there by accident rather
+than by reading the verdict the producer had already written down.
+
+### An off-by-one in the shared gate, found while reconciling two medians
+
+My recomputed median was **0.04042**; the gate reported **0.04289**, on the same n=96 rows. The cause
+is `score_behavior.py:2020`:
+
+```
+v = sorted(vals); med = v[len(v) // 2]
+```
+
+For even `n` that is the **upper-middle element**, not the median (which averages the two middles).
+Here `v[48] = 0.042891` against a true median of `0.040421`.
+
+**Swept across the corpus:** 28 runs carry an `option_mass` block; **32 readouts** have
+upper-middle ≠ true median (median discrepancy 0.001376, max 0.042581); and **0 gate verdicts would
+flip** if the true median were used.
+
+So it is **real but currently harmless** — and it is a *gate*, which is where a 6 % upward bias on a
+threshold statistic matters most: a readout whose true median sits just under 0.05 could be passed.
+**I have not changed the shared code**, because `median`/`p10`/`p90` appear in every historical
+`summary.json` and other analyses may quote them; silently altering them would be worse than the
+bug. Flagged to the concurrent session as shared-code territory, and recorded here.
+
+**54 tests, 2 further mutations caught.**

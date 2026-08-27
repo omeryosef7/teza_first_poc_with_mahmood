@@ -85,6 +85,44 @@ def _excluded_run_ids(root: Optional[str] = None) -> set:
         return set()
 
 
+def readout_reportability(run_dir: str) -> Dict[str, Any]:
+    """Surface the PRODUCER's own per-readout reportability verdict to the consumer.
+
+    ADDED 2026-08-28, and it is the V-20 shape again from a third angle. `score_behavior.py` runs a
+    tail gate: if a readout's median option mass falls below `--min-option-mass`, it stamps
+    `summary.json` with `option_mass_gate: "OVERRIDDEN — NOT REPORTABLE: ..."` and per-readout
+    `reportable: false`, then EXITS NON-ZERO so the unreportability is loud.
+
+    The run is nonetheless COMPLETE — it writes `DONE.json` with `failures: {}` — so
+    `require_done` passes it and `check_run_readable` passes it, correctly. Completeness and
+    reportability are different properties and the completeness contract should not conflate them.
+
+    But nothing was reading the reportability verdict. `p5A_main` (job 787914) shows `FAILED` in
+    sacct for exactly this reason while its forced-choice and comprehension readouts are perfectly
+    usable; a consumer checking only files would call it a success, and one checking only exit
+    status would call it a total loss. Both readings are wrong. This returns the producer's own
+    verdict so an analysis can honour it instead of re-deriving it — or, worse, not noticing.
+    """
+    sp = os.path.join(run_dir, "summary.json")
+    if not os.path.exists(sp):
+        return {"gate": None, "by_readout": {}, "unreportable": []}
+    try:
+        s = json.load(open(sp))
+    except Exception:
+        return {"gate": None, "by_readout": {}, "unreportable": []}
+    om = s.get("option_mass") or {}
+    bad = [k for k, v in om.items() if isinstance(v, dict) and v.get("reportable") is False]
+    return {"gate": s.get("option_mass_gate"),
+            "by_readout": {k: {"n": v.get("n"), "median": v.get("median"),
+                               "reportable": v.get("reportable")}
+                           for k, v in om.items() if isinstance(v, dict)},
+            "unreportable": bad,
+            "NOTE": ("a non-empty `unreportable` list does NOT mean the run failed — the run is "
+                     "complete and its other readouts are usable. It means those named readouts "
+                     "are below their reliability floor and must not be quoted without an "
+                     "explicit, recorded decision to accept them.")}
+
+
 def check_run_readable(run_dir: str, allow_partial: bool = False) -> Dict[str, Any]:
     """Refuse a run dir that is aborted, unfinished, or explicitly excluded."""
     name = os.path.basename(os.path.abspath(run_dir).rstrip("/"))
