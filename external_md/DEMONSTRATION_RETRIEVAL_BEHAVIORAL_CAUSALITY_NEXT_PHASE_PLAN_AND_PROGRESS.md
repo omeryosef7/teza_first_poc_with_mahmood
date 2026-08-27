@@ -8562,6 +8562,44 @@ above.
 **No correction.** C4 stands as published, now with its per-cell distribution recorded rather than
 assumed.
 
+
+### ✅ R-85 (22:40) — **Attention-kernel audit prompted by the concurrent session: `config.json`'s `attn_impl` is the REQUEST, not the reality. Checked all 25 of my arms — no mismatch, and the reason is that this phase never requested `sdpa`.**
+
+They found that all five of their entry-6 knockout arms record `attn_impl: "sdpa"` in `config.json`
+while every one actually ran **eager**, because `score_behavior.py:1348` forces eager whenever a
+knockout is requested. The comment at `1136-1140` gives the reason, and it is a serious one: *under
+sdpa the 4-D mask edit is silently discarded*, and under greedy bf16 decoding *a sub-ulp difference on
+a near-tie refuse/comply token branches into a different completion and a different judged ASR*. **An
+arm-vs-baseline contrast that mixed kernels would confound the mask edit with a kernel swap.**
+
+**Audited: 25 arms across every result in this phase.**
+
+| | result |
+|---|---|
+| arms requesting `eager` | **25 / 25** |
+| knockout arms whose `summary.json` `knockout_liveness.attn_implementation` confirms **eager** | **17 / 17** |
+| **mismatches** | **none** |
+
+**Why there is nothing to find here, stated as a property rather than as luck:** every argsfile in
+`runargs/p17/` passes `--attn-impl eager` explicitly, and the forcing at line 1348 is
+`"eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl` — it only ever
+overrides **towards** eager. So a request for eager is always honoured, and this phase's request was
+always eager.
+
+**⚠ One honest gap.** The 8 **baseline** arms have no `knockout_liveness` block, so their actual kernel
+is **inferred, not recorded**: request = eager, and the override cannot move away from eager, therefore
+eager. That inference is sound given the code path I read, but it is an inference. **The knockout arms
+are verified; the baselines are derived.** Since baseline and arm requested the same kernel, **no
+contrast in this phase mixes kernels either way.**
+
+**Worth keeping as a general lesson about provenance fields**: `config.json` recorded the *argument*,
+and the only field carrying the *outcome* is on the liveness block — which exists only for arms that
+intervene. **A provenance field that is written before the thing it describes is decided is a request,
+not a record**, and this phase has now been bitten by that distinction twice: once here (harmlessly)
+and once in C-20, where `rescue_liveness` truthfully reported `fired: true` for a patch that wrote the
+value already present. **Liveness told the truth both times; the question it answers is narrower than
+the one I wanted answered.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
