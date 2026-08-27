@@ -257,7 +257,7 @@
   {
    "claim": "(3) C7 \u2014 demonstration-specificity: the effect is specific to the demonstration block rather than to context tokens generally.",
    "status_proposed_by_audit": "OPEN",
-   "status_after_adversarial_verification": "OPEN",
+   "status_after_adversarial_verification": "KEEP_NARROWED",
    "status_changed_by_verification": false,
    "verifier_refuted_the_reasoning": true,
    "ambiguity_resolution_note": null,
@@ -275,7 +275,32 @@
    "audit_reasoning": "WHAT THE ARTIFACTS SHOW: the control's constructibility question is settled in both directions \u2014 unconstructible on the original bank (match_ratio 0.000 at n=4 and n=8), constructible on the rebuilt long-preamble banks (match_ratio_min 1.000 at every dose). WHAT THEY DO NOT SHOW: a demonstration-specificity result. The pre-registered test required BOTH n=4 and n=8; per the report n=4 failed because the non-demo control removed exactly as much as demoproc, and building the control dropped baseline ASR 0.1562\u21920.0437, putting both decisive doses under the pre-registered underpower threshold. The report correctly declines the rescue. Treat C7 as UNRESOLVED, and specifically as 'the control can be built, and building it costs the phenomenon' \u2014 not as 'demonstration-specificity is established' and not as 'it was refuted'. The one suggestive cell (n=2, 0.989-matched, demoproc 5/5 vs control 0.67/5, gap 0.1083) rests on 5 attacks and is the report's own 'suggestive not established'.",
    "verifier_reasoning": "REFUTED on evidentiary basis; final status stays OPEN. (a) All 7 cited paths exist. (b) Every feasibility number reproduces exactly at the stated fields in outputs/boombness/control_feasibility/{feas_d10_20260826_120920_1403234,feas_longpre_20260826_131114_3595990,feas_pre10_20260826_145845_1409001}/control_feasibility.json (all_doses_feasible, per_dose.*.match_ratio_mean/min, median_drawable_pool, median_n_demo, n_refused_by_strict_policy); the three cited config.json files carry args.max_new=192 with the stated bank/intervene/n_examples. (c) THE ENTRY'S CENTRAL CAVEAT IS FALSE. It states the C7 outcome table is 'DOCUMENT-ONLY IN MY SEARCH'. It is fully artifact-backed in committed judge summaries, field asr_by_arm['0.5'] and asr_by_n_examples['0.5']: outputs/boombness/judge/p4bj_A_20260825_111016_1351749/summary.json (bank boombness_prompt_bank_d10.jsonl) n=160, n_malicious=25, asr=0.1562, n_examples 4 -> 8 and 8 -> 10; outputs/boombness/judge/p12j_A_20260826_140850_1406476/summary.json (longpre) 10/160, asr=0.0625, 4 -> 4 and 8 -> 4; outputs/boombness/judge/p13j_A_20260826_161320_1413609/summary.json (longpre10) 7/160, asr=0.04375, 4 -> 3 and 8 -> 1. The n=8 separation also reproduces exactly: baseline 0.100, p12j_demoproc 0.000 (-0.1000), p12j_matched_d1 0.100 (+0.0000), d2 0.150 (+0.0500), d3 0.100 (+0.0000); control mean 0.11667 - 0.000 = 0.1167. The n=4 failure reproduces: baseline 0.100, demoproc 0.000, matched_d1 0.000 (-0.1000 each). The n=2 'suggestive cell' also reproduces: p4bj_A n=2 = 5, p4bj_demoproc n=2 = 0 (5/5), p5j_capped_d1/d2/d3 n=2 = 4/5/4 -> mean 0.67 removed. So the entry's search failure, not the record, is the defect; the 26.7 self-flag it invokes concerns three OTHER figures (R-45 char lengths, R-51 length ratio, R-47 wall time), none of which are the ASR table. (d) TRUNCATION CAVEAT IS INVERTED AND UNDERSTATED. Counting gen_truncated in results.jsonl: p12A 146/160, p12_demoproc 140/160, p12_matched_d1/d2/d3 148/150/146; p13A 147/160, p13_demoproc 141/160, controls 150/148/147 -- 88-94% truncation in EVERY arm (far above the 46.2% pooled figure), and demoproc truncates LESS than baseline here, the opposite of the entry's '116/160 vs 93/160, demoproc truncates MORE' claim, which belongs to a different bank/arm. (e) CONFOUNDS THE ENTRY MISSED: (i) the two rebuilt banks disagree on which dose separates -- longpre separates at n=8 (demoproc 0/40 vs baseline 4/40) but not n=4, while longpre10 is exactly NULL at n=8 (demoproc 1/40 vs baseline 1/40) and separates at n=4 (0/40 vs 3/40); (ii) on longpre10 all three matched control draws exceed baseline (9, 10, 14 vs 7 of 160), incompatible with a clean 'control removes nothing' reading and indicating draw noise dominating; (iii) the n=2 suggestive cell comes from a different bank (d10) and a different capped control policy than the decisive runs, so it is not a within-design cell. Net: C7 remains UNRESOLVED/OPEN -- 'the control can be built and building it costs the phenomenon' is right -- but the ledger entry must not be kept as written, since its load-bearing warning misstates the artifact record and its ASR-cap dependency is directionally wrong for the runs it cites.",
    "rerun_needed": "Two things. (a) LOCATE OR REGENERATE THE OUTCOME ARTIFACT: the d10/longpre/longpre10 ASR table and the n=4/n=8 arm-vs-control deltas need to be emitted as a committed JSON with row counts, or the numbers must be reported as document-only. The generation runs (p12*/p13*/q13-q16*) and their judges exist on disk, so this is analysis-only, no GPU. (b) To actually resolve C7 would need a preamble design that restores baseline ASR to ~0.15 while keeping match_ratio 1.000 at n=4 and n=8 \u2014 the report explicitly forbids retrying by varying preamble LENGTH, so this is a design problem, not a compute problem. Do not pool doses and do not relax the margin.",
-   "verifier_bad_path_claims_RECHECKED": []
+   "verifier_bad_path_claims_RECHECKED": [],
+   "SPRINT_UPDATE_2026-08-27": {
+    "action": "REPOINTED and UPGRADED (OPEN -> KEEP_NARROWED)",
+    "why_repointed": "the entry cited p12A/p12_demoproc/p13A, which are all Llama-3.1-8B-Instruct at cap 192 and belong to the branch DECLINED FOR POWER (the longer preamble required by the count-matched control took Llama baseline ASR 0.1562 -> 0.0437). Verified all 13 published C7 runs exist and are Qwen3-14B.",
+    "published_runs_verified": 13,
+    "runs_at_cap_192": 10,
+    "runs_at_cap_640": 3,
+    "sprint_grade_result": {
+     "artifact": "outputs/boombness/asr_protocol/c7_640_20260827_214634_3657971/asr_table.json",
+     "model": "Qwen/Qwen3-14B",
+     "bank": "boombness_prompt_bank_longpreQ14B.jsonl",
+     "n_examples": "4,8",
+     "n_per_arm": 80,
+     "cap": 640,
+     "frac_at_cap": 0.0,
+     "judge_pinned": "openai/gpt-4o-mini",
+     "A_baseline": "11/80",
+     "demo_processing_only": "1/80",
+     "CTRL_matched_d1": "12/80",
+     "knockout_paired": "up=1 down=11 discordant=12 exact_two_sided_p=0.006348 delta=-0.1250",
+     "control_paired": "up=4 down=3 discordant=7 exact_two_sided_p=1.000 MDE=0.0875 (UNDERPOWERED)",
+     "not_refusal": "refusal keyword rate 0/80 in the knockout arm",
+     "not_length_collapse": "median new tokens rises 212.5 -> 277.0"
+    },
+    "scope_caveat": "one model, one bank, two n_examples levels, n=80. Does not discharge ledger entry 6."
+   }
   },
   {
    "claim": "(4) Binding survival / comprehension controls: the codeword\u2192concept mapping SURVIVES the intervention that kills the attack \u2014 representation \u2260 behaviour.",

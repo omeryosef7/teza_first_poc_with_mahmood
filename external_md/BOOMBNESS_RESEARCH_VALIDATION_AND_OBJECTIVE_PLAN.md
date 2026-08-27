@@ -607,3 +607,55 @@ judge invocation**, or carry this floor explicitly.
 **No new code was written for this section.** `judge_retest.py` and `judge_session_drift.py` already
 existed and already said the right things; what was missing was running them on the pinned pairs and
 reading the answer.
+
+---
+
+## §0.5 — C7 REPOINTED, and the sprint's FIRST SPRINT-GRADE RESULT
+
+**Artifact:** `outputs/boombness/asr_protocol/c7_640_20260827_214634_3657971/asr_table.json`
+**Command:** `python src/boombness/asr_protocol.py --sprint-grade --tag c7_640 --judge-dir .../p26j_A_* --judge-dir .../p26j_dp_* --judge-dir .../p26j_c1_*`
+
+### The repoint
+
+My §0.1 ledger cited three **Llama** runs for C7 (`p12A`, `p12_demoproc`, `p13A`). A peer session
+asserted C7 is Qwen3-only; I refused the assertion and checked. **Both were true.** All three Llama
+runs exist and are all `Llama-3.1-8B-Instruct` at cap 192 — but they belong to the branch that was
+**declined for power** (the longer preamble needed for the count-matched control took Llama baseline
+ASR from 0.1562 to 0.0437). The published C7 is the 13 **Qwen3-14B** runs; I verified all 13 exist
+and are Qwen3. **My ledger entry cited the wrong runs and is repointed.**
+
+Scored under the protocol, **10 of the 13 published C7 runs are at cap 192** and the cap binds hard
+(0.394–0.700 at cap) — those may be quoted only as "ASR within first 192 generated tokens".
+**But the 3-run 640-cap replication is clean**, and it clears `--sprint-grade`.
+
+### The result — and it is the sprint's first genuinely clean one
+
+Qwen3-14B, `boombness_prompt_bank_longpreQ14B`, `n_examples ∈ {4,8}`, n=80/arm, cap 640,
+**0.000 at cap**, judge pinned `openai/gpt-4o-mini`, all three arms judged in one invocation
+(so the §0.4 cross-session floor is minimised, not merely acknowledged):
+
+| arm | ASR@0.5 | median tokens | refusal kw | vs baseline | up | down | exact 2-sided p |
+|---|---|---|---|---|---|---|---|
+| `A_baseline` | **11/80** | 212.5 | 1/80 | — | — | — | — |
+| **`demo_processing_only`** (the knockout) | **1/80** | 277.0 | 0/80 | **−0.1250** | 1 | **11** | **0.006348** |
+| `CTRL_matched_d1` (count-matched control) | 12/80 | 207.5 | 0/80 | +0.0125 | 4 | 3 | 1.000 |
+
+**The demonstration-processing knockout removes the attack — 11 of 80 down to 1 of 80 — while a
+count-matched control moves it the other way.** Against the §0.4 judge noise floor of ~4 rows on
+n=80, the 11 discordant-down rows are ~2.75× the floor, and the exact test already accounts for the
+pairing. **Refusal keyword rate is 0/80 in the knockout arm and median length goes UP (212.5 → 277),
+so this is not refusal and not length collapse.**
+
+### Two caveats that must travel with it
+
+1. **The control's null is underpowered.** At 7 discordant pairs only a 7–0 split reaches α=0.05
+   (MDE 0.0875), so "the matched control does nothing" is *weakly* supported. Its point estimate is
+   +0.0125 — the opposite direction — which is consistent but not proof.
+2. **Scope: one model, one bank, two `n_examples` levels, n=80.** This does not by itself discharge
+   ledger entry 6, whose claim spans 8 populations on two models and whose twenty underlying runs
+   are all at cap 192. It is a clean *replication in miniature* at a usable cap.
+
+**Ledger effect:** entry 12 (C7) moves **OPEN → KEEP-NARROWED** (supported at 640 on Qwen3 for
+n_examples 4/8; the cap-192 pool A/B numbers remain relabelled). Entry 6 stays **NEEDS RERUN** but
+now has a positive prior — the rerun is expected to confirm, which makes a failure the informative
+outcome.
