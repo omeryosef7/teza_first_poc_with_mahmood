@@ -1783,3 +1783,67 @@ confirmed. **No entry moved on argument; each moved on a sprint-grade measuremen
    what the data says, but it is also the pattern a confirmation-seeking process would produce, and
    the honest counterweight is that the two hardest gates — Phase 7 and entry 6's `basket_gun` —
    are both still pending and both are set up to fail informatively.
+
+---
+
+## §6.1 — PHASE 6, representational half: does the QUERY token get more bomb-like with more demonstrations?
+
+**Population:** `extract_boombness/full_20260816_185942_1008673`, `natural_doublespeak`,
+`query_kind=behavioral`, **query occurrences only**.
+
+### ⛔ The pooled answer is confounded — composition, not dose
+
+My first pass pooled all query occurrences by `n_examples` and got ρ = **−0.046** at L12: "flat".
+**That number is wrong**, and the composition table says why:
+
+| `n_examples` | n | bank blocks | role styles |
+|---|---|---|---|
+| 0 | 36 | core2x2 12, strength 24 | plain only |
+| 1 | 12 | core2x2 12 | plain only |
+| 2 | 36 | core2x2 12, families 24 | plain only |
+| **4** | **120** | **core2x2, strength, consistency, position, role_style, families** | **all six** |
+| 8 | 54 | core2x2 12, consistency 18, families 24 | plain only |
+| 16 | 12 | core2x2 12 | plain only |
+
+The `n_examples=4` stratum is 120 rows spanning six blocks and all six role styles; `n=1` and `n=16`
+are twelve rows of `core2x2`/`plain`. **A correlation across those strata is measuring block
+composition as much as dose.**
+
+### The balanced answer — `core2x2` + `role_style=plain`, 12 rows per dose, 6 domains each
+
+| readout | ρ(n_examples, query boombness) | n0 | n1 | n2 | n4 | n8 | n16 |
+|---|---|---|---|---|---|---|---|
+| `d_surface\|L8\|proj` | **+0.7157** | −3.679 | −3.096 | −3.024 | −2.867 | −2.644 | **−2.438** |
+| `d_surface\|L12\|proj` | **+0.3798** | −4.220 | −3.669 | −3.681 | −3.724 | −3.618 | −3.451 |
+| `ll\|L12\|boombness` | **−0.4518** | +1.052 | +0.418 | +0.395 | +0.206 | +0.119 | **−0.291** |
+
+**Answer: YES on the direction-projection readout, and it is monotone at L8** — every one of the six
+dose steps moves the same way, ρ = +0.72. The pooled −0.046 was a composition artifact and the
+balanced L12 figure is **+0.380**, a sign flip.
+
+### But the two readouts DISAGREE IN SIGN, on the same tokens
+
+`d_surface` projection says the query codeword becomes **more** bomb-like as demonstrations
+accumulate (+0.72 at L8). The **logit lens** on the same tokens says it becomes **less** so
+(−0.45 at L12), also monotonically.
+
+**"Boombness" is therefore not one quantity.** Two readouts the brief lists side by side as
+measurements of the same thing move in opposite directions under the manipulation that produces the
+attack. Any objective built on "boombness" must say *which* readout, because they do not agree about
+the sign of the central dose-response.
+
+### Consequence for Phase 7
+
+This is a **direct hit on objective viability**, and it cuts both ways:
+
+* **For** a `d_surface`-projection objective: it responds monotonically to the manipulation that
+  creates the attack (ρ = +0.72 at L8). That is the dose-response a usable objective needs.
+* **Against**: the logit-lens readout of the same quantity moves the *other* way, so the choice of
+  readout determines the sign of the finding. An objective whose direction depends on which lens you
+  read it through is not measuring one thing.
+* And §0.14–§0.15 already showed that **removing** `d_surface` *raises* ASR. So the representational
+  dose-response (+0.72) and the causal test (removal → more attack) point in **opposite** directions.
+
+**Phase 6's representational half is answered and the answer is unfavourable to a simple objective.**
+The behavioural half — ASR by `n_examples` at a non-binding cap — is next, and the entry-6 arms
+already provide it at `n_examples ∈ {1,2,4,8}` on three banks.
