@@ -8936,6 +8936,52 @@ bind at both caps".** Different questions, and the classifier asks mine.
 **theirs** (V-25, entry 6) — left alone, not staged. Shared suite green at **1207 passed, 7 skipped**
 under the conda interpreter.
 
+
+### 🔎 DR-13 (01:15, 4h DEEP REVIEW) — **First review since the concurrent session began committing to shared code. Blast radius checked, every headline recomputed, nothing moved. Suite 1207/0.**
+
+The queue is empty for the first time in a day — **both sessions' jobs are done** — and no job of mine
+failed. The new risk since DR-11 is not my own work, which has not run since; it is that **another
+session has been committing to `src/boombness/` under my results.**
+
+**Blast radius, computed rather than assumed.** Files they changed since DR-11 (`cc50d20d`):
+`arm_report`, `asr_protocol`, `bank_leakage_probe`, `cap_natural_experiment`, `intervention_liveness`,
+`paired_test_noise_sensitivity`, `token_vs_prompt_level`, **`prompt_families`**. My analysis path
+imports `common`, `coherence_gate`, `ds_common`, `extract_boombness`, `score_behavior` — **none of
+their new modules is in my import graph.** The one overlap that matters is `prompt_families`, because
+it generates the banks.
+
+**So I verified the C-10 hazard myself instead of accepting their report of it** — C-10 is exactly this
+failure (expanding `DOMAINS` broke canonical regeneration) and it is the reason I warned them:
+
+| check | result |
+|---|---|
+| canonical banks regenerate byte-identically | **3 passed** |
+| `N_EXAMPLES` at `prompt_families.py:71` | **`(0, 1, 2, 4, 8, 16)` — untouched** |
+| `longpreQ14B` sha (C7's bank) | **`b2903479258a0f68` — matches the committed value** |
+
+**Their derived-preset approach held.** The ne12 cell exists without any canonical bank changing
+meaning.
+
+**Every headline recomputed from `results.jsonl`, after their commits:**
+
+| claim | recomputed | published |
+|---|---|---|
+| C7 pool A | 5→0, 7→2 | ✅ |
+| C7 pool B | 4→0, 6→1 | ✅ |
+| C7 640-cap | 4→1, 7→0 | ✅ |
+| C1 Llama/A | 9 → 35 | ✅ |
+| C1 Qwen3/A | 2 → 23 | ✅ |
+| C1 Llama/B | 1 → 32 | ✅ |
+| C1 codeword | 2 → 14 | ✅ |
+
+**Seven for seven.** Liveness/overwrite sweep across **28 arms**: every intervention arm
+`frac_rows_scope_live = 1.0` with no violations, **exactly one `DONE` directory per tag**, `n_failed=0`
+throughout. Full suite **1207 passed, 7 skipped** under the conda interpreter.
+
+**No correction issued.** Recorded because the point of this review was a specific new exposure —
+**shared code moving under settled results** — and the answer is that it did not reach them. That is
+worth stating explicitly rather than leaving as an absence.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
