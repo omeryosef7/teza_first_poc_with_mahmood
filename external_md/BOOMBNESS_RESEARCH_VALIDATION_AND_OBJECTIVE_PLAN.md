@@ -734,3 +734,75 @@ contention rule). `787201` tokenization audit — **COMPLETE, clean**.
 **Currently supported by this sprint:** §0.2, §0.3a, §0.1, §1, §1.1, §0.4, and now **§0.5 — the
 first result that clears `--sprint-grade`**. Still **no claim about boombness itself**, and none is
 due until the 1024 arms land.
+
+---
+
+## §0.6 — DOES THE ~5 % JUDGE NOISE INVALIDATE §0.5's `p = 0.006348`?
+
+**Artifact:** `outputs/boombness/paired_test_noise_sensitivity/c7noise_20260827_215858_3688244/paired_test_noise_sensitivity.json`
+**Script:** `src/boombness/paired_test_noise_sensitivity.py` · **Tests:** 10, 4 mutations caught
+
+A peer session raised a precise objection to §0.5: *"of your 12 discordant pairs ~4 are expected
+judge noise, but the exact test treats all 12 as signal, so the p is optimistic."* That is testable,
+so it was tested rather than argued. **n=80, base rate 11/80, 20 000 reps per cell.**
+
+### 1. Symmetric noise does NOT inflate Type I error
+
+| per-label flip rate | Type I error at α=0.05 |
+|---|---|
+| 0.00 | 0.0297 |
+| **0.05** (the measured floor) | **0.0280** |
+| 0.10 | 0.0305 |
+| 0.20 | 0.0309 |
+
+**At or below nominal everywhere, up to a 20 % flip rate.** The reason is structural: McNemar's null
+is `P(A=0,B=1) = P(A=1,B=0)`, and noise that is symmetric and independent across arms fills *both*
+discordant cells equally — it produces exactly the 50/50 split the test assumes under H0. Verified
+directly: at flip 0.10, `E[down] = 11.51` against `E[up] = 11.44`.
+
+### 2. What noise actually costs is POWER
+
+| flip rate | power at true Δ = −0.125 | E[down] | E[up] |
+|---|---|---|---|
+| 0.00 | 0.851 | 10.87 | 0.85 |
+| **0.05** | **0.519** | **13.08** | **4.04** |
+| 0.10 | 0.324 | 14.94 | 6.94 |
+
+**Symmetric label noise makes this test conservative, not liberal.** And note the second row against
+what was actually observed: at a 5 % flip rate a true −0.125 effect should produce about **13 down
+and 4 up**. §0.5 observed **11 down and 1 up** — *fewer* discordant pairs than the noise model
+predicts, i.e. the data are cleaner than a 5 % floor would generate. That is plausible: 5 % is a
+corpus-wide average, and clearly-compliant and clearly-refusing completions are stable while
+ambiguous ones flip.
+
+### 3. Where the objection WOULD bite — and why it does not here
+
+If the noise were **asymmetric**, it inflates Type I badly:
+
+| extra up-flip bias on arm B | Type I | E[down] | E[up] |
+|---|---|---|---|
+| 0.00 | 0.0280 | 11.51 | 11.44 |
+| 0.05 | **0.0675** | 10.90 | 14.30 |
+| 0.10 | **0.1933** | 10.30 | 17.14 |
+
+This is a live worry for §0.5, because the knockout arm's completions are **longer** (median 277 vs
+212.5) and a longer completion has more chance to say something the judge scores. **But that
+asymmetry pushes the knockout arm's ASR UP, and §0.5 observed 11 rows DOWN against 1 up.** The one
+asymmetry this design plausibly has works **against** the reported effect, not for it.
+
+*(That inflation row is also the positive control on the simulator itself: a sensitivity study that
+only ever reports "fine" is worthless. `test_ASYMMETRIC_noise_DOES_inflate_type_I` asserts the same
+code flags a genuinely broken situation, so the clean verdicts above are informative.)*
+
+### Verdict, and what changes
+
+**The objection is wrong on the mechanism — the p is not optimistic under symmetric noise, it is
+conservative.** But the peer's *practical* recommendation is right and is adopted: a bare p-value is
+a poor summary of a noisy-label paired test. `report_line` emits the discordant counts, the assumed
+floor and the net alongside the p, and §0.5 should be quoted as:
+
+> **11 down / 1 up of 80 (net −10), against a ~5 % per-label judge floor; exact two-sided p = 0.006348.**
+
+The peer also declined to adopt this statistic *for their own claim* because they had pre-committed
+against it — refusing a test at the moment it favours them. That is the right instinct even though
+the technical premise turned out to be mistaken, and it is recorded here as such.
