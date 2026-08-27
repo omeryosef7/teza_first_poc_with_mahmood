@@ -7333,6 +7333,81 @@ the write-ups should lead with.
 **No correction is issued this round.** Recorded explicitly, because a review that finds nothing is
 only informative if it says so.
 
+
+### 🔒 PR-28 (08:10, written before the arm is submitted) — **layer-specificity, replicated on Llama; and a declared change of statistic for REFUSAL only, applied symmetrically.**
+
+#### Part 1 — the statistic, declared before it is used to decide anything
+
+DR-10 measured two facts that together change what the right uncertainty is **for refusal**:
+
+* `kw_refusal` disagreed on **0/160** rows of byte-identical text (the LLM judge flipped 9/160).
+* Generation is **deterministic** given the same bank, model and intervention (C-21) — and that
+  determinism spans sessions: `p8b_rescue_L5` (26 Aug) is byte-identical to `p6b`'s knockout arm
+  (25 Aug), both pool B.
+
+So a refusal count for a given arm on a given bank is **exact and reproducible**. PR-3's margins were
+measured from **LLM re-judge spread** — a noise source that, for refusal, **is zero**. Using them on
+refusal is not wrong, it is *conservative against the wrong thing*, and it says nothing about the only
+uncertainty that remains: **population sampling.** The right instrument for that is a **paired exact
+(McNemar) test on discordant rows**.
+
+**⛔ Declared, because switching to a test that yields smaller p-values is exactly the move that needs
+declaring:**
+
+1. **PR-3's margins remain the pre-registered gate.** Nothing is re-adjudicated by the new test; it is
+   reported **alongside**, never instead.
+2. **It applies to every refusal claim in the phase, not only where it helps.** Applied symmetrically
+   to C1, the flagship refusal claim, before being applied to anything new:
+
+   | C1 setting | refusal | discordant | exact p |
+   |---|---|---|---|
+   | Llama / pool A | 9 → 35 | 2/28 | **8.7e-07** |
+   | Qwen3 / pool A | 2 → 23 | 0/21 | **9.5e-07** |
+   | Llama / pool B | 1 → 32 | 1/32 | **7.9e-09** |
+
+3. **It never applies to ASR**, which has a measured 9/160 judge flip rate and is *not* exact.
+4. **Its own positive control passes**: the byte-identical arm `q9_qpos_L5` vs `q9_ko` gives
+   **0/0 discordant, p = 1.0** — exactly what a test of a no-op must return.
+
+#### Part 2 — the experiment
+
+**Exploratory result being tested** (R-70, Qwen3, band 7-17, query span, d10 pool A):
+
+| comparison | refusal | discordant | exact p |
+|---|---|---|---|
+| knockout → **L17** (top of band) | 23 → 8 | 17/2 | **0.00073** |
+| knockout → **L12** (mid band) | 23 → 17 | 11/5 | 0.21 |
+| **L12 vs L17** | 17 → 8 | **10/1** | **0.0117** |
+
+**This is one model, one pool, one layer pair, and DR-10's own conclusion is that no single population
+is decisive.** C-13 is the standing warning: a Llama result in this family was tested on Qwen3 and came
+back negative. So it is **not** a claim until it replicates.
+
+**Design.** Llama-3.1-8B, band **6-14**, same d10 pool A bank, `--rescue-positions query --rescue-donor
+clean`. Top-of-band **L14** and the knockout and clean arms **already exist** and are not regenerated
+(`p9_rescue_qpos_L14`, `p4b_demo_processing_only`, `p4bA`). **One new arm: `p11_qpos_L10`**, mid-band at
+`lo+4`, the Llama analogue of Qwen3's L12. All four judge in one window.
+
+**⛔ Preconditions, checked before reading (C-20's lesson):** `L10` must **not** be byte-identical to
+the knockout arm. `lo = 6`, so `L10 > lo` and the corrected rule predicts a real intervention — **if it
+comes back byte-identical the rule is wrong again and this branch stops rather than moving to a third
+layer.**
+
+#### 📌 Conditions — all three required, at both instruments
+
+**REPLICATES** if, on Llama:
+1. **Top of band restores refusal**: `|Δrefusal(L14 vs knockout)| > 0.0521` **and** paired exact
+   `p < 0.05`.
+2. **Mid band does not**: `|Δrefusal(L10 vs knockout)| ≤ 0.0521`.
+3. **They separate**: `|Δrefusal(L14) − Δrefusal(L10)| > 0.0417` **and** paired exact `p < 0.05`.
+
+**DECLINES** if the Llama knockout does not raise refusal by more than 0.0521 in the first place —
+there would be nothing to rescue, which is R-52's underpower rule, not a refutation.
+
+**REFUTED** if mid-band restores refusal as well as top-of-band does. Then the effect is not specific
+to the top of the band, the Qwen3 result was population-specific, and **the specificity leg that C-20
+removed from C9/C11/C12 stays removed.** Stated before the arm exists.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
