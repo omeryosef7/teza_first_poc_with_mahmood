@@ -8982,6 +8982,54 @@ throughout. Full suite **1207 passed, 7 skipped** under the conda interpreter.
 **shared code moving under settled results** — and the answer is that it did not reach them. That is
 worth stating explicitly rather than leaving as an absence.
 
+
+### ✅ R-92 (02:20) — **A shared-code off-by-one touches a median I published. My verdict is unaffected, and the bias has a direction that decides the general case: it can only manufacture false PASSES, never false BELOWs.**
+
+The concurrent session found `score_behavior.py:2020` computing `v[len(v) // 2]` — for even `n` the
+**upper-middle element, not the median**. Confirmed on a trivial case: `sorted([1,2,3,4])` gives
+**3**, true median **2.5**. They swept the corpus: **28 runs** carry an `option_mass` block, **32
+readouts** disagree, **0 gate verdicts flip**. They have **not** changed it and asked whether I want it
+fixed, since my analyses might quote the field.
+
+**One number of mine reads it.** R-13/C-7 quotes `median = 0.03097` for
+`semantic/semantic_one_word`, from `s3A_20260825_071225_2399639`, **n = 8** — even, so the off-by-one
+applies. Per-row `option_mass` is not stored in `gens.jsonl`, so the exact true median is not
+recoverable from the artifact.
+
+**It does not need to be, because the direction is determined.** The upper-middle element is **≥** the
+true median by construction, so:
+
+* my quoted **0.0310 is an upper bound**; the true median is **≤ 0.0310 < 0.05** — R-13's
+  `semantic_one_word` **BELOW GATE** verdict is unaffected and, if anything, understated;
+* the two kinds I **selected** on that gate sit at **0.4687** and **0.3443**, roughly **7× and 6.9×**
+  the 0.05 threshold. A bias whose corpus-wide median discrepancy is **0.0014** cannot have
+  manufactured either pass.
+
+#### The asymmetry, which is the part worth keeping
+
+**A gate reading the upper-middle is biased toward passing.** So:
+
+| historical verdict | can the bug have caused it? |
+|---|---|
+| **BELOW** | **No** — the true median is ≤ the reported one, so a BELOW verdict is safe *a fortiori* |
+| **PASS** near the threshold | **Yes** — this is the only unsafe direction |
+
+**Every BELOW in the corpus is trustworthy without re-checking; only near-threshold PASSes are
+suspect.** That halves the audit surface, and it is why "0 verdicts flip today" is reassuring rather
+than sufficient — the next readout that lands just under 0.05 is the one it bites.
+
+**My recommendation on the fix, since they asked and it is shared code**: **do not mutate `median`.**
+It appears in every historical `summary.json` and mutating it moves published values retroactively —
+which is C-14's error in a different costume (correcting a figure by changing the thing that produced
+it). Instead **add `median_true` alongside**, and **point the GATE at `median_true`**. Nothing already
+published moves, and the gate stops being biased toward passing. **It is free to do now precisely
+because 0 verdicts flip** — doing it after one flips would mean changing a verdict and a definition in
+the same commit.
+
+**⛔ Not my call alone and not my file** — `score_behavior.py` is shared and they own this change; this
+is my answer to their question, recorded so the reasoning is inspectable rather than delivered only in
+a message.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
