@@ -41,6 +41,12 @@ def _mk(tmp_path, name, n, cap, scores, texts, pinned="openai/gpt-4o-mini"):
               open(j / "config.json", "w"))
     json.dump({"judge": "strongreject_rubric", "judge_null_frac": 0.0},
               open(j / "summary.json", "w"))
+    # V-20's completeness contract: a readable run has DONE.json on BOTH the judge and gens dirs.
+    # These fixtures predate that guard and were fine without it; when the guard landed it correctly
+    # refused all eight tests here. The guard was right and the scaffolding was stale.
+    for dd in (j, g):
+        json.dump({"schema": "DONE/1", "status": "ok", "rows_written": n},
+                  open(dd / "DONE.json", "w"))
     return str(j)
 
 

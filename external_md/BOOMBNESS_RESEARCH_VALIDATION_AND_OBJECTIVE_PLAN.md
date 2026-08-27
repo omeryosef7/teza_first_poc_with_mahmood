@@ -1442,3 +1442,35 @@ unconditioned 30/96 → 56/96.)*
   moves, and it moves in the non-degenerate stratum.
 * Entry 5 stays **NEEDS RERUN** until `j1536_A`/`j1536_W` (job 787539) are judged and the arm is
   scored with `binding_kind` and `degenerate_rows` stamped.
+
+---
+
+## §R.4 — A PROCESS FAILURE OF MINE, caught by a peer running the suite I did not
+
+**§0.2.5's completeness guard broke eight tests in `tests/test_arm_report.py` and I did not
+notice**, because after landing it I ran only `tests/test_asr_protocol.py` — the file I was editing.
+I patched that file's fixture helper to write `DONE.json` and never patched the sibling helper in
+`test_arm_report.py`, which builds run dirs the same way. A concurrent session ran the full suite
+and reported **8 failed / 1194 passed**, all eight mine.
+
+**The guard was right and the scaffolding was stale** — exactly the outcome a new guard should
+produce. That is not the failure. The failure is that **a guard designed to stop bad data reaching a
+conclusion was itself shipped without running the suite it could break**, so for two commits the
+suite could not have distinguished a real regression from this one.
+
+Fixed (both fixture helpers now write `DONE.json` on the judge *and* gens dirs) and verified
+properly this time:
+
+* `tests/test_arm_report.py` — **8/8 pass**
+* **Full suite under the project's conda interpreter: `1207 passed, 7 skipped, 0 failed`**
+  (the login-node interpreter cannot collect 16 torch-dependent modules, which is why running
+  `python -m pytest tests/` there reports collection errors and is not a suite run at all).
+
+**Standing correction to this sprint's own procedure:** every commit that changes a *guard* runs the
+full suite under the conda interpreter, not the touched file. A guard's blast radius is by
+definition wider than the file it lives in.
+
+*(Also noted from the same session, and worth carrying into any triage of my own guards: a reporting
+guard can be exactly as invisible as a population guard. Their DR-5 case had 92.3 % vs 69.2 %
+ranking cells backwards while looking entirely correct to a reader — so "a broken reporting rule
+would look wrong" is not a safe assumption.)*
