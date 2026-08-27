@@ -6742,6 +6742,37 @@ independence of the draws, and R-62 already established that all three controls 
 them would spend GPU on a question already answered. Recorded so the omission is a decision and not
 a silent truncation of scope.
 
+
+### R-63 (04:30) — **PR-26 gate 1 PASSES outright: at a 640-token cap both arms terminate on 100% of rows. The 192-token cap was the binding constraint, and `demoproc`'s truncation was LENGTH, not degeneration.**
+
+Artifacts: `outputs/boombness/score_behavior/A640_20260827_040740_708673` and
+`.../dp640_20260827_040740_708761`, both 80/80 rows, `DONE.json` present, Qwen3-14B,
+`frac_rows_scope_live=1.0` with `scope_violations={}` on the knockout arm.
+
+| arm | `frac_stop_length` at 192 (R-62) | **at 640** | median new tokens | max new tokens | median chars |
+|---|---|---|---|---|---|
+| baseline | 0.431 | **0.000** | 212 | 555 | 938 |
+| `demoproc` | 0.700 | **0.000** | **277** | 618 | 1294 |
+
+**Gate 1 required `< 0.15` on every arm and got `0.000` on both.** No row reaches the cap — the
+longest completion in either arm is 618 tokens against 640 — so this is not a cap moved just far
+enough to look released.
+
+**The incidental finding is the more informative one.** `demoproc`'s median completion is **277 new
+tokens against the baseline's 212**, a ratio of **1.31**. Its 70% truncation at 192 was therefore
+**not** the model degenerating or rambling into the cap: it was writing longer answers and being cut
+off. That independently reproduces C-9's observation on a different bank (there the ratio was 1.14 and
+the down-flips decomposed as 12-of-15 *neither refused nor short*), and it removes the specific
+alternative explanation C-19 was most worried about — that `demoproc`'s ASR drop was manufactured by
+handing the judge more truncated text than the controls got.
+
+**This is not yet the answer.** Gate 2 (truncation must no longer *separate* the arms) needs
+`c1_640`, submitted as job `784658` once a slot freed. Gate 3 (≥4 baseline attacks at both decisive
+doses) is read from the judged baseline, and a 640-token cap can move the baseline ASR in either
+direction — a longer completion can complete a harmful answer the 192-token version left unfinished,
+which would *raise* it, or wander into a refusal, which would lower it. **The gate order stands: no
+arm-vs-arm number is computed until gate 3 passes.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
