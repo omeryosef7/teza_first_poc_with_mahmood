@@ -8777,6 +8777,48 @@ that should have differed. **Each step was cheaper than the last** — C-20 took
 same-session control arm, C-26 took one rename, C-27 took two, R-87 took a 30-line fixture. **The
 expensive part was never the check; it was not knowing the check was owed.**
 
+
+### ⛔ R-88 (23:15) — **R-87's own justification for deprioritising two tests was WRONG, and DR-5 is the proof. Converted the one it misjudged.**
+
+R-87 left `test_rescue_dissociation_table` and `test_dose_breakdown` as source-text assertions with a
+stated reason:
+
+> *"A disabled reporting rule produces a number that looks **wrong** to a reader; a disabled population
+> guard produces a number that looks **right**."*
+
+**That is false for this guard, and the counterexample is the failure it exists to prevent.** DR-5:
+the published *"% of refusal rise removed"* figures were **92.3%** and **69.2%**, and they **ranked the
+cells backwards** — 92.3% was **12 rows / 1.44× margin** (the weakest) and 69.2% was **18 rows /
+2.16×** (the strongest). **Those numbers looked entirely right.** The failure is **invisible**, the same
+class as C-13's, so it earns an executing test on the same grounds.
+
+**Converted.** The invariant asserted on real output rather than on source: **no cell may carry
+`pct_of_rise_removed` without `effect_rows` and `effect_x_margin` beside it.** Fixture is four judge
+dirs of 8 rows; no model, no GPU, 14 s.
+
+| | before | after |
+|---|---|---|
+| real code | 6 passed | **7 passed** |
+| `"effect_x_margin": …` → `None` *(rule disabled, source text intact)* | **6 passed** ⛔ | **1 failed, 6 passed** ✅ |
+
+**`test_dose_breakdown` remains text-only, and now for a reason I have actually checked** rather than
+one I asserted: its rule is that **per-dose cell sizes are emitted beside per-dose numbers**. A missing
+cell size is visible in the artifact — a reader sees a rate with no `n` and cannot compute anything
+from it — whereas DR-5's percentage was **self-consistent and complete-looking while being backwards**.
+**That distinction is real; the blanket version I wrote in R-87 was not.**
+
+#### The correction under the correction
+
+R-87 closed by observing that each step of this thread was cheaper than the last, and that *"the
+expensive part was never the check; it was not knowing the check was owed."* **I then immediately used
+a plausible-sounding rule to decide two checks were not owed — without checking.** The rule was
+invented in the same message that congratulated itself for noticing this failure mode.
+
+**The pattern is now four deep** — C-20, C-26, C-27, and R-87's justification — and every instance is
+the same: **something true about a narrower question, used to answer a wider one.** Here the narrow
+truth is *"some reporting failures are visible"*; the wider claim was *"reporting failures are
+visible"*.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
