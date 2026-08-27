@@ -7037,6 +7037,56 @@ second judge-reproducibility measurement: judged in the same window, its flip co
 knockout arm is a second read of the ±0.0125 figure above, on a different model. **Recorded as a
 repurposing, not as a control that happened to be inert.**
 
+
+### R-67 (06:20) — **I tried to test C-20's prediction and the test was INVALID BY DESIGN. Flagging it before it can be read either way, and launching the comparator that actually tests it. C-20's evidence is unchanged; its confirmation is now pending.**
+
+The fresh below-band arm `q9_qpos_L5_20260827_054320_1072840` landed (160/160, `fired` 160/160, 28
+positions). C-20 predicts it is a no-op, so I compared it to the knockout-only arm and got:
+
+> **identical 0/160 — "PREDICTION FAILED"**
+
+**That comparison tests nothing, and I should have seen it before running it.** The only knockout-only
+arm I compared against (`q6b_...516774`) is from a **different session** — 25 August. Measured just
+now, two runs of the **same** knockout-only intervention in different sessions agree on
+**3/160 rows**:
+
+| comparison | identical |
+|---|---|
+| Llama knockout-only, session `p6b` vs session `p4b` — *same intervention* | **3/160** |
+| `q9_qpos_L5` (today) vs `q6b` knockout-only (25 Aug) | 0/160 |
+
+**Generation is not reproducible across sessions**, so a cross-session comparison returns ~0/160 for a
+vacuous arm and a real arm alike. My "prediction test" could not have come out any other way.
+
+**C-20's actual evidence is untouched, and it is not weak.** Every one of its four matches is
+**within** a session, and same-session runs of *different* interventions do **not** match — `p8b`'s
+in-band L14 arm agrees with its session's knockout arm on only **6/160**. Exact byte-identity across
+160 rows is not something a session produces by default; it happens when the computation is identical:
+
+| within-session comparison | identical |
+|---|---|
+| `p8b_rescue_L5` (below band) vs `p6b` knockout-only | **160/160** |
+| `p9_rescue_qpos_L5` (below band) vs `p4b` knockout-only | **160/160** |
+| `p10_demo24_L5` (below band) vs `p4b` knockout-only | **40/40** |
+| `q6b_rescue_L5` (below band) vs `q6b` knockout-only | **160/160** |
+| `p8b_rescue_L14` (**in** band) vs `p6b` knockout-only | 6/160 |
+
+**So C-20 stands on its evidence and its confirmation is now pending, not delivered.** The valid test
+needs a knockout-only arm from **this** session. **Launched: `q9_ko`, job `784904`** — identical
+configuration to `q9_qpos_L17`/`L5` with the rescue flags removed. C-20 is confirmed if
+`q9_qpos_L5 ≡ q9_ko` at 160/160 while `q9_qpos_L17 ≢ q9_ko`; it is **refuted** if `q9_qpos_L5` differs
+from `q9_ko` on a material fraction of rows, and in that case the construction argument is wrong and
+C-20 must be withdrawn the way C-14 was.
+
+**Nothing in C-20's corrections is being rolled back on the strength of an invalid test.** The struck
+citations in the handoff and summary stay struck until `q9_ko` reports, because the four within-session
+identities are the reason they were struck and those numbers have not changed.
+
+**Also confirmed clean, and unaffected by any of this:** `q9_qpos_L17` is a **real** intervention —
+0/160 identical to knockout-only *and* it is the in-band arm, so the C-20 trap does not touch PR-27's
+primary condition. 160/160 rows, `frac_rows_scope_live=1.0`, `scope_violations={}`, `fired` 160/160 at
+**28** positions, truncation 0.344.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
