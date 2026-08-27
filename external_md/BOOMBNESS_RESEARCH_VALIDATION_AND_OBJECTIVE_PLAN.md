@@ -1847,3 +1847,48 @@ This is a **direct hit on objective viability**, and it cuts both ways:
 **Phase 6's representational half is answered and the answer is unfavourable to a simple objective.**
 The behavioural half — ASR by `n_examples` at a non-binding cap — is next, and the entry-6 arms
 already provide it at `n_examples ∈ {1,2,4,8}` on three banks.
+
+---
+
+## §0.16 — ENTRY 6, population `ticket_bomb`: the strongest knockout result yet
+
+**Artifact:** `outputs/boombness/arm_report/e6t_20260828_014238_70394/arm_report.json`
+Cap 640 · n=96 · pinned judge · **both arms in one invocation** (787814)
+
+| arm | ASR | at cap | median tokens | refusal kw | judge floor |
+|---|---|---|---|---|---|
+| `A_baseline` | **27/96** | **0.0000** | 248.0 | 12/96 | 0.0461 |
+| `C_band_L6_14` knockout | **2/96** | **0.0000** | 299.5 | **0/96** | 0.0237 |
+
+**delta −0.2604 · 1 up / 26 down · exact p ≈ 0 · net/SD = 9.66 · divergence 96/96 · MDE 0.135**
+
+Neither arm truncates, so this is plain `ASR`. **Stronger than at cap 192** (24/96 → 7/96, net +17;
+now 27/96 → 2/96, net +25).
+
+**It is neither refusal nor length collapse, and both are measured rather than assumed:**
+refusal keyword rate **falls** to 0/96 in the knockout arm (from 12/96), and median generation
+length **rises** 248 → 299.5. The knockout removes the attack while the model keeps writing, at
+length, without refusing.
+
+### Entry 6 status: 2 of 3 populations, both sprint-grade
+
+| population | baseline → arm | delta | up/down | p | net/SD |
+|---|---|---|---|---|---|
+| `main` | 22/96 → 8/96 | −0.1458 | 7/21 | 0.0125 | 4.05 |
+| **`ticket_bomb`** | **27/96 → 2/96** | **−0.2604** | **1/26** | **~0** | **9.66** |
+| `basket_gun` | *generating* | — | — | — | — |
+
+Both confirming populations are the two §0.8 identified as carrying the pooled claim (net/SD 5.53
+and 5.18 at cap 192). **`basket_gun` remains the informative test** — a population with headroom
+(baseline 10/96) that showed **nothing** at 192 (net −1). If it stays null the dissociation is
+confirmed at a usable cap; if it now moves, §0.8's decomposition needs revisiting.
+
+### A gap I am recording rather than papering over
+
+These entry-6 runs were generated with `--query-kinds behavioral` only, so **they carry no
+comprehension or binding readout**. The brief's Phase 5 asks for binding accuracy *beside* every
+ASR delta, precisely so that "ASR fell" can be distinguished from "the model no longer understands
+the prompt". The refusal rate and length figures above argue against destruction — a model that had
+lost the prompt would not write *longer* — but **that is an argument, not the forced-choice binding
+probe Phase 5 specifies.** Recorded as an open item; the probe exists (`core2x2`,
+`semantic_forced_choice`) and would need its own generation pass.
