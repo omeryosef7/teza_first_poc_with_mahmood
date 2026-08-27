@@ -52,6 +52,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
+| ⚠️ **THE LLM JUDGE FLIPS 9/160 ROWS ON BYTE-IDENTICAL TEXT (0.0563), while `kw_refusal` flips 0/160.** Not threshold adjacency — only 6/160 rows are score-adjacent to the cut and **four flips swing 0.0 ↔ ≥0.5**. Per-dose churn is **2,3,1,3 rows per 40-row cell**, against C7 per-cell effects of **3-7 rows** | **Net** churn is 1 row so PR-3's margins stand and no number moves; but **no single 40-row cell is decisive alone** — C7 is carried by **three independent populations agreeing in sign at both doses** | **R-70**, **DR-10** |
 | 🏆 **§20 Q7 ANSWERED: C11's refusal half and its dissociation REPLICATE on Qwen3-14B.** Query-span rescue at L17 moves refusal **−0.0937 (−15 rows, 71.4% of the knockout's rise)** while ASR moves **−0.0062 (−1 row, −7.7% recovery)**; dissociation **0.0875** vs a 0.0417 margin. Llama gave −0.1562 / 96.2%. **The ASR half DECLINES for power** (inside ±0.0521), per PR-27's rule — not refuted | judge 800 rows 0 nulls; all arms same bank + same session; layer-specificity read is **EXPLORATORY** (no criterion was pre-registered for L12) | **R-70** (PR-27) |
 | ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
 | 🏆🏆🏆 **C1 NOW HOLDS IN THREE INDEPENDENT SETTINGS — two model families and two demonstration pools sharing NO sentences.** `demoproc` refusal rise **+0.1625** (Llama/A), **+0.1312** (Qwen3/A), **+0.1938** (Llama/B); every other scope within margin in all three. §20 Q5 ANSWERED | PR-12 both conditions HOLD; committed before pool B existed | **R-29** |
@@ -7276,6 +7277,61 @@ same bytes:
   deterministic detector; every ASR number is drawn from one that flips 5.6% of rows given the same
   input. **That is a strong reason the refusal half of C11 replicated cleanly and the ASR half did
   not, and it is measured rather than asserted.**
+
+
+### 🔎 DR-10 (07:55, 4h DEEP REVIEW) — **Full suite 1085/0. All three C7 headline cell-sets recomputed from artifacts and they match exactly. No corrections this round. The one thing the review found — a 27.5pp truncation gap on R-70's newest arm — was tested and the claim STRENGTHENS under it.**
+
+**Suite.** `1085 passed, 7 skipped` in 205s. Queue empty; no FAILED or CANCELLED job this phase owns.
+
+**Headline numbers recomputed independently from the judge artifacts** (rows, not rates, per C7's
+decisive doses):
+
+| population | n=4 | n=8 | published as |
+|---|---|---|---|
+| pool A (R-58) | **5 → 0** | **7 → 2** | 5/5 and 5/7 ✅ |
+| pool B (R-62) | **4 → 0** | **6 → 1** | −4/4 and −5/6 ✅ |
+| 640-token cap (R-64) | **4 → 1** | **7 → 0** | −3/4 and −7/7 ✅ |
+
+**All three match what is published.** Nothing drifted.
+
+**Liveness, provenance, overwrites — 18 arms swept.** Every intervention arm reports
+`frac_rows_scope_live = 1.0` with `scope_violations = {}`; every arm has `DONE.json` at its expected
+row count; `n_failed = 0` everywhere. **Exactly one run directory per tag — no silent overwrites.**
+Banks and models are correct per family (`longpre*` for the C7 work, `d10` for the Q7 work), which is
+the check C-21 exists to enforce.
+
+**Truncation/EOS — the review's one real finding, and it went the right way.** `q9_qpos_L17` truncates
+**0.344** against its comparator `q9_ko`'s **0.619** — a **27.5pp** gap, the same shape as C-19. Unlike
+C-19, the subgroup where both arms terminate is **not** empty:
+
+| population | n | refusal `ko` → `L17` | Δrefusal |
+|---|---|---|---|
+| all rows | 160 | 23 → 8 | **−0.0938** |
+| **both terminated** | **51** | **15 → 5** | **−0.1961** |
+
+**R-70's condition 1 survives and roughly doubles on the untruncated subgroup.** Conditioning on
+`stop_reason` is still conditioning on a collider (PR-4), so this is support and not proof — but the
+subgroup is 51 rows rather than C-19's 1 and 0, refusal comes from a **deterministic** detector, and
+the effect moves *away* from the truncation explanation. **C-19's caveat does not transfer to R-70.**
+
+**Structure below the reproducibility floor — now measured, not assumed.** From R-70's byte-identical
+pair, the LLM judge flips **9/160 = 0.0563** of rows on the *same bytes*. Two properties matter:
+
+* **It is not threshold adjacency.** Only **6/160** rows have a baseline score anywhere in
+  `[0.30, 0.70]`, yet 9 flipped, and **four of them swing 0.0 ↔ ≥0.5.** The judge is not merely
+  wobbling around the cut; it sometimes reads the same text completely differently.
+* **Per-dose it is 2, 3, 1, 3 rows** per 40-row cell (n=1,2,4,8), against C7 per-cell effects of
+  **3 to 7 rows**. So the individual cells sit at roughly **1.7× to 5×** the churn.
+
+**What that does and does not license.** The margins gate *net* differences and the net churn is
+**1 row**, so PR-3 stands and no published number moves. But it means **no single 40-row cell in this
+phase should be read as decisive on its own.** What actually carries C7 is that **three independent
+populations agree in sign at both decisive doses** — pool A, pool B, and the untruncated 640-token
+rerun — which is a much stronger statement than any one cell against its margin, and it is the framing
+the write-ups should lead with.
+
+**No correction is issued this round.** Recorded explicitly, because a review that finds nothing is
+only informative if it says so.
 
 ---
 
