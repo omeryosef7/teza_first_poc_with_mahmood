@@ -7138,6 +7138,78 @@ still wrong and PR-27's specificity condition is abandoned rather than patched a
 **PR-27's primary conditions are untouched** by any of this: `q9_qpos_L17` is a real intervention
 (4/160), in-band, liveness 1.0, `fired` 160/160 at 28 positions.
 
+
+### ⛔ C-21 (07:10) — **CORRECTION to R-67: I blamed "generation is not reproducible across sessions" for an artifact that was actually POOL A vs POOL B. The conclusion (the test was invalid) stands; the reason was wrong, and the true picture is the opposite — generation here is DETERMINISTIC given the same bank.**
+
+Caught by verifying a number before publishing it. I was about to record a "generation-session
+reproducibility floor" of ±0.0312 ASR from two pairs of runs I described as *the same intervention run
+twice*. Diffing their `RUNMETA` args first — the only difference in each pair:
+
+> `bank`: `boombness_prompt_bank_d10.jsonl` **vs** `boombness_prompt_bank_d10_poolB.jsonl`
+
+**They are different demonstration pools.** The ASR gap is a pool difference, which R-29 already
+established is real. **There is no measured generation-session noise floor, and PR-3's margins are not
+undermined.** The finding is withdrawn before it was ever written down as one.
+
+**The same confound explains R-67.** Every arm's bank, checked:
+
+| grouping | comparison | identical |
+|---|---|---|
+| **same bank** | `p8b_rescue_L5` (poolB) vs `p6b` KO (poolB) | **160/160** |
+| **same bank** | `p9_rescue_qpos_L5` (poolA) vs `p4b` KO (poolA) | **160/160** |
+| **same bank** | `p10_demo24_L5` (poolA) vs `p4b` KO (poolA) | **40/40** |
+| **same bank** | `q6b_rescue_L5` (poolB) vs `q6b` KO (poolB) | **160/160** |
+| same bank, **in band** | `p8b_rescue_L14` (poolB) vs `p6b` KO (poolB) | 6/160 |
+| **cross bank** | `p6b` KO (poolB) vs `p4b` KO (poolA) | 3/160 |
+| **cross bank** | `q9_qpos_L5` (poolA) vs `q6b` KO (**poolB**) | 0/160 |
+
+R-67's `q9_qpos_L5 → 0/160` was **not** a session effect. It was pool A judged against a pool B
+knockout arm — **different demonstration sentences, therefore different prompts**. I reached for
+"sessions differ" because I had just been thinking about session artifacts, and never checked the one
+field that decides it. **That is C-13's defect exactly: a comparison silently run against the wrong
+population, producing a plausible number.**
+
+**What changes, and what does not.**
+
+* **C-20 is unaffected and remains CONFIRMED.** R-68's decisive test compared `q9_qpos_L5/L7/L12/L17`
+  against `q9_ko` — **all pool A, all this session** — and it is clean on both axes.
+* **R-67's conclusion stands** (the prediction test was invalid) but **its stated reason is withdrawn**;
+  the invalidity was cross-bank, not cross-session.
+* **R-67 and R-68's "within one session" framing is corrected to "on the same bank."** Both happen to
+  be true of R-68's arms, so no number moves.
+* **Generation appears fully DETERMINISTIC here**, given the same bank, model and intervention — which
+  is *stronger* than what I claimed, and it is what makes byte-identity a sharp enough instrument to
+  have caught C-20 at all.
+
+**No published claim is touched.** The withdrawn floor was never published; R-67's numbers were
+reported with their comparison stated, and the comparison is what was wrong.
+
+---
+
+### ✅ R-69 (07:12) — **The corrected rule survives its own test: `L12` is a REAL intervention, and PR-27 finally has a sound specificity control.**
+
+`q9_qpos_L12_...` — 160/160 rows, `failures: 0`, `frac_rows_scope_live=1.0`, `scope_violations={}`,
+`fired` 160/160 at **28** positions. All four layers against `q9_ko` (same bank, same session):
+
+| layer | position in band 7-17 | predicted | identical vs `q9_ko` | observed |
+|---|---|---|---|---|
+| 5 | below | vacuous | **160/160** | vacuous ✅ |
+| 7 | `= lo` | vacuous | **160/160** | vacuous ✅ |
+| **12** | `lo+5` | **real** | **16/160** | **real ✅** |
+| 17 | `= hi` | real | 4/160 | real ✅ |
+
+**4/4 predictions correct.** R-68 pre-committed that a byte-identical `L12` would mean the rule was
+still wrong and the specificity condition would be abandoned rather than patched a third time. It did
+not come to that: `L12` changes **144 of 160** generations.
+
+**PR-27's condition 3 now has a control that can actually fail**, and the layer-specificity question
+C9/C11/C12 lost to C-20 becomes answerable: L12 and L17 are both real interventions at the same
+positions, differing only in depth.
+
+**Launched: `q9A`, job `784915`** — the clean baseline on pool A **in this session**, so the whole Q7
+read is same-bank and same-session end to end rather than leaning on an Aug-25 baseline. All arms then
+judge in one window.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
