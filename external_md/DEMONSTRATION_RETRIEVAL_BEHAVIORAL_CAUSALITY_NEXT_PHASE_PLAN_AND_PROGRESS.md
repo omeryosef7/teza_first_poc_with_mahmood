@@ -8519,6 +8519,49 @@ so.
 **No correction issued.** Recorded because a floor audit that finds nothing is only informative if it
 says what it covered.
 
+
+### ✅ R-84 (22:30) — **Headroom audit on my one pooled claim, prompted by the concurrent session's finding that their 8-population aggregate was carried by two populations. C4 is clean — and the reason generalises into a rule about which aggregates are vulnerable.**
+
+They found that *"96 down / 18 up over 8 populations"* is carried by **two** of five Llama populations
+(+17, +17) while three contribute **+2, −1, −1** — and that `window_knife`'s baseline ASR of **2/96**
+means it has *no attack to remove*, so its near-zero result is **evidence of nothing** being averaged in
+as though it were evidence of a small effect. That is my own R-AU (attackability is a bank × model
+property) biting an aggregate headline.
+
+**So I audited my only pooled claim.** C4 — *attack removal proceeds by coherent non-compliance* —
+reports **0 degenerate rows of 165 across 8 cells**. Per-cell, from
+`outputs/boombness/kill_route_breakdown/krb_20260825_131040_3620206/kill_route_breakdown.json`:
+
+| cell | killed rows | | cell | killed rows |
+|---|---|---|---|---|
+| `llama:demoproc` | 25 | | `qwen3:demoproc` | 20 |
+| `llama:legacy` | 24 | | `qwen3:legacy` | 19 |
+| `llama:respq` | 24 | | `qwen3:respq` | 20 |
+| `llama:qpre` | 18 | | `qwen3:qpre` | 15 |
+
+**Range 15-25, total 165, both models.** No cell contributes less than 9% or more than 15% of the
+total. **"8 cells" is not overselling one cell's data**, and the independent re-derivation
+(`REPRO_krb_...`) reproduces all eight counts exactly.
+
+#### The rule this exposes, which is the transferable part
+
+**Their aggregate and mine are different shapes, and only one shape has this failure mode:**
+
+* **Vulnerable — an effect size averaged over populations.** A population with no headroom contributes
+  ≈ 0 *and still carries weight in the mean*, so it **drags the aggregate toward the null** while
+  looking like evidence for a small effect. This is what happened to entry 6.
+* **Immune — a proportion computed over the affected rows themselves.** C4's denominator is *killed
+  rows*. A cell with no kills contributes nothing to the numerator **and nothing to the denominator**,
+  so it cannot dilute; it simply is not represented.
+
+**The diagnostic question is therefore not "how many populations?" but "does a population with no
+headroom enter the denominator?"** If yes, the aggregate needs per-population reporting before it can
+be quoted. If no, pooling is safe and only *concentration* needs checking — which is what I checked
+above.
+
+**No correction.** C4 stands as published, now with its per-cell distribution recorded rather than
+assumed.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
