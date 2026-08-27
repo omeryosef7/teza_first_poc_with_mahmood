@@ -6554,6 +6554,62 @@ block, never from `population_composition`.**
 | `outputs/boombness/scoped_smoke_verdict/s1verdict_20260825_033930_2556360/scoped_smoke_verdict.json` | `src/boombness/scoped_smoke_verdict.py` | **R-9** — the smoke verdict, read as a whole |
 | `outputs/boombness/rederive_crossbank/rederive10_20260825_002934_2201570/rederive_crossbank.json` | `src/boombness/rederive_crossbank.py` | **R-1 / R-2** — population identity, pool proof, per-population ASR, crossed ANOVA + both marginals + crossed random-effects interval, prompt-level binomial **decomposed by demonstration pool**, both-EOS composition |
 
+
+### R-61 (03:35) — **All four PR-25 generation arms landed clean on pool B; the three control draws are provably independent; the five-arm judge window is submitted. Nothing is read yet.**
+
+The sweep pre-registered at R-60 is complete. Every generation-side precondition PR-25 requires
+was checked **before** any judging was launched, and each one is recorded here with the artifact
+that produced it, so the read that follows cannot quietly relax a condition it has already met.
+
+**Arms, all Qwen/Qwen3-14B, all on `boombness_prompt_bank_longpreQ14B.jsonl` (sha `b2903479258a0f68`):**
+
+| tag | run dir | rows | `frac_rows_scope_live` | `scope_violations` | `control_draw_match_ratio` min |
+|---|---|---|---|---|---|
+| `q16A` (baseline) | `outputs/boombness/score_behavior/q16A_20260827_014106_689620` | 160/160 | — | — | — |
+| `q16_demoproc` | `.../q16_demoproc_20260827_022535_694032` | 160/160 | **1.0** | `{}` | n/a (not a control arm) |
+| `q16_matched_d1` | `.../q16_matched_d1_20260827_024736_695408` | 160/160 | **1.0** | `{}` | **1.000** (160/160 rows carry the field) |
+| `q16_matched_d2` | `.../q16_matched_d2_20260827_025736_696843` | 160/160 | **1.0** | `{}` | **1.000** (160/160) |
+| `q16_matched_d3` | `.../q16_matched_d3_20260827_025810_1051351` | 160/160 | 1.0 | `{}` | 1.000 |
+
+Every arm reached `DONE.json` at the full 160 rows, so C-16's partial-read trap is closed by the
+artifact itself rather than by the scheduler. `match_ratio` is 1.000 on **every** control row at
+every dose — the strict `nondemo_matched_d*` policy would have refused an under-matched row, and
+none were refused. The longer-preamble bank was built for exactly this: on pool A's short bank the
+strict policy had no drawable pool at `n=8`.
+
+**The three draws are independent by seed AND by generation hash (C-17's requirement, checked, not
+assumed).** Each control row records its own draw provenance:
+
+* `d1` → `nondemo_matched_d1@seed20260825`, `draw_seed=28180602`
+* `d2` → `nondemo_matched_d2@seed20260825`, `draw_seed=36100379`
+* row-wise comparison of the drawn position sets: **0 of 160 rows drew identically** between d1 and d2.
+* whole-arm generation hashes (sha256 over the sorted per-row completion hashes) are **3 distinct
+  values for 3 arms** — `708f15bc…` (demoproc), `abb9e9e1…` (d1), `6dce84cb…` (d2).
+
+So "three independent controls" is a measured statement here, not a naming convention. This is the
+condition C-17 was written for: two arms that *were* launched twice looked distinct by tag and
+identical by content.
+
+**Judging.** All five arms go through **one** judge window, `q16j_{A,demoproc,d1,d2,d3}`, job
+`784409`, pinned to `openai/gpt-4o-mini`, script `scripts/judge_q16_poolB.sh`. The baseline is
+**re-judged** inside that window even though `xj_q_Q14B` already judged it at 02:10 for the power
+gate: R6-6 established that arms judged in different sessions produced a real artifact, and the
+whole pool-B read is an arm-vs-baseline contrast. The power-gate artifact is not overwritten — the
+new run writes under a different tag prefix — so the 12/160 power number stays independently
+inspectable.
+
+`run_judge_cpu.sh` now takes the batch script via `JUDGE_BATCH` instead of hard-coding one file.
+That is a launcher change only; the default is unchanged, so every prior judge invocation still
+resolves to the same script.
+
+**Not read yet, and the thresholds do not move.** PR-23's three conditions apply to this pool
+unchanged — a new pool licenses no new thresholds. R-60's flag stands and is repeated here because
+it is the thing most likely to be rationalised after the fact: **pool B carries 12 attacks total
+(n1:0 n2:2 n4:4 n8:6) against pool A's 17, and `n=4` sits at exactly the 4-row floor for the second
+time.** One row moving turns a confirmation into a decline. Per PR-25, if the matched controls
+remove attack comparably on this powered population, **C7 reverts to unresolved rather than staying
+confirmed on one pool.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*

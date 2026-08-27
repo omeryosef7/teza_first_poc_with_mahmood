@@ -28,5 +28,5 @@ export PYTHONUNBUFFERED=1
 export PYTHONPATH="$PROJECT_DIR/src/boombness:${PYTHONPATH:-}"
 echo "=== judge batch ==="; date; hostname
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"
-bash "$PROJECT_DIR/scripts/judge_qwen3_decomposition.sh"
+bash "$PROJECT_DIR/${JUDGE_BATCH:-scripts/judge_qwen3_decomposition.sh}"
 echo "=== done ==="; date
