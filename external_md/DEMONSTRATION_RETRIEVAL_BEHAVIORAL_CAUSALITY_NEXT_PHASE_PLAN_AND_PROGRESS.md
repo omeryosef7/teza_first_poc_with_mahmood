@@ -8416,6 +8416,63 @@ flip on identical input.**
 number that favoured my own claim — and I was *wrong in the direction of excessive caution*, which is
 still wrong. **Scepticism is not self-validating; it has to be checked too.**
 
+
+### ✅ R-83 (22:20) — **The judge floor is now PER-ARM, and applying it to C7 turns R-82's estimate into a measurement: the pool-B effect is 3.6× the paired noise, and the two flagged control cells are 0.00× and 0.38×.**
+
+The concurrent session ran the boundary test and confirmed the prediction: on 320 double-judged rows,
+flips concentrate almost entirely at the decision boundary — **9/17 (0.53) within |score − 0.5| < 0.15
+versus 5/289 (0.0173) beyond it.** Per their own caveat I use **only the two-bucket contrast**; their
+five-bucket split rests on n = 11, 6, 8, 6 and is not quotable.
+
+**That makes the floor a property of an ARM, not of the corpus**, because it depends on how much
+borderline mass the arm has. Applied to my arms (`near` = rows with |score − 0.5| < 0.15):
+
+| arm | near/160 | effective flip rate | expected flips |
+|---|---|---|---|
+| pool A baseline | 7 | 0.0397 | 6.35 |
+| pool A `demoproc` | 5 | 0.0333 | 5.33 |
+| pool A `matched_d1` | 10 | **0.0493** | 7.89 |
+| pool B baseline | 10 | **0.0493** | 7.89 |
+| **pool B `demoproc`** | **1** | **0.0205** | **3.28** |
+
+**The peer flagged a risk that turns out not to bite here, and the reason is worth keeping.** They
+warned that my flagged `matched_d2`/`d3` cells might face a floor *worse* than my ~2-row estimate. At
+the decisive doses those arms have **5 and 2** borderline rows in 80 — effective rates **0.0493** and
+**0.0301**, at or below the corpus average. The arms that face an above-average floor are the
+**baselines** (0.0493), not the controls.
+
+#### C7 against its own measured noise
+
+Symmetric flips move the paired net by ±1 with equal probability, so `Var(net) = total expected flips`
+(C-25's result is what licenses this). Pool B, decisive doses, 80 rows per arm:
+
+| | value |
+|---|---|
+| baseline expected flips | 4.97 (7 near-rows) |
+| `demoproc` expected flips | 1.38 (**0** near-rows) |
+| **paired net-noise SD** | **2.52 rows** |
+| **observed effect** | **10 → 1 = −9 rows** |
+| **effect / noise SD** | **3.6×** |
+
+And the two cells R-82 flagged, pooled over both decisive doses:
+
+| cell | net | paired noise SD | ratio |
+|---|---|---|---|
+| `matched_d2` | **+0** rows | 2.90 | **0.00×** |
+| `matched_d3` | **−1** row | 2.62 | **0.38×** |
+
+**R-82's characterisation is confirmed and is now quantitative**: those two nulls are **not** evidence
+of inertness — they are indistinguishable from zero noise-wise — while **the effect they are supposed
+to contrast with is 3.6× the same noise**. The asymmetry is the point: `demoproc` has **zero**
+borderline rows at the decisive doses, which is *why* its floor is the lowest of any arm and why the
+contrast survives.
+
+**⚠ What this rests on.** The near/far rates are the peer's measurement on `q15A`/`q16A` double-judgings
+and I am importing them as a mixture model onto my arms. **It is a measured floor transplanted, not a
+floor measured on these arms**, and the 3.6× would move if the boundary rates differ by population.
+The direction of the borderline counts (0 near-rows in `demoproc`) is directly measured on my own data
+and is not transplanted.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
