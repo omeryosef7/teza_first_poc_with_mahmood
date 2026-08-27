@@ -7464,6 +7464,48 @@ additional layers are run.**
   restoration is significant at p = 0.019, which is what killed condition 2. **A statistic adopted for
   good reasons should sometimes cost you a result, and this one did.**
 
+
+### 📌 R-72 (09:10) — **The planned experimental programme is COMPLETE. Every pre-registration PR-1…PR-28 has a recorded outcome, every §20 question is answered, declined on evidence, or failed its gate. What remains needs a decision that is not mine.**
+
+Queue empty; no FAILED or CANCELLED job this phase owns; `check_all` 6/6; suite 1085/0 (DR-10).
+
+**§20, closed item by item:**
+
+| question | status |
+|---|---|
+| Q1 response-query vs prefill | answered (C2, C3) |
+| Q2 what changes when the attack dies | answered (C4, C5) |
+| Q3 causal rescue | answered (C9, instrument-verified C10) |
+| **Q4 low-rank vs distributed** | **DECLINED ON EVIDENCE (R-65)** — its antecedent failed |
+| Q5 fourth demonstration pool | answered (R-29) |
+| Q6 joint crossed Qwen3 factorization | dropped (R-30), already answered by R-17 |
+| **Q7 retrieval/refusal independence on Qwen3** | **ANSWERED (R-70)** — strong half replicates, ASR half declines |
+| Q8 GCG/MAC objective | closed with Q4, which gated it |
+| *(follow-on)* layer specificity | **FAILED ITS GATE (R-71)** — branch stopped, not rescued |
+
+**Consistency pass on the deliverables, after a day that issued three corrections (C-19, C-20, C-21):**
+no withdrawn statement asserts itself unstruck in either deliverable; C7's truncation-robustness is
+stated in all three documents; **no document claims layer specificity anywhere.**
+
+**What this phase actually established, in one line each:**
+
+* **C7 is the strongest result**: attack removal is demonstration-specific — confirmed on pool A,
+  replicated on pool B, and shown truncation-robust at a 640-token cap where the effect **grew**.
+  Three independent populations agreeing in sign at both decisive doses (DR-10's framing).
+* **C1 is the most robust**: `demoproc` uniquely restores refusal in three settings, now also at
+  paired exact p ≤ 9.5e-07.
+* **C11's strong half is model-general** (R-70); its ASR half declines for power on Qwen3.
+* **The dissociation stands**: refusal restoration is not the route to attack removal (C2/C12).
+
+**⛔ What remains is ONE item and it is blocked on a decision, not on compute.** R-27's
+**benign-register concept bank** — the vehicle for mapping-usage and for lifting lexical generality
+above **G = 1**, which is limitation 5 and the phase's largest unaddressed scope limit. It is a
+**bank-design change**, the same class as the longer-context bank that had to be authorised before
+C7 could be tested. **It is not started, and I am not starting it unasked.**
+
+**Nothing else is justified by current evidence.** The honest alternative to inventing work is to say
+the programme is done, and this entry says it.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
