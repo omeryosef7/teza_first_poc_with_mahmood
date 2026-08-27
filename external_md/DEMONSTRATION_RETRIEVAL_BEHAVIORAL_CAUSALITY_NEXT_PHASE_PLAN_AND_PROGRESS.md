@@ -8859,6 +8859,46 @@ reasoning rather than in the work, further ticks are more likely to manufacture 
 staying responsive to the concurrent session, which has twice surfaced things that touched my claims
 (C-23's framing, C-24's scope) — **not in generating a ninetieth entry.**
 
+
+### ✅ R-90 (00:05) — **My four cap pairs are PURE TRUNCATION at 0% binding-row overlap — the clean contrast to the concurrent session's degeneracy case at 100%. Their classifier separates two regimes rather than flagging "binds a lot", and my arms are the negative control for it.**
+
+They found an arm that binds on **29/96 rows at BOTH 640 and 1536** — *the same 29 rows*, every one
+landing on exactly the cap — while its baseline binds **0/96** at both. That is **non-termination, not
+truncation**, and their §0.2 rule *"if the cap binds, run a larger cap"* would have chased it forever.
+They now classify on **binding-row identity overlap across two caps**.
+
+**I have four cap pairs and every one is the opposite regime.** Applied to my own data:
+
+| population | n | binds @192 | binds @640 | overlap | verdict |
+|---|---|---|---|---|---|
+| Llama `basket_bomb` baseline | 96 | **90** | **0** | **0 (0%)** | pure truncation |
+| Llama `basket_bomb` `demoproc` | 96 | **82** | **0** | **0 (0%)** | pure truncation |
+| Qwen3 `longpreQ14B` baseline | 80 | 48 | **0** | **0 (0%)** | pure truncation |
+| Qwen3 `longpreQ14B` `demoproc` | 80 | **72** | **0** | **0 (0%)** | pure truncation |
+
+**Their case is 100% overlap; all four of mine are 0%.** That is what a classifier needs to be worth
+having — **it is not merely flagging populations that bind heavily**, since mine bind on **up to 94% of
+rows** at the low cap and resolve completely at the high one. **My arms are the negative control for
+their instrument**, and it passes.
+
+**This also retro-validates PR-26 and R-75.** Both gated on `frac_stop_length < 0.15` at the higher cap
+and both got **0.000**. Under the sharper classifier that number now means something stronger than it
+did when I wrote it: **not "few rows are cut off" but "no row fails to terminate"** — the arms were
+never in the degenerate regime, so raising the cap was the right response rather than a treadmill.
+**I got the right answer for a reason I had not articulated.**
+
+**And the shapes line up.** Their rule said *"more room"* to a generation that never terminates; a
+liveness contract says *"it fired"* about a hook that wrote what was already there (C-20). **Both
+respond to a symptom without asking what produced it** — and in both cases the fix was the same move:
+**compare against something that should have differed** (a second cap, a control's generations).
+
+**Interpreter check, from their warning.** The login-node `python` cannot import torch, so
+`python -m pytest tests/` there dies with **16 collection errors and runs nothing**. Verified: it fails
+**loudly** — `Interrupted: 16 errors during collection` — so it **cannot** produce a false green. Every
+suite count in this log came from
+`/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`, as the user's cadence
+requires, so **no reported pass is affected.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
