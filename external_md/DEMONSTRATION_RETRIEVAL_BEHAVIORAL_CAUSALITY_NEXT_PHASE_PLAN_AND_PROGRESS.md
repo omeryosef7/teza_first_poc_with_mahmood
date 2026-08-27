@@ -6610,6 +6610,138 @@ time.** One row moving turns a confirmation into a decline. Per PR-25, if the ma
 remove attack comparably on this powered population, **C7 reverts to unresolved rather than staying
 confirmed on one pool.**
 
+
+### 🏆 R-62 (03:40) — **PR-25 CONFIRMS. C7 replicates on the independent pool B: all three pre-registered conditions hold at both decisive doses, with the closest control 1.8x away.**
+
+Producing artifact: `outputs/boombness/dose_breakdown/q16dose_20260827_033538_110259/dose_breakdown.json`.
+Judge window: `q16j_{A,demoproc,d1,d2,d3}`, job `784409`, all five 160/160 rows, **0 nulls**, one pinned
+`openai/gpt-4o-mini` on all 800 rows.
+
+**Baseline (`q16j_A`), rows out of 40 per cell:** n1 **0**, n2 **3**, n4 **4**, n8 **6**.
+
+| arm | n=4 Δrows | n=4 Δ | n=8 Δrows | n=8 Δ | `match_ratio` min |
+|---|---|---|---|---|---|
+| `demoproc` | **−4** | **−0.1000** | **−5** | **−0.1250** | n/a |
+| `matched_d1` | +1 | +0.0250 | +0 | +0.0000 | 1.000 |
+| `matched_d2` | +1 | +0.0250 | −1 | −0.0250 | 1.000 |
+| `matched_d3` | +1 | +0.0250 | −2 | −0.0500 | 1.000 |
+
+**The three conditions, at both decisive doses:**
+
+1. `demoproc` clears `MARGIN_VS_BASELINE = 0.0521`: **0.1000** at n=4 and **0.1250** at n=8. ✅
+2. Every matched control stays inside it: worst is `matched_d3` at n=8, **|−0.0500| < 0.0521**. ✅
+3. Separation exceeds `MARGIN_ARM_VS_ARM = 0.0417`: n=4 is **0.1250 (3.0×)** against all three controls;
+   n=8 is 0.1250 / 0.1000 / **0.0750 (1.8×)**. Worst case **1.8×**. ✅
+
+**Cross-session baseline agreement, unplanned and worth having.** The power gate judged this same
+baseline in a *separate* session 80 minutes earlier (`xj_q_Q14B`). Both decisive doses agree exactly:
+
+| dose | power-gate session | re-judge session |
+|---|---|---|
+| n=1 | 0/40 | 0/40 |
+| n=2 | 2/40 | **3/40** |
+| n=4 | **4/40** | **4/40** |
+| n=8 | **6/40** | **6/40** |
+
+One row moved, at `n=2`, a non-decisive dose — inside the ±0.0480 re-judge band PR-3 measured. R-60's
+warning that "`n=4` sits at exactly 4 rows and one row moving flips the verdict" was the right thing to
+worry about, and the answer is that the cell did not move.
+
+**What this is not.** Still Qwen3-only — Llama remains *declined for power*, not refuted (R-52).
+Still thin: `demoproc`'s effect is 4 and 5 rows against a **2.08-row** margin (1.9× and 2.4×), and the
+n=8 separation of 3 rows against a 1.67-row margin is the thinnest number in the confirmation.
+`n=1` (+1) and `n=2` (−2) were never the claim and say nothing.
+
+---
+
+### ⛔ C-19 (03:45) — **CORRECTION: C7 was resolved (R-58) and replicated (R-62) without ever running the truncation-robustness check DR-2 made mandatory. Running it now shows it is UNTESTABLE on both pools — the `demoproc` arm truncates ~27pp more than its own controls, and the untruncated subgroup at the decisive doses is 3, 1, 1 and 0 rows.**
+
+DR-2 established the rule in this document: *"every ASR is published beside its arm's truncation
+fraction and median `n_chars`"*, and it survived the Llama exposure only because **Qwen3 was 26%
+truncated with both-EOS subsets of 111/114 rows.** I carried that protection forward to the `longpre`
+banks. **It does not transfer.** The preamble that made the count-matched control constructible also
+made every prompt longer against an unchanged **192-token cap**:
+
+| arm | pool A `frac_stop_length` | pool B `frac_stop_length` |
+|---|---|---|
+| baseline | 0.519 | 0.431 |
+| **`demoproc`** | **0.675** | **0.700** |
+| `matched_d1` | 0.469 | 0.400 |
+| `matched_d2` | 0.481 | 0.394 |
+| `matched_d3` | 0.456 | 0.400 |
+
+The three controls sit **at or below the baseline**. `demoproc` sits ~20-27pp **above** it, on both
+pools. So the very contrast that carries C7 — `demoproc` vs count-matched controls — coincides with a
+systematic truncation gap that the controls do not have.
+
+**The both-EOS subgroup cannot arbitrate it, because it is essentially empty for the one arm that
+matters** (rows where baseline AND arm both terminated, decisive doses only):
+
+| arm | pool A n=4 | pool A n=8 | pool B n=4 | pool B n=8 |
+|---|---|---|---|---|
+| **`demoproc`** | **3/40** | **1/40** | **1/40** | **0/40** |
+| `matched_d1` | 11/40 | 9/40 | 14/40 | 8/40 |
+| `matched_d2` | 14/40 | 10/40 | 16/40 | 12/40 |
+| `matched_d3` | 14/40 | 10/40 | 14/40 | 9/40 |
+
+**What is and is not withdrawn.** R-58 and R-62 are **not retracted**: every pre-registered condition
+was met on the population that was pre-registered, and conditioning on `stop_reason` is conditioning on
+a **collider** (PR-4), so an empty both-EOS subgroup is not evidence of an artifact any more than a
+surviving one would be proof against it. What is withdrawn is the **implied scope**. C7 says:
+
+> masking the demonstration positions removes the attack **as measured over the first 192 generated
+> tokens**, on an arm that truncates 27pp more than its controls, and **its truncation-robustness is
+> UNMEASURED — not established, and not refuted.**
+
+There is prior evidence against the truncation explanation — C-9 decomposed `demoproc`'s down-flips as
+15 = 3 refused + 3 short + **12 neither**, found it makes output *longer*, and beat a length-matched
+control (−0.1310 vs −0.0714). But that was the **internal bank**, a different population with a
+different truncation profile. It is support, not a substitute for the check on this population.
+
+**How this got past me.** I checked liveness, match_ratio, draw independence, judge provenance, nulls,
+row counts and cross-session agreement — every gate PR-23 and PR-25 named — and DR-2's truncation rule
+was not among them, because I had filed it as "already handled on Qwen3". A rule that lives in a prior
+review rather than in the pre-registration is a rule that gets skipped. **PR-26 puts it in the gate.**
+
+---
+
+### PR-26 (03:50, pre-registered before any data exists) — **the decisive truncation test: re-generate the C7 contrast with a cap large enough that the arms actually terminate.**
+
+The both-EOS subgroup is a collider and cannot settle this. Re-generating with a larger cap is **not**
+collider conditioning — it is a different and better-powered experiment on the same population.
+
+**Design.** Pool B (`longpreQ14B`, sha `b2903479258a0f68`), Qwen3-14B, identical to R-62 in every
+respect **except `--max-new 192 → 640`**, and restricted to the two decisive doses. Three arms only,
+because that is what the contrast needs: `A640` (baseline), `dp640` (`demo_processing_only`), and
+`c1_640` (`nondemo_matched_d1`). Judged in **one** window.
+
+**Gates, in order, and the branch stops if one fails:**
+
+1. **The cap must actually be released:** `frac_stop_length` **< 0.15 on every arm**. If `demoproc`
+   still truncates most of its rows at 640, the cap is not the binding constraint and this test cannot
+   be run — say so and stop, do not raise the cap again and retry.
+2. **Truncation must no longer separate the arms:** `|frac_stop_length(dp640) − frac_stop_length(c1_640)|`
+   **< 0.10**. This is the whole point; without it the confound is merely smaller, not removed.
+3. **Power on the new population:** **≥4 baseline attack rows at n=4 AND at n=8.** A longer cap can
+   move the baseline ASR in either direction; if the population loses its attack the branch stops for
+   power, exactly as Llama did (R-52).
+
+**Only if all three pass is the result read**, and the read is PR-23's, unchanged:
+`dp640` clears ±0.0521 at both doses; `c1_640` stays inside it; separation exceeds 0.0417.
+
+* **CONFIRMS** → C7's truncation-robustness is **established**, and the scope sentence C-19 forces onto
+  it can be dropped.
+* **REFUTED** — `dp640` no longer clears the margin once the arms terminate → **C7's effect is an
+  artifact of the 192-token cap.** R-58 and R-62 would then be *correct readings of a confounded
+  measurement*, and C7 reverts to unresolved. Stated now, before the run exists.
+* **Neither** — gate 1 or 3 fails → C7 keeps C-19's scope sentence permanently, and the phase records
+  truncation-robustness as **untestable on this bank**, not as absent.
+
+**One arm is deliberately not run.** `matched_d2`/`d3` are omitted: PR-26 tests a *confound*, not the
+independence of the draws, and R-62 already established that all three controls behave alike. Adding
+them would spend GPU on a question already answered. Recorded so the omission is a decision and not
+a silent truncation of scope.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
