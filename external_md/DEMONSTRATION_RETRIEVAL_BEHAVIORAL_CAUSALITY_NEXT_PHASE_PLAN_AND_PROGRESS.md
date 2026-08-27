@@ -8062,6 +8062,13 @@ a continuation of the 192 run):
 
 **The cap moves neither arm detectably.**
 
+**⚠ And one of those two nulls is UNINFORMATIVE, which the concurrent session flagged and I am
+adopting.** `demoproc` has **1 discordant pair**; at n=1 discordant, **no split reaches α = 0.05 in
+either direction**, so its `p = 1.0` **could not have come out any other way** and is *not* evidence of
+absence. The baseline's 7 discordant pairs are informative; `demoproc`'s single pair is not. This is
+the same rule as PR-1's attainable-floor `2/2^k` — *a p at its floor is a design fact, not a result* —
+and I failed to apply it to my own null.
+
 **What I wrote in R-64:** *"the effect **grows** at n=8 (−0.1250 → −0.1750) … `demoproc` now removes
 7 of 7 attacks"* and, as the headline, *"removes MORE attack, not less."* **That is a per-dose slice of
 a 1-2 row change.** Pooled it is −0.1125 → −0.1250 — one row — and the within-row test says p = 1.0.
@@ -8180,6 +8187,64 @@ cost: it needs **new probe generation**, not a code fix.
 
 **Credit where it is due.** I recomputed C5's numbers in DR-10 and DR-11 and never asked *"48 out of
 how many?"* — the audit did, and that is the question that found this.
+
+
+### ⚠ R-80 (21:35) — **The forklift pool generated cleanly, but applying PR-31's UNCHANGED rule to it exposes two problems, and I am reporting them instead of relaxing the rule to get a usable flag.**
+
+Pool `demo_pools_benign_forklift.json` (job `787099`) is sound as a generation:
+`codeword=carrot concept=forklift`, seed `20260827`, 40 pools × 40 sentences, 10 domains,
+`content_sha16 = 567eb1775678406d`, sentence-set sha **`a73553f7801fe8e1`** vs d10's
+**`8539cbfc3be8b714`** — genuinely distinct.
+
+**Applying PR-31's rule verbatim** — *concept-pool count ≥ 5 AND absent from benign, remap and
+filler* — yields 11 terms, and **`forklift` is not among them**:
+
+`operators(26), accident(10), malfunctioning(9), moving(8), loads(7), capacity(7), involving(7),
+miss(6), horn(5), construction(5), warning(5)`
+
+#### Problem 1 — lexical leakage: the head noun fails its own rule
+
+| word | concept pool | benign | remap | filler |
+|---|---|---|---|---|
+| **`forklift`** | **400** | **2** | 0 | 0 |
+| `carrot` | 0 | 400 | 0 | 0 |
+| *(d10 for comparison)* `bomb` | 400 | **0** | 0 | 0 |
+
+**Two benign carrot sentences mention a forklift**, which is entirely plausible in a warehouse or farm
+setting — and it is enough for a strict "absent from benign" rule to drop the very word the flag exists
+to detect. `bomb` never leaked because a benign carrot sentence has no reason to mention a bomb.
+**This is a pool defect, not a rule defect**, and the rule behaved correctly by excluding a
+contaminated term.
+
+#### Problem 2 — the deeper one: the concept pool's vocabulary is INCIDENT vocabulary, not FORKLIFT vocabulary
+
+Look at what the rule did surface: `accident`, `malfunctioning`, `warning`, `involving`, `miss`. Those
+are properties of the **prompt template** — the `harm`-valence pools are generated as *"incident-log
+sentences from a safety inspection"* — not of the concept. Meanwhile genuinely forklift-specific words
+score **zero**: `tines` 0, `mast` 0, and `pallet` is contaminated across all four valences (13/4/1/4).
+
+**So a flag built from this pool would largely detect "the model is talking about accidents", which is
+a property of the demonstration register that every arm shares.** That is a *different* confound from
+R-27's, but it is the same shape: **the flag would not isolate mapping use.**
+
+**⛔ What I am NOT doing.** I am not relaxing the threshold to `benign ≤ 2` to let `forklift` back in,
+and I am not hand-adding `tines`/`mast`/`pallet`. Both would be tuning a rule after seeing it fail —
+the exact move PR-31 forbade and R-78 refused to make.
+
+**Two candidate repairs, neither taken this tick.** (a) `prompt_families.py` already exposes
+`--incidental-replace OLD=NEW` and banks carry an `incidental_repairs` field, so removing incidental
+concept-word occurrences is a **sanctioned, recorded operation** rather than an ad-hoc edit — that
+addresses Problem 1. (b) Problem 2 needs the concept pool generated in a **register that names the
+object rather than the event**, which is a prompt-template change in `demo_pools.py` and a larger
+commitment.
+
+**Deciding this at the end of a long tick is how PR-31's flaw got in.** The pool is generated and costs
+nothing to keep; the decision waits for the next tick with both repairs costed. **Nothing is
+pre-registered and no arm is submitted.**
+
+*(Also adopted this tick, from the concurrent session: `demoproc`'s cap null has 1 discordant pair and
+so could not have reached α = 0.05 either way — it is underpowered, not a measured zero. C-23 and the
+summary now say so.)*
 
 ---
 
