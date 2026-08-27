@@ -545,3 +545,65 @@ as a concept (R-AZ, 528 rows).
 
 **The banks are reused.** The leakage probe the user asked for was run, it tried hard to break the
 alignment, and the alignment held on the one contrast the sprint's central quantity depends on.
+
+---
+
+## §0.4 — THE JUDGE NOISE FLOOR, and a correction to §0.2's framing
+
+**Artifacts:** `outputs/boombness/judge_stability/{unpinned_base,pinned_q15A,pinned_q16A}.json`
+**Script:** `src/boombness/judge_retest.py` — **existing repo code, reused unmodified.**
+**Commands:** `python src/boombness/judge_retest.py --judge-a <A> --judge-b <B> --score-a <..> --score-b <..> --out <..>`
+
+While repointing the C7 ledger entry (§0.5) I noticed that `q15A` and `q16A` had each been judged
+**twice**, and the two runs disagreed: 16/160 vs 17/160, and 13/160 vs 12/160. Same generations,
+same pinned model. That is the judge re-scoring stability check the brief demands before any
+per-prompt flip identity may be quoted, and it was sitting in the corpus unread.
+
+### The measurement
+
+Every pair below has **byte-identical generations** (verified: 660/660, 160/160, 160/160), so every
+difference is the judge and nothing else.
+
+| pair | pinned? | subset | n | flips | **flip rate** | rows w/ score change | ASR swing |
+|---|---|---|---|---|---|---|---|
+| `base` Llama, carrot bank | **no** | all | 660 | 37 | **0.0561** | 0.1212 | 1.06 pp |
+| " | no | `natural_doublespeak` | 270 | 27 | **0.1000** | 0.2259 | 1.85 pp |
+| " | no | `core2x2_n≥1` | 240 | 11 | 0.0458 | 0.0958 | 2.08 pp |
+| " | no | `core2x2_n≥1_doublespeak` | 60 | 6 | **0.1000** | 0.2500 | **6.67 pp** |
+| `q15A` Qwen3, longpreQ14 | **yes** | all | 160 | 7 | **0.0437** | 0.0875 | 0.62 pp |
+| " | yes | `core2x2_n≥1` | 80 | 4 | 0.0500 | 0.0875 | 2.50 pp |
+| `q16A` Qwen3, longpreQ14B | **yes** | all | 160 | 9 | **0.0563** | 0.0938 | 0.62 pp |
+| " | yes | `core2x2_n≥1` | 80 | 5 | 0.0625 | 0.1250 | 3.75 pp |
+
+### ⛔ CORRECTION to the framing in V-2 / §0.2.3
+
+**I expected pinning the judge model to reduce this, and it does not.** On the matched
+`core2x2_n≥1` subset the flip rate is **0.0458 unpinned against 0.0500 and 0.0625 pinned** — if
+anything slightly worse, and certainly not better. The comparison is not fully controlled (different
+model, different bank), so the honest statement is: **there is no evidence that pinning reduces
+binary-label instability, and it should not be claimed.**
+
+What pinning *does* buy is what `judge_boombness.py` was actually built for and what V-2 should have
+said on its own: it stops an ASR from **silently averaging over two different judge models**, via a
+pre-flight canary and a `JudgeModelMismatch` abort. That is a real and different protection. The
+`assert_sprint_grade` requirement stands — **for that reason, not for this one.**
+
+### What the floor actually costs
+
+`gpt-4o-mini` at temperature 0 is **not deterministic**: it flips roughly **5 % of binary labels on
+byte-identical text**, and changes the continuous score on 9–25 % of rows. On n=80 that is ~4 rows;
+on n=160, ~8 rows.
+
+**This is the same order of magnitude as several claims in the ledger.** C7's headline cell-sets are
+net differences of 3–5 rows out of 80. A 4-row judge noise floor on an 80-row arm is not a
+footnote — it is the effect size.
+
+**The mitigation is already known and is in `judge_retest.py`'s own docstring: a paired comparison
+scored inside ONE judge run is far less exposed than a comparison across two.** Most of the
+exposed claims (C7, the retrieval knockout) difference an arm against a baseline **judged in a
+different session**. §0.5 and the entry-6 rerun must therefore judge arm and baseline **in the same
+judge invocation**, or carry this floor explicitly.
+
+**No new code was written for this section.** `judge_retest.py` and `judge_session_drift.py` already
+existed and already said the right things; what was missing was running them on the pinned pairs and
+reading the answer.
