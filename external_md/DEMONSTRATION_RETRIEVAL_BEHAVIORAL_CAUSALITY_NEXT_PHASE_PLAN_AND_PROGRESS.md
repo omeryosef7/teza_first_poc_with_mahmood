@@ -6830,6 +6830,68 @@ skipped for two full confirmations. The fix is that PR-26 put it in the gate.
   alike. The 640-token result therefore rests on **one** count-matched control, not three.
 * **`n=1` and `n=2` were not generated at all** at this cap; PR-26 restricted to the decisive doses.
 
+
+### R-65 (05:15) — **§20 reassessed now that C7 is closed. Of the three questions never run, Q4 is DECLINED ON EVIDENCE (its antecedent failed), Q6 stays dropped, and Q7 is the one still justified. Smoke launched; nothing claimed.**
+
+Step 2 of the cadence, done properly rather than by inertia: the queue is empty, no job FAILED or
+CANCELLED since the last tick, and C7's branch closed at R-64. So the question is which of the
+remaining §20 items current evidence still justifies.
+
+**§20 Q4 — *"If full-state rescue works, is the behaviourally relevant information low-rank or
+irreducibly distributed?"* — DECLINED ON EVIDENCE, not deferred.**
+
+Q4 is written as a conditional, and **its antecedent has been tested and did not hold.** C9 measured
+what full-state rescue actually restores: **the refusal comes back and the attack does not.** C2 and
+C12 then established that refusal restoration is **not** the route to attack removal. So the thing Q4
+proposes to compress — a *behaviourally* relevant rescued state — is not what the rescue recovers.
+
+The one behavioural handle that does exist is C11's query-span patch, and it is too thin to carry a
+rank decomposition: **ASR +0.0563 against a 0.0521 margin — 1.08×, i.e. it clears by about 0.7 rows
+out of 160** — with only **37.5% recovery** and explicitly **not selective**. Fitting a low-rank
+structure onto an effect that clears its own margin by 8% is precisely *fitting structure below the
+measurement reproducibility floor*, which this phase's own review cadence forbids. **Q4 is closed as
+unjustified by current evidence.** §20 Q8 was gated on Q4 and closes with it.
+
+**§20 Q6** stays **dropped** for R-30's reason, unchanged: its motivating question is already answered
+by R-17's Qwen3 within-family bridge.
+
+**§20 Q7 — *"Does the Llama retrieval/refusal independence result replicate on Qwen3, or is it
+model-specific?"* — JUSTIFIED, and it is the last open question in §20.**
+
+This is C11, and C11 is **Llama-only** (`S` in the handoff table). It is also the phase's sharpest
+dissociation: at L14 over the query span, refusal comes back **−0.1562 (96.2% of the rise**, to within
+margin of clean) while ASR recovers only **37.5%**. C13 has already shown that a Llama result in this
+family can be **Llama-specific** — neutral context suppressed the attack on Llama and was tested
+NEGATIVE on Qwen3 (21/160 → 23/160) — so "does C11 transfer?" is a live question with a real chance of
+declining, not a formality.
+
+**The instrument gap that decides what runs first.** An inventory of every rescue run in
+`outputs/boombness/score_behavior` by `(model, rescue_positions, rescue_donor, rescue_layer)` shows:
+
+| model | `rescue_positions` | layers run |
+|---|---|---|
+| Llama-3.1-8B | **`query`** | 14, 5 |
+| Llama-3.1-8B | `demo` / default | 14, 5 |
+| Qwen3-14B | default (demo span) | 17, 5 |
+| **Qwen3-14B** | **`query`** | **never run** |
+
+Query-span rescue has **never executed on Qwen3**. C9's Qwen3 arms patched the demonstration span. So
+the correct next step is a **smoke, not a sweep** — the alignment guard (`strict_ids`) and the query
+span selection have never met Qwen3's tokenizer, and C-18 is the standing lesson about generalising a
+feasibility fact across tokenizers.
+
+**Launched: `q9smoke_qpos_L17`, job `784766`** — 8 rows, d10 bank, Qwen3-14B, knockout
+`demo_all:attn_knockout:7-17` with `demo_processing_only`, `--rescue-positions query --rescue-donor
+clean --rescue-layer 17`. L17 is the top of Qwen3's band, the depth-matched analogue of Llama's L14,
+and it is the mapping already fixed and used by the `q7_rescue_L17` runs — **not retuned here.**
+
+**Nothing is claimed and no pre-registration is written yet.** The smoke answers one question only:
+*does the query-span patch fire on Qwen3 and select a sane number of positions?* `rescue_liveness`
+must report `fired: true` with `n_positions_written > 0`. Llama's smoke wrote **24** positions; Qwen3
+will differ because it is a different tokenizer, and per C12 what matters is position **identity**, not
+count — so a different count is expected and is **not** grounds to force Llama's 24. **PR-27 will be
+written after the smoke and before any sweep is judged.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
