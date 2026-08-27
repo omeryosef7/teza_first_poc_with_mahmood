@@ -8135,6 +8135,52 @@ the old bank, or from any completion, would be the tuning this log exists to pre
 content-distinct → `prompt_families.py --strict` 0 violations → `tokenization_audit --strict`
 0 alignment violations → the bank regenerates the canonical banks byte-identically (C-10's test).
 
+
+### ⛔ C-24 (21:25) — **SCOPE CORRECTION to C5, surfaced by the concurrent session's audit: the within-family bridge covers `core2x2` families ONLY, because the forced-choice probe was never generated for any other block. I reported "48 families" without saying it is half, or which half.**
+
+The peer's claim ledger flags my binding-survival claim as `NEEDS_RERUN`, citing
+*"family_missing_one_side — 144/288 pairs dropped is a bank/join defect."* **The count is right, the
+diagnosis is not**, and both matter.
+
+**Verified on my own artifacts** — every bridge run, three arms each:
+
+| run | `n_failed` | reason | families kept per arm |
+|---|---|---|---|
+| `bridge_20260825_101613_3117657` | 144 | `family_missing_one_side` ×144 | **48** |
+| `qbridge_20260825_104155_3190213` | 144 | same | **48** |
+| `REPRO_R16_20260826_051035_1020533` | 144 | same | **48** |
+
+**Why the families are missing — checked against the bank rather than inferred:**
+
+| block | behavioural rows | forced-choice probe rows |
+|---|---|---|
+| `core2x2` | 72 | **72** |
+| `core2x2_slot3` | 48 | **0** |
+| `strength` | 48 | **0** |
+| `consistency` | 36 | **0** |
+| `position` | 12 | **0** |
+| `role_style` | 180 | **0** |
+| `families` | 72 | **0** |
+
+**468 behavioural family stems, 72 probe stems, 72 in both, 396 behavioural-only.** The probe was
+**only ever generated for `core2x2`.** So the dropped families cannot be recovered by fixing a join —
+**the other side does not exist.** It is a bank-design fact, and `family_missing_one_side` is the
+ledger doing its job, not a silent subset (contrast C-13, where rows *were* silently dropped).
+
+**What is actually wrong is my reporting.** `RESEARCH_HANDOFF.md` records C5 as *"48 families/model"* —
+true, but it does not say that this is **half the eligible behavioural families**, nor that the missing
+half is **systematically the other blocks**, including the `core2x2_slot3` position variant. **A reader
+would take 48 as the population rather than as a `core2x2`-only subset.** That is now stated.
+
+**Does it threaten C5?** No, and I am not claiming a correction I did not earn: the bridge is a
+**within-family** 2×2, so restricting to `core2x2` costs power and generality, not validity. But C5's
+scope is narrower than written — **it is a statement about `core2x2` families**, and the peer's
+suggestion that recovering slot3 "would roughly double k" is right about the payoff and wrong about the
+cost: it needs **new probe generation**, not a code fix.
+
+**Credit where it is due.** I recomputed C5's numbers in DR-10 and DR-11 and never asked *"48 out of
+how many?"* — the audit did, and that is the question that found this.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
