@@ -8246,6 +8246,59 @@ pre-registered and no arm is submitted.**
 so could not have reached α = 0.05 either way — it is underpowered, not a measured zero. C-23 and the
 summary now say so.)*
 
+
+### ⛔ R-81 (21:40) — **Limitation 2 is CLOSED AS NOT RESOLVABLE with the instruments available, and I am stopping this branch rather than building a third bank. The bank build the user authorised was spent, and what it bought is a precise diagnosis instead of a result.**
+
+**The decision R-80 deferred, taken with the register problem costed.**
+
+**Why the forklift repairs are not worth taking.** Repair (a), `--incidental-replace`, fixes only the
+head-noun leakage — **but PR-31 already measured that the head noun is the part the model does not
+produce** (1/40 rows). Fixing leakage buys a clean flag for a term that does not appear. Repair (b),
+regenerating the concept pool in an object-naming register, is a `demo_pools.py` template change whose
+payoff is unknown and which would be my **third** guess at this instrument.
+
+**And the last cheap alternative is not one.** The bank's `comprehension_usage` query kind looked like
+free-generation usage; it is `'Answer with exactly one word, either literal or coded'` — a two-way
+forced choice that detects **that** a word is coded, never **what as**. Like `comprehension_mc` and
+`semantic_forced_choice`, it is a probe. **The bank contains no query kind that elicits free-generation
+naming of the concept**, which is what limitation 2 needs.
+
+#### Why the measurement is hard, stated as the finding
+
+| instrument | what it gives | why it fails limitation 2 |
+|---|---|---|
+| harmful concept (`bomb`, R-27) | 64-81% concept usage among jailbroken rows | **confounded**: usage ≈ "produced harmful content". Baseline-not-jailbroken is 6-10%, killed rows 0-4% — the drop is explained by jailbreak status alone |
+| benign concept via `benign_remap` (`bicycle`, PR-31/R-78) | head noun **1/40**; concept vocabulary **11/40 vs 0/20 floor** | **head noun too rare to gate on**; vocabulary flag not pre-registered and cannot be adopted post hoc |
+| purpose-built benign pool (`forklift`, R-79/R-80) | 11 rule-derived terms, **head noun excluded by leakage** | the pool's distinctive vocabulary is the **incident register** (`accident`, `malfunctioning`, `warning`) that **every arm shares**, not the object |
+
+**The unifying reason: with a harmful concept the model names the concept because the request pulls the
+content out of it; with a benign concept it has no reason to name anything, and the vocabulary that
+remains is the demonstration register rather than the mapping.** Usage and harm are entangled *because*
+harm is what makes usage observable.
+
+#### What would actually work, specified so the next attempt does not repeat these three
+
+A **register-controlled** usage measure, which none of the above has:
+
+1. A benign concept whose pool is generated in a register that **names the object** rather than
+   narrating an event.
+2. A **register control** holding demonstrations fixed while removing the mapping — the bank's
+   `irrelevant` arm (`DISTRACTOR_CODEWORD = "tulip"`) is the right shape: if concept vocabulary appears
+   when the query asks about a word the demos never remapped, that vocabulary is **echo, not use**.
+3. A query that gives the model a **reason** to name the object without asking it to (the probes ask;
+   that is why they are probes).
+
+**⛔ Not attempted.** That is a bank *and* a query-family design, it is my fourth iteration on one
+limitation, and R-76's standard — *do not invent work; do not rescue a failed gate* — applies to me
+here as much as it did to the layer sweep.
+
+**Limitation 2 stands as recorded, now with a diagnosis rather than a gap.** The honest position: R-27
+said this needed a benign-register concept; **that was necessary and not sufficient**, and the missing
+half is a register control. **That is what the authorised build bought**, and it is worth more than a
+fourth guess would have been.
+
+**⛔ No GPU is queued for this branch and none will be without a new decision.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
