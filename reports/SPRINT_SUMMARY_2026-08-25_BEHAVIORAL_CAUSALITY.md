@@ -260,7 +260,7 @@ RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thi
 2. Mapping usage unreadable (F3) — **needs a benign-register concept vocabulary**.
 3. All ASR is over the first 192 tokens (DR-2).
 4. `kw_refusal` is lexical: it detects refusal *markers*, not refusal.
-5. Lexical generality G = 1 (one codeword) throughout this phase.
+5. Lexical generality: **G = 2 for C1, G = 1 for everything else.** C1 was replicated on a second codeword (`basket`, R-73/PR-29: **+0.1250**, other three scopes at exactly zero refusals) and shown **truncation-robust row-for-row** at a 640-token cap (R-75/PR-30). **Every other claim, C7 included, still rests on the single codeword `carrot`** — PR-29 pre-committed to lifting G for C1 only, because C7's count-matched control needs the `longpre` preamble that the codeword banks do not have, so C7 at G = 2 would require a bank build.
 6. Coherent non-compliance is a **residual** category and is not itself explained.
 7. **Never quote a "% of the rise removed" figure alone (DR-5)** — rows and ×margin must travel with it.
 8. All rescue work is at **one layer per model** (top of the knockout band) and **no layer sweep was

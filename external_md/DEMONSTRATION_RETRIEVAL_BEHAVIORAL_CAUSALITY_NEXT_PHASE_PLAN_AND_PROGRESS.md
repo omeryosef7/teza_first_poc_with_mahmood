@@ -7741,6 +7741,47 @@ essentially nil** — which is the opposite of C7, whose ASR reading genuinely n
 * **PR-29's process miss (no truncation gate) cost nothing in the end** — but it was still a miss, and
   R-73 records it. The fix was to run the test, not to argue the caveat away.
 
+
+### 📌 R-76 (11:40) — **Final status: no further experiment is justified without a decision. I considered a third codeword and a concept variation, and am declining BOTH — one is low-information, the other would be inventing a limitation to solve.**
+
+Queue empty; no FAILED or CANCELLED job; `check_all` 6/6.
+
+**Considered and declined: a THIRD codeword** (`button_bomb`, structurally identical, ~40 min of GPU).
+C1 now holds at **+0.1625, +0.1312, +0.1938, +0.1250** across two models, two pools and two codewords,
+every one clearing its margin by **2.4-3.7×**. A fifth setting is very likely to confirm and would add
+almost nothing: **DR-10's framing is that what carries a claim is independent populations agreeing, and
+four already do.** Declined for low information, not for cost.
+
+**Considered and declined: a CONCEPT variation** (`basket_gun` / `basket_club` / `basket_knife` exist,
+holding the codeword fixed while varying the harmful concept). It is a genuinely different generality
+axis and I was ready to pre-register it — **then I checked the recorded limitations and concept
+generality is not among them.** Limitations 1-8 name demonstration-specificity, mapping usage, the
+192-token ASR window, `kw_refusal`'s lexicality, **lexical** generality, coherent non-compliance,
+the "% of rise" rule, and layer specificity. **Nothing claims concept generality.** Running it would be
+**inventing a limitation in order to solve it**, which is the failure mode this log exists to prevent.
+Declined.
+
+**Corrected a stale limitation instead.** Limitation 5 read *"Lexical generality G = 1 (one codeword)
+throughout this phase"* — **false as of R-73/R-75.** It now reads **G = 2 for C1, G = 1 for everything
+else**, with the reason C7 cannot follow: its count-matched control needs the `longpre` preamble that
+the codeword banks do not have, so C7 at G = 2 requires a bank build. No guard caught this because it
+is not a retraction — **a claim strengthening can leave a deliverable stale exactly as a retraction
+can.**
+
+#### ⛔ What is left, precisely
+
+**One item, and it is the one that was blocked from the start**: **limitation 2 — mapping usage is
+unreadable, and it needs a benign-register concept vocabulary** (R-27). That is a **bank-design
+change**, the same class as the longer-context bank which had to be authorised before C7 could be
+tested. It is **not started and will not be started unasked.**
+
+Everything else is closed: **PR-1…PR-30 all have recorded outcomes**, §20 is fully resolved (R-72), the
+deliverables' 37 artifact paths and 74 job ids all resolve (R-74), and the day's four corrections
+(C-19, C-20, C-21, and PR-28's failed gate) are propagated everywhere they touch.
+
+**The honest statement is that the phase is finished pending one decision, and this entry makes it
+rather than manufacturing a fifth codeword to look busy.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
