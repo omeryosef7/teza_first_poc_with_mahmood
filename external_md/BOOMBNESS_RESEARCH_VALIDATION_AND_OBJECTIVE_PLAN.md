@@ -1213,3 +1213,59 @@ The instrument corrections it drove (§0.4, §0.6, §0.7, §4.1a, §0.10) are al
 
 **Still no claim about boombness itself, and none is due until the cap-1024 arms are judged.**
 Phase 7 gate remains closed.
+
+---
+
+## §0.12 — FIRST NON-BINDING-CAP RESULT — and my own guard refused it
+
+**Artifact:** `outputs/boombness/arm_report/w640_20260827_224651_3802479/arm_report.json`
+**Command:** `python src/boombness/arm_report.py --contrasts-file <..> --tag w640 --require-sprint-grade`
+
+`v3_W640` finished (96 rows, 0 failures). Its baseline `g3A640` already had a pinned judge run, but
+from a **different session**, and §0.4's floor applies to cross-session deltas — so job **787350
+re-judged both arms in ONE invocation** (192 rows) rather than caveating the exposure.
+
+**The arm:** `d_surface:project_out:14-14:1.0` — removing the `d_surface` direction — Llama-3.1-8B,
+`basket_bomb`, `natural_doublespeak`, `n_examples ∈ {1,2,4,8}`, n=96, cap 640, judge pinned.
+
+| | ASR | at cap | median tokens | refusal kw | effective judge floor |
+|---|---|---|---|---|---|
+| `A_baseline` | **30/96** | **0.000** | 308.5 | 2/96 | 0.0658 |
+| `W` (`d_surface` removed) | **56/96** | **0.302** ⚠ | 346.5 | 2/96 | 0.0689 |
+
+| paired | value |
+|---|---|
+| delta | **+0.2708** |
+| up / down | **35 / 9** (discordant 44) |
+| exact two-sided p | **0.0001** |
+| judge-noise SD | 3.60 rows |
+| **net / noise SD** | **−7.23** (ASR *up*) |
+| divergence | **96/96 `OK`** |
+| MDE | the test rejects only at ≥29/44 one way, i.e. 14 rows in 96 |
+
+### ⛔ The guard refused this, and it was right to
+
+`--require-sprint-grade` **failed the arm**: `not_sprint_grade — the cap binds on 0.3021 of rows at
+max_new=640`. So the arm is *"ASR within first 640 generated tokens"* while the baseline is plain
+*"ASR"*. **My own instrument refuses my own largest result**, which is the first time this sprint's
+guards have been tested against a number I wanted to be true.
+
+**Following §0.2's pre-registered rule (raise the cap until it does not bind) rather than quoting
+it:** jobs **787377 / 787378** re-run *both* arms at **cap 1536**. Both, not just the arm — a
+comparison whose two halves have different cap-binding status is not one I will report.
+
+### What can honestly be said now
+
+* **The direction is not in doubt and the truncation works in its favour.** 35 rows up against 9
+  down at p=0.0001, and the arm's 30 % truncation can only *hide* successes (a row cut off before
+  finishing cannot have its compliance counted). **+0.2708 is a lower bound.**
+* **It is not refusal and not length collapse.** Refusal keyword rate is identical at 2/96 in both
+  arms, and the arm's median generation is *longer* (346.5 vs 308.5).
+* **It is not a dead arm.** Divergence 96/96.
+* **It is directionally consistent with ledger entry 5** ("removing `d_surface` RAISES ASR",
+  +0.0424 at L8 on AdvBench-495) — here far larger, at L14, on a doublespeak bank. Same sign, and
+  now at a cap that does not bind on the baseline.
+
+**But the number itself is not quotable as ASR until 787377/787378 land.** Entry 5 stays
+**NEEDS RERUN** until then. Recorded now because the guard firing on a result I wanted is worth more
+than the result.
