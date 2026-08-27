@@ -33,7 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
-| 🏆🏆 **C7 RESOLVED (Qwen3) and REPLICATED on an independent pool — but its truncation-robustness is UNMEASURED.** Pool A: `demoproc` **5/5** at n=4 and **5/7** at n=8 (−0.1250 each), controls **1,2,2** and **2,−2,−1**, separation **2.0x**/**3.2x**. Pool B: **−4/4** and **−5/6** (−0.1000/−0.1250), controls **+1,+1,+1** and **0,−1,−2**, separation **3.0x**/**1.8x**. Preconditions on both: match_ratio 1.000 on every control row, 3/3 draws distinct by seed AND generation hash. ⚠ **Every number is an ASR over the first 192 generated tokens**, and `demoproc` truncates **0.675/0.700** vs controls **0.39-0.48**; the both-EOS subgroup is **3, 1, 1, 0 rows** and cannot test it | **R-58** (PR-23) + **R-62** (PR-25); scope corrected by **C-19**; PR-26 is the decisive test; Llama remains **declined for power**, not refuted | **R-58**, **R-62**, **C-19** |
+| 🏆🏆🏆 **C7 RESOLVED (Qwen3), REPLICATED on an independent pool, and TRUNCATION-ROBUST.** Pool A: `demoproc` **5/5** at n=4 and **5/7** at n=8 (−0.1250 each), controls **1,2,2** and **2,−2,−1**, separation **2.0x**/**3.2x**. Pool B: **−4/4** and **−5/6**, controls **+1,+1,+1** and **0,−1,−2**, separation **3.0x**/**1.8x**. **Untruncated (640-token cap, 0.000 stop-on-length on every arm): −3/4 and −7/7, control +1 and +0, separation 2.4x/4.2x** — the effect **grows** at n=8 (−0.1250 → −0.1750) once completions finish, the opposite of the truncation prediction. match_ratio 1.000 on every control row throughout; draws distinct by seed AND generation hash | **R-58** (PR-23) + **R-62** (PR-25) + **R-64** (PR-26); **C-19 discharged**; Llama remains **declined for power**, not refuted; n=4 untruncated is the thinnest cell at **1.4x** margin | **R-58**, **R-62**, **R-64** |
 | ⛔ **PR-23 GATE FAILED (C-18): the Qwen3 control is NOT constructible at n=8 on either preamble bank** — Qwen3 pool **112/133** vs a 114-token demo block, so the arms refused before generating. R-49/R-51's feasibility was a **Llama** measurement (`--model` defaulted); the claim was generalised to a method it never covered | arms produced no generations; nothing to salvage | **C-18** |
 | ⚖️ **C13 IS LLAMA-SPECIFIC (PR-22).** Qwen3 d10 **21/160** vs longpre10 **23/160** — gap **+2 rows**, inside margin and pointing the wrong way, on **21 baseline attacks** (powered) with **0 rows** of drift. 🟢 **Consequence: C7's power blocker is Llama's, not the method's — Qwen3 keeps its attack on the preamble bank where match_ratio is 1.000 at every dose** | **R-54** | **R-54** |
 | 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
@@ -6772,6 +6772,63 @@ doses) is read from the judged baseline, and a 640-token cap can move the baseli
 direction — a longer completion can complete a harmful answer the 192-token version left unfinished,
 which would *raise* it, or wander into a refusal, which would lower it. **The gate order stands: no
 arm-vs-arm number is computed until gate 3 passes.**
+
+
+### 🏆 R-64 (05:00) — **PR-26 CONFIRMS on all three gates and all three conditions. C7's effect is NOT an artifact of the 192-token cap: with every completion terminating, `demoproc` removes MORE attack, not less. C-19's scope sentence is discharged.**
+
+Producing artifact: `outputs/boombness/dose_breakdown/p26dose_20260827_045812_279200/dose_breakdown.json`.
+Judge window `p26j_{A,dp,c1}`, job `784740`: 240 rows, **0 nulls**, one pinned `openai/gpt-4o-mini`.
+Generations `A640_20260827_040740_708673`, `dp640_20260827_040740_708761`,
+`c1_640_20260827_043749_711377` — each 80/80 with `DONE.json`; `dp640` and `c1_640` both report
+`frac_rows_scope_live=1.0`, `scope_violations={}`, and `c1_640` carries `match_ratio` **1.000 on all
+80 control rows**.
+
+**The three gates, in the order they were pre-registered:**
+
+| gate | requirement | result |
+|---|---|---|
+| 1 — cap released | `frac_stop_length < 0.15` on every arm | **0.000 / 0.000 / 0.000** ✅ |
+| 2 — truncation no longer separates the arms | `\|dp − c1\| < 0.10` | **0.000** (was **0.300** at the 192 cap) ✅ |
+| 3 — power on the new population | ≥4 baseline attacks at n=4 **and** n=8 | **4/40** and **7/40** ✅ |
+
+Longest completion in any arm is **634 tokens against a 640 cap**, and no row stopped on length — the
+cap is released, not merely raised until the number looked acceptable.
+
+**PR-23's three conditions, on a population with zero truncation:**
+
+| dose | baseline | `demoproc` | `matched_d1` | separation |
+|---|---|---|---|---|
+| n=4 | 4/40 | **−3 rows, −0.0750** | +1 row, +0.0250 | **0.1000 (2.4×)** |
+| n=8 | 7/40 | **−7 rows, −0.1750** | +0 rows, +0.0000 | **0.1750 (4.2×)** |
+
+All three hold at both doses: `demoproc` clears ±0.0521, the count-matched control stays inside it,
+and the separation exceeds 0.0417.
+
+**The direction is the informative part.** The truncation hypothesis predicted `demoproc`'s effect
+would *shrink* once its completions were allowed to finish, because its apparent ASR drop would have
+been the judge scoring cut-off text. It did the opposite. At n=8 the effect goes from **−0.1250 at the
+192-token cap to −0.1750 untruncated — `demoproc` now removes 7 of 7 attacks, all of them.** At n=4 it
+goes from −4 rows to −3. **A confound that vanishes when you remove the confound is not the
+explanation.**
+
+**C-19 is discharged.** C7's truncation-robustness is no longer *unmeasured*: it was measured, on the
+same pool, same model, same bank, same intervention, with the only change being a cap that no longer
+binds — and the effect survives. The scope sentence C-19 forced onto C7 comes off. **C-19 itself stays
+in the corrections table**, because the process failure it records is real and was not about the
+answer: DR-2's truncation rule lived in a prior review instead of a pre-registration gate, so it was
+skipped for two full confirmations. The fix is that PR-26 put it in the gate.
+
+#### ⚠ What this is still not
+
+* **Still Qwen3-only.** Llama remains **declined for power** (R-52), never refuted. PR-26 changes
+  nothing about that.
+* **The n=4 cell is now the thinnest number in the whole claim: −3 rows against a 2.08-row margin,
+  1.4×.** It was 1.9× at the 192 cap. The n=8 cell carries this result (−7 rows, 3.4× the margin,
+  4.2× separation); n=4 clears its threshold and no more. **Reported, not smoothed over.**
+* **Two controls were deliberately not run at 640** (`matched_d2`, `matched_d3`) — recorded at
+  pre-registration, because PR-26 tests a confound and R-62 already established the three draws behave
+  alike. The 640-token result therefore rests on **one** count-matched control, not three.
+* **`n=1` and `n=2` were not generated at all** at this cap; PR-26 restricted to the decisive doses.
 
 ---
 

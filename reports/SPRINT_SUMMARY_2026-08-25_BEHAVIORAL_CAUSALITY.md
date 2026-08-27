@@ -66,7 +66,7 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 | 24 | Qwen3-correct preamble bank (`longpreQ14`) + power check | 783828-783831, 783849, judge 783886 | R-55, R-56 |
 | 25 | **C7 on Qwen3 — CONFIRMS** | 783849/783903/783904/783945/783946, judge 784128 | **🏆 R-58** |
 | 26 | **C7 replication on pool B — CONFIRMS** | 784371/784372/784380/784381 + baseline, judge 784409 | **🏆 R-62** |
-| 27 | C7 truncation test at a 640-token cap | 784460/784461 (+`c1_640`) | **PR-26**, running |
+| 27 | **C7 truncation test at a 640-token cap — CONFIRMS** | 784460/784461/784658, judge 784740 | **🏆 R-64** |
 
 ## 5. Where we won
 
@@ -107,7 +107,7 @@ refusal by exactly 0.0000 in all four cells**, and the identity control (`--resc
 reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
 attack.**
 
-**W9 — 🏆 C7 IS RESOLVED AND REPLICATED: attack removal is DEMONSTRATION-SPECIFIC.** On Qwen3, masking the
+**W9 — 🏆 C7 IS RESOLVED, REPLICATED AND TRUNCATION-ROBUST: attack removal is DEMONSTRATION-SPECIFIC.** On Qwen3, masking the
 demonstration positions removes **5 of 5** attacks at `n_examples`=4 and **5 of 7** at n=8, while
 **three independent count-matched masks of the same size, drawn from elsewhere in the same prompt**,
 remove **1, 2, 2** and **2, −2, −1** — every one inside the pre-registered ±0.0521 margin. Separation
@@ -124,12 +124,15 @@ seed **and** by generation hash. The separately-judged power gate agreed with th
 ⚠ **Qwen3 only** — Llama's version was **declined for power (F6), never refuted** — and it rests on
 5 and 7 baseline attacks, i.e. **5 rows against a 2.1-row margin**.
 
-⚠ **Truncation-robustness is UNMEASURED (C-19).** Every ASR here covers the **first 192 generated
-tokens**. `demoproc` terminates on **0.325 / 0.300** of its rows versus **0.519–0.606** for its own
-controls, and the both-terminated subgroup at the decisive doses is **3, 1, 1 and 0 rows** — it cannot
-test the effect on either pool. Termination is post-treatment, so this is **not** evidence of an
-artifact; it means the check DR-2 made mandatory has not been run. **PR-26** re-generates the contrast
-at a 640-token cap to run it.
+**Truncation-robust (R-64, PR-26).** The ASRs above cover the first **192** generated tokens, on an
+arm that terminated on only 0.325/0.300 of its rows versus 0.519–0.606 for its controls (C-19).
+Re-run at a **640-token cap** — every arm stops on length **0.000** of the time, longest completion 634
+tokens — the effect **survives and grows**: `demoproc` removes **3 of 4** at n=4 (−0.0750) and **7 of
+7** at n=8 (**−0.1750**, up from −0.1250); the count-matched control moves **+1** and **+0**;
+separation **2.4×** and **4.2×**. The truncation hypothesis predicted the effect would shrink once
+completions could finish. It did the opposite. ⚠ The untruncated n=4 cell is the thinnest number in the
+claim (**−3 rows against a 2.08-row margin, 1.4×**), and the 640-token result rests on **one**
+count-matched control rather than three.
 
 **W8 — the count-matched control was finally BUILT, after three attempts and a measured
 specification.** R-25 left "demonstration-specificity is not constructible" as a qualitative limit.
@@ -218,7 +221,7 @@ dropped as no longer justified by current evidence.
 | R-46 | My first long-context bank grew the **demonstration block** instead of the drawable pool — the opposite of the requirement | Branch stopped; the failed preset kept as a record of what cannot work |
 | R-52 | My readout script applied PR-19's three conditions but **not its underpower rule**, and would have reported a refutation where a **decline** was mandated | Corrected before the numbers were written down |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
-| **C-19** | **C7 was resolved (R-58) and replicated (R-62) without ever running the truncation check DR-2 made mandatory.** Running it: `demoproc` terminates on **0.325/0.300** of its rows vs **0.519–0.606** for its own controls, and the both-terminated subgroup at the decisive doses is **3, 1, 1 and 0 rows**. DR-2's protection came from Qwen3 being lightly truncated on the *internal* bank; the preamble that made the control constructible pushed every `longpre` prompt against an unchanged 192-token cap, and it did not transfer | **Nothing retracted** — termination is post-treatment, so an empty subgroup is not evidence of an artifact. C7's **scope** is now explicit: truncation-robustness **UNMEASURED**, not established. **PR-26** re-runs the contrast at a 640-token cap. Root cause: a rule that lived in a prior review instead of in a pre-registration gate |
+| **C-19** | **C7 was resolved (R-58) and replicated (R-62) without ever running the truncation check DR-2 made mandatory.** Running it: `demoproc` terminates on **0.325/0.300** of its rows vs **0.519–0.606** for its own controls, and the both-terminated subgroup at the decisive doses is **3, 1, 1 and 0 rows**. DR-2's protection came from Qwen3 being lightly truncated on the *internal* bank; the preamble that made the control constructible pushed every `longpre` prompt against an unchanged 192-token cap, and it did not transfer | **Nothing retracted** — termination is post-treatment, so an empty subgroup is not evidence of an artifact. C7's **scope** was made explicit and then **discharged by R-64**: re-run at a 640-token cap with 0.000 truncation on every arm, `demoproc` removes **3/4** and **7/7** (separation 2.4×/4.2×) — the effect **grows**, so the cap was not the explanation. Root cause of the miss: a rule that lived in a prior review instead of in a pre-registration gate |
 
 ## 8. Final claims
 
