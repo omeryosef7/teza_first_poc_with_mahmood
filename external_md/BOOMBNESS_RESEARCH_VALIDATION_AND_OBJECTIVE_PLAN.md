@@ -1036,3 +1036,71 @@ of entry 6, where 2 of 5 populations carried everything and 2 pointed backwards.
 entry 11 on the same test. That is what makes it worth keeping. Entry 11's `KEEP_NARROWED` is
 reaffirmed on stronger grounds than it had before — the pooled number is a fair summary of six
 concordant domains, not a mean over a mixture.
+
+---
+
+## §4.1 — "DID THE HOOK MATTER?" — an invariant, not a habit
+
+**Script:** `src/boombness/intervention_liveness.py` · **Tests:** 8, 4 mutations caught
+**Artifacts:** `outputs/boombness/intervention_liveness/{e6live_*,c20check_*}/intervention_liveness.json`
+
+A peer session's **C-20** is the case that motivates this: a rescue arm reported `fired: true` and
+`n_positions_written: 28` for a patch that wrote **the value already present**. Below the knockout
+band the clean and knocked-out activations are bit-identical, so the hook fired, wrote, and changed
+nothing. **Three published claims cited that arm as a specificity control and none of them had run
+one.** Liveness told the truth — the truth it told was narrower than the question being asked:
+
+    liveness  answers  "did the hook execute?"
+    this      answers  "did the hook change what the model wrote?"
+
+Two failure modes report `fired: true` and show a null, and **only a generation comparison separates
+them**:
+
+| | computation | behaviour | verdict |
+|---|---|---|---|
+| hook fires, changes computation, no ASR effect | changed | null | **real dissociation** |
+| hook fires, changes nothing, no ASR effect | unchanged | null | **no-op arm (C-20)** |
+
+### It catches the known case, on real data
+
+Run against the peer's `q9` rescue ladder (knockout band **7–17**, rescue at query positions,
+control = knockout-only, n=160):
+
+| arm | rescue layer | generations differing | verdict |
+|---|---|---|---|
+| `Q_qpos_L5` | 5 | **0/160** | ⛔ **NO-OP ARM** |
+| `Q_qpos_L7` | 7 | **0/160** | ⛔ **NO-OP ARM** |
+| `Q_qpos_L12` | 12 | 144/160 | ✅ live |
+| `Q_qpos_L17` | 17 | 156/160 | ✅ live |
+
+This **is not a new discovery**, and it was nearly written up as one. The peer's own
+`tests/test_below_band_rescue_is_a_noop.py` already derives the predicate analytically —
+`patch_can_differ_from_recipient` returns `rescue_layer > lo` — and documents `rescue_layer == lo`
+as "the trap that caught C-20's own first replacement control". With `lo = 7`, both L5 and L7 are
+≤ lo and are no-ops *by construction*. **What this adds is empirical confirmation of an analytic
+predicate, measured on generations rather than derived** — which is exactly the value of an
+independent route, and exactly nothing more. Checked before claiming.
+
+### Applied to this sprint's own entry-6 arms — the claim survives and strengthens
+
+| population | generations differing | ASR net | reading |
+|---|---|---|---|
+| `main` | **96/96** | +17 | live and effective |
+| `ticket_bomb` | **96/96** | +17 | live and effective |
+| `window_knife` | **96/96** | +2 | live; no headroom (baseline 2/96) |
+| `basket_gun` | **96/96** | **−1** | **live and inert** |
+| `button_knife` | **96/96** | **−1** | **live and inert** |
+
+**Every population changes 96/96 generations.** So §0.9's reading holds and is now demonstrated
+rather than asserted: `basket_gun` and `button_knife` are **not** C-20-style no-op arms. The
+intervention alters what the model writes on every single row and ASR still does not move. **That is
+a genuine dissociation between changing the computation and changing the behaviour**, and it is the
+strongest form the §0.8 concentration result could have taken.
+
+### The invariant
+
+`assert_changed_generations` refuses an arm whose generations differ on fewer than
+`MIN_DIVERGENCE = 0.10` of rows, and refuses a pair sharing no `prompt_id`s rather than scoring it
+as "no change". The threshold is deliberately **not zero** — an arm that moves one row in ninety-six
+has fired and mattered on one row, which is a rounding error, not an intervention. **Every
+intervention arm this sprint reports must pass it.**
