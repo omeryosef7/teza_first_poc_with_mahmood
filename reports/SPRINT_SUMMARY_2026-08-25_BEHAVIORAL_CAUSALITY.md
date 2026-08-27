@@ -70,15 +70,21 @@ keyword detector — **not** the LLM judge, so it carries none of its measured s
 
 ## 5. Where we won
 
-**W1 — `demo_processing_only` uniquely restores refusal, in three independent settings.**
+**W1 — `demo_processing_only` uniquely restores refusal, in FOUR independent settings.**
 
 | setting | model | pool | baseline refusal | `demoproc` rise | other scopes |
 |---|---|---|---|---|---|
 | 1 | Llama-3.1-8B | A | 0.0563 | **+0.1625** | all within margin |
 | 2 | Qwen3-14B | A | 0.0125 | **+0.1312** | all within margin |
 | 3 | Llama-3.1-8B | B | 0.0063 | **+0.1938** | all within margin |
+| **4** | Llama-3.1-8B | **`basket_bomb` (2nd CODEWORD)** | 0.0208 | **+0.1250** | **all three at exactly 0** |
 
-Killed-by-refusal: **14/25, 8/20, 9/24** for `demoproc`; **0, 0, 1** for the controls. Pre-registered
+Killed-by-refusal: **14/25, 8/20, 9/24** for `demoproc`; **0, 0, 1** for the controls.
+Setting 4 is a **second codeword** (`basket`, R-73/PR-29) — a new generality axis, not another pool —
+lifting **lexical G from 1 to 2 for C1 only**; every other claim, C7 included, stays at G = 1.
+⚠ Setting 4's **truncation-robustness is UNMEASURED**: that bank truncates **0.938** at baseline
+(vs 0.581 for the same model on d10) and the both-terminated subgroup is **1 row**. PR-30 re-runs it
+at a 640-token cap; if it fails, lexical generality reverts to G = 1. Pre-registered
 twice before reading (**PR-6** 3/3 conditions, **PR-12** 2/2). Pool B shares **0 of 40** sentence sets
 with pool A.
 
