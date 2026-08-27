@@ -330,3 +330,82 @@ level that those are the same prompts, so `row_level_valid=true` for all four.)*
 estimate is not measurably a truncation artifact, but the number must be labelled by its cap"),
 **not** toward RETRACT — with the explicit exception of the C/D refusal arms, which remain
 **NEEDS RERUN** because no evidence either way exists for them.
+---
+
+## §0.1 — THE CLAIM LEDGER *(deliverable 2)*
+
+**Artifact:** `reports/boombness_claim_ledger_2026-08-27.json` (schema `BOOMBNESS_CLAIM_LEDGER/1`)
+
+### Method — re-derived from artifacts, then adversarially attacked
+
+Three read-only audit agents re-derived every prior claim **from committed artifacts, never from
+prose**. Each resulting entry was then handed to an **independent adversarial verifier** told to
+*refute* it and to default to `refuted=true` when uncertain, checking five things: do the cited
+paths exist; do the cited numbers appear at the stated fields to the stated precision; is the
+status too strong or too weak; is the claim contaminated by the `max_new=192` defect; is there an
+ignored confound. **20 agents, 1.53 M tokens, 558 tool calls.**
+
+The verification did real work: **it refuted the reasoning of 7 of 14 entries and changed 4
+verdicts — every one of them in the STRICTER direction.**
+
+### The ledger
+
+| # | claim | audit | **after verification** | ASR cap dependency |
+|---|---|---|---|---|
+| 1 | `d_surface` exists, is reproducible, describes the codeword↔concept contrast | KEEP-NARROWED | **KEEP-NARROWED** | not ASR-based |
+| 2 | concept axis `N` codeword-invariant; codeword identity is a (K−1)-dim subspace | KEEP-NARROWED | **KEEP-NARROWED** | not ASR-based |
+| 3 | **R-25 dose confound** — `d_surface` ≈ PC1 of the cell-mean span | KEEP | **KEEP** | mixed; geometric half not ASR-based |
+| 4 | `d_surface` is CAUSAL because steering changes attack behaviour (G4) | RETRACT | **NEEDS RERUN** ⬆ | **cap 192** |
+| 5 | removing `d_surface` at L8 RAISES ASR by +0.0424 on AdvBench-495 | NEEDS RERUN | **NEEDS RERUN** | cap 512 |
+| 6 | **demonstration-retrieval knockout suppresses the attack** (96 down / 18 up) | KEEP-NARROWED | **NEEDS RERUN** ⬆ | **cap 192 on ALL TWENTY runs** |
+| 7 | **refusal projection is the larger Llama channel** (C +0.2061, D +0.2869) | KEEP-NARROWED | **NEEDS RERUN** ⬆ | cap 512, **and the cap binds** |
+| 8 | "R-75/DR-11 discharged the truncation caveat" for these ASR claims | RETRACT | **RETRACT** (retraction upheld) | meta-claim |
+| 9 | **G2 — prompt-level boombness predicts ASR** | RETRACT | **RETRACT** (retraction upheld) | cap 192 throughout |
+| 10 | a clean pre-registered dev/heldout Fig-9 bank *does* show a prompt-level→ASR relation | KEEP-NARROWED | **KEEP-NARROWED** | cap 512, not the 192 defect |
+| 11 | token-level boombness rises across layers and across occurrences | KEEP-NARROWED | **KEEP-NARROWED** | not ASR-based |
+| 12 | C7 demonstration-specificity | OPEN | **OPEN** | cap 192 |
+| 13 | binding/comprehension **survives** the intervention that kills the attack | KEEP-NARROWED | **NEEDS RERUN** ⬆ | partially, cap 192 |
+| 14 | **a GCG/MAC objective was ever justified on this axis** | RETRACT | **RETRACT** | cap 192 for the steering half |
+
+**Tally: 5 NEEDS-RERUN · 4 KEEP-NARROWED · 3 RETRACT · 1 KEEP · 1 OPEN.**
+
+### What the ledger settles for this sprint
+
+* **The Phase 7 gate has already failed once, on the old evidence** (entry 14, RETRACT, upheld
+  under attack). Nothing in this sprint may build a GCG/MAC objective on the *old* `d_surface`
+  axis. A new objective would need new evidence.
+* **The two claims the previous sprint leaned on hardest both moved to NEEDS RERUN** — the
+  retrieval knockout (entry 6) and the refusal channel (entry 7). Entry 6 is the more serious:
+  **all twenty runs behind the 8- and 10-population tests are at `max_new=192`**, the exact
+  stratum §0.2 showed binds on 91.3 % of dirs.
+* **Entry 4 moved the other way — RETRACT → NEEDS RERUN.** The audit wanted to retract "steering
+  is causal"; the verifier showed the retraction was *itself* over-claimed and the honest state is
+  "unmeasured at a usable cap". The sprint does not get to bank that negative either.
+* **The purely geometric claims (1, 2, 3) survive**, because no generation enters them. The dose
+  confound (3) survived a five-axis refutation attempt with every number reproducing bit-for-bit.
+
+### A verification field that could not be trusted — checked, not propagated
+
+The verifiers returned **three artifact paths flagged as hallucinated**. Per the sprint rule that a
+subagent's output is data rather than a finding, all three were re-checked on disk:
+
+| flagged path | exists? |
+|---|---|
+| `outputs/boombness_followup/phaseB_semantic_forced_choice_slot0/token_level_dynamics_summary.json` | ✅ exists |
+| `src/boombness/semantic_binding_probe.py` | ✅ exists |
+| `.../binding_behaviour_bridge/REPRO_bridge_20260826_050914_1018899/binding_behaviour_bridge.json` | ✅ exists |
+
+**All three exist.** One was a legitimate but mis-filed observation (the artifact's `RUNMETA.json`
+names `binding_behaviour_bridge.py`, not `semantic_binding_probe.py`, as its producer — a
+wrong-producer error, not a missing file). The other two are simply wrong. The field is recorded in
+the artifact as `verifier_bad_path_claims_RECHECKED` and **is not propagated into any verdict**.
+Had it been, this ledger would have asserted that three existing artifacts are missing.
+
+### A schema flaw I introduced, and how it was resolved
+
+Two entries are phrased "*X — retracted as R-18*". For those, a verifier verdict of `KEEP` is
+ambiguous: keep *X*, or keep the *retraction*? Both came back `KEEP`. Resolved by reading each
+verifier's full reasoning, which upholds every clean and powered null: **in both cases KEEP means
+the retraction stands and the claim is dead.** Recorded in the artifact as
+`ambiguity_resolution_note`. Future audit schemas in this sprint will state claims in the
+affirmative only.
