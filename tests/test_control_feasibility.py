@@ -56,3 +56,32 @@ def test_the_quarantine_note_records_that_the_first_guess_was_wrong():
     """The docstring must not leave a wrong diagnosis standing as if it were the cause."""
     s = _src()
     assert "That guess was wrong" in s or "guess was wrong" in s
+
+
+# --------------------------------------------------------------------------- #
+# C-27: the tests above assert on SOURCE TEXT, which catches DELETION of a guard but not its
+# DISABLEMENT. Measured 2026-08-27: flipping `required=True` to `required=False` on `--model`
+# left every test in this file green — and that flip IS C-18, the defect this file exists to
+# prevent (feasibility measured on Llama's tokenizer, quoted as a Qwen3 statement, arms then
+# refusing at pre-flight). A guard that cannot fail for the regression it names is documentation.
+#
+# The fix is to EXECUTE the thing rather than read it. One subprocess, no fixtures.
+# --------------------------------------------------------------------------- #
+
+def test_model_is_actually_required_when_the_script_runs():
+    """Run it with --model omitted and require a non-zero exit naming the missing argument.
+
+    This fails if `--model` becomes optional, whatever the source text still says.
+    """
+    import subprocess, sys, os
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    proc = subprocess.run(
+        [sys.executable, os.path.join(repo, "src", "boombness", "control_feasibility.py"),
+         "--bank", os.devnull],
+        capture_output=True, text=True, timeout=120)
+    assert proc.returncode != 0, (
+        "control_feasibility.py ran WITHOUT --model. That is C-18: the feasibility number is a "
+        "property of a tokenizer, so a defaulted model silently makes it a statement about the "
+        "wrong one.")
+    assert "--model" in (proc.stderr + proc.stdout), (
+        "it exited non-zero but did not name --model; the failure must identify the argument")

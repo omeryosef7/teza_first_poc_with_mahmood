@@ -8694,6 +8694,54 @@ firing while changing nothing.* This is *a test that reported passing while chec
 the only thing that exposed it was **comparing against something that should have differed** — a
 control's generations there, a mutated module here.
 
+
+### ⛔ C-27 (22:55) — **C-26 was not one bad test. FOUR of this phase's guards assert on SOURCE TEXT, which catches a guard being DELETED but not DISABLED — and two of them fail to catch the exact regression they were written for.**
+
+C-26 fixed one tautological test. **The obvious next question is whether it was alone**, so I audited
+every test file this phase added, by what each actually binds to:
+
+| binding | files | catches |
+|---|---|---|
+| **executes production code** | `test_donor_patch` (imports + exercises), `test_bank_regenerates_byte_identically` (subprocess) | semantic breaks |
+| **reads real artifacts / deliverables** | `test_argsfiles_match_runs`, `test_published_percentages_are_row_exact`, `test_preamble_is_the_only_difference` | drift in the things they read |
+| ⛔ **reads production source as TEXT** | `test_bridge_bank_guard`, `test_control_feasibility`, `test_rescue_dissociation_table`, `test_dose_breakdown` | **deletion only** |
+| ⛔ **nothing** (C-26, fixed) | `test_below_band_rescue_is_a_noop` | — |
+
+**Mutation-tested rather than asserted**, on the two that matter most:
+
+| mutation | what it models | result |
+|---|---|---|
+| `if _missing:` → `if False and _missing:` in `binding_behaviour_bridge.py` | **C-13's guard disabled**, text intact | **8 passed** ⛔ |
+| `--model required=True` → `required=False` in `control_feasibility.py` | **C-18 exactly** | **8 passed** ⛔ |
+
+**The second one is the serious one.** `test_control_feasibility.py` exists *because of C-18* — where
+`--model` defaulted, feasibility was measured on **Llama's** tokenizer, quoted as a **Qwen3** statement,
+and the arms then refused at pre-flight. **The test written to prevent that recurrence does not fail
+when it recurs.**
+
+**Fixed, minimally and by execution.** `test_model_is_actually_required_when_the_script_runs` runs the
+script with `--model` omitted in a subprocess and requires a non-zero exit that **names the argument**.
+Verified both directions: **green on the real code, and the C-18 mutation is now RED** (1 failed,
+5 passed).
+
+**Not fixed, and stated rather than left implicit**: `test_bridge_bank_guard`,
+`test_rescue_dissociation_table` and `test_dose_breakdown` remain source-text assertions. They catch
+deletion, which is the common accident, and **they do not catch inversion**. Making them executing
+tests needs constructed fixtures (a bank with missing ids, a judge dir pair), which is real work I am
+**not** doing at the end of a session — **the file now says what each one does and does not catch**, so
+the next person does not have to mutation-test them to find out.
+
+**The pattern across C-20, C-26 and C-27 is one pattern, and it is worth naming.** Each was an artifact
+that **truthfully answered a narrower question than the one being asked of it**:
+
+* C-20 — `fired: true` answered *"did the hook execute?"*, not *"did the hook matter?"*
+* C-26 — a passing test answered *"is this predicate self-consistent?"*, not *"does the code obey it?"*
+* C-27 — a source-text assertion answers *"is the guard present?"*, not *"is the guard active?"*
+
+**In all three the only thing that exposed the gap was comparing against something that should have
+differed** — a control's generations, a mutated module, a disabled condition. **Nothing about the
+artifact itself was ever wrong.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
