@@ -8819,6 +8819,46 @@ the same: **something true about a narrower question, used to answer a wider one
 truth is *"some reporting failures are visible"*; the wider claim was *"reporting failures are
 visible"*.
 
+
+### 📌 R-89 (23:40) — **Verification tick. The shared suite is RED (8 failures) and none of them are mine — reported to the owning session, not touched. This phase's own work has nothing left to do, stated plainly rather than filled.**
+
+**Suite: 8 failed, 1194 passed, 7 skipped.** All eight are `tests/test_arm_report.py`, the concurrent
+session's file. Cause, from the traceback rather than inference:
+
+> `asr_protocol.ExcludedRunError: base: [require_done] REFUSING: … has no DONE.json, so the run did
+> not finish and its 40 rows are a truncated prefix of unknown length`
+
+**Their V-20 guard is firing on their V-18 fixtures.** The guard is behaving exactly as built; the
+fixtures predate it and construct judge dirs without `DONE.json`. **Their file, their boundary —
+reported and not edited.**
+
+**My side, verified**: 87 tests across all 11 files this phase added or touched — green.
+`check_all.py` 6/6. All nine corrections `C-19 … C-27` present in the sprint summary. Every
+pre-registration `PR-25 … PR-31` carries a recorded outcome.
+
+#### There is nothing left for this phase to do, and that is the finding
+
+Each of the last several ticks found real work, but the thread has been getting narrower — from
+science (C7, Q7), to instrument audits (floors, kernels, divergence), to auditing my own audits
+(C-26, C-27, R-87), to **correcting a justification I had invented one tick earlier** (R-88). **R-88 is
+the signal that the vein is exhausted**: when the newest finding is an error in the previous finding's
+reasoning rather than in the work, further ticks are more likely to manufacture work than to find it.
+
+**Status, complete:**
+
+| | |
+|---|---|
+| §20 questions | all resolved, declined on evidence, or failed their gate |
+| limitation 2 (mapping usage) | **closed as not resolvable** with available instruments (R-81) |
+| limitation 5 (lexical G) | **lifted for C1 only**, G = 2, truncation-robust row-for-row |
+| ASR contrasts | all floor-audited; **nothing below its floor** (DR-12) |
+| arms | liveness-, kernel-, divergence- and provenance-audited |
+| guards | the two whose failures are **invisible** now execute; the one that is visible is documented as such |
+
+**So this tick launches nothing and pre-registers nothing.** The remaining value in the loop is
+staying responsive to the concurrent session, which has twice surfaced things that touched my claims
+(C-23's framing, C-24's scope) — **not in generating a ninetieth entry.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
