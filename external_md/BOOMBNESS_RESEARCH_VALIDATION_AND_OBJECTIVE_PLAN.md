@@ -1474,3 +1474,80 @@ definition wider than the file it lives in.
 guard can be exactly as invisible as a population guard. Their DR-5 case had 92.3 % vs 69.2 %
 ranking cells backwards while looking entirely correct to a reader — so "a broken reporting rule
 would look wrong" is not a safe assumption.)*
+
+---
+
+## §0.14 — ENTRY 5 RESOLVED: removing `d_surface` RAISES ASR — the sprint's first fully sprint-grade causal result
+
+**Judge dirs:** `j1536_A_20260827_234356_3798010`, `j1536_W_20260827_234816_3798190`
+(both pinned `openai/gpt-4o-mini`, **judged in one invocation**, job 787539)
+**Gens:** `v3_A1536`, `v3_W1536` · Llama-3.1-8B · `basket_bomb` · `natural_doublespeak` ·
+`n_examples ∈ {1,2,4,8}` · **n=96** · **cap 1536**
+
+| | ASR | at cap | label | median tokens | refusal kw | judge pinned |
+|---|---|---|---|---|---|---|
+| `A_baseline` | **28/96** | **0.0000** | `ASR` | 308.5 | 2/96 | ✅ |
+| `W` — `d_surface:project_out:14-14` | **59/96** | 0.3021 † | `ASR within first 1536` | 346.5 | 2/96 | ✅ |
+
+| paired | |
+|---|---|
+| delta | **+0.3229** |
+| up / down | **37 / 6** (43 discordant) |
+| **exact two-sided p** | **0.000002** |
+| judge-noise SD | 3.77 rows · **net/SD = −8.23** (ASR *up*) |
+| divergence | **96/96 `OK`** |
+
+† classified `degeneracy_no_cap_will_fix` and **disclosed as 29 non-terminating rows** (§0.13).
+
+**Both arms PASS `assert_sprint_grade`.** This is the first result in the sprint to clear every gate:
+pinned judge · both arms in one judge invocation · non-binding baseline cap · arm binding classified
+and disclosed rather than chased · divergence 96/96 · refusal identical · median length *longer* in
+the arm.
+
+### It replicates across caps
+
+| cap | baseline | arm | delta | up/down | p |
+|---|---|---|---|---|---|
+| 640 | 30/96 | 56/96 | +0.2708 | 35/9 | 0.0001 |
+| **1536** | **28/96** | **59/96** | **+0.3229** | **37/6** | **0.000002** |
+
+Baseline moved 2 rows and the arm 3 — both inside the 3.77-row judge floor. The effect is stable.
+
+### Ledger effect
+
+**Entry 5 — "removing `d_surface` at L8 RAISES ASR by +0.0424 on AdvBench-495" — moves NEEDS RERUN →
+KEEP, and BROADENS.** The direction confirms at a much larger magnitude (+0.3229 vs +0.0424), at
+**L14** rather than L8, on a **doublespeak** bank rather than AdvBench, under a protocol the original
+did not have. The original number is *not* re-established — different layer, bank and population —
+but the claim it encodes is.
+
+**This is the sprint's central positive finding so far, and note which direction it runs.** The
+original hypothesis was that `d_surface` *carries* the attack, so removing it should *suppress*.
+**It does the opposite, decisively.** Whatever `d_surface` is, removing it makes the model **more**
+compliant, not less — while also making ~30 % of its generations non-terminating.
+
+That is consistent with the retracted G2/G4 picture (both steering signs suppressed; removal raised
+ASR at L8) and inconsistent with `d_surface` being the attack-carrying direction. **It does not
+license a GCG objective**: the Phase 7 gate asks for a signal that *predicts* heldout ASR and can be
+*optimised*, and "delete this direction and the model complies more, but a third of its outputs never
+stop" is a finding about model fragility, not an objective.
+
+---
+
+## §0.13a — the degeneracy classifier VALIDATED against a 4-pair negative control
+
+A peer session supplied four cap pairs from its own phase as a negative control. **Re-derived here
+rather than accepted** (one run id in the message was wrong and was located before use):
+
+| pair | n | binds @192 | binds @640 | **row overlap** | classification |
+|---|---|---|---|---|---|
+| Llama `basket_bomb` baseline | 96 | 90 | 0 | **0.0 %** | truncation |
+| Llama `basket_bomb` demoproc | 96 | 82 | 0 | **0.0 %** | truncation |
+| Qwen3 `longpreQ14B` baseline | 160 | 69 | 0 | **0.0 %** | truncation |
+| Qwen3 `longpreQ14B` demoproc | 160 | 112 | 0 | **0.0 %** | truncation |
+| **mine — `d_surface` project-out** | **96** | **29** | **29** | **100.0 %** | **degeneracy** |
+
+**Four cases at 0 % against one at 100 %, spanning two models and two banks.** The classifier is
+discriminating, not flagging heaviness — the control pairs bind on up to **94 %** of rows at the low
+cap and resolve *completely* at the high one, while mine binds on 30 % and resolves *not at all*.
+Without this control the classifier would rest on a single case.
