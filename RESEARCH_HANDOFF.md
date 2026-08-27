@@ -41,7 +41,7 @@ which positions they are, not how many.**
 ✅ **Truncation-robust (R-64, PR-26).** The numbers above are ASRs over the first **192** generated
 tokens, on an arm that terminated on only 0.325/0.300 of its rows versus 0.519–0.606 for its controls
 (C-19). Re-generating the contrast at a **640-token cap**, where **every** arm stops on length **0.000**
-of the time and the longest completion is 634 tokens, the effect **survives and grows**: `demoproc`
+of the time and the longest completion is 634 tokens, the effect **survives at the same size** (the cap moves neither arm detectably — C-23): `demoproc`
 removes **3 of 4** attacks at n=4 (−0.0750) and **7 of 7** at n=8 (**−0.1750**, up from −0.1250), while
 the count-matched control moves **+1** and **+0** — separation **2.4×** and **4.2×**. The truncation
 hypothesis predicted the effect would shrink once completions could finish; it did the opposite.

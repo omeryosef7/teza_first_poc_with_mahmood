@@ -33,7 +33,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **PR-11 UNINFORMATIVE — instrument confounded with outcome.** Concept usage falls 64%/81% (baseline jailbroken) to 0-11% (killed), but baseline **NOT-jailbroken** rows sit at **6%/10%** — killed rows look like untreated non-jailbroken ones. In this bank "mentions bomb" and "is a jailbreak" are near-identical events. **No mapping-usage claim made; R-16/R-17 neither supported nor contradicted** | the pre-committed confound clause is the only reason this is a null and not a headline | **R-27** |
 | ⚠️ **EVERY ASR HERE IS THE ASR OF THE FIRST 192 TOKENS.** Llama baseline **93/160 (58%)** at cap, demoproc **116/160 (73%)**; the untruncated Llama subgroup holds **0-7 baseline attacks** and cannot test it. Qwen3 is 26% truncated, its both-EOS subsets are **111/114 rows**, and every effect survives at full size | provenance 13/13 arms verified at content level, 0 sha mismatches, 0 duplicate tags; suite 1358/0 | **DR-2** |
 | ⚖️ **ONE matched, powered demonstration-specificity cell exists — at n_examples=2, where the capped control is 0.989-matched.** `demoproc` removes **5/5** attacks; the control removes **0.67/5** across three independent draws; gap **0.1083**, 2.6x the margin. Under-matched at n=4 (0.547) and n=8 (0.272), so those stay UNTESTED. Suggestive, one dose, 5 attacks, one model | capped arm read one-sided per PR-10; the overall null is NOT quoted as support | **R-26** |
-| 🏆🏆🏆 **C7 RESOLVED (Qwen3), REPLICATED on an independent pool, and TRUNCATION-ROBUST.** Pool A: `demoproc` **5/5** at n=4 and **5/7** at n=8 (−0.1250 each), controls **1,2,2** and **2,−2,−1**, separation **2.0x**/**3.2x**. Pool B: **−4/4** and **−5/6**, controls **+1,+1,+1** and **0,−1,−2**, separation **3.0x**/**1.8x**. **Untruncated (640-token cap, 0.000 stop-on-length on every arm): −3/4 and −7/7, control +1 and +0, separation 2.4x/4.2x** — the effect **grows** at n=8 (−0.1250 → −0.1750) once completions finish, the opposite of the truncation prediction. match_ratio 1.000 on every control row throughout; draws distinct by seed AND generation hash | **R-58** (PR-23) + **R-62** (PR-25) + **R-64** (PR-26); **C-19 discharged**; Llama remains **declined for power**, not refuted; n=4 untruncated is the thinnest cell at **1.4x** margin | **R-58**, **R-62**, **R-64** |
+| 🏆🏆🏆 **C7 RESOLVED (Qwen3), REPLICATED on an independent pool, and TRUNCATION-ROBUST.** Pool A: `demoproc` **5/5** at n=4 and **5/7** at n=8 (−0.1250 each), controls **1,2,2** and **2,−2,−1**, separation **2.0x**/**3.2x**. Pool B: **−4/4** and **−5/6**, controls **+1,+1,+1** and **0,−1,−2**, separation **3.0x**/**1.8x**. **Untruncated (640-token cap, 0.000 stop-on-length on every arm): −3/4 and −7/7, control +1 and +0, separation 2.4x/4.2x** — the effect is **the same size at both caps** — a within-row test shows the cap moves neither arm detectably (baseline 3↓/4↑, demoproc 1↓/1↑, both p=1.0; **C-23**), so the truncation-artifact hypothesis is unsupported without claiming growth. match_ratio 1.000 on every control row throughout; draws distinct by seed AND generation hash | **R-58** (PR-23) + **R-62** (PR-25) + **R-64** (PR-26); **C-19 discharged**; Llama remains **declined for power**, not refuted; n=4 untruncated is the thinnest cell at **1.4x** margin | **R-58**, **R-62**, **R-64** |
 | ⛔ **PR-23 GATE FAILED (C-18): the Qwen3 control is NOT constructible at n=8 on either preamble bank** — Qwen3 pool **112/133** vs a 114-token demo block, so the arms refused before generating. R-49/R-51's feasibility was a **Llama** measurement (`--model` defaulted); the claim was generalised to a method it never covered | arms produced no generations; nothing to salvage | **C-18** |
 | ⚖️ **C13 IS LLAMA-SPECIFIC (PR-22).** Qwen3 d10 **21/160** vs longpre10 **23/160** — gap **+2 rows**, inside margin and pointing the wrong way, on **21 baseline attacks** (powered) with **0 rows** of drift. 🟢 **Consequence: C7's power blocker is Llama's, not the method's — Qwen3 keeps its attack on the preamble bank where match_ratio is 1.000 at every dose** | **R-54** | **R-54** |
 | 🏆 **NEUTRAL CONTEXT SUPPRESSES THE ATTACK: ~10 sentences touching neither demos nor query cut ASR by two thirds** (27/160 → 6/160 same-window, −21 rows vs a 8.3-row margin), with cross-session drift measured at **2-4 rows** and the banks verified to differ *only* by the preamble | **R-53** (PR-21); withdrawn as unestablished in C-15, then established | **R-53** |
@@ -7987,6 +7987,102 @@ paid for itself again.
 **The lesson, which is the same one C-19 and PR-29 taught in a different costume:** I wrote the correct
 design in the analysis section and then wrote an argsfile that did not match it. **A pre-registration
 and the command that implements it are two artifacts, and only one of them runs.**
+
+
+### ⛔ R-78 (21:10) — **PR-31 DECLINES: the gate fails on its pre-registered flag. And the diagnostic shows exactly why — my flag was too narrow — which I am recording as an instrument lesson and explicitly NOT using to re-gate this data.**
+
+Artifacts: `br_A_20260827_...` (60/60, `n_failed = 0`) and `br_dp_20260827_204727_2209758`
+(40/40, `frac_rows_scope_live = 1.0`, `scope_violations = {}`). *(A second `br_dp` directory exists
+from the run C-22 refused — no `gens.jsonl`, no `DONE.json`, an orphan carrying no data.)*
+
+**The gate, as pre-registered — baseline `bicycle` rate must exceed the `n = 0` floor by > 0.0521:**
+
+| dose | n | rows containing `bicycle` | rate |
+|---|---|---|---|
+| **0 (floor)** | 20 | **0** | 0.0000 |
+| 4 | 20 | 1 | 0.0500 |
+| 8 | 20 | **0** | 0.0000 |
+
+**Floor 0.0000, baseline at n ∈ {4,8} = 0.0250, lift +0.0250 — inside the 0.0521 margin. GATE FAILS.**
+Per PR-31 this is a **DECLINE for lack of power**, not a null: the model essentially never *names* the
+inferred concept in free generation, so there is nothing for the knockout to remove.
+
+#### 🔎 The diagnostic, recorded as an instrument lesson and NOT as a result
+
+The pre-committed secondary list tells a different story. Splitting it into terms that are
+bicycle-**specific** versus generic:
+
+| | n = 0 floor | n ∈ {4,8} baseline |
+|---|---|---|
+| rows hitting **any bicycle-specific term** (`tires`, `racing`, `handlebars`, `ride`, `cyclists`, `races`, `bicycle`) | **0/20** | **11/40** |
+| generic terms (`repair` 8, `frame` 4, `lane` 3) | 0/20 | fire too |
+
+**So the mapping evidently IS being used** — the model writes about tires, racing and handlebars — **it
+just rarely says the word `bicycle`.** My primary flag asked whether the model *names* the concept when
+the thing to ask was whether it *deploys the concept's vocabulary*.
+
+**⛔ I am not switching to the specific-subset flag on this data, and that restraint is the point.**
+Doing so would be three forbidden moves at once: adopting a statistic **after** seeing that it works,
+**hand-splitting** the 16 terms into "specific" and "generic" by eye — which PR-31 explicitly forbade —
+and **re-gating a failed gate on the same completions.** The 11/40-vs-0/20 split is suggestive and it
+is **not a claim**; it is a specification for the next instrument.
+
+**What carries forward.** The flag must be *concept-vocabulary* based and derived mechanically, and the
+concept must be one the model will actually name. That is a **bank-design** requirement — precisely the
+build the user authorised — and it is now **motivated by measurement rather than by argument**, which is
+worth more than the failed test cost.
+
+**PR-31's own decline clause is therefore executed as written:** *"DECLINES → gate fails; spend the
+authorised bank build."*
+
+
+### ⛔ C-23 (21:20) — **CORRECTION to R-64: I framed a 1-2 row change as the effect "GROWING" when the cap moves nothing detectably. Found by cross-checking a CONCURRENT WRITER's independent analysis of my own artifacts.**
+
+Another session pushed **V-1/V-2/V-3** onto this branch while PR-31 was running (`4da920c1`,
+`8aa67ee6`, `03c06b75`). My commits are all intact as ancestors and nothing of theirs was touched.
+**V-3 analyses the same `g2A`/`g3A640` and `q16j`/`p26j` artifacts I produced**, as a within-row cap
+natural experiment — so I verified their numbers against the artifacts myself rather than accepting
+the table.
+
+**Recomputed independently, on the 80 rows PR-26 ran:**
+
+| | cap 192 | cap 640 |
+|---|---|---|
+| baseline | 10/80 | 11/80 |
+| `demoproc` | **1/80** | **1/80** |
+| delta | −0.1125 | −0.1250 |
+
+**Within-row effect of the cap on each arm** (the right test, since greedy decoding makes the 640 run
+a continuation of the 192 run):
+
+| arm | down | up | exact p |
+|---|---|---|---|
+| baseline | 3 | 4 | **1.0** |
+| `demoproc` | 1 | 1 | **1.0** |
+
+**The cap moves neither arm detectably.**
+
+**What I wrote in R-64:** *"the effect **grows** at n=8 (−0.1250 → −0.1750) … `demoproc` now removes
+7 of 7 attacks"* and, as the headline, *"removes MORE attack, not less."* **That is a per-dose slice of
+a 1-2 row change.** Pooled it is −0.1125 → −0.1250 — one row — and the within-row test says p = 1.0.
+**"Grows" is not supported and is withdrawn** from the claim table, the handoff and the sprint summary.
+
+**What still stands, unchanged:** PR-26's three gates passed, and PR-23's conditions hold at both caps.
+The truncation-artifact hypothesis predicted the effect would **shrink** when completions finished; it
+did not shrink. **"Not an artifact of the cap" survives; "grows" does not.** R-64's verdict of CONFIRMS
+is correct; its *direction* language was not.
+
+**And a premise of mine was wrong, which is the more useful part.** C-19 reasoned that truncated
+completions would score *lower*, so truncation would depress ASR. V-3's Llama pair shows **12 rows
+flipped 0→1 and 5 flipped 1→0** when allowed to finish — **truncation is not a one-way suppressor**; a
+completion cut at 192 tokens sometimes scores *higher*, because it was cut before the model hedged or
+wandered. **Any argument of the form "the old number was depressed by truncation" is wrong on its
+face**, including the one I used to motivate PR-26.
+
+**Why this is worth recording beyond the fix.** I ran PR-26, passed every gate, and still reached for a
+directional story the data did not carry — and the thing that caught it was **someone else analysing my
+artifacts a different way.** DR-11 had already given me the tool to catch this (*"no single cell is
+decisive alone"*) and I did not apply it to my own headline.
 
 ---
 
