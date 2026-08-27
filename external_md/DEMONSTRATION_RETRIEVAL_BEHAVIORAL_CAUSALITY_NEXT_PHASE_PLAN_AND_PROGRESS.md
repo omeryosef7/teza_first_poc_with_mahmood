@@ -52,6 +52,7 @@ status attached. Every row names the correction that last touched it.
 | ⛔ **WITHDRAWN BEFORE IT WAS EVER A CLAIM: the Qwen3 ASR rescue FAILED its confirmatory test on an independent pool** (+0.0625 pool A vs **+0.0437 pool B**, needed >0.0521 — missed by ~1.3 rows). Not promoted, not rescued, no margin moved | **R-37**; the pre-registration is why this is a non-event rather than a retraction | **R-37** |
 | ⚠️ **superseded by R-37 — on Qwen3 the same patch also appeared to restore the ATTACK** (knockout 0.0437 → 0.1062 vs clean 0.1313; Outcome-A shape) where Llama gave Outcome C. PR-14 pre-committed that the ASR column does not count here. Needs its own pre-registration + replication | the phase's causal picture may be model-dependent on ASR while model-independent on refusal | **R-36** |
 | 🏆🏆🏆 **CAUSAL DISSOCIATION: one patch gives back the REFUSAL but not the ATTACK.** Handing clean demo-position activations back at L14 removes **69.2%** of the knockout's refusal rise (35→17 rows, >2x margin) while ASR stays **within margin of knockout-only** (recovers 16.7%). Below-band L5 control moves refusal by **exactly 0.0000** | PR-13 Outcome C on ASR; precondition `fired` 320/320; committed before the jobs existed | **R-35** |
+| ⛔ **LAYER-SPECIFICITY DOES NOT REPLICATE — the rescue effect is NOT specific to the top of the band.** Llama mid-band (L10) restores refusal **−0.0688, p=0.019**, clearing the margin, where Qwen3 mid-band (L12) gave **−0.0375, p=0.21**. PR-28's condition 2 fails. Separation holds in both (0.0875 p=0.00052; 0.0562 p=0.0117) but all three conditions were required | **C9/C11/C12 do not get their specificity leg back** (C-20 removed it; their primary effects never rested on it). R-70's L12/L17 observation withdrawn as a candidate claim. **No layer sweep run — that would be rescuing a failed gate** | **R-71** (PR-28) |
 | ⚠️ **THE LLM JUDGE FLIPS 9/160 ROWS ON BYTE-IDENTICAL TEXT (0.0563), while `kw_refusal` flips 0/160.** Not threshold adjacency — only 6/160 rows are score-adjacent to the cut and **four flips swing 0.0 ↔ ≥0.5**. Per-dose churn is **2,3,1,3 rows per 40-row cell**, against C7 per-cell effects of **3-7 rows** | **Net** churn is 1 row so PR-3's margins stand and no number moves; but **no single 40-row cell is decisive alone** — C7 is carried by **three independent populations agreeing in sign at both doses** | **R-70**, **DR-10** |
 | 🏆 **§20 Q7 ANSWERED: C11's refusal half and its dissociation REPLICATE on Qwen3-14B.** Query-span rescue at L17 moves refusal **−0.0937 (−15 rows, 71.4% of the knockout's rise)** while ASR moves **−0.0062 (−1 row, −7.7% recovery)**; dissociation **0.0875** vs a 0.0417 margin. Llama gave −0.1562 / 96.2%. **The ASR half DECLINES for power** (inside ±0.0521), per PR-27's rule — not refuted | judge 800 rows 0 nulls; all arms same bank + same session; layer-specificity read is **EXPLORATORY** (no criterion was pre-registered for L12) | **R-70** (PR-27) |
 | ✅ **§20 Q3 rescue instrument VALIDATED end-to-end: identity control 8/8 byte-identical to the arm, while the clean-donor rescue differs on 8/8.** Identical where it must be, different where it must be | no rescue science yet; sweep gated on a pre-registration | **R-33** |
@@ -7407,6 +7408,61 @@ there would be nothing to rescue, which is R-52's underpower rule, not a refutat
 **REFUTED** if mid-band restores refusal as well as top-of-band does. Then the effect is not specific
 to the top of the band, the Qwen3 result was population-specific, and **the specificity leg that C-20
 removed from C9/C11/C12 stays removed.** Stated before the arm exists.
+
+
+### ⛔ R-71 (08:50) — **PR-28 DOES NOT REPLICATE: condition 2 fails on Llama. Mid-band rescue restores refusal there by a margin-clearing amount, so the effect is NOT specific to the top of the band. The specificity leg C-20 removed from C9/C11/C12 STAYS REMOVED, and this branch stops.**
+
+Judge window `p11j_{A,ko,L14,L10}`, job `784963`: 640 rows, **0 nulls**, one pinned
+`openai/gpt-4o-mini`, all four arms d10 pool A. New arm `p11_qpos_L10_20260827_081318_733459` —
+160/160, `failures: 0`, `frac_rows_scope_live=1.0`, `scope_violations={}`, `fired` 160/160 at 24
+positions.
+
+**Precondition passed** (C-20's trap): L10 is a **real** intervention — 14/160 identical to the
+knockout arm, against L14's 7/160. The corrected `layer > lo` rule predicted this and was right a
+second time.
+
+**Gate passed**: the Llama knockout raises refusal 9 → 35 = **+0.1625**, so there was something to
+rescue and R-52's decline rule does not apply.
+
+| condition | requirement | Llama result | |
+|---|---|---|---|
+| 1 — top of band restores refusal | `|Δ| > 0.0521` **and** `p < 0.05` | **−0.1562** (−25 rows), discordant 27/2, **p = 1.6e-06** | ✅ |
+| **2 — mid band does NOT** | `|Δ| ≤ 0.0521` | **−0.0688** (−11 rows), discordant 15/4, **p = 0.019** | **❌ FAILS** |
+| 3 — they separate | `> 0.0417` **and** `p < 0.05` | **0.0875**, L10 vs L14 discordant 15/1, **p = 0.00052** | ✅ |
+
+**PR-28 required all three. Condition 2 fails, so the layer-specificity claim is NOT established, and
+per the standing rule this branch stops rather than being rescued.**
+
+**What the data actually shows, stated once and not pursued.** On Llama the refusal restoration is
+**graded with depth** — mid-band gives back 11 rows and top-of-band 25 — whereas on Qwen3 mid-band gave
+back 6 rows *inside* the margin at **p = 0.21**, i.e. nothing detectable:
+
+| | mid band | top of band | separation |
+|---|---|---|---|
+| Qwen3 (7-17) | −0.0375, p=0.21 | −0.0937, p=0.00073 | 0.0562, p=0.0117 |
+| Llama (6-14) | **−0.0688, p=0.019** | −0.1562, p=1.6e-06 | 0.0875, p=0.00052 |
+
+**The two models disagree on exactly the condition that would have made this a claim.** Condition 3 —
+the separation — holds decisively in both, and it would be easy to report that alone as a success.
+**That is precisely the cherry-pick the pre-registration exists to stop, so it is not being reported
+that way.** "Top of band restores more than mid-band" is real in both models; **"the effect is specific
+to the top of the band" is false on Llama.**
+
+**⛔ Not pursued further.** The obvious next move is a layer sweep to characterise the Llama gradient.
+That is rescuing a failed gate, and PR-13 already forbade scanning layers for this reason. **No
+additional layers are run.**
+
+**Consequences, all negative and all recorded:**
+
+* **C9, C11 and C12 do not get their specificity leg back.** C-20 removed it; PR-28 was the attempt to
+  restore it properly; the attempt failed. Their **primary effects are unaffected** — they never rested
+  on the layer control.
+* **R-70's exploratory L12/L17 observation is now known to be model-specific** and is withdrawn as a
+  candidate claim. It stays in the log as what it always was: exploratory, never pre-registered.
+* **PR-28's declared change of statistic stands and was not the problem.** The paired exact test was
+  applied symmetrically, it strengthened C1 (p ≤ 9.5e-07), and here it *sharpened the failure* — L10's
+  restoration is significant at p = 0.019, which is what killed condition 2. **A statistic adopted for
+  good reasons should sometimes cost you a result, and this one did.**
 
 ---
 

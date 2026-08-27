@@ -259,8 +259,13 @@ RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thi
    run**, deliberately: PR-13 forbade scanning layers until one rescues. **So "the top of the band
    specifically" is not established at all (C-20):** the below-band control it rested on is a no-op by
    construction — below the band the knocked-out and clean activations are identical, so the patch
-   writes what is already there. A real specificity control must sit **inside** the band; the
-   replacement patches its bottom layer.
+   writes what is already there. A real specificity control must sit **strictly above** the
+   band's first layer (patching the band floor itself is also vacuous — R-68). Such a control was
+   built and run, and **it did not replicate (R-71): the effect is NOT specific to the top of the
+   band.** Llama mid-band restores refusal **−0.0688, p=0.019**, clearing the margin, where Qwen3
+   mid-band gave **−0.0375, p=0.21** — graded with depth on one model, top-specific on the other.
+   PR-28's condition 2 failed, so **the specificity leg stays removed and no layer sweep was run**,
+   because sweeping would be rescuing a failed gate.
 
 ## 10. Canonical artifacts and reproduction
 
