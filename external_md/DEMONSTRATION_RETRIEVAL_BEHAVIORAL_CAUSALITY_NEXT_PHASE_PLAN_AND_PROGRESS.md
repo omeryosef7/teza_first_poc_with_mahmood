@@ -7656,6 +7656,43 @@ four doses, nothing else changed.**
 * **REFUTED** → C1's fourth setting is an artifact of the 192-token cap, R-73 is a correct reading of
   a confounded measurement, and **lexical generality reverts to G = 1.** Stated before the arms exist.
 
+
+### 🔎 R-74 (10:40) — **Reference audit: every artifact path and every job id cited in the deliverables RESOLVES. PR-30 is queue-blocked, and the standing stall rule cannot be applied here — recorded rather than worked around.**
+
+**PR-30 status.** `785044` / `785045` have been PENDING for **~30 minutes** on `(Resources)` and
+`(Priority)`. All four requested nodes are in `mix` state; the cluster is simply busy.
+
+**⛔ The stall rule does not apply and is deliberately not adapted.** The standing rule is *"if a job is
+PENDING over 30 minutes, scancel and resubmit with a different config"*. **`scancel` is forbidden
+here.** Submitting replacements *without* cancelling would leave two jobs racing to write the same
+tag — **C-17's double-run, which this phase has already paid for once.** So the arms are left alone and
+the PR-30 read waits. **Nothing else is blocked by it.**
+
+**Reference audit — the "execute the manifest" discipline that caught C-13**, run because it needs no
+GPU and the queue was idle time:
+
+| document | citation form | cited | unresolvable |
+|---|---|---|---|
+| `RESEARCH_HANDOFF.md` | artifact paths | 9 | **0** |
+| the sprint summary | **job ids** | 74 | **0** |
+| this log | artifact paths | 28 | **0** |
+
+* **37 artifact paths**, each resolved on disk (prefix citations such as `p4bj_` resolved by prefix,
+  which is what they assert).
+* **74 job ids** in the summary's run table, **every one** with a log under
+  `outputs/boombness/logs/`. The summary cites runs by job id rather than path; that is a legitimate
+  reference form **only if the ids are traceable**, so they were checked rather than assumed.
+* **First-pass false positives are worth recording**: the naive check reported 11 "missing" paths,
+  all of which were prose **prefixes** (`p4b`, `p4bj_`, `boomb_`). A checker that flags those as
+  broken would train me to ignore it. The refined check resolves prefixes; **0 genuinely unresolvable
+  references remain.**
+
+**Housekeeping.** Removed a **0-byte file whose *name* was a fragment of my C-20 commit message** —
+created 05:46 when unescaped quotes in `git commit -m` turned part of the message into a shell
+redirect. Verified empty before deleting. The remaining working-tree modifications
+(`BOOMBNESS_DSURFACE_...`, two other sprint summaries, and a regeneration of
+`boombness_prompt_bank_meta.json`) are **the concurrent writer's and were not touched or staged.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
