@@ -41,3 +41,57 @@ def test_guard_runs_before_any_arm_is_read():
     """Refusing after computing arms would still emit a partial artifact."""
     s = _src()
     assert s.index("for _name, _ids in ((") < s.index("beh_arms = {")
+
+
+# --------------------------------------------------------------------------- #
+# C-27: everything above reads this module's SOURCE TEXT. That catches the guard being DELETED
+# and NOT the guard being disabled. Measured 2026-08-27: rewriting `if _missing:` as
+# `if False and _missing:` left every test in this file green — and that guard is C-13, where the
+# bridge silently kept 96 of 160 rows and printed a complete-looking answer with different numbers.
+#
+# The test below EXECUTES the bridge against a bank that is missing ids and requires the refusal.
+# It fails whatever the source text still says.
+# --------------------------------------------------------------------------- #
+
+def _write_fixture(tmp_path, bank_ids, row_ids):
+    """Minimal inputs the bridge accepts: a bank, a judge dir, a probe dir."""
+    import json
+    bank = tmp_path / "bank.jsonl"
+    with open(bank, "w") as fh:
+        for p in bank_ids:
+            fh.write(json.dumps({"prompt_id": p, "family_id": f"dom|cond|{p}|behavioral",
+                                 "query_kind": "behavioral"}) + "\n")
+    def _dir(name, payload):
+        d = tmp_path / name
+        d.mkdir()
+        with open(d / "results.jsonl", "w") as fh:
+            for p in row_ids:
+                fh.write(json.dumps(dict(payload, prompt_id=p)) + "\n")
+        return str(d)
+    beh = _dir("beh", {"strongreject_score": 0.9})
+    probe = _dir("probe", {"p_concept": 0.9, "p_codeword": 0.1})
+    return str(bank), beh, probe
+
+
+def _run(bank, beh, probe, tmp_path):
+    import subprocess, sys, os
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    env = dict(os.environ, BOOMB_OUTPUT_ROOT=str(tmp_path / "out"))
+    return subprocess.run(
+        [sys.executable, os.path.join(repo, "src", "boombness", "binding_behaviour_bridge.py"),
+         "--bank", bank, "--beh-baseline", beh, "--probe-baseline", probe,
+         "--tag", "guardtest"],
+        capture_output=True, text=True, timeout=180, cwd=repo, env=env)
+
+
+def test_bridge_REFUSES_when_the_bank_is_missing_row_ids(tmp_path):
+    """C-13 executed: bank knows 2 ids, the runs carry 4. The bridge must refuse, not subset."""
+    bank, beh, probe = _write_fixture(tmp_path, bank_ids=["a", "b"],
+                                      row_ids=["a", "b", "c", "d"])
+    proc = _run(bank, beh, probe, tmp_path)
+    out = proc.stdout + proc.stderr
+    assert proc.returncode != 0, (
+        "the bridge RAN against a bank missing 2 of 4 row ids. That is C-13: it silently drops the "
+        "unknown rows and prints a complete-looking answer over a different population.")
+    assert "REFUSING" in out and "not in" in out, (
+        f"it exited non-zero but not via the bank guard; output was:\n{out[-600:]}")

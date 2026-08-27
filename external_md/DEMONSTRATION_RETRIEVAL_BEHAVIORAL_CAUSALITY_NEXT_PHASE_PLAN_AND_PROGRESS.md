@@ -8742,6 +8742,41 @@ that **truthfully answered a narrower question than the one being asked of it**:
 differed** — a control's generations, a mutated module, a disabled condition. **Nothing about the
 artifact itself was ever wrong.**
 
+
+### ✅ R-87 (23:00) — **C-13's guard is now covered by an EXECUTING test. The mutation that was green under the text assertions is red under this one. Two of C-27's four remain, and I am saying which and why.**
+
+C-27 identified four source-text guards and fixed one (`control_feasibility`, C-18's). I deferred the
+rest as *"real work I am not starting at the end of a session"* — **that was a timing judgement, not a
+merit one**, so it is the right work now rather than something to leave.
+
+**Converted: `test_bridge_bank_guard.py`**, which guards **C-13** — where
+`binding_behaviour_bridge` silently kept **96 of 160 rows** and printed a complete-looking answer over
+a different population. The new test builds a minimal fixture (a bank knowing 2 ids, run dirs carrying
+4), runs the real script in a subprocess, and requires the refusal:
+
+| | text assertions only | with the executing test |
+|---|---|---|
+| real code | 4 passed | **4 passed** |
+| `if _missing:` → `if False and _missing:` *(guard disabled, text intact)* | **4 passed** ⛔ | **1 failed, 3 passed** ✅ |
+
+**The fixture is the whole trick and it is cheap**: the bridge needs only `prompt_id` + `family_id`
+ending in its `query_kind` from the bank, `strongreject_score` from a judge dir, and
+`p_concept`/`p_codeword` from a probe dir. **No model, no GPU, 28 s.** I had assumed constructing it
+was expensive; it was not, and that assumption is why C-27 shipped with three gaps instead of one.
+
+**Still text-only, stated rather than left to be discovered**: `test_rescue_dissociation_table` and
+`test_dose_breakdown`. Both guard **reporting rules** — *"refuses to emit a percentage without
+`effect_rows` and `effect_x_margin`"* and the per-dose cell-size requirement — rather than population
+integrity. **A disabled reporting rule produces a number that looks wrong to a reader; a disabled
+population guard produces a number that looks right.** That is why C-13's was worth the fixture first
+and why these two are a lower priority, **not** why they are fine.
+
+**What this run of the pattern cost and bought.** C-20 → C-26 → C-27 → R-87 is one thread: an artifact
+that answers a narrower question than the one asked of it, found only by comparing against something
+that should have differed. **Each step was cheaper than the last** — C-20 took a GPU sweep and a
+same-session control arm, C-26 took one rename, C-27 took two, R-87 took a 30-line fixture. **The
+expensive part was never the check; it was not knowing the check was owed.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
