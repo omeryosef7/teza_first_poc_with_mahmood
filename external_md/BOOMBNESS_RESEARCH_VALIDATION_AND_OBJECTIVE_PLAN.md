@@ -409,3 +409,75 @@ verifier's full reasoning, which upholds every clean and powered null: **in both
 the retraction stands and the claim is dead.** Recorded in the artifact as
 `ambiguity_resolution_note`. Future audit schemas in this sprint will state claims in the
 affirmative only.
+---
+
+## §1 — PHASE 1 REASSESSED: the aligned banks the brief asks for MOSTLY ALREADY EXIST
+
+**Source:** bank inventory over all 25 banks in `data/boombness_prompts/` (field values and
+`*_meta.json` scalars only; no prompt text opened) plus `src/boombness/prompt_families.py`.
+
+The brief's Phase 1 assumes prompts "were not always structurally aligned … farms vs cities" and
+asks for new banks. **That is not the current state of this repo.** `prompt_families.py` builds the
+2×2 as an *exact word swap* — A/C and E/B share the same demo sentences up to one word, and all
+four share a byte-identical final query up to the same swap — with domain, template, sentence
+count, occurrence count, chat template and target position matched by design.
+
+| brief asks for | already exists | gap |
+|---|---|---|
+| core 2×2 A/B/C/D cells | `CONDITIONS` — 6 of them, incl. `benign_remap` and a no-demo control | none |
+| `n_examples ∈ {0,1,2,4,8,12}` | **`N_EXAMPLES = (0,1,2,4,8,16)`** | **12 occurs in ZERO rows in ZERO banks. 16 exists instead — and is strictly better for the question.** |
+| aggressiveness sweep weak/med/strong/inconsistent | `STRENGTHS = (none,weak,medium,strong,aggressive)` and `CONSISTENCIES = (consistent,mixed,conflicting,irrelevant)`; `phase_d` bank has **120 rows per level** | none |
+| position variants | `POSITIONS = (near,far,distributed)` | none |
+| heldout codeword/concept pairs | **14 pairs**: 5 codewords × 4 concepts (6 cells missing) | none |
+| family-disjoint train/dev/test | `dev ∩ heldout = 0` families on **every** bank | test split absent; dev/heldout only |
+| ≥10 domains for cluster inference | **7 banks span 10 domains**, 456 rows/domain, evenly | **k = 10 is the ceiling; no bank has k > 10** |
+| tokenization + grammar audit, byte-identical regeneration | `tokenization_audit.py`, `tests/test_bank_regenerates_byte_identically.py`, `bank_rows_sha16` + `pools_sha16` per bank | none |
+
+**Conclusion: Phase 1 is largely a NO-OP and the sprint should not spend GPU or wall-clock
+rebuilding it.** The bottleneck this sprint faces is not bank construction — it is **measurement at
+a usable generation cap**, which is precisely what §0.2/§0.3 address. Rebuilding banks would have
+been the expensive way to avoid the actual problem.
+
+### Three genuine gaps, and what they cost
+
+1. **`n_examples = 12` does not exist; `16` does.** The brief's sweep is unavailable as written.
+   Running `{0,1,2,4,8,16}` answers the same question over a *wider* range and needs **no new
+   bank**. **Adopted, with the deviation recorded here.**
+2. **No `test` split** — only `dev`/`heldout`. Phase 7's "pre-register on dev, evaluate on heldout"
+   is therefore executable exactly as written; a third split is not.
+3. **A design constraint that is a property of the phenomenon, not a bug.** Per
+   `prompt_families.py`, `strength != none` and `consistency = conflicting` are **incompatible with
+   the exact-word-swap 2×2 invariant**, because stating a mapping must name the codeword. Every
+   aggressiveness sweep in every bank is therefore single-condition (`natural_doublespeak`) and
+   exempt from `check_alignment`, and `n_target_occurrences` varies across strength levels **by
+   construction**. **The Phase 2.5 aggressiveness→ASR analysis must condition on
+   `n_target_occurrences`, or "aggressiveness" and "how many times the codeword appears" are the
+   same variable.** This is recorded now so it cannot be discovered in a later audit.
+
+---
+
+## §R.1 — SELF-REVIEW (30-minute checkpoint, 2026-08-27 ~21:20)
+
+**Changed:** `asr_protocol.py` + guard + 38 tests (9 mutations caught); `cap_natural_experiment.py`
++ 10 tests (5 mutations caught); the claim ledger (14 entries, adversarially verified);
+`corpus_sweep_20260827.json`; four commits pushed (`4da920c1`, `03c06b75`, `48388931`, `140462f7`).
+
+**Running:** SLURM 787101/787102/787103 — `base`/`C`/`D` on `advbench_heldout_495` at
+**`max_new=1024`**, the rerun ledger entry 7 demands. SLURM 787104 — the `W_codeword_pc1`
+`d_surface:project_out:14-14` arm at **640**, whose 640 baseline (`g3A640`) already exists with a
+**pinned** judge. All four PENDING on `(Priority)` — fair-share, not capacity; a first submission
+pinned to single nodes was cancelled and resubmitted across 3-node subsets.
+
+**Failed / corrected:** (a) a test fixture that never scored exactly 0.5, so a `>=`→`>` mutation
+survived — closed. (b) my own hand-computed McNemar threshold (14/17) was wrong; the code was right
+(13/17) — the test now derives it instead of memorising it. (c) three verifier-flagged "hallucinated"
+paths all exist — not propagated. (d) an ambiguous audit schema for claims phrased "X, retracted as
+R-18" — resolved by reading the full reasoning.
+
+**What is currently supported:** §0.2 (the cap is a reporting defect on 271 dirs / 81 088 rows),
+§0.3a (that defect did not measurably move the point estimate where it can be checked, and is
+bidirectional at the row level), §0.1 (the ledger), §1 (Phase 1 is largely a no-op).
+**No new claim about boombness itself has been made yet, and none should be until §0.3 lands.**
+
+**Peer session:** a concurrent session owns job 787099 (`dpools`, cpu-killable). Path and job
+ownership exchanged; both findings above sent to it so its summary does not quote a 192-cap ASR.
