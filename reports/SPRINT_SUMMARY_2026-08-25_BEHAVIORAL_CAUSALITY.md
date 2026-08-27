@@ -102,9 +102,11 @@ activation patch that hands back the clean demonstration activations at the top 
 removes **12-18 refusal rows** in **all four** model × pool cells, every one clearing the **8.3-row**
 margin (**1.44-2.16×**) — **while leaving the attack removal intact on Llama** (16.7% recovery, inside
 the margin). *As percentages of the rise that is 58-92%, but those figures are* ***inverted*** *relative
-to the evidence — see the correction table.* The **below-band control at the same positions moves
-refusal by exactly 0.0000 in all four cells**, and the identity control (`--rescue-donor self`)
-reproduces its own arm **8/8 byte-identical**. **One intervention gives back the refusal and not the
+to the evidence — see the correction table.* ~~The below-band control at the same positions moves refusal by exactly 0.0000 in all four cells~~
+**— WITHDRAWN (C-20): that arm is byte-identical to knockout-only on 160/160 rows, a no-op by
+construction rather than an inert intervention, so no specificity control was run.** The identity
+control (`--rescue-donor self`) reproduces its own arm **8/8 byte-identical** and is unaffected — it
+is an instrument check and was always meant to be a no-op. **One intervention gives back the refusal and not the
 attack.**
 
 **W9 — 🏆 C7 IS RESOLVED, REPLICATED AND TRUNCATION-ROBUST: attack removal is DEMONSTRATION-SPECIFIC.** On Qwen3, masking the
@@ -143,7 +145,8 @@ R-49 delivered a bank where **`match_ratio` is 1.000 (min and mean) at all four 
 became real on every row of 480.**
 
 **W7 — the two effects are localised differently, and it is position IDENTITY not count.** The attack
-damage is reachable from the **query span** (+0.0563 ASR, clears margin; below-band control inert) but
+damage is reachable from the **query span** (+0.0563 ASR, clearing the margin by 0.7 rows;
+**its cited below-band control is withdrawn — C-20**) but
 **not** from the demonstration positions. Size-matched at **24 positions each**, a demo patch removes 4
 refusal rows and restores **no** attack while a query patch removes **13** and restores attack — same
 count, same layer, same rows, opposite behaviour.
@@ -222,6 +225,7 @@ dropped as no longer justified by current evidence.
 | R-52 | My readout script applied PR-19's three conditions but **not its underpower rule**, and would have reported a refutation where a **decline** was mandated | Corrected before the numbers were written down |
 | DR-2 | Every ASR is over **192-token completions**; Llama baseline is **58%** truncated, `demoproc` **73%** | No number retracted; the **scope** of "ASR" is now stated. Qwen3 (26% truncated) has both-EOS subgroups of 111/114 rows where every effect survives at full size |
 | **C-19** | **C7 was resolved (R-58) and replicated (R-62) without ever running the truncation check DR-2 made mandatory.** Running it: `demoproc` terminates on **0.325/0.300** of its rows vs **0.519–0.606** for its own controls, and the both-terminated subgroup at the decisive doses is **3, 1, 1 and 0 rows**. DR-2's protection came from Qwen3 being lightly truncated on the *internal* bank; the preamble that made the control constructible pushed every `longpre` prompt against an unchanged 192-token cap, and it did not transfer | **Nothing retracted** — termination is post-treatment, so an empty subgroup is not evidence of an artifact. C7's **scope** was made explicit and then **discharged by R-64**: re-run at a 640-token cap with 0.000 truncation on every arm, `demoproc` removes **3/4** and **7/7** (separation 2.4×/4.2×) — the effect **grows**, so the cap was not the explanation. Root cause of the miss: a rule that lived in a prior review instead of in a pre-registration gate |
+| **C-20** | **The below-band L5 rescue arm is a NO-OP BY CONSTRUCTION, and C9, C11 and C12 each published it as a layer-specificity control.** Below the knockout band the knocked-out run's prompt-position activations are bit-identical to the clean run's, so a clean-donor patch writes what is already there. Four instances — two models, two position modes, three sessions — are **byte-identical to their own knockout-only arm** (160/160, 160/160, 160/160, 40/40) while every in-band arm differs. `rescue_liveness` correctly reported `fired: true`: liveness proves the hook ran, not that it mattered | **Primary effects stand** (they rest on the in-band arm). **C9, C11 and C12 lose their specificity leg** — no such control was run; the citations are struck in the handoff and above. The exact zeros ("EXACTLY 0.0000", "15→15") were the tell and were read as clean control behaviour. Byproduct: C11's control "+0.0125 ASR" on byte-identical text is a measured **judge non-reproducibility floor of 2/160**. Replacement control patches the **bottom of the band**; a test now encodes the rule |
 
 ## 8. Final claims
 
@@ -234,7 +238,7 @@ RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thi
 > prefill removes the attack *and* restores refusal — and the second does not cause the first. The
 > concept mapping survives the intervention that removes the behaviour. Handing the demonstration
 > activations back gives the refusal back without giving the attack back, in all four model × pool
-> cells, while a below-band control at the same positions does exactly nothing.**
+> cells.** *(The below-band control that this sentence originally invoked is withdrawn — C-20.)*
 
 ## 9. Limitations
 
@@ -252,7 +256,10 @@ RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thi
 7. **Never quote a "% of the rise removed" figure alone (DR-5)** — rows and ×margin must travel with it.
 8. All rescue work is at **one layer per model** (top of the knockout band) and **no layer sweep was
    run**, deliberately: PR-13 forbade scanning layers until one rescues. **So "the top of the band
-   specifically" is established only against the below-band control, not against layers 6-13.**
+   specifically" is not established at all (C-20):** the below-band control it rested on is a no-op by
+   construction — below the band the knocked-out and clean activations are identical, so the patch
+   writes what is already there. A real specificity control must sit **inside** the band; the
+   replacement patches its bottom layer.
 
 ## 10. Canonical artifacts and reproduction
 

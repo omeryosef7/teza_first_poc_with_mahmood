@@ -6967,6 +6967,76 @@ model-specific in its interesting half — which is exactly what happened to C13
 **REFUTED** if condition 1 fails on a powered population: the refusal recovery is the strong,
 well-measured half, and if it does not transfer then C11's dissociation is a Llama property.
 
+
+### ⛔⛔ C-20 (05:55) — **CORRECTION: the below-band L5 rescue "control" is a NO-OP BY CONSTRUCTION. All four instances across the phase produce generations BYTE-IDENTICAL to their own knockout arm. C9, C11 and C12 each cite it as a specificity control; none of them ran one.**
+
+Found by checking preconditions on the four pre-existing Qwen3 arms **before** submitting PR-27's read
+— the whole-arm generation hashes came back **3 distinct for 4 arms**, which is C-17's signature.
+
+**The measurement.** Row-level generation identity, every rescue arm against its own session's
+knockout-only arm:
+
+| model | arm | positions | layer | vs its session's knockout-only |
+|---|---|---|---|---|
+| Qwen3-14B | `q6b_rescue_L17` | demo | 17 (**in band** 7-17) | 0/160 identical |
+| Qwen3-14B | `q6b_rescue_L5` | demo | **5 (below band)** | **160/160 IDENTICAL** |
+| Llama-3.1-8B | `p8b_rescue_L14` | demo | 14 (**in band** 6-14) | 6/160 identical |
+| Llama-3.1-8B | `p8b_rescue_L5` | demo | **5 (below band)** | **160/160 IDENTICAL** |
+| Llama-3.1-8B | `p9_rescue_qpos_L14` | query | 14 (in band) | 7/160 identical |
+| Llama-3.1-8B | `p9_rescue_qpos_L5` | query | **5 (below band)** | **160/160 IDENTICAL** |
+| Llama-3.1-8B | `p10_demo24_L5` | demo, 24 | **5 (below band)** | **40/40 IDENTICAL** |
+
+Four independent below-band instances — **two models, two position modes, three sessions** — and every
+one is a bit-for-bit no-op. Every in-band arm is not.
+
+**Why, and why it was inevitable.** The knockout masks attention at layers **7-17** (Qwen3) / **6-14**
+(Llama). Layers 0-6 are untouched, so the knocked-out run's **prompt-position** activations at layer 5
+are *bit-identical to the clean run's*. `DonorPatch` at L5 therefore writes the value that is already
+there. `rescue_liveness` correctly reports `fired: true` with positions written — **it did write; there
+was simply nothing to change.** Liveness proves the hook ran; it cannot prove the hook mattered. That
+distinction is the one this phase has been most careful about everywhere else.
+
+**What this costs the three claims that cite it.**
+
+* **C9** — *"below-band L5 patch moves refusal by EXACTLY 0.0000 in all four cells."*
+* **C12** — *"below-band L5, exactly inert (15→15)."*
+* **C11** — *"below-band L5 query patch: refusal 0.0000, ASR +0.0125."*
+
+**Those exact zeros are not clean control behaviour. They are arithmetic consequences of identical
+text**, and the phrase "EXACTLY 0.0000" should have been the tell: a live-but-inert intervention
+produces small *nonzero* noise, not machine zeros.
+
+**Nothing about the main findings is retracted.** C9, C11 and C12 rest on the **in-band** arm against
+knockout-only, and those arms genuinely change the computation (0/160, 6/160, 7/160 identical). What is
+withdrawn is the claim that a **layer-specificity control was run**. It was not. **C9, C11 and C12 lose
+their specificity leg** until a real control exists; their primary effects stand.
+
+**A byproduct worth keeping: a measured judge-reproducibility floor on IDENTICAL text.** C11's control
+reported **ASR +0.0125** — 2 rows of 160 — on completions that are byte-identical. That number cannot
+be an effect of the intervention, so it is a direct measurement of **judge non-reproducibility: 2/160 =
+0.0125 flip rate on the same text.** Reassuringly it sits well inside PR-3's measured ±0.0480 re-judge
+band, so the margins are not threatened — but it means **±0.0125 of any arm-vs-arm difference is judge
+noise before the science starts.**
+
+#### ⛔ PR-27's condition 3 is WITHDRAWN, before any of its data is read
+
+I wrote PR-27 twenty minutes ago requiring *"the below-band control is inert: query-L5 moves neither
+refusal nor ASR by more than 0.0521."* **That condition is unfalsifiable** — the arm is a no-op, so it
+passes by construction. Withdrawing it now, before reading, rather than reporting a guaranteed pass as
+a satisfied condition.
+
+**Replacement, pre-registered now: the specificity control moves to the BOTTOM of the band.** Patch at
+**L7** (Qwen3) instead of L5. L7 is *inside* the knockout band, so the clean donor genuinely differs
+from what is there, and the patch is a real intervention. It tests the same scientific question —
+*is the effect specific to the top of the band, or does any layer do it?* — with an arm that can
+actually fail. **Conditions 1 and 2 of PR-27 are unchanged.**
+
+**The in-flight `q9_qpos_L5` (job `784857`) is not cancelled and is not a control.** It will be
+byte-identical to the Qwen3 knockout arm like every other below-band arm. It is **repurposed** as a
+second judge-reproducibility measurement: judged in the same window, its flip count against the
+knockout arm is a second read of the ±0.0125 figure above, on a different model. **Recorded as a
+repurposing, not as a control that happened to be inert.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
