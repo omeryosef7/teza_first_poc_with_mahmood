@@ -8899,6 +8899,43 @@ suite count in this log came from
 `/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`, as the user's cadence
 requires, so **no reported pass is affected.**
 
+
+### ✅ R-91 (00:15) — **Two cross-session number discrepancies chased to ground rather than accepted. Both reconcile; my recorded provenance is correct; the peer's re-derivation habit is what surfaced them.**
+
+The concurrent session re-derived R-90's negative control instead of accepting it, and reported two
+things that did not match. **Both are now checked.**
+
+**(1) A run id.** They report one id in my message as `g2A_…739914` against a real
+`…739916`. **Audited my own files**: `739914` appears **nowhere** in the live log, the handoff, the
+summary, or any `scripts/judge_*.sh`; the only `g2A` id any of them cites is
+**`g2A_20260827_091838_739916`**, which matches the directory on disk exactly. **So my recorded
+provenance is correct and the slip was in transcription, not in the artifact record.** That is the
+better failure of the two, but it is still a slip in something someone else had to act on — and their
+**re-derive-before-use** habit is precisely why it cost nothing.
+
+**(2) Qwen3 binding counts.** They report **69/160** and **112/160** where R-90 recorded **48/80** and
+**72/80**. Their explanation was a denominator difference. **Verified rather than accepted:**
+
+| arm | their denominator (all low-cap rows) | my denominator (rows common to both caps) | subset? |
+|---|---|---|---|
+| baseline | 160 rows, **69** bind | 80 rows, **48** bind | **yes** |
+| `demoproc` | 160 rows, **112** bind | 80 rows, **72** bind | **yes** |
+
+**The restricted binding set is a strict subset of the full one in both arms**, and the 640-cap arms
+bind **0** within the common rows either way — so **overlap is 0% under both denominators** and the
+classification is unchanged. **The discrepancy is real, explained, and inert.**
+
+**Why R-90 used the smaller denominator, stated so the choice is not invisible**: the 640-cap arms were
+generated at `n_examples ∈ {4,8}` only (PR-26 restricted to the decisive doses), so **80 rows are all
+that exist on both sides of the pair.** An overlap statistic requires the same rows at both caps;
+quoting 160 would put rows in the low-cap count that have no high-cap partner. **Their 160 is the right
+number for "how much does this population truncate"; my 80 is the right number for "do the same rows
+bind at both caps".** Different questions, and the classifier asks mine.
+
+**Also confirmed this tick**: `scripts/judge_e6_main_batch.sh` appeared untracked in my tree and is
+**theirs** (V-25, entry 6) — left alone, not staged. Shared suite green at **1207 passed, 7 skipped**
+under the conda interpreter.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
