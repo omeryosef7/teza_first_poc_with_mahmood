@@ -9030,6 +9030,55 @@ the same commit.
 is my answer to their question, recorded so the reasoning is inspectable rather than delivered only in
 a message.
 
+
+### ⛔ C-28 (02:35) — **C5 is narrowed to the bank it was measured on. The concurrent session's binding collapse is REAL, is on a DIFFERENT SCOPE than C5's headline, and their `main` number reproduces my `legacy` arm to four decimals.**
+
+They report binding collapsing under *"the entry-6 retrieval knockout, `demo_all:attn_knockout:6-14`"*:
+`main` **0.5416 → 0.3689** (mapped-wins 42/48 → 41/48) but `ticket_bomb` **0.5695 → 0.1162**
+(**45/48 → 15/48**). They answered both of my qualifying questions correctly — it is **100%
+`core2x2`**, `n=48`, and the family sets are **set-equal** across arms, so it is a within-family paired
+contrast on a fixed 48, **C5's own shape**. No denominator problem.
+
+**So I checked my own arms, and the first thing found was that we are not running the same
+intervention.** Option mass on the forced-choice probe, Llama, the same
+`boombness_prompt_bank.jsonl`:
+
+| arm | scope | option mass |
+|---|---|---|
+| `p2A` (baseline) | — | **0.5416** |
+| `p2_demo_processing_only` | **`demo_processing_only`** | **0.6021** |
+| **`p2_legacy_all_query`** | **`legacy_all_query`** | **0.3689** |
+| `p2_query_prefill_only` | `query_prefill_only` | 0.4365 |
+
+**Their `main` baseline 0.5416 and knockout 0.3689 are my baseline and my `legacy_all_query` arm,
+to four decimals.** The `--intervene` string is identical across all four of my arms —
+`demo_all:attn_knockout:6-14:1.0` — and what differs is `--knockout-scope`. **So "the entry-6
+retrieval knockout" is the UNSCOPED `legacy_all_query` mask**, which is exactly the *"one unscoped
+mask"* §1 of this plan was written to decompose.
+
+**What that does and does not do to C5.**
+
+* **C5's headline arm is `demo_processing_only`, where mass RISES (0.5416 → 0.6021).** Their collapse
+  is on a **sibling scope**, so it does **not** contradict C5's central number — and their own `main`
+  result is consistent with my `legacy` arm rather than in tension with it. **This is a cross-session
+  reproduction, not a disagreement.**
+* **But C5 is measured on ONE BANK.** Both bridge runs — Llama `bridge_20260825_101613_3117657` and
+  Qwen3 `qbridge_20260825_104155_3190213` — use `boombness_prompt_bank.jsonl`. C5's "Llama + Qwen3"
+  is **two models on one bank**, not two banks.
+* **They have now shown that binding-survival under a sibling scope is BANK-DEPENDENT** — surviving on
+  `main`, collapsing five-fold on `ticket_bomb`. **That is a direct warning against assuming C5's
+  bank-generality**, which nothing in my evidence establishes and which the claim's wording did not
+  exclude.
+
+**Correction applied**: C5 is stated as **`main` bank only**, with the sibling-scope bank-dependence
+recorded beside it. **Not a retraction** — the within-family dissociation on `main` stands on both
+models — **a scope narrowing**, the second C5 has taken (C-24 narrowed it to `core2x2` families).
+
+**⛔ What is now open and is NOT being asserted either way**: whether `demo_processing_only`'s binding
+survival holds on `ticket_bomb`. **Nobody has run it.** Their collapse is `legacy`; my survival is
+`demoproc`; the cell that would decide C5's bank-generality is empty. **Recorded as unknown rather than
+inferred from either neighbour.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
