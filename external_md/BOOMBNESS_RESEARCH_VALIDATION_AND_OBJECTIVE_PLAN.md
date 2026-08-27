@@ -261,3 +261,72 @@ was added; mutation 5 was re-applied and now goes **RED**. All six mutations are
 green at HEAD.
 
 **Status of §0.2: COMPLETE.** Deliverable 3 exists, is guarded, and is mutation-tested.
+---
+
+## §0.3a — DID THE 192-TOKEN CAP ACTUALLY CHANGE ASR? *(a natural experiment already in the corpus)*
+
+**Artifact:** `outputs/boombness/cap_natural_experiment/capNE2_20260827_210525_3544980/cap_natural_experiment.json`
+**Script:** `src/boombness/cap_natural_experiment.py` · **Tests:** `tests/test_cap_natural_experiment.py` (10, 5 mutations caught)
+**Commands:** `python src/boombness/cap_natural_experiment.py --pairs-file <pairs.json> --tag capNE2`
+
+§0.2 settled that a number with half its rows at the cap **may not be called ASR**. It did not
+settle the different and more important question: **did the cap move the estimate, and which way?**
+Relabelling a number is not the same as knowing it was wrong. Before spending any GPU on §0.3, it
+is worth noticing that the corpus already contains the experiment.
+
+### The design
+
+Four `(bank, model, arm)` groups were run at two caps. In one — `g2A` vs `g3A640`,
+**Llama-3.1-8B-Instruct** on `boombness_prompt_bank_basket_bomb`, arm `A_baseline`, **n=96** — the
+two generation configs differ in **exactly one field**: `max_new` 192 → 640 (plus the run tag).
+
+Decoding is greedy, so the large-cap run should be *literally* the small-cap run continued. That is
+verified, not assumed:
+
+| continuation proof (Llama pair) | result |
+|---|---|
+| rows that ended in EOS at cap=192 | 6/96 — **6/6 byte-identical at cap=640** |
+| rows truncated at cap=192 | 90/96 — **90/90 extended verbatim at cap=640** |
+
+**This is a within-row natural experiment with no confound at all.** The right test is McNemar on
+the discordant pairs — exact, because at n=17 discordant the asymptotic form is not usable — not a
+difference of two independent rates, which would discard the pairing.
+
+### The result
+
+| pair | n | ASR@0.5 rows, cap 192 → 640 | Δ | up | down | exact 2-sided p | MDE |
+|---|---|---|---|---|---|---|---|
+| **Llama `basket_bomb` `A_baseline`** (cap-only) | 96 | **25/96 → 32/96** | **+0.0729** | 12 | **5** | **0.1435** | 0.0938 |
+| Qwen3 `longpreQ14B` `A_baseline` | 80 | 10/80 → 11/80 | +0.0125 | 4 | 3 | 1.0000 | 0.0875 |
+| Qwen3 `longpreQ14B` `CTRL_matched_d1` | 80 | 11/80 → 12/80 | +0.0125 | 2 | 1 | 1.0000 | **none** |
+| Qwen3 `longpreQ14B` `C_demo_processing_only` | 80 | 1/80 → 1/80 | +0.0000 | 1 | 1 | 1.0000 | **none** |
+
+*(The three Qwen pairs are flagged `cap_only=false` because `n_examples` differs — the small-cap run
+generated a superset. The continuation proof holds on all 80 common ids, which proves at the row
+level that those are the same prompts, so `row_level_valid=true` for all four.)*
+
+### What this means, stated carefully
+
+1. **Truncation is NOT a one-way suppressor.** On the clean Llama pair, 12 rows flipped 0→1 when
+   allowed to finish and **5 flipped 1→0**. A completion cut at 192 tokens sometimes scores
+   *higher* than the finished one, because it was cut before the model hedged, refused or wandered
+   off-topic. Any story of the form "the old ASR was depressed by truncation" is **wrong on its
+   face** and this sprint will not tell it.
+2. **The cap did not detectably move the point estimate on any arm tested.** The largest shift,
+   +0.0729 on Llama, has exact p=0.1435 and does not exclude zero.
+3. **But two of those four nulls are uninformative, and the artifact says so.** At 3 and 2
+   discordant pairs, **no split reaches α=0.05 in either direction** — the design could not have
+   produced a significant result whatever happened. `min_detectable_net_flips` reports
+   `detectable: false` rather than letting a p of 1.0 be read as evidence of absence. Even the
+   Llama pair could only have seen a shift of **≥0.0938** (13/17 one way).
+4. **The reporting defect stands regardless.** 271 judge dirs / 81 088 rows may be quoted only as
+   "ASR within first N generated tokens".
+5. **The arms that most warrant suspicion have NO cap pair.** The `ch_D`/`abg_D`/`ab_C` refusal
+   arms — the ones carrying the largest surviving old claim and the ones with the bimodal length
+   distribution at cap=512 — were never run at a second cap. §0.3 must generate that pair on GPU;
+   it cannot be recovered from the corpus.
+
+**Ledger effect:** this evidence pushes the ASR-based claims toward **KEEP-NARROWED** ("the point
+estimate is not measurably a truncation artifact, but the number must be labelled by its cap"),
+**not** toward RETRACT — with the explicit exception of the C/D refusal arms, which remain
+**NEEDS RERUN** because no evidence either way exists for them.
