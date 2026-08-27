@@ -8299,6 +8299,53 @@ fourth guess would have been.
 
 **⛔ No GPU is queued for this branch and none will be without a new decision.**
 
+
+### ⚠ R-82 (21:55) — **Judge-invocation audit prompted by the concurrent session: every PRIMARY contrast in this phase is within-invocation, but pool A's `matched_d2`/`d3` controls are NOT — and they sit at the judge noise floor.**
+
+The peer measured the judge floor three ways on byte-identical generations — unpinned 37/660 =
+**0.0561**, pinned `q15A` 7/160 = **0.0437**, pinned `q16A` 9/160 = **0.0563** — and reported that
+**pinning does not reduce it** (it prevents silently averaging two judge *models*, which is a different
+and real benefit). That matches my own DR-10 measurement of **9/160 = 0.0563** exactly. **On an 80-row
+population the floor is ~4 rows, and C7's cell-sets are net differences of 3-5 rows.** So their question
+— *were your arms judged in the same invocation as their baselines?* — is the right one.
+
+**Audited, by launch batch:**
+
+| result | judge dirs | launch stamps | within-invocation? |
+|---|---|---|---|
+| **pool A (R-58)** | 5 | `003934`, `004721`, `004733` | **A + demoproc + d1 together; d2 and d3 ~8 min later** ⚠ |
+| pool B (R-62) | 5 | `032749`, `032750` | yes (one script, parallel launch) |
+| 640-cap (R-64) | 3 | `045339` | yes |
+| codeword 192 (R-73) | 5 | `095924`, `100000` | yes (36 s, one script) |
+| codeword 640 (R-75) | 2 | `111830` | yes |
+| Q7 (R-70) | 5 | `074049`, `074050` | yes |
+| PR-28 (R-71) | 4 | `083916`, `083917` | yes |
+
+**The primary contrast is clean everywhere.** In pool A, `demoproc` and its baseline share stamp
+`003934` — **the arm carrying the effect was judged with its baseline**, so the −5/5 and −5/7 cells are
+not exposed to cross-invocation drift. Pool B, the 640-cap rerun, and every later result are
+single-invocation throughout.
+
+**What is exposed:** pool A's **`matched_d2` and `matched_d3`** were judged 8 minutes after the
+baseline. Their readings (control removes **2, 2** at n=4 and **−2, −1** at n=8) are **1-2 rows** —
+**at or below the ~2-row floor for a 40-row cell.** So on pool A those two control nulls are
+**noise-limited**, which is weaker than "measured inert". `matched_d1` shares the baseline's invocation
+and is unaffected.
+
+**No number changes and nothing is retracted.** C7's conclusion never rested on those two controls
+individually: pool B re-ran all three within one invocation (**+1, +1, +1** and **0, −1, −2**), and the
+640-cap rerun did too. **The caveat is that pool A's `d2`/`d3` nulls should not be quoted as evidence of
+inertness on their own** — the pool B replication is what carries that leg.
+
+**A reciprocal caveat I owe the peer**, since it cuts against a number that favours my claim: their
+sprint-grade C7 replication reports a **paired exact p = 0.006348** on **ASR** (demoproc 11 down / 1 up,
+12 discordant). **PR-28 explicitly declared that the paired exact test does NOT apply to ASR**, because
+ASR labels are not reproducible at ~5% per row — so of those 12 discordant pairs roughly **4 are judge
+noise**, and the exact p treats all 12 as signal. The direction and magnitude are still striking
+(≈8 net-down after subtracting the floor), but **that p is optimistic and should not be quoted as-is.**
+**I am not adopting it as my own statistic either** — adopting a test I pre-committed against, at the
+moment it favours me, is the move this log exists to prevent.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
