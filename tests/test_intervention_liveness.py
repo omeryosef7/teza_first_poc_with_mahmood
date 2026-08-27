@@ -48,23 +48,42 @@ def test_a_NOOP_ARM_is_caught(tmp_path):
     r = il.generation_divergence(a, c, "c20_shape")
     assert r["n_differing"] == 0 and r["frac_differing"] == 0.0
     assert r["is_noop_arm"] is True
-    with pytest.raises(il.NoOpArmError, match="changed only"):
+    assert r["diagnosis"]["verdict"] == "NOOP_ARM"
+    with pytest.raises(il.NoOpArmError, match="NOOP_ARM"):
         il.assert_changed_generations(r)
 
 
-def test_a_nearly_noop_arm_is_also_caught(tmp_path):
-    """One row in ten is not an intervention, it is a rounding error."""
+def test_a_SMALL_but_real_arm_is_WARNED_not_refused(tmp_path):
+    """The predicate correction. A first draft refused anything under 0.10, but that threshold was
+    calibrated on broad-span masks only. A single-position patch or a rarely-triggered intervention
+    can legitimately touch 1 row in 20, and refusing it would look authoritative while being wrong."""
     c = _mk(tmp_path, "ctrl", ["same"] * 20)
     a = _mk(tmp_path, "arm", ["diff"] + ["same"] * 19)
     r = il.generation_divergence(a, c, "barely")
     assert r["n_differing"] == 1
-    with pytest.raises(il.NoOpArmError):
-        il.assert_changed_generations(r)
+    assert r["diagnosis"]["verdict"] == "SMALL_BUT_REAL"
+    assert r["diagnosis"]["refuse"] is False
+    il.assert_changed_generations(r)          # must NOT raise
 
 
-def test_the_threshold_is_not_zero():
-    """A threshold of 0 would pass an arm that moved a single row. MIN_DIVERGENCE is deliberate."""
-    assert il.MIN_DIVERGENCE > 0.0
+def test_the_refusal_predicate_is_EXACT_zero():
+    """Exact zero needs no calibration: under greedy decoding only a bit-identical computation
+    lands there. Any positive threshold would have to be tuned, and tuning is what went wrong."""
+    assert il.ZERO_DIVERGENCE == 0.0
+    assert il.diagnose(0.0)["refuse"] is True
+    assert il.diagnose(1e-9)["refuse"] is False        # anything above zero is not a refusal
+    assert il.diagnose(0.05)["refuse"] is False
+
+
+def test_fired_flag_separates_a_dead_hook_from_a_C20_noop():
+    """Divergence alone under-determines the diagnosis; only the middle case is the bug."""
+    assert il.diagnose(0.0, fired=False)["verdict"] == "HOOK_NEVER_RAN"
+    assert il.diagnose(0.0, fired=True)["verdict"] == "NOOP_ARM"
+    assert "wrote the value already present" in il.diagnose(0.0, fired=True)["reading"]
+    assert il.diagnose(0.03, fired=True)["verdict"] == "SMALL_BUT_REAL"
+    # both zero cases still refuse -- the distinction is the DIAGNOSIS, not the gate
+    assert il.diagnose(0.0, fired=False)["refuse"] is True
+    assert il.diagnose(0.0, fired=True)["refuse"] is True
 
 
 def test_disjoint_populations_are_refused_not_scored_as_zero(tmp_path):
@@ -77,7 +96,7 @@ def test_disjoint_populations_are_refused_not_scored_as_zero(tmp_path):
             fh.write(json.dumps({"prompt_id": f"z{i}", "generation": "a"}) + "\n")
     r = il.generation_divergence(str(a), c, "disjoint")
     assert r["n_common"] == 0
-    with pytest.raises(il.NoOpArmError, match="share no prompt_ids"):
+    with pytest.raises(il.NoOpArmError, match="NO_COMPARISON"):
         il.assert_changed_generations(r)
 
 

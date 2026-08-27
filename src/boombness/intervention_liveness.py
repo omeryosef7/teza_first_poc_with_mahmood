@@ -42,14 +42,59 @@ from common import FailureLedger, RunDir  # noqa: E402
 
 SCHEMA = "INTERVENTION_LIVENESS/1"
 
-#: An intervention that changes fewer than this fraction of generations is not doing enough to
-#: support a causal claim about it. It is deliberately NOT 0: a hook that moves 1 row in 96 has
-#: fired and mattered on 1 row, which is not an intervention, it is a rounding error.
-MIN_DIVERGENCE = 0.10
+#: THE PREDICATE IS EXACT ZERO, NOT A THRESHOLD — and the first draft got this wrong.
+#:
+#: A draft refused any arm below 0.10. A peer session then measured divergence across all 18
+#: intervention contrasts in its phase: sixteen legitimate arms span **0.8187–1.0000**, both known
+#: no-ops are **exactly 0.0000**, and NOTHING lands in between. So 0.10 refused nothing real — but
+#: it was calibrated on a sample containing no small-but-real arms, and that is the problem. Every
+#: arm in that sample is a broad-span mask or patch. A single-position patch,
+#: `--rescue-n-positions 1`, or an intervention gated on a rare row property could legitimately
+#: touch 3 rows in 96, and a threshold tuned on broad-span arms would refuse it *authoritatively*.
+#:
+#: Exact zero needs no calibration. Under GREEDY decoding an arm that changed anything at all
+#: cannot land on 0.0000 across a whole population; only a bit-identical computation does that.
+#: So zero REFUSES and the ambiguous region WARNS.
+ZERO_DIVERGENCE = 0.0
+#: Below this, an arm is flagged for inspection but NOT refused. It is a warning band, not a gate.
+SMALL_DIVERGENCE = 0.10
 
 
 class NoOpArmError(AssertionError):
-    """An intervention arm whose generations do not differ from its control's."""
+    """An intervention arm whose generations are BIT-IDENTICAL to its control's."""
+
+
+def diagnose(frac_differing: Optional[float], fired: Optional[bool] = None) -> Dict[str, Any]:
+    """Divergence alone under-determines the diagnosis; pair it with the liveness `fired` field.
+
+    Three cases that a single number cannot separate, and only the middle one is the bug:
+
+        fired=False, div=0          -> the hook NEVER RAN. Instrument failure, not a no-op arm.
+        fired=True,  div=0          -> C-20. The hook ran and wrote the value already present.
+        fired=True,  0 < div < 0.10 -> a legitimately SMALL intervention. Warn, do not refuse.
+
+    This is R-85's lesson arriving from the other side: there, a request needed its matching
+    outcome field; here, an outcome field needs its matching request field.
+    """
+    if frac_differing is None:
+        return {"verdict": "NO_COMPARISON", "refuse": True,
+                "reading": "arm and control share no prompt_ids; nothing was compared"}
+    if frac_differing == ZERO_DIVERGENCE:
+        if fired is False:
+            return {"verdict": "HOOK_NEVER_RAN", "refuse": True,
+                    "reading": "liveness says the hook did not fire AND generations are identical: "
+                               "this is an instrument failure, not a no-op arm"}
+        return {"verdict": "NOOP_ARM", "refuse": True,
+                "reading": ("generations are BIT-IDENTICAL across the population. Under greedy "
+                            "decoding only an unchanged computation does that" +
+                            (" — and liveness says the hook DID fire, which is exactly C-20: it "
+                             "wrote the value already present" if fired else ""))}
+    if frac_differing < SMALL_DIVERGENCE:
+        return {"verdict": "SMALL_BUT_REAL", "refuse": False,
+                "reading": ("the arm changed something, but on few rows. Legitimate for a "
+                            "single-position patch or a rarely-triggered intervention; suspicious "
+                            "for a broad-span mask. NOT refused — inspect it.")}
+    return {"verdict": "OK", "refuse": False, "reading": "the arm changed what the model wrote"}
 
 
 def _sha(t: str) -> str:
@@ -70,7 +115,8 @@ def _gens(run_dir: str) -> Dict[str, str]:
     return out
 
 
-def generation_divergence(arm_dir: str, control_dir: str, label: str = "") -> Dict[str, Any]:
+def generation_divergence(arm_dir: str, control_dir: str, label: str = "",
+                          fired: Optional[bool] = None) -> Dict[str, Any]:
     """How many rows did this intervention actually change?
 
     Returns hashes-only counts. `frac_differing` is the number that matters; `n_common` is its
@@ -81,40 +127,46 @@ def generation_divergence(arm_dir: str, control_dir: str, label: str = "") -> Di
     differing = [p for p in common if A[p] != B[p]]
     n = len(common)
     frac = (len(differing) / n) if n else None
-    return {
+    out = {
         "label": label or os.path.basename(arm_dir),
         "arm_dir": os.path.abspath(arm_dir), "control_dir": os.path.abspath(control_dir),
         "n_common": n, "n_arm_rows": len(A), "n_control_rows": len(B),
         "n_identical": n - len(differing), "n_differing": len(differing),
         "frac_differing": frac,
-        "is_noop_arm": (frac is not None and frac < MIN_DIVERGENCE),
-        "min_divergence": MIN_DIVERGENCE,
+        "is_noop_arm": (frac is not None and frac == ZERO_DIVERGENCE),
+        "zero_divergence": ZERO_DIVERGENCE, "small_divergence": SMALL_DIVERGENCE,
         "NOTE": ("`fired: true` cannot distinguish an arm that changes the computation and has no "
                  "behavioural effect (a real dissociation) from one that changes NOTHING and has "
                  "no behavioural effect (a no-op, cf. C-20). This can."),
     }
+    out["diagnosis"] = diagnose(frac, fired)
+    out["fired_reported_by_liveness"] = fired
+    return out
 
 
 def assert_changed_generations(result: Dict[str, Any]) -> None:
     """Refuse an intervention claim whose arm did not change what the model wrote."""
-    if result["n_common"] == 0:
+    # NOTE: the n_common==0 case is NOT special-cased here. It used to be, and that meant the
+    # empty-comparison path raised with a different message than every other refusal and bypassed
+    # the diagnosis entirely — two code paths for one decision. `diagnose(None)` returns
+    # NO_COMPARISON, so there is now exactly one.
+    d = result.get("diagnosis") or diagnose(result.get("frac_differing"),
+                                             result.get("fired_reported_by_liveness"))
+    if d["refuse"]:
         raise NoOpArmError(
-            f"{result['label']}: arm and control share no prompt_ids — nothing was compared.")
-    if result["is_noop_arm"]:
-        raise NoOpArmError(
-            f"{result['label']}: the intervention changed only "
-            f"{result['n_differing']}/{result['n_common']} generations "
-            f"(frac {result['frac_differing']:.4f} < {MIN_DIVERGENCE}). A liveness block reporting "
-            "`fired: true` does NOT license a causal claim about an arm that wrote the value "
-            "already present (C-20). Either the hook is a no-op at this site, or the arm is not "
-            "the intervention it is labelled as.")
+            f"{result['label']} [{d['verdict']}]: "
+            f"{result['n_differing']}/{result['n_common']} generations differ. {d['reading']}. "
+            "A liveness block reporting `fired: true` does NOT license a causal claim about an arm "
+            "that wrote the value already present (C-20).")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--pair", action="append", default=[], metavar="LABEL:ARM_DIR:CONTROL_DIR",
                     help="colon-separated; repeat per arm")
-    ap.add_argument("--pairs-file", default="", help="JSON list of {label, arm, control}")
+    ap.add_argument("--pairs-file", default="",
+                    help="JSON list of {label, arm, control, fired?} — `fired` is the liveness "
+                         "block's report, which separates HOOK_NEVER_RAN from NOOP_ARM")
     ap.add_argument("--tag", default="ivlive")
     args = ap.parse_args()
 
@@ -131,20 +183,20 @@ def main() -> int:
     run = RunDir("intervention_liveness", args, tag=args.tag)
     rows = []
     for sp in specs:
-        r = generation_divergence(sp["arm"], sp["control"], sp.get("label", ""))
+        r = generation_divergence(sp["arm"], sp["control"], sp.get("label", ""),
+                                  fired=sp.get("fired"))
         rows.append(r)
         run.log_row(r)
         try:
             assert_changed_generations(r)
             ledger.ok()
-            verdict = "OK"
-        except NoOpArmError as e:
-            ledger.fail("noop_arm", r["label"])
-            verdict = "NO-OP ARM"
-        print(f"  {r['label'][:34]:34s} differing={r['n_differing']}/{r['n_common']} "
-              f"frac={r['frac_differing']}  {verdict}")
+        except NoOpArmError:
+            ledger.fail(r["diagnosis"]["verdict"].lower(), r["label"])
+        print(f"  {r['label'][:32]:32s} differing={r['n_differing']}/{r['n_common']} "
+              f"frac={r['frac_differing']}  {r['diagnosis']['verdict']}")
 
-    out = {"schema": SCHEMA, "min_divergence": MIN_DIVERGENCE, "arms": rows,
+    out = {"schema": SCHEMA, "zero_divergence": ZERO_DIVERGENCE,
+           "small_divergence": SMALL_DIVERGENCE, "arms": rows,
            "VERDICT_NOTE": ("An arm passing this check has changed what the model wrote. An arm "
                             "FAILING it may still report `fired: true` truthfully -- that is "
                             "exactly the C-20 failure, where a hook wrote the value already "
@@ -152,8 +204,11 @@ def main() -> int:
     p = os.path.join(run.path, "intervention_liveness.json")
     with open(p, "w") as fh:
         json.dump(out, fh, indent=2, sort_keys=True)
-    run.finish(summary={"n_arms": len(rows),
-                        "n_noop": sum(1 for r in rows if r["is_noop_arm"])}, ledger=ledger)
+    import collections as _c
+    verdicts = _c.Counter(r["diagnosis"]["verdict"] for r in rows)
+    run.finish(summary={"n_arms": len(rows), "verdicts": dict(verdicts),
+                        "n_refused": sum(1 for r in rows if r["diagnosis"]["refuse"])},
+               ledger=ledger)
     print(f"[ivlive] wrote {p}")
     return 0
 

@@ -1104,3 +1104,50 @@ strongest form the §0.8 concentration result could have taken.
 as "no change". The threshold is deliberately **not zero** — an arm that moves one row in ninety-six
 has fired and mattered on one row, which is a rounding error, not an intervention. **Every
 intervention arm this sprint reports must pass it.**
+
+### §4.1a — ⛔ PREDICATE CORRECTED: exact zero refuses, small warns
+
+The §4.1 draft **refused any arm below `MIN_DIVERGENCE = 0.10`. That was wrong, and the reason it
+was wrong is more useful than the fix.**
+
+A peer session answered the threshold question with data rather than opinion, measuring divergence
+across all 18 intervention contrasts in its phase: **sixteen legitimate arms span 0.8187–1.0000,
+both known no-ops are exactly 0.0000, and nothing lands in between.** So 0.10 refused nothing real —
+**but every arm in that sample is a broad-span mask or patch.** A single-position patch,
+`--rescue-n-positions 1`, or an intervention gated on a rare row property could legitimately touch 3
+rows in 96. A threshold calibrated on broad-span arms would refuse those, **and the artifact would
+not say it had been calibrated on a sample containing no small-but-real arms.** The refusal would
+look authoritative.
+
+**Exact zero needs no calibration.** Under greedy decoding an arm that changed anything cannot land
+on 0.0000 across a population; only a bit-identical computation does. So:
+
+| divergence | verdict | action |
+|---|---|---|
+| **exactly 0** | `NOOP_ARM` / `HOOK_NEVER_RAN` | **REFUSE** |
+| 0 < d < 0.10 | `SMALL_BUT_REAL` | **WARN — inspect, do not refuse** |
+| ≥ 0.10 | `OK` | pass |
+| no shared `prompt_id`s | `NO_COMPARISON` | REFUSE |
+
+### Divergence alone under-determines the diagnosis
+
+Pairing it with the liveness `fired` field separates three cases, **and only the middle one is the
+bug**:
+
+| `fired` | divergence | verdict | reading |
+|---|---|---|---|
+| `False` | 0 | `HOOK_NEVER_RAN` | **instrument failure** — the hook never ran |
+| `True` | 0 | `NOOP_ARM` | **C-20** — it ran and wrote the value already present |
+| `True` | 0 < d < 0.10 | `SMALL_BUT_REAL` | a legitimately small intervention |
+
+This is §0.9's lesson arriving from the other side. There, a **request** (`attn_impl`) needed its
+matching **outcome** field (`knockout_liveness.attn_implementation`). Here, an **outcome**
+(divergence) needs its matching **request** field (`fired`). Neither direction is safe alone.
+
+Both ladders re-run under the corrected predicate and reproduce: `q9` L5 and L7 → `NOOP_ARM`, L12
+and L17 → `OK`; all five entry-6 populations → `OK` at 96/96. **9 tests, 4 mutations caught**,
+including re-introducing the refuse-on-warn-band bug.
+
+*(A second, smaller correction: the `n_common == 0` case was special-cased ahead of the diagnosis,
+so the empty-comparison path raised a different message and skipped the verdict entirely — two code
+paths for one decision. `diagnose(None)` now returns `NO_COMPARISON` and there is exactly one.)*
