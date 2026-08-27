@@ -2002,3 +2002,75 @@ threshold statistic matters most: a readout whose true median sits just under 0.
 bug. Flagged to the concurrent session as shared-code territory, and recorded here.
 
 **54 tests, 2 further mutations caught.**
+
+---
+
+## §5.2 — ⛔ CORRECTION TO §5: binding does NOT reliably survive — it is population-dependent
+
+**§5 concluded, from `main` alone, that "the brief's success condition is met". `ticket_bomb` says
+the opposite, and I am correcting the conclusion rather than the caveat.**
+
+All four Phase 5 arms verified reportable (only `p5A_main`'s `semantic_one_word` at 0.0429 falls
+below floor; every other readout on every arm passes), so the two populations are directly
+comparable.
+
+| population | readout | option mass base → knockout | mapped-wins base → knockout | Δ |
+|---|---|---|---|---|
+| **`main`** | `semantic_forced_choice` | 0.5416 → 0.3689 | 42/48 → **41/48** | **−1** |
+| **`ticket_bomb`** | `semantic_forced_choice` | **0.5695 → 0.1162** | 45/48 → **15/48** | **−30** |
+| `main` | `comprehension_usage` | 0.3722 → 0.3208 | 11/48 → 4/48 | −7 |
+| `ticket_bomb` | `comprehension_usage` | 0.1923 → 0.3435 | 11/48 → 3/48 | −8 |
+| `ticket_bomb` | `semantic_one_word` | 0.1808 → 0.0644 | 64/96 → 5/96 | −59 |
+
+### On `ticket_bomb` the knockout destroys the mapping
+
+Forced-choice option mass collapses **0.5695 → 0.1162, a five-fold drop**. That is not the model
+choosing the other option — **it is the model losing the frame**: it no longer concentrates
+probability on either reading of the codeword. Mapped-wins falls 45/48 → 15/48.
+
+On `main` the same readout barely moves (42/48 → 41/48) with a mild mass drop (0.54 → 0.37).
+
+### The uncomfortable pattern
+
+**`ticket_bomb` has BOTH the larger ASR effect AND the binding collapse:**
+
+| population | ASR delta | forced-choice binding Δ |
+|---|---|---|
+| `main` | −0.1458 | **−1** (survives) |
+| `ticket_bomb` | **−0.2604** | **−30** (collapses) |
+
+They **track together**. That is the opposite of a dissociation — it is precisely the confound the
+brief names: *"lowering ASR may only mean the model no longer understands the prompt."*
+
+### Revised verdict
+
+* **On `main`: the success condition IS met.** ASR falls 22/96 → 8/96 while forced-choice binding
+  holds at 41/48. The knockout removes the attack without removing the mapping.
+* **On `ticket_bomb`: the success condition is NOT met.** ASR falls 27/96 → 2/96 *and* binding
+  collapses to 15/48 with the option mass gone. **§0.16's "strongest knockout result yet" is strong
+  on ASR and may be strong *because* it is destroying comprehension.** That reading now travels
+  with it.
+* **Phase 5's answer is therefore: binding survival is population-dependent, and one of the two
+  populations that carries entry 6 fails the control.**
+
+Note the refusal and length evidence does **not** rescue `ticket_bomb`: refusal fell to 0/96 and
+median length *rose* 248 → 299.5. The model writes more, refuses less, and **can no longer say what
+the codeword means**. Those are consistent — it is answering something fluently, having lost the
+mapping — and they show why refusal and length are *necessary but not sufficient* comprehension
+controls. Only the forced-choice probe separates these cases, which is why Phase 5 specifies it.
+
+**This is the sprint's first substantive negative on a claim it had just published, and it came from
+running the control the brief demanded on a second population rather than one.**
+
+### ⚠ A process failure in how this section was committed
+
+Commit `a136f8a1` carries this correction's message but **not its content**. The heredoc that was to
+append it died on a `SyntaxError` (an escaped quote inside a quoted heredoc), so the script never
+ran — and `git commit` then succeeded on an unchanged file, because the only staged change was a new
+judge script. **A commit message asserted a correction the repository did not contain.**
+
+Caught within a minute by checking `git show --stat` and grepping for the section, which is the only
+reason it is a footnote rather than a hole. The lesson generalises past this instance: **a commit
+message is not evidence that the change landed**, and a heredoc that dies at parse time is silent —
+`check_all.py` passed, the pre-commit hook passed, and the push succeeded. Verify the artifact, not
+the exit code.
