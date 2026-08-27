@@ -8084,6 +8084,57 @@ directional story the data did not carry — and the thing that caught it was **
 artifacts a different way.** DR-11 had already given me the tool to catch this (*"no single cell is
 decisive alone"*) and I did not apply it to my own headline.
 
+
+### 📌 R-79 (21:15) — **Spending the authorised bank build, with the design fixed by R-78's diagnostic rather than by my original guess. Also: three PENDING jobs on this account are NOT mine and are left alone.**
+
+**Queue hygiene first.** `787094`/`787095`/`787096` are PENDING, submitted **21:09:07**, with **no
+`BOOMB_ARGSFILE` I wrote** and no corresponding file in `runargs/p17/` (my newest is `br_dp.txt` at
+20:41). They arrived as the concurrent session pushed V-3 at 21:07. **They are not mine and are not
+touched**, on the same rule as `779083`/`779084`. Recorded so a later tick does not mistake them for
+this phase's work — C-17's lesson was that job ownership must be established from evidence, not from
+timing.
+
+**Is the build still justified after C-23?** Yes, and the reasoning is checked rather than assumed:
+limitation 2 remains open and *recorded*; PR-31's decline clause names the build explicitly; the user
+authorised it; and R-78's diagnostic showed the phenomenon **is** present and measurable
+(**11/40 vs 0/20** on concept-specific vocabulary) — the instrument was wrong, not the question. The
+concurrent V-track is redefining the **ASR** protocol, which does not intersect this branch's
+refusal/usage metrics.
+
+#### What R-78 changed about the design
+
+My original guess was that limitation 2 needed a **benign concept**. That was half right. R-78 showed
+the actual failure was narrower: **the model deploys the concept's vocabulary but does not name the
+head noun**, so a single-word flag misses it while the population (40 rows) is too small to carry a
+vocabulary flag with a floor.
+
+So the build targets **three** things, not one:
+
+1. **A benign concept** — so usage is not a restatement of harm (R-27's original requirement).
+2. **A concept the model will NAME as well as describe** — `forklift`, chosen because its vocabulary
+   is distinctive (*tines, mast, pallet, load, operator*) **and** it sits naturally in the incident-log
+   / safety-inspection register the `harm`-valence pool prompts already use, so no prompt template is
+   rewritten for it.
+3. **The full core-2×2 behavioural population** — `natural_doublespeak` at `n_examples ∈ {1,2,4,8}`,
+   i.e. **160 rows with a dose ladder**, instead of `benign_remap`'s 40 rows at two doses.
+
+**⛔ `forklift` deliberately avoids `bicycle`**, which is `REMAP_SOURCE_WORD` (`demo_pools.py:194`).
+Reusing it would collide with the `benign_remap` control inside the same bank and make "used the
+mapping" ambiguous between two different taught mappings.
+
+**Launched: job `787099`**, `run_demo_pools.sh` with `DP_CONCEPT=forklift DP_CODEWORD=carrot
+DP_SEED=20260827` → `demo_pools_benign_forklift.json`. CPU-killable, not the login node (the standing
+rule about `import openai` hanging under NFS contention).
+
+**⛔ Nothing is pre-registered yet, and the ordering matters:** the pool must exist first, because
+**PR-32's flag will be derived mechanically from the NEW pool's sentences** — the same rule that
+produced PR-31's list, which is sound even though PR-31's *choice of primary* was not. Deriving it from
+the old bank, or from any completion, would be the tuning this log exists to prevent.
+
+**Gates that will stop this branch before any arm runs:** pool generation succeeds and is
+content-distinct → `prompt_families.py --strict` 0 violations → `tokenization_audit --strict`
+0 alignment violations → the bank regenerates the canonical banks byte-identically (C-10's test).
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
