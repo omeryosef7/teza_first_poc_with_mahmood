@@ -1543,9 +1543,20 @@ rather than accepted** (one run id in the message was wrong and was located befo
 |---|---|---|---|---|---|
 | Llama `basket_bomb` baseline | 96 | 90 | 0 | **0.0 %** | truncation |
 | Llama `basket_bomb` demoproc | 96 | 82 | 0 | **0.0 %** | truncation |
-| Qwen3 `longpreQ14B` baseline | 160 | 69 | 0 | **0.0 %** | truncation |
-| Qwen3 `longpreQ14B` demoproc | 160 | 112 | 0 | **0.0 %** | truncation |
+| Qwen3 `longpreQ14B` baseline | **80** | **48** | 0 | **0.0 %** | truncation |
+| Qwen3 `longpreQ14B` demoproc | **80** | **72** | 0 | **0.0 %** | truncation |
 | **mine — `d_surface` project-out** | **96** | **29** | **29** | **100.0 %** | **degeneracy** |
+
+⛔ **DENOMINATOR CORRECTED.** The Qwen3 rows first read `160 / 69` and `160 / 112`. That is the
+wrong denominator for **this** statistic, and a peer session caught it. The cap-640 arms exist only
+at `n_examples ∈ {4,8}` (PR-26 restricted to the decisive doses), so **n_common = 80** — verified
+here: the within-common binding sets are 48 and 72 and are strict subsets of the full 69 and 112.
+An *overlap* statistic requires rows present at **both** caps; including 80 low-cap rows with no
+high-cap partner puts rows in the count that have nothing to overlap with. `160 / 69` answers
+"how much does this population truncate"; `80 / 48` answers "do the SAME rows bind at both caps",
+and only the second is what the classifier asks. **Classification is unchanged at either
+denominator** (overlap is 0.0 % both ways) — the correction is to the reported figure, not the
+verdict.
 
 **Four cases at 0 % against one at 100 %, spanning two models and two banks.** The classifier is
 discriminating, not flagging heaviness — the control pairs bind on up to **94 %** of rows at the low
