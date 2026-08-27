@@ -1697,3 +1697,89 @@ vindicated on their numbers, and corrected on their labels.**
 
 **The gate is satisfied: §0.3 exists, so objective work may now be evaluated.** Phase 7 remains
 closed on its own criteria, not on this one.
+
+---
+
+## §DR-1 — DEEP REVIEW (4-hour), 2026-08-28 00:45
+
+### Artifact review — every cited path resolves
+
+Automated audit over this document: **63 cited paths, 0 unresolvable**; **4 cited run ids, all 4
+resolve** on disk. (The audit's first pass flagged 30 "missing" — all bare filenames used as prose
+shorthand, plus one subdirectory my glob omitted. Refining the resolver to search
+`src/boombness`, `tests`, `doublespeak_causality`, `scripts` and `outputs` left exactly one flag,
+which was my own glob bug, not a bad reference.)
+
+**One real defect found and fixed:** `corpus_sweep_20260827.json` — the V-1 sweep superseded by
+§0.2.5 — was **sitting on disk unmarked**. Anyone opening it would read inflated row counts with
+nothing saying so. It now carries a `SUPERSEDED` block naming its replacement, the reason
+(51 partial/aborted/excluded runs ingested; 10 449 inflated rows at cap 192), and `DO_NOT_QUOTE`.
+The brief requires that a superseded artifact cannot be silently re-ingested; it could have been.
+
+### Code review — 1 738 new LOC, 93 new tests
+
+| module | LOC | tests |
+|---|---|---|
+| `asr_protocol.py` | 560 | 27 |
+| `bank_leakage_probe.py` | 341 | 12 |
+| `cap_natural_experiment.py` | 253 | 10 |
+| `intervention_liveness.py` | 217 | 9 |
+| `paired_test_noise_sensitivity.py` | 205 | 14 |
+| `arm_report.py` | 181 | 8 |
+| `token_vs_prompt_level.py` | 181 | 7 |
+| `prompt_families.py` (`main_ne12` only) | +24 | 6 |
+
+**Every guard mutation-tested**, 33 mutations applied across the sprint. **Four survived and each
+was informative:** two were harness faults of mine (wrong occurrence replaced; unused variable
+added), one was a genuine test gap (threshold boundary never exercised), one was a semantic no-op
+correctly recorded as such rather than counted as a catch.
+
+Full suite under the conda interpreter: **1207 passed, 7 skipped, 0 failed.**
+
+### Liveness review — every intervention arm reported this sprint
+
+| arm | divergence | verdict |
+|---|---|---|
+| E5 `d_surface` project-out @640 | **96/96** | `OK` |
+| E5 `d_surface` project-out @1536 | **96/96** | `OK` |
+| E7 arm C refusal @1024 | 440/495 | `OK` |
+| E7 arm D joint @1024 | 453/495 | `OK` |
+| E6 `main` knockout @640 | **96/96** | `OK` |
+
+**No arm this sprint is a C-20-style no-op.** Every reported intervention demonstrably changed what
+the model wrote.
+
+### Population review
+
+Denominators are stated with every rate throughout; `n_join_missing = 0` corpus-wide; the completeness
+contract now refuses partial/aborted/excluded runs on **both** judge and gens dirs. The one
+population caveat that stands is §0.8's: entry 6's pooled claim was carried by 2 of 5 populations,
+and `window_knife` (baseline 2/96) has no headroom and should never have entered the mean.
+
+### Claim review — 4 of 14 entries moved, all on new measurement
+
+| | at audit | **now** |
+|---|---|---|
+| KEEP | 1 | **3** |
+| KEEP-NARROWED | 4 | **5** |
+| NEEDS RERUN | 5 | **3** |
+| RETRACT | 3 | 3 |
+| OPEN | 1 | 0 |
+
+Moved: entry 5 → KEEP, entry 7 → KEEP, entry 12 (C7) → KEEP-NARROWED, entry 6 → 1 of 3 populations
+confirmed. **No entry moved on argument; each moved on a sprint-grade measurement.**
+
+### What I would flag against myself
+
+1. **Three of my own errors were caught by a peer session, not by me** — the stale fixtures, the
+   negative-control denominator, and (indirectly) the SystemExit leak. My own checks caught the
+   §0.2.5 exclusion bug and the case-sensitivity bug. The lesson already recorded (run the full
+   suite on any guard change) addresses the first; the other two were caught because someone
+   re-derived numbers I published.
+2. **`window_knife` is still in the entry-6 rerun plan as declined**, which is correct, but the
+   original pooled claim remains quotable from prior deliverables where §0.8's decomposition is
+   absent. That is a propagation risk I do not control from this file.
+3. **The sprint has produced no negative result yet.** Everything re-measured has survived. That is
+   what the data says, but it is also the pattern a confirmation-seeking process would produce, and
+   the honest counterweight is that the two hardest gates — Phase 7 and entry 6's `basket_gun` —
+   are both still pending and both are set up to fail informatively.
