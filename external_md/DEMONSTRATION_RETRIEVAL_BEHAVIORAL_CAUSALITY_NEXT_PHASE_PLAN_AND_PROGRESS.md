@@ -9079,6 +9079,64 @@ survival holds on `ticket_bomb`. **Nobody has run it.** Their collapse is `legac
 `demoproc`; the cell that would decide C5's bank-generality is empty. **Recorded as unknown rather than
 inferred from either neighbour.**
 
+
+### 🔒 PR-32 (02:45, written and committed before the arms are submitted) — **fill the empty cell C-28 identified: does `demo_processing_only` preserve binding on `ticket_bomb`, where the unscoped mask collapses it five-fold?**
+
+**Why this is not the invented work R-76 forbade.** The gap was **created by evidence that arrived
+tonight**, not derived from a limitation I went looking for: the concurrent session showed binding
+collapsing on `ticket_bomb` under `legacy_all_query` (**0.5695 → 0.1162**, mapped-wins **45/48 →
+15/48**) while C5's `demo_processing_only` arm on `main` shows mass **rising** (0.5416 → 0.6021).
+**C-28 recorded the deciding cell as empty; this fills it.**
+
+**It is also cheap and needs no new bank.** `boombness_prompt_bank_ticket_bomb.jsonl` already carries
+**288** forced-choice rows, all `core2x2`; filtered to `natural_doublespeak` × `n_examples ∈ {1,2,4,8}`
+it is **48 rows — the same population the peer used.** Forward-only probes: `--max-new 8`, no
+generation to judge, no GPU-hours beyond two short loads.
+
+**Design.** Exactly the `p2_*` configuration with the bank swapped — Llama-3.1-8B, band **6-14**,
+`--query-kinds semantic_forced_choice --conditions natural_doublespeak --bank-blocks
+core2x2,core2x2_slot3 --n-examples 1,2,4,8 --expect-n 48 --max-new 8 --min-option-mass 0.05
+--attn-impl eager`. **Two arms, both mine end to end** so the pair is same-bank and same-session:
+`tbA` (baseline) and `tb_demoproc` (`--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope
+demo_processing_only`). **Nothing is retuned.**
+
+#### 📌 Gate first
+
+**The baseline must show binding to preserve**: `mapped_wins` clearly above chance **and** median
+option mass **≥ 0.05** (the same floor R-13 used to select this probe). If the baseline does not bind
+on this bank, there is nothing for the intervention to preserve or destroy and this **DECLINES** —
+R-52's rule. *(The peer's `ticket_bomb` baseline was 45/48 at mass 0.5695, so I expect this to pass;
+expecting it does not excuse skipping it.)*
+
+#### 📌 Conditions, fixed now
+
+Let `d_demoproc = mapped_wins(demoproc) − mapped_wins(baseline)`, and the peer's measured
+`d_legacy = 15 − 45 = −30` on this same population.
+
+1. **BINDING SURVIVES** if `demoproc` stays within the noise of baseline — `|d_demoproc| ≤ 3 rows` of
+   48 — **and** its median option mass stays **≥ 0.05**.
+2. **BINDING COLLAPSES** if `d_demoproc ≤ −15` rows, i.e. at least half the way to `legacy`'s −30.
+3. **INTERMEDIATE** otherwise, and is reported as intermediate rather than forced into either bucket.
+
+**Reported alongside, per PR-28's declared statistic** (the readout is deterministic — forced choice,
+no judge): the **paired exact test on discordant families**, plus the mass, plus the row counts.
+
+#### ⛔ What each outcome means, written before the data exists
+
+* **SURVIVES** → the scope decomposition is what carries binding survival: the unscoped mask destroys
+  binding on this bank and the scoped one does not. **That is a STRONGER result than C5 currently
+  claims** and it would restore bank-generality to C5's *scoped* form while leaving the unscoped form
+  bank-dependent.
+* **COLLAPSES** → **C5 narrows again, hard**: binding survival is a property of the `main` bank, not of
+  the intervention, and "concept binding survives" cannot be stated without naming the bank. C-28's
+  narrowing would become the headline rather than a caveat.
+* **INTERMEDIATE** → C5 is stated as bank-sensitive with a measured gradient, and neither of the clean
+  stories is told.
+
+**⛔ Pre-committed as NOT counting**: any behavioural/ASR number on this bank (none is being generated),
+and any comparison to the peer's `legacy` arm other than as the **reference collapse** it already is —
+their run is theirs, and I am not re-deriving their number, only my own two arms.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
