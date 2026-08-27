@@ -6892,6 +6892,81 @@ will differ because it is a different tokenizer, and per C12 what matters is pos
 count — so a different count is expected and is **not** grounds to force Llama's 24. **PR-27 will be
 written after the smoke and before any sweep is judged.**
 
+
+### R-66 (05:40) — **The Q7 smoke PASSES: query-span rescue fires on Qwen3, writing 28 positions per row. The instrument gap is closed; the sweep needs only two new arms.**
+
+Artifact: `outputs/boombness/score_behavior/q9smoke_qpos_L17_20260827_050944_715471` — 8/8 rows,
+`DONE.json`, `n_failed: 0`.
+
+| check | result |
+|---|---|
+| `rescue_liveness.fired` | **true on 8/8 rows** |
+| `n_positions_written` | **28**, identical on every row |
+| `n_forward_calls` (min) | 57 |
+| knockout `frac_rows_scope_live` | **1.0**, `scope_violations={}` |
+| distinct generations | **8/8** |
+
+**Qwen3 writes 28 query-span positions where Llama wrote 24.** That difference is expected and is
+**not** corrected: they are different tokenizers over the same query text, and C12 established that
+what carries the demo/query contrast is position **identity**, not count. Forcing Llama's 24 onto
+Qwen3 would truncate the span to make a number match — the opposite of what C12 licenses.
+
+**Existing Qwen3 d10 160-row arms** (inventoried rather than assumed, so nothing is regenerated):
+baseline `q6bA_...516233`, knockout-only `q6b_demo_processing_only_...516774`, and **demo-span**
+rescue `q6b_rescue_L17_...888002` / `q6b_rescue_L5_...888003`. **Only the two query-span arms are
+missing**, so the sweep is two runs, not six — and the demo-vs-query contrast that is C11's actual
+claim is available within one judge window.
+
+---
+
+### 🔒 PR-27 (05:45, written and committed before the arms are submitted) — **what a Qwen3 replication of C11 would and would not show.**
+
+**C11 on Llama, the thing being tested** (d10, 160 rows, `DonorPatch` at L14 over the query span):
+query-span rescue restores **refusal −0.1562 (96.2% of the knockout's rise**, back to within margin of
+clean) while recovering only **37.5%** of the ASR — **+0.0563 against a 0.0521 margin.** Below-band L5
+query control inert (refusal 0.0000, ASR +0.0125).
+
+**Design.** Qwen3-14B, the same d10 bank and the same 160-row population, knockout
+`demo_all:attn_knockout:7-17` under `demo_processing_only`, `--rescue-positions query --rescue-donor
+clean`, at **L17** (top of Qwen3's band, the depth-matched analogue of Llama's L14) with the
+**below-band L5** control. **The band and both layers are the mapping already fixed and used by the
+`q7_rescue_*` and `q6b_rescue_*` runs — not retuned for this test.** Baseline, knockout-only, both
+demo-span rescue arms and both new query-span arms are judged in **one** window (R6-6).
+
+#### 📌 The three conditions, at PR-3's margins, unchanged
+
+1. **Refusal is restored from the query span**: query-L17 moves refusal against the knockout's rise by
+   more than `MARGIN_VS_BASELINE = 0.0521`.
+2. **The dissociation holds**: query-L17's **refusal** recovery exceeds its **ASR** recovery, and the
+   two differ by more than `MARGIN_ARM_VS_ARM = 0.0417` as a fraction of what the knockout removed.
+3. **The below-band control is inert**: query-L5 moves **neither** refusal nor ASR by more than 0.0521.
+
+#### ⛔ Declared in advance, because C11's two halves are not equally powered
+
+**C11's refusal half is strong (−0.1562, 25 rows of 160) and its ASR half is not: +0.0563 clears the
+0.0521 margin by 0.7 rows.** A replication is therefore pre-registered as **two separate verdicts**:
+
+* **The refusal half** is the primary. It replicates or it does not, and either is reportable.
+* **The ASR half is DECLARED THIN NOW.** If Qwen3's query-span ASR recovery lands **inside** ±0.0521,
+  that is a **DECLINE for lack of power, not a refutation** — the same rule R-52's underpower clause
+  applies to Llama, and the same rule I failed to apply there until it was caught. **A Qwen3 ASR
+  number inside margin must not be written up as "C11 refuted".**
+* Equally: if Qwen3's ASR half clears margin by a similarly thin amount, **that is not a confirmation
+  of a mechanism either.** Two 1.1×-margin effects agreeing is not evidence of structure; it is two
+  measurements at their floor. It would be recorded as *consistent in direction, underpowered in both
+  models.*
+
+#### 📌 And the demo-vs-query contrast, which is C11's actual sentence
+
+C11 claims the attack damage is reachable from the **query** span **but not from the demonstration
+positions**. On Qwen3 both arms now exist at the same layer, so this is directly testable:
+**query-L17 vs demo-L17 must differ by more than 0.0417 on ASR** for the contrast to hold. If they do
+not differ, **the "but not from the demonstration positions" clause fails on Qwen3** and C11 becomes
+model-specific in its interesting half — which is exactly what happened to C13.
+
+**REFUTED** if condition 1 fails on a powered population: the refusal recovery is the strong,
+well-measured half, and if it does not transfer then C11's dissociation is a Llama property.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
