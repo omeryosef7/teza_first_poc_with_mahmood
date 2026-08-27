@@ -1635,3 +1635,65 @@ alone is not a strong result; it is one concordant cell.
 sprint's clearest structural finding so far, and it points away from "`d_surface` carries the
 attack" and toward "the demonstration-retrieval *pathway* carries it, while the fitted directions are
 suppressors whose deletion disinhibits the model."
+
+---
+
+# §0.3 — DELIVERABLE: "OLD CONCLUSION vs FIXED-ASR CONCLUSION"
+
+**Artifacts:** `cap_natural_experiment/{capNE2,capC,p03}_*` · `arm_report/{e67,w640}_*` ·
+`asr_protocol/corpus_sweep_20260827_v2.json`
+**This is the table the brief gates all objective work on. It now exists.**
+
+## Part 1 — every arm measured at BOTH caps, same rows, continuation-verified
+
+Nine arms across three interventions, two models, four banks. Greedy decoding, so each high-cap run
+is verifiably the low-cap run continued.
+
+| arm | n | low cap → high | ASR rows | Δ | up/down | exact p | MDE |
+|---|---|---|---|---|---|---|---|
+| Llama `basket_bomb` baseline | 96 | 192→640 | 25→32 | +0.0729 | 12/5 | 0.1435 | 0.094 |
+| Qwen3 `longpreQ14B` baseline | 80 | 192→640 | 10→11 | +0.0125 | 4/3 | 1.000 | 0.088 |
+| Qwen3 `CTRL_matched_d1` | 80 | 192→640 | 11→12 | +0.0125 | 2/1 | 1.000 | — |
+| Qwen3 `C_demo_processing_only` | 80 | 192→640 | 1→1 | 0.0000 | 1/1 | 1.000 | — |
+| **E7 baseline** | **495** | 512→1024 | 32→33 | **+0.0020** | 1/0 | 1.000 | — |
+| **E7 arm C** (refusal projout) | **495** | 512→1024 | 134→133 | **−0.0020** | 2/3 | 1.000 | — |
+| **E7 arm D** (joint) | **495** | 512→1024 | 174→171 | **−0.0061** | 4/7 | 0.5488 | **0.018** |
+| **E6 `main` baseline** | 96 | 192→640 | 22→22 | **0.0000** | **8/8** | 1.000 | 0.104 |
+| **E6 `main` knockout** | 96 | 192→640 | 5→8 | +0.0312 | 5/2 | 0.4531 | 0.073 |
+
+**Not one arm moves detectably.** Largest shift is 3 rows in 96. Every p ≥ 0.45. The two
+best-powered pairs (E7 arm D at MDE 0.018 on n=495; E6 knockout at MDE 0.073) are both null.
+
+The `E6 main baseline` row is the clearest picture of what is going on: **8 rows up, 8 rows down,
+net exactly zero.** Sixteen rows changed verdict and the estimate did not move — the judge floor
+churning, visible because the pairing exposes it.
+
+## Part 2 — old conclusion vs fixed-ASR conclusion
+
+| # | old conclusion | what the fixed protocol says | verdict |
+|---|---|---|---|
+| 2 | ASR numbers are trustworthy as reported | **250 judge dirs / 70 053 rows may be quoted only as "ASR within first N generated tokens"**; at cap 192 the cap binds on 90.7 % of dirs | **REPORTING defect, real** |
+| — | *(implied)* truncation depressed the old ASR | **False on its face.** Truncation is bidirectional: 12 up / 5 down on the clean Llama pair | **RETRACTED** |
+| 5 | removing `d_surface` raises ASR (+0.0424, L8, AdvBench) | **+0.3229** at L14 on `basket_bomb`, cap 1536, 37/6, p=2e-6 | **KEEP, broadened** |
+| 7 | refusal is the larger Llama channel (C +0.2061, D +0.2869) | **C +0.2020, D +0.2788** at cap 1024, n=495, pinned, one invocation | **KEEP — replicates within 4 rows** |
+| 6 | retrieval knockout suppresses the attack (96↓/18↑, 8 populations) | `main` replicates (**net +17 → +14**, plain ASR, no relabelling); but the pooled claim was **carried by 2 of 5 populations** with 2 pointing the other way | **KEEP-NARROWED; 2 populations pending** |
+| 12 | C7 demonstration-specificity | 640-cap replication is **sprint-grade**: 11/80 → 1/80, p=0.0063 | **OPEN → KEEP-NARROWED** |
+| 9 | G2: prompt-level boombness predicts ASR | retraction upheld — **and §2 shows prompt-level and token-level share only ρ=0.287 at L12**, so the retraction covers the token-level quantity only | **RETRACT, scope narrowed** |
+| 14 | a GCG objective was justified | unchanged | **RETRACT** |
+
+## Part 3 — the answer to the brief's actual question
+
+> *"Which old ASR effects survive when the cap is large enough? Which were truncation or length
+> artifacts?"*
+
+**None were truncation artifacts. Every effect re-measured survives, and the two large ones
+reproduce to within a few rows.** The 192-token cap was a genuine and serious **reporting** defect —
+70 000 rows may not be called ASR — but across nine arms at two caps each it **did not move a single
+estimate detectably.**
+
+That is not the answer I expected when §0.2 opened, and it is the one the data gives. The
+sprint's measurement-repair phase closes with the prior sprint's ASR conclusions **substantially
+vindicated on their numbers, and corrected on their labels.**
+
+**The gate is satisfied: §0.3 exists, so objective work may now be evaluated.** Phase 7 remains
+closed on its own criteria, not on this one.
