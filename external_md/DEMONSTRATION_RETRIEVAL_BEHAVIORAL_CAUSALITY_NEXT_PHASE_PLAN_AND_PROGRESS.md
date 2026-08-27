@@ -8346,6 +8346,76 @@ noise**, and the exact p treats all 12 as signal. The direction and magnitude ar
 **I am not adopting it as my own statistic either** — adopting a test I pre-committed against, at the
 moment it favours me, is the move this log exists to prevent.
 
+
+### ⛔ C-25 (22:05) — **CORRECTION to R-82: I claimed symmetric judge noise makes a paired exact p "optimistic". It does the opposite. Simulated independently rather than conceded — and my own simulation refutes me.**
+
+R-82 asserted, against the concurrent session's C7 replication, that *"of those 12 discordant pairs
+roughly 4 are judge noise, and the exact p treats all 12 as signal… that p is optimistic."* **The
+mechanism is wrong.** They simulated it; I ran my own simulation before accepting theirs
+(n=80, base 11/80, 6000 reps/cell, seed 20260827):
+
+| symmetric flip rate | type I error (H0) | E[down] | E[up] |
+|---|---|---|---|
+| 0.00 | **0.0312** | 9.49 | 9.52 |
+| 0.05 | **0.0283** | 11.47 | 11.47 |
+| 0.10 | **0.0327** | 13.27 | 13.24 |
+| 0.20 | **0.0285** | 16.22 | 16.22 |
+
+**Every cell is at or below the nominal 0.05.** The reason is structural and I should have seen it:
+McNemar's null is `P(A=0,B=1) = P(A=1,B=0)`, and **symmetric independent noise fills both discordant
+cells equally** — it manufactures exactly the 50/50 split the null assumes. It cannot create a false
+positive. What it destroys is **power**:
+
+| flip | power at true Δ = −0.125 |
+|---|---|
+| 0.00 | 0.845 |
+| 0.05 | **0.526** |
+| 0.10 | **0.329** |
+
+**So symmetric label noise makes that test CONSERVATIVE, not liberal, and "the p is optimistic" is
+withdrawn.** My "~4 of the 12 are noise" arithmetic was right and the inference from it was wrong:
+those ~4 split ~2 up / ~2 down and **cancel in the net**, which is precisely what the test reads.
+
+**Where my concern was actually valid — asymmetric noise**, which I did not distinguish:
+
+| extra up-bias on one arm | type I error |
+|---|---|
+| 0.00 | 0.0265 |
+| 0.05 | **0.0640** |
+| 0.10 | **0.1740** |
+
+**That inflation is real and is live whenever two arms differ systematically in a way the judge
+responds to** — such as completion length, where `demo_processing_only` runs longer (median 277 vs
+212.5). **But the asymmetry that design plausibly has pushes the knockout arm UP, and the observed
+result is 11 DOWN against 1 up.** The one bias the design carries works *against* the result, which
+makes it stronger, not weaker.
+
+#### What this does to PR-28
+
+PR-28 declared the paired exact test **never applies to ASR**, reasoning that *"ASR labels are not
+reproducible at ~5% per row"*. **The declaration stands; its stated rationale was wrong.** The correct
+reasons to keep ASR out of that test are:
+
+1. **Power collapse** — at a 5% floor, power against Δ = −0.125 is **0.526**, so a *null* from it is
+   nearly uninformative. (This is the same detectability rule the peer applied to `demoproc`'s cap null
+   and I applied to the `2/2^k` floor.)
+2. **Asymmetric-noise risk**, which is genuinely live for arms differing in length — and which
+   symmetric-noise reasoning cannot see.
+
+**I am still not adopting the test for my own ASR claims**, and now for reasons that survive scrutiny
+rather than for the one I invented.
+
+**The joint measurement worth stating once.** The judge floor is now measured twice by independent
+routes on byte-identical text: **DR-10's `q9j_L5` vs `q9j_ko` = 9/160 = 0.0563** (an arm that is a
+bit-exact no-op, so the two sets are literally the same bytes) and the concurrent session's **pinned
+`q16A` re-judge = 9/160 = 0.0563**, plus `q15A` 7/160 = 0.0437 and an unpinned 37/660 = 0.0561.
+**Pinning does not reduce it.** Four measurements, two designs, one number: **≈5% of binary ASR labels
+flip on identical input.**
+
+**Why this correction matters beyond the arithmetic.** R-82 was me being appropriately sceptical of a
+number that favoured my own claim — and I was *wrong in the direction of excessive caution*, which is
+still wrong. **Scepticism is not self-validating; it has to be checked too.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
