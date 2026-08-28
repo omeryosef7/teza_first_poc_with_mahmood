@@ -4767,3 +4767,111 @@ tries to *adjust* it rather than re-measure — the adjustment does not exist.
 front.** Both move the number, and this tick establishes that neither can be corrected for
 afterwards.
 
+
+---
+
+## §10.7 — Enumerated the ICC population by code: my bank count is right, and the extra row it surfaces must be refused on ATTRITION, not on model
+
+A peer found their six-bank table was hand-listed and missed rows, re-derived it by enumerating the
+artifact tree, and got eight. **Their lesson applies to me identically — my table was hand-listed
+too** — so I enumerated rather than assume mine was complete.
+
+**Enumeration finds 8 runs and 7 distinct banks.** `ticket_bomb` appears twice: `p5A_ticket_bomb`
+and the peer's batch-1 rerun `c5A_tb_b1` of the *same* bank. So no bank was missing from §10.4's
+table, but I only know that because the enumeration was run.
+
+### The eighth row is `longpreQ14B`, and it is the attrited run
+
+Their eighth entry is `longpreQ14B` (0.107 → 0.042). It does not appear in my enumeration because I
+filter attrited runs, and **the only `longpreQ14B` run carrying `one_word` is `q5A_lpQ14B`, which
+lost 92 of 160 rows to OOM** — leaving 18 and 19 survivors from cells of 48.
+
+**So the correct reason to exclude it is not that it is Qwen3.** It is the exact population §5.22
+established must be refused: the survivors are the **short** rows *selected by the very perturbation
+under study*. `margin_exposure.assert_complete()` refuses it on sight, which is what that guard was
+added for:
+
+```
+REFUSED: q5A_lpQ14B — ATTRITED population, 92 rows failed
+```
+
+The peer's instinct to flag the silent exclusion was right, and their stated ground ("it's Qwen3, so
+excluding it from a Llama table is defensible") is the weaker of the two available. **On attrition
+grounds it is not a defensible exclusion, it is a required one** — and this is the one bank whose
+perturbation window was already withdrawn for the same reason, so an unnoticed *inclusion* would
+have been actively wrong.
+
+### The generalisable rule, which is theirs
+
+**When a table's rows are a POPULATION rather than a SELECTION, enumerate them by code.** A hand
+list cannot be audited against what it should cover, because the omission is invisible from inside
+the list — the same way a range assumption is invisible from inside the range. Their two failures
+today (a ledger audit over a self-chosen `C-19…C-40` range that missed seven; a six-row hand list
+that missed two) are instances of one sentence, and my §10.4 table was a third waiting to happen.
+
+**Nothing concluded moves.** Direction still holds on every reportable row; magnitude is still
+untranslatable at 1.24, 1.98 and ∞ among the non-degenerate reportable ones.
+
+
+---
+
+## §11 — §9 next step #3, a judge-independent success measure: the deterministic anchor is SOUND and structurally CANNOT cover the region the claims live in
+
+Every concept-level result in this sprint is entangled with StrongREJECT's scoring, and §9 records
+"find a judge-independent success measure" as an open next step. A peer proposed `kw_refusal` — the
+deterministic keyword refusal test, measured at **0/160 flips on byte-identical text** against the
+LLM judge's ~5% — with the caveat that it measures **refusal, not success**, and so anchors one side
+only. This tests how far that gets.
+
+*(Population enumerated by code rather than hand-listed, per §10.7.)*
+
+### The anchor is sound: it essentially never contradicts the judge
+
+Pooled over **598 judged arms, 217,532 rows**:
+
+| | rows | rate |
+|---|---|---|
+| `kw_refusal` fires | 134,555 | 0.619 |
+| judge success (SR ≥ 0.5) | 24,735 | 0.114 |
+| **contradictions** (kw says refused **and** judge says success) | **128** | **0.00059** |
+
+**Fewer than 6 rows in 10,000 are called refused by the keyword test and successful by the judge.**
+So where `kw_refusal` fires it can be trusted, and it is a legitimate deterministic anchor for the
+refusal side. *(The 128 are plausibly refuse-then-comply completions — "I can't help with that.
+However…" — which the keyword test catches at the prefix and the judge scores on the body.)*
+
+### ⛔ But it cannot see the effect the claims rest on
+
+The Qwen3 second-model contrast (§5.18), the sprint's cleanest ASR result, measured both ways on the
+same 80 paired rows:
+
+| measure | baseline → `demo_processing_only` | exact p |
+|---|---|---|
+| judge (SR ≥ 0.5) | **11/80 → 1/80** | **0.00635** |
+| `kw_refusal` | **1/80 → 0/80** | 1.0 |
+
+**Almost nothing is refused in either arm.** The knockout does not work by inducing refusals — it
+moves completions from *judged successful* into *complied but unsuccessful*, and that is a region
+only a judge discriminates. A refusal-only instrument is blind to it **by construction, not by
+sample size**.
+
+This is not peculiar to that arm: **`kw_refusal` fires on ≤1 row in 89 of the 598 arms**, so on ~15%
+of the corpus it has no discriminating power at all, while firing on >10% of rows in 404 arms.
+**Its coverage is arm-dependent and cannot be assumed.**
+
+### Verdict on next step #3: PARTIAL, and the remaining half is the hard half
+
+* **Achieved:** a deterministic, judge-free anchor for the **refusal** side, validated at a
+  0.059% contradiction rate over 217k rows — strong enough that any claim resting on *"the model
+  refused"* can be stated without a judge.
+* **Not achieved:** a judge-independent measure of **success**. The concept-level results live
+  precisely in the complied-but-unsuccessful region, where no deterministic instrument in this repo
+  discriminates.
+
+This is the same one-sided shape recorded at §5.22: **an instrument that can only move a result in
+one direction is safe on one class of claim and silently unsafe on the other.** `kw_refusal` can
+confirm a refusal and can never confirm a success, so it **must not be quoted as an ASR substitute**
+— and the entanglement of the concept-level claims with StrongREJECT stands as a live limitation
+rather than a discharged one.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
