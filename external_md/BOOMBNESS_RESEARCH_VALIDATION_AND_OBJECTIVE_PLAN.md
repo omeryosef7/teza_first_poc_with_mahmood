@@ -2435,9 +2435,9 @@ session caught why before I wrote them up.**
 | `demo_processing_only` | 23/48 | 0.3872 |
 
 **`legacy`'s 11/48 must NOT be read as "binding destroyed on a third bank."** It is a drop from a
-baseline that never bound — structurally the same as **`window_knife`** in §0.8 (baseline ASR 2/96,
-which I called "evidence of nothing") and as the no-headroom declines this project has made twice
-before. **The baseline must bind before "does the intervention preserve binding" is a question at
+baseline that never bound — the same *kind* of decline as **`window_knife`** in §0.8 (baseline ASR
+2/96, which I called "evidence of nothing"), though **on a different axis: `window_knife` lacks ASR
+headroom while binding perfectly; `basket_gun` lacks both** (§5.9). **The baseline must bind before "does the intervention preserve binding" is a question at
 all, and `basket_gun` fails that gate.**
 
 **§5.7's question is therefore untouched: still 1-of-2, not 2-of-3.** The directions remain
@@ -2548,3 +2548,68 @@ Recorded **before** running it:
 **Phase 7 status: REOPENED, not passed.** This is the strongest positive the sprint has produced and
 the reason to treat it carefully is that it is strong — the previous sprint's G2 was retracted for
 exactly the failure mode this section is at risk of.
+
+---
+
+## §5.9 — ⛔ `window_knife` INSTALLS the mapping — low ASR does NOT imply non-installation
+
+**A concurrent session retracted its own extrapolation before it reached this log, and the retraction
+is a result.** It had suggested `window_knife`'s baseline ASR of 2/96 "predicts the same shape" as
+`basket_gun`, i.e. a second non-installing bank. It ran the probe arm. **It refutes that.**
+
+**Baseline forced-choice mapped-wins by dose (12 rows/cell; their measurement, their arm):**
+
+| bank | n=1 | n=2 | n=4 | n=8 | Δ | verdict |
+|---|---|---|---|---|---|---|
+| `main` | 0.667 | 0.917 | 0.917 | **1.000** | +0.333 | installs, saturates |
+| `ticket_bomb` | 0.750 | 1.000 | 1.000 | **1.000** | +0.250 | installs, saturates |
+| **`window_knife`** | 0.583 | 0.833 | 0.833 | **1.000** | **+0.417** | **INSTALLS, saturates** |
+| `basket_gun` | 0.333 | 0.417 | 0.417 | 0.417 | +0.083 | **never installs** |
+
+`window_knife` reaches **39/48 overall with true-median option mass 0.7681 — the highest of any bank
+measured**, against `basket_gun`'s 0.3869. It saturates at 12/12 by n=8, exactly like the two banks
+that carry entry 6.
+
+**Verified on my side:** `window_knife` baseline ASR is **2/96** (cap 192 — *ASR within first 192
+generated tokens*), from my own `lbj_window_knife_lbA` artifact.
+
+### What this corrects
+
+**"Two of five entry-6 populations are non-installation" — which I put in a message to them and they
+had offered me — collapses to ONE.** It is not in this log, and it is not going in it.
+`basket_gun` is non-installation. **`window_knife` is something else and neither of us has an
+explanation.**
+
+§5.8's analogy is narrowed accordingly: `window_knife` and `basket_gun` are both no-headroom
+declines, but **on different axes** — `window_knife` lacks *ASR* headroom while binding perfectly;
+`basket_gun` lacks both.
+
+### `window_knife` is now the cleanest instance of the sprint's central dissociation
+
+**The mapping installs completely (39/48, mass 0.7681, saturating) and the attack essentially never
+lands (2/96).** No intervention anywhere in it — this is a **baseline property of the bank**.
+
+**Binding is necessary but not sufficient for the attack**, demonstrated on a fourth bank without
+any knockout, patch or direction involved. Everything else in this sprint reaches that conclusion
+*through* an intervention; `window_knife` shows it in the untouched model.
+
+**Caveats:** the probe is theirs and I have not re-derived the per-dose cells, only the ASR endpoint;
+cells are 12 rows so the *shape* is the claim and no single cell is; no behavioural arm has been run
+at a non-binding cap on `window_knife`, so its 2/96 remains cap-192-labelled.
+
+---
+
+## §7.1 — Which sentence should travel from §7
+
+The same session flagged that *"boombness predicts ASR"* is the sentence that will travel from §7 if
+I let it. It is right, and the write-up should not depend on a reader reaching the caveats.
+
+**The takeaway sentence is: the Phase 7 gate is REOPENED AND NOT PASSED.**
+
+`d_surface` correlates with attack success at ρ ≈ +0.30 on n=288 under every control the brief names
+except pre-registration — and **pre-registration is the one that matters here**, because G2 was
+retracted for precisely this failure mode: a strong correlation, selected after the fact, that did
+not survive a clean population. The confirmatory test is pre-registered in §7 and unrun.
+
+**A correlation this sprint discovered by looking is not evidence a future objective would optimise
+anything.** That is the reading, and it is the one that should travel.
