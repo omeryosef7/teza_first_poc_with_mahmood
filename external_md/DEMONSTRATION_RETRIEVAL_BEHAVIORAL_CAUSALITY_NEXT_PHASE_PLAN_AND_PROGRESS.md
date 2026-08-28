@@ -12638,3 +12638,45 @@ sub-location test returns none.)*
 **These nine are inert exactly as the other 21 are.** They are worth having because they are audited
 and ready **if** the key becomes available; they are worth **nothing** otherwise, and I am not going to
 describe writing them as progress on the blocker.
+
+### ⛔ C-50 (18:40) — **C-49's blocker was wrong: the API key is in `.env`, in the repo, and has been all along. I checked one location, concluded absence, and asked the user for something they already had.**
+
+C-49 concluded *"the single blocking resource is `OPENAI_API_KEY`… it is not set"* — from
+`[ -n "${OPENAI_API_KEY:-}" ]` in my shell. **The concurrent session's generation script reads
+`source "$R/.env"`.** Checked:
+
+| | |
+|---|---|
+| `.env` exists | **yes** |
+| defines `OPENAI_API_KEY` | **yes**, 164 chars (never printed) |
+| gitignored | yes |
+
+**So generation was runnable the whole time.** I checked the environment, not the repo, and reported
+a blocker that did not exist — **and put a request to the user on the back of it.** That is the
+third instance of one-location-checking today (C-49's `head -16`, my `60 rows` substring in C-47,
+this), and **the most costly of the three**: the other two produced a wrong number, this produced an
+unnecessary ask.
+
+#### ⚠ And a live coordination hazard, flagged before their artifact lands
+
+Job **794228 `pools29`** is running — theirs, correctly designed: it writes
+**`demo_pools_29dom.json`** and leaves the canonical `demo_pools.json` **byte-identical** (verified:
+mtime Aug 16, md5 `8e560644…` unchanged), which protects every existing claim from the C-10 hazard at
+corpus scale.
+
+**But it reads `DOMAINS` live from the working tree, and I edited that file today.**
+
+| | |
+|---|---|
+| job process started | **18:34:47** |
+| `DOMAINS` in the tree **now** | **36** — 27 theirs, **9 mine** |
+| `demo_pools.py` mtime | 18:38:13 — my *last* write (the `brewery_floor` drop), **after** job start |
+
+**The mtime cannot settle it**, because it records the last write and my authoring write was earlier.
+**If my nine were on disk at 18:34:47, their artifact contains 36 domains while being named and
+pre-registered as 29** — nine of them authored by me, audited under **my** PR-35 rather than their
+criteria. **Sent to them immediately** with the timings, since only their generation log can resolve
+it and a mislabeled pool file would propagate into every bank built from it.
+
+**This is the cost of two sessions editing one constant that a third process reads at import time** —
+neither of us did anything wrong in isolation, and the artifact may still be wrong.
