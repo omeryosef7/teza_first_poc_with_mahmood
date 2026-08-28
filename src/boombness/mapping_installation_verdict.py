@@ -133,6 +133,22 @@ def main():
                 f"silently adapt to the smaller n and still print a verdict, but the survivors of "
                 f"length-correlated attrition are not a random subset of the bank.")
 
+        # *** DO NOT TRUST THE UPSTREAM GATE FOR A CLAIM THIS TOOL IS MAKING ***
+        # V-54 (concurrent session, 2026-08-28) found `option_mass_gate` advertising PASS over a
+        # readout that was ~90% NaN, because NaN escapes BOTH sides of a threshold: `x < gate` and
+        # `x >= gate` are each False. The same hazard reaches the predicate below -- `p_concept >
+        # p_codeword` is False for NaN, so a NaN row is silently counted as "not a win" and depresses
+        # the fraction instead of failing loudly. Verified finite here rather than assumed.
+        nonfinite = [r.get("prompt_id") for r in rows
+                     if r.get("p_concept") is None or r.get("p_codeword") is None
+                     or not math.isfinite(r["p_concept"]) or not math.isfinite(r["p_codeword"])]
+        if nonfinite:
+            raise SystemExit(
+                f"[install] REFUSING {lab}: {len(nonfinite)} of {len(rows)} rows have a missing or "
+                f"non-finite p_concept/p_codeword (first: {nonfinite[:3]}). NaN would be counted as "
+                f"'not a win' by the strict-> predicate rather than raising, so the fraction would be "
+                f"depressed silently. The upstream option_mass_gate does not catch this (V-54).")
+
         n = len(rows)
         wins = sum(1 for r in rows if r["p_concept"] > r["p_codeword"])
         ties = sum(1 for r in rows if r["p_concept"] == r["p_codeword"])

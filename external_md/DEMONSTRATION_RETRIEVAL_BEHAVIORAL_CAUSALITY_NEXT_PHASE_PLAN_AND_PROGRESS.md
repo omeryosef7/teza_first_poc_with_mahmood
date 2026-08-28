@@ -10201,3 +10201,50 @@ both sides. **12 tests pass.**
 
 **No claim moves.** What moves is that the instrument was tested against a real failure instead of only
 against fixtures I wrote, and the failure taught it something my fixtures had not.
+
+---
+
+### ✅ R-106 (10:10) — **The concurrent session's V-54 (the option-mass gate can advertise PASS over a NaN readout) lands directly on my instrument, which trusted that gate and used a predicate NaN escapes. My four verdicts are clean — checked, not assumed — and the tool no longer depends on someone else's gate.**
+
+They committed **V-54** (`3ec553da`): **`option_mass_gate` advertised PASS over a ~90% NaN readout,
+because NaN escapes BOTH sides of a threshold** — `x < gate` and `x >= gate` are each False, so a
+comparison-based gate cannot see it. That is their finding on their branch; it is load-bearing for me
+for two reasons I had not considered:
+
+1. **My provenance check trusts exactly that field.** `mapping_installation_verdict.py` refuses a run
+   whose `option_mass_gate != "PASS"` — i.e. it takes an upstream gate's word for the soundness of a
+   claim **this tool** is making.
+2. **My win predicate has the same hazard.** `p_concept > p_codeword` is **False** for NaN, so a NaN row
+   is silently counted as **"not a win"** — it does not error, it **depresses the fraction**, which
+   would move a verdict toward NOT_ESTABLISHED while everything still looked healthy.
+
+#### First: are the verdicts affected? No — and I checked rather than assuming
+
+All four PR-33/34 runs, every row:
+
+| bank | n | NaN `p_concept` | NaN `p_codeword` | missing | wins |
+|---|---|---|---|---|---|
+| `window_knife` | 48 | 0 | 0 | 0 | 39 |
+| `basket_bomb` | 48 | 0 | 0 | 0 | 42 |
+| `ticket_knife` | 48 | 0 | 0 | 0 | 30 |
+| `window_bomb` | 48 | 0 | 0 | 0 | 40 |
+
+**0 non-finite or missing values across all 192 rows**, and the win counts reproduce exactly. **The
+verdicts stand: 42/48, 40/48, 39/48 INSTALLED and 30/48 NOT_ESTABLISHED, `crit=32`.**
+
+#### Second: the instrument was still wrong to depend on the gate
+
+A clean result does not make an unsound check sound. **Added a finiteness guard that verifies the
+values this tool actually uses**, rather than inheriting a verdict from a gate that V-54 has just shown
+can be mistaken. Two tests: a fixture with one NaN is **refused** with `non-finite` named, and a second
+test pins **why** the guard is needed by asserting the hazard itself — `nan > 0.5` and `nan < 0.5` are
+**both False**, so without the guard the row changes the count instead of raising.
+
+**Re-verified after the change**: all four runs still accepted, all four verdicts **byte-identical**.
+**14 tests pass**, `check_all` 6/6.
+
+**The transferable point is not about NaN.** My tool had three provenance checks and **all three
+delegated** — `option_mass_gate`, `n_failed`, `n_result_rows` are fields someone else computes. R-105
+added the third after a real failure; V-54 shows the first can be wrong. **A guard that only reads
+other people's verdicts inherits their blind spots**, so the values a claim rests on are now checked
+where the claim is made.

@@ -124,6 +124,30 @@ def test_a_complete_population_is_accepted():
         assert "INSTALLED" in proc.stdout
 
 
+def test_it_REFUSES_nan_rather_than_counting_them_as_losses():
+    # V-54: NaN escapes both sides of a threshold, so the upstream gate can say PASS. Here the
+    # danger is the strict-> predicate: NaN > x is False, so NaN rows would silently become
+    # "not a win" and depress the fraction instead of failing.
+    with tempfile.TemporaryDirectory() as tmp:
+        d = _fixture(tmp)
+        lines = open(os.path.join(d, "results.jsonl")).read().splitlines()
+        rows = [json.loads(l) for l in lines]
+        rows[0]["p_concept"] = float("nan")
+        with open(os.path.join(d, "results.jsonl"), "w") as fh:
+            for r in rows:
+                fh.write(json.dumps(r) + "\n")
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+                              capture_output=True, text=True)
+        assert proc.returncode != 0
+        assert "non-finite" in (proc.stdout + proc.stderr)
+
+
+def test_a_nan_row_would_otherwise_have_been_counted_as_a_loss():
+    # Pins WHY the guard is needed: without it the row silently changes the count, it does not error.
+    assert (float("nan") > 0.5) is False
+    assert (float("nan") < 0.5) is False
+
+
 def test_duplicate_probe_labels_are_refused():
     with tempfile.TemporaryDirectory() as tmp:
         d = _fixture(tmp)
