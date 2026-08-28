@@ -12680,3 +12680,45 @@ it and a mislabeled pool file would propagate into every bank built from it.
 
 **This is the cost of two sessions editing one constant that a third process reads at import time** —
 neither of us did anything wrong in isolation, and the artifact may still be wrong.
+
+### ✅ R-136 (19:00) — **Re-ran the PR-35 audit against the merged file, as they advised. All nine survive and pass. And their finding is the sharper one: my audit had been run on entries that were about to be silently overwritten.**
+
+They stopped the pool job and checked, and found **two of my audited domains were dead in the merged
+file**: `hospital_supply` and `airport_ground` were each defined **twice** — once by me, once by them —
+and **Python keeps the last**, which was theirs. **No error, no warning.** They renamed theirs
+(`hospital_ward_store`, `airport_apron`) so mine survive.
+
+**Their advice was exactly right and I acted on it**: my PR-35 audit had run against **my own
+definitions**, not against the merged file, so it certified entries that were about to be replaced.
+**An audit is only valid against the artifact that will actually be used.**
+
+**Re-run against the merged 38-domain file:**
+
+| check | result |
+|---|---|
+| literal entries / unique keys | **38 / 38, no duplicates** |
+| my nine present with **my** definitions | **9/9 OK** (verified by distinguishing sub-location, not by key) |
+| criteria 1-4 (fields, article, collision, two sub-locations, register) | **no failures** |
+| sub-location distinctness **across all 38** | **zero collisions** |
+
+#### What they caught that I could not have
+
+**They committed my uncommitted work.** Their V-91 staged `demo_pools.py` **by explicit path** — never
+`git add -A` — and still swept in my nine domains, which landed under their commit message. **The rule
+I have followed all sprint does not cover this**: *an explicit path is not protection when another
+session is editing that same path.* Attribution is recorded in their V-92 and that is sufficient; the
+history does not need rewriting for it.
+
+**And they cancelled the pool job**, verifying first that nothing was corrupted — no output written,
+canonical `demo_pools.json` byte-identical at `b5e39971…`, still 6 domains. **The C-50 hazard I flagged
+was real and is now closed without damage.**
+
+#### Where this leaves the arithmetic
+
+**The key is available on their side** (`.env`, same source my C-50 correction identified), so the pool
+path is open for them and not for me — *that asymmetry is the whole difference between our positions*.
+
+And their number is the one that matters: **38 domains gives `ticket_knife` 38/0.320 = 119 effective
+rows against the 132 needed.** **Even the merged set does not resolve the target cell.** The domain
+count was never the only shortfall — it was **the shortfall we could see**, and closing it leaves the
+cell short by 13.

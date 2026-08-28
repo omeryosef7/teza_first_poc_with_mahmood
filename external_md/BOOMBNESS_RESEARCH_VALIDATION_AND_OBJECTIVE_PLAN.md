@@ -5828,3 +5828,34 @@ and nothing measured so far tests that.
 * **Decision rule:** the build **succeeds for a bank** iff its measured ceiling at k=29 reaches 132.
   Success on the low-ICC banks alone is **not** success for `ticket_knife`.
 
+
+### §12.1 — ⛔ CORRECTION to §12's pre-registration: the real k is 38, not 29, and `main` now clears
+
+§12 pre-registered at **k=29**. The true merged count is **38** — a peer was authoring 9 domains in
+the same file concurrently, and two of their keys collided with two of mine (§12.2). Corrected
+before regenerating pools, so the prediction still precedes the data:
+
+| bank | ICC | ceiling k=6 | k=29 *(as registered)* | **k=38 *(real)*** | clears 132? |
+|---|---|---|---|---|---|
+| `ticket_bomb` | 0.114 | 53 | 254 | **333** | yes |
+| `window_bomb` | 0.158 | 38 | 184 | **241** | yes |
+| `basket_bomb` | 0.160 | 38 | 181 | **238** | yes |
+| `main` | 0.286 | 21 | 101 | **133** | **yes** — clears only at k=38 |
+| **`ticket_knife`** | **0.320** | **19** | **91** | **119** | **no — needs 43** |
+| `window_knife` | 0.400 | 15 | 72 | 95 | no — needs 53 |
+| `basket_gun` | 0.755 | 8 | 38 | 50 | no — needs 100 |
+
+**The correction changes one verdict:** `main` was predicted short at k=29 (101) and clears at k=38
+(133). **`ticket_knife` remains short at 119 against 132** — the build was authorised to resolve
+that cell and is still predicted not to, by roughly five domains.
+
+**Four of seven banks are predicted to move from unresolvable to resolvable.** At k=6 every ceiling
+was 8–53, so *no* bank could resolve a true 0.625; at k=38 four can. That is the build's real
+payoff, and it is worth having even though the target cell falls short.
+
+**The decisive uncertainty is unchanged and is the reason to build rather than calculate:**
+`k/ICC` is a ceiling *only if ICC is stable in k*. The 32 added domains are more heterogeneous than
+the original 6, so measured ICC may rise (every ceiling above is then optimistic, and 43 domains
+would not fix `ticket_knife` either) or fall (all of them improve). **Nothing measured so far tests
+that, and the build is what tests it.**
+
