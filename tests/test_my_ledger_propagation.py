@@ -42,12 +42,36 @@ EXEMPT = {
     4: "superseded: the generation-cap concern is discharged by C7's 640-cap truncation check (R-75)",
     15: "honoured in C13's construction: the re-judge it mandated IS C13 (PR-21, same judging window, "
         "drift 2-4 rows), so the corrected claim is the one in the ledger",
+    # --- found only after C-45 hardened the heading match; both opened in combined `R-nn / C-nn`
+    #     headings that the previous single-token pattern could not see ---
+    12: "in boombness_objective_sprint_report.md (2 rows). PR-9's second outcome, which became live "
+        "claim C2; it propagated, my check just could not see it was a correction.",
+    16: "operational: a SLURM control-plane Protocol authentication error caused a partial judge "
+        "output to be read; it happened to agree with the truth. No claim was stated wrongly.",
 }
 
 
+#: A correction heading is any markdown heading whose SUBJECT is C-NN — i.e. the id appears before
+#: the em-dash that separates the heading's title from its summary.
+#:
+#: The previous pattern required exactly one whitespace-delimited token before the id, so it silently
+#: MISSED `### <marker> **C-49**`, `### <marker> CORRECTION C-52` and `#### <marker> C-53`. It passed
+#: only because every correction written so far happened to use a shape it handled — a check whose
+#: correctness was contingent on an accident of its inputs, which is the failure class the concurrent
+#: session named from C-44. A miss here is invisible: the correction is simply never checked.
+#:
+#: Matching C-NN anywhere in the heading would over-match instead, because R-entry headings cite
+#: corrections after the dash (`### R-103 — C-31/C-33 corrected readings...`). Hence: before the dash.
+HEADING = re.compile(r"^#{2,6}[^\n]*?$", re.M)
+
+
 def corrections_in_plan(text):
-    """`### ... C-NN ...` headings — how a correction is opened in the plan log."""
-    return {int(m) for m in re.findall(r"^###\s+\S*\s*C-(\d+)\b", text, re.M)}
+    """Correction ids opened by a heading, robust to marker, emphasis, wording and heading depth."""
+    out = set()
+    for line in HEADING.findall(text):
+        subject = re.split(r"\s+[—-]{1,2}\s+", line, maxsplit=1)[0]
+        out |= {int(m) for m in re.findall(r"\bC-(\d+)\b", subject)}
+    return out
 
 
 def corrections_in_deliverable(text):
@@ -68,6 +92,25 @@ def test_every_correction_reached_the_deliverable():
     assert not gaps, (
         f"corrections in the plan log but NOT in the deliverable's table: "
         f"{['C-%d' % g for g in gaps]}. Add the row, or register an EXEMPT entry with a reason.")
+
+
+def test_the_heading_match_is_not_contingent_on_my_formatting():
+    """C-45: the previous pattern passed only because every correction happened to fit its shape.
+
+    A miss here is invisible — the correction is simply never checked for propagation — so the
+    match must survive marker, emphasis, wording and heading depth. It must ALSO not over-match:
+    R-entry headings cite corrections after the dash and are not themselves corrections.
+    """
+    for text in ("### C-90 — no marker",
+                 "### \u26d4 C-91 (12:00) — marker",
+                 "### \u26d4\u26d4 C-92 — double marker",
+                 "### \u26d4 **C-93** — bold id",
+                 "### \u26d4 CORRECTION C-94 — two words before the id",
+                 "#### \u26d4 C-95 — four hashes",
+                 "### \u26d4 R-99 / C-96 (12:00) — combined heading"):
+        assert corrections_in_plan(text), f"heading not recognised: {text}"
+    # must NOT count a correction merely cited in an R-entry's summary
+    assert not corrections_in_plan("### R-103 (07:15) — **C-31/C-33 corrected readings**")
 
 
 def test_the_check_can_actually_fail():

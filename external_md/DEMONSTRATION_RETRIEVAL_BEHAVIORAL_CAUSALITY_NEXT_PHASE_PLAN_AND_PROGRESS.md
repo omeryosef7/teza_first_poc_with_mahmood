@@ -12032,3 +12032,52 @@ hand-computed them, and their values (main 42/48, window_bomb 40/48, window_knif
 
 **No published number moves.** The defect's damage was confined to a refusal that never happened
 because I had not followed my own C-42 advice.
+
+### ⛔ C-45 (17:40) — **They named a new failure class from C-44 — a tool correct only by accident of its inputs — and it was live in my ledger guard. Two corrections had been invisible to it for its entire life.**
+
+Their framing of my no-query-kind-filter finding: *"a tool that works only because every input it has
+ever seen happened to be homogeneous is passing for a reason unrelated to its correctness, and nothing
+about its green tells you which."* **A distinct class** from admissibility, reasoning and blast radius.
+**I turned it on my own guards immediately, and `test_my_ledger_propagation.py` has it.**
+
+Its heading pattern required **exactly one whitespace-delimited token** before the id. Tested against
+ways I might plausibly open a correction:
+
+| heading | old pattern |
+|---|---|
+| `### ⛔ C-45 (12:00) —` | found |
+| `### C-48 —` | found |
+| **`### ⛔ **C-49** —`** (bold id) | **MISSED** |
+| **`### ⛔ CORRECTION C-52 —`** (two words) | **MISSED** |
+| **`#### ⛔ C-53 —`** (four hashes) | **MISSED** |
+
+**A miss is invisible**: the correction is simply never checked for propagation — the exact failure the
+test exists to prevent. It passed for its whole life **because every correction I had written happened
+to fit a shape it handled.**
+
+#### It was not hypothetical: two real corrections were never checked
+
+Hardened to *"C-NN appearing before the em-dash of any markdown heading"* — which also must **not**
+over-match, since R-entry headings cite corrections after the dash. The count went **42 → 44**:
+
+| | opened in | disposition |
+|---|---|---|
+| **C-12** | `### 🔴🔴🔴 R-23 / C-12 — PR-9's SECOND OUTCOME…` | **in `boombness_objective_sprint_report.md` (2 rows)** — it propagated; my check could not see it was a correction. It is the origin of **live claim C2** |
+| **C-16** | `#### 🔴 C-16: I read a partial judge output…` | **in neither deliverable** — operational: a SLURM `Protocol authentication error` produced a partial judge read that **happened to agree with the truth**. No claim stated wrongly |
+
+**Both were opened in combined `R-nn / C-nn` headings**, a format the single-token pattern structurally
+could not see. **Neither is a live claim error**, and C-12 is the more uncomfortable: it is the
+provenance of a claim in the live ledger, and my propagation guard had never once examined it.
+
+**Now classified in `EXEMPT` with reasons**, and `test_the_heading_match_is_not_contingent_on_my_formatting`
+asserts all seven heading shapes are recognised **and** that an R-entry citing corrections is not
+counted. **4 tests pass.**
+
+#### The class, stated
+
+**Admissibility**, **reasoning**, **blast radius**, and now: **a check whose correctness is contingent
+on an accident of its inputs.** Its signature is that *nothing about the green distinguishes "the
+inputs are clean" from "the check cannot see this input"* — and unlike the other three it is invisible
+to both a guard and a reader, because the guard passes and the argument reads correctly. **The only
+way to find it is to feed the check inputs it has never seen**, which is what I did here and what
+C-44's mixed-readout run would have done to the verdict tool.
