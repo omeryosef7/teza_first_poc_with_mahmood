@@ -4575,3 +4575,65 @@ coverage would have been the same error again.
 makes it a property of the working mode rather than of either session.**
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §10.5 — The seventh bank lands, and pooling it surfaced that THREE of the seven ICC estimates come from readouts their own gate marks NOT REPORTABLE
+
+A peer generated the seventh bank (`window_knife`, 192/192, `n_failed=0`) to complete the third
+within-codeword contrast, pre-registering that one extra point could not make the win-rate/ICC
+relationship significant. **It could not, and it did not.** But pooling it required checking the
+readout, and that check found something worse than the correlation result.
+
+### ⛔ Three of seven `semantic_one_word` readouts are below the option-mass floor
+
+| bank | median option mass | reportable | ICC (dose-centred) |
+|---|---|---|---|
+| `ticket_bomb` | 0.181 | **yes** | 0.000 |
+| `basket_bomb` | 0.103 | **yes** | 0.000 |
+| `basket_gun` | 0.081 | **yes** | 0.381 |
+| `ticket_knife` | 0.077 | **yes** | 0.190 |
+| `main` | **0.043** | **NO** | **0.218** |
+| `window_bomb` | **0.040** | **NO** | 0.049 |
+| `window_knife` | **0.019** | **NO** | 0.115 |
+
+**`main` is one of them, and `main`'s 0.218 is the value §10.2's blocker table used as its
+representative ICC.** A readout below the floor decides its forced choice inside a tail, so the
+mapped-wins it produces — and therefore the ICC computed from them — may be ordering noise. This is
+§0.16's tail-gate lesson arriving in an analysis I built two sections after quoting it.
+
+**What survives:** `ticket_knife`'s **0.190 is on a REPORTABLE readout (0.077)**, so §10.3.1's
+conclusion — `ticket_knife` is cluster-limited and unreachable at 10 domains — **stands on a sound
+measurement**. That is the load-bearing claim of the whole design analysis, and it is the one that
+happens not to depend on a tail-bound readout.
+
+**What is scoped down:** §10.2's table quoted **ICC 0.218** as the working value. It should be read
+as *`main`'s* number, from a readout that is not reportable. The reportable banks span **0.000 to
+0.381**, so the honest working range is unchanged from §10.3's "no clustering penalty to ~53
+domains" — the range was always the honest form, and this removes the temptation to collapse it to a
+point.
+
+### The seventh bank, against its pre-registration
+
+`window|knife` = **0.115** against `window|bomb` = **0.049**. The peer pre-registered that a high
+value would make it "three for three on concept-not-codeword" and a near-zero value would weaken the
+concept story. It is **neither** — same direction as the other two contrasts (knife above bomb) but
+a **2.3×** ratio where `basket` and `ticket` both showed bomb at exactly 0.000. Recorded as
+**directionally consistent and materially weaker**, not as a third confirmation.
+
+*(Concept-wise the ordering does hold on both codewords that carry two concepts: `ticket` 0.190
+knife vs 0.000 bomb, `window` 0.115 knife vs 0.049 bomb. Two for two on `knife > bomb`. Both
+`window` rows are non-reportable, so that contrast is the weakest evidence in the table.)*
+
+### The correlation, and the pre-registration holding
+
+| population | n | Spearman(win rate, ICC) | exact p |
+|---|---|---|---|
+| all banks | 7 | **−0.559** | 0.2056 |
+| reportable readouts only | 4 | **−0.738** | 0.3333 |
+
+Adding the seventh point moved ρ from −0.696 **away** from significance, exactly as pre-registered.
+**Not established on any subset**, and the reportable-only subset is too small to test at all.
+§10.4's verdict is unchanged: a hypothesis, needing ~13 banks, and not a finding.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**

@@ -478,7 +478,9 @@
     "p5_basket_bomb_20260828_060644_3977117",
     "p5_ticket_knife_20260828_054104_3951114",
     "p5_window_bomb_20260828_054104_3951137"
-   ]
+   ],
+   "SCOPE_2026-08-28_V68": "READOUT REPORTABILITY: three of the seven semantic_one_word readouts are BELOW the 0.05 option-mass floor and their producer marks them NOT REPORTABLE -- main 0.043, window_bomb 0.040, window_knife 0.019. A readout below the floor decides its forced choice inside a tail, so the mapped-wins and the ICC computed from them may be ordering noise. Reportable: ticket_bomb 0.181 (ICC 0.000), basket_bomb 0.103 (0.000), basket_gun 0.081 (0.381), ticket_knife 0.077 (0.190). ticket_knife's 0.190 IS reportable, so the cluster-limited verdict for ticket_knife stands on a sound measurement; main's 0.218 is NOT, so it must be read as main's number from a tail-bound readout rather than as a working value.",
+   "SEVENTH_BANK_V68": "window_knife added (192/192, n_failed=0): ICC 0.115 dose-centred, one_word median option mass 0.019 (NOT reportable). Third within-codeword contrast is window|knife 0.115 vs window|bomb 0.049 -- same direction as basket and ticket but a 2.3x ratio where both of those showed bomb at exactly 0.000, so directionally consistent and materially weaker, NOT a third confirmation. Correlation with win rate: n=7 rho=-0.559 p=0.2056; reportable only n=4 rho=-0.738 p=0.3333. Adding the point moved rho AWAY from significance, exactly as pre-registered. Still a hypothesis, not a finding."
   }
  ],
  "bad_path_audit": {
