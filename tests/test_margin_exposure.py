@@ -23,7 +23,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 import margin_exposure as me  # noqa: E402
 
 
-def _run(tmp, name, model, bank, rows, *, bank_sha=None, launch_model=None, commit="c0"):
+def _run(tmp, name, model, bank, rows, *, bank_sha=None, launch_model=None, commit="c0",
+         n_failed=0):
     """`launch_model` is what --model was given as (None = omitted); `model` is what RESOLVED."""
     d = tmp / name
     d.mkdir()
@@ -32,6 +33,7 @@ def _run(tmp, name, model, bank, rows, *, bank_sha=None, launch_model=None, comm
     (d / "metadata.json").write_text(json.dumps({
         "model": model, "model_revision_resolved_commit": commit,
         "bank_rows_sha16": bank_sha if bank_sha is not None else "sha_" + bank}))
+    (d / "summary.json").write_text(json.dumps({"failures": {"n_failed": n_failed}}))
     with open(d / "results.jsonl", "w") as fh:
         for i, margin in enumerate(rows):
             fh.write(json.dumps({"prompt_id": f"p{i}", "query_kind": "semantic_forced_choice",
@@ -175,3 +177,70 @@ def test_missing_hash_falls_back_but_LABELS_itself(tmp_path):
     (d / "config.json").write_text(json.dumps({"args": {"model": "m", "bank": "/x/b.jsonl"}}))
     (d / "results.jsonl").write_text("")
     assert me._provenance(str(d))["bank_rows_sha16"] == "basename:b.jsonl"
+
+
+def test_an_ATTRITED_run_is_refused_by_measure_window(tmp_path):
+    """R-105 parity, missing from the first version of this module.
+
+    The real case: a Qwen3 arm dropped 22 of 40 rows to OOM and this module reported n=18 as
+    though 18 were the population.
+    """
+    a = _run(tmp_path, "att_a", "llama", "b.jsonl", [5.0, 1.0], n_failed=22)
+    b = _run(tmp_path, "att_b", "llama", "b.jsonl", [5.1, 1.1])
+    with pytest.raises(me.BorrowedScaleError, match="ATTRITED"):
+        me.measure_window(a, b)
+    with pytest.raises(me.BorrowedScaleError, match="ATTRITED"):
+        me.measure_window(b, a)
+
+
+def test_an_ATTRITED_run_is_refused_by_exposure(tmp_path):
+    clean_a = _run(tmp_path, "ok_a", "llama", "b.jsonl", [5.0, 1.0])
+    clean_b = _run(tmp_path, "ok_b", "llama", "b.jsonl", [5.1, 1.1])
+    w = me.measure_window(clean_a, clean_b)
+    bad = _run(tmp_path, "att_c", "llama", "b.jsonl", [5.0, 0.1], n_failed=1)
+    with pytest.raises(me.BorrowedScaleError, match="ATTRITED"):
+        me.exposure(bad, w, "batch16-vs-batch1")
+
+
+def test_even_ONE_lost_row_is_refused(tmp_path):
+    """Attrition is not a magnitude question: one silently missing row means n is not n."""
+    a = _run(tmp_path, "one_a", "llama", "b.jsonl", [5.0, 1.0], n_failed=1)
+    b = _run(tmp_path, "one_b", "llama", "b.jsonl", [5.1, 1.1])
+    with pytest.raises(me.BorrowedScaleError, match="ATTRITED"):
+        me.measure_window(a, b)
+
+
+def test_a_run_with_no_summary_is_not_blocked(tmp_path):
+    """The guard must not refuse fixtures/older runs that simply lack a failures block."""
+    d = tmp_path / "nosum"; d.mkdir()
+    (d / "config.json").write_text(json.dumps({"args": {"model": "m", "bank": "/x/b.jsonl"}}))
+    (d / "metadata.json").write_text(json.dumps({"model": "m", "bank_rows_sha16": "s"}))
+    (d / "results.jsonl").write_text("")
+    assert me.assert_complete(str(d)) == 0
+
+
+def test_common_mode_shift_changes_the_LOGPS_but_not_the_MARGIN(tmp_path):
+    """A peer's 0/48 and my 1/48 were both right; the names had to distinguish them.
+
+    A row whose two logps shift by the SAME amount changed measurably on both logits and did not
+    move the decision at all. "bit-identical" reads as "unchanged", so both counts are reported
+    under names that say which question they answer.
+    """
+    def one(name, c, w, nf=0):
+        d = tmp_path / name; d.mkdir()
+        (d / "config.json").write_text(json.dumps({"args": {"model": "m", "bank": "/x/b.jsonl"}}))
+        (d / "metadata.json").write_text(json.dumps(
+            {"model": "m", "model_revision_resolved_commit": "c0", "bank_rows_sha16": "s"}))
+        (d / "summary.json").write_text(json.dumps({"failures": {"n_failed": nf}}))
+        (d / "results.jsonl").write_text(json.dumps(
+            {"prompt_id": "z", "query_kind": "semantic_forced_choice",
+             "logp_concept": c, "logp_codeword": w}) + "\n")
+        return str(d)
+
+    shift = -9.091e-02
+    a = one("cm_a", -1.0, -4.0)
+    b = one("cm_b", -1.0 + shift, -4.0 + shift)     # common mode: margin identical
+    w = me.measure_window(a, b)
+    assert w["n_identical_margin"] == 1, "the MARGIN did not move"
+    assert w["n_identical_both_logps"] == 0, "but the computation DID change, on both logits"
+    assert w["scale_max"] == pytest.approx(0.0, abs=1e-12)

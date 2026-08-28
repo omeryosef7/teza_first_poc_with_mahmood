@@ -4013,3 +4013,93 @@ silently unsafe on the other — the borrowed window, this guard, and `kw_refusa
 refusal and can never confirm success and so must never be quoted as an ASR substitute.)*
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.22 — DEEP REVIEW: the new instrument had the attrition blind spot it was built next to, and the Qwen3 window I published is measured on a population the perturbation selected
+
+The ~4h review, run against the newest code first, on the principle that new code is where a review
+pays. It found one defect and one published number that needs its scope corrected.
+
+### The defect: `margin_exposure` accepted an attrited population
+
+One tick after writing it, `margin_exposure` computed `median |margin|` and an at-risk count over
+an arm that had lost **22 of 40 rows** to OOM, reporting **n=18** as though 18 were the population.
+Both of its two numbers describe survivors and neither said so.
+
+This is **V-54's failure in a module written to prevent a neighbouring one**, and a peer's
+`mapping_installation_verdict` already refuses exactly this. R-105 parity was simply missing.
+
+**Fixed:** `assert_complete()` refuses any run with `n_failed > 0`, wired into *both* entry points.
+**Mutation-tested, 4 mutants, all killed:** disabling the refusal (3 tests), tolerating <5 lost rows
+(2), checking only the first run of a measured pair (1), and skipping the check in `exposure` (1).
+18 tests.
+
+### ⛔ The consequence: the Qwen3 window **1.2499** is measured on a subset the perturbation chose
+
+That attrited pair is exactly where §5.20.1's `longpreQ14B` window came from. So **1.2499 was
+measured on the 18 rows where the batch-16 arm survived** — and those are the **short** rows,
+because *the perturbation being measured is what killed the long ones*.
+
+**This is the sharpest form of the error this module exists to refuse: not a scale borrowed from
+another population, but one borrowed from a biased sample of its own.** And the bias is not
+incidental — it is induced by the very quantity under measurement.
+
+Worse, it is **UNMEASURABLE, not merely unmeasured**: no complete batch-16 run on
+Qwen3/longpreQ14B exists *or can exist*, because batch 16 is what OOMs. The honest entry is a
+refusal, and the tool now produces one.
+
+| bank | window | status |
+|---|---|---|
+| `main` (Llama) | 0.4616 | **measured**, complete 48/48 both arms |
+| `ticket_bomb` (Llama) | 0.3202 | **measured**, complete 48/48 both arms |
+| `longpreQ14B` (Qwen3) | ~~1.2499~~ | **WITHDRAWN — unmeasurable**; batch-16 cannot complete this bank |
+
+### What this does and does not touch
+
+**The batching finding itself STANDS, because it does not rest on the Qwen3 numbers.** "Batching is
+not numerically inert" was independently established on Llama/`main` with **complete** populations
+on both arms: 0/48 bit-identical, max \|Δ margin\| 0.4616. The determinism control (40/40
+bit-identical at fixed batch, |Δ| exactly 0) also ran on complete populations.
+
+What is scoped down is the **magnitude** I quoted from Qwen3 — median 0.688, max 1.250, 1 verdict
+flip in 18 — which describes *the short half of `longpreQ14B`*, not the bank. It should never have
+been tabulated as a bank-level window beside two that were properly measured.
+
+**§5.20's audit is unaffected in its conclusions**, because the fix there was to *stop* using 1.250
+on Llama banks; this correction removes the number entirely rather than relocating it. §5.19's and
+§5.18's Qwen3 result are likewise untouched — both arms there are complete 40/40 at batch 1.
+
+### The pattern, now at four instances
+
+An instrument that can only fail in one direction is safe on one class of claim and silently unsafe
+on the other: the borrowed window (safe on effects, unsafe on nulls), the provenance guard (safe
+against false confidence, unsafe against corrections), `kw_refusal` (anchors refusal, never
+success), and now **an attrition-blind exposure metric** — safe when a run is complete, silently
+wrong when it is not, and *most* wrong precisely when the perturbation causes the attrition.
+
+**A useful standing check for any new instrument: ask which direction it can fail in, and which
+class of claim that direction protects.**
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### §5.22.1 — "bit-identical" was the wrong name, and two correct counts disagreed because of it
+
+A peer's determinism count and mine differed on the same pair — **0/48** against **1/48** — and both
+were right. They counted rows identical on **both logps** ("did the computation change"); I counted
+rows identical on the **margin** ("could the decision change"). The one discrepant row had
+`logp_concept` and `logp_codeword` both shifted by exactly **−9.091e-02** — a **common-mode** shift
+that cancels in the difference.
+
+The margin definition is the correct one *for exposure*, since the margin is what the predicate
+thresholds. But calling it `bit_identical` reads as *"the row did not change"*, and that row changed
+measurably on both logits. **Two ledgers would have appeared to contradict each other over a naming
+choice.** Both counts are now emitted under names that state the question:
+
+```
+0/48 identical MARGIN, 0 identical on both logps, 0 verdict flips
+```
+
+Covered by a test that constructs the common-mode case explicitly, so the distinction cannot
+silently collapse back into one number.
+

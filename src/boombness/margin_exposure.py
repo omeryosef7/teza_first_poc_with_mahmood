@@ -104,6 +104,42 @@ def _provenance(run_dir: str) -> Dict[str, Optional[str]]:
     }
 
 
+def assert_complete(run_dir: str) -> int:
+    """Refuse a run that silently lost rows. R-105 parity, and it was missing here.
+
+    FOUND IN REVIEW, in this module, one tick after writing it. `margin_exposure` happily
+    computed `median |margin|` and an at-risk count over an arm that had dropped **22 of 40 rows**
+    to OOM, reporting `n=18` as though 18 were the population. Both of its two numbers describe
+    the survivors and neither says so — which is precisely the failure the option-mass gate had
+    (V-54) and that a peer's `mapping_installation_verdict` already refuses.
+
+    It has a published consequence. The Qwen3 window quoted as **1.2499** was MEASURED from that
+    attrited pair, i.e. on the 18 rows where the batch-16 arm survived — and those are the SHORT
+    rows, because the perturbation being measured is what killed the long ones. So the scale was
+    measured on a subset selected BY the perturbation, which is the sharpest form of the
+    borrowed-scale error this module exists to refuse: not borrowed from another population, but
+    from a biased sample of its own.
+
+    Note this can make a window UNMEASURABLE rather than merely unmeasured — on Qwen3/longpreQ14B
+    no complete batch-16 run exists or can exist, since batch 16 is what OOMs. That is the honest
+    answer, and an honest blank beats an estimate.
+    """
+    sp = os.path.join(run_dir, "summary.json")
+    if not os.path.isfile(sp):
+        return 0
+    try:
+        n_failed = int(((json.load(open(sp)) or {}).get("failures") or {}).get("n_failed") or 0)
+    except Exception:
+        return 0
+    if n_failed:
+        raise BorrowedScaleError(
+            f"{os.path.basename(run_dir)}: ATTRITED population — {n_failed} rows failed. "
+            "median |margin| and the at-risk count would describe only the survivors, and when "
+            "the attrition is caused by the very perturbation being measured the survivors are "
+            "selected BY it. Refusing rather than reporting a subset as a population.")
+    return 0
+
+
 def margins(run_dir: str, query_kind: str = "semantic_forced_choice") -> Dict[str, float]:
     """Per prompt_id: logp_concept − logp_codeword, the quantity mapped-wins thresholds at 0.
 
@@ -122,6 +158,18 @@ def margins(run_dir: str, query_kind: str = "semantic_forced_choice") -> Dict[st
     return out
 
 
+def _raw(run_dir: str, query_kind: str) -> Dict[str, Any]:
+    """Per prompt_id: the (concept, codeword) logp PAIR, for the did-the-computation-change count."""
+    out: Dict[str, Any] = {}
+    for r in read_jsonl(os.path.join(run_dir, "results.jsonl")):
+        if r.get("query_kind") != query_kind:
+            continue
+        if r.get("logp_concept") is None or r.get("logp_codeword") is None:
+            continue
+        out[r["prompt_id"]] = (float(r["logp_concept"]), float(r["logp_codeword"]))
+    return out
+
+
 def measure_window(run_a: str, run_b: str,
                    query_kind: str = "semantic_forced_choice") -> Dict[str, Any]:
     """MEASURE a perturbation scale from two runs that differ only in the perturbation.
@@ -130,20 +178,34 @@ def measure_window(run_a: str, run_b: str,
     thing this module exists to refuse. Both runs must share (model, bank) — measuring a window
     across two populations would produce a number belonging to neither.
     """
+    assert_complete(run_a)
+    assert_complete(run_b)
     pa, pb = _provenance(run_a), _provenance(run_b)
     if pa != pb:
         raise BorrowedScaleError(
             f"cannot MEASURE a window across different populations: {pa} vs {pb}. A perturbation "
             "scale is a property of one model-and-bank.")
     A, B = margins(run_a, query_kind), margins(run_b, query_kind)
+    RA, RB = _raw(run_a, query_kind), _raw(run_b, query_kind)
     common = sorted(set(A) & set(B))
+    n_identical_logps = sum(1 for p in common
+                            if p in RA and p in RB and RA[p] == RB[p])
     if not common:
         raise BorrowedScaleError("the two runs share no prompt_ids; nothing was compared")
     d = [abs(A[p] - B[p]) for p in common]
     flips = [p for p in common if (A[p] > 0) != (B[p] > 0)]
+    # NAME THE DEFINITION. A peer's count and mine disagreed (0/48 vs 1/48) and both were right:
+    # they counted rows identical on BOTH logps ("did the computation change"), this counts rows
+    # identical on the MARGIN ("could the decision change"). The discrepant row had both logps
+    # shifted by exactly -9.091e-02 -- a COMMON-MODE shift that cancels in the difference. The
+    # margin definition is the correct one for exposure, because the margin is what the predicate
+    # thresholds; but calling it "bit_identical" reads as "the row did not change", and that row
+    # changed measurably on both logits. So both are reported, each under its own name.
     return {
         "scale_max": max(d), "scale_median": statistics.median(d),
-        "n_common": len(common), "n_bit_identical": sum(1 for x in d if x == 0.0),
+        "n_common": len(common),
+        "n_identical_margin": sum(1 for x in d if x == 0.0),
+        "n_identical_both_logps": n_identical_logps,
         "n_verdict_flips": len(flips),
         "provenance": pa, "measured_from": [os.path.basename(run_a), os.path.basename(run_b)],
         "NOTE": ("this scale is valid ONLY for this (model, bank). Quoting it elsewhere is the "
@@ -162,6 +224,7 @@ def exposure(run_dir: str, window: Dict[str, Any], scale_name: str,
     """
     if not scale_name or not scale_name.strip():
         raise BorrowedScaleError("scale_name is required: an at-risk count must say at-risk of WHAT")
+    assert_complete(run_dir)
     pr, pw = _provenance(run_dir), window.get("provenance")
     if pr != pw:
         raise BorrowedScaleError(
@@ -254,7 +317,8 @@ def main() -> int:
     win = measure_window(*args.measure_window, query_kind=args.query_kind)
     print(f"[margex] MEASURED scale '{args.scale_name}' on {win['provenance']}: "
           f"max {win['scale_max']:.4f} median {win['scale_median']:.4f} "
-          f"({win['n_bit_identical']}/{win['n_common']} bit-identical, "
+          f"({win['n_identical_margin']}/{win['n_common']} identical MARGIN, "
+          f"{win['n_identical_both_logps']} identical on both logps, "
           f"{win['n_verdict_flips']} verdict flips)")
     run.log_row({"kind": "window", **win})
 
