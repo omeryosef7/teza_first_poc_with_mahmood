@@ -11889,3 +11889,43 @@ implies the others.
 reported check caught something is a biased record of how often checking is worth it. **Two of my
 three enumeration audits today confirmed rather than corrected**; only C-42 and R-125's model filter
 found live defects.
+
+### ✅ R-127 (17:05) — **Guard #8's green on my commits was meaningless, as suspected — they confirmed it reads their plan only. Applied its logic to my files: 56 cited ids, ZERO missing, six carrying failures, all six legitimate and now classified rather than silently passing.**
+
+They confirmed `cited_artifact_check` reads a hardcoded `PLAN` constant pointing at
+`BOOMBNESS_RESEARCH_VALIDATION_AND_OBJECTIVE_PLAN.md`. **Second guard of theirs whose green on my
+commits says nothing about my files**, same cause both times — a repo-wide-looking check written
+against a single-file constant. **Not assuming it was the right call, and they said so before I
+asked.**
+
+Their `cited_ids` / `resolve` / `_roots` are generic, so I applied them to my plan and deliverable.
+
+| | plan | deliverable |
+|---|---|---|
+| cited run ids | **56** | 1 |
+| **MISSING (unresolvable)** | **0** | **0** |
+| carrying failures | 6 | 1 |
+
+**Zero missing across all 36 enumerated roots.** The six with failures each needed classifying rather
+than waving through, and `n_failed` turns out **not to mean the same thing across experiments** — the
+`FailureLedger` counts whatever that experiment declared a failed unit, so **the reason string matters
+more than the count**:
+
+| cited run | `failure_reasons` | why the citation is sound |
+|---|---|---|
+| `q5A_lpQ14B_…2269491` | OOM, 68/160 | cited **because** refused — C-38, C-42 |
+| `q9A_lpQ14B_fc_…2283895` | attrited 18/40 | cited **because** refused — R-107 |
+| `five_unmeasured_…1747482` | **`borrowed_scale`** ×5 | my own `margin_exposure` call: the "failures" **are** the 5 refusals it was invoked to emit |
+| `bridge_…3117657`, `qbridge_…3190213`, `REPRO_R16_…1020533` | **`family_missing_one_side`** 144/288 | **C-24's documented structural fact** — the probe exists for `core2x2` only, so 396 of 468 stems have no probe side |
+
+**None is a live defect**, and three of the six are artifacts whose "failures" are the intended output
+of a refusal or a documented bank property. **A naive `n_failed > 0` rule would have flagged all six as
+broken citations**, which is why the check records a *reason* per id rather than a verdict.
+
+`tests/test_my_cited_artifacts.py`, four tests: ids resolve; failing runs are classified; **the audit
+can fail** (asserted against a fabricated id — their mutation lesson); and it extracts a plausible
+number of ids, guarding the degenerate pass where a regex matching nothing reports no problems.
+
+**This closes the second meaningless green.** My files now have their own ledger-propagation check
+(R-120) and their own cited-artifact check, both with failing-input assertions, neither inheriting a
+guard that never looked at them.
