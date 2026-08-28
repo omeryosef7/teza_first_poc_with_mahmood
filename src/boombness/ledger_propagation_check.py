@@ -46,9 +46,9 @@ METHOD_ONLY = {
              "recorded on their own entries",
     "§5.18.1": "withdraws one supporting sentence; the claim it supported is recorded via "
                "SECOND_MODEL_BINDING on its entry",
-    "§6.1": "design arithmetic for a bank that was never generated — no claim depends on it",
-    "§6.2": "design arithmetic, superseded by §6.3/§6.3.1 before any claim rested on it",
-    "§6.3": "corrects §6.2's arithmetic; the surviving claim is recorded via PER_BANK_ICC",
+    "§10.1": "design arithmetic for a bank that was never generated — no claim depends on it",
+    "§10.2": "design arithmetic, superseded by §10.3/§10.3.1 before any claim rested on it",
+    "§10.3": "corrects §10.2's arithmetic; the surviving claim is recorded via PER_BANK_ICC",
 }
 
 #: Tokens that evidence a section reached the ledger. A section passes if ANY of its own distinctive
@@ -67,9 +67,14 @@ TRACE_TOKENS = {
     "§5.20.1": ["borrowed", "0.4616"],
     "§5.21": ["unmeasurable", "attrit"],
     "§5.22": ["unmeasurable", "attrit"],
-    "§6.3.1": ["per_bank_icc", "0.190"],
-    "§6.4": ["codeword property", "0.381"],
+    "§10.3.1": ["per_bank_icc", "0.190"],
+    "§10.4": ["codeword property", "0.381"],
 }
+
+
+#: Floor for the degenerate-pass check; module-level so unit fixtures can scale it down while the
+#: shipped guard keeps the real value.
+MIN_EXPECTED = 10
 
 
 def correction_sections(text: str):
@@ -93,6 +98,19 @@ def main() -> int:
     blob = json.dumps(json.load(open(LEDGER))).lower()
 
     secs = correction_sections(plan)
+
+    # DEGENERATE-PASS FLOOR. A peer guarded this on their own version and I had not: if the marker
+    # convention changes, or a path breaks, or the regex stops matching, `secs` is EMPTY and every
+    # loop below is skipped -- so the guard reports success having checked nothing. That is the
+    # green-on-green failure one level up from the mutation-test mistake, and the tell was already
+    # visible in the summary line, which printed "-5 with a required ledger trace" on an empty scan.
+    # The corpus has never had fewer than this many correction sections; a real drop means the
+    # SCANNER broke, not that the corrections vanished.
+    if len(secs) < MIN_EXPECTED:
+        print(f"[ledger-prop] FAIL — only {len(secs)} correction sections found, expected at least "
+              f"{MIN_EXPECTED}. The scanner or the marker convention has broken; a guard that "
+              f"checks nothing must not report success.")
+        return 1
     seen, unclassified, untraced = set(), [], []
     for sid, heading in secs:
         if sid in seen:
@@ -109,7 +127,7 @@ def main() -> int:
 
     print(f"[ledger-prop] {len(seen)} correction sections; "
           f"{len(METHOD_ONLY)} classified method-only; "
-          f"{len(seen) - len(METHOD_ONLY) - len(unclassified)} with a required ledger trace")
+          f"{len([x for x in seen if x in TRACE_TOKENS])} with a required ledger trace")
     ok = True
     for sid, heading in unclassified:
         ok = False

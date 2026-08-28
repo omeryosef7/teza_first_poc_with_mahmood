@@ -40,6 +40,7 @@ def test_an_ordinary_section_is_not_a_correction():
 
 def _run_guard(tmp_path, monkeypatch, plan_text, ledger_obj):
     import json
+    monkeypatch.setattr(lp, "MIN_EXPECTED", 0)   # unit fixtures carry one section, not a corpus
     p = tmp_path / "plan.md"
     p.write_text(plan_text, encoding="utf-8")
     lg = tmp_path / "ledger.json"
@@ -91,3 +92,22 @@ def test_every_shipped_METHOD_ONLY_entry_states_a_reason():
 def test_the_real_repo_passes():
     """The shipped plan and ledger must be consistent right now."""
     assert lp.main() == 0
+
+
+def test_an_EMPTY_scan_is_refused_rather_than_reported_as_clean(tmp_path, monkeypatch):
+    """The degenerate pass a peer guarded and I had not.
+
+    If the marker convention changes or the scan breaks, every loop below is skipped and the guard
+    reports success having checked NOTHING. The tell was already in the summary line, which printed
+    "-5 with a required ledger trace" on an empty scan.
+    """
+    import json
+    p = tmp_path / "plan.md"; p.write_text("## S1 - a plan with no correction markers\n")
+    lg = tmp_path / "l.json"; lg.write_text(json.dumps({"entries": []}))
+    monkeypatch.setattr(lp, "PLAN", str(p)); monkeypatch.setattr(lp, "LEDGER", str(lg))
+    monkeypatch.setattr(lp, "MIN_EXPECTED", 10)
+    assert lp.main() == 1, "a guard that checked nothing must not report success"
+
+
+def test_the_shipped_floor_is_not_zero():
+    assert lp.MIN_EXPECTED >= 10, "a floor of 0 restores the degenerate pass"

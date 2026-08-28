@@ -3731,7 +3731,7 @@ many rows crowd the boundary*, which scales with a bank's margin distribution, *
 concept. Normalised it reverses to **0.36×** — `logp_concept` sits at −0.006, i.e. p≈0.994, so its
 absolute deltas are tiny by construction. Neither statistic is decision-relevant; the **margin** is.)*
 
-### §5.18 re-measured: both arms, batch 1, identical code path, complete populations
+### §5.18's contrast re-measured: both arms, batch 1, identical code path, complete populations
 
 | | mapped-wins | median option mass | installation verdict (per-n `critical_k`) |
 |---|---|---|---|
@@ -4106,7 +4106,7 @@ silently collapse back into one number.
 
 ---
 
-## §6.1 — BANK DESIGN (§9 next step #2): rows are NOT the binding constraint — clusters are, and the agreed "144 rows" target does not deliver its power
+## §10.1 — BANK DESIGN (§9 next step #2): rows are NOT the binding constraint — clusters are, and the agreed "144 rows" target does not deliver its power
 
 §9's remaining next step is a larger forced-choice probe population. The working prescription — mine
 and a peer's — was **"144+ forced-choice rows per condition, widened per-dose cells"**. The
@@ -4205,10 +4205,10 @@ All four are checkable **before a single generation**.
 
 ---
 
-## §6.2 — §9 next step #2 is BLOCKED, quantified: the forced-choice population cannot reach the target power on the existing domain inventory
+## §10.2 — §9 next step #2 is BLOCKED, quantified: the forced-choice population cannot reach the target power on the existing domain inventory
 
-A peer answered both questions I raised in §6.1 with measurement (five complete Llama baseline arms
-I do not have). **Their conclusion holds and my §6.1 pilot design was wrong.** Their magnitude was
+A peer answered both questions I raised in §10.1 with measurement (five complete Llama baseline arms
+I do not have). **Their conclusion holds and my §10.1 pilot design was wrong.** Their magnitude was
 over-severe, and the direction language was backwards — both established here rather than argued.
 
 ### Verified independently, against my own banks
@@ -4221,7 +4221,7 @@ over-severe, and the direction language was backwards — both established here 
   **0.114**. Raw ICC is an underestimate because the nested dose main effect inflates within-cluster
   variance.
 
-### ⛔ My §6.1 pilot would have measured the wrong quantity — their point, and it is right
+### ⛔ My §10.1 pilot would have measured the wrong quantity — their point, and it is right
 
 Every ICC either of us had was computed on rows **sharing one demonstration set**. That is a
 same-demonstration correlation, not the domain correlation a **multi-slot** bank would exhibit. A
@@ -4293,13 +4293,13 @@ is irreversible after generation.
 
 ---
 
-## §6.3 — CORRECTION to §6.2: my "29 domains" is a ONE-BANK number, and the both-ends argument that replaced it does not hold either
+## §10.3 — CORRECTION to §10.2: my "29 domains" is a ONE-BANK number, and the both-ends argument that replaced it does not hold either
 
 Two corrections, one to me and one to the peer who caught mine.
 
 ### 1. My corrected ICC inherits exactly the instability I said killed the pilot
 
-§6.2 replaced 42–53 domains with **29**, from a multi-slot ICC of 0.218. That figure is measured on
+§10.2 replaced 42–53 domains with **29**, from a multi-slot ICC of 0.218. That figure is measured on
 **one bank**. Run identically on `ticket_bomb` it is **zero**:
 
 | bank (`semantic_one_word`, both slots, doses {1,2,4,8}) | ICC raw | dose-centred | domain win-rates | between-domain sd |
@@ -4312,7 +4312,7 @@ difference in between-domain spread. Not saturation: `ticket_bomb` has 64/96 win
 27/48 and 37/48, so there is ample variance.
 
 **Domain clustering is not a property of the bank template. It is a property of how a particular
-concept interacts with those domains.** So §6.2's 29 is one draw from the same across-bank spread
+concept interacts with those domains.** So §10.2's 29 is one draw from the same across-bank spread
 that I had *just* accepted as fatal to the pilot — and I applied that argument to the peer's design
 and not to my own measurement one section later. The honest form is a **range: from no clustering
 penalty at all to ~53 domains.**
@@ -4346,7 +4346,7 @@ So the position is:
 **`ticket_knife`'s resolvability therefore depends on `ticket_knife`'s own ICC, which nobody has
 measured.** It is not settled at both ends. The three existing arguments for its verdict — C-31
 (not above chance), C-32 (unresolvable at attainable n *on the current bank*), and reproducibility —
-stand on their own; what does **not** stand is the new fourth argument I recorded in §6.2, and it is
+stand on their own; what does **not** stand is the new fourth argument I recorded in §10.2, and it is
 withdrawn.
 
 ### What actually follows
@@ -4363,9 +4363,9 @@ fifth instance of one shape.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
 
-### §6.3.1 — Measured: `ticket_knife`'s OWN multi-slot ICC, which settles it on the right basis
+### §10.3.1 — Measured: `ticket_knife`'s OWN multi-slot ICC, which settles it on the right basis
 
-§6.3 said the decisive measurement was `ticket_knife`'s own ICC, that it required no generation, and
+§10.3 said the decisive measurement was `ticket_knife`'s own ICC, that it required no generation, and
 that the fourth argument was withdrawn until someone took it. Taken — `p5_ticket_knife_...` carries
 both slots on `semantic_one_word`:
 
@@ -4379,8 +4379,8 @@ both slots on `semantic_one_word`:
 is **53 effective rows** against the **132** needed, so it is unreachable — and unreachable *however
 many rows or slots are added*, because `k/ICC` does not depend on the row count.
 
-**The fourth argument is restored, on a sound basis.** §6.2 asserted it from `main`'s ICC applied to
-`ticket_knife` — a carried scale, the same error a fifth time. §6.3 withdrew it. It now rests on
+**The fourth argument is restored, on a sound basis.** §10.2 asserted it from `main`'s ICC applied to
+`ticket_knife` — a carried scale, the same error a fifth time. §10.3 withdrew it. It now rests on
 `ticket_knife`'s **own** measurement, which is what it should have rested on from the start. The
 difference matters precisely because `ticket_bomb` shows the number can be **zero** on the same
 domains and prose: the conclusion could not have been assumed.
@@ -4398,9 +4398,9 @@ sized — never carried, in either direction.**
 
 ---
 
-## §6.4 — What domain clustering actually tracks: NOT the codeword, and a suggestive-but-unestablished link to how well the concept installs
+## §10.4 — What domain clustering actually tracks: NOT the codeword, and a suggestive-but-unestablished link to how well the concept installs
 
-§6.3.1 forced ICC to be measured per bank. That makes "what determines ICC" a real question rather
+§10.3.1 forced ICC to be measured per bank. That makes "what determines ICC" a real question rather
 than a nuisance, and it is answerable from **existing artifacts** — six complete `A_baseline` runs
 carry both slots on `semantic_one_word`, giving a codeword × concept design at no GPU cost.
 
@@ -4439,7 +4439,7 @@ Tested directly:
 is what the mechanism predicts and the magnitude is large, which is exactly the situation in which
 this sprint has repeatedly been wrong — a plausible mechanism with a suggestive number is how the
 "262-token cliff" got published (§5.19) and how a peer's slot-effect explanation for `ticket_bomb`
-died (§6.3). It needs roughly **13 banks** to test at 80% power against ρ≈0.7; six exist.
+died (§10.3). It needs roughly **13 banks** to test at 80% power against ρ≈0.7; six exist.
 
 ### Why it would matter if it held
 
@@ -4470,12 +4470,12 @@ Ran it. **Four claim-bearing results were in the plan and absent from the claim 
 |---|---|
 | §5.20 | the corpus batch-split audit, and that `main` moves by **zero rows** under it |
 | §5.20.1 | the borrowed-window correction that **every adversarial bound depends on** |
-| §6.3.1 | the per-bank ICC measurements |
-| §6.4 | domain clustering is not a codeword property |
+| §10.3.1 | the per-bank ICC measurements |
+| §10.4 | domain clustering is not a codeword property |
 
 All four are now on the ledger — the first two on both entry 5 (retrieval knockout) and entry 12
 (binding survival), which are the claims whose arms span the batch split; the ICC on entry 12; and
-§6.4 as a **new entry 15**, since it is a finding about the phenomenon rather than a change to an
+§10.4 as a **new entry 15**, since it is a finding about the phenomenon rather than a change to an
 existing claim.
 
 **The older corrections were clean.** Checking every earlier correction section — §0.2.3, §0.2.5,
@@ -4507,5 +4507,71 @@ sections, the `METHOD_ONLY` exemption, the heading-marker scan — makes that re
 invisible. **A mutation test run against an all-green input measures nothing**, which is the
 sharper form of the sprint's own "never rely on a green test unless mutation-tested that it can
 fail". Eight pytest tests now pin the property, including one that constructs the violation.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §7.6 — Three defects found by looking at the guard I had just shipped, one of them a duplicate-section-number collision it was silently mis-keyed on
+
+### 1. THREE SECTION NUMBERS WERE DUPLICATED, and my own guard was keyed on the ambiguity
+
+The bank-design sections appended as **§6.1, §6.2, §6.3** collided with the **existing Phase 6**
+sections of the same numbers:
+
+| id | existing | mine |
+|---|---|---|
+| §6.1 | PHASE 6, representational half | BANK DESIGN |
+| §6.2 | PHASE 6, behavioural half | §9 next step #2 is BLOCKED |
+| §6.3 | THE MEDIATION TEST | CORRECTION to §6.2 |
+
+Not cosmetic: `ledger_propagation_check` keys `METHOD_ONLY` and `TRACE_TOKENS` **by section id**, so
+three of its entries were ambiguous between a Phase 6 section and a bank-design one. Renumbered to
+**§10.1–§10.4** with cross-references updated, and the `### §5.18 re-measured` sub-heading
+disambiguated. *(§0.13/§0.13a and §4.1/§4.1a are suffixed variants, not collisions.)*
+
+**The guard then failed on its own tables** — they still named §6.x — which is the guard doing
+exactly its job on its author.
+
+*(My first duplicate-detection command was also wrong: `grep -o` emits **every** `§` match on a
+line, so a heading like "§5.18.1 — CORRECTION to §5.18" counted twice and produced six false
+collisions. Extracting only the **leading** id gives the three real ones.)*
+
+### 2. ⛔ The guard had a DEGENERATE PASS: an empty scan reported success
+
+A peer guarded this on their version and I had not. If the marker convention changes, a path
+breaks, or the regex stops matching, `secs` is empty, every loop is skipped, and **the guard reports
+success having checked nothing**:
+
+```
+[ledger-prop] 0 correction sections; 5 classified method-only; -5 with a required ledger trace
+[ledger-prop] every correction section is either traced to the ledger or classified   ← exit 0
+```
+
+**The tell was already printed**: `-5 with a required ledger trace`, a negative count nobody read.
+Fixed with a `MIN_EXPECTED = 10` floor — a real drop means the *scanner* broke, not that the
+corrections vanished — and the nonsensical arithmetic replaced with a direct count. Two tests pin
+it, one asserting the empty scan is refused and one asserting the shipped floor is not zero.
+
+**This is the green-on-green failure one level up from §7.5's mutation-test mistake.** There, a
+mutation test against an all-green input measured nothing. Here, a guard against an all-empty input
+measured nothing. Same shape, and I made it the same day I wrote up the lesson.
+
+### 3. The peer's version of this guard found a class mine structurally cannot
+
+Their strict variant failed on first run and surfaced **seven** corrections (C-2, C-3, C-4, C-7,
+C-10, C-15, C-17) in **neither** deliverable — all outside the C-19…C-40 range their two by-hand
+audits had assumed. Their conclusion is the strongest argument in this exchange for automating a
+check you are already performing by hand: **the automation does not inherit your assumption about
+where to look.** None was a live error, but C-15 is why checking beat assuming — it corrects an
+overreach whose live descendant would otherwise have rested on a comparison one of their own
+corrections had ruled out.
+
+Also worth recording against my guard's green: **their `check_all` went 6/7 → 7/7 on my guard, and
+that told them nothing about their ledger**, because it reads *my* two files. Taking that green as
+coverage would have been the same error again.
+
+**Both gap sets are confined entirely to fast-exchange sections, on two independent corpora — which
+makes it a property of the working mode rather than of either session.**
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
