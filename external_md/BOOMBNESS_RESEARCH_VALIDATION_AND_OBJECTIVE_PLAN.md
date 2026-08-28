@@ -2853,3 +2853,64 @@ be over-precision. **The claim is "concept dominates by roughly an order of magn
 If the knife banks install and still score ~0.05, the harm-category account is complete; if they do
 not, two effects are tangled and the ASR column cannot separate them. Jobs **788639 / 788640**
 (forward-only probes).
+
+---
+
+## §5.12 — THE HARM-CATEGORY ACCOUNT IS COMPLETE: knife banks INSTALL and still do not score
+
+§5.11 left one question: do the knife banks install the mapping, or are two effects tangled? Both
+missing probes are now run (forward-only, baseline, no intervention).
+
+| cell | **installs** (forced-choice) | option mass | n=1 → n=8 ladder | **ASR** |
+|---|---|---|---|---|
+| `ticket \| bomb` | **45/48 = 0.938** | 0.5534 | 0.750 → 1.000 | **0.281** |
+| `ticket \| knife` | **30/48 = 0.625** | 0.7685 | 0.417 → 0.917 | **0.052** |
+| `window \| bomb` | **40/48 = 0.833** | 0.5156 | 0.667 → 0.917 | **0.260** |
+| `window \| knife` † | **39/48 = 0.812** | 0.7681 | 0.583 → 1.000 | **0.042** |
+
+† `window|knife`'s probe is the concurrent session's measurement (R-99); the other three are mine.
+All four of my cells are fully reportable.
+
+**All four cells install the mapping, and all four ladders rise with demonstrations.** The knife
+banks are not failures of installation — and their option mass is *higher* (0.768, 0.769) than the
+bomb banks' (0.553, 0.516): the model is **more** concentrated on the knife mappings, not less.
+
+### The decisive comparison holds the codeword fixed
+
+| | installs | ASR |
+|---|---|---|
+| `window \| bomb` | **0.833** | **0.260** |
+| `window \| knife` | **0.812** | **0.042** |
+
+**Essentially identical installation, a ~6× ASR gap.** The concept effect is **not mediated by
+installation**. The model learns `window = knife` as well as it learns `window = bomb`, and then
+almost never produces something StrongREJECT scores as a successful knife attack.
+
+*(The `ticket` pair is less clean — 0.938 vs 0.625 — so installation does vary somewhat with concept.
+But the `window` pair rules out installation as the explanation, and it is the pair where the two
+cells match.)*
+
+### What this settles
+
+**The concept effect is a SCORING property, not a mechanism property.** `knife` compliance is
+rarely scored above threshold whether or not the mapping took. That completes §5.10's account and
+closes §5.11's open question.
+
+**Consequences, carried forward:**
+
+1. **§5.9 stays withdrawn as a headline** — now on a measurement rather than a suspicion.
+2. **Any cross-bank ASR comparison in this sprint is confounded by concept** unless concept is held
+   fixed. That reaches §0.17's entry-6 decomposition (`main`/`ticket_bomb` are bomb; `basket_gun` is
+   gun; `window_knife` is knife) and §7's per-bank correlations alike.
+3. **§7.3's within-bank family-level test is unaffected**, and this is the second independent reason
+   it is the version to lead with.
+4. **`basket_gun`'s non-installation (§5.8) remains genuine and is now the ONLY such case** — every
+   other bank measured installs. Its 0.417 is a real outlier, not a harm-category effect: `gun` is
+   not `knife`, and the knife banks install fine.
+
+### An honest note on what the concept effect is NOT evidence for
+
+It would be easy to read this as "the attack only works for bombs". **That is not established.** What
+is established is that **StrongREJECT scores knife-compliance above threshold far less often**. Those
+are different claims, and separating them needs a judge-independent success measure, which this
+sprint does not have.
