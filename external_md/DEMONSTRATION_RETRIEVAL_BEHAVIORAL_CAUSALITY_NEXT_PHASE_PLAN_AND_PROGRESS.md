@@ -12181,3 +12181,23 @@ the only one nobody had checked.
 
 **16 tests across the two files.** No claim moves; what moves is that a false reason string now has to
 survive a test rather than a reader's attention.
+
+#### R-130 (18:25) — **Ran their V-82 test on myself: no live claim rests on either attrited run. A confirming check, recorded as one.**
+
+Their V-82 found **their own exemption reason was false — a live claim did rest on the attrited run.**
+My `CLASSIFIED` reasons assert the same thing about mine, so the assertion is checkable and I checked
+it rather than trusting the string I had just mechanised.
+
+| run | every citation across plan, summary and handoff | verdict |
+|---|---|---|
+| `q5A_lpQ14B_…2269491` | **one**: C-42, *"the row came from…"* — the source of a **struck** row | reason accurate |
+| `q9A_lpQ14B_fc_…2283895` | **one**: R-107's table, `gate PASS` / **result REFUSED — attrited population** | reason accurate |
+
+The `q9A` row initially reads as a contradiction — a table cell saying **PASS** next to a reason saying
+refused — until the columns are read: **PASS is the *gate*, the *result* column is the refusal.** That
+is C-44's distinction appearing in my own prose: **a gate verdict and an admissibility verdict are
+different things, and a table that shows both must not be skimmed as showing one.**
+
+**Neither run carries a live claim.** Recorded because we agreed a corpus in which every reported
+check catches something misrepresents how often checking pays — and because their identical test on
+their own corpus came back the other way.
