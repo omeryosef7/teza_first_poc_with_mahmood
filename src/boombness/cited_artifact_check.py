@@ -50,6 +50,14 @@ CITED_AS_REFUSED = {
         "subject of a refusal, not the evidence for a claim",
 }
 
+#: RULE FOR THESE REASON STRINGS, learned by writing a bad one: **quote the artifact's own tokens,
+#: do not paraphrase them.** The q9A reason originally said "lost to OOM" against a ledger key of
+#: `semantic_forced_choice:OutOfMemoryError:...`. That sentence was true, and no mechanical check
+#: could ever bind it to the artifact, because the vocabulary did not match. A peer named it as a
+#: third variant of the unauditable-prose class: not false, not unverifiable, but written so that
+#: nothing can verify it. `test_every_CITED_WITH_FAILURES_reason_names_a_real_failure_reason`
+#: enforces the rule.
+#:
 #: Cited runs whose ledger records FAILURES. `check_run_readable` does NOT inspect `n_failed` — it
 #: refuses ABORTED, missing-DONE and EXCLUDED runs only — so guard 8 passed an attrited citation on
 #: its first day (`q9A_lpQ14B_fc`, 22 of 40 rows lost to OOM). A peer found the same blind spot on

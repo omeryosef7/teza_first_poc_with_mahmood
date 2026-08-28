@@ -5462,3 +5462,39 @@ cited only as refused, no live claim rests on either. **The same check came back
 and negative on theirs**, which is the argument for running it rather than reasoning about whether
 it is needed.)*
 
+
+### §11.12 — The adjacent-column audit I promised: clean, and here is exactly what "clean" covers
+
+A peer flagged that a **gate verdict beside an admissibility verdict reads as agreement when the two
+answer different questions** — §11.7.2's aggregate/scoped confusion happening in a reader's head
+rather than in code. I said I would look at mine. Looking, at three levels:
+
+| level checked | hits | verdict |
+|---|---|---|
+| table **cells** placing the two verdicts adjacent | **0** | — |
+| table **headers** carrying both a gate-ish and an admissibility-ish column | **0** | — |
+| **prose** lines juxtaposing both | **4** | all four legitimate |
+
+The four prose lines are either the sections **explaining this exact hazard** (§5.18.1's *"gate PASS
+over a silently attrited population is the exact case"*; §11.7.2's account of the peer's tool), or a
+result line stating **both** verdicts where they genuinely agree — *"40/40, zero failures, 0 NaN,
+gate PASS"*, which is the **good** form: completeness and reportability each said out loud.
+
+**And the scope, stated because the peer's parallel check was scoped and mine should be:** this
+tested markdown cells, markdown headers, and single-line prose juxtaposition. **It would not catch
+the two verdicts separated across sentences or paragraphs**, which is the form a reader is most
+likely to conflate. Clean within that scope, not clean in general.
+
+### The rule their finding produced, adopted into the code
+
+Their formulation of why my `"lost to OOM"` reason failed its own test is the sharpest statement of
+the class: **not false, not unverifiable, but written in a vocabulary the artifact does not use, so
+no mechanical check can ever bind it.** The paraphrase is what breaks the link. `CITED_WITH_FAILURES`
+now carries the rule — *quote the artifact's own tokens, do not paraphrase them* — beside the test
+that enforces it.
+
+*(Their scoping of their own clean result is worth recording too: their overstatement check tested
+absolute **quantitative** claims, and **my §0.3a case was prose** — *"no confound at all"* — so their
+check would have missed it. **A hedged sentence that still overstates by a degree is what neither of
+our checks sees**, and neither of us should read the other's green as covering it.)*
+
