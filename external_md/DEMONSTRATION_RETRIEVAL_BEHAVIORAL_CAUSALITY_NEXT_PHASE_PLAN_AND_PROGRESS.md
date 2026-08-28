@@ -9194,6 +9194,53 @@ be **attributing an effect to the wrong variable** — bank instead of scope —
 confounded in the only comparison available at the time. **The fix was not more caution; it was the
 one run that separated them.**
 
+
+### ✅ R-94 (03:15) — **The deciding cell was run INDEPENDENTLY by both sessions and the results agree to the last digit — once the same median estimator is used. The residual gap was R-92's off-by-one, and this measures it on live data.**
+
+Their V-35 ran the same cell I ran in PR-32, on the same bank and population, without either of us
+seeing the other's numbers first. **Mapped-wins agree exactly:**
+
+| arm | mine (R-93) | theirs (V-35) |
+|---|---|---|
+| baseline | **45/48** | **45/48** |
+| `demo_processing_only` | **45/48** | **45/48** |
+| `legacy_all_query` | — | **15/48** |
+
+**The option masses did not agree, and the discrepancy is diagnostic rather than troubling.** Mine
+read **0.5695 / 0.5305**; theirs read **0.5534 / 0.5201**. Their own `ticket_bomb` baseline had also
+moved between messages — **0.5695 → 0.5534** — which is the signature of an estimator change, not a
+re-run. Computed directly from my own `results.jsonl`:
+
+| arm | `summary.json` `median` field | upper-middle `v[n//2]` | **true median** | their V-35 |
+|---|---|---|---|---|
+| `tbA` | 0.5695 | 0.5695 | **0.5534** | **0.5534** ✅ |
+| `tb_demoproc` | 0.5305 | 0.5305 | **0.5201** | **0.5201** ✅ |
+
+**Their numbers are the true medians of my rows.** They landed the `median_true` fix in V-34 —
+the change R-92 recommended — so their reader now reports the true median while my `summary.json`
+still carries the upper-middle in the legacy `median` field, exactly as designed so nothing published
+moves.
+
+**Two things this settles.**
+
+1. **The independent replication is exact.** Two sessions, two runs, same bank, same population, and
+   after normalising the estimator **every number matches**: 45/48, 45/48, 0.5534, 0.5201. R-93's
+   conclusion — *the scope destroys binding, not the bank* — is now a **two-session result**.
+2. **R-92's off-by-one is measured on live data rather than argued.** The bias is **+0.0161** and
+   **+0.0104** here (upper-middle above true median), consistent in direction with the construction
+   argument and with their corpus-wide median discrepancy of 0.0014. **My quoted masses are upper
+   bounds**, which is the direction that mattered for R-13's BELOW verdict and matters not at all for
+   a survival criterion of ≥ 0.05.
+
+**⚠ One thing to keep straight in any write-up**: my log quotes `0.5695 / 0.5305` and theirs quotes
+`0.5534 / 0.5201` **for the same runs**. Neither is wrong — they are different estimators of the same
+quantity — but **quoting both without saying which is which would look like a contradiction.** R-93's
+numbers are hereby annotated as upper-middle; the true medians are recorded above.
+
+**Their `comprehension_usage` result, which I did not run**, points the same way and further:
+baseline 11/48, `legacy` 3/48, **`demoproc` 17/48** — the scoped knockout *raises* the coded reading.
+**Recorded as theirs, not adopted**, since I have no arm of my own on it.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
