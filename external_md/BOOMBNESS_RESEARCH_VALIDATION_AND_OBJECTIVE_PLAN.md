@@ -2345,3 +2345,68 @@ and `demoproc` probes on `basket_gun`.
 
 Either way it converts a 1-of-2 split into a 2-of-3, which is the minimum for saying which case is
 the norm. **§5.6's ASR and binding numbers stand; only its mechanism sentence is withdrawn.**
+
+---
+
+## §6.2 — PHASE 6, behavioural half: ASR DOES rise with demonstrations
+
+**Population:** entry-6 baseline arms, three banks, **cap 640 (non-binding)**, pinned judge,
+24 rows per dose per bank.
+
+| bank | n=1 | n=2 | n=4 | n=8 | ρ(n_examples, success) |
+|---|---|---|---|---|---|
+| `main` | 3/24 | 3/24 | 5/24 | **11/24** | +0.2882 |
+| `ticket_bomb` | 3/24 | 4/24 | 8/24 | **12/24** | +0.3212 |
+| `basket_gun` | 3/24 | 0/24 | 2/24 | 5/24 | +0.1220 |
+| **pooled** | **9/72** | **7/72** | **15/72** | **28/72** | **+0.2501** (n=288) |
+
+**More demonstrations produce more successful attacks**, on all three banks, at a cap that does not
+bind. `basket_gun` is weakest — the same low-attackability bank that gave entry 6 its null (§0.17).
+
+Combined with §6.1: `n_examples` raises **both** the query token's `d_surface` projection (ρ=+0.72
+at L8, balanced) **and** attack success (ρ=+0.25). Both legs of a mediation story are present.
+
+---
+
+## §6.3 — THE MEDIATION TEST, and it is UNDERPOWERED rather than negative
+
+The brief's decisive Phase 6 question: *"Is boombness still predictive within each `n_examples`
+stratum?"* — i.e. does boombness carry information about ASR beyond the dose that produced it?
+
+Joining per-prompt query-occurrence boombness to per-prompt ASR:
+
+| readout | pooled ρ(boombness, ASR) | within n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|---|
+| `d_surface\|L8\|proj` | **+0.0074** | 0.000 | −0.453 | −0.131 | +0.367 |
+| `d_surface\|L12\|proj` | **−0.0074** | −0.389 | −0.130 | +0.044 | +0.171 |
+| `ll\|L12\|boombness` | +0.0963 | −0.259 | +0.259 | +0.131 | +0.318 |
+
+**Pooled ρ is indistinguishable from zero, and the within-stratum signs flip.** That is consistent
+with the retracted G2 (clean n=90 gave ρ = −0.052).
+
+### But this cannot carry a verdict, and the reason is a join limit
+
+**n=48 pooled; n=12 per stratum, with 1–5 successes per stratum.** A rank correlation on twelve rows
+containing one success is not a measurement. **I am not banking a negative on it.**
+
+The cause is structural, not sampling: the `extract_boombness` run covers
+`core2x2/strength/consistency/position/role_style/families` and has **no `core2x2_slot3` rows**,
+while the entry-6 population is `core2x2 + core2x2_slot3`. So **exactly half the judged population
+has no boombness measurement at all** and the join collapses 96 → 48.
+
+| extract blocks | rows | joined to e6 |
+|---|---|---|
+| `core2x2` | 72 | **48** |
+| `strength`, `consistency`, `position`, `role_style`, `families` | 198 | 0 |
+
+### What a powered version needs
+
+1. **`extract_boombness` re-run over `core2x2_slot3`** — restores the join to 96/bank and, across
+   three banks, to ~288.
+2. **Or the `phase_d` bank**, built for exactly this test with **120 rows per level** and a
+   pre-registered dev/heldout split. Ledger entry 10 already records that a clean Fig-9-style
+   analysis on that bank *does* show a prompt-level→ASR relation (KEEP-NARROWED, cap 512).
+
+**Phase 7 gate status: still closed, and this section does not move it either way.** The honest
+state is that the strongest available direct test of "boombness predicts ASR beyond `n_examples`" is
+underpowered by a factor of ~6, and the two routes to powering it are both known and unrun.
