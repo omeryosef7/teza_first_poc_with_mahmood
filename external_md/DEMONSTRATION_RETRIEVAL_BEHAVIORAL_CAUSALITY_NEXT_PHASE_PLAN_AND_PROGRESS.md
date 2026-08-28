@@ -10105,3 +10105,48 @@ C-31's finding that the codeword-side account rests on one bank and adds nothing
 the claim is a *contrast*. The fix is now in code — `INVERTED`/`NOT_ESTABLISHED` are distinct verdicts
 in an artifact, and 10 tests in `tests/test_mapping_installation_verdict.py` assert on **behaviour**,
 not on module wording (C-27), so a reintroduced 0.500 cut fails the suite rather than reading fine.
+
+---
+
+### ✅ R-104 (08:10) — **Swept the live claims for C-34's fault pattern rather than fixing only the instance that produced it. One claim was carrying it: C13's model-specificity had never been tested as an interaction. It survives, conservatively.**
+
+C-34 named a recurring fault — **reading a label off a one-sample cell when the claim is a contrast** —
+and DR-14 fixed the single case that exposed it. **A fault named once and fixed once is not closed**, so
+I checked every live claim for the same shape. The sweep is cheap: a claim has the shape iff its
+*statement* is a comparison and its *evidence column* holds two independent one-sample results.
+
+| claim | comparison in the statement | how it is evidenced | verdict |
+|---|---|---|---|
+| C1 | `demoproc` **vs the other three scopes** | +0.1625 vs baseline, others at **exactly zero** — gap 0.1625 against the **arm-vs-arm** 0.0417 (≈3.9×) | sound, the between-arm margin is the one applied |
+| C3 | the four scopes vs **each other** | all pairwise gaps vs 0.0417 | sound, explicitly pairwise |
+| C7 | Qwen3 yes / Llama **declined for power** | R-52 declines rather than claims a difference | sound, no contrast asserted |
+| C11 | Qwen3 **replicates** Llama | same-direction agreement, no difference claimed | sound |
+| C6 | "Llama only" | population, not a contrast — Qwen3 untested | sound |
+| **C13** | **"LLAMA-SPECIFIC"**, Qwen3 "tested and NEGATIVE" | **two separate one-sample results** | ⚠ **the C-34 shape** |
+
+#### C13 tested properly, and it holds
+
+"Significant in Llama, not significant in Qwen3" is **not** the same statement as "Llama differs from
+Qwen3", and only the second is what C13 claims. Recomputed from the row counts in the claim table:
+
+| cell | counts | Δ | Fisher |
+|---|---|---|---|
+| Llama, base → longpre12 | 27/160 → **6/160** | −0.1313 | p = 1.54e-04 |
+| Llama, base → longpre10 | 27/160 → **7/160** | −0.1250 | p = 4.16e-04 |
+| Qwen3, base → preamble | 21/160 → **23/160** | +0.0125 | p = 0.871 |
+
+**The interaction — the difference of the two differences, which is the claim:**
+
+| contrast | dd | z | **p** |
+|---|---|---|---|
+| Llama[longpre12] vs Qwen3 | **−0.1437** | −2.83 | **0.0047** |
+| Llama[longpre10] vs Qwen3 | **−0.1375** | −2.69 | **0.0072** |
+
+**C13's model-specificity survives**, and the test is **conservative**: the within-model comparisons are
+**paired** — `tests/test_preamble_is_the_only_difference` verifies the banks differ **only** by the
+preamble across 200/200 rows, so the same 160 prompts appear on both sides — and I used the **unpaired**
+variance, which inflates the SE. A paired treatment can only reduce these p-values.
+
+**No claim changes.** What changes is that C13 is now evidenced by the test its own wording requires,
+and the fault C-34 named has been checked against the whole ledger instead of the one cell that
+happened to expose it. **Five of six claims were already sound; the one that was not, survives.**
