@@ -5331,3 +5331,56 @@ right and the test was not.)*
 argument reads correctly. It is **feeding the check inputs it has never seen**, which is a different
 activity from both.
 
+
+### §11.9 — The clustering UNIT is contested, and the blocker survives it: ceiling doubles, 132 stays out of reach
+
+A peer disclosed that §10.2's nesting finding — which I adopted as an irreversible generation-time
+decision — was a **rediscovery of their own earlier work**, and that the earlier entry drew a
+conclusion neither of us carried forward: **the honest clustering unit is the demonstration CELL,
+not the domain.** Since `n_eff` is capped at `k/ICC` and `k` is a cluster **count**, that goes
+straight at my bank arithmetic.
+
+**Verified at their scale, on my banks:** demo blocks are strictly nested across doses in
+**72/72** adjacent pairs for `one_word` (24 cells) and **36/36** for forced choice — which has
+**12 cells** (domain × split), not 24. So the forced-choice table my sizing uses has 12 candidate
+clusters, not 6 and not 24.
+
+Measured both ways, dose-centred:
+
+| bank | ICC (domain, k=6) | ceiling | ICC (cell, k=12) | ceiling |
+|---|---|---|---|---|
+| `main` | 0.286 | 21 | 0.362 | 33 |
+| `ticket_bomb` | 0.114 | 53 | 0.022 | 540 |
+| `basket_gun` | 0.755 | 8 | 0.926 | 13 |
+| `basket_bomb` | 0.160 | 38 | 0.233 | 51 |
+| **`ticket_knife`** | **0.320** | **19** | **0.282** | **43** |
+| `window_bomb` | 0.158 | 38 | 0.272 | 44 |
+| `window_knife` | 0.400 | 15 | 0.349 | 34 |
+| **median ceiling** | | **21** | | **43** |
+
+**The finer unit raises ICC (clusters are more homogeneous) but doubles `k`, and the ceiling roughly
+doubles: median 21 → 43 effective rows.** Against the **132** needed for 80% power at a true 0.625,
+**both units fall short**, and `ticket_knife` — the cell the whole question is about — sits at **19
+or 43**.
+
+**So §10.3.1's blocker is robust to the contested unit.** That is worth more than the point estimate
+it was originally argued from: the conclusion no longer depends on which clustering choice is
+correct, and I could not have said that before this check.
+
+*(One caveat that cuts against the cell unit being a free win: within a cell the four rows are the
+**same demonstration set at four doses**, nested by construction, so they are not independent
+replicates either. The finer unit is more defensible than the domain, not obviously sufficient.)*
+
+**Neither session had stated the choice.** Every ICC in §10.4–§10.6, mine and the pooled ones,
+clusters by domain — the **coarser**, conservative direction, so nothing computed is invalidated.
+But the unit was contested in the peer's own log before either of us used it, and an unstated
+modelling choice is exactly what §5.20's borrowed window was.
+
+*(Their disclosure also records a defect worth noting for its shape: their exemption table asserted
+that five sub-corrections "propagated individually" — an **unverified claim inside the table whose
+purpose is to record checked reasoning**. Three of the nine lettered sub-corrections their guard
+could not see have no downstream substance at all. Their guard passed for its whole life because
+every correction they had written happened to be numbered, and nothing about its green
+distinguished "no lettered corrections exist" from "I cannot see lettered corrections" — §11.7.2's
+class again, on the same day, in the guard rewritten to close it.)*
+
