@@ -6035,3 +6035,44 @@ the band was honest and the point was not.
   k=6 estimate of 0.320 is exactly the kind of figure that just proved unreliable by 3.6×. **The cell
   this build was authorised to resolve still requires its own bank.**
 
+
+### §12.7 — ⛔ Incidental codeword contamination in the new pools, caught before the `ticket_knife` arm
+
+A peer scanned the new pools for codeword contamination, **got a false clean, and found the real
+problem while diagnosing it.** Each pool is a dict, so `for s in sents` iterates **key names** — 152
+pools × 7 keys = **1,064 strings**, which is exactly the count they had reported as "sentences
+scanned". They had scanned metadata and pronounced the pools clean. **Fifth loose-check instance of
+the day, and the only one on a safety predicate.**
+
+**Reproduced on the 6,080 real sentences:**
+
+| word | count | status |
+|---|---|---|
+| `carrot` / `bomb` / `bicycle` | 1520 each | by design |
+| `basket` | **23** | incidental |
+| `window` | **7** | incidental |
+| `ticket` | **6** | incidental |
+
+**36 incidental across 20 of 38 domains, and 22 of the 36 sit in `remap`** — the *control* valence,
+which is what the unrelated-mapping and irrelevant arms rest on.
+
+**Harmless where I had already built, live where I was about to.** In the `carrot|bomb` bank those
+words are ordinary nouns and the carrot↔bomb factor is intact. But I was mid-build on
+**`ticket_knife`**, where `ticket` **is** the codeword — so those 6 occurrences would have landed in
+demonstrations teaching the mapping outside its intended slot, exactly the confound the criterion
+exists to prevent.
+
+**Fixed with the mechanism the repo already had.** All six are transit fare infrastructure — *"the
+ticket office / booth / machine / barriers"* — so `--incidental-replace ticket=fare` preserves the
+sentences' meaning exactly, and it rewrites **in memory**, leaving `demo_pools_29dom.json`
+byte-identical so the `carrot|bomb` bank's `pools_sha16` and every run joined to it stay valid.
+*(The generator emits this instruction itself on collision.)*
+
+Rebuilt and verified: **17,328 rows, violations 0**, forced-choice population **304 rows / 38
+domains**, and **zero rows whose demo block contains `ticket` outside its designed surface**.
+
+**Their diagnosis of their own miss is the transferable part:** their criterion-3 audit passed
+because it checked the generation **instructions**, not the generated **text**. *An audit is only
+valid against the artifact that will actually be used, and the artifact is what the model wrote, not
+what it was asked for.*
+
