@@ -7069,3 +7069,50 @@ estimates: the full-control partial over all 288 rows is +0.1783, and dev (+0.03
 What the ICC measurement adds is the reason the design cannot be rescued by more rows: **at
 ICC 0.90 on the predictor, effective n is ~20 regardless of how many rows are collected.** More
 domains is the only lever, which is now the third independent route to that same conclusion.
+
+## §12.27 — PRE-REGISTERED: the Phase 7 gate re-tested at 38 domains, with the directions fitted on 6 of them
+
+**Written while jobs 798294/798295 are PENDING. No row of either exists.**
+
+**Why re-test a gate that is already closed.** §12.24 closed it on *instability*, not on evidence —
+the full-control partial was +0.1783 pooled with a CI containing zero and a 6.5× dev/heldout
+disagreement. §12.26 then measured why: **ICC 0.8208 on the predictor**, so effective n stays near
+81 (196 after residualisation) no matter how many rows are collected. Three separate routes this
+sprint reached the same conclusion — **more domains is the only lever**. The `38dom` bank exists and
+carries 608 behavioral rows at `core2x2`+`core2x2_slot3` × `n ∈ {1,2,4,8}`, across **38 domain
+clusters** against the current 6 per bank. This is that lever, pulled once.
+
+**The design is a genuine transfer test, which the current one is not.** The directions come from
+`full_20260816_185942_1008673`, fitted on the **6-domain** bank (`directions_fitted_on: heldout`,
+`is_self_fit: False`). Applying them to `38dom` is a cross-bank application, **declared** through
+`--allow-cross-bank-fit` rather than hidden — the flag records it in the run. Of the 38 domains,
+**6 were seen by the fit and 32 were not.** §12.24's dev/heldout split shuffled rows within the same
+6 domains; this splits on the unit that actually clusters.
+
+### Decision rule, committed in advance
+
+Let *P* = partial ρ(`d_surface|L8|proj`, ASR) controlling the full gate set (`d_naive`, `d_context`,
+`n_examples`, length, refusal), cluster-bootstrapped over domains.
+
+* **GATE PASSES** only if **both**: *P* on the **32 unseen domains** has a 95% CI excluding zero,
+  **and** the unseen-domain point estimate is at least half the seen-domain one — i.e. it transfers
+  rather than merely fitting where the directions were built.
+* **GATE FAILS** if the unseen-domain CI contains zero, **or** the estimate collapses on unseen
+  domains relative to seen (which would make it a property of the 6 fit domains, not of the model).
+* **A large unseen-domain estimate with a wide CI is a FAIL**, not a "promising signal". At 38
+  clusters the cluster bootstrap is no longer in the under-coverage regime (< 30) that made
+  §12.26's interval quotable-only-with-a-caveat, so a CI containing zero here is informative rather
+  than merely underpowered.
+
+**What I expect, recorded so it cannot be revised afterwards.** I expect it to FAIL. `d_naive`
+correlates 0.9627 with the candidate, and §12.24's two equal halves of the same data gave +0.039 and
++0.255 — an estimate that unstable across a *row* split is unlikely to survive a *domain* split.
+The value of running it is that a fail at 38 clusters closes Phase 7 **on evidence** rather than on
+"this design cannot resolve the question", and that is a materially stronger sentence to write in
+Phase 9.
+
+**This is not Phase 8.** No GCG/MAC objective is being built, and none will be unless this passes.
+
+**Cost and scope.** Two GPU jobs. `d38beh` generates 608 rows at cap 640 (`expect-n 608`);
+`d38xb` scores the readouts. Judging follows on `cpu-killable` in one invocation, per §12.21's
+7.0% cross-session flip rate.

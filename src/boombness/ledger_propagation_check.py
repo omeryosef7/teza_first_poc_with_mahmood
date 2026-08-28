@@ -126,6 +126,7 @@ TRACE_TOKENS = {
     "§12.24": ["incremental", "+0.1924", "dev and heldout"],
     "§12.25": ["prompt-level", "query occurrence", "dose + 1"],
     "§12.26": ["0.9038", "not quotable", "n_eff"],
+    "§12.27": ["38 domain", "unseen", "pre-registered"],
 }
 
 
