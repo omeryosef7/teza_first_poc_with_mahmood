@@ -82,7 +82,8 @@ def _fixture(tmp, gate="PASS", n_failed=0):
 def test_it_REFUSES_a_run_whose_option_mass_gate_did_not_pass():
     with tempfile.TemporaryDirectory() as tmp:
         d = _fixture(tmp, gate="FAIL")
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode != 0
         assert "option_mass_gate" in (proc.stdout + proc.stderr)
@@ -91,7 +92,8 @@ def test_it_REFUSES_a_run_whose_option_mass_gate_did_not_pass():
 def test_it_REFUSES_a_run_with_failed_rows():
     with tempfile.TemporaryDirectory() as tmp:
         d = _fixture(tmp, n_failed=3)
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode != 0
         assert "failed to generate" in (proc.stdout + proc.stderr)
@@ -105,7 +107,8 @@ def test_it_REFUSES_a_silently_attrited_population():
         sm = json.load(open(os.path.join(d, "summary.json")))
         sm["n_bank_rows"], sm["n_result_rows"] = 160, 48
         json.dump(sm, open(os.path.join(d, "summary.json"), "w"))
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode != 0
         assert "survived" in (proc.stdout + proc.stderr)
@@ -118,7 +121,8 @@ def test_a_complete_population_is_accepted():
         sm = json.load(open(os.path.join(d, "summary.json")))
         sm["n_bank_rows"], sm["n_result_rows"] = 48, 48
         json.dump(sm, open(os.path.join(d, "summary.json"), "w"))
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode == 0, proc.stdout + proc.stderr
         assert "INSTALLED" in proc.stdout
@@ -136,7 +140,8 @@ def test_it_REFUSES_nan_rather_than_counting_them_as_losses():
         with open(os.path.join(d, "results.jsonl"), "w") as fh:
             for r in rows:
                 fh.write(json.dumps(r) + "\n")
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode != 0
         assert "non-finite" in (proc.stdout + proc.stderr)
@@ -151,7 +156,8 @@ def test_a_nan_row_would_otherwise_have_been_counted_as_a_loss():
 def test_duplicate_probe_labels_are_refused():
     with tempfile.TemporaryDirectory() as tmp:
         d = _fixture(tmp)
-        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}", "--probe", f"x={d}"],
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}", "--probe", f"x={d}",
+                               "--out-root", os.path.join(tmp, "out")],
                               capture_output=True, text=True)
         assert proc.returncode != 0
         assert "duplicate" in (proc.stdout + proc.stderr).lower()

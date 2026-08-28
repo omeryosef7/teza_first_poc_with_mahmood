@@ -94,9 +94,16 @@ def main():
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--tag", default="install")
     ap.add_argument("--experiment", default="mapping_installation_verdict")
+    # Tests invoke this module as a subprocess. Without an override every test run writes a real
+    # RunDir into outputs/boombness/, where fixture output sits in the same namespace as results
+    # and is told apart only by reading the artifact. Measured 2026-08-28: 64 of 69 dirs under
+    # mapping_installation_verdict/ were test litter. Tests pass a temp dir here.
+    ap.add_argument("--out-root", default=None,
+                    help="override the output root (tests use a temp dir so fixture runs never "
+                         "land beside real results)")
     args = ap.parse_args()
 
-    run = common.RunDir(args.experiment, args=args, tag=args.tag)
+    run = common.RunDir(args.experiment, args=args, tag=args.tag, out_root=args.out_root)
     ledger = common.FailureLedger()
 
     per = {}

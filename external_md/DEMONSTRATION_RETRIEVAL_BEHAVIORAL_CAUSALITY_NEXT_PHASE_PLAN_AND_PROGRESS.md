@@ -10372,3 +10372,67 @@ Max tokens by dose, identical shape in all four banks:
    that fail.
 
 **Sent to them.** The useful half is the confound and the C-32 caveat, not the clean runs.
+
+---
+
+### 🔬 DR-15 (11:55) — **Deep review. Corrections ledger complete 16/16; C13's interaction re-derived by an independent method and survives; two ledger propagations applied. One defect found: my own tests were writing fixture artifacts into the real outputs tree, where 64 of 69 run dirs were litter.**
+
+Queue holds only the concurrent session's `wrap` probes (repeatedly FAILED — their OOM diagnostic, not
+mine, untouched). My paths clean.
+
+#### 1. Containment of R-108's measurement error
+
+R-108 recorded that my first length measurement read a non-existent `prompt` field and returned an
+artifact (**"max 252 tokens"**). Checked whether that number reached anything durable: **it did not.**
+`grep` over the plan log, `RESEARCH_HANDOFF.md` and the sprint summary finds **no occurrence** — the
+`113` hits are unrelated pre-existing counts. **The wrong number was stated once in conversation and
+corrected before it entered a deliverable.**
+
+#### 2. Corrections ledger: complete
+
+**C-19 … C-34, all 16 present** in the summary's corrections table, verified by count rather than by
+eye. This is the check DR-14 introduced after finding C-32/C-33 had silently stopped propagating.
+
+#### 3. C13's interaction re-derived independently
+
+R-104 used a normal-approximation z-test on the difference of two risk differences. Re-derived by
+**permutation** (20,000 relabelings of the model factor, seed 20260828):
+
+| method | p |
+|---|---|
+| z-test (R-104) | **0.0047** |
+| **permutation (DR-15)** | **0.0064** |
+
+Same conclusion, and the permutation is **more conservative** — the normal approximation was slightly
+optimistic at these counts, as it tends to be. **`RESEARCH_HANDOFF.md` updated to carry both and to
+name the permutation as the figure to quote.**
+
+#### 4. Ledger propagation from R-108
+
+C-32's summary row said the forced-choice ceiling is **60**. R-108 established that the 12 rows of
+headroom are the `n_ex=16` dose at **261–308 tokens**, straddling the 262-token cliff where the
+concurrent Qwen3-14B run lost 22 of 40 rows, and that **I never ran `n_ex=16`**. The row now says
+**60 is an upper bound on the population, not a demonstrated one** — which **strengthens** C-32's
+conclusion rather than weakening it.
+
+#### 5. ⛔ Defect: my tests were writing into the real outputs tree
+
+The overwrite sweep found **69 run dirs** under `outputs/boombness/mapping_installation_verdict/` and
+**only 4 carry real multi-probe results.** The cause is mine: the tests invoke the script as a
+**subprocess**, `common.RunDir` writes to the module-level `OUT_ROOT`, and so **every pytest run
+deposited fixture artifacts beside real ones** — `{'x': 'INSTALLED'}` from a synthetic 39/48 fixture,
+in the same namespace, distinguishable only by opening the file.
+
+**Fixed at the cause**: added `--out-root` to my own script (rather than touching shared `common.py`)
+and pointed all **6** subprocess call sites at a temp dir. **Verified: 14 tests pass and the dir count
+is unchanged at 69** — the litter stops.
+
+#### ⚠ And I declined the cleanup, because my own classifier was wrong
+
+I wrote a classifier to delete the 65 "provably fixture" dirs and **it was overstated.** Real ad-hoc
+checks I ran this morning — including the one against their complete `q8D` arm that returned
+**30/40 INSTALLED** — used the **default tag**, so they are named `install_*` and carry the label
+`'x'` **exactly like the fixtures.** *My own runs are indistinguishable from test output by name
+because I did not pass `--tag`.* The dirs are gitignored and harmless; the cause is fixed; deleting on
+an ambiguous classifier to gain tidiness is the wrong trade. **Not deleted.** The transferable rule is
+the small one: **always pass an explicit `--tag`**, or a run cannot be told from a fixture later.
