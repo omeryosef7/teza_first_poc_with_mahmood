@@ -11184,3 +11184,69 @@ a number that does not describe the bank being designed.**
 (domain, and slot-within-domain), dose-centred. Size from **k/ICC_domain** with the target
 **n_eff = 132**, and treat the eight-estimate spread as a **prior on estimate instability** rather than
 sizing from a point value.
+
+### ⛔ C-39 (15:00) — **My direction statement in R-118 was backwards. Over-predicting the correlation is CONSERVATIVE, not optimistic.**
+
+R-118 said a one-slot ICC applied to a multi-slot bank errs "**in the optimistic direction, since it
+would over-predict the correlation slots actually induce.**" **Over-predicting correlation lowers
+n_eff, which demands MORE clusters, which over-sizes the bank.** That is **conservative/pessimistic**,
+the opposite of what I wrote. They caught it. The surrounding reasoning — that the one-slot bank
+measures the wrong quantity — is unaffected; **the direction label on the error was simply wrong**, and
+after R-115 made "state which side your error falls on" a standing rule, getting the side backwards is
+the one mistake that rule exists to prevent.
+
+### ✅ R-119 (15:00) — **Verified their multi-slot ICC exactly on `main`, then found it does NOT hold on `ticket_bomb` — 0.218 vs 0.000, and the difference is real. The cluster structure is a property of the codeword×concept pair, not of the bank template, so no pilot on one bank can size another.**
+
+Their `main` figures reproduce **exactly** from my own copy of the artifacts:
+
+| slots (semantic_one_word, doses 1-8) | ICC raw | dose-centred |
+|---|---|---|
+| slot0 only (shared demos) | **0.210** | **0.316** |
+| slot3 only (shared demos) | **0.289** | **0.397** |
+| **BOTH slots (mixed demos)** | **0.156** | **0.218** |
+
+**But on `ticket_bomb` the same computation gives BOTH = 0.000 / 0.000**, with **ample variance**
+(64/96 wins, slot0 27/48, slot3 37/48) — so it is **not** a saturation artifact.
+
+**I hypothesised a slot main effect** (slot varies within domain, so a slot effect would deflate ICC
+exactly as the dose effect did — `ticket_bomb`'s slots differ by 0.208 in win rate while `main`'s are
+identical at 0.583). **I tested it and it is wrong**: slot-centring moves `ticket_bomb` **0.000 →
+0.000**. Recorded because it was a plausible mechanism that the data refused.
+
+**The real explanation is that domain structure differs by bank:**
+
+| bank | domain win-rates | **between-domain sd** |
+|---|---|---|
+| `main` | 0.312 … 0.875 | **0.210** |
+| `ticket_bomb` | 0.562 … 0.750 | **0.078** |
+
+**Same six domains, same prose, same model — different codeword×concept pair, and 2.7× different
+between-domain spread.** Domain clustering is **not a property of the bank template**; it is a
+property of **how a particular concept interacts with those domains**.
+
+#### What this does to the corrected requirement
+
+Their **"29 domains, not 42-53"** rests on the **multi-slot ICC = 0.218 measured on one bank**. On the
+other bank I can check, that quantity is **0.000**, where the clustering penalty vanishes entirely.
+**So the correction inherits precisely the instability that killed the pilot** — my "the spread is
+across banks" point applies to the multi-slot quantity too, and it was the argument they accepted for
+not running the pilot.
+
+The honest statement is a **range, not a point**: the design requirement spans **no clustering penalty
+at all** (ICC 0.000, `ticket_bomb`) to **~53 domains** (ICC 0.400, `window_knife` single-slot).
+
+#### `ticket_knife` is unreachable under BOTH regimes, for different reasons
+
+This is the part that survives every estimate:
+
+* **at high ICC** — the ceiling is `k/ICC`, and 10 domains cannot reach n_eff = 132;
+* **at ICC = 0** — there is no clustering penalty, so n_eff = n, and **C-32's row ceiling binds
+  instead**: the bank supplies **60** rows with demonstrations, against 132 needed.
+
+**Cluster-limited or row-limited, it does not get there.** That is now the **fifth** independent
+argument for a verdict that carries no claim — C-31 (not above chance), C-32 (unresolvable at any
+attainable n), reproducibility (C-36), and both horns of the clustering analysis.
+
+**Their useful half stands and I would keep it**: 0.75+ effects are answerable today with ~7 domains
+and no new prose, on the optimistic estimate — but given that the ICC is bank-dependent, that
+threshold should be **re-measured per bank**, not carried.
