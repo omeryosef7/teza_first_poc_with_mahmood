@@ -38,11 +38,25 @@ CAUTIONED_FIGURES = [
 ]
 
 
-def _violations(text):
+#: The caveat must sit NEAR the figure, not merely somewhere in the file. Whole-file presence is
+#: satisfied by the document's own explanation of the rule — the concurrent session found their
+#: one-tick-old guard passing on the strength of the section that describes the caveat, and mine had
+#: the same defect: `POST-TREATMENT` appears once, in the corrections table, 40+ lines from anything.
+#: Distinctive phrasing (C-47) is necessary; proximity is the other half.
+CAUTION_WINDOW = 12
+
+
+def _violations(text, window=CAUTION_WINDOW):
+    lines = text.splitlines()
     out = []
     for name, fig, phrase, why in CAUTIONED_FIGURES:
-        if re.search(fig, text, re.I) and phrase.lower() not in text.lower():
-            out.append((name, phrase, why))
+        for i, line in enumerate(lines):
+            if not re.search(fig, line, re.I):
+                continue
+            near = "\n".join(lines[max(0, i - window): i + window + 1])
+            if phrase.lower() not in near.lower():
+                out.append((name, phrase, why, i + 1))
+                break
     return out
 
 
@@ -51,7 +65,7 @@ def test_no_deliverable_quotes_a_cautioned_figure_without_its_caveat():
         v = _violations(open(path, encoding="utf-8").read())
         assert not v, (
             f"{os.path.basename(path)} quotes a cautioned figure without its caveat: "
-            + "; ".join(f"{n} needs {p!r} ({w})" for n, p, w in v))
+            + "; ".join(f"line {ln}: {n} needs {p!r} ({w})" for n, p, w, ln in v))
 
 
 def test_the_guard_fires_on_a_violating_document():
@@ -59,7 +73,7 @@ def test_the_guard_fires_on_a_violating_document():
     the live document may be passing because the caveat happens to be discussed elsewhere."""
     bad = "the length-conditioned ASR rises to 0.31 across the sweep"
     v = _violations(bad)
-    assert [n for n, _, _ in v] == ["length-conditioned ASR"], v
+    assert [n for n, _, _, _ in v] == ["length-conditioned ASR"], v
     assert not _violations(bad + " — note completion length is POST-TREATMENT")
 
 
@@ -73,3 +87,18 @@ def test_each_required_phrase_is_distinctive_not_generic():
         assert corpus.count(phrase.lower()) <= 12, (
             f"required phrase {phrase!r} for {name} appears {corpus.count(phrase.lower())} times — "
             f"too common to evidence that the caveat was stated (the C-47 failure)")
+
+
+def test_the_shipped_window_is_not_effectively_infinite():
+    """The concurrent session's proximity fix was VACUOUS as first written: their tests monkeypatched
+    the window, so a mutant widening it to 100000 passed everything. Proximity present in the code and
+    absent in effect — and it was the same omission they had already closed for another constant two
+    guards earlier, so the lesson did not transfer even within one session.
+
+    This pins the SHIPPED value by asserting a case that passes wide and fails narrow.
+    """
+    assert CAUTION_WINDOW <= 40, "the shipped window is too wide to mean proximity"
+    doc = ["the length-conditioned ASR is 0.31"] + ["filler"] * 30 + ["completion length is POST-TREATMENT"]
+    text = "\n".join(doc)
+    assert _violations(text, window=100000) == [], "sanity: a huge window should find no violation"
+    assert _violations(text), "the SHIPPED window must flag a caveat 30 lines away"

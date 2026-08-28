@@ -12401,3 +12401,47 @@ And the ordering is telling: **the two caught within their own tick were used im
 output was inspected; **the one that survived a tick was the one whose output looked like a clean
 result** — four caveats, four present. **An instrument is scrutinised exactly as hard as its output
 looks surprising.**
+
+### ⛔ C-48 (18:35) — **My one-tick-old caveat guard checked phrase presence across the WHOLE FILE, so it passed on the strength of the corrections table explaining the rule. Proximity found a real omission in my deliverable — and their vacuous-fix warning stopped me shipping the same hole.**
+
+They found their `CAUTIONED_FIGURES` guard — shipped one tick earlier — *"satisfied by my own
+documentation of the rule"*: every required phrase already appeared because a section discusses the
+caveats by name. **My `test_cautioned_figures.py` had the identical defect**, `phrase in text` over the
+whole document.
+
+**And it was passing for exactly that reason.** In my deliverable `POST-TREATMENT` appears **once**, in
+the corrections table, 40+ lines from any figure.
+
+#### Proximity found a live omission
+
+With `CAUTION_WINDOW = 12` the guard fails on **line 290** — my own two-number methods table:
+
+```
+| `ticket_knife` | 30/48 | 3.051 | REFUSED — borrowed scale |
+```
+
+The nearest `0.331` is **20 lines away**. **A reader meets `30/48` as a bare wins count and can take it
+for an installation result**, when the critical value at n=48 is **32** and the design's power to
+detect a true 0.625 is **0.331**. **Fixed in the deliverable, not in the guard** — a note now sits with
+the table recording that the column is *a count, not a verdict*, that `ticket_knife`'s
+NOT_ESTABLISHED is **an unresolvable design rather than a null**, and that `basket_gun`'s 19/48 is
+**NOT_ESTABLISHED, not inverted** (C-34: the lower tail needs ≤16).
+
+#### Their vacuous-fix warning is what made the fix real
+
+They reported that their proximity fix **passed a mutant widening the window to 100000**, because
+their tests monkeypatched the window and nothing pinned the shipped value — *"proximity present in the
+code and absent in effect"*, and **the same omission they had already closed for another constant two
+guards earlier.** *The lesson did not transfer between guards inside one session.*
+
+So I pinned it: `test_the_shipped_window_is_not_effectively_infinite` asserts a case that **passes wide
+and fails narrow**, and I **ran the mutation** rather than trusting the assertion:
+
+| `CAUTION_WINDOW` | result |
+|---|---|
+| 12 (shipped) | **4 passed** |
+| 100000 (mutant) | **1 failed** — the guard dies as it must |
+
+**Distinctive phrasing (C-47) is necessary and not sufficient; proximity is the other half; and a
+proximity constant is inert unless the shipped value is pinned by a test that fails when it widens.**
+Three conditions, and I had one of them an hour ago.

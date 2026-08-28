@@ -289,6 +289,8 @@ after both of us made the mistakes it prevents (C-33, C-36, C-37).
 | `window_bomb` | 40/48 | 3.604 | **REFUSED** — borrowed scale (bank `ad6ae618…`) |
 | `ticket_knife` | 30/48 | 3.051 | **REFUSED** — borrowed scale (bank `77824a28…`) |
 | `basket_gun` | 19/48 | 3.965 | **REFUSED** — borrowed scale (bank `568dd040…`) |
+
+⚠ **The wins column is a count, not a verdict.** `ticket_knife`'s **30/48** is **not** an installation result: the critical value at n=48 is **32**, and this design's **power to detect a true 0.625 is 0.331** (0.399 at the 60-row ceiling), so its NOT_ESTABLISHED is **an unresolvable design rather than a null** (C-31, C-32). The same applies to `basket_gun`'s 19/48, which C-34 records as **NOT_ESTABLISHED, not inverted** — the lower tail at n=48 needs ≤16.
 | C5 `ticket_bomb` baseline | 45/48 | 4.018 | **1** (W=0.3202, measured on `ticket_bomb`/Llama) |
 | C5 `ticket_bomb` `demo_processing_only` | 45/48 | 2.251 | **4** (same W) |
 | C5 `ticket_bomb` unscoped | 15/48 | **1.075** | **9** (same W) |
