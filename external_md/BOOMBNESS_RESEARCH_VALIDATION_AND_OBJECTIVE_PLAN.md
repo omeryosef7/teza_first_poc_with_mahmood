@@ -3346,3 +3346,64 @@ token, and the sprint has a clean positive and a clean negative to say so.
    probe coverage (§5.15, §6.3, C-24). 144 rows would resolve what 48 cannot.
 5. **A judge-independent success measure.** Every concept-level result here is entangled with
    StrongREJECT's scoring (§5.12).
+
+---
+
+## §7.4 — G2's NON-REPRODUCTION IS RESOLVED: the population reproduces exactly, and G2 does not conflict with §7
+
+§7.2 recorded that I could not reproduce G2 (n=102 vs 90, within-domain +0.089 vs −0.052) and left
+it as the standing blocker on any predictive claim. **Closed.** Two things were wrong with my
+reconstruction, both found by reading `analyze_g2.py` rather than guessing at the filter:
+
+**1. `--min-examples 1`.** `analyze_g2.py:526` drops rows below `min_examples`, and the artifact
+records `min_examples = 1`. I had included the 12 `n_examples=0` rows. **Adding the filter gives
+n=90 — exact.**
+
+**2. `rho_within_domain` is not a mean of per-domain rhos.** `rank_corr_pair` ranks globally,
+standardises, **demeans by cluster**, then correlates. I had averaged per-domain Spearmans — a
+different estimator, which is also why I reported 5 clusters where G2 reports 6.
+
+### The reproduction
+
+| | G2 published | **my reconstruction** |
+|---|---|---|
+| n | 90 | **90** ✅ |
+| clusters | 6 | **6** ✅ |
+| ρ pooled | +0.085957 | +0.074950 |
+| **ρ within-domain** | **−0.051801** | **−0.069318** |
+
+**The population reproduces exactly and both statistics agree in sign**, differing by 0.011 and
+0.017. I have not isolated the residual — most likely a tie-handling or standardisation detail
+between `scipy.stats.rankdata` and my pure-Python implementation (ASR is binary, so ties dominate).
+**I am not claiming a bit-exact reproduction**; I am claiming the population and the sign, which is
+what the blocker required.
+
+*(Checked and excluded: the position definition. `is_query_occurrence` and `is_final_occurrence`
+give byte-identical results on this population.)*
+
+### What it settles
+
+**G2 and §7 do not conflict — they measure different populations.** §7.2 offered that as a
+hypothesis; it is now confirmed:
+
+| | population | result |
+|---|---|---|
+| **G2** | `main` bank, slot0 only, blocks `core2x2/extra/role_style/families`, **cap 192** | **−0.052 → null** |
+| **§7** | **3 banks**, `core2x2`+**slot3**, `n_ex ∈ {1,2,4,8}`, **cap 640**, cross-fitted | **+0.27 to +0.30** |
+
+**G2's null is correct on G2's population, and §7's positive is correct on §7's.** The largest single
+difference is bank coverage: §7.2 already showed **every `main`-bank estimate sits between −0.01 and
++0.15**, far below §7's pooled figure, which comes from `ticket_bomb` and `basket_gun` — banks G2
+never measured.
+
+### What this does and does not do to the gate
+
+**It removes §7's second blocker.** It does **not** reopen the gate:
+
+* §7's **pre-registration** failure stands — the candidates were chosen after seeing pooled results.
+* **§3's controllability failure is decisive and independent.** `d_surface` being predictive on a
+  wider population was never the thing in doubt; being *steerable* was, and it is not.
+
+**Phase 7 remains CLOSED and Phase 8 must not be built.** This section makes the predictive claim
+*publishable with its scope attached* — three banks, `core2x2`+slot3, cap 640 — rather than
+apparently contradicting a retracted result.
