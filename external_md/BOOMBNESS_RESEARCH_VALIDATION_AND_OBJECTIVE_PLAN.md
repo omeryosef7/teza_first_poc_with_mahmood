@@ -6848,3 +6848,62 @@ that is the same order as several of these cells, `n=12` measured on `main` only
 a strict superset of `main` — 2736/2736 rows byte-identical by `prompt_sha16` plus 192 rows at 12 —
 so the cell is on the same ladder, but there is no cross-bank replication of it), and one row of 96
 at cap in `basket_gun`'s n=1,2,4,8 arm.
+
+## §12.23 — §6.3 POWERED: boombness DOES predict ASR within dose strata — and the Phase 7 gate stays CLOSED anyway, because the naive control does the same job
+
+**§6.3's blocker was already gone, and had been for a day.** That section said the mediation test was
+"underpowered by a factor of ~6" because `extract_boombness` had no `core2x2_slot3` rows, collapsing
+the join 96 → 48, and listed two routes to powering it as "both known and unrun". **Route 1 was
+already run**: `xb_main_s3`, `xb_ticket` and `xb_gun` (2026-08-28) each carry **1,824
+`core2x2_slot3` rows**. No GPU work was needed. That is the fourth open question tonight answered by
+an artifact already on disk.
+
+**The powered join: 288 rows, 62 successes, 18 bank-domain clusters** — six times §6.3's 48.
+
+### The result overturns §6.3's reading
+
+| readout | pooled ρ | cluster-perm p | n=1 | n=2 | n=4 | n=8 | mean within-dose |
+|---|---|---|---|---|---|---|---|
+| `d_surface\|L8\|proj` | **+0.336** | **0.0037** | +0.172 | +0.446 | +0.321 | +0.280 | **+0.305** |
+| `d_surface\|L12\|proj` | +0.254 | 0.0197 | — | — | — | — | — |
+| `ll\|L12\|boombness` | +0.201 | 0.0387 | +0.077 | +0.039 | +0.291 | +0.385 | +0.198 |
+
+**Every within-dose correlation is positive**, where §6.3 reported signs flipping
+(0.000, −0.453, −0.131, +0.367). Those flips were twelve-row noise. And it replicates across the
+bank's pre-registered split: **dev ρ = +0.351, heldout ρ = +0.316**. So the answer to the brief's
+decisive Phase 6 question — *"is boombness still predictive within each `n_examples` stratum?"* — is
+**yes**, and §6.3's "underpowered rather than negative" is resolved in the positive direction.
+
+### ⛔ AND THE GATE STILL DOES NOT OPEN
+
+Phase 7 requires a candidate to predict heldout ASR **beyond** a named control set that includes the
+**naive concept direction**. Running those controls on the same 288 rows:
+
+| direction | pooled ρ | cluster-perm p | mean within-dose |
+|---|---|---|---|
+| `d_surface\|L8` *(candidate)* | +0.336 | 0.0037 | **+0.305** |
+| `d_naive\|L8` *(control)* | +0.297 | 0.0099 | **+0.267** |
+| `d_context\|L8` *(control)* | +0.136 | 0.1839 | −0.179 |
+| `d_inter\|L8` *(control)* | +0.019 | 0.8563 | — |
+| `hnorm\|L8` *(control)* | +0.265 | 0.0490 | −0.176 |
+
+**ρ(`d_surface|L8`, `d_naive|L8`) = 0.9627.** The candidate and the naive control are **the same
+signal**. The candidate beats it by 0.038 in mean within-dose ρ and by 0.039 pooled, on 18 clusters.
+A direction that correlates 0.96 with the naive concept direction and edges it by four hundredths
+does not "predict beyond" it in any sense the gate intends. **Phase 7 remains CLOSED and no
+GCG/MAC objective is being built.**
+
+**What is genuinely informative here**, and it is not nothing: `d_context` and `hnorm` are
+*negative* within-dose (−0.179, −0.176), so this is not "any direction predicts ASR". Something
+concept-aligned does. But the cheapest possible concept direction does it, which makes the elaborate
+one unnecessary rather than validated — the gate's exact purpose.
+
+### ⛔ A flaw in my own test, stated because the number looked usable
+
+The same cluster-permutation reported `n_examples` at **p = 1.0000**, which is an artifact, not a
+finding. Every cluster in this design carries an identical dose composition, so permuting outcomes
+between clusters preserves the dose→outcome pairing exactly and the null is degenerate for any
+variable that is balanced by construction. **`n_examples` demonstrably does predict ASR** — §12.22's
+ladder is the evidence. The permutation is valid for the readouts, which vary within cluster, and
+invalid for the dose variable. Reported rather than dropped, because a p of exactly 1.0000 next to a
+variable one wants to dismiss is precisely the number that would get quoted.
