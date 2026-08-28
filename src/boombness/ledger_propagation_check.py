@@ -75,6 +75,7 @@ TRACE_TOKENS = {
     "§11.5": ["cited_artifact", "guard"],
     "§11.6": ["cited_with_failures", "attrited"],
     "§11.7": ["superseded_by", "598"],
+    "§11.7.1": ["582", "over-corrected"],
 }
 
 

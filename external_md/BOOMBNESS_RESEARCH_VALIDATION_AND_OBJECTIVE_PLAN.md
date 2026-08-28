@@ -5194,3 +5194,46 @@ defect appeared inside the check built for it: hand-listed roots in the artifact
 the guard fix, the peer's substring matcher in their citation audit, and now a tautology in this
 regression test.)*
 
+
+### §11.7.1 — Blast radius of the exclusion bug: §0.2.5's corpus sweep wrongly excluded 16 of its 51 runs
+
+§11.7 fixed the parser and withdrew §11.1. The bug dates to **V-20** — the commit that *introduced*
+exclusion checking — so the obligation is to check what else it touched, not to stop at the fix.
+
+**Callers are few:** only `asr_protocol` (internally) and guard 8. But `asr_protocol` is what
+produced §0.2.5's corpus sweep, whose corrected counts are quoted in the plan.
+
+### 16 of the 51 exclusions were false positives — nearly a third
+
+The sweep refuses on **either** the judge dir **or its gens dir**, so a healthy judge run was thrown
+out when its *gens* run was a supersedor. That is why most of the 16 have a **key that differs from
+the id named in the refusal reason**:
+
+```
+ctrl_orth_a025_…3203557   refused because  ctrl_orth_a025_…91739   (a supersedor)
+q3dec_base_…1074900       refused because  qwen3nt_base_…3560487   (a supersedor)   × 7 runs
+```
+
+**Verified, not assumed:** all 16 judge dirs re-check **ADMISSIBLE** under the fixed parser, and so
+do all 9 distinct named gens runs. None is refused for any other reason.
+
+| §0.2.5 table | published | **corrected** |
+|---|---|---|
+| scored | 566 | **582** |
+| excluded | **51** (45 on the list · 4 ABORTED · 2 no DONE) | **35** (29 on the list · 4 ABORTED · 2 no DONE) |
+
+**The V-1 → V-20 correction was still right in direction** — the sweep genuinely had ingested
+partial and excluded runs, and 35 of them really are inadmissible. **It over-corrected by 16.**
+
+*(The downstream cap-binding and quotability rows of that table are computed over the scored set and
+would shift slightly; they are **not** re-derived here, because the sweep artifact is already marked
+`SUPERSEDED` and no live claim reads those rows. Recording that as a known-unrederived consequence
+rather than silently leaving the impression the whole table was checked.)*
+
+### What this instance adds
+
+Every other correction today was found by a peer reading an argument, or by a guard refusing data.
+**This one was found by asking what a fixed bug had already done** — a question neither a guard nor a
+reader asks, because the guard now passes and the argument now reads correctly. **A bug's blast
+radius is a third failure class, and the only trigger for checking it is the fix itself.**
+
