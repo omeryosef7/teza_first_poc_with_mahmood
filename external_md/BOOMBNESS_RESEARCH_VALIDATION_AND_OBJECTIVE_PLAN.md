@@ -4202,3 +4202,91 @@ The peer's three, plus the one this analysis forces:
 All four are checkable **before a single generation**.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §6.2 — §9 next step #2 is BLOCKED, quantified: the forced-choice population cannot reach the target power on the existing domain inventory
+
+A peer answered both questions I raised in §6.1 with measurement (five complete Llama baseline arms
+I do not have). **Their conclusion holds and my §6.1 pilot design was wrong.** Their magnitude was
+over-severe, and the direction language was backwards — both established here rather than argued.
+
+### Verified independently, against my own banks
+
+* **Nesting confirmed.** For `core2x2` forced choice the 48 rows are 6 domains × 2 splits × 4 doses
+  at **one slot**, and demo blocks are strictly **nested**: n=1 ⊂ n=2 ⊂ n=4 ⊂ n=8 (checked
+  byte-wise on `city_bridge/dev`). The 8 rows in a domain are nested doses of **one** demonstration
+  set.
+* **Dose-centring raises ICC**, as they said — `main` 0.228 → **0.286**, `ticket_bomb` 0.064 →
+  **0.114**. Raw ICC is an underestimate because the nested dose main effect inflates within-cluster
+  variance.
+
+### ⛔ My §6.1 pilot would have measured the wrong quantity — their point, and it is right
+
+Every ICC either of us had was computed on rows **sharing one demonstration set**. That is a
+same-demonstration correlation, not the domain correlation a **multi-slot** bank would exhibit. A
+pilot varying only domains estimates a number that does not describe the bank being designed.
+
+### But the direction was stated backwards, and the size of the error is measurable
+
+`core2x2_slot3` supplies a second, **disjoint** slot on `semantic_one_word`, so the multi-slot
+quantity can be measured **now**:
+
+| ICC (domain), `semantic_one_word`, doses {1,2,4,8} | raw | dose-centred |
+|---|---|---|
+| slot0 only — **shared** demo set | 0.210 | 0.314 |
+| slot3 only — **shared** demo set | 0.289 | 0.395 |
+| **both slots — mixed demo sets** | **0.156** | **0.218** |
+
+Cross-slot agreement on matched (domain, split, dose) is **32/48 = 0.667** against **0.514**
+expected under independence — correlated, but well below same-slot.
+
+**The one-slot estimate OVER-states the multi-slot ICC (0.31/0.40 → 0.22), so it is *pessimistic*
+for the multi-slot design, not optimistic.** Sizing from it over-sizes, which is conservative rather
+than dangerous. That matters for the magnitude: **29 domains needed, not the 42–53 the same-slot
+figures imply.**
+
+*(Caveat carried: this is measured on `semantic_one_word`, because `core2x2_slot3` carries no
+forced-choice rows. It is a proxy for the forced-choice ICC, not the thing itself — which is
+precisely why the slot-varying pilot is still required.)*
+
+### The blocker, at the corrected ICC
+
+At the **measured multi-slot dose-centred ICC of 0.218**, `n_eff` is capped at `k/ICC`:
+
+| true rate | n_eff for 80% power | domains needed | feasible at k=10? |
+|---|---|---|---|
+| 0.625 (`ticket_knife`) | 132 | **29** | no |
+| 0.650 | 90 | 20 | no |
+| 0.700 | 54 | 12 | **no** (just misses) |
+| 0.750 | 30 | 7 | **yes** |
+| 0.800 | 24 | 6 | **yes** |
+
+**10 domains give a ceiling of 46 effective rows.** So:
+
+* **`ticket_knife`'s 0.625 is unreachable** — 29 domains against 10, and it stays unreachable no
+  matter how many rows or slots are added, because the ceiling is `k/ICC`. This is now a **fourth**
+  independent argument for the same verdict, alongside C-31 (not above chance), C-32 (unresolvable
+  at any attainable n), and reproducibility.
+* Even a true **0.70 just misses** at 12 domains needed.
+* Effects at **0.75+ are answerable today** with 7 domains, no new prose.
+
+**So §9 next step #2 is not "generate a bigger bank" — it is blocked on domain inventory, and the
+block is quantified: ~19 more domains would have to be authored to resolve a `ticket_knife`-sized
+effect.** The honest framing is that the probe can be strengthened for large effects now, and the
+small-effect cells cannot be rescued by any amount of generation.
+
+### What I am not doing
+
+Not authoring 19 domains and not generating a bank. Both would commit real cost against an ICC whose
+eight-estimate spread (0.000–0.327 raw across structurally identical banks) is **as large as the
+quantity**, and — the peer's sharpest point — that spread is **across banks, not across clusters
+within a bank**, so more clusters per bank tightens an estimate of a number that changes at the next
+bank anyway. **A pilot cannot fix that by getting bigger.**
+
+**One generation-time decision to record before any bank is built:** demo draws are currently
+**nested** across doses, so dose rows are not independent even in principle. If dose is to be an
+analysable factor rather than a nuisance, the new bank needs **disjoint draws per dose** — and that
+is irreversible after generation.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
