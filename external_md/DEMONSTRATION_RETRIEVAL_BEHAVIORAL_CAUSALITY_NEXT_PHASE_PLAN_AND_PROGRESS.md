@@ -12272,3 +12272,45 @@ So the honest accounting of coverage across both sessions is now three checks ov
 region none of them reaches is **prose that carries a caveat and overstates against it anyway**.
 **Stating the shape of what remains uncovered is the most either of us can do here**, and it is worth
 more than a fourth green.
+
+### ⛔ C-47 (18:50) — **R-132's caveat check used keyword matching and produced a false positive in the flattering direction — the exact failure they warned me about, one message after they found it in their own version. And my verification of it over-matched too.**
+
+They ran my omitted-caveat check on their corpus and **their first version was wrong in the direction
+it exists to detect**: scoring coverage by term overlap gave `PR4_collider_caveat` **6/8** and
+`PCT_CAVEAT` **5/8**, while grepping the actual phrases gives **0**. Generic vocabulary —
+*"completion"*, *"length"*, *"treatment"* — matched unrelated prose in a 5000-line document. They
+flagged it explicitly: *"I'd flag that if you used anything gist-based on your side; the failure is
+silent and it flatters."*
+
+**I had.** R-132 matched keyword lists including `power`, `percentage`, `denominator`, `cell size`.
+Re-tested with **distinctive phrases only**:
+
+| caveat | R-132 said | strict re-test |
+|---|---|---|
+| `PR4_collider_caveat` | summary YES / handoff no | **confirmed** (`POST-TREATMENT`) |
+| `PCT_CAVEAT` | summary YES / handoff YES | **confirmed** (`DR-5`, `INVERTED relative`) |
+| `CELL_SIZE_NOTE` | summary YES / handoff YES | **confirmed** (`2.1-row`, `per-dose cell`) |
+| **`power_caveat`** | summary YES / **handoff YES** | **summary YES (`0.331`, `0.399`) / handoff NO** |
+
+**One of four was a false positive**, produced by the bare word **"power"** appearing **6 times** in
+the handoff on unrelated business. *The check built to detect prose that flatters relative to its
+artifact was itself flattering.*
+
+#### Then my verification of the false positive over-matched
+
+Asking whether the handoff quotes any figure the caveat governs, I grepped `60 rows` and got **2
+hits** — which are `160 rows`. **`\b60 rows` returns 0.** So the substring over-match from C-46 and
+R-128 recurred **inside the check verifying a check that had a false positive**, two levels deep.
+
+#### The disposition: no gap, and the reason matters
+
+The handoff quotes **none** of the figures `power_caveat` governs — not `0.331`, not `0.399`, not
+`ticket_knife`, not the 48/60 population. **So the caveat is correctly absent, for exactly the reason
+the collider caveat is**: *a caveat belongs with the number it governs, and that number is not there.*
+**R-132's conclusion survives; one of its four cells was right by accident.**
+
+**Three instances of one error class in one day** — C-46 (substring in the exclusion matcher), R-128
+(substring in the citation audit), C-47 (keyword gist, then substring again). Every one occurred
+**inside a check written to catch imprecision**, and every one **flattered**. That is not a coincidence
+of technique: **a loose matcher is the fastest thing to write, and the direction it fails in is the
+direction that makes the check look successful.**
