@@ -6134,3 +6134,63 @@ interval confirms the warning rather than softening it.
 domain.** The CI is wide because it rests on one arm; narrowing it is measurement, and the gap it
 would need to close is smaller than the noise on the number that defines it.
 
+
+### §12.9 — ⛔ CORRECTION to §12.8: "38.5 domains" was the INFINITE-ROW asymptote, and two of my own suggestions were wrong
+
+§12.8 reported `ticket_knife` short by **1.6 effective rows** and needing **38.5 domains**, then
+proposed *"a second independent ICC estimate — a re-run on a different seed"*. **Both the framing and
+the proposal were wrong, and the second was wrong for a reason this sprint had already established.**
+
+### The proposal was wrong: the readout is deterministic
+
+§5.19 measured two runs of the same arm at fixed batch as **40/40 bit-identical, |Δ| exactly
+0.000000**. **A re-run on a different seed returns the same numbers.** It is not a second estimate of
+anything — I proposed a measurement that cannot move.
+
+*(Nor does redrawing the pools help much: the confidence interval is a **cluster bootstrap over
+domains**, so it is driven by between-domain variance at k=38. New demonstration sentences resample
+sentence-level noise while leaving the domain set — and hence the quantity the interval is about —
+unchanged.)*
+
+### The framing was wrong: `k/ICC` is the asymptote, not the achievable value
+
+`n_eff = k·m / (1 + (m−1)·ICC)` reaches `k/ICC` only as rows-per-domain **m → ∞**. Decomposed at
+ICC = 0.291, k = 38:
+
+| rows/domain | n_eff | vs 132 |
+|---|---|---|
+| **8 (the arm as run)** | **100.1** | short |
+| 16 | 113.3 | short |
+| 32 | 121.3 | short |
+| 64 | 125.8 | short |
+| ∞ *(the ceiling I quoted)* | 130.6 | short |
+
+**So the arm is at n_eff = 100, not 130.4.** The ceiling is what infinite rows would buy, and **it
+is unreachable by construction.**
+
+**Maximum achievable rows per domain is 66** — forced choice at doses {1,2,4,8} admits 20+7+4+2 = 33
+disjoint slot-doses × 2 splits. At m=66:
+
+| k | n_eff | |
+|---|---|---|
+| **38 (built)** | **125.9** | short |
+| **40** | **132.6** | **clears** |
+| 45 | 149.1 | clears |
+
+**The real requirement is 40 domains at maximum row density, not 38.5** — and reaching it also
+requires building the multi-slot rows, which the current arm does not use (it is single-slot,
+8 rows/domain).
+
+### What this changes
+
+* §12.8's *"short by four-tenths of a domain"* understated it. **Short by ~2 domains AND a
+  row-density increase from 8 to 66 per domain.**
+* The direction of §12.8's conclusion is unchanged and is now better founded: **do not author one
+  domain.** The gap is not one domain; it is two domains plus an 8× row increase, and the whole
+  calculation still rests on an ICC whose 95% CI is [0.124, 0.440].
+* **What would settle it is not more precision on ICC but the multi-slot rows**, which are free of
+  new authoring — they exist in the pools already and cost only generation and one arm.
+
+**Recorded as a correction rather than folded in silently: I quoted an asymptote as if it were a
+measurement, and proposed a re-run that this sprint had already proved deterministic.**
+
