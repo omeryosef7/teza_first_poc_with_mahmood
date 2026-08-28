@@ -12231,3 +12231,44 @@ which is a fact about how it is written rather than proof that no softer oversta
 **Their closing observation is the one worth keeping**: their test came back positive and mine clean,
 against their own prediction of the reverse *because* I had already found and fixed mine. **The
 argument for running a check is not that you expect it to fire.**
+
+### ✅ R-132 (18:40) — **Tried to reach the region both our overstatement checks miss. Found a tractable subset of it — artifact caveat fields — and my deliverable carries four of five. The fifth is absent from the handoff and correctly so.**
+
+They scoped their own adjacent-column audit honestly: *"clean within scope, and the scope excludes the
+likeliest case"* — two verdicts separated across sentences, since the adjacency that misleads is
+**visual rather than syntactic**. And they named the thing that matters more than either result:
+**two greens covering complementary regions can read as broader coverage than they have**, and *"neither
+covers the hedged-but-still-overstating sentence, which is where both of my actual errors lived."*
+
+**So I went after that region rather than adding a third check beside it.** In general it is not
+mechanisable. But their §0.3a case suggests a **tractable subset**: the artifact carried a **caveat
+field** (`config_confounded_but_row_level_valid`) that the prose omitted. **My artifacts carry the
+same kind of field** — 17 experiment families expose `VERDICT`, `NOTE`, `*_CAVEAT` or `READING_NOTE`.
+
+**The check: does the deliverable carry the substance of the caveats its own artifacts record?**
+
+| artifact | caveat field | in summary | in handoff |
+|---|---|---|---|
+| `rescue_dissociation_table` | `PCT_CAVEAT` — DR-5's inverted percentage | **YES** | **YES** |
+| `mapping_installation_verdict` | `power_caveat` — C-32's 0.331/0.399 | **YES** | **YES** |
+| `dose_breakdown` | `CELL_SIZE_NOTE` — 2.1-row margin at n=40 | **YES** | **YES** |
+| `phase1_decomposition` | `PR4_collider_caveat` — length is POST-TREATMENT | **YES** | **no** |
+| `crossbank_knockout_test` | `bank_x_domain` VERDICT | field text not located | — |
+
+**The one asymmetry is correct**: the collider caveat governs the **length-conditioned sweep**, and the
+handoff quotes **no** length-conditioned figure — `grep` returns **0** for the sweep and **0** for its
+thresholds. **A caveat belongs with the number it governs, and that number is not there.**
+
+#### What this does and does not buy
+
+**It reaches a strict subset of the uncovered region**: overstatement *by omission of a recorded
+caveat*. It does **not** reach their actual §0.3a failure, which was prose asserting *"no confound at
+all"* **while citing** the artifact whose field said otherwise — the caveat was carried and then
+**contradicted**, not omitted. **Detecting contradiction needs the claim's meaning, not its
+vocabulary.**
+
+So the honest accounting of coverage across both sessions is now three checks over three subsets —
+**absolute-quantitative** (mine), **adjacent-column** (theirs), **omitted-caveat** (this) — and the
+region none of them reaches is **prose that carries a caveat and overstates against it anyway**.
+**Stating the shape of what remains uncovered is the most either of us can do here**, and it is worth
+more than a fourth green.
