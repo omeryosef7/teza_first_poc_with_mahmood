@@ -6983,3 +6983,89 @@ cluster-permutation p does not clear 0.05. ρ(token, prompt-mean) = +0.878 and
 "Phase 7 must treat token-level and prompt-level as two candidate objectives requiring separate
 evaluation" — has now had that separate evaluation: the prompt-level one is strictly worse, and
 neither clears §12.24's gate.
+
+## §12.26 — DEEP REVIEW (4h): the gate's own intervals are not quotable, and a test I wrote failed to catch the mutation it was written for
+
+**LIVENESS.** No jobs of mine in flight; two peer jobs running. **ARTIFACT.** Both sprint-grade
+artifacts cited this session exist and read `publishable=true`. **POPULATION.** The 288-row join
+recounts independently as 96+96+96. **CLAIM.** 20 ledger entries, all 8 guards green, 140 → 151
+tests.
+
+### CODE — the statistics behind the gate were untested heredocs
+
+§12.24 closed Phase 7 on a partial correlation with a cluster-bootstrap interval, and those numbers
+were computed in inline scripts — one of which had the tie bug that returned +0.0942 instead of
++0.1924 **in the direction that confirmed the conclusion already written**. Extracted to
+`src/boombness/clustered_stats.py` with 11 tests.
+
+**Mutation test, 4 mutants — and the first pass exposed a gap in my own test:**
+
+| mutant | outcome |
+|---|---|
+| `ranks` breaks ties by `argsort` position *(the real bug)* | **3 tests fail** ✅ |
+| `multi_partial_spearman` ignores its controls | **2 tests fail** ✅ |
+| permutation stops shuffling clusters | **1 test fails** ✅ |
+| bootstrap resamples **rows** instead of clusters | **⛔ ALL 11 PASSED** |
+
+**The bootstrap test did not catch the bootstrap mutation.** I had built it around a Spearman
+between a cluster-constant `x` and an *alternating* `y`, whose bootstrap spread happens to be wide
+under row-resampling too — so the property was never actually exercised. Rewritten around the mean
+of `y` with half the clusters all-ones, where cluster resampling gives SE ≈ 0.5/√12 = 0.144 against
+row resampling's 0.5/√96 = 0.051. The mutant now dies. **A test written for a specific mutation
+still has to be checked against it.**
+
+### ⛔ AND THE INTERVALS IN §12.24 SHOULD NOT BE QUOTED
+
+A peer inverted my CI through Fisher z and observed it implied n_eff ≈ 293 out of 288 rows — i.e.
+ICC ≈ 0 — which contradicts §12.22, where moving to domain clusters cost a fourfold precision loss
+on this same structure. Measuring it directly across the 18 `(bank, domain)` clusters:
+
+| quantity | ICC | implied n_eff of 288 |
+|---|---|---|
+| ASR outcome | **0.2085** | **69.8** |
+| ASR outcome, dose-centred | 0.2325 | 64.2 |
+| `d_surface\|L8` *(the predictor)* | **0.9038** | **19.8** |
+
+**The predictor is almost entirely a between-cluster variable.** Its within-domain variance is
+9% of the total, so the correlation with ASR is close to an 18-point correlation between cluster
+means. And yet:
+
+| interval on partial ρ(`d_surface`, ASR \| `d_naive`) | width |
+|---|---|
+| cluster bootstrap, 18 clusters | [+0.0788, +0.2970] → 0.2182 |
+| row bootstrap, 288 rows *(known wrong)* | [+0.0763, +0.2966] → 0.2203 |
+| **ratio** | **0.99** |
+
+The two agree to one percent when the *marginal* ICCs say they should differ severalfold.
+
+**RESOLVED, and my "not quotable" was itself too strong.** The partial does not correlate
+`d_surface` with ASR — it correlates their **residuals after removing `d_naive`**, and `d_naive`
+carries almost the same between-cluster structure. Measuring the ICC of what is actually correlated:
+
+| | ICC of `d_surface` | ICC of ASR | design effect | n_eff of 288 |
+|---|---|---|---|---|
+| raw (the marginal) | 0.8208 | 0.2085 | 3.57 | **81** |
+| **residualised on `d_naive`** *(what the partial uses)* | **0.2330** | **0.1341** | **1.47** | **196** |
+
+Residualising strips most of the clustering, so the correct penalty is a **1.21× widening**
+(√(288/196)), not the severalfold one the marginals imply. The cluster bootstrap is therefore
+roughly 20% too narrow rather than wrong in kind, and **the single-control partial still excludes
+zero after the correction**. What remains not quotable is the peer's analytic `df = clusters − 3`
+interval, which assumes ICC = 1 — an assumption, not a measurement — and my bootstrap should be
+quoted with the 1.21× caveat attached.
+
+⛔ **A cross-population inference I nearly accepted.** The peer measured ASR ICC of 0.0000–0.0017 on
+*their* cap-640 arms and concluded my bootstrap was simply correct because ICC ≈ 0. **On my rows the
+ASR ICC is 0.2085**, with per-cluster rates running 0.0 to 0.81. Their measurement is real and does
+not transfer — the same cross-population move both sessions have now corrected repeatedly. Their
+larger finding stands and is the useful one: **ICC is outcome-dependent by two orders of magnitude
+in the same rows** (ASR ≈ 0.00 vs refusal 0.33–0.43 on their arms), so refusal outcomes need
+cluster-robust treatment that ASR outcomes may not. §12.25's Phase 2.5 negatives use ASR
+throughout, so they are unaffected.
+
+**This does not move the gate**, and it matters that it doesn't. Phase 7 closes on the *point*
+estimates: the full-control partial over all 288 rows is +0.1783, and dev (+0.0389) and heldout
+(+0.2547) disagree 6.5× on equal halves with heldout exceeding dev. Those readings need no interval.
+What the ICC measurement adds is the reason the design cannot be rescued by more rows: **at
+ICC 0.90 on the predictor, effective n is ~20 regardless of how many rows are collected.** More
+domains is the only lever, which is now the third independent route to that same conclusion.
