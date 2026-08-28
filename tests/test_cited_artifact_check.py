@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 import cited_artifact_check as cac  # noqa: E402
 
 
-def _run(root, name, *, rows=4, done=True, excluded=False):
+def _run(root, name, *, rows=4, done=True, excluded=False, n_failed=0, reason="boom"):
     d = os.path.join(root, name)
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "results.jsonl"), "w") as fh:
@@ -33,6 +33,10 @@ def _run(root, name, *, rows=4, done=True, excluded=False):
     if done:
         with open(os.path.join(d, "DONE.json"), "w") as fh:
             json.dump({"schema": "DONE/1", "status": "ok", "rows_written": rows}, fh)
+    with open(os.path.join(d, "summary.json"), "w") as fh:
+        json.dump({"failures": {"n_failed": n_failed, "n_attempted": rows + n_failed,
+                                "n_succeeded": rows,   # require_done refuses n_succeeded == 0
+                                "failure_reasons": ({reason: n_failed} if n_failed else {})}}, fh)
     if excluded:
         with open(os.path.join(root, "..", "EXCLUDED_RUNS.json"), "w") as fh:
             json.dump({"schema": "EXCLUDED/1", "per_experiment": {os.path.basename(root): [name]}}, fh)
@@ -117,3 +121,38 @@ def test_the_shipped_floor_is_not_zero():
 
 def test_the_real_repo_passes():
     assert cac.main() == 0
+
+
+def test_a_cited_run_WITH_FAILURES_is_unclassified_and_FAILS(env):
+    """check_run_readable does not inspect n_failed, so guard 8 passed an attrited citation on
+    its first day. The count alone cannot decide it -- n_failed means different things in
+    different experiments -- so the run must be CLASSIFIED, not thresholded."""
+    out, plan = env
+    _run(str(out / "expA"), ID_A, n_failed=22, reason="OutOfMemoryError")
+    plan.write_text(f"cites {ID_A}\n")
+    assert cac.main() == 1
+
+
+def test_a_cited_run_with_failures_PASSES_once_classified(env, monkeypatch):
+    out, plan = env
+    _run(str(out / "expA"), ID_A, n_failed=22, reason="OutOfMemoryError")
+    plan.write_text(f"cites {ID_A}\n")
+    monkeypatch.setattr(cac, "CITED_WITH_FAILURES",
+                        {ID_A: "GENUINELY ATTRITED: cited only as the superseded baseline"})
+    assert cac.main() == 0
+
+
+def test_a_clean_run_needs_no_classification(env):
+    out, plan = env
+    _run(str(out / "expA"), ID_A, n_failed=0)
+    plan.write_text(f"cites {ID_A}\n")
+    assert cac.main() == 0
+
+
+def test_every_shipped_failure_classification_states_a_reason():
+    """The count carries no meaning; the reason does. An exemption recording only that someone
+    looked, without what they concluded, leaves the next reader unable to tell a deliberate
+    refusal-citation from a structural artifact."""
+    assert cac.CITED_WITH_FAILURES
+    for rid, why in cac.CITED_WITH_FAILURES.items():
+        assert isinstance(why, str) and len(why.strip()) > 30, f"{rid} has no real reason"

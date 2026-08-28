@@ -50,6 +50,39 @@ CITED_AS_REFUSED = {
         "subject of a refusal, not the evidence for a claim",
 }
 
+#: Cited runs whose ledger records FAILURES. `check_run_readable` does NOT inspect `n_failed` — it
+#: refuses ABORTED, missing-DONE and EXCLUDED runs only — so guard 8 passed an attrited citation on
+#: its first day (`q9A_lpQ14B_fc`, 22 of 40 rows lost to OOM). A peer found the same blind spot on
+#: their own corpus and supplied the reason it cannot be fixed with a threshold:
+#:
+#:   **`n_failed` does not mean the same thing across experiments.** The FailureLedger counts
+#:   whatever that experiment declared a failed unit, so the REASON STRING carries the meaning and
+#:   the count does not. A naive `n_failed > 0` rule flags structural facts, probe verdicts, and a
+#:   tool's own intended refusals as broken citations.
+#:
+#: So each is classified by what its reason actually means. The value is required: an exemption that
+#: records only that someone looked, without recording what they concluded, leaves the next reader
+#: unable to tell a deliberate refusal-citation from a bridge artifact.
+CITED_WITH_FAILURES = {
+    "REPRO_bridge_20260826_050914_1018899":
+        "STRUCTURAL: 48/96 `family_missing_one_side` — the forced-choice probe exists for core2x2 "
+        "only, so stems outside it have no probe side. A documented property of the bank, not a "
+        "failed run",
+    "capNE2_20260827_210525_3544980":
+        "DOCUMENTED-VALID: 3/4 `config_confounded_but_row_level_valid` — the reason string states "
+        "the rows remain usable; the failure marks a config confound, not lost data",
+    "leak2_20260827_212632_3593613":
+        "PROBE VERDICT: 1/24 `d_surface_not_lexically_clean` is the probe's FINDING about a "
+        "direction, emitted through the ledger; the run did what it was asked",
+    "q9A_lpQ14B_fc_20260828_104610_2283895":
+        "GENUINELY ATTRITED: 22/40 lost to OOM. Cited only as the superseded baseline — §5.19 "
+        "re-measured the contrast on qbA (40/40) and §5.18.1 withdrew the one-sample claim taken "
+        "from it. No live claim rests on this run",
+    "w640_20260827_224651_3802479":
+        "TOOL'S OWN REFUSAL: 1/1 `not_sprint_grade` is arm_report refusing the arm, which is the "
+        "artifact's intended output and the subject of §0.12",
+}
+
 #: A run id as this repo writes them: <tag>_<YYYYMMDD>_<HHMMSS>_<pid>.
 RUN_ID = re.compile(r"\b([A-Za-z0-9_]+_20[0-9]{6}_[0-9]{6}_[0-9]+)\b")
 
@@ -65,6 +98,20 @@ def _roots():
         return []
     return [os.path.join(OUT_ROOT, d) for d in sorted(os.listdir(OUT_ROOT))
             if os.path.isdir(os.path.join(OUT_ROOT, d))]
+
+
+def _failures(run_dir: str):
+    """(n_failed, first reason) from the run's ledger, or (0, "") if it records none."""
+    import json
+    sp = os.path.join(run_dir, "summary.json")
+    if not os.path.isfile(sp):
+        return 0, ""
+    try:
+        f = (json.load(open(sp)).get("failures") or {})
+    except Exception:
+        return 0, ""
+    reasons = list(f.get("failure_reasons") or {})
+    return int(f.get("n_failed") or 0), (reasons[0][:48] if reasons else "")
 
 
 def cited_ids(text: str):
@@ -95,7 +142,7 @@ def main() -> int:
               f"report success.")
         return 1
 
-    missing, inadmissible, ok = [], [], 0
+    missing, inadmissible, unclassified, ok = [], [], [], 0
     for rid in ids:
         d = resolve(rid, roots)
         if d is None:
@@ -103,12 +150,17 @@ def main() -> int:
             continue
         try:
             ap.check_run_readable(d)
-            ok += 1
         except Exception as e:                      # noqa: BLE001 — any refusal is a refusal
             if rid in CITED_AS_REFUSED:
                 ok += 1
             else:
                 inadmissible.append((rid, os.path.basename(os.path.dirname(d)), str(e)[:70]))
+            continue
+        nf, why = _failures(d)
+        if nf and rid not in CITED_WITH_FAILURES:
+            unclassified.append((rid, nf, why))
+        else:
+            ok += 1
 
     print(f"[cited-artifact] {len(ids)} run ids cited across {len(roots)} enumerated roots; "
           f"{ok} usable or documented-refused")
@@ -117,7 +169,10 @@ def main() -> int:
     for rid, root, why in inadmissible:
         print(f"  INADMISSIBLE {rid} (in {root}): {why}")
         print(f"      -> fix the claim, or add {rid} to CITED_AS_REFUSED with a reason")
-    if missing or inadmissible:
+    for rid, nf, why in unclassified:
+        print(f"  UNCLASSIFIED FAILURES {rid}: n_failed={nf} ({why})")
+        print(f"      -> classify it in CITED_WITH_FAILURES with what the reason MEANS, or fix the claim")
+    if missing or inadmissible or unclassified:
         print("[cited-artifact] FAIL — a claim cites an artifact that is absent or unusable.")
         return 1
     print("[cited-artifact] every cited artifact exists and is usable or documented-refused")

@@ -73,6 +73,7 @@ TRACE_TOKENS = {
     "§11.2": ["guard_class_correction", "admissibility"],
     "§11.3": ["cadence", "self-audit"],
     "§11.5": ["cited_artifact", "guard"],
+    "§11.6": ["cited_with_failures", "attrited"],
 }
 
 

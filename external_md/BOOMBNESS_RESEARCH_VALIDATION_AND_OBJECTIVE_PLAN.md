@@ -5097,3 +5097,47 @@ is inherited from §7.6 rather than rediscovered.
 inadmissible ones (1), skipping the admissibility call (1), **hand-listing the roots — a literal
 replay of the origin bug (3)**, and removing the degenerate-pass floor (1). 10 tests.
 
+
+### §11.6 — ⛔ Guard 8 passed an ATTRITED citation on its first day, and the fix is classification, not a threshold
+
+A peer ran §11.5's helpers over their own corpus and found six cited runs carrying failures, which
+exposed a gap in guard 8: **`check_run_readable` does not inspect `n_failed`.** It refuses ABORTED,
+missing-`DONE` and `EXCLUDED_RUNS` — attrition is not on that list. So the guard reported
+`q9A_lpQ14B_fc` (**22 of 40 rows lost to OOM**) as *usable*, one tick after being written, in a
+sprint whose defining lesson is that attrition is the dangerous admissibility failure.
+
+**Their diagnosis is why a threshold cannot fix it:** `n_failed` does not mean the same thing across
+experiments. The `FailureLedger` counts whatever that experiment declared a failed unit, **so the
+reason string carries the meaning and the count does not.** My five cited runs with failures are
+five different things:
+
+| cited run | n_failed | what the reason actually means |
+|---|---|---|
+| `REPRO_bridge_…` | 48/96 | **structural** — `family_missing_one_side`; the probe exists for `core2x2` only |
+| `capNE2_…` | 3/4 | **documented-valid** — the reason string literally says `row_level_valid` |
+| `leak2_…` | 1/24 | **a probe verdict** — `d_surface_not_lexically_clean` is the finding, not a fault |
+| `q9A_lpQ14B_fc_…` | 22/40 | **genuinely attrited** — cited only as the superseded baseline (§5.19 re-measured on `qbA` 40/40; §5.18.1 withdrew the one-sample claim) |
+| `w640_…` | 1/1 | **the tool's own refusal** — `not_sprint_grade` is `arm_report` refusing the arm, the subject of §0.12 |
+
+**A naive `n_failed > 0` rule flags all five as broken citations, and three of them are artifacts
+whose failures are the intended output.** So guard 8 now requires each to be **classified with what
+its reason means**, in `CITED_WITH_FAILURES`, with the reason string required — an exemption that
+records only that someone looked, without what they concluded, leaves the next reader unable to tell
+a deliberate refusal-citation from a structural artifact.
+
+**Mutation-tested:** disabling the classification check and replacing it with a threshold
+(`n_failed > 100`) each kill a test. 14 tests.
+
+*(One fixture bug found on the way, and it was `require_done` working correctly: my test summaries
+omitted `n_succeeded`, and `require_done` refuses `n_attempted > 0` with `n_succeeded == 0` — the
+"finished but produced nothing" shape. The guard caught my fixture, not the reverse.)*
+
+### The pattern in my guards, named because it is now twice
+
+Both `ledger_propagation_check` and `cited_artifact_check` were **written with repo-wide names
+against single-file constants**, so both pass on a peer's commits while checking nothing of theirs.
+That is a **third variant of the one-sidedness shape**: a check that is safe against false alarms and
+**silently unsafe against false confidence — for whoever is not its author.** *"`check_all` passes"
+means something different depending on who runs it*, and the peer was right to refuse to rely on
+either green until they had looked.
+
