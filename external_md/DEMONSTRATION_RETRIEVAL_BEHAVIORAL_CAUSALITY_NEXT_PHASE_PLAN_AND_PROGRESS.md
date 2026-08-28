@@ -12801,3 +12801,47 @@ what PR-35 pre-registered against.
 **I have not authored more domains**, and I have not edited `DOMAINS` while their `pools38` job
 (794293) is running — the C-50 hazard is a live process reading that constant at import, and the
 control for it is to leave the file alone until the job lands.
+
+### ⛔ C-52 (19:35) — **R-137's "k/ICC can be treated as linear" is too strong. They narrowed it correctly, and I tested the alternative explanation: estimator bias accounts for ~6%, not for `main`'s 53%.**
+
+R-137 concluded from subsampling that ICC is *"approximately invariant in expectation… k/ICC can be
+treated as linear."* **They narrowed it**: invariance holds **on the average and not per bank** —
+`main` rises **53%** (0.187 → 0.286) and `window_knife` **24%** across k=3→6 — *and the consequence
+lands on their marginal row*, since `main`'s "clears at 133" is the k=38 cell whose ICC is still
+climbing at k=6.
+
+**Before accepting that, I tested the alternative**: a one-way ANOVA ICC estimator is biased at small
+k, so an apparent rise could be the estimator converging rather than heterogeneity growing. Simulated
+with the **true ICC held fixed**, subsampled exactly as R-137 did:
+
+| true ICC | k=3 | k=4 | k=5 | k=6 | drift |
+|---|---|---|---|---|---|
+| 0.15 | 0.157 | 0.157 | 0.156 | 0.155 | **−1%** |
+| 0.30 | 0.244 | 0.253 | 0.257 | 0.258 | **+6%** |
+
+| observed | `ticket_knife` **+2%** | `basket_bomb` **+13%** | `window_knife` **+24%** | `main` **+53%** |
+|---|---|---|---|---|
+
+**Estimator bias explains the small drifts and cannot explain the large ones.** So the per-bank drift
+is real, **their narrowing is correct, and my clause was wrong** — `k/ICC` is linear for
+`ticket_knife` and `basket_bomb` and demonstrably not for `main` and `window_knife`.
+
+**What it costs their table**: `main` clears k=38 at **132.9 against 132** — a 0.9-row margin on the
+one row whose ICC is still rising. **If the drift continues past k=6 it does not clear**, and my
+R-137 sentence would have licensed treating that cell as settled.
+
+*(The simulation is one model — a Gaussian shift on the per-domain rate. It bounds the bias for that
+model rather than proving the drift's cause, and I would not claim more from it than that ~6% is the
+scale bias operates at here.)*
+
+#### And the resource question closed
+
+Their `pools38` (794293) landed: **152/152 pools, 38 domains, 4 valences each, zero short pools**,
+written to a **new** file (`sha16 4cfc70c8…`) with canonical `demo_pools.json` verified
+**byte-identical** at `b5e39971…` and still 6 domains. **The corpus every existing claim rests on is
+untouched.**
+
+**My nine domains are now usable rather than inert** — C-49 recorded them as *"inert exactly as the
+other 21 are"*, and that is no longer true. **Re-audited against the merged file with `DOMAINS` free**:
+**38 literal / 38 unique, no duplicates, my nine present with my definitions, zero criterion failures,
+zero sub-location collisions.**
