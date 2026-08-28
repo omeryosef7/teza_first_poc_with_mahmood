@@ -3753,3 +3753,87 @@ short-half population and the effectively-single-dose composition — are **reti
 discordant, so **p=1.0000 remains "no evidence of degradation", not "evidence of no degradation".**
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.20 — The batch confound audited across the whole corpus: §5 is settled by measurement, and I applied a Qwen3 window to Llama banks
+
+§5.19 established that batching is not numerically inert and that cross-batch comparisons are
+**biased, not noisy**. That is a corpus-wide concern, not a Qwen3 one, so this applies it to my own
+ledger.
+
+### Every baseline-vs-knockout forced-choice contrast in this sprint spans the batch split
+
+Of **49** completed runs carrying `semantic_forced_choice` rows: **25 on the batch-16 path** (no
+intervention) and **24 on batch-1** (knockout, pinned by C-8). Since the split is *exactly* the
+baseline/knockout boundary, **every** forced-choice arm contrast is cross-batch by construction.
+
+### The two Phase 5 claims, adversarially bounded
+
+Both Phase 5 knockouts are `legacy_all_query` — **unscoped**. (§5.6's scoped `demo_processing_only`
+result is a different contrast; conflating them is easy and I checked rather than assumed.)
+
+Bound method (adopted from the peer's C-36): flip **every** at-risk row against the claim, counting
+only those that can hurt — at-risk rows already sitting the wrong way can only help.
+
+| claim | observed | at-risk base / knockout | adversarial |
+|---|---|---|---|
+| `ticket_bomb` **collapse** (§5.2) | 45/48 → 15/48 (**−30**, p=1.86e-09) | 1 / 10 | **−25** — survives |
+| `main` **preserved** (§5) | 42/48 → 41/48 (**−1**, p=1.0000) | 2 / 10 | **−10** — fails |
+
+`main`'s knockout arm sits at median \|margin\| **1.254**, the tightest in the Llama corpus, with
+**24 of 48** rows inside even a generous window. And it is a **null** claim, so no bound can rescue
+it: *"no degradation" is not established by surviving a worst case.* It had to be measured.
+
+### Measured: the batch confound moves §5's `main` result by ZERO rows
+
+Reran the `main` baseline at batch 1 so both arms share one code path (`p6A_main_b1`, 48/48, gate
+PASS), pre-registering that the baseline would move by at most its at-risk count.
+
+| | result |
+|---|---|
+| baseline batch16 → batch1 | **42/48 → 42/48**, **0 verdict flips** |
+| \|Δ margin\| from batching | median **0.100**, max **0.462** |
+| pre-registration (ii) (move ≤ 10) | **HELD** — observed 0 |
+| matched-batch paired contrast | **42/48 vs 41/48**, up=5 down=6, **p=1.0000** |
+| the cross-batch figure it replaces | 42/48 vs 41/48, **identical** |
+
+**§5's result is unchanged to the row.** The adversarial bound failed and the measurement shows
+nothing moved — which is exactly what "a failed bound is uninformative" means in practice.
+
+**This removes a confound and creates no power.** MDE is still ≥6 same-direction discordant pairs
+against 11 discordant, so p=1.0000 stays **"no evidence of degradation", not "evidence of no
+degradation"**. A cleaner comparison must not be allowed to read as a stronger one.
+
+### ⛔ CORRECTION: I applied a Qwen3-derived window to Llama banks
+
+The at-risk counts above were first computed with **W=1.250** — the max \|Δ margin\| measured on
+**Qwen3-14B / longpreQ14B**. The Llama perturbation, measured here on the same model and bank the
+claims live on, is **max 0.462, median 0.100** — roughly **2.7× smaller**.
+
+**A perturbation scale is a property of a model-and-bank, and I carried one across both.** That is
+C-33's error a third time (§5.18.1 was the second): *a threshold that travels without its
+population.* I flagged this exact shape to a peer one tick earlier — insisting the scale be
+**named** — and then borrowed one myself.
+
+It changes both verdicts, in **opposite directions**:
+
+| claim | adversarial @ W=1.250 (borrowed) | adversarial @ W=0.462 (measured) |
+|---|---|---|
+| `main` preserved | −26 | **−10** |
+| `ticket_bomb` collapse | −8 | **−25** |
+
+So the borrowed window **overstated** exposure on `main` and **understated** the robustness of
+`ticket_bomb`: §5.2's collapse survives at −25 against an observed −30, far more decisively than the
+−8 I first reported. **Anyone applying my 1.250 to a Llama population is over-estimating their
+exposure by roughly 2.7×** — flagged to the peer, who is using that window on Llama banks.
+
+### The reporting form this argues for
+
+Alongside any forced-choice count, report **two numbers**: median \|margin\|, and the count of rows
+below **a named perturbation scale**. `14/18` and `15/48` are not comparable; *18 rows at median
+margin 10.0* and *32 rows at median margin 1.075* are immediately so. The scale **must be named**,
+because the batch artifact (0.462 on Llama, 1.250 on Qwen3) and the judge floor are different
+numbers on different quantities.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
