@@ -5975,3 +5975,63 @@ once the question is answered.
 **This is the test both tables have rested on and neither of us had run.** It is pre-registered here,
 with the decision rule fixed, before the arm reports.
 
+
+## §12.6 — THE k=38 MEASUREMENT: ICC is 0.080, not 0.286, the ladder is FLAT, and the ceiling is 473
+
+The arm landed clean — **304/304 rows, 0 failures, gate PASS, admissible** — and the result
+contradicts the pre-registered prediction in the direction nobody argued for.
+
+| | value |
+|---|---|
+| **measured ICC at k=38** (dose-centred, forced choice) | **0.080** |
+| predicted if invariant (from k=6) | 0.286 |
+| **ceiling at k=38** = `k/ICC` | **473** — against 132 needed |
+| wins | 284/304 = 0.934 |
+
+### The pre-registered ladder: FLAT, so the drift hypothesis is refuted
+
+| k | ICC | ceiling |
+|---|---|---|
+| 6 | 0.061 | 625 |
+| 10 | 0.077 | 493 |
+| 20 | 0.080 | 477 |
+| 30 | 0.080 | 476 |
+| **38** | **0.080** | **473** |
+
+**Flat from k=10 onward.** §12.5 fixed the reading in advance: *flat ⇒ the k=3→6 drift was a small-k
+artifact and `k/ICC` is linear where it matters.* **That is the outcome, and `main`'s 0.9-row margin
+is gone — it clears by 3.6×, not by rounding.**
+
+### Checked before believing it: this is not ceiling attenuation
+
+The new bank scores **0.934**, near the ceiling where ICC estimates compress. Null floors simulated
+at each bank's own observed win rate, zero true clustering:
+
+| | observed ICC | null floor | ratio |
+|---|---|---|---|
+| old bank, k=6, p=0.875 | 0.286 | 0.0281 | **10.2×** |
+| new bank, k=38, p=0.934 | 0.080 | 0.0119 | **6.7×** |
+
+**Both sit far above their floors, so both measure real clustering and the drop is not an artifact
+of the higher win rate.**
+
+### ⛔ What actually failed was the k=6 ESTIMATE, not the k/ICC model
+
+The 6-domain estimate of **0.286** was off by **3.6×** from the 38-domain value of **0.080** — and
+the ladder shows this is not because ICC moves with k. A **random 6 of the 38** gives **0.061**,
+while the *original* 6 gave **0.286**. **The original six domains were unusually heterogeneous
+relative to each other**, and every ceiling either session computed inherited that.
+
+This is §12.3's overprecision warning arriving as a measurement: the peer's leave-one-out band for
+`main` was **[0.00, 0.36]**, and the truth landed at 0.080 — **inside the band, and nowhere near the
+0.286 point estimate both tables were built on.** Sizing from a k=6 point estimate was the error;
+the band was honest and the point was not.
+
+### What this does and does not settle
+
+* **Settled:** on the `main` family at k=38, clustering is far weaker than believed, the ladder is
+  flat, and the ceiling clears 132 by a wide margin. **The `main` row of §12.1 is resolved.**
+* **NOT settled:** this is `carrot|bomb`. **`ticket_knife`'s own ICC at k=38 is unmeasured**, and its
+  k=6 estimate of 0.320 is exactly the kind of figure that just proved unreliable by 3.6×. **The cell
+  this build was authorised to resolve still requires its own bank.**
+
