@@ -10309,3 +10309,66 @@ length-biased.** V-55 independently documents the same cliff (succeeded 200–25
 half is defensible as a paired contrast. **Sent to them with these numbers**, because the screen is
 mine and they will reuse it, and because a criterion that is one row loose is worth fixing while it is
 still cheap.
+
+---
+
+### ✅ R-108 (11:35) — **They applied both corrections (V-56). Checking whether my clean runs bear on their unexplained OOM: they do not — my prompts stop at 172 tokens and their cliff starts at 262. But measuring it properly showed length and dose are confounded at r=0.995, which makes their two hypotheses indistinguishable in the data and puts C-32's "ceiling of 60" in doubt.**
+
+They verified `critical_k` before accepting it rather than taking my word, and their disagreement was
+the useful part: **one-sided gives 13/18 and 31/48; two-sided gives 14/18 and 32/48**, and §5.16's
+published **32/48 matches two-sided**, which settles the convention. I reproduced both columns —
+`n=18: 14 vs 13`, `n=40: 27 vs 26`, `n=48: 32 vs 31`. **Their check is right and mine was right for the
+reason they identified, not the reason I gave** (I never stated the tail convention at all).
+
+They withdrew the one-sample screen sentence and rewrote the "mapping is not destroyed" half onto the
+complete 40 rows. Their own sharper statement of the failure, which I am recording because it is
+better than mine: **the attrition limit was documented in §5.17 and then not applied one section
+later.**
+
+#### ⛔ My own measurement was wrong first — corrected before it was used
+
+My first attempt to measure prompt lengths read a `prompt` field **that does not exist** in these
+banks; the script fell back to stringifying id-like keys and returned plausible numbers (**"max 252
+tokens"**) that were **an artifact of my own fallback**. A `ZeroDivisionError` on a downstream
+correlation exposed it. **The real field is `full_prompt`.** I had already stated the wrong number
+once; it is corrected here before anything was built on it.
+
+#### Do my clean runs say anything about their OOM? No.
+
+Measured with the model's own tokenizer on `full_prompt`, my **ran** population (doses 1,2,4,8):
+
+| bank | n | min | median | **max** | rows ≥ 262 tok |
+|---|---|---|---|---|---|
+| `window_knife` | 48 | 40 | 74 | **172** | **0** |
+| `basket_bomb` | 48 | 37 | 68 | **149** | **0** |
+| `ticket_knife` | 48 | 40 | 74 | **172** | **0** |
+| `window_bomb` | 48 | 37 | 68 | **149** | **0** |
+
+**Their failures begin at 262 tokens. My longest prompt is 172.** So "my four runs were 48/48 clean"
+is **not evidence against their length-cap hypothesis** — my banks never reach the region where their
+failures start. Reporting the clean runs as reassurance would have been the same error as quoting a
+fraction off an attrited population: **a number that is true and uninformative.**
+
+#### The finding that is worth something to them: length and dose are confounded at r = 0.995
+
+Max tokens by dose, identical shape in all four banks:
+
+| `n_examples` | 0 | 1 | 2 | 4 | 8 | **16** |
+|---|---|---|---|---|---|---|
+| `window_knife` / `ticket_knife` | 28 | 47 | 66 | 100 | 172 | **308** |
+| `basket_bomb` / `window_bomb` | 28 | 44 | 62 | 91 | 149 | **261** |
+
+**Pearson r(n_examples, tokens) = 0.995** over the 72 forced-choice rows. Two consequences:
+
+1. **A "length cliff" and a "dose cliff" are indistinguishable in this bank family by construction.**
+   Their surviving split — 16 rows at `n_ex=4`, 2 at `n_ex=8` — is exactly what a length cap produces
+   *and* exactly what a dose-dependent failure produces. **Their longest-first vs shortest-first probe
+   is the right design** precisely because it varies *order* against *length*, which the bank cannot.
+2. **⚠ C-32's "ceiling with demonstrations = 60" is now in doubt on larger models.** The only headroom
+   was the `n_ex=16` dose, and those rows are **261–308 tokens — straddling their 262 cliff.** On
+   Llama-8B my 48 rows were clean, but **I never ran n=16**, so I have no evidence the extra 12 rows
+   are reachable. C-32's conclusion (`ticket_knife` unresolvable) is **unaffected and if anything
+   strengthened**: the population is not merely capped at 60, the last 12 rows may be exactly the ones
+   that fail.
+
+**Sent to them.** The useful half is the confound and the C-32 caveat, not the clean runs.
