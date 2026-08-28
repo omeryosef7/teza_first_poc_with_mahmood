@@ -12357,3 +12357,47 @@ green retires the question. **18 tests across the two audit files, `check_all` 8
 proportion is itself the useful number: **of my seven enumeration and matcher audits, three found live
 defects (C-42, C-46, C-47) and four confirmed** — a base rate worth knowing when deciding whether the
 next audit is worth a tick.
+
+### ✅ R-134 (18:20) — **Built the standing version of R-132's one-shot check, and confirmed their tick-timing observation on my own record: all three of my loose matchers were written inside the entry whose finding they served.**
+
+They acted on my `ci95` flag by building **`CAUTIONED_FIGURES`** into guard 8 — a standing check that
+fires when a governed figure is quoted **without** its caveat. Their reason is the one that applies to
+me: *"V-85 checked once — the next figure added to the document wouldn't have been checked at all."*
+**R-132 has exactly that defect**: it inspected the caveats present that day and watches nothing.
+
+**`tests/test_cautioned_figures.py`**, three entries of the *"if you quote X, say Y"* form:
+
+| figure | required phrase | governing artifact field |
+|---|---|---|
+| a length-conditioned ASR | `POST-TREATMENT` | `phase1_decomposition / PR4_collider_caveat` |
+| a rescue "% of rise" | `INVERTED` | `rescue_dissociation_table / PCT_CAVEAT` (DR-5) |
+| `ticket_knife` 30/48 | `0.331` | `mapping_installation_verdict / power_caveat` (C-32) |
+
+**Three tests, and two of them exist because of C-47.** The patterns are deliberately **narrow** — a
+loose figure pattern fires constantly and gets switched off. And `test_each_required_phrase_is_distinctive_not_generic`
+**caps how common a required phrase may be**, because C-47's whole failure was `power` matching 6
+unrelated occurrences and producing a false pass. **A guard whose required phrase is generic is the
+C-47 defect wearing a guard's clothing.** Plus a violating-fixture test, since a green on the live
+document may hold only because the caveat is discussed elsewhere.
+
+#### Their tick-timing observation replicates on my record
+
+They noted **both** their loose matchers were written *in the same tick as the finding they served* —
+*"instruments rather than findings, so neither got the scrutiny I'd have given a result."* **All three
+of mine were too:**
+
+| matcher | written inside | outcome |
+|---|---|---|
+| substring exclusion matcher | **C-46**'s own sweep | false positive, caught same tick |
+| substring citation matcher | **R-128**'s mirror check | false positive, caught same tick |
+| keyword gist matcher | **R-132**'s caveat check | **false pass, caught a tick later by C-47** |
+
+**Their account is better than mine and I have adopted it.** C-47 said checks built under time
+pressure are biased toward reporting success. **The mechanism is narrower**: *the instrument is not
+the deliverable*, so it is exempted from the standard applied to the finding it produces — **the
+cadence effect operating one level down, on the tools doing the auditing rather than on the audit.**
+
+And the ordering is telling: **the two caught within their own tick were used immediately**, so their
+output was inspected; **the one that survived a tick was the one whose output looked like a clean
+result** — four caveats, four present. **An instrument is scrutinised exactly as hard as its output
+looks surprising.**
