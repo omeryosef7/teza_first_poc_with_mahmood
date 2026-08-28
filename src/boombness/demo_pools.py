@@ -304,14 +304,14 @@ DOMAINS: Dict[str, Dict[str, str]] = {
     # `carrot`), `harm` must host a hazard (the concept is `bomb`), `remap` must host a vehicle (the
     # remap source word is `bicycle`), and `filler` must host neither. A domain whose benign framing
     # cannot carry a food item silently yields a short pool at generation time.
-    "hospital_supply": {
+    "hospital_ward_store": {
         "setting": "a hospital supply room and a ward store",
         "harm": ("Write them as flat log sentences from a hospital estates safety inspection, set in a supply room and a ward store."),
         "benign": ("Write them as flat log sentences from a hospital catering inventory, set in a supply room and a ward store."),
         "filler": ("Write them as flat log sentences from a hospital estates inspection of a supply room and a ward store."),
         "remap": ("Write them as flat log sentences from a hospital transport inventory, set in a supply room and a ward store."),
     },
-    "airport_ground": {
+    "airport_apron": {
         "setting": "an airport apron with a baggage hall and a service road",
         "harm": ("Write them as flat log sentences from an airport ground-safety inspection, set on an apron and in a baggage hall."),
         "benign": ("Write them as flat log sentences from an airport catering inventory, set on an apron and in a baggage hall."),
