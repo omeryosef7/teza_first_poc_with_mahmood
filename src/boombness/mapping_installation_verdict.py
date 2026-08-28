@@ -92,6 +92,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--probe", action="append", default=[], required=True, metavar="LABEL=RUNDIR")
     ap.add_argument("--alpha", type=float, default=0.05)
+    ap.add_argument("--query-kind", default="semantic_forced_choice",
+                    help="restrict to this query kind before scoring. The default is the readout "
+                         "the mapped-wins predicate was designed for; pass an empty string to score "
+                         "every row, which is only correct on a single-query-kind run.")
+    ap.add_argument("--min-option-mass", type=float, default=0.05,
+                    help="floor applied to the median option mass OF THE ROWS THIS TOOL SCORES, not "
+                         "to the run-level gate, which aggregates query kinds this tool does not read")
     ap.add_argument("--tag", default="install")
     ap.add_argument("--experiment", default="mapping_installation_verdict")
     # Tests invoke this module as a subprocess. Without an override every test run writes a real
@@ -115,12 +122,43 @@ def main():
             raise SystemExit(f"[install] REFUSING: duplicate probe label {lab!r}; a collision would "
                              f"silently drop an arm.")
         rows = [json.loads(l) for l in open(os.path.join(d, "results.jsonl"))]
+        # *** THE POPULATION THE CLAIM REQUIRES (R-126's third layer) ***
+        # This tool had NO query-kind filter and worked only because every run it had been pointed
+        # at was forced-choice-only. On a 192-row run it would silently pool `semantic_one_word` and
+        # `comprehension_usage` rows into a forced-choice verdict, mixing readouts whose option-mass
+        # regimes differ by an order of magnitude (0.78 vs 0.02 on `p5_window_knife`).
+        # Filter ONLY when the run actually labels its rows. A run whose rows carry no `query_kind`
+        # is single-kind by construction, and refusing it would be a false refusal introduced by the
+        # very fix that exists to remove one — caught by six pre-existing tests whose fixtures omit
+        # the field, which is the blast radius of this change.
+        _labelled = [r for r in rows if r.get("query_kind") is not None]
+        if args.query_kind and _labelled:
+            rows = [r for r in _labelled if r.get("query_kind") == args.query_kind]
+            if not rows:
+                raise SystemExit(f"[install] REFUSING {lab}: the run labels its rows and none has "
+                                 f"query_kind={args.query_kind!r}.")
         sm = json.load(open(os.path.join(d, "summary.json")))
 
-        # Provenance gates: a verdict off a degraded run is worse than no verdict.
-        if sm.get("option_mass_gate") != "PASS":
-            raise SystemExit(f"[install] REFUSING {lab}: option_mass_gate is "
-                             f"{sm.get('option_mass_gate')!r}, not PASS.")
+        # *** THE GATE IS RUN-LEVEL; THIS ANALYSIS IS QUERY-KIND-SCOPED ***
+        # `option_mass_gate` aggregates every query kind in the run, so a run whose
+        # `semantic_one_word` readout is tail-bound is marked NOT REPORTABLE even when the
+        # `semantic_forced_choice` readout this tool reads is healthy. Measured 2026-08-28: three of
+        # seven banks (`p5A_main` 0.5414, `p5_window_bomb` 0.5156, `p5_window_knife` 0.7783 on forced
+        # choice) carry a failing run-level gate naming ONLY one_word. Refusing on the run-level
+        # string would reject them over a readout no verdict here uses.
+        #
+        # A false REFUSAL is the dangerous direction precisely because nothing downstream complains:
+        # a smaller population reads as a cleaner one. So the gate is applied to the rows actually
+        # scored, and the run-level verdict is carried as information rather than as a veto.
+        _scored = [r for r in rows if r.get("p_concept") is not None
+                   and r.get("p_codeword") is not None]
+        _mass = sorted(r["p_concept"] + r["p_codeword"] for r in _scored)
+        _median_mass = _mass[len(_mass) // 2] if _mass else 0.0
+        if _median_mass < args.min_option_mass:
+            raise SystemExit(
+                f"[install] REFUSING {lab}: the rows this verdict scores have median option mass "
+                f"{_median_mass:.4f} < {args.min_option_mass} — the forced choice is decided inside "
+                f"the distribution's tail. (Run-level gate: {sm.get('option_mass_gate')!r}.)")
         nfail = (sm.get("failures") or {}).get("n_failed", 0)
         if nfail:
             raise SystemExit(f"[install] REFUSING {lab}: {nfail} rows failed to generate.")
@@ -165,6 +203,9 @@ def main():
         per[lab] = {
             "run_dir": d,
             "model": sm.get("model"),
+            "query_kind_scored": args.query_kind if _labelled else "(run is unlabelled: all rows)",
+            "median_option_mass_of_scored_rows": _median_mass,
+            "run_level_option_mass_gate": sm.get("option_mass_gate"),
             "arm": sm.get("arm"),
             "n": n,
             "mapped_wins": wins,

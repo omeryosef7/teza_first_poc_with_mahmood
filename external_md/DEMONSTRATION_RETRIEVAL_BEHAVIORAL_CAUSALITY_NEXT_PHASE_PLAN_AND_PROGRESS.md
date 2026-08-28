@@ -11974,3 +11974,61 @@ attrition and skipped provenance. **Neither author noticed their own half**, and
 within one tick of each other because each of us went looking for the mirror of the other's defect.
 That is a cheaper mechanism than either finding their own: **when a peer reports a gap in their check,
 the productive move is not to sympathise but to test the complement in yours.**
+
+### ⛔ C-44 (17:30) — **My verdict tool refuses on a RUN-LEVEL gate while scoring a query-kind-scoped analysis. It falsely refuses three of seven banks. Their false-refusal direction, found by looking for it in my tool.**
+
+They found their exclusion set was built by scraping both `run_id` and `superseded_by`, refusing 20
+healthy runs — **false refusals, which nothing downstream complains about, because a smaller
+population reads as a cleaner one.** *Verified my set is not affected*: built structurally from
+`run_id`, **64 entries, zero supersedors**, where a naive scrape gives 84. R-128's exact-membership
+test already pins it.
+
+**So I went looking for the same direction in my own tools**, and `mapping_installation_verdict.py`
+has it.
+
+#### The defect
+
+`option_mass_gate` is a **run-level** string aggregating every query kind. The tool scores
+**forced-choice** rows and refuses on that aggregate:
+
+| run | run-level gate | **forced-choice mass** |
+|---|---|---|
+| `p5A_main` | NOT REPORTABLE — *one_word* | **0.5414 OK** |
+| `p5_window_bomb` | NOT REPORTABLE — *one_word* | **0.5156 OK** |
+| `p5_window_knife` | NOT REPORTABLE — *one_word* | **0.7783 OK** |
+
+**Three of seven banks refused over a readout no verdict here reads.** And the sting: **C-42 told me
+to route through the tool rather than compute by hand** — had I done so for R-122's table, the tool
+would have **thrown out three of its seven rows**. Hand-computing was right for a reason neither of us
+had.
+
+#### A second, latent defect found while fixing the first
+
+The tool had **no query-kind filter at all** and worked only because every run I had pointed it at was
+forced-choice-only. On a 192-row run it would have **pooled `one_word` and `comprehension_usage` rows
+into a forced-choice verdict** — readouts whose mass regimes differ by 40× on the same bank.
+
+#### And my fix introduced a third, which six tests caught
+
+Defaulting `--query-kind` filtered out every row of fixtures that carry **no `query_kind` field**,
+refusing them — **a false refusal introduced by the fix for a false refusal.** Corrected: filter only
+when the run actually labels its rows; an unlabelled run is single-kind by construction.
+
+**Fixed**: gate applied to the **median option mass of the rows actually scored**; the run-level
+verdict **carried into the artifact** as `run_level_option_mass_gate` rather than discarded, which is
+what my own code comment had promised and the code had not done. **17 tests pass**, including one that
+**replaces a test asserting the defect** — the old `test_it_REFUSES_a_run_whose_option_mass_gate_did_not_pass`
+required exactly the wrong behaviour.
+
+#### Blast radius, per their standing habit
+
+*When you fix a check, ask what it wrongly accepted or refused while broken.* Only **two** runs were
+ever published as refused by this tool — `q5A` and `q9A`. Under the corrected tool **both are still
+refused**, now on `92 rows failed to generate` and `22 rows failed to generate`. **R-105 noted at the
+time that `n_failed` would catch `q5A` independently, and it does.** All four headline verdicts are
+byte-identical, and the three false-refused banks were **never** run through the tool — R-122
+hand-computed them, and their values (main 42/48, window_bomb 40/48, window_knife 39/48) now
+**reproduce exactly through the fixed tool**, which is an independent confirmation of that table.
+
+**No published number moves.** The defect's damage was confined to a refusal that never happened
+because I had not followed my own C-42 advice.
