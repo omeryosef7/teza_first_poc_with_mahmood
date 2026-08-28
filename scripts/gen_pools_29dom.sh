@@ -20,8 +20,13 @@ R=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 cd "$R"
 if [ -f "$R/.env" ]; then set -a; source "$R/.env"; set +a; fi
 PY=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
+# UNBUFFERED. Without this, stdout is block-buffered to the log file and a multi-hour job is
+# indistinguishable from a hung one -- the first run showed no output at all for 7 minutes,
+# including the startup line. The loop requires detecting stalls from the LOG rather than from
+# squeue state, and that is impossible without per-pool progress arriving as it happens.
+export PYTHONUNBUFFERED=1
 echo "[pools29] starting $(date -Is)"
-"$PY" src/boombness/demo_pools.py \
+"$PY" -u src/boombness/demo_pools.py \
   --out "$R/data/boombness_prompts/demo_pools_29dom.json" \
   --seed 20260828 --refresh
 echo "[pools29] done $(date -Is)"

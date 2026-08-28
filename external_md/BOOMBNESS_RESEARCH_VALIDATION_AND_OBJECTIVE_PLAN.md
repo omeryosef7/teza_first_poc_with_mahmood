@@ -5906,3 +5906,28 @@ estimate of the thing under measurement.
 live process reads that constant at import and the only control is leaving the file alone. That is
 the §12.2 hazard handled by coordination rather than by tooling, and there is no guard for it.)*
 
+
+### §12.4 — The 38-domain pools and bank are built
+
+| artifact | result |
+|---|---|
+| `demo_pools_29dom.json` | **152 pools, 38 domains × 4 valences, ZERO short pools**, sha16 `4cfc70c8688e4a3a` |
+| canonical `demo_pools.json` | **byte-identical**, sha16 `b5e399712b996b7d`, still 6 domains |
+| `boombness_prompt_bank_38dom.jsonl` | **17,328 rows**, 2×2 families checked **2,128**, **violations 0**, duplicate prompt_ids dropped **0** |
+| measurement population | forced choice, `natural_doublespeak`, `core2x2`, doses {1,2,4,8}: **304 rows, 38 domains × 2 splits** |
+
+The bank is `carrot|bomb` — the **`main`** family — so this measures `main`'s ICC at k=38, and `main`
+is the bank whose ICC was **still rising at k=6** (0.187 → 0.286 across k=3..6). It is therefore both
+the marginal row of the predicted table and the one most likely to move.
+
+**Pre-registered prediction for this specific measurement, restated before the arm lands:** if ICC is
+invariant, `main` at k=38 measures ≈**0.286** and its ceiling is **133**, just clearing 132. If the
+k=3→6 drift continues, it measures **higher** and the ceiling falls below 132. **The drift is the
+hypothesis under test, and `main` is the bank that tests it.**
+
+*(An operational note worth keeping: the first generation job produced no output for 7 minutes
+because the script did not set `PYTHONUNBUFFERED` — stdout was block-buffered to the log, so a
+multi-hour job was indistinguishable from a hung one. The loop requires detecting stalls **from the
+log rather than from `squeue`**, and that is impossible without unbuffered progress. Restarted with
+`-u`; the 152 pools then reported one by one.)*
+
