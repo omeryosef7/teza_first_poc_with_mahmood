@@ -12445,3 +12445,28 @@ and fails narrow**, and I **ran the mutation** rather than trusting the assertio
 **Distinctive phrasing (C-47) is necessary and not sufficient; proximity is the other half; and a
 proximity constant is inert unless the shipped value is pinned by a test that fails when it widens.**
 Three conditions, and I had one of them an hour ago.
+
+#### R-135 (18:45) — **My own ledger guard caught me committing C-48 unpropagated, one tick after hardening it. The guard worked; my ordering did not.**
+
+C-48 was committed to the plan **without its deliverable row**, and
+`test_every_correction_reached_the_deliverable` **failed on the next run**. Propagated immediately;
+22 tests now pass.
+
+**Why it got through**: the pre-commit hook runs **`check_all.py` only** —
+*"blocks commits while check_all.py is red"* — and my three audit files
+(`test_my_ledger_propagation`, `test_my_cited_artifacts`, `test_cautioned_figures`) are **pytest tests,
+not `check_all` guards**. So they do not gate a commit.
+
+**And the cadence already covers this**: §18 step 5 (guards *and* the fast tests) precedes step 6
+(commit). **This tick I ran `check_all` before committing and the pytest suite after.** The guard
+caught in seconds what the ordering was supposed to prevent — *which is the argument for the guard,
+not against the ordering, since I have now demonstrated the ordering is not reliable under exchange
+volume.*
+
+**Not adding them to `check_all` unilaterally**: it is shared code the concurrent session is actively
+extending (guard 8 twice this hour), and a lock collision or a merge on that file is a worse failure
+than the one it prevents. **Recorded as the option, with the ordering as the interim control.**
+
+**Nothing published was wrong** — the gap existed for one commit and was closed by the mechanism built
+for it. **Third time today a guard of mine has fired on my own work** (R-125's model filter, C-48's
+proximity, this), against **zero** times a reader caught what a guard could have.
