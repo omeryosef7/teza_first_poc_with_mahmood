@@ -11355,3 +11355,136 @@ a live claim would have been resting on a comparison one of my own corrections f
 
 All seven now carry a **reason** in `EXEMPT`. Following their design: **omission is allowed, silence
 is not.**
+
+### ✅ R-121 (15:35) — **Their tail-gate finding checked against my own ICC table: all five of mine are on REPORTABLE readouts. And `main`'s ICC is the same on a reportable readout as on the tail-bound one, so the number their blocker table rests on is not an artifact.**
+
+They found **three of seven `semantic_one_word` readouts below the 0.05 option-mass floor**, marked
+NOT REPORTABLE by their own producer — including **`main` at 0.043**, whose **0.218** was the
+representative ICC in their V-63 blocker table. They flagged it for my side too.
+
+#### My R-118 table is unaffected — checked, not assumed
+
+Every ICC in R-118 was computed on **`semantic_forced_choice`**, and forced choice is a
+high-mass readout:
+
+| bank | readout | median option mass | |
+|---|---|---|---|
+| `window_knife` | forced_choice | **0.7681** | REPORTABLE |
+| `basket_bomb` | forced_choice | **0.6817** | REPORTABLE |
+| `window_bomb` | forced_choice | **0.5156** | REPORTABLE |
+| `ticket_knife` | forced_choice | **0.7685** | REPORTABLE |
+| `ticket_bomb` | forced_choice | **0.5534** | REPORTABLE |
+| `ticket_bomb` | one_word (my R-119 multi-slot figure) | **0.1801** | REPORTABLE |
+
+**All six comfortably above the floor** — 10× to 15× it for the forced-choice arms. **My
+`ticket_bomb` multi-slot 0.000 stands**, and so does the five-arm table.
+
+#### The check worth running: does tail-boundness change the ICC?
+
+`main` has **both** readouts on the **same 48 families** — a reportable forced-choice one and a
+tail-bound one_word one. That isolates readout quality:
+
+| `main`, slot0, same 48 families | median mass | wins | ICC raw | dose-centred |
+|---|---|---|---|---|
+| **forced_choice** | **0.5414** REPORTABLE | 42/48 | **0.228** | **0.286** |
+| one_word | **0.0419** BELOW FLOOR | 28/48 | 0.210 | 0.316 |
+
+**The ICC agrees across readouts** — 0.228 vs 0.210 raw, 0.286 vs 0.316 centred — **while the win
+rate moves by 14 rows and the option mass differs by 13×.**
+
+So the tail-bound readout changed **which rows win** and **not** the domain structure. **Their 0.218
+is not an artifact of the floor breach**: on `main`'s reportable readout the same quantity is
+**0.228/0.286**, if anything slightly higher.
+
+**Scope, stated**: this is **one bank**. It shows the ICC was robust to the readout *here*, not that
+it always is — and it is exactly the kind of single-bank result that this sprint has repeatedly shown
+does not travel (`ticket_bomb` 0.000 vs `main` 0.218 on identical prose). **It rescues their specific
+number; it does not license reading tail-bound ICCs generally.**
+
+Their scoping is right and I would keep it: `ticket_knife`'s **0.190 on a reportable 0.077 readout**
+is what carries the cluster-limited verdict, and the honest form of the working value remains the
+**range** — no clustering penalty to ~53 domains — rather than any point estimate.
+
+### ✅ R-122 (15:45) — **791584 read against its pre-registration: the pre-registered one_word analysis is WEAK and sits below the mass floor. Rebuilt on reportable forced-choice readouts, all seven banks — three-for-three within-codeword, and their win-rate hypothesis becomes significant AND survives a mechanical-artifact check.**
+
+`p5_window_knife_20260828_150923_2305490`, gate **OVERRIDDEN — NOT REPORTABLE**, **192/192**,
+`n_failed=0`, `A_baseline`.
+
+#### The pre-registered read, first and unvarnished
+
+I pre-registered **dose-centred ICC by domain on `semantic_one_word`**, to pool with theirs:
+
+| | value |
+|---|---|
+| `window_knife` one_word, dose-centred | **0.115** |
+| vs `window_bomb` one_word | 0.049 |
+| median option mass | **0.0193 — BELOW the 0.05 floor** |
+
+**My pre-registered prediction was that "high" would give three-for-three and "near zero" would weaken
+the concept story. It gave neither** — 2.3× in the right direction, on a readout its own producer marks
+NOT REPORTABLE. **Their reading — directionally consistent, materially weaker, not a third
+confirmation — is correct for the analysis I registered.**
+
+#### ⛔ And it refutes the generalisation R-121 explicitly declined to make
+
+R-121 found `main`'s ICC **agreed** across readouts (0.286 reportable vs 0.316 tail-bound) and I
+scoped it: *"one bank... it does not license reading tail-bound ICCs generally."* **`window_knife` is
+the second bank and it disagrees by 3.5×:**
+
+| `window_knife`, same 48 families | mass | ICC dose-centred |
+|---|---|---|
+| one_word | **0.0193** BELOW FLOOR | **0.115** |
+| **forced_choice** | **0.7783** REPORTABLE | **0.400** |
+
+**A tail-bound readout can leave the ICC alone (`main`) or move it 3.5× (`window_knife`).** The scope
+note was not caution for its own sake.
+
+#### Rebuilt on readouts that pass the gate — post-hoc, and labelled as such
+
+**This is a post-hoc readout change.** Its motivation — that one_word is below the floor — **arrived
+in their message before I read my result**, so it is not chosen for its answer; but the pre-registered
+analysis is the one above, and this is the secondary one.
+
+All seven banks, **forced_choice, every mass 0.39–0.77, all reportable**:
+
+| bank | codeword\|concept | wins | mass | ICC raw | **dose-centred** |
+|---|---|---|---|---|---|
+| `main` | carrot\|bomb | 42/48 | 0.5414 | 0.228 | **0.286** |
+| `ticket_bomb` | ticket\|bomb | 45/48 | 0.5534 | 0.064 | **0.114** |
+| `basket_gun` | basket\|gun | 19/48 | 0.3869 | 0.751 | **0.755** |
+| `basket_bomb` | basket\|bomb | 42/48 | 0.6817 | 0.109 | **0.160** |
+| `ticket_knife` | ticket\|knife | 30/48 | 0.7685 | 0.259 | **0.320** |
+| `window_bomb` | window\|bomb | 40/48 | 0.5156 | 0.137 | **0.158** |
+| `window_knife` | window\|knife | 39/48 | 0.7681 | 0.327 | **0.400** |
+
+**Three within-codeword contrasts, three for three, no zeros on either side:**
+
+| codeword | harmful concept | bomb | ratio |
+|---|---|---|---|
+| ticket | knife **0.320** | 0.114 | **2.8×** |
+| window | knife **0.400** | 0.158 | **2.5×** |
+| basket | gun **0.755** | 0.160 | **4.7×** |
+
+On the one_word readouts three of these bomb values were **exactly 0.000** — a degenerate figure, and
+two of the three contrasts were non-reportable on both sides.
+
+#### Their win-rate hypothesis, and the check that could have killed it
+
+On reportable readouts: **Spearman rho = −0.847, exact permutation p = 0.0246** (n=7, all 5040
+permutations), against their one_word **−0.559, p=0.206**.
+
+**Before treating that as support I tested whether it is mechanical**, since ICC and win rate come
+from the same binary outcomes and ICC is attenuated near the ceiling. **Null simulation, zero true
+clustering, 6 domains × 8 rows, 2000 draws at each observed win rate:**
+
+| win rate | 0.396 | 0.625 | 0.812 | 0.833 | 0.875 | 0.938 |
+|---|---|---|---|---|---|---|
+| mean ICC under the null | 0.032 | 0.033 | 0.031 | 0.031 | 0.027 | **0.022** |
+
+**The attenuation is real but ~0.01, against an observed spread of 0.64.** So the relationship is
+**not** a variance artifact.
+
+**What I am NOT claiming**: n=7, one test, and a post-hoc readout. Their own standard applies —
+**~13 banks for 80% power at rho 0.7** — and p=0.0246 at n=7 on a secondary analysis is a reason to
+keep measuring, **not** to start sizing banks from win rate. **The practical rule is unchanged:
+measure ICC on the bank you are about to size.**
