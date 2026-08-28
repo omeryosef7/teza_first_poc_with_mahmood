@@ -4395,3 +4395,62 @@ be rescued by generation; `ticket_bomb`-like banks have no clustering penalty an
 with the multi-slot rows that already exist. The ICC must be measured per bank before any bank is
 sized — never carried, in either direction.**
 
+
+---
+
+## §6.4 — What domain clustering actually tracks: NOT the codeword, and a suggestive-but-unestablished link to how well the concept installs
+
+§6.3.1 forced ICC to be measured per bank. That makes "what determines ICC" a real question rather
+than a nuisance, and it is answerable from **existing artifacts** — six complete `A_baseline` runs
+carry both slots on `semantic_one_word`, giving a codeword × concept design at no GPU cost.
+
+| bank | codeword \| concept | wins/96 | ICC raw | ICC dose-centred | between-domain sd |
+|---|---|---|---|---|---|
+| `main` | carrot \| bomb | 56 | 0.156 | **0.218** | 0.209 |
+| `ticket_bomb` | ticket \| bomb | 64 | 0.000 | **0.000** | 0.078 |
+| `basket_gun` | basket \| gun | 36 | 0.371 | **0.381** | 0.293 |
+| `basket_bomb` | basket \| bomb | 60 | 0.000 | **0.000** | 0.062 |
+| `ticket_knife` | ticket \| knife | 25 | 0.162 | **0.190** | 0.189 |
+| `window_bomb` | window \| bomb | 45 | 0.004 | **0.049** | 0.118 |
+
+### It is definitively NOT a codeword property
+
+The design contains two within-codeword contrasts, and both are large:
+
+* **`basket`**: 0.381 with `gun`, **0.000** with `bomb`
+* **`ticket`**: 0.190 with `knife`, **0.000** with `bomb`
+
+Same codeword, same six domains, same prose, same model. **Whatever sets the clustering, it is not
+the codeword.** By concept, `bomb` is near zero on three of four banks (0.000, 0.000, 0.049) with
+`carrot|bomb` at 0.218 the exception, while `gun` (0.381) and `knife` (0.190) are high.
+
+### The obvious hypothesis is suggestive and NOT established
+
+The pattern invites a mechanism, and it connects to §5's finding that **the `gun` concept never
+installs**: if a concept installs everywhere, domains have nothing to differentiate; if it installs
+weakly, *whether* it installs becomes domain-dependent and clustering appears.
+
+Tested directly:
+
+* Spearman(win rate, ICC) = **−0.696**
+* exact permutation two-sided **p = 0.1444** (104/720)
+
+**Not significant at n=6 banks, so it is recorded as a hypothesis and not a finding.** The direction
+is what the mechanism predicts and the magnitude is large, which is exactly the situation in which
+this sprint has repeatedly been wrong — a plausible mechanism with a suggestive number is how the
+"262-token cliff" got published (§5.19) and how a peer's slot-effect explanation for `ticket_bomb`
+died (§6.3). It needs roughly **13 banks** to test at 80% power against ρ≈0.7; six exist.
+
+### Why it would matter if it held
+
+ICC currently has to be **measured** per bank before that bank can be sized — a real cost, and the
+thing that blocks §9 next step #2. The win rate is far cheaper. **If the relationship held, a bank's
+clustering penalty could be predicted from a quantity every run already reports**, turning a
+blocking measurement into a free one. That is worth testing properly; it is not worth assuming, and
+sizing a bank on ρ = −0.696 at p = 0.14 would be the same error this sprint has now made five times
+in different costumes.
+
+**Practical rule, unchanged: measure ICC on the bank you are about to size. It cannot yet be
+predicted, and it is not inherited from the codeword.**
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
