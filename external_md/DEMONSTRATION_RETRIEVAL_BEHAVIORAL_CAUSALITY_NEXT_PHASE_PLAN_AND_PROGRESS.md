@@ -11250,3 +11250,62 @@ attainable n), reproducibility (C-36), and both horns of the clustering analysis
 **Their useful half stands and I would keep it**: 0.75+ effects are answerable today with ~7 domains
 and no new prose, on the optimistic estimate — but given that the ICC is bank-dependent, that
 threshold should be **re-measured per bank**, not carried.
+
+---
+
+### ⛔ C-40 (15:05) — **My "unreachable under both regimes" argument is wrong: it used C-32's SINGLE-slot row ceiling against a bank whose entire design point is extra slots. The conclusion survives on `ticket_knife`'s own measured ICC, which is not the argument I gave.**
+
+R-119 claimed `ticket_knife` is unreachable at **both** ends: cluster-limited at high ICC, and at ICC 0
+row-limited by **C-32's 60-row ceiling**. **The second horn is invalid.** C-32's 60 describes the
+**existing one-slot bank**; the bank under design is **multi-slot** — 396 forced-choice rows at doses
+{1,2,4,8} — so at ICC 0 there is no clustering penalty, `n_eff = n`, and **396 clears 132 comfortably.**
+
+**I applied a ceiling from the bank we have to the bank whose purpose is to not be that bank.** The
+"holds at both ends" property I was pleased with **was never established**, and they were right to say
+a conclusion holding at both ends of an unpinned quantity is worth more than one needing it — *this
+just was not an instance of it.*
+
+**The conclusion survives on a number I did not have.** They measured `ticket_knife`'s **own**
+multi-slot ICC: **0.162 raw / 0.190 dose-centred, sd_domain 0.189** — main-like. At 10 domains that is
+a ceiling of **53 effective rows against 132 needed**, so it is unreachable **however many rows or
+slots are added**, because `k/ICC` does not depend on the row count.
+
+**This is a right answer that had a wrong reason**, and the distinction is load-bearing rather than
+pedantic **precisely because of my own `ticket_bomb` result**: multi-slot ICC **can be 0.000** on
+identical domains, prose and model, so `ticket_knife`'s value could not have been assumed in either
+direction. Had I sent only the direction correction, they would have kept a correct verdict resting on
+`main`'s number carried across — the same carry-over shape a fifth time.
+
+### 🔬 DR-16 (15:10) — **Deep review. Suite 1261 passed. Ledger had dropped C-39 — the same propagation gap DR-14 found. All headline numbers reproduce; a `dirty=True` on a claim-bearing run checked out clean.**
+
+**Full suite: 1261 passed, 7 skipped** (615s). `check_all` **6/6**.
+
+**⛔ Ledger gap, second occurrence.** C-19…C-39 audited by count: **C-39 was missing** from the
+summary's corrections table — logged in this file an hour earlier and never propagated. **This is the
+identical failure DR-14 caught with C-32/C-33**, and it recurs in exactly the same circumstance: a
+correction written during a fast exchange. **Added.** The by-count audit is now the only thing standing
+between this ledger and silent drift, and it has caught two of two.
+
+**Headline numbers, recomputed from raw rows**: `basket_bomb` 42/48 (p=1.01e-07), `window_knife`
+39/48 (1.52e-05), `window_bomb` 40/48 (3.31e-06), `ticket_knife` 30/48 (0.111) — all `crit=32`,
+unchanged. C5: `ticket_bomb` 45/45/45 and 15 unscoped; **main leg 42/48 → 48/48, p=0.02647** against
+the ledger's 0.0265.
+
+**Provenance on the one artifact added since DR-15** (`c5A_tb_b1`): gate **PASS**, **192/192**,
+`n_failed=0`, model `Llama-3.1-8B-Instruct`, `intervention=None` and `knockout_liveness=None` — correct
+for a baseline arm.
+
+**⚠ It records `git_dirty=True`, and it is claim-bearing, so I checked what was dirty.**
+`score_behavior.py` is **byte-identical between that run's commit (`058b70fe`) and HEAD**, with the
+`readout_max_batch` logic at the same lines. The only `src/` file changed since is
+`margin_exposure.py`, which this run does not import. **The dirty flag was harmless** — recorded
+because a bare `dirty=True` on a claim-bearing run looks alarming later without this check, and the
+check is two commands.
+
+**No duplicate result hashes** across all seven claim-bearing probe runs. **Truncation/EOS: not a
+surface** — every claim-bearing probe is `no_generate=True`, forward-only, so there is no decode to
+truncate. **Reproducibility floor**: covered by C-36 (exact adversarial bound), C-37/C-38 (measured
+per-population windows), and R-114 (the confound measures to zero rows on both banks).
+
+**Deep-review artifacts written to the scratchpad via `--out-root`**, so the review itself does not
+litter `outputs/` — the DR-15 fix doing its job.
