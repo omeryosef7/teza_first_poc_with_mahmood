@@ -2410,3 +2410,68 @@ has no boombness measurement at all** and the join collapses 96 → 48.
 **Phase 7 gate status: still closed, and this section does not move it either way.** The honest
 state is that the strongest available direct test of "boombness predicts ASR beyond `n_examples`" is
 underpowered by a factor of ~6, and the two routes to powering it are both known and unrun.
+
+---
+
+## §5.8 — the third bank DECLINES rather than decides — and it reframes entry 6's null
+
+`basket_gun`'s three probe arms are in. **They do not answer §5.7's question, and a concurrent
+session caught why before I wrote them up.**
+
+**Forced-choice, n=48, all arms reportable:**
+
+| bank | **baseline** mapped-wins | above chance? |
+|---|---|---|
+| `main` | 42/48 = **0.875** | ✅ |
+| `ticket_bomb` | 45/48 = **0.938** | ✅ |
+| **`basket_gun`** | **19/48 = 0.396** | ⛔ **BELOW the 0.500 chance line** |
+
+**The model prefers the codeword to the concept on `basket_gun` before any intervention.** So:
+
+| arm | mapped-wins | mass |
+|---|---|---|
+| baseline | 19/48 | 0.3869 |
+| `legacy_all_query` | 11/48 | 0.3617 |
+| `demo_processing_only` | 23/48 | 0.3872 |
+
+**`legacy`'s 11/48 must NOT be read as "binding destroyed on a third bank."** It is a drop from a
+baseline that never bound — structurally the same as **`window_knife`** in §0.8 (baseline ASR 2/96,
+which I called "evidence of nothing") and as the no-headroom declines this project has made twice
+before. **The baseline must bind before "does the intervention preserve binding" is a question at
+all, and `basket_gun` fails that gate.**
+
+**§5.7's question is therefore untouched: still 1-of-2, not 2-of-3.** The directions remain
+consistent with everything else (demoproc 19→23, legacy 19→11) but from a non-binding baseline they
+are uninterpretable, and they are not counted.
+
+### The pre-screen criterion, now explicit
+
+Picking the next candidate bank no longer needs guesswork: **baseline forced-choice mapped-wins must
+clear chance by a real margin.** One baseline probe arm per candidate, no intervention needed —
+cheap, and it would have saved these three jobs.
+
+### The reframe: `basket_gun` fails to install the mapping AT ALL
+
+Pulling the three independent measurements together, this bank is weak on **every** axis:
+
+| measurement | `main` | `ticket_bomb` | **`basket_gun`** |
+|---|---|---|---|
+| baseline ASR (cap 640) | 22/96 | 30/96 | **10/96** — lowest |
+| baseline forced-choice binding | 0.875 | 0.938 | **0.396** — below chance |
+| retrieval-knockout ASR effect | −0.146 | −0.260 | **−0.031, null** (§0.17) |
+
+**That is a coherent single account: the doublespeak mapping does not install on `basket_gun`.** And
+it is a *better* explanation of entry 6's null there than "the effect is population-specific" —
+**there is no mapping to knock out.** §0.17's null stands, but its reading improves: not *"the
+knockout fails on this population"* but *"this population has nothing for it to remove"*, which the
+binding probe now shows directly rather than by inference.
+
+### A trap I checked rather than assumed
+
+The same session nearly reported a below-chance baseline from a number pooling **three** readouts:
+`semantic_forced_choice`, `semantic_one_word` and `comprehension_usage` all carry `p_concept`, so a
+filter on field presence mixes scales. Reproduced here: **filtering by `p_concept` gives 55/144 =
+0.382**, silently pooling forced-choice (mass 0.3869) with one-word (mass 0.0808).
+
+My reader filters on `query_kind` explicitly, so it does not have the bug — **verified, not
+assumed**, because the failure is invisible: it returns a plausible number.
