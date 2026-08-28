@@ -3019,3 +3019,70 @@ turned out to be a concept claim (§5.10, §5.11, here).
 | **`window|knife` installs and still scores 0.042** | established on **one** bank (§5.13) |
 | `ticket\|knife` installation | **unresolvable at n=48** (p = 0.111) |
 | "the attack only works for bombs" | **NOT established** — this is a judge-scoring result |
+
+---
+
+## §DR-2 — DEEP REVIEW (4-hour), 2026-08-28 06:20
+
+### Mechanical checks — all clean
+
+| check | result |
+|---|---|
+| cited paths in this log | **71, 0 unresolvable** |
+| cited run ids | **4, 0 unresolvable** |
+| full suite (conda interpreter) | **1217 passed, 7 skipped, 0 failed** |
+| `check_all.py` deliverable guards | **6/6** |
+| sprint commits | **49** |
+
+### Ledger
+
+| | at audit | **now** |
+|---|---|---|
+| KEEP | 1 | **3** |
+| KEEP-NARROWED | 4 | **5** |
+| NEEDS RERUN | 5 | **3** |
+| RETRACT | 3 | 3 |
+| OPEN | 1 | **0** |
+
+### ⛔ THE GAP THIS REVIEW FOUND: Phase 3 was never run
+
+The brief puts an **aggressive-intervention gate BEFORE objective extraction**:
+
+> *"Before doing delicate surgical patching, test whether the basic idea is even possible … If no
+> aggressive patch can move behavior without degeneracy, do not proceed to objective extraction."*
+
+**I did Phase 3.2 (the negative patch) and never did Phase 3.1 (the positive one).** §0.14 removed
+`d_surface` and found ASR *rises*. **Nobody has tested whether ADDING `d_surface` — pushing the
+codeword token toward the concept — moves behaviour at all.** And §7 reopened the objective gate
+without that prerequisite having been met.
+
+**This is also exactly ledger entry 4's outstanding rerun.** Entry 4 (*"`d_surface` is causal because
+steering changes attack behaviour"*) sits at NEEDS RERUN because its evidence is the
+`steer_L8_a1`/`steer_L8_a2` runs at **cap 192 with 100 % truncation** (§0.2's worst stratum). So one
+experiment closes a ledger entry and fills the plan's missing gate.
+
+**Launched (788769 / 788770 / 788771)**, `ticket_bomb` (the highest-headroom bank, baseline 27–30/96),
+**cap 640**, pinned judge to follow, all against the existing `e6A_ticket_bomb` baseline:
+
+| arm | intervention | question |
+|---|---|---|
+| `p3_add_pos` | `d_surface:add:8-8:+1.0` | **does pushing toward the concept raise ASR?** |
+| `p3_add_neg` | `d_surface:add:8-8:−1.0` | is the effect *directional* or does either sign suppress? |
+| `p3_rand` | `random:add:8-8:1.0` | matched-dose control |
+
+The `−1.0` arm matters because **G4's retracted finding was that BOTH signs suppressed ASR** — a
+directional null. If that reproduces at a non-binding cap, the objective is dead on its own terms
+regardless of §7's correlation; if `+1.0` raises and `−1.0` lowers, Phase 3's gate passes for the
+first time.
+
+### Standing self-criticism
+
+1. **Every phase of this sprint that produced a positive result has subsequently been narrowed** —
+   §5.6 by scope, §5.9 by concept, §5.12 by resolvability, §0.17 by concept. The corrections have all
+   come from cheap structural checks run *after* the write-up. The pattern is consistent enough that
+   **any new positive should be assumed to have an un-run structural check attached.**
+2. **Nine of the sprint's corrections originated with the concurrent session, not with me.** My own
+   catches were mostly of my own code (the exclusion bug, the case-sensitivity bug, the mangled
+   heredoc); theirs were mostly of my *reasoning*. That asymmetry is worth naming: I check
+   instruments well and claims less well.
+3. **Phase 8 remains correctly unstarted**, and §7's gate remains closed.
