@@ -12985,3 +12985,51 @@ have told them which.**
 C-31/C-33/R-137 error a fourth time** — a precise operation on a quantity whose own k=6 predecessor
 was 3.6× wrong on a neighbouring bank. **The measured 0.291 is far better determined than the 0.320 it
 replaces, and it is still one bank's number.**
+
+### ⛔ C-55 (20:40) — **My R-138 advice contained an option my own R-111 had already excluded, and the "38.4 domains" I quoted is an asymptote no finite design reaches. At their actual 8 rows/domain the requirement is 51, not 38.4.**
+
+Two errors in one message, both caught by them.
+
+#### 1. I proposed a re-run for a second estimate. R-111 proved re-runs are bit-identical.
+
+R-138 suggested *"a re-run, or the subsample ladder on the `ticket_knife` arm"*. **R-111 — my own
+finding — established `q8D` vs `qbD` are bit-identical on 40/40 rows: the readout is exactly
+deterministic at fixed batch.** A re-run yields **zero** new information, and I listed it **first**.
+*The ladder half was the useful half and I buried it behind an option my own measurement had ruled
+out three hours earlier.* **C-32/C-33's shape a fourth time: I audit what I assert and not what I
+advise.**
+
+#### 2. `k/ICC` is the m→∞ asymptote, not a requirement
+
+`n_eff = k·m / (1 + (m−1)·ICC)`, and `k/ICC` is its limit as rows-per-domain **m → ∞**. Their design
+has **304 forced-choice rows over 38 domains = m = 8**:
+
+| | at k=38 |
+|---|---|
+| asymptote `k/ICC` (what V-99 and my R-138 both quoted) | **130.6** |
+| **actual n_eff at m=8** | **100.1** |
+| domains needed for 132 **at m=8** | **51** |
+| domains needed, asymptotic | 38.4 |
+
+**So "short by 1.4 rows" was wrong in my message as well as theirs — at their real design the cell is
+short by 32 effective rows and 13 domains.** I inherited the asymptote from their table and
+re-published it without checking what it assumed.
+
+#### And their V-101 is the lever this identifies
+
+Raising **m** moves n_eff toward the asymptote, which is exactly what multi-slot rows do (V-101: 8 → 66
+per domain):
+
+| rows/domain m | 8 | 16 | 24 | 40 | 66 |
+|---|---|---|---|---|---|
+| **domains needed for 132** | **51** | 45 | 43 | 41 | **40** |
+| n_eff at k=38 | 100.1 | 113.3 | 118.5 | 123.1 | **125.9** |
+
+**Even at m=66 the requirement is 40 domains and k=38 gives 125.9** — still short, and **38.4 is a
+floor no finite design reaches.** The two levers are not interchangeable: **m has sharply diminishing
+returns** (8→66 buys 26 effective rows; the last 26 rows of m buy 2.8), while **k is linear**. *Adding
+domains is the only lever that scales.*
+
+**What this does not change**: their bootstrap CI in V-99 already says the data cannot decide, and
+that verdict is unaffected — the correction makes the cell **further** from the line, not nearer, so
+nothing that was decided becomes undecided.
