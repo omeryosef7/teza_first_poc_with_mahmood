@@ -45,6 +45,9 @@ GUARDS = [
     ("ledger_propagation_check",
      [sys.executable, os.path.join(HERE, "ledger_propagation_check.py")],
      "a correction written in the plan and never reaching the claim ledger"),
+    ("cited_artifact_check",
+     [sys.executable, os.path.join(HERE, "cited_artifact_check.py")],
+     "a claim citing an artifact that is missing or inadmissible"),
 ]
 
 

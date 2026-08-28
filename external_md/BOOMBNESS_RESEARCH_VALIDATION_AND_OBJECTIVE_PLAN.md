@@ -5065,3 +5065,35 @@ recording exactly as a catch would be. It is also the direct test of §11.3 — 
 lapsed, not obsolete**, and re-running it cost one tick.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### §11.5 — The deep-review artifact check promoted to a guard, and its own hand-listing bug encoded as a test
+
+§11.4's artifact check found nothing — but it existed only as a script I typed once, which is the
+weaker half of "a verification that confirms is worth as much as one that catches": **run by hand it
+confirms once; the value is in it running every time.** It is now
+`src/boombness/cited_artifact_check.py`, wired into `check_all.py` as guard **8**.
+
+It answers the question no guard previously asked: **does the artifact a claim cites still exist,
+and may it be used?** A citation is a string, and a claim whose run directory is missing or excluded
+reads exactly like one whose artifact is fine. Existence and **admissibility** are checked
+separately, per §11.2.
+
+```
+[cited-artifact] 23 run ids cited across 36 enumerated roots; 23 usable or documented-refused
+```
+
+**Its own origin bug is encoded as a test.** The ad-hoc version hand-listed four output roots and
+reported **14 missing** ids; widening to all 36 gave **0**. So `_roots()` globs every directory and
+names none, and `test_roots_are_enumerated_not_hardcoded` fails if anyone reintroduces a fixed list.
+**The rule this sprint arrived at is sharper than "enumerate the rows": enumerate the SEARCH SPACE
+too** — §10.7 fixed the row set and left the roots hand-listed, which is how the bug survived into
+the check written to catch it.
+
+Two exemption tables carry reasons, not just ids: `CITED_AS_REFUSED` documents the two runs cited
+**as** refusals (§0.2.5's 482-row partial; §0.12's guard-refused arm), and the `MIN_EXPECTED` floor
+is inherited from §7.6 rather than rediscovered.
+
+**Mutation-tested, 5 mutants, all killed:** not recording missing citations (1 test), not recording
+inadmissible ones (1), skipping the admissibility call (1), **hand-listing the roots — a literal
+replay of the origin bug (3)**, and removing the degenerate-pass floor (1). 10 tests.
+
