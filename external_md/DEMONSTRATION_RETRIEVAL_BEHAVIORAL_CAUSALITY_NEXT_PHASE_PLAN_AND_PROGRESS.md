@@ -11549,3 +11549,25 @@ and it is the one that matters if anyone later tries to reuse my table for sizin
 **Their closing point is the right standing rule and I have adopted it**: if the count ever reaches 13
 banks, the pre-registration must fix **readout and slot structure up front**, because both move the
 number and this tick shows neither can be corrected for afterwards.
+
+#### Provenance note on 791584 (16:10) — **SLURM marks it FAILED; the failure is the tail gate, and R-122 is unaffected**
+
+`sacct` reports **791584 FAILED, ExitCode 4:0**. Recorded here because a `FAILED` against a
+claim-bearing run is the kind of thing that gets a result quietly discounted later — the same reason
+DR-16 chased a bare `dirty=True`.
+
+The exit is **`score_behavior`'s tail gate refusing to certify one readout**, not a run failure:
+
+```
+[score] failures: {}
+[score] option mass comprehension/comprehension_usage  median 0.3528   OK
+[score] option mass semantic/semantic_forced_choice    median 0.7857   OK
+[score] option mass semantic/semantic_one_word         median 0.01969  BELOW GATE
+[score] TAIL GATE FAILED — the run is written and its healthy readouts are usable
+```
+
+**Zero row failures, all 192 rows written.** The gate's own verdicts line up exactly with how R-122
+used the run: the **forced-choice** table it certifies **OK at 0.7857** is the one carrying the
+seven-bank result, and the **one_word** readout it marks **BELOW** is the one I reported as my
+pre-registered — and below-floor — read at 0.0193. **The producer and my report agree on which half is
+quotable.**
