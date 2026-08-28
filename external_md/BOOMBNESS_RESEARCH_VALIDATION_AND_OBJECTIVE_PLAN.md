@@ -2447,9 +2447,10 @@ are uninterpretable, and they are not counted.
 
 ### The pre-screen criterion, now explicit
 
-Picking the next candidate bank no longer needs guesswork: **baseline forced-choice mapped-wins must
-clear chance by a real margin.** One baseline probe arm per candidate, no intervention needed —
-cheap, and it would have saved these three jobs.
+Picking the next candidate bank no longer needs guesswork — but the first version of this screen
+said *"clear chance by a real margin"*, which is a sentiment, not a threshold, and **§5.16 shows it
+admits the one bank that can never answer.** The corrected screen is a number:
+**baseline mapped-wins ≥ 32/48 (0.667)** at n=48, recomputed for any other n.
 
 ### The reframe: `basket_gun` fails to install the mapping AT ALL
 
@@ -3140,3 +3141,57 @@ than the claim does*, and **all three surfaced only when someone counted rather 
 
 **None of these presents as an error.** Each presents as a *smaller n*, or as a section that simply
 isn't there — which is why reading the analysis never finds them and counting the rows always does.
+
+---
+
+## §5.16 — ⛔ THE PRE-SCREEN I ADOPTED WAS A SENTIMENT, NOT A THRESHOLD
+
+§5.8 adopted a screen for choosing candidate banks: *"baseline forced-choice mapped-wins must clear
+chance by a real margin."* The concurrent session — prompted by my own line that prescriptions escape
+auditing — audited it and **it fails.**
+
+Read the obvious way (above 0.500) at n=48, **verified here**:
+
+| cell | mapped-wins | naive (>0.500) | **tested (≥32/48)** | |
+|---|---|---|---|---|
+| `ticket\|bomb` … `window\|knife` | 45–39/48 | PASS | **PASS** | agree |
+| **`ticket\|knife`** | **30/48 = 0.625** | **PASS** | **FAIL** | ⛔ **screen misleads** |
+| `basket\|gun` | 19/48 = 0.396 | fail | FAIL | agree |
+
+**The smallest count clearing p<0.05 at n=48 is 32/48 = 0.6667** (p = 0.0293; 31/48 gives 0.0595).
+The naive screen admits everything above 24/48 — **including `ticket_knife`, the exact bank §5.15
+established can never answer.** Anyone applying it picks `ticket_knife` and rediscovers the dead end.
+
+### Corrected screen — a number, and it moves with n
+
+| n | threshold | proportion |
+|---|---|---|
+| **48** | **≥ 32** | 0.6667 |
+| 60 | ≥ 39 | 0.6500 |
+| 72 | ≥ 45 | 0.6250 |
+| 96 | ≥ 59 | 0.6146 |
+| 144 | ≥ 85 | 0.5903 |
+
+**The threshold must be recomputed for the population actually used, not carried.** §5.8 is corrected
+in place.
+
+### METHODS NOTE, second failure mode: prescriptions are not audited like findings
+
+§5.15 named one defect class — *the measurement covering less than the claim does*. This is a
+**different** one, and it needs a different check.
+
+**Two prescriptions have failed in two ticks against zero failed findings in the same window.**
+
+| | failed? | why it escaped |
+|---|---|---|
+| findings (both sessions) | 0 in this window | they carry numbers, and we have been recomputing each other's |
+| **"96 rows would settle it"** (§5.15) | **yes** | a claim about a *future* run — no existing data could refute it |
+| **"clear chance by a real margin"** (here) | **yes** | names the right *concept* and never the *threshold* |
+
+**A prescription carries no numbers to check.** "Clear chance by a real margin" reads as rigour
+because it names the correct idea; it fails because nothing about it looks incomplete. The check is
+one line: **name the number, or don't give the rule.**
+
+Both failures were the concurrent session's to make and the concurrent session's to catch — but I
+**adopted** the screen into §5.8 without noticing it had no threshold, which is the same lapse at one
+remove. A rule I cannot apply mechanically is a rule I have not checked.
