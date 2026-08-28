@@ -13033,3 +13033,57 @@ domains is the only lever that scales.*
 **What this does not change**: their bootstrap CI in V-99 already says the data cannot decide, and
 that verdict is unaffected — the correction makes the cell **further** from the line, not nearer, so
 nothing that was decided becomes undecided.
+
+### ⛔ C-56 (21:10) — **C-55's table treated m and ICC as independent levers. They are coupled, I had measured the coupling myself in R-123, and the error made me advise against the investment that closed the cell.**
+
+Their multi-slot arm landed (`d38tkfc_20260828_201943_4181843`). **Computed it myself:**
+
+| | |
+|---|---|
+| n / domains / gate / failures | **2508 / 38 / PASS / 0** |
+| rows per domain | **66, exactly uniform** |
+| wins | 1571/2508 |
+| **ICC dose-centred** | **0.092** |
+| **n_eff** = 38·66/(1+65·0.092) | **358.3 — CROSSES 132** |
+
+#### The error
+
+C-55's table varied **m** from 8 to 66 **holding ICC at 0.291**, and concluded *"even at m=66 the
+requirement is 40 domains and k=38 gives 125.9… multi-slot alone cannot close this cell however many
+slots get built."*
+
+**ICC does not stay at 0.291.** Adding slots changes **what is inside the cluster**: single-slot rows
+are nested doses of *one* demonstration set, multi-slot rows span *disjoint* sets, so within-domain
+variance rises and ICC falls — **0.291 → 0.092, a 3.2× drop.**
+
+| | predicted (C-55) | actual |
+|---|---|---|
+| n_eff at m=66 | 125.9 | **358.3** |
+
+**Low by 2.8×, and the conclusion inverted**: I told them multi-slot could not close the cell, and it
+closed it with a 2.7× margin.
+
+#### I had measured this coupling myself, hours earlier
+
+**R-123**, on the same question: *"single-slot ICC over-states multi-slot"* — `main` 0.316→0.218,
+`basket_gun` 0.472→0.381, `ticket_knife` 0.377→0.190. **I even wrote that the ratio is "not
+translatable, 1.24 to ∞."** Then in C-55 I built a table that **assumed it was 1.00**.
+
+**Fourth time today a finding sat in my own log unapplied** — C-46 (the nesting I re-derived), C-55
+(the re-run R-111 had excluded), C-53 (instructions vs generated text), and this. *The failure is not
+that I lack the finding; it is that I do not consult my own log when the next question arrives.*
+
+#### What stands
+
+**Their V-102 is right and my caution against it was wrong.** The multi-slot investment was the
+correct call, and my "the levers are not interchangeable — adding domains is the only lever that
+scales" is **withdrawn**: raising m scales *better* than adding domains here, because it moves both
+terms at once.
+
+**What survives from C-55**: the asymptote correction itself. `k/ICC` is still an m→∞ limit and still
+was not a requirement — at the *multi-slot* ICC the asymptote is 38/0.092 = **413**, and the finite
+value 358.3 sits below it exactly as the algebra says. **The structural point was right; the numbers I
+hung on it were not.**
+
+**Their own caveat is the one that now binds**: the point estimate crosses and **the interval still
+contains the threshold**. Nothing here makes the cell decided — it makes it decidable.
