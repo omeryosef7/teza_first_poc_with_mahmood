@@ -49,6 +49,8 @@ METHOD_ONLY = {
     "§10.1": "design arithmetic for a bank that was never generated — no claim depends on it",
     "§10.2": "design arithmetic, superseded by §10.3/§10.3.1 before any claim rested on it",
     "§10.3": "corrects §10.2's arithmetic; the surviving claim is recorded via PER_BANK_ICC",
+    "§12.13": "widens a guard's path list and repairs two table rows; no figure value changed "
+               "-- only cell alignment and one absent row label, and the mutation test is recorded",
 }
 
 #: Tokens that evidence a section reached the ledger. A section passes if ANY of its own distinctive
@@ -109,6 +111,7 @@ TRACE_TOKENS = {
     "§12.10": ["fcslots", "2508"],
     "§12.11": ["3.16", "142.9"],
     "§12.2": ["silently overwrit", "38 unique"],
+    "§12.12": ["0.2443", "pooled-vs-balanced"],
 }
 
 

@@ -27,6 +27,12 @@ DELIVERABLES = [
     "reports/boombness_objective_sprint_short_update.md",
     "docs/BOOMBNESS_SPRINT_PROGRESS.md",
     "docs/BOOMBNESS_CONTINUATION_LOG.md",
+    # THE PLAN WAS NEVER SCANNED, and it is where the tables actually get written. Two other
+    # guards (ledger_propagation, plan_coverage) already treat it as an audited artifact; this
+    # one did not, so a broken row in it was invisible. Found when my own carrot-pipe-bomb
+    # heading row split into 5 cells against a 4-cell header while check_all reported 8/8
+    # green. Scanning it surfaced 2 real breaks in 175 tables, both now fixed.
+    "external_md/BOOMBNESS_RESEARCH_VALIDATION_AND_OBJECTIVE_PLAN.md",
 ]
 SEP = re.compile(r"^\s*\|[-: |]+\|\s*$")
 CELL = re.compile(r"(?<!\\)\|")

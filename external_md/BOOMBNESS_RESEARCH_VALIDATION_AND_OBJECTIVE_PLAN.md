@@ -3016,7 +3016,7 @@ turned out to be a concept claim (§5.10, §5.11, here).
 |---|---|
 | **ASR tracks concept, ~an order of magnitude over codeword** | established (§5.11, 2×2, both draws) |
 | **`gun` fails to install; `bomb` installs on the same codeword** | established (here) |
-| **`window|knife` installs and still scores 0.042** | established on **one** bank (§5.13) |
+| **`window\|knife` installs and still scores 0.042** | established on **one** bank (§5.13) |
 | `ticket\|knife` installation | **unresolvable at n=48** (p = 0.111) |
 | "the attack only works for bombs" | **NOT established** — this is a judge-scoring result |
 
@@ -3102,7 +3102,7 @@ arm on it. **Both halves verified independently here.**
 | what I ran (`n ∈ {1,2,4,8}`) | **48** | §5.13 |
 | ceiling **with** demonstrations (add `n=16`) | **60** | the real maximum |
 | including `n=0` | 72 | `n=0` teaches no mapping — dilutes the thing measured |
-| **96** | **does not exist** on this bank/condition |
+| a larger population | **96** | **does not exist** on this bank/condition |
 
 **And the ceiling would not settle it.** Power to detect a true 0.625 against chance, exact
 two-sided, α=0.05 — **my computation, matching theirs to three decimals**:
@@ -6284,7 +6284,7 @@ n_eff   142.9   95% CI [99.3, 276.3]      target 132
 |---|---|---|
 | k=6, single-slot *(before the build)* | ceiling **19** | unreachable by **7×** |
 | k=38, single-slot | 100.1 | short by 32 |
-| **k=38, multi-slot, dose-balanced** | **142.9 [99, 276]** | **point clears; interval contains** |
+| **k=38, multi-slot, dose-balanced** | **142.9 [99, 276]** ⛔ *one draw; see §12.12 — median 152.7 [118.5, 201.7]* | **point clears; interval contains** |
 
 **The build moved `ticket_knife` from unreachable to point-estimate-clearing.** It is the first time
 in this sprint the cell has been on the right side of the line. **It is still not robustly settled:**
@@ -6295,3 +6295,109 @@ authoring a 39th domain two ticks ago on a point estimate that later moved.
 more domains. `k` is the linear lever — at m=16 each domain adds ~3.8 effective rows, so the CI's
 lower bound of 99 reaches 132 at roughly **k=47**, all of which is generation rather than prose.
 
+
+## §12.12 — ⛔ CORRECTION: "single-slot over-states ICC by 3.16x" was a POOLED-vs-BALANCED artifact, and §12.6's ceiling of 473 does not survive
+
+**What I claimed, and why I ran the arm.** §12.11 measured `ticket_knife`'s single-slot ICC at 0.2915
+and its multi-slot ICC at 0.0923, called the ratio 3.16x, and I wrote that if this were general then
+"§10.6's entire seven-bank ICC table is single-slot, so every ceiling in it is understated." I
+launched the multi-slot `carrot|bomb` arm (job 795721, 4 preemptions, completed 2508 rows with
+`DONE.json`) to find out whether the inflation was general or one cell.
+
+**The comparison was invalid, and in the same way a peer's cross-bank one was.** 0.2915 is a
+DOSE-BALANCED single-slot estimate (`core2x2` carries one slot at each of 4 doses x 2 splits, so it
+is naturally balanced at m=8). 0.0923 is the POOLED multi-slot estimate over m=66 rows that are
+60.6% dose-1, because the disjoint slot sets shrink as n grows (19/6/3/1 slots after excluding slot
+0). Dose-centring removes each dose's mean but not its variance, and the low doses are the
+low-variance ones. So 3.16x is mostly the composition change, not the slot change.
+
+**The within-bank, balanced-to-balanced test.** Truncating each completed arm to its own `core2x2`
+rows and comparing against its own dose-balanced multi-slot rows — same bank, same model, same
+readout, so nothing is borrowed across banks:
+
+| bank | single-slot ICC (m=8) | multi-slot balanced ICC (m=16) | ratio |
+|---|---|---|---|
+| `carrot\|bomb`   | 0.0803 | 0.2443 | **0.33x — ICC went UP 3x** |
+| `ticket_knife`  | 0.2915 | 0.2361 | 1.23x — barely moved |
+
+**The inflation is not general, and it is not even the same sign.** `ticket_knife`'s balanced ratio
+is 1.23x, not 3.16x. `carrot|bomb`'s runs the other way entirely. So §10.6's seven-bank table is
+NOT uniformly understated, and the corpus-wide correction I was preparing to make would have been
+wrong in one direction for at least one of the two banks I can check.
+
+**⛔ THE NUMBER THAT DIES IS §12.6's 473.** That ceiling is `k/ICC = 38/0.0803`, and it rested on a
+single-slot ICC whose own cluster-bootstrap interval is **[0.0044, 0.1500]** — an asymptote anywhere
+from 253 to 8,600. The point estimate carried no information. The dose-balanced multi-slot n_eff for
+the same bank is **143.8 (median over 200 balanced draws), range [94.7, 233.3], 140/200 crossing
+132**. §12.6's headline is withdrawn; §12.9 had already retired 473 as an asymptote rather than a
+requirement, and this retires the ICC it was computed from as well.
+
+**Why the single-slot estimates are the unreliable ones.** Their intervals are
+`carrot|bomb` [0.0044, 0.1500] and `ticket_knife` [0.1200, 0.4388] — they **overlap**, narrowly, so
+the two banks' single-slot ICCs are not cleanly distinguishable despite differing 3.6x on the point
+estimate. Meanwhile the two multi-slot balanced estimates converge to 0.2443 and 0.2361. Read
+cautiously — n=2 banks is suggestive, not established — the reading is that m=8 on ONE demonstration
+set is too thin to estimate a domain ICC, and the divergence between 0.080 and 0.2915 was sampling
+noise that the multi-slot rows average out.
+
+**⛔ AND MY 142.9 WAS ONE ARBITRARY DRAW.** §12.11 quoted `ticket_knife` at n_eff 142.9. That came
+from a deterministic tie-break (first 4 rows per cell by `prompt_id`). Re-drawing the balanced
+subsample 200 times gives median **152.7**, range [118.5, 201.7], 186/200 crossing 132. A peer's
+independent implementation reproduced that distribution to within 1.3 rows on the median while their
+single draw differed from mine by 30 effective rows — the estimate moves further between two
+arbitrary subsamples than the entire margin over the threshold. Neither 133.9 nor 163.9 nor 142.9 is
+a fact about the bank. **Standing rule adopted with the peer: report the resampling spread of any
+estimate whose row composition we chose.** It costs one loop.
+
+**⛔ §12.11's k=47 PROJECTION IS WITHDRAWN AS UNMEASURED.** It extrapolated the CI lower bound to
+k=47 domains while holding ICC fixed at the balanced value — structurally the same fixed-ICC
+assumption that produced the peer's wrong m-table, relocated to the other variable. Adding domains
+has no mechanical reason to change within-domain row composition the way adding slots does, so it is
+probably less wrong; that is not a basis for a number.
+
+**What stands.** The `ticket_knife` cell is decidable, not decided: median 152.7 crosses 132 at about
+1.15x with 5-7% of draws below it, and the cluster-bootstrap interval still contains the threshold.
+`carrot|bomb`'s cell now sits at median 143.8 with 30% of draws below 132, i.e. WORSE than §12.6
+claimed and no longer comfortably clear.
+
+**Artifact hygiene.** Both figures are read only from run dirs carrying `DONE.json`. The three
+preempted `d38cbfc_*` dirs are dose-ordered partials, and a peer showed by within-bank truncation
+that a partial computes to a BETTER n_eff than its own completed arm — up to +107 effective rows —
+because the rows it is missing are the high-dose, high-variance ones. A preempted run fails in the
+flattering direction, which is the direction nobody checks.
+
+## §12.13 — ⛔ CORRECTION: `markdown_structure_check` never scanned the plan, which is where the tables are written
+
+**Found by tripping it.** The §12.12 comparison table above contains a row labelled with a codeword
+pair whose separator is a literal `|`. That row split into **5 cells against a 4-cell header** — the
+exact defect `markdown_structure_check` exists to catch ("a figure in the wrong column misleads as
+much as a wrong figure") — and `check_all` reported **8/8 guards green**.
+
+**The guard was correct; its scope was not.** Its cell regex is already escape-aware
+(`CELL = (?<!\\)\|`), so it would have caught the row. But `DELIVERABLES` listed four report/doc
+files and not the plan — even though `ledger_propagation_check` and `plan_coverage_check` both read
+the plan and both treat it as an audited artifact. The one guard that inspects table structure was
+pointed away from the document where this sprint actually writes its tables.
+
+**What scanning it surfaced: 2 real breaks in 175 tables**, both pre-existing and neither mine:
+
+| line | defect | repair |
+|---|---|---|
+| 3019 | `` `window\|knife` `` unescaped — 3 cells against a 2-cell header | escaped the pipe |
+| 3105 | a row carrying only 2 cells against a 3-cell header | supplied the missing `population` label |
+
+Line 3019 is notable because **the very next row in the same table already writes
+`` `ticket\|knife` `` correctly** — so the convention was known and one instance was missed, which is
+why this needs a guard and not a habit. On line 3105 I supplied only the absent row label
+(`a larger population`); the `96` and its note are unchanged, and no figure was invented.
+
+**Mutation test.** Re-introducing the unescaped pipe and running the guard on its DEFAULT paths — so
+the test exercises the scope change, not just the regex — exits **1**; restoring exits **0**, and the
+plan is byte-identical to its pre-mutation state. A green-on-green run would have proved nothing,
+which is the mistake this sprint already made once on `ledger_propagation_check`.
+
+**The general shape, which has now appeared three times here.** A guard that cannot see an artifact
+is indistinguishable from a guard that finds it clean — `ledger_propagation_check` dropping 13 of 31
+id-less headings, `cited_artifact_check`'s loose matcher, and now a path list. Every one of them
+reported success while examining less than it appeared to. The tell is never in the guard's verdict;
+it is in whether anyone checked what the denominator was.
