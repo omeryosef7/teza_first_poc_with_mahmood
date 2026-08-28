@@ -3195,3 +3195,79 @@ one line: **name the number, or don't give the rule.**
 Both failures were the concurrent session's to make and the concurrent session's to catch — but I
 **adopted** the screen into §5.8 without noticing it had no threshold, which is the same lapse at one
 remove. A rule I cannot apply mechanically is a rule I have not checked.
+
+---
+
+# §3 — PHASE 3: THE AGGRESSIVE-PATCH GATE **FAILS**
+
+**Artifact:** `outputs/boombness/arm_report/p3_20260828_072154_744607/arm_report.json`
+`ticket_bomb` · Llama-3.1-8B · **cap 640** · n=96 · pinned judge · **all four arms judged in ONE
+invocation** (788861) · this is also **ledger entry 4's rerun** (its evidence was cap-192 at 100 %
+truncation).
+
+## Read this first
+
+> **Both signs of `d_surface` and a matched-dose RANDOM direction all move ASR. The only arm that
+> RAISES it is degenerate on 96 % of rows. There is no clean, direction-specific, non-degenerate
+> behavioural effect — so the Phase 3 gate fails and Phase 7 must not proceed on this axis.**
+
+That sentence is placed before the numbers deliberately, on the §7.1 principle: the number that will
+otherwise travel from this section is "+0.479", and it is the one that means least.
+
+| arm | **ASR** | Δ | up/down | p | **at cap** | median tok | refusal | divergence |
+|---|---|---|---|---|---|---|---|---|
+| `A_baseline` | **26/96** | — | — | — | **0/96** | 248 | 12/96 | — |
+| **`d_surface` add α=+1** | **72/96** | **+0.4792** | 53/7 | ~0 | ⛔ **92/96 = 0.958** | **640** | 12/96 | 96/96 |
+| **`d_surface` add α=−1** | **0/96** | −0.2708 | 0/26 | ~0 | 0/96 | **63** | 0/96 | 96/96 |
+| **`random` add α=+1** | **5/96** | −0.2188 | 1/22 | 6e-06 | 0/96 | 175.5 | 36/96 | 96/96 |
+
+## Why each row kills a different part of the objective case
+
+**1. The positive arm is not a usable measurement.** 92 of 96 rows never terminate, with median
+tokens **exactly 640**. `assert_sprint_grade` **refuses it** — `cap_binds=True` with no
+`binding_kind`. Its +0.479 is an ASR-within-640 over runaway text, and length predicts being scored
+inside every arm (ρ = +0.24 baseline, +0.16 positive, +0.12 random). Its median generation is
+**1884 chars against the baseline's 1152**. **A 640-token ramble gives StrongREJECT far more surface
+to score, and this arm is 96 % rambles.**
+
+*(§0.13 ran this same check on the project-out arm and the effect SURVIVED — 25 of 26 flips were in
+terminating rows. Here that test cannot even be run: only 4 rows terminate.)*
+
+**2. The negative arm suppresses — but so does random, at the same dose.** −1.0 gives 0/96 and the
+matched random direction gives 5/96. **Suppression is not `d_surface`-specific**; a perturbation of
+this magnitude at L8 destroys the attack whatever direction it points in. The random arm also
+*triples* refusal (12/96 → 36/96) while `d_surface`−1 drives it to **0/96** and truncates generation
+to a 63-token median — two different kinds of breakage, neither of them steering.
+
+**3. This reproduces G4's retracted finding at a non-binding cap.** G4 said *both signs suppress* —
+a directional null. Here −1 suppresses to 0/96, and +1 "raises" only by generating 640-token text
+that no longer terminates. **The 2026-08 retraction of G4 was correct, and it now holds under the
+fixed protocol.**
+
+## The gate, in the brief's own terms
+
+> *"If no aggressive patch can move behavior without degeneracy, do not proceed to objective
+> extraction. Record the negative."*
+
+**Recorded. The gate fails.** Every arm that moves ASR either (a) is degenerate on 96 % of rows, or
+(b) is matched by a random direction at the same dose.
+
+## What this does to §7
+
+§7 found `d_surface` correlates with ASR at ρ ≈ +0.30 (n=288) and I marked the gate **reopened, not
+passed**, pending pre-registration. **Phase 3 now closes it on prior grounds**, and this is the more
+fundamental of the two:
+
+* **§7 shows `d_surface` is PREDICTIVE.** That still stands — the correlation is real, within-bank,
+  and survives its controls.
+* **§3 shows `d_surface` is not CONTROLLABLE.** Pushing along it does not produce more attack; it
+  produces more *text*. Pushing against it suppresses no better than noise.
+
+**An objective needs the second property, not the first.** A signal you can read but cannot steer is
+a measurement, not an optimisation target — and GCG/MAC would be optimising exactly the quantity
+that, when pushed, breaks generation instead of steering behaviour.
+
+**PHASE 7 GATE: CLOSED. PHASE 8 MUST NOT BE BUILT.** Ledger entry 14 ("a GCG objective was ever
+justified") stays **RETRACT**, now with a direct non-degenerate-controllability test behind it rather
+than only the older steering evidence. Ledger entry 4 moves **NEEDS RERUN → RETRACT**: steering is
+not causal in the required sense, measured at a cap that does not bind.
