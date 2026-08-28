@@ -3837,3 +3837,76 @@ because the batch artifact (0.462 on Llama, 1.250 on Qwen3) and the judge floor 
 numbers on different quantities.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.20.1 — Addendum: which arm "main preserved" means, the window is per-BANK too, and why a borrowed window is invisible on the claims people trust most
+
+Three refinements to §5.20, one of which is the most useful thing to come out of this exchange.
+
+### 1. "`main` preserved" is ambiguous across two different contrasts — always name the arm
+
+There are **two** `main` binding contrasts in this sprint and they give different answers:
+
+| contrast | observed | adversarial @ measured W |
+|---|---|---|
+| baseline vs **`legacy_all_query`** (unscoped) — §5, §5.20 | 42/48 → 41/48 (−1) | **−10** |
+| baseline vs **`demo_processing_only`** (scoped) — the peer's C5 main leg | 42/48 → **48/48** (+6, p=0.0265) | **+3** (protected) |
+
+**Not a contradiction — different interventions.** But "main preserved" unqualified will collide in any
+deliverable, so every quotation of it must name the arm. This is the §5.6-vs-§5 distinction again:
+the **scoped** knockout is the one that preserves binding, and on this contrast mapped-wins actually
+*rises*. *(The rise is not claimed: under adversarial batch bias +6 becomes +3, so the direction is
+not robust, and the peer is not claiming it either.)*
+
+### 2. The window is per-model **and per-bank** — I fixed the model half and left the bank half
+
+§5.20 corrected a Qwen3 window applied to Llama banks. But I then used **one Llama window (0.462,
+measured on `main`) for the `ticket_bomb` bank too** — the same carry-over, one level down. The peer
+measured `ticket_bomb`'s directly: **max 0.3202, median 0.1151**.
+
+| bank | measured max \|Δ margin\| |
+|---|---|
+| `main` (Llama) | 0.4616 |
+| `ticket_bomb` (Llama) | 0.3202 |
+| `longpreQ14B` (Qwen3-14B) | 1.2499 |
+
+Recomputed with `ticket_bomb`'s own window: at-risk 1/**9** (was 1/10) and adversarial **−25** —
+**identical to the published figure**. So §5.20's number survives, and it survives *by luck*: the
+error was too small to bite on this bank. That is worth stating plainly, because "the conclusion
+didn't change" is not evidence the method was sound.
+
+### 3. ⚠ The asymmetry that makes this error dangerous: it is INVISIBLE on the claims people trust most
+
+The peer's observation, and it generalises well past batching:
+
+**An over-large window is CONSERVATIVE for a positive claim and ANTI-CONSERVATIVE for a null.**
+
+* For an **INSTALLED / effect-present** verdict, inflating the at-risk set only makes the adversarial
+  bound harder to pass. Surviving it with a borrowed window means you would also survive with the
+  right one. Their published at-risk counts 10/5/12/6 become **4/1/2/0** at the measured scale and
+  **every verdict holds either way**.
+* For a **null / "no degradation"** claim, an inflated window manufactures exposure that is not there
+  — which is exactly what produced §5.20's `−26`, the peer's withdrawn "C5 does not survive its own
+  worst case", and my `main` `−10`.
+
+So a borrowed window **cannot** damage the results that carry effects, and can **only** damage the
+nulls. The claims most likely to be checked are the ones where the error is harmless, and the claims
+where it does harm are the ones a reader is least likely to re-derive. **A robustness check that is
+silently one-sided in favour of the headline is worse than none**, and this one was — in both our
+ledgers, for two ticks, while both of us were auditing each other.
+
+*(Both legs of the peer's C5 are now measured rather than bounded: `ticket_bomb` at batch 1 gives
+45/48 → 45/48, **zero verdict flips**, matching my `main` result exactly — the batch path changes
+every row's logits and moves no verdict on either bank. Their C-37 records the same borrowed-window
+error against themselves. They also caught a direction bug in their own recomputation — the
+collapse half pushed the favourable way — and flagged that the wrong-direction number "looks
+impressive, which is exactly when it doesn't get checked.")*
+
+### The rule, final form
+
+Alongside any forced-choice count: **median \|margin\|**, plus the count below a **named, per-model-
+and-bank, MEASURED** perturbation scale. The load-bearing word is **measured** — a quoted scale is
+portable in exactly the way the discredited rate was.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
