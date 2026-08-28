@@ -10644,3 +10644,73 @@ move the count **up**. The worst case is 33/48, still installed.
   and should not acquire one.
 * **C5's exposure is untouched by all of this.** It is a systematic path difference, not a boundary
   wobble, and only `q8D` vs `qbD` settles it.
+
+---
+
+### ✅ R-111 (12:50) — **The control landed and I ran it: `q8D` vs `qbD` are BIT-IDENTICAL on all 40 rows. So the readout is exactly deterministic run-to-run, and the entire batch-16 vs batch-1 difference is BATCHING. Cross-batch arm comparisons are biased, not noisy — and C5 does not survive the adversarial bound.**
+
+`qbD_lpQ14B_b1_20260828_122402_4084014` appeared on disk this tick. Both arms `C_demoproc`,
+`demo_processing_only`, gate PASS, `n_failed=0`, **both batch 1, different runs** — the control the
+concurrent session queued. Comparing it to `q8D_lpQ14B_fc_20260828_102657_2281919` row by row:
+
+| quantity | value |
+|---|---|
+| **bit-identical rows** | **40/40** |
+| \|Δ logp_concept\| | median **0.000000**, max **0.000000** |
+| \|Δ logp_codeword\| | median **0.000000**, max **0.000000** |
+| \|Δ margin\| | median **0.000000**, max **0.000000** |
+| mapped-wins | **30/40 vs 30/40** |
+| verdict flips | **0** |
+
+**Branch 1. The readout is exactly deterministic at fixed batch size.** There is no run-to-run bf16
+nondeterminism at all — not "small", **zero**. Therefore the entire b16-vs-b1 signal they measured
+(0/18 bit-identical, median \|Δ margin\| 0.688, one verdict flip) is **attributable to batching**.
+
+This is the **worse** branch for both ledgers, as I flagged when naming the third possibility:
+**a systematic path difference is a bias, not noise.** It does not average out, and it sits **exactly
+where the intervention sits** — baseline batches at 16, every knockout arm is pinned to batch 1 by C-8.
+
+#### C5 under the adversarial bound — it does NOT survive
+
+Applying C-36's exact bound to C5's own artifacts (`p5A_ticket_bomb` baseline b16,
+`tb_demoproc` b1, `p5C_ticket_bomb` unscoped b1):
+
+| arm | wins | median \|margin\| | at-risk (<1.250) |
+|---|---|---|---|
+| baseline (b16) | 45/48 | 4.018 | **3** (3 wins) |
+| `demo_processing_only` (b1) | 45/48 | 2.251 | **8** (7 wins) |
+| `legacy_all_query` unscoped (b1) | 15/48 | **1.075** | **32** (13 wins, 19 losses) |
+
+| half of C5 | observed | **adversarial worst case** |
+|---|---|---|
+| **collapse** (unscoped destroys binding) | 45 vs 15, **p=1.2e-10** | **42 vs 34, p=0.0769 — NOT significant** |
+| **preserved** (demoproc does not degrade) | 45 vs 45, p=1 | **45 vs 38, p=0.0704** |
+
+**Unlike C-36's verdicts, C5 does not survive its own worst case.** The reason is visible in the
+table: the unscoped arm's median margin is **1.075**, *below* the maximum observed batch perturbation,
+so **32 of its 48 rows are at-risk** — that arm sits on the decision boundary in a way the installation
+banks never did.
+
+**This does not refute C5.** An adversarial bound that fails is **uninformative**, not disconfirming:
+it assumes every at-risk row in both arms flips the worst way at once, which is far beyond the one
+flip in one at-risk row actually observed. What it establishes is that **the bound is too weak to
+settle C5, so the magnitude has to be measured rather than bounded.**
+
+**And the preserved half cannot be rescued by any bound**, because it is a **null** claim — "no
+degradation" is not protected by showing a worst case is bad.
+
+#### The measurement, and why it is not launched yet
+
+The fix is one run: **C5's baseline at `--readout-max-batch 1`**, putting both arms on the same code
+path. 48 rows, forward-only, config already proven by `p5A`.
+
+**The flag is in the concurrent session's UNCOMMITTED working tree** (`git show HEAD:` has 0
+occurrences; the working tree has 1). Running against it would put a claim-bearing result on code that
+**is not in git**, which is the provenance hole this sprint has repeatedly paid for. **Asked them to
+commit it**; the run goes out as soon as it is in, pre-registered below.
+
+**PRE-REGISTRATION (before the run, per §18):** compare `p5A_ticket_bomb` (b16) against its own batch-1
+rerun on the same 48 rows. **Predictions, committed now**: (i) rows are **not** bit-identical, since
+the batch grouping changes; (ii) **mapped-wins moves by at most 3**, the baseline's at-risk count;
+(iii) if it moves by more than 3, my at-risk model is wrong and that is the finding. C5's preserved
+half is read **only** from the batch-1-vs-batch-1 comparison once both arms share a path.
