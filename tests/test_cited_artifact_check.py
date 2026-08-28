@@ -362,6 +362,10 @@ def test_the_shipped_CAUTION_WINDOW_is_a_real_window():
     absent in effect. This is the same omission as the MIN_EXPECTED floor, repeated in the guard
     written after it.
     """
-    assert 2 <= cac.CAUTION_WINDOW <= 40, (
-        f"CAUTION_WINDOW={cac.CAUTION_WINDOW} is not a window: too small to span a paragraph, or "
-        "wide enough to make proximity vacuous")
+    hi = max(cac.CALIBRATION_DISTANCES)
+    assert hi >= 1, "the calibration set records no real separation to calibrate against"
+    assert hi < cac.CAUTION_WINDOW <= 3 * hi, (
+        f"CAUTION_WINDOW={cac.CAUTION_WINDOW} is not derived from the measured pairings "
+        f"{cac.CALIBRATION_DISTANCES}: it must exceed the largest correct distance ({hi}) and stay "
+        "within 3x it. The first value, 12, was chosen by eye and was 4x the largest correct "
+        "distance -- permissive by construction, with the calibration data available the whole time.")

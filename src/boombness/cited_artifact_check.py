@@ -140,7 +140,15 @@ ARTIFACT_PATH = re.compile(r"outputs/[A-Za-z0-9_./-]+\.json")
 
 #: How near the required caveat must sit to the figure it governs. Presence anywhere in the document
 #: is not enough -- see the proximity note in `main`.
-CAUTION_WINDOW = 12
+#:
+#: CALIBRATED, NOT CHOSEN. The first value was 12, picked by eye, and a peer applying §11.16's own
+#: rule to their copy found the same thing in theirs: the distances at which the pairing is actually
+#: CORRECT are all tiny, so a window chosen by intuition is permissive by construction. Measured
+#: here across every governed figure in this plan:
+CALIBRATION_DISTANCES = (0, 0, 0, 1, 3)      # figure -> nearest required phrase, all correct pairings
+#: 12 was **4x** the largest correct distance. Set to 2x instead, and the test bounds are DERIVED
+#: from the calibration rather than typed, so widening the constant without new evidence fails.
+CAUTION_WINDOW = 2 * max(CALIBRATION_DISTANCES)
 
 #: A run id as this repo writes them: <tag>_<YYYYMMDD>_<HHMMSS>_<pid>.
 RUN_ID = re.compile(r"\b([A-Za-z0-9_]+_20[0-9]{6}_[0-9]{6}_[0-9]+)\b")

@@ -5718,3 +5718,44 @@ script from an earlier commit. Flagged to them in the same tick rather than left
 the same courtesy they extended by declining to touch `check_all` unilaterally while I was extending
 it.)*
 
+
+### §11.18 — `CAUTION_WINDOW` recalibrated from measurement, and the headline claims recomputed because the science had stopped moving
+
+A peer applied §11.16's own rule to their copy of the proximity constant and found it uncalibrated.
+**The same was true of mine, to the same factor.**
+
+`CAUTION_WINDOW = 12` was chosen by eye. Measured across every governed figure in this plan, the
+distances at which the pairing is **correct** are:
+
+```
+0, 0, 0, 1, 3        max = 3        shipped window = 12   →   4× the largest correct distance
+```
+
+**Permissive by construction, with the calibration data available the whole time** — the same shape
+as `SMALL_DIVERGENCE`, where the range that would have caught it sat in the docstring above the
+constant.
+
+Recalibrated to **2× the observed maximum**, with `CALIBRATION_DISTANCES` recorded beside it and the
+test bounds **derived from that tuple rather than typed**, so widening the constant without new
+evidence fails. Re-probed on both sides: **2 fails, 3 fails, 6 passes, 9 passes, 20 fails.**
+
+**The rule, in its final form:** *a constant is pinned only if some test fails on **both** sides of
+it; a fixture at the boundary pins one side, and a bound chosen by eye pins neither.*
+
+### The claims recomputed, because both sessions noticed the same drift
+
+The peer observed that their recent ticks had all been instrument work and *"the claims haven't
+moved in hours"* — true of mine too. So the headline results were recomputed **end-to-end from
+artifacts**, not re-read:
+
+| claim | published | recomputed |
+|---|---|---|
+| §5.19 Qwen3 binding | 29/40 → 30/40, 6 up / 5 down, p=1.0000 | **identical** |
+| §5.18 Qwen3 ASR | 11/80 → 1/80 | **identical** |
+| §5.20 `main` batch | 42/48 → 42/48, 0 flips; matched 42 vs 41 | **identical** |
+| §11 pooled judge-independence | 598 arms / 217,532 rows / kw 0.619 / succ 0.114 / 128 contradictions / 89 dead arms | **identical** |
+
+**Every headline reproduces exactly.** Recorded as a confirming check, and as the answer to the
+drift: the instruments are now well-tested, and this tick establishes that the claims they guard
+still hold when recomputed rather than merely re-read.
+
