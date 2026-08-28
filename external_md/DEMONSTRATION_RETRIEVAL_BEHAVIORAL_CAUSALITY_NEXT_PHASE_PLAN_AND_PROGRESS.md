@@ -13444,7 +13444,7 @@ larger differentials. So:
 | claim | arm | status |
 |---|---|---|
 | C7 | `demoproc` | **protected** — R-64 released the cap, effect grew |
-| C1 | `demoproc` | **partially protected** — same arm, but R-64's release covers neither its pools nor Qwen3 |
+| C1 | `demoproc` | **partially protected** — same arm, but R-64's release covers neither its pools nor its models; **see C-63, R-64 IS Qwen3** |
 | C9 | rescue patch | **open** (C-60) — different intervention, R-64 does not transfer |
 | C13 | preamble | **withdrawn** (C-61) — different intervention, Δ +0.331 |
 | C2, C3, C4, C6, C11, C12 | mixed | **unassessed** — newly in scope as of this entry |
@@ -13453,3 +13453,99 @@ larger differentials. So:
 is C9's rescue arms, then C13's preamble arms, then a demoproc cap-release on the Qwen3 sessions that
 R-64 never covered. C2/C3/C4/C6/C11/C12 get measured next tick before anything is said about them —
 **this entry states their scope, not their verdict.**
+
+### 📋 PR-36 (22:50) — **Pre-registration: the C9 cap-release rerun. Committed before the argsfiles exist and before any 640-cap row is generated.**
+
+C-60 left C9's truncation leg open and refused to close it by argument. This is the measurement.
+**Gates are R-64's, unchanged**, because the point is to hold C9 to the standard C7 was held to:
+
+| gate | requirement |
+|---|---|
+| 1 — cap released | `frac_stop_length < 0.15` on **every** arm |
+| 2 — truncation no longer separates the arms | `\|rescue − comparator\|< 0.10` |
+| 3 — power on the new population | ≥4 baseline attacks per dose cell read |
+
+**Arms.** Identical to the 192-cap originals in every argument except `--max-new 192 → 640` and the
+tag. The comparator is `RESCUE_L5`, which C-20 established is **byte-identical to knockout-only on
+160/160 rows** — a no-op patch, and therefore the correct within-session comparator:
+
+| tag | model | bank | intervene | rescue-layer |
+|---|---|---|---|---|
+| `p7r640_L14` | Llama-3.1-8B | `d10` | `demo_all:attn_knockout:6-14:1.0` | 14 |
+| `p7r640_L5` | Llama-3.1-8B | `d10` | same | 5 |
+| `q6r640_L17` | Qwen3-14B | `d10_poolB` | `demo_all:attn_knockout:7-17:1.0` | 17 |
+| `q6r640_L5` | Qwen3-14B | `d10_poolB` | same | 5 |
+
+**The prediction, written down before the runs exist.** The measured differentials are **+0.087 /
++0.099** (Llama) and **+0.025 / +0.050** (Qwen3) — the rescue arm is the *more* truncated one, and
+C9 claims the rescue arm is where refusal comes *back*. So the confound runs **with** the claim:
+
+* **truncation-driven** → C9's refusal recovery **shrinks or reverses** once the cap is released,
+  and it should shrink **more on Llama**, whose differential is 3-4× Qwen3's;
+* **not truncation-driven** → the recovery survives at full size, and the model ordering does not
+  track the differential ordering;
+* **the recovery growing on Llama specifically** would be the C7 outcome repeating, and I am
+  recording in advance that I will read that as *consistent with* a real effect and **not** as
+  confirmation — R-64 earned that reading with a pre-registered gate 2, which this shares.
+
+**What this rerun cannot settle.** C9's specificity leg is already unsupported (C-20), and this does
+not restore it. A pass here licenses the *primary* effect at an untruncated cap and nothing more.
+
+**Also recorded: the 4th arm may lag a tick.** Three slots are free under the six-parallel cap
+(theirs: 796750, 796751, 796752). Submitting **three** now — the Llama pair first because it carries
+the larger differential — and `q6r640_L5` on the next free slot. **The Qwen3 comparison is not read
+until both its arms exist**; a lone arm is not a contrast.
+
+### ⛔ C-63 (22:55) — **C-62 said R-64's cap release "covers neither its pools nor Qwen3". R-64 IS Qwen3-14B. The missing coverage is LLAMA and other banks — the opposite model.**
+
+Recovering R-64's launch command to build the C9 rerun surfaced its provenance:
+
+```
+dp640  --model Qwen/Qwen3-14B  --bank …boombness_prompt_bank_longpreQ14B.jsonl
+       --n-examples 4,8  --max-new 640  --expect-n 80
+```
+
+So the sprint's **only** cap-release evidence is **Qwen3-14B on `longpreQ14B`, doses 4 and 8, 80
+rows/arm**. C-62's cell had it backwards. Corrected in place, and the correction is the more useful
+statement: **Llama `demoproc` has no cap-release evidence at all**, and neither does any bank other
+than `longpreQ14B`.
+
+**Which is where their V-107 independently arrives from the other side** — measuring both-EOS
+discordant rows they get L|button_knife 0, L|window_knife 0, L|basket_gun 0, L|ticket_bomb 2, and
+conclude four of five Llama populations have never had untruncated evidence. Two different routes,
+same hole, and neither of us was looking for it.
+
+**One number of mine that needs its scope stated so it is not read as a rebuttal of theirs.** Across
+all 463 run dirs there are **247 Llama behavioural dirs at cap ≥512 with truncation < 0.15** —
+Llama untruncated evidence is abundant *in aggregate* (67.9% of Llama dirs vs **22.8%** of Qwen3's).
+That does **not** contradict them: theirs is scoped to five specific populations, mine is a global
+count and says nothing about which populations those 247 dirs cover. **Recorded as context, not as a
+counter-measurement**, and the aggregate is the sort of figure that would read as reassurance if
+quoted without that sentence attached.
+
+**C7's protection is unchanged but its scope is now written down properly:** R-64 licenses `demoproc`
+at an untruncated cap **on Qwen3/`longpreQ14B` only**. C7 is a Qwen3 claim (R-52 declined Llama for
+power), so this is coverage, not a gap — but C1 spans both models and gets no Llama leg from it.
+
+*Third time this sprint I have had a model or bank label backwards in a table — C-37 (applied their
+Qwen3 W to Llama banks), their §12.14 (quoted Qwen runs under a Llama heading, self-corrected in
+V-107), and now this. All three were caught by going to the producing artifact's own argv rather
+than to the prose describing it.*
+
+### ✅ R-140 (23:00) — **C9's cap-release rerun is submitted: 796888/796889/796890, three of four arms, at the six-job cap.**
+
+Argsfiles `runargs/p17/{p7r640_L14,p7r640_L5,q6r640_L17,q6r640_L5}.txt`, built from the originals'
+own `RUNMETA.argv` rather than retyped. **Verified token-by-token against the 192-cap originals: the
+only keys that differ are `--max-new` and `--tag`, on all four** — bank, blocks, doses, seed, dtype,
+`--attn-impl`, `--intervene`, `--knockout-scope`, `--rescue-layer` and `--expect-n` all byte-equal.
+
+| job | tag | model | rescue-layer |
+|---|---|---|---|
+| 796888 | `p7r640_L14` | Llama-3.1-8B | 14 (the arm) |
+| 796889 | `p7r640_L5` | Llama-3.1-8B | 5 (comparator, no-op per C-20) |
+| 796890 | `q6r640_L17` | Qwen3-14B | 17 (the arm) |
+| — | `q6r640_L5` | Qwen3-14B | 5 — **held, submits on the next free slot** |
+
+Six jobs total across both sessions, which is the standing cap. **The Qwen3 contrast is not read
+until `q6r640_L5` exists.** Gates and predictions are PR-36, committed before the argsfiles were
+written.
