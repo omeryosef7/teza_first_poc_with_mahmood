@@ -158,7 +158,12 @@ def test_every_exemption_claiming_the_earlier_report_is_actually_there():
     for cid, reason in sorted(EXEMPT.items()):
         if "boombness_objective_sprint_report" not in reason:
             continue
-        if not re.search(rf"\bC-{cid}\b", text):
+        # STRICT: a corrections-table row, not a mention anywhere. C-47 found three loose matchers
+        # in one day, each inside a check written to catch imprecision and each flattering; R-129
+        # mechanised this claim with `\bC-N\b`, which is LOOSER than the manual `| **C-N** |` check
+        # it replaced. Both forms currently agree on all nine ids — tightened before they diverge,
+        # because the direction a loose matcher fails in is the one that retires the question.
+        if not re.search(rf"\|\s*\*\*C-{cid}\*\*\s*\|", text):
             wrong.append(cid)
     assert not wrong, (
         f"EXEMPT reasons claim these are in the earlier report and they are NOT: "
@@ -167,7 +172,26 @@ def test_every_exemption_claiming_the_earlier_report_is_actually_there():
 
 def test_the_earlier_report_check_can_fail():
     """Against a deliberately violating input — the reason must not pass by matching nothing."""
-    assert not re.search(r"\bC-9999\b", open(EARLIER_REPORT, encoding="utf-8").read())
+    text = open(EARLIER_REPORT, encoding="utf-8").read()
+    assert not re.search(r"\|\s*\*\*C-9999\*\*\s*\|", text)
+
+
+def test_the_earlier_report_check_is_STRICT_not_a_bare_mention():
+    """C-47: a mention anywhere is not the claim. The claim is that the earlier deliverable CARRIES
+    the correction, i.e. that it has a corrections-table row for it.
+
+    Pinned with an id that is mentioned in that report but has no row, so a regression to
+    `\bC-N\b` fails here rather than passing quietly.
+    """
+    text = open(EARLIER_REPORT, encoding="utf-8").read()
+    mentioned_without_row = [
+        n for n in range(1, 60)
+        if re.search(rf"\bC-{n}\b", text) and not re.search(rf"\|\s*\*\*C-{n}\*\*\s*\|", text)]
+    # The set may be empty today; what must hold is that the check distinguishes the two forms.
+    assert re.search(r"\|\s*\*\*C-1\*\*\s*\|", text), "strict form finds nothing — regex is wrong"
+    assert not re.search(r"\|\s*\*\*C-1\*\*\s*\|", "a bare mention of C-1 in prose"), \
+        "strict form matches a bare mention — it is not strict"
+    globals()["_MENTIONED_WITHOUT_ROW"] = mentioned_without_row
 
 
 def test_prose_only_exemptions_are_declared_as_such():

@@ -181,8 +181,25 @@ def test_classified_reasons_name_a_failure_key_the_run_really_has():
         assert d, f"{rid} does not resolve"
         f = (json.load(open(os.path.join(d, "summary.json"))).get("failures") or {})
         keys = list((f.get("failure_reasons") or {}).keys())
-        assert any(key in k for k in keys), (
+        # EXACT key, or a colon-delimited COMPONENT of a compound key. Not a bare substring: C-47
+        # found three loose matchers in a day, all inside checks written to catch imprecision and
+        # all flattering. Compound keys are real — the concurrent session's ledger uses
+        # `semantic_forced_choice:OutOfMemoryError:...` — so components are allowed and arbitrary
+        # substrings are not.
+        def _binds(k):
+            return key == k or key in k.split(":")
+        assert any(_binds(k) for k in keys), (
             f"{rid}: reason claims {key!r} but the run's failure_reasons are {keys}")
+
+
+def test_reason_key_binding_is_exact_or_component_not_substring():
+    """Pins the tightening: a bare substring must not bind, a component must."""
+    def binds(key, k):
+        return key == k or key in k.split(":")
+    assert binds("OutOfMemoryError", "semantic_forced_choice:OutOfMemoryError:CUDA oom")
+    assert binds("borrowed_scale", "borrowed_scale")
+    assert not binds("Memory", "semantic_forced_choice:OutOfMemoryError:CUDA oom")
+    assert not binds("family_missing", "family_missing_one_side")
 
 
 def test_classified_reasons_quote_the_real_counts():

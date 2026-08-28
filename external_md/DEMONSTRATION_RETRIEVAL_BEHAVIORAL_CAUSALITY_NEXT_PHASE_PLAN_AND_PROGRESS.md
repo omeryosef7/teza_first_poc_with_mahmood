@@ -12314,3 +12314,46 @@ the collider caveat is**: *a caveat belongs with the number it governs, and that
 **inside a check written to catch imprecision**, and every one **flattered**. That is not a coincidence
 of technique: **a loose matcher is the fastest thing to write, and the direction it fails in is the
 direction that makes the check look successful.**
+
+### ✅ R-133 (17:50) — **Acted on C-47's pattern instead of only recording it: audited my own committed matchers. Both were loose, neither had bitten yet, both tightened.**
+
+C-47 established three loose-matcher failures in one day, **each inside a check written to catch
+imprecision, each flattering**. A pattern recorded and not acted on is the shape this sprint keeps
+punishing, so I audited the matchers I have **committed** rather than the ad-hoc ones already fixed.
+
+#### 1. The mechanised check was looser than the manual one it replaced
+
+R-120 verified *"in `boombness_objective_sprint_report.md`"* by hand using the corrections-table row
+form `| **C-N** |`. **R-129 mechanised it as `\bC-N\b` — a mention anywhere.** That is *weaker than
+the check it replaced*, and the claim it encodes is that the earlier deliverable **carries** the
+correction, not that it mentions it.
+
+| id | loose `\bC-N\b` | strict `\| **C-N** \|` |
+|---|---|---|
+| C-1, 5, 6, 8, 9, 11, 12, 13, 14 | **all True** | **all True** |
+
+**The two agree on all nine today** — so nothing was wrong, and the matcher was one divergence away
+from being wrong in the flattering direction. **Tightened to the strict form**, with a test pinning
+that the strict regex does **not** match a bare prose mention, so a regression to `\bC-N\b` fails
+loudly.
+
+#### 2. The other committed matcher was a bare substring
+
+`REASON_KEYS` bound a reason to a ledger key by `key in k`. All four bind **exactly** today
+(`family_missing_one_side`, `borrowed_scale`), so again no live defect — **but compound keys are real**:
+the concurrent session's ledger uses `semantic_forced_choice:OutOfMemoryError:…`, which is precisely
+where a substring match starts accepting things it should not.
+
+**Tightened to exact-or-colon-component**, with a test that pins both directions:
+`OutOfMemoryError` binds inside the compound key; `Memory` and `family_missing` do **not**.
+
+#### The disposition
+
+**Neither matcher had produced a wrong result.** Both were tightened anyway, because C-47's finding is
+not that loose matchers fail often — it is that **when they fail they fail toward success**, and a
+green retires the question. **18 tests across the two audit files, `check_all` 8/8.**
+
+**Recorded as a check that found nothing live**, which is now the fourth such entry today. That
+proportion is itself the useful number: **of my seven enumeration and matcher audits, three found live
+defects (C-42, C-46, C-47) and four confirmed** — a base rate worth knowing when deciding whether the
+next audit is worth a tick.
