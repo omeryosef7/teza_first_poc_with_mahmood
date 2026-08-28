@@ -98,6 +98,7 @@ TRACE_TOKENS = {
     "§11.16": ["SMALL_DIVERGENCE", "vacuous value"],
     "§11.17": ["pre-commit", "guard tests"],
     "§11.18": ["CALIBRATION_DISTANCES", "recomputed"],
+    "§12": ["pools_not_prose", "43 domains"],
 }
 
 

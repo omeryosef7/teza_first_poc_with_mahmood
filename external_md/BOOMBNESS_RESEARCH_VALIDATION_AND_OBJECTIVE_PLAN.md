@@ -5759,3 +5759,72 @@ artifacts**, not re-read:
 drift: the instruments are now well-tested, and this tick establishes that the claims they guard
 still hold when recomputed rather than merely re-read.
 
+
+---
+
+## §12 — THE 19-DOMAIN BUILD *(user-directed: "do the whole 19 domains")*, PRE-REGISTERED BEFORE ANY DATA
+
+§10.2 recorded next step #2 as blocked on a domain-authoring decision. The user has directed the
+full build. This section is written **before the pools finish generating** and states the
+predictions, so they cannot be adjusted to the result.
+
+### ⛔ First, a correction to §10.1 found while scoping the build
+
+§10.1 stated that `DOMAINS` "already holds **10**, so 4 unused domains are available immediately —
+**with no new prose to write**." **That was wrong.** `DOMAINS` holds ten *prose specs*, but
+`demo_pools.json` carries pools for **six**:
+
+```
+domains WITH pools    : city_bridge, farm_storage, game_manual, instructional, lab_safety, news_report
+domains WITHOUT pools : harbour_dock, museum_archive, rail_depot, warehouse_logistics
+```
+
+A domain is not usable until it has **four LLM-generated sentence pools** (`benign`, `harm`,
+`filler`, `remap`, 40 sentences each). So the four "free" domains were never free, and every ICC
+figure in §10.4–§10.6 was computed on a **6-domain** corpus, not a 10-domain one. *(The `k=10`
+ceilings in §10.2 were therefore optimistic; the k=6 column beside them was the real one.)*
+
+### What is being built
+
+19 new domain specs, in the established register — `benign` must host a food item (codeword
+`carrot`), `harm` a hazard (concept `bomb`), `remap` a vehicle (source word `bicycle`), `filler`
+neither. Pools regenerate for **all 29** domains into
+**`demo_pools_29dom.json`** — a NEW file. *The canonical `demo_pools.json` is what every existing
+bank and claim was generated from; regenerating it in place would silently change the corpus.*
+
+### ⚠ PRE-REGISTERED PREDICTION: 29 domains does NOT resolve `ticket_knife`
+
+`n_eff` is capped at `k/ICC`, and 80% power at a true 0.625 needs **132**. Using each bank's
+**already-measured** forced-choice ICC and the new **k=29**:
+
+| bank | measured ICC | predicted ceiling at k=29 | clears 132? |
+|---|---|---|---|
+| `ticket_bomb` | 0.114 | 254 | **yes** |
+| `window_bomb` | 0.158 | 184 | **yes** |
+| `basket_bomb` | 0.160 | 181 | **yes** |
+| `main` | 0.286 | 101 | **no** |
+| **`ticket_knife`** | **0.320** | **91** | **NO** |
+| `window_knife` | 0.400 | 72 | no |
+| `basket_gun` | 0.755 | 38 | no |
+
+**`ticket_knife` — the cell this build was authorised to resolve — needs 43 domains, not 29.**
+`main` needs 38. So the build is predicted to convert three low-ICC banks from unresolvable to
+resolvable, and to leave the target cell short.
+
+**This is stated before the measurement, not after.** The empirical question the build actually
+answers is whether **ICC itself changes as domains are added** — 23 new domains are more
+heterogeneous than the original 6, so ICC may *rise*, which would make the ceiling worse than
+predicted, or fall, which would make it better. `k/ICC` is only a ceiling if ICC is stable in `k`,
+and nothing measured so far tests that.
+
+### Pre-registered analysis, fixed now because neither can be corrected afterwards
+
+* **Readout:** `semantic_forced_choice` is **primary** (all seven banks reportable, mass 0.387–0.778).
+  `semantic_one_word` is secondary and is the only multi-slot readout.
+* **Slot structure:** forced choice exists in `core2x2` only, so it is **single-slot** by
+  construction; the one_word comparison is multi-slot.
+* **Clustering unit:** **domain** primary (k=29), **cell** (domain × split) secondary.
+* **Estimator:** dose-centred ICC, doses {1,2,4,8}, exactly as §10.6.
+* **Decision rule:** the build **succeeds for a bank** iff its measured ceiling at k=29 reaches 132.
+  Success on the low-ICC banks alone is **not** success for `ticket_knife`.
+
