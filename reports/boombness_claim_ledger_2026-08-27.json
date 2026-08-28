@@ -206,13 +206,14 @@
      "knockout_full_population": "30/40 = 0.750 on its own complete 40 rows",
      "asr_half": "11/80 -> 1/80 at cap 640 (peer C7 arms p26j_A/p26j_dp)",
      "liveness": "LIVE: 18/18 rows changed, median |d logp_concept| 0.1111, max 13.5200, 80.5 demo positions masked",
-     "screen": "baseline 0.778 clears the 5.16 >=0.667 installation screen",
+     "screen": "WITHDRAWN (5.18.1). The >=0.667 screen is a RATE carried over from n=48; C-33 requires recomputing the threshold per n. Exact two-sided critical_k: n=18 -> 14, n=40 -> 27, n=48 -> 32 (which reproduces 5.16's published 32/48). The rate form is one row too permissive at n=18 (admits 13/18, p=0.0963). Separately the baseline population is attrited (18 of 40, n_failed=22) and mapping_installation_verdict.py REFUSES it, correctly and for the reason 5.17 documents. A one-sample fraction off that run is unsound; the PAIRED contrast is unaffected because pairing controls for which rows survived.",
      "verdict": "5.6's success condition (removes attack, preserves mapping) HOLDS on a second model",
      "LIMITS": "n=18 of 40 -- the baseline OOM'd the 22 LONGEST rows (succeeded 200-255 tokens, failed 262-325), so this is the short half of the bank; MDE needs >=6 same-direction discordant pairs and only 5 are discordant at all, so p=1.0000 is NO EVIDENCE OF DEGRADATION and not evidence of no degradation; 16 of 18 rows are n_ex=4 so it is effectively single-dose; one bank, not pre-registered",
      "artifacts": [
       "q9A_lpQ14B_fc_20260828_104610_2283895",
       "q8D_lpQ14B_fc_20260828_102657_2281919"
-     ]
+     ],
+     "knockout_installation_verdict": "30/40 two-sided p=0.00222 critical_k=27 -> INSTALLED on a COMPLETE population, zero attrition (v56_qwen_20260828_111912_1260091). This carries the 'mapping survives' half on its own."
     }
    }
   },

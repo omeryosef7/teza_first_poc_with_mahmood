@@ -3500,7 +3500,8 @@ byte-identical, not an approximation — a memory fix, not a numerical one.
 The one uncorrupted Qwen3 measurement is the 1-GPU baseline, and it is **encouraging but partial**
 (18 of 40 rows, OOM-biased toward short prompts, so it is not quotable as an estimate):
 
-* mapped-wins **14/18 = 0.778** — clears §5.16's ≥0.667 installation screen
+* mapped-wins **14/18 = 0.778** — *(this line's screen claim is withdrawn in §5.18.1: the rate
+  form of the threshold is wrong at this n, and the population is attrited)*
 * median option mass **0.9998** — not a tail decision at all, unlike the Llama banks
 
 So the probe **does** work on Qwen3 and the bank **does** install the mapping. The knockout arm has
@@ -3536,8 +3537,14 @@ discordant **3 up / 2 down**, n_disc=5, exact two-sided **p = 1.0000**.
 complete 40 rows give **30/40 = 0.750**, also above the §5.16 screen, so the conclusion does not
 depend on the paired subset.
 
-**The baseline clears §5.16's ≥0.667 installation screen at 0.778**, so unlike `ticket_knife` (§5.15)
-this is a probe that *can* answer, and unlike `ticket_bomb` (§5.2) the mapping is not destroyed.
+**Unlike `ticket_bomb` (§5.2) the mapping is not destroyed**, and the evidence for that is the
+knockout arm's own **complete** 40 rows: **30/40, two-sided p=0.00222, critical_k=27 → INSTALLED**
+(`mapping_installation_verdict`, `v56_qwen_20260828_111912_1260091`). That run has **zero** attrition,
+so it carries the "mapping survives" half on its own.
+
+⚠ **I originally wrote that the baseline "clears the ≥0.667 screen at 0.778". That sentence is
+withdrawn** — see §5.18.1. It is a one-sample fraction computed on the attrited baseline, and both
+halves of it were unsound.
 
 **Option mass is the sharpest contrast with the Llama results.** On the Llama banks forced choice was
 decided inside roughly half the next-token mass (`main` 0.5416, `ticket_bomb` 0.5695, collapsing to
@@ -3583,3 +3590,66 @@ and a 12 MiB allocation failing on a 44 GiB card with a 30 GiB model remains una
 recorded as open rather than papered over, because it is the reason limit (1) exists.
 
 **This does not touch the Phase 7 gate, which remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.18.1 — ⛔ CORRECTION to §5.18: the installation screen was carried over as a RATE, and applied to a population that should have been refused
+
+A peer session audited §5.18 against two corrections of its own. **Both land, and the finding
+survives both.** Recording them here because one of them is the C-33 error recurring in a new
+disguise.
+
+### Error 1 — encoding a threshold as a rate IS the carry-over C-33 forbade
+
+§5.16 fixed an earlier screen that had no threshold at all by setting **≥32/48 = 0.667**. I then
+applied **0.667** at **n=18**. But C-33's correction was precisely that *the threshold moves with n
+and must be recomputed, not carried over* — and **a rate is the carry-over form**. Storing 0.667
+and multiplying by n is exactly the mistake, wearing a percentage.
+
+Recomputed per n (exact two-sided binomial against chance, the convention that **reproduces §5.16's
+own 32/48**, which is how I confirmed it is the right one — my first check used a one-sided test and
+gave 31/48, disagreeing with the published screen):
+
+| n | critical_k | implied rate |
+|---|---|---|
+| 18 | **14** | 0.778 |
+| 40 | **27** | 0.675 |
+| 48 | 32 | 0.667 |
+
+**The rate screen is one row too permissive at n=18**: it admits **13/18** (two-sided p=0.0963,
+NOT established) while the correct critical value is 14. My baseline was 14/18 (p=0.0309), so **the
+sentence I wrote happened to be true** — but it was true by luck, and the same screen would have
+passed 13/18 next time.
+
+### Error 2 — the sentence was a one-sample fraction on a population my own §5.17 says is unusable
+
+`q9A_lpQ14B_fc_...` has `option_mass_gate: PASS` and **18 of 40 rows, n_failed=22**. The peer's
+`mapping_installation_verdict.py` **refuses it outright** — run against it, it prints
+`REFUSING qwen3_baseline: 22 rows failed to generate.` — and that guard is right for the reason
+**I documented in §5.17 myself**: gate PASS over a silently attrited population is the exact case,
+and the 200–255 vs 262–325 token cliff is the length-correlation that makes the survivors
+non-random. I flagged the attrition as a limit and then quoted a one-sample statistic off it anyway.
+
+### What changes and what does not
+
+| claim | status |
+|---|---|
+| **paired** binding contrast 14/18 → 15/18, 3 up / 2 down, p=1.0000 | **STANDS** |
+| knockout installs on its **complete** 40 rows: 30/40, p=0.00222, crit=27 | **STANDS** — zero attrition |
+| ASR half 11/80 → 1/80 | **STANDS** — untouched |
+| "the baseline clears the ≥0.667 screen at 0.778" | **WITHDRAWN** |
+
+**The pairing is not affected by the attrition.** Pairing on the 18 ids measured by *both* arms
+controls for *which* rows survived — a biased subset is still a valid pairing, just a narrower
+population, which limits (1)–(3) already state. What the attrition invalidates is a **one-sample
+fraction**, and that is the one thing I quoted from it. The "mapping is not destroyed" half never
+needed it: the knockout arm's complete 40 rows carry it alone.
+
+**§5.18's conclusion is unchanged: on Qwen3-14B the scoped knockout removes the attack and leaves
+binding intact.** One supporting sentence was withdrawn; no headline moved.
+
+*(Method note, and the reason this correction is cheap: the peer's tool recomputes `critical_k` per
+n and refuses attrited or non-finite populations. I am using it rather than re-deriving the screen —
+which is what I should have done instead of applying a remembered rate. Their tool gained the
+non-finite check from V-54's NaN finding, and V-54's finding is why it no longer trusts
+`option_mass_gate`; this correction is the return leg of that exchange.)*
