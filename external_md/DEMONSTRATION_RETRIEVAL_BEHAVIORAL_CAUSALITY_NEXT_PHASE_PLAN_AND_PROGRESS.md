@@ -13679,3 +13679,41 @@ baseline refusal is **1/80**, a floor. "No restoration" from a floor is weaker e
 **C1's status upgrades from "partially protected" (C-62) to cap-release CONFIRMED on Llama, and the
 decomposition shows its 192-cap numbers are conservative.** C9's Llama leg stays below margin (C-64).
 Neither conclusion moved because of an argument; both moved because the mechanical term was computed.
+
+### ✅ R-142 (23:45) — **PR-36 gates 1 and 2 PASS on the completed Llama pair. Intervention liveness verified. The outcome is NOT read — judging is still queued, and gate 3 and the T2 test wait for it.**
+
+Jobs 796888/796889 **COMPLETED** (21:19 / 35:43). Artifacts
+`outputs/boombness/score_behavior/p7r640_L14_20260828_225719_809668` and
+`…/p7r640_L5_20260828_225909_2351979`, 160 rows each, both with `DONE.json`.
+
+| gate | requirement | L14 (arm) | L5 (comparator) | verdict |
+|---|---|---|---|---|
+| 1 — cap released | `frac_stop_length < 0.15` | **0.0000** | **0.0000** | ✅ |
+| 2 — truncation no longer separates the arms | gap `< 0.10` | **0.0000** | ✅ |
+
+Longest generations **515/640** and **504/640**: the cap is *released*, not raised until the number
+looked acceptable — the same standard R-64 set (634/640) and the reason its gate 1 was credible.
+
+**Liveness, checked before trusting either arm rather than after:**
+
+* `hook_n_prefill_edits` = **3,017,169 in both arms** — identical, which is correct here: the
+  knockout is the same in both and only `--rescue-layer` differs.
+* `hook_liveness_violations` **0/160** in both; `frac_rows_scope_live` **1.0**; `scope_violations` `{}`.
+* **152/160 generations differ between L14 and L5** — the rescue is doing something. A no-op patch
+  would reproduce C-20's defect, where the L5 arm turned out byte-identical to knockout-only and the
+  specificity leg died.
+* **130/160 differ between L14 at 640 and L14 at 192** — the cap change moved the text, as it must;
+  the 30 identical rows are the ones that had already terminated under 192.
+
+**Not read, deliberately:** refusal counts, ASR, gate 3. Refusal requires judging and the judge job
+(**797243**) is queued. The T2 prediction from C-64 — Llama Δrefusal should land near **−7**, not the
+192-cap **−18** — stands exactly as written; nothing in this entry could have adjusted it, since
+truncation is not the outcome.
+
+**Judging design, chosen for a reason worth recording.** Both arms go through **one** job, one batch
+script, one pinned `openai/gpt-4o-mini` (`scripts/judge_p7r640.sh`). R-82 measured **2-4 rows** of
+cross-invocation judge drift on *identical* completions, and C9's surviving effect is ~7 rows — so
+judging the arm and its comparator in separate windows would put the drift at half the signal. That
+is the defect R-82 found in pool A's `d2`/`d3` and it is cheap to not repeat.
+
+`q6r640_L5` submitted as **797239**; the Qwen3 contrast still waits for both its arms.
