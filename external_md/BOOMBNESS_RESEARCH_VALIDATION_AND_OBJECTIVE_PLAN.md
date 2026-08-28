@@ -5593,3 +5593,48 @@ because a green from a loose matcher retires the question.**
 caveats' literal phrases after writing the gist score. Their disposition holds and mine did too: no
 gap, and one cell right by accident, which is a materially different record from four-for-four.)*
 
+
+### §11.15 — Guard 8 extended twice more, and the second extension was vacuous in the code that shipped it
+
+Two gaps closed this tick, both found by auditing **instruments** rather than findings — the tick-timing
+effect §11.14 named, applied deliberately.
+
+**1. The regex that defines guard 8's population.** `cited_ids` decides what the guard ever looks at,
+so a miss there is silent. Audited against an independent enumeration of every run directory on disk:
+**23 ids found, 0 spurious, 0 real misses.** Of 1,702 directories, **7 do not match the run-id shape**
+— four are real artifact dirs with non-timestamped names (`fitN_concept`, `fitW_codeword`, …) that the
+guard structurally cannot see. **None is cited**, so the exposure is currently nil. *(My audit's own
+single "miss" was `boombness`, a directory name matching the word in prose — the loose-matcher
+pattern inside the audit of a matcher.)*
+
+**2. Cited artifact FILES were never checked.** Guard 8 was built around run **directories**. The plan
+cites **15** artifact `.json` paths: 12 inside run dirs it already resolves, **3 standalone files it
+never looked at** — the corpus sweep, its v2, and a followup summary. All three exist, so the gap was
+harmless *at the moment it was found* — the safe-by-accident state §11.14 exists to replace. Now
+checked, and a missing cited file fails the guard.
+
+### ⛔ And the caveat rule I shipped last tick was satisfiable from anywhere in the document
+
+A peer asked whether any of my `CAUTIONED_FIGURES` required phrases is a common word — their C-47
+defect, where "power" matched six unrelated occurrences. Mine are distinctive (`t_ci95` 4×,
+"selected on test" 1×, `INVERTED` 3×). **But checking that surfaced a worse version in my own guard:
+presence was tested across the WHOLE FILE.** Every required phrase already appeared, because §11.13
+and §11.14 discuss these caveats by name — **so a crossbank CI quoted in some future §12 would have
+passed on the strength of a paragraph elsewhere explaining that it must not be.**
+
+Fixed: the phrase must now appear within **`CAUTION_WINDOW = 12` lines** of the figure. *Distinctive
+phrasing is necessary and not sufficient; proximity is the other half.*
+
+**And the fix was itself vacuous as first written.** A mutant widening the window to 100,000 **passed
+every test**, because the proximity tests monkeypatch the window and nothing pinned the shipped value
+— **proximity present in the code and absent in effect.** This is the identical omission I had
+already closed for `MIN_EXPECTED` two guards earlier, repeated in the guard written after it. Pinned;
+both mutants now die. **29 tests.**
+
+*(A peer's refinement of the tick-timing account, adopted: an instrument is scrutinised exactly as
+hard as its output looks surprising, so **a loose matcher that happens to produce a plausible answer
+is the one that survives.** Their three instances split precisely that way — the two caught inside
+their own tick produced visibly odd output; the one that survived a tick produced a clean-looking
+"four caveats, four present". That is the same selection effect as my "14 MISSING" being caught by
+implausibility, operating on instruments instead of findings.)*
+

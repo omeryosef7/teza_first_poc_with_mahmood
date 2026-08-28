@@ -129,6 +129,19 @@ CAUTIONED_FIGURES = {
     ),
 }
 
+#: Artifact FILE paths cited in the plan, e.g. `outputs/boombness/asr_protocol/corpus_sweep.json`.
+#:
+#: Guard 8 was built around run DIRECTORIES and silently ignored these. Measured: 15 artifact `.json`
+#: paths are cited, 12 sit inside a run dir the guard already resolves, and **3 are standalone files
+#: it never looked at** — the corpus sweep and its v2, plus a followup summary. All three exist, so
+#: the gap was harmless *at the moment it was found*, which is exactly the safe-by-accident state
+#: §11.14 says to replace with a construction rather than leave.
+ARTIFACT_PATH = re.compile(r"outputs/[A-Za-z0-9_./-]+\.json")
+
+#: How near the required caveat must sit to the figure it governs. Presence anywhere in the document
+#: is not enough -- see the proximity note in `main`.
+CAUTION_WINDOW = 12
+
 #: A run id as this repo writes them: <tag>_<YYYYMMDD>_<HHMMSS>_<pid>.
 RUN_ID = re.compile(r"\b([A-Za-z0-9_]+_20[0-9]{6}_[0-9]{6}_[0-9]+)\b")
 
@@ -210,13 +223,35 @@ def main() -> int:
 
     # CAUTIONED FIGURES: quoting a governed figure requires its caveat phrase (see the table).
     plan_text = open(PLAN, encoding="utf-8").read()
+
+    # CITED ARTIFACT FILES. Run dirs are checked above; standalone file paths were not checked at
+    # all until §11.15. Existence only — admissibility of a bare JSON has no contract to test.
+    cited_paths = sorted(set(ARTIFACT_PATH.findall(plan_text)))
+    absent_paths = [q for q in cited_paths if not os.path.exists(os.path.join(ROOT, q))]
+    # PROXIMITY, not mere presence. A first version asked whether the required phrase appeared
+    # ANYWHERE in the document, and every phrase already did -- because §11.13 and §11.14 discuss
+    # these caveats by name. So a crossbank CI quoted in some future section would have passed on
+    # the strength of a paragraph elsewhere explaining that it must not be. The caveat has to
+    # ACCOMPANY the figure, so the phrase is required within CAUTION_WINDOW lines of it. A peer's
+    # C-47 was the same defect in its cruder form (a required word matching six unrelated
+    # occurrences); distinctive phrasing is necessary and NOT sufficient.
     caution_fail = []
+    plan_lines = plan_text.splitlines()
     for label, (fig_re, phrase, why) in CAUTIONED_FIGURES.items():
-        if re.search(fig_re, plan_text, re.I) and phrase.lower() not in plan_text.lower():
-            caution_fail.append((label, phrase, why))
+        for i, line in enumerate(plan_lines):
+            if not re.search(fig_re, line, re.I):
+                continue
+            lo, hi = max(0, i - CAUTION_WINDOW), min(len(plan_lines), i + CAUTION_WINDOW + 1)
+            near = "\n".join(plan_lines[lo:hi]).lower()
+            if phrase.lower() not in near:
+                caution_fail.append((label, phrase, f"line {i + 1}: {why}"))
+                break
 
     print(f"[cited-artifact] {len(ids)} run ids cited across {len(roots)} enumerated roots; "
-          f"{ok} usable or documented-refused; {len(CAUTIONED_FIGURES)} cautioned figures watched")
+          f"{ok} usable or documented-refused; {len(cited_paths)} artifact files; "
+          f"{len(CAUTIONED_FIGURES)} cautioned figures watched")
+    for q in absent_paths:
+        print(f"  CITED ARTIFACT FILE MISSING: {q}")
     for label, phrase, why in caution_fail:
         print(f"  CAUTIONED FIGURE QUOTED WITHOUT ITS CAVEAT [{label}]: expected {phrase!r}")
         print(f"      {why}")
@@ -228,7 +263,7 @@ def main() -> int:
     for rid, nf, why in unclassified:
         print(f"  UNCLASSIFIED FAILURES {rid}: n_failed={nf} ({why})")
         print(f"      -> classify it in CITED_WITH_FAILURES with what the reason MEANS, or fix the claim")
-    if missing or inadmissible or unclassified or caution_fail:
+    if missing or inadmissible or unclassified or caution_fail or absent_paths:
         print("[cited-artifact] FAIL — a claim cites an artifact that is absent or unusable.")
         return 1
     print("[cited-artifact] every cited artifact exists and is usable or documented-refused")

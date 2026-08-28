@@ -275,3 +275,93 @@ def test_every_shipped_cautioned_figure_states_why():
     for label, tup in cac.CAUTIONED_FIGURES.items():
         assert len(tup) == 3, f"{label}: expected (regex, phrase, why)"
         assert isinstance(tup[2], str) and len(tup[2].strip()) > 30, f"{label} has no real reason"
+
+
+# --- cited artifact FILES (not just run dirs) -------------------------------------------------
+#
+# Guard 8 was built around run directories. 15 artifact .json paths are cited in the real plan, 12
+# inside run dirs and 3 standalone -- and the standalone ones were never checked. All three existed,
+# so the gap was harmless at the moment it was found, which is the safe-by-accident state §11.14
+# exists to replace.
+
+def test_a_cited_artifact_FILE_that_is_missing_FAILS(env, monkeypatch):
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "ROOT", str(out.parent.parent))
+    plan.write_text(f"cites {ID_A} and outputs/boombness/nope/absent_thing.json\n")
+    assert cac.main() == 1
+
+
+def test_a_cited_artifact_FILE_that_exists_passes(env, monkeypatch, tmp_path):
+    import json as _json
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    real = out / "expA" / "real_artifact.json"
+    real.write_text(_json.dumps({"ok": True}))
+    monkeypatch.setattr(cac, "ROOT", str(tmp_path))
+    rel = os.path.relpath(str(real), str(tmp_path))
+    plan.write_text(f"cites {ID_A} and {rel}\n")
+    assert cac.main() == 0
+
+
+def test_the_real_plans_artifact_files_all_exist():
+    """15 cited .json paths, 12 inside run dirs and 3 standalone -- none missing."""
+    import re as _re
+    text = open(cac.PLAN, encoding="utf-8").read()
+    paths = sorted(set(cac.ARTIFACT_PATH.findall(text)))
+    assert len(paths) >= 10, "the artifact-path scanner found suspiciously few paths"
+    for q in paths:
+        assert os.path.exists(os.path.join(cac.ROOT, q)), f"cited artifact file missing: {q}"
+
+
+def test_the_caveat_must_be_NEAR_the_figure_not_merely_present(env, monkeypatch):
+    """Presence anywhere in a 5,000-line document is not accompaniment.
+
+    Every required phrase already appeared somewhere in the real plan, because §11.13 and §11.14
+    discuss these caveats by name. So a figure quoted in a future section would have passed on the
+    strength of a paragraph elsewhere explaining that it must not.
+    """
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "CAUTIONED_FIGURES",
+                        {"x": (r"\bci95\b", "t_ci95", "quote the t-interval")})
+    monkeypatch.setattr(cac, "CAUTION_WINDOW", 2)
+    far = "\n".join([f"cites {ID_A}", "the ci95 was 0.12 to 0.44"] + ["filler"] * 10 + ["t_ci95 is the right one"])
+    plan.write_text(far + "\n")
+    assert cac.main() == 1, "a caveat 12 lines away does not accompany the figure"
+
+
+def test_the_caveat_within_the_window_passes(env, monkeypatch):
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "CAUTIONED_FIGURES",
+                        {"x": (r"\bci95\b", "t_ci95", "quote the t-interval")})
+    monkeypatch.setattr(cac, "CAUTION_WINDOW", 2)
+    plan.write_text(f"cites {ID_A}\nthe ci95 was 0.12-0.44\nreported as t_ci95, not the percentile\n")
+    assert cac.main() == 0
+
+
+def test_required_phrases_are_DISTINCTIVE_not_common_words():
+    """A peer's C-47: a required word matching six unrelated occurrences passes without evidence.
+
+    Distinctive phrasing is necessary and not sufficient -- proximity is the other half -- but a
+    common word makes the check vacuous whatever the window.
+    """
+    text = open(cac.PLAN, encoding="utf-8").read().lower()
+    for label, (_fig, phrase, _why) in cac.CAUTIONED_FIGURES.items():
+        n = text.count(phrase.lower())
+        assert n <= 8, (
+            f"{label}: required phrase {phrase!r} occurs {n} times; a common phrase satisfies the "
+            "guard without evidence the caveat was stated")
+
+
+def test_the_shipped_CAUTION_WINDOW_is_a_real_window():
+    """The proximity tests monkeypatch the window, so nothing pinned the SHIPPED value.
+
+    A mutant widening it to 100000 passed every other test -- proximity present in the code and
+    absent in effect. This is the same omission as the MIN_EXPECTED floor, repeated in the guard
+    written after it.
+    """
+    assert 2 <= cac.CAUTION_WINDOW <= 40, (
+        f"CAUTION_WINDOW={cac.CAUTION_WINDOW} is not a window: too small to span a paragraph, or "
+        "wide enough to make proximity vacuous")
