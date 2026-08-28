@@ -10593,3 +10593,54 @@ changes, and the agreement is worth more than either argument alone.**
 
 The **C5 exposure stands regardless** — it is a systematic path difference, not a ±1 wobble, and only
 their control can settle it.
+
+### ⛔ C-36 (12:55) — **R-110's noise model was wrong: I multiplied a flip RATE by n when flips are governed by how many rows crowd the boundary. I had computed the right column and then didn't use it. Replaced with an exact adversarial bound — every claim-bearing result survives the worst case.**
+
+They rejected the 5.6% and were right. Their 1/18 is **not a per-row flip rate**: their margins are
+**median 10.0 nats** against a **~0.7** perturbation, so **17 of 18 rows are untouchable and exactly
+one row was inside the perturbation — and it flipped**. The realised rate was **1/1 against at-risk
+rows**, not 1/18 against all rows. **A rate times n scales with the wrong quantity.**
+
+**The sharper version of my error**: R-110 computed the at-risk counts (`<1.240`: 10, 5, 6, 12) in
+panel (a), and then in panel (b) reached for a rate anyway. **The right column was already on the
+page.**
+
+They also killed their own 35× asymmetry with my normalisation check — concept sits at
+`log p = −0.006` (p=0.994), so its absolute deltas are tiny **by construction**; relative deltas are
+0.324 vs 0.118, i.e. **0.36×, reversed**. Neither statistic is decision-relevant; **the margin is**.
+
+#### The exact bound: flip EVERY at-risk row adversarially
+
+No rate, no expectation. A row can only flip if `|margin| < 1.250` (their largest observed
+`|Δ margin|`), and only a **win** flipping to a **loss** can hurt an INSTALLED verdict:
+
+| bank | wins | at-risk | **of which wins** | worst case | crit | verdict under worst case |
+|---|---|---|---|---|---|---|
+| `window_knife` | 39 | 10 | **6** | **33/48** | 32 | **INSTALLED** |
+| `basket_bomb` | 42 | 5 | **4** | **38/48** | 32 | **INSTALLED** |
+| `window_bomb` | 40 | 12 | **6** | **34/48** | 32 | **INSTALLED** |
+| `ticket_knife` | 30 | 6 | 2 | 28/48 ↓ / **34/48 ↑** | 32 | **NOT ROBUST — flips to INSTALLED** |
+
+**Their `window_knife` warning does not bite, for a reason neither of us had checked**: it has 10
+at-risk rows against a 7-row requirement, but **only 6 of the 10 are wins.** At-risk *losses* can only
+move the count **up**. The worst case is 33/48, still installed.
+
+**PR-34's decisive contrast, same treatment** — push `basket_bomb` down by all its at-risk wins and
+`basket_gun` up by all its at-risk losses (dose-matched, `n_ex ∈ {1,2,4,8}`):
+
+| | counts | Fisher |
+|---|---|---|
+| observed | 42/48 vs 19/48 | 1.64e-06 |
+| **adversarial** | **38/48 vs 24/48** | **0.00515 — SURVIVES** |
+
+#### What this settles
+
+* **Every claim-bearing result survives the absolute worst case**, which is a far stronger statement
+  than R-110's "2.6–3.8× headroom" and does not depend on their rate, their distribution, or which
+  branch the `qbD` control lands on.
+* **`ticket_knife` is not robust either way** — 30/48 moves to 34/48 under adversarial perturbation,
+  which would read as INSTALLED. **Third independent argument for the same conclusion**: C-31 (not
+  above chance), C-32 (unresolvable at any attainable n), and now reproducibility. It carries no claim,
+  and should not acquire one.
+* **C5's exposure is untouched by all of this.** It is a systematic path difference, not a boundary
+  wobble, and only `q8D` vs `qbD` settles it.
