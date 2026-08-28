@@ -12751,3 +12751,53 @@ rely on "I staged explicit paths, so this commit is mine" will be wrong in the s
 **The workable control in this configuration is temporal, not path-based** — commit promptly after
 editing a shared file, so the window in which another session can sweep it is short. *Which is the
 cadence finding again, in a third place.*
+
+### ✅ R-137 (19:10) — **Tested the assumption under both our sizing numbers. `k/ICC` is approximately linear — my worry was unfounded — but "short by five domains" is far more precise than its input supports: the requirement spans 28 to 62 domains.**
+
+Their V-93 gives **38 domains → `ticket_knife` 119 effective rows, short by five**. The arithmetic
+reproduces exactly (38/0.320 = 118.8; 43/0.320 = 134.4), and the ICC at which k=38 exactly suffices is
+**0.288** — which the seven measured banks **straddle**, clearing for four and failing for three.
+
+#### First I tested an assumption neither of us had stated
+
+`k/ICC` treats **ICC as invariant to k**. If new domains were more heterogeneous than the original
+six, ICC would rise and the ceiling would grow **sub-linearly**. Subsampling the 6 available domains:
+
+| bank | k=3 | k=4 | k=5 | k=6 |
+|---|---|---|---|---|
+| `ticket_knife` | 0.313 | 0.321 | 0.321 | **0.320** |
+| `basket_bomb` | 0.141 | 0.152 | 0.158 | **0.160** |
+| `main` | 0.187 | 0.226 | 0.259 | **0.286** |
+| `window_knife` | 0.322 | 0.364 | 0.388 | **0.400** |
+
+**Approximately invariant in expectation** — flat for `ticket_knife` and `basket_bomb`, mild upward
+drift for the other two. **My concern was not supported**, and `k/ICC` can be treated as linear.
+*Recorded as a check that found nothing, since it would have changed both our numbers had it fired.*
+
+#### But the spread is the finding
+
+**The ICC estimate's uncertainty collapses with k**, and at k=6 it is enormous — `ticket_knife`'s
+leave-one-out range at k=5 is **[0.21, 0.47]**. Propagating that through the same arithmetic:
+
+| ICC | k=38 → n_eff | | domains needed for 132 |
+|---|---|---|---|
+| 0.21 (low) | **181.0** | **CLEARS** | 27.7 |
+| **0.320 (point)** | 118.8 | short | **42.2** |
+| 0.47 (high) | 80.9 | short | 62.0 |
+
+**The requirement is not 43 domains. It is somewhere between 28 and 62**, and 38 may already be
+enough. **"Short by five" is arithmetically right and inferentially overprecise**: it quotes a
+one-decimal shortfall from an input carrying a ±0.13 band, which is the same shape as C-31's 0.500
+threshold and C-33's carried-over screen — *a precise operation on an imprecise quantity.*
+
+#### What follows for the build
+
+**The decision cannot be made before the bank exists.** At k=38 the ICC estimate will be far better
+determined than at k=6 — that is the one thing the subsampling does establish — so the correct order is
+**generate 38, measure ICC on the 38-domain bank, then size**. Authoring five more domains now to hit
+132 would be **sizing from a point estimate of a quantity about to be re-measured**, which is exactly
+what PR-35 pre-registered against.
+
+**I have not authored more domains**, and I have not edited `DOMAINS` while their `pools38` job
+(794293) is running — the C-50 hazard is a live process reading that constant at import, and the
+control for it is to leave the file alone until the job lands.
