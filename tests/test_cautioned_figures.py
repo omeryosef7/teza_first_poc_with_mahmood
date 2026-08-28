@@ -128,3 +128,61 @@ def test_the_window_admits_the_calibration_range_and_rejects_the_old_one():
                           + ["completion length is POST-TREATMENT"])
     assert not _violations(doc(max(CALIBRATION_DISTANCES))), "a correct placement must pass"
     assert _violations(doc(12)), "the previous window's reach must now be rejected"
+
+
+def _figure_match_counts():
+    """How many times each entry's FIGURE pattern actually occurs in the live deliverables."""
+    corpus = [open(p, encoding="utf-8").read() for p in DELIVERABLES]
+    return {name: sum(len(re.findall(fig, c, re.I)) for c in corpus)
+            for name, fig, _, _ in CAUTIONED_FIGURES}
+
+
+def test_at_least_one_entry_is_live_in_the_deliverables():
+    """C-72b: an entry whose figure pattern matches NOTHING can never fire, and a guard made only of
+    such entries passes forever while watching nothing.
+
+    Found by mutation: removing every occurrence of `POST-TREATMENT` left the suite green, because
+    `length-conditioned ASR` matches zero times in either deliverable. That entry is inert BY DESIGN
+    — an "if you quote X, say Y" caveat is dormant until someone quotes X — so it is kept. What was
+    wrong is that the suite could not tell dormant-and-correct from broken.
+    """
+    counts = _figure_match_counts()
+    live = {k: v for k, v in counts.items() if v > 0}
+    assert live, (
+        "NO cautioned figure is quoted in any deliverable — every entry is dormant, so this guard "
+        f"cannot fail regardless of what the documents say. Counts: {counts}")
+
+
+def test_the_guard_fires_on_a_LIVE_entry_not_only_a_dormant_one():
+    """C-72b, the sharper half: every synthetic fixture in this file was built on `length-conditioned
+    ASR`, the ONE entry that matches nothing in production. The guard's only proof of life exercised
+    the only thing that was not alive.
+
+    This rebuilds the fire-test from whichever entry is actually live, so the mechanism is
+    demonstrated on an entry that operates.
+    """
+    counts = _figure_match_counts()
+    live = [(n, f, p) for n, f, p, _ in CAUTIONED_FIGURES if counts[n] > 0]
+    assert live, "no live entry to exercise (see test_at_least_one_entry_is_live_in_the_deliverables)"
+    name, fig, phrase = live[0]
+    # a violating document built from the entry's OWN pattern, so the fixture cannot drift from it
+    specimen = {"rescue percentage": "the recovery is 58% as % of rise across the four cells",
+                "ticket_knife installation": "ticket_knife installs at 30/48 on the bank",
+                "length-conditioned ASR": "the length-conditioned ASR is 0.31"}[name]
+    assert re.search(fig, specimen, re.I), f"specimen for {name!r} does not match its own figure pattern"
+    v = _violations(specimen)
+    assert [n for n, _, _, _ in v] == [name], f"guard failed to flag a live entry {name!r}: {v}"
+    assert not _violations(specimen + " — " + phrase), (
+        f"guard still flags {name!r} after its required phrase {phrase!r} is supplied")
+
+
+def test_dormant_entries_are_recorded_so_going_dormant_is_visible():
+    """A live entry that goes dormant — because the figure stopped being quoted — silently stops
+    watching. Recording the counts makes that a visible change rather than an invisible one.
+    """
+    counts = _figure_match_counts()
+    dormant = sorted(k for k, v in counts.items() if v == 0)
+    assert dormant == ["length-conditioned ASR"], (
+        "the set of DORMANT cautioned figures changed. This is not necessarily a defect — an entry "
+        "is dormant when its figure is not currently quoted — but it changes what this guard is "
+        f"actually watching, so it must be acknowledged. Now dormant: {dormant}; counts: {counts}")

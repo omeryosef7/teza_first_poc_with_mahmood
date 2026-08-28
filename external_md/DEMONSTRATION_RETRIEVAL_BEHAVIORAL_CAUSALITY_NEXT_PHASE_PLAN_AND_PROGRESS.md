@@ -14588,3 +14588,90 @@ SURVIVED three times for three *different* wrong reasons before writing a valid 
 both report "passed". So mutation testing needs its own positive control: *before* concluding a guard
 is blind, confirm the mutation actually removed the thing the guard looks for. Three of my four
 SURVIVED verdicts tonight were my own bug, and only the fourth was real.
+
+### ✅ R-153 (02:40) — **Fixed the C-72b defect and then did the thing C-72b was about: ran the new tests against the mutations they were written for. Four mutations, four killed. PR-38 judged (798384).**
+
+**The defect, restated precisely.** The `length-conditioned ASR` entry is **dormant by design** — an
+"if you quote X, say Y" caveat is inert until someone quotes X, and nobody currently quotes that
+figure. Keeping it is correct. **What was wrong is that the suite could not distinguish
+dormant-and-correct from broken**, and every synthetic fixture in the file was built on that one
+entry, so the guard's only proof of life exercised the only thing not alive.
+
+**Three tests added:**
+
+| test | what it catches |
+|---|---|
+| `test_at_least_one_entry_is_live_in_the_deliverables` | a guard whose every entry is dormant — passes forever, watches nothing |
+| `test_the_guard_fires_on_a_LIVE_entry_not_only_a_dormant_one` | rebuilds the fire-test from whichever entry actually matches, so the mechanism is proven where it operates |
+| `test_dormant_entries_are_recorded_so_going_dormant_is_visible` | a live entry going dormant, which silently stops watching |
+
+**And the positive control, which is the whole point of C-72b:**
+
+| mutation | probe | result |
+|---|---|---|
+| only the dormant entry configured | `at_least_one_live` | **KILLED** |
+| only the dormant entry configured | `fires_on_LIVE` | **KILLED** |
+| live entry's required phrase weakened to `"the"` | `phrase_is_distinctive` | **KILLED** |
+| live entry's figure pattern broken to match nothing | `dormant_recorded` | **KILLED** |
+
+**4/4.** Run by monkeypatching `CAUTIONED_FIGURES` in-process rather than mutating files, so the
+shared tree was never touched — the worktree was only needed for document mutations.
+
+**This is the first time tonight I have written a guard and then demonstrated it fails.** C-72b's
+lesson was *a mutation that fails to exercise the property is indistinguishable from a guard that is
+blind*; the corollary is that **writing the test is not the evidence — running it against the mutation
+is** — and I would have shipped three unverified tests without it.
+
+**Their second self-caught mutant is the better illustration.** *"Weights drawn per ROW instead of per
+cluster"* passed their size test because rejection rates were **identical at 32 clusters (0.075 vs
+0.075)**, separating only below ~12. Their `t` already carries a cluster-robust CR0 variance, so most
+of the clustering enters through the **variance estimator**, not the weights — **a rejection-rate test
+is the wrong instrument for that property no matter how many replicates it runs.** Their fix is
+structural rather than statistical: one Rademacher draw per cluster means the bootstrap `t` takes at
+most `2**k` values — **four clusters, 600 draws, exactly 16 distinct** — and per-row weights make it
+continuous. That kills the mutant at any cluster count. **A structural invariant beats a distributional
+one when the property is structural.**
+
+**PR-38 judged.** `798384`, both `q7r640` arms in one invocation, bank read from each arm's own
+`RUNMETA.argv` (`d10`, cap 640, both `DONE`). Gate 3 unread until it lands.
+
+### ⛔ C-73 (02:50) — **My three audit guards have never gated a single one of my commits. They are not in the pre-commit hook's list — every "160 passed" in my commit output was THEIR eight files. C-72 proved it by slipping through.**
+
+Full `pytest` failed on `test_every_correction_reached_the_deliverable`: **C-72 was in the plan and
+absent from the summary's corrections table.** That is exactly the defect the guard exists for, and it
+is the guard I had mutation-verified as **KILLED** an hour earlier. So why did the commit succeed?
+
+**Because the hook does not run it.** `.git/hooks/pre-commit` has:
+
+```
+GUARD_TESTS="tests/test_cited_artifact_check.py tests/test_ledger_propagation_check.py
+             tests/test_option_mass_nan_guard.py tests/test_margin_exposure.py
+             tests/test_intervention_liveness.py tests/test_asr_protocol.py
+             tests/test_fcslots_preset.py tests/test_clustered_stats.py"
+```
+
+**Eight files, all theirs. None of mine.** My three collect **26 tests** and not one of them has run at
+commit time this entire sprint. Every `140 passed` / `160 passed` I have quoted in a commit was **their
+guards passing on my commit**, which I read as coverage of my own deliverables. It was not.
+
+**And `check_all`'s name completed the illusion.** It reports *"all 8 deliverable guards pass"*, and
+its `ledger_propagation_check.py` is **their** guard over **their** plan and **their** ledger — its
+docstring cites §5.20, §6.3.1, §6.4. Mine is `tests/test_my_ledger_propagation.py` over my plan and my
+summary. **Two guards, near-identical names, disjoint scopes**, and the one that runs automatically is
+the one that cannot see my documents. When check_all said 8/8 while my guard would have failed, I read
+it as a contradiction in my tooling; it was two tools correctly reporting on two different corpora.
+
+**Fixed:** added all three to `GUARD_TESTS`. Hook re-verified — executable, `bash -n` clean, and the
+full set now runs **190 tests in 6.3s** (was 160). **This is a shared hook, so it now fires on their
+commits too**, exactly as their `test_clustered_stats.py` addition fires on mine; they announced that
+and I am announcing this.
+
+**The uncomfortable part.** Tonight I mutation-tested these guards, verified 4/5 mutations killed,
+fixed the survivor, and wrote a positive control for the fix — **all for guards that were never being
+run.** I checked that they *work* and never checked that they were *wired in*. That is the same
+distinction as C-72b's *writing a test is not evidence it works*, one level further out: **a verified
+guard that nothing invokes is worth exactly as much as a guard that does not fire.**
+
+**Sixth in the pattern, and the first that is not a matcher at all.** The others were a regex, a glob,
+`ls | tail -1`, a substring, a split-name list — all *"selected by a pattern I supplied"*. This one is
+*"assumed a list contained my files"*. Same failure to enumerate; no pattern involved.
