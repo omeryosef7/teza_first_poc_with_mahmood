@@ -9442,6 +9442,8 @@ incomparable.**
 
 ### ✅ R-98 (04:20) — **Their "the mapping never installs on `basket_gun`" account is not just coherent — it is directly measurable, and the dose-response confirms it. On two banks binding saturates at 1.000; on `basket_gun` it never reaches chance at any dose.**
 
+**⚠ Read with R-100:** every bank compared here varies **codeword AND concept together**, so the cross-population ordering below cannot be decomposed into codeword, concept, or demonstration sentences. The concurrent session is now running the disconfounding 2×2 (`ticket_knife`, `window_bomb`, `window_knife` at cap 640).
+
 They proposed that `basket_gun`'s weakness on every axis (baseline ASR 10/96, forced-choice 0.396,
 knockout effect −0.031 null) is one account rather than three: **the doublespeak mapping does not
 install on that bank**, so there is nothing for a knockout to remove. **That is an inference from
@@ -9524,6 +9526,8 @@ claim and no individual cell is.
 
 
 ### ⛔ R-99 (04:40) — **PR-33 REFUTES MY OWN PREDICTION. `window_knife` installs the mapping perfectly (0.583 → 1.000, saturating) despite a baseline ASR of 2/96. So low ASR does NOT imply non-installation, and R-98's hedge leaned the wrong way.**
+
+**⚠ Read with R-100:** every bank compared here varies **codeword AND concept together**, so the cross-population ordering below cannot be decomposed into codeword, concept, or demonstration sentences. The concurrent session is now running the disconfounding 2×2 (`ticket_knife`, `window_bomb`, `window_knife` at cap 640).
 
 PR-33 was written to convert R-98's *"`window_knife` likely is too"* into a measurement, explicitly
 *"running my own prediction against the possibility that it fails."* **It failed.**
