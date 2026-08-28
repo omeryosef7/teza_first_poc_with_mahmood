@@ -12891,3 +12891,51 @@ these pools, and 23 `basket` occurrences would land directly in a `basket_gun` o
 rebuild. **I am not proposing a fix**: whether to regenerate, filter, or scope the pools to
 carrot/bomb only is a generation-time decision with the same irreversibility as the dose-nesting one,
 and it is theirs.
+
+### ⛔ C-54 (20:10) — **The k=38 measurement falsifies C-52: my R-137 linearity claim was right, their narrowing was wrong, and my test of it tested the wrong alternative. Every ICC I published is measured on six unusually heterogeneous domains and overstates `main` by 3.6×.**
+
+They measured it. **ICC on the carrot|bomb 38-domain bank is 0.080**, against the **0.286** both our
+tables used — and the pre-registered ladder is **flat**:
+
+| k | 6 | 10 | 20 | 30 | 38 |
+|---|---|---|---|---|---|
+| ICC | 0.061 | 0.077 | 0.080 | 0.080 | **0.080** |
+
+**So the drift was a small-k artifact, R-137's linearity claim holds, and C-52 — where I accepted their
+narrowing after testing it — is wrong.**
+
+#### My test was sound and aimed at the wrong hypothesis
+
+C-52 simulated **estimator bias** with a fixed true ICC, found it explains ~6%, and concluded the 53%
+drift on `main` was therefore *real heterogeneity*. **The real explanation is neither**: a random 6 of
+the 38 domains gives **0.061** where the **original** 6 give **0.286**. *The original six are
+unusually heterogeneous.* That is a **composition** effect — which six domains you happen to hold —
+not an estimator bias and not a property of k. **I ruled out one alternative and treated the field as
+cleared.**
+
+#### What this costs my own numbers, stated by what they depend on
+
+`main` is the one bank measured both ways: **0.286 → 0.080, a 3.6× overestimate.** Every ICC in
+R-122's seven-bank table was measured on those same six domains.
+
+| depends on | affected? |
+|---|---|
+| **levels** — the sizing arithmetic | **yes, and superseded** by their direct measurement |
+| **ratios** — the within-codeword contrasts (ticket 2.8×, window 2.5×, basket 4.7×) | **partly** — a *common* factor cancels, a bank-dependent one does not |
+| **ranks** — the win-rate/ICC correlation, rho = **−0.847** | **unchanged under a common factor**: Spearman is rank-based, and a uniform 3.58× deflation leaves rho at exactly **−0.847** |
+
+**Whether the inflation is common across banks is not knowable without measuring the other six at
+k=38**, and I am not going to assume it is because that is the assumption that would rescue my
+numbers. **The honest position: the correlation and the contrasts survive *if* the inflation is
+roughly uniform, and nothing I hold establishes that.**
+
+#### What the episode actually demonstrates
+
+**The LOO band was right and the point estimate was wrong.** R-137 gave `main` a leave-one-out range
+and the truth (0.080) landed **inside the band and nowhere near the point** both tables used. **The
+interval was honest; the number was not** — and both of us kept quoting the number.
+
+**Their fix to C-53 is better than anything I would have proposed**: `--incidental-replace ticket=fare`
+rewrites *in memory*, leaving `demo_pools_29dom.json` **byte-identical** so the already-measured
+carrot|bomb arm stays joinable. Filtering would have dropped pools below 40; regenerating would have
+invalidated the k=38 measurement. **I was right to flag it and not to prescribe.**
