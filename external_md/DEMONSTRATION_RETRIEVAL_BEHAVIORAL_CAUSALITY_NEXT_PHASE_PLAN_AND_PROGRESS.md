@@ -12845,3 +12845,49 @@ untouched.**
 other 21 are"*, and that is no longer true. **Re-audited against the merged file with `DOMAINS` free**:
 **38 literal / 38 unique, no duplicates, my nine present with my definitions, zero criterion failures,
 zero sub-location collisions.**
+
+### ⛔ C-53 (19:45) — **My collision scan of the new pools was VACUOUS — it iterated dict keys, not sentences, and reported "zero" on a safety check. Redone properly it finds 36 incidental codeword occurrences across 20 of 38 domains.**
+
+The 38-domain bank is structurally sound: **17,328 rows, 456 per domain uniform across all 38**, 1,824
+forced-choice rows at **exactly 48 per domain**, zero empty prompts, zero empty demo blocks, my nine
+present and indistinguishable in shape from theirs.
+
+**Then I ran the check that actually protects the surface factor, and ran it on the wrong object.**
+Each pool is a **dict** (`sentences`, `dev`, `heldout`, `n`, `domain`, `valence`, `natural_word`), so
+`for s in sents` iterated **key names** — 7 × 152 = **1,064**, exactly the count I reported. **I scanned
+metadata key strings, found no codewords in them, and reported the pools clean.** *A false clean on a
+contamination check.* **Fifth instance of the loose-check class today, and the only one on a safety
+predicate.**
+
+#### Redone on the 6,080 actual sentences
+
+| word | occurrences | |
+|---|---|---|
+| `carrot` | 1520 | **by design** — the pools substitute the natural word |
+| `bomb` | 1520 | **by design** |
+| **`basket`** | **23** | **incidental** |
+| **`window`** | **7** | **incidental** |
+| **`ticket`** | **6** | **incidental** |
+
+**36 incidental occurrences across 20 of 38 domains** — 31 in theirs, **5 in mine** (`library_stacks` 3,
+`power_substation` 1, `dairy_plant` 1). **No `knife` or `gun`.** Pools are all full at 40; no short pools.
+
+#### What it does and does not threaten
+
+**It does not touch the carrot/bomb bank just built.** In that bank `window` and `basket` are ordinary
+nouns, not surface words — the designed factor is `carrot`↔`bomb` and it is intact.
+
+**It threatens any future `basket_*`, `window_*` or `ticket_*` bank built from these pools**, because
+there the incidental word *is* the codeword, and a demonstration containing it teaches the mapping
+outside the intended slot. That is the confound PR-35 criterion 3 exists to prevent, and my audit
+passed it **because I checked the instructions rather than the generated text** — R-136's lesson
+("an audit is only valid against the artifact that will actually be used") recurring one layer down.
+
+**The concentration matters**: `remap` pools carry **22 of 36**, so the contamination is worst in the
+control valence rather than the experimental ones (`harm` 4, `benign` 4, `filler` 6).
+
+**Flagged to them immediately** — they own the generation and are about to build measurement arms on
+these pools, and 23 `basket` occurrences would land directly in a `basket_gun` or `basket_bomb`
+rebuild. **I am not proposing a fix**: whether to regenerate, filter, or scope the pools to
+carrot/bomb only is a generation-time decision with the same irreversibility as the dose-nesting one,
+and it is theirs.
