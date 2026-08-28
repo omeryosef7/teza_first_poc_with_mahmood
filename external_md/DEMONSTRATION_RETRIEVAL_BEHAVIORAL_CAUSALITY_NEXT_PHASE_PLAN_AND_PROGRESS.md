@@ -12939,3 +12939,49 @@ interval was honest; the number was not** — and both of us kept quoting the nu
 rewrites *in memory*, leaving `demo_pools_29dom.json` **byte-identical** so the already-measured
 carrot|bomb arm stays joinable. Filtering would have dropped pools below 40; regenerating would have
 invalidated the k=38 measurement. **I was right to flag it and not to prescribe.**
+
+### ✅ R-138 (20:15) — **Computed `ticket_knife` at k=38 from their landed arm rather than waiting for it. The inflation is BANK-DEPENDENT — 3.58× on one bank, 1.10× on the other — which is the case I said would break my ratios. And `ticket_knife` is short by 1.4 rows, not 13.**
+
+Their `794494` completed and wrote `d38tk_20260828_194454_2334737`. **I computed the ICC myself**
+rather than wait for their write-up, because it is the second bank measured both ways and C-54 left my
+table hanging on exactly this question.
+
+| arm | n | domains | wins | mass | gate | ICC |
+|---|---|---|---|---|---|---|
+| `ticket_knife` k=38 | 304 | 38 | 220 (0.724) | 0.5796 | PASS | **0.291** |
+| carrot\|bomb k=38 | 304 | 38 | 284 (0.934) | 0.5715 | PASS | **0.080** |
+
+#### The inflation is not common, and that is the answer to C-54's open question
+
+| bank | k=6 | k=38 | ratio |
+|---|---|---|---|
+| carrot\|bomb | 0.286 | **0.080** | **3.58×** |
+| `ticket_knife` | 0.320 | **0.291** | **1.10×** |
+
+**One bank collapses, the other barely moves.** C-54 said the ratios and ranks survive *only if* the
+inflation is common, and that I would not assume it. **It is not common**, so:
+
+* **the within-codeword ratios do not survive as published** — `ticket: knife/bomb` was 2.8× on two
+  k=6 estimates and is **2.6×** with the knife side measured, but the bomb side is still a k=6 number
+  and `main` shows a k=6 number can be 3.6× wrong;
+* **the rank correlation is unmoved *so far*** — rho stays **−0.847** with both corrections applied,
+  because `main` was already low-ranked and `ticket_knife` high-ranked and neither crossed. **This is a
+  partial correction, not a corrected value**: five of seven are still k=6 estimates and any one of them
+  moving like `main` did could reorder the ranks.
+
+#### And the sizing headline changes in their favour
+
+| `ticket_knife` at k=38 | effective rows | |
+|---|---|---|
+| on the k=6 estimate 0.320 | 118.8 | short by **13.2** |
+| **on the measured 0.291** | **130.6** | **short by 1.4** |
+
+**Domains needed at the measured ICC: 38.4.** Their build is essentially at the requirement — *short by
+four-tenths of a domain* — where the k=6 estimate said five domains short. **The measurement moved the
+cell from "clearly short" to "at the line", and neither the old point estimate nor my LOO band would
+have told them which.**
+
+**What I would not do with this**: treat 38.4 as a target and author one more domain. **That is the
+C-31/C-33/R-137 error a fourth time** — a precise operation on a quantity whose own k=6 predecessor
+was 3.6× wrong on a neighbouring bank. **The measured 0.291 is far better determined than the 0.320 it
+replaces, and it is still one bank's number.**
