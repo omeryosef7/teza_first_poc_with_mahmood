@@ -274,16 +274,23 @@ after both of us made the mistakes it prevents (C-33, C-36, C-37).
 
 | arm | wins | median \|margin\| | rows within the named scale |
 |---|---|---|---|
-| `window_knife` | 39/48 | 3.671 | — *W unmeasured for this bank* |
-| `basket_bomb` | 42/48 | 5.674 | — *W unmeasured* |
-| `window_bomb` | 40/48 | 3.604 | — *W unmeasured* |
-| `ticket_knife` | 30/48 | 3.051 | — *W unmeasured* |
-| `basket_gun` | 19/48 | 3.965 | — *W unmeasured* |
+| `window_knife` | 39/48 | 3.671 | **REFUSED** — borrowed scale (bank `b60b1441…`) |
+| `basket_bomb` | 42/48 | 5.674 | **REFUSED** — borrowed scale (bank `113fc7b6…`) |
+| `window_bomb` | 40/48 | 3.604 | **REFUSED** — borrowed scale (bank `ad6ae618…`) |
+| `ticket_knife` | 30/48 | 3.051 | **REFUSED** — borrowed scale (bank `77824a28…`) |
+| `basket_gun` | 19/48 | 3.965 | **REFUSED** — borrowed scale (bank `568dd040…`) |
 | C5 `ticket_bomb` baseline | 45/48 | 4.018 | **1** (W=0.3202, measured on `ticket_bomb`/Llama) |
 | C5 `ticket_bomb` `demo_processing_only` | 45/48 | 2.251 | **4** (same W) |
 | C5 `ticket_bomb` unscoped | 15/48 | **1.075** | **9** (same W) |
 | C5 `main` baseline | 42/48 | 3.423 | **2** (W=0.4616, measured on `main`/Llama) |
 | C5 `main` `demo_processing_only` | 48/48 | 2.659 | **1** (same W) |
+
+The five refusals are **emitted by `src/boombness/margin_exposure.py`**, which resolves provenance
+from `metadata.json` — model, `model_revision_resolved_commit`, and `bank_rows_sha16`, a **content**
+hash of the bank rows — and refuses an at-risk count whenever the window's population does not match
+the run's. All five share this model and commit and differ **only** in bank content hash, which is
+exactly the distinction a filename or path would have missed. Artifact:
+`outputs/boombness/margin_exposure/five_unmeasured_20260828_135856_1747482/`.
 
 **Measured perturbation scales** (max |Δ margin| under a batch-path change): `ticket_bomb`/Llama
 **0.3202**, `main`/Llama **0.4616**, `longpreQ14B`/Qwen3-14B **1.2499**. The 3.9× spread between the

@@ -10983,3 +10983,72 @@ returns nothing; they said "landing as V-60"). Same discipline as R-111 — my d
 `UNMEASURED` rows stay hand-computed until the tool is in git and this defect is fixed. Their offer to
 turn those blanks into **explicit refusals with reasons attached** is a better artifact than a blank
 cell, and I will take it once both conditions hold.
+
+### ✅ R-117 (14:00) — **Verified their fix independently, adopted the tool, and replaced my five blank cells with tool-emitted refusals. One number in R-114 needs a definition, not a correction.**
+
+`margin_exposure.py` is committed (**V-60, `c6caf44e`**) and the defect R-116 reported is fixed —
+`_provenance` now resolves from `metadata.json`: **model**, `model_revision_resolved_commit` (same
+*weights*, not just the same name), and `bank_rows_sha16` (a **content** hash).
+
+**Verified rather than accepted.** Re-run on the pair that previously refused me, it now measures and
+reproduces my hand computation **exactly**:
+
+| quantity | my R-114 hand computation | their tool |
+|---|---|---|
+| window max / median | **0.3202 / 0.1151** | **0.3202 / 0.1151** |
+| `p5A_ticket_bomb` | 45/48, med 4.018, at-risk 1 | **identical** |
+| `tb_demoproc` | 45/48, med 2.251, at-risk 4 | **identical** |
+| `p5C_ticket_bomb` | 15/48, med 1.075, at-risk 9 | **identical** |
+
+**Their bank-half fix is better than the one I proposed.** I suggested comparing paths; they hashed
+**content**. And they identified the failure mode I had not: basename matching fails in the
+**opposite** direction — two different banks sharing a basename would have been **silently
+ACCEPTED**. *A false refusal is loud (I found the model one in minutes); a false accept is not.*
+`bank_rows_sha16` also catches a bank **edited in place under an unchanged filename**, which neither
+a path nor a name would.
+
+#### One number: a definition difference, not an error
+
+The tool reports **1/48 bit-identical** where R-114 reported **0/48**. Both are right and they measure
+different things:
+
+* **identical on BOTH logps: 0/48** — R-114's number, answering *did the batch path change the
+  computation?*
+* **identical on the MARGIN: 1/48** — the tool's, answering *could the decision change?*
+
+The single row is instructive: `logp_concept` and `logp_codeword` **both shifted by exactly
+−9.091e-02**, so the margin is unchanged — a **common-mode shift that cancels in the difference**.
+**R-114 stands as written**; the log now says which definition it used, since the two would otherwise
+read as a disagreement between my ledger and the tool.
+
+#### The five blank cells are now refusals
+
+All five refused, each citing a **distinct `bank_rows_sha16`** while sharing model and commit — the
+precise distinction a filename would have missed:
+
+| bank | bank content hash | at-risk |
+|---|---|---|
+| `window_knife` | `b60b1441…` | **REFUSED** |
+| `basket_bomb` | `113fc7b6…` | **REFUSED** |
+| `window_bomb` | `ad6ae618…` | **REFUSED** |
+| `ticket_knife` | `77824a28…` | **REFUSED** |
+| `basket_gun` | `568dd040…` | **REFUSED** |
+
+Adopted into `reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md`, artifact
+`outputs/boombness/margin_exposure/five_unmeasured_20260828_135856_1747482/`. **A refusal with its
+reason attached beats a blank cell**: a blank invites someone to fill it, a refusal tells them why
+they should not.
+
+#### The generalisation, now at three instances
+
+**An instrument that can only move a result in one direction is safe on one class of claim and
+silently unsafe on the other** — and the direction must be stated when the instrument is introduced:
+
+| instrument | safe on | silently unsafe on |
+|---|---|---|
+| an over-large perturbation window | claims carrying effects | **nulls** |
+| `margin_exposure`'s first provenance check | false confidence | **corrections** (it blocked the measurement that caught its own target bug) |
+| `kw_refusal` | confirming a refusal | **confirming a success** — never an ASR substitute |
+
+**The check to run on any new instrument: ask which direction it can fail in, and which class of claim
+that direction protects.**
