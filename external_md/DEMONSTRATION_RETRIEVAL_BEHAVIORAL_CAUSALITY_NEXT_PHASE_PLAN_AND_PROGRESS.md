@@ -13848,3 +13848,52 @@ instrument spread looks like either.
 
 **Still open:** the Qwen3 pair — `q6r640_L17` is complete, `q6r640_L5` at 87/160 (job 797239). Not
 read until both exist.
+
+### 🏆 R-144 (00:20) — **Their judge-drift floor does not reach C9, and for a better reason than the one I nearly wrote: C9's outcome is not judged at all. Measured drift is ASR-only (2 rows in 160); refusal is a deterministic keyword function (0 flips). Its real validity question is keyword coverage — probed, and the length separation is total.**
+
+Their 797129 found the judge moving up to **3 rows in 96** on unchanged generations, with a sign
+flip, and flagged that C9's margin gap is the same size. Re-judging `p7_rescue_L14` @192 in a fresh
+invocation (**797515**), on files verified byte-identical (**160/160 completion hashes match**):
+
+| outcome | 2026-08-25 | 2026-08-28 | net | per-row flips |
+|---|---|---|---|---|
+| **refused** | 17 | 17 | **+0** | **0** |
+| ASR | 5 | 3 | **−2** | **2** |
+
+**I was one sentence from reporting "the refusal classifier is stable and the ASR judge is not."
+That would have been wrong.** `judge_boombness.py:571` is `refused = bj.kw_refusal(text)`, and
+`kw_refusal` is a substring match over `REFUSAL_MARKERS` on the lowercased completion. **It is a
+deterministic function of the text, so it cannot drift across invocations by construction.** Zero
+flips confirms the pipeline is deterministic and nothing more; only `strongreject_score` comes from
+the LLM.
+
+**So the correct scoping of their concern:** the ~3-row floor is an **ASR** floor. It applies to
+their populations and to C9's *secondary* ASR reading — and **not** to C9's −18, whose outcome never
+passes through the judge. C9's headline is immune to judge drift **by construction**, which is
+stronger than being stable, and is a different fact from the one I was about to claim.
+
+**But it swaps one validity question for another, and this one re-judging can never surface.** A
+keyword refusal detector has false negatives on refusals phrased outside the marker list, and it will
+be *consistently* wrong every time. Probed by scalar length only, no completion text read:
+
+| arm | refused | median chars | max chars | not-refused | median chars | **min chars** | overlap |
+|---|---|---|---|---|---|---|---|
+| `L5` @640 | 35 | 98 | **179** | 125 | 1331 | **499** | **0** |
+| `L14` @640 | 17 | 67 | **138** | 143 | 1344 | **581** | **0** |
+
+**Zero overlap, with a 2.8× gap** between the longest refusal and the shortest non-refusal. There is
+no population of short non-refused completions for the detector to be missing — an undetected refusal
+would have to be a 500-plus-character one, and the detected ones run 67-98.
+
+**And this measures C-67's mechanism instead of asserting it.** Refusals are **67-98 chars** and
+terminate immediately; non-refusals are **1300+ chars**. A 192-token cap sits at roughly 800
+characters — *between* the two populations. So `stop_reason == "length"` is not merely correlated
+with non-refusal, it is very nearly the same partition, which is exactly why releasing the cap
+converted zero rows (C-67) and why P(refused | truncated) was 0.0088 (C-64's one sound measurement).
+
+**Three descriptions of one fact, now with the number that generates it:** their ceiling correction,
+C-64's coupling, C-66's ASR result and C-67's null conversion are all consequences of *refusals being
+an order of magnitude shorter than compliant answers* in this bank.
+
+**Pending:** `p7rj2_L5` (23/160) completes the paired drift figure; `q6r640_L5` at 151/160. The
+Qwen3 contrast stays unread until both its arms exist.
