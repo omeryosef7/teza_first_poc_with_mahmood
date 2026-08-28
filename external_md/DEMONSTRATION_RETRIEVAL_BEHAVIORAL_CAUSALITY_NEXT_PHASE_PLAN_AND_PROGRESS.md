@@ -11488,3 +11488,64 @@ clustering, 6 domains × 8 rows, 2000 draws at each observed win rate:**
 **~13 banks for 80% power at rho 0.7** — and p=0.0246 at n=7 on a secondary analysis is a reason to
 keep measuring, **not** to start sizing banks from win rate. **The practical rule is unchanged:
 measure ICC on the bank you are about to size.**
+
+### ✅ R-123 (16:00) — **Their estimand caveat verified against the bank source: my reportable table is single-slot by construction. Their conservative-direction claim holds on reportable rows (3/3) — but the single→multi ratio is NOT translatable, spanning 1.24 to infinity.**
+
+They flagged that `core2x2_slot3` carries no forced-choice rows, so my whole R-122 table measures a
+**same-demonstration** correlation. **Verified from the bank source rather than accepted**, and it is
+exact — across four banks, identically:
+
+| query kind | blocks it appears in |
+|---|---|
+| `semantic_forced_choice` | **`core2x2` only, 72 rows** |
+| `semantic_one_word` | `core2x2` 72, **`core2x2_slot3` 48**, `role_style` 180, `strength` 48, `consistency` 36, `position` 12 |
+
+**So the reportable readout is structurally incapable of measuring the multi-slot quantity, and the
+readout that can measure it is the one that keeps failing the mass gate.** That is not a choice either
+of us made; it is how the bank was generated, and it means the two tables are **different estimands
+that cannot be merged**, exactly as they said.
+
+#### ⛔ My recommendation was under-specified
+
+I told them to use `ticket_knife`'s forced-choice **0.320** in the blocker row instead of the one_word
+**0.190**. **Both numbers are sound; they answer different questions** — 0.320 is single-slot, and the
+bank under design is multi-slot. **I named a number without naming its estimand**, which is the same
+shape as C-33 (a threshold without its population) and C-37 (a window without its model-and-bank).
+**They resolved it correctly by carrying both**, with the estimand named on each:
+
+| readout | mass | ICC | domains needed |
+|---|---|---|---|
+| one_word, **multi**-slot (the design estimand) | 0.077 | 0.190 | **26** |
+| forced_choice, **single**-slot (conservative) | 0.769 | 0.320 | **43** |
+
+**26 and 43 against 10 available** — unreachable on either, which is why the conclusion never depended
+on the choice.
+
+#### Their conservative-direction claim: holds where it is measurable
+
+They argued single-slot **over-states** multi-slot (from `main`, 0.314 vs 0.218), so nothing of mine is
+at risk. **Tested on every bank with both**:
+
+| bank | slot0 ICC | multi ICC | ratio | multi-slot mass |
+|---|---|---|---|---|
+| `main` | 0.316 | 0.218 | 1.45 | 0.0404 **below floor** |
+| `ticket_bomb` | 0.248 | **0.000** | **∞** | 0.1801 reportable |
+| `basket_gun` | 0.472 | 0.381 | 1.24 | 0.0808 reportable |
+| `ticket_knife` | 0.377 | 0.190 | 1.98 | 0.0774 reportable |
+| `window_bomb` | **0.000** | **0.049** | **0.00** | 0.0404 below floor |
+| `window_knife` | 0.154 | 0.115 | 1.34 | 0.0193 below floor |
+
+**Direction: their claim holds on all three rows where the multi-slot readout is reportable** —
+`ticket_bomb`, `basket_gun`, `ticket_knife` all over-state. **The two counterexamples where single
+UNDER-states (`window_bomb`, ratio 0.00) are both below the mass floor**, so they are not evidence
+against it. Their conservatism argument stands **on reportable data**.
+
+**Magnitude: not translatable.** Ratios of **1.24, 1.98 and ∞** on the reportable rows alone. So the
+single-slot table **cannot be converted** into a multi-slot one by any factor, and their 1.4× from
+`main` is one draw from a spread that includes infinity. **Neither table substitutes for the other,
+and no correction factor bridges them** — which is a stronger statement than "different estimands",
+and it is the one that matters if anyone later tries to reuse my table for sizing.
+
+**Their closing point is the right standing rule and I have adopted it**: if the count ever reaches 13
+banks, the pre-registration must fix **readout and slot structure up front**, because both move the
+number and this tick shows neither can be corrected for afterwards.
