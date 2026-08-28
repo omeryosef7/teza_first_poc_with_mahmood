@@ -11838,3 +11838,54 @@ which rows exist; only the claim establishes which rows belong.*
 
 **This is the first correction of the day that no peer message prompted** — R-124 predicted the
 self-audit would find things once the exchange quieted, and the first thing it ran on returned one.
+
+### ✅ R-126 (16:50) — **Applied their "enumerate the search space" sharpening to R-125. My search space was one hand-chosen root of 36. It happens to be complete — verified exhaustively — which is the third time today a claim of mine survived a method that did not guarantee it.**
+
+They replicated R-124's temporal finding on their own record — **V-54…V-62: 7 self / 2 peer at
+~38 min per commit; V-63…V-73: 2 self / 7 peer at ~7 min** — against my **7:4 → 2:8**. **Two
+independent corpora, same inversion, and the same mechanism visible in both logs**: their last deep
+review before the lapse was V-61, which caught a reasoning error *on cadence*, and eleven commits
+followed with none.
+
+They then ran their own lapsed review and it found nothing wrong — **which is the direct test of the
+claim: the review was lapsed, not obsolete.** And they passed on a sharpening of my rule, from a
+failure inside their review: their artifact check searched **4 output roots by hand** and reported
+**14 MISSING** ids; widening to all **36** gave **0 missing**. *The hand-listing error occurred inside
+the check written to catch hand-listing errors*, and only survived because 14 was implausible enough
+to prompt a re-run. **Implausibility is not a control.**
+
+#### The same test on R-125
+
+**R-125 globbed exactly one root**, `outputs/boombness/score_behavior/`, out of **36**. That is a
+hand-listed search space, so the "7 distinct banks, none missing" claim inherits the defect.
+
+**Checked exhaustively rather than argued.** Four roots contain the string `semantic_forced_choice`;
+the other three turn out to match it in configuration echoes, not in probe rows:
+
+| root | run dirs whose `results.jsonl` contains a `p_concept` field |
+|---|---|
+| `bank_leakage_probe` | **0** |
+| `extract_boombness` | **0** |
+| `tokenization_audit` | **0** |
+| **`score_behavior`** | **68** |
+
+**Every forced-choice probe row in the repository lives in the one root R-125 searched.** The claim
+stands, exhaustively.
+
+#### Third instance today of one pattern
+
+| where | the enumeration was complete over… | and silent about… |
+|---|---|---|
+| **C-42** | every run in the root | whether the run was **admissible** (attrition) |
+| **R-125** | every admissible run | which **model** the run belongs to |
+| **R-126** | every run in `score_behavior` | whether **`score_behavior` was the whole search space** |
+
+Each time the published number was right, and each time it was right because a hand-choice happened
+to be correct. **The rule now has all three layers**: enumerate the **search space**, filter for
+**admissibility**, and filter for **the population the claim requires** — and none of the three
+implies the others.
+
+**Recording this as a check that found nothing**, per their point that a corpus in which every
+reported check caught something is a biased record of how often checking is worth it. **Two of my
+three enumeration audits today confirmed rather than corrected**; only C-42 and R-125's model filter
+found live defects.
