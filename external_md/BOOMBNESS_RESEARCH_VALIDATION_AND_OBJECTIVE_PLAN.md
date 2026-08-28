@@ -3910,3 +3910,106 @@ and-bank, MEASURED** perturbation scale. The load-bearing word is **measured** �
 portable in exactly the way the discredited rate was.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.21 — The two-number rule becomes an instrument that REFUSES a borrowed scale
+
+Four corrections in this sprint share one shape — **a scale quoted away from the population it was
+measured on**:
+
+| | the carried scale |
+|---|---|
+| **C-33** | a threshold carried across n as a *rate* |
+| **§5.18.1** | the ≥0.667 installation screen applied at n=18, where `critical_k` is 14 |
+| **§5.20** | a Qwen3-measured perturbation window applied to Llama banks (**2.7×** too large) |
+| **§5.20.1** | then *one* Llama window (`main`, 0.4616) applied to `ticket_bomb` (0.3202, **1.4×**) |
+
+Documentation did not stop instances 3 and 4. **Instance 4 happened one tick after I wrote down
+"the scale must be named", in the same analysis that corrected instance 3.** A convention that
+fails while you are actively enforcing it on someone else is not a convention worth keeping — so
+`src/boombness/margin_exposure.py` makes it a refusal.
+
+### What it emits, and what it will not
+
+Alongside any forced-choice count: **median \|margin\|** and the **count below a named, measured
+scale**. It refuses to compute an at-risk count when the window's `(model, bank)` provenance does
+not match the run's, refuses to *measure* a window across two populations, and requires a
+`scale_name` — because "at-risk = 32" without saying at-risk-of-*what* invites the same carry-over.
+
+Run on the `main` population, it reproduces §5.20's published numbers and then blocks the error:
+
+```
+MEASURED scale 'batch16-vs-batch1' on {bank: boombness_prompt_bank.jsonl}:
+    max 0.4616  median 0.1000  (0/48 bit-identical, 0 verdict flips)
+  p5A_main    42/48  median|margin| 3.423  at-risk  2 (0w/2l)
+  p5C_main    41/48  median|margin| 1.254  at-risk 10 (7w/3l)
+  REFUSED p5A_ticket_bomb: BORROWED SCALE — window measured on ...bank.jsonl,
+          run is ...bank_ticket_bomb.jsonl
+  BOUND[preserved] 42/48->41/48 (-1)  adversarial 44->34 (-10)
+```
+
+**That refusal is §5.20.1 caught automatically**, by the tool, instead of by a peer reading my
+write-up.
+
+The at-risk count is split into **wins and losses**, which a bare count hides: at-risk *losses* can
+only move a count **up**, so they help a "preserved" claim and hurt a "collapse" one. The bound
+therefore flips only rows that can *damage* the claim — flipping the rest would make it adversarial
+against itself. *(A peer hit exactly that bug in their own recomputation, pushing a collapse the
+favourable way; their note is worth keeping — the wrong-direction number "looks impressive, which
+is exactly when it doesn't get checked.")*
+
+**Guard mutation-tested, 5 mutants, all killed:** disabling the provenance check (2 tests),
+comparing model but **ignoring bank** — precisely the §5.20.1 error — (1), dropping the
+`scale_name` requirement (1), allowing a window to be measured across populations (1), and making
+the bound flip rows that cannot hurt the claim (1). 10 tests.
+
+### An honest blank beats an estimate
+
+A peer applying the same rule now reports **5 of 10** forced-choice arms with the at-risk count as
+**UNMEASURED** rather than estimated, having no measured window for those banks. That is the
+correct output, and it is what this module produces by construction: it will not manufacture a
+number by borrowing one. *Their note — "I'd have quietly filled those with 0.3202 a few ticks ago"
+— is the whole argument for making it a refusal rather than a guideline.*
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### ⛔ The guard's first version would have REFUSED the measurement that caught its own target bug
+
+A peer pointed the module at the exact pair that produced the **0.3202** `ticket_bomb` window — the
+measurement that reversed their R-111 and produced their C-37 — and was refused:
+
+```
+BorrowedScaleError: cannot MEASURE a window across different populations:
+  {'model': 'DEFAULT', ...} vs {'model': 'meta-llama/Llama-3.1-8B-Instruct', ...}
+```
+
+**Both runs loaded the identical model.** `_provenance` read `config.args.model`, which is `None`
+when `--model` is omitted, so one launch style read `DEFAULT` and the other read the model name.
+**That is launch style, not science.**
+
+The failure direction is what matters. **A guard built to prevent the borrowed-window error would
+have blocked the measurement that DETECTED it.** An instrument that refuses the work catching its
+own target bug is conservative in a direction that *suppresses corrections* — the same
+one-sidedness this module warns about for windows, arriving one level up, in the module itself.
+
+The basename half had the **opposite and quieter** failure, which I had not considered: two
+**different** banks sharing a basename would have been silently **ACCEPTED**. A false refusal is
+loud; a false accept is not.
+
+**Fixed by reading the fields that actually carry identity**, all already recorded in
+`metadata.json`: the **resolved** `model`, the resolved **weights commit**, and **`bank_rows_sha16`**
+— a hash of the bank's rows, immune to path, basename and launch style alike. Verified against the
+real pair: it now measures **max 0.3202, median 0.1151, 0 verdict flips** — reproducing the peer's
+number exactly.
+
+**Re-mutation-tested, 5 mutants, all killed:** disabling the provenance check (2 tests), allowing
+cross-population measurement (3), ignoring the bank content hash (2), **reading the model from
+config as the buggy version did (3)**, and ignoring the weights commit (2). 14 tests.
+
+*(This is the third instance of one shape, which makes it the finding rather than an observation:
+an instrument that can only move a result in one direction is safe on one class of claim and
+silently unsafe on the other — the borrowed window, this guard, and `kw_refusal`, which anchors
+refusal and can never confirm success and so must never be quoted as an ASR substitute.)*
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
