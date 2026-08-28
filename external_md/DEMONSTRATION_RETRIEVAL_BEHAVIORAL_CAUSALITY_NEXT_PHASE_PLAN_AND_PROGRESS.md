@@ -12470,3 +12470,67 @@ than the one it prevents. **Recorded as the option, with the ordering as the int
 **Nothing published was wrong** — the gap existed for one commit and was closed by the mechanism built
 for it. **Third time today a guard of mine has fired on my own work** (R-125's model filter, C-48's
 proximity, this), against **zero** times a reader caught what a guard could have.
+
+---
+
+### 🔬 DR-17 (18:35) — **Deep review. Suite 1333 passed; ledger complete C-19…C-48; every headline number reproduces. Two method findings: my truncation predicate was wrong (in the safe direction), and my proximity window was invented where it could have been calibrated.**
+
+**Queue empty, my paths clean, tests run BEFORE committing** — R-135's ordering correction, applied.
+
+#### The standing checks
+
+**Full suite: 1333 passed, 7 skipped** (300s). `check_all` **8/8**. Ledger **C-19…C-48 complete**,
+counted independently of my own automation. **12 claim-bearing runs, 12 distinct content hashes, no
+duplicates.**
+
+**Headline numbers, recomputed from raw rows:**
+
+| | recomputed | ledger |
+|---|---|---|
+| `basket_bomb` / `window_knife` / `window_bomb` / `ticket_knife` | 42, 39, 40, 30 of 48, crit 32 | identical |
+| C5 main leg | 42/48 → 48/48, **p = 0.02647** | 0.0265 |
+| PR-34 contrast | 42/48 vs 19/48, **p = 1.64e-06** | 1.64e-06 |
+| `ticket_bomb` b16 / b1 / demoproc / unscoped | 45 / 45 / 45 / 15 | identical |
+
+**Provenance on the one artifact added since DR-16** (`p5_window_knife`): 192/192, `n_failed=0`,
+correct model, `intervention=None` and `knockout_liveness=None` — correct for a baseline arm.
+
+#### ⚠ My truncation check used the wrong predicate
+
+DR-16 concluded *"no decode, so no truncation surface"*. **This review tested it by file existence and
+found `gens.jsonl` in 12 of 12 runs** — apparently contradicting it. **They are 0 bytes, 0 lines**:
+`RunDir` creates the file, `--no-generate` never writes to it. **DR-16's conclusion holds; my test of
+it did not.** Existence is not evidence of decoding — **line count is.** For once a loose predicate
+erred toward *alarm* rather than reassurance, which is the direction that gets investigated.
+
+#### ⚠ My proximity window was invented; it could have been measured
+
+They probed every numeric guard constant in their repo — **8 of 9 pinned**, the ninth
+(`SMALL_DIVERGENCE`) pinned in **one direction only** because its fixture sat **at** the boundary. Their
+rule: *a threshold test whose fixture sits at the boundary pins one side only; draw fixtures from the
+**calibration range***. And the sting on their side — **the calibration data was written directly above
+the constant** and no test drew from it.
+
+**Mine had the same shape.** `CAUTION_WINDOW = 12` and an assertion `<= 40` were both **chosen by eye**.
+Measured, the actual figure→caveat distances where the pairing is **correct** are
+**0, 0, 1, 1, 1, 3, 3 — every one within 3 lines.** So 12 was **4×** and 40 **13×** the largest correct
+distance: *permissive by construction*.
+
+**Recalibrated to 6** (2× the observed maximum), with `CALIBRATION_DISTANCES` recorded **beside** the
+constant and the bounds derived from it rather than typed. Re-probed both directions:
+
+| window | 2 | 3 | **6** | 7 | 20 |
+|---|---|---|---|---|---|
+| | fail | fail | **pass** | pass | fail |
+
+**A narrow admissible band, both sides held by evidence** — where an hour ago the wide side was held by
+a number I had invented.
+
+#### Their pre-commit change
+
+They extended the shared hook to run **six guard test files** after `check_all` — **140 tests, 0.75 s**
+— because `check_all` runs guards but not the tests proving a guard can still **refuse**. **Verified on
+my tree before relying on it: exit 0, no friction.** The change is right and it closes exactly the gap
+R-135 recorded; **I would have been wrong to object to it on symmetry grounds**, since it touches a
+file neither of us edits and adds a fast check, where my restraint concerned a file they were actively
+extending.

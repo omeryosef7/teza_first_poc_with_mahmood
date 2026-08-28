@@ -43,7 +43,15 @@ CAUTIONED_FIGURES = [
 #: one-tick-old guard passing on the strength of the section that describes the caveat, and mine had
 #: the same defect: `POST-TREATMENT` appears once, in the corrections table, 40+ lines from anything.
 #: Distinctive phrasing (C-47) is necessary; proximity is the other half.
-CAUTION_WINDOW = 12
+#: CALIBRATED, not invented. Measured figure->caveat distances where the pairing is correct, over
+#: both deliverables: 0, 0, 1, 1, 1, 3, 3 — every correct placement is within 3 lines. 6 gives 2x
+#: headroom. The previous 12 was 4x the largest correct distance and the `<= 40` assertion 13x,
+#: both chosen by eye. V-88's rule from the concurrent session: a threshold whose fixture sits AT
+#: the boundary pins one side only, so draw fixtures from the CALIBRATION RANGE — and record the
+#: range beside the constant, since their SMALL_DIVERGENCE was mis-set with its own calibration
+#: data written directly above it.
+CAUTION_WINDOW = 6
+CALIBRATION_DISTANCES = (0, 0, 1, 1, 1, 3, 3)
 
 
 def _violations(text, window=CAUTION_WINDOW):
@@ -97,8 +105,26 @@ def test_the_shipped_window_is_not_effectively_infinite():
 
     This pins the SHIPPED value by asserting a case that passes wide and fails narrow.
     """
-    assert CAUTION_WINDOW <= 40, "the shipped window is too wide to mean proximity"
+    assert CAUTION_WINDOW <= 2 * max(CALIBRATION_DISTANCES), (
+        f"window {CAUTION_WINDOW} exceeds 2x the largest CORRECT figure-to-caveat distance "
+        f"({max(CALIBRATION_DISTANCES)}) — it is permissive by construction")
+    assert CAUTION_WINDOW > max(CALIBRATION_DISTANCES), (
+        "window is narrower than a correct placement already in the document — it would fire on "
+        "prose that is right")
     doc = ["the length-conditioned ASR is 0.31"] + ["filler"] * 30 + ["completion length is POST-TREATMENT"]
     text = "\n".join(doc)
     assert _violations(text, window=100000) == [], "sanity: a huge window should find no violation"
     assert _violations(text), "the SHIPPED window must flag a caveat 30 lines away"
+
+
+def test_the_window_admits_the_calibration_range_and_rejects_the_old_one():
+    """V-88: draw the fixture from the calibration range, not the threshold.
+
+    Every correct placement in the live deliverables is within 3 lines. A caveat at 3 must pass; one
+    at 12 — which the previous window admitted — must not.
+    """
+    def doc(gap):
+        return "\n".join(["the length-conditioned ASR is 0.31"] + ["filler"] * gap
+                          + ["completion length is POST-TREATMENT"])
+    assert not _violations(doc(max(CALIBRATION_DISTANCES))), "a correct placement must pass"
+    assert _violations(doc(12)), "the previous window's reach must now be rejected"
