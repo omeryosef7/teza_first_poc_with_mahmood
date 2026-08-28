@@ -14001,3 +14001,63 @@ their finding sat unaddressed in the same repo.
 *Reusable, and worth their having: **when comparing two caps, the rows that finished under the lower
 one are byte-identical across both runs and give you the judge's noise floor for free**, in the same
 table as the effect.*
+
+### 🏆 R-146 (01:00) — **Their gross/net diagnosis does not fit my numbers (mine were already gross), but their estimate is the better one and I am adopting it. Their dynamic-range check does not bite on C1 — and running it anyway surfaced that C1's three null sessions are all ONE BANK.**
+
+**1. Gross vs net, checked rather than accepted.** They read my 2.3-3.3% as a *net* figure. On
+byte-identical rows my cells contain **zero downward flips**, so mine were already **gross**:
+
+| arm | n identical | ASR up | down | **gross** |
+|---|---|---|---|---|
+| L14 | 30 | 1 | **0** | 1 (3.3%) |
+| L5 | 45 | 1 | **0** | 1 (2.2%) |
+| **pooled** | **75** | 2 | 0 | **2/75 = 2.7%** |
+
+**2. And the two estimates do not actually differ.** Mine 2/75, theirs 8/123 — **Fisher exact
+p = 0.324**. Exact Clopper-Pearson intervals **0.32-9.30%** and **2.85-12.41%**, overlapping and each
+containing the other's point estimate. Their 8 events beat my 2, so **6.5% is the working floor** and
+I am quoting theirs, not mine — but the reason is precision, not a correction to my arithmetic.
+
+**⚠ I nearly published the opposite.** My first pass used a normal approximation at k=2, returned
+"0.0-6.3%", and would have reported *their estimate lies outside my confidence interval* — a
+manufactured disagreement from an interval that is invalid at two events. The exact interval was
+validated against known Clopper-Pearson values (0/10 → 0.3085; 1/10 → 0.0025, 0.4450) before use.
+
+**3. Their pooling defect does not reach C1.** Their five populations had baselines from 3/96 to
+27/96, so three of them could not express the effect. C1's outcome is refusal, and **baseline refusal
+is near-zero everywhere**:
+
+| | range across 13 sessions |
+|---|---|
+| baseline refusals | **0 to 9** (of 80-160) |
+| **headroom** | **79 to 160 — effectively full in every session** |
+
+No session is floor-limited, so C1's pooled `+162` is not a dynamic-range artifact. Their check was
+worth running and it comes back clean.
+
+**4. But it found something else, which is why it was worth running.** Eight of thirteen sessions
+carry ≥10 rows (**+150 of +162**), and **three sessions are null with full headroom available**:
+
+| session | model | bank | Δrefusal | headroom used |
+|---|---|---|---|---|
+| `q15j` | Qwen3-14B | **`longpreQ14`** | **+0** | 0.0% |
+| `q16j` | Qwen3-14B | **`longpreQ14B`** | **−1** | −0.6% |
+| `p26j` | Qwen3-14B | **`longpreQ14B`** | **−1** | −1.3% |
+| `q1j` | Qwen3-14B | `boombness_prompt_bank` | +14 | 14.7% |
+| `q4bj` | Qwen3-14B | `d10` | +21 | 13.3% |
+
+**All three nulls are Qwen3 on `longpreQ14`/`longpreQ14B`; both Qwen3 sessions on other banks show
+the effect.** Resolved by completion-hash join to each arm's own `RUNMETA.argv`, not by tag. This is
+**bank-specific**, not noise and not model-specific — the analogue of their `basket_gun` null, but
+with an identifiable structure rather than a floor.
+
+**5. And that lands on C2 as direct support.** `longpreQ14B` is **R-64's bank** — where `demoproc`'s
+attack removal is best established (`p26j`: ASR **11 → 1** at a released cap). So on the very
+bank/model/arm where attack removal is strongest, **refusal restoration is exactly zero**. Same rows,
+same intervention: the attack goes and the refusal does not come back. That is C2's claim
+(*refusal restoration is not the route to attack removal*) demonstrated within a single population
+rather than inferred across them.
+
+**C1 is qualified accordingly:** its effect is present in 8/13 sessions and **absent on Qwen3 +
+`longpreQ14*` in 3/3**, with the headroom to have shown it. Recorded on the claim, not left in the
+pooled total.
