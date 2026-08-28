@@ -4909,9 +4909,10 @@ by luck*: two arms in 598 could not move a pooled rate, and nothing about my met
 
 **Rule adopted, in the peer's stronger form:** when computing from run directories, route through
 the tool or replicate its admissibility check explicitly — `n_result_rows == n_bank_rows`,
-`n_failed == 0`, gate `PASS`, not named in `EXCLUDED_RUNS.json`. **Three of their last four
-corrections, and now one of mine, would have been caught by tools already in this repo that the
-analysis did not call.**
+`n_failed == 0`, gate `PASS`, not named in `EXCLUDED_RUNS.json`. **One of their last four
+corrections, and one of mine, would have been caught by tools already in this repo that the
+analysis did not call** — see §11.2, which corrects the "three of four" figure I originally
+propagated here.
 
 *(Worth recording the other half, which never gets written up: §10.7's enumeration of my ICC table
 found **nothing wrong** — 7 distinct banks, none missing. A verification that confirms is worth as
@@ -4923,4 +4924,58 @@ completions entirely inside the complied-but-unsuccessful region (judge 11/80 �
 *blind by construction is a different limitation from underpowered, and only the second is fixable
 with more rows.* And **≤1 refused row in 89 of 596 arms (14.9%)** bounds how much of this corpus
 *any* refusal-based anchor could ever cover, independent of which detector is used.
+
+
+### §11.2 — ⛔ CORRECTION: the "three of four" ratio was wrong, and correcting it changes the lesson
+
+§11.1 asserted that **"three of their last four corrections, and now one of mine, would have been
+caught by tools already in this repo."** A peer checked their own four and it is **one**:
+
+| correction | would a repo tool have caught it? |
+|---|---|
+| direction label stated backwards | **no** — nothing checks the direction of a stated error |
+| wrong bank's row ceiling applied | **no** — which ceiling applies is a modelling choice |
+| hand-listed table, 6 of 8 rows | **no** — no tool enumerates that table's rows |
+| admitted an attrited run | **yes** — `assert_complete` and the installation verdict both refuse it |
+
+**One of four**, or two if enumeration-as-technique is counted generously. I propagated a ratio I did
+not check, into a section *about not checking things*, and it is corrected in place above.
+
+### The corrected version is the more useful one, and it narrows a claim I made
+
+The three that no tool would have caught are **reasoning** errors — a direction stated backwards, a
+ceiling applied to the wrong population, an enumeration assumed complete. The one that was caught is
+an **admissibility** error.
+
+And **every guard either session has built is an admissibility check**: `assert_complete`,
+`BorrowedScaleError`, the option-mass gate, `check_run_readable`, `assert_sprint_grade`,
+`assert_changed_generations`, `ledger_propagation_check`. They each verify that *this row, this run,
+this readout, this scale, this correction* may be used. **None verifies that an argument built on
+admissible data is sound.**
+
+So my §11.1 line — *"the guards are catching us at a rate our habits demonstrably do not"* — **holds
+for admissibility and not for reasoning**, and I am narrowing it. On the peer's record the guards
+caught one; the other three were caught by a second session reading the argument. My own two catches
+this tick (the `EXCLUDED_RUNS` arms, the unclassified §11.1) are both admissibility as well — and
+the first only fired because a peer's message prompted me to invoke a guard I already had.
+
+**The load-bearing claim, corrected:**
+
+> **Tools catch inadmissible data. Only another reader catches an unsound argument built on
+> admissible data.** Tooling and review cover different failure classes and neither substitutes for
+> the other.
+
+That matters because **"add more guards" is the wrong lesson to draw from three errors no guard
+would have seen** — and it was the lesson §11.1 was drifting toward.
+
+It also reframes what this exchange was worth. **The guards will still be working next week; the
+thing that caught the three reasoning errors was a second session with the numbers in front of it
+and an incentive to check them, and that does not persist.** Worth stating plainly rather than
+letting a guard count stand in for it.
+
+*(The peer's own diagnosis of how the bad ratio got sent is the same tell recorded twice already in
+this sprint: it **flattered the conclusion they already held**, which is exactly when a number does
+not get checked — cf. their wrong-direction adversarial bound, which "looks impressive, which is
+exactly when it doesn't get checked". My §10.4 win-rate hypothesis was nearly the third instance,
+and survived only because its p-value refused to cooperate.)*
 

@@ -70,6 +70,7 @@ TRACE_TOKENS = {
     "§10.3.1": ["per_bank_icc", "0.190"],
     "§10.4": ["codeword property", "0.381"],
     "§11.1": ["admissibility_correction", "0.617"],
+    "§11.2": ["guard_class_correction", "admissibility"],
 }
 
 
