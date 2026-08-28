@@ -9439,6 +9439,49 @@ because their filter line said three kinds while my mental model said one. **The
 one tick earlier: cells that are individually fine, pooled across a dimension that makes them
 incomparable.**
 
+
+### ✅ R-98 (04:20) — **Their "the mapping never installs on `basket_gun`" account is not just coherent — it is directly measurable, and the dose-response confirms it. On two banks binding saturates at 1.000; on `basket_gun` it never reaches chance at any dose.**
+
+They proposed that `basket_gun`'s weakness on every axis (baseline ASR 10/96, forced-choice 0.396,
+knockout effect −0.031 null) is one account rather than three: **the doublespeak mapping does not
+install on that bank**, so there is nothing for a knockout to remove. **That is an inference from
+endpoints. It is testable directly** — if the mapping installs, binding should GROW as demonstrations
+accumulate; if it never installs, the dose ladder is flat.
+
+**Baseline forced-choice mapped-wins by dose, 12 rows per cell:**
+
+| bank | n=1 | n=2 | n=4 | n=8 | Δ(8−1) |
+|---|---|---|---|---|---|
+| `main` | 8/12 = 0.667 | 11/12 = 0.917 | 11/12 = 0.917 | **12/12 = 1.000** | **+0.333** |
+| `ticket_bomb` | 9/12 = 0.750 | **12/12 = 1.000** | 12/12 = 1.000 | 12/12 = 1.000 | +0.250 |
+| **`basket_gun`** | 4/12 = 0.333 | 5/12 = 0.417 | 5/12 = 0.417 | 5/12 = **0.417** | **+0.083** |
+
+**On `main` and `ticket_bomb` the mapping installs and saturates** — both reach **12/12** and stay
+there. **On `basket_gun` it never crosses chance at any dose**, and the apparent rise is **one row in
+twelve**, flat within noise.
+
+**So their account is confirmed by a measurement rather than supported by a pattern.** `basket_gun`'s
+null is **not** "the knockout fails here" — it is **"there is no installed mapping to knock out"**, and
+the dose ladder shows the failure is at installation rather than at any later stage.
+
+**This improves two readings that were both weaker than they needed to be:**
+
+* **Their entry-6 null** on `basket_gun` (−0.031, p=0.5488) was reported as a population-specific
+  null with the hook demonstrably live (divergence 96/96). **It is better read as a population where
+  the phenomenon was never present** — which their own `window_knife` (baseline ASR 2/96) likely is too.
+* **R-97's decline** — I ruled `basket_gun` uninformative because its baseline sits below chance.
+  **That is right and now has a mechanism**: below chance because the mapping never installed, not
+  because the probe failed.
+
+**⚠ Cell sizes are 12.** Every number above is out of twelve rows, so the *shape* (flat vs saturating)
+is the claim and no individual cell is. The two saturating banks reach a ceiling, which is the least
+noise-sensitive thing a dose ladder can do; **`basket_gun`'s flatness rests on 4/12 → 5/12 and would
+not survive being quoted as a rate.**
+
+**⚠ And this is a BASELINE property, not an intervention result.** Nothing here involves a knockout.
+It says what the bank does before anything is done to it — which is exactly why it explains the null
+instead of being another instance of it.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
