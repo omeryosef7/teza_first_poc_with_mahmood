@@ -138,7 +138,7 @@
   {
    "claim": "(2) Demonstration-retrieval knockout suppresses the doublespeak attack \u2014 96 down / 18 up over 8 populations",
    "status_proposed_by_audit": "KEEP_NARROWED",
-   "status_after_adversarial_verification": "NEEDS_RERUN",
+   "status_after_adversarial_verification": "KEEP_NARROWED",
    "status_changed_by_verification": true,
    "verifier_refuted_the_reasoning": true,
    "ambiguity_resolution_note": null,
@@ -194,7 +194,8 @@
      "demo_processing_only": "45/48, option mass 0.5201 -- BINDING FULLY PRESERVED",
      "comprehension_usage": "baseline 11/48, legacy 3/48, demoproc 17/48 (scoped knockout RAISES the coded reading)",
      "verdict": "binding survival is SCOPE-dependent, not bank-dependent. V-33 was right that I over-generalised from one population but wrong about the axis: legacy_all_query destroys comprehension on BOTH banks, demo_processing_only preserves it on both."
-    }
+    },
+    "FINAL": "rerun COMPLETE at cap 640, all three planned populations, pinned, arms paired in one invocation. main 22/96->8/96 (p=0.0125) and ticket_bomb 27/96->2/96 (p~0) CONFIRM; basket_gun 10/96->7/96 (p=0.5488, MDE 0.094) is null WITH divergence 96/96, and V-48 explains it: the gun CONCEPT never installs, so there was nothing to remove. The pooled 96-down/18-up claim is retired in favour of per-population reporting. Scope: all arms are knockout_scope=legacy_all_query, the UNSCOPED mask."
    }
   },
   {
@@ -372,7 +373,7 @@
   {
    "claim": "(4) Binding survival / comprehension controls: the codeword\u2192concept mapping SURVIVES the intervention that kills the attack \u2014 representation \u2260 behaviour.",
    "status_proposed_by_audit": "KEEP_NARROWED",
-   "status_after_adversarial_verification": "NEEDS_RERUN",
+   "status_after_adversarial_verification": "KEEP_NARROWED",
    "status_changed_by_verification": true,
    "verifier_refuted_the_reasoning": true,
    "ambiguity_resolution_note": null,
@@ -401,7 +402,10 @@
      "verifier_said": "does not exist / mis-cited",
      "exists_on_disk": true
     }
-   ]
+   ],
+   "SPRINT_UPDATE_2026-08-28": {
+    "FINAL": "measured directly with forward-only probes. demo_processing_only PRESERVES binding (ticket_bomb 45/48 -> 45/48, mass 0.5534 -> 0.5201) while removing 22 of 30 attacks (p=5.9e-05). legacy_all_query DESTROYS it on ticket_bomb (45/48 -> 15/48) and PRESERVES it on main (42/48 -> 41/48), so the binding effect is bank-dependent for the unscoped mask and bank-stable for the scoped one. The refusal signature separates the scopes on 2/2 banks. Why legacy differs by bank is UNEXPLAINED and left so."
+   }
   },
   {
    "claim": "(5) GCG objective viability \u2014 a Boombness-maximizing (or probe-margin, or layer-profile) attack objective was ever justified.",

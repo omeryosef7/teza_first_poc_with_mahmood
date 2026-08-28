@@ -3271,3 +3271,78 @@ that, when pushed, breaks generation instead of steering behaviour.
 justified") stays **RETRACT**, now with a direct non-degenerate-controllability test behind it rather
 than only the older steering evidence. Ledger entry 4 moves **NEEDS RERUN → RETRACT**: steering is
 not causal in the required sense, measured at a cap that does not bind.
+
+---
+
+# §9 — FINAL SUMMARY (deliverable 12)
+
+**Ledger: 7 KEEP-NARROWED · 3 KEEP · 4 RETRACT · 0 NEEDS-RERUN · 0 OPEN.** Every entry that entered
+the sprint needing a rerun has had one.
+
+## §10 — the brief's seven minimum success criteria, answered
+
+| # | question | answer |
+|---|---|---|
+| **1** | Is there a measurable token-level boombness signal at codeword tokens? | **YES.** Reproducible directions (split-half cos 0.98–0.996), and the projection predicts ASR at ρ ≈ +0.27–0.30 (n=288, cross-fitted, within-bank on all 3 banks). |
+| **2** | Does it grow across layers / demonstrations / occurrences? | **YES, with a caveat.** Balanced within `core2x2`+plain, `d_surface\|L8` rises monotonically with `n_examples` (ρ=+0.72). **But the logit-lens readout on the same tokens FALLS (−0.45)** — "boombness" is not one quantity. |
+| **3** | Is prompt-level separable from token-level? | **YES.** ρ = 0.287 at L12 — ~8 % shared rank variance. They are two objects, measured. |
+| **4** | Does either predict ASR beyond `n_examples`/refusal/length/domain? | **YES on the direct controls** (positive within every dose stratum; not norm, not length, not refusal, `d_context` opposite-signed). **But NOT pre-registered**, and **G2 does not reproduce**, so this is exploratory. |
+| **5** | Can aggressive patching make the codeword more bomb-like *behaviourally*? | **NO.** §3: the only arm that raises ASR is degenerate on **92/96** rows; a matched **random** direction suppresses as well as `−d_surface`. |
+| **6** | Can surgical removal lower ASR without destroying binding? | **YES — for the SCOPED knockout.** `demo_processing_only` removes 22/30 attacks (p=5.9e-05) with binding **unchanged at 45/48**. The unscoped mask does it too but destroys binding on one bank of two. |
+| **7** | Is any candidate objective justified for GCG/MAC? | **NO.** Stated plainly below. |
+
+## The answer to question 7
+
+> **No objective should be built.**
+
+`d_surface` is **predictive but not controllable**. §7 established the correlation; §3 established
+that pushing along it yields runaway text rather than more attack, and pushing against it suppresses
+no better than noise. **An optimiser needs controllability, and the direct test of it failed.**
+
+## What survives for research
+
+1. **The demonstration-retrieval pathway is causal, and scoping matters.** `demo_processing_only`
+   removes most of the attack while leaving the mapping intact and reportable (§5.6, §5.5). This is
+   the sprint's best result and the one to build on.
+2. **Binding is necessary but not sufficient** — measured *within* banks, immune to the concept
+   confound (§7.3). Non-binding families attack at 0.000–0.083; binding families at 0.158–0.300.
+3. **The refusal channel replicates almost exactly** at a non-binding cap: C +0.2020 vs +0.2061,
+   D +0.2788 vs +0.2869 (§0.15).
+4. **Removing `d_surface` RAISES ASR** (+0.3229, p=2e-06) — opposite to the original hypothesis,
+   confirmed at a cap that does not bind (§0.14).
+5. **ASR is a property of the harm CONCEPT, not the codeword** — ~an order of magnitude (§5.11), and
+   not mediated by installation (§5.12).
+
+## What must be retracted or narrowed
+
+* **RETRACT:** the GCG objective (entry 14); `d_surface` steering as causal (entry 4); G2's
+  prompt-level→ASR claim; the "truncation caveat discharged" meta-claim.
+* **NARROWED:** entry 6's pooled "96 down / 18 up" → per-population, 2 of 3, unscoped mask only.
+* **WITHDRAWN as a headline:** `window_knife`'s binding-without-attack (§5.9) — real arithmetic,
+  mundane explanation.
+* **`ticket_knife` is UNRESOLVABLE** with this bank at any usable n (§5.15).
+
+## The strongest negative result
+
+**§3.** Both signs of `d_surface` and a matched random direction all move ASR; the only one that
+raises it does so by breaking generation on 96 % of rows. This is a *direct, non-degenerate
+controllability test* — the thing the previous sprint's G4 retraction inferred, now measured at a
+non-binding cap with a matched control.
+
+## The best publishable story
+
+**"A retrieval pathway you can cut without breaking comprehension — and a direction you can read but
+cannot steer."** The scoped knockout (§5.6) and the controllability failure (§3) are the same paper:
+the mechanism is in the *demonstration-retrieval pathway*, not in a linear direction at the codeword
+token, and the sprint has a clean positive and a clean negative to say so.
+
+## What should be done next
+
+1. **Do not build the GCG objective.** (Gate closed on prior grounds.)
+2. **Extend `demo_processing_only`** — one model, one bank, n=96. It needs a second model and a
+   pre-registered replication.
+3. **Resolve the G2 non-reproduction** (§7.2) before any predictive claim is published.
+4. **Build a larger forced-choice probe population.** Three separate limits this sprint traced to
+   probe coverage (§5.15, §6.3, C-24). 144 rows would resolve what 48 cannot.
+5. **A judge-independent success measure.** Every concept-level result here is entangled with
+   StrongREJECT's scoring (§5.12).
