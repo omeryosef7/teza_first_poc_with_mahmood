@@ -12722,3 +12722,32 @@ And their number is the one that matters: **38 domains gives `ticket_knife` 38/0
 rows against the 132 needed.** **Even the merged set does not resolve the target cell.** The domain
 count was never the only shortfall — it was **the shortfall we could see**, and closing it leaves the
 cell short by 13.
+
+### ⛔ C-51 (19:05) — **"Stage explicit paths only" does not bound what a commit contains when another session edits the same path. Demonstrated twice, in both files, within an hour.**
+
+The user's standing rule is *"stage explicit paths only, never `git add -A`"*, and I have followed it
+every commit this sprint. **It does not do what it is for.**
+
+| | swept into | mechanism |
+|---|---|---|
+| my nine domains in `demo_pools.py` | **their V-91 (`ae461390`)** | they staged that path; my uncommitted edits were in the file |
+| **my R-136 entry** in my own plan md | **their V-93 (`3476cdf5`)** | same |
+
+**`git add <path>` stages the file's current contents, not the author's changes.** In a shared working
+tree with two live sessions, an explicit path bounds *which files* a commit touches and **not whose
+work it carries** — which is the property the rule exists to provide.
+
+**Verified symmetrically rather than assuming the traffic ran one way.** My four most recent commits
+(`52dc8255`, `4b62c179`, `b684b7b9`, `38deb966`) touch **only** my plan md, my summary and my own test
+file; **zero** of their `V-9x` lines appear in any diff of mine. The asymmetry is real and has a cause:
+**they commit far more often, so their window to catch my in-progress edits is much wider than mine to
+catch theirs.** My C-49 commit is the proof — I staged `demo_pools.py` explicitly and it contributed
+**nothing**, because V-91 had already taken those exact lines minutes earlier.
+
+**Nothing is lost and no history needs rewriting**: both sweeps are recorded, mine in their V-92 and
+this entry. **What needed recording is that the control was ineffective**, because the next person to
+rely on "I staged explicit paths, so this commit is mine" will be wrong in the same way.
+
+**The workable control in this configuration is temporal, not path-based** — commit promptly after
+editing a shared file, so the window in which another session can sweep it is short. *Which is the
+cadence finding again, in a third place.*
