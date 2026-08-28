@@ -5638,3 +5638,52 @@ their own tick produced visibly odd output; the one that survived a tick produce
 "four caveats, four present". That is the same selection effect as my "14 MISSING" being caught by
 implausibility, operating on instruments instead of findings.)*
 
+
+### §11.16 — Every guard constant probed against a vacuous value: 8 of 9 pinned, and the ninth was pinned only downward
+
+A peer generalised §11.15's `CAUTION_WINDOW` lapse better than I had: **a lesson learned about a
+constant lives in the test file where you learned it, and nothing carries it to the next constant.**
+That is a *different* failure from the cadence one — not attention lapsing under pressure, but
+**knowledge that is structurally local to where it was acquired.**
+
+It is also directly testable, so rather than accept it I probed **every** numeric guard constant in
+this repo by mutating it to a vacuous value and running its own tests:
+
+| constant | vacuous value | result |
+|---|---|---|
+| `asr_protocol.CAP_BIND_MAX` | 1.0 | pinned |
+| `asr_protocol.PRIMARY_THRESHOLD` | 0.0 | pinned |
+| `asr_protocol.SECONDARY_THRESHOLD` | 0.0 | pinned |
+| `cap_natural_experiment.PRIMARY_THRESHOLD` | 0.0 | pinned |
+| `cited_artifact_check.MIN_EXPECTED` | 0 | pinned |
+| `cited_artifact_check.CAUTION_WINDOW` | 100000 | pinned *(§11.15)* |
+| `ledger_propagation_check.MIN_EXPECTED` | 0 | pinned |
+| `intervention_liveness.ZERO_DIVERGENCE` | 1.0 | pinned |
+| **`intervention_liveness.SMALL_DIVERGENCE`** | **1.0** | **UNPINNED** |
+
+### The ninth was pinned in one direction only, and the reason is a fixture at the boundary
+
+`SMALL_DIVERGENCE = 0.10` sets the warning band below which an arm is flagged `SMALL_BUT_REAL`.
+Probed in three directions: **0.0 fails, 0.5 fails, 1.0 PASSES.**
+
+The cause is that the existing OK fixture sits at divergence **exactly 1.0**, and `1.0 < 1.0` is
+false — so the "OK" branch survives however wide the band becomes. **The module's own docstring
+records the range the constant was calibrated on — sixteen legitimate arms spanning 0.8187–1.0000 —
+and no test used a value from it.** At `SMALL_DIVERGENCE = 1.0` a real arm at 0.82 is flagged
+`SMALL_BUT_REAL`, and nothing would have caught it.
+
+Fixed with a test asserting a **measured-range** arm (0.8187) is `OK`, plus one pinning the shipped
+constant to a band that is vacuous in neither direction. All three mutants now fail.
+
+**The generalisable form is narrower than "test your constants":** a threshold test whose fixture
+sits **at the boundary** pins one side only. The measured range the constant was calibrated on is the
+place to draw fixtures from, and in this case that range was written in the docstring directly above
+the constant and still not used.
+
+*(A peer's own instance the same tick, worth recording for where it locates the division of labour:
+they committed a correction without its deliverable row and their ledger guard failed on the next
+run — the pre-commit hook runs `check_all` only, so their pytest audits do not gate commits. **Three
+times today a guard of theirs fired on their own work, against zero times a reader caught something
+a guard could have.** That is the cleanest evidence either session has for where the two mechanisms
+divide.)*
+

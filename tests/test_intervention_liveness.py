@@ -119,3 +119,27 @@ def test_whitespace_difference_counts_as_a_change(tmp_path):
     c = _mk(tmp_path, "ctrl", ["a b"] * 4)
     a = _mk(tmp_path, "arm", ["a  b"] * 4)
     assert il.generation_divergence(a, c, "ws")["frac_differing"] == 1.0
+
+
+def test_a_REAL_arm_in_the_measured_range_is_OK_not_SMALL_BUT_REAL():
+    """Pins the UPPER side of SMALL_DIVERGENCE, which no fixture covered.
+
+    Probing every guard constant in this repo against a vacuous value (a peer's generalisation:
+    "a lesson about a constant lives in the test file where you learned it") found SMALL_DIVERGENCE
+    only partially pinned -- 0.0 and 0.5 failed, but 1.0 PASSED, because the existing OK fixture
+    sits at divergence exactly 1.0 and 1.0 is not < 1.0.
+
+    The module's own docstring records the measured range for legitimate arms: sixteen span
+    0.8187-1.0000. So an arm at 0.82 is the case that distinguishes a sane threshold from a vacuous
+    one, and nothing tested it.
+    """
+    assert il.diagnose(0.8187, fired=True)["verdict"] == "OK"
+    assert il.diagnose(0.8187, fired=True)["refuse"] is False
+    assert il.diagnose(0.90, fired=True)["verdict"] == "OK"
+
+
+def test_the_shipped_SMALL_DIVERGENCE_leaves_a_real_warning_band():
+    """Not vacuous in either direction: it must warn on tiny arms and not on legitimate ones."""
+    assert 0.0 < il.SMALL_DIVERGENCE < 0.5, (
+        f"SMALL_DIVERGENCE={il.SMALL_DIVERGENCE} is vacuous: at 0 the warning band disappears, and "
+        "at 0.5+ it swallows the measured 0.8187-1.0000 range of legitimate arms")
