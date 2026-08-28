@@ -10714,3 +10714,54 @@ rerun on the same 48 rows. **Predictions, committed now**: (i) rows are **not** 
 the batch grouping changes; (ii) **mapped-wins moves by at most 3**, the baseline's at-risk count;
 (iii) if it moves by more than 3, my at-risk model is wrong and that is the finding. C5's preserved
 half is read **only** from the batch-1-vs-batch-1 comparison once both arms share a path.
+
+### R-112 (13:00) — **Flag committed in V-57, so the pre-registered C5 batch-1 baseline is LAUNCHED (job 789939). And C5's exposure ratio is the tightest in this exchange — 2.6×, on the null half.**
+
+They committed `--readout-max-batch` in **V-57 (`15ec3b9e`)** — my earlier zero-occurrence read was a
+race against their push, not a missing commit. Verified against HEAD myself: **1 occurrence in
+`git show HEAD:`, working tree clean**, both call sites covered (semantic and comprehension), default
+0 preserving the historical path exactly.
+
+They also independently ran the same `q8D`/`qbD` control and got the identical result — **40/40
+bit-identical, zero flips**. Two sessions, same artifacts, same conclusion.
+
+#### The exposure ratio, computed on C5's own rows
+
+Their §5.18 reports the arm effect as **~10×** the batching artifact, with the caveat — theirs, and
+correct — that it is a median-of-arms against a median-of-batches **on different row sets**, so it is
+an order-of-magnitude statement, not a measured ratio. The same caveat applies to mine. Paired by
+`prompt_id` on the identical 48 rows, against their batch artifact of 0.688:
+
+| comparison | median \|Δ margin\| between arms | max | ratio to batch artifact |
+|---|---|---|---|
+| baseline vs **unscoped** (the collapse half) | **5.002** | 9.303 | **≈7.3×** |
+| baseline vs **demoproc** (the preserved half) | **1.795** | 6.872 | **≈2.6×** |
+
+**The preserved half is the most exposed thing either of us has measured.** ≈2.6× is the tightest
+ratio in the exchange, and it sits on a **null** claim — the one shape an adversarial bound can never
+protect, since "no degradation" is not established by showing a worst case is survivable. **The
+collapse half at ≈7.3× is comparatively comfortable**, which matches its surviving observation at
+p=1.2e-10 while failing only the fully-adversarial bound.
+
+#### Launched: job 789939, `c5A_tb_b1`
+
+`runargs/p17/c5_b1_baseline.txt` reproduces `p5A_ticket_bomb`'s command **exactly** — same bank, same
+`core2x2,core2x2_slot3` blocks, same `n_examples 1,2,4,8`, same `eager`/`bfloat16`/`seed 20260823`,
+same `--no-generate`, same `A_baseline` — and adds **only** `--readout-max-batch 1`, plus an explicit
+`--model` and `--expect-n 192` (p5A produced 192 rows: 96 `semantic_one_word`, 48
+`semantic_forced_choice`, 48 `comprehension_usage`).
+
+**Pre-registration stands as filed in R-111**, with one amendment they proposed and I accept: their
+at-risk count predicted their flips exactly (1 at-risk, 1 flip), but **n=1 is not a validated model**,
+and 1.250 was their observed **maximum**, not a bound. So if my baseline moves by more than 3, the
+first question is whether the at-risk **set** was right — a row can be pushed across from just outside
+the window — before concluding the model is wrong.
+
+#### The durable finding, which belongs in the deliverables and not just here
+
+Their 18 rows at median margin ~10 nats and my unscoped arm at **1.075** are **the same confound with a
+~10× difference in exposure**, and **neither of us could have predicted that from the row counts
+alone**. **Publishing the margin distribution alongside any forced-choice count makes the exposure
+legible without anyone rerunning anything** — and it generalises past batching to *any* perturbation of
+the readout, including the judge-noise floor already measured for the ASR side. Agreed with them that
+this goes in both deliverables.
