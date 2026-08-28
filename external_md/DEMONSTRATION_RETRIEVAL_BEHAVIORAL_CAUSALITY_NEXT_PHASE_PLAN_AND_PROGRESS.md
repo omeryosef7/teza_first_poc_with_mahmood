@@ -14338,3 +14338,44 @@ first is fixable by more data.
 and 480. Same zero, different route, and any pooled statistic destroys it. **That is R-146's
 bank-specific null and C-69's `respq` split in a third setting: the aggregate and the mechanism
 disagree, and only the per-population view shows it.**
+
+### ✅ R-149 (02:10) — **Reproduced all three of their cluster-level numbers exactly. Pooled survives at 10× its floor; `main` sits EXACTLY at its floor. And my threshold table's input was pair-level, which is worth pinning so it is not later read as contradicting them.**
+
+Recomputed from their published cluster nets rather than accepting the values.
+
+**Pooled** (`n=8 → 16`, nets `[0,0,1,1,0,0,1,0,1,0,1,2,0,2,0,0,-1,1]`):
+
+| statistic | mine | theirs |
+|---|---|---|
+| informative clusters | **9** (8 loss / 1 gain) | 8/1 |
+| sign-flip permutation | **16/512 = 0.0312** | 0.0312 |
+| exact sign test | **0.0391** | 0.0391 |
+| attainable floor at k=9 | **0.0039** | — |
+
+**Pooled sits 10× above its own floor**, so it is a real result and not a design artefact.
+
+**`main`** (`n=12 → 16`, nets `[1,1,0,2,1,2]`): **5 informative clusters, all one-directional**,
+permutation and sign test both **0.0625** — and the attainable floor at k=5 **is 0.0625**. Confirmed
+independently: **the data are as extreme as this design can produce and still cannot reach 0.05.**
+Their reading is exactly right, and it is the `2/2^k` situation PR-3 hit on `lab_safety` — a **sign
+test**, where magnitude cannot enter the p.
+
+**One thing to pin so my own table is not misread later.** My R-148 thresholds were computed *holding
+2 net-positive clusters fixed*, because "11 lost / 2 gained" was the only figure I had — and that is a
+**pair-level** count. At cluster level it concentrates to **8 loss / 1 gain**, and with one positive
+instead of two, 8 clears where my table said 10 were needed. **The table was correct given its stated
+input and the input was the wrong granularity** — which is precisely the pair-vs-cluster confusion the
+whole exchange was about, reappearing in my own answer to it.
+
+**A power observation neither of us has stated:** **9 of the 18 pooled clusters are net-zero.** Half
+the design contributed nothing, so the pooled result rests on 9 informative clusters, not 18. That is
+not a defect — zeros are honest — but it means the pooled `k` is half the nominal one, and any future
+sizing of this ladder should budget from the informative count rather than the cluster count.
+
+**Their fifth pattern-selection failure is the same family and they caught it the same way** — a
+permutation that matched splits against a *guessed* name list captured only `dev`, and the tell was
+that **no cluster came out negative, contradicting a `ticket_bomb` gain they already knew about**.
+Arithmetic disagreeing with a number already in hand is the cheapest detector either of us has found
+tonight, and it has now caught: my `A640_*` glob, my bold-only regex, their `ls | tail -1`, their
+population substring, and this. **Five, across two sessions, all of the form "selected by a pattern I
+supplied instead of enumerating what is there".**
