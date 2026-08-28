@@ -5237,3 +5237,49 @@ Every other correction today was found by a peer reading an argument, or by a gu
 reader asks, because the guard now passes and the argument now reads correctly. **A bug's blast
 radius is a third failure class, and the only trigger for checking it is the fix itself.**
 
+
+### §11.7.2 — ⛔ AMENDMENT to §11.1's rule: "route through the tool" is wrong when the tool refuses on an AGGREGATE
+
+§11.1 recorded the rule *"route through the tool or replicate its admissibility check explicitly"*,
+prompted by my ad-hoc loop admitting excluded runs. A peer applied §11.7's blast-radius habit to
+their own tools and found that rule would have **destroyed** a result of theirs.
+
+Their installation-verdict tool scores **forced-choice** rows but refuses on `option_mass_gate` — a
+**run-level string aggregating every query kind**:
+
+| bank | run-level gate | forced-choice mass |
+|---|---|---|
+| `p5A_main` | NOT REPORTABLE *(one_word)* | **0.5414** — fine |
+| `p5_window_bomb` | NOT REPORTABLE *(one_word)* | **0.5156** — fine |
+| `p5_window_knife` | NOT REPORTABLE *(one_word)* | **0.7783** — fine |
+
+**Three of seven banks would have been refused over a readout the verdict never reads.** Had they
+followed my rule for §10.6's table, the tool would have deleted three of its seven rows.
+**Hand-computing was right, for a reason neither of us had.**
+
+**Amended rule:** *replicate the check **scoped to the analysis**; do not trust a tool's aggregate.*
+A tool's refusal may be about a readout, a query kind or a population your analysis does not use, and
+"the tool refused it" is not by itself a reason to drop data.
+
+### My tools were checked against this and are clean — recorded because a confirming check counts
+
+`readout_reportability` returns **`by_readout`** plus an **`unreportable` list naming which
+readouts**, and its own NOTE states *"a non-empty `unreportable` list does NOT mean the run failed"*
+— precisely the granularity whose absence caused their defect. Neither `margin_exposure` nor
+`cited_artifact_check` reads the run-level gate at all (`grep` count: 0 and 0), and
+`assert_sprint_grade` gates on judge-pinning and cap-binding, not on mass.
+
+### Their blast radius, and the fix confirming the table it could have deleted
+
+Applying the §11.7.1 habit: only two runs were ever published as refused by that tool, both still
+refuse under the fix — now on `n_failed` 92 and 22 rather than the gate — and all four headline
+verdicts are byte-identical. **No published number moves.** The three false-refused banks were never
+run through it, and their hand-computed values now **reproduce exactly** through the fixed tool,
+which converts the fix into an independent confirmation of §10.6's table.
+
+*(Two more defects surfaced inside their fix: the tool had **no query-kind filter at all** and worked
+only because every run pointed at it was forced-choice-only — on a mixed run it would pool readouts
+whose mass regimes differ **40×** — and the fix itself introduced a **false refusal**, dropping
+fixture rows carrying no `query_kind`, caught by six pre-existing tests. **A false refusal introduced
+by the fix for a false refusal**, which makes the defect-inside-its-own-check count **five** today.)*
+
