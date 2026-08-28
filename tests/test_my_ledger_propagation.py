@@ -141,3 +141,44 @@ def test_it_finds_the_real_corrections_and_not_zero_of_them():
     assert len(found_deliv) >= 20, f"only found {len(found_deliv)} rows in the deliverable"
     assert 39 in found_plan and 39 in found_deliv       # the DR-16 gap, now closed
     assert 32 in found_plan and 33 in found_plan        # the DR-14 gaps
+
+
+EARLIER_REPORT = os.path.join(ROOT, "reports", "boombness_objective_sprint_report.md")
+
+
+def test_every_exemption_claiming_the_earlier_report_is_actually_there():
+    """C-46: `EXEMPT[3]` asserted its sub-corrections "propagated individually" and they had not.
+
+    A reason string is exactly as unauditable as that one was, so every reason making a CHECKABLE
+    claim is now checked. This is the structural fix, not a re-verification: re-reading the table
+    once would leave the next reason equally unaudited.
+    """
+    text = open(EARLIER_REPORT, encoding="utf-8").read()
+    wrong = []
+    for cid, reason in sorted(EXEMPT.items()):
+        if "boombness_objective_sprint_report" not in reason:
+            continue
+        if not re.search(rf"\bC-{cid}\b", text):
+            wrong.append(cid)
+    assert not wrong, (
+        f"EXEMPT reasons claim these are in the earlier report and they are NOT: "
+        f"{['C-%d' % c for c in wrong]}")
+
+
+def test_the_earlier_report_check_can_fail():
+    """Against a deliberately violating input — the reason must not pass by matching nothing."""
+    assert not re.search(r"\bC-9999\b", open(EARLIER_REPORT, encoding="utf-8").read())
+
+
+def test_prose_only_exemptions_are_declared_as_such():
+    """The reasons that CANNOT be mechanised are named, so the unaudited set is explicit.
+
+    Eight of seventeen make claims no test can check ("operational", "superseded", "honoured in
+    C13's construction"). Recording which they are is the honest half: the suite verifies nine and
+    is silent about eight, and silence about which eight is how EXEMPT[3] survived.
+    """
+    mechanised = {c for c, r in EXEMPT.items() if "boombness_objective_sprint_report" in r}
+    prose_only = set(EXEMPT) - mechanised
+    assert prose_only == {2, 3, 4, 7, 10, 15, 16, 17}, (
+        f"the prose-only set changed to {sorted(prose_only)} — update this list deliberately, "
+        f"so the unauditable reasons stay enumerated rather than growing silently")

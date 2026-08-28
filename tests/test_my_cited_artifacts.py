@@ -151,3 +151,54 @@ def test_it_finds_the_real_citations_and_not_zero_of_them():
     assert len(ids) >= 40, f"only extracted {len(ids)} run ids from the plan"
     assert "c5A_tb_b1_20260828_125009_2294147" in ids      # the C5 batch-1 rerun
     assert "q5A_lpQ14B_20260828_083233_2269491" in ids     # the refused-attrited citation
+
+
+#: Reason strings that name a `failure_reasons` key the run must actually carry. The rest of the
+#: reason is prose; this is the checkable half, and checking it is what EXEMPT[3] taught (C-46).
+REASON_KEYS = {
+    "bridge_20260825_101613_3117657": "family_missing_one_side",
+    "qbridge_20260825_104155_3190213": "family_missing_one_side",
+    "REPRO_R16_20260826_051035_1020533": "family_missing_one_side",
+    "five_unmeasured_20260828_135856_1747482": "borrowed_scale",
+}
+
+#: Reason strings that quote an n_failed/n_total. Asserted against the artifact, not remembered.
+REASON_COUNTS = {
+    "q5A_lpQ14B_20260828_083233_2269491": (92, 68, 160),
+    "q9A_lpQ14B_fc_20260828_104610_2283895": (22, 18, 40),
+}
+
+
+def test_classified_reasons_name_a_failure_key_the_run_really_has():
+    """C-46: a reason string is unauditable prose unless something checks it.
+
+    `EXEMPT[3]` asserted its sub-corrections had propagated; they had not, and nothing looked. These
+    reasons assert that a specific run failed for a specific REASON — which the artifact records, so
+    the assertion is checkable and now checked.
+    """
+    for rid, key in sorted(REASON_KEYS.items()):
+        d = cac.resolve(rid)
+        assert d, f"{rid} does not resolve"
+        f = (json.load(open(os.path.join(d, "summary.json"))).get("failures") or {})
+        keys = list((f.get("failure_reasons") or {}).keys())
+        assert any(key in k for k in keys), (
+            f"{rid}: reason claims {key!r} but the run's failure_reasons are {keys}")
+
+
+def test_classified_reasons_quote_the_real_counts():
+    for rid, (n_failed, n_res, n_bank) in sorted(REASON_COUNTS.items()):
+        d = cac.resolve(rid)
+        sm = json.load(open(os.path.join(d, "summary.json")))
+        f = sm.get("failures") or {}
+        assert f.get("n_failed") == n_failed, f"{rid}: n_failed {f.get('n_failed')} != {n_failed}"
+        assert sm.get("n_result_rows") == n_res and sm.get("n_bank_rows") == n_bank, (
+            f"{rid}: rows {sm.get('n_result_rows')}/{sm.get('n_bank_rows')} != {n_res}/{n_bank}")
+
+
+def test_every_classified_entry_is_either_key_checked_or_count_checked():
+    """No reason may be pure prose without being declared so — the EXEMPT[3] failure mode."""
+    checked = set(REASON_KEYS) | set(REASON_COUNTS)
+    unchecked = set(CLASSIFIED) - checked
+    assert not unchecked, (
+        f"CLASSIFIED reasons with nothing verifying them: {sorted(unchecked)}. Add a REASON_KEYS or "
+        f"REASON_COUNTS entry, or state explicitly that the reason is unauditable.")

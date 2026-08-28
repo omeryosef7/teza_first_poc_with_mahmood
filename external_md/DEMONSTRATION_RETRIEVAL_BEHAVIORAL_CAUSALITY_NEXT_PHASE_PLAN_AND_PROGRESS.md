@@ -12135,3 +12135,49 @@ the **24-cell** unit; every ICC figure from R-118 onward clusters by **domain (6
 is the **conservative** direction — fewer, larger clusters — so nothing computed is invalidated, **but
 I never stated the choice, and my own log had already argued the finer unit was the defensible one.**
 **Flagged to them, since the cluster level is load-bearing for the whole bank-design arithmetic.**
+
+### ✅ R-129 (18:15) — **The unit question is settled by their measurement and the blocker is robust to it. Acted on C-46's real lesson: every reason string that CAN be checked now IS, and the eight that cannot are enumerated.**
+
+They measured both units rather than waiting for a number I was unwilling to hand over, and
+**reproduced my nesting verification exactly** — 72/72 adjacent dose pairs for one_word (24 cells),
+36/36 for forced choice. **One correction I accept**: forced choice has **12** cells, not 24, because
+it exists only in `core2x2`, so its cell is `domain × split`. Their sizing table uses forced choice, so
+**12 is the number that applies**.
+
+| | ICC domain (k=6) → ceiling | ICC cell (k=12) → ceiling |
+|---|---|---|
+| median across 7 banks | 0.29 → **21** | — → **43** |
+| `ticket_knife` | 0.320 → **19** | 0.282 → **43** |
+
+**The finer unit raises ICC and doubles k, so the ceiling roughly doubles — and against 132 both fall
+short.** The blocker is **robust to the contested choice**, which is a better result than the one it
+replaces: it no longer rests on a modelling decision neither of us had stated. **Their caveat is right
+and I would keep it**: within a cell the four rows are the same demonstration set at nested doses, so
+the cell is *more defensible* than the domain rather than sufficient, and the true ceiling probably
+sits between the columns.
+
+#### The lesson I had not acted on
+
+They flagged that their `CITED_AS_REFUSED` and `CITED_WITH_FAILURES` tables carry the same risk as my
+`EXEMPT[3]` — *"a reason string is exactly as unauditable as yours was"* — and said they would
+re-verify. **Re-verifying once leaves the next reason equally unaudited**, so I mechanised instead:
+
+| table | entries | now checked by |
+|---|---|---|
+| `EXEMPT` | **9 of 17** | the id must actually appear in `boombness_objective_sprint_report.md` |
+| `CLASSIFIED` | **4 of 6** | the run's `failure_reasons` must contain the key the reason names (`family_missing_one_side`, `borrowed_scale`) |
+| `CLASSIFIED` | **2 of 6** | the quoted counts must match the artifact — `92 / 68 / 160` and `22 / 18 / 40` |
+
+Plus `test_every_classified_entry_is_either_key_checked_or_count_checked`, so **a new reason cannot be
+added as pure prose without being declared unauditable.**
+
+#### And the eight that cannot be mechanised are now enumerated
+
+`test_prose_only_exemptions_are_declared_as_such` pins the set **{2, 3, 4, 7, 10, 15, 16, 17}** — the
+"operational", "superseded" and "honoured in C13's construction" reasons that no test can check. **The
+suite verifies nine and is silent about eight, and it now says which eight.** *Silence about which
+ones is exactly how `EXEMPT[3]` survived*: it sat among reasons that looked equally checkable and was
+the only one nobody had checked.
+
+**16 tests across the two files.** No claim moves; what moves is that a false reason string now has to
+survive a test rather than a reader's attention.
