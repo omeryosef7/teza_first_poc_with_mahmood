@@ -13393,3 +13393,63 @@ run tags happened not to match a grep.
 the earlier one is **empty** — no `results.jsonl`, no `DONE.json`. A `sorted(glob(tag))[0]` selects
 the empty one. My own guards are unaffected — they cite full timestamped paths and `check_run_readable`
 already refuses missing-`DONE` runs — but any tag-globbing analysis here would read zero rows.*
+
+### ⛔ C-62 (22:45) — **C-60 said "my ASR claims C7, C9, C13". It is TEN of thirteen. A bold-only regex matched 3 of 13 ledger rows and I almost concluded the other ten were unexposed — the fourth under-matching guard this sprint. And the confound is systematic: `demo_processing_only` is more truncated than its baseline in 9 of 9 sessions.**
+
+Classifying the ledger by readout type, `^\| \*\*C\d+\*\* \|` returned **3 rows**. The ledger has
+**13**: only C7, C9 and C13 are bolded, the rest are plain `| C1 |`. Under the corrected
+`^\|\s*\*{0,2}C\d+`, the split is:
+
+| readout | claims |
+|---|---|
+| **generative** (ASR / refusal / down-flips — truncation-exposed in principle) | **C1, C2, C3, C4, C6, C7, C9, C11, C12, C13** — **ten** |
+| probe-only (logprob readout, cannot be truncated) | C5 |
+| unclassified by keyword, checked by hand | C8, C10 |
+
+**C-60's scope sentence was wrong by seven claims**, and wrong in the direction that made my own
+exposure look smaller. **Fourth occurrence of this exact failure class** — C-45/C-46 (heading regex),
+C-47 (keyword caveat check), C-48 (whole-file phrase check), now this. Every one of them a pattern
+that matched less than it appeared to while reporting success. *The verdict never shows it; only the
+denominator does* — which I wrote at 21:50 and then did not apply to my own next classifier.
+
+**The exposure surface, measured rather than argued.** Across **463** run dirs with ≥40 rows,
+**172** sit at an observed cap ≤192, and **16 sessions** have an arm-vs-baseline truncation
+differential above 0.10.
+
+**The systematic part is the finding.** `demo_processing_only` is **more** truncated than its own
+baseline in **every session it appears in — 9 of 9**:
+
+| session | Δtrunc | | session | Δtrunc |
+|---|---|---|---|---|
+| `q4b` | **+0.356** | | `p1` | +0.156 |
+| `q6b` | **+0.338** | | `q15` | +0.156 |
+| `q1` | **+0.312** | | `p4b` | +0.144 |
+| `br` | **+0.292** | | `p6b` | +0.144 |
+| `q16` | **+0.269** | | | |
+
+This is not nine accidents. **The intervention makes the model generate longer**, so it meets the
+192-token cap more often, and it does so in the direction that manufactures a lower ASR. C1 (refusal
+restoration) and C7 (demonstration-specificity) both rest on this arm.
+
+**The one thing that rescues it is the one thing that was actually measured.** R-64 released the cap
+on `demoproc` — and the effect **grew** (−3/4 and −7/7 at 640 with `frac_stop_length` 0.000, against
+a 0.300 arm-separating gap at 192). *For this arm the confound has been tested head-on once and did
+not explain the result.* That is real evidence and it is why C-60 credited C7 and refused to let C9
+borrow the credit.
+
+**But its coverage is one bank, one model, two doses, 80 rows/arm.** It does not reach the `q1`,
+`q4b`, `q6b`, `q15`, `q16` or `br` demoproc sessions, which are Qwen3 and other banks and carry the
+larger differentials. So:
+
+| claim | arm | status |
+|---|---|---|
+| C7 | `demoproc` | **protected** — R-64 released the cap, effect grew |
+| C1 | `demoproc` | **partially protected** — same arm, but R-64's release covers neither its pools nor Qwen3 |
+| C9 | rescue patch | **open** (C-60) — different intervention, R-64 does not transfer |
+| C13 | preamble | **withdrawn** (C-61) — different intervention, Δ +0.331 |
+| C2, C3, C4, C6, C11, C12 | mixed | **unassessed** — newly in scope as of this entry |
+
+**Not launching and not reclassifying on argument.** Six of their jobs are running. The queue order
+is C9's rescue arms, then C13's preamble arms, then a demoproc cap-release on the Qwen3 sessions that
+R-64 never covered. C2/C3/C4/C6/C11/C12 get measured next tick before anything is said about them —
+**this entry states their scope, not their verdict.**
