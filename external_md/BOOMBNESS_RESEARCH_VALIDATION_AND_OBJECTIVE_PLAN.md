@@ -6907,3 +6907,79 @@ variable that is balanced by construction. **`n_examples` demonstrably does pred
 ladder is the evidence. The permutation is valid for the readouts, which vary within cluster, and
 invalid for the dose variable. Reported rather than dropped, because a p of exactly 1.0000 next to a
 variable one wants to dismiss is precisely the number that would get quoted.
+
+## §12.24 — ⛔ CORRECTION to §12.23: "the candidate and the naive control are the same signal" is WRONG. The gate still closes, for a different reason
+
+**The error.** §12.23 compared two *marginal* correlations (+0.336 vs +0.297), observed
+ρ(`d_surface|L8`, `d_naive|L8`) = 0.9627, and concluded the candidate was redundant. **Comparing
+marginals does not estimate incremental validity.** A peer flagged it, reconstructed the partial from
+my published summary numbers, got ≈ +0.19, and correctly noted their reconstruction assumed a common
+covariance structure and needed running on rows. Run on rows:
+
+| | partial ρ | cluster-boot 95% CI (18 clusters) |
+|---|---|---|
+| `d_surface` ~ ASR **given `d_naive`** | **+0.1924** | [+0.078, +0.299] excludes 0 |
+| `d_naive` ~ ASR **given `d_surface`** | **−0.1024** | — |
+
+So the candidate carries signal the naive direction does not, and **controlling for the candidate the
+naive direction's contribution goes negative**. Two directions correlated at 0.96 are still
+separable here. §12.23's "same signal" sentence is withdrawn.
+
+### ⛔ A bug in my own analysis, caught before it set the verdict
+
+My first multiple-partial used a rank function that broke ties **by `argsort` order** instead of
+averaging them. The outcome is binary — 226 zeros and 62 ones — so almost every rank was arbitrary.
+It returned `| d_naive` = +0.0942 where the correct value is +0.1924, and would have *supported* the
+wrong conclusion I had already written. Fixed to average ranks; every number below uses that.
+
+### The gate's actual test: the full control set, on the pre-registered heldout split
+
+Controls: `d_naive`, `d_context`, `n_examples`, length, refusal.
+
+| split | n | partial ρ (full gate set) | cluster-boot 95% CI |
+|---|---|---|---|
+| all | 288 | +0.1783 | [−0.0033, +0.2952] **includes 0** |
+| **heldout** | 144 | **+0.2547** | [+0.0020, +0.3946] excludes 0 |
+| dev | 144 | **+0.0389** | [−0.1386, +0.2201] **includes 0** |
+
+**PHASE 7 REMAINS CLOSED, and this table is why.** Not because the candidate is redundant — it
+isn't — but because the evidence is not stable enough to build on:
+
+* Pooled over all 288 rows the full-control partial **includes zero**.
+* **dev and heldout disagree by 6.5×** (+0.039 vs +0.255) on equal-sized halves of the same data.
+  Heldout exceeding dev is the wrong direction for a real effect and the right direction for noise.
+* The heldout CI's lower bound is **+0.0020** — it excludes zero by two thousandths.
+* 18 clusters, and a cluster bootstrap is known to under-cover below ~30 clusters, so that lower
+  bound is if anything optimistic.
+
+A candidate that scores +0.04 on dev and +0.25 on heldout has not demonstrated it predicts beyond the
+controls; it has demonstrated that **this design cannot resolve the question**. The remedy is **more
+domains** — 18 clusters is the binding constraint, exactly as in §12.22 — and not a fourth readout.
+**No GCG/MAC objective is being built.**
+
+## §12.25 — PHASE 2.5: prompt-level is not a better objective than token-level, and both are entangled with dose
+
+Phase 2 asked for token-level vs prompt-level separation, and §12.23 tested only the token-level
+(query-occurrence) readout. Prompt-level aggregates over all occurrences — and occurrences are
+**dose + 1** by construction, so prompt-level metrics are structurally tied to `n_examples`.
+
+Same 288 rows, 18 clusters, `d_surface|L8|proj`:
+
+| metric | pooled ρ | cluster-perm p | n=1 | n=2 | n=4 | n=8 | mean within-dose |
+|---|---|---|---|---|---|---|---|
+| token, query occurrence | +0.336 | 0.0037 | +0.172 | +0.446 | +0.321 | +0.280 | **+0.305** |
+| prompt, mean all occ. | +0.299 | 0.0371 | +0.187 | +0.409 | +0.214 | +0.219 | +0.257 |
+| prompt, max all occ. | +0.301 | 0.0496 | +0.043 | +0.367 | +0.164 | +0.243 | +0.204 |
+| prompt, mean demo occ. | +0.250 | 0.0856 | +0.008 | +0.321 | +0.191 | +0.220 | +0.185 |
+| length *(control)* | +0.102 | 0.2230 | +0.168 | −0.008 | +0.159 | +0.088 | +0.102 |
+| refused *(control)* | −0.143 | 0.0854 | −0.048 | −0.099 | −0.130 | −0.310 | −0.147 |
+
+**The token-level readout beats every prompt-level aggregate** on both pooled ρ and mean within-dose,
+and the demo-only aggregate — the one that excludes the query token entirely — is weakest and its
+cluster-permutation p does not clear 0.05. ρ(token, prompt-mean) = +0.878 and
+ρ(prompt-mean, naive-prompt-mean) = +0.978.
+
+**So Phase 2's open question resolves negatively for the prompt-level candidate.** §12.20's framing —
+"Phase 7 must treat token-level and prompt-level as two candidate objectives requiring separate
+evaluation" — has now had that separate evaluation: the prompt-level one is strictly worse, and
+neither clears §12.24's gate.

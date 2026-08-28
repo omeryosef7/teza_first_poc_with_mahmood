@@ -123,6 +123,8 @@ TRACE_TOKENS = {
     "§12.21": ["already existed", "384", "7.0%"],
     "§12.22": ["non-monotonic", "9/12", "n=16"],
     "§12.23": ["0.9627", "gate", "288"],
+    "§12.24": ["incremental", "+0.1924", "dev and heldout"],
+    "§12.25": ["prompt-level", "query occurrence", "dose + 1"],
 }
 
 
