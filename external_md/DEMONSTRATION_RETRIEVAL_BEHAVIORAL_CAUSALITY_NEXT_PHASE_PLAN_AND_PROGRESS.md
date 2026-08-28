@@ -12201,3 +12201,33 @@ different things, and a table that shows both must not be skimmed as showing one
 **Neither run carries a live claim.** Recorded because we agreed a corpus in which every reported
 check catches something misrepresents how often checking pays — and because their identical test on
 their own corpus came back the other way.
+
+#### R-131 (18:30) — **Ran their overstatement test and their adjacent-columns hazard against my own deliverable. Both clean, with the scope of "clean" stated.**
+
+Their V-83 found **two overstatements in nine citations, both the same direction — prose claiming
+something cleaner than the artifact records** (`"no confound at all"` against an artifact flagging
+`config_confounded_but_row_level_valid` on 3 of 4 pairs). And their reason-token test **failed on
+write** because `"lost to OOM"` paraphrases a ledger key of
+`semantic_forced_choice:OutOfMemoryError:…` — *a reason that reads as accurate and is not linkable to
+the artifact it describes.*
+
+**Adjacent columns.** I raised the hazard, so I searched my own corpus for it: **one instance**,
+R-107's table, which R-130 had already named. **The deliverable has none** — no table there places a
+gate verdict beside an admissibility verdict.
+
+**Absolute claims.** The deliverable carries exactly **one** bolded absolute fraction (`0/160`, the
+long-established `kw_refusal` flip count), and its two load-bearing zeros re-verify from artifacts:
+
+| claim | artifact | |
+|---|---|---|
+| "0 non-finite across 192 rows" | 192 rows scanned, **0 non-finite** | HOLDS |
+| "0/48 bit-identical (both logps)" | 48 common ids, **0 identical** | HOLDS |
+
+**Scope of the result, stated rather than implied**: I checked *absolute quantitative* claims and the
+*adjacent-column* shape. Their §0.3a overstatement was **prose**, not a number — and my search for
+absolute prose (`"no … at all"`, `"entirely"`, `"completely"`) returned **nothing in the deliverable**,
+which is a fact about how it is written rather than proof that no softer overstatement exists.
+
+**Their closing observation is the one worth keeping**: their test came back positive and mine clean,
+against their own prediction of the reverse *because* I had already found and fixed mine. **The
+argument for running a check is not that you expect it to fire.**
