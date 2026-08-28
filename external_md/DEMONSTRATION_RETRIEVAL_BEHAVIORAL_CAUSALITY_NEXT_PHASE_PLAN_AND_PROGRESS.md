@@ -14727,3 +14727,48 @@ must use the effective n, per C-71.
 decomposition and restored a claim I had just weakened; PR-38 confirmed a prediction I had made
 against my own earlier position. **Neither was adjusted after seeing the data**, and the second is
 worth no more credit than the first — the discipline is the same and only the direction differs.
+
+### ⛔ C-74 (03:15) — **C-73's fix was one command from being undone. I edited the DEPLOYED hook; the tracked source is `scripts/install_commit_guard.sh`, and re-running it would have silently dropped my three guards. Three conditions — works, wired, wiring versioned — and this sprint has now failed each separately.**
+
+They caught it and I verified rather than accepted. **Both lists now carry all 11**, and the stronger
+property holds: I backed up the deployed hook, **ran the installer, and diffed** — byte-identical, so
+the installer is idempotent and my guards survive a reinstall.
+
+**The failure mode, which nothing would have reported.** They had already run
+`bash scripts/install_commit_guard.sh` once tonight to add `test_clustered_stats.py`. Running it again
+would have regenerated the hook from a list that did not contain my three files, restoring exactly the
+C-73 state — and the hook would still have printed *"N passed"*, just a smaller N that nobody reads as
+a failure. **A silent reduction in coverage that reports success is the same shape as C4's vacuous
+`frac_scorable` and my dormant caveat entry**, now at the level of the tooling that runs the guards.
+
+**The three conditions, and the sprint has failed each one separately:**
+
+| condition | how it failed | entry |
+|---|---|---|
+| the guard **works** | one caveat entry could never fire | C-72b |
+| the guard is **wired in** | absent from `GUARD_TESTS` all sprint | C-73 |
+| the **wiring is versioned** | fixed the untracked hook, not the tracked installer | **C-74** |
+
+**Two tracked tests added, in an already-wired file so there is no bootstrap problem:**
+
+* `test_my_guards_are_named_in_the_tracked_installer` — fails if my three are tidied out of the
+  installer, which is the precise C-74 regression;
+* `test_every_guard_file_the_installer_names_actually_exists` — a name matching no file is a guard
+  that silently does not run.
+
+**Positive-controlled, per C-72b's lesson.** Mutation A (remove my three from the installer) →
+**KILLED**. Mutation B (installer names a nonexistent file) → **KILLED**. Run against a backed-up copy
+and the installer verified **byte-identical afterwards**; `git status` clean on it.
+
+**Their consequence is the one that belongs in the write-up, and it limits both of us.**
+**`.git/hooks/` is not in the repository.** Every guarantee built tonight lives in a file no commit can
+protect and no reviewer would ever see; the installer is the only thing that reconstructs it. So
+*"190 tests run at commit time"* is **true of this working tree and of nothing else** — a fresh clone
+has no hook at all until someone runs the installer. That belongs beside any claim about what the
+guards enforce.
+
+**On their §12.23-§12.24 warning, which I think is the right call to make in advance.** If `d_naive`
+also collapses on the 32 unseen domains, the earlier within-dose correlations were fitted and
+evaluated on the same 6 domains, so a general transfer failure would make them partly a property of
+the fit set. **Saying that before the number exists is what makes it a prediction rather than a
+concession**, and it is the largest correction the sprint could still take.

@@ -206,3 +206,48 @@ def test_prose_only_exemptions_are_declared_as_such():
     assert prose_only == {2, 3, 4, 7, 10, 15, 16, 17}, (
         f"the prose-only set changed to {sorted(prose_only)} — update this list deliberately, "
         f"so the unauditable reasons stay enumerated rather than growing silently")
+
+
+#: C-73/C-74: the guards in this repo are wired by `scripts/install_commit_guard.sh`, which WRITES
+#: `.git/hooks/pre-commit`. The hook is untracked, so the installer is the only version-controlled
+#: record of what runs at commit time — and re-running it silently replaces whatever is deployed.
+MY_GUARD_FILES = (
+    "tests/test_my_ledger_propagation.py",
+    "tests/test_my_cited_artifacts.py",
+    "tests/test_cautioned_figures.py",
+)
+
+
+def test_my_guards_are_named_in_the_tracked_installer():
+    """C-74: I fixed the DEPLOYED hook and not the installer that regenerates it.
+
+    The concurrent session had already run `install_commit_guard.sh` once tonight; running it again
+    would have overwritten the hook and dropped my three guards, restoring the exact state C-73 found
+    — and reporting a smaller "N passed" that nobody reads as a failure.
+
+    Three conditions, and this sprint has failed each separately: a guard must WORK (C-72b: mutation-
+    tested), be WIRED IN (C-73: absent from GUARD_TESTS), and have its WIRING UNDER VERSION CONTROL
+    (this test). Editing the deployed hook satisfies the second and not the third.
+    """
+    installer = os.path.join(ROOT, "scripts", "install_commit_guard.sh")
+    assert os.path.exists(installer), f"{installer} is missing — the hook has no tracked source"
+    text = open(installer, encoding="utf-8").read()
+    missing = [f for f in MY_GUARD_FILES if f not in text]
+    assert not missing, (
+        f"{os.path.basename(installer)} does not name {missing}. The deployed hook may still run "
+        f"them, but the next `bash scripts/install_commit_guard.sh` will silently drop them — which "
+        f"is how C-73's state would be restored with nothing reporting it.")
+
+
+def test_every_guard_file_the_installer_names_actually_exists():
+    """A name in the installer that matches no file is a guard that silently does not run.
+
+    pytest exits non-zero on a missing path, so this would surface at commit time — but as a confusing
+    collection error rather than as 'this guard is gone', and the temptation is then to delete the
+    name rather than restore the file.
+    """
+    installer = os.path.join(ROOT, "scripts", "install_commit_guard.sh")
+    named = re.findall(r"tests/test_[A-Za-z0-9_]+\.py", open(installer, encoding="utf-8").read())
+    assert named, "installer names no guard test files at all"
+    absent = sorted({n for n in named if not os.path.exists(os.path.join(ROOT, n))})
+    assert not absent, f"installer names guard files that do not exist: {absent}"
