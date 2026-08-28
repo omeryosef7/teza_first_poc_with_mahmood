@@ -14061,3 +14061,68 @@ rather than inferred across them.
 **C1 is qualified accordingly:** its effect is present in 8/13 sessions and **absent on Qwen3 +
 `longpreQ14*` in 3/3**, with the headroom to have shown it. Recorded on the claim, not left in the
 pooled total.
+
+### ⛔ C-68 (01:10) — **PR-36's Qwen3 half: gate 3 FAILS as pre-registered, so I am not claiming its ASR result. But C9's headline specificity — "gives back the REFUSAL and not the ATTACK" — is contradicted on Qwen3 by evidence that predates this rerun. It holds on Llama only.**
+
+**The Qwen3 arms, cap 640, one invocation (797678), `q6r640j_L17` / `q6r640j_L5`:**
+
+| gate | requirement | result |
+|---|---|---|
+| 1 — cap released | `frac_stop_length < 0.15` | 0.0000 / 0.0000 ✅ |
+| 2 — arms not separated | gap < 0.10 | 0.0000 ✅ |
+| 3 — power | **≥4 baseline attacks** | **3** ⛔ **FAIL** |
+
+**Gate 3 fails, so PR-36 does not license a Qwen3 ASR conclusion and I am not drawing one from it.**
+The gate was written to give power to detect attack *removal*; what the arm shows is an *increase*,
+which the gate does not speak to. **That is a reason the gate is mis-specified for this outcome, not a
+reason to waive it** — waiving a pre-registered gate because the result came out interesting is the
+move the whole pre-registration exists to prevent.
+
+**What the refusal leg shows, which gate 3 does not govern and which carries no judge noise (R-144):**
+
+| session | cap | Δrefusal | ΔASR |
+|---|---|---|---|
+| `q6b` | 192 | **−12** | +9 |
+| `q7` | 192 | **−17** | +13 |
+| **`q6` (new)** | **640** | **−12** | **+10** |
+| Llama `p7` | 640 | −18 | **+0** |
+
+**Δrefusal = −12 reproduces exactly across the cap change.** The refusal leg replicates on Qwen3.
+
+**The ladder, which is what settles the direction — `q6b`, all 160 rows:**
+
+| arm | refused | ASR |
+|---|---|---|
+| clean baseline `A` | 2 | **22** |
+| knockout-only | 15 | 7 |
+| `L5` (= knockout-only, C-20) | 15 | 5 |
+| **`L17` (rescue)** | **3** | **14** |
+
+The knockout drives refusal **2 → 15** and attack **22 → 7**. The rescue returns refusal to **3**
+(clean is 2) **and returns attack to 14** (clean is 22). **On Qwen3 the rescue undoes the knockout on
+both axes.** On Llama the same contrast moves refusal 35 → 17 while ASR sits at **5 → 5**.
+
+**So C9's headline is model-specific and its ledger does not say so.** *"Gives back the REFUSAL and
+not the ATTACK"* is asserted with a model column reading *"Llama + Qwen3, 2 pools"*. The
+refusal-versus-attack selectivity holds on **Llama** and fails on **Qwen3**, where ΔASR is **+9, +13
+and +10** across three independent measurements — far outside the ~6.5% gross per-row floor, whose
+*net* drift on 160 rows runs a few rows at most.
+
+**This is a different specificity from the one C-20 already withdrew.** C-20 killed the *below-band
+L5 control* (byte-identical to knockout-only, a no-op). This is the *refusal-vs-attack* selectivity
+in the claim's own headline, and it is contradicted by `q6b`/`q7` at 192 — evidence that was sitting
+in the tree before PR-36 was written and that I did not check when I restored C9 in C-67.
+
+**C9 is qualified, not withdrawn:** its primary refusal effect stands on both models (−18 Llama at a
+released cap; −12/−17/−12 Qwen3), and **the "not the ATTACK" clause is scoped to Llama.**
+
+**Pre-registered follow-up rather than a claim now:** a Qwen3 arm with ≥4 baseline attacks in the
+*comparator* is needed to test attack restoration under PR-36's own gate. `q7`@192 already has 4 and
+shows +13, so the observation is not fragile — but it was not generated under this pre-registration
+and I am recording it as corroboration, not as the test.
+
+**Also void: C-63's corroboration paragraph.** They have retracted V-107's *"four of five Llama
+populations have never had untruncated evidence"* — it read a within-run both-EOS statistic as a
+statement about the corpus, and six cap-640 runs existed. C-63 cited it as independent arrival at the
+same hole. **That paragraph is withdrawn**; my own enumeration in C-65 (296 runs at `--max-new ≥ 512`,
+read from each `RUNMETA.argv`) stands on its own and never depended on theirs.
