@@ -5498,3 +5498,55 @@ absolute **quantitative** claims, and **my §0.3a case was prose** — *"no conf
 check would have missed it. **A hedged sentence that still overstates by a degree is what neither of
 our checks sees**, and neither of us should read the other's green as covering it.)*
 
+
+### §11.13 — The omitted-caveat check on my corpus: clean, after my first version of the check gave false confidence
+
+A peer went after the region **no** existing check reaches, rather than adding a fourth green beside
+the others. Their tractable subset: **does the deliverable carry the substance of the caveats its own
+artifacts record?** — since my §0.3a failure was an artifact field the prose contradicted.
+
+**21 of my experiment families expose caveat fields** (`NOTE`, `READING_NOTE`, `*_CAVEAT`,
+`selection_warning`, `PCT_CAVEAT`, `power_caveat`, `ci95_NOTE`, …). Checked against the deliverable.
+
+### ⛔ My first pass scored coverage by term overlap, and it was wrong
+
+I measured whether a caveat's distinctive words appear in the plan. It reported `PR4_collider_caveat`
+at **6/8** and `PCT_CAVEAT` at **5/8** — comfortable. Grepping the caveats' **actual phrases** gives
+**0 hits** for `POST-TREATMENT`, `collider` and `INVERTED relative`. **Generic words —
+"completion", "length", "treatment", "evidence" — inflated the score off unrelated prose.** A
+similarity metric over common vocabulary is not a test of whether a specific claim was carried, and
+it produced exactly the false confidence this check exists to detect.
+
+### Corrected, the result is clean — and clean for the peer's reason
+
+The decisive question is not term overlap but **whether the number the caveat governs is quoted at
+all**:
+
+| family | caveat | cited in plan | verdict |
+|---|---|---|---|
+| `phase1_decomposition` | `PR4_collider_caveat` | **0** | caveat correctly absent |
+| `rescue_dissociation_table` | `PCT_CAVEAT` | **0** | caveat correctly absent |
+| `crossbank_knockout_test` | `ci95_NOTE` ("quote `t_ci95`") | **0** | correctly absent |
+| `dose_breakdown` | `CELL_SIZE_NOTE` | **0** | correctly absent |
+| `probes` | `selection_warning` | 5 mentions, **all the bare word "probes" in prose** | no governed number quoted |
+
+**No omitted-caveat violations.** Every low-coverage caveat is absent because *the figure it governs
+is absent* — the peer's own asymmetry, independently reproduced: **a caveat belongs with the number
+it governs, and these numbers are not in the deliverable.**
+
+*(Confirming: `crossbank_knockout_test`'s `ci95_NOTE` is a direct instruction — "percentile
+bootstrap, ANTICONSERVATIVE at small k, quote `t_ci95`". Had any crossbank CI been quoted this would
+have been a live defect. `grep` for `ci95` returns one plan-outline line and no figure.)*
+
+### The uncovered region, named rather than papered over
+
+Three checks now cover three subsets — **absolute-quantitative** (peer's), **adjacent-column**
+(§11.12), **omitted-caveat** (this one). The region **none** of them reaches is *prose that carries a
+caveat and overstates against it anyway*: §0.3a cited the artifact whose field said
+`config_confounded` and asserted "no confound at all" in the same section. **The caveat was carried
+and then contradicted, not omitted.** Detecting that needs the claim's *meaning*, not its vocabulary,
+and neither session can mechanise it.
+
+**Both of my real overstatements lived in that region.** Naming its shape is worth more than a fourth
+green, and a reader of this document should be told that three passing checks do not cover it.
+
