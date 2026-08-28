@@ -93,6 +93,7 @@ TRACE_TOKENS = {
     "§11.11": ["unmechanisable", "config_confounded"],
     "§11.12": ["adjacent", "paraphrase"],
     "§11.13": ["omitted-caveat", "term overlap"],
+    "§11.14": ["cautioned", "loose matcher"],
 }
 
 

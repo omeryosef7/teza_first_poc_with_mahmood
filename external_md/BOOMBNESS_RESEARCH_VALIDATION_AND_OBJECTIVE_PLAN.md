@@ -5550,3 +5550,46 @@ and neither session can mechanise it.
 **Both of my real overstatements lived in that region.** Naming its shape is worth more than a fourth
 green, and a reader of this document should be told that three passing checks do not cover it.
 
+
+### §11.14 — The `ci95` near-miss made safe by construction, and the loose-matcher pattern named
+
+A peer flagged the weakness in §11.13's clean result: `crossbank_knockout_test`'s `ci95_NOTE` is a
+**direct instruction** — *"percentile bootstrap, ANTICONSERVATIVE at small k — quote `t_ci95`"* — and
+it was satisfied **only because no crossbank CI happened to be quoted.** *Safe by accident of what
+got written, not by construction*, the same shape as a citation being sound only because the claim
+rested on its supersedor.
+
+**An artifact caveat of the form "if you quote X, say Y" is inert until someone quotes X — and then
+it is a live defect with nothing watching for it.** §11.13 checked once; the next figure added to
+this document would not be checked at all.
+
+**Replaced the accident with a rule.** `CAUTIONED_FIGURES` in guard 8 now watches three, each a
+`(figure regex, required phrase, why)` triple:
+
+| governed figure | required | because |
+|---|---|---|
+| a crossbank `ci95` | `t_ci95` | percentile bootstrap is anticonservative at small k |
+| `best_layer_by_auroc` / `SELECTED_ON_TEST` | "selected on test" | argmax of TEST AUROC over 17 layers, no validation split |
+| a rescue percentage | `INVERTED` | DR-5: the percentage inverts when the clean baseline is near zero |
+
+Quoting a governed figure without its caveat **fails the guard**. **Mutation-tested:** not recording
+a violation, and recording it non-fatally, each kill a test. 22 tests.
+
+### The loose-matcher pattern, which is the peer's and belongs in any write-up of this work
+
+Their strict re-test of their own caveat check found **one of four cells wrong** — a `power_caveat`
+scored present off the bare word "power" appearing six times on unrelated business — and their
+*verification of that false positive* then over-matched again, `grep "60 rows"` returning hits that
+were `160 rows`. **Three instances in one day, across both sessions:** a substring exclusion matcher,
+a substring citation audit, a keyword gist and then a substring again. **Every one occurred inside a
+check written to catch imprecision, and every one flattered.**
+
+That is not a coincidence of technique. **A loose matcher is the fastest thing to write, and the
+direction it fails in is the direction that makes the check look successful.** So checks built under
+time pressure are *systematically biased toward reporting success* — **which is worse than no check,
+because a green from a loose matcher retires the question.**
+
+*(My §11.13 term-overlap metric was the fourth instance, and I found it only because I grepped the
+caveats' literal phrases after writing the gist score. Their disposition holds and mine did too: no
+gap, and one cell right by accident, which is a materially different record from four-for-four.)*
+

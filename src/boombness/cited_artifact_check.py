@@ -95,6 +95,40 @@ CITED_WITH_FAILURES = {
         "artifact's intended output and the subject of §0.12",
 }
 
+#: CAUTIONED FIGURES: an artifact caveat that says "if you quote X, say Y" is inert until someone
+#: quotes X — and then it is a live defect with nothing watching for it.
+#:
+#: §11.13 checked these ONCE and found them all absent, so every caveat was correctly missing. A
+#: peer flagged the weakness of that result: `crossbank_knockout_test`'s `ci95_NOTE` is a direct
+#: instruction ("percentile bootstrap, ANTICONSERVATIVE at small k -- quote `t_ci95`"), and it was
+#: satisfied only because no crossbank CI happened to be quoted. **Safe by accident of what got
+#: written, not by construction** — the same shape as a citation being sound only because the claim
+#: rested on its supersedor.
+#:
+#: So the accident is replaced by a rule: quoting the governed figure REQUIRES the caveat's own
+#: phrase to appear. Each entry is (regex for the governed figure, phrase that must accompany it).
+#: A caveat that names no checkable figure belongs in the prose, not here.
+CAUTIONED_FIGURES = {
+    "crossbank ci95": (
+        r"\bci95\b(?!_NOTE)",
+        "t_ci95",
+        "crossbank_knockout_test's ci95_NOTE: the percentile bootstrap is ANTICONSERVATIVE at small "
+        "k, so a quoted CI must be the t-interval and must say so",
+    ),
+    "probes best-layer AUROC": (
+        r"best_layer_by_auroc|SELECTED_ON_TEST",
+        "selected on test",
+        "probes' selection_warning: the best layer is the argmax of TEST AUROC over 17 layers with "
+        "no validation split, so any such figure is optimistically biased",
+    ),
+    "rescue percentage": (
+        r"rescue[_ ]percent|rescued\s+\d+\s*%",
+        "INVERTED",
+        "rescue_dissociation_table's PCT_CAVEAT (DR-5): the percentage inverts relative to the "
+        "evidence when the clean baseline is near zero",
+    ),
+}
+
 #: A run id as this repo writes them: <tag>_<YYYYMMDD>_<HHMMSS>_<pid>.
 RUN_ID = re.compile(r"\b([A-Za-z0-9_]+_20[0-9]{6}_[0-9]{6}_[0-9]+)\b")
 
@@ -174,8 +208,18 @@ def main() -> int:
         else:
             ok += 1
 
+    # CAUTIONED FIGURES: quoting a governed figure requires its caveat phrase (see the table).
+    plan_text = open(PLAN, encoding="utf-8").read()
+    caution_fail = []
+    for label, (fig_re, phrase, why) in CAUTIONED_FIGURES.items():
+        if re.search(fig_re, plan_text, re.I) and phrase.lower() not in plan_text.lower():
+            caution_fail.append((label, phrase, why))
+
     print(f"[cited-artifact] {len(ids)} run ids cited across {len(roots)} enumerated roots; "
-          f"{ok} usable or documented-refused")
+          f"{ok} usable or documented-refused; {len(CAUTIONED_FIGURES)} cautioned figures watched")
+    for label, phrase, why in caution_fail:
+        print(f"  CAUTIONED FIGURE QUOTED WITHOUT ITS CAVEAT [{label}]: expected {phrase!r}")
+        print(f"      {why}")
     for rid in missing:
         print(f"  MISSING {rid}: cited in the plan, found in none of the {len(roots)} roots")
     for rid, root, why in inadmissible:
@@ -184,7 +228,7 @@ def main() -> int:
     for rid, nf, why in unclassified:
         print(f"  UNCLASSIFIED FAILURES {rid}: n_failed={nf} ({why})")
         print(f"      -> classify it in CITED_WITH_FAILURES with what the reason MEANS, or fix the claim")
-    if missing or inadmissible or unclassified:
+    if missing or inadmissible or unclassified or caution_fail:
         print("[cited-artifact] FAIL — a claim cites an artifact that is absent or unusable.")
         return 1
     print("[cited-artifact] every cited artifact exists and is usable or documented-refused")

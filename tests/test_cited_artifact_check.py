@@ -234,3 +234,44 @@ def test_the_unmechanisable_claims_are_ENUMERATED_not_merely_absent():
         assert rid in UNMECHANISABLE, (
             f"{rid} has no entry in UNMECHANISABLE: state what about it cannot be checked, "
             "even if that is 'nothing'")
+
+
+# --- cautioned figures: quoting the governed number requires its caveat -----------------------
+#
+# A peer flagged that §11.13's clean result on ci95_NOTE held only because no crossbank CI happened
+# to be quoted -- safe by accident of what got written, not by construction. These pin the rule that
+# replaces the accident.
+
+def test_quoting_a_cautioned_figure_WITHOUT_its_caveat_FAILS(env, monkeypatch):
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "CAUTIONED_FIGURES",
+                        {"x": (r"\bci95\b", "t_ci95", "quote the t-interval")})
+    plan.write_text(f"cites {ID_A}. The ci95 was 0.12 to 0.44.\n")
+    assert cac.main() == 1, "a governed figure quoted without its caveat must fail"
+
+
+def test_quoting_it_WITH_the_caveat_passes(env, monkeypatch):
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "CAUTIONED_FIGURES",
+                        {"x": (r"\bci95\b", "t_ci95", "quote the t-interval")})
+    plan.write_text(f"cites {ID_A}. The t_ci95 was 0.12 to 0.44 (percentile is anticonservative).\n")
+    assert cac.main() == 0
+
+
+def test_not_quoting_the_figure_at_all_passes(env, monkeypatch):
+    """The 11.13 situation: the caveat is correctly absent because the figure is."""
+    out, plan = env
+    _run(str(out / "expA"), ID_A)
+    monkeypatch.setattr(cac, "CAUTIONED_FIGURES",
+                        {"x": (r"\bci95\b", "t_ci95", "quote the t-interval")})
+    plan.write_text(f"cites {ID_A}. No confidence interval is quoted anywhere.\n")
+    assert cac.main() == 0
+
+
+def test_every_shipped_cautioned_figure_states_why():
+    assert cac.CAUTIONED_FIGURES
+    for label, tup in cac.CAUTIONED_FIGURES.items():
+        assert len(tup) == 3, f"{label}: expected (regex, phrase, why)"
+        assert isinstance(tup[2], str) and len(tup[2].strip()) > 30, f"{label} has no real reason"
