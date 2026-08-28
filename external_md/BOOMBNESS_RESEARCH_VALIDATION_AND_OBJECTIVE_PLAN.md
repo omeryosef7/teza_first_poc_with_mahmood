@@ -4290,3 +4290,108 @@ analysable factor rather than a nuisance, the new bank needs **disjoint draws pe
 is irreversible after generation.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §6.3 — CORRECTION to §6.2: my "29 domains" is a ONE-BANK number, and the both-ends argument that replaced it does not hold either
+
+Two corrections, one to me and one to the peer who caught mine.
+
+### 1. My corrected ICC inherits exactly the instability I said killed the pilot
+
+§6.2 replaced 42–53 domains with **29**, from a multi-slot ICC of 0.218. That figure is measured on
+**one bank**. Run identically on `ticket_bomb` it is **zero**:
+
+| bank (`semantic_one_word`, both slots, doses {1,2,4,8}) | ICC raw | dose-centred | domain win-rates | between-domain sd |
+|---|---|---|---|---|
+| `main` | 0.156 | **0.218** | 0.312 – 0.875 | **0.209** |
+| `ticket_bomb` | **0.000** | **0.000** | 0.562 – 0.750 | **0.078** |
+
+Same six domains, same prose, same model, **different codeword–concept pair** — a **2.7×**
+difference in between-domain spread. Not saturation: `ticket_bomb` has 64/96 wins with slots at
+27/48 and 37/48, so there is ample variance.
+
+**Domain clustering is not a property of the bank template. It is a property of how a particular
+concept interacts with those domains.** So §6.2's 29 is one draw from the same across-bank spread
+that I had *just* accepted as fatal to the pilot — and I applied that argument to the peer's design
+and not to my own measurement one section later. The honest form is a **range: from no clustering
+penalty at all to ~53 domains.**
+
+*(A mechanism the peer proposed and then refuted rather than shipped: `ticket_bomb`'s slots differ
+by 0.208 in win rate, so a slot main effect might deflate its ICC as the dose effect did.
+Slot-centring moves it 0.000 → 0.000. Plausible, tested, wrong.)*
+
+### 2. But the both-ends argument that replaces it is wrong, because it uses the OLD row ceiling
+
+The proposed rescue was that `ticket_knife` is unreachable under *both* regimes — cluster-limited at
+high ICC, and row-limited at ICC 0 where C-32's 60-row ceiling binds against the 132 needed. **A
+conclusion that survives at both ends of an unpinnable quantity would indeed be worth more than one
+that needs it. This one does not survive, because 60 is the SINGLE-slot ceiling:**
+
+| bank structure | doses {1,2,4,8,16} | doses {1,2,4,8} |
+|---|---|---|
+| single-slot (C-32's basis) | **60** | 48 |
+| **multi-slot** (the design under discussion) | **408** | **396** |
+
+At **ICC 0** there is no clustering penalty, so `n_eff = n`, and **396 rows clears 132 comfortably**.
+The row ceiling only binds on the bank we already have — not on the one being designed, whose entire
+point is the extra slots.
+
+So the position is:
+
+* **ICC high (`main`-like, 0.218):** ceiling `k/ICC` = 46 at 10 domains → **not reachable**, and no
+  number of rows fixes it.
+* **ICC ~0 (`ticket_bomb`-like):** `n_eff = n` → **reachable**, 396 rows against 132 needed.
+
+**`ticket_knife`'s resolvability therefore depends on `ticket_knife`'s own ICC, which nobody has
+measured.** It is not settled at both ends. The three existing arguments for its verdict — C-31
+(not above chance), C-32 (unresolvable at attainable n *on the current bank*), and reproducibility —
+stand on their own; what does **not** stand is the new fourth argument I recorded in §6.2, and it is
+withdrawn.
+
+### What actually follows
+
+**The decisive measurement is cheap and specific: `ticket_knife`'s own multi-slot ICC.** It is one
+number, it decides whether a multi-slot `ticket_knife` bank can answer at all, and it can be taken
+from `semantic_one_word` on the existing two slots exactly as the two rows above were — no
+generation required.
+
+Also amended, per the peer and per the same rule as the window: **"7 domains suffices for 0.75
+effects" is a `main`-bank statement.** ICC is bank-dependent, so the threshold must be re-measured
+per bank rather than carried. That is §5.21's rule arriving in the design arithmetic, and it is the
+fifth instance of one shape.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### §6.3.1 — Measured: `ticket_knife`'s OWN multi-slot ICC, which settles it on the right basis
+
+§6.3 said the decisive measurement was `ticket_knife`'s own ICC, that it required no generation, and
+that the fourth argument was withdrawn until someone took it. Taken — `p5_ticket_knife_...` carries
+both slots on `semantic_one_word`:
+
+| bank | multi-slot ICC (raw / dose-centred) | between-domain sd | domains for n_eff=132 |
+|---|---|---|---|
+| `main` | 0.156 / 0.218 | 0.209 | 29 |
+| `ticket_bomb` | 0.000 / 0.000 | 0.078 | none — no penalty |
+| **`ticket_knife`** | **0.162 / 0.190** | **0.189** | **26** |
+
+**`ticket_knife` is `main`-like, not `ticket_bomb`-like.** At ICC 0.190 the ceiling with 10 domains
+is **53 effective rows** against the **132** needed, so it is unreachable — and unreachable *however
+many rows or slots are added*, because `k/ICC` does not depend on the row count.
+
+**The fourth argument is restored, on a sound basis.** §6.2 asserted it from `main`'s ICC applied to
+`ticket_knife` — a carried scale, the same error a fifth time. §6.3 withdrew it. It now rests on
+`ticket_knife`'s **own** measurement, which is what it should have rested on from the start. The
+difference matters precisely because `ticket_bomb` shows the number can be **zero** on the same
+domains and prose: the conclusion could not have been assumed.
+
+*(Two caveats travel with it: this is `semantic_one_word` as a proxy, since `core2x2_slot3` carries
+no forced-choice rows; and `ticket_knife`'s one-word win rate is 25/96, so it is a low-scoring
+population — which is consistent with C-31's "not above chance" and is the reason the cell is
+contested in the first place.)*
+
+**Net effect on the design: `main`-like and `ticket_knife`-like banks are cluster-limited and cannot
+be rescued by generation; `ticket_bomb`-like banks have no clustering penalty and could reach 132
+with the multi-slot rows that already exist. The ICC must be measured per bank before any bank is
+sized — never carried, in either direction.**
+
