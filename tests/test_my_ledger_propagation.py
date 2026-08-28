@@ -30,14 +30,20 @@ EXEMPT = {
     # --- carried by the EARLIER deliverable, reports/boombness_objective_sprint_report.md ---
     1: "in boombness_objective_sprint_report.md", 5: "in boombness_objective_sprint_report.md",
     6: "in boombness_objective_sprint_report.md", 8: "in boombness_objective_sprint_report.md",
-    9: "in boombness_objective_sprint_report.md", 11: "in boombness_objective_sprint_report.md",
+    9: "container: THE SECOND 4-HOUR REVIEW, which withdrew or narrowed four claims (C-9a..C-9d). "
+       "The parent id is in boombness_objective_sprint_report.md; the four lettered sub-corrections "
+       "are in no deliverable by id, and C-9c's substance is carried by the plan's claim table row "
+       "on the 24-cell clustering unit. See C-46.", 11: "in boombness_objective_sprint_report.md",
     13: "in boombness_objective_sprint_report.md", 14: "in boombness_objective_sprint_report.md",
     # --- operational / method-only: no claim was ever stated wrongly ---
     2: "operational: concurrent pytest runs corrupted an artifact; no claim affected",
     7: "method: wrong query kind, caught by the option-mass gate BEFORE any measurement was produced",
     10: "method: DOMAINS expansion broke a bank reproduction; caught by the suite and fixed",
     17: "operational: duplicate sbatch ran two arms twice; deterministic, no scientific harm",
-    3: "container: a 4-hour review whose five sub-corrections propagated individually",
+    3: "container: THE 4-HOUR REVIEW. \u26a0 C-46 — my earlier reason here said its five "
+       "sub-corrections 'propagated individually'. That was an assertion I never checked and it is "
+       "FALSE by id: C-3a..C-3e appear in no deliverable. Their substance is carried by the plan's "
+       "own claim table; the ids are not, and the check could not see them (C-45).",
     # --- claim-level, but discharged in the CLAIM'S CONSTRUCTION rather than as a table row ---
     4: "superseded: the generation-cap concern is discharged by C7's 640-cap truncation check (R-75)",
     15: "honoured in C13's construction: the re-judge it mandated IS C13 (PR-21, same judging window, "

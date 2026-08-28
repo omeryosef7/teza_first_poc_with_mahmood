@@ -12081,3 +12081,57 @@ inputs are clean" from "the check cannot see this input"* — and unlike the oth
 to both a guard and a reader, because the guard passes and the argument reads correctly. **The only
 way to find it is to feed the check inputs it has never seen**, which is what I did here and what
 C-44's mixed-readout run would have done to the verdict tool.
+
+### ⛔ C-46 (18:00) — **The eighth heading shape I said was still invisible: LETTERED sub-corrections. Nine of them, in no deliverable — and one of my own EXEMPT reasons asserted the opposite without checking. Plus: R-118's "finding" was a rediscovery of C-9c.**
+
+C-45 hardened the heading match and I wrote that *"my new test asserts seven heading shapes because I
+could enumerate seven; the eighth is still invisible."* **Rather than leave that as a rhetorical
+flourish I drove the check from the corpus** — every heading mentioning a `C-` id must be either
+counted or recognisably an R/DR/PR entry. **22 headings cite corrections after the dash (correct), and
+no numbered id exists only in a mention. But the sweep surfaced a shape my regex cannot express at
+all:**
+
+| lettered sub-corrections opened by `####` headings | in ANY deliverable |
+|---|---|
+| **C-3a, C-3b, C-3c, C-3d, C-3e** | **none** |
+| **C-9a, C-9b, C-9c, C-9d** | **none** |
+
+`\bC-(\d+)\b` cannot match `C-3a` — the digit is followed by a word character, so there is no boundary.
+**Nine corrections, invisible to the propagation guard for its entire life**, and their titles are not
+minor: *"is FACTUALLY WRONG"*, *"is WITHDRAWN"*, *"conditions on a POST-TREATMENT variable"*, *"the
+entire result is lexical G = 1, and I never said so"*.
+
+#### ⛔ And my own exemption asserted what I had not checked
+
+`EXEMPT[3]` read: *"container: a 4-hour review whose five sub-corrections **propagated individually**."*
+**They did not.** C-3a…C-3e appear in **no** deliverable. **That reason was an unverified assertion
+sitting inside the table whose entire purpose is to record checked reasoning** — the same shape as
+C-43's ratio, in the structure built to prevent it. Both `EXEMPT[3]` and `EXEMPT[9]` corrected.
+
+#### What survives, checked rather than assumed
+
+**C-9 is "THE SECOND 4-HOUR REVIEW"**, a container like C-3, so C-9a–d are corrections to *various*
+claims, not to live claim C9 — which is itself well-caveated, carrying C-20's withdrawal, DR-5's
+inversion and its margins explicitly.
+
+**And the substance is not lost**: the plan's own claim table (L71) already carries C-9c —
+*"at the bank's real unit (24 nested demonstration cells) the arm-vs-control contrast does not
+replicate; Llama `demoproc` p = 0.0063"*. **The ids never propagated; the finding did.** Three
+sub-corrections have neither id nor obvious substance downstream (C-9a, C-9b, C-3e), all three
+narrowing controls rather than establishing claims.
+
+#### ⛔ R-118's nesting "finding" was a rediscovery of my own
+
+C-9c, written days earlier: *"6 domains × 2 bank_blocks × 2 family slots = **24 demonstration
+cells**, with the four `n_examples` levels **NESTED** inside each cell … in **72/72** adjacent pairs.
+So 96 prompts are not 96 units, **and the domain is not the finest honest cluster either.**"*
+
+R-118, today: *"the demo blocks are **strictly nested across doses** … the 8 rows in a domain are
+nested doses of ONE demonstration set."* **I reported that to the concurrent session as a finding.**
+It is the same fact, and **my own log had it, with a larger `72/72` verification.**
+
+**The uncomfortable part is not the duplication but the unit.** C-9c concluded the honest cluster is
+the **24-cell** unit; every ICC figure from R-118 onward clusters by **domain (6)**. Clustering coarser
+is the **conservative** direction — fewer, larger clusters — so nothing computed is invalidated, **but
+I never stated the choice, and my own log had already argued the finer unit was the defensible one.**
+**Flagged to them, since the cluster level is load-bearing for the whole bank-design arithmetic.**
