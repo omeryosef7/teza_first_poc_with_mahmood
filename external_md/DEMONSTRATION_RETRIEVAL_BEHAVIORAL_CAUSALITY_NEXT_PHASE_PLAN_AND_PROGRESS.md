@@ -11309,3 +11309,49 @@ per-population windows), and R-114 (the confound measures to zero rows on both b
 
 **Deep-review artifacts written to the scratchpad via `--out-root`**, so the review itself does not
 litter `outputs/` — the DR-15 fix doing its job.
+
+### ✅ R-120 (15:20) — **Their new guard does not cover my files, which is the green-on-green error they had just warned about. Wrote my own — and it immediately found SEVEN corrections no by-hand count had covered, because my manual audits assumed the range they were auditing.**
+
+They ran my count against their own corpus and found **four** gaps, including the one that would have
+hurt: **the borrowed-window correction that every adversarial bound depends on** was in their plan and
+absent from the ledger anyone auditing the claims actually reads. They then built it as **`check_all`
+guard #7, `ledger_propagation_check`**.
+
+**My `check_all` went 6/7 → 7/7 and that told me nothing.** The guard reads
+`BOOMBNESS_RESEARCH_VALIDATION_AND_OBJECTIVE_PLAN.md` and `boombness_claim_ledger_2026-08-27.json` —
+**neither of mine**. Taking its green as coverage would have been **exactly the green-on-green error
+they had described two paragraphs earlier**: a passing check that never looked at the thing you
+believe it checked. *The warning and the trap arrived in the same message.*
+
+#### `tests/test_my_ledger_propagation.py`
+
+Strict by design, and the strictness is justified differently from theirs: in this log **every `C-NN`
+is claim-level by construction** — method-only fixes get `R-NN` — so absence, not merely silence, is
+the failure. Three tests, and the second one is theirs: **a mutation test against an all-green input
+measures nothing**, so `test_the_check_can_actually_fail` asserts on a **deliberately violating**
+input, and a third guards the degenerate pass where a regex matching nothing also reports no gaps.
+
+#### ⛔ It failed on first run, and found what my counting could not
+
+**Seven corrections — C-2, C-3, C-4, C-7, C-10, C-15, C-17 — were in NEITHER deliverable.** My
+by-hand audits in DR-14 and DR-16 ran **C-19…C-40**: they **assumed the range**, so no amount of
+care would have surfaced these. *That is the argument for automating a check you are already
+performing.*
+
+**Investigated rather than bulk-exempted**, and none is a live error:
+
+| correction | disposition |
+|---|---|
+| C-1, C-5, C-6, C-8, C-9, C-11, C-13, C-14 | carried by the **earlier** deliverable `boombness_objective_sprint_report.md` |
+| C-2, C-7, C-10, C-17 | **operational/method** — a corrupted artifact, a wrong query kind caught *before* any measurement, a bank reproduction caught by the suite, a duplicate `sbatch` with deterministic output |
+| C-3 | a 4-hour review **container** whose five sub-corrections propagated individually |
+| **C-4** | **superseded** — the generation-cap concern is discharged by C7's 640-cap truncation check (R-75) |
+| **C-15** | **honoured in C13's construction**: the re-judge it mandated **is** C13 (PR-21, same judging window, drift 2–4 rows), so the corrected claim is the one in the ledger |
+
+**C-15 was the one worth checking.** It corrects an overreach — *"neutral context weakens the attack"*
+as a cross-bank, cross-session comparison forbidden by PR-19, against a measured **78/96** judge
+agreement. C13 is that claim's live descendant, and it is stated **post-correction**. Had it not been,
+a live claim would have been resting on a comparison one of my own corrections forbade.
+
+All seven now carry a **reason** in `EXEMPT`. Following their design: **omission is allowed, silence
+is not.**
