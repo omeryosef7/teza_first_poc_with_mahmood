@@ -9300,6 +9300,50 @@ with MDE 0.094 exceeded by both confirmers and **divergence 96/96 on the null**,
 changed every generation while ASR did not move. **Live and inert — a dissociation, not a dead arm**,
 which is exactly the distinction the invariant exists to draw.
 
+
+### ⚠ R-96 (03:50) — **R-95's mechanism story is HALF right, and my own arms show which half. `demo_processing_only` behaves identically on both banks; `legacy_all_query` does NOT — on `main` it removes the attack while leaving binding intact, so "the unscoped mask works by removing access to the mapping" is bank-specific.**
+
+Their caveat list said *"`main`'s scoped ASR arm hasn't been run."* **It has — by me, at cap 192**
+(`p1k_*` behavioural and `p2_*` probe, both on `boombness_prompt_bank.jsonl`). So the 2×2 of
+**bank × scope**, on **both** readouts, is already complete across the two sessions. Assembled:
+
+| bank | arm | ASR | refusal | binding (mapped-wins) |
+|---|---|---|---|---|
+| **main** | baseline | 16/96 | 3/96 | 42/48 |
+| main | `legacy_all_query` | **3/96** | **1/96** ↓ | **41/48 — INTACT** |
+| main | `demo_processing_only` | **4/96** | **20/96** ↑ | **48/48 — raised** |
+| **ticket_bomb** | baseline | 30/96 | 12/96 | 45/48 |
+| ticket_bomb | `legacy_all_query` | **2/96** | **0/96** ↓ | **15/48 — DESTROYED** |
+| ticket_bomb | `demo_processing_only` | **8/96** | **22/96** ↑ | **45/48 — intact** |
+
+#### What replicates and what does not
+
+**`demo_processing_only` is consistent on both banks**: removes most of the attack (16→4, 30→8),
+**raises** refusal (3→20, 12→22), and **preserves or raises** binding (42→48, 45→45). **That is C5 and
+C2 holding together on two banks, and it is the half R-95 got right.**
+
+**`legacy_all_query` is NOT consistent.** On `ticket_bomb` it destroys binding (**45→15**); on `main`
+it leaves binding **intact at 41/48** while still removing the attack (16→3). **So R-95's sentence —
+*"the unscoped mask removes the attack by removing access to the mapping"* — is true on `ticket_bomb`
+and FALSE on `main`.** On `main` the mapping stays available, refusal *falls*, and the attack goes
+anyway. **That is a third route, not the one I recorded an hour ago.**
+
+**I adopted their framing and it was over-general.** The dissociation I should have stated is the one
+that actually replicates: **the two scopes differ in their REFUSAL signature on both banks** — `legacy`
+refuses *less* (3→1, 12→0), `demoproc` refuses *more* (3→20, 12→22) — **while their effect on binding
+is bank-dependent for `legacy` and bank-stable for `demoproc`.**
+
+**This is not a correction to any number** — theirs and mine both recompute — **it is a correction to a
+mechanism sentence I imported without testing it on the bank I already had.** R-95 recorded their
+result faithfully and then generalised its interpretation one bank too far; the arms that refute the
+generalisation were sitting in my own outputs while I wrote it.
+
+**What it does to C5**: unchanged and slightly strengthened — `demo_processing_only` preserves binding
+on **both** banks (42→48, 45→45), which is what R-93 claimed. **What it does to the phase's story**:
+the clean *"scoped preserves, unscoped destroys"* headline **is not available**; the unscoped mask only
+destroys binding on one of two banks, and why it does there and not here is **unexplained and not
+being explained by me tonight.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
