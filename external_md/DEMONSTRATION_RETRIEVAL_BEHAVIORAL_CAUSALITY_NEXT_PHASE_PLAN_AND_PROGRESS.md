@@ -13087,3 +13087,54 @@ hung on it were not.**
 
 **Their own caveat is the one that now binds**: the point estimate crosses and **the interval still
 contains the threshold**. Nothing here makes the cell decided — it makes it decidable.
+
+### ⛔ C-57 (21:40) — **C-56's "2.7× margin" was composition-inflated. Verified their correction independently: our resampling distributions agree, our single draws differ by 30 effective rows, and that disagreement is the finding.**
+
+They corrected the number I computed, so I recomputed it rather than accepting it.
+
+**Their composition point is exact.** Dose counts in `d38tkfc` are **1520 / 532 / 304 / 152** at
+n=1/2/4/8 — **60.6% of rows are dose-1**, because disjoint slot sets shrink as n grows. So `m=66` is
+not 66 comparable rows but a **dose-heterogeneous mixture dominated by one dose**, and dose-centring
+removes each dose's mean while leaving its variance, so the pooled ICC is pulled down by composition
+**on top of** the real slot coupling.
+
+| estimand | ICC | m | n_eff |
+|---|---|---|---|
+| **pooled** (my C-56 figure) | 0.0923 | 66 | **358.3** |
+| **dose-balanced**, their draw | 0.2361 | 16 | **133.9** |
+| **dose-balanced**, my draw | **0.1806** | 16 | **163.9** |
+
+**So C-56's "crosses with a 2.7× margin" is withdrawn.** The pooled 358.3 is right for what it
+measures and wrong as a statement about the cell.
+
+#### The disagreement between our single draws is the result
+
+**Our distributions agree; our point estimates do not.** 200 random balanced draws:
+
+| | median | range | crossing 132 |
+|---|---|---|---|
+| **mine** | **151.4** | [123.1, 200.2] | **190/200** |
+| theirs | 152.7 | [118.5, 201.7] | 186/200 |
+
+**Two independent implementations reproduce the same distribution to within 1.3 effective rows on the
+median — and their single draw (133.9) and mine (163.9) differ by 30.** *The estimate moves by more
+between two arbitrary subsamples than the entire margin over the threshold.* Neither 133.9 nor 163.9
+is a fact about the bank; **the median with its draw range is the only honest quote**, and roughly
+**5-7% of draws fall below 132**.
+
+**The bottom line survives and the margin does not**: the cell crosses on the median with ~1.15×, not
+2.7×, and the interval contains the threshold. **Decidable, not decided** — unchanged from C-56, for a
+different reason than C-56 gave.
+
+#### Their withdrawal is the same error as mine, relocated
+
+They pulled their §12.11 "CI lower bound reaches 132 at k≈47" to **unmeasured**, because it held ICC
+fixed while growing **k** — *"structurally the same fixed-ICC assumption your C-55 table made, just
+relocated to the other variable."* **Correct, and I would add the asymmetry they note**: adding domains
+has no mechanical reason to change within-domain composition, whereas adding slots does, so the k
+projection is *less* wrong than my m table was — **but neither of us measured it, and that is the
+whole point.**
+
+**The shared fix, cheap and general**: *report the resampling spread of any estimate whose row
+composition we chose.* One loop. Both of today's failures — my fixed-ICC table and their single-draw
+142.9 — are quoting a point estimate whose own instability was never sampled.
