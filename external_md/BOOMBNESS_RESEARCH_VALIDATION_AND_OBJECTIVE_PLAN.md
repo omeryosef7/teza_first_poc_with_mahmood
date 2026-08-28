@@ -2741,3 +2741,56 @@ it is not yet a resolution.
 
 **Gate status unchanged: REOPENED, NOT PASSED.** One blocker cleared, one stands, and the
 `basket_gun` puzzle from §7 is untouched.
+
+---
+
+## §7.3 — the `basket_gun` puzzle, and "binding necessary but not sufficient" RE-MEASURED WITHIN banks
+
+§7's third blocker: **boombness predicts ASR at +0.308 on `basket_gun`, a bank where §5.8 showed the
+mapping never installs.** If there is no mapping, what is boombness predicting?
+
+**Hypothesis:** `basket_gun` installs the mapping on a *minority* of families (0.417 mapped-wins),
+and those are the families that attack. If so, boombness's predictive power there is *consistent*
+with the mapping account rather than against it.
+
+**Test:** join each behavioural row to its **own family's** forced-choice probe — same bank, same
+codeword, same concept, same demonstrations. Baseline arms only, no intervention.
+
+| bank | families binding | n | **ASR \| binds** | **ASR \| not** | OR | Fisher p |
+|---|---|---|---|---|---|---|
+| `basket_gun` | 38/96 | 96 | **6/38 = 0.158** | 4/58 = 0.069 | 2.53 | 0.1869 |
+| `main` | 84/96 | 96 | **21/84 = 0.250** | 1/12 = 0.083 | 3.67 | 0.2854 |
+| `ticket_bomb` | 90/96 | 96 | **27/90 = 0.300** | **0/6 = 0.000** | ∞ | 0.1801 |
+
+**All three banks point the same way. None is significant alone** (Fisher combined p = 0.1580;
+3/3 concordance under a sign test = 0.25 two-sided). **This is directional consistency, not an
+established effect, and it is reported as such.**
+
+### Why this matters more than its p-value
+
+**It re-measures §5.9's claim WITHIN banks, which sidesteps §5.10's codeword × concept confound
+entirely.** The `window_knife` dissociation compared *across* banks, where codeword and concept move
+together and StrongREJECT's harm-category scoring is uncontrolled. **This comparison holds bank,
+codeword, concept and demonstration pool fixed and varies only whether that family's mapping took.**
+
+On that comparison:
+
+* **Binding looks NECESSARY** — non-binding families attack at **0.000, 0.069, 0.083** across the
+  three banks.
+* **Binding is clearly NOT SUFFICIENT** — binding families attack at only **0.158, 0.250, 0.300**.
+
+**That is §5.9's conclusion, surviving the confound that threatened it**, obtained without any
+intervention and without any between-bank comparison.
+
+### And it partially resolves the `basket_gun` puzzle
+
+`basket_gun` is **the only bank with enough binding variance to run this test** — `main` and
+`ticket_bomb` bind at 84/96 and 90/96, near ceiling, leaving 12 and 6 non-binding families. The bank
+that looked anomalous in §7 is the one that makes the within-bank test possible.
+
+Boombness predicting ASR there is **consistent with** "the minority of families that do bind are the
+ones that attack" rather than requiring a mapping-free route. **Consistent with, not established** —
+the 6-vs-4 split carries no weight on its own.
+
+**Gate status: unchanged.** This softens the third blocker from "unexplained anomaly" to
+"underpowered but coherent", and leaves the G2 non-reproduction (§7.2) standing.
