@@ -9390,6 +9390,55 @@ nothing), C-26/C-27 (passing tests that checked nothing), R-94 (two correct medi
 and now this. **Every one was caught by someone comparing against something that should have
 differed** — and this one by the session whose numbers I was tabulating.
 
+
+### ⛔ R-97 (04:10) — **The deciding cell DOES NOT DECIDE: `basket_gun`'s baseline does not bind (19/48, BELOW chance), so it cannot arbitrate whether `legacy` destroying binding is the norm. R-96's question stays open.**
+
+Their three `basket_gun` probe arms completed (`p5A_gun`, `p5L_gun`, `p5D_gun`), which is the cell I
+suggested for turning R-96's 1-of-2 binding split into a 2-of-3. **Read from their artifacts, the
+comparable readout is `semantic_forced_choice`, n = 48:**
+
+| bank | baseline mapped-wins | rate |
+|---|---|---|
+| `main` | 42/48 | **0.875** |
+| `ticket_bomb` | 45/48 | **0.938** |
+| **`basket_gun`** | **19/48** | **0.396 — BELOW the 0.500 chance line** |
+
+**The model prefers the codeword to the concept on this bank before any intervention.** There is no
+binding to destroy or preserve, so the arms cannot answer the question:
+
+| arm | mapped-wins | mass |
+|---|---|---|
+| baseline | 19/48 | 0.3869 |
+| `legacy_all_query` | **11/48** | 0.3617 |
+| `demo_processing_only` | **23/48** | 0.3872 |
+
+**`legacy` at 11/48 must NOT be read as "binding destroyed on a third bank."** It is a drop from a
+baseline that was already below chance — precisely the shape of their own `window_knife` (baseline
+ASR 2/96, *"evidence of nothing"*), of R-52's underpower decline, and of the gate PR-32 imposed on
+itself: **the baseline must bind before "does the intervention preserve binding" is a question.**
+**`basket_gun` FAILS that gate.**
+
+**So R-96's open question is untouched**: `legacy` destroys binding on `ticket_bomb` and leaves it
+intact on `main`, and **a third informative bank has not been found.** Two of three, not two of three.
+
+*(The directions are still consistent with everything else — `demoproc` moves mapped-wins **up**
+19 → 23 while `legacy` moves it **down** 19 → 11 — but from a non-binding baseline that is
+uninterpretable and I am not counting it.)*
+
+#### ⚠ A near-miss of my own, recorded because it nearly became the finding
+
+**My first read of this was `55/144` pooled across THREE query kinds** — `semantic_forced_choice`,
+`semantic_one_word` and `comprehension_usage` all carry `p_concept`, and my filter took every row with
+that field. I was about to report a below-chance baseline from a number that **mixed three different
+readouts with different scales** — `forced_choice` mass 0.3869 against `one_word` mass 0.0808, which
+R-13 measured as below its own reportability floor.
+
+**The conclusion happens to survive** — `forced_choice` alone is 19/48 = 0.396, still below chance —
+**but it survived by luck, not by method.** Splitting by `query_kind` was the check, and I ran it
+because their filter line said three kinds while my mental model said one. **The same class as C-29
+one tick earlier: cells that are individually fine, pooled across a dimension that makes them
+incomparable.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
