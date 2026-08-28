@@ -97,6 +97,33 @@ def test_it_REFUSES_a_run_with_failed_rows():
         assert "failed to generate" in (proc.stdout + proc.stderr)
 
 
+def test_it_REFUSES_a_silently_attrited_population():
+    # The dangerous case: no recorded failures and a PASS gate, but fewer rows than the bank held.
+    # critical_k would quietly adapt to the smaller n and the verdict would look valid.
+    with tempfile.TemporaryDirectory() as tmp:
+        d = _fixture(tmp)
+        sm = json.load(open(os.path.join(d, "summary.json")))
+        sm["n_bank_rows"], sm["n_result_rows"] = 160, 48
+        json.dump(sm, open(os.path.join(d, "summary.json"), "w"))
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+                              capture_output=True, text=True)
+        assert proc.returncode != 0
+        assert "survived" in (proc.stdout + proc.stderr)
+
+
+def test_a_complete_population_is_accepted():
+    # The guard must not refuse a healthy run: n_result_rows == n_bank_rows.
+    with tempfile.TemporaryDirectory() as tmp:
+        d = _fixture(tmp)
+        sm = json.load(open(os.path.join(d, "summary.json")))
+        sm["n_bank_rows"], sm["n_result_rows"] = 48, 48
+        json.dump(sm, open(os.path.join(d, "summary.json"), "w"))
+        proc = subprocess.run([sys.executable, SCRIPT, "--probe", f"x={d}"],
+                              capture_output=True, text=True)
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        assert "INSTALLED" in proc.stdout
+
+
 def test_duplicate_probe_labels_are_refused():
     with tempfile.TemporaryDirectory() as tmp:
         d = _fixture(tmp)

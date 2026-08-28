@@ -10150,3 +10150,54 @@ variance, which inflates the SE. A paired treatment can only reduce these p-valu
 **No claim changes.** What changes is that C13 is now evidenced by the test its own wording requires,
 and the fault C-34 named has been checked against the whole ledger instead of the one cell that
 happened to expose it. **Five of six claims were already sound; the one that was not, survives.**
+
+---
+
+### ✅ R-105 (09:10) — **A concurrent job failed hard and became the first real test of yesterday's guard. It refused correctly — and refusing it exposed a gap the guard did not cover: silent attrition would have adapted the threshold instead of tripping it.**
+
+**Job 789095 (not mine — the concurrent session's `q5A_lpQ14B`, Qwen3-14B) FAILED.** I did not launch it,
+did not cancel it and have not touched it; the diagnosis below is only because it writes into the
+shared `outputs/` tree and because it is the first degraded run my new instrument has ever met. Two
+independent failures, both theirs to resolve:
+
+1. **CUDA OOM on 92 of 160 rows** — `n_succeeded=68`, surviving by query kind
+   `{semantic_one_word: 37, semantic_forced_choice: 18, comprehension_usage: 13}`.
+2. **Tail gate FAILED** on two kinds: `comprehension_usage` median option mass **0.001466** and
+   `semantic_one_word` **0.01854**, both under the 0.05 gate. `semantic_forced_choice` **passed**
+   (median 0.9998), so the forced-choice arm looks individually healthy.
+
+**`src/boombness/mapping_installation_verdict.py` refused it**, on `option_mass_gate` being the
+`OVERRIDDEN — NOT REPORTABLE` string rather than `PASS`. The `n_failed=92` check would have caught it
+independently. **First live exercise, correct refusal.**
+
+#### ⚠ But the refusal fired for the wrong reason to be reassuring
+
+`semantic_forced_choice` **passed its own mass gate**, and the run dir is written and inviting. The
+guard stopped it via two conditions that happen to be true here — **neither of which is about the
+forced-choice population itself.** A run that was forced-choice-only, gate PASS, and simply lost rows
+would have walked straight through, because **`n` is taken from the rows on disk**: the population
+shrinks, `critical_k` **quietly shrinks with it**, and the verdict still prints as valid. At the n this
+job actually produced:
+
+| n | `critical_k` | as a rate | power @ 0.625 |
+|---|---|---|---|
+| **18** (surviving forced-choice) | **14** | **0.778** | **0.135** |
+| 48 (intended) | 32 | 0.667 | 0.331 |
+
+**This is C-33's shape arriving through the data rather than through prose** — a threshold that silently
+re-fits itself to whatever population survived. And it is **worse than lost power**: the attrition here
+is **OOM, which is length-correlated**, so the survivors are systematically the **shorter prompts**. A
+fraction computed on them is not an estimate of the bank's rate at all.
+
+**Guard added**: the tool now refuses when `n_result_rows < n_bank_rows`, with the reason stated —
+the survivors of length-correlated attrition are not a random subset. **Two tests**, and deliberately
+one of each polarity: a silently-attrited fixture (gate PASS, `n_failed=0`, 48 of 160) is **refused**,
+and a complete 48/48 fixture is **accepted and returns INSTALLED**. The positive test is the point —
+C-26 recorded that a guard which passes for the wrong reason is worthless, so this one is pinned on
+both sides. **12 tests pass.**
+
+**Re-verified after the change**: all four PR-33/34 runs still accepted and **unchanged** — 42/48, 39/48,
+40/48 INSTALLED and 30/48 NOT_ESTABLISHED, `crit=32` throughout. `check_all` 6/6.
+
+**No claim moves.** What moves is that the instrument was tested against a real failure instead of only
+against fixtures I wrote, and the failure taught it something my fixtures had not.

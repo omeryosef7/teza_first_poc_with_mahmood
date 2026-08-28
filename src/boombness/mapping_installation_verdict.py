@@ -118,6 +118,21 @@ def main():
         if nfail:
             raise SystemExit(f"[install] REFUSING {lab}: {nfail} rows failed to generate.")
 
+        # *** ATTRITION IS NOT JUST LOST POWER; THE SURVIVORS ARE A BIASED SUBSET ***
+        # `n` below is taken from the rows on disk, so a silently shrunken population would simply
+        # get a SMALLER critical_k and still produce a verdict that looks completely valid. That is
+        # the C-33 shape arriving through the data instead of through the prose.
+        # It is worse than a power loss: the attrition observed in practice is CUDA OOM (job 789095,
+        # 92 of 160 rows), and OOM is length-correlated, so the rows that survive are systematically
+        # the shorter prompts. A fraction computed on them is not an estimate of the bank's rate.
+        n_bank = sm.get("n_bank_rows")
+        n_res = sm.get("n_result_rows")
+        if n_bank is not None and n_res is not None and n_res < n_bank:
+            raise SystemExit(
+                f"[install] REFUSING {lab}: {n_res} of {n_bank} rows survived. The threshold would "
+                f"silently adapt to the smaller n and still print a verdict, but the survivors of "
+                f"length-correlated attrition are not a random subset of the bank.")
+
         n = len(rows)
         wins = sum(1 for r in rows if r["p_concept"] > r["p_codeword"])
         ties = sum(1 for r in rows if r["p_concept"] == r["p_codeword"])
