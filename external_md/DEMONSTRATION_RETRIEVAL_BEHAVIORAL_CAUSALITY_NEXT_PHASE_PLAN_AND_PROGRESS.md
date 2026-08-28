@@ -9309,12 +9309,14 @@ Their caveat list said *"`main`'s scoped ASR arm hasn't been run."* **It has —
 
 | bank | arm | ASR | refusal | binding (mapped-wins) |
 |---|---|---|---|---|
-| **main** | baseline | 16/96 | 3/96 | 42/48 |
-| main | `legacy_all_query` | **3/96** | **1/96** ↓ | **41/48 — INTACT** |
-| main | `demo_processing_only` | **4/96** | **20/96** ↑ | **48/48 — raised** |
+| **main** | baseline | **16/96 †** | 3/96 | 42/48 |
+| main | `legacy_all_query` | **3/96 †** | **1/96** ↓ | **41/48 — INTACT** |
+| main | `demo_processing_only` | **4/96 †** | **20/96** ↑ | **48/48 — raised** |
 | **ticket_bomb** | baseline | 30/96 | 12/96 | 45/48 |
 | ticket_bomb | `legacy_all_query` | **2/96** | **0/96** ↓ | **15/48 — DESTROYED** |
 | ticket_bomb | `demo_processing_only` | **8/96** | **22/96** ↑ | **45/48 — intact** |
+
+**† = ASR within the first 192 generated tokens** (over half of every `main` row is at the cap); the `ticket_bomb` ASR figures are plain ASR at cap 640. **The two ASR columns are NOT comparable — C-29.** The binding and refusal columns are cap-free and are.
 
 #### What replicates and what does not
 
@@ -9343,6 +9345,50 @@ on **both** banks (42→48, 45→45), which is what R-93 claimed. **What it does
 the clean *"scoped preserves, unscoped destroys"* headline **is not available**; the unscoped mask only
 destroys binding on one of two banks, and why it does there and not here is **unexplained and not
 being explained by me tonight.**
+
+
+### ⛔ C-29 (03:55) — **R-96's table put an ASR-within-192 column next to a plain-ASR column without labelling either. Caught by the concurrent session. The conclusion survives because it never rested on that column — but the table as written invites the comparison my own DR-2 rule forbids.**
+
+R-96 assembled a bank × scope table to test R-95's mechanism sentence. They flagged that **`main`'s
+rows are cap 192 and `ticket_bomb`'s are cap 640**, so the ASR column mixes two different quantities.
+**Verified on my own artifacts:**
+
+| arm | `max_new` | frac at cap |
+|---|---|---|
+| `p1A` (main baseline) | **192** | **0.562** |
+| `p1_legacy_all_query` | **192** | 0.552 |
+| `p1_demo_processing_only` | **192** | **0.719** |
+| ticket_bomb behavioural (theirs) | **640** | 0.000 |
+
+**More than half of every `main` row is at the cap.** So `16/96` and `3/96` are **ASR-within-192**;
+`30/96` and `2/96` are **plain ASR**. DR-2 fixed the rule that every ASR travels with its cap, and my
+own R-92/R-94 work turned on exactly this kind of estimator mismatch — **I then built a table that
+juxtaposes the two without a label.**
+
+**Corrected in place**: the ASR column now reads **`16/96 †` / `3/96 †` / `4/96 †`** for `main` with
+**† = ASR within the first 192 generated tokens**, and the `ticket_bomb` rows unmarked as plain ASR at
+cap 640.
+
+#### Why R-96's conclusion is unaffected — checked, not assumed
+
+R-96 concluded two things, and **neither uses the ASR column**:
+
+1. **`legacy` destroys binding on `ticket_bomb` and not on `main`** — from the **forced-choice probe**,
+   which runs `--max-new 8` **forward-only with no generation**. `p2A` and `tbA` both carry
+   `max_new=8`. **No cap is involved on either side; the comparison is clean.**
+2. **The refusal signature separates the scopes on both banks** — and **R-75 measured refusal to be
+   cap-invariant row-for-row** (81/96 completions changed between caps, **0** refusal decisions moved).
+   **Cap-mixing cannot reach it.**
+
+**So the finding stands and the presentation was wrong.** That distinction matters: the fix is a label,
+not a retraction — but an unlabelled table is how a reader ends up making the comparison the author
+avoided.
+
+**The pattern, for the fourth time in this exchange**: an artifact that is individually correct in each
+cell and misleading in how the cells are set beside each other. C-20 (a live hook that changed
+nothing), C-26/C-27 (passing tests that checked nothing), R-94 (two correct medians of the same rows),
+and now this. **Every one was caught by someone comparing against something that should have
+differed** — and this one by the session whose numbers I was tabulating.
 
 ---
 
