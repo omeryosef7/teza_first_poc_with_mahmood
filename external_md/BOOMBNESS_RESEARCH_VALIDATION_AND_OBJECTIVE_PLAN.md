@@ -2290,3 +2290,58 @@ remains available and reportable.
 * The **31 % refusal component** is real and travels with the claim.
 * This is the retrieval knockout, **not** a boombness objective. It bears on entry 6 and Phase 5, and
   says nothing in favour of Phase 7.
+
+---
+
+## §5.7 — ⛔ CORRECTION TO §5.6: "the unscoped mask removes access to the mapping" is FALSE on `main`
+
+**§5.6's mechanism sentence was contradicted by my own §5 data before I wrote it.**
+
+A concurrent session pointed out that `main`'s scoped ASR arm *had* been run — by them, at cap 192 —
+so the bank × scope 2×2 was already complete across the two sessions. Re-derived from **my own probe
+artifacts**, forced-choice, mapped-wins / n and median option mass:
+
+| bank | arm | binding | option mass |
+|---|---|---|---|
+| `main` | baseline | 42/48 | 0.5414 |
+| **`main`** | **`legacy_all_query`** | **41/48 — INTACT** | 0.3681 |
+| `ticket_bomb` | baseline | 45/48 | 0.5534 |
+| **`ticket_bomb`** | **`legacy_all_query`** | **15/48 — DESTROYED** | 0.1152 |
+| `ticket_bomb` | `demo_processing_only` | 45/48 — intact | 0.5201 |
+
+**Same scope, opposite outcome, two banks.** So §5.6's *"the unscoped mask removes the attack by
+removing access to the mapping"* is true on `ticket_bomb` and **false on `main`**, where the mapping
+stays available (41/48), refusal *falls*, and the attack goes anyway. That is a **third route**.
+
+**This is mine, not theirs.** They generalised the sentence one bank too far — but I wrote it, and
+**§5 (V-31) already contained the refuting number**: I reported `main` legacy at 42/48 → 41/48 and
+called it "binding survives". Then §5.2 found `ticket_bomb` collapsing and I reframed the axis from
+*population* to *scope* — a reframing that fits `ticket_bomb` and contradicts the `main` row I had
+published two sections earlier. **I had both halves and fitted a story to one of them.**
+
+### What survives, and it is narrower
+
+| | replicates? |
+|---|---|
+| **`demo_processing_only` is bank-STABLE** — removes most of the attack, **raises** refusal, preserves or raises binding | ✅ **2/2 banks** |
+| **The REFUSAL SIGNATURE separates the scopes** — `legacy` refuses *less* (3→1, 12→0), `demoproc` refuses *more* (3→20, 12→22) | ✅ **2/2 banks** |
+| "unscoped destroys binding, scoped preserves it" | ⛔ **fails on `main`** |
+
+**The refusal signature is the dissociation worth building on**, and the binding effect is
+**bank-dependent for `legacy` and bank-stable for `demoproc`**.
+
+**Why `legacy` destroys binding on `ticket_bomb` but not `main` is unexplained, and it is being left
+unexplained rather than fitted to two banks.**
+
+### The deciding cell, launched
+
+The obvious test is `legacy` on a **third** bank. `basket_gun` already has my behavioural arms
+(§0.17), so only the probe side is missing. **Jobs 788326 / 788327 / 788328** run baseline, `legacy`
+and `demoproc` probes on `basket_gun`.
+
+* If `legacy` binding is **intact** there → `ticket_bomb` is the outlier and destroyed-binding is the
+  exception.
+* If **destroyed** → `main` is the outlier and the question becomes what `main` has that protects it.
+
+Either way it converts a 1-of-2 split into a 2-of-3, which is the minimum for saying which case is
+the norm. **§5.6's ASR and binding numbers stand; only its mechanism sentence is withdrawn.**
