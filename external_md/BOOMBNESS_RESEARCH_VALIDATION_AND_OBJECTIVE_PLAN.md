@@ -2794,3 +2794,62 @@ the 6-vs-4 split carries no weight on its own.
 
 **Gate status: unchanged.** This softens the third blocker from "unexplained anomaly" to
 "underpowered but coherent", and leaves the G2 non-reproduction (§7.2) standing.
+
+---
+
+## §5.11 — THE 2×2 RESOLVES: concept dominates codeword by ~14×, and §5.9 loses its headline
+
+All four cells at **cap 640, 0/96 at cap** (plain ASR, no relabelling), pinned judge.
+
+| | **bomb** | **knife** |
+|---|---|---|
+| **ticket** | **27/96 = 0.281** | **5/96 = 0.052** |
+| **window** | **25/96 = 0.260** | **4/96 = 0.042** |
+
+| effect | size |
+|---|---|
+| **concept** (bomb − knife) | **+0.2240** |
+| **codeword** (ticket − window) | +0.0156 |
+| **ratio** | **14.3×** |
+
+**The two knife cells agree (0.052, 0.042) and the two bomb cells agree (0.281, 0.260), across
+different codewords.** §5.10's hypothesis is now a measurement: **ASR is a property of the concept,
+essentially not of the codeword.**
+
+### What this costs §5.9
+
+`window_knife`'s ASR is 0.042 — and **every knife bank sits at ~0.05 regardless of codeword.** So the
+gap between "mapping installs completely (39/48)" and "attack never lands (4/96)" is **largely
+explained by the harm category scoring low**, not by the mapping failing to drive behaviour.
+
+**The arithmetic of §5.9 is not false — binding 1.000 with ASR 0.042 is still binding without
+attack.** What is removed is the *inference*: that gap no longer tells us anything about the
+mapping's causal role, because **the same gap sits on `ticket_knife` at 0.052 and nobody is claiming
+a mechanism there.** Real dissociation, mundane explanation.
+
+**§5.9 is withdrawn as a headline.** It stays as an observation with the concept effect attached.
+
+### Why §7.3 is the version that survives
+
+§7.3 re-measured "binding necessary but not sufficient" **within** banks — bank, codeword, concept
+and demonstration pool all held fixed, varying only whether that family's mapping took. **The concept
+effect cannot reach it.** That was the right response to §5.10 before this 2×2 existed, and this
+result confirms it was necessary rather than merely cautious.
+
+### ⚠ A judge-draw discrepancy inside my own headline
+
+A concurrent session read `ticket|bomb` as **30/96**; I read **27/96**. Both are correct: the *same
+generations* judged in two invocations (`e6j_A_ticket` and `dpj_A_ticket`). **7/96 = 0.0729
+disagreements on byte-identical text** — precisely §0.4's floor, landing in a headline cell.
+
+The 2×2 also **mixes invocations**: three cells were judged together (788571) and `ticket|bomb`
+comes from an earlier one. The conclusion is invariant — concept/codeword ratio is **14.3× on my
+draw and 8× on theirs** — but the exact ratio is not, and quoting it to two significant figures would
+be over-precision. **The claim is "concept dominates by roughly an order of magnitude", not 14.3.**
+
+### Still open, and launched
+
+**Do `ticket_knife` and `window_bomb` install the mapping?** Only `window_knife`'s ladder is measured.
+If the knife banks install and still score ~0.05, the harm-category account is complete; if they do
+not, two effects are tangled and the ASR column cannot separate them. Jobs **788639 / 788640**
+(forward-only probes).
