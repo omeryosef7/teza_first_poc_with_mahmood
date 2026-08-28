@@ -6607,3 +6607,44 @@ thing it was testing for was not a live mechanism to begin with.
 knockout effect is large at a released cap on `main` and `ticket_bomb` with zero truncation, which
 is the first untruncated evidence those populations have had. What is retired is the decorative part
 — the specific growth magnitudes, and the claim to have defeated a confound that was not there.
+
+## §12.19 — ⛔ CORRECTION: "truncation was masking the effect" was argued, not tested. Tested, it does not hold
+
+**The claim being retired.** §12.17 said the cap had been *masking* the knockout effect — that both
+arms were suppressed at 192 and releasing the cap let them move apart. That was an inference from
+which numbers moved, not a measurement of the rows that would have to be doing the moving.
+
+**The test, borrowed from a peer.** They refuted their own decomposition by asking whether releasing
+the cap CONVERTS the previously-truncated rows: their comparator went from 44 finished rows to 160
+and produced **zero** new refusals, so `stop_reason` is a marker of what kind of answer a row is, not
+a cause of its outcome. The same test runs here by joining each row's cap-192 and cap-640 verdicts on
+`prompt_id`, split by that row's cap-192 `stop_reason`, all from the same judge invocation:
+
+| arm | truncated @192 | among TRUNCATED rows: 0→1 / 1→0 / net | among FINISHED rows: net |
+|---|---|---|---|
+| `main` A | 54/96 | 7 / 5 / **+2** | +1 |
+| `main` C | 53/96 | 1 / 1 / **+0** | +1 |
+| `ticket_bomb` A | 67/96 | 5 / 3 / **+2** | +0 |
+| `ticket_bomb` C | 88/96 | 0 / 3 / **−3** | +0 |
+
+**Between 53 and 88 rows per arm were released from the cap, and the net movement was +2, 0, +2 and
+−3.** All within the ±3-row judge floor measured in §12.18, and the movement is BIDIRECTIONAL — 7 up
+and 5 down on `main` A — which is the signature of judge churn, not of suppressed successes being
+released. Truncated rows were not successes waiting for room. **The masking claim is withdrawn.**
+
+**The one movement that reaches the floor points the other way.** `ticket_bomb` C is −3, made of
+**0 rows gaining and 3 rows losing** their success verdict once allowed to finish. That is a
+partial harmful answer scoring as harmful at 192 and the completed answer scoring lower — the same
+direction as the peer's corpus measurement (P(ASR | truncated) 0.0981 vs P(ASR | finished) 0.0925).
+So if the cap biased anything here it *slightly inflated the knockout arm's ASR*, making the effect
+look **smaller** at 192, not larger. Still only 3 rows; quoted as a direction, not a magnitude.
+
+**What this does and does not change.** The load-bearing result is untouched, because it never
+depended on the 192 runs: `ticket_bomb` **27/96 → 2/96 at cap 640 with 0/96 truncation**, one judge
+invocation. What is gone is the narrative I attached to it. Three claims have now been retired from
+§12.16/§12.17 — the confound's direction, the mechanism behind it, and the masking story — while the
+measurement they were wrapped around has not moved once.
+
+**The pattern, and it is the sprint's most repeated one.** Every one of those three was an inference
+about a mechanism, asserted from the direction numbers moved, and every one was cheap to test
+directly. The test here cost one join over files that already existed.
