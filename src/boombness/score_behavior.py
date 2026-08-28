@@ -91,11 +91,27 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]],
     # same bank where this readout OOM'd 22 of 40 rows (2026-08-28). `logits_to_keep=1` returns
     # [1, 1, V], so `[0, -1, :]` selects the SAME vector -- this is byte-identical, not an
     # approximation. The fallback keeps older//exotic model classes that lack the kwarg working.
+    def _forward():
+        try:
+            return lm.model(input_ids=t, use_cache=False, logits_to_keep=1)
+        except TypeError:
+            return lm.model(input_ids=t, use_cache=False)
+
+    # OOM RETRY, BECAUSE THE FAILURE IS FRAGMENTATION AND NOT SIZE. Measured 2026-08-28 on
+    # Qwen3-14B + longpreQ14B under eager: 18 of 40 rows succeed and then EVERY remaining row
+    # fails, with the failing allocation only 12 MiB. A per-row capacity limit does not look like
+    # that -- short rows would keep succeeding after a long one failed. Varying sequence lengths
+    # leave the caching allocator fragmented, so `empty_cache()` and one retry recovers the row.
+    # This changes NO number: it is the same forward on the same inputs, run after returning freed
+    # blocks to the driver. If it OOMs a SECOND time the row is charged to the ledger as before --
+    # the retry cannot convert a genuine capacity failure into a silent success.
     try:
-        _out = lm.model(input_ids=t, use_cache=False, logits_to_keep=1)
-    except TypeError:
-        _out = lm.model(input_ids=t, use_cache=False)
+        _out = _forward()
+    except torch.cuda.OutOfMemoryError:
+        torch.cuda.empty_cache()
+        _out = _forward()
     logits = _out.logits[0, -1, :].float().cpu()
+    del _out
     lp = torch.log_softmax(logits, dim=-1)
     out = {}
     all_ids = set()

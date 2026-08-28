@@ -3507,3 +3507,79 @@ So the probe **does** work on Qwen3 and the bank **does** install the mapping. T
 no uncorrupted measurement yet. Both arms are relaunched single-GPU with the `logits_to_keep` fix.
 
 **Nothing here touches the Phase 7 gate, which remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §5.18 — §5.6 EXTENDS TO A SECOND MODEL: on Qwen3-14B the scoped knockout removes the attack and leaves binding intact
+
+§5.6's success condition — *the intervention removes the attack without removing the mapping* — was
+Llama-only on the binding side. It now holds on **Qwen3-14B** as well. Both halves, same bank
+(`longpreQ14B`), same doses (`n_ex ∈ {4,8}`), same blocks (`core2x2` + `core2x2_slot3`):
+
+| half | arm | result | artifact |
+|---|---|---|---|
+| **ASR** (cap 640) | `A_baseline` → `demo_processing_only` | **11/80 → 1/80** | `p26j_A_20260827_045339_1483852`, `p26j_dp_20260827_045339_1483855` |
+| **binding** (forced choice) | `A_baseline` → `demo_processing_only` | **14/18 → 15/18** | `q9A_lpQ14B_fc_20260828_104610_2283895`, `q8D_lpQ14B_fc_20260828_102657_2281919` |
+
+### The binding contrast, paired
+
+Paired on the **18 prompt_ids measured by both arms**, `semantic_forced_choice`, gate PASS on both:
+
+| | mapped-wins | median option mass |
+|---|---|---|
+| `A_baseline` | **14/18 = 0.778** | **0.9998** |
+| `demo_processing_only` | **15/18 = 0.833** | **0.9999** |
+
+discordant **3 up / 2 down**, n_disc=5, exact two-sided **p = 1.0000**.
+
+**Binding does not degrade — it is numerically higher under the knockout.** The knockout arm's own
+complete 40 rows give **30/40 = 0.750**, also above the §5.16 screen, so the conclusion does not
+depend on the paired subset.
+
+**The baseline clears §5.16's ≥0.667 installation screen at 0.778**, so unlike `ticket_knife` (§5.15)
+this is a probe that *can* answer, and unlike `ticket_bomb` (§5.2) the mapping is not destroyed.
+
+**Option mass is the sharpest contrast with the Llama results.** On the Llama banks forced choice was
+decided inside roughly half the next-token mass (`main` 0.5416, `ticket_bomb` 0.5695, collapsing to
+0.1162 under knockout). Here it is **0.9998 → 0.9999**: the two options are essentially all of what
+the model was going to say, before *and* after. This is the least tail-bound forced-choice readout in
+the sprint.
+
+### The arm is LIVE, so "preserved" is not vacuous
+
+A no-op hook preserves binding trivially (C-20). It is not one here:
+
+* **18/18 rows changed** — zero bit-identical readouts between arms
+* median |Δ logp_concept| **0.1111**, max **13.5200**
+* the mask covered a median of **80.5 demo positions**, `attn_implementation: eager`,
+  `knockout_scope: demo_processing_only`
+
+*(`frac_rows_decode_live: 0.0` in the liveness block is expected and not a failure: this is a
+`--no-generate` run, so there is no decode phase to edit. The prefill edit is the intervention, and
+the 18/18 readout divergence is what evidences it.)*
+
+### ⚠ What this result is NOT — the limits travel with it
+
+1. **n=18 of a possible 40, and the missing rows are the LONG ones.** The baseline arm OOM'd 22 of
+   40 rows. Prompts that succeeded are **200–255 tokens**; every prompt **262–325 tokens failed** —
+   a razor-sharp cliff. The estimate is therefore on the **short half** of the bank.
+2. **Underpowered.** MDE: **≥6** same-direction discordant pairs are needed for p<0.05 and only **5**
+   pairs are discordant at all. A degradation affecting fewer than about a third of rows is
+   undetectable here. **p=1.0000 is "no evidence of degradation", NOT "evidence of no degradation".**
+3. **Dose 8 contributes 2 rows** (16 of the 18 are `n_ex=4`), so this is effectively a single-dose
+   result.
+4. It is **one bank on this model**, and it is not pre-registered.
+
+### An unexplained asymmetry, recorded rather than explained away
+
+The **baseline** arm OOM'd 22/40 **twice, reproducibly, on two different nodes** (n-802 and n-803),
+while the **knockout** arm on the same node completed **40/40 with zero failures**. The intervened
+arm does strictly more work, so this is backwards. Ruled out: node identity (reproduced on both),
+GPU contention (`mem_get_info` reports **44.11 GiB free of 44.53** before load, i.e. the GPU is
+exclusively ours), sequence length as such (the prompts are only **200–325 tokens**; eager attention
+at S=325 is ~8 MB), fragmentation (an `empty_cache()` + one-retry path changed nothing), and the
+discarded-logits hypothesis (`logits_to_keep=1` changed nothing). **I do not have an explanation**,
+and a 12 MiB allocation failing on a 44 GiB card with a 30 GiB model remains unaccounted for. It is
+recorded as open rather than papered over, because it is the reason limit (1) exists.
+
+**This does not touch the Phase 7 gate, which remains CLOSED. Phase 8 must not be built.**
