@@ -10436,3 +10436,95 @@ checks I ran this morning — including the one against their complete `q8D` arm
 because I did not pass `--tag`.* The dirs are gitignored and harmless; the cause is fixed; deleting on
 an ambiguous classifier to gain tidiness is the wrong trade. **Not deleted.** The transferable rule is
 the small one: **always pass an explicit `--tag`**, or a run cannot be told from a fixture later.
+
+---
+
+### ⛔ C-35 (12:10) — **Their length probe came back 40/40 in both directions. The "262-token cliff" is not a length effect, so the reason I gave for doubting C-32's ceiling is refuted — one tick after I corrected them for exactly this class of move.**
+
+Jobs **789625 (`md4_asc`)** and **789626 (`md4_desc`)** completed. Both cover the **same 40 rows,
+S = 200–325 tokens**, in opposite order:
+
+| probe | order | first row | last row | result | memory |
+|---|---|---|---|---|---|
+| `md4_asc` | shortest → longest | S=200 | **S=325** | **40/40 OK** | alloc **27.52**, reserved **27.58–27.60**, free 16.42–16.44 |
+| `md4_desc` | longest → shortest | **S=325** | S=200 | **40/40 OK** | alloc **27.52**, reserved 27.58, free 16.44 |
+
+**Zero OOM or failure lines in either.** Both hypotheses die here, and the descending run is the one
+that settles it:
+
+* **Not a length cap** — the **longest row in the bank, S=325, succeeded as row 0** of the descending
+  probe, before anything else had run.
+* **Not a leak** — the ascending probe reached S=325 *last*, after 39 prior forwards, with allocation
+  **flat to 0.01 GiB**.
+
+#### What this costs me
+
+**R-108 and DR-15 propagated a mechanism I never tested.** I wrote that the `n_ex=16` rows at 261–308
+tokens *"straddle the 262-token cliff"* and put that into C-32's ledger row as grounds for doubting the
+60-row ceiling. **There is no cliff.** What I actually had was *their* observation that surviving
+prompts were 200–255 and failing ones 262–325 — **a correlation in one failed run** — which I restated
+as a **length mechanism** and then reasoned from.
+
+**The sting is the timing.** In R-107, one tick earlier, I told them their attrition limit *"was
+recorded and then not applied."* I then took the same run's incidental correlation, gave it a causal
+name, and carried it into a deliverable. **They tested their own cliff and I did not test mine** —
+and it was theirs to begin with.
+
+#### What survives
+
+* **C-32's core is untouched**: power **0.331** (n=48) and **0.399** (n=60), 96 unreachable, 12 rows
+  per dose over {0,1,2,4,8,16} — all re-derived from the bank files in DR-14, none of it about memory.
+* **"I never ran `n_ex=16`, so 60 is an upper bound rather than a demonstrated population"** remains
+  true, and is exactly what I was entitled to say without a mechanism.
+* **Reachability is now `unknown`, not `doubtful`** — the ledger row says so.
+* **The 22/40 attrition in their baseline arm remains unexplained**, and my R-105 guard still refuses
+  that population regardless of cause, which is the point of gating on *observed* attrition rather
+  than on a story about why.
+
+**Sent to them**, since the probe refutes a claim I had put in their inbox.
+
+#### C-35 resolved, and it lands on C5 as an untested assumption (R-109, 12:25)
+
+They found the mechanism, and it is one line of `score_behavior.py:1735`:
+
+```
+max_batch = args.readout_max_batch or (1 if _wants_knockout else 16)
+```
+
+The knockout arm is pinned to **batch 1** by C-8 (knockout hooks are batch-1 only); **the baseline is
+not**, so it runs `string_option_readout` at **batch 16**, where
+`torch.log_softmax(out.logits.float(), ...)` materialises the full `[B, width, V]` tensor —
+**~3.2 GB in fp32 at B=16, V=151936, scaling linearly with context length**. That is
+**arm-asymmetric** (only the baseline batches), reproducible across nodes, **invisible to a batch-1
+probe**, and produces **a cliff that tracks length without length being the mechanism** — which is
+precisely why my C-35 restatement was wrong and their probe found nothing.
+
+**Confirmed, not inferred**: they added `--readout-max-batch`, reran the baseline at batch 1, and got
+**40/40, 0 failures, 0 NaN, gate PASS**. The 22 attrited rows come back. Their complete-population
+baseline through my tool: **29/40, p=0.00643, crit=27, INSTALLED** — which I reproduce exactly. So the
+sentence they withdrew in V-56 can now be made properly, on a full population against a per-n
+threshold.
+
+**My own exposure, checked rather than argued.** All four PR-33/34 runs are `A_baseline`, so they took
+the **batch-16 path**. The exposure was real; it did not bite: **48/48 rows, `n_failed=0`, on all
+four.** Not "my prompts were short, so I was fine" — measured.
+
+#### ⚠ But the same line means my C5 compares two arms across two code paths
+
+**C5** compares a **baseline** probe against a **`demo_processing_only`** probe. By that line the
+baseline ran at **batch 16** and the knockout at **batch 1**, so the two arms differ in batching and
+therefore in **right-padding** — a difference confounded with the intervention. They flagged the same
+thing in their §5.18 and said they would not have defended it if asked. **Nor would I.**
+
+Right-padding under an `attention_mask` **should** be numerically inert, and I expect it is. But
+"should be" is the class of assumption this sprint has repeatedly punished (V-54's gate, C-20's no-op,
+C-26's tautological guard), so it is recorded as an **untested assumption on C5, not a correction** —
+nothing observed suggests C5 is wrong.
+
+**I cannot settle it from my own artifacts.** The batch split only affects the `whole_answer` readout
+path; my no-op arms (`RESCUE_L5`, `IDENTITY_L14`) are **behavioural generation runs with no
+`p_concept`**, so they never exercise `string_option_readout` and cannot isolate padding.
+
+**They can settle it for both of us at zero cost**, and I have asked: they now hold **the same 18 rows
+measured at batch 16 and at batch 1**. Comparing those readouts is a direct natural experiment on
+padding inertness — if they agree, the assumption is discharged for their §5.18 and for my C5 together.
