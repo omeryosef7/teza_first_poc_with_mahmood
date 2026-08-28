@@ -9458,7 +9458,7 @@ accumulate; if it never installs, the dose ladder is flat.
 | `ticket_bomb` | 9/12 = 0.750 | **12/12 = 1.000** | 12/12 = 1.000 | 12/12 = 1.000 | +0.250 |
 | **`basket_gun`** | 4/12 = 0.333 | 5/12 = 0.417 | 5/12 = 0.417 | 5/12 = **0.417** | **+0.083** |
 
-**On `main` and `ticket_bomb` the mapping installs and saturates** — both reach **12/12** and stay
+**⛔ R-102 NARROWS THIS: `basket_bomb` installs on the same codeword, so the failure is the CONCEPT `gun`, not the bank — read "does not install for the `gun` concept".** **On `main` and `ticket_bomb` the mapping installs and saturates** — both reach **12/12** and stay
 there. **On `basket_gun` it never crosses chance at any dose**, and the apparent rise is **one row in
 twelve**, flat within noise.
 
@@ -9780,6 +9780,58 @@ three PR-34 arms are duplicates.** I do not cancel, so they will run and waste a
 **`bbA` (`basket_bomb`) is not a duplicate and is the decisive arm** — it is the one that
 disconfounds *my own* R-98, which nobody else is testing. **The waste is real, small, and mine: I acted
 on an offer instead of waiting for the reply to it.**
+
+
+### 🏆 R-102 (06:05) — **PR-34 condition 1 FIRES: `basket_bomb` installs, so R-98's failure is the CONCEPT `gun`, not the codeword. And `ticket_knife` installs too, which COMPLETES R-101's harm-category account.**
+
+Seven banks now have a measured installation ladder, 12 rows per cell:
+
+| bank | codeword | concept | n=1 | n=2 | n=4 | n=8 | total | installs? |
+|---|---|---|---|---|---|---|---|---|
+| `main` | carrot | bomb | 0.667 | 0.917 | 0.917 | **1.000** | 42/48 | yes |
+| `ticket_bomb` | ticket | bomb | 0.750 | 1.000 | 1.000 | **1.000** | 45/48 | yes |
+| **`basket_bomb`** | **basket** | **bomb** | 0.667 | 0.833 | **1.000** | **1.000** | **42/48** | **YES** |
+| `window_bomb` | window | bomb | 0.667 | 0.917 | 0.833 | 0.917 | 40/48 | yes |
+| `window_knife` | window | knife | 0.583 | 0.833 | 0.833 | **1.000** | 39/48 | yes |
+| `ticket_knife` | ticket | knife | 0.417 | 0.583 | 0.583 | **0.917** | 30/48 | **yes** (weakest) |
+| **`basket_gun`** | **basket** | **gun** | 0.333 | 0.417 | 0.417 | 0.417 | **19/48** | **NO** |
+
+#### Condition 1 fires — R-98's sentence was wrong in its scope
+
+**`basket_bomb` installs and saturates on the same codeword that fails with `gun`.** So the failure is
+**not** the codeword `basket`; it is the **concept `gun`**. PR-34 pre-committed the consequence:
+
+> **R-98's *"the mapping does not install on `basket_gun`"* becomes *"the mapping does not install for
+> the `gun` concept"*** — and the concurrent session's entry-6 null reading, which rests on R-98,
+> inherits that narrowing.
+
+**All four bomb banks install. Both knife banks install. The single gun bank does not.** Installation
+tracks the **concept**, and — as with ASR (R-101) — **the codeword does almost nothing**: `basket`
+gives 42/48 with bomb and 19/48 with gun; `ticket` gives 45/48 with bomb and 30/48 with knife.
+
+#### R-101's open item is settled, and the harm-category account is now complete
+
+R-101 left this explicitly unresolved: *"if the knife banks install and still score ~0.05, the
+harm-category account is complete; if they do not install, two effects are tangled."*
+
+**They install.** `ticket_knife` **30/48**, `window_knife` **39/48** — and both score **~0.05 ASR**
+(0.052, 0.042). **So the knife banks bind the mapping and still almost never produce a successful
+attack. Two effects are not tangled: there is one effect (harm category depresses ASR) and one
+separate failure (the `gun` concept does not install at all).**
+
+**That completes the account the concurrent session should carry**: `window_knife`'s install/attack
+gap is a **harm-category** phenomenon, confirmed on a second codeword.
+
+#### ⚠ What I am not claiming
+
+* **`ticket_knife` is the weakest installer** — 30/48, starting **below chance** at n=1 (0.417) and
+  only reaching 0.917 at n=8. It installs, but less completely than the bomb banks. **The binary
+  "installs / does not" hides a gradient**, and `basket_gun` is at one end of it rather than in a
+  separate category. **PR-34's conditions were written as binary and I am reporting the gradient
+  rather than pretending the binary was sufficient.**
+* **One model, Llama-3.1-8B.** Nothing here is cross-model.
+* **12-row cells.** The *shape* is the claim; `window_bomb`'s non-monotone 0.917 → 0.833 → 0.917 is
+  one row wobbling and means nothing.
 
 ---
 
