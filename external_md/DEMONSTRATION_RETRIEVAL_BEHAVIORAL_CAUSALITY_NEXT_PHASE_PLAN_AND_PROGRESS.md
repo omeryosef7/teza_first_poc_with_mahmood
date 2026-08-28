@@ -9884,6 +9884,52 @@ threshold question.
 threshold and never whether the *threshold* was resolvable. **A 48-row binary readout cannot separate
 0.625 from 0.500, and nothing about the number's appearance says so.**
 
+
+### ⛔ C-32 (06:40) — **The remedy I proposed for C-31 is not available and would not have worked. `ticket_knife` is UNRESOLVABLE on this bank, and I checked that only after recommending a run.**
+
+C-31 closed by telling the concurrent session that **"96 rows would put p<0.05 within reach of a 0.625
+effect"** and that *"the population size, not the model, is what makes `ticket_knife` unresolvable."*
+**Both halves are wrong, and I established that by counting rows I could have counted first.**
+
+**96 rows do not exist.** `ticket_knife` has **288** forced-choice rows, **72 per condition**, and
+`natural_doublespeak` splits **12 per dose across n ∈ {0,1,2,4,8,16}**. So:
+
+| population | rows | note |
+|---|---|---|
+| what I ran, `n ∈ {1,2,4,8}` | **48** | |
+| **ceiling with demonstrations**, `n ∈ {1,2,4,8,16}` | **60** | adding `n=16` is the only headroom |
+| 72 | 72 | **only by including `n=0`, which teaches no mapping** — it would dilute the thing being measured |
+| **96** | — | **does not exist on this bank/condition** |
+
+**And the reachable ceiling would not have settled it.** Power to detect a true rate of 0.625 at
+α = 0.05:
+
+| n | k needed | expected at 0.625 | **power** |
+|---|---|---|---|
+| 48 | 32 | 30.0 | **0.331** |
+| **60 (the ceiling)** | 39 | 37.5 | **0.399** |
+| 96 *(unreachable)* | 59 | 60.0 | 0.627 |
+| 144 | 85 | 90.0 | 0.828 |
+
+**At the maximum population this bank can supply, power is 0.399** — a coin flip whether a real 0.625
+effect registers. **Even my unreachable 96 gives only 0.627.** Resolving `ticket_knife` would need
+**~144 rows**, i.e. **three times the natural_doublespeak forced-choice population that exists**.
+
+#### The correction, and what it changes
+
+**`ticket_knife`'s installation is not "unresolved pending a bigger run" — it is unresolvable with this
+bank.** C-31 recorded it as indistinguishable from chance; **that verdict stands and is now known to be
+permanent** rather than provisional. The harm-category account rests on `window_knife` alone
+(39/48, p = 1.5e-05) **and will continue to**, unless someone builds a larger probe population, which
+is a bank-design change and not a rerun.
+
+**What I did wrong is narrow and worth naming**: I diagnosed an underpowered measurement correctly and
+then **prescribed a remedy without checking the prescription against the same constraint I had just
+measured.** The row count was one `Counter` away and I sent the advice first. **Same tick, opposite
+halves: rigorous about the finding, casual about the recommendation.**
+
+**⚠ Sent to them immediately** — they had the arm as a live option and it cannot answer the question.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
