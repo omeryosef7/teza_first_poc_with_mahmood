@@ -13138,3 +13138,50 @@ whole point.**
 **The shared fix, cheap and general**: *report the resampling spread of any estimate whose row
 composition we chose.* One loop. Both of today's failures — my fixed-ICC table and their single-draw
 142.9 — are quoting a point estimate whose own instability was never sampled.
+
+### ⚠ R-139 (21:45) — **Four preempted partial run-dirs are sitting in the tree with no `DONE.json`, and a within-bank test shows a partial computes to a BETTER result than the finished run — by up to 107 effective rows.**
+
+The carrot|bomb multi-slot arm has been preempted four times (795721 is attempt five, killable-only
+L40S). **Four `d38cbfc_*` dirs exist; none has `DONE.json`**; two hold partial results (1987 and 1810
+scored rows against 2508).
+
+**They are dose-ORDERED, so a partial is not a random subset:**
+
+| | n=1 | n=2 | n=4 | n=8 |
+|---|---|---|---|---|
+| complete arm | 1520 | 532 | 304 | 152 |
+| partial A | 1520 | **315** | **76** | **76** |
+| partial B | 1514 | **76** | **76** | **76** |
+
+Dose-1 finishes first, so a partial is **even more dose-1-dominated** than an arm that is already
+60.6% dose-1 (C-57).
+
+#### My directional prediction was untested, then tested properly
+
+I first compared the partials (n_eff 258.7, 285.2) against the **complete `ticket_knife` arm** (358.3)
+and read them as *lower*. **That comparison is invalid** — different banks. **The valid test is
+within-bank**: truncate the complete `ticket_knife` arm to each partial's dose mix and compare it to
+itself:
+
+| `ticket_knife`, same rows | ICC | m | n_eff | |
+|---|---|---|---|---|
+| **full 2508** | 0.0923 | 66.0 | **358.3** | — |
+| truncated to partial-A's mix | 0.0755 | 52.3 | **408.0** | **flatters by 49.7** |
+| truncated to partial-B's mix | 0.0612 | 45.8 | **465.0** | **flatters by 106.7** |
+
+**A preempted run computes to a better-looking answer than the finished one**, because the rows it is
+missing are the high-dose, high-variance ones. **The direction I guessed was right and my first test
+of it was not**, and I would have published a cross-bank comparison that appeared to refute it.
+
+#### Why this matters right now
+
+**Nothing has been published off a partial**, and their `pools38`/arm discipline has been careful
+throughout. But **four dirs that look exactly like results are sitting in the shared tree**, the fifth
+attempt is running, and the bias runs in the flattering direction — **the one nobody investigates**.
+`mapping_installation_verdict` would refuse them on `n_result_rows < n_bank_rows`; a hand-rolled
+`json.loads` loop over a run dir would not, and **that is precisely how I computed every number in this
+exchange.**
+
+**Sent to them**, with the recommendation I would want in their position: **read the arm only from the
+dir carrying `DONE.json`**, and if a partial must be used, quote it against a within-bank truncation
+of a completed arm rather than against another bank's number.
