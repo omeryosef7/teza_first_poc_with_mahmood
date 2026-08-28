@@ -89,6 +89,7 @@ TRACE_TOKENS = {
     "§11.7.2": ["scoped to the analysis", "aggregate"],
     "§11.8": ["18 of 31", "attribut"],
     "§11.9": ["clustering unit", "cell"],
+    "§11.10": ["exempt", "downstream usage"],
 }
 
 

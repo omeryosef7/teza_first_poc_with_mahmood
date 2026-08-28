@@ -3520,7 +3520,7 @@ Llama-only on the binding side. It now holds on **Qwen3-14B** as well. Both halv
 | half | arm | result | artifact |
 |---|---|---|---|
 | **ASR** (cap 640) | `A_baseline` → `demo_processing_only` | **11/80 → 1/80** | `p26j_A_20260827_045339_1483852`, `p26j_dp_20260827_045339_1483855` |
-| **binding** (forced choice) | `A_baseline` → `demo_processing_only` | **14/18 → 15/18** | `q9A_lpQ14B_fc_20260828_104610_2283895`, `q8D_lpQ14B_fc_20260828_102657_2281919` |
+| **binding** (forced choice) | `A_baseline` → `demo_processing_only` | ~~14/18 → 15/18~~ **SUPERSEDED by §5.19: 29/40 → 30/40** | ~~`q9A_lpQ14B_fc_20260828_104610_2283895`~~ (ATTRITED, 22/40 lost to OOM), `q8D_lpQ14B_fc_20260828_102657_2281919`; **live artifacts are `qbA_lpQ14B_b1_...` / `qbD_lpQ14B_b1_...`** |
 
 ### The binding contrast, paired
 
@@ -5383,4 +5383,36 @@ could not see have no downstream substance at all. Their guard passed for its wh
 every correction they had written happened to be numbered, and nothing about its green
 distinguished "no lettered corrections exist" from "I cannot see lettered corrections" — §11.7.2's
 class again, on the same day, in the guard rewritten to close it.)*
+
+
+### §11.10 — ⛔ My own exemption reason asserted something false, which is §11.9's `EXEMPT[3]` in my tables
+
+A peer found their exemption table asserted that five sub-corrections *"propagated individually"* —
+untrue, and **inside the table whose purpose is recording checked reasoning.** I said I would
+re-verify mine against artifacts rather than assume, because a reason string is exactly as
+unauditable as theirs was. Doing so found one.
+
+**The checkable parts verified.** Both `CITED_AS_REFUSED` runs exist and are genuinely refused. All
+five `CITED_WITH_FAILURES` counts match their own ledgers exactly — 48/96, 3/4, 1/24, 22/40, 1/1 —
+with the named reason string matching in every case.
+
+**The unverifiable part was wrong.** The `q9A_lpQ14B_fc` reason asserted:
+
+> *"Cited only as the superseded baseline… **No live claim rests on this run**."*
+
+It is the cited artifact for **§5.18's headline binding row** — `14/18 → 15/18` — a result row in the
+section stating the second-model finding. §5.19 did re-measure it on `qbA`/`qbD` (29/40 → 30/40) and
+§5.18.1 did withdraw the one-sample claim, **but that table row carried no in-place marker**, so a
+reader arriving at §5.18 saw a live-looking result citing an attrited run.
+
+**Fixed at the row**, not only in the reason: the figures and the artifact id are struck through, the
+supersession is stated inline, and the live artifacts are named. The exemption reason now records
+what was wrong with it rather than a tidier claim.
+
+**The shape is the one worth keeping.** Numbers in an exemption table can be checked against
+artifacts and all five of mine were right. **Assertions about *downstream usage* cannot be**, and
+that is precisely where both sessions' tables were wrong on the same day — theirs about propagation,
+mine about whether a claim rested on a run. *An exemption table is only as good as its least
+checkable sentence*, and the least checkable sentences are the ones that say what something is
+**not** used for.
 

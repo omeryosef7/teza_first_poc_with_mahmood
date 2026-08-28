@@ -75,9 +75,13 @@ CITED_WITH_FAILURES = {
         "PROBE VERDICT: 1/24 `d_surface_not_lexically_clean` is the probe's FINDING about a "
         "direction, emitted through the ledger; the run did what it was asked",
     "q9A_lpQ14B_fc_20260828_104610_2283895":
-        "GENUINELY ATTRITED: 22/40 lost to OOM. Cited only as the superseded baseline — §5.19 "
-        "re-measured the contrast on qbA (40/40) and §5.18.1 withdrew the one-sample claim taken "
-        "from it. No live claim rests on this run",
+        "GENUINELY ATTRITED: 22/40 lost to OOM. §5.19 re-measured the contrast on qbA/qbD (40/40) "
+        "and §5.18.1 withdrew the one-sample claim. CORRECTED 2026-08-28: an earlier version of this "
+        "reason asserted 'no live claim rests on this run', which was FALSE — it is the cited "
+        "artifact for §5.18's headline binding row, and that row carried no in-place supersession "
+        "marker. The row is now struck through and re-pointed at qbA/qbD. This entry is the reason "
+        "strings' own EXEMPT[3]: an assertion inside the table whose purpose is recording CHECKED "
+        "reasoning, which had not been checked",
     "w640_20260827_224651_3802479":
         "TOOL'S OWN REFUSAL: 1/1 `not_sprint_grade` is arm_report refusing the arm, which is the "
         "artifact's intended output and the subject of §0.12",
