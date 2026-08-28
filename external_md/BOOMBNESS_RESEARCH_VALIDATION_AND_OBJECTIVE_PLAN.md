@@ -7116,3 +7116,59 @@ Phase 9.
 **Cost and scope.** Two GPU jobs. `d38beh` generates 608 rows at cap 640 (`expect-n 608`);
 `d38xb` scores the readouts. Judging follows on `cpu-killable` in one invocation, per §12.21's
 7.0% cross-session flip rate.
+
+## §12.27.1 — ⛔ AMENDMENT to the §12.27 pre-registration, before any outcome exists
+
+**Timestamp discipline.** `d38beh` had generated 13 of 608 rows and `d38xb` 1,661 readout rows when
+this was written. **No ASR verdict exists** — judging has not run, so the outcome variable is not yet
+defined and nothing has been read. A peer attacked the three points I asked them to; all three land,
+and two of them would have made the result unreadable.
+
+### 1. The "unseen ≥ half of seen" criterion is withdrawn — the denominator is the problem
+
+The seen-domain estimate comes from **6 clusters**, where the Fisher-z SE is 0.577 and a point
+estimate of 0.19 carries a CI of roughly (−0.74, +0.87). A ratio whose denominator has that spread
+can pass or fail for reasons unrelated to transfer. The fault is the *ratio form*, not the choice of
+one-half over one-third. Replaced with:
+
+* **Primary:** the partial on the 32 unseen domains is non-zero.
+* **Transfer, as a difference not a ratio:** bootstrap `P_unseen − P_seen` over domains and report
+  its CI. A CI containing zero means *no detectable degradation*, which is what the ratio was
+  reaching for, and it introduces no constant.
+* **Usefulness floor, stated as a judgment:** `|P_unseen| ≥ 0.10`. This is not a statistical
+  threshold and is not derived from anything — it is my line for "large enough to be worth
+  optimising against", declared in advance so it cannot be moved afterwards.
+
+### 2. The primary test is at k = 32, not 38 — and 32 is inside the marginal band
+
+§12.27 said "at 38 clusters the bootstrap is out of the under-coverage regime". **38 is the bank; 32
+is the analysis**, and the usual guidance places cluster-robust inference in trouble below ~40–50
+clusters, not below 30. So 32 is marginal rather than clear.
+
+**Remedy adopted:** a null-imposed **wild cluster bootstrap** with Rademacher weights
+(Cameron–Gelbach–Miller), now implemented in `clustered_stats.wild_cluster_bootstrap_p` and
+validated by simulation — under a true null with independently clustered `x` and `y` it rejects at
+**0.042** against nominal 0.05, where treating rows as clusters rejects at **0.683**.
+
+**And what a fail licenses is softened accordingly:** at k=32 a CI containing zero is *suggestive
+evidence of absence*, not the clean "informative fail" §12.27 planned to write. That sentence was
+load-bearing for Phase 9 and is now weaker.
+
+### 3. `d_naive` runs as a positive control on the unseen domains
+
+The cross-bank fit is declared but not validated, and a fail otherwise conflates two hypotheses.
+The identical unseen-domain partial is therefore run for `d_naive`, which costs nothing:
+
+* `d_naive` transfers and `d_surface` does not → the failure is **about boombness**, which is the
+  answer Phase 7 wants.
+* **Neither transfers** → the failure is about domain generalisation of fitted directions in
+  general, and the design cannot speak to the objective question. The write-up then reads
+  **"untestable on this bank"**, not "boombness does not predict".
+
+### 4. Not adopted, and why
+
+A rotation — fit on 32 domains, test on 6, rotate — would give a *distribution* of transfer
+estimates instead of one unbalanced 6/32 contrast, and it is strictly more informative. It requires
+**refitting directions per fold**, which is a `--stage fit` run per rotation rather than a
+re-analysis, so it is out of scope for this tick. Recorded as the better design that was not run,
+rather than left unmentioned.

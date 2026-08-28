@@ -143,3 +143,84 @@ def test_cluster_bootstrap_resamples_CLUSTERS_not_rows():
     assert hi - lo > 0.35, (
         f"width {hi - lo:.3f} is what ROW resampling produces (~0.20); cluster resampling of 12 "
         f"fully-clustered groups must give ~0.57. The bootstrap is not resampling clusters.")
+
+
+def _clustered_null(n_clusters, per, rng):
+    """x and y each strongly clustered but INDEPENDENT of one another: the true effect is zero."""
+    rows = []
+    for c in range(n_clusters):
+        ax, ay = rng.gauss(0, 1), rng.gauss(0, 1)
+        for _ in range(per):
+            rows.append({"c": c, "x": ax + rng.gauss(0, 0.5), "y": ay + rng.gauss(0, 0.5)})
+    return rows
+
+
+def test_wild_cluster_bootstrap_has_correct_SIZE_under_a_clustered_null():
+    """The property the whole function exists for.
+
+    §12.27's primary statistic sits on 32 clusters, inside the 30-50 band where a pairs bootstrap
+    is unreliable. This checks the wild version does not over-reject when x and y are each heavily
+    clustered but unrelated — the exact structure of the boombness data, where the predictor's ICC
+    is 0.82.
+    """
+    rng = random.Random(4)
+    rejects = 0
+    reps = 40
+    for _ in range(reps):
+        _, p = cs.wild_cluster_bootstrap_p(_clustered_null(32, 19, rng), lambda r: r["c"],
+                                           "x", "y", n_boot=250)
+        rejects += p < 0.05
+    assert rejects / reps <= 0.20, (
+        f"rejection rate {rejects / reps:.2f} at nominal 0.05 — the test over-rejects under a "
+        f"clustered null, which is the failure it exists to prevent")
+
+
+def test_treating_ROWS_as_clusters_over_rejects_badly_on_the_same_data():
+    """The contrast that shows the clustering is doing real work: ~0.04 vs ~0.68 in simulation."""
+    rng = random.Random(4)
+    rejects = 0
+    reps = 20
+    for _ in range(reps):
+        _, p = cs.wild_cluster_bootstrap_p(_clustered_null(32, 19, rng), lambda r: id(r),
+                                           "x", "y", n_boot=250)
+        rejects += p < 0.05
+    assert rejects / reps >= 0.30, (
+        "row-level 'clusters' should over-reject heavily here; if this passes the fixture no "
+        "longer has the cluster structure the size test depends on")
+
+
+def test_wild_cluster_bootstrap_detects_a_real_WITHIN_cluster_effect():
+    rng = random.Random(9)
+    rows = []
+    for c in range(32):
+        a = rng.gauss(0, 1)
+        for _ in range(19):
+            x = rng.gauss(0, 1)
+            rows.append({"c": c, "x": x + a, "y": a + 1.2 * x + rng.gauss(0, 0.5)})
+    _, p = cs.wild_cluster_bootstrap_p(rows, lambda r: r["c"], "x", "y", n_boot=500)
+    assert p < 0.05, f"a strong within-cluster effect must be detected; got p={p}"
+
+
+def test_rademacher_weights_are_drawn_PER_CLUSTER_not_per_row():
+    """⛔ THE SECOND TEST OF MINE THAT FAILED ITS OWN MUTANT.
+
+    The size test above did NOT catch "weights drawn per row": measured rejection rates were
+    identical at 32 clusters (0.075 vs 0.075) and only separated below ~12 (0.117 vs 0.067 at
+    k=8) — because the t statistic already carries a cluster-robust CR0 variance, so most of the
+    clustering enters there rather than through the weights. A rejection-rate test is the wrong
+    instrument for this property.
+
+    The direct signature is deterministic and holds at any cluster count: one Rademacher draw per
+    cluster means the bootstrap t can take at most 2**k distinct values. Per-row weights make the
+    support effectively continuous.
+    """
+    rng = random.Random(2)
+    rows = [{"c": c, "x": rng.gauss(0, 1), "y": rng.gauss(0, 1)}
+            for c in range(4) for _ in range(25)]
+    _, _, draws = cs.wild_cluster_bootstrap_p(rows, lambda r: r["c"], "x", "y",
+                                              n_boot=600, return_draws=True)
+    distinct = len({round(v, 9) for v in draws})
+    assert distinct <= 2 ** 4, (
+        f"{distinct} distinct bootstrap statistics from 4 clusters — with one weight per cluster "
+        f"there can be at most 16. The weights are being drawn per ROW.")
+    assert distinct >= 4, f"only {distinct} distinct values; the bootstrap is not varying at all"

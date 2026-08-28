@@ -161,3 +161,68 @@ def cluster_permutation_p(rows: Sequence[dict], cluster_key: Callable[[dict], ob
         if abs(stat(swapped)) >= obs:
             hits += 1
     return obs, (hits + 1) / (n_perm + 1)
+
+
+def wild_cluster_bootstrap_p(rows: Sequence[dict], cluster_key: Callable[[dict], object],
+                             x_key: str, y_key: str, control_keys: Sequence[str] = (),
+                             n_boot: int = 4000, seed: int = 0,
+                             return_draws: bool = False):
+    """Null-imposed wild cluster bootstrap (Cameron-Gelbach-Miller) for "x has no partial effect".
+
+    WHY THIS EXISTS ALONGSIDE `cluster_bootstrap_ci`. The pairs bootstrap in that function
+    under-covers when the cluster count is small, and the usual guidance places cluster-robust
+    inference in trouble below roughly 40-50 clusters rather than below 30. §12.27's primary test
+    runs on the 32 UNSEEN domains — inside that marginal band — so a pairs interval there is not
+    trustworthy on its own. The wild bootstrap with Rademacher weights is the standard remedy in
+    exactly that range.
+
+    Ranks everything first, residualises x and y on the controls, then tests the slope of
+    ey ~ ex. The null b = 0 is IMPOSED: bootstrap outcomes are w_g * ey_i with one Rademacher draw
+    w_g per CLUSTER, so the resampled data satisfy the null by construction and the reference
+    distribution is the right one. Returns (observed t, two-sided p).
+    """
+    groups: dict[object, list[int]] = {}
+    for i, r in enumerate(rows):
+        groups.setdefault(cluster_key(r), []).append(i)
+    keys = sorted(groups, key=repr)
+
+    rx = ranks([r[x_key] for r in rows])
+    ry = ranks([r[y_key] for r in rows])
+    ctrls = [[r[c] for r in rows] for c in control_keys]
+    ex = _residualise(rx, ctrls) if ctrls else [v - sum(rx) / len(rx) for v in rx]
+    ey = _residualise(ry, ctrls) if ctrls else [v - sum(ry) / len(ry) for v in ry]
+
+    def _t(y: Sequence[float]) -> float:
+        sxx = sum(v * v for v in ex)
+        if sxx <= 0:
+            return float("nan")
+        b = sum(a * c for a, c in zip(ex, y)) / sxx
+        resid = [c - b * a for a, c in zip(ex, y)]
+        # cluster-robust (CR0) variance of b
+        meat = 0.0
+        for k in keys:
+            s = sum(ex[i] * resid[i] for i in groups[k])
+            meat += s * s
+        var = meat / (sxx * sxx)
+        return b / (var ** 0.5) if var > 0 else float("nan")
+
+    t_obs = _t(ey)
+    if t_obs != t_obs:
+        return float("nan"), float("nan")
+    rng = random.Random(seed)
+    hits = 0
+    draws = []
+    for _ in range(n_boot):
+        w = {k: (1.0 if rng.random() < 0.5 else -1.0) for k in keys}
+        ystar = list(ey)
+        for k in keys:
+            wk = w[k]
+            for i in groups[k]:
+                ystar[i] = wk * ey[i]
+        t_star = _t(ystar)
+        if return_draws:
+            draws.append(t_star)
+        if t_star == t_star and abs(t_star) >= abs(t_obs):
+            hits += 1
+    p = (hits + 1) / (n_boot + 1)
+    return (t_obs, p, draws) if return_draws else (t_obs, p)
