@@ -55,6 +55,16 @@ METHOD_ONLY = {
 #: tokens appears there — deliberately loose, because the guard is against SILENCE and not against
 #: imperfect wording.
 TRACE_TOKENS = {
+    "§0.4": ["truncation", "cap"],
+    "§0.12": ["not_sprint_grade", "sprint-grade"],
+    "§5.14": ["phase 3", "controllab"],
+    "§6.1": ["composition", "dose"],
+    "§7": ["gate"],
+    "§7.2": ["g2"],
+    "§7.6": ["degenerate"],
+    "§10.5": ["reportab", "option_mass"],
+    "§10.6.1": ["single-slot", "1.24"],
+    "§11": ["complied", "kw_refusal"],
     "§0.2.3": ["truncation", "cap"],
     "§0.2.5": ["partial", "excluded"],
     "§4.1": ["liveness", "divergence"],
@@ -77,6 +87,7 @@ TRACE_TOKENS = {
     "§11.7": ["superseded_by", "598"],
     "§11.7.1": ["582", "over-corrected"],
     "§11.7.2": ["scoped to the analysis", "aggregate"],
+    "§11.8": ["18 of 31", "attribut"],
 }
 
 
@@ -86,15 +97,37 @@ MIN_EXPECTED = 10
 
 
 def correction_sections(text: str):
-    """Headings marked as corrections: the ⛔ marker, or CORRECTION/WITHDRAWN in the heading."""
-    out = []
+    """Headings marked as corrections, EVERY one attributed to a section — none silently dropped.
+
+    ⛔ THE FIRST VERSION DROPPED ANY CORRECTION HEADING THAT CARRIED NO `§` ID. It searched the
+    heading for an id and, finding none, simply did not append it — no count, no warning. **13 of
+    31 correction-marked headings in this plan have no id of their own**, because they are
+    sub-headings inside a numbered section ("### ⛔ CORRECTION: I applied a Qwen3-derived window").
+    So the guard examined 18 of 31 and reported success, and nothing in its output distinguished
+    "the corrections are all classified" from "the scanner cannot see this shape".
+
+    A peer hit the identical class in their own propagation guard — a heading pattern requiring
+    exactly one token before the id, which silently missed bolded ids, two-word prefixes and
+    four-hash headings — and named the signature: **nothing distinguishes clean inputs from inputs
+    the check cannot see, and it is invisible to a guard AND to a reader, because the guard passes
+    and the argument reads correctly.** The only way to find it is to feed the check shapes it has
+    never seen.
+
+    Fixed by tracking the enclosing section: a correction heading without its own id is attributed
+    to the most recent heading that had one, and the attribution count is REPORTED so the guard can
+    never again be silent about what it could not parse. A correction before any numbered section
+    is returned under `None` and refused by the caller rather than dropped.
+    """
+    out, current = [], None
     for line in text.splitlines():
         if not line.startswith("#"):
             continue
+        own = re.match(r"#+\s*(?:[^A-Za-z0-9§]*\s*)?(§[0-9]+(?:\.[0-9]+)*)", line)
+        if own:
+            current = own.group(1)
         if "⛔" in line or re.search(r"\bCORRECTION\b|\bWITHDRAW", line):
-            m = re.search(r"(§[0-9]+(?:\.[0-9]+)*)", line)
-            if m:
-                out.append((m.group(1), line.strip()))
+            sid = own.group(1) if own else current
+            out.append((sid, line.strip()))
     return out
 
 

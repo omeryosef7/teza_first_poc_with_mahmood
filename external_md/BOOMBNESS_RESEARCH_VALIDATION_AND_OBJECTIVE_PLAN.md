@@ -5283,3 +5283,51 @@ whose mass regimes differ **40×** — and the fix itself introduced a **false r
 fixture rows carrying no `query_kind`, caught by six pre-existing tests. **A false refusal introduced
 by the fix for a false refusal**, which makes the defect-inside-its-own-check count **five** today.)*
 
+
+### §11.8 — ⛔ The propagation guard was examining 18 of 31 corrections and reporting success
+
+A peer found their propagation guard's heading pattern silently missed bolded ids, two-word prefixes
+and four-hash headings — the class §11.7.2 named: **a tool whose correctness is contingent on an
+accident of its inputs.** They asked what mine could not see. It could not see a lot.
+
+`correction_sections` searched each heading for a `§` id and, finding none, **appended nothing — no
+count, no warning.** In this plan **13 of 31 correction-marked headings carry no id of their own**,
+because they are sub-headings inside a numbered section:
+
+```
+### ⛔ CORRECTION: I applied a Qwen3-derived window to Llama banks
+### ⛔ The guard's first version would have REFUSED the measurement that caught its own target bug
+### ⛔ But it cannot see the effect the claims rest on
+```
+
+**So the guard examined 18 of 31 and reported success**, and nothing in its output distinguished
+*"every correction is classified"* from *"the scanner cannot see this shape"*. It had passed for its
+entire life because every section I happened to register carried an id.
+
+**Fixed** by tracking the enclosing section: an id-less correction heading is attributed to the most
+recent heading that had one, and a correction before any numbered section surfaces under `None`
+rather than vanishing. Attribution is to the **container, not the referent** — `### ⛔ CORRECTION to
+§1.1` sitting inside §9.9 is a correction *to* §1.1 that lives *in* §9.9, and pinning that is its own
+test.
+
+**The 10 newly visible sections all had propagated correctly** — §0.4, §0.12, §5.14, §6.1, §7, §7.2,
+§7.6, §10.5, §10.6.1, §11 — every one traced in the ledger. **The blind spot hid no real gap**, which
+is the outcome to report as loudly as a catch would be.
+
+### ⚠ My first mutation of the fix SURVIVED, which is the peer's caution landing live
+
+Reintroducing the original bug — dropping id-less headings — **passed all 10 existing tests.** Their
+warning, sent in the same message: *"every failing-input test we have added asserts on ONE synthetic
+violation we thought of; that catches the regression we are defending against and says nothing about
+the shape we did not imagine."* My tests covered unclassified sections, missing traces, empty scans
+and method-only exemptions — **not a heading shape**, because I had not imagined one.
+
+Three tests added (attribution, referent-not-container, unattributable), and both mutants now die
+killing 3 tests each. *(One of the three tests was itself wrong on first write — it expected the
+plain containing heading to be collected, when only correction-marked headings are. The code was
+right and the test was not.)*
+
+**The remedy for this class is neither more guards nor more review** — the guard passes and the
+argument reads correctly. It is **feeding the check inputs it has never seen**, which is a different
+activity from both.
+

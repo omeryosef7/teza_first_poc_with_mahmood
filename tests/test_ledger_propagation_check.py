@@ -111,3 +111,39 @@ def test_an_EMPTY_scan_is_refused_rather_than_reported_as_clean(tmp_path, monkey
 
 def test_the_shipped_floor_is_not_zero():
     assert lp.MIN_EXPECTED >= 10, "a floor of 0 restores the degenerate pass"
+
+
+def test_a_correction_heading_with_NO_id_is_attributed_not_dropped():
+    """The first version searched a heading for a section id and, finding none, silently skipped it.
+
+    13 of 31 correction headings in the real plan have no id of their own -- they are sub-headings
+    inside a numbered section. So the guard examined 18 of 31 and reported success, and nothing in
+    its output distinguished "all corrections are classified" from "the scanner cannot see this
+    shape". A peer hit the identical class in their own propagation guard.
+    """
+    text = "\n".join([
+        "## §3.1 — an ordinary section",
+        "### ⛔ CORRECTION: a sub-heading carrying no id of its own",
+        "## §3.2 — another section",
+        "### ⛔ WITHDRAWN: another id-less sub-heading",
+    ])
+    got = lp.correction_sections(text)
+    assert [sid for sid, _ in got] == ["§3.1", "§3.2"], \
+        "id-less correction headings must inherit their ENCLOSING section, never be dropped"
+
+
+def test_a_reference_in_the_heading_does_not_steal_attribution():
+    """`### ⛔ CORRECTION to §1.1` inside §9.9 is a correction TO §1.1 that lives IN §9.9."""
+    text = "\n".join([
+        "## §9.9 — the containing section",
+        "### ⛔ CORRECTION to §1.1's framing",
+    ])
+    got = lp.correction_sections(text)
+    # only the CORRECTION heading is collected; the plain containing heading is not a correction
+    assert [sid for sid, _ in got] == ["§9.9"], "attribution must be the container, not the referent"
+    assert "§1.1" not in [sid for sid, _ in got]
+
+
+def test_a_correction_before_any_numbered_section_is_not_silently_dropped():
+    got = lp.correction_sections("### ⛔ CORRECTION with no enclosing section at all\n")
+    assert got and got[0][0] is None, "an unattributable correction must surface, not vanish"
