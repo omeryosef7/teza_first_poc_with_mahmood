@@ -13952,3 +13952,52 @@ tag collisions, and every path in this entry is pinned by full name.
 
 **Open:** the Qwen3 contrast (`q6r640j_*`, job **797678**) is generated but unjudged and stays unread
 until both arms are scored in that one invocation.
+
+### 🏆 R-145 (00:45) — **Both our 192-vs-640 comparisons rest on an unchecked assumption; it holds. And at row level, releasing the cap changed NOTHING on C9's arms — refusal not once in 320 rows, ASR within a noise floor the data measures internally.**
+
+**The assumption neither session had verified.** Every 192-vs-640 row-level comparison — their V-110,
+my C-67 — treats the 640 row as *the same row with more room*. If decoding were not deterministic the
+640 generation would be different text, and the comparison would conflate "cap released" with
+"resampled". Checked per row, booleans and lengths only, no completion text read:
+
+| arm | n | identical | 640 **extends** 192 | divergent |
+|---|---|---|---|---|
+| L14 | 160 | 30 | **130** | **0** |
+| L5 | 160 | 45 | **115** | **0** |
+
+**Zero divergent rows.** Every 640 generation either equals its 192 counterpart (the rows that had
+already terminated) or strictly extends it. The cap release is a clean intervention with nothing else
+moving, which licenses the row-level design for both of us.
+
+**Row-level transitions, V-110's design on my arms, using the SAME-SESSION 192 re-judge (`p7rj2`) so
+no comparison crosses a judge window:**
+
+| arm | cell | n | ASR 0→1 | 1→0 | net | ref 0→1 | 1→0 | net |
+|---|---|---|---|---|---|---|---|---|
+| L14 | truncated | 130 | 2 | 1 | +1 | **0** | **0** | **+0** |
+| L14 | finished | 30 | 1 | 0 | +1 | **0** | **0** | **+0** |
+| L5 | truncated | 116 | 4 | 1 | +3 | **0** | **0** | **+0** |
+| L5 | finished | 44 | 1 | 0 | +1 | **0** | **0** | **+0** |
+
+**Refusal: zero transitions in all four cells, 320 rows.** Not one continuation of a truncated row
+contained a refusal. C-67 was a totals argument; this is the row-level version and it is absolute.
+
+**And the `finished` cells are a free internal noise control I had not realised was sitting there.**
+Those rows have **byte-identical text** at 192 and 640 — so their ASR flips are pure judge
+non-reproducibility, measured *inside* the same comparison: **1 flip in 30 and 1 in 44**, a per-row
+rate of **2.3-3.3%**. That brackets my cross-session estimate (1.3-1.9%, DR-18) and their 3-in-96
+(3.1%) without needing a separate re-judge at all.
+
+**Against which the truncated cells are unremarkable:** +1 on 130 rows and +3 on 116 rows, where
+noise alone predicts ~3 flips per cell. **Releasing the cap changed nothing measurable on these
+arms** — the 192-cap numbers were sound the whole time.
+
+**Which is the correct place for this thread to end.** C-60 opened C9's truncation exposure, C-64
+built a decomposition on it, C-67 killed the decomposition, and this closes it: for C9 the cap was
+never doing anything. **Four entries to establish that a measurement did not need correcting** — and
+that is a legitimate outcome, not a wasted evening, because the alternative was quoting −18 while
+their finding sat unaddressed in the same repo.
+
+*Reusable, and worth their having: **when comparing two caps, the rows that finished under the lower
+one are byte-identical across both runs and give you the judge's noise floor for free**, in the same
+table as the effect.*
