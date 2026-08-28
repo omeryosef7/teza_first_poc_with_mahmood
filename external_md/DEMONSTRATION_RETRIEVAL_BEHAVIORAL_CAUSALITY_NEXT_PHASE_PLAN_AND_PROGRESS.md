@@ -11776,3 +11776,65 @@ Their conclusion survives, on better grounds than they gave it:
 in a single session: **the deep review is what caught things when no peer was present**, and during
 the exchange I ran ticks without one for hours at a stretch. **Sent to them, since it changes what the
 methods note should say.**
+
+### ✅ R-125 (16:15) — **Ran the self-audit R-124 says stopped running, on the window R-124 identified. R-122's table is correct and its method does not guarantee that: six of seven banks are run-invariant, and `main`'s two values differ because one candidate run is Qwen3.**
+
+R-124 concluded that my self-audit rate collapsed during the exchange and that the remedy is
+**cadence, not staffing**. The queue is now empty, so I ran the audit rather than only recording the
+conclusion. **Target: the window R-124 named** — everything from C-38 onward postdates DR-16 and has
+never been through a review.
+
+**First target: R-122's seven-bank table, because it was built the same way C-41's was — from run
+directories I typed out.**
+
+#### The row set is complete
+
+Enumerating every `A_baseline` run with 48 forced-choice rows, **applying the C-42 admissibility
+filter** (`n_failed == 0`, `n_result_rows >= n_bank_rows`): **7 distinct banks, exactly the seven in
+R-122, none missing.** The C-41 failure did not recur.
+
+#### But the hand-list hid a choice I did not know I was making
+
+Several banks have **more than one admissible run** — `main` 4, `ticket_bomb` 3 — and R-122 used one
+per bank, picked by hand. **Six of seven banks are run-invariant**, identical wins and identical ICC:
+
+| bank | admissible runs | wins | ICC |
+|---|---|---|---|
+| `basket_bomb` | 2 | 42 | 0.160 |
+| `ticket_bomb` | 3 | 45 | 0.114 |
+| `ticket_knife` | 2 | 30 | 0.320 |
+| `window_bomb` | 2 | 40 | 0.158 |
+| `window_knife` | 2 | 39 | 0.400 |
+| `basket_gun` | 1 | 19 | 0.755 |
+| **`main`** | **4** | **32 or 42** | **0.286 or 0.481** |
+
+**`main` splits**, and the reason is that my enumeration filtered on **arm** and **bank** and **not on
+model**:
+
+| run | model | wins | ICC |
+|---|---|---|---|
+| `p2A`, `p5A_main`, `p6A_main_b1` | **Llama-3.1-8B-Instruct** | 42 | **0.286** |
+| **`q2A_20260825_101300_2421408`** | **Qwen/Qwen3-14B** | 32 | **0.481** |
+
+#### The disposal
+
+**R-122's published table is correct** — I used `p2A`, the Llama run, so the Llama table contains only
+Llama rows. **And the method that produced it does not ensure that.** Had my hand-list picked `q2A`,
+a **Qwen3 row would have sat silently inside a Llama table**, changing `main` from 0.286 to 0.481 and
+with it the within-codeword contrast and the rho.
+
+This is **C-42's shape one level out**: C-42 was an enumeration complete but missing an *attrition*
+filter; this is an enumeration complete but missing a *model* filter. **Both times the enumeration was
+right about which rows exist and silent about which rows belong.**
+
+Same disposal I gave `ticket_bomb`'s window and they gave their `EXCLUDED_RUNS` catch: **"the numbers
+didn't change" is not evidence the method was sound.** The published table survives on a hand-choice
+that happened to be right.
+
+**Extending the C-42 rule with the filter it was missing** — when computing from run directories, the
+admissibility check is `n_result_rows == n_bank_rows`, `n_failed == 0`, `gate == PASS`, **and the
+population filters the claim requires: model, bank, arm, condition, dose.** *Enumeration establishes
+which rows exist; only the claim establishes which rows belong.*
+
+**This is the first correction of the day that no peer message prompted** — R-124 predicted the
+self-audit would find things once the exchange quieted, and the first thing it ran on returned one.
