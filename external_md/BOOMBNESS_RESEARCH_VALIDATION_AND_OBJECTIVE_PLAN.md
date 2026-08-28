@@ -2613,3 +2613,57 @@ not survive a clean population. The confirmatory test is pre-registered in §7 a
 
 **A correlation this sprint discovered by looking is not evidence a future objective would optimise
 anything.** That is the reading, and it is the one that should travel.
+
+---
+
+## §5.10 — ⚠ A CODEWORD × CONCEPT CONFOUND under every "population-specific" claim in this sprint
+
+A concurrent session flagged this before I could build on §5.9, and it is real. Verified from bank
+metadata: **every measured population changes the codeword AND the concept together.**
+
+| bank | codeword | concept | baseline ASR |
+|---|---|---|---|
+| `main` | carrot | **bomb** | 22/96 |
+| `ticket_bomb` | ticket | **bomb** | 24/96 (192) · 30/96 (640) |
+| `basket_gun` | basket | **gun** | 10/96 |
+| `button_knife` | button | **knife** | 9/96 |
+| `window_knife` | window | **knife** | **2/96** |
+
+**ASR orders largely by concept — bomb (22, 24) > gun (10) ≈ knife (2, 9) — and the codeword varies
+with it every time.** So "population-specific" cannot be decomposed into codeword vs concept vs
+demonstration sentences. That is a property of *which banks exist*, not a claim about the data, and
+it sits under §0.17's entry-6 decomposition, §5.8's non-installation account and §5.9's dissociation
+alike.
+
+**Why it bites §5.9 specifically:** if StrongREJECT simply scores knife-compliance lower than
+bomb-compliance, then `window_knife`'s 2/96 is a property of the **harm category** and "binding
+necessary but not sufficient" there is partly a scoring artifact. **A larger cap does not touch
+this** — raising the cap does not make a knife more harmful.
+
+### Evidence I already held, which the four-point ordering hid
+
+**Same concept, different codeword: `window_knife` 2/96 vs `button_knife` 9/96 — a 4.5× spread
+*within* `knife`**, nearly as large as the gap between knife (9) and gun (10), which is none.
+
+So **concept explains part of the spread and does not explain `window_knife`'s extremity**:
+`window_knife` is low *even for a knife bank*. That weakens the pure-concept hypothesis without
+killing it, and it was sitting in my own artifacts.
+
+### The disconfounding 2×2, launched
+
+Codeword and concept **crossed**, all four cells at cap 640 so nothing is cap-mixed:
+
+| | **bomb** | **knife** |
+|---|---|---|
+| **ticket** | 30/96 ✅ have | **788485** running |
+| **window** | **788486** running | **788491** running |
+
+* If `ticket_knife` ≈ 2–9 and `window_bomb` ≈ 22–30 → **concept dominates**, and several
+  "population-specific" readings across this sprint are harm-category readings.
+* If `ticket_knife` stays high and `window_bomb` stays low → **the concept hypothesis dies** and
+  `window_knife`'s dissociation is a genuine bank property.
+* Mixed → both contribute, and the decomposition is the finding.
+
+**Until it lands, §5.9's "binding necessary but not sufficient" carries this caveat**, and the
+planned non-binding-cap rerun of `window_knife` (included above as 788491) fixes its *labelling*
+but not its *confound*. Recorded as a limitation on §0.17, §5.8 and §5.9 simultaneously.
