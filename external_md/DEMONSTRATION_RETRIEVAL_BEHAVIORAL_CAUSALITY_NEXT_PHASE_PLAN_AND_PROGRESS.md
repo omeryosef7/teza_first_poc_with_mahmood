@@ -14484,3 +14484,56 @@ arbitrary and returned **+0.0942** instead of **+0.1924**, which would have **co
 conclusion they had already written**. The detector was the same as every other catch tonight: **two
 computations of one quantity disagreeing.** A bug whose output agrees with your existing draft is the
 one that survives.
+
+### ⛔ C-71 (02:40) — **R-151 argued their bootstrap's implied ICC ≈ 0 contradicts their Phase-6 result. It does not — I conflated "clustering degrades the p" with "ICC is high", and they are different mechanisms. Measured on comparable data, ASR ICC really is ≈ 0. Their bootstrap is defensible and MY interval was the badly wrong one.**
+
+I said the ICC was measurable and neither of us had measured it, then did not measure it. Doing that
+now, on my own cap-640 arms — binary outcomes, one-way ANOVA across **domain** clusters:
+
+| arm | outcome | ICC | deff | n_eff of 160 |
+|---|---|---|---|---|
+| `p7r640_L14` | **ASR** | **0.0017** | 1.03 | **156.0** |
+| `p7r640_L5` | **ASR** | **0.0017** | 1.03 | **156.0** |
+| `q6r640_L5` | **ASR** | **0.0000** | 1.00 | **160.0** |
+| `q6r640_L17` | ASR | 0.1645 | 3.47 | 46.1 |
+| `p7r640_L14` | **refusal** | **0.4267** | 7.40 | **21.6** |
+| `p7r640_L5` | **refusal** | **0.3260** | 5.89 | **27.2** |
+| `q6r640_L5` | refusal | 0.0545 | 1.82 | 88.0 |
+| `q6r640_L17` | refusal | 0.0000 | 1.00 | 160.0 |
+
+**Their Phase-7 test uses ASR, and for ASR the ICC is 0.0000-0.0017 in three of four arms.** An
+effective n near the row count is exactly what that produces. **Their bootstrap is behaving
+correctly**, and my `df = n_clusters − 3` interval — which assumes ICC = 1 — is off by the entire
+width of the table.
+
+**Where my reasoning failed.** R-151 inferred high ICC from their Phase-6 degradation (`main`
+p = 0.0156 → 0.0625 under clustering). **That degradation does not require any ICC at all.** Moving
+from a 12-observation McNemar to a 5-cluster sign test discards within-cluster magnitude *by
+construction* — the count of informative units falls from 12 to 5, and the exact binomial floor rises
+with it. **That happens at ICC = 0 just as much as at ICC = 0.5.** I read a loss of resolution caused
+by a change of *statistic* as evidence about the *correlation structure*, and then used it to tell
+them their bootstrap contradicted their own work. It did not.
+
+**What survives from R-151 and what does not.**
+
+* ~~"Their bootstrap implies ICC ≈ 0, which contradicts Phase-6"~~ — **withdrawn**. No contradiction,
+  and the implied ICC is right for this outcome.
+* ~~"Neither interval is quotable"~~ — **withdrawn as stated**. Theirs is quotable for an ASR
+  outcome; **mine is not quotable for anything**, because ICC = 1 is contradicted by every row of the
+  table above.
+* **Stands**: the inversion arithmetic (their CI implies n_eff ≈ 293) and the observation that a
+  cluster bootstrap returning the naive interval needs explaining. **The explanation is that ICC ≈ 0
+  for ASR**, which I should have looked for before proposing that the bootstrap was broken.
+
+**The genuinely new finding, which neither of us was looking for.** **ICC is outcome-dependent by a
+factor of ~250 in the same rows:** ASR **0.0000-0.0017** against refusal **0.3260-0.4267** on the
+identical Llama arms. Domain predicts *whether the model refuses* very strongly and *whether an attack
+succeeds* almost not at all. **So a cluster-robust analysis is nearly free for ASR and mandatory for
+refusal** — and C9's −18, my own headline, is a refusal outcome with n_eff ≈ **22-27**, not 160.
+**That is a bigger caveat on my number than anything I raised about theirs**, and it follows directly
+from the measurement I was recommending to someone else.
+
+**C9 is not weakened by this** — its −18 rows is a paired within-session contrast whose significance
+came from an 8.3-row margin and a deterministic outcome, not from an n=160 normal approximation. But
+**any future interval on a refusal outcome in this repo must use n_eff ≈ 25, not 160**, and that is
+now on the record before I quote one.
