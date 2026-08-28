@@ -14241,3 +14241,49 @@ this particular bank happens to make unreachable.*
 
 **Still unassessed: C11 and C12.** Named so they do not quietly become "reviewed" — C3 got a
 qualification (C-69) and C4 this note, and the remaining two have had no numeric audit at all.
+
+### ⛔ C-70 (01:55) — **C11 and C12 audited against the now-measured floor. C11 survives on both halves. C12's REFUSAL half is exact and noise-free; its ASR half is a 2-row contrast at n=40 against a 1.9-row floor — it is at the noise, and the claim quotes it to four decimal places.**
+
+The last two unassessed claims, scored against the drift floor rather than against intuition. **The
+floor is empirical, not modelled:** their four byte-identical re-judges at n=96 gave net drifts
+**+2, 0, +2, −3**, RMS **2.06 rows**, scaling as √n to **1.33** at n=40 and **2.66** at n=160.
+
+| claim | quantity | n | effect | outcome type | vs floor |
+|---|---|---|---|---|---|
+| C11 | query **ASR** +0.0563 | 160 | **9.0 rows** | judged | **3.4 SD** ✅ |
+| C11 | query **refusal** −0.1562 | 160 | **25.0 rows** | `kw_refusal` | **no judge noise** ✅ |
+| C12 | demo-vs-query **refusal** (4 vs 13) | 40 | **9.0 rows** | `kw_refusal` | **no judge noise** ✅ |
+| C12 | query **ASR** +0.0500 | 40 | **2.0 rows** | judged | 1.5 SD |
+| C12 | demo **ASR** 0.0000 | 40 | 0.0 rows | judged | — |
+| **C12** | **demo-vs-query ASR contrast** | 40 | **2.0 rows** | judged | **1.1 SD** ⛔ |
+
+**C11 is fine.** Its ASR half is 3.4 SD and its refusal half passes through `kw_refusal`, which R-144
+showed is a deterministic substring match — **zero judge variance, not merely low**. Its ledger's
+"clears margin by 0.7 rows" reads thinner than the claim actually is, because the 8.3-row margin is
+more conservative than the measured floor.
+
+**C12's two halves are not equally supported, and its ledger presents them as one finding.** The
+contrast it is named for — *identity, not count* — rests on **4 vs 13 refusal rows at 24 positions
+each**, and that comparison has **no judge noise at all**. It is the strongest single number in
+either claim. But the accompanying *"demo restores **0.0000** ASR, query restores **+0.0500**"* is a
+**2-row difference between two 40-row arms**, and the floor for a difference of two independent counts
+is **√2 × 1.33 = 1.9 rows**. That is **1.1 SD — indistinguishable from the judge re-scoring the same
+text twice.**
+
+**The four-decimal presentation is the specific problem.** `0.0000` and `+0.0500` on 40 rows can only
+take values in steps of 0.025, and the gap between them is one step above the noise. Quoting them at
+1/10000 implies a precision the design cannot deliver — and `0.0000` in particular reads as a measured
+zero when it is *"0 of 40, where 2 would have been noise"*.
+
+**C12 is qualified, not withdrawn.** Its headline claim stands on the refusal contrast, which is
+exact. **The ASR rider is marked at-the-floor and must not be quoted as showing that the query patch
+restores attack while the demo patch does not** — at n=40 that distinction is unmeasured.
+
+**Note the direction this cuts.** The deterministic outcome that R-144 flagged as *weaker* in one
+respect — `kw_refusal` trades judge variance for an untestable keyword-coverage assumption — is here
+the *stronger* evidence, because it has no re-scoring variance at all. **Both halves of that trade-off
+are now visible in the same claim**, and the right reading is not that one instrument beats the other
+but that C12's two numbers fail and succeed for unrelated reasons.
+
+**All ten generative claims are now assessed** (C1, C2, C3, C4, C6, C7, C9, C11, C12, C13). C-62 put
+them in scope; the audit is closed.
