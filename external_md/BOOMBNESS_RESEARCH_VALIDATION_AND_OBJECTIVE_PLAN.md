@@ -6076,3 +6076,61 @@ because it checked the generation **instructions**, not the generated **text**. 
 valid against the artifact that will actually be used, and the artifact is what the model wrote, not
 what it was asked for.*
 
+
+## §12.8 — `ticket_knife` AT k=38: the cell is AT THE LINE, and the interval says the data cannot tell
+
+The arm the build was authorised for landed clean — **304/304 rows, 0 failures, gate PASS**.
+
+| | `carrot\|bomb` | **`ticket_knife`** |
+|---|---|---|
+| ICC at k=6 (old bank) | 0.286 | 0.320 |
+| **ICC at k=38 (measured)** | **0.080** | **0.291** |
+| ratio k=6 → k=38 | **3.58×** | **1.10×** |
+| wins | 284/304 = 0.934 | 220/304 = 0.724 |
+| ceiling `k/ICC` | **473** | **130.4** |
+| vs 132 needed | clears **3.6×** | **short by 1.6 rows** |
+
+**The inflation is bank-dependent** — `carrot|bomb`'s k=6 estimate collapsed by 3.6×, `ticket_knife`'s
+barely moved. So the answer to "was the k=6 corpus unrepresentative?" is **yes for one bank and no
+for the other**, and neither could have been predicted from the other.
+
+### `ticket_knife`'s ladder, which it had lacked
+
+| k | 6 | 10 | 20 | 30 | 38 |
+|---|---|---|---|---|---|
+| ICC | 0.271 | 0.269 | 0.285 | 0.287 | **0.291** |
+
+**Flat** — an 8% spread across k, inside the ±10% estimator-bias band, and the value sits **24×** its
+null floor at this win rate. The estimate is stable and real. *This is the check that made
+`carrot|bomb`'s 0.080 believable, and `ticket_knife` now has it.*
+
+### ⛔ But the interval is what decides it, and it says the data cannot
+
+Cluster bootstrap over domains, 4,000 draws:
+
+```
+ICC              0.291   95% CI [0.124, 0.440]
+ceiling 38/ICC   130.4   95% CI [86.4, 305.4]
+domains needed    38.5   95% CI [16.4, 58.1]
+```
+
+**132 sits inside the interval.** The point estimate is short by 1.6 effective rows — *four-tenths
+of a domain* — and the interval spans **16 to 58 domains**.
+
+**So authoring one more domain to close a 0.4-domain gap would be the sprint's recurring error a
+fifth time:** a precise operation on a quantity whose 95% CI is three-and-a-half times wider than
+the gap being closed. A peer warned against exactly this before the interval existed, and the
+interval confirms the warning rather than softening it.
+
+### What the build achieved, stated without inflation
+
+* **At k=6, `ticket_knife`'s ceiling was 19 effective rows against 132.** Unreachable, by 7×.
+* **At k=38 it is 130.4 against 132** — *at the threshold*, with the target inside the CI.
+* **`carrot|bomb` is decisively resolved**, ceiling 473.
+* **What the build did not do is settle `ticket_knife`.** It moved it from *"unreachable"* to
+  *"indistinguishable from the threshold"*, and one estimate cannot close the remainder.
+
+**The honest next step is a second independent estimate of `ticket_knife`'s ICC — not one more
+domain.** The CI is wide because it rests on one arm; narrowing it is measurement, and the gap it
+would need to close is smaller than the noise on the number that defines it.
+

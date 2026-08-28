@@ -104,6 +104,7 @@ TRACE_TOKENS = {
     "§12.5": ["subsample ladder", "0.9-row"],
     "§12.6": ["0.080", "473"],
     "§12.7": ["incidental-replace", "6080"],
+    "§12.8": ["0.291", "130.4"],
     "§12.2": ["silently overwrit", "38 unique"],
 }
 
