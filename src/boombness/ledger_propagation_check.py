@@ -106,6 +106,7 @@ TRACE_TOKENS = {
     "§12.7": ["incidental-replace", "6080"],
     "§12.8": ["0.291", "130.4"],
     "§12.9": ["asymptote", "66 rows"],
+    "§12.10": ["fcslots", "2508"],
     "§12.2": ["silently overwrit", "38 unique"],
 }
 

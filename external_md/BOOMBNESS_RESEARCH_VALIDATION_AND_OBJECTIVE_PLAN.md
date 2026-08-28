@@ -6194,3 +6194,42 @@ requires building the multi-slot rows, which the current arm does not use (it is
 **Recorded as a correction rather than folded in silently: I quoted an asymptote as if it were a
 measurement, and proposed a re-run that this sprint had already proved deterministic.**
 
+
+### §12.10 — The multi-slot forced-choice rows, built: 8 → 66 rows per domain, no new authoring
+
+§12.9 established that the lever is **rows per domain**, not domains — the single-slot arm sits at
+n_eff **100** against a ceiling of 130, and forced choice existed at **one slot only**, so those rows
+had never been generated. They need no new prose: the 20-sentence pools already admit them.
+
+**New preset `main_fcslots`**, derived from `main` rather than mutating it (the `main_ne12` idiom, so
+every existing bank stays reproducible). One block **per dose**, because `_take` starts at
+`(slot*3) % 20` and the pairwise-disjoint slot set depends on n — **20 at n=1, 7 at n=2, 4 at n=4,
+2 at n=8**. A single block with one `slots` list would reuse n=8's two slots at every dose and
+discard most of the available independent demonstrations.
+
+**Built:** 2×2 families checked **2,128, violations 0**, duplicates **0**; forced-choice rows
+**1,824 → 4,028**. Measurement population **2,508 rows, 38 domains, exactly 66 rows/domain**, zero
+contaminated demo blocks.
+
+### ⛔ The alignment guard caught my first version, and it was a real error
+
+The first build **excluded nothing** and re-emitted **slot 0**, which `core2x2` already provides for
+every dose. That duplicated **304 prompt_ids** — 38 domains × 2 splits × 4 doses, exactly the count
+reported — and the dedup dropped them from `natural_doublespeak` **only**, leaving the four 2×2 cells
+covering different family sets:
+
+```
+VIOLATION duplicate prompt_ids dropped UNEVENLY across the core 2x2
+  {benign_literal: 0, direct_harmful: 0, natural_doublespeak: 304, concept_in_benign_ctx: 0}
+REFUSING under --strict. NOTHING was written; the temporary files were removed.
+```
+
+**The guard refused the bank and wrote nothing**, so no downstream step could pick up a
+silently-unbalanced 2×2. The new blocks now supply the disjoint slots **other than 0** and compose
+with `core2x2` to the full 33 slot-doses per split.
+
+**Predicted for the arm now running** (pre-registered before it lands): at ICC 0.291 and m=66,
+n_eff = **125.9** — up from 100.1, and still short of 132. *If the measured ICC is lower than 0.291
+on this larger population, it clears; if higher, it does not.* The arm is 2,508 rows against the
+previous 304, so the ICC estimate itself will be far better determined.
+

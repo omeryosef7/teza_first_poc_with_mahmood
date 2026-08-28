@@ -695,6 +695,38 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                  positions=["near"],
                  role_styles=[x for x in ROLE_STYLES if x != "plain"]),
         ]
+    if preset == "main_fcslots":
+        # MULTI-SLOT FORCED CHOICE. §12.9 decomposed the power gap and found it is not what either
+        # session thought: `k/ICC` is the INFINITE-ROW asymptote, and the single-slot arm sits at
+        # n_eff 100 against a ceiling of 130. Rows-per-domain is the lever that closes 100 -> 126,
+        # and forced choice existed at ONE slot only, so those rows were never generated.
+        #
+        # WHY A SEPARATE BLOCK PER DOSE. `_take` starts at (slot*3) % 20, so the set of pairwise
+        # DISJOINT slots depends on n: 20 at n=1, 7 at n=2, 4 at n=4, 2 at n=8. A single block with
+        # one `slots` list would reuse n=8's two slots at every dose and throw away most of the
+        # available independent demonstrations. Emitting one block per dose takes each dose's full
+        # disjoint set: 20+7+4+2 = 33 slot-doses x 2 splits = 66 rows per domain, the maximum the
+        # 20-sentence pools admit.
+        #
+        # natural_doublespeak ONLY, deliberately. The 2x2 alignment check runs on complete cores and
+        # single-condition blocks are exempt by documented practice (cf. phase_d). The estimand here
+        # is a within-attack-arm ICC, which forms no 2x2 contrast, and emitting all four conditions
+        # would quadruple the bank for rows no analysis reads.
+        blocks = _blocks("main", domains)
+        # SLOT 0 IS EXCLUDED, and the alignment guard is what found that. `core2x2` already emits
+        # forced choice at slot 0 for every dose, so including it here re-emitted 304 identical
+        # prompt_ids -- 38 domains x 2 splits x 4 doses -- which the dedup then dropped from
+        # natural_doublespeak ONLY, leaving the four 2x2 cells covering different family sets. The
+        # guard refused the bank and wrote nothing. These blocks therefore supply the disjoint slots
+        # OTHER than 0, and compose with core2x2 to the full 33 slot-doses per split.
+        for n, slots in ((1, list(range(1, 20))), (2, list(range(1, 7))), (4, [2, 4, 12]), (8, [3])):
+            blocks.append(dict(name=f"fcslots_n{n}", domains=domains, splits=list(SPLITS),
+                               conditions=["natural_doublespeak"], n_examples=[n],
+                               strengths=["none"], consistencies=["consistent"],
+                               positions=["near"], role_styles=["plain"],
+                               query_kinds=["semantic_forced_choice"], slots=slots))
+        return blocks
+
     if preset == "main_ne12":
         # PHASE 6, 2026-08-27. The research-validation sprint's brief asks for a demonstration-count
         # sweep over n_examples {0,1,2,4,8,12}. `12` occurs in ZERO rows in ZERO banks: `N_EXAMPLES`
@@ -992,7 +1024,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
     ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre",
-                                         "phase_d", "main_ne12"],
+                                         "phase_d", "main_ne12", "main_fcslots"],
                     default="main")
     ap.add_argument("--n-preamble", type=int, default=None,
                     help="Override main_longpre's preamble length. Required length depends on the "
