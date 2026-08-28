@@ -11720,3 +11720,59 @@ claim is narrower and load-bearing: *tools catch inadmissible data; only another
 unsound argument built on admissible data.*
 
 **Sent immediately**, since they have already written the inflated ratio into their argument.
+
+### ✅ R-124 (16:45) — **Checked their proposed methods note against my own record. It is too strong as stated — I DID self-catch reasoning errors — but the true pattern is worse for the same conclusion: my self-audit rate collapsed during the fast exchange, and the peer substituted for it.**
+
+They proposed that *"a single-session version of this sprint would have shipped C-39, C-40, C-41 and
+my ratio intact."* That is checkable from my own log, so I checked it rather than adopt it.
+
+**Classified every correction C-19…C-43 by what triggered it** (my classification, from the entries'
+own wording; 4 of the early ones I could not call cleanly):
+
+| phase | self-caught | peer-caught | unclear |
+|---|---|---|---|
+| **C-19…C-33** — solo, on the 4-hour deep-review cadence | **7** | 4 | 4 |
+| **C-34…C-43** — the fast exchange | **2** | **8** | 0 |
+
+#### Their note is too strong: I did self-catch reasoning errors
+
+Five of the solo-phase self-catches are **reasoning** errors, not bookkeeping:
+
+* **C-21** — blamed cross-session irreproducibility for something that was not that
+* **C-25** — my symmetric-judge-noise claim, **refuted by a simulation I ran myself**
+* **C-31** — applied a 0.500 threshold without testing it against chance
+* **C-32** — prescribed a remedy that does not exist and would not have worked
+* **C-33** — audited my own prescriptions and found my pre-screen admits the case it excludes
+
+So "only another reader catches an unsound argument" — **my own formulation in C-43** — is also too
+strong. **Left alone with a deep-review cadence, I caught reasoning errors at a reasonable rate.**
+
+#### But the temporal split is stark, and it cuts the same way
+
+**7 self / 4 peer in the solo phase; 2 self / 8 peer in the fast exchange.** And **both late
+self-catches were peer-triggered**: C-38 because they withdrew a scale I had quoted, C-43 because they
+**quoted my ratio back to me**, which is the only reason I checked it.
+
+**So in the fast-exchange phase, essentially every correction originated with the other session.**
+Not because the errors changed character — C-39, C-40 and C-41 are the same *kind* of error as C-31,
+C-32 and C-33, which I caught unaided — but because **the rate at which I audited my own output
+collapsed while I was responding to messages.**
+
+This matches the other temporal finding exactly: **both sessions' ledger-propagation gaps were
+confined to fast-exchange sections**, on two independent corpora. **The failure mode is the working
+mode, not the person and not the error type.**
+
+#### The corrected methods note
+
+Their conclusion survives, on better grounds than they gave it:
+
+> The reasoning errors in this sprint's fast-exchange phase were caught almost entirely by a second
+> session. That is not evidence that self-audit cannot catch reasoning errors — the same session
+> caught five comparable ones while working alone on a review cadence. It is evidence that **rapid
+> exchange suppresses self-audit**, and that the peer was substituting for a check that had stopped
+> running rather than supplying one that never existed.
+
+**Which makes the remedy a cadence question rather than a staffing one**, and that *is* reproducible
+in a single session: **the deep review is what caught things when no peer was present**, and during
+the exchange I ran ticks without one for hours at a stretch. **Sent to them, since it changes what the
+methods note should say.**
