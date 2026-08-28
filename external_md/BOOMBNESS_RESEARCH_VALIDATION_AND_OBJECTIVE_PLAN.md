@@ -6233,3 +6233,65 @@ n_eff = **125.9** — up from 100.1, and still short of 132. *If the measured IC
 on this larger population, it clears; if higher, it does not.* The arm is 2,508 rows against the
 previous 304, so the ICC estimate itself will be far better determined.
 
+
+## §12.11 — THE MULTI-SLOT ARM: `ticket_knife` crosses the threshold on the point estimate, and the interval still contains it
+
+2,508 rows, 38 domains, **exactly 66 rows/domain**, 2508/2508 succeeded, gate PASS.
+
+| | single-slot (m=8) | **multi-slot (m=66)** |
+|---|---|---|
+| ICC | 0.2915 | **0.0923** |
+| n_eff | 100.1 | **358.3** |
+| wins | 0.724 | 0.626 |
+
+**The single-slot ICC over-states by 3.16×** — §10.3 predicted this (single-slot measures a
+*same-demonstration* correlation) and measured 1.4–2× on `one_word`; on forced choice it is **3.16×**.
+The previous arm's 66 rows/domain were the *same* demonstration set at four nested doses; these are
+33 disjoint sets.
+
+### ⛔ But the pooled figure is not the comparable estimand
+
+ICC rises steeply with dose, and so does the win rate:
+
+| dose | rows | ICC | wins |
+|---|---|---|---|
+| 1 | 1520 | **0.046** | 0.560 |
+| 2 | 532 | 0.122 | 0.662 |
+| 4 | 304 | 0.384 | 0.786 |
+| 8 | 152 | **0.615** | 0.849 |
+
+Slots are plentiful at low dose (20 at n=1, 2 at n=8), so the pooled population is **61% dose-1
+rows** — the cell with both the lowest ICC and the lowest win rate. **The pooled n_eff of 358 is
+partly an artifact of that composition**, and the pooled win rate of 0.626 is an average over cells
+spanning 0.560–0.849, not a single 0.625 effect. Quoting 358 as the answer would be the composition
+error §6.1 already recorded once in this sprint.
+
+### The dose-balanced estimand, which is comparable
+
+Equal rows per dose per domain, capped by the scarcest dose (4 → **m=16**), bootstrapped over
+domains:
+
+```
+ICC     0.217   95% CI [0.080, 0.342]
+n_eff   142.9   95% CI [99.3, 276.3]      target 132
+```
+
+**The point estimate clears 132 by 11 effective rows. The 95% CI contains 132.**
+
+### Where this leaves the cell the build was authorised for
+
+| stage | n_eff | vs 132 |
+|---|---|---|
+| k=6, single-slot *(before the build)* | ceiling **19** | unreachable by **7×** |
+| k=38, single-slot | 100.1 | short by 32 |
+| **k=38, multi-slot, dose-balanced** | **142.9 [99, 276]** | **point clears; interval contains** |
+
+**The build moved `ticket_knife` from unreachable to point-estimate-clearing.** It is the first time
+in this sprint the cell has been on the right side of the line. **It is still not robustly settled:**
+the interval contains the target, and honesty about that is the same discipline that stopped me
+authoring a 39th domain two ticks ago on a point estimate that later moved.
+
+**What would settle it is now cheap and needs no authoring:** the same multi-slot construction on
+more domains. `k` is the linear lever — at m=16 each domain adds ~3.8 effective rows, so the CI's
+lower bound of 99 reaches 132 at roughly **k=47**, all of which is generation rather than prose.
+
