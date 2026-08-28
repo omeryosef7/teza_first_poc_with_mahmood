@@ -10014,3 +10014,94 @@ rather than assumed.
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
+
+---
+
+### 🔬 DR-14 (07:47) — **Deep review. Full suite green; all four PR-33/34 headlines reproduce exactly from raw rows; C-32's population and power arithmetic verified and shown to be structural to every bank. Two defects found: the corrections ledger had silently stopped propagating, and my own installation verdicts had never been produced by a committed artifact.**
+
+**Queue empty, no FAILED/CANCELLED, tree clean.** Full suite **1217 passed, 7 skipped** (245s).
+
+#### 1. Independent recomputation — all four headlines reproduce
+
+Recomputed from `results.jsonl` rather than from any prior summary, at
+`outputs/boombness/score_behavior/{wkA_20260828_042130_2251980, bbA_20260828_054201_3951828, tkA_20260828_054201_3951916, wbA_20260828_054231_3952502}`:
+
+| bank | wins | p vs chance | ties | doses | gate | failed rows |
+|---|---|---|---|---|---|---|
+| `window_knife` | **39/48** | 1.52e-05 | 0 | 12/12/12/12 | PASS | 0 |
+| `basket_bomb` | **42/48** | 1.01e-07 | 0 | 12/12/12/12 | PASS | 0 |
+| `ticket_knife` | **30/48** | 0.111 | 0 | 12/12/12/12 | PASS | 0 |
+| `window_bomb` | **40/48** | 3.31e-06 | 0 | 12/12/12/12 | PASS | 0 |
+
+All four on `Llama-3.1-8B-Instruct`, arm `A_baseline`, `intervention=None`, single condition
+`natural_doublespeak`, each reading its **own** bank file, 48/48 rows succeeded. **Zero ties**, so the
+strict-`>` predicate is not carrying hidden mass. Four **distinct** content hashes and a single write
+per dir — no silent overwrite. `check_all.py` **6/6**.
+
+#### 2. C-32 verified, and it is structural rather than specific
+
+The population and power table now recomputed from the bank files themselves. Every one of the **five**
+banks has the identical structure — **72** `natural_doublespeak` × `semantic_forced_choice` rows,
+**12 per dose over n ∈ {0,1,2,4,8,16}**, hence **48 run and 60 the ceiling with demonstrations, and 96
+does not exist**. Power at a true 0.625: **0.331 (n=48), 0.399 (n=60)**, 0.627 (96), 0.828 (144);
+critical counts **32/48, 39/60, 59/96, 85/144**. Every figure C-32 and C-33 quote reproduces exactly.
+**The unresolvability is a property of the bank design, not of `ticket_knife`** — any 48-row cell here
+misses a real 0.625 effect two times in three.
+
+#### 3. ⛔ Defect found: the corrections ledger had stopped propagating
+
+**C-32 and C-33 were in this log and absent from the deliverable's corrections table** — the first
+gap since the table was created. Both were written the same night I stopped opening new work, which is
+exactly when a ledger stops being re-read. **Fixed**: both rows added to
+`reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md`; **C-19…C-33 now all present, verified by
+count.**
+
+#### 4. ⛔ Defect found: no artifact ever carried the floor
+
+Every other headline this sprint is emitted by a **script that writes a JSON artifact with its
+pre-registration embedded**. The installation counts were the exception: I computed them **ad hoc in a
+shell one-liner each tick**. `grep -rl mapped_wins src/boombness/*.py` returns **one** file, and it is
+the bridge, which does something else. **That absence is the mechanism behind C-31 and C-33** — a
+fraction with no artifact has nowhere to carry its threshold, so "0.625 > 0.500" looked like a reading
+rather than a judgement.
+
+**Fixed**: `src/boombness/mapping_installation_verdict.py` — classifies **only** against
+`critical_k(n, α)` recomputed for the n actually used, reports the design's **power** so an
+unresolvable cell reads as unresolvable rather than as a null, refuses a run whose `option_mass_gate`
+is not PASS or that has failed rows, and refuses duplicate labels. Re-ran on all four probes
+(`outputs/boombness/mapping_installation_verdict/pr33_34_install_20260828_074724_800265/`) —
+**reproduces R-103 exactly**: three INSTALLED, `ticket_knife` NOT_ESTABLISHED.
+
+### ⛔ C-34 (07:47) — **Writing the rule down made two of my own words wrong: `basket_gun` does not reach the lower tail, and I had named that tail "ABSENT" when it means "INVERTED".**
+
+The new test asserting C-31's reading failed — **and the test was the thing that was wrong**, which is
+how I found the rest.
+
+* **C-31 said `basket_gun` 19/48 is "the mapping is ABSENT, not inverted".** Under the rule I had just
+  written, the lower tail at n=48 needs **≤ 16**. **19 does not reach it.** So `basket_gun` is
+  **NOT_ESTABLISHED — the same verdict as `ticket_knife`**, and it licenses **no positive claim of
+  absence**. C-31 corrected R-97's over-reading in one direction and then made a milder version of the
+  same over-reading in the other.
+* **My verdict label was misnamed.** Significantly *below* chance means the model **prefers the
+  codeword** — that is an **inverted** mapping. Calling that tail `ABSENT` would have let exactly the
+  claim C-31 made be read straight off the artifact. **Renamed `ABSENT` → `INVERTED`.**
+
+#### What survives, and it is stronger than what it replaces
+
+**PR-34's decisive contrast never depended on either label**, and I had never run the test that
+actually carries it. As a **two-sample** comparison on the same codeword:
+
+| contrast | counts | Fisher exact |
+|---|---|---|
+| **`basket_bomb` vs `basket_gun`** (concept swapped, codeword held) | 42/48 vs 19/48 | **p = 1.64e-06** |
+| `window_knife` vs `ticket_knife` (codeword swapped, concept held) | 39/48 vs 30/48 | p = 0.0683 |
+| `window_bomb` vs `window_knife` | 40/48 vs 39/48 | p = 1 |
+
+**PR-34 stands on p = 1.64e-06**, and that is the correct test for it — a between-bank contrast, not
+two one-sample labels compared by eye. The second row is **not significant**, which is consistent with
+C-31's finding that the codeword-side account rests on one bank and adds nothing new.
+
+**The pattern across C-31 → C-34 is one thing**: I keep reading a *label* off a one-sample cell when
+the claim is a *contrast*. The fix is now in code — `INVERTED`/`NOT_ESTABLISHED` are distinct verdicts
+in an artifact, and 10 tests in `tests/test_mapping_installation_verdict.py` assert on **behaviour**,
+not on module wording (C-27), so a reintroduced 0.500 cut fails the suite rather than reading fine.
