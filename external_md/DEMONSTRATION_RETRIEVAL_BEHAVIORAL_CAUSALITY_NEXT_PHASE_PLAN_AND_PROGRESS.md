@@ -9569,6 +9569,62 @@ that its mapping installs completely. **Binding is necessary and evidently not s
 attack**, which is a restatement of this phase's central dissociation (C5/C2) on a fourth bank — but I
 have run **no** behavioural arm here and am not inferring one from a probe.
 
+
+### ⚠ R-100 (04:45) — **Every population compared across this sprint varies CODEWORD and CONCEPT together. That confound is a design fact, not an inference — and it offers a free explanation for R-99's open question that no one has tested.**
+
+R-99 left open why `window_knife` shows ASR **2/96** while installing the mapping perfectly. **Reading
+the bank metadata rather than theorising**, the four measured populations line up like this:
+
+| bank | codeword | concept | baseline ASR | binding at n=8 |
+|---|---|---|---|---|
+| `main` | `carrot` | **bomb** | **22/96** | 1.000 |
+| `ticket_bomb` | `ticket` | **bomb** | **30/96** | 1.000 |
+| `basket_gun` | `basket` | **gun** | **10/96** | 0.417 |
+| `window_knife` | `window` | **knife** | **2/96** | 1.000 |
+
+**ASR orders exactly by concept — bomb (22, 30) > gun (10) > knife (2) — and binding does not order by
+anything.** Three banks install completely and one does not, cutting across the ASR ordering.
+
+#### The confound is certain even though the explanation is not
+
+**Every one of these populations changes the codeword AND the concept at the same time.** So a
+"population-specific effect" — which is how the concurrent session's entry 6 is currently framed, and
+how R-98 and R-99 both discussed it — **cannot be decomposed into codeword, concept, or demonstration
+sentences.** That is not a hypothesis about the data; it is a property of which banks exist.
+
+**The concept explanation for `window_knife` is a hypothesis and I am labelling it one**: StrongREJECT
+may simply score knife-related compliance lower than bomb-related compliance, in which case
+`window_knife`'s 2/96 is a **property of the harm category, not of the mechanism**, and there is
+nothing to explain. **Four points with one or two per concept cannot establish that** — the ordering
+is suggestive and the sample is a design artifact.
+
+#### The controlled pairs already exist
+
+The bank directory contains **same-codeword, different-concept** pairs that separate the two axes at
+zero build cost:
+
+* `ticket_bomb` ↔ **`ticket_knife`**
+* `window_bomb` ↔ **`window_knife`**
+* `basket_bomb` ↔ `basket_gun` ↔ `basket_knife` ↔ `basket_club`
+* `button_bomb` ↔ `button_gun` ↔ `button_knife` ↔ `button_club`
+
+**`ticket_bomb` is already measured at 30/96.** A behavioural arm on `ticket_knife` — codeword held
+fixed, concept swapped — would say directly whether the ASR spread is concept-driven. **If it lands
+near 2/96, concept explains it and several "population-specific" readings across this sprint are
+harm-category readings.** If it lands near 30/96, the concept hypothesis dies and the spread is about
+the demonstration sentences.
+
+**⛔ I am not running it.** It needs generation plus judging on a population that belongs to the
+concurrent session's entry 6, and it would answer *their* limitation section rather than any open
+question of mine — R-76's standard. **What I am contributing is the observation that the comparison
+they and I have both been making is confounded by construction, and that the disconfounding banks are
+already on disk.** Passed to them.
+
+**⚠ This does not touch any claim of mine.** C1, C2, C5 and C7 are all *within*-bank contrasts —
+baseline versus intervention on the same population — so a between-bank confound cannot reach them.
+**It bears on the cross-population talk this sprint has been doing for the last several ticks**,
+including mine in R-98 and R-99.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
