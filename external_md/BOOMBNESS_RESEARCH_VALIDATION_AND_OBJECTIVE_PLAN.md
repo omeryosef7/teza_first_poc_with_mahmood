@@ -5141,3 +5141,56 @@ That is a **third variant of the one-sidedness shape**: a check that is safe aga
 means something different depending on who runs it*, and the peer was right to refuse to rely on
 either green until they had looked.
 
+
+---
+
+## §11.7 — ⛔ THE EXCLUSION RECORD WAS READ BY REGEX, 20 GOOD RUNS WERE REFUSED, AND §11.1's CORRECTION IS WITHDRAWN
+
+A peer found over-matching in their own citation audit — a substring match that hit a
+`superseded_by` field and reported the **supersedor** as excluded — and asked whether my membership
+test was keyed on the exact `run_id`. **It was not.**
+
+`_excluded_run_ids` regex-scraped the whole of `EXCLUDED_RUNS.json`, which names run ids under
+**two** keys:
+
+| key | count | meaning |
+|---|---|---|
+| `run_id` | **64** | the excluded runs |
+| `superseded_by` | **20** | the **good replacements** |
+
+**All 84 were treated as excluded, so 20 healthy runs were refused — every one present on disk.**
+
+### It invalidates §11.1, which was my own correction
+
+§11.1 "corrected" §11's population from **598 arms / 217,532 rows** to **596 / 216,542**, dropping
+`abgL16_B_…` and `abgL6_B_…` as *"named in `EXCLUDED_RUNS.json`"*. **They appear only under
+`superseded_by`** — they are the runs that *replaced* the excluded ones.
+
+| | arms | rows | kw rate |
+|---|---|---|---|
+| §11 as published | 598 | 217,532 | 0.619 |
+| §11.1 "corrected" | 596 | 216,542 | 0.617 |
+| **corrected parser** | **598** | **217,532** | **0.619** |
+
+**§11's original figures were right. §11.1's correction is WITHDRAWN — it removed 990 rows of good
+data.** Every §11 conclusion is unaffected either way, which is the third time today a number
+survived a wrong method.
+
+### The failure direction is the one nobody audits
+
+This produces **false refusals**. A guard that drops good data *looks* conservative and silently
+shrinks populations — and unlike a false pass, nothing downstream complains. **A guard that is wrong
+in the safe-looking direction is still wrong**, and §11.1 is the proof: I reported a smaller,
+cleaner-sounding population as a correction and it was a regression.
+
+**Fixed** by walking the JSON structurally and admitting only `run_id` values: **64 excluded, down
+from 84**, with the genuinely excluded `ab_C_…` still refused. **Mutation-tested** — restoring the
+scrape (`key in ("run_id","superseded_by")`) kills 2 tests.
+
+*(One more inside the fix: my first regression test asserted `s in excluded or s not in excluded` —
+a **tautology that cannot fail**, written into a test defending against untestable guards. Replaced
+with `excluded == run_ids` plus a per-supersedor assertion. That is the **fourth** time today a
+defect appeared inside the check built for it: hand-listed roots in the artifact check, a fixture in
+the guard fix, the peer's substring matcher in their citation audit, and now a tautology in this
+regression test.)*
+

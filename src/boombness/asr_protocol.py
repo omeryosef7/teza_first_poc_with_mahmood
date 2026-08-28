@@ -74,15 +74,46 @@ class ExcludedRunError(ValueError):
 
 
 def _excluded_run_ids(root: Optional[str] = None) -> set:
-    """Run ids named by `outputs/boombness/EXCLUDED_RUNS.json`, best-effort and never fatal."""
-    import re
+    """Run ids the exclusion record EXCLUDES — read STRUCTURALLY, not by regex over the raw text.
+
+    ⛔ THE FIRST VERSION REGEX-SCRAPED THE WHOLE FILE, and `EXCLUDED_RUNS.json` names run ids under
+    TWO keys: `run_id` (64 — the excluded runs) and `superseded_by` (20 — the GOOD replacements).
+    Scraping the text returned all 84, so **20 healthy runs were refused as excluded**, every one of
+    them present on disk.
+
+    It cost a published correction. V-72 "corrected" §11's population from 598 arms to 596 by
+    dropping `abgL16_B_...` and `abgL6_B_...` as "named in EXCLUDED_RUNS.json". They appear ONLY
+    under `superseded_by`: they are the runs that REPLACED the excluded ones. The original 598 was
+    right and the correction removed 990 rows of good data.
+
+    A peer found the identical over-matching in their own citation audit — a substring match that
+    hit a `superseded_by` field and reported the supersedor as excluded — and warned that any
+    membership test not keyed on the exact `run_id` field is exposed. It was.
+
+    The failure direction is worth naming: this produces FALSE REFUSALS, which look conservative and
+    silently shrink populations. A guard that drops good data is not "safe"; it is wrong in the
+    direction nobody audits.
+    """
     path = os.path.join(root or OUT_ROOT, "EXCLUDED_RUNS.json")
     if not os.path.exists(path):
         return set()
+    out: set = set()
+
+    def walk(node, key=None):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                walk(v, k)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v, key)
+        elif isinstance(node, str) and key == "run_id":
+            out.add(node)
+
     try:
-        return set(re.findall(r"[A-Za-z0-9_]+_2026\d{4}_\d{6}_\d+", open(path).read()))
+        walk(json.load(open(path)))
     except Exception:
         return set()
+    return out
 
 
 def readout_reportability(run_dir: str) -> Dict[str, Any]:

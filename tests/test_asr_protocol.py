@@ -399,3 +399,62 @@ def test_missing_summary_is_not_an_error(tmp_path):
     d = tmp_path / "bare"
     d.mkdir()
     assert ap.readout_reportability(str(d)) == {"gate": None, "by_readout": {}, "unreportable": []}
+
+
+# --- exclusion membership must be STRUCTURAL, not a regex over the file text -----------------
+
+def test_excluded_run_ids_ignores_superseded_by(tmp_path):
+    """A supersedor is the GOOD run. Scraping the file text marks it excluded.
+
+    Measured on the real record: 64 ids sit under `run_id` and 20 under `superseded_by`, and the
+    regex version returned all 84 -- refusing 20 healthy runs, every one present on disk. It cost a
+    published correction: V-72 dropped two of them from a population as "excluded" when they were
+    the runs that REPLACED the excluded ones.
+    """
+    import json as _json
+    rec = {"schema": "EXCLUDED/1", "per_experiment": {"exp": [
+        {"run_id": "bad_20260819_081115_1111", "reason": "partial",
+         "superseded_by": "good_20260819_090000_2222"},
+    ]}}
+    (tmp_path / "EXCLUDED_RUNS.json").write_text(_json.dumps(rec))
+    got = ap._excluded_run_ids(str(tmp_path))
+    assert got == {"bad_20260819_081115_1111"}
+    assert "good_20260819_090000_2222" not in got, "the supersedor is the replacement, not excluded"
+
+
+def test_excluded_run_ids_is_empty_without_a_record(tmp_path):
+    assert ap._excluded_run_ids(str(tmp_path)) == set()
+
+
+def test_the_real_record_excludes_only_run_id_entries():
+    """Regression on the SHIPPED record: 20 supersedors must not be in the exclusion set.
+
+    Written after the first attempt at this test asserted `s in excluded or s not in excluded`,
+    which is a tautology and cannot fail -- the exact defect this sprint exists to prevent, in a
+    test written to prevent it.
+    """
+    import json as _json, os as _os
+    path = _os.path.join(ap.OUT_ROOT, "EXCLUDED_RUNS.json")
+    if not _os.path.exists(path):
+        return
+    doc = _json.load(open(path))
+    run_ids, sup = set(), set()
+
+    def walk(node, key=None):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                walk(v, k)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v, key)
+        elif isinstance(node, str):
+            if key == "run_id":
+                run_ids.add(node)
+            elif key == "superseded_by":
+                sup.add(node)
+
+    walk(doc)
+    excluded = ap._excluded_run_ids()
+    assert excluded == run_ids, "the exclusion set must be exactly the run_id entries"
+    for s_ in sup - run_ids:
+        assert s_ not in excluded, f"supersedor {s_} wrongly excluded -- the regex bug is back"
