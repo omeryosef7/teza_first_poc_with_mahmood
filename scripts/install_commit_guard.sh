@@ -30,6 +30,26 @@ if [ $RC -ne 0 ]; then
   echo "[pre-commit] REFUSING: check_all.py exited $RC. Fix the guard, or use --no-verify deliberately." >&2
   exit 1
 fi
+
+# GUARD TESTS. check_all runs the guards; it does NOT run the tests that prove the guards can FAIL.
+# A guard whose refusal branch has been broken still exits 0 on a clean corpus, so the hook was
+# green on exactly the mutants this sprint kept finding: a NaN filter removed, a proximity window
+# widened to the whole document, an attrition check disabled. Both sessions found the same gap in
+# their own hooks on 2026-08-28 -- pytest gates nothing at commit time.
+#
+# Only the GUARD test files run here, not the full suite: 140 tests in ~1.4s against ~11 minutes,
+# and a hook slow enough to skip is a hook that gets skipped.
+GUARD_TESTS="tests/test_cited_artifact_check.py tests/test_ledger_propagation_check.py
+             tests/test_option_mass_nan_guard.py tests/test_margin_exposure.py
+             tests/test_intervention_liveness.py tests/test_asr_protocol.py"
+echo "[pre-commit] running guard tests ..."
+# shellcheck disable=SC2086
+TOUT="$(cd "$R" && "$PY" -m pytest $GUARD_TESTS -q 2>&1)" ; TRC=$?
+echo "$TOUT" | tail -2
+if [ $TRC -ne 0 ]; then
+  echo "[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail." >&2
+  exit 1
+fi
 exit 0
 HOOKEOF
 chmod +x "$HOOK"

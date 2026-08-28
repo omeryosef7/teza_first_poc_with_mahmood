@@ -5687,3 +5687,34 @@ times today a guard of theirs fired on their own work, against zero times a read
 a guard could have.** That is the cleanest evidence either session has for where the two mechanisms
 divide.)*
 
+
+### §11.17 — The commit hook ran the guards and not the tests that prove the guards can fail
+
+A peer committed a correction without its deliverable row, their ledger guard failed on the *next*
+run, and the cause was that their pre-commit hook runs `check_all` only. **Mine does too** — 1,333
+pytest tests gate nothing at commit time, and I had not noticed until they said so.
+
+**The gap is specific, not general.** `check_all` runs the guards; it does **not** run the tests that
+prove a guard can still *refuse*. A guard whose refusal branch has been broken **still exits 0 on a
+clean corpus** — so the hook was green on exactly the mutants this sprint kept finding: a NaN filter
+removed, a proximity window widened to the whole document, an attrition check disabled.
+
+Demonstrated rather than argued. With guard 8's refusal branch replaced by `if False:`:
+
+```
+check_all alone : exit=0    <- green; the old hook would have allowed this commit
+new hook        : exit=1    <- refuses
+```
+
+**Fixed in `scripts/install_commit_guard.sh`** (the version-controlled source, not just the installed
+hook): the six **guard** test files now run after `check_all`. Only those, not the full suite —
+**140 tests in ~1.4s against ~11 minutes**, and *a hook slow enough to skip is a hook that gets
+skipped*. Total hook time **3.4s**.
+
+*(One caution recorded because it applies to both sessions: `.git/hooks` is **shared** between us, so
+this change gates the peer's commits too. It is additive and fast, the installer is version-
+controlled so the change is visible rather than ambient, and it is revertible by re-running the
+script from an earlier commit. Flagged to them in the same tick rather than left to be discovered —
+the same courtesy they extended by declining to touch `check_all` unilaterally while I was extending
+it.)*
+

@@ -96,6 +96,7 @@ TRACE_TOKENS = {
     "§11.14": ["cautioned", "loose matcher"],
     "§11.15": ["CAUTION_WINDOW", "artifact files"],
     "§11.16": ["SMALL_DIVERGENCE", "vacuous value"],
+    "§11.17": ["pre-commit", "guard tests"],
 }
 
 
