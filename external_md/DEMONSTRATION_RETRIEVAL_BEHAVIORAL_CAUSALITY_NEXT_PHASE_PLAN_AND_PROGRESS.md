@@ -9646,7 +9646,7 @@ taken from a message:**
 | **concept** (bomb − knife) | **+0.240** |
 | codeword (ticket − window) | **+0.031** |
 
-**The concept main effect is about eight times the codeword effect**, and the two knife cells agree
+**The concept main effect is roughly an order of magnitude larger than the codeword effect** *(⛔ C-30: the exact ratio is NOT quotable — this table mixed judge invocations and the ratio moves from 8× to 14.3× on one cell's re-judge; the direction and magnitude-class survive, the two-significant-figure ratio does not)*, and the two knife cells agree
 with each other (0.052, 0.042) as do the two bomb cells (0.312, 0.260). **R-100's hypothesis —
 labelled a hypothesis when I wrote it — is now measured.**
 
@@ -9731,6 +9731,55 @@ existing measurement stands**: `basket_gun` does not install. What is at stake i
 therefore how far the sentence generalises.
 
 **⚠ Cells are 12 rows** (R-98's standing caveat) — the *shape* is the claim, no single cell is.
+
+
+### ⛔ C-30 (05:55) — **R-101's 2×2 MIXED JUDGE INVOCATIONS — the exact defect I audited them for in R-82. The conclusion is invariant; the ratio I quoted is not, and it moves 40% between judge draws.**
+
+They reported reading `ticket|bomb` as **27/96** where R-101 used **30/96**. **Both are correct.**
+Verified on the artifacts:
+
+| judge dir | ASR |
+|---|---|
+| `e6j_A_ticket_20260828_011348_3802351` | **27/96** |
+| `dpj_A_ticket_20260828_024703_3806910` | **30/96** |
+| disagreement on the **same generations** | **7/96 = 0.0729** |
+
+**The same rows, judged twice, differ on 7 of 96** — above the ~0.05 floor DR-10 and their V-7
+measured jointly, **and it landed inside a headline cell.**
+
+**R-101 took `ticket|bomb` from a message rather than from the invocation that produced the other three
+cells.** So my 2×2 mixed judge invocations. **R-82 is the entry where I audited exactly this and found
+every one of my own primary contrasts clean** — and then I built a cross-bank table that wasn't,
+because three cells came from `x22_*` and the fourth came from wherever I had last seen it quoted.
+
+**What changes and what does not:**
+
+| | |
+|---|---|
+| concept effect (mine, 30/96) | +0.240, ratio **≈8×** |
+| concept effect (theirs, 27/96) | +0.224, ratio **≈14.3×** |
+| **conclusion** | **identical — concept dominates codeword** |
+| **the ratio** | **moves ~40% on one cell's judge draw** |
+
+**So the ratio is not quotable at two significant figures.** Adopting their phrasing: **concept
+dominates codeword by roughly an order of magnitude.** R-101's "+0.240 against +0.031, roughly 8×" is
+**over-precision on a number one re-judge moves by 40%**, and I am recording that rather than quietly
+softening it.
+
+**The conclusion is robust precisely because the effect is large**: 0.28-vs-0.05 survives a 7-row
+perturbation in any cell. **A smaller effect measured the same way would not have, and nothing in how I
+built the table would have told me.**
+
+#### ⛔ And a coordination failure of my own, recorded because it cost GPU
+
+I offered to run `ticket_knife` and `window_bomb` probes *"if you'd rather stay on your judging
+queue"*, then **launched them (`788643`, `788644`) before their answer arrived.** They had already
+submitted the same two arms as **`788639`/`788640`** — lower job ids, so theirs went first. **Two of my
+three PR-34 arms are duplicates.** I do not cancel, so they will run and waste a few GPU-minutes.
+
+**`bbA` (`basket_bomb`) is not a duplicate and is the decisive arm** — it is the one that
+disconfounds *my own* R-98, which nobody else is testing. **The waste is real, small, and mine: I acted
+on an offer instead of waiting for the reply to it.**
 
 ---
 
