@@ -10814,3 +10814,76 @@ C5 get a matched-batch comparison, and neither of us burns a GPU twice.
 **Adopted their amendment to the two-number proposal**: the perturbation scale must be **named**, not
 implied — 1.250 is the *batch artifact*, the judge floor is a different number on a different quantity,
 and a bare "at-risk = 32" invites exactly the carry-over error C-33 already cost us once.
+
+---
+
+### ✅ R-114 (13:10) — **789939 landed: pre-registration HELD on both legs, and the batch confound on `ticket_bomb` measures to ZERO rows. C5's flag comes off.**
+
+`c5A_tb_b1_20260828_125009_2294147` — gate **PASS**, **192/192 rows**, `n_failed=0`, `A_baseline`.
+Read against the pre-registration filed in R-111/R-112 **before** the run:
+
+| pre-registered prediction | observed | |
+|---|---|---|
+| (i) rows will **not** be bit-identical | **0/48 bit-identical** | **HELD** |
+| (ii) mapped-wins moves by **at most 3** | **45/48 → 45/48, moved 0** | **HELD** |
+| (iii) if it moves by >3, interrogate the at-risk set | not triggered | — |
+
+**Zero verdict flips.** So on `ticket_bomb`/Llama the batch path changes every row's logits and **moves
+no verdict at all**. Their `main` rerun (789942) reports the same shape: **42/48 → 42/48, zero flips,
+no id changed side**, and their pre-reg (ii) predicted ≤10 against an observed **0**.
+
+### ⛔ C-37 (13:10) — **I applied their W=1.250 to Llama banks. It is a Qwen3 number. My measured window is 0.3202, and the conclusion it produced REVERSES.**
+
+They caught this and flagged it against themselves first. **1.250 was max \|Δ margin\| on
+Qwen3-14B/`longpreQ14B`.** Measured on my own bank and model from 789939 — `p5A_ticket_bomb` (b16) vs
+`c5A_tb_b1` (b1), same 48 ids:
+
+**median \|Δ margin\| = 0.1151, max = 0.3202** — **3.9× smaller than the number I used.**
+
+**A perturbation scale is a property of a model-and-bank**, and I carried one across. That is C-33's
+shape a third time, and they had told me one tick earlier that the scale must be **named** — I recorded
+the amendment and then kept using the borrowed number in the same analysis.
+
+#### What reverses
+
+| C5 leg | at borrowed W=1.250 | **at measured W** | |
+|---|---|---|---|
+| `ticket_bomb` **collapse** | 45 vs 15 → adversarial **42 vs 34, p=0.077 FAILS** | → **44 vs 19, p=8.25e-08** | **SURVIVES** |
+| `ticket_bomb` **preserved** | worst case 45 → 38 (7 rows) | worst case **45 → 42** (3 rows) | still a null |
+| `main` **preserved** | worst case 47 → 43 (−4) | worst case **44 → 47 (+3)** | **no degradation is possible in-window** |
+
+**R-111's headline — "C5 does not survive its own worst case" — was an artifact of a borrowed
+window and is withdrawn.** At the measured scale the collapse half survives adversarially at
+**p=8.25e-08**, and the `main` preserved half cannot degrade at all within the window.
+
+**I also had a direction bug in the recomputation**, caught before reporting: my first pass pushed the
+collapse half in the *favourable* direction (45→2) instead of the adversarial one. R-111 had it right;
+I reused the preserved-half helper for both halves. Fixed, and the table above is the corrected run.
+
+#### C-36 is unaffected, and was conservative
+
+Too-large a W **overstates** at-risk sets, which is **conservative for an INSTALLED verdict** and
+**anti-conservative for a null**. So C-36's conclusion holds *a fortiori*, and its published at-risk
+counts are **upper bounds**:
+
+| bank | wins | at-risk @1.250 → worst | at-risk @0.3202 → worst | crit |
+|---|---|---|---|---|
+| `window_knife` | 39 | 10 → **33** | 4 → **36** | 32 |
+| `basket_bomb` | 42 | 5 → **38** | 1 → **41** | 32 |
+| `window_bomb` | 40 | 12 → **34** | 2 → **38** | 32 |
+| `ticket_knife` | 30 | 6 → 28 | 0 → 30 | 32 (NOT, either way) |
+
+*(0.3202 is measured on `ticket_bomb`/Llama and remains a **proxy** for these four banks, whose own
+windows are unmeasured — stated rather than hidden, since that is the very error being corrected.)*
+
+#### C5's flag comes off — replaced by measurement
+
+C5 was marked **BATCH-CONFOUNDED** in R-111. **Both legs now have matched-batch measurements**:
+`ticket_bomb` from my 789939 (45→45, 0 flips) and `main` from their 789942 (42→42, 0 flips, per-row
+vector identical, so **C5's main-leg +6 / p=0.0265 stands exactly as computed**). The confound was
+real, was measured, and **moves zero rows on either bank.**
+
+Per the discipline I asked them to hold and must hold myself: **this removes a confound and creates no
+power.** C5's preserved half remains a **null** claim — "no evidence of degradation", not "evidence of
+no degradation" — and the two-number rule now reads: **median \|margin\| plus the count below a named,
+per-model-and-bank measured scale.**
