@@ -120,6 +120,7 @@ TRACE_TOKENS = {
     "§12.18": ["3 rows", "judge noise", "27/96"],
     "§12.19": ["masking", "bidirectional", "stop_reason"],
     "§12.20": ["dynamic range", "6.5%", "basket_gun"],
+    "§12.21": ["already existed", "384", "7.0%"],
 }
 
 

@@ -6701,3 +6701,66 @@ retrieval knockout suppresses the doublespeak attack on the two populations with
 attack to measure it, does not suppress on `basket_gun`, and is untestable on the other two.** Qwen
 was not rerun and remains cap-dependent. The original "96 down / 18 up over 8 populations" pooled
 across populations of wildly different dynamic range and should not be quoted in that form.
+
+## §12.21 — ⛔ CORRECTION: cap-640 arms ALREADY EXISTED for three of the five populations. My "first untruncated evidence" claim was false
+
+**Found while assembling the Phase 6 ladder, not by auditing the claim.** Six runs sit in the tree
+dated 2026-08-27/28, before the reruns: `e6A_main`, `e6C_main`, `e6A_ticket_bomb`,
+`e6C_ticket_bomb`, `e6A_basket_gun`, `e6C_basket_gun` — all `max_new=640`, all Llama, all
+`core2x2,core2x2_slot3`, all `n_examples 1,2,4,8`, 96 rows each. **Configuration-identical to the
+reruns I launched.**
+
+**What I claimed and why it was wrong.** §12.16 and the ledger said *"four of the five Llama
+populations have never had untruncated evidence at all"*, citing both-EOS discordant-row counts of
+0, 0, 0 and 2. That statistic is real, but it counts **rows inside the cap-192 runs where both arms
+happened to finish** — it is a property of those runs, and says nothing about whether a separate
+cap-640 run exists. I read a narrow within-run statistic as a statement about the corpus, and never
+checked the corpus. One `ls` would have shown it. §12.14 was built from `config.json` files
+specifically to avoid trusting prose about runs, and I then made a corpus-level claim without
+enumerating the corpus at all.
+
+**What the reruns actually contributed**, stated accurately:
+
+* `button_knife` and `window_knife` — **genuinely new**. No prior cap-640 arms exist for either.
+* `main`, `ticket_bomb`, `basket_gun` — **independent replication**, not new evidence.
+
+That replication is not worthless, but it is a different thing, and §12.17/§12.20 should not have
+been framed as first-light on those three.
+
+### Generation is fully deterministic, and it makes the duplication measurable
+
+Comparing the pre-existing runs against my reruns row by row — independent SLURM jobs, different
+nodes, a day apart:
+
+| pair | n | byte-identical | differing |
+|---|---|---|---|
+| `main` A | 96 | **96** | 0 |
+| `main` C | 96 | **96** | 0 |
+| `ticket_bomb` A | 96 | **96** | 0 |
+| `basket_gun` A | 96 | **96** | 0 |
+
+**384 of 384.** Same weights, same seed, same batch shape ⇒ the same text. So the reruns cost GPU
+time and produced no new bits on those three populations.
+
+### Which buys a third judge-noise measurement, on 384 rows
+
+Two independent judge sessions over text that is byte-identical by construction:
+
+| arm | n | totals | flips (up/down) | rate |
+|---|---|---|---|---|
+| `main` A | 96 | 22 → 23 | 5 / 4 = 9 | 9.4% |
+| `main` C | 96 | 8 → 5 | 2 / 5 = 7 | 7.3% |
+| `ticket_bomb` A | 96 | **27 → 27** | **4 / 4 = 8** | 8.3% |
+| `basket_gun` A | 96 | 10 → 7 | 0 / 3 = 3 | 3.1% |
+| **total** | **384** | | **27** | **7.0%** |
+
+7.0% against §12.20's 6.5% on a different 123 rows — two independent estimates agreeing. **And
+`ticket_bomb` A is the clearest possible statement of the net-versus-gross distinction: the total is
+27 both times, unchanged, while 8 rows disagree underneath it.** An identical aggregate is not
+evidence that the same rows were scored the same way.
+
+**Standing consequence.** Before claiming a population, model or cap has "no evidence", enumerate
+the run corpus by `config.json` and say how many dirs were examined. Every under-coverage failure
+this sprint — a bolded-id regex, a prefix glob, `ls | tail -1`, a population-name substring, and now
+a within-run statistic read as a corpus fact — was invisible because nothing reported the
+denominator.
