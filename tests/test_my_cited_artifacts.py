@@ -29,6 +29,16 @@ DELIVERABLE = os.path.join(ROOT, "reports", "SPRINT_SUMMARY_2026-08-25_BEHAVIORA
 #: Cited ids whose run carries failures, each with the reason the citation is still sound.
 #: `n_failed` does NOT mean the same thing in every experiment — the FailureLedger counts whatever
 #: that experiment declared a failed unit, so the reason string matters more than the count.
+#: Cited ids that appear in outputs/boombness/EXCLUDED_RUNS.json, with why the citation is sound.
+#: Membership is tested by EXACT run_id. An earlier ad-hoc substring match false-positived on
+#: ...2201570, which is the SUPERSEDOR named in the excluded run's `superseded_by` field, not an
+#: excluded run itself — the same over-matching class as every other hand-rolled check this sprint.
+EXCLUDED_BUT_CITED = {
+    "rederive10_20260825_002905_2199605":
+        "reason=no_done_json. Cited at plan L1651 AS the run that died; the claim rests on its "
+        "supersedor rederive10_20260825_002934_2201570, which is not excluded.",
+}
+
 CLASSIFIED = {
     # --- cited BECAUSE they were refused; the refusal is the point being made ---
     "q5A_lpQ14B_20260828_083233_2269491":
@@ -68,6 +78,50 @@ def _audit(text):
         if bad and rid not in CLASSIFIED:
             unclassified.append(rid)
     return missing, unclassified
+
+
+def _excluded_ids():
+    """Exact run_ids from the repo's exclusion record — never substring matching."""
+    p = os.path.join(ROOT, "outputs", "boombness", "EXCLUDED_RUNS.json")
+    if not os.path.exists(p):
+        return {}
+    d = json.load(open(p))
+    return {r["run_id"]: r.get("reason") for r in d.get("runs", []) if r.get("run_id")}
+
+
+def test_no_cited_run_is_silently_excluded_or_unfinished():
+    """The complementary gap to the attrition check, and the one their guard catches that mine did not.
+
+    `check_run_readable` refuses ABORTED / missing-DONE / EXCLUDED_RUNS and does NOT inspect
+    attrition; `_audit` above inspects attrition and did NOT inspect these. Each check missed exactly
+    what the other caught, which is why both are here.
+    """
+    exc = _excluded_ids()
+    for path in (PLAN, DELIVERABLE):
+        text = open(path, encoding="utf-8").read()
+        cited = set(cac.cited_ids(text))
+        bad = sorted((cited & set(exc)) - set(EXCLUDED_BUT_CITED))
+        assert not bad, (
+            f"{os.path.basename(path)} cites EXCLUDED runs without classification: "
+            f"{[(b, exc[b]) for b in bad]}")
+        unfinished = []
+        for rid in sorted(cited):
+            d = cac.resolve(rid)
+            if d and not os.path.exists(os.path.join(d, "DONE.json")) \
+                    and rid not in EXCLUDED_BUT_CITED:
+                unfinished.append(rid)
+        assert not unfinished, f"{os.path.basename(path)} cites unfinished runs: {unfinished}"
+
+
+def test_exclusion_membership_is_exact_not_substring():
+    """Pins the false positive that prompted this test.
+
+    A two-way substring match reports the supersedor as excluded, because its id appears inside the
+    excluded run's `superseded_by` field. Exact run_id membership does not.
+    """
+    exc = _excluded_ids()
+    assert "rederive10_20260825_002905_2199605" in exc
+    assert "rederive10_20260825_002934_2201570" not in exc
 
 
 def test_every_cited_run_id_resolves():

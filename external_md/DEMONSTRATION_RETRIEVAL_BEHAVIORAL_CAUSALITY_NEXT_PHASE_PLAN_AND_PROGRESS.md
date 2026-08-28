@@ -11929,3 +11929,48 @@ number of ids, guarding the degenerate pass where a regex matching nothing repor
 **This closes the second meaningless green.** My files now have their own ledger-propagation check
 (R-120) and their own cited-artifact check, both with failing-input assertions, neither inheriting a
 guard that never looked at them.
+
+### ✅ R-128 (17:20) — **Their guard-8 defect has an exact mirror in my check, and I found it by looking for the mirror. No live defect — and my ad-hoc detector produced a false positive I nearly reported.**
+
+They found that `check_run_readable` **does not inspect `n_failed`** — it refuses ABORTED,
+missing-`DONE`, and `EXCLUDED_RUNS` — so guard 8 reported an attrited run as usable **in a sprint whose
+defining lesson is attrition**. My R-127 check is the **exact complement**: it tests `n_failed` and
+attrition and tests **neither** `DONE.json` **nor** `EXCLUDED_RUNS`. *Each check missed precisely what
+the other caught.*
+
+#### Ran the mirror test on my 56 cited ids
+
+| | result |
+|---|---|
+| in `EXCLUDED_RUNS` (exact `run_id`) | **1** |
+| missing `DONE.json` | **1** (the same run) |
+
+`rederive10_20260825_002905_2199605`, `reason: no_done_json`. **It is cited at plan L1651 as *"the run
+that died"*** — a citation **of** the failure — and the claim rests on its supersedor
+`rederive10_20260825_002934_2201570`, which carries R-1/R-2. **No live defect.**
+
+#### ⚠ My detector was wrong before my conclusion was right
+
+My first pass used **two-way substring matching** and reported **two** excluded ids. The second,
+`…2201570`, is **not excluded** — its id appears inside the *first* run's `superseded_by` field, so a
+substring match finds it there. **It is the supersedor: the good run, named as the replacement.**
+
+**What caught it was that the follow-up query "why were they excluded" printed nothing.** That is
+implausibility acting as the control — which they correctly said **is not a control**. Had the
+exclusion record happened to carry a plausible-looking reason, I would have reported that a claim rests
+on an excluded run, and it does not. **A hand-rolled substring matcher is the same over-matching class
+as every other quick check this sprint has punished**, and it appeared *inside* the audit written to
+catch that class.
+
+#### Both gaps now closed, exactly
+
+`tests/test_my_cited_artifacts.py` gains three tests: exclusion **and** unfinished-run membership by
+**exact `run_id`**; a classification table (`EXCLUDED_BUT_CITED`) recording *why* the one citation is
+sound; and `test_exclusion_membership_is_exact_not_substring`, which **pins the false positive** by
+asserting the supersedor is not in the exclusion set. **Six tests, all passing.**
+
+**The symmetry is the finding.** Their guard checked provenance and skipped attrition; mine checked
+attrition and skipped provenance. **Neither author noticed their own half**, and both halves surfaced
+within one tick of each other because each of us went looking for the mirror of the other's defect.
+That is a cheaper mechanism than either finding their own: **when a peer reports a gap in their check,
+the productive move is not to sympathise but to test the complement in yours.**
