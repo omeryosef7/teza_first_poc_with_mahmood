@@ -9482,6 +9482,46 @@ not survive being quoted as a rate.**
 It says what the bank does before anything is done to it — which is exactly why it explains the null
 instead of being another instance of it.
 
+
+### 🔒 PR-33 (04:20, written and committed before the arm is submitted) — **convert R-98's hedge into a measurement: does `window_knife` also fail to install the mapping?**
+
+R-98 wrote that the concurrent session's `window_knife` population (**baseline ASR 2/96**) *"likely
+is too"* a non-installation case. **That is a hedge in a document whose whole discipline is not
+hedging where a measurement is available**, and the measurement costs one forward-only probe arm.
+
+**It is falsifiable, which is the point.** If `window_knife`'s baseline **binds**, then low baseline
+ASR does **not** imply non-installation, R-98's "likely" was wrong, and their entry-6 null on that
+population needs a different explanation. **I am running my own prediction against the possibility
+that it fails.**
+
+**Design.** One arm, baseline only, no intervention. `boombness_prompt_bank_window_knife.jsonl`
+(codeword `window`, concept `knife`) — **48 rows**, `natural_doublespeak` ×
+`semantic_forced_choice` × `n_examples ∈ {1,2,4,8}`, **12 per dose**, identical to `p2A`/`tbA`/`p5A_gun`.
+Llama-3.1-8B, `--max-new 8`, forward-only, `--min-option-mass 0.05`, `--attn-impl eager`. **Nothing is
+retuned and no intervention arm is run** — the claim is about the *baseline*.
+
+#### 📌 Conditions, fixed now against the three banks already measured
+
+Reference dose ladders (mapped-wins, 12/cell): `main` 0.667→**1.000**; `ticket_bomb` 0.750→**1.000**;
+`basket_gun` 0.333→0.417, **never crossing 0.500**.
+
+1. **NON-INSTALLATION (R-98's prediction holds)** — baseline mapped-wins **never reaches 0.500 at any
+   dose**, and `Δ(n=8 − n=1) ≤ +0.15`. `window_knife` joins `basket_gun`, and **two of five entry-6
+   populations are positively identified as non-installation rather than inferred.**
+2. **INSTALLATION (prediction REFUTED)** — mapped-wins **crosses 0.500 and rises**, i.e. it looks like
+   `main`/`ticket_bomb`. Then **low baseline ASR does NOT imply non-installation**, R-98's hedge was
+   wrong to lean that way, and their `window_knife` null needs a different account. **I would record
+   that as a refuted prediction of mine, not as a peer's problem.**
+3. **AMBIGUOUS** — crosses chance but flat, or rises without crossing. Reported as ambiguous; **no
+   story is fitted to it.**
+
+**⛔ Pre-committed as NOT counting**: the option-mass number on its own (`basket_gun` sat at 0.3869
+mass while failing to bind, so mass and binding are separable and mass alone decides nothing here),
+and any ASR statement — **I am generating no completions.**
+
+**⚠ And the standing caveat from R-98 applies unchanged**: cells are **12 rows**, so the *shape* is the
+claim and no individual cell is.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
