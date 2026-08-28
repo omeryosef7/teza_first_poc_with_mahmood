@@ -90,6 +90,7 @@ TRACE_TOKENS = {
     "§11.8": ["18 of 31", "attribut"],
     "§11.9": ["clustering unit", "cell"],
     "§11.10": ["exempt", "downstream usage"],
+    "§11.11": ["unmechanisable", "config_confounded"],
 }
 
 

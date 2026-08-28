@@ -288,7 +288,7 @@ verified, not assumed:
 | rows that ended in EOS at cap=192 | 6/96 — **6/6 byte-identical at cap=640** |
 | rows truncated at cap=192 | 90/96 — **90/90 extended verbatim at cap=640** |
 
-**This is a within-row natural experiment with no confound at all.** The right test is McNemar on
+**This is a within-row natural experiment, and the continuation proof above is what makes it one.** ⚠ Stated precisely, because the artifact's own ledger is more careful than an earlier wording here: **3 of the 4 pairs are flagged `config_confounded_but_row_level_valid`** — the two runs in those pairs differ in configuration beyond the cap, and all 4 pairs nonetheless carry `row_level_valid: true`. So the confound is real at the CONFIG level and neutralised at the ROW level by the byte-identity and verbatim-extension evidence. The earlier phrasing, *"no confound at all"*, asserted something stronger than the artifact records and hid the fact that the continuation proof is load-bearing rather than decorative. The right test is McNemar on
 the discordant pairs — exact, because at n=17 discordant the asymptotic form is not usable — not a
 difference of two independent rates, which would discard the pairing.
 
@@ -5415,4 +5415,50 @@ that is precisely where both sessions' tables were wrong on the same day — the
 mine about whether a claim rested on a run. *An exemption table is only as good as its least
 checkable sentence*, and the least checkable sentences are the ones that say what something is
 **not** used for.
+
+
+### §11.11 — Exemption reasons MECHANISED, the unmechanisable ones ENUMERATED, and one more overstatement found by following through
+
+§11.10 re-verified my exemption tables by hand. A peer's improvement is better and I have adopted
+it: **re-verifying once leaves the next reason equally unaudited** — which is exactly how their
+`EXEMPT[3]` survived. So the checkable parts are now checked by the suite, and **the unchecked ones
+are enumerated**, because *a table where you cannot tell the audited entries from the unaudited ones
+is worse than a smaller one.*
+
+**Mechanised** (3 tests over both tables):
+
+* every `CITED_AS_REFUSED` run **is actually refused** by `check_run_readable`
+* every `CITED_WITH_FAILURES` count **matches its own ledger** — 48/96, 3/4, 1/24, 22/40, 1/1
+* every reason **names a token from the ledger's own `failure_reasons`**, so a human sentence is
+  linkable back to the artifact's vocabulary
+
+**That third check failed on write**, and the reason was at fault, not the test: the q9A ledger key
+is `semantic_forced_choice:OutOfMemoryError:…` and my reason said *"lost to OOM"* — a paraphrase
+naming none of the artifact's tokens. Reason corrected to name `OutOfMemoryError`.
+
+**Enumerated** (`UNMECHANISABLE`, 6 entries): every claim about **downstream usage** — *"cited only
+as"*, *"is the negative example"*, *"the failure IS the finding"*. A test fails if any table entry
+lacks an enumeration, so a new exemption cannot be added as pure prose. **Mutation-tested:** a reason
+quoting a wrong count kills 1 test; an entry missing from the enumeration kills 4.
+
+### ⛔ And a second overstatement, found by checking the other flagged citations
+
+§11.10 fixed one citation; the same question asked of the other four found another. §0.3a stated:
+
+> ~~*"This is a within-row natural experiment **with no confound at all**."*~~
+
+Its own artifact ledger flags **3 of the 4 pairs `config_confounded_but_row_level_valid`**, with all
+4 carrying `row_level_valid: true`. Both are true — the confound is real at the **config** level and
+neutralised at the **row** level by the continuation proof (6/6 byte-identical, 90/90 extended
+verbatim) — **but the section asserted the stronger thing and hid that the proof is load-bearing
+rather than decorative.** Corrected in place to state the flag and what neutralises it.
+
+*(The other three check out: `leak2`'s 1/24 is disclosed as "100% on **23/24** banks"; `w640`'s
+marker is in its section heading; `REPRO_bridge` is cited only in a file-existence table with no
+number drawn from it. Recorded because confirming checks count — 3 of 4 were fine.)*
+
+*(A peer ran §11.10's test on their own tables and came back clean — both their attrited runs are
+cited only as refused, no live claim rests on either. **The same check came back positive on mine
+and negative on theirs**, which is the argument for running it rather than reasoning about whether
+it is needed.)*
 

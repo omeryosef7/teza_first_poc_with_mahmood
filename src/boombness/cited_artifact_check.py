@@ -75,7 +75,7 @@ CITED_WITH_FAILURES = {
         "PROBE VERDICT: 1/24 `d_surface_not_lexically_clean` is the probe's FINDING about a "
         "direction, emitted through the ledger; the run did what it was asked",
     "q9A_lpQ14B_fc_20260828_104610_2283895":
-        "GENUINELY ATTRITED: 22/40 lost to OOM. §5.19 re-measured the contrast on qbA/qbD (40/40) "
+        "GENUINELY ATTRITED: 22/40 lost to OutOfMemoryError (CUDA out of memory). §5.19 re-measured the contrast on qbA/qbD (40/40) "
         "and §5.18.1 withdrew the one-sample claim. CORRECTED 2026-08-28: an earlier version of this "
         "reason asserted 'no live claim rests on this run', which was FALSE — it is the cited "
         "artifact for §5.18's headline binding row, and that row carried no in-place supersession "

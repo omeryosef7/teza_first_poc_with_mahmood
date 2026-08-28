@@ -156,3 +156,81 @@ def test_every_shipped_failure_classification_states_a_reason():
     assert cac.CITED_WITH_FAILURES
     for rid, why in cac.CITED_WITH_FAILURES.items():
         assert isinstance(why, str) and len(why.strip()) > 30, f"{rid} has no real reason"
+
+
+# --- the exemption tables' REASON STRINGS, mechanised ---------------------------------------
+#
+# A peer's exemption table asserted five sub-corrections "propagated individually"; it was untrue
+# and sat inside the table whose purpose is recording CHECKED reasoning. Mine then turned out to
+# assert of an attrited run that "no live claim rests on" it, which was also false (§11.10).
+#
+# Re-verifying once leaves the NEXT reason equally unaudited -- which is how theirs survived. So the
+# checkable parts are checked mechanically here, and THE UNCHECKABLE ONES ARE ENUMERATED, because a
+# table where you cannot tell the audited entries from the unaudited ones is worse than a smaller
+# one. Their framing, adopted.
+
+def test_every_CITED_AS_REFUSED_run_is_actually_refused():
+    """The claim 'this run is refused' is mechanically checkable. Check it."""
+    import asr_protocol as ap
+    for rid in cac.CITED_AS_REFUSED:
+        d = cac.resolve(rid)
+        assert d, f"{rid} is exempted but does not exist"
+        raised = False
+        try:
+            ap.check_run_readable(d)
+        except Exception:
+            raised = True
+        assert raised, f"{rid} is exempted AS REFUSED but check_run_readable accepts it"
+
+
+def test_every_CITED_WITH_FAILURES_count_matches_the_ledger():
+    """Reasons quote counts like '48/96' and '22 of 40'. Those are checkable against the artifact."""
+    import json as _json, os as _os, re as _re
+    for rid, why in cac.CITED_WITH_FAILURES.items():
+        d = cac.resolve(rid)
+        assert d, f"{rid} is classified but does not exist"
+        led = (_json.load(open(_os.path.join(d, "summary.json"))).get("failures") or {})
+        m = _re.search(r"(\d+)\s*(?:/|of)\s*(\d+)", why)
+        assert m, f"{rid}: the reason quotes no count, so nothing can be checked"
+        assert int(m.group(1)) == int(led.get("n_failed") or 0), f"{rid}: n_failed disagrees"
+        assert int(m.group(2)) == int(led.get("n_attempted") or 0), f"{rid}: n_attempted disagrees"
+
+
+def test_every_CITED_WITH_FAILURES_reason_names_a_real_failure_reason():
+    """The reason string names a ledger key ('family_missing_one_side'); it must actually be there."""
+    import json as _json, os as _os
+    for rid, why in cac.CITED_WITH_FAILURES.items():
+        d = cac.resolve(rid)
+        keys = list((_json.load(open(_os.path.join(d, "summary.json"))).get("failures") or {})
+                    .get("failure_reasons") or {})
+        assert keys, f"{rid}: classified as having failures but the ledger records no reason"
+        # ledger keys take two shapes: a bare reason ("family_missing_one_side") and a compound
+        # "<query_kind>:<ErrorType>:<message>". The reason must name SOME component, so that a
+        # human sentence is linkable back to the artifact's own vocabulary.
+        parts = [p for p in keys[0].split(":") if len(p) > 3]
+        assert any(p in why for p in parts), (
+            f"{rid}: reason names none of the ledger's own tokens {parts!r}")
+
+
+#: Claims in the exemption tables that CANNOT be checked from artifacts -- assertions about
+#: DOWNSTREAM USAGE ("cited only as", "no live claim rests on"). §11.10 is the proof that this is
+#: where both sessions' tables were wrong. Enumerated so the suite is never silent about which
+#: entries it does not cover.
+UNMECHANISABLE = {
+    "ab_C_20260819_002240_1397246": "that it is cited INSIDE §0.2.5 as that section's negative example",
+    "w640_20260827_224651_3802479": "that its section heading frames it as a refusal",
+    "REPRO_bridge_20260826_050914_1018899": "that 48/96 is STRUCTURAL rather than a fault",
+    "capNE2_20260827_210525_3544980": "that the rows remain usable despite the config confound",
+    "leak2_20260827_212632_3593613": "that the failure IS the probe's finding",
+    "q9A_lpQ14B_fc_20260828_104610_2283895": "which sections still present it as a live result",
+}
+
+
+def test_the_unmechanisable_claims_are_ENUMERATED_not_merely_absent():
+    """Silence about which entries are unaudited is how a false reason survives."""
+    covered = set(cac.CITED_AS_REFUSED) | set(cac.CITED_WITH_FAILURES)
+    assert set(UNMECHANISABLE) <= covered, "an enumerated entry is not in either table"
+    for rid in covered:
+        assert rid in UNMECHANISABLE, (
+            f"{rid} has no entry in UNMECHANISABLE: state what about it cannot be checked, "
+            "even if that is 'nothing'")
