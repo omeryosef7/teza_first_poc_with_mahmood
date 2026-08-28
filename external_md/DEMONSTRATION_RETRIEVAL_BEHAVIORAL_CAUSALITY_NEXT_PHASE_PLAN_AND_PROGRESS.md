@@ -12585,3 +12585,56 @@ domains pass their audit**, because a domain list that fails audit makes them mo
 
 **Falsifier**: a domain failing **any** of criteria 1-6 is dropped and **not repaired to fit** — a
 repaired domain is chosen by what it needs to be rather than by what it is.
+
+### ⛔ C-49 (19:10) — **"10 domains available" is wrong and has been wrong all day. The pools file holds SIX. Thirty-one authored domains are inert, so authoring was never the constraint — pool generation is, and it needs an API key that is not set.**
+
+Authoring began under PR-35. **The first check falsified its premise.**
+
+#### The error, and how I made it
+
+I read `DOMAINS` through `head -16`, saw ten names, and reported *"current DOMAINS: 10"*. **The
+constant held 27.** Truncated output read as complete — the same loose-observation class as C-46,
+R-128 and C-47, now in the fact-gathering step rather than in a matcher.
+
+**And the number that matters is neither 10 nor 27.** `prompt_families` builds from
+`pool_domains = [d for d in DOMAINS if f"{d}|benign" in pools]`, and `demo_pools.json` contains:
+
+| | count |
+|---|---|
+| **domains with generated pools** | **6** — `city_bridge, farm_storage, game_manual, instructional, lab_safety, news_report` |
+| `DOMAINS` constant (before my edit) | 27 |
+| **inert — authored, no pools** | **21** |
+
+**Confirmed against a measured artifact**: `wkA`'s rows carry exactly those six domains. **Every ICC
+figure I computed all day was on k = 6**, which was correct — but the *sizing* arithmetic said
+"against 10 available", and **10 was never available.**
+
+#### What this does to the task
+
+**Authoring prose is not the bottleneck and never was.** Twenty-one domains were already written and
+unusable — including the four the Phase-4B comment credits with taking k from 6 to 10, which it did
+not, because their pools were never generated. **Adding more definitions produces more inert
+definitions.**
+
+**The single blocking resource is `OPENAI_API_KEY`**: `demo_pools.py:266` reads
+`os.environ["OPENAI_API_KEY"]` and regeneration is the only path from a domain definition to a usable
+cluster. **It is not set.**
+
+#### What I did anyway, and why it is still worth having
+
+Nine of my ten domains are authored and **pass the full PR-35 audit** — five fields, article
+agreement, two named sub-locations, zero collisions against `carrot/ticket/basket/window/bomb/knife/gun`,
+and **no shared sub-location phrase with any of the other 27**.
+
+**The tenth, `brewery_floor`, was dropped rather than repaired.** It shared *"a fermentation hall"*
+with the existing `brewery_works` — two entries of the same setting family are not two clusters. PR-35's
+falsifier is explicit that a failing domain is **dropped and not repaired to fit**, and I applied it to
+my own prose within minutes of writing it.
+
+*(My first distinctness check flagged five more collisions on the generic nouns `room`, `store`,
+`plant` — a loose matcher inside the audit I had just written, the fourth instance today. The strict
+sub-location test returns none.)*
+
+**These nine are inert exactly as the other 21 are.** They are worth having because they are audited
+and ready **if** the key becomes available; they are worth **nothing** otherwise, and I am not going to
+describe writing them as progress on the blocker.
