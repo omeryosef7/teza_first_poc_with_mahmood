@@ -2971,9 +2971,8 @@ about "0.625" looks unresolvable. This is the same failure as §0.3a's underpowe
 built `min_detectable_net_flips` precisely so a p of 1.0 could not read as evidence of absence, and
 then did not apply the same reasoning to a proportion.
 
-**The binding constraint is the population, not the model:** the forced-choice probe exists for
-`core2x2` only (48 rows) and **has no `core2x2_slot3` rows**, so it cannot be doubled to 96 without
-generating new probe rows. That is the same coverage defect as §6.3's join limit and the concurrent
+**The binding constraint is the population, not the model** — and §5.15 shows it is worse than
+"needs a bigger run": `ticket_knife` is **unresolvable with this bank at any usable n**. That is the same coverage defect as §6.3's join limit and the concurrent
 session's C-24 — **the measurement covering less of the population than the claim does**, which
 never surfaces as an error, only as a smaller n.
 
@@ -3086,3 +3085,58 @@ first time.
    heredoc); theirs were mostly of my *reasoning*. That asymmetry is worth naming: I check
    instruments well and claims less well.
 3. **Phase 8 remains correctly unstarted**, and §7's gate remains closed.
+
+---
+
+## §5.15 — `ticket_knife` is UNRESOLVABLE with this bank, not merely unresolved
+
+The concurrent session retracted its own "96 rows would settle it" recommendation before I spent an
+arm on it. **Both halves verified independently here.**
+
+**The rows do not exist.** `ticket_knife` has 288 forced-choice rows, 72 per condition, and
+`natural_doublespeak` splits **12 per dose** across `n_examples ∈ {0,1,2,4,8,16}`:
+
+| population | n | note |
+|---|---|---|
+| what I ran (`n ∈ {1,2,4,8}`) | **48** | §5.13 |
+| ceiling **with** demonstrations (add `n=16`) | **60** | the real maximum |
+| including `n=0` | 72 | `n=0` teaches no mapping — dilutes the thing measured |
+| **96** | **does not exist** on this bank/condition |
+
+**And the ceiling would not settle it.** Power to detect a true 0.625 against chance, exact
+two-sided, α=0.05 — **my computation, matching theirs to three decimals**:
+
+| n | power |
+|---|---|
+| **48** (what I ran) | **0.331** |
+| **60** (this bank's ceiling) | **0.399** |
+| 96 (unreachable) | 0.627 |
+| 144 (what would be needed) | 0.828 |
+
+**At the maximum this bank can supply, power is 0.399 — a coin flip.** Resolving `ticket_knife`
+needs ~144 rows, **three times the `natural_doublespeak` forced-choice population that exists.**
+
+### How this changes the limitation
+
+§5.13 recorded `ticket_knife` as unresolvable *at n=48*, which implies someone could close it with a
+rerun. **They cannot.** It is a **bank-design change**, not a rerun.
+
+**Stated for the limitations section:** *the harm-category account rests on `window_knife` alone, and
+will continue to unless a larger probe population is built. `ticket_knife` cannot confirm or refute
+it at any n this bank supports.* An "open item" framing would have implied a cheap fix and there
+isn't one.
+
+### METHODS NOTE — three independent instances of the same defect
+
+This is now the **third** case in two sessions of *the measurement covering less of the population
+than the claim does*, and **all three surfaced only when someone counted rather than read**:
+
+| instance | shape | surfaced by |
+|---|---|---|
+| §6.3's join limit | `extract_boombness` predates `core2x2_slot3`, so half the judged population had no boombness value — n=48 not 288 | counting the join |
+| the concurrent session's C-24 | the forced-choice probe only ever existed for `core2x2` — 396 of 468 family stems had no probe side | counting the stems |
+| **§5.15** | `natural_doublespeak` forced-choice tops out at 60 usable rows, not the 96 assumed | counting the doses |
+| *(and §DR-2)* | Phase 3 was never run at all — the plan's coverage, not a population's | counting the phases |
+
+**None of these presents as an error.** Each presents as a *smaller n*, or as a section that simply
+isn't there — which is why reading the analysis never finds them and counting the rows always does.
