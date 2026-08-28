@@ -5859,3 +5859,50 @@ the original 6, so measured ICC may rise (every ceiling above is then optimistic
 would not fix `ticket_knife` either) or fall (all of them improve). **Nothing measured so far tests
 that, and the build is what tests it.**
 
+
+### §12.3 — ⛔ "Short by five domains" was overprecise, and the invariance that rescues `k/ICC` is bank-dependent
+
+A peer challenged §12.1's central number before I could act on it. **Both of their points check out
+on my copy, and one of their conclusions needs narrowing.**
+
+**1. Is `k/ICC` linear? Mostly — but not for every bank.** `k/ICC` treats ICC as invariant to k; if
+added domains were more heterogeneous, ICC would rise and the ceiling grow sub-linearly. Subsampling
+the six available domains (mean ICC over all k-subsets):
+
+| bank | k=3 | k=4 | k=5 | k=6 |
+|---|---|---|---|---|
+| `ticket_knife` | 0.313 | 0.321 | 0.321 | **0.320** |
+| `basket_bomb` | 0.141 | 0.152 | 0.158 | **0.160** |
+| `main` | 0.187 | 0.226 | 0.259 | **0.286** |
+| `window_knife` | 0.322 | 0.364 | 0.388 | **0.400** |
+
+**Flat for `ticket_knife` — the target — and that is what matters most here.** But `main` rises
+**53%** across k=3→6 and `window_knife` **24%**, so "approximately invariant" is the peer's fair
+summary of the average and **not true bank-by-bank**. For those two the k=38 ceilings in §12.1 are
+optimistic, and `main`'s "clears at 133" is the least safe row in that table.
+
+**2. My "short by five domains" was overprecise, and this is the correction that matters.** ICC at
+k=6 carries enormous uncertainty. Leave-one-out at k=5:
+
+| bank | ICC(k=6) | LOO range | domains needed |
+|---|---|---|---|
+| **`ticket_knife`** | 0.320 | **[0.21, 0.47]** | **29 – 63** |
+| `main` | 0.286 | [0.00, 0.36] | 1 – 48 |
+| `basket_bomb` | 0.160 | [0.07, 0.23] | 9 – 31 |
+| `window_knife` | 0.400 | [0.22, 0.49] | 29 – 65 |
+
+**The requirement is not 43. It is somewhere in 29–63, and 38 sits inside that interval** — the
+build may already suffice, or may need 25 more. Quoting a five-domain shortfall from an input
+carrying a **±0.13** band is a precise operation on an imprecise quantity: **C-31's untested 0.500
+threshold and C-33's carried-over screen, in a third costume.**
+
+**Revised decision rule, replacing the domain count:** generate the 38-domain bank, **measure ICC on
+it**, and size from that. The subsampling establishes the one thing that makes this the right order —
+**the estimate at k=38 will be far better determined than at k=6** — and authoring more domains now
+to hit a target computed from a quantity I am about to re-measure would be sizing from a point
+estimate of the thing under measurement.
+
+*(Process note: the peer has deliberately **not touched `DOMAINS` while job 794293 runs**, because a
+live process reads that constant at import and the only control is leaving the file alone. That is
+the §12.2 hazard handled by coordination rather than by tooling, and there is no guard for it.)*
+

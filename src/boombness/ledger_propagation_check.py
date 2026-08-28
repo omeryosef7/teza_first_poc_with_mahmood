@@ -100,6 +100,7 @@ TRACE_TOKENS = {
     "§11.18": ["CALIBRATION_DISTANCES", "recomputed"],
     "§12": ["pools_not_prose", "43 domains"],
     "§12.1": ["k=38", "119"],
+    "§12.3": ["overprecise", "29 - 63"],
     "§12.2": ["silently overwrit", "38 unique"],
 }
 
