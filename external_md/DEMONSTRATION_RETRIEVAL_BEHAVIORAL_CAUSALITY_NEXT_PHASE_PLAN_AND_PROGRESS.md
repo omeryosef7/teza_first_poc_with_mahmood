@@ -10765,3 +10765,52 @@ alone**. **Publishing the margin distribution alongside any forced-choice count 
 legible without anyone rerunning anything** — and it generalises past batching to *any* perturbation of
 the readout, including the judge-noise floor already measured for the ASR side. Agreed with them that
 this goes in both deliverables.
+
+### R-113 (12:50) — **C5 has TWO legs and both preserved halves are equally exposed (≈2.4× and ≈2.6×), neither surviving the bound. Their `main` rerun covers the identical 48 ids as C5's main leg, so it settles mine too — no duplicate run.**
+
+They found the same structural problem across their corpus — **49 DONE runs carry forced-choice rows,
+25 on the batch-16 path and 24 on batch-1**, so every baseline-vs-knockout forced-choice contrast in
+their ledger spans the split, exactly as C5 does. They cancelled their duplicate `ticket_bomb` run
+(789943) in favour of mine, which covers all three query kinds; **`ticket_bomb` is mine, `main` is
+theirs.**
+
+#### C5's main leg is a DIFFERENT comparison from their §5, and I checked mine rather than inheriting theirs
+
+Their "main preserved 42/48 → 41/48" is baseline vs **unscoped** (`p5A_main` → `p5C_main`). **C5's
+main leg is baseline vs `demo_processing_only`** (`p2A_20260825_094249_2418414` →
+`p2_demo_processing_only_20260825_094220_433604`), which is a different pair and a different number:
+
+| arm | wins | median \|margin\| | at-risk (<1.250) |
+|---|---|---|---|
+| baseline (b16) | **42/48** | 3.423 | 10 (5 wins, 5 losses) |
+| `demo_processing_only` (b1) | **48/48** | 2.659 | 5 (5 wins, 0 losses) |
+
+| | counts | delta | p |
+|---|---|---|---|
+| **observed** | 42/48 → **48/48** | **+6** | **0.0265** |
+| **adversarial worst case** | 47/48 → 43/48 | **−4** | 0.204 |
+
+So on `main`, binding does not merely survive the scoped knockout — **mapped-wins rises significantly**
+(+6, p=0.0265), which is a stronger statement than C5 makes (C5 quotes *masses*, 0.5416→0.6021, not
+counts). **But the direction is not robust**: under adversarial batch bias the +6 becomes −4.
+
+**Between-arm effect vs the batch artifact: 1.621 / 0.688 ≈ 2.4×**, essentially identical to
+`ticket_bomb`'s preserved half at ≈2.6×. **Both of C5's preserved legs sit at the same tight ratio and
+neither survives the bound** — consistent with what they found on their §5, and consistent with the
+general rule: **null claims at ~2–3× the perturbation scale cannot be defended by bounding.**
+
+#### Their run settles my main leg — verified, not assumed
+
+`p6A_main_b1` (789942) reproduces `p5A_main` at batch 1. `p5A_main` differs from C5's `p2A` in seed
+(20260823 vs 20260825) and query kinds, **but the forced-choice `prompt_id` sets are IDENTICAL
+(48/48, verified by set comparison)**, and both baselines independently return **42/48**. Since the
+readout is now known to be **exactly deterministic at fixed batch** (R-111), a batch-1 baseline on
+those ids is directly comparable to `p2_demo_processing_only`, which is already batch 1.
+
+**So 789942 gives C5's main leg its matched-batch baseline for free.** I am **not** launching a
+duplicate. My **789939** (`c5A_tb_b1`) covers the `ticket_bomb` leg. Between the two runs both legs of
+C5 get a matched-batch comparison, and neither of us burns a GPU twice.
+
+**Adopted their amendment to the two-number proposal**: the perturbation scale must be **named**, not
+implied — 1.250 is the *batch artifact*, the judge floor is a different number on a different quantity,
+and a bare "at-risk = 32" invites exactly the carry-over error C-33 already cost us once.
