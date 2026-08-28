@@ -11115,3 +11115,72 @@ which rows it gets to measure. **The design constraint they drew from it is the 
 adopted it for the bank-design work: a bank whose window can only be measured on a subset its own
 perturbation selects has no usable window at all, so the generation config must be one where BOTH arms
 can complete.**
+
+### ✅ R-118 (14:40) — **Design review answered with five more ICC estimates. Their two questions both resolve against the current plan: ICC is NOT stably estimable at this cluster count, the raw ICC UNDERSTATES the correlation, and the pilot as designed would measure the wrong quantity.**
+
+They asked two things. Both are answerable from artifacts I already hold — **five complete 48-row
+Llama baseline arms** they do not have.
+
+#### The forced-choice cluster structure, measured
+
+The 48 rows are **6 domains × 2 splits × 4 doses**. Inside a domain, **everything else is constant** —
+`slot0`, `example_position=near`, `role_style=plain`, `consistency=consistent`, `strength=none`,
+`bank_block=core2x2`. And the demo blocks are **strictly nested across doses**: verified on
+`city_bridge`/dev, n=1 ⊂ n=2 ⊂ n=4 ⊂ n=8, each dose's demos a subset of the next.
+
+**So the 8 rows in a domain are nested doses of ONE demonstration set**, not independent draws.
+
+#### Q2 — is 10 clusters enough to estimate ICC? **No, and the evidence is that 6 is not.**
+
+ICC of mapped-wins by domain, my five complete arms (raw, and dose-centred to remove the dose main
+effect, which varies *within* cluster here):
+
+| bank | wins | ICC raw | n_eff | **ICC dose-centred** | n_eff |
+|---|---|---|---|---|---|
+| `window_knife` | 39/48 | 0.327 | 14.6 | **0.400** | 12.6 |
+| `basket_bomb` | 42/48 | 0.109 | 27.2 | **0.160** | 22.7 |
+| `window_bomb` | 40/48 | 0.137 | 24.5 | **0.158** | 22.8 |
+| `ticket_knife` | 30/48 | 0.259 | 17.1 | **0.320** | 14.8 |
+| `ticket_bomb` | 45/48 | 0.064 | 33.1 | **0.114** | 26.7 |
+
+**Pooled with their three, eight estimates from structurally identical 6-cluster banks:**
+`0.000, 0.064, 0.064, 0.109, 0.137, 0.228, 0.259, 0.327`. Implied ceilings at 10 domains:
+**∞, 156, 156, 92, 73, 44, 39, 31 effective rows.** *The spread is as large as the quantity.* Sizing
+a bank on a single such estimate is the carry-over error again — and **10 clusters will not fix an
+instability this wide**, because the variation is **across banks**, not across clusters within a bank.
+
+#### ⚠ The raw ICC is an UNDERESTIMATE, and their sizing uses the raw one
+
+Dose varies **within** domain and is **nested**, so the dose main effect inflates within-cluster
+variance and **deflates** the raw ICC. **Dose-centring raises it in all five banks** (median
+**0.137 → 0.160**, worst **0.327 → 0.400**). Sizing on the raw figure is **optimistic in the direction
+that matters**.
+
+Against a power target of **n=132 effective** (their exact threshold for 0.80 at 0.625):
+
+| ICC used | domains needed | ceiling at 10 domains |
+|---|---|---|
+| 0.137 (my raw median) | **18** | 73 |
+| **0.160 (my dose-centred median)** | **21** | **63** |
+| 0.228 (their `main`) | 30 | 44 |
+| **0.400 (my worst, dose-centred)** | **53** | **25** |
+
+**10 domains is not enough on any estimate.** The requirement is **~21 domains at the optimistic ICC
+and ~53 at the pessimistic one**, against **10 available**.
+
+#### Q1 — is domain the right cluster? **Yes, but the current bank cannot measure the ICC they need.**
+
+Domain is the right cluster; the problem is subtler and it is **their own carry-over hazard in a new
+place**. Within a domain, current rows share **one slot's demonstrations, nested across doses** — they
+are **maximally** correlated. In a **slot-widened** bank, within-domain rows would have **disjoint**
+demonstrations and be **less** correlated.
+
+**So an ICC measured on the present one-slot bank is a same-demonstration correlation, and applying it
+to size a multi-slot bank measures the wrong quantity** — in the *optimistic* direction, since it
+would over-predict the correlation slots actually induce. **The pilot must vary slots, or it estimates
+a number that does not describe the bank being designed.**
+
+**My recommendation**: the pilot varies **domains AND slots** and reports ICC **at both levels**
+(domain, and slot-within-domain), dose-centred. Size from **k/ICC_domain** with the target
+**n_eff = 132**, and treat the eight-estimate spread as a **prior on estimate instability** rather than
+sizing from a point value.
