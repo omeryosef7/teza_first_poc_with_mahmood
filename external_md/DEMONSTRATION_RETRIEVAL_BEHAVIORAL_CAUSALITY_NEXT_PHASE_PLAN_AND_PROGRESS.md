@@ -10248,3 +10248,64 @@ delegated** — `option_mass_gate`, `n_failed`, `n_result_rows` are fields someo
 added the third after a real failure; V-54 shows the first can be wrong. **A guard that only reads
 other people's verdicts inherits their blind spots**, so the values a claim rests on are now checked
 where the claim is made.
+
+---
+
+### ✅ R-107 (11:10) — **Checked V-55 (their Qwen3 binding replication) against my own two corrections. The finding holds, but the installation screen I gave them is being applied in the carried-over form C-33 corrected, and the baseline arm is a population R-105 refuses. Both flagged with numbers; neither overturns their conclusion.**
+
+They committed **V-55** (`8d7fd003`): on Qwen3-14B the scoped knockout removes the attack (**11/80 →
+1/80**) and leaves binding intact (**14/18 → 15/18**, paired, discordant 3 up / 2 down, p = 1.0000).
+It is a careful writeup — it states the OOM attrition, states that **p=1.0000 is "no evidence of
+degradation", not "evidence of no degradation"**, and states the dose imbalance. Two things in it are
+mine to check, because both are corrections I issued.
+
+#### 1. The ≥0.667 screen is being applied at n=18, and 0.667 is the n=48 number
+
+**C-33 corrected exactly this**: *"at other population sizes the threshold moves and must be
+recomputed, not carried over."* The screen was encoded as a **rate**, which is the carry-over form.
+
+| n | `critical_k` | as a rate |
+|---|---|---|
+| **18** (their paired baseline) | **14** | **0.778** |
+| 40 (their complete arm) | 27 | 0.675 |
+| 48 (where 0.667 came from) | 32 | 0.667 |
+
+| count at n=18 | rate | p | verdict |
+|---|---|---|---|
+| 12/18 | 0.667 | 0.2379 | NOT_ESTABLISHED |
+| 13/18 | 0.722 | 0.0963 | **NOT_ESTABLISHED — but the rate-screen ADMITS it** |
+| **14/18** (theirs) | **0.778** | **0.0309** | **INSTALLED** |
+
+**Their number clears the correctly-recomputed threshold**, at p=0.0309 — but only just, and the screen
+as written is **one row too permissive** at this n. The conclusion is safe; the criterion would not be
+next time.
+
+#### 2. The baseline arm is a population my R-105 guard refuses
+
+Running `mapping_installation_verdict.py` over both V-55 artifacts:
+
+| arm | run dir | gate | rows | result |
+|---|---|---|---|---|
+| `A_baseline` | `q9A_lpQ14B_fc_20260828_104610_2283895` | **PASS** | **18 of 40**, `n_failed=22` | **REFUSED** — attrited population |
+| `demo_processing_only` | `q8D_lpQ14B_fc_20260828_102657_2281919` | PASS | **40 of 40** | **INSTALLED, 30/40, p=0.00222, crit=27** |
+
+This is **R-105's guard firing on real data for the second time, now on a run that carries a claim** —
+and it is the case R-105 predicted precisely: **gate PASS, population silently attrited, survivors
+length-biased.** V-55 independently documents the same cliff (succeeded 200–255 tokens; every prompt
+262–325 failed), which is exactly the length-correlation the guard was written for.
+
+#### What survives, stated fairly
+
+* **The paired dissociation survives the attrition.** The comparison is on the **18 ids measured by
+  both arms**, so the pairing controls for *which* rows survived — a biased subset is still a valid
+  pairing, just a narrower population. Their limits 1–3 already say so.
+* **The knockout arm's complete 40 rows are clean** — 30/40, p=0.00222, INSTALLED on a **full**
+  population — so the "mapping is not destroyed" half does not rest on the attrited run at all.
+* **What does not survive as stated is the one-sample screen sentence** — "the baseline clears the
+  screen at 0.778" is a **one-sample fraction on a refused population**, which is C-34's shape
+  (a label read off one cell) sitting on top of R-105's (a population that silently shrank).
+
+**Nothing here overturns V-55.** The attack-removal half (11/80 → 1/80) is untouched, and the binding
+half is defensible as a paired contrast. **Sent to them with these numbers**, because the screen is
+mine and they will reuse it, and because a criterion that is one row loose is worth fixing while it is
+still cheap.
