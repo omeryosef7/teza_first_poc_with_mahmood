@@ -4979,3 +4979,89 @@ not get checked — cf. their wrong-direction adversarial bound, which "looks im
 exactly when it doesn't get checked". My §10.4 win-rate hypothesis was nearly the third instance,
 and survived only because its p-value refused to cooperate.)*
 
+
+### §11.3 — ⛔ CORRECTION to §11.2's methods note: the failure mode is CADENCE, not staffing — replicated on my own record
+
+§11.2 concluded that *"a single-session version of this sprint would have shipped C-39, C-40 and
+C-41 intact."* A peer classified their own 25 corrections by trigger and **that does not follow**:
+
+| their phase | self-caught | peer-caught | unclear |
+|---|---|---|---|
+| solo, on a 4-hour deep-review cadence | **7** | 4 | 4 |
+| fast-exchange | **2** | 8 | 0 |
+
+Five of the solo-phase self-catches are **reasoning** errors of exactly the kind §11.2 claimed only a
+reader finds — including one refuted by a simulation they ran on themselves, and one where they
+audited their own prescription and found their pre-screen admits the case it excludes. **Left alone
+on a review cadence, that session caught reasoning errors at a reasonable rate.**
+
+### Replicated independently on mine, and the numbers are nearly identical
+
+Classifying my own V-commits by trigger, split at the point the exchange became rapid:
+
+| my phase | commits | pace | self | peer | mixed |
+|---|---|---|---|---|---|
+| V-54…V-62 (07:25–14:29) | 9 | ~38 min each | **7** | 2 | 0 |
+| V-63…V-73 (14:36–15:55) | 11 | **~7 min each** | **2** | 7 | 2 |
+
+**A 5× compression in pace, and the self-catch ratio inverts — 7:2 to 2:7, against their 7:4 to
+2:8.** Two independent records, same shift.
+
+**And the mechanism is visible in my own log:** my last deep review is **V-61**, the tick that found
+`margin_exposure`'s attrition blind spot — a reasoning error I caught on myself, on cadence. **Eleven
+commits and ninety-one minutes have passed since, with no deep review**, because every tick was
+spent answering a message.
+
+### The corrected note
+
+> The reasoning errors in this sprint's fast-exchange phase were caught almost entirely by a second
+> session. **That is not evidence that self-audit cannot catch reasoning errors** — both sessions
+> caught comparable ones while working alone on a review cadence. It is evidence that **rapid
+> exchange suppresses self-audit**, and that the peer was substituting for a check that had stopped
+> running rather than supplying one that never existed.
+
+This changes the remedy from a **staffing** question to a **cadence** question, and **cadence is
+reproducible in one session.** My §11.2 framing — "two sessions with an incentive to check each
+other is not a reproducible resource" — was right about the resource and **wrong about the
+implication**: what lapsed under exchange was the deep review, which is a thing a single session can
+simply keep running.
+
+*(Consistent with the other temporal finding: both sessions' ledger-propagation gaps were confined
+entirely to fast-exchange sections, on two independent corpora. **The failure mode is the working
+mode**, not the person and not the error class. And this correction is itself peer-triggered — I
+proposed the note that made them count — which the finding predicts and neither of us is pretending
+otherwise.)*
+
+**Acted on rather than only recorded: a deep review is run in §11.4 below, before this tick ends.**
+
+
+### §11.4 — DEEP REVIEW, run because §11.3 found it had lapsed: nothing wrong, and that is the result
+
+The review that stopped running during the fast-exchange phase, run now over everything committed
+since **V-61** — eleven commits and ninety-one minutes with no deep review.
+
+| axis | check | result |
+|---|---|---|
+| **artifact** | every run id cited in the plan resolved and passed through `check_run_readable` | **23 cited, 21 admissible, 0 missing** |
+| **population** | the 2 inadmissible citations inspected in context | **both legitimate** |
+| **numbers** | all 7 published ICC values recomputed from `results.jsonl` | **7/7 reproduce exactly** |
+| **code** | new modules carry tests *including a failing-input assertion* | `margin_exposure` 19, `ledger_propagation_check` 10, both **yes** |
+| **liveness** | intervention claims carry divergence evidence | present |
+| **claim** | propagation guard; full suite | **7/7 guards, 1274 passed / 7 skipped** |
+
+**The two inadmissible citations are both correct.** `ab_C_20260819_002240_1397246` is cited *inside*
+§0.2.5 as the 482-row partial that was wrongly ingested — it is the negative example. And
+`w640_20260827_224651_3802479` sits under a heading reading *"and my own guard refused it"*. **No
+result rests on inadmissible data.**
+
+*(One within-review false alarm, caught before it was reported: the first artifact pass searched four
+output roots and reported **14 missing** run ids. Widening to all 36 roots gives **0 missing** — the
+ids were in experiment directories I had not listed. Same hand-listing failure as §10.7, this time
+inside the check written to catch such things, and it only did not become a false claim because the
+number was implausible enough to re-run.)*
+
+**Nothing was wrong.** Per §11.2's own point about verifications that confirm: that is worth
+recording exactly as a catch would be. It is also the direct test of §11.3 — **the deep review was
+lapsed, not obsolete**, and re-running it cost one tick.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
