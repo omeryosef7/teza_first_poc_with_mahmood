@@ -9137,6 +9137,63 @@ no judge): the **paired exact test on discordant families**, plus the mass, plus
 and any comparison to the peer's `legacy` arm other than as the **reference collapse** it already is —
 their run is theirs, and I am not re-deriving their number, only my own two arms.
 
+
+### 🏆 R-93 (03:10) — **PR-32: BINDING SURVIVES on `ticket_bomb` under `demo_processing_only` — 45/48 → 45/48, where the unscoped mask gives 45/48 → 15/48 on the same 48 rows. The SCOPE is what destroys binding, not the bank.**
+
+Artifacts `tbA_20260828_024412_1186606` and `tb_demoproc_20260828_024522_1186992`: 48/48 rows each,
+`failures: 0`, `frac_rows_scope_live = 1.0`, `scope_violations = {}`, family sets **set-equal**, so it
+is a paired within-family contrast on a fixed 48 — C5's own shape.
+
+**Gate passed**: baseline binds at **45/48** with median option mass **0.5695** — which **reproduces
+the concurrent session's `ticket_bomb` baseline to four decimals**, a second cross-session
+reproduction after C-28's.
+
+**The three pre-registered conditions:**
+
+| | | |
+|---|---|---|
+| mapped-wins | **45/48 → 45/48**, `d = +0` | |
+| median option mass | **0.5695 → 0.5305** (≥ 0.05) | |
+| discordant / paired exact | 2/2, **p = 1.0** | |
+| **1 SURVIVES** — \|d\| ≤ 3 and mass ≥ 0.05 | **TRUE** | ✅ |
+| 2 COLLAPSES — d ≤ −15 | false | |
+| 3 INTERMEDIATE | false | |
+
+**Side by side on the identical 48 rows and the identical `--intervene` string:**
+
+| scope | mapped-wins | option mass |
+|---|---|---|
+| baseline | 45/48 | 0.5695 |
+| **`demo_processing_only`** | **45/48** *(d = 0)* | **0.5305** |
+| `legacy_all_query` *(peer)* | **15/48** *(d = −30)* | **0.1162** |
+
+**The only difference between those two arms is `--knockout-scope`.** Same bank, same model, same
+band 6-14, same mask specification. **The unscoped mask destroys binding on this bank; the scoped one
+leaves it untouched.**
+
+#### What this does to C5 — the outcome PR-32 pre-committed as the stronger one
+
+C-28 narrowed C5 to the `main` bank three ticks ago because the peer's collapse suggested
+bank-dependence. **That inference is now wrong in the direction that matters**: the collapse was
+**scope**-dependence wearing bank-dependence's clothes. On the bank where binding was supposed to be
+fragile, **C5's own scope preserves it perfectly.**
+
+**So C5's scoped form recovers its generality**: `demo_processing_only` preserves binding on **two
+banks** (`main` 0.5416 → 0.6021 rising; `ticket_bomb` 45/48 → 45/48) and **two models** on `main`.
+**C-28's bank restriction is lifted for the scoped claim and retained for the unscoped one**, which is
+where the evidence actually puts it.
+
+**⚠ What is NOT claimed.** `ticket_bomb` adds a **second bank on Llama only** — Qwen3 remains
+single-bank, so C5 is not "two models × two banks". The mass does drop (0.5695 → 0.5305, ~7%) where on
+`main` it rose; that is **within the survival criterion and is not nothing**, and I am recording the
+direction rather than rounding it to "unchanged". And the `+0` is a **net** of 2 discordant each way,
+not 48 identical decisions.
+
+**The finding beneath the finding.** C-28 was a correct, evidence-driven narrowing that turned out to
+be **attributing an effect to the wrong variable** — bank instead of scope — because the two were
+confounded in the only comparison available at the time. **The fix was not more caution; it was the
+one run that separated them.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
