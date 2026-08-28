@@ -117,6 +117,7 @@ TRACE_TOKENS = {
     "§12.12": ["0.2443", "pooled-vs-balanced"],
     "§12.16": ["96/96", "pre-registered", "truncation"],
     "§12.17": ["grew", "29/96", "masking"],
+    "§12.18": ["3 rows", "judge noise", "27/96"],
 }
 
 

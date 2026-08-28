@@ -6560,3 +6560,50 @@ not clear the Qwen half.
 **`window_knife` carries almost no weight.** 3/96 → 0/96 is a floor effect; its baseline barely
 attacks at all, so it neither supports nor threatens the claim. Quoting it as a third confirming
 population would be overreading three rows.
+
+## §12.18 — ⛔ CORRECTION to §12.17: "the effect grew" was measured ACROSS judge sessions, and the judge moves 3 rows on unchanged generations
+
+**What was wrong.** §12.17 reported the knockout effect growing 18 → 23 rows on `main` and 20 → 28
+on `ticket_bomb`. The cap-640 numbers came from the judge session of 2026-08-28 and the cap-192
+numbers from 2026-08-24. **The A-vs-C contrast within each cap was clean — one invocation, which is
+the house convention — but the old-vs-new comparison crossed sessions**, and that crossing is the
+only thing the "grew" claim rested on. I applied the convention to one axis of the table and not the
+other.
+
+**Re-judged all eight arms in a single invocation** (`ss192_*` / `ss640_*`, job 797129, pinned
+`gpt-4o-mini`, `null_frac=0.0000`):
+
+| population | cap 192 A → C | effect | cap 640 A → C | effect | change |
+|---|---|---|---|---|---|
+| `main` | 20/96 → 4/96 | 16 rows | 23/96 → 5/96 | 18 rows | **+2** |
+| `ticket_bomb` | 25/96 → 5/96 | 20 rows | 27/96 → 2/96 | 25 rows | **+5** |
+
+**And the judge moves up to 3 rows in 96 on generations that did not change.** Re-scoring the
+identical files: `p2A@192` 23→20, `lbA_ticket_bomb@192` 28→25, `lbC_ticket_bomb@192` 8→5,
+`p2A@640` 26→23, `p2C@640` 3→5. Max |Δ| = 3 rows, and it is not one-directional. **Any cross-session
+row-count difference smaller than about 3 rows of 96 is judge noise, not signal** — worth having as
+a standing resolution bound, because several comparisons in this sprint are that size.
+
+**What survives, and what does not.**
+
+* **STANDS — the released-cap result.** `ticket_bomb` 27/96 → 2/96 at cap 640 with 0/96 truncation.
+  This never depended on the old runs; it is a single-session A-vs-C contrast.
+* **STANDS, narrowly — growth on `ticket_bomb`.** +5 rows against a ~3-row noise floor. Real but
+  marginal, and it should be quoted as +5 with the floor attached, not as the +8 §12.17 claimed.
+* **⛔ WITHDRAWN — growth on `main`.** +2 rows is INSIDE the noise floor. §12.17's +5 on `main` was
+  mostly cross-session judge drift. `main` is the internal control and the honest reading is that it
+  **did not detectably move**, which is what §12.16 predicted for it and what I over-read.
+
+**⛔ AND THE MECHANISM BEHIND MY PREDICTION DOES NOT EXIST.** §12.16 reasoned that "more truncation
+mechanically produces lower ASR". A peer measured it across 76 judged runs and 10,568 joined rows:
+**P(ASR | truncated) = 0.0981 vs P(ASR | finished) = 0.0925**, delta +0.0056, 57 of 76 runs positive.
+Truncation does not depress ASR — a jailbroken answer is LONG and a refusal is SHORT, so hitting the
+cap selects against refusals, and StrongREJECT scores a partial harmful answer as harmful. So the
+confound §12.16 pre-registered against **does not operate in the direction I assumed**, and §12.17's
+"the confound was refuted by the strongest test" overstates: the test was real and passed, but the
+thing it was testing for was not a live mechanism to begin with.
+
+**Net effect on ledger entry (2).** Unchanged in substance and better supported in form: the
+knockout effect is large at a released cap on `main` and `ticket_bomb` with zero truncation, which
+is the first untruncated evidence those populations have had. What is retired is the decorative part
+— the specific growth magnitudes, and the claim to have defeated a confound that was not there.
