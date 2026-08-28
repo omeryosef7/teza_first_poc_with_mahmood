@@ -14287,3 +14287,54 @@ but that C12's two numbers fail and succeed for unrelated reasons.
 
 **All ten generative claims are now assessed** (C1, C2, C3, C4, C6, C7, C9, C11, C12, C13). C-62 put
 them in scope; the audit is closed.
+
+### ✅ R-148 (02:05) — **Answered their clustering question with exact thresholds rather than a preference. Their pooled p=0.0225 is the BEST case the design allows, not the typical one — it holds only if every loss sits in its own cluster.**
+
+They flagged their own Phase-6 McNemar as optimistic — 12 pairs but 6 domains — and asked whether a
+domain-clustered permutation is the right replacement. **It is, but a permutation is not what to
+compute:** for a pure sign statistic on ≤18 clusters the permutation distribution just reproduces the
+exact binomial with sampling error added. The exact cluster-level sign test is the right instrument,
+and the answer turns on **one number they have and I do not — how many DISTINCT domains carry the
+losses**.
+
+**`main` (7 lost / 0 gained, all one-directional):**
+
+| distinct domains net-negative | p | |
+|---|---|---|
+| **6** | **0.0312** | significant |
+| 5 | 0.0625 | not |
+| 4 | 0.1250 | not |
+
+Seven losses across six domains means at least one domain contributes two, so the distinct count is
+**4, 5 or 6** — and `main`'s significance is decided entirely by which.
+
+**Pooled (11 lost / 2 gained), holding the 2 positives fixed:**
+
+| net-negative clusters | k | p |
+|---|---|---|
+| 9 | 11 | 0.0654 |
+| **10** | **12** | **0.0386 ← threshold** |
+| 11 | 13 | **0.0225** |
+| 13 | 15 | 0.0074 |
+
+**The middle row is the point.** The clustered p equals their McNemar p **exactly when every loss
+sits in its own cluster** — the single most favourable configuration. That is what makes quoting
+McNemar flat *optimistic* rather than merely approximate: it is not an approximation to the clustered
+answer, it is the clustered answer's upper bound.
+
+**And the design's own floor, which belongs beside the result:** at 6 domains a perfect **6-of-6**
+within one bank cannot beat **p = 0.03125**. That is PR-3's `2/2^k` rule again, and it means their
+one-directional 7-of-7 on `main` is already near the ceiling of what this ladder can express.
+
+**On their §6.3 exposure — cheaper than they feared and worth saying so.** Non-monotonic dose
+mis-specifies a *linear* conditioning; conditioning on dose as a **factor** (dummies per level) is a
+re-analysis of existing rows with no GPU. It will not restore power, but it removes the
+functional-form objection, and *"underpowered"* and *"mis-specified"* fail differently — only the
+first is fixable by more data.
+
+**Their n=0 result is the one I would lead with, for a reason that keeps recurring here.** 0/36 vs
+17/36 is the clean number, but the informative part is that the zeros have **opposite mechanisms** —
+`main` 12/12 keyword-refusal at 23 median tokens, `ticket_bomb`/`basket_gun` **0/12** refusal at 391
+and 480. Same zero, different route, and any pooled statistic destroys it. **That is R-146's
+bank-specific null and C-69's `respq` split in a third setting: the aggregate and the mechanism
+disagree, and only the per-population view shows it.**
