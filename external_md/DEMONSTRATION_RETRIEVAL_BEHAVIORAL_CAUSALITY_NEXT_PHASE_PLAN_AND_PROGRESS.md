@@ -9403,7 +9403,7 @@ comparable readout is `semantic_forced_choice`, n = 48:**
 | `ticket_bomb` | 45/48 | **0.938** |
 | **`basket_gun`** | **19/48** | **0.396 — BELOW the 0.500 chance line** |
 
-**The model prefers the codeword to the concept on this bank before any intervention.** There is no
+**The model does not bind the concept on this bank.** *(⛔ C-31: originally written as "prefers the codeword" — wrong. 19/48 is **p = 0.193** against chance, so the mapping is ABSENT, not inverted.)* There is no
 binding to destroy or preserve, so the arms cannot answer the question:
 
 | arm | mapped-wins | mass |
@@ -9793,7 +9793,7 @@ Seven banks now have a measured installation ladder, 12 rows per cell:
 | **`basket_bomb`** | **basket** | **bomb** | 0.667 | 0.833 | **1.000** | **1.000** | **42/48** | **YES** |
 | `window_bomb` | window | bomb | 0.667 | 0.917 | 0.833 | 0.917 | 40/48 | yes |
 | `window_knife` | window | knife | 0.583 | 0.833 | 0.833 | **1.000** | 39/48 | yes |
-| `ticket_knife` | ticket | knife | 0.417 | 0.583 | 0.583 | **0.917** | 30/48 | **yes** (weakest) |
+| `ticket_knife` | ticket | knife | 0.417 | 0.583 | 0.583 | 0.917 | 30/48 | **⛔ NOT DEMONSTRATED — p=0.111 vs chance (C-31)** |
 | **`basket_gun`** | **basket** | **gun** | 0.333 | 0.417 | 0.417 | 0.417 | **19/48** | **NO** |
 
 #### Condition 1 fires — R-98's sentence was wrong in its scope
@@ -9832,6 +9832,57 @@ gap is a **harm-category** phenomenon, confirmed on a second codeword.
 * **One model, Llama-3.1-8B.** Nothing here is cross-model.
 * **12-row cells.** The *shape* is the claim; `window_bomb`'s non-monotone 0.917 → 0.833 → 0.917 is
   one row wobbling and means nothing.
+
+
+### ⛔ C-31 (06:10) — **I applied an "installs / does not" threshold at 0.500 without ever testing it against chance. Two of my own statements fail that test: `basket_gun` does NOT prefer the codeword, and `ticket_knife` does NOT demonstrably install.**
+
+R-102 noted the binary hides a gradient and then used the binary anyway. **Testing each bank against
+chance (24/48) with an exact two-sided binomial — the check I should have run before writing either
+entry:**
+
+| bank | concept | wins | rate | p vs chance | verdict |
+|---|---|---|---|---|---|
+| `ticket_bomb` | bomb | 45/48 | 0.938 | **1.3e-10** | above chance |
+| `main` | bomb | 42/48 | 0.875 | **1.0e-07** | above chance |
+| `basket_bomb` | bomb | 42/48 | 0.875 | **1.0e-07** | above chance |
+| `window_bomb` | bomb | 40/48 | 0.833 | **3.3e-06** | above chance |
+| `window_knife` | knife | 39/48 | 0.812 | **1.5e-05** | above chance |
+| **`ticket_knife`** | knife | 30/48 | 0.625 | **0.111** | **INDISTINGUISHABLE** |
+| **`basket_gun`** | gun | 19/48 | 0.396 | **0.193** | **INDISTINGUISHABLE** |
+
+#### Two statements of mine are wrong, in opposite directions
+
+**1. R-97 said of `basket_gun`: *"The model prefers the codeword to the concept on this bank before any
+intervention."*** **It does not.** 19/48 is **p = 0.193** against chance — the mapping is **absent**,
+not **inverted**. "Prefers the codeword" claims a direction the data does not support, and the
+difference matters: *no mapping installed* and *an anti-mapping* are different phenomena.
+**Corrected to: indistinguishable from chance.**
+
+**2. R-102 listed `ticket_knife` as "installs (weakest)" at 30/48.** **p = 0.111 — not demonstrably
+installed either.** I put it in the installs column because 0.625 > 0.500, **which is exactly applying
+a threshold below the measurement floor** — the failure the standing review item names.
+
+#### What this costs the harm-category account
+
+R-102 completed R-101's open item with *"the knife banks install and still score ~0.05"* — **plural**.
+**Only `window_knife` qualifies** (39/48, p = 1.5e-05, ASR 0.042). `ticket_knife` neither supports nor
+contradicts it; it is uninformative on installation.
+
+**So the account rests on ONE bank, not two.** It is still a real instance — `window_knife` installs
+solidly and scores 0.042 — but **"both knife banks" was overstated and the second codeword I claimed
+as confirmation is not confirmation.** The concurrent session should carry the singular.
+
+#### What survives untouched
+
+**PR-34's decisive result is unaffected**: `basket_bomb` at 42/48 is **p = 1.0e-07** above chance,
+against `basket_gun`'s indistinguishable 19/48 **on the same codeword**. **The concept-not-codeword
+conclusion rests on a comparison where one side is overwhelming and does not depend on where the other
+side sits relative to chance.** Likewise all four bomb banks and `window_knife` are far past any
+threshold question.
+
+**The lesson is the one I keep relearning tonight**: I checked whether the *effect* was above a
+threshold and never whether the *threshold* was resolvable. **A 48-row binary readout cannot separate
+0.625 from 0.500, and nothing about the number's appearance says so.**
 
 ---
 
