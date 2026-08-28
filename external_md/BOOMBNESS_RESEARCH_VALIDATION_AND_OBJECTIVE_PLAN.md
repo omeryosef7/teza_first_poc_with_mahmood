@@ -6513,3 +6513,50 @@ Consequences, committed to in advance:
 **What this cannot settle either way.** Qwen is not being rerun, so entry (2) narrows to
 "untruncated on Llama" at best, and the Qwen half stays cap-dependent. And per the standing rule, no
 number from the old `max_new=192` runs is quoted anywhere without that label.
+
+## §12.17 — RESULT: the knockout effect GREW when the cap was released. The pre-registered confound is refuted, not confirmed
+
+**Read against §12.16, which was committed before any of these numbers existed.** Six arms, one
+judge invocation (so no cross-session judge noise enters the A-vs-C contrast), pinned
+`openai/gpt-4o-mini`, `null_frac=0.0000` on every arm, all 96 goals substituted. Sprint-grade
+artifact `k640_knockout_20260828_230529_3204665` is stamped **PUBLISHABLE**, `at_cap=0.0` on all six.
+
+| population | cap 192 A → C | effect | cap 640 A → C | effect | C−A truncation |
+|---|---|---|---|---|---|
+| `main` *(control)* | 23/96 → 5/96 | 18 rows | **26/96 → 3/96** | **23 rows** | −0.010 |
+| `ticket_bomb` | 28/96 → 8/96 | 20 rows | **29/96 → 1/96** | **28 rows** | +0.219 |
+| `window_knife` | 2/96 → 0/96 | 2 rows | **3/96 → 0/96** | **3 rows** | +0.125 |
+
+**Truncation is fully released**: 0/96 at cap on every arm, longest generation 596 of 640, all six
+ending in EOS. At 192 these same C arms ran 0.917 and **1.000** truncated.
+
+**The pre-registration said: if truncation-driven, the effect SHRINKS OR REVERSES on the confounded
+populations. It grew in all three.** On `ticket_bomb` — the population with the largest confound
+(+0.219, and the one where the C arm's truncation was 0.917) — the effect went from 20 rows to **28**.
+The confound had every opportunity to manufacture this result and did not. It is refuted by the
+strongest test available, which is the outcome §12.16 named in advance as ruling it out.
+
+**⛔ AND THE CONFOUND RAN THE OPPOSITE WAY TO MY REASONING.** I argued that more truncation in C
+mechanically depresses C's ASR and so inflates the apparent effect. What actually happened is that
+**truncation was MASKING the effect, not manufacturing it**: releasing the cap raised the baseline
+(A: 23→26, 28→29, 2→3) *and* lowered the knockout arm (C: 5→3, 8→1, 0→0). Both arms moved apart. The
+reason is that at 192 the A arms were heavily truncated too (0.562, 0.698, 0.875), so the cap was
+suppressing *both* sides and compressing the gap. **A differential in truncation does not tell you
+the direction of the bias when both arms are near the ceiling** — that is the part of §12.16's
+reasoning that was wrong, and it was wrong in the direction that made me expect a weaker result.
+
+**Why the C arm was more truncated, mechanically.** Median new tokens are HIGHER in the knockout arm
+in 2 of 3 populations — `ticket_bomb` 248 → 299.5, `window_knife` 348 → 403, `main` 202 → 201.5. The
+intervention makes the model more discursive, so it met the old cap more often. This is the same
+mechanism a peer identified independently on their preamble arm, arriving from a different claim.
+
+**Status of ledger entry (2), narrowed honestly.** Three of five Llama populations now have
+untruncated evidence where **four of five previously had none** (`L|button_knife` 0 both-EOS
+discordant rows, `L|window_knife` 0, `L|basket_gun` 0, `L|ticket_bomb` 2). `button_knife` and
+`basket_gun` are running as jobs 796750/796751. Qwen is NOT rerun, so the claim remains
+"untruncated on Llama for these populations, still cap-dependent on Qwen" — the reruns cannot and do
+not clear the Qwen half.
+
+**`window_knife` carries almost no weight.** 3/96 → 0/96 is a floor effect; its baseline barely
+attacks at all, so it neither supports nor threatens the claim. Quoting it as a third confirming
+population would be overreading three rows.
