@@ -6811,10 +6811,28 @@ attack. Same zero, opposite mechanisms.
 | **pooled n=8 → n=16** | **36** | **11** | **2** | **0.0225** |
 
 **More demonstrations stop helping and start hurting.** The direction is consistent on all three
-banks (11 lost against 2 gained pooled) and strictly one-directional on `main` (7 lost, 0 gained),
-but **only `main` reaches significance on its own** — `ticket_bomb` and `basket_gun` are individually
-null, and McNemar treats the 12 pairs as independent when they come from 6 domains. Refusal does not
-explain it: refusal at n=16 is 1/12, 3/12 and 1/12.
+banks (11 lost against 2 gained pooled) and strictly one-directional on `main` (7 lost, 0 gained).
+Refusal does not explain it: refusal at n=16 is 1/12, 3/12 and 1/12.
+
+**⛔ BUT THE McNEMAR p VALUES ABOVE TREAT 12 PAIRS AS INDEPENDENT WHEN THEY COME FROM 6 DOMAINS.**
+Re-run as an exact sign-flip permutation over `(bank, domain)` clusters — the design's real unit:
+
+| contrast | clusters | pairs | observed | clustered p | McNemar had |
+|---|---|---|---|---|---|
+| pooled n=8 → n=16 | 18 | 36 | 9 | **0.0312** | 0.0225 |
+| `main` n=12 → n=16 | 6 | 12 | 7 | **0.0625** | 0.0156 |
+
+The pooled result survives. **`main`'s does not: 0.0625, not 0.0156.** And the reason is worth
+stating exactly, because it is not "the effect got weaker" — with 6 clusters of which 5 are
+informative (one has a net of 0 and cannot move under sign-flip), **the smallest two-sided p
+attainable is 2/2⁵ = 0.0625.** `main`'s data are as extreme as they could possibly be and still
+cannot reach 0.05. That is a power ceiling set by the bank's 6 domains, exactly the
+cluster-count bound §12.9 established, now binding on my own result.
+
+*(Method note: the first version of this permutation matched splits against a guessed list of names
+and silently captured only `dev`, halving the data and producing no negative cluster nets — which
+was the tell, since `ticket_bomb` demonstrably gains 2 pairs. Splits are now read from the data:
+`dev`, `heldout`.)*
 
 ### What this means for the objective question
 
