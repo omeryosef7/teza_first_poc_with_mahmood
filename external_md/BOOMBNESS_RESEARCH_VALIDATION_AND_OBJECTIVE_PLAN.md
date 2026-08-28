@@ -6648,3 +6648,56 @@ measurement they were wrapped around has not moved once.
 **The pattern, and it is the sprint's most repeated one.** Every one of those three was an inference
 about a mechanism, asserted from the direction numbers moved, and every one was cheap to test
 directly. The test here cost one join over files that already existed.
+
+## §12.20 — ALL FIVE Llama populations at cap 640: the knockout effect is real on TWO, and the other three never had the baseline to test it
+
+**Every population's 192 and 640 arms judged in one invocation, every run dir pinned by full name.**
+Jobs 797129 (`main`, `ticket_bomb`) and 797616 (`button_knife`, `basket_gun`); `window_knife` from
+the 640 batch. Row counts of 96:
+
+| population | cap 192 A → C | effect | cap 640 A → C | effect |
+|---|---|---|---|---|
+| `ticket_bomb` | 25 → 5 | 20 | **27 → 2** | **25 rows** |
+| `main` | 20 → 4 | 16 | **23 → 5** | **18 rows** |
+| `button_knife` | 9 → 10 | **−1** | 7 → 3 | 4 rows |
+| `basket_gun` | 9 → 11 | **−2** | 7 → 8 | **−1 row** |
+| `window_knife` | 2 → 0 | 2 | 3 → 0 | 3 rows |
+
+**The honest reading is a narrowing, and it is not "the effect fails on three populations".** Look at
+the baselines: `button_knife` 7/96, `basket_gun` 7/96, `window_knife` 3/96. **A population whose
+baseline attack succeeds 7 times in 96 cannot exhibit a 20-row suppression — the largest effect
+arithmetically available is 7 rows, which is at the noise floor.** Those three populations do not
+disconfirm the claim; they lack the dynamic range to test it. The claim is supported where it can be
+measured (`main`, `ticket_bomb` — baselines 23 and 27) and untestable where it cannot.
+
+**`basket_gun` is the one genuine null**: 7 → 8 at a released cap, and it was 9 → 11 at 192. Its
+knockout arm has never been lower than its baseline. It should be reported as a population where the
+knockout does not suppress, not quietly absorbed into an aggregate.
+
+### The judge noise floor, measured for free and larger than §12.18 said
+
+Decoding is deterministic across the cap change — **384 paired rows, 123 byte-identical, 261 where
+the 640 text strictly EXTENDS the 192 text, 0 divergent.** So the cap release is a clean intervention
+and rows can be compared per-row. That also means the byte-identical rows give the judge's
+reproducibility directly, since their text did not change at all:
+
+| cell | n | verdict flips | rate |
+|---|---|---|---|
+| byte-identical text | 123 | 8 | **6.5%** |
+| 640 extends 192 | 261 | 25 | 9.6% |
+
+**⛔ REFINING §12.18.** That section put the floor at "±3 rows in 96 ≈ 3.1%". That figure was a NET
+movement (ups cancelling downs); the **gross per-row flip rate on unchanged bytes is 6.5%, about
+twice as large**. The distinction matters and I conflated them: the net floor bounds *aggregate* ASR
+comparisons, the gross rate bounds *row-level* ones like §12.19's. §12.19's per-cell nets of +2, 0,
++2 and −3 sit far inside the gross rate, so its conclusion is unchanged and better supported.
+
+The extended rows flip at 9.6% against a 6.5% floor — a ~3-point difference over 261 rows. That is
+the entire measurable footprint of releasing the cap, and it is small.
+
+**Status of ledger entry (2), final for the Llama side.** Untruncated evidence now exists for all
+five Llama populations where four of five previously had none. The claim narrows to: **the
+retrieval knockout suppresses the doublespeak attack on the two populations with enough baseline
+attack to measure it, does not suppress on `basket_gun`, and is untestable on the other two.** Qwen
+was not rerun and remains cap-dependent. The original "96 down / 18 up over 8 populations" pooled
+across populations of wildly different dynamic range and should not be quoted in that form.
