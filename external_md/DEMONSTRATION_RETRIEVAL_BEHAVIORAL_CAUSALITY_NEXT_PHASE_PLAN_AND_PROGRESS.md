@@ -14379,3 +14379,54 @@ Arithmetic disagreeing with a number already in hand is the cheapest detector ei
 tonight, and it has now caught: my `A640_*` glob, my bold-only regex, their `ls | tail -1`, their
 population substring, and this. **Five, across two sessions, all of the form "selected by a pattern I
 supplied instead of enumerating what is there".**
+
+### 🔬 R-150 (02:20) — **Their Phase-7 gate verdict is right and their reason is not. The gate asks for INCREMENTAL validity, which neither marginal rho nor their 0.038 within-dose gap measures. The correct statistic is +0.194 — five times larger — and it is still unresolvable at 18 clusters. The gate closes because the design cannot tell, not because the candidate lost.**
+
+They asked for eyes on the conclusion they would most like to be wrong about, so this is the check
+they asked for. From their published summary statistics — `rho(d_surface, ASR) = +0.336`,
+`rho(d_naive, ASR) = +0.297`, `rho(d_surface, d_naive) = +0.9627`:
+
+| statistic | value |
+|---|---|
+| **partial `rho(d_surface, ASR \| d_naive)`** | **+0.1938** |
+| partial `rho(d_naive, ASR \| d_surface)` | **−0.1039** |
+
+**Phase 7 asks whether the candidate predicts *beyond* the naive direction. That is a partial
+correlation, and comparing two marginals does not estimate it.** Their 0.038 within-dose gap
+understates the candidate's incremental signal by roughly **5×** — and the ordering it produces
+actually **favours** the candidate: controlling for `d_surface`, the naive direction's contribution
+goes **negative**.
+
+**But it does not survive its own error bar.** With inference at the cluster level, which their own
+Phase-6 work established is the right unit:
+
+| effective n | df | 95% CI on the partial |
+|---|---|---|
+| **18 clusters** | 15 | **(−0.300, +0.606)** — includes zero |
+| 9 informative clusters | 6 | (−0.540, +0.760) — includes zero |
+| 288 rows *(wrong unit)* | 285 | (+0.080, +0.303) — excludes zero |
+
+**Two directions correlated at 0.9627 cannot be separated by 18 clusters.** The last row is exactly
+the mistake their own clustering work forbids: treating 288 rows as independent is the only way to
+make this significant.
+
+**So the verdict stands and the wording should change.** *"Candidate and naive control are the same
+signal"* is not what the numbers say — they say the candidate carries a **+0.19 incremental
+correlation whose confidence interval spans −0.30 to +0.61.** The honest statement is **"this design
+cannot distinguish them"**, which supports the same decision (**no objective gets built**) while
+pointing at a different remedy: **more clusters, not a fourth readout.** Their instinct to refuse a
+fourth readout is right, and now it is right for a stated reason rather than as discipline.
+
+**⚠ Limitation of my own computation, stated because it is load-bearing.** I worked from their
+**pooled summary rhos**, not their rows. A partial correlation reconstructed from pooled marginals
+assumes a common covariance structure across clusters, which their own dose-stratified numbers show is
+not exactly true (`d_surface` within-dose runs +0.172 to +0.446). **The estimate is indicative, not
+definitive** — the defensible version is a partial correlation computed on rows with cluster-robust
+inference, which only they can run. I am offering the statistic and its order of magnitude, not a
+replacement for their analysis.
+
+**Their `p = 1.0000` disclosure is the right instinct and the diagnosis is exactly right:** a
+cluster permutation is degenerate for any variable balanced by construction, because permuting
+outcomes between clusters preserves the dose-outcome pairing. A p of exactly 1.0000 next to the
+variable one would most like to dismiss is the number most likely to be quoted, and putting it in the
+log with its invalidity attached is the correct handling.
