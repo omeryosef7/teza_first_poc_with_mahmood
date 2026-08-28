@@ -13897,3 +13897,58 @@ an order of magnitude shorter than compliant answers* in this bank.
 
 **Pending:** `p7rj2_L5` (23/160) completes the paired drift figure; `q6r640_L5` at 151/160. The
 Qwen3 contrast stays unread until both its arms exist.
+
+### 🔍 DR-18 (00:35) — **Deep review. The drift floor is now MEASURED rather than assumed, and the headline reproduces three independent ways. Nothing is fitted below the floor that is not already caveated.**
+
+**Full suite:** `1343 passed, 7 skipped` (330s). `check_all` 8/8, 140 guard tests.
+
+**1. Headline recomputed independently, three ways.** C9's Llama Δrefusal:
+
+| source | cap | generations | judge invocation | Δrefusal |
+|---|---|---|---|---|
+| `p7j_rescueL14/L5` | 192 | 2026-08-25 | 2026-08-25 | **−18** |
+| `p7rj2_L14/L5` (797515) | 192 | *same files* | 2026-08-28 | **−18** |
+| `p7r640j_L14/L5` (797243) | **640** | **regenerated** | 2026-08-28 | **−18** |
+
+Three times, exactly. The third row shares neither generations nor judge session with the first.
+
+**2. The reproducibility floor, measured on my own arms.** Identical cap-192 generations
+(**160/160 completion hashes verified**) re-judged three days apart:
+
+| arm | refused | flips | ASR | flips |
+|---|---|---|---|---|
+| L14 | 17 → 17 | **0** | 5 → 3 | 2 |
+| L5 | 35 → 35 | **0** | 2 → 1 | 3 |
+| **contrast** | **−18 → −18** | drift **+0** | +3 → +2 | drift **−1** |
+
+**Refusal drift is zero by construction** (R-144: `kw_refusal` is a deterministic substring match).
+**ASR drift is 2-3 flips in 160 — a per-row rate of 1.3-1.9%**, against their 3-in-96 (3.1%). Same
+order, mine slightly lower; I am quoting **3 rows in 160** as my floor, the conservative end.
+
+**3. Floor audit — is any live claim fitted below it?** Scanned every claim and correction row in
+both deliverables for effects ≤3 rows. **17 mentions, and every one is already handled:**
+
+* C7's `−3/4` and `−7/7` (R-64) are at **n=40**, where a 1.3-1.9% per-row rate predicts **0.5-0.8**
+  expected flips — so a 3-row effect is 4-6× the floor, not at it.
+* C13's Qwen3 `+2 rows` (21/160 → 23/160) **is** at the floor — but it is quoted as a **null**, and
+  an effect indistinguishable from zero is exactly what that leg claims. The interaction it feeds
+  contrasts **−21** against **0 ± 3**, which survives.
+* C-23 already retracted a 1-2 row "growing" framing; C11's `2.1-row margin at n=40` already carries
+  its ⚠; the `2/160` judge floor is already published as a floor in both files.
+
+**No claim needed changing.** Recording that plainly rather than manufacturing a finding — the last
+two deep reviews each produced a correction, and the absence of one here is only meaningful if I say
+so explicitly.
+
+**4. Liveness, provenance, overwrites.** R-142 verified the 640 arms' hook counters (3,017,169
+prefill edits, 0 violations, `frac_rows_scope_live` 1.0, 152/160 generations differing between arms).
+The Qwen3 judge batch reads its bank from **each arm's own `RUNMETA.argv`** (`d10_poolB`, printed and
+checked before submit) rather than inherited from the Llama half — the label-inversion class that
+cost C-37, C-63 and their §12.14. All four 640 dirs carry `DONE.json` and distinct timestamps; no
+tag collisions, and every path in this entry is pinned by full name.
+
+**5. Truncation/EOS.** Fully released on all four 640 arms: `frac_stop_length` **0.0000**, longest
+515/640 and 504/640 (Llama), Qwen3 arms complete at 160/160.
+
+**Open:** the Qwen3 contrast (`q6r640j_*`, job **797678**) is generated but unjudged and stays unread
+until both arms are scored in that one invocation.
