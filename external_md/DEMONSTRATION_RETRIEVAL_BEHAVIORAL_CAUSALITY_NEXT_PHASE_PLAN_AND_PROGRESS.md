@@ -9468,7 +9468,7 @@ the dose ladder shows the failure is at installation rather than at any later st
 
 * **Their entry-6 null** on `basket_gun` (−0.031, p=0.5488) was reported as a population-specific
   null with the hook demonstrably live (divergence 96/96). **It is better read as a population where
-  the phenomenon was never present** — which their own `window_knife` (baseline ASR 2/96) likely is too.
+  the phenomenon was never present** — which their own `window_knife` (baseline ASR 2/96) likely is too. **⛔ REFUTED by PR-33/R-99: `window_knife` installs the mapping completely (0.583 → 1.000, mass 0.7681). Low ASR does NOT imply non-installation, and this hedge was wrong.**
 * **R-97's decline** — I ruled `basket_gun` uninformative because its baseline sits below chance.
   **That is right and now has a mechanism**: below chance because the mapping never installed, not
   because the probe failed.
@@ -9521,6 +9521,53 @@ and any ASR statement — **I am generating no completions.**
 
 **⚠ And the standing caveat from R-98 applies unchanged**: cells are **12 rows**, so the *shape* is the
 claim and no individual cell is.
+
+
+### ⛔ R-99 (04:40) — **PR-33 REFUTES MY OWN PREDICTION. `window_knife` installs the mapping perfectly (0.583 → 1.000, saturating) despite a baseline ASR of 2/96. So low ASR does NOT imply non-installation, and R-98's hedge leaned the wrong way.**
+
+PR-33 was written to convert R-98's *"`window_knife` likely is too"* into a measurement, explicitly
+*"running my own prediction against the possibility that it fails."* **It failed.**
+
+| bank | n=1 | n=2 | n=4 | n=8 | Δ | verdict |
+|---|---|---|---|---|---|---|
+| `main` | 0.667 | 0.917 | 0.917 | **1.000** | +0.333 | installs |
+| `ticket_bomb` | 0.750 | **1.000** | 1.000 | 1.000 | +0.250 | installs |
+| **`window_knife`** | **0.583** | 0.833 | 0.833 | **12/12 = 1.000** | **+0.417** | **INSTALLS** |
+| `basket_gun` | 0.333 | 0.417 | 0.417 | 0.417 | +0.083 | never installs |
+
+Overall **39/48 = 0.812**, true-median option mass **0.7681** — the *highest* mass of any bank
+measured, against `basket_gun`'s 0.3869. **Condition 2 (INSTALLATION) fires; condition 1
+(NON-INSTALLATION) is false.**
+
+#### What this refutes, stated as a correction to my own reasoning
+
+**R-98 wrote that `window_knife` "likely" shares `basket_gun`'s non-installation, on the strength of
+its baseline ASR being 2/96.** That inference is **wrong**: `window_knife` has the strongest binding
+of the four banks and an ASR near zero. **Low ASR and non-installation are independent** — a bank can
+install the mapping completely and still not produce successful attacks.
+
+**So the tidy story R-98 offered the concurrent session — "two of five entry-6 populations are
+non-installation rather than non-effect" — collapses to one.** `basket_gun` remains a genuine
+non-installation case (measured, R-98). **`window_knife` is not, and its entry-6 null needs a
+different explanation than the one I proposed.** I have told them; the hedge was mine and so is the
+retraction.
+
+**What survives untouched**: R-98's `basket_gun` finding, which was measured rather than inferred —
+flat ladder, never crossing chance. **The method was right and the extrapolation from it was not.**
+That is the distinction PR-33 existed to draw, and it drew it against me.
+
+#### Why this was worth one probe arm
+
+R-98's hedge was doing real work in the argument — it turned a single measured population into a
+pattern, and a pattern into a recommendation for how the peer should read their limitation section.
+**Twenty minutes of forward-only compute showed the pattern did not exist.** Had I left the word
+"likely" in place, it would have travelled into their write-up as support for a generalisation that
+the very next bank contradicts.
+
+**⚠ Open, and explicitly not answered here**: what *does* explain `window_knife`'s ASR of 2/96 given
+that its mapping installs completely. **Binding is necessary and evidently not sufficient for the
+attack**, which is a restatement of this phase's central dissociation (C5/C2) on a fourth bank — but I
+have run **no** behavioural arm here and am not inferring one from a probe.
 
 ---
 
