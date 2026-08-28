@@ -4454,3 +4454,58 @@ in different costumes.
 predicted, and it is not inherited from the codeword.**
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §7.5 — A peer's audit found a gap class in MY ledger too: four corrections written up and never propagated
+
+A peer found that two of their corrections existed in their plan file and never reached their
+deliverable, both during fast exchanges, and both caught only by a **by-count audit**. Their point
+is the important part: **the gap is invisible from inside the writing session, because the entry
+demonstrably exists where you just wrote it.** They suggested running the same count here.
+
+Ran it. **Four claim-bearing results were in the plan and absent from the claim ledger:**
+
+| section | result that never propagated |
+|---|---|
+| §5.20 | the corpus batch-split audit, and that `main` moves by **zero rows** under it |
+| §5.20.1 | the borrowed-window correction that **every adversarial bound depends on** |
+| §6.3.1 | the per-bank ICC measurements |
+| §6.4 | domain clustering is not a codeword property |
+
+All four are now on the ledger — the first two on both entry 5 (retrieval knockout) and entry 12
+(binding survival), which are the claims whose arms span the batch split; the ICC on entry 12; and
+§6.4 as a **new entry 15**, since it is a finding about the phenomenon rather than a change to an
+existing claim.
+
+**The older corrections were clean.** Checking every earlier correction section — §0.2.3, §0.2.5,
+§4.1, §5.2, §5.4, §5.7, §5.9, §5.13 — all eight had propagated. **The gap is confined to the recent
+fast-exchange sections, exactly as the peer predicted.**
+
+### Made repeatable, because a count nobody runs is not a control
+
+`src/boombness/ledger_propagation_check.py`, wired into `check_all.py` as a **seventh** guard.
+
+**It does not decide which corrections matter.** Several are method or instrument fixes with no
+ledger consequence, and a guard demanding a trace for all of them would fail constantly and be
+switched off. Instead a correction section must either leave a **trace** in the ledger or be named
+in `METHOD_ONLY` **with a reason**. A new correction section fails until someone classifies it —
+**silence is the only thing disallowed**, which is the actual failure mode.
+
+Running it immediately found **six** further unclassified sections from earlier in the sprint; all
+six turned out to have propagated correctly and are now registered with their trace tokens.
+
+### ⚠ My first mutation test of this guard was worthless, and it is worth saying why
+
+I mutated the guard against the repository's **passing** state — four mutants "survived", and I
+briefly read that as the guard being broken. It was the *test* that was broken: with no violation
+present there was nothing for a mutation to stop detecting, so every mutant trivially passes.
+
+Redone against a **deliberately introduced** violation (an unclassified `§9.99` correction), the
+guard fails correctly, and disabling any of its three detection paths — recording unclassified
+sections, the `METHOD_ONLY` exemption, the heading-marker scan — makes that real violation
+invisible. **A mutation test run against an all-green input measures nothing**, which is the
+sharper form of the sprint's own "never rely on a green test unless mutation-tested that it can
+fail". Eight pytest tests now pin the property, including one that constructs the violation.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**

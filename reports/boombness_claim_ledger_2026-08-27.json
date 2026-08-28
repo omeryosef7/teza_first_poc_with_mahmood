@@ -217,7 +217,9 @@
      "SUPERSEDED_BY_5.19": "Re-measured on the COMPLETE population with both arms on the same code path (--readout-max-batch 1). baseline 29/40 p=0.00643 INSTALLED; demo_processing_only 30/40 p=0.00222 INSTALLED; both against per-n critical_k=27. Paired: 6 up / 5 down, exact two-sided p=1.0000. LIVE: 0/40 bit-identical, median |d margin| between arms 6.44. Limits 1 and 3 (attrited short-half population; effectively single-dose) are RETIRED -- all 40 rows, 20 per dose. Limit 2 STANDS: MDE >=6 same-direction discordant against 11 discordant, so p=1.0000 is no evidence of degradation, not evidence of no degradation.",
      "OOM_CAUSE_SOLVED": "string_option_readout ran at max_batch=16 on the baseline while the knockout was pinned to batch 1 by C-8. It calls .float() then log_softmax on the FULL [B,width,V] logits: ~3.2 GB fp32 at B=16, V=151936, growing linearly with context length. Explains the arm asymmetry, the cross-node reproducibility, and the apparent length cliff. NOT a length cap and NOT a leak: a bare forward over the same 40 rows ran 40/40 in BOTH shortest-first and longest-first order with flat memory (alloc 27.52 GiB, free 16.4 GiB).",
      "BATCHING_IS_NOT_INERT": "Same 18 rows at batch 16 vs batch 1: 0/18 bit-identical, median |d margin| 0.688 (max 1.250), 1 verdict flip (+0.2503 -> -0.7497). CONTROL (same arm, same config, both batch 1, different runs) is 40/40 BIT-IDENTICAL with |d| exactly 0, so this is batching and not run-to-run noise -- cross-batch comparisons are BIASED, not merely noisy. Read as an AT-RISK COUNT, not a rate: median |margin| is 10.0 against a ~0.7 perturbation, so 17 of 18 rows are untouchable and exactly one sat inside the perturbation. The transferable quantity is how many rows crowd the boundary, which scales with a bank's margin distribution, not with n. SCOPE CORRECTION (5.22): those 18 rows are the subset on which the batch-16 arm SURVIVED -- the short rows, because the perturbation being measured is what killed the long ones. So 0.688/1.250 describe the short half of longpreQ14B, not the bank, and 1.2499 is WITHDRAWN as a window (unmeasurable: no complete batch-16 run on this bank exists or can exist). The QUALITATIVE finding does not rest on these numbers -- it is established on Llama/main with COMPLETE populations, 0/48 identical margin, max 0.4616."
-    }
+    },
+    "BATCH_SPLIT_AUDIT": "BATCH-SPLIT AUDIT (5.20, 5.20.1). Every baseline-vs-knockout forced-choice contrast in this sprint spans a batch split: of 49 complete runs carrying forced_choice rows, 25 are on the batch-16 path (no intervention) and 24 on batch-1 (knockout, pinned by C-8), and the split IS the baseline/knockout boundary. SETTLED BY MEASUREMENT, not by bound: rerunning the main baseline at batch 1 (p6A_main_b1, 48/48, gate PASS) gives 42/48 -> 42/48 with ZERO verdict flips, and the matched-batch paired contrast 42/48 vs 41/48 (up=5 down=6, p=1.0000) is IDENTICAL to the cross-batch figure it replaces. Removes a confound; creates NO power -- MDE is still >=6 same-direction discordant against 11 discordant.",
+    "BORROWED_WINDOW_CORRECTION": "METHOD CORRECTION carried with any adversarial bound quoted for these arms: the at-risk counts were first computed with W=1.250, a window measured on Qwen3-14B/longpreQ14B, then applied to LLAMA banks (2.7x too large), and then ONE Llama window (main 0.4616) applied to ticket_bomb (0.3202). Measured per bank: main 0.4616, ticket_bomb 0.3202; the Qwen3 figure is WITHDRAWN as unmeasurable. An over-large window is CONSERVATIVE for an effect-present claim and ANTI-CONSERVATIVE for a null, so a borrowed window can only damage the nulls -- which is why the main 'preserved' bound moved -26 -> -10 while ticket_bomb's 'collapse' bound moved -8 -> -25 (observed -30)."
    }
   },
   {
@@ -429,7 +431,10 @@
     }
    ],
    "SPRINT_UPDATE_2026-08-28": {
-    "FINAL": "measured directly with forward-only probes. demo_processing_only PRESERVES binding (ticket_bomb 45/48 -> 45/48, mass 0.5534 -> 0.5201) while removing 22 of 30 attacks (p=5.9e-05). legacy_all_query DESTROYS it on ticket_bomb (45/48 -> 15/48) and PRESERVES it on main (42/48 -> 41/48), so the binding effect is bank-dependent for the unscoped mask and bank-stable for the scoped one. The refusal signature separates the scopes on 2/2 banks. Why legacy differs by bank is UNEXPLAINED and left so."
+    "FINAL": "measured directly with forward-only probes. demo_processing_only PRESERVES binding (ticket_bomb 45/48 -> 45/48, mass 0.5534 -> 0.5201) while removing 22 of 30 attacks (p=5.9e-05). legacy_all_query DESTROYS it on ticket_bomb (45/48 -> 15/48) and PRESERVES it on main (42/48 -> 41/48), so the binding effect is bank-dependent for the unscoped mask and bank-stable for the scoped one. The refusal signature separates the scopes on 2/2 banks. Why legacy differs by bank is UNEXPLAINED and left so.",
+    "BATCH_SPLIT_AUDIT": "BATCH-SPLIT AUDIT (5.20, 5.20.1). Every baseline-vs-knockout forced-choice contrast in this sprint spans a batch split: of 49 complete runs carrying forced_choice rows, 25 are on the batch-16 path (no intervention) and 24 on batch-1 (knockout, pinned by C-8), and the split IS the baseline/knockout boundary. SETTLED BY MEASUREMENT, not by bound: rerunning the main baseline at batch 1 (p6A_main_b1, 48/48, gate PASS) gives 42/48 -> 42/48 with ZERO verdict flips, and the matched-batch paired contrast 42/48 vs 41/48 (up=5 down=6, p=1.0000) is IDENTICAL to the cross-batch figure it replaces. Removes a confound; creates NO power -- MDE is still >=6 same-direction discordant against 11 discordant.",
+    "BORROWED_WINDOW_CORRECTION": "METHOD CORRECTION carried with any adversarial bound quoted for these arms: the at-risk counts were first computed with W=1.250, a window measured on Qwen3-14B/longpreQ14B, then applied to LLAMA banks (2.7x too large), and then ONE Llama window (main 0.4616) applied to ticket_bomb (0.3202). Measured per bank: main 0.4616, ticket_bomb 0.3202; the Qwen3 figure is WITHDRAWN as unmeasurable. An over-large window is CONSERVATIVE for an effect-present claim and ANTI-CONSERVATIVE for a null, so a borrowed window can only damage the nulls -- which is why the main 'preserved' bound moved -26 -> -10 while ticket_bomb's 'collapse' bound moved -8 -> -25 (observed -30).",
+    "PER_BANK_ICC": "PER-BANK ICC, MEASURED (6.3.1, 6.4). Domain-clustered n_eff is capped at k/ICC, so probe power is set by the CLUSTER count and not the row count. Multi-slot dose-centred ICC by domain on semantic_one_word, doses {1,2,4,8}: main 0.218, ticket_bomb 0.000, basket_gun 0.381, basket_bomb 0.000, ticket_knife 0.190, window_bomb 0.049. ticket_knife is main-like, so with 10 domains available its ceiling is 53 effective rows against the 132 needed for 80% power at a true 0.625 -- unreachable HOWEVER many rows or slots are added. This is a fourth independent argument for ticket_knife's verdict, and it rests on ticket_knife's OWN measurement rather than on main's ICC carried across (which an earlier draft did, and which ticket_bomb's 0.000 shows could not have been assumed)."
    }
   },
   {
@@ -458,6 +463,22 @@
     "action": "RETRACT reaffirmed on new evidence",
     "why": "Phase 3 gate failed: d_surface is predictive (rho ~ +0.30, n=288) but not controllable. An objective needs controllability. Phase 8 must not be built."
    }
+  },
+  {
+   "claim": "(6) Domain clustering of the forced-choice readout is a property of the CONCEPT's interaction with the domains, not of the codeword",
+   "verdict": "SUPPORTED (descriptive); the mechanism that would explain it is NOT established",
+   "added": "2026-08-28 (V-65)",
+   "evidence": "Six complete A_baseline runs carrying both slots on semantic_one_word give a codeword x concept design at no GPU cost. Dose-centred ICC by domain: carrot|bomb 0.218, ticket|bomb 0.000, basket|gun 0.381, basket|bomb 0.000, ticket|knife 0.190, window|bomb 0.049. TWO within-codeword contrasts, both large: basket 0.381 (gun) vs 0.000 (bomb); ticket 0.190 (knife) vs 0.000 (bomb). Same codeword, same six domains, same prose, same model.",
+   "NOT_ESTABLISHED": "The mechanism suggested by section 5's 'the gun concept never installs' -- that a concept installing everywhere leaves domains nothing to differentiate -- predicts ICC should fall as the win rate rises. Spearman(win rate, ICC) = -0.696, exact permutation two-sided p = 0.1444 at n=6 banks. Direction as predicted, magnitude large, NOT significant. Recorded as a hypothesis; ~13 banks are needed for 80% power at rho~0.7.",
+   "why_it_matters": "If it held, a bank's clustering penalty could be predicted from the win rate, which every run already reports, turning the measurement that blocks section 9 next step 2 into a free one. That payoff is exactly why it must not be assumed.",
+   "artifacts": [
+    "p5A_main_20260828_014436_2523591",
+    "p5A_ticket_bomb_20260828_014648_1770906",
+    "p5A_gun_20260828_034151_2413331",
+    "p5_basket_bomb_20260828_060644_3977117",
+    "p5_ticket_knife_20260828_054104_3951114",
+    "p5_window_bomb_20260828_054104_3951137"
+   ]
   }
  ],
  "bad_path_audit": {

@@ -42,6 +42,9 @@ GUARDS = [
      "a small p quoted without its design's floor"),
     ("plan_coverage_check", [sys.executable, os.path.join(HERE, "plan_coverage_check.py")],
      "a plan section silently dropped from the report"),
+    ("ledger_propagation_check",
+     [sys.executable, os.path.join(HERE, "ledger_propagation_check.py")],
+     "a correction written in the plan and never reaching the claim ledger"),
 ]
 
 
