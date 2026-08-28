@@ -13243,3 +13243,95 @@ six repaired and re-verified; no figure value changed.**
 **Third time this sprint a guard reported success while examining less than it appeared to** — my
 loose matcher, their id-less headings, now a path list. **The verdict never shows it; only the
 denominator does.**
+
+### ⛔ C-59 (22:05) — **C-51 named one sweep mechanism and concluded no path-based control exists. There are two mechanisms, and the second has a path-based fix. Tested both in a scratch repo rather than accepting the peer's account.**
+
+Their V-105 swept my plan md and summary again. Their diagnosis is sharper than my C-51's and
+corrects it: **`git commit` commits the INDEX, not the paths just added.** They ran
+`git add <their paths>` and never widened it — but *my* files were already staged by *me*, so the
+index was wide before they touched it.
+
+That is a **different mechanism** from the one C-51 recorded:
+
+| # | mechanism | when it fires | who staged the swept file |
+|---|---|---|---|
+| C-51's | `git add <shared path>` stages the file's *current contents*, incl. the other session's edits | both sessions edit the **same** file | the committer, deliberately |
+| C-59's | `git commit` commits the **whole index**, incl. paths the committer never added | the other session left **anything** staged | the *victim*, deliberately |
+
+**Both reproduce, and the proposed fix separates them.** Scratch repo, `mine.md` staged then their
+`theirs.md` committed:
+
+| form | commit contains | my staged work after |
+|---|---|---|
+| `git add theirs.md && git commit` | **`mine.md` + `theirs.md`** — the sweep | consumed |
+| `git commit theirs.md -m …` | **`theirs.md` only** | still staged, worktree intact |
+
+**But the fix is narrower than it was offered as, and this is the part worth pinning.** A pathspec
+commit takes that path's **worktree** content. With both sessions editing one shared file it sweeps
+exactly as before — verified: `git commit shared.md` carried my in-progress line into their commit,
+**1 occurrence**. So:
+
+> **`git commit <paths>` separates FILES, not AUTHORS.** It closes C-59's mechanism completely and
+> C-51's not at all.
+
+Mapping that onto the three actual sweeps: it would have prevented **V-93 and V-105** (my files,
+which they never intended to touch) and **not V-91** (`demo_pools.py`, a file we both edit).
+C-51's "the workable control is temporal, not path-based" was therefore **wrong for two of three
+cases and right for the third**. Adopting the pathspec form; the temporal control still carries the
+shared-file case, which is the one it was actually derived from.
+
+### ⛔ C-60 (22:20) — **Their truncation finding generalises to MY claims. C7 is fully protected; C9 is NOT, and I had not checked. The primary arm is protected in a way the raw ASR understates.**
+
+They flagged that the runs behind their ledger entry 6 ran at `max_new=192` with truncation to 0.698.
+I checked whether this touches my claims instead of assuming it was theirs to own.
+
+**My headline mapping-installation numbers are unexposed** — `mapping_installation_verdict.py` reads
+`p_concept`/`p_codeword` only and never opens `gens.jsonl`; a forced-choice logprob readout cannot be
+truncated. **My ASR claims C7, C9, C13 are a different matter.**
+
+**Phase-1 scoped arms, n=160/arm, cap 192, judged `gpt-4o-mini`**
+(`outputs/boombness/score_behavior/{p4b,q4b}*` × `outputs/boombness/judge/{p4bj,q4bj}_*`):
+
+| arm | Llama ASR | Δrows | trunc | Δtrunc | Qwen3 ASR | Δrows | trunc | Δtrunc |
+|---|---|---|---|---|---|---|---|---|
+| baseline `A` | 0.156 | — | 0.581 | — | 0.131 | — | 0.263 | — |
+| `legacy_all_query` | 0.031 | −20 | 0.662 | **+0.081** | 0.025 | −17 | 0.087 | −0.175 |
+| `query_prefill_only` | 0.131 | −4 | 0.450 | −0.131 | 0.069 | −10 | 0.044 | −0.219 |
+| `demo_processing_only` | 0.006 | −24 | 0.725 | **+0.144** | 0.044 | −14 | 0.619 | **+0.356** |
+| `response_query_only` | 0.050 | −17 | 0.487 | −0.094 | 0.019 | −18 | 0.044 | −0.219 |
+
+**The confound is arm-specific, and it spares the primary arm.** `demo_processing_only` is more
+truncated than its baseline in **both** models — lower ASR *and* less text, confounded in the
+direction of the claim. But `response_query_only`, PR-1's **primary** comparison, is **less**
+truncated in both (−0.094, −0.219) and still drops 17 and 18 rows. Truncation cannot produce that;
+it runs against it, so the primary result is if anything **understated** at the 192 cap.
+
+**C7 is already discharged and I confirmed it rather than citing it.** R-64's 640-cap population has
+`frac_stop_length` **0.000 on every arm**, longest completion **634/640**, and its pre-registered
+gate 2 measured the arm-separating truncation gap at **0.000, down from 0.300** at the 192 cap — with
+`demoproc`'s effect *growing* (−3/4 and −7/7). That is exactly this confound, closed by measurement.
+
+**⛔ C9 has no such leg, and its status line does not say so.** Every rescue arm is cap-192:
+
+| arm | trunc | comparator (`L5`, byte-identical to knockout-only per C-20) | Δ |
+|---|---|---|---|
+| `p7_rescue_L14` | 0.812 | 0.725 | **+0.087** |
+| `p8b_rescue_L14` | 0.812 | 0.713 | **+0.099** |
+| `q6b_rescue_L17` | 0.675 | 0.650 | +0.025 |
+| `q7_rescue_L17` | 0.669 | 0.619 | +0.050 |
+
+The differential is small — well under C7's pre-fix 0.300 — and refusals surface early enough that a
+192-token cut is a poor mechanism for manufacturing one. **But that is an argument, not a
+measurement, and C9's own effect is 18/160 = 0.1125 against a Llama differential of 0.087: the same
+order of magnitude.** C7 earned its status by *releasing the cap*; C9 has not, so I am not going to
+credit it with reasoning C7 was made to prove.
+
+**Not rescuing it.** C9 is marked truncation-exposed, its confirmatory status qualified. The remedy
+is the same 640-cap rerun that worked for C7 — two rescue arms plus comparator per model — and it is
+**not launched**: six of their jobs are queued and the standing cap is six parallel. It queues when
+they clear, pre-registered before it is read.
+
+**The general lesson is the one that keeps recurring in a new place.** C7 got a truncation gate
+because C-19 forced one. C9 and C13 came later, reused the same 192-token default, and inherited
+none of it — *a caveat discharged on one claim does not travel to the next claim built on the same
+default.*
