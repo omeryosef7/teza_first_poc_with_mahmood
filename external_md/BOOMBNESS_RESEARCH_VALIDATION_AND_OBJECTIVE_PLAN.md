@@ -3711,7 +3711,7 @@ else — show it:
 | statistic | value |
 |---|---|
 | bit-identical rows | **0/18** |
-| median \|Δ margin\| | **0.688** (max 1.250) |
+| median \|Δ margin\| | **0.688** (max 1.250) — ⚠ **on the 18 rows the batch-16 arm survived, which are the SHORT rows: see §5.22. This is not a bank-level figure and the max is withdrawn as a window.** |
 | verdict flips | **1** (margin +0.2503 → −0.7497) |
 
 The forward runs in **bf16** and only the `log_softmax` is fp32, so batched and unbatched matmuls
@@ -4103,3 +4103,102 @@ choice.** Both counts are now emitted under names that state the question:
 Covered by a test that constructs the common-mode case explicitly, so the distinction cannot
 silently collapse back into one number.
 
+
+---
+
+## §6.1 — BANK DESIGN (§9 next step #2): rows are NOT the binding constraint — clusters are, and the agreed "144 rows" target does not deliver its power
+
+§9's remaining next step is a larger forced-choice probe population. The working prescription — mine
+and a peer's — was **"144+ forced-choice rows per condition, widened per-dose cells"**. The
+arithmetic below says the row target is right and **the way we planned to reach it is not**.
+
+### The power target reproduces independently
+
+Exact two-sided binomial against chance, computed here rather than carried over:
+
+| n | critical_k | power at a true rate of 0.625 |
+|---|---|---|
+| 48 | 32 | **0.331** |
+| 60 | 39 | **0.399** |
+| 144 | 85 | 0.828 |
+
+Reproduces the peer's 0.331 and 0.399 exactly. Two refinements: the exact threshold for power ≥ 0.80
+is **n=132**, and the requirement is **steep in effect size** — 90 rows at a true 0.65, but **204**
+at 0.60. `ticket_knife`'s observed 0.625 sits in the worst part of that curve.
+
+### Rows are cheaply available — far more than assumed
+
+Forced-choice rows come from `core2x2` = domains × splits × slots, and the current bank uses
+**one slot**, giving 12/dose. `core2x2_slot3` would add more but **omits
+`semantic_forced_choice` from its query kinds**. The 20-sentence pool admits many more disjoint
+slots than that (`_take` starts at `(slot*3) % 20`, verified empirically against `_take` itself,
+including the wrapping slot 12):
+
+| dose | pairwise-disjoint slots | fc rows/dose |
+|---|---|---|
+| 1 | 20 | 240 |
+| 2 | 7 | 84 |
+| 4 | 4 (0, 2, 4, 12) | 48 |
+| 8 | 2 (0, 3) | 24 |
+| 16 | 1 | 12 |
+
+Doses {1,2,4,8} therefore supply **396** independent forced-choice rows against the 48 in use —
+**no new bank template required**, just slots plus adding the query kind.
+
+### ⛔ But adding slots buys almost nothing, because it adds ROWS and not CLUSTERS
+
+Inference here is **domain-clustered**, and slots multiply rows *within* a domain. Measured ICC of
+mapped-wins by domain on complete 48-row arms:
+
+| arm | ICC | deff at m=8 | n_eff from n=48 |
+|---|---|---|---|
+| `main` baseline | **0.228** | 2.59 | **19** |
+| `ticket_bomb` baseline | 0.064 | 1.45 | 33 |
+| `main` unscoped knockout | 0.000 | 1.00 | 48 |
+
+Since `n_eff = k·m / (1 + (m−1)·ICC)`, as rows-per-cluster grows this converges to **`k / ICC`** —
+a ceiling set by the number of **domains**, not by rows:
+
+| ICC | k=6 | k=10 | k=20 | k=30 |
+|---|---|---|---|---|
+| 0.05 | 120 | **200** | 400 | 600 |
+| 0.10 | 60 | 100 | **200** | 300 |
+| 0.228 | **26** | 44 | 88 | 132 |
+
+**At ICC 0.228 and 6 domains the ceiling is ~26 effective rows — so all 396 rows would be worth
+about as much as the 48 we already have.** Widening per-dose cells is close to free and close to
+useless; the binding constraint is the cluster count.
+
+`DOMAINS` already holds **10** (it grew from 6 on 2026-08-25 for Phase 4B), so 4 unused domains are
+available immediately — `warehouse_logistics`, `harbour_dock`, `museum_archive`, `rail_depot` — with
+no new prose to write.
+
+### ⚠ The ICC itself is badly determined, and that is the finding
+
+Three arms give **0.228, 0.064, 0.000** — from 6 clusters and 48 rows each. That is far too little
+to size a design on, and the three values imply ceilings of 26, 94, and unbounded. **Committing to a
+row count now would be sizing a bank against a number we cannot yet estimate**, which is the
+carry-over error in a new costume: a quantity used away from the evidence that supports it.
+
+So the recommendation is **staged**, and I am not generating a large bank on the current estimate:
+
+1. **Pilot**: all **10** domains × the disjoint slots at doses {1,2,4,8}, forced-choice added to the
+   slot blocks. Purpose is to **measure ICC on 10 clusters**, not to answer any claim.
+2. **Size** the final design from that ICC via `k/ICC`, against the exact `critical_k` at the n
+   actually used.
+3. **Generate** only then — and ship each bank with **its own measured perturbation window**.
+
+### The four design-time checks, with one added
+
+The peer's three, plus the one this analysis forces:
+
+1. **144+** forced-choice rows per condition — necessary, and now known to be **not sufficient**.
+2. **Both arms completable** at the batch size intended. *(A bank whose window can only be measured
+   on a subset its own perturbation selects has no usable window at all — §5.22.)*
+3. **Window measured and shipped with the bank**, per model-and-bank.
+4. **NEW: enough CLUSTERS that `k/ICC` clears the target `n_eff`.** A row target met by widening
+   cells inside 6 domains satisfies check 1 and fails the power requirement it was written for.
+
+All four are checkable **before a single generation**.
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
