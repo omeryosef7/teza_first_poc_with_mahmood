@@ -2667,3 +2667,77 @@ Codeword and concept **crossed**, all four cells at cap 640 so nothing is cap-mi
 **Until it lands, §5.9's "binding necessary but not sufficient" carries this caveat**, and the
 planned non-binding-cap rerun of `window_knife` (included above as 788491) fixes its *labelling*
 but not its *confound*. Recorded as a limitation on §0.17, §5.8 and §5.9 simultaneously.
+
+---
+
+## §7.2 — Two of §7's blockers worked: the pooled ρ is NOT an aggregation artifact, but G2 does NOT reproduce
+
+§7 pre-registered two things to resolve before the gate could pass. Both were attacked; **one clears,
+one does not.**
+
+### ✅ The pooled correlation survives the aggregation test I applied to everyone else
+
+Pooling three banks with different baseline ASR could manufacture correlation — the same
+between-vs-within trap as §0.10's denominator rule, turned on my own headline:
+
+| readout | **pooled** | main | ticket | gun | **mean within-bank** |
+|---|---|---|---|---|---|
+| **`d_surface\|L8\|cos`** | **+0.2712** | +0.203 | +0.291 | +0.308 | **+0.2673** |
+| `d_surface\|L12\|cos` | +0.2423 | +0.165 | +0.156 | +0.327 | +0.2159 |
+| `d_surface\|L31\|cos` | +0.3030 | **+0.054** | +0.416 | +0.292 | +0.2537 |
+| `d_naive\|L8\|cos` | +0.2314 | +0.172 | +0.277 | +0.145 | +0.1980 |
+
+**At L8 the pooled figure (+0.2712) and the mean within-bank figure (+0.2673) are the same to three
+decimals.** Pooling adds nothing; the correlation is genuinely within-bank, on **all three banks**.
+
+The bank means show why it *couldn't* have been an aggregation effect: `main` (boombness −0.4307,
+ASR 22/96) and `basket_gun` (−0.4524, 10/96) have **near-identical mean boombness and very different
+ASR**, so the between-bank ordering is not monotone and cannot induce the within-bank signal.
+
+**This is a real strengthening of §7** and it was not guaranteed — §0.10's rule condemned entry 6's
+pooled claim on exactly this test.
+
+### ⚠ It also changes which candidate I should have pre-registered
+
+**`L31` is heterogeneous across banks (+0.054 → +0.416); `L8` is homogeneous (+0.203 → +0.308).**
+`L31` had the *higher* pooled ρ and is the *worse* candidate — on `main` it is +0.054, essentially
+nothing.
+
+§7 pre-registered both `L8|cos` and `L31|cos`. **Both stay pre-registered** — I am not dropping a
+candidate after seeing data and calling the remainder confirmatory. But it is recorded now, before
+the confirmatory run, that **`L31`'s cross-bank heterogeneity is a known weakness going in**, and
+that `L8` is the candidate with the homogeneity a usable objective needs.
+
+### ⛔ G2 does NOT reproduce, and that blocker stands
+
+Best reconstruction of G2's clean filter (`slot0` via `family_id`, blocks
+`core2x2/extra_conditions/role_style/families`, `natural_doublespeak`, its own cap-192 judge and
+`codeword_last` position):
+
+| | G2 published | my reconstruction |
+|---|---|---|
+| n | **90** | **102** |
+| ρ pooled | +0.0860 | **+0.1493** |
+| ρ within-domain | **−0.0518** | **+0.0887** |
+| domains | 6 | **5** |
+
+**I cannot reproduce G2's number, and my reconstruction differs in n and in domain count**, so the
+filter is not the one G2 used. **Until G2 is reproducible, the §7 discrepancy is unexplained** — and
+"unexplained" is the correct state, not "resolved in my favour."
+
+Decomposition on the `main` bank alone at L12, which is where G2 lived:
+
+| | n | ρ pooled | ρ within-domain |
+|---|---|---|---|
+| G2 population, G2 cap-192 judge (my reconstruction) | 102 | +0.149 | +0.089 |
+| G2 population, my cap-640 pinned judge | 48 | −0.007 | +0.238 |
+| my population, G2's cap-192 judge | 48 | +0.121 | −0.089 |
+| **my population, my judge** (§7's `main` cell) | **96** | **+0.144** | +0.102 |
+
+Every main-bank estimate sits between **−0.01 and +0.15** — **far below §7's pooled +0.24–0.30.**
+The larger figure comes from `ticket_bomb` and `basket_gun`, not from the bank G2 measured. **So G2
+and §7 may not disagree at all: they may be measuring different banks.** That is a hypothesis, and
+it is not yet a resolution.
+
+**Gate status unchanged: REOPENED, NOT PASSED.** One blocker cleared, one stands, and the
+`basket_gun` puzzle from §7 is untouched.
