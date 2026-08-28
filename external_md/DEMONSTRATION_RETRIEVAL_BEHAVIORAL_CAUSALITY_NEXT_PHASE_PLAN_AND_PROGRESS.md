@@ -14537,3 +14537,54 @@ from the measurement I was recommending to someone else.
 came from an 8.3-row margin and a deterministic outcome, not from an n=160 normal approximation. But
 **any future interval on a refusal outcome in this repo must use n_eff ≈ 25, not 160**, and that is
 now on the record before I quote one.
+
+### ⛔ C-72 (02:45) — **C-71 inferred THEIR ICC from MY population. That is the cross-population move, made inside a retraction of a different error. And mutation-testing my own guards found one entry that cannot fire — with the suite's own "the guard fires" self-test built on exactly that entry.**
+
+**C-72a — the ICC over-reach.** C-71 measured ASR ICC **0.0000-0.0017** on `p7r640`/`q6r640` and
+concluded *"their bootstrap is behaving correctly"*. On **their** rows it is **0.2085**, with
+per-cluster ASR rates from 0.0 to 0.812. My measurement is real and it is a **different population** —
+the exact move both sessions have now corrected repeatedly, committed while I was retracting a
+different error.
+
+**Their resolution is better than either of our positions**, and I have adopted it: the partial does
+not correlate `d_surface` with ASR, it correlates their **residuals after removing `d_naive`**, and at
+rho = 0.96 `d_naive` carries nearly the same between-cluster structure. Residualising drops ICC from
+**0.8208/0.2085** to **0.2330/0.1341**, deff **3.57 → 1.47** — so the correct penalty is a **1.21×
+widening**, not a rejection. Their bootstrap is ~20% narrow, not wrong in kind.
+
+**What survives of mine:** only the Phase-6 diagnosis — *the 0.0156 → 0.0625 degradation is a change
+of statistic (informative count 12 → 5), not evidence about correlation structure* — which they have
+kept. **Withdrawn:** "their bootstrap is correct because ICC ≈ 0" (right conclusion, wrong reason,
+wrong population).
+
+**C-72b — I mutation-tested my three guards after their warning, in a detached worktree so the shared
+tree was never mutated.** Baseline required symlinking the untracked `outputs/`; verified afterwards
+that the real tree is intact (**611 run dirs, 673 judge dirs, 30 banks**) and that
+`data/…/bank_meta.json` — the one modified tracked file — has mtime **2026-08-27 09:14**, two days
+before my worktree ran, so **nothing wrote through the symlink**.
+
+| guard | mutation | result |
+|---|---|---|
+| `test_my_ledger_propagation` | delete a correction row from the summary | **KILLED** |
+| `test_my_cited_artifacts` | rewrite a cited run id to a bogus timestamp | **KILLED** |
+| `test_cautioned_figures` — `INVERTED` | remove every occurrence | **KILLED** |
+| `test_cautioned_figures` — `0.331` | remove every occurrence | **KILLED** |
+| **`test_cautioned_figures` — `POST-TREATMENT`** | remove every occurrence | **⛔ SURVIVED** |
+
+**The third entry is VACUOUS: its figure pattern matches ZERO times in either deliverable**, so it can
+never fire. And the defect is sharper than that — **the suite's own
+`test_the_guard_fires_on_a_violating_document` is built on precisely that entry**, against a synthetic
+string. **The only entry demonstrated to fire is the one that cannot fire in production.** That is
+their mutant-passing-its-dedicated-test, in my file, found because they said to look.
+
+**And a lesson about mutation testing itself, learned by failing at it three times.** I recorded
+SURVIVED three times for three *different* wrong reasons before writing a valid mutation:
+
+1. mutated a caveat **outside the guard's declared list** — out of scope, not blindness;
+2. replaced only the **first occurrence** where the phrase appears 2-6 times;
+3. mutated **case-sensitively** where the guard compares `.lower()`.
+
+**A mutation that fails to exercise the property is indistinguishable from a guard that is blind** —
+both report "passed". So mutation testing needs its own positive control: *before* concluding a guard
+is blind, confirm the mutation actually removed the thing the guard looks for. Three of my four
+SURVIVED verdicts tonight were my own bug, and only the fourth was real.
