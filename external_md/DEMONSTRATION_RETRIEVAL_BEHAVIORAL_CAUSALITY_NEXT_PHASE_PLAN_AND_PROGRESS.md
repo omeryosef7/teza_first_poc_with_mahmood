@@ -11571,3 +11571,44 @@ used the run: the **forced-choice** table it certifies **OK at 0.7857** is the o
 seven-bank result, and the **one_word** readout it marks **BELOW** is the one I reported as my
 pre-registered — and below-floor — read at 0.0193. **The producer and my report agree on which half is
 quotable.**
+
+### ⛔ C-41 (16:15) — **R-123's ratio table was HAND-LISTED and silently incomplete: 6 rows where 8 exist. The same failure as R-120 — an enumeration I assembled by hand, presented as if it were the population.**
+
+They noticed `basket_bomb` was absent from a table I introduced as *"every bank with both readouts."*
+**It was not a data gap.** `p5_basket_bomb_20260828_060644_3977117` carries its 48 slot3 rows and has
+all along; **I hand-wrote a list of six run directories and missed it.**
+
+**Re-derived by enumerating the artifact tree instead of listing it** — every `A_baseline` run whose
+results contain `core2x2_slot3` × `semantic_one_word`:
+
+| bank | slot0 | multi | ratio | multi-slot mass |
+|---|---|---|---|---|
+| **`basket_bomb`** | **0.000** | **0.000** | **0.00** | **0.1027 reportable — MISSED** |
+| `basket_gun` | 0.472 | 0.381 | 1.24 | 0.0808 reportable |
+| `main` | 0.316 | 0.218 | 1.45 | 0.0404 below floor |
+| **`longpreQ14B`** | **0.107** | **0.042** | **2.54** | **0.0185 below floor — MISSED** |
+| `ticket_bomb` | 0.248 | 0.000 | ∞ | 0.1707 reportable |
+| `ticket_knife` | 0.377 | 0.190 | 1.98 | 0.0774 reportable |
+| `window_bomb` | 0.000 | 0.049 | 0.00 | 0.0404 below floor |
+| `window_knife` | 0.154 | 0.115 | 1.34 | 0.0193 below floor |
+
+**Eight, not six.** `basket_bomb` is a **reportable** row and its omission is unexcused;
+`longpreQ14B` is **Qwen3**, so excluding it from a Llama table is defensible — **but silently is not**,
+and it is the bank whose window C-38 already withdrew.
+
+**Nothing concluded changes.** `basket_bomb` at 0.000→0.000 is a **degenerate 0/0** — neither support
+nor counterexample, and their flagging it as such is right. The direction claim still holds on every
+reportable row, and the magnitude is still **not translatable**: among non-degenerate reportable rows
+the ratios remain **1.24, 1.98, ∞**.
+
+#### The pattern, second instance in one day
+
+**R-120**: my ledger audits ran C-19…C-40 — a range I chose — and an automated check found seven
+corrections outside it. **R-123**: my ratio table ran six run directories I typed out, and enumeration
+found two more. **Both times I presented a hand-assembled enumeration as if it were the population,
+and both times the fix was to derive the list from the artifacts rather than from memory.**
+
+The generalisation is narrower and more useful than "be careful": **whenever a table's rows are a
+population rather than a selection, the rows must be enumerated by code.** A hand list cannot be
+audited against the thing it is supposed to cover, because the omission is invisible from inside the
+list — exactly as a range assumption is invisible from inside the range.
