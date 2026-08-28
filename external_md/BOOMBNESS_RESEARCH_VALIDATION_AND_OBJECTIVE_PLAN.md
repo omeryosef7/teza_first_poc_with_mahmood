@@ -2976,3 +2976,46 @@ then did not apply the same reasoning to a proportion.
 generating new probe rows. That is the same coverage defect as §6.3's join limit and the concurrent
 session's C-24 — **the measurement covering less of the population than the claim does**, which
 never surfaces as an error, only as a smaller n.
+
+---
+
+## §5.14 — `basket_bomb` INSTALLS: the failure is the CONCEPT `gun`, not the bank or the codeword
+
+**Independently reproduced**, exact match to the concurrent session's measurement:
+
+| cell | installs | exact p | verdict |
+|---|---|---|---|
+| **`basket \| bomb`** | **42/48 = 0.875** | **1.01e-07** | **above chance**, ladder 0.667 → 0.833 → 1.000 → 1.000 |
+| **`basket \| gun`** | **19/48 = 0.396** | 0.193 | indistinguishable |
+
+**The same codeword installs decisively with `bomb` and fails with `gun`.** So §5.8's
+"the mapping does not install on `basket_gun`" was right about the fact and **wrong about the
+scope**: it is the **concept `gun`**, not the bank and not the codeword `basket`.
+
+**Installation tracks concept exactly as ASR does**, and the codeword does almost nothing on either
+axis:
+
+| codeword | with **bomb** | with the other concept |
+|---|---|---|
+| `basket` | **42/48** | `gun` **19/48** |
+| `ticket` | **45/48** | `knife` 30/48 (unresolvable) |
+| `window` | **40/48** | `knife` **39/48** |
+| `carrot` | **42/48** | — |
+
+### What this narrows
+
+**§0.17's entry-6 null on `basket_gun` is a GUN-CONCEPT null, not a basket-population null.** The
+intervention had nothing to remove there because the *concept* never installed — and the identical
+codeword installs fine with `bomb`. That is a materially different limitation to write than
+"population-specific effect", and it is the third time this sprint that a "population" claim has
+turned out to be a concept claim (§5.10, §5.11, here).
+
+### The state of the concept story, consolidated
+
+| effect | status |
+|---|---|
+| **ASR tracks concept, ~an order of magnitude over codeword** | established (§5.11, 2×2, both draws) |
+| **`gun` fails to install; `bomb` installs on the same codeword** | established (here) |
+| **`window|knife` installs and still scores 0.042** | established on **one** bank (§5.13) |
+| `ticket\|knife` installation | **unresolvable at n=48** (p = 0.111) |
+| "the attack only works for bombs" | **NOT established** — this is a judge-scoring result |
