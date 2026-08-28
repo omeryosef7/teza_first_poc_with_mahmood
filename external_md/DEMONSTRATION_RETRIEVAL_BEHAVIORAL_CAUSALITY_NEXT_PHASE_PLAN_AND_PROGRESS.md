@@ -11052,3 +11052,66 @@ silently unsafe on the other** — and the direction must be stated when the ins
 
 **The check to run on any new instrument: ask which direction it can fail in, and which class of claim
 that direction protects.**
+
+### ⛔ C-38 (14:15) — **A scale I quoted in my report has been withdrawn by its own author as UNMEASURABLE, and C-37's justification rested on it. Both my corrections survive — because the withdrawn number was too LARGE, which is the conservative direction for everything I used it on.**
+
+Their deep review found `margin_exposure` had **no attrition check** — R-105 parity simply missing —
+so `longpreQ14B`/Qwen3 **1.2499** was measured on a pair whose **batch-16 arm lost 22 of 40 rows**.
+The surviving 18 are the rows where batch-16 **succeeded**, i.e. the **short** ones, *because the
+perturbation being measured is what killed the long ones.* **A scale measured on a biased sample of
+its own population, where the bias was induced by the quantity under measurement.**
+
+It is **unmeasurable, not merely unmeasured**: no complete batch-16 run on that bank can exist,
+because **batch 16 is what OOMs**. The honest entry is a refusal, and their tool now emits one.
+
+#### What I had to fix in my own deliverable
+
+| where | was | now |
+|---|---|---|
+| measured-scales list | three scales, incl. `1.2499` | **two** (`ticket_bomb` 0.3202, `main` 0.4616), the third **withdrawn** |
+| "the spread is **3.9×**" | 0.3202 vs the withdrawn 1.2499 | **1.44×** — 0.4616 vs 0.3202, **both complete 48/48, same model** |
+| C-37's justification | rested on the withdrawn number | restated; **C-38 makes C-37 worse, not milder** |
+| C-36's bound | computed at W=1.250 | restated at the largest **valid** window |
+
+**C-37 is aggravated, not softened.** I had imported not merely another population's scale but one
+**measured on a biased subset of its own** — I could not have known that, but the correct response to
+an unfamiliar borrowed number was never to use it.
+
+**C-36 and C-37 both survive, and were conservative**, because **1.250 exceeds every valid Llama
+window**. Restated at **W=0.4616**, the bound is *stronger*:
+
+| bank | at W=1.250 (withdrawn) | **at W=0.4616 (valid)** | crit |
+|---|---|---|---|
+| `window_knife` | 33/48 | **36/48** | 32 |
+| `basket_bomb` | 38/48 | **40/48** | 32 |
+| `window_bomb` | 34/48 | **38/48** | 32 |
+| `ticket_knife` | 28/48 | 30/48 | 32 (NOT, either way) |
+| PR-34 contrast | 38 vs 24, p=0.00515 | **40 vs 20, p=4.53e-05** | — |
+
+**Every claim-bearing verdict holds under both, and holds more comfortably under the valid one.**
+**My 0.3202 and their 0.4616 are unaffected** — both pairs complete 48/48.
+
+#### What the withdrawal does NOT touch
+
+**The batching finding never rested on Qwen3.** "Not numerically inert" was established on
+**Llama/`main` with complete populations**, and the determinism control (`q8D` vs `qbD`) was
+**40/40 complete**. Only the Qwen3 **magnitude** is scoped down: median 0.688, max 1.250, 1 flip in 18
+describes **the short half** of that bank, not the bank. C5's closure stands — both legs measured on
+complete 48/48 pairs.
+
+#### Fourth instance, and the worst
+
+The one-sidedness pattern now reads:
+
+| instrument | safe on | silently unsafe on |
+|---|---|---|
+| an over-large window | claims carrying effects | nulls |
+| `margin_exposure`'s first provenance check | false confidence | **corrections** |
+| `kw_refusal` | confirming a refusal | confirming a success |
+| **a window measured on an attrited arm** | — | **itself: the perturbation selects the sample it is measured on** |
+
+The fourth is the worst because it is **self-referential** — the measurement's own subject determines
+which rows it gets to measure. **The design constraint they drew from it is the right one and I have
+adopted it for the bank-design work: a bank whose window can only be measured on a subset its own
+perturbation selects has no usable window at all, so the generation config must be one where BOTH arms
+can complete.**
