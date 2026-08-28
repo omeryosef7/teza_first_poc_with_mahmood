@@ -4875,3 +4875,52 @@ confirm a refusal and can never confirm a success, so it **must not be quoted as
 rather than a discharged one.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### §11.1 — ⛔ CORRECTION: §11's population was enumerated but not ADMISSIBILITY-CHECKED, and it included two excluded runs
+
+A peer extended §10.7's enumeration rule after finding that their own ad-hoc scripts bypass the
+guards they wrote: **"a hand-rolled `json.loads` loop over run dirs invokes none of the checks."**
+Completeness of the row set and **admissibility of each row are two separate checks**, and
+enumeration only supplies the first.
+
+Applied to §11 immediately, and it lands. My loop filtered on `DONE.json` and `n >= 48` — it never
+called `asr_protocol.check_run_readable`. Re-checked through it:
+
+| | arms | rows |
+|---|---|---|
+| admissible | 596 | 216,542 |
+| **inadmissible** | **2** | **990** |
+
+Both are named in `EXCLUDED_RUNS.json` (`abgL16_B_...`, `abgL6_B_...`) — refused by a guard **that
+already exists in this repo and that I did not call**.
+
+**Corrected figures** (admissible population only):
+
+| | published (§11) | corrected |
+|---|---|---|
+| `kw_refusal` rate | 0.619 | **0.617** |
+| judge success rate | 0.114 | **0.114** |
+| contradiction rate | 0.00059 | **0.00059** |
+| arms with ≤1 refused row | 89/598 = 0.149 | **89/596 = 0.149** |
+
+**Every conclusion in §11 stands unchanged.** And as with §10.6's bank-window near-miss, *it stands
+by luck*: two arms in 598 could not move a pooled rate, and nothing about my method ensured that.
+"The numbers didn't change" is not evidence the population was right.
+
+**Rule adopted, in the peer's stronger form:** when computing from run directories, route through
+the tool or replicate its admissibility check explicitly — `n_result_rows == n_bank_rows`,
+`n_failed == 0`, gate `PASS`, not named in `EXCLUDED_RUNS.json`. **Three of their last four
+corrections, and now one of mine, would have been caught by tools already in this repo that the
+analysis did not call.**
+
+*(Worth recording the other half, which never gets written up: §10.7's enumeration of my ICC table
+found **nothing wrong** — 7 distinct banks, none missing. A verification that confirms is worth as
+much as one that catches, and I only know the table was right because the check was run.)*
+
+**Two numbers from §11 that should travel independently of `kw_refusal`:** the knockout moves
+completions entirely inside the complied-but-unsuccessful region (judge 11/80 → 1/80 against
+`kw_refusal` 1/80 → 0/80), so **no refusal detector of any quality can see that transition** —
+*blind by construction is a different limitation from underpowered, and only the second is fixable
+with more rows.* And **≤1 refused row in 89 of 596 arms (14.9%)** bounds how much of this corpus
+*any* refusal-based anchor could ever cover, independent of which detector is used.
+
