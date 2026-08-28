@@ -4717,3 +4717,53 @@ rate**.
 **The practical rule is unchanged: measure ICC on the bank you are about to size.**
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+### §10.6.1 — No correction factor bridges the two tables, and the bank makes that unfixable
+
+§10.6 recorded that the reportable (forced-choice) table is single-slot and the multi-slot table
+(`one_word`) is the one that keeps failing the mass floor. A peer verified that split **from the
+bank source**, and it is structural, not a sampling accident:
+
+* `semantic_forced_choice` exists in **`core2x2` only** — 72 rows
+* `semantic_one_word` spans `core2x2` 72, `core2x2_slot3` 48, `role_style` 180, `strength` 48,
+  `consistency` 36, `position` 12
+
+**So the reportable readout is structurally incapable of measuring the multi-slot quantity, and the
+readout that can measure it is the one that keeps failing the gate.** Neither session chose that; it
+is how the bank was generated, and it is a generation-time property.
+
+### The conservative-direction claim holds — on reportable rows only
+
+Single-slot vs multi-slot ICC on every bank carrying both (dose-centred, `one_word`):
+
+| bank | slot0 | multi | ratio | multi-slot mass | reportable |
+|---|---|---|---|---|---|
+| `ticket_bomb` | 0.248 | **0.000** | ∞ | 0.1801 | yes |
+| `basket_gun` | 0.472 | 0.381 | 1.24 | 0.0808 | yes |
+| `basket_bomb` | 0.000 | 0.000 | — | 0.1027 | yes |
+| `ticket_knife` | 0.377 | 0.190 | 1.98 | 0.0774 | yes |
+| `main` | 0.316 | 0.218 | 1.45 | 0.0404 | **no** |
+| `window_knife` | 0.154 | 0.115 | 1.34 | 0.0193 | **no** |
+| `window_bomb` | **0.000** | **0.049** | 0.00 | 0.0404 | **no** |
+
+Single-slot ≥ multi-slot on **all four reportable rows**, so §10.6's conservatism argument stands —
+and stands *specifically on reportable data*, not in general. There are two counterexamples where
+single-slot **under**-states, `window_bomb` going 0.000 → 0.049 the wrong way, but both are below
+the mass floor and so are not evidence against it. *(`basket_bomb` is 0.000 → 0.000, a degenerate
+row that is neither support nor counterexample; it was absent from the peer's table and is included
+here for completeness.)*
+
+### ⛔ But the MAGNITUDE is not translatable, which is the stronger point
+
+Among reportable rows the ratios are **1.24, 1.98, and infinity**. **No constant factor converts
+one table into the other**, and my "1.4× from `main`" is a single draw from a spread that includes a
+case collapsing to exactly zero.
+
+So §10.6's "different estimands, neither substitutes for the other" needs its stronger form: **no
+correction bridges them either.** That matters for anyone who later finds the reportable table and
+tries to *adjust* it rather than re-measure — the adjustment does not exist.
+
+**Consequence for the 13-bank pre-registration: it must fix the READOUT and the SLOT STRUCTURE up
+front.** Both move the number, and this tick establishes that neither can be corrected for
+afterwards.
+
