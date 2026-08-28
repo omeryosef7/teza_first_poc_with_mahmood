@@ -6401,3 +6401,36 @@ is indistinguishable from a guard that finds it clean — `ledger_propagation_ch
 id-less headings, `cited_artifact_check`'s loose matcher, and now a path list. Every one of them
 reported success while examining less than it appeared to. The tell is never in the guard's verdict;
 it is in whether anyone checked what the denominator was.
+
+## §12.14 — LAUNCHED: the retrieval-knockout reruns at cap 640 (ledger entry 6)
+
+**Why this claim needed a rerun and not a re-read.** Ledger entry (2) — "demonstration-retrieval
+knockout suppresses the doublespeak attack, 96 down / 18 up over 8 populations" — is ASR-based, and
+**all twenty runs behind it ran at `max_new=192`**. Their truncation rates run from 0.073 to
+**0.698**: on `lbC_ticket_bomb`, 67 of 96 generations hit the cap. An ASR measured on truncated
+generations is not an ASR, and the standing rule for this sprint is that no `max_new=192` figure is
+quoted without relabelling.
+
+**Derived, not hand-written.** Each of the ten argsfiles is generated from its ORIGINAL run's own
+`config.json`, changing exactly one field. That matters because the arm names are not uniform —
+`main` used `C_demo_all_L6_14` while the four codeword banks used `C_band_L6_14` — and hand-writing
+ten files would have silently normalised them into a different intervention. The generator asserts
+`max_new == 192` and `model in (None, "")` on every source config before writing, so a mis-pointed
+run fails loudly rather than producing a Qwen rerun labelled Llama.
+
+| population | A arm | C arm | old truncation A / C |
+|---|---|---|---|
+| `main` | `k640_p2A` | `k640_p2C_band` | 0.562 / 0.552 |
+| `ticket_bomb` | `k640_lbA_ticket_bomb` | `k640_lbC_ticket_bomb` | 0.469 / **0.698** |
+| `window_knife` | `k640_lbA_window_knife` | `k640_lbC_window_knife` | 0.573 / 0.354 |
+| `button_knife` | `k640_lbA_button_knife` | `k640_lbC_button_knife` | queued next |
+| `basket_gun` | `k640_gnLA` | `k640_gnLC` | queued next |
+
+Jobs 796400-796405 hold the first three populations, A and C submitted together so no comparison can
+land half-complete. The remaining two go in as slots free, keeping the queue at the 6-job cap.
+
+**What this can and cannot settle.** It re-measures the knockout effect without truncation on the
+Llama side. It does NOT re-measure the Qwen populations, so if the effect survives here the claim
+narrows to "verified untruncated on Llama, still cap-dependent on Qwen" rather than clearing
+outright. Argsfiles live on the shared filesystem, not the node-local scratchpad, which fails these
+jobs in 3 seconds.

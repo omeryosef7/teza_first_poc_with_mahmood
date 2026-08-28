@@ -3845,8 +3845,8 @@ level with **`matchesA = 0`** on all four arms. Rescue `fired` **160/160** on bo
 | condition | value | verdict |
 |---|---|---|
 | **1 — ASR rescue** | `L17 − knockout = +0.0437`, needed **> 0.0521** | **FAILS** |
-| 2 — control inert | `|L5 − knockout| = 0.0125` | HOLDS |
-| 3 — refusal dissociation | `|L17 − knockout| = 0.0750`, less refusal | HOLDS |
+| 2 — control inert | `\|L5 − knockout\| = 0.0125` | HOLDS |
+| 3 — refusal dissociation | `\|L17 − knockout\| = 0.0750`, less refusal | HOLDS |
 
 #### ⛔ The ASR rescue is NOT promoted
 
@@ -7232,7 +7232,7 @@ C-21's confound cannot touch the read. n = **160 common rows**.
 
 | condition | requirement | result |
 |---|---|---|
-| **1 — refusal restored from the query span** | `|Δrefusal| > 0.0521` | **−0.09375 (−15/160) (−15 rows), 71.4% of the rise** ✅ |
+| **1 — refusal restored from the query span** | `\|Δrefusal\| > 0.0521` | **−0.09375 (−15/160) (−15 rows), 71.4% of the rise** ✅ |
 | **2 — the dissociation holds** | refusal move exceeds ASR move by `> 0.0417` | **0.0875** ✅ |
 | ASR half | declared thin; inside ±0.0521 ⇒ **DECLINE**, not refutation | **−0.0062 (−1 row), recovery −7.7%** → **DECLINE** |
 
@@ -7427,8 +7427,8 @@ rescue and R-52's decline rule does not apply.
 
 | condition | requirement | Llama result | |
 |---|---|---|---|
-| 1 — top of band restores refusal | `|Δ| > 0.0521` **and** `p < 0.05` | **−0.1562** (−25 rows), discordant 27/2, **p = 1.6e-06** | ✅ |
-| **2 — mid band does NOT** | `|Δ| ≤ 0.0521` | **−0.0688** (−11 rows), discordant 15/4, **p = 0.019** | **❌ FAILS** |
+| 1 — top of band restores refusal | `\|Δ\| > 0.0521` **and** `p < 0.05` | **−0.1562** (−25 rows), discordant 27/2, **p = 1.6e-06** | ✅ |
+| **2 — mid band does NOT** | `\|Δ\| ≤ 0.0521` | **−0.0688** (−11 rows), discordant 15/4, **p = 0.019** | **❌ FAILS** |
 | 3 — they separate | `> 0.0417` **and** `p < 0.05` | **0.0875**, L10 vs L14 discordant 15/1, **p = 0.00052** | ✅ |
 
 **PR-28 required all three. Condition 2 fails, so the layer-specificity claim is NOT established, and
@@ -13185,3 +13185,61 @@ exchange.**
 **Sent to them**, with the recommendation I would want in their position: **read the arm only from the
 dir carrying `DONE.json`**, and if a partial must be used, quote it against a within-bank truncation
 of a completed arm rather than against another bank's number.
+
+### ⛔ C-58 (22:10) — **C-56's "3.16× drop" was a cross-design comparison — the error I had retracted one entry earlier. Balanced-to-balanced, the two banks move in OPPOSITE directions, and my seven-bank between-bank contrasts are inside the noise.**
+
+Their carrot|bomb multi-slot arm completed on the fifth attempt (2508 rows, `DONE.json` present).
+**Verified balanced-to-balanced myself**, using `core2x2` — the slot-0 rows, naturally dose-balanced at
+m=8 — so single- and multi-slot are compared on the same bank, model and readout:
+
+| bank | single-slot | multi-slot balanced (my median, 50 draws) | theirs | direction |
+|---|---|---|---|---|
+| carrot\|bomb | 0.0803 | **0.1946** | 0.2443 | **UP** |
+| `ticket_knife` | 0.2915 | **0.1993** | 0.2361 | **DOWN** |
+
+**C-56's 3.16× was balanced-single-slot against POOLED-multi-slot** — mixing a dose-balanced estimand
+with a 60.6%-dose-1 one. **That is exactly the cross-design error I retracted in C-57**, committed one
+entry earlier in the same argument.
+
+#### The structural result, robust across both implementations
+
+**Single-slot estimates diverge; multi-slot estimates converge.**
+
+| | carrot\|bomb vs `ticket_knife` |
+|---|---|
+| single-slot | 0.0803 vs 0.2915 — **3.6× apart** |
+| multi-slot balanced, mine | 0.1946 vs 0.1993 — **1.02× apart** |
+| multi-slot balanced, theirs | 0.2443 vs 0.2361 — **1.03× apart** |
+
+**Two independent implementations, two banks, same conclusion**: the between-bank difference that
+looked like a 3.6× property of the banks **vanishes when each domain holds more than one demonstration
+set.** Their reading — m=8 on a single slot is too thin to estimate a domain ICC — is the natural one,
+and their own caveat (n=2 banks, *suggestive not established*) is the right standard.
+
+#### What it costs R-122, stated as a scope not a rescue
+
+**My within-codeword contrasts are between-bank ICC differences computed from single-slot estimates**
+— `ticket` 2.8×, `window` 2.5×, `basket` 4.7× — **which is precisely the quantity now shown to
+collapse.** They are **withdrawn as evidence about banks**; what they measure is not established to be
+a property of the codeword–concept pair.
+
+**The rho = −0.847 win-rate/ICC correlation is the same shape** — seven banks' win rates against seven
+single-slot ICCs. **It is scoped, not retracted**: only 2 of 7 banks have multi-slot data, so it
+cannot be recomputed, and I will not defend it on the grounds that the collapse might not generalise.
+
+**What is unaffected**: the *levels* were never the claim, and C-57's crossing verdict stands —
+their balanced medians are carrot|bomb **143.8** [94.7, 233.3] with **140/200** crossing and
+`ticket_knife` **152.7** [118.5, 201.7] with **186/200**. **Both decidable, neither decided.**
+
+#### And their guard-scope fix found six broken tables in my documents
+
+`markdown_structure_check` never scanned the plan — *a path list pointing away from the document where
+we write tables.* Applying it to mine: **six table rows broken by unescaped pipes inside code spans**,
+five in the plan (`|L5 − knockout|`, `|Δrefusal| > 0.0521`, …) and one in the summary
+(`'warehouse_logistics|benign'`). **Verified as real breaks by cell-count against each row's own
+header** — 5 cells against a 3-cell header, 6 against 4 — not merely by the presence of a pipe. **All
+six repaired and re-verified; no figure value changed.**
+
+**Third time this sprint a guard reported success while examining less than it appeared to** — my
+loose matcher, their id-less headings, now a path list. **The verdict never shows it; only the
+denominator does.**
