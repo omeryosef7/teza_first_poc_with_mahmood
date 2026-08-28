@@ -14430,3 +14430,57 @@ cluster permutation is degenerate for any variable balanced by construction, bec
 outcomes between clusters preserves the dose-outcome pairing. A p of exactly 1.0000 next to the
 variable one would most like to dismiss is the number most likely to be quoted, and putting it in the
 log with its invalidity attached is the correct handling.
+
+### 🔬 R-151 (02:30) — **Their row-level partial confirms my reconstruction to 0.0014. But their cluster bootstrap implies n_eff ≈ 293 of 288 rows — ICC ≈ 0 — which contradicts their own Phase-6 result on the same cluster structure. Neither of our intervals should be quoted; the ICC is measurable and neither of us measured it.**
+
+**Reconstruction validated.** Their row-level computation returns **+0.1924** against my
+summary-statistic estimate of **+0.1938** (Δ 0.0014), and **−0.1024** against my **−0.1039**. The
+partial-from-marginals approximation held, and their sentence *"candidate and naive control are the
+same signal"* is withdrawn.
+
+**The interval is where we differ, and it is resolvable rather than a matter of taste.** Inverting
+their bootstrap CI **[+0.078, +0.299]** through Fisher z:
+
+| | half-width (z) | SE | implied df | implied **n_eff** |
+|---|---|---|---|---|
+| their cluster bootstrap | 0.1151 | 0.0587 | 290 | **≈ 293** |
+
+With 288 rows in 18 clusters of 16, `n_eff = k·m/(1+(m−1)·ICC)`:
+
+| ICC | n_eff |
+|---|---|
+| **0.00** | **288** ← their bootstrap sits here |
+| 0.05 | 164.6 |
+| 0.20 | 72.0 |
+| **1.00** | **18** ← my analytic interval sits here |
+
+**Their cluster bootstrap reproduces the independent-rows interval to within 0.004** — I computed
+(+0.080, +0.303) treating all 288 rows as independent; they report (+0.078, +0.299) after resampling
+clusters. **A cluster bootstrap that returns the naive answer is either measuring ICC ≈ 0 or failing
+to capture the clustering at 18 clusters.**
+
+**And their own Phase-6 result says ICC is not zero on this cluster structure.** There, moving from
+pair-level McNemar to domain-level clustering degraded `main` from **p = 0.0156 to 0.0625** — a
+fourfold loss of precision, which is exactly what substantial ICC does. **The two analyses imply
+contradictory ICCs on the same (bank, domain) clustering.** One of them is wrong and it is measurable:
+a one-way ANOVA on the binary outcome across the 18 clusters settles it in a line of code, and I would
+not quote either interval until it is run.
+
+**My own interval is the opposite extreme and equally unjustified.** `df = n_clusters − 3` assumes
+**ICC = 1** — that every row within a cluster is redundant. I chose it as the conservative bound, but
+"conservative" is not "correct", and I should have said it was an assumption rather than a
+calculation. **The honest position is that the true interval lies between (−0.300, +0.606) and
+(+0.078, +0.299), and which end depends on a number neither of us has measured.**
+
+**This does not move the gate**, and it is worth saying so rather than letting a methodological
+dispute look decisive. Their full control set gives **+0.1783, CI including zero** pooled, with
+**dev +0.0389 and heldout +0.2547** — a **6.5×** disagreement on equal halves where heldout *exceeds*
+dev, which is the wrong direction for a real effect and the right one for noise. **The gate stays
+closed on the pooled result regardless of which interval is right.**
+
+**Their rank-tie bug is the most dangerous catch of the night and they caught it themselves.** A
+tie-breaking-by-argsort rank on a binary outcome — 226 zeros, 62 ones — made nearly every rank
+arbitrary and returned **+0.0942** instead of **+0.1924**, which would have **confirmed the wrong
+conclusion they had already written**. The detector was the same as every other catch tonight: **two
+computations of one quantity disagreeing.** A bug whose output agrees with your existing draft is the
+one that survives.
