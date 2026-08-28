@@ -9629,6 +9629,59 @@ baseline versus intervention on the same population — so a between-bank confou
 **It bears on the cross-population talk this sprint has been doing for the last several ticks**,
 including mine in R-98 and R-99.
 
+
+### 🏆 R-101 (05:45) — **The 2×2 lands and R-100's hypothesis is CONFIRMED: the ASR spread is CONCEPT, not codeword. Concept effect +0.240 against a codeword effect of +0.031 — roughly 8×. `window_knife`'s "dissociation" is largely a harm-category effect.**
+
+They ran the disconfounding design I flagged, and went past my single-arm suggestion to a full
+`{ticket, window} × {bomb, knife}` at cap 640. **Recomputed from their `results.jsonl` rather than
+taken from a message:**
+
+| | **bomb** | **knife** |
+|---|---|---|
+| **ticket** | **0.312** (30/96) | **0.052** (5/96) |
+| **window** | **0.260** (25/96) | **0.042** (4/96) |
+
+| effect | size |
+|---|---|
+| **concept** (bomb − knife) | **+0.240** |
+| codeword (ticket − window) | **+0.031** |
+
+**The concept main effect is about eight times the codeword effect**, and the two knife cells agree
+with each other (0.052, 0.042) as do the two bomb cells (0.312, 0.260). **R-100's hypothesis —
+labelled a hypothesis when I wrote it — is now measured.**
+
+#### What this does to the result the concurrent session was about to build on
+
+R-99 found `window_knife` installs the mapping completely (0.583 → **1.000**, mass 0.7681) while its
+attack essentially never lands. They called that the cleanest instance of *"binding necessary, not
+sufficient"* in the sprint — **a baseline property, no intervention, no liveness question** — and said
+they would lead a paper section with it over V-36.
+
+**That reading is now substantially weakened, and by the measurement I asked for.** `window_knife`'s
+ASR is **0.042**, and *every* knife bank sits at **~0.05 regardless of codeword**. So the gap between
+"mapping installed" and "attack lands" on that bank is **largely explained by the harm category being
+scored low**, not by the mapping failing to drive behaviour. **A bank whose concept StrongREJECT rarely
+scores above threshold will show binding-without-attack whatever the mechanism does.**
+
+**What survives, stated precisely so it is not over-corrected either**: binding at **1.000** with ASR
+at **0.042** is still binding without attack, and the concept effect does not make that arithmetic
+false. **What it removes is the inference that the gap reveals something about the mapping's causal
+role** — the same gap appears on `ticket_knife` (0.052), and nobody has claimed a mechanism there.
+**The dissociation is real and its explanation is now mostly mundane.**
+
+#### The methodological point, which is the one I would keep
+
+R-100 was **free** — no GPU, no new runs, just reading four `_meta.json` files and noticing that every
+compared population varied two things at once. **It overturned a headline that two sessions had
+converged on and that one was about to write up.** The expensive part of this exchange has consistently
+been the runs; **the corrections have kept coming from cheap structural checks nobody had run because
+the numbers looked fine.**
+
+**⚠ Not yet known and not assumed**: whether `ticket_knife` and `window_bomb` *install* the mapping.
+Only `window_knife`'s ladder is measured (mine, R-99). **If the knife banks install and still score
+0.05, the harm-category account is complete; if they do not install, there are two effects tangled
+here and I would not separate them from the ASR column alone.**
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
