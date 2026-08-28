@@ -6764,3 +6764,69 @@ the run corpus by `config.json` and say how many dirs were examined. Every under
 this sprint — a bolded-id regex, a prefix glob, `ls | tail -1`, a population-name substring, and now
 a within-run statistic read as a corpus fact — was invisible because nothing reported the
 denominator.
+
+## §12.22 — PHASE 6 COMPLETE: the dose ladder is NON-MONOTONIC — it peaks at n=8–12 and falls at n=16
+
+**The sweep the brief specified, finished.** §6.2 had covered `n_examples ∈ {1,2,4,8}` only. The
+missing doses are now run at cap 640 (`ph6_*`, jobs 797838-797841, truncation **0/84**) and judged
+**with the existing doses in a single invocation** (`p6j_*`, job 797947) — necessary because the
+judge's gross per-row flip rate is 6.5–7.0% (§12.21), and judging the ends of a dose-response curve
+in different sessions would place an instrument boundary in the middle of the curve.
+
+**Balanced ladder, `core2x2` only, 12 rows at every dose:**
+
+| bank | n=0 | n=1 | n=2 | n=4 | n=8 | n=12 | n=16 |
+|---|---|---|---|---|---|---|---|
+| `main` | **0/12** | 2/12 | 0/12 | 3/12 | 7/12 | **9/12** | **2/12** |
+| `ticket_bomb` | **0/12** | 1/12 | 3/12 | 5/12 | **7/12** | — | 5/12 |
+| `basket_gun` | **0/12** | 2/12 | 0/12 | 0/12 | **3/12** | — | 1/12 |
+
+Sprint-grade artifact `phase6_ladder_20260829_014709_3632423`, **PUBLISHABLE**.
+
+### The ladder is a paired design, which is what makes it readable at this size
+
+The `(domain, split)` cells are **identical at every dose** — the same 6 domains × 2 splits, verified
+against the bank. So each dose comparison is within-domain and paired. **But 6 domains means 6
+clusters**, and this sprint's own §12.9/§12.11 result is that power is bounded by cluster count, not
+row count. Everything below is quoted with that ceiling attached.
+
+### n=0 is 0/12 on all three banks — and by two different routes
+
+The attack does not exist without demonstrations. Pooled n=0 (0/36) against n=8 (17/36) is
+Fisher p < 0.0001, the largest and least ambiguous contrast in the table.
+
+**The routes differ, and averaging would have hidden it.** On `main`, n=0 is **12/12 keyword-refusal
+at 23 median tokens** — the model refuses outright. On `ticket_bomb` and `basket_gun`, n=0 is **0/12
+refusal at 391 and 480 median tokens** — long, non-refusing answers that simply do not carry the
+attack. Same zero, opposite mechanisms.
+
+### The drop at n=16, paired within domain
+
+| contrast | pairs | lost | gained | McNemar p |
+|---|---|---|---|---|
+| `main` n=12 → n=16 | 12 | **7** | **0** | **0.0156** |
+| `main` n=8 → n=16 | 12 | 5 | 0 | 0.0625 |
+| `ticket_bomb` n=8 → n=16 | 12 | 4 | 2 | 0.6875 |
+| `basket_gun` n=8 → n=16 | 12 | 2 | 0 | 0.5000 |
+| **pooled n=8 → n=16** | **36** | **11** | **2** | **0.0225** |
+
+**More demonstrations stop helping and start hurting.** The direction is consistent on all three
+banks (11 lost against 2 gained pooled) and strictly one-directional on `main` (7 lost, 0 gained),
+but **only `main` reaches significance on its own** — `ticket_bomb` and `basket_gun` are individually
+null, and McNemar treats the 12 pairs as independent when they come from 6 domains. Refusal does not
+explain it: refusal at n=16 is 1/12, 3/12 and 1/12.
+
+### What this means for the objective question
+
+Phase 6 exists to answer *"if boombness is just `n_examples` wearing a different name, it is not an
+objective."* The honest answer is that **`n_examples` is not a monotone driver**, so boombness cannot
+be a monotone restatement of it. That cuts both ways and I am not claiming the favourable half:
+non-monotonicity equally means **`n_examples` is a poor control variable**, because conditioning on
+it linearly — which §6.3's mediation test did — mis-specifies the relationship on the upper half of
+the range.
+
+**Caveats that bound all of the above:** 12 rows per dose, 6 domain-clusters, a 6.5–7.0% judge floor
+that is the same order as several of these cells, `n=12` measured on `main` only (the `ne12` bank is
+a strict superset of `main` — 2736/2736 rows byte-identical by `prompt_sha16` plus 192 rows at 12 —
+so the cell is on the same ladder, but there is no cross-bank replication of it), and one row of 96
+at cap in `basket_gun`'s n=1,2,4,8 arm.

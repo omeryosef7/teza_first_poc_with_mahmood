@@ -121,6 +121,7 @@ TRACE_TOKENS = {
     "§12.19": ["masking", "bidirectional", "stop_reason"],
     "§12.20": ["dynamic range", "6.5%", "basket_gun"],
     "§12.21": ["already existed", "384", "7.0%"],
+    "§12.22": ["non-monotonic", "9/12", "n=16"],
 }
 
 
