@@ -5931,3 +5931,47 @@ multi-hour job was indistinguishable from a hung one. The loop requires detectin
 log rather than from `squeue`**, and that is impossible without unbuffered progress. Restarted with
 `-u`; the 152 pools then reported one by one.)*
 
+
+### §12.5 — PRE-REGISTERED before the k=38 arm lands: a subsample ladder that tests the assumption both tables rest on
+
+§12.3 narrowed a peer's "`k/ICC` is linear" to *"linear for `ticket_knife`, not for `main`"*. They
+then tested the alternative that would have rescued their version — **an ICC estimator is biased at
+small k, so an apparent rise could be convergence rather than heterogeneity** — and reported it
+against themselves.
+
+**Reproduced independently here**, simulating with the TRUE ICC held fixed and subsampling exactly
+as the observation did:
+
+| | k=3 | k=6 | drift |
+|---|---|---|---|
+| simulated, true ICC 0.15 | 0.171 | 0.165 | **−4%** |
+| simulated, true ICC 0.30 | 0.282 | 0.309 | **+10%** |
+| **observed** | | | `ticket_knife` **+2%**, `basket_bomb` **+13%**, `window_knife` **+24%**, `main` **+53%** |
+
+*(Their run gave −1% and +6%; mine −4% and +10%. Same order — the disagreement is simulation noise,
+and the conclusion is identical.)*
+
+**Bias operates at roughly ±10% and cannot explain +53%.** So `main`'s drift is real,
+`window_knife`'s is probably real, `basket_bomb`'s is inside the bias band, and `ticket_knife`'s is
+flat. *(Caveat carried from them, and it is the right one: this is one model — a Gaussian shift on
+the per-domain rate — so it bounds the scale bias operates at rather than proving what causes the
+drift.)*
+
+**Consequence, and it is worse than either of us first said:** `main` clears at **132.9 against
+132** — a **0.9-row margin** on the single bank whose ICC is still climbing at k=6. It is
+simultaneously the marginal row of the predicted table and the least settled cell in it.
+
+### The ladder, fixed now because it cannot be added afterwards
+
+When the k=38 arm lands, ICC will be computed **not only at k=38** but on random subsamples at
+**k=10, 20, 30** — free, since it is post-hoc analysis of the same 304 rows, and impossible to add
+once the question is answered.
+
+| outcome | reading |
+|---|---|
+| estimate **flat** across k=10…38 | the k=3→6 drift was a small-k artifact after all; `main` is safe and `k/ICC` is linear where it matters |
+| estimate **still climbing** at k=30 | `main` does not clear, and **nothing near the 132 boundary does** — every ceiling in §12.1 is optimistic and the domain requirement is larger than any figure quoted today |
+
+**This is the test both tables have rested on and neither of us had run.** It is pre-registered here,
+with the decision rule fixed, before the arm reports.
+
