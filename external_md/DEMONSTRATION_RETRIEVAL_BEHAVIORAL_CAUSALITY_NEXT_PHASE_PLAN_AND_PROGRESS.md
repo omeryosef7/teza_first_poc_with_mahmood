@@ -9972,6 +9972,45 @@ zero failed findings in the same window.** That asymmetry is the finding, and it
 
 **Sent to them immediately**, since they adopted the screen.
 
+
+### ✅ R-103 (07:15) — **C-31/C-33 corrected readings and advice; the PRE-REGISTRATIONS carried the same unresolvable criterion. Re-evaluated against a powered threshold — every decisive verdict survives, and I am recording the check rather than assuming it.**
+
+C-31 caught that "crosses 0.500" is below the resolvable floor on 48 binary rows, and C-33 caught the
+same defect in a screening rule I gave the peer. **Both fixed the output. Neither fixed the input** —
+**PR-33 and PR-34 wrote their conditions as *"crosses 0.500 and rises"* / *"never reaches 0.500"*, so
+the pre-registrations themselves specified a threshold the population cannot resolve.**
+
+**A pre-registration with an unresolvable criterion is a latent defect even when the answer clears it
+comfortably**, because it would have licensed a verdict on a marginal case. So I re-evaluated every
+verdict under the properly powered rule — **k ≥ 32/48 (0.667), exact binomial p < 0.05:**
+
+| pre-reg | bank | verdict as written | wins | p | under the powered rule |
+|---|---|---|---|---|---|
+| **PR-33** | `window_knife` | INSTALLATION | 39/48 | **1.5e-05** | **SURVIVES** |
+| **PR-34** | `basket_bomb` | INSTALLS *(decisive)* | 42/48 | **1.0e-07** | **SURVIVES** |
+| R-98 | `basket_gun` | non-installation | 19/48 | 0.193 | **SURVIVES** (not above chance) |
+| PR-34 | `ticket_knife` | *descriptive only* | 30/48 | 0.111 | n/a — pre-committed as carrying no claim |
+| PR-34 | `window_bomb` | *descriptive only* | 40/48 | 3.3e-06 | n/a — same |
+
+**Every verdict that carried a claim survives.** PR-33's and PR-34's decisive arms clear the powered
+threshold by four and six orders of magnitude respectively, and R-98's negative verdict is *"not
+distinguishable from chance"*, which is what the tested rule also says.
+
+**The two arms that fall in the unresolvable band were both pre-committed as descriptive** — PR-34
+stated *"`tkA` and `wbA` are descriptive… no claim rests on them alone"* before the data existed.
+**That pre-commitment is the only reason `ticket_knife`'s 30/48 never became a claim**, and it was
+luck of drafting rather than foresight about power: I wrote it to protect against over-reading
+side-arms, not because I had computed anything.
+
+**The correction for future pre-registrations, stated as a rule**: an installation-style criterion must
+name **a count and a test**, not a rate — *"k ≥ 32 of 48, exact binomial p < 0.05"* rather than
+*"crosses 0.500"* — and the count must be **recomputed for the population actually used**, since it is
+39/60 at n = 60 and 59/96 at n = 96. **The threshold is a property of the population, not of the
+question**, which is exactly what "0.500" hides.
+
+**No claim changes. What changes is that the criterion is now checkable**, and the check has been run
+rather than assumed.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
