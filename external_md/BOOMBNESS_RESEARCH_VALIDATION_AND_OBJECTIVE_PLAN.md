@@ -2475,3 +2475,76 @@ filter on field presence mixes scales. Reproduced here: **filtering by `p_concep
 
 My reader filters on `query_kind` explicitly, so it does not have the bug — **verified, not
 assumed**, because the failure is invisible: it returns a plausible number.
+
+---
+
+# §7 — THE PHASE 7 GATE TEST, POWERED: boombness DOES predict ASR — and why I am **not** calling the gate passed
+
+**Population:** 3 banks × 96 rows = **n=288**, `natural_doublespeak`, query occurrence, **cap 640
+(non-binding)**, pinned judge, **`is_self_fit: False` on all 288** (cross-fitted — no score read off
+a direction fitted on its own text).
+
+§6.3 reported ρ ≈ 0 at n=48 and called it underpowered. **With the join repaired (§6.3's slot3
+defect), the answer reverses.**
+
+| readout | pooled ρ | within n=1 / 2 / 4 / 8 | per-bank (main / ticket / gun) |
+|---|---|---|---|
+| **`d_surface\|L31\|proj`** | **+0.3340** | +0.338 +0.364 +0.244 +0.260 | +0.110 +0.495 +0.322 |
+| **`d_surface\|L8\|proj`** | **+0.3026** | +0.147 +0.238 +0.328 +0.321 | +0.248 +0.370 +0.317 |
+| `d_surface\|L10\|proj` | +0.2655 | +0.130 +0.261 +0.274 +0.271 | +0.140 +0.255 +0.356 |
+| `d_surface\|L12\|proj` | +0.2442 | +0.118 +0.245 +0.309 +0.254 | +0.144 +0.150 +0.341 |
+
+**Positive pooled, positive in every `n_examples` stratum, positive on every bank.** That is the
+brief's decisive Phase 6 question — *"is boombness still predictive within each stratum?"* —
+answered **yes**.
+
+## Every control the brief names
+
+| control | result | verdict |
+|---|---|---|
+| **not the norm** | `cos` (norm-free) ≈ `proj`: **+0.271 vs +0.303** at L8; **+0.303 vs +0.334** at L31, where `hnorm` is only −0.052 | ✅ direction, not magnitude |
+| **not length** | ρ(boombness, `n_chars`) = **−0.152** — *anti*-correlated | ✅ |
+| **not refusal** | refusal ρ(·,ASR) = −0.139, opposite sign | ✅ |
+| **not `n_examples`** | positive within all four strata | ✅ |
+| **not generic direction** | `d_context` **−0.124**, `d_inter` +0.043 | ✅ opposite / null |
+| **not topic** | within-domain **4/6 positive**, mean +0.222; `d_context` **0/6 positive** | ⚠ partial |
+| **dev vs heldout** | **+0.3115 / +0.2884** (L8), **+0.3782 / +0.2945** (L31) | ✅ holds |
+| vs `d_naive` | +0.231 against `d_surface` +0.271 (cos) | ⚠ the 2×2 buys little |
+
+## ⛔ Why this is EXPLORATORY and the gate stays CLOSED
+
+The brief is explicit: *"Do not choose one post-hoc. Pre-register candidate metrics on dev, then
+evaluate on heldout."* **I did not do that.** I computed pooled correlations across seven layers and
+two variants, *then* looked at dev/heldout. **The dev/heldout agreement is reassuring but it is not a
+pre-registered holdout test**, because the layers were selected after seeing the pooled result.
+
+Three further reasons to withhold:
+
+1. **It contradicts G2's retraction and I cannot yet say why.** G2 gave ρ = −0.052 on clean n=90.
+   This gives +0.30 on n=288. The populations differ in cap (192 vs 640), bank coverage (one vs
+   three), block coverage (no slot3 vs slot3), and judge pinning. **Until the difference is
+   localised, one of the two is measuring something other than what it says.**
+2. **`basket_gun` shows a strong correlation (+0.317) on a bank where §5.8 established the mapping
+   never installs.** If there is no mapping, boombness should have nothing to predict. Either the
+   non-installation account is wrong, or boombness predicts ASR *through a route that does not
+   require the mapping* — and that second possibility would undercut the objective's rationale even
+   while its correlation holds.
+3. **`d_naive` reaches +0.231 against `d_surface`'s +0.271.** The 2×2 identification buys ~0.04.
+   R-25's dose confound (`d_surface` ≈ PC1 ≈ `d_naive`) is visible here, and an objective that is
+   ~85 % reproducible by the naive contrast is a weaker object than "boombness".
+
+## Pre-registration for the confirmatory test
+
+Recorded **before** running it:
+
+* **Candidates (2, fixed now):** `d_surface|L8|cos` and `d_surface|L31|cos` — the `cos` variants, so
+  norm cannot contribute.
+* **Success:** ρ > 0.15 on a **heldout population not used above**, positive within every
+  `n_examples` stratum, and exceeding `d_naive|L·|cos` on the same rows.
+* **Comparators, mandatory:** `d_naive`, `d_context`, `hnorm`, refusal, `n_chars`.
+* **Resolve first:** the G2 discrepancy and the `basket_gun` puzzle. **A metric that predicts on a
+  bank where the phenomenon is absent needs an explanation before it becomes an objective.**
+
+**Phase 7 status: REOPENED, not passed.** This is the strongest positive the sprint has produced and
+the reason to treat it carefully is that it is strong — the previous sprint's G2 was retracted for
+exactly the failure mode this section is at risk of.
