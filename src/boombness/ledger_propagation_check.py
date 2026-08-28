@@ -115,6 +115,7 @@ TRACE_TOKENS = {
     "§12.11": ["3.16", "142.9"],
     "§12.2": ["silently overwrit", "38 unique"],
     "§12.12": ["0.2443", "pooled-vs-balanced"],
+    "§12.16": ["96/96", "pre-registered", "truncation"],
 }
 
 

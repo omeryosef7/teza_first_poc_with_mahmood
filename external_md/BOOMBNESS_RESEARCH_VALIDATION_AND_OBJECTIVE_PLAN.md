@@ -6418,13 +6418,19 @@ ten files would have silently normalised them into a different intervention. The
 `max_new == 192` and `model in (None, "")` on every source config before writing, so a mis-pointed
 run fails loudly rather than producing a Qwen rerun labelled Llama.
 
-| population | A arm | C arm | old truncation A / C |
-|---|---|---|---|
-| `main` | `k640_p2A` | `k640_p2C_band` | 0.562 / 0.552 |
-| `ticket_bomb` | `k640_lbA_ticket_bomb` | `k640_lbC_ticket_bomb` | 0.469 / **0.698** |
-| `window_knife` | `k640_lbA_window_knife` | `k640_lbC_window_knife` | 0.573 / 0.354 |
-| `button_knife` | `k640_lbA_button_knife` | `k640_lbC_button_knife` | queued next |
-| `basket_gun` | `k640_gnLA` | `k640_gnLC` | queued next |
+| population | A arm | C arm | old truncation A / C | C − A |
+|---|---|---|---|---|
+| `main` | `k640_p2A` | `k640_p2C_band` | 0.562 / 0.552 | −0.010 |
+| `ticket_bomb` | `k640_lbA_ticket_bomb` | `k640_lbC_ticket_bomb` | 0.698 / 0.917 | **+0.219** |
+| `window_knife` | `k640_lbA_window_knife` | `k640_lbC_window_knife` | 0.875 / **1.000** | **+0.125** |
+| `button_knife` | `k640_lbA_button_knife` | `k640_lbC_button_knife` | 0.927 / 0.990 | **+0.063** |
+| `basket_gun` | `k640_gnLA` | `k640_gnLC` | 0.896 / **1.000** | **+0.104** |
+
+⛔ **CORRECTION to this table's first version, made before any result was read.** It listed
+`ticket_bomb` as 0.469 / 0.698 and `window_knife` as 0.573 / 0.354. **Those are the QWEN runs**
+(`xbA_*`/`xbC_*`), quoted under a Llama heading — I matched on the population name and took the
+first row carrying it. The Llama runs (`lbA_*`/`lbC_*`) are far worse, and the corrected numbers are
+above. Only the `main` row was right.
 
 Jobs 796400-796405 hold the first three populations, A and C submitted together so no comparison can
 land half-complete. The remaining two go in as slots free, keeping the queue at the 6-job cap.
@@ -6470,3 +6476,40 @@ under `outputs/`, which is gitignored, and the generator was an inline heredoc �
 the claim and not the thing that backs it. Now tracked as `src/boombness/make_k640_argsfiles.py`,
 which regenerates all ten from the source `config.json` files and asserts `max_new == 192` and an
 unset `model` before writing.
+
+## §12.16 — PRE-REGISTERED before the cap-640 reruns are read: the knockout confound runs WITH the claim on 4 of 5 Llama populations
+
+**Written while jobs 796400-796405 are still loading weights. No result has been read.**
+
+**Two facts found while correcting §12.14's table, both worse than that section implied.**
+
+*First, the Llama knockout arms are almost entirely truncated.* At `max_new=192`:
+`lbC_window_knife` **96/96 = 1.000**, `gnLC` **96/96 = 1.000**, `lbC_button_knife` 0.990,
+`lbC_ticket_bomb` 0.917. An ASR computed where every generation hit the cap is not a weak
+measurement; it is not a measurement of the generation at all.
+
+*Second, the existing untruncated control does not cover Llama.* Entry (2)'s both-EOS restriction
+yields, per population: `L|ticket_bomb` **2**, `L|button_knife` **0**, `L|window_knife` **0**,
+`L|basket_gun` **0**, `L|main` 28. **Four of the five Llama populations contribute zero untruncated
+discordant rows.** So these reruns are not a robustness check on the Llama side — they are the first
+untruncated evidence that side has ever had.
+
+**THE PREDICTION, and the direction that makes it falsifiable.** The knockout arm (C) is MORE
+truncated than its own baseline (A) in **4 of 5** Llama populations, by +0.063 to +0.219. The claim
+is that C has the LOWER ASR. More truncation mechanically produces lower ASR, so **the confound runs
+in the same direction as the claim** — the opposite of the peer's `response_query_only` arm, where
+truncation runs against the claim and a cap release should therefore make the effect bigger.
+
+Consequences, committed to in advance:
+
+* If the knockout effect is truncation-driven, releasing the cap should **shrink or reverse** it on
+  `ticket_bomb`, `window_knife`, `button_knife` and `basket_gun`, and leave `main` roughly unchanged
+  — `main` is the one population whose differential is ≈0 (−0.010), so it is the internal control.
+* If the effect **survives at full size on the four confounded populations**, the confound is ruled
+  out by the strongest available test, because it had every opportunity to manufacture the result.
+* `main` moving a lot in either direction would be the surprise, and would mean something other than
+  truncation changed with the cap.
+
+**What this cannot settle either way.** Qwen is not being rerun, so entry (2) narrows to
+"untruncated on Llama" at best, and the Qwen half stays cap-dependent. And per the standing rule, no
+number from the old `max_new=192` runs is quoted anywhere without that label.
