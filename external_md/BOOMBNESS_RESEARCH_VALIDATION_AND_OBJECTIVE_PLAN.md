@@ -3653,3 +3653,103 @@ n and refuses attrited or non-finite populations. I am using it rather than re-d
 which is what I should have done instead of applying a remembered rate. Their tool gained the
 non-finite check from V-54's NaN finding, and V-54's finding is why it no longer trusts
 `option_mass_gate`; this correction is the return leg of that exchange.)*
+
+---
+
+## §5.19 — The OOM is SOLVED, it was never about memory pressure, and §5.18 now stands on a complete n=40 matched-batch population
+
+§5.18 rested on 18 of 40 rows because the baseline arm OOM'd, and §5.18 recorded that as unexplained.
+It is now explained, fixed, and the result is re-measured on the full population. **The conclusion
+does not change; the evidence for it does.**
+
+### Ruling out the plausible causes, including my own two
+
+A probe ran the exact 40 rows through a bare forward, **shortest-first and longest-first**, on the
+same hardware. Both orders: **40/40, zero OOM, memory flat** — `alloc 27.52 GiB`, `free 16.42–16.46
+GiB`, unchanged across every row.
+
+* **Not a length cap.** The longest row (S=325) succeeded as **row 0** of the descending probe.
+* **Not a leak.** The ascending probe reached S=325 last, after 39 prior forwards, allocation flat
+  to 0.01 GiB.
+* Also ruled out earlier: node identity (reproduced on n-802 *and* n-803), GPU contention
+  (**44.11 GiB free of 44.53** before load), fragmentation (`empty_cache()` + retry changed nothing),
+  and discarded logits (`logits_to_keep=1` changed nothing).
+
+**Both of my published hypotheses were wrong**, and the "262-token cliff" of §5.17 was a correlation
+inside a single failed run that I named as a mechanism. A peer session had propagated it into its own
+ledger on my authority; it has since corrected that. *(Their banks confound dose with length at
+**r=0.995**, so no bank of ours can separate the two — which is why the order-varying probe, not more
+bank data, was the design that settled it.)*
+
+### The actual cause is one line, and it is a batch size
+
+```python
+max_batch=(1 if _wants_knockout else 16)      # score_behavior.py
+```
+
+The knockout arm is pinned to **batch 1** by correction C-8 (knockout hooks are batch-1 only). The
+baseline is **not**, so it runs `string_option_readout` at **batch 16**, which does:
+
+```python
+lp = torch.log_softmax(out.logits.float(), dim=-1)     # on the FULL [B, width, V]
+```
+
+At B=16 and V=151936 that is **~3.2 GB in fp32** for the cast and another for the softmax, **growing
+linearly with context length**. That is simultaneously why the failure was arm-asymmetric (only the
+baseline batches), why it reproduced across nodes, why it tracked length *without length being the
+mechanism*, and why a batch-1 probe saw nothing.
+
+**Confirmed, not inferred:** added `--readout-max-batch` and reran the baseline at batch 1 →
+**40/40, zero failures, 0 NaN, gate PASS**. The 22 attrited rows come back.
+
+### ⚠ A second finding, which is the more important one: BATCHING IS NOT NUMERICALLY INERT
+
+I wrote in the new flag's help text that this "changes no number beyond float non-associativity."
+**That was wrong**, and the same 18 rows measured at batch 16 and batch 1 — differing in nothing
+else — show it:
+
+| statistic | value |
+|---|---|
+| bit-identical rows | **0/18** |
+| median \|Δ margin\| | **0.688** (max 1.250) |
+| verdict flips | **1** (margin +0.2503 → −0.7497) |
+
+The forward runs in **bf16** and only the `log_softmax` is fp32, so batched and unbatched matmuls
+take different reduction orders.
+
+**And it is batching, not run-to-run noise.** The control — same arm, same config, **both batch 1**,
+different runs — is **40/40 bit-identical, |Δ| exactly 0.000000, 30/40 reproducing exactly**. So
+runs are perfectly reproducible at fixed batch size, and **cross-batch comparisons are biased rather
+than merely noisy**, which is the worse of the two possibilities.
+
+**Read it as an at-risk count, not a rate.** 1/18 is *not* a 5.6% per-row flip rate: median
+\|margin\| is **10.000** against a ~0.7 perturbation, so **17 of 18 rows are untouchable** and
+**exactly one row sat inside the perturbation — and it flipped**. The transferable quantity is *how
+many rows crowd the boundary*, which scales with a bank's margin distribution, **not with n**.
+
+*(A related trap, avoided: absolute \|Δ\| makes the codeword look **35×** more perturbed than the
+concept. Normalised it reverses to **0.36×** — `logp_concept` sits at −0.006, i.e. p≈0.994, so its
+absolute deltas are tiny by construction. Neither statistic is decision-relevant; the **margin** is.)*
+
+### §5.18 re-measured: both arms, batch 1, identical code path, complete populations
+
+| | mapped-wins | median option mass | installation verdict (per-n `critical_k`) |
+|---|---|---|---|
+| `A_baseline` | **29/40** | 0.99985 | p=0.00643, crit=27 → **INSTALLED** |
+| `demo_processing_only` | **30/40** | 0.99993 | p=0.00222, crit=27 → **INSTALLED** |
+
+paired: discordant **6 up / 5 down**, exact two-sided **p = 1.0000**. Arm is **LIVE** — 0/40
+bit-identical, median \|Δ margin\| between arms **6.44** (max 19.25), roughly **ten times** the
+batching artifact.
+
+**§5.18's conclusion is unchanged and now rests on a complete, matched-batch, n=40 population:
+on Qwen3-14B the scoped knockout removes the attack (11/80 → 1/80) and leaves binding intact.**
+
+§5.18.1's withdrawal is now **superseded in the correct direction**: the baseline installation claim
+can be made again, because it is on a **complete** population and against a **recomputed per-n
+`critical_k`=27** rather than a carried-over rate. Limits (1) and (3) of §5.18 — the attrited
+short-half population and the effectively-single-dose composition — are **retired**: all 40 rows,
+20 per dose. **Limit (2) stands**: MDE is still ≥6 same-direction discordant pairs against 11
+discordant, so **p=1.0000 remains "no evidence of degradation", not "evidence of no degradation".**
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**

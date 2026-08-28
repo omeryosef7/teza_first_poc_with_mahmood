@@ -1142,6 +1142,25 @@ def main() -> int:
                          '"nondemo_matched_d2:attn_knockout:0-31:1.0" (run d1/d2/d3 as three '
                          'separate runs: the control is a BAND of draws, never one ticket)')
     ap.add_argument("--arm", default="base", help="label written on every row")
+    ap.add_argument("--readout-max-batch", type=int, default=0,
+                    help="0 (default) keeps the historical behaviour EXACTLY: 16 variants per "
+                         "forward, or 1 under a knockout (C-8, whose hooks are batch-1 only). Set "
+                         "1 to force batch 1 on BOTH arms. Why you would: string_option_readout "
+                         "calls .float() on the FULL [B, width, V] logits and then log_softmax on "
+                         "it, so at B=16 with V=151936 that is ~3.2 GB in fp32 per tensor and it "
+                         "grows LINEARLY with context length -- the OOM that attrited 22 of 40 "
+                         "baseline rows on Qwen3-14B (2026-08-28) while the knockout arm, already "
+                         "pinned to batch 1 by C-8, ran 40/40 on the same node. It also removes a "
+                         "real asymmetry: the two arms being COMPARED were running different batch "
+                         "sizes and therefore different right-padding. DO NOT assume this is "
+                         "numerically inert: measured on the SAME 18 rows at batch 16 vs batch "
+                         "1, ZERO rows were bit-identical, median |d logp_codeword| was 0.249 "
+                         "with max 1.240, and ONE row's mapped-wins verdict flipped. The "
+                         "forward is bf16 and only the log_softmax is fp32, so batched and "
+                         "unbatched matmuls take different reduction orders. (Not yet separated "
+                         "from plain run-to-run nondeterminism -- the control is two batch-1 "
+                         "runs of the same arm.) Batching is a grouping, not a statistic, but "
+                         "at bf16 the grouping is visible in the output.")
     ap.add_argument("--readout-ids", default="whole_answer",
                     choices=["primary", "full_word", "whole_answer"],
                     help="whole_answer (default from 2026-08-18) teacher-forces each option's WHOLE "
@@ -1720,14 +1739,16 @@ def main() -> int:
         # weaker `primary` readout to dodge the constraint. It costs <=16x more forwards on the probe
         # population, which is 96 rows.
             return sg.string_option_readout(lm, templated + args.answer_prefix, sem_variants,
-                                             max_batch=(1 if _wants_knockout else 16))
+                                             max_batch=(args.readout_max_batch
+                                                        or (1 if _wants_knockout else 16)))
         return next_token_readout(lm, templated, {"concept": c_ids, "codeword": w_ids},
                                   answer_prefix=args.answer_prefix)
 
     def _comprehension(templated):
         if args.readout_ids == "whole_answer":
             return sg.string_option_readout(lm, templated + args.answer_prefix, comp_variants,
-                                             max_batch=(1 if _wants_knockout else 16))
+                                             max_batch=(args.readout_max_batch
+                                                        or (1 if _wants_knockout else 16)))
         return next_token_readout(lm, templated, {w: comp_ids[w] for w in COMPREHENSION_WORDS},
                                   answer_prefix=args.answer_prefix)
     run.note(readout_ids=id_meta, comprehension_readout_ids=comp_meta,
