@@ -14126,3 +14126,45 @@ populations have never had untruncated evidence"* — it read a within-run both-
 statement about the corpus, and six cap-640 runs existed. C-63 cited it as independent arrival at the
 same hole. **That paragraph is withdrawn**; my own enumeration in C-65 (296 runs at `--max-new ≥ 512`,
 read from each `RUNMETA.argv`) stands on its own and never depended on theirs.
+
+### ⛔ C-69 (01:15) — **C3's exception clause names only `qpre`. `respq` separates too — by 8 rows in BOTH models at n=96, above the drift floor. C3's ledger row survives on its own cited evidence; its unrestricted restatements (W4, and the Section-2 answer) do not.**
+
+C-68's lesson was that I restored a claim without checking a column of the table I was already citing.
+Applying it to C3 rather than only checking its truncation exposure. All four scopes, ΔASR vs the
+session's own baseline, judge dirs joined by tag→full path:
+
+| session | n | margin (rows) | non-`qpre` pairs over 0.0417 | excess |
+|---|---|---|---|---|
+| `p4bj` Llama | 160 | 6.7 | `demoproc−respq` 0.0437 (7 rows) | **+0.3** |
+| `q4bj` Qwen3 | 160 | 6.7 | **none** | — |
+| `p1j` Llama | 96 | 4.0 | `demoproc−respq` 0.0833 (8r), `legacy−respq` 0.0521 (5r) | **+4.0**, +1.0 |
+| `q1j` Qwen3 | 96 | 4.0 | `demoproc−respq` 0.0833 (8r), `legacy−respq` 0.0937 (9r) | **+4.0**, +5.0 |
+
+**C3's ledger row is scoped `160/model`, and there it holds** — `q4bj` is clean and `p4bj`'s single
+exceedance is **0.3 rows**, inside the margin's own rounding. I am not calling that a violation.
+
+**But at n=96 `respq` separates from `demoproc` by 8 rows in both models** — identical magnitude,
+independently — and from `legacy` by 5 and 9. Against the measured net-drift floor (~3 rows on 96,
+from their four byte-identical re-judges) those are **2-3× the floor**, not noise.
+
+**So the exception clause is wrong as a general statement.** It names `qpre` as the sole outlier;
+`respq` is a second one, and unlike `qpre` it is invisible at n=160. Two places assert the general
+form without the `160/model` scope:
+
+* **W4** in the summary — *"the four scopes are statistically indistinguishable on ASR … except
+  marginal `qpre` pairs"*, offered as **"the control that makes W1 meaningful"**;
+* the **Section-2 answer** in the handoff — *"All four scopes remove indistinguishable amounts (C3)"*.
+
+Both are corrected to carry the scope and the second outlier. **W4's role makes this matter**: it is
+the control licensing *"same attack removed, different route"*, and if `respq` removes a different
+amount from `demoproc` at n=96 then "same attack removed" is not established across the board.
+
+**What I am NOT claiming.** That `respq` is genuinely weaker — the n=160 sessions say otherwise, and
+the n=96 and n=160 sessions differ in population as well as size, so this is not a power story with a
+tidy direction. **The defensible statement is that the four-scope equivalence is established at
+n=160 and contradicted at n=96, and C3 should say which.**
+
+**And an equivalence claim sits close to its own floor here.** The 0.0417 margin is **6.7 rows at
+n=160 and 4.0 at n=96**, against a ~3-row net-drift floor. At n=96 the margin is only ~1.3× the noise
+— so "indistinguishable" there is nearly **unfalsifiable rather than measured**, which is the
+opposite failure from the one above and worth stating beside it.
