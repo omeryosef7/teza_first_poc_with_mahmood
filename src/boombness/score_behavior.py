@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import collections
 import json
+import math
 import os
 import random
 import statistics
@@ -83,7 +84,18 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]],
     # since the scorer aggregates by logsumexp, more variants can only raise a score.
     ids = lm.tokenizer(templated + answer_prefix, add_special_tokens=False)["input_ids"]
     t = torch.tensor([ids], device=lm.model.device)
-    logits = lm.model(input_ids=t, use_cache=False).logits[0, -1, :].float().cpu()
+    # MEMORY, NOT MATHS. Only the FINAL position is ever read, but a plain forward returns logits
+    # for every position: [1, S, V] with V=151936 on Qwen3 is ~0.3 MB per token, so a long-prefix
+    # prompt spends gigabytes materialising rows this function immediately discards. `generate`
+    # already keeps just the last row, which is why the cap-640 generation arms ran clean on the
+    # same bank where this readout OOM'd 22 of 40 rows (2026-08-28). `logits_to_keep=1` returns
+    # [1, 1, V], so `[0, -1, :]` selects the SAME vector -- this is byte-identical, not an
+    # approximation. The fallback keeps older//exotic model classes that lack the kwarg working.
+    try:
+        _out = lm.model(input_ids=t, use_cache=False, logits_to_keep=1)
+    except TypeError:
+        _out = lm.model(input_ids=t, use_cache=False)
+    logits = _out.logits[0, -1, :].float().cpu()
     lp = torch.log_softmax(logits, dim=-1)
     out = {}
     all_ids = set()
@@ -2017,7 +2029,25 @@ def main() -> int:
     for kind, vals in sorted(option_mass.items()):
         if not vals:
             continue
-        v = sorted(vals)
+        # NaN GUARD (2026-08-28). `sorted()` on a list containing NaN does NOT raise and does NOT
+        # sort: every NaN comparison is False, so the result is an arbitrary interleaving and both
+        # `v[n//2]` and `statistics.median(v)` can return a FINITE value drawn from a list that is
+        # mostly NaN. Measured: a Qwen3-14B run whose readout was 36/40 NaN reported `gate: PASS`.
+        # A NaN option mass is not a small mass, it is an ABSENT measurement -- the readout did not
+        # produce a number -- so it can never be averaged away. Count them, and refuse the readout
+        # if any are present rather than letting a finite-looking median certify corruption.
+        n_nan = sum(1 for m in vals if m is None or (isinstance(m, float) and math.isnan(m)))
+        v = sorted(m for m in vals if m is not None and not (isinstance(m, float) and math.isnan(m)))
+        if n_nan or not v:
+            mass_summary[kind] = {"n": len(vals), "n_nan": n_nan, "n_numeric": len(v),
+                                  "median": None, "median_true": None, "reportable": False,
+                                  "median_note": (f"{n_nan}/{len(vals)} option_mass values are "
+                                                  "NaN/None: the readout did not produce a number "
+                                                  "on those rows. NOT reportable at any threshold.")}
+            tail_fail.append(f"{kind}: {n_nan}/{len(vals)} option_mass values are NaN -- "
+                             "corrupted readout, not a low mass")
+            print(f"[score] option mass {kind}: {n_nan}/{len(vals)} NaN -- REFUSED")
+            continue
         # `med` is the UPPER-MIDDLE element, not the median: for even n the median averages the two
         # middles. Measured 2026-08-28 on p5A_main, semantic_one_word, n=96 -- v[48] = 0.042891
         # against a true median of 0.040421. Swept over the corpus: 28 runs carry an option_mass

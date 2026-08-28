@@ -3407,3 +3407,103 @@ never measured.
 **Phase 7 remains CLOSED and Phase 8 must not be built.** This section makes the predictive claim
 *publishable with its scope attached* — three banks, `core2x2`+slot3, cap 640 — rather than
 apparently contradicting a retracted result.
+
+---
+
+## §5.17 — Extending §5.6 to a second model surfaced TWO measurement defects before it produced a result
+
+Next-step #2 was to test whether `demo_processing_only` preserves binding on a **second model**.
+§5.6's ASR half already exists on Qwen3-14B (`A_baseline` 11/80 → `demo_processing_only` 1/80, cap
+640, bank `longpreQ14B`); only the **binding** half was Llama-only. The probe is forward-only
+(`--no-generate`), needs no judge, and the matched population is the same bank the ASR arms used.
+
+It has not produced a number yet. It produced two defects, one of them mine.
+
+### Defect 1 — a run can report `status: ok` while silently dropping a NON-RANDOM half of its population
+
+`q5A_lpQ14B` (160 rows: 3 query kinds × 2 doses × 2 blocks) wrote **68 rows and reported
+`status: ok`**. The FailureLedger recorded the truth — `n_attempted 160, n_succeeded 68, n_failed
+92`, all `OutOfMemoryError` — but `DONE.json` says `ok` and `rows_written: 68`, and nothing in the
+headline says half the population is missing.
+
+The missingness is **length-correlated, which is what makes it dangerous**: `n_examples=8` prompts
+are the longest and are the ones that OOM'd. Surviving rows skew short.
+
+| | n_ex=4 | n_ex=8 |
+|---|---|---|
+| rows written | 62 | 6 |
+
+A binding estimate computed from that is an estimate on short prompts wearing the label of the whole
+bank. **No percentage would have revealed it; only the row counts did.**
+
+**Corpus audit — the defect has NOT contaminated the sprint.** I swept all **538** completed
+`score_behavior` runs for `n_failed > 0`: **11 have any failure, and 8 of those are `n_succeeded=0`**
+(dead runs — any analysis of them shows n=0, which is visible, not silent). The only genuinely
+*partial* runs are one `smoke_*` and the two I just created. **Every published sprint result rests
+on a fully-populated run.** This is a clean negative check, and it is the reason the defect is a
+process finding rather than a retraction.
+
+### Defect 2 — the option-mass gate advertised `PASS` over a readout that was 90% NaN
+
+Trying to fix the OOM by sharding the model across **2 GPUs** (`--gpus=2`; `device_map="auto"` was
+already the default, so this needed no code change) removed the OOM — 40/40 rows, 0 failures — and
+**corrupted the readout**: `option_mass` was **NaN on 36 of 40 rows** in the baseline and **40/40**
+in the knockout arm. The 1-GPU run of the identical spec has **0 NaN**. Multi-GPU sharding of
+Qwen3-14B under eager attention produces NaN logits. **`--gpus=2` is not a usable workaround here,
+and the two 2-GPU runs are discarded.**
+
+That was my error. The defect it exposed is not:
+
+```
+gate: PASS                      <-- the headline
+reportable: False               <-- the SAME run's own per-readout flag
+median_true: nan
+```
+
+**The headline and the flag disagreed, and the headline was wrong.** The per-readout flag was
+computed as `median_true >= 0.05`, and `NaN >= 0.05` is False, so `reportable` was correctly False.
+But the headline appended to `tail_fail` only when `med < min_option_mass`, and **`NaN < 0.05` is
+also False** — so nothing was appended and the run advertised `option_mass_gate: PASS`. A NaN
+escapes *both* directions of a threshold comparison; one direction was the refusal and the other was
+the alarm, and it slipped past both.
+
+*(A consumer calling `asr_protocol.readout_reportability()` — which surfaces the producer's
+per-readout flag rather than the headline — would have caught this. That helper existed. The
+headline is what a human reads.)*
+
+**Fixed** in `score_behavior.py`: NaN/None values are counted and excluded before sorting, and a
+readout with **any** absent measurement is refused outright with the count reported. A NaN option
+mass is an **absent measurement, not a small one**, so no threshold can make it reportable.
+
+There is a second, quieter trap in the old code: `sorted()` on a list containing NaN neither raises
+nor sorts — every NaN comparison is False, so the result is an arbitrary interleaving whose median
+depends on **input order**. On this run's row order it happened to yield NaN; on an ordering with
+the NaNs grouped differently it yields a *finite* value drawn from a mostly-NaN list. The guard
+therefore filters rather than relying on how the corruption happens to be arranged.
+
+**Guard mutation-tested** (`tests/test_option_mass_nan_guard.py`, 11 tests): dropping the NaN filter
+kills 8 tests, weakening it to `if not v:` kills 7. Full suite **1240 passed / 7 skipped**.
+
+### Defect 3 (the actual cause) — the readout materialised logits it immediately discarded
+
+The OOM had a real cause, and it is not model size. `next_token_readout` reads **only the final
+position** but a plain forward returns logits for **every** position: `[1, S, 151936]` on Qwen3 is
+~0.3 MB per token, so a long-prefix prompt spends gigabytes on rows the function throws away. This
+is exactly why the cap-640 **generation** arms ran clean (80/80, 0 failures) on the *same bank* where
+this readout OOM'd 22 of 40 — `generate` keeps only the last row.
+
+Passing `logits_to_keep=1` returns `[1, 1, V]`, so `[0, -1, :]` selects **the same vector**. This is
+byte-identical, not an approximation — a memory fix, not a numerical one.
+
+### Status of the §5.6 extension: NOT YET ANSWERED, and not blocked
+
+The one uncorrupted Qwen3 measurement is the 1-GPU baseline, and it is **encouraging but partial**
+(18 of 40 rows, OOM-biased toward short prompts, so it is not quotable as an estimate):
+
+* mapped-wins **14/18 = 0.778** — clears §5.16's ≥0.667 installation screen
+* median option mass **0.9998** — not a tail decision at all, unlike the Llama banks
+
+So the probe **does** work on Qwen3 and the bank **does** install the mapping. The knockout arm has
+no uncorrupted measurement yet. Both arms are relaunched single-GPU with the `logits_to_keep` fix.
+
+**Nothing here touches the Phase 7 gate, which remains CLOSED. Phase 8 must not be built.**
