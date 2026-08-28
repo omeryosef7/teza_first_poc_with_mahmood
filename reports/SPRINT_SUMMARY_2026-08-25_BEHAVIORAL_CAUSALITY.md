@@ -259,6 +259,57 @@ dropped as no longer justified by current evidence.
 | **C-36** | **I modelled readout noise as a flip RATE times n, when flips are governed by how many rows crowd the decision boundary.** A concurrent session measured 1 verdict flip in 18 rows under a batch-16 vs batch-1 comparison; I read that as a 5.6% per-row rate and applied it to n=48. Their margins are **median 10.0 nats against a ~0.7 perturbation**, so 17 of 18 rows were untouchable and **the single at-risk row flipped** — a realised rate of **1/1 against at-risk rows**. Worse, R-110 had already computed the at-risk counts and then reached for a rate anyway | **Replaced with an exact adversarial bound** — flip every row with `\|margin\| < 1.250` against the verdict, counting only wins, since at-risk losses can only help: `window_knife` **33/48**, `basket_bomb` **38/48**, `window_bomb` **34/48**, all still **INSTALLED** at crit=32; PR-34's contrast goes **42/48 vs 19/48 → 38/48 vs 24/48, Fisher p=0.00515, SURVIVES**. **Every claim-bearing result survives the absolute worst case**, independent of their rate or of which branch their control lands on. `ticket_knife` is **not robust** (30/48 → 34/48 would read INSTALLED) — a **third** independent argument for the conclusion C-31 and C-32 already reached, and it carries no claim |
 | **C-37** | **I applied a perturbation window measured on Qwen3 to Llama banks.** A concurrent session's `W = max \|Δ margin\| = 1.250` came from Qwen3-14B/`longpreQ14B`; measured on my own model and bank (job 789939, `p5A_ticket_bomb` b16 vs `c5A_tb_b1` b1, same 48 ids) it is **0.3202 median 0.1151 — 3.9× smaller**. A perturbation scale is a property of a **model-and-bank**, and they had told me one tick earlier that the scale must be **named**; I recorded that amendment and kept using the borrowed number in the same analysis — **C-33's carry-over shape, third instance** | **R-111's "C5 does not survive its own worst case" is WITHDRAWN — it was an artifact of the borrowed window.** At the measured scale the `ticket_bomb` collapse half goes from *failing* at p=0.077 to **surviving at p=8.25e-08**, and the `main` preserved half **cannot degrade in-window** (worst case 44→47). **C-36 is unaffected and was conservative**: too-large a W overstates at-risk sets, which is conservative for an INSTALLED verdict and anti-conservative for a null, so its published at-risk counts are **upper bounds** (10/5/12/6 → 4/1/2/0) and every verdict holds either way. A **direction bug** in my recomputation (pushing the collapse half the favourable way) was caught before reporting |
 
+
+## Reading a forced-choice count: the two numbers that must travel with it
+
+Every forced-choice count in this report is published with **two further numbers**, because a bare
+fraction hides its own fragility. This convention was arrived at jointly with the concurrent session
+after both of us made the mistakes it prevents (C-33, C-36, C-37).
+
+1. **median |margin|**, where `margin = logp_concept − logp_codeword` — the quantity the
+   `mapped_win` predicate thresholds at zero. It is intrinsic to the run and always reportable.
+2. **the count of rows with |margin| below a NAMED, MEASURED perturbation scale W** — never a scale
+   borrowed from another model or bank. Where no W has been measured for that bank, the count is
+   reported as **unmeasured**, not estimated.
+
+| arm | wins | median \|margin\| | rows within the named scale |
+|---|---|---|---|
+| `window_knife` | 39/48 | 3.671 | — *W unmeasured for this bank* |
+| `basket_bomb` | 42/48 | 5.674 | — *W unmeasured* |
+| `window_bomb` | 40/48 | 3.604 | — *W unmeasured* |
+| `ticket_knife` | 30/48 | 3.051 | — *W unmeasured* |
+| `basket_gun` | 19/48 | 3.965 | — *W unmeasured* |
+| C5 `ticket_bomb` baseline | 45/48 | 4.018 | **1** (W=0.3202, measured on `ticket_bomb`/Llama) |
+| C5 `ticket_bomb` `demo_processing_only` | 45/48 | 2.251 | **4** (same W) |
+| C5 `ticket_bomb` unscoped | 15/48 | **1.075** | **9** (same W) |
+| C5 `main` baseline | 42/48 | 3.423 | **2** (W=0.4616, measured on `main`/Llama) |
+| C5 `main` `demo_processing_only` | 48/48 | 2.659 | **1** (same W) |
+
+**Measured perturbation scales** (max |Δ margin| under a batch-path change): `ticket_bomb`/Llama
+**0.3202**, `main`/Llama **0.4616**, `longpreQ14B`/Qwen3-14B **1.2499**. The 3.9× spread between the
+first and last is the reason the scale is never carried across (C-37).
+
+Why this matters concretely: **18 rows at median margin ~10 nats and 48 rows at median margin 1.075
+are the same nominal design with an order of magnitude different exposure**, and nothing in `14/18`
+or `15/48` reveals that.
+
+### ⚠ A perturbation bound is one-sided, and it favours the headline
+
+**An over-large W is conservative for a claim carrying an effect and anti-conservative for a null.**
+Inflating the at-risk set can only make a positive result look *more* fragile than it is, and can only
+make a null look *less* robust than it is. So:
+
+* results that **carry effects** — the ones a reader is most likely to re-derive — are where the error
+  is **harmless**;
+* results that are **nulls** — the ones least likely to be independently checked — are the only place
+  it does damage.
+
+**A robustness check that is silently one-sided in favour of the headline is worse than none.** Ours
+was, in both this ledger and the concurrent session's, for two ticks, *while the two sessions were
+auditing each other* (C-37). The failure signature is the same as the direction bug caught in R-114:
+**the error's tell is that the result improves**, which is precisely when it is not re-checked. Any
+deliverable using a perturbation bound should state which side its error falls on.
+
 ## 8. Final claims
 
 See `RESEARCH_HANDOFF.md` §4 for the full table with n, independence unit, test and artifact.

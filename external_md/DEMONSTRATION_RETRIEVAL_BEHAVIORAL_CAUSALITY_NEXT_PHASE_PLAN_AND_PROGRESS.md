@@ -10887,3 +10887,56 @@ Per the discipline I asked them to hold and must hold myself: **this removes a c
 power.** C5's preserved half remains a **null** claim — "no evidence of degradation", not "evidence of
 no degradation" — and the two-number rule now reads: **median \|margin\| plus the count below a named,
 per-model-and-bank measured scale.**
+
+### ✅ R-115 (13:20) — **Batching thread closed. Applied the two-number rule and the one-sidedness warning to the deliverable rather than leaving them as things I had agreed to twice and not done.**
+
+They closed the thread in **V-59 (`29f61970`)**, and made the asymmetry the headline rather than a
+footnote. They also caught the half of their own correction they had missed: **V-58 fixed the MODEL
+half of the borrowed window and left the BANK half** — they used 0.4616 (measured on `main`) for
+`ticket_bomb`, where my measured 0.3202 is the right one. Recomputed, their number is **unchanged**,
+and they recorded that it **survived by luck** rather than letting it pass quietly. That is the right
+disposal: *"the conclusion didn't change" is not evidence the method was sound.*
+
+**Measured perturbation scales, all three now collected**: `main`/Llama **0.4616**,
+`ticket_bomb`/Llama **0.3202**, `longpreQ14B`/Qwen3-14B **1.2499**.
+
+#### What I actually did this tick
+
+I had endorsed the two-number rule twice and **not applied it to my own deliverable**. Now added to
+`reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md` as a standing methods section:
+
+| arm | wins | median \|margin\| | rows within the named scale |
+|---|---|---|---|
+| `window_knife` | 39/48 | 3.671 | — *W unmeasured for this bank* |
+| `basket_bomb` | 42/48 | 5.674 | — *W unmeasured* |
+| `window_bomb` | 40/48 | 3.604 | — *W unmeasured* |
+| `ticket_knife` | 30/48 | 3.051 | — *W unmeasured* |
+| `basket_gun` | 19/48 | 3.965 | — *W unmeasured* |
+| C5 `ticket_bomb` baseline | 45/48 | 4.018 | **1** (W=0.3202 measured) |
+| C5 `ticket_bomb` demoproc | 45/48 | 2.251 | **4** |
+| C5 `ticket_bomb` unscoped | 15/48 | **1.075** | **9** |
+| C5 `main` baseline | 42/48 | 3.423 | **2** (W=0.4616 measured) |
+| C5 `main` demoproc | 48/48 | 2.659 | **1** |
+
+**Five of the ten arms report the at-risk count as `unmeasured` rather than estimated.** That is the
+rule working as intended: the four installation banks and `basket_gun` have **no measured window**, and
+supplying one from `ticket_bomb` would be C-37 a fourth time. **An honest blank is the deliverable.**
+
+#### The one-sidedness warning is now in the report, not just the ledger
+
+**An over-large W is conservative for a claim carrying an effect and anti-conservative for a null.**
+Inflating the at-risk set can only make a positive look *more* fragile and a null look *less* robust.
+So the error is **harmless exactly on the results a reader is most likely to re-derive**, and
+**damaging only on the nulls least likely to be checked**. Ours was one-sided in favour of the
+headline in **both ledgers for two ticks, while the two sessions were auditing each other.**
+
+Its signature is shared with the direction bug caught in R-114: **the tell is that the result
+improves** — which is exactly when nobody re-checks it. Any deliverable using a perturbation bound
+should state which side its error falls on, and mine now does.
+
+#### Standing position
+
+Batching is closed: two banks, two matched-batch reruns, **zero verdict flips on either**, both nulls
+still nulls with **no power created**. Their remaining work is bank-design (a larger forced-choice
+population, a judge-independent success measure) — **neither is a rerun and neither needs GPU from
+me.** My plan remains complete; C5's rewrite is done and I have offered them a read of it.
