@@ -4637,3 +4637,83 @@ Adding the seventh point moved ρ from −0.696 **away** from significance, exac
 §10.4's verdict is unchanged: a hypothesis, needing ~13 banks, and not a finding.
 
 **Phase 7 gate remains CLOSED. Phase 8 must not be built.**
+
+---
+
+## §10.6 — Rebuilt on REPORTABLE readouts: the codeword result strengthens, and the load-bearing row is now sound on BOTH readouts
+
+§10.5 found three of seven `semantic_one_word` readouts below the option-mass floor. A peer rebuilt
+the table on **`semantic_forced_choice`**, where all seven are comfortably reportable. **Every number
+reproduces exactly on my copy**, including the correlation and its null simulation.
+
+| bank | cw \| cc | wins | option mass | ICC (dose-centred) |
+|---|---|---|---|---|
+| `main` | carrot \| bomb | 42/48 | 0.5414 | 0.286 |
+| `ticket_bomb` | ticket \| bomb | 45/48 | 0.5534 | 0.114 |
+| `basket_gun` | basket \| gun | 19/48 | 0.3869 | **0.755** |
+| `basket_bomb` | basket \| bomb | 42/48 | 0.6817 | 0.160 |
+| `ticket_knife` | ticket \| knife | 30/48 | **0.7685** | 0.320 |
+| `window_bomb` | window \| bomb | 40/48 | 0.5156 | 0.158 |
+| `window_knife` | window \| knife | 39/48 | **0.7783** | 0.400 |
+
+### §10.4's codeword result STRENGTHENS, and loses its degenerate figures
+
+Three-for-three within-codeword, **with no zeros on either side**:
+
+| codeword | bomb | other concept | ratio |
+|---|---|---|---|
+| `basket` | 0.160 | gun **0.755** | 4.7× |
+| `ticket` | 0.114 | knife **0.320** | 2.8× |
+| `window` | 0.158 | knife **0.400** | 2.5× |
+
+On `one_word` three of those `bomb` values were exactly **0.000** — a degenerate figure — and two of
+the three contrasts were non-reportable on both sides. **The finding is the same and the evidence is
+now much better**, and §10.5's "materially weaker third contrast" is superseded: on reportable data
+`window` (2.5×) sits alongside `ticket` (2.8×).
+
+### ⚠ But the whole reportable table is SINGLE-slot, and that is a different estimand
+
+`core2x2_slot3` carries **no forced-choice rows** — verified: forced choice is 48 rows from
+`core2x2` alone, while `one_word` is 96 across both blocks. **So every figure above is a
+same-demonstration correlation**, which §10.3 measured as *over-stating* the multi-slot quantity
+(`main`: single-slot 0.314 → multi-slot 0.218, a 1.4× gap).
+
+The design sizing needs the **multi-slot** ICC, because the bank under design has multiple slots.
+So these numbers **over-size**, which is conservative rather than dangerous — but they are not the
+quantity, and `one_word` remains the only readout that can measure it.
+
+### The load-bearing row is now sound on BOTH readouts, which is better than either of us had
+
+`ticket_knife` is the ideal case: **reportable on both**, and both say unreachable.
+
+| readout | mass | reportable | ICC | domains for n_eff=132 |
+|---|---|---|---|---|
+| `one_word`, **multi-slot** (the design estimand) | 0.077 | yes | 0.190 | 26 |
+| `forced_choice`, single-slot (conservative) | 0.7685 | yes | 0.320 | 43 |
+
+**26 and 43, against 10 available.** Adopting the peer's recommendation with the estimand named:
+the blocker row now cites the reportable forced-choice figure as the conservative bound and the
+multi-slot figure as the design quantity, and **§10.3.1's verdict holds on both** — which removes
+§10.5's "three of seven are non-reportable" caveat from the row that carries the conclusion.
+
+### The correlation: much stronger, verified not to be an artifact, and still not claimed
+
+ρ = **−0.847**, exact permutation **p = 0.0246** (n=7, all 5040 permutations) — against `one_word`'s
+−0.559, p=0.206.
+
+The peer tested whether it is mechanical before reporting it, which is the right order. ICC and win
+rate come from the same binary outcomes and ICC attenuates near the ceiling, so a null simulation
+with **zero** true clustering was run across the observed win rates. **Reproduced here:** mean null
+ICC runs 0.0316 → 0.0224 from p=0.396 to p=0.938, a range of **0.0108** against an observed spread
+of **0.641** — the real spread is **59×** the artifact. Real attenuation, far too small to explain
+it.
+
+**Neither session is claiming it, and I agree with that.** n=7, one test, and a **post-hoc** readout
+choice — the motivation arrived before the result was read, so it is not selected for its answer,
+but it is not what was pre-registered. My own standard is ~13 banks for 80% power at ρ≈0.7, and
+**p=0.0246 on a secondary analysis is a reason to keep measuring, not to start sizing from win
+rate**.
+
+**The practical rule is unchanged: measure ICC on the bank you are about to size.**
+
+**Phase 7 gate remains CLOSED. Phase 8 must not be built.**
