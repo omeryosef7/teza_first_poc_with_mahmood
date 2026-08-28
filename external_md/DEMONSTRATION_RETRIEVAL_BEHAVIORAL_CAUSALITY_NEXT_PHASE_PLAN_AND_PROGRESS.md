@@ -13717,3 +13717,60 @@ judging the arm and its comparator in separate windows would put the drift at ha
 is the defect R-82 found in pool A's `d2`/`d3` and it is cheap to not repeat.
 
 `q6r640_L5` submitted as **797239**; the Qwen3 contrast still waits for both its arms.
+
+### ⛔ C-66 (23:55) — **"Truncation depresses ASR" is FALSE in this repo, and it is the premise under C-60, C-61 and their V-107. Measured across 76 judged runs: P(ASR | truncated) 0.0981 vs P(ASR | finished) 0.0925. C-61's withdrawal of C13 rested on a mechanism C13's own rows contradict.**
+
+Both of us have been reasoning from *more truncation → lower ASR*: their V-107 pre-registration
+(*"more truncation mechanically produces lower ASR, so my confound runs WITH the claim"*), my C-60
+(`demoproc` "confounded in the direction of the claim") and my C-61 (*"a completion cut off
+mid-answer scores low on StrongREJECT"*). **Nobody measured it.**
+
+**Pooled over 76 judged runs with ≥15 rows in both truncation cells — 10,568 joined rows:**
+
+| | truncated (n=5889) | finished (n=4679) |
+|---|---|---|
+| **P(ASR)** | **0.0981** | **0.0925** |
+
+**Δ = +0.0056**, and the per-run sign is **57 positive to 17 negative**. Truncation does not depress
+ASR; if anything it very slightly tracks with it. The reason is the same one C-64 found for refusal,
+running the other way: **a jailbroken answer is long and a refusal is short**, so hitting the cap
+selects *against* refusals rather than against harmful content, and StrongREJECT scores a partial
+harmful answer as harmful.
+
+**Within C13's own arms it is not even close:**
+
+| arm | n trunc | n fin | P(ASR\|trunc) | P(ASR\|fin) |
+|---|---|---|---|---|
+| `d10` baseline | 93 | 67 | **0.204** | 0.119 |
+| `pre12` | 146 | 14 | **0.041** | 0.000 |
+| `pre10` | 147 | 13 | **0.048** | 0.000 |
+| `q_d10` baseline | 42 | 118 | **0.167** | 0.119 |
+| `q_pre10` | 70 | 90 | **0.214** | 0.089 |
+
+Every arm positive. **And the decisive part: C13's drop is present WITHIN each stratum** — `pre12`
+scores 0.041 against baseline 0.204 among truncated rows, and 0.000 against 0.119 among finished
+ones. The effect is not a composition shift between strata, which is what C-61 asserted it could not
+be distinguished from.
+
+**So C-61 was wrong in its mechanism and over-strong in its verdict.** *"Neutral context makes the
+model ramble until it runs out of budget, and a cut-off completion scores low"* requires the second
+half, and the second half is false. **C13's ASR leg moves from WITHDRAWN to SUSPENDED**, with the
+mechanism retracted.
+
+**Suspended and not reinstated, for two reasons I am not going to argue past.** Conditioning on
+truncation is conditioning on a **post-treatment collider** — my own PR-4 — so within-stratum
+agreement is suggestive, not unbiased. And `pre12`/`pre10` have **14 and 13 finished rows**: the
+cleaner-looking cell is the thin one. The 640-cap rerun remains the test, and C13 stays out of the
+deliverable until it runs.
+
+**This also softens C-60's demoproc verdict, which I should say plainly rather than leave implied.**
+`demoproc` being "confounded in the direction of the claim" was the same inference from the same
+unmeasured premise. R-141 had already shown its refusal term T1 is *negative*; now its ASR premise is
+unsupported too. The 9-of-9 truncation differential in C-62 is real as a **measurement**; what it is
+**not** is evidence of inflation.
+
+**The pattern across C-64 and this entry.** Both of us derived a confound's direction from what
+truncation *ought* to do to a score, and both times the answer was set by something more mundane:
+**refusals are short and harmful answers are long, so `stop_reason` is mostly a length proxy for
+which kind of answer it was.** Their ceiling correction, C-64's refusal coupling and this entry are
+three faces of that one fact.
