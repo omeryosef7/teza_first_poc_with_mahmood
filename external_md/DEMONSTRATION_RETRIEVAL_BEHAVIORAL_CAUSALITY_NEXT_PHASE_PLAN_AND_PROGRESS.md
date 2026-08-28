@@ -12534,3 +12534,54 @@ my tree before relying on it: exit 0, no friction.** The change is right and it 
 R-135 recorded; **I would have been wrong to object to it on symmetry grounds**, since it touches a
 file neither of us edits and adds a fast check, where my restraint concerned a file they were actively
 extending.
+
+---
+
+## PHASE 19 — BANK DESIGN: NEW DOMAINS (user-authorised 2026-08-28 18:30)
+
+### 🔒 PR-35 (18:55, written and committed BEFORE any domain prose is authored) — **acceptance criteria for new domains**
+
+The user has authorised authoring new domains. **The criteria are fixed here, before the prose exists**,
+because D-10 — the pre-registration governing the last domain expansion — says exactly why:
+
+> *"these four are accepted or rejected ON THEIR AUDIT — token alignment, article agreement, family
+> completeness, incidental-collision freedom — and NEVER on their effect size. Choosing domains by how
+> much they help is how a floor becomes a search."*
+
+**PR-35 adopts D-10 unchanged and adds what this sprint has since established.**
+
+#### Target and why it is a range
+
+`k/ICC` is the ceiling, and **ICC is bank-dependent — measured 0.000 to 0.755 across seven banks**, so
+the requirement **cannot be known before the bank exists**. Against a target of **132 effective rows**:
+~**21 domains** at the optimistic ICC (0.16), ~**53** at the pessimistic (0.40). **Authoring 10 new
+domains takes k from 10 to 20**, which reaches the optimistic target and is the largest increment that
+a pilot can then adjudicate. **It is deliberately not sized to the pessimistic end**: authoring 43
+domains on an unmeasured ICC would be sizing from a point estimate of a quantity this sprint has shown
+varies five-fold.
+
+#### Acceptance criteria — every one checkable offline, before generation
+
+1. **Field completeness** — exactly the five keys `setting`, `harm`, `benign`, `filler`, `remap`.
+2. **Article agreement** — `setting` reads grammatically after "in"/"at"; a/an correct throughout.
+3. **Incidental-collision freedom** — the prose contains **none** of the codewords or concepts in use:
+   `carrot`, `ticket`, `basket`, `window`, `bomb`, `knife`, `gun`, in any inflection. *A domain that
+   mentions a spray **gun** or a **window** frame silently contaminates the surface factor.*
+4. **Register match** — flat log / incident-log sentences, one setting with **two named sub-locations**,
+   matching the existing ten so the valence contrast is carried by valence and not by style.
+5. **Two-sided naturalness** — the setting must make **both** a benign inventory log **and** a harm
+   incident log natural. *A setting where harm sentences are strained reintroduces the F1 confound the
+   whole bank exists to remove.*
+6. **No semantic proximity to a codeword's referent** — no produce settings (near `carrot`), no
+   ticketing, no cutlery or weapons contexts.
+
+#### What is NOT decided here
+
+**Nothing about doses, slots or readout.** Those are generation-time choices with irreversible
+consequences already recorded — **nested vs disjoint dose draws** (R-118/C-46), **forced choice exists
+only in `core2x2`** so its cell is `domain × split` (their V-81), and **both arms must be able to
+complete** or the bank has no measurable window (C-38). **They are pre-registered separately, once the
+domains pass their audit**, because a domain list that fails audit makes them moot.
+
+**Falsifier**: a domain failing **any** of criteria 1-6 is dropped and **not repaired to fit** — a
+repaired domain is chosen by what it needs to be rather than by what it is.
