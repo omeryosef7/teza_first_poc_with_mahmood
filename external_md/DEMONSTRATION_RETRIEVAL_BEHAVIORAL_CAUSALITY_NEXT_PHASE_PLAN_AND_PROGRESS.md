@@ -13549,3 +13549,62 @@ only keys that differ are `--max-new` and `--tag`, on all four** — bank, block
 Six jobs total across both sessions, which is the standing cap. **The Qwen3 contrast is not read
 until `q6r640_L5` exists.** Gates and predictions are PR-36, committed before the argsfiles were
 written.
+
+### ⛔ C-64 (23:15) — **C-60 argued "refusals surface early, so a 192-token cut is a poor mechanism for manufacturing one." Measured, it is backwards: a truncated generation is 42× LESS likely to be scored refused. Truncation does not weaken the refusal signal, it very nearly IS the refusal signal.**
+
+Their reruns refuted their own §12.16 prediction (effect **grew** on all three populations) and their
+diagnosis — *a truncation differential does not give you the direction of the bias when both arms sit
+near the ceiling* — sent me to the one number PR-36 turns on. **All four C9 comparators are near the
+ceiling:** `p7_rescue_L5` **0.725**, `p8b_rescue_L5` **0.713**, `q6b_rescue_L5` **0.650**,
+`q7_rescue_L5` **0.619**. So PR-36's shrink-branch was written for a regime C9 is not in.
+
+**But their correction is derived from an ASR outcome and C9's primary outcome is REFUSAL, so I
+measured that direction instead of importing it.** Pooling the eight judged C9 arms, 1280 joined rows:
+
+| | truncated (n=908) | finished (n=372) |
+|---|---|---|
+| **P(refused)** | **0.0088** | **0.3683** |
+| P(ASR) | 0.0573 | 0.0349 |
+
+In **four of the eight runs P(refused \| truncated) is exactly 0.000**. The mechanism is close to
+tautological once stated: **a refusal is short and terminates**, so a row that ran to the cap is
+almost by construction a row that did not refuse. `stop_reason == "length"` is very nearly a proxy
+for *"did not refuse"* — and C9's outcome variable is refusal.
+
+**So the exact decomposition, not an argument.** With `f`/`t` the finished/truncated counts and
+`pf`/`pt` the refusal rates within each, `Δr = (Δf)·pf_b + f_a·(Δpf) + (Δt)·pt_b + t_a·(Δpt)`:
+
+| contrast | Δrefusal | **T1** finish-shift | **T2** refusal-shift | T3+T4 | check |
+|---|---|---|---|---|---|
+| Llama `p7` L14 vs L5 | **−18** | **−11.1** | **−6.9** | +0.0 | −18.0 ✅ |
+| Llama `p8b` L14 vs L5 | **−18** | **−11.1** | **−6.9** | +0.0 | −18.0 ✅ |
+| Qwen3 `q6b` L17 vs L5 | −12 | −0.8 | **−7.2** | −4.0 | −12.0 ✅ |
+| Qwen3 `q7` L17 vs L5 | −17 | −2.5 | **−10.5** | −4.0 | −17.0 ✅ |
+
+All four close exactly. **On Llama, 62% of C9's headline 18 rows is T1 — rows crossing the
+finish/truncate boundary.** T2, the part that is a genuine change in whether a *finished* generation
+refuses, is **−6.9 rows against C9's own 8.3-row margin.** It does not clear it. On Qwen3 the split
+inverts (T1 only 10-19%) and T2 clears the margin in `q7` (−10.5) but not `q6b` (−7.2).
+
+**What this does and does not establish, because the collider caveat is mine and applies to me.**
+Generation length is **post-treatment**: the intervention causes both the truncation and the refusal,
+so T1 is *not* automatically spurious and I am not calling it an artifact. What the decomposition
+does establish is that **T1 is contingent on the cap existing** — rows that would finish by 640 stop
+being counted as "did not refuse" the moment the cap is released — whereas T2 is the part that
+survives it. **At most T2 survives a cap release**, and on Llama that is below margin.
+
+**Gate: C9's Llama leg does not clear its own margin once the cap-contingent component is separated.
+Stopping that branch rather than rescuing it.** The rerun already running (796888/796889) is the
+arbiter and it was pre-registered before any of this; I am not revising the prediction after results,
+because none of C9's 640-cap rows exist yet.
+
+**PR-36 AMENDMENT, recorded now and not after the arms land.** The live prediction is about **T2, not
+Δrefusal**: with the cap released both arms' refusal detection is un-suppressed, so both refusal rates
+should **rise**, T1 should largely **vanish**, and C9's surviving effect should approach **T2 ≈ −7
+(Llama) / −7 to −10 (Qwen3)**. A 640-cap Llama Δrefusal that still reads ≈ −18 would falsify this
+decomposition and I would owe C9 an apology; ≈ −7 confirms it and leaves C9's Llama leg **below its
+margin**.
+
+*Their "check the comparator's absolute level before reading the pre-registration, not after" is the
+single most useful thing anyone has handed me this sprint — it converted PR-36 from a prediction
+about the wrong quantity into one about the right one, with two hours to spare.*
