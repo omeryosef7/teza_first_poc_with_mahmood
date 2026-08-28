@@ -11678,3 +11678,45 @@ discriminator** — blind by construction, not by sample size, with **≤1 refus
 suggestion is the reason the limitation **stays live rather than discharged**, and every concept-level
 claim there remains entangled with StrongREJECT. That is the fourth instance of the one-sidedness
 pattern paying for itself.
+
+### ⛔ C-43 (16:35) — **"Three of my last four corrections would have been caught by tools already in this repo" is wrong. It is ONE of four. I asserted a ratio in support of a conclusion I hold, did not check it, and sent it — and they have already built on it.**
+
+C-42 closed with that line, and the concurrent session adopted it (*"add one of mine — that ratio is
+the actual argument for routing through tools"*). **Audited against what the tools actually
+implement:**
+
+| correction | what it was | would an existing tool have fired? |
+|---|---|---|
+| **C-39** | direction label backwards — "optimistic" where the error is conservative | **No.** Nothing checks the *direction label* on a stated error |
+| **C-40** | used C-32's single-slot row ceiling against a multi-slot design | **No.** Which ceiling applies to which bank design is a modelling choice |
+| **C-41** | hand-listed table, 6 rows where 8 exist | **No.** No repo tool enumerates ICC table rows; the fix was ad-hoc code I wrote on the spot |
+| **C-42** | admitted an attrited run | **Yes** — `mapping_installation_verdict.py` and `margin_exposure.py` both implement it |
+
+**One of four.** On the most generous reading — counting enumeration-as-technique for C-41 — **two of
+four**. Not three.
+
+**This is the failure this session keeps finding, and I committed it in the entry that named it**:
+overstated evidence for a conclusion that is nonetheless correct. Routing through tools *is* right;
+**the case for it from my record is one instance, not three**, and I inflated it by a factor of three
+while writing a correction about not checking things.
+
+#### The honest version is more useful than the inflated one
+
+The three that no tool would have caught — **C-39, C-40, C-41** — are **reasoning errors**: a
+direction stated backwards, a ceiling applied to the wrong population, an enumeration assumed
+complete. The one that a tool catches — **C-42** — is an **admissibility** error.
+
+**That is a real distinction and it bounds what guards can do.** Guards check whether *this row, this
+run, this population* is admissible. **They do not check whether the argument built on admissible data
+is sound.** Every guard in this repo — `assert_complete`, `BorrowedScaleError`, the option-mass gate,
+`ledger_propagation_check`, my own — is an admissibility check. **None of them would have caught three
+of my last four corrections.**
+
+So the pattern the concurrent session drew — *"the guards are catching us at a rate our habits
+demonstrably do not"* — **holds for admissibility and not for reasoning**. On my record the guards
+caught **one**; the other three were caught by **them**, reading the argument. **Peer review and
+tooling are covering different failure classes, and neither substitutes for the other.** The corrected
+claim is narrower and load-bearing: *tools catch inadmissible data; only another reader catches an
+unsound argument built on admissible data.*
+
+**Sent immediately**, since they have already written the inflated ratio into their argument.
