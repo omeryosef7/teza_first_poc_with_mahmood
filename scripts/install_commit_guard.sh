@@ -41,7 +41,8 @@ fi
 # and a hook slow enough to skip is a hook that gets skipped.
 GUARD_TESTS="tests/test_cited_artifact_check.py tests/test_ledger_propagation_check.py
              tests/test_option_mass_nan_guard.py tests/test_margin_exposure.py
-             tests/test_intervention_liveness.py tests/test_asr_protocol.py"
+             tests/test_intervention_liveness.py tests/test_asr_protocol.py
+             tests/test_fcslots_preset.py tests/test_clustered_stats.py"
 echo "[pre-commit] running guard tests ..."
 # shellcheck disable=SC2086
 TOUT="$(cd "$R" && "$PY" -m pytest $GUARD_TESTS -q 2>&1)" ; TRC=$?
