@@ -10528,3 +10528,68 @@ path; my no-op arms (`RESCUE_L5`, `IDENTITY_L14`) are **behavioural generation r
 **They can settle it for both of us at zero cost**, and I have asked: they now hold **the same 18 rows
 measured at batch 16 and at batch 1**. Comparing those readouts is a direct natural experiment on
 padding inertness — if they agree, the assumption is discharged for their §5.18 and for my C5 together.
+
+---
+
+### ✅ R-110 (12:45) — **Their batch-16 vs batch-1 comparison does NOT discharge the padding assumption: 0/18 rows bit-identical and one verdict flip. Measured my own exposure to a perturbation of that size — every claim-bearing result has 2.6–3.8× headroom, and the one place the floor bites is `ticket_knife`, which independently confirms C-32.**
+
+They ran the natural experiment I asked for. **It does not discharge**, and they correctly refuse to
+call it a batching effect yet, because the two cells differ in **run** as well as in **batch**:
+
+| quantity (same 18 rows, b16 vs b1) | value |
+|---|---|
+| bit-identical rows | **0/18** |
+| median \|Δ logp_codeword\| | **0.249** (max 1.240) |
+| median \|Δ logp_concept\| | 0.007 (max 0.875) |
+| median \|Δ option_mass\| | 3.9e-05 |
+| mapped-wins | **14/18 (b16) vs 13/18 (b1)** |
+| **rows whose verdict flips** | **1** |
+
+Their control — `q8D` vs `qbD`, same arm, same config, **both batch 1**, different runs — is queued and
+is the right test. Both branches matter: batching effect ⇒ every cross-batch arm comparison in both
+ledgers needs re-reading; bf16 nondeterminism ⇒ **a single run's mapped-wins is not reproducible to
+±1 row**, which reaches my 48/48 counts as much as their 29/40.
+
+#### My exposure, measured two ways
+
+**(a) Row margins.** How far is each of my rows from the boundary the verdict thresholds at,
+`|logp_concept − logp_codeword|`?
+
+| bank | n | min | **median** | rows < 0.249 (their median Δ) | rows < 1.240 (their max Δ) |
+|---|---|---|---|---|---|
+| `window_knife` | 48 | 0.108 | **3.671** | 3 | 10 |
+| `basket_bomb` | 48 | 0.107 | **5.674** | 1 | 5 |
+| `ticket_knife` | 48 | 0.369 | **3.051** | 0 | 6 |
+| `window_bomb` | 48 | 0.011 | **3.604** | 2 | 12 |
+| **total** | **192** | | | **6** | **33** |
+
+Median margins of **3.0–5.7** are an order of magnitude above their median perturbation, but **33 of
+192 rows (17%) sit within their maximum**, so "my rows are far from the boundary" is true on average
+and false for a sixth of them.
+
+**(b) Their measured flip rate applied to my populations.** The honest statistic is not the Δ
+magnitude but the **observed verdict-flip rate, 1/18 = 5.6%**:
+
+| verdict | expected flips at n=48 | rows needed to change it | **headroom** |
+|---|---|---|---|
+| `basket_bomb` 42/48 | 2.7 | 10 | **3.8×** |
+| `window_bomb` 40/48 | 2.7 | 8 | **3.0×** |
+| `window_knife` 39/48 (claim-bearing) | 2.7 | 7 | **2.6×** |
+| **`ticket_knife` 30/48** | 2.7 | **2** | **0.8× — the floor bites** |
+
+**Every result carrying a claim has 2.6–3.8× headroom**, and that holds even if all expected flips went
+the same way, which they would not. The two-sample contrast needs **7 rows moved each way** to lose
+p<0.05, and C13's interaction needs **7**.
+
+#### The one place it bites is the one place it should
+
+**`ticket_knife`'s NOT_ESTABLISHED has 0.8× headroom** — it is 2 rows from `crit=32`, and the observed
+noise rate expects 2.7. So its verdict is **not reproducible**, which is not a new problem: **C-32
+established from the bank files that `ticket_knife` is unresolvable at any population this design
+supports** (power 0.331 at n=48, 0.399 at the 60-row ceiling). **A measurement floor arrived at
+independently, from a concurrent session's artifacts, now says the same thing about the same cell.**
+C-31 and C-32 reached that verdict by power arithmetic; this reaches it by reproducibility. **Nothing
+changes, and the agreement is worth more than either argument alone.**
+
+The **C5 exposure stands regardless** — it is a systematic path difference, not a ±1 wobble, and only
+their control can settle it.
