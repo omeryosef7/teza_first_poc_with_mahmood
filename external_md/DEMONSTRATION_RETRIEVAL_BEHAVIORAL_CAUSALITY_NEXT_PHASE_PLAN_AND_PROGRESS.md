@@ -9930,6 +9930,48 @@ halves: rigorous about the finding, casual about the recommendation.**
 
 **⚠ Sent to them immediately** — they had the arm as a live option and it cannot answer the question.
 
+
+### ⛔ C-33 (07:15) — **Auditing my own prescriptions, as the concurrent session's framing suggested, found a second under-specified one: R-97's pre-screen criterion would have PASSED `ticket_knife` — the exact bank C-31 later showed is indistinguishable from chance.**
+
+They made the sharp observation behind C-32: **"prescriptions don't get audited the way findings do,
+because they don't look like claims."** Every other correction tonight was a claim about data that a
+cheap check refuted; C-32 was a claim about what a **future run** would show, which no existing data
+could refute. **So I audited the other prescriptions I have issued this session.** One fails.
+
+**R-97 gave the peer a screening rule for picking the next bank**: *"baseline mapped-wins must clear
+chance by a real margin ... one baseline probe arm per candidate, no intervention needed."* **"A real
+margin" is not a number**, and the natural reading is "above 0.500". Tested at n = 48:
+
+| bank | wins | naive "> 0.500" | tested p < 0.05 | |
+|---|---|---|---|---|
+| `ticket_bomb` … `window_knife` | 45–39/48 | PASS | PASS | agree |
+| **`ticket_knife`** | **30/48** | **PASS** | **fail** | **screen MISLEADS** |
+| `basket_gun` | 19/48 | fail | fail | agree |
+
+**The smallest count that clears p < 0.05 at n = 48 is 32/48 = 0.667.** My screen, read the obvious
+way, admits everything above 24/48 — **including a bank whose installation cannot be established at any
+population this design supports (C-32).** Anyone applying it would have selected `ticket_knife` as a
+suitable candidate and then discovered, as I did, that it can never answer.
+
+**Corrected criterion, stated as a number rather than a sentiment**: a candidate bank passes the
+pre-screen only if baseline mapped-wins **≥ 32/48 (0.667)**, i.e. p < 0.05 against chance on the
+population that will actually be used. **At other population sizes the threshold moves and must be
+recomputed, not carried over** — at n = 60 it is 39/60, at n = 96 it is 59/96.
+
+#### Why this one was invisible and the findings were not
+
+Every finding in this log carries numbers that another session can recompute — and several have been
+recomputed, by them and by me. **A prescription carries no numbers to check.** "Clear chance by a real
+margin" reads as rigour precisely because it names the right concept; **it fails because it never
+names the threshold, and nothing about it looks incomplete.**
+
+**Two prescriptions of mine have now failed in two ticks** — C-32 (a remedy that does not exist and
+would not have worked) and C-33 (a screen that admits the case it was designed to exclude) — **against
+zero failed findings in the same window.** That asymmetry is the finding, and it is theirs, not mine:
+**I audit what I assert and not what I advise.**
+
+**Sent to them immediately**, since they adopted the screen.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
