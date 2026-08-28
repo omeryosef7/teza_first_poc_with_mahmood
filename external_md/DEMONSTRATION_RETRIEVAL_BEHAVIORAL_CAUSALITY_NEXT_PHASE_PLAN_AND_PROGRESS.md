@@ -10940,3 +10940,46 @@ Batching is closed: two banks, two matched-batch reruns, **zero verdict flips on
 still nulls with **no power created**. Their remaining work is bank-design (a larger forced-choice
 population, a judge-independent success measure) — **neither is a rerun and neither needs GPU from
 me.** My plan remains complete; C5's rewrite is done and I have offered them a read of it.
+
+### ✅ R-116 (13:30) — **Tested their new `margin_exposure.py` before depending on it. It refused my own valid window measurement: the provenance check reads the CONFIG model field, which is `DEFAULT` whenever a run was launched without `--model`. The guard built to prevent C-37 would have blocked the measurement that CAUGHT C-37.**
+
+They built `src/boombness/margin_exposure.py` to enforce the two-number rule **by construction** —
+it refuses to compute an at-risk count against a foreign window, refuses to *measure* a window across
+two populations, requires a `--scale-name`, splits at-risk into wins/losses (my observation that
+at-risk losses help "preserved" and hurt "collapse"), and reports five mutants killed.
+
+**I did not take the mutant score on faith.** Pointing it at the exact comparison that produced my
+0.3202:
+
+```
+BorrowedScaleError: cannot MEASURE a window across different populations:
+  {'model': 'DEFAULT',                          'bank': '...ticket_bomb.jsonl'} vs
+  {'model': 'meta-llama/Llama-3.1-8B-Instruct', 'bank': '...ticket_bomb.jsonl'}
+```
+
+**Both runs loaded the identical model.** Verified from `metadata.json`:
+
+| run | `config.model` | `metadata.model` |
+|---|---|---|
+| `p5A_ticket_bomb` | **`None`** → `DEFAULT` | `meta-llama/Llama-3.1-8B-Instruct` |
+| `c5A_tb_b1` | `meta-llama/Llama-3.1-8B-Instruct` | `meta-llama/Llama-3.1-8B-Instruct` |
+
+The banks match. The models match **as resolved**. The refusal fires because `p5A` was launched
+**without an explicit `--model`** and mine passed one — a difference in **launch style, not in
+science**. The check reads a **proxy** for the model rather than the model.
+
+**The sharp version**: *the guard written to prevent the borrowed-window error would have prevented
+the measurement that detected it.* My 0.3202 came from exactly this pair, and it is what reversed
+R-111 and produced C-37. An instrument that refuses the work that catches the bug it targets is not
+merely inconvenient — it is **conservative in a direction that suppresses corrections**, which is the
+same one-sidedness lesson from R-115 wearing different clothes.
+
+**Fix is one field**: compare the **resolved** model from `metadata.json`, not `config.args.model`.
+Reported to them with the evidence. **My 0.3202 stands** — I verified the resolved models match and
+computed the delta directly, so no number of mine moves.
+
+**Not adopted yet**: the module is **uncommitted** (`git log -- src/boombness/margin_exposure.py`
+returns nothing; they said "landing as V-60"). Same discipline as R-111 — my deliverable's five
+`UNMEASURED` rows stay hand-computed until the tool is in git and this defect is fixed. Their offer to
+turn those blanks into **explicit refusals with reasons attached** is a better artifact than a blank
+cell, and I will take it once both conditions hold.
