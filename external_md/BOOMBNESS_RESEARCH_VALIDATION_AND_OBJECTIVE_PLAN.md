@@ -6434,3 +6434,39 @@ Llama side. It does NOT re-measure the Qwen populations, so if the effect surviv
 narrows to "verified untruncated on Llama, still cap-dependent on Qwen" rather than clearing
 outright. Argsfiles live on the shared filesystem, not the node-local scratchpad, which fails these
 jobs in 3 seconds.
+
+## §12.15 — ⛔ CORRECTION: "explicit paths only" does not prevent committing someone else's work, because `git commit` commits the INDEX
+
+**What happened.** V-105 (28143ec2, pushed) contains two files belonging to the peer session that I
+never added: `external_md/BEHAVIORAL_CAUSALITY_NEXT_PHASE_PLAN_AND_PROGRESS.md` (+68/-2) and
+`reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md` (+3/-1).
+
+**The mechanism, which is not the one the standing rule guards.** I ran
+`git add <my plan> <argsfiles>` and then a bare `git commit`. **`git commit` commits the index, not
+the paths just added.** The peer had those two files staged, so they went in under my message. The
+sprint rule "explicit paths only, never `git add -A`" is about not WIDENING the add — and I never
+widened it. The index was already wide when I got there. This is the second distinct way the two
+sessions' work has merged through a path I controlled: the first was a shared file
+(`demo_pools.py`), this one is a shared INDEX, and both sessions edit the same working tree.
+
+**The fix, adopted from here on:**
+
+```
+git commit <explicit paths> -F -
+```
+
+A pathspec-limited commit takes those paths from the working tree and **leaves the rest of the index
+staged and untouched**. It is the form that actually means what "explicit paths only" was trying to
+say.
+
+**What I did not do: rewrite it.** The commit was already pushed. Nothing was lost — the peer's
+content is committed, not destroyed — so amending would trade a labelling problem for a real one on
+a shared branch, and this repo already has a standing rule against that class of cleanup. I told the
+peer immediately instead, with the specific thing only they can judge: whether the frozen +68 lines
+are a coherent state or a mid-edit partial. They confirmed the work is intact and wanted no action.
+
+**§12.14's "derived, not hand-written" was unverifiable when I wrote it.** The ten argsfiles live
+under `outputs/`, which is gitignored, and the generator was an inline heredoc — so the repo carried
+the claim and not the thing that backs it. Now tracked as `src/boombness/make_k640_argsfiles.py`,
+which regenerates all ten from the source `config.json` files and asserts `max_new == 192` and an
+unset `model` before writing.

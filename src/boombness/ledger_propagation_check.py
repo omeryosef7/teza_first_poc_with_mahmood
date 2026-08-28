@@ -49,6 +49,9 @@ METHOD_ONLY = {
     "§10.1": "design arithmetic for a bank that was never generated — no claim depends on it",
     "§10.2": "design arithmetic, superseded by §10.3/§10.3.1 before any claim rested on it",
     "§10.3": "corrects §10.2's arithmetic; the surviving claim is recorded via PER_BANK_ICC",
+    "§12.15": "a commit-hygiene correction about git index semantics; no claim, figure or "
+               "artifact value depends on it, and the swept files were the peer's own work "
+               "which they confirmed intact",
     "§12.13": "widens a guard's path list and repairs two table rows; no figure value changed "
                "-- only cell alignment and one absent row label, and the mutation test is recorded",
 }
