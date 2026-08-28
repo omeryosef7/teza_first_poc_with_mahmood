@@ -11586,7 +11586,7 @@ results contain `core2x2_slot3` × `semantic_one_word`:
 | **`basket_bomb`** | **0.000** | **0.000** | **0.00** | **0.1027 reportable — MISSED** |
 | `basket_gun` | 0.472 | 0.381 | 1.24 | 0.0808 reportable |
 | `main` | 0.316 | 0.218 | 1.45 | 0.0404 below floor |
-| **`longpreQ14B`** | **0.107** | **0.042** | **2.54** | **0.0185 below floor — MISSED** |
+| ~~`longpreQ14B`~~ | ~~0.107~~ | ~~0.042~~ | ~~2.54~~ | **REFUSED — attrited (C-42)** |
 | `ticket_bomb` | 0.248 | 0.000 | ∞ | 0.1707 reportable |
 | `ticket_knife` | 0.377 | 0.190 | 1.98 | 0.0774 reportable |
 | `window_bomb` | 0.000 | 0.049 | 0.00 | 0.0404 below floor |
@@ -11612,3 +11612,69 @@ The generalisation is narrower and more useful than "be careful": **whenever a t
 population rather than a selection, the rows must be enumerated by code.** A hand list cannot be
 audited against the thing it is supposed to cover, because the omission is invisible from inside the
 list — exactly as a range assumption is invisible from inside the range.
+
+### ⛔ C-42 (16:25) — **The row C-41 added back is one my OWN guard refuses. I wrote the attrition check, used it to refuse their baseline, and then hand-computed a table row from the same refused run.**
+
+C-41 fixed a hand-list omission by enumerating the artifact tree, and the enumeration correctly
+surfaced `longpreQ14B`. **I then reported its numbers without applying the admissibility check I
+built.** They caught it because their tool filters attrited runs on sight.
+
+The row came from **`q5A_lpQ14B_20260828_083233_2269491`**:
+
+| field | value |
+|---|---|
+| `n_bank_rows` / `n_result_rows` | **160 / 68** |
+| `n_failed` | **92** |
+| `option_mass_gate` | **OVERRIDDEN — NOT REPORTABLE** |
+| one_word rows | **18** (core2x2) and **19** (slot3), of 48 each |
+| **R-105 guard verdict** | **REFUSE (attrited)** |
+
+**This is the run I diagnosed in R-105** — the job whose OOM prompted me to *write* the attrition
+guard — and **the run whose sibling arm I used the guard to refuse in R-107**. Its survivors are the
+**short rows selected by the perturbation under study**, which is precisely the population C-38 records
+as unmeasurable. **My 0.107 → 0.042 for that row is computed on that selected subset.** Struck from
+the table.
+
+**Their framing is right and I would not soften it**: excluding it is not "defensible because it's
+Qwen3", it is **required on attrition**. My instinct that it was the row where an unnoticed inclusion
+would be actively wrong was correct, but I gave the weaker reason and then published the numbers
+anyway.
+
+#### The lesson C-41 did not go far enough to reach
+
+C-41's rule was **"enumerate the population by code."** That is necessary and **not sufficient**:
+**the enumeration must also carry the admissibility filter the analysis tool enforces.** My
+enumeration was complete and unfiltered — it found every run and admitted one that
+`margin_exposure.assert_complete()` would have rejected on sight.
+
+The operative failure is that **my ad-hoc scripts bypass my own guards**. The checks live in
+`mapping_installation_verdict.py` and in their `margin_exposure.py`; a hand-rolled `json.loads` loop
+over run directories invokes none of them. **Three of my last four corrections would have been caught
+by tools that already exist in this repo and that I did not call.**
+
+**Standing rule, extending C-41**: when computing from run directories ad hoc, either route through
+the tool or replicate its admissibility check explicitly — `n_result_rows == n_bank_rows`,
+`n_failed == 0`, `option_mass_gate == PASS`. **Completeness of the row set and admissibility of each
+row are two separate checks, and enumeration only supplies the first.**
+
+#### Their `kw_refusal` result — my caveat was the whole answer
+
+They closed §9 next-step #3 with it, enumerated over **598 judged arms / 217,532 rows**:
+
+| | |
+|---|---|
+| `kw_refusal` fires | 134,555 (0.619) |
+| judge success | 24,735 (0.114) |
+| **contradictions** | **128 (0.00059)** |
+
+**Where it fires it can be trusted** — under 6 rows in 10,000 are keyword-refused *and*
+judge-successful. But on their §5.18 Qwen3 contrast, the same 80 paired rows: **judge 11/80 → 1/80
+(p=0.00635) against `kw_refusal` 1/80 → 0/80 (p=1)**. The knockout moves completions from
+*judged-successful* to *complied-but-unsuccessful*, and **that region has no deterministic
+discriminator** — blind by construction, not by sample size, with **≤1 refused row in 89 of 598 arms**
+(~15% of the corpus uncovered).
+
+**Refusal side anchored, success side not.** The one-sided-instrument caveat I sent with the
+suggestion is the reason the limitation **stays live rather than discharged**, and every concept-level
+claim there remains entangled with StrongREJECT. That is the fourth instance of the one-sidedness
+pattern paying for itself.
