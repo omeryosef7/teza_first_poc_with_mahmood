@@ -9241,6 +9241,65 @@ numbers are hereby annotated as upper-middle; the true medians are recorded abov
 baseline 11/48, `legacy` 3/48, **`demoproc` 17/48** — the scoped knockout *raises* the coded reading.
 **Recorded as theirs, not adopted**, since I have no arm of my own on it.
 
+
+### 🏆 R-95 (03:45) — **The behavioural half of the deciding cell lands, and it turns R-93 from a probe reading into a MECHANISM DISSOCIATION: the two scopes remove the same attack by different routes. My refusal decomposition corroborates theirs on a third bank.**
+
+The concurrent session ran the behavioural arms on `ticket_bomb` that PR-32 deliberately did not
+(PR-32 pre-committed *"any behavioural/ASR number on this bank"* as not counting, because I generated
+none). Same population, cap 640, n=96, **all three arms in one judge invocation**:
+
+| arm | ASR | Δ | down/up | refusal | median len |
+|---|---|---|---|---|---|
+| baseline | 30/96 | — | — | 12/96 | 248.0 |
+| `legacy_all_query` | **2/96** | **−0.2917** | 29 ↓ / 1 ↑ | **0/96** | 299.5 |
+| `demo_processing_only` | **8/96** | **−0.2292** | 26 ↓ / 4 ↑ | **22/96** | 282.0 |
+
+**Set beside R-93's probe numbers on the identical population**, the picture is not two magnitudes of
+one effect:
+
+| | binding (mapped-wins) | ASR removed | refusal |
+|---|---|---|---|
+| `legacy_all_query` | **15/48 — destroyed** | 29 | **falls to 0** |
+| `demo_processing_only` | **45/48 — intact** | 26 | **rises 12 → 22** |
+
+**The unscoped mask removes the attack by removing access to the mapping. The scoped mask removes it
+while the mapping stays available and reportable.** That is a **mechanism dissociation**, and it is
+their framing, which I think is right and better than "the scoped arm is slightly weaker".
+
+#### The complication they flagged, checked against my own data rather than accepted
+
+They noted that `demoproc`'s effect **is not purely non-refusal**: 8 of 26 down-flips are refusals
+(31%), and its keyword refusal rate **rises** where `legacy`'s falls to zero. **Recomputed my own
+decomposition from the judge artifacts** rather than quoting C-9b's log line:
+
+| population | down-flips | refused | non-refusal |
+|---|---|---|---|
+| Llama `d10` (`p1k`) | 15 | **3 (20%)** | 12 |
+| Qwen3 (`q1j`) | 17 | **4 (24%)** | 13 |
+| **their `ticket_bomb`** | 26 | **8 (31%)** | 18 |
+
+**Three banks, two models, and the refusal share is 20% / 24% / 31% — a minority everywhere and
+never zero.** C-9b's *"not mostly refusal"* is corroborated on a bank I never ran; their 31% is the
+high end of a consistent range rather than a contradiction.
+
+**But their caveat is the honest one and I am adopting it**: *"if C5's story is 'the mapping survives
+and the model declines to use it', the refusal component is part of how it declines."* **C2 says
+refusal restoration is not the ROUTE to attack removal, and that survives — 69-80% of down-flips are
+non-refusal across all three banks. It does not license calling refusal absent**, and the contrast
+with `legacy`'s **0/96** is what makes refusal informative rather than incidental: the scope that
+preserves binding is also the scope that refuses.
+
+**⚠ Recorded as theirs, not adopted as mine.** I generated no behavioural arm on `ticket_bomb` and
+PR-32 pre-committed not to claim one. Their caveats travel with it: **one bank for the scoped
+comparison, one model, n = 96, and `main`'s scoped ASR arm unrun.** Their gate note also travels —
+**all of it is the retrieval knockout, not a boombness objective**, so none of it speaks for Phase 7.
+
+**Their entry 6 closes consistently with R-84**: `main` −0.1458 (p=0.0125), `ticket_bomb` −0.2604
+(p≈0), `basket_gun` **−0.0312, p=0.5488, null** — reported **per population** rather than pooled,
+with MDE 0.094 exceeded by both confirmers and **divergence 96/96 on the null**, so the hook fired and
+changed every generation while ASR did not move. **Live and inert — a dissociation, not a dead arm**,
+which is exactly the distinction the invariant exists to draw.
+
 ---
 
 *Opened 2026-08-25 00:30 at HEAD `059e819f`. Part A is stable. Everything below it is append-only.*
