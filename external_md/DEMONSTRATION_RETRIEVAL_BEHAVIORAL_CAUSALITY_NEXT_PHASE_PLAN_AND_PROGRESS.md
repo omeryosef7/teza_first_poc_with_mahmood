@@ -17478,3 +17478,46 @@ a units mismatch (UTC vs local) nearly produced a false positive, and a populati
 edit set vs the directory) produced a wrong count. **None is arithmetic; all three are about which
 rows, which units, which population** — and this is the item where both sessions were explicitly
 watching for exactly that.
+
+### ⚠ DR-24 (deeper review, 15:55) — **DR-23 verified the BANK half of the provenance sentence and left the JUDGE half unchecked. Checked now: the claim is TRUE for this phase and UNSCOPED as written — corpus-wide, 480 of 644 finished judge runs carry neither field.**
+
+The deliverable's sentence makes two claims: *"Judge provenance is closed on every behavioural result
+(`judge_model_used` and `completion_sha256_16` on 100% of rows); bank provenance is verified at
+content level…"*. DR-23 swept the second half across 557 runs and **never touched the first** — the
+adjacent half of the same sentence, which is the shape this phase keeps finding.
+
+**Corpus-wide sweep — 644 finished judge runs, 222,471 rows:**
+
+| | n |
+|---|---|
+| runs with **both** fields on every row | **164** |
+| runs missing either field | **480** |
+| distinct judge models seen | **`openai/gpt-4o-mini`** only (22,256 rows) |
+
+**Split by date, the picture resolves:**
+
+| period | clean | missing |
+|---|---|---|
+| 2026-08-16 → 08-24 | **0** | **468** — the fields did not exist yet |
+| 2026-08-25 | 43 | **12** |
+| 2026-08-26 → 08-29 | **121** | **0** |
+
+**All 12 exceptions on 08-25 are `q3dec`** — the family R-169 traced to commit `de63dd8c`
+("Prepare one-session judging for the full Qwen3 decomposition"), prior-phase infrastructure — and
+**every one is cited by nothing** in the plan, the deliverable or the handoff (checked individually,
+not counted).
+
+**So the claim holds for what it means and not for what it says.** Every judge run backing a
+behavioural result in this phase carries both fields; read corpus-wide the sentence is false by 480
+runs. That is precisely the *"true statement about a subset, published without the subset"* defect —
+the same one behind the peer's `45/48 across three baselines` filter and their `three files` count,
+now found in **my own deliverable** rather than in correspondence.
+
+**Scoped in the deliverable** rather than withdrawn: the fields were introduced mid-day on
+2026-08-25, everything after is clean, and the claim is now stated over the population it was always
+about.
+
+⚠ The sweep also establishes something the sentence never claimed and which is worth having: **one
+judge model across the entire corpus**, `openai/gpt-4o-mini`, with no second model anywhere in
+22,256 stamped rows. Judge-model heterogeneity is therefore not a live confound for any cross-run
+comparison in this phase.
