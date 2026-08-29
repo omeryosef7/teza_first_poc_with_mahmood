@@ -124,6 +124,7 @@ TRACE_TOKENS = {
     "§17.3": ["escape classes", "re.I", "fifth defect"],
     "§18": ["74 ledger fields", "dead config", "re-deriving the premise"],
     "§20": ["did not isolate", "bold paragraph marker"],
+    "§21": ["expiry date", "21 of 8", "audit item, not a guard"],
 }
 
 

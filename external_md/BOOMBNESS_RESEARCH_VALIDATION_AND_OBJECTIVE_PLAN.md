@@ -1698,6 +1698,31 @@ vindicated on their numbers, and corrected on their labels.**
 **The gate is satisfied: §0.3 exists, so objective work may now be evaluated.** Phase 7 remains
 closed on its own criteria, not on this one.
 
+> ### ⛔ UPDATE to §0.3's row 6 (2026-08-29) — "2 populations pending" is no longer true
+>
+> That row was written while `button_knife` and `basket_gun` were unrun. **They have since run**
+> (§12.20), so the knockout line is complete and its verdict is sharper than "pending":
+>
+> | population | cap-640 A → C | effect | baseline |
+> |---|---|---|---|
+> | `ticket_bomb` | 27/96 → 2/96 | **25 rows** | 27/96 |
+> | `main` | 23/96 → 5/96 | **18 rows** | 23/96 |
+> | `button_knife` | 7/96 → 3/96 | 4 rows | 7/96 |
+> | `basket_gun` | 7/96 → 8/96 | **−1 row** | 7/96 |
+> | `window_knife` | 3/96 → 0/96 | 3 rows | 3/96 |
+>
+> The three small populations have baselines of 7, 7 and 3 of 96, so the largest effect
+> arithmetically available to them is at the noise floor — they **lack the dynamic range to test the
+> claim** rather than disconfirming it. `basket_gun` is a genuine null at both caps.
+>
+> **Row 6's verdict therefore becomes: KEEP-NARROWED, complete — supported on the two populations
+> that can measure it, null on one, untestable on two, and Qwen still cap-dependent.** The original
+> row is left as written, per this file's append convention.
+>
+> *Found by auditing §0.3, the one deliverable never re-read after the work it forecasts was done.
+> A section that names outstanding work is a claim with an expiry date, and nothing in this repo
+> checks for expired ones.*
+
 ---
 
 ## §DR-1 — DEEP REVIEW (4-hour), 2026-08-28 00:45
@@ -1783,6 +1808,10 @@ confirmed. **No entry moved on argument; each moved on a sprint-grade measuremen
    what the data says, but it is also the pattern a confirmation-seeking process would produce, and
    the honest counterweight is that the two hardest gates — Phase 7 and entry 6's `basket_gun` —
    are both still pending and both are set up to fail informatively.
+
+> ⛔ **EXPIRED (2026-08-29).** Both have since resolved, and both failed informatively as promised:
+> Phase 7 is **closed as untestable** (§12.30), and `basket_gun` is a **genuine null** — 7/96 → 8/96,
+> never below baseline at either cap (§12.20).
 
 ---
 
@@ -2410,6 +2439,10 @@ has no boombness measurement at all** and the join collapses 96 → 48.
 **Phase 7 gate status: still closed, and this section does not move it either way.** The honest
 state is that the strongest available direct test of "boombness predicts ASR beyond `n_examples`" is
 underpowered by a factor of ~6, and the two routes to powering it are both known and unrun.
+
+> ⛔ **EXPIRED (2026-08-29).** Route 1 had *already been run* when this was written — `xb_main_s3`,
+> `xb_ticket` and `xb_gun` each carry 1,824 `core2x2_slot3` rows. The powered join is 288 rows and is
+> reported in §12.23, whose result is in turn superseded by §12.30's transfer failure.
 
 ---
 
@@ -8342,3 +8375,41 @@ wrote to catch missing references.** Now matches both forms.
 
 **Mutation-tested:** inserting a ledger reference to a section existing nowhere kills exactly this
 test; ledger restored byte-identical. 17 tests.
+
+## §21 — ⛔ EXPIRED CLAIMS: sections that name outstanding work, after the work was done
+
+Every plan item is complete, so I re-read the one deliverable never revisited after the work it
+forecasts — **§0.3**, the gate the brief makes all objective work conditional on. It was sound, with
+one defect of a kind nothing in this repo checks for.
+
+**§0.3's row 6 read "KEEP-NARROWED; 2 populations pending".** Those two populations ran in §12.20.
+A reader of §0.3 — an early section, and the one a reader is *directed* to as the gate — would take
+finished work as outstanding. Updated in place with the completed five-population table, original
+row left as written per this file's append convention.
+
+**A section that names outstanding work is a claim with an expiry date, and nothing checks for
+expired ones.** Enumerating the plan: **21 of 8,370 lines** assert something is pending, unrun or
+still open. Most are historical by construction — a pre-registration timestamped "written while jobs
+are PENDING", or a correction quoting an earlier "unrun" precisely to say it had already been run.
+**Three were genuinely stale:**
+
+| line | claim | reality |
+|---|---|---|
+| §0.3 row 6 | "2 populations pending" | both ran (§12.20) |
+| ~1810 | "Phase 7 and `basket_gun` are both still pending" | Phase 7 closed as untestable; `basket_gun` a genuine null |
+| ~2437 | "the two routes to powering it are both known and unrun" | route 1 had already been run when written |
+
+All three now carry an **EXPIRED** marker beside the original text.
+
+**Why this is not mechanisable the way §19's reachability was.** Reachability is decided from the
+scanner — a key either can or cannot be consulted. Expiry is decided from *the world*: whether a job
+ran, whether a population landed. A checker could **list** the 21 lines, but it cannot know which
+have expired without re-deriving each from the artifacts, which is what a person doing a deep review
+does. So this is an **audit item, not a guard** — and I am recording that boundary rather than
+building something that would report "21 possible expiries" every run and be switched off within a
+week.
+
+**The general shape, and it is the sprint's own failure mode one level up.** Every one of these was
+true when written. They rot because the document is append-only and the world moves; the same
+property that makes the log honest — never silently overwriting — is what lets a superseded
+"pending" sit unmarked. **The convention that protects conclusions does nothing for forecasts.**
