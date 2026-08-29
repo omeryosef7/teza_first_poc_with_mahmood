@@ -452,11 +452,39 @@ been the expensive way to avoid the actual problem.
    > this line states it flat. Kept and marked rather than edited: the log is append-only and the
    > original judgement was sound on the evidence then available.
    >
-   > Found by sweeping the plan's **43 bolded universal claims** for whether each names the
-   > population it was measured over — a peer's method, applied here after their DR-24 found the
-   > same defect in their deliverable. Four others sampled (`zero verdict flips`, `none carried`,
-   > `no overlap`, §6.0's own) all name their population; this one does not, and is the only
-   > instance the sweep surfaced.
+   > Found while sweeping the plan's bolded universal claims for whether each names the population
+   > it was measured over — a peer's method, applied here after their DR-24 found the same defect
+   > in their deliverable.
+   >
+   > **⛔ TWO CORRECTIONS TO THIS PARAGRAPH AS FIRST WRITTEN.**
+   >
+   > **(a) "43" is one of three defensible counts, and the sweep was published twice at two of
+   > them.** The same quantity over byte-identical text:
+   >
+   >     case-SENSITIVE, counting LINES ............... 43   <- published in this annotation
+   >     case-insensitive, counting LINES ............. 92
+   >     unique spans, matched LINE-BY-LINE ........... 63   <- published one tick later
+   >     unique spans, matched over WHOLE TEXT ........ 74
+   >
+   > The 43→63 gap is case sensitivity plus lines-versus-unique-spans; the 63→74 gap is **11 bolded
+   > spans that wrap a newline**, invisible to line-by-line matching. A "corpus grew between
+   > measurements" hypothesis was proposed and **refuted** — the file is byte-identical at both
+   > commits. Fourth instance this phase of *two numbers disagreeing because the instrument
+   > differed, not the corpus*, after 27-vs-29 (lines vs occurrences) and two population/scheme
+   > mismatches.
+   >
+   > **(b) "the only instance the sweep surfaced" is false: the sweep did not surface this line at
+   > all.** Its own regex is quantifier-initial and this claim is a *negative-existence* phrasing —
+   > `n_examples = 12` **does not exist** — which the pattern cannot match. It was reached by
+   > following a *matching* sentence (§6.0's "zero rows in zero banks") to a *non-matching* one two
+   > sections away. The sweep produced the **trail**, not the sentence, and crediting it with the
+   > catch overstates its recall.
+   >
+   > The completed sweep, stated at one setting: **74 unique bolded universals, 46 naming a
+   > population in adjacent context, 17 not; five of those seventeen examined and all resolve** —
+   > population sits in an adjacent table or enumeration, or the sentence is a policy rather than a
+   > measurement, or (for *"no refusal detector of any quality can see that transition"*) it is a
+   > logical entailment from a stated 80-row result and is labelled blind-by-construction.
 2. **No `test` split** — only `dev`/`heldout`. Phase 7's "pre-register on dev, evaluate on heldout"
    is therefore executable exactly as written; a third split is not.
 3. **A design constraint that is a property of the phenomenon, not a bug.** Per
