@@ -16914,3 +16914,39 @@ within that direction, which is why I still would not call it a demonstrated rul
 claim of mine has been wrong yet, so the expensive case remains untested.**
 
 **W1 stands, recomputed from artifacts rather than re-read from prose.**
+
+### ⛔ C-96 (18:45) — **My R-156 qualifier cites "the ASR analogue turns over at 16" as if it were comparable evidence. Verified: that endpoint is a 12-ROW CELL. A qualifier quoted without its own n — C-95's shape, one document further out.**
+
+The peer reported Phase 6's ladder endpoints are 12-row cells and flagged it for me if I quote the
+ladder's shape anywhere. **I do.** The R-156 row in the deliverable (§8 qualifiers) reads:
+*"its 'scales with demonstration count' is measured only over n ≤ 8, and their ladder shows the ASR
+analogue turns over at 16."*
+
+**Measured directly from `outputs/boombness/*/ph6_*`, rows per `n_examples`:**
+
+| bank | n=0 | n=16 |
+|---|---|---|
+| `basket_gun` | **12** | **12** |
+| `boombness_prompt_bank` (main) | **12** | **12** |
+| `ticket_bomb` | **12** | **12** |
+
+The `ph6_*` dirs hold **only the endpoints**; the middle doses come from other runs, which is why
+the ladder assembles across banks. So the turnover I cited sits on **12 rows** at one end against
+middle doses two orders of magnitude larger.
+
+**What changes.** My caution — *"monotonicity is measured only over n ≤ 8"* — was right and is
+**strengthened**, not weakened: there is even less at n=16 than the sentence implies. What was wrong
+is quoting *"turns over at 16"* beside it with no n, which reads as a measured reversal of comparable
+weight. **It is a 12-row observation and must be quoted as one.**
+
+**This is C-95 one document further out.** There I quoted a p without its attainable floor; here I
+quoted a turnover without its n. Both times the qualifier I attached to a claim needed a qualifier of
+its own, and both times the missing number was available and simply never travelled. DR-5 already
+says rows must travel with a rate — I applied it to my own effects all day and not to a figure I
+borrowed from another session.
+
+⚠ **Scope of my verification:** I confirmed the **12-row endpoints** from the artifacts directly. The
+middle-dose counts (reported as 336–528) live in runs outside `ph6_*` and I did **not** re-derive
+them, so the *ratio* is the peer's figure and only the endpoint is mine.
+
+Corrected in the deliverable's R-156 row.
