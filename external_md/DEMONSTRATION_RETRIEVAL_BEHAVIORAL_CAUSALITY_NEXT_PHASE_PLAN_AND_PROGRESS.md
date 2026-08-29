@@ -12369,7 +12369,7 @@ me: *"V-85 checked once — the next figure added to the document wouldn't have 
 
 | figure | required phrase | governing artifact field |
 |---|---|---|
-| a length-conditioned ASR | `POST-TREATMENT` | `phase1_decomposition / PR4_collider_caveat` |
+| a the sweep entry (entry 1) | `POST-TREATMENT` | `phase1_decomposition / PR4_collider_caveat` |
 | a rescue "% of rise" | `INVERTED` | `rescue_dissociation_table / PCT_CAVEAT` (DR-5) |
 | `ticket_knife` 30/48 | `0.331` | `mapping_installation_verdict / power_caveat` (C-32) |
 
@@ -14591,7 +14591,7 @@ SURVIVED verdicts tonight were my own bug, and only the fourth was real.
 
 ### ✅ R-153 (02:40) — **Fixed the C-72b defect and then did the thing C-72b was about: ran the new tests against the mutations they were written for. Four mutations, four killed. PR-38 judged (798384).**
 
-**The defect, restated precisely.** The `length-conditioned ASR` entry is **dormant by design** — an
+**The defect, restated precisely.** The the sweep entry (entry 1) entry is **dormant by design** — an
 "if you quote X, say Y" caveat is inert until someone quotes X, and nobody currently quotes that
 figure. Keeping it is correct. **What was wrong is that the suite could not distinguish
 dormant-and-correct from broken**, and every synthetic fixture in the file was built on that one
@@ -15727,3 +15727,99 @@ reason is that none of my claims rest on a fitted predictor.** They are interven
 (knockout vs baseline, rescue vs comparator) whose generalisation is tested by *replication across
 banks and models*, not by a train/test partition. **The fit/heldout distinction cannot arise where
 nothing is fitted** — so this is a clean negative with a mechanism, not luck.
+
+### ⛔ C-88 (08:40) — **Re-deriving the caveat guard's three premises against the current documents, as the mechanism behind its four defects demanded. Two hold. The third fails: the stray budget polices DORMANT entries, where its own rationale cannot apply.**
+
+R-164 named the mechanism behind C-72b, C-76, C-86 and C-87 — *"an entry or threshold added mid-tick
+without re-deriving whether the guard's premise still held with the new entry in it."* Doing that
+re-derivation.
+
+**Premise 1 — `CAUTION_WINDOW = 6` is 2× the largest correct figure→caveat distance. HOLDS.**
+Re-measured on the current documents, which have grown substantially tonight:
+
+| | distances |
+|---|---|
+| on record (`CALIBRATION_DISTANCES`) | 0, 0, 1, 1, 1, 3, 3 |
+| **measured now** | **0, 0, 0, 0, 1, 1, 1, 3** |
+
+Max is still **3**, so the window is still exactly **2.0×**. The calibration survived the corpus
+roughly doubling — worth knowing, since a window calibrated once and never rechecked is precisely the
+sort of premise that rots silently.
+
+**Premise 2 — the dormant entry is still dormant. HOLDS.** the sweep entry (entry 1) matches **0**
+lines in both deliverables.
+
+**Premise 3 — the stray budget of 8 measures occurrences that could pass the guard spuriously. FAILS.**
+
+| entry | adjacent | **stray** |
+|---|---|---|
+| the sweep entry (entry 1) (summary) | **0** | **5** |
+| `ticket_knife installation` (summary) | 8 | 1 |
+| `rescue percentage` (handoff) | 1 | 1 |
+
+**A dormant entry has no figure, so *every* occurrence is stray by construction** — and none of them
+can satisfy a proximity check **that never runs**. `POST-TREATMENT` sits at **5 of a budget of 8**
+purely because I have written about post-treatment conditioning all night. **Four more mentions and
+the suite fails over a phrase whose distinctiveness has no consequence.**
+
+**This is C-87's defect one entry over.** There the budget punished compliance; here it polices an
+entry where the thing it protects cannot happen. **Both come from applying a threshold outside the
+conditions that justify it** — and I introduced this one *in the fix for the previous one*, two ticks
+ago, which is the mechanism R-164 described operating on the entry that named it.
+
+**Fixed: dormant entries are skipped**, with dormancy still covered by
+`test_dormant_entries_are_recorded`. **Positive-controlled both directions:**
+
+| mutation | expected | result |
+|---|---|---|
+| 30 strays on the **dormant** entry | must **not** fire | **passed** ✅ |
+| 30 strays on a **live** entry | must fire | **KILLED** ✅ |
+
+**Fifth defect in this one guard, and the third found by re-deriving rather than by failure.** The
+guard has now caught two real omissions in production and contained five defects of its own. **I am
+recording that ratio rather than defending it**: it is the most-extended file I own, and every defect
+entered through an extension made under time pressure.
+
+### ⛔ C-89 (08:55) — **Documenting C-88 made a dormant entry LIVE — my correction text reproduced the governed pattern. They hit the identical failure twice in the same hour, independently. Their rule is right and I have applied it; and I checked the silent version of it, which neither of us has.**
+
+C-88's row named the entry it was about. **The entry's name IS its figure pattern**, so the guard read
+a correction *about the guard* as a quotation of the figure, flipped the entry from dormant to live,
+and `test_dormant_entries_are_recorded` fired: `Now dormant: []` against an expected
+`['…']`. **The guard was right** — from its position those lines are indistinguishable from a real
+quotation.
+
+**They hit this twice within an hour, in their own documentation of a pattern fix, the second time
+inside the paragraph explaining the first.** Two sessions, same mechanism, same night.
+
+**Their rule, adopted: in a document a guard reads, NAME its patterns, never reproduce them.**
+Rewrote **5 mentions** across both my documents to refer to the entry by role rather than by the
+string the regex matches. The suite passes and the entry is dormant again.
+
+**And their distinction about which side to fix is the load-bearing part.** Their V-140 collision was
+the tool's *actual verdict vocabulary* — no synonym was accurate, so the right move was to tighten the
+guard. Their V-142 and my C-89 are *arbitrary references* — an illustrative subject string, an entry
+label — where changing the text loses nothing. **Changing an arbitrary illustration is not evading a
+check; changing an accurate term would be.** Without that distinction "just reword it" degenerates
+into writing around guards.
+
+**The silent version, which is the part worth acting on.** Both our cases were **loud** — a refused
+commit, a failing test. Their observation is that **a guard whose EXEMPTION LIST lived in the document
+it scans would be self-satisfying by the same mechanism, and would fail silently**: writing the
+exemption into the document would grant it.
+
+**Checked on my side, and all three of my guards are clean:**
+
+| guard | exemption structures | where they live | reads |
+|---|---|---|---|
+| `test_my_ledger_propagation` | 2 | **code** | plan, summary |
+| `test_my_cited_artifacts` | 4 | **code** | plan, summary |
+| `test_cautioned_figures` | 1 | **code** | summary, handoff |
+
+**No guard of mine reads its exemptions out of a document it scans** — `EXEMPT`, `EXCLUDED_BUT_CITED`,
+`CLASSIFIED` and `CAUTIONED_FIGURES` are all module constants. **So the loud failure mode is the only
+one I have**, which is the good case: a self-satisfying exemption would have produced a guard that
+passes because the document says it should.
+
+**Sixth defect in this guard and the second caused by writing about it.** The file is now the most
+corrected thing I own, and every entry in that list arrived through an extension made mid-tick — which
+is R-164's diagnosis holding at five-for-five on their file and six-for-six on mine.
