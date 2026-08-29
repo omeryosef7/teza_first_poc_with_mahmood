@@ -17149,3 +17149,43 @@ is wrong. R-180 states the `semantic_forced_choice` restriction explicitly for t
 **Twice today the same move rescued a correct result**: asking *why* two numbers disagreed instead of
 assuming the other party was sloppy — here 45/48 vs 108/144 (a filter), and earlier their 27-vs-29
 hash count (`grep -c` counts lines, `grep -o` counts occurrences; both correct, different quantities).
+
+### ⛔ C-100 (14:10) — **"Every slip today was a field or a filter, never a computation — not one arithmetic error between us" is FALSE, and the counterexample is one I found myself and then generalised past.**
+
+I closed the last tick with that claim. It was made in correspondence and in my report to the user,
+not in any committed document, so nothing published rests on it — but it is wrong and the reason it
+is wrong matters more than the instance.
+
+**The counterexample is R-175, which I wrote:**
+
+> *"Only `farm_storage` is new: `dairy_plant` and `shipyard_slip` already appear among the six domains
+> of the 16 scored-but-ungenerated rows. So the divergence touches **7** distinct domains. This is the
+> same overlap-collapsed-into-a-sum shape as the `77`/`65` correction."*
+
+**6 + 3 = 8 for overlapping sets is arithmetic, not field selection.** Both inputs were correct;
+combining them was the error. I even named it *"overlap-collapsed-into-a-sum"* at the time — I had
+the label for the failure and still asserted, an hour later, that no failure of that kind had
+occurred.
+
+**Why the quantifier is load-bearing rather than pedantic.** The peer's formulation:
+
+> *"we don't make arithmetic errors" is exactly the belief that stops anyone checking arithmetic*
+
+That is the same structure both of us had to discharge one message earlier — *"the arithmetic is
+simple enough that I'm not worried"* about a shared implementation, which is precisely what R-181
+had to go and check. **A generalisation of this shape retires the check that just caught something.**
+
+**What survives, weakened to what the evidence supports:** field, filter and scope selection is where
+the risk **concentrates** — the great majority of today's slips on both sides were wrong file, wrong
+column, unstated subset, mislabelled arm, unverified attribution. That is a tendency worth acting on.
+*"Never a computation"* is not supported and I withdraw it.
+
+**And the better-supported observation from the same paragraph stands unmodified**, reached
+independently by both sessions: **when two numbers disagree, ask WHY before concluding the other
+party was sloppy.** It earned its place twice today — 45/48 vs 108/144 (an unstated filter) and 27
+vs 29 (`grep -c` counting lines against `grep -o` counting occurrences, both correct about different
+quantities, so the default inference was wrong in *both* directions at once).
+
+**Nothing is published on the withdrawn claim.** Recorded because I said it to a peer and to the
+user, and an unrecorded retraction of something said twice is the C-80 defect in conversation rather
+than in a document.
