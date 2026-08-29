@@ -15499,3 +15499,53 @@ your own tool refuses to pool). **Every one is a discipline I had already encode
 correction, a guard, or a tool default — and then did not apply in the next ad-hoc script.** The
 failure is not ignorance of the rule; it is that the rules live in artifacts and the ad-hoc scripts
 are written from memory.
+
+### ⛔ C-85 / 🔍 DR-19 (07:30) — **I proposed "run the audit through the tool that has the constraint compiled in", applied it to my own R-162 within the hour, and it immediately caught a published error whose DIRECTION was wrong. The tool refused the row outright.**
+
+**Deep review.** Full suite **1375 passed, 7 skipped**. `check_all` 9/9, 204 guard tests. **No
+malformed output roots** — their spaced-directory hazard (`--experiment` accepting prose) finds
+nothing on my side, checked because the flag would do it to me too.
+
+**The centrepiece is that my own remedy worked on me.** R-162 recommended routing audits through the
+tool rather than reimplementing the query inline. Doing that to R-162's own table,
+`mapping_installation_verdict.py` **refused a probe**:
+
+```
+[install] REFUSING lpQ14B_fc: 36 of 40 rows have a missing or non-finite
+p_concept/p_codeword. NaN would be counted as 'not a win' by the strict-> predicate
+rather than raising, so the fraction would be depressed silently.
+```
+
+**R-162 reported `q6A_lpQ14B_fc` as `INVERTED 4/40, p=1.9e-07`. The truth is `4/4 wins among 4 valid
+rows` — 36 of 40 are non-finite.** My filter tested `is not None`, which **NaN passes**; the strict
+`>` then counted all 36 as losses and manufactured a significant inversion. **The direction is
+backwards, not merely the magnitude** — I published "inverted" for a probe whose valid rows are 100%
+wins.
+
+**And the guard that catches it is mine.** V-54/R-105 put that NaN check in the tool precisely because
+`option_mass_gate` does not see it. **I wrote the guard, recommended using the tool, and then computed
+the audit inline anyway.**
+
+**What the tool supplied that my inline script did not** — the same three things they reported:
+
+| | inline | via the tool |
+|---|---|---|
+| verdict | "at chance" (prose) | **`NOT_ESTABLISHED`** / `INSTALLED` / `INVERTED` |
+| distance to a verdict | — | **`critical_k = 32`**, so `ticket_knife` at 30/48 is **two rows short**, `basket_gun` at 19/48 is **thirteen** |
+| provenance | terminal output | `outputs/boombness/mapping_installation_verdict/dr19_baseline_gate_20260829_060619_37733/` |
+
+**R-162's table is corrected:** 12 bind, **3 NOT_ESTABLISHED** (`ticket_knife` 30/48 p=0.111,
+`basket_gun` 19/48 p=0.193 — both matching C-31 exactly, and both **two and thirteen rows** short of
+`critical_k=32`), and **1 UNMEASURABLE** (`lpQ14B_fc`, 36/40 attrited) where I had written *inverted*.
+**The clean-negative conclusion survives** — nothing new about the at-chance banks — but a row of the
+table was wrong in direction.
+
+**This is the thirteenth instance and the first where the remedy caught it rather than the peer.**
+Every previous one was found by the other session reading my work, or by an enumeration I happened to
+run. This one was caught by a tool refusing input, in the first hour of applying the rule that
+predicts it. **That is the difference between a lesson and a mechanism**, demonstrated on the entry
+that proposed the distinction.
+
+*Their §16.1 re-run found the same shape on their side: numbers right, vocabulary and `critical_k`
+missing, no auditable artifact. **Getting the right answer inline is not the same as getting it
+defensibly** — and in my case the inline answer was not even right.*
