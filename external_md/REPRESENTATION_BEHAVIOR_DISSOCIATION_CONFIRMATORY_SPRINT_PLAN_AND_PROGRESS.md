@@ -2387,3 +2387,97 @@ staying quotable at the floor and refused at sprint grade; quantiles degrading t
 paired transitions counting both directions, reporting one-sided ids, and refusing a disjoint pair.
 
 **138 tests pass** across `asr_protocol` and adjacent suites; **9/9 guards**.
+
+---
+
+## §14.24 — `RBD-DR-003` · **§27 PRE-RESULT CODE REVIEW** — four reviewers, and it paid for itself before a single GPU second · 2026-08-30 09:15 IDT
+
+Four independent read-only reviewers over the intervention path, the population/parity, measurement
+validity, and SLURM/reproducibility. 182 tool calls, 422k subagent tokens. **§27 exists because a
+confirmatory matrix is expensive to waste; this review found three defects that would have wasted
+it, one of them in argsfiles I had just written.**
+
+### The three that would have ruined the run
+
+| # | finding | status |
+|---|---|---|
+| **E1** | **The baseline arm would have run a DIFFERENT ATTENTION KERNEL from the arms.** `score_behavior.py:1434` forces `eager` whenever a knockout is requested; `--attn-impl` **defaults to `sdpa`**. A baseline argsfile without an explicit `--attn-impl eager` compares sdpa generations against eager generations — a kernel-level confound on a greedy decode, invisible in every artifact. The corpus already contains the mismatched shape (`k640_p2A` eager vs `k640_p2C_band` sdpa). **My own smoke baselines had exactly this defect.** | **FIXED** — all four smoke argsfiles now carry `--attn-impl eager`; it is mandatory on every one of the matrix's argsfiles |
+| **E2** | **Copying the `p4b`/`q4b` argsfile conventions selects ZERO rows.** The new banks' only `bank_block` is `rbd_core`, so `--bank-blocks core2x2,core2x2_slot3` matches nothing. Worse, **without `--expect-n` a 0-row run writes a `DONE.json` and reads as ASR 0.** | avoided — the argsfiles use `--bank-blocks rbd_core --n-examples 8`, and `--expect-n` is now mandatory on every matrix run |
+| **E3** | **`paired_transitions` counted an unjudgeable row as a failure.** `cap_natural_experiment._succ` is `s is not None and float(s) >= 0.5`, so a row the judge could not score reads as a clean 0. Paired against a scored row on the other side it becomes a **spurious 0→1 flip feeding `net_down` and the McNemar p directly.** | **FIXED** — unscorable rows are **dropped and counted** (`n_dropped_unscorable`), never coerced; duplicated prompt_ids on either side are **refused** rather than last-wins. Two new tests. |
+
+### `RBD-C-009` · DEVIATION from PR-002.4: Qwen3 arm C band `27-38` → **`27-37`**
+
+PR-002.4 locked arm C's control bands by depth-matching. Reviewer 1 checked the arithmetic:
+
+| model | band | blocks | depth | width |
+|---|---|---|---|---|
+| Llama (32) | 6-14 (B/D/E) | 9 | 0.188–0.469 | **0.281** |
+| Llama (32) | **22-30** (C) | 9 | 0.688–0.969 | **0.281** ✅ |
+| Qwen3 (40) | 7-17 (B/D/E) | 11 | 0.175–0.450 | 0.275 |
+| Qwen3 (40) | **27-38** (C) | **12** | 0.675–0.975 | **0.300** ❌ |
+
+**Llama is exactly width-matched; Qwen3's arm C was one block wider than its own early band** —
++9.1% layers and, since `n_edits` scales linearly in `len(layer_idxs)`, **+9.1% masked edges**. If
+arm C had shown a larger effect than the early band on Qwen3 and not on Llama, *part of that would
+have been dose, not depth* — and dose-vs-identity is the confound that killed this project's entire
+`d_surface` causal line.
+
+**Amended to `27-37`** (11 blocks, depth 0.675–0.950). **Outcome-blind:** this is arithmetic over
+`num_hidden_layers`, computed before any Qwen3 run of any kind exists in this sprint.
+
+### Other findings, recorded
+
+* **MEDIUM — liveness is a COUNT gate, not a LOCATION gate.** `frac_rows_scope_live ≥ 0.99` proves
+  the hook fired on ≥99% of rows against the mode's >0/==0 table; it does **not** prove it edited
+  the *right* rows. `demo_key_positions` uses `.find` (first occurrence) while
+  `query_span_positions` uses `.rfind` (last) — a duplicated `demo_block` substring would mask the
+  wrong window with healthy liveness. Low risk (demo blocks are long), **but liveness cannot detect
+  it**, so it is not evidence of correct placement.
+* **MEDIUM — "exactly one prefill forward per row" is FALSE** under the default
+  `--readout-ids whole_answer`. `string_option_readout` issues one forward per chunk, and with
+  `max_batch` pinned to 1 under a knockout and 2 case-variants × 2 options that is **4 prefill
+  forwards per row**. All prefill, so the contract still holds — but `median_prefill_edits` is ×4
+  per row and **must not be read as a per-forward edge count.** The docstring at
+  `score_behavior.py:388` is wrong and is now known to be.
+* **MEDIUM — the ASR denominator is `n_rows`** (unscorable rows count as non-malicious), while
+  `judge_boombness`'s own `asr_by_condition` is over `ok` rows only. The two artifacts can sit in
+  one table disagreeing, and nothing flags it. `scorable_frac` is reported; nothing gates on it.
+* **MEDIUM — a sharded judge run (`--offset/--limit`) would trip the new `n_missing_ids` refusal.**
+  With 80 behavioural rows per arm, **do not shard**; if the driver shards, the guard fires and the
+  refusal will look like data loss.
+* **MEDIUM — `readout_reportability` has no caller** outside its own tests, so the producer's
+  per-readout verdict never reaches the table; it also reads `median` rather than `median_true`.
+* **LOW — `n_judged` is vacuous**: every row `judge_boombness` writes carries `judge_status`, so
+  `n_judged == n_rows` unconditionally. It is a MANDATORY diagnostic that can never discriminate.
+* **`_quantiles`, the hash-join ordering, and `missing_ids`: no defect found.** The hash comparison
+  sits inside the `g is not None` branch, so a join failure is counted once as `n_join_missing` and
+  not double-counted as a hash mismatch.
+
+### Operational facts now pinned (from reviewer 4)
+
+* **`--expect-n` for this design**, derived and verified from the banks: with
+  `--conditions natural_doublespeak --bank-blocks rbd_core --n-examples 8`, the **behavioural** run
+  is **80** rows and the **readout** run is **160** (80 forced-choice + 80 mapping-use), per bank
+  per arm. Both banks give identical counts.
+* **Argsfiles must live under `runargs/`** — `outputs/` is gitignored, and 674 existing argsfiles
+  live there **untracked**, which is why parts of the prior corpus are not reproducible from the
+  repo.
+* **Quotes in an argsfile are refused**; the file is word-split, so multi-word values must be joined
+  with underscores. Verified clean on all four smoke files.
+* **Never pass `--exclude` on the sbatch line** — it nullifies `#SBATCH --nodelist` and a job landed
+  on an RTX 3090 once; only the L40S guard caught it.
+* **≤2 concurrent Qwen3-14B weight loads IN TOTAL**, not per node — the documented 2-per-node rule
+  was **measured insufficient** (jobs 781410-781413 at the per-node cap still showed 0 rows after
+  16–28 min because the bottleneck is shared NFS, not the node).
+* **The judge takes one `P2_BANK` per invocation**, so the two banks are necessarily **two judge
+  sessions**; all arms of a bank must be in one manifest, and any cross-bank comparison is
+  cross-session and must be labelled as such.
+* **Generation is greedy** (`do_sample=False`), so `--seed` is **inert for generation** — seed
+  variation is not a source of variance to average over.
+* **Health check for the first 60s** of a smoke: `args:` line (printed before the GPU is touched),
+  `GPU ok: NVIDIA L40S`, the population filter line, the `band X-Y -> blocks .. of N` echo (Llama
+  must read `of 32`, Qwen3 `of 40`), and `KNOCKOUT PRE-FLIGHT` all-zeros. In `.err`, liveness is
+  **the weight-loading bar advancing**, not `squeue`.
+
+**75 tests pass** in `test_asr_protocol.py`. No GPU job has been submitted yet; the smoke gate is
+next.

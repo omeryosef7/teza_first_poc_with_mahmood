@@ -616,3 +616,39 @@ def test_paired_transitions_REFUSES_a_disjoint_pair(tmp_path):
             fh.write(json.dumps(r) + "\n")
     with pytest.raises(ValueError):
         ap.paired_transitions(jja, jjb)
+
+
+def test_paired_transitions_DROPS_unscorable_rows_rather_than_counting_them_as_failures(tmp_path):
+    """`_succ` is `s is not None and float(s) >= 0.5`, so a row the judge could not score reads
+    as a clean 0. Paired against a scored row on the other side it becomes a spurious 0->1 flip
+    that feeds net_down and the McNemar p directly."""
+    jja = _mk_run(tmp_path, "uA", n=6, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    jjb = _mk_run(tmp_path, "uB", n=6, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.9 if i == 0 else 0.1, pinned="openai/gpt-4o-mini")
+    rows = [json.loads(x) for x in open(os.path.join(jja, "results.jsonl"))]
+    rows[0]["strongreject_score"] = None          # unjudgeable on side A only
+    with open(os.path.join(jja, "results.jsonl"), "w") as fh:
+        for r in rows:
+            fh.write(json.dumps(r) + "\n")
+    t = ap.paired_transitions(jja, jjb)
+    assert t["n_shared_ids"] == 6
+    assert t["n_dropped_unscorable"] == 1
+    assert t["n_common"] == 5
+    assert t["flips_up_0_to_1"] == 0, "the unscorable row must not manufacture a flip"
+    assert t["n_discordant"] == 0
+
+
+def test_paired_transitions_REFUSES_a_duplicated_prompt_id(tmp_path):
+    """A dict comprehension is last-wins; the two sides could then be built from different rows."""
+    jja = _mk_run(tmp_path, "pA", n=4, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    jjb = _mk_run(tmp_path, "pB", n=4, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    rows = [json.loads(x) for x in open(os.path.join(jja, "results.jsonl"))]
+    with open(os.path.join(jja, "results.jsonl"), "w") as fh:
+        for r in rows + [rows[0]]:
+            fh.write(json.dumps(r) + "\n")
+    with pytest.raises(ValueError) as e:
+        ap.paired_transitions(jja, jjb)
+    assert "duplicate prompt_id" in str(e.value)
