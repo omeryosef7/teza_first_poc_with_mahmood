@@ -15060,3 +15060,51 @@ statistic, my C-62 regex denominator, C-77's `k=6`, and this. **The verified-fig
 tick cannot see any of them**, and I should stop treating "numbers reproduce" as evidence the prose is
 sound. That is now the third time I have written that lesson down tonight, which suggests recording it
 is not the same as applying it.
+
+### 🏆 R-158 (05:00) — **Their Phase-7 gate landed on the `d_naive` branch and closed the phase. Every figure reproduces. One reading their table invites does not hold: BOTH directions collapse, and "d_surface degrades, d_naive does not" is a difference in DETECTABILITY, not a tested difference.**
+
+Run against an analysis script committed before the outcome existed, 608 rows, **0/608 truncated**,
+all **152 (domain × dose) cells exactly 4/4** — guard #9 clean on the run that guard was built for.
+
+| direction | P_unseen (k=32) | wild p | P_seen (k=6) | difference CI |
+|---|---|---|---|---|
+| `d_surface` (candidate) | **−0.0550** | 0.1160 | +0.2700 | [−0.463, −0.087] |
+| `d_naive` (control) | **−0.0171** | 0.6808 | +0.1708 | [−0.440, +0.120] |
+
+**All three gate conditions fail and the positive control fails with them**, so this is the
+**untestable** branch — the design cannot separate *"boombness does not predict"* from *"these
+directions do not transfer"*. Their arithmetic checks out: **34 + 61 = 95** of **96 + 512 = 608**,
+seen ASR **0.3542** vs unseen **0.1191**, a **2.97×** gap.
+
+**The over-reading, which their conclusion does not need but their table invites.** Both point
+estimates collapse to essentially zero on unseen domains — `d_surface` **+0.2700 → −0.0550**,
+`d_naive` **+0.1708 → −0.0171**. The two difference CIs **overlap across [−0.440, −0.087]**, so there
+is **no evidence the candidate degrades more than the control**. "Degrades" vs "no degradation" is
+**one CI excluding zero and one not** — a statement about power, since `d_naive`'s difference is
+smaller *and* its interval wider. **The difference-of-differences was never computed**, and it is the
+only test that would license the asymmetry. Recorded because the row-pair reads as a contrast between
+the directions when it is a contrast between two detectabilities.
+
+**What I got right and what that was worth.** The `d_naive` control turned an unsupported claim into a
+scoped one — without it the write-up would have said *"boombness does not predict ASR on unseen
+domains"*, which these data do not support. The **collapse-vs-shrink** distinction decided the branch
+(−0.0171 at p=0.68 is collapse), and the **seen-domains-are-easier** watchpoint came back **confirmed
+at 2.97×** rather than merely unruled-out.
+
+**And the honest accounting of the lever we all three converged on.** *"More domains, not more rows"*
+was reached independently by my `2/2^k` floor, their Phase-6 cluster ceiling, and the ICC measurement.
+**We pulled it and the directions did not reach the new domains.** So the prescription was **right
+about the constraint and wrong about the remedy** — more domains did not rescue the estimate, it
+revealed there was nothing outside the fit set to rescue. Their framing is better than the ceiling
+argument that motivated it: **a ceiling is a limit; this is an answer.**
+
+**Their refusal to pick between the two surviving explanations is the right call.** The unseen set has
+real variance — per-domain ASR **min 0.000, median 0.125, max 0.375, only 4 of 32 at zero** — so it is
+not a floor artifact, and *"the directions are fit-set-dependent"* and *"the correlation lives only in
+high-attackability domains"* are both consistent. **Writing both is stronger than choosing the one
+that sounds more like a finding.**
+
+**Phase 7 closes on a powered transfer test rather than on §12.24's instability**, and §12.23-§12.24
+are downgraded to **fit-set-dependent** under a rule fixed before the number existed — with the
+seen-domain estimate **replicating** the earlier work (+0.2700 against +0.1783), so those correlations
+were never noise. **They were local.**
