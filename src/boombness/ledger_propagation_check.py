@@ -113,6 +113,7 @@ TRACE_TOKENS = {
     "§12.28.1": ["understates", "in NEITHER file", "511"],
     "§12.28.2": ["CHECK_3_MECHANISED", "501 comparable", "TESTING THE CHECK IS NOT TESTING THE GUARD"],
     "§12.28.3": ["GUARD_WIRING_PROBE", "8 of 9 demonstrated wired", "audit #11's defect surviving on"],
+    "§12.28.4": ["NO_OPINION_VS_PASSED", "UNCHECKABLE", "fitN_concept"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],

@@ -152,15 +152,40 @@ def scan_file_agreement():
     return problems, comparable, not_comparable
 
 
+def is_a_run(run_dir, rowfile):
+    """A DONE directory that is actually a generation run, not a fit or export artifact.
+
+    ⛔ THE DISTINCTION THIS DRAWS WAS PREVIOUSLY MADE BY SILENCE (§12.28.4). `scan()` dropped any
+    directory whose `config.json` would not parse, with no counter — so `fitN_concept` and three
+    siblings, which are fit artifacts carrying neither a config nor a row file, were skipped
+    identically to how a REAL run that lost its config would be skipped. The guard printed
+    "210 finished runs carry an expect_n", which reads as *not applicable* when it also meant
+    *could not tell*. Those two states shared an output line, which a peer named as the general
+    form of the `canonical_figures` defect.
+
+    A run is anything that persisted a row file. That splits the cases: no config AND no rows is a
+    non-run and is counted as one; no config WITH rows is a run whose expectation cannot be
+    recovered, which is a defect.
+    """
+    return os.path.isfile(os.path.join(run_dir, rowfile))
+
+
 def scan():
-    problems, checked = [], 0
+    problems, checked, non_runs = [], 0, []
     for root, rowfile in sorted(ROW_FILE.items()):
         for d in sorted(glob.glob(os.path.join(ROOT, "outputs", "boombness", root, "*/"))):
             if not os.path.isfile(os.path.join(d, "DONE.json")):
                 continue
+            rid_ = os.path.basename(d.rstrip("/"))
             try:
                 cfg = json.load(open(os.path.join(d, "config.json"), encoding="utf-8"))["args"]
             except Exception:
+                if is_a_run(d, rowfile):
+                    problems.append((rid_, "persisted rows but its config.json is missing or "
+                                           "unreadable -- its --expect-n cannot be recovered, so "
+                                           "this run is UNCHECKABLE rather than complete"))
+                else:
+                    non_runs.append(rid_)
                 continue
             expect = cfg.get("expect_n")
             if not expect:
@@ -187,11 +212,11 @@ def scan():
                 problems.append((rid, f"{ci[2]} of {ci[1]} (domain x dose) cells hold fewer than "
                                       f"the modal {ci[0]} rows -- loss is NON-UNIFORM, which is "
                                       f"what biases a clustered analysis"))
-    return problems, checked
+    return problems, checked, non_runs
 
 
 def main() -> int:
-    problems, checked = scan()
+    problems, checked, non_runs = scan()
     fa_problems, comparable, not_comparable = scan_file_agreement()
     problems += fa_problems
     if checked < MIN_EXPECTED:
@@ -203,7 +228,8 @@ def main() -> int:
               f"expected at least {MIN_COMPARABLE}. Check 3 has collapsed to a no-op.")
         return 1
     print(f"[run-complete] {checked} finished runs carry an expect_n; "
-          f"{len(KNOWN_SHORT)} documented short")
+          f"{len(KNOWN_SHORT)} documented short; "
+          f"{len(non_runs)} DONE dirs are not runs (no config and no row file)")
     print(f"[run-complete] file agreement: {comparable} runs comparable, {not_comparable} NOT "
           f"comparable (no generations dumped) -- and file agreement sees only one-sided losses, "
           f"never rows missing from both files")

@@ -7524,6 +7524,52 @@ contamination found while writing it: the anti-vacuity test read the *cached* mo
 deformation an earlier test had left in `FIGURES`. **A test that inherits a previous test's mutation
 is testing that mutation.** It reloads now, and passes in isolation and in reverse order.
 
+### §12.28.4 ⛔ CORRECTION: "no opinion" and "passed" shared an output line in check 1 too
+
+A peer generalised the `canonical_figures` defect past its instance, and the general form is worth
+more than the fix was:
+
+> **Any guard whose "no opinion" and "passed" states share an output line has that defect latent.**
+
+Probing my own guards for it found a live instance in `run_completeness_check`'s check 1. Every DONE
+directory whose `config.json` would not parse was dropped by a bare `except Exception: continue`,
+**counted nowhere**:
+
+    run dirs                668
+      no DONE.json           41   unfinished, legitimately out of scope
+      DONE                  627
+        config unreadable      4   ⛔ SILENT -- no counter reported these at all
+        no expect_n          413   reported implicitly, via `checked`
+        CHECKED              210
+
+The four are `fitN_concept`, `fitN_concept_bk`, `fitU_button_bk`, `fitW_codeword` — fit artifacts
+carrying neither a config nor a row file, so genuinely out of scope. **That is not the point.** The
+guard printed *"210 finished runs carry an expect_n"*, which reads as **not applicable**, while the
+same silence also covered **could not tell** — and a real run that lost its `config.json` would have
+been dropped by the identical branch, invisibly, while the guard reported success.
+
+The distinction is cheap once named, because a run is anything that **persisted a row file**:
+
+    no config AND no rows   -> a NON-RUN. Out of scope, but COUNTED and printed.
+    no config WITH rows     -> a run whose --expect-n can never be recovered: UNCHECKABLE,
+                               which is a defect, not a skip.
+
+Live output now ends `...; 4 DONE dirs are not runs (no config and no row file)`. Three mutants, all
+killed: collapse both cases to non-runs (the old silent behaviour, 2 tests), collapse both to defects
+(4 tests), and compute `non_runs` but drop it from the output (3 tests). Two pre-existing tests
+called `scan()` expecting a 2-tuple and were updated rather than loosened.
+
+**PR-39, verified independently.** The peer's cluster arithmetic reproduces exactly here from the
+counts alone — `pre12` 6 of 7 informative domains negative gives an exact two-sided sign p of
+**0.1250**, `pre10` 4 of 5 gives **0.3750** — and, importantly, **neither design is degenerate**: the
+attainable floors are 2/2⁷ = **0.0156** and 2/2⁵ = **0.0625**, so these are real nulls and not the
+`2/2^k` floor artefact of §19. Their own framing is the correct one and matches this document's
+standing rule: **reinstated as a ROW-LEVEL effect, not established at cluster level**, since quoting
+the row-level PASS alone would be C-70 again. Worth recording alongside it: 12 fewer rows of 160
+across 7 informative domains is ~1.7 rows per domain, against domain deltas of −0.25, −0.31 and
+−0.19 concentrated in three — the effect is real but **carried by a few clusters**, which is exactly
+what a domain-level test is supposed to refuse to generalise from.
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the
