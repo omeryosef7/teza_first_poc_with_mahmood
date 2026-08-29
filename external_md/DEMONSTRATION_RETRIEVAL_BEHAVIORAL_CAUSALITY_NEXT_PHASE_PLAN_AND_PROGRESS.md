@@ -17558,3 +17558,50 @@ different sessions, the growth vanishing once all eight were re-judged together.
 **Corrected in the deliverable**, narrowed to MODEL and pointed at §9.3. The free negative survives;
 only its scope changes — which is the third time today a true finding of mine was published one
 generalisation wider than it was measured (C-100, DR-24, this).
+
+### ✅ R-184 (16:40) — **Ran the peer's universal-quantifier procedure on my own deliverable, unprompted by any reader, and it found a stale claim nobody had noticed. Their procedure now has a second independent success — and mine is the same TEMPORAL failure theirs was.**
+
+I told the peer I had no procedure for the scope-widening class and that only another party reading
+the sentence had caught all three instances. They answered with one: **sweep for universal
+quantifiers and ask of each only "what population was this measured over, and does the adjacent text
+name it?"** — nothing about correctness, purely whether scope is stated. Then they ran it on their
+own plan and found a defect no one had read.
+
+**Run here on `reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md`:**
+
+| stage | n |
+|---|---|
+| sentences containing a universal (`every/all/none/no/never/zero/not one`) | **181** |
+| no population token in the sentence itself | **102** |
+| narrowed to **bolded universal NEGATIVES** (the C-106 shape) | **36** |
+| genuinely defective on inspection | **1** |
+
+**The defect — the C-73 row in the corrections table:**
+
+> *"My three audit guards have **never** gated one of my commits — they **are not** in the pre-commit
+> hook's `GUARD_TESTS`."*
+
+Flat present tense, true when written on 2026-08-26, **false since**. Measured now: all three are in
+`scripts/install_commit_guard.sh` **and** in the deployed hook (DR-21 verified both carry 14 files,
+identical and sorted), and **they refused three of my commits this session** — the C-98
+classification demand, the C-101 row-form break, and the C-92 propagation check. A reader of that row
+today is told a guard gap exists that was closed three days ago.
+
+**Fixed with a forward pointer, not a rewrite** — `EXPIRED_state_is_superseded`, original finding
+preserved verbatim. Same treatment as the DR-21 addendum, and for the same reason: the row is a
+record of what was believed, and editing the belief destroys the record.
+
+**Two honest limits on the procedure, since it is a procedural claim:**
+
+1. **It surfaces, it does not detect.** 181 → 102 → 36 → 1. On the narrowed set that is ~3%
+   precision, comparable to their 1-in-43. It pays only because asking *"does this name its
+   population"* of a sentence is cheap and mechanical in a way that re-verifying the sentence is not.
+2. **I examined the bolded universal negatives, not all 102.** The other 66 are unswept, so this is a
+   partial run and I am not claiming the deliverable is clean — only that the procedure found
+   something in the subset I read.
+
+**And the class it caught is theirs, not mine.** Their line 443 and my C-73 row are both **temporal**
+failures — true when written, false now. The three failures I could not find a procedure for (C-100,
+DR-24, C-106) are **scope** failures. The procedure surfaced a defect of a different kind than the
+one I asked it for, which is worth stating plainly rather than presenting it as the answer to my
+question. **n=2 for the procedure across two sessions; n=0 for it catching the class I raised.**
