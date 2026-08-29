@@ -17034,3 +17034,46 @@ and unverifiable. **That is the informative shape of a clean sweep: it says how 
 what the single exception was**, rather than reporting a category as checked.
 
 Corrected in the deliverable's R-171 row and its corrections table. **Not** in `RESEARCH_HANDOFF.md`: I wrote that it was, then checked — R-171 is not cited there at all, so there is nothing to qualify. Left as a note rather than a silent edit, because a correction entry that claims a propagation it did not make is the defect C-80 and C-90 were about.
+
+### ⛔ C-99 (12:55) — **C-98 IS WITHDRAWN. The Llama × `ticket_bomb` × `legacy` cell is NOT missing — it is in MY OWN TREE, under an arm labelled `C_band_L6_14`. My search filtered on the arm NAME containing "legacy". Fifth matcher artifact today, and the first of mine in the EXPENSIVE direction: it sent the concurrent session to search their tree for a run that was in mine.**
+
+C-98 reported *"0 matching forced-choice runs"* for Llama × `ticket_bomb` × `legacy` and concluded
+R-171's bank half was inherited and unverifiable. **The run exists**:
+`score_behavior/p5C_ticket_bomb_20260828_014653_2524606`.
+
+    arm       = C_band_L6_14
+    intervene = demo_all:attn_knockout:6-14:1.0
+    bank      = boombness_prompt_bank_ticket_bomb.jsonl
+
+**Re-derived against `tbA` on their 48 shared `prompt_id`s:**
+
+| quantity | measured | recorded at plan:9168 |
+|---|---|---|
+| baseline mapped-wins | **45** | 45 |
+| `legacy`-scope mapped-wins | **15** | 15 |
+| d | **−30** | −30 |
+| median option mass (arm) | **0.1152** | 0.1162 |
+| median option mass (baseline) | **0.5534** | 0.5695 |
+
+**The load-bearing quantities reproduce exactly.** The two option-mass medians are close but not
+identical, so the recorded masses were computed on a slightly different basis or baseline run
+(`c5A_tb_b1` is the 192-row sibling); I am **not** asserting a perfect match, only that the
+mapped-wins cell is sourced and correct.
+
+**The error.** My sweep tested `"legacy" in arm.lower()`. This run's arm is labelled by its **band**,
+not its scope — the `--intervene` string `demo_all:attn_knockout:6-14:1.0` *is* the unscoped mask, but
+the label never says "legacy". I searched the label and the semantics live in a different field.
+**R-172's "right artifact, wrong field", now for the fifth time today**, and the exact failure C-94
+recorded: a matcher keyed on the wrong amount of the wrong string.
+
+**⚠ This is the expensive direction, and it is mine.** DR-21 named the asymmetry — a false negative
+costs only the session that made it, a false positive costs the other one — and I logged the peer's
+instance while noting the expensive case was untested from my side. **It is tested now and I failed
+it.** I asserted a cross-tree absence; they spent a tick enumerating 45 runs by config to confirm
+something that was sitting in my own `outputs/`. Their answer was correct about *their* tree and my
+question was malformed.
+
+**Restored:** R-171's bank half is **verified from artifacts in this tree**, not inherited. The 2×2
+stands as originally written — Llama `main` 42→41 INTACT, Llama `ticket_bomb` 45→15 DESTROYED, Qwen3
+`main` 32→4 DESTROYED, Qwen3 `ticket_bomb` VOID — and *"moderated by BOTH"* needs no qualification.
+**C-96 and C-97 are unaffected; only C-98 is withdrawn.**
