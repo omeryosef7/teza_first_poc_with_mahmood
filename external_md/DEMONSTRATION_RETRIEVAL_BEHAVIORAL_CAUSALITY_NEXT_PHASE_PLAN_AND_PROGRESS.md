@@ -16017,3 +16017,43 @@ again: a check applied outside the conditions that justify it.
 pattern across all three is that the finding transfers but the verdict does not. Their dead keys were
 22; mine 0. Their orphan case was a dangling forward reference; mine was a correction the log never
 had. Their bold marker was a real miss; mine is correct behaviour.*
+
+### ⛔ R-167 (10:20) — **Their two audit items ported. The Monte Carlo hazard does not reach me — zero p-values in the 0.04-0.06 band. The staleness one does: THREE assertions of pending work that had already landed, two of them in the claim ledger.**
+
+**Their p-value hazard, checked: clean, and for a structural reason.** Scanning all three documents
+for `p = …` in **0.04-0.06**: **zero hits**. My only Monte Carlo p is DR-15's interaction permutation
+at **p = 0.0064, B = 20000** — MC standard error **0.00056**, 95% band **0.0053-0.0075**, and the
+0.05 threshold is **77 standard errors away**. Every other p I quote is an **exact** enumeration
+(sign tests, Clopper-Pearson, exact binomials), which has no seed to vary. **Their hazard needs a
+borderline p from a sampled procedure and I have neither.**
+
+**Their staleness item does reach me, and the distinction that matters is document KIND.** The plan
+is **append-only**, so its 57 pending-assertions are historical by construction and correct. The
+**claim ledger and summary are state documents**, and there the same sentence is a claim about now:
+
+| location | assertion | reality |
+|---|---|---|
+| **C5**, ledger | *"a batch-1 baseline rerun is pre-registered"* | **it ran** — job 789939 / R-114, confound measured to **zero**, both legs held |
+| **C9**, ledger | *"the remedy; queued, not launched"* | **it ran** — PR-36 (−18 at 0.0000 truncation, R-143) and PR-38, all three gates passed (R-154) |
+| C-60, summary | *"640-cap rerun queued behind the six-job cap"* | ran — R-143/R-154 |
+| C13, ledger | *"SUSPENDED pending the 640-cap rerun"* | **still accurate** — C13's rerun was never run |
+
+**A reader of C9's ledger row would have found a completed, gate-passing result and a sentence in the
+same cell saying the work was not launched.** That is their §0.3 exactly.
+
+**Fixed differently by document kind, which is a distinction their case did not need.** The two
+**ledger** rows are current-state and are marked **EXPIRED with the outcome**. The **corrections-table
+row is a historical record** — it states what was true when written — so it gets a **forward pointer**
+and is *not* revised. **Rewriting a correction row to match later evidence would destroy the audit
+trail the table exists to be.**
+
+**And their reason for not mechanising this is right, with one addition.** Reachability is decided
+from the **scanner**; expiry is decided from **the world** — whether a job ran, whether a population
+landed — so a checker could list candidates but not adjudicate them. **The addition: on my side it is
+not even a uniform list.** The same phrase is *correct* in the plan and *stale* in the ledger, so any
+mechanical sweep would have to know which documents are logs and which are state — and would report
+57 false positives against 3 real ones. **An audit item, not a guard**, and the ratio is the argument.
+
+*Their finding-transfers-verdict-doesn't observation holds a fourth time: their §0.3 was one stale
+gate section; mine was three assertions across two documents, two of them inside claim rows that also
+carried the completed result.*
