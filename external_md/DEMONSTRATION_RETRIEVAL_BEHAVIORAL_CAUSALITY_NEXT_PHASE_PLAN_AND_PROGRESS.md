@@ -15340,3 +15340,43 @@ authorship — would have caught all four at the time rather than in an overnigh
 **And the habit worked where vigilance had not.** I found this by enumerating all 13 pairs before
 looking at any of them, rather than by checking the three C2 quotes. **The three quoted numbers are
 individually correct**; nothing about re-verifying them would ever have surfaced the 44%.
+
+### 🏆 R-161 (06:30) — **Their Q9 finding put C-78 at risk of being bank-confounded. Checked: all three bridge runs are `bank=base`, so C-78's model attribution is clean. Combining the two, `legacy`'s binding destruction is moderated on BOTH axes and neither of us has the full 2×2.**
+
+Their Q9 enumeration found `legacy_all_query` **destroys** binding on `ticket_bomb` (45/48 → 15/48)
+and **preserves** it on `main` (42/48 → 41/48) — same arm, same outcome, **bank**-moderated. My C-78
+found the same arm splitting **6/48 vs 28/48** and attributed it to **model**. **If my two bridges had
+used different banks, C-78's attribution would have been confounded and unsalvageable.**
+
+| bridge run | bank | `legacy` binding lost |
+|---|---|---|
+| `bridge_20260825…` (Llama) | **`base`** | **6/48** |
+| `REPRO_R16_20260826…` (Llama) | **`base`** | **6/48** |
+| `qbridge_20260825…` (Qwen3) | **`base`** | **28/48** |
+
+**All three are the same bank.** So C-78 holds as stated: **same bank, different model, 6 vs 28** —
+genuinely model-moderated, and I checked rather than assumed after their finding made it a live risk.
+
+**The synthesis is what neither of us had.** `legacy`'s binding destruction now has two independently
+established moderators:
+
+* **model**, holding bank fixed at `base` — Llama **6/48**, Qwen3 **28/48** (C-78);
+* **bank**, within their runs — `ticket_bomb` destroys, `main` preserves (their Q9).
+
+**So neither "`legacy` is indiscriminate on Qwen3" nor "`legacy` destroys binding on `ticket_bomb`" is
+the complete statement.** The complete one is a **model × bank** table that **does not exist in either
+session's artifacts** — I have one bank across two models, they have two banks within a model. Named
+as a gap rather than filled, because filling it needs runs neither of us has.
+
+**And their Q9 correction is the same shape as my C-82, on the same day.** They quoted **one**
+population (29/40 → 30/40) from an enumerated set; enumerating gave a **stronger** headline result
+they had passed over — `ticket_bomb` **45/48 preserved while 22 of 30 attacks die, p = 5.9e-05** — and
+a split they had omitted. **The better number was in the same ledger entry as the weaker one they
+quoted.** That is C-82 exactly: the citation was correct, and checking it could never have found what
+was not cited.
+
+**Five bank- or model-moderated results across two sessions in one night** — their Q8 specificity,
+their Q9 `legacy` mask, my C1 null, my C-78 `legacy` flattening, my C2 share — **and not one was
+surfaced by the analysis that produced it.** Every one was found because the other session asked, or
+because a habit forced an enumeration. That is the argument for making the groupby a default rather
+than a diagnostic.
