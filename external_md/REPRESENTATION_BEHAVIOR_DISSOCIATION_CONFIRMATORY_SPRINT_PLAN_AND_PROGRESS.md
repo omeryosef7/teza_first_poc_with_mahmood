@@ -3141,3 +3141,64 @@ Outcome B; the behavioural estimand is not established on this population.**
 
 **Nothing was changed in response to any of these numbers.** No threshold, margin, arm, bank or
 population has been adjusted. T7 runs as written.
+
+---
+
+## §14.34 — `RBD-C-011` · **T7, my own registered fallback, is STRUCTURALLY INCAPABLE — declared before running it** · 2026-08-30 01:50 IDT
+
+T7 specified: on a T6 headroom failure, *"re-run that model at `n_examples = 16` on the same bank."*
+Before building it I checked its arithmetic, and it cannot work.
+
+**At `n_examples = 16` the population HALVES.** `_take` starts at `(slot × 3) mod 20` over a
+20-sentence per-split pool, so the pairwise-disjoint slot count is `floor(20/n)`:
+
+| n_examples | disjoint slots | families / domain / pair | **pooled behavioural rows** |
+|---|---|---|---|
+| **8** (used) | 2 | 4 | **160** |
+| **16** (T7) | **1** | 2 | **80** |
+
+Verified empirically: at n=16, slots 0 and 1 share **13 of 16** sentences — only one slot is
+disjoint. Using two would emit rows that share demonstrations, which is the failure G2 was retracted
+for.
+
+**So T7 would measure 80 rows instead of 160.** At the observed baseline rate (0.075) that is
+**≈ 6 expected baseline attacks against a required 14**. To pass T6 the dose change would have to
+**more than double the attack rate** — against a prior dose ladder that is **non-monotonic and
+FALLS at 16**.
+
+> **T7 as a headroom remedy is declared UNINFORMATIVE BY CONSTRUCTION and will not be run as one.**
+
+This is the identical discipline the sprint has applied twice to others' work and now applies to my
+own: `pre10`'s k=5 cluster test had an attainable floor of 0.0625 > α, so **no arrangement of the
+data could have cleared it**, and it was quoted as a negative anyway (prior `C-95`). Running a test
+that cannot reach its threshold and then reporting the outcome is the error, whichever direction the
+outcome falls in.
+
+**It is also the same defect class as `RBD-C-004`:** I wrote a preregistration clause without
+checking `_take`'s slot arithmetic. That arithmetic was equally discoverable both times.
+**Two registered design decisions in this sprint have now been wrong for the same reason** — and in
+both cases the check that caught it took under a minute and was run only because a *result* forced
+me to look. The rule that follows: **any clause that names an `n_examples` value must state the
+resulting family count and row total at the time it is written.**
+
+### What replaces it
+
+**Nothing, for T6.** The headroom failure stands and the behavioural estimand remains **DECLINED**
+(`RBD-R-031`). §30 forbids substituting a bank, a concept, a threshold or a margin to rescue it, and
+no such substitution is being made.
+
+### `RBD-PR-005` — the same run, relabelled honestly, as an EXPLORATORY diagnostic
+
+The n=16 build is still worth ~4 GPU runs, but **not as a T6 remedy**. It answers the question
+`RBD-R-031` left open and which matters for the handoff:
+
+> **Is the low baseline ASR DOSE-driven or CONCEPT-driven?**
+
+If ASR rises materially at n=16, the floor is a dose artifact of this design. If it does not move —
+which prior evidence predicts — the floor belongs to **`poison` / `missile` as concepts**, and the
+implication for future work is that **pair selection must screen for behavioural headroom on a
+DEVELOPMENT population before a pair is committed to**, which is a screening step this sprint did not
+have and which does not contaminate a confirmation.
+
+**Labelled `EXPLORATORY` under §30 and it cannot promote any declined estimand**, whatever it shows.
+It is queued **behind** the Qwen wave, which is registered primary work and has GPU priority.
