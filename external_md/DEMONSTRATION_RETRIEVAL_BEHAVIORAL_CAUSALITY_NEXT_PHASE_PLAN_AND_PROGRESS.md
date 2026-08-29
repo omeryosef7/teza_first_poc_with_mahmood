@@ -17339,3 +17339,42 @@ nothing in R-171 or R-93 rests on the masses.
 It does not cover other banks, other statistics (trimmed means, per-block medians), or runs outside
 this tree — so it establishes irreproducibility **here under these definitions**, not that the
 figures were never computed anywhere.
+
+### ⛔ C-102 (14:35) — **I reported to the user that jobs 741053/741054 are RUNNING and 741057 PENDING. They do not exist. `sacct` shows a frozen accounting row; the live scheduler has no record of them. My disposition was right and my premise was false.**
+
+Verified directly rather than adopted from the peer's report:
+
+| source | 741053 / 741054 / 741057 |
+|---|---|
+| `squeue -u $USER` | **no rows** |
+| `squeue -j 741053,741054,741057` (explicit ids) | **no rows** |
+| `scontrol show job 741053` | **`slurm_load_jobs error: Invalid job id specified`** |
+| `sacct -j …` | **RUNNING / RUNNING / PENDING**, `Elapsed` **19-13:08:57**, `End` **Unknown** |
+
+`scontrol` is the live scheduler and has no record. So the `sacct` rows are **orphaned accounting
+records**: the jobs died without `slurmctld` closing them out, the State froze mid-value, and
+`Elapsed` has been counting for nineteen days against nothing. **No GPU is held and there is nothing
+to cancel.**
+
+**Why this is operational and not pedantry.** Section 18's standing rule is *"if a job is PENDING
+over 30 minutes, scancel and resubmit with a different config"*. Read against `sacct`, **741057 has
+been PENDING for nineteen days** and demands action — action that would mean cancelling a job that
+does not exist and resubmitting work from a phase closed weeks ago. **The rule is sound; the source
+decides whether it fires correctly.**
+
+    LIVENESS -> squeue / scontrol.     HISTORY -> sacct.
+    A State field in an accounting database records what was last WRITTEN, not what is TRUE.
+
+That is the same shape as this repo's standing note that a hung job is told from a slow one by the
+weight-loading bar in `.err` rather than by a scheduler status field — and, less comfortably, the
+same shape as most of today: **a field that reads as current state without being it**, which is
+exactly the DR-21-addendum defect (`EXPIRED_count_is_superseded`) arriving from the infrastructure
+rather than from my own prose.
+
+**Corrected to the user.** I flagged these as possibly-stale jobs worth their attention; the honest
+statement is that nothing is running and there is nothing for them to look at.
+
+**Accepted, and it strengthens R-183:** the peer read `option_mass` directly — only I computed
+`p_concept + p_codeword` by hand. So the field and the hand computation agreeing was established
+across *two different access paths*, not one, which is a better elimination of the wrong-field
+hypothesis than R-183 claimed.
