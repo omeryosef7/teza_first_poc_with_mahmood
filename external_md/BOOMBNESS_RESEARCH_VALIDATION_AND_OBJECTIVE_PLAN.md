@@ -7346,3 +7346,66 @@ independent behavioural proofs plus two restatements.
 
 Both are kept: they stop a future edit lowering the floor or changing the mapping silently. That is
 a real guarantee, it is just enforced by construction rather than demonstrated.
+
+## §12.30 — GATE RESULT: neither direction transfers. Phase 7 is CLOSED as UNTESTABLE, and §12.23–§12.24 are downgraded
+
+**Run against the analysis script committed in V-121 before the outcome existed, unmodified.**
+608 rows, 0/608 truncated, max 536 tokens of 640, all 152 (domain × dose) cells at exactly 4/4,
+guard #9 clean, judge `null_frac` clean. ASR 95/608.
+
+| | `P_unseen` (32 domains) | wild cluster p | `P_seen` (6 domains) | `P_unseen − P_seen` 95% CI |
+|---|---|---|---|---|
+| `d_surface` **(candidate)** | **−0.0550** | 0.1160 | **+0.2700** | [−0.463, −0.087] **DEGRADES** |
+| `d_naive` **(positive control)** | **−0.0171** | 0.6808 | +0.1708 | [−0.440, +0.120] no detectable degradation |
+
+**All three pre-registered conditions fail**, and the positive control fails with them. Per
+§12.27.1, that is the **"untestable on this bank"** branch, not the clean-fail branch:
+
+> **PHASE 7 GATE: CLOSED.** Neither direction transfers to unseen domains, so this design cannot
+> speak to the objective question. **No GCG/MAC objective is being built.**
+
+### ⛔ §12.23 and §12.24 ARE DOWNGRADED TO FIT-SET-DEPENDENT, as pre-registered in §12.27.2
+
+Those sections measured within-dose correlations of +0.172/+0.446/+0.321/+0.280 and an incremental
+partial of +0.1924 — **on the 6 domains the directions were fitted from**, with a dev/heldout split
+that shuffled rows inside those same 6. The seen-domain estimate here **replicates them**
+(+0.2700 against §12.24's +0.1783 full-control partial), so those numbers were not noise. But the
+same statistic on 32 unseen domains is **−0.055**, and the marginal correlation goes from **+0.315
+seen to −0.010 unseen**.
+
+Their correlations are hereby relabelled **"measured on the 6 domains the directions were built
+from; transfer untested"** — and now, transfer *tested and absent*. This is the largest single
+correction of the sprint and it was named in §12.27.2 before the number existed.
+
+### The confound I pre-registered as unremovable is real, and it is large
+
+§12.27.2 recorded that with 6 seen against 32 unseen the seen half cannot be characterised, so
+"the fit domains are systematically easier" could not be ruled out. It is not ruled out — it is
+**confirmed as a difference**: seen ASR **34/96 = 0.354**, unseen **61/512 = 0.119**, a 3× gap.
+
+**But the unseen set is not at a floor**, which matters for what the null means: unseen per-domain
+ASR runs min 0.000, median 0.125, max 0.375, with only **4 of 32 domains at zero**. There is real
+outcome variance in the unseen domains and neither direction predicts any of it.
+
+So two explanations survive and this design separates neither:
+
+1. the fitted directions are **fit-set-dependent** and do not generalise; or
+2. the correlation exists only in **high-attackability domains**, and the 6 fit domains are 3× more
+   attackable.
+
+**That is precisely why the verdict is "untestable" rather than "boombness does not predict".** A
+clean fail would have required the positive control to transfer while the candidate did not; instead
+both collapsed together, which is the signature of a problem with the *setup* rather than with the
+candidate.
+
+### What survives the sprint's Phase 7 question
+
+* **Nothing licenses building an objective.** That answer is unchanged and now rests on a properly
+  powered transfer test rather than on §12.24's instability.
+* **The within-6-domain correlations are real but local.** They replicate across two bank builds and
+  are not artifacts of the earlier analysis; what they are not is evidence about the model in
+  general.
+* **The remedy is not more domains after all.** Three separate analyses said "more domains is the
+  only lever"; 38 domains were run and the answer was that the directions do not reach them. The
+  lever was real and pulling it produced a negative — which is a better outcome than the ceiling
+  argument that motivated it, because it is an answer rather than a limit.
