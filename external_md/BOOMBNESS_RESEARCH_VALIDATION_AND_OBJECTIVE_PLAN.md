@@ -7370,6 +7370,68 @@ dangerous artifact this sprint has produced, because everything about it looks f
 > identical, so intersection *is* the full population there — but for the quarantined run the claim
 > is bounded exactly as theirs is.
 
+### §12.28.1 ⛔ CORRECTION: file agreement UNDERSTATES the damage fourfold — and my own sweep inherits it
+
+Two corrections from a peer, both verified here; the second retracts the framing of the finding above.
+
+**⛔ I said 8 distinct domains were touched by the divergence. It is 7.** `dairy_plant` and
+`shipyard_slip` appear in *both* the only-results and only-gens sets, so 6 + 3 is not 9 or 8 — the
+union is **7**. That is a sum where an overlap belonged, the same shape as the 77-vs-65 error in
+§12.21, one level down.
+
+**⛔ And 7 is the wrong denominator, which indicts the method both sessions used.** Of the **81**
+designed rows absent from the 527 intersection (608 − 527), only **20** are one-sided — and a
+gens-vs-results comparison *can only ever see those 20*. The other **61 rows are in NEITHER file**
+and leave nothing to compare. Concretely, 4 of the 11 reduced domains — `harbour_dock`,
+`museum_archive`, `rail_depot`, `warehouse_logistics` — are **not touched by the divergence at all**;
+their entire loss sits in the invisible 61.
+
+> Characterise the damage from crossing id-sets and you get **7 clusters, 20 rows**.
+> The truth is **11 clusters, 81 rows**. File agreement understates by **4× on rows** and misses
+> **a third of the affected clusters**.
+
+**This is a property of the method, not of this run**: the rows that failed hardest are absent from
+both files by construction, so damage characterised from file agreement will *always* understate.
+
+**MY SWEEP OF THIS TICK IS THE SAME INSTRUMENT AND CARRIES THE SAME BLINDNESS.** I had just swept
+all run roots comparing `set(gens_ids)` against `set(results_ids)`, and it must be recorded with its
+limits rather than as a completeness result:
+
+    runs where both files exist:  585
+      identical id-sets:          508
+      MISMATCHED:                  77  -- of which 74 have a 0-BYTE gens.jsonl
+    genuinely comparable runs:    511  (508 + 3)
+
+Two limits, and the first is mine alone:
+
+1. **The coverage denominator is inflated.** 74 of the 77 "mismatches" are runs where gens dumping
+   was simply never enabled — a 0-byte file, not corruption. The sweep therefore compared **511**
+   runs, not 585. It was loud here only because an empty set mismatches everything; **written the
+   natural way (`if gens and gens != results`) it would have silently passed all 74** — the
+   degenerate-pass class again, and this time in a check I wrote after building the guard for it.
+2. **The blindness above.** Even on the 511, the criterion cannot see rows missing from both files.
+
+What the sweep *does* establish, scoped: among comparable runs, **exactly one has crossing sets** —
+`d38beh_20260829_022027_2389958`. The two other non-empty disagreements (`base_20260816_203355`,
+`smoke2_20260816_194943`) are strict **subsets** (`gen_only = 0`), consistent with partial dumping
+and not with the bidirectional cross that is the corruption's signature.
+
+**KEEP THE COMPLEMENTARITY.** `run_completeness_check` compares persisted rows to `--expect-n` and
+therefore **does** see the 61; the file comparison sees the 20 and says *which* rows crossed. Neither
+alone characterises an artifact — and note which one actually caught this: **the `expect_n` check**.
+Had we owned only the more elegant file comparison, this would have read as a 20-row problem in 7
+clusters instead of an 81-row problem in 11.
+
+Disposition unchanged: `KNOWN_SHORT`, superseded, must never be analysed. Every addition tonight has
+strengthened that, never weakened it.
+
+**Footnote — the reachability guard fired on this very section.** The first version of this heading
+read `### ⛔ CORRECTION (§12.28.1): ...`, putting words before the id, so the scanner could not read
+`§12.28.1` as its own id, attributed the section to the enclosing `§12.28`, and the new
+`TRACE_TOKENS` key was **unreachable**. `test_every_TABLE_KEY_is_REACHABLE_by_the_scanner` refused
+the commit. That is the §17.2/§20 class caught *before* it entered the corpus rather than after —
+and the fix was to the heading, not to the guard.
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the

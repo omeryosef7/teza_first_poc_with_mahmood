@@ -110,6 +110,7 @@ TRACE_TOKENS = {
     "§12.27.1": ["wild cluster", "positive control", "0.042"],
     "§12.27.2": ["fit-set-dependent", "downgraded", "6 seen"],
     "§12.28": ["12.7", "inadmissible", "quota"],
+    "§12.28.1": ["understates", "in NEITHER file", "511"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
