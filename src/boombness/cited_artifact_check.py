@@ -127,7 +127,14 @@ def stray_occurrences(lines, fig_regex: str, phrase: str, window: int) -> tuple[
     were adjacent -- the guard working perfectly and one line from being "fixed" by weakening the
     phrase. Counting stray occurrences only is the repair.
     """
-    fig_lines = [i for i, l in enumerate(lines) if re.search(fig_regex.lower(), l)]
+    # ⛔ `fig_regex.lower()` was WRONG and a peer caught it before importing this. Lowercasing a
+    # PATTERN rewrites its escape classes: \S (non-space) becomes \s (space) and \B (non-
+    # boundary) becomes \b -- both INVERTED, silently. The three shipped patterns use only
+    # \s and \d so nothing was broken, but any future pattern with \S \D \W or \B would have
+    # matched the wrong lines, anchoring adjacent/stray against the wrong figures. An inverted
+    # anchor does not raise; it fails quietly in the direction of passing, which is the class
+    # this file exists to catch. Case-insensitivity belongs in the FLAG, never in the pattern.
+    fig_lines = [i for i, l in enumerate(lines) if re.search(fig_regex, l, re.I)]
     hits = [i for i, l in enumerate(lines) if phrase.lower() in l]
     stray = [i for i in hits if not any(abs(i - f) <= window for f in fig_lines)]
     return len(hits) - len(stray), len(stray)

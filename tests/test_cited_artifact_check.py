@@ -431,3 +431,36 @@ def test_stray_counting_respects_the_window_boundary():
                                  cac.CAUTION_WINDOW) == (1, 0)
     assert cac.stray_occurrences(outside, r"rescue[_ ]percent", "percentage inverts",
                                  cac.CAUTION_WINDOW) == (0, 1)
+
+
+def test_figure_patterns_are_matched_case_insensitively_NOT_by_lowercasing_the_pattern():
+    """⛔ A peer caught this before importing the helper.
+
+    `re.search(pat.lower(), line)` is not case-insensitive matching — it rewrites the pattern's
+    escape classes. `\\S` (non-space) becomes `\\s` (space) and `\\B` becomes `\\b`, both inverted.
+    An inverted FIGURE anchor does not raise; it silently classifies occurrences against the wrong
+    lines, i.e. it fails in the direction of passing.
+
+    This fixture uses `\\S`, which no shipped pattern does — that is the point: the shipped patterns
+    were safe by luck of using only `\\s` and `\\d`.
+    """
+    lines = ["filler"] * 40
+    lines[10] = "the rescue percentage was 42%"      # `\S+ percentage` matches this
+    lines[11] = "note that the percentage inverts here"
+    adjacent, stray = cac.stray_occurrences(lines, r"\S+ percentage", "percentage inverts", 6)
+    assert (adjacent, stray) == (1, 0), (
+        f"got {(adjacent, stray)}: with the pattern lowercased, \\S becomes \\s, the figure line is "
+        f"never matched, and the compliant phrase is misclassified as stray")
+
+
+def test_an_UPPERCASE_figure_pattern_still_matches_lowercased_text():
+    """The other half: dropping .lower() must not break patterns written in caps.
+
+    `SELECTED_ON_TEST` is a real shipped pattern and the corpus is lowercased before scanning, so
+    case-insensitivity has to come from the flag.
+    """
+    lines = ["filler"] * 20
+    lines[5] = "best_layer_by_auroc selected_on_test"
+    lines[6] = "selected on test, so optimistically biased"
+    adjacent, stray = cac.stray_occurrences(lines, "SELECTED_ON_TEST", "selected on test", 6)
+    assert (adjacent, stray) == (1, 0), f"got {(adjacent, stray)}"

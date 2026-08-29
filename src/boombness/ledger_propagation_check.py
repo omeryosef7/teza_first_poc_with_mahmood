@@ -144,6 +144,8 @@ TRACE_TOKENS = {
     "§17": ["row split", "fit domains", "scoped, not withdrawn"],
     "§17.1": ["race", "1374", "live deliverables"],
     "§17.2": ["punished compliance", "stray", "adjacent"],
+    "§17.3": ["escape classes", "re.I", "fifth defect"],
+    "§17.3.1": ["documentation of a pattern", "arbitrary illustration", "self-satisfying"],
 }
 
 

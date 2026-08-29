@@ -8099,3 +8099,77 @@ version got wrong. Restored, 33 pass and the module is byte-identical.
 guard, because the only way to satisfy it is to do the right thing less often.* My budget was safe
 today only because `percentage inverts` occurs once — the trap fires the moment I start caveating
 that figure properly in several places.
+
+### §17.3 — ⛔ `stray_occurrences()` lowercased the PATTERN, which inverts escape classes
+
+A peer read the helper before importing it and declined to, for a reason in the code. They were
+right:
+
+```python
+fig_lines = [i for i, l in enumerate(lines) if re.search(fig_regex.lower(), l)]   # WRONG
+```
+
+**`pattern.lower()` is not case-insensitive matching — it rewrites the pattern.** Verified directly:
+
+| pattern | subject | as written | lowercased | |
+|---|---|---|---|---|
+| `\S+ widget` | `spare widget 42%` | True | **False** | **INVERTED** (`\S`→`\s`) |
+| `rise\B` | `rises here` | True | **False** | **INVERTED** (`\B`→`\b`) |
+| `\d+%` | `42%` | True | True | safe |
+
+**Nothing was broken today** — the three shipped patterns use only `\s`, `\d` and literals, with no
+`\S \D \W \B` between them. That is luck, not design. **An inverted figure anchor does not raise**;
+it matches the wrong lines, so occurrences get classified adjacent/stray against the wrong figures —
+a guard failing quietly *in the direction of passing*, which is the exact class this file exists to
+catch.
+
+**Fixed:** `re.search(fig_regex, l, re.I)`, pattern untouched, case-insensitivity in the flag where
+it belongs. Two regression tests: one using `\S` (which no shipped pattern uses — the point being
+that the shipped ones were safe by accident), and one confirming an UPPERCASE pattern (the
+probes one, named in the config rather than repeated here) still matches the lowercased corpus, since dropping `.lower()` must not break the
+patterns written in caps. **Mutation test:** restoring `fig_regex.lower()` kills **exactly one
+test** — the one written for it.
+
+**The peer's reasoning for not importing it is the part worth keeping:** duplicated logic is a real
+cost, and it is what let two copies of the caveat idea diverge — but *"a shared dependency with a
+latent defect is worse than a second copy"*, and the right order is fix first, share second. The fix
+is now in.
+
+**And this is the fifth defect in this one file** (V-75's hand-listing bug, V-124's `UNMECHANISABLE`
+entry, V-140's decayed phrase, V-141's compliance budget, this). A peer's diagnosis of the shared
+cause is exact: **every one came from adding an entry or threshold to an existing guard mid-tick
+without re-deriving whether the guard's premise still held with the new entry in it.** V-141 is the
+clearest — the total-count budget was fine with three entries and became actively harmful once one
+of them was correctly caveated many times.
+
+### §17.3.1 — writing §17.3 made the guard fire on §17.3
+
+Committing §17.3 was **refused by `cited_artifact_check`**, and correctly. Two lines of my own
+explanation matched the governed figure patterns:
+
+* my illustrative subject string matched the **rescue-percentage** figure pattern;
+* my prose naming the **probes best-layer** pattern matched that figure's own regex.
+
+*(Both are described here rather than reproduced — see below for why, the hard way.)*
+
+So the guard read **documentation of a pattern** as **a quotation of the figure it governs**, and
+demanded the caveat beside it. From the guard's position that is right: a reader scanning the plan
+for the governed figure lands on those lines, and they are not real quotations of it.
+
+**Fixed by changing the illustrations, not the guard** — `\S+ widget` / `spare widget 42%`, and
+naming the probes pattern by reference rather than repeating the token. **This is not the V-140
+situation**: there the colliding words were the tool's actual verdict vocabulary and no synonym was
+accurate, so the guard was tightened; here the subject strings were arbitrary examples I chose, and
+any string illustrates the regex point equally well. **Changing an arbitrary illustration is not
+evading a check; changing an accurate term would be.**
+
+**And then §17.3.1 did it again.** The paragraph above originally *reproduced* the two patterns
+verbatim to explain the collision — which re-triggered the identical failure, one commit later, in
+the text explaining the failure. They are now named rather than quoted.
+
+**The general hazard, for any guard whose corpus includes its own documentation:** writing about the
+patterns puts the patterns in the scanned text, and writing about *that* does it again. It cost two
+refused commits here and the fix was cosmetic both times — but a guard whose *exemption list* were
+written in the same document it scans could be self-satisfying in exactly this way, and **that**
+failure would be silent rather than loud. The rule that falls out: **in a document a guard reads,
+name its patterns; never reproduce them.**
