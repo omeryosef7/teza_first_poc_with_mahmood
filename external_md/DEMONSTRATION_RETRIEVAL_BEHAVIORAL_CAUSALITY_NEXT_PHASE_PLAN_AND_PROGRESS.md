@@ -17672,3 +17672,49 @@ note itself, because the note is the artifact that outlives the reasoning.
 **Both of us kept our boundary correctly**: they declined to edit a prescription I had revised three
 times without my seeing the wording, and I verified all four cases from the files before folding
 their clause in rather than adopting it.
+
+### ⛔ C-109 (17:55) — **Finishing R-184's declared partial sweep found a universal that was FALSE WHEN WRITTEN, not merely stale — and it sits inside C-43, the correction about asserting things without checking them.**
+
+R-184 swept the bolded universal **negatives** and left 66 candidates unexamined, reported as
+partial. Finishing it: 140 bolded universals, 87 negatives (swept), **53 positives**, 19 without a
+population token. Eighteen resolve on inspection — the population sits in the adjacent enumeration.
+**One does not.**
+
+**C-43's supporting sentence:**
+
+> *"and **every guard in this repo** (`assert_complete`, `BorrowedScaleError`, the option-mass gate,
+> `ledger_propagation_check`) is an admissibility check. **Guards verify that this row/run/population
+> may be used; they do not verify that the argument built on admissible data is sound.**"*
+
+**Refuted by a guard that predates the claim by six days:**
+
+| | date |
+|---|---|
+| `src/boombness/pvalue_hygiene_check.py` added | **2026-08-22** (`b4aa4ba2`) |
+| the C-43 text landed | **2026-08-28** (`2ab881dd`) |
+
+Its own docstring states the purpose: *"a rule … a p below its design's floor is
+bootstrap/parametric, not clustered evidence … A habit cannot be fixed by intending to remember it,
+so it is mechanised here."* **That is a guard checking that an argument built on admissible data is
+sound** — exactly what the sentence says no guard does. The four named guards *are* admissibility
+checks; the error is the universal quantified over a set larger than the enumeration.
+
+**Three things make this worse than the C-73 staleness R-184 found:**
+
+1. **It was false when written**, not true-then-superseded. No forward pointer fixes it; the claim
+   was wrong on the evidence available on 2026-08-28.
+2. **C-43 is the correction about asserting a claim without checking it** — *"I asserted 'three of my
+   last four corrections would have been caught by tools already in this repo' without checking
+   it… and sent it to a peer who built on it."* I then supported the corrected version with a second
+   unchecked assertion about the same tools.
+3. **The refuting guard is the one that would have caught today's C-95** — a p quoted without its
+   attainable floor is precisely what `pvalue_hygiene_check` exists to stop. So the sentence denies
+   the existence of the guard class whose absence I felt most sharply this afternoon.
+
+**Corrected in the deliverable** — narrowed to the four named guards, with `pvalue_hygiene_check`
+recorded as the counterexample and the conclusion weakened from *"guards do not verify soundness"* to
+*"most guards here are admissibility checks; at least one is not"*.
+
+**And the sweep is now complete**: 140 bolded universals examined across two passes, 2 defects
+(C-73 stale, C-43 false-when-written), ~1.4% — consistent with the 1-in-40 precision the peer and I
+measured separately.
