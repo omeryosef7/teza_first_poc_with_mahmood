@@ -1624,3 +1624,100 @@ computed from it — and deleting it would leave a negative result unreproducibl
 
 **Added to the sprint's do-not-use list**, alongside the inherited
 `d38beh_20260829_022027_2389958`.
+
+## §14.12 — `RBD-R-005` · `lantern` pool generation failed on one domain; `--domains` added · 2026-08-29 16:25 IDT
+
+### What happened
+
+```
+RuntimeError: pool sports_stadium|benign only reached 25/40 sentences with exactly one
+whole-word 'lantern' after 8 rounds (396 raw)
+```
+
+`demo_pools.generate_pools` iterates **all 38 domains** and aborts on the first short pool. The run
+had already paid for 24 domains when it died on the 25th.
+
+**This is a permitted rejection criterion, not an outcome.** PR-002.3 lists *"sufficient sample
+availability"* among the five permitted criteria, and pool feasibility is a property of the OpenAI
+text generator — **entirely upstream of any model forward pass, any bank, any judge and any
+measurement.** Nothing about `lantern`'s eventual ASR or intervention response is knowable here.
+
+### `RBD-R-006` — the domain set is locked, and `sports_stadium` is not in it
+
+The confirmatory design needs **12** domains, not 38. Locked rule, applied mechanically:
+
+> From the 38-domain roster, exclude every domain used in `demo_processing_only` discovery. Order
+> the remainder by their **index in the committed `demo_pools.DOMAINS` declaration** — a
+> pre-existing, deterministic order this session did not choose. Take the first 12.
+
+**Discovery domains, read from the pools files rather than assumed:** `demo_pools_d10.json` carries
+10 and `demo_pools.json` carries 6, and the 6 are a strict subset of the 10. **Union = exactly 10.**
+28 domains are therefore held out.
+
+> ### The `rbd12` domain set (LOCKED)
+> `hospital_supply`, `airport_ground`, `power_substation`, `quarry_site`, `library_stacks`,
+> `dairy_plant`, `shipyard_slip`, `textile_mill`, `telecom_exchange`, `hospital_ward_store`,
+> `airport_apron`, `school_campus`
+>
+> **`sports_stadium` is held-out domain #15 — outside the 12.** `lantern` failing there says nothing
+> about the 12 this experiment uses. The remaining 16 held-out domains
+> (`hotel_service` … `brewery_works`) are the registered extension set.
+
+k = 12 clusters ⇒ attainable floor `2/2^k_informative`; at the expected k_informative ≈ 11 the floor
+is **2⁻¹⁰ = 0.00098**, and at the k=6 minimum it is 0.03125. **The design's capability is asserted
+here, before it is run.**
+
+### `RBD-R-007` — `demo_pools.py --domains` added, with §22 guard tests
+
+A six-edit additive change to `src/boombness/demo_pools.py`:
+
+* `generate_pools(..., domains: Optional[Sequence[str]] = None)`;
+* validation **before** the loop — unknown / duplicate / empty are all refused;
+* `for domain in selected: spec = DOMAINS[domain]` replaces `for domain, spec in DOMAINS.items()`;
+* `_meta.domains` records the **selected** list;
+* CLI `--domains` (comma list, empty = all);
+* `main()` threads it through.
+
+**Backward compatibility is the point:** `domains=None` reproduces the previous iteration order and
+the previous meta exactly, so every committed pools file still regenerates. Pinned by
+`test_default_None_selects_every_domain_in_declaration_order` and by
+`test_explicitly_passing_every_domain_equals_the_default`, which additionally asserts the
+`content_sha16` does not depend on *how* the full roster was requested.
+
+**`tests/test_demo_pools_domains.py` — 11 tests, all passing**, covering §22's five requirements:
+normal pass; executed mutation; a minimum-count assertion; a wiring test; and an anti-vacuity
+control.
+
+#### The mutation was EXECUTED, and it changed one of the tests
+
+Per §22, the validation block was deleted from a copy of the module and the three refusals re-run
+against the mutant. **The guard is load-bearing in two of three cases, and the third exposed a weak
+test of mine:**
+
+| input | with the guard | **with the guard deleted** |
+|---|---|---|
+| `["hospital_supply", "no_such_domain"]` | `ValueError`, before any API call | **`KeyError: 'no_such_domain'`** — fails, but *lazily*, after paying for `hospital_supply` |
+| `["hospital_supply", "hospital_supply"]` | `ValueError` | **NO RAISE — 4 pools written, `meta.domains` records the name twice.** The second pass overwrites the first in the `pools` dict, so the file claims two domains and contains one. **Silent corruption.** |
+| `[]` | `ValueError` | **NO RAISE — 0 pools, `meta.domains = []`, exit 0.** A pools file with no pools, written to disk. **Silent corruption.** |
+
+**The mutation made me strengthen a test.** `test_an_unknown_domain_is_refused_BEFORE_any_api_call`
+originally passed `["no_such_domain"]` alone — which would also pass against a guard that validated
+*lazily inside the loop*, since there is nothing ahead of it to pay for. The bad name is now placed
+**second, behind a valid one**, so the test fails against exactly the lazy-validation variant the
+mutant demonstrated. *This is the §22 point in miniature: the executed mutation is what tells you
+whether your test tests what you meant.*
+
+### Current pool status
+
+| pair | pools file | status |
+|---|---|---|
+| `apple ↔ drug` | `demo_pools_apple_drug.json`, 152 pools, sha16 `875033702333d04f` | ⛔ **QUARANTINED** — pair rejected by `RBD-R-003`. Retained as the evidence for `RBD-R-003`/`RBD-R-004`. **Never build a bank from it.** |
+| `lantern ↔ poison` (38 domains) | — | ❌ failed at `sports_stadium`, nothing written |
+| `lantern ↔ poison` (rbd12) | `demo_pools_lantern_poison_rbd12.json` | 🟡 generating |
+| `candle ↔ missile` (38 domains) | `demo_pools_candle_missile.json`, **152 pools, sha16 `59a5a7b4221cd590`** | ✅ **COMPLETE** — all 38 domains, no short pool. A superset of the 12; usable as-is. |
+
+⚠ If the 38-domain `candle` run succeeds it is a **superset** of the 12 needed and is usable as-is;
+the preset selects the 12 regardless. If it fails on a domain outside the 12, it will be re-run
+restricted, exactly as `lantern` was. **Neither outcome is informative about the science** — pool
+feasibility is a text-generator property, and it is recorded here only so that a later reader does
+not mistake a regenerated pools file for a changed design.

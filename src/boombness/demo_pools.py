@@ -39,7 +39,7 @@ import json
 import os
 import sys
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional, Sequence
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, DS_DIR, ds, seed_everything  # noqa: E402
@@ -516,8 +516,24 @@ def _clean_filler(sentences: List[str], forbidden: List[str]) -> List[str]:
 
 def generate_pools(concept: str, codeword: str, model: str = "gpt-4o-mini",
                    seed: int = 20260816, n_per_pool: int = N_PER_POOL,
-                   verbose: bool = True) -> Dict:
-    """Generate every (domain, valence) pool plus per-domain filler. Requires OPENAI_API_KEY."""
+                   verbose: bool = True,
+                   domains: Optional[Sequence[str]] = None) -> Dict:
+    """Generate every (domain, valence) pool plus per-domain filler. Requires OPENAI_API_KEY.
+
+    `domains` selects a SUBSET of `DOMAINS`, in the caller's order. `None` (the default) means
+    every domain in declaration order, which is what every committed pools file was built with,
+    so the default path is byte-identical to the pre-flag behaviour.
+
+    WHY THE FLAG EXISTS (RBD sprint, 2026-08-29). A confirmatory design that needs 12 domains had
+    to generate all 38, and a codeword can be perfectly serviceable in the 12 it will actually use
+    while being ungeneratable in one it will not: `lantern` reached only 25/40 benign sentences in
+    `sports_stadium` after 8 rounds and aborted the whole run, having already paid for 37 other
+    domains. Generating a superset both wastes API budget and manufactures failure modes in
+    domains the experiment never touches.
+
+    Unknown names are REFUSED rather than skipped -- a typo'd domain that silently produced a
+    smaller pools file would be indistinguishable from a deliberate subset.
+    """
     from openai import OpenAI
     from prepare_demos import gen_demos
 
@@ -526,7 +542,18 @@ def generate_pools(concept: str, codeword: str, model: str = "gpt-4o-mini",
     raw_for_hash: List[str] = []
     skipped: Dict[str, int] = {}
 
-    for domain, spec in DOMAINS.items():
+    selected = list(DOMAINS) if domains is None else list(domains)
+    unknown = [d for d in selected if d not in DOMAINS]
+    if unknown:
+        raise ValueError(f"unknown domain(s) {unknown!r}; known domains are {list(DOMAINS)!r}")
+    dupes = sorted({d for d in selected if selected.count(d) > 1})
+    if dupes:
+        raise ValueError(f"duplicate domain(s) {dupes!r} requested")
+    if not selected:
+        raise ValueError("no domains selected; pass at least one")
+
+    for domain in selected:
+        spec = DOMAINS[domain]
         for valence in VALENCES:
             # The pool is generated with the word that is NATURAL for that valence; the other
             # surface is produced by exact substitution at assembly time, which is what makes
@@ -606,7 +633,7 @@ def generate_pools(concept: str, codeword: str, model: str = "gpt-4o-mini",
                            "Plan docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md §3.1/§4.1.",
             "generator": model, "openai_seed": seed, "n_per_pool": n_per_pool,
             "per_split": n_per_pool // 2, "concept": concept, "codeword": codeword,
-            "domains": list(DOMAINS), "valences": list(VALENCES),
+            "domains": selected, "valences": list(VALENCES),
             "remap_source_word": REMAP_SOURCE_WORD,
             "content_sha16": content_hash,
             "dropped_for_occurrence_ne_1": skipped,
@@ -629,6 +656,10 @@ def main() -> int:
     ap.add_argument("--model", default="gpt-4o-mini")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--n-per-pool", type=int, default=N_PER_POOL)
+    ap.add_argument("--domains", default="",
+                    help="comma-separated SUBSET of DOMAINS to generate, in the given order. "
+                         "Empty (the default) means every domain, which is what every committed "
+                         "pools file was built with. Unknown names are refused, not skipped.")
     ap.add_argument("--out", default=POOL_PATH)
     ap.add_argument("--refresh", action="store_true",
                     help="regenerate even if the cache exists")
@@ -642,7 +673,9 @@ def main() -> int:
         return 0
 
     print(f"[demo_pools] generating with {args.model} seed={args.seed} ...")
-    obj = generate_pools(args.concept, args.codeword, args.model, args.seed, args.n_per_pool)
+    _domains = [d.strip() for d in args.domains.split(",") if d.strip()] or None
+    obj = generate_pools(args.concept, args.codeword, args.model, args.seed, args.n_per_pool,
+                         domains=_domains)
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w") as f:
         json.dump(obj, f, indent=2)
