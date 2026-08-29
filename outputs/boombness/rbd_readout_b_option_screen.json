@@ -1,0 +1,135 @@
+{
+ "schema": "RBD_READOUT_B_OPTION_SCREEN/1",
+ "why": "Readout B scores a forced choice over two benign property words. signals.readout_ids REFUSES unless ' word' is exactly one token, so every option in prompt_families.MAPPING_USE_OPTIONS must be single-token WITH A LEADING SPACE on BOTH primary models. This artifact is the evidence, so the fact is auditable rather than a claim in a log.",
+ "models": [
+  "meta-llama/Llama-3.1-8B-Instruct",
+  "Qwen/Qwen3-14B"
+ ],
+ "pairs": {
+  "candle|missile": {
+   "literal": "cupboard",
+   "mapped": "bunker"
+  },
+  "lantern|poison": {
+   "literal": "shed",
+   "mapped": "cabinet"
+  }
+ },
+ "per_model": {
+  "meta-llama/Llama-3.1-8B-Instruct": {
+   "bunker": {
+    "space_ids": [
+     84772
+    ],
+    "space_single": true
+   },
+   "cabinet": {
+    "space_ids": [
+     22685
+    ],
+    "space_single": true
+   },
+   "candle": {
+    "space_ids": [
+     38899
+    ],
+    "space_single": true
+   },
+   "cupboard": {
+    "space_ids": [
+     87041
+    ],
+    "space_single": true
+   },
+   "lantern": {
+    "space_ids": [
+     74265
+    ],
+    "space_single": true
+   },
+   "missile": {
+    "space_ids": [
+     26290
+    ],
+    "space_single": true
+   },
+   "poison": {
+    "space_ids": [
+     21109
+    ],
+    "space_single": true
+   },
+   "shed": {
+    "space_ids": [
+     25351
+    ],
+    "space_single": true
+   }
+  },
+  "Qwen/Qwen3-14B": {
+   "bunker": {
+    "space_ids": [
+     83672
+    ],
+    "space_single": true
+   },
+   "cabinet": {
+    "space_ids": [
+     21921
+    ],
+    "space_single": true
+   },
+   "candle": {
+    "space_ids": [
+     37799
+    ],
+    "space_single": true
+   },
+   "cupboard": {
+    "space_ids": [
+     85941
+    ],
+    "space_single": true
+   },
+   "lantern": {
+    "space_ids": [
+     73165
+    ],
+    "space_single": true
+   },
+   "missile": {
+    "space_ids": [
+     25224
+    ],
+    "space_single": true
+   },
+   "poison": {
+    "space_ids": [
+     20476
+    ],
+    "space_single": true
+   },
+   "shed": {
+    "space_ids": [
+     24354
+    ],
+    "space_single": true
+   }
+  }
+ },
+ "single_token_on_both": [
+  "bunker",
+  "cabinet",
+  "candle",
+  "cupboard",
+  "lantern",
+  "missile",
+  "poison",
+  "shed"
+ ],
+ "all_option_words_single_token_on_both": true,
+ "provenance": {
+  "argv": "src/boombness/rbd_option_screen (inline)",
+  "git_commit": "ed2f0d625472bcdbf7fa0f5ffbe2d558a23e8f37"
+ }
+}
