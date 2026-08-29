@@ -17676,7 +17676,7 @@ their clause in rather than adopting it.
 ### ⛔ C-109 (17:55) — **Finishing R-184's declared partial sweep found a universal that was FALSE WHEN WRITTEN, not merely stale — and it sits inside C-43, the correction about asserting things without checking them.**
 
 R-184 swept the bolded universal **negatives** and left 66 candidates unexamined, reported as
-partial. Finishing it: 140 bolded universals, 87 negatives (swept), **53 positives**, 19 without a
+partial. Finishing it: 140 bolded universals, 87 negatives (**36 of them READ in R-184; the other 51 name a population and were cleared mechanically** — C-110), **53 positives**, 19 without a
 population token. Eighteen resolve on inspection — the population sits in the adjacent enumeration.
 **One does not.**
 
@@ -17747,3 +17747,32 @@ one demonstrated miss in a class the pattern cannot express is enough to know th
 not a verdict**. That holds whether the defect is at the hit or two sections on, and it is why the
 funnel numbers (140 → 19 → 1 here) should never be read as precision of a detector — 18 of my 19
 resolved on inspection, and the reading is the method rather than the overhead.
+
+### ⚠ C-110 (18:45) — **Applied the peer's V-184 class to my own two sweep passes. One of my two number-disagreements is legitimate corpus growth; the other is a word doing two jobs — C-109 called 87 negatives "swept" when R-184 had READ 36 of them.**
+
+Their V-184: the same sweep published at two counts one tick apart, on byte-identical text, because
+the instrument differed. Tested here, since R-184 and C-109 report different numbers over the same
+document.
+
+**Disagreement 1 — 36 → 39 unscoped negatives: LEGITIMATE.** Recomputing today gives **39** where
+R-184 reported **36**. The text is *not* byte-identical: **three correction rows (C-107, C-108,
+C-109) landed between the two measurements**, each containing bolded universals of my own writing.
+The corpus grew, and it grew because of the sweep's own output. **This is the opposite of their
+case** — theirs was one corpus measured two ways, mine is one instrument over two corpora — and the
+distinction is worth keeping because only one of them indicates an error.
+
+**Disagreement 2 — "87 negatives (swept)": OVERSTATED.** C-109 says *"140 bolded universals, 87
+negatives (**swept**), 53 positives"*. R-184 did not read 87. It filtered the 87 down to the **36**
+that named no population and read those; the other **51 were processed by the automated check, never
+read by me.** For those 51 the check *is* the sweep — that is the procedure's design, and the whole
+reason it is cheap — but **"swept" carries both meanings and I used it for one while it read as the
+other.**
+
+**Corrected in the plan**: the pass read **36 of 87**; the remaining 51 self-scope and were cleared
+mechanically. That distinction is exactly what makes the funnel honest — *"87 swept"* claims 87
+readings I did not perform.
+
+**Fourth instance this phase of two numbers disagreeing by instrument rather than corpus** — theirs
+was the fourth, this is a fifth, and mine splits into one real and one spurious. The lesson I would
+draw is narrower than "check the instrument": **when two of your own counts disagree, first establish
+whether the corpus changed, because the answer decides whether you have a defect or a diary.**
