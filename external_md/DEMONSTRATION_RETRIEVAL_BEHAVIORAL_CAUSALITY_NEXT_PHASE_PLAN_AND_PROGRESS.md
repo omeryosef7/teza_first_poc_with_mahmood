@@ -17223,3 +17223,47 @@ first output, "18 runs whose bank is missing" would have been a false alarm abou
 **Seventh field/label slip today**, again the cheap direction and caught before reporting — and again
 not arithmetic but a predicate that merged two distinguishable states, which is the same shape as the
 peer's *"no opinion and passed share an output line"*.
+
+### ⚠ R-182 (15:05) — **Counted my OWN error corpus instead of adopting the peer's count of theirs. The answer differs: field/filter is ~half of mine and 4/15 of theirs. So the tendency is real for me, NOT general, and C-100's surviving clause needs scoping rather than withdrawal.**
+
+The peer counted their corrections — 15 distinct, **4** field/filter/scope, ~9 other modes — and
+concluded the tendency C-100 kept is unsupported. **That is a claim about their corpus.** Adopting it
+for mine would be the same move as adopting a number instead of measuring, so I counted mine.
+
+**My distinct error instances today, hand-classified (C-92…C-100 plus slips recorded inside R/DR
+entries):**
+
+| class | n | instances |
+|---|---|---|
+| **field / filter / matcher / parsing** | **8** | C-93 (`PR-18` tail), C-94 (arm-suffixed tag vs wildcard), C-98→C-99 (arm-name filter), R-169 (`\b` after a digit), R-176 (over-broad empty-`gens` criterion), DR-21 (quote glued to filename), R-180 (unfiltered `query_kind`), DR-23 (`bank_missing` predicate merging two states) |
+| qualifier omitted | 2 | C-95 (p without floor), C-96 (turnover without n) |
+| inference / elimination | 1 | C-97 |
+| coverage gap | 1 | C-92 |
+| overclaimed warrant | 1 | R-179's phrasing, caught by R-181 |
+| distribution claim from memory | 1 | C-100 |
+| shell semantics | 1 | R-169's unmatched-glob abort |
+| measurement vs substance | 1 | C-93's id-presence over-report |
+| **total** | **16** | |
+
+**8 of 16 — half, and four times the next largest class.** For *my* corpus the tendency is real and
+"concentrates" is defensible. For theirs, 4 of 15 is not concentration. **So the honest statement is
+that this is a property of one session's error pattern, not of the work** — and I would have kept
+asserting it as general if they had not counted.
+
+**What that changes.** C-100's surviving clause becomes: *field/filter/matcher selection is where MY
+errors concentrate — half of them today.* Their prescription differs from mine because their corpus
+does: with ~9 modes and no plurality, "there is no single class to watch harder" is right for them
+and wrong for me.
+
+⚠ **Scope, since this is itself a distribution claim.** The classification is **hand-made by the
+author of the entries being classified**, one session, one day, and several instances could be
+argued into a neighbouring class (is DR-23's merged predicate a "field" error or a "logic" error?).
+It is a count that was actually performed rather than a measured taxonomy. **What it establishes is
+that our two corpora differ, which is enough to refute the general claim without establishing a
+replacement.**
+
+**And the pattern across this whole thread is the finding:** *every* claim either session made about
+the shape of its past errors has been withdrawn or corrected once someone counted — mine twice,
+theirs twice. The one claim still standing is procedural (*ask why two numbers disagree*), tested
+twice and working twice. **Claims about a procedure survived; claims about a distribution did not**,
+and neither of us noticed we were making the second kind while defending the first.
