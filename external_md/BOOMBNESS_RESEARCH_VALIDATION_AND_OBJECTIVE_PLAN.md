@@ -7700,11 +7700,36 @@ any claim that the effect requires a mapping to be present.
 bank family, and legacy-flattening being Qwen3-only). A peer's suggestion, adopted: **bank should be
 a reported axis by default**, not something rediscovered per claim.
 
-### Q9 — Can we surgically remove Boombness without destroying comprehension?  **YES, and it is the sprint's cleanest positive**
+### Q9 — Can we surgically remove Boombness without destroying comprehension?  **YES for the SCOPED intervention. The unscoped one destroys comprehension on one bank of two**
 
-Binding survives at 29/40 → 30/40 on Qwen3 while ASR falls 11/80 → 1/80 (p=1.0000, MDE ≥6 against 11
-discordant rows — *no evidence of degradation*, not *evidence of no degradation*). Representation and
-behaviour dissociate.
+⛔ **My first answer quoted one population (29/40 → 30/40) out of an enumerated set.** Enumerated —
+the same check that caught Q8 — the evidence is stronger *and* carries a scope split I had omitted.
+
+**`demo_processing_only` (scoped mask) — preserves binding, and it is bank-stable:**
+
+| population | binding | attack |
+|---|---|---|
+| `ticket_bomb` | **45/48 → 45/48** | 22 of 30 attacks removed, **p=5.9e-05** |
+| `main` (matched-batch) | **42/48 → 42/48**, zero verdict flips | — |
+| Qwen3 forced-choice | 29/40 → 30/40 | ASR 11/80 → 1/80 |
+| Llama, within-family | **7/7** attack-killed families keep binding | binomial p=0.0156 |
+| Qwen3, within-family | **10/10** attack-killed families keep binding | — |
+
+Design is **within-family**: each family contributes one behavioural row and one probe row sharing a
+**byte-identical demonstration block** under the same arm, so the dissociation is measured on the
+same demonstrations that produced the behaviour.
+
+**`legacy_all_query` (unscoped mask) — BANK-DEPENDENT, and unexplained:**
+destroys binding on `ticket_bomb` (**45/48 → 15/48**) and preserves it on `main` (42/48 → 41/48).
+Why the same unscoped mask behaves oppositely on two banks is **not explained**, and is left so.
+
+**So the answer depends on which "surgical" is meant** — the scoped intervention removes the attack
+while comprehension survives on 2 banks and 2 models; the unscoped one is not surgical at all on one
+of them. Reporting Q9 as an unqualified YES would have hidden that.
+
+*Power caveat, carried:* the matched-batch contrast (42/48 vs 41/48, up=5 down=6, p=1.0000) removes
+a batch confound and creates **no** power — MDE is still ≥6 same-direction discordant against 11
+discordant. *No evidence of degradation*, not *evidence of no degradation*.
 
 ### Q10 — Can we turn Boombness into a useful GCG objective?  **NO**
 
@@ -7734,3 +7759,39 @@ an optimisation target.
 
 **Still open, and honestly so:** Q6's head-to-head on unseen domains, and clustered inference for
 Q1–Q4/Q8.
+
+## §15 — STANDING RULE: bank is a reported axis, and enumerate before you filter
+
+**Five bank-moderated results in one night, across two independent sessions**, none of them surfaced
+by the analysis that produced it — every one was found because someone else asked:
+
+| result | holds | fails / differs |
+|---|---|---|
+| Q8 framing specificity (§14) | `main` | absent on `basket_gun` (ratio 1.0×) |
+| Q9 `legacy_all_query` binding | `main` (42/48 → 41/48) | destroys on `ticket_bomb` (45/48 → **15/48**) |
+| a peer's C1 null | one Qwen3 bank family | the other Qwen3 banks show the effect |
+| a peer's legacy-flattening | Qwen3 | Llama runs 6/48 in the **opposite** direction |
+| a peer's C2 non-refusal share | 76–83% on the two `base` pairs quoted | **44.0%** on `d10`, the family most of the sprint runs on |
+
+**The rule, in the cheap form that would have caught all five at authorship:** when a claim is
+computed over rows that span banks, **group by bank and report the breakdown** — not because
+heterogeneity is expected, but because a pooled figure over a heterogeneous axis *has no referent*,
+and nothing in the pooled number reveals that.
+
+### Why this is a habit and not a matter of care
+
+Both sessions hit this **while actively writing about it**. A peer's tenth instance landed ~90
+minutes after they wrote out why the failure happens, in the same entry. Mine landed *inside my
+correction of theirs* — I generalised from one bank in the paragraph criticising a one-bank
+generalisation. **Vigilance failed for both of us on the night we were most alert to it.**
+
+The operational form is **enumerate, then filter**: list every unit the claim could span *before*
+looking at any of them. A peer demonstrated the difference concretely — the three figures their C2
+quotes are each individually correct, so **no amount of re-verifying them could ever have surfaced
+the 44% cell**. Checking what is cited cannot find what was never cited.
+
+**This is the same defect as the sprint's nine "absence from a pattern I supplied" failures**
+(`ls | tail -1`, a prefix glob, a bolded-id regex, a population-name substring, guessed split names,
+an assumed `results.jsonl`, assumed `GUARD_TESTS` membership, a within-run statistic read as a corpus
+fact, and searching for "brief" in a file that says "handoff"). In every case the fix is the same:
+**enumerate the space, then narrow — never narrow by a pattern chosen from expectation.**

@@ -136,6 +136,7 @@ TRACE_TOKENS = {
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
     "§13.1": ["eleven", "reconstructed", "handoff"],
     "§14": ["lexical-presence", "1.01", "role style"],
+    "§15": ["enumerate", "reported axis", "no referent"],
 }
 
 
