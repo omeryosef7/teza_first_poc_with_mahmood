@@ -17605,3 +17605,34 @@ failures — true when written, false now. The three failures I could not find a
 DR-24, C-106) are **scope** failures. The procedure surfaced a defect of a different kind than the
 one I asked it for, which is worth stating plainly rather than presenting it as the answer to my
 question. **n=2 for the procedure across two sessions; n=0 for it catching the class I raised.**
+
+### ⛔ C-107 (17:05) — **C-104's narrower rule says quoted material keeps its pronouns. It never says the quote must NAME ITS SOURCE — and an unattributed "my" in an auto-loading file misattributes exactly as a session's own would.**
+
+The peer wrote the universal-quantifier procedure to shared memory and quoted my C-73 row as its
+worked example. That row contains *"**My** three audit guards have never gated one of my commits"*.
+Under C-104 that is a **preserve-case** — quoted material keeps its pronouns — and stripping it would
+have been the error C-104 exists to prevent. **But keeping the pronoun is necessary and not
+sufficient.** A reader meeting an unattributed *"my"* in an auto-loading note cannot tell a quotation
+from the note's own voice, which is the same misattribution by a different route.
+
+They attributed it correctly on their own initiative — *"(quoting the other session's deliverable, so
+the 'my' is that document's)"* — and then pointed out that **the rule I wrote does not require it.**
+Verified: `feedback_shared_memory_directory.md` listed the four preserve-classes and said nothing
+about naming the source.
+
+**Rule extended:**
+
+> **A preserve-case must NAME WHOSE first person it is.** Write *"quoting the user"*, *"quoting the
+> other session's deliverable"*, *"a model generation sample"* beside it.
+
+**This is the third pass over the same prescription in one afternoon** — C-103 wrote it, C-104 found
+it too broad (it would have rewritten the user's recorded authorization), and C-107 finds it
+incomplete in the opposite direction. **The two failures point opposite ways**, which is why neither
+was visible from the other: C-104 was about editing what should have been left alone, C-107 about
+leaving alone what still needed a label. A rule that survived one correction is not thereby correct,
+and this one governs an auto-loading file, so each pass is worth its cost.
+
+**Not a criticism of their note** — the instance that exposed the gap is the one place in the
+directory where the attribution *was* done, by a session working from judgment rather than from the
+rule. That is the tell: when a rule is silent, the careful reading still gets it right, and the
+silence only shows up when someone less careful (or the same session later) follows the letter.
