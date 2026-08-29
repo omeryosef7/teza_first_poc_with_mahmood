@@ -90,8 +90,34 @@ def test_the_guard_fires_on_a_violating_document():
 def test_each_required_phrase_is_distinctive_not_generic():
     """C-47: `power` matched 6 unrelated occurrences and produced a false PASS.
 
-    A required phrase must be rare enough that its presence means the caveat was actually stated.
+    C-87 refines what "common" means: count only occurrences AWAY from a figure, not total ones.
+
+    A phrase can become common in two opposite ways. `INVERTED` became common because a night of
+    writing used it for an unrelated verdict vocabulary; those occurrences could satisfy the guard
+    without the caveat being stated, so it stopped being evidence (C-86). `0.331` is common because
+    the caveat is CORRECTLY STATED every time the figure is quoted -- 7 of its 8 occurrences sit
+    within the window of a figure match. A total-count test conflates the two and would have forced
+    a weaker phrase on a caveat whose frequency IS compliance.
+
+    What compromises a required phrase is its presence where the figure is NOT: exactly the set of
+    places it could pass the check spuriously.
     """
+    for path in DELIVERABLES:
+        lines = open(path, encoding="utf-8").read().splitlines()
+        for name, fig, phrase, _ in CAUTIONED_FIGURES:
+            figs = [i for i, l in enumerate(lines) if re.search(fig, l, re.I)]
+            hits = [i for i, l in enumerate(lines) if phrase.lower() in l.lower()]
+            stray = [i for i in hits if not any(abs(i - f) <= CAUTION_WINDOW for f in figs)]
+            assert len(stray) <= 8, (
+                f"{name}: required phrase {phrase!r} appears {len(stray)} times AWAY from its "
+                f"figure in {os.path.basename(path)} (of {len(hits)} total). Those occurrences can "
+                f"satisfy the guard without the caveat being stated at the figure -- the C-47 "
+                f"defect. Frequency AT the figure is compliance and is not counted.")
+
+
+
+def _unused_total_count_check():
+    """Superseded by C-87; kept only to document what it used to assert."""
     corpus = "".join(open(p, encoding="utf-8").read() for p in DELIVERABLES).lower()
     for name, _, phrase, _ in CAUTIONED_FIGURES:
         assert corpus.count(phrase.lower()) <= 12, (

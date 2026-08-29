@@ -15641,3 +15641,49 @@ budget.**
 *Fourteenth instance, and the second caught by a mechanism rather than a reader — but the first where
 the mechanism was the OTHER session's. Their guard read my corpus and refused my commit, which is the
 cross-session checking working without either of us doing anything deliberate.*
+
+### ⛔ C-87 (08:10) — **Going to pre-emptively replace `0.331` (11 of a 12 budget) I found my distinctiveness test cannot tell erosion from compliance. 7 of its 8 occurrences sit AT the figure. The guard would have forced me to weaken a caveat that was being stated correctly every time.**
+
+C-86 flagged `0.331` as next to trip. Checking *why* it is common rather than just replacing it:
+
+| corpus | figure-pattern lines | `0.331` lines | **within 6 lines of a figure** |
+|---|---|---|---|
+| summary | 7 | 8 | **7 of 8** |
+| handoff | 0 | 1 | 0 of 1 |
+
+**The frequency is compliance.** Every time `ticket_knife 30/48` is quoted, the power caveat is stated
+beside it — which is the guard's entire purpose. **`INVERTED` and `0.331` became common in opposite
+ways:** the first through a night of unrelated verdict vocabulary (**stray** occurrences that could
+satisfy the check spuriously), the second through the caveat being correctly attached (**adjacent**
+occurrences that are the check succeeding).
+
+**A total-count test conflates them**, and mine was one line from forcing a *worse* phrase onto a
+correctly-caveated figure. The naive fix — swap in `"power 0.331 at n=48"` — would have been actively
+wrong: that phrase occurs **once** against **7** figure occurrences, so six of the seven would have
+failed the proximity check.
+
+**Rewritten to count STRAY occurrences only** — those outside the caution window of any figure match,
+which is exactly the set that could pass the guard without the caveat being stated:
+
+```
+stray = [i for i in hits if not any(abs(i - f) <= CAUTION_WINDOW for f in figs)]
+assert len(stray) <= 8
+```
+
+**Positive-controlled in both directions**, per C-76's requirement that a control be one only the
+mutated path satisfies:
+
+| mutation | expected | result |
+|---|---|---|
+| 20 **stray** occurrences added (true erosion) | must fire | **KILLED** ✅ |
+| 20 occurrences added **at figures** (compliance) | must **not** fire | **passed** ✅ |
+
+The second is the one the old test failed. **A guard that punishes compliance is worse than no guard**,
+because the only way to satisfy it is to state the caveat less often.
+
+**This is the fourth defect tonight in a check I wrote to catch defects** — C-72b's dormant entry,
+C-76's non-isolating control, C-86's decayed phrase, and now a threshold that penalises the behaviour
+it exists to enforce. **Every one was in the caveat guard**, which is also the guard that has caught
+two real omissions in production. **A tool can be simultaneously the most productive and the most
+defective thing in the suite**, and the reason appears to be that it is the one I keep extending under
+time pressure.
