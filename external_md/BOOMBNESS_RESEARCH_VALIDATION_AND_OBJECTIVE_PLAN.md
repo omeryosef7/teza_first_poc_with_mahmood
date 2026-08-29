@@ -7769,9 +7769,20 @@ Design is **within-family**: each family contributes one behavioural row and one
 **byte-identical demonstration block** under the same arm, so the dissociation is measured on the
 same demonstrations that produced the behaviour.
 
-**`legacy_all_query` (unscoped mask) — BANK-DEPENDENT, and unexplained:**
-destroys binding on `ticket_bomb` (**45/48 → 15/48**) and preserves it on `main` (42/48 → 41/48).
-Why the same unscoped mask behaves oppositely on two banks is **not explained**, and is left so.
+**`legacy_all_query` (unscoped mask) — moderated by BOTH model and bank (§23):**
+
+| | `main` | `ticket_bomb` |
+|---|---|---|
+| **Llama** | 42/48 → 41/48 **intact** | 45/48 → **15/48 destroyed** |
+| **Qwen3** | 32/48 → **4/48 destroyed** | baseline at chance — **void** |
+
+Within Llama the **bank** decides; at `main` the **model** decides. **Neither single-factor reading
+survives**, so the unscoped mask is not "surgical" in any general sense — it is surgical on exactly
+one of the three measurable cells. Three cells complete this as a *main-effects* design; the
+**interaction** is permanently untestable, because the fourth cell's baseline does not bind
+(22/48, p=0.665) and no amount of compute installs a mapping that was never there.
+*Caveat: the model half rests on the weakest baseline of the three — Qwen3 × `main` at 32/48,
+p=0.0293, which passes the screen but is thinner than 42/48 and 45/48.*
 
 **So the answer depends on which "surgical" is meant** — the scoped intervention removes the attack
 while comprehension survives on 2 banks and 2 models; the unscoped one is not surgical at all on one
