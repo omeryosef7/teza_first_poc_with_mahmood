@@ -49,7 +49,7 @@ def test_the_shipped_bank_passes_every_check(rows):
     assert rba.check_ids_and_hashes(rows)[0]
     assert rba.check_duplicates(rows)[0]
     assert rba.check_balance(rows)[0]
-    assert rba.check_readout_coverage(rows)[0]
+    assert rba.check_readout_coverage(rows, expect_stems=80)[0]
     assert rba.check_single_factor(rows)[0]
     assert rba.check_articles(rows, CW, CN)[0]
     assert rba.check_lexical_collisions(rows, CW, CN)[0]
@@ -60,7 +60,7 @@ def test_the_shipped_bank_passes_every_check(rows):
 def test_the_checks_are_not_vacuous_on_this_bank(rows):
     """Each check must actually examine a material number of rows."""
     assert rba.check_single_factor(rows)[1]["n_aligned_pairs_checked"] >= 100
-    assert rba.check_readout_coverage(rows)[1]["n_stems"] == 80
+    assert rba.check_readout_coverage(rows, expect_stems=80)[1]["n_stems"] == 80
     # {9: 640, 10: 320}, and the 10 is EXPLAINED, not tolerated: `semantic_forced_choice` names
     # both candidate words in its query, so when the target surface IS the codeword it appears once
     # as {W} and again as {CODEWORD} -- one extra occurrence on 320 rows. `mapping_use_forced_choice`
@@ -110,7 +110,7 @@ def test_MUTANT_a_missing_readout_is_caught(rows):
     victim = rba._stem(rows[0])
     m = [r for r in rows
          if not (rba._stem(r) == victim and r["query_kind"] == "mapping_use_forced_choice")]
-    ok, d = rba.check_readout_coverage(m)
+    ok, d = rba.check_readout_coverage(m, expect_stems=80)
     assert not ok and d["n_stems_missing_a_readout"] == 1
 
 
@@ -216,7 +216,9 @@ def test_pool_independence_passes_on_the_two_shipped_banks(rows):
     assert ok
     assert d["a|b:shared_demo_sentences"] == 0
     assert d["a:within_bank_slot_overlaps"] == 0
-    assert d["a:n_domain_split_groups"] == 40
+    assert d["a:n_groups_checked"] == 160, "20 domains x 2 splits x 4 conditions"
+    assert d["a:conditions_covered"] == sorted(
+        ["benign_literal", "concept_in_benign_ctx", "direct_harmful", "natural_doublespeak"])
 
 
 def test_MUTANT_slots_that_share_a_demonstration_are_caught(rows):
@@ -235,3 +237,98 @@ def test_MUTANT_slots_that_share_a_demonstration_are_caught(rows):
     target["demo_block"] = donor["demo_block"]
     ok, d = rba.check_pool_independence({"a": m})
     assert not ok and d["a:within_bank_slot_overlaps"] >= 1
+
+
+# --------------------------------------------------------------------------- #
+# 9. Regressions for the four HIGH findings of the 2026-08-29 deep review
+#    (RBD-DR-002). Each was EXECUTED against the shipped bank before the fix.
+# --------------------------------------------------------------------------- #
+def test_F3_deleting_a_whole_DOMAIN_is_caught_by_the_preregistered_design(rows):
+    """Before the fix, expect was derived from the rows, so both sides moved together."""
+    m = [r for r in rows if r["domain"] != "dairy_plant"]
+    res = rba.audit_bank("x", rows=m,
+                         expect={"rows": 960, "domains": 20, "stems": 80, "attack_rows": 80})
+    assert not res["PASS"]
+    assert res["design"]["mismatches"]["domains"] == {"expected": 20, "observed": 19}
+
+
+def test_F3_an_unasserted_design_is_NOT_CERTIFIED(rows):
+    """No --expect must mean 'reported, not certified' -- never a silent PASS."""
+    res = rba.audit_bank("x", rows=rows, expect=None)
+    assert not res["PASS"]
+    assert "NOT_ASSERTED" in res["design"]
+
+
+def test_F1_a_single_stray_occurrence_flag_is_REFUSED_not_silently_skipped(rows):
+    """One stray row used to delete an entire query kind from the check while ok stayed True."""
+    m = _copy(rows)
+    for r in m:
+        if r["query_kind"] == "behavioral":
+            r["occurrence_analysis_safe"] = False
+            break
+    with pytest.raises(ValueError) as e:
+        rba.check_single_factor(m)
+    assert "not constant within query kind" in str(e.value)
+
+
+def test_F2_a_MISSING_occurrence_flag_is_REFUSED_not_defaulted_to_safe(rows):
+    m = _copy(rows)
+    for r in m:
+        r.pop("occurrence_analysis_safe", None)
+    with pytest.raises(ValueError) as e:
+        rba.check_single_factor(m)
+    assert "no occurrence_analysis_safe" in str(e.value)
+
+
+def test_F4_slot_sharing_in_the_BENIGN_pool_is_caught(rows):
+    """The first version filtered to natural_doublespeak, so half the 2x2 was unverified."""
+    m = _copy(rows)
+    donor = target = None
+    for r in m:
+        if (r["query_kind"] == "behavioral" and r["condition"] == "benign_literal"
+                and r["domain"] == "hospital_supply" and r["split"] == "dev"):
+            if r["family_slot"] == 0:
+                donor = r
+            elif donor is not None:
+                target = r
+                break
+    assert donor is not None and target is not None
+    target["demo_block"] = donor["demo_block"]
+    ok, d = rba.check_pool_independence({"a": m})
+    assert not ok and d["a:within_bank_slot_overlaps"] >= 1
+    assert d["a:within_bank_examples"][0]["condition"] == "benign_literal"
+
+
+def test_F5_the_forced_choice_gap_model_is_now_EXACT(rows):
+    """The query names both words, so the gap is delta_w * (occ_target - occ_other).
+
+    Before the fix the shipped bank showed residual 1.0 on this kind, absorbed only by a 2.0-char
+    tolerance -- so any pair with |len(cw) - len(cn)| > 2 would have FALSE-FAILED a correct bank.
+    """
+    ok, d = rba.check_lengths(rows, CW, CN)
+    assert ok
+    for qk in ("behavioral", "semantic_forced_choice", "mapping_use_forced_choice"):
+        g = d[qk]["aligned_gap:natural_doublespeak-direct_harmful"]
+        assert g["residual_chars"] == pytest.approx(0.0, abs=0.5), (qk, g)
+
+
+def test_F8_a_CAPITALISED_bad_article_is_caught():
+    """`A apple` is the sentence-initial form of the RBD-R-004 defect."""
+    ok, d = rba.check_articles([{"full_prompt": "A apple sat here."}], "apple", "poison")
+    assert not ok
+    assert d["a_before_vowel_by_word"]["apple"] == 1
+
+
+def test_F9_an_hour_is_allowlisted_and_does_not_false_alarm():
+    ok, d = rba.check_articles([{"full_prompt": "It took an hour and an honest effort."}],
+                               "lantern", "poison")
+    assert ok, d
+    assert d["an_before_consonant_total"] == 2
+    assert d["unexpected_an_words"] == {}
+
+
+def test_F9b_a_genuinely_wrong_an_is_still_caught():
+    """Anti-vacuity for the allowlist: it must not swallow real defects."""
+    ok, d = rba.check_articles([{"full_prompt": "There was an bunker here."}], "lantern", "poison")
+    assert not ok
+    assert d["unexpected_an_words"] == {"bunker": 1}

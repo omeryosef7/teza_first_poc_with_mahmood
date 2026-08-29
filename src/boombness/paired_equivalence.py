@@ -33,24 +33,41 @@ Three quantities, deliberately reported together:
 3. `mcnemar_p` -- the exact conditional two-sided p for a DIFFERENCE. It is reported for context and
                   is explicitly NOT the equivalence verdict.
 
-THE VERDICT USES THE MOST CONSERVATIVE LOWER BOUND of (1) and (2). Taking the friendlier of two
-intervals is how a null claim gets manufactured.
+THE VERDICT USES A CONSERVATIVE ENVELOPE: the LOWEST lower bound and the HIGHEST upper bound across
+the available intervals, taken independently. Taking the friendlier of two intervals is how a null
+claim gets manufactured -- and reading `hi` off whichever interval happened to win the `lo` contest
+(the first version of this module) let WORSE_THAN_MARGIN fire while the cluster-respecting interval
+still contained zero.
 
 CAPABILITY, BEFORE THE DATA
 ---------------------------
-`can_establish_equivalence` answers: at this n, could ANY outcome have cleared the margin? The
-best case is zero discordant pairs, so the field is computed by evaluating the interval at b=c=0
-with the observed n. If that best case does not clear -m, the design is STRUCTURALLY INCAPABLE and
-the result is `UNRESOLVABLE_AT_THIS_N` -- not "equivalent", and not "different".
+`can_establish_equivalence` answers: at this n, could ANY outcome have cleared the margin?
 
-This is the same discipline `clustered_stats.cluster_sign_test.can_reach_alpha` applies to the sign
-test, and it exists because the prior phase quoted `pre10`'s k=5 cluster test as a negative when its
-attainable floor (0.0625) was above alpha and no arrangement of the data could have cleared.
+The precision of a paired binary difference is driven by the DISCORDANT pairs, not by n directly.
+With zero discordance observed, the 95% upper bound on the discordant rate is the RULE OF THREE,
+3/n, so the best attainable is |delta| <= 3/n. Equivalence at `margin` is therefore attainable only
+if 3/n < margin. At margin 0.10 that needs n > 30; the sprint's binding population (n = 160 per
+model) gives 3/n = 0.019, comfortably capable.
+
+An earlier version evaluated Newcombe at zero discordance with the OBSERVED marginals. That sits
+exactly at phi = 1 whenever n00 > 0, so "capability" swung on the observed cell pattern rather than
+on the design: n=20 with n00=4 read CAPABLE while n=20 with n00=0 read incapable. Capability must be
+a property of the design, answerable before the data.
+
+If the design is incapable the verdict is `UNRESOLVABLE_AT_THIS_N` -- not "equivalent", and not
+"different". This is the discipline `clustered_stats.cluster_sign_test.can_reach_alpha` applies to
+the sign test, and it exists because the prior phase quoted `pre10`'s k=5 cluster test as a negative
+when its attainable floor (0.0625) was above alpha.
+
+⚠ Capability is checked AFTER a decisive difference, not before it. "Could equivalence have been
+established?" and "was a difference established?" are orthogonal questions, and gating the second on
+the first reported delta = -1.0 at p = 0.0078 as "unresolvable".
 """
 from __future__ import annotations
 
 import math
 import random
+from fractions import Fraction
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 SCHEMA = "PAIRED_EQUIVALENCE/1"
@@ -96,7 +113,8 @@ def newcombe_paired_ci(n11: int, n10: int, n01: int, n00: int,
 
     Cell convention, both indexed (base, arm):
         n11 = base 1, arm 1     n10 = base 1, arm 0   (a LOSS under the arm)
-        n01 = base 0, arm 1     n00 = base 0, arm 0   (a GAIN under the arm)
+        n01 = base 0, arm 1     n00 = base 0, arm 0
+                                ^ a GAIN            ^ concordant zero
 
     so p_base = (n11 + n10)/n, p_arm = (n11 + n01)/n, delta = (n01 - n10)/n.
     """
@@ -136,13 +154,21 @@ def newcombe_paired_ci(n11: int, n10: int, n01: int, n00: int,
 # Exact conditional McNemar (a DIFFERENCE test -- reported, never the verdict)
 # --------------------------------------------------------------------------- #
 def mcnemar_exact(n10: int, n01: int) -> float:
-    """Exact two-sided p for a paired difference, conditional on the discordant total."""
+    """Exact two-sided p for a paired difference, conditional on the discordant total.
+
+    Uses integer arithmetic and a single final division, because `2.0 ** m` is a FLOAT power and
+    overflows at m ~ 1024: `mcnemar_exact(600, 600)` raised OverflowError before this fix.
+    """
+    if n10 < 0 or n01 < 0:
+        raise ValueError(f"counts must be non-negative, got n10={n10}, n01={n01}")
     m = n10 + n01
     if m == 0:
         return 1.0
     k = min(n10, n01)
-    tail = sum(math.comb(m, i) for i in range(0, k + 1))
-    return min(1.0, 2.0 * tail / (2.0 ** m))
+    tail = sum(math.comb(m, i) for i in range(0, k + 1))   # exact int
+    # Fraction, not float arithmetic: `2.0 * tail` alone still overflows on the way in, because
+    # `tail` is an exact integer that can exceed the float range long before the RATIO does.
+    return min(1.0, float(Fraction(2 * tail, 1 << m)))
 
 
 # --------------------------------------------------------------------------- #
@@ -190,8 +216,10 @@ class EquivalenceVerdict(dict):
         return (f"{self['VERDICT']}: delta={self['delta']:+.4f} "
                 f"[{self['binding_lo']:+.4f}, {self['binding_hi']:+.4f}] "
                 f"vs margin -{self['margin']:.4f} "
-                f"(binding={self['binding_interval']}, n={self['n']}, "
-                f"k={self.get('n_clusters')}, capable={self['can_establish_equivalence']})")
+                f"(lo from {self['binding_lo_from']}, hi from {self['binding_hi_from']}, "
+                f"n={self['n']}, k={self.get('n_clusters')}, "
+                f"capable={self['can_establish_equivalence']} at 3/n="
+                f"{self['rule_of_three_bound']:.4f})")
 
 
 def paired_equivalence(pairs: Sequence[Dict[str, Any]], margin: float,
@@ -222,26 +250,46 @@ def paired_equivalence(pairs: Sequence[Dict[str, Any]], margin: float,
     n = n11 + n10 + n01 + n00
 
     nc = newcombe_paired_ci(n11, n10, n01, n00, alpha)
-    los = [("newcombe", nc["lo"], nc["hi"])]
+    intervals = [("newcombe", nc["lo"], nc["hi"])]
 
     cl = None
     if cluster_key is not None:
         cl = cluster_bootstrap_delta_ci(pairs, cluster_key, alpha, n_boot, seed)
-        los.append(("cluster_bootstrap", cl["lo"], cl["hi"]))
+        intervals.append(("cluster_bootstrap", cl["lo"], cl["hi"]))
 
-    binding_name, binding_lo, binding_hi = min(los, key=lambda t: t[1])
+    # CONSERVATIVE ENVELOPE, not "the interval that won the lower-bound contest".
+    # The first version took min(lo) and then read `hi` off THAT SAME interval, so
+    # WORSE_THAN_MARGIN could fire while the cluster-respecting interval still contained 0 --
+    # i.e. the module declared an arm worse than the margin on the strength of an interval that
+    # ignores the clustering the docstring says is the whole point. Both bounds are now taken in
+    # the conservative direction independently.
+    binding_lo = min(t[1] for t in intervals)
+    binding_hi = max(t[2] for t in intervals)
+    lo_from = min(intervals, key=lambda t: t[1])[0]
+    hi_from = max(intervals, key=lambda t: t[2])[0]
 
-    # CAPABILITY: the best attainable case is zero discordance at this n and these marginals.
-    best = newcombe_paired_ci(n11 + n10 + n01, 0, 0, n00, alpha)
-    can = best["lo"] > -margin
+    # CAPABILITY, as a property of the DESIGN rather than of the observed cells.
+    # The first version evaluated Newcombe at zero discordance with the OBSERVED marginals, which
+    # sits exactly at phi = 1 whenever n00 > 0 -- so `can` swung on n00 rather than on n, and
+    # n=20 with n00=4 read CAPABLE while n=20 with n00=0 read incapable.
+    # The precision of a paired binary difference is driven by the DISCORDANT pairs, so the
+    # design-level bound is the rule of three: with zero discordance observed, the 95% upper
+    # bound on the discordant rate is 3/n, hence |delta| <= 3/n. Equivalence at `margin` is
+    # attainable only if that best case fits inside it.
+    rule_of_three = 3.0 / n
+    can = rule_of_three < margin
 
     passes = binding_lo > -margin
-    if not can:
+    decisive_worse = binding_hi < -margin
+    # ORDER MATTERS. A decisive difference is decisive whether or not equivalence was ever
+    # attainable -- the two questions are orthogonal, and gating capability first reported
+    # delta = -1.0 with p = 0.0078 as "unresolvable".
+    if decisive_worse:
+        verdict = "WORSE_THAN_MARGIN"
+    elif not can:
         verdict = "UNRESOLVABLE_AT_THIS_N"
     elif passes:
         verdict = "EQUIVALENT"
-    elif binding_hi < -margin:
-        verdict = "WORSE_THAN_MARGIN"
     else:
         verdict = "NOT_ESTABLISHED"
 
@@ -250,15 +298,19 @@ def paired_equivalence(pairs: Sequence[Dict[str, Any]], margin: float,
         "delta": nc["delta"], "p_base": nc["p_base"], "p_arm": nc["p_arm"],
         "n": n, "n11": n11, "n10": n10, "n01": n01, "n00": n00,
         "margin": margin, "alpha": alpha,
-        "binding_interval": binding_name, "binding_lo": binding_lo, "binding_hi": binding_hi,
+        "binding_lo": binding_lo, "binding_hi": binding_hi,
+        "binding_lo_from": lo_from, "binding_hi_from": hi_from,
+        "intervals": {t[0]: {"lo": t[1], "hi": t[2]} for t in intervals},
         "newcombe": nc, "cluster_bootstrap": cl,
         "n_clusters": (cl or {}).get("n_clusters"),
         "mcnemar_p_two_sided": mcnemar_exact(n10, n01),
         "mcnemar_note": ("a DIFFERENCE test, reported for context. A large p here is NOT evidence "
                          "of equivalence -- that is the failure this module exists to prevent."),
         "can_establish_equivalence": can,
-        "attainable_lo_at_zero_discordance": best["lo"],
-        "capability_note": ("best case is zero discordant pairs at this n; if that lower bound "
-                            "does not clear -margin, no outcome could have, and the verdict is "
-                            "UNRESOLVABLE_AT_THIS_N rather than a finding"),
+        "rule_of_three_bound": rule_of_three,
+        "capability_note": ("capability is a property of n alone: with zero observed discordance "
+                            "the 95% upper bound on the discordant rate is 3/n (rule of three), "
+                            "so |delta| <= 3/n is the best attainable. If that does not fit "
+                            "inside the margin, no outcome could have, and the verdict is "
+                            "UNRESOLVABLE_AT_THIS_N rather than a finding."),
     })

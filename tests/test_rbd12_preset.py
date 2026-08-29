@@ -268,3 +268,38 @@ def test_the_wiring_test_is_not_vacuous():
                  example_position="near", role_style="plain", query_kind=QK, family_slot=0)
     r = pf.build_prompt(pools, ax, "lantern", "poison")
     assert "in a shed" in r["final_query_text"]
+
+
+def test_REFUSES_a_PARTIAL_options_entry():
+    """F7 (RBD-DR-002): `{"literal": "shed"}` rendered `in a shed or in a ?` and was SCORED.
+
+    A missing key is not in `opts.items()`, so the vowel scan could not see it, and `_opts is not
+    None` meant the KeyError never fired either. Presence must be checked explicitly.
+    """
+    for bad in ({"literal": "shed"}, {"mapped": "cabinet"}, {"literal": "shed", "mapped": ""},
+                {"literal": "  ", "mapped": "cabinet"}):
+        with pytest.raises(ValueError) as e:
+            pf._assert_option_articles_ok(bad, "x", "y")
+        assert "missing or empty" in str(e.value)
+
+
+def test_REFUSES_an_unknown_options_key():
+    with pytest.raises(ValueError) as e:
+        pf._assert_option_articles_ok(
+            {"literal": "shed", "mapped": "cabinet", "typo": "x"}, "x", "y")
+    assert "unknown" in str(e.value)
+
+
+def test_a_PARTIAL_entry_is_refused_through_the_REAL_build_path(monkeypatch):
+    if not os.path.exists(POOLS):
+        pytest.skip("pools file absent")
+    pools = json.load(open(POOLS))["pools"]
+    ax = pf.Axes(domain="hospital_supply", split="dev", condition="natural_doublespeak",
+                 n_examples=8, strength="none", consistency="consistent",
+                 example_position="near", role_style="plain", query_kind=QK, family_slot=0)
+    bent = dict(pf.MAPPING_USE_OPTIONS)
+    bent[("lantern", "poison")] = {"literal": "shed"}
+    monkeypatch.setattr(pf, "MAPPING_USE_OPTIONS", bent)
+    with pytest.raises(ValueError) as e:
+        pf.build_prompt(pools, ax, "lantern", "poison")
+    assert "missing or empty" in str(e.value)

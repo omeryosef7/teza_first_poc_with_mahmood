@@ -220,6 +220,18 @@ def _assert_option_articles_ok(opts: Dict[str, str], codeword: str, concept: str
     words a curated option list is most likely to reach for. The option vocabulary is small and
     hand-picked, so requiring a consonant-initial word costs nothing.
     """
+    # F7. A PARTIAL entry passed every guard and rendered "in a shed or in a ?" -- exactly the
+    # output the KeyError below exists to prevent. Missing keys are not in `opts.items()`, so a
+    # vowel scan cannot see them; they must be checked for presence explicitly.
+    missing = [k for k in ("literal", "mapped") if not (opts.get(k) or "").strip()]
+    if missing:
+        raise ValueError(
+            f"Readout-B options for ({codeword!r}, {concept!r}) are missing or empty: {missing}. "
+            f"str.format would render 'in a  or in a ' and the row would then be SCORED.")
+    extra = sorted(set(opts) - {"literal", "mapped"})
+    if extra:
+        raise ValueError(f"Readout-B options for ({codeword!r}, {concept!r}) carry unknown "
+                         f"key(s) {extra}; expected exactly 'literal' and 'mapped'")
     bad = {k: v for k, v in opts.items() if v[:1].lower() in "aeiou"}
     if bad:
         raise ValueError(

@@ -210,12 +210,12 @@ def test_a_point_estimate_inside_the_margin_with_a_crossing_interval_does_not_pa
 # --------------------------------------------------------------------------- #
 # 6. Conservatism of the binding interval, and clustering
 # --------------------------------------------------------------------------- #
-def test_the_binding_bound_is_the_MOST_CONSERVATIVE_of_the_available_intervals():
+def test_the_envelope_takes_BOTH_bounds_in_the_conservative_direction():
     rows = _pairs(300, 20, 15, 65, clusters=6)
     v = pe.paired_equivalence(rows, margin=0.10, cluster_key=lambda r: r["domain"], n_boot=600)
     assert v["cluster_bootstrap"] is not None
-    assert v["binding_lo"] == min(v["newcombe"]["lo"], v["cluster_bootstrap"]["lo"])
-    assert v["binding_interval"] in ("newcombe", "cluster_bootstrap")
+    assert v["binding_lo"] == min(i["lo"] for i in v["intervals"].values())
+    assert v["binding_hi"] == max(i["hi"] for i in v["intervals"].values())
 
 
 def test_cluster_bootstrap_reports_its_own_k():
@@ -225,13 +225,53 @@ def test_cluster_bootstrap_reports_its_own_k():
     assert v["cluster_bootstrap"]["n_rows"] == 160
 
 
-def test_bootstrap_is_deterministic_under_a_fixed_seed():
-    rows = _pairs(100, 10, 10, 40, clusters=5)
-    a = pe.paired_equivalence(rows, margin=0.10, cluster_key=lambda r: r["domain"],
-                              n_boot=400, seed=1)
-    b = pe.paired_equivalence(rows, margin=0.10, cluster_key=lambda r: r["domain"],
-                              n_boot=400, seed=1)
-    assert a["binding_lo"] == b["binding_lo"]
+def _heterogeneous(clusters=6):
+    """Clusters with DIFFERENT compositions, so the bootstrap actually has something to resample.
+
+    `_pairs(..., clusters=k)` assigns d{i%k} over a spec list sorted by cell type, which gives
+    every cluster an identical composition and a bootstrap CI of width exactly 0.0 -- a test built
+    on it cannot detect a seed bug, or any bootstrap bug at all.
+    """
+    rows = []
+    comps = [(20, 0, 0, 0), (5, 10, 0, 5), (18, 1, 1, 0), (2, 12, 4, 2),
+             (15, 2, 3, 0), (0, 15, 5, 0)][:clusters]
+    for di, (a, b, c, d) in enumerate(comps):
+        for x, y in [(1, 1)] * a + [(1, 0)] * b + [(0, 1)] * c + [(0, 0)] * d:
+            rows.append({"base": x, "arm": y, "domain": f"d{di}"})
+    return rows
+
+
+def test_the_cluster_bootstrap_is_actually_EXERCISED_by_these_fixtures():
+    """Anti-vacuity: a zero-width bootstrap makes every bootstrap test meaningless."""
+    rows = _heterogeneous()
+    cl = pe.cluster_bootstrap_delta_ci(rows, lambda r: r["domain"], n_boot=800, seed=3)
+    assert cl["hi"] - cl["lo"] > 0.02, f"bootstrap width {cl['hi'] - cl['lo']} is degenerate"
+    assert cl["n_clusters"] == 6
+
+
+def test_bootstrap_is_deterministic_under_a_fixed_seed_AND_varies_without_one():
+    """Asserts on the BOOTSTRAP's own bounds, not on binding_lo.
+
+    The previous version asserted `binding_lo`, which on its fixture was always Newcombe's -- so
+    no bootstrap output was ever compared and a fresh random seed on every call left it passing.
+    """
+    rows = _heterogeneous()
+    a = pe.cluster_bootstrap_delta_ci(rows, lambda r: r["domain"], n_boot=500, seed=1)
+    b = pe.cluster_bootstrap_delta_ci(rows, lambda r: r["domain"], n_boot=500, seed=1)
+    c = pe.cluster_bootstrap_delta_ci(rows, lambda r: r["domain"], n_boot=500, seed=2)
+    assert (a["lo"], a["hi"]) == (b["lo"], b["hi"])
+    assert (a["lo"], a["hi"]) != (c["lo"], c["hi"]), "different seeds gave identical draws"
+
+
+def test_the_bootstrap_can_be_the_BINDING_interval():
+    """The min()/max() selection through the bootstrap branch must be exercised."""
+    rows = _heterogeneous()
+    v = pe.paired_equivalence(rows, margin=0.10, cluster_key=lambda r: r["domain"], n_boot=800)
+    assert "cluster_bootstrap" in v["intervals"]
+    assert v["binding_lo_from"] in ("newcombe", "cluster_bootstrap")
+    assert v["binding_hi_from"] in ("newcombe", "cluster_bootstrap")
+    assert v["binding_lo"] <= v["intervals"]["cluster_bootstrap"]["lo"]
+    assert v["binding_hi"] >= v["intervals"]["cluster_bootstrap"]["hi"]
 
 
 # --------------------------------------------------------------------------- #
@@ -259,7 +299,91 @@ def test_REFUSES_an_empty_population():
         pe.newcombe_paired_ci(0, 0, 0, 0)
 
 
-def test_summary_names_the_capability_and_the_binding_interval():
+def test_summary_names_the_capability_and_where_each_bound_came_from():
     v = pe.paired_equivalence(_pairs(400, 0, 0, 0), margin=0.10)
     s = v.summary()
-    assert "EQUIVALENT" in s and "capable=True" in s and "newcombe" in s
+    assert "EQUIVALENT" in s and "capable=True" in s and "lo from newcombe" in s and "3/n=" in s
+
+
+# --------------------------------------------------------------------------- #
+# 8. Regressions for the 2026-08-29 deep review (RBD-DR-002)
+# --------------------------------------------------------------------------- #
+def test_a_DECISIVE_negative_is_reported_even_when_equivalence_was_unattainable():
+    """delta = -1.0 at p = 0.0078 was reported as UNRESOLVABLE_AT_THIS_N.
+
+    "Could equivalence have been established?" and "was a difference established?" are
+    orthogonal; gating the second on the first discards a decisive result.
+    """
+    v = pe.paired_equivalence(_pairs(0, 8, 0, 0), margin=0.10)
+    assert v["delta"] == -1.0
+    assert v["can_establish_equivalence"] is False
+    assert v["VERDICT"] == "WORSE_THAN_MARGIN"
+    assert v["mcnemar_p_two_sided"] < 0.01
+
+
+@pytest.mark.parametrize("n,expect_can", [(8, False), (20, False), (30, False),
+                                          (40, True), (160, True), (400, True)])
+def test_capability_is_a_function_of_n_ALONE(n, expect_can):
+    """It must not swing on the observed cell pattern.
+
+    The first version evaluated Newcombe at zero discordance with the OBSERVED marginals, which
+    sits at phi = 1 whenever n00 > 0: n=20 with n00=4 read CAPABLE while n=20 with n00=0 read
+    incapable. Rule of three, 3/n < margin, is a property of the design.
+    """
+    for n00 in (0, n // 4, n // 2):
+        v = pe.paired_equivalence(_pairs(n - n00, 0, 0, n00), margin=0.10)
+        assert v["can_establish_equivalence"] is expect_can, (n, n00, v["rule_of_three_bound"])
+        assert v["rule_of_three_bound"] == pytest.approx(3.0 / n)
+
+
+def test_mcnemar_does_not_overflow_on_large_discordance():
+    """2.0 ** m overflows at m ~ 1024, and so does 2.0 * tail for an exact integer tail."""
+    assert pe.mcnemar_exact(600, 600) == pytest.approx(1.0)
+    assert 0.0 <= pe.mcnemar_exact(1200, 0) <= 1.0
+    assert pe.mcnemar_exact(5, 0) == pytest.approx(0.0625)
+
+
+def test_mcnemar_REFUSES_negative_counts():
+    with pytest.raises(ValueError):
+        pe.mcnemar_exact(-1, 3)
+
+
+def test_the_envelope_prevents_a_WORSE_verdict_that_a_cluster_interval_contradicts():
+    """Reading `hi` off the lo-winning interval let WORSE_THAN_MARGIN fire while the
+    cluster-respecting interval still contained zero."""
+    rows = []
+    for di, (a, b, c, d) in enumerate([(5, 20, 3, 25), (16, 25, 8, 8), (0, 12, 12, 6)]):
+        for x, y in [(1, 1)] * a + [(1, 0)] * b + [(0, 1)] * c + [(0, 0)] * d:
+            rows.append({"base": x, "arm": y, "domain": f"d{di}"})
+    v = pe.paired_equivalence(rows, margin=0.10, cluster_key=lambda r: r["domain"], n_boot=2000)
+    assert v["intervals"]["cluster_bootstrap"]["hi"] >= 0.0
+    assert v["binding_hi"] >= 0.0
+    assert v["VERDICT"] != "WORSE_THAN_MARGIN"
+
+
+@pytest.mark.parametrize("p_base,p_flip_down,p_flip_up,n", [(0.98, 0.01, 0.01, 48),
+                                                            (0.50, 0.02, 0.02, 20)])
+def test_coverage_ALSO_holds_in_the_near_ceiling_regime(p_base, p_flip_down, p_flip_up, n):
+    """The module's stated regime is 45/48 and 48/48; the original coverage cells never sampled
+    it, so a collapse there would have escaped."""
+    rng = random.Random(4242)
+    reps, covered = 800, 0
+    for _ in range(reps):
+        n11 = n10 = n01 = n00 = 0
+        for _ in range(n):
+            b = 1 if rng.random() < p_base else 0
+            a = (0 if rng.random() < p_flip_down else 1) if b else \
+                (1 if rng.random() < p_flip_up else 0)
+            if b and a:
+                n11 += 1
+            elif b and not a:
+                n10 += 1
+            elif not b and a:
+                n01 += 1
+            else:
+                n00 += 1
+        true_delta = (p_base * (1 - p_flip_down) + (1 - p_base) * p_flip_up) - p_base
+        r = pe.newcombe_paired_ci(n11, n10, n01, n00)
+        if r["lo"] <= true_delta <= r["hi"]:
+            covered += 1
+    assert covered / reps >= 0.93, f"coverage {covered / reps:.3f} in the near-ceiling regime"

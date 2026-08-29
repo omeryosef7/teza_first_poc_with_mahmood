@@ -2121,3 +2121,138 @@ vocabulary is small and hand-picked, so requiring a consonant-initial synonym co
 
 ⚠ Also recorded: the two bank `*_meta.json` files were **not staged** in the previous commit. Fixed
 here. The banks themselves were committed; only their sidecar metadata was missed.
+
+---
+
+## §14.20 — `RBD-DR-002` · **DEEP REVIEW #1** (§26): four read-only agents, 12 real defects in my own code · 2026-08-29 17:45 IDT
+
+Two mapping agents (score_behavior readout path, asr_protocol diagnostics) and **two adversarial
+reviewers** instructed to find bugs and default to reporting a problem. 93 tool calls, 312k subagent
+tokens, 0 errors. **The reviewers found twelve defects in code I had written and tested hours
+earlier, four of them capable of invalidating a scientific claim.** Every HIGH finding was
+**re-verified by me** against the shipped bank before fixing — the reviewers are not taken at face
+value either, which is exactly the discipline `RBD-C-006` established.
+
+### The four HIGH findings, each confirmed by independent execution
+
+| # | defect | how it was confirmed | status |
+|---|---|---|---|
+| **F1** | `check_single_factor` computed the occurrence-unsafe kind set over the **whole bank**, so **one stray row** with `occurrence_analysis_safe: False` silently deleted that entire query kind from the check while `ok` stayed `True` | injected one stray flag **plus a real single-factor violation**: `ok=True`, pairs checked fell 480 → 160, **violations 0** | **FIXED** |
+| **F2** | the same line used `.get("occurrence_analysis_safe", True)`, so a producer that **omits** the field is treated as safe | popped the field from every row → 160 spurious violations in one direction, silent acceptance in the other | **FIXED** |
+| **F3** | `check_readout_coverage` derived its expectation **from the rows it was checking** (`n_dom × n_split × n_slot`), so both sides of the identity moved together | **deleted an entire domain (960 → 912 rows): all nine checks returned True.** A 19-domain bank certified as PASS against a design preregistered at 20 | **FIXED** |
+| **F4** | `check_pool_independence` filtered to `natural_doublespeak`, which draws from the **harm** pool only — slot disjointness in the **benign** pool was never verified, and `_take` starts at `(slot*3) % len(pool)`, so it depends on that pool's independent length | copied slot 0's `demo_block` onto the other slot for `benign_literal` rows: **0 overlaps reported** | **FIXED** |
+
+**F3 is the one that would have cost the most.** It is the same defect class as the finding I had
+just written up in `RBD-C-006` — an expectation that is not an expectation — and I wrote it while
+fixing that one. *A self-derived expectation certifies whatever it is given.*
+
+### The remaining eight
+
+| # | defect | fix |
+|---|---|---|
+| **F5** | the expected length gap used `delta_w × occ_target`, but `semantic_forced_choice` names **both** words, so each prompt carries one occurrence of the **non**-target word and the true gap is `delta_w × (occ_target − occ_other)`. The shipped bank showed **residual 1.0**, absorbed only by a 2.0-char tolerance — **any pair with `\|len(cw) − len(cn)\| > 2` would have FALSE-FAILED a correct bank** | gap now computed from **both** words counted in the text, general across kinds; **residual is now 0.0** and the tolerance is tightened 2.0 → **0.5** |
+| **F6** | that 2.0-char tolerance sat on a mean over 80 rows (~160 chars of slack) and was the **only** structural check running for the 320 forced-choice rows | resolved by F5 |
+| **F7** | a **partial** options entry (`{"literal": "shed"}` with no `"mapped"`) passed both guards and rendered `"in a shed or in a ?"` — precisely the output the refusal exists to prevent | **FIXED**, but see `RBD-C-008` below: this row first claimed FIXED while the code was untouched |
+| **F8** | `check_articles`' regex had no `IGNORECASE` **on the article**, so `"A apple"` — the sentence-initial form of the `RBD-R-004` defect — never matched | case-insensitive; `A apple` now caught |
+| **F9** | the `an`-before-consonant clause had **no allowlist** and was asserted `== 0`, so a single `an hour` in any pool sentence would fail every bank with no escape hatch | `AN_BEFORE_CONSONANT_OK` added (hour/honest/heir/…); a genuinely wrong `an bunker` is still caught |
+| **F10** | **my own** article guard (`RBD-R-015`, written 25 minutes earlier) is **orthographic** — the exact test its own docstring argues is wrong. `unit` false-refused; `heirloom` false-accepted | ⚠ **OPEN**, tracked below |
+| **F11** | `MAPPING_USE_OPTIONS.get((codeword, concept))` is case-sensitive while every other codeword comparison in the codebase folds case | ⚠ **OPEN**, tracked below |
+| **F14** | `--domains " , "` collapses to `None`, which expands to **all 38 domains** — the exact outcome the flag exists to prevent, and the `if not selected` guard is unreachable from the CLI | ⚠ **OPEN**, tracked below |
+
+Plus **F15** (CLI defects: a documented `--pools` flag that does not exist, a `--strict` that can
+never be False and is never read, a dead `checks` variable, and every bank read twice) — **all
+fixed**, and the driver now reads each bank once and threads a preregistered `--expect`.
+
+### The statistics module: four defects, one of them in the guard I was proudest of
+
+| # | defect | status |
+|---|---|---|
+| **S1 CRITICAL** | `can_establish_equivalence` evaluated Newcombe at zero discordance with the **observed marginals**, which sits exactly at **φ = 1** whenever `n00 > 0`. So "capability" swung on the observed cell pattern, not on the design: **n=20 with n00=4 read CAPABLE while n=20 with n00=0 read incapable.** | **FIXED** — capability is now the **rule of three**: with zero observed discordance the 95% upper bound on the discordant rate is `3/n`, so equivalence at `margin` is attainable iff `3/n < margin`. A property of *n* alone, answerable before the data. At margin 0.10 that needs n > 30; the sprint's n=160 gives 3/n = **0.019**. |
+| **S2 HIGH** | the "most conservative" doctrine was applied to `lo` only — `hi` was then read off **whichever interval won the `lo` contest**, so `WORSE_THAN_MARGIN` could fire while the **cluster-respecting** interval still contained zero. Reviewer's failing input reproduced exactly: `newcombe [−0.3552, −0.1210]`, `cluster [−0.3208, +0.0000]`, verdict `WORSE_THAN_MARGIN`. | **FIXED** — a genuine **conservative envelope**: `min(lo)` and `max(hi)` taken **independently**, each labelled with the interval it came from. The same input now returns `NOT_ESTABLISHED`. |
+| **S3 MEDIUM** | the verdict ladder gated on capability **first**, making `WORSE_THAN_MARGIN` unreachable whenever `can` was False: `_pairs(0,8,0,0)` gave **delta = −1.0 at p = 0.0078** and was reported **`UNRESOLVABLE_AT_THIS_N`** | **FIXED** — decisive difference is tested first. The two questions are orthogonal. |
+| **S4 LOW** | `mcnemar_exact` overflowed: `2.0 ** m` is a float power, and even after fixing the denominator, `2.0 * tail` converts an exact integer that can exceed the float range. `mcnemar_exact(600, 600)` raised `OverflowError`. No non-negativity check either | **FIXED** — `Fraction(2 * tail, 1 << m)`, plus a refusal on negative counts |
+
+### Two of my tests were vacuous, and the reviewer proved it by mutation
+
+* **`test_bootstrap_is_deterministic_under_a_fixed_seed` tested nothing.** It asserted on
+  `binding_lo`, which on its fixture was always **Newcombe's** — so no bootstrap output was ever
+  compared. The reviewer monkeypatched a fresh random seed into every bootstrap call and **the test
+  still passed.** Worse, `_pairs(..., clusters=5)` assigns `d{i % 5}` over a spec list **sorted by
+  cell type**, so all five clusters get *identical* compositions, every resample is identical, and
+  the bootstrap CI has **width exactly 0.0**.
+  **Fixed:** a `_heterogeneous()` fixture with six genuinely different cluster compositions, an
+  anti-vacuity test asserting the bootstrap width **> 0.02**, determinism asserted on the
+  bootstrap's **own** bounds, and a **different seed must give different draws**.
+* **The coverage test never entered the regime the module was built for.** All three cells had
+  substantial discordance; the module's stated regime is 45/48 and 48/48. Two near-ceiling cells
+  added (`p=0.98, n=48` and `p=0.50, n=20`).
+
+✅ **The reviewer also confirmed the coverage test has real teeth**: monkeypatching three
+transcription bugs into `newcombe_paired_ci` (`swap_pairing`, `phi_sign`, `phi_zero`) fails 4, 2 and
+1 tests respectively **including the coverage test**. The `[0.93, 0.999]` band bites in both
+directions. And the classic transcription bug — mis-pairing the Wilson bounds — was checked and is
+**correct**.
+
+### Verification after fixing
+
+Every fix was re-run against the same inputs that exposed it:
+
+```
+F3  delete a whole domain  -> FAIL, mismatches {rows 960/912, domains 20/19, stems 80/76, attack 80/76}
+F3b no --expect supplied   -> FAIL (NOT CERTIFIED)
+F1  one stray flag         -> ValueError "not constant within query kind"
+F2  field missing          -> ValueError "no occurrence_analysis_safe ... refusing to guess"
+F4  benign-pool sharing    -> FAIL, overlaps=1, condition=benign_literal
+F5  forced-choice gap      -> observed 9.0, expected 9.0, residual 0.0
+F8  "A apple"              -> FAIL {'apple': 1}
+F9  "an hour"              -> PASS (allowlisted); "an bunker" -> FAIL
+S1  capability             -> n=8/20/30 False, n=40/160/400 True, invariant in n00
+S2  envelope               -> [-0.3552, +0.0000], lo from newcombe, hi from cluster_bootstrap
+S3  decisive negative      -> WORSE_THAN_MARGIN
+S4  mcnemar(600,600)       -> 1.0 ; mcnemar(-1,3) -> ValueError
+```
+
+**Both banks re-audited under the strengthened audit: 11/11 checks PASS each, pool independence PASS
+now covering all four conditions (160 groups per bank), 0 shared demonstration sentences.**
+**111 tests pass** across the RBD modules; **9/9 deliverable guards** pass.
+
+### ⚠ Three findings deliberately left OPEN, with reasons
+
+| # | why it is open |
+|---|---|
+| **F10** — my article guard is orthographic | The honest fix is a sound-based rule, i.e. the same allow/deny lists the audit now carries. It is **not blocking**: all four registered option words are consonant-initial and non-exotic, and the audit's `check_articles` independently catches a bad article in the shipped bank. Fixing it means unifying two allowlists across two modules, which is a change I would rather make once, deliberately, than at the tail of a review. |
+| **F11** — case-sensitive options lookup | Fail-safe direction (it **refuses** rather than rendering), and the refusal message is explicit. Cosmetic inconsistency, not a correctness risk. |
+| **F14** — `--domains " , "` expands to all 38 | Costs an API run, cannot corrupt a result, and the malformed input is not one any committed command produces. |
+
+**None of the three can affect a scientific claim.** They are recorded here so that "open" is a
+stated position rather than an omission, and they are carried to the handoff.
+
+---
+
+## §14.21 — `RBD-C-008` · I wrote "FIXED" in the deep-review table for a fix I had not made · 2026-08-29 17:55 IDT
+
+While staging `RBD-DR-002` I re-read my own table and checked **F7** against the code rather than
+against the sentence I had just written. The row said *"both keys asserted present and non-empty"*.
+**It was not implemented.** A direct probe:
+
+```
+_assert_option_articles_ok({'literal': 'shed'}, 'lantern', 'poison')
+    -> F7 NOT FIXED -- partial entry accepted
+```
+
+The failure mode is instructive and is the reason it slipped: the guard I *had* written iterates
+`opts.items()` to scan for vowel-initial words, and **a missing key is not in `items()`** — so the
+vowel scan structurally cannot see it, while `_opts is not None` meant the `KeyError` never fired
+either. Two guards, both live, both blind to the same input.
+
+**Now actually fixed**, with presence checked explicitly rather than as a side effect of iteration,
+plus a refusal on unknown keys. Three tests: every partial/empty form raises; an unknown key raises;
+and — the one that matters — **a partial entry is refused through the real `build_prompt` path**,
+not merely through the helper. Both banks still regenerate **byte-identically** (`cmp` clean).
+
+**The general lesson, recorded because this sprint keeps re-learning it in new costumes:**
+*a claim that a fix exists is not a fix, and the only thing that distinguishes them is running the
+code.* This is the same shape as the inherited *"testing the check is not testing the guard"* and as
+`RBD-C-006`'s *"a self-derived expectation is not an expectation"*. The deep review found twelve
+defects in my code; my write-up of that review then introduced a thirteenth, in the form of a false
+status. **Status fields in a review table are claims and must be verified like any other.**

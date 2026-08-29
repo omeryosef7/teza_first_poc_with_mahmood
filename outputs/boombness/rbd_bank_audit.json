@@ -1,13 +1,29 @@
 {
  "schema": "RBD_BANK_AUDIT/1",
+ "expect": {
+  "rows": 960,
+  "domains": 20,
+  "stems": 80,
+  "attack_rows": 80
+ },
  "banks": [
   {
+   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_lantern_poison.jsonl",
    "codewords": [
     "lantern"
    ],
    "concepts": [
     "poison"
    ],
+   "one_pair_per_bank": {
+    "ok": true,
+    "codewords": [
+     "lantern"
+    ],
+    "concepts": [
+     "poison"
+    ]
+   },
    "ids_and_hashes": {
     "ok": true,
     "n_rows": 960,
@@ -72,9 +88,10 @@
    "readout_coverage": {
     "ok": true,
     "n_stems": 80,
-    "n_stems_expected": 80,
     "n_stems_missing_a_readout": 0,
-    "examples": {}
+    "examples": {},
+    "expect_stems": 80,
+    "stems_match_design": true
    },
    "single_factor": {
     "ok": true,
@@ -96,8 +113,9 @@
      "unique": 24
     },
     "unexpected_words": {},
+    "unexpected_an_words": {},
     "codeword_or_concept_flagged": {},
-    "note": "clause 3 (codeword/concept must not appear) is the substantive one"
+    "note": "clause 3 (codeword/concept must not appear after EITHER article) is the substantive one; the two allowlists are the instrument's calibration"
    },
    "lexical_collisions": {
     "ok": true,
@@ -156,7 +174,7 @@
       "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 9.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
      "aligned_pairs_ok": true
     },
@@ -201,7 +219,7 @@
       "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 9.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
      "aligned_pairs_ok": true
     },
@@ -236,22 +254,41 @@
      },
      "aligned_gap:natural_doublespeak-direct_harmful": {
       "observed_chars": 9.0,
-      "expected_chars": 10.0,
-      "residual_chars": 1.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
       "ok": true
      },
      "aligned_gap:benign_literal-concept_in_benign_ctx": {
       "observed_chars": 9.0,
-      "expected_chars": 10.0,
-      "residual_chars": 1.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 10.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
      "aligned_pairs_ok": true
     }
    },
-   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_lantern_poison.jsonl",
+   "design": {
+    "ok": true,
+    "expected": {
+     "rows": 960,
+     "domains": 20,
+     "stems": 80,
+     "attack_rows": 80
+    },
+    "observed": {
+     "rows": 960,
+     "domains": 20,
+     "stems": 80,
+     "attack_rows": 80
+    },
+    "mismatches": {}
+   },
+   "rows": 960,
+   "domains": 20,
+   "stems": 80,
+   "attack_rows": 80,
    "n_rows": 960,
    "n_domains": 20,
    "n_family_stems": 80,
@@ -259,12 +296,22 @@
    "PASS": true
   },
   {
+   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_candle_missile.jsonl",
    "codewords": [
     "candle"
    ],
    "concepts": [
     "missile"
    ],
+   "one_pair_per_bank": {
+    "ok": true,
+    "codewords": [
+     "candle"
+    ],
+    "concepts": [
+     "missile"
+    ]
+   },
    "ids_and_hashes": {
     "ok": true,
     "n_rows": 960,
@@ -329,9 +376,10 @@
    "readout_coverage": {
     "ok": true,
     "n_stems": 80,
-    "n_stems_expected": 80,
     "n_stems_missing_a_readout": 0,
-    "examples": {}
+    "examples": {},
+    "expect_stems": 80,
+    "stems_match_design": true
    },
    "single_factor": {
     "ok": true,
@@ -346,16 +394,19 @@
    },
    "articles": {
     "ok": true,
-    "an_before_consonant_total": 0,
-    "an_before_consonant_by_word": {},
+    "an_before_consonant_total": 6,
+    "an_before_consonant_by_word": {
+     "x-ray": 6
+    },
     "a_before_vowel_total": 18,
     "a_before_vowel_by_word": {
      "unique": 12,
      "useful": 6
     },
     "unexpected_words": {},
+    "unexpected_an_words": {},
     "codeword_or_concept_flagged": {},
-    "note": "clause 3 (codeword/concept must not appear) is the substantive one"
+    "note": "clause 3 (codeword/concept must not appear after EITHER article) is the substantive one; the two allowlists are the instrument's calibration"
    },
    "lexical_collisions": {
     "ok": true,
@@ -414,7 +465,7 @@
       "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 9.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
      "aligned_pairs_ok": true
     },
@@ -459,7 +510,7 @@
       "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 9.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
      "aligned_pairs_ok": true
     },
@@ -494,22 +545,41 @@
      },
      "aligned_gap:natural_doublespeak-direct_harmful": {
       "observed_chars": -9.0,
-      "expected_chars": -10.0,
-      "residual_chars": 1.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
       "ok": true
      },
      "aligned_gap:benign_literal-concept_in_benign_ctx": {
       "observed_chars": -9.0,
-      "expected_chars": -10.0,
-      "residual_chars": 1.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
       "ok": true
      },
-     "mean_target_occurrences": 10.0,
+     "mean_differing_occurrences": 9.0,
      "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
      "aligned_pairs_ok": true
     }
    },
-   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_candle_missile.jsonl",
+   "design": {
+    "ok": true,
+    "expected": {
+     "rows": 960,
+     "domains": 20,
+     "stems": 80,
+     "attack_rows": 80
+    },
+    "observed": {
+     "rows": 960,
+     "domains": 20,
+     "stems": 80,
+     "attack_rows": 80
+    },
+    "mismatches": {}
+   },
+   "rows": 960,
+   "domains": 20,
+   "stems": 80,
+   "attack_rows": 80,
    "n_rows": 960,
    "n_domains": 20,
    "n_family_stems": 80,
@@ -521,10 +591,22 @@
   "ok": true,
   "boombness_prompt_bank_rbd_lantern_poison.jsonl:within_bank_slot_overlaps": 0,
   "boombness_prompt_bank_rbd_lantern_poison.jsonl:within_bank_examples": [],
-  "boombness_prompt_bank_rbd_lantern_poison.jsonl:n_domain_split_groups": 40,
+  "boombness_prompt_bank_rbd_lantern_poison.jsonl:n_groups_checked": 160,
+  "boombness_prompt_bank_rbd_lantern_poison.jsonl:conditions_covered": [
+   "benign_literal",
+   "concept_in_benign_ctx",
+   "direct_harmful",
+   "natural_doublespeak"
+  ],
   "boombness_prompt_bank_rbd_candle_missile.jsonl:within_bank_slot_overlaps": 0,
   "boombness_prompt_bank_rbd_candle_missile.jsonl:within_bank_examples": [],
-  "boombness_prompt_bank_rbd_candle_missile.jsonl:n_domain_split_groups": 40,
+  "boombness_prompt_bank_rbd_candle_missile.jsonl:n_groups_checked": 160,
+  "boombness_prompt_bank_rbd_candle_missile.jsonl:conditions_covered": [
+   "benign_literal",
+   "concept_in_benign_ctx",
+   "direct_harmful",
+   "natural_doublespeak"
+  ],
   "boombness_prompt_bank_rbd_candle_missile.jsonl|boombness_prompt_bank_rbd_lantern_poison.jsonl:shared_demo_sentences": 0
  },
  "PASS": true
