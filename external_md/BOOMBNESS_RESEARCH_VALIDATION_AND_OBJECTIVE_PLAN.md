@@ -7440,3 +7440,97 @@ approximately zero on unseen domains and this design cannot distinguish how they
 §12.30 concluded. What changes is that the two rows must be quoted as *both collapsing*, never as
 `d_surface` degrading while `d_naive` holds. A table read outside the paragraph that qualifies it is
 how a real finding becomes a wrong one, and this row-pair was one sentence away from that.
+
+## §13 — PHASE 9/10 DELIVERABLE: the seven questions, each with a clean answer
+
+**⛔ A SCOPE NOTE THAT MATTERS FOR HOW THIS IS READ.** Phase 9 says *"the seven questions in the
+brief get a clean YES/NO each"*. **The brief itself is not in this repository** — only that
+reference to it. The seven questions below are therefore **reconstructed from the plan's own
+Phase 1–7 structure**, one per phase, which is the mapping the plan's §A implies. If the brief's
+wording differs, the *answers* still stand because each is tied to ledger entries and artifacts, but
+the *question set* is my inference and should be checked against the brief before publication.
+
+---
+
+### Q1 (Phase 1) — Can aligned, leakage-free banks be built that isolate the manipulation?  **YES**
+
+432 complete 2×2 families; the leakage probe finds `d_surface` **byte-identical after masking on all
+of them**, with masked surface-arm accuracy **0.5000 against a 0.5000 baseline**. Tokenization audit:
+**2,928 rows, 0 bad, 0 ambiguous, 0 alignment violations**. Banks regenerate byte-identically.
+*Scope:* this answers constructibility, not whether anything measured on them generalises — see Q7.
+
+### Q2 (Phase 2) — Are token-level and prompt-level boombness separate objects, and does either predict ASR?  **SEPARATE: YES. PREDICTS: NO**
+
+Separation is established (§12.25). On identical rows the token-level query-occurrence readout beats
+every prompt-level aggregate — pooled/within-dose **+0.336/+0.305** against `mean-all`
++0.299/+0.257, `max` +0.301/+0.204, `demo-only` +0.250/+0.185 (which does not clear 0.05). Prompt
+aggregates are structurally tied to dose, since occurrences are dose+1.
+**Neither predicts ASR beyond controls on unseen domains** (Q7). Ledger (20).
+
+### Q3 (Phase 3) — Is `d_surface` causal for behaviour under dose-matched controls?  **NO**
+
+Ledger entry (1)/**RETRACT**: the steering claim does not survive. Ledger entry (1b)/**KEEP**:
+*removing* `d_surface` at L8 **raises** ASR by **+0.0424** on held-out AdvBench-495 (21 net flips) —
+the opposite sign to the causal story. Ledger (3)/**KEEP**: `d_surface` ≈ PC1 of the cell-mean span,
+and every in-subspace control removes ≤0.13 of the spread the arm removes 0.81–0.88 of.
+
+### Q4 (Phase 4) — Does demonstration-retrieval knockout suppress the attack?  **YES, on the populations that can measure it**
+
+At a released cap (640, **0/96 truncated**, one judge invocation per contrast), row counts A→C:
+`ticket_bomb` **27/96 → 2/96**, `main` **23/96 → 5/96**. Untestable on `button_knife` (7/96 baseline)
+and `window_knife` (3/96) — the largest effect arithmetically available to them is at the noise
+floor — and **`basket_gun` is a genuine null** (7/96 → 8/96; never below baseline at either cap).
+Qwen was not rerun and stays cap-dependent. The original *"96 down / 18 up over 8 populations"*
+pooled populations whose baselines run 3/96 to 27/96 and **should not be quoted in that form**.
+
+### Q5 (Phase 5) — Does the model comprehend the mapping, and does comprehension survive interventions that remove the behaviour?  **YES to both — and that dissociation is the finding**
+
+Ledger (4)/**KEEP_NARROWED**: the codeword→concept mapping **survives** interventions that abolish
+the attack. Binding holds at 29/40 → 30/40 on Qwen3 while ASR falls 11/80 → 1/80 (p=1.0000, MDE ≥6
+against 11 discordant rows: *no evidence of degradation*, not *evidence of no degradation*).
+Representation and behaviour come apart.
+
+### Q6 (Phase 6) — Is the attack just `n_examples` wearing a different name?  **NO**
+
+The dose-response is **non-monotonic**: it peaks at n=8–12 and falls at n=16, and **n=0 is 0/12 on
+all three banks** (0/36 vs 17/36 at n=8, p<0.0001) — the attack does not exist without
+demonstrations, by two different routes (`main` refuses outright at 12/12 keyword-refusal and 23
+median tokens; the others give long non-refusing answers that simply do not attack).
+*Cuts both ways, as recorded:* non-monotonicity also makes `n_examples` a **poor control variable**,
+so conditioning on it linearly mis-specifies the upper range. Pooled n=8→16 clustered permutation
+p=0.0312; `main` alone p=0.0625, which is the **floor** attainable at 5 informative clusters.
+
+### Q7 (Phase 7) — Should a GCG/MAC objective be built?  **NO — and the reason is "untestable", not "refuted"**
+
+608 rows across 38 domains, 6 seen by the direction fit and 32 unseen, cap 640, **0/608 truncated**,
+all 152 cells at 4/4, analysis script committed before the outcome existed.
+
+| | `P_unseen` (k=32) | wild cluster p | `P_seen` (k=6) |
+|---|---|---|---|
+| `d_surface` (candidate) | −0.0550 | 0.1160 | +0.2700 |
+| `d_naive` (positive control) | −0.0171 | 0.6808 | +0.1708 |
+
+All three pre-registered conditions fail **and the positive control fails with them** — so the
+verdict is *untestable on this bank*, not *boombness does not predict*. The two are not
+distinguishable here: the difference-of-differences is **−0.1371, CI [−0.446, +0.200]**, including
+zero (§12.30.1). **No objective was built.**
+
+---
+
+### What the sprint establishes overall
+
+**A clean negative, and it is the reportable result the framing asked for.** No objective should be
+built. But the more useful output is *why*: the correlations that motivated one are **real and
+local** — they replicate across two bank builds (+0.2700 here against +0.1783 there) and vanish on
+domains the directions were not fitted from (+0.315 → −0.010 marginal). That is a sharper statement
+than either "confirmed" or "withdrawn", and it is the one this sprint can defend.
+
+**Three things a reader should carry:**
+
+1. **`d_surface` is `d_surface_carrot_bomb`.** No concept transfer, and now no domain transfer either.
+2. **Representation ≠ behaviour.** Comprehension survives interventions that abolish the attack (Q5),
+   and removing the direction *raises* ASR (Q3). Any objective built on the representation would have
+   been optimising something the behaviour does not follow.
+3. **The binding constraint was cluster count, and pulling that lever produced an answer rather than
+   a rescue.** Three independent analyses said "more domains"; 38 domains showed the directions do
+   not reach them.
