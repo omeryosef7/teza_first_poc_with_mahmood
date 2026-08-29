@@ -7798,7 +7798,15 @@ an optimisation target.
 5. **The attack itself is real and mechanistically tractable** — retrieval knockout suppresses it
    (27/96 → 2/96 on `ticket_bomb`) where baselines are high enough to measure, and it does not exist
    at n=0 (0/36).
-6. **The measurement lessons are portable and expensive:** an ASR from a `max_new=192` run is not an
+6. **Installation is necessary and not sufficient**, and this is the cleanest structural result in
+   the sprint (§21.2). Across four banks, each replicating on two independent runs:
+   `window_knife` **saturates installation at 1.000** by n=8 while producing **3/96** attacks, and
+   `basket_gun` **never installs** (plateau 0.417). The 2×2 has **no bank that produces attacks
+   without installing the mapping.** Teaching the mapping is a prerequisite the model reliably
+   satisfies and which predicts nothing about whether the attack lands — so *"does the model
+   understand the codeword"* is the wrong question to optimise against, and the sprint reached that
+   from the bank side and the intervention side (Q9) independently.
+7. **The measurement lessons are portable and expensive:** an ASR from a `max_new=192` run is not an
    ASR (two arms were 96/96 truncated); the judge flips 6.5–7.0% of rows on identical text; and
    power here is bounded by *domain count*, not row count.
 
