@@ -16417,3 +16417,44 @@ population that is not exactly 160, which `--limit` violates by construction. Th
 compared to the 640 baseline, within one cap. Cross-cap deltas are diagnostics only. And I will not
 condition on truncation to rescue a FAIL, which is the exact move PR-4 forbids and the reason this
 leg was suspended rather than argued.
+
+### ⛔ R-172 second addendum (11:40) — **The quarantined run's two files are not merely short, they DISAGREE ABOUT WHICH ROWS EXIST — in both directions. My own decomposition was right about `results.jsonl` and silent about `gens.jsonl`, which is the half that would have poisoned a join.**
+
+The peer traced their `77` to reading `gens.jsonl` and labelling it rows. Verifying that turned up
+something neither of us had stated:
+
+| file | rows | unique ids | 608 − rows |
+|---|---|---|---|
+| `gens.jsonl` | **531** | 531 | **77** |
+| `results.jsonl` | **543** | 543 | **65** |
+
+**The two are not nested.** Measured on
+`score_behavior/d38beh_20260829_022027_2389958`:
+
+* **16** `prompt_id`s appear in `results.jsonl` with **no `gens.jsonl` row** — scored rows whose
+  generation text was never persisted.
+* **4** appear in `gens.jsonl` with **no `results.jsonl` row**.
+
+So the quota did not truncate one stream; it hit **two independent writers at different points**, and
+their surviving row sets **cross**. Both files' last lines parse, so nothing is detectably corrupt —
+each looks internally healthy.
+
+**Why this matters more than the row count.** Analyses in this repo join these two files by
+`prompt_id` and take the intersection *silently*: `phase1_decomposition.health()` computes
+`ids = [p for p in rows_j if p in g]`, and every PR-4 truncation statistic (`frac_stop_length`,
+`median_n_chars`, `frac_at_cap`) is derived from that intersection. On this run that join would
+quietly drop 16 scored rows, keep 527, and print a complete-looking PR-4 health block. **This is the
+same silent-subset defect class that `binding_behaviour_bridge.py` now refuses outright** — the
+difference is that the bridge refuses because someone paid for the lesson, and the health path does
+not check.
+
+**No claim is affected**: the run is in `KNOWN_SHORT`, superseded by `d38beh2`, and cited by nobody as
+evidence. **The verdict is unchanged and I am not extending it** — this is one artifact from one
+transient quota event, and I am not going to generalise a join-integrity defect from a run that must
+never be analysed. What it does establish is that *"short"* was the wrong summary of the damage, on
+both our sides: the peer's number came from the wrong file, mine came from the right file and stopped
+at one file.
+
+`tests/test_my_cited_artifacts.py::test_truncated_entries_still_have_the_discrepancy_they_claim` now
+pins the divergence (531/543, 16 and 4 one-sided ids) alongside the 608 = 543 + 22 + 43 arithmetic, so
+the citation fails if either file is ever repaired.

@@ -184,6 +184,37 @@ TRUNCATED = {
     "d38beh_20260829_022027_2389958": (586, 543, 608),
 }
 
+#: R-172 addendum. The same run's gens.jsonl and results.jsonl DISAGREE ABOUT WHICH ROWS EXIST, in
+#: both directions -- the quota hit two writers at different points. Values:
+#: (gens_lines, results_lines, n_results_ids_absent_from_gens, n_gens_ids_absent_from_results).
+#: This is pinned separately from the row arithmetic because a repair could fix one and not the other.
+DIVERGENT_FILES = {
+    "d38beh_20260829_022027_2389958": (531, 543, 16, 4),
+}
+
+
+def test_divergent_file_entries_still_cross_the_way_they_claim():
+    """The join hazard, pinned: results and gens are not nested, so an intersection silently subsets."""
+    for rid, (n_gens, n_res, only_res, only_gens) in sorted(DIVERGENT_FILES.items()):
+        d = cac.resolve(rid)
+        assert d, f"{rid} does not resolve"
+        def ids(fn):
+            out = []
+            with open(os.path.join(d, fn), encoding="utf-8") as fh:
+                for line in fh:
+                    out.append(json.loads(line)["prompt_id"])
+            return out
+        g, r = ids("gens.jsonl"), ids("results.jsonl")
+        assert len(g) == n_gens, f"{rid}: gens {len(g)} != {n_gens}"
+        assert len(r) == n_res, f"{rid}: results {len(r)} != {n_res}"
+        assert len(set(r) - set(g)) == only_res, (
+            f"{rid}: {len(set(r) - set(g))} results ids absent from gens, expected {only_res}")
+        assert len(set(g) - set(r)) == only_gens, (
+            f"{rid}: {len(set(g) - set(r))} gens ids absent from results, expected {only_gens}")
+        # the point of the entry: neither file contains the other
+        assert not set(r).issubset(set(g)) and not set(g).issubset(set(r)), (
+            f"{rid} is no longer two-way divergent; the R-172 addendum is stale")
+
 
 def test_truncated_entries_still_have_the_discrepancy_they_claim():
     """If a quarantined artifact were ever repaired or regenerated, this citation must stop passing."""
@@ -249,7 +280,7 @@ def test_classified_reasons_quote_the_real_counts():
 
 def test_every_classified_entry_is_either_key_checked_or_count_checked():
     """No reason may be pure prose without being declared so — the EXEMPT[3] failure mode."""
-    checked = set(REASON_KEYS) | set(REASON_COUNTS) | set(TRUNCATED)
+    checked = set(REASON_KEYS) | set(REASON_COUNTS) | set(TRUNCATED) | set(DIVERGENT_FILES)
     unchecked = set(CLASSIFIED) - checked
     assert not unchecked, (
         f"CLASSIFIED reasons with nothing verifying them: {sorted(unchecked)}. Add a REASON_KEYS or "
