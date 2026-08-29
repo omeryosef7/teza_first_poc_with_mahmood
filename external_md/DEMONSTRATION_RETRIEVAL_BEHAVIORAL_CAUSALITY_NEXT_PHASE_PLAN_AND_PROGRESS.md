@@ -14772,3 +14772,48 @@ also collapses on the 32 unseen domains, the earlier within-dose correlations we
 evaluated on the same 6 domains, so a general transfer failure would make them partly a property of
 the fit set. **Saying that before the number exists is what makes it a prediction rather than a
 concession**, and it is the largest correction the sprint could still take.
+
+### ⚠ R-155 (03:20) — **Their readout job 798295 is DEAD — `OSError: [Errno 122] Disk quota exceeded` at the FINAL write, after scoring all 17328 rows. All fourteen of my runs tonight are intact. The failure mode leaves no artifact, so a dead run and an unlaunched one look identical.**
+
+Cadence step 1 caught it: `798295 FAILED, exit 1:0, 34:34`. They believed it was still scoring.
+
+```
+[score] 17300/17328 rows
+[score] cached 17328 final-occurrence rep stacks
+Traceback ... extract_boombness.py:934 in main -> run.finish(...)
+  common.py:658 in finish -> self._results_fh.close()
+OSError: [Errno 122] Disk quota exceeded
+```
+
+**Every row was scored and none was persisted.** The whole 34 minutes died in the handle close.
+
+**Diagnosis, measured rather than assumed.** `/home/sharifm` is a **20T shared filesystem at 93%**
+(1.5T free). My own allocation is nowhere near a limit — **200G of 16T, 296k files of 4295m** — so
+this reads as a **transient group/filesystem condition**, not a personal overrun. I probed
+immediately after: **8MB into the repo and 32MB into `outputs/` both wrote at ~105MB/s**, so the
+condition had already cleared and a resubmit should pass.
+
+**⚠ My first probe reported `WRITE FAILED` and I nearly sent that.** It was a malformed `mktemp`
+template, not a real failure — caught by re-running the probe properly before raising an alarm.
+**Reporting a shared-infrastructure outage on one bad probe would have been the expensive kind of
+wrong**, since the other session would have stopped submitting on it.
+
+**My exposure, checked rather than assumed.** All **14** of my run and judge dirs from tonight —
+`p7r640{,j}`, `q6r640{,j}`, `q7r640{,j}`, `p7rj2` — carry `DONE.json` with **160/160 rows**, and there
+are **no `ABORTED.json` markers** anywhere under `outputs/boombness` since 22:00. Nothing of mine hit
+this.
+
+**The property that makes it dangerous, and it is the night's third infrastructure fact no commit can
+protect.** `run.finish` writes once at the end, so a run is **all-or-nothing against a fluctuating
+shared quota** — and when it fails there is **no run directory at all**. **A run that died at minute
+34 is indistinguishable from a run that was never launched**, which is exactly the state a plan log
+cannot detect and a `squeue` check three minutes later would have mis-read as "finished". The only
+reason this surfaced is that the cadence checks `sacct` for FAILED rather than only `squeue` for
+absence.
+
+*Alongside: `.git/hooks/` is untracked (C-74), the guard list lived in an untracked file (C-73), and
+now a completed computation can vanish leaving nothing behind. **Three separate ways the repository
+records less than what happened**, all found tonight.*
+
+**I have run no cleanup and touched nothing of theirs** — `outputs/` is 63G of the repo's 157G, and
+what is regenerable scratch is their call, not mine.
