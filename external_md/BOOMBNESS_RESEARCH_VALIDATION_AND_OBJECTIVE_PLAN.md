@@ -7010,14 +7010,24 @@ Same 288 rows, 18 clusters, `d_surface|L8|proj`:
 |---|---|---|---|---|---|---|---|
 | token, query occurrence | +0.336 | 0.0037 | +0.172 | +0.446 | +0.321 | +0.280 | **+0.305** |
 | prompt, mean all occ. | +0.299 | 0.0371 | +0.187 | +0.409 | +0.214 | +0.219 | +0.257 |
-| prompt, max all occ. | +0.301 | 0.0496 | +0.043 | +0.367 | +0.164 | +0.243 | +0.204 |
+| prompt, max all occ. | +0.301 | **~0.052** ⛔ | +0.043 | +0.367 | +0.164 | +0.243 | +0.204 |
 | prompt, mean demo occ. | +0.250 | 0.0856 | +0.008 | +0.321 | +0.191 | +0.220 | +0.185 |
 | length *(control)* | +0.102 | 0.2230 | +0.168 | −0.008 | +0.159 | +0.088 | +0.102 |
 | refused *(control)* | −0.143 | 0.0854 | −0.048 | −0.099 | −0.130 | −0.310 | −0.147 |
 
 **The token-level readout beats every prompt-level aggregate** on both pooled ρ and mean within-dose,
-and the demo-only aggregate — the one that excludes the query token entirely — is weakest and its
-cluster-permutation p does not clear 0.05. ρ(token, prompt-mean) = +0.878 and
+and the demo-only aggregate — the one that excludes the query token entirely — is weakest.
+
+⛔ **CORRECTION (2026-08-29), found by re-deriving these numbers from artifacts.** The `max` row was
+quoted at **p = 0.0496** and read as clearing 0.05. These are **Monte Carlo permutation** p-values,
+and 0.0496 was a lucky draw. Re-run at five seeds it is **0.0505, 0.0508, 0.0514, 0.0524, 0.0534 —
+above 0.05 every time.** So **two** prompt-level aggregates fail to clear, not one. The neighbouring
+values are seed-stable and unaffected: token 0.0042–0.0057, prompt-mean 0.0370–0.0425.
+
+**Quoting a Monte Carlo p to four decimals beside a 0.05 threshold implies a precision it does not
+have** — the same over-precision this sprint corrected in the "38.5 domains" asymptote and the
+single-draw n_eff. Where a permutation p lands within ~0.01 of the threshold it should be quoted as
+a range over seeds, and that is done here. ρ(token, prompt-mean) = +0.878 and
 ρ(prompt-mean, naive-prompt-mean) = +0.978.
 
 **So Phase 2's open question resolves negatively for the prompt-level candidate.** §12.20's framing —
