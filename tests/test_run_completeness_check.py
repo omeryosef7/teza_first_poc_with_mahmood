@@ -147,3 +147,121 @@ def test_a_complete_balanced_run_passes_the_same_path(tmp_path, monkeypatch):
     monkeypatch.setattr(rc, "MIN_EXPECTED", 1)
     monkeypatch.setattr(rc, "KNOWN_SHORT", {})
     assert rc.scan()[0] == []
+
+
+# ---------------------------------------------------------------------------------------------
+# CHECK 3 — file agreement (§12.28.1). Complement of the row-count check, NOT a stronger version:
+# it sees only ONE-SIDED losses, and its silent-degeneration mode was caught in a live sweep where
+# 74 of 585 run pairs had a 0-byte gens.jsonl. Every test below is written to fail a specific
+# mutant of that check in isolation.
+# ---------------------------------------------------------------------------------------------
+
+def _fake_pair(tmp_path, gens_ids, scored_ids, gens_bytes=None):
+    """A DONE run with an independent gens/results id-set. `gens_bytes` writes a raw file instead."""
+    root = tmp_path / "outputs" / "boombness" / "fakeroot" / "r_20260829_000000_9"
+    root.mkdir(parents=True)
+    (root / "DONE.json").write_text("{}")
+    (root / "config.json").write_text(json.dumps({"args": {}}))
+    (root / "results.jsonl").write_text(
+        "".join(json.dumps({"prompt_id": i}) + "\n" for i in scored_ids))
+    if gens_bytes is not None:
+        (root / "gens.jsonl").write_text(gens_bytes)
+    else:
+        (root / "gens.jsonl").write_text(
+            "".join(json.dumps({"prompt_id": i}) + "\n" for i in gens_ids))
+    return tmp_path
+
+
+def _fa(tmp_path, monkeypatch, gens_ids, scored_ids, gens_bytes=None):
+    tp = _fake_pair(tmp_path, gens_ids, scored_ids, gens_bytes)
+    monkeypatch.setattr(rc, "ROOT", str(tp))
+    monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
+    return rc.scan_file_agreement()
+
+
+def test_a_generated_row_that_was_never_scored_is_FLAGGED(tmp_path, monkeypatch):
+    """The corruption signature: a row exists in gens and is absent from results."""
+    problems, comparable, _ = _fa(tmp_path, monkeypatch, [1, 2, 3], [1, 2])
+    assert comparable == 1
+    assert len(problems) == 1 and "1 generated rows were NEVER SCORED" in problems[0][1]
+
+
+def test_results_EXCEEDING_gens_is_NOT_a_defect(tmp_path, monkeypatch):
+    """Kills the direction-flip mutant. Partial dumping makes gens a strict subset of results --
+    two runs in this corpus are exactly that -- and flagging it would fire on every such run."""
+    problems, comparable, _ = _fa(tmp_path, monkeypatch, [1, 2], [1, 2, 3, 4])
+    assert comparable == 1, "a strict-subset run is comparable and must be checked, not skipped"
+    assert problems == [], "scored-but-not-dumped is partial dumping, not a missing row"
+
+
+def test_a_ZERO_BYTE_gens_is_NOT_COMPARABLE_rather_than_passing(tmp_path, monkeypatch):
+    """⛔ THE MUTANT THAT MOTIVATED CHECK 3'S SHAPE. `if gens and gens != results` passes a 0-byte
+    gens file while counting it as checked; 74 of 585 real run pairs are exactly this."""
+    problems, comparable, not_comparable = _fa(tmp_path, monkeypatch, [], [1, 2, 3], gens_bytes="")
+    assert problems == []
+    assert comparable == 0, "an empty gens file is not evidence of agreement"
+    assert not_comparable == 1, "it must be COUNTED as unchecked, never silently dropped"
+
+
+def test_an_absent_gens_file_is_also_NOT_COMPARABLE(tmp_path, monkeypatch):
+    tp = _fake_pair(tmp_path, [1], [1])
+    os.remove(os.path.join(str(tp), "outputs", "boombness", "fakeroot",
+                           "r_20260829_000000_9", "gens.jsonl"))
+    monkeypatch.setattr(rc, "ROOT", str(tp))
+    monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
+    problems, comparable, not_comparable = rc.scan_file_agreement()
+    assert (problems, comparable, not_comparable) == ([], 0, 1)
+
+
+def test_gens_rows_WITHOUT_a_prompt_id_are_NOT_COMPARABLE(tmp_path, monkeypatch):
+    """A schema change must degrade to 'cannot check', never to 'everything is missing'."""
+    problems, comparable, not_comparable = _fa(
+        tmp_path, monkeypatch, [], [1, 2], gens_bytes=json.dumps({"other": 1}) + "\n")
+    assert problems == [] and comparable == 0 and not_comparable == 1
+
+
+def test_check_3_has_its_OWN_degenerate_floor_and_it_is_not_zero(monkeypatch):
+    """Kills the shared-floor mutant: the comparable population is far smaller than the expect_n
+    population, so one floor covering both would let check 3 collapse unnoticed."""
+    assert rc.MIN_COMPARABLE > 0 and rc.MIN_COMPARABLE != rc.MIN_EXPECTED
+    monkeypatch.setattr(rc, "MIN_COMPARABLE", 10 ** 9)
+    assert rc.main() == 1, "a collapsed check 3 must refuse, not report success"
+
+
+def test_check_3_fires_on_the_REAL_corpus_and_on_exactly_one_run():
+    """Anti-vacuity on live data: the check must actually detect d38beh, whose exemption then
+    suppresses it. A check that fires nowhere is indistinguishable from one that cannot fire."""
+    problems, comparable, _ = rc.scan_file_agreement()
+    assert comparable >= rc.MIN_COMPARABLE
+    assert [p[0] for p in problems] == ["d38beh_20260829_022027_2389958"]
+
+
+def test_check_3_sees_FEWER_rows_than_the_row_count_check_on_the_same_run():
+    """§12.28.1 as an executable claim: file agreement understates. On d38beh it sees 4 one-sided
+    rows where the designed shortfall is 81, so it must never be read as a completeness result."""
+    problems, _, _ = rc.scan_file_agreement()
+    d38 = [p for p in problems if p[0].startswith("d38beh_20260829")][0]
+    seen = int(d38[1].split()[0])
+    assert seen < 81, "file agreement cannot see rows missing from BOTH files"
+
+
+def test_check_3_IS_WIRED_INTO_THE_VERDICT(tmp_path, monkeypatch):
+    """⛔ THE MUTANT THAT SURVIVED THE FIRST SEVEN TESTS OF THIS BLOCK.
+
+    Deleting `problems += fa_problems` from `main()` -- so check 3 runs, prints its counts, and its
+    findings never reach the exit code -- left all 20 tests passing. Every one of them called
+    `scan_file_agreement()` directly and none asserted that the VERDICT consumes it. That is the
+    green-on-green shape: the check works, the guard reports success anyway.
+
+    Isolation matters here. d38beh cannot be the fixture, because with `KNOWN_SHORT` emptied it
+    fails check 1 as well and `main()` would return 1 either way. This corpus has a file-agreement
+    defect and NOTHING else: no `expect_n` anywhere, so check 1 has no opinion at all.
+    """
+    tp = _fake_pair(tmp_path, gens_ids=[1, 2, 3], scored_ids=[1, 2])
+    monkeypatch.setattr(rc, "ROOT", str(tp))
+    monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
+    monkeypatch.setattr(rc, "MIN_EXPECTED", 0)
+    monkeypatch.setattr(rc, "MIN_COMPARABLE", 1)
+    monkeypatch.setattr(rc, "KNOWN_SHORT", {})
+    assert rc.scan()[1] == 0, "fixture must carry no expect_n, or this stops isolating check 3"
+    assert rc.main() == 1, "check 3 found a defect and main() did not act on it"

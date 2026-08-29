@@ -7432,6 +7432,50 @@ read `### ⛔ CORRECTION (§12.28.1): ...`, putting words before the id, so the 
 the commit. That is the §17.2/§20 class caught *before* it entered the corpus rather than after —
 and the fix was to the heading, not to the guard.
 
+### §12.28.2 ⛔ CORRECTION: check 3 mechanised — and the mutant that survived my first seven tests
+
+§12.28.1 ended by naming the complementarity and mechanising only half of it. `run_completeness_check`
+now carries **check 3, file agreement**, stated in the module docstring as the *complement* of the
+row-count check and never as a completeness result:
+
+    check 1 (expect_n)       sees rows missing from BOTH files.   On d38beh: all 81.
+    check 3 (file agreement) sees only ONE-SIDED losses.          On d38beh: 4 rows, and 7 of the
+                                                                  11 damaged domains.
+
+**It fires on exactly one run in the whole corpus** — `d38beh_20260829_022027_2389958`, whose
+`KNOWN_SHORT` exemption then suppresses it — which is the anti-vacuity evidence a new guard owes.
+Live counts: **501 runs comparable, 124 not comparable** (generation dumping is opt-in and was off).
+
+Two shapes are refused by construction, both drawn from this tick's sweep:
+
+* **A 0-byte `gens.jsonl` is NOT COMPARABLE, counted and reported — never a pass.** The natural
+  spelling `if gens and gens != results` passes all 74 such runs while claiming full coverage.
+* **`results` exceeding `gens` is not a defect.** Partial dumping makes gens a strict subset, and
+  two runs in this corpus are exactly that; only a GENERATED row that was never scored is a loss.
+
+`MIN_COMPARABLE = 200` is its own floor, separate from `MIN_EXPECTED = 50`, because the comparable
+population is a different and smaller set and one shared floor would let either collapse unnoticed.
+
+**⛔ AND THE MUTATION TEST FOUND A SURVIVOR — THE FOURTH TIME A TEST OF MINE HAS FAILED ITS OWN
+MUTANT.** Six mutants were run. Five died. The survivor was `problems += fa_problems` deleted from
+`main()`: check 3 still ran, still printed its counts, and **its findings never reached the exit
+code**. All 20 tests passed. Every one of them called `scan_file_agreement()` directly and **none
+asserted that the verdict consumes it** — the check works, the guard reports success anyway, and the
+printed output looks identical. Killed by a fixture carrying a file-agreement defect and *nothing
+else* (no `expect_n` anywhere, so check 1 has no opinion); d38beh cannot serve, because with
+`KNOWN_SHORT` emptied it fails check 1 too and `main()` would return 1 either way.
+
+    M1 0-byte gens passes silently ...... 2 tests failed  ✅
+    M2 direction flipped ................ 4 tests failed  ✅
+    M3 comparable floor removed ......... 1 test  failed  ✅
+    M4 schema change reads as all-missing 1 test  failed  ✅
+    M5 check 3 unwired from the verdict .. 0 tests failed ⛔ -> now 1  ✅
+    M6 detection branch neutered ........ 4 tests failed  ✅
+
+The lesson is narrower than "mutation-test the guard", which was already the rule: **testing the
+check is not testing the guard.** A unit test that calls the scanner directly cannot see whether the
+verdict is wired to it, and that wire is the only part the commit hook actually runs.
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the

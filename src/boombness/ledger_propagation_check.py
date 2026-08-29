@@ -111,6 +111,7 @@ TRACE_TOKENS = {
     "§12.27.2": ["fit-set-dependent", "downgraded", "6 seen"],
     "§12.28": ["12.7", "inadmissible", "quota"],
     "§12.28.1": ["understates", "in NEITHER file", "511"],
+    "§12.28.2": ["CHECK_3_MECHANISED", "501 comparable", "TESTING THE CHECK IS NOT TESTING THE GUARD"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
