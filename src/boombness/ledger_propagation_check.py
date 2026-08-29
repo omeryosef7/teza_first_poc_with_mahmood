@@ -128,6 +128,7 @@ TRACE_TOKENS = {
     "§22": ["loose-token check built while auditing", "20 of 22 entries"],
     "§22.1": ["could the thing be present", "p3j_neg judges"],
     "§22.3": ["occupy the SAME LOCATION", "would have made it dirty"],
+    "§23": ["the answer is BOTH", "marginal binder"],
     "§21": ["expiry date", "21 of 8", "audit item, not a guard"],
 }
 

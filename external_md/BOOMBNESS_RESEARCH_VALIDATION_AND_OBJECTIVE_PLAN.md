@@ -8699,3 +8699,53 @@ that are **not run citations at all** — bank names in a prospective sentence (
 `basket_*`, `window_*` or `ticket_*` bank built from these pools"*). A widened extractor would read
 a bank name in a forward-looking sentence as a missing artifact and **fail forever**. Not merely
 unnecessary: actively wrong.
+
+## §23 — ⛔ CORRECTION to §16/§16.1: attribution IS answered, and the answer is BOTH
+
+§16 pre-registered that the missing Qwen3 × `ticket_bomb` cell could not attribute `legacy_all_query`'s
+moderation between *model* and *bank*, and §16.1 concluded attribution "stays open". **A peer found
+the fourth cell had been measured on 2026-08-25 and never brought into the table.** Verified here
+from their named runs, not their prose — both `DONE`, both Qwen3-14B on `boombness_prompt_bank.jsonl`,
+band 7–17:
+
+| | `main` | `ticket_bomb` |
+|---|---|---|
+| **Llama** | 42/48 → 41/48 **INTACT** | 45/48 → **15/48 DESTROYED** |
+| **Qwen3** | **32/48 → 4/48 DESTROYED** | 22/48 *(chance)* → **VOID** |
+
+`q2A_20260825_101300_2421408` gives baseline **32/48, p=0.0293**; `q2_legacy_all_query_20260825_101300_2421409`
+gives **4/48, p=1.514e-09**.
+
+**Attribution is answered and neither single-factor reading survives.** Within Llama the **bank**
+decides (`main` intact, `ticket_bomb` destroyed); at `main` the **model** decides (Llama intact,
+Qwen3 destroyed). Both moderate.
+
+**And this is a stronger statement of §16.1's point than I made.** I wrote that the 2×2 "cannot be
+completed by this route". Three cells complete it **as a main-effects design**; what dies with the
+void cell is specifically the **interaction** — whether model and bank compound — and that is now
+*permanently* unavailable rather than merely unrun, because the missing cell's baseline does not
+bind and no GPU fixes that.
+
+**Caveat carried, not buried:** the model half rests on the **marginal binder**. Qwen3 × `main`'s
+baseline is 32/48 at p=0.0293 — it passes the exact-binomial screen but is the weakest of the three
+against 42/48 and 45/48. The 32→4 direction is not in doubt; the baseline is thinner than its
+neighbours and the conclusion travels with that.
+
+**Launch cancelled, not deferred — zero new runs.** Two of the three cells worth paying for already
+existed and the third is void for a reason no compute addresses.
+
+### ⛔ The near-miss is the finding, and it is the same matcher failure a third time
+
+A peer nearly spent GPU on a result that had been sitting in `score_behavior/` for four days. **Their
+note tracked the gap BY TAG while the data is organised by `(bank, model, arm)`** — so scanning for
+the tag could not see it. That is the third instance today of a matcher keyed on the wrong thing:
+their tag-vs-wildcard sweep (cost a retraction), my `RUN_ID` blind spot (cost nothing, audit came
+back clean), and this one (**would have cost GPU**).
+
+**Same defect, escalating price.** And the trigger was external: they re-examined a decision already
+written down twice as settled only because my message prompted it. **Neither of us has a mechanism
+that surfaces "the answer may already be on disk, indexed differently than your question."**
+
+*My own inversion-from-chance observation gets a floor from this:* Qwen3 × `main` inverts to 4/48
+**from a baseline that does bind**, which is the interpretable version of the same direction my void
+cell showed without one.
