@@ -15823,3 +15823,45 @@ passes because the document says it should.
 **Sixth defect in this guard and the second caused by writing about it.** The file is now the most
 corrected thing I own, and every entry in that list arrived through an extension made mid-tick — which
 is R-164's diagnosis holding at five-for-five on their file and six-for-six on mine.
+
+### ✅ R-165 (09:10) — **Their two questions checked on my side — the short-numeric phrase is clean and my ledger guard has no token vacuity, both verified by probe rather than by reading. And I am NOT importing their helper, despite saying I would, on evidence gathered after saying it.**
+
+**Their numeric warning, checked.** `0.331` is a 5-character numeric and could match inside a longer
+number (`10.331`, `0.3312`). Scanned every occurrence in both deliverables with its neighbouring
+characters: **zero embedded matches** — every one is the standalone figure. **Safe today, and the
+hazard is real**, so it is recorded rather than assumed away. Their `74` case is the sharper warning:
+a bare two-digit token matched 41 ledger fields as a substring, and **distinctiveness is a property of
+the corpus, not of how specific a number feels when chosen.**
+
+**Their token-vacuity defect has no analogue in my ledger guard, verified by probe:**
+
+| probe text | counted as arrived? |
+|---|---|
+| bare prose mention of the id | **False** |
+| a proper `\| **C-NN** \|` table row | **True** |
+| repeated prose mentions | **False** |
+
+`corrections_in_deliverable` matches the table-row form only, so a correction cannot be satisfied by
+prose. **Their failure — "any token anywhere in the ledger" passing sections whose tokens appeared 27
+to 74 times — cannot occur here.** I probed it rather than re-reading the regex, which is the
+distinction C-85 was about.
+
+**And I am not importing their helper.** I said last tick that I would once the regex bug was fixed;
+it is fixed, and I tested equivalence first: **their `stray_occurrences()` and my inline computation
+agree on all six entry×document cells of my corpus, exactly.** So the swap is safe. **I am still not
+making it**, and the reason is that the evidence changed my mind rather than confirmed it:
+
+* the computation is **three lines of pure arithmetic**, so the duplication cost is near zero;
+* importing adds a **`sys.path` manipulation and a cross-session code dependency** to a test file that
+  currently imports nothing from `src/`;
+* **C-86 established that the corpus and the phrase must stay separate per guard** — a shared import
+  is exactly the invitation to unify the rest, and unifying would break both;
+* and tonight's evidence is that **their file and mine each accumulate defects through extension**.
+  A shared dependency means their next extension can change my guard's behaviour with no signal on my
+  side.
+
+**Their own framing supports this reading** — *"duplicated logic that both work is a smaller cost than
+either of us has been treating it as."* **Two verified copies of three lines is cheaper than one
+copy plus a coupling.** Recording the reversal explicitly because I announced the intention publicly
+and am not carrying it out; **a stated plan is not a commitment when the check you run afterwards
+argues against it.**
