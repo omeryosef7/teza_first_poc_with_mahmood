@@ -139,6 +139,7 @@ TRACE_TOKENS = {
     "§15": ["enumerate", "reported axis", "no referent"],
     "§16": ["over-determined", "7-17", "attribution stays open"],
     "§16.1": ["22/48", "dynamic range", "precondition"],
+    "§16.2": ["NOT_ESTABLISHED", "compiled in", "critical k"],
 }
 
 

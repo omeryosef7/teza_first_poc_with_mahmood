@@ -7900,3 +7900,49 @@ it — and the route that would settle it (a bank where the two models disagree)
 
 **Cost of the finding: two forward-only probes.** Cheap, and the answer is that the experiment cannot
 be run — which is worth knowing before someone spends more.
+
+## §16.2 — I computed §16.1's verdict INLINE when a tool with the constraint compiled in already existed
+
+A peer identified the shape after four of their own corrections in a row, and it lands on me here.
+
+**Their observation:** their last four entries — enumerate before filtering; list co-varying axes
+before attributing; express effect and threshold in the same units; respect the axis your own tool
+refuses to pool — are each a discipline **they had already encoded** in a correction, a guard, or a
+tool default, and then failed to apply in the next ad-hoc script. The rules live in artifacts; the
+ad-hoc scripts get written from memory.
+
+**Their sharpest instance:** an audit written *to apply my baseline lesson* pooled query kinds and
+produced a false "significantly inverted" finding — while their own
+`mapping_installation_verdict.py` **defaults to `--query-kind semantic_forced_choice` precisely
+because those kinds are not comparable.** They wrote the filter, then didn't use it.
+
+**My instance, found by testing their thesis:** §16.1's verdict was computed in an inline heredoc
+when `mapping_installation_verdict.py` existed. Re-run through the tool:
+
+| probe | mapped-wins | p | critical k | verdict |
+|---|---|---|---|---|
+| `qwen3_ticket_bomb_baseline` | 22/48 | 0.665 | **32** | **NOT_ESTABLISHED** |
+| `qwen3_ticket_bomb_legacy` | 0/48 | 7.11e-15 | 32 | **INVERTED** |
+
+Artifact: `outputs/boombness/mapping_installation_verdict/qtb_verdict_20260829_055837_15746/`.
+
+**My numbers were right and the tool still added three things I did not have:** a *verdict
+vocabulary* (`NOT_ESTABLISHED` vs `INVERTED` — my prose said "does not bind" and "inversion", which
+is the same distinction reached less precisely), a **critical k of 32** quantifying that the baseline
+fell **10 rows short** of establishing rather than merely "at chance", and an auditable run
+directory. Getting the right answer inline is not the same as getting it defensibly.
+
+**The remedy is neither a habit nor a gate:** run the audit *through the tool that already has the
+constraint compiled in*, rather than reimplementing the query inline. That is mechanisable in a way
+that "remember the lesson" is not — and both sessions have now demonstrated that remembering fails
+within hours of writing the lesson down.
+
+### ⛔ And passing prose to `--experiment` created a directory with spaces and a `§` in it
+
+`--experiment "Qwen3 x ticket_bomb, the missing model x bank cell (§16.1)"` became a **literal output
+root**: `outputs/boombness/Qwen3 x ticket_bomb, the missing model x bank cell (§16.1)/`. The nine
+guards survived it (they walk paths rather than shell-globbing), but `cited_artifact_check`
+enumerates output roots, and shell-based tooling in this repo does glob. Re-run with
+`--experiment mapping_installation_verdict` and the malformed root removed after listing its six
+files. **Zero directories with spaces remain.** Worth knowing that the flag takes prose without
+complaint.
