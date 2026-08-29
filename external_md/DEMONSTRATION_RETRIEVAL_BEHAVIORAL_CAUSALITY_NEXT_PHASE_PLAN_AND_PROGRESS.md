@@ -15252,3 +15252,49 @@ verdict.
 `role_style` is a bank axis with 2448 rows per style in the extract, sitting there the whole time — so
 **my "not addressed this sprint" in C-79 was itself an absence claimed without enumerating.** Tenth
 instance, mine, made *in the entry cataloguing the other nine.*
+
+### ⛔ C-81 (06:00) — **My Q8 direction was a Simpson's paradox and they were right. But their replacement finding — the framing effect is specific to doublespeak — is ONE BANK OF THREE, and their numbers match my `main` bank digit for digit.**
+
+**First, my error, confirmed exactly.** The non-plain role styles exist for only **two** conditions:
+
+| role_style | conditions covered |
+|---|---|
+| `plain` | `benign_literal` 1368, `benign_remap` 216, `concept_in_benign_ctx` 1152, `direct_codeword` 216, `direct_harmful` 1152, `natural_doublespeak` 1944 |
+| the five non-plain | **`benign_literal` 216, `natural_doublespeak` 216 — and nothing else** |
+
+So `plain` uniquely carries `concept_in_benign_ctx` **+1.649** and `direct_harmful` **+1.574**, the two
+highest-scoring conditions in the bank. **My pooled comparison put non-plain-doublespeak against
+plain-everything** — a textbook Simpson's paradox, and my −0.388 was answering a question the brief
+did not ask. **Within condition the direction reverses: 15 of 15 style × bank cells are positive.**
+
+**Their replacement claim does not survive the same treatment.** They report the effect **absent** in
+`benign_literal` (−0.028 to +0.057) and present in `natural_doublespeak` (+0.597 to +0.664),
+concluding it *"appears only where a codeword→concept mapping is being taught"*. Per bank:
+
+| bank | `natural_doublespeak` | `benign_literal` | specificity? |
+|---|---|---|---|
+| **`main`** | **+0.597 … +0.664** | **−0.028 … +0.057** | **yes — their result** |
+| `ticket` | +0.125 … +0.218 | +0.044 … +0.130 | weak, ~2× ratio |
+| **`gun`** | **+0.593 … +0.650** | **+0.452 … +0.611** | **none — both move** |
+
+**Their five doublespeak deltas and all five `benign_literal` deltas match my `main` bank exactly** —
++0.640/+0.597/+0.664/+0.601/+0.610 and −0.028/+0.030/−0.003/−0.012/+0.057. **They computed on `main`.**
+On `gun` the framing shift is **generic**: benign text with a codeword moves +0.45 to +0.61, nearly as
+much as doublespeak. The mechanism they inferred is a **property of one bank**, not of the readout.
+
+**Neither of us was careless and neither number was wrong.** They were on `main`; I pooled three banks;
+pooling averaged three genuinely different pictures, so **my pooled figure had no referent**. The
+disagreement was resolvable only by splitting on an axis neither of us had reported.
+
+**Third bank-specificity result tonight** — R-146 (C1 null on Qwen3 + `longpreQ14*` only), C-78
+(`legacy` indiscriminate on Qwen3 only), and this. **Bank is behaving as a first-class moderator and
+is not a reported axis in either of our deliverables.** That is a standing gap, not three coincidences.
+
+**What survives for brief Q8:** *non-plain framings raise the readout within condition* — 15/15 cells,
+three banks, five styles. **What must not ship without its bank named:** that the rise is specific to
+where a mapping is taught.
+
+**And on the meta-point, theirs is better than mine.** *"It needs a mechanical habit — enumerate, then
+filter — not vigilance."* My tenth instance came **ninety minutes after I wrote out why the failure
+happens, in the entry that catalogued the other nine.** Knowing the shape demonstrably does not
+prevent it; a habit executable without remembering why is the only kind that survives.
