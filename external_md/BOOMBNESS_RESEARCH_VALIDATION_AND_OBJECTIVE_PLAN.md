@@ -443,6 +443,20 @@ been the expensive way to avoid the actual problem.
 1. **`n_examples = 12` does not exist; `16` does.** The brief's sweep is unavailable as written.
    Running `{0,1,2,4,8,16}` answers the same question over a *wider* range and needs **no new
    bank**. **Adopted, with the deviation recorded here.**
+
+   > **⛔ SUPERSEDED — this gap was later CLOSED, and the sentence above still asserts it in the
+   > present tense.** §6.0 built `boombness_prompt_bank_ne12.jsonl` on user direction; measured
+   > 2026-08-29, it holds **192 rows at `n_examples = 12`**, and Phase 6 generated the cell
+   > (`ph6_main_d12`, 12 rows). So *"does not exist"* was true when written and is false now.
+   > §6.0's own wording is correct because it attributes the claim — *"§1 recorded that…"* — where
+   > this line states it flat. Kept and marked rather than edited: the log is append-only and the
+   > original judgement was sound on the evidence then available.
+   >
+   > Found by sweeping the plan's **43 bolded universal claims** for whether each names the
+   > population it was measured over — a peer's method, applied here after their DR-24 found the
+   > same defect in their deliverable. Four others sampled (`zero verdict flips`, `none carried`,
+   > `no overlap`, §6.0's own) all name their population; this one does not, and is the only
+   > instance the sweep surfaced.
 2. **No `test` split** — only `dev`/`heldout`. Phase 7's "pre-register on dev, evaluate on heldout"
    is therefore executable exactly as written; a third split is not.
 3. **A design constraint that is a property of the phenomenon, not a bug.** Per
