@@ -16993,3 +16993,44 @@ of this correction is that **elimination in a multi-writer tree is not identific
 
 **Escalating to the user**, because a third party writing to their working tree in real time is
 operationally theirs to know and they are likely the only one who can identify it.
+
+### ⛔ C-98 (12:20) — **Swept C-97's class instead of only naming it, and it caught a live claim: R-171's "moderated by BOTH model and bank" is half verified and half INHERITED. The Llama × `ticket_bomb` × `legacy` cell has NO artifact in this tree.**
+
+C-97 said every attribution made by elimination this phase is suspect. Naming a class and not sweeping
+it is the failure I have corrected repeatedly today, so I swept my three documents for ownership
+attributions. Most are citations of the concurrent session's *findings*, correctly scoped. **One is an
+artifact-ownership attribution that a live claim rests on.**
+
+**Searched every run in `outputs/boombness/*/*` for a forced-choice run with bank `ticket_bomb`,
+arm containing `legacy`, model Llama:**
+
+    matching runs in this tree: 0
+
+Every other cell of R-171's 2×2 is present and was re-derived from `results.jsonl`:
+`p2A` ✓, `p2_legacy_all_query` ✓, `q2A` ✓, `q2_legacy_all_query` ✓, and the peer's own `qtbA`/`qtbL` ✓
+— **their runs do generally land in this tree**, which is what makes the one absence notable rather
+than routine.
+
+**So R-171 splits:**
+
+| half | evidence | status |
+|---|---|---|
+| **At `main`, the MODEL decides** — Llama 42→41 INTACT vs Qwen3 32→4 DESTROYED | both cells re-derived from artifacts here | **VERIFIED** |
+| **Within Llama, the BANK decides** — `main` 42→41 INTACT vs `ticket_bomb` 45→15 DESTROYED | the 15/48 cell has **no artifact I can read** | **INHERITED** |
+
+**What I am NOT saying:** that the cell is wrong, or that it does not exist. It is marked *(peer)* at
+plan:9168 and I have no reason to doubt it. **What I am saying is that I wrote R-171's headline as
+though I had verified the 2×2, and I had verified three quarters of it** — the fourth came from a
+report, and I did not mark it as such in the conclusion even though I marked it in the table.
+
+**The model half is the stronger half and it survives untouched**, which is worth stating because the
+correction weakens the claim without withdrawing it: *"no single-factor reading survives"* still
+holds, since the model half alone refutes a pure-bank account. What is now qualified is the bank half
+and therefore the symmetry of the "BOTH".
+
+**Consequence for method, not just this claim:** the sweep found the ownership attributions were
+overwhelmingly fine — 22 ownership-shaped sentences in the plan, and only this one was load-bearing
+and unverifiable. **That is the informative shape of a clean sweep: it says how hard it looked and
+what the single exception was**, rather than reporting a category as checked.
+
+Corrected in the deliverable's R-171 row and its corrections table. **Not** in `RESEARCH_HANDOFF.md`: I wrote that it was, then checked — R-171 is not cited there at all, so there is nothing to qualify. Left as a note rather than a silent edit, because a correction entry that claims a propagation it did not make is the defect C-80 and C-90 were about.
