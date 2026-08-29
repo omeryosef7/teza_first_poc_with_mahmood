@@ -8054,3 +8054,48 @@ report a *pass* on a state that never existed as a whole. Neither is a fact abou
 
 This is the same shape as §12.28's inadmissible run — an artifact that looks authoritative because
 it completed, while describing a moment rather than a state.
+
+### §17.2 — ⛔ my distinctiveness budget PUNISHED COMPLIANCE, and a peer found it on their copy first
+
+A peer hit this on their own instance of the caveat guard and flagged that mine had the same shape
+(`text.count(phrase.lower()) <= 8`). It does, and the defect is worse than an eroding phrase.
+
+**Two opposite things were being counted as one.** A required caveat phrase occurs either:
+
+* **ADJACENT** to a governed figure — the caveat *correctly stated*, i.e. the guard **succeeding**,
+  and it rises the more compliant the document becomes; or
+* **STRAY**, somewhere else — the only occurrences that can satisfy the proximity check by
+  coincidence, and therefore the only ones that erode it.
+
+**A total-count budget charges compliance against the limit.** On the peer's corpus **7 of 8**
+occurrences were adjacent — the guard working perfectly — and the naive repair would have forced a
+rarer phrase onto a figure whose caveat was already stated everywhere it belonged, failing six
+proximity checks to fix a miscounted one.
+
+**Measured on my own plan before fixing:**
+
+| figure | phrase | adjacent | stray |
+|---|---|---|---|
+| crossbank ci95 | `t_ci95` | **3** | 2 |
+| probes best-layer AUROC | `selected on test` | **1** | 1 |
+| rescue percentage | `percentage inverts` | **1** | 0 |
+
+Five of nine occurrences were compliance being charged to the budget.
+
+**Fixed** with a shared `cited_artifact_check.stray_occurrences()` counting stray only, and
+positive-controlled **both ways**, which is the part the total-count version could not do:
+
+| control | expectation | result |
+|---|---|---|
+| 20 occurrences far from any figure (real erosion) | must exceed the budget | **stray = 20** ✅ |
+| 20 occurrences each beside their own figure (compliance) | must be silent | **stray = 0** ✅ |
+| phrase exactly at the window edge / one line beyond | adjacent / stray | (1,0) and (0,1) ✅ |
+
+**Mutation test:** reverting the helper to the total count kills **4 tests**, including
+`test_the_distinctiveness_budget_IS_SILENT_on_compliance` specifically — the property the old
+version got wrong. Restored, 33 pass and the module is byte-identical.
+
+**The general lesson, which is the peer's:** *a guard that punishes compliance is worse than no
+guard, because the only way to satisfy it is to do the right thing less often.* My budget was safe
+today only because `percentage inverts` occurs once — the trap fires the moment I start caveating
+that figure properly in several places.

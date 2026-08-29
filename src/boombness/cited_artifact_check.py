@@ -110,6 +110,29 @@ CITED_WITH_FAILURES = {
 #: So the accident is replaced by a rule: quoting the governed figure REQUIRES the caveat's own
 #: phrase to appear. Each entry is (regex for the governed figure, phrase that must accompany it).
 #: A caveat that names no checkable figure belongs in the prose, not here.
+def stray_occurrences(lines, fig_regex: str, phrase: str, window: int) -> tuple[int, int]:
+    """Split a required caveat phrase's occurrences into (adjacent, stray).
+
+    ⛔ WHY THIS EXISTS. The distinctiveness check used to count TOTAL occurrences, which conflates
+    two opposite things:
+
+      ADJACENT -- the phrase sitting beside a governed figure. That is the caveat being correctly
+                  stated, i.e. the guard SUCCEEDING, and it rises the more compliant the document is.
+      STRAY    -- the phrase somewhere else. Only these can satisfy the proximity check by
+                  coincidence, so only these erode the guard.
+
+    A total-count budget therefore PUNISHES COMPLIANCE: state the caveat beside every occurrence of
+    the figure and the count climbs until the guard fails, and the only way to satisfy it is to say
+    the caveat less often. A peer found this on their own copy of the idea, where 7 of 8 occurrences
+    were adjacent -- the guard working perfectly and one line from being "fixed" by weakening the
+    phrase. Counting stray occurrences only is the repair.
+    """
+    fig_lines = [i for i, l in enumerate(lines) if re.search(fig_regex.lower(), l)]
+    hits = [i for i, l in enumerate(lines) if phrase.lower() in l]
+    stray = [i for i in hits if not any(abs(i - f) <= window for f in fig_lines)]
+    return len(hits) - len(stray), len(stray)
+
+
 CAUTIONED_FIGURES = {
     "crossbank ci95": (
         r"\bci95\b(?!_NOTE)",

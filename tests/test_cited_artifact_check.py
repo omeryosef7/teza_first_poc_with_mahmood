@@ -353,13 +353,20 @@ def test_required_phrases_are_DISTINCTIVE_not_common_words():
 
     Distinctive phrasing is necessary and not sufficient -- proximity is the other half -- but a
     common word makes the check vacuous whatever the window.
+
+    ⛔ COUNTS STRAY OCCURRENCES ONLY. The first version counted TOTAL, which charges the budget for
+    the phrase sitting correctly beside its figure -- i.e. for the guard succeeding. A peer hit that
+    on their copy: 7 of 8 occurrences were adjacent, and the "fix" they nearly applied would have
+    forced a rarer phrase onto a figure whose caveat was already stated everywhere it should be.
+    Only STRAY occurrences can satisfy the proximity check by coincidence, so only they erode it.
     """
-    text = open(cac.PLAN, encoding="utf-8").read().lower()
-    for label, (_fig, phrase, _why) in cac.CAUTIONED_FIGURES.items():
-        n = text.count(phrase.lower())
-        assert n <= 8, (
-            f"{label}: required phrase {phrase!r} occurs {n} times; a common phrase satisfies the "
-            "guard without evidence the caveat was stated")
+    lines = open(cac.PLAN, encoding="utf-8").read().lower().split("\n")
+    for label, (fig, phrase, _why) in cac.CAUTIONED_FIGURES.items():
+        adjacent, stray = cac.stray_occurrences(lines, fig, phrase, cac.CAUTION_WINDOW)
+        assert stray <= 8, (
+            f"{label}: required phrase {phrase!r} has {stray} STRAY occurrences ({adjacent} sit "
+            f"beside a governed figure and are compliance, not erosion); a phrase this common can "
+            f"satisfy the proximity check by coincidence")
 
 
 def test_the_shipped_CAUTION_WINDOW_is_a_real_window():
@@ -376,3 +383,51 @@ def test_the_shipped_CAUTION_WINDOW_is_a_real_window():
         f"{cac.CALIBRATION_DISTANCES}: it must exceed the largest correct distance ({hi}) and stay "
         "within 3x it. The first value, 12, was chosen by eye and was 4x the largest correct "
         "distance -- permissive by construction, with the calibration data available the whole time.")
+
+
+def _doc(fig_lines, phrase_lines, n=200):
+    """A synthetic document: `FIGURE 42%` on the given lines, the caveat phrase on the others."""
+    out = ["filler"] * n
+    for i in fig_lines:
+        out[i] = "the rescue percent was 42%"
+    for i in phrase_lines:
+        out[i] = "note that the percentage inverts here"
+    return out
+
+
+def test_stray_occurrences_counts_ADJACENT_and_STRAY_separately():
+    lines = _doc(fig_lines=[10], phrase_lines=[12, 100, 150])
+    adjacent, stray = cac.stray_occurrences(lines, r"rescue[_ ]percent", "percentage inverts", 6)
+    assert (adjacent, stray) == (1, 2), f"got {(adjacent, stray)}"
+
+
+def test_the_distinctiveness_budget_FIRES_on_stray_erosion():
+    """20 occurrences far from any figure: real erosion, must be counted."""
+    lines = _doc(fig_lines=[10], phrase_lines=[12] + list(range(100, 120)))
+    _adjacent, stray = cac.stray_occurrences(lines, r"rescue[_ ]percent", "percentage inverts", 6)
+    assert stray == 20 and stray > 8, f"stray={stray}; erosion must exceed the budget"
+
+
+def test_the_distinctiveness_budget_IS_SILENT_on_compliance():
+    """⛔ THE CASE THE TOTAL-COUNT VERSION FAILED.
+
+    20 occurrences, every one beside its own governed figure — the caveat correctly stated 20 times.
+    A total count would read 20 and fail; the stray count reads 0. A guard that punishes compliance
+    is worse than no guard, because the only way to satisfy it is to state the caveat less often.
+    """
+    figs = list(range(0, 200, 10))[:20]
+    lines = _doc(fig_lines=figs, phrase_lines=[f + 1 for f in figs])
+    adjacent, stray = cac.stray_occurrences(lines, r"rescue[_ ]percent", "percentage inverts", 6)
+    assert adjacent == 20, f"expected 20 compliant occurrences, got {adjacent}"
+    assert stray == 0 and stray <= 8, (
+        f"stray={stray}: compliance must not consume the distinctiveness budget")
+
+
+def test_stray_counting_respects_the_window_boundary():
+    """A phrase exactly at the window edge is adjacent; one line beyond is stray."""
+    inside = _doc(fig_lines=[50], phrase_lines=[50 + cac.CAUTION_WINDOW])
+    outside = _doc(fig_lines=[50], phrase_lines=[50 + cac.CAUTION_WINDOW + 1])
+    assert cac.stray_occurrences(inside, r"rescue[_ ]percent", "percentage inverts",
+                                 cac.CAUTION_WINDOW) == (1, 0)
+    assert cac.stray_occurrences(outside, r"rescue[_ ]percent", "percentage inverts",
+                                 cac.CAUTION_WINDOW) == (0, 1)
