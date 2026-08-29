@@ -16765,3 +16765,53 @@ independently on both sides within one tick, from opposite starting points: mine
 never travelled from output into prose, theirs was a value **printed on the same line as the verdict
 it refutes** and hedged. **That is the stronger evidence for the structural fix** — adjacency was
 never the problem, so no amount of "put the number nearer the claim" would have helped either of us.
+
+### ✅ DR-20 (deeper review, 16:45) — **Full suite green in ALPHABETICAL order (not just the hook's); my guard tests are order-independent under the peer's contamination path; intervention liveness holds on every claim-backing arm, PR-1's subset inequality included. One qualifier added to C13: its row-level effect is the THINNEST in the corpus.**
+
+**1. `pytest tests/` in alphabetical order: 1433 passed, 7 skipped, 0 failed** (305s). Run because
+the peer found that the commit hook's `GUARD_TESTS` order can pass over a suite that alphabetical
+order fails — their `test_guard_wiring.py` bent live module tables and never restored them, and the
+hook happened to run the victim first. **The hook passing is not evidence that the suite passes.**
+
+**2. My exposure to that class is nil, verified rather than asserted.** No direct assignment to any
+guard module's constants; both my patches use `monkeypatch.setattr`, which pytest restores. Run four
+ways:
+
+| order | result |
+|---|---|
+| each of my three files alone | 16 / 14 / 9 passed |
+| my three, reversed vs hook order | 39 passed |
+| **after `test_guard_wiring.py` — their contamination path** | **51 passed** |
+
+One inert finding: `test_my_ledger_propagation.py:194` writes `globals()["_MENTIONED_WITHOUT_ROW"]`
+and **nothing reads it**. Not an order dependence today; it is the shape that becomes one the moment
+someone adds a reader assuming it is populated.
+
+**3. Intervention liveness — every arm backing a live claim, against PR-1's contract:**
+
+| arm | prefill edits | decode edits | min prefill fwd | min decode fwd | violations | `frac_rows_scope_live` |
+|---|---|---|---|---|---|---|
+| `legacy_all_query` | 2,688,993 | 7,582,680 | 9 | 234 | 0 | 1.0 |
+| `demo_processing_only` | 1,628,343 | **0** | 9 | **63** | 0 | 1.0 |
+| `response_query_only` | 1,018,224 | 7,265,808 | 9 | 108 | 0 | 1.0 |
+| `query_prefill_only` | 1,018,224 | **0** | 9 | **234** | 0 | 1.0 |
+
+The two arms whose contract requires **zero** decode edits have **positive decode forwards** (63 and
+234) — the check that separates a correctly-scoped hook from a dead one. **PR-1's subset inequality
+holds:** `qpre + demoproc = 1,018,224 + 1,628,343 = 2,646,567 ≤ 2,688,993 = legacy`, slack **42,426**
+— the prefill query rows in neither span, exactly as the contract predicts an upper bound rather than
+an equality. R-171's four probe cells (`p2_`/`q2_`, Llama and Qwen3) show positive prefill edits, zero
+decode edits and zero decode forwards, which is correct for a forced-choice probe: it never decodes.
+
+**4. Where C13 sits against the corpus (⚠ new qualifier on R-178).** Measured against the same
+0.0521 margin, this phase's effects tier as: `legacy` **4.23×**, `demoproc` **3.70×**, C7 pool B
+**3.57×**, then `respq` **1.73×**, `qpre` **1.57×** — and now **C13 `pre12` 1.45× and `pre10`
+1.33×**. **C13's reinstated effect is the thinnest quoted result in the phase**, below both arms
+whose claims were always null/equivalence ones. That does not withdraw anything — PR-39's criterion
+was met — but it belongs beside the reinstatement.
+
+⚠ **Stated so this is not read as stronger than it is:** the 1.45×/1.33× use the *pre-registered*
+0.0521, not a **per-arm** floor. DR-12 established that the floor is per-arm, and C13's arms have no
+re-judge replicate, so a per-arm floor cannot be computed for them. The ratio is therefore
+comparable to the other arms only insofar as 0.0521 is representative for these two banks — which
+is assumed, not measured.
