@@ -15461,3 +15461,41 @@ That was true in C-69, true in C-83, and is true now.
 cannot attribute when both hypotheses predict the same outcome; asking the same question of my own
 confound — **what observation would distinguish n from bank?** — pointed straight at a third bank at
 n=96, which was already on disk.*
+
+### ✅ R-162 (07:15) — **Their baseline-binding gate applied to my forced-choice corpus: 16 baselines, 3 at chance, and all three are ALREADY correctly caveated. A clean negative — and my first pass at the audit produced a false finding by pooling query kinds.**
+
+Their void cell (Qwen3 × `ticket_bomb`, baseline 22/48 at chance) turns on a precondition I do not
+have either: **the baseline must bind before a contrast against it means anything.** Applied to every
+forced-choice baseline in my corpus, exact two-sided binomial against 24/48:
+
+| verdict | runs |
+|---|---|
+| **BINDS** (12) | `d38A` 284/304 **p=6.5e-61**, `c5A_tb_b1`/`p5A_ticket_bomb`/`tbA` 45/48, `bbA`/`p2A`/`p5A_main`/`p6A_main_b1` 42/48, `wbA` 40/48, `wkA` 39/48, `qbA_lpQ14B_b1` 29/40, `q2A` 32/48 |
+| **AT CHANCE** (3) | `tkA` 30/48 **p=0.111**, `p5A_gun` 19/48 **p=0.193**, `qtbA` 22/48 **p=0.665** *(theirs, voided tonight)* |
+| **INVERTED** (1) | `q6A_lpQ14B_fc` 4/40 **p=1.9e-07** |
+
+**Both of my at-chance banks are already recorded as such.** C-31 says verbatim: *"`basket_gun` 19/48
+is p=0.193 — the mapping is ABSENT, not inverted"* and *"`ticket_knife` 30/48 is p=0.111 — not
+demonstrably installed."* **The gate finds nothing new on my side**, and the reason is that C-31 was
+the same insight arrived at from the other direction — I had applied it per-arm and they applied it as
+a design precondition. **Recording the clean negative explicitly**, because an audit that finds nothing
+is only informative if it says so.
+
+**⛔ My first pass at this audit produced a false finding.** It reported **17** baselines and
+`p5A_gun` as **significantly INVERTED at 55/144, p=0.0058** — which would have contradicted C-31 and
+looked like a real correction. **It pooled query kinds.** `p5A_gun` carries
+`--query-kinds comprehension_usage,…`; restricted to `semantic_forced_choice` it is **19/48, p=0.193**,
+**exactly C-31's figure.**
+
+**That is C-81's error, three hours later, in a script written to apply someone else's lesson.**
+Pooling across a heterogeneous axis, producing a number with no referent — and my own
+`mapping_installation_verdict.py` **defaults to `--query-kind semantic_forced_choice` precisely
+because these are not comparable**, a filter I wrote and then failed to apply in an ad-hoc audit.
+**Twelfth instance.**
+
+**The pattern in the last four entries is now consistent enough to name.** C-82 (enumerate first),
+C-83 (list co-varying axes), C-84 (same units for effect and threshold), and this (respect the axis
+your own tool refuses to pool). **Every one is a discipline I had already encoded somewhere — in a
+correction, a guard, or a tool default — and then did not apply in the next ad-hoc script.** The
+failure is not ignorance of the rule; it is that the rules live in artifacts and the ad-hoc scripts
+are written from memory.
