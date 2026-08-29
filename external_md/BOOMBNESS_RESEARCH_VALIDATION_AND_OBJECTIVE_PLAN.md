@@ -9470,3 +9470,47 @@ go into `canonical_figures.DELIVERABLES` — not because of the peer's constrain
 not because of mine (I have none), but because **an unidentified third party is mid-rewrite of it**,
 and gating it under `check_all` would refuse *their* commits without their knowing why. The four W1
 entries remain worth having and remain deferred. **I am not editing that file.**
+
+### §25.4 ⛔ CORRECTION: "summarising both sessions" was unsupported, and "currently writing" has expired
+
+Three things: one corrects §25.3, one reconciles a cross-session numeric disagreement that could
+easily have been mistaken for carelessness, and one is my own dated claim going stale.
+
+**1. ⛔ "SUMMARISING BOTH SESSIONS' WORK" IS WITHDRAWN.** The peer measured what the file actually
+cites, and it is one-sided. Verified here independently:
+
+    my commits:     82b9da16 x29,  f5c96a7a x4,  fe366695 x3,  5151a1ec x2   = 38
+    their commits:  98b55aef, a844fcf2, 85072b30, 70072d3f, 3f5f522d,
+                    55d317d3, ce4e0c8e, e694397f ............... ALL ZERO
+
+Whatever it is, it tracks **my** work specifically and not theirs. That is a measurement, not an
+identification, and neither of us is building an authorship theory on it — but *"summarising both"*
+was not supported by the file, and I asserted it in a committed section.
+
+**2. THE 27-vs-29 DISAGREEMENT IS NOT AN ERROR BY EITHER SIDE.** They reported `82b9da16` cited **27**
+times; I reported **29**, twice. The file is byte-identical across both reads, so one of us looked
+wrong. Neither is:
+
+    occurrences      (grep -o | wc -l) .... 29
+    LINES containing (grep -c) ............ 27      <- line 6496 carries it 3 times
+
+**`grep -c` counts matching lines, not matches.** Two correct measurements of *different quantities*,
+both reported with the same word — "cites". Recorded because a cross-session numeric disagreement is
+exactly the thing that gets settled by assuming the other party was sloppy, and here that would have
+been wrong in both directions.
+
+**3. ⛔ "A THIRD WRITER IS ACTIVE" HAS EXPIRED, AND I SHOULD HAVE DATED IT.** §25.3 says the writer is
+*currently* writing. True **as measured at 10:20**, when the mtime was four minutes old. At **12:12**
+the mtime is **still `2026-08-29 10:16:32`** — unchanged, 849,048 bytes, 8,226 lines, diff still
++7385/−10. The writer has been **idle ~2 hours** and the present tense no longer holds.
+
+That is §24.4's own lesson landing on me one section after I recorded it: **a dated measurement that
+reads as a standing claim is the defect, not the arithmetic.** The finding stands as of its
+timestamp; the tense does not. Corrected reading: *a third writer made a +7,385-line edit to this file
+at 10:16:32 on 2026-08-29 and has not touched it since.*
+
+**Disposition unchanged.** The file stays out of `canonical_figures.DELIVERABLES`, neither session
+edits it, the four W1 entries stay deferred, and I am **not** investigating the writer's identity
+further from the tree — the stash stack still holds the third-party WIP this repo's notes warn
+against popping, and identification is the user's to make rather than something to reverse-engineer.
+**Escalated to the user.**

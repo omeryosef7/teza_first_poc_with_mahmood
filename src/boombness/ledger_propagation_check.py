@@ -121,6 +121,7 @@ TRACE_TOKENS = {
     "§24.4": ["SCOPE (24.4)", "STATED principle, not a validated one", "never exercised"],
     "§25.1": ["TICK_VERIFICATION_25", "OPPOSITE DIRECTIONS", "excluded every markdown TABLE ROW"],
     "§25.3": ["THIRD_WRITER", "EXPENSIVE-DIRECTION INSTANCE", "A THIRD WRITER IS ACTIVE"],
+    "§25.4": ["CORRECTED (25.4)", "grep -c counts matching LINES", "idle ~2 hours"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
