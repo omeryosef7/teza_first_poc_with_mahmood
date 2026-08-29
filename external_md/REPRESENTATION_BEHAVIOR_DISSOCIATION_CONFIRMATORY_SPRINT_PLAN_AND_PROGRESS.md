@@ -2481,3 +2481,94 @@ have been dose, not depth* — and dose-vs-identity is the confound that killed 
 
 **75 tests pass** in `test_asr_protocol.py`. No GPU job has been submitted yet; the smoke gate is
 next.
+
+---
+
+## §14.25 — `RBD-R-019` · **SMOKE GATE PASSED** — first GPU of the sprint · 2026-08-30 00:35 IDT
+
+Jobs **804715–804718**, Llama-3.1-8B-Instruct, `lantern_poison` bank, `--limit 8`, all four
+**COMPLETED** with `failures: {}`.
+
+§27: *"smoke tests are for liveness, code correctness, row counts and shapes, NOT for deciding
+whether the effect is promising."* What follows is read in that spirit, and the one number that
+looks like an effect is explicitly **not** read as one.
+
+### Wiring — every check green
+
+| check | result |
+|---|---|
+| GPU guard | `GPU ok: NVIDIA L40S` on all four |
+| population filter | `n: 8`, `by_bank_block {rbd_core: 8}`, `by_n_examples {8: 8}`, `by_condition {natural_doublespeak: 8}` — the argsfile selects what it claims |
+| band echo | `band 6-14 -> blocks 6..14 of 32 (depth 0.188-0.469, 9 blocks)` — **`of 32` confirms the Llama/band pairing** |
+| knockout pre-flight | `no_demo_block 0, infeasible_control 0, dead_scope_span 0` on both arms |
+| **liveness** | **`frac_rows_scope_live: 1.0`** on both knockout arms; `total_decode_edits: 0` (the must-be-zero half of the contract); `scope_violations: {}` |
+| reduced contract selection | `liveness_readout_only: True` on the readout arm and **`False`** on the behavioural arm — the two contracts are being chosen correctly, not applied uniformly |
+| demo span | `median_n_demo_positions` 110.0 / 108.5 — the span resolves and is large |
+| Readout-B row shape | `p_mapped`, `p_literal`, `logp_mapped`, `logp_literal`, `mapping_use_logodds`, `option_mass`, `mapping_use_options` **all present**; hook fields present on the knockout arm and **absent on the baseline**, as they should be |
+
+✅ **The reviewer's ×4 prefill finding is confirmed in the artifact.** `min_prefill_forwards` is
+**36** on the readout arm and **9** on the behavioural arm — i.e. 4 forwards × 9 layers versus
+1 × 9. `median_prefill_edits` is 220,068 on the readout arm against 53,464 on the behavioural one.
+**Read those as per-row-per-layer-per-forward totals, never as an edge count.**
+
+### `RBD-R-020` — Readout B clears the option-mass gate, and clears it better than Readout A
+
+The gate exists because the prior forced-choice instrument held **median 5.6e-06** of the
+next-token mass with **0 of 516 rows above 1%** — every verdict was an ordering inside a 1e-5 tail.
+
+| readout | arm | median true option mass | frac above 1% | reportable |
+|---|---|---|---|---|
+| **`mapping_use_forced_choice`** | baseline | **0.7788** | **1.000** | ✅ |
+| **`mapping_use_forced_choice`** | demoproc | **0.6535** | **1.000** | ✅ |
+| `semantic_forced_choice` | baseline | 0.4883 | 1.000 | ✅ |
+| `semantic_forced_choice` | demoproc | 0.2062 | 1.000 | ✅ |
+
+`option_mass_gate: PASS` on all four runs. **Readout B carries ~1.6× the answer mass of Readout A**
+— the benign property question concentrates more of the next-token distribution than *"does X refer
+to a lantern or to a poison?"* does. That is a property of the **instrument**, established on 4 rows
+per bucket, and it is the reason the assay is usable at all.
+
+⛔ **NOT AN EFFECT, AND NOT READ AS ONE.** The baseline-to-arm movement in these masses
+(0.78 → 0.65, 0.49 → 0.21) is **n = 4 per bucket** on **one domain**, and option mass is an
+instrument diagnostic, not an outcome. §27 forbids changing the plan on an 8-row smoke and nothing
+here changes it. The confirmatory readout is `mapping_use_logodds` over the full preregistered
+population, judged against T5.
+
+### `RBD-R-021` — **T1 (generation cap) PASSES on the development population**
+
+T1 required a development check before freezing the cap, with `frac_at_cap ≤ 0.02` in **both** arms.
+
+| arm | n | cap | stop_reason | `frac_at_cap` | median new tokens | max |
+|---|---|---|---|---|---|---|
+| A baseline | 8 | 640 | `{eos: 8}` | **0.0000** | 367 | 459 |
+| B demoproc | 8 | 640 | `{eos: 8}` | **0.0000** | 396 | **553** |
+
+**Every row terminated on EOS. The longest completion is 553 tokens against a 640 cap** — real
+headroom, not a coincidence at the boundary. **The cap is FROZEN at 640** per T1, and the §8
+escalation path is not triggered.
+
+⚠ Reviewer 3 flagged that Qwen3-14B **with thinking enabled** could plausibly exceed 10% at-cap,
+which would collide with `CAP_BIND_MAX`. The matrix passes **`--enable-thinking false`** on every
+Qwen3 argsfile (the prior phase's `q4b` convention), and the Qwen cap check is repeated on its own
+development rows before its confirmatory arms are read.
+
+### `RBD-R-022` — the confirmatory matrix argsfiles are built and committed
+
+**36 argsfiles under `runargs/rbd/`** — tracked, because `outputs/` is gitignored and 674 existing
+argsfiles live there untracked, which is why parts of the prior corpus are not reproducible from the
+repo.
+
+2 models × 2 banks × (4 arms × 2 run kinds + 1 behavioural-only arm) = 36.
+**Arm E emits no readout file** — `readout_liveness_contract` refuses `response_query_only` on the
+forward-only path, so the design limitation recorded in PR-002.4 is enforced by construction rather
+than by discipline.
+
+Verified mechanically over all 36: **every file carries `--attn-impl eager`** (E1); every Qwen file
+carries `--enable-thinking false`; bands are `6-14` ×10, `22-30` ×4, `7-17` ×10, **`27-37` ×4**
+(the `RBD-C-009` amendment); `--expect-n` is **80** on behavioural and **160** on readout runs; and
+no file contains a quote character.
+
+⚠ I first wrote `6-14 ×12` / `7-17 ×12` here from arithmetic rather than from the files, and the
+counted values are **10 and 10**: arms B and D contribute 4 each (2 run kinds × 2 banks) and arm E
+contributes 2 (behavioural only), not 4. Corrected by `grep -oh` over the 36 files before commit.
+The habit that caught it is the one this sprint keeps needing — **count it, do not derive it**.
