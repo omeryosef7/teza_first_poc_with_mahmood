@@ -7512,6 +7512,11 @@ every prompt-level aggregate — pooled/within-dose **+0.336/+0.305** against `m
 aggregates are structurally tied to dose, since occurrences are dose+1.
 **Neither predicts ASR beyond controls on unseen domains** (Q7). Ledger (20).
 
+*Context a reader of this section alone would otherwise miss:* the prompt-level→ASR claim is not a
+fresh negative — it is **G2, a previously published result, RETRACTED** before this sprint opened
+(ledger entry 9; clean n=90 gave ρ = −0.052). This sprint's contribution is that the retraction
+**survives a properly powered re-test**, not that the question was newly asked.
+
 ### Q3 (Phase 3) — Is `d_surface` causal for behaviour under dose-matched controls?  **NO**
 
 Ledger entry (1)/**RETRACT**: the steering claim does not survive. Ledger entry (1b)/**KEEP**:
@@ -8537,3 +8542,42 @@ attack), reached here from the bank side without any intervention at all.
 correction, so no guard was implicated; mine recorded it and reported it traced while passing on a
 token matching 25 incidental fields. **Same lost result, and neither mechanism would have caught the
 other's version.**
+
+## §22 — AUDIT: do the ledger's findings reach the deliverable? (and my first attempt at asking was vacuous)
+
+§21.2 exposed that my ledger guard enforces plan→ledger **for corrections** and nothing enforces
+anything **for findings** — the installation dissociation reached the ledger and a correction section
+and still was not in the deliverable until §14's Q11 was amended. So: does that happen elsewhere?
+
+### ⛔ My first version of this audit was vacuous, in the way §18 documents
+
+It matched words from each claim against the deliverable and reported **22 of 22 present**. The
+matched tokens were `attack`, `concept`, `prompt`, `domain` — words guaranteed to appear anywhere in
+a 59,000-character document. **I built a loose-token check while auditing for loose-token checks**,
+and it would have reported perfect coverage. Discarded rather than reported.
+
+### The audit that means something: distinctive figures
+
+Re-run against each entry's **distinctive figures** — `\d+/\d+` row counts and 3+ decimal values,
+which cannot match by accident:
+
+| entries | outcome |
+|---|---|
+| 20 of 22 | at least one distinctive figure carried into the deliverable |
+| **2 of 22** | **none carried** — entries **9** and **17** |
+
+**Both turn out defensible, which is the honest answer rather than a disappointing one:**
+
+* **Entry 17** (domain-clustered probe power, ICC intervals) is **methodological** — it governs how
+  the forced-choice probe is read, and is not one of the eleven questions.
+* **Entry 9** is **G2, RETRACTED**. Its figures belong to a claim that was withdrawn before this
+  sprint opened, so their absence is correct.
+
+**But entry 9 exposed a real omission of a different kind:** the string `G2` appears **nowhere** in
+the deliverable. Q2 answers *"predicts: NO"* for prompt-level without recording that this is a
+**retraction of a previously published result surviving re-test**, not a newly asked question. A
+reader of §14 alone would take it for a fresh negative. Fixed with two sentences in Q2.
+
+**So the finding-propagation gap is real but narrow** — one context omission, not a pattern — and
+the dissociation of §21.2 remains its only substantive instance. Recording that explicitly, because
+an audit that finds little is only informative if it says how hard it looked.

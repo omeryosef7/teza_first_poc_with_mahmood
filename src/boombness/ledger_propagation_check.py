@@ -125,6 +125,7 @@ TRACE_TOKENS = {
     "§18": ["74 ledger fields", "dead config", "re-deriving the premise"],
     "§20": ["did not isolate", "bold paragraph marker"],
     "§21.2": ["vacuous token was masking", "never substantively traced"],
+    "§22": ["loose-token check built while auditing", "20 of 22 entries"],
     "§21": ["expiry date", "21 of 8", "audit item, not a guard"],
 }
 
