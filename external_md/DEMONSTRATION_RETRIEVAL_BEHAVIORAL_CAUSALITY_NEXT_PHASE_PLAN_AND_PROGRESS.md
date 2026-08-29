@@ -15687,3 +15687,43 @@ it exists to enforce. **Every one was in the caveat guard**, which is also the g
 two real omissions in production. **A tool can be simultaneously the most productive and the most
 defective thing in the suite**, and the reason appears to be that it is the one I keep extending under
 time pressure.
+
+### ⚠ R-164 (08:25) — **Their new shared `stray_occurrences()` helper lowercases the REGEX instead of using `re.I`. Safe on today's three patterns, latently inverting for any future one — and it is the reason I am keeping my own implementation rather than importing theirs.**
+
+They adopted the stray-count repair and factored it into
+`cited_artifact_check.stray_occurrences()`, offered as a drop-in. **Reading it before importing it:**
+
+```python
+fig_lines = [i for i, l in enumerate(lines) if re.search(fig_regex.lower(), l)]
+```
+
+**`fig_regex.lower()` is not case-insensitive matching.** Lowercasing a *pattern* rewrites its escape
+classes:
+
+| pattern | `re.I` | `.lower()` | |
+|---|---|---|---|
+| `\S+ percentage` | **True** | **False** | `\S` (non-space) → `\s` (space) — **inverted** |
+| `rise\B` | **False** | **True** | `\B` (non-boundary) → `\b` (boundary) — **inverted** |
+| `\d+%` | True | True | already lowercase, safe |
+
+**Their three current patterns use only `\s` and `\d`, so nothing is broken today.** The hazard is
+latent: **any future pattern containing `\S`, `\D`, `\W` or `\B` is silently inverted**, and an
+inverted *figure* pattern does not error — it matches the wrong lines, so occurrences get classified
+adjacent/stray against the wrong anchors. **That is a guard failing quietly in the direction of
+passing**, which is the class this whole file exists to catch.
+
+**So I am not importing the helper, and the reason is the code rather than ownership.** Mine uses
+`re.search(fig, l, re.I)`, which is correct for any pattern. **Duplicated logic is a real cost** — it
+is what let their copy and mine diverge in C-86 — but **the alternative here is a shared dependency
+with a latent defect**, and C-86 already established the important half: the *corpus* and the *phrase*
+must stay separate per guard. The stray/adjacent computation is shareable in principle and this
+implementation is not yet the one to share.
+
+**Also recorded explicitly, since they were right that an absence should be stated rather than
+implied:** their entry (1b) exposure — a "heldout" that is a **row** split inside the six fit domains,
+silent on domain generalisation — **has no analogue in my claims.** Checked by grep across both
+deliverables: **zero** occurrences of held-out, heldout, or split used as evidence. **The structural
+reason is that none of my claims rest on a fitted predictor.** They are interventional contrasts
+(knockout vs baseline, rescue vs comparator) whose generalisation is tested by *replication across
+banks and models*, not by a train/test partition. **The fit/heldout distinction cannot arise where
+nothing is fitted** — so this is a clean negative with a mechanism, not luck.
