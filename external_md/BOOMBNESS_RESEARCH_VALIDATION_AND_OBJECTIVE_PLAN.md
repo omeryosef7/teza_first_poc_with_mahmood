@@ -7654,6 +7654,7 @@ states it; the Fisher combination remains the only inferential claim on that lin
 **Nothing else in the corpus quotes a cluster sign test**, so the sweep is complete rather than
 sampled: two instances, one already correct, one now annotated.
 
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the
@@ -9168,3 +9169,72 @@ mismatch, and worth stating so the two are not confused.)*
 **Left uncommitted and untouched** — it is not mine, and the explicit-path commit discipline
 (§12.15) has kept it out of every commit in this session. Recorded here so that if it is swept into
 a future commit, the discrepancy is already on the record rather than discovered afterwards.
+
+## §24 DR-12 — deeper review (code, artifact, population, liveness, claim)
+
+Run against the artifacts rather than from memory. Four of five dimensions are clean; the claim
+review found one stale status and, more usefully, established that "open items" was the wrong count.
+
+    LIVENESS    0 jobs queued, both sessions. No PENDING, nothing to widen or resubmit.
+    CODE        full suite green; guard suite 257 at commit time.
+    GUARDS      9/9.
+    ARTIFACT    210 runs carry an expect_n, 1 documented short, 4 DONE dirs are not runs;
+                file agreement 503 comparable / 124 not comparable; every finished run
+                persisted its full row count.
+    POPULATION  668 run dirs -> 627 DONE -> 210 checked, and the residual is now CLASSIFIED
+                rather than silent (§12.28.4).
+
+**CLAIM REVIEW — "five open items" was a matcher artefact, and the right count is one.** Grepping
+`OPEN|PENDING` over the ledger returns 5 entries. Read in context they are four different things,
+and only the last is a defect:
+
+    (1b), (19)   FALSE POSITIVES. Historical prose -- "a pre-registration timestamped while jobs
+                 were PENDING", "most are historical by construction". Nothing open.
+    (3)  C7      STRUCTURALLY UNRESOLVABLE, and recorded as such: "the control can be built and
+                 building it costs the phenomenon". A stated limitation, not pending work.
+    (4)  model×bank  STRUCTURALLY UNRESOLVABLE: "the fourth cell is structurally unavailable, not
+                 merely unrun", so attribution stays open permanently. Also a limitation.
+    (2)  ⛔ GENUINELY STALE -- the one real finding, below.
+
+That is the **matcher/scope class** this repo has been bitten by before, in its over-crediting
+direction: a substring match cannot distinguish *unresolvable by construction* from *awaiting work*,
+and reporting "5 open items" would have implied five pieces of pending work when the true count of
+actionable items is **zero** and the count of stale records is one.
+
+**⛔ THE ONE REAL FINDING.** Entry (2)'s field `truncation_leg_2026-08-28` has the literal value
+`"OPEN, and worse than the entry's own asr_cap_dependency field made obvious..."` — and it is
+**superseded three times over inside the same entry**, by `truncation_leg_RESULT_2026-08-28`,
+`FINAL_LLAMA_RESULT_2026-08-29` and `verdict_llama_side`, all reporting the cap≥640 reruns that
+closed the leg (knockout real on 2 Llama populations, null on `basket_gun`, untestable on 2).
+Nothing in the earlier field points forward. **And the entry already uses the
+`EXPIRED_..._is_superseded` convention** — for the sprint update, two fields away. So the convention
+existed, was in use in the same entry, and simply was not applied here.
+
+Which is this phase's recurring shape once more, now in the ledger rather than in a guard or a
+statistic: **the resolving information exists, is adjacent, and nothing forces it to travel with the
+thing it resolves.** Marker added; the leg itself was already closed and no verdict moves.
+
+**⛔ AND WRITING THIS SECTION TRIPPED THE GUARD — for a reason worth keeping.** DR-12 was first
+spliced in *mid-document*, after §12.28.6, in an **append-only log**. `ledger_propagation_check`
+refused the commit, and the message was not the one I expected: it reported an **UNCLASSIFIED §24**
+pointing at a correction heading I did not write in this tick —
+`### ⛔ AND MY OWN GUARD REFUSED TO CALL IT REFUSED`, which belongs to the §12.28 material.
+
+The cause is structural, not cosmetic. A correction sub-heading carrying no id of its own is
+attributed to **the most recent heading that had one** (§12.28.6's docstring explains exactly this).
+So inserting a new numbered section *above* such a heading **silently re-attributes it** — the older
+correction stopped belonging to §12.28.6 and started belonging to §24, and its ledger trace went with
+it. Nothing about the older text changed.
+
+That is the same failure family as the rest of this phase, one level up: **the record's meaning
+depended on document order, and editing elsewhere changed it silently.** Two things follow, and only
+the second is new:
+
+* the fix is placement, not classification — §24 moved to the **end** of the log, where an
+  append-only document requires it, restoring the older heading to §12.28.6; and
+* **the guard's value here was not catching a missing trace. It was catching an edit that moved
+  someone else's record** — including, in principle, an edit by the other session. That is a
+  property I had not designed for and would not have predicted from its docstring.
+
+This is the second time in this phase that this guard has refused one of my commits and been right
+both times.
