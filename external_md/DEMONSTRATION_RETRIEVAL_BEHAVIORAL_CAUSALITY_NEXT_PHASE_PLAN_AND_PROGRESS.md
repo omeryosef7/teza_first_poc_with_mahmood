@@ -14985,3 +14985,41 @@ assumption, their `ls | tail -1`, their population substring, their split-name l
 **What I am not doing:** rewriting `fires_on_LIVE` to manufacture an isolating mutation. A test
 contorted so that a mutation can single it out is optimising the control rather than the coverage, and
 the structural guarantee is the one actually wanted here.
+
+### ⛔ C-77 (04:10) — **W6 quotes "at k=6 the attainable floor was 0.0625" and `2/2⁶ = 0.03125`. The number is right, the stated k is not — and the summary claims to be self-contained, so the reader cannot resolve it. W9's numbers verify exactly.**
+
+Continuing C-75's prose reconciliation into the W-claims I had marked *"unchanged and still
+supported"* — I had checked their **status** against the ledger and not their **arithmetic**.
+
+**W9 verifies exactly.** R-64's 640-cap Qwen3 arms, recomputed from
+`outputs/boombness/judge/p26j_{A,dp,c1}`:
+
+| dose | n | baseline | `demoproc` | Δ | `matched_d1` | Δ |
+|---|---|---|---|---|---|---|
+| 4 | 40 | 4 | 1 | **−3** | 5 | +1 |
+| 8 | 40 | 7 | 0 | **−7** | 7 | **+0** |
+
+Exactly R-64's **−3/4 and −7/7**, control inert at **+1 and +0**. No drift.
+
+**W6 does not, and it stopped me for several minutes.** The floor is `2/2^k` over the **informative**
+domains — a domain netting exactly zero drops out of a sign test. Computing `2/2⁶` gives **0.03125**,
+not the 0.0625 quoted, and I went looking for an arithmetic error before finding the plan's own
+Defect 3: **`lab_safety` nets exactly 0.0000 on that bank, so k_informative = 5 and the floor is
+`2/2⁵ = 0.0625`.** The plan states this correctly and completely. **The summary compressed it to
+"at k=6", where the number no longer follows from the k given.**
+
+**Why that is a defect and not pedantry: the summary's own header says *"Self-contained: no session
+context required."*** A reader who checks the arithmetic gets a different number and **has no way to
+resolve it without the plan** — which is precisely the context the document promises not to require.
+Corrected in place to name k_informative on both sides.
+
+**And the correction sharpens the claim rather than weakening it.** I verified the ten-domain half
+directly — `p4bj`: **10 domains, 10 negative, 0 zero, 0 positive**, so all ten are informative and
+`2/2¹⁰ = 0.00195` is right. So the real improvement is **5 → 10 informative units, a 32× lower
+floor**, which is a *better* statement than "6 → 10 domains" because the domain count was never the
+operative quantity.
+
+*Third time tonight a number was correct while the sentence around it was not: their V-107 both-EOS
+statistic, my C-62 bold-only regex denominator, and this. In all three the arithmetic survived
+checking and the claim wrapped around it did not — which is why recomputing a figure is not the same
+as auditing a sentence.*
