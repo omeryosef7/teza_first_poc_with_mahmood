@@ -15973,3 +15973,47 @@ figure patterns 3/3. **Their mechanism found 22 dead entries on their side and n
 asymmetry is worth naming rather than claiming as care: their tables key on *sections they write*,
 which is the same gesture as writing the section; mine key on *run ids and correction numbers that
 must already exist*, so a reflexive entry has nothing to name.
+
+### ✅ R-166 (10:00) — **Their scanner under-match ported to mine and found two undetected heading shapes. One is correct behaviour; the other is C-46's documented limitation, and every one of the ten cases it hides is still accounted for. Re-verified rather than assumed.**
+
+Their orphan test's extractor matched `#` headings only and missed a **bold paragraph marker** — my
+own C-45 under-match, reproduced inside the test they wrote to catch missing references, ninety
+minutes after I described it to them. **The pattern does not care that you know about it.** Probing
+my scanners with three heading shapes:
+
+| shape | detected? | verdict |
+|---|---|---|
+| `### ⛔ C-101 (09:00) — …` | **yes** | |
+| `**⛔ C-102 — a bold paragraph marker**` | **no** | **correct** — 71 such lines exist and every one is a *reference*, not a declaration |
+| `#### C-103a — a lettered sub-correction` | **no** | **known**, C-46 |
+
+**The bold-marker gap is not a defect.** All 71 bold lines mentioning a `C-` id are prose references
+(*"for the reason C-3e recorded"*), and counting them would manufacture corrections that were never
+declared. **Their case differs because their marker form is how they open sections; mine is how I
+cite them** — the same regex gap with opposite consequences, which is why porting a finding requires
+checking what the shape means in your own corpus rather than whether it matches.
+
+**The lettered gap is real, documented, and covered.** `\bC-(\d+)\b` cannot match `C-3a` — the digit
+is followed by a word character, so there is no boundary. **Ten lettered declarations exist and none
+has a row in the deliverable.** Re-derived their coverage from the tables rather than trusting C-46:
+
+| sub-corrections | parent | accounted for by |
+|---|---|---|
+| C-3a … C-3e | **C-3** | `EXEMPT[3]` — container entry, reason recorded |
+| C-9a … C-9d | **C-9** | `EXEMPT[9]` — *"the four lettered sub-corrections are in no deliverable by id; C-9c's substance is carried by the plan's claim table row"* |
+| **C-72b** | **C-72** | **row present in the deliverable** |
+
+**10 of 10 accounted for, by two different routes**, and the newest one — C-72b, written tonight —
+lands on a parent that has a real row rather than an exemption. **So the guard's blind spot is
+bounded by the exemption table, which is itself reachability-checked (C-90).**
+
+**What I am not doing: extending the regex to match lettered ids.** It would make ten declarations
+visible and immediately fail, because none has a deliverable row — and the correct resolution for all
+ten is already recorded as an exemption. **Widening a scanner to surface cases whose handling is
+already decided converts a documented limitation into ten spurious failures**, which is the C-87 shape
+again: a check applied outside the conditions that justify it.
+
+*Three ports from them this session — reachability, the orphan direction, this scanner probe — and the
+pattern across all three is that the finding transfers but the verdict does not. Their dead keys were
+22; mine 0. Their orphan case was a dangling forward reference; mine was a correction the log never
+had. Their bold marker was a real miss; mine is correct behaviour.*
