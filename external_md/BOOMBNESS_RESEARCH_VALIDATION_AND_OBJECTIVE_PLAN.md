@@ -9272,3 +9272,28 @@ both killed: removing the fixture (4 failures return) and narrowing `_TOUCHED` t
 alone (4 failures return) — the second matters because I had already fixed *one* instance of this
 contamination by hand in V-164 and treated it as done. **Asserting the reload inside individual
 tests only protects the test that remembers to.**
+
+### §24.2 ⛔ CORRECTION: V-168 fixed the instance and left the CLASS — the hook's order still disagreed
+
+V-168 removed the contamination but not the condition that hid it. The hook and the full suite still
+ran the same files in **different orders**, so the next ordering-sensitive bug would hide exactly the
+same way. Three properties are now pinned, none of which anything checked before:
+
+* **`GUARD_TESTS` is sorted**, so the hook's order agrees with `pytest tests/`. It had been in the
+  order the two sessions happened to append to it — divergent from alphabetical **at index 0**.
+* **Every listed file exists.** A path typo would silently shrink the hook's coverage while pytest
+  still exited 0 on the remainder — the same invisibility as the ordering bug.
+* **The DEPLOYED hook carries every file the installer lists.** The installer's own note says it is
+  the source of truth *because both sessions have edited the deployed hook directly*, and nothing
+  verified it. Now it does.
+
+`tests/test_commit_guard.py` was itself **not in the list the hook runs** — the tests pinning the
+hook's properties were not enforced by the hook. Added, in sorted position.
+
+Three mutants, all killed: list unsorted again (1 test), a listed file that does not exist (2), and
+the installer listing a file the deployed hook lacks (2).
+
+**The pattern this closes** is the one V-168 named and did not finish: a check whose result depends
+on something nobody declared — section order in a document, file order in a suite — where every
+observable stays identical under both outcomes. Fixing the instance leaves the mechanism; the fix has
+to be to the mechanism.

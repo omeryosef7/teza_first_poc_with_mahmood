@@ -39,13 +39,27 @@ fi
 #
 # Only the GUARD test files run here, not the full suite: 140 tests in ~1.4s against ~11 minutes,
 # and a hook slow enough to skip is a hook that gets skipped.
-GUARD_TESTS="tests/test_cited_artifact_check.py tests/test_ledger_propagation_check.py
-             tests/test_option_mass_nan_guard.py tests/test_margin_exposure.py
-             tests/test_intervention_liveness.py tests/test_asr_protocol.py
-             tests/test_fcslots_preset.py tests/test_clustered_stats.py
-             tests/test_my_ledger_propagation.py tests/test_my_cited_artifacts.py
-             tests/test_cautioned_figures.py tests/test_run_completeness_check.py
-             tests/test_guard_wiring.py"
+# ⛔ SORTED, AND THAT IS LOAD-BEARING (§24.2). This list previously ran in the order the two
+# sessions happened to append to it, and pytest runs the FULL suite alphabetically. The two orders
+# disagreed, and a real contamination bug -- test_guard_wiring.py leaving module tables deformed --
+# failed 4 tests under `pytest tests/` while this hook reported 257 passed, because the hook
+# happened to run the victim BEFORE the polluter. A green hook was not evidence of a green suite,
+# and nothing in its output could say so. Sorting makes the hook's order agree with the suite's, so
+# an ordering-sensitive failure can no longer pass here and fail there.
+GUARD_TESTS="tests/test_asr_protocol.py
+             tests/test_cautioned_figures.py
+             tests/test_cited_artifact_check.py
+             tests/test_clustered_stats.py
+             tests/test_commit_guard.py
+             tests/test_fcslots_preset.py
+             tests/test_guard_wiring.py
+             tests/test_intervention_liveness.py
+             tests/test_ledger_propagation_check.py
+             tests/test_margin_exposure.py
+             tests/test_my_cited_artifacts.py
+             tests/test_my_ledger_propagation.py
+             tests/test_option_mass_nan_guard.py
+             tests/test_run_completeness_check.py"
 # NOTE: this list spans BOTH concurrent sessions deliberately. The three tests above were
 # added to the DEPLOYED hook directly by the other session; the installer had only the first
 # eight, so re-running it would have silently dropped them and restored the state in which

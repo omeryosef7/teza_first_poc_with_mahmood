@@ -72,3 +72,49 @@ def test_installer_explains_why_it_exists():
     s = open(INSTALLER).read()
     assert "check_all" in s and ("committed anyway" in s or "ignore" in s), \
         "the installer no longer records the failure it exists to prevent"
+
+
+# ---------------------------------------------------------------------------------------------
+# §24.2 — the hook's file ORDER must agree with the full suite's, and the DEPLOYED hook must
+# carry every file the installer lists.
+# ---------------------------------------------------------------------------------------------
+
+def _guard_tests_from(text):
+    m = re.search(r'GUARD_TESTS="([^"]+)"', text, re.S)
+    assert m, "GUARD_TESTS not found -- the installer's shape changed"
+    return m.group(1).split()
+
+
+def _installer_text():
+    return open(os.path.join(ROOT, "scripts", "install_commit_guard.sh"), encoding="utf-8").read()
+
+
+def test_GUARD_TESTS_is_sorted_so_hook_order_matches_suite_order():
+    """⛔ THE BUG THIS PINS. pytest runs the full suite alphabetically. This list previously ran in
+    append order, and the two disagreed: a contamination bug in test_guard_wiring.py failed 4 tests
+    under `pytest tests/` while the hook reported 257 passed, because the hook happened to run the
+    victim BEFORE the polluter. A green hook was not evidence of a green suite."""
+    files = _guard_tests_from(_installer_text())
+    assert files == sorted(files), (
+        "GUARD_TESTS is not sorted, so the hook can pass an ordering-sensitive failure that "
+        f"`pytest tests/` fails. Out of order at: {next(a for a, b in zip(files, sorted(files)) if a != b)}")
+
+
+def test_every_listed_guard_test_actually_exists():
+    """A path typo would silently shrink the hook's coverage -- pytest would still exit 0 on the
+    rest, so the loss is invisible exactly like the ordering bug was."""
+    missing = [f for f in _guard_tests_from(_installer_text())
+               if not os.path.isfile(os.path.join(ROOT, f))]
+    assert missing == [], f"the hook lists files that do not exist: {missing}"
+
+
+def test_the_DEPLOYED_hook_carries_every_file_the_installer_lists():
+    """The installer is the source of truth, and the file says so -- but nothing checked it. Both
+    sessions have edited the deployed hook directly, and a re-install would drop those edits."""
+    hook = os.path.join(ROOT, ".git", "hooks", "pre-commit")
+    if not os.path.isfile(hook):
+        pytest.skip("no pre-commit hook installed in this checkout")
+    deployed = open(hook, encoding="utf-8").read()
+    absent = [f for f in _guard_tests_from(_installer_text()) if f not in deployed]
+    assert absent == [], (
+        f"the deployed hook is missing {absent} -- re-run scripts/install_commit_guard.sh")

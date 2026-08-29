@@ -117,6 +117,7 @@ TRACE_TOKENS = {
     "§12.28.5": ["INCAPABLE_NOT_NULL", "COMPUTING A QUALIFIER IS NOT QUOTING IT", "can_reach_alpha"],
     "§12.28.6": ["FOLLOW-UP AUDIT", "POWER CEILING", "0.25 IS THE FLOOR"],
     "§24.1": ["DR12_FULL_SUITE_CLAIM_WITHDRAWN", "ORDERING ARTEFACT", "1429"],
+    "§24.2": ["HOOK_ORDER_CLASS_CLOSED", "divergent from alphabetical at index 0", "sorted position"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
