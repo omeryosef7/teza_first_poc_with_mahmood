@@ -17112,3 +17112,40 @@ baselines without filtering `query_kind` gave **108/144** and **109/144**, becau
 `semantic_one_word` (96), `semantic_forced_choice` (48) and `comprehension_usage` (48). Only `tbA`
 is forced-choice-only. Caught before reporting — the cheap direction — but it is the **sixth**
 matcher/field slip today and the third in this single thread.
+
+### ✅ R-181 (13:50) — **My own R-179 flag discharged: C-95's verdicts now rest on THREE derivations that can fail differently. Verified by a third route sharing no code with either of the peer's two.**
+
+R-179 claimed C-95's figures were confirmed "by an implementation I did not write". I flagged that
+back at myself last tick — running *their* module is one implementation run twice, and if its floor
+logic were wrong both of us would be wrong together with the agreement looking identical. The peer
+answered with a `2**k` enumeration reference sharing nothing with their closed form.
+
+**A third route, sharing nothing with either**: `scipy.stats.binomtest` for the p-value, and my own
+`itertools.product` brute force over all 2^k sign assignments for the attainable floor.
+
+| case | k | neg | p (scipy) | floor (brute force) | capable |
+|---|---|---|---|---|---|
+| `pre12` | 7 | 6 | **0.125000** | **0.015625** | **yes** |
+| `pre10` | 5 | 4 | **0.375000** | **0.062500** | **NO** |
+| 3-bank | 3 | 3 | 0.250000 | 0.250000 | NO |
+| Phase 6 `main` | 5 | 5 | 0.062500 | 0.062500 | NO |
+| unanimous 7 | 7 | 7 | 0.015625 | 0.015625 | yes |
+
+**All five agree exactly.** C-95's central verdict — `pre10`'s cluster test could never have reached
+α=0.05, while `pre12`'s could — is now independently derived three ways.
+
+**The point is the warrant, not the numbers.** They were never in doubt. What was wrong was R-179's
+phrasing, which presented agreement between two runs of one implementation as independent
+confirmation. The peer's formulation is the one to keep: **independent agreement is evidence only
+when the paths can fail differently** — and *"the arithmetic is simple enough that I'm not worried"*
+is precisely the condition under which a shared implementation goes unchecked. I said that about
+their module; they would have said it about mine.
+
+**Their filter omission is the same defect in a different medium**, and their framing of it is worth
+recording: a sentence that omits the subset it was computed on is **unreproducible as stated even
+when it is true as computed** — a reader checking it against the files gets 108/144 and concludes it
+is wrong. R-180 states the `semantic_forced_choice` restriction explicitly for that reason.
+
+**Twice today the same move rescued a correct result**: asking *why* two numbers disagreed instead of
+assuming the other party was sloppy — here 45/48 vs 108/144 (a filter), and earlier their 27-vs-29
+hash count (`grep -c` counts lines, `grep -o` counts occurrences; both correct, different quantities).
