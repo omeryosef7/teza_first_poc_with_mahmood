@@ -2801,6 +2801,15 @@ codeword, same concept, same demonstrations. Baseline arms only, no intervention
 3/3 concordance under a sign test = 0.25 two-sided). **This is directional consistency, not an
 established effect, and it is reported as such.**
 
+> **⛔ ANNOTATION (§12.28.6): 0.25 IS THE FLOOR here, and this line did not say so.** With k=3
+> banks the smallest attainable two-sided sign-test p is 2/2³ = **0.2500**, so **3/3 unanimity was
+> the most extreme outcome this test could produce** and it still cannot approach 0.05. The
+> conclusion above is right — directional consistency, not an established effect — but the p-value
+> is quoted bare, and a reader can take 0.25 as *weak evidence* when it is in fact *the ceiling*.
+> Rendered through `cluster_sign_test`: `3/3 negative, p=0.2500 — STRUCTURALLY INCAPABLE: with k=3
+> the attainable floor is 0.2500 > alpha=0.05`. The sign test contributes **nothing** here; the
+> Fisher combination is the only inferential statement on this line.
+
 ### Why this matters more than its p-value
 
 **It re-measures §5.9's claim WITHIN banks, which sidesteps §5.10's codeword × concept confound
@@ -7616,6 +7625,34 @@ Zero-delta clusters are excluded from k, which is what makes the floor a propert
 data: PR-39's twelve domains with five at exactly 0.00 is a seven-cluster test. Four mutants, all
 killed — capability hard-coded True (2 tests), `summary()` dropping the capability branch (1),
 zero deltas counted as informative (2), one-sided instead of two-sided (2).
+
+### §12.28.6 The audit that followed: the repo had ALREADY solved this, with the same number
+
+Having made the fix structural, the obvious next question was whether the error is already sitting in
+the deliverables. Every cluster sign test quoted anywhere was re-rendered through
+`cluster_sign_test`. Two results, and the first is worse for me than the original error.
+
+**1. THE REPO ALREADY CONTAINED THE CORRECT REASONING, ABOUT THE IDENTICAL VALUE.** The ledger's
+`n16_drop_CLUSTERED` entry says of Phase 6's `main` arm:
+
+> *"main's failure is a POWER CEILING not a weak effect: with 5 informative clusters the smallest
+> attainable two-sided p is 2/2⁵ = 0.0625, so the data are as extreme as possible and still cannot
+> reach 0.05."*
+
+That reproduces exactly (`p=0.0625, floor=0.0625, capable=False`). So this was not a rule that failed
+to transfer from a *different* pair — **the same value, 0.0625, with the same reasoning spelled out,
+was already recorded in the ledger I was writing into**, and I still wrote "real nulls" about it. DR-5
+being general is not the explanation; the specific instance was there too.
+
+**2. ONE LIVE INSTANCE, now annotated in place.** The three-bank family-binding concordance quotes
+*"3/3 concordance under a sign test = 0.25 two-sided"* — and **0.25 is the floor at k=3**. Unanimity
+across three banks was the most extreme outcome available, so the sign test could not have said
+anything. The surrounding conclusion is correct and unchanged (*directional consistency, not an
+established effect*), but the bare p invites reading a ceiling as weak evidence. The annotation
+states it; the Fisher combination remains the only inferential claim on that line.
+
+**Nothing else in the corpus quotes a cluster sign test**, so the sweep is complete rather than
+sampled: two instances, one already correct, one now annotated.
 
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own

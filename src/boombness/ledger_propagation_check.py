@@ -115,6 +115,7 @@ TRACE_TOKENS = {
     "§12.28.3": ["GUARD_WIRING_PROBE", "8 of 9 demonstrated wired", "audit #11's defect surviving on"],
     "§12.28.4": ["NO_OPINION_VS_PASSED", "UNCHECKABLE", "fitN_concept"],
     "§12.28.5": ["INCAPABLE_NOT_NULL", "COMPUTING A QUALIFIER IS NOT QUOTING IT", "can_reach_alpha"],
+    "§12.28.6": ["FOLLOW-UP AUDIT", "POWER CEILING", "0.25 IS THE FLOOR"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
