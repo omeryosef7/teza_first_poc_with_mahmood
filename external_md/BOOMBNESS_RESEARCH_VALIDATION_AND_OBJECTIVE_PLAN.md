@@ -8492,3 +8492,40 @@ its distinctive `0.042`.
 occurrence over a threshold; chasing the fix exposed a correction absent from the ledger for days.
 **The vacuity check found the untraced correction that the propagation guard was built to find and
 had been silently failing to.**
+
+### The recovered correction is stronger than the two banks I quoted for it
+
+A peer verified it from their artifacts and supplied the two banks that turn it from an observation
+into a **dissociation**. Re-derived here independently — every row replicates across **two
+independent baseline runs** with identical values:
+
+| bank | n=1 | n=2 | n=4 | n=8 | baseline ASR |
+|---|---|---|---|---|---|
+| `main` | 0.667 | 0.917 | 0.917 | **1.000** | 23/96 |
+| `ticket_bomb` | 0.750 | 1.000 | 1.000 | **1.000** | 27/96 |
+| **`window_knife`** | 0.583 | 0.833 | 0.833 | **1.000** | **3/96** |
+| **`basket_gun`** | 0.333 | 0.417 | 0.417 | **0.417** | 7/96 |
+
+**`window_knife` is the decisive case and I had not cited it.** Its installation **saturates at
+1.000** by n=8 while its baseline ASR is the lowest in the corpus. `main` and `ticket_bomb` cannot
+show this — they have healthy ASR, so installation and attack success are *confounded* there. The
+correction was right and its best evidence was in a bank I never quoted.
+
+`basket_gun` supplies the other direction and is not a counterexample: it **plateaus at 0.417 and
+never installs**, which is the same conclusion §5's forced-choice screen reached by a different
+measurement (19/48, p=0.193).
+
+| | **installs** | **does not install** |
+|---|---|---|
+| **high ASR** | `main`, `ticket_bomb` | *(not observed)* |
+| **near-zero ASR** | **`window_knife`** | `basket_gun` |
+
+**The empty cell is the one that would have mattered for an objective: no bank produces attacks
+without installing the mapping.** Installation is *necessary and not sufficient* — which is the same
+dissociation Q9 reports from the intervention side (comprehension survives what abolishes the
+attack), reached here from the bank side without any intervention at all.
+
+**It was untraced on the peer's side too, and by a different mechanism.** Theirs never recorded the
+correction, so no guard was implicated; mine recorded it and reported it traced while passing on a
+token matching 25 incidental fields. **Same lost result, and neither mechanism would have caught the
+other's version.**
