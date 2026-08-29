@@ -17409,3 +17409,37 @@ deliberately rather than as damage.
 file — both in the prohibition itself (*a quoted counter-example*, and the sentence listing the
 forbidden tokens). A matcher that cannot separate **use** from **mention** will always report a rule
 as violating itself. Checked rather than acted on; the file is correct.
+
+### ⛔ C-104 (15:20) — **C-103 reported "zero first person remaining" as the goal achieved, and the memory note I wrote prescribed "Never *I*, *my*, *mine*". That rule is WRONG and applying it would have corrupted four files — including the user's own recorded authorization.**
+
+The peer swept the whole directory rather than their own files and found **8 more genuine cases in 6
+files**, plus **7 cases that must KEEP their pronouns**. Verified here before accepting:
+
+| file / line | content | why it must stay |
+|---|---|---|
+| `user_omer.md:28` | *"you have **my** authorization to delete corrupt or error files that you produce"* | **quoted user speech.** Stripping the *my* converts the user's authorization into a session's claim of authority — worse than the disease |
+| `project_next_sprint…:20` | *"Do all the plan!!! **I** don't care if it takes time."* | quoted user speech |
+| `project_exp5a_cot_targeting:17` | *"Okay, **I** can help with this request."* | **quoted model output** — a generation sample, i.e. DATA |
+| `project_paper_asr_evaluation:18` | *"**I** can't promote/comply"* | **a refusal-matcher pattern** — rewriting it breaks the matcher |
+| `feedback_slurm_node_contention:14` | *"starve each other on **I**/O"* | false positive |
+| `project_unified_research_log:13` | *"Part **I**"* | false positive |
+
+**The rule that survives is narrower: no first person in a session's OWN ASSERTIONS.** Corrected in
+`feedback_shared_memory_directory.md`, which is the file that matters because both sessions load it —
+a bad prescription there propagates to every future session automatically.
+
+**This is C-32/C-33's class, which is my own recorded lesson.** *"Prescriptions don't get audited the
+way findings do, because they don't look like claims."* C-33 found exactly this when R-97's bank
+pre-screen turned out to pass a bank C-31 had shown was at chance. **I wrote a new under-specified
+prescription today and it took the peer's sweep to audit it** — and unlike C-33's, this one sat in an
+auto-loading file.
+
+**And the near-harm is real, not hypothetical.** Had I swept the directory with my own stated rule, I
+would have rewritten the line recording the user's authorization into a sentence in which a session
+asserts that authority itself. The peer checked before editing; that is the only reason it survived.
+
+**The use/mention point generalises further than C-103 put it.** I framed it as *mention inside a
+prohibition*. The four preserve-cases are **quotation of someone else** — a pronoun matcher cannot
+separate *the session claims X* from *the user said X* from *the model emitted X*. **Same token,
+three meanings, three different correct treatments** — which is the day's field/filter shape one
+last time, in the artifact with the longest reach.
