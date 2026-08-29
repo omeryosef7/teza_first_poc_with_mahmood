@@ -147,3 +147,56 @@ def test_a_reference_in_the_heading_does_not_steal_attribution():
 def test_a_correction_before_any_numbered_section_is_not_silently_dropped():
     got = lp.correction_sections("### ⛔ CORRECTION with no enclosing section at all\n")
     assert got and got[0][0] is None, "an unattributable correction must surface, not vanish"
+
+
+def _ledger_fields():
+    import json
+    led = json.load(open(lp.LEDGER, encoding="utf-8"))
+
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values():
+                yield from walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                yield from walk(v)
+        else:
+            yield str(o)
+    return list(walk(led))
+
+
+def test_every_TRACE_TOKEN_is_DISTINCTIVE_in_the_ledger():
+    """⛔ THE GUARD'S UNCHECKED PREMISE: that a token match is EVIDENCE the correction arrived.
+
+    A section passes if ANY of its tokens appears anywhere in the ledger. That is only meaningful
+    if the token is rare there. Ten of 86 entries were not: 'cap' matched 74 ledger fields,
+    'dose' 54, 'cell' 46, 'gate' and 'ticket_bomb' 43 each, a bare 'knife' 41. Those sections would
+    have passed whether or not their correction ever reached the ledger — the same vacuity as a
+    common caveat phrase, one guard over.
+
+    Found by deliberately re-deriving each premise after a peer discovered the identical failure in
+    their own guard's third premise. Nothing was testing it.
+    """
+    fields = _ledger_fields()
+    loose = {}
+    for sid, toks in lp.TRACE_TOKENS.items():
+        counts = {t: sum(1 for v in fields if t.lower() in v.lower()) for t in toks}
+        bad = {t: c for t, c in counts.items() if c >= 25}
+        if bad:
+            loose[sid] = bad
+    assert not loose, (
+        f"{len(loose)} section(s) rely on a token matching >=25 ledger fields, so a match is not "
+        f"evidence the correction arrived: {loose}")
+
+
+def test_every_TRACE_TOKEN_actually_APPEARS_in_the_ledger():
+    """The complement: tightening a token must not make it unfindable.
+
+    A token present 0 times would fail the guard for every section that needs it -- the opposite
+    failure, and equally silent until a correction is added.
+    """
+    fields = _ledger_fields()
+    absent = {sid: [t for t in toks if not any(t.lower() in v.lower() for v in fields)]
+              for sid, toks in lp.TRACE_TOKENS.items()}
+    absent = {k: v for k, v in absent.items() if len(v) == len(lp.TRACE_TOKENS[k])}
+    assert not absent, f"section(s) whose every token is absent from the ledger: {absent}"

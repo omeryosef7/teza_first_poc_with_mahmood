@@ -8173,3 +8173,82 @@ refused commits here and the fix was cosmetic both times — but a guard whose *
 written in the same document it scans could be self-satisfying in exactly this way, and **that**
 failure would be silent rather than loud. The rule that falls out: **in a document a guard reads,
 name its patterns; never reproduce them.**
+
+## §18 — ⛔ RE-DERIVING MY GUARDS' PREMISES: one held, one had silently failed for 10 of 86 entries
+
+A peer re-derived their caveat guard's three premises deliberately (rather than after a failure) and
+found the third had failed. I owed the same on mine. **Two premises were testable and nothing was
+testing either.**
+
+### ✅ PREMISE THAT HOLDS — the caution window is still calibrated
+
+Shipped `CALIBRATION_DISTANCES` = (0, 0, 0, 1, 3), window = 6 = 2 × max. Observed correct
+figure→caveat distances **now**: 0, 0, 0, 0, 0, 1, 3 — **max still 3** after the corpus roughly
+doubled. The peer independently re-derived the same premise on their copy and also found it holding.
+
+### ⛔ PREMISE THAT FAILED — a trace-token match was not evidence
+
+`ledger_propagation_check` passes a correction section if **any** of its tokens appears anywhere in
+the ledger. That is only meaningful if the token is *rare* there. **Ten of 86 entries were not:**
+
+| section | token | ledger fields matched |
+|---|---|---|
+| §0.4, §0.2.3 | `cap` | **74** |
+| §6.1 | `dose` | 54 |
+| §11.9 | `cell` | 46 |
+| §7, §12.23 | `gate` | 43 |
+| §5.2 | `ticket_bomb` | 43 |
+| §5.13 | `knife` | 41 |
+| §12.16 | `truncation` | 32 |
+| §12.20 | `basket_gun` | 27 |
+
+**Those sections would have passed whether or not their correction ever reached the ledger** — the
+same vacuity as a common caveat phrase (§17.2), one guard over, and undetected because the guard's
+own premise was never checked. Tightened to distinctive tokens **verified present** in the ledger:
+`max_new=192` / `asr_cap_dependency`, `window_knife` / `0.042`, `Phase 7 gate` / `GATE CLOSED`,
+`0.9627` / `288`, and so on.
+
+### ⛔ And the complement test found two DEAD entries
+
+Pinning the premise required a second test — *a tightened token must still appear*, or the guard
+fails for every section needing it. It immediately flagged **§12.2** and **§17.3.1** as having **no
+token present in the ledger at all**. Both turned out to be **dead config**: §12.2 has no heading in
+the plan (it survives only as a prose reference), and §17.3.1 is an unmarked continuation of §17.3,
+whose entry already covers the substance. Neither is ever consulted, so neither could ever fire —
+**the vacuous-entry defect a peer found in their own guard, in mine, twice.** Both removed.
+
+**Mutation test:** restoring the loose `gate` token kills exactly the new distinctiveness test.
+15 tests, guard reports 69 correction sections / 62 traced / 7 method-only.
+
+**The transferable point:** both defects here were *premises of a guard*, not bugs in its code. The
+code did exactly what it said. A guard can be correct, tested, wired in, and version-controlled, and
+still be worthless because the thing it checks stopped implying the thing you wanted. **Only
+re-deriving the premise finds that, and nothing prompts you to.**
+
+### §18.1 — the new distinctiveness test failed on the very next entry I added, which was mine
+
+Committing §18 was refused by the test §18 had just introduced. The offending entry was **§18's
+own**: I had given it the token `74` — a bare two-digit number, which matches **41 ledger fields**
+as a substring (run ids, timestamps, unrelated figures).
+
+**So the first trace token I chose after writing a distinctiveness test violated it.** That is the
+test working, immediately and on its author, and it is worth recording rather than quietly fixing:
+the ten loose tokens in §18 were not a historical lapse I had grown out of — I reproduced the exact
+same mistake within one commit of diagnosing it.
+
+Replaced with `74 ledger fields` / `dead config` / `re-deriving the premise`, each occurring once.
+
+**Bare numbers are the worst possible trace token** and none should have been used: a figure like
+`0.9627` is distinctive because it is long, but `74`, `288` or `96` will match any field containing
+those digits anywhere. The lesson generalises past this guard — **a token's distinctiveness is a
+property of the corpus, not of how specific the number feels when you pick it.**
+
+**And writing this section, I added a `TRACE_TOKENS` entry for it — which was dead config**, since
+§18.1 carries no correction marker and its tokens were absent from the ledger. That is the third
+dead entry of the tick, added **one commit after removing the other two and while describing why
+they were wrong.** Removed.
+
+A peer's corollary, now demonstrated a fourth time across the two of us: **the extension made to fix
+a defect is as likely to introduce one as any other extension.** The reflex to add a table entry
+alongside a new section fires whether or not the section needs one, and nothing in the moment
+distinguishes the cases.
