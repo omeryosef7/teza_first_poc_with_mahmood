@@ -61,16 +61,20 @@ Artifacts: `score_behavior/c13{b,p12,p10}640_20260829_0825*`, `judge/c13j640_{b,
 
 ## 4. Warnings that cost real time
 
-1. **A third writer is in this tree — now probably identified.** `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md`
+1. ⛔ **AN UNACCOUNTED WRITER IS IN THIS TREE. Still open — the lead was checked and DENIED.** `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md`
    was rewritten +7385 lines on 2026-08-29 (mtime 10:16, idle since). Both Claude sessions
    established non-authorship by direct check. **`ListAgents` shows a THIRD peer session —
    `Session summary with exact numbers` [`d2b144`], running.** Both of us have now messaged it
    directly to ask rather than infer, because *not mine and not yours* is exactly the
    elimination-is-not-identification error we each made this afternoon (**C-97**).
-   **Until it answers: do not edit that file, and do not pop the `git stash` WIP entry**, which
-   belongs to neither Claude session. If it confirms, the file can join
-   `canonical_figures.DELIVERABLES` once writing stops; if it denies, the writer is genuinely
-   unidentified and Omer needs to look.
+   **`d2b144` answered: NOT theirs**, with evidence that bounds it — the file was already
+   modified at their session's first `git status`, and the first file they wrote anywhere was
+   at **15:25:50** against this file's **10:16:32** mtime. **So all three Claude sessions have
+   now ruled themselves out by direct check, each on its own evidence.**
+   ⛔ **A genuinely unaccounted writer is the live hypothesis. This needs Omer.**
+   **Do not edit that file. Do not pop the `git stash` WIP** (`stash@{0}: WIP on
+   behavioral-causality-sprint: 3018852e`) — confirmed present and disowned by all three.
+   Keep the file OUT of `canonical_figures.DELIVERABLES` while its author is unknown.
 2. **`sacct` State is not liveness.** See §1. (**C-102**)
 3. **A disk-quota event on 2026-08-29 truncated a `DONE`-marked run.**
    `d38beh_20260829_022027_2389958` is in `run_completeness_check.KNOWN_SHORT` — *must never be
