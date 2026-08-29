@@ -14857,3 +14857,48 @@ assessed: **C1** (bank-specific null, R-146), **C2** (supported within a single 
 entry), **C7** (protected, R-64), **C9** (C-64/C-67/C-68/R-154, restored then scoped to Llama),
 **C11** (passes, C-70), **C12** (ASR half at the floor, C-70), **C13** (suspended, C-61/C-66).
 **Nine of the ten changed status.**
+
+### ✅ R-157 (03:40) — **Their second quota failure form — a run that writes `DONE.json` and is still 12.7% short — checked against all fourteen of my artifacts by counting cells, not by trusting terminal markers. Every arm is exactly balanced, 4 rows in each of 40 cells, zero unmatched joins.**
+
+Their `798294` finished, wrote `DONE.json`, and reported **586 succeeded / 22 failed** while holding
+**543 results rows and 531 gens rows of 608** — three numbers that should be one, because the quota
+killed writes *after* rows were counted successful. **Anything reading the failure ledger instead of
+counting files passes it.** My PR-38 judge (`798384`, 02:33-02:49) ran inside that window, so this is
+not hypothetical for me.
+
+**Three-number check on all 14 artifacts — `--expect-n` from argv, rows on disk, the run's own
+summary count:** every one agrees at **160/160/160**. Then the check that would actually have caught
+their signature, since their totals looked fine while **27 of 38 domains** were complete:
+
+| arm | domains | cells | min/cell | max/cell |
+|---|---|---|---|---|
+| all 8 judged arms (`p7r640j`, `p7rj2`, `q6r640j`, `q7r640j`) | **10** | **40** | **4** | **4** |
+
+**Perfectly balanced — every (domain × dose) cell holds exactly 4 rows**, so no domain or dose is
+silently short. And the 1:1 join to generations, which their loss would break: **0 unmatched of 160**
+on both spot-checked arms, consistent with the `hash_miss=0` I recorded when reading each result.
+
+**Their reasoning about why the loss is not droppable is the important part and I would not have got
+there.** The attrition mechanism is **write volume**, and the outcome is whether a generation is a
+successful attack — which is the same thing as it being long. **My own length measurement is what makes
+that decisive**: refusals 67-98 chars, compliant answers 1300+ (R-144). So the rows most likely to be
+lost are the rows most likely to be successes, concentrated in 11 of 38 domains, in a design built for
+domain-clustered inference. **A biased 12.7% is worse than a missing 100%**, because the second is
+visible and the first looks like data.
+
+*Their point that my losses would have been biased the opposite way is right and worth stating: my
+outcome is refusal, the short generation, so quota attrition would preferentially drop my
+non-refusals. Not missing-at-random either — just tilted the other way. It did not happen, but the
+reason it would have mattered is the same.*
+
+**And their guard refused the exemption they tried to write**, which is the sharpest thing in their
+message: `exempted AS REFUSED but check_run_readable accepts it`. The run is **not mechanically
+refusable** — it terminated, wrote a verdict, parses cleanly. **Refusing it is a judgement, not a
+derivation.** Every other inadmissible artifact this sprint was caught by a check; this one was caught
+by noticing 543 ≠ 608 and asking why, **which is one step from not noticing at all**.
+
+**Which is the night's fourth thing the repository cannot record.** `.git/hooks/` untracked (C-74),
+the guard list untracked (C-73), a completed run that vanishes entirely (R-155), and now **a run whose
+own terminal marker is true and whose contents are incomplete**. The first three are absences; this
+one is a **present artifact that misreports itself**, and no guard in either session would have
+flagged it.
