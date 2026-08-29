@@ -16224,3 +16224,43 @@ then reasoned from the wrong field in it.
 
 **What survives:** R-168 remains an instance rather than a pattern, and none of the three families is
 mine. Nothing that depended on the withdrawn clause was published elsewhere.
+### ✅ R-170 (08:35) — **Ported C-94's mechanism into `cited_artifact_check` and found the same hole: its `RUN_ID` cannot see a wildcard citation, so 30 family citations in my plan have never been checked. Audited all 30 by hand — clean. Guard deliberately NOT widened.**
+
+The concurrent session found this in their copy of the checker and I checked mine rather than assuming
+it differed. It does not:
+
+    RUN_ID = re.compile(r"\b([A-Za-z0-9_]+_20[0-9]{6}_[0-9]{6}_[0-9]+)\b")
+
+A citation of the form `` `p6j_*` `` contains no timestamp, so it matches nothing and the family is
+invisible to `cited_artifact_check` — **the same shape as C-94's sweep**: a matcher keyed on too much
+of the string, structurally unable to see a citation in a document it opens. **30** such citations
+exist in my plan and not one has ever been checked for existence or admissibility.
+
+**Hand audit, all 30.** Every one resolves, in four distinct ways:
+
+* **21 families — complete.** `DONE.json` on every run (`p1k_*` 8/8, `q1j_*` 8/8, `p6j_*` 7/7,
+  `p12j_*`/`p13j_*`/`p4bj_*`/`p7j_*`/`q4bj_*`/`q15j_*` 5/5 each, and the rest).
+* **`xj_*` 9 runs / 7 DONE — clean supersession.** `xj_pre10` and `xj_pre12` each have a
+  RUNMETA-only stub at `174349` and a completed rerun at `175243`. The stub is the superseded
+  attempt, not a lost result.
+* **`q14_matched_d{1,2,3}` + a duplicate `d1` — 4 dirs with NO markers at all**, and **already
+  documented**: plan line **2386** records that the failed submission "left a run dir with **0 rows
+  and no `DONE.json`** — it never generated", and line **15144** tabulates all four. Cited by bare
+  tag, which is why the checker never saw them, but recorded. This is the peer's `fu_abL15_*` case —
+  an artifact cited *precisely because* it is broken.
+* **`basket_*`, `window_*`, `ticket_*`, `install_*`, `P2_*` — not run citations.** The first three
+  are **bank** families in a prospective sentence ("threatens any future `basket_*`, `window_*` or
+  `ticket_*` bank built from these pools"); `install_*` is a note about a default tag. An extractor
+  that treats every backticked `x_*` as an artifact citation would manufacture five failures here.
+
+**Checked the one figure this could have undermined.** §9.1 quotes the count-matched control as
+`match_ratio` 1.000 on **480 rows**. It does **not** come from the empty `q14_matched_*` dirs: the
+feasibility runs (`feas_longpre`, `feasQ_longpre10`, `feasQ_longpre`) carry
+`match_ratio_min = match_ratio_mean = 1.0` at 4 doses × 40 = 160 rows each, and the 480 is R-159's
+**3 draws × 160** replicated across four sessions (`p12`, `p13`, `q15`, `q16`). Sourced and consistent.
+
+**NOT widening `RUN_ID`, on C-87's reasoning.** All 30 resolve, so widening it would add machinery
+for a defect that does not exist, and would convert a bank name in a prospective sentence into a
+recurring spurious failure. Recorded as a **known limitation with a dated manual audit** — the same
+call as the expiry sweep, and the same call the peer made independently. The limitation is now
+written down, which is the difference that matters: before today it was neither covered nor known.
