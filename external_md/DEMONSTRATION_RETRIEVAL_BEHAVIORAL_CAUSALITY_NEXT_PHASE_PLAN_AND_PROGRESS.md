@@ -16637,3 +16637,60 @@ file's own `CLASSIFIED` table — but those runs are classified *here* while sti
 the **guard** scores against its own `CITED_WITH_FAILURES`, so the clean case returned 1 and the
 control failed. Selecting the fixture from the **artifact** (`DONE`, `n_failed == 0`) rather than
 from either table fixes it. A wire test whose "clean" input is not clean would have asserted nothing.
+
+### 🏆 R-178 (14:55) — **PR-39 RESOLVES: C13's effect SURVIVES the cap release on the pre-registered criterion, and does NOT reach significance on the phase's own independence unit. The 192-cap effect was roughly HALF truncation artifact. Reinstated at row level only.**
+
+The last unrun item this phase owned. All six artifacts complete, 160/160 rows each, judged in ONE
+session (R-82). Generations `c13{b,p12,p10}640_20260829_0825*`; judgements
+`judge/c13j640_{b,p12,p10}_20260829_085325_*`.
+
+**Gate 1 — truncation (VOID precondition): CLEARED BY MEASUREMENT.**
+
+| arm | `frac_stop_length` @192 | @640 | median new tokens @640 |
+|---|---|---|---|
+| `d10` baseline | 0.5813 | **0.0000** | 212 |
+| `pre12` | 0.9125 | **0.0187** | 306 |
+| `pre10` | 0.9187 | **0.0187** | 284 |
+
+At 192 the arms were **91–92%** truncated against the baseline's **58%** — differential truncation
+penalising exactly the arms whose effect was being measured, and the source of the 14 and 13 finished
+rows that suspended this leg.
+
+**Gate 2 — baseline stability across caps: NOT VOID.** Baseline ASR **27/160 = 0.1688 → 23/160 =
+0.1437**, a shift of **−0.0250**, inside the 0.0521 margin. Identical `prompt_id` set both caps.
+
+**Gate 3 — the primary comparison, WITHIN the 640 cap: PASS.**
+
+| arm | ASR @640 | Δ vs baseline 0.1437 | rows | × margin |
+|---|---|---|---|---|
+| `pre12` | **11/160 = 0.0688** | **−0.0750** | **12 fewer** | **1.45×** |
+| `pre10` | **12/160 = 0.0750** | **−0.0687** | **11 fewer** | **1.33×** |
+
+Both clear the pre-registered `MARGIN_VS_BASELINE = 0.0521` and both are below baseline. **On the
+criterion fixed in advance, PR-39 PASSES.**
+
+**⛔ And the cluster test does not follow it, which I am reporting rather than burying.** PR-1 makes
+the **DOMAIN** the unit of independence for this phase. On domain means (unpaired — the arms use
+*different banks*, so rows do not pair by `prompt_id`):
+
+* `pre12`: **6 of 7** informative domains negative, **p = 0.125**
+* `pre10`: **4 of 5** informative domains negative, **p = 0.375**
+
+Neither clears 0.05. The direction is consistent — 10 of 12 informative domain-deltas are ≤ 0 across
+both arms — but with 10 domains and most of the effect in `game_manual` (−0.25 / −0.31),
+`lab_safety` (−0.19) and `rail_depot` (−0.19), and **three to five domains at exactly 0.00**, the
+clustered evidence is not significant.
+
+**VERDICT: C13's ASR leg is reinstated as a ROW-LEVEL effect and is NOT established at the
+domain-cluster level.** PR-39 pre-registered the margin as the criterion and the margin is met; I am
+not moving the goalposts in either direction. But quoting the row-level PASS without the cluster
+result would repeat C-70's error — a figure quoted past the strength of its design.
+
+**And C-61 was partly right about the mechanism after all.** The effect **halved** when the cap was
+released: `pre12` **−0.1313 → −0.0750**, `pre10` **−0.1250 → −0.0687**. So truncation *was* inflating
+it, by roughly a factor of two — C-61's *"a cut-off completion scores low"* contributed materially.
+What C-61 got wrong was the verdict, not the direction: the effect does not vanish when the cap is
+released, so it is **not** an artifact. R-142's decision to suspend rather than withdraw was correct,
+and so was refusing to reinstate on the within-stratum reading.
+
+**Nothing further is queued for C13.** The 640 rerun was the declared test, it ran, and it answered.
