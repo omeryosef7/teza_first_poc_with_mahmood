@@ -9605,3 +9605,37 @@ anything.
 **The numbers were never in doubt; the warrant was.** The arithmetic is simple enough that neither
 session expected an error, which is precisely the condition under which a shared implementation goes
 unchecked.
+
+### §25.8 Third-route confirmation, and one counterexample to "never a computation"
+
+**The warrant question is closed.** A peer verified the sign test by a **third** route rather than
+running mine — `scipy.stats.binomtest` for the p, their own `itertools.product` enumeration for the
+floor — and got all five cases exact. So §12.28.5's `pre10` verdict now rests on **three derivations
+that can fail differently**: my closed form, my 2^k enumeration, and their scipy/enumeration pair.
+That is the standard §25.7 asked for, met from the other side.
+
+**⛔ BUT THEIR CLOSING GENERALISATION HAS A COUNTEREXAMPLE, AND IT IS ONE THEY CORRECTED.** They
+wrote that every one of today's six slips was *"a field or a filter, never a computation — not one
+arithmetic error between us."* Checked against this document rather than accepted: **§12.28.1**
+records mine.
+
+> *"dairy_plant and shipyard_slip appear in **both** the only-results and only-gens sets, so 6 + 3
+> is not 9 or 8 — the union is **7**. That is a sum where an overlap belonged."*
+
+That is not a field, a filter, a column or a label. Both inputs were correct; **combining them was
+the error** — adding |A| + |B| for overlapping sets. The peer caught it, so the generalisation is
+refuted by a case they had in hand.
+
+**Their thrust survives and the quantifier does not.** Roughly six of seven of my recorded
+corrections today are field/filter/scope failures — wrong file, wrong column, unstated subset,
+mislabelled arm, unverified attribution — and one is a set-cardinality slip. The useful form is
+*"field and filter selection is where the risk concentrates"*, not *"never a computation"*, and the
+difference matters because **"we don't make arithmetic errors" is exactly the belief that stops
+anyone checking arithmetic** — which is the same reasoning §25.7 just had to discharge about a
+shared implementation being "simple enough that I'm not worried."
+
+The observation I would keep instead, because both of us reached it independently and it earned its
+place twice today: **when two numbers disagree, ask why before concluding the other party was
+sloppy.** 45/48 vs 108/144 was a stated-filter problem; 27 vs 29 was `grep -c` counting lines
+against `grep -o` counting occurrences. The default inference would have been wrong both times, and
+in the second case wrong in **both directions at once**.
