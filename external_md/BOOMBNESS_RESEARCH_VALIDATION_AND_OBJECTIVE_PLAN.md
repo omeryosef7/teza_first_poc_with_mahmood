@@ -9514,3 +9514,48 @@ edits it, the four W1 entries stay deferred, and I am **not** investigating the 
 further from the tree — the stash stack still holds the third-party WIP this repo's notes warn
 against popping, and identification is the user's to make rather than something to reverse-engineer.
 **Escalated to the user.**
+
+### §25.5 ⛔ CORRECTION: I reported the cell ABSENT while my own printout showed it present
+
+A peer withdrew a claim that the `ticket_bomb × legacy × Llama` forced-choice cell was missing; it
+was never missing. **My confirmation of its absence was wrong, and the run appears in my own
+enumeration output.** The line I printed and read past:
+
+    p5C_ticket_bomb_20260828_014653_2524606   arm=C_band_L6_14   ko=legacy_all_query   qk=fc
+
+I filtered on the **`arm`** column while `knockout_scope=legacy_all_query` sat in the **next
+column of the same row**. The arm is labelled by its *band*; the `--intervene` string
+`demo_all:attn_knockout:6-14:1.0` **is** the unscoped mask, and the label simply never says so.
+
+This is the §12.28.5 shape for the third time: **the value that refutes the conclusion was in my own
+output, and I wrote around it.** There I computed an attainable floor, printed it, and called the
+test a real null; here I printed `ko=legacy_all_query` and reported absence. Not adjacency — *the
+same line*.
+
+**⛔ AND "OUR TWO SEARCH PATHS AGREEING IS WORTH MORE THAN EITHER ALONE" WAS WRONG.** I wrote that
+last tick. They agreed **because they shared the defect**: both keyed on the arm name. Independent
+agreement is only evidence when the paths can fail differently, and two searches keying on the same
+mislabelled field are one search run twice. That is a stronger claim than "check both directions" and
+it retracts something I asserted as a methodological win.
+
+**THE CELL VERIFIES — and more strongly than the peer claimed.** Re-derived here on the 48 shared
+forced-choice `prompt_id`s, orienting mapped-wins as `p_concept > p_codeword`:
+
+    tbA_20260828_024412        45/48    median option_mass 0.5534
+    c5A_tb_b1_20260828_125009  45/48    median option_mass 0.5513
+    p5A_ticket_bomb_...014648  45/48    median option_mass 0.5534
+    p5C_ticket_bomb_...014653  15/48    median option_mass 0.1152      d = -30
+
+**45/48 reproduces across three independent baselines**, so plan:9168 is sourced and correct, and
+R-171's bank half is verified from artifacts rather than inherited.
+
+**⛔ BUT THE RECORDED OPTION MASSES ARE UNSOURCED IN THIS TREE.** The plan records **0.5695**
+baseline and **0.1162** arm. Measured: no run here produces either, under **eight** statistics —
+forced-choice median, forced-choice mean, all-query-kind median and all-query-kind mean, across all
+four runs. The closest are 0.5534/0.5513 and 0.1152. The peer's hypothesis that `c5A_tb_b1` is the
+source is **refuted**: at 0.5513 it is further away, not closer.
+
+Not load-bearing — the mapped-wins cell is the claim and it reproduces exactly — and **I am not
+guessing which statistic yields 0.5695**, because guessing which field produces a number is how one
+reconstructs a confirmation instead of finding one. Recorded as an open, bounded discrepancy: **the
+counts are sourced, two masses beside them are not.**
