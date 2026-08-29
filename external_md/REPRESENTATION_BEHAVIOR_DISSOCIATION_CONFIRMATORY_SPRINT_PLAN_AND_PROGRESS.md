@@ -2676,3 +2676,60 @@ is meaningful corroboration of the **arithmetic**. It is worth being explicit ab
 **Matrix status at this checkpoint:** 4 of 18 Llama runs complete, 6 in flight, **0 aborted**. Every
 completed run: `rows_written` exactly 80 (behavioural) or 160 (readout), `option_mass_gate: PASS`,
 and on every knockout arm `frac_rows_scope_live: 1.0` with `scope_violations: {}`.
+
+---
+
+## §14.28 — `RBD-C-010` · My ad-hoc health check flagged a healthy arm — for the third time this sprint · 2026-08-30 01:10 IDT
+
+A health sweep over the completed Llama runs reported one PROBLEM:
+
+```
+rbdplpD_beh: decode edits 33995403
+```
+
+**The run is correct and the check was wrong.** Arm D is `legacy_all_query`, and the authoritative
+contract in `pair_common` is:
+
+| scope | required > 0 | must be 0 |
+|---|---|---|
+| `demo_processing_only` | `n_prefill_edits` | **`n_decode_edits`** |
+| **`legacy_all_query`** | `n_prefill_edits`, **`n_decode_edits`** | **— (nothing)** |
+
+`legacy_all_query` is the only behavioural arm that masks **during decode**, so ~34M decode edits is
+precisely what it is supposed to produce, and `frac_rows_scope_live: 1.0` confirms it satisfied its
+own contract. I had applied `demo_processing_only`'s must-be-zero rule to every arm.
+
+### ✅ The same data contains strong positive evidence that the contract machinery is exact
+
+`rbdplpD_readout` is the **same scope** (`legacy_all_query`) on the **forward-only** path, and it
+records `must_be_zero=['n_decode_edits']` with `decode = 0`. So one scope correctly gets **two
+different contracts on two different paths**, and both are satisfied:
+
+```
+rbdplpD_beh      legacy_all_query   required=[n_prefill_edits, n_decode_edits]  must_be_zero=[]                decode=33,995,403  live=1.0
+rbdplpD_readout  legacy_all_query   required=[n_prefill_edits, n_prefill_forward] must_be_zero=[n_decode_edits] decode=0           live=1.0
+```
+
+That is `readout_liveness_contract` **deriving** the reduced contract from `pair_common`'s tables
+rather than restating them — exactly the property §27 asked reviewer 1 to check, now visible in the
+artifact.
+
+### The pattern, recorded because it is now three-for-three
+
+| # | my check | reality |
+|---|---|---|
+| `RBD-C-006` | required all four 2×2 cells identical after masking | the design only claims it for the two **aligned pairs** |
+| `RBD-C-006` | flagged a 136-char cross-valence length spread | expected by design; within an aligned pair the gap is **exactly 9.0** chars |
+| **`RBD-C-010`** | applied one scope's must-be-zero rule to every arm | each scope has **its own** contract, and the run records it |
+
+**Every one of the three was my check being stricter than the design, not the artifact being wrong.**
+The triage order that resolves them is the inherited one — corpus → instrument → population — and
+all three stopped at *instrument*. The operational rule this sprint keeps re-earning: **when a check
+disagrees with an artifact, read the artifact's own recorded contract before believing the check.**
+Each of these runs *records the contract it was held to*, which is what made the resolution
+immediate rather than a debugging session.
+
+**Matrix at this checkpoint:** all 18 Llama runs submitted, **13 complete, 6 running, 0 aborted**.
+Every completed run: rows exactly 80/160, `option_mass_gate: PASS`, `n_failed: 0`, and
+`frac_rows_scope_live: 1.0` with `scope_violations: {}` on every intervention arm. The Qwen
+submitter is correctly blocked at 0 submitted while the queue is above its cap of 2.
