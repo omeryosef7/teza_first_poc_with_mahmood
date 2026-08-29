@@ -128,6 +128,7 @@ TRACE_TOKENS = {
     "§12.26": ["0.9038", "not quotable", "n_eff"],
     "§12.27": ["38 domain", "unseen", "pre-registered"],
     "§12.27.1": ["wild cluster", "positive control", "0.042"],
+    "§12.27.2": ["fit-set-dependent", "downgraded", "6 seen"],
 }
 
 

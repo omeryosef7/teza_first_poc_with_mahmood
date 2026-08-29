@@ -7172,3 +7172,36 @@ estimates instead of one unbalanced 6/32 contrast, and it is strictly more infor
 **refitting directions per fold**, which is a `--stage fit` run per rotation rather than a
 re-analysis, so it is out of scope for this tick. Recorded as the better design that was not run,
 rather than left unmentioned.
+
+## §12.27.2 — ⛔ SECOND AMENDMENT: what a `d_naive` transfer failure costs §12.23–§12.24, decided in advance
+
+**Still before any ASR verdict exists.** `d38beh` was mid-generation and no judging had run.
+
+§12.27.1 added `d_naive` as a positive control and said that if neither direction transfers, the
+write-up reads *"untestable on this bank"*. That understates the consequence, and a peer was right
+that it should be a **decision rule rather than a caveat**, fixed now instead of argued later.
+
+**§12.23 and §12.24 use the SAME fitted directions on the SAME 6 domains for both fit and
+evaluation.** Their dev/heldout split shuffled rows within those 6. So if fitted directions turn out
+not to transfer to unfamiliar domains *in general* — the `d_naive`-also-fails branch — then the
+within-dose correlations those sections reported (+0.172, +0.446, +0.321, +0.280) are partly a
+property of the fit set rather than of the model, and the incremental partial (+0.1924) inherits the
+same doubt.
+
+**Committed in advance:**
+
+* **`d_naive` transfers, `d_surface` does not** → the failure is about boombness. §12.23–§12.24
+  stand as written, and Phase 7 closes on evidence.
+* **NEITHER transfers** → §12.23 and §12.24 are **downgraded to fit-set-dependent**, their
+  correlations relabelled as "measured on the 6 domains the directions were built from, transfer
+  untested", and the Phase 7 verdict becomes *untestable on this bank* rather than a clean close.
+  **This would be the largest single correction of the sprint**, and it is being named before the
+  number exists rather than negotiated after it.
+* **`d_naive` merely shrinks rather than collapsing** → an intermediate the rule must not blur.
+  A shrunk-but-non-zero control licenses the first branch with the transfer loss quoted; a control
+  indistinguishable from zero licenses only the second.
+
+**One confound this design cannot remove**, recorded now: with 6 seen against 32 unseen domains, the
+seen half is too small to characterise, so "the 6 fit domains happen to be systematically easier"
+cannot be ruled out. The `P_unseen − P_seen` difference bootstrap will carry that limitation
+whichever way it points.
