@@ -2733,3 +2733,44 @@ immediate rather than a debugging session.
 Every completed run: rows exactly 80/160, `option_mass_gate: PASS`, `n_failed: 0`, and
 `frac_rows_scope_live: 1.0` with `scope_violations: {}` on every intervention arm. The Qwen
 submitter is correctly blocked at 0 submitted while the queue is above its cap of 2.
+
+---
+
+## §14.29 — `RBD-PR-003` · Judging structure, fixed BEFORE any judge output exists · 2026-08-30 01:15 IDT
+
+§9 requires that **all arms of a primary comparison be judged in ONE invocation**, because ~5% of
+binary ASR labels flip between invocations on byte-identical text and that drift does **not** cancel
+in an arm-vs-arm contrast. `P2_BANK` takes one value per invocation, so the two banks are
+necessarily two sessions. The open question was whether to put **both models** in each session (2
+sessions × 10 arms) or to split by model (4 sessions × 5 arms).
+
+> ### Decision: **4 sessions, one per (bank × model), 5 behavioural arms each, 80 rows per arm.**
+
+**Why this is sufficient rather than a compromise.** Every primary claim in this sprint is
+**within-model**:
+
+* **T2** (behavioural effect) compares arm vs baseline **inside one model**;
+* **T3 / T5** (binding, benign-use equivalence) are paired **inside one model**;
+* **H4** is *"the same preregistered test passes on both models"* — **two independent verdicts, not
+  a pooled statistic.** Session structure cannot contaminate it, because nothing is compared across
+  the session boundary.
+
+So every contrast that carries a verdict is session-clean under this split, and no primary claim
+gains anything from co-judging the models.
+
+**What it costs, stated explicitly.** A formal **model × arm interaction** test — the shape the
+prior phase used for its `R-104`/`DR-15` model-specificity claim — would be **cross-session** under
+this split. That test is **not a preregistered primary claim here**, and if it is ever run it will
+be labelled **CROSS-SESSION** and its uncertainty will carry the ~5%-per-row drift explicitly. It
+will not be quoted as though it were session-clean.
+
+**Why the decision is being recorded now.** The Llama runs are complete and the Qwen runs have not
+started; co-judging would mean holding the Llama arms unjudged for the whole Qwen wave (18 runs at
+≤2 concurrent 14B loads). **The choice therefore has a schedule incentive attached to it, which is
+exactly the kind of pressure that should be resolved on the record and before any number exists** —
+not after a first look at the Llama results.
+
+Per-session parameters, fixed here: `P2_EXPECT_ROWS=80` (behavioural rows per arm, verified against
+both banks), `P2_EXPECTED=5` (arms per manifest), `P2_PIN_JUDGE_MODEL=openai/gpt-4o-mini`, and the
+manifest built by `scripts/rbd_build_judge_manifest.py`, which refuses any input run lacking a
+`DONE.json` with a matching `rows_written` and an independently counted `gens.jsonl`.
