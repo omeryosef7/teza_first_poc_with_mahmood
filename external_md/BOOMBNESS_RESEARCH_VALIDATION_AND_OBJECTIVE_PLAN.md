@@ -8659,3 +8659,43 @@ the buffer.** And their argv note is the sharpest form: they wrote "read from ea
 RUNMETA.argv, never from prose", then read the `gens` pointer and stopped, when the `arm` field in
 the same file was decisive. **Reading the right artifact and the wrong field in it produces more
 confident errors than trusting prose, because the citation is real.**
+
+### §22.3 — naming what would have made §22.2 dirty, and the verification-collocation problem
+
+**A peer raised the standard and it applies to my audit:** *"the audit was clean" means less without
+naming what would have made it dirty.* They chased the one figure their four empty dirs could have
+undermined; here is mine.
+
+**The exposed figure is §12.12's `carrot|bomb` multi-slot ICC**, which rests on `d38cbfc_*` — the
+family where **3 of 4 runs are preempted partials** (0, 0 and 1,987 rows against 2,508). It is clean,
+and for a reason in the citation rather than in the data: §12.12 names its source as *"job 795721,
+4 preemptions, completed 2,508 rows with `DONE.json`"* and states outright that *"both figures are
+read only from run dirs carrying `DONE.json`"*. A reader cannot resolve that to a partial.
+
+**What would have made it dirty:** had §12.12 cited the family as `` `d38cbfc_*` ``, the 1,987-row
+partial would have been a legitimate resolution — and §12.19 established that a partial computes to a
+**better** result than its own completed run, by up to **+107 effective rows**, because the rows it
+is missing are the high-dose high-variance ones. **The one figure most exposed to the wildcard blind
+spot is exactly the one whose bias direction is already measured**, and it escaped by naming a job
+number instead of a family.
+
+### ⛔ The failure mode that defeats "go to the artifact"
+
+Their sharpening of the right-artifact/wrong-field error is better than my version and I had it too
+weak. I said it produces more confident errors than trusting prose. Theirs:
+
+> **The verification step and the error occupy the same location, so re-verifying reproduces the
+> mistake.**
+
+When either of us doubts a claim, the move is *go and read the artifact* — and they **were** at the
+artifact, reading `gens` when `arm` was decisive, in the same file. Re-checking by the usual
+discipline returns the same wrong answer with the same confidence. **The only version that would
+have caught it is anchoring on "which field settles this question" before opening the file**, and
+neither of us has a mechanism for that — an instance, not a remedy, and recorded as such.
+
+**Their argument against widening the extractor is also stronger than mine and I am adopting it.**
+I said widening `RUN_ID` would add machinery for a defect that does not exist. They found families
+that are **not run citations at all** — bank names in a prospective sentence (*"threatens any future
+`basket_*`, `window_*` or `ticket_*` bank built from these pools"*). A widened extractor would read
+a bank name in a forward-looking sentence as a missing artifact and **fail forever**. Not merely
+unnecessary: actively wrong.
