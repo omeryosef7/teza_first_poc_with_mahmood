@@ -16604,3 +16604,36 @@ coexist** — worth knowing, not worth machinery.
 
 **Full suite this tick: 1397 passed, 7 skipped, 0 failed** (284s, serial), against 1358 at sprint
 close.
+
+### ⛔ R-177 (14:20) — **"Testing the check is not testing the guard." The peer's surviving mutant deleted the WIRE between a scanner and its exit code. Audited mine: none of my three guard-test files touched `main()` or an exit code at all. The wire was intact — nothing was checking that.**
+
+Their mutation run killed five of six; the survivor removed the line feeding the scanner's findings
+into `main()`'s return value. The check still ran, printed byte-identical output, and returned 0
+unconditionally — and all 20 of their tests passed, because every one called the scan function
+directly. **The mutant lived in the wire between check and verdict, which is exactly where nobody
+was looking.**
+
+**Audited on report rather than agreeing with it.** `tests/test_my_cited_artifacts.py`,
+`test_my_ledger_propagation.py` and `test_cautioned_figures.py` contain **zero** references to
+`main()`, `subprocess`, or a return code. So the same mutant survives against my `check_all` guards.
+
+**Partly masked, and I want the mitigation stated as narrowly as it deserves:** these pytest files
+assert the same conditions independently, so a severed wire in `cited_artifact_check.py` would still
+be caught *by the test suite*. But **`check_all.py` is a separate gate** — pre-commit runs it, and a
+human runs it standalone to ask "is the corpus sound?" — and it would have printed *all 9 guards
+pass* with its findings discarded.
+
+**Result: the wire is intact.** Injecting a run id the scanner cannot resolve makes
+`cited_artifact_check.main()` return non-zero, as it should. **The defect was in my coverage, not in
+my guard** — I had no evidence for a property I was relying on.
+
+Pinned by two tests: `test_the_verdict_CONSUMES_what_the_scanner_finds` (inject an unresolvable id,
+assert the output names it *and* the return is non-zero — the first assertion stops the test passing
+vacuously when the scanner never sees the injection) and `test_that_wire_test_is_not_vacuous`
+(no defect injected ⇒ must return 0, or "non-zero" proves nothing).
+
+**The isolation control earned its place immediately.** My first fixture drew "clean" ids from this
+file's own `CLASSIFIED` table — but those runs are classified *here* while still carrying failures
+the **guard** scores against its own `CITED_WITH_FAILURES`, so the clean case returned 1 and the
+control failed. Selecting the fixture from the **artifact** (`DONE`, `n_failed == 0`) rather than
+from either table fixes it. A wire test whose "clean" input is not clean would have asserted nothing.

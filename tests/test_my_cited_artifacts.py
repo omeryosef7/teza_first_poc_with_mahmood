@@ -14,6 +14,7 @@ BECAUSE it was refused (C-38, C-42, R-107 all cite attrited runs as documented e
 exemption table records why each is legitimate.
 """
 
+import glob
 import json
 import os
 import sys
@@ -292,3 +293,70 @@ def test_every_classified_entry_is_either_key_checked_or_count_checked():
     assert not unchecked, (
         f"CLASSIFIED reasons with nothing verifying them: {sorted(unchecked)}. Add a REASON_KEYS or "
         f"REASON_COUNTS entry, or state explicitly that the reason is unauditable.")
+
+
+# --------------------------------------------------------------------------------------------
+# R-177. THE CHECK IS NOT THE GUARD. The concurrent session mutation-tested their new guard and
+# five of six mutants died -- the survivor deleted the line that feeds the scanner's findings into
+# main()'s return value. The check still ran, still printed identical output, and the exit code was
+# unconditionally 0. All 20 of their tests passed, because every one called the scan function
+# directly and none asserted that the VERDICT consumes what the scan found.
+#
+# Audited mine on that report: NONE of my three guard-test files called main() or inspected an exit
+# code at all, so the same mutant survives here. The defect is partly masked -- these pytest tests
+# assert the same conditions independently, so a broken wire in cited_artifact_check.py would still
+# be caught by the suite -- but `check_all.py` is a SEPARATE gate that pre-commit runs and a human
+# runs standalone, and it would report all-9-pass with its findings discarded.
+#
+# These two tests pin the wire itself: a defect the scanner CAN see must reach a non-zero return.
+def _min_ids_that_resolve(n):
+    """N run ids that resolve AND are clean BY THE GUARD'S OWN STANDARD.
+
+    First attempt drew from this file's CLASSIFIED table and the isolation control caught it: those
+    runs are classified *here* but still carry failures the GUARD scores against its own
+    CITED_WITH_FAILURES, so the "clean" fixture was not clean and the control failed. Select on the
+    artifact instead of on either table.
+    """
+    good = []
+    for d in sorted(glob.glob(os.path.join(cac.ROOT, "outputs", "boombness", "*", "*/"))):
+        rid = os.path.basename(d.rstrip("/"))
+        sm = os.path.join(d, "summary.json")
+        if not (os.path.isfile(sm) and os.path.isfile(os.path.join(d, "DONE.json"))):
+            continue
+        try:
+            f = (json.load(open(sm, encoding="utf-8")).get("failures") or {})
+        except Exception:
+            continue
+        if f.get("n_failed"):
+            continue
+        if cac.resolve(rid):
+            good.append(rid)
+        if len(good) >= n:
+            break
+    assert len(good) >= n, f"only {len(good)} clean resolvable runs found, need {n}"
+    return good[:n]
+
+
+def test_the_verdict_CONSUMES_what_the_scanner_finds(monkeypatch, capsys):
+    """A run id the scanner cannot resolve must make main() return non-zero, not merely print."""
+    ids = _min_ids_that_resolve(cac.MIN_EXPECTED) + ["nosuchrun_20260101_000000_1"]
+    monkeypatch.setattr(cac, "cited_ids", lambda _text: ids)
+    rc = cac.main()
+    out = capsys.readouterr().out
+    assert "nosuchrun_20260101_000000_1" in out, (
+        "the scanner did not even see the injected defect; this test is not exercising the wire")
+    assert rc != 0, (
+        "cited_artifact_check.main() returned 0 while its own output names a missing artifact. "
+        "The check ran and its finding never reached the verdict -- check_all would print "
+        "all-9-pass. Testing the check is not testing the guard (R-177).")
+
+
+def test_that_wire_test_is_not_vacuous(monkeypatch):
+    """ISOLATION: with NO defect injected, the same path must return 0.
+
+    Without this, `assert rc != 0` would also pass if main() returned non-zero unconditionally --
+    which would make the guard useless in the opposite direction and the test above meaningless.
+    """
+    monkeypatch.setattr(cac, "cited_ids", lambda _text: _min_ids_that_resolve(cac.MIN_EXPECTED))
+    assert cac.main() == 0, (
+        "the clean corpus does not return 0, so the non-zero in the test above proves nothing")
