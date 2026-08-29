@@ -15926,3 +15926,50 @@ is untouched:
 **Three attempts to build a control that isolates one test.** C-76 said the question is not *does a
 mutation kill this test* but *is this test the only thing that could have killed it* — and finding
 the mutation that answers yes took longer than writing either test.
+
+### ✅ C-91 (09:45) — **Reachability applied to my remaining four tables: 13 of 13 keys live, nothing dead. And ported to the figure patterns, which answers a question C-72b's live-check structurally cannot: a DORMANT entry with a broken pattern is invisible, because dormant-and-correct looks identical.**
+
+**Tables in `test_my_cited_artifacts`, checked against the 63 run ids the plan actually cites:**
+
+| table | n | reachable | dead |
+|---|---|---|---|
+| `CLASSIFIED` | 6 | 6 | **0** |
+| `EXCLUDED_BUT_CITED` | 1 | 1 | **0** |
+| `REASON_COUNTS` | 2 | 2 | **0** |
+| `REASON_KEYS` | 4 | 4 | **0** |
+
+**Clean, and reported as a negative** — their 22-of-85 was worth checking for and did not occur here.
+
+**The interesting port is the one they flagged.** C-72b asks *is this entry currently live*. That
+cannot distinguish a **dormant-and-correct** entry (its figure simply is not quoted yet) from a
+**dormant-and-broken** one whose pattern could never match anything — and the second would sit inert
+forever, looking exactly like the first. **Reachability asks the sharper question: can it match
+anything at all.**
+
+Implemented by giving every entry a **specimen** its own pattern must match — decidable from the entry
+alone, so a typo'd or over-narrowed pattern fails at authorship. The specimen dict already existed
+inside the fire-test; **lifting it to a module constant is what made the property testable**, which is
+itself the shape of their mechanism: a check becomes possible once the thing it would check stops
+being a local variable.
+
+**Isolation took two attempts, and the first failure is instructive.** Breaking the dormant entry's
+*pattern* fails **four** tests — because C-72b's finding still holds structurally: three synthetic
+fixtures in this file are built on that entry's pattern. **Corrupting the *specimen* instead isolates
+exactly:**
+
+| mutation | fails | isolates? |
+|---|---|---|
+| break the dormant entry's **pattern** | reachability + 3 fixture tests | ⛔ |
+| **corrupt the dormant entry's specimen** | reachability only | ✅ |
+| **drop a specimen entirely** | reachability only | ✅ |
+
+**The mutation had to target the declaration, not the mechanism** — the same lesson as C-90's
+drop-one-EXEMPT-key, arrived at from the other side. **In both cases the isolating mutation exploits a
+property of the table rather than of the code**, which may be the general form: *to isolate a test
+about a declaration, mutate the declaration.*
+
+**Three reachability ports now, all clean** — `EXEMPT` 17/17, the cited-artifact tables 13/13, the
+figure patterns 3/3. **Their mechanism found 22 dead entries on their side and none on mine**, and the
+asymmetry is worth naming rather than claiming as care: their tables key on *sections they write*,
+which is the same gesture as writing the section; mine key on *run ids and correction numbers that
+must already exist*, so a reflexive entry has nothing to name.

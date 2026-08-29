@@ -166,6 +166,36 @@ def test_the_window_admits_the_calibration_range_and_rejects_the_old_one():
     assert _violations(doc(12)), "the previous window's reach must now be rejected"
 
 
+#: One line per entry that its OWN figure pattern must match. C-91: this makes every entry's
+#: pattern REACHABLE-testable — a pattern that matches nothing can never fire, and for a DORMANT
+#: entry the live-corpus check cannot tell a dormant pattern from a broken one. Their reachability
+#: mechanism asks "can this ever be consulted", which for a figure pattern means "does it match
+#: anything at all".
+SPECIMENS = {
+    "rescue percentage": "the recovery is 58% as % of rise across the four cells",
+    "ticket_knife installation": "ticket_knife installs at 30/48 on the bank",
+    "length-conditioned ASR": "the sweep is conditioned on length and reports 0.31",
+}
+
+
+def test_every_entry_pattern_is_reachable_matches_its_own_specimen():
+    """C-91, ported from their reachability mechanism.
+
+    C-72b's check asks whether an entry is currently LIVE. That cannot distinguish a dormant entry
+    (correct — its figure is simply not quoted yet) from a BROKEN one whose pattern could never match
+    anything. A dormant-and-broken entry looks exactly like a dormant-and-correct one, forever.
+
+    Every entry therefore declares a specimen its own pattern must match. That is decidable from the
+    entry alone, so a typo'd or over-narrowed pattern fails at authorship rather than sitting inert.
+    """
+    missing = [n for n, _, _, _ in CAUTIONED_FIGURES if n not in SPECIMENS]
+    assert not missing, f"entries with no specimen, so their reachability is untested: {missing}"
+    for name, fig, _, _ in CAUTIONED_FIGURES:
+        assert re.search(fig, SPECIMENS[name], re.I), (
+            f"{name}: the figure pattern {fig!r} does not match its own specimen "
+            f"{SPECIMENS[name]!r} — the entry can never fire on any document.")
+
+
 def _figure_match_counts():
     """How many times each entry's FIGURE pattern actually occurs in the live deliverables."""
     corpus = [open(p, encoding="utf-8").read() for p in DELIVERABLES]
@@ -211,9 +241,7 @@ def test_the_guard_fires_on_a_LIVE_entry_not_only_a_dormant_one():
     assert live, "no live entry to exercise (see test_at_least_one_entry_is_live_in_the_deliverables)"
     name, fig, phrase = live[0]
     # a violating document built from the entry's OWN pattern, so the fixture cannot drift from it
-    specimen = {"rescue percentage": "the recovery is 58% as % of rise across the four cells",
-                "ticket_knife installation": "ticket_knife installs at 30/48 on the bank",
-                "length-conditioned ASR": "the length-conditioned ASR is 0.31"}[name]
+    specimen = SPECIMENS[name]
     assert re.search(fig, specimen, re.I), f"specimen for {name!r} does not match its own figure pattern"
     v = _violations(specimen)
     assert [n for n, _, _, _ in v] == [name], f"guard failed to flag a live entry {name!r}: {v}"
