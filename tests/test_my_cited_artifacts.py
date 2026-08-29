@@ -55,6 +55,12 @@ CLASSIFIED = {
         "same, Qwen3 side.",
     "REPRO_R16_20260826_051035_1020533":
         "same, reproduction run.",
+    # --- cited BECAUSE it is the quarantined artifact; the truncation is the point (R-172) ---
+    "d38beh_20260829_022027_2389958":
+        "disk-quota truncation: DONE claims 586, file holds 543, --expect-n was 608. Cited by "
+        "R-172 as the ONE finished-looking-but-short artifact in 1267, and it is in "
+        "run_completeness_check.KNOWN_SHORT as 'must never be analysed'. Cited to audit the "
+        "exemption's arithmetic, never as evidence for a claim.",
 }
 
 
@@ -166,7 +172,36 @@ REASON_KEYS = {
 REASON_COUNTS = {
     "q5A_lpQ14B_20260828_083233_2269491": (92, 68, 160),
     "q9A_lpQ14B_fc_20260828_104610_2283895": (22, 18, 40),
+    # R-172. 22 rows never generated (quota); see TRUNCATED for the 43 that were counted and lost.
+    "d38beh_20260829_022027_2389958": (22, 586, 608),
 }
+
+#: R-172. Runs whose `DONE.json` count exceeds what the file actually holds. REASON_COUNTS checks the
+#: run's own summary, which here says 586 succeeded -- and the file holds 543. The gap is invisible to
+#: any check that trusts the ledger, which is exactly the failure `run_completeness_check` calls "the
+#: files are the authority". Values: (rows_written_claimed, actual_lines, expect_n).
+TRUNCATED = {
+    "d38beh_20260829_022027_2389958": (586, 543, 608),
+}
+
+
+def test_truncated_entries_still_have_the_discrepancy_they_claim():
+    """If a quarantined artifact were ever repaired or regenerated, this citation must stop passing."""
+    for rid, (claimed, actual, expect) in sorted(TRUNCATED.items()):
+        d = cac.resolve(rid)
+        assert d, f"{rid} does not resolve"
+        done = json.load(open(os.path.join(d, "DONE.json")))
+        lines = sum(1 for _ in open(os.path.join(d, "results.jsonl"), encoding="utf-8"))
+        assert done.get("rows_written") == claimed, (
+            f"{rid}: DONE.rows_written {done.get('rows_written')} != {claimed}")
+        assert lines == actual, f"{rid}: file holds {lines} lines, not {actual}"
+        assert lines < claimed, f"{rid} is no longer short; the R-172 citation is stale"
+        cfg = json.load(open(os.path.join(d, "config.json")))["args"]
+        assert cfg.get("expect_n") == expect
+        # the arithmetic R-172 corrects: attempted = persisted + failed + lost-at-close
+        f = (json.load(open(os.path.join(d, "summary.json"))).get("failures") or {})
+        assert expect == actual + f["n_failed"] + (claimed - actual), (
+            f"{rid}: 608 != {actual} + {f['n_failed']} + {claimed - actual}")
 
 
 def test_classified_reasons_name_a_failure_key_the_run_really_has():
@@ -214,7 +249,7 @@ def test_classified_reasons_quote_the_real_counts():
 
 def test_every_classified_entry_is_either_key_checked_or_count_checked():
     """No reason may be pure prose without being declared so — the EXEMPT[3] failure mode."""
-    checked = set(REASON_KEYS) | set(REASON_COUNTS)
+    checked = set(REASON_KEYS) | set(REASON_COUNTS) | set(TRUNCATED)
     unchecked = set(CLASSIFIED) - checked
     assert not unchecked, (
         f"CLASSIFIED reasons with nothing verifying them: {sorted(unchecked)}. Add a REASON_KEYS or "

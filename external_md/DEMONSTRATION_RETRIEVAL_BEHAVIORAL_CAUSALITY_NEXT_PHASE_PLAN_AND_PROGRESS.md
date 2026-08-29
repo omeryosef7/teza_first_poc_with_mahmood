@@ -16309,3 +16309,65 @@ already satisfied, or already failed, on every cell in this design.
 my standing note tracked the gap **by tag** while the data is organised by `(bank, model, arm)`.
 That is C-94's matcher failure a third time — same day, third instance — and this one would have
 cost GPU rather than a retraction.
+
+### ✅ R-172 (10:20) — **A disk-quota exhaustion on 2026-08-29 truncated a run that was still marked `DONE`. The corpus-wide sweep it prompted finds exactly ONE such artifact, already caught and quarantined by the peer — but two figures in its exemption text do not reconcile with the file.**
+
+**How this surfaced.** Job **798295** FAILED at 03:01:59 with `OSError: [Errno 122] Disk quota
+exceeded`, raised inside `common.py:658`, `RunDir.finish()` → `self._results_fh.close()`. A write
+failure *at close* is the exact shape that produces a run dir which looks finished and is not, so I
+swept the whole corpus rather than only that job.
+
+**Sweep:** 1347 run dirs across `score_behavior`, `extract_boombness`, `judge`,
+`control_feasibility`; **1267** carry a `DONE.json` with `rows_written`.
+
+* **`DONE.json` disagreeing with the actual line count: 1.**
+  `score_behavior/d38beh_20260829_022027_2389958` — claims **586**, file holds **543**,
+  `--expect-n` was **608**. Last line parses, so whole rows are missing, not a partial write.
+* **Rows written with neither `DONE` nor `ABORTED`: 27**, all pre-dating this event and dominated by
+  known cases (`d38cbfc_…2948188` is R-170's documented preemption).
+* Job 798295's own run dir was never persisted, so it left no misleading artifact.
+
+**Already caught, and correctly.** The run is in `run_completeness_check.KNOWN_SHORT` with the verdict
+*"superseded by `d38beh2`; it must never be analysed"*, which is why `check_all` legitimately passes.
+The guard's logic is sound: it compares persisted rows against `expect_n` and flags non-uniform
+`(domain × dose)` loss, which is the part that matters for a clustered analysis.
+
+**But the exemption's own numbers are off, recomputed from `results.jsonl`:**
+
+| quantity | exemption says | measured |
+|---|---|---|
+| rows removed | **77** of 608 (12.7%) | **65** of 608 (**10.7%**) |
+| domains affected | **11** of 38 | **10** of 38 |
+
+All **152** `(domain × dose)` cells are present — none vanished entirely — with modal 4 rows/cell and
+**37** cells below modal, totalling exactly the 65-row deficit (608 − 543). The `586 − 543 = 43` gap
+is the portion the ledger itself never reconciled.
+
+**Verdict unchanged and not rescued:** the run is short, its loss is non-uniform across domains, and
+it must not be analysed. Only the two quoted magnitudes are wrong. It is the peer's artifact and
+their `§12.28` text, so I have reported the recomputation rather than editing their rationale —
+the same call as `p3j`/`p6j`. **A documented negative example is exactly the entry whose arithmetic
+should be right**, because it is the one future readers will cite for how bad the event was.
+
+⚠ **Operational note for both sessions:** the shared quota is currently healthy (home **821M/1900M**,
+netapp **200G/16384G**), so the exhaustion was transient. But it silently produced a
+finished-looking artifact once, and the only reason it did not enter an analysis is that someone
+checked. Any run launched during a quota squeeze needs its row count verified against `expect_n`
+before use, not its exit status.
+
+**R-172 addendum — the deficit decomposes exactly, which is what makes 77 wrong.** Reading
+`summary.json` closes it: `n_attempted` **608**, `n_succeeded` **586**, `n_failed` **22**, every
+failure keyed `behavioral:OSError:[Errno 122] Disk quota exceeded`. So
+
+    608 attempted  =  543 persisted  +  22 never generated  +  43 counted as succeeded but lost at close
+
+The **22** is the quota refusing new work; the **43** is the same quota killing
+`self._results_fh.close()` *after* the ledger had already counted those rows. **The run therefore
+fails in two distinct places, and only the first is visible in its own summary** — which is precisely
+why `run_completeness_check` warns that "the files are the authority". Any check trusting
+`n_succeeded` sees a 22-row loss; the true loss is 65.
+
+Both figures are now machine-verified rather than asserted: `tests/test_my_cited_artifacts.py`
+gained a `TRUNCATED` table and `test_truncated_entries_still_have_the_discrepancy_they_claim`, which
+re-derives `608 == 543 + 22 + 43` from the artifact and fails if the run is ever repaired or
+regenerated — so this citation cannot go stale silently.
