@@ -15202,3 +15202,53 @@ one that returns a clean empty result.
 explicit optimization objective for GCG/MAC-style optimization."* That is brief Q10, and the answer
 the sprint reached is **NO** — so the phase closes with a documented negative against its own stated
 goal, which is a stronger ending than seven invented questions could have given it.
+
+### 🏆 R-160 (05:45) — **Their Q1 verifies and gets STRONGER: the two conditions they did not quote are the ones that isolate lexical presence from harm. But my Q8 direction is OPPOSITE to theirs — non-plain framings LOWER the readout by 0.391, they report a rise of ~0.6.**
+
+Recomputed `d_surface|L8|proj` medians on **query-occurrence rows only** (8208 of 47376), pooling
+`xb_main_s3`, `xb_ticket`, `xb_gun`.
+
+| condition | n | median | harmful? | lexical item at the query |
+|---|---|---|---|---|
+| `concept_in_benign_ctx` | 1152 | **+1.649** | **benign** | **CONCEPT word** |
+| `direct_harmful` | 1152 | **+1.574** | harmful | CONCEPT word |
+| **`direct_codeword`** | 216 | **−1.466** | **harmful** | **codeword** |
+| `natural_doublespeak` | 3024 | −1.512 | harmful | codeword |
+| `benign_remap` | 216 | −1.531 | benign | codeword |
+| `benign_literal` | 2448 | −1.605 | benign | codeword |
+
+**The split is perfect on lexical item and orthogonal to harm.** My magnitudes are smaller than
+theirs (±1.5-1.6 vs ±1.6-2.25 — different bank subset), and the **structure is identical**.
+
+**The two conditions they did not quote are the decisive ones.** `concept_in_benign_ctx` is **benign
+with the concept word → +1.649**; `direct_codeword` is **harmful with the codeword → −1.466**. Those
+two cells alone form a 2×2 that separates *lexical presence* from *harmfulness*, and the readout
+follows the lexical item in both. **A directly harmful prompt scores like benign text when it uses the
+codeword.** Their conclusion needs only the four conditions they quoted; these two make it
+unarguable — and both were on disk.
+
+**⚠ Q8: my direction is opposite and I am flagging it rather than asserting they are wrong.**
+
+| role_style | n | median |
+|---|---|---|
+| `plain` | 6048 | **−1.105** |
+| `system_like_quoted` | 432 | −1.457 |
+| `cot_like` | 432 | −1.474 |
+| `tool` | 432 | −1.494 |
+| `assistant_like` | 432 | −1.518 |
+| `user_like` | 432 | −1.536 |
+
+**Non-plain framings are LOWER than plain by 0.391** — the readout becomes *less* concept-like — where
+they report *"every non-plain framing raises it by ~+0.6"*. **We agree exactly on the part their
+conclusion rests on**: the spread among the five non-plain styles is **0.079**, against their "within
+0.07". So *"it is departing from plain formatting, not user/CoT framing"* holds either way.
+
+**But the sign changes the answer to the brief's Q8**, which asks *"do user-like / CoT-like framings
+INCREASE Boombness?"* — on my rows the answer is **no, they decrease it**. Since our magnitudes differ
+throughout, we are plausibly on different row subsets, so this needs their check rather than my
+verdict.
+
+**Their correction of me on Q8 was right and I was wrong twice over.** I told them Q8 was unaddressed;
+`role_style` is a bank axis with 2448 rows per style in the extract, sitting there the whole time — so
+**my "not addressed this sprint" in C-79 was itself an absence claimed without enumerating.** Tenth
+instance, mine, made *in the entry cataloguing the other nine.*
