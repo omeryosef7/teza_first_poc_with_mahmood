@@ -16371,3 +16371,49 @@ Both figures are now machine-verified rather than asserted: `tests/test_my_cited
 gained a `TRUNCATED` table and `test_truncated_entries_still_have_the_discrepancy_they_claim`, which
 re-derives `608 == 543 + 22 + 43` from the artifact and fails if the run is ever repaired or
 regenerated — so this citation cannot go stale silently.
+
+### 📋 PR-39 (10:55) — **Pre-registration for C13's 640-cap rerun, written before any 640 row exists. This is the test C13's ASR leg has been SUSPENDED on since R-142; it is the last unrun item this phase owns.**
+
+**Why it is still justified** (Section 18 step 2). C13's ASR leg is SUSPENDED, not withdrawn:
+C-61's mechanism was retracted (the drop is present *within* each truncation stratum) but the
+within-stratum reading conditions on a **post-treatment collider** (my own PR-4), and the clean cells
+are the thin ones — `pre12` and `pre10` have **14 and 13 finished rows**. Releasing the cap is the
+only reading that is not collider-conditioned. Nothing since R-142 has changed that, and R-104's
+interaction test strengthened C13's *model-specificity* without touching its truncation problem.
+
+**Arms** — Llama-3.1-8B-Instruct, three banks, identical design, cap 192 → **640**:
+
+| tag | bank | source run (argv copied from it) |
+|---|---|---|
+| `c13b640` | `boombness_prompt_bank_d10.jsonl` | `p4bA_20260825_104739_439513` |
+| `c13p12640` | `boombness_prompt_bank_longpre.jsonl` | `p12A_20260826_134355_615606` |
+| `c13p10640` | `boombness_prompt_bank_longpre10.jsonl` | `p13A_20260826_150513_993848` |
+
+Args are built **from each source run's own `RUNMETA.argv`**, not retyped, changing only `--max-new`
+(192 → 640) and `--tag`. Verified set-difference per arm: removed `{--expect-n, 160, 192, <old tag>}`,
+added `{640, <new tag>}` (plus `--limit 4` for the smoke only). Same seed, same model, same
+`--bank-blocks`, same `--n-examples`, same dtype and attention backend.
+
+**Smoke first** (§2.3): `--limit 4` on **all three banks**, because a smoke on one bank does not
+exercise the other two banks' paths. `--expect-n` is dropped for the smoke only — it refuses any
+population that is not exactly 160, which `--limit` violates by construction. The full runs restore
+`--expect-n 160`.
+
+**Pre-registered outcomes for the FULL runs, fixed now:**
+
+* **PASS — C13 reinstated.** `pre12` and `pre10` ASR both remain **below** the `d10` baseline at 640
+  by more than the arm-vs-baseline margin **0.0521** (PR-3), with `frac_stop_length` materially lower
+  than at 192 in every arm. This is the outcome that was never available at 192.
+* **FAIL — C13's ASR leg stays out.** Either arm's deficit falls **within** 0.0521 of baseline once
+  the cap is released. Then the 192 effect was a truncation artifact after all and **C-61's verdict
+  was right for the wrong reason.** I will say so and stop, not re-cut the strata.
+* **VOID — no conclusion.** `frac_stop_length` at 640 is not materially below its 192 value (the cap
+  was not the binding constraint), or the baseline's own ASR moves by more than 0.0521 between caps,
+  which would make the two caps incomparable populations rather than the same one measured longer.
+* Truncation fields (`frac_stop_length`, median `n_chars`, `frac_at_cap`) travel with **every** ASR
+  quoted, per PR-4, and the length-conditioned sweep carries its collider caveat.
+
+**Declared in advance:** the 192-cap numbers are **not** the comparison of record — the 640 runs are
+compared to the 640 baseline, within one cap. Cross-cap deltas are diagnostics only. And I will not
+condition on truncation to rescue a FAIL, which is the exact move PR-4 forbids and the reason this
+leg was suspended rather than argued.
