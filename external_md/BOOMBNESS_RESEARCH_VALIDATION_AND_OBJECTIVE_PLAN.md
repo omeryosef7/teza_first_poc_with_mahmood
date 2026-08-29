@@ -9238,3 +9238,37 @@ the second is new:
 
 This is the second time in this phase that this guard has refused one of my commits and been right
 both times.
+
+### §24.1 ⛔ CORRECTION: DR-12 said "full suite green". It was not — and the HOOK COULD NOT HAVE TOLD ME
+
+**DR-12's CODE line is withdrawn.** It read *"full suite green"* on the strength of the commit hook
+reporting 257 passed. The full suite was running in the background and returned **4 failed, 1429
+passed, 7 skipped** — I wrote the claim before the evidence for it existed, from a *different* and
+narrower suite.
+
+**All four failures are one cause, and it is mine.** `tests/test_guard_wiring.py` — added in V-164
+to probe every guard's verdict — bends module-level tables (`FIGURES`, `CHECKS`, `PLAN`,
+`METHOD_ONLY`, `MIN_EXPECTED`) on the **live module object** and never restored them. So
+`ledger_propagation_check` was left with `PLAN`/`LEDGER` pointing at a tmp fixture and `METHOD_ONLY`
+holding 29 injected entries, and four tests in `test_ledger_propagation_check.py` failed downstream.
+
+**⛔ AND THE FAILURE IS PURELY AN ORDERING ARTEFACT, WHICH IS WHY THE HOOK IS BLIND TO IT:**
+
+    pytest tests/                                          (alphabetical: guard_wiring FIRST)
+        -> 4 failed
+    the hook's GUARD_TESTS order  (ledger_propagation_check listed BEFORE guard_wiring)
+        -> 29 passed
+
+Reproduced both ways on demand. **A green hook was therefore not evidence that the suite was green**,
+and nothing in its output could have distinguished the two — the same green-on-green shape as V-163,
+except the concealing mechanism here is **file order** rather than an unwired verdict.
+
+That is DR-12's own re-attribution finding appearing one layer down: **in the document, meaning
+depended on section order; in the tests, it depended on file order.** Both are silent, and both were
+introduced by an edit that looked local.
+
+Fixed with an `autouse` fixture that reloads every deformed module after each test. Two mutants,
+both killed: removing the fixture (4 failures return) and narrowing `_TOUCHED` to `canonical_figures`
+alone (4 failures return) — the second matters because I had already fixed *one* instance of this
+contamination by hand in V-164 and treated it as done. **Asserting the reload inside individual
+tests only protects the test that remembers to.**

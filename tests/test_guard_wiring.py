@@ -40,6 +40,36 @@ sys.path.insert(0, os.path.join(ROOT, "src", "boombness"))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 
+#: Every guard module this file deforms. `_verdict` mutates module-level tables (FIGURES, CHECKS,
+#: PLAN, METHOD_ONLY, MIN_EXPECTED) on the LIVE module object, so without restoration those
+#: deformations leak into any later test that imports the same module.
+_TOUCHED = ("canonical_figures", "verify_report_numbers", "ledger_propagation_check",
+            "markdown_structure_check", "pvalue_hygiene_check", "retraction_sweep",
+            "plan_coverage_check")
+
+
+@pytest.fixture(autouse=True)
+def _restore_guard_modules():
+    """⛔ THIS FILE POISONED test_ledger_propagation_check.py, AND THE HOOK COULD NOT SEE IT.
+
+    `_verdict` reloads a guard and then bends its module-level tables. The bends survived the test,
+    so `ledger_propagation_check` was left with `PLAN`/`LEDGER` pointing at a tmp fixture and
+    `METHOD_ONLY` holding 29 injected entries. Four tests in that file then failed -- but ONLY in
+    alphabetical order, which is the full suite's order and NOT the commit hook's: the hook lists
+    `test_ledger_propagation_check.py` BEFORE this file, so it ran clean while
+    `pytest tests/` reported 4 failures.
+
+    A green hook was therefore not evidence the suite was green, and the difference was file
+    ORDER -- the same order-dependence that re-attributed a plan section in DR-12, in the test
+    layer instead of the document layer. Restoring after every test is the fix; asserting the
+    reload inside individual tests is not, because it only protects the test that remembers to.
+    """
+    yield
+    for name in _TOUCHED:
+        if name in sys.modules:
+            importlib.reload(sys.modules[name])
+
+
 def _verdict(module, patch=None, argv=None):
     """Reload the guard, optionally deform it, and return (exit_code, stdout)."""
     m = importlib.reload(importlib.import_module(module))
