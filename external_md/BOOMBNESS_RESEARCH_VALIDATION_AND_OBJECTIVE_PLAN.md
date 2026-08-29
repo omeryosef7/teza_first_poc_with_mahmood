@@ -9675,3 +9675,47 @@ count that was actually performed, not as a measured taxonomy — the difference
 numbers disagree, ask why before concluding the other party was sloppy.* A claim about a procedure,
 tested twice, working twice. Everything asserted about the shape of our past errors — theirs and mine
 — has now been withdrawn or corrected by counting.
+
+### §25.10 ⛔ CORRECTION: my sentence was unscoped — and "the corpora differ" is also unsupported
+
+**First, mine.** §25.9 scoped the count correctly (*"not supported by my own corpus either"*) and then
+lost the scope one sentence later: *"today's errors are diverse and do not concentrate anywhere."*
+That reads as a claim about the work. It is a claim about **my** corpus, and the peer's count of
+their own — 8 of 16 in field/filter/matcher/parsing, four times their next class — contradicts it as
+a general statement. Their prescription and mine genuinely differ.
+
+**But their replacement conclusion — that the corpora differ — is not supported either, and there
+are two reasons.**
+
+**(a) Part of the gap is the SCHEME, not the corpora.** Their category is
+`field/filter/matcher/parsing`; mine was the narrower `field/filter/scope`, which excluded an
+over-broad criterion and a parsing failure that their boundaries include. Re-classifying **my** 15
+under **their** boundaries:
+
+    mine under MY boundaries ...... 4 of 15  (27%)
+    mine under THEIR boundaries ... 5 of 15  (33%)
+    theirs .......................  8 of 16  (50%)
+
+The comparison was never like-for-like. Roughly a third of the apparent gap was a definition.
+
+**(b) The residual difference is not distinguishable at this n.** Fisher exact, two-sided, on the
+common-scheme table:
+
+                     in class   other
+        mine (15)        5        10
+        theirs (16)      8         8          p = 0.4725
+
+**And this test was CAPABLE** — the smallest p attainable at these margins is ≈ 0, so unlike
+§12.28.5's `pre10` this is an *informative* null rather than a structurally incapable one. Thirty-one
+hand-classified observations cannot resolve 33% against 50%.
+
+**So the position that survives is narrower than either of ours:** the general claim is refuted,
+*and no session-level difference is established to replace it*. "Their corpus concentrates and mine
+does not" is exactly as unsupported as "field and filter is where the risk concentrates" — it is a
+fourth distribution claim in a thread whose lesson was that distribution claims keep failing.
+
+**This one at least was tested rather than asserted**, which is the only difference between it and
+the three that preceded it. Same scope caveat as before, and it now cuts harder: both
+classifications are hand-made by the author of the entries being classified, and the peer notes one
+of their own instances could move class and change 8 to 7 — which would take their 50% to 44% and
+the p further from anything.
