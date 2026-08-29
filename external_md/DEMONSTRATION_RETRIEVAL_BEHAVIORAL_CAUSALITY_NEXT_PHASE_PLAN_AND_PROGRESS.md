@@ -16458,3 +16458,37 @@ at one file.
 `tests/test_my_cited_artifacts.py::test_truncated_entries_still_have_the_discrepancy_they_claim` now
 pins the divergence (531/543, 16 and 4 one-sided ids) alongside the 608 = 543 + 22 + 43 arithmetic, so
 the citation fails if either file is ever repaired.
+
+### ✅ R-173 (12:10) — **Swept all 582 runs carrying both `gens.jsonl` and `results.jsonl` for the join hazard R-172 exposed. Exactly ONE is two-way divergent, and it is the run already quarantined. My first cut of this audit reported 77 and was a false alarm.**
+
+The peer checked the six runs their own figures join on and found `results == gens` exactly on all
+six. That is the right check for their documents; this is the corpus-wide version, because the
+question R-172 raises is whether `d38beh`'s crossing id-sets are an instance or a pattern.
+
+**The false alarm first, because it changed the number by 76.** My initial criterion was
+`set(gens_ids) != set(results_ids)` and it flagged **77** runs. Nearly all are correct by
+construction: a probe run generates no text, so its `gens.jsonl` is legitimately **empty**. Reporting
+77 would have been C-31's "applied a threshold without testing it" in a new costume — a criterion
+that has never been checked against what the artifacts are supposed to look like.
+
+**Classified, 582 runs with both files:**
+
+| class | n | verdict |
+|---|---|---|
+| `gens.jsonl` **empty** — no text generated | **74** | **Expected.** Every one is a probe design: `semantic_forced_choice` (38), `comprehension_usage`+`semantic_one_word` combinations (35), and **one** run whose argv records no `--query-kinds` at all. |
+| gens ids a **strict subset** of results | **2** | **Expected.** Multi-row-per-prompt designs — `base_20260816_203355_3985444` at **2.22** result rows/prompt and `smoke2_20260816_194943_3949678` at **3.0**. Both from 2026-08-16. |
+| **TWO-WAY divergent** — ids in gens absent from results | **1** | `d38beh_20260829_022027_2389958`. |
+
+**`only_gens > 0` is the discriminating signal**, and exactly one run in the corpus has it. A one-way
+shortfall is ambiguous (empty-by-design, or multi-row, or truncation); ids surviving in `gens` that
+are **missing from `results`** cannot be produced by any of the legitimate patterns above.
+
+**Conclusion: the join hazard is confined to the single quarantined artifact.** No run backing any
+live claim — `p2A`, `p2_legacy_all_query`, `q2A`, `q2_legacy_all_query` (R-171's four cells), `tbA`,
+`p1k_*`, `p4bA`, `p12A`, `p13A` — has crossing id sets. R-172's divergence is an **instance, not a
+pattern**, which is the same shape as R-169's answer about untraced families and reached by the same
+method: enumerate, then classify, and treat the first count as a hypothesis rather than a finding.
+
+⚠ Stated so the negative is informative: the sweep covered `score_behavior` only, which is where both
+files coexist. It does **not** cover `judge/` (one row file) or the analysis artifacts, and it tests
+id-set identity, **not** whether the joined rows agree field-by-field.
