@@ -5539,7 +5539,7 @@ whose attack it did not kill**. On Llama the arm lost binding nowhere at all, so
 answer "it simply never damages binding". **Qwen3 removes that escape: the arm damages binding, just
 never on the families it disarms.**
 
-**`legacy_all_query` is exposed as indiscriminate.** It loses the binding on **28 of 48 families**
+**`legacy_all_query` is exposed as indiscriminate — ON QWEN3 (⛔ C-78: on Llama it loses binding on only 6/48, 0.2857 vs 0.0976, concentrated among killed families rather than flattened).** It loses the binding on **28 of 48 families**
 (0.60 vs 0.58) — it is not selecting anything, it is flattening the demonstrations. That is the
 arm the paper's original knockout used, and it is why an unscoped knockout cannot separate these two
 things.
@@ -15023,3 +15023,40 @@ operative quantity.
 statistic, my C-62 bold-only regex denominator, and this. In all three the arithmetic survived
 checking and the claim wrapped around it did not — which is why recomputing a figure is not the same
 as auditing a sentence.*
+
+### ⛔ C-78 (04:45) — **Every number in W2 verifies. But `legacy` "flattens 28/48" is a QWEN3 figure attributed only by sentence position, and on Llama the same arm loses binding on 6/48 — so "`legacy_all_query` is exposed as indiscriminate" is a one-model claim stated as a property of the arm.**
+
+Verified against the bridge artifacts rather than re-read:
+
+| claim | artifact | value | ✓ |
+|---|---|---|---|
+| Llama `demoproc` loses binding on **0 of 48** while killing **7** | `REPRO_R16` and `bridge` | `n_fam=48, killed=7, binding_lost=0` | ✅ |
+| Qwen3 **0 of 10** killed families lost binding | `qbridge` | `killed=10, frac\|killed=0.0` | ✅ |
+| Qwen3 arm **did** cost binding on **5** surviving families | `qbridge` | `binding_lost=5, frac\|not=0.1316` (5 of 38) | ✅ |
+| `legacy` flattens **28/48** | `qbridge` | `binding_lost=28, 0.60 vs 0.5789` | ✅ |
+
+**All four reproduce exactly, and two artifacts agree on the Llama side.** The defect is elsewhere.
+
+**The `legacy` 28/48 is Qwen3, and W2 says so only by where the sentence sits.** On **Llama** the same
+arm loses binding on **6 of 48** — `frac|killed` **0.2857**, `frac|not` **0.0976** — a different arm
+behaviour entirely. So the plan's *"`legacy_all_query` is exposed as indiscriminate … it is not
+selecting anything, it is flattening the demonstrations"* holds on **Qwen3** and **not on Llama**,
+while being phrased as a property of the arm and used to explain *"why an unscoped knockout cannot
+separate these two things"* — a claim about the paper's original method, resting on one model.
+
+**Both corrected to name the model.** The reading that survives is narrower and still useful: on
+Qwen3 `legacy` is indiscriminate (0.60 vs 0.58, independence at chance); on Llama it is *selective in
+the wrong direction* (0.2857 vs 0.0976 — binding loss **concentrated** among killed families, the
+opposite of flattening). **Neither supports `legacy` as a mechanism, and they fail it differently** —
+which is a stronger statement than the single-model version it replaces.
+
+**This is C-77's shape again, one claim over.** There the arithmetic was right and the stated `k` was
+wrong; here every count is right and the **model attribution** is carried by paragraph order. Both are
+invisible to a numeric recomputation and both survive every guard, because **a guard checks that a
+figure matches its artifact, never that the sentence names the right population.**
+
+**Fourth instance tonight of a correct number inside a wrong sentence** — their V-107 both-EOS
+statistic, my C-62 regex denominator, C-77's `k=6`, and this. **The verified-figures check I run each
+tick cannot see any of them**, and I should stop treating "numbers reproduce" as evidence the prose is
+sound. That is now the third time I have written that lesson down tonight, which suggests recording it
+is not the same as applying it.
