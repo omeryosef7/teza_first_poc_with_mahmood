@@ -126,6 +126,7 @@ TRACE_TOKENS = {
     "§25.6": ["FILTER OMISSION (25.6)", "108/144", "SHARED-IMPLEMENTATION RISK DISCHARGED"],
     "§25.9": ["FOUR OF FIFTEEN, NOT SIX OF SEVEN", "do not concentrate anywhere"],
     "§25.10": ["25.10", "0.4725", "never like-for-like"],
+    "§25.12": ["SACCT_IS_NOT_LIVENESS", "orphaned accounting record", "Invalid job id"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],

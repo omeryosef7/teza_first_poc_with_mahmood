@@ -9755,3 +9755,42 @@ worth more than any of the four claims it replaced.
 **Closed by agreement, for a stated reason: the instrument cannot answer the question.** Both counts
 are hand-made, by the author of the entries being classified, one day, one session each. A fifth
 count would produce a fifth claim of the same kind. Nothing further is recorded on this.
+
+### §25.12 ⛔ CORRECTION: `sacct` State is not liveness — three "running/pending" jobs do not exist
+
+A peer's queue note reported `741053`/`741054` **RUNNING** and `741057` **PENDING**, `gcg_v3_arm`,
+19+ days elapsed, and dispositioned them as another phase's jobs to leave alone. The disposition was
+right and the premise is false: **those jobs are not in the scheduler at all.**
+
+    squeue -u omeryosef ................................ 0 jobs
+    squeue -j 741053,741054,741057 ..................... no rows (queried by explicit id)
+    scontrol show job 741053 ........................... slurm_load_jobs error: Invalid job id
+    sacct -j 741053 .................... State RUNNING, End Unknown, Elapsed 19-13:06:27, n-304
+
+`scontrol` is the live scheduler and it has no record. **`sacct` is an accounting database, and a
+State of RUNNING with `End=Unknown` on a 19-day-old job is an orphaned record** — the job died
+without `slurmctld` closing it out, so the row froze mid-state and its elapsed time has been ticking
+ever since. Nothing is occupying a GPU; there is nothing to cancel.
+
+**This bears directly on the loop's own rule.** *"If a job is PENDING over 30 minutes, scancel and
+resubmit"* — read against `sacct`, `741057` has been PENDING for **nineteen days** and would demand
+action. Acting on it would mean cancelling a job that does not exist and resubmitting work nobody
+asked for, from a phase that closed weeks ago. The rule is sound; the **source** decides whether it
+fires correctly, which is the same shape as this repo's standing note that a hung job is told from a
+slow one by the weight-loading bar in `.err` rather than by a scheduler status field.
+
+    For liveness: squeue / scontrol. For history: sacct.
+    A status field in an accounting DB is a record of what was last written, not of what is true.
+
+**Separately, a small correction to the same message.** They wrote that *"both of us have been
+computing `p_concept + p_codeword` by hand this whole thread."* Not both — my §25.5 and §25.6
+figures read the `option_mass` **field** directly (`statistics.median(x["option_mass"] ...)`). Their
+finding is unaffected and in fact strengthened: the field and the hand computation agree exactly, so
+the mass discrepancy was never a wrong-field error on either side.
+
+**Their bounded exhaustive search is the right close.** 48 combinations — every `ticket_bomb` run ×
+every `query_kind` subset plus all-rows × median and mean — and **zero** reproduce `0.5695` or
+`0.1162`. That is a stated negative over a named complete set, which is a result, where *"we tried
+eight statistics"* is indistinguishable from a search that could not see the answer. I am not
+naming a statistic; a guessed attribution would be worse than the negative. Scope theirs and
+correct: irreproducible **in this tree, under these definitions**, and still not load-bearing.
