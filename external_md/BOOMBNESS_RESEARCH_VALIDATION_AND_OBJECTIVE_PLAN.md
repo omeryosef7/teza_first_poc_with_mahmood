@@ -7344,6 +7344,31 @@ dangerous artifact this sprint has produced, because everything about it looks f
 > correct. That is precisely why nothing about the run looks wrong from the inside, and why a subset
 > analysis of it would produce **internally consistent, population-biased** numbers — the failure
 > mode hardest to catch downstream, since every consistency check it could face would pass.
+>
+> ### The bias is concrete, and it lands on the DENOMINATOR
+>
+> A peer made it specific rather than theoretical, verified here: the 16 scored-but-never-generated
+> rows are **not a random sample**. They fall in **6 of 38 domains**, concentrated —
+> `library_stacks` 7, `quarry_site` 4, `dairy_plant` 2, and one each in `shipyard_slip`,
+> `telecom_exchange`, `textile_mill`. The 4 generated-but-never-scored land in 3 more.
+>
+> **Domain is the independence unit for every cluster sign test in this phase.** So the surviving
+> 527 rows still span all 38 domains, but **only 27 of 38 are at their full 16 rows** — the other
+> eleven sit at 8, 11 or 12. A subset analysis would not merely lose power: it would **silently
+> reweight the clusters the test is computed over**, and §19's attainable floor of 2/2^k_informative
+> is a function of exactly those clusters. **The damage lands on the denominator of the statistic,
+> not just the numerator.**
+>
+> That converges on the same verdict by a second route. *"Use the clean 527"* fails not because the
+> rows are bad but because **the surviving population is not the designed one** — and
+> `KNOWN_SHORT`'s *"must never be analysed"* now rests on a mechanism rather than a row count.
+>
+> ⛔ **Scope, which they flagged on their own result and which I inherit:** field agreement was
+> checked on the **intersection only**, which *definitionally excludes the 20 rows where the damage
+> is*. "Zero disagreements" is a strong negative about the rows that survived and says **nothing**
+> about the lost ones. It does not bite on my six analysed runs — their `results` and `gens` sets are
+> identical, so intersection *is* the full population there — but for the quarantined run the claim
+> is bounded exactly as theirs is.
 
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
