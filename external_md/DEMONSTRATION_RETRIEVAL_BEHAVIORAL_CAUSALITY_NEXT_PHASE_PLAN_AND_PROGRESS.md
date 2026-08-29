@@ -16264,3 +16264,48 @@ for a defect that does not exist, and would convert a bank name in a prospective
 recurring spurious failure. Recorded as a **known limitation with a dated manual audit** — the same
 call as the expiry sweep, and the same call the peer made independently. The limitation is now
 written down, which is the difference that matters: before today it was neither covered nor known.
+
+### 🏆 R-171 (09:10) — **The model × bank 2×2 for `legacy`'s binding destruction is COMPLETE from data already on disk, and I was about to spend GPU on a cell I already had. Three informative cells; the effect is moderated by BOTH factors, so there is no single-factor account. Queued work cancelled.**
+
+The concurrent session reported that Qwen3 × `ticket_bomb` is void and recommended a binding
+pre-screen before launching. Both points verified from their artifacts before acting:
+`qtbA_20260829_053914_2657393` gives **22/48, p = 0.665** (chance) and
+`qtbL_20260829_054147_721010` gives **0/48, p = 7.1e-15**. Their conclusion is right: you cannot
+measure destruction of a mapping that was never installed.
+
+**But their framing and my own standing note both had the missing cell wrong.** My summary listed the
+gaps as "Qwen3 × `ticket_bomb` and Qwen3 × `main`". Scanning every forced-choice run on disk by
+`(bank, model, arm)` — rather than by tag, which is what failed in C-94 — found **Qwen3 × `main`
+already measured** on 2026-08-25 and never brought into the table.
+
+| | `main` | `ticket_bomb` |
+|---|---|---|
+| **Llama** | 42/48 → **41/48 INTACT** *(mine, `p2A` / `p2_legacy_all_query`)* | 45/48 → **15/48 DESTROYED** *(peer, plan:9168)* |
+| **Qwen3** | **32/48 → 4/48 DESTROYED** *(mine, `q2A_20260825_101300_2421408` / `q2_legacy_all_query_20260825_101300_2421409`)* | 22/48 **at chance** → 0/48 — **VOID** *(peer, verified today)* |
+
+Every cell re-derived from `results.jsonl`, not quoted from prose. All three of my pairs are on
+**identical `prompt_id` sets** (48/48) and the **same bank file**, verified.
+
+**The attribution question is answered, and the answer is "both".** Within Llama, the bank decides
+(`main` intact, `ticket_bomb` destroyed). At the `main` bank, the model decides (Llama intact, Qwen3
+destroyed). **So `legacy`'s binding destruction is moderated by model AND bank; neither factor alone
+accounts for it, and the single-factor readings both fail.** The void cell is the one that would have
+tested whether the two interact, and it is structurally unavailable rather than merely unrun.
+
+⚠ **The weakest cell carries the model half of that claim.** Qwen3 × `main`'s baseline is **32/48,
+p = 0.0293** — it passes C-33's sharpened pre-screen (exact binomial p < 0.05, not the naive
+"> 0.500"), but it is the marginal binder of the three, against Llama's 42/48 and 45/48. The 32 → 4
+drop is large and its direction is not in doubt; what is thinner than the other cells is the
+**baseline**, and the model-half conclusion should be quoted with that attached.
+
+**DECISION: the queued launch is cancelled, not deferred.** Section 18 step (2) asks whether queued
+work is still justified by current evidence. It is not: two of the three cells I would have paid for
+already exist, and the third is void for a reason no amount of GPU fixes. **Zero new runs.** The
+peer's pre-screen recommendation is still the right gate and I have adopted it — it is simply
+already satisfied, or already failed, on every cell in this design.
+
+**The methodological point is the one to keep.** I nearly launched a run whose result was sitting in
+`outputs/boombness/score_behavior/` from four days earlier, and the reason I did not find it is that
+my standing note tracked the gap **by tag** while the data is organised by `(bank, model, arm)`.
+That is C-94's matcher failure a third time — same day, third instance — and this one would have
+cost GPU rather than a retraction.
