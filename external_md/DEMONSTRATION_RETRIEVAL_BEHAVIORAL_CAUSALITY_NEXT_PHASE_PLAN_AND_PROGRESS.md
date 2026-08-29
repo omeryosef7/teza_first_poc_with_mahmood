@@ -15298,3 +15298,45 @@ where a mapping is taught.
 filter — not vigilance."* My tenth instance came **ninety minutes after I wrote out why the failure
 happens, in the entry that catalogued the other nine.** Knowing the shape demonstrably does not
 prevent it; a habit executable without remembering why is the only kind that survives.
+
+### ⛔ C-82 (06:15) — **Enumerate-then-filter, applied to my own C2. Its statistic ranges 44%-100% across 13 bank/model pairs, not the three it quotes — and on `d10`, the bank with the LARGEST refusal restoration, the MAJORITY of down-flips ARE refusals. That is C2's claim reversed on one bank.**
+
+Their per-bank retraction obliged the same check on my side. **Enumerating first**, every baseline vs
+`demoproc` judged pair with its bank read from the arm's own `argv` — 13 pairs, not the 3 C2 cites:
+
+| non-refusal share of down-flips | sessions | Δrefusal on the same rows |
+|---|---|---|
+| **100.0%** | `p13j`, `p26j`, `q15j`, `q16j` | +7, **−1, +0, −1** |
+| 90.0% – 76.5% | `p12j`, `p1j`, `p1k` (**C2's 80.0%**), `q1j` (**C2's 76.5%**) | +7, +17, +17, +14 |
+| 73.1% – 60.0% | `g3j`, `g2j`, `p6bj`, `q4bj` | +12, +12, **+31**, +21 |
+| **44.0%** | **`p4bj` (`d10`)** | **+26** |
+
+**`correlation(non-refusal share, Δrefusal) = −0.877.`** The share falls exactly where refusal
+restoration is largest, which is what it must do if refusal is a genuine route on that bank.
+
+**Being precise about what this does and does not show, because the tempting reading is wrong.** My
+first instinct was to call the 100% cells vacuous — the share is *arithmetically* forced once
+Δrefusal ≤ 0. **That is a mistake.** Those cells are C2's **strongest** evidence: on `longpreQ14B` and
+`longpreQ14`, **11 and 16 attacks died with refusal changing by −1 and 0**. Attack removal without any
+refusal restoration is exactly the dissociation C2 asserts. The arithmetic is entailed; the
+*conjunction* is not, and the conjunction is the claim.
+
+**The real finding is the other end of the range.** On **`p4bj`/`d10`**, only **44.0%** of down-flips
+are non-refusals — so **56% of the attack removal on that bank travels with a refusal**, alongside the
+largest refusal restoration in the set (**+26**). **C2's "refusal restoration is not the route" is
+contradicted on `d10`**, and `q4bj`/`d10` (60.0%) and `p6bj`/`d10_poolB` (62.5%) are the next two
+weakest. **The `d10` family is where C2 is weakest and it is the family most of the sprint runs on.**
+
+**C2 is scoped, not withdrawn.** It holds strongly where refusal never moves (`longpreQ14*`, and
+`p26j` at a released cap), holds on the `base` banks it quotes, and **fails on `d10`**. The two
+numbers it cites, 80.0% and 76.5%, are the two `base` pairs — **mid-range of 44-100, and not
+representative of the set they were drawn from.**
+
+**Fourth bank-specificity finding, and the second on one of my own claims** (C1 in R-146, C2 here;
+theirs on `legacy`-flattening and Q8). **Bank now moderates four separate results across two
+sessions.** Their proposal — a per-bank groupby as a default reported axis, costing one line at
+authorship — would have caught all four at the time rather than in an overnight audit.
+
+**And the habit worked where vigilance had not.** I found this by enumerating all 13 pairs before
+looking at any of them, rather than by checking the three C2 quotes. **The three quoted numbers are
+individually correct**; nothing about re-verifying them would ever have surfaced the 44%.
