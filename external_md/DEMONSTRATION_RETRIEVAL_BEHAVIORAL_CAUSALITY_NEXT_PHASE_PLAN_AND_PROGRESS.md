@@ -16492,3 +16492,34 @@ method: enumerate, then classify, and treat the first count as a hypothesis rath
 ⚠ Stated so the negative is informative: the sweep covered `score_behavior` only, which is where both
 files coexist. It does **not** cover `judge/` (one row file) or the analysis artifacts, and it tests
 id-set identity, **not** whether the joined rows agree field-by-field.
+
+### ✅ R-174 (12:35) — **The stronger check I had scoped as unrun: on the quarantined run the 527 surviving rows agree on EVERY shared field. The corruption is in which rows exist, not in row content — and the loss is concentrated, so a subset analysis would be internally consistent and population-biased.**
+
+R-173 tested id-set identity and explicitly did not test field agreement. The peer ran it on their
+six runs (all clean) and on `d38beh`; I verified the second independently.
+
+**`score_behavior/d38beh_20260829_022027_2389958`**, intersection of `gens.jsonl` and
+`results.jsonl`: **527 rows**, **21 shared fields** (`arm`, `bank_block`, `cell`, `condition`,
+`consistency`, `domain`, `example_position`, `family_id`, `knockout_scope`, `model`, `n_examples`,
+`n_new_tokens`, `n_target_occurrences`, `prompt_id`, `prompt_sha16`, `query_kind`, `role_style`,
+`split`, `stop_reason`, `strength`, `target_surface`) — **0 fields with any disagreement**. (21 counts
+`prompt_id`, the join key; excluding it gives the peer's 20. Same result.)
+
+**So every surviving row is internally correct, including its `prompt_sha16` bank-provenance stamp.**
+Nothing about this artifact looks wrong from the inside, which is precisely what makes it dangerous:
+an analysis that joined the two files would compute on 527 self-consistent rows and pass every
+consistency check available to it.
+
+**And the missing rows are not a random sample.** The 16 scored-but-never-generated rows fall in
+**6 of 38 domains**, concentrated: `library_stacks` **7**, `quarry_site` **4**, `dairy_plant` **2**,
+and one each in `textile_mill`, `shipyard_slip`, `telecom_exchange`. Domain is the **independence
+unit** for every cluster sign test in this phase, so a subset analysis would not merely lose power —
+it would silently reweight the clusters the test is computed over.
+
+**This strengthens the quarantine and closes off partial salvage.** There is no "use the clean 527"
+story, because the part that survives is exactly the part that looks fine. `KNOWN_SHORT`'s *"must
+never be analysed"* is the right disposition and it now has a mechanism behind it rather than a row
+count.
+
+**Scope, so the negative stays informative:** field agreement was checked on the intersection only —
+it cannot say anything about the 20 rows outside it, which is definitionally where the damage is.
