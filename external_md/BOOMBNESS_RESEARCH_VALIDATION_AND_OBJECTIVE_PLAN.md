@@ -9875,3 +9875,33 @@ is what establishes the first rather than assuming it.
 **Their methodological point is the transferable part**, and it is why the negative exists at all:
 sweeping the population returned both a scope defect in the claim *and* a fact the claim never made,
 where testing the claim as written would have returned "true" and stopped.
+
+## §26 DR-13 — deeper review (5h13m after DR-12)
+
+    LIVENESS    0 jobs queued; 0 runs reached DONE in 4h. Nothing to judge, score or launch.
+    CODE        full suite 1444 passed, 7 skipped, 0 failed -- read from the run's own output,
+                not from the hook (the V-168 correction).
+    GUARDS      9/9.
+    ARTIFACT    210 runs carry an expect_n, 1 documented short, 4 DONE dirs are not runs;
+                file agreement 503 comparable / 124 not comparable; every finished run
+                persisted its full row count.
+
+**CLAIM REVIEW — the universal sweep re-run at the WIDENED setting, which had never been run.**
+§25.13's instrument was corrected to add temporal and negative-existence forms. Running it:
+
+    quantifier-initial only (the old pattern) ....  74 unique
+    widened (temporal + negative-existence) ...... 181 unique   -> 107 new candidates
+
+**No new defects.** Of the 107 new candidates, **93 are ordinary modal prose** — *"a pilot cannot fix
+that by getting bigger"*, *"bias cannot explain +53%"* — capability statements about a thing rather
+than claims about a population. Ten are universal-shaped; one is §25.13's already-corrected
+`n_examples = 12`; three checked in full all name their populations (*"never installs"* attributed to
+§5.8, *"never run"* a table cell marking an unrun 2×2 condition, *"every `main`-bank estimate sits
+between −0.01 and +0.15"* attributed to §7.2).
+
+**⛔ AND THE RUN CORRECTED THE INSTRUMENT AGAINST ITSELF.** `cannot` and `fails to` were in the
+widened list and produced **93 of the 107 false candidates**. They are removed: those words are modal
+capability statements, not universal quantifiers, and they swamp the worklist while the temporal and
+negative-existence forms earn their noise. All three worked examples still match the pruned list.
+That is the documented-pattern-versus-its-examples check applied to a *widening* rather than to the
+original — the widening needed the same sweep the original did.
