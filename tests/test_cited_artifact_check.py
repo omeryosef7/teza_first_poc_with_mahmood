@@ -223,6 +223,13 @@ UNMECHANISABLE = {
     "capNE2_20260827_210525_3544980": "that the rows remain usable despite the config confound",
     "leak2_20260827_212632_3593613": "that the failure IS the probe's finding",
     "q9A_lpQ14B_fc_20260828_104610_2283895": "which sections still present it as a live result",
+    "d38beh_20260829_022027_2389958":
+        "that its DONE.json is true AND misleading. check_run_readable ACCEPTS it -- the run "
+        "finished, wrote a terminal verdict and parses. What nothing here can see is that a "
+        "disk quota removed 12.7% of its rows in a way correlated with the OUTCOME (write "
+        "volume vs attack length) and concentrated in 11 of 38 domains, nor that its own "
+        "ledger disagrees with its files (586 succeeded, 543 results, 531 gens). Refusing it "
+        "is a JUDGEMENT recorded in \u00a712.28, not something a guard derived",
 }
 
 

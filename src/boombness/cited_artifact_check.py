@@ -72,6 +72,8 @@ CITED_AS_REFUSED = {
 #: records only that someone looked, without recording what they concluded, leaves the next reader
 #: unable to tell a deliberate refusal-citation from a bridge artifact.
 CITED_WITH_FAILURES = {
+    "d38beh_20260829_022027_2389958":
+        "DATA-LOSS, NOT A PROPERTY OF THE BANK: 22/608 `OSError [Errno 122] Disk quota exceeded` on a shared filesystem at 93%. Unlike every other entry here the reason means rows were LOST, not that they legitimately do not exist -- and the loss is biased, because the mechanism is write volume while the outcome is whether a generation is a successful attack, i.e. whether it is long. 77 of 608 rows absent (12.7%), concentrated in 11 of 38 domains. Cited in §12.28 solely as the negative example; superseded by d38beh2",
     "REPRO_bridge_20260826_050914_1018899":
         "STRUCTURAL: 48/96 `family_missing_one_side` — the forced-choice probe exists for core2x2 "
         "only, so stems outside it have no probe side. A documented property of the bank, not a "

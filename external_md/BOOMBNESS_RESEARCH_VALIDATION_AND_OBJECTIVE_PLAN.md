@@ -7205,3 +7205,76 @@ same doubt.
 seen half is too small to characterise, so "the 6 fit domains happen to be systematically easier"
 cannot be ruled out. The `P_unseen − P_seen` difference bootstrap will carry that limitation
 whichever way it points.
+
+## §12.28 — ⛔ THE FIRST GATE RUN IS INADMISSIBLE: a disk quota silently attrited 12.7% of it, non-randomly
+
+**`d38beh_20260829_022027_2389958` carries a `DONE.json` and must not be read.** It is the most
+dangerous artifact this sprint has produced, because everything about it looks finished.
+
+| | |
+|---|---|
+| attempted | 608 |
+| succeeded (per the failure ledger) | 586 |
+| failed | **22**, all `OSError: [Errno 122] Disk quota exceeded` |
+| rows in `results.jsonl` | **543** |
+| rows in `gens.jsonl` | **531** |
+| missing against the bank | **77 of 608 = 12.7%** |
+| domains with all 16 rows | **27 of 38**; the worst domain has **8** |
+
+**Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
+`gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
+success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the
+files would have passed it.
+
+**Why this cannot be salvaged by dropping the missing rows.** The attrition mechanism is *write
+volume*, and the outcome being measured is whether a generation is a successful attack — which is
+the same thing as it being long. §12.19 measured the completed generations at 205 median tokens and
+successful attacks run longer than refusals by an order of magnitude (a peer measured refusals at
+67–98 characters against 1300+ for compliant answers). **So the rows most likely to be lost are the
+rows most likely to be successes**, and the loss is concentrated: 11 domains are incomplete while 27
+are whole, so it is not even missing-at-random across clusters — in a design whose entire purpose is
+domain-clustered inference.
+
+**Decision: not analysed, not partially analysed, rerun.** `d38beh2` (job 798690) regenerates all
+608 rows against `boombness_prompt_bank_38dom_gatesub.jsonl` with 4.6T free. The first run stays on
+disk as evidence and is not deleted, because a missing directory and a directory that was never
+created look identical.
+
+### ⛔ AND MY OWN GUARD REFUSED TO CALL IT REFUSED
+
+Registering it in `cited_artifact_check.CITED_AS_REFUSED` **failed the suite**:
+
+    AssertionError: d38beh_20260829_022027_2389958 is exempted AS REFUSED
+                    but check_run_readable accepts it
+
+That is the correct answer and a sharper statement of the problem than the one I had written. The
+run **is not mechanically refusable**: it finished, wrote a terminal verdict, and parses cleanly, so
+every automated check in this repo accepts it. It now sits in `CITED_WITH_FAILURES` (with the reason
+classified as **data loss, not a property of the bank** — the only entry in that table where the
+failure means rows were *lost* rather than legitimately absent) and in the suite's `UNMECHANISABLE`
+list, whose entry states what no guard can see: that the `DONE.json` is *true and misleading*.
+
+**Refusing this run is a judgement, not a derivation.** No guard produced it and none could have —
+what makes it inadmissible is a correlation between the failure mechanism and the outcome, which
+lives outside anything the artifact records. Every other inadmissible artifact this sprint has been
+caught by a check; this one was caught by noticing that 543 ≠ 608 and asking why.
+
+### The infrastructure facts neither commit nor guard can protect
+
+Both surfaced tonight and both limit every guarantee in this document:
+
+1. **`.git/hooks/` is not in the repository.** "192 tests run at commit time" is true of this working
+   tree and of nothing else; a fresh clone has no hook at all. Only
+   `scripts/install_commit_guard.sh` reconstructs it — and that file was itself missing three of the
+   eleven guards until §12.22.
+2. **A shared filesystem at 93% can kill a completed run at its final syscall.** The readout run
+   `d38xb` scored all 17,328 rows in 34 minutes and persisted **none** of them: the `OSError` fired
+   inside `run.finish` closing the results handle. A run that dies that way leaves no directory, and
+   **a missing run dir is indistinguishable from a job that was never launched.**
+
+The second is why `d38xb` was resubmitted as `d38xb2` against a **608-row subset bank**
+(`boombness_prompt_bank_38dom_gatesub.jsonl`, sha16 `bd2a7b36778f53a0`, 38 domains × 16 rows, every
+line verified byte-identical to the parent): `extract_boombness` has no query-kind or bank-block
+filter, so it rescored all 17,328 rows to produce the 608 the gate needs — 366 MB of results for
+1 MB of signal. `d38xb2` completed cleanly: **608 query-occurrence rows, 38 domains, 6 seen and 32
+unseen, doses 152/152/152/152**, with `directions_fitted_on: heldout` and `is_self_fit: False`.
