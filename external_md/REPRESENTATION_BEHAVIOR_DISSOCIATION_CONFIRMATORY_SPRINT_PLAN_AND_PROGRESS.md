@@ -2572,3 +2572,61 @@ no file contains a quote character.
 counted values are **10 and 10**: arms B and D contribute 4 each (2 run kinds × 2 banks) and arm E
 contributes 2 (behavioural only), not 4. Corrected by `grep -oh` over the 36 files before commit.
 The habit that caught it is the one this sprint keeps needing — **count it, do not derive it**.
+
+---
+
+## §14.26 — `RBD-R-023` · Confirmatory matrix RUNNING; analysis written **before the data** · 2026-08-30 00:50 IDT
+
+**The Llama half is launched** — 18 runs across both banks, fed by `scripts/rbd_submit_wave.sh`,
+which holds ≤6 jobs in flight and enforces the SLURM rules in code rather than by operator memory
+(including that the Qwen3-14B cap is **2 concurrent loads in total**, because the documented
+per-node rule was *measured* insufficient). The script only ever **adds** — it never cancels a
+waiting job to make progress (§24).
+
+**Early health, from the live logs:**
+
+* every job printed `GPU ok: NVIDIA L40S` and completed `Loading weights: 100%|…| 291/291`;
+* **the population filter returns exactly the preregistered counts** — `n: 160` on readout runs and
+  `n: 80` on behavioural runs, so **`--expect-n` held on every arm**. That is the guard E2 exists
+  for: without it a mis-copied `--bank-blocks` would have produced a 0-row run with a `DONE.json`
+  that reads as ASR 0;
+* first two completions carry `rows_written` **80** and **160** respectively.
+
+### `src/boombness/rbd_analysis.py` — written and committed WHILE THE MATRIX WAS STILL RUNNING
+
+This is deliberate and it is the point. **The estimator, the thresholds and the verdict ladder are
+committed before any result exists**, so none of them can have been chosen to suit a number. The
+threshold table `RBD_THRESHOLDS` **restates** PR-002.6 as amended by `RBD-C-004`; a test asserts
+each value against the preregistration, and a second test **re-derives the 9-row effect floor from
+its two independent sources** (`0.0521 × 160 = 8.34 → 9` and `3 × 2.06 × √(160/96) = 7.98 → 8`,
+binding constraint taken).
+
+**It reuses and joins; it derives nothing statistical of its own:** `asr_protocol` for entries,
+diagnostics, the hash join and paired transitions; `clustered_stats.cluster_sign_test` for the
+domain test *and its attainable floor*; `paired_equivalence` for T3/T5; and
+`reanalyze_corrected.holm_table` for T8.
+
+**Three things it deliberately cannot do:**
+
+1. **It cannot filter rows.** There is no length, truncation, EOS, scorability or "both arms
+   finished" parameter, and `test_the_module_exposes_no_row_filtering_knob` asserts over four public
+   functions that none ever grows one — the same by-absence enforcement `asr_protocol` uses.
+2. **It cannot choose a cluster unit at analysis time.** Domain for the behavioural claim, family
+   for the paired readouts; both hardcoded, neither passable.
+3. **It cannot call something equivalent because p was large.** That decision belongs to
+   `paired_equivalence`, which refuses to make it.
+
+**T4 is wired in and is not decorative:** `critical_k(160, 0.05) = 93`, so a baseline scoring below
+**93/160** mapped wins makes the cell **`VOID_BASELINE_DID_NOT_INSTALL`** for every readout claim —
+the guard that the prior phase's Qwen3 × `ticket_bomb` cell (22/48, p = 0.665, indistinguishable
+from chance) needed and did not have. Prior installing banks sat at 0.875–0.9375, i.e. ~140/160, so
+this is a floor a healthy cell clears easily and a dead one does not.
+
+**15 tests**, covering: the threshold table against the preregistration; the effect floor
+re-derived; the no-filter property; the win predicate per readout; **a tie is not a win**; **a NaN
+is unscorable, not a loss** (the V-54 escape, where `x < g` and `x >= g` are both False); pairing on
+common ids with both one-sided counts reported; unscorable rows **dropped and counted**, never
+coerced; the readout filter genuinely separating the two assays (mixing them would pair binding
+against benign use); a duplicate prompt_id refused; **the domain taken from the BANK rather than
+from the run's own copy**; and Holm applied over the declared family size with step-down stopping at
+the first failure.
