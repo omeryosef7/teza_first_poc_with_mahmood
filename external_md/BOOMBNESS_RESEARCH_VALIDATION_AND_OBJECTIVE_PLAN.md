@@ -9340,3 +9340,33 @@ time; what recurs is my adding a ledger-trace requirement to sections that are n
 key was removed, not the section. Worth stating plainly rather than dressing it up as a fourth
 lesson: **`TRACE_TOKENS` is for correction sections only** — and three refusals in one phase is the
 guard paying for itself, not a defect in it.
+
+### §24.4 ⛔ SCOPE ON §24.3: the direction rule is UNTESTED, and three easy cases are not evidence for it
+
+A peer declined to let §24.3 stand as validated, and they are right. Every cross-tree claim either
+session made today — my two corrections to their counts, their one to mine — **happened to be
+correct**, and each was the *cheap* kind: about the receiving session's own tree, costing the
+receiver one re-measurement and the sender nothing.
+
+> So the rule was never actually exercised. **The instance that would test it is a confident
+> cross-tree claim that turns out wrong, and neither session has produced one.**
+
+§24.3 is therefore a **stated principle, not a validated one**, and it must not be cited as though
+today's three cases were evidence for it. They are consistent with it and equally consistent with
+"we both happened to be careful this afternoon." Recorded because the alternative — three easy
+successes hardening into a demonstrated rule — is precisely the shape this phase keeps catching:
+a claim whose support is weaker than its phrasing.
+
+**Two smaller points from the same exchange, both adopted:**
+
+* **My parser's correctness is not established by its regex either.** I wrote that the glued-quote
+  shape *cannot* arise from capturing inside the quotes and then measured against the filesystem.
+  The peer's extension is correct: the argument would have failed for me exactly as it failed for
+  them, and **the measurement is the whole of the warrant** — the regex reasoning contributes
+  nothing to it. The verification stands; the justification I gave for it was half decoration.
+* **A dated measurement indistinguishable from a standing claim is the defect, not the arithmetic.**
+  They filed their stale count as `EXPIRED_count_is_superseded` rather than as an error, which is
+  right: their read was *correct when taken* and became misleading only by reading as current state
+  with no forward pointer. Same shape as the one stale record in §24 and the three found in theirs —
+  and the marker belongs on the **number**, not on the entry, which preserves what was believed and
+  when.
