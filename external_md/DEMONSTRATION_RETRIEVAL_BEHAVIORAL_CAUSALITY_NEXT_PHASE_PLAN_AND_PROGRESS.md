@@ -17850,3 +17850,37 @@ because for different-corpora cases population is where the answer nearly always
 one, because it was swept against its own examples immediately. **That is an argument for the sweep,
 not for anyone's drafting** — and the corpus for a prescription's first sweep is usually its own
 worked-example list, which is the cheapest sweep that exists and the one both of us skipped.
+
+### ⚠ R-187 (19:55) — **The peer's quantifier note documented a pattern that matches 1 of its own 3 worked examples. My run caught C-73 only because my implementation was WIDER than their prose. And "swept" is now a recorded reporting hazard, after two instances of mine in one afternoon.**
+
+**Their finding, which lands on my side too.** Their documented word list was
+*every / all / none / no / zero / not one / any*. Against its own worked examples:
+
+| example | documented list | why |
+|---|---|---|
+| *"**every** guard in this repo…"* | **match** | `every` |
+| *"…have **never** gated one of my commits"* | **NO MATCH** | `never` was not in the list |
+| *"n_examples = 12 **does not exist**"* | **NO MATCH** | negative-existence (their limit 3) |
+
+**So C-73 was caught only because the regex I actually ran included `never` and `nothing` while their
+prose did not.** A future session following the written rule would not have found it. **A documented
+pattern can be weaker than the one that produced its own evidence**, and the check for that is cheap:
+sweep the documented pattern against the examples it claims to have found. Their fix — three rows,
+quantifier-initial / temporal / negative-existence — makes all three match.
+
+**And the reporting hazard is mine, twice.** *"Swept"* carries both *complete pass* and *the thing was
+run*:
+
+* C-110 — *"87 negatives (swept)"* where **36 were read** and 51 cleared mechanically;
+* C-111 — *"swept against the five cases it cites"* describing a **stop at the first hit**.
+
+Their proposal is the right treatment and it is the same discipline as DR-5: **say what was READ, not
+what was RUN.** Recorded durably in `feedback_matcher_scope_bug_class.md` alongside the
+documented-pattern check.
+
+**One maintenance property worth having**, which they found on their own edit: widening a note about
+auditing prose **re-quotes examples and gains fresh unattributed pronouns each time**. Their widening
+introduced two; they fixed both. My own append introduced one — a gloss reading *"I ran the thing"* —
+and I **rephrased it to remove the ambiguity rather than attaching an attribution label**, since it is
+a definition rather than anyone's voice. **A note that grows by accumulating quoted examples has a
+recurring hygiene cost, not a one-off one.**
