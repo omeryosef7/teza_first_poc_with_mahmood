@@ -7975,3 +7975,63 @@ be holding. **Luck, not care.**
 **Robustness check while here** (the sprint's floor is a *median* option-mass screen at 0.05, and
 mine sits at 0.8712): re-screening per row changes nothing that matters — 22/48 at floors 0.05 and
 0.10 (**0 rows excluded**), 19/45 at 0.20, 18/43 at 0.30. `NOT_ESTABLISHED` at every floor.
+
+## §17 — DEEP REVIEW (DR-20): entry (1b)'s "genuine heldout" is a ROW split inside the six fit domains
+
+**LIVENESS** nothing of mine queued. **ARTIFACT** 9/9 guards. **CLAIM** 22 ledger entries, every one
+carrying a verdict and evidence fields, one correctly marked superseded.
+
+**POPULATION — re-derived *through* `asr_protocol.py` rather than inline**, per §16.2's remedy:
+
+| arm | rows | cap | at_cap |
+|---|---|---|---|
+| knockout A (`ticket_bomb`, 640) | **27/96** | 640 | 0.0 |
+| knockout C (`ticket_bomb`, 640) | **2/96** | 640 | 0.0 |
+| Phase 7 gate arm (38 domains) | **95/608** | 640 | 0.0 |
+
+All three reproduce the figures §12.30 and §14 quote, from the tool, PUBLISHABLE.
+
+### ⛔ THE FINDING: ledger entry (1b) has §12.30's exposure and does not say so
+
+Entry (1b) — *"a CLEAN, pre-registered, dev/heldout Fig-9-style bank DOES show a prompt-level
+Boombness→ASR relation"* — is the strongest surviving prompt-level claim in the ledger, and it is
+KEEP_NARROWED on the strength of **a genuine pre-registered heldout**. Reading the artifact rather
+than the description:
+
+* `row_accounting.by_domain` = **exactly the six domains the directions were fitted from**
+  (`city_bridge, farm_storage, game_manual, instructional, lab_safety, news_report`) — verified
+  identical to `phase7_gate_38dom.FIT_DOMAINS` as a set.
+* Every one of those six appears in **both** `dev` and `HELDOUT_TEST` (n=140–150 per domain per
+  side). **The split is by ROW, not by domain.**
+
+**That is precisely the structure §12.30 showed to be uninformative about generalisation**: a
+row-level heldout inside the fit domains reported +0.315 while the same statistic on 32 unseen
+domains was −0.010. Entry (1b)'s heldout tests *sample* generalisation and says nothing about
+*domain* generalisation, which is the axis that turned out to matter.
+
+**And its own naive control is not cleanly beaten.** Per-domain heldout ρ, candidate vs `d_naive`:
+
+| domain | `d_surface` | `d_naive` |
+|---|---|---|
+| `city_bridge` | +0.402 | +0.366 |
+| `farm_storage` | +0.265 | **+0.308** |
+| `game_manual` | +0.047 | **+0.211** |
+| `instructional` | +0.347 | +0.277 |
+| `lab_safety` | +0.142 | +0.029 |
+| `news_report` | +0.270 | **+0.383** |
+
+`d_naive` is higher on **3 of 6**. The entry's own `audit_reasoning` already says *"WHAT IT DOES NOT
+SHOW: that this is `d_surface`"* — so that half was recorded; the **domain-transfer** half was not.
+
+**Entry (1b) is scoped, not withdrawn.** The correlation is real within these six domains and the
+permutation p (4.997e-04) stands for what it tests. What it cannot support is generalisation beyond
+the fit domains, and §12.30 is now the direct evidence against assuming it.
+
+### ⛔ A correction to V-140's own commit message
+
+V-140 said *"the edited file is the peer's"*. **It is not.** `git log --diff-filter=A` shows
+`src/boombness/cited_artifact_check.py` was created by **V-75 (mine)**; the peer's cautioned-figures
+guard is `tests/test_cautioned_figures.py` (R-134). They also read **different corpora** — mine the
+plan, theirs `RESEARCH_HANDOFF.md` and the sprint summary — so the two phrasings are **two instances
+of one idea over two document sets, not a duplicated rule that has drifted.** Unifying them would
+break both, because a phrase rare in one corpus need not be rare in the other.
