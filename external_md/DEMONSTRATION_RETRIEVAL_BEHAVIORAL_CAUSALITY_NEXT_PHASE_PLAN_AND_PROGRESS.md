@@ -16846,3 +16846,33 @@ That direction is worth separating. An under-reporting matcher hides work; a fal
 The check that caught it was `ls` on the named path — confirming the claim against the thing itself
 rather than against another parse of the same text, which is the only move that has reliably worked
 all day.
+
+### ⏳ DR-21 addendum (17:45) — **EXPIRED_count_is_superseded: DR-21's "13 files each" was true when measured and is stale now. Re-verified against the filesystem: 14 and 14, still identical. All three conclusions hold; only the number moved.**
+
+The peer flagged it and I re-measured rather than adopting the number, using a regex that captures
+*inside* the array quotes — the shape that produced DR-21's false MISSING cannot arise from it:
+
+| check | result |
+|---|---|
+| installer entries | **14** |
+| deployed entries | **14** |
+| in installer, not deployed | none |
+| in deployed, not installer | none |
+| entries with trailing junk | none |
+| listed but absent on disk | none |
+| deployed list written in sorted order | yes |
+| my three guards in both | yes |
+
+`tests/test_commit_guard.py` entered in the peer's V-169 **after** DR-21's read, which is the whole
+difference. **DR-21's three conclusions — identical, all present, sorted — are unaffected.**
+
+**Recording it this way on purpose.** DR-21 was a correct measurement at 17:20; what makes it a
+defect is that it reads as *current state* with no forward pointer, which is exactly the single
+genuinely stale record the peer's DR-12 found in their ledger and the shape R-167 found three times
+in mine. A dated measurement that cannot be distinguished from a standing claim is the problem, not
+the arithmetic — so the marker goes on the number rather than the entry.
+
+⚠ **And by the direction rule this correction is the cheap kind**: it is about *my* tree, so it costs
+me a re-measurement and costs the peer nothing. The expensive direction — a claim about their tree
+that would send them chasing something — is the one to hold to a higher bar, which is the asymmetry
+DR-21 named and this exchange immediately exercised in both directions.
