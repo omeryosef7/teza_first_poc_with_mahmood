@@ -7415,3 +7415,28 @@ candidate.
   only lever"; 38 domains were run and the answer was that the directions do not reach them. The
   lever was real and pulling it produced a negative — which is a better outcome than the ceiling
   argument that motivated it, because it is an answer rather than a limit.
+
+### §12.30.1 — ⛔ the "DEGRADES / no degradation" column in §12.30 must not be read as a contrast between the two directions
+
+A peer flagged that §12.30's table invites a reading it does not support, and they are right.
+
+    d_surface  +0.2700 → −0.0550   difference −0.3250   CI [−0.463, −0.087]  excludes 0
+    d_naive    +0.1708 → −0.0171   difference −0.1879   CI [−0.440, +0.120]  includes 0
+
+One interval excludes zero and one does not — but **the two intervals overlap across
+[−0.440, −0.087]**, and `d_naive`'s difference is both smaller *and* more widely bracketed. That is
+a difference in **detectability**, not a demonstrated difference between the directions. The only
+test that licenses the asymmetry is the difference-of-differences, which §12.30 never computed.
+
+Computed now, cluster-bootstrapped over domains:
+
+    (cand_unseen − cand_seen) − (naive_unseen − naive_seen) = −0.1371
+    95% CI [−0.4461, +0.2002]  →  INCLUDES ZERO
+
+**There is no evidence the candidate degrades more than the control.** Both collapse to
+approximately zero on unseen domains and this design cannot distinguish how they got there.
+
+**The verdict is unchanged** — both fail, so the branch is "untestable" either way, and that is what
+§12.30 concluded. What changes is that the two rows must be quoted as *both collapsing*, never as
+`d_surface` degrading while `d_naive` holds. A table read outside the paragraph that qualifies it is
+how a real finding becomes a wrong one, and this row-pair was one sentence away from that.

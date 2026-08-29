@@ -133,6 +133,7 @@ TRACE_TOKENS = {
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30": ["untestable", "-0.0550", "fit-set-dependent"],
+    "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
 }
 
 
