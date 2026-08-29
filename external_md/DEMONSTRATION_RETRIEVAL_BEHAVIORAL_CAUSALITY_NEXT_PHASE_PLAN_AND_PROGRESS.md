@@ -16815,3 +16815,34 @@ was met — but it belongs beside the reinstatement.
 re-judge replicate, so a per-arm floor cannot be computed for them. The ratio is therefore
 comparable to the other arms only insofar as 0.0521 is representative for these two banks — which
 is assumed, not measured.
+
+### ✅ DR-21 (17:20) — **C-73/C-74's concern is now VERIFIED rather than asserted: installer and deployed hook are identical, all 13 files exist, the list is sorted so hook order equals `pytest` order, and my three guards are in both. Full suite independently 1436/0. My check produced a FALSE MISSING first — fourth matcher artifact today, and the first in the false-positive direction.**
+
+C-73 found my guards were never in `GUARD_TESTS`; C-74 found I had fixed the *deployed* hook and not
+the tracked installer. Neither was ever machine-verified — the peer's V-169 pins it, and the property
+is as much mine as theirs, so I checked it directly.
+
+| property | result |
+|---|---|
+| installer `GUARD_TESTS` vs deployed `.git/hooks/pre-commit` | **identical**, 13 files each |
+| every listed file exists | **13/13** |
+| list sorted ⇒ hook order == `pytest tests/` order | **sorted** |
+| my three guards in both | `test_my_cited_artifacts` ✓ `test_my_ledger_propagation` ✓ `test_cautioned_figures` ✓ |
+
+**Full suite, read from its own output: 1436 passed, 7 skipped, 0 failed** (305s) — confirming the
+peer's count independently rather than repeating it. The +3 over DR-20's 1433 are
+`tests/test_commit_guard.py`, which had been pinning the hook's properties while **not being run by
+the hook**.
+
+**⚠ And my first extraction reported `tests/test_run_completeness_check.py` as MISSING. It is not.**
+Splitting the shell array on whitespace left the closing `"` glued to the final element, so the
+existence test looked for `..._check.py"` and failed. **Fourth matcher artifact today** — after
+C-93's `PR-18` tail-match, C-94's arm-suffixed tag, and R-176's over-broad empty-`gens` criterion —
+and the **first in the false-positive direction**: the previous three under-reported, this one
+invented a defect in a file that has existed all along.
+
+That direction is worth separating. An under-reporting matcher hides work; a false-positive matcher
+**manufactures** it, and had I reported it, the peer would have spent a tick chasing a missing file.
+The check that caught it was `ls` on the named path — confirming the claim against the thing itself
+rather than against another parse of the same text, which is the only move that has reliably worked
+all day.
