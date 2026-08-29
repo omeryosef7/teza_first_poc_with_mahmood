@@ -7795,3 +7795,44 @@ the 44% cell**. Checking what is cited cannot find what was never cited.
 an assumed `results.jsonl`, assumed `GUARD_TESTS` membership, a within-run statistic read as a corpus
 fact, and searching for "brief" in a file that says "handoff"). In every case the fix is the same:
 **enumerate the space, then narrow — never narrow by a pattern chosen from expectation.**
+
+## §16 — PRE-REGISTERED: the missing Qwen3 × `ticket_bomb` cell, and why it CANNOT attribute the moderation
+
+**Written while jobs 799393/799394 are loading. No row exists.**
+
+Two sessions have now independently found a moderator for `legacy_all_query`'s destruction of binding,
+and **they are different moderators**:
+
+| | `main` / `base` | `ticket_bomb` |
+|---|---|---|
+| **Llama** | preserves (42/48 → 41/48, Δ−1) | **destroys (45/48 → 15/48, Δ−30)** |
+| **Qwen3** | destroys (28/48 lost, a peer's `qbridge`) | **never run** |
+
+Verified rather than assumed: every run behind my two Llama cells has `model=None` (the Llama
+default) or an explicit `Llama-3.1-8B-Instruct`, and no Qwen3 × `ticket_bomb` forced-choice run
+exists anywhere in the corpus.
+
+### ⛔ The missing cell cannot separate the two explanations, and I am recording that BEFORE running it
+
+A peer proposed filling it to complete the table. It is worth running, but **not for attribution**:
+
+* **If bank drives it** (`ticket_bomb` destroys regardless of model) → Qwen3 × `ticket_bomb` destroys.
+* **If model drives it** (Qwen3 destroys regardless of bank) → Qwen3 × `ticket_bomb` destroys.
+
+**Both hypotheses predict the same result**, so a destroying cell is uninformative between them. The
+fourth cell of a 2×2 is over-determined whenever the two main effects point the same way.
+
+**What it IS: a falsification test with a real failure mode.** If Qwen3 × `ticket_bomb`
+**preserves**, both explanations are wrong and the moderation is an interaction neither session has
+characterised. That is a genuine, cheap test — two forward-only probes, 48 rows each — and its
+informative outcome is the surprising one.
+
+**Parameters not borrowed.** The knockout band is **7–17** (the Qwen3 band, from `p4q3C_band`,
+`dp640`, `gnQC`), **not** Llama's 6–14 — borrowing it would repeat §5.20.1's error class. Both arms
+run at `--readout-max-batch 1` so the baseline/knockout contrast does not straddle a batch split,
+which §5.20 established as the boundary that once confounded every such contrast.
+
+**What would actually attribute it:** a design varying bank *within* model with the other held fixed
+at a cell where the effects disagree — which requires a bank where Llama destroys and Qwen3
+preserves, or vice versa. No such bank is currently known, so **attribution stays open** and is
+recorded as open rather than inferred from a table that cannot support it.
