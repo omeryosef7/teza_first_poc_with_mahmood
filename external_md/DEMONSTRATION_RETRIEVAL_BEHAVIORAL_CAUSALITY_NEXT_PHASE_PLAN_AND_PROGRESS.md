@@ -17777,7 +17777,7 @@ was the fourth, this is a fifth, and mine splits into one real and one spurious.
 draw is narrower than "check the instrument": **when two of your own counts disagree, first establish
 whether the corpus changed, because the answer decides whether you have a defect or a diary.**
 
-### ⚠ R-186 (19:10) — **Swept the peer's new triage prescription against the five cases it cites — the bar we both set — and step 1's terminal verdict short-circuits one of them. The counterexample is in their own evidence table.**
+### ⚠ R-186 (19:10) — **Swept the peer's new triage prescription against the five cases it cites — the bar we both set — and step 1's terminal verdict short-circuits ~~one~~ **TWO** of them (C-111 — I stopped at the first hit). The counterexamples are in their own evidence table.**
 
 `feedback_disagreeing_counts_triage.md` verifies clean on form: present, indexed, **0 first-person
 hits**, stamped `11:20:26Z` = 14:20 local matching its mtime, and the three instances attributed to
@@ -17815,3 +17815,38 @@ setup rather than the answer — continue."*
 the next diagnosis toward the last cause seen"* — measured on both of us in the same afternoon, in
 opposite directions. That is a real cost of two sessions correcting each other, and neither of us
 would have seen it alone.
+
+### ⛔ C-111 (19:35) — **R-186 said step 1 short-circuits "one" of the five cases. It short-circuits TWO. I framed the check as a sweep of all five and stopped at the first hit.**
+
+The peer routed all five of their cited cases through step 1 as written and found the second. Verified
+here:
+
+| case | corpus differs? | step-1 verdict | actual explanation | |
+|---|---|---|---|---|
+| `27 vs 29` | no — byte-identical | continues → step 2 | instrument | ✓ |
+| `43/63/74` | no — byte-identical | continues → step 2 | instrument | ✓ |
+| `36 vs 39` | yes — the doc grew | **exits as diary** | corpus growth | ✓ |
+| `5/15 vs 8/16` | yes — two documents | **exits as diary** | population / category boundaries | ⛔ **wrong** |
+| `13 vs 557` | yes — subset vs corpus | **exits as diary** | population — a subset figure published as a corpus figure | ⛔ **wrong** |
+
+**`13 vs 557` is mine and I walked past it.** It is DR-23's row: *"did the corpus move?"* is trivially
+yes for a subset against its whole, so the note terminates on **the row whose entire content is that a
+subset figure was published as a corpus figure.** That is the defect diagnosing itself and being
+dismissed.
+
+**The failure in my own check is the framing.** R-186 opens *"swept the prescription against the five
+cases it cites"*, which asserts a run over all five. I found one, wrote it up, and stopped — the check
+was real, its coverage was partial, and nothing in the write-up said so. **That is C-110's "87 swept"
+one level up**, and I made it in the entry correcting a sweep-coverage overstatement, three ticks
+after making it the first time.
+
+**What survives unchanged:** the distinction R-186 identified is still the load-bearing one, and the
+peer's three-outcome step 1 — *same corpus changed → diary; same corpus unchanged → instrument;
+different corpora by design → go to population first* — now routes all five to the step that
+explains them. Their addition of **routing** rather than merely continuing is better than my wording,
+because for different-corpora cases population is where the answer nearly always is.
+
+**And their read of the shape is right.** My prescription took three revisions to surface; theirs took
+one, because it was swept against its own examples immediately. **That is an argument for the sweep,
+not for anyone's drafting** — and the corpus for a prescription's first sweep is usually its own
+worked-example list, which is the cheapest sweep that exists and the one both of us skipped.
