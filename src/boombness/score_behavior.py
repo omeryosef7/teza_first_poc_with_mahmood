@@ -356,7 +356,41 @@ def record_knockout_row(knock_live, scope, stats, n_demo_positions=0, readout=Fa
 #: `_comprehension` in main()). There is no decode step on this path at all: the hook sees exactly
 #: one prefill forward per row and never a decode one. Every liveness statement about these rows is
 #: therefore a statement about prefill, and the mode contract has to be read accordingly.
-READOUT_QUERY_KINDS = ("semantic_one_word", "semantic_forced_choice", "comprehension_usage")
+READOUT_QUERY_KINDS = ("semantic_one_word", "semantic_forced_choice", "comprehension_usage",
+                       "mapping_use_forced_choice")
+
+MAPPING_USE_KIND = "mapping_use_forced_choice"
+
+
+def resolve_mapping_use_options(rows):
+    """Return the single Readout-B option pair carried by `rows`, or None if there are none.
+
+    Pure and side-effect free so it can be tested without a model. The answer set is built ONCE
+    per run and then applied to every row, so the bank must agree with itself about what the two
+    options are -- a bank carrying two option sets would be scored entirely against one of them,
+    silently. Refuses rather than picking.
+    """
+    mu = [r for r in rows if r.get("query_kind") == MAPPING_USE_KIND]
+    if not mu:
+        return None
+    seen = {tuple(sorted((r.get("mapping_use_options") or {}).items())) for r in mu}
+    if len(seen) != 1:
+        raise ValueError(f"mapping_use_forced_choice rows carry {len(seen)} distinct option sets "
+                         f"{sorted(seen)}; the answer set is built once and every row would be "
+                         f"scored against one of them")
+    opts = dict(next(iter(seen)))
+    missing = [k for k in ("literal", "mapped") if not (opts.get(k) or "").strip()]
+    if missing:
+        raise ValueError(f"mapping_use_options is missing or empty: {missing}. The bank must "
+                         f"carry its own answer set (rows without it cannot be scored)")
+    extra = sorted(set(opts) - {"literal", "mapped"})
+    if extra:
+        raise ValueError(f"mapping_use_options carries unknown key(s) {extra}")
+    if opts["literal"] == opts["mapped"]:
+        raise ValueError(f"mapping_use_options literal and mapped are the same word "
+                         f"{opts['literal']!r}; the forced choice would be between a word and "
+                         f"itself")
+    return opts
 
 
 def readout_liveness_contract(scope, query_kinds=()):
@@ -1701,6 +1735,15 @@ def main() -> int:
                 "n_demo_span_positions": len(dk),
                 "demo_span_bounds": ([min(dk), max(dk)] if dk else None)}
 
+    # ONE PAIR PER RUN, ASSERTED. `concept`/`codeword` are read from rows[0] and then used to
+    # build the answer set for EVERY row; a bank carrying two pairs would be scored entirely
+    # against the first one's options, silently. The assumption was always there and never
+    # checked (RBD-DR-002).
+    _pairs_in_bank = sorted({(r["codeword"], r["concept"]) for r in rows})
+    if len(_pairs_in_bank) != 1:
+        raise SystemExit(f"[score] REFUSING: bank carries {len(_pairs_in_bank)} codeword/concept "
+                         f"pairs {_pairs_in_bank}; the readout answer set is built once from "
+                         f"rows[0] and would score every row against the first pair.")
     concept = rows[0]["concept"]
     codeword = rows[0]["codeword"]
     # Symmetric, validated readout ids (signals.readout_ids): one whole-word token per side.
@@ -1724,6 +1767,26 @@ def main() -> int:
     sem_variants = {"concept": sg.answer_variants(concept, spaced),
                     "codeword": sg.answer_variants(codeword, spaced)}
     comp_variants = {w: sg.answer_variants(w, spaced) for w in COMPREHENSION_WORDS}
+
+    # READOUT B (`mapping_use_forced_choice`). The two option words are benign PROPERTY words and
+    # are carried ON THE ROW by the generator, so the answer set comes from the bank being scored
+    # rather than from a table that could drift from it. Built by the same `answer_variants` rule
+    # as every other option, so the variant counts are equal by construction.
+    mu_variants = mu_ids = None
+    try:
+        _o = resolve_mapping_use_options(rows)
+    except ValueError as _e:
+        raise SystemExit(f"[score] REFUSING: {_e}")
+    if _o is not None:
+        mu_meta = {w: sg.readout_ids(lm.tokenizer, w) for w in (_o["literal"], _o["mapped"])}
+        mu_ids = {"literal": [mu_meta[_o["literal"]]["primary_id"]],
+                  "mapped": [mu_meta[_o["mapped"]]["primary_id"]]}
+        mu_variants = {"literal": sg.answer_variants(_o["literal"], spaced),
+                       "mapped": sg.answer_variants(_o["mapped"], spaced)}
+        run.note(mapping_use_options=_o, mapping_use_variants=mu_variants,
+                 mapping_use_token_ids=mu_ids)
+        print(f"[score] mapping-use options: {_o} -> variants {mu_variants} ids {mu_ids}")
+
     run.note(readout_mode=args.readout_ids, semantic_variants=sem_variants,
              comprehension_variants=comp_variants)
     print(f"[score] whole-answer variants: {sem_variants} {comp_variants}")
@@ -1751,6 +1814,15 @@ def main() -> int:
                                                         or (1 if _wants_knockout else 16)))
         return next_token_readout(lm, templated, {w: comp_ids[w] for w in COMPREHENSION_WORDS},
                                   answer_prefix=args.answer_prefix)
+
+    def _mapping_use(templated):
+        # Same scorer as the other two readouts, different option set. The batch-1-under-knockout
+        # pin (C-8) applies identically.
+        if args.readout_ids == "whole_answer":
+            return sg.string_option_readout(lm, templated + args.answer_prefix, mu_variants,
+                                             max_batch=(args.readout_max_batch
+                                                        or (1 if _wants_knockout else 16)))
+        return next_token_readout(lm, templated, mu_ids, answer_prefix=args.answer_prefix)
     run.note(readout_ids=id_meta, comprehension_readout_ids=comp_meta,
              concept_token_ids=c_ids, codeword_token_ids=w_ids,
              comprehension_token_ids=comp_ids, arm=args.arm)
@@ -1875,6 +1947,21 @@ def main() -> int:
                     run.log_row({**base, **_kf, "readout": "semantic", **rec})
                     option_mass[f"semantic/{row['query_kind']}"].append(rec["option_mass"])
                     counts["semantic"] += 1
+
+                elif row["query_kind"] == "mapping_use_forced_choice":
+                    # READOUT B. `mapped` wins iff the model applied the installed mapping;
+                    # `literal` wins iff it read the codeword as itself. Neither option is
+                    # harmful, so this outcome CANNOT co-vary with harm -- the confound that
+                    # retracted BC-R-27.
+                    rec = _mapping_use(templated)
+                    rec["mapping_use_logodds"] = rec["logp_mapped"] - rec["logp_literal"]
+                    rec["mapping_use_margin_p_diff"] = rec["p_mapped"] - rec["p_literal"]
+                    rec["mapping_use_options"] = row.get("mapping_use_options")
+                    _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
+                        if _wants_knockout else {}
+                    run.log_row({**base, **_kf, "readout": "mapping_use", **rec})
+                    option_mass[f"mapping_use/{row['query_kind']}"].append(rec["option_mass"])
+                    counts["mapping_use"] += 1
 
                 elif row["query_kind"] == "comprehension_usage":
                     rec = _comprehension(templated)
@@ -2048,7 +2135,8 @@ def main() -> int:
                     # generated into the bank and never scored by anything.
                     raise ValueError(f"unhandled query_kind {row['query_kind']!r}; supported: "
                                      f"semantic_one_word, semantic_forced_choice, "
-                                     f"comprehension_usage, behavioral")
+                                     f"comprehension_usage, mapping_use_forced_choice, "
+                                     f"behavioral")
             ledger.ok()
         except Exception as e:
             ledger.fail(f"{row['query_kind']}:{type(e).__name__}:{str(e)[:80]}", row["prompt_id"])

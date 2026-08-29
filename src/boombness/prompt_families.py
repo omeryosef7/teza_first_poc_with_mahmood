@@ -540,6 +540,13 @@ def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
     # key silently is a bank whose sha no longer matches the artifacts joined to it.
     _extra = ({"preamble": preamble, "n_preamble_lines": len(preamble_lines)}
               if preamble_lines else {})
+    # READOUT-B SELF-DESCRIPTION. The scorer needs the two option words to build its variant sets,
+    # and the alternative -- importing MAPPING_USE_OPTIONS into score_behavior -- would make the
+    # scorer's answer set depend on a table that can drift from the bank it is scoring. Carrying
+    # them ON THE ROW means a bank is scorable from itself, and a mismatch is detectable rather
+    # than silent. Conditional, like the preamble above, so no existing bank grows a key.
+    if _needs_opts:
+        _extra = {**_extra, "mapping_use_options": dict(_opts)}
     return {
         **_extra,
         "prompt_id": pid,

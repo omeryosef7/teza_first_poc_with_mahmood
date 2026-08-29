@@ -2256,3 +2256,66 @@ code.* This is the same shape as the inherited *"testing the check is not testin
 `RBD-C-006`'s *"a self-derived expectation is not an expectation"*. The deep review found twelve
 defects in my code; my write-up of that review then introduced a thirteenth, in the form of a false
 status. **Status fields in a review table are claims and must be verified like any other.**
+
+---
+
+## §14.22 — `RBD-R-016` · Readout B is SCORABLE: `score_behavior` wired, reusing the existing readout · 2026-08-29 18:20 IDT
+
+Before this, the bank existed and nothing could score it: `score_behavior`'s dispatch is an
+`if/elif` on `query_kind` and `mapping_use_forced_choice` fell to the `else`, which raises. (That
+`else` exists because its absence once let **288 forced-choice rows be generated into a bank and
+never scored by anything**, with `counts={}`, `n_failed=0` and a `DONE.json` indistinguishable from
+a complete run.)
+
+**Nothing new was written to score it.** The mapping agent's finding was that the machinery is
+already generic:
+
+* `signals.string_option_readout(lm, context, options, max_batch)` takes
+  `{option_name: [surfaces]}` and returns `logp_{name}` / `p_{name}` / `option_mass` for **any**
+  option names — so options named `literal` and `mapped` yield `p_literal` / `p_mapped` with zero
+  new scoring code;
+* `sg.answer_variants(word, spaced)` is the single rule that turns any word into its variant list,
+  so the two options get **equal variant counts by construction** rather than by tokenizer luck —
+  the asymmetry that once made every `semantic_logodds` favour the concept side;
+* the **option-mass gate is keyed by the string** `f"{readout}/{query_kind}"` over a `defaultdict`,
+  so a new readout name gets its own median, its own `reportable` flag and its own `tail_fail` line
+  automatically. No change was needed there at all.
+
+**The diff is five small edits**: membership in `READOUT_QUERY_KINDS`; a `_mapping_use` closure that
+is `_semantic` with a different option dict (including the same batch-1-under-knockout pin from
+C-8); a dispatch branch emitting `readout="mapping_use"` with `mapping_use_logodds`; the
+option-mass key; and the `else` message.
+
+### The answer set comes from the BANK, not from a table
+
+`prompt_families` now emits `mapping_use_options` **onto the row** (conditionally, like the
+preamble field, so no existing bank grows a key). The alternative — importing `MAPPING_USE_OPTIONS`
+into `score_behavior` — would make the scorer's answer set depend on a table that can drift from the
+bank it is scoring. **A bank is now scorable from itself, and a mismatch is detectable rather than
+silent.**
+
+Both banks regenerated: **960 rows, 240 families, 0 violations** each; `mapping_use_options` present
+on **320/320** Readout-B rows and **0/640** others; canonical `main` banks still **byte-identical**
+(3 tests). Both banks re-audited under the strengthened audit: **OVERALL PASS**.
+
+### `RBD-R-017` — a latent bug in existing code, fixed while passing through
+
+`concept` and `codeword` are read from `rows[0]` and then used to build the answer set for **every**
+row. The reviewer noted this is *"a single-pair-per-run assumption with no assertion behind it"* — a
+bank carrying two lexical pairs would be scored **entirely against the first one's options,
+silently**. Now asserted, with a `SystemExit` naming the pairs found. The same guarantee is enforced
+for the Readout-B option set by `resolve_mapping_use_options`.
+
+That resolver was **extracted as a pure function** precisely so the refusals are testable without a
+model: it refuses two distinct option sets, a missing/empty/unknown key, a row missing the key
+entirely, and a forced choice between a word and itself.
+
+**20 tests**, covering membership, the liveness contract on the three admitted scopes, that it still
+**refuses** `response_query_only` and `decode_only` (Readout B must not widen what the forward-only
+path accepts), the option set read from the real shipped bank, and that the two banks carry disjoint
+pairs on both axes — which is what H2 needs.
+
+**212 tests pass** across the RBD and readout-adjacent suites; **9/9 guards**.
+
+⚠ One dead line (`... if False else None`) was left in the first version of this patch and removed
+before commit. Recorded because it is the kind of thing that survives into a paper's codebase.
