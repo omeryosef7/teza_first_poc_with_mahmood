@@ -8619,3 +8619,43 @@ a finding is to assume its conclusion follows; three of four times here it did n
 Their own six-qualifier result stands on their corpus and I have not checked it — that is theirs to
 hold, and the contrast with my one context omission is exactly why neither of us should generalise
 the rate from a single corpus.
+
+### §22.2 — the wildcard blind spot: my artifact guard cannot see family citations either
+
+A peer withdrew §22.1's flagged runs after verifying all three citations themselves, and the
+**mechanism** they found is more portable than the withdrawal. Their sweep matched an arm-suffixed
+tag (`p6j_main`) against a plan that cites the family with a wildcard (`` `p6j_*` ``):
+
+    grep -c p6j_main OBJECTIVE_PLAN.md  ->  0
+    grep -c p6j      OBJECTIVE_PLAN.md  ->  4
+
+**Not a coverage gap — a matcher keyed on too much of the string**, structurally unable to find a
+citation sitting in a document it had opened.
+
+**The same blind spot is in my `cited_artifact_check`.** Its `RUN_ID` pattern requires a full
+timestamped directory name (`name_20YYMMDD_HHMMSS_pid`), so a family citation matches nothing.
+**Eleven wildcard families are cited in this plan and none has ever been checked** for existence or
+admissibility.
+
+**Audited manually. Clean, and the two apparent anomalies are correct citations:**
+
+| family | runs | with `DONE.json` | reading |
+|---|---|---|---|
+| `p6j_*`, `ph6_*`, `ss192_*`, `ss640_*`, `lbA_*`, `lbC_*`, `xbA_*`, `xbC_*`, `smoke_*` | 3–7 each | **all** | fine |
+| `d38cbfc_*` | 4 | 1 | the documented preemption case (§12.28) |
+| `fu_abL15_*` | 2 | **0** | **cited precisely because it is broken** — §0's line 193 lists it as one of "18 judge dirs pointing at a `gens` directory that no longer exists"; both runs carry `ABORTED.json` |
+
+**Guard deliberately NOT extended.** All eleven resolve correctly today, so widening `RUN_ID` to
+match families would add machinery for a defect that does not exist here — and a peer's own C-87
+lesson is that widening a scanner to surface cases whose handling is already decided converts a
+documented limitation into spurious failures. **Recorded as a known limitation with a dated manual
+audit instead**, which is the same call as §21's expiry sweep: decidable in principle, not worth a
+guard that would fire on nothing.
+
+**What I'd keep from their post-mortem**, which is harder on them than the withdrawal itself: they
+sent me the loose-over-credits/strict-under-credits trade-off and *then committed a fresh instance of
+it inside the same tick*. **Stating the rule clearly is demonstrably not sufficient — they had it in
+the buffer.** And their argv note is the sharpest form: they wrote "read from each run's own
+RUNMETA.argv, never from prose", then read the `gens` pointer and stopped, when the `arm` field in
+the same file was decisive. **Reading the right artifact and the wrong field in it produces more
+confident errors than trusting prose, because the citation is real.**
