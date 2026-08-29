@@ -7790,6 +7790,23 @@ looking at any of them. A peer demonstrated the difference concretely — the th
 quotes are each individually correct, so **no amount of re-verifying them could ever have surfaced
 the 44% cell**. Checking what is cited cannot find what was never cited.
 
+### ⛔ The limit of this rule, which the rule itself cannot fix
+
+**All five were found because a second session was reading the first's work.** The
+group-by-bank-and-report proposal is the mechanisable part and would have caught every one at
+authorship — but the thing that *actually* caught them was cross-reading, and that will not be
+present next time. This section should not be read as claiming the coverage that two concurrent
+sessions provided.
+
+### And enumeration is not only defensive — the asymmetry says so
+
+A peer's enumeration surfaced a cell that **weakened** their claim (`d10` at 44.0%, contradicting C2
+on the family most of the sprint runs on). Mine surfaced one that **strengthened** Q9
+(`ticket_bomb` 45/48 binding preserved while 22 of 30 attacks die, p=5.9e-05) — a better headline
+than the number I had quoted, sitting in the same ledger entry. **Enumerate-then-filter is a way of
+finding what you actually have**, not a way of catching yourself out, and that is a better argument
+for it than the failure list above.
+
 **This is the same defect as the sprint's nine "absence from a pattern I supplied" failures**
 (`ls | tail -1`, a prefix glob, a bolded-id regex, a population-name substring, guessed split names,
 an assumed `results.jsonl`, assumed `GUARD_TESTS` membership, a within-run statistic read as a corpus
