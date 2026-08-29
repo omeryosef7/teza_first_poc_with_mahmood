@@ -17304,3 +17304,38 @@ unstated filter) and 27 vs 29 (`grep -c` lines vs `grep -o` occurrences). **Clai
 survived; every claim about a distribution did not.**
 
 **Thread closed on my side.**
+
+### ⛔ R-183 (14:15) — **R-180 left the two option masses beside plan:9168 "open". Closed as a BOUNDED NEGATIVE: no run × query-kind subset × {median, mean} on any `ticket_bomb` bank reproduces 0.5695 or 0.1162. And the obvious explanation — that I had been computing the wrong quantity by hand — is eliminated.**
+
+**Eliminated first, because it was the likeliest and it is the failure class I keep hitting.** The
+rows carry an **explicit `option_mass` field**, and I had been computing `p_concept + p_codeword` by
+hand throughout this thread. That is textbook *right artifact, wrong field*. Measured on the 48
+shared forced-choice rows:
+
+| run | hand `p_concept+p_codeword` | **field `option_mass`** |
+|---|---|---|
+| `tbA` | median 0.5534 / mean 0.5442 | median **0.5534** / mean **0.5442** |
+| `p5C` | median 0.1152 / mean 0.1396 | median **0.1152** / mean **0.1396** |
+
+**Identical.** The field is the same quantity, so the discrepancy is not a wrong-field error on my
+side.
+
+**Bounded exhaustive search**, over every run whose bank contains `ticket_bomb`, every `query_kind`
+subset plus the all-rows set, and both `median` and `mean` of `option_mass`:
+
+    combinations scanned .......................... 48
+    reproducing 0.5695 or 0.1162 (tol 5e-5) ....... 0
+
+**So the two masses recorded beside the 45/48 → 15/48 cell are not reproducible from this corpus.**
+The mapped-wins figures reproduce exactly and across three baselines (R-180); only the masses do not.
+
+**Disposition: closed as a stated negative, not attributed and not guessed.** This is stronger than
+R-180's *"left open"* because the search space is now named and complete rather than a list of
+statistics somebody happened to try — which is the difference between *"we tried eight things"* and
+*"no member of this set produces it"*. **Not load-bearing:** the mapped-wins cell is the claim, and
+nothing in R-171 or R-93 rests on the masses.
+
+⚠ Scope: the search covers `option_mass` medians and means over `ticket_bomb` runs in **this tree**.
+It does not cover other banks, other statistics (trimmed means, per-block medians), or runs outside
+this tree — so it establishes irreproducibility **here under these definitions**, not that the
+figures were never computed anywhere.
