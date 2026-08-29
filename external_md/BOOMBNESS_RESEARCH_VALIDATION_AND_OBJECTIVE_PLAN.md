@@ -7573,12 +7573,21 @@ Phase 6 ladder). Readout is `d_surface|L8|proj` at the query occurrence unless s
 
 ### Q1 — Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?  **NO, and it is not close**
 
-| condition | n | median `d_surface\|L8\|proj` |
-|---|---|---|
-| `direct_harmful` | 384 | **+1.643** |
-| `concept_in_benign_ctx` | 384 | **+1.823** |
-| `natural_doublespeak` | 1008 | **−2.156** |
-| `benign_literal` | 816 | **−2.253** |
+| condition | harmful? | surface word | n | median `d_surface\|L8\|proj` |
+|---|---|---|---|---|
+| `concept_in_benign_ctx` | benign | **concept** | 384 | **+1.823** |
+| `direct_harmful` | harmful | **concept** | 384 | **+1.643** |
+| `natural_doublespeak` | harmful | codeword | 1008 | **−2.156** |
+| `direct_codeword` | **harmful** | codeword | 72 | **−2.160** |
+| `benign_literal` | benign | codeword | 816 | **−2.253** |
+| `benign_remap` | benign | codeword | 72 | **−2.442** |
+
+**The two rows a peer added make it unarguable, and both were on disk.** `concept_in_benign_ctx` is
+**benign text containing the concept word** and scores **+1.823**; `direct_codeword` is a
+**directly harmful request phrased with the codeword** and scores **−2.160**. Those two alone form a
+2×2 that separates lexical presence from harm: **a harmful prompt scores like benign text whenever it
+uses the codeword, and benign text scores like a harmful one whenever it uses the concept word.**
+The readout tracks the surface token, not the intent.
 
 The readout splits by **whether the concept word is literally present**, not by whether the attack
 succeeds. Doublespeak sits with *benign literal*; direct sits with *concept in benign context*.
@@ -7623,20 +7632,29 @@ Partial ρ controlling `n_examples`, length **and refusal** = **+0.3405**, CI [+
 excludes zero. Against the *full* control set including `d_naive`: +0.1783 pooled, CI containing
 zero; dev +0.0389 vs heldout +0.2547. On unseen domains the whole thing collapses to −0.055.
 
-### Q8 — Do user-like / CoT-like framings increase Boombness?  **YES — but non-specifically, which is the finding**
+### Q8 — Do user-like / CoT-like framings increase Boombness?  **YES in doublespeak, by ~+0.6 — but NOT specifically user/CoT, and NOT in benign text**
 
-| role style | n | median | Δ vs plain |
-|---|---|---|---|
-| `plain` | 648 | −2.223 | — |
-| `user_like` | 72 | −1.582 | **+0.640** |
-| `cot_like` | 72 | −1.626 | **+0.597** |
-| `assistant_like` | 72 | −1.559 | +0.664 |
-| `tool` | 72 | −1.621 | +0.601 |
-| `system_like_quoted` | 72 | −1.613 | +0.610 |
+⛔ **A sign disagreement with a peer, resolved.** Pooling all conditions gives non-plain **−0.290
+BELOW** plain; conditioning gives non-plain **+0.6 ABOVE**. The pooled comparison is **confounded**:
+the non-plain styles exist for only two conditions, while `plain` additionally carries
+`concept_in_benign_ctx` (+1.823) and `direct_harmful` (+1.643) — the two highest-scoring conditions
+in the bank. Pooling therefore compares non-plain doublespeak against plain-everything.
 
-**Every non-plain framing raises it by the same ~+0.6**, within 0.07 of each other. So the effect is
-*departing from plain formatting*, not anything specific to user or CoT framing. A result reported as
-"CoT framing increases boombness" would be true and misleading.
+| role style | in `natural_doublespeak` (Δ vs plain) | in `benign_literal` (Δ vs plain) |
+|---|---|---|
+| `plain` | −2.223 | −2.253 |
+| `user_like` | −1.582 (**+0.640**) | −2.281 (−0.028) |
+| `cot_like` | −1.626 (**+0.597**) | −2.223 (+0.030) |
+| `assistant_like` | −1.559 (**+0.664**) | −2.256 (−0.003) |
+| `tool` | −1.621 (**+0.601**) | −2.265 (−0.012) |
+| `system_like_quoted` | −1.613 (**+0.610**) | −2.196 (+0.057) |
+
+**Two findings, and the second is new to both of us.** First, the five non-plain styles are within
+**0.067** of each other, so the effect is *departing from plain formatting*, not anything about user
+or CoT framing — reporting "CoT framing increases boombness" would be true and misleading. Second,
+**the effect is absent in `benign_literal`** (−0.028 to +0.057, n=72 each): the same five framings
+applied to benign text containing the same codeword move the readout by nothing. So it is not a
+generic formatting artifact — it appears only where a codeword→concept mapping is being taught.
 
 ### Q9 — Can we surgically remove Boombness without destroying comprehension?  **YES, and it is the sprint's cleanest positive**
 
