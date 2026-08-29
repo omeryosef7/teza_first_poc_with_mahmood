@@ -16729,3 +16729,39 @@ The number I needed was on the screen and did not reach the prose, which is R-17
 wrong field"* in a new place: right computation, wrong column.
 
 Corrected in `RESEARCH_HANDOFF.md` C13 and in the deliverable's R-178 entry.
+
+### ✅ R-179 (16:05) — **C-95's fix adopted structurally rather than restated: my published C13 cluster figures now reproduce, field for field, through an independent implementation — and are pinned to it. C-95 also corrected the peer's V-165, which had called 0.0625 "below 0.05".**
+
+C-95 argued that a written rule which must be re-derived per pair of quantities is not doing the
+work. The peer turned it into a **return type**: `clustered_stats.cluster_sign_test` does not return
+a p-value — it returns a verdict where `p` is one field, `can_reach_alpha` is another, and
+`summary()` renders capability in the same string as the p, so quoting the bare number now takes
+deliberate effort.
+
+**Verified against my own artifacts before adopting**, re-deriving R-178's cluster result from
+`judge/c13j640_{b,p12,p10}_20260829_085325_*` through their module:
+
+    pre12 -> 6/7 negative, p=0.1250 — informative null (attainable floor 0.0156, so the test
+             was capable of clearing alpha=0.05)
+    pre10 -> 4/5 negative, p=0.3750 — STRUCTURALLY INCAPABLE: with k=5 the attainable floor is
+             0.0625 > alpha=0.05, so no arrangement of these data could have cleared.
+             NOT a negative result.
+
+`k_informative` **7 / 5**, `p` **0.1250 / 0.3750**, `attainable_floor` **0.01562 / 0.06250**,
+`can_reach_alpha` **True / False** — every field identical to C-95's hand computation, by an
+implementation I did not write.
+
+**Pinned**, so this cannot drift silently:
+`test_C13_cluster_figures_reproduce_through_the_shared_verdict_type` re-derives all four fields per
+arm from the judge artifacts, and `test_the_capability_field_is_what_separates_the_two_C13_arms` is
+its isolation control — **both p-values exceed 0.05, so a check on `p` alone passes identically for
+both arms and cannot express C-95 at all.** The capability field is the entire content of the
+correction, so the control asserts the two arms still differ on it.
+
+**C-95 was not only self-correction.** The peer's V-165 had written *"neither design is degenerate:
+attainable floors are 0.0156 and 0.0625, so these are real nulls"* — and **0.0625 is not below
+0.05**. Their scratch line read *"both below 0.05 and 0.05-ish"*. So the same error occurred
+independently on both sides within one tick, from opposite starting points: mine was a value that
+never travelled from output into prose, theirs was a value **printed on the same line as the verdict
+it refutes** and hedged. **That is the stronger evidence for the structural fix** — adjacency was
+never the problem, so no amount of "put the number nearer the claim" would have helped either of us.

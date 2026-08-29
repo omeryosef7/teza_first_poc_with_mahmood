@@ -360,3 +360,68 @@ def test_that_wire_test_is_not_vacuous(monkeypatch):
     monkeypatch.setattr(cac, "cited_ids", lambda _text: _min_ids_that_resolve(cac.MIN_EXPECTED))
     assert cac.main() == 0, (
         "the clean corpus does not return 0, so the non-zero in the test above proves nothing")
+
+
+# --------------------------------------------------------------------------------------------
+# R-179. C-95's structural fix, adopted rather than restated. The concurrent session turned
+# "quote the floor with the p" from a written rule into a return type: cluster_sign_test does not
+# return a p-value, it returns a verdict whose summary() renders capability in the same string as
+# the p. My C-95 argued for exactly that and their module is the version that exists.
+#
+# This test pins MY PUBLISHED C13 CLUSTER FIGURES against their INDEPENDENT implementation,
+# recomputed from my own judge artifacts. It fails if my documents drift, if the module's floor
+# logic changes, or if the two ever stop agreeing -- which is the property C-95 says I had no
+# mechanism for.
+C13_CLUSTER = {   # arm -> (k_informative, n_negative, p, can_reach_alpha)
+    "pre12": (7, 6, 0.1250, True),
+    "pre10": (5, 4, 0.3750, False),
+}
+C13_JUDGE = {
+    "base":  "c13j640_b_20260829_085325_330096",
+    "pre12": "c13j640_p12_20260829_085325_330099",
+    "pre10": "c13j640_p10_20260829_085325_330102",
+}
+
+
+def _domain_means(run_id):
+    import collections
+    import statistics
+    d = cac.resolve(run_id)
+    assert d, f"{run_id} does not resolve"
+    per = collections.defaultdict(list)
+    with open(os.path.join(d, "results.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            per[r.get("domain")].append(1 if (r.get("strongreject_score") or 0) >= 0.5 else 0)
+    return {k: statistics.fmean(v) for k, v in per.items()}
+
+
+def test_C13_cluster_figures_reproduce_through_the_shared_verdict_type():
+    """R-178/C-95's cluster numbers, re-derived from artifacts through clustered_stats."""
+    import clustered_stats as cs
+    base = _domain_means(C13_JUDGE["base"])
+    for arm, (k, neg, p, capable) in sorted(C13_CLUSTER.items()):
+        arm_means = _domain_means(C13_JUDGE[arm])
+        doms = sorted(set(base) & set(arm_means))
+        v = cs.cluster_sign_test([arm_means[d] - base[d] for d in doms])
+        assert v["k_informative"] == k, f"{arm}: k {v['k_informative']} != published {k}"
+        assert v["n_negative"] == neg, f"{arm}: negative {v['n_negative']} != published {neg}"
+        assert abs(v["p"] - p) < 1e-9, f"{arm}: p {v['p']} != published {p}"
+        assert v["can_reach_alpha"] is capable, (
+            f"{arm}: can_reach_alpha {v['can_reach_alpha']} != published {capable}. C-95 turns on "
+            f"exactly this field: pre10's test could never have cleared alpha.")
+
+
+def test_the_capability_field_is_what_separates_the_two_C13_arms():
+    """ISOLATION: without can_reach_alpha the two arms are indistinguishable as 'not significant'.
+
+    Both p-values exceed 0.05, so a check on p alone passes identically for both and cannot express
+    C-95. This asserts the arms DIFFER on capability -- if they ever stop differing, the correction
+    this file encodes has become vacuous and should be re-derived, not silently kept.
+    """
+    ps = {a: v[2] for a, v in C13_CLUSTER.items()}
+    assert all(p > 0.05 for p in ps.values()), "p alone no longer fails to separate them"
+    caps = {a: v[3] for a, v in C13_CLUSTER.items()}
+    assert len(set(caps.values())) == 2, (
+        "both C13 arms now have the same capability verdict, so this test no longer demonstrates "
+        "the distinction C-95 exists to draw")
