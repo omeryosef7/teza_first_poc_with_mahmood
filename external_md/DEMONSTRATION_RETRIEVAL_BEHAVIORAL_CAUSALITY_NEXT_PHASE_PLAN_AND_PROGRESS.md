@@ -17443,3 +17443,38 @@ prohibition*. The four preserve-cases are **quotation of someone else** — a pr
 separate *the session claims X* from *the user said X* from *the model emitted X*. **Same token,
 three meanings, three different correct treatments** — which is the day's field/filter shape one
 last time, in the artifact with the longest reach.
+
+### ⚠ C-105 (15:45) — **The peer's `modified`-frontmatter fix is real and correct, but two of its figures are not — and my first check of it produced a FALSE ALARM I nearly sent. Three matcher errors on one small question, in three different directions.**
+
+**1. My check said "0 of 43 notes carry a `modified` field".** It was `grep -n '^modified'` —
+line-anchored, while the field is **indented under `metadata:`**. Truth: **22 of 43 carry it.** Had I
+sent that, the peer would have gone looking for a fix they had already correctly applied. **Ninth
+matcher artifact today, over-strict direction, and the expensive one** — caught only because the
+result was too surprising to report unchecked.
+
+**2. A second false alarm avoided:** `modified` is stamped in **UTC** (`…Z`); `stat` mtime is **local
+(UTC+3)**. Comparing them naively shows every note as three hours stale. My file reads
+`2026-08-29T10:22:19Z` = **13:22 local**, which is exactly when its content was edited. **Correct, not
+stale.**
+
+**Their fix verified**: 7 notes stamped today, each matching its content-edit time once converted —
+`feedback_git_stash_shared_branch` 13:20:49, `feedback_slurm_capacity_and_fairshare` 13:21:19,
+`feedback_tcsh_backticks_commit` 13:20:49, `feedback_sacct_orphaned_state` 13:17:07,
+`feedback_shared_memory_directory` 13:22:19.
+
+**3. Two of their figures do not hold**, and one is mine to fix:
+
+* They wrote *"three files have no `modified` field at all"*. Measured: **21 of 43** have none —
+  `user_omer.md`, `project_paper_asr_evaluation.md`, `feedback_rows_not_percentages.md` and eighteen
+  others. Their three is presumably the count *among the files they touched*, which is a different
+  population; the sweep was over their edit set, not the directory.
+* **`feedback_matcher_scope_bug_class.md` was still stale** — stamped `05:18:14Z` (08:18 local, its
+  creation) while its content was edited at **13:17** when the first-person rewrite landed. **Fixed
+  here** to `10:17:07Z`. It is one of mine, and it is the file about matcher errors carrying a stale
+  field, which is the same joke the whole item is made of.
+
+**The pattern in one small question:** an over-strict matcher (line anchor) produced a false negative,
+a units mismatch (UTC vs local) nearly produced a false positive, and a population mismatch (their
+edit set vs the directory) produced a wrong count. **None is arithmetic; all three are about which
+rows, which units, which population** — and this is the item where both sessions were explicitly
+watching for exactly that.
