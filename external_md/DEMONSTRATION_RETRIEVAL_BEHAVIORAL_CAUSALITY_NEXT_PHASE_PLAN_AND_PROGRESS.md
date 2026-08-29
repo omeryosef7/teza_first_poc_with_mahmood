@@ -14902,3 +14902,42 @@ the guard list untracked (C-73), a completed run that vanishes entirely (R-155),
 own terminal marker is true and whose contents are incomplete**. The first three are absences; this
 one is a **present artifact that misreports itself**, and no guard in either session would have
 flagged it.
+
+### ⛔ C-75 (03:45) — **Nine claims changed status tonight and the summary's NARRATIVE sections did not move with them. Four of the nine W-headlines still asserted what the ledger no longer supports — and the ledger-propagation guard cannot see this, because it checks that a correction row EXISTS, not that the prose agrees with it.**
+
+The corrections table is the guard's target and it was complete. **The narrative sections above it were
+written before tonight and were never re-read against the changed rows.** Checking all nine W-claims
+against the current ledger:
+
+| section | asserted | now |
+|---|---|---|
+| **W5** | *"the dissociation is CAUSAL, and it replicates across a complete 2 × 2"* | ⛔ the **refusal** effect replicates across the 2 × 2; the **dissociation** is **Llama-only** (C-68/R-154). Qwen3 restores attack **+9, +13, +10, +14** against Llama's **+0**. Two claims were stated as one |
+| **W7** | *"a demo patch restores no attack while a query patch restores attack"* | ⛔ the refusal half (4 vs 13, `kw_refusal`, exact) stands; the ASR half is a **2-row contrast at n=40 against a 1.9-row floor — 1.1 SD** (C-70) |
+| **W3** | *"`frac_scorable = 1.000` everywhere"* | ⚠ **vacuous** — refusals `continue` before the length test, and every short row in this bank is a refusal (R-147). The 0-degenerate result is unaffected |
+| **W1** | *"uniquely restores refusal, in FOUR independent settings"* | ⚠ those four are pools A and B; **absent on Qwen3 + `longpreQ14*` in 3/3 sessions with full headroom** (R-146) |
+| W4 | corrected earlier tonight (C-69) | scoped to n=160 |
+| W2, W6, W8, W9 | — | unchanged and still supported |
+
+**All four corrected in place.** W5's headline now separates the two claims it had merged; W7 marks the
+ASR half unquotable; W3 says which of its two numbers is informative; W1 says "uniquely" is about
+*which scope*, not *every bank*.
+
+**Why the guard could not catch this, which is the point worth keeping.**
+`test_every_correction_reached_the_deliverable` asserts that a correction written in the plan **has a
+row** in the summary's table. **Every one of tonight's did.** What it cannot check is whether the
+document's *prose* still contradicts that row — the correction and the sentence it corrects sat **31
+lines apart** in the same file, both true to the guard, and the sentence is the part a reader reaches
+first.
+
+**So this is the caveat-proximity problem one level up.** `test_cautioned_figures` already encodes
+*"the caveat must sit NEAR the figure, not merely somewhere in the file"* — and a corrections table is
+exactly *"merely somewhere in the file"* for every claim it corrects. **I built the proximity guard for
+figures and never applied its own reasoning to the corrections table**, which is the largest
+propagation surface in the deliverable.
+
+**Not building a guard for it, and saying why.** A check that prose agrees with a correction row is a
+semantic comparison, not a pattern match, and every mechanical approximation I can think of (keyword
+overlap, section-distance heuristics) is the C-47 failure mode — a loose matcher inside a check
+written to catch imprecision. **The honest control here is procedural: when a claim's status changes,
+re-read its narrative section in the same tick.** Recorded as a manual step rather than dressed up as
+an automated one.
