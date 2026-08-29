@@ -17077,3 +17077,38 @@ question was malformed.
 stands as originally written — Llama `main` 42→41 INTACT, Llama `ticket_bomb` 45→15 DESTROYED, Qwen3
 `main` 32→4 DESTROYED, Qwen3 `ticket_bomb` VOID — and *"moderated by BOTH"* needs no qualification.
 **C-96 and C-97 are unaffected; only C-98 is withdrawn.**
+
+### ✅ R-180 (13:25) — **C-99's cell verified across THREE independent baselines, not one. The recorded option masses match NOTHING in this tree and are left OPEN. And the field my C-98 search needed was on the row I was already reading.**
+
+Verified from artifacts, restricted to `query_kind = semantic_forced_choice` on the 48 rows shared
+with the arm:
+
+| run | mapped-wins | median option mass |
+|---|---|---|
+| `tbA_20260828_024412_1186606` | **45/48** | 0.5534 |
+| `c5A_tb_b1_20260828_125009_2294147` | **45/48** | 0.5513 |
+| `p5A_ticket_bomb_20260828_014648_1770906` | **45/48** | 0.5534 |
+| **`p5C_ticket_bomb_20260828_014653_2524606`** (arm) | **15/48**, d = **−30** | 0.1152 |
+
+**45/48 reproduces across three independent baselines.** plan:9168 is sourced and R-171's bank half
+is verified, more strongly than C-99 claimed.
+
+**⚠ The two option masses beside that cell remain UNRESOLVED.** The record says **0.5695** and
+**0.1162**; the closest values in this tree are **0.5534/0.5513** and **0.1152**. My `c5A_tb_b1`
+hypothesis is **refuted** — it gives 0.5513, *further* from 0.5695 than `tbA`'s 0.5534, not closer.
+The concurrent session searched eight statistics (forced-choice/all-query-kind × median/mean × four
+runs) and reproduced neither figure. **Left open rather than attributed:** guessing which statistic
+yields a number reconstructs a confirmation instead of finding one. It is not load-bearing — the
+mapped-wins cell is the claim and it reproduces exactly — but the masses beside it match nothing
+measurable here and should not be quoted as verified.
+
+**The field I needed was in the data I had already loaded.** `p5C`'s rows carry
+`knockout_scope = legacy_all_query` **on every row**, beside `arm = C_band_L6_14`. C-98 filtered on
+`--arm` from `RUNMETA.argv` and never looked at the row field that states the scope directly. So the
+failure was not that the information was elsewhere — it was one key away in the same dict.
+
+**And my own first attempt at this check was wrong too, in the same family.** Comparing the three
+baselines without filtering `query_kind` gave **108/144** and **109/144**, because those runs mix
+`semantic_one_word` (96), `semantic_forced_choice` (48) and `comprehension_usage` (48). Only `tbA`
+is forced-choice-only. Caught before reporting — the cheap direction — but it is the **sixth**
+matcher/field slip today and the third in this single thread.
