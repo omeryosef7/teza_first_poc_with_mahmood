@@ -7649,12 +7649,35 @@ in the bank. Pooling therefore compares non-plain doublespeak against plain-ever
 | `tool` | −1.621 (**+0.601**) | −2.265 (−0.012) |
 | `system_like_quoted` | −1.613 (**+0.610**) | −2.196 (+0.057) |
 
-**Two findings, and the second is new to both of us.** First, the five non-plain styles are within
-**0.067** of each other, so the effect is *departing from plain formatting*, not anything about user
-or CoT framing — reporting "CoT framing increases boombness" would be true and misleading. Second,
-**the effect is absent in `benign_literal`** (−0.028 to +0.057, n=72 each): the same five framings
-applied to benign text containing the same codeword move the readout by nothing. So it is not a
-generic formatting artifact — it appears only where a codeword→concept mapping is being taught.
+**The direction is solid: 15 of 15 bank × style cells are positive.** And the five non-plain styles
+sit within **0.067** of each other on `main`, so the effect is *departing from plain formatting*, not
+anything about user or CoT framing — reporting "CoT framing increases boombness" would be true and
+misleading.
+
+### ⛔ CORRECTION: I claimed the effect is SPECIFIC to doublespeak. That is `main` only
+
+I computed the table above on **one bank** and generalised — the exact failure I had just written up
+twice, committed while writing it up a third time. Enumerated across all three:
+
+| bank | doublespeak Δ (5 styles) | `benign_literal` Δ | ratio |
+|---|---|---|---|
+| `main` | +0.597 … +0.664 | **−0.028 … +0.057** | 10× – 220× |
+| `ticket_bomb` | +0.125 … +0.218 | +0.044 … +0.130 | **1.6× – 2.8×** |
+| `basket_gun` | +0.593 … +0.650 | **+0.452 … +0.611** | **1.0× – 1.3×** |
+
+On `basket_gun` the same framings move **benign** text by +0.45 to +0.61 — nearly as much as
+doublespeak. **The specificity holds on `main`, is weak on `ticket_bomb`, and is absent on
+`basket_gun`.** So "it appears only where a codeword→concept mapping is being taught" is a
+**bank-specific observation, not a mechanism**, and must not ship as the Q8 answer without the bank
+named.
+
+**What survives:** non-plain framings raise the readout within condition on every bank (15/15), the
+five styles are interchangeable, and the *magnitude* varies 3–5× across banks. **What does not:**
+any claim that the effect requires a mapping to be present.
+
+**This is the third bank-specificity finding of the night** (with C1's null holding only on one Qwen3
+bank family, and legacy-flattening being Qwen3-only). A peer's suggestion, adopted: **bank should be
+a reported axis by default**, not something rediscovered per claim.
 
 ### Q9 — Can we surgically remove Boombness without destroying comprehension?  **YES, and it is the sprint's cleanest positive**
 
