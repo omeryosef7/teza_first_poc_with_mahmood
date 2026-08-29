@@ -7570,6 +7570,53 @@ across 7 informative domains is ~1.7 rows per domain, against domain deltas of �
 −0.19 concentrated in three — the effect is real but **carried by a few clusters**, which is exactly
 what a domain-level test is supposed to refuse to generalise from.
 
+### §12.28.5 ⛔ CORRECTION: I called a STRUCTURALLY INCAPABLE test a "real null" — with the refuting number in my own printout
+
+**§12.28.4's PR-39 paragraph is wrong and is corrected here.** It read:
+
+> *"neither design is degenerate: the attainable floors are 2/2⁷ = 0.0156 and 2/2⁵ = 0.0625, so
+> these are real nulls and not the 2/2^k floor artefact of §19."*
+
+**0.0625 is not below 0.05.** With k=5 informative clusters the smallest attainable two-sided p is
+0.0625, so `pre10`'s cluster test **could not have cleared α=0.05 under any arrangement of the
+data** — including unanimity. It is not a null result; it is a test with nothing to say, and
+reporting it beside `pre12`'s genuine null implied a convergence of evidence that does not exist.
+
+    arm     k_inf  neg      p      floor    can reach p<0.05?
+    pre12       7    6   0.1250   0.0156          YES  -- capable, consistent, insufficient
+    pre10       5    4   0.3750   0.0625          NO   -- must not be quoted as a negative
+
+The corrected reading is **weaker, not stronger**: one capable test failing to confirm, and one test
+unable to speak. Gate 3 is untouched — the row-level margin was met, truncation is ruled out, the
+effect halved on cap release — and the peer reached the same correction independently and one tick
+earlier (C-95).
+
+**⛔ THE FAILURE WAS NOT ARITHMETIC AND NOT AVAILABILITY.** Their sign-test helper printed
+`attainable_floor` in the same output block as the p-values and only the p-values reached the prose.
+**Mine is worse: I computed the floor, printed it beside the verdict, and wrote "real nulls"
+anyway** — my own scratch line read *"both below 0.05 and 0.05-ish"*, which is what hedging a number
+that refutes you looks like. The refuting value was not merely nearby, it was on the same screen.
+
+> **Computing a qualifier is not quoting it.**
+
+DR-5 already states exactly this for rows-and-margin, and the repo having the rule did not stop
+either of us applying it to a new pair. So the fix is **structural rather than another written
+rule**: `clustered_stats.cluster_sign_test` **does not return a p-value**. It returns a verdict in
+which `p` is one field, `can_reach_alpha` is another, and `summary()` renders the capability *in the
+same string as the p*, so quoting the number bare now takes deliberate effort instead of being the
+path of least resistance:
+
+    pre12 -> 6/7 negative, p=0.1250 — informative null (attainable floor 0.0156, so the test was
+             capable of clearing alpha=0.05)
+    pre10 -> 4/5 negative, p=0.3750 — STRUCTURALLY INCAPABLE: with k=5 the attainable floor is
+             0.0625 > alpha=0.05, so no arrangement of these data could have cleared.
+             NOT a negative result.
+
+Zero-delta clusters are excluded from k, which is what makes the floor a property of the **realised**
+data: PR-39's twelve domains with five at exactly 0.00 is a seven-cluster test. Four mutants, all
+killed — capability hard-coded True (2 tests), `summary()` dropping the capability branch (1),
+zero deltas counted as informative (2), one-sided instead of two-sided (2).
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the

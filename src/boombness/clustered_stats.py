@@ -226,3 +226,70 @@ def wild_cluster_bootstrap_p(rows: Sequence[dict], cluster_key: Callable[[dict],
             hits += 1
     p = (hits + 1) / (n_boot + 1)
     return (t_obs, p, draws) if return_draws else (t_obs, p)
+
+
+# =================================================================================================
+# CLUSTER SIGN TEST — and the reason it returns a VERDICT rather than a p-value.
+#
+# ⛔ THE ERROR THIS EXISTS TO MAKE UNREPEATABLE (§12.28.5, 2026-08-29). Two sessions independently
+# read a cluster sign test as "does not clear" when one of the two tests COULD NOT HAVE CLEARED
+# UNDER ANY DATA. With k informative clusters the smallest attainable two-sided p is 2/2**k, so at
+# k=5 the floor is 0.0625 and no arrangement of the data reaches 0.05. That is not a negative
+# result; it is a test with nothing to say, and quoting it beside a genuine null implies a
+# convergence of evidence that does not exist.
+#
+# Both of us had the floor ON SCREEN. A peer's helper printed `attainable_floor` in the same block
+# as the p-values and only the p-values reached the prose; I computed both, printed both, and still
+# wrote "so these are real nulls". The failure is not arithmetic and not availability:
+#
+#     COMPUTING A QUALIFIER IS NOT QUOTING IT.
+#
+# DR-5 already states this for rows-and-margin and it did not transfer to p-and-floor, which is why
+# the fix here is structural rather than another written rule. `cluster_sign_test` does not return a
+# p-value. It returns a verdict in which the p-value is one field, `can_reach_alpha` is another, and
+# `summary()` renders the capability in the same string as the p, so quoting the number without its
+# qualifier takes deliberate effort rather than being the path of least resistance.
+# =================================================================================================
+
+def _binom_tail(k: int, at_least: int) -> float:
+    """P(X >= at_least) for X ~ Binomial(k, 0.5), exactly — no floating factorials."""
+    from math import comb
+    return sum(comb(k, i) for i in range(at_least, k + 1)) / (2 ** k)
+
+
+class SignTestVerdict(dict):
+    """A sign-test result that carries its own power ceiling.
+
+    Deliberately a dict so it serialises into the ledger unchanged, but with `summary()` as the
+    intended way to quote it: the capability travels with the number.
+    """
+
+    def summary(self) -> str:
+        if not self["can_reach_alpha"]:
+            return (f"{self['n_negative']}/{self['k_informative']} negative, p={self['p']:.4f} — "
+                    f"STRUCTURALLY INCAPABLE: with k={self['k_informative']} the attainable floor "
+                    f"is {self['attainable_floor']:.4f} > alpha={self['alpha']}, so no arrangement "
+                    f"of these data could have cleared. NOT a negative result.")
+        verdict = "SIGNIFICANT" if self["p"] <= self["alpha"] else "informative null"
+        return (f"{self['n_negative']}/{self['k_informative']} negative, p={self['p']:.4f} — "
+                f"{verdict} (attainable floor {self['attainable_floor']:.4f}, so the test was "
+                f"capable of clearing alpha={self['alpha']})")
+
+
+def cluster_sign_test(deltas: Sequence[float], alpha: float = 0.05) -> SignTestVerdict:
+    """Exact two-sided sign test over per-cluster deltas, with its attainable floor.
+
+    Clusters with a delta of exactly 0 are UNINFORMATIVE and excluded from k, which is what makes
+    the floor a property of the realised data rather than of the design: a 12-domain study in which
+    5 domains land on 0.00 is a 7-cluster test, and its floor is 2/2**7.
+    """
+    informative = [d for d in deltas if d != 0]
+    k = len(informative)
+    neg = sum(1 for d in informative if d < 0)
+    if k == 0:
+        return SignTestVerdict(k_informative=0, n_negative=0, p=1.0, attainable_floor=1.0,
+                               alpha=alpha, can_reach_alpha=False, n_clusters=len(deltas))
+    tail = _binom_tail(k, max(neg, k - neg))
+    return SignTestVerdict(k_informative=k, n_negative=neg, p=min(1.0, 2 * tail),
+                           attainable_floor=2 / (2 ** k), alpha=alpha,
+                           can_reach_alpha=(2 / (2 ** k)) <= alpha, n_clusters=len(deltas))

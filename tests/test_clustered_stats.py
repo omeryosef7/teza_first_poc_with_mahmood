@@ -18,6 +18,8 @@ import os
 import random
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                 "src", "boombness"))
 import clustered_stats as cs  # noqa: E402
@@ -224,3 +226,56 @@ def test_rademacher_weights_are_drawn_PER_CLUSTER_not_per_row():
         f"{distinct} distinct bootstrap statistics from 4 clusters — with one weight per cluster "
         f"there can be at most 16. The weights are being drawn per ROW.")
     assert distinct >= 4, f"only {distinct} distinct values; the bootstrap is not varying at all"
+
+
+# ---------------------------------------------------------------------------------------------
+# cluster_sign_test — the p-value must not be quotable without its power ceiling (§12.28.5).
+# ---------------------------------------------------------------------------------------------
+
+def test_sign_test_reproduces_the_PR39_p_values():
+    """Both arms, from the counts alone: 6/7 -> 0.1250 and 4/5 -> 0.3750."""
+    assert cs.cluster_sign_test([-1, -1, -1, -1, -1, -1, 1])["p"] == pytest.approx(0.1250)
+    assert cs.cluster_sign_test([-1, -1, -1, -1, 1])["p"] == pytest.approx(0.3750)
+
+
+def test_a_five_cluster_test_is_STRUCTURALLY_INCAPABLE_at_alpha_005():
+    """⛔ THE ERROR TWO SESSIONS MADE. k=5 floors at 0.0625 > 0.05, so no data could have cleared;
+    reporting it as a negative implies evidence that cannot exist."""
+    v = cs.cluster_sign_test([-1, -1, -1, -1, 1])
+    assert v["attainable_floor"] == pytest.approx(0.0625)
+    assert v["can_reach_alpha"] is False
+    assert "STRUCTURALLY INCAPABLE" in v.summary() and "NOT a negative result" in v.summary()
+
+
+def test_a_seven_cluster_test_IS_capable_and_is_labelled_an_informative_null():
+    v = cs.cluster_sign_test([-1, -1, -1, -1, -1, -1, 1])
+    assert v["can_reach_alpha"] is True
+    assert "informative null" in v.summary()
+
+
+def test_even_UNANIMOUS_clusters_cannot_clear_below_the_floor():
+    """The floor is a property of k, not of agreement: 5 of 5 still cannot reach 0.05."""
+    v = cs.cluster_sign_test([-1] * 5)
+    assert v["p"] == pytest.approx(0.0625) and v["can_reach_alpha"] is False
+
+
+def test_ZERO_deltas_are_UNINFORMATIVE_and_shrink_k():
+    """PR-39's arms had three to five domains at exactly 0.00 -- which is what made k 7 and 5
+    rather than 12. Counting them would overstate the test's power."""
+    v = cs.cluster_sign_test([-1, -1, -1, -1, -1, -1, 1, 0, 0, 0, 0, 0])
+    assert v["k_informative"] == 7 and v["n_clusters"] == 12
+    assert v["attainable_floor"] == pytest.approx(2 / 2 ** 7)
+
+
+def test_the_summary_ALWAYS_carries_the_capability_with_the_p():
+    """⛔ THE STRUCTURAL POINT. Computing a qualifier is not quoting it -- both sessions had the
+    floor on screen and neither carried it into prose. Every rendering must contain both."""
+    for deltas in ([-1] * 3, [-1, 1, -1, -1, 1], [-1] * 7 + [1], [1] * 9):
+        s = cs.cluster_sign_test(deltas).summary()
+        assert "p=" in s
+        assert ("attainable floor" in s) or ("attainable floor is" in s), s
+
+
+def test_an_all_zero_cluster_set_is_not_a_crash_and_not_a_pass():
+    v = cs.cluster_sign_test([0, 0, 0])
+    assert v["k_informative"] == 0 and v["can_reach_alpha"] is False
