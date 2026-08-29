@@ -82,6 +82,11 @@ def test_the_row_file_is_named_per_root_not_assumed():
 
     They hold 96, in retrieval.jsonl. Assuming results.jsonl everywhere is the same
     select-by-a-pattern-I-supplied failure the guard exists to catch.
+
+    STRUCTURAL, not empirical: like the floor test, this restates the mapping a mutation changes, so
+    it is not independent evidence. The behavioural proof is
+    `test_the_real_corpus_passes_with_its_documented_exemption`, which goes red against the real
+    corpus when the mapping is wrong.
     """
     assert rc.ROW_FILE["retrieval_strength"] == "retrieval.jsonl"
     assert rc.ROW_FILE["score_behavior"] == "results.jsonl"
@@ -93,6 +98,10 @@ def test_an_EMPTY_scan_is_refused_rather_than_reported_clean(monkeypatch):
 
 
 def test_the_shipped_floor_is_not_zero():
+    """STRUCTURAL, not empirical: this restates the constant a floor mutation changes, so it is not
+    independent evidence that the floor WORKS. The behavioural proof is
+    `test_an_EMPTY_scan_is_refused_rather_than_reported_clean`, which isolates the mutation on its
+    own. Kept because it prevents a future edit lowering the floor silently."""
     assert rc.MIN_EXPECTED >= 50
 
 

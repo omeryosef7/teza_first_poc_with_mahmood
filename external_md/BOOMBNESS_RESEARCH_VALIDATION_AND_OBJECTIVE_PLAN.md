@@ -7323,3 +7323,26 @@ That is three tests tonight that passed their own mutations — the bootstrap re
 Rademacher weighting test, and this one. In every case the mutation was survived because **another
 mechanism produced the same observable**, not because the test was weak in itself. Writing a test
 for a property does not establish that the property is what the test measures.
+
+### §12.29.1 — ⛔ my own mutation kills, re-audited for ISOLATION rather than counted
+
+A peer applied my sharpening to their guards and found one of their "4/4 killed" was **one kill
+counted twice** — two tests dying on a shared precondition. Running the same audit here, recording
+*which* tests die rather than how many:
+
+| mutation | tests that fail | isolates? |
+|---|---|---|
+| row-count check disabled | `ROW_COUNT_fires_on_loss_the_cell_check_CANNOT_see` | **yes, exactly one** |
+| cell-balance neutered | `cell_imbalance_detects_NON_UNIFORM_loss` (unit) + `real_short_run_caught_by_BOTH` | yes — the unit test is independent |
+| floor removed | `an_EMPTY_scan_is_refused` (behavioural) + `the_shipped_floor_is_not_zero` | **partly** |
+| row file assumed | `real_corpus_passes` (behavioural) + `row_file_is_named_per_root` | **partly** |
+
+**The two "partly" rows are the mild form of the peer's double-count.** `the_shipped_floor_is_not_zero`
+and `row_file_is_named_per_root` *restate the constant the mutation changes* — they cannot fail for
+any other reason and are not independent evidence that the behaviour works. Each is now labelled
+**structural, not empirical** in its own docstring, naming the behavioural test that actually
+isolates, so nobody later tallies four independent kills where there are four mutations and two
+independent behavioural proofs plus two restatements.
+
+Both are kept: they stop a future edit lowering the floor or changing the mapping silently. That is
+a real guarantee, it is just enforced by construction rather than demonstrated.
