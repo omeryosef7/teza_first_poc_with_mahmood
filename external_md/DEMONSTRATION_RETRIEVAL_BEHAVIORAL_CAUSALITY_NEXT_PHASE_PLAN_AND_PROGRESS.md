@@ -15380,3 +15380,39 @@ their Q9 `legacy` mask, my C1 null, my C-78 `legacy` flattening, my C2 share —
 surfaced by the analysis that produced it.** Every one was found because the other session asked, or
 because a habit forced an enumeration. That is the argument for making the groupby a default rather
 than a diagnostic.
+
+### ⛔ C-83 (06:45) — **C-69 attributed C3's split to SAMPLE SIZE. `n` and BANK are perfectly confounded in those four sessions — both n=160 arms are `d10`, both n=96 arms are `base`. I named the wrong axis, in a correction whose whole subject was naming the right scope.**
+
+Applying enumerate-then-filter to my own C-69, three hours after writing it:
+
+| session | n | model | bank | C-69's verdict |
+|---|---|---|---|---|
+| `p4bj` | **160** | Llama-3.1-8B | **`d10`** | holds (0.3-row exceedance) |
+| `q4bj` | **160** | Qwen3-14B | **`d10`** | holds (clean) |
+| `p1j` | **96** | Llama-3.1-8B | **`base`** | **fails** (`respq` +4.0 rows) |
+| `q1j` | **96** | Qwen3-14B | **`base`** | **fails** (`respq` +4.0 rows) |
+
+**Both models appear on both sides**, so model is cleanly excluded as the moderator. **`n` and bank
+are not separable at all** — every n=160 session is `d10` and every n=96 session is `base`.
+
+**C-69 said the four-scope equivalence is *"established at n=160 and contradicted at n=96, and C3
+should say which."*** That is one of two equally supported readings. The other is **"holds on `d10`,
+fails on `base`"** — and given that **four other results tonight turned out bank-moderated** (C1,
+C-78, C2, their Q8 and Q9), bank is now the *more* likely explanation of the two, not the less.
+
+**Corrected to state the confound rather than pick a side.** C3's split is confounded across **n,
+bank and session simultaneously**; nothing in these four runs separates them. What survives from
+C-69 is the finding that mattered — **`respq` is a second outlier, not just `qpre`** — which is
+attribute-free and stands regardless of which axis drives it.
+
+**This is the sharper version of the night's lesson, because the failure is one level up from the
+ones I catalogued.** C-69 was not a missed enumeration — I *did* enumerate all four sessions and I
+*did* report all four numbers. **The defect is that I enumerated the rows and not the COLUMNS**: I
+recorded `n` for each session because the margin scales with it, and never asked what else varied
+alongside. **Enumerate-then-filter protects against missing cases; it does nothing about attributing
+a real split to whichever column you happened to write down.**
+
+**Eleventh instance and the first that enumeration would not have caught.** The habit that would have
+caught this one is different and cheaper: **before attributing a split to an axis, list every axis
+that co-varies with it.** Two columns of a four-row table would have shown `d10`/`d10`/`base`/`base`
+sitting exactly under 160/160/96/96.
