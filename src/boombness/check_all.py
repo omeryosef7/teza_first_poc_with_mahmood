@@ -48,6 +48,9 @@ GUARDS = [
     ("cited_artifact_check",
      [sys.executable, os.path.join(HERE, "cited_artifact_check.py")],
      "a claim citing an artifact that is missing or inadmissible"),
+    ("run_completeness_check",
+     [sys.executable, os.path.join(HERE, "run_completeness_check.py")],
+     "a run that FINISHED but did not persist all its rows"),
 ]
 
 

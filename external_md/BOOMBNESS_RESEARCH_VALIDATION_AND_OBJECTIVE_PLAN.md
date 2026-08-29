@@ -7278,3 +7278,48 @@ line verified byte-identical to the parent): `extract_boombness` has no query-ki
 filter, so it rescored all 17,328 rows to produce the 608 the gate needs — 366 MB of results for
 1 MB of signal. `d38xb2` completed cleanly: **608 query-occurrence rows, 38 domains, 6 seen and 32
 unseen, doses 152/152/152/152**, with `directions_fitted_on: heldout` and `is_self_fit: False`.
+
+## §12.29 — GUARD #9: a run that FINISHED but did not persist all its rows
+
+§12.28 said refusing `d38beh` was a judgement rather than a derivation. **Half of it is derivable
+after all**, and that half is now a guard. The judgement — that the loss was *biased* — still is not.
+
+**Why nothing existing caught it.** `score_behavior.py` already has an `--expect-n` check. It counts
+the **bank rows selected before generation**; 608 were selected and 543 were written, and no check
+compared those two numbers.
+
+**Three checks, in the order they fire:**
+
+| check | what it catches | authority |
+|---|---|---|
+| persisted rows ≥ `expect_n` | any shortfall | the files |
+| persisted rows ≥ ledger `n_succeeded` | the run's own bookkeeping being wrong — d38beh claimed 586 against 543 written | **the files, not the ledger** |
+| every (domain × dose) cell holds the modal count | **non-uniform** loss, without any expectation about totals | the files |
+
+The third is a peer's design and the better of the three: it needs no `expect_n` at all and fails on
+exactly the shape that made d38beh dangerous. On d38beh's own rows it reports **37 of 152 cells
+short**; on a healthy run, 0 of 24. It is documented as blind to *uniform* loss, which is the benign
+case — uniform loss does not bias a clustered analysis and non-uniform loss does.
+
+**Survey at introduction: 204 finished runs carry an `expect_n`; 203 are complete and 1 is short.**
+A guard that fired constantly would be switched off; this one fires once, on the run it was built
+for, which is now its documented `KNOWN_SHORT` entry with the reason.
+
+### ⛔ TWO BUGS THE GUARD FOUND IN ITSELF
+
+**Its first run reported four `retrieval_strength` runs as holding 0 rows.** They hold 96 — in
+`retrieval.jsonl`. I had assumed `results.jsonl` everywhere. That is the
+select-by-a-pattern-I-supplied failure, committed *inside the guard built to catch that class*.
+Fixed by naming the row file per root, and pinned by a test.
+
+**And a third test of mine failed its own mutant.** Disabling the row-count check entirely
+(`if n < expect:` → `if False:`) passed all ten tests — because the real short run is *also*
+cell-imbalanced, so the positive control failed through the other check. Two checks, one fixture,
+nothing distinguishing them. Fixed with a fixture only the row-count check can see: **uniformly**
+short, 30 rows against `expect_n` 40, perfectly cell-balanced. That mutant now dies, and the test
+asserts the fixture is balanced so it cannot silently drift into testing the wrong check.
+
+That is three tests tonight that passed their own mutations — the bootstrap resampling test, the
+Rademacher weighting test, and this one. In every case the mutation was survived because **another
+mechanism produced the same observable**, not because the test was weak in itself. Writing a test
+for a property does not establish that the property is what the test measures.
