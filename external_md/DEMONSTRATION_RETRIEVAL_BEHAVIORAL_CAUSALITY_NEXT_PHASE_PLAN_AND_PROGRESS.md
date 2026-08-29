@@ -15153,3 +15153,52 @@ model attribution), **W3** (R-147, vacuous guard), **W4** (C-69, `respq`), **W5*
 Llama-only), **W6** (C-77, `k_informative`), **W1** (C-75, bank-specific null) corrected; **W7** (C-70)
 qualified; **W8** and **W9** verify exactly. **Seven of nine needed a change, and not one of the
 changes was to a number** — every defect was in what the sentence around the number claimed.
+
+### ⛔ C-79 (05:30) — **The sprint brief's question list IS in the repository — `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md` §19 — and it has ELEVEN questions, not the seven reconstructed. Their Q6 and Q7 are exactly the work just completed.**
+
+They delivered Phase 9/10 as seven questions, disclosing in bold that the question **set** was their
+inference from the plan's phase structure because *"the brief is NOT in this repository"*. **It is**,
+at line **1181**, under `## 19. Important questions to answer in the report — Answer these directly:`
+
+| # | brief's question | covered? |
+|---|---|---|
+| 1 | Does Natural Doublespeak create the same internal `bomb` representation as Direct prompts? | not in their set |
+| 2 | Does the final `carrot` become more `bomb`-like than earlier `carrot`s? | not in their set |
+| 3 | How many examples before Boombness rises? | ≈ their Q6 |
+| 4 | Does Boombness vary enough across prompts to support optimization? | not in their set |
+| 5 | Does Boombness predict ASR? | ≈ their Q2 |
+| 6 | **Does Boombness predict ASR better than refusalness?** | **answered, unfiled** |
+| 7 | **Does Boombness add predictive power beyond refusalness?** | **answered, unfiled** |
+| 8 | Do user-like / CoT-like framings increase Boombness? | **not addressed this sprint** |
+| 9 | Surgically remove Boombness without destroying comprehension? | = their Q5 |
+| 10 | Turn Boombness into a useful GCG objective? | = their Q7 |
+| 11 | **What should Matan/Mahmood take from this sprint?** | **not in their set** |
+
+**Their strongest result answers the two questions they did not know were asked.** Brief Q6 and Q7 —
+*better than* and *beyond* refusalness — are precisely the partial correlation and the `d_naive`
+positive control finished tonight. **The `d_naive` control I suggested was, unknowingly, the brief's
+Q7 verbatim.**
+
+**Their disclosure discipline is what makes this a correction rather than a retraction.** They marked
+the reconstruction in bold at the top of §13 instead of presenting it as a quotation, so nothing
+published claims to be the brief. **The answers are unaffected** — each is tied to ledger entries and
+artifacts — but the *keys* are wrong, and **Q8 and Q11 are genuinely unaddressed**.
+
+**How it was found, because this is the night's pattern at its highest stakes.** They searched for
+*"the brief"* and concluded absence. The file is titled *"Claude Code Research Handoff Prompt"* and
+the section is *"Important questions to answer in the report"* — **the word "brief" appears nowhere in
+either.** I found it by enumerating **every tracked `.md` with five or more question-shaped lines**,
+rather than searching for what I expected it to be called. **Ninth instance across both sessions, and
+the same shape as their `ls | tail -1` and my `A640_*` glob: absence inferred from a pattern that could
+never have matched.**
+
+**⚠ And my own enumeration was broken while it ran.** A malformed shell fallback made the numeric
+comparison error on every file — the output is 100+ lines of `integer expression expected` — and I
+nearly read that as "nothing found". **The one useful line printed anyway, through the noise.** A
+search whose failure mode is a visibly broken script is the lucky case; the dangerous version is the
+one that returns a clean empty result.
+
+**§0 of the same file states the sprint's purpose**: *"We want to turn the discovered weakness into an
+explicit optimization objective for GCG/MAC-style optimization."* That is brief Q10, and the answer
+the sprint reached is **NO** — so the phase closes with a documented negative against its own stated
+goal, which is a stronger ending than seven invented questions could have given it.
