@@ -15416,3 +15416,48 @@ a real split to whichever column you happened to write down.**
 caught this one is different and cheaper: **before attributing a split to an axis, list every axis
 that co-varies with it.** Two columns of a four-row table would have shown `d10`/`d10`/`base`/`base`
 sitting exactly under 160/160/96/96.
+
+### ⛔ C-84 (07:00) — **C-83 said C3's confound was unbreakable and bank the likelier driver. Both wrong. A third bank at n=96 exists, it FAILS too, and the real driver is neither axis: the margin is a RATE while the effect is roughly constant in ROWS.**
+
+C-83 claimed *"nothing in these four runs separates them"*. Enumerating **all** four-scope sessions
+rather than the four C-69 quoted, **`g2j` is n=96 on `basket_bomb`** — a third bank at the small n,
+which breaks the confound directly. It **fails**, and harder than `base`:
+
+| session | bank | n | `demoproc−respq` rate | **rows** | margin in rows | over? |
+|---|---|---|---|---|---|---|
+| `p1j` | `base` | 96 | 0.0833 | **8** | **4.0** | yes |
+| `g2j` | **`basket_bomb`** | 96 | 0.1250 | **12** | **4.0** | yes |
+| `p4bj` | `d10` | 160 | 0.0437 | **7** | **6.7** | yes |
+| `q4bj` | `d10` | 160 | 0.0250 | **4** | **6.7** | no |
+
+**Two different banks fail at n=96**, so bank is not the driver and C-83's *"bank is now the more
+likely explanation"* is withdrawn.
+
+**But n is not the driver either.** The gap in **rows** is 8, 12, 7, 4 — the same order throughout.
+What changes is the **margin**, which is a fixed **rate** (0.0417) and therefore **4.0 rows at n=96
+and 6.7 rows at n=160**. A roughly constant row-difference crosses a rate-margin at small n and not at
+large n. **The apparent n-dependence is the margin's functional form meeting an effect that does not
+scale with n.**
+
+**So three of four sessions exceed, not "n=96 fails and n=160 holds".** `p4bj` at n=160 exceeds too
+(7 rows against 6.7). **Only `q4bj` is genuinely under**, at 4 rows. C-69's framing made one session's
+result look like a property of a sample size.
+
+**This supersedes both prior attributions.** C-69 said *n*; C-83 said probably *bank*; **neither is
+right, and the answer was available in the same four rows both times** — it needed the gap expressed
+in rows beside a margin expressed in rows, which is one column neither entry computed.
+
+**Third correction to the same claim in four hours, each finding the previous attribution wrong.**
+The progression is worth stating because it is not carelessness compounding: C-69 found a real
+outlier (`respq`), C-83 found a real confound (n ⊥̸ bank), and C-84 finds the real driver. **Each step
+was correct about what it added and wrong about what it attributed** — and every one of them was
+prompted by the *other session* applying the same scrutiny to their own work first.
+
+**What survives, and it is the part that was never attribute-dependent:** **`respq` separates from
+`demoproc` in three of four sessions, by 7-12 rows**, and C3's exception clause names only `qpre`.
+That was true in C-69, true in C-83, and is true now.
+
+*Their over-determination argument is what produced this. They observed that the fourth cell of a 2×2
+cannot attribute when both hypotheses predict the same outcome; asking the same question of my own
+confound — **what observation would distinguish n from bank?** — pointed straight at a third bank at
+n=96, which was already on disk.*
