@@ -7300,6 +7300,29 @@ dangerous artifact this sprint has produced, because everything about it looks f
 > `n_succeeded` sees a 22-row loss; the true loss is 65. That is a live demonstration of guard #9's
 > *"the files are the authority"* rule, and it is why 586 and 543 both look authoritative in
 > isolation.
+>
+> ### ⛔ And "short" was the wrong summary from BOTH of us — the two files CROSS
+>
+> A peer went further and it changes the shape again. The gens and results sets are **not nested**:
+>
+>     results 543 · gens 531 · intersection 527
+>     in results but NOT gens: 16      in gens but NOT results: 4
+>
+> **The quota hit two independent writers at different points**, and both files' last lines parse, so
+> **neither looks corrupt from the inside.** My summary ("77 rows short") came from the wrong file;
+> theirs ("65 rows short") came from the right file and stopped at one file. **Neither of us was
+> measuring the thing that actually bites**, which is the *join*: an analysis intersecting gens with
+> results on this run silently keeps 527 rows and prints a complete-looking block.
+>
+> **Checked against my own analyses rather than assumed.** §12.19's paired stop_reason↔verdict join
+> and §12.21's determinism check both join on `prompt_id`. Every run they touch has
+> `results == gens` **exactly**: `d38beh2` 608/608, `e6A_main` 96/96, `e6A_ticket_bomb` 96/96,
+> `k640_lbA_ticket_bomb` 96/96, `k640_p2A` 96/96, `ph6_main_d016` 24/24. **No silent drop reaches
+> any figure in this document.**
+>
+> Their restraint is adopted: this is **one artifact, one transient quota event**, already
+> `KNOWN_SHORT`, superseded, and cited by nobody. Whether the health path deserves a subset check is
+> a separate argument on its own evidence, **not a rescue of a run that must never be analysed.**
 
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
