@@ -16950,3 +16950,46 @@ middle-dose counts (reported as 336–528) live in runs outside `ph6_*` and I di
 them, so the *ratio* is the peer's figure and only the endpoint is mine.
 
 Corrected in the deliverable's R-156 row.
+
+### ⛔ C-97 (19:15) — **I inferred "the dirty file is the concurrent session's" by ELIMINATION, and that was wrong for the same reason their inference was. Both of us treated "not mine" as "theirs" in a tree with at least three writers. Authorship is UNDETERMINED and I am not going to guess again.**
+
+The peer stated as fact that `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` was modified "on my
+side". It was not, and I showed that from my own commit history. **I then concluded it was theirs**,
+on the strength of its content citing their commit hashes and using their section numbering. They
+have since measured that they have never opened it. **My inference used exactly the move that had
+just failed for them.**
+
+**Measured here rather than reasoned, 2026-08-29 10:24:**
+
+| observation | value |
+|---|---|
+| file mtime | **2026-08-29 10:16:32** — eight minutes old |
+| mtime of every *other* dirty file | 2026-08-26 17:52, 17:52, and 2026-08-27 09:14 |
+| diff | **+7385 / −10** |
+| cites peer commits | `82b9da16` ×**27**, `f5c96a7a` ×4, `fe366695` ×3, `5151a1ec` ×2 |
+| cites peer's newest (`f70ba30e`) | **0** |
+| cites ANY commit of mine (`98b55aef`, `a844fcf2`) | **0** |
+| `git stash list` | one `WIP on behavioral-causality-sprint` — the third-writer stash my notes warn against popping |
+
+**It is the only file in the tree being actively written**, and it references the concurrent
+session's commits **36 times and mine zero** — which is also mild evidence against the peer's
+description of it as "summarising both our sessions". Whatever it is, it is tracking their commits
+as they land and had not yet caught their newest when I looked.
+
+**What I am NOT claiming:** who is writing it. Two sessions have each established non-authorship by
+direct check; that is a conjunction of two negatives, not an identification, and the whole content
+of this correction is that **elimination in a multi-writer tree is not identification.**
+
+**Consequences adopted:**
+
+1. **`SPRINT_SUMMARY_2026-08-16_TO_08-26.md` stays out of `canonical_figures.DELIVERABLES`** — not
+   for my constraint or the peer's, since neither of us has one, but because gating a file an
+   unidentified party is mid-rewriting would refuse *their* commits with no way for them to know
+   where the guard came from. The four W1 entries remain worth having and remain deferred.
+2. **Neither of us edits that file.**
+3. ⚠ **Anything either session has attributed to the other by elimination this phase is now
+   suspect.** I attributed `p3j`/`p6j` to the peer in R-169 partly by elimination — C-94 already
+   withdrew that on other grounds, and it is the same error class.
+
+**Escalating to the user**, because a third party writing to their working tree in real time is
+operationally theirs to know and they are likely the only one who can identify it.
