@@ -7589,6 +7589,19 @@ Phase 6 ladder). Readout is `d_surface|L8|proj` at the query occurrence unless s
 uses the codeword, and benign text scores like a harmful one whenever it uses the concept word.**
 The readout tracks the surface token, not the intent.
 
+**✅ VERIFIED ON ALL THREE BANKS** (enumerate-then-filter, after Q8's specificity claim turned out to
+be one bank of three). Every concept-word condition sits above every codeword condition on every
+bank, with **no overlap**:
+
+| bank | lowest concept-word | highest codeword | gap |
+|---|---|---|---|
+| `main` | +1.643 | −2.156 | **+3.799** |
+| `ticket_bomb` | +2.327 | −0.795 | **+3.121** |
+| `basket_gun` | +1.358 | −2.190 | **+3.547** |
+
+The absolute levels shift by bank (`ticket_bomb` runs ~1.2 higher throughout), but the **partition is
+identical**. This is the sprint's most robust result.
+
 The readout splits by **whether the concept word is literally present**, not by whether the attack
 succeeds. Doublespeak sits with *benign literal*; direct sits with *concept in benign context*.
 **This is the single most important row in the sprint** — the quantity named "boombness" is largely a
@@ -7604,6 +7617,10 @@ occurrence is higher in **508/948 = 53.6%** of prompts. A coin flip is 50%.
 
 n=0 **−2.448** · n=1 −2.092 · n=2 −2.406 · n=4 −2.053 · n=8 −1.765 · n=16 **−1.331**
 
+**✅ VERIFIED ON ALL THREE BANKS.** `main` −2.448 → −1.331, `ticket_bomb` −1.027 → −0.587,
+`basket_gun` −2.691 → −1.685. All three rise from n=0 to n=16, and **all three are still rising at
+n=16** — where ASR falls.
+
 **And it keeps rising at n=16 where ASR falls** (§12.22: ASR peaks at 8–12, then drops, pooled
 clustered p=0.0312). Boombness and attack success **diverge at the top of the dose range** — a
 dissociation that any dose-based objective would have optimised in the wrong direction.
@@ -7613,6 +7630,10 @@ dissociation that any dose-based objective would have optimised in the wrong dir
 Across-prompt SD **0.757** against a median within-domain SD of **0.751** — a between/within ratio of
 **1.01**. The prompt-to-prompt spread is indistinguishable from within-domain noise, so there is no
 structured variation for an optimiser to climb.
+
+**✅ VERIFIED ON ALL THREE BANKS**, and strikingly stable: ratios **1.01** (`main`), **1.06**
+(`ticket_bomb`), **1.00** (`basket_gun`). Whatever the absolute spread, prompt-to-prompt variation
+never exceeds within-domain noise on any bank.
 
 ### Q5 — Does Boombness predict ASR?  **LOCALLY YES, GLOBALLY NO**
 
