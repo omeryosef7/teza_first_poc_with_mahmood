@@ -8423,3 +8423,72 @@ week.
 true when written. They rot because the document is append-only and the world moves; the same
 property that makes the log honest — never silently overwriting — is what lets a superseded
 "pending" sit unmarked. **The convention that protects conclusions does nothing for forecasts.**
+
+### §21.1 — I swept the plan and not the ledger; the ledger had two, and one was worse
+
+§21 enumerated the **plan** for expiry-dated claims and found three. A peer, porting the same check,
+found theirs in the **ledger** — and pointed out the distinction I had missed: **fix by document
+kind.** An append-only log's "pending" is *correct by construction* (it records what was true when
+written); a **current-state** document's is simply wrong.
+
+**My ledger is current-state and I never swept it.** Doing so — 12 raw hits, 8 of them my own §21
+audit text describing the sweep — leaves **two real cases**, both the shape the peer named, where
+one entry holds the finished result and a sentence saying the work is outstanding:
+
+| entry | stale text | reality |
+|---|---|---|
+| **6** (retrieval knockout) | `action: NEEDS_RERUN`, *"1 of 3 planned populations"*, *"`ticket_bomb` and `basket_gun` queued"* | **all five ran** (§12.20): 27→2, 23→5, 7→3, 7→8 *(null)*, 3→0 |
+| **7** (refusal channel) | magnitude *"UNRESOLVED pending a >512-token cap"* | **that cap ran** — §0.3 measures both arms at **512→1024, n=495**; C +0.2020, D +0.2788 |
+
+Entry 7's is the more consequential: it is the **best-powered pair in the sprint** (arm D, MDE 0.018)
+and its caveat had been discharged in §0.3 without the ledger learning of it.
+
+**Applied the peer's rule rather than my instinct.** The instinct is to edit the stale sentence.
+Entry 6's stale text sits in a **dated** `SPRINT_UPDATE_2026-08-28` field — a record of what was true
+that day — so rewriting it would destroy the audit trail. Both entries instead gain a **new
+`EXPIRED_…` field carrying the outcome**, leaving the dated record intact. Their taxonomy in full:
+*append-only log* → leave alone; *current-state* → mark with the outcome; *historical corrections
+table* → forward pointer only, **never revise**.
+
+**And it sharpens §21's not-mechanisable argument into a better one.** I had said expiry is decided
+from the world rather than the scanner. The peer's version is stronger and I have adopted it: *the
+same sentence is correct in the plan and stale in the ledger*, so a mechanical sweep would need to
+know which documents are logs and which are state — and mine would report **21 plan lines against 2
+real ledger cases**. Not "undecidable" but **decidable and useless**, which is a sharper reason to
+keep it an audit item.
+
+### §21.2 — ⛔ a loose token WAS masking an untraced correction, and §5.9 is it
+
+Committing §21.1 was refused by my own distinctiveness test: the new ledger text mentioned
+`window_knife` once more, tipping that token from 24 to **exactly 25** — the threshold. Following
+the peer's rule (*the fix is always a more specific phrase, never a larger budget*) I went to
+replace it, and found the token had no distinctive substitute **because there was nothing to
+substitute for.**
+
+**§5.9's correction was never substantively traced in the ledger.** Searching it for §5.9's actual
+claim returns one hit, about `option_mass_gate` and forced-choice mass — a different subject. The
+guard had been passing §5.9 on a token matching **25 fields, almost all incidental**.
+
+**That is §18's defect doing real damage rather than hypothetical damage.** §18 established that ten
+loose tokens *could* pass a section whether or not its correction arrived; this is a case where one
+*did*. The correction is real and was lost:
+
+> **Low ASR does not imply non-installation.** A concurrent session extrapolated that
+> `window_knife`'s 2/96 baseline ASR "predicts the same shape" as `basket_gun` — a second
+> non-installing bank. It ran the probe arm and **refuted its own extrapolation**: baseline
+> forced-choice mapped-wins by dose (12 rows/cell) are `main` 0.667/0.917/0.917/1.000 and
+> `ticket_bomb` 0.750/1.000/1.000/1.000, both installing and saturating. **A bank can install the
+> mapping and still produce almost no successful attacks** — installation and attack success are
+> separate quantities.
+>
+> Partly superseded by §5.11's 2×2 (cap 640, 0/96 at cap): `ticket|bomb` 27/96, `window|bomb` 25/96,
+> `ticket|knife` 5/96, `window|knife` 4/96 — **concept dominates codeword ~14×**, and §5.9's
+> headline loses to that decomposition while its installation finding stands.
+
+Now traced, with `§5.9`'s token set to the phrase that carries the finding, and `§5.13`'s reduced to
+its distinctive `0.042`.
+
+**The sequence is the point.** A loose token was flagged only because my own writing pushed it one
+occurrence over a threshold; chasing the fix exposed a correction absent from the ledger for days.
+**The vacuity check found the untraced correction that the propagation guard was built to find and
+had been silently failing to.**

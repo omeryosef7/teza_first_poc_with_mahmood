@@ -75,8 +75,8 @@ TRACE_TOKENS = {
     "§5.2": ["population-dependent"],
     "§5.4": ["legacy_all_query", "unscoped"],
     "§5.7": ["unscoped mask", "demo_processing_only"],
-    "§5.9": ["window_knife"],
-    "§5.13": ["window_knife", "0.042"],
+    "§5.9": ["installation and attack success are separate"],
+    "§5.13": ["0.042"],
     "§5.20": ["42/48 -> 42/48", "batch_split_audit"],
     "§5.21": ["unmeasurable", "attrit"],
     "§5.22": ["unmeasurable", "attrit"],
@@ -124,6 +124,7 @@ TRACE_TOKENS = {
     "§17.3": ["escape classes", "re.I", "fifth defect"],
     "§18": ["74 ledger fields", "dead config", "re-deriving the premise"],
     "§20": ["did not isolate", "bold paragraph marker"],
+    "§21.2": ["vacuous token was masking", "never substantively traced"],
     "§21": ["expiry date", "21 of 8", "audit item, not a guard"],
 }
 
