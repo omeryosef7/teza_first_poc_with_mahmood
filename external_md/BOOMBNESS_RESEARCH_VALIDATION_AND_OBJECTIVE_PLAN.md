@@ -8581,3 +8581,41 @@ reader of §14 alone would take it for a fresh negative. Fixed with two sentence
 **So the finding-propagation gap is real but narrow** — one context omission, not a pattern — and
 the dissociation of §21.2 remains its only substantive instance. Recording that explicitly, because
 an audit that finds little is only informative if it says how hard it looked.
+
+### §22.1 — the converse failure, and two "untraced" runs that are traced
+
+**A peer supplied the edge my four-mechanism framing was missing.** I had asked: *could this evidence
+have been produced by something other than the thing it claims to show?* — the question behind
+reachability, distinctiveness, specimens and the vacuous audit above. Their converse is the other
+half and I had no answer to it:
+
+> **Could the THING be present while the EVIDENCE is absent?**
+
+Their case: an id-presence audit scored `R-18` as delivered because the deliverable contains
+`PR-18`, whose tail is that substring. Anchoring the match fixed the over-credit — and then
+**over-reported**, because R-18's *substance* was already fully present under a different name.
+**A loose matcher over-credits; a strict one under-credits; neither is safe by construction, only in
+a chosen direction.** They fixed the instance by adding the citation rather than an exemption, and
+recorded the residual weakness as unfixed because it errs toward false alarms. That asymmetry —
+*choose the direction your matcher fails in* — is the part worth keeping.
+
+### ⛔ And the two runs they flagged as untraced are both traced
+
+They reported `p3j` and `p6j` as appearing in neither session's plan. Checked:
+
+* **`p6j` is in this plan** — §12.22 cites it as `` `p6j_*`, job 797947 ``, the Phase 6 dose-ladder
+  judge batch. A literal search for `p6j` finds it.
+* **`p3j` is traced too, in documents their sweep did not cover**:
+  `BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md` line 1914 discusses `p3j_p2A` explicitly, and
+  `SPRINT_SUMMARY_2026-08-23_TO_08-24_PART_II.md` line 1216 registers
+  `` {p2j,p3j,p4j,p4hj}_* `` as "Phases 2/3/4". It is also **not mine** — `p3j_neg` judges
+  `p3_add_neg`, whose arm is `d_surface:add:8-8:-1.0`, i.e. Phase 3 steering.
+
+**This is the conflation-of-corpora pattern once more, and it is the fourth time a finding has
+transferred while its verdict has not** — after the bank-specificity results, the bolded-marker gap
+(a real miss for me, correct behaviour for them), and the expiry sweep. **The instinct on receiving
+a finding is to assume its conclusion follows; three of four times here it did not.**
+
+Their own six-qualifier result stands on their corpus and I have not checked it — that is theirs to
+hold, and the contrast with my one context omission is exactly why neither of us should generalise
+the rate from a single corpus.
