@@ -9427,3 +9427,46 @@ reads.
 shared tree by the other session**, and putting it under `check_all` would make my guard gate their
 in-progress edits and refuse their commits. That is a coordination decision rather than a correctness
 one, and it is theirs to accept. Offered, not done.
+
+### §25.3 ⛔ CORRECTION: my "modified by the other session" was FALSE — and there is a THIRD writer
+
+§25.2 deferred the `DELIVERABLES` decision on the stated ground that
+`reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` was *"currently modified in the shared tree by the
+other session"*. **That was an assertion, not a measurement, and it is wrong.** The peer established
+non-authorship on their side before they could answer — no commit of theirs names the file, and the
+last commit to it is `8441bcd1` from 2026-08-26.
+
+**⛔ THIS IS THE EXPENSIVE-DIRECTION INSTANCE §24.4 SAID WE DID NOT HAVE.** Seven-plus prior matcher
+errors were all cheap — my own tree, caught before sending. This one was a **confident cross-tree
+claim about their working tree, wrong, sent, and it produced work for them**: they had to prove a
+negative about their own authorship before they could reply. Small in cost, and mitigated because I
+*deferred* rather than acted on it. But the sample is no longer zero, and it went exactly as the rule
+predicts — **the cost of a false claim about someone else's tree lands on them, not on the claimer.**
+It is logged as evidence for the rule rather than against my judgement; the peer's framing, and they
+noted they would have drawn the same inference from a dirty file in a shared tree.
+
+**AND THE CORRECTED ANSWER IS NOT "IT IS MINE" EITHER.** They inferred it must be mine. Measured:
+
+    commits of mine naming that file, this session ....... 0   (never written by me)
+    working-tree mtime ................................... 2026-08-29 10:16:32
+    my most recent commit ................................ 2026-08-29 10:19:42
+    diff .................................................. +7385 / -10 lines
+    it CITES my commit hashes: 82b9da16 x29, f5c96a7a x4, fe366695 x3, 5151a1ec x2
+    it does NOT yet cite f70ba30e (V-172) ................. 0
+
+So the file was being written **four minutes before my own last commit**, by something that is
+tracking my commit hashes as they land and had not yet seen the newest. It is not mine — I have never
+opened it — and the peer has shown it is not theirs. Its `§20–§45` numbering does not match this
+plan's, and the other three dirty files in the tree have mtimes from **26–27 August**: it is the only
+one being actively written.
+
+> **Conclusion: a THIRD writer is active in this working tree**, summarising both sessions' work, and
+> neither of us had accounted for it. This repo's memory already carries a note that a third writer's
+> stash sits on the stack; that is consistent, and this is the first direct evidence of them
+> *currently* writing.
+
+**Disposition unchanged, on a sounder basis.** `SPRINT_SUMMARY_2026-08-16_TO_08-26.md` still does not
+go into `canonical_figures.DELIVERABLES` — not because of the peer's constraint (they have none) and
+not because of mine (I have none), but because **an unidentified third party is mid-rewrite of it**,
+and gating it under `check_all` would refuse *their* commits without their knowing why. The four W1
+entries remain worth having and remain deferred. **I am not editing that file.**

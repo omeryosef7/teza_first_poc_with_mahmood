@@ -120,6 +120,7 @@ TRACE_TOKENS = {
     "§24.2": ["HOOK_ORDER_CLASS_CLOSED", "divergent from alphabetical at index 0", "sorted position"],
     "§24.4": ["SCOPE (24.4)", "STATED principle, not a validated one", "never exercised"],
     "§25.1": ["TICK_VERIFICATION_25", "OPPOSITE DIRECTIONS", "excluded every markdown TABLE ROW"],
+    "§25.3": ["THIRD_WRITER", "EXPENSIVE-DIRECTION INSTANCE", "A THIRD WRITER IS ACTIVE"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],
