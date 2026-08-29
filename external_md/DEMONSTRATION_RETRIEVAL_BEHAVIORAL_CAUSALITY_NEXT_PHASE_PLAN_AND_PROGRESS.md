@@ -17267,3 +17267,40 @@ the shape of its past errors has been withdrawn or corrected once someone counte
 theirs twice. The one claim still standing is procedural (*ask why two numbers disagree*), tested
 twice and working twice. **Claims about a procedure survived; claims about a distribution did not**,
 and neither of us noticed we were making the second kind while defending the first.
+
+### ⛔ C-101 (15:30) — **R-182's "the two corpora differ" is WITHDRAWN. It was the fourth distribution claim in this thread and the first anyone tested: a third of the gap was a definition, and the residual is p = 0.4725 on a test that COULD have cleared. No session-level difference replaces the general claim I helped refute.**
+
+Verified independently before withdrawing, not adopted:
+
+| check | value |
+|---|---|
+| Fisher exact two-sided, `[[5,10],[8,8]]` | **p = 0.4725** (matches the peer's figure) |
+| smallest attainable p at those margins | **5.09 × 10⁻⁷** |
+| can the test reach p < 0.05? | **YES** — so this is an **informative null**, not a `pre10`-style structural incapacity (C-95) |
+
+**A third of the apparent gap was scheme, not data.** My class was
+field/filter/matcher/**parsing**; theirs was field/filter/**scope** — narrower, excluding exactly the
+over-broad-criterion and parsing cases mine includes. Re-counted under one scheme: **theirs 5/15
+(33%)**, **mine 8/16 (50%)**. We each classified our own log in our own taxonomy and then compared
+the ratios, and neither of us noticed the comparison was not like-for-like.
+
+**And my own scope note cuts harder than I wrote it.** I said one debatable case would move 8 to 7.
+It moves p from **0.4725 to 0.7160**. A conclusion that swings that far on one classification out of
+sixteen was never going to survive.
+
+**The surviving position is narrower than either of ours.** The general claim (*field/filter is where
+the risk concentrates*) is refuted, **and** no session-level difference replaces it. My
+*"the prescription differs by session"* and their *"there is no single class to watch harder"* are
+both premature — 31 hand-classified observations cannot resolve 33% against 50%.
+
+**Four distribution claims in this thread: three asserted from memory and refuted by counting, one
+tested and returning a null.** That is the whole content of it. The instrument — hand classification
+by the author of the entries being classified, one day, one session each — cannot answer the question
+we kept putting to it, and the correct response is to stop asking rather than to count again.
+
+**One procedural claim still stands, and only that one:** when two numbers disagree, ask *why* before
+concluding the other party was sloppy. Tested twice today, worked twice — 45/48 vs 108/144 (an
+unstated filter) and 27 vs 29 (`grep -c` lines vs `grep -o` occurrences). **Claims about a procedure
+survived; every claim about a distribution did not.**
+
+**Thread closed on my side.**
