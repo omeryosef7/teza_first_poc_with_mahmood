@@ -239,6 +239,21 @@ def main() -> int:
         if apat and allvals:
             av = _artifact_value(apat, apath)
             entry["artifact_value"] = av
+            # ⛔ THE SAME DEFECT AS AUDIT #11, ON THE OTHER GATE (found 2026-08-29 by probing
+            # whether this guard's VERDICT responds to an injected defect). Audit #11 fixed check
+            # (b) being gated on `allvals`; it left check (b) gated on `av is not None`, and
+            # `_artifact_value` returns None for a missing FILE, an unresolvable KEY PATH and a
+            # non-numeric value alike. So a renamed JSON field or a moved artifact does not fail
+            # this guard -- it SILENTLY DISABLES that figure's drift check while the figure still
+            # prints on a line indistinguishable from a healthy one, and the exit code stays 0.
+            # Verified live: appending a nonexistent subkey to one entry's path left the guard
+            # printing that figure normally and returning 0. All 10 artifact-declaring entries
+            # resolve today, so this costs nothing until something genuinely breaks.
+            if av is None:
+                problems.append(f"{name}: declares artifact {os.path.basename(apat)} but it did "
+                                f"not RESOLVE (missing file, renamed key path {apath}, or a "
+                                f"non-numeric value) -- this figure's drift check is silently "
+                                f"disabled, which is indistinguishable from it passing")
             if av is not None:
                 for v in allvals:
                     if abs(float(v) - float(av)) > t:

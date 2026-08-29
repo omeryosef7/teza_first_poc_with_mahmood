@@ -7476,6 +7476,54 @@ The lesson is narrower than "mutation-test the guard", which was already the rul
 check is not testing the guard.** A unit test that calls the scanner directly cannot see whether the
 verdict is wired to it, and that wire is the only part the commit hook actually runs.
 
+### §12.28.3 ⛔ CORRECTION: the wiring probe run against all nine guards — and it found a LIVE one
+
+§12.28.2's mutant was worth generalising, so every guard `check_all` gates on was probed the same
+way: inject a defect, assert the **exit code** moves, and assert a **clean control still passes**.
+A peer ran it against their three guards in parallel and found their wires intact but **untested** —
+their words, and the right narrowing: *the defect was in coverage, not in the guard.*
+
+**⛔ TWO OF MY OWN PROBES WERE VACUOUS BEFORE THEY WERE INFORMATIVE, in the two ways already named
+in this document.** Recorded because the first pass looked like a clean result:
+
+* **The first sweep severed `return 1` in each guard on the LIVE corpus and every one still exited
+  0** — which proves nothing, because on a clean corpus there is no finding for a severed verdict to
+  discard. An unfalsifiable probe, run against eight guards, that would have been reported as
+  coverage. The same anti-vacuity trap this document has now hit at four different levels.
+* **The `HOOKTESTS` shell variable expanded to one glued string**, so `pytest` ran **no tests at all**
+  and printed `no tests ran in 0.01s` under every mutant. That is the zsh no-word-splitting hazard,
+  which is already a standing note in this repo, re-committed inside a probe whose entire purpose was
+  detecting checks that do not run.
+
+**RESULT: 8 of 9 guards demonstrated wired, each with a passing clean control** — `retraction_sweep`,
+`verify_report_numbers`, `markdown_structure_check`, `pvalue_hygiene_check`, `plan_coverage_check`,
+`ledger_propagation_check`, `run_completeness_check`, `canonical_figures`. `cited_artifact_check` was
+covered by the peer's own probe rather than mine.
+
+**⛔ AND `canonical_figures` WAS NOT WIRED — a live defect in a shipped guard, found by the probe.**
+Appending a nonexistent subkey to one figure's artifact path left the guard **printing that figure on
+a line indistinguishable from a healthy one and returning 0**. The cause:
+
+    _artifact_value() returns None for a MISSING FILE, an UNRESOLVABLE KEY PATH and a
+    NON-NUMERIC VALUE alike -- and check (b) was gated `if av is not None:`.
+
+So a renamed JSON field, a moved artifact or a retyped value **silently disables that figure's
+drift check**, which is indistinguishable from it passing. This is **audit #11's defect surviving on
+the other gate**: audit #11 fixed check (b) being gated on `allvals` and left it gated on `av`. The
+module's own docstring states the principle it then violated — *detecting disagreement is not
+detecting absence*.
+
+Fixed: an entry that declares an artifact and fails to resolve it is now a problem that **names the
+figure**. All 10 artifact-declaring entries resolve today, so this costs nothing until something
+genuinely breaks. Three mutants, all killed — gate removed (2 tests), reason not named (1), verdict
+unwired (2).
+
+`tests/test_guard_wiring.py` (12 tests) pins the property for every guard and is **registered in
+`install_commit_guard.sh`**, whose deployed hook was verified to carry all 13 test files. One
+contamination found while writing it: the anti-vacuity test read the *cached* module and inherited a
+deformation an earlier test had left in `FIGURES`. **A test that inherits a previous test's mutation
+is testing that mutation.** It reloads now, and passes in isolation and in reverse order.
+
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
 success count overstates what it persisted by 43 rows.** A guard checking the ledger rather than the
