@@ -6851,6 +6851,8 @@ at cap in `basket_gun`'s n=1,2,4,8 arm.
 
 ## §12.23 — §6.3 POWERED: boombness DOES predict ASR within dose strata — and the Phase 7 gate stays CLOSED anyway, because the naive control does the same job
 
+> ⛔ **DOWNGRADED BY §12.30 (2026-08-29).** Every number in this section is measured on the **6 domains the directions were fitted from**, and its dev/heldout split shuffled rows inside those same 6. Tested on 32 unseen domains the same statistic is **−0.055** and the marginal correlation goes **+0.315 → −0.010**. The seen-domain estimate replicates (+0.2700), so these numbers are real but **local**: read them as *measured where the directions were built, transfer tested and absent*.
+
 **§6.3's blocker was already gone, and had been for a day.** That section said the mediation test was
 "underpowered by a factor of ~6" because `extract_boombness` had no `core2x2_slot3` rows, collapsing
 the join 96 → 48, and listed two routes to powering it as "both known and unrun". **Route 1 was
@@ -6910,6 +6912,8 @@ variable one wants to dismiss is precisely the number that would get quoted.
 
 ## §12.24 — ⛔ CORRECTION to §12.23: "the candidate and the naive control are the same signal" is WRONG. The gate still closes, for a different reason
 
+> ⛔ **DOWNGRADED BY §12.30 (2026-08-29).** Every number in this section is measured on the **6 domains the directions were fitted from**, and its dev/heldout split shuffled rows inside those same 6. Tested on 32 unseen domains the same statistic is **−0.055** and the marginal correlation goes **+0.315 → −0.010**. The seen-domain estimate replicates (+0.2700), so these numbers are real but **local**: read them as *measured where the directions were built, transfer tested and absent*.
+
 **The error.** §12.23 compared two *marginal* correlations (+0.336 vs +0.297), observed
 ρ(`d_surface|L8`, `d_naive|L8`) = 0.9627, and concluded the candidate was redundant. **Comparing
 marginals does not estimate incremental validity.** A peer flagged it, reconstructed the partial from
@@ -6958,6 +6962,8 @@ domains** — 18 clusters is the binding constraint, exactly as in §12.22 — a
 **No GCG/MAC objective is being built.**
 
 ## §12.25 — PHASE 2.5: prompt-level is not a better objective than token-level, and both are entangled with dose
+
+> ⛔ **DOWNGRADED BY §12.30 (2026-08-29).** Every number in this section is measured on the **6 domains the directions were fitted from**, and its dev/heldout split shuffled rows inside those same 6. Tested on 32 unseen domains the same statistic is **−0.055** and the marginal correlation goes **+0.315 → −0.010**. The seen-domain estimate replicates (+0.2700), so these numbers are real but **local**: read them as *measured where the directions were built, transfer tested and absent*.
 
 Phase 2 asked for token-level vs prompt-level separation, and §12.23 tested only the token-level
 (query-occurrence) readout. Prompt-level aggregates over all occurrences — and occurrences are
