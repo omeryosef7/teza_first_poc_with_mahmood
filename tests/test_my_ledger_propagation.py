@@ -251,3 +251,42 @@ def test_every_guard_file_the_installer_names_actually_exists():
     assert named, "installer names no guard test files at all"
     absent = sorted({n for n in named if not os.path.exists(os.path.join(ROOT, n))})
     assert not absent, f"installer names guard files that do not exist: {absent}"
+
+
+def test_no_correction_exists_only_in_the_deliverable():
+    """C-90: the propagation check runs plan -> deliverable, so the reverse is invisible.
+
+    A correction can be given a `C-` number in the published table while the live log never records
+    one — which is how C-80 came to exist in the summary and nowhere in the plan. That is worse than
+    the direction already guarded: a reader of the plan cannot find the correction at all, and the
+    plan is what the next session inherits.
+
+    Reachability (their mechanism) asks whether a table key CAN be consulted; this asks whether a
+    relation asserted in one document is asserted in the other. Different premises, different tests.
+    """
+    plan = open(PLAN, encoding="utf-8").read()
+    deliv = open(DELIVERABLE, encoding="utf-8").read()
+    orphans = sorted(corrections_in_deliverable(deliv) - corrections_in_plan(plan))
+    assert not orphans, (
+        f"corrections in the deliverable's table with NO entry in the plan log: "
+        f"{['C-%d' % o for o in orphans]}. The published document asserts a correction the live log "
+        f"never recorded; add the plan entry rather than removing the row.")
+
+
+def test_exempt_keys_are_reachable_by_the_scanner():
+    """C-90, ported from their reachability mechanism.
+
+    EXEMPT is subtracted from the corrections the scanner finds IN THE PLAN. A key naming anything
+    the scanner never produces can therefore never be consulted: it cannot fire, cannot fail, and
+    only looks like coverage. They found 22 such keys of 85 — every one added because writing a
+    section and adding a table entry had become a single gesture.
+
+    Decidable from the scanner itself, so a reflexively added key fails at authorship.
+    """
+    plan = open(PLAN, encoding="utf-8").read()
+    reachable = corrections_in_plan(plan)
+    dead = sorted(k for k in EXEMPT if k not in reachable)
+    assert not dead, (
+        f"EXEMPT keys the scanner can never consult: {['C-%d' % d for d in dead]}. Each names "
+        f"something `corrections_in_plan` does not produce, so the exemption is inert and only "
+        f"looks like coverage.")

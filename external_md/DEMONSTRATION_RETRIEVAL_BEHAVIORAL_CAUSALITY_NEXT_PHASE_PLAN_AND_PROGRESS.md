@@ -15865,3 +15865,64 @@ either of us has been treating it as."* **Two verified copies of three lines is 
 copy plus a coupling.** Recording the reversal explicitly because I announced the intention publicly
 and am not carrying it out; **a stated plan is not a commitment when the check you run afterwards
 argues against it.**
+
+### ⛔ C-80 (retro-logged 09:25) — **Q8 WAS addressed this sprint; C-79 said it was not.** *(Content originally written inside R-160; this heading exists because the plan never had one — see C-90.)*
+
+C-79 listed brief Q8 (*do user-like / CoT-like framings increase the readout?*) as **not addressed**.
+It was: `role_style` is a bank axis carrying **2448 query-occurrence rows per style**, present the
+whole time. **An absence claimed without enumerating, inside the entry cataloguing nine other
+instances of exactly that.**
+
+The measurement and its later correction live in **R-160** and **C-81** — the pooled direction I first
+reported was a Simpson's paradox, and within condition all 15 bank×style cells are positive.
+
+### ⛔ C-90 (09:25) — **Their reachability mechanism, ported. My exemption keys are all reachable — but running it found C-80 present in the deliverable and ABSENT from the plan, in the one direction my guard never checked.**
+
+They proposed reachability as the mechanism I said neither of us had: *every key in an exemption or
+trace table must be consultable by the scanner*, decidable from the scanner itself, so a reflexively
+added entry fails at authorship. It found **22 dead keys of 85** on their side and **fired on its own
+author immediately**.
+
+**Ported to my `EXEMPT` table: 17 of 17 keys reachable, 0 dead.** Every exemption names a correction
+the plan scanner actually finds, so the reflexive-entry failure has not occurred here.
+
+**But the measurement surfaced something else.** The scanner reports **88 corrections across the range
+C-1..C-89** — one short. The gap is **C-80**, with **zero** mentions in the plan:
+
+| | count | |
+|---|---|---|
+| corrections in the **plan** | 88 | |
+| corrections in the **deliverable** | 72 | |
+| in plan, not deliverable | **0** | ← the direction my guard checks |
+| **in deliverable, not plan** | **[80]** | ← **never checked** |
+
+**C-80's content was written inside R-160 and given a `C-` number only in the summary's table.** The
+guard tests plan → deliverable, so a correction that exists *only* in the deliverable is invisible to
+it: **the live log never recorded a correction the published document asserts.**
+
+**Both fixed:** C-80 is now retro-logged in the plan above, cross-referencing R-160 rather than
+duplicating it, and the reverse direction gets its own test.
+
+**Their limit applies here too and I will not overstate what this catches.** Reachability finds entries
+that can **never** fire; it says nothing about entries that fire and are **wrong** — their §18's ten
+loose tokens were perfectly reachable and meant nothing. **My C-80 gap is a third category again:** not
+an unreachable key and not a wrong one, but **a direction of the relation that was never asserted at
+all.** Three failure modes, three separate premises, and reachability answers one.
+
+**Both new tests positive-controlled for ISOLATION, per C-76 — and the first mutation I tried did
+not isolate.** Adding an unreachable key `9999` failed *two* tests, because it also changes the
+pinned exempt set. Shrinking the scanner wholesale failed two as well, since both tests read
+`corrections_in_plan`. The isolating mutation is **dropping exactly one EXEMPT key from the
+scanner's output** — an exempt key is by definition absent from the deliverable, so the orphan test
+is untouched:
+
+| mutation | fails | isolates? |
+|---|---|---|
+| orphan `C-999` in the deliverable only | `no_correction_exists_only_in_the_deliverable` | ✅ |
+| add unreachable key `9999` | reachability **+ pinned-set** | ⛔ |
+| shrink scanner to `n > 20` | reachability **+ orphan** | ⛔ |
+| **drop one EXEMPT key from the scanner** | **reachability only** | ✅ |
+
+**Three attempts to build a control that isolates one test.** C-76 said the question is not *does a
+mutation kill this test* but *is this test the only thing that could have killed it* — and finding
+the mutation that answers yes took longer than writing either test.
