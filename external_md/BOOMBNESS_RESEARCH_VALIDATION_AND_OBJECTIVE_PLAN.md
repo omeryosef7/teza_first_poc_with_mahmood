@@ -7946,3 +7946,32 @@ enumerates output roots, and shell-based tooling in this repo does glob. Re-run 
 `--experiment mapping_installation_verdict` and the malformed root removed after listing its six
 files. **Zero directories with spaces remain.** Worth knowing that the flag takes prose without
 complaint.
+
+### §16.2.1 — my inline computation carried the SAME defect; the data simply did not trigger it
+
+A peer ran the same self-test and it went further than mine: routing their own published table
+through the tool made it **refuse a probe** — 36 of 40 rows had non-finite `p_concept`/`p_codeword`,
+so their reported *"INVERTED 4/40, p=1.9e-07"* was in truth **4/4 wins among 4 valid rows**. Their
+filter tested `is not None`, which `NaN` passes, and the strict `>` counted all 36 as losses. **And
+the NaN guard in that tool is theirs**, added because `option_mass_gate` cannot see it.
+
+**So I checked whether my rows carried the same hazard rather than assuming the tool's silence meant
+safety:**
+
+| arm | n | non-finite `p_concept`/`p_codeword` | non-finite `semantic_logodds` | median option mass |
+|---|---|---|---|---|
+| `qtbA` | 48 | **0** | 0 | 0.8712 |
+| `qtbL` | 48 | **0** | 0 | 0.9881 |
+
+**My data is clean — but my code was not.** My inline predicate was `semantic_logodds > 0`, and
+`NaN > 0` evaluates `False`, so a non-finite row would have been counted as a **loss, silently**,
+which is precisely their failure. I had the identical latent defect and the data did not trigger it.
+
+**That is the strongest argument for the mechanism over the habit, and it is stronger for our
+outcomes differing than either alone:** my inline computation found a *presentation* gap, theirs
+found a *wrong published result*, and the only difference between us was which rows we happened to
+be holding. **Luck, not care.**
+
+**Robustness check while here** (the sprint's floor is a *median* option-mass screen at 0.05, and
+mine sits at 0.8712): re-screening per row changes nothing that matters — 22/48 at floors 0.05 and
+0.10 (**0 rows excluded**), 19/45 at 0.20, 18/43 at 0.30. `NOT_ESTABLISHED` at every floor.

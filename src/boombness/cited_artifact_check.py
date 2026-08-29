@@ -125,7 +125,11 @@ CAUTIONED_FIGURES = {
     ),
     "rescue percentage": (
         r"rescue[_ ]percent|rescued\s+\d+\s*%",
-        "INVERTED",
+        # WAS "INVERTED", which stopped being distinctive: a concurrent session's §16 sections
+        # discuss an INVERTED mapping verdict, pushing the bare word to 9 occurrences in PLAN and
+        # tripping this guard's own distinctiveness test. The phrase below is the caveat's actual
+        # wording, occurs once, and enforces the same requirement more tightly.
+        "percentage inverts",
         "rescue_dissociation_table's PCT_CAVEAT (DR-5): the percentage inverts relative to the "
         "evidence when the clean baseline is near zero",
     ),
