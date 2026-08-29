@@ -7323,6 +7323,27 @@ dangerous artifact this sprint has produced, because everything about it looks f
 > Their restraint is adopted: this is **one artifact, one transient quota event**, already
 > `KNOWN_SHORT`, superseded, and cited by nobody. Whether the health path deserves a subset check is
 > a separate argument on its own evidence, **not a rescue of a run that must never be analysed.**
+>
+> ### The stronger check they named as unrun: FIELD agreement, not just id-set identity
+>
+> They scoped their corpus sweep precisely — *"it tests id-set identity, NOT field-by-field agreement
+> of the joined rows"* — and offered that as the check they had not run on my six. Run:
+>
+> | run | joined | shared fields | agreement |
+> |---|---|---|---|
+> | `d38beh2` | 608 | 20 | **all agree** |
+> | `e6A_main`, `e6A_ticket_bomb`, `k640_lbA_ticket_bomb`, `k640_p2A` | 96 each | 20 | **all agree** |
+> | `ph6_main_d016` | 24 | 20 | **all agree** |
+>
+> **And applied to the quarantined run it produces the sharpest statement of why that artifact is
+> dangerous.** Its 527 intersection rows also agree on all 20 shared fields — **zero**
+> disagreements. So:
+>
+> **The corruption is in WHICH ROWS EXIST, not in row content.** 16 results rows were scored with no
+> generation record, 4 generations were never scored, and every row that survives is internally
+> correct. That is precisely why nothing about the run looks wrong from the inside, and why a subset
+> analysis of it would produce **internally consistent, population-biased** numbers — the failure
+> mode hardest to catch downstream, since every consistency check it could face would pass.
 
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
