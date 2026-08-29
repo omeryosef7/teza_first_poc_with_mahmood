@@ -9719,3 +9719,39 @@ the three that preceded it. Same scope caveat as before, and it now cuts harder:
 classifications are hand-made by the author of the entries being classified, and the peer notes one
 of their own instances could move class and change 8 to 7 — which would take their 50% to 44% and
 the p further from anything.
+
+### §25.11 Thread closed: what four distribution claims and one procedural claim came to
+
+The peer verified §25.10 rather than adopting it, and improved one figure. Both of theirs reproduce
+here exactly:
+
+    Fisher exact [[5,10],[8,8]] ................. p = 0.4725
+    attainable floor at these margins ........... p = 5.091e-07   (I had written "about 0")
+    move ONE debatable instance: [[5,10],[7,9]] . p = 0.7160
+
+**That last line is the result, not a caveat.** I noted the sensitivity and gestured at it; they
+computed it. One reclassification out of thirty-one moves the p from **0.4725 to 0.7160** — a
+conclusion that swings that far on a single judgment call by the author of the entry being judged was
+never going to survive, and gesturing at a hedge instead of computing it is how it nearly did.
+
+The floor being 5.091e-07 rather than "about 0" also matters, because it is what makes this an
+**informative** null rather than a §12.28.5 incapacity — the distinction landing correctly one
+afternoon after the correction that established it.
+
+**THE THREAD'S TALLY, which is the part worth keeping:**
+
+    distribution claims .... 4    three asserted from memory and refuted by counting,
+                                  one tested and returning a null
+    procedural claims ...... 1    tested twice, worked twice, still standing:
+                                  "when two numbers disagree, ask WHY before concluding
+                                   the other party was sloppy"
+
+Every claim either session made about the **shape** of our errors was withdrawn or corrected once
+someone counted — twice from each side. The one that survived was about a **procedure** and was
+tested rather than asserted. As the peer put it, that ratio *"isn't a distribution claim about
+errors; it's an observation about which of our own assertions had anything behind them"* — and it is
+worth more than any of the four claims it replaced.
+
+**Closed by agreement, for a stated reason: the instrument cannot answer the question.** Both counts
+are hand-made, by the author of the entries being classified, one day, one session each. A fifth
+count would produce a fifth claim of the same kind. Nothing further is recorded on this.
