@@ -290,3 +290,61 @@ def test_exempt_keys_are_reachable_by_the_scanner():
         f"EXEMPT keys the scanner can never consult: {['C-%d' % d for d in dead]}. Each names "
         f"something `corrections_in_plan` does not produce, so the exemption is inert and only "
         f"looks like coverage.")
+
+
+# --------------------------------------------------------------------------------------------
+# C-92. The guards above enforce plan -> deliverable for CORRECTIONS (`C-NN`) and enforce nothing
+# for FINDINGS (`R-NNN`). That asymmetry is a real hole, not a stylistic one: a finding can be
+# measured, written into the plan, promoted in `RESEARCH_HANDOFF.md` to a qualifier that changes how
+# a live claim reads, and STILL never reach the deliverable -- while every propagation check passes.
+# Measured 2026-08-29: six such findings existed (R-70, R-83, R-95, R-104, R-156, R-168), four of
+# them headline results, each one qualifying a claim the deliverable states unqualified.
+#
+# The rule is deliberately narrow. Most findings are intermediate and have no business in a summary
+# (62 of 166 never reach it, correctly). What must propagate is the subset the CLAIM LEDGER itself
+# leans on: if the ledger cites a finding to qualify a claim, the deliverable that states that claim
+# has to state the qualifier too.
+HANDOFF = os.path.join(ROOT, "RESEARCH_HANDOFF.md")
+FINDING_ID = re.compile(r"\bR-(\d+)\b")
+
+
+def _findings_cited_by_the_ledger(handoff_text):
+    return sorted({int(m) for m in FINDING_ID.findall(handoff_text)})
+
+
+def _states(text, r):
+    """Does `text` state finding R-<r>?  Boundary-anchored: plain `"R-7" in text` is True for a
+    document that only ever mentions R-70 (C-91's under-match, one level down)."""
+    return re.search(r"\bR-%d\b" % r, text) is not None
+
+
+def test_findings_the_ledger_leans_on_reach_the_deliverable():
+    """A finding the claim ledger cites must appear in the deliverable that states the claim."""
+    cited = _findings_cited_by_the_ledger(open(HANDOFF, encoding="utf-8").read())
+    assert cited, "no R-NNN cited in the handoff at all -- the extractor is broken, not the ledger"
+    deliverable = open(DELIVERABLE, encoding="utf-8").read()
+    missing = [r for r in cited if not _states(deliverable, r)]
+    assert not missing, (
+        "findings the claim ledger leans on that the deliverable never states: "
+        f"{['R-%d' % r for r in missing]}. Each qualifies a claim the deliverable asserts "
+        "unqualified. Recorded is not delivered (C-92).")
+
+
+def test_the_findings_guard_actually_fires_when_one_goes_undelivered():
+    """ISOLATION. A guard that cannot fail is decoration -- prove this one fails on a real omission.
+
+    Removes one genuinely-cited finding from a COPY of the deliverable and asserts the check
+    notices. Without this, the test above would keep passing if `FINDING_ID` silently stopped
+    matching or `DELIVERABLE` were pointed at the wrong file.
+    """
+    cited = _findings_cited_by_the_ledger(open(HANDOFF, encoding="utf-8").read())
+    deliverable = open(DELIVERABLE, encoding="utf-8").read()
+    present = [r for r in cited if _states(deliverable, r)]
+    assert present, "nothing cited is delivered, so the control cannot be run"
+    victim = present[0]
+    mutated = re.sub(r"\bR-%d\b" % victim, "R-REDACTED", deliverable)
+    assert mutated != deliverable
+    missing = [r for r in cited if not _states(mutated, r)]
+    assert victim in missing, (
+        f"the guard did NOT notice R-{victim} going undelivered; it cannot catch the C-92 failure "
+        f"it was written for.")

@@ -180,7 +180,11 @@ count, same layer, same rows, opposite behaviour. ⛔ **C-70: only the REFUSAL h
 is selective, the other is not. The demo patch's magnitude also scales with count (24 of ~114 positions
 buys 36.4% of the effect), so **no all-or-none locality is claimed**.
 
-**W6 — raising domains 6 → 10 made the sign test a real test.** The floor is `2/2^k` over the
+**W6 — raising domains 6 → 10 made the sign test a real test (R-18).** The d10 bank was
+accepted on its audit alone — alignment `560 checked / 0 violations`, tokenization
+`4560 ok / 0 bad / 0 token-alignment violations` — read **before a single behavioural number
+existed**, because choosing domains by how much they help is how a floor becomes a search.
+The floor is `2/2^k` over the
 **INFORMATIVE** domains — a domain whose net is exactly zero drops out of a sign test. At 6
 domains `lab_safety` nets exactly 0.0000 on that bank, so **k_informative = 5** and the floor is
 **`2/2⁵ = 0.0625`** — *not* `2/2⁶ = 0.03125`, which is what the domain count alone would suggest.
@@ -328,6 +332,8 @@ dropped as no longer justified by current evidence.
 | **C-89** | **Documenting C-88 made a dormant entry LIVE — the correction text reproduced the governed pattern**, so the guard read a correction *about the guard* as a quotation of the figure and `test_dormant_entries_are_recorded` fired. **The peer hit the identical failure twice in the same hour**, the second time inside the paragraph explaining the first | **Rule adopted (theirs): in a document a guard reads, NAME its patterns, never reproduce them.** 5 mentions rewritten to refer to the entry by role. **Their which-side-to-fix distinction is load-bearing**: where the colliding words are an *accurate term* (their verdict vocabulary) the guard must be tightened; where they are an *arbitrary reference* (an illustration, an entry label) the text should change — otherwise "just reword it" becomes writing around guards. **Checked the silent version they flagged**: a guard reading its exemptions from a document it scans would be self-satisfying. **All three of mine keep exemptions in code**, so the loud failure is the only mode I have. **Sixth defect in this guard, second from writing about it** |
 | **C-90** | **Ported their reachability mechanism: my 17 `EXEMPT` keys are all reachable, 0 dead — but running it found C-80 in the deliverable and ABSENT from the plan.** The scanner sees 88 corrections across C-1..C-89; the gap is C-80, with **zero** plan mentions | C-80's content was written inside R-160 and given a `C-` number only in the summary's table. **My guard tests plan → deliverable, so a correction existing only in the deliverable is invisible** — the live log never recorded a correction the published document asserts. Both fixed: C-80 retro-logged in the plan (cross-referencing R-160, not duplicating it), and the reverse direction now has its own test. **Three distinct failure modes, three premises**: their 22 dead keys (can never fire), their §18 loose tokens (fire and mean nothing), and this (a direction of the relation never asserted). Reachability answers one |
 | **C-91** | **Reachability ported to my remaining tables — 13 of 13 keys live, nothing dead** (`CLASSIFIED` 6, `EXCLUDED_BUT_CITED` 1, `REASON_COUNTS` 2, `REASON_KEYS` 4, against the 63 run ids the plan cites). Reported as a negative, since their 22-of-85 was worth checking for | **The useful port is to the figure patterns.** C-72b asks *is this entry live*, which cannot distinguish **dormant-and-correct** from **dormant-and-broken** — the second sits inert forever looking identical. Every entry now declares a **specimen its own pattern must match**, decidable from the entry alone. **Lifting the specimen dict out of a test body is what made the property testable at all.** Isolation took two attempts: breaking the *pattern* fails 4 tests (three fixtures are built on it — C-72b holding structurally); **corrupting the *specimen* isolates exactly**. Same lesson as C-90's drop-one-key from the other side: **to isolate a test about a declaration, mutate the declaration.** Asymmetry named rather than claimed as care — their tables key on sections they write, mine on ids that must already exist |
+| **C-92** | **My propagation guard enforced plan→deliverable for CORRECTIONS and nothing for FINDINGS.** Of the **47** findings `RESEARCH_HANDOFF.md` cites to qualify live claims, **six** were never stated in the deliverable — R-70 (C11's refusal half and dissociation **do** replicate on Qwen3), R-83 (per-arm floor; C7 pool-B **3.57×**, controls **0.00×/0.38×**), R-95 (C2 on a 3rd bank, **80/76/69%**), R-104 (C13 tested **as an interaction**), R-156 (C6 cap-release **+0.3333**, but monotone only over **n ≤ 8**), R-168 (**installation ≠ attack**: `window_knife` installs at **1.000** with ASR **1-2/96**). Recorded, promoted, never delivered — with every propagation check green. Delivered in §8; guarded with an isolation control. |
+| **C-93** | **The C-92 audit under-reported via the same boundary bug I had corrected one tick earlier, and the guard replacing it measures CITATION, not delivery.** The hand-audit's `"R-18" in text` matched the tail of **`PR-18`** and scored R-18 delivered; the `\bR-%d\b` guard found it immediately. But R-18's *substance* (k_informative **5 → 10**, floor **0.0625 → 0.00195**) was already fully in **W6** — only the id was missing, so the guard reported "never delivered" for "delivered under another name". Fixed by citing R-18 in W6, not by exempting it. The residual weakness is **recorded, not fixed**; it errs in the safe direction. |
 | **R-167** *(audit)* | **Three assertions of pending work that had already landed — two inside claim-ledger rows that also carried the completed result.** C5's *"batch-1 baseline rerun is pre-registered"* (it ran — 789939/R-114, confound measured to zero) and C9's *"the remedy; queued, not launched"* (PR-36 and PR-38 both ran, all gates passed) | **Fixed differently by document KIND**, a distinction the peer's case did not need: the plan is append-only so its 57 pending-assertions are correct by construction; the **ledger** rows are current-state and marked **EXPIRED with the outcome**; the **corrections row is a historical record** and gets a forward pointer rather than revision — **rewriting it to match later evidence would destroy the audit trail the table exists to be**. C13's *"SUSPENDED pending"* is still accurate. **Their Monte Carlo hazard does not reach me**: zero p-values in 0.04-0.06, and my only sampled p is 77 MC standard errors from the threshold |
 
 
@@ -401,6 +407,27 @@ RESOLVED on Qwen3 (W9), declined-for-power on Llama (F6)**. ⚠ **C12 is the thi
 > concept mapping survives the intervention that removes the behaviour. Handing the demonstration
 > activations back gives the refusal back without giving the attack back, in all four model × pool
 > cells.** *(The below-band control that this sentence originally invoked is withdrawn — C-20.)*
+
+### Qualifiers that must travel with these claims (C-92)
+
+The one-line inventory above states each claim's coverage. Six findings the claim ledger leans on
+were **recorded in the plan and in `RESEARCH_HANDOFF.md` but never stated here**, and each one
+changes how a claim reads. They are delivered now; the omission is C-92.
+
+| Finding | Qualifies | What the deliverable was missing |
+|---|---|---|
+| **R-70** | C11 | The **refusal half and the dissociation replicate on Qwen3**; only the ASR half declined for power. C11 is listed as "single-model", which understates it — its strong half is model-general. |
+| **R-83** | C7 | The judge floor is **per-arm**, not a corpus constant, and against its own floor C7's pool-B effect is **3.57×** while two flagged control cells sit at **0.00× and 0.38×**. (The ratio reached §9.3; the finding id and the control cells did not.) |
+| **R-95** | C2 | Corroborated on a **third bank**: the non-refusal share of down-flips is **80% / 76% / 69%** (Llama d10 / Qwen3 / `ticket_bomb`). |
+| **R-104** | C13 | C13's model-specificity had never been tested **as an interaction**, only as two separate tests. Swept and re-tested; it **survives, conservatively**. |
+| **R-156** | C6 | Replicates at a **released cap on a second bank** (+0.0000 → **+0.3333** against the quoted +0.3500) — but "scales with demonstration count" is measured **only over n ≤ 8**, and the ASR analogue **turns over at 16**. The monotonicity is not established beyond 8. |
+| **R-168** | C3, and the phase's framing | **Low ASR does not imply non-installation.** Baseline mapped-win rate by dose: `main` 0.667/0.917/0.917/**1.000**, `ticket_bomb` 0.750/1.000/1.000/**1.000**, `window_knife` 0.583/0.833/0.833/**1.000** — `window_knife` installs the mapping perfectly while its ASR is the lowest in the corpus (**1-2/96**). Installation is **necessary and not sufficient**, so "does the model understand the codeword" is the wrong quantity to optimise against. |
+
+**Why this happened, and what now prevents it.** The tracked commit guard enforced propagation for
+**corrections** (`C-NN`) and enforced nothing for **findings** (`R-NNN`), so a finding could be
+recorded, promoted to a claim qualifier in the ledger, and still never reach the deliverable — with
+every propagation check passing. `tests/test_my_ledger_propagation.py::test_findings_the_ledger_leans_on_reach_the_deliverable`
+now fails if any `R-NNN` cited by `RESEARCH_HANDOFF.md` is absent from this file.
 
 ## 9. Limitations
 

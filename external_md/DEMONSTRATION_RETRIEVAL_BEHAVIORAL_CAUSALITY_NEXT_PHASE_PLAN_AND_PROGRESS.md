@@ -16102,3 +16102,83 @@ specific phrase, never a larger budget* — exposed a correction missing for day
 found the untraced correction that the propagation guard exists to find and had been reporting as
 traced every run.** A guard can be simultaneously green and wrong about the thing it is for, and the
 only reason this surfaced is that an unrelated threshold happened to trip.
+
+---
+
+### ⛔ C-92 (2026-08-29, 11:20) — **My propagation guard enforced plan→deliverable for CORRECTIONS and NOTHING for FINDINGS. Six findings the claim ledger leans on — four of them headline — were recorded, promoted to claim qualifiers, and never stated in the deliverable, with every propagation check green.**
+
+The concurrent session named this gap in their own guard. It was live in mine, so I measured it
+rather than agreeing with it.
+
+**Scope, deliberately narrow.** 166 `R-NNN` findings exist in this plan and **62 never reach the
+deliverable** — which is *correct*, because most findings are intermediate and have no business in a
+summary. A raw 62/166 is not a defect and quoting it as one would be the "% of the rise removed"
+error (DR-5) in another costume. The defect is the subset **the claim ledger itself cites**: if
+`RESEARCH_HANDOFF.md` leans on a finding to qualify a live claim, the deliverable that states that
+claim must state the qualifier.
+
+Of **47** findings the ledger cites, **six** were absent from the deliverable:
+
+| Finding | Claim | What the deliverable asserted without it |
+|---|---|---|
+| **R-70** | C11 | Listed "single-model". Its **refusal half and the dissociation replicate on Qwen3**; only the ASR half declined for power. |
+| **R-83** | C7 | The judge floor is **per-arm**; C7 pool-B is **3.57×** its own floor and two flagged control cells are **0.00× / 0.38×**. The ratio had reached §9.3 — the id and the control cells had not. |
+| **R-95** | C2 | Corroborated on a **third bank**: non-refusal share of down-flips **80% / 76% / 69%**. |
+| **R-104** | C13 | Model-specificity had been tested only as two separate tests, never **as an interaction**. Re-tested; survives conservatively. |
+| **R-156** | C6 | Cap-release replication on a 2nd bank (+0.0000 → **+0.3333** vs quoted +0.3500) — and "scales with demonstration count" is measured **only over n ≤ 8**, with the ASR analogue **turning over at 16**. |
+| **R-168** | C3 / framing | **Low ASR does not imply non-installation** (`window_knife` installs at **1.000** with ASR **1-2/96**). Installation is necessary and not sufficient. |
+
+**Delivered** in `reports/SPRINT_SUMMARY_2026-08-25_BEHAVIORAL_CAUSALITY.md` §8, "Qualifiers that
+must travel with these claims". **Guarded** by
+`tests/test_my_ledger_propagation.py::test_findings_the_ledger_leans_on_reach_the_deliverable`,
+with an isolation control that redacts a genuinely-cited id and asserts the check notices.
+
+### ⛔ C-93 (11:30) — **My own C-92 audit under-reported, by the SAME boundary bug I corrected one tick earlier. And the guard I wrote to replace it measures CITATION, not delivery — it flagged a finding that was fully delivered.**
+
+Two failures, opposite in direction, in the same hour:
+
+1. **Under-report.** My hand-audit tested `f"R-{r}" in summary`. The deliverable contains **`PR-18`**,
+   whose tail is the substring `R-18`, so the audit scored R-18 as delivered. It was not cited at
+   all. This is **C-91's `\b` under-match reproduced one level up** — I corrected the bug and then
+   wrote its mirror image the same day. The guard uses `\bR-%d\b` and immediately found the 7th case
+   my hand-audit missed.
+2. **Over-report, from the fix.** R-18's *substance* — the d10 domain expansion, `k_informative`
+   5 → 10, floor **0.0625 → 0.00195** — was already fully stated in **W6**. Only the identifier was
+   missing. An id-presence guard cannot tell "never delivered" from "delivered under another name",
+   so it reports the second as the first. The peer's framing is the right test and it cuts both
+   ways: *could this evidence have been produced by something other than the thing it claims to
+   show* — and equally, **could the thing be present while the evidence is absent.**
+
+Resolved by citing R-18 in W6 (with the acceptance gate it records: alignment `560 checked / 0
+violations`, tokenization `4560 ok / 0 bad`, read before any behavioural number existed) rather than
+by exempting it. The id belongs next to its content. **The guard's residual weakness is recorded,
+not fixed:** it will keep flagging substance-delivered/id-absent cases, which is the safe direction.
+
+### ✅ R-169 (11:35) — **Swept my corpus for R-168's shape — a measured family traced nowhere — and it does not recur. Three unmentioned families exist; all three belong to other sessions. A clean negative, plus the method failure that nearly hid it.**
+
+R-168 was a result of mine that no document referenced. The question this answers is whether that
+was an instance or a pattern.
+
+**Method failure first, because it changed the answer.** The first sweep matched run tags with
+`\b{tag}\b` and reported **13** unmentioned families. A tag like `p9_rescue` has **no word boundary
+after a digit**, so the pattern cannot match its own directory names — 10 of the 13 were false.
+Prefix matching gives **3**. (A second, silent one: a `for pat in …; ls -d A/$pat B/$pat` loop
+produced nothing at all, because an unmatched glob aborts the whole command in this shell. It looked
+like "no results", not like an error. Re-run per-path.)
+
+**The three, and their provenance, read from each run's own `RUNMETA.argv` and never from prose:**
+
+| Family | Rows | `--gens` source | Verdict |
+|---|---|---|---|
+| `p3j` | 384 | `e6A_ticket_bomb_20260828_002321_882523` | **Not mine** — judges the peer's E6 banks |
+| `p6j` | 288 | `e6A_main_20260827_232241_875172` | **Not mine** — dose-suffixed (`_d016`, `_d12`, `_d1248`), the peer's Phase-6 dose ladder |
+| `q3dec` | 5760 | — | **Prior-phase infrastructure**, created by `de63dd8c` "Prepare one-session judging for the full Qwen3 decomposition" |
+
+**Conclusion: R-168 was an instance, not a pattern.** Every measured family I produced is referenced
+by at least one of my documents. Worth stating explicitly, per the standing rule that *an audit
+finding little is only informative if it says how hard it looked*: the sweep covered all measured
+run families under `outputs/boombness/judge/`, matched by prefix against both plan documents, and the
+one correction to its own method moved the count from 13 to 3.
+
+⚠ `p3j` and `p6j` appear in **neither** session's plan. They are the peer's to interpret and I have
+flagged them there; I have not read their numbers.
