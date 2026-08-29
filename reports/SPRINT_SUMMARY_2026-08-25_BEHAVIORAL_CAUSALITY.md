@@ -166,7 +166,7 @@ R-48 turned it into a number (**≥76 non-demo, non-query tokens at `n_examples`
 every cheaper lever excluded); R-46 showed in-body filler makes it **worse** (it grows `demo_block`);
 R-49 delivered a bank where **`match_ratio` is 1.000 (min and mean) at all four doses**, pool 30 →
 160, with `demo_block` byte-unchanged. **A control that had been impossible for the whole phase
-became real on every row of 480.**
+became real on every row of 480.** ⬆ **R-159: replicated in FOUR independent sessions** — `p12`, `p13`, `q15`, `q16`, each 3 draws × 160 = **480 rows at `match_ratio` min = mean = 1.0000**, **1920 control rows across two models**. W8 quotes one 480; the tree holds four.
 
 **W7 — the two effects are localised differently, and it is position IDENTITY not count.** The attack
 damage is reachable from the **query span** (+0.0563 ASR, clearing the margin by 0.7 rows;

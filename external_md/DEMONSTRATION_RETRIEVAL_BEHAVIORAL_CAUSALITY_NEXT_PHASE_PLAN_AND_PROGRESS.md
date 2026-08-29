@@ -15108,3 +15108,48 @@ that sounds more like a finding.**
 are downgraded to **fit-set-dependent** under a rule fixed before the number existed — with the
 seen-domain estimate **replicating** the earlier work (+0.2700 against +0.1783), so those correlations
 were never noise. **They were local.**
+
+### 🏆 R-159 (05:15) — **W8 verifies, and four times over rather than once: `match_ratio` min = mean = 1.0000 on 480 rows in EACH of four independent sessions. My first attempt at checking it produced a wrong denominator by the same pattern I have catalogued seven times tonight.**
+
+The last unaudited W-claim. W8 asserts *"`match_ratio` is 1.000 (min and mean) at all four doses"* and
+W9 quotes *"1.000 on all 480 control rows, 3/3 distinct draws"*.
+
+| session | draws | rows | rows with ratio | min | mean |
+|---|---|---|---|---|---|
+| `p12` | 3 | **480** | 480 | **1.0000** | **1.0000** |
+| `p13` | 3 | **480** | 480 | **1.0000** | **1.0000** |
+| `q15` | 3 | **480** | 480 | **1.0000** | **1.0000** |
+| `q16` | 3 | **480** | 480 | **1.0000** | **1.0000** |
+
+**1920 control rows across four sessions and two models, every one at exactly 1.0000.** W8 claims one
+480; the artifact tree holds four. **This is the strongest-supported claim in the deliverable and it is
+under-stated.**
+
+**⛔ And my first check of it was wrong, in the night's own pattern.** It reported *"320 rows —
+CHECK"*, from two independent silent skips in one twelve-line script:
+
+1. `if not os.path.exists(gens): continue` — **seven run dirs skipped without a word**;
+2. globbing `p12_matched_d1*` and `p13_matched_d1*` — **only draw 1 of 3**.
+
+**A wrong denominator, produced by selecting with a pattern I supplied and by discarding what did not
+match it — inside a script written to audit a claim about completeness.** Eighth instance tonight,
+and the fourth that is mine. The corrected version **reports** empty dirs instead of skipping them,
+which is the whole of the fix.
+
+**The seven empty dirs, inventoried because they are a standing hazard rather than a defect:**
+
+| dirs | contents |
+|---|---|
+| `p5_matched_d{1,2,3}` (3) | `config.json`, `RUNMETA.json`, `plots` — **no `gens.jsonl`, no `DONE.json`** |
+| `q14_matched_d{1,2,3}` + a duplicate `d1` (4) | same |
+
+**None is cited by full run ID in any deliverable** (0/6 checked), and `cited_artifact_check` requires
+`DONE.json`, so nothing admissible points at them. **But a `sorted(glob(tag))[0]` resolves `p5_matched_d1`
+to an empty shell** — the C-61/C-65 hazard with live instances still on disk. They are superseded
+runs, not losses.
+
+**With W8 the prose audit is complete.** All nine W-claims checked against artifacts: **W2** (C-78,
+model attribution), **W3** (R-147, vacuous guard), **W4** (C-69, `respq`), **W5** (C-75, dissociation
+Llama-only), **W6** (C-77, `k_informative`), **W1** (C-75, bank-specific null) corrected; **W7** (C-70)
+qualified; **W8** and **W9** verify exactly. **Seven of nine needed a change, and not one of the
+changes was to a number** — every defect was in what the sentence around the number claimed.
