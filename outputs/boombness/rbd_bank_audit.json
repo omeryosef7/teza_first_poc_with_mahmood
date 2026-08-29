@@ -1,0 +1,531 @@
+{
+ "schema": "RBD_BANK_AUDIT/1",
+ "banks": [
+  {
+   "codewords": [
+    "lantern"
+   ],
+   "concepts": [
+    "poison"
+   ],
+   "ids_and_hashes": {
+    "ok": true,
+    "n_rows": 960,
+    "n_bad_prompt_sha16": 0,
+    "n_bad_prompt_id": 0,
+    "examples_bad_sha": [],
+    "examples_bad_pid": []
+   },
+   "duplicates": {
+    "ok": true,
+    "n_duplicate_prompt_ids": 0,
+    "n_duplicate_prompt_texts": 0,
+    "examples_duplicate_text": []
+   },
+   "balance": {
+    "ok": true,
+    "by_condition": {
+     "benign_literal": 240,
+     "concept_in_benign_ctx": 240,
+     "direct_harmful": 240,
+     "natural_doublespeak": 240
+    },
+    "by_query_kind": {
+     "behavioral": 320,
+     "mapping_use_forced_choice": 320,
+     "semantic_forced_choice": 320
+    },
+    "by_split": {
+     "dev": 480,
+     "heldout": 480
+    },
+    "by_n_examples": {
+     "8": 960
+    },
+    "by_domain": {
+     "airport_apron": 48,
+     "airport_ground": 48,
+     "bakery_plant": 48,
+     "campsite_park": 48,
+     "construction_site": 48,
+     "dairy_plant": 48,
+     "ferry_terminal": 48,
+     "fishing_harbour": 48,
+     "hospital_supply": 48,
+     "hospital_ward_store": 48,
+     "hotel_service": 48,
+     "library_stacks": 48,
+     "power_substation": 48,
+     "quarry_site": 48,
+     "recycling_centre": 48,
+     "school_campus": 48,
+     "shipyard_slip": 48,
+     "telecom_exchange": 48,
+     "textile_mill": 48,
+     "theatre_backstage": 48
+    },
+    "by_family_slot": {
+     "0": 480,
+     "3": 480
+    }
+   },
+   "readout_coverage": {
+    "ok": true,
+    "n_stems": 80,
+    "n_stems_expected": 80,
+    "n_stems_missing_a_readout": 0,
+    "examples": {}
+   },
+   "single_factor": {
+    "ok": true,
+    "n_aligned_pairs_checked": 320,
+    "n_violations": 0,
+    "n_skipped_not_checkable": 80,
+    "skipped_query_kinds": [
+     "semantic_forced_choice"
+    ],
+    "skipped_note": "NOT CHECKED is not the same as passed",
+    "examples": []
+   },
+   "articles": {
+    "ok": true,
+    "an_before_consonant_total": 0,
+    "an_before_consonant_by_word": {},
+    "a_before_vowel_total": 24,
+    "a_before_vowel_by_word": {
+     "unique": 24
+    },
+    "unexpected_words": {},
+    "codeword_or_concept_flagged": {},
+    "note": "clause 3 (codeword/concept must not appear) is the substantive one"
+   },
+   "lexical_collisions": {
+    "ok": true,
+    "n_rows_with_leak": 0,
+    "examples": []
+   },
+   "occurrences": {
+    "ok": true,
+    "n_recorded_vs_recounted_mismatches": 0,
+    "target_occurrence_distribution": {
+     "9": 640,
+     "10": 320
+    },
+    "examples": []
+   },
+   "lengths": {
+    "ok": true,
+    "behavioral": {
+     "benign_literal": {
+      "n": 80,
+      "min": 568,
+      "p50": 663.5,
+      "max": 771,
+      "mean": 661.48
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 559,
+      "p50": 654.5,
+      "max": 762,
+      "mean": 652.48
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 600,
+      "p50": 769.0,
+      "max": 1012,
+      "mean": 780.09
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 609,
+      "p50": 778.0,
+      "max": 1021,
+      "mean": 789.09
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": 9.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": 9.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 9.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
+     "aligned_pairs_ok": true
+    },
+    "mapping_use_forced_choice": {
+     "benign_literal": {
+      "n": 80,
+      "min": 592,
+      "p50": 687.5,
+      "max": 795,
+      "mean": 685.48
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 583,
+      "p50": 678.5,
+      "max": 786,
+      "mean": 676.48
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 624,
+      "p50": 793.0,
+      "max": 1036,
+      "mean": 804.09
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 633,
+      "p50": 802.0,
+      "max": 1045,
+      "mean": 813.09
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": 9.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": 9.0,
+      "expected_chars": 9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 9.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
+     "aligned_pairs_ok": true
+    },
+    "semantic_forced_choice": {
+     "benign_literal": {
+      "n": 80,
+      "min": 601,
+      "p50": 696.5,
+      "max": 804,
+      "mean": 694.48
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 592,
+      "p50": 687.5,
+      "max": 795,
+      "mean": 685.48
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 633,
+      "p50": 802.0,
+      "max": 1045,
+      "mean": 813.09
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 642,
+      "p50": 811.0,
+      "max": 1054,
+      "mean": 822.09
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": 9.0,
+      "expected_chars": 10.0,
+      "residual_chars": 1.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": 9.0,
+      "expected_chars": 10.0,
+      "residual_chars": 1.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 10.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 136.61,
+     "aligned_pairs_ok": true
+    }
+   },
+   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_lantern_poison.jsonl",
+   "n_rows": 960,
+   "n_domains": 20,
+   "n_family_stems": 80,
+   "n_behavioural_attack_rows": 80,
+   "PASS": true
+  },
+  {
+   "codewords": [
+    "candle"
+   ],
+   "concepts": [
+    "missile"
+   ],
+   "ids_and_hashes": {
+    "ok": true,
+    "n_rows": 960,
+    "n_bad_prompt_sha16": 0,
+    "n_bad_prompt_id": 0,
+    "examples_bad_sha": [],
+    "examples_bad_pid": []
+   },
+   "duplicates": {
+    "ok": true,
+    "n_duplicate_prompt_ids": 0,
+    "n_duplicate_prompt_texts": 0,
+    "examples_duplicate_text": []
+   },
+   "balance": {
+    "ok": true,
+    "by_condition": {
+     "benign_literal": 240,
+     "concept_in_benign_ctx": 240,
+     "direct_harmful": 240,
+     "natural_doublespeak": 240
+    },
+    "by_query_kind": {
+     "behavioral": 320,
+     "mapping_use_forced_choice": 320,
+     "semantic_forced_choice": 320
+    },
+    "by_split": {
+     "dev": 480,
+     "heldout": 480
+    },
+    "by_n_examples": {
+     "8": 960
+    },
+    "by_domain": {
+     "airport_apron": 48,
+     "airport_ground": 48,
+     "bakery_plant": 48,
+     "campsite_park": 48,
+     "construction_site": 48,
+     "dairy_plant": 48,
+     "ferry_terminal": 48,
+     "fishing_harbour": 48,
+     "hospital_supply": 48,
+     "hospital_ward_store": 48,
+     "hotel_service": 48,
+     "library_stacks": 48,
+     "power_substation": 48,
+     "quarry_site": 48,
+     "recycling_centre": 48,
+     "school_campus": 48,
+     "shipyard_slip": 48,
+     "telecom_exchange": 48,
+     "textile_mill": 48,
+     "theatre_backstage": 48
+    },
+    "by_family_slot": {
+     "0": 480,
+     "3": 480
+    }
+   },
+   "readout_coverage": {
+    "ok": true,
+    "n_stems": 80,
+    "n_stems_expected": 80,
+    "n_stems_missing_a_readout": 0,
+    "examples": {}
+   },
+   "single_factor": {
+    "ok": true,
+    "n_aligned_pairs_checked": 320,
+    "n_violations": 0,
+    "n_skipped_not_checkable": 80,
+    "skipped_query_kinds": [
+     "semantic_forced_choice"
+    ],
+    "skipped_note": "NOT CHECKED is not the same as passed",
+    "examples": []
+   },
+   "articles": {
+    "ok": true,
+    "an_before_consonant_total": 0,
+    "an_before_consonant_by_word": {},
+    "a_before_vowel_total": 18,
+    "a_before_vowel_by_word": {
+     "unique": 12,
+     "useful": 6
+    },
+    "unexpected_words": {},
+    "codeword_or_concept_flagged": {},
+    "note": "clause 3 (codeword/concept must not appear) is the substantive one"
+   },
+   "lexical_collisions": {
+    "ok": true,
+    "n_rows_with_leak": 0,
+    "examples": []
+   },
+   "occurrences": {
+    "ok": true,
+    "n_recorded_vs_recounted_mismatches": 0,
+    "target_occurrence_distribution": {
+     "9": 640,
+     "10": 320
+    },
+    "examples": []
+   },
+   "lengths": {
+    "ok": true,
+    "behavioral": {
+     "benign_literal": {
+      "n": 80,
+      "min": 547,
+      "p50": 658.0,
+      "max": 921,
+      "mean": 662.0
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 556,
+      "p50": 667.0,
+      "max": 930,
+      "mean": 671.0
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 640,
+      "p50": 747.5,
+      "max": 973,
+      "mean": 767.5
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 631,
+      "p50": 738.5,
+      "max": 964,
+      "mean": 758.5
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": -9.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": -9.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 9.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
+     "aligned_pairs_ok": true
+    },
+    "mapping_use_forced_choice": {
+     "benign_literal": {
+      "n": 80,
+      "min": 574,
+      "p50": 685.0,
+      "max": 948,
+      "mean": 689.0
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 583,
+      "p50": 694.0,
+      "max": 957,
+      "mean": 698.0
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 667,
+      "p50": 774.5,
+      "max": 1000,
+      "mean": 794.5
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 658,
+      "p50": 765.5,
+      "max": 991,
+      "mean": 785.5
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": -9.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": -9.0,
+      "expected_chars": -9.0,
+      "residual_chars": 0.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 9.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
+     "aligned_pairs_ok": true
+    },
+    "semantic_forced_choice": {
+     "benign_literal": {
+      "n": 80,
+      "min": 580,
+      "p50": 691.0,
+      "max": 954,
+      "mean": 695.0
+     },
+     "concept_in_benign_ctx": {
+      "n": 80,
+      "min": 589,
+      "p50": 700.0,
+      "max": 963,
+      "mean": 704.0
+     },
+     "direct_harmful": {
+      "n": 80,
+      "min": 673,
+      "p50": 780.5,
+      "max": 1006,
+      "mean": 800.5
+     },
+     "natural_doublespeak": {
+      "n": 80,
+      "min": 664,
+      "p50": 771.5,
+      "max": 997,
+      "mean": 791.5
+     },
+     "aligned_gap:natural_doublespeak-direct_harmful": {
+      "observed_chars": -9.0,
+      "expected_chars": -10.0,
+      "residual_chars": 1.0,
+      "ok": true
+     },
+     "aligned_gap:benign_literal-concept_in_benign_ctx": {
+      "observed_chars": -9.0,
+      "expected_chars": -10.0,
+      "residual_chars": 1.0,
+      "ok": true
+     },
+     "mean_target_occurrences": 10.0,
+     "cross_valence_spread_chars_EXPECTED_BY_DESIGN": 105.5,
+     "aligned_pairs_ok": true
+    }
+   },
+   "bank": "data/boombness_prompts/boombness_prompt_bank_rbd_candle_missile.jsonl",
+   "n_rows": 960,
+   "n_domains": 20,
+   "n_family_stems": 80,
+   "n_behavioural_attack_rows": 80,
+   "PASS": true
+  }
+ ],
+ "pool_independence": {
+  "ok": true,
+  "boombness_prompt_bank_rbd_lantern_poison.jsonl:within_bank_slot_overlaps": 0,
+  "boombness_prompt_bank_rbd_lantern_poison.jsonl:within_bank_examples": [],
+  "boombness_prompt_bank_rbd_lantern_poison.jsonl:n_domain_split_groups": 40,
+  "boombness_prompt_bank_rbd_candle_missile.jsonl:within_bank_slot_overlaps": 0,
+  "boombness_prompt_bank_rbd_candle_missile.jsonl:within_bank_examples": [],
+  "boombness_prompt_bank_rbd_candle_missile.jsonl:n_domain_split_groups": 40,
+  "boombness_prompt_bank_rbd_candle_missile.jsonl|boombness_prompt_bank_rbd_lantern_poison.jsonl:shared_demo_sentences": 0
+ },
+ "PASS": true
+}

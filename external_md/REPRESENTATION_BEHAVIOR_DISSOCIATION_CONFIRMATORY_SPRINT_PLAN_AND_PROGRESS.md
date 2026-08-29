@@ -1939,3 +1939,155 @@ Readout-B option tokenization is asserted against a **committed artifact**,
 8 words (both codewords, both concepts, all four options) on both models — **8/8 single-token with a
 leading space** — with a test that the artifact is not vacuous (`space_single` must agree with
 `len(space_ids) == 1`). A tokenizer fact asserted against a comment is not asserted.
+
+## §14.16 — `RBD-R-012` · **The two confirmatory banks are BUILT and AUDITED** · 2026-08-29 17:05 IDT
+
+| | `boombness_prompt_bank_rbd_lantern_poison.jsonl` | `boombness_prompt_bank_rbd_candle_missile.jsonl` |
+|---|---|---|
+| pools | `demo_pools_rbd_lantern_poison.json` (80 pools) | `demo_pools_rbd_candle_missile.json` (80 pools, sha16 `9b5f841e89a374d7`) |
+| rows | **960** | **960** |
+| domains | **20** | **20** |
+| family stems | **80** | **80** |
+| behavioural attack rows (`natural_doublespeak`) | **80** | **80** |
+| 2×2 families checked / violations | 240 / **0** | 240 / **0** |
+| duplicate `prompt_id` rows dropped | **0** | **0** |
+| balance (condition / query_kind / split / domain / slot / n_examples) | exact | exact |
+
+960 = 20 domains × 2 splits × 2 slots × 4 conditions × 3 query kinds. **80 + 80 = 160 behavioural
+attack rows per arm per model**, exactly the amended design of `RBD-C-004`.
+
+### Tokenizer audit (`tokenization_audit.py`, reused not rewritten) — both banks, both models
+
+| bank | model | rows ok / bad / ambiguous | families checked | token-alignment violations |
+|---|---|---|---|---|
+| lantern_poison | Llama-3.1-8B-Instruct | **960 / 0 / 0** | 160 of 240 | **0** |
+| lantern_poison | Qwen3-14B | **960 / 0 / 0** | 160 of 240 | **0** |
+| candle_missile | Llama-3.1-8B-Instruct | **960 / 0 / 0** | 160 of 240 | **0** |
+| candle_missile | Qwen3-14B | **960 / 0 / 0** | 160 of 240 | **0** |
+
+⚠ **80 of 240 families are SKIPPED, and the module correctly reports that as *not checked* rather
+than as *passing*** — its docstring records that returning `[]` for an unchecked family once made a
+summary read "540 families, 0 violations" when only 216 had been examined. The 80 are the
+`semantic_forced_choice` families, which name **both** candidate words and therefore cannot satisfy
+an exact-swap invariant at the token level.
+
+> ### `RBD-R-013` — an unplanned property of Readout B, worth recording
+> **`mapping_use_forced_choice` IS token-alignment checked; `semantic_forced_choice` is not.**
+> Because Readout B's options are **property** words rather than the codeword and concept, its rows
+> are `occurrence_analysis_safe`, so they fall inside the 160 checked families. **Readout B carries a
+> stronger structural guarantee than the binding probe it is paired with.** This was a consequence of
+> the safety requirement, not a design goal.
+
+### Independent bank audit (`rbd_bank_audit.py`, **does not import `prompt_families`**)
+
+Implements the §4.2 audits `RBD-DR-001` found missing. **Both banks: 9/9 checks PASS, plus pool
+independence PASS.**
+
+| check | result |
+|---|---|
+| `ids_and_hashes` — `prompt_sha16` re-derived from `full_prompt`, `prompt_id` from `family_id\|condition` | 0 bad of 960 |
+| `duplicates` — duplicate id **and duplicate prompt TEXT** (the latter is checked nowhere else) | 0 / 0 |
+| `balance` — 6 categorical axes | exact on all |
+| `readout_coverage` — the BC-C-24 fix | **80/80 stems carry all three readouts** |
+| `single_factor` — aligned pairs byte-identical after masking | **160 pairs checked, 0 violations**, 80 correctly skipped |
+| `articles` — the corrected `RBD-C-005` gate | `an`-before-consonant **0**; `a`-before-vowel only `unique`; codeword/concept absent |
+| `lexical_collisions` — the *other* word must not appear in the demo block | **0 leaks** |
+| `occurrences` — recorded vs **re-counted** from the text | 0 mismatches; distribution `{9: 640, 10: 320}` |
+| `lengths` — aligned-pair gap vs the exact word-length arithmetic | residual **≤ 2 chars** everywhere |
+| `pool_independence` | within-bank slot overlaps **0**; **shared demo sentences across the two banks: 0** |
+
+The occurrence distribution is *explained*, not tolerated: `semantic_forced_choice` names both
+candidates, so when the target surface is the codeword it appears once as `{W}` and again as
+`{CODEWORD}` — one extra occurrence on exactly the 320 forced-choice rows.
+
+---
+
+## §14.17 — `RBD-C-006` · **My independent audit produced two FALSE ALARMS, and that is the finding**
+
+The first run of `rbd_bank_audit` reported **`single_factor`: 240/240 violations** and
+**`lengths`: FAIL** on both banks. Both were bugs **in the audit**, not in the banks.
+
+**Triage followed the inherited rule — corpus → instrument → population — and stopped at the
+instrument.**
+
+1. **`single_factor`.** I required all **four** 2×2 cells to be byte-identical after masking each
+   cell's own target. The design never claims that: the four cells cross demonstration **valence**
+   with target **surface**, so `benign_literal`/`concept_in_benign_ctx` draw from the benign pool and
+   `natural_doublespeak`/`direct_harmful` from the harm pool. Cells from different pools *should*
+   differ. The design's actual claim is about the two **aligned pairs**, and re-derived directly:
+
+   | aligned pair | identical after masking |
+   |---|---|
+   | `direct_harmful` → `natural_doublespeak` | **80 / 80** |
+   | `concept_in_benign_ctx` → `benign_literal` | **80 / 80** |
+
+2. **`lengths`.** I compared mean length across all four cells and flagged a 136.6-char spread. That
+   spread is **cross-valence and expected by design** (harm-pool sentences are longer). Within an
+   aligned pair the gap is **exactly 9.0 chars**, and it is fully explained:
+   `len("lantern") − len("poison") = 1` × **9 target occurrences** = 9. The same arithmetic holds on
+   the other bank (`candle`/`missile`, also 1 char) and at the forced-choice kind (10 occurrences →
+   10 chars). **The check now asserts the exact expected gap rather than a tolerance**, which is a
+   strictly stronger test than the one that false-alarmed.
+
+**Why this is worth a numbered entry.** §22 asks for an independent re-derivation *"to detect the
+same bug twice, not reproduce it twice."* This is the other failure mode of that instruction: **an
+independent auditor can be wrong in the stricter direction, and a red audit is not evidence of a bad
+corpus.** Had I trusted my own audit over the design, I would have rejected two clean banks and gone
+looking for a bank that satisfied an invariant nothing ever claimed. The clean control is now pinned
+alongside every mutant in `tests/test_rbd_bank_audit.py`, precisely so that a future false alarm is
+visible as one.
+
+**18 guard tests**, each check exercised twice — clean bank must PASS, single targeted corruption
+must FAIL and name itself. Mutations executed: corrupted `prompt_sha16`; corrupted `prompt_id`;
+duplicate prompt **text with distinct ids**; condition imbalance; a stem missing a readout (the
+BC-C-24 defect); an injected clause breaking an aligned pair (the `apple` failure mode); `an` before
+a consonant; a leaked concept word in a demo block; a miscounted occurrence; a padded aligned pair;
+and **two slots sharing a demonstration** (the G2 failure). Plus: unsafe query kinds are *skipped and
+counted*, and a bank with **nothing** checkable does **not** pass.
+
+⚠ One of my own test assertions was also wrong and the bank was right: I asserted the occurrence
+distribution was `{9: 960}` from a behavioural-subset reading. It is `{9: 640, 10: 320}`. Corrected,
+with the extra occurrence tied to `n_semantic_forced_choice_rows` so the explanation is asserted
+rather than asserted-around.
+
+---
+
+## §14.18 — `RBD-R-014` · `paired_equivalence.py` — the sprint's one new statistical module
+
+`RBD-DR-001.2` established that no equivalence test exists in `src/boombness/`. H1's binding conjunct
+needs the positive form, so it is written, with the §22 guard set.
+
+**What it computes**, for a paired binary outcome (a family scored under baseline and under the arm):
+
+* **Newcombe method-10** interval for the paired proportion difference, built from two Wilson
+  intervals plus the 2×2 correlation. Closed form, no scipy. Chosen because this design **lives at
+  the boundary** — 45/48 and 48/48 are real observed cells — where the Wald interval is not defined
+  and Wilson is. Degenerate margins take Newcombe's prescribed `φ = 0`, which **widens** the
+  interval: the conservative direction for a null claim.
+* **Cluster bootstrap over domains**, reporting its own `n_clusters` so a 5-cluster interval cannot
+  masquerade as an n=160 one.
+* **Exact conditional McNemar p**, reported **for context and explicitly not as the verdict**.
+
+**The verdict takes the MOST CONSERVATIVE lower bound of the available intervals.** Taking the
+friendlier of two is how a null claim gets manufactured.
+
+**`can_establish_equivalence`** answers, *before* the data speaks: at this n, could **any** outcome
+have cleared the margin? It evaluates the interval at zero discordance with the observed n. If even
+that best case fails, the verdict is **`UNRESOLVABLE_AT_THIS_N`** — not "equivalent", not
+"different". This is `cluster_sign_test.can_reach_alpha`'s discipline applied to equivalence, and it
+exists because the prior phase quoted `pre10`'s k=5 test as a negative when its floor (0.0625) was
+above α.
+
+**24 tests pass.** The interval is verified by **Monte-Carlo coverage** rather than by re-deriving
+Newcombe's algebra — retyping the formula would reproduce a transcription error rather than catch it,
+which is exactly what §22 warns against. Coverage is checked at three true deltas (zero, negative,
+positive) and must land in [0.93, 0.999]; an anti-vacuity control confirms a deliberately 5×-too-narrow
+interval **fails** the same test. Also pinned: `_z` against the standard normal quantiles; Wilson
+defined at x=0 and x=n; sign symmetry under swapping the arms; monotonicity of the lower bound in the
+loss count; McNemar on hand-computable cases; and, centrally,
+
+> **`test_a_large_mcnemar_p_does_NOT_make_it_equivalent`** — 8 pairs, zero discordance, p = 1.0, and
+> the verdict is **`UNRESOLVABLE_AT_THIS_N`**. That is the inference this module exists to replace.
+
+A companion test pins that a point estimate **inside** the margin whose interval **crosses** it
+returns `NOT_ESTABLISHED`, never `EQUIVALENT`.
