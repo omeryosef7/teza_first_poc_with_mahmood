@@ -1500,3 +1500,127 @@ measured on any model. The state is:
    `asr_protocol` diagnostics, **hash-join first**.
 
 **No GPU job has been submitted. The queue is empty. Zero jobs in flight.**
+
+## §14.11 — `RBD-R-003` RESOLVED: the `apple` gate **FIRED**, and the registered fallback is taken · 2026-08-29 16:10 IDT
+
+### What was run
+
+```
+python src/boombness/prompt_families.py \
+  --pools data/boombness_prompts/demo_pools_apple_drug.json \
+  --preset pilot --codeword apple --concept drug --seed 20260829 --out <scratch>.jsonl --strict
+```
+
+**Result: REFUSED.**
+
+```
+[prompt_families] REFUSING: 12 alignment violation(s) under --strict. NOTHING was written to
+<...>.jsonl or <...>_meta.json; the temporary files were removed. No bank exists at the target
+path for a downstream step to pick up.
+```
+
+All 12 violations are of the form
+`<domain>|dev|slot0|nK|none|consistent|near|plain|behavioral: <hi>-><lo> full_prompt is not an
+exact word swap`, over both audited contrasts (`direct_harmful → natural_doublespeak` and
+`concept_in_benign_ctx → benign_literal`).
+
+**The generator's own guard caught it, refused, and left nothing behind for a downstream step to
+pick up. That is the guard working exactly as designed.**
+
+### Localization — and the mechanism is NOT what "the article repair failed" would suggest
+
+Built the four 2×2 cells directly and inspected them:
+
+| cell | target surface | demo block: `a apple` / `an apple` | demo block: `a drug` / `an drug` |
+|---|---|---|---|
+| `natural_doublespeak` | apple | **0 / 3** | 0 / 0 |
+| `direct_harmful` | drug | 0 / 0 | **3 / 0** |
+| `benign_literal` | apple | **0 / 2** | 0 / 0 |
+| `concept_in_benign_ctx` | drug | 0 / 0 | **2 / 0** |
+
+**`_fix_indefinite_articles` works perfectly.** Zero `a apple` in any demonstration block; the
+repair fired on every occurrence.
+
+**And that is precisely why the bank is invalid.** Masking each cell's own target word and diffing:
+
+```
+concept_in_benign_ctx -> benign_literal:
+  - A @ sat forgotten in the corner of the luggage cart.
+  + An @ sat forgotten in the corner of the luggage cart.
+```
+
+> **The repair CREATES the violation.** The exact-word-swap invariant requires two cells to be
+> byte-identical after masking their target words. Repairing the article makes cell A say `An @`
+> where cell C says `A @` — so the cells now differ in a token that is **not** the target word, and
+> the invariant fails. **Not repairing it leaves `a apple` ungrammatical in 2,938 places.** Both
+> branches are invalid, and no third branch exists.
+
+**Generalized statement of criterion 4, derived rather than assumed:**
+
+> **The codeword and the concept must take the same English indefinite article** — i.e. agree in
+> initial-sound class. Otherwise the 2×2 cells cannot be an exact word swap, *whether or not* the
+> article is repaired.
+
+This is why the prior phase **rejected** `arrow` rather than fixing it, and the reason is now on the
+record as a structural property of the design rather than as a fact about one word.
+
+### `RBD-R-004` — a **separate, latent defect** the alignment guard cannot see
+
+The same inspection found a second thing, unrelated to the fallback:
+
+```
+natural_doublespeak  :: ...instructions to build a apple. given the context.
+benign_literal       :: ...instructions to build a apple. given the context.
+```
+
+**`_fix_indefinite_articles` is applied in `_swap` (the demonstration path) and NOT to the query
+template**, which `prompt_families.build_prompt:411` formats directly:
+`query = str(qspec["template"]).format(W=qsurface, CODEWORD=..., CONCEPT=...)`.
+
+⚠ **The exact-word-swap guard is structurally blind to this.** Because the query is ungrammatical
+**symmetrically** in both cells, masking the target words makes them match, and the check passes. A
+bank whose every behavioural query read `build a apple` would clear `--strict`. It was caught here
+only because the *demonstration* repair introduced an asymmetry — i.e. **by a different defect.**
+
+**Impact on this sprint: none.** Every selected and every remaining eligible word is
+consonant-initial, so `{W}` always takes `a`. **Recorded as a latent defect in shared code**, not
+fixed here (fixing it would touch a path every committed bank depends on, and §34 says do not
+rewrite what artifacts depend on). It is filed for the handoff. Any future vowel-initial target
+would hit it, and would **not** be caught by the guard that caught `apple`.
+
+### The fallback, taken
+
+`RBD-R-003` registered — **before this audit ran** — that if the article gate failed, PR-002.3's rule
+advances to the first eligible pair with a consonant-initial codeword. Re-running the sweep with
+criterion 4 now applied (empirically verified, not assumed):
+
+| codeword | concept | verdict |
+|---|---|---|
+| apple × {drug, missile, poison, virus, weapon} | | **REJECT c4** — article class mismatch, all five |
+| candle | drug | reject c1 |
+| **candle** | **missile** | **✅ SELECTED (pair 1)** |
+| candle | poison / virus | reject c6 |
+| candle | weapon | reject c1 |
+| lantern | drug | reject c1 |
+| lantern | missile | reject c6 |
+| **lantern** | **poison** | **✅ SELECTED (pair 2)** |
+| lantern | virus | reject c6 |
+| lantern | weapon | reject c1 |
+| marble / pillow | virus | eligible, not needed |
+| marble / pillow | others | reject c1 or c6 |
+
+> ### ✅ **Confirmatory pairs: `candle ↔ missile` and `lantern ↔ poison`**
+> Both codewords and both concepts are consonant-initial. Distinct on both axes. Neither word has
+> ever appeared in any bank in this repository. **This is the pre-registered fallback firing as
+> designed — not a deviation, and not a search.** The extension set is now `marble ↔ virus` and
+> `pillow ↔ virus`.
+
+### Artifact disposition
+
+`data/boombness_prompts/demo_pools_apple_drug.json` (152 pools, sha16 `875033702333d04f`) **exists
+and is retained**, per §30. It is **QUARANTINED**: it must never be used to build a bank. It is
+retained because it is the evidence for `RBD-R-003` and `RBD-R-004` — the localization above was
+computed from it — and deleting it would leave a negative result unreproducible.
+
+**Added to the sprint's do-not-use list**, alongside the inherited
+`d38beh_20260829_022027_2389958`.
