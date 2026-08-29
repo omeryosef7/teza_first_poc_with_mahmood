@@ -16694,3 +16694,38 @@ released, so it is **not** an artifact. R-142's decision to suspend rather than 
 and so was refusing to reinstate on the within-stratum reading.
 
 **Nothing further is queued for C13.** The 640 rerun was the declared test, it ran, and it answered.
+
+### ⛔ C-95 (2026-08-29, 15:30) — **R-178 reported both cluster tests as "does not clear", as though they were the same kind of negative. They are not: `pre12`'s test COULD have reached significance and did not; `pre10`'s test COULD NOT HAVE, at any outcome. I quoted a p without its attainable floor — the exact discipline C-77 and PR-3 established in this phase.**
+
+The cluster sign test's attainable floor is `2/2^k_informative`. Recomputed for R-178's two arms:
+
+| arm | k informative | negative | p | attainable floor | best p if ALL agreed | can it reach p < 0.05? |
+|---|---|---|---|---|---|---|
+| `pre12` | **7** | 6 | 0.1250 | **0.01562** | 0.01562 | **YES** |
+| `pre10` | **5** | 4 | 0.3750 | **0.06250** | **0.06250** | **NO** |
+
+**`pre10`'s cluster test could not have produced a significant result under any data.** With five
+informative domains the smallest attainable two-sided p is **0.0625**, above 0.05, even if all five
+had agreed in direction. Reporting *"p = 0.375, not significant"* alongside `pre12`'s reads as two
+comparable negatives; it is one informative negative and one **structurally incapable test**.
+
+**Corrected reading of R-178's cluster result:**
+
+* **`pre12`** — the cluster test was **capable** (floor 0.0156) and returned **p = 0.125** on 6 of 7
+  informative domains. That is a **genuine informative negative**: consistent direction, insufficient
+  clustered evidence.
+* **`pre10`** — the cluster test is **uninformative by construction**. It neither supports nor
+  refutes the row-level effect, and **must not be quoted as a negative.**
+
+**What does not change:** Gate 3's row-level PASS (`pre12` −0.0750 / 12 rows / 1.45× margin;
+`pre10` −0.0687 / 11 rows / 1.33× margin), the truncation result, and the halving of the effect on
+cap release. **What changes is only how the cluster half may be quoted** — and it makes the honest
+statement *weaker*, not stronger: C13 is reinstated at row level with **one** capable cluster test
+failing to confirm it and **one** cluster test that was never able to say anything.
+
+**Why this happened.** I computed the floor for these very arms in the PR-39 read — the sign-test
+helper prints `attainable_floor` — and then wrote the summary sentence from the two p-values alone.
+The number I needed was on the screen and did not reach the prose, which is R-172's *"right artifact,
+wrong field"* in a new place: right computation, wrong column.
+
+Corrected in `RESEARCH_HANDOFF.md` C13 and in the deliverable's R-178 entry.
