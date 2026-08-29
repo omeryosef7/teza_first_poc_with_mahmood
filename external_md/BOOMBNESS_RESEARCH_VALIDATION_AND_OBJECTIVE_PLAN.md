@@ -9559,3 +9559,49 @@ Not load-bearing — the mapped-wins cell is the claim and it reproduces exactly
 guessing which statistic yields 0.5695**, because guessing which field produces a number is how one
 reconstructs a confirmation instead of finding one. Recorded as an open, bounded discrepancy: **the
 counts are sourced, two masses beside them are not.**
+
+### §25.6 ⛔ CORRECTION: my "45/48 across three baselines" omitted the filter it depends on
+
+**The claim is true of a subset and false of the raw files, and I did not say so.** My script
+restricted to `query_kind == "semantic_forced_choice"`; my *report* said only *"45/48 reproduces
+across three independent baselines"*. Two of those three runs are **192-row mixed-query files** —
+`semantic_one_word` 96, `semantic_forced_choice` 48, `comprehension_usage` 48 — so read unfiltered
+they give **108/144 and 109/144**, not 45/48. The peer got exactly those numbers attempting to verify
+me, and reached the right answer only because they asked *why* we disagreed instead of assuming one
+of us was wrong.
+
+Corrected statement: **on the `semantic_forced_choice` subset**, `tbA`, `c5A_tb_b1` and
+`p5A_ticket_bomb` each give 45/48 against `p5C`'s 15/48. The filter is not a detail — it is the
+difference between a reproducible claim and an unreproducible one, and a reader running my sentence
+against the files would have failed to confirm it.
+
+### §25.7 The shared-implementation risk in `cluster_sign_test`, discharged by an independent derivation
+
+The peer flagged something back at me that I had let stand: they re-derived their published cluster
+figures **through my module** and called it confirmation by an implementation they did not write.
+True, and weaker than it sounds — **running someone else's implementation is one implementation run
+twice.** If the floor logic were wrong, both sessions would be wrong together, and the agreement
+would look identical either way. That is §25.5's retraction pointed back at me: *independent
+agreement is evidence only when the paths can fail differently.*
+
+Discharged rather than argued. `cluster_sign_test`'s closed form is now pinned against a **2^k
+enumeration** sharing nothing with it — no binomial coefficients, no `_binom_tail`, no closed form —
+counting sign assignments at least as extreme as observed and finding the floor by minimising that
+count over every attainable outcome. Seven cases, five fields each, exact agreement:
+
+    case                closed form                          enumeration
+    pre12 (6/7)         p 0.1250   floor 0.015625  capable   identical
+    pre10 (4/5)         p 0.3750   floor 0.0625    INCAPABLE identical
+    3-bank (3/3)        p 0.2500   floor 0.2500    INCAPABLE identical
+    Phase 6 main (5/5)  p 0.0625   floor 0.0625    INCAPABLE identical
+    with 5 zeros        k stays 7, floor 0.015625            identical
+    unanimous 7         p 0.015625 = floor         capable   identical
+
+Three mutants killed against the reference — one-sided tail instead of two-sided (9 tests), floor as
+`1/2^k` instead of `2/2^k` (9), zeros counted as informative (3) — plus a control asserting the
+enumeration **disagrees** with a deliberately wrong closed form, so the reference cannot pass against
+anything.
+
+**The numbers were never in doubt; the warrant was.** The arithmetic is simple enough that neither
+session expected an error, which is precisely the condition under which a shared implementation goes
+unchecked.

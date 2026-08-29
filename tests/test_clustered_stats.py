@@ -279,3 +279,65 @@ def test_the_summary_ALWAYS_carries_the_capability_with_the_p():
 def test_an_all_zero_cluster_set_is_not_a_crash_and_not_a_pass():
     v = cs.cluster_sign_test([0, 0, 0])
     assert v["k_informative"] == 0 and v["can_reach_alpha"] is False
+
+
+def _brute_sign_test(deltas, alpha=0.05):
+    """INDEPENDENT derivation of the same quantities: enumerate all 2**k sign assignments.
+
+    Deliberately shares no code path with `cluster_sign_test` -- no binomial coefficients, no
+    `_binom_tail`, no closed form. It counts assignments at least as extreme as the observed one,
+    and finds the floor by minimising that count over every attainable outcome.
+    """
+    import itertools
+    informative = [d for d in deltas if d != 0]
+    k = len(informative)
+    if k == 0:
+        return None
+    obs = sum(1 for d in informative if d < 0)
+
+    def extreme(v):
+        return abs(v - k / 2)
+
+    def tail(v):
+        return sum(1 for s in itertools.product((0, 1), repeat=k)
+                   if extreme(sum(s)) >= extreme(v)) / 2 ** k
+    floor = min(tail(v) for v in range(k + 1))
+    return k, obs, tail(obs), floor, floor <= alpha
+
+
+@pytest.mark.parametrize("deltas", [
+    [-1] * 6 + [1],            # pre12, 6/7
+    [-1] * 4 + [1],            # pre10, 5 informative clusters -- the incapable case
+    [-1] * 3,                  # the 3-bank concordance, p IS the floor
+    [-1] * 5,                  # Phase 6 main, unanimous but still floored at 0.0625
+    [-1] * 6 + [1] + [0] * 5,  # zeros must not inflate k
+    [-1] * 7,                  # unanimous and capable
+    [1] * 4 + [-1],            # sign-symmetric partner of pre10
+])
+def test_the_closed_form_agrees_with_a_2_TO_THE_K_ENUMERATION(deltas):
+    """⛔ WHY THIS EXISTS. A peer re-derived their published cluster figures THROUGH THIS MODULE and
+    called it independent confirmation. It is not: running someone else's implementation is one
+    implementation run twice, and if the floor logic were wrong both sessions would be wrong
+    together. They flagged it back at me and were right to.
+
+    Independent agreement is evidence only when the paths can FAIL DIFFERENTLY -- the same lesson
+    that retracted "our two search paths agreeing is worth more than either alone", where both
+    searches keyed on the same mislabelled field. So the closed form is pinned against a derivation
+    that shares nothing with it.
+    """
+    v = cs.cluster_sign_test(deltas)
+    k, obs, p, floor, capable = _brute_sign_test(deltas)
+    assert v["k_informative"] == k
+    assert v["n_negative"] == obs
+    assert v["p"] == pytest.approx(p)
+    assert v["attainable_floor"] == pytest.approx(floor)
+    assert v["can_reach_alpha"] is capable
+
+
+def test_the_brute_force_reference_is_not_vacuous():
+    """The control: the enumeration must DISAGREE with a deliberately wrong closed form, or it
+    would pass against anything and pin nothing."""
+    k, obs, p, floor, capable = _brute_sign_test([-1] * 4 + [1])
+    assert (k, obs) == (5, 4)
+    assert p == pytest.approx(0.375) and floor == pytest.approx(0.0625)
+    assert p != pytest.approx(0.1875), "a one-sided tail must not satisfy this reference"
