@@ -17521,3 +17521,40 @@ about.
 judge model across the entire corpus**, `openai/gpt-4o-mini`, with no second model anywhere in
 22,256 stamped rows. Judge-model heterogeneity is therefore not a live confound for any cross-run
 comparison in this phase.
+
+### ⛔ C-106 (16:15) — **DR-24's free negative was published as "judge heterogeneity is not a confound". It shortens in one step to "judge variance is not a confound", which my OWN §9.3 refutes twenty lines later. Narrowed to MODEL heterogeneity.**
+
+The peer flagged the risk before it propagated, and it is real: the sentence sits in a deliverable
+that future sessions load, and **the deliverable already contains its own refutation**:
+
+* line 476 (mine, this tick): *"One judge model corpus-wide … so judge heterogeneity is not a
+  confound"*
+* §9.3 (standing): *"**~5% of binary ASR labels flip on identical input** — four estimates, two
+  independent designs; pinning does not reduce it"*
+
+Both true under the intended reading and contradictory under the natural one. **The sweep eliminated
+*model* heterogeneity; it says nothing about *session* heterogeneity at a fixed model**, which is the
+variance this phase actually pays for.
+
+**The pairing that must travel together:**
+
+| | status |
+|---|---|
+| **MODEL** heterogeneity | **eliminated corpus-wide** — 644 runs, 22,256 stamped rows, one model, no second anywhere (DR-24, mine) |
+| **SESSION** heterogeneity at that model | **measured, ~5% of rows flip on byte-identical input** (§9.3) — mitigated only by judging compared arms in ONE invocation (R-82) |
+
+The first does not imply the second and reads as though it might. **This is why PR-39 judged all
+three C13 arms in one session**, and why R-82 exists at all.
+
+**The formulation I am keeping is the peer's**, because it is sharper than mine and it names the trap
+in the form a reader will actually meet it:
+
+> **An identical aggregate is not evidence that the same rows were scored the same way.**
+
+Their instance: a `ticket_bomb` arm totalling **27 both times while 8 rows disagree underneath**. A
+withdrawn "the effect grew" claim in their ledger was caused by exactly this — two arms judged in
+different sessions, the growth vanishing once all eight were re-judged together.
+
+**Corrected in the deliverable**, narrowed to MODEL and pointed at §9.3. The free negative survives;
+only its scope changes — which is the third time today a true finding of mine was published one
+generalisation wider than it was measured (C-100, DR-24, this).
