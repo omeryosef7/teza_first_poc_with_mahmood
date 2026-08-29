@@ -216,3 +216,55 @@ def test_the_screen_artifact_is_not_vacuous():
         for w, rec in scr["per_model"][m].items():
             assert isinstance(rec["space_ids"], list) and rec["space_ids"]
             assert rec["space_single"] == (len(rec["space_ids"]) == 1), w
+
+
+# --------------------------------------------------------------------------- #
+# 8. Readout-B option articles (RBD-R-015, found by reviewing my own new code)
+# --------------------------------------------------------------------------- #
+def test_every_registered_option_word_is_consonant_initial():
+    """The template hardcodes `in a {OPT}`, so a vowel-initial option emits `a attic`.
+
+    Same class as RBD-R-004, and the exact-word-swap guard is structurally blind to it: the
+    options do not vary by condition, so the ungrammaticality would be IDENTICAL in all four
+    cells and survive masking.
+    """
+    assert pf.MAPPING_USE_OPTIONS, "no options registered"
+    for (cw, cn), o in pf.MAPPING_USE_OPTIONS.items():
+        pf._assert_option_articles_ok(o, cw, cn)          # must not raise
+        for role, w in o.items():
+            assert w[:1].lower() not in "aeiou", f"{cw}|{cn} {role}={w}"
+
+
+def test_REFUSES_a_vowel_initial_option_word():
+    with pytest.raises(ValueError) as e:
+        pf._assert_option_articles_ok({"literal": "attic", "mapped": "bunker"}, "x", "y")
+    assert "vowel-initial" in str(e.value)
+    assert "a attic" in str(e.value)
+
+
+def test_the_article_guard_is_WIRED_into_build_prompt(monkeypatch):
+    """Testing the helper is not testing the guard. Bend the table and drive the real path."""
+    if not os.path.exists(POOLS):
+        pytest.skip("pools file absent")
+    pools = json.load(open(POOLS))["pools"]
+    ax = pf.Axes(domain="hospital_supply", split="dev", condition="natural_doublespeak",
+                 n_examples=8, strength="none", consistency="consistent",
+                 example_position="near", role_style="plain", query_kind=QK, family_slot=0)
+    bent = dict(pf.MAPPING_USE_OPTIONS)
+    bent[("lantern", "poison")] = {"literal": "attic", "mapped": "cabinet"}
+    monkeypatch.setattr(pf, "MAPPING_USE_OPTIONS", bent)
+    with pytest.raises(ValueError) as e:
+        pf.build_prompt(pools, ax, "lantern", "poison")
+    assert "vowel-initial" in str(e.value)
+
+
+def test_the_wiring_test_is_not_vacuous():
+    """Unbent, the same call must succeed -- otherwise the raise proves nothing."""
+    if not os.path.exists(POOLS):
+        pytest.skip("pools file absent")
+    pools = json.load(open(POOLS))["pools"]
+    ax = pf.Axes(domain="hospital_supply", split="dev", condition="natural_doublespeak",
+                 n_examples=8, strength="none", consistency="consistent",
+                 example_position="near", role_style="plain", query_kind=QK, family_slot=0)
+    r = pf.build_prompt(pools, ax, "lantern", "poison")
+    assert "in a shed" in r["final_query_text"]

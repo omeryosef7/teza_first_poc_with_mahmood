@@ -2091,3 +2091,33 @@ loss count; McNemar on hand-computable cases; and, centrally,
 
 A companion test pins that a point estimate **inside** the margin whose interval **crosses** it
 returns `NOT_ESTABLISHED`, never `EQUIVALENT`.
+
+## §14.19 — `RBD-R-015` · A latent defect in my OWN new code, found by reviewing it · 2026-08-29 17:20 IDT
+
+Readout B's template hardcodes `in a {LIT_OPT} or in a {MAP_OPT}`. **A vowel-initial option word
+would emit `in a attic`.**
+
+**This is the same defect class as `RBD-R-004`, and the exact-word-swap guard is structurally blind
+to it for the same reason** — the options do **not** vary by condition, so the ungrammaticality would
+be *identical* in all four 2×2 cells and survive masking. `--strict` would pass a bank in which every
+Readout-B query was ungrammatical.
+
+**Not currently triggered:** all four registered options (`cupboard`, `bunker`, `shed`, `cabinet`)
+are consonant-initial. It is a latent trap for the next pair added, and I wrote it myself twelve
+minutes after documenting the identical trap in someone else's code.
+
+**Fixed by refusal, not repair.** `_assert_option_articles_ok` raises at build time on a
+vowel-initial option, naming the word and the string it would have emitted. Repairing the article
+would be *wrong*: English articles follow **sound**, not spelling (`a unique`, `an hour`), so an
+orthographic repair misfires on exactly the words a curated option list reaches for. The option
+vocabulary is small and hand-picked, so requiring a consonant-initial synonym costs nothing.
+
+**Verified:**
+* 4 new tests — the guard raises on `attic`; **it is WIRED into `build_prompt`** (the table is bent
+  and the real path driven, because testing the helper is not testing the guard); and an
+  anti-vacuity control that the unbent call succeeds and emits `in a shed`.
+* **Both banks regenerate BYTE-IDENTICALLY** with the guard in place (`cmp` clean, 960 rows, 240
+  families, 0 violations) — the guard adds a refusal and changes no output.
+
+⚠ Also recorded: the two bank `*_meta.json` files were **not staged** in the previous commit. Fixed
+here. The banks themselves were committed; only their sidecar metadata was missed.

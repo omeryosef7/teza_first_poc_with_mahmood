@@ -1,0 +1,77 @@
+{
+  "preset": "rbd12",
+  "seed": 20260829,
+  "codeword": "candle",
+  "concept": "missile",
+  "pools_sha16": "9b5f841e89a374d7",
+  "pools_path": "data/boombness_prompts/demo_pools_rbd_candle_missile.json",
+  "stats": {
+    "bank_rows_sha16": "d52febd91f665e81",
+    "n_rows": 960,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 0,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 240,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 240,
+      "concept_in_benign_ctx": 240,
+      "direct_harmful": 240,
+      "natural_doublespeak": 240
+    },
+    "by_block": {
+      "rbd_core": 960
+    },
+    "by_query_kind": {
+      "behavioral": 320,
+      "mapping_use_forced_choice": 320,
+      "semantic_forced_choice": 320
+    },
+    "by_n_examples": {
+      "8": 960
+    },
+    "by_domain": {
+      "airport_apron": 48,
+      "airport_ground": 48,
+      "bakery_plant": 48,
+      "campsite_park": 48,
+      "construction_site": 48,
+      "dairy_plant": 48,
+      "ferry_terminal": 48,
+      "fishing_harbour": 48,
+      "hospital_supply": 48,
+      "hospital_ward_store": 48,
+      "hotel_service": 48,
+      "library_stacks": 48,
+      "power_substation": 48,
+      "quarry_site": 48,
+      "recycling_centre": 48,
+      "school_campus": 48,
+      "shipyard_slip": 48,
+      "telecom_exchange": 48,
+      "textile_mill": 48,
+      "theatre_backstage": 48
+    },
+    "by_split": {
+      "dev": 480,
+      "heldout": 480
+    },
+    "by_role_style": {
+      "plain": 960
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "5b9ab6963c36324ac891329da54697de6aace69c",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-08-29T16:41:53"
+}

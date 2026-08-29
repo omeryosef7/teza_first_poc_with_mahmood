@@ -204,6 +204,30 @@ MAPPING_USE_OPTIONS: Dict[Tuple[str, str], Dict[str, str]] = {
     ("lantern", "poison"): {"literal": "shed", "mapped": "cabinet"},
 }
 
+
+def _assert_option_articles_ok(opts: Dict[str, str], codeword: str, concept: str) -> None:
+    """Readout B's template hardcodes `in a {LIT_OPT}` / `in a {MAP_OPT}`, so a vowel-initial
+    option word would emit `in a attic`.
+
+    This is the SAME defect class as `RBD-R-004` -- and, like it, the exact-word-swap guard is
+    structurally blind to it, because the ungrammaticality would be IDENTICAL in all four 2x2
+    cells (the options do not vary by condition) and therefore survives masking. Found by
+    reviewing my own new code rather than by a guard catching it, which is precisely why it is
+    asserted here at build time instead of trusted.
+
+    Refusing is right rather than repairing the article: English articles follow SOUND, not
+    spelling (`a unique`, `an hour`), so an orthographic repair would be wrong for exactly the
+    words a curated option list is most likely to reach for. The option vocabulary is small and
+    hand-picked, so requiring a consonant-initial word costs nothing.
+    """
+    bad = {k: v for k, v in opts.items() if v[:1].lower() in "aeiou"}
+    if bad:
+        raise ValueError(
+            f"Readout-B options for ({codeword!r}, {concept!r}) are vowel-initial: {bad}. "
+            f"The template hardcodes 'in a {{OPT}}', so this would emit 'a {list(bad.values())[0]}'. "
+            f"Pick a consonant-initial synonym -- do NOT add an article repair, because English "
+            f"articles follow sound, not spelling.")
+
 # --------------------------------------------------------------------------- #
 # Mapping statements (the `strength` axis, plan §4.1)
 # --------------------------------------------------------------------------- #
@@ -451,6 +475,8 @@ def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
     # as a missing table entry, and would then be scored.
     _needs_opts = "{LIT_OPT}" in _tmpl or "{MAP_OPT}" in _tmpl
     _opts = MAPPING_USE_OPTIONS.get((codeword, concept))
+    if _needs_opts and _opts is not None:
+        _assert_option_articles_ok(_opts, codeword, concept)
     if _needs_opts and _opts is None:
         raise KeyError(
             f"query_kind {ax.query_kind!r} needs Readout-B options but MAPPING_USE_OPTIONS has no "
