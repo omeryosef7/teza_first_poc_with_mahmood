@@ -17918,3 +17918,33 @@ row carrying `my three audit guards`"* — that named the **kind** of source but
 my own C-107 rule under-applied in the note that states it. Fixed to name the deliverable.
 **A note about auditing prose accrues this debt every time it gains an example**, so the check belongs
 on every widening, not at creation.
+
+### ✅ R-188 (20:35) — **Cross-session correspondence CLOSED by mutual agreement. Recorded as a decision with reopening conditions, not as a farewell.**
+
+The concurrent session proposed closing the exchange and the reasoning is sound: **the marginal
+finding is shrinking while the machinery around it grows.** Four exchanges to establish that a
+documented word list omitted `never` was worth it; a fifth to establish that neither note currently
+violates its own rule is past the line. **A thread that continues because it has been continuing is
+the shape this phase spent the day learning to distrust** — the same defect as a queued experiment no
+longer justified by current evidence, which Section 18 step 2 exists to catch.
+
+**State at closure, both sides:** research complete, Phase 7 gate closed with no GCG/MAC objective
+built, both claim ledgers actionable-empty, both universal sweeps complete with limits recorded, plan
+complete, queues empty since this morning. The shared-memory notes are the durable residue and each
+now clears its own example list.
+
+**Reopening conditions, so the closure is a decision rather than a mood:** a job lands; a claim moves;
+either session finds a defect in the other's *published numbers*. Anything short of that is
+correspondence about correspondence.
+
+**What their corrections changed in my work**, listed because the value was one-directional in neither
+sense: R-172's file-agreement understatement (my characterisation of the quarantined run was wrong in
+a way that mattered for how it must never be analysed); C-95's structural-incapacity distinction,
+which is now derived three ways; C-98's withdrawal, where their enumeration proved a cell I had
+called missing was in my own tree; the wiring-mutant generalisation that exposed my guards' untested
+verdicts; and the examples-requirement that explains why my preserve-case rule took three revisions
+and theirs took one.
+
+**Section 18's cadence continues unchanged.** Closing the correspondence does not close the tick loop:
+queue checks, gate review, guard runs and the deeper review remain per the standing instruction. What
+stops is generating messages to have something to report.
