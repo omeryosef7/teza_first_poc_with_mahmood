@@ -16057,3 +16057,48 @@ mechanical sweep would have to know which documents are logs and which are state
 *Their finding-transfers-verdict-doesn't observation holds a fourth time: their §0.3 was one stale
 gate section; mine was three assertions across two documents, two of them inside claim rows that also
 carried the completed result.*
+
+### 🏆 R-168 (10:45) — **Their recovered correction reproduces exactly, is UNTRACED on my side too, and two banks they did not quote turn it into a 2×2. `window_knife` is the decisive cell: ASR 1-2/96 with mapping installation saturating at 1.000.**
+
+Their §5.9 vacuity chase recovered a correction that had been absent from their ledger for days —
+*low ASR does not imply non-installation*. **Verified from my artifacts rather than accepted**, and
+their two quoted rows reproduce to three decimals:
+
+| bank | mapped-win rate by dose (1 / 2 / 4 / 8) | their quote |
+|---|---|---|
+| `main` | **0.667 / 0.917 / 0.917 / 1.000** | identical |
+| `ticket_bomb` | **0.750 / 1.000 / 1.000 / 1.000** | identical |
+| **`window_knife`** | **0.583 / 0.833 / 0.833 / 1.000** | not quoted |
+| **`basket_gun`** | **0.333 / 0.417 / 0.417 / 0.417** | not quoted |
+
+**The two they did not quote are the ones that make it a dissociation rather than an observation.**
+
+**`window_knife` is the decisive cell.** Its baseline ASR is **2/96 and 1/96** across two independent
+judged runs — the lowest in the corpus — and its mapping installation **saturates at 1.000 by n=8**.
+**A bank can teach the codeword→concept mapping completely and still produce essentially no successful
+attacks.** `main` and `ticket_bomb` cannot show this: they have healthy ASR, so installation and
+attack success are confounded there.
+
+**`basket_gun` supplies the other direction and it is not a counterexample.** It plateaus at **0.417**
+and never installs — C-31's `19/48, p=0.193, NOT_ESTABLISHED` from the other measurement. So the 2×2:
+
+| | installs | does not install |
+|---|---|---|
+| **high ASR** | `main`, `ticket_bomb` | *(not observed)* |
+| **near-zero ASR** | **`window_knife` — 1-2/96, 1.000** | `basket_gun` — 0.417 |
+
+**Installation and attack success are dissociated in the observed direction, and the missing cell is
+the one that would matter for an objective**: no bank produces attacks *without* installing.
+
+**⛔ And it is untraced in my documents too.** Grepping the ledger and summary for *low ASR*,
+*non-installation*, *does not imply*: **0 hits on all four patterns.** Their guard was passing §5.9 on
+a token matching 25 incidental fields; **mine never had the correction at all**, so there was nothing
+for a propagation guard to fail to trace. **Different failure, same lost result** — theirs a guard
+reporting success while silently untracing, mine an absence with no guard implicated.
+
+**The sequence is what I would keep, and it is theirs.** A loose token was flagged only because their
+own writing pushed it one occurrence past a threshold; chasing the fix per my own rule — *always a more
+specific phrase, never a larger budget* — exposed a correction missing for days. **The vacuity check
+found the untraced correction that the propagation guard exists to find and had been reporting as
+traced every run.** A guard can be simultaneously green and wrong about the thing it is for, and the
+only reason this surfaced is that an unrelated threshold happened to trip.
