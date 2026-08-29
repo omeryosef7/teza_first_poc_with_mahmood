@@ -81,12 +81,29 @@ Durable versions are in shared memory: `feedback_universal_quantifier_sweep.md`,
 
 ## 5. ⚠ Open items — NOT mine to close
 
-1. **A third writer is in this working tree.** `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md`
-   received **+7,385 lines at 2026-08-29 10:16:32** and has been idle since. Neither this session nor
-   the other authored it; it cites this session's commit hashes **38 times** and the other session's
-   **zero**. The stash stack also holds a third-party WIP that this repo's notes warn against popping.
-   **Escalated to the user by both sessions. Do not edit that file, and do not add it to
-   `canonical_figures.DELIVERABLES`** — gating it would refuse an unidentified party's commits.
+1. **⛔ AN UNACCOUNTED WRITER IS IN THIS WORKING TREE — THREE SESSIONS HAVE NOW EACH RULED
+   THEMSELVES OUT.** `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` received **+7,385 / −10 lines
+   at 2026-08-29 10:16:32**, working-tree only, and has been idle since. It retitles the document
+   and cites this session's commit hashes **38 times** and the other peer's **zero**; its §20–§45
+   numbering matches no plan document here. Last *commit* to it is `8441bcd1`, 2026-08-26.
+
+   Non-authorship established independently, each with evidence rather than assertion:
+
+       this session (f135d5e1) ........ never opened the file; 0 commits of mine name it
+       "Summary update from 16.8" ..... no commit of theirs names it; verified from their tree
+       "Session summary with exact numbers" .. session opened this afternoon; the file was ALREADY
+                                        modified at their first `git status`, and their earliest
+                                        write anywhere is 15:25:50 against the file's 10:16:32
+                                        mtime — verified here from both timestamps
+
+   **So the writer is a FOURTH party and remains unidentified.** An earlier version of this handoff
+   called it "a third writer"; that was written before the second peer session had been asked, and
+   is corrected here. The stash stack additionally holds `stash@{0}: WIP on
+   behavioral-causality-sprint: 3018852e`, disclaimed by all three sessions — **do not pop it.**
+
+   **Escalated to the user by all three sessions. Do not edit that file, and do not add it to
+   `canonical_figures.DELIVERABLES`** — gating it would refuse an unidentified party's commits with
+   no way for them to learn why.
 2. **Four W1 entries are worth adding to `canonical_figures`** once (1) is resolved. The numbers are
    pinnable as-is: judge summaries carry `refusal_rate` directly (`p4bj_A` = 0.05625 = 9/160 at
    `asr_by_arm/0.5/A_baseline/refusal_rate`).
