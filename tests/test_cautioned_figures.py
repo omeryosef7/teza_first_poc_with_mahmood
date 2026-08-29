@@ -29,7 +29,9 @@ CAUTIONED_FIGURES = [
      "phase1_decomposition / PR4_collider_caveat — the sweep conditions on a COLLIDER"),
     ("rescue percentage",
      r"\bas % of rise\b|\bpct_of_rise\b",
-     "INVERTED",
+     "inverted relative to the evidence",   # C-86: was "INVERTED", which my own writing
+                                            # inflated to 12 occurrences — a required phrase
+                                            # is only evidence while it stays rare (C-47).
      "rescue_dissociation_table / PCT_CAVEAT — DR-5: inverts when the clean baseline is near zero"),
     ("ticket_knife installation",
      r"ticket_knife.{0,40}\b30/48\b|\b30/48\b.{0,40}ticket_knife",

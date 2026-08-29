@@ -15549,3 +15549,95 @@ that proposed the distinction.
 *Their §16.1 re-run found the same shape on their side: numbers right, vocabulary and `critical_k`
 missing, no auditable artifact. **Getting the right answer inline is not the same as getting it
 defensibly** — and in my case the inline answer was not even right.*
+
+### ⚠ R-163 (07:45) — **The C-85 remedy has a limit I should state before it is adopted further: routing C-69 through `phase1_decomposition.py` would have reproduced C-84's error EXACTLY, and attached an authoritative verdict field to it.**
+
+C-85 recommended running audits through the tool that has the constraint compiled in, and it caught a
+real error within the hour. **Testing the same remedy against the other inline analysis of the night**
+— C-69/C-83/C-84's four-scope gaps — the tool reproduces my numbers exactly (`p1j` deltas `demoproc`
+−0.1875, `legacy` −0.1562, `qpre` −0.0312, `respq` −0.1042) **and reproduces the defect with them**:
+
+| run | n | `abs_gap` | margin | tool's verdict | **in rows** |
+|---|---|---|---|---|---|
+| `dr20_p1j` | 96 | 0.0521 | 0.0417 | **`equivalent = False`** | gap **5.0**, margin **4.0** |
+| `dr20_p4bj` | 160 | 0.0188 | 0.0417 | **`equivalent = True`** | gap **3.0**, margin **6.7** |
+
+**`equivalent_within_margin` compares a rate to a rate margin, and n differs between the sessions.**
+That is precisely the units error C-84 corrected — and the tool encodes it, so routing C-69 through it
+would have produced the same framing.
+
+**Worse, it would have produced it with a verdict attached.** The tool emits `n_down`/`n_up` in rows,
+so the raw material is there — but its *conclusion field* is a boolean derived from the rate
+comparison. **An inline computation yields a number you must interpret; the tool yields a verdict you
+are tempted to quote.** That is a real hazard of the remedy I recommended an hour ago, not a
+hypothetical one: `equivalent = True` at 3 rows against a 6.7-row margin is exactly the sentence
+somebody would lift.
+
+**So the remedy's scope, stated precisely:**
+
+| catches | does not catch |
+|---|---|
+| violations of a constraint the tool **encodes** — C-85's NaN guard refusing 36/40 attrited rows | defects **in** that constraint — a rate margin applied across differing n |
+| ad-hoc reimplementation drift | an assumption compiled in once and inherited by every caller |
+
+**And the second column is the more dangerous half**, because a tool laundering an assumption into a
+verdict is harder to question than a bare number. **C-85 is not wrong — it caught a direction error I
+had published — but "run it through the tool" is a defence against carelessness and not against a
+mistaken premise.** Both of my failures tonight were real; they are different failures and only one of
+them has this fix.
+
+**Not changing the tool.** Its margin is **PR-3's**, measured and pre-registered, and rewriting a
+pre-registered threshold at 07:45 because a downstream reading was sloppy is the wrong repair. **The
+fix is in the reading**: C-84 already records that the effect must be expressed in the margin's units
+before the verdict means anything, and that is now noted against the tool's own verdict field rather
+than only against my prose.
+
+### ⛔ C-86 (07:55) — **My own writing tonight destroyed a required phrase's distinctiveness. "INVERTED" went from a caveat marker to a common word — 12 occurrences in my deliverables, 9 in theirs — and BOTH sessions' guards failed on it independently.**
+
+The pre-commit hook refused a commit: **their**
+`test_required_phrases_are_DISTINCTIVE_not_common_words` failed on **my** caveat entry.
+
+**Cause: I wrote the word.** R-162, C-85 and DR-19 all discuss the verdict vocabulary
+`NOT_ESTABLISHED / INSTALLED / INVERTED`, and their §16 sections discuss an INVERTED mapping
+verdict. **The required phrase for the `rescue percentage` caveat was the bare word `INVERTED`** —
+chosen when it was rare, and pushed to **12 occurrences in my two deliverables and 9 in their plan**
+by a night of writing about an unrelated inversion.
+
+**This is C-47 arriving by a route C-47 did not anticipate.** C-47's lesson was *choose a distinctive
+phrase*. It was distinctive **when chosen**. **A required phrase is not a fixed property — it decays
+as the corpus grows around it**, and nothing was watching the decay except a threshold that finally
+tripped.
+
+**Both sessions hit it independently and fixed it differently**, which is worth recording since the
+same constraint is encoded twice:
+
+| | required phrase | occurrences |
+|---|---|---|
+| their `src/boombness/cited_artifact_check.py` | `"percentage inverts"` | **1** |
+| my `tests/test_cautioned_figures.py` | `"inverted relative to the evidence"` | **3** |
+
+Both are the caveat's own wording at the figure, both are rare, and **neither of us knew the other was
+editing** — I found their fix already in place when I went to apply mine.
+
+**⚠ Correcting my own first reading of this: these are NOT two copies of one constraint.** Their
+guard reads `BOOMBNESS_RESEARCH_VALIDATION_AND_OBJECTIVE_PLAN.md`; mine reads the summary and
+`RESEARCH_HANDOFF.md`. **Different corpora, so two instances of one idea rather than a duplicated
+rule**, and divergent phrasing is legitimate — each phrase must be rare *in the corpus its own
+guard reads*. `"percentage inverts"` occurs once in their plan; `"inverted relative to the
+evidence"` three times in mine. **Neither edited the other's file**; `git log` confirms their
+V-140 touched only `cited_artifact_check.py` and my working change touches only
+`test_cautioned_figures.py`.
+
+**My current margins, now that I know they erode:** `POST-TREATMENT` **6**, `inverted relative to the
+evidence` **3**, `0.331` **10** against my own ≤12 threshold. **`0.331` is the next to go** — it is a
+bare number, it appears in every discussion of `ticket_knife`'s power, and I quoted it again in C-85
+two hours ago.
+
+**What I am not doing: raising the threshold.** The threshold is the only thing that detected this,
+and a phrase that has become common is genuinely no longer evidence — loosening the test to keep the
+phrase would invert the guard's purpose. **The fix is always a more specific phrase, never a larger
+budget.**
+
+*Fourteenth instance, and the second caught by a mechanism rather than a reader — but the first where
+the mechanism was the OTHER session's. Their guard read my corpus and refused my commit, which is the
+cross-session checking working without either of us doing anything deliberate.*
