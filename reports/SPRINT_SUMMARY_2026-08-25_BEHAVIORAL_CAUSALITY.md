@@ -469,7 +469,7 @@ now fails if any `R-NNN` cited by `RESEARCH_HANDOFF.md` is absent from this file
 Full artifact paths, the reproduction manifest (one command per result), and the repo hazards worth
 carrying forward are in **`RESEARCH_HANDOFF.md` §8-§9**. Judge provenance is closed on every
 behavioural result (`judge_model_used` and `completion_sha256_16` on 100% of rows); bank provenance is
-verified at **content level** via per-row `prompt_sha16` on **13/13** pool-A arms.
+verified at **content level** via per-row `prompt_sha16` on **13/13** pool-A arms — and **DR-23 widened this to the whole corpus: 557 finished runs checked row-by-row against the bank their own argv names, ZERO mismatches and zero runs lacking the field.** The 18 runs outside that check are pre-08-18 runs with no `--bank` in argv (17 still carry `prompt_sha16`; the one that does not is the earliest smoke, classified).
 
 **Test suite at close: 1358 passed, 7 skipped, 0 failed** (serial and exclusive — concurrent runs
 corrupt committed artifacts, see C-2).

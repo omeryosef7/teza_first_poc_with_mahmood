@@ -17189,3 +17189,37 @@ quantities, so the default inference was wrong in *both* directions at once).
 **Nothing is published on the withdrawn claim.** Recorded because I said it to a peer and to the
 user, and an unrecorded retraction of something said twice is the C-80 defect in conversation rather
 than in a document.
+
+### ✅ DR-23 (deeper review, 14:40) — **Content-level bank provenance verified far beyond the claimed 13 arms: 557 finished runs, EVERY row's `prompt_sha16` matched against its own bank file, ZERO mismatches. The 18 exceptions are named rather than counted.**
+
+The deliverable states *"bank provenance is verified at content level via per-row `prompt_sha16` on
+**13/13** pool-A arms"* (origin plan:4620 — 5 Llama, 5 Qwen3, 3 capped controls). I had never checked
+it, and rather than confirm those 13 I swept **every** finished `score_behavior` run against the bank
+its own `RUNMETA.argv` names.
+
+| class | n |
+|---|---|
+| runs verified row-by-row against their own bank | **557** |
+| **runs with ANY `prompt_sha16` mismatch** | **0** |
+| runs carrying no `prompt_sha16` on any row | **0** |
+| runs with **no `--bank` in argv** (unverifiable by this method) | **18** |
+
+**Zero mismatches across 557 runs** — the claim holds and is much stronger than 13 arms: every bank
+in the corpus, not only pool A.
+
+**The 18, named because a count would hide what they are.** All date **2026-08-16 → 08-18** and ran
+before the bank argument was made explicit, so they used the default: `base_…203355`,
+`ctrl_orth_a025`, `ctrl_rand_L8_a1`, `ctrl_rand_a025`, `nopfx_smoke`, `pfx_smoke`, `smoke2`,
+`smoke_…193523`, `steer_L8_{a010,a025,a1,a2}`, `steer_neg_a025`, `wa_{D,Dctrl,base,projout}`,
+`wa_smoke`. **17 of the 18 still carry `prompt_sha16` on every row** — the field is present, only the
+bank to check it against is not named in argv. The **one** without it is
+`smoke_20260816_193523_2926143`, the pre-`--query-kinds` smoke already classified in R-176 and in
+`tests/test_my_cited_artifacts.py`.
+
+**⚠ My own first pass mislabelled these.** I counted them under `bank_missing`, a branch whose
+condition was `not bp or not os.path.isfile(bp)` — conflating *"no `--bank` argument"* with *"the bank
+file is gone"*. Re-checked: **zero** runs name a bank file that no longer exists. Had I reported the
+first output, "18 runs whose bank is missing" would have been a false alarm about deleted banks.
+**Seventh field/label slip today**, again the cheap direction and caught before reporting — and again
+not arithmetic but a predicate that merged two distinguishable states, which is the same shape as the
+peer's *"no opinion and passed share an output line"*.
