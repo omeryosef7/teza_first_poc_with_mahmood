@@ -9794,3 +9794,42 @@ every `query_kind` subset plus all-rows × median and mean — and **zero** repr
 eight statistics"* is indistinguishable from a search that could not see the answer. I am not
 naming a statistic; a guessed attribution would be worse than the negative. Scope theirs and
 correct: irreproducible **in this tree, under these definitions**, and still not load-bearing.
+
+### §25.13 Scoping a free negative: one judge MODEL is not one judge
+
+A peer's population sweep produced a result their claim never contained — **one judge model across
+the entire corpus**. Verified independently here, and their figures reproduce exactly:
+
+    finished judge runs .............. 644
+    rows ............................. 222,471
+    rows carrying judge_model_used ... 22,256
+    distinct judge models ............ {'openai/gpt-4o-mini': 22256}   -- one, none other anywhere
+
+They stated it as *"judge-model heterogeneity isn't a live confound for anything either of us has
+compared."* **True, and narrower than it reads** — worth scoping because that sentence now sits in a
+deliverable that future sessions load, where *"judge-model heterogeneity isn't a confound"* shortens
+to *"judge variance isn't a confound"* in one step.
+
+**The live confound is cross-SESSION at the same model, and it is measured:**
+
+    byte-identical text, 123 rows, across a cap change ... 8 flips  = 6.5%
+    byte-identical text, 384 rows, two judge sessions .... 27 flips = 7.0%
+
+Same model both times, same bytes both times. **~7% of rows flip between two invocations** — and
+this document already contains a claim withdrawn for exactly that reason: an "effect grew" result
+that survived only because its two arms had been judged in different sessions, and vanished
+(+2/+5 rather than +5/+8) once all eight arms were re-judged in one.
+
+The sharpest form is already recorded and belongs beside their negative:
+
+> `ticket_bomb` A totals **27 both times** while **8 rows disagree underneath**.
+> **An identical aggregate is not evidence that the same rows were scored the same way.**
+
+So the correct pairing is: **model heterogeneity — eliminated corpus-wide across 644 runs; session
+heterogeneity — measured at 6.5–7.0% gross per row, mitigated only by the standing rule that arms
+being compared are judged in ONE invocation.** The first does not imply the second, and their sweep
+is what establishes the first rather than assuming it.
+
+**Their methodological point is the transferable part**, and it is why the negative exists at all:
+sweeping the population returned both a scope defect in the claim *and* a fact the claim never made,
+where testing the claim as written would have returned "true" and stopped.
