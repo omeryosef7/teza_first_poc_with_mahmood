@@ -2630,3 +2630,49 @@ coerced; the readout filter genuinely separating the two assays (mixing them wou
 against benign use); a duplicate prompt_id refused; **the domain taken from the BANK rather than
 from the run's own copy**; and Holm applied over the declared family size with step-down stopping at
 the first failure.
+
+---
+
+## §14.27 — `RBD-R-024` · The independent verifier, written before the data and cross-checked against the producers · 2026-08-30 01:05 IDT
+
+`scripts/rbd_verify_independent.py` re-derives every RBD headline scalar **from the raw `.jsonl`**
+and **imports none of** `rbd_analysis`, `asr_protocol`, `paired_equivalence`, `clustered_stats` or
+`cap_natural_experiment` — verified by grep, not by intention.
+
+§22's reason for the rule is that *"the purpose is to detect the same bug twice, not reproduce it
+twice."* So this re-implements from scratch: ASR counts and rates; paired 0→1 / 1→0 transitions;
+per-domain deltas and the exact two-sided cluster sign test **with its attainable floor**;
+mapped-win counts and McNemar discordant pairs for both readouts; and truncation/EOS/hash
+agreement. It reads the **bank** for domains rather than a run's own copy, and **counts rows
+itself** rather than trusting any `DONE.json` or `summary.json` figure.
+
+### It agrees with the production statistics — which is the point of writing it separately
+
+| cross-check | result |
+|---|---|
+| sign test vs `clustered_stats.cluster_sign_test`, 3000 random delta vectors (k = 0…14, with zero-deltas mixed in) | **0 disagreements** on `k_informative`, `p`, `attainable_floor` and `can_reach_alpha` |
+| exact two-sided binomial vs `paired_equivalence.mcnemar_exact`, 3000 random (k, n) with n ≤ 60 | **0 disagreements** |
+| hand cases | `binom(0,5)=0.0625`, `binom(1,5)=0.375`, `binom(3,6)=1.0`, `binom(0,0)=1.0` — all exact |
+| attainable floor | k=20 → **1.907e-06**, k=6 → **0.03125** |
+
+Two independently written implementations of the same exact tests agreeing on 6,000 random inputs
+is meaningful corroboration of the **arithmetic**. It is worth being explicit about what it is not:
+
+> ⚠ **Agreement here means the arithmetic is reproducible. It says nothing about whether the design
+> supports the claim.** §26: *"A review that reproduces all numbers may STILL invalidate the
+> interpretation. Arithmetic integrity ≠ claim validity."* The verifier carries that sentence in its
+> own module docstring so a future reader cannot mistake a green run for a validated result.
+
+### Two deliberate differences from the producer, both in the conservative direction
+
+* **`succeeded()` is tri-state.** It returns `None` for an unscorable row rather than `False`.
+  Coercing an unjudgeable row to "not a success" is exactly how a judge error becomes a fabricated
+  flip — the defect the §27 review found in `paired_transitions` (E3). The verifier would catch a
+  regression of that bug **because it never had it**.
+* **Zero-delta clusters are excluded from `k`** before the floor is computed, so the floor is a
+  property of the realised data rather than of the design — matching `clustered_stats`, and
+  re-derived rather than copied.
+
+**Matrix status at this checkpoint:** 4 of 18 Llama runs complete, 6 in flight, **0 aborted**. Every
+completed run: `rows_written` exactly 80 (behavioural) or 160 (readout), `option_mass_gate: PASS`,
+and on every knockout arm `frac_rows_scope_live: 1.0` with `scope_violations: {}`.
