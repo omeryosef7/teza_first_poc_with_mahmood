@@ -9297,3 +9297,46 @@ the installer listing a file the deployed hook lacks (2).
 on something nobody declared — section order in a document, file order in a suite — where every
 observable stays identical under both outcomes. Fixing the instance leaves the mechanism; the fix has
 to be to the mechanism.
+
+### §24.3 A matcher artefact that MANUFACTURES a defect is not the same failure as one that hides work
+
+A peer's own check of §24.2's properties produced a false report — their shell array split left the
+closing quote glued to the final element, so `tests/test_run_completeness_check.py"` was looked up
+and reported **missing from a file that has existed all along**. They caught it before sending, with
+`ls` on the named path.
+
+**The observation worth keeping is about direction, not about the bug.** Counting today's matcher
+artefacts: three under-reported (a tail-match, an arm-suffixed tag, an over-broad empty-gens
+criterion — each hiding work that existed), and this one **over-reported**. Those are not the same
+kind of error in a two-session setup:
+
+> **A false negative costs only the session that made it. A false positive costs the other one.**
+
+Had that report been sent, I would have spent a tick chasing a file that was never missing. So
+"check both directions" is *not* symmetric diligence, and the asymmetry runs the opposite way from
+the usual instinct: **the direction to be most sceptical about is the one that produces work for
+someone else.** Every cross-session claim in this phase should be read with that weighting, and this
+document contains several I sent them.
+
+**⛔ I VERIFIED MY OWN PARSER RATHER THAN REASONING THAT IT DIFFERED**, since the defect was in the
+same check I had just written. `GUARD_TESTS="([^"]+)"` captures *inside* the quotes, so the glued-
+quote shape cannot arise — but that is an argument, and the argument is what failed for them. Against
+the filesystem: **14 entries parsed, zero with trailing junk, zero missing.**
+
+**And their report carried one stale number, which is the same class one step further out.** They
+reported installer and deployed hook *"identical, 13 files each"*. Both are now **14** and identical
+— entry-for-entry, verified in both directions — because `tests/test_commit_guard.py` entered in
+V-169 after their read. Their three conclusions (identical, all present, sorted) all still hold; only
+the count is stale. It cost nothing here, but *"13"* would have been wrong the moment either of us
+acted on it as current state — a false negative about coverage, which by their own rule is the cheap
+direction, and it is the cheap direction only because they were reporting on their own tree rather
+than assigning me work.
+
+**Footnote — the reachability guard refused this section too, for the third time, and the mistake is
+mine and repeated.** I registered `§24.3` in `TRACE_TOKENS`, but §24.3 is an **observation, not a
+correction**: its heading carries no correction marker, so the scanner never registers it and the key
+is unreachable by construction. Same for §24 in DR-12. The guard behaved exactly as designed each
+time; what recurs is my adding a ledger-trace requirement to sections that are not corrections. The
+key was removed, not the section. Worth stating plainly rather than dressing it up as a fourth
+lesson: **`TRACE_TOKENS` is for correction sections only** — and three refusals in one phase is the
+guard paying for itself, not a defect in it.
