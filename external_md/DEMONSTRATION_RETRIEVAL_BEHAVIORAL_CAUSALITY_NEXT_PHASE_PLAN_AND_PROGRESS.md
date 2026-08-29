@@ -17982,3 +17982,41 @@ rounded to **8.3**, giving 2.17× and a spurious disagreement with the ledger's 
 `0.0521 × 160 = 8.336`. **Rounding an input before dividing manufactured a mismatch in the last
 digit** — the same shape as C-105's unit error, and the reason the ledger's range is right and my
 first reading of it was not.
+
+### ⚠ C-113 (21:20) — **Chasing last tick's one-off guard failure found that my shell extraction of `GUARD_TESTS` has been silently dropping the FIRST entry — I ran 13 of 14 files twice and read 217 as the suite. The intermittency itself did not reproduce in seven runs.**
+
+Last tick a guard test failed once, passed on retry, and I wrote *"resolved by retrying"* without
+establishing a cause. Chasing it produced two results, neither the one I went looking for.
+
+**1. The extraction bug — the real finding.** The hook stores its list as
+`GUARD_TESTS="tests/test_asr_protocol.py` *(newline)* `             tests/test_cautioned_figures.py …`.
+**The first entry is glued to the assignment**, so a pipeline of `tr ' ' '\n' | tr -d '"' | grep
+'^tests/'` yields `GUARD_TESTS=tests/test_asr_protocol.py`, which fails `^tests/` and vanishes.
+
+| method | files | tests |
+|---|---|---|
+| my shell pipeline | **13** | **217** |
+| whole-file regex `tests/[A-Za-z0-9_./-]*\.py` | **14** | **274** |
+
+**I ran the 13-file subset twice this tick and read 217 as the suite total** without noticing it
+disagreed with the hook's own 274 — a number I have quoted every tick today. **DR-21 is unaffected**:
+its 14/14 came from a Python regex over the whole file, not this pipeline, so the published parity
+claim stands. This is **the same glued-token shape as DR-21's own quote-artifact** — same file, same
+kind of pipeline, the delimiter attaching to a different end.
+
+**2. The intermittency did not reproduce.** Four consecutive runs of the complete 14-file list: **274
+passed** each time. Three runs of the 13-file subset: 217 each. `test_asr_protocol.py` ahead of
+`test_guard_wiring.py` in isolation: 69 passed. **Seven runs, no failure.**
+
+**So the cause is unestablished and I am not going to assert one.** The plausible story — a concurrent
+edit to `test_guard_wiring.py` mid-hook — fits the timing and matches two earlier refusals today, but
+the working tree showed no modification when I checked a minute later, so that is inference, not
+measurement. **What is recorded is that it happened once, has not recurred in seven attempts, and the
+guard suite is green at 274.**
+
+⚠ **And the shell hazard is one my own memory note already warns about.** The first attempt at the
+reproduction passed the file list as an unquoted `$HOOKLIST`; **zsh does not word-split**, pytest
+received one glued path, and it printed *"no tests ran in 0.01s"* — five times, which I would have
+read as a clean run had the count not been absent. That is the exact failure the concurrent session
+reported hitting earlier today, and it is in `feedback_zsh_expansion_hazards`, which is loaded into
+this session's context.
