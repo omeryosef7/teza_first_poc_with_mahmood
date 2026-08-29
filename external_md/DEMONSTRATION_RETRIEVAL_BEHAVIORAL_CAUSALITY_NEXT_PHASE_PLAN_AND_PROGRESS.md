@@ -17378,3 +17378,34 @@ statement is that nothing is running and there is nothing for them to look at.
 `p_concept + p_codeword` by hand. So the field and the hand computation agreeing was established
 across *two different access paths*, not one, which is a better elimination of the wrong-field
 hypothesis than R-183 claimed.
+
+### ⛔ C-103 (14:55) — **The two sessions share ONE memory directory, which neither of us had established. Three notes written today in the first person would have read to the other session as its OWN recollection. Rewritten in third person.**
+
+The peer went to record the `sacct` finding and found the file already there — written by this
+session, indexed in `MEMORY.md` — and their edits arrive here as *"changed on disk"* notices
+mid-turn. Both are direct evidence: `.claude/projects/…-teza-first-poc-with-mahmood/memory/` is
+shared, and **anything written there is loaded into the other session's context at session start.**
+
+**The defect this creates is the day's own shape, with the longest reach.** Memory persists across
+sessions and loads automatically, so a first-person line misattributes permanently. Three of mine
+did:
+
+| file | was | now |
+|---|---|---|
+| `feedback_sacct_orphaned_state.md` | *"**I** also reported them to the user as live jobs"* | *"the session that recorded this also reported the jobs…"* |
+| `feedback_matcher_scope_bug_class.md` | *"the same tick in which **I** explained the trade-off"* | *"…in which the recording session explained…"* |
+| `feedback_matcher_scope_bug_class.md` | *"**I** nearly re-ran a GPU experiment … **my** note tracked the gap"* | *"a GPU experiment was nearly re-run … the tracking note keyed the gap…"* |
+
+Each would have told a future session that **it** had made an error it never made — a record reading
+as something it is not, which is the class this phase has corrected in prose (C-95, C-96), in
+infrastructure (C-102), and now in the one artifact that outlives the session.
+
+**Recorded durably** as `feedback_shared_memory_directory.md`: write memory in the third person,
+check for an existing file before writing (a duplicate is noise in *both* contexts), say so when
+appending to another session's note, and treat surprising edits there as the other session working
+deliberately rather than as damage.
+
+**One small thing worth keeping.** The grep verifying my own compliance flagged **2** hits in the new
+file — both in the prohibition itself (*a quoted counter-example*, and the sentence listing the
+forbidden tokens). A matcher that cannot separate **use** from **mention** will always report a rule
+as violating itself. Checked rather than acted on; the file is correct.
