@@ -50,6 +50,10 @@ def _mk_run(tmp_path, name, n, cap, trunc_frac, score_fn, chars=200,
               "judge_status": "ok", "refused": i < n_ref}
         if pinned:
             jr["judge_model_used"] = pinned          # written only on the pinned path
+            # ...and so is the completion hash. A fixture that stamps the model but not the hash
+            # is not a pinned run; it is a run that cannot prove it judged the text on record,
+            # which is exactly what assert_sprint_grade now refuses (RBD sprint §7/§9).
+            jr["completion_sha256_16"] = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
         judge_rows.append(jr)
 
     with open(gens / "gens.jsonl", "w") as fh:
@@ -458,3 +462,157 @@ def test_the_real_record_excludes_only_run_id_entries():
     assert excluded == run_ids, "the exclusion set must be exactly the run_id entries"
     for s_ in sup - run_ids:
         assert s_ not in excluded, f"supersedor {s_} wrongly excluded -- the regex bug is back"
+
+
+# =========================================================================== #
+# RBD sprint §7: the diagnostics that were MISSING, each with an executed mutation.
+#
+# The most important is the hash join: `load_gens_index` COMPUTED a completion hash and
+# `judge_boombness` WROTE one, and `build_entry` never compared them -- so every prior
+# "100% completion-hash join" claim rested on a comparison no committed code performed.
+# =========================================================================== #
+def _entry(tmp_path, name="hj", n=12, pinned="openai/gpt-4o-mini", **kw):
+    """_mk_run returns the JUDGE dir path (a string); the gens dir is resolved from its config."""
+    j = _mk_run(tmp_path, name, n=n, cap=640, trunc_frac=0.0,
+                score_fn=lambda i: 0.9 if i % 3 == 0 else 0.1, pinned=pinned, **kw)
+    return ap.build_entry(j), None, j
+
+
+def test_the_hash_join_is_VERIFIED_on_a_clean_pinned_run(tmp_path):
+    e, _, _ = _entry(tmp_path)
+    assert e["hash_join_status"] == "verified"
+    assert e["n_hash_join_checked"] == e["n_rows"] > 0
+    assert e["n_hash_join_match"] == e["n_hash_join_checked"]
+    assert e["n_hash_join_mismatch"] == 0
+    ap.assert_publishable(e)
+    ap.assert_sprint_grade(e)
+
+
+def test_MUTANT_a_judged_row_whose_text_differs_is_CAUGHT(tmp_path):
+    """The judge scored something other than the generation on record."""
+    e, _gens, judge = _entry(tmp_path, name="hjm")
+    rows = [json.loads(x) for x in open(os.path.join(judge, "results.jsonl"))]
+    rows[2]["completion_sha256_16"] = "deadbeefdeadbeef"
+    with open(os.path.join(judge, "results.jsonl"), "w") as fh:
+        for r in rows:
+            fh.write(json.dumps(r) + "\n")
+    e2 = ap.build_entry(judge)
+    assert e2["n_hash_join_mismatch"] == 1
+    assert e2["hash_join_status"] == "MISMATCH"
+    with pytest.raises(ap.PublicationGuardError) as ex:
+        ap.assert_publishable(e2)
+    assert "NOT the generation on record" in str(ex.value)
+
+
+def test_an_UNPINNED_run_is_unavailable_not_mismatched_and_stays_quotable_at_the_floor(tmp_path):
+    """Every pre-2026-08-25 run is in this state; holding it to a standard that did not exist
+    would delete the old-vs-new comparison."""
+    e, _, _ = _entry(tmp_path, name="hju", pinned=None)
+    assert e["hash_join_status"] == "unavailable_unpinned_judge"
+    assert e["n_hash_join_checked"] == 0 and e["n_hash_join_mismatch"] == 0
+    assert e["n_hash_join_unavailable"] == e["n_rows"]
+    ap.assert_publishable(e)                      # the floor still accepts it
+    with pytest.raises(ap.PublicationGuardError):  # sprint grade does not
+        ap.assert_sprint_grade(e)
+
+
+def test_MUTANT_a_generation_that_was_never_JUDGED_is_caught(tmp_path):
+    """`n_join_missing` only ever saw the other direction: judged rows with no generation."""
+    e, _gens, judge = _entry(tmp_path, name="unj")
+    assert e["n_missing_ids"] == 0
+    rows = [json.loads(x) for x in open(os.path.join(judge, "results.jsonl"))]
+    with open(os.path.join(judge, "results.jsonl"), "w") as fh:
+        for r in rows[:-2]:
+            fh.write(json.dumps(r) + "\n")
+    e2 = ap.build_entry(judge)
+    assert e2["n_missing_ids"] == 2
+    assert e2["n_generated"] == 12 and e2["n_rows"] == 10
+    with pytest.raises(ap.PublicationGuardError) as ex:
+        ap.assert_publishable(e2)
+    assert "never judged" in str(ex.value)
+
+
+def test_MUTANT_a_prompt_judged_TWICE_is_caught(tmp_path):
+    """Only the gens side was ever checked for duplicate prompt_ids."""
+    e, _gens, judge = _entry(tmp_path, name="dup")
+    assert e["n_judge_duplicate_prompt_ids"] == 0
+    rows = [json.loads(x) for x in open(os.path.join(judge, "results.jsonl"))]
+    with open(os.path.join(judge, "results.jsonl"), "w") as fh:
+        for r in rows + [rows[0]]:
+            fh.write(json.dumps(r) + "\n")
+    e2 = ap.build_entry(judge)
+    assert e2["n_judge_duplicate_prompt_ids"] == 1
+    assert e2["judge_duplicate_prompt_ids"] == ["p0000"]
+    with pytest.raises(ap.PublicationGuardError) as ex:
+        ap.assert_publishable(e2)
+    assert "judged twice" in str(ex.value) or "counted" in str(ex.value)
+
+
+def test_length_quantiles_are_emitted_and_degrade_to_None_rather_than_raising(tmp_path):
+    e, _, _ = _entry(tmp_path, name="q")
+    for key in ("new_token_quantiles", "char_quantiles"):
+        q = e[key]
+        assert set(q) >= {"q10", "q50", "q90", "min", "max"}
+        assert q["min"] <= q["q50"] <= q["max"]
+    assert ap._quantiles([1]) is None and ap._quantiles([]) is None
+    assert ap._quantiles(None) is None
+
+
+def test_the_new_mandatory_keys_are_ALWAYS_COMPUTABLE(tmp_path):
+    """assert_publishable refuses on `is None`, so a key that can be legitimately unknown must
+    NOT be mandatory. n_expected and the quantiles are emitted but deliberately not required."""
+    e, _, _ = _entry(tmp_path, name="mand")
+    for k in ("n_generated", "n_missing_ids", "n_judge_duplicate_prompt_ids",
+              "n_hash_join_mismatch", "hash_join_status"):
+        assert k in ap.MANDATORY_DIAGNOSTICS
+        assert e[k] is not None
+    for k in ("n_expected", "new_token_quantiles", "char_quantiles", "judge_session_id"):
+        assert k not in ap.MANDATORY_DIAGNOSTICS
+
+
+def test_the_judge_session_id_is_recorded(tmp_path):
+    e, _g, judge = _entry(tmp_path, name="sess")
+    assert e["judge_session_id"]
+    assert e["judge_session_id"] == os.path.basename(judge)
+
+
+# --------------------------------------------------------------------------- #
+# paired transitions
+# --------------------------------------------------------------------------- #
+def test_paired_transitions_counts_both_directions(tmp_path):
+    jja = _mk_run(tmp_path, "tA", n=10, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.9 if i < 5 else 0.1, pinned="openai/gpt-4o-mini")
+    jjb = _mk_run(tmp_path, "tB", n=10, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.9 if i < 2 else 0.1, pinned="openai/gpt-4o-mini")
+    t = ap.paired_transitions(jja, jjb, "base", "arm")
+    assert t["n_common"] == 10
+    assert t["n_success_a"] == 5 and t["n_success_b"] == 2
+    assert t["flips_down_1_to_0"] == 3 and t["flips_up_0_to_1"] == 0
+    assert t["net_down"] == 3 and t["n_discordant"] == 3
+    assert 0.0 <= t["mcnemar_exact_two_sided_p"] <= 1.0
+
+
+def test_paired_transitions_reports_ids_present_on_only_one_side(tmp_path):
+    jja = _mk_run(tmp_path, "oA", n=10, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    jjb = _mk_run(tmp_path, "oB", n=8, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    t = ap.paired_transitions(jja, jjb)
+    assert t["n_common"] == 8
+    assert t["n_a_only"] == 2 and t["n_b_only"] == 0
+    assert t["a_only_ids"] == ["p0008", "p0009"]
+
+
+def test_paired_transitions_REFUSES_a_disjoint_pair(tmp_path):
+    jja = _mk_run(tmp_path, "dA", n=4, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    jjb = _mk_run(tmp_path, "dB", n=4, cap=640, trunc_frac=0.0,
+                  score_fn=lambda i: 0.1, pinned="openai/gpt-4o-mini")
+    rows = [json.loads(x) for x in open(os.path.join(jjb, "results.jsonl"))]
+    for k, r in enumerate(rows):
+        r["prompt_id"] = f"z{k:04d}"
+    with open(os.path.join(jjb, "results.jsonl"), "w") as fh:
+        for r in rows:
+            fh.write(json.dumps(r) + "\n")
+    with pytest.raises(ValueError):
+        ap.paired_transitions(jja, jjb)

@@ -2319,3 +2319,71 @@ pairs on both axes — which is what H2 needs.
 
 ⚠ One dead line (`... if False else None`) was left in the first version of this patch and removed
 before commit. Recorded because it is the kind of thing that survives into a paper's codebase.
+
+---
+
+## §14.23 — `RBD-R-018` · `asr_protocol`: the missing §7 diagnostics, **hash join first** · 2026-08-29 18:50 IDT
+
+`RBD-DR-001.4` found `asr_protocol.build_entry` missing 10 of the diagnostics §7 declares mandatory.
+The worst was not a missing number but a **missing comparison**:
+
+> `load_gens_index` **computes** a full 64-hex `completion_sha256` per generation, and
+> `judge_boombness` **writes** a 16-hex `completion_sha256_16` per judged row — and `build_entry`
+> **never compared them.** The join was on `prompt_id` alone; the hash was computed and discarded.
+> The module's stated purpose, *"so a later re-judge can prove it scored the same text"*, was
+> **documented in the docstring and not implemented.**
+
+Every prior "100% completion-hash join" claim therefore rested on a comparison no committed code
+performed. It is now performed, and it runs **before any statistic derived from that row**.
+
+### What was added
+
+| field | note |
+|---|---|
+| `n_hash_join_checked` / `_match` / `_mismatch` / `_unavailable`, `hash_join_status` | gens side is 64-hex, judge side a 16-hex prefix, so the comparison is on the prefix. An **absent** judge-side hash means an **unpinned** run (the field is written only on the pinned path) — that is `unavailable_unpinned_judge`, **never** a mismatch |
+| `n_generated`, `n_expected`, `missing_ids`, `n_missing_ids` | **the other direction of the join.** `n_join_missing` could only ever see *judged rows with no generation*; a **generation that was never judged** was invisible, and it silently shrinks the ASR denominator |
+| `judge_duplicate_prompt_ids`, `n_judge_duplicate_prompt_ids` | only the **gens** side was ever checked. A prompt judged twice is counted twice in the numerator |
+| `new_token_quantiles`, `char_quantiles` | deciles + min/max; `statistics.quantiles` raises below n=2, so it degrades to `None` rather than raising |
+| `judge_session_id`, `judge_slurm_job_id` | read from the judge run's `metadata.json`; previously recoverable only by regexing a directory basename |
+
+### Three new refusals, and one of them deliberately only at the higher tier
+
+Added to `assert_publishable`: **generations never judged**, **judge-side duplicate prompt_ids**, and
+**hash mismatch**. Added to `assert_sprint_grade` **only**: `hash_join_status != "verified"`.
+
+That split is the point. The pinned path is *exactly* the path that writes
+`completion_sha256_16`, so a sprint-grade entry has no excuse for an unverifiable join — while
+**every pre-2026-08-25 run is legitimately unpinned**, and holding those to a standard that did not
+exist when they ran would delete the old-vs-new comparison §0 depends on. They stay quotable at the
+floor and are refused at the tier this sprint's own numbers must meet.
+
+Five keys joined `MANDATORY_DIAGNOSTICS` (22 → 27). **Only always-computable ones**:
+`assert_publishable` refuses on `is None`, so `n_expected` (null when the gens config has no
+`expect_n`), the quantile dicts (null at n<2) and `judge_session_id` are **emitted but not
+mandatory** — a key that can legitimately be unknown would make honest entries unpublishable.
+
+### `paired_transitions` — reused, not re-derived
+
+§7 requires per-prompt 0→1 and 1→0 transitions on every ASR table, and nothing in the repo produced
+them for a plain judge-vs-judge pair (`cap_natural_experiment.compare` is coupled to the cap
+experiment and needs both gens dirs; `paired_arm_test` computes them inline in `main`;
+`judge_retest`'s flips are **undirected**). The new function is ~25 lines and **imports
+`cap_natural_experiment._succ`, `exact_two_sided_binomial` and `min_detectable_net_flips`** rather
+than re-typing them — `_succ` is the repo's one definition of *"this row is an attack success"*, and
+re-typing it is how two modules come to disagree about what an ASR is. Both runs go through
+`check_run_readable` first, same refusal discipline as `build_entry`.
+
+### The fixture was lying, and the new check caught it
+
+Four existing sprint-grade tests failed immediately. Their fixture stamped `judge_model_used` on the
+pinned path but **not** `completion_sha256_16` — so it modelled a run that claims to be pinned and
+cannot prove it judged the text on record. **That is not a pinned run**, and the fixture now stamps
+both. The four tests pass unchanged; what changed is that the fixture now represents reality.
+
+**73 tests in `test_asr_protocol.py`** (62 existing, unmodified in substance, + **11 new**), each new
+diagnostic exercised twice — clean run passes, single targeted corruption fails and names itself:
+a judged row whose text differs; a generation never judged; a prompt judged twice; an unpinned run
+staying quotable at the floor and refused at sprint grade; quantiles degrading to `None`; and
+paired transitions counting both directions, reporting one-sided ids, and refusing a disjoint pair.
+
+**138 tests pass** across `asr_protocol` and adjacent suites; **9/9 guards**.

@@ -197,6 +197,15 @@ MANDATORY_DIAGNOSTICS = (
     "frac_lt_40_chars", "frac_lt_80_chars", "frac_lt_120_chars",
     "frac_eos",
     "n_join_missing",
+    # RBD sprint (§7). Only ALWAYS-COMPUTABLE keys belong here: `assert_publishable` refuses on
+    # `is None`, so a key that can legitimately be unknown would make honest entries unpublishable.
+    # `n_expected`, the quantile dicts and `judge_session_id` are therefore emitted but not
+    # mandatory.
+    "n_generated",
+    "n_missing_ids",
+    "n_judge_duplicate_prompt_ids",
+    "n_hash_join_mismatch",
+    "hash_join_status",
 )
 
 #: Above this fraction at the cap, the number is not "ASR" -- it is ASR-within-N-tokens and must
@@ -236,6 +245,27 @@ def assert_publishable(entry: Dict[str, Any]) -> None:
             f"ASR entry '{entry.get('label', '?')}' has {entry['n_join_missing']} judged rows "
             "with no matching generation. The population is not what it claims to be; fix the "
             "join before quoting an ASR.")
+
+    # RBD sprint (§7). The other direction of the same defect: generations that were never
+    # judged. `n_join_missing` could only ever see judged rows that failed to join.
+    if entry["n_missing_ids"]:
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}' has {entry['n_missing_ids']} generations "
+            "that were never judged. The ASR denominator is the judged set, so an unjudged "
+            "generation silently shrinks the population.")
+
+    if entry["n_judge_duplicate_prompt_ids"]:
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}' has "
+            f"{entry['n_judge_duplicate_prompt_ids']} duplicated prompt_id(s) on the JUDGE side "
+            f"{entry.get('judge_duplicate_prompt_ids', [])[:5]}. A prompt judged twice is counted "
+            "twice in the numerator. Only the gens side was ever checked for this.")
+
+    if entry["n_hash_join_mismatch"]:
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}': {entry['n_hash_join_mismatch']} of "
+            f"{entry['n_hash_join_checked']} rows were judged on text that is NOT the generation "
+            "on record (completion_sha256_16 mismatch). The judge scored something else.")
 
     frac = float(entry["frac_at_cap"])
     label = entry.get("asr_label") or ""
@@ -318,6 +348,17 @@ def assert_sprint_grade(entry: Dict[str, Any]) -> None:
             "Sprint-grade ASR requires `judge_boombness.py --pin-judge-model openai/gpt-4o-mini`, "
             "which stamps judge_model_used on every row and aborts on a mid-run model switch. "
             "Without it the ASR may be an average over two different judges.")
+    # The hash join is FATAL at this tier and only at this tier. The pinned path is exactly the
+    # path that writes `completion_sha256_16`, so a sprint-grade entry has no excuse for an
+    # unverifiable join -- while every pre-2026-08-25 run is legitimately in that state and must
+    # stay quotable at the floor.
+    if entry.get("hash_join_status") != "verified":
+        raise PublicationGuardError(
+            f"ASR entry '{entry.get('label', '?')}' has hash_join_status="
+            f"{entry.get('hash_join_status')!r}: the judged text was never proved to be the "
+            f"generation on record ({entry.get('n_hash_join_checked')} checked, "
+            f"{entry.get('n_hash_join_unavailable')} unavailable). Sprint-grade ASR requires a "
+            "verified completion_sha256_16 join on every row.")
     if entry.get("cap_binds"):
         kind = entry.get("binding_kind")
         if kind == BINDING_DEGENERACY:
@@ -390,7 +431,23 @@ def load_gens_index(gens_dir: str) -> Dict[str, Any]:
             idx[pid] = rec
     return {"index": idx, "max_new": cfg.get("max_new"), "model": cfg.get("model"),
             "bank": cfg.get("bank"), "arm": cfg.get("arm"), "n_duplicate_prompt_ids": dupes,
-            "gens_dir": os.path.abspath(gens_dir)}
+            "gens_dir": os.path.abspath(gens_dir),
+            # RBD sprint: the population's own cardinality. Without these, `n_join_missing` could
+            # only see judged rows that failed to join -- a GENERATION that was never judged at
+            # all was invisible, and so was a run that generated fewer rows than it was asked for.
+            "prompt_ids": set(idx), "n_generated": len(idx),
+            "n_expected": cfg.get("expect_n") or None}
+
+
+def _quantiles(vals) -> Optional[Dict[str, float]]:
+    """Deciles of a length distribution. `statistics.quantiles` raises below n=2, so guard."""
+    v = [x for x in (vals or []) if x is not None]
+    if len(v) < 2:
+        return None
+    qs = st.quantiles(v, n=10, method="inclusive")
+    out = {f"q{10 * (i + 1)}": float(q) for i, q in enumerate(qs)}
+    out["min"], out["max"] = float(min(v)), float(max(v))
+    return out
 
 
 def _frac(k: int, n: int) -> Optional[float]:
@@ -434,6 +491,11 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
     n_at_cap = n_eos = 0
     n_lt40 = n_lt80 = n_lt120 = 0
     n_join_missing = 0
+    # RBD sprint (§7). The completion hash was COMPUTED on the gens side and WRITTEN on the judge
+    # side and never compared by any committed code, so "100% completion-hash join" rested on a
+    # comparison nothing performed. It is performed here, first.
+    seen_judge_ids: Dict[str, int] = {}
+    n_hash_checked = n_hash_match = n_hash_absent = 0
     scores: List[float] = []
     chars: List[int] = []
     toks: List[int] = []
@@ -441,6 +503,9 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
 
     for r in rows:
         pid = r.get("prompt_id")
+        # A prompt judged twice double-counts in the ASR numerator. Only the GENS side was ever
+        # checked for duplicates.
+        seen_judge_ids[pid] = seen_judge_ids.get(pid, 0) + 1
         s = r.get("strongreject_score")
         if r.get("judge_status") is not None:
             n_judged += 1
@@ -458,6 +523,16 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
         if g is None:
             n_join_missing += 1
             continue
+        # HASH JOIN, before any statistic derived from this row. The gens side stores the full
+        # 64-hex digest and the judge side writes a 16-hex prefix, so the comparison is on the
+        # prefix. An ABSENT judge-side hash means an unpinned judge run (the field is written only
+        # on the pinned path) -- that is "not available", never a mismatch.
+        _jh = r.get("completion_sha256_16")
+        if _jh is None:
+            n_hash_absent += 1
+        else:
+            n_hash_checked += 1
+            n_hash_match += int(str(g["completion_sha256"])[:16] == str(_jh))
         nc = g["n_chars"]
         chars.append(nc)
         n_lt40 += int(nc < 40)
@@ -473,6 +548,18 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
     n_len = len(chars)          # rows that actually joined; the denominator for length stats
     cap = gi["max_new"]
     frac_at_cap = _frac(n_at_cap, n_len)
+
+    # GENERATED-BUT-NOT-JUDGED. `n_join_missing` counts judged rows with no generation; this is
+    # the other direction, which nothing measured.
+    _judged_ids = {r.get("prompt_id") for r in rows}
+    _missing_ids = sorted(i for i in (gi["prompt_ids"] - _judged_ids) if i is not None)
+    _judge_dupes = sorted(p for p, c in seen_judge_ids.items() if c > 1 and p is not None)
+    _hash_status = ("verified" if n_hash_checked and n_hash_match == n_hash_checked
+                    else "MISMATCH" if n_hash_checked
+                    else "unavailable_unpinned_judge")
+    _jmeta_path = os.path.join(judge_dir, "metadata.json")
+    _jmeta = json.load(open(_jmeta_path)) if os.path.exists(_jmeta_path) else {}
+    _session_id = _jmeta.get("run_id") or os.path.basename(judge_dir)
 
     entry: Dict[str, Any] = {
         "label": label or jargs.get("tag") or os.path.basename(judge_dir),
@@ -509,8 +596,23 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
         "frac_lt_120_chars": _frac(n_lt120, n_len),
 
         "n_join_missing": n_join_missing,
+        "missing_ids": _missing_ids,
+        "n_missing_ids": len(_missing_ids),
         "n_length_rows": n_len,
+        "n_expected": gi.get("n_expected"),
+        "n_generated": gi["n_generated"],
         "n_duplicate_prompt_ids_in_gens": gi["n_duplicate_prompt_ids"],
+        "judge_duplicate_prompt_ids": _judge_dupes,
+        "n_judge_duplicate_prompt_ids": sum(c - 1 for c in seen_judge_ids.values() if c > 1),
+        "n_hash_join_checked": n_hash_checked,
+        "n_hash_join_match": n_hash_match,
+        "n_hash_join_mismatch": n_hash_checked - n_hash_match,
+        "n_hash_join_unavailable": n_hash_absent,
+        "hash_join_status": _hash_status,
+        "new_token_quantiles": _quantiles(toks),
+        "char_quantiles": _quantiles(chars),
+        "judge_session_id": _session_id,
+        "judge_slurm_job_id": _jmeta.get("slurm_job_id"),
         "judge": jsum.get("judge"),
         "judge_model_used": sorted(judge_models) or None,
         # A pin the backend ignores is worse than no pin, so `judge_pinned` reflects what the ROWS
@@ -533,6 +635,52 @@ def build_entry(judge_dir: str, label: Optional[str] = None,
         entry["asr_label"] = "ASR"
         entry["cap_binds"] = False
     return entry
+
+
+def paired_transitions(judge_a: str, judge_b: str,
+                       label_a: str = "A", label_b: str = "B") -> Dict[str, Any]:
+    """Per-prompt 0->1 and 1->0 transitions between two judge runs. §7 requires these on every
+    ASR table and nothing in the repo produced them for a plain judge-vs-judge pair.
+
+    Reuses `cap_natural_experiment` for the success predicate and the exact tests rather than
+    re-deriving them: `_succ` is the repo's one definition of "this row is an attack success",
+    and re-typing it here is how two modules come to disagree about what an ASR is.
+
+    Both runs are put through `check_run_readable` first, with the same refusal discipline as
+    `build_entry` -- an ABORTED or excluded run must not be readable at all.
+    """
+    from cap_natural_experiment import _succ, exact_two_sided_binomial, min_detectable_net_flips
+
+    sa = check_run_readable(judge_a)
+    sb = check_run_readable(judge_b)
+    A = {r.get("prompt_id"): r for r in read_jsonl(os.path.join(judge_a, "results.jsonl"))}
+    B = {r.get("prompt_id"): r for r in read_jsonl(os.path.join(judge_b, "results.jsonl"))}
+    common = sorted(set(A) & set(B))
+    if not common:
+        raise ValueError(f"no common prompt_ids between {judge_a} and {judge_b}")
+    up = [p for p in common if not _succ(A[p]) and _succ(B[p])]      # 0 -> 1
+    down = [p for p in common if _succ(A[p]) and not _succ(B[p])]    # 1 -> 0
+    n_disc = len(up) + len(down)
+    return {
+        "label_a": label_a, "label_b": label_b,
+        "judge_a": os.path.abspath(judge_a), "judge_b": os.path.abspath(judge_b),
+        "run_status_a": sa.get("run_status"), "run_status_b": sb.get("run_status"),
+        "n_common": len(common),
+        "n_a_only": len(set(A) - set(B)), "n_b_only": len(set(B) - set(A)),
+        "a_only_ids": sorted(i for i in (set(A) - set(B)) if i is not None)[:20],
+        "b_only_ids": sorted(i for i in (set(B) - set(A)) if i is not None)[:20],
+        "n_success_a": sum(1 for p in common if _succ(A[p])),
+        "n_success_b": sum(1 for p in common if _succ(B[p])),
+        "flips_up_0_to_1": len(up), "flips_down_1_to_0": len(down),
+        "net_down": len(down) - len(up),
+        "n_discordant": n_disc,
+        "mcnemar_exact_two_sided_p": (exact_two_sided_binomial(len(down), n_disc)
+                                      if n_disc else 1.0),
+        "min_detectable_net_flips": min_detectable_net_flips(n_disc, len(common)),
+        "up_ids": up[:20], "down_ids": down[:20],
+        "NOTE": ("transitions are directional A->B; `net_down` is the count the effect is quoted "
+                 "in. Compare it to the measured judge noise, not to zero."),
+    }
 
 
 def build_table(judge_dirs: List[str], labels: Optional[List[str]] = None,
