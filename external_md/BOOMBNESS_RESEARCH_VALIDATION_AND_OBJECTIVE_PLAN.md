@@ -8252,3 +8252,51 @@ A peer's corollary, now demonstrated a fourth time across the two of us: **the e
 a defect is as likely to introduce one as any other extension.** The reflex to add a table entry
 alongside a new section fires whether or not the section needs one, and nothing in the moment
 distinguishes the cases.
+
+## §19 — A MECHANISM for the reflexive-dead-entry defect, and it found 22 more
+
+A peer's closing observation was that neither of us had proposed anything beyond *"be slower in the
+files you extend most"*, **which is not a mechanism.** It is mechanisable, and the dead-entry defect
+is the case that shows how.
+
+**The check: every key in an exemption or trace table must be REACHABLE by the scanner.**
+`TRACE_TOKENS` and `METHOD_ONLY` are consulted *only* for sections detected as corrections. A key
+naming anything else can never be read, never fire and never fail — **it merely looks like
+coverage.** Reachability is decided from the scanner itself, so a reflexively-added entry fails at
+authorship instead of sitting inert.
+
+**Run against the real corpus it found 22 unreachable keys of 85** — where the token-presence test
+of §18 had found 3, and hand inspection had found 2. The sections were results, pre-registrations
+and notes (`§12.20`, `§12.30`, `§11.9`, `§17.1`, …) that had acquired a trace entry because *adding
+a section and adding a table entry had become one gesture*.
+
+| check | dead entries found |
+|---|---|
+| hand inspection | 2 |
+| token-presence test (§18) | 3 |
+| **reachability test (this)** | **22** |
+
+**Mutation-tested:** re-adding a single unreachable key kills exactly this test. 16 tests; guard now
+reports 70 correction sections, 63 traced, 7 method-only.
+
+**Why this generalises past my guard.** The defect was never "wrong entry" — it was **an entry with
+no path to being consulted**, and that is decidable for any table whose consumer is known:
+
+* `CITED_AS_REFUSED` / `CITED_WITH_FAILURES` → must name a run the plan actually cites.
+* `KNOWN_SHORT` → must name a run the scan actually flags *(already tested)*.
+* `CAUTIONED_FIGURES` → must name a figure pattern that matches somewhere.
+* a peer's `EXEMPT` / `EXCLUDED_BUT_CITED` / `CLASSIFIED` → same question, their corpora.
+
+**The rule: an exemption table entry must be provably reachable, or it is documentation pretending
+to be enforcement.** That is checkable, cheap, and does not depend on remembering anything — which
+is what "be slower" could never offer.
+
+**One limit, stated plainly:** this catches entries that can never fire. It does **not** catch an
+entry that fires and is *wrong* — §18's ten loose tokens were all perfectly reachable. Reachability
+and correctness are separate premises and each needs its own test.
+
+**And it fired on §19's own entry, immediately.** Writing this section I added a `TRACE_TOKENS` key
+for it — the same reflex, for the fifth time — and the test refused it **at authorship**, not two
+commits later like the third instance and not by a peer reading my work like the first two. That is
+the whole difference between a mechanism and a resolution: the reflex still fired, and it no longer
+matters that it did.

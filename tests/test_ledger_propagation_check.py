@@ -200,3 +200,29 @@ def test_every_TRACE_TOKEN_actually_APPEARS_in_the_ledger():
               for sid, toks in lp.TRACE_TOKENS.items()}
     absent = {k: v for k, v in absent.items() if len(v) == len(lp.TRACE_TOKENS[k])}
     assert not absent, f"section(s) whose every token is absent from the ledger: {absent}"
+
+
+def test_every_TABLE_KEY_is_REACHABLE_by_the_scanner():
+    """⛔ THE MECHANISM FOR THE REFLEXIVE-DEAD-ENTRY DEFECT.
+
+    `TRACE_TOKENS` and `METHOD_ONLY` are consulted ONLY for sections the scanner detects as
+    corrections. A key naming any other section is dead config: it can never be read, never fire,
+    and never fail — it merely looks like coverage.
+
+    This is the third dead entry's real lesson. Two were found by hand and a third was added one
+    commit later while writing about the first two; a peer and I had concluded the only remedy was
+    "be slower in the files you extend most", which is not a mechanism. **This is one**: it decides
+    reachability from the scanner itself, so a reflexively-added entry fails at authorship rather
+    than sitting inert. Run against the real corpus it found **22** unreachable keys of 85, where
+    the token-presence test had found 3.
+
+    A key here must therefore be resolved rather than tolerated: either the section is a correction
+    and gets its marker, or the entry goes.
+    """
+    secs = {sid for sid, _ in lp.correction_sections(open(lp.PLAN, encoding="utf-8").read()) if sid}
+    for name, table in (("TRACE_TOKENS", lp.TRACE_TOKENS), ("METHOD_ONLY", lp.METHOD_ONLY)):
+        unreachable = sorted(k for k in table if k not in secs)
+        assert not unreachable, (
+            f"{name} has {len(unreachable)} key(s) naming sections the scanner does not detect as "
+            f"corrections, so they can never be consulted: {unreachable}. Either mark the section "
+            f"as a correction or delete the entry — dead config looks like coverage.")
