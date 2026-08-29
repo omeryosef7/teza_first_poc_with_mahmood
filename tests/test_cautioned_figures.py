@@ -160,6 +160,15 @@ def test_the_guard_fires_on_a_LIVE_entry_not_only_a_dormant_one():
 
     This rebuilds the fire-test from whichever entry is actually live, so the mechanism is
     demonstrated on an entry that operates.
+
+    ⛔ C-76 — READ THIS BEFORE COUNTING THIS TEST AS MUTATION-VERIFIED. No CONFIG mutation can
+    isolate this check. Configuring only the dormant entry fails it, but fails
+    `test_at_least_one_entry_is_live_in_the_deliverables` through the SAME precondition, and
+    mutating `_violations` fails all four mechanism tests. What this test uniquely asserts is
+    that the fixture is DERIVED from the live set (`live[0]`) rather than hardcoded to the
+    dormant entry — a property of how the test is written, not of the data it reads. Its
+    guarantee is STRUCTURAL, not empirical: it stops a future edit regressing the fixture, and
+    that is real, but it is not a killed mutant and must not be tallied as one.
     """
     counts = _figure_match_counts()
     live = [(n, f, p) for n, f, p, _ in CAUTIONED_FIGURES if counts[n] > 0]

@@ -14941,3 +14941,47 @@ overlap, section-distance heuristics) is the C-47 failure mode — a loose match
 written to catch imprecision. **The honest control here is procedural: when a claim's status changes,
 re-read its narrative section in the same tick.** Recorded as a manual step rather than dressed up as
 an automated one.
+
+### ⛔ C-76 (03:55) — **Their sharpening applied to my own R-153 controls: one of my three mutations does NOT isolate its target. `fires_on_LIVE` has never been shown to catch anything `at_least_one_live` doesn't — so R-153's "4/4 killed" overstates what was verified.**
+
+Their generalisation is that *"mutation testing needs a positive control"* is necessary but not
+sufficient — **the control must be one that ONLY the mutated path can satisfy**, because in all three
+of their surviving mutants a *different mechanism produced the same observable*. Tested against my own
+R-153 probes by running **every** test under **each** mutation rather than only the targeted one:
+
+| mutation | tests that fail | isolates? |
+|---|---|---|
+| **A: only the dormant entry configured** | `at_least_one_entry_is_live`, **`fires_on_a_LIVE_entry`** | ⛔ **no — 2 checks** |
+| B: live entry's phrase weakened to `"the"` | `each_required_phrase_is_distinctive` | ✅ yes |
+| C: a live entry's figure broken to match nothing | `dormant_entries_are_recorded` | ✅ yes |
+
+**Mutation A fails through the shared precondition.** `fires_on_LIVE` asserts a live entry exists
+before it does anything else, so with only the dormant entry configured it dies on the *same*
+condition `at_least_one_live` tests. **R-153 recorded that as two kills; it is one kill counted
+twice.**
+
+**And no configuration mutation can isolate it, which is the honest finding.** Mutating the mechanism
+instead — `_violations` always returning `[]` — fails **four** tests including both fire-tests, which
+is correct: they test the same mechanism on different entries. What `fires_on_LIVE` uniquely asserts is
+that **the fixture is derived from the live set rather than hardcoded to the dormant one**, and that is
+a property of *how the test is written*, not of the data it reads. **No data mutation can reach it.**
+
+**So its guarantee is structural, not empirical**, and I am labelling it that way rather than leaving
+it in a table of "verified" checks: it prevents a future edit from regressing the fixture back to the
+dormant entry, and that protection is real but is enforced by construction — `live[0]` — not
+demonstrated by a killed mutant.
+
+**Their three cases and mine are the same shape with different mechanisms:** cluster structure entering
+through the CR0 variance rather than the weights; a short run that is *also* cell-imbalanced so the
+row-count control fired through the cell-balance check; and here a precondition shared between two
+tests. **In none of them was the test weak in isolation.** The right question is not *"does a mutation
+kill this test"* but ***"is this test the only thing that could have killed it"***.
+
+**Their `retrieval.jsonl` bug is the sixth pattern instance and the most pointed**: assuming
+`results.jsonl` everywhere, committed **inside the guard built to catch select-by-a-pattern-I-supplied**.
+That is now seven across both sessions — my `A640_*` glob, my bold-only regex, my `GUARD_TESTS`
+assumption, their `ls | tail -1`, their population substring, their split-name list, and this.
+
+**What I am not doing:** rewriting `fires_on_LIVE` to manufacture an isolating mutation. A test
+contorted so that a mutation can single it out is optimising the control rather than the coverage, and
+the structural guarantee is the one actually wanted here.
