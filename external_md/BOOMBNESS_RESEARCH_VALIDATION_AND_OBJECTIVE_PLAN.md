@@ -7534,3 +7534,141 @@ than either "confirmed" or "withdrawn", and it is the one this sprint can defend
 3. **The binding constraint was cluster count, and pulling that lever produced an answer rather than
    a rescue.** Three independent analyses said "more domains"; 38 domains showed the directions do
    not reach them.
+
+## §13.1 — ⛔ RETRACTION: §13's question set was invented. The real one is in the repo, and it has ELEVEN questions
+
+**§13 answered seven questions I reconstructed from the plan's phase structure. That reconstruction
+is withdrawn.** The actual question set is tracked, at
+`docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md` §19 — *"Important questions to answer in the report"* —
+in a file titled **"Claude Code Research Handoff Prompt"**.
+
+**Why I concluded absence.** I searched for `"seven question"` and for `"the brief"`. The file
+contains neither string: it is a *handoff prompt* with a section called *"Important questions to
+answer in the report"*. A peer found it by enumerating every tracked `.md` with five or more
+question-shaped lines — **searching for the shape rather than for the name I expected**. This is the
+ninth instance tonight of the same failure across both sessions, and the most consequential:
+`ls | tail -1`, a prefix glob, a bolded-id regex, a population-name substring, a guessed split-name
+list, an assumed `results.jsonl`, an assumed GUARD_TESTS membership, a within-run statistic read as a
+corpus fact — and now **absence concluded from a pattern that was never going to match**.
+
+**What made this recoverable rather than a retraction of published work:** §13 stated in bold, at its
+head, that the question set was reconstructed and had to be checked against the brief before
+publication. Nothing claimed to be a quotation. The disclosure is the only reason this is an
+amendment.
+
+**Mapping:** my Q5 → their **Q9**; my Q7 → their **Q10**; my Q6 partly → their **Q3**. Their
+**Q1, Q2, Q4, Q6, Q7, Q8, Q11 had no counterpart at all** — and their Q6/Q7 (*better than
+refusalness* / *adds predictive power beyond refusalness*) are precisely the partial-correlation and
+control work of §12.24 and §12.30, which I had filed under a heading I invented.
+
+---
+
+## §14 — THE ELEVEN QUESTIONS, answered against the real numbering
+
+Computed from artifacts already on disk (`xb_main_s3`, 15,840 extract rows; the d38 gate arm; the
+Phase 6 ladder). Readout is `d_surface|L8|proj` at the query occurrence unless stated.
+
+**⛔ Q1–Q4 and Q8 are DESCRIPTIVE:** medians with n, no domain-clustered inference. Given §12.26
+(ICC 0.82 on this predictor) they must not be quoted with p-values or intervals until that is run.
+
+### Q1 — Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?  **NO, and it is not close**
+
+| condition | n | median `d_surface\|L8\|proj` |
+|---|---|---|
+| `direct_harmful` | 384 | **+1.643** |
+| `concept_in_benign_ctx` | 384 | **+1.823** |
+| `natural_doublespeak` | 1008 | **−2.156** |
+| `benign_literal` | 816 | **−2.253** |
+
+The readout splits by **whether the concept word is literally present**, not by whether the attack
+succeeds. Doublespeak sits with *benign literal*; direct sits with *concept in benign context*.
+**This is the single most important row in the sprint** — the quantity named "boombness" is largely a
+lexical-presence detector, which is exactly what Phase 7's "not a lexical/topic classifier" criterion
+was written to exclude.
+
+### Q2 — Does the final `carrot` become more `bomb`-like than earlier `carrot`s?  **BARELY — not enough to build on**
+
+Paired within prompt, 948 prompts: median(final − median(earlier)) = **+0.0875**, and the final
+occurrence is higher in **508/948 = 53.6%** of prompts. A coin flip is 50%.
+
+### Q3 — How many examples are needed before Boombness rises?  **It rises smoothly from the first, with no threshold**
+
+n=0 **−2.448** · n=1 −2.092 · n=2 −2.406 · n=4 −2.053 · n=8 −1.765 · n=16 **−1.331**
+
+**And it keeps rising at n=16 where ASR falls** (§12.22: ASR peaks at 8–12, then drops, pooled
+clustered p=0.0312). Boombness and attack success **diverge at the top of the dose range** — a
+dissociation that any dose-based objective would have optimised in the wrong direction.
+
+### Q4 — Does Boombness vary enough across prompts to support optimization?  **NO**
+
+Across-prompt SD **0.757** against a median within-domain SD of **0.751** — a between/within ratio of
+**1.01**. The prompt-to-prompt spread is indistinguishable from within-domain noise, so there is no
+structured variation for an optimiser to climb.
+
+### Q5 — Does Boombness predict ASR?  **LOCALLY YES, GLOBALLY NO**
+
+Within the 6 domains the directions were fitted from: within-dose ρ +0.172/+0.446/+0.321/+0.280,
+pooled +0.336. On 32 unseen domains: **−0.055**, marginal **+0.315 → −0.010**. Real but local.
+
+### Q6 — Does Boombness predict ASR *better than* refusalness?  **NOT ESTABLISHED**
+
+On the 288-row set, refusal marginal ρ = **−0.143** (cluster-perm p=0.0854) against boombness
++0.336. Boombness looks stronger *on the fit domains* — but §12.30 shows it does not survive
+transfer, and no head-to-head test was run on unseen domains where boombness is ≈0. **The comparison
+that would settle it has not been done.**
+
+### Q7 — Does Boombness add predictive power *beyond* refusalness?  **ON THE FIT SET YES; OUT OF IT NO**
+
+Partial ρ controlling `n_examples`, length **and refusal** = **+0.3405**, CI [+0.103, +0.521],
+excludes zero. Against the *full* control set including `d_naive`: +0.1783 pooled, CI containing
+zero; dev +0.0389 vs heldout +0.2547. On unseen domains the whole thing collapses to −0.055.
+
+### Q8 — Do user-like / CoT-like framings increase Boombness?  **YES — but non-specifically, which is the finding**
+
+| role style | n | median | Δ vs plain |
+|---|---|---|---|
+| `plain` | 648 | −2.223 | — |
+| `user_like` | 72 | −1.582 | **+0.640** |
+| `cot_like` | 72 | −1.626 | **+0.597** |
+| `assistant_like` | 72 | −1.559 | +0.664 |
+| `tool` | 72 | −1.621 | +0.601 |
+| `system_like_quoted` | 72 | −1.613 | +0.610 |
+
+**Every non-plain framing raises it by the same ~+0.6**, within 0.07 of each other. So the effect is
+*departing from plain formatting*, not anything specific to user or CoT framing. A result reported as
+"CoT framing increases boombness" would be true and misleading.
+
+### Q9 — Can we surgically remove Boombness without destroying comprehension?  **YES, and it is the sprint's cleanest positive**
+
+Binding survives at 29/40 → 30/40 on Qwen3 while ASR falls 11/80 → 1/80 (p=1.0000, MDE ≥6 against 11
+discordant rows — *no evidence of degradation*, not *evidence of no degradation*). Representation and
+behaviour dissociate.
+
+### Q10 — Can we turn Boombness into a useful GCG objective?  **NO**
+
+The Phase 7 gate is closed. All three pre-registered conditions fail and the positive control fails
+with them, so the verdict is *untestable on this bank* rather than *refuted*; the
+difference-of-differences (−0.1371, CI [−0.446, +0.200]) cannot separate candidate from control.
+**No objective was built.** Q1, Q4 and Q3's divergence say independently that one should not be:
+a lexical-presence detector with no prompt-level variance that diverges from ASR at high dose is not
+an optimisation target.
+
+### Q11 — What exactly should Matan/Mahmood take from this sprint?
+
+1. **Do not build the objective.** That was the sprint's stated purpose (§0 of the handoff:
+   *"turn the discovered weakness into an explicit optimization objective"*), and the answer is no.
+2. **`d_surface` is `d_surface_carrot_bomb`** — no concept transfer (R-23/R-24), and now no domain
+   transfer (§12.30).
+3. **It is largely a lexical-presence detector** (Q1), which is the disqualifying property Phase 7
+   named in advance.
+4. **Representation ≠ behaviour** (Q9, and Q3's divergence): comprehension survives interventions
+   that abolish the attack, and *removing* the direction **raises** ASR (+0.0424).
+5. **The attack itself is real and mechanistically tractable** — retrieval knockout suppresses it
+   (27/96 → 2/96 on `ticket_bomb`) where baselines are high enough to measure, and it does not exist
+   at n=0 (0/36).
+6. **The measurement lessons are portable and expensive:** an ASR from a `max_new=192` run is not an
+   ASR (two arms were 96/96 truncated); the judge flips 6.5–7.0% of rows on identical text; and
+   power here is bounded by *domain count*, not row count.
+
+**Still open, and honestly so:** Q6's head-to-head on unseen domains, and clustered inference for
+Q1–Q4/Q8.
