@@ -9370,3 +9370,60 @@ a claim whose support is weaker than its phrasing.
   with no forward pointer. Same shape as the one stale record in §24 and the three found in theirs —
   and the marker belongs on the **number**, not on the entry, which preserves what was believed and
   when.
+
+## §25 Tick verification: the four named plan items, against artifacts
+
+The loop names four items. Each checked against its artifact rather than from memory.
+
+    cap_natural_experiment.py / token_vs_prompt_level.py   present
+    Phase 0.3 cap runs                                     capNE_*, capC_* present
+    knockout cap>=640 (five Llama populations x A and C)   10 run dirs -- exactly 5 x 2
+    Phase 2 token-vs-prompt                                20 p2_/q2_ run dirs
+    Phase 6 dose sweep                                     see below
+
+**Phase 6 needed a second look and survives it.** Only **4** `ph6_` run dirs exist, covering doses
+`{0, 12, 16}` — not the `{0,1,2,4,8,16}` the plan asks for. The `ph6_` runs are the *additions*; the
+ladder assembles across banks. Measured from the rows, per Phase 6 bank:
+
+    main          {0: 6682, 1: 5272, 2: 12934, 4: 17796, 8: 15310, 16: 3915}
+    basket_gun    {0:   12, 1:  336, 2:   336, 4:   336, 8:   336, 16:   12}
+    ticket_bomb   {0:   12, 1:  528, 2:   528, 4:   528, 8:   528, 16:   12}
+
+All six doses present on all three banks — **complete**. But the endpoints are thin: `basket_gun` and
+`ticket_bomb` carry **12 rows at n=0 and 12 at n=16 against 336–528 per middle dose**, a 28–44× gap.
+The recorded finding already says *"n=0 is 0/12 on all three banks"*, so it was never overstated —
+but the same 12-row weight sits under the n=16 end of the non-monotonic ladder, and that had not been
+said.
+
+### §25.1 ⛔ CORRECTION: two matcher errors of mine in one tick, in OPPOSITE directions
+
+A peer noted that `canonical_figures` does not cover **W1**, the phase's load-bearing refusal-rise
+claim. Chasing that produced both failure directions within five minutes, on the same question:
+
+* **Over-restrictive → a false NEGATIVE.** My first grep wrapped the numbers in `[^|]{0,70}` context.
+  Every W1 figure lives in a **markdown table row**, so the pipe characters excluded all of them and
+  I concluded *"no matches in either deliverable"*. Wrong, and it would have closed the question.
+* **Over-broad → a false POSITIVE.** The follow-up matched `5.6%`, which hit `25.6%` in an unrelated
+  sentence of the report and briefly looked like W1 being present in registry scope. It is not.
+
+§24.4 said the direction rule was untested because every instance had landed on the cheap side. These
+two are *also* cheap — both about my own tree, caught before anything was sent — so the expensive
+case remains unobserved and the count is now near seven, all on one side. **That is the same untested
+case repeated, not accumulating evidence.**
+
+### §25.2 W1 is quoted OUTSIDE the registry's scope — and extending it is not my call alone
+
+Measured, after fixing the matcher: W1's table is in **`reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md`**
+(lines 1204/1206: `| 1 | Llama-3.1-8B | A | 0.0563 | 0.2188 | +0.1625 |`, setting 3 at `+0.1938`).
+`canonical_figures.DELIVERABLES` is exactly two files — the sprint report and the short update — and
+that summary is **neither**. So the peer's observation is right, and the reason is **scope rather
+than a hole**: there was nothing in scope to pin.
+
+The numbers *are* pinnable — the judge summaries carry `refusal_rate` directly (`p4bj_A` reports
+`0.05625` = 9/160 at `asr_by_arm/0.5/A_baseline/refusal_rate`), exactly the shape `_artifact_value`
+reads.
+
+**⛔ I am not adding that file to `DELIVERABLES` unilaterally.** It is currently **modified in the
+shared tree by the other session**, and putting it under `check_all` would make my guard gate their
+in-progress edits and refuse their commits. That is a coordination decision rather than a correctness
+one, and it is theirs to accept. Offered, not done.
