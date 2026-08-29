@@ -16876,3 +16876,41 @@ the arithmetic — so the marker goes on the number rather than the entry.
 me a re-measurement and costs the peer nothing. The expensive direction — a claim about their tree
 that would send them chasing something — is the one to hold to a higher bar, which is the asymmetry
 DR-21 named and this exchange immediately exercised in both directions.
+
+### ✅ DR-22 (deeper review, 18:10) — **Independently recomputed W1 — the phase's headline claim — from the judge artifacts. All four settings reproduce exactly, with bank, model and n matched WITHIN family. Two false steps in my own check along the way, both in the cheap direction.**
+
+The one deep-review item not yet done this session: *recompute the current headline numbers*. `W1`
+(`demo_processing_only` uniquely restores refusal, four independent settings) is the phase's
+load-bearing claim and the one `canonical_figures` does **not** cover — its ten entries are
+earlier-phase figures.
+
+| setting | baseline refusal | `demoproc` | rise | asserted | bank / model matched |
+|---|---|---|---|---|---|
+| 1 Llama pool A | **9/160 = 0.05625** | 35/160 = 0.21875 | **+0.1625** | +0.1625 | `d10` / Llama ✓ |
+| 2 Qwen3 pool A | **2/160 = 0.01250** | 23/160 = 0.14375 | **+0.1312** | +0.1312 | `d10` / Qwen3 ✓ |
+| 3 Llama pool B | **1/160 = 0.00625** | 32/160 = 0.20000 | **+0.1938** | +0.1938 | `d10_poolB` / Llama ✓ |
+| 4 Llama basket | **2/96 = 0.02083** | 14/96 = 0.14583 | **+0.1250** | +0.1250 | `basket_bomb` / Llama ✓ |
+
+Producing artifacts: `judge/{p4bj,q4bj,p6bj,g2j}_{A,demoproc}_*`. Bank and model read from each
+judge run's `--gens` run's own `RUNMETA.argv`, and **A and `demoproc` verified to share bank, model
+and row count within each family** — not merely to have the asserted rates.
+
+**Two false steps of mine, both worth recording because they are the cheap direction.**
+
+1. **My first pass matched by COUNT, not by family.** It searched for any judge dir whose refusal
+   count equalled the asserted value, and found **6, 16, 6 and 17** candidates per cell — including
+   `c13j640_b` at 9/160 and `p12j_demoproc` at 9/160, which have nothing to do with setting 1.
+   Coincident denominators across a 160-row corpus make count-matching almost meaningless, and had
+   I stopped there I would have reported "verified" from an accident. The fix is the same one that
+   has worked all day: pair within the family and check the provenance, not the number.
+2. **My second pass reported setting 1 as FAILING, and it does not.** The tolerance was
+   `abs(b - 0.0563) < 5e-5`, and `9/160 = 0.05625` differs from the deliverable's rounded `0.0563`
+   by **exactly 5e-5** — the boundary. The prose rounds to four places; my check demanded more
+   precision than the prose claims. Comparing `round(b, 4) == asserted` is the correct test.
+
+**Both errors were about my own verification and cost only this session** — the cheap direction under
+DR-21's asymmetry. Worth noting that the asymmetry has now been exercised three times today entirely
+within that direction, which is why I still would not call it a demonstrated rule: **no cross-tree
+claim of mine has been wrong yet, so the expensive case remains untested.**
+
+**W1 stands, recomputed from artifacts rather than re-read from prose.**
