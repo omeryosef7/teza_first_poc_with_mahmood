@@ -7269,8 +7269,37 @@ dangerous artifact this sprint has produced, because everything about it looks f
 | failed | **22**, all `OSError: [Errno 122] Disk quota exceeded` |
 | rows in `results.jsonl` | **543** |
 | rows in `gens.jsonl` | **531** |
-| missing against the bank | **77 of 608 = 12.7%** |
-| domains with all 16 rows | **27 of 38**; the worst domain has **8** |
+| missing against the bank | **⛔ see correction below** |
+| domains with all 16 rows | **⛔ see correction below** |
+
+> ### ⛔ CORRECTION to two magnitudes in this table (2026-08-29)
+>
+> A peer swept all 1,347 run dirs for the write-fails-at-close shape and recomputed this run from
+> `results.jsonl`. **Both of my magnitudes were wrong, and the verdict is unchanged.** Re-derived
+> here independently:
+>
+> | | I wrote | measured |
+> |---|---|---|
+> | rows removed | 77 of 608 = 12.7% | **65 of 608 = 10.7%** |
+> | domains affected | 11 of 38 | **10 of 38** |
+>
+> **My error was reading the wrong file.** `gens.jsonl` holds 531 rows and `results.jsonl` holds
+> 543; I computed 608 − 531 = 77 and labelled it "rows". The two files are short by *different*
+> amounts, which is itself part of the defect.
+>
+> **And the decomposition is the part worth having**, because it explains why this run is worse than
+> merely short. All **152 of 152** (domain × dose) cells are present — none vanished — at a modal
+> 4 rows/cell, with **37 cells below modal** summing to exactly the 65 missing. The run's own summary
+> reports `n_attempted 608, n_succeeded 586, n_failed 22`, so:
+>
+>     608 attempted = 543 persisted + 22 never generated + 43 counted-succeeded but LOST AT CLOSE
+>
+> **Two distinct failures from one cause.** The 22 is the quota refusing new work and it *is* in the
+> summary. The **43** is the same quota killing the file-handle close *after* the ledger had counted
+> those rows — and it appears **nowhere in the run's own bookkeeping**. Anything trusting
+> `n_succeeded` sees a 22-row loss; the true loss is 65. That is a live demonstration of guard #9's
+> *"the files are the authority"* rule, and it is why 586 and 543 both look authoritative in
+> isolation.
 
 **Three numbers that should be one.** The ledger says 586 succeeded, `results.jsonl` holds 543 and
 `gens.jsonl` 531. The quota killed writes *after* rows were counted as successful, so **the run's own
@@ -8760,3 +8789,29 @@ that surfaces "the answer may already be on disk, indexed differently than your 
 *My own inversion-from-chance observation gets a floor from this:* Qwen3 × `main` inverts to 4/48
 **from a baseline that does bind**, which is the interpretable version of the same direction my void
 cell showed without one.
+
+### §23.1 — an uncommitted `meta.json` describes a build that did not produce its bank
+
+A peer flagged this in the shared working tree and it is not mine — it was already modified when
+this session opened. Verified rather than relayed:
+
+| field | HEAD | working tree |
+|---|---|---|
+| `timestamp` | 2026-08-19T06:07:50 | **2026-08-27T09:11:24** |
+| `hostname` | c-001 | **c-002** |
+| `gpu` | NVIDIA TITAN Xp | **None** |
+| `cuda_available` | True | **False** |
+| `git_commit` | `9c712730…` | `51f717b1…` |
+
+**And `boombness_prompt_bank.jsonl` is byte-identical to HEAD** (sha16 `7bf21cfbdc1966b0`). So the
+provenance record now describes a **2026-08-27 CPU rebuild on a different host**, attached to a bank
+file unchanged since **2026-08-19**. Anyone reading the meta for build provenance gets a record that
+did not produce the artifact beside it.
+
+*(The meta's `pools_sha16` is the POOLS hash, a different quantity from the bank hash — not a
+mismatch, and worth stating so the two are not confused.)*
+
+**No run is affected**: every bank consumed by this sprint's runs is the unchanged `.jsonl`.
+**Left uncommitted and untouched** — it is not mine, and the explicit-path commit discipline
+(§12.15) has kept it out of every commit in this session. Recorded here so that if it is swept into
+a future commit, the discrepancy is already on the record rather than discovered afterwards.
