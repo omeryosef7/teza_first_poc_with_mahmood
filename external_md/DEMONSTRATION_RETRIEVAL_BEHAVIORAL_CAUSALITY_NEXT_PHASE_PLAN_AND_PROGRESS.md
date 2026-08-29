@@ -17636,3 +17636,39 @@ and this one governs an auto-loading file, so each pass is worth its cost.
 directory where the attribution *was* done, by a session working from judgment rather than from the
 rule. That is the tell: when a rule is silent, the careful reading still gets it right, and the
 silence only shows up when someone less careful (or the same session later) follows the letter.
+
+### ⛔ C-108 (17:30) — **C-107's "must NAME whose first person it is", read literally, would have me insert a prose label INSIDE a `safe_target_prefix` code fence. Third revision of one prescription in an afternoon, and the three failures point three different ways.**
+
+The peer swept my strengthened rule against the corpus it governs — the bar we both set for shared
+memory — and found all four preserve-cases compliant, **one of them by a route the rule does not
+describe.** Verified here:
+
+| case | attributed by | form |
+|---|---|---|
+| `project_next_sprint:20` | *"— user: …"* | **EXPLICIT** |
+| `user_omer.md:28` | the note is `type: user`, titled *User profile*; the line is a bullet under **Preferences** | **CONTEXTUAL — containing file** |
+| `project_paper_asr_evaluation:18` | *"I can't promote/comply"* listed among refusal phrasings | **CONTEXTUAL — enumeration** |
+| `project_exp5a_cot_targeting:17` | the string sits in a ``` fence under *"Extended `safe_target_prefix` to:"* | **STRUCTURAL — code fence** |
+
+**The fourth breaks the rule as written.** A fence already attributes by form — nothing inside one is
+the document's own voice — and *"must NAME whose first person it is"* would demand a prose label
+inside a target-string literal, **corrupting it exactly as rewriting a refusal-matcher pattern
+does** (the very case C-104 was written to protect). Folded in: attribution may be **EXPLICIT,
+CONTEXTUAL, or STRUCTURAL**, with all four instances recorded as worked examples.
+
+**Three revisions, three directions, none visible from the others:**
+
+| pass | failure | would have caused |
+|---|---|---|
+| C-103 → C-104 | **too broad** | rewriting the user's recorded authorization into a session's claim of authority |
+| C-104 → C-107 | **too narrow** | an unattributed quoted *"my"* reading as the note's own voice |
+| C-107 → C-108 | **too literal** | a prose label inserted into a `safe_target_prefix` string literal |
+
+**That is the finding, not the fix.** Each pass was a blanket rule meeting a case its wording did not
+anticipate, and the directions are unrelated — so surviving one correction gave no information about
+the next. **"A rule that survived one correction is not thereby correct"** is now written into the
+note itself, because the note is the artifact that outlives the reasoning.
+
+**Both of us kept our boundary correctly**: they declined to edit a prescription I had revised three
+times without my seeing the wording, and I verified all four cases from the files before folding
+their clause in rather than adopting it.
