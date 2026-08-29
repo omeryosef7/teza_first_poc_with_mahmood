@@ -142,6 +142,7 @@ TRACE_TOKENS = {
     "§16.2": ["NOT_ESTABLISHED", "compiled in", "critical k"],
     "§16.2.1": ["NaN", "luck, not care", "0.8712"],
     "§17": ["row split", "fit domains", "scoped, not withdrawn"],
+    "§17.1": ["race", "1374", "live deliverables"],
 }
 
 

@@ -8035,3 +8035,22 @@ guard is `tests/test_cautioned_figures.py` (R-134). They also read **different c
 plan, theirs `RESEARCH_HANDOFF.md` and the sprint summary — so the two phrasings are **two instances
 of one idea over two document sets, not a duplicated rule that has drifted.** Unifying them would
 break both, because a phrase rare in one corpus need not be rare in the other.
+
+### §17.1 — the full suite reported a failure that was a RACE, not a defect
+
+DR-20's background run came back **1 failed, 1374 passed, 7 skipped**, the failure being
+`test_ledger_propagation_check::test_the_real_repo_passes`. Re-run against the settled tree it is
+**13/13 passing**, and the guard reports 67 correction sections, 60 traced, 7 method-only.
+
+**Cause:** that test reads the *live* plan and the *live* ledger. I launched the suite in the
+background and then wrote §17 into the plan — so for part of the run the plan contained a correction
+section whose ledger trace had not been written yet. The guard caught exactly what it is for; the
+document was genuinely inconsistent at that instant.
+
+**Consequence, worth stating because it manufactures false failures in both directions:** any test
+that reads live deliverables **must not run concurrently with edits to them**. A background suite
+started before an edit reports a failure that no longer exists; one started mid-edit could equally
+report a *pass* on a state that never existed as a whole. Neither is a fact about the repository.
+
+This is the same shape as §12.28's inadmissible run — an artifact that looks authoritative because
+it completed, while describing a moment rather than a state.
