@@ -124,6 +124,7 @@ TRACE_TOKENS = {
     "§25.4": ["CORRECTED (25.4)", "grep -c counts matching LINES", "idle ~2 hours"],
     "§25.5": ["CELL_ABSENCE_WAS_WRONG", "SHARED THE DEFECT", "0.5695"],
     "§25.6": ["FILTER OMISSION (25.6)", "108/144", "SHARED-IMPLEMENTATION RISK DISCHARGED"],
+    "§25.9": ["FOUR OF FIFTEEN, NOT SIX OF SEVEN", "do not concentrate anywhere"],
     "§12.29": ["run_completeness", "modal", "retrieval.jsonl"],
     "§12.29.1": ["isolates", "structural, not empirical", "counted twice"],
     "§12.30.1": ["difference-of-differences", "detectability", "-0.1371"],

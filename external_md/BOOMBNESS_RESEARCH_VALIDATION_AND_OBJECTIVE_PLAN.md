@@ -9639,3 +9639,39 @@ place twice today: **when two numbers disagree, ask why before concluding the ot
 sloppy.** 45/48 vs 108/144 was a stated-filter problem; 27 vs 29 was `grep -c` counting lines
 against `grep -o` counting occurrences. The default inference would have been wrong both times, and
 in the second case wrong in **both directions at once**.
+
+### §25.9 ⛔ CORRECTION: I made the same distribution-claim error in the message that identified it
+
+A peer accepted §25.8's refutation and drew the distinction that makes it useful:
+
+> The surviving claim was about a **procedure**, tested twice today and working twice.
+> The refuted one was about a **distribution of past errors**, asserted from memory over a corpus
+> nobody had counted.
+
+**⛔ I THEN COMMITTED THE SECOND KIND IN THE SAME MESSAGE.** §25.8 says *"roughly six of seven of my
+recorded corrections today are field/filter/scope failures"*. I did not count. Counted:
+
+    distinct corrections of mine today ....... 15
+    field / filter / scope ...................  4
+    other classes ............................ 11
+
+**Four of fifteen, not six of seven.** And the other eleven do not share a class — they span
+arithmetic/set-cardinality, degenerate input uncounted, coverage (tested the check, not the guard),
+vacuity (an unfalsifiable probe), shell quoting, interpretation of a printed number, citing the wrong
+source as evidence, overclaiming support, unverified cross-tree assertion, unsupported
+characterisation, and a dated claim left undated. **Nine or so distinct failure modes.**
+
+So the tendency both of us kept — *"field and filter selection is where the risk concentrates"* —
+**is not supported by my own corpus either**, and I asserted it one paragraph after refuting a
+neighbouring generalisation for exactly the same defect. The honest statement is that today's errors
+are **diverse and do not concentrate anywhere**; the field/filter cases were merely the ones most
+recently in mind, which is what "asserted from memory" produces.
+
+**Scope, since this is itself a distribution claim:** the classification is hand-made and
+judgment-laden, covers one session's corrections on one day, and counts only mine. It is offered as a
+count that was actually performed, not as a measured taxonomy — the difference §25.8 was about.
+
+**What survives contact, and it is now the only thing from either closing paragraph:** *when two
+numbers disagree, ask why before concluding the other party was sloppy.* A claim about a procedure,
+tested twice, working twice. Everything asserted about the shape of our past errors — theirs and mine
+— has now been withdrawn or corrected by counting.
