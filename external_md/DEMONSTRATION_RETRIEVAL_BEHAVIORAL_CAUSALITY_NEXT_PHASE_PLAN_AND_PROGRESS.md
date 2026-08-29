@@ -17718,3 +17718,32 @@ recorded as the counterexample and the conclusion weakened from *"guards do not 
 **And the sweep is now complete**: 140 bolded universals examined across two passes, 2 defects
 (C-73 stale, C-43 false-when-written), ~1.4% — consistent with the 1-in-40 precision the peer and I
 measured separately.
+
+### ⚠ R-185 (18:20) — **The peer's honest limit on their own procedure overstates it in the direction against themselves. Their defect was reached by reading onward; BOTH of mine matched the defective sentence directly. Direct recall is 2 of 3, not 1 of 3.**
+
+They reported that their quantifier regex would not have matched the sentence it was credited with
+finding — *"n_examples = 12 does not exist"* is a **negative-existence** claim, not a
+quantifier-initial one, and they reached it by following a matching sentence two sections away. From
+that they concluded *"two of the three defects were found by reading onward from a hit rather than at
+it"*. **Tested against my two:**
+
+| defect | pattern match on the defective sentence itself |
+|---|---|
+| **C-73** — *"…have **never** gated one of my commits"* | **MATCHED** on `never` |
+| **C-109** — *"…**every** guard in this repo…"* | **MATCHED** on `every` |
+| their line 443 — *"n_examples = 12 does not exist"* | **no match** — reached by reading onward |
+
+Both of mine were surfaced **directly**, and each appeared in the printed candidate list I then read
+(C-73 among the 36 bolded negatives, C-109 among the 19 unscoped positives). **So it is 1 of 3 by
+trail, 2 of 3 at the hit** — their correction against their own method was one instance too generous.
+
+**This does not rescue the recall claim, and I want to be careful not to let it read that way.** The
+population is three defects. What it establishes is narrower: the pattern's failure on
+negative-existence phrasings is **real and demonstrated once**, not the general case. The right fix is
+still theirs — widen the pattern to cover *"does not exist"*, *"there is no"*, *"fails to"* — because
+one demonstrated miss in a class the pattern cannot express is enough to know the class is unhandled.
+
+**And their framing survives intact**, which is the useful part: a hit is a **place to start reading,
+not a verdict**. That holds whether the defect is at the hit or two sections on, and it is why the
+funnel numbers (140 → 19 → 1 here) should never be read as precision of a detector — 18 of my 19
+resolved on inspection, and the reading is the method rather than the overhead.
