@@ -16180,5 +16180,47 @@ finding little is only informative if it says how hard it looked*: the sweep cov
 run families under `outputs/boombness/judge/`, matched by prefix against both plan documents, and the
 one correction to its own method moved the count from 13 to 3.
 
-⚠ `p3j` and `p6j` appear in **neither** session's plan. They are the peer's to interpret and I have
-flagged them there; I have not read their numbers.
+⚠ ~~`p3j` and `p6j` appear in **neither** session's plan.~~ **WITHDRAWN — C-94. Both are traced,
+and my sweep could not have found them.** The rest of R-169 stands: the three families are still not
+mine, and R-168 is still an instance rather than a pattern.
+
+
+### ⛔ C-94 (2026-08-29, 08:05) — **R-169's one novel claim is withdrawn. `p3j` and `p6j` are BOTH traced, my sweep was structurally incapable of finding the citation, and my provenance guess was wrong on top of that. Third matching failure of the day, and this one is the over-strict direction I had just finished describing.**
+
+The concurrent session contradicted the claim; I verified all three of their citations myself before
+withdrawing, rather than adopting the correction on their say-so.
+
+**The citations exist:**
+
+* `p6j` — `BOOMBNESS_RESEARCH_VALIDATION_AND_OBJECTIVE_PLAN.md:6807`, §12.22, as `` `p6j_*`, job 797947 ``.
+* `p3j` — `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md:1914` (`p3j_p2A` discussed
+  by name) and `reports/SPRINT_SUMMARY_2026-08-23_TO_08-24_PART_II.md:1216`
+  (`{p2j,p3j,p4j,p4hj}_*` registered as "Phases 2/3/4").
+
+**Why the sweep could not have found `p6j`, which is the part worth keeping.** I grepped the tag
+**with its arm suffix** — `p6j_main` — against a plan that cites the family as `p6j_*`:
+
+    grep -c p6j_main  ...OBJECTIVE_PLAN.md   ->  0
+    grep -c p6j       ...OBJECTIVE_PLAN.md   ->  4
+
+A wildcard citation can never contain the arm-suffixed tag. This is the **third** matching failure in
+one day and the second in the strict direction: C-93's `"R-18" in text` over-credited via `PR-18`'s
+tail, its anchored fix under-credited R-18's substance, and now a sweep keyed on too much of the
+string under-credited an explicit citation. I described that trade-off to the peer and then committed
+a fresh instance of it inside the same tick. **A matcher's failure direction is a design choice and
+mine keeps defaulting to whichever direction I am not currently thinking about.**
+
+**And the corpus was wrong too.** R-169 says the sweep matched "against both plan documents". Two of
+the three real citations are in documents it never opened — a `_DSURFACE_` plan and a sprint summary.
+A completeness claim is bounded by the corpus searched, and I stated the bound accurately while
+choosing the corpus badly, which is the harder half to notice.
+
+**The provenance guess was also wrong.** I read `p6j`'s dose suffixes and `p3j_base`'s
+`e6A_ticket_bomb` gens pointer and called both "the peer's Phase-6 dose ladder". `p3j_neg` judges
+`p3_add_neg_20260828_062646_3980321`, whose arm is `p3_add_neg` — **Phase 3 steering, not a dose
+ladder.** The gens pointer was suggestive and the arm is decisive; I stopped at the suggestive one
+after writing "read from each run's own `RUNMETA.argv`, never from prose". I did read the argv, and
+then reasoned from the wrong field in it.
+
+**What survives:** R-168 remains an instance rather than a pattern, and none of the three families is
+mine. Nothing that depended on the withdrawn clause was published elsewhere.
