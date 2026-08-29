@@ -16523,3 +16523,43 @@ count.
 
 **Scope, so the negative stays informative:** field agreement was checked on the intersection only —
 it cannot say anything about the 20 rows outside it, which is definitionally where the damage is.
+
+### ⛔ R-175 (12:55) — **The gens-vs-results comparison BOTH of us used to characterise the quarantined run sees 20 of its 81 missing rows and 7 of its 11 damaged clusters. The method systematically under-reports the damage, and that includes my own R-173 sweep.**
+
+Verifying the peer's cluster-reweighting result confirmed their headline exactly — **27 of 38 domains
+at the full 16 rows, 11 reduced** (`dairy_plant` 8, `farm_storage` 11, `harbour_dock` 8,
+`library_stacks` 8, `museum_archive` 8, `quarry_site` 12, `rail_depot` 8, `shipyard_slip` 8,
+`telecom_exchange` 8, `textile_mill` 8, `warehouse_logistics` 8) — and turned up two things it does
+not say.
+
+**1. The domain union is 7, not 8.** The 4 generated-but-never-scored rows sit in
+`dairy_plant` 1, `shipyard_slip` 2, `farm_storage` 1. Only **`farm_storage`** is new: `dairy_plant`
+and `shipyard_slip` already appear among the six domains of the 16 scored-but-ungenerated rows. So
+the divergence touches **7** distinct domains. This is the same overlap-collapsed-into-a-sum shape as
+the `77`/`65` correction, one level down.
+
+**2. And that 7 is itself the wrong denominator, which is the finding.** Of the **81** designed rows
+absent from the 527-row intersection:
+
+* **20** are one-sided — the only ones a `gens` vs `results` comparison can see;
+* **61 are in NEITHER file**, and are therefore invisible to every such check.
+
+Consequently **4 of the 11 reduced domains — `harbour_dock`, `museum_archive`, `rail_depot`,
+`warehouse_logistics` — are not touched by the divergence at all.** Their entire loss sits in the
+invisible 61. A reader who characterised the damage from the crossing id-sets would conclude 7
+affected clusters and 20 lost rows; the true figures are **11** and **81**.
+
+**This bites my own R-173.** That sweep classified 582 runs by `set(gens_ids)` vs `set(results_ids)`
+and concluded the join hazard is confined to one artifact. **That conclusion stands for what it
+tested** — no other run has crossing sets — but the criterion is blind to rows missing from *both*
+files, so it is not a completeness check and I should not have let it read as one.
+
+**The two checks are complementary and neither is sufficient.** `run_completeness_check` compares
+persisted rows against `--expect-n` and therefore *does* see the 61; the file comparison sees the 20
+and identifies *which* rows crossed. It was the `expect_n` check, not the file comparison, that
+caught this run in the first place. **Characterising damage from file agreement alone will always
+understate it, because the rows that failed hardest are absent from both files and leave no trace to
+compare.**
+
+Nothing here changes the disposition: `KNOWN_SHORT`, superseded by `d38beh2`, must never be analysed.
+It makes the case stronger, not weaker.
