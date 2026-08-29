@@ -7853,3 +7853,50 @@ which §5.20 established as the boundary that once confounded every such contras
 at a cell where the effects disagree — which requires a bank where Llama destroys and Qwen3
 preserves, or vice versa. No such bank is currently known, so **attribution stays open** and is
 recorded as open rather than inferred from a table that cannot support it.
+
+## §16.1 — RESULT: the Qwen3 × `ticket_bomb` cell is VOID, and my pre-registration named the wrong two outcomes
+
+Both arms complete, 48/48, forward-only probe, Qwen3 band 7–17, both at `--readout-max-batch 1`.
+
+| arm | mapped-wins | median option mass | vs chance (24/48) |
+|---|---|---|---|
+| `A_baseline` | **22/48** | 0.8660 | **p = 0.665 — indistinguishable from chance** |
+| `C_legacy_all_query` | **0/48** | 0.9877 | p = 7.1e-15 |
+
+### The baseline does not bind, so "destruction" is not measurable here
+
+§16 pre-registered two outcomes: *destroys* → uninformative between the two hypotheses, *preserves*
+→ both wrong. **Neither happened.** The Qwen3 baseline on `ticket_bomb` sits at chance
+(22/48, p=0.665), where the Llama baseline on the same bank is 45/48 (p=1.3e-10). **You cannot
+measure the destruction of a mapping that was never installed.**
+
+**This is the dynamic-range failure for the third time this sprint** — after §12.20's knockout
+populations (7/96 and 3/96 baselines, where the largest available effect was at the noise floor) and
+§12.22's `n=16` cells. I wrote both of those up and still did not put a baseline-binding gate on this
+pre-registration. **The gate belongs in the design, not in the reading.**
+
+### ⛔ What my pre-registration got wrong
+
+It enumerated outcomes of the *contrast* and never asked whether the *baseline* could support one.
+A pre-registration that lists only "effect present / effect absent" has no branch for "the
+population cannot express either", which is the outcome that actually occurred — and which §12.20
+had already shown to be common on this corpus. Any future cell of this kind gets a **precondition**:
+*baseline binding must exceed chance at p < 0.05, or the cell is not run.*
+
+### The 0/48 is a separate observation, and I am not over-reading it
+
+0/48 with median option mass **0.9877** is not a collapse to chance — it is the model **confidently
+choosing the non-mapped option on every row**. That is an inversion, not a destruction, and it is a
+different phenomenon from `ticket_bomb`'s Llama result (45/48 → 15/48, which lands near chance).
+Whether an inversion from a chance-level baseline means anything at all is **not something these 48
+rows can answer**, and it is recorded as an observation rather than a finding.
+
+### Consequence for the model × bank table
+
+**It cannot be completed by this route.** The Qwen3 side has no dynamic range on `ticket_bomb`, so
+the fourth cell is structurally unavailable rather than merely unrun. Attribution of
+`legacy_all_query`'s moderation between *model* and *bank* therefore **stays open**, as §16 recorded
+it — and the route that would settle it (a bank where the two models disagree) still does not exist.
+
+**Cost of the finding: two forward-only probes.** Cheap, and the answer is that the experiment cannot
+be run — which is worth knowing before someone spends more.

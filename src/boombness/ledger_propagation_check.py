@@ -138,6 +138,7 @@ TRACE_TOKENS = {
     "§14": ["lexical-presence", "1.01", "role style"],
     "§15": ["enumerate", "reported axis", "no referent"],
     "§16": ["over-determined", "7-17", "attribution stays open"],
+    "§16.1": ["22/48", "dynamic range", "precondition"],
 }
 
 
