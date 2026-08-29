@@ -5832,7 +5832,8 @@ and nothing measured so far tests that.
 ### §12.1 — ⛔ CORRECTION to §12's pre-registration: the real k is 38, not 29, and `main` now clears
 
 §12 pre-registered at **k=29**. The true merged count is **38** — a peer was authoring 9 domains in
-the same file concurrently, and two of their keys collided with two of mine (§12.2). Corrected
+the same file concurrently, and two of their keys collided with two of mine (recorded inline here
+and in the ledger's `BUILD_K38_CORRECTED_V93`; there is no separate §12.2). Corrected
 before regenerating pools, so the prediction still precedes the data:
 
 | bank | ICC | ceiling k=6 | k=29 *(as registered)* | **k=38 *(real)*** | clears 132? |
@@ -5904,7 +5905,8 @@ estimate of the thing under measurement.
 
 *(Process note: the peer has deliberately **not touched `DOMAINS` while job 794293 runs**, because a
 live process reads that constant at import and the only control is leaving the file alone. That is
-the §12.2 hazard handled by coordination rather than by tooling, and there is no guard for it.)*
+the concurrent-authoring hazard handled by coordination rather than by tooling, and there is
+no guard for it.)*
 
 
 ### §12.4 — The 38-domain pools and bank are built
@@ -8300,3 +8302,43 @@ for it — the same reflex, for the fifth time — and the test refused it **at 
 commits later like the third instance and not by a peer reading my work like the first two. That is
 the whole difference between a mechanism and a resolution: the reflex still fired, and it no longer
 matters that it did.
+
+## §20 — ⛔ CORRECTION: my reachability mutation did NOT isolate, and the reverse-direction test found a dangling reference
+
+A peer asked whether my reachability test has an isolating mutation or shares a dependency with the
+token-presence test. **It shared one, exactly as they suspected.**
+
+| mutation | tests killed | isolates? |
+|---|---|---|
+| add unreachable key `§99.9` with a *nonexistent* token *(my original)* | reachability **+ token-presence** | **NO** |
+| shrink `correction_sections` to 20 | reachability only | yes |
+| **add unreachable key with a token that IS present** | **reachability only** | **yes** |
+
+My original mutation changed *two* properties at once — the key was unreachable **and** its token
+was absent — so I had called the test verified on evidence that could not distinguish it from its
+neighbour. The isolating form exploits the table, as theirs did: a key that is unreachable but whose
+token exists leaves the token-presence test untouched.
+
+### The reverse direction: the ledger asserting a section the plan never recorded
+
+Their third failure mode — a correction living in the deliverable and never the log — is not a
+variant of my dead keys or my loose tokens. **My guard runs plan → ledger and nothing ran the
+converse.** Added, and it found six candidate orphans of which **five were valid cross-document
+references** to `SPRINT_SUMMARY` sections, correctly attributed in context. Counting those would
+have repeated the conflation-of-corpora this sprint keeps finding, so the test resolves a reference
+against **every document that could host it**.
+
+**The one real case was `§12.2`** — a forward reference in §12.1 to a section never written. Unlike
+their C-80 the *substance* was recorded (inline in §12.1 and in the ledger's
+`BUILD_K38_CORRECTED_V93`); only the number dangled. Both references corrected to say so rather than
+manufacture a section.
+
+### ⛔ And the orphan test's own scanner under-matched
+
+Its first version flagged `§26.7` as dangling. **It exists** — at line 1887 of the summary, as a
+**bold** paragraph marker rather than a `#` heading. My extraction regex matched `#` headings only:
+**the bolded-id under-match a peer hit in their own heading scanner, reproduced inside the test I
+wrote to catch missing references.** Now matches both forms.
+
+**Mutation-tested:** inserting a ledger reference to a section existing nowhere kills exactly this
+test; ledger restored byte-identical. 17 tests.

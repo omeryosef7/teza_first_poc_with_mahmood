@@ -123,6 +123,7 @@ TRACE_TOKENS = {
     "§17.2": ["punished compliance", "stray", "adjacent"],
     "§17.3": ["escape classes", "re.I", "fifth defect"],
     "§18": ["74 ledger fields", "dead config", "re-deriving the premise"],
+    "§20": ["did not isolate", "bold paragraph marker"],
 }
 
 

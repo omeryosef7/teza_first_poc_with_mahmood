@@ -226,3 +226,58 @@ def test_every_TABLE_KEY_is_REACHABLE_by_the_scanner():
             f"{name} has {len(unreachable)} key(s) naming sections the scanner does not detect as "
             f"corrections, so they can never be consulted: {unreachable}. Either mark the section "
             f"as a correction or delete the entry — dead config looks like coverage.")
+
+
+def test_no_LEDGER_reference_points_at_a_plan_section_that_does_not_EXIST():
+    """⛔ THE REVERSE DIRECTION, which the guard never checks.
+
+    `ledger_propagation_check` runs plan → ledger: it asks whether a correction in the plan reached
+    the ledger. Nothing asked the converse — whether the ledger asserts a section the plan never
+    recorded. A peer found exactly that on their side (a correction numbered only in the published
+    summary, absent from the live log) and it is the worse direction to lose, because the plan is
+    what the next session inherits.
+
+    CROSS-DOCUMENT REFERENCES ARE NOT ORPHANS. A first pass flagged six, of which five cited
+    sections of `reports/SPRINT_SUMMARY_*.md` and were correctly attributed in context. Counting
+    those as orphans would be the same conflation of corpora this suite keeps finding elsewhere, so
+    a reference is exempt when its own field names another document.
+    """
+    import json
+    import re
+    plan = open(lp.PLAN, encoding="utf-8").read()
+    headed = set(re.findall(r"^#+\s*(?:[^A-Za-z0-9§]*\s*)?(§[0-9]+(?:\.[0-9]+)*)", plan, re.M))
+    led = json.load(open(lp.LEDGER, encoding="utf-8"))
+
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values():
+                yield from walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                yield from walk(v)
+        else:
+            yield str(o)
+
+    # Sections of SIBLING deliverables are valid referents. Three refs (§21.10/§21.11/§21.12) are
+    # headings in the sprint summary and were flagged by a first version that only exempted fields
+    # literally containing ".md" -- too narrow, and the same conflation-of-corpora this suite keeps
+    # finding. Reachability of a reference is decided against every document that could host it.
+    import glob
+    for sib in glob.glob(os.path.join(os.path.dirname(lp.PLAN), "..", "reports", "*.md")):
+        body = open(sib, encoding="utf-8", errors="ignore").read()
+        # BOTH heading forms. The sprint summary marks some sections as a BOLD paragraph
+        # (`**26.7 — ...`) rather than a `#` heading, and a `#`-only regex reported §26.7 as a
+        # dangling citation when it exists at line 1887. That is the bolded-id under-match a peer
+        # hit in their own heading scanner, reproduced here in the test written to catch orphans.
+        for pat in (r"^#+\s*(?:[^A-Za-z0-9§]*\s*)?(§?[0-9]+(?:\.[0-9]+)*)",
+                    r"^\*\*(§?[0-9]+(?:\.[0-9]+)*)\s*[—-]"):
+            headed |= {"§" + h.lstrip("§") for h in re.findall(pat, body, re.M)}
+
+    orphans = {}
+    for value in walk(led):
+        for ref in re.findall(r"§[0-9]+(?:\.[0-9]+)*", value):
+            if ref not in headed:
+                orphans.setdefault(ref, value[:110])
+    assert not orphans, (
+        f"{len(orphans)} ledger reference(s) name a plan section with no heading — the ledger "
+        f"asserts something the plan never recorded: {orphans}")
