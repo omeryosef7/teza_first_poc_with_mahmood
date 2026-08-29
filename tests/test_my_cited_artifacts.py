@@ -55,6 +55,11 @@ CLASSIFIED = {
         "same, Qwen3 side.",
     "REPRO_R16_20260826_051035_1020533":
         "same, reproduction run.",
+    # --- cited BECAUSE it is the ONE non-probe run in R-173's empty-gens bucket (R-176) ---
+    "smoke_20260816_193523_2926143":
+        "earliest smoke, 2026-08-16, before --query-kinds existed: 8/24 rows died on "
+        "behavioral:KeyError:'text'. Cited by R-173 and R-176 as the single carve-out from "
+        "'every empty-gens run is a probe design', never as evidence for a claim.",
     # --- cited BECAUSE it is the quarantined artifact; the truncation is the point (R-172) ---
     "d38beh_20260829_022027_2389958":
         "disk-quota truncation: DONE claims 586, file holds 543, --expect-n was 608. Cited by "
@@ -174,6 +179,8 @@ REASON_COUNTS = {
     "q9A_lpQ14B_fc_20260828_104610_2283895": (22, 18, 40),
     # R-172. 22 rows never generated (quota); see TRUNCATED for the 43 that were counted and lost.
     "d38beh_20260829_022027_2389958": (22, 586, 608),
+    # R-176. The pre---query-kinds smoke: 8 of 24 died on a KeyError, 16 rows persisted.
+    "smoke_20260816_193523_2926143": (8, 16, 24),
 }
 
 #: R-172. Runs whose `DONE.json` count exceeds what the file actually holds. REASON_COUNTS checks the

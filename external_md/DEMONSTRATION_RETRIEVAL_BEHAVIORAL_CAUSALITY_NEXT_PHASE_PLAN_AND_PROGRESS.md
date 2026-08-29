@@ -16563,3 +16563,44 @@ compare.**
 
 Nothing here changes the disposition: `KNOWN_SHORT`, superseded by `d38beh2`, must never be analysed.
 It makes the case stronger, not weaker.
+
+### ✅ R-176 (13:35) — **R-173's empty-`gens` bucket survives a discriminating test, but the peer's explanation for it does not — and testing theirs found three runs marked `DONE` that produced nothing at all.**
+
+The peer reported the same 74-run bucket in their independent sweep and attributed it to *"gens
+dumping was simply never enabled on those runs"*. R-173 attributed it to query kind: a probe design
+generates no text. **Two different mechanisms for the same observation, so I tested which
+discriminates**, across every `score_behavior` run carrying a `gens.jsonl`:
+
+| `--query-kinds` | empty `gens` | non-empty `gens` |
+|---|---|---|
+| probe-only (`semantic_forced_choice` / `comprehension_usage` / `semantic_one_word`) | **78** | **0** |
+| `behavioral` only | **7** | **509** |
+| none recorded in argv | 1 | 2 |
+
+**Probe-only runs with a non-empty `gens.jsonl`: zero.** The query-kind account is therefore
+sufficient and a dumping flag is not needed to explain the bucket. R-173's classification stands,
+including its carve-out — exactly one run in that bucket is not probe-only
+(`smoke_20260816_193523_2926143`, no `--query-kinds` in argv), and R-173 named it.
+
+**But the 7 behavioral runs with an empty `gens.jsonl` are a class R-173 never saw**, because they
+have **no `results.jsonl` at all** and so never entered a gens-vs-results comparison. They produced
+nothing:
+
+* `abR24_C`, `abR28_C`, `abR8_C`, `q3_Dctrl` — no `DONE`, no `ABORTED`: incomplete runs, the same
+  27-run leftover class R-172 counted.
+* **`ch_D`, `ch_Dctrl`, `ch_base` — `DONE.json` present, `status: ok`, `rows_written: 0`.**
+
+**The three `ch_*` runs are honest, and that is why they are not a defect.** Their `DONE.json`
+*reports* `rows_written: 0`; nothing claims rows that do not exist. They ran on an **external** bank
+(`data/boombness_prompts/external/clearharm_179.jsonl`) whose schema the behavioural population
+filter matches nothing in, they pass no `--expect-n`, and they are **cited nowhere** in any document.
+`run_completeness_check` skips them correctly: it requires an `expect_n` to compare against, and
+without one there is no declared population to be short of.
+
+**Not adding a guard**, on the same C-87 reasoning as R-170: a run that truthfully records zero rows
+and is cited by nobody misleads no one, and a "DONE implies rows > 0" rule would fire on every
+legitimately empty external-bank probe. **The gap is that `status: ok` and `rows_written: 0` can
+coexist** — worth knowing, not worth machinery.
+
+**Full suite this tick: 1397 passed, 7 skipped, 0 failed** (284s, serial), against 1358 at sprint
+close.
