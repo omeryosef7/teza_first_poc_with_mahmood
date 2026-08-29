@@ -17948,3 +17948,37 @@ and theirs took one.
 **Section 18's cadence continues unchanged.** Closing the correspondence does not close the tick loop:
 queue checks, gate review, guard runs and the deeper review remain per the standing instruction. What
 stops is generating messages to have something to report.
+
+### ✅ DR-25 (deeper review, 20:55) — **C9, the phase's causal centrepiece, independently recomputed from the judge artifacts. All four cells reproduce exactly, ×margin range to the digit. And the withdrawn L5 control is re-confirmed as a no-op by an independent route.**
+
+The one headline claim not yet re-derived this session. C9: *"handing back the clean demonstration
+activations at the top of the knockout band gives back the REFUSAL and not the ATTACK"*, asserted at
+**18 / 17 / 12 / 18** refusal rows removed against an 8.336-row margin, **1.44–2.16×**.
+
+| cell | knockout ref | rescue ref | **removed** | ×margin | ko ASR | rescue ASR | ASR Δ |
+|---|---|---|---|---|---|---|---|
+| Llama `d10` | 35 | 17 | **18** | **2.16** | 1 | 5 | **+4** |
+| Llama poolB | 32 | 14 | **18** | **2.16** | 6 | 11 | **+5** |
+| Qwen3 `d10` | 23 | 6 | **17** | **2.04** | 7 | 17 | **+10** |
+| Qwen3 poolB | 15 | 3 | **12** | **1.44** | 7 | 14 | **+7** |
+
+**Measured `{12, 17, 18, 18}` against asserted `{12, 17, 18, 18}`; ×margin `1.44–2.16` against
+`1.44–2.16`.** Artifacts: `judge/{p4bj_demoproc, p7j_rescueL14, p6bj_demoproc, p8bj_rescueL14,
+q4bj_demoproc, q7j_rescueL17, q6bj_knock, q6bj_rescueL17}_*`. Arms read from each judge run's
+`--gens` run's own `RUNMETA.argv` (`C_demo_processing_only` / `RESCUE_L14` / `RESCUE_L17`).
+
+**The direction holds in both halves**: refusal returns toward baseline in every cell, while ASR moves
+the *other* way by **+4 / +5 / +10 / +7** rows — the attack does not come back with it. That is the
+dissociation C9 exists to state, and it is now derived from the artifacts rather than read from the
+ledger.
+
+**C-20 independently re-confirmed en route.** `q6bj_rescueL5` carries **ref = 15**, identical to
+`q6bj_knock`'s **15** — the below-band arm is byte-identical to knockout-only, exactly as C-20 found
+when withdrawing C9's specificity leg. I did not go looking for that; it fell out of enumerating the
+cells, which is the cheapest kind of corroboration.
+
+⚠ **One imprecision of my own, caught before it reached the entry.** My first pass divided by a margin
+rounded to **8.3**, giving 2.17× and a spurious disagreement with the ledger's 2.16. The margin is
+`0.0521 × 160 = 8.336`. **Rounding an input before dividing manufactured a mismatch in the last
+digit** — the same shape as C-105's unit error, and the reason the ledger's range is right and my
+first reading of it was not.
