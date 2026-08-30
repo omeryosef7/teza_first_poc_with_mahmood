@@ -3322,3 +3322,113 @@ estimand**. It asks only whether the low baseline ASR is dose- or concept-driven
 `main` banks regenerate byte-identically (`tests/test_bank_regenerates_byte_identically.py`);
 `check_all.py` exits 0 on all 9 guards; the commit hook runs 290 tests; and both RBD banks pass
 `rbd_bank_audit.py --expect rows=960,domains=20,stems=80,attack_rows=80`.
+
+---
+
+## §14.36 — `RBD-R-032` · **H4: the T3 failure REPLICATES on Qwen3-14B, far more strongly** · 2026-08-30 04:10 IDT
+
+All 8 Qwen3 readout runs complete. Readouts need no judge, so H4's **binding** replication is
+available now. Bands as preregistered: `7-17`, late control `27-37` (the `RBD-C-009` amendment).
+
+### Qwen3-14B × `lantern_poison` (baseline installs 75/80, critical_k = 50)
+
+| arm | BINDING | Δ | envelope | n10/n01 | verdict |
+|---|---|---|---|---|---|
+| **B `demo_processing_only` 7-17** | **75 → 9** | **−0.8250** | **[−0.9125, −0.7146]** | **66 / 0** | **WORSE_THAN_MARGIN** |
+| **C late band 27-37** | **75 → 75** | **+0.0000** | [−0.0401, +0.0401] | **0 / 0** | **EQUIVALENT** |
+| D `legacy_all_query` | 75 → 0 | −0.9375 | [−0.9875, −0.8491] | 75 / 0 | WORSE_THAN_MARGIN |
+
+> **T3 fails on BOTH models, and the late-band control is EXACTLY inert on both.**
+> Llama Δ = −0.2125; **Qwen3 Δ = −0.8250** — the intervention removes **66 of 75** binding wins,
+> **zero in the other direction**, and median log-odds fall **+16.62 → −4.99**, i.e. straight
+> through zero. **`demo_processing_only` does not preserve the representation; on Qwen3 it very
+> nearly abolishes it.**
+
+`H4` is satisfied for this claim in the sense §H4 defines — *the same preregistered test run on both
+models* — and both return the same verdict. Verified by raw no-module counts and by median signed
+log-odds, a second code path.
+
+**Qwen3 × `candle_missile` is VOID**: baseline binding **40/80 — exactly chance**. T4 refuses the
+cell for every arm. That bank is weak on Llama (52/80) and dead on Qwen3, and its `RBD-R-028`
+anomaly needs no further explanation than that.
+
+---
+
+## §14.37 — `RBD-C-012` · ⛔ **CORRECTION: `RBD-R-029` is LLAMA-SPECIFIC. Qwen3 DOES compose the mapping.**
+
+Two hours ago I recorded `RBD-R-029` — *installation without use* — as **ESTABLISHED**, scoped to
+"Llama only, Qwen3 pending". **Qwen3 is now in, and it does not replicate. The finding is a property
+of Llama, not of the phenomenon.**
+
+| baseline cell | BINDING | **BENIGN USE** |
+|---|---|---|
+| Llama × `lantern_poison` | 78/80 | **24/80** (log-odds −1.60) — does **not** compose |
+| Llama × `candle_missile` | 52/80 | **3/80** — does not compose |
+| **Qwen3 × `lantern_poison`** | 75/80 | **69/80 (log-odds +6.75)** — **DOES compose** |
+| Qwen3 × `candle_missile` | 40/80 (chance) | 2/80 — cell VOID, baseline never installed |
+
+**Qwen3-14B applies the installed mapping to the benign property question 69 times out of 80.**
+Llama, given the same bank, the same demonstrations and the same question, applies it 24 times out
+of 80 — **below chance**.
+
+**The corrected claim:**
+
+> Whether an installed mapping is *composed* into an unrelated inference is **model-dependent**.
+> On Llama-3.1-8B-Instruct the mapping is reportable at ceiling and is **not** applied. On Qwen3-14B
+> the same mapping is both reportable **and** applied. The dissociation between knowing and using is
+> **real and measurable, and it is a fact about a model rather than about doublespeak.**
+
+⚠ **I was one model away from publishing a general claim about semantic composition that the second
+model contradicts.** The scope caveat I attached ("Llama only; Qwen3 pending") is the only reason
+this reads as a correction rather than a retraction — and it was written because §H4 requires
+cross-model replication, not because I suspected anything. **The lesson is not "add caveats"; it is
+that a single-model finding is a hypothesis, and this sprint's own rules already said so.**
+
+---
+
+## §14.38 — `RBD-R-033` · On Qwen3, USE survives the intervention better than REPORT does — the opposite shape from H1
+
+Because Qwen3's baseline benign-use is real (69/80), **T5 is measurable there rather than VOID**:
+
+| arm (Qwen3 × `lantern_poison`) | BINDING Δ | BENIGN-USE Δ | benign-use verdict |
+|---|---|---|---|
+| **B `demo_processing_only`** | **−0.8250** (75→9) | **−0.1625** (69→56) | NOT_ESTABLISHED (envelope [−0.2875, −0.0500] crosses −0.10) |
+| **C late band** | +0.0000 (75→75) | **−0.0250** (69→67) | **EQUIVALENT** |
+| D `legacy_all_query` | −0.9375 (75→0) | −0.0750 (69→63) | NOT_ESTABLISHED |
+
+Median log-odds under arm B: **binding +16.62 → −4.99** (through zero); **benign-use +6.75 → +2.00**
+(falls, stays positive).
+
+> **The intervention destroys the model's ability to REPORT the mapping far more than its ability to
+> USE it.** Under `demo_processing_only`, Qwen3 loses 66 of 75 binding wins but only 16 of 69
+> benign-use wins — and still answers the property question with the *mapped* option 56 times out of
+> 80 **while being unable to say what the codeword refers to**.
+
+**This is a dissociation, and it is the OPPOSITE ORIENTATION from the one H1 proposed.** H1 wanted
+the representation preserved and the downstream behaviour removed; what is observed is the readable
+representation removed and the downstream use largely retained.
+
+⚠ **A serious alternative explanation, stated because it is not excluded.** The two readouts do not
+ask equally-exposed questions. The **binding** query names *both* the codeword and the concept
+(`occurrence_analysis_safe = False`); the **benign-use** query names *neither*, only two property
+words. A manipulation that masks demonstration→demonstration attention could plausibly degrade the
+query that references the demonstrations' own vocabulary more than one that does not — which would
+produce this pattern **without any dissociation between representation and use.**
+
+**Distinguishing them requires a readout that asks about the mapping WITHOUT naming its two terms** —
+e.g. `semantic_one_word` (*"what does the word X actually refer to?"*), which exists in
+`QUERY_KINDS` and is **not** in the `rbd12` preset. **That is the decisive next experiment**, it is
+cheap (readout-only, no judge), and **it is registered here as `RBD-PR-007` before being run.**
+
+Until it runs, `RBD-R-033` is recorded as an **OBSERVATION, not a claim**, with the confound named.
+
+### Claim state after Qwen3's readouts
+
+| id | claim | status |
+|---|---|---|
+| T3, **both models** | binding preserved under `demo_processing_only` | ⛔ **FAILED on both** (Llama −0.2125; Qwen3 −0.8250) |
+| T3 arm C, **both models** | late-band control preserves binding | ✅ **EQUIVALENT on both**, Δ exactly 0.0000, zero discordant pairs |
+| **`RBD-R-029`** | installation without use | ⚠ **SCOPED TO LLAMA** by `RBD-C-012` — Qwen3 composes at 69/80 |
+| **`RBD-R-033`** | use survives better than report (Qwen3) | 🟡 **OBSERVATION** — confound named, `RBD-PR-007` registered to resolve it |
+| `candle_missile`, **both models** | any readout claim | ⛔ **VOID** — 52/80 on Llama, **40/80 = chance** on Qwen3 |
+| **H1** | representation/behaviour dissociation | ⛔ **OUTCOME A EXCLUDED ON BOTH MODELS**, on conjunct 2 alone |
