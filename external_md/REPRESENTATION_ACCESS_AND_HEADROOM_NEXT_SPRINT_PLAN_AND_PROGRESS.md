@@ -1489,3 +1489,58 @@ result on exactly that ground.
 This is instrument validation only (§9.8: *smoke tests are not pilot science*). It measures no arm,
 supports no claim about representation or behaviour, and its outcome selects only whether Track A
 continues — a decision the brief's §34 gate requires be made before any large causal search.
+
+---
+
+## `RAH-C-003` — `RAH-PR-003`'s judge clause is NOT implementable; the deviation, declared before running — 2026-08-30
+
+**Status: CORRECTION / DEVIATION, declared prospectively.** No judge output exists yet.
+
+`RAH-PR-003` registered:
+
+> **the n = 8 rows are re-judged in the SAME invocation as the n = 16 rows**, one session per
+> (model × bank), 120 rows each (80 at n = 8 + 40 at n = 16), pinned `openai/gpt-4o-mini`
+
+**That cannot be done, and the reason is a guard doing its job.** The two doses live in **different
+banks** — `boombness_prompt_bank_rbd_*` (preset `rbd12`, 960 rows) and
+`boombness_prompt_bank_rbdn16_*` (preset `rbd12_n16`, 480 rows). `judge_boombness.py:487` calls
+`common.compare_bank_hashes(gens_meta, bank_meta, strict=True)`, which **raises** when a run's
+recorded bank does not match the bank passed to the judge. `scripts/judge_p2.sh` takes exactly one
+`P2_BANK` per invocation. A single invocation spanning both doses would be refused — correctly.
+
+Merging the two banks into one file to satisfy the join would produce a third hash matching
+**neither** run, so it fails the same guard. There is no implementable version of the clause.
+
+### What is done instead
+
+**Eight separate `judge_p2.sh` invocations** — 2 models × 2 lexical pairs × 2 doses — each with one
+tag, its own correct `P2_BANK`, its own `P2_EXPECT_ROWS` (80 at n = 8, 40 at n = 16), the **same**
+pinned judge model, the same commit, launched in the same window. **No code change**: `P2_BANK`,
+`P2_MANIFEST`, `P2_EXPECTED`, `P2_PREFIX`, `P2_EXPECT_ROWS` and `P2_PIN_JUDGE_MODEL` are already
+parameters of the existing driver.
+
+### Why this is not a weakening relative to the predecessor sprint
+
+`RBD-DR-004` finding **F10** already established that *"one invocation per bank" is literally FALSE*
+for the RBD sprint: it ran **five `judge_boombness` invocations per (model, bank)**, one per arm, and
+the measured drift is **per invocation**. So the RBD sprint's own arm-to-arm comparisons were already
+cross-invocation. This design has the same structure — the difference is that it is **stated here in
+advance** rather than discovered by an auditor afterwards.
+
+### What is gained, and how the noise is handled
+
+Re-judging the n = 8 rows produces a **direct measurement of cross-invocation drift on the exact rows
+being compared**, at the same commit and pinned model. The `RBD-PR-005` verdict is therefore reported
+as:
+
+> the n = 16 − n = 8 difference, **against the measured re-judge drift on the n = 8 rows themselves**
+
+and a difference not exceeding that drift is reported as **not resolvable**, never as a null. This
+also supplies `RAH-PR-006` with a freshly measured judge-noise input on this exact population, which
+§20 requires to be *measured* rather than assumed.
+
+### Scope
+
+The **RBD sprint's published n = 8 ASR figures are not overwritten and not restated.** They remain the
+product of their own sessions. This diagnostic quotes only its own joint-window values, and labels
+them as such.
