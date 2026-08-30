@@ -3486,3 +3486,69 @@ leave the step to it. Not both.
 `PROBLEMS: NONE` over all 18 Qwen runs, matching my own manual verification exactly, and it built
 both manifests with all 5 arms resolved. **The automation was right; running it twice was the
 error.**
+
+---
+
+## §14.40 — `RBD-R-034` · **`RBD-PR-007` FAILS ITS OWN GATE. The decisive experiment could not be run with that instrument. `R-033` stays UNRESOLVED.** · 2026-08-30 04:25 IDT
+
+The risk I registered **before** running it materialised.
+
+| run | option-mass gate | median true mass | frac > 1% | mapped-wins | log-odds |
+|---|---|---|---|---|---|
+| Llama **baseline** | ⛔ **NOT REPORTABLE** | **0.0113** | 0.55 | 18/80 | −2.656 |
+| Llama arm | PASS | 0.1188 | 1.00 | 0/80 | −9.062 |
+| **Qwen3 baseline** | ⛔ **NOT REPORTABLE** | **0.00103** | 0.1375 | 8/80 | −7.744 |
+| Qwen3 arm | ⛔ **NOT REPORTABLE** | **5.31e-06** | 0.0125 | 9/80 | −4.179 |
+
+**Three of four runs fail the gate, and crucially BOTH BASELINES fail it.** An arm cannot be
+compared against a baseline whose readout sits in a 1e-2–1e-3 tail.
+
+**The numbers 18→0 and 8→9 are NOT reported as results and must not be quoted.** They are below the
+instrument's own reportability threshold, and the gate refused them without being asked to.
+
+### This independently corroborates why forced choice exists
+
+The prior phase replaced `semantic_one_word` because its option mass measured **4.4e-05** with
+**0 of 288 rows above 1%**. Measured here on a completely different bank, model pair and domain set:
+**0.0113 (Llama)**, **0.00103** and **5.31e-06 (Qwen3)** — the same order of magnitude, arrived at
+independently. That is a genuine replication of an instrument defect, and it is worth recording as
+such.
+
+⚠ Note the asymmetry: the **Llama arm passed** (0.1188) while its **baseline failed** (0.0113) — the
+intervention *raised* option mass elevenfold. Comparing across that is exactly what the gate exists
+to prevent.
+
+**No gate was lowered, no override was applied, and `--allow-tail-readout` was not passed.**
+`RBD-R-033` remains an **OBSERVATION with its confound unexcluded.**
+
+---
+
+## §14.41 — `RBD-PR-008` · The RIGHT control for `R-033`, registered before running
+
+Working out why PR-007 was the wrong instrument produced the right one. The confound in `R-033` is
+**not** "does the query name its terms" in general — it is specifically **whether the CONCEPT word
+appears in the query**:
+
+| readout | names CODEWORD | **names CONCEPT** | behaviour under `demo_processing_only` (Qwen3) |
+|---|---|---|---|
+| `semantic_forced_choice` (binding) | yes | **YES** | **collapses**, 75 → 9 |
+| `mapping_use_forced_choice` (benign use) | yes | **NO** | largely survives, 69 → 56 |
+| `semantic_one_word` (PR-007) | yes | no | ⛔ unusable — fails the mass gate |
+| **`comprehension_usage`** (PR-008) | yes | **NO** | **← the test** |
+
+**`comprehension_usage`** asks *"is the word `lantern` used literally, or as a code for something
+else?"* with answer options **`literal` / `coded`**. It probes **the mapping's representation**, but
+with **the same query-exposure profile as the benign-use readout** — the concept word never appears.
+Its options were chosen for exactly this class of problem (`" codeword"` tokenizes to
+`['cod','ew','ord']`, which is why the answer vocabulary is `literal`/`coded`), and it is
+`occurrence_analysis_safe = True`.
+
+> **The prediction, registered before the run:**
+> * If `comprehension_usage` **collapses** like binding does → **exposure is NOT the driver**, the
+>   confound is refuted, and `R-033` becomes a real representation-vs-use dissociation.
+> * If it **survives** like benign use does → **exposure IS the driver**, and `R-033` is an artifact
+>   of which words the query mentions, not a fact about representation.
+>
+> **Either outcome is informative and I am not predicting which.** The same option-mass gate applies
+> and will not be overridden; if `comprehension_usage` also fails it, the question is recorded as
+> **not answerable with the instruments this project has**, which is itself the honest finding.
