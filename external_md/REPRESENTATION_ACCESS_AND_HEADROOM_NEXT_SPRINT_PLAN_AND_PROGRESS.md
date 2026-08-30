@@ -2437,3 +2437,44 @@ before that data exists, so it cannot later be mistaken for a post-hoc escape ha
 [x] P2   liveness smoke: shapes, hooks, dose, row counts   RAH-R-012  -> PASS
 [ ] P4   TRACK-A FREEZE                                    RAH-PR-005
 ```
+
+---
+
+## `RAH-C-009` — the nuisance run crashed on my own code path; a smoke-discipline lesson — 2026-08-30
+
+**Status: CORRECTION (defect in this sprint's own code). No artifact was produced; no claim affected.**
+
+Job `819307` (Llama, nuisance ensemble) captured **40/40 donors**, built its **8 receiver variants**,
+and then died:
+
+```
+File "src/boombness/rah_transport_assay.py", line 417, in main
+    arms = {"base": vb, "dpo": r["vectors"]["dpo"], ...
+KeyError: 'dpo'
+```
+
+**Cause.** `--nuisance-ensemble` restricts the live arms to `("base",)` — deliberately, so the run
+that produces the equivalence margin cannot see the effect. But the decode loop still referenced the
+`dpo` vector unconditionally. The donor-side controls (`exch`, `mean`, `perm`, `rand`) are derived
+from `base` and were fine; only the **live** arms are conditional.
+
+**Fixed:** the arms dict is built from `base` plus the derived controls, and the live arms are added
+**only if they were constructed**. `819308` (the Qwen3 twin) was cancelled before it reached the same
+line rather than left to burn a GPU allocation on a known crash.
+
+### The lesson, which is the actual finding
+
+> **I smoke-tested the SCRIPT and not the new MODE.** `RAH-R-012`'s smoke exercised the default path
+> (`base, dpo, keys`) and passed cleanly. `--nuisance-ensemble` is a *different code path through the
+> same script*, and it had never been executed before a 40-row, two-model job was submitted on it.
+
+§9.8 says a smoke validates shapes, hooks, liveness and row counts — it does not say *"of the script"*.
+It should be read as **of every path a run can take**. The cost here was one wasted 16-minute weight
+load; the same omission on a path that *silently* produced wrong numbers instead of crashing would
+have been far more expensive. The crash was the good outcome, and only because the missing arm was
+referenced by key rather than defaulted — a `.get("dpo")` there would have produced `None` and, one
+line later, a plausible wrong number. That is the `stats.get(k, 0)` defect class (`RAH-R-002-b`)
+arriving in my own new code.
+
+**Standing rule added for this sprint:** a new *mode*, flag or branch is smoked at minimum size
+before it is run at scale, exactly as a new script is.

@@ -414,14 +414,19 @@ def main():
 
         for i, r in enumerate(donors):
             vb = r["vectors"]["base"]
-            arms = {"base": vb, "dpo": r["vectors"]["dpo"],
+            # Donor-side controls are ALWAYS available (they are derived from `base`); the live
+            # intervened arms are present only when they were constructed. In nuisance-ensemble
+            # mode they never are, so referencing them unconditionally is a crash, not a null --
+            # which is how this was caught (`RAH-C-009`).
+            arms = {"base": vb,
                     "exch": donors[der[i]]["vectors"]["base"],
                     "mean": mean_vec,
                     "perm": vb[perm_dims],
                     "rand": _t.randn(vb.shape, generator=_t.Generator().manual_seed(
                         args.seed + i)) * (vb.norm() / (vb.shape[0] ** 0.5))}
-            if "keys" in r["vectors"]:
-                arms["keys"] = r["vectors"]["keys"]
+            for _live in ("dpo", "keys"):
+                if _live in r["vectors"]:
+                    arms[_live] = r["vectors"][_live]
             for arm, vec in arms.items():
                 probs, logps = decode(vec)
                 out_rows.append({
