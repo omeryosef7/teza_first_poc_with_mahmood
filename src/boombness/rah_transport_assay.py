@@ -151,9 +151,11 @@ def main():
     ap.add_argument("--other-codeword", required=True)
     ap.add_argument("--rotations", type=int, default=2)
     ap.add_argument("--seed", type=int, default=20260830)
-    ap.add_argument("--key-control-arm", default="nondemo_matched_d1",
-                    help="key set for the matched-count control; must be in "
-                         "score_behavior.KNOCKOUT_ARMS")
+    ap.add_argument("--key-control-arm", default="nondemo_capped_d1",
+                    help="key set for the same-band key control. Default is the CAPPED policy: "
+                         "on this population STRICT count-matching is infeasible (the demo block "
+                         "is larger than the entire protected complement), which the run MEASURES "
+                         "per row rather than assuming. See RAH-R-011.")
     ap.add_argument("--tag", default="rahta")
     ap.add_argument("--outdir", default="outputs/boombness/rah_transport")
     args = ap.parse_args()
@@ -202,6 +204,7 @@ def main():
 
     # ---------------- PASS 1: capture donors, one live forward per (row, live arm) -------------- #
     donors = []
+    infeasible_rows = {}
     for row in pop:
         pid = row["prompt_id"]
         try:
@@ -229,17 +232,40 @@ def main():
             problems.append("%s: capture token %r is not a piece of %r" % (pid, piece, codeword))
             continue
 
-        rec = {"prompt_id": pid, "family_id": row["family_id"], "domain": row["domain"],
+        # MEASURED, not assumed: would a STRICT count-matched control have been constructible?
+        _slog = {}
+        try:
+            sb.nondemo_control_draw(dk, len(ids_r), protected=prot, seed=args.seed,
+                                    policy="strict", log=_slog)
+            strict_ok = True
+        except sb.InfeasibleControl:
+            strict_ok = False
+        rec = {"strict_match_feasible": strict_ok,
+               "strict_pool_size": _slog.get("pool_size"),
+               "strict_demo_count": _slog.get("demo_count"),
+               "prompt_id": pid, "family_id": row["family_id"], "domain": row["domain"],
                "split": row["split"], "seq_len": len(ids_r), "capture_pos": p_cw,
                "capture_piece": piece, "n_demo_keys": len(dk), "n_query_span": len(prot),
                "vectors": {}, "liveness": {}}
         for arm in LIVE_ARMS:
             spec, scope = build_arm_spec(arm, args.band, args.key_control_arm)
             kstats = {} if spec else None
-            ctxs = sb.make_intervention(dc, pc, lm, spec, None, control_seed=args.seed,
-                                        demo_keys=dk, seq_len=len(ids_r), knock_stats=kstats,
-                                        protected=prot, knock_scope=scope or "demo_processing_only",
-                                        draw_log={}) if spec else []
+            kdraw = {}
+            try:
+                ctxs = sb.make_intervention(
+                    dc, pc, lm, spec, None, control_seed=args.seed, demo_keys=dk,
+                    seq_len=len(ids_r), knock_stats=kstats, protected=prot,
+                    knock_scope=scope or "demo_processing_only", draw_log=kdraw) if spec else []
+            except sb.InfeasibleControl as e:
+                # A control that CANNOT be constructed on this row is recorded, never skipped
+                # silently and never substituted. `RAH-R-011`.
+                rec.setdefault("infeasible", {})[arm] = str(e)
+                infeasible_rows.setdefault(arm, []).append(pid)
+                continue
+            rec.setdefault("draw", {})[arm] = {
+                k: kdraw.get(k) for k in ("pool_size", "demo_count", "achieved_count",
+                                          "control_draw_match_ratio", "policy", "seed")
+                if k in kdraw}
             cap = ActivationCapture(lm.model, args.donor_layer, [p_cw])
             with torch.no_grad():
                 with contextlib.ExitStack() as st:
@@ -255,8 +281,10 @@ def main():
             rec["vectors"][arm] = v
             rec["liveness"][arm] = liveness_snapshot(kstats or {}, arm, problems,
                                                      "%s/%s" % (pid, arm))
-        if set(rec["vectors"]) != set(LIVE_ARMS):
-            problems.append("%s: incomplete donor set %r" % (pid, sorted(rec["vectors"])))
+        # base and dpo are REQUIRED; a missing key control is degraded, not fatal, and is counted.
+        if not {"base", "dpo"} <= set(rec["vectors"]):
+            problems.append("%s: missing a REQUIRED donor arm; have %r"
+                            % (pid, sorted(rec["vectors"])))
             continue
         vb, vd = rec["vectors"]["base"], rec["vectors"]["dpo"]
         d = (vd - vb)
@@ -330,12 +358,14 @@ def main():
 
         for i, r in enumerate(donors):
             vb = r["vectors"]["base"]
-            arms = {"base": vb, "dpo": r["vectors"]["dpo"], "keys": r["vectors"]["keys"],
+            arms = {"base": vb, "dpo": r["vectors"]["dpo"],
                     "exch": donors[der[i]]["vectors"]["base"],
                     "mean": mean_vec,
                     "perm": vb[perm_dims],
                     "rand": _t.randn(vb.shape, generator=_t.Generator().manual_seed(
                         args.seed + i)) * (vb.norm() / (vb.shape[0] ** 0.5))}
+            if "keys" in r["vectors"]:
+                arms["keys"] = r["vectors"]["keys"]
             for arm, vec in arms.items():
                 probs, logps = decode(vec)
                 out_rows.append({
@@ -380,6 +410,10 @@ def main():
             "n_families_requested": len(pop), "n_families_captured": len(donors),
             "n_rows_written": len(out_rows), "vacuity": vacuity,
             "derangement": der, "problems": problems,
+            "key_control_arm": args.key_control_arm,
+            "key_control_infeasible_rows": {k: len(v) for k, v in infeasible_rows.items()},
+            "strict_match_feasible_rows": sum(1 for r in donors if r.get("strict_match_feasible")),
+            "n_rows_with_key_arm": sum(1 for r in donors if "keys" in r["vectors"]),
             "complete": len(donors) == len(pop) and not problems}
     with open(os.path.join(run, "meta.json"), "w") as f:
         json.dump(meta, f, indent=1)

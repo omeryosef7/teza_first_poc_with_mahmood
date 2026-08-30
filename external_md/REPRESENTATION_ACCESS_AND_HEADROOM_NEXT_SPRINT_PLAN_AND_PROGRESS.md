@@ -2300,3 +2300,66 @@ single deterministic forward and "repeatability" is float jitter.
 [x] P3   Stage-A calibration on LEVEL-A data              RAH-PR-009 / RAH-R-010
 [ ] P4   TRACK-A FREEZE                                   RAH-PR-005
 ```
+
+---
+
+## `RAH-R-011` — the assay's first smoke: the count-matched key control is INFEASIBLE on this population — 2026-08-30
+
+**Status: DIAGNOSTIC (instrument constraint, found by a liveness smoke).** Per §9.8 this smoke was
+read for shapes, hooks, liveness and row counts only — **never** for effect direction.
+
+Job `818854` (Llama × `lantern_poison`, 4 rows, donor L = 14, R = 4) resolved its labels correctly
+and then stopped on a **guard in the existing code, firing correctly**:
+
+```
+score_behavior.InfeasibleControl: nondemo control draw (strict, seed 28180607):
+  query-protected pool 30 < demo count 125. Count-matching is impossible on this row;
+  use a capped arm and read control_draw_match_ratio, or shorten the demos.
+```
+
+### What this means
+
+The same-band key control asks: *is the effect specific to masking DEMONSTRATION keys, or would
+masking an equal number of keys anywhere in the same band do it?* Answering it requires drawing
+**as many** non-demo keys as there are demo keys, from the complement that also excludes the request
+span (`query_span_positions` — excluding it is review finding M1 and is not optional).
+
+On this population that complement is **30 positions against a 125-key demo block**. The control
+**cannot be count-matched**, on this row, at any seed.
+
+> **The RBD population at `n_examples = 8` cannot support a dose-matched non-demo key control.**
+> The demonstration block is roughly **4× larger** than the entire protected complement.
+
+This is a property of the stimulus geometry, not of the intervention, and it is worth stating plainly
+because the predecessor sprint's *exact* dose match (arms B and C identical in `total_prefill_edits`)
+was one of its genuine strengths — and that match was available there only because the control was a
+**different band**, not a different key set. `RAH-DR-001` F2 then established that a different band is
+**vacuous** at a fixed mid-depth capture site. **Both dose-matched controls are therefore unavailable
+to Track A on this population, for two independent reasons.**
+
+### What was done, and what was deliberately not done
+
+The infeasible control is now **recorded, never skipped silently and never substituted**:
+
+* the default key arm becomes the **capped** policy (`nondemo_capped_d1`), which draws what the pool
+  allows and writes `control_draw_match_ratio` on every row;
+* `InfeasibleControl` is caught **per row**, the reason is stored, and the row count for which the
+  arm was unavailable is written into `meta.json`;
+* every row additionally carries a **measured** `strict_match_feasible` flag, obtained by actually
+  attempting the strict draw — so the infeasibility is a measurement in the artifact, not a claim in
+  a comment;
+* `base` and `dpo` remain **required**; a row missing either is dropped with a recorded problem. A
+  missing *key control* degrades the row rather than killing it, and the degradation is counted.
+
+**What was NOT done:** the capped control is **not** presented as dose-matched. A null on an
+under-dosed control is uninterpretable, and `control_draw_match_ratio` is precisely what tells a
+reader how far under-dosed it is. Track A's specificity therefore rests primarily on the **donor-side**
+controls — `exch` (seeded derangement), `mean`, `perm`, `rand`, and the wrong-concept donor — which
+are unaffected by this geometry, with the capped key control reported as a **secondary, explicitly
+under-dosed** check.
+
+### Why the smoke was worth running before any science
+
+It cost one 4-row job and it changed the control family. It also confirmed the parts that matter:
+labels resolved to the frozen ids (`21109/74265/26290/38899`), `R = 4` at depth 0.125 as frozen by
+`RAH-R-010`, band `6-14`, donor layer 14 accepted against `lo = 6`. **No effect direction was read.**
