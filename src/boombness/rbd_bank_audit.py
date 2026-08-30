@@ -51,8 +51,15 @@ VOWELS = set("aeiouAEIOU")
 #: Correct English `an` before an orthographic consonant (silent h, letter names). Without this,
 #: a single `an hour` in any pool sentence fails every bank with no escape hatch, and the failure
 #: reads as a real article defect. `RBD-C-007` (F9).
+#: `RAH-R-003`: "led" added 2026-08-30. The pool sentence "An LED lantern provided crisp
+#: illumination ..." is CORRECT English -- "LED" is a letter-name onset /el/, the same class as the
+#: "x-ray"/"mba"/"fbi" entries already here. It surfaces only at n_examples=16 (`rbd12_n16`), which
+#: draws deeper into the 20-sentence pool than n=8 ever did, so no committed n=8 bank contains it.
+#: Adding it CANNOT weaken the substantive clause: `target_hit` is computed from the raw counters,
+#: not from the allowlisted remainder, so a codeword or concept after a wrong article still fails
+#: even if that word is on this list. `test_allowlisting_a_word_cannot_suppress_clause_3` proves it.
 AN_BEFORE_CONSONANT_OK = {"hour", "hours", "honest", "honestly", "honour", "honourable", "honor",
-                          "honorable", "heir", "heirloom", "x-ray", "mba", "fbi", "hourly"}
+                          "honorable", "heir", "heirloom", "x-ray", "mba", "fbi", "hourly", "led"}
 
 READOUTS = ("behavioral", "semantic_forced_choice", "mapping_use_forced_choice")
 

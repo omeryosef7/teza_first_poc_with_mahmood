@@ -821,6 +821,41 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                                   "mapping_use_forced_choice"],
                      slots=[0, 3])]
 
+    if preset == "rbd12_n16":
+        # RBD-PR-005 -- the n=16 DOSE DIAGNOSTIC, executed by the RAH sprint as `RAH-PR-003`.
+        #
+        # THIS PRESET IS NOT A HEADROOM REMEDY AND MUST NEVER BE USED AS ONE. `RBD-C-011` declared
+        # the n=16 build UNINFORMATIVE BY CONSTRUCTION for headroom -- it HALVES the population --
+        # and `RBD-PR-005` relabelled the same run as an EXPLORATORY diagnostic of one question:
+        # is the low baseline ASR DOSE-driven or CONCEPT-driven? It cannot promote any declined
+        # estimand whatever it shows.
+        #
+        # IDENTICAL to `rbd12` on every axis except the two that the dose forces:
+        #   n_examples [8] -> [16], and slots [0, 3] -> [0].
+        # `_take` starts at (slot*3) % 20 over a 20-sentence per-split pool, so the number of
+        # PAIRWISE DISJOINT slots is floor(20/n) = floor(20/16) = 1. Emitting a second slot here
+        # would emit rows SHARING demonstrations with rows already emitted, which is the exact
+        # failure G2 was retracted for. One slot is the ceiling, not a choice.
+        #
+        # RESULTING POPULATION, stated here because `RBD-C-011` requires any clause naming an
+        # n_examples value to state the family count and row total at the time it is written:
+        #   20 domains x 2 splits x 1 slot = 40 family stems per bank (rbd12 has 80)
+        #   x 4 conditions x 3 query kinds = 480 rows per bank (rbd12 has 960)
+        #   behavioural natural_doublespeak rows: 40 per bank, 80 pooled over both banks
+        # That 80 is exactly the pooled figure `RBD-C-011`'s own table predicted, against the 160
+        # that `rbd12` supplies -- i.e. the population HALVES, which is why it is not a remedy.
+        #
+        # All three query kinds are kept so the bank stays structurally comparable to `rbd12` and
+        # the existing `rbd_bank_audit` readout-coverage check applies unchanged; the diagnostic
+        # itself reads only the behavioural rows.
+        return [dict(name="rbd_core", domains=domains, splits=list(SPLITS),
+                     conditions=list(CORE_2X2), n_examples=[16],
+                     strengths=["none"], consistencies=["consistent"],
+                     positions=["near"], role_styles=["plain"],
+                     query_kinds=["behavioral", "semantic_forced_choice",
+                                  "mapping_use_forced_choice"],
+                     slots=[0])]
+
     if preset == "rbd12_cu":
         # RBD-PR-008. The RIGHT control for RBD-R-033, arrived at after PR-007's instrument failed
         # its own option-mass gate.
@@ -1197,7 +1232,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
     ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre",
-                                         "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu"],
+                                         "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu",
+                                         "rbd12_n16"],
                     default="main")
     ap.add_argument("--n-preamble", type=int, default=None,
                     help="Override main_longpre's preamble length. Required length depends on the "

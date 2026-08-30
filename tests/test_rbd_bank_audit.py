@@ -332,3 +332,36 @@ def test_F9b_a_genuinely_wrong_an_is_still_caught():
     ok, d = rba.check_articles([{"full_prompt": "There was an bunker here."}], "lantern", "poison")
     assert not ok
     assert d["unexpected_an_words"] == {"bunker": 1}
+
+
+# --- RAH-R-003: the "an LED" calibration, and proof it cannot weaken clause 3 ---------------
+
+def test_RAH_an_LED_is_tolerated_as_correct_english():
+    """`an LED` is a letter-name onset, the same class as the x-ray/mba/fbi entries."""
+    ok, d = rba.check_articles(
+        [{"full_prompt": "An LED lantern provided crisp illumination during the audit."}],
+        "lantern", "poison")
+    assert ok, d
+    assert d["an_before_consonant_by_word"] == {"led": 1}, d
+    assert d["unexpected_an_words"] == {}, d
+
+
+def test_MUTANT_allowlisting_a_word_cannot_suppress_clause_3():
+    """The real hazard of an allowlist: it must not be able to hide a CODEWORD defect.
+
+    "led" is on AN_BEFORE_CONSONANT_OK. If the codeword itself were "led", `an led` must STILL
+    fail, because clause 3 reads the raw counters rather than the allowlisted remainder.
+    """
+    assert "led" in rba.AN_BEFORE_CONSONANT_OK
+    ok, d = rba.check_articles([{"full_prompt": "There was an led here."}], "led", "poison")
+    assert not ok, "allowlisting suppressed a codeword article defect -- clause 3 is broken"
+    assert d["codeword_or_concept_flagged"] == {"led": 1}, d
+    assert d["unexpected_an_words"] == {}, "the allowlist should still absorb clause 2"
+
+
+def test_MUTANT_the_article_guard_still_goes_RED_on_a_real_defect():
+    """Executed mutation: a genuinely wrong article on a non-allowlisted word must FAIL."""
+    ok, d = rba.check_articles([{"full_prompt": "There was an switchgear panel."}],
+                               "lantern", "poison")
+    assert not ok
+    assert d["unexpected_an_words"] == {"switchgear": 1}, d
