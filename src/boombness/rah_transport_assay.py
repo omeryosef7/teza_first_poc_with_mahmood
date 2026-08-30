@@ -398,8 +398,28 @@ def main():
                 raise SystemExit("unknown --receiver-form %r" % args.receiver_form)
         for form in forms:
             variants.append((rot, order, form))
-    print("[ta] %d receiver variants = %d option orders x %d wordings"
-          % (len(variants), len(orders), len(variants) // max(1, len(orders))))
+    # `RAH-R-017`. Option-order counterbalancing is INAPPLICABLE to a receiver that names no
+    # options. The `id07*` receivers are the repetition prompt, which contains no labels, so every
+    # rotation renders the SAME text and would emit duplicate rows -- inflating any n counted in
+    # rows rather than families, and implying a counterbalancing that did not happen. Deduplicate
+    # on the rendered text and record how many were collapsed, rather than trusting the caller.
+    seen, uniq, collapsed = {}, [], 0
+    for rot, order, form in variants:
+        txt, _ = pf.render_receiver(dc, tok, form, think)
+        key = (form["name"], txt)
+        if key in seen:
+            collapsed += 1
+            continue
+        seen[key] = True
+        uniq.append((rot, order, form))
+    if collapsed:
+        print("[ta] COLLAPSED %d receiver variant(s) that render IDENTICAL text -- this receiver "
+              "does not name its options, so option order has no effect on the prompt" % collapsed)
+    variants = uniq
+    print("[ta] %d distinct receiver variants (%d option orders x %d wordings requested, "
+          "%d collapsed)" % (len(variants), len(orders),
+                             max(1, len(variants) // max(1, len(orders))) if not collapsed else 1,
+                             collapsed))
 
     for rot, order, form in variants:
         text, adds = pf.render_receiver(dc, tok, form, think)
@@ -504,6 +524,8 @@ def main():
             "nuisance_ensemble": bool(args.nuisance_ensemble),
             "live_arms": list(live_arms),
             "n_receiver_variants": len(variants),
+            "n_variants_collapsed_identical_text": collapsed,
+            "option_order_affects_prompt": bool(collapsed == 0),
             "receiver_variants": sorted(set("%s|rot%d" % (f["name"], r) for r, _o, f in variants)),
             "n_families_requested": len(pop), "n_families_captured": len(donors),
             "n_rows_written": len(out_rows), "vacuity": vacuity,

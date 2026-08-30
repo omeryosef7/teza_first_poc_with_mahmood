@@ -2976,3 +2976,54 @@ Smoke `820831` (Qwen3, the `RAH-PR-011` configuration) is RUNNING, past the GPU 
 repository's own diagnostic (the bar in `.err` distinguishes a hang from slowness) this is
 contention, not a hang: the measured worst case for a contended Qwen3-14B load in this sprint is
 **49 minutes** (job `817148`). **Not cancelled** — the rule is to leave a healthy slow job alone.
+
+---
+
+## `RAH-R-017` — the `RAH-PR-011` configuration smoke PASSES, and exposes a degenerate nuisance axis — 2026-08-31
+
+**Status: DIAGNOSTIC (liveness only, §9.8 — no effect direction read).**
+Smoke `820831`, Qwen3, `id07_tmpl` R = 30, donor L = 34, 4 families.
+
+| check | result |
+|---|---|
+| rows | **56** = 4 families × 7 arms × 2 rotations |
+| `complete` / `problems` | **true** / **`[]`** |
+| geometry | `(patch_at, read_at, hops) = ('last', 'patch', 0)` — **zero attention hops**, correct for `id07_tmpl` and confirming the `RAH-C-013` fix |
+| vacuity at donor L = 34 | **0/4 bit-identical**, median rel-delta **0.4073**, median cos **0.9169** — the arms genuinely differ at the selected layer |
+
+### The degenerate axis
+
+`rot0` and `rot1` produced **byte-identical output on all 28 (family × arm) cells**, with identical
+`q_pos` / `read_pos`. The reason is structural:
+
+> **The `id07*` receivers are the repetition prompt. They name NO options.** So option order changes
+> nothing about the prompt, and rotating it emits **duplicate rows**.
+
+This is not a defect in the receiver — **it is the property that makes it worth using.** `RAH-R-014`
+found that the forms detecting the mapped concept are exactly the ones with no labels in the prompt,
+and the untested hypothesis recorded there was that a labelled receiver lets a surface-carrying donor
+win by lexical match. A receiver that names nothing cannot be won that way — and equally, it has no
+option-order nuisance axis.
+
+**Two consequences, both handled rather than noted:**
+
+1. **`S-21` counterbalancing is INAPPLICABLE here.** Claiming it would be false. The
+   `option_order` field on these rows records an order that had **no effect on the prompt**.
+2. **Duplicate rows would inflate any n counted in rows rather than families.** The assay now
+   **deduplicates variants on the rendered receiver text**, reports how many collapsed, and writes
+   `option_order_affects_prompt` and `n_variants_collapsed_identical_text` into `meta.json`. It
+   detects this rather than trusting the caller — the caller asked for 4 rotations and will get 1.
+
+### The `RAH-PR-011` run is launched
+
+Job `821293`: Qwen3-14B, **held-out level-B `lantern_poison`**, 80 families, `id07_tmpl` R = 30,
+donor L = 34 — the configuration selected on level-A `carrot↔bomb` by the rule committed in
+`5eff51fb` and corrected in `RAH-C-012`. Arms: `base`, `dpo`, capped key control, plus the
+donor-side controls.
+
+**Its built-in precondition:** the run measures baseline transport **on the held-out bank**. The
+configuration was chosen on a different lexical pair; if `base` does not transport on
+`lantern_poison`, the configuration did not generalise, and **no Δ is interpreted** — that is a
+transfer failure, not a preservation result.
+
+**Llama remains DECLINED by the rule.** Neither model has yet had an intervened arm interpreted.
