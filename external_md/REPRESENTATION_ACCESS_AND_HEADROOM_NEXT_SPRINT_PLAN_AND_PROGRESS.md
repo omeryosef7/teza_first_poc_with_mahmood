@@ -2570,3 +2570,129 @@ A position change would be a new construction, not a follow-up, and would need i
 [!] P4  TRACK-A FREEZE BLOCKED -- baseline transport fails the precondition
 [~] RAH-PR-010  donor-layer sweep at the codeword position (level-A, base only)
 ```
+
+---
+
+## `RAH-DR-003` / `RAH-C-010` — six of my own published claims were wrong; one correction makes the main result STRONGER — 2026-08-30
+
+**Status: DEEP REVIEW + CORRECTION PASS.** Four read-only lenses (claims · code · quantifiers ·
+corrections) plus an adjudicator, 5 agents, 246 tool calls, over every entry from `RAH-R-008` onward.
+**Every finding below was re-verified by me from raw artifacts before being accepted**, and two of the
+lenses' proposed fixes were themselves wrong and are not applied (see A2).
+
+**No conclusion of the sprint reverses. Six statements were overstated, one control is vacuous, and
+one alternative explanation I said was still open is now CLOSED — against my own null.**
+
+### `A4` — the correction that matters most, and it strengthens `RAH-R-013`
+
+`RAH-R-013` defended a **level-A** null by citing binding **78/80**, which is a **level-B**
+(`lantern_poison`) number. That is exactly the cross-population substitution `RBD-C-017` was raised
+for. The dose-matched **level-A** number exists, and I recomputed it from raw rows
+(`semantic_forced_choice`, `natural_doublespeak`, `A_baseline`, predicate `p_concept > p_codeword`):
+
+| `carrot↔bomb`, level A | n_ex=1 | 2 | 4 | **8 (the assay dose)** |
+|---|---|---|---|---|
+| Llama (`p5A_main_20260828_014436`) | 8/12 | 11/12 | 11/12 | **12/12 = 1.000** |
+| Qwen3 (`q2A_20260825_101300`) | 6/12 | 7/12 | 9/12 | **10/12 = 0.833** |
+
+> **This CLOSES the one alternative explanation I said the layer sweep could not answer.** The
+> mapping **is** installed, at the assay's own dose, on the **same bank** where transport sits at the
+> floor — 12/12 on Llama. So the null is **not** an artifact of a bank that failed to install the
+> mapping. `RAH-R-013` is *stronger* than when it was written, and the `lantern_poison` control I
+> prepared for this purpose is **no longer needed for it**.
+
+### `A1` — "a patch effect, not a prior" is FALSE on Qwen3 as written
+
+I cited the prior on the **concept** to license a claim about the **codeword** argmax. Recomputed
+per rotation, frozen form:
+
+| | Llama unpatched argmax | Qwen3 unpatched argmax | Qwen3 prior P(carrot) |
+|---|---|---|---|
+| rot0 | ticket | **carrot** | **0.0705** |
+| rot1 | ticket | ticket | 0.0275 |
+| rot2 | ticket | ticket | 0.0515 |
+| rot3 | ticket | **carrot** | **0.3123** |
+
+**Corrected:** on **Llama** the unpatched argmax is `ticket` on **160/160** rows, so 40/40 `carrot`
+*is* a patch effect. On **Qwen3** the unpatched receiver already argmaxes `carrot` in **2 of 4
+rotations**, so the argmax alone is not evidence there — the Qwen3 patch effect is the **probability**
+move 0.115 → 0.99999, not the identity of the argmax. **No lens caught this; the adjudicator did.**
+
+### `A2` — the headline table was `rot0` only, labelled as "the frozen configuration"
+
+The frozen configuration is the frozen *form* over **all four rotations** (n = 160), not one rotation
+(n = 40). Recomputed:
+
+| | published (rot0, n=40) | **corrected (frozen form, 4 rotations, n=160)** |
+|---|---|---|
+| Llama argmax | carrot 40/40 | **carrot 160/160** |
+| Llama mean P(codeword) | 0.6987 | **0.6938** |
+| Llama mean P(concept) | 1.6e-05 | **4.373e-06** |
+| Qwen3 mean P(codeword) | 1.0000 | **1.0000** |
+| Qwen3 mean P(concept) | 0.0 | **3.166e-12** |
+
+**The qualitative claim survives unchanged.** ⚠ Two lenses proposed publishing the **8-variant** pool
+instead; that is **wrong** — it includes `fc_probe_last_v2`, which is *not* the frozen configuration
+the sentence is about. Adjudicated from source; the middle column is what is published.
+
+### `A3` — the "~96×" crosses two receiver forms and two donor layers
+
+0.0088 is `fc46 @ R=28, L=19`; 0.8421 is `fc_probe_last @ R=4, L=3`. **Corrected:** like-for-like,
+moving injection R=28 → R=4 takes `fc46` from **0.0088 → 0.2771 (31×)** and `fc_probe_last` from
+**0.0065 → 0.8421 (130×)** — the 130× figure the same entry already states correctly six lines
+earlier. **The 96× must not be quoted.**
+
+### `A5` — "all five recorded positive-control failures" is wrong in count and in mechanism
+
+The corpus holds **seven** artifacts, and `readout_layer` is **`n_layers − 2`** (30) in the two
+`multiconcept_necsuff_llama8b` runs, not `n_layers − 4`. **Corrected:** *"the seven recorded
+positive-control failures, all of which injected within the last 2–4 blocks. **Only the `46`
+configuration was re-run here; the other six are consistent with, not demonstrated by, this
+result.**"*
+
+### `A6` — "Every form works at R = 4–8" is falsified by my own table
+
+`id07_tmpl` has `positive_control_ok = False` at **all five** R (its maximum, 0.0572, is at
+**R = 28**), and `fc46` fails at R = 8. **Corrected:** *"Three of four forms pass at R = 4 and two at
+R = 8; every **passing** form dies at R ≥ 16. An early injection layer is **necessary but not
+sufficient** — `id07_tmpl` fails at every R, so the receiver form matters too."* The heading
+*"it is the RECEIVER INJECTION LAYER, and nothing else"* is withdrawn.
+
+### `B1` — my registered precondition is VACUOUS against two of the controls it names
+
+`rah_transport_assay.py` deranges over the **full** donor list and the receiver prompt is
+family-independent, so `{v_exch}` is a **permutation** of `{v_base}`. Verified directly:
+
+```
+sorted(base p(concept)) == sorted(exch p(concept))  ->  True   (n=160, BOTH models)
+```
+
+**`exch` therefore cannot differ from `base` on ANY aggregate statistic, by construction.** The
+baseline-transport precondition (`RAH-R-012`) names `exch` and `mean` among the controls base must
+clear — **that part of it was unfalsifiable.**
+
+**It does not change the verdict**, because the informative controls are `perm` and `rand`, and base
+sits **below** them (base 4.4e-06 against perm 0.011 and rand 0.030 on Llama). **Corrected:** `exch`
+is a **paired per-family** control only and is removed from the aggregate precondition; the
+precondition now reads *"base must exceed the OFF-MANIFOLD controls (`perm`, `rand`)"*.
+
+### `B2` — the margin is the imported floor; the ensemble contributed almost nothing
+
+`accuracy_by_variant` is **0.0 in 15 of 16** model×variant cells. The single nonzero is Llama
+`fc_probe_last_v2|rot1` = 0.075 = **3 families of 40**. **Corrected:** *"MARGIN = 0.10 is the
+repository's T3/T5 floor. The nuisance ensemble measured s = 0.075 from **one** variant on **one**
+model (3 of 40 families) and did **not** bind. Without the floor, `rule_of_three = 0.075 < 0.075` is
+False and equivalence would be **UNREACHABLE** — the attainability in `RAH-R-013` is supplied by the
+floor, not earned by the ensemble."* Presenting 0.075 and 3/40 as two independent quantities was
+misleading; they are the same three families.
+
+### What this pass says about the sprint
+
+Six overstatements, one vacuous control, **zero arithmetic errors** — the same signature as
+`RAH-DR-002` and as the predecessor sprint's two audits. **The numbers keep being right and the
+sentences around them keep being wrong.** The recurring shape is a claim whose *scope* is wider than
+the population it was computed on (A1, A2, A4, A5, A6) — which is precisely §9.4's quantifier rule,
+and I have now violated it five times in one day despite auditing for it.
+
+**The `lantern_poison` base-transport control is no longer required for `RAH-R-013`** (A4 closed that
+question). It is **not** run.

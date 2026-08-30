@@ -440,6 +440,8 @@ def main():
                     "donor_layer": args.donor_layer, "receiver_R": R, "n_layers": nL,
                     "band": args.band, "attn_implementation": "eager",
                     "capture_pos": r["capture_pos"], "capture_piece": r["capture_piece"],
+                    "donor_seq_len": r["seq_len"], "n_query_span": r["n_query_span"],
+                    "n_demo_keys": r["n_demo_keys"],
                     "q_pos": q_pos, "read_pos": read_pos, "option_order": order,
                     "p": probs, "logp": logps,
                     "option_mass": sum(probs.values()),
