@@ -232,11 +232,17 @@ sprint.**
 
 | # | claim | evidence |
 |---|---|---|
-| **`RBD-R-025`/`R-032`** | **`demo_processing_only` does NOT preserve binding**, on both models | Llama 78→61 (Δ −0.2125, envelope **wholly below** the −0.10 margin, 18 lost / 1 gained, p 7.6e-05); **Qwen3 75→9 (Δ −0.8250, 66/0, log-odds +16.62 → −4.99)**. Late-band control **78→78 and 75→75, Δ exactly 0.0000, zero discordant pairs, on both.** |
+| **`RBD-R-025`/`R-032`** | **`demo_processing_only` does NOT preserve binding**, on both models | Llama 78→61 (Δ −0.2125, envelope [−0.3162, −0.1166], 18 lost / 1 gained, p 7.6e-05); **Qwen3 75→9 (Δ −0.8250, 66/0, log-odds +16.62 → −4.99)**. ⚠ **The Llama upper bound clears the margin by 1.3 of 80 families — two families moving would flip it to `NOT_ESTABLISHED`. Qwen3's is decisive. "Failed on both" must not imply equal weight.** Late-band control **78→78 and 75→75, Δ exactly 0.0000, zero discordant pairs — on the BINDING readout of `lantern_poison` only** (see below). |
 | **`RBD-R-029`** (⚠ **LLAMA ONLY**) | **Installation without use.** Llama reports the mapping and does not apply it | binding 78/80; property known 80/80 (`direct_harmful`); benign use **24/80**, *below chance* and no better than the no-mapping control (32/80) |
 | **`RBD-C-012`** | **Whether a mapping is COMPOSED is model-dependent** | **Qwen3 composes 69/80** (log-odds +6.75) where Llama composes 24/80. Same bank, same demonstrations, same question. |
 | **`RBD-R-036`** | **Behavioural headroom is CONCEPT-driven**, cross-model replicated | `poison`/`missile` give 0.075 (Llama) and 0.031 (Qwen3) baseline ASR against 0.15–0.28 for `bomb` banks, same design/dose/domains/cap/judge |
-| **Readout B is a valid instrument** | measures mapping *use* without touching harm | 1.000/0.950 when the concept is named; **0/80 when no mapping is taught**; option mass 0.64–0.95 |
+| **Readout B is a valid instrument** | measures mapping *use* without touching harm | **1.000/0.950 when the concept is named directly** (`direct_harmful`); option mass 0.64–0.95 on every core run. ⚠ **`RBD-C-015`:** the "0/80 with no mapping taught" validation belongs to the **BINDING** readout, not Readout B — Readout B under `benign_literal` reads **32/80** (`lantern_poison`) and 0/80 (`candle_missile`). |
+
+⚠ **`RBD-C-015` scope correction — "the late-band control is exactly inert on both models" is TRUE
+ONLY for the BINDING readout on `lantern_poison`.** It is **not** inert on benign use (Llama
+24→23, Qwen3 69→67), on ASR (pooled Llama 12→16, Qwen3 5→7), or on `candle_missile` binding
+(Llama 52→49, n10=3). The dose-matching *is* exact — arms B and C have identical
+`total_prefill_edits` per bank — so the band, not the dose, is what differs.
 
 ## 3. FAILED / DECLINED / VOID — and why each is which
 
@@ -248,8 +254,13 @@ sprint.**
   design looks like.
 * **T5 (benign mapping-use) → VOID on all Llama cells** — no baseline use to disrupt. **Measurable on
   Qwen3**, where arm C is `EQUIVALENT` and arm B is `NOT_ESTABLISHED`.
-* **`candle_missile` → VOID on both models.** Baseline binding 52/80 (Llama, passes T4 by two rows)
-  and **40/80 = exactly chance** (Qwen3).
+* **`candle_missile`** — ⚠ **corrected by `RBD-C-015`**: **Llama PASSES T4 there** (52/80 vs
+  `critical_k` 50) and returns **`NOT_ESTABLISHED`** (Δ −0.1250, envelope [−0.2250, −0.0305],
+  crossing the margin). It is **set aside POST HOC** on `RBD-R-028`'s destructive-control
+  incoherence — **a data-derived criterion, not a preregistered gate**. Only **Qwen3** ×
+  `candle_missile` is **T4-VOID** (40/80 = exactly chance). ⚠ The set-aside cell is the one that
+  *least* supports the headline, so the exclusion is outcome-favourable and must be labelled as
+  post hoc wherever it is used.
 
 ## 4. MERELY EXPLORATORY / UNRESOLVED
 

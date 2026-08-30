@@ -3770,3 +3770,77 @@ make the guard pass on a real omission — and it is recorded here so the author
 **What I did NOT do:** bypass the hook with `--no-verify`, or drop the `RBD-R-*` citations from the
 handoff to route around the guard. Either would have "worked" and both would have been the wrong
 move — the first hides a real defect, the second makes the handoff unable to cite its own findings.
+
+---
+
+## §14.46 — `RBD-DR-004` / `RBD-C-015` · **ADVERSARIAL AUDIT OF THE SPRINT'S OWN CLAIMS — six overstatements found in my write-ups, zero errors in the numbers** · 2026-08-30 05:10 IDT
+
+Four read-only auditors recomputed every headline from raw artifacts and attacked the claim state.
+121 tool calls, 312k subagent tokens.
+
+### ✅ Every NUMBER reproduced exactly
+
+All 16 ASR cells; all 24 arm×readout binding/benign counts with n10/n01; all 16 cluster p / k_inf /
+attainable floors to 5 dp; cap and EOS columns; the `RBD-R-029` control table; the PR-007/PR-008
+option-mass table. **50/50 runs DONE, 0 ABORTED, 0 in `EXCLUDED_RUNS.json`.** 46/50 row counts exact
+(the 4 "mismatches" are the `--limit 8` smoke runs, correct by design). **30/30 intervened runs
+satisfy their OWN liveness contract**, `frac_rows_scope_live = 1.0`, `scope_violations = {}`.
+**`--allow-tail-readout` false in all 50 config.json; no override key anywhere.** And the
+completion-hash join was verified **on all 20 judge dirs, 1600/1600 rows matched, 0 mismatched** —
+the join is not merely asserted, the bytes agree.
+
+Two facts the audit added that *strengthen* the work: **arms B and C have IDENTICAL
+`total_prefill_edits` per bank** (Llama 43,100,928; Qwen3 52,688,768), so the late-band control is
+**exactly dose-matched** and differs only in band. And the code-independence claims are structurally
+real: `rbd_verify_independent.py` imports only stdlib.
+
+### ⛔ Six overstatements in my own prose — all now corrected
+
+| # | what I wrote | what the artifacts say | fix |
+|---|---|---|---|
+| **F1** | *"`candle_missile` → VOID on **both** models"* | **Llama PASSES T4** there (52/80 vs critical 50) and returns **`NOT_ESTABLISHED`**. It is set aside on `RBD-R-028` — a **post-hoc, data-derived** criterion, not a preregistered gate. Only Qwen3 is T4-VOID. ⚠ **The set-aside cell is the one that least supports the headline, so the exclusion is outcome-favourable.** | handoff + ledger corrected; labelled post hoc |
+| **F2** | *"the late-band control is **exactly inert on both models**"* | True **only for binding on `lantern_poison`**. Not inert on benign use (24→23, 69→67), on ASR (12→16, 5→7), or on `candle_missile` binding (52→49, n10=3) | scope restored in handoff + ledger (`RBD-R-025b`) |
+| **F3** | the claim ledger | **STALE** — committed before any Qwen3 result, still said *"Qwen3 arms are RUNNING and absent"*, still marked `R-029` ESTABLISHED, missing `R-032`…`R-038` and `C-012`/`013`/`014` | **ledger rewritten at schema /2** |
+| **F4** | Readout B *"0/80 when no mapping is taught"* | That is the **BINDING** readout's number. Readout B under `benign_literal` is **32/80** (`lantern_poison`), 0/80 (`candle_missile`) | corrected |
+| **F5** | main table header *"the COMPLETE preregistered population"* | every row is **n=80, one bank**; the preregistered primary is the **pooled 160** | recorded; the pooled figures live in §14.33/§14.42 |
+| **F6** | *"Llama benign use is **below chance**"* | The instrument's no-mapping null is **~0.40 (32/80)**, not 0.50 — "below chance" invites reading *active avoidance* | corrected to "no better than the no-mapping control" |
+
+Plus three lower-severity items now on the record: **F7** — §14.43 uses the below-gate numbers
+argumentatively despite listing them as unquotable; **F8** — the §14.31 heading *"the direction
+replicates"* survives as standing text that MNQ #2 forbids; **F9** — `paired_equivalence` returns a
+**zero-width CI** for a perfectly concordant symmetric cell (Qwen3 × `candle_missile` arm C, 40/40),
+narrower than its own stated 3/n best case. No live claim rests on any of them.
+
+### `RBD-C-015` **F10 — "one invocation per bank" is literally FALSE**
+
+The artifacts show **five separate `judge_boombness` invocations per (model, bank)** — five run
+dirs, five `run_id`s, five `RUNMETA.json` argv each naming one `--gens`. What is true is **one SLURM
+job, one manifest, one pinned model** per bank (805149 / 805150 / 806491 / 806492).
+
+⚠ **This matters, because the sprint's own measured drift is per-INVOCATION** (6.5–7.0% of rows),
+which at n=80 is ~5 rows — **comparable to the entire baseline event count of 5–12.** §9's
+one-session requirement was satisfied in spirit (one job, one manifest, one pinned model) and **not
+in the letter I claimed**. It is a further reason the behavioural decline is right.
+
+⚠ **Also found and not previously recorded:** Qwen3's two judge jobs span **three different git
+commits** across the five arms of a contrast (`5602cd24` → `c854d6f0` → `38311faa`); Llama's are
+uniform at `b08fe7d8`. Judge model pinned and row counts clean, so this is a provenance caveat, not
+a demonstrated defect.
+
+### The audit's strongest addition to the science
+
+> **On Qwen3, NOT ONE baseline attack survives into ANY arm — including the late-band control that
+> is exactly inert on binding.** Recomputed transitions: arm C base = 5, arm = 7, **down = 5, up =
+> 7, both = 0**. Attack success is **not reproducible arm-to-arm at these rates.**
+
+**This independently corroborates Outcome E and disciplines the Llama result further: the 12-down /
+1-up pattern must NOT be read as a mechanism signature, because the design cannot distinguish it
+from churn.** Added to the decline rationale in the ledger.
+
+### Note on the correction's own status
+
+`RBD-C-015` is the **first correction in this sprint made AFTER results were known** — every earlier
+one was outcome-blind. **Every change it makes tightens a claim rather than loosening one**: a VOID
+becomes a NOT_ESTABLISHED-set-aside-post-hoc, an "inert on both" gains its scope, a validity number
+is re-attributed to the readout it belongs to, and "below chance" becomes "no better than the
+control". **No number moved.**
