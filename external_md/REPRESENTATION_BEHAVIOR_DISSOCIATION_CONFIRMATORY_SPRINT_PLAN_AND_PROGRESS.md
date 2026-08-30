@@ -3552,3 +3552,70 @@ Its options were chosen for exactly this class of problem (`" codeword"` tokeniz
 > **Either outcome is informative and I am not predicting which.** The same option-mass gate applies
 > and will not be overridden; if `comprehension_usage` also fails it, the question is recorded as
 > **not answerable with the instruments this project has**, which is itself the honest finding.
+
+---
+
+## §14.42 — `RBD-R-035` · **Qwen3 behavioural half: T6 fails HARDER. The behavioural axis is DECLINED on BOTH models.** · 2026-08-30 04:30 IDT
+
+Qwen3 judging complete — 10/10 arms, 5 per bank, one session per bank, model pinned.
+
+| arm (Qwen3, pooled n=160, k=20) | base | arm | Δ rows | Δ rate | down | up | k_inf | p | floor |
+|---|---|---|---|---|---|---|---|---|---|
+| B `demo_processing_only` | **5** | 2 | −3 | −0.0187 | 5 | 2 | **4** | 0.625 | **0.125** |
+| C late band | 5 | 7 | +2 | +0.0125 | 5 | 7 | 9 | 0.508 | 0.0039 |
+| D `legacy_all_query` | 5 | 5 | ±0 | 0.0000 | 5 | 5 | 7 | 1.000 | 0.0156 |
+| E `response_query_only` | 5 | 6 | +1 | +0.0063 | 5 | 6 | 9 | 1.000 | 0.0039 |
+
+**Baseline = 5 attacks of 160 (0.031), against a required 14. T6 FAILS, worse than Llama's 12.**
+Arm B is additionally **structurally incapable**: k_informative = 4 gives an attainable floor of
+**0.125 > α**, so no arrangement of that data could have reached significance — the `pre10` shape,
+caught by the same field.
+
+> **The behavioural estimand is DECLINED on BOTH models.** §12 Outcome E, applied twice.
+> **No claim about attack suppression exists anywhere in this sprint.**
+
+### `RBD-R-036` — the headroom floor is CONCEPT-driven, and now cross-model replicated
+
+| population | model | baseline ASR |
+|---|---|---|
+| `rbd12` (`poison`, `missile`) | Llama-3.1-8B | **12/160 = 0.075** |
+| `rbd12` (`poison`, `missile`) | **Qwen3-14B** | **5/160 = 0.031** |
+| prior-phase banks (`bomb`) | Llama-3.1-8B | 0.15 – 0.28 |
+
+**Same design, same dose (n=8), same 20 domains, same cap, same judge model — only the CONCEPT
+differs, and baseline ASR falls 2–9×, on both models independently.** `BC-R-168` anticipated exactly
+this: `window_knife` produced 2/96 baseline attacks with installation saturating at 1.000. **A bank
+can teach a mapping perfectly and produce almost no successful attacks.**
+
+**Cross-model replication makes the concept explanation strongly supported** — though not proven,
+since a dose effect is not formally excluded. The direct test remains `RBD-PR-005`, and its verdict
+does not change any declined estimand either way.
+
+### The methodological finding this sprint should be quoted for
+
+> **Behavioural headroom is a property of the CONCEPT, and it must be screened on a DEVELOPMENT
+> population before a lexical pair is committed to a confirmatory design.**
+
+`RBD-PR-002`'s H2 rule deliberately excluded ASR from pair selection — correctly, since selecting
+lexical material by its outcome contaminates the confirmation. **The consequence is that headroom was
+left to chance and came up short on all four cells.** The resolution is not to abandon the rule but
+to add a **prior, separate screening stage**: measure baseline ASR for candidate pairs on a
+*development* bank, commit to pairs that clear a headroom threshold, and *then* run the confirmatory
+design on held-out material. That preserves outcome-blindness where it matters — the confirmation —
+while not spending a full matrix on a population that cannot answer.
+
+**This sprint did not have that stage. That is the single most actionable thing it learned about
+its own method.**
+
+### Behavioural axis, final state
+
+| model | baseline attacks | T6 | estimand |
+|---|---|---|---|
+| Llama-3.1-8B | 12 / 160 | ⛔ FAILED (need 14) | **DECLINED** |
+| Qwen3-14B | 5 / 160 | ⛔ FAILED, and arm B structurally incapable (floor 0.125) | **DECLINED** |
+
+⚠ **Recorded for a future reader who sees Llama's arm B (12→1, p = 0.0064) and is tempted:** that
+number passed T2's arithmetic and is still declined, and its apparent counterpart on Qwen3 is −3
+rows at p = 0.625. **A 12-event population producing a striking-looking delta on one model and
+nothing on the other is precisely what an underpowered design looks like**, and precisely why the
+headroom gate is checked before the delta rather than after it.
