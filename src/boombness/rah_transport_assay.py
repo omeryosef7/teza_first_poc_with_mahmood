@@ -408,9 +408,19 @@ def main():
         enc = tok(text, return_tensors="pt", add_special_tokens=adds, return_offsets_mapping=True)
         offs = enc.pop("offset_mapping")[0].tolist()
         rids = enc["input_ids"][0].tolist()
-        q_pos = pf.token_index_covering(offs, *pf.find_quoted_probe_span(text, args.probe))
-        pf.assert_token_is_part_of(tok, rids, q_pos, args.probe, "receiver rot%d" % rot)
-        read_pos = len(rids) - 1
+        # `RAH-C-013`. The patch site and the read site are properties of the FORM, not constants.
+        # This loop was written when the receiver was frozen to `fc_probe_last` (patch at a quoted
+        # probe, read at the final position) and hardcoded that geometry. `RAH-PR-011` selected
+        # `id07_tmpl`, whose prompt contains NO quoted probe and which patches the LAST token and
+        # reads AT that same position (zero attention hops). Resolve exactly as the pre-flight does.
+        if form["patch_at"] == "last":
+            q_pos = len(rids) - 1
+        else:
+            a_off, b_off = pf.find_quoted_probe_span(text, args.probe)
+            q_pos = pf.token_index_covering(offs, a_off, b_off)
+            pf.assert_token_is_part_of(tok, rids, q_pos, args.probe,
+                                       "receiver %s rot%d" % (form["name"], rot))
+        read_pos = q_pos if form["read_at"] == "patch" else len(rids) - 1
         inputs = {"input_ids": enc["input_ids"].to(lm.model.device)}
         dtype = next(lm.model.parameters()).dtype
 
@@ -458,7 +468,9 @@ def main():
                     "capture_pos": r["capture_pos"], "capture_piece": r["capture_piece"],
                     "donor_seq_len": r["seq_len"], "n_query_span": r["n_query_span"],
                     "n_demo_keys": r["n_demo_keys"],
-                    "q_pos": q_pos, "read_pos": read_pos, "option_order": order,
+                    "q_pos": q_pos, "read_pos": read_pos, "hops": read_pos - q_pos,
+                    "patch_at": form["patch_at"], "read_at": form["read_at"],
+                    "option_order": order,
                     "p": probs, "logp": logps,
                     "option_mass": sum(probs.values()),
                     "p_unpatched": {w: float(unpatched[label_ids[w]]) for w in labels},

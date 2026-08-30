@@ -2857,3 +2857,53 @@ The assay is now parameterised on `--receiver-form` / `--receiver-R`, with the `
 **base** transport, so Δ = base − dpo is inflated by selection even though `dpo` was never computed
 by the selecting program. The mandatory mitigation — Δ at the selected cell **and** across every
 gate-passing cell — is unchanged and will be reported with the result.
+
+---
+
+## `RAH-C-013` — the assay hardcoded one receiver's geometry; caught by the config smoke — 2026-08-30
+
+**Status: CORRECTION (this sprint's own code). No artifact produced; no claim affected.**
+
+The `RAH-PR-011` configuration smoke (`820496`, Qwen3, `id07_tmpl` R=30, donor L=34) captured its
+donors, passed its vacuity check, and then died:
+
+```
+ValueError: probe 'widget' not present in quotes
+  rah_preflight_transport.py:184 in find_quoted_probe_span
+```
+
+**Cause.** The assay's decode loop was written when the receiver was **frozen** to `fc_probe_last`,
+whose geometry is *patch at a quoted probe, read at the final position*. It hardcoded that. When
+`RAH-R-014`/`RAH-C-012` made the receiver a parameter and `RAH-PR-011` selected **`id07_tmpl`** —
+whose prompt is the repetition prompt `"hello hello\nworld world\ncat cat\nX"`, containing **no
+quoted probe**, and which patches the **last token** and reads **at that same position** (zero
+attention hops) — the hardcoded lookup could not resolve.
+
+**Fixed:** the patch site and read site are now taken from `form["patch_at"]` / `form["read_at"]`,
+exactly as the pre-flight resolves them, and **`patch_at`, `read_at` and `hops` are written onto
+every row** so a downstream analysis cannot assume a geometry it did not verify.
+
+### The pattern, now three for three
+
+This is the third crash caught by a minimum-size smoke (`RAH-R-011` infeasible control, `RAH-C-009`
+nuisance mode, this one), and **all three were loud rather than silent**:
+
+| | what failed | why it was loud |
+|---|---|---|
+| `RAH-R-011` | strict count-matching infeasible | an existing guard raised |
+| `RAH-C-009` | `dpo` absent in nuisance mode | referenced by **key**, not `.get()` |
+| `RAH-C-013` | no quoted probe in this receiver | the resolver **raises** when it finds nothing |
+
+Each would have been a **silent wrong number** under a more permissive idiom — `.get(k, default)`, a
+fallback position, or a `try/except: pass`. That is the same lesson as `RAH-R-002-b`, and it is
+worth stating as a positive rule rather than only as a defect class: **in this codebase, resolvers
+raise and required fields are referenced by key.** The cost of that choice is three crashed smokes;
+the benefit is three numbers that were never published.
+
+The standing rule from `RAH-C-009` — *smoke the mode, not just the script* — is extended: **a new
+CONFIGURATION of an existing mode is also smoked at minimum size.** `RAH-PR-011` changed the receiver
+form, the receiver layer and the donor layer simultaneously; that is a new configuration.
+
+The vacuity check meanwhile passed on the new configuration before the crash: at donor L = 34 with
+band 7-17, **0/4 rows bit-identical, median relative delta 0.4073, median cos 0.9169** — the arms
+genuinely differ at the selected layer.
