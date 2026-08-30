@@ -2226,3 +2226,77 @@ one label gives 0.9078 vs 0.9134 — so the readout is **insensitive to distract
 Qwen3 level-A (`818651/2/3`) is running. The `RAH-PR-009` selection — maximise the **minimum** uplift
 across level-A banks and **both** models — is applied only when those land, and is then frozen as
 part of `RAH-PR-005`.
+
+---
+
+## `RAH-R-010` — Stage-A COMPLETE: the configuration selected by the registered rule — 2026-08-30
+
+**Status: DIAGNOSTIC (instrument selection). P3 complete. This is the INPUT to the `RAH-PR-005`
+freeze, not the freeze itself.**
+
+Six level-A runs (3 banks × 2 models), 20 configurations each, selected by
+`scripts/rah_select_config.py` — a pure deterministic function, 8 unit tests, run over the committed
+grid so a reviewer can re-run it and assert equality.
+
+### Eligible cells, ranked by the rule registered in `RAH-PR-009`
+
+| form | depth | R (Llama/Qwen3) | **min uplift over runs** | min over concepts | min support above band |
+|---|---|---|---|---|---|
+| **`fc_probe_last`** | **0.125** | **4 / 5** | **0.8516** | 0.8516 | **23** |
+| `fc_probe_last` | 0.250 | 8 / 10 | 0.8313 | 0.8313 | 8 |
+| `id07_raw` | 0.125 | 4 / 5 | 0.7376 | 0.7376 | 10 |
+| `fc46` | 0.125 | 4 / 5 | 0.4687 | 0.4687 | 4 |
+| `id07_raw` | 0.250 | 8 / 10 | 0.4492 | 0.4492 | 6 |
+
+11 of 16 cells were **rejected for failing the gate on at least one run** — the rule's whole purpose.
+
+### SELECTED
+
+```
+form            fc_probe_last     (4-way forced choice, probe last, assistant-side "Answer:")
+depth fraction  0.125             -> R = 4 of 32 (Llama), R = 5 of 40 (Qwen3)
+min uplift      0.8516            across ALL SIX level-A runs
+support         23                donor layers ABOVE the intervention band clear the gate,
+                                  on the WORST of the six runs
+```
+
+The winner is not marginal (0.8516 vs 0.8313 for the runner-up) and it is the **same configuration**
+the level-B GO/NO-GO pre-flight found. `RAH-R-008` pre-committed to reporting a disagreement and
+letting level-A win; **there is no disagreement to report.**
+
+`min_uplift_over_runs` equals `min_uplift_over_concepts`, so the `RAH-R-009` donor-set collapse
+(`carrot_bomb` and `basket_bomb` sharing byte-identical donors) **does not change the winner**.
+
+### Anti-fishing, made auditable rather than promised
+
+| requirement (`RAH-DR-001` F10) | how it is met |
+|---|---|
+| the runner cannot compute the `dpo` arm | `grep -cE "intervene\|knockout\|demo_processing_only"` on the Stage-A runner returns **0** — no intervention code path exists |
+| selection is a pure deterministic function with a written tie-break | `scripts/rah_select_config.py::select`, 8 unit tests including one proving **max-min beats max-max**, one proving a cell failing on **one** run is ineligible, and one proving support counts **only** layers above the band |
+| the full grid is committed | `outputs/boombness/rah_stagea/rah_stagea_selection.json` carries `full_table`, all 16 cells, eligible and rejected |
+| level-B cannot leak in | the loader **refuses** any artifact whose bank name contains `rbd` |
+
+### One forced clarification, recorded not applied silently
+
+`RAH-PR-009` wrote the rule over "(form, R)". **R is not commensurable across models** — 32 blocks vs
+40 — and the grid was built as `int(n_layers × f)`. The shared axis is the **depth fraction**, and the
+rule is applied on it. This is an interpretation, not a change: the design already parameterised R by
+fraction. It is written down because an unrecorded interpretation of a registered rule is how a
+preregistration quietly stops binding.
+
+### What is still NOT frozen
+
+`RAH-PR-005` must additionally fix, before any level-C forward pass: the **donor position**; the
+**donor layer set** (constrained `L > lo`); the **control family** as revised by `RAH-DR-001`
+(`D-late` deleted, `D-nomap` / `D-cw` / `D-exch` / `D-mean` / `D-perm` added); the **primary
+estimand** (harm-matched margin per S-1, not bare accuracy); the **statistical test**; and the
+**equivalence margin** — which per F5 must come from a *nuisance ensemble*, since the receiver is a
+single deterministic forward and "repeatability" is float jitter.
+
+### Checklist
+
+```
+[x] P2   GO/NO-GO transport pre-flight, both models       RAH-R-008 / RAH-R-009  -> GO
+[x] P3   Stage-A calibration on LEVEL-A data              RAH-PR-009 / RAH-R-010
+[ ] P4   TRACK-A FREEZE                                   RAH-PR-005
+```
