@@ -202,3 +202,118 @@ and read committed artifacts; the arms need SLURM + GPU.
 discards `P2_*`; zsh does not glob unquoted parameters (build arg lists in Python); `--seed` is inert
 at `--preset main`; `--export` truncates comma values; the full test suite mutates committed files and
 must not run concurrently.
+
+---
+---
+
+# ADDENDUM — Representation–Behavior Dissociation (RBD) confirmatory sprint, 2026-08-29/30
+
+**Everything above this line belongs to the 2026-08-25 behavioral-causality phase and is unchanged.**
+This addendum is a *separate* sprint with its own id namespace (`RBD-PR / RBD-R / RBD-C / RBD-DR`),
+deliberately disjoint from the four colliding registries this repo already carries. **Never write a
+bare `C-12` or `R-25` when citing it.**
+
+* **Authoritative log:** `external_md/REPRESENTATION_BEHAVIOR_DISSOCIATION_CONFIRMATORY_SPRINT_PLAN_AND_PROGRESS.md`
+* **Claim ledger:** `reports/rbd_claim_ledger.json` · **Main table:** `reports/RBD_MAIN_TABLE.md`
+* **Starting commit:** `10fcd035`
+
+## 1. The one-paragraph truth
+
+The sprint asked whether a scoped intervention can **preserve an installed semantic mapping while
+removing the behaviour built on it**. **It cannot — on either model.** `demo_processing_only`
+**damages the representation**: binding falls −0.2125 on Llama-3.1-8B and **−0.8250 on Qwen3-14B**,
+while **the identical scope at a late band is exactly inert on both** (Δ = 0.0000, zero discordant
+pairs). **Outcome A is excluded on the binding conjunct alone.** The behavioural half could not be
+measured at all — baseline attack rates of 12/160 and 5/160 against a preregistered floor of 14 — so
+it is **DECLINED on both models**, and **no claim about attack suppression exists anywhere in this
+sprint.**
+
+## 2. ESTABLISHED
+
+| # | claim | evidence |
+|---|---|---|
+| **`RBD-R-025`/`R-032`** | **`demo_processing_only` does NOT preserve binding**, on both models | Llama 78→61 (Δ −0.2125, envelope **wholly below** the −0.10 margin, 18 lost / 1 gained, p 7.6e-05); **Qwen3 75→9 (Δ −0.8250, 66/0, log-odds +16.62 → −4.99)**. Late-band control **78→78 and 75→75, Δ exactly 0.0000, zero discordant pairs, on both.** |
+| **`RBD-R-029`** (⚠ **LLAMA ONLY**) | **Installation without use.** Llama reports the mapping and does not apply it | binding 78/80; property known 80/80 (`direct_harmful`); benign use **24/80**, *below chance* and no better than the no-mapping control (32/80) |
+| **`RBD-C-012`** | **Whether a mapping is COMPOSED is model-dependent** | **Qwen3 composes 69/80** (log-odds +6.75) where Llama composes 24/80. Same bank, same demonstrations, same question. |
+| **`RBD-R-036`** | **Behavioural headroom is CONCEPT-driven**, cross-model replicated | `poison`/`missile` give 0.075 (Llama) and 0.031 (Qwen3) baseline ASR against 0.15–0.28 for `bomb` banks, same design/dose/domains/cap/judge |
+| **Readout B is a valid instrument** | measures mapping *use* without touching harm | 1.000/0.950 when the concept is named; **0/80 when no mapping is taught**; option mass 0.64–0.95 |
+
+## 3. FAILED / DECLINED / VOID — and why each is which
+
+* **H1 → Outcome A EXCLUDED**, on conjunct 2 alone, independently of everything else.
+* **Behavioural estimand → DECLINED (Outcome E)** on both models. ⚠ **Llama arm B passed every T2
+  criterion** (12→1, Δ −0.0688, 11 rows, cluster p 0.00635, control moving the opposite way) **and is
+  still declined**, because 12 baseline attacks is below the headroom floor fixed before any data
+  existed. **Its Qwen3 counterpart is −3 rows at p = 0.625.** That contrast is what an underpowered
+  design looks like.
+* **T5 (benign mapping-use) → VOID on all Llama cells** — no baseline use to disrupt. **Measurable on
+  Qwen3**, where arm C is `EQUIVALENT` and arm B is `NOT_ESTABLISHED`.
+* **`candle_missile` → VOID on both models.** Baseline binding 52/80 (Llama, passes T4 by two rows)
+  and **40/80 = exactly chance** (Qwen3).
+
+## 4. MERELY EXPLORATORY / UNRESOLVED
+
+* **`RBD-R-033`** — on Qwen3 the intervention destroys *reportability* (75→9) far more than *use*
+  (69→56): a dissociation in the **opposite orientation from H1's**. **NOT ANSWERABLE** with this
+  project's instruments. Two attempts (`semantic_one_word`, `comprehension_usage`) both **fail the
+  option-mass gate on the decisive cell**.
+  **The structural reason, which is the reusable finding:** a readout that **names its options** is
+  high-mass **and** exposure-confounded; one that does not is exposure-clean **and** unreportable.
+  **No readout in this inventory is both.**
+* **`RBD-R-030`** — masking the demonstrations is **not** equivalent to not having them
+  (`benign_literal` 0/80 vs `legacy_all_query` 63/80 on one cell).
+
+## 5. ⛔ MUST NEVER BE QUOTED
+
+1. **Any claim that `demo_processing_only` suppresses the doublespeak attack.** The estimand is
+   DECLINED on both models. The T2 arithmetic passing does not change this.
+2. `candle_missile`'s T3 delta as a replication — the cell is uninterpretable/VOID.
+3. Any **T5** verdict on a Llama cell — VOID for absence of baseline use.
+4. `legacy_all_query` as "the no-mapping control" (`RBD-R-030`).
+5. **`RBD-R-029` as a general claim about composition** — it is Llama-specific (`RBD-C-012`).
+6. The below-gate `PR-007`/`PR-008` numbers (18→0, 8→9, 52→0). They sit in a 0.2–1% option-mass tail
+   and **no gate was overridden to obtain them**.
+7. **T7 (`n_examples=16`) as a headroom remedy** — uninformative by construction (`RBD-C-011`).
+
+## 6. The exact next experiments
+
+1. **Screen behavioural headroom on a DEVELOPMENT population before committing to a lexical pair.**
+   This sprint's H2 rule correctly excluded ASR from *selection*; the cost was that headroom was left
+   to chance and failed on **all four cells**. Add a prior, separate screening stage — it preserves
+   outcome-blindness where it matters (the confirmation) without spending a matrix on a population
+   that cannot answer. **This is the single most actionable methodological finding.**
+2. **Resolve `RBD-R-033` at the ACTIVATION level, not with another readout.** Patching does not
+   depend on what the query mentions, so it sidesteps the mass-vs-exposure trade entirely. The
+   `donor_patch` infrastructure already exists.
+3. **Re-run the confirmatory design with a headroom-screened concept** (e.g. `bomb`-class) on the
+   same 20 held-out domains. The whole apparatus — banks, presets, readouts, analysis, verifier — is
+   built and tested; only the pair changes. ⚠ Do this as a **new** confirmation, not as a rescue of
+   the declined estimand.
+4. **Ask whether the HARMFUL route composes the mapping where the benign route does not** (Llama).
+   `RBD-R-029` shows stage 1 reached and stage 2 not, under a *benign* query. Whether the attack
+   query composes is the sharp open question — and it needs a population with headroom, i.e. (1)
+   first.
+
+## 7. Reusable assets built here
+
+`src/boombness/paired_equivalence.py` (the equivalence test the repo lacked — Newcombe + cluster
+bootstrap, conservative envelope, rule-of-three capability) · `rbd_bank_audit.py` (independent bank
+audit, does not import the generator) · `rbd_analysis.py` (preregistered analysis, committed before
+the data) · `scripts/rbd_verify_independent.py` (imports **none** of the producers; agrees with them
+on 6,000 random cases) · `scripts/rbd_build_judge_manifest.py` (refuses an incomplete input run) ·
+`scripts/rbd_submit_wave.sh` (enforces the SLURM caps in code) · Readout B
+(`mapping_use_forced_choice`) · `asr_protocol`'s **completion-hash join, which was documented but
+never implemented** before this sprint.
+
+## 8. Hazards worth inheriting
+
+* **Each intervention arm has its OWN liveness contract.** `legacy_all_query` legitimately produces
+  ~34M decode edits; `demo_processing_only` legitimately produces none. Applying one scope's
+  must-be-zero rule to every arm produced a false alarm **three times** (`RBD-C-010`).
+* **Pipeline automation and manual execution are mutually exclusive** — running both produced
+  duplicate judge jobs (`RBD-C-013`), caught before any artifact existed.
+* **Any preregistration clause naming `n_examples` must state its resulting family count and row
+  total when written.** Two registered decisions were wrong for want of that check
+  (`RBD-C-004`, `RBD-C-011`).
+* **A self-derived expectation is not an expectation.** An audit whose expected counts come from the
+  rows it is checking will certify a bank missing an entire domain (`RBD-DR-002` F3).

@@ -305,7 +305,13 @@ def test_exempt_keys_are_reachable_by_the_scanner():
 # leans on: if the ledger cites a finding to qualify a claim, the deliverable that states that claim
 # has to state the qualifier too.
 HANDOFF = os.path.join(ROOT, "RESEARCH_HANDOFF.md")
-FINDING_ID = re.compile(r"\bR-(\d+)\b")
+#: A BARE `R-<n>` only. The negative lookbehind is load-bearing: `\b` sits between `-` and `R`,
+#: so the old `\bR-(\d+)\b` matched `R-033` INSIDE `RBD-R-033` and demanded that this phase's
+#: deliverable state a finding "R-33" that belongs to a different sprint's namespace entirely.
+#: Any prefixed id (`RBD-R-*`, `PII-R-*`, `BC-R-*`) tripped it. Found 2026-08-30 when the RBD
+#: sprint -- whose namespace exists precisely to avoid collisions -- collided with the
+#: EXTRACTOR rather than with a human reader. Recorded as RBD-C-014.
+FINDING_ID = re.compile(r"(?<![A-Za-z0-9-])R-(\d+)\b")
 
 
 def _findings_cited_by_the_ledger(handoff_text):
@@ -348,3 +354,25 @@ def test_the_findings_guard_actually_fires_when_one_goes_undelivered():
     assert victim in missing, (
         f"the guard did NOT notice R-{victim} going undelivered; it cannot catch the C-92 failure "
         f"it was written for.")
+
+
+def test_the_extractor_ignores_PREFIXED_namespaces():
+    """RBD-C-014. `\\b` sits between `-` and `R`, so a bare-`R-` pattern matches inside `RBD-R-033`.
+
+    This repo carries four independently numbered registries plus the RBD sprint's prefixed one, and
+    the whole point of a prefix is that `RBD-R-33` and `R-33` are DIFFERENT findings. An extractor
+    that conflates them makes a prefixed namespace unusable in any document this guard reads.
+    """
+    assert FINDING_ID.findall("see R-25 for details") == ["25"]
+    assert FINDING_ID.findall("R-7, R-70 and R-700") == ["7", "70", "700"]
+    for prefixed in ("RBD-R-033", "RBD-R-25", "PII-R-5", "BC-R-25", "V-R-1"):
+        assert FINDING_ID.findall(prefixed) == [], f"{prefixed} must not read as a bare R-id"
+    mixed = "RBD-R-033 qualifies R-25"
+    assert FINDING_ID.findall(mixed) == ["25"], "only the bare id may be extracted"
+
+
+def test_the_prefixed_namespace_guard_is_not_vacuous():
+    """The old pattern MUST fail this, or the fix is untested."""
+    old = re.compile(r"\bR-(\d+)\b")
+    assert old.findall("RBD-R-033") == ["033"], "the defect this pins no longer reproduces"
+    assert FINDING_ID.findall("RBD-R-033") == []

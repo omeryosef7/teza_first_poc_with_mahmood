@@ -3719,3 +3719,54 @@ reproduces perfectly.
 populated from a run — ASR base/arm, Δ rows and rate, cluster p, k_informative, attainable floor,
 T2, headroom, binding and benign-use transitions with verdicts, cap and EOS fractions, hash-join
 status, and each arm's own recorded liveness.
+
+---
+
+## §14.45 — `RBD-C-014` · The handoff commit was **REFUSED by the pre-commit hook**, and the guard was right to fire · 2026-08-30 04:50 IDT
+
+⚠ **I reported deliverable F as committed. It was not.** The pre-commit hook refused it:
+
+```
+FAILED tests/test_my_ledger_propagation.py::test_findings_the_ledger_leans_on_reach_the_deliverable
+[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.
+```
+
+The file was staged, the hook rejected the commit, and `git push` reported *"Everything up-to-date"*
+— which reads like success. **I read the tail of a background log and reported a result that had not
+happened.** Corrected here; the same class of error as `RBD-C-008`, where I wrote "FIXED" for a fix
+that did not exist. **Both times the fix was to check the artifact instead of the sentence.**
+
+### The defect the guard exposed — and it is an ironic one
+
+`FINDING_ID = re.compile(r"\bR-(\d+)\b")` extracts finding ids from `RESEARCH_HANDOFF.md`.
+**`\b` sits between `-` and `R`**, so the pattern matches `R-033` **inside `RBD-R-033`** — and the
+guard then demanded that the *previous phase's* deliverable state a finding "R-33" belonging to a
+different sprint's namespace.
+
+> **The RBD namespace exists precisely to avoid collisions with the four registries already in this
+> repo. It collided with an EXTRACTOR instead of with a human reader.** §21 solved the problem for
+> people and not for regexes.
+
+Any prefixed id trips it — `RBD-R-*`, `PII-R-*`, `BC-R-*` — so this blocks *any* future prefixed
+namespace from appearing in a document this guard reads. That is a defect worth fixing rather than
+routing around.
+
+### The fix
+
+`(?<![A-Za-z0-9-])R-(\d+)\b` — a negative lookbehind, so a bare `R-25` still matches and a prefixed
+`RBD-R-033` does not.
+
+**Two tests added**, per §22:
+* `test_the_extractor_ignores_PREFIXED_namespaces` — bare ids still extract (`R-7`, `R-70`, `R-700`
+  distinctly); five prefixed forms extract nothing; and in `"RBD-R-033 qualifies R-25"` **only the
+  bare id** is taken.
+* `test_the_prefixed_namespace_guard_is_not_vacuous` — asserts the **old** pattern *does* match
+  `RBD-R-033`, so if the defect ever stops reproducing the test says so instead of passing quietly.
+
+**16 tests pass in that file.** ⚠ This edits a guard file belonging to a peer session's work. The
+change strictly *improves* the guard — it removes a mis-attribution, adds no exemption, and cannot
+make the guard pass on a real omission — and it is recorded here so the authorship is not ambiguous.
+
+**What I did NOT do:** bypass the hook with `--no-verify`, or drop the `RBD-R-*` citations from the
+handoff to route around the guard. Either would have "worked" and both would have been the wrong
+move — the first hides a real defect, the second makes the handoff unable to cite its own findings.
