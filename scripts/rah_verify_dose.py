@@ -61,7 +61,7 @@ def main():
     ap.add_argument("--produced", default="outputs/boombness/rah_phase1b/rah_dose.json")
     a = ap.parse_args()
     produced = json.load(open(os.path.join(ROOT, a.produced)))
-    problems = []
+    problems, skipped_intervals = [], []
     # `RAH-C-006` / review S4: refuse to certify a partial population. The producer records how many
     # cells it expected; a verifier that PASSes over half of them is worse than no verifier.
     if not produced.get("complete", False):
@@ -105,14 +105,26 @@ def main():
                                     [r["domain"] for r in rows])
             tl, th = got[key]["ci_domain_cluster"]
             src = got[key].get("ci_interval_source", "MISSING")
+            # `RAH-C-007`. The FIRST version of this branch tested `src != "cluster_bootstrap"`,
+            # but the healthy value `common.py` actually emits is `cluster_percentile_bootstrap`,
+            # so the branch skipped EVERY cell and the run still printed PASS -- a vacuous guard
+            # created by the correction that was supposed to remove one. The test is now on the
+            # DEGENERATE prefixes, which are the enumerable set, so an unrecognised value fails
+            # loudly instead of being waved through.
             if src == "MISSING":
                 problems.append("%s/%s: ci_interval_source not persisted -- the producer may have "
                                 "silently substituted an iid Wilson interval" % (cell, key))
-            elif src != "cluster_bootstrap":
-                # `RAH-C-006` / review F5: the producer fell back to Wilson on a degenerate
-                # bootstrap. Comparing that against a bootstrap here would FAIL a correct cell.
-                print("%-32s %-4s  interval_source=%s -- clustered comparison SKIPPED, flagged"
-                      % (cell, key, src))
+            elif src.startswith("wilson_iid_fallback") or src.startswith("undefined"):
+                # The producer fell back off the cluster bootstrap. Comparing that against a
+                # bootstrap here would FAIL a correct cell, so skip the interval only, and SAY SO.
+                skipped_intervals.append("%s/%s (%s)" % (cell, key, src))
+                print("%-32s %-4s  %2d/%-3d = %.4f   interval_source=%s -- INTERVAL COMPARISON "
+                      "SKIPPED" % (cell, key, k, len(rows), k / len(rows), src))
+                continue
+            elif src != "cluster_percentile_bootstrap":
+                problems.append("%s/%s: unrecognised ci_interval_source %r -- refusing to certify "
+                                "an interval whose provenance this verifier does not know"
+                                % (cell, key, src))
                 continue
             if abs(lo - tl) > 0.02 or abs(hi - th) > 0.02:
                 problems.append("%s/%s: cluster CI mine=[%.4f,%.4f] theirs=[%.4f,%.4f]"
@@ -167,8 +179,13 @@ def main():
         for p in problems[:40]:
             print("  *", p)
         return 1
-    print("\nINDEPENDENT VERIFY (dose): PASS -- counts, rates, ratios, cluster intervals and "
-          "cache accounting all reproduced from raw judge rows by an independent implementation.")
+    n_int = 2 * len(produced["cells"]) - len(skipped_intervals)
+    print("\nINDEPENDENT VERIFY (dose): PASS -- counts, rates, ratios and drift recomputed from raw "
+          "judge rows by an independent implementation.")
+    print("  cluster intervals compared: %d of %d" % (n_int, 2 * len(produced["cells"])))
+    if skipped_intervals:
+        print("  intervals SKIPPED (degenerate bootstrap, producer fell back): %s"
+              % ", ".join(skipped_intervals))
     return 0
 
 

@@ -1870,3 +1870,106 @@ Llama intervals, whose bootstraps were non-degenerate).
 The lesson is the one the predecessor sprint paid for and this sprint has now paid for twice: **the
 defects were all in guards and provenance, not in arithmetic.** Every number my code computed was
 right. What was wrong was what the code *claimed to have checked*.
+
+---
+
+## `RAH-C-007` — my F5 correction created a vacuous guard, caught one tick later — 2026-08-30
+
+**Status: CORRECTION OF A CORRECTION.** This is the failure mode `RBD-C-018` documented and the
+sprint brief §9.5 exists for: *a correction is a new claim and needs the same audit as the claim it
+replaces.*
+
+`RAH-C-006`'s F5 fix taught the dose verifier to skip the clustered-interval comparison when the
+producer had fallen back to an iid Wilson interval. I wrote the test as
+`elif src != "cluster_bootstrap"`. **The healthy value `common.py` actually emits is
+`cluster_percentile_bootstrap`** (`common.py:1479`). So the branch matched **every** cell, skipped
+**every** interval comparison — and the run still printed:
+
+> `INDEPENDENT VERIFY (dose): PASS -- counts, rates, ratios, cluster intervals ... all reproduced`
+
+**8 of 8 interval comparisons were silently skipped under a PASS that claimed them.** A guard that
+matches zero rows and passes is a defect (§9.7); I created one while removing one.
+
+**Fix.** The test is now on the **degenerate** prefixes — `wilson_iid_fallback…` and `undefined…` —
+which are the enumerable set (`common.py:1440, 1450, 1462`), so an **unrecognised** source now fails
+loudly instead of being waved through. The PASS line reports `cluster intervals compared: N of M` and
+names any skipped cell. Re-run: **8 of 8 compared, all match.**
+
+**Why it was caught:** the fix printed a per-cell line saying "SKIPPED", and eight of them appeared
+under a PASS. Making a guard *say what it did not check* is what made a vacuous guard visible.
+
+---
+
+## `RAH-R-007` — `RBD-PR-005` CLOSED: the dose diagnostic does not resolve dose vs concept — 2026-08-30
+
+**Status: EXPLORATORY (inherited). COMPLETE — all four cells. `RBD-PR-005` is CLOSED.**
+
+Producer `scripts/rah_analyze_dose.py` → `outputs/boombness/rah_phase1b/rah_dose.json`
+(`complete: true`, 4/4 cells, `problems: []`). Independently re-derived by
+`scripts/rah_verify_dose.py` — stdlib only, its own cluster bootstrap, refuses an incomplete
+population — **PASS, 8 of 8 cluster intervals compared, every count / rate / ratio / drift figure
+recomputed from raw judge rows.**
+
+### The complete result
+
+| model × bank | n = 8 | n = 16 | ratio | n=16 observed vs flat expectation |
+|---|---|---|---|---|
+| Llama × `candle_missile` | 7/80 = 0.0875 [0.0250, 0.1500] | 8/40 = 0.2000 [0.0750, 0.3500] | **2.29×** | 8 vs 3.5 → **+4.5 rows** |
+| Llama × `lantern_poison` | 7/80 = 0.0875 [0.0375, 0.1375] | 3/40 = 0.0750 [0.0000, 0.2000] | 0.86× | 3 vs 3.5 → −0.5 |
+| Qwen3 × `candle_missile` | 1/80 = 0.0125 [0.0000, 0.0375] | 1/40 = 0.0250 [0.0000, 0.0750] | 2.00× | 1 vs 0.5 → +0.5 |
+| Qwen3 × `lantern_poison` | 3/80 = 0.0375 [0.0000, 0.0750] | 1/40 = 0.0250 [0.0000, 0.0750] | 0.67× | 1 vs 1.5 → −0.5 |
+| **pooled Llama** | 14/160 = 0.0875 | 11/80 = 0.1375 | **1.57×** | |
+| **pooled Qwen3** | 4/160 = 0.0250 | 2/80 = 0.0250 | **1.00×** | |
+
+Intervals are domain-cluster percentile bootstraps, k = 20, `interval_source =
+cluster_percentile_bootstrap` on all eight. Judge pinned `openai/gpt-4o-mini` on 100 % of rows,
+`judge_status: ok` on 100 %, arm `A_baseline` on 100 %, **no filtering of any kind**.
+
+### The verdict, in the registration's own vocabulary
+
+`RAH-PR-003` fixed the interpretation rules before the runs and recorded the attainable resolution:
+**MDE at 80 % power = 2.68× (Llama), 4.10× (Qwen3).** Observed pooled: **1.57×** and **1.00×** —
+both **below** their own thresholds.
+
+> **`RBD-PR-005` DOES NOT MOVE AT A RESOLVABLE SIZE.** Per its registration this licenses
+> *"no LARGE dose effect"* and **never** *"no dose effect"*. It does not resolve whether the low
+> baseline ASR is dose-driven or concept-driven.
+
+**Three of four cells sit within ±0.5 rows of the flat expectation.** Only Llama × `candle_missile`
+deviates (+4.5 rows) — a single cell, against a measured re-judge drift of ~2 rows at n = 80, with
+overlapping domain-cluster intervals ([0.0250, 0.1500] vs [0.0750, 0.3500]), and no preregistered
+threshold to adjudicate it. **It is one cell of four and is not promoted.**
+
+### Bound scope, honoured
+
+`RBD-PR-005` was registered EXPLORATORY and **cannot promote any declined estimand**. The behavioural
+estimand remains **DECLINED** on both models. Nothing here is evidence about attack suppression.
+`RBD-PR-005` is now **CLOSED** and will not be re-run, re-cut, or pooled differently.
+
+⚠ **An observation recorded and deliberately NOT pursued.** The *direction* is bank-consistent across
+models — `candle_missile` up on both (2.29×, 2.00×), `lantern_poison` down on both (0.86×, 0.67×).
+Three of those four movements are ±0.5 rows, i.e. indistinguishable from nothing. Reading a
+bank × dose interaction out of this would be **branching into a new hypothesis on partial data**,
+which §51 of the brief forbids. It is written down here so it is not rediscovered later as if new,
+and it is **not** acted on.
+
+### The reusable number this produced
+
+**Pooled re-judge drift on byte-identical text, freshly measured on the very rows compared:
+11 flips / 299 freshly-judged rows = 0.0368**, direction 4 up / 7 down.
+
+| cell | fresh flips / fresh rows | rate | cached (cannot flip) |
+|---|---|---|---|
+| Llama × `candle_missile` | 2 / 80 | 0.0250 | 0 |
+| Llama × `lantern_poison` | 4 / 59 | 0.0678 | **21** |
+| Qwen3 × `candle_missile` | 0 / 80 | 0.0000 | 0 |
+| Qwen3 × `lantern_poison` | 5 / 80 | 0.0625 | 0 |
+
+This is a **directly measured, pinned-judge, same-commit** noise floor on this exact population, and
+it is what `RAH-PR-006` uses rather than the repository's unsourced 6.5–7.0 % per-invocation figure
+(which `RAH-R-002-f` cited and which has **no committed artifact** behind it — it exists only as a
+hand-assembled table in a prior plan document, from unpinned-era runs).
+
+### Checklist
+
+`[x] P1B  RBD-PR-005 executed as written, then closed  → RAH-R-007`
