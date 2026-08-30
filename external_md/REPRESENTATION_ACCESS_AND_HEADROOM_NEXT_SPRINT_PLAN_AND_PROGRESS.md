@@ -2696,3 +2696,101 @@ and I have now violated it five times in one day despite auditing for it.
 
 **The `lantern_poison` base-transport control is no longer required for `RAH-R-013`** (A4 closed that
 question). It is **not** run.
+
+---
+
+## `RAH-R-014` / `RAH-C-011` — the mapped concept IS transportable from the codeword position; the FROZEN configuration is the wrong instrument for the question — 2026-08-30
+
+**Status: DIAGNOSTIC on level-A development data. `RAH-PR-010` answered. It CORRECTS `RAH-R-013`.**
+
+Runs `basesweep_p_cb_20260830_221814` / `basesweep_q_cb_20260830_222108`: donor =
+`natural_doublespeak` × `behavioral`, `n_examples = 8`, captured at the **codeword** (`' carrot'` on
+every donor), 8 donors, every donor layer × 5 receiver layers × 4 forms. **No intervention exists in
+this program**, so the sweep is effect-blind.
+
+### The answer to `RAH-PR-010`: YES, at some configurations
+
+P(concept = `bomb`), best over donor layers; `*` = passes the three-conjunct gate:
+
+| form | Llama R=4 | R=8 | R=16 | R=24 | R=28 |
+|---|---|---|---|---|---|
+| `id07_raw` | 0.0163 | 0.0282 | 0.0350 | 0.0161 | 0.0236 |
+| `id07_tmpl` | 0.0223 | 0.0304 | 0.0408 | 0.0113 | 0.0174 |
+| **`fc_probe_last`** (FROZEN) | 0.0223 | 0.0086 | 0.0131 | 0.0085 | 0.0071 |
+| `fc46` | 0.1602 | **0.2337\*** | 0.1255 | 0.1022 | 0.0935 |
+
+| form | Qwen3 R=5 | R=10 | R=20 | R=30 | R=36 |
+|---|---|---|---|---|---|
+| `id07_raw` | **0.3127\*** | **0.3214\*** | **0.3361\*** | **0.3886\*** | **0.1875\*** |
+| `id07_tmpl` | **0.4163\*** | **0.4039\*** | **0.4070\*** | **0.4344\*** | **0.2078\*** |
+| **`fc_probe_last`** (FROZEN) | 0.0682 | 0.0933 | 0.0003 | 0.0029 | 0.0022 |
+| `fc46` | 0.0001 | 3.2e-05 | 5.1e-05 | 4.4e-05 | 1.4e-05 |
+
+### `RAH-C-011` — correcting `RAH-R-013`
+
+`RAH-R-013` said:
+
+> *"at this layer and position there is no mapped concept in it to transport"*
+
+**That is too strong and is withdrawn.** The corrected statement:
+
+> **At the FROZEN configuration (`fc_probe_last`, depth 0.125) the codeword-position donor does not
+> transport the mapped concept — on Llama P(concept) 0.022 against P(codeword) 0.037, on Qwen3 0.093
+> against 0.484. But OTHER configurations of the same channel DO transport it: `fc46 @ R=8` reaches
+> 0.2337 on Llama, and `id07_tmpl` reaches 0.4344 on Qwen3, both beating the codeword.**
+
+Everything `RAH-R-013` measured remains correct — including that base sits below the off-manifold
+controls **at the frozen configuration**. What was wrong was the **scope**: a property of one
+configuration was written as a property of the position. That is the fifth instance today of the
+`RAH-DR-003` signature, and it was caught within one tick by the follow-up the stopping rule required.
+
+### The methodological finding, which is larger than this sprint
+
+> **The receiver configuration selected on the POSITIVE CONTROL is the WORST of the four for the
+> actual question.** `fc_probe_last` won Stage A (min uplift 0.8516 across six runs) because it best
+> transports a donor captured at the **concept** token, where the concept is literally present. On a
+> donor captured at the **codeword** token it is last on Qwen3 and third on Llama. The forms that
+> detect the mapped concept — `id07_raw` / `id07_tmpl`, the repetition-style patchscope with **no
+> labels in the prompt** — *lost* Stage A.
+
+A plausible mechanism, **stated as a hypothesis and not tested here**: the 4-way forced-choice
+receiver prints the codeword as one of its options, so a donor carrying that surface token can win by
+lexical match; the repetition receiver names nothing and cannot be won that way. **Not investigated —
+that would be branching on partial data.**
+
+**The consequence is procedural and it binds the rest of the sprint:** validating an instrument on a
+positive control does **not** establish that it is the right instrument for the phenomenon, and
+`RAH-PR-009`'s selection rule — however carefully de-fished — optimised the wrong objective.
+
+### ⚠ What may NOT be done with this
+
+Switching to `id07_tmpl` because it gives a better answer is exactly the form-fishing §14/§35 forbid.
+Worse, `RAH-DR-001` **F10** applies directly: Δ = base − dpo, and selecting a configuration that
+maximises **base** inflates Δ by selection even though `dpo` was never computed.
+
+Also recorded before it can be quoted: **Llama's only passing cell peaks at donor L = 4, BELOW the
+band (`lo = 6`), where base and dpo are bit-identical** — so it is **vacuous for Track A** at its own
+optimum. Above the band only **4 of 24** Llama donor layers clear 0.1 (L = 7, 11, 12, 13). Qwen3's
+passing layers (L = 30–37) are above its band and are **not** vacuous.
+
+### `RAH-PR-011` — registered now, before any intervened arm is run
+
+| | |
+|---|---|
+| question | on a configuration where **baseline transport is established**, does `demo_processing_only` reduce it? |
+| configuration | selected from the **committed** level-A base-only grid by a deterministic rule, **not by eye**; `L > lo` enforced; Llama's below-band optimum is **ineligible** |
+| population | **held-out** — the level-B diagnostic banks, never level A, since level A selected the configuration |
+| mandatory reporting (`RAH-DR-001` F10) | Δ at the selected configuration **and** Δ across **every** gate-passing configuration; if the selected cell is an outlier, say so |
+| selection bias | acknowledged in advance: selecting on **base** inflates Δ. The all-configurations table is the mitigation, and the claim is scoped as *"on configurations where baseline transport is established"*, never as *"the effect"* |
+| Llama status | **may be DECLINED**: 4 of 24 above-band layers clearing 0.1, with the optimum vacuous, may not support a claim. That is decided by the registered rule, not after seeing Δ |
+
+**The `RAH-PR-005` freeze remains BLOCKED** and `fc_probe_last` is **not** frozen for this question.
+
+### Checklist
+
+```
+[x] RAH-PR-010  donor-layer sweep at the codeword position   -> RAH-R-014: transport EXISTS
+[x] RAH-C-011   RAH-R-013 narrowed from "the position" to "the frozen configuration"
+[ ] RAH-PR-011  intervened arm on a transport-established configuration, held-out
+[!] P4  TRACK-A FREEZE still blocked
+```
