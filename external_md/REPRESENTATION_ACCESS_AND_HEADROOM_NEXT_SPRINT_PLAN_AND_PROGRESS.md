@@ -3027,3 +3027,96 @@ configuration was chosen on a different lexical pair; if `base` does not transpo
 transfer failure, not a preservation result.
 
 **Llama remains DECLINED by the rule.** Neither model has yet had an intervened arm interpreted.
+
+---
+
+## `RAH-R-018` — `RAH-PR-011` returns **A-IV / CANNOT ANSWER**: the configuration does not transfer, and the exposure/mass dilemma RECURS at the activation level — 2026-08-31
+
+**Status: CONFIRMATORY-ATTEMPT → DECLINED (outcome A-IV, "assay invalid / cannot answer"), exactly
+as preregistered. This is a sourced negative, not a null.**
+
+Run `pr011_q_lp_20260831_002047`, job `821293`: Qwen3-14B, **held-out level-B `lantern↔poison`**,
+**80/80 families**, 560 rows, `problems: 0`, vacuity clean (0/80 bit-identical, median rel-delta
+0.4073, cos 0.9144). The configuration — `id07_tmpl`, R = 30, donor L = 34 — was selected on level-A
+`carrot↔bomb` by the rule committed before it was applied.
+
+### The precondition fails on the held-out bank
+
+| arm | median option mass | rows ≥ 0.05 gate | mean P(concept) |
+|---|---|---|---|
+| `base` | **7.147e-08** | **0 / 80** | 1.788e-07 |
+| `dpo` | 5.097e-08 | 0 / 80 | 1.278e-11 |
+| `keys` | 8.721e-08 | 0 / 80 | 1.530e-07 |
+| `exch` / `mean` / `perm` / `rand` | 1.06e-07 – 3.63e-07 | 0 / 80 | ≤ 1.0e-06 |
+
+**Median option mass 7.1e-08 against a 0.05 gate — six orders of magnitude below it, on every arm,
+with 0 of 80 rows above gate.** The four option words carry essentially no probability at the read
+position. The readout is entirely in the far tail and is **not reportable**.
+
+On level A the *same* configuration reached P(concept) = **0.4344**. It does **not transfer** to the
+held-out lexical pair.
+
+### ⚠ The number that must NOT be quoted
+
+The argmax over the four options *does* shift dramatically between arms:
+
+```
+base  ->  poison 36 / candle 26 / lantern 18
+dpo   ->  lantern 61 / candle 19        (poison: 0)
+```
+
+That looks like a large, clean intervention effect — **and it is computed over probabilities of order
+1e-8.** Quoting it would be precisely the below-gate reporting `RBD-C-019` was raised for. **It is
+recorded here only so that it is on the record as NOT USED.** No Δ is computed, no equivalence test
+is run, and the registered precondition — *"if `base` does not transport on the held-out bank, no Δ
+is interpreted"* — is honoured.
+
+### The structural finding, and it is the sprint's most transferable result
+
+The predecessor sprint closed `RBD-R-033` with a structural claim about **behavioural** readouts:
+
+> *A readout that names its options is high-mass and exposure-confounded; one that does not is
+> exposure-clean and unreportable. No readout in this project's inventory is both.*
+
+and concluded the route out was **activation-level patching**. This sprint built that route. The same
+dilemma reappeared, one level down:
+
+| receiver | names its options? | exposure | outcome |
+|---|---|---|---|
+| `fc_probe_last` | **yes** | confounded — a surface-carrying donor can win by lexical match | transports the **codeword**; baseline transport of the concept fails (`RAH-R-013`, `RAH-C-011`) |
+| `id07_tmpl` | **no** | clean | transports the concept on level A (0.4344) — **unreportable on held-out material, mass 7.1e-08** |
+
+> **The exposure/option-mass dilemma is not a property of behavioural readouts. It recurred at the
+> activation level, in a donor→receiver patchscope, on the first held-out test.** That is a
+> substantially stronger and more general statement than `RBD-R-033`, and it was obtained by
+> building the instrument the predecessor sprint recommended and running it to a held-out
+> conclusion.
+
+### Track-A status
+
+**Both routes are now closed on this construction:**
+
+1. the configuration selected on the **positive control** (`fc_probe_last`) fails the
+   baseline-transport precondition — it moves the **codeword**, not the mapped concept;
+2. the configuration selected on **baseline transport** (`id07_tmpl`) transports on the selection
+   bank and is **unreportable on held-out material**.
+
+Per §8's stopping rule this is where Track A stops on this design. **We do not search further
+receiver forms, donor layers or lexical pairs to find a reportable cell** — that is the post-hoc
+rescue loop §56 prohibits, and every additional search would inherit the F10 selection bias already
+declared.
+
+**What is NOT concluded:** that the representation does not exist. The mapping is demonstrably
+installed on both banks (level-A binding 12/12 Llama, 10/12 Qwen3; level-B 78/80, 75/80). What is
+established is about the **instrument**: this donor→receiver construction cannot deliver a reportable
+measurement of mapped-concept transport on held-out material, on either of its two viable
+configurations.
+
+### Checklist
+
+```
+[x] P2/P3  assay built, validated, calibrated                  RAH-R-008..012
+[x] P4-attempt  RAH-PR-011 on held-out material                RAH-R-018 -> A-IV, CANNOT ANSWER
+[-] P4   TRACK-A FREEZE  -- not reached; Track A stops here on this construction
+[x] Track-A verdict: A-IV, with a transferable structural finding
+```
