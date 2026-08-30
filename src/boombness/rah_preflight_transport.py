@@ -80,29 +80,70 @@ def receiver_forms(concept, codeword, other_concept, other_codeword, probe):
 
     `read_at` is 'patch' (read the logits at the patched position -- zero hops, 07's geometry) or
     'final' (read at the last position -- 46's geometry).
+
+    `body` is the USER message. `suffix` is appended AFTER chat templating, i.e. on the ASSISTANT
+    side -- `RAH-C-006` / review F3. `score_behavior.next_token_readout:85` implements the validated
+    form as `tokenizer(templated + answer_prefix, add_special_tokens=False)` and its comment records
+    why (as_is 1.4e-2 -> forced 0.979): with the prefix inside the user turn, templating appends the
+    assistant header and the read position lands on the trailing newline, not on the answer slot.
+    An empty suffix means the form reads at the patched position and needs no prefix.
     """
-    labels = f'"{concept}", "{codeword}", "{other_concept}" or "{other_codeword}"'
+    labels = '"{a}", "{b}", "{c}" or "{d}"'.format(a=concept, b=codeword,
+                                                   c=other_concept, d=other_codeword)
     return [
-        # zero hops, raw string, no chat template -- 07 exactly
+        # zero hops, RAW string, no chat template -- 07 exactly. `templated=False` also selects
+        # add_special_tokens=True at the call site, because 07 tokenizes this prompt WITH BOS
+        # (review F1); dropping BOS would mean the one configuration that has ever passed a
+        # positive control here was not actually reproduced.
         {"name": "id07_raw", "templated": False, "read_at": "patch",
-         "text": ID_PROMPT, "patch_at": "last"},
+         "body": ID_PROMPT, "suffix": "", "patch_at": "last"},
         # zero hops, chat-templated (does the template alone break it?)
         {"name": "id07_tmpl", "templated": True, "read_at": "patch",
-         "text": ID_PROMPT, "patch_at": "last"},
-        # few hops: probe LAST, options BEFORE it, explicit answer prefix
+         "body": ID_PROMPT, "suffix": "", "patch_at": "last"},
+        # few hops: probe LAST in the user turn, options before it, ASSISTANT-side answer prefix
         {"name": "fc_probe_last", "templated": True, "read_at": "final",
-         "text": (f'Labels: {labels}. '
-                  f'Choose one label only and answer with just that label. '
-                  f'Which label describes the word "{probe}"? Answer:'),
-         "patch_at": "probe"},
+         "body": ('Labels: {L}. Choose one label only and answer with just that label. '
+                  'Which label describes the word "{p}"?').format(L=labels, p=probe),
+         "suffix": "Answer:", "patch_at": "probe"},
         # 46's geometry: probe FIRST, ~40 tokens upstream of the read position. The known failure,
         # kept as the comparison point so this run reproduces the archive rather than asserting it.
         {"name": "fc46", "templated": True, "read_at": "final",
-         "text": (f'Consider the word "{probe}" on its own. '
-                  f'Choose one label only and answer with just that label. '
-                  f'Does the word "{probe}" refer to {labels}?'),
-         "patch_at": "probe"},
+         "body": ('Consider the word "{p}" on its own. Choose one label only and answer with just '
+                  'that label. Does the word "{p}" refer to {L}?').format(p=probe, L=labels),
+         "suffix": "Answer:", "patch_at": "probe"},
     ]
+
+
+def render_receiver(dc, tok, form, think):
+    """Build the receiver string exactly as the repo's validated readout does.
+
+    Templated forms: apply_template(body) + suffix, tokenized add_special_tokens=False (the template
+    already carries BOS). Untemplated forms: the raw body, tokenized WITH specials, matching 07.
+    """
+    if form["templated"]:
+        return dc.apply_template(tok, form["body"], enable_thinking=think) + form["suffix"], False
+    return form["body"], True
+
+
+def assert_thinking_actually_off(dc, tok, body, think):
+    """`RAH-C-006` / review S1: test the EFFECT, not the presence of a tag.
+
+    `ds_common.apply_template` SWALLOWS TypeError/ValueError when a tokenizer rejects
+    `enable_thinking` and silently falls back to a plain call -- so a rendered string containing no
+    `<think>` at all is indistinguishable from "thinking is off", and the old guard (open tag present
+    AND close tag absent) could never fire in either real state. Compare the two renderings instead.
+    """
+    if think is not False:
+        return {"checked": False, "reason": "enable_thinking not requested False"}
+    t_off = dc.apply_template(tok, body, enable_thinking=False)
+    t_def = dc.apply_template(tok, body, enable_thinking=None)
+    if t_off == t_def:
+        raise SystemExit("enable_thinking=False had NO EFFECT on the rendered template -- the "
+                         "tokenizer silently ignored the kwarg (ds_common.apply_template swallows "
+                         "it). Refusing to run: on Qwen3 the read position would be <think>.")
+    if "</think>" not in t_off:
+        raise SystemExit("enable_thinking=False changed the template but did not close <think>")
+    return {"checked": True, "differs_from_default": True, "think_block_closed": True}
 
 
 def find_quoted_probe_span(text, probe):
@@ -224,12 +265,10 @@ def main():
     results = []
 
     for form in forms:
-        text = form["text"]
-        if form["templated"]:
-            text = dc.apply_template(tok, text, enable_thinking=think)
-            if think is False and "<think>" in text and "</think>" not in text:
-                raise SystemExit("enable_thinking=False did not close <think> (FATAL-8)")
-        enc = tok(text, return_tensors="pt", add_special_tokens=False,
+        text, add_specials = render_receiver(dc, tok, form, think)
+        think_check = (assert_thinking_actually_off(dc, tok, form["body"], think)
+                       if form["templated"] else {"checked": False, "reason": "untemplated"})
+        enc = tok(text, return_tensors="pt", add_special_tokens=add_specials,
                   return_offsets_mapping=True)
         offsets = enc.pop("offset_mapping")[0].tolist()
         rids = enc["input_ids"][0].tolist()
@@ -271,17 +310,37 @@ def main():
                     "p_codeword_mean": sum(x["p_codeword"] for x in ps) / len(ps),
                     "option_mass_mean": sum(x["option_mass"] for x in ps) / len(ps)})
             best = max(per_layer, key=lambda r: r["p_concept_mean"])
+            # `RAH-C-006` / review F2. The gate must measure TRANSPORT, not the receiver's lexical
+            # prior. `fc_probe_last` and `fc46` PRINT all four labels in the prompt, so the
+            # UNPATCHED probability of the concept is order 1/4 -- already far above a 0.1 absolute
+            # threshold. Gating on the level alone would return GO for a receiver that ignores the
+            # patch entirely, which is exactly the failure this whole pre-flight exists to detect.
+            # Three conjuncts, all required:
+            #   (i)   the patched level clears the threshold at all,
+            #   (ii)  the patch RAISES it over the unpatched prior by more than the threshold,
+            #   (iii) the concept beats the codeword -- the donor's meaning wins the forced choice.
+            p_unpatched = base_dist[concept]
+            uplift = best["p_concept_mean"] - p_unpatched
+            ok = bool(best["p_concept_mean"] > POSITIVE_CONTROL_THRESH
+                      and uplift > POSITIVE_CONTROL_THRESH
+                      and best["p_concept_mean"] > best["p_codeword_mean"])
             rec = {"form": form["name"], "read_at": form["read_at"], "templated": form["templated"],
                    "R": R, "n_layers": nL, "q_pos": q_pos, "read_pos": read_pos,
                    "recv_seq_len": len(rids), "hops": read_pos - q_pos,
+                   "add_special_tokens": add_specials, "thinking_check": think_check,
                    "unpatched_option_mass": base_mass, "unpatched_dist": base_dist,
-                   "pos_ctrl_max": best["p_concept_mean"], "best_donor_L": best["L"],
-                   "positive_control_ok": bool(best["p_concept_mean"] > POSITIVE_CONTROL_THRESH),
+                   "p_concept_unpatched": p_unpatched,
+                   "pos_ctrl_max": best["p_concept_mean"], "uplift_over_unpatched": uplift,
+                   "p_codeword_at_best": best["p_codeword_mean"], "best_donor_L": best["L"],
+                   "positive_control_ok": ok,
+                   "gate_rule": "level > t AND uplift > t AND p_concept > p_codeword",
                    "per_layer": per_layer}
             results.append(rec)
-            print("[pf] %-14s R=%-3d hops=%-3d  pos_ctrl_max=%.4g @L%-3d  mass(unpatched)=%.3f  %s"
-                  % (form["name"], R, rec["hops"], rec["pos_ctrl_max"], rec["best_donor_L"],
-                     base_mass, "PASS" if rec["positive_control_ok"] else "fail"))
+            print("[pf] %-14s R=%-3d hops=%-3d  p_conc=%.4g (unpatched %.4g, uplift %+.4g) "
+                  "@L%-3d  p_code=%.4g  mass=%.3f  %s"
+                  % (form["name"], R, rec["hops"], rec["pos_ctrl_max"], p_unpatched, uplift,
+                     rec["best_donor_L"], rec["p_codeword_at_best"], base_mass,
+                     "PASS" if rec["positive_control_ok"] else "fail"))
 
     any_pass = [r for r in results if r["positive_control_ok"]]
     out = {"schema": SCHEMA, "model": args.model, "bank": os.path.abspath(args.bank),
@@ -291,6 +350,7 @@ def main():
            "donor_condition": "direct_harmful", "n_donors": len(donors),
            "donors": [{k: v for k, v in d.items() if k != "reps"} for d in donor_reps],
            "R_set": R_SET, "threshold": POSITIVE_CONTROL_THRESH,
+           "gate_rule": "positive_control_ok requires level > t AND uplift over the UNPATCHED prior > t AND p_concept > p_codeword (RAH-C-006 / review F2: an absolute level gate is passed by the receiver's own lexical prior, since the 4 labels are printed in the prompt)",
            "layer_convention": "donor block index L == hidden_states[L+1] == LayerPatch(L) target; "
                                "L capped at n_layers-2 because hidden_states[n_layers] is post-norm",
            "grid": results,

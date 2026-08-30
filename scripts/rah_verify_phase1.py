@@ -246,10 +246,18 @@ def main():
                 if got["counts"][c] != theirs["counts"][c]:
                     problems.append("%s/%s: counts[%s] mine=%r theirs=%r"
                                     % (label, readout, c, got["counts"][c], theirs["counts"][c]))
-            for k in ("delta_arm_minus_base", "mcnemar_exact_p"):
-                if abs(got[k] - theirs[k]) > TOL:
-                    problems.append("%s/%s: %s mine=%.8g theirs=%.8g"
-                                    % (label, readout, k, got[k], theirs[k]))
+            if abs(got["delta_arm_minus_base"] - theirs["delta_arm_minus_base"]) > TOL:
+                problems.append("%s/%s: delta mine=%.8g theirs=%.8g"
+                                % (label, readout, got["delta_arm_minus_base"],
+                                   theirs["delta_arm_minus_base"]))
+            # `RAH-C-006` / review S2: an ABSOLUTE 5e-4 tolerance is VACUOUS for these p-values --
+            # the semantic cells sit at 5e-23..4e-16, so ANY producer value below 5e-4 would pass,
+            # including one computed from the wrong cells. Both sides are exact Fraction-derived
+            # floats, so compare RELATIVELY and tightly.
+            pa, pb = got["mcnemar_exact_p"], theirs["mcnemar_exact_p"]
+            if abs(pa - pb) > 1e-12 * max(abs(pa), abs(pb), 1e-300):
+                problems.append("%s/%s: mcnemar_exact_p mine=%.17g theirs=%.17g"
+                                % (label, readout, pa, pb))
             for k in ("newcombe_ci", "cluster_ci"):
                 for i in (0, 1):
                     if abs(got[k][i] - theirs[k][i]) > TOL:

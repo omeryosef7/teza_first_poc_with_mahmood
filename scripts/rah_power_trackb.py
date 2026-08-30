@@ -84,6 +84,10 @@ def flip_for_asr(p0):
 #: Estimable only on the larger balanced populations; RBD's own baselines cannot estimate it.
 ICC_PRIMARY, ICC_PESSIMISTIC = 0.09, 0.19
 ALPHA, REPS, POWER_TARGET = 0.05, 20000, 0.80
+#: `RAH-C-006` / review F4. mde() used reps//5 internally while the artifact recorded REPS, so a
+#: reader attributed sqrt(5)x more Monte-Carlo precision than existed. The simulation reps are now
+#: a named constant and it is THIS value that is written to the artifact.
+SIM_REPS = max(2000, REPS // 5)
 
 
 def deff(m_per_domain, icc):
@@ -91,7 +95,7 @@ def deff(m_per_domain, icc):
     return 1.0 + (m_per_domain - 1) * icc
 
 
-def mde(sim, n_eff, p0, flip, up_bias=0.0, reps=REPS, seed=20260830):
+def mde(sim, n_eff, p0, flip, up_bias=0.0, reps=SIM_REPS, seed=20260830):
     """Smallest |reduction| reaching POWER_TARGET, by bisection on true_delta (negative)."""
     n_eff = max(8, int(round(n_eff)))
     lo, hi = 0.0, p0                      # cannot reduce below zero
@@ -99,13 +103,13 @@ def mde(sim, n_eff, p0, flip, up_bias=0.0, reps=REPS, seed=20260830):
         return None
     # confirm the ceiling is even attainable
     top = sim(n=n_eff, base_rate=p0, true_delta=-hi, flip_a=flip, flip_b=flip,
-              up_bias_b=up_bias, reps=max(2000, reps // 5), alpha=ALPHA, seed=seed)
+              up_bias_b=up_bias, reps=reps, alpha=ALPHA, seed=seed)
     if top["rejection_rate"] < POWER_TARGET:
         return None                        # not even a total wipeout is detectable
     for _ in range(14):
         mid = (lo + hi) / 2.0
         r = sim(n=n_eff, base_rate=p0, true_delta=-mid, flip_a=flip, flip_b=flip,
-                up_bias_b=up_bias, reps=max(2000, reps // 5), alpha=ALPHA, seed=seed)
+                up_bias_b=up_bias, reps=reps, alpha=ALPHA, seed=seed)
         if r["rejection_rate"] < POWER_TARGET:
             lo = mid
         else:
@@ -176,7 +180,9 @@ def main():
                       "flip_rate_measured_by_asr": [list(t) for t in MEASURED_FLIP_BY_ASR],
                       "flip_symmetric": True, "icc_primary": ICC_PRIMARY,
                       "icc_pessimistic": ICC_PESSIMISTIC, "alpha": ALPHA,
-                      "power_target": POWER_TARGET, "reps": REPS,
+                      "power_target": POWER_TARGET, "reps_per_simulation": SIM_REPS,
+                      "reps_note": "each power evaluation uses reps_per_simulation; at power 0.80 the per-evaluation SE is sqrt(.8*.2/reps). MDE is reported to 4 dp for reproducibility, NOT because it is resolved to 4 dp.",
+                      "mde_bisection_steps": 14, "mde_seed": 20260830,
                       "simulator": "paired_test_noise_sensitivity.simulate (reused, not reimplemented)",
                       "clustering": "design effect DEFF = 1 + (m-1)*ICC applied as n_eff = n/DEFF",
                       "provenance": {

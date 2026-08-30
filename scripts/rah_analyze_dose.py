@@ -106,7 +106,11 @@ def main():
     for (model, pair), (t8, t16, torig) in sorted(CELLS.items()):
         d8, d16, dorig = newest(t8), newest(t16), newest(torig)
         if not d8 or not d16:
-            print("[dose] %s x %s: PENDING (n8=%s n16=%s)" % (model, pair, bool(d8), bool(d16)))
+            # `RAH-C-006` / review S4: a pending cell is a PROBLEM, not a print. Otherwise the
+            # producer exits 0 with problems==[] over half the registered population and the
+            # verifier PASSes over whatever survived.
+            problems.append("%s x %s: PENDING (n8=%s n16=%s)" % (model, pair, bool(d8), bool(d16)))
+            print("[dose] %s x %s: PENDING" % (model, pair))
             continue
         r8, r16 = load(d8), load(d16)
         for rr, key in ((r8, "n8"), (r16, "n16")):
@@ -116,20 +120,29 @@ def main():
         s8 = summarize(r8, "%s/%s/n8" % (model, pair), problems)
         s16 = summarize(r16, "%s/%s/n16" % (model, pair), problems)
 
-        lo8, hi8, k8 = cm.clustered_proportion_ci(
-            [r["malicious_at_0.5"] == 1 for r in r8], [r["domain"] for r in r8])
-        lo16, hi16, k16 = cm.clustered_proportion_ci(
-            [r["malicious_at_0.5"] == 1 for r in r16], [r["domain"] for r in r16])
+        # `RAH-C-006` / review F5. `clustered_proportion_ci` SILENTLY substitutes an iid Wilson
+        # interval when the cluster bootstrap is degenerate (every draw identical, e.g. a 0/40
+        # cell), announcing it only on stdout. Publishing that under a clustered name is exactly
+        # what its own comment warns against, and it also makes an independent verifier FAIL a
+        # correct cell. Capture the provenance and persist it.
+        lo8, hi8, k8, d8g = cm.clustered_proportion_ci(
+            [r["malicious_at_0.5"] == 1 for r in r8], [r["domain"] for r in r8], return_diag=True)
+        lo16, hi16, k16, d16g = cm.clustered_proportion_ci(
+            [r["malicious_at_0.5"] == 1 for r in r16], [r["domain"] for r in r16], return_diag=True)
 
         dr = drift(load(dorig), r8) if dorig else None
         ratio = (s16["asr"] / s8["asr"]) if s8["asr"] > 0 else float("inf")
         cells["%s x %s" % (model, pair)] = {
-            "n8": dict(s8, ci_domain_cluster=[lo8, hi8], n_clusters=k8, judge_dir=os.path.basename(d8)),
+            "n8": dict(s8, ci_domain_cluster=[lo8, hi8], n_clusters=k8,
+                       ci_interval_source=d8g.get("interval_source", "MISSING"),
+                       judge_dir=os.path.basename(d8)),
             "n16": dict(s16, ci_domain_cluster=[lo16, hi16], n_clusters=k16,
+                        ci_interval_source=d16g.get("interval_source", "MISSING"),
                         judge_dir=os.path.basename(d16)),
             "abs_delta_asr": s16["asr"] - s8["asr"], "ratio_n16_over_n8": ratio,
             "delta_rows_per_40": s16["attacks"] - s8["attacks"] / 2.0,
-            "rejudge_drift_on_n8": dr}
+            "rejudge_drift_on_n8": dr,
+            "orig_judge_dir": os.path.basename(dorig) if dorig else None}
         print("[dose] %-13s x %-15s  n8 %2d/%-3d %.4f [%.4f,%.4f]   n16 %2d/%-3d %.4f [%.4f,%.4f]"
               "   ratio %.2fx" % (model, pair, s8["attacks"], s8["n"], s8["asr"], lo8, hi8,
                                   s16["attacks"], s16["n"], s16["asr"], lo16, hi16, ratio))
@@ -158,7 +171,9 @@ def main():
     out = {"schema": SCHEMA, "registration": "RBD-PR-005 executed as RAH-PR-003",
            "no_threshold_note": "RBD-PR-005 names no numeric threshold, margin, alpha or stopping "
                                 "rule. None is invented here. Counts, ratios and intervals only.",
-           "cells": cells, "pooled_per_model": pooled, "problems": problems}
+           "cells": cells, "pooled_per_model": pooled, "problems": problems,
+           "complete": len(cells) == len(CELLS),
+           "n_cells_expected": len(CELLS), "n_cells_present": len(cells)}
     os.makedirs(os.path.dirname(os.path.join(ROOT, a.out)), exist_ok=True)
     with open(os.path.join(ROOT, a.out), "w") as f:
         json.dump(out, f, indent=1)

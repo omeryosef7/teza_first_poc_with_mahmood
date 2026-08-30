@@ -1775,3 +1775,98 @@ Llama baseline ASR 0.1562** (`d38gj_20260829_043706_310488`). Whether it is usab
 
 **Nothing is frozen by this entry.** `RAH-PR-006` will state the minimum headroom, the minimum
 meaningful effect, the required rows and the required domains — after the method is audited.
+
+---
+
+## `RAH-DR-002` / `RAH-C-006` — the self-review of my own code found FIVE fatal defects — 2026-08-30
+
+**Status: DEEP REVIEW + CORRECTION.** Three read-only lenses (numerics · guards-and-vacuity ·
+semantics) plus a synthesis pass, over the five scripts this sprint has written. **4 agents, 130 tool
+calls.** Every finding below was **re-verified by me from source before being accepted** — the brief's
+rule that a correction is itself a claim.
+
+The single most important thing this review establishes: **a running GPU job was executing code that
+could have returned a false GO on the sprint's most important gate.** Job `817661` was cancelled
+mid-flight rather than allowed to write a misleading artifact.
+
+### FATAL — would have changed a number or inverted a verdict
+
+**`F2` — the pre-flight gate could pass with ZERO transport.** `positive_control_ok` tested an
+**absolute** probability, `p_concept > 0.1`. But two of the four receiver forms **print all four
+labels in the prompt**, so the *unpatched* prior on the concept is of order 1/4 — already far above
+the threshold. `base_dist` was computed, stored, and **never used in the verdict**. A receiver that
+ignored the patch entirely would have reported **GO**, on the gate whose entire purpose is to detect
+exactly that. *Fixed:* three required conjuncts — level > t **and** uplift over the unpatched prior
+> t **and** `p_concept > p_codeword`. `p_concept_unpatched` and `uplift_over_unpatched` are now
+persisted per row, and the rule itself is written into the artifact.
+
+**`F3` — the answer prefix was on the wrong side of the chat template, so every `read_at=final`
+probability was measured at the wrong token.** I put `Answer:` inside the **user** message.
+Templating then appends the assistant header, and `read_pos = len-1` lands on the trailing newline.
+Verified by me:
+
+```
+fc_probe_last  last 3 tokens = ['\n\n', 'Answer', ':']   <- AFTER fix
+               (before: ['<|start_header_id|>','assistant','<|end_header_id|>','\n\n'])
+```
+
+`score_behavior.next_token_readout:85` implements the validated form as
+`tokenizer(templated + answer_prefix, add_special_tokens=False)` and its own comment records why
+(`as_is 1.4e-2 → forced 0.979`). *Fixed:* receivers are now built as
+`apply_template(body) + "Answer:"`.
+
+**`F1` — `id07_raw` was not "07 exactly".** I applied `add_special_tokens=False` unconditionally,
+including to the one **untemplated** form. `07_patchscope_readout.py:56` tokenizes that same raw
+prompt with the default `add_special_tokens=True`. Verified: 07 gives `ids[0]=128000
+'<|begin_of_text|>'`, len 11; mine gave `ids[0]=15339 'hello'`, len 10. **The one configuration in
+this repository that has ever passed a patchscope positive control was not actually being
+reproduced.** *Fixed:* `add_special_tokens = not form["templated"]`; verified BOS restored, len 11.
+
+**`F4` — the power artifact claimed 20 000 replicates; every simulation ran at 4 000.** `mde()`
+passed `reps // 5` internally while the artifact recorded `REPS`. A reader would attribute √5 more
+Monte-Carlo precision than exists (per-evaluation SE at power 0.80 is 0.0063). *Fixed:* `SIM_REPS` is
+a named constant, it is what the artifact records, and the artifact now carries an explicit note that
+the MDE is printed to 4 dp for reproducibility, **not** because it is resolved to 4 dp.
+
+**`F5` — `clustered_proportion_ci` silently substitutes an iid Wilson interval** on a degenerate
+bootstrap (e.g. a 0/40 cell), announcing it only on stdout. Publishing that under a *clustered* name
+is what its own comment warns against — and it would have made the independent verifier **FAIL a
+correct cell**. This was prospective-live: both Qwen3 cells were still pending with baselines of
+0.0125 and 0.05, so a 0/40 `n16` cell was entirely plausible. *Fixed:* the producer captures
+`return_diag=True` and persists `ci_interval_source`; the verifier refuses a `MISSING` source and
+skips-with-a-flag when the source is the Wilson fallback.
+
+### SERIOUS — guards that could not fail
+
+**`S1`** — the `enable_thinking` guard tested for an open `<think>` with no close. But
+`ds_common.apply_template` **swallows** `TypeError/ValueError` and falls back to a plain call, so the
+"thinking silently left ON" state contains **no `<think>` at all** and the guard was silent in
+exactly the case it names. *Fixed:* the guard now tests the **effect** — render with
+`enable_thinking=False` and with `None`, and refuse unless they differ **and** the closed tag is
+present. Verified firing correctly on both models.
+
+**`S2`** — an **absolute** 5e-4 tolerance on the exact McNemar p made that check vacuous for all four
+headline cells (they sit at 5e-23 … 4e-16); any producer value below 5e-4 would have passed,
+including one computed from the wrong cells. *Fixed:* relative comparison at 1e-12. **Re-ran the
+Phase-1 verifier under the tightened rule: still PASS**, so `RAH-R-004`'s numbers are unaffected.
+
+**`S3`** — the dose verifier *printed* the producer's own drift figures and checked only `n_cached`,
+while its PASS text claimed the drift was reproduced. It was an echo, not a verification — and
+`flip_rate_fresh` is quoted downstream in the power analysis. *Fixed:* the producer persists
+`orig_judge_dir`; the verifier loads it and recomputes every drift figure independently.
+
+**`S4`** — a pending cell was skipped with a `print`, so the producer exited 0 with `problems: []`
+over **2 of 4** registered cells and the verifier PASSed over whatever survived. *Fixed:* a pending
+cell is now a recorded problem, the artifact carries `complete`, and the verifier **refuses to
+certify an incomplete population**.
+
+### What this costs, and what it buys
+
+Job `817661` is cancelled and the pre-flight rerun; the Qwen3 judge wave is launched so the dose
+population can complete. **No published number moves** — `RAH-R-004` re-verifies clean under the
+tightened check, and `RAH-R-005`'s counts are unaffected (F5 changes interval *provenance*, not the
+Llama intervals, whose bootstraps were non-degenerate).
+
+The lesson is the one the predecessor sprint paid for and this sprint has now paid for twice: **the
+defects were all in guards and provenance, not in arithmetic.** Every number my code computed was
+right. What was wrong was what the code *claimed to have checked*.
