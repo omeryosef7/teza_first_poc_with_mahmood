@@ -2140,3 +2140,89 @@ equivalence margin.
 
 **If level-A disagrees with the pre-flight's R = 4–8 band, that disagreement is reported as a
 finding, and the level-A answer wins** — the pre-flight is a GO/NO-GO, not a calibration.
+
+---
+
+## `RAH-R-009` — Qwen3 gate PASSES; level-A Llama calibration; two structural findings — 2026-08-30
+
+**Status: DIAGNOSTIC / INSTRUMENT VALIDATION. Selection NOT yet made — Qwen3 level-A is still
+running, and `RAH-PR-009`'s rule requires both models.**
+
+### The Qwen3 gate — the decisive model — PASSES
+
+`rahpf_qlp_20260830_201039.json`, job `818419`, Qwen3-14B, `lantern↔poison`, `n_layers = 40`.
+**10 of 20 configurations pass**, best `1.0000`.
+
+P(concept), best over donor layers, by receiver layer:
+
+| form | R=5 | R=10 | R=20 | R=30 | R=36 |
+|---|---|---|---|---|---|
+| `id07_raw` | 0.6925 | 0.2200 | 0.0486 | 1.26e-04 | 0.0071 |
+| `id07_tmpl` | 2.89e-05 | 5.66e-04 | 0.2276 | 2.22e-06 | 0.0097 |
+| **`fc_probe_last`** | **1.0000** | **1.0000** | **1.0000** | 0.8930 | 0.9394 |
+| `fc46` | 0.1310 | 0.3004 | 1.55e-05 | 1.54e-06 | 1.92e-06 |
+
+`fc_probe_last @ R = 5`: P(concept) **0.99999991** against an unpatched prior of **0.0223**, with
+P(codeword) **3.4e-12**. The donor-layer profile is **flat at 1.000 from L = 0 to L = 31**, still
+0.910 at L = 36, and **31 of 31 donor layers above the Qwen3 band (`lo = 7`) clear the gate**.
+
+**The depth fraction, not the absolute layer, is what transfers across models.** Llama passes at
+R = 4 and 8 of 32 (0.125 and 0.25 of depth); Qwen3 passes at R = 5 and 10 of 40 — *the same two
+fractions*. `fc46` again fails hardest at the late layers that were its default.
+
+### ⚠ Caveat that must travel with this number
+
+A positive control this saturated shows the **channel works** — it does **not** show the channel
+carries a *mapped* concept. The donor here is a `direct_harmful` prompt in which the concept word is
+**literally present**, so its residual at that token largely *is* that token's identity. Transporting
+it and reading it back is close to a copy test.
+
+> **What Track A must still establish is the non-trivial claim: that a donor captured at the
+> CODEWORD position of a `natural_doublespeak` prompt transports the CONCEPT.** `RAH-R-008` and
+> `RAH-R-009` license only *"the instrument can transport something"*. They are not evidence about
+> the doublespeak mapping.
+
+A second consequence: on Qwen3 the positive control **saturates at 1.000 across 31 donor layers**, so
+it carries **no information for choosing a donor layer** on that model. The donor layer must be fixed
+on mechanism (`L > lo`, inside/above the intervention band), never on this curve — which is what
+`RAH-PR-009` already requires.
+
+### Level-A Llama calibration — all three banks pass
+
+| bank | labels | passing | best (`fc_probe_last` R=4) | R=8 |
+|---|---|---|---|---|
+| `carrot↔bomb` | bomb / carrot / knife / ticket | 8/20 | **0.9078** | 0.8606 |
+| `basket↔bomb` | bomb / basket / knife / ticket | 9/20 | **0.9134** | 0.8813 |
+| `ticket↔knife` | knife / ticket / bomb / carrot | 9/20 | **0.8550** | 0.8347 |
+
+`fc_probe_last` at R = 4 is the best form on **every** level-A bank, and the R = 4–8 band reproduces
+the pre-flight's independently. **No disagreement to report** — the level-A answer and the level-B
+GO/NO-GO agree, which is the outcome `RAH-R-008` pre-committed to check.
+
+### ⚠ Structural finding: two of my three level-A banks share their donors byte-for-byte
+
+`direct_harmful` carries the **concept** surface and never the codeword, so two banks with the same
+concept have **identical** `direct_harmful` rows. Verified:
+
+```
+carrot_bomb vs basket_bomb  : 4/4 donor prompts BYTE-IDENTICAL   (concepts bomb vs bomb)
+carrot_bomb vs ticket_knife : 0/4                                (concepts bomb vs knife)
+```
+
+This is visible in the results as identical `id07_raw` / `id07_tmpl` values for the two bomb banks
+(0.7652 / 0.8459 / 0.4323 / 0.5643) — the `id07` receiver contains no codeword, so with an identical
+donor those cells *must* agree, and they do to the last digit.
+
+**Consequence, recorded before the selection is made:** level-A supplies **two distinct donor sets
+(bomb, knife), not three.** `RAH-PR-009`'s "minimum across banks" must be read that way, and the
+`carrot_bomb` vs `basket_bomb` pair is **not** independent replication.
+
+**It is still useful, as an unplanned control**: the *same* donor into two receivers differing only in
+one label gives 0.9078 vs 0.9134 — so the readout is **insensitive to distractor identity** at the
+0.006 level. That is a free specificity check the design did not ask for.
+
+### Next
+
+Qwen3 level-A (`818651/2/3`) is running. The `RAH-PR-009` selection — maximise the **minimum** uplift
+across level-A banks and **both** models — is applied only when those land, and is then frozen as
+part of `RAH-PR-005`.
