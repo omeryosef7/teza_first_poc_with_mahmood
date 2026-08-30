@@ -3619,3 +3619,63 @@ number passed T2's arithmetic and is still declined, and its apparent counterpar
 rows at p = 0.625. **A 12-event population producing a striking-looking delta on one model and
 nothing on the other is precisely what an underpowered design looks like**, and precisely why the
 headroom gate is checked before the delta rather than after it.
+
+---
+
+## §14.43 — `RBD-R-037` · **`RBD-PR-008` also fails the gate on the decisive cell. `R-033` is NOT ANSWERABLE with this project's instruments.** · 2026-08-30 04:35 IDT
+
+| run | gate | median true mass | frac > 1% | coded-wins | log-odds |
+|---|---|---|---|---|---|
+| Llama baseline | **PASS** | 0.1059 | 1.000 | 15/80 | −1.328 |
+| Llama arm | **PASS** | 0.3586 | 1.000 | 6/80 | −0.916 |
+| **Qwen3 baseline** | ⛔ **NOT REPORTABLE** | **0.00193** | 0.2375 | 52/80 | +5.074 |
+| **Qwen3 arm** | ⛔ **NOT REPORTABLE** | **0.0375** | 0.625 | 0/80 | −12.419 |
+
+**`R-033` lives on Qwen3, and both Qwen3 arms fail the option-mass gate.** The second candidate
+instrument fails on the same cell as the first.
+
+> ### `R-033` is recorded as **NOT ANSWERABLE with the instruments this project has.**
+> That is the outcome `RBD-PR-008` registered in advance for this contingency, and it is the honest
+> finding rather than a gap.
+
+**No gate was overridden. `--allow-tail-readout` was not passed on any run in this sprint.**
+
+### ⛔ The unreportable direction, labelled so it is not mistaken for evidence
+
+For a future researcher deciding where to look — **and explicitly NOT as support for any claim** —
+Qwen3's below-gate numbers move **with** binding, not with benign use: comprehension **52 → 0**
+(log-odds **+5.07 → −12.42**) alongside binding **75 → 9**, while benign use held at 69 → 56.
+
+**If** that were reportable it would **refute** the exposure confound and make `R-033` a genuine
+representation-vs-use dissociation. **It is not reportable**, the mass sits at **0.2% of the
+next-token distribution**, and an ordering inside a 0.2% tail is exactly what the gate exists to
+refuse. **This paragraph is a pointer for future work, not an argument, and it must not be cited as
+one.**
+
+### Why both instruments failed, and what would actually work
+
+Both `semantic_one_word` and `comprehension_usage` put their answer options **outside the model's
+preferred continuation** — the model wants to answer the question in prose, not with a bare option
+token, so the option pair collects a tail of the mass. `semantic_forced_choice` and
+`mapping_use_forced_choice` avoid this by **naming both options in the query**, which is precisely
+what makes them high-mass **and** what creates the exposure confound `R-033` needs to exclude.
+
+> **The confound and the mass are the same property.** A readout that names its options is
+> reportable and exposure-confounded; one that does not is exposure-clean and unreportable. **No
+> readout in this project's inventory is both**, and that is a structural fact about the instrument
+> set rather than an accident of these two attempts.
+
+**What would resolve it** (recorded for the handoff, not attempted here): a forced-choice readout
+that names two options **neither of which is the concept** while still probing the mapping — for
+example a **third-party paraphrase** target, or a **two-alternative property question whose options
+are the concept's property and the codeword's property** (which is what `mapping_use_forced_choice`
+already is). The cleanest available route is therefore **not a new readout at all** but an
+**activation-level** test — patching, per §14/§16 — which does not depend on what the query mentions.
+
+### Claim state — `R-033` closed as unresolved
+
+| id | status |
+|---|---|
+| `RBD-R-033` (report vs use asymmetry, Qwen3) | 🟡 **OBSERVATION, NOT ANSWERABLE** — two instruments attempted (`PR-007`, `PR-008`), both fail the option-mass gate on the decisive cell |
+| `RBD-R-034` | `semantic_one_word` unusable — replicates a known instrument defect |
+| **`RBD-R-037`** | `comprehension_usage` unusable on Qwen3; **the confound and the option mass are the same property** |

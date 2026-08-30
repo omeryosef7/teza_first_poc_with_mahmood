@@ -821,6 +821,53 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                                   "mapping_use_forced_choice"],
                      slots=[0, 3])]
 
+    if preset == "rbd12_cu":
+        # RBD-PR-008. The RIGHT control for RBD-R-033, arrived at after PR-007's instrument failed
+        # its own option-mass gate.
+        #
+        # The confound R-033 has to exclude is not "does the query name its terms" in general -- it
+        # is specifically whether the CONCEPT word appears in the query. `semantic_forced_choice`
+        # names it and collapses under demo_processing_only; `mapping_use_forced_choice` does not
+        # name it and largely survives. `comprehension_usage` asks whether the word is used
+        # literally or as a code, so it probes the mapping's REPRESENTATION while sharing the
+        # benign-use readout's exposure profile: the concept word never appears.
+        #
+        # Its answer vocabulary is `literal` / `coded` rather than `literal` / `codeword` because
+        # " codeword" tokenizes to ['cod','ew','ord'] on Llama, which is the defect
+        # signals.readout_ids exists to refuse. Both options are single tokens.
+        return [dict(name="rbd_core", domains=domains, splits=list(SPLITS),
+                     conditions=list(CORE_2X2), n_examples=[8],
+                     strengths=["none"], consistencies=["consistent"],
+                     positions=["near"], role_styles=["plain"],
+                     query_kinds=["comprehension_usage"], slots=[0, 3])]
+
+    if preset == "rbd12_sow":
+        # RBD-PR-007. Identical to `rbd12` in every axis EXCEPT the query kind: `semantic_one_word`
+        # asks "what does the word X actually refer to?" and names NEITHER the codeword nor the
+        # concept, where `semantic_forced_choice` names both.
+        #
+        # WHY IT EXISTS. RBD-R-033 observed that `demo_processing_only` costs Qwen3 66 of 75
+        # BINDING wins but only 16 of 69 BENIGN-USE wins. The confound is that the binding query
+        # references the demonstrations' own vocabulary and the benign-use query does not, so a
+        # manipulation of demonstration attention could degrade the former more WITHOUT any
+        # representation-versus-use dissociation. This readout asks about the mapping without
+        # naming its terms, which is what separates the two explanations.
+        #
+        # A SEPARATE BANK, not an edit to rbd12: `family_id` carries the query kind and `prompt_id`
+        # is sha(family_id|condition), so these rows get fresh ids and cannot collide with -- or
+        # silently rejoin -- the runs already completed against the rbd12 banks.
+        #
+        # ⚠ EXPECTED RISK, recorded before running: `semantic_one_word` is the framing the
+        # forced-choice kind was introduced to REPLACE, because its option mass sat at ~4.4e-05
+        # with 0 of 288 rows above 1%. If it fails the option-mass gate here, that is a reportable
+        # outcome -- the decisive experiment could not be run with this instrument -- and NOT a
+        # licence to lower the gate.
+        return [dict(name="rbd_core", domains=domains, splits=list(SPLITS),
+                     conditions=list(CORE_2X2), n_examples=[8],
+                     strengths=["none"], consistencies=["consistent"],
+                     positions=["near"], role_styles=["plain"],
+                     query_kinds=["semantic_one_word"], slots=[0, 3])]
+
     if preset == "main_fcslots":
         # MULTI-SLOT FORCED CHOICE. §12.9 decomposed the power gap and found it is not what either
         # session thought: `k/ICC` is the INFINITE-ROW asymptote, and the single-slot arm sits at
@@ -1150,7 +1197,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
     ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre",
-                                         "phase_d", "main_ne12", "main_fcslots", "rbd12"],
+                                         "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu"],
                     default="main")
     ap.add_argument("--n-preamble", type=int, default=None,
                     help="Override main_longpre's preamble length. Required length depends on the "

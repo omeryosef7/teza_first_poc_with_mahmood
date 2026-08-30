@@ -1,0 +1,75 @@
+{
+  "preset": "rbd12_cu",
+  "seed": 20260829,
+  "codeword": "lantern",
+  "concept": "poison",
+  "pools_sha16": "7bcfef0f19ee9e3e",
+  "pools_path": "data/boombness_prompts/demo_pools_rbd_lantern_poison.json",
+  "stats": {
+    "bank_rows_sha16": "009e759341067a89",
+    "n_rows": 320,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 0,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 80,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 80,
+      "concept_in_benign_ctx": 80,
+      "direct_harmful": 80,
+      "natural_doublespeak": 80
+    },
+    "by_block": {
+      "rbd_core": 320
+    },
+    "by_query_kind": {
+      "comprehension_usage": 320
+    },
+    "by_n_examples": {
+      "8": 320
+    },
+    "by_domain": {
+      "airport_apron": 16,
+      "airport_ground": 16,
+      "bakery_plant": 16,
+      "campsite_park": 16,
+      "construction_site": 16,
+      "dairy_plant": 16,
+      "ferry_terminal": 16,
+      "fishing_harbour": 16,
+      "hospital_supply": 16,
+      "hospital_ward_store": 16,
+      "hotel_service": 16,
+      "library_stacks": 16,
+      "power_substation": 16,
+      "quarry_site": 16,
+      "recycling_centre": 16,
+      "school_campus": 16,
+      "shipyard_slip": 16,
+      "telecom_exchange": 16,
+      "textile_mill": 16,
+      "theatre_backstage": 16
+    },
+    "by_split": {
+      "dev": 160,
+      "heldout": 160
+    },
+    "by_role_style": {
+      "plain": 320
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "38311faa1dc631ae2e073b604e6c90890bfc94d3",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-08-30T04:25:57"
+}
