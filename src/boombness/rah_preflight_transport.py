@@ -220,6 +220,11 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--enable-thinking", default="default")
     ap.add_argument("--n-donors", type=int, default=4)
+    ap.add_argument("--donor-condition", default="direct_harmful",
+                    help="`direct_harmful` (default) captures at the CONCEPT surface -- the "
+                         "instrument positive control. `natural_doublespeak` captures at the "
+                         "CODEWORD surface -- the BASELINE-TRANSPORT question (RAH-PR-010). "
+                         "Either way NO intervention is constructed, so this stays effect-blind.")
     ap.add_argument("--n-examples", type=int, default=None,
                     help="restrict donors to this dose. Level-A banks carry {0,1,2,4,8,16}; the RBD "
                          "banks carry only 8, so this is a no-op there and a real filter on level A.")
@@ -237,7 +242,7 @@ def main():
     # DONOR = a CLEAN, concept-bearing prompt: `direct_harmful` carries the CONCEPT on its surface,
     # so a rep captured at its target occurrence is the positive control's "clean concept rep".
     cand = [r for r in rows
-            if r["condition"] == "direct_harmful" and r["query_kind"] == "behavioral"
+            if r["condition"] == args.donor_condition and r["query_kind"] == "behavioral"
             and (args.n_examples is None or r["n_examples"] == args.n_examples)]
     donors = sorted(cand, key=lambda r: r["prompt_id"])[:args.n_donors]
     if not donors:
@@ -377,7 +382,7 @@ def main():
            "n_layers": nL, "attn_implementation": "eager", "enable_thinking": args.enable_thinking,
            "concept": concept, "codeword": codeword, "probe": args.probe,
            "label_words": label_words, "label_ids": label_ids, "label_meta": label_meta,
-           "donor_condition": "direct_harmful", "n_donors": len(donors),
+           "donor_condition": args.donor_condition, "n_donors": len(donors),
            "donor_n_examples": args.n_examples,
            "n_donor_candidates": len(cand),
            "donors": [{k: v for k, v in d.items() if k != "reps"} for d in donor_reps],

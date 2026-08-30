@@ -2478,3 +2478,95 @@ arriving in my own new code.
 
 **Standing rule added for this sprint:** a new *mode*, flag or branch is smoked at minimum size
 before it is run at scale, exactly as a new script is.
+
+---
+
+## `RAH-R-013` — the equivalence margin, and the BASELINE-TRANSPORT PRECONDITION FAILS at the frozen configuration — 2026-08-30
+
+**Status: DIAGNOSTIC, on DEVELOPMENT (level-A) data. This is the precondition registered in
+`RAH-R-012` before this data existed, firing exactly as written.**
+
+Runs `nuis_p_cb_20260830_215702` (Llama) and `nuis_q_cb_20260830_220236` (Qwen3): 40/40 families,
+**1600 rows each**, `problems: 0`, `live_arms = ['base']`, **no intervened arm constructed**.
+
+### The equivalence margin — derived and ATTAINABLE
+
+| | |
+|---|---|
+| nuisance ensemble | 4 option orders × 2 receiver wordings = 8 variants, base donors only |
+| `s_accuracy` (p95 of pairwise \|Δaccuracy\|, worst model) | **0.0750** |
+| floor (repo T3/T5 precedent) | 0.10 |
+| **MARGIN** | **0.10** |
+| rule-of-three at n = 40 | 0.0750 → **equivalence is ATTAINABLE** |
+
+The check `RAH-DR-002` F5 warned about is now satisfied *and shown to be satisfied*: a
+repeatability-derived margin (~1e-6) would have made `EQUIVALENT` unreachable for every dataset.
+The nuisance-derived margin does not.
+
+### The precondition fails, and the reason is specific
+
+At the frozen configuration — `fc_probe_last`, R at depth 0.125, donor layer 14 (Llama) / 17 (Qwen3),
+captured at the **codeword position of a `natural_doublespeak` prompt** — the base donor transports
+**the codeword, not the mapped concept**:
+
+| model | argmax over 40 families | mean P(codeword) | mean P(concept) | mean option mass |
+|---|---|---|---|---|
+| Llama × `carrot↔bomb` | **`carrot` 40/40** | **0.6987** | **1.6e-05** | 0.699 |
+| Qwen3 × `carrot↔bomb` | **`carrot` 40/40** | **1.0000** | **0.0** | 1.000 |
+
+Donor-side controls behave sensibly and rule out the trivial explanations:
+
+* `exch` (a seeded derangement — another family's base donor) also decodes to `carrot`, but is
+  **not** identical to `base` per family (**0/40 identical**) and the donor norms vary across
+  families (sd 0.129 / 3.703). So the donors *are* family-specific; they simply all encode the same
+  surface word.
+* `perm` and `rand` (norm-matched, direction-destroyed) decode to `ticket` — a *different* label —
+  so the receiver is not stuck on one answer regardless of input.
+* the unpatched receiver prior on the concept is 0.0053 (Llama) / 0.0001 (Qwen3), so 40/40 `carrot`
+  is a patch effect, not a prior.
+
+> **The instrument transports the SURFACE TOKEN, and at this layer and position there is no mapped
+> concept in it to transport.** The positive control (`RAH-R-008`/`RAH-R-009`) reached
+> P(concept) 0.84–1.00 — but it captured at the **concept** token of a `direct_harmful` prompt,
+> where the concept is literally present. That was always closer to a copy test, as `RAH-R-009`
+> recorded at the time.
+
+### What this licenses, and what it does not
+
+**It does NOT license "the representation does not exist."** The predecessor sprint measured the
+model answering the binding question correctly **78/80** on Llama — the mapping is behaviourally
+available. What is established is narrower and it is about the *instrument*:
+
+> At donor layer 14/17 and the query-codeword position, the mapped concept is **not present in a
+> form this channel transports**. Baseline transport is therefore ~0, and **there is nothing for
+> `demo_processing_only` to remove**. A `base ≈ dpo` result here would mean the instrument measured
+> nothing — **outcome A-IV (assay invalid), never preservation.**
+
+This is exactly why the precondition was registered in advance. **No Track-A confirmatory claim may
+be made at this configuration.**
+
+### `RAH-PR-010` — the one small follow-up the stopping rule permits
+
+§8 permits *"a small predeclared follow-up testing whether the representation moved earlier or later,
+as a NEW preregistration"*, and forbids searching layers until one works. Registered now:
+
+| | |
+|---|---|
+| question | **is there ANY donor layer at which the codeword position transports the mapped concept?** |
+| data | **level-A discovery only** (`carrot↔bomb`), both models |
+| donor | `natural_doublespeak` × `behavioral`, `n_examples = 8`, captured at the last codeword occurrence — 8 donors |
+| sweep | **every** donor layer `L ∈ [0, n_layers−2]` × the 5 receiver layers, via the EXISTING pre-flight sweep (`--donor-condition natural_doublespeak`) — no new sweep code |
+| effect-blindness | the pre-flight has **no intervention code path** (`grep` returns 0), so this cannot see `dpo` |
+| outcome if some layer transports | that layer is a candidate; it must then be **re-derived on held-out material** before any freeze, and `L > lo` still binds |
+| **outcome if NO layer transports** | **Track A returns A-IV on this construction**: the codeword position carries no transportable mapped concept at any depth, and the donor→receiver design cannot answer the sprint's question. That is a **sourced negative**, reported as such. |
+
+**We do not lower the gate, and we do not switch to a different donor position to find a signal.**
+A position change would be a new construction, not a follow-up, and would need its own registration.
+
+### Checklist
+
+```
+[x] margin derived and ATTAINABLE (0.10, rule-of-three 0.075 at n=40)   RAH-R-013
+[!] P4  TRACK-A FREEZE BLOCKED -- baseline transport fails the precondition
+[~] RAH-PR-010  donor-layer sweep at the codeword position (level-A, base only)
+```
