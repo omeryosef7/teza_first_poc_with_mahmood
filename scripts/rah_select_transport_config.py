@@ -64,12 +64,33 @@ def above_band(cell, lo):
     return [p for p in cell["per_layer"] if p["L"] > lo]
 
 
-def summarise(cell, lo):
+def gate_at(cell, layer_rec, unpatched_concept):
+    """The THREE CONJUNCTS evaluated at a SPECIFIC donor layer.
+
+    `RAH-C-012`. The first version of this rule read `positive_control_ok`, which the producing
+    sweep computes at the GLOBAL best donor layer -- and that layer may sit BELOW the band, where
+    the arms are bit-identical. A cell could therefore qualify on the strength of a layer the
+    intervened comparison can never use. The gate is now recomputed at the layer that will actually
+    be used, which is the best ABOVE-BAND layer.
+    """
+    lvl = layer_rec["p_concept_mean"]
+    cw = layer_rec["p_codeword_mean"]
+    uplift = lvl - unpatched_concept
+    return {"level": lvl, "uplift": uplift, "p_codeword": cw,
+            "c_level": lvl > GATE_T, "c_uplift": uplift > GATE_T, "c_dominance": lvl > cw,
+            "gate_ok_at_layer": bool(lvl > GATE_T and uplift > GATE_T and lvl > cw)}
+
+
+def summarise(cell, lo, unpatched_concept):
     ab = above_band(cell, lo)
     clearing = [p for p in ab if p["p_concept_mean"] > GATE_T]
     best_ab = max(ab, key=lambda p: p["p_concept_mean"]) if ab else None
+    g = gate_at(cell, best_ab, unpatched_concept) if best_ab else None
     return {"form": cell["form"], "R": cell["R"],
-            "gate_ok": bool(cell["positive_control_ok"]),
+            "gate_ok_global": bool(cell["positive_control_ok"]),
+            "gate_at_selected_layer": g,
+            "gate_ok": bool(g and g["gate_ok_at_layer"]),
+            "unpatched_p_concept": unpatched_concept,
             "global_best_L": cell["best_donor_L"],
             "global_best_p": cell["pos_ctrl_max"],
             "global_best_is_below_band": cell["best_donor_L"] <= lo,
@@ -81,8 +102,8 @@ def summarise(cell, lo):
             "best_above_band_p_codeword": best_ab["p_codeword_mean"] if best_ab else None}
 
 
-def select_for_model(cells, lo):
-    rows = [summarise(c, lo) for c in cells]
+def select_for_model(cells, lo, concept):
+    rows = [summarise(c, lo, c["unpatched_dist"][concept]) for c in cells]
     eligible = [r for r in rows
                 if r["gate_ok"] and r["n_above_band_clearing"] >= MIN_ABOVE_BAND]
     if not eligible:
@@ -113,24 +134,24 @@ def main():
             raise SystemExit("REFUSING: %s has donor_condition=%r; PR-011 must be selected on the "
                              "CODEWORD-donor sweep, not on the positive control"
                              % (os.path.basename(f), d["donor_condition"]))
-        win, rows = select_for_model(d["grid"], lo)
+        win, rows = select_for_model(d["grid"], lo, d["concept"])
         out["models"][model] = {"artifact": os.path.basename(f), "band_lo": lo,
                                 "n_cells": len(rows), "selected": win, "all_cells": rows,
                                 "DECLINED": win is None}
         print("\n### %s   (band lo=%d, donor=%s @ codeword)" % (model, lo, d["donor_condition"]))
-        print("  %-16s %3s %6s %9s %11s %13s %11s" %
-              ("form", "R", "gate", "n_above>t", "best_ab_L", "p_conc@best_ab", "global_L"))
+        print("  %-16s %3s %8s %9s %10s %9s %9s %9s" %
+              ("form", "R", "gate@ab", "n_above>t", "best_ab_L", "p_conc", "uplift", "prior"))
         for r in sorted(rows, key=lambda r: (-r["n_above_band_clearing"], r["form"], r["R"])):
             flag = "" if not r["global_best_is_below_band"] else "  <-- global optimum BELOW band"
-            print("  %-16s %3d %6s %9d %11s %13s %11s%s" %
+            g = r["gate_at_selected_layer"] or {}
+            print("  %-16s %3d %8s %9d %10s %9s %9s %9s%s" %
                   (r["form"], r["R"], "PASS" if r["gate_ok"] else "-",
-                   r["n_above_band_clearing"],
-                   r["best_above_band_L"],
+                   r["n_above_band_clearing"], r["best_above_band_L"],
                    "%.4f" % (r["best_above_band_p_concept"] or 0),
-                   r["global_best_L"], flag))
+                   "%.4f" % g.get("uplift", 0), "%.4f" % r["unpatched_p_concept"], flag))
         if win is None:
-            print("  => DECLINED: no cell clears the gate at >= %d donor layers above the band"
-                  % MIN_ABOVE_BAND)
+            print("  => DECLINED BY THE RULE: no cell passes the three conjuncts AT ITS BEST "
+                  "ABOVE-BAND LAYER with >= %d such layers clearing the threshold" % MIN_ABOVE_BAND)
         else:
             print("  => SELECTED %s R=%d, donor layer L=%d (best ABOVE band), "
                   "p_concept=%.4f p_codeword=%.4f, breadth %d layers"

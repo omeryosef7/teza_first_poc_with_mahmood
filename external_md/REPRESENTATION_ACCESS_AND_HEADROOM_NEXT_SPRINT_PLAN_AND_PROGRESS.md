@@ -2794,3 +2794,66 @@ passing layers (L = 30–37) are above its band and are **not** vacuous.
 [ ] RAH-PR-011  intervened arm on a transport-established configuration, held-out
 [!] P4  TRACK-A FREEZE still blocked
 ```
+
+---
+
+## `RAH-C-012` / `RAH-R-015` — the selection rule gated at the wrong layer; corrected, Llama is DECLINED — 2026-08-30
+
+**Status: CORRECTION of a rule + SELECTION RESULT. The rule was committed (`5eff51fb`) before being
+applied, and its flaw was found by testing its own output.**
+
+### The flaw
+
+`RAH-PR-011`'s first implementation read `positive_control_ok` for eligibility. That flag is computed
+by the producing sweep at the **GLOBAL best donor layer** — which may sit **below the band**, where
+the base and dpo arms are bit-identical. **A cell could therefore qualify on the strength of a layer
+the intervened comparison can never use.** That is `RAH-DR-001` F2 re-entering through the selection
+rule rather than through the assay.
+
+Caught by re-testing the three conjuncts at the layer the rule had actually selected:
+
+| model | selected cell | level | uplift | dominance | gate at THAT layer |
+|---|---|---|---|---|---|
+| Llama | `fc46` R=8, L=11 (global best was **L=4, below band**) | 0.1072 ✓ | **0.1072 − 0.0838 = 0.0234 ✗** | ✓ | **FAIL** |
+| Qwen3 | `id07_tmpl` R=30, L=34 | 0.4344 ✓ | **0.4344 − 0.0000 = 0.4344 ✓** | ✓ | **PASS** |
+
+**Llama's apparent transport is largely its receiver's PRIOR.** The `fc46` receiver already places
+**0.0838** on `bomb` with no patch at all, so an above-band level of 0.1072 is an uplift of 0.0234.
+This is `RAH-DR-003` A1 recurring — a level cited where an uplift was required — and it is exactly
+why the uplift conjunct exists.
+
+**Fixed:** the gate is recomputed at the best **above-band** layer, and the per-cell table now prints
+`uplift` and `prior` beside the level so a prior-driven cell is visible on sight.
+
+### The selection, under the corrected rule
+
+```
+Llama-3.1-8B   DECLINED BY THE RULE
+               no cell passes the three conjuncts at its best ABOVE-BAND layer
+               with >= 3 such layers clearing the threshold
+
+Qwen3-14B      SELECTED  id07_tmpl, R = 30, donor layer L = 34
+               p(concept) 0.4344   uplift 0.4344   p(codeword) 0.0000
+               breadth: 8 above-band donor layers clearing the threshold (L = 30..37)
+```
+
+**Llama is declined by the rule, not by the result** — no intervened arm has been run on either
+model. Qwen3 is also the scientifically decisive model: its binding is what collapsed 75/80 → 9/80.
+
+### What `RAH-PR-011` now runs
+
+| | |
+|---|---|
+| model | **Qwen3-14B only** |
+| configuration | `id07_tmpl`, R = 30, donor L = 34 — selected on **level-A** `carrot↔bomb` |
+| population | **HELD-OUT: level-B `lantern_poison`**, 80 families. The configuration was selected on level A and has never seen this bank |
+| arms | `base`, `dpo`, capped key control, plus the donor-side controls |
+| built-in precondition | the run measures baseline transport **on the held-out bank**. If `base` does not transport there, the configuration did not generalise — reported as such, and no Δ is interpreted |
+
+The assay is now parameterised on `--receiver-form` / `--receiver-R`, with the `RAH-R-010` values as
+**defaults**, so every previously committed run still reproduces byte-identically.
+
+⚠ **The declared selection bias stands** (`RAH-DR-001` F10): the configuration was chosen to maximise
+**base** transport, so Δ = base − dpo is inflated by selection even though `dpo` was never computed
+by the selecting program. The mandatory mitigation — Δ at the selected cell **and** across every
+gate-passing cell — is unchanged and will be reported with the result.

@@ -63,7 +63,11 @@ import rah_preflight_transport as pf  # noqa: E402  -- the FROZEN receiver, impo
 
 SCHEMA = "RAH_TRANSPORT_ASSAY/1"
 
-#: Frozen by `RAH-R-010`: fc_probe_last at depth fraction 0.125.
+#: `RAH-R-010` froze fc_probe_last at depth fraction 0.125 -- for the POSITIVE-CONTROL question.
+#: `RAH-R-014` then showed that configuration is the WORST of four for the actual question (a donor
+#: captured at the CODEWORD token), so the receiver is now a parameter, selected by
+#: `scripts/rah_select_transport_config.py` under the rule registered in `RAH-PR-011`. The old
+#: values remain the DEFAULTS so every previously committed run reproduces byte-identically.
 FROZEN_FORM = "fc_probe_last"
 FROZEN_DEPTH_FRACTION = 0.125
 
@@ -169,6 +173,12 @@ def main():
     ap.add_argument("--probe", default="widget")
     ap.add_argument("--other-concept", required=True)
     ap.add_argument("--other-codeword", required=True)
+    ap.add_argument("--receiver-form", default=FROZEN_FORM,
+                    help="receiver form; default is RAH-R-010's positive-control freeze. "
+                         "RAH-PR-011 selects it from the committed codeword-donor grid instead.")
+    ap.add_argument("--receiver-R", type=int, default=None,
+                    help="explicit receiver layer. Default: int(n_layers * 0.125), the RAH-R-010 "
+                         "depth fraction. RAH-PR-011 passes the selected R directly.")
     ap.add_argument("--rotations", type=int, default=2,
                     help="option orders, each placing the mapped concept in a different slot")
     ap.add_argument("--nuisance-ensemble", action="store_true",
@@ -224,7 +234,9 @@ def main():
 
     lm = dc.load_model(args.model, attn_implementation="eager")   # S-12: eager for EVERY arm
     tok, nL = lm.tokenizer, lm.num_layers
-    R = max(1, int(nL * FROZEN_DEPTH_FRACTION))
+    R = args.receiver_R if args.receiver_R is not None else max(1, int(nL * FROZEN_DEPTH_FRACTION))
+    if not (0 <= R < nL):
+        raise SystemExit("receiver R=%d out of range for %d blocks" % (R, nL))
 
     labels = [concept, codeword, args.other_concept, args.other_codeword]
     label_ids = {}
@@ -232,8 +244,8 @@ def main():
         label_ids[w] = signals.readout_ids(tok, w)["primary_id"]   # raises on multi-token
     if len(set(label_ids.values())) != len(labels):
         raise SystemExit("label first-token ids collide: %r" % label_ids)
-    print("[ta] model=%s nL=%d R=%d (depth %.3f) band=%s donorL=%d labels=%r"
-          % (args.model, nL, R, FROZEN_DEPTH_FRACTION, args.band, args.donor_layer, label_ids))
+    print("[ta] model=%s nL=%d form=%s R=%d (depth %.3f) band=%s donorL=%d labels=%r"
+          % (args.model, nL, args.receiver_form, R, R / nL, args.band, args.donor_layer, label_ids))
 
     # ---------------- PASS 1: capture donors, one live forward per (row, live arm) -------------- #
     donors = []
@@ -378,8 +390,12 @@ def main():
         if args.nuisance_ensemble:
             forms = pf.nuisance_receiver_forms(order[0], order[1], order[2], order[3], args.probe)
         else:
-            forms = [f for f in pf.receiver_forms(order[0], order[1], order[2], order[3],
-                                                  args.probe) if f["name"] == FROZEN_FORM]
+            _all = (pf.receiver_forms(order[0], order[1], order[2], order[3], args.probe)
+                    + pf.nuisance_receiver_forms(order[0], order[1], order[2], order[3],
+                                                 args.probe))
+            forms = [f for f in _all if f["name"] == args.receiver_form][:1]
+            if not forms:
+                raise SystemExit("unknown --receiver-form %r" % args.receiver_form)
         for form in forms:
             variants.append((rot, order, form))
     print("[ta] %d receiver variants = %d option orders x %d wordings"
@@ -467,7 +483,8 @@ def main():
             f.write(json.dumps(r) + "\n")
     meta = {"schema": SCHEMA, "model": args.model, "bank": os.path.abspath(args.bank),
             "n_layers": nL, "receiver_R": R, "depth_fraction": FROZEN_DEPTH_FRACTION,
-            "receiver_form": FROZEN_FORM, "donor_layer": args.donor_layer, "band": args.band,
+            "receiver_form": args.receiver_form, "donor_layer": args.donor_layer,
+            "band": args.band,
             "band_lo": lo, "attn_implementation": "eager", "enable_thinking": args.enable_thinking,
             "condition": "natural_doublespeak", "n_examples": args.n_examples,
             "labels": labels, "label_ids": label_ids, "probe": args.probe,
