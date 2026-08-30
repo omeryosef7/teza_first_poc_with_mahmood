@@ -3432,3 +3432,57 @@ Until it runs, `RBD-R-033` is recorded as an **OBSERVATION, not a claim**, with 
 | **`RBD-R-033`** | use survives better than report (Qwen3) | 🟡 **OBSERVATION** — confound named, `RBD-PR-007` registered to resolve it |
 | `candle_missile`, **both models** | any readout claim | ⛔ **VOID** — 52/80 on Llama, **40/80 = chance** on Qwen3 |
 | **H1** | representation/behaviour dissociation | ⛔ **OUTCOME A EXCLUDED ON BOTH MODELS**, on conjunct 2 alone |
+
+---
+
+## §14.39 — `RBD-C-013` · **I launched DUPLICATE judge jobs. Caught before any artifact existed.** · 2026-08-30 04:20 IDT
+
+**What happened.** I set a background watcher to continue the pipeline automatically when the Qwen3
+matrix finished — verify, build manifests, submit judging, *gated on clean verification*. Then,
+seeing the matrix at 18/18 and the watcher's log looking inert, **I performed the same steps
+manually.** Both fired.
+
+**Result: four judge jobs for the same ten arms** — `806491`/`806492` (mine) and `806503`/`806504`
+(the watcher's). §24, verbatim: *"never launch duplicate jobs because output did not appear
+quickly."* That is precisely what I did, and the reason the watcher looked inert is that its `until`
+loop was between 120-second sleeps.
+
+**Resolution.** `scancel 806503 806504`, executed while **`judge dirs = 0`** — verified immediately
+before and after. **No output directory had been created by either pair**, so there are no partial
+artifacts, no half-written `results.jsonl`, and nothing for a later step to pick up. The
+first-submitted pair continues untouched.
+
+⚠ **This is the sprint's first `scancel`, and it is not a violation of §24.** That rule forbids
+cancelling a *healthy queued or running job to make progress*. This cancelled a **genuine duplicate
+of work already in flight**, which is the opposite situation — leaving it running is what would have
+caused harm.
+
+### What the harm would actually have been
+
+Not wasted API spend, which is the obvious cost. The real hazard is downstream:
+
+* **`rbd_analysis._one()` requires exactly ONE completed run per tag glob.** With two judge sessions
+  per bank, `rbdqlpj_rbdqlpA_beh_*` matches **two** directories and `_one()` returns `None` — so
+  every Qwen cell would have **silently dropped out of the main table**, appearing as missing data
+  rather than as an error. The code fails safe (`None`, never a wrong answer), but the symptom would
+  have looked like a run that never happened.
+* **§9 requires all arms of a contrast in ONE judge session.** Two same-prefix sessions per bank
+  makes "the session" ambiguous, and a later step choosing arms across them would inherit the ~5%
+  per-row drift the one-session rule exists to eliminate — silently, because both sets carry
+  identical tags.
+
+### The rule this produces
+
+> **Pipeline automation and manual execution are mutually exclusive.** A step that a watcher may
+> perform must not also be performed by hand while that watcher is alive; and a watcher that submits
+> jobs must be **idempotent or exclusive**. Mine was neither — it re-derived the manifests and
+> submitted unconditionally, with no check for work already in flight.
+
+**Concretely, for the remaining stages:** before any `sbatch`, check `squeue` for a job already
+covering that work — and if a watcher is alive that could do the step, either kill the watcher or
+leave the step to it. Not both.
+
+**Also recorded:** the watcher's verification was independently correct — it printed
+`PROBLEMS: NONE` over all 18 Qwen runs, matching my own manual verification exactly, and it built
+both manifests with all 5 arms resolved. **The automation was right; running it twice was the
+error.**
