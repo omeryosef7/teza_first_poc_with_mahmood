@@ -74,6 +74,26 @@ BAND_LO = {"meta-llama/Llama-3.1-8B-Instruct": 6, "Qwen/Qwen3-14B": 7}
 #: Donor arms that require a live forward. Derived controls are computed from these afterwards.
 LIVE_ARMS = ("base", "dpo", "keys")
 
+#: `RAH-C-008` / `RAH-DR-002` F5. In nuisance-ensemble mode the ONLY live arm is `base`, and the
+#: intervened arms are not merely unused -- they are never constructed. The equivalence margin is
+#: derived from this run, so the run that produces the margin must be structurally incapable of
+#: seeing the effect the margin will later be used to judge.
+NUISANCE_LIVE_ARMS = ("base",)
+
+
+def label_rotations(labels, n):
+    """`n` option orders placing the MAPPED concept in a different slot each time.
+
+    labels is [concept, codeword, other_concept, other_codeword]. Rotation r puts the concept at
+    position r and keeps the other three in their relative order, so option POSITION cannot be
+    confounded with option IDENTITY across the ensemble.
+    """
+    c, rest = labels[0], labels[1:]
+    out = []
+    for r in range(min(n, len(labels))):
+        out.append(rest[:r] + [c] + rest[r:])
+    return out
+
 
 def parse_band(band):
     """'6-14' -> [6..14], matching `score_behavior.py:1517` exactly (inclusive of hi)."""
@@ -149,7 +169,13 @@ def main():
     ap.add_argument("--probe", default="widget")
     ap.add_argument("--other-concept", required=True)
     ap.add_argument("--other-codeword", required=True)
-    ap.add_argument("--rotations", type=int, default=2)
+    ap.add_argument("--rotations", type=int, default=2,
+                    help="option orders, each placing the mapped concept in a different slot")
+    ap.add_argument("--nuisance-ensemble", action="store_true",
+                    help="MARGIN MODE. Computes ONLY the base donor -- the intervened arms are "
+                         "never constructed -- and sweeps the nuisance axes (option order x "
+                         "receiver wording). This is the run that produces the equivalence margin, "
+                         "so it is structurally incapable of seeing the effect that margin judges.")
     ap.add_argument("--seed", type=int, default=20260830)
     ap.add_argument("--key-control-arm", default="nondemo_capped_d1",
                     help="key set for the same-band key control. Default is the CAPPED policy: "
@@ -188,6 +214,13 @@ def main():
     if not pop:
         raise SystemExit("empty population")
     concept, codeword = pop[0]["concept"], pop[0]["codeword"]
+
+    live_arms = NUISANCE_LIVE_ARMS if args.nuisance_ensemble else LIVE_ARMS
+    if args.nuisance_ensemble:
+        assert "dpo" not in live_arms and "keys" not in live_arms, \
+            "nuisance mode must not construct an intervened arm"
+        print("[ta] NUISANCE-ENSEMBLE MODE: live arms = %r; no intervened arm is constructed"
+              % (live_arms,))
 
     lm = dc.load_model(args.model, attn_implementation="eager")   # S-12: eager for EVERY arm
     tok, nL = lm.tokenizer, lm.num_layers
@@ -247,7 +280,7 @@ def main():
                "split": row["split"], "seq_len": len(ids_r), "capture_pos": p_cw,
                "capture_piece": piece, "n_demo_keys": len(dk), "n_query_span": len(prot),
                "vectors": {}, "liveness": {}}
-        for arm in LIVE_ARMS:
+        for arm in live_arms:
             spec, scope = build_arm_spec(arm, args.band, args.key_control_arm)
             kstats = {} if spec else None
             kdraw = {}
@@ -282,18 +315,26 @@ def main():
             rec["liveness"][arm] = liveness_snapshot(kstats or {}, arm, problems,
                                                      "%s/%s" % (pid, arm))
         # base and dpo are REQUIRED; a missing key control is degraded, not fatal, and is counted.
-        if not {"base", "dpo"} <= set(rec["vectors"]):
+        _required = {"base"} if args.nuisance_ensemble else {"base", "dpo"}
+        if not _required <= set(rec["vectors"]):
             problems.append("%s: missing a REQUIRED donor arm; have %r"
                             % (pid, sorted(rec["vectors"])))
             continue
-        vb, vd = rec["vectors"]["base"], rec["vectors"]["dpo"]
-        d = (vd - vb)
-        rec["delta_norm_dpo_base"] = float(d.norm())
-        rec["rel_delta_dpo_base"] = float(d.norm() / vb.norm()) if float(vb.norm()) else None
-        rec["cos_base_dpo"] = float((vb @ vd) / (vb.norm() * vd.norm()))
+        vb = rec["vectors"]["base"]
         rec["norm_base"] = float(vb.norm())
-        rec["norm_dpo"] = float(vd.norm())
-        rec["norm_keys"] = float(rec["vectors"]["keys"].norm())
+        if "dpo" in rec["vectors"]:
+            vd = rec["vectors"]["dpo"]
+            d = (vd - vb)
+            rec["delta_norm_dpo_base"] = float(d.norm())
+            rec["rel_delta_dpo_base"] = float(d.norm() / vb.norm()) if float(vb.norm()) else None
+            rec["cos_base_dpo"] = float((vb @ vd) / (vb.norm() * vd.norm()))
+            rec["norm_dpo"] = float(vd.norm())
+        else:
+            rec["delta_norm_dpo_base"] = None
+            rec["rel_delta_dpo_base"] = None
+            rec["cos_base_dpo"] = None
+        if "keys" in rec["vectors"]:
+            rec["norm_keys"] = float(rec["vectors"]["keys"].norm())
         donors.append(rec)
         if len(donors) % 20 == 0:
             print("[ta] captured %d/%d donors" % (len(donors), len(pop)))
@@ -302,15 +343,20 @@ def main():
         raise SystemExit("no donors captured; problems=%r" % problems[:5])
 
     # VACUITY GATE (F2, empirical form): if the two arms are bit-identical the cell is VACUOUS.
-    n_zero = sum(1 for r in donors if r["delta_norm_dpo_base"] == 0.0)
-    vacuity = {"n_rows": len(donors), "n_delta_exactly_zero": n_zero,
-               "median_rel_delta": sorted(r["rel_delta_dpo_base"] for r in donors)[len(donors) // 2],
-               "median_cos": sorted(r["cos_base_dpo"] for r in donors)[len(donors) // 2],
-               "VACUOUS": n_zero == len(donors)}
-    print("[ta] vacuity: %d/%d rows have delta EXACTLY zero; median rel-delta %.4g, median cos %.4f"
-          % (n_zero, len(donors), vacuity["median_rel_delta"], vacuity["median_cos"]))
-    if vacuity["VACUOUS"]:
-        problems.append("VACUOUS CELL: every dpo donor is bit-identical to its base donor")
+    have_dpo = [r for r in donors if r.get("delta_norm_dpo_base") is not None]
+    if have_dpo:
+        n_zero = sum(1 for r in have_dpo if r["delta_norm_dpo_base"] == 0.0)
+        vacuity = {"n_rows": len(have_dpo), "n_delta_exactly_zero": n_zero,
+                   "median_rel_delta": sorted(r["rel_delta_dpo_base"]
+                                              for r in have_dpo)[len(have_dpo) // 2],
+                   "median_cos": sorted(r["cos_base_dpo"] for r in have_dpo)[len(have_dpo) // 2],
+                   "VACUOUS": n_zero == len(have_dpo)}
+        print("[ta] vacuity: %d/%d rows delta EXACTLY zero; median rel-delta %.4g, median cos %.4f"
+              % (n_zero, len(have_dpo), vacuity["median_rel_delta"], vacuity["median_cos"]))
+        if vacuity["VACUOUS"]:
+            problems.append("VACUOUS CELL: every dpo donor is bit-identical to its base donor")
+    else:
+        vacuity = {"not_applicable": "nuisance-ensemble mode constructs no intervened arm"}
 
     # ---------------- derived controls, computed from the captured bank ------------------------- #
     import torch as _t
@@ -326,10 +372,20 @@ def main():
 
     # ---------------- PASS 2: decode every arm through the FROZEN receiver ---------------------- #
     out_rows = []
-    for rot in range(args.rotations):
-        order = labels[:] if rot == 0 else [labels[0], labels[2], labels[1], labels[3]]
-        form = [f for f in pf.receiver_forms(order[0], order[1], order[2], order[3], args.probe)
-                if f["name"] == FROZEN_FORM][0]
+    orders = label_rotations(labels, args.rotations)
+    variants = []
+    for rot, order in enumerate(orders):
+        if args.nuisance_ensemble:
+            forms = pf.nuisance_receiver_forms(order[0], order[1], order[2], order[3], args.probe)
+        else:
+            forms = [f for f in pf.receiver_forms(order[0], order[1], order[2], order[3],
+                                                  args.probe) if f["name"] == FROZEN_FORM]
+        for form in forms:
+            variants.append((rot, order, form))
+    print("[ta] %d receiver variants = %d option orders x %d wordings"
+          % (len(variants), len(orders), len(variants) // max(1, len(orders))))
+
+    for rot, order, form in variants:
         text, adds = pf.render_receiver(dc, tok, form, think)
         if form["templated"]:
             pf.assert_thinking_actually_off(dc, tok, form["body"], think)
@@ -371,6 +427,8 @@ def main():
                 out_rows.append({
                     "prompt_id": r["prompt_id"], "family_id": r["family_id"],
                     "domain": r["domain"], "split": r["split"], "rotation": rot,
+                    "receiver_variant": form["name"],
+                    "variant_key": "%s|rot%d" % (form["name"], rot),
                     "arm": arm, "model": args.model, "bank": os.path.basename(args.bank),
                     "concept": concept, "codeword": codeword,
                     "other_concept": args.other_concept, "other_codeword": args.other_codeword,
@@ -391,7 +449,7 @@ def main():
                     "rel_delta_dpo_base": r["rel_delta_dpo_base"],
                     "cos_base_dpo": r["cos_base_dpo"],
                     "liveness": r["liveness"].get(arm)})
-        print("[ta] rotation %d decoded: %d rows" % (rot, len(out_rows)))
+        print("[ta] variant %s rot%d decoded: %d rows total" % (form["name"], rot, len(out_rows)))
 
     os.makedirs(args.outdir, exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M%S")
@@ -407,6 +465,10 @@ def main():
             "condition": "natural_doublespeak", "n_examples": args.n_examples,
             "labels": labels, "label_ids": label_ids, "probe": args.probe,
             "rotations": args.rotations, "seed": args.seed,
+            "nuisance_ensemble": bool(args.nuisance_ensemble),
+            "live_arms": list(live_arms),
+            "n_receiver_variants": len(variants),
+            "receiver_variants": sorted(set("%s|rot%d" % (f["name"], r) for r, _o, f in variants)),
             "n_families_requested": len(pop), "n_families_captured": len(donors),
             "n_rows_written": len(out_rows), "vacuity": vacuity,
             "derangement": der, "problems": problems,

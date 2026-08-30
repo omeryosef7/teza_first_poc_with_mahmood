@@ -146,6 +146,32 @@ def assert_thinking_actually_off(dc, tok, body, think):
     return {"checked": True, "differs_from_default": True, "think_block_closed": True}
 
 
+def nuisance_receiver_forms(concept, codeword, other_concept, other_codeword, probe):
+    """The FROZEN form plus a wording paraphrase of it -- the nuisance axis, kept OUT of the grid.
+
+    `RAH-C-008`. This deliberately does NOT live in `receiver_forms`. That function's output defined
+    the Stage-A grid (4 forms x 5 receiver layers = 20 configurations) over which `RAH-R-010` made
+    the frozen selection, and `scripts/rah_select_config.py` re-runs that selection as an audit.
+    Adding a fifth form there would silently change what a re-run produces and break the audit of a
+    frozen artifact -- so the paraphrase is a separate inventory with a separate caller.
+
+    WHY A PARAPHRASE AT ALL (`RAH-DR-002` F5). The receiver is one deterministic greedy forward, so
+    its "repeatability" is float jitter of order 1e-6. An equivalence margin derived from that would
+    be far below the rule-of-three floor 3/n and would make `EQUIVALENT` UNREACHABLE for every
+    possible dataset. The margin must come from variation the design considers IRRELEVANT -- option
+    ORDER and receiver WORDING -- measured on BASE donors only, so it cannot see the effect.
+    """
+    base = [f for f in receiver_forms(concept, codeword, other_concept, other_codeword, probe)
+            if f["name"] == "fc_probe_last"]
+    labels = '"{a}", "{b}", "{c}" or "{d}"'.format(a=concept, b=codeword,
+                                                   c=other_concept, d=other_codeword)
+    return base + [{
+        "name": "fc_probe_last_v2", "templated": True, "read_at": "final",
+        "body": ('Which of these labels best describes the word "{p}"? '
+                 'The options are {L}. Reply with the single label only.').format(L=labels, p=probe),
+        "suffix": "Answer:", "patch_at": "probe"}]
+
+
 def find_quoted_probe_span(text, probe):
     """Character offsets of the FIRST `"probe"` occurrence, quotes excluded.
 
