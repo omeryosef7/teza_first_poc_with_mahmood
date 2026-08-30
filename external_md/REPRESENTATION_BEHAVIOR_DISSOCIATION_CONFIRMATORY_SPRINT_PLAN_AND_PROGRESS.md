@@ -3844,3 +3844,101 @@ one was outcome-blind. **Every change it makes tightens a claim rather than loos
 becomes a NOT_ESTABLISHED-set-aside-post-hoc, an "inert on both" gains its scope, a validity number
 is re-attributed to the readout it belongs to, and "below chance" becomes "no better than the
 control". **No number moved.**
+
+---
+
+## §14.47 — `RBD-DR-005` / `RBD-C-016`…`C-021` · **THE AUDIT OF THE CORRECTIONS — my own correction pass CREATED a false claim, and two claims were still overstated after it** · 2026-08-30 14:40 IDT
+
+`RBD-DR-004` corrected six overstatements. Three read-only auditors then checked **the corrections
+themselves**, on the principle that a correction pass is exactly where a motivated author
+over-corrects in the safe direction and under-corrects in the costly one. 118 tool calls, 279k tokens.
+
+**Every headline number reproduced EXACTLY for the second time** — the Llama contingency 60/18/1/1,
+δ −0.21250, Newcombe [−0.31620, −0.11656], McNemar 7.62939e-05 bit-for-bit; the Qwen3 66/0; every
+`rbdctrl*` cell and median log-odds; the option-mass table. **Six defects survived or were created.**
+
+### ⛔ `RBD-C-018` — the correction pass CREATED a false claim
+
+`RESEARCH_HANDOFF.md` gained the words **"option mass 0.64–0.95 on every core run"**. The
+pre-correction text had **no quantifier**. Recomputed `median_true` mass over the 18 readout runs:
+**0.6048 → 1.0000.** All twelve Qwen3 runs sit at 0.9994–1.0000; `rbdplpC_readout` sits at **0.6048,
+below the stated floor**. "0.64–0.95" is the **Llama baseline+control subrange**.
+
+> **A universal quantifier attached to a model-specific range, in the row that certifies the
+> instrument's validity — written by the pass whose job was to remove overstatements.** This is the
+> `feedback_universal_quantifier_sweep` failure mode, committed by the sweep itself.
+
+### ⛔ `RBD-C-017` — `RBD-R-036` is confounded on **every clause of its own control statement**
+
+I wrote *"same design, dose, domains, cap and judge model; only the concept differs."* Against the
+artifacts, **every clause is false**:
+
+| claimed "same" | `rbd12` | prior bomb banks |
+|---|---|---|
+| domains | 20 | 6 / 10 / 38 — **the two sets are 100% DISJOINT** |
+| role styles | `plain` only | **six** |
+| dose | `{8}` | `{0,1,2,4,8,16}` pooled |
+| **generation cap** | **640** | **192** |
+| judge | pinned `gpt-4o-mini` | **responder UNKNOWN** (unpinnable pre-2026-08-25) |
+
+And **this repo already refutes the attribution's sufficiency**: bomb-bank baseline ASR runs
+**0.1562 → 0.0625 → 0.0437 from a two-sentence preamble change alone** — a **3.6× swing *within* the
+bomb concept**, larger than the gap I attributed to concept, with `rbd12`'s 0.075 sitting **inside
+it**. My "0.15–0.28" quoted the **top** of the bomb range. **"Cross-model replicated" was also
+unsupported — there is no Qwen3 bomb comparator at all.** → **downgraded to OBSERVATION.**
+
+### ⛔ `RBD-C-016` — the Qwen3 composition claim has **no Qwen3 control**
+
+Both `rbdctrl*_allcond` runs are **Llama-only**. Every Qwen3 readout dir contains
+`Counter({'natural_doublespeak': 160})` — **no `benign_literal`, no `direct_harmful` anywhere on
+Qwen3.** So the *mapping-attributable lift* — the quantity "composition" names — **is not estimated
+on the very model the claim is about**, and Readout B's validity is Llama-only.
+
+What survives: the **raw** difference, Qwen3 69/80 vs Llama 24/80, **+0.5625, CI [0.4208, 0.6695]**,
+Fisher p 3.3e-13. On Llama the lift is **indistinguishable from its own control** (24/80 vs 32/80,
+**McNemar p = 0.215**). Sensitivity: a Qwen3 null ≥ 61/80 would sink its lift below the margin — and
+**Llama's own null was 0.40, not the intuitive 0.50**, which is precisely why it cannot be assumed.
+
+### ⛔ `RBD-C-020` — "excluded on both models" is not a symmetric claim
+
+Re-running `paired_equivalence` with families flipped: **n10 = 16 (two fewer than observed) yields
+hi = −0.09565 and `NOT_ESTABLISHED`.** So on Llama, **one cell fails by 1.3 families and the other
+(`candle_missile`) does not fail at all and was set aside post hoc.** Qwen3's −0.8250 is decisive.
+→ say **"excluded on Qwen3, and not preserved on Llama at the margin"**, never "dead on both".
+
+### ⛔ `RBD-C-021` / `C-019` — two literal-truth failures
+
+"Only **4** runs have any at-cap row" is **5** (`rbdplpB/C/D_beh`, `rbdpcmC_beh`, `rbdqlpC_beh`) —
+**contradicting the sprint's own main table**, inside a commit whose message asserts *"no number
+moved"*. And **"no gate was overridden" is literally FALSE**: all four PR-007/PR-008 runs record
+`option_mass_gate = "OVERRIDDEN — NOT REPORTABLE"` in their own `summary.json`. The defensible
+statement is *no gate-failing number was used to support a claim*.
+
+### Under-shoots: the corrections were applied to the table and not to the prose
+
+`RESEARCH_HANDOFF.md:225` — **"the one-paragraph truth", the most-quoted sentence in the addendum** —
+still carried the unqualified *"exactly inert on both"*, with the qualification 16 lines below.
+`:236` still said *"below chance"*. `:281` still called the Llama × `candle_missile` cell **VOID**,
+contradicting the corrected passage 20 lines above. And **F5 was never applied to
+`reports/RBD_MAIN_TABLE.md` at all** — its header still named the pooled-160 population over n=80
+rows. All fixed; the table header now comes from the **generator**, so it cannot drift again.
+
+### `RBD-C-016` (second part) — a prior-phase headline contradicting the sprint, in the same file
+
+`RESEARCH_HANDOFF.md:23` and the `C5` row still asserted **"The concept binding survives the
+intervention on both models"** with the bank restriction **"LIFTED"**. §14.30 flagged this and
+**neither audit nor correction touched it.** A reader opening the deliverable met the opposite of the
+sprint's only established finding, in the file whose own preamble says *this file wins*. Both lines
+now carry the contradiction and **the R-93 bank restriction is REINSTATED**.
+
+### What this says about the method
+
+**Two full adversarial passes, seven auditors, and the numbers never moved once.** Every defect
+found in either pass was in **prose**: a quantifier, a scope, a control clause, a stale file, a
+population label. The instrument layer — liveness contracts, option-mass gates, hash joins,
+`--allow-tail-readout` never set — held under repeated attack.
+
+> **The correction pass was itself the largest single source of new error.** `RBD-C-018` is a false
+> claim that did not exist before I set out to remove false claims. **A correction is a claim, and it
+> needs the same audit as the claim it replaces** — which is why `RBD-DR-005` existed at all, and why
+> a third pass over `RBD-DR-005`'s own edits is the honest next step, not an optional one.

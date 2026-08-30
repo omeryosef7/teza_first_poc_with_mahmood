@@ -69,7 +69,7 @@ checking it here. If a claim is not in the LIVE table, treat it as dead.
 The original chain
 `Boombness → predicts ASR → causally increases jailbreak behaviour → becomes a GCG/MAC objective`
 **did not survive.** The current state, condensed from
-`reports/SPRINT_SUMMARY_2026-08-16_TO_08-23.md` (commit `8bd07054`, itself written by re-deriving
+`reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` (commit `8bd07054`, itself written by re-deriving
 445 figures from committed artifacts):
 
 * **G2 is RETRACTED (R-18).** `d_surface` does not predict attack success on clean rows.

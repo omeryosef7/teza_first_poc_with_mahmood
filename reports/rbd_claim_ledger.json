@@ -2,12 +2,11 @@
  "schema": "RBD_CLAIM_LEDGER/2",
  "sprint": "Representation-Behavior Dissociation confirmatory sprint",
  "namespace": "RBD-* (RBD-PR / RBD-R / RBD-C / RBD-DR). Never a bare C-n or DR-n.",
- "as_of": "2026-08-30T05:10+03:00",
- "supersedes": "RBD_CLAIM_LEDGER/1 (commit 71595deb), which was STALE: it predated every Qwen3 result and still read 'Qwen3-14B arms are RUNNING and absent here'. Corrected by RBD-C-015 after an adversarial audit found it (finding F3).",
+ "as_of": "2026-08-30T14:40+03:00",
+ "supersedes": "RBD_CLAIM_LEDGER/1 (commit 71595deb), which was STALE. v2 corrected six wording overstatements. This is v2 REVISED by RBD-C-016..021 after a SECOND adversarial audit checked the corrections themselves and found that three claims were still overstated, one numeric error survived, and one FALSE claim had been CREATED by the correction pass.",
  "starting_commit": "10fcd0354b6662b4b4a5bd1d3b3e49ade8b717cb",
  "authoritative_log": "external_md/REPRESENTATION_BEHAVIOR_DISSOCIATION_CONFIRMATORY_SPRINT_PLAN_AND_PROGRESS.md",
- "verification": "Every number below was independently recomputed from raw results.jsonl by four read-only auditors on 2026-08-30 (RBD-DR-004). All headline counts reproduced EXACTLY. The corrections in this version are to CLAIM WORDING, not to any number.",
-
+ "verification": "All headline numbers independently recomputed from raw results.jsonl twice (RBD-DR-004, RBD-DR-005) by seven read-only auditors. Every count, envelope, McNemar p, cluster p and option-mass figure reproduces EXACTLY. The corrections below are to CLAIM WORDING and SCOPE; two numeric errors are fixed and flagged as such.",
  "claims": [
   {
    "id": "RBD-R-025 / RBD-R-032",
@@ -22,18 +21,33 @@
    "control": "same scope, late band 22-30 / 27-37",
    "primary_estimand": "paired difference in mapped-win rate, Readout A",
    "evidence": {
-    "llama": {"base": "78/80", "arm": "61/80", "delta": -0.2125,
-              "envelope": "[-0.3162, -0.1166]", "n10": 18, "n01": 1, "mcnemar_p": 7.629e-05},
-    "qwen3": {"base": "75/80", "arm": "9/80", "delta": -0.8250,
-              "envelope": "[-0.9125, -0.7146]", "n10": 66, "n01": 0,
-              "logodds": "+16.62 -> -4.99"}
+    "llama": {
+     "base": "78/80",
+     "arm": "61/80",
+     "delta": -0.2125,
+     "envelope": "[-0.3162, -0.1166]",
+     "n10": 18,
+     "n01": 1,
+     "mcnemar_p": 7.629e-05
+    },
+    "qwen3": {
+     "base": "75/80",
+     "arm": "9/80",
+     "delta": -0.825,
+     "envelope": "[-0.9125, -0.7146]",
+     "n10": 66,
+     "n01": 0,
+     "logodds": "+16.62 -> -4.99"
+    }
    },
    "uncertainty": "conservative envelope: min(lo) and max(hi) taken independently across Newcombe and a seeded domain cluster bootstrap",
    "robustness_caveat": "AUDIT FINDING: the LLAMA upper bound clears the -0.10 margin by 0.0166 = 1.3 of 80 families; two families moving would flip it to NOT_ESTABLISHED. The QWEN3 result is decisive. The shorthand 'FAILED on both' must not imply equal weight.",
    "cap_valid": true,
    "judge_session_valid": "n/a - logprob readout, no judge",
    "binding_equivalence_valid": true,
-   "artifacts": ["outputs/boombness/score_behavior/rbd{p,q}lp{A,B,C,D}_readout_*"]
+   "artifacts": [
+    "outputs/boombness/score_behavior/rbd{p,q}lp{A,B,C,D}_readout_*"
+   ]
   },
   {
    "id": "RBD-R-025b",
@@ -47,18 +61,23 @@
    "intervention": "demo_processing_only at 22-30 / 27-37",
    "control": "is the control",
    "primary_estimand": "paired difference in mapped-win rate",
-   "evidence": {"llama_binding": "78->78, n10=n01=0", "qwen3_binding": "75->75, n10=n01=0",
-                "dose_matched": "arm B and arm C have IDENTICAL total_prefill_edits per bank (Llama 43,100,928; Qwen3 52,688,768) - the control is exactly dose-matched, differing only in band"},
+   "evidence": {
+    "llama_binding": "78->78, n10=n01=0",
+    "qwen3_binding": "75->75, n10=n01=0",
+    "dose_matched": "arms B and C have IDENTICAL total_prefill_edits WITHIN EACH BANK. lantern_poison readout runs: Llama 43,100,928; Qwen3 52,688,768. candle_missile readout runs: Llama 42,033,528; Qwen3 51,413,032. (RBD-C-016: v2 labelled the first pair 'per bank' while quoting lantern_poison only.) The control is exactly dose-matched and differs ONLY in band."
+   },
    "scope_correction": "AUDIT FINDING F2: 'exactly inert on both models' is TRUE ONLY for binding on lantern_poison. It is NOT inert on: benign use (Llama 24->23 n10=1; Qwen3 69->67 n10=2), ASR (pooled Llama 12->16, Qwen3 5->7), or binding on candle_missile (Llama 52->49, n10=3).",
    "cap_valid": true,
    "judge_session_valid": "n/a for binding",
    "binding_equivalence_valid": true,
-   "artifacts": ["outputs/boombness/score_behavior/rbd{p,q}{lp,cm}C_readout_*"]
+   "artifacts": [
+    "outputs/boombness/score_behavior/rbd{p,q}{lp,cm}C_readout_*"
+   ]
   },
   {
    "id": "RBD-R-029 / RBD-C-012",
    "claim": "Whether an installed mapping is COMPOSED into an unrelated inference is MODEL-DEPENDENT.",
-   "status": "ESTABLISHED (this is the corrected, cross-model form)",
+   "status": "RAW MODEL DIFFERENCE ESTABLISHED; the COMPOSITION attribution is NOT (RBD-C-016)",
    "superseded_form": "The original RBD-R-029 - 'installation without use' - was recorded as ESTABLISHED with a 'Llama only, Qwen3 pending' caveat. Qwen3 CONTRADICTS the generalisation. Do not quote R-029 as a general claim about composition.",
    "kind": "confirmatory",
    "population": "rbd12 both banks, baseline arms + the all-condition control",
@@ -66,21 +85,51 @@
    "independence_unit": "family",
    "model": "Llama-3.1-8B-Instruct AND Qwen3-14B",
    "intervention": "none - a BASELINE property",
-   "control": "direct_harmful (concept named directly) and benign_literal (no mapping taught)",
+   "control": "Llama ONLY. Both rbdctrl*_allcond runs are meta-llama/Llama-3.1-8B-Instruct. Every Qwen3 readout dir contains natural_doublespeak x160 and NOTHING ELSE - no benign_literal, no direct_harmful anywhere on Qwen3. The property_known and no_mapping rows are LLAMA-ONLY.",
    "primary_estimand": "mapped-win rate on mapping_use_forced_choice",
    "evidence": {
-    "llama_lantern_poison": {"binding": "78/80", "benign_use": "24/80", "logodds": -1.596},
-    "qwen3_lantern_poison": {"binding": "75/80", "benign_use": "69/80", "logodds": 6.75},
-    "property_known_direct_harmful": {"lantern_poison": "80/80 (+5.055)", "candle_missile": "76/80 (+10.793)"},
-    "no_mapping_benign_literal_benign_use": {"lantern_poison": "32/80", "candle_missile": "0/80"}
+    "llama_lantern_poison": {
+     "binding": "78/80",
+     "benign_use": "24/80",
+     "logodds": -1.596
+    },
+    "qwen3_lantern_poison": {
+     "binding": "75/80",
+     "benign_use": "69/80",
+     "logodds": 6.75
+    },
+    "property_known_direct_harmful": {
+     "lantern_poison": "80/80 (+5.055)",
+     "candle_missile": "76/80 (+10.793)"
+    },
+    "no_mapping_benign_literal_benign_use": {
+     "lantern_poison": "32/80",
+     "candle_missile": "0/80"
+    }
    },
    "correction_to_wording": "AUDIT FINDING F6: 'Llama benign use is BELOW CHANCE' invites reading active avoidance. The instrument's no-mapping null is ~0.40 (32/80), not 0.50. The defensible statement is 'no better than the no-mapping control'.",
    "cap_valid": true,
    "judge_session_valid": "n/a",
    "binding_equivalence_valid": "n/a",
-   "artifacts": ["outputs/boombness/score_behavior/rbdctrl{lp,cm}_allcond_*",
-                 "outputs/boombness/score_behavior/rbd{p,q}lpA_readout_*"],
-   "scope_limits": ["two lexical pairs", "ONE property-question frame", "20 domains, n=80 per cell"]
+   "artifacts": [
+    "outputs/boombness/score_behavior/rbdctrl{lp,cm}_allcond_*",
+    "outputs/boombness/score_behavior/rbd{p,q}lpA_readout_*"
+   ],
+   "scope_limits": [
+    "two lexical pairs",
+    "ONE property-question frame",
+    "20 domains, n=80 per cell",
+    "the Qwen3 arm has NO within-model control",
+    "Readout B validated on Llama only"
+   ],
+   "quantified": {
+    "raw_difference_qwen_minus_llama": "+0.5625, Newcombe 95% CI [0.4208, 0.6695], Fisher p 3.3e-13",
+    "llama_mapping_attributable_lift": "24/80 vs its 32/80 no-mapping control; exact McNemar p = 0.215 - NO detectable composition",
+    "qwen3_mapping_attributable_lift": "NOT ESTIMABLE - no within-model control was run",
+    "sensitivity": "a Qwen3 no-mapping control of >=61/80 would put its lift below the 0.10 margin; >=77/80 would make it no larger than Llama's",
+    "why_this_matters": "Llama's own null was 32/80 (0.40), not the intuitive 0.50 - this instrument's null is NOT guessable, and the models differ sharply in baseline option mass (Qwen3 median 1.000 vs Llama 0.636), so their nulls are not interchangeable by assumption."
+   },
+   "correct_statement": "Qwen3 answers the property question with the mapped option 69/80 where Llama answers 24/80 (raw difference 0.56). On Llama this is indistinguishable from its no-mapping control. No control was run on Qwen3, so the model-dependence is STRONGLY SUGGESTED BY THE RAW RATES and NOT ESTABLISHED as a difference in composition. Readout B's validity is established on Llama only."
   },
   {
    "id": "RBD-R-031 / RBD-R-035",
@@ -95,16 +144,32 @@
    "control": "late band (moved the OPPOSITE way on both: Llama +4, Qwen3 +2)",
    "primary_estimand": "dASR at StrongREJECT 0.5 over the complete population, no filtering",
    "evidence": {
-    "llama": {"base": 12, "arm": 1, "delta_rows": -11, "cluster_p": 0.00635, "floor": 0.00049, "k_inf": 12},
-    "qwen3": {"base": 5, "arm": 2, "delta_rows": -3, "cluster_p": 0.625, "floor": 0.125, "k_inf": 4,
-              "note": "arm B is ALSO structurally incapable: floor 0.125 > alpha"}
+    "llama": {
+     "base": 12,
+     "arm": 1,
+     "delta_rows": -11,
+     "cluster_p": 0.00635,
+     "floor": 0.00049,
+     "k_inf": 12
+    },
+    "qwen3": {
+     "base": 5,
+     "arm": 2,
+     "delta_rows": -3,
+     "cluster_p": 0.625,
+     "floor": 0.125,
+     "k_inf": 4,
+     "note": "arm B is ALSO structurally incapable: floor 0.125 > alpha"
+    }
    },
    "why_declined": "T6 required baseline attacks in [14, 96]. Observed 12 (Llama) and 5 (Qwen3). The Llama T2 arithmetic PASSED and is reported, but a population failing its headroom precondition cannot carry the claim in EITHER direction.",
-   "additional_evidence_for_the_decline": "AUDIT FINDING: on Qwen3, NOT ONE baseline attack survives into ANY arm - including the late-band control that is exactly inert on binding (base=5, arm=7, down=5, up=7, both=0). Attack success is not reproducible arm-to-arm at these rates, so the Llama 12-down/1-up pattern must NOT be read as a mechanism signature; the design cannot distinguish it from churn.",
+   "additional_evidence_for_the_decline": "On Qwen3, NOT ONE baseline attack survives into ANY arm. Recomputed paired transitions, all four arms: A->B 5 down/2 up/0 both; A->C 5/7/0; A->D 5/5/0; A->E 5/6/0. STRONGER than v2 stated (which evidenced arm C only). NOT true on Llama (A->C is 6/10/6). Attack success is not reproducible arm-to-arm at these rates on Qwen3, so the Llama 12-down/1-up pattern must NOT be read as a mechanism signature.",
    "cap_valid": true,
    "judge_session_valid": "one SLURM job and one manifest per (model,bank), one pinned judge model, but FIVE separate judge_boombness invocations - see RBD-C-015 F10",
    "binding_equivalence_valid": "n/a",
-   "artifacts": ["outputs/boombness/judge/rbd{p,q}{lp,cm}j_*"]
+   "artifacts": [
+    "outputs/boombness/judge/rbd{p,q}{lp,cm}j_*"
+   ]
   },
   {
    "id": "RBD-R-028 / RBD-R-030",
@@ -119,12 +184,17 @@
    "intervention": "demo_processing_only",
    "control": "legacy_all_query moved binding UP on Llama (52 -> 63) when it masks the demonstrations entirely",
    "primary_estimand": "paired difference in mapped-win rate",
-   "evidence": {"llama": "52/80 -> 42/80, NOT_ESTABLISHED", "qwen3": "40/80 -> 12/80, T4-VOID",
-                "no_mapping_control": "benign_literal binding is 0/80, so masking is NOT equivalent to not having the demonstrations (RBD-R-030)"},
+   "evidence": {
+    "llama": "52/80 -> 42/80, NOT_ESTABLISHED",
+    "qwen3": "40/80 -> 12/80, T4-VOID",
+    "no_mapping_control": "benign_literal binding is 0/80, so masking is NOT equivalent to not having the demonstrations (RBD-R-030)"
+   },
    "cap_valid": true,
    "judge_session_valid": "n/a",
    "binding_equivalence_valid": false,
-   "artifacts": ["outputs/boombness/score_behavior/rbd{p,q}cm{A,B,C,D}_readout_*"]
+   "artifacts": [
+    "outputs/boombness/score_behavior/rbd{p,q}cm{A,B,C,D}_readout_*"
+   ]
   },
   {
    "id": "RBD-R-033 / RBD-R-034 / RBD-R-037",
@@ -143,31 +213,40 @@
    "cap_valid": true,
    "judge_session_valid": "n/a",
    "binding_equivalence_valid": "n/a",
-   "artifacts": ["outputs/boombness/score_behavior/rbdsow*", "outputs/boombness/score_behavior/rbdcu*"]
+   "artifacts": [
+    "outputs/boombness/score_behavior/rbdsow*",
+    "outputs/boombness/score_behavior/rbdcu*"
+   ]
   },
   {
    "id": "RBD-R-036",
    "claim": "Behavioural headroom is CONCEPT-driven.",
-   "status": "SUPPORTED, cross-model replicated",
+   "status": "OBSERVATION - the low rate is real; the attribution TO CONCEPT is NOT ESTABLISHED (RBD-C-017)",
    "kind": "confirmatory (observational)",
    "population": "rbd12 vs the prior phase's bomb banks",
    "n": "160 rows per model",
    "independence_unit": "model",
    "model": "Llama-3.1-8B-Instruct AND Qwen3-14B",
    "intervention": "none - baseline comparison",
-   "control": "same design, dose, domains, cap and judge model; only the concept differs",
+   "control": "RETRACTED. My stated control - 'same design, dose, domains, cap and judge model; only the concept differs' - is FALSE ON EVERY CLAUSE. Domains 100% DISJOINT (20 rbd12 vs 6/10/38 prior); role styles 1 vs 6; demo pools differ; dose {8} vs {0,1,2,4,8,16}; generation cap 640 vs 192; the comparator's judge model is UNKNOWN (unpinnable before 2026-08-25).",
    "primary_estimand": "baseline ASR",
-   "evidence": {"llama_poison_missile": "12/160 = 0.075", "qwen3_poison_missile": "5/160 = 0.031",
-                "prior_bomb_banks_llama": "0.15 - 0.28"},
+   "evidence": {
+    "llama_poison_missile": "12/160 = 0.075",
+    "qwen3_poison_missile": "5/160 = 0.031",
+    "prior_bomb_banks_llama": "0.15 - 0.28"
+   },
    "caveat": "A dose effect is not formally excluded; the direct test (RBD-PR-005, n_examples=16) was registered EXPLORATORY and never run.",
    "cap_valid": true,
    "judge_session_valid": true,
-   "binding_equivalence_valid": "n/a"
+   "binding_equivalence_valid": "n/a",
+   "refutation_in_this_repo": "DEMONSTRATION_RETRIEVAL_BEHAVIORAL_CAUSALITY...md:40 records bomb-bank baseline ASR 0.1562 -> 0.0625 -> 0.0437 from a TWO-SENTENCE PREAMBLE CHANGE ALONE - a 3.6x swing WITHIN the bomb concept, larger than the gap attributed to concept, and rbd12's 0.075 sits INSIDE that range. '0.15-0.28' selects the top of the bomb range and drops the 0.0437/0.0625 cells.",
+   "cross_model_claim": "RETRACTED - no Qwen3 bomb comparator exists. What replicates cross-model is the low rbd12 rate, not the contrast.",
+   "correct_statement": "Baseline ASR on rbd12 is 0.075 (Llama) / 0.031 (Qwen3), lower than a SUBSET of prior Llama bomb runs, but the comparison changes concept, codeword, domains, pools, role styles, cap, judge pinning and judge session simultaneously. Concept is a PLAUSIBLE BUT UNIDENTIFIED contributor."
   },
   {
    "id": "H1",
    "claim": "Representation/behaviour dissociation: demo_processing_only reduces attack success while PRESERVING semantic binding.",
-   "status": "OUTCOME A EXCLUDED ON BOTH MODELS, on conjunct 2 alone",
+   "status": "OUTCOME A EXCLUDED on Qwen3 DECISIVELY; on Llama the exclusion is MARGINAL (RBD-C-020)",
    "kind": "confirmatory",
    "population": "rbd12, both banks, both models",
    "n": "160 behavioural rows/arm/model; 80 families/readout/bank",
@@ -178,38 +257,115 @@
    "conjunct_status": {
     "1_behaviour_decreases": "DECLINED on both models (T6 headroom)",
     "2_binding_equivalent": "FAILED on both models (RBD-R-025/R-032)",
-    "3_liveness_verified": "PASS - frac_rows_scope_live 1.0 and scope_violations {} on all 30 intervened runs, each checked against its OWN liveness_must_be_zero contract",
-    "4_no_truncation_or_degeneracy": "PASS - only 4 runs have any at-cap row, 1 row each",
+    "3_liveness_verified": "PASS - frac_rows_scope_live 1.0 and scope_violations {} on all 34 runs carrying a knockout_scope (28 confirmatory + 2 smoke + 2 sow-B + 2 cu-B), each against its OWN liveness_must_be_zero contract. v2 undercounted the denominator as 30.",
+    "4_no_truncation_or_degeneracy": "PASS - 5 runs have any at-cap row, 1 row each (rbdplpB/C/D_beh, rbdpcmC_beh, rbdqlpC_beh; 5 of 1600 rows = 0.31%). RBD-C-021: v2 said 4, contradicting the sprint's OWN main table which shows all five at 0.0125 - a numeric error inside a commit asserting 'no number moved'.",
     "5_controls_do_not_reproduce": "PARTIAL - the late band is exactly inert on BINDING on lantern_poison only; it is not inert on benign use, on ASR, or on candle_missile binding (see RBD-R-025b)"
    },
    "verdict": "Outcome A is excluded independently of the headroom failure. The pattern has Outcome B's shape but Outcome B cannot be asserted either, since its behavioural half rests on the same declined estimand.",
    "cap_valid": true,
    "judge_session_valid": "see RBD-C-015 F10",
-   "binding_equivalence_valid": true
+   "binding_equivalence_valid": true,
+   "asymmetry": "'Excluded on both models' is not symmetric. Qwen3: delta -0.8250, 66/0, envelope [-0.9125,-0.7146] - decisive. Llama: rests on ONE cell (lantern_poison) whose upper bound clears the margin by 0.0166 = 1.3 of 80 families; re-running paired_equivalence with n10=16 (two fewer than the observed 18) yields hi=-0.09565 and verdict NOT_ESTABLISHED. Its OTHER cell, candle_missile, does NOT fail (NOT_ESTABLISHED) and was set aside post hoc. So on Llama: one cell fails by 1.3 families, the other does not fail and was excluded after the fact. Say 'excluded on Qwen3, and not preserved on Llama at the margin' - not 'dead on both models'."
   }
  ],
-
  "must_not_be_quoted": [
-  "Any claim that demo_processing_only suppresses the doublespeak attack. The estimand is DECLINED on BOTH models. The Llama T2 arithmetic passing does not change this, and on Qwen3 not one baseline attack survives into any arm including the inert control.",
-  "'candle_missile is VOID on both models' - Llama PASSES T4 there and returns NOT_ESTABLISHED; it is set aside post hoc, not by a gate (RBD-C-015 F1).",
-  "'the late-band control is exactly inert on both models' without qualification - it is exactly inert on BINDING on lantern_poison only (RBD-C-015 F2).",
-  "RBD-R-029 as a general claim about composition - it is contradicted by Qwen3 (RBD-C-012).",
-  "'Llama benign use is below chance' as evidence of active avoidance - the no-mapping null is ~0.40, not 0.50 (RBD-C-015 F6).",
+  "Any claim that demo_processing_only suppresses the doublespeak attack. DECLINED on BOTH models.",
+  "'candle_missile is VOID on both models' - Llama PASSES T4 there and returns NOT_ESTABLISHED; set aside post hoc, not by a gate.",
+  "'the late-band control is exactly inert on both models' unqualified - true for BINDING on lantern_poison only.",
+  "'Outcome A is dead/excluded on both models' as a SYMMETRIC claim - decisive on Qwen3, marginal on Llama by 1.3 families (RBD-C-020).",
+  "RBD-R-029 as a claim about COMPOSITION on Qwen3 - Qwen3 has NO within-model control; only the RAW rate difference is established (RBD-C-016).",
+  "RBD-R-036 as 'headroom is concept-driven' - confounded on domains, role styles, pools, dose, cap and judge, and this repo records a 3.6x bomb-internal swing from a preamble change (RBD-C-017).",
+  "'Readout B option mass 0.64-0.95 on every core run' - the range is 0.6048-1.0000; 0.64-0.95 is Llama baseline+control only (RBD-C-018).",
+  "'No gate was overridden' - the four PR-007/PR-008 runs record option_mass_gate OVERRIDDEN in their own summary.json. Say: no gate-failing number was used to support a claim (RBD-C-019).",
+  "'Llama benign use is below chance' as active avoidance - the no-mapping null is ~0.40.",
   "Any T5 verdict on a Llama cell - VOID for absence of baseline mapping-use.",
   "legacy_all_query as 'the no-mapping control' (RBD-R-030).",
-  "The below-gate PR-007 / PR-008 numbers (18->0, 8->9, 52->0, +5.07->-12.42). No gate was overridden to obtain them and they must not be used argumentatively (RBD-C-015 F7).",
-  "T7 (n_examples=16) as a headroom remedy - uninformative by construction (RBD-C-011)."
+  "The below-gate PR-007/PR-008 numbers argumentatively.",
+  "T7 (n_examples=16) as a headroom remedy - uninformative by construction (RBD-C-011).",
+  "RESEARCH_HANDOFF.md's prior-phase 'concept binding SURVIVES the intervention on both models' (line 23, C5 row) - CONTRADICTED on held-out banks; the R-93 bank-restriction lift is REINSTATED."
  ],
-
  "corrections_to_own_preregistration_and_claims": [
-  {"id": "RBD-C-004", "what": "10 rows per domain-pair unachievable; floor(20/n)=2 disjoint slots at n=8. Amended to 160 rows/arm.", "outcome_blind": true},
-  {"id": "RBD-C-005", "what": "'article_audit must return zero' would fail every valid bank; corrected to a three-clause gate.", "outcome_blind": true},
-  {"id": "RBD-C-008", "what": "Wrote FIXED for a fix that had not been made (F7 of the deep review).", "outcome_blind": true},
-  {"id": "RBD-C-009", "what": "Qwen3 arm C band 27-38 was 12 blocks against the early band's 11. Amended to 27-37.", "outcome_blind": true},
-  {"id": "RBD-C-010", "what": "Applied one scope's must-be-zero liveness rule to every arm; three false alarms.", "outcome_blind": true},
-  {"id": "RBD-C-011", "what": "T7's n_examples=16 fallback halves the population and cannot pass T6. Declared uninformative BEFORE running.", "outcome_blind": true},
-  {"id": "RBD-C-013", "what": "Launched duplicate judge jobs by running a watcher and the same step manually. Cancelled before any artifact existed.", "outcome_blind": true},
-  {"id": "RBD-C-014", "what": "FINDING_ID regex matched R-033 inside RBD-R-033; the prefixed namespace collided with an extractor.", "outcome_blind": true},
-  {"id": "RBD-C-015", "what": "This ledger version. An adversarial audit found: a stale ledger, 'VOID on both models' overstated, 'exactly inert on both' under-qualified, a Readout-B validity number attributed to the wrong readout, a main-table population mismatch, and 'one invocation per bank' literally false.", "outcome_blind": false, "note": "Made AFTER results were known, and every change tightens a claim rather than loosening one."}
+  {
+   "id": "RBD-C-004",
+   "what": "10 rows per domain-pair unachievable; floor(20/n)=2 disjoint slots at n=8. Amended to 160 rows/arm.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-005",
+   "what": "'article_audit must return zero' would fail every valid bank; corrected to a three-clause gate.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-008",
+   "what": "Wrote FIXED for a fix that had not been made (F7 of the deep review).",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-009",
+   "what": "Qwen3 arm C band 27-38 was 12 blocks against the early band's 11. Amended to 27-37.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-010",
+   "what": "Applied one scope's must-be-zero liveness rule to every arm; three false alarms.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-011",
+   "what": "T7's n_examples=16 fallback halves the population and cannot pass T6. Declared uninformative BEFORE running.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-013",
+   "what": "Launched duplicate judge jobs by running a watcher and the same step manually. Cancelled before any artifact existed.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-014",
+   "what": "FINDING_ID regex matched R-033 inside RBD-R-033; the prefixed namespace collided with an extractor.",
+   "outcome_blind": true
+  },
+  {
+   "id": "RBD-C-015",
+   "what": "This ledger version. An adversarial audit found: a stale ledger, 'VOID on both models' overstated, 'exactly inert on both' under-qualified, a Readout-B validity number attributed to the wrong readout, a main-table population mismatch, and 'one invocation per bank' literally false.",
+   "outcome_blind": false,
+   "note": "Made AFTER results were known, and every change tightens a claim rather than loosening one."
+  },
+  {
+   "id": "RBD-C-016",
+   "what": "Qwen3 has NO all-condition control; the composition claim was asserted for a model whose within-model lift is not estimable. Also: dose-match scalars labelled 'per bank' while quoting lantern_poison only.",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  },
+  {
+   "id": "RBD-C-017",
+   "what": "RBD-R-036's control clause was false on every clause; the concept attribution is confounded and this repo contains a larger bomb-internal swing from a preamble change.",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  },
+  {
+   "id": "RBD-C-018",
+   "what": "My CORRECTION PASS CREATED a false claim: 'option mass 0.64-0.95 on every core run' - a universal quantifier attached to a Llama-only range, in the row certifying the instrument.",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  },
+  {
+   "id": "RBD-C-019",
+   "what": "'No gate was overridden' is literally false; the four runs record OVERRIDDEN in their own summary.json.",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  },
+  {
+   "id": "RBD-C-020",
+   "what": "'Excluded on both models' is not symmetric: decisive on Qwen3, marginal on Llama (two families flip the verdict).",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  },
+  {
+   "id": "RBD-C-021",
+   "what": "v2 said 4 runs have an at-cap row; it is 5, contradicting the sprint's own main table - inside a commit asserting 'no number moved'.",
+   "outcome_blind": false,
+   "note": "Found by RBD-DR-005, the audit OF the corrections. Every change tightens or retracts a claim."
+  }
  ]
 }

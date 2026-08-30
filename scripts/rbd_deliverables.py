@@ -102,8 +102,11 @@ def main_table(cells: dict) -> str:
          "**Every row is emitted by `scripts/rbd_deliverables.py` reading the runs.** A cell reads",
          "`n/a` only when the artifact genuinely does not exist yet; nothing is left blank.",
          "",
-         "`ASR` columns are over the COMPLETE preregistered population — no filtering of any kind",
-         "(§7). `Δ` is arm minus baseline, in rows and rate. `binding`/`benign` are mapped-wins.",
+         "`ASR` columns carry EVERY row of the population each row names — no filtering of any",
+         "kind (§7). ⚠ **Each row is ONE (model, bank) cell, n = 80.** The preregistered PRIMARY",
+         "estimand is the POOLED 160 across both banks (sprint log §14.33/§14.42); the n=160-derived",
+         "thresholds must not be read against a single n=80 row. `Δ` is arm minus baseline, in rows",
+         "and rate. `binding`/`benign` are mapped-wins.",
          "",
          "| model | bank | arm | scope | n | ASR base | ASR arm | Δ rows | Δ rate | cluster p | k_inf | floor | T2 | headroom | binding base→arm | binding verdict | benign base→arm | benign verdict | cap base/arm | EOS base/arm | hash join | liveness |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]

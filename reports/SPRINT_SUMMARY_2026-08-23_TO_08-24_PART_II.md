@@ -7,7 +7,7 @@ Mechanistic interpretability of jailbreak / prompt-injection mechanisms.
 (2026-08-24 23:04:57). **113 commits.**
 
 **What this document is.** A self-contained account of the work done after
-`reports/SPRINT_SUMMARY_2026-08-16_TO_08-23.md` (Part I) closed at HEAD `016f3c98`, 2026-08-23 16:07.
+`reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` (Part I) closed at HEAD `016f3c98`, 2026-08-23 16:07.
 It is written for a reader — human or LLM — with **no prior knowledge of the project**: §1 restates
 everything from Part I that is needed to follow §5 onward. Every number is quoted at the precision it
 is stored at, with its producing artifact named.
@@ -1224,7 +1224,7 @@ truth. **Every Phase-2/3/4 arm actually ran eager, bf16.**
 
 | document | lines | status |
 |---|---|---|
-| `reports/SPRINT_SUMMARY_2026-08-16_TO_08-23.md` | 851 | **Part I** — the state this document continues from |
+| `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` | 2,027 | Its **§1–§15** (851 lines, frozen at HEAD `016f3c98`) are the state this document continues from. It was **extended on 2026-08-26** to cover 08-23 → 08-26, so it now also summarises *this* window and the phase after it — and its **§16** records where later work overturned §1–§15. Renamed from `..._TO_08-23.md`. |
 | `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md` | 6,029 | **CURRENT** — this window's live log. Read its LIVE CLAIMS LEDGER (top) before quoting any figure from it |
 | `external_md/BOOMBNESS_D_SURFACE_FOLLOWUP_PROGRESS.md` | — | the previous phase's live log; superseded for everything this window touched |
 | `reports/boombness_objective_sprint_report.md` | — | the main report; §0a is the one-screen state |
