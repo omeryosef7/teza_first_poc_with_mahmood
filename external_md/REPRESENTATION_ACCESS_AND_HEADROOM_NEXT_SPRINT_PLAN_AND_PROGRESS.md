@@ -2076,3 +2076,67 @@ unseen.** Therefore, binding on the rest of the sprint:
 
 Qwen3 is the decisive model — its binding collapsed 75/80 → 9/80 — so the assay must be shown to work
 there before any Track-A claim. That run is submitted.
+
+---
+
+## `RAH-PR-009` — Stage-A calibration on LEVEL-A discovery data — 2026-08-30
+
+**Status: PREREGISTERED (prospective). Written and committed before the level-A runs are submitted.**
+
+`RAH-R-008` bound this sprint to re-derive the receiver configuration on **level-A discovery
+material**, because the GO/NO-GO pre-flight chose `R` while looking at a level-B population.
+
+> **Registry note.** The §10.0 phase map originally pointed P3 at `RAH-PR-004`. `RAH-PR-004` was
+> spent on the GO/NO-GO pre-flight, so the Stage-A procedure takes the next free id, **`RAH-PR-009`**.
+> `RAH-PR-005` stays reserved for the **freeze**. Recorded rather than silently renumbered.
+
+### What is calibrated, and on what
+
+| | |
+|---|---|
+| banks (level A, **discovery**) | `boombness_prompt_bank` (carrot↔bomb), `_basket_bomb` (basket↔bomb), `_ticket_knife` (ticket↔knife) — 6 domains each, 2736 rows, all conditions |
+| donors | `direct_harmful` × `behavioral`, **`n_examples = 8`** (matching the RBD dose), 4 per bank, sorted by `prompt_id` — a deterministic, outcome-blind selection |
+| distractor labels | **domain-matched** (`RAH-DR-001` F6): on a bomb bank the other concept is `knife` and the other codeword is `ticket`; on the knife bank, `bomb` / `carrot`. All four labels verified **single-token and pairwise distinct on both models** — Llama `13054/75294/22145/11989`, Qwen3 `12764/74194/21430/11727` |
+| models | Llama-3.1-8B-Instruct and Qwen3-14B (`--enable-thinking false`) |
+| grid | 4 receiver forms × 5 receiver layers `R` × all donor layers `L ∈ [0, n_layers−2]` |
+
+### The selection rule, fixed now
+
+Choose the `(form, R)` that **maximises the MINIMUM uplift across all level-A banks and both models**,
+subject to the three-conjunct gate passing on every one of them.
+
+Maximising the *minimum* rather than the maximum is deliberate: it selects for **robustness across
+lexical pairs and models**, not for a peak on one lucky cell — the failure mode `RAH-DR-001` F9/F10
+warned about when a gate argmaxes over ~1300 cells.
+
+Deterministic tie-break, in order: **lower `R`** → **broader donor-layer support above the
+intervention band** (count of `L > lo` with uplift > threshold) → **form order as listed**.
+
+### Why this selection CANNOT be contaminated by the effect it will later estimate
+
+`RAH-DR-001` F10 required *"absence of the cell, not a promise"*. It is satisfied structurally:
+
+```
+$ grep -cE "intervene|ScopedAttentionKnockout|AttentionKnockout|knockout|demo_processing_only" \
+        src/boombness/rah_preflight_transport.py
+0
+```
+
+**The Stage-A runner contains no intervention code path at all.** It cannot compute a
+`demo_processing_only` arm even if instructed to. The `base − dpo` contrast that Track A will
+estimate is not merely unexamined here — it is **uncomputable** by this program.
+
+Additionally, every donor is `direct_harmful` (the concept is literally present) — an
+instrument-validity condition, never the `natural_doublespeak` attack condition — so no attack row is
+touched.
+
+### What the result licenses
+
+Stage A selects `(form, R)` **and nothing else**. It does **not** license any claim about
+representation, behaviour, the intervention, or any lexical pair. Its output is an input to the
+`RAH-PR-005` freeze, which will additionally fix the donor position, the donor layer set
+(constrained to `L > lo` per `RAH-DR-001` F2), the control family, the statistical test and the
+equivalence margin.
+
+**If level-A disagrees with the pre-flight's R = 4–8 band, that disagreement is reported as a
+finding, and the level-A answer wins** — the pre-flight is a GO/NO-GO, not a calibration.

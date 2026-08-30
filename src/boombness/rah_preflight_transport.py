@@ -194,6 +194,9 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--enable-thinking", default="default")
     ap.add_argument("--n-donors", type=int, default=4)
+    ap.add_argument("--n-examples", type=int, default=None,
+                    help="restrict donors to this dose. Level-A banks carry {0,1,2,4,8,16}; the RBD "
+                         "banks carry only 8, so this is a no-op there and a real filter on level A.")
     ap.add_argument("--probe", default="widget",
                     help="neutral probe; must be ONE token with a leading space on both models")
     ap.add_argument("--other-concept", default="missile")
@@ -207,9 +210,10 @@ def main():
     rows = [json.loads(l) for l in open(args.bank)]
     # DONOR = a CLEAN, concept-bearing prompt: `direct_harmful` carries the CONCEPT on its surface,
     # so a rep captured at its target occurrence is the positive control's "clean concept rep".
-    donors = sorted([r for r in rows
-                     if r["condition"] == "direct_harmful" and r["query_kind"] == "behavioral"],
-                    key=lambda r: r["prompt_id"])[:args.n_donors]
+    cand = [r for r in rows
+            if r["condition"] == "direct_harmful" and r["query_kind"] == "behavioral"
+            and (args.n_examples is None or r["n_examples"] == args.n_examples)]
+    donors = sorted(cand, key=lambda r: r["prompt_id"])[:args.n_donors]
     if not donors:
         raise SystemExit("no direct_harmful/behavioral rows in the bank")
     concept, codeword = donors[0]["concept"], donors[0]["codeword"]
@@ -348,6 +352,8 @@ def main():
            "concept": concept, "codeword": codeword, "probe": args.probe,
            "label_words": label_words, "label_ids": label_ids, "label_meta": label_meta,
            "donor_condition": "direct_harmful", "n_donors": len(donors),
+           "donor_n_examples": args.n_examples,
+           "n_donor_candidates": len(cand),
            "donors": [{k: v for k, v in d.items() if k != "reps"} for d in donor_reps],
            "R_set": R_SET, "threshold": POSITIVE_CONTROL_THRESH,
            "gate_rule": "positive_control_ok requires level > t AND uplift over the UNPATCHED prior > t AND p_concept > p_codeword (RAH-C-006 / review F2: an absolute level gate is passed by the receiver's own lexical prior, since the 4 labels are printed in the prompt)",
