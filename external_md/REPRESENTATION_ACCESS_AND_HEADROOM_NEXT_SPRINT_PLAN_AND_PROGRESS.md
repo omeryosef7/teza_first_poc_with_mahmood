@@ -1694,3 +1694,84 @@ known failure rather than assuming it.
 
 **No scientific claim was affected** — the job produced no result artifact. `RAH-PR-004`'s gate and
 stop rule are unchanged.
+
+---
+
+## `RAH-R-006` — the Track-B power analysis, and what it says about the whole behavioural design class — 2026-08-30
+
+**Status: DIAGNOSTIC. This is the INPUT to `RAH-PR-006`; the thresholds are NOT frozen in this entry.**
+The freeze waits on the self-review currently auditing whether the clustering correction is applied
+correctly for a paired McNemar test (§38 requires the power analysis itself be right before it can
+gate an expensive matrix).
+
+Producer `scripts/rah_power_trackb.py`, reusing `paired_test_noise_sensitivity.simulate()` — the
+repository's existing paired-McNemar-with-judge-noise simulator, already covered by 14 tests
+including a positive control asserting that asymmetric noise *does* inflate type-I. This file adds
+only a bisection over the true effect and a clustering correction.
+
+### Inputs, all measured, all conservative (§20)
+
+| input | value | provenance |
+|---|---|---|
+| judge flip rate | **not a constant** — 0.0213 at ASR 0.0125 rising to 0.0851 at ASR 0.2708 | `effective_flip_rate` over each population's own score distribution (`RAH-C-004`) |
+| flip symmetry | symmetric | pinned re-tests 8 up / 8 down, exact p = 1.0; this sprint's own 4 up / 2 down |
+| domain ICC | **0.09** | the TOP of the range estimable on balanced populations (ab_base 0.030, 38dom 0.067, d10-Llama 0.090). The RBD baselines cannot estimate ICC at 4 rows/domain — every point estimate ≤ 0 — so their apparent zero is **not** used |
+| α, power | 0.05 two-sided, 0.80 | |
+
+### The result
+
+MDE at 80 % power, ICC 0.09, measured flip rate. `n/a` = **even reducing ASR to zero does not reach
+80 % power**.
+
+| k domains | rows/domain | n | baseline ASR | expected attacks | MDE (absolute) | MDE (relative) |
+|---|---|---|---|---|---|---|
+| 20 | 4 | **80** | 0.05 → 0.20 | 4 → 16 | **n/a at every baseline** | — |
+| 20 | 8 | 160 | 0.0875 | 14 | **n/a** | — |
+| 20 | 8 | 160 | 0.1500 | 24 | **n/a** | — |
+| 20 | 8 | 160 | 0.2000 | 32 | 0.1896 | 0.95 |
+| 20 | 16 | 320 | 0.1375 | 44 | 0.1294 | 0.94 |
+| 30 | 8 | 240 | 0.1375 | 33 | 0.1258 | 0.91 |
+| 38 | 16 | **608** | 0.0875 | 53 | 0.0795 | 0.91 |
+| 38 | 16 | **608** | 0.1375 | 84 | 0.0964 | **0.70** |
+| 38 | 16 | **608** | 0.2000 | 122 | 0.1211 | **0.61** |
+
+### What this says, and it is larger than Track B
+
+> **The 80-rows-per-arm design used throughout this project cannot detect a behavioural effect of any
+> size, at any baseline ASR up to 0.20, once judge noise and domain clustering are both accounted
+> for.** Not "is underpowered for small effects" — *cannot detect a total wipeout*.
+
+This is a **retrospective explanation** of why the behavioural half kept failing, and it is
+independent of the headroom gate that formally declined it. The predecessor sprint declined its
+behavioural estimand because baseline attacks (12/160, 5/160) fell below a floor of 14. This analysis
+says that **even had the floor been met, the design could not have resolved the effect**: at n = 160
+and baseline 0.15 the MDE is still `n/a`.
+
+⚠ It also **removes a tempting reading of `RAH-R-005`**. The `candle_missile` n = 16 cell rose to
+0.2000, which looks like the headroom the sprint wanted. At k = 20 × m = 2 (the n = 16 population is
+40 rows) the design is *further* below the n/a threshold, not above it. **Headroom alone was never
+the binding constraint.**
+
+### Two consequences that are not obvious
+
+1. **A higher-headroom population does not buy proportional power.** Judge churn concentrates near
+   the 0.5 boundary, so the effective flip rate *rises* with baseline ASR (0.021 → 0.085 measured).
+   Choosing a bomb-class concept buys signal **and** noise. This is why the n = 160 / baseline-0.20
+   cell needs a 95 % relative reduction.
+2. **Domains, not rows, are the binding lever** — as the predecessor phase's own R-BE finding said.
+   Going 20 → 38 domains at fixed rows/domain is what moves MDE from `n/a` to 0.61–0.70 relative.
+
+### The feasibility question this poses for `RAH-PR-006`
+
+A design at **k = 38 domains × 16 rows = 608 rows** on a baseline of **≥ 0.15** reaches a relative MDE
+of **0.61–0.70**. The discovery-bank observation that motivated this whole line was a **73 % relative
+reduction** (30/96 → 8/96); the RBD Llama arm-B pattern was 92 % (12 → 1). So an effect of the size
+previously observed **is** detectable — but only at ~600 rows over ~38 domains on a high-headroom
+population, and **not** at any design this project has run.
+
+Such a bank already exists: `boombness_prompt_bank_38dom_gatesub.jsonl` — **38 domains, 608 rows,
+Llama baseline ASR 0.1562** (`d38gj_20260829_043706_310488`). Whether it is usable is a question for
+`RAH-PR-007`, which is **not yet written**, and nothing here selects it.
+
+**Nothing is frozen by this entry.** `RAH-PR-006` will state the minimum headroom, the minimum
+meaningful effect, the required rows and the required domains — after the method is audited.
