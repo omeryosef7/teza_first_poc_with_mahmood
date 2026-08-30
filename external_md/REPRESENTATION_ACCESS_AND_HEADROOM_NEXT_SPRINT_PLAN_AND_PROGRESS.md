@@ -1144,3 +1144,136 @@ suppression. Once reported, `RBD-PR-005` is **CLOSED**.
 **Known limitation, from `RAH-R-003`:** the n = 16 demonstrations are a *superset* drawn deeper into
 the same pool, so the marginal sentences are material the n = 8 population never contained. Dose and
 demonstration content are not fully separable in this design. Recorded before the result.
+
+---
+
+## `RAH-C-001` — my own analysis swapped the Newcombe cell arguments — 2026-08-30
+
+**Status: CORRECTION (of an unpublished intermediate). No claim was ever made on the wrong values.**
+
+The first Phase-1 analysis pass called
+`newcombe_paired_ci(n11, n10, n01, n00)` with `n10` = *"arm and not base"* and `n01` = *"not arm and
+base"*. The library's convention (`src/boombness/paired_equivalence.py:110-120`) is the **opposite**,
+and is documented in its own docstring:
+
+> Cell convention, both indexed (base, arm): `n10 = base 1, arm 0` (a **LOSS** under the arm);
+> `n01 = base 0, arm 1` (a **GAIN**)
+
+So every Newcombe interval in that pass was **sign-flipped**. It produced the self-contradictory line
+`delta = +0.9375 … Newcombe 95% CI [-0.9730, -0.8491]` and a `VERDICT: NEGATIVE LIFT` on a cell whose
+lift is strongly positive.
+
+**How it was caught: two estimators of the same quantity disagreed in sign.** The domain cluster
+bootstrap computes `sum(arm - base)/n` directly and cannot be fooled by an argument order; Newcombe
+takes four counts and can. The disagreement was visible in the first line of output.
+`mcnemar_exact(n10, n01)` is symmetric, so the p-values were unaffected and would **not** have
+revealed it — a difference test was blind to this exact defect.
+
+**Fix, applied at the source of the error class rather than to the symptom.** The analysis no longer
+hand-counts cells for the interval: it builds `{"base": …, "arm": …}` rows and lets the library count
+them, and it **asserts `newcombe.delta == cluster_bootstrap.delta`** before reporting. Two
+independent paths to the same scalar now have to agree or the run aborts.
+
+**Permanent guard:** `scripts/rah_verify_phase1.py` re-derives the cells, the delta, both intervals
+and the exact McNemar p from raw rows with **its own** Wilson / Newcombe-10 / McNemar / bootstrap
+implementations and **no import of `paired_equivalence`**. It reproduces every figure.
+
+**Correction discipline (§9.5):** this correction is itself a claim. The corrected numbers below were
+recomputed independently before being written, the old wording exists only in this session's
+scratch output and in this entry, and the entry states the *scope* of the error (intervals only;
+counts, deltas and p-values were correct throughout).
+
+---
+
+## `RAH-R-004` — Phase 1 result: the mapping is installed and is not used — 2026-08-30
+
+**Status: DIAGNOSTIC — CONFIRMATORY for `RAH-PR-002`'s registered question.** Answers the question
+registered in `RAH-PR-002` before the Qwen3 runs were submitted. Closes `RBD-C-016`.
+
+### Provenance
+
+| | |
+|---|---|
+| new runs | `rahqlp_allcond_20260830_180029_2664294`, `rahqcm_allcond_20260830_180029_2664293` — Qwen3-14B, **640/640 rows each**, `status: ok`, 953 s / 972 s |
+| reused runs | `rbdctrllp_allcond_20260830_012059_2650520`, `rbdctrlcm_allcond_20260830_012059_2650519` — Llama, 640 rows each |
+| population | 80 family stems × 4 conditions × 2 readouts, **20 domains**, per (model × bank) |
+| option mass | **PASS on every cell** — median 0.99995–0.99998, `frac_above_1pct = 1.0`, gate 0.05 |
+| independent verify | `scripts/rah_verify_phase1.py` → **PASS**, all counts / deltas / both intervals / p exact |
+| artifacts | `outputs/boombness/rah_phase1/rah_phase1_lift.json`, `…/rah_phase1_verify.json` |
+
+### The attributable lift — `arm = natural_doublespeak`, `base = benign_literal` (no mapping installed), paired by family, n = 80, k = 20 domains
+
+| cell | readout | nat_ds | benign_literal | Δ | Newcombe 95 % | domain-cluster 95 % | McNemar | verdict |
+|---|---|---|---|---|---|---|---|---|
+| Qwen3 × `lantern_poison` | binding | 75/80 | 0/80 | **+0.9375** | [+0.8491, +0.9730] | [+0.8750, +0.9875] | 5.29e-23 | **LIFT ESTABLISHED** |
+| Qwen3 × `candle_missile` | binding | 40/80 | 0/80 | **+0.5000** | [+0.3836, +0.6070] | [+0.3375, +0.6500] | 1.82e-12 | **LIFT ESTABLISHED** |
+| Llama × `lantern_poison` | binding | 78/80 | 0/80 | **+0.9750** | [+0.8982, +0.9931] | [+0.9375, +1.0000] | 6.62e-24 | **LIFT ESTABLISHED** |
+| Llama × `candle_missile` | binding | 52/80 | 0/80 | **+0.6500** | [+0.5316, +0.7455] | [+0.5250, +0.7875] | 4.44e-16 | **LIFT ESTABLISHED** |
+| Qwen3 × `lantern_poison` | mapping use | 69/80 | **72/80** | −0.0375 | [−0.1421, +0.0666] | [−0.1250, +0.0375] | 0.629 | NOT ESTABLISHED |
+| Qwen3 × `candle_missile` | mapping use | 2/80 | 0/80 | +0.0250 | [−0.0243, +0.0866] | [+0.0000, +0.0625] | 0.500 | NOT ESTABLISHED |
+| Llama × `lantern_poison` | mapping use | 24/80 | **32/80** | −0.1000 | [−0.2318, +0.0371] | [−0.2875, +0.0625] | 0.215 | NOT ESTABLISHED |
+| Llama × `candle_missile` | mapping use | 3/80 | 0/80 | +0.0375 | [−0.0145, +0.1045] | [+0.0000, +0.1000] | 0.250 | NOT ESTABLISHED |
+
+### `RBD-C-016` is CLOSED — and it resolves against the interesting reading
+
+> **Qwen3's 69/80 benign mapping-use rate is NOT attributable to the installed mapping.** Measured on
+> the **same** families, the **same** readout, the **same** option words and the **same**
+> implementation, Qwen3's **no-mapping base rate is 72/80** — *higher* than its mapped rate.
+
+The large raw model difference the predecessor sprint found (Qwen3 69/80 vs Llama 24/80, Fisher
+p 3.3e-13) is therefore **a difference in the two models' no-mapping base rates for these option
+words** — Llama 32/80 = 0.40, Qwen3 72/80 = 0.90 — **not** a difference in how much they use an
+installed mapping. `RBD-C-016`'s warning that *"that control being 0.40, not the intuitive 0.50, is
+exactly why Qwen3's cannot be assumed"* is vindicated: assuming it would have been wrong by 0.50.
+
+**The `RESEARCH_HANDOFF.md` §5 prohibition on quoting `RBD-R-029` as a general composition claim
+STANDS.** This entry does not revive it. `RAH-R-004` is a **new measurement** resting on its own
+four-cell data, and it reaches a *narrower* conclusion than the composition reading did.
+
+### Dynamic-range check — why "NOT ESTABLISHED" is not merely low power here
+
+A null on a readout with no headroom is uninformative. So the floor (`benign_literal`, no mapping)
+and the ceiling (`direct_harmful`, concept literally present) are reported with every arm:
+
+| cell | readout | floor | ceiling | range | arm | **arm's position in range** |
+|---|---|---|---|---|---|---|
+| Qwen3 × `lantern_poison` | mapping use | 72/80 | 80/80 | 8 | 69/80 | **at/below floor** |
+| Qwen3 × `candle_missile` | mapping use | 0/80 | 77/80 | **77** | 2/80 | **2.6 %** |
+| Llama × `lantern_poison` | mapping use | 32/80 | 80/80 | 48 | 24/80 | **at/below floor** |
+| Llama × `candle_missile` | mapping use | 0/80 | 76/80 | **76** | 3/80 | **3.9 %** |
+| Qwen3 × `lantern_poison` | binding | 0/80 | 80/80 | 80 | 75/80 | 93.8 % |
+| Qwen3 × `candle_missile` | binding | 0/80 | 80/80 | 80 | 40/80 | 50.0 % |
+| Llama × `lantern_poison` | binding | 0/80 | 80/80 | 80 | 78/80 | 97.5 % |
+| Llama × `candle_missile` | binding | 0/80 | 80/80 | 80 | 52/80 | 65.0 % |
+
+On **`candle_missile`, both models**, the readout has a **76–77-row dynamic range** and the
+doublespeak arm sits at **2.6 % / 3.9 %** of it. That is not a power failure; it is a measured floor.
+On `lantern_poison`, both models, the arm sits **at or below its own no-mapping floor**.
+
+### The claim, scoped exactly
+
+> **On all four (model × lexical pair) cells, the doublespeak mapping is demonstrably installed and
+> is not used in a benign property question.** Installation: binding lift +0.5000 to +0.9750, every
+> CI excluding zero, arm at 50.0–97.5 % of the readout's range. Non-use: mapping-use lift NOT
+> ESTABLISHED on 4/4, arm at or below its no-mapping floor on 4/4 and at ≤ 3.9 % of a 76-row range on
+> the two cells with wide headroom.
+
+**Population:** Llama-3.1-8B-Instruct and Qwen3-14B; `lantern↔poison` and `candle↔missile`; 80 family
+stems and 20 domains per cell; baseline arm only, no intervention anywhere in this result.
+
+### ⚠ What this is NOT
+
+* **Not a claim about harmful behaviour.** No ASR, no judge, no generation is involved. The
+  behavioural estimand remains **DECLINED** on both models.
+* **Not a claim about any intervention.** Every row here is `A_baseline_allcond`.
+* **Not "the mapping is never used"** — it is one benign property readout with one option pair per
+  bank. `mapping_use_forced_choice` on `lantern↔poison` asks about `shed` vs `cabinet`; on
+  `candle↔missile` about `cupboard` vs `bunker`.
+* **Not evidence that the representation is absent** — the binding lift proves the opposite. This is
+  precisely the *representation present, downstream use absent* pattern, and it is the reason Track A
+  matters: it says nothing about *why* the use is absent.
+
+### Scope limit honoured
+
+`RAH-PR-002` bound this to a cleanup experiment that may not expand into a new mechanism branch. It
+has not. Phase 1 is **CLOSED**. Any follow-up requires a new `RAH-PR-###`.
