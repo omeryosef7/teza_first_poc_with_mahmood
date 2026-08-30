@@ -3327,3 +3327,52 @@ measured at 25/152.
 The decisive unknown remains **`ticket↔knife`, the pool's only non-discovery pair**. Its 6-domain
 sibling measured 0.0521, far below the floor. If its 38-domain screening rate also falls short, the
 outcome is **`B-BLOCKED-BY-MATERIAL`** — named in `RAH-PR-007` before this data existed.
+
+---
+
+## `RAH-R-020` — screening Step 1 PASSES; Step 2 submitted — 2026-08-31
+
+**Status: DIAGNOSTIC (bank validity).**
+
+Tokenisation audit, both screening banks × both models, `--strict`:
+
+```
+boombness_prompt_bank_38dom_tk_gatesub.jsonl   rows ok=608 bad=0 ambiguous=0  violations=0  (x2 models)
+boombness_prompt_bank_38dom_gatesub.jsonl      rows ok=608 bad=0 ambiguous=0  violations=0  (x2 models)
+```
+
+⚠ **What this does NOT establish.** The audit reports `families=608 checked=0
+skipped_incomplete=608` — the **2×2 token-alignment half was not exercised at all**. Both gatesub
+banks contain a **single condition** (`natural_doublespeak`), so there are no aligned condition pairs
+to compare and the alignment check has nothing to run on. That is legitimately N/A here, **not** a
+pass. The honest statement is *"tokenisation verified on 608/608 rows on both models; the alignment
+check was inapplicable to a single-condition subset"* — never *"the bank passed the audit"*, which
+would be the kind of guard-matched-zero-rows claim §9.7 treats as a defect.
+
+The alignment property is nonetheless inherited: both gatesub banks are **strict subsets of banks
+generated under `--strict`**, and `rah_make_gatesub.py` copies rows **verbatim** rather than
+regenerating them.
+
+### Step 2 submitted
+
+| job | model × bank | rows | status |
+|---|---|---|---|
+| `822840` | Llama × `ticket↔knife` | 152 | submitted |
+| `822841` | Qwen3 × `carrot↔bomb` | 152 | submitted |
+| `822842` | Qwen3 × `ticket↔knife` | 152 | submitted |
+
+Llama × `carrot↔bomb` needs no run — already measured at **25/152 = 0.1645**.
+All three use the frozen screening parameters: baseline arm only, `natural_doublespeak`,
+`n_examples = 8`, cap **640**, `--expect-n 152`. Two concurrent Qwen3-14B loads, at the documented cap.
+
+### A process note on this tick
+
+The Step-1 → Step-2 gate was written as a background command that waited on
+`pgrep -f tokenization_audit.py` and then submitted. **It submitted nothing and produced no output** —
+the wait pattern matched the waiting shell's own command line, so the guard could never observe the
+audit finishing. Caught by the next tick's `squeue` check showing an empty queue with no artifacts.
+The audit was then read directly and the runs submitted by hand.
+
+Worth recording because it is the *inverse* of this sprint's usual failure: not a guard that passed
+vacuously, but a **gate that never fired at all** — which is the safe direction (nothing ran on an
+unverified bank), and which the 30-minute loop caught on its first pass.
