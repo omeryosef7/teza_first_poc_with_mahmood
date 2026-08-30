@@ -1277,3 +1277,215 @@ stems and 20 domains per cell; baseline arm only, no intervention anywhere in th
 
 `RAH-PR-002` bound this to a cleanup experiment that may not expand into a new mechanism branch. It
 has not. Phase 1 is **CLOSED**. Any follow-up requires a new `RAH-PR-###`.
+
+---
+
+## `RAH-DR-001` — adversarial review of the Track-A design, BEFORE implementation — 2026-08-30
+
+**Status: DEEP REVIEW.** Five independent read-only lenses (capture site · receiver · controls &
+confounds · statistics & anti-fishing · prior-art archaeology) plus a synthesis pass, over a written
+design spec and the source it proposed to build on. **6 agents, 172 tool calls, 0 errors.** The spec
+reviewed is `scratchpad/TRACK_A_ASSAY_SPEC_v1.md`; no assay code existed.
+
+It returned **10 FATAL and 21 SERIOUS defects**. Running the review before writing the code, rather
+than after, is the single highest-value decision of the sprint so far. Full findings are in the
+workflow transcript; the ones that change the plan are recorded below.
+
+### The four that would have produced a WRONG ANSWER rather than a broken run
+
+**`RAH-DR-001-F1` — the instrument's positive control has already failed, by ~712×.** See
+`RAH-C-002` below. This is the finding that reorders the sprint.
+
+**`RAH-DR-001-F2` — a whole family of donor layers makes `D-base` and `D-dpo` bit-identical, and
+every gate still passes.** Under `demo_processing_only` the mask edits **demo** query-rows only, so a
+**query** position's residual first differs at block `lo+1`. For any donor block `L ≤ lo` (6 Llama /
+7 Qwen3) at `p-codeword` or `p-final`, `v_base == v_dpo` **byte for byte**. Every validity gate
+(positive control, `D-self`, `D-wrong`, option mass) is computed *without* `D-dpo`, so all of them
+pass at such a layer. The confirmatory stage would then report *"receiver identical under base and
+dpo ⇒ representation preserved"* **when the two input tensors were the same bytes** — a false
+positive for the sprint's preferred hypothesis, manufactured by the anti-fishing protocol itself.
+*Required:* constrain `L > lo` (`L ≥ lo` at `p-demo-end`); add a **mandatory vacuity gate** logging
+`‖v_dpo − v_base‖` and `cos` per row, with `median(delta) == 0` written `VACUOUS`, never a null; keep
+one below-band cell as a deliberate negative control that must show Δ = 0 exactly.
+*Consequence:* **`D-late` is deleted.** A late band (22-30 / 27-37) with a fixed mid-depth capture
+site is `D-base` relabelled — it cannot differ. It is replaced by the repo's existing same-band,
+count-matched key control `nondemo_matched_d1..3` (`score_behavior.NONDEMO_DRAW_ARMS`), which fixes
+band, depth, dose and key count and varies only key *identity*. **This changes `CA4` as registered in
+`RAH-PR-001` §6.1** and is recorded as a deviation here rather than silently applied.
+
+**`RAH-DR-001-F3` — the donor capture path double-counts BOS on Llama, shifting every position +1.**
+`ds_common.forward_hidden_states:876` calls the tokenizer **without** `add_special_tokens=False` on an
+**already chat-templated** string, while every position-resolution helper in the repo
+(`query_span_positions`, `demo_key_positions`, `46:115`) uses `add_special_tokens=False`. Executed on
+both tokenizers: Llama templated prompt → **38 vs 37 ids**, leading `[128000, 128000, …]`; **Qwen3
+unaffected**. Track A would have read every Llama donor one token off, silently, with a plausible
+number out the other end — and a Qwen3-only pilot would not have caught it.
+
+**`RAH-DR-001-F4` — two live layer-index conventions, and the top row is a different coordinate.**
+`capture_target_reps` returns `[n_layers+1, H]` where row `l` = `hidden_states[l]` = resid *after
+block l−1*; `LayerPatch(layer_idx=L)` writes `hidden_states[L+1]`. Additionally transformers ties
+`hidden_states[-1]` to the **post-final-norm** state, so the top row is not a block output at all.
+The archived failing run's "best" layer was **32 of 32** — i.e. that anomalous row.
+
+### Serious defects adopted into the design (abridged)
+
+`S-1` both harmful labels rise together with harm salience → primary estimand becomes the
+**harm-matched** `logp(poison) − logp(missile)`. `S-2` donor/receiver residual **norm differs 5–6×**
+(measured from a committed artifact: ‖h‖ 5.68 @L6 → 38.25 @L28) and `mode="replace"` therefore
+*deletes* far more than it *writes* → rescale to the receiver's native norm, report un-rescaled as
+secondary; **and nothing in this repo has ever measured residual norm under a knockout** — one paired
+measurement is now required before freeze. `S-3` a Gaussian `D-rand` is off-manifold and cannot be
+the floor → add `D-mean` and `D-perm`. `S-4` `D-shuf` shares the same mapping, so it is
+**repeatability, not specificity** → renamed `D-exch`; specificity moves to *same-codeword,
+different-concept* (`basket_bomb` → `basket_knife`) and *same-concept, different-codeword*.
+`S-6` the donor is lexically clean (**verified: 0/80 rows contain "poison"**) but the demos carry
+*vial / hazardous materials / antidote / spills* while the distractors come from a different semantic
+field → **domain-matched distractors** and a new mandatory `D-nomap` arm from `benign_remap`.
+`S-8` Qwen3's receiver would read `<think>`, not the answer, unless `enable_thinking=False` is passed
+**explicitly**. `S-9` the search space is ~1330 cells, not 54, because the gate itself argmaxes over
+all donor layers. `S-11` the missing `Answer:` prefix. `S-12` `eager` must be forced on **every** arm
+or `D-base` loads SDPA and `D-dpo` loads eager. `S-18` `D-self` as specified is a bitwise tautology.
+`S-19` add a **patch-free linear/logit-lens channel** on the same vectors — *"linearly present but
+not transportable"* is the most informative outcome available and no single channel can produce it.
+
+### What the review confirmed as CORRECT — recorded so it is not re-litigated
+
+The core construction (options in a different prompt from the measured state); the residual
+coordinate claim; capturing at a query position under `demo_processing_only` **does** measure the
+intended thing subject to `L > lo`; `ScopedAttentionKnockout`'s key/row algebra has **no off-by-one**;
+a single prefill-only donor forward reproduces the behavioural intervention exactly, so there is **no
+KV hazard**; the receiver must never be hooked (and in fact *cannot* be — `demo_processing_only`
+raises on an empty demo span); `RAH-R-002-b` confirmed at `pair_common.py:678-684`; the three-level
+population design with a pre-data freeze; reporting the full 4-cell distribution.
+
+---
+
+## `RAH-C-002` — correcting `RAH-R-002`: I cited a gate as an asset without checking that it had ever passed — 2026-08-30
+
+**Status: CORRECTION of a claim made in this sprint's own inventory.**
+
+`RAH-R-002` §0b.2 wrote, of `doublespeak_causality/46_forced_choice_patchscope.py`:
+
+> *"the same mechanic with a **forced-choice inspection prompt** … **and a layer-scanned positive-control
+> gate** (`patchscope_gate:83`) that must pass before evaluation runs."*
+
+and concluded:
+
+> *"**P2 is a small additive build, not a rewrite.**"*
+
+**That is an overstatement, and the omission is material.** I recorded that the module *has* a
+positive-control gate. I did not check whether the gate had ever *passed*. It has not.
+
+**Re-derived by me from the raw artifact**, `doublespeak_causality/outputs/next3_fc_patchscope_bomb.json`
+(the **only** `46` artifact in the repository; Llama-3.1-8B, carrot↔bomb, `n_layers` 32, R = 28,
+injection position 35 of 75):
+
+```
+positive_control.pos_ctrl_max   = 1.404e-04      gate: > 0.1      -> failed by ~712x
+positive_control.best_ps_layer  = 32             (= n_layers: the POST-NORM row, RAH-DR-001-F4)
+per_layer_p_concept             = 3.2e-05 .. 1.4e-04, FLAT across all 33 rows
+evaluated                       = false
+surface_baseline.p_codeword     = 0.9529   <-- option mass is NOT the problem
+```
+
+`surface_baseline.p_codeword = 0.9529` is the important half: the receiver answers confidently when
+unpatched. **The patch simply does not move it.** So the failure is transport, not readout mass.
+
+**Corroborated on two further model families** by the review, from committed artifacts:
+`pair_kv_mediation_Llama-3.1-8B-Instruct_…` 2.53e-04; `…Qwen3-14B…` 3.59e-06;
+`multiconcept_necsuff_llama8b_fixed/stage2b_results.json` `positive_control_ok: false` on **36/36**
+items. And the repository had already drawn the conclusion — `HANDOFF.md:21`: *"Patchscope readout is
+unusable as configured (late-layer read, no positive control) — dropped."*
+
+**What is corrected.** `RAH-R-002`'s *factual* statements about `46` stand — the module exists, it is
+cross-prompt, it is forced-choice, it has a gate. The **inference** does not: *"P2 is a small additive
+build"* assumed a working instrument. **The correct statement is:**
+
+> Track A rests on an instrument that has **one recorded run and a failed positive control**, whose
+> failure was **flat in the donor layer** — the very axis the design proposed to search. Whether the
+> instrument can be made to work is now an **open empirical question that must be settled first**.
+
+**Why this matters beyond bookkeeping.** Had the review not run, Stage-A calibration would have swept
+donor layers on discovery data, found nothing above the gate anywhere, and burned the sprint into
+outcome **A-IV (assay invalid)** — while `RAH-R-002` sat in the log calling the instrument an asset.
+
+**Correction discipline (§9.5):** the corrected figure was re-derived by me from the raw JSON before
+this entry was written, not accepted from the reviewing agent. The old wording is quoted verbatim
+above rather than edited away. Scope of the error: an *inference*, not a number.
+
+---
+
+## `RAH-PR-004` — GO/NO-GO transport pre-flight, with a stop rule — 2026-08-30
+
+**Status: PREREGISTERED (prospective). Written and committed before the runs are submitted.**
+
+### The one question
+
+> Is there **any** (receiver form, receiver layer `R`) at which a clean, concept-bearing donor
+> activation forces a receiver to name that concept?
+
+This is a question about the **instrument**, not about the intervention. No arm, no knockout, no
+`demo_processing_only` appears anywhere in it.
+
+### The lead being tested — receiver GEOMETRY, not donor layer
+
+The only patchscope configuration in this repository that has ever passed a positive control
+(`07_patchscope_readout.py`, `P(virus) = 0.722`) patches the **final** prompt token and reads the
+logits **at that same position** — *zero attention hops*, raw string, no chat template. The failing
+`46` patches ~40 tokens upstream of its read position with 4 blocks remaining. Since the archived
+failure was **flat in donor layer**, donor layer is not the axis that explains it. **Geometry is.**
+
+Four receiver forms, ordered by hops, are swept against `R ∈ {n/8, n/4, n/2, 3n/4, n−4}` and all
+donor blocks `L ∈ [0, n_layers−2]`:
+
+| form | template | patch at | read at | hops |
+|---|---|---|---|---|
+| `id07_raw` | none (raw string) | last token | **same position** | **0** |
+| `id07_tmpl` | chat template | last token | **same position** | **0** |
+| `fc_probe_last` | chat template | probe (near end) | final, after `Answer:` | few |
+| `fc46` | chat template | probe (first mention) | final | ~40 |
+
+`fc46` is retained deliberately: this run must **reproduce the archived failure**, not assume it.
+
+### Donor
+
+`direct_harmful` × `behavioral` rows from the RBD banks — the condition whose *surface is the concept
+itself*, so the captured state is the "clean concept rep" the positive control requires. Captured at
+the **last occurrence of the concept surface**, resolved by character offset in that prompt's own
+tokenisation. `n_donors = 4`, reported as a mean over donors so a single row cannot carry the verdict.
+
+### Defects fixed by construction, so a failure cannot be a bug
+
+`RAH-DR-001-F3` own tokenisation with `add_special_tokens=False` (`capture_target_reps` and
+`forward_hidden_states` are **not used**) · `F4` one layer convention, `L` ↔ `hidden_states[L+1]`,
+capped at `n_layers−2` to exclude the post-norm row · `S-8` `enable_thinking=False` explicit, with the
+rendered receiver asserted to contain a **closed** `<think></think>` · `S-11` `Answer:` prefix ·
+`S-12` `attn_implementation="eager"` on every forward · `S-10` probe resolved by character offset into
+the quoted slot and then asserted to be a subtoken of the probe · `RAH-DR-001-F7` labels scored by
+`signals.readout_ids(...)["primary_id"]`, one id each, pairwise disjointness asserted.
+
+**Verified on CPU before submission**, both tokenizers: `poison/lantern/missile/candle` →
+Llama `21109/74265/26290/38899`, Qwen3 `20476/73165/25224/37799`, **4 distinct on both**; probe
+`widget` is a single token (`9264` / `9086`) and collides with no label.
+
+### The gate and the STOP RULE — fixed now
+
+* **PASS** — at least one configuration reaches `pos_ctrl_max > 0.1` (the threshold `46` itself
+  applies, restated rather than imported so this verdict does not depend on the failing module).
+  Track A proceeds; the passing geometry is carried into the Stage-A design.
+* **FAIL** — **no** configuration reaches the threshold on either model. Then:
+
+> **Track A STOPS.** The sprint reports: *the activation-transport instrument this design requires
+> does not exist in this repository, on either model, across four receiver geometries, five receiver
+> layers and every donor layer — now the fifth recorded positive-control failure.* That is a
+> **sourced, reusable negative**, not a null result, and it is reported as such.
+
+**We do not lower the threshold, and we do not proceed on a failed control.** A null from a readout
+that fails its own positive control is uninterpretable, and this repository has already retracted a
+result on exactly that ground.
+
+### Scope
+
+This is instrument validation only (§9.8: *smoke tests are not pilot science*). It measures no arm,
+supports no claim about representation or behaviour, and its outcome selects only whether Track A
+continues — a decision the brief's §34 gate requires be made before any large causal search.
