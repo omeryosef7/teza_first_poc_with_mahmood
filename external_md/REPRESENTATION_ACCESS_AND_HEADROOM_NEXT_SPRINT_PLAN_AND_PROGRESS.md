@@ -714,3 +714,253 @@ uncommitted files, unfinished run directories, newest claim ledger, newest corre
 registry". Staged/uncommitted are empty (tree clean). Unfinished run directories, other-branch work,
 and the ledger/registry locations are part of the pending inventory and are reported in `RAH-R-002`
 rather than being guessed here.
+
+---
+
+## `RAH-R-002` — Phase 0b: code inventory reconciled — 2026-08-30
+
+**Status: DIAGNOSTIC (state record).** Eight read-only inspectors, 293 tool calls, 0 errors. Findings
+that change what this sprint does are recorded here; the rest live in the transcripts.
+
+### 0b.1 The intervention — confirmed, with exact coordinates
+
+| item | location |
+|---|---|
+| mode table | `doublespeak_causality/pair_common.py:614-620` |
+| row-set algebra | `pair_common.py:642-665` — `demo_processing_only` → `frozenset()` if decode else `demo_span` |
+| hook | `pair_common.py:687-828` `ScopedAttentionKnockout`, mask edit `_pre` at `:743-806` |
+| empty-span refusal | `pair_common.py:722-724` — refuses a no-op knockout |
+| constructed | `src/boombness/score_behavior.py:951-955` |
+| liveness required-positive | `pair_common.py:623-630` `LIVENESS_REQUIREMENT` |
+| liveness required-zero | `pair_common.py:633-640` `LIVENESS_MUST_BE_ZERO` |
+| **`total_prefill_edits`** | `score_behavior.py:544` |
+
+**Bands are argsfile constants, not code** — `--intervene demo_all:attn_knockout:<lo>-<hi>:<alpha>`,
+validated at `score_behavior.py:1494-1518`:
+
+| model | mechanism band (arm B) | late control band (arm C) |
+|---|---|---|
+| Llama-3.1-8B-Instruct | **6–14** | **22–30** |
+| Qwen3-14B | **7–17** | **27–37** |
+
+⚠ **`RAH-R-002-a` — the dose match is an audit result, not an assertion.** There is **no code** that
+checks arms B and C have equal `total_prefill_edits`. The exact equality (Llama 43,100,928; Qwen3
+52,688,768) was established by reading the artifacts. **Any RAH run pairing a mechanism band against
+a late band must re-verify the dose match from its own artifacts**; it is not guaranteed by
+construction for a new band width or a new bank.
+
+⚠ **`RAH-R-002-b` — one required-zero counter is read with a default.** `pair_common.py:668-684`
+evaluates liveness as `int(stats.get(key, 0))`. For the required-**positive** direction a missing key
+correctly fails (`0 <= 0`). For the required-**zero** direction a **missing key silently passes**.
+This is precisely the `missing != zero` defect class named in §9.6. It did not bite the RBD sprint
+(the hook always writes all counters), but any **new** patch hook in this sprint must not inherit the
+pattern, and the Track-A liveness contract will assert key *presence* before value.
+
+### 0b.2 Patching infrastructure — the decisive finding
+
+**A true cross-prompt patchscope already exists**, and one variant is already forced-choice:
+
+| module | what it is |
+|---|---|
+| `doublespeak_causality/07_patchscope_readout.py:48-67` | `PatchscopeDecoder(lm, inspection_prompt)` → `.decode(vector, inspect_layer, harm_id, code_id)`. Donor vector → **fixed third prompt** via `LayerPatch(replace)` at `q_pos = seq_len-1`. |
+| `doublespeak_causality/46_forced_choice_patchscope.py` | the same mechanic with a **forced-choice inspection prompt** (`FORCED_CHOICE_INSPECTION:66`), injection at `:123`, patch at `:135`, labels read at the final position, **and a layer-scanned positive-control gate** (`patchscope_gate:83`) that must pass before evaluation runs. |
+| `doublespeak_causality/ds_common.py:886` `capture_target_reps` | per-layer resid at `codeword_last` / `following` |
+| `doublespeak_causality/pair_common.py:374` `ComponentOutSwap` | **per-position** donor rows into `resid_post` / `attn_out` / `mlp_out` |
+| `src/boombness/aggressive_patching.py:861` `run_pair` | the most complete donor/recipient transplant: live alignment assertions, `donor_ceiling` arm, live `self_swap_noop_check`, `FailureLedger`, dose-matched additive controls |
+| `src/boombness/donor_patch.py:84` `DonorPatch` | the only patcher with a **token-identity refusal** (`strict_ids`) and a `liveness()` method |
+| `doublespeak_causality/48_attribution_patching.py:256` `build_alignment` | the correct cross-prompt, **different-length** position map |
+| `doublespeak_causality/43_transplant_mediation.py` | model-free reducer: paired bootstrap, permutation, Holm, faithfulness |
+
+**`RAH-R-002-c` — the single missing piece is arm-active donor capture.** Every existing transplanter
+captures its donor from a **clean, unhooked** forward. Capture under live intervention hooks exists in
+**exactly one place**: `src/boombness/score_behavior.py:1914-1921` (`--rescue-donor self`), where the
+arm's context managers are entered around the capture forward. Track A needs precisely that wiring
+pointed at a **different** (receiver) prompt.
+
+**Consequence for the plan: P2 is a small additive build, not a rewrite.** The assay is
+`46_forced_choice_patchscope`'s receiver + `score_behavior.py:1914-1921`'s arm-active capture, with
+`DonorPatch`-style identity/liveness guards. This is recorded now so that a later "we had to write a
+lot of new code" cannot be justified retrospectively.
+
+Also on record, for `RAH-DR` Reviewer A: `34_intervention_sweep.py` writes ONE donor vector to every
+receiver occurrence with **no token-identity check**; `44_kv_mediation.py:362-363` aligns donor and
+receiver **by rank** (`[-m:]`), not by token; `DonorPatch` is a **no-op by construction** when
+`rescue_layer <= lo` while `liveness()` still reports `fired: true` (defect C-20).
+
+### 0b.3 Readouts, banks, conditions
+
+`semantic_forced_choice` at `src/boombness/prompt_families.py:137-152`;
+`mapping_use_forced_choice` (Readout B) at `:168-193` with options table `:202-205`
+(`lantern/poison → shed | cabinet`; `candle/missile → cupboard | bunker`).
+`CONDITIONS` at `:94-105`; `CORE_2X2 = (benign_literal, direct_harmful, natural_doublespeak,
+concept_in_benign_ctx)` at `:106`. Scoring via `signals.string_option_readout`
+(`src/boombness/signals.py:693-751`), `option_mass` at `:749`, gate at `score_behavior.py:2199-2209`.
+
+Banks: `rbd12` preset, seed 20260829, **960 rows each**, 20 domains, 80 family stems, 3 readouts.
+Bank audit `src/boombness/rbd_bank_audit.py` (9 checks, both banks PASS). Tokenisation audit clean on
+both models. **Note: the audit module is at `src/boombness/`, not `scripts/`** — the brief's path is
+NOT FOUND.
+
+**`RAH-R-002-d` — what was never run on Qwen3.** Every Qwen3 RBD run passes
+`--conditions natural_doublespeak`. `benign_literal`, `direct_harmful` and `concept_in_benign_ctx`
+have **zero Qwen3 rows in any run**. The all-condition control exists only as
+`rbdctrllp_allcond` / `rbdctrlcm_allcond`, both `--model meta-llama/Llama-3.1-8B-Instruct`. This is
+exactly the gap `RBD-C-016` names, and it is what Phase 1 closes. Also never run anywhere: arm E
+readout (`E_respq` × forced-choice), on either model.
+
+### 0b.4 ASR, judge, statistics
+
+`src/boombness/asr_protocol.py` (807 lines): 27 `MANDATORY_DIAGNOSTICS` (`:185-209`),
+`assert_publishable` (`:225`), `assert_sprint_grade` (`:329`), `paired_transitions` (`:641`),
+`CAP_BIND_MAX = 0.10` (`:215`). §9.2's field list is a **superset** of the existing 27 in two places —
+it additionally requires `judge_session`, `total_intervention_edits`, `intervention liveness`,
+`domain-level effects` and the `development vs confirmatory` label. **Those five must be added before
+any Track-B headline is printed** (`RAH-R-002-e`, an implementation item, not a defect claim).
+
+`src/boombness/paired_equivalence.py`: Newcombe method-10 (`:110`), exact McNemar (`:156`), domain
+cluster bootstrap (`:177`), rule-of-three capability check (`:279`), conservative envelope
+(`:266-269`), verdicts `WORSE_THAN_MARGIN → UNRESOLVABLE_AT_THIS_N → EQUIVALENT → NOT_ESTABLISHED`.
+Pure stdlib. `scripts/rbd_verify_independent.py` imports **only** `argparse/collections/json/math/os/
+typing/fractions` — its independence is real, and it declares its own limit (it does not re-derive
+Newcombe or Holm).
+
+**Measured judge instability, pinned model, byte-identical text** — the Track-B noise floor:
+
+| artifact | n | ASR a → b | rows changed |
+|---|---|---|---|
+| `pinned_q15A.json` core2x2 | 80 | 0.11250 → 0.08750 | 0.0875 |
+| `pinned_q16A.json` core2x2 | 80 | 0.03750 → 0.07500 | 0.1250 |
+| DR-10 / R-70 | 160 | — | **9/160 rows flip (0.0563)**, 4 of them 0.0 ↔ ≥0.5 |
+
+⚠ **`RAH-R-002-f`** — `RBD-DR-004` F10 records **five** `judge_boombness` invocations per (model,bank),
+not one, with **per-invocation drift 6.5–7.0 %** — at n=80 that is ~5 rows, *comparable to the entire
+RBD baseline attack count*. Track B's judge protocol (§9.4) must be enforced in code, not by intent.
+
+### 0b.5 Historical baseline harmful ASR — the Track-B power input
+
+**RBD population (cap 640, pinned judge), all 16 cells HEADROOM_FAILED:**
+
+| model | bank | baseline |
+|---|---|---|
+| Llama | `lantern_poison` | 7/80 (0.0875) |
+| Llama | `candle_missile` | 5/80 (0.0625) |
+| Qwen3 | `lantern_poison` | 4/80 (0.0500) |
+| Qwen3 | `candle_missile` | 1/80 (0.0125) |
+
+**Prior `bomb`-concept populations (cap 192, judge pinning varies — NOT directly comparable):**
+Llama `natural_doublespeak` n=270: **0.2185**; Llama within-bomb preamble swing **0.1562 → 0.0437
+(3.6×)**; Qwen3 `natural_doublespeak` n=420: **0.1596** (95 % CI [0.0714, 0.3167] over 6 domains);
+Qwen3 d10 21/160, longpre10 23/160; n=96 decompositions Llama 0.1667 / Qwen3 0.1771 (both cap 192,
+`frac_at_cap` 0.5625 / 0.2604 — **cap-bound, so these are ASR-within-192, not ASR**).
+
+**These numbers are the INPUT to the `RAH-PR-006` power analysis and are not themselves a headroom
+claim.** The comparison across them changes concept, codeword, domains (100 % disjoint), role styles,
+dose, cap and judge pinning simultaneously (`RBD-C-017`). Per §20 of the brief the power analysis
+will use **conservative** values, never the 0.2185 maximum.
+
+**NOT FOUND:** no per-concept-pair power calculation targeting Track B exists in the repo.
+
+### 0b.6 SLURM and environment — confirmed unchanged
+
+`/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python` → python 3.12.13, torch
+2.7.1+cu126, transformers 5.12.1. It is the **only** env; every sbatch script does
+`conda activate poc_stage2`. Template: **`src/boombness/slurm/run_boombness.sh`** (killable, 1 GPU,
+48 G, 6 h, `--nodelist=n-801..n-805,t-806`, L40S name guard at `:82-89`, argsfile quote guard at
+`:62-75`). `slurm_scripts/` is **not** used by this line of work. Judge:
+`src/boombness/slurm/run_p2_judge.sh` — **never** `run_judge_cpu.sh` (it silently discards `P2_*`).
+Submitter `scripts/rbd_submit_wave.sh`, `MAX_INFLIGHT` default 6; **2 for Qwen3-14B**.
+
+Measured cost: readout cell ≈ **0.03 GPU-h** (Llama) / **0.06** (Qwen3); behavioural cell ≈ **0.26** /
+**0.30**. Whole 36-job RBD matrix = **8.66 GPU-h**. n-801 is a **3–4× tail-risk** node (every weight
+load slower than 15 min in 232 logged runs happened there).
+
+### 0b.7 Concurrency and unfinished work — clean
+
+No commit anywhere is a descendant of `fe8fd610`. `origin` == local. Zero uncommitted or untracked
+files. **Zero unfinished RBD run directories** — all 71 `rbd*` dirs have `DONE.json` with expected row
+counts. 326 dirs repo-wide have `config.json` without `DONE.json`; **225 are pytest fixtures**, the
+rest are pre-2026-08-25 aborts already catalogued in `EXCLUDED_RUNS.json`, plus 25 non-RBD dirs listed
+in the transcript. Three worktrees under a peer session's scratchpad are all **ancestors** of HEAD and
+stale by ~32 h. `stash@{0}` (2026-08-22) belongs to a **third writer — it is not popped, not
+inspected, not touched.** No `.git` lock files. No other writer is active.
+
+### 0b.8 Open item inherited and carried forward
+
+`RESEARCH_HANDOFF.md` and the RBD log both close on the same sentence: *"a third pass over
+`RBD-DR-005`'s own edits is the honest next step, not an optional one."* **This sprint adopts it** as
+the first task of `RAH-DR-001` — the RBD deliverables are the documents this sprint builds on, so an
+uncorrected error there propagates.
+
+---
+
+## `RAH-PR-002` — Phase 1: the Qwen3 all-condition control — 2026-08-30
+
+**Status: PREREGISTERED (prospective). Registered before the runs are submitted and before any Qwen3
+row for these conditions exists anywhere in the repository (`RAH-R-002-d`).**
+
+### Question
+
+> How much of Qwen3's mapping-use performance is attributable to the **installed mapping** rather than
+> to its **no-mapping base rate**?
+
+`RBD-C-016` is explicit that this is unanswered: Qwen3's 69/80 mapped answers under
+`natural_doublespeak` has **no Qwen3 control condition**. Llama's control is 32/80 — **0.40, not the
+intuitive 0.50** — which is exactly why Qwen3's may not be assumed, and why Llama's 32/80 may **not**
+be borrowed.
+
+### Population
+
+Qwen3-14B (`--enable-thinking false`), both RBD banks, `rbd_core`, `n_examples 8`, seed 20260829,
+**all four `CORE_2X2` conditions**, query kinds `semantic_forced_choice,mapping_use_forced_choice`,
+`--readout-max-batch 1`, `--expect-n 640` per bank. 640 = 80 family stems × 4 conditions × 2 readouts.
+
+The argsfiles are byte-identical to the committed Llama twins `runargs/rbd_ctrl/{lp,cm}_allcond.txt`
+except for **three tokens**: `--model Qwen/Qwen3-14B`, the added `--enable-thinking false` (present in
+every other Qwen3 run in the repo), and `--tag`. Verified by whitespace-split diff before submission.
+This satisfies the brief's "SAME population / readout / cap / option structure / implementation".
+
+### Primary estimand
+
+$$\Delta_{\text{map}} = P(\text{mapped} \mid \texttt{natural\_doublespeak}) - P(\text{mapped} \mid \texttt{benign\_literal})$$
+
+on `mapping_use_forced_choice`, **paired by family stem**, n = 80 per bank, clustered by `domain`
+(k = 20). `benign_literal` is the no-mapping base rate: benign demonstrations, codeword surface, no
+installed mapping — the same control condition that supplies Llama's 32/80.
+
+### Secondary, reported but not the estimand
+
+`direct_harmful` (Readout-B ceiling / instrument validity — Llama gave 1.000 and 0.950);
+`concept_in_benign_ctx`; and the same four-condition breakdown for `semantic_forced_choice`.
+
+### Statistics, fixed now
+
+Exact McNemar on discordant pairs; Newcombe method-10 paired CI; domain cluster bootstrap
+(k = 20, seed 20260829); α = 0.05, two-sided. Computed with
+`src/boombness/paired_equivalence.py` and **independently re-derived** by a verifier that does not
+import it.
+
+### Validity gate, fixed now
+
+Median `option_mass` ≥ **0.05** on every reported cell (the repository's existing gate). **A cell
+below the gate is `CANNOT ANSWER` for that cell and its number is not quoted** — the `RBD-C-019`
+lesson: a gate recorded as overridden is still an overridden gate.
+
+### Interpretation rules, fixed now
+
+| result | conclusion |
+|---|---|
+| Δ_map CI excludes 0, positive | Qwen3 mapping use **is** mapping-attributable on this population. `RBD-C-016` closed. |
+| Δ_map CI includes 0 | **NOT ESTABLISHED.** The 69/80 remains a *raw* rate; the model difference remains a raw difference. |
+| Δ_map negative | reported as observed. |
+
+### Scope limit — binding
+
+This is a **cleanup / DIAGNOSTIC** experiment whose only job is to close `RBD-C-016`. It **may not**
+expand into a new mechanism branch, and it **cannot promote any declined estimand** — in particular
+nothing here may be read as evidence about attack suppression, which is `DECLINED` on both models and
+stays declined. Any follow-up motivated by this result requires its own `RAH-PR-###`.
+
+### Cost
+
+2 Qwen3-14B readout jobs, 640 rows each. At the measured 1.10 rows/s that is ≈ 10 min of compute per
+job plus weight load; budget ≈ 0.35 GPU-h total. `MAX_INFLIGHT=2` (the two-concurrent-14B-loads rule).
