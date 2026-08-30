@@ -1629,3 +1629,68 @@ the ordering is disclosed here in full:
 
 Qwen3-14B × both banks — generation running (jobs 817148 / 817157, both alive, weight-loading under
 the documented two-14B-per-node contention). `RBD-PR-005` is **not closed** until those land.
+
+---
+
+## `RAH-C-005` — the pre-flight crashed on my own span resolver; fixed, tested, resubmitted — 2026-08-30
+
+**Status: CORRECTION (defect in this sprint's own code, caught by its first GPU run).**
+
+Job `817294` (Llama × `lantern_poison`) resolved its label ids correctly —
+`poison 21109 · lantern 74265 · missile 26290 · candle 38899`, matching the CPU pre-check exactly —
+and then **died in donor capture**:
+
+```
+ValueError: no token covers char span [870,876)
+  rah_preflight_transport.py:190 -> token_index_covering
+```
+
+**Cause.** `token_index_covering` required a token *contained* in the word's character span
+(`a >= lo and b <= hi`). A BPE tokenizer emits the **leading space as part of the word token**:
+
+```
+target_surface 'poison' at chars [870, 876)
+tokens overlapping:  idx=149  span=[869, 876)  piece=' poison'
+                     containment test (a >= 870) -> FALSE, so NOTHING matched
+```
+
+**Containment is the wrong rule; overlap is the right one.** The fix takes the LAST token whose span
+*overlaps* the word, and the caller now additionally asserts the resolved token **decodes to a piece
+of the target word** (`assert_token_is_part_of`), so a mis-resolution fails loudly instead of
+producing a plausible wrong capture site.
+
+⚠ **The failure mode was lucky, and that is the point.** This crashed rather than silently resolving
+to a neighbouring token — but only because *no* token satisfied the containment test on this
+segmentation. On a tokenizer that split the word without a leading-space merge, the same bug would
+have returned a **valid-looking but wrong index** and the whole assay would have measured the wrong
+position. This is the `feedback_absolute_position_index_bug` class that has hit this repository twice
+before, arriving a third way.
+
+**Tests added** — `tests/test_rah_preflight_spans.py`, **7 passing**, including:
+
+| test | what it pins |
+|---|---|
+| `test_leading_space_token_is_resolved` | the real failing case, [869,876) for a word at [870,876) |
+| `test_MUTANT_containment_semantics_would_have_failed` | **executed proof** the old rule found nothing on the same input |
+| `test_multi_subtoken_word_returns_the_LAST_piece` | multi-piece words resolve to the last subtoken |
+| `test_no_overlap_still_raises` | the guard can still fail |
+| `test_zero_width_tokens_are_ignored` | degenerate spans do not win |
+| `test_MUTANT_assert_token_is_part_of_REJECTS_a_wrong_token` | the new identity assertion can fail |
+
+**Re-validated on CPU before resubmitting**, both models × both banks × 4 donors each: every donor
+position resolves to a token decoding exactly to the concept (`poison` / `missile`), and
+`target_surface` is confirmed to be the **concept** on `direct_harmful` rows. The receiver hop ladder
+is as designed:
+
+| receiver form | Llama seq / q_pos / read / **hops** | Qwen3 seq / q_pos / read / **hops** |
+|---|---|---|
+| `id07_raw` | 10 / 9 / 9 / **0** | 10 / 9 / 9 / **0** |
+| `id07_tmpl` | 45 / 44 / 44 / **0** | 22 / 21 / 21 / **0** |
+| `fc_probe_last` | 75 / 66 / 74 / **8** | 52 / 39 / 51 / **12** |
+| `fc46` | 81 / 34 / 80 / **46** | 58 / 7 / 57 / **50** |
+
+`fc46`'s 46–50 hops is the archived failing geometry, retained deliberately so the run reproduces the
+known failure rather than assuming it.
+
+**No scientific claim was affected** — the job produced no result artifact. `RAH-PR-004`'s gate and
+stop rule are unchanged.

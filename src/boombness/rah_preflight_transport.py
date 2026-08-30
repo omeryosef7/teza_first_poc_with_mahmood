@@ -119,11 +119,28 @@ def find_quoted_probe_span(text, probe):
 
 
 def token_index_covering(offsets, lo, hi):
-    """LAST token index whose character span lies inside [lo, hi). Own tokenisation, per prompt."""
-    hits = [k for k, (a, b) in enumerate(offsets) if a >= lo and b <= hi and b > a]
+    """LAST token index whose character span OVERLAPS [lo, hi). Own tokenisation, per prompt.
+
+    OVERLAP, not containment -- `RAH-C-005`. A BPE tokenizer emits the leading space as part of the
+    word token: for `poison` at chars [870, 876) Llama produces ONE token `' poison'` spanning
+    [869, 876). A containment test (`a >= lo and b <= hi`) matches nothing and the capture site is
+    lost. The first preflight crashed here rather than resolving to a neighbouring token, which is
+    the good failure mode -- but only by luck of this segmentation. Overlap is the correct rule, and
+    the caller additionally asserts the chosen token decodes into the target word.
+    """
+    hits = [k for k, (a, b) in enumerate(offsets) if b > lo and a < hi and b > a]
     if not hits:
-        raise ValueError("no token covers char span [%d,%d)" % (lo, hi))
+        raise ValueError("no token overlaps char span [%d,%d)" % (lo, hi))
     return hits[-1]
+
+
+def assert_token_is_part_of(tokenizer, ids, idx, word, what):
+    """The resolved token must decode to a piece of `word`. Catches a mis-resolved capture site."""
+    piece = tokenizer.decode([ids[idx]]).strip().casefold()
+    if not piece or piece not in word.casefold():
+        raise SystemExit("%s: token %d decodes to %r, which is not a piece of %r"
+                         % (what, idx, piece, word))
+    return piece
 
 
 def main():
@@ -188,6 +205,7 @@ def main():
         if pos_c < 0:
             raise SystemExit("target_surface %r absent from templated donor" % surf)
         p = token_index_covering(offsets, pos_c, pos_c + len(surf))
+        assert_token_is_part_of(tok, ids, p, surf, "donor %s" % d["prompt_id"])
         with torch.no_grad():
             out = lm.model(input_ids=enc["input_ids"].to(lm.model.device),
                            output_hidden_states=True)
@@ -220,9 +238,8 @@ def main():
         else:
             a, b = find_quoted_probe_span(text, args.probe)
             q_pos = token_index_covering(offsets, a, b)
-            piece = tok.decode([rids[q_pos]]).strip().casefold()
-            assert piece and piece in args.probe.casefold(), \
-                "probe resolved to %r, not a subtoken of %r (S-10)" % (piece, args.probe)
+            assert_token_is_part_of(tok, rids, q_pos, args.probe,
+                                    "receiver %s probe" % form["name"])
         read_pos = q_pos if form["read_at"] == "patch" else len(rids) - 1
         inputs = {"input_ids": enc["input_ids"].to(lm.model.device)}
 
