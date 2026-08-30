@@ -2907,3 +2907,72 @@ form, the receiver layer and the donor layer simultaneously; that is a new confi
 The vacuity check meanwhile passed on the new configuration before the crash: at donor L = 34 with
 band 7-17, **0/4 rows bit-identical, median relative delta 0.4073, median cos 0.9169** — the arms
 genuinely differ at the selected layer.
+
+---
+
+## `RAH-R-016` — my new guards were not gating commits; fixed and proven — 2026-08-31
+
+**Status: DIAGNOSTIC / INTEGRITY FIX.** Found during a GPU-blocked tick by asking a question the
+pre-commit output had been quietly answering wrong all sprint.
+
+Every commit this sprint printed `294 passed`. That number **never moved** — including across the
+commits that added `tests/test_rah_preflight_spans.py` (7 tests) and `tests/test_rah_select_config.py`
+(8 tests). The reason: the hook does not run `pytest tests/`; it runs an explicit
+`GUARD_TESTS` list (`scripts/install_commit_guard.sh:49`), and **my two files were not in it**.
+
+> **The mutation tests I wrote to prove my own guards can fail — the executed RED for the span
+> resolver (`RAH-C-005`) and the max-min selection rule (`RAH-PR-009`) — had never gated a single
+> commit.** They passed when I ran them by hand and were invisible to the hook thereafter. A later
+> edit could have broken either silently.
+
+This is §9.7's *"a guard that is never called is a defect"*, one level up: the **test** that proves
+the guard can fail was itself never called.
+
+**Fixed** in both the tracked generator (`scripts/install_commit_guard.sh`) and the installed hook,
+so a fresh clone gets the same list.
+
+**Proven, not assumed.** With the files now in the list, the span resolver was reverted to the broken
+containment rule (`a >= lo and b <= hi`) that `RAH-C-005` corrected:
+
+```
+2 failed, 5 passed   <- test_leading_space_token_is_resolved, test_zero_width_tokens_are_ignored
+```
+
+restored → `7 passed`. The guard tests now fail on the exact historical defect they were written for,
+**inside the hook's own list**.
+
+### An existing guard then refused MY change, correctly
+
+Adding the two files by appending them broke
+`test_commit_guard.py::test_GUARD_TESTS_is_sorted_so_hook_order_matches_suite_order`, and the hook
+**refused the commit**:
+
+```
+FAILED tests/test_commit_guard.py::test_GUARD_TESTS_is_sorted_so_hook_order_matches_suite_order
+1 failed, 308 passed
+[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.
+```
+
+Two things worth recording. First, **the count moved: 294 -> 309**, which is the direct confirmation
+that the two files are now inside the hook's list — the very number whose immobility exposed the gap.
+Second, a guard written by an earlier session caught a defect introduced by this one, on its first
+attempt, and the list exists in sorted order precisely so the hook's ordering matches the suite's.
+Sorted and re-run: **9 passed**.
+
+### ⚠ A known suite hazard, recorded rather than inherited silently
+
+The hook's own comment documents that `pytest tests/` (alphabetical, full suite) and the guard list
+**disagree**: a contamination bug — `test_guard_wiring.py` leaving module tables deformed — failed 4
+tests under the full suite while the hook reported 257 passed. §9.9 requires order-dependence be
+*investigated*, not worked around. It is **not** investigated here (it predates this sprint and is
+not on the critical path), but it is now recorded in this sprint's log so that **`294 passed` is
+never quoted as "the suite is green"** — it is *"the guard list is green"*, which is a strictly
+weaker statement.
+
+### SLURM note for this tick
+
+Smoke `820831` (Qwen3, the `RAH-PR-011` configuration) is RUNNING, past the GPU guard, with a
+**0-byte `.err`** and no weight-loading bar after 19 minutes, on `n-802` carrying **8 jobs**. By the
+repository's own diagnostic (the bar in `.err` distinguishes a hang from slowness) this is
+contention, not a hang: the measured worst case for a contended Qwen3-14B load in this sprint is
+**49 minutes** (job `817148`). **Not cancelled** — the rule is to leave a healthy slow job alone.
