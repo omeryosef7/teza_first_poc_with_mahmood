@@ -3679,3 +3679,43 @@ already is). The cleanest available route is therefore **not a new readout at al
 | `RBD-R-033` (report vs use asymmetry, Qwen3) | 🟡 **OBSERVATION, NOT ANSWERABLE** — two instruments attempted (`PR-007`, `PR-008`), both fail the option-mass gate on the decisive cell |
 | `RBD-R-034` | `semantic_one_word` unusable — replicates a known instrument defect |
 | **`RBD-R-037`** | `comprehension_usage` unusable on Qwen3; **the confound and the option mass are the same property** |
+
+---
+
+## §14.44 — `RBD-R-038` · **DELIVERABLE E: the reproduction manifest, EXECUTED** · 2026-08-30 04:40 IDT
+
+§31-E requires the manifest be **actually run** before the sprint is declared complete. It was.
+All five checks executed at HEAD, live:
+
+| # | check | command | result |
+|---|---|---|---|
+| 1 | bank regenerates byte-identically | `prompt_families.py --preset rbd12 … --strict` then `cmp` | **PASS — byte-identical** |
+| 2 | bank audit at the preregistered design | `rbd_bank_audit.py --bank … --expect rows=960,domains=20,stems=80,attack_rows=80` | **OVERALL: PASS** |
+| 3 | deliverable guards | `check_all.py` | **all 9 pass** |
+| 4 | RBD test suites | `pytest` over the 7 RBD test files | **205 passed** |
+| 5 | **independent re-derivation of every headline** | `rbd_verify_independent.py` (imports **none** of the producing modules) | **every figure reproduced** |
+
+### Check 5 in full — all four cells, no producing module imported
+
+```
+model=p bank=lantern_poison   ASR  7/80 -> 1/80  (-6)   binding 78->61 (-0.2125, n10=18 n01=1)   benign  24->31
+model=p bank=candle_missile   ASR  5/80 -> 0/80  (-5)   binding 52->42 (-0.1250, n10=13 n01=3)   benign   3-> 0
+model=q bank=lantern_poison   ASR  4/80 -> 2/80  (-2)   binding 75-> 9 (-0.8250, n10=66 n01=0)   benign  69->56
+model=q bank=candle_missile   ASR  1/80 -> 0/80  (-1)   binding 40->12 (-0.3500, n10=29 n01=1)   benign   2-> 0
+```
+
+Per-bank ASR sums to the pooled figures already reported (Llama 7+5 = **12**; Qwen3 4+1 = **5**),
+and every binding and benign-use count matches `rbd_analysis` exactly. **Two independently written
+implementations, sharing no code, agree on every published number.**
+
+⚠ **As the verifier's own docstring says, and it bears repeating here: agreement means the
+arithmetic is reproducible. It says nothing about whether the design supports the claim.** The
+declined and voided estimands above are declined and voided *notwithstanding* that their arithmetic
+reproduces perfectly.
+
+### The complete main table (deliverable C) now covers all 16 rows
+
+`reports/RBD_MAIN_TABLE.md`, regenerated from artifacts: 2 models × 2 banks × 4 arms, every column
+populated from a run — ASR base/arm, Δ rows and rate, cluster p, k_informative, attainable floor,
+T2, headroom, binding and benign-use transitions with verdicts, cap and EOS fractions, hash-join
+status, and each arm's own recorded liveness.
