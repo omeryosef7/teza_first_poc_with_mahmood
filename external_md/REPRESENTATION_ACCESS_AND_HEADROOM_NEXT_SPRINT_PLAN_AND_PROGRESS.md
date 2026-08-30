@@ -1973,3 +1973,106 @@ hand-assembled table in a prior plan document, from unpinned-era runs).
 ### Checklist
 
 `[x] P1B  RBD-PR-005 executed as written, then closed  → RAH-R-007`
+
+---
+
+## `RAH-R-008` — the transport gate PASSES, and the five prior failures were the RECEIVER LAYER — 2026-08-30
+
+**Status: DIAGNOSTIC / INSTRUMENT VALIDATION. `RAH-PR-004`'s gate: GO.**
+Artifact `outputs/boombness/rah_preflight/rahpf_plp_20260830_195527.json`, job `817882`,
+Llama-3.1-8B-Instruct, `lantern↔poison`, 4 `direct_harmful` donors, 20 configurations
+(4 receiver forms × 5 receiver layers) × 31 donor layers.
+
+### The gate
+
+**`any_config_passes = true`, 5 of 20 configurations pass**, under the corrected three-conjunct rule
+(`RAH-C-006` F2: level > 0.1 **and** uplift over the unpatched prior > 0.1 **and** concept beats
+codeword).
+
+| best configuration | value |
+|---|---|
+| form | `fc_probe_last` (4-way forced choice, probe last, assistant-side `Answer:`) |
+| receiver layer R | **4** of 32 |
+| donor layer L | 3 (best); **the profile is broad — see below**) |
+| P(concept) | **0.8421** |
+| P(concept) unpatched | 0.00209 |
+| **uplift** | **+0.8400** |
+| P(codeword) | 0.00210 → **concept/codeword = 402×** |
+
+### The finding: it is the RECEIVER INJECTION LAYER, and nothing else
+
+P(concept), best over donor layers, by receiver layer:
+
+| form | R=4 | R=8 | R=16 | R=24 | R=28 |
+|---|---|---|---|---|---|
+| `id07_raw` | 0.5043 | **0.6019** | 0.0029 | 0.0005 | 0.0519 |
+| `id07_tmpl` | 0.0033 | 0.0413 | 0.0007 | 0.0002 | 0.0572 |
+| **`fc_probe_last`** | **0.8421** | 0.6999 | 0.0168 | 0.0201 | 0.0065 |
+| `fc46` | 0.2771 | 0.0877 | 0.0133 | 0.0117 | 0.0088 |
+
+**Every form works at R = 4–8 and dies at R ≥ 16.** For `fc_probe_last` that is a **130× collapse**
+from R=4 to R=28.
+
+**`fc46` at R = 28 is exactly `46_forced_choice_patchscope.py`'s default** (`R = n_layers − 4`,
+`46:164`). It returns **0.0088** here — reproducing the archived `pos_ctrl_max = 1.404e-04`
+(`next3_fc_patchscope_bomb.json`) to within the difference expected from a different bank and
+concept, and **both are far below the 0.1 gate**.
+
+> **The instrument was never broken. It was injected 4 layers from the output, leaving the receiver
+> no depth in which to use the transplanted state.** Moving the injection from R = 28 to R = 4 takes
+> the same donor, the same model and the same readout from **0.0088 to 0.8421 — a ~96× improvement.**
+
+This explains **all five** recorded positive-control failures in this repository
+(`next3_fc_patchscope_bomb` 1.4e-04; `pair_kv_mediation` Llama 2.53e-04 and Qwen3 3.59e-06;
+`multiconcept_necsuff` 36/36 items), every one of which used a late-layer injection inherited from
+`07_patchscope_readout.py`'s `n_layers − 4` **readout** default being reused as an **injection**
+layer. `RESEARCH_HANDOFF.md:21`'s conclusion — *"Patchscope readout is unusable as configured
+(late-layer read, no positive control) — dropped"* — named the right cause and dropped the method
+anyway.
+
+### Why the winning configuration is also the RIGHT one for Track A
+
+`RAH-DR-001` F2 established that Track A is vacuous at any donor layer `L ≤ lo` (Llama `lo = 6`),
+because `demo_processing_only` masks demo rows only, so a query-position residual is **bit-identical**
+between arms below the band. An assay that only worked at L ≤ 6 would be unusable.
+
+`fc_probe_last @ R = 4` has a **broad, flat donor-layer profile**:
+
+```
+L :   0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15    16
+pC: 0.740 0.774 0.835 0.842 0.827 0.789 0.772 0.694 0.733 0.677 0.678 0.651 0.747 0.747 0.775 0.676 0.636
+```
+
+At **L = 14 — the top of the Llama intervention band 6–14 — P(concept) = 0.7745** against
+P(codeword) = 0.0094, an **82× ratio.** The assay therefore has strong signal *exactly where the
+intervention acts*, and the `L > lo` constraint costs almost nothing. The two `R = 8` variants are
+sharply peaked at L ≈ 5 and decay fast, which is why `R = 4` is preferred on more than its maximum.
+
+### ⚠ Population discipline — a deviation, declared
+
+This pre-flight ran on **`lantern_poison`, a LEVEL-B (diagnostic) population**, not level-A discovery
+material. `RAH-PR-004` scoped it as *"instrument validation only … its outcome selects only whether
+Track A continues"*, and it used `direct_harmful` donors — an instrument-validity condition, never
+the attack condition — with **no intervention anywhere**. So it measures no arm and supports no
+claim about representation or behaviour.
+
+**But the receiver layer R was chosen while looking at level-B material, and that cannot be
+unseen.** Therefore, binding on the rest of the sprint:
+
+* the **Stage-A calibration (P3) that freezes the configuration must be re-run on LEVEL-A discovery
+  banks** (`boombness_prompt_bank`, `basket_bomb`, `button_bomb`, …), and must confirm the R = 4–8
+  band independently. If level-A disagrees, that is informative and the disagreement is reported;
+* `RAH-PR-005`'s freeze records **R chosen on level-A**, with this pre-flight cited only as the
+  GO/NO-GO that licensed continuing;
+* the level-C confirmatory claim remains untouched by both.
+
+### Checklist
+
+```
+[x] P2   GO/NO-GO transport pre-flight, Llama            RAH-PR-004 / RAH-R-008  -> GO
+[~] P2   same pre-flight, Qwen3-14B (submitted)
+[ ] P3   Stage-A calibration on LEVEL-A data, R re-derived independently
+```
+
+Qwen3 is the decisive model — its binding collapsed 75/80 → 9/80 — so the assay must be shown to work
+there before any Track-A claim. That run is submitted.
