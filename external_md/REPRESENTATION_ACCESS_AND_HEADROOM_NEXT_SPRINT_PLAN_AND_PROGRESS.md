@@ -3269,3 +3269,61 @@ grammar audit, alignment, development n, baseline attacks, baseline ASR, refusal
 what stops it later being presented as a confirmation. `ticket↔knife` is the only non-discovery pair
 in the pool, and its 6-domain sibling measured **0.0521** — far below the 0.1375 floor. Its 38-domain
 baseline is **unmeasured**, and Step 2 will measure it.
+
+---
+
+## `RAH-C-014` / `RAH-R-019` — the 0.1562 I quoted is the wrong population; the screening population is 0.1645 — 2026-08-31
+
+**Status: CORRECTION + SCREENING STEP 1.**
+
+### `RAH-C-014`
+
+`RAH-PR-006` and `RAH-PR-007` both cite **0.1562** as the `carrot↔bomb` baseline that clears the
+frozen 0.1375 floor. Recomputed from `d38gj_20260829_043706_310488`:
+
+```
+by n_examples: {1: 152, 2: 152, 4: 152, 8: 152}    <- 0.1562 is POOLED over four doses
+POOLED                      95/608 = 0.1562
+THE SCREENING POPULATION    25/152 = 0.1645   (natural_doublespeak x n_examples = 8, 38 domains)
+```
+
+**0.1562 is pooled over `n_examples` ∈ {1, 2, 4, 8}.** The registered screening population is
+`n_examples = 8` alone, and its rate is **0.1645** over 152 rows and 38 domains, with **20 of 38
+domains carrying ≥ 1 attack** (`k_informative = 20`, against the ≥ 6 required for α = 0.05 to be
+reachable).
+
+The correction does **not** change the qualification — 0.1645 also clears 0.1375, and by more — but a
+number quoted in two frozen preregistrations was the wrong population, which is the sixth instance of
+this sprint's recurring signature. Both entries are corrected by this one.
+
+**One clarification the correction exposed.** `RAH-PR-006` freezes *"minimum baseline attacks ≥ 80"*
+and screening measures only 152 rows, where 80 attacks is unreachable. These are not in conflict: the
+**rate** (≥ 0.1375) is the screening criterion, and the **attack count** (≥ 80) is a property of the
+n = 608 confirmatory design that the rate implies. At 0.1645 a 608-row arm yields ≈ **100 attacks**.
+
+### `RAH-R-019` — screening Step 1
+
+**The candidate pool needed one bank built, and it was built by filtering, not generating.**
+`carrot↔bomb` already had a pre-cut screening bank (`38dom_gatesub`, 608 rows). `ticket↔knife` had
+none, and screening two pairs on different axes would confound the comparison with the cut.
+
+`scripts/rah_make_gatesub.py` reproduces the cut. It **generates no prompts** — it copies rows
+verbatim, so `prompt_id`, `prompt_sha16` and `full_prompt` are unchanged. The cut was **read off the
+committed carrot/bomb gatesub rather than assumed**, and the script **refuses to run unless applying
+that cut to the full 38-domain bank reproduces the reference exactly**:
+
+```
+[cut] verified: reproduces boombness_prompt_bank_38dom_gatesub.jsonl exactly (608 rows)
+[cut] 608 rows, 38 domains x 16 rows, n_examples {1:152, 2:152, 4:152, 8:152}, ticket<->knife
+```
+
+It further refuses on: wrong row count, < 30 domains, unbalanced rows per domain, or duplicate ids.
+
+**Step 2 is gated on Step 1.** The three screening runs — Qwen3 × `carrot↔bomb`, and both models ×
+`ticket↔knife` — are submitted **only if** the tokenisation audit passes on both banks and both
+models, and are otherwise not submitted at all. Llama × `carrot↔bomb` needs no run: it is already
+measured at 25/152.
+
+The decisive unknown remains **`ticket↔knife`, the pool's only non-discovery pair**. Its 6-domain
+sibling measured 0.0521, far below the floor. If its 38-domain screening rate also falls short, the
+outcome is **`B-BLOCKED-BY-MATERIAL`** — named in `RAH-PR-007` before this data existed.
