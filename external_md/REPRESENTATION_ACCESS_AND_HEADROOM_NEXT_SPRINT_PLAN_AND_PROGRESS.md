@@ -2363,3 +2363,77 @@ under-dosed** check.
 It cost one 4-row job and it changed the control family. It also confirmed the parts that matter:
 labels resolved to the frozen ids (`21109/74265/26290/38899`), `R = 4` at depth 0.125 as frozen by
 `RAH-R-010`, band `6-14`, donor layer 14 accepted against `lo = 6`. **No effect direction was read.**
+
+---
+
+## `RAH-R-012` — assay liveness smoke PASSES; the vacuity gate passes empirically — 2026-08-30
+
+**Status: DIAGNOSTIC (liveness only).** Job `819180`, 4 families, Llama × `lantern_poison`,
+donor L = 14, R = 4. **Read for shapes, hooks, masks, liveness, dose and row counts only.**
+Per §9.8 no effect direction was read and no plan was altered on it.
+
+### Structural criteria — all pass
+
+| check | result |
+|---|---|
+| rows written | **56** = 4 families × 7 arms × 2 rotations, exactly as expected |
+| arms present | `base, dpo, exch, keys, mean, perm, rand` |
+| `complete` / `problems` | **true** / **`[]`** |
+| option mass | min **0.5715**, median **0.8565** — against a 0.05 gate |
+| `attn_implementation` | `{eager}` on every row (S-12) |
+| frozen config honoured | `receiver_R = 4` (depth 0.125), `donor_layer = 14`, band `6-14`, `band_lo = 6` |
+| receiver geometry | `(q_pos, read_pos) = (66, 74)` — constant across rows, 8 hops, as designed |
+
+### The vacuity gate — the biggest open risk — passes on real data
+
+`RAH-DR-001` F2's hazard was that the `base` and `dpo` donors could be **bit-identical**, letting the
+assay report "preserved" on two copies of the same tensor. Measured at donor layer 14:
+
+```
+rows with delta EXACTLY zero : 0 of 4
+median ||v_dpo - v_base|| / ||v_base|| : 0.6127
+median cos(v_base, v_dpo)              : 0.8321
+```
+
+**The intervention genuinely moves the captured state at L = 14** — a 61 % relative change. The
+constraint `L > lo` is doing its job, and the gate is now an empirical measurement in every artifact
+rather than an argument.
+
+### The `RAH-R-011` under-dosing, now quantified
+
+| arm | `n_keys_masked` | `n_prefill_edits` | `n_decode_edits` |
+|---|---|---|---|
+| `dpo` | 1062 – 1188 | 63 189 – 79 002 | **0** |
+| `keys` (capped) | **261** | 30 798 – 34 452 | **0** |
+
+The key control masks **261/1125 = 23.2 %** of the demonstration dose. `strict_match_feasible_rows =
+0 of 4` — the strict draw was *attempted on every row and failed on every row*, so `RAH-R-011`'s
+claim is a measurement, not an inference. `n_decode_edits = 0` on every intervened row confirms the
+prefill-only scope.
+
+### ⚠ One VALIDITY question the smoke raises and CANNOT answer
+
+The smoke shows the instrument produces scorable output with ample option mass. It does **not** show
+that a **baseline** donor transports the *mapped concept* — that is an effect-direction question, it
+has n = 4, and §9.8 forbids reading it.
+
+But it makes explicit a precondition that must be **preregistered rather than discovered**, and it is
+review finding S-6:
+
+> **BASELINE-TRANSPORT PRECONDITION.** If `base` donors do not transport the mapped concept
+> detectably above the donor-side controls (`exch`, `mean`, `perm`, `rand`), then there is **nothing
+> for the intervention to remove**, and a `base ≈ dpo` result means the instrument measured nothing —
+> **not** that the representation was preserved. That outcome is **A-IV (assay invalid /
+> CANNOT ANSWER)**, never preservation.
+
+This must be evaluated on the **development** population and written into `RAH-PR-005` as a
+precondition on the verdict, computed on the *same rows* the claim is made from. It is recorded here,
+before that data exists, so it cannot later be mistaken for a post-hoc escape hatch.
+
+### Checklist
+
+```
+[x] P2   donor->receiver assay implemented                 RAH-R-011 / RAH-R-012
+[x] P2   liveness smoke: shapes, hooks, dose, row counts   RAH-R-012  -> PASS
+[ ] P4   TRACK-A FREEZE                                    RAH-PR-005
+```
