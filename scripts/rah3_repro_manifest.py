@@ -152,6 +152,49 @@ def main():
         record("%s: provenance complete" % tag, [], miss, path, RUN)
         record("%s: bank sha matches disk" % tag, sha(art["bank"]), p.get("bank_sha256"), path, RUN)
 
+    print("\n[G] RAH3-DR-002: the audit's findings, recomputed")
+    # C-013: the confound, recorded as a KNOWN DEFECT so it can never silently disappear.
+    record("C-013 Llama comparison is matched on enable_thinking", (po["enable_thinking"],
+           pn["enable_thinking"]), ("default", "default"), P_NEW, RUN % "nc_p_cb",
+           "Llama offset-0 vs offset-+1")
+    record("C-013 Qwen3 comparison is CONFOUNDED (known defect)", ("false", "default"),
+           (qo["enable_thinking"], qn["enable_thinking"]), Q_NEW, RUN % "nc_q_cb",
+           "the offset-0 comparator ran at enable_thinking=false; this is the DEFECT, asserted so "
+           "it cannot silently disappear")
+    for tag, o, n, path in (("Llama", po, pn, P_NEW), ("Qwen3", qo, qn, Q_NEW)):
+        ca = {(c["form"], c["R"]): c for c in o["grid"]}
+        cb = {(c["form"], c["R"]): c for c in n["grid"]}
+        same = sum(1 for k in ca if k in cb
+                   and ca[k]["q_pos"] == cb[k]["q_pos"] and ca[k]["read_pos"] == cb[k]["read_pos"]
+                   and ca[k]["unpatched_option_mass"] == cb[k]["unpatched_option_mass"])
+        record("C-013 %s cells bit-identical on unpatched geometry" % tag,
+               25 if tag == "Llama" else 15, same, path, RUN)
+        rises = sum(1 for k in ca if k in cb and cb[k]["pos_ctrl_max"] > ca[k]["pos_ctrl_max"])
+        record("C-014 %s MATCHED cells that RISE" % tag, 2 if tag == "Llama" else 3, rises,
+               path, RUN, "'every cell collapses' is false")
+    fc16 = [c for c in pn["grid"] if c["form"] == "fc_probe_last" and c["R"] == 16][0]
+    fc16o = [c for c in po["grid"] if c["form"] == "fc_probe_last" and c["R"] == 16][0]
+    record("C-014 Llama fc_probe_last R=16 flips FAIL->PASS", (False, True),
+           (fc16o["positive_control_ok"], fc16["positive_control_ok"]), P_NEW, RUN)
+    # C-018: the sweep whose FIRST version was wrong because a missing key read as falsy.
+    tot = pas = 0
+    for f in sorted(glob.glob("outputs/boombness/rah_preflight/*.json")):
+        try:
+            d = json.load(open(f))
+        except Exception:
+            continue
+        for c in d.get("grid", []):
+            if "names_candidates" not in c or "hops" not in c:
+                continue                      # ⚠ the key MUST be present -- see RAH3-C-018
+            if c["names_candidates"] == [] and c["hops"] > 0:
+                tot += 1
+                pas += 1 if c["positive_control_ok"] else 0
+    record("C-018 exposure-clean multi-hop cells, whole corpus", 220, tot, None,
+           "python scripts/rah3_repro_manifest.py")
+    record("C-018 ... of which PASSING (at EITHER offset, BOTH models)", 0, pas, None,
+           "python scripts/rah3_repro_manifest.py",
+           "this is why the top-line conclusion is robust to C-013")
+
     npass = sum(1 for r in RESULTS if r["pass"])
     out = {"schema": "RAH3_REPRO_MANIFEST/1",
            "executed": True,

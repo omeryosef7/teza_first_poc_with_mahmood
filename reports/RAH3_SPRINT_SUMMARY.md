@@ -8,11 +8,12 @@
 
 RAH3 asked whether this project's activation-transport assay measures **semantics** or merely
 **copies a token injected at the concept's own surface position** — because until that is settled,
-no Track-A intervention result is interpretable. The answer is that **it was largely copying.**
+no Track-A intervention result is interpretable. The answer is that **it was largely copying** — on Llama, where the comparison is clean.
 Moving the donor capture **one token** off the concept surface, to the `'.'` that follows it,
 collapses every receiver form on both models — the two 0-hop token decoders by **688×** and
-**42 809×** on Llama and by **8 062×** and **141×** on Qwen3, and, most damagingly, Qwen3's
-**multi-hop** positive control from **0.999999 → 0.000539 (1 855×)**. On Llama a genuine off-surface
+**42 809×** on Llama and by **8 062×** and **141×** on Qwen3, ⚠ The Qwen3 **templated**-form comparisons — including the once-headline
+**0.999999 → 0.000539** — are **CONFOUNDED** and withdrawn as clean measurements (`RAH3-C-013`:
+the offset-0 comparator ran at `--enable-thinking false`, mine at the default). On Llama a genuine off-surface
 transport signal survives — a period token carries enough of the concept for a receiver to name it
 at `p = 0.1932` against a `0.0053` prior — **but only into a receiver that prints all four candidate
 labels in its prompt.** Every exposure-clean multi-hop receiver fails, the best by **376×** below the
@@ -50,8 +51,10 @@ bank, stopping at a costed GO/NO-GO before ~20 GPU-hours.
 
 ## What passed
 
-* **`H4` SUPPORTED.** Every form collapses off-surface, on both models. `RAH2-C-020`'s copy
-  diagnosis is confirmed **prospectively** rather than inferred after the fact.
+* **`H4` PARTIALLY SUPPORTED.** ⚠ *"Every form collapses"* is **FALSE** (`RAH3-C-014`): on matched
+  `(form, R)` pairs **5 of 50 rise**, one flipping **FAIL → PASS**. What stands: **on Llama**, on a
+  25/25 bit-identical comparison, the 0-hop decoders collapse **688×** and **42 809×** —
+  `RAH2-C-020`'s copy diagnosis confirmed **prospectively**.
 * **Real off-surface transport exists on Llama** — `fc_probe_last`, `R=4`, donor `L=11`, 8 hops:
   `p_concept 0.1932`, `p_codeword 0.0023`, option mass **0.746**, captured on a period token.
 * **Both verifiers agree**, the manifest reproduces **49/49**, and every guard was proven able to
@@ -64,8 +67,10 @@ bank, stopping at a costed GO/NO-GO before ~20 GPU-hours.
 * **Qwen3 = P-D**: even the candidate-printing positive reference fails off-surface. The assay is
   **not validated** for this question on that model.
 * **Track B is blocked.** The one baseline cell clearing 0.1375 is the **discovery** pair on one
-  model; at the material that exists (38 domains × **4** rows) the design needs a **97.9 %** relative
-  reduction at the optimistic ICC and detects **nothing at all** at the pessimistic one.
+  model. ⚠ **The 608-row 38 × 16 material DOES exist** (`RAH3-C-019` — my first reading was wrong);
+  but its `n_examples` is `{1,2,4,8} × 152`, so the blocker is an **estimand** problem, not a
+  shortage. ⚠ And `ICC = 0.09` is at the **extreme optimistic end** of this repo's own measured
+  range of **0.000–0.755** (`RAH3-C-020`).
 
 ## What was declined
 
@@ -85,8 +90,9 @@ bank, stopping at a costed GO/NO-GO before ~20 GPU-hours.
    preregistration.
 2. Whether the exposure-clean readout failure is a property of the **representation** or of **every
    decoder tried so far** — five framings now.
-3. Track B needs a non-discovery pair clearing a baseline screen, **608 rows** where 152 exist, a
-   **measured** ICC, and a live truncation gate.
+3. Track B needs a non-discovery pair clearing a baseline screen, a **single-dose** estimand over
+   the existing 608 rows, an ICC taken from the repo's measured **0.000–0.755** range rather than
+   assumed at 0.09, and a live truncation gate.
 
 ## ⚠ Claims that must NOT be revived
 
@@ -99,7 +105,9 @@ bank, stopping at a costed GO/NO-GO before ~20 GPU-hours.
   a *new* experiment; it does not reinterpret it.
 * **Any max over receiver-layer × donor-layer quoted as "transport strength"** — that is
   `selection_max`, an upper bound. `0.1932` included.
-* ⚠ *"Qwen3's positive control was 1.000"* — it is **0.999999** (`RAH3-C-012`).
+* ⚠ *"Qwen3's positive control was 1.000"* — it is **0.999999** (`RAH3-C-012`), **and the
+  comparison it anchors is confounded** (`RAH3-C-013`).
+* ⚠ *"Every form collapses"* — **false** (`RAH3-C-014`).
 
 ## The final table
 

@@ -785,10 +785,11 @@ falling back.
 **The activation-transport assay this project has been building on was largely a copy test.** Every
 `direct_harmful` positive control in RAH/RAH2 captured the donor at the **concept's own surface
 token**, so transport and copying were indistinguishable by construction. `RAH3-PR-001` moved the
-capture **one token**, to the `'.'` immediately after the concept, changed nothing else, and every
-receiver form collapsed on both models — the 0-hop decoders by **688×** / **42 809×** (Llama) and
-**8 062×** / **141×** (Qwen3), and Qwen3's **multi-hop** reference from **0.999999 → 0.000539
-(1 855×)**. On Llama a real off-surface signal survives — `p_concept = 0.1932` against a `0.0053`
+capture **one token**, to the `'.'` immediately after the concept, changed nothing else, and the 0-hop
+decoders collapsed by **688×** / **42 809×** on Llama, on a **25/25 bit-identical** comparison.
+⚠ **The Qwen3 templated-form comparisons are CONFOUNDED** (`RAH3-C-013`: the offset-0 comparator ran
+at `--enable-thinking false`) and *"every form collapses"* is **false** — 5 of 50 matched cells rise
+(`RAH3-C-014`). On Llama a real off-surface signal survives — `p_concept = 0.1932` against a `0.0053`
 prior, captured on a period token — **but only into a receiver that prints all four candidates.**
 Every exposure-clean multi-hop receiver fails, the best by **376×** below `MASS_GATE`. **Track A
 remains CANNOT ANSWER; held-out was gated off and never run.**
@@ -797,12 +798,19 @@ remains CANNOT ANSWER; held-out was gated off and never run.**
 
 * **`RAH3-R-006`** — Llama = **P-B**, Qwen3 = **P-D**, `held_out_may_run = False`. Verdict produced
   by `scripts/rah3_select_config.py`, committed **before** either artifact existed.
-* **`H4` SUPPORTED** — `RAH2-C-020`'s copy diagnosis confirmed **prospectively**.
+* **`H4` PARTIALLY SUPPORTED** — `RAH2-C-020`'s copy diagnosis confirmed **prospectively on Llama**.
+  ⚠ See `RAH3-C-013`/`C-014` before quoting any Qwen3 collapse figure.
+* ⚠ **`RAH3-C-018` — the load-bearing sentence does NOT come from RAH3.** Across **220**
+  exposure-clean multi-hop cells in the entire corpus, at **both** offsets and on **both** models,
+  **zero have ever passed.** That is why the conclusion is robust to `RAH3-C-013`, and why RAH3's
+  own comparison contributed no incremental evidence to it.
 * **Off-surface transport is real on Llama** — `fc_probe_last R=4 L=11`, 8 hops, mass 0.746.
   ⚠ Candidate-printing; **can never carry a Track-A claim.**
-* **`RAH3-R-003`** — Track B **BLOCKED BY MATERIAL AND POWER**, re-derived. ⚠ **The 38-domain bank
-  already exists**; the blockers are that the only qualifying baseline is the **discovery** pair on
-  one model, and rows/domain is **4**, not 16.
+* **`RAH3-R-003`** — Track B **BLOCKED**, re-derived. ⚠ **The 38-domain bank already exists AND so
+  do the 608 rows at 16/domain** (`RAH3-C-019`). The blockers are: the only qualifying baseline is
+  the **discovery** pair on one model; the 608 rows span **four doses** (`n_examples {1,2,4,8}`), an
+  **estimand** problem; and `ICC = 0.09` sits at the extreme optimistic end of this repo's own
+  measured **0.000–0.755** (`RAH3-C-020`).
 * **`RAH3-R-008`** — reproduction manifest **executed**: **49 headlines, 49 PASS**.
 
 ## 3. ⛔ MUST NEVER BE QUOTED
@@ -862,5 +870,15 @@ sweep where the patch never applied · `cell_mass_gate_ok()` — `MASS_GATE`, no
   patching the wrong layer.
 * ⚠ **`MEASURED_FLIP_BY_ASR` is non-monotonic** and `flip_for_asr` clamps **below** the measured
   maximum. The handoff's own "flip rate rises with baseline ASR" is **not** what its eight points do.
-* ⚠ **`ICC = 0.09` has no estimator anywhere in this repository**, and it is the difference between
-  a viable Track-B design and an undetectable one. **Never quote 0.70 without 0.86 beside it.**
+* ⚠ **`ICC = 0.09` has no estimator SCRIPT — but measured values ARE recorded**: `demo_pools.py:64`
+  says the domain ICC spans **0.000–0.755** across seven banks, and `analyze_g2.py:737` cites ~0.45.
+  **0.09 is at the extreme optimistic end of this project's own measurements**, so never quote the
+  0.6899 MDE without saying ICC has been measured as high as **0.755** here.
+* ⚠ **A universal quantifier written during reconciliation can propagate into an experiment's
+  CONFIGURATION.** `RAH3-C-013`: "`--enable-thinking default` in every RAH2 preflight run" was false,
+  and it built the argsfiles. **Check argsfiles against artifacts, not against your own prose.**
+* ⚠ **A frozen-config record that omits an axis cannot detect that axis moving.** Neither RAH3
+  verifier could catch `C-013` because `enable_thinking` was in no frozen block.
+* ⚠ **A missing key defaults toward a pass.** Twice here: `.get()` on an absent liveness counter
+  (`C-004`) and `c.get("names_candidates")` returning falsy `None` on 200 old cells (`C-018`),
+  which turned 220/0 into a wrong 39/320.

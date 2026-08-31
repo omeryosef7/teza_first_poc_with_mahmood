@@ -1,10 +1,10 @@
 {
  "schema": "RAH3_REPRO_MANIFEST/1",
  "executed": true,
- "git_commit": "59f21cfbfa3bb123cad5aef921274912d872cd37",
+ "git_commit": "aa6ec27349b65bf447da019443029eb94f4ca45c",
  "git_dirty": true,
- "n_headlines": 49,
- "n_pass": 49,
+ "n_headlines": 58,
+ "n_pass": 58,
  "n_fail": 0,
  "tolerance": "relative 1e-06 (absolute tolerance is vacuous against 1e-08 values)",
  "headlines": [
@@ -487,6 +487,114 @@
    "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
    "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
    "note": ""
+  },
+  {
+   "headline": "C-013 Llama comparison is matched on enable_thinking",
+   "expected": [
+    "default",
+    "default"
+   ],
+   "recomputed": [
+    "default",
+    "default"
+   ],
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/nc_p_cb.txt src/boombness/slurm/run_boombness.sh",
+   "note": "Llama offset-0 vs offset-+1"
+  },
+  {
+   "headline": "C-013 Qwen3 comparison is CONFOUNDED (known defect)",
+   "expected": [
+    "false",
+    "default"
+   ],
+   "recomputed": [
+    "false",
+    "default"
+   ],
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/nc_q_cb.txt src/boombness/slurm/run_boombness.sh",
+   "note": "the offset-0 comparator ran at enable_thinking=false; this is the DEFECT, asserted so it cannot silently disappear"
+  },
+  {
+   "headline": "C-013 Llama cells bit-identical on unpatched geometry",
+   "expected": 25,
+   "recomputed": 25,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "C-014 Llama MATCHED cells that RISE",
+   "expected": 2,
+   "recomputed": 2,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": "'every cell collapses' is false"
+  },
+  {
+   "headline": "C-013 Qwen3 cells bit-identical on unpatched geometry",
+   "expected": 15,
+   "recomputed": 15,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "C-014 Qwen3 MATCHED cells that RISE",
+   "expected": 3,
+   "recomputed": 3,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": "'every cell collapses' is false"
+  },
+  {
+   "headline": "C-014 Llama fc_probe_last R=16 flips FAIL->PASS",
+   "expected": [
+    false,
+    true
+   ],
+   "recomputed": [
+    false,
+    true
+   ],
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "C-018 exposure-clean multi-hop cells, whole corpus",
+   "expected": 220,
+   "recomputed": 220,
+   "pass": true,
+   "artifact": null,
+   "artifact_sha256": null,
+   "command": "python scripts/rah3_repro_manifest.py",
+   "note": ""
+  },
+  {
+   "headline": "C-018 ... of which PASSING (at EITHER offset, BOTH models)",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": null,
+   "artifact_sha256": null,
+   "command": "python scripts/rah3_repro_manifest.py",
+   "note": "this is why the top-line conclusion is robust to C-013"
   }
  ]
 }
