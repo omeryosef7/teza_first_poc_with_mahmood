@@ -1393,3 +1393,76 @@ away "OPEN". A `✅ CLOSED by RAH2-R-003` marker is now inline at `RAH2-C-006` �
 
 **That grep is worth inheriting**: `grep -n "is OPEN\|is owed\|not yet implemented\|filed, not"` over
 an append-only log finds every promise the log made to itself and did not visibly keep.
+
+---
+
+## `RAH2-PR-004` — the capture-site control: is the positive control a copy test? — registered before any forward pass
+
+**Status: PREREGISTERED (prospective).** Written and committed **before** any `PR-004` forward pass.
+This is the step `RAH2-R-005` §6 named as *the cheapest decisive next test*, and §6 also says it must
+be registered as a new `PR` id first. **No new receiver form is added** — the frozen Stage-A grid and
+all three existing form sets are untouched. What changes is **where the donor is captured.**
+
+### The question, and why it is not a rescue attempt
+
+`RAH2-C-020` retracted this phase's positive result by showing `id07_raw` is a token decoder. That
+diagnosis was made **retrospectively**, from a comparison I happened to have (inject the codeword,
+get the codeword). `RAH2-PR-004` makes the same diagnosis **prospectively**, and generalises it into
+a reusable validity check.
+
+Every `direct_harmful` positive control in the RAH/RAH2 preflight — **12 artifacts** — captures the
+donor at the **concept's own surface token** (`donors[].piece` == the concept), by construction at
+`rah_preflight_transport.py:391-397`. **A positive control whose donor surface IS the target cannot
+distinguish transport from copying.** That is not a hypothesis; it is a property of the construction,
+and it is why `RAH2-C-020` was possible at all.
+
+> **`H3`.** A receiver that passes the positive control **only** because the target is the injected
+> token will **collapse** when the donor is captured at a position where the concept is *present in
+> context but not on the surface*. A receiver that genuinely reads content from the representation
+> will **survive**.
+
+### The intervention: a capture-site offset, not a new form
+
+`rah_preflight_transport.py:391-397` hardcodes `pos_c = templated.lower().rfind(surf.lower())` and
+then **asserts** the captured token is part of `target_surface` (`assert_token_is_part_of`, :300-306,
+raises `SystemExit`). Two changes, both narrow:
+
+* add `--capture-offset N` (default **0** — so **every existing invocation is bit-identical**);
+* when `N != 0`, capture at `p + N` and **relax that one assertion**, replacing it with a recorded
+  `capture_piece` field plus a bounds check.
+
+**Registered offset: `N = +1`** — the token immediately after the concept surface. Chosen because it
+is the minimal displacement that removes the surface identity while staying inside the same clause,
+and because "minimal" is the only principled choice available without fishing over offsets.
+**⚠ One offset only. Sweeping N and reporting the best would be exactly the two-free-parameter
+maximisation `RAH2-C-002` and `RAH2-C-018` were raised for.**
+
+### Populations, gates, metrics — all inherited, none new
+
+Donor `direct_harmful`; form set `fewshot` (which carries `id07_raw`, `id07_tmpl`, `fc_probe_last`,
+`fewshot_cat`, `fewshot_syn`); development `carrot↔bomb` **and** held-out `lantern↔poison`; both
+models; 8 donors; the same 5 receiver depths; the **0.1** positive-control gate (naming it explicitly,
+per `RAH2-C-027`). **4 jobs**, same shape as the `rah2pcf_*` runs.
+
+**The `N = 0` arm already exists** (`rah2pcf_{p,q}_cb`) and is the paired comparison. ⚠ It exists on
+the **development** bank only, so the held-out cells have **no `N = 0` counterpart** and are
+descriptive, not paired.
+
+### Outcomes, fixed now
+
+| result at `N = +1` | reading |
+|---|---|
+| **`id07_raw` collapses below the 0.1 gate while `fc_probe_last` survives** | `H3` SUPPORTED. The copy diagnosis of `RAH2-C-020` is confirmed **prospectively**, and the capture-site control becomes a **required** validity check for every future positive control in this project |
+| **both collapse** | the offset destroyed the signal rather than isolating copying — the control is **uninformative** and `H3` is CANNOT ANSWER. ⚠ This is the most likely failure mode and it is **not** evidence for either side |
+| **`id07_raw` survives** | **`RAH2-C-020`'s copy diagnosis is WRONG** and the retraction must itself be revisited. Registered now so that this outcome cannot be quietly dropped |
+| any few-shot form rises above 0.1 | recorded, **not** interpreted — `H1`/`H2` are closed and a new preregistration would be required to reopen them |
+
+### What this does NOT license
+
+⚠ **`H3` says nothing about the doublespeak mapping.** It is a claim about **instrument validity**.
+A pass does **not** re-open Track A (`RAH-R-018` stands at **A-IV**), does **not** revive
+`RAH2-R-005`, and does **not** bear on `H0`, which `RAH2-C-020` confirmed.
+
+⚠ **`N = 0` is the default and must stay so.** If `--capture-offset` ever silently changes the
+default, every prior artifact becomes non-reproducible. A guard test pins the default before the
+runs.
