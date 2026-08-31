@@ -215,7 +215,9 @@ offset rule structurally possible at all, and §10's verification is a check tha
 **every** row, not on the one I inspected.
 
 **Model geometry:** Llama-3.1-8B `nL=32`, `R_set=[4,8,16,24,28]`; Qwen3-14B `nL=40`,
-`R_set=[5,10,20,30,36]`. `--enable-thinking default` in every RAH2 preflight run.
+`R_set=[5,10,20,30,36]`. ⚠ **`--enable-thinking default` in every RAH2 preflight run — THIS IS
+FALSE and it propagated into this sprint's argsfiles. See `RAH3-C-013`:** every Qwen3 RAH2 run used
+`--enable-thinking false`.
 
 **Launch infrastructure to REUSE, not rebuild:** argsfiles under `runargs/<phase>/*.txt` →
 `sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$R/runargs/rah3/X.txt
@@ -1311,9 +1313,11 @@ on Llama exactly as predicted, and **overshot on Qwen3**. Moving the donor captu
 | `fewshot_cat` | 2 | **yes** | 0.06565 → 0.0001009 | **651×** | 0.00871 → 8.952e-05 | **97×** |
 | `fewshot_syn` | 2 | **yes** | 0.01965 → 0.0001283 | **153×** | 0.09645 → 0.0002094 | **461×** |
 
-⚠ **Every single cell collapses.** The two 0-hop token decoders collapse by 2.8–4.6 orders of
-magnitude, which is `RAH2-C-020`'s copy diagnosis confirmed **prospectively** rather than inferred
-from a control that had been run eight times and not read.
+⚠ **CORRECTED by `RAH3-C-014` / `RAH3-C-015`: "every single cell collapses" is FALSE**, and this
+table is **max-over-`R`**, not matched cells. On matched `(form, R)` pairs **5 of 50 RISE**, one of
+them decisive (Llama `fc_probe_last R=16`: 0.0303 → 0.1416, **FAIL → PASS**). The 0-hop decoders
+collapse by **2.15–4.6** orders, not 2.8–4.6. `RAH2-C-020`'s copy diagnosis is confirmed
+prospectively **on Llama**; the Qwen3 templated rows are confounded (`RAH3-C-013`).
 
 ⚠ **The most important row is Qwen3's `fc_probe_last`.** Its offset-0 positive control was
 **`p_concept = 0.999999`** — effectively a perfect score, the kind of number an instrument is declared validated on.
@@ -1466,3 +1470,164 @@ only the *quoted* number was rounded. But *"1.000, a perfect score"* is a strong
 data supports, and §53's rule is that **a true number with a false quantifier is a false claim.**
 **The manifest caught it because it recomputes rather than re-reads** — and that is the entire
 argument for executing a manifest instead of publishing one.
+
+---
+
+## 19. `RAH3-DR-002` — the final adversarial audit. **It landed, and the headline survives for a different reason than I gave**
+
+Five read-only auditors instructed to **kill** the main claim, then a second auditor over their
+corrections. ⚠ **Every finding below I re-verified myself at source before accepting it** — this
+project's record is `RAH2-C-003 → C-017 → C-018 → C-020`, four rounds of confidently-wrong
+corrections.
+
+### 19.1 `RAH3-C-013` — ⚠ THE SERIOUS ONE. The Qwen3 comparison is CONFOUNDED, and it is my error
+
+| run | `enable_thinking` |
+|---|---|
+| `rah2pcf_q_cb` (offset 0, the comparator) | **`false`** — `runargs/rah2/pcf_q_cb.txt` carries `--enable-thinking false` |
+| `rah3nc_q_cb` (offset +1, mine) | **`default`** — my argsfile carries no such flag |
+| both Llama runs | `default` / `default` — **matched** |
+
+**How it happened:** §1.5 of this very document asserted *"`--enable-thinking default` in every RAH2
+preflight run."* That sentence is **false** — it is true of the Llama runs and false of **every**
+Qwen3 run — and I built the RAH3 argsfiles on it. ⚠ **A universal quantifier I wrote in Phase 0
+propagated, unchecked, into the experiment's configuration.** §53 exists for exactly this, and my
+own quantifier sweep did not catch it because I checked the *claims* and not the *argsfiles*.
+
+**Exactly how much is damaged, measured rather than argued.** I diffed all 25 matched cells per model
+on `(q_pos, read_pos, unpatched_option_mass, p_concept_unpatched)`:
+
+* **Llama: 25/25 bit-identical.** The Llama comparison is **clean**.
+* **Qwen3: 15/25 identical.** The 10 that differ are **exactly** the 10 `templated=True` cells —
+  `fc_probe_last` and `id07_tmpl` (e.g. `read_pos` 48→44, unpatched mass 0.141027→0.012293).
+
+**So the damage is precisely bounded:** ⚠ **every Qwen3 `fc_probe_last` and `id07_tmpl` comparison is
+confounded**, including the sprint's most quoted number, the **1 855×** collapse. The Qwen3
+untemplated forms (`id07_raw`, `fewshot_cat`, `fewshot_syn`) and **all** Llama comparisons stand.
+
+⚠ **The confound is committed into the unrun held-out argsfile `runargs/rah3/nc_q_lp.txt` too.** Any
+future held-out run must fix it first.
+
+⚠ **Neither verifier could have caught this**, and the structural reason is worth inheriting:
+`RAH3_FROZEN_CONFIG.json`'s `frozen` block **records no `enable_thinking` field at all**. A frozen
+configuration that omits an axis cannot detect that the axis moved.
+
+### 19.2 `RAH3-C-014` — "every single cell collapses" is FALSE, and the table was unmatched
+
+The published collapse table pairs **max-over-`R`** against **max-over-`R`** — different cells. On
+**matched** `(form, R)` pairs, **5 of 50 RISE**:
+
+| model | cell | N=0 → N=+1 | |
+|---|---|---|---|
+| **Llama** | **`fc_probe_last R=16`** | **0.0303 → 0.1416 (×4.68)** | ⚠ **FAIL → PASS** |
+| Llama | `fewshot_cat R=28` | ×1.40 | still fails |
+| Qwen3 | `id07_raw R=36` | ×19.0 | still fails |
+| Qwen3 | `id07_tmpl R=30` / `R=36` | ×2.28 / ×13.2 | still fail, and confounded |
+
+⚠ The Llama row is not cosmetic: a cell **gains** enough from moving off-surface to cross the
+transport threshold. **"Every single cell collapses" was a false universal over a true set of
+numbers** — §53's exact failure mode, in my own headline.
+
+### 19.3 `RAH3-C-015` — two order-of-magnitude claims were wrong
+
+*"2.8–4.6 orders"* → **2.15–4.6**: Qwen3 `id07_tmpl` is 141× = **2.15** orders, printed two rows
+above the sentence asserting it. *"the readout falls 3–4 orders on both models"* → **3.18 orders on
+Llama, 0.41 on Qwen3** — because on Qwen3 nothing passes, so there is almost nothing to fall.
+
+### 19.4 `RAH3-C-016` — I cited the FAILING verifier run
+
+The report and ledger cited **job 831512** for verifier B. That is the run that ended **`25 checks,
+4 FAILURES`** — the one whose disagreement `RAH3-C-010` documents. The passing run is **831541**
+(`24 checks, 0 FAILURES`) and was cited nowhere. Corrected in both.
+
+### 19.5 `RAH3-C-017` — the offset's provenance claim was too strong
+
+I wrote that `N = +1` was frozen *"before any transport number **at any offset** existed."* ⚠ False.
+`RAH2-PR-004` was committed at **18:43:55**; the offset-0 artifacts `rah2pcf_p_cb` / `rah2pcf_q_cb`
+have mtimes **16:10 / 16:15 the same day**, and the `sA_*` set predates them by a day.
+
+**The defensible claim is narrower and still sufficient:** `N = +1` was frozen before any
+**offset-+1** number existed, which is what protects it from being fitted. ⚠ The *selection rule*'s
+provenance is clean and unaffected — `8e9ca447` at **21:53:03**, artifacts at **22:27** and **22:48**.
+
+### 19.6 `RAH3-C-018` — the auditor's strongest attack, which I confirmed after first getting it wrong
+
+**The load-bearing sentence is not a finding of RAH3 at all.** Sweeping **every** `(form, R)` cell in
+**every** preflight artifact for `names_candidates == [] AND hops > 0`:
+
+```
+exposure-clean multi-hop cells (both keys present): 220
+                                          PASSING:   0
+```
+
+**Zero — at both capture offsets, on both models, on both banks, across every form set.** The two
+exposure-clean multi-hop forms already failed at offset 0, *with the copy available*. ⚠ **RAH3's
+non-copy control contributed ZERO incremental evidence to "no exposure-clean multi-hop receiver
+passes."** For those forms there was nothing to collapse *from*; the drop is failing → more-failing.
+
+⚠ **My first attempt at this sweep returned 39 passing cells and was WRONG** — `c.get('names_candidates')`
+returns `None` on older artifacts that lack the field, and `None` is falsy, so **200 cells with a
+missing key were silently counted as exposure-clean.** Requiring the key to be *present* gives
+220 / 0. **This is the matcher/scope bug class: the audit failed on the matcher, not on the corpus** —
+and it is the second time in this sprint that a missing key defaulted toward a pass
+(`RAH3-C-004` was the first).
+
+**It cuts both ways, and the second direction is why the headline survives:**
+
+* it **destroys** the framing that the +1 collapse demonstrates copy-dependence of the *exposure-clean*
+  readout — that story only ever applied to `id07_raw`, `id07_tmpl` and `fc_probe_last`;
+* it **immunises the top-line conclusion against `RAH3-C-013` completely.** The exposure-clean
+  multi-hop forms have never passed in **any** configuration — including the **12** Qwen3 artifacts
+  run at `enable_thinking=false`. **No rerun at any thinking setting can rescue them.**
+
+### 19.7 `RAH3-C-019` — ⚠ Track B: the 608 rows DO exist. My §11 was wrong
+
+`outputs/boombness/judge/d38gj_20260829_043706_310488/results.jsonl`: **608 rows, 38 domains,
+16 rows per domain — exactly the handoff's design.** My §11.3 claim *"608 rows where 152 exist"* and
+§11.7's *"608 rows across the existing 38 domains"* are **false**: the material exists.
+
+**But the correct defect is worse-specified, not absent.** `n_examples` is `{1: 152, 2: 152, 4: 152,
+8: 152}` — the 608 rows span **four doses**, only **152** at the dose used elsewhere. ⚠ **The blocker
+is an ESTIMAND problem (a mixed-dose population), not a material shortage**, and the 38 × 16 power
+figure applies only if the estimand is defined across doses. **`TRACK B BLOCKED` stands; its stated
+reason was wrong.**
+
+### 19.8 `RAH3-C-020` — `RAH3-C-006` overstated, and the truth is worse for Track B
+
+I wrote that ICC *"has no estimator anywhere in this repository."* ⚠ There is no estimator **script**,
+but **measured values are recorded in-repo**, and `demo_pools.py:64` states:
+
+> *"Measured across seven banks the domain ICC spans **0.000–0.755**"*
+
+with `analyze_g2.py:737` citing an instance at **~0.45**.
+
+⚠ **This makes the Track-B negative STRONGER, not weaker.** `ICC = 0.19` is not a pessimistic bound —
+it sits in the lower half of this project's own measured range. At 38 × 16 the design already gives
+**0.8552** at 0.19; at the measured 0.45–0.755 it is far worse. **`ICC_PRIMARY = 0.09` is at the
+extreme optimistic end of the repository's own measurements**, and the corrected rule is: never quote
+0.6899 without stating that the repo has measured ICC as high as 0.755.
+
+### 19.9 `RAH3-C-021` — "exposure-clean" was used where `rah3_eligible` was meant
+
+The report's §3 column marks `id07_raw` **exposure-clean: yes** — correct, it names no candidate — and
+§4 then called `fewshot_syn R=16` (1.283e-04) *"the best exposure-clean cell"*, when `id07_raw R=4` is
+**1.223e-03**, 9.5× higher. The intended predicate is **`rah3_eligible`** = exposure-clean **and**
+multi-hop. Corrected.
+
+---
+
+## 20. What survives, and what the headline now rests on
+
+| claim | status after `RAH3-DR-002` |
+|---|---|
+| **TRACK A REMAINS CANNOT ANSWER — VALID READOUT NOT ESTABLISHED** | ⚠ **STANDS — and is more robust than I claimed.** Per `RAH3-C-018` it holds over **220 cells at both offsets on both models**, so it does not depend on RAH3's comparison at all, and `RAH3-C-013` cannot reach it. |
+| Llama = **P-B** | **STANDS.** The Llama comparison is 25/25 bit-identical; `fc_probe_last` passes; no eligible cell does. |
+| Qwen3 = **P-D** | **STANDS as a verdict** — it is a property of the offset-+1 run alone, where nothing passes. ⚠ Its *comparison* to offset 0 is confounded on the templated forms. |
+| Held-out gated off | **STANDS.** |
+| *"`H4` SUPPORTED — every form collapses"* | ⚠ **WITHDRAWN as written.** Restated: **on Llama** the 0-hop decoders collapse **688×** and **42 809×** on a clean comparison; **5 of 50 matched cells rise**; the Qwen3 templated rows are confounded. |
+| *"Qwen3's 1.000 → 0.000539, 1 855×"* | ⚠ **WITHDRAWN as a clean measurement** (`RAH3-C-013`). The unconfounded statement is: **nothing passes on Qwen3 at offset +1.** |
+| Track B blocked | **STANDS**, reason corrected (`RAH3-C-019`) and strengthened (`RAH3-C-020`). |
+
+⚠ **The sprint's most-quoted number did not survive its own audit, and the conclusion did — for a
+reason I had not identified.** That is the outcome §68 exists to produce, and it is the fourth
+consecutive phase in which the arithmetic was reproducible while sentences were not.

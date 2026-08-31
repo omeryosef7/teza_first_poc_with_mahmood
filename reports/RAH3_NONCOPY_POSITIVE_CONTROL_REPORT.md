@@ -49,8 +49,12 @@ Moving the donor capture **one token**, `' bomb'` → `'.'`, nothing else change
 | `fewshot_cat` | 2 | yes | 0.06565 → 0.0001009 | **651×** | 0.00871 → 8.952e-05 | **97×** |
 | `fewshot_syn` | 2 | yes | 0.01965 → 0.0001283 | **153×** | 0.09645 → 0.0002094 | **461×** |
 
-**Every cell collapses.** The 0-hop token decoders fall by 2.8–4.6 orders — `RAH2-C-020`'s copy
-diagnosis, confirmed **prospectively**.
+⚠ **NOT every cell collapses, and this table is max-over-`R`, not matched cells** (`RAH3-C-014`).
+On **matched** `(form, R)` pairs **5 of 50 RISE**, and one is decisive: Llama `fc_probe_last R=16`
+goes **0.0303 → 0.1416**, i.e. **FAIL → PASS**. The 0-hop decoders fall by **2.15–4.6** orders
+(`RAH3-C-015`; Qwen3 `id07_tmpl` is 141× = 2.15 orders, printed in the row above). `RAH2-C-020`'s
+copy diagnosis is confirmed prospectively **on Llama**; ⚠ see `RAH3-C-013` for why the Qwen3
+templated rows cannot carry it.
 
 ### ⚠ The single most important number
 
@@ -67,11 +71,13 @@ one of the 0-hop forms already retracted.
 carries enough of the concept for a receiver to name it**, and the concept beats the codeword ~84×.
 
 **Does not:** ⚠ `fc_probe_last` **prints all four candidate labels in its prompt.** It fails
-requirement 1 by construction and can never carry a Track-A claim. The best **exposure-clean** cell
-is `fewshot_syn R=16`: `p_concept = 1.283e-04`, option mass **1.329e-04 — 376× below `MASS_GATE`**.
+requirement 1 by construction and can never carry a Track-A claim. The best **exposure-clean AND
+multi-hop** cell — the `rah3_eligible` predicate, not exposure-clean alone (`RAH3-C-021`) — is
+`fewshot_syn R=16`: `p_concept = 1.283e-04`, option mass **1.329e-04 — 376× below `MASS_GATE`**.
 
-**So `H0` is confirmed again, now off-surface:** mass comes from printing the candidates. Remove them
-and the readout falls 3–4 orders on both models.
+**So `H0` is confirmed again, now off-surface:** mass comes from printing the candidates. Removing
+them costs **3.18 orders on Llama** and **0.41 orders on Qwen3** (`RAH3-C-015` — the earlier "3–4
+orders on both models" was false; on Qwen3 *nothing* passes, so there is little left to fall).
 
 ## 5. Why held-out was not run
 
@@ -90,7 +96,7 @@ returning a *new* negative.
 |---|---|---|
 | verifier **A**, imports **no** producer helper | semantics re-derived from bank + tokenizer | **289 checks, 0 failures** on each artifact |
 | verifier **A**, mutation-tested | **17 distinct** assertion classes | **17/17 RED**, incl. a **0.0001 %** relative perturbation |
-| verifier **B**, own forward hook | the frozen cell `fc_probe_last R=4 L=11` | job 831512 |
+| verifier **B**, own forward hook | the frozen cell `fc_probe_last R=4 L=11` | job **831541**, 24 checks / 0 failures (⚠ job 831512 was its FAILING first run — `RAH3-C-010`) |
 | guard list / targeted / **full suite** | — | 341 / 39 / **1644 passed, 7 skipped**, tree clean before and after |
 
 Two defects were caught **before** the first job and would each have corrupted the result:

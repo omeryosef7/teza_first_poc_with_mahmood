@@ -187,7 +187,10 @@
     "ONE offset. N=+1 is a single pre-committed site, deliberately not swept. A richer non-surface site (' context' at +4) might transport more; testing it needs a NEW preregistration.",
     "The collapse does NOT distinguish 'off-surface transport is weak' from \"'.' is a poor carrier\". Both are consistent with every number.",
     "p_concept=0.1932 is selection_max over 31x5 unpenalised - an upper bound on Llama off-surface transport, not an estimate.",
-    "Qwen3's P-D is a statement about THIS ASSAY on that model, not about Qwen3."
+    "Qwen3's P-D is a statement about THIS ASSAY on that model, not about Qwen3.",
+    "RAH3-C-013: the Qwen3 offset-0 comparator used --enable-thinking false while the RAH3 offset-+1 run used the default. The Qwen3 TEMPLATED-form comparisons (fc_probe_last, id07_tmpl) are CONFOUNDED. Llama is clean: 25/25 cells bit-identical on q_pos, read_pos and unpatched mass.",
+    "RAH3-C-014: \"every cell collapses\" is false. On matched (form,R) pairs 5 of 50 RISE, including Llama fc_probe_last R=16 which flips FAIL->PASS. The published collapse table is max-over-R, not matched.",
+    "RAH3-C-018: exposure-clean multi-hop cells have NEVER passed in ANY of the 220 such cells across the whole artifact corpus, at BOTH offsets and on BOTH models. RAH3 contributed ZERO incremental evidence to that specific conclusion - which is also why C-013 cannot reach it."
    ],
    "artifact": [
     "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
@@ -198,7 +201,7 @@
    "selection": "scripts/rah3_select_config.py, committed at 8e9ca447 BEFORE either artifact existed",
    "independent_verifier": [
     "scripts/rah3_verify_noncopy_independent.py: 289 checks / 0 failures on each, 17/17 mutation classes RED",
-    "scripts/rah3_verify_noncopy_gpu.py on the frozen cell (job 831512)"
+    "scripts/rah3_verify_noncopy_gpu.py on the frozen cell (job 831541, 24 checks / 0 failures; job 831512 was its FAILING first run, RAH3-C-010)"
    ]
   },
   {
@@ -274,8 +277,8 @@
  ],
  "headline": {
   "verdict": "TRACK A REMAINS CANNOT ANSWER - VALID READOUT NOT ESTABLISHED",
-  "H4": "SUPPORTED - every form collapses when the donor moves one token off the concept surface",
-  "most_important_single_number": "Qwen3 fc_probe_last positive control: p_concept 0.999999 at offset 0 -> 0.000539 at offset +1 (1855x). The multi-hop positive control this project's transport infrastructure rests on was essentially entirely a copy effect on that model.",
+  "H4": "PARTIALLY SUPPORTED. On Llama (clean comparison) the 0-hop decoders collapse 688x and 42809x. \"Every form collapses\" is FALSE (RAH3-C-014). The Qwen3 templated rows are confounded (RAH3-C-013).",
+  "most_important_single_number": "Qwen3 fc_probe_last: 0.999999 at offset 0 -> 0.000539 at offset +1. WARNING (RAH3-C-013): this comparison is CONFOUNDED by enable_thinking (false vs default) and must not be quoted as a clean 1855x collapse. The unconfounded statement is that nothing passes on Qwen3 at offset +1.",
   "does_not_reinterpret": "RAH-R-018 stands at A-IV / CANNOT ANSWER, permanently."
  }
 }
