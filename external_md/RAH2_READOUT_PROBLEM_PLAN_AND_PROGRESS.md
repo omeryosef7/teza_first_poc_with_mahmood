@@ -443,3 +443,183 @@ substituted for the other.
 
 **`H2` FALSIFIED.** Not PARTIAL — the forms failed in development *and* held-out, so the
 dev-high/held-out-collapse branch never applied.
+
+---
+
+# `RAH2-DR-001` — deep adversarial review — 2026-08-31
+
+Two read-only auditors, scoped to code and to claims-vs-artifacts. **Every finding below was
+re-verified by me against the artifacts before being accepted or rejected** — one was rejected.
+Nothing here is taken on the auditor's word.
+
+**This review changes the headline result of both `RAH2-R-001` and `RAH2-R-002`.** The changes are
+recorded as amendments; the original entries stay in place with `SUPERSEDED` pointers, per the
+append-only rule.
+
+## D1 `RAH2-C-003` — **FATAL.** The falsifications are **Qwen3-only**. On Llama the registered CANNOT-ANSWER branch fired and I did not report it
+
+`RAH2-PR-001` §1.3 fixed: *"**CANNOT ANSWER** | the positive control fails for all forms"*.
+
+Verified count of `positive_control_ok` across every RAH2 run:
+
+| run | model | passing configs |
+|---|---|---|
+| `rah2dev_p_cb` | Llama | **0 / 25** |
+| `rah2fs_p_cb` | Llama | **0 / 20** |
+| `rah2fs_p_lp` | Llama | **0 / 20** |
+| `rah2dev_q_cb` | Qwen3 | 5 / 25 (`id07_tmpl`, all depths) |
+| `rah2fs_q_cb` | Qwen3 | 5 / 20 (`id07_tmpl`, all depths) |
+| `rah2fs_q_lp` | Qwen3 | 2 / 20 (`fc_probe_last` R=30, 36) |
+
+**On Llama, no form at any depth on any bank passed the gate — 0 of 65.** The instrument was never
+shown to transport anything on Llama in this phase. `RAH2-R-001`'s *"H1 FALSIFIED on both models"* and
+`RAH2-R-002`'s *"H2 FALSIFIED ... on both models"* are therefore **not supported on Llama**: a form
+that reads nothing cannot distinguish "this framing fails" from "nothing was transported".
+
+**Compounding it:** `RAH2-PR-001` §1.5 registered the positive control as a **`direct_harmful`** donor
+arm. **No `direct_harmful` run exists in RAH2** — all six runs are `natural_doublespeak`. So the field
+I have been calling `pos_ctrl_max` is not the registered positive control at all; it is the
+discrimination arm's own P(concept). The registered positive control **was never run**.
+
+**Corrected claim status:**
+> `H1` and `H2` are **FALSIFIED on Qwen3**. On **Llama** the outcome is **CANNOT ANSWER** — the
+> registered positive control was not run, and the substitute field fails for every form at every
+> depth. Llama's few-shot and semantic numbers are recorded but carry **no falsification weight**.
+
+The prior sprint did establish Llama transport (`RAH-R-013`, `fc_probe_last` at R=4, P(concept)
+0.8421, `direct_harmful` donor). That is a **cross-phase** citation from a different donor condition
+and does not substitute for the arm `RAH2-PR-001` registered.
+
+## D2 `RAH2-C-004` — a false claim in `RAH2-R-002`'s trade-off table
+
+I wrote that `fc_probe_last` *"fails the three-conjunct gate on both models"* held-out. **False on
+Qwen3:** `rah2fs_q_lp` has `GATE.n_passing = 2` — R=30 (`p_conc` 0.5562 vs `p_code` 0.0951) and R=36
+(0.4999 vs 0.0852). Both conjuncts I claimed were violated are satisfied. I had quoted the R=10 cell,
+which is selected by **max mass**, not by the gate.
+
+**Corrected:** *"`fc_probe_last` fails the gate at every depth on Llama held-out (0/5) and at 3 of 5
+depths on Qwen3 held-out; at R=30 and R=36 on Qwen3 it **passes**. It is excluded as a readout because
+it prints all four candidates — an exposure confound — not because it fails the gate."*
+
+## D3 `RAH2-C-005` — `RAH2-C-002` was applied to one table and not the other, and fixing that flips a universal
+
+`RAH2-C-002` established that `patched_option_mass_at_best` understates mass. I applied it to the
+few-shot table and left `RAH2-R-001`'s ladder table on the field C-002 calls wrong. Max over (R, L),
+same committed artifacts:
+
+| Llama form | quoted | corrected | factor |
+|---|---|---|---|
+| `synonym` | 2.18e-05 | **0.00301** | **138×** |
+| `cat_cue` | 0.000626 | 0.00198 | 3.2× |
+| `defn_oneword` | 3.12e-05 | 9.76e-05 | 3.1× |
+
+(Qwen3's ladder numbers are unchanged under the corrected reading.)
+
+**A universal flips.** `RAH2-R-001` claims *"The ordering is identical on both models"*. Under the
+corrected reading it is **not**: on Llama `synonym` (0.00301) **exceeds** `cat_cue` (0.00198), the
+reverse of Qwen3. **Only the group-level ordering (naming > echo >> semantic) is common to both.**
+
+## D4 `RAH2-C-006` — the "2–10 orders" figure is wrong, and the true number makes a skipped run **owed**
+
+`RAH2-R-001` says the ladder forms are *"2–10 orders below"* the gate. Verified: the range is
+**1.39–9.56**. `cat_cue` is **1.90** orders below on Llama and **1.39** on Qwen3 — **less than 2 on
+both models**, which is exactly the gap `RAH2-C-001` later resolved *toward measuring*.
+
+So `RAH2-C-001`'s amendment retroactively obliges a **ladder held-out run**, which was skipped.
+**Submitted: jobs 827941 (Llama), 827942 (Qwen3).** Until they report, **`H1`'s held-out status for
+`cat_cue` is OPEN, not falsified.**
+
+## D5 `RAH2-C-007` — `RAH2-R-001` made the exact inference `RAH2-C-001` says was not made
+
+`RAH2-R-001`: *"A form cannot climb 2–10 orders on a held-out pair when a better form fell 6."*
+`RAH2-C-001`: *"What I did NOT do: ... argue from the one precedent ... That inference is probably
+right and it is still an inference."*
+
+The two are in direct conflict. **The `RAH2-R-001` sentence is WITHDRAWN.** D4's run replaces it with
+a measurement.
+
+## D6 `RAH2-C-008` — two registered measurement definitions were not the ones computed
+
+* **Median → mean.** §1.2/§1.3 register the gate on *median* mass. `rah_preflight_transport.py:448`
+  computes `option_mass_mean` over 8 donors. **`grep -c median` on the module returns 0 — no median
+  exists in any artifact.** Every mass figure in this log is a **mean over 8 donors**, at a layer
+  selected by a *different* statistic (`p_concept_mean`).
+* **Frozen R → best over R.** §2 registers R **frozen** at depth 0.125 for the primary comparison,
+  with the R-sweep *"reported only as a secondary diagnostic"*. `RAH2-R-001`'s primary table is
+  explicitly *"best over receiver layers"*. At the frozen R=4 the Llama numbers are materially
+  different: `id07_tmpl` **0.0226** (not 0.0410), `cat_cue` **3.54e-04** (not 6.26e-04), `synonym`
+  **5.42e-06** (not 2.18e-05).
+
+Both are **deviations from the preregistration**, not errors in arithmetic. Recorded as such. The
+frozen-R cell is the registered primary and is now stated; max-over-R and max-over-(R,L) are
+secondary and are labelled upper bounds.
+
+## D7 `RAH2-C-009` — the population was narrowed and I called it "UNCHANGED"
+
+`RAH2-PR-002` says *"populations — **UNCHANGED** from `RAH2-PR-001`"*. `RAH2-PR-001` §1.4 registers
+**three** development banks (`carrot↔bomb`, `basket↔bomb`, `ticket↔knife`) and **two** held-out pairs
+(`lantern↔poison`, `candle↔missile`). Every RAH2 run used **1 of 3** and **1 of 2**. `candle↔missile`
+appears only as two **distractor labels** in the held-out vocabulary, never as a probed pair.
+
+**Corrected:** this is a **narrowing of the registered population**, and §1.3's CANNOT-ANSWER trigger
+*"the population is incomplete"* is live for the untested cells.
+
+## D8 `RAH2-C-010` — smaller quoted-number defects
+
+* *"1.5–10 orders below the form they were meant to improve on"* — no reference form is named, and
+  neither candidate gives 1.5: vs `id07_tmpl` it is **1.8–10.5**, vs `fc_probe_last` **2.4–10.9**.
+* `RAH2-C-002` misquotes its own predecessor as *"2 orders"*; `RAH2-C-001` recorded **1.1 and 0.9**.
+* `RAH2-C-002`'s *"factor of 3–4"* is the **held-out** figure; the development figures in its own
+  table give **1.7× and 1.6×**.
+* `RAH2-C-002`'s *"~5× understatement"* is **7.3×** (Llama) and **4.9×** (Qwen3).
+* §1.1's quoted prompt for `synonym` (*"X means the same as the word"*) **appears nowhere in the
+  code**; the run used body `Give a one-word synonym for the word "widget".` + suffix `A synonym is`.
+  `cat_cue`'s quoted shape is likewise a paraphrase.
+
+## D9 `RAH2-C-011` — "7 of 8 cells" selects R as well as L
+
+`RAH2-R-002`'s *"7 of the 8 cells, `p_codeword > p_concept` at the selected layer"* is true as stated,
+but "the selected layer" also silently picks R by max mass. **Across all 40 few-shot configurations
+the count is 29/40** (Llama dev 9/10, Qwen3 dev 5/10, Llama held-out 7/10, Qwen3 held-out 8/10). The
+weaker, unselected statement is the honest one.
+
+## D10 `RAH2-C-012` — `RAH2-R-001` substitutes across estimands in the way `RAH2-R-002` forbids
+
+`RAH2-R-001`: *"the same `id07_tmpl` configuration read 0.4344 in development and 7.1e-08 held out."*
+0.4344 is `pos_ctrl_max` at **R=30** — a max over the R-sweep, and a P(concept), not a mass — while
+7.1e-08 is `RAH-R-018`'s 80-family **median option mass** from the assay. Different statistic,
+different R from the frozen one (R=5 gives 0.4163), different n. **The sentence is withdrawn**; the
+same-phase collapse evidence in `RAH2-R-002` (dev 0.4344 → held-out 2.53e-04, one estimand, one
+phase) stands in its place. (The arithmetic was also ~6.8 orders, not "six".)
+
+## D11 — provenance is asserted in prose and is not in the artifacts
+
+`RAH2-R-002` states job ids, `COMPLETED`, commit `c09068bc`, `dirty=0`. The `RAH_PREFLIGHT_TRANSPORT/1`
+schema carries **no** commit, dirty, job-id or runtime field, so none of it is checkable from the
+artifact. It is true — it is in the SLURM logs — but it is not *attested*. **Action:** the writer
+should emit a provenance block. Filed, not yet implemented.
+
+## D12 — one auditor finding **REJECTED**
+
+The claims auditor reported the `RAH2-PR-002` CPU-verification table's `fc_probe_last` spans as wrong
+by +3 on both models (claimed 72/63/71 and 49/36/48). **This is the auditor's error, not mine.** Those
+are the `carrot↔bomb` numbers; my table was rendered with the `lantern↔poison` vocabulary, whose
+labels tokenize to different lengths, and it matches `rah2fs_p_lp` (75/66/74) and `rah2fs_q_lp`
+(52/39/51) **exactly**. The real defect is that the table **did not say which vocabulary** it used —
+fixed by labelling it.
+
+## What the audit confirmed clean
+
+Every mass digit in `RAH2-R-001`, `RAH2-C-001`, `RAH2-C-002` and `RAH2-R-002`'s 4×4 table reproduces
+its artifact exactly (16 + 10 + 4 values). The *"40 of 40 `positive_control_ok` False for the few-shot
+forms"* claim is verified true and correctly scoped. Hop counts, `names_any_candidate() == []` on all
+four model×bank combinations, and the patch/read sites all match. The anti-fishing property holds:
+**no intervention code path exists in the module**. `RAH2-PR-002` is genuinely prospective (committed
+13:53:04, artifacts 14:09–14:25), and `RAH2-C-001` genuinely precedes both held-out artifacts.
+
+## Corrected bottom line for the phase
+
+> **On Qwen3**, three readout mechanisms were tested and none is both exposure-clean and reportable
+> on held-out material. **On Llama, the phase CANNOT ANSWER** — the registered positive control was
+> never run and its substitute fails everywhere. `cat_cue`'s held-out status is **OPEN** pending jobs
+> 827941/827942. The population is **1 of 3** development banks and **1 of 2** held-out pairs.
