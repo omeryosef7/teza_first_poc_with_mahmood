@@ -908,3 +908,92 @@ on both models**, and this is the branch `RAH2-PR-003` registered in advance:
 scoping I published two entries ago. The measurements never changed; my reading of which model could
 support a claim was wrong twice, in opposite directions, and is now anchored to a control that was
 actually run.
+
+---
+
+## `RAH2-C-018` — `RAH2-R-004` quoted the upper bound as if it were the result. The template conclusion survives; the table does not
+
+Jobs **828393 / 828395** COMPLETED gave `id07_raw` its own positive control, and checking it exposed
+that `RAH2-R-004`'s headline table (*"`id07_raw` clears the gate by 15–19× in all four cells"*) is the
+**max over (R, L)** — the quantity `RAH2-C-002` labelled *"NOT AN ESTIMATOR"*, an upper bound
+maximised over two free parameters. Those maxima sit at donor layers **L = 0, 4, 6** — the very
+bottom of the stack.
+
+At the **`p_concept`-argmax layer**, `id07_raw` under the doublespeak donor reads:
+
+| | best over R, at the selected layer | gate |
+|---|---|---|
+| Llama dev | 0.0353 | fail (0/5 depths) |
+| **Llama held-out** | **0.00673** | fail (0/5) |
+| Qwen3 dev | **0.3887** | **PASS at all 5 depths**, concept ≫ codeword (7.5e-07) |
+| **Qwen3 held-out** | **0.000401** | fail (0/5) |
+
+**`id07_raw` collapses held-out exactly as `id07_tmpl` did** — Qwen3 0.3887 → 0.000401, three orders.
+I used the upper bound to make a claim one tick after writing down that it is not an estimator.
+
+**What survives, and on a better footing than before.** `RAH2-C-013`'s alternative explanation was
+*"an instruct model puts little mass on a bare continuation outside its chat format"*. That is refuted
+**by the positive control, not by the table**: untemplated `id07_raw` reads **0.8409 (Llama)** and
+**0.8404 (Qwen3)** when the concept is present. The untemplated condition supports mass ~0.84. The
+template is **not** the explanation, and this now rests on a controlled measurement.
+
+---
+
+## `RAH2-R-005` — the phase's result, with every form finally carrying its own positive control
+
+**`P(concept)` under a concept-bearing donor, gate 0.1 — the control `RAH2-PR-001` registered and
+`RAH2-C-003` found had never been run:**
+
+| form | exposure-clean | Llama | Qwen3 | validated readout? |
+|---|---|---|---|---|
+| `fc_probe_last` | **no** — prints all 4 | 0.9087 | 1.0000 | yes, but confounded by construction |
+| **`id07_raw`** | **yes** | **0.8409** | **0.8404** | **YES, on both models** |
+| `id07_tmpl` | yes | 0.5011 | 0.0142 | Llama only |
+| `fewshot_syn` | yes | 0.0197 | 0.0965 | **no** |
+| `fewshot_cat` | yes | 0.0658 | 0.0087 | **no** |
+| `cat_cue` | yes | 0.0091 | 0.0354 | **no** |
+| `synonym` | yes | 0.0013 | 1.48e-08 | **no** |
+| `defn_oneword` | yes | 3.53e-05 | 2.57e-08 | **no** |
+
+### `RAH2-C-017`'s Qwen3 verdict is WITHDRAWN
+
+C-017 concluded *"no exposure-clean receiver is demonstrated to transport anything on Qwen3"*. **False:
+`id07_raw` passes on Qwen3 at 0.8404, at three depths.** C-017 was computed on the **ladder** form
+set, which does not contain `id07_raw`. Qwen3 is answerable. That is the **third** time this phase's
+model scoping moved, and **all three moves came from a control I had not yet run — never from a number
+changing.**
+
+### The two questions the phase confused, now separated
+
+**(a) "Is there an exposure-clean, high-mass readout at all?"** — the question `RBD-R-033` and the RAH
+sprint summary both recorded as having **no** instance in this project's inventory.
+
+> **ANSWERED, and positively: `id07_raw`.** Names no candidate, and transports a present concept at
+> **0.84 on both models** with `p_codeword` at 1.2e-05 / 5.2e-07. It is the **first** readout in this
+> project that is both exposure-clean and demonstrably high-mass, and it was **already sitting in the
+> frozen Stage-A grid, never having been given a positive control.**
+
+**(b) "Does the doublespeak mapping survive in the codeword representation, readably?"**
+
+> **NO, on held-out material, on both models — and now with a validated instrument.** `id07_raw`
+> reads 0.00673 (Llama) and 0.000401 (Qwen3) held-out, failing the gate at every depth, *after*
+> passing its positive control at 0.84 on the same model, same receiver, same layers.
+
+**This is the first held-out negative in the phase that a working readout produced.** Every earlier
+one was confounded with the readout being broken. That is what changes here.
+
+### Registered outcomes, final for this phase
+
+| hypothesis | as a claim about the READOUT FORM | as a claim about the MAPPING |
+|---|---|---|
+| **`H1`** (semantic constraint can be clean + high-mass) | **FALSIFIED, both models** — the semantic forms cannot report a concept that is *literally present* | CANNOT ANSWER through those forms |
+| **`H2`** (in-context mapping can be clean + high-mass) | **FALSIFIED, both models** — `fewshot_*` peak at 0.0965 with the concept present, below the 0.1 control | CANNOT ANSWER through those forms |
+| **`H0`** (the trade-off is unavoidable) | **FALSIFIED by `id07_raw`** — exposure-clean *and* 0.84 | — |
+
+⚠ **`H2`'s verdict has now moved three times** (FALSIFIED → CONFOUNDED → FALSIFIED-on-Llama →
+FALSIFIED-as-a-readout-claim-on-both). Each move was a control arriving, not a measurement changing.
+The stable statement is the two-column split above, which I should have drawn at `RAH2-PR-001`.
+
+⚠ **Scope, unchanged and still narrow:** 2 models, 1 development bank of 3 registered, 1 held-out
+pair of 2, 8 donors per cell, means not medians (`RAH2-C-008`), best-over-R not frozen-R for the
+mass figures, and `id07_*` figures carry the leading-space-only limitation (`RAH2-C-014`).
