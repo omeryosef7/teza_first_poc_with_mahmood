@@ -346,3 +346,100 @@ never toward the conclusion the partial data already suggests.
 **The rule is amended for future ids, prospectively:** *if development mass is below the gate by less
 than 2 orders on either model, held-out is run.* This amendment is recorded here **before** the
 held-out numbers exist.
+
+---
+
+## `RAH2-C-002` — I quoted the wrong field, and it flattered the falsification by ~5×
+
+Found while checking, before writing `RAH2-R-002`, whether the `p_concept`-vs-`p_codeword`
+comparison is taken at a single donor layer.
+
+`rah_preflight_transport.py:449` selects `best = max(per_layer, key=p_concept_mean)`. Every
+`*_at_best` field is then read **from that layer**. Two consequences:
+
+* **Good:** `pos_ctrl_max`, `p_codeword_at_best` and `patched_option_mass_at_best` are all
+  same-layer, so `p_concept > p_codeword` comparisons are sound. That was the worry; it is clean.
+* **Bad:** `patched_option_mass_at_best` is *the option mass at the `p_concept`-argmax layer*, **not
+  the maximum option mass**. For a form whose `p_concept` is tiny everywhere, the layer that
+  maximises `p_concept` is not the layer that maximises mass — so this field **understates** the mass
+  a form can reach.
+
+I had been reading it as "best mass". Corrected, from `per_layer` in the same committed artifacts, no
+re-run:
+
+| | quoted as "best mass" (wrong field) | max mass over **all** (R, L) |
+|---|---|---|
+| Llama dev `fewshot_syn` | 0.0040 | **0.0293** |
+| Qwen3 dev `fewshot_syn` | 0.0063 | **0.0308** |
+
+**This is a ~5× understatement and it ran in the direction that made my own falsification look
+easier.** The conclusion does not change — see `RAH2-R-002` — but the margin does, from "2 orders
+below the gate" to "a factor of 3–4 below it", and the honest number is the one that makes the
+falsification harder to claim. Both readings are reported below.
+
+⚠ The max-over-(R, L) figure is an **upper bound obtained by maximising over two free parameters**.
+It is **NOT AN ESTIMATOR** and is reported only because it is the reading most favourable to the
+hypothesis being falsified.
+
+---
+
+## `RAH2-R-002` — `H2` FALSIFIED on held-out material, on both models — 2026-08-31
+
+Jobs **827848 / 827849** (development, level-A `carrot↔bomb`) and **827899 / 827900** (held-out,
+`lantern↔poison`), all **COMPLETED**, all at commit `c09068bc`, `dirty=0`. Donor
+`natural_doublespeak` at the codeword surface, 8 donors, `n_examples=8`, 5 receiver depths × all
+donor layers. Held-out was run because `RAH2-C-001` resolved a gap in the stopping rule toward
+measuring.
+
+### Primary registered readout — the three-conjunct gate
+
+**`positive_control_ok` is `False` for `fewshot_cat` and `fewshot_syn` at every receiver depth, on
+both models, on both banks — 40 of 40 configurations.** Not one passed.
+
+### Mass, both readings, against the 0.05 gate
+
+| | | Llama dev | Qwen3 dev | **Llama held-out** | **Qwen3 held-out** |
+|---|---|---|---|---|---|
+| `fewshot_syn` | at `p_conc`-argmax L | 0.0040 | 0.0063 | 0.000655 | 0.000798 |
+| `fewshot_syn` | **max over (R, L)** | 0.0293 | 0.0308 | **0.0117** | **0.0163** |
+| `fewshot_cat` | at `p_conc`-argmax L | 0.00060 | 0.00064 | 0.000648 | 0.000333 |
+| `fewshot_cat` | **max over (R, L)** | 0.0177 | 0.00129 | **0.00815** | **0.00181** |
+
+**Under the reading most favourable to `H2` — maximising over both free parameters — the best
+few-shot form reaches 0.33× the gate on Qwen3 held-out and 0.23× on Llama.** It is below the gate on
+every model, every bank, both forms, under both readings. `H2` is **FALSIFIED**.
+
+### Why it fails, as far as this run can say
+
+For **7 of the 8** (model × bank × form) cells, `p_codeword > p_concept` at the selected layer — e.g.
+Llama held-out `fewshot_syn` 5.18e-04 vs 3.27e-06. The single exception is **Qwen3 development
+`fewshot_cat`** (4.60e-04 vs 1.80e-04). So the small mass the few-shot receivers do place on the
+candidate vocabulary sits **predominantly on the codeword, not the mapped concept**: the demonstrated
+mapping fires, and it maps the **surface it was handed**. That is the echo mechanism one step
+removed, not a new one.
+
+⚠ This is a description of where the mass sits, at n=8 donors, with **no interval and no test**. It is
+**not** a demonstrated mechanism.
+
+### The trade-off, now with three mechanisms tested and no exception found
+
+| mechanism | names candidates | held-out mass | reads |
+|---|---|---|---|
+| forced choice (`fc_probe_last`) | **yes** | 0.70 / 0.99992 | exposure-confounded — `p_code` 0.34 / 0.411 **beats** `p_conc` 0.00096 / 0.023, and it **fails the three-conjunct gate on both models** |
+| echo (`id07_tmpl`) | no | 0.000695 / 0.000253 | surface identity — and it **collapses held-out on Llama too** (dev 0.0410), a second instance of the collapse previously seen once |
+| **in-context mapping (`fewshot_*`)** | **no** | **0.0117 / 0.0163** | the surface it was handed |
+
+⚠ **Scope.** Three mechanisms, two models, two lexical pairs, one donor condition, 8 donors per cell.
+`RAH2-R-001`'s statement stands and is not strengthened by this: the trade-off is **not obviously
+escapable**, on the routes tried. It is **not** established that no exposure-clean high-mass readout
+exists.
+
+⚠ **Do not conflate with Track A.** The `id07_tmpl` held-out figure here (2.53e-04, Qwen3, best over
+donor layers, 8 donors, preflight) is a **different estimand** from `RAH-R-018`'s **7.147e-08** (median
+over 80 families, fixed configuration, the assay). Both say "unreportable"; neither number may be
+substituted for the other.
+
+### Registered outcome
+
+**`H2` FALSIFIED.** Not PARTIAL — the forms failed in development *and* held-out, so the
+dev-high/held-out-collapse branch never applied.
