@@ -12,6 +12,14 @@ The predecessor sprint closed `RBD-R-033` on a structural claim about **behaviou
 > A readout that names its options is high-mass and **exposure-confounded**; one that does not is
 > exposure-clean and **unreportable**. No readout in this project's inventory is both.
 
+> ⚠ **CORRECTED by `RAH2-R-005` (2026-08-31), see
+> `external_md/RAH2_READOUT_PROBLEM_PLAN_AND_PROGRESS.md`.** The structural half of this claim is
+> **FALSIFIED**: `id07_raw` names no option and reports a present concept at **0.8409** (Llama) /
+> **0.8404** (Qwen3) under the registered `direct_harmful` positive control — so "exposure-clean
+> implies unreportable" is false, and the counterexample was in the frozen Stage-A grid all along,
+> never having been given a positive control. What still stands is the **held-out** requirement
+> (§6 below): `id07_raw` reads 0.00673 / 0.000401 on held-out material, 0/5 depths at gate.
+
 Its recommendation was to go **activation-level**: measure the internal state directly, so the
 options can live in a *different prompt* from the one whose state is measured and therefore cannot
 have created it. This report documents building that instrument and running it to a held-out

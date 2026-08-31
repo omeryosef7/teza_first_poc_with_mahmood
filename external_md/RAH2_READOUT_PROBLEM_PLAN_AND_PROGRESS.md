@@ -997,3 +997,63 @@ The stable statement is the two-column split above, which I should have drawn at
 ⚠ **Scope, unchanged and still narrow:** 2 models, 1 development bank of 3 registered, 1 held-out
 pair of 2, 8 donors per cell, means not medians (`RAH2-C-008`), best-over-R not frozen-R for the
 mass figures, and `id07_*` figures carry the leading-space-only limitation (`RAH2-C-014`).
+
+---
+
+## `RAH2-C-019` — `RAH2-R-005` cited two prior claims as if they were one. Only **one** of them is refuted
+
+Found while checking `RAH2-R-005` against the deliverables it bears on. There are **two** distinct
+prior statements and they have **different truth values** after R-005:
+
+**(A) the STRUCTURAL claim — `RBD-R-033`, quoted at `reports/RAH_ACTIVATION_ASSAY_REPORT.md:13` and
+`RESEARCH_HANDOFF.md:279`:**
+
+> *"A readout that names its options is high-mass and exposure-confounded; one that does not is
+> exposure-clean **and unreportable**. No readout in this project's inventory is both."*
+
+**REFUTED.** `id07_raw` names no option and reports at **0.8409 / 0.8404**. "Exposure-clean implies
+unreportable" is false, and the counterexample was inside the frozen Stage-A grid the whole time.
+
+**(B) the HELD-OUT requirement — `reports/RAH_SPRINT_SUMMARY.md:211` and `RESEARCH_HANDOFF.md:450`:**
+
+> *"Track A needs a receiver that is both exposure-clean and high-mass **on held-out material**. No
+> such readout exists in this project's inventory."*
+
+**STANDS, UNREFUTED.** `id07_raw` is exposure-clean and reads **0.00673 / 0.000401** on held-out
+material — 0/5 depths at gate on both models. It does **not** satisfy (B).
+
+`RAH2-R-005` §(a) wrote *"the question `RBD-R-033` **and the RAH sprint summary** both recorded as
+having no instance"* and claimed it ANSWERED. **That is right for (A) and wrong for (B).** The two
+sentences differ by the words "on held-out material", which is the entire difficulty of the phase.
+
+**Corrected statement of what R-005 established:**
+
+> The trade-off is **not structural** — an exposure-clean readout can be high-mass, demonstrated at
+> 0.84 on both models. But the readout Track A actually needs, one that is exposure-clean **and
+> high-mass on held-out doublespeak material**, **still does not exist**. R-005 converts an
+> unexplained absence into a **located** one: the readout is fine; what is missing is on held-out
+> material, downstream of a receiver that demonstrably works.
+
+This is the same scope-error class the predecessor sprint closed on (*"the numbers kept being right
+and the sentences around them kept being wrong"*) — a qualifier dropped between two nearly identical
+sentences. The numbers in R-005 were and are correct: independently verified below.
+
+## `RAH2-R-006` — independent verification of `RAH2-R-005`
+
+`scripts/rah2_verify_r005.py` — **stdlib only, imports nothing from the producer**, re-derives every
+published number from the committed `grid` records and **refuses (exit 1)** on mismatch.
+
+| checked | result |
+|---|---|
+| 16 positive-control values across 4 artifacts | **all OK** |
+| the validated/not-validated verdict, **recomputed** from the 0.1 gate rather than read | 6/6 OK |
+| 4 `id07_raw` doublespeak masses | all OK |
+| *"fails at every depth held-out"* — checked on **all 5 depths**, not the best | 0/5 pass, both models |
+| `RAH2-C-018`'s upper-bound gap | selected-layer 4.01e-04 vs max-over-(R,L) 0.9408 = **2348×** |
+
+**22 checks, 0 failures.** Proven able to fail: perturbing one published value to 0.9409 exits 1
+naming that value; restored, exit 0.
+
+⚠ This verifies that the **published tables match the artifacts**. It does **not** re-run the models,
+and it inherits every measurement limitation already recorded — means not medians (`RAH2-C-008`),
+best-over-R (`RAH2-C-008`), leading-space-only ids (`RAH2-C-014`), and 8 donors per cell.
