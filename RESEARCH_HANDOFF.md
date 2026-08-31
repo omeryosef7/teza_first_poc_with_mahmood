@@ -339,3 +339,137 @@ never implemented** before this sprint.
   (`RBD-C-004`, `RBD-C-011`).
 * **A self-derived expectation is not an expectation.** An audit whose expected counts come from the
   rows it is checking will certify a bank missing an entire domain (`RBD-DR-002` F3).
+
+---
+---
+
+# ADDENDUM — Representation Access & Headroom (RAH) sprint, 2026-08-30/31
+
+**Branch `behavioral-causality-sprint`, `fe8fd610..f9729af2`.** Unique id namespace `RAH-PR / RAH-R /
+RAH-C / RAH-DR`. **Never write a bare `C-12` or `R-25` when citing it.** Full log:
+`external_md/REPRESENTATION_ACCESS_AND_HEADROOM_NEXT_SPRINT_PLAN_AND_PROGRESS.md`. Standalone
+summary: `reports/RAH_SPRINT_SUMMARY.md`. Every number below is re-read from its raw artifact by
+`reports/RAH_REPRO_MANIFEST.json`, **executed on a clean tree: 17 numbers, 5 verifiers, 0 failures.**
+
+## 1. The one-paragraph truth
+
+The predecessor sprint said the route out of its dead end was activation-level patching. **That route
+was built and run to a held-out conclusion, and it returned CANNOT ANSWER.** Along the way the sprint
+established that the doublespeak mapping is **installed and not used** (4/4 cells), that the
+**80-row-per-arm design used throughout this project cannot detect a behavioural effect of any size**
+once judge noise and domain clustering are counted, and that this repository's five failed patchscope
+attempts failed for a **fixable reason** — the receiver injection layer, worth ~130× on the same
+donor and readout. Both tracks closed on preregistered negative or non-answerable outcomes; **no
+intervened arm was interpreted on either.**
+
+## 2. ESTABLISHED
+
+* **The mapping is installed and is not used, 4/4 cells** (`RAH-R-004`). Binding lift **+0.5000 …
+  +0.9750**, every CI excluding zero; benign mapping-use lift **NOT ESTABLISHED** on all four. Not a
+  power failure — on `candle↔missile` the readout has a 76-row dynamic range and the doublespeak arm
+  sits at 2.6 %/3.9 % of it. n = 80 families, 20 domains, paired, independently re-derived.
+* **`RBD-C-016` is CLOSED.** Qwen3's 69/80 mapping-use rate is **not** mapping-attributable: its
+  no-mapping base rate on the same families is **72/80 — higher**. The Llama-vs-Qwen3 difference is a
+  difference in **base rates for the option words** (0.40 vs 0.90), not in mapping use.
+* **The 80-row design is structurally underpowered** (`RAH-R-006`). At k=20×m=4 the MDE is `n/a` at
+  every baseline this repo has measured — *even reducing ASR to zero misses 80 % power*. At n=160 and
+  baseline 0.15 it is still `n/a`, so meeting the old 14-attack floor would not have rescued it.
+  **Domains, not rows, are the binding lever.**
+* **Judge flip rate RISES with baseline ASR** (`RAH-C-004`): 0.021 at ASR 0.013 → 0.085 at ASR 0.27,
+  measured with `effective_flip_rate` per population. A higher-headroom population does **not** buy
+  proportional power.
+* **The patchscope failures were the receiver injection layer** (`RAH-R-008`). Like-for-like,
+  R=28 → R=4 of 32: archived config **0.0088 → 0.2771 (31×)**, best form **0.0065 → 0.8421 (130×)**.
+  The depth *fraction* transfers across models (0.125 on both).
+* **Fresh judge-noise measurement** (`RAH-R-007`): **11 flips / 299 freshly-judged byte-identical
+  rows = 0.0368**, pinned model, same commit. This **replaces** the repo's 6.5–7.0 % per-invocation
+  figure, which has **no committed artifact** behind it.
+
+## 3. FAILED / DECLINED / CANNOT ANSWER
+
+* **Track A → A-IV, CANNOT ANSWER** (`RAH-R-018`). Both viable configurations closed: the one
+  selected on the positive control transports the **codeword**, not the concept; the one selected on
+  baseline transport is **unreportable on held-out material** (median option mass **7.147e-08**
+  against a 0.05 gate, **0/80 rows** above gate, every arm). No Δ computed, no equivalence test run.
+* **Track B → B-BLOCKED-BY-MATERIAL** (`RAH-R-021`). One screening cell of four qualifies and it is
+  the **discovery pair on a single model**; there is **no qualifying cell on Qwen3 at all**. The
+  confirmatory matrix was **not run** and ≈20 GPU-hours were not spent.
+* **`RBD-PR-005` executed as registered and CLOSED** (`RAH-R-007`): pooled ratios 1.57× (Llama) and
+  1.00× (Qwen3) against preregistered MDEs of 2.68× and 4.10×. **Does not move at a resolvable
+  size** — licenses *"no LARGE dose effect"*, never *"no dose effect"*.
+
+## 4. UNRESOLVED / DIAGNOSTIC ONLY
+
+* Whether the exposure/mass dilemma is **general** at the activation level. Observed **once**, one
+  model, one bank, n = 80 (`RAH-C-015`).
+* The `bomb` > `knife` pair effect — 1.79× (Llama) and 2.20× (Qwen3) with domains, cut, dose, cap,
+  judge, window and models all matched. **Codeword and concept change together**, so it is a *pair*
+  effect and cannot be attributed to the concept alone.
+* Refusal rates differ sharply by pair — **0.217/0.270** on `ticket↔knife` vs **0.013/0.020** on
+  `carrot↔bomb`. A plausible mechanism for the ASR gap. **Recorded, not interpreted.**
+* The full-suite vs guard-list order dependence inherited from before this sprint (`RAH-R-016`).
+
+## 5. ⛔ MUST NEVER BE QUOTED
+
+1. **The Track-A argmax shift.** Held-out `base` → `poison 36`, `dpo` → `poison 0` looks like a large
+   clean intervention effect and is computed over probabilities of order **1e-8**, six orders below
+   the reportability gate. Recorded in `RAH-R-018` **as NOT USED**.
+2. **"~96×"** for the receiver-layer improvement (`RAH-DR-003` A3) — it crosses two receiver forms
+   and two donor layers. Like-for-like it is **31×** and **130×**.
+3. **"0.1562"** as the `carrot↔bomb` screening baseline (`RAH-C-014`) — that is pooled over
+   `n_examples` {1,2,4,8}. The screening population is **0.1645**.
+4. **"all five prior patchscope failures were the receiver layer"** (`RAH-DR-003` A5) — there are
+   **seven** artifacts, two used `n_layers−2`, and **only the one archived configuration was re-run**.
+5. **"every form works at R=4–8"** (`RAH-DR-003` A6) — one form fails at **every** R. An early
+   injection layer is **necessary but not sufficient**.
+6. **`exch` as a specificity control** (`RAH-DR-003` B1) — it is a *permutation* of `base` and cannot
+   differ on any aggregate. Paired per-family only.
+7. **The capped key control as "dose-matched"** (`RAH-R-011`) — it masks **23.2 %** of the demo dose;
+   strict count-matching is **infeasible** on this population.
+8. **"N passed" from the pre-commit hook as "the suite is green"** (`RAH-R-016`) — it is *"the guard
+   list is green"*, strictly weaker, and the full suite is known to disagree with it.
+
+## 6. The exact next step
+
+**Track B is blocked by a BANK, not by an experiment.** Build a **38-domain bank on a NEW lexical
+pair with a bomb-class concept** — this needs fresh demonstration pools across 38 domains. With it,
+k=38 × m=16 at baseline ≥ 0.1375 reaches an MDE of **0.70 relative**, enough for the 73 % reduction
+the discovery bank showed, with little to spare. Screening is cheap (baseline arm only, 152 rows per
+cell); the confirmatory matrix is ≈20 GPU-hours and should be a **separate, costed decision**.
+
+**Track A needs a receiver that is both exposure-clean and high-mass on held-out material.** No such
+readout exists in this project's inventory at *either* the behavioural or the activation level. That
+is now a **characterised** open problem rather than a suspicion, and it is the single most valuable
+thing to solve.
+
+## 7. Reusable assets
+
+`rah_preflight_transport.py` (donor×receiver×layer sweep, three-conjunct gate, **no intervention code
+path** so any selection made with it is structurally effect-blind) · `rah_transport_assay.py`
+(arm-active capture, per-row vacuity, key-presence liveness, variant dedup) · `rah_power_trackb.py`
+(clustered power, measured ASR-dependent flip rate) · `rah_verify_phase1.py`, `rah_verify_dose.py`
+(stdlib-only independent verifiers) · `rah_select_config.py`, `rah_select_transport_config.py`,
+`rah_screen_table.py`, `rah_make_gatesub.py` (deterministic unit-tested rules that **refuse** rather
+than degrade) · `rah_repro_manifest.py` (a manifest that **executes**).
+
+## 8. Hazards worth inheriting
+
+* **Validating an instrument on a positive control does not make it the right instrument.** The
+  positive control here captures where the concept is *literally present* — close to a copy test —
+  and it selected the form that was **worst** for the real question (`RAH-R-014`).
+* **A donor layer at or below the knockout band makes the arms BIT-IDENTICAL**, and every validity
+  gate still passes because none of them sees the intervened arm (`RAH-DR-001` F2). Constrain
+  `L > lo` and **measure** the delta per row.
+* **A late-band control is vacuous at a fixed mid-depth capture site**, and a count-matched key
+  control is **infeasible** when the demo block exceeds the protected complement. Both dose-matched
+  controls can be unavailable at once, for independent reasons.
+* **Resolvers should raise and required fields should be referenced by key.** Three crashed smokes
+  this sprint were each a genuine defect made **loud**; under `.get(k, default)` all three would have
+  been silent wrong numbers.
+* **Smoke every MODE and every CONFIGURATION, not just every script** (`RAH-C-009`, `RAH-C-013`).
+* **An unchanging test count is a signal.** "294 passed" never moved because new guard tests were
+  never in the hook's list (`RAH-R-016`).
+* **The numbers keep being right and the sentences keep being wrong.** Every claim-level defect this
+  sprint found in its own work was a **scope** error, not an arithmetic one — a property of one
+  configuration written as a property of a position, a level-B number defending a level-A null, a
+  pooled rate quoted as a subset rate.
