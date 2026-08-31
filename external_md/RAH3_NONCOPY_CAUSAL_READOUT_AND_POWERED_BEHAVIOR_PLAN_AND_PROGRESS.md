@@ -1377,3 +1377,54 @@ reinterprets it; `RAH3-PR-001` was a *new* experiment and it returned a *new* ne
   ⚠ It is an upper bound on Llama's off-surface transport, not an estimate of it.
 * **Qwen3's P-D is a statement about this assay**, not about Qwen3. It means the instrument is not
   validated for this question on that model.
+
+---
+
+## 17. `RAH3-R-007` — verifier B confirms the P-B number, after disagreeing by 22× first
+
+`scripts/rah3_verify_noncopy_gpu.py`, job **831541, COMPLETED**, on the cell the entire P-B verdict
+rests on — `fc_probe_last`, `R=4`, donor `L=11`:
+
+| quantity | producer | verifier B (own hook, own transcription) |
+|---|---|---|
+| `p_concept_mean` | 0.193181 | **0.193181** ✓ |
+| `p_codeword_mean` | 0.00229583 | **0.00229583** ✓ |
+| `option_mass_mean` | 0.745978 | **0.745978** ✓ |
+
+**24 checks, 0 failures.** Requirement 1 is reported as `EXPECTED-FAIL` — this form names all four
+candidates by design; it is verified only because the P-B verdict rests on it.
+
+### 17.1 `RAH3-C-010` — the first run disagreed by 22×, and the verifier was wrong
+
+Verifier B's first run reported `p_concept = 0.008561` against the producer's `0.193181`. ⚠ **It
+agreed on every geometric quantity** — capture indices on all 8 donors, `recv_seq_len`, `q_pos`,
+`read_pos`, `hops`, `names_candidates` — **and on both UNPATCHED values.** The disagreement was
+confined to the patched forward.
+
+**The bug was mine.** The producer captures the donor at layer **`L`** and injects at receiver depth
+**`R`** (`LayerPatch(lm.model, R, …)`); verifier B hooked `blocks[L]` — **the donor layer instead of
+the receiver layer.** Fixed to `blocks[R]`, and the hook was additionally made to `clone()` and
+return a new tuple, matching `LayerPatch`'s own contract rather than mutating in place.
+
+⚠ **This is the most valuable thing verifier B did.** A verifier that had agreed on the first run
+would have proved much less: the disagreement located itself precisely *because* the geometric and
+unpatched checks passed, which is exactly why they are checked separately and first. **`RAH2-C-022`
+is the counter-example — a verifier that agreed with the producer while both were reading the wrong
+field.**
+
+### 17.2 `RAH3-C-011` — a GPU guard that killed the job before it could say why
+
+Job **831537 FAILED in 7 s with two 0-byte logs**, while the *identical* script had run as 831512.
+Exit code **13 = SIGPIPE**: the guard used `nvidia-smi … | head -1`, and under `set -o pipefail`
+`head` exiting first kills the job before a single byte reaches the logs. ⚠ It is
+**nondeterministic** — a race between `nvidia-smi` finishing its write and `head` closing the pipe —
+which is why the same script passed once and failed once. Replaced with the house runner's
+pipe-free parameter expansion (`${GPU_ALL%%$'\n'*}`).
+
+⚠ **And an earlier one:** job **831507** failed in 6 s, also with 0-byte logs, because the sbatch
+script itself was written into the `/tmp` scratchpad — **node-local storage**. The known
+argsfile-on-shared-FS hazard applies to **the batch script**, not just to its arguments.
+
+**Three separate causes of a 0-byte-log fast failure in one sprint** (node-local script, SIGPIPE
+guard, and — for the record — neither was a code error in the thing being tested). ⚠ *"0-byte log
+under `set -e` means it died before it could tell you"* is the inheritable form.

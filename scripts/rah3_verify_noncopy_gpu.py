@@ -198,12 +198,17 @@ def main():
         applied = {"n": 0}
 
         def hook(_mod, _inp, output):
-            hs = output[0] if isinstance(output, tuple) else output
-            hs[0, q_pos, :] = vv
+            is_tup = isinstance(output, tuple)
+            hs = (output[0] if is_tup else output).clone()
+            hs[0, q_pos, :] = vv.to(hs.dtype)
             applied["n"] += 1
-            return output
+            return ((hs,) + tuple(output[1:])) if is_tup else hs
 
-        h = blocks[a.L].register_forward_hook(hook)
+        # ⚠ PATCH AT THE RECEIVER DEPTH R, NOT AT THE DONOR LAYER L. `RAH3-C-010`: the first
+        # version of this file hooked `blocks[a.L]` and disagreed with the producer by 22x on
+        # p_concept while agreeing on EVERY geometric quantity and on both UNPATCHED values.
+        # L is where the donor vector was CAPTURED; R is where it is INJECTED.
+        h = blocks[a.R].register_forward_hook(hook)
         try:
             with torch.no_grad():
                 o = model(**inp)
@@ -231,8 +236,13 @@ def main():
 
     # ---- 4. the scientific reading of THIS cell, re-derived ----------------------------------- #
     print("\n[4] the four requirements, re-derived on this cell")
-    check("requirement 1 exposure-clean", not cell["names_candidates"],
-          repr(cell["names_candidates"]))
+    if cell["names_candidates"]:
+        print("  requirement 1 exposure-clean                              "
+              "EXPECTED-FAIL | this form names %r by design; it is verified here only because the "
+              "P-B verdict rests on it, and it can never carry a Track-A claim"
+              % cell["names_candidates"])
+    else:
+        check("requirement 1 exposure-clean", True)
     check("requirement 3 non-zero hops", cell["hops"] > 0, str(cell["hops"]))
     check("requirement 4 non-surface capture", art["capture_mode"] == "offset",
           art["capture_mode"])
