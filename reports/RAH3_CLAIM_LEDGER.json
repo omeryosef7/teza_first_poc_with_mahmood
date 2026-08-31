@@ -1,0 +1,129 @@
+{
+ "schema": "RAH3_CLAIM_LEDGER/1",
+ "sprint": "RAH3 - non-copy causal readout validation + powered behavioural bank",
+ "branch": "behavioral-causality-sprint",
+ "rule": "Every paper-level claim is entered HERE before any prose is written, and no prose may say more than its ledger entry (RAH3 section 5.6). A claim with status PENDING has no prose at all.",
+ "claims": [
+  {
+   "id": "RAH3-R-001",
+   "claim": "At capture offset N=+1 the donor token is '.', identically on all 8 registered donors, on both models and both lexical pairs, and it violates none of the three non-copy disqualification predicates. At offset 0 the donor token IS the concept surface on 8/8 rows of every cell.",
+   "scope": "STRUCTURAL ONLY. Says nothing whatever about transport.",
+   "models": ["meta-llama/Llama-3.1-8B-Instruct", "Qwen/Qwen3-14B"],
+   "bank": ["boombness_prompt_bank.jsonl", "boombness_prompt_bank_rbd_lantern_poison.jsonl"],
+   "lexical_pair": ["carrot<->bomb", "lantern<->poison"],
+   "population": "direct_harmful / behavioral / n_examples=8, first 8 by prompt_id",
+   "n": 32,
+   "domains": "n/a - 8 donor prompts within one pair; NOT independent domains",
+   "intervention": "none - effect-blind by construction",
+   "control": "offset 0 (the historical capture site) is the paired comparison",
+   "estimand": "token identity and three boolean predicates at the capture site",
+   "statistic": "exact enumeration, not an estimate",
+   "ci": null, "p": null, "equivalence": null,
+   "status": "ESTABLISHED",
+   "limitations": [
+    "Tokenizer-only. No weights loaded, no forward pass; the probe is INCAPABLE of producing a transport number.",
+    "The banks happen to end in a fixed pair-independent trailer; the rule's validity is a property of THIS material, not of the code (rfind has no word-boundary test).",
+    "A clean structural result is NOT a preview of the transport answer."
+   ],
+   "artifact": "outputs/boombness/rah_preflight/rah3_capture_site_probe.json",
+   "producer": "scripts/rah3_capture_site_probe.py",
+   "independent_verifier": "scripts/rah3_verify_noncopy_independent.py (re-derives the capture site from the bank + tokenizer, importing no producer helper)"
+  },
+  {
+   "id": "RAH3-R-002",
+   "claim": "The non-copy capture site is implemented with nine per-row invariants and a cross-row consistency assertion, all hard-failing; 39 guard tests are green and every invariant has a paired mutation proven to make it red, except one branch shown to be unreachable at positive offsets and proven red at a negative offset instead.",
+   "scope": "Instrument implementation. Not a scientific result.",
+   "models": null, "bank": null, "lexical_pair": null,
+   "population": "n/a", "n": 39, "domains": "n/a",
+   "intervention": "n/a", "control": "n/a",
+   "estimand": "guard coverage", "statistic": "test count", "ci": null, "p": null, "equivalence": null,
+   "status": "ESTABLISHED",
+   "limitations": [
+    "39 is the GUARD-LIST count across two files, not the full suite (RAH3 section 5.9).",
+    "The default capture path remains 'surface', i.e. a copy test, by design and for historical reproduction."
+   ],
+   "artifact": "tests/test_rah3_capture_site.py",
+   "producer": "src/boombness/rah_preflight_transport.py",
+   "independent_verifier": "the mutation tests themselves; each constructs a violating input and asserts refusal"
+  },
+  {
+   "id": "RAH3-R-003",
+   "claim": "Track B is blocked by material and power. The 38-domain bank already exists and is not the blocker; the blockers are that the only baseline cell clearing 0.1375 is the DISCOVERY pair on one model, and that rows-per-domain is 4 rather than the 16 the design needs.",
+   "scope": "Track B design feasibility at current material and current HEAD.",
+   "models": ["meta-llama/Llama-3.1-8B-Instruct", "Qwen/Qwen3-14B"],
+   "bank": "38-domain screening populations",
+   "lexical_pair": ["carrot<->bomb", "ticket<->knife"],
+   "population": "the four screened baseline cells",
+   "n": 4,
+   "domains": 38,
+   "intervention": "NONE - baseline-only screening, by design",
+   "control": "n/a",
+   "estimand": "minimum detectable relative effect at 80% power",
+   "statistic": "MDE by bisection over paired_test_noise_sensitivity.simulate, SIM_REPS=4000, alpha=0.05",
+   "ci": null, "p": null,
+   "equivalence": null,
+   "status": "ESTABLISHED",
+   "key_numbers": {
+    "qualifying_cell": {"cell": "Llama x carrot_bomb", "baseline_asr": 0.16447368, "note": "the DISCOVERY pair"},
+    "flip_for_asr_at_qualifying": 0.078234,
+    "mde_rel_38x4_icc009": 0.9786,
+    "mde_rel_38x4_icc019": null,
+    "mde_rel_38x16_icc009": 0.6899,
+    "mde_rel_38x16_icc019": 0.8552,
+    "mde_rel_20x4": null
+   },
+   "limitations": [
+    "MDE at 38x4 ICC=0.19 and at 20x4 (both ICCs) is null meaning NOT DETECTABLE AT ALL, including a 100% wipeout - not meaning 'small'.",
+    "ICC=0.09 has no estimator anywhere in the repository (RAH3-C-006); the 0.6899 figure must never be quoted without 0.8552 beside it.",
+    "k=38 is an UPPER BOUND on independent clusters: 3 of 38 domains are register/genre, the rest are near-identical templates from one model at one base seed (RAH3 section 11.8).",
+    "The screening truncation gate is published and never evaluated (RAH3-C-007), so no screened baseline is certified against the cap rule."
+   ],
+   "artifact": "outputs/boombness/rah_screen/rah_screen_table.json",
+   "producer": "scripts/rah_power_trackb.py, scripts/rah_screen_table.py",
+   "independent_verifier": "re-derived in the main loop by importing the module and running its own simulator; the flip-model non-monotonicity and the ICC absence were confirmed by direct source reading and grep"
+  },
+  {
+   "id": "RAH3-R-004",
+   "claim": "PENDING - the non-copy positive control on development material (carrot<->bomb, both models).",
+   "scope": "not yet measured",
+   "status": "PENDING",
+   "gated_by": "GPU queue; smoke job 831249",
+   "outcome_rule": "RAH3-PR-001 section 2.8, taxonomy P-A / P-B / P-C / P-D / P-E, locked before the run",
+   "selection_rule": "scripts/rah3_select_config.py, committed before the artifacts exist"
+  },
+  {
+   "id": "RAH3-R-005",
+   "claim": "PENDING - the frozen configuration on held-out material (lantern<->poison, both models).",
+   "scope": "not yet measured",
+   "status": "PENDING",
+   "gated_by": "RAH3-R-004 returning ELIGIBLE-PASS or P-B",
+   "note": "The held-out direct_harmful positive control has NEVER been run at any offset (the RAH2 held-out runs used natural_doublespeak donors), so this is a first measurement, unpaired and descriptive."
+  }
+ ],
+ "corrections": [
+  {"id": "RAH3-C-001", "about": "a mutation test that could not be made red", "resolved": true,
+   "summary": "Two attempts at the concept-overlap mutation failed to raise. rfind anchors on the LAST occurrence, so at a POSITIVE offset any concept characters downstream would have BEEN the anchor - the branch is unreachable there. Recorded as a structural test and proven red at a negative offset instead, rather than contriving an input until it went red."},
+  {"id": "RAH3-C-002", "about": "shared-tree collision: commit 7906faae", "resolved": "PARTIALLY - its own prescription was wrong, see RAH3-C-008",
+   "summary": "A second live session committed 14 lines of RAH3's implementation inside a commit whose message is a provenance audit ending 'PR-004 unaffected'. History deliberately not rewritten."},
+  {"id": "RAH3-C-003", "about": "MASS_GATE was a dead literal", "resolved": true,
+   "summary": "'mass_gate': 0.05 was written into every preflight artifact and read by no code path, so requirement 2 was enforced by nothing. The Track-A headline's median option_mass of 6.96e-08 passed straight through. Now a module constant applied on the production path via cell_mass_gate_ok."},
+  {"id": "RAH3-C-004", "about": "a patch that never applied would score as a scientific null", "resolved": true,
+   "summary": "LayerPatch skips an out-of-range position silently and exposes no n_applied. assert_run_not_vacuous now refuses to persist a sweep where the patch changed nothing anywhere, refuses an empty grid, and refuses a missing counter key."},
+  {"id": "RAH3-C-005", "about": "the judge-noise model is non-monotonic", "resolved": "RECORDED, code unchanged",
+   "summary": "MEASURED_FLIP_BY_ASR falls twice (22% and 23%) while its own docstring, RESEARCH_HANDOFF.md:378 and the sprint charter all say the flip rate RISES with baseline ASR. flip_for_asr also clamps above ASR 0.3125 to 0.0658, BELOW the 0.0851 maximum measured - anti-conservative at the wrong end."},
+  {"id": "RAH3-C-006", "about": "ICC=0.09 has no estimator", "resolved": "RECORDED",
+   "summary": "The single most load-bearing input to the Track-B GO/NO-GO is an assumption with no producing script and no artifact anywhere in the repository."},
+  {"id": "RAH3-C-007", "about": "the screening truncation gate is never evaluated", "resolved": "RECORDED",
+   "summary": "max_frac_at_cap = 0.02 is published in the thresholds block; frac_cap = None is hardcoded and no qualification branch references it. A cell with 100% truncation would still report qualifies: true. Same defect class as C-003, found twice in one sprint in two files."},
+  {"id": "RAH3-C-008", "about": "the third sweep, inside the correction for the second", "resolved": true,
+   "summary": "Commit b100c52d, titled 'RBD-C-022: I committed another writer's work', committed four RAH3 files. RAH3-C-002's prescription was WRONG: git add <path> scopes the ADD while git commit commits the whole shared index. The correct rule is git commit -- <paths>."}
+ ],
+ "must_not_be_revived": [
+  "id07_raw is an exposure-clean high-mass readout (retracted by RAH2-C-020; it is a 0-hop token decoder)",
+  "H0 was falsified (H0 stands SUPPORTED)",
+  "RBD-R-033 was refuted (withdrawn)",
+  "binding preservation is established (it is not - Llama 78->61/80, Qwen3 75->9/80)",
+  "RAH-R-018 shows transport is present or absent (it is A-IV / CANNOT ANSWER, permanently)",
+  "any max over receiver-layer x donor-layer quoted as transport strength (that is selection_max, an upper bound)"
+ ]
+}
