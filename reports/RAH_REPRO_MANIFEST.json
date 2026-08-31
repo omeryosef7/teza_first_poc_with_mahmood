@@ -1,0 +1,163 @@
+{
+ "schema": "RAH_REPRO_MANIFEST/1",
+ "commit": "af4ea24ceeec276f4146b1a81e8d092a9bd959a0",
+ "tree_dirty": true,
+ "n_numbers": 17,
+ "n_verifiers": 5,
+ "numbers": [
+  {
+   "id": "RAH-R-004",
+   "number": "Qwen3 x lantern_poison, mapping-use arm count",
+   "expected": 69,
+   "got": 69,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-004",
+   "number": "Qwen3 x lantern_poison, mapping-use BASE count (the no-mapping rate)",
+   "expected": 72,
+   "got": 72,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-004",
+   "number": "Qwen3 x lantern_poison, binding lift delta",
+   "expected": 0.9375,
+   "got": 0.9375,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-004",
+   "number": "Llama x lantern_poison, mapping-use lift delta",
+   "expected": -0.1,
+   "got": -0.10000000000000003,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-007",
+   "number": "Llama x candle_missile, n=16 attacks",
+   "expected": 8,
+   "got": 8,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-007",
+   "number": "Llama x candle_missile, n=8 attacks",
+   "expected": 7,
+   "got": 7,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-007",
+   "number": "Qwen3 x lantern_poison, n=16 ASR",
+   "expected": 0.025,
+   "got": 0.025,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-008",
+   "number": "Llama preflight, fc46 @ R=28 (the archived failing geometry)",
+   "expected": 0.008784,
+   "got": 0.008784496458247304,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-008",
+   "number": "Llama preflight, fc_probe_last @ R=4 (the best config)",
+   "expected": 0.8421,
+   "got": 0.8420825004577637,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-010",
+   "number": "Stage-A selection, min uplift across all six level-A runs",
+   "expected": 0.8516,
+   "got": 0.8516195728443563,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-013",
+   "number": "equivalence margin (floored at the repo T3/T5 precedent)",
+   "expected": 0.1,
+   "got": 0.1,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-013",
+   "number": "nuisance-ensemble s_accuracy, worst model",
+   "expected": 0.075,
+   "got": 0.075,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-018",
+   "number": "Track A held-out: median option mass on the base arm",
+   "expected": 7.147e-08,
+   "got": 7.147100955506858e-08,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-021",
+   "number": "Llama x carrot_bomb screening attacks",
+   "expected": 25,
+   "got": 25,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-021",
+   "number": "Llama x carrot_bomb screening ASR",
+   "expected": 0.16447368421052633,
+   "got": 0.16447368421052633,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-021",
+   "number": "Qwen3 x carrot_bomb screening ASR (the discovery pair FAILS on Qwen3)",
+   "expected": 0.07236842105263158,
+   "got": 0.07236842105263158,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-021",
+   "number": "Qwen3 x ticket_knife k_informative (below the >=6 floor)",
+   "expected": 3,
+   "got": 3,
+   "pass": true
+  }
+ ],
+ "verifiers": [
+  {
+   "id": "RAH-R-004",
+   "cmd": "scripts/rah_verify_phase1.py --produced outputs/boombness/rah_phase1/rah_phase1_lift.json",
+   "returncode": 0,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-007",
+   "cmd": "scripts/rah_verify_dose.py",
+   "returncode": 0,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-010",
+   "cmd": "scripts/rah_select_config.py --out /tmp/rah_repro_stagea.json",
+   "returncode": 0,
+   "pass": true
+  },
+  {
+   "id": "RAH-C-012",
+   "cmd": "scripts/rah_select_transport_config.py --out /tmp/rah_repro_pr011.json",
+   "returncode": 0,
+   "pass": true
+  },
+  {
+   "id": "RAH-R-021",
+   "cmd": "scripts/rah_screen_table.py --out /tmp/rah_repro_screen.json",
+   "returncode": 0,
+   "pass": true
+  }
+ ],
+ "failures": [],
+ "EXECUTED": true,
+ "PASS": true
+}
