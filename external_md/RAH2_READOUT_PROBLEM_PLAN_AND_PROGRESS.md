@@ -1272,3 +1272,68 @@ Every number in R-003/C-017/R-004/C-018/R-005/R-006, independently re-derived �
 `rah2p3_p_lp_20260831_154049` onward, absent in every earlier artifact. `n_donors: 8` in all 16 RAH2
 artifacts. The verifier is genuinely stdlib-only and asserts `donor_condition` on every artifact it
 opens.
+
+---
+
+## `RAH2-R-007` — the handoff, and the audit of the handoff
+
+`RESEARCH_HANDOFF.md` now carries the **RAH2 addendum** (`## ADDENDUM — RAH2 "readout problem"
+phase`), in the same 8-section format as the RBD and RAH addenda.
+
+**It was adversarially audited before being appended**, by a 5-lens fan-out (numbers · retracted
+claims stated as live · scope words · references/reproducibility · completeness vs house style), each
+lens's findings passed to a **skeptical verifier** instructed to default to *not real*. 11 agents.
+**22 findings survived verification and all 22 were applied.** The draft's central claims survived;
+its supporting sentences did not. The worst four:
+
+* **`RAH2-C-022` recurred inside the handoff itself.** The draft paired P(concept) **0.3886**
+  (development) with **4.01e-04** (held-out) as one collapse — but 4.01e-04 is the *option mass*; the
+  same-statistic held-out value is **2.38e-04**. I wrote the field-confusion correction and then
+  committed the same confusion **in the document warning about it**.
+* **The correction chain was written backwards.** The draft said `RAH2-C-017`'s scoping was
+  *withdrawn*. It was withdrawn by `RAH2-C-018` and then **REINSTATED** by `RAH2-C-020`, which
+  retracted the `id07_raw` reading the withdrawal rested on. `RAH2-C-017` is **standing**. A live
+  claim was filed as dead, in three places.
+* **The `H1`/`H2` survival argument was stated with a false warrant.** The draft justified survival
+  by *"these read at 2 hops"* — true of the few-shot forms, **false of the semantic forms**, which
+  read at **9–17** hops (`synonym` 9/13, `cat_cue` 12/16, `defn_oneword` 13/17). The conclusion
+  holds — all are non-zero — but the sentence carrying it did not survive inspection.
+* **"0 arithmetic errors" was false.** `RAH2-C-006`, `-010`, `-012`, `-023` each corrected a
+  **derived magnitude in prose**. The defensible claim is *"not one correction changed a value
+  produced by a run"*, which is what the handoff now says.
+
+Also fixed: a nonexistent job-id boundary (`827989`), a commit range that **excluded its own
+preregistration** (`4b42a596..` drops `RAH2-PR-001`; now `4284e68c..`), `0.602–0.923` → **0.602–0.922**,
+a "next step" described as a re-run when it is a **producer change** (`--capture-offset`, plus
+relaxing `assert_token_is_part_of`), and the absence of any bank-population statement.
+
+⚠ **The handoff asserts no number that this log does not already carry**, and every number in it was
+re-derived from the artifacts by the audit. It adds **no new claim** — only scoping, and the four
+constraints in its §6, which are a restatement of `RAH2-C-020` plus the three prior requirements.
+
+### `RAH2-C-029` — the handoff violated the rule it was stating, and a guard caught it
+
+The `RAH2-R-007` commit was **REFUSED by the pre-commit hook**:
+`test_findings_the_ledger_leans_on_reach_the_deliverable` failed with
+
+```
+findings the claim ledger leans on that the deliverable never states: ['R-5']
+```
+
+The addendum's own namespace warning read *"Never write a bare `C-20` or `R-5` when citing it"*. The
+extractor in `tests/test_my_ledger_propagation.py:317` deliberately **ignores prefixed ids**
+(`RAH2-R-005` is invisible to it) and matches only **unprefixed** ones — so it read my illustration of
+the forbidden pattern as a genuine citation of finding `R-5`, a Doublespeak-namespace finding the
+deliverable does not state.
+
+**The guard was right and the document was wrong.** An unprefixed id in a handoff *is* a citation,
+regardless of the author's intent to use it as an example. Rewritten to state the rule without
+instantiating it, and the sentence now names the guard that enforces it.
+
+Two things worth keeping from this:
+
+* **A rule stated by example instantiates the thing it forbids.** This is the same shape as
+  `RAH2-C-022` recurring inside the document warning about `RAH2-C-022` — the third time this phase
+  that a warning contained its own violation.
+* **The guard fired on a document, not on code, and it fired on a commit I was confident in.** It is
+  the only defect this phase that was caught by automation rather than by an auditor or by me.

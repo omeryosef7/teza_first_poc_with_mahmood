@@ -483,3 +483,295 @@ than degrade) · `rah_repro_manifest.py` (a manifest that **executes**).
   sprint found in its own work was a **scope** error, not an arithmetic one — a property of one
   configuration written as a property of a position, a level-B number defending a level-A null, a
   pooled rate quoted as a subset rate.
+
+---
+
+# ADDENDUM — RAH2 "readout problem" phase, 2026-08-31
+
+**Branch `behavioral-causality-sprint`, `4284e68c..3a640c66`** — 14 commits, the first being
+`4b42a596` = `RAH2-PR-001`, registered before any forward pass (`4284e68c` = `RAH-R-026`, the RAH
+sprint's closing commit). Unique id namespace `RAH2-PR / RAH2-R / RAH2-C / RAH2-DR`. **Always cite these ids
+with their full `RAH2-` prefix** — `RAH-C-020` and `RAH2-C-020` are different corrections in
+adjacent phases, and an unprefixed id in this repo already means the original Doublespeak namespace.
+(Writing one unprefixed here is not merely sloppy: `tests/test_my_ledger_propagation.py` reads it as
+a citation of *that* finding and the pre-commit hook refuses the commit — which is how this very
+sentence was caught, see `RAH2-C-029`.) Full log: `external_md/RAH2_READOUT_PROBLEM_PLAN_AND_PROGRESS.md`. Independent
+verifier: `scripts/rah2_verify_r005.py` (**39 assertions, stdlib-only, imports nothing from the
+producer**; every assertion proven able to fail by mutation — see `RAH2-C-023` for why the first
+version could not).
+
+**There is no `reports/RAH2_*` deliverable** — the log plus the verifier are the entire record; the
+phase's two would-be deliverable edits were **retracted in place**. **Artifacts carry no provenance**:
+the `RAH_PREFLIGHT_TRANSPORT/1` schema has no commit, dirty, job-id or runtime field, so every job id
+and commit in the log is prose, checkable only against the SLURM logs.
+
+**3 preregistrations · 6 results · 28 corrections · 2 deep reviews · 16 artifacts · 0 corrections to
+a measured value.**
+
+## 1. The one-paragraph truth
+
+The RAH sprint handed on exactly one open problem: **find a readout that is exposure-clean and
+high-mass on held-out material.** RAH2 attacked it with two new framings and **ruled both out** —
+semantic-constraint receivers (`cat_cue`, `synonym`, `defn_oneword`) and in-context-mapping receivers
+(`fewshot_cat`, `fewshot_syn`) **cannot report a concept that is literally present in the donor** —
+on the `carrot↔bomb` development bank (1 of 3 registered), 8 donors, peaking at **0.0965** against a
+0.1 positive-control gate. Mid-phase I believed I had solved the problem — `id07_raw` is
+exposure-clean and reads 0.84 under a positive control — and I published that, propagated it into two
+deliverables, and declared `H0` falsified. **An adversarial auditor refuted it and I confirmed the
+refutation: `id07_raw` is a 0-hop read at the patched position, i.e. a token decoder. Inject the
+codeword and you get the codeword at 0.90–0.94, at or above its own "positive control".** `H0` is
+**CONFIRMED**, `RBD-R-033` **stands**, and **the open problem the RAH sprint handed on is still
+open.** What RAH2 contributes is a **reduction of the search space** and one methodological result
+that should change how this project screens: **a development screen here has no predictive validity
+for held-out material, in magnitude or in direction.**
+
+## 2. ESTABLISHED
+
+⚠ **Scope of every claim in this section: 1 of the 3 registered development banks (`carrot↔bomb`)
+and 1 of the 2 registered held-out pairs (`lantern↔poison`)** (`RAH2-C-009`). `basket↔bomb`,
+`ticket↔knife` and `candle↔missile` were **never probed** — `candle↔missile` appears only as
+distractor labels — so `RAH2-PR-001` §1.3's CANNOT-ANSWER trigger ("the population is incomplete")
+stays **live** for those cells. **"Both models" means both models, not both banks.**
+
+* **`H1` FALSIFIED as a readout claim, both models** (`RAH2-R-005`; `RAH2-C-028` for the scope).
+  Under a `direct_harmful` donor — the concept **literally present on the donor's surface** — the
+  semantic-constraint forms cannot report it. `pos_ctrl_max` = P(concept), gate 0.1:
+  `cat_cue` **0.00910 / 0.0353**, `synonym` **0.00131 / 1.48e-08**, `defn_oneword` **3.52e-05 /
+  2.57e-08** (Llama / Qwen3). These forms are unreportable **per se**, not
+  unreportable-for-doublespeak.
+  ⚠ **Scope**: `carrot↔bomb`, 8 donors per cell, `pos_ctrl_max` = mean over donors, **max over
+  (R, L)** — an upper bound over two free parameters, and **selection-inflated** (argmax over ~31–39
+  donor layers × 5 R, no multiplicity correction). The `direct_harmful` control was **never run on
+  the held-out pair** for these form sets.
+* **`H2` FALSIFIED as a readout claim, both models** (`RAH2-R-005`). Same control:
+  `fewshot_syn` **0.0196 / 0.0965**, `fewshot_cat` **0.0657 / 0.00871**. **Peak 0.0965, below the
+  0.1 gate.**
+  The few-shot forms read at **2 hops** and the semantic forms at **9–17 hops** (`synonym` 9/13,
+  `cat_cue` 12/16, `defn_oneword` 13/17, Llama/Qwen3). **All of them read at non-zero hops** and must
+  compute a *function of* the patched token, so the 0-hop copy confound of `RAH2-C-020` does **not**
+  reach either family — this is why `H1` and `H2` survive the retraction while `RAH2-R-005`'s
+  positive claim does not.
+  ⚠ The few-shot-vs-reference comparison is **confounded by construction** and remains so in
+  `rah2pcf_*`: `fewshot_*` are `templated: False` and both references (`id07_tmpl`, `fc_probe_last`)
+  are `templated: True`, so framing and chat-template presence vary together. `RAH2-R-002` was
+  downgraded to **H2 CONFOUNDED — CANNOT ATTRIBUTE** on that basis (`RAH2-C-013`); `RAH2-R-004` lifts
+  it only via a **copy task** (`RAH2-C-020`). The template axis is controlled **by inference, not by
+  a matched semantic control.**
+* **A development screen does not predict held-out mass — in magnitude OR direction**
+  (`RAH2-R-003`). Max over (R, L), development → held-out, **5 of 8 form × model cells went UP**,
+  spread **×0.00067 to ×347**: `cat_cue` ×19.7 (Llama) / ×11.8 (Qwen3), `synonym` ×347 (Qwen3),
+  `id07_tmpl` ×0.00067 (Qwen3). **The single precedent this project had generalised from is the most
+  extreme collapse in the table** — the exception, not the rule.
+  ⚠ What this buys is the **unpredictability** finding, **not mass**: the biggest numbers in that
+  held-out run are not readouts — `id07_tmpl`'s 0.990 is 0.9904 `p_codeword` against `p_concept`
+  1.3e-09, and `cat_cue`'s 0.0389 carries `p_concept` 1.1e-06 with ~93 % of the mass on the two
+  distractor labels.
+* **As of `RAH2-C-003` the registered `direct_harmful` positive control had not yet been run in
+  RAH2** — the six runs existing then (`rah2dev_*`, `rah2fs_*`) were all `natural_doublespeak`, so
+  the field named `pos_ctrl_max` in them is **the test arm's own P(concept)**, not a control. The arm
+  was run later in the phase: `RAH2-C-017` (`rah2pc_{p,q}_cb`, ladder set) and `RAH2-C-018` (jobs
+  **828393 / 828395** = `rah2pcf_{p,q}_cb`, few-shot set) — **which is where every positive-control
+  number quoted above comes from.** The four later `natural_doublespeak` runs (`rah2ld_*`,
+  `rah2p3_*`, jobs 827991 / 827993 / 828070 / 828085) carry the same substitute-field caveat.
+  ⚠ **Scope**: *not run in RAH2 at the time of `RAH2-C-003`* ≠ *never run* — see #5 below.
+* **Untemplated prompts are not intrinsically unreadable — demonstrated only for a copy task**
+  (`RAH2-R-004`, narrowed by `RAH2-C-018` and again by `RAH2-C-020`). Untemplated `id07_raw` reads
+  **0.841 / 0.840** under the `direct_harmful` control, but at **0 hops, read at the patched
+  position** — it shows only that an untemplated prompt can echo an injected token. ⚠ It does **not**
+  show an untemplated prompt supports a *semantic* readout, so **`RAH2-C-013`'s chat-template
+  explanation for the few-shot forms is NOT ruled out.**
+
+## 3. FAILED / RETRACTED — DO NOT REVIVE
+
+* **`RAH2-R-005`'s positive result is RETRACTED** (`RAH2-C-020`). `id07_raw` is
+  `ID_PROMPT = "hello hello\nworld world\ncat cat\nX"` with `patch_at="last"`, `read_at="patch"` —
+  **0 hops**, logits read at the position that was overwritten. In the positive control the donor is
+  captured at the concept's own surface token (`piece == ' bomb'`, all 8 donors), so **transport and
+  copying are confounded by construction.** The discriminating evidence was in my own artifacts:
+
+  | injected | emitted | P(codeword) | at |
+  |---|---|---|---|
+  | ` carrot` (Llama dev) | ` carrot` | **0.899** | R=4, L=0 |
+  | ` lantern` (Llama held-out) | ` lantern` | **0.750** | R=8, L=4 |
+  | ` carrot` (Qwen3 dev) | ` carrot` | **0.780** | R=5, L=4 |
+  | ` lantern` (Qwen3 held-out) | ` lantern` | **0.941** | R=5, L=6 |
+
+* **`H0` is CONFIRMED, not falsified.** `H0` states that mass requires **printing the candidates or
+  echoing the patched token**. `id07_raw` *is* the second disjunct. I filed a confirming instance as
+  a refutation.
+* **`RBD-R-033` stands, entirely.** `RAH2-C-019`'s refutation of it is withdrawn.
+* **Two deliverables were corrected on the wrong basis and have been RETRACTED in place** —
+  `reports/RAH_ACTIVATION_ASSAY_REPORT.md` and `reports/RAH_SPRINT_SUMMARY.md` now carry retraction
+  notes. **The worst defect of the phase: an artifact of my own test reached published documents
+  within one tick.**
+* **`RAH2-C-003`'s model scoping is withdrawn** — replaced by `RAH2-C-017`. **`RAH2-C-017`'s scoping
+  was itself withdrawn (`RAH2-C-018` / `RAH2-R-005`) and then REINSTATED by `RAH2-C-020`**, which
+  retracted the `id07_raw` reading that withdrawal rested on. **The standing scoping is
+  `RAH2-C-017`'s**: on Qwen3 no exposure-clean receiver is demonstrated to transport — under the
+  `direct_harmful` ladder the only passing form is `fc_probe_last`, which prints all four candidates,
+  while exposure-clean `id07_tmpl` reads **0.0142** and fails at 0/5 depths. ⚠ `RAH2-C-017`'s Llama
+  half rests on `id07_tmpl` (0.5011), which is **itself `hops=0`** and so hit by §6 constraint 3;
+  that tension is unresolved and untested.
+
+## 4. UNRESOLVED / OBSERVATION ONLY
+
+* **The one real signal, and it is an OBSERVATION, not a finding.** On **Qwen3 development only**, at
+  donor layer **L=34** (deep, not the shallow L=0–6 where copying lives), the **codeword**
+  representation decodes to the **concept**: P(concept) **0.3886** with P(codeword) **7.46e-07**
+  (`rah2p3_q_cb`, `id07_raw`, R=30, L=34) — the reverse of the shallow-layer behaviour, in the same
+  form and the same run. **Held-out, the same statistic reads P(concept) 2.38e-04**
+  (`rah2p3_q_lp`, R=36, L=31). The 4-label **option mass** there is 4.01e-04; **do not swap the two —
+  that is `RAH2-C-022`.** One model, one bank, development, 8 donors, no interval, no test.
+  **Any work on this needs its own preregistration first.**
+* Whether that shallow/deep split is a real layer-dependence or an artifact of the 0-hop read.
+  **Untested.**
+* Whether `RBD-R-033`'s structural claim holds for **behavioural** readouts — the population it
+  actually quantified over (`RAH2-C-026`). No behavioural readout was run in RAH2.
+
+## 5. ⛔ MUST NEVER BE QUOTED
+
+1. **"`id07_raw` is an exposure-clean, high-mass readout"** (`RAH2-C-020`) — it is a **token
+   decoder**. Inject `carrot`, get `carrot` at 0.899. Any use of its 0.75–0.94 figures as *concept*
+   mass is wrong: those are **~100 % `p_codeword`**.
+2. **"`H0` is falsified"** — `H0` is **confirmed**; `id07_raw` is its "echo the patched token"
+   disjunct.
+3. **"`RBD-R-033` is refuted"** (`RAH2-C-019`, withdrawn by `RAH2-C-020`) — it stands. Two
+   independent reasons: the counterexample was an artifact, **and** `RBD-R-033` is scoped to
+   **behavioural** readouts while `id07_raw` is activation-level (`RAH2-C-026`).
+4. **"the first readout in this project that is both exposure-clean and high-mass"** (`RAH2-C-020`) —
+   `id07_raw` **is** exposure-clean, but it is not a readout: it is a 0-hop token decoder, so the
+   "high-mass readout" half is false and its figures are ~100 % `p_codeword` (see #1).
+5. **"`id07_raw` was never given a positive control"** (`RAH2-C-021`) — **eight artifacts dated
+   2026-08-30** in `outputs/boombness/rah_preflight/` contain exactly that control, at
+   **0.602–0.922**, including on the held-out pair. It is also in the RAH log's own `RAH-PR-009`
+   eligibility table at min-uplift **0.7376**. *Not run in RAH2 **yet*** ≠ *never run.*
+6. **`RAH2-R-004`'s "clears the gate by 15–19× in all four cells"** (`RAH2-C-018`) — that is
+   **max over (R, L)**, an upper bound over **two** free parameters, with maxima at donor layers
+   **L = 0, 4, 6**. At the selected layer the same form reads **0.00673 / 4.01e-04** held-out (both
+   option masses).
+7. **`RAH2-C-003`'s "Llama = CANNOT ANSWER, Qwen3 = answerable"** — inverted by `RAH2-C-017`;
+   `RAH2-C-017` withdrawn by `RAH2-C-018` and **reinstated** by `RAH2-C-020`. **No model-scoping
+   statement from `RAH2-R-002` or `RAH2-R-003` is safe to quote.**
+8. **`RAH2-R-003`'s registered-outcome table** (`RAH2-C-024`) — it counts `positive_control_ok` on a
+   **`natural_doublespeak`** run and labels it "the positive control". A category error, not a
+   scoping slip. Its dev→held-out finding is untouched and **is** safe to quote.
+9. **"the closest any exposure-clean form has come"** for `cat_cue` at 0.0389 (`RAH2-C-025`) —
+   `id07_tmpl` is exposure-clean by the same test and reads **0.980 dev → 0.990 held-out on Llama**
+   in the same table (its Qwen3 cell collapses to 2.93e-04, so the counterexample holds **on Llama
+   only**). The population meant was *the three new semantic-ladder forms*.
+10. **"2–10 orders below the gate"** for the ladder forms (`RAH2-C-006`) — the range is
+    **1.39–9.56**, and `cat_cue` is **under 2 orders on both models**.
+11. **"22 checks"** for `rah2_verify_r005.py` (`RAH2-C-023`) — it registered **29** then and **39**
+    now, and **6 of the originals could not fail**.
+12. **Any bare "the gate"** (`RAH2-C-027`) — there are two: `mass_gate` **0.05** (option mass) and
+    `threshold` **0.1** (positive control / transport). **The producer never applies the 0.05 one**;
+    `positive_control_ok` is computed only from 0.1. Always name which.
+13. **Any RAH2 mass figure as a "median"** (`RAH2-C-008`) — `RAH2-PR-001` registered medians; the
+    code computes `option_mass_mean` over **8 donors**, at a layer chosen by a **different**
+    statistic. `grep -c median` on the producer returns **0**.
+14. **`id07_tmpl`'s "0.4344 dev → 7.1e-08 held-out"** as one collapse (`RAH2-C-012`) — different
+    statistic, different R, different n, different phase. The same-phase collapse `RAH2-C-012`
+    endorses is **0.4344 → 2.53e-04** (`RAH2-R-002`, one estimand, frozen R, best over donor layers);
+    `RAH2-R-003`'s 0.4344 → 2.93e-04 is the **max-over-(R, L)** reading and must be labelled as such.
+15. **Any `id07_*` mass as complete** (`RAH2-C-014`) — only the **leading-space** token id is scored;
+    `id07_*` reads after `'\n\n'`, where the **bare** form is the natural continuation and is a
+    different id. Understates `id07_*`, magnitude unmeasured.
+16. **`RAH2-R-002`'s "7 of 8 cells `p_codeword > p_concept`"** (`RAH2-C-011`) — true as stated, but
+    "the selected layer" silently selects **R as well as L**. Unselected, across all 40 few-shot
+    configurations the count is **29/40** (Llama dev 9/10, Llama held-out 7/10, Qwen3 dev 5/10,
+    Qwen3 held-out 8/10). **Quote 29/40.**
+
+## 6. The exact next step
+
+**The open problem is unchanged and now better characterised.** A usable readout must satisfy **four**
+constraints, and RAH2 established that the fourth is not optional:
+
+1. **exposure-clean** — names no candidate (`names_any_candidate() == []`);
+2. **high-mass on held-out material** — the RAH requirement, still unmet by everything tested;
+3. **non-zero hops** — it must compute a *function of* the patched representation, or it is a token
+   decoder (`RAH2-C-020`). **This is the new constraint and it eliminates `id07_raw` and `id07_tmpl`**,
+   the only two forms in the frozen grid that ever cleared the mass gate without printing candidates;
+4. **validated on a positive control that is NOT a copy test** — a donor captured where the concept
+   is **not** the surface token. **Every positive control in the RAH/RAH2 preflight** captures at the
+   concept's own surface: all **12** `direct_harmful` artifacts in `outputs/boombness/rah_preflight/`
+   carry `donors[].piece` == the concept surface, by construction at
+   `rah_preflight_transport.py:390-395`. That is why `RAH2-C-020` was possible at all. ⚠ **Capture
+   sites in the earlier behavioural phases were not checked** and this constraint is not claimed for
+   them.
+
+**Constraints 1 + 3 are in tension with 2 across everything tried so far** — five framings now
+(forced choice, echo templated, echo raw, semantic constraint ×3, in-context mapping ×2) — and that
+tension is why `H0` keeps being confirmed rather than refuted.
+
+**The cheapest decisive next test is constraint 4. It needs no new form — but it is a producer
+change, not a re-run.** `src/boombness/rah_preflight_transport.py:391-397` hardcodes the donor
+capture at the **last** occurrence of `target_surface`
+(`pos_c = templated.lower().rfind(surf.lower())`) and then **asserts** the captured token is a piece
+of that surface (`assert_token_is_part_of`, :300-306, raises `SystemExit`). There is no capture-site
+flag in the argparse block (:315-338). Add a `--capture-offset` option, relax that assertion for the
+offset case, then run `--form-set fewshot --donor-condition direct_harmful` on `carrot↔bomb` and
+`lantern↔poison`, both models — **4 jobs, the same shape as the `rah2pcf_*` runs**. Predicted
+discriminator: **`id07_raw` collapses, `fc_probe_last` survives.** **Register it as a new `PR` id
+before any forward pass.** ⚠ A readout that passes does **not** re-open Track A: `RAH-R-018` stands
+at **A-IV** and licenses only a *new* attempt under a *new* preregistration, never a re-reading of
+the old one.
+
+## 7. Reusable assets
+
+`fewshot_receiver_forms()` / `readout_ladder_forms()` in `src/boombness/rah_preflight_transport.py` —
+new form sets added **outside** the frozen Stage-A grid (`receiver_forms()` is still exactly 4 forms;
+touching it is `RAH-C-008`) · `exemplar_candidate_collisions()` — anti-priming check, now **called by
+`main()`, refusing on collision, and persisted to every artifact** (it was **dead code** when
+`RAH2-R-002` published its result — `RAH2-C-015`) · `scripts/rah2_verify_r005.py` — 39 assertions,
+**relative** tolerance, verdicts checked against a **transcription of the published column** rather
+than the code's own rule · `tests/test_rah_preflight_spans.py` 7 → **9** guard tests, both new ones
+RED-checked · the `--form-set {grid,ladder,fewshot}` dispatch, which raises `KeyError` rather than
+falling back.
+
+## 8. Hazards worth inheriting
+
+* **A 0-hop read at the patched position is a token decoder, not a readout.** Its "positive control"
+  is a **copy test** whenever the donor is captured at the target's own surface token. **Diagnose it
+  by injecting a DIFFERENT token and checking whether you get that token back** — the answer here was
+  0.899 for the codeword against 0.841 for the concept, i.e. the "control" value was the *lower* of
+  the two.
+* **A correction can be confidently wrong, and so can the correction of the correction.**
+  `RAH2-C-003` (Llama CANNOT ANSWER) → `RAH2-C-017` (inverted it) → `RAH2-C-018` (withdrew C-017) →
+  `RAH2-C-020` (withdrew C-018, **reinstating C-017**). Each was written with full confidence; each
+  rested on a control not yet run — or, at the end, on one that had been run eight times and not read.
+* **A mutation test that picks the value with the most headroom proves only that the harness runs**
+  (`RAH2-C-023`). `RAH2-R-006` "proved" its verifier could fail by perturbing 0.8409 — the value with
+  the most headroom in the file — while six other assertions could be made wrong by anywhere from
+  **5 % to 33 784×** and still pass.
+* **Absolute tolerances in a verifier are vacuous against small values.** Use relative.
+* **A verifier that re-reads the producer's chosen field inherits the producer's choice of field**
+  (`RAH2-C-022`). Mine reported **0 failures over its 29 registered fail-conditions** — while
+  advertising "22 checks", itself wrong (`RAH2-C-023`) — and the quantity it verified was 100 %
+  `p_codeword` while the column heading said concept. Transcription was never the problem.
+* **Check the artifact directory before asserting a run never happened** (`RAH2-C-021`) — the second
+  time this exact failure has occurred here (`RAH-C-002` was the first).
+* **A maximum over two free parameters is an upper bound, not an estimator** (`RAH2-C-002`,
+  `RAH2-C-018`). I labelled it that way and then quoted it as a result **one entry later**.
+* **When two near-identical sentences differ by a qualifier, the qualifier IS the claim**
+  (`RAH2-C-019`) — "exposure-clean and high-mass" vs "exposure-clean and high-mass **on held-out
+  material**" have different truth values.
+* **A gap in a stopping rule is resolved toward measuring** (`RAH2-C-001`) — the rule stands amended
+  prospectively: *if development mass is below the gate by less than 2 orders on either model,
+  held-out is run.* `RAH2-R-003` is why.
+* **A console column may not hold the JSON field it is named after** (`RAH2-C-016`) — the printed
+  `mass=` was `unpatched_option_mass` while the near-identically-named JSON field held the patched
+  value. No published number came from it, and that was luck.
+* **`positive_control_ok` is selection-inflated** — argmax over ~31–39 donor layers × 5 receiver
+  layers, no multiplicity correction. It makes a *negative* stronger and a *positive* weaker; never
+  read a passing cell as an estimate.
+* **Smoke every MODE**: `exemplar_candidate_collisions` was defined, documented, reported in the log
+  as a verification result, and **never called** (`RAH2-C-015`).
+* **The numbers keep being right and the sentences keep being wrong** — 28 corrections in this phase
+  and **not one changed a value produced by a run**. Most were claims about what a correct number
+  meant; the exceptions are *derived* magnitudes mis-transcribed in prose (`RAH2-C-006` 2–10 orders →
+  1.39–9.56; `RAH2-C-010` ~5× → 7.3×/4.9×; `RAH2-C-012` "six" → ~6.8 orders; `RAH2-C-023` "22
+  checks" → 29) and three code/tooling defects (`RAH2-C-015` dead code, `RAH2-C-016` console column,
+  `RAH2-C-023` vacuous tolerance). **"Zero arithmetic errors" is true of the runs, not of the
+  write-ups.** This is the third consecutive phase with that signature, and it is the strongest
+  argument for the adversarial-auditor step: `RAH2-DR-002` was asked to **refute** a claim rather than
+  check it, and it took the phase's headline result down in one pass.
