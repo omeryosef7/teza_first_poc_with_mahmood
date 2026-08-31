@@ -3942,3 +3942,44 @@ population label. The instrument layer — liveness contracts, option-mass gates
 > claim that did not exist before I set out to remove false claims. **A correction is a claim, and it
 > needs the same audit as the claim it replaces** — which is why `RBD-DR-005` existed at all, and why
 > a third pass over `RBD-DR-005`'s own edits is the honest next step, not an optional one.
+
+---
+
+## §14.48 — `RBD-C-022` · **I COMMITTED ANOTHER WRITER'S WORK: `git add -A` swept 7,385 foreign lines into an RBD commit** · 2026-08-31
+
+A peer session (RAH3) reported that commit `7906faae` had swept 14 lines of its uncommitted working
+tree in via a broad `git add`, and asked writers in this tree to stage by explicit path. **I am not
+that session** — my sprint closed 2026-08-30 16:58 at `fe8fd610`, a day before those commits.
+**But checking their warning against my own history showed I did the same thing first, and worse.**
+
+`d96ec2f2` — whose message is entirely about RBD claim corrections — used `git add -A` and committed
+**four files that were already dirty when my session began**:
+
+| file | swept | mine? |
+|---|---|---|
+| `reports/SPRINT_SUMMARY_2026-08-16_TO_08-26.md` | **+7385 / −10** | **no** |
+| `data/boombness_prompts/boombness_prompt_bank_meta.json` | +7 / −5 | **no** |
+| `reports/SPRINT_SUMMARY_2026-08-23_TO_08-24_PART_II.md` | +2 / −2 | **no** |
+| `external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md` | +1 / −1 | **no** |
+
+All four appear in this session's own start-of-conversation `git status` snapshot as pre-existing
+`M` entries. **I never opened any of them.** They went in verbatim, so **no content is lost or
+altered** — but another writer's sprint summary now lives inside a commit that claims to be about my
+corrections, and it is pushed to a shared branch.
+
+**Not rewriting history.** Same call the peer made for `RAH3-C-002`: this branch is shared and
+pushed, and a rewrite to tidy my provenance would rewrite *their* commits too. The record is
+corrected here and reported to the user instead.
+
+### Why this is worse than a tidiness problem
+
+**The whole sprint's method rests on provenance** — hash-joined judge rows, `RUNMETA` argv, banks
+audited by a module that does not import their builder. `RBD-DR-005` was itself an audit of *whether
+my corrections said what the artifacts said*. And in the same commit that recorded that audit, I
+attached 7,385 lines of someone else's work to my own attestation. **A commit message is a claim
+about a diff, and I did not read the diff I was claiming about.**
+
+Two independent sweep-ins from the same cause in ~26 hours. `git add -A` and `commit -a` are unsafe
+in this tree — every commit from here stages by explicit path. Note also that
+`scripts/install_commit_guard.sh` is dirty in the tree right now and is **not mine**; it is exposed
+to exactly this and is being left alone.

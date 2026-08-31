@@ -71,6 +71,14 @@ SCHEMA = "RAH_PREFLIGHT_TRANSPORT/1"
 #: this script's verdict does not depend on the module whose only run failed.
 POSITIVE_CONTROL_THRESH = 0.1
 
+#: `RAH3` requirement 2. ⚠ THIS WAS A DEAD LITERAL. Until `RAH3-C-003` the value 0.05 was written
+#: into every artifact as `"mass_gate": 0.05` and READ BY NO CODE PATH -- so a verifier filtering on
+#: the artifact's own field would believe reportability had been gated when nothing had gated it.
+#: The Track-A precedent is a median `option_mass` of 6.96e-08 passing straight through. It is now
+#: applied, per cell, as `mass_gate_ok`, and it is a DIFFERENT number from POSITIVE_CONTROL_THRESH
+#: for a different purpose -- never call either one "the gate" (`RAH2-C-027`).
+MASS_GATE = 0.05
+
 #: `07_patchscope_readout.INSPECTION_PROMPT` -- the ONLY configuration in this repository that has
 #: ever passed a patchscope positive control. Reproduced verbatim; do not "improve" it.
 ID_PROMPT = "hello hello\nworld world\ncat cat\nX"
@@ -514,6 +522,32 @@ def assert_capture_consistent(records, what="donor capture"):
     return {"n_rows": len(records), "donor_piece": pieces[0], "tok_distance": dists[0]}
 
 
+def cell_mass_gate_ok(option_mass_mean, gate=None):
+    """`RAH3-C-003`. Requirement 2, as a function so it can be tested. ⚠ `>=`, and NEVER an
+    absolute tolerance around it -- the values this is applied to reach 1e-08 (`RAH2-C-023`)."""
+    return bool(option_mass_mean >= (MASS_GATE if gate is None else gate))
+
+
+def assert_run_not_vacuous(results, what="run"):
+    """`RAH3-C-004` / hazard H9. A sweep in which the patch never altered the output in ANY cell is
+    an INSTRUMENT FAILURE, not a negative result, and must not be persisted as one.
+
+    `ds_common.LayerPatch` skips an out-of-range position silently and exposes no `n_applied`, so
+    the failure mode is a full grid of "the patch does nothing" that reads exactly like a
+    scientific null. Refuse instead of writing it."""
+    if not results:
+        raise SystemExit("%s: no cells to check -- an empty grid is not a negative result" % what)
+    missing = [r for r in results if "n_patch_changed_at_best" not in r]
+    if missing:
+        raise SystemExit("%s: %d cells carry no patch-liveness counter; the guard cannot run"
+                         % (what, len(missing)))
+    live = sum(1 for r in results if r["n_patch_changed_at_best"] > 0)
+    if live == 0:
+        raise SystemExit("%s: VACUOUS -- the patch changed the output on 0 donors in all %d cells. "
+                         "This is an instrument failure, not a negative result." % (what, len(results)))
+    return {"n_cells": len(results), "n_cells_with_a_live_patch": live}
+
+
 def sha256_file(path):
     """Bank identity for the provenance block (§37). Streamed: the banks are megabytes."""
     import hashlib
@@ -701,11 +735,20 @@ def main():
                         with dc.LayerPatch(lm.model, R, [q_pos], vector=v, mode="replace"):
                             o = lm.model(**inputs)
                     pr = torch.softmax(o.logits[0, read_pos, :].float(), dim=-1)
-                    ps.append({"p_concept": float(pr[label_ids[concept]]),
+                    # `RAH3-C-004` / hazard H9. `ds_common.LayerPatch` SKIPS an out-of-range
+                    # position silently (`if p < 0 or p >= seq: continue`) and exposes no
+                    # `n_applied`, so a patch that never applied yields an UNPATCHED forward that
+                    # is then reported as "the patch does nothing" -- a vacuous null wearing the
+                    # costume of a result. Recorded per donor and asserted in aggregate below.
+                    ps.append({"patch_changed_output": bool(
+                                   float(torch.max(torch.abs(pr - base_probs.to(pr.device)))) > 0.0),
+                               "p_concept": float(pr[label_ids[concept]]),
                                "p_codeword": float(pr[label_ids[codeword]]),
                                "option_mass": float(sum(pr[i] for i in label_ids.values()))})
                 per_layer.append({
                     "L": L,
+                    "n_patch_changed_output": sum(1 for x in ps if x["patch_changed_output"]),
+                    "n_donors_scored": len(ps),
                     "p_concept_mean": sum(x["p_concept"] for x in ps) / len(ps),
                     "p_concept_max": max(x["p_concept"] for x in ps),
                     "p_codeword_mean": sum(x["p_codeword"] for x in ps) / len(ps),
@@ -738,6 +781,14 @@ def main():
                    "rah3_eligible": bool(not names_any_candidate(text, label_words)
                                          and (read_pos - q_pos) > 0
                                          and args.capture_mode == "offset"),
+                   # requirement 2, now ACTUALLY APPLIED (`RAH3-C-003`).
+                   "mass_gate": MASS_GATE,
+                   "mass_gate_ok": cell_mass_gate_ok(best["option_mass_mean"]),
+                   # hazard H9 (`RAH3-C-004`): did the patch alter the output on EVERY donor at the
+                   # selected layer? `False` means the cell is VACUOUS, not negative.
+                   "patch_live_at_best": bool(best["n_patch_changed_output"] == best["n_donors_scored"]
+                                              and best["n_donors_scored"] > 0),
+                   "n_patch_changed_at_best": best["n_patch_changed_output"],
                    "unpatched_option_mass": base_mass, "unpatched_dist": base_dist,
                    "patched_option_mass_at_best": best["option_mass_mean"],
                    "p_concept_unpatched": p_unpatched,
@@ -752,8 +803,12 @@ def main():
                   % (form["name"], R, rec["hops"], rec["pos_ctrl_max"], p_unpatched, uplift,
                      rec["best_donor_L"], rec["p_codeword_at_best"], base_mass,
                      rec["patched_option_mass_at_best"],
-                     "PASS" if rec["positive_control_ok"] else "fail"))
+                     ("PASS" if rec["positive_control_ok"] else "fail")
+                     + (" ELIGIBLE" if rec["rah3_eligible"] else " ineligible")
+                     + (" mass_ok" if rec["mass_gate_ok"] else " MASS_BELOW_GATE")
+                     + ("" if rec["patch_live_at_best"] else " VACUOUS_PATCH")))
 
+    assert_run_not_vacuous(results)
     any_pass = [r for r in results if r["positive_control_ok"]]
     prov["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     prov["branch"] = _git_branch()
@@ -777,7 +832,21 @@ def main():
            "n_donor_candidates": len(cand),
            "donors": [{k: v for k, v in d.items() if k != "reps"} for d in donor_reps],
            "R_set": R_SET, "threshold": POSITIVE_CONTROL_THRESH,
-           "form_set": args.form_set, "mass_gate": 0.05,
+           "MASS_GATE": MASS_GATE,
+           "TRANSPORT_POSITIVE_CONTROL_THRESHOLD": POSITIVE_CONTROL_THRESH,
+           "threshold_names": "MASS_GATE (0.05) gates REPORTABILITY of option mass; "
+                              "TRANSPORT_POSITIVE_CONTROL_THRESHOLD (0.10) gates the positive "
+                              "control. RAH2-C-027: never call either one 'the gate'.",
+           "RAH3": {"n_eligible_cells": sum(1 for r in results if r["rah3_eligible"]),
+                    "n_eligible_and_passing": sum(1 for r in results if r["rah3_eligible"]
+                                                  and r["positive_control_ok"]),
+                    "n_eligible_passing_and_mass_ok": sum(
+                        1 for r in results if r["rah3_eligible"] and r["positive_control_ok"]
+                        and r["mass_gate_ok"]),
+                    "n_vacuous_patch_cells": sum(1 for r in results if not r["patch_live_at_best"]),
+                    "selection_is_max_over": "donor layer L x receiver depth R -- selection_max, "
+                                             "an instrument-selection statistic, NOT an estimator"},
+           "form_set": args.form_set, "mass_gate": MASS_GATE,
            "gate_rule": "positive_control_ok requires level > t AND uplift over the UNPATCHED prior > t AND p_concept > p_codeword (RAH-C-006 / review F2: an absolute level gate is passed by the receiver's own lexical prior, since the 4 labels are printed in the prompt)",
            "layer_convention": "donor block index L == hidden_states[L+1] == LayerPatch(L) target; "
                                "L capped at n_layers-2 because hidden_states[n_layers] is post-norm",

@@ -869,3 +869,105 @@ condition, same offset `N = +1`, same form set, same two models, same two pairs,
 `RAH3-PR-001`. Submitting both would be **duplicate GPU work on a shared queue** and two writers
 into `outputs/boombness/rah_preflight/`. **No RAH3 GPU job is submitted until this is resolved** —
 see §10.
+
+---
+
+## 10. `RAH3-DR-001` — the Phase-0 adversarial audit, and the four defects it caught BEFORE the first job
+
+Nine read-only reviewers over the producer's capture semantics, its receiver/metric semantics, the
+Track-A assay, the test/guard surface, the verifiers, the power tooling, the bank generator, and the
+claim ledgers — then an adjudicator that re-derived the load-bearing facts at source rather than
+trusting the reports. ⚠ **Bank prompt text was never sent to a subagent** (inherited hazard: the
+cyber classifier terminates subagents reading jailbreak corpora; all text work stays in the main
+loop).
+
+⚠ **The audit's own most useful output was that it was partly out of date**: reviewers read the tree
+at 565/582 lines while it grew to 801 under them, and three independently asserted *"no
+`--capture-offset` exists anywhere"* — true when they looked, false at HEAD. **The adjudicator
+caught this and corrected it.** A fan-out over a moving tree needs an adjudication pass; the reports
+alone would have been wrong.
+
+### 10.1 `RAH3-C-003` — ⚠ `MASS_GATE` was a DEAD LITERAL
+
+**The defect.** `"mass_gate": 0.05` was written into **every** preflight artifact and **read by no
+code path**. It appeared exactly once in the file: inside the output dict.
+
+**Why it matters more than it looks.** Requirement 2 — *high mass on held-out material* — is one of
+the four constraints this whole sprint exists to enforce, and **nothing enforced it.** An
+independent verifier filtering on the artifact's own `mass_gate` field would have concluded
+reportability had been gated when nothing had gated it. The precedent is not hypothetical: the
+Track-A headline artifact carries a **median `option_mass` of 6.96e-08** — six orders below 0.05 —
+which passed straight through.
+
+**The fix.** `MASS_GATE = 0.05` is a module constant beside `POSITIVE_CONTROL_THRESH = 0.1`;
+`cell_mass_gate_ok()` applies it; `main()` calls **that function** (production-path wiring, §49 —
+a helper `main()` does not call is a tested helper nothing uses); every cell persists `mass_gate_ok`
+and the console prints `MASS_BELOW_GATE`. The artifact now carries **`MASS_GATE`**,
+**`TRANSPORT_POSITIVE_CONTROL_THRESHOLD`**, and a `threshold_names` string saying which gates what —
+⚠ `RAH2-C-027`: never call either one "the gate".
+
+⚠ **Relative comparison only.** An absolute tolerance around a value of order 1e-08 is vacuous
+(`RAH2-C-023`); the boundary test pins `>=` at exactly 0.05 and the historical 6.96e-08 floor.
+
+### 10.2 `RAH3-C-004` — a patch that never applied would have been scored as a scientific null
+
+**The defect.** `ds_common.LayerPatch` skips an out-of-range position **silently**
+(`if p < 0 or p >= seq: continue`) and exposes **no `n_applied` counter** — unlike `donor_patch.py`,
+which has one. A patch that never applied therefore yields an **unpatched** forward, which the grid
+reports as *"the patch does nothing"*: **a vacuous null wearing the costume of a result.** This is
+§18's hazard arriving in Phase 1 rather than Phase 2.
+
+**The fix.** Every donor now records `patch_changed_output` (does the patched distribution differ
+from the unpatched one *at all*); each layer records `n_patch_changed_output` / `n_donors_scored`;
+each cell records `patch_live_at_best` and `n_patch_changed_at_best`; and
+`assert_run_not_vacuous()` **refuses to persist** a sweep in which the patch changed nothing in any
+cell. It also refuses an **empty** grid and refuses when the counter **key is missing** — a missing
+key must fail, not be `.get(..., default)`-ed into a pass.
+
+⚠ Deliberately weak by design: **one** live cell is enough to clear vacuity. Vacuity is a property
+of the *instrument*, not of the *effect* — a grid where one cell responds and the rest do not is a
+real measurement with mostly-null cells, and refusing that would be refusing a legitimate negative.
+
+### 10.3 The guard that was not guarding
+
+`tests/test_rah3_capture_site.py` — which contains the **only** enforcement of the cross-row capture
+consistency rule — **was not in `GUARD_TESTS`**, so a regression in the sprint's load-bearing guard
+would not have blocked a commit. Added to `scripts/install_commit_guard.sh` **and** to the deployed
+`.git/hooks/pre-commit`, in sorted position (the sort is itself a pinned invariant: an unsorted hook
+can pass an ordering-sensitive failure that `pytest tests/` fails). ⚠ The deployed hook was diffed
+against the installer first, so re-installing could not silently drop a guard another session had
+added directly to the hook.
+
+**Guard count: 39 tests across the two RAH3-relevant files, all green.** ⚠ Per §45 that is the
+**guard-list**, not the full suite.
+
+### 10.4 Confirmed NOT a threat to Phase 1
+
+* **`fc46`'s double-probe confound** (the form contains the quoted probe **twice**, while
+  `find_quoted_probe_span` takes the **first** and the donor uses `rfind` — opposite conventions in
+  one file) affects only the **`grid`** form set. **`fewshot`** — the registered RAH3 set — contains
+  `fc_probe_last`, which carries the probe exactly **once**. Verified at source.
+* **`rfind` has no word-boundary test** (`"bomb"` inside `"bombard"` would resolve and the assertion
+  would pass). ⚠ The current banks happen to be safe, so **the protection is in the data, not in the
+  code** — recorded as an inherited limitation, and `RAH3-C-001` shows the anchor assertion does
+  fire on the constructed case.
+
+### 10.5 Recorded, NOT fixed in this sprint — they are outside Phase 1's path
+
+⚠ Listed so they are not mistaken for clean. **None is on the Phase-1 code path**; fixing them would
+be refactoring unrelated code mid-sprint (§45).
+
+* `rah_transport_assay.py` writes `depth_fraction = FROZEN_DEPTH_FRACTION` **unconditionally**, so
+  the headline Track-A artifact records `0.125` where `receiver_R=30, n_layers=40` means **0.75** —
+  **wrong by 6×**, in the one artifact that matters.
+* That assay's `keys` control is **~1.7 % of the treatment dose** (median 22 vs 1292.5 keys masked;
+  2 585 vs 76 582 prefill edits) — it is not dose-matched.
+* Its `exch` arm's median `option_mass` is **bit-identical** to `base` (6.961193471655136e-08 on
+  both) with `liveness: None` on 80/80 rows — §43's vacuous arm, measured.
+* It calls `provenance()` **zero** times.
+* `attn_implementation` is persisted as a **hardcoded string literal**, not read back from the
+  loaded model.
+* **0 of 27** artifacts in `outputs/boombness/rah_preflight/` carry a `provenance` key.
+* `rah_repro_manifest.py`'s `newest()` returns the **last glob hit**, so a new run under a matching
+  prefix silently redefines what a published headline points at. ⚠ RAH3's manifest must use
+  fail-closed `one()` semantics instead.

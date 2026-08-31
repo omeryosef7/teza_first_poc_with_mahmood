@@ -225,3 +225,67 @@ def test_provenance_gains_the_rah3_fields():
     assert pf._git_branch() is None or isinstance(pf._git_branch(), str)
     assert pf._diff_sha256() is None or len(pf._diff_sha256()) == 64
     assert len(pf.sha256_file(pf.__file__)) == 64
+
+
+# --------------------------------------------------------------------------------------------- #
+# `RAH3-C-003` -- MASS_GATE was a DEAD LITERAL and is now applied
+# --------------------------------------------------------------------------------------------- #
+def test_MASS_GATE_is_a_real_constant_and_distinct_from_the_positive_control_threshold():
+    """⚠ Before `RAH3-C-003` the value 0.05 was written into every artifact as `mass_gate` and read
+    by NO code path. The two thresholds are different numbers for different purposes
+    (`RAH2-C-027`)."""
+    assert pf.MASS_GATE == 0.05
+    assert pf.POSITIVE_CONTROL_THRESH == 0.1
+    assert pf.MASS_GATE != pf.POSITIVE_CONTROL_THRESH
+
+
+def test_mass_gate_is_APPLIED_ON_THE_PRODUCTION_PATH_not_merely_persisted():
+    """§49 production-path wiring: the tested function must be the one `main()` actually calls, or
+    the guard tests a helper nothing uses."""
+    src = open(pf.__file__, encoding="utf-8").read()
+    assert '"mass_gate_ok": cell_mass_gate_ok(best["option_mass_mean"])' in src
+    # the dead literal must survive ONLY in the comment that documents it as a defect
+    code = [ln for ln in src.splitlines()
+            if '"mass_gate": 0.05' in ln and not ln.lstrip().startswith("#")]
+    assert code == [], "the dead literal is back on a code line: %r" % code
+
+
+def test_cell_mass_gate_ok_boundary_and_the_historical_floor():
+    assert pf.cell_mass_gate_ok(0.05) is True          # >= , not >
+    assert pf.cell_mass_gate_ok(0.0499) is False
+    # the Track-A precedent that passed straight through an unenforced gate
+    assert pf.cell_mass_gate_ok(6.96e-08) is False
+
+
+# --------------------------------------------------------------------------------------------- #
+# `RAH3-C-004` -- a patch that never applied must not be scored as a scientific null
+# --------------------------------------------------------------------------------------------- #
+def test_run_with_a_live_patch_passes():
+    cells = [{"n_patch_changed_at_best": 8} for _ in range(20)]
+    assert pf.assert_run_not_vacuous(cells) == {"n_cells": 20, "n_cells_with_a_live_patch": 20}
+
+
+def test_MUTANT_run_where_the_patch_NEVER_changed_anything_RAISES():
+    """The exact H9 failure: `LayerPatch` silently skips an out-of-range position, every forward is
+    really unpatched, and the grid reads as a clean negative."""
+    cells = [{"n_patch_changed_at_best": 0} for _ in range(20)]
+    with pytest.raises(SystemExit, match="VACUOUS"):
+        pf.assert_run_not_vacuous(cells)
+
+
+def test_MUTANT_empty_grid_RAISES_rather_than_reporting_a_vacuous_pass():
+    with pytest.raises(SystemExit, match="no cells to check"):
+        pf.assert_run_not_vacuous([])
+
+
+def test_MUTANT_missing_liveness_counter_RAISES_rather_than_skipping_the_guard():
+    """A missing key must FAIL, not be `.get(..., default)`-ed into a pass."""
+    with pytest.raises(SystemExit, match="carry no patch-liveness counter"):
+        pf.assert_run_not_vacuous([{"n_patch_changed_at_best": 8}, {"L": 3}])
+
+
+def test_one_live_cell_out_of_many_is_enough_to_not_be_VACUOUS():
+    """Deliberately weak: vacuity is about the INSTRUMENT, not about the effect. A grid where one
+    cell responds is a real measurement with mostly-null cells, which is a legitimate result."""
+    cells = [{"n_patch_changed_at_best": 0} for _ in range(19)] + [{"n_patch_changed_at_best": 1}]
+    assert pf.assert_run_not_vacuous(cells)["n_cells_with_a_live_patch"] == 1

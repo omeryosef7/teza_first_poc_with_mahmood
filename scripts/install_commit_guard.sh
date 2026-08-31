@@ -59,6 +59,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_my_cited_artifacts.py
              tests/test_my_ledger_propagation.py
              tests/test_option_mass_nan_guard.py
+             tests/test_rah3_capture_site.py
              tests/test_rah_preflight_spans.py
              tests/test_rah_select_config.py
              tests/test_run_completeness_check.py"
