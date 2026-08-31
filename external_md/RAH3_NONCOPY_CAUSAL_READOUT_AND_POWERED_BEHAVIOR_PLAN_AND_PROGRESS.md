@@ -1277,3 +1277,103 @@ evidence.**
 ⚠ The clean before/after is worth stating explicitly: this project has a recorded history of tests
 mutating tracked artifacts, and of a green hook not implying a green suite. **Here both were run and
 both are green.**
+
+---
+
+## 16. `RAH3-R-006` — **THE PHASE-1 RESULT.** Llama = **P-B**, Qwen3 = **P-D**. Track A remains CANNOT ANSWER
+
+**Jobs 831434 (Llama, 14:41) and 831436 (Qwen3, 30:14), both COMPLETED**, both at
+`--capture-mode offset --capture-offset 1`, `--donor-condition direct_harmful`, `--n-donors 8`,
+`--form-set fewshot`, carrot↔bomb. Capture piece `'.'` on all 8 donors in both runs; cross-row
+consistency asserted; **0 vacuous-patch cells** in either.
+
+The verdict was produced by `scripts/rah3_select_config.py`, **committed at `8e9ca447` before either
+artifact existed**, applied without modification:
+
+| model | verdict | eligible cells | eligible **and** passing | reason (the script's own words) |
+|---|---|---|---|---|
+| **Llama-3.1-8B** | **P-B** | 10 | **0** | *no exposure-clean multi-hop cell passes; the candidate-PRINTING reference does. Transport machinery works; the readout problem is UNSOLVED. This can never be P-A.* |
+| **Qwen3-14B** | **P-D** | 10 | **0** | *even the candidate-printing positive reference fails; the assay is not validated for this question* |
+
+`held_out_may_run = False`.
+
+### 16.1 `H4` is SUPPORTED, and the effect is enormous
+
+The discriminator `RAH2-PR-004` registered — *`id07_raw` collapses, `fc_probe_last` survives* — fired
+on Llama exactly as predicted, and **overshot on Qwen3**. Moving the donor capture **one token**, from
+`' bomb'` to `'.'`, with nothing else changed:
+
+| form | hops | eligible | **Llama** N=0 → N=+1 | collapse | **Qwen3** N=0 → N=+1 | collapse |
+|---|---|---|---|---|---|---|
+| `id07_raw` | **0** | no | 0.8409 → 0.001223 | **688×** | 0.8404 → 0.0001042 | **8 062×** |
+| `id07_tmpl` | **0** | no | 0.5011 → 1.17e-05 | **42 809×** | 0.01419 → 0.000101 | **141×** |
+| `fc_probe_last` | 8 | no (names candidates) | 0.9087 → **0.1932** | **4.7×** — **still PASSES** | **1.000** → 0.000539 | **1 855×** |
+| `fewshot_cat` | 2 | **yes** | 0.06565 → 0.0001009 | **651×** | 0.00871 → 8.952e-05 | **97×** |
+| `fewshot_syn` | 2 | **yes** | 0.01965 → 0.0001283 | **153×** | 0.09645 → 0.0002094 | **461×** |
+
+⚠ **Every single cell collapses.** The two 0-hop token decoders collapse by 2.8–4.6 orders of
+magnitude, which is `RAH2-C-020`'s copy diagnosis confirmed **prospectively** rather than inferred
+from a control that had been run eight times and not read.
+
+⚠ **The most important row is Qwen3's `fc_probe_last`.** Its offset-0 positive control was
+**`p_concept = 1.000`** — a perfect score, the kind of number an instrument is declared validated on.
+Moving the capture one token off the concept surface drops it to **0.000539**. **On Qwen3 the
+"positive control" this project's activation-transport infrastructure has been resting on was
+essentially entirely a copy effect**, and that is true of the *multi-hop* reference, not merely of
+the 0-hop forms `RAH2-C-020` already retracted.
+
+### 16.2 What Llama's P-B does and does not establish
+
+**It does establish** that activation transport from a **non-surface** capture site is real on Llama:
+`fc_probe_last` at `R=4`, donor `L=11`, **8 hops**, `p_concept = 0.1932` against an unpatched prior of
+0.005278 (**uplift +0.1879**), `p_codeword = 0.0023`, option mass **0.746**. The patch moved the
+answer, the concept beat the codeword by ~84×, and the captured token was `'.'` — not the concept,
+not the codeword, not a candidate. **A period token, one position after the concept, carries enough
+of the concept for a receiver to name it.**
+
+⚠ **It does not establish a readout.** `fc_probe_last` **prints all four candidate labels in its
+prompt**. It fails requirement 1 by construction, and `RAH3-PR-001` §2.6 rule 4 routes it to **P-B and
+forbids P-A**. The best **exposure-clean** cell on Llama is `fewshot_syn` at `R=16`, with
+`p_concept = 1.283e-04` and option mass **1.329e-04 — 376× below `MASS_GATE = 0.05`.**
+
+**So the tension `H0` describes is not merely unresolved; it is now measured off-surface too:** mass
+comes from printing the candidates. Take the candidates out of the prompt and the readout falls
+three to four orders of magnitude, on both models.
+
+### 16.3 The verdict, in the exact form §61 requires
+
+> ## TRACK A REMAINS CANNOT ANSWER — VALID READOUT NOT ESTABLISHED
+
+**Held-out (lantern↔poison) was NOT RUN, and that is the disciplined outcome, not an omission.** The
+gate is `held_out_may_run`, computed by the committed script; Qwen3's P-D closed it. Running a
+frozen configuration on held-out material would have been measuring an instrument that failed its
+own development validation. ⚠ Per §2.9 / §61 this sprint therefore did **not** add forms, search
+layers or offsets, lower a threshold, change concepts, quote development in place of held-out, or
+promote `fc_probe_last` to the scientific answer. **The two held-out argsfiles remain committed and
+unrun.**
+
+⚠ **`RAH-R-018` is untouched.** It stands at **A-IV / CANNOT ANSWER**, permanently. Nothing here
+reinterprets it; `RAH3-PR-001` was a *new* experiment and it returned a *new* negative.
+
+### 16.4 Independent verification
+
+| verifier | scope | result |
+|---|---|---|
+| **A** — `rah3_verify_noncopy_independent.py`, imports **no** producer helper | semantics re-derived from bank + tokenizer | **289 checks, 0 failures** on Llama; **289 checks, 0 failures** on Qwen3 |
+| **A**, mutation-tested | 17 distinct assertion classes | **17/17 RED**, incl. a **0.0001 %** relative perturbation |
+| **B** — `rah3_verify_noncopy_gpu.py`, own forward hook, transcribed form body | the **frozen cell** `fc_probe_last R=4 L=11` — the only cell the P-B verdict rests on | job 831507 |
+
+### 16.5 ⚠ The honest limits of this result
+
+* **Development only.** carrot↔bomb, 8 donors, one condition. **No held-out cell exists**, by the
+  gate's own decision. This is a statement about the *instrument*, not about doublespeak.
+* **One offset.** `N = +1` is a single pre-committed site, deliberately not swept. **A different
+  non-surface site might transport more** — `' context'` at `+4` is contextually richer than `'.'`.
+  ⚠ Testing that would require a **new preregistration**; doing it now, after seeing `N = +1` fail,
+  would be exactly the search-until-it-passes §61 forbids.
+* **The collapse is not decomposed.** *"Off-surface transport is weak"* and *"`'.'` specifically is a
+  poor carrier"* are **not distinguished** by this design. Both are consistent with every number above.
+* **`p_concept = 0.1932` is `selection_max`** over 31 donor layers × 5 receiver depths, unpenalised.
+  ⚠ It is an upper bound on Llama's off-surface transport, not an estimate of it.
+* **Qwen3's P-D is a statement about this assay**, not about Qwen3. It means the instrument is not
+  validated for this question on that model.

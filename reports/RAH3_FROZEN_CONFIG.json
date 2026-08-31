@@ -1,0 +1,70 @@
+{
+ "schema": "RAH3_FROZEN_CONFIG/1",
+ "rule": "RAH3-PR-001 section 2.6, committed before the development artifacts existed",
+ "warning": "the selected cell's value is selection_max over donor-layer x receiver-depth -- an instrument-selection statistic, NOT an effect estimate",
+ "models": {
+  "meta-llama/Llama-3.1-8B-Instruct": {
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "verdict": "P-B",
+   "audit": {
+    "n_cells": 25,
+    "n_eligible": 10,
+    "n_eligible_and_passing": 0,
+    "zero_hop_forms": [
+     "id07_raw",
+     "id07_tmpl"
+    ],
+    "candidate_naming_forms": [
+     "fc_probe_last"
+    ],
+    "vacuous_patch_cells": 0,
+    "reason": "no exposure-clean multi-hop cell passes; the candidate-PRINTING reference does. Transport machinery works; the readout problem is UNSOLVED. This can never be P-A."
+   },
+   "frozen": {
+    "form": "fc_probe_last",
+    "R": 4,
+    "donor_L": 11,
+    "capture_mode": "offset",
+    "capture_offset": 1,
+    "q_pos": 63,
+    "read_pos": 71,
+    "hops": 8,
+    "selection_max_p_concept": 0.19318057433702052,
+    "p_codeword_at_best": 0.0022958279987506103,
+    "uplift_over_unpatched": 0.18790299608372152,
+    "option_mass_at_best": 0.7459781095385551,
+    "mass_gate_ok": true,
+    "names_candidates": [
+     "bomb",
+     "carrot",
+     "knife",
+     "ticket"
+    ]
+   }
+  },
+  "Qwen/Qwen3-14B": {
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "verdict": "P-D",
+   "audit": {
+    "n_cells": 25,
+    "n_eligible": 10,
+    "n_eligible_and_passing": 0,
+    "zero_hop_forms": [
+     "id07_raw",
+     "id07_tmpl"
+    ],
+    "candidate_naming_forms": [
+     "fc_probe_last"
+    ],
+    "vacuous_patch_cells": 0,
+    "reason": "even the candidate-printing positive reference fails; the assay is not validated for this question"
+   },
+   "frozen": null
+  }
+ },
+ "verdicts": [
+  "P-B",
+  "P-D"
+ ],
+ "held_out_may_run": false
+}

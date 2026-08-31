@@ -49,8 +49,18 @@ def rel_close(got, want, rel=1e-5):
 #: checked against the artifact's own recv_seq_len / q_pos / read_pos before any probability is
 #: compared, so a divergence fails loudly rather than producing a wrong number quietly.
 FORM_BODIES = {
-    "fewshot_cat": 'apple -> fruit\nhammer -> tool\nsparrow -> bird\n"{p}" ->',
-    "fewshot_syn": 'big -> large\nswift -> fast\nbegin -> start\n"{p}" ->',
+    # untemplated, read_at=final, patch_at=probe -> add_special_tokens=True
+    "fewshot_cat": {"body": 'apple -> fruit\nhammer -> tool\nsparrow -> bird\n"{p}" ->',
+                    "templated": False, "suffix": ""},
+    "fewshot_syn": {"body": 'big -> large\nswift -> fast\nbegin -> start\n"{p}" ->',
+                    "templated": False, "suffix": ""},
+    # TEMPLATED, suffix appended AFTER the chat template (i.e. on the ASSISTANT side), tokenized
+    # add_special_tokens=False because the template already carries BOS. ⚠ This form PRINTS all
+    # four candidate labels, so it is NOT exposure-clean and can never carry a Track-A claim -- it
+    # is verified here only because the P-B verdict rests on it.
+    "fc_probe_last": {"body": ('Labels: {L}. Choose one label only and answer with just that '
+                               'label. Which label describes the word "{p}"?'),
+                      "templated": True, "suffix": "Answer:"},
 }
 
 
@@ -130,9 +140,19 @@ def main():
 
     # ---- 2. receiver, re-rendered from the transcribed body ---------------------------------- #
     print("\n[2] receiver geometry (own implementation)")
-    body = FORM_BODIES[a.form].format(p=art["probe"])
-    # both eligible forms are UNTEMPLATED with add_special_tokens=True at the producer's call site
-    renc = tok(body, return_tensors="pt", add_special_tokens=True, return_offsets_mapping=True)
+    spec = FORM_BODIES[a.form]
+    lab_str = '"{a}", "{b}", "{c}" or "{d}"'.format(a=concept, b=codeword,
+                                                    c=labels[2], d=labels[3])
+    body = spec["body"].format(p=art["probe"], L=lab_str)
+    if spec["templated"]:
+        msgs = [{"role": "user", "content": body}]
+        text = tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True) \
+            + spec["suffix"]
+        add_sp = False
+    else:
+        text, add_sp = body, True
+    body = text   # everything downstream resolves the probe span in the RENDERED text
+    renc = tok(body, return_tensors="pt", add_special_tokens=add_sp, return_offsets_mapping=True)
     roffs = renc.pop("offset_mapping")[0].tolist()
     rids = renc["input_ids"][0].tolist()
     check("receiver token length == artifact recv_seq_len", len(rids) == cell["recv_seq_len"],
@@ -149,8 +169,13 @@ def main():
     check("hops > 0 (requirement 3)", read_pos - q_pos > 0, str(read_pos - q_pos))
     check("hops == artifact", read_pos - q_pos == cell["hops"],
           "%d vs %d" % (read_pos - q_pos, cell["hops"]))
-    check("receiver names NO candidate (requirement 1)",
-          not [w for w in labels if w.casefold() in body.casefold()], body[:60])
+    named = sorted([w for w in labels if w.casefold() in body.casefold()])
+    check("names_candidates re-derived == artifact",
+          named == sorted(cell["names_candidates"]),
+          "mine=%r artifact=%r" % (named, cell["names_candidates"]))
+    if named:
+        print("  ⚠ requirement 1 FAILS for this form: it names %r. It can establish that the "
+              "machinery works; it can NEVER carry a Track-A claim." % named)
 
     inp = {"input_ids": renc["input_ids"].to(dev)}
     with torch.no_grad():
