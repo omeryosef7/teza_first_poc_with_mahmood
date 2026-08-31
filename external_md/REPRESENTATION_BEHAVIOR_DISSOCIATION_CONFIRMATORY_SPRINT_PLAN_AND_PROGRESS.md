@@ -3983,3 +3983,56 @@ Two independent sweep-ins from the same cause in ~26 hours. `git add -A` and `co
 in this tree — every commit from here stages by explicit path. Note also that
 `scripts/install_commit_guard.sh` is dirty in the tree right now and is **not mine**; it is exposed
 to exactly this and is being left alone.
+
+---
+
+## §14.49 — `RBD-C-023` · **THE CORRECTION COMMITTED THE DEFECT IT DOCUMENTS — and `RBD-C-022`'s prescribed fix is WRONG** · 2026-08-31
+
+`b100c52d`, the commit whose subject is *"I committed another writer's work"*, **committed another
+writer's work.** Verified from the diffstat — **only one of its five files is mine**:
+
+| file | lines | owner |
+|---|---|---|
+| `external_md/RAH3_NONCOPY_..._PLAN_AND_PROGRESS.md` | **+102** | RAH3 |
+| `src/boombness/rah_preflight_transport.py` | **+72 / −3** | RAH3 |
+| `tests/test_rah3_capture_site.py` | **+64** | RAH3 |
+| `scripts/install_commit_guard.sh` | +1 | RAH3 |
+| `external_md/REPRESENTATION_BEHAVIOR_DISSOCIATION_...md` | +41 | **mine** |
+
+Content intact (`MASS_GATE` ×6, `assert_run_not_vacuous` ×2, `cell_mass_gate_ok` ×2, 28 test
+functions). **Three sweeps in ~26 hours, and the third happened inside the correction for the second.**
+
+### ⛔ `RBD-C-022`'s prescribed fix — "stage by explicit path" — is INSUFFICIENT, and I used it
+
+I did exactly what I had just prescribed:
+
+```
+git add external_md/REPRESENTATION_..._PROGRESS.md     # one explicit path — mine
+git commit -F -                                        # ← commits THE WHOLE INDEX
+```
+
+**`git add <path>` scopes the ADD. `git commit` still commits the entire index** — and in this tree
+**the index is shared**, so the peer's four already-staged paths went in with mine. Being careful
+about `add` buys nothing when the danger lives in `commit`.
+
+**The correct form is `git commit -- <paths>`** — a path-limited commit that ignores the shared index
+entirely and takes only those paths from the working tree. That is what this entry is committed with.
+
+### The evidence was in my own terminal and I explained it away
+
+My previous message ended by noting the guard suite had grown **294 → 341 tests** and concluding
+*"another session is actively writing in this tree right now."* **That was the sweep itself.** The
+count jumped because **the peer's `test_rah3_capture_site.py` was being committed by me and executed
+by my own pre-commit hook.** I observed the symptom, produced a plausible cause, and moved on — with
+the disconfirming evidence already printed on screen.
+
+> That is the same failure the audits kept finding in my prose (`RBD-C-018`: a quantifier invented by
+> the pass meant to remove quantifiers). **Here it is in my tooling: a diagnosis invented by the
+> commit meant to fix the diagnosis.** The recurring defect in this sprint is not any single claim —
+> it is *asserting a conclusion over an artifact I did not actually read*, which is precisely what
+> `RBD-DR-004` and `RBD-DR-005` were built to catch in the science and did not catch here.
+
+**Not rewriting history** — third time, same reason: shared, pushed, and a rewrite would rewrite
+theirs. Also noted for the record: the peer reports our two commits **raced on the ref** (theirs died
+with `cannot lock ref HEAD: is at b100c52d but expected a4f5d7c8`), so concurrent commits in this
+tree are unsafe independently of staging.
