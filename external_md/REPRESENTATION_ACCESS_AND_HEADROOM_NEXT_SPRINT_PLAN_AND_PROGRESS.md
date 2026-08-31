@@ -3503,3 +3503,66 @@ often, which is a plausible mechanism for its lower ASR and is recorded, not int
 [ ] 7  updated RESEARCH_HANDOFF.md
 [ ] 8  standalone sprint summary
 ```
+
+---
+
+## `RAH-R-023` — deliverable 6: the reproduction manifest, **EXECUTED** — 2026-08-31
+
+**Status: DELIVERABLE.** `scripts/rah_repro_manifest.py` → `reports/RAH_REPRO_MANIFEST.json`.
+
+§12.6 asks that the manifest be *actually executed* before sprint close. A manifest that is only a
+list is a promise. This one **runs**: for every paper-level number it checks the artifact exists,
+**executes the independent verifier**, re-reads the headline number from the raw artifact and
+compares it to the value recorded in the manifest, and refuses to exit 0 if anything disagrees.
+
+```
+commit 452c00f55a97   dirty=False
+17 numbers, 5 verifiers, 0 failure(s)
+```
+
+Re-executed on a **clean tree** after committing, so the manifest certifies a specific commit rather
+than a working directory.
+
+### The 17 numbers, each re-read from its raw artifact
+
+`RAH-R-004` — Qwen3 mapping-use arm **69**, base **72** (the number that closed `RBD-C-016`), binding
+lift **+0.9375**, Llama mapping-use lift **−0.1000** ·
+`RAH-R-007` — Llama × `candle_missile` n=16 **8** attacks and n=8 **7**, Qwen3 n=16 ASR **0.025** ·
+`RAH-R-008` — the archived failing geometry `fc46 @ R=28` = **0.008784** and the best config
+`fc_probe_last @ R=4` = **0.8421** ·
+`RAH-R-010` — Stage-A min uplift **0.8516** ·
+`RAH-R-013` — margin **0.10**, nuisance `s_accuracy` **0.075** ·
+`RAH-R-018` — Track-A held-out median option mass **7.147e-08** ·
+`RAH-R-021` — screening attacks **25**, ASR **0.164474**, Qwen3 × `carrot_bomb` **0.072368** (the
+discovery pair failing on Qwen3), Qwen3 × `ticket_knife` `k_informative` **3**.
+
+### The five verifiers, each executed
+
+| id | verifier | result |
+|---|---|---|
+| `RAH-R-004` | `rah_verify_phase1.py` — own Wilson/Newcombe-10/McNemar/bootstrap, imports nothing from the producer | **PASS** |
+| `RAH-R-007` | `rah_verify_dose.py` — own cluster bootstrap, recomputes drift, refuses an incomplete population | **PASS** |
+| `RAH-R-010` | `rah_select_config.py` — re-runs the frozen selection over the committed grid | **PASS** |
+| `RAH-C-012` | `rah_select_transport_config.py` — re-runs the corrected transport selection | **PASS** |
+| `RAH-R-021` | `rah_screen_table.py` — re-applies the frozen qualification rule | **PASS** |
+
+### Why the manifest's numbers are typed on purpose
+
+They are **the only typed numbers in the sprint's deliverables**, and that is deliberate: the main
+table is *generated* so it cannot drift, and the manifest is *typed* so that drift is **detected**.
+If an artifact silently changes, a typed expectation is what turns that into a FAILURE rather than a
+quietly updated table. **A number here that stops matching its artifact is a defect to investigate,
+never a value to edit.**
+
+### Deliverable status
+
+```
+[x] 1  authoritative sprint log            this file
+[x] 2  RAH-* claim ledger                  reports/RAH_CLAIM_LEDGER.json  (21 claims)
+[x] 3  development headroom-screen table   all candidates incl. failures
+[ ] 4  activation-level assay report
+[x] 5  paper-grade summary table           reports/RAH_MAIN_TABLE.md
+[x] 6  reproduction manifest, EXECUTED     17 numbers, 5 verifiers, 0 failures, clean tree
+[ ] 7  updated RESEARCH_HANDOFF.md
+[ ] 8  standalone sprint summary
+```
