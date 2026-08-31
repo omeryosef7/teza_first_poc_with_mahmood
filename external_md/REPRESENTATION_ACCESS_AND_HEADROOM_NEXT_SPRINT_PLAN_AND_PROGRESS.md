@@ -3566,3 +3566,63 @@ never a value to edit.**
 [ ] 7  updated RESEARCH_HANDOFF.md
 [ ] 8  standalone sprint summary
 ```
+
+---
+
+## `RAH-R-024` / `RAH-C-015` — deliverable 4: the activation-assay report, and I caught my own over-scoped claim writing it — 2026-08-31
+
+**Status: DELIVERABLE + CORRECTION.** `reports/RAH_ACTIVATION_ASSAY_REPORT.md`.
+
+Documents §12.4's required content: donor, receiver, capture position, patch position, controls,
+option mass, liveness, and the causal transport result. Every number in it is protected by
+`reports/RAH_REPRO_MANIFEST.json`, which re-reads it from its raw artifact and fails if it has moved.
+
+### `RAH-C-015` — the quantifier sweep caught the report's strongest sentence
+
+Running §9.4's sweep over the draft flagged my own headline:
+
+> ~~*The exposure/option-mass dilemma is not a property of behavioural readouts. It recurs at the
+> activation level.*~~
+
+**That rests on ONE held-out test, ONE model, ONE bank, n = 80 families.** Stated as a general
+property it is the same over-scoping that `RAH-DR-003` found six times. Corrected to name its
+population, with the defensible version quoted verbatim in the report:
+
+> *On the one held-out test this sprint ran, the exposure-clean receiver was unreportable and the
+> option-naming receiver was exposure-confounded — the same trade-off `RBD-R-033` identified for
+> behavioural readouts, now observed **once** at the activation level.*
+
+And the report now says plainly that **whether it generalises is open**, that testing it needs
+further pairs and models, and that what the sprint *did* earn is narrower: the trade-off is **not
+obviously escaped** by going activation-level, which was the predecessor sprint's stated route out.
+
+Caught **before** commit by running the sweep on my own draft rather than waiting for a review to
+find it — the first time this sprint that the quantifier discipline caught a claim prospectively
+instead of retrospectively.
+
+### What the report records that is not elsewhere
+
+* the **receiver-layer finding** in full, with the like-for-like ratios (31× for `fc46`, 130× for
+  `fc_probe_last`) and the explicit caveat that an early injection layer is **necessary but not
+  sufficient** — `id07_tmpl` fails at every R on Llama;
+* the **control audit**, including which controls turned out **uninformative by construction**:
+  `exch` is a permutation of `base` and cannot differ on any aggregate; `mean` is near-inert; the
+  informative floor is `perm`/`rand`, and base sits **below** it;
+* that **two dose-matched controls are unavailable for two independent reasons** — a late band is
+  vacuous at a fixed capture site, and a count-matched key set is infeasible on this stimulus
+  geometry (demo block 125 keys vs a 30-position protected complement);
+* **"positive control ≠ the right instrument"**, with the table showing the Stage-A winner is last on
+  Qwen3 and third on Llama for the actual question.
+
+### Deliverable status
+
+```
+[x] 1  authoritative sprint log            this file
+[x] 2  RAH-* claim ledger                  reports/RAH_CLAIM_LEDGER.json  (21 claims)
+[x] 3  development headroom-screen table   all candidates incl. failures
+[x] 4  activation-level assay report       reports/RAH_ACTIVATION_ASSAY_REPORT.md
+[x] 5  paper-grade summary table           reports/RAH_MAIN_TABLE.md
+[x] 6  reproduction manifest, EXECUTED     17 numbers, 5 verifiers, 0 failures, clean tree
+[ ] 7  updated RESEARCH_HANDOFF.md
+[ ] 8  standalone sprint summary
+```
