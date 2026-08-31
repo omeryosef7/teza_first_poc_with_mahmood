@@ -1,9 +1,10 @@
 {
  "schema": "RAH_REPRO_MANIFEST/1",
- "commit": "452c00f55a97f9da1fb183d84f50a39e7e6a5c10",
- "tree_dirty": false,
+ "commit": "fafbae5ee95e48b63b5e52b73be5c7de6de47d2e",
+ "tree_dirty": true,
  "n_numbers": 17,
- "n_verifiers": 5,
+ "n_independent_verifiers": 2,
+ "n_replay_checks": 3,
  "numbers": [
   {
    "id": "RAH-R-004",
@@ -128,33 +129,48 @@
  "verifiers": [
   {
    "id": "RAH-R-004",
+   "kind": "independent",
    "cmd": "scripts/rah_verify_phase1.py --produced outputs/boombness/rah_phase1/rah_phase1_lift.json",
    "returncode": 0,
-   "pass": true
+   "diffed_against": null,
+   "pass": true,
+   "detail": ""
   },
   {
    "id": "RAH-R-007",
+   "kind": "independent",
    "cmd": "scripts/rah_verify_dose.py",
    "returncode": 0,
-   "pass": true
+   "diffed_against": null,
+   "pass": true,
+   "detail": ""
   },
   {
    "id": "RAH-R-010",
+   "kind": "replay",
    "cmd": "scripts/rah_select_config.py --out /tmp/rah_repro_stagea.json",
    "returncode": 0,
-   "pass": true
+   "diffed_against": "outputs/boombness/rah_stagea/rah_stagea_selection.json",
+   "pass": true,
+   "detail": "decision matches"
   },
   {
    "id": "RAH-C-012",
+   "kind": "replay",
    "cmd": "scripts/rah_select_transport_config.py --out /tmp/rah_repro_pr011.json",
    "returncode": 0,
-   "pass": true
+   "diffed_against": "outputs/boombness/rah_stagea/rah_pr011_selection.json",
+   "pass": true,
+   "detail": "decision matches"
   },
   {
    "id": "RAH-R-021",
+   "kind": "replay",
    "cmd": "scripts/rah_screen_table.py --out /tmp/rah_repro_screen.json",
    "returncode": 0,
-   "pass": true
+   "diffed_against": "outputs/boombness/rah_screen/rah_screen_table.json",
+   "pass": true,
+   "detail": "decision matches"
   }
  ],
  "failures": [],

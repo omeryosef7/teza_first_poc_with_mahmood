@@ -3,7 +3,7 @@
 **2026-08-30 → 2026-08-31 · branch `behavioral-causality-sprint` · `fe8fd610..35d4737e`**
 
 Every number here is re-read from its raw artifact by `reports/RAH_REPRO_MANIFEST.json`, which was
-**executed on a clean tree**: 17 numbers, 5 independent verifiers, 0 failures. The main table
+**executed on a clean tree**: 17 numbers, **2 independent verifiers + 3 replay checks**, 0 failures. The main table
 (`reports/RAH_MAIN_TABLE.md`) is **generated** from artifacts, not typed.
 
 ---
@@ -76,16 +76,24 @@ ASR 0.013 → 0.085 at ASR 0.27).
 
 ### 2.3 Patchscope in this repository failed for a fixable reason
 
-Five recorded positive-control failures had led to the method being dropped
-(*"unusable as configured — late-layer read, no positive control"*). **The cause was the receiver
-injection layer.** Like-for-like, moving injection from R=28 to R=4 of 32 takes the archived
-configuration from **0.0088 → 0.2771 (31×)** and the best form from **0.0065 → 0.8421 (130×)**, same
-model, same donor, same readout. The depth *fraction* transfers across models (Llama 4/32, Qwen3 5/40
-— both 0.125).
+**Seven** recorded positive-control failures had led to the method being dropped
+(*"unusable as configured — late-layer read, no positive control"*). **Only the one archived `46`
+configuration was re-run here**; the receiver injection layer explains **that one**, and the other
+six are *consistent with*, not demonstrated by, this result.
 
-⚠ An early injection layer is **necessary but not sufficient**: one form fails at every R. And only
-the one archived configuration was re-run; the other failures are *consistent with*, not
-demonstrated by, this result.
+On **Llama**, moving injection from R=28 to R=4 of 32 takes the archived configuration from
+**0.0088 → 0.2771 (31×)** and the best form from **0.0065 → 0.8421 (130×)** — same model, same
+receiver form, same readout. ⚠ **Each endpoint is a maximum over 31 donor layers and the argmax
+donor layer differs** (L=19→2 and L=21→3), so these are **not** same-donor comparisons. Held at a
+**fixed** donor layer the ratio is **16.5×–321.8×** across the four (form, L) combinations.
+
+⚠ **The R-profile is LLAMA'S, and it does not hold on Qwen3.** On Llama every passing form dies at
+R ≥ 16 and `id07_tmpl` fails at all five R. On Qwen3 `fc_probe_last` clears the gate at **all five
+depths including R = 36 = `n_layers − 4`** — the very depth blamed for the archived failures — and
+`id07_tmpl` clears it only at R = 20. So *"an early injection layer is necessary"* is **false on
+Qwen3**. The selected depth fraction is 0.125 on both models, but both `R_set`s were laid out at
+**identical depth fractions by construction** and the selection rule tie-breaks on the lowest — that
+is agreement of a **selection rule**, not demonstrated transfer of a depth effect.
 
 ### 2.4 Track A — **A-IV, CANNOT ANSWER**
 
@@ -148,7 +156,7 @@ models. **The confirmatory matrix was not run and ≈20 GPU-hours were not spent
 | preregistrations | **9 registered**, each committed **before** the data it governs. Two further ids (`RAH-PR-005` the Track-A freeze, `RAH-PR-008` the Track-B confirmatory arms) were planned in the phase map and **never reached** — their phases stopped first |
 | corrections | 15 (`RAH-C-001`…`RAH-C-015`) |
 | deep reviews | 3, using 15 read-only auditor agents |
-| independent verifiers | 5, each recomputing an estimand **without importing its producer** |
+| verification | **2 independent verifiers** (re-implement the statistics, import nothing from the producer) **+ 3 replay checks** (re-run the producing rule and **diff its decision** against the committed artifact). `RAH-DR-004` B4 found the replays originally discarded their output, proving only that a script had not crashed; they now diff, and the diff is **proven able to fail** |
 | reproduction manifest | **executed on a clean tree**: 17 numbers, 5 verifiers, **0 failures** |
 | guard tests | 294 → **309** (see below) |
 | ASR filtering | **none**, at any point |

@@ -3715,3 +3715,85 @@ loosely and the most costly to get wrong.
 [ ] 7  updated RESEARCH_HANDOFF.md
 [x] 8  standalone sprint summary           reports/RAH_SPRINT_SUMMARY.md
 ```
+
+---
+
+## `RAH-DR-004` / `RAH-C-017` — the final review found 5 BLOCKING defects in the deliverables — 2026-08-31
+
+**Status: DEEP REVIEW + CORRECTION.** Three read-only lenses plus an adjudicator over the finished
+deliverables, 260 tool calls. **No headline number moved and neither verdict changed** — all five
+were wording, scope or provenance. **Every one re-verified by me from raw artifacts before acceptance.**
+
+### `B1` — a correction applied to ONE place and not the other three
+
+`RAH-DR-003` A5 ruled that *"five prior failures were the receiver layer"* is wrong: there are
+**seven** artifacts and **only the one archived `46` configuration was re-run**. I put that on the
+never-quote list — **and left "five" standing in the summary, the handoff §1 and the assay report.**
+So §5 of the handoff forbade what §1 of the handoff asserted.
+
+This is `RBD-C-015` F5 exactly — *a correction applied to the tables and not to the prose people
+quote* — recurring in my own work one sprint later. **Fixed in all three.**
+
+### `B2` — "same donor" is false
+
+The 31×/130× endpoints are **maxima over 31 donor layers with different argmax layers**
+(fc46 L=19→2; fc_probe_last L=21→3). Verified. `RAH-DR-003` A3 had withdrawn the earlier "~96×"
+*because* it crossed forms **and donor layers**; my replacement fixed the form-crossing and then
+**added an explicit "same donor" the artifact does not support.**
+
+Held at a **fixed** donor layer the ratio is **16.5× – 321.8×**, so the conclusion survives — but the
+claim as written did not.
+
+### `B3` — the R-profile is LLAMA'S and is FALSIFIED on Qwen3
+
+Recomputed from `rahpf_qlp_20260830_201039.json`:
+
+| Qwen3 | R=5 | R=10 | R=20 | R=30 | R=36 |
+|---|---|---|---|---|---|
+| `fc_probe_last` | 1.0000 ✓ | 1.0000 ✓ | 1.0000 ✓ | 0.8930 ✓ | **0.9394 ✓** |
+| `id07_tmpl` | 3e-05 | 6e-04 | **0.2276 ✓** | 2e-06 | 0.0097 |
+
+**R=36 IS `n_layers − 4`** — the exact depth blamed for the archived failures — **and the selected
+form clears the gate there.** So on Qwen3: *"an early injection layer is necessary"* is **false**, and
+*"one form fails at every R"* is **false** (`id07_tmpl` passes at R=20).
+
+And *"the depth fraction transfers across models — both 0.125"* is **near-circular**: the two `R_set`s
+were laid out at **identical depth fractions by construction**, and the selection rule tie-breaks on
+the **lowest**. That is agreement of a **selection rule**, not a demonstrated depth effect.
+
+**This is the most serious finding of the review** — a mechanistic story generalised from one model
+when the second model contradicts it. Fixed in all three deliverables and added to the never-quote
+list as two entries.
+
+### `B4` — 3 of my 5 "independent verifiers" were the PRODUCER, and their output was discarded
+
+`rah_select_config.py`, `rah_select_transport_config.py` and `rah_screen_table.py` **wrote** the
+artifacts they were listed as verifying. The manifest ran them with `--out /tmp/…` and recorded
+`ok = (returncode == 0)` — **never reading the output**. They passed iff the script did not crash and
+were **structurally incapable** of noticing that a committed artifact disagreed with its own rule.
+
+**Fixed in code, not by relabelling.** The three are now typed `replay` and **diff their fresh
+decision against the committed artifact**. Proven able to fail: corrupting
+`rah_screen_table.json`'s `outcome` to `B-QUALIFIED` gives
+
+```
+RAH-R-021  replay  FAIL DECISION DIFFERS from the committed artifact
+```
+
+restored → 0 failures. The count is now stated honestly everywhere as **2 independent verifiers +
+3 replay checks**.
+
+### `B5` — the manifest attested a commit that predated three deliverables
+
+The committed manifest recorded `452c00f5`; the summary landed at `f9729af2` and the handoff at
+`fafbae5e`. **Neither the committed nor the working-tree manifest certified the delivered state** —
+and this is the sprint's single strongest integrity claim, the first thing an external reviewer
+checks. Re-run at the corrected HEAD; see the closing note on what a manifest can and cannot attest
+about itself.
+
+### The pattern, stated once more because it did not stop
+
+Four reviews, and **every claim-level defect in all four was a SCOPE error, never an arithmetic
+one.** `RAH-DR-004` adds: a correction can be applied to one document and not its three siblings
+(B1); a fix for one over-claim can introduce another (B2); and a mechanism can be generalised from
+the model that shows it while the second model **falsifies it** (B3).

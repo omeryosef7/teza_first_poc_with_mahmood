@@ -7,7 +7,10 @@ before sprint close. A manifest that is only a list is a promise; this one runs.
 
 For each entry it:
   1. checks the raw artifact exists,
-  2. RUNS the independent verifier (a program that does not import the producer),
+  2. runs its checks -- either an INDEPENDENT verifier (re-implements the statistics, imports
+     nothing from the producer) or a REPLAY of the producing rule that DIFFS its fresh decision
+     against the committed artifact. `RAH-DR-004` B4: a replay whose output is discarded proves
+     only that the script did not crash,
   3. re-reads the headline number from the artifact and compares it to the value recorded here,
   4. reports PASS/FAIL per entry and refuses to exit 0 if any entry fails.
 
@@ -115,18 +118,43 @@ NUMBERS = [
      lambda: r_screen("Qwen3 x ticket_knife", "k_informative"), 3, 0),
 ]
 
-#: independent verifiers -- programs that recompute an estimand WITHOUT importing its producer
+#: TWO KINDS OF CHECK, labelled distinctly because they are NOT the same strength (`RAH-DR-004` B4).
+#:
+#: "independent" -- a program that RE-IMPLEMENTS the statistics from their definitions, imports
+#: nothing from the producer, and compares its own numbers against the produced artifact.
+#:
+#: "replay" -- a re-execution of the PRODUCING rule itself. Exit code alone proves nothing: the
+#: first version of this manifest ran these with `--out /tmp/...` and never looked at the output, so
+#: they passed iff the script did not crash and were structurally incapable of noticing that the
+#: committed artifact disagreed with the rule. They now DIFF their fresh output against the
+#: committed artifact on the fields that matter, which is what makes a replay worth running at all.
 VERIFIERS = [
-    ("RAH-R-004", [PY, "scripts/rah_verify_phase1.py",
-                   "--produced", "outputs/boombness/rah_phase1/rah_phase1_lift.json"]),
-    ("RAH-R-007", [PY, "scripts/rah_verify_dose.py"]),
-    ("RAH-R-010", [PY, "scripts/rah_select_config.py",
-                   "--out", "/tmp/rah_repro_stagea.json"]),
-    ("RAH-C-012", [PY, "scripts/rah_select_transport_config.py",
-                   "--out", "/tmp/rah_repro_pr011.json"]),
-    ("RAH-R-021", [PY, "scripts/rah_screen_table.py",
-                   "--out", "/tmp/rah_repro_screen.json"]),
+    ("RAH-R-004", "independent",
+     [PY, "scripts/rah_verify_phase1.py",
+      "--produced", "outputs/boombness/rah_phase1/rah_phase1_lift.json"], None, None),
+    ("RAH-R-007", "independent", [PY, "scripts/rah_verify_dose.py"], None, None),
+    ("RAH-R-010", "replay",
+     [PY, "scripts/rah_select_config.py", "--out", "/tmp/rah_repro_stagea.json"],
+     "/tmp/rah_repro_stagea.json", "outputs/boombness/rah_stagea/rah_stagea_selection.json"),
+    ("RAH-C-012", "replay",
+     [PY, "scripts/rah_select_transport_config.py", "--out", "/tmp/rah_repro_pr011.json"],
+     "/tmp/rah_repro_pr011.json", "outputs/boombness/rah_stagea/rah_pr011_selection.json"),
+    ("RAH-R-021", "replay",
+     [PY, "scripts/rah_screen_table.py", "--out", "/tmp/rah_repro_screen.json"],
+     "/tmp/rah_repro_screen.json", "outputs/boombness/rah_screen/rah_screen_table.json"),
 ]
+
+
+def _decision(d):
+    """The fields a replay must reproduce: the RULE'S DECISION, not incidental metadata."""
+    if d is None:
+        return None
+    for k in ("selected", "outcome", "models"):
+        if k in d:
+            return {k: d[k]} if k != "models" else {
+                k: {m: {"DECLINED": v.get("DECLINED"), "selected": v.get("selected")}
+                    for m, v in d[k].items()}}
+    return None
 
 
 def main():
@@ -157,26 +185,41 @@ def main():
               % (cid, desc[:62], expected, got if not isinstance(got, float) else "%.6g" % got,
                  "PASS" if ok else "FAIL"))
 
-    print("\nINDEPENDENT VERIFIERS (each recomputes without importing its producer)")
+    print("\nVERIFIERS  (independent = re-implements the statistics; replay = re-runs the "
+          "producing rule and DIFFS its decision against the committed artifact)")
     vres = []
-    for cid, cmd in VERIFIERS:
+    for cid, kind, cmd, fresh, committed in VERIFIERS:
         r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
         ok = r.returncode == 0
-        vres.append({"id": cid, "cmd": " ".join(cmd[1:]), "returncode": r.returncode, "pass": ok})
+        detail = ""
+        if ok and kind == "replay":
+            # NB: not `a` -- that is the argparse namespace in this scope.
+            fresh_dec = _decision(jload(fresh))
+            committed_dec = _decision(jload(committed))
+            same = (fresh_dec is not None and fresh_dec == committed_dec)
+            ok = ok and same
+            detail = "decision matches" if same else "DECISION DIFFERS from the committed artifact"
+        vres.append({"id": cid, "kind": kind, "cmd": " ".join(cmd[1:]),
+                     "returncode": r.returncode, "diffed_against": committed, "pass": ok,
+                     "detail": detail})
         if not ok:
-            failures.append("%s verifier exited %d" % (cid, r.returncode))
-        print("  %-12s %-64s %s" % (cid, " ".join(cmd[1:])[:64], "PASS" if ok else
-                                    "FAIL(rc=%d)" % r.returncode))
+            failures.append("%s %s verifier: rc=%d %s" % (cid, kind, r.returncode, detail))
+        print("  %-12s %-11s %-46s %s %s"
+              % (cid, kind, " ".join(cmd[1:])[:46], "PASS" if ok else "FAIL", detail))
 
     out = {"schema": SCHEMA, "commit": commit, "tree_dirty": bool(dirty),
-           "n_numbers": len(entries), "n_verifiers": len(vres),
+           "n_numbers": len(entries),
+           "n_independent_verifiers": sum(1 for v in vres if v["kind"] == "independent"),
+           "n_replay_checks": sum(1 for v in vres if v["kind"] == "replay"),
            "numbers": entries, "verifiers": vres, "failures": failures,
            "EXECUTED": True, "PASS": not failures}
     os.makedirs(os.path.dirname(os.path.join(ROOT, a.out)), exist_ok=True)
     with open(os.path.join(ROOT, a.out), "w") as f:
         json.dump(out, f, indent=1)
 
-    print("\n%d numbers, %d verifiers, %d failure(s)" % (len(entries), len(vres), len(failures)))
+    print("\n%d numbers, %d independent verifiers + %d replay checks, %d failure(s)"
+          % (len(entries), out["n_independent_verifiers"], out["n_replay_checks"],
+             len(failures)))
     for f_ in failures:
         print("   FAIL:", f_)
     print("-> %s" % a.out)

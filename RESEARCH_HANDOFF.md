@@ -357,9 +357,9 @@ The predecessor sprint said the route out of its dead end was activation-level p
 was built and run to a held-out conclusion, and it returned CANNOT ANSWER.** Along the way the sprint
 established that the doublespeak mapping is **installed and not used** (4/4 cells), that the
 **80-row-per-arm design used throughout this project cannot detect a behavioural effect of any size**
-once judge noise and domain clustering are counted, and that this repository's five failed patchscope
-attempts failed for a **fixable reason** — the receiver injection layer, worth ~130× on the same
-donor and readout. Both tracks closed on preregistered negative or non-answerable outcomes; **no
+once judge noise and domain clustering are counted, and that the one re-run patchscope failure in this
+repository failed for a **fixable reason** — the receiver injection layer, worth 31–130× on
+**Llama**. **Six further recorded failures were not re-run, and the effect is not model-general.** Both tracks closed on preregistered negative or non-answerable outcomes; **no
 intervened arm was interpreted on either.**
 
 ## 2. ESTABLISHED
@@ -378,9 +378,11 @@ intervened arm was interpreted on either.**
 * **Judge flip rate RISES with baseline ASR** (`RAH-C-004`): 0.021 at ASR 0.013 → 0.085 at ASR 0.27,
   measured with `effective_flip_rate` per population. A higher-headroom population does **not** buy
   proportional power.
-* **The patchscope failures were the receiver injection layer** (`RAH-R-008`). Like-for-like,
-  R=28 → R=4 of 32: archived config **0.0088 → 0.2771 (31×)**, best form **0.0065 → 0.8421 (130×)**.
-  The depth *fraction* transfers across models (0.125 on both).
+* **The ONE re-run patchscope failure was the receiver injection layer** (`RAH-R-008`), **on Llama**.
+  R=28 → R=4 of 32: archived config **0.0088 → 0.2771 (31×)**, best form **0.0065 → 0.8421 (130×)**;
+  ⚠ each endpoint is a max over 31 donor layers with **differing argmax layers**, and at a fixed
+  layer the ratio is 16.5–321.8×. ⚠ **Not model-general**: on Qwen3 `fc_probe_last` passes at **all
+  five depths including `n_layers − 4`**, so *"an early injection layer is necessary"* is false there.
 * **Fresh judge-noise measurement** (`RAH-R-007`): **11 flips / 299 freshly-judged byte-identical
   rows = 0.0368**, pinned model, same commit. This **replaces** the repo's 6.5–7.0 % per-invocation
   figure, which has **no committed artifact** behind it.
@@ -420,13 +422,21 @@ intervened arm was interpreted on either.**
    `n_examples` {1,2,4,8}. The screening population is **0.1645**.
 4. **"all five prior patchscope failures were the receiver layer"** (`RAH-DR-003` A5) — there are
    **seven** artifacts, two used `n_layers−2`, and **only the one archived configuration was re-run**.
-5. **"every form works at R=4–8"** (`RAH-DR-003` A6) — one form fails at **every** R. An early
-   injection layer is **necessary but not sufficient**.
-6. **`exch` as a specificity control** (`RAH-DR-003` B1) — it is a *permutation* of `base` and cannot
+5. **Any R-profile statement as model-general** (`RAH-DR-004` B3) — the profile is **Llama's**. On
+   Qwen3 `fc_probe_last` passes at all five depths **including `n_layers − 4`**, and `id07_tmpl`
+   passes only at R=20. *"An early injection layer is necessary"* is **false on Qwen3**.
+6. **"the depth fraction transfers across models"** (`RAH-DR-004` B3) — both `R_set`s were laid out
+   at identical depth fractions **by construction** and the rule tie-breaks on the lowest. Agreement
+   of a **selection rule**, not a demonstrated depth effect.
+7. **"same donor"** for the 31×/130× ratios (`RAH-DR-004` B2) — each endpoint is a maximum over 31
+   donor layers with a **different argmax layer**. At a fixed layer the ratio is 16.5–321.8×.
+8. **"5 independent verifiers"** (`RAH-DR-004` B4) — it is **2 independent + 3 replay checks**; the
+   replays originally discarded their output and proved only that a script had not crashed.
+9. **`exch` as a specificity control** (`RAH-DR-003` B1) — it is a *permutation* of `base` and cannot
    differ on any aggregate. Paired per-family only.
-7. **The capped key control as "dose-matched"** (`RAH-R-011`) — it masks **23.2 %** of the demo dose;
+10. **The capped key control as "dose-matched"** (`RAH-R-011`) — it masks **23.2 %** of the demo dose;
    strict count-matching is **infeasible** on this population.
-8. **"N passed" from the pre-commit hook as "the suite is green"** (`RAH-R-016`) — it is *"the guard
+11. **"N passed" from the pre-commit hook as "the suite is green"** (`RAH-R-016`) — it is *"the guard
    list is green"*, strictly weaker, and the full suite is known to disagree with it.
 
 ## 6. The exact next step

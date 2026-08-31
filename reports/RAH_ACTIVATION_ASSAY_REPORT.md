@@ -59,11 +59,14 @@ coordinate `LayerPatch(layer_idx=L)` writes. `L` is capped at `n_layers − 2` b
 ## 4. The finding that made the instrument work at all
 
 `46_forced_choice_patchscope.py` had been run **once** in this repository and its positive control
-failed by ~712× (`pos_ctrl_max` 1.404e-04 against a 0.1 gate), flat across all 33 donor layers. Four
-further recorded failures existed on other model families. The method had been dropped.
+failed by ~712× (`pos_ctrl_max` 1.404e-04 against a 0.1 gate), flat across all 33 donor layers. **Six
+further recorded failures existed** on other model families; **none of those six was re-run here.**
+The method had been dropped.
 
-**The cause was the receiver injection layer, not the concept.** P(concept), best over donor layers,
-Llama:
+**For the one configuration that was re-run, the cause was the receiver injection layer, not the
+concept.** P(concept), best over donor layers, **Llama** — ⚠ each cell is a **maximum over 31 donor
+layers** and the argmax layer differs between cells, so column-to-column ratios are **not**
+same-donor comparisons:
 
 | form | R=4 | R=8 | R=16 | R=24 | R=28 |
 |---|---|---|---|---|---|
@@ -74,11 +77,15 @@ Llama:
 **Moving the injection from R=28 to R=4 takes `fc46` from 0.0088 to 0.2771 (31×) and
 `fc_probe_last` from 0.0065 to 0.8421 (130×)** on the same model and readout.
 
-⚠ **An early injection layer is necessary but not sufficient**: `id07_tmpl` fails at *every* R on
-Llama. The receiver **form** matters too.
+⚠ **On Llama** an early injection layer is necessary but not sufficient: `id07_tmpl` fails at
+*every* R. Held at a **fixed** donor layer the R=28→R=4 ratio is **16.5×–321.8×**.
 
-⚠ **Only the `46` configuration was re-run here.** The other recorded failures are *consistent with*
-this explanation, not demonstrated by it.
+⚠ **This profile is LLAMA'S and is falsified on Qwen3.** There `fc_probe_last` clears the gate at all
+five depths **including R = 36 = `n_layers − 4`**, the depth blamed for the archived failures, and
+`id07_tmpl` clears it only at R = 20. **No R-profile statement here may be quoted as model-general.**
+
+⚠ **Only the `46` configuration was re-run here.** The other six are *consistent with* this
+explanation, not demonstrated by it.
 
 ---
 
