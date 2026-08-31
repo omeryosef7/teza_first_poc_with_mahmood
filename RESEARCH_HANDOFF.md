@@ -775,3 +775,92 @@ falling back.
   write-ups.** This is the third consecutive phase with that signature, and it is the strongest
   argument for the adversarial-auditor step: `RAH2-DR-002` was asked to **refute** a claim rather than
   check it, and it took the phase's headline result down in one pass.
+
+---
+
+# ADDENDUM — RAH3 "non-copy causal readout" phase, 2026-08-31
+
+## 1. The one-paragraph truth
+
+**The activation-transport assay this project has been building on was largely a copy test.** Every
+`direct_harmful` positive control in RAH/RAH2 captured the donor at the **concept's own surface
+token**, so transport and copying were indistinguishable by construction. `RAH3-PR-001` moved the
+capture **one token**, to the `'.'` immediately after the concept, changed nothing else, and every
+receiver form collapsed on both models — the 0-hop decoders by **688×** / **42 809×** (Llama) and
+**8 062×** / **141×** (Qwen3), and Qwen3's **multi-hop** reference from **0.999999 → 0.000539
+(1 855×)**. On Llama a real off-surface signal survives — `p_concept = 0.1932` against a `0.0053`
+prior, captured on a period token — **but only into a receiver that prints all four candidates.**
+Every exposure-clean multi-hop receiver fails, the best by **376×** below `MASS_GATE`. **Track A
+remains CANNOT ANSWER; held-out was gated off and never run.**
+
+## 2. ESTABLISHED
+
+* **`RAH3-R-006`** — Llama = **P-B**, Qwen3 = **P-D**, `held_out_may_run = False`. Verdict produced
+  by `scripts/rah3_select_config.py`, committed **before** either artifact existed.
+* **`H4` SUPPORTED** — `RAH2-C-020`'s copy diagnosis confirmed **prospectively**.
+* **Off-surface transport is real on Llama** — `fc_probe_last R=4 L=11`, 8 hops, mass 0.746.
+  ⚠ Candidate-printing; **can never carry a Track-A claim.**
+* **`RAH3-R-003`** — Track B **BLOCKED BY MATERIAL AND POWER**, re-derived. ⚠ **The 38-domain bank
+  already exists**; the blockers are that the only qualifying baseline is the **discovery** pair on
+  one model, and rows/domain is **4**, not 16.
+* **`RAH3-R-008`** — reproduction manifest **executed**: **49 headlines, 49 PASS**.
+
+## 3. ⛔ MUST NEVER BE QUOTED
+
+* *"`id07_raw` is an exposure-clean high-mass readout"* — collapses **688×** off-surface.
+* *"`H0` was falsified"* — `H0` **stands**, now off-surface too.
+* *"`RAH-R-018` shows transport is present/absent"* — **A-IV / CANNOT ANSWER, permanently.** RAH3
+  was a *new* experiment and does **not** reinterpret it.
+* **`0.1932` as "transport strength"** — it is `selection_max` over 31 × 5, an upper bound.
+* *"Qwen3's positive control was 1.000"* — **0.999999** (`RAH3-C-012`).
+* ⚠ Any RAH3 number as **held-out**. **There is no held-out cell.** Development only.
+
+## 4. The exact next step
+
+⚠ **Not another intervention matrix.** `RAH3-R-006`'s own limits name the honest next question, and
+it needs a **new preregistration**:
+
+> **Is off-surface transport weak, or is `'.'` specifically a poor carrier?** The current design
+> cannot distinguish these, and both are consistent with every number measured.
+
+A candidate design: the **same** frozen receiver at a small, **pre-registered** set of structurally
+valid non-surface sites (`' given'` +2, `' the'` +3, `' context'` +4 — the trailer is identical on
+both models and both pairs). ⚠ **This is NOT an offset sweep to find one that works** — it must be
+registered with its outcome rule first, and the estimate must come from a frozen choice, or it is
+exactly the search-until-it-passes that §61 forbids.
+
+## 5. Reusable assets
+
+`resolve_donor_capture()` — pure, model-free, GPU-free; every non-copy invariant independently
+re-derivable · `assert_capture_consistent()` · `assert_run_not_vacuous()` — refuses to persist a
+sweep where the patch never applied · `cell_mass_gate_ok()` — `MASS_GATE`, now actually applied ·
+`--capture-mode {surface,offset}` with the default pinned by a source-grepping test ·
+`scripts/rah3_select_config.py` · **two** independent verifiers, one importing no producer helper ·
+`scripts/rah3_mutate_verifier.py` — 17 mutation classes · `scripts/rah3_repro_manifest.py`, executed.
+
+## 6. Hazards worth inheriting
+
+* ⚠ **A positive control whose donor surface IS the target cannot distinguish transport from
+  copying.** Diagnose it by **moving the capture**, not by reasoning about it. It is cheap and it
+  took down a `p = 0.999999` control.
+* ⚠ **A threshold published in an artifact and enforced by nothing.** Found **twice in one sprint**,
+  in two files: `mass_gate` (`RAH3-C-003`) and `max_frac_at_cap` (`RAH3-C-007`). **Grep every
+  published threshold for a code path that reads it.**
+* ⚠ **A patch that never applied reads exactly like a scientific null.** `LayerPatch` skips an
+  out-of-range position silently and has no `n_applied`.
+* ⚠ **`git add <path>` scopes the ADD; `git commit` commits the whole shared index.** Use
+  **`git commit -- <paths>`**. Three sweeps in 26 hours, one *inside* the correction for another.
+  **A jump in the pre-commit guard-test count is a live sweep signal.**
+* ⚠ **A 0-byte log under `set -e` means it died before it could tell you.** Three causes here:
+  node-local `/tmp` batch script, a SIGPIPE `nvidia-smi | head -1` guard (**nondeterministic** — the
+  same script passed once and failed once), and neither was a bug in the code under test.
+* ⚠ **A verifier that agrees on its first run has proved less than one that disagrees.** Verifier B
+  disagreed by **22×** while matching every geometric quantity and both unpatched values — which
+  localised the bug instantly, and the bug was the verifier's (donor layer vs receiver layer).
+* ⚠ **Defects appear inside the mechanisms built to detect them.** Three this sprint: a mutation
+  that could not go red, a verifier console asserting the opposite of the truth, and a verifier
+  patching the wrong layer.
+* ⚠ **`MEASURED_FLIP_BY_ASR` is non-monotonic** and `flip_for_asr` clamps **below** the measured
+  maximum. The handoff's own "flip rate rises with baseline ASR" is **not** what its eight points do.
+* ⚠ **`ICC = 0.09` has no estimator anywhere in this repository**, and it is the difference between
+  a viable Track-B design and an undetectable one. **Never quote 0.70 without 0.86 beside it.**
