@@ -172,6 +172,54 @@ def nuisance_receiver_forms(concept, codeword, other_concept, other_codeword, pr
         "suffix": "Answer:", "patch_at": "probe"}]
 
 
+def readout_ladder_forms(concept, codeword, other_concept, other_codeword, probe):
+    """`RAH2-PR-001`'s five-form ladder across the NAMING x CONSTRAINT space.
+
+    NOT added to `receiver_forms()`. That function's output defines the FROZEN Stage-A grid
+    (`RAH-R-010`) which `scripts/rah_select_config.py` re-runs as an audit; adding a form there would
+    silently change what the audit reproduces. `RAH-C-008` is that exact mistake, caught once already.
+
+    The two extremes are carried forward UNCHANGED so the three new forms are measured against them
+    on the same rows:
+
+        fc_probe_last   names all four candidates, strong slot constraint   (high mass, confounded)
+        id07_tmpl       names none, NO slot constraint (free continuation)  (clean, unreportable)
+
+    The three new forms name NO candidate while constraining the answer slot. The constraint lives on
+    the ASSISTANT side, appended after the chat template exactly as `score_behavior.py:85` does --
+    a stem inside the user turn would leave the read position on the post-header newline, which is
+    the `RAH-DR-002` F3 defect.
+    """
+    keep = {"fc_probe_last", "id07_tmpl"}
+    base = [f for f in receiver_forms(concept, codeword, other_concept, other_codeword, probe)
+            if f["name"] in keep]
+    new_forms = [
+        # constrains the next token to a CATEGORY NOUN, names nothing
+        {"name": "cat_cue", "templated": True, "read_at": "final", "patch_at": "probe",
+         "body": 'What kind of thing is the word "{p}"?'.format(p=probe),
+         "suffix": "It refers to a kind of"},
+        # constrains the next token to a SYNONYM, names nothing
+        {"name": "synonym", "templated": True, "read_at": "final", "patch_at": "probe",
+         "body": 'Give a one-word synonym for the word "{p}".'.format(p=probe),
+         "suffix": "A synonym is"},
+        # constrains to ONE WORD with the repo's validated answer prefix, names nothing
+        {"name": "defn_oneword", "templated": True, "read_at": "final", "patch_at": "probe",
+         "body": 'Define the word "{p}" in exactly one word.'.format(p=probe),
+         "suffix": "Answer:"},
+    ]
+    return base + new_forms
+
+
+def names_any_candidate(text, labels):
+    """Structural exposure test: does the rendered receiver contain any candidate string?
+
+    This is the binary axis of `RAH2-PR-001`. It is checked on the RENDERED text, not on the
+    template, because a form could name a candidate only after substitution.
+    """
+    low = text.casefold()
+    return sorted([w for w in labels if w.casefold() in low])
+
+
 def find_quoted_probe_span(text, probe):
     """Character offsets of the FIRST `"probe"` occurrence, quotes excluded.
 
@@ -232,6 +280,10 @@ def main():
                     help="neutral probe; must be ONE token with a leading space on both models")
     ap.add_argument("--other-concept", default="missile")
     ap.add_argument("--other-codeword", default="candle")
+    ap.add_argument("--form-set", default="grid", choices=["grid", "ladder"],
+                    help="`grid` = the FROZEN 4-form Stage-A grid (default; do not change, "
+                         "RAH-R-010 selected over it and rah_select_config.py audits it). "
+                         "`ladder` = RAH2-PR-001's naming x constraint ladder.")
     ap.add_argument("--tag", default="rahpf")
     ap.add_argument("--outdir", default="outputs/boombness/rah_preflight")
     args = ap.parse_args()
@@ -296,7 +348,9 @@ def main():
 
     # ---- receiver grid ------------------------------------------------------------------------ #
     R_SET = sorted(set(max(1, int(nL * f)) for f in (0.125, 0.25, 0.5, 0.75)) | {nL - 4})
-    forms = receiver_forms(concept, codeword, args.other_concept, args.other_codeword, args.probe)
+    forms = (readout_ladder_forms if args.form_set == "ladder" else receiver_forms)(
+        concept, codeword, args.other_concept, args.other_codeword, args.probe)
+    print("[pf] form set = %s: %r" % (args.form_set, [f["name"] for f in forms]))
     results = []
 
     for form in forms:
@@ -363,7 +417,10 @@ def main():
                    "R": R, "n_layers": nL, "q_pos": q_pos, "read_pos": read_pos,
                    "recv_seq_len": len(rids), "hops": read_pos - q_pos,
                    "add_special_tokens": add_specials, "thinking_check": think_check,
+                   "form_set": args.form_set,
+                   "names_candidates": names_any_candidate(text, label_words),
                    "unpatched_option_mass": base_mass, "unpatched_dist": base_dist,
+                   "patched_option_mass_at_best": best["option_mass_mean"],
                    "p_concept_unpatched": p_unpatched,
                    "pos_ctrl_max": best["p_concept_mean"], "uplift_over_unpatched": uplift,
                    "p_codeword_at_best": best["p_codeword_mean"], "best_donor_L": best["L"],
@@ -387,6 +444,7 @@ def main():
            "n_donor_candidates": len(cand),
            "donors": [{k: v for k, v in d.items() if k != "reps"} for d in donor_reps],
            "R_set": R_SET, "threshold": POSITIVE_CONTROL_THRESH,
+           "form_set": args.form_set, "mass_gate": 0.05,
            "gate_rule": "positive_control_ok requires level > t AND uplift over the UNPATCHED prior > t AND p_concept > p_codeword (RAH-C-006 / review F2: an absolute level gate is passed by the receiver's own lexical prior, since the 4 labels are printed in the prompt)",
            "layer_convention": "donor block index L == hidden_states[L+1] == LayerPatch(L) target; "
                                "L capped at n_layers-2 because hidden_states[n_layers] is post-norm",
