@@ -32,7 +32,10 @@ def check(label, ok, detail=""):
     CHECKS.append(label)
     if not ok:
         FAILS.append("%s -- %s" % (label, detail))
-    print("  %-58s %s%s" % (label, "ok" if ok else "FAIL", (" | " + detail) if detail else ""))
+    # ⚠ `RAH2-C-016`: a console column that does not hold what its text implies. The detail string
+    # is the FAILURE explanation and must be printed ONLY on failure -- an earlier version printed
+    # "ok | MISSING" for every present provenance field, which reads as the opposite of the truth.
+    print("  %-58s %s%s" % (label, "ok" if ok else "FAIL", ("" if ok else " | " + detail)))
     return ok
 
 
@@ -178,7 +181,7 @@ def main(argv):
     p = art.get("provenance", {})
     for f in ("git_commit", "git_dirty", "branch", "hostname", "argv", "python_executable",
               "bank_sha256", "expected_n_donors", "actual_n_donors", "slurm_job_id"):
-        check("provenance carries %r" % f, f in p, "MISSING")
+        check("provenance carries %r" % f, f in p, "field ABSENT from the provenance block")
     check("expected_n_donors == actual_n_donors",
           p.get("expected_n_donors") == p.get("actual_n_donors"),
           "%r vs %r" % (p.get("expected_n_donors"), p.get("actual_n_donors")))
