@@ -1177,3 +1177,103 @@ close to free and would have caught all three. **RAH3's final audit will include
 If that commit's provenance-audit conclusion was computed over a tree that **already contained** the
 swept-in RAH3 lines, the attestation may describe a state it did not intend to cover. ⚠ Recorded as
 an **open question**, not a finding — it belongs to the RAH2 session.
+
+---
+
+## 13. `RAH3-R-004` — the configuration smoke, and a disclosure about it
+
+**Job 831249, `rah3smoke_p_cb`, COMPLETED in 14:26 on n-802**, `git=883dafdc dirty=0`. It ran the
+**exact** configuration the registered jobs use — `--form-set fewshot --donor-condition
+direct_harmful --n-examples 8 --capture-mode offset --capture-offset 1`, Llama, carrot↔bomb —
+differing only in `--n-donors 2` instead of 8. ⚠ §5.10 exists because this project repeatedly smoked
+"the script" and not the mode later used.
+
+**What it validates — code and liveness, nothing else:**
+
+| | observed |
+|---|---|
+| capture site | `pos=137/147 piece='.' mode=offset off=+1 anchor=136` and `pos=154/164 … anchor=153` |
+| the three non-copy predicates | `ov_concept=False ov_codeword=False is_cand=False` on **both** donors |
+| cross-row consistency assertion | fired and passed: `{'n_rows': 2, 'donor_piece': '.', 'tok_distance': 1}` |
+| hops, per form | `id07_raw` **0**, `id07_tmpl` **0**, `fc_probe_last` **8**, `fewshot_cat` **2**, `fewshot_syn` **2** |
+| `rah3_eligible` | **only** `fewshot_cat` and `fewshot_syn`. ⚠ `fc_probe_last` correctly prints `ineligible` — it names the candidates |
+| `MASS_GATE` (`RAH3-C-003`) | live: `MASS_BELOW_GATE` printed on 21 of 25 cells |
+| patch liveness (`RAH3-C-004`) | **no** `VACUOUS_PATCH` on any cell |
+| artifact | written with a full provenance block |
+
+### 13.1 ⚠ Disclosure: the smoke printed transport numbers, and the plan did not change
+
+§5.10 says a smoke is **not** a scientific pilot and its effect direction must not change the plan.
+The console prints `p_conc` per cell, so **those numbers were visible to me.** I am recording that
+rather than pretending otherwise.
+
+**The plan did not change, and structurally could not have:** `RAH3-PR-001` (§2), its outcome
+taxonomy (§2.8) and the deterministic selection rule (`scripts/rah3_select_config.py`) were all
+**written and committed before job 831249 was submitted** — at `f2a42a6c` and `8e9ca447`, against a
+smoke that completed at `883dafdc`. The four registered jobs run exactly as registered, on 8 donors,
+and the selection is applied by a committed script rather than by my judgement. ⚠ **This is the
+whole reason preregistration is worth its cost: it converts "I saw the numbers" from a
+contamination into a disclosure.**
+
+⚠ **No smoke number is quoted as a result anywhere in this sprint.** `n_donors = 2` is not the
+registered population, and the registered analysis is Stage 1 on 8 donors followed by a frozen
+held-out test.
+
+## 14. `RAH3-R-005` — verifier A, and the proof it can fail
+
+`scripts/rah3_verify_noncopy_independent.py` on the smoke artifact: **241 checks, 0 failures.**
+⚠ A verifier reporting zero failures is exactly what `RAH2-C-022` and `RAH2-C-023` reported while
+verifying the wrong field with vacuous tolerances. So it was mutation-tested.
+
+`scripts/rah3_mutate_verifier.py` perturbs **17 distinct assertion classes** — not one:
+
+| mutation | caught by |
+|---|---|
+| capture piece changed on **one** donor | per-donor piece re-derivation |
+| capture index shifted by 1 | per-donor index re-derivation |
+| `capture_mode` flipped back to `surface` | the copy-test refusal |
+| `capture_offset` → +2 | offset + 5 downstream checks |
+| a label id corrupted | tokenizer re-derivation |
+| `hops` falsified to 0 on an eligible cell | hops arithmetic + eligibility (10 checks) |
+| `rah3_eligible` flipped True on `fc_probe_last` | eligibility re-derivation (5 checks) |
+| `mass_gate_ok` flipped True below the gate | mass-gate re-derivation (22 checks) |
+| `best_donor_L` moved off the argmax | argmax re-derivation |
+| `positive_control_ok` flipped True | three-conjunct re-derivation (23 checks) |
+| patch liveness falsified | liveness comparison |
+| `bank_sha256` corrupted | recomputed hash |
+| a provenance field deleted | §37 field list |
+| `expected_n_donors` ≠ actual | provenance consistency |
+| uplift arithmetic broken | uplift re-derivation |
+| `pos_ctrl_max` inflated by **1 %** | uplift arithmetic |
+| `pos_ctrl_max` inflated by **0.0001 %** | uplift arithmetic |
+
+**17/17 RED.** ⚠ The last row is the one that matters: `RAH2-C-023` showed a tolerance can be
+vacuous against small values, and a **0.0001 % relative** perturbation going red proves this one is
+not.
+
+⚠ **Recorded because it is not obvious:** both `pos_ctrl_max` mutations are caught by the
+**uplift-arithmetic** assertion, not by a direct comparison — `uplift = pos_ctrl_max −
+p_concept_unpatched`, so perturbing one breaks the other. *"It went red"* without knowing **which**
+assertion caught it is precisely how a vacuous guard hides.
+
+### 14.1 `RAH3-C-009` — the verifier reproduced `RAH2-C-016` inside itself
+
+Its `check()` printed the **failure-explanation** string on **success**, so every present provenance
+field rendered as **`ok | MISSING`** — a console column asserting the opposite of the truth, in the
+tool built to catch exactly that. Fixed: the detail prints only on failure. ⚠ This is the third
+instance this sprint of a defect appearing inside the mechanism built to detect it (`RAH3-C-001`,
+`RAH3-C-008`, `RAH3-C-009`) — **and it is why console output is diagnostic only and never
+evidence.**
+
+## 15. Test status at this checkpoint (§45 — reported SEPARATELY, never conflated)
+
+| | result |
+|---|---|
+| **guard list** (pre-commit hook, 17 files) | **341 passed** |
+| **targeted** (`test_rah3_capture_site.py` + `test_rah_preflight_spans.py`) | **39 passed** |
+| **full suite** (`pytest tests/ -p no:randomly`, serial, exclusive, one writer) | **1644 passed, 7 skipped, 0 failed**, 16:07 |
+| `git status` before / after the full suite | **clean / clean** — no test mutated a tracked artifact |
+
+⚠ The clean before/after is worth stating explicitly: this project has a recorded history of tests
+mutating tracked artifacts, and of a green hook not implying a green suite. **Here both were run and
+both are green.**
