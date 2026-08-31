@@ -1597,3 +1597,34 @@ commit — *not* as a content conflict. What made that recoverable rather than d
   in-flight, uncommitted RAH3 files into a RAH2 commit;
 * **do not read, edit, stage or delete the other writer's files**, and do not push their unpushed
   commits — they may still be amending.
+
+### `RAH2-C-031` follow-up — the provenance gap is **CLOSED**, verified by reading, not assumed
+
+`RAH2-C-031` flagged that a preregistration executed by a different session under a different id does
+not automatically carry its outcome table across, and named the branch that mattered: the one where
+*"`id07_raw` survives"* would mean **`RAH2-C-020`'s retraction is itself wrong**. It said, in terms,
+**"this log cannot vouch that it did"** survive into RAH3's outcome space.
+
+**Checked (read-only; the RAH3 log was not edited, staged or touched). It did survive, explicitly.**
+`external_md/RAH3_NONCOPY_CAUSAL_READOUT_AND_POWERED_BEHAVIOR_PLAN_AND_PROGRESS.md:388-390`:
+
+> ⚠ **`RAH2-PR-004`'s inherited prediction:** `id07_raw` collapses, `fc_probe_last` survives. **This
+> is a registered prediction, not a required outcome.** If `id07_raw` *survives* at `N = +1`, then
+> `RAH2-C-020`'s copy diagnosis is wrong and the retraction must itself be revisited — registered now
+
+RAH3 cites `RAH2-PR-004` **by name**, inherits its prediction, and marks it a *prediction* rather
+than a required outcome — which is stronger than PR-004 stated it. RAH3 also carries `RAH2-C-020`
+into its constraint table (`:44`, non-zero hops) and its own do-not-quote list (`:60`).
+
+**So the cross-phase handoff is sound and `RAH2-C-031`'s ⚠ is discharged.** The correction I was most
+worried about losing — the one that says *my own retraction could be wrong* — is the one the next
+phase carried forward most explicitly.
+
+> **The general point, worth inheriting:** when a phase hands a question to a *different* session,
+> the thing to verify is not that the question survived — it is that **the branch where the handing
+> phase was wrong** survived. A successor that inherits only the predicted outcome has inherited a
+> hypothesis; one that inherits the refutation branch has inherited an experiment.
+
+**`RAH2` has no remaining open item.** Every preregistration is resolved or explicitly superseded,
+every correction is applied, every unresolved-status phrase in this log carries a forward pointer, and
+the one claim this log could not vouch for has now been checked and closed.
