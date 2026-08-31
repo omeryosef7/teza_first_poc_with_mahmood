@@ -319,3 +319,30 @@ from the patched token rather than zero (repeat it) or many (walk to a printed l
 
 `+2` guard tests (`tests/test_rah_preflight_spans.py` 7 → **9**), each **proven able to fail** by
 mutation (inserting `poison -> bad` as an exemplar turns the naming test red).
+
+---
+
+## `RAH2-C-001` — a GAP in `RAH2-PR-002`'s stopping rule, found by the data falling into it
+
+**Correction, raised against my own preregistration, before acting on the development data.**
+
+`RAH2-PR-002` fixed two branches and they do not tile the outcome space:
+
+* *"development mass clears the gate"* → held-out is **mandatory**;
+* *"both models ≥ 2 orders below the gate in development"* → held-out is **not warranted**.
+
+The few-shot forms landed in **neither**. Best development mass is **0.0040** (Llama) and **0.0063**
+(Qwen3) against a 0.05 gate — below it, but by **1.1 and 0.9 orders**, not 2.
+
+**What I did NOT do:** re-read the rule as "roughly two orders", or argue from the one precedent
+(`id07_tmpl` fell 0.4344 → 7.1e-08 held-out) that a form failing in development cannot pass held-out.
+That inference is probably right and it is still an inference, and the whole point of the split is not
+to make it.
+
+**What I did:** took the branch that spends compute rather than the one that saves it — **held-out is
+being run** (jobs 827899 Llama, 827900 Qwen3). A gap in a stopping rule is resolved toward measuring,
+never toward the conclusion the partial data already suggests.
+
+**The rule is amended for future ids, prospectively:** *if development mass is below the gate by less
+than 2 orders on either model, held-out is run.* This amendment is recorded here **before** the
+held-out numbers exist.

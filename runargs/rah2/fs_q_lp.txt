@@ -1,0 +1,1 @@
+--bank /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_rbd_lantern_poison.jsonl --model Qwen/Qwen3-14B --enable-thinking false --form-set fewshot --donor-condition natural_doublespeak --n-donors 8 --n-examples 8 --probe widget --other-concept missile --other-codeword candle --tag rah2fs_q_lp
