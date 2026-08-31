@@ -2440,6 +2440,32 @@ before that data exists, so it cannot later be mistaken for a post-hoc escape ha
 
 ---
 
+## `RAH-C-008` — the entry that was missing: I nearly broke a frozen artifact adding a nuisance axis — 2026-08-30
+
+**Status: CORRECTION. Written retrospectively on 2026-08-31 because the id was DANGLING** — it is
+cited in commit `6dd469ea` and in two source files (`rah_transport_assay.py:81`,
+`rah_preflight_transport.py:152`) but had **no entry in this log**. A reader following the citation
+would have found nothing. Recorded now with that provenance stated rather than back-dated silently.
+
+**What happened.** The equivalence margin needed a nuisance axis (`RAH-DR-002` F5: the receiver is one
+deterministic forward, so "repeatability" is float jitter and a margin derived from it makes
+`EQUIVALENT` unreachable for every dataset). I added a receiver paraphrase, `fc_probe_last_v2`,
+directly to `receiver_forms()`.
+
+**That function's output defined the FROZEN Stage-A grid** — 4 forms × 5 receiver layers = 20
+configurations — over which `RAH-R-010` made its selection, and which `scripts/rah_select_config.py`
+re-runs as an audit. A fifth form would have silently changed what a re-run produced, **breaking the
+audit of a frozen artifact** while every test still passed.
+
+**Fixed** by moving the paraphrase into a separate `nuisance_receiver_forms()` with its own caller,
+leaving `receiver_forms()` at exactly the 4 forms that defined the freeze. **Verified** by re-running
+the selection: it reproduces `fc_probe_last / 0.125 / 0.8516` exactly.
+
+This is the same class as `RAH-C-007` — a correction creating a new defect — caught one step earlier,
+before the change was committed rather than after.
+
+---
+
 ## `RAH-C-009` — the nuisance run crashed on my own code path; a smoke-discipline lesson — 2026-08-30
 
 **Status: CORRECTION (defect in this sprint's own code). No artifact was produced; no claim affected.**
@@ -3625,4 +3651,67 @@ instead of retrospectively.
 [x] 6  reproduction manifest, EXECUTED     17 numbers, 5 verifiers, 0 failures, clean tree
 [ ] 7  updated RESEARCH_HANDOFF.md
 [ ] 8  standalone sprint summary
+```
+
+---
+
+## `RAH-R-025` / `RAH-C-016` — deliverable 8, and writing it caught two bookkeeping defects — 2026-08-31
+
+**Status: DELIVERABLE + CORRECTION.** `reports/RAH_SPRINT_SUMMARY.md` — self-contained, readable with
+no conversation context.
+
+Before committing it I verified the summary's own counts against the log by enumeration rather than
+memory. **Two of them were wrong.**
+
+### `RAH-C-016a` — `RAH-C-008` was a DANGLING id
+
+The id is cited in commit `6dd469ea` and in **two source files** (`rah_transport_assay.py:81`,
+`rah_preflight_transport.py:152`) — and had **no entry in this log**. A reader following either
+citation would have found nothing.
+
+The correction it names was real and is now written up: I had added the nuisance paraphrase directly
+to `receiver_forms()`, whose output **defines the frozen Stage-A grid** (4 forms × 5 layers = 20
+configurations) that `RAH-R-010` selected over and that `rah_select_config.py` re-runs as an audit. A
+fifth form would have silently changed what a re-run produced, **breaking the audit of a frozen
+artifact while every test still passed.** Fixed by moving it to a separate inventory; verified by
+re-running the selection, which reproduces `fc_probe_last / 0.125 / 0.8516` exactly.
+
+The entry is dated **retrospectively and says so**, rather than being slipped in as if written at the
+time. Corrections are now **contiguous `RAH-C-001` … `RAH-C-016`** with no gaps — checked
+programmatically, not by eye.
+
+### `RAH-C-016b` — the summary over-counted its own preregistrations
+
+I wrote *"11 preregistrations, each committed before the data it governs"*. Enumerating actual
+registration headings gives **9**: `RAH-PR-001/002/003/004/006/007/009/010/011`. The other two ids
+appear only in the phase map:
+
+* **`RAH-PR-005`** — the Track-A freeze, **never reached** (the assay returned A-IV first);
+* **`RAH-PR-008`** — the Track-B confirmatory arms, **never reached** (screening returned
+  `B-BLOCKED-BY-MATERIAL` first).
+
+Both are *planned* ids whose phases stopped before them. Counting them as registered preregistrations
+would inflate the sprint's own integrity statistic — in the **integrity record section**, which is
+exactly where an inflated number does the most damage. Corrected to "9 registered, two planned and
+never reached", with both named.
+
+### The pattern this closes on
+
+`RAH-C-015` caught an over-scoped claim in the assay report **before commit**, by running the
+quantifier sweep on my own draft. `RAH-C-016` caught two count errors in the summary **before
+commit**, by enumerating instead of remembering. Both are the same discipline applied prospectively —
+and both were in **integrity claims about the sprint itself**, which are the easiest to state
+loosely and the most costly to get wrong.
+
+### Deliverable status
+
+```
+[x] 1  authoritative sprint log            this file
+[x] 2  RAH-* claim ledger                  reports/RAH_CLAIM_LEDGER.json  (21 claims)
+[x] 3  development headroom-screen table   all candidates incl. failures
+[x] 4  activation-level assay report       reports/RAH_ACTIVATION_ASSAY_REPORT.md
+[x] 5  paper-grade summary table           reports/RAH_MAIN_TABLE.md
+[x] 6  reproduction manifest, EXECUTED     17 numbers, 5 verifiers, 0 failures, clean tree
+[ ] 7  updated RESEARCH_HANDOFF.md
+[x] 8  standalone sprint summary           reports/RAH_SPRINT_SUMMARY.md
 ```
