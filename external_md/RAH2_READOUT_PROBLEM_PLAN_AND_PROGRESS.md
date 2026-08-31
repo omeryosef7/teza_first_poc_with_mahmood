@@ -748,3 +748,59 @@ development banks and 1 of 2 held-out pairs, per `RAH2-C-009`.
 
 ⚠ Per `RAH2-C-003`, Llama cannot falsify anything in this phase until a **`direct_harmful`** positive
 control is run. That arm is **owed** and is not part of PR-003.
+
+---
+
+## `RAH2-R-003` — the ladder held-out run `RAH2-C-006` made owed — and it refutes the inference `RAH2-C-007` withdrew — 2026-08-31
+
+Jobs **827941** (Llama) / **827942** (Qwen3), both **COMPLETED**, held-out `lantern↔poison`, ladder
+form set, same donor/dose/depths as development. This run existed only because `RAH2-C-001` resolved a
+stopping-rule gap toward measuring and `RAH2-C-006` found `cat_cue` inside that gap.
+
+### It was worth running. The withdrawn inference was not merely unproven — it was **wrong in sign**
+
+`RAH2-R-001` had argued *"a form cannot climb 2–10 orders on a held-out pair when a better form fell
+6"*; `RAH2-C-007` withdrew it as an inference. **Measured, max over (R, L), development →
+held-out:**
+
+| form | Llama dev → held-out | Qwen3 dev → held-out |
+|---|---|---|
+| **`cat_cue`** | 0.00198 → **0.0389** (**×19.7 UP**) | 0.00205 → **0.0243** (**×11.8 UP**) |
+| `synonym` | 0.00301 → 0.00122 (×0.41) | 1.38e-11 → 4.78e-09 (**×347 UP**) |
+| `defn_oneword` | 9.76e-05 → 8.21e-04 (**×8.4 UP**) | 1.42e-06 → 7.78e-07 (×0.55) |
+| `id07_tmpl` | 0.980 → 0.990 (×1.01) | 0.4344 → 2.93e-04 (**×0.00067**) |
+
+**Development mass does not predict held-out mass — not in magnitude and not in direction.** Eight
+form × model cells: five went **up**, three went down, and the spread runs from ×0.00067 to ×347. The
+one precedent I had generalised from (`id07_tmpl` on Qwen3) is the **single most extreme collapse in
+the table**, and it is the exception, not the rule.
+
+> **Methodological finding, and the one I would carry to any future phase of this project:** a
+> development screen here has **no** demonstrated predictive validity for held-out material.
+> `RAH2-R-001`'s registered early stop — skipping held-out when development looks hopeless — would
+> have been a **mistake**, and would have hidden the largest exposure-clean mass this phase has seen.
+
+### The result itself
+
+`cat_cue` is the **closest any exposure-clean form has come**: **0.0389 = 0.78× the gate** on Llama,
+**0.0243 = 0.49×** on Qwen3, under the max-over-(R, L) upper bound. It is **still below the 0.05
+gate** on both models, under both readings.
+
+Where the mass sits is unchanged: at the selected layer, `p_codeword` beats `p_concept` — Llama
+2.66e-03 vs 1.13e-06, Qwen3 1.72e-04 vs 5.88e-05.
+
+### Registered outcome, scoped per `RAH2-C-003`
+
+| model | gate | outcome for `cat_cue` held-out |
+|---|---|---|
+| **Llama** | **0 / 25** `positive_control_ok` | **CANNOT ANSWER** — fourth consecutive Llama run with no passing configuration |
+| **Qwen3** | 2 / 25 (`fc_probe_last` R=30, 36) | **`H1` FALSIFIED for `cat_cue`** — below gate under both readings |
+
+⚠ **A caveat I am not going to bury.** On Qwen3 the only configurations that pass the positive
+control are `fc_probe_last`, the form that **prints all four candidates**. That an option-naming form
+transports is weak evidence that the instrument works for a form that names nothing. The registered
+rule (§1.3: CANNOT ANSWER only if the control fails for *all* forms) is satisfied, so this counts as
+an answer — but it is the **weakest** kind this phase has produced, and the owed `direct_harmful`
+arm is what would settle it.
+
+**`cat_cue`'s held-out status, open since `RAH2-C-006`, is now closed on Qwen3 and open on Llama.**
