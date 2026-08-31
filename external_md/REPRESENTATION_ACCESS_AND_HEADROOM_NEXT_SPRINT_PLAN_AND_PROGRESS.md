@@ -3458,3 +3458,48 @@ registered rules rather than by judgement after the fact.
 [x] P8   full candidate table published incl. failures RAH-R-021
 [-] P9   confirmatory matrix  -- NOT RUN, blocked by material, ~20 GPU-h not spent
 ```
+
+---
+
+## `RAH-R-022` — deliverables 2, 3 and 5: the claim ledger and main table, GENERATED — 2026-08-31
+
+**Status: DELIVERABLE.** `scripts/rah_deliverables.py` → `reports/RAH_CLAIM_LEDGER.json` (**21
+claims**) and `reports/RAH_MAIN_TABLE.md`.
+
+**Every value is read from a committed artifact at generation time; none is typed.** That is the
+predecessor sprint's own lesson — `RBD-C-015` F5 found a corrected figure applied to the tables and
+not to the prose, and the fix was to make the header come from the generator so it cannot drift.
+Here the whole table does.
+
+Each claim carries: its `RAH-` id, a **status word from the closed set**, the cell, the unit of
+independence, n and n_domains, raw counts, effect, both intervals, p, the verdict, cap, judge
+provenance, the artifact path and the independent verifier that reproduced it.
+
+### What the table shows in one place for the first time
+
+**Phase 1 (`RAH-R-004`)** — binding lift **ESTABLISHED on 4/4** cells (+0.5000 … +0.9750, every CI
+excluding zero); mapping-use lift **NOT ESTABLISHED on 4/4**. The mapping is installed and is not
+used in a benign property question.
+
+**Dose (`RAH-R-007`)** — 4 cells, ratios 0.67× … 2.29×, all below their preregistered MDEs, with the
+measured re-judge drift printed beside each so a reader can see the effect sits at noise scale.
+
+**Track-B screening (`RAH-R-021`)** — all four candidates including the three failures, with
+`k_informative` and refusal rate. Refusal rates are worth noting: **0.217 and 0.270 on the two
+`ticket↔knife` cells** against 0.013 / 0.020 on `carrot↔bomb` — the knife pair is refused far more
+often, which is a plausible mechanism for its lower ASR and is recorded, not interpreted.
+
+**Verdicts** — both tracks, with their reasons and the note that ~20 GPU-hours were **not** spent.
+
+### Deliverable status
+
+```
+[x] 1  authoritative sprint log            this file
+[x] 2  RAH-* claim ledger                  reports/RAH_CLAIM_LEDGER.json  (21 claims)
+[x] 3  development headroom-screen table   in the main table, ALL candidates incl. failures
+[ ] 4  activation-level assay report
+[x] 5  paper-grade summary table           reports/RAH_MAIN_TABLE.md, counts + denominators
+[ ] 6  reproduction manifest, EXECUTED
+[ ] 7  updated RESEARCH_HANDOFF.md
+[ ] 8  standalone sprint summary
+```
