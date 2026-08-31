@@ -275,7 +275,7 @@
  "headline": {
   "verdict": "TRACK A REMAINS CANNOT ANSWER - VALID READOUT NOT ESTABLISHED",
   "H4": "SUPPORTED - every form collapses when the donor moves one token off the concept surface",
-  "most_important_single_number": "Qwen3 fc_probe_last positive control: p_concept 1.000 at offset 0 -> 0.000539 at offset +1 (1855x). The multi-hop positive control this project's transport infrastructure rests on was essentially entirely a copy effect on that model.",
+  "most_important_single_number": "Qwen3 fc_probe_last positive control: p_concept 0.999999 at offset 0 -> 0.000539 at offset +1 (1855x). The multi-hop positive control this project's transport infrastructure rests on was essentially entirely a copy effect on that model.",
   "does_not_reinterpret": "RAH-R-018 stands at A-IV / CANNOT ANSWER, permanently."
  }
 }

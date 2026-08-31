@@ -45,7 +45,7 @@ Moving the donor capture **one token**, `' bomb'` → `'.'`, nothing else change
 |---|---|---|---|---|---|---|
 | `id07_raw` | **0** | yes | 0.8409 → 0.001223 | **688×** | 0.8404 → 0.0001042 | **8 062×** |
 | `id07_tmpl` | **0** | yes | 0.5011 → 1.17e-05 | **42 809×** | 0.01419 → 0.000101 | **141×** |
-| `fc_probe_last` | 8 | **no** | 0.9087 → **0.1932** | **4.7× — PASSES** | **1.000** → 0.000539 | **1 855×** |
+| `fc_probe_last` | 8 | **no** | 0.9087 → **0.1932** | **4.7× — PASSES** | **0.999999** → 0.000539 | **1 855×** |
 | `fewshot_cat` | 2 | yes | 0.06565 → 0.0001009 | **651×** | 0.00871 → 8.952e-05 | **97×** |
 | `fewshot_syn` | 2 | yes | 0.01965 → 0.0001283 | **153×** | 0.09645 → 0.0002094 | **461×** |
 
@@ -54,7 +54,7 @@ diagnosis, confirmed **prospectively**.
 
 ### ⚠ The single most important number
 
-**Qwen3's `fc_probe_last` positive control was `p_concept = 1.000` at offset 0 and is `0.000539` at
+**Qwen3's `fc_probe_last` positive control was `p_concept = 0.999999` at offset 0 and is `0.000539` at
 offset +1 — a 1 855× collapse.** A perfect score, the kind on which an instrument is declared
 validated, was **essentially entirely a copy effect** — and this is the **multi-hop** reference, not
 one of the 0-hop forms already retracted.

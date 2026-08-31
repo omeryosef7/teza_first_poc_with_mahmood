@@ -1,0 +1,492 @@
+{
+ "schema": "RAH3_REPRO_MANIFEST/1",
+ "executed": true,
+ "git_commit": "59f21cfbfa3bb123cad5aef921274912d872cd37",
+ "git_dirty": true,
+ "n_headlines": 49,
+ "n_pass": 49,
+ "n_fail": 0,
+ "tolerance": "relative 1e-06 (absolute tolerance is vacuous against 1e-08 values)",
+ "headlines": [
+  {
+   "headline": "capture piece is '.' on all 8 Llama donors",
+   "expected": 1,
+   "recomputed": 1,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/nc_p_cb.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "capture piece value (Llama)",
+   "expected": ".",
+   "recomputed": ".",
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/nc_p_cb.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "capture piece is '.' on all 8 Qwen3 donors",
+   "expected": 1,
+   "recomputed": 1,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/nc_q_cb.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: 0 donors overlap the concept surface",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: 0 donors overlap the codeword surface",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: 0 donors are a candidate label",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: capture_offset is the registered +1",
+   "expected": 1,
+   "recomputed": 1,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: 0 donors overlap the concept surface",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: 0 donors overlap the codeword surface",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: 0 donors are a candidate label",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: capture_offset is the registered +1",
+   "expected": 1,
+   "recomputed": 1,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "probe: offset 0 disqualified on 8/8 rows, all 4 cells",
+   "expected": 4,
+   "recomputed": 4,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3_capture_site_probe.json",
+   "artifact_sha256": "6f33b8742a7120227435feb22e98d07f007c885721ac86d6283f7cd5be21bec9",
+   "command": "python scripts/rah3_capture_site_probe.py <out>",
+   "note": ""
+  },
+  {
+   "headline": "Llama id07_raw collapse factor",
+   "expected": 687.5,
+   "recomputed": 687.5,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Llama id07_tmpl collapse factor",
+   "expected": 42808.9,
+   "recomputed": 42808.9,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Llama fc_probe_last collapse factor",
+   "expected": 4.7,
+   "recomputed": 4.7,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Llama fewshot_cat collapse factor",
+   "expected": 650.9,
+   "recomputed": 650.9,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Llama fewshot_syn collapse factor",
+   "expected": 153.2,
+   "recomputed": 153.2,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Qwen3 id07_raw collapse factor",
+   "expected": 8062.3,
+   "recomputed": 8062.3,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Qwen3 id07_tmpl collapse factor",
+   "expected": 140.5,
+   "recomputed": 140.5,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Qwen3 fc_probe_last collapse factor",
+   "expected": 1855.3,
+   "recomputed": 1855.3,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Qwen3 fewshot_cat collapse factor",
+   "expected": 97.3,
+   "recomputed": 97.3,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Qwen3 fewshot_syn collapse factor",
+   "expected": 460.6,
+   "recomputed": 460.6,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh"
+  },
+  {
+   "headline": "Llama verdict",
+   "expected": "P-B",
+   "recomputed": "P-B",
+   "pass": true,
+   "artifact": "reports/RAH3_FROZEN_CONFIG.json",
+   "artifact_sha256": "0d5c8f6d6b89cc0b90a9bc6acddf9bdfdcb33211efd19185ee0f20939394b9b3",
+   "command": "python scripts/rah3_select_config.py --dev ... --dev ...",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3 verdict",
+   "expected": "P-D",
+   "recomputed": "P-D",
+   "pass": true,
+   "artifact": "reports/RAH3_FROZEN_CONFIG.json",
+   "artifact_sha256": "0d5c8f6d6b89cc0b90a9bc6acddf9bdfdcb33211efd19185ee0f20939394b9b3",
+   "command": "python scripts/rah3_select_config.py --dev ... --dev ...",
+   "note": ""
+  },
+  {
+   "headline": "held_out_may_run",
+   "expected": false,
+   "recomputed": false,
+   "pass": true,
+   "artifact": "reports/RAH3_FROZEN_CONFIG.json",
+   "artifact_sha256": "0d5c8f6d6b89cc0b90a9bc6acddf9bdfdcb33211efd19185ee0f20939394b9b3",
+   "command": "same",
+   "note": ""
+  },
+  {
+   "headline": "Llama: eligible cells",
+   "expected": 10,
+   "recomputed": 10,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: eligible AND passing",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: vacuous-patch cells",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: eligible cells",
+   "expected": 10,
+   "recomputed": 10,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: eligible AND passing",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: vacuous-patch cells",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last p_concept",
+   "expected": 0.193181,
+   "recomputed": 0.193181,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last p_codeword",
+   "expected": 0.002296,
+   "recomputed": 0.002296,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last option mass",
+   "expected": 0.745978,
+   "recomputed": 0.745978,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last R",
+   "expected": 4,
+   "recomputed": 4,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last donor L",
+   "expected": 11,
+   "recomputed": 11,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama fc_probe_last hops",
+   "expected": 8,
+   "recomputed": 8,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "fc_probe_last is NOT exposure-clean",
+   "expected": 4,
+   "recomputed": 4,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama best ELIGIBLE cell option mass",
+   "expected": 0.000133,
+   "recomputed": 0.000133,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "  ... x below MASS_GATE",
+   "expected": 376,
+   "recomputed": 376,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3 best cell over ALL forms",
+   "expected": 0.000539,
+   "recomputed": 0.000539,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3 offset-0 fc_probe_last (NOT 1.000 -- rounded)",
+   "expected": 0.999999,
+   "recomputed": 0.999999,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah2pcf_q_cb_20260831_161226.json",
+   "artifact_sha256": "ca0b546015cebbc7a7d71fb01eb3d73bde7d5cc0413a0333e72e3144429f8a0e",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/(rah2pcf, prior phase).txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "MASS_GATE persisted",
+   "expected": 0.05,
+   "recomputed": 0.05,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "TRANSPORT_POSITIVE_CONTROL_THRESHOLD persisted",
+   "expected": 0.1,
+   "recomputed": 0.1,
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "held-out artifacts do NOT exist (gated off)",
+   "expected": 0,
+   "recomputed": 0,
+   "pass": true,
+   "artifact": null,
+   "artifact_sha256": null,
+   "command": "ls outputs/boombness/rah_preflight/rah3nc_*_lp_*.json",
+   "note": ""
+  },
+  {
+   "headline": "Llama: provenance complete",
+   "expected": [],
+   "recomputed": [],
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Llama: bank sha matches disk",
+   "expected": "7bf21cfbdc1966b04ce8f8b90e172d254db0edddf48f645507239930f1d440cc",
+   "recomputed": "7bf21cfbdc1966b04ce8f8b90e172d254db0edddf48f645507239930f1d440cc",
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_p_cb_20260831_222744.json",
+   "artifact_sha256": "c7acc270867f302714285afdddf3cd9827289b84b40f65ba6d143e80afed7e5f",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: provenance complete",
+   "expected": [],
+   "recomputed": [],
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  },
+  {
+   "headline": "Qwen3: bank sha matches disk",
+   "expected": "7bf21cfbdc1966b04ce8f8b90e172d254db0edddf48f645507239930f1d440cc",
+   "recomputed": "7bf21cfbdc1966b04ce8f8b90e172d254db0edddf48f645507239930f1d440cc",
+   "pass": true,
+   "artifact": "outputs/boombness/rah_preflight/rah3nc_q_cb_20260831_224819.json",
+   "artifact_sha256": "1f06da65f840c1fb955236da22a864c2458b3a06dfee6223d0611373d7ccec8a",
+   "command": "sbatch --export=ALL,BOOMB_SCRIPT=rah_preflight_transport.py,BOOMB_ARGSFILE=$PWD/runargs/rah3/%s.txt src/boombness/slurm/run_boombness.sh",
+   "note": ""
+  }
+ ]
+}

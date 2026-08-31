@@ -1307,7 +1307,7 @@ on Llama exactly as predicted, and **overshot on Qwen3**. Moving the donor captu
 |---|---|---|---|---|---|---|
 | `id07_raw` | **0** | no | 0.8409 → 0.001223 | **688×** | 0.8404 → 0.0001042 | **8 062×** |
 | `id07_tmpl` | **0** | no | 0.5011 → 1.17e-05 | **42 809×** | 0.01419 → 0.000101 | **141×** |
-| `fc_probe_last` | 8 | no (names candidates) | 0.9087 → **0.1932** | **4.7×** — **still PASSES** | **1.000** → 0.000539 | **1 855×** |
+| `fc_probe_last` | 8 | no (names candidates) | 0.9087 → **0.1932** | **4.7×** — **still PASSES** | **0.999999** → 0.000539 | **1 855×** |
 | `fewshot_cat` | 2 | **yes** | 0.06565 → 0.0001009 | **651×** | 0.00871 → 8.952e-05 | **97×** |
 | `fewshot_syn` | 2 | **yes** | 0.01965 → 0.0001283 | **153×** | 0.09645 → 0.0002094 | **461×** |
 
@@ -1316,7 +1316,7 @@ magnitude, which is `RAH2-C-020`'s copy diagnosis confirmed **prospectively** ra
 from a control that had been run eight times and not read.
 
 ⚠ **The most important row is Qwen3's `fc_probe_last`.** Its offset-0 positive control was
-**`p_concept = 1.000`** — a perfect score, the kind of number an instrument is declared validated on.
+**`p_concept = 0.999999`** — effectively a perfect score, the kind of number an instrument is declared validated on.
 Moving the capture one token off the concept surface drops it to **0.000539**. **On Qwen3 the
 "positive control" this project's activation-transport infrastructure has been resting on was
 essentially entirely a copy effect**, and that is true of the *multi-hop* reference, not merely of
@@ -1428,3 +1428,41 @@ argsfile-on-shared-FS hazard applies to **the batch script**, not just to its ar
 **Three separate causes of a 0-byte-log fast failure in one sprint** (node-local script, SIGPIPE
 guard, and — for the record — neither was a code error in the thing being tested). ⚠ *"0-byte log
 under `set -e` means it died before it could tell you"* is the inheritable form.
+
+---
+
+## 18. `RAH3-R-008` — the reproduction manifest, EXECUTED. 49 headlines, 49 PASS
+
+`scripts/rah3_repro_manifest.py` → `reports/RAH3_REPRO_MANIFEST.json`. ⚠ §58: *a manifest that has
+never been run is a hypothesis.* This one **recomputes** every published headline from the raw
+artifacts and compares. It uses fail-closed `one()` globbing — never `newest()`, which returns the
+last glob hit and lets a later run silently redefine what a headline points at — and a **relative**
+tolerance.
+
+| section | what is recomputed | result |
+|---|---|---|
+| **A** | capture piece `'.'` on 8/8 donors both models; 0 concept-, 0 codeword-, 0 candidate-overlaps; offset = +1; offset-0 disqualified 8/8 in all 4 probe cells | **12/12** |
+| **B** | all **10** collapse factors, both models, recomputed from the two artifact pairs | **10/10** |
+| **C** | both verdicts, `held_out_may_run`, eligible / eligible-and-passing / vacuous-patch counts | **9/9** |
+| **D** | the frozen cell's `p_concept`, `p_codeword`, mass, `R`, `L`, hops, exposure; best eligible cell and its 376× shortfall; Qwen3's best over all forms; the offset-0 comparator | **11/11** |
+| **E** | both thresholds persisted; **held-out artifacts do not exist** | **3/3** |
+| **F** | provenance complete field-by-field on both artifacts; bank SHA recomputed against disk | **4/4** |
+
+**49 headlines, 49 PASS, 0 FAIL**, at `git_dirty` recorded in the artifact.
+
+### 18.1 `RAH3-C-012` — the manifest's first run caught an overstatement of mine
+
+⚠ **The first execution returned 48/49.** The failure was **my own prose**:
+
+> replaced: *"Qwen3's `fc_probe_last` positive control was **`p_concept = 1.000`**"* — a **rounded**
+> value presented as exact.
+> with: *"**`p_concept = 0.999999`**"*, the value the artifact actually holds.
+
+Corrected in **all four** places it appeared: the plan §16.1 table and §16.1 prose, the
+positive-control report's table and prose, and the claim ledger's `most_important_single_number`.
+
+⚠ **The 1 855× collapse factor is unaffected** — it was computed from the true value throughout;
+only the *quoted* number was rounded. But *"1.000, a perfect score"* is a stronger sentence than the
+data supports, and §53's rule is that **a true number with a false quantifier is a false claim.**
+**The manifest caught it because it recomputes rather than re-reads** — and that is the entire
+argument for executing a manifest instead of publishing one.
