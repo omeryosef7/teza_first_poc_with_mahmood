@@ -606,6 +606,12 @@ schema carries **no** commit, dirty, job-id or runtime field, so none of it is c
 artifact. It is true — it is in the SLURM logs — but it is not *attested*. **Action:** the writer
 should emit a provenance block. Filed, not yet implemented.
 
+> ✅ **IMPLEMENTED by `RAH2-R-008`.** `provenance()` now writes `git_commit` · `git_dirty` ·
+> `slurm_job_id` · `slurm_nodelist` · `hostname` · `argv` · `started_utc` · `finished_utc` ·
+> `python` into every artifact. ⚠ The **16 RAH2 artifacts already on disk cannot be back-filled**
+> and keep prose provenance, so this claim's own artifacts remain unattested — it helps the next
+> phase, not this one.
+
 ## D12 — one auditor finding **REJECTED**
 
 The claims auditor reported the `RAH2-PR-002` CPU-verification table's `fc_probe_last` spans as wrong
