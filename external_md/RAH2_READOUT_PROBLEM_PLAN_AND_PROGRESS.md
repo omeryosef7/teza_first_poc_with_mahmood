@@ -804,3 +804,107 @@ an answer — but it is the **weakest** kind this phase has produced, and the ow
 arm is what would settle it.
 
 **`cat_cue`'s held-out status, open since `RAH2-C-006`, is now closed on Qwen3 and open on Llama.**
+
+---
+
+## `RAH2-C-017` — the owed positive control was run, and it **INVERTS** `RAH2-C-003`'s verdict
+
+`RAH2-C-003` found the registered `direct_harmful` arm had never been run and concluded, from the
+substitute field, **Llama = CANNOT ANSWER, Qwen3 = answerable**. The arm has now been run — jobs
+**828 (rah2pc_p_cb / rah2pc_q_cb)**, both COMPLETED — and the conclusion is **the wrong way round for
+the class of form the whole phase is about.**
+
+`p_concept` under a donor that carries the concept **on its surface**, best over donor layers, gate
+0.1:
+
+| form | names candidates | **Llama** | **Qwen3** |
+|---|---|---|---|
+| `fc_probe_last` | **yes** | **0.9087 PASS** | **1.0000 PASS** |
+| `id07_tmpl` | no | **0.5011 PASS** | 0.0142 fail |
+| `cat_cue` | no | 0.0091 fail | 0.0354 fail |
+| `synonym` | no | 0.0013 fail | 1.48e-08 fail |
+| `defn_oneword` | no | 3.53e-05 fail | 2.57e-08 fail |
+
+| | passing configs |
+|---|---|
+| Llama | **4/25** — `id07_tmpl` @ R=4, 8 **and** `fc_probe_last` @ R=4, 8 |
+| Qwen3 | 3/25 — **`fc_probe_last` only** @ R=5, 10, 20 |
+
+**Corrected scoping, replacing `RAH2-C-003`'s:**
+
+> On **Llama** the instrument is demonstrated for an **exposure-clean** receiver (`id07_tmpl`, 0.50,
+> `p_code` 1.9e-06) — so Llama's `H1`/`H2` results **are** answerable, and `RAH2-C-003`'s
+> CANNOT ANSWER is **WITHDRAWN**.
+> On **Qwen3** the only form that passes is the one that **prints all four candidates**. No
+> exposure-clean receiver is demonstrated to transport anything on Qwen3, so for exposure-clean forms
+> **Qwen3 is CANNOT ANSWER** — the reverse of what `RAH2-C-003` said, and it propagated into
+> `RAH2-R-002` and `RAH2-R-003`.
+
+Those two entries are **SUPERSEDED on their model scoping** and stand on everything else. I got this
+backwards because I read a field named `pos_ctrl_max` as the positive control when it was the test
+arm's own P(concept) — and then corrected confidently in the wrong direction.
+
+### The finding this sharpens — and it is stronger than the one it replaces
+
+In the positive control the concept is **literally present in the donor**. The semantic forms still
+cannot report it: `cat_cue` 0.0091 / 0.0354, `synonym` 0.0013 / 1.5e-08, `defn_oneword` 3.5e-05 /
+2.6e-08 — **all below the gate on both models**.
+
+> `RAH2-R-001` read as *"a semantic-constraint framing cannot recover the mapped concept"*. The
+> positive control shows the weaker premise is what is true: **a semantic-constraint framing cannot
+> report a concept that is sitting right there.** These forms are unreportable **per se**, not
+> unreportable-for-doublespeak. That is a cleaner claim, and it makes `H1`'s falsification about the
+> **readout**, not about the mapping.
+
+### ⚠ An anomaly recorded, not explained
+
+On **Qwen3**, `id07_tmpl` reads **0.4344** from a `natural_doublespeak` donor (codeword on the
+surface) but only **0.0142** from a `direct_harmful` donor (concept on the surface) — **the positive
+control is ~30× WEAKER than the test condition** for that form. A control that underperforms the
+condition it is meant to validate is not a working control. **I do not have an explanation**, and I am
+not going to invent one; it is filed as an open defect in the Qwen3 positive-control arm and it is
+part of why Qwen3 is now CANNOT ANSWER for exposure-clean forms.
+
+### A gap this exposed, and the run that closes it
+
+`RAH2-PR-003`'s control form `id07_raw` has **no positive control of its own** — the `pc_*` runs used
+the **ladder** form set, which does not contain it. Submitted: **828393 (Llama), 828395 (Qwen3)**,
+`direct_harmful` × `fewshot` form set. Until they report, `id07_raw`'s readings are uncontrolled.
+
+---
+
+## `RAH2-R-004` — `RAH2-PR-003`: the chat template is **NOT** the explanation. `H2` restored to FALSIFIED on Llama
+
+Jobs 827991 / 827993 (Llama dev / held-out), 828085 / 828070 (Qwen3 dev / held-out), all COMPLETED,
+all carrying the `RAH2-C-015` fix (`exemplar_candidate_collisions: []` now **persisted in every
+artifact**) and the `RAH2-C-016` console fix.
+
+`RAH2-C-013` downgraded `H2` because the few-shot forms are untemplated and both references were
+templated. `id07_raw` — **untemplated**, echo framing — settles it. Max over (R, L):
+
+| form | templated | Llama dev | Llama held-out | Qwen3 dev | Qwen3 held-out |
+|---|---|---|---|---|---|
+| `fc_probe_last` | yes | 0.851 | 0.897 | 1.000 | 1.000 |
+| `id07_tmpl` | yes | 0.980 | 0.990 | 0.434 | 2.93e-04 |
+| **`id07_raw`** | **no** | **0.899** | **0.750** | **0.780** | **0.941** |
+| `fewshot_syn` | no | 0.0293 | 0.0117 | 0.0308 | 0.0163 |
+| `fewshot_cat` | no | 0.0177 | 0.00815 | 0.00129 | 0.00181 |
+
+**`id07_raw` clears the gate by 15–19× in all four cells.** The untemplated condition supports
+option mass of 0.75–0.94; it is not unreadable. **`RAH2-C-013`'s alternative explanation is refuted
+on both models**, and this is the branch `RAH2-PR-003` registered in advance:
+
+> *"`id07_raw` clears the 0.05 gate while `fewshot_*` do not → the template is **not** the
+> explanation → **`H2` FALSIFIED** is restored, on the models where a positive control fires."*
+
+**Registered outcome, with `RAH2-C-017`'s corrected scoping:**
+
+| model | positive control for an exposure-clean form | `H2` |
+|---|---|---|
+| **Llama** | **fires** (`id07_tmpl` 0.50) | **FALSIFIED** — restored from CONFOUNDED |
+| **Qwen3** | does **not** fire | **CANNOT ANSWER** |
+
+**`H2` is falsified on Llama and cannot be answered on Qwen3** — the exact opposite of the model
+scoping I published two entries ago. The measurements never changed; my reading of which model could
+support a claim was wrong twice, in opposite directions, and is now anchored to a control that was
+actually run.
