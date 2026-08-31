@@ -145,3 +145,82 @@ split, the success and failure conditions, and the anti-fishing constraints.
 **Deliberately left open**, to be fixed in a freeze entry before the held-out run: nothing. The form
 set, the gates and the populations are all frozen now — this design has no calibration stage, because
 the two gates it uses are inherited from the closed sprint rather than derived here.
+
+---
+
+## `RAH2-R-001` — `H1` FALSIFIED on development, both models. Constraint without naming makes mass WORSE — 2026-08-31
+
+**Status: DEVELOPMENT RESULT. `H1` falsified; `H0` supported. Registered early stop invoked — the
+held-out run is NOT warranted and is not run.**
+
+Runs `rah2dev_p_cb_20260831_100101` (Llama, 52 min) and `rah2dev_q_cb_…` (Qwen3), level-A
+`carrot↔bomb`, donor = `natural_doublespeak` at the codeword, 8 donors, all donor layers × 5 receiver
+layers × the 5-form ladder. No intervention exists in this program.
+
+### Patched option mass, best over receiver layers — the `H1` primary metric
+
+| form | names candidates? | Llama | Qwen3 |
+|---|---|---|---|
+| `fc_probe_last` | **all four** | **0.1484** | **0.9998** |
+| `id07_tmpl` | none | 0.0410 | **0.4344** |
+| `cat_cue` | none | 0.000626 | 0.002049 |
+| `defn_oneword` | none | 3.12e-05 | 1.42e-06 |
+| `synonym` | none | 2.18e-05 | **1.38e-11** |
+
+Mass gate 0.05. **The three new forms sit 1.5–10 orders of magnitude BELOW the form they were meant
+to improve on, on both models.** `H1` predicted they would be *higher*.
+
+### `H1` is falsified, and the reason sharpens the problem
+
+The ordering is identical on both models:
+
+```
+names all four   >   names none, ECHO frame   >>   names none, SEMANTIC frame
+```
+
+**My preregistered framing was wrong in a specific and informative way.** I described `id07_tmpl` as
+having *"no slot constraint — a free repetition continuation"*. It is not unconstrained: the
+repetition frame is a **strong** constraint, and what it constrains toward is **echoing the patched
+token itself**. That is exactly why it has mass — the patched representation is the thing being
+echoed.
+
+So the axis is not *naming vs constraint*. It is **what the constraint points at**:
+
+| framing | where mass goes | consequence |
+|---|---|---|
+| **naming** the candidates | onto the printed candidate words | mass, and the exposure confound — a surface-carrying donor wins by lexical match |
+| **echo / identity** (`id07_tmpl`) | onto whatever was patched | mass, but it reads **surface identity**, not the mapping |
+| **semantic category** (`cat_cue`, `synonym`, `defn_oneword`) | spread across a large category vocabulary | **no mass on these four words in particular** |
+
+> **`H0` supported, and stated more precisely than either predecessor sprint managed:**
+> **mass on a SPECIFIC small candidate vocabulary requires either printing that vocabulary (which
+> creates the exposure confound) or asking the model to echo the patched token (which reads surface
+> identity rather than the mapping). Constraining the slot semantically constrains it to a
+> CATEGORY, not to the candidates — so it buys no mass on them.**
+
+That is why the trade-off has survived two sprints and three readout families: the two escape routes
+are not two, they are the same two mechanisms, and the third route tested here does not exist.
+
+### The registered early stop, invoked
+
+`RAH2-PR-001` requires **held-out** mass ≥ 0.05. The new forms are 2–10 orders below that in
+**development**, and `RAH-R-018` measured directly that held-out can only be worse — the same
+`id07_tmpl` configuration read **0.4344 in development and 7.1e-08 held out**, a collapse of six
+orders on a lexical-pair change.
+
+**A form cannot climb 2–10 orders on a held-out pair when a better form fell 6.** The held-out run is
+therefore not warranted, and is not run. That was stated as the criterion **before** the second model
+reported, not chosen after seeing it.
+
+### ⚠ Scope
+
+Development only: **level-A `carrot↔bomb`, 8 donors, 2 models, one donor condition.** The claim is
+about **these five receiver forms**, not about all possible readouts — a form that constrains toward
+the candidates *without printing them* (a learned or retrieved constraint, rather than a written one)
+is untested and is **not** excluded by this result.
+
+### What this costs and what it buys
+
+Cost: ~1.5 GPU-hours. Buys: `H1` — the most natural idea for escaping the trade-off, and the one both
+predecessor sprints implicitly assumed was available — is **tested and dead**, with a mechanism for
+*why*. That is worth more than the third repetition of "no readout is both."
