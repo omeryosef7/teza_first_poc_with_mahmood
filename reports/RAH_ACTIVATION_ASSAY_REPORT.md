@@ -12,13 +12,16 @@ The predecessor sprint closed `RBD-R-033` on a structural claim about **behaviou
 > A readout that names its options is high-mass and **exposure-confounded**; one that does not is
 > exposure-clean and **unreportable**. No readout in this project's inventory is both.
 
-> ⚠ **CORRECTED by `RAH2-R-005` (2026-08-31), see
-> `external_md/RAH2_READOUT_PROBLEM_PLAN_AND_PROGRESS.md`.** The structural half of this claim is
-> **FALSIFIED**: `id07_raw` names no option and reports a present concept at **0.8409** (Llama) /
-> **0.8404** (Qwen3) under the registered `direct_harmful` positive control — so "exposure-clean
-> implies unreportable" is false, and the counterexample was in the frozen Stage-A grid all along,
-> never having been given a positive control. What still stands is the **held-out** requirement
-> (§6 below): `id07_raw` reads 0.00673 / 0.000401 on held-out material, 0/5 depths at gate.
+> ⚠ **THIS CLAIM STANDS. A correction posted here on 2026-08-31 was itself WRONG and is RETRACTED**
+> (`RAH2-C-020`, see `external_md/RAH2_READOUT_PROBLEM_PLAN_AND_PROGRESS.md`).
+>
+> I briefly recorded this claim as falsified by `id07_raw`, which reads 0.84 under a positive control
+> while naming no option. **That was an artifact of my own test.** `id07_raw` is a 0-hop read at the
+> patched position on a repetition prompt, so it decodes the **token identity** of whatever was
+> injected. Injecting the *codeword* representation yields the **codeword** at **0.90 (Llama) / 0.94
+> (Qwen3)** — at or above the "positive control" value. It is a token decoder, not a concept readout,
+> and it is a **confirming instance** of the trade-off above (the "echo the patched token" disjunct),
+> not a counterexample. No part of `RBD-R-033` is refuted.
 
 Its recommendation was to go **activation-level**: measure the internal state directly, so the
 options can live in a *different prompt* from the one whose state is measured and therefore cannot

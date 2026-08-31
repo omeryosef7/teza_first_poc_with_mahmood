@@ -211,10 +211,11 @@ domains. With it, `k=38 × m=16` at baseline ≥0.1375 reaches an MDE of 0.70 re
 **Track A needs a receiver that is both exposure-clean and high-mass on held-out material.** No such
 readout exists in this project's inventory at either the behavioural or the activation level. That is
 
-> ⚠ **STATUS UPDATE, `RAH2-R-005` (2026-08-31).** This sentence **STANDS** — `id07_raw` reads
-> 0.00673 (Llama) / 0.000401 (Qwen3) held-out, failing at every depth. But the *reason* is now
-> located rather than open: the same receiver passes its positive control at **0.84 on both models**,
-> so the missing piece is **not** the readout. The separate *structural* claim quoted in
-> `RAH_ACTIVATION_ASSAY_REPORT.md` §1 — that an exposure-clean readout is necessarily unreportable —
-> is **FALSIFIED**. See `RAH2-C-019` for why these two are not the same statement.
+> ⚠ **STATUS UPDATE, 2026-08-31 (`RAH2-R-005`, as corrected by `RAH2-C-020`).** This sentence
+> **STANDS, unrefuted.** An earlier note here claimed the accompanying *structural* claim had been
+> falsified by `id07_raw`; that was **wrong and is retracted** — `id07_raw` decodes token identity
+> (inject the codeword, get the codeword at 0.90/0.94), so it is an instance of the trade-off, not a
+> counterexample. What the RAH2 phase adds is narrower: the semantic-constraint and in-context-mapping
+> framings **cannot report a concept that is literally present** (peak 0.0965 against a 0.1 control),
+> so they are ruled out as candidate readouts — the search space is reduced, not solved.
 the open problem this sprint hands on, and it is now a *characterised* one rather than a suspicion.

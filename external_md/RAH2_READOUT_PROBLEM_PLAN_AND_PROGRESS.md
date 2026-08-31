@@ -1057,3 +1057,109 @@ naming that value; restored, exit 0.
 ⚠ This verifies that the **published tables match the artifacts**. It does **not** re-run the models,
 and it inherits every measurement limitation already recorded — means not medians (`RAH2-C-008`),
 best-over-R (`RAH2-C-008`), leading-space-only ids (`RAH2-C-014`), and 8 donors per cell.
+
+---
+
+# `RAH2-DR-002` — an adversarial auditor was asked to REFUTE the phase's one positive claim. It did.
+
+`RAH2-R-005`'s positive result is **RETRACTED**. Every decisive point was re-verified by me against
+the artifacts before acceptance; all three hold.
+
+## `RAH2-C-020` — **RETRACTION.** `id07_raw` is a token decoder, not a readout
+
+`id07_raw` is `ID_PROMPT = "hello hello\nworld world\ncat cat\nX"` with `patch_at="last"`,
+`read_at="patch"` — **0 hops**. The donor vector is written into the residual at the final position
+and the logits are read **at that same position**. It is a copy prompt, and the measurement is *"after
+overwriting the residual with the representation of token T, does the model emit T?"*
+
+In the positive control the donor is captured at the concept's own surface token (`piece == ' bomb'`
+for all 8 donors). **Concept and injected token are the same object, so transport and copying are
+confounded by construction.** The discriminating experiment already existed in my own artifacts — the
+`natural_doublespeak` donor captures at the **codeword** surface:
+
+| run | injected token | **P(codeword)** | P(concept) there |
+|---|---|---|---|
+| Llama dev | ` carrot` | **0.8989** | 4.79e-06 |
+| Llama held-out | ` lantern` | **0.7495** | 3.56e-07 |
+| Qwen3 dev | ` carrot` | **0.7805** | 6.44e-07 |
+| Qwen3 held-out | ` lantern` | **0.9408** | 6.56e-08 |
+
+> **Inject `bomb` → get `bomb` at 0.84. Inject `carrot` → get `carrot` at 0.90. Inject `lantern` →
+> get `lantern` at 0.94.** Same shallow donor layers (L=0–6), same shallow receiver depths, same
+> magnitude — **at or above the "positive control" value.** `id07_raw`'s output is a deterministic
+> function of *which token was injected*. It reads token identity, and nothing else.
+
+**Consequences, all retracted:**
+
+| retracted | status |
+|---|---|
+| *"the first readout that is both exposure-clean and high-mass"* | **FALSE** — it is a token decoder |
+| *"`H0` is falsified by `id07_raw`"` | **WITHDRAWN — `H0` is CONFIRMED.** `H0` says mass requires printing the candidates **or echoing the patched token**. `id07_raw` *is* the second disjunct. I filed a confirming instance as a refutation |
+| *"`RBD-R-033` (A) is REFUTED"* (`RAH2-C-019`) | **WITHDRAWN.** `RBD-R-033` stands entirely |
+| *"first held-out negative a working readout produced"* | **not established** |
+| `RAH2-C-018`'s withdrawal of `RAH2-C-017`'s Qwen3 verdict | **withdrawn in turn** — it rested on this form |
+
+**Two deliverables were corrected on this wrong basis and have been RETRACTED in place**
+(`reports/RAH_ACTIVATION_ASSAY_REPORT.md`, `reports/RAH_SPRINT_SUMMARY.md`). That is the worst defect
+of the phase: I propagated an artifact of my own test into published documents within one tick.
+
+### `RAH2-C-021` — *"never having been given a positive control"* is factually false
+
+**Eight artifacts in the same directory, dated 2026-08-30**, are `form_set=grid` /
+`donor_condition=direct_harmful` — `id07_raw`'s positive control, run and passed, the day before:
+
+| artifact | `id07_raw` P(concept) | passing depths |
+|---|---|---|
+| `sA_q_ticket_knife` | **0.9225** | 2/5 |
+| `sA_q_carrot_bomb`, `sA_q_basket_bomb` | 0.8492 | 3/5 |
+| `sA_p_carrot_bomb`, `sA_p_basket_bomb` | 0.8459 | 2/5 |
+| `sA_p_ticket_knife` | 0.8442 | 2/5 |
+| `rahpf_qlp` / `rahpf_plp` | 0.6925 / 0.6019 | 2/5 |
+
+Nothing was discovered on 2026-08-31; the control had been run **eight times** and I did not look.
+`RAH2-R-005`'s framing (*"sitting in the frozen grid the whole time, never having been given a
+positive control"*) is exactly backwards, and it is the same failure as `RAH-C-002` in the
+predecessor sprint — asserting a run had never happened without checking the artifact directory.
+
+### `RAH2-C-022` — `RAH2-R-006` verified the wrong quantity, and its verifier passed anyway
+
+`scripts/rah2_verify_r005.py` re-derives from `option_mass_mean` and `pos_ctrl_max`. Its headline
+*"selected-layer 4.01e-04 vs max-over-(R,L) 0.9408 = 2348×"* — **that 0.9408 is 100 % `p_codeword`**
+(max `p_concept` over the same cells is **2.38e-04**). The number I published as the misleading
+*concept* upper bound is the model echoing the codeword.
+
+**22 checks, 0 failures, and it could not have caught this**: transcription was never the problem.
+The verifier confirms the tables match the artifacts and is silent on whether the tables measure what
+their column headings say. **A verifier that re-reads the producer's chosen field inherits the
+producer's choice of field.**
+
+## The one real signal, registered as an OBSERVATION and nothing more
+
+Not all the `id07_raw` numbers are token identity. On **Qwen3 development**, at donor layer **L=34**
+(deep, not shallow), the *codeword* representation decodes to the **concept**: P(concept) **0.3887**
+with P(codeword) **7.5e-07** — the reverse of the shallow-layer behaviour in the table above, in the
+same form and the same run.
+
+⚠ **This is an OBSERVATION, not a finding, and it is NOT a new hypothesis.** It is one model, one
+bank, development only, 8 donors, and it collapses to 4.0e-04 held-out. Per the standing rule, any
+work on it requires **its own preregistration first**. It is recorded here so it is not lost and so
+that nobody — including me — quotes it as a result.
+
+## What survives `RAH2-DR-002` intact
+
+* **`H1` and `H2` are still falsified as readout claims.** The semantic and few-shot forms read at
+  **non-zero hops** and must compute a *function of* the patched token, so the copy confound does not
+  apply to them. They peak at **0.0965** with the concept literally present, against a 0.1 control.
+  Ruled out as candidate readouts, on both models.
+* **`RAH2-R-003`** — development mass does not predict held-out mass, in magnitude or direction
+  (×0.00067 to ×347). Untouched.
+* **`RAH2-C-013`'s template question**: the untemplated condition supports mass 0.84 — but that is
+  now known to be token identity, so the honest statement is weaker: *untemplated prompts are not
+  intrinsically unreadable*, demonstrated only for a copy task.
+* Every measured number. **Not one number in this phase has ever been wrong.** Twenty-two corrections
+  and every one of them was a claim about what a correct number meant.
+
+**Corrected bottom line for the phase:** the readout problem is **NOT solved**, `RBD-R-033` and the
+RAH summary's open problem both **stand**, and what RAH2 contributes is a **reduction of the search
+space** — semantic-constraint and in-context-mapping framings are ruled out, because they cannot
+report a concept that is sitting right in front of them.
