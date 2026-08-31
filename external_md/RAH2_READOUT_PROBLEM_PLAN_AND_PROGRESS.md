@@ -1541,3 +1541,59 @@ it was the timeout being **misread as clean**, which is F1.
 ⚠ **`RAH2-PR-004` is unaffected** — it was registered before this audit and none of its gates,
 populations or outcomes changed. What changed is that its artifacts will now carry provenance that
 means what it says.
+
+---
+
+## `RAH2-C-031` — `RAH2-PR-004` is registered and will **NOT** be executed by this phase. A second writer is running the same question as RAH3
+
+**Recorded so that a future reader does not find a registered preregistration with no result and
+assume it is pending.** This is the dangling-promise defect `RAH2-C-006` / D11 / `RAH2-C-024` were
+each raised for, caught this time **before** it became stale.
+
+### What happened
+
+`RAH2-PR-004` was registered at `4e3fab1d` (19:0x) for the capture-site control. Within the same
+hour a **second session** — not this one — committed `f2a42a6c`
+(`RAH3-PR-001 + R-001/R-002 + C-001/C-002`, *"the non-copy capture site, registered and
+instrumented"*) onto this same branch, with its own log
+(`external_md/RAH3_NONCOPY_CAUSAL_READOUT_AND_POWERED_BEHAVIOR_PLAN_AND_PROGRESS.md`), its own
+guard tests, four `runargs/rah3/nc_*` argfiles and `scripts/rah3_capture_site_probe.py`.
+
+**That is the same scientific question `RAH2-PR-004` registered**, reached independently from the
+same `RAH2-C-020` copy diagnosis.
+
+### Status, stated plainly
+
+| | |
+|---|---|
+| `RAH2-PR-004` | **REGISTERED, NOT EXECUTED, and not to be executed under this id.** Superseded in practice by `RAH3-PR-001` |
+| the design in it | still valid, and it differs from RAH3's: PR-004 proposed `--capture-offset` **inside** `rah_preflight_transport.py` with `N = 0` default; RAH3 built a **separate probe script**. RAH3's choice is the safer one — it leaves the shared producer untouched |
+| what a future reader should cite | **`RAH3`'s result, not `RAH2-PR-004`** |
+
+⚠ **A preregistration executed by a different session under a different id is a provenance gap.**
+PR-004's registered outcome table — including the branch where *"`id07_raw` survives"* would mean
+`RAH2-C-020`'s retraction is wrong — is **not** automatically inherited by RAH3, because RAH3
+registered its own. Anyone reconciling the two must check that the "retraction is wrong" branch
+survived into RAH3's outcome space; **this log cannot vouch that it did.**
+
+### RAH2's record verified intact under the concurrent commit
+
+`f2a42a6c` is **purely additive** — 8 new files, and `git diff 7906faae..f2a42a6c` over
+`rah_preflight_transport.py`, `tests/test_rah_preflight_spans.py`, `scripts/rah2_verify_r005.py` and
+this log is **empty**. Re-run after it landed: verifier **39/39**, guard tests **11/11**, the frozen
+Stage-A grid still exactly 4 forms, and the `RAH2-C-030` provenance tri-state intact.
+
+### The operational note worth inheriting
+
+The sprint brief said **ONE WRITER ONLY**, and for a while there were two, on one branch. It
+surfaced as a **stale `.git/index.lock`** (0 bytes, orphaned, no owning process) that refused my
+commit — *not* as a content conflict. What made that recoverable rather than destructive:
+
+* **back the changed files up before touching git state**, so nothing depends on the recovery going
+  well;
+* **check twice, minutes apart, for a live `git` process** before removing a lock — a lock with an
+  owner must never be removed, and one without an owner is inert;
+* **stage by explicit path, never `git add -A`** — an `-A` here would have swept the other session's
+  in-flight, uncommitted RAH3 files into a RAH2 commit;
+* **do not read, edit, stage or delete the other writer's files**, and do not push their unpushed
+  commits — they may still be amending.
