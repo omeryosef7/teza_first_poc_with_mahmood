@@ -7,6 +7,8 @@ and proves the guard can still fail.
 import os
 import sys
 
+import types
+
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -109,4 +111,50 @@ def test_d11_provenance_block_is_emitted_and_complete():
     assert p["git_commit"] is None or len(p["git_commit"]) == 40
     src = open(pf.__file__, encoding="utf-8").read()
     assert '"provenance": prov' in src, "provenance() exists but is not written into the artifact"
-    assert 'prov["started_utc"] = started_utc' in src, "start time not stamped before the model load"
+    # `RAH2-C-030` F4: the written object must come FROM the function. Without this, replacing
+    # `prov = provenance()` with `prov = {}` shipped a 2-field block and the guard stayed green.
+    assert "prov = provenance()" in src, "the written block is not provenance()'s return value"
+    # `RAH2-C-030` F3: the old assertion only checked the stamp EXISTED. Moving the assignment to
+    # after the model load left it green while making the log's sentence false. Positions, not
+    # presence -- and the repo state must be sampled BEFORE the sweep, or it attests the wrong
+    # commit (F2).
+    i_stamp = src.index("started_utc = time.strftime")
+    i_prov = src.index("prov = provenance()")
+    i_load = src.index("dc.load_model(")
+    i_sweep = src.index("for form in forms:")
+    assert i_stamp < i_load, "started_utc is stamped AFTER the model load"
+    assert i_prov < i_sweep, "provenance() is sampled AFTER the sweep -- it will attest the wrong commit"
+
+
+def test_c030_git_dirty_is_tristate_and_never_claims_clean_on_failure():
+    """`RAH2-C-030` F1. `git_dirty` False must mean *measured clean*, never *could not measure*.
+
+    The first version collapsed both to False, so an artifact produced on a node without git would
+    assert the code was unmodified. This pins the tri-state at the source, because a functional test
+    would need git to be genuinely broken.
+    """
+    p = pf.provenance()
+    assert p["git_dirty"] in (True, False, None)
+    assert isinstance(p["git_ok"], bool)
+
+    # FUNCTIONAL, not a source grep. `RAH2-C-030`: the first attempt at this guard asserted a
+    # literal substring was absent, and a rewrite of the SAME defect
+    # (`(bool(status) if ok_status else None)` -> `bool(status)`) sailed past it. Drive a failing
+    # git instead and demand the tri-state.
+    class _Boom:
+        def __call__(self, *a, **k):
+            raise OSError("git not found on this node")
+
+    dead = pf.provenance(_run=_Boom())
+    assert dead["git_ok"] is False
+    assert dead["git_commit"] is None
+    assert dead["git_dirty"] is None, (
+        "git_dirty is %r when git cannot run -- an artifact would assert the code was unmodified "
+        "by a run that could not read the repo at all" % (dead["git_dirty"],))
+
+    class _NonZero:
+        def __call__(self, *a, **k):
+            return types.SimpleNamespace(returncode=128, stdout="", stderr="dubious ownership")
+
+    refused = pf.provenance(_run=_NonZero())
+    assert refused["git_ok"] is False and refused["git_dirty"] is None

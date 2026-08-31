@@ -634,7 +634,8 @@ four model×bank combinations, and the patch/read sites all match. The anti-fish
 
 > **On Qwen3**, three readout mechanisms were tested and none is both exposure-clean and reportable
 > on held-out material. **On Llama, the phase CANNOT ANSWER** — the registered positive control was
-> never run and its substitute fails everywhere. `cat_cue`'s held-out status is **OPEN** pending jobs
+> never run and its substitute fails everywhere. `cat_cue`'s held-out status is **OPEN** [✅ closed by
+`RAH2-R-003`] pending jobs
 > 827941/827942. The population is **1 of 3** development banks and **1 of 2** held-out pairs.
 
 ---
@@ -760,7 +761,8 @@ rather than called unchanged**: development `carrot↔bomb` and held-out `lanter
 development banks and 1 of 2 held-out pairs, per `RAH2-C-009`.
 
 ⚠ Per `RAH2-C-003`, Llama cannot falsify anything in this phase until a **`direct_harmful`** positive
-control is run. That arm is **owed** and is not part of PR-003.
+control is run. That arm is **owed** and is not part of PR-003. [✅ run and reported at
+`RAH2-C-017`.]
 
 ---
 
@@ -1367,6 +1369,10 @@ implemented: `provenance()` in `rah_preflight_transport.py` emits, into every ar
 `git_commit` · `git_dirty` · `slurm_job_id` · `slurm_nodelist` · `hostname` · `argv` ·
 `started_utc` · `finished_utc` · `python`
 
+⚠ **Into every `rah_preflight_transport.py` artifact — NOT every artifact in the project.**
+`src/boombness/rah_transport_assay.py` (`RAH_TRANSPORT_ASSAY/1`) is the other transport writer in the
+same package and still emits **no** provenance block (`RAH2-C-030` F6).
+
 Design notes worth keeping:
 
 * **Every field degrades to a string or `None` rather than raising.** A provenance block must never
@@ -1466,3 +1472,72 @@ A pass does **not** re-open Track A (`RAH-R-018` stands at **A-IV**), does **not
 ⚠ **`N = 0` is the default and must stay so.** If `--capture-offset` ever silently changes the
 default, every prior artifact becomes non-reproducible. A guard test pins the default before the
 runs.
+
+---
+
+# `RAH2-DR-003` — the provenance block audited before it attests anything
+
+`RAH2-R-008` shipped provenance and `RAH2-PR-004`'s runs would be the **first artifacts to carry
+it** — auditing after running would defeat the point. One read-only auditor, scoped to commits
+`080ce1cd` / `6ecf1e60`. **7 findings, all verified by me, all applied.** Registered as
+`RAH2-C-030`.
+
+## The two that would have corrupted every future artifact
+
+* **F2 — provenance was sampled AFTER the sweep.** `prov = provenance()` sat at line 531, below the
+  grid loop at 448, so `git_commit` / `git_dirty` described HEAD at **write** time. A multi-hour run
+  launched at commit A and written after commit B would have **silently attested B** — precisely
+  what D11 exists to prevent, and not theoretical: **8 commits landed here on 2026-08-31 alone** and
+  a third writer shares the tree. Moved to line 387, before the sweep.
+* **F1 — `git_dirty` reported a CLEAN TREE whenever it knew nothing.** `bool(_git(...))` collapsed
+  *failure* and *empty output* to the same `False`. A node without `git` on PATH, a 20 s timeout on
+  this NFS repo, or a dubious-ownership refusal in this shared tree would each have produced an
+  artifact **asserting the code was unmodified, from a run that could not read the repo at all.**
+  Now tri-state (`True` / `False` / `None`) plus a `git_ok` flag: **a tree we cannot read is not a
+  clean tree.**
+
+## The guard that was supposed to catch this could not
+
+* **F3/F4 — 4 of 6 mutations the auditor tried stayed green**, including `prov = {}` (shipping a
+  2-field block) and moving the timestamp after the model load. My assertion checked the stamp
+  *existed*, never its *position*, and nothing tied the **written** object to the function's return.
+  Fixed with index comparisons (`i_stamp < i_load`, `i_prov < i_sweep`) and a `prov = provenance()`
+  check.
+* **And my first fix for F1 was itself vacuous** — it asserted a literal substring was absent, so
+  rewriting the same defect as `bool(status)` sailed straight past it. **I verified this by
+  mutation and watched my own new guard pass.** Replaced with a **functional** test: `provenance()`
+  now takes an injectable runner, and the guard drives a *failing* git (raising, and returning
+  128 "dubious ownership") and demands `git_dirty is None`. That mutation now exits 1.
+
+> **This is `RAH2-C-023` for the third time: a guard written against a defect, in the shape of the
+> defect I happened to imagine, rather than against the property I actually wanted.** The fix that
+> works is always the functional one — drive the failure, don't grep for it.
+
+## Three smaller, all real
+
+* **F5** — the new code's own comment said the timestamps were the **login** node's clock. They are
+  the **compute** node's (`main()` runs in the job), which is what the log said four lines away. The
+  comment contradicted the entry it pointed at, and would have made a reader read the ~3 min skew
+  backwards. Corrected.
+* **F6** — *"into every artifact"* overstates: `rah_transport_assay.py` is the other transport writer
+  in the same package and still emits none. Scoped in place.
+* **F7 — my "worth inheriting" grep missed two live instances of the very defect it was built to
+  find.** `grep "is OPEN\|is owed"` is defeated by the log's own markdown emphasis (`is **OPEN**`),
+  so line 637 (`cat_cue` "OPEN" after `RAH2-R-003` closed it) and line 763 (the positive-control arm
+  "owed" after `RAH2-C-017` ran it) both survived. Both now carry inline ✅ pointers, and the
+  inheritable form is the **case-insensitive, emphasis-tolerant** one:
+  `grep -nEi 'is +\**(OPEN|owed)\b|not yet implemented|filed, not|remains? open'`.
+
+## Clean, and worth recording as clean
+
+`started_utc` scope (no `NameError` path that could lose a completed sweep), `HERE`/`subprocess`
+imports, and **hang risk**: the auditor checked empirically that `subprocess.run` on `TimeoutExpired`
+kills and reaps rather than blocking on a second `communicate()`, and that the `soft` NFS mount
+returns EIO rather than parking git in unkillable D state. The residual exposure was never a hang —
+it was the timeout being **misread as clean**, which is F1.
+
+`+1` guard test (10 → **11**), and the two previously-green mutations now exit 1.
+
+⚠ **`RAH2-PR-004` is unaffected** — it was registered before this audit and none of its gates,
+populations or outcomes changed. What changed is that its artifacts will now carry provenance that
+means what it says.

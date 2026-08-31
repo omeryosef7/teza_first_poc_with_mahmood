@@ -76,7 +76,7 @@ POSITIVE_CONTROL_THRESH = 0.1
 ID_PROMPT = "hello hello\nworld world\ncat cat\nX"
 
 
-def provenance():
+def provenance(_run=None):
     """`RAH2-DR-002` D11. Every job id, commit and `dirty=0` in the RAH2 log is **prose** — the
     artifact schema carried none of it, so a reader could not check any of it without the SLURM
     logs, which are not part of the record. This emits the block so provenance is **attested**.
@@ -84,23 +84,61 @@ def provenance():
     Every field degrades to a string rather than raising: a provenance block must never be the
     reason a completed sweep fails to persist. `git_commit` is None only if git itself is absent.
     """
+    runner = _run if _run is not None else subprocess.run
+
     def _git(*a):
+        """Returns (ok, text). `_run` is injectable ONLY so the tri-state can be tested against a
+        FAILING git without breaking git on the machine -- see `RAH2-C-030`, where a source-string
+        guard for this missed a rewrite of the same defect. `RAH2-C-030`: the first version returned None on both failure AND
+        empty output, so `bool(None)` made `git_dirty` report a CLEAN TREE whenever git could not
+        run at all -- a missing binary, a timeout on this NFS repo, or a dubious-ownership refusal
+        in this shared tree all produced an artifact asserting the code was unmodified."""
         try:
-            return subprocess.run(("git",) + a, cwd=HERE, capture_output=True, text=True,
-                                  timeout=20).stdout.strip() or None
-        except Exception:                                   # noqa: BLE001 -- never block the write
-            return None
+            r = runner(("git",) + a, cwd=HERE, capture_output=True, text=True, timeout=20)
+        except BaseException:                     # noqa: BLE001 -- never block the write, ever
+            return False, None
+        if r.returncode != 0:
+            return False, None
+        return True, r.stdout.strip()
+
+    ok_head, head = _git("rev-parse", "HEAD")
+    ok_status, status = _git("status", "--porcelain")
     return {
-        "git_commit": _git("rev-parse", "HEAD"),
-        "git_dirty": bool(_git("status", "--porcelain")),
+        "git_ok": bool(ok_head and ok_status),
+        "git_commit": head if ok_head else None,
+        # tri-state ON PURPOSE: None means "could not tell", which is NOT "clean".
+        "git_dirty": (bool(status) if ok_status else None),
         "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
         "slurm_nodelist": os.environ.get("SLURM_JOB_NODELIST"),
         "hostname": os.environ.get("HOSTNAME") or os.environ.get("SLURMD_NODENAME"),
         "argv": sys.argv[1:],
-        "started_utc": None,          # filled by main(); the clock here is the LOGIN node's and
-        "finished_utc": None,         # skews ~3 min from the compute node (see the RAH2 log).
+        "started_utc": None,          # filled by main(). `RAH2-C-030`: this is the COMPUTE node's
+        "finished_utc": None,         # clock (main() runs in the job), which skewed ~3 min from the
+                                      # login node this phase -- so these date a run, they do not
+                                      # order it against `squeue` output taken on the login node.
         "python": sys.version.split()[0],
     }
+
+
+def _git_branch():
+    """Branch name for the provenance block, or None. Never raises -- provenance must not be the
+    reason a completed sweep fails to persist."""
+    try:
+        r = subprocess.run(("git", "rev-parse", "--abbrev-ref", "HEAD"), cwd=HERE,
+                           capture_output=True, text=True, timeout=20)
+        return r.stdout.strip() if r.returncode == 0 else None
+    except BaseException:                          # noqa: BLE001
+        return None
+
+
+def _diff_sha256():
+    """SHA256 of the full working diff, so a dirty-tree run is still citable (§5.4)."""
+    import hashlib
+    try:
+        r = subprocess.run(("git", "diff", "HEAD"), cwd=HERE, capture_output=True, timeout=60)
+        return hashlib.sha256(r.stdout).hexdigest() if r.returncode == 0 else None
+    except BaseException:                          # noqa: BLE001
+        return None
 
 
 def receiver_forms(concept, codeword, other_concept, other_codeword, probe):
@@ -334,6 +372,158 @@ def assert_token_is_part_of(tokenizer, ids, idx, word, what):
     return piece
 
 
+def _char_spans(text, needle):
+    """Every [lo, hi) character span of `needle` in `text`, case-insensitively. Used to prove a
+    chosen capture token does NOT overlap the concept or codeword surface ANYWHERE in the prompt --
+    not merely at the occurrence the anchor happened to select."""
+    low, n, out, i = text.casefold(), len(needle), [], 0
+    nl = needle.casefold()
+    while True:
+        i = low.find(nl, i)
+        if i < 0:
+            return out
+        out.append((i, i + n))
+        i += 1
+
+
+def resolve_donor_capture(tok, ids, offsets, templated, concept_surface, codeword_surface,
+                          label_ids, capture_mode, capture_offset, what):
+    """`RAH3-PR-001` §2.3. Resolve the donor capture site and return its FULL invariant record.
+
+    Pure: takes an already-tokenised prompt and returns scalars, so every invariant is testable and
+    independently re-derivable WITHOUT a GPU or a model. This is the whole point -- the RAH2
+    positive controls could not be audited for the copy confound because the capture site was
+    resolved inline inside a forward-pass loop and only `piece` survived into the artifact.
+
+    ``capture_mode='surface'`` (the DEFAULT) reproduces the historical path EXACTLY: last occurrence
+    of the concept surface, last overlapping token, and the assertion that the token decodes to a
+    piece of that surface. ``RAH3-C-000`` would be filed if this path ever changed, because every
+    prior artifact in ``outputs/boombness/rah_preflight/`` was produced by it.
+
+    ``capture_mode='offset'`` is `RAH3-PR-001`'s NON-COPY control. It anchors identically, then
+    moves ``capture_offset`` tokens and HARD-FAILS -- ``SystemExit``, never a default -- if the
+    resulting token overlaps the concept surface, overlaps the codeword surface, or IS a candidate
+    label. Those three are exactly the ways a "transport" result could be a copy result.
+    """
+    if capture_mode not in ("surface", "offset"):
+        raise SystemExit("%s: unknown capture_mode %r" % (what, capture_mode))
+    if capture_mode == "surface" and capture_offset != 0:
+        raise SystemExit("%s: capture_mode=surface forbids a non-zero offset (%d); use "
+                         "--capture-mode offset to move the capture site" % (what, capture_offset))
+    if capture_mode == "offset" and capture_offset == 0:
+        raise SystemExit("%s: capture_mode=offset with offset 0 is the surface path in disguise; "
+                         "it would silently produce a COPY test labelled as a non-copy control"
+                         % what)
+
+    pos_c = templated.lower().rfind(concept_surface.lower())
+    if pos_c < 0:
+        raise SystemExit("%s: target_surface %r absent from templated donor" % (what, concept_surface))
+    anchor = token_index_covering(offsets, pos_c, pos_c + len(concept_surface))
+    assert_token_is_part_of(tok, ids, anchor, concept_surface, "%s anchor" % what)
+
+    idx = anchor + capture_offset
+    if not (0 <= idx < len(ids)):
+        raise SystemExit("%s: capture index %d (anchor %d + offset %d) outside [0,%d)"
+                         % (what, idx, anchor, capture_offset, len(ids)))
+    piece = tok.decode([ids[idx]])
+    bare = piece.strip().casefold()
+
+    # Overlap is decided on CHARACTER SPANS against EVERY occurrence, then again lexically. The
+    # span test catches a token that shares characters with the surface; the lexical test catches a
+    # token whose text IS the surface even if the tokeniser's offsets are unreliable. Both, because
+    # either alone has a hole.
+    a, b = offsets[idx]
+    span_hit = lambda w: any(b > lo and a < hi for lo, hi in _char_spans(templated, w)) if w else False
+    ov_concept = bool(span_hit(concept_surface)
+                      or (bare and bare in concept_surface.casefold()))
+    ov_codeword = bool(span_hit(codeword_surface)
+                       or (bare and codeword_surface and bare in codeword_surface.casefold()))
+    # A candidate label by TOKEN ID, not by string: the id is what the readout scores, so an id
+    # match is the precise "the capture supplies the answer" condition.
+    cand_by_id = sorted([w for w, i in label_ids.items() if i == ids[idx]])
+    cand_by_str = sorted([w for w in label_ids if bare and bare == w.casefold()])
+    is_cand = bool(cand_by_id or cand_by_str)
+
+    rec = {
+        "capture_mode": capture_mode, "capture_offset": capture_offset,
+        "concept_surface_char_pos": pos_c, "concept_tok_idx": anchor,
+        "codeword_tok_idx": _codeword_tok_idx(offsets, templated, codeword_surface),
+        "donor_tok_idx": idx, "donor_piece": piece,
+        "donor_char_span": [a, b],
+        "tok_distance_from_concept": idx - anchor,
+        "overlaps_concept_surface": ov_concept,
+        "overlaps_codeword_surface": ov_codeword,
+        "is_candidate_label": is_cand,
+        "candidate_matches": sorted(set(cand_by_id) | set(cand_by_str)),
+        "seq_len": len(ids),
+    }
+    if rec["tok_distance_from_concept"] != capture_offset:
+        raise SystemExit("%s: resolved distance %d != requested offset %d"
+                         % (what, rec["tok_distance_from_concept"], capture_offset))
+
+    if capture_mode == "surface":
+        # historical behaviour: the token MUST be part of the concept surface
+        if not ov_concept:
+            raise SystemExit("%s: surface capture resolved OFF the concept surface (piece %r)"
+                             % (what, piece))
+        return rec
+
+    # ---- the non-copy path. No `.get(..., default)`. Raise. ------------------------------------
+    if not bare:
+        raise SystemExit("%s: capture token %d decodes to whitespace %r -- not a valid capture site"
+                         % (what, idx, piece))
+    if ov_concept:
+        raise SystemExit("%s: NON-COPY VIOLATION -- capture token %d (%r) overlaps the CONCEPT "
+                         "surface %r. This is a copy test." % (what, idx, piece, concept_surface))
+    if ov_codeword:
+        raise SystemExit("%s: NON-COPY VIOLATION -- capture token %d (%r) overlaps the CODEWORD "
+                         "surface %r. This is a copy test." % (what, idx, piece, codeword_surface))
+    if is_cand:
+        raise SystemExit("%s: NON-COPY VIOLATION -- capture token %d (%r) IS a candidate label %r. "
+                         "The capture supplies the answer."
+                         % (what, idx, piece, rec["candidate_matches"]))
+    return rec
+
+
+def _codeword_tok_idx(offsets, templated, codeword_surface):
+    """LAST token overlapping the LAST codeword occurrence, or None when the codeword is absent --
+    `direct_harmful` prompts need not contain it, and that is not an error."""
+    if not codeword_surface:
+        return None
+    p = templated.lower().rfind(codeword_surface.lower())
+    if p < 0:
+        return None
+    try:
+        return token_index_covering(offsets, p, p + len(codeword_surface))
+    except ValueError:
+        return None
+
+
+def assert_capture_consistent(records, what="donor capture"):
+    """`RAH3-PR-001` §2.3, cross-row. The registered trailer is pair-independent, so a non-copy
+    capture must land on the SAME token piece on every donor. A row-varying piece means the offset
+    does not denote one structural position -- §9's "offset produces inconsistent semantics
+    across rows" -- and the run must refuse rather than average over two different sites."""
+    if not records:
+        raise SystemExit("%s: no donor rows to check" % what)
+    pieces = sorted({r["donor_piece"] for r in records})
+    dists = sorted({r["tok_distance_from_concept"] for r in records})
+    if len(pieces) != 1 or len(dists) != 1:
+        raise SystemExit("%s: INCONSISTENT capture across %d rows -- pieces=%r distances=%r"
+                         % (what, len(records), pieces, dists))
+    return {"n_rows": len(records), "donor_piece": pieces[0], "tok_distance": dists[0]}
+
+
+def sha256_file(path):
+    """Bank identity for the provenance block (§37). Streamed: the banks are megabytes."""
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def main():
     import torch
     import ds_common as dc
@@ -362,11 +552,32 @@ def main():
                          "`ladder` = RAH2-PR-001's naming x constraint ladder. "
                          "`fewshot` = RAH2-PR-002's in-context mapping forms plus the "
                          "two reference extremes.")
+    # `RAH3-PR-001`. THE DEFAULT IS `surface` AND MUST STAY SO: every artifact in
+    # outputs/boombness/rah_preflight/ was produced by that path, and a silent default change would
+    # make all of them non-reproducible. `tests/test_rah3_capture_site.py` pins the default.
+    ap.add_argument("--capture-mode", default="surface", choices=["surface", "offset"],
+                    help="`surface` (DEFAULT, historical, bit-identical) captures the donor at the "
+                         "CONCEPT'S OWN SURFACE TOKEN -- which makes the positive control a COPY "
+                         "TEST (`RAH2-C-020`). `offset` is `RAH3-PR-001`'s NON-COPY control: it "
+                         "anchors identically then moves --capture-offset tokens and HARD-FAILS if "
+                         "the resulting token overlaps the concept surface, the codeword surface, "
+                         "or is a candidate label.")
+    ap.add_argument("--capture-offset", type=int, default=0,
+                    help="tokens from the concept-surface anchor. MUST be 0 for --capture-mode "
+                         "surface and non-zero for offset. `RAH3-PR-001` freezes +1 (the token "
+                         "immediately after the concept), pre-committed by `RAH2-PR-004` before "
+                         "any transport number at any offset existed. DO NOT SWEEP THIS.")
     ap.add_argument("--tag", default="rahpf")
     ap.add_argument("--outdir", default="outputs/boombness/rah_preflight")
     args = ap.parse_args()
 
     started_utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    # `RAH2-C-030`. This MUST be sampled before the sweep: taken at write time it records HEAD as of
+    # the WRITE, and a multi-hour run launched at commit A and written after commit B silently
+    # attests B -- which defeats the whole point of D11. Eight commits landed here on 2026-08-31
+    # alone and a third writer shares the tree, so this is a live hazard, not a theoretical one.
+    prov = provenance()
+    prov["started_utc"] = started_utc
     think = dc.parse_enable_thinking(args.enable_thinking)
 
     rows = [json.loads(l) for l in open(args.bank)]
@@ -418,23 +629,32 @@ def main():
         offsets = enc.pop("offset_mapping")[0].tolist()
         ids = enc["input_ids"][0].tolist()
         surf = d["target_surface"]
-        # LAST occurrence of the concept surface, by character offset, in this prompt's own text.
-        pos_c = templated.lower().rfind(surf.lower())
-        if pos_c < 0:
-            raise SystemExit("target_surface %r absent from templated donor" % surf)
-        p = token_index_covering(offsets, pos_c, pos_c + len(surf))
-        assert_token_is_part_of(tok, ids, p, surf, "donor %s" % d["prompt_id"])
+        # `RAH3-PR-001` §2.3. Resolution and ALL non-copy invariants in one pure, testable call.
+        # On --capture-mode surface this is the historical path, character-for-character.
+        cap = resolve_donor_capture(tok, ids, offsets, templated, surf, codeword, label_ids,
+                                    args.capture_mode, args.capture_offset,
+                                    "donor %s" % d["prompt_id"])
+        p = cap["donor_tok_idx"]
         with torch.no_grad():
             out = lm.model(input_ids=enc["input_ids"].to(lm.model.device),
                            output_hidden_states=True)
         hs = out.hidden_states
         assert len(ids) == hs[0].shape[1], "capture seq_len != own tokenisation"
         # block index L  <->  hidden_states[L+1]. L stops at nL-2: hidden_states[nL] is POST-NORM.
-        donor_reps.append({"prompt_id": d["prompt_id"], "pos": p, "seq_len": len(ids),
-                           "piece": tok.decode([ids[p]]),
-                           "reps": {L: hs[L + 1][0, p, :].detach().float().cpu()
-                                    for L in range(0, nL - 1)}})
-        print("[pf] donor %s pos=%d/%d piece=%r" % (d["prompt_id"], p, len(ids), tok.decode([ids[p]])))
+        donor_reps.append(dict(cap, prompt_id=d["prompt_id"], pos=p, seq_len=len(ids),
+                               piece=cap["donor_piece"],
+                               reps={L: hs[L + 1][0, p, :].detach().float().cpu()
+                                     for L in range(0, nL - 1)}))
+        print("[pf] donor %s pos=%d/%d piece=%r  mode=%s off=%+d anchor=%d "
+              "ov_concept=%s ov_codeword=%s is_cand=%s"
+              % (d["prompt_id"], p, len(ids), cap["donor_piece"], cap["capture_mode"],
+                 cap["capture_offset"], cap["concept_tok_idx"], cap["overlaps_concept_surface"],
+                 cap["overlaps_codeword_surface"], cap["is_candidate_label"]))
+
+    # `RAH3-PR-001` §2.3 cross-row. A row-varying capture piece means the offset does not denote
+    # ONE structural position, and averaging over two different sites would be silent.
+    capture_consistency = assert_capture_consistent(donor_reps, "donor capture")
+    print("[pf] capture consistency: %r" % capture_consistency)
 
     # ---- receiver grid ------------------------------------------------------------------------ #
     R_SET = sorted(set(max(1, int(nL * f)) for f in (0.125, 0.25, 0.5, 0.75)) | {nL - 4})
@@ -510,7 +730,14 @@ def main():
                    "recv_seq_len": len(rids), "hops": read_pos - q_pos,
                    "add_special_tokens": add_specials, "thinking_check": think_check,
                    "form_set": args.form_set,
+                   "capture_mode": args.capture_mode, "capture_offset": args.capture_offset,
                    "names_candidates": names_any_candidate(text, label_words),
+                   # `RAH3-PR-001` §2.6 rule 1: the three conditions a cell must satisfy before it
+                   # is even ELIGIBLE to carry a scientific claim. Persisted per cell so the
+                   # selection rule is auditable from the artifact alone.
+                   "rah3_eligible": bool(not names_any_candidate(text, label_words)
+                                         and (read_pos - q_pos) > 0
+                                         and args.capture_mode == "offset"),
                    "unpatched_option_mass": base_mass, "unpatched_dist": base_dist,
                    "patched_option_mass_at_best": best["option_mass_mean"],
                    "p_concept_unpatched": p_unpatched,
@@ -528,14 +755,23 @@ def main():
                      "PASS" if rec["positive_control_ok"] else "fail"))
 
     any_pass = [r for r in results if r["positive_control_ok"]]
-    prov = provenance()
-    prov["started_utc"] = started_utc
     prov["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    prov["branch"] = _git_branch()
+    prov["python_executable"] = sys.executable
+    prov["bank_sha256"] = sha256_file(args.bank)
+    prov["expected_n_donors"] = args.n_donors
+    prov["actual_n_donors"] = len(donor_reps)
+    if prov["git_dirty"] is not False:
+        # `RAH3` §5.4: a dirty (or unknowable) tree must be ATTESTED, not glossed. The diff hash
+        # makes the exact working state citable even though the diff itself is not committed.
+        prov["diff_sha256"] = _diff_sha256()
     out = {"schema": SCHEMA, "provenance": prov, "model": args.model, "bank": os.path.abspath(args.bank),
            "n_layers": nL, "attn_implementation": "eager", "enable_thinking": args.enable_thinking,
            "concept": concept, "codeword": codeword, "probe": args.probe,
            "label_words": label_words, "label_ids": label_ids, "label_meta": label_meta,
            "exemplar_candidate_collisions": exemplar_clash,
+           "capture_mode": args.capture_mode, "capture_offset": args.capture_offset,
+           "capture_consistency": capture_consistency,
            "donor_condition": args.donor_condition, "n_donors": len(donors),
            "donor_n_examples": args.n_examples,
            "n_donor_candidates": len(cand),
