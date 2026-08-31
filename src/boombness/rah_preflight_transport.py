@@ -210,6 +210,50 @@ def readout_ladder_forms(concept, codeword, other_concept, other_codeword, probe
     return base + new_forms
 
 
+def fewshot_receiver_forms(concept, codeword, other_concept, other_codeword, probe):
+    """`RAH2-PR-002`'s few-shot forms, plus the two reference extremes.
+
+    `RAH2-R-001` found mass comes from either PRINTING the candidates or asking the model to ECHO the
+    patched token -- both point the answer slot at something already present. Neither points it at a
+    FUNCTION of the patched token. These forms do: the slot is constrained by a mapping demonstrated
+    in context on UNRELATED word pairs, so nothing about the candidates is printed.
+
+    The exemplars are deliberately far from every candidate vocabulary -- no weapon, container or
+    hazard term -- so the demonstration cannot prime the answer. `EXEMPLAR_WORDS` is exported so a
+    caller can assert no exemplar shares a first token with a candidate.
+    """
+    keep = {"fc_probe_last", "id07_tmpl"}
+    base = [f for f in receiver_forms(concept, codeword, other_concept, other_codeword, probe)
+            if f["name"] in keep]
+    return base + [
+        {"name": "fewshot_cat", "templated": False, "read_at": "final", "patch_at": "probe",
+         "body": ('apple -> fruit\nhammer -> tool\nsparrow -> bird\n"{p}" ->').format(p=probe),
+         "suffix": ""},
+        {"name": "fewshot_syn", "templated": False, "read_at": "final", "patch_at": "probe",
+         "body": ('big -> large\nswift -> fast\nbegin -> start\n"{p}" ->').format(p=probe),
+         "suffix": ""},
+    ]
+
+
+def exemplar_candidate_collisions(tok, labels):
+    """`RAH2-PR-002`'s structural anti-priming check: no few-shot exemplar may share a first token
+    with any candidate, or the demonstration could prime the answer vocabulary.
+
+    Deliberately uses the RAW first token of " word" rather than `signals.readout_ids`: exemplars
+    appear in the PROMPT, never as a scored readout, so the single-token requirement that
+    `readout_ids` enforces does not apply to them ("sparrow" is 2 tokens on Llama). What matters is
+    only whether the first token collides.
+    """
+    first = lambda w: tok(" " + w, add_special_tokens=False)["input_ids"][0]
+    cand = {first(w) for w in labels}
+    return sorted({w for w in EXEMPLAR_WORDS if first(w) in cand})
+
+
+#: every content word appearing in a few-shot exemplar; none may collide with a candidate.
+EXEMPLAR_WORDS = ["apple", "fruit", "hammer", "tool", "sparrow", "bird",
+                  "big", "large", "swift", "fast", "begin", "start"]
+
+
 def names_any_candidate(text, labels):
     """Structural exposure test: does the rendered receiver contain any candidate string?
 
@@ -280,10 +324,12 @@ def main():
                     help="neutral probe; must be ONE token with a leading space on both models")
     ap.add_argument("--other-concept", default="missile")
     ap.add_argument("--other-codeword", default="candle")
-    ap.add_argument("--form-set", default="grid", choices=["grid", "ladder"],
+    ap.add_argument("--form-set", default="grid", choices=["grid", "ladder", "fewshot"],
                     help="`grid` = the FROZEN 4-form Stage-A grid (default; do not change, "
                          "RAH-R-010 selected over it and rah_select_config.py audits it). "
-                         "`ladder` = RAH2-PR-001's naming x constraint ladder.")
+                         "`ladder` = RAH2-PR-001's naming x constraint ladder. "
+                         "`fewshot` = RAH2-PR-002's in-context mapping forms plus the "
+                         "two reference extremes.")
     ap.add_argument("--tag", default="rahpf")
     ap.add_argument("--outdir", default="outputs/boombness/rah_preflight")
     args = ap.parse_args()
@@ -348,8 +394,10 @@ def main():
 
     # ---- receiver grid ------------------------------------------------------------------------ #
     R_SET = sorted(set(max(1, int(nL * f)) for f in (0.125, 0.25, 0.5, 0.75)) | {nL - 4})
-    forms = (readout_ladder_forms if args.form_set == "ladder" else receiver_forms)(
-        concept, codeword, args.other_concept, args.other_codeword, args.probe)
+    _sets = {"grid": receiver_forms, "ladder": readout_ladder_forms,
+             "fewshot": fewshot_receiver_forms}
+    forms = _sets[args.form_set](concept, codeword, args.other_concept, args.other_codeword,
+                                 args.probe)
     print("[pf] form set = %s: %r" % (args.form_set, [f["name"] for f in forms]))
     results = []
 

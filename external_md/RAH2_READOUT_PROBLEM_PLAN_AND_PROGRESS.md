@@ -224,3 +224,98 @@ is untested and is **not** excluded by this result.
 Cost: ~1.5 GPU-hours. Buys: `H1` — the most natural idea for escaping the trade-off, and the one both
 predecessor sprints implicitly assumed was available — is **tested and dead**, with a mechanism for
 *why*. That is worth more than the third repetition of "no readout is both."
+
+---
+
+## `RAH2-PR-002` — the one route `RAH2-R-001` left open: constrain toward the candidates WITHOUT printing them — 2026-08-31
+
+**Status: PREREGISTERED (prospective). Written and committed before any `RAH2-PR-002` forward pass.**
+A new preregistration, as `RAH2-PR-001` §1.4 requires for any form added after its ladder was fixed.
+
+### Why this specific route, and why it is not a rescue attempt
+
+`RAH2-R-001` did not merely falsify `H1` — it produced a mechanism, and the mechanism names its own
+exception. Mass on a small candidate vocabulary was found to come from exactly two sources:
+
+| framing | mass comes from | what it reads |
+|---|---|---|
+| **naming** (`fc_probe_last`) | the candidates being **printed** | the printed surface → exposure confound |
+| **echo** (`id07_tmpl`) | the model being asked to **repeat the patched token** | **surface identity**, not the mapping |
+| semantic category (`cat_cue`…) | nothing — spreads over a category | ✗ falsified |
+
+Both working mechanisms point the answer slot at something already present: a printed word, or the
+patched token itself. **Neither points it at *a function of* the patched token.**
+
+> **`H2`.** A receiver can constrain the answer slot toward **the output of a mapping applied to the
+> patched representation** — demonstrated **in context, on unrelated word pairs** — without printing
+> any candidate. If so it is exposure-clean (nothing named), high-mass (the slot is tightly
+> constrained by the demonstrated task), and reads a **function of** the donor rather than its
+> surface.
+
+This is the mechanism the echo frame has, generalised from *identity* to *an arbitrary demonstrated
+mapping*. It is the standard Patchscopes construction and **it has never been tried in this
+repository** — every prior receiver here was identity/repetition or forced choice.
+
+⚠ **This is a NEW mechanism, not a reworded old form.** `RAH2-R-001` is not being rescued: `H1`
+stays falsified, and if `H2` fails the trade-off stands with three mechanisms tested rather than two.
+
+### The two new forms
+
+Both are few-shot, both name **no** candidate, both patch at the probe and read at the final position.
+
+| id | prompt | what the slot is constrained toward |
+|---|---|---|
+| **`fewshot_cat`** | `apple -> fruit` / `hammer -> tool` / `sparrow -> bird` / `<probe> ->` | the **category** of the patched token |
+| **`fewshot_syn`** | `big -> large` / `swift -> fast` / `begin -> start` / `<probe> ->` | a **synonym** of the patched token |
+
+The exemplar pairs are **deliberately unrelated** to every candidate — no weapon, no container, no
+hazard term — so the demonstration cannot prime the candidate vocabulary. **This is checked
+structurally** by the same `names_any_candidate` test, and additionally by requiring that no exemplar
+shares a first token with any candidate.
+
+### Metrics, gates and populations — UNCHANGED from `RAH2-PR-001`
+
+Same five metrics, same 0.05 mass gate, same 0.1 positive-control gate, same development
+(level-A `carrot↔bomb`) → held-out (`lantern↔poison`) split, same anti-fishing constraints, and the
+two known extremes carried forward on the same rows as reference.
+
+### Outcomes, fixed now
+
+| outcome | condition |
+|---|---|
+| **`H2` SUPPORTED** | a few-shot form reaches **median mass ≥ 0.05 on HELD-OUT material**, names no candidate, and passes the positive control |
+| **`H2` FALSIFIED** | few-shot forms are below the mass gate, like the semantic forms — the trade-off stands with **three** mechanisms tested |
+| **PARTIAL** | high mass in development that collapses held-out, as `id07_tmpl` did (0.4344 → 7.1e-08). **This is a FAILURE for the purpose of the readout problem**, and is recorded as such, not as a near-miss |
+
+### The early-stop rule, restated so it binds this run too
+
+If both models show the few-shot forms **≥ 2 orders below the gate in development**, the held-out run
+is **not** warranted and is not run — the same rule invoked in `RAH2-R-001`, stated before the data.
+If development mass clears the gate, **held-out is mandatory** and is the only thing that counts.
+
+### `RAH2-PR-002` CPU verification — executed BEFORE any GPU forward pass
+
+Both tokenizers, both candidate vocabularies. `exemplar_candidate_collisions` uses the **raw** first
+token of `" word"`, not `signals.readout_ids`: exemplars appear in the PROMPT and are never scored,
+so the single-token requirement does not apply to them (`sparrow` is 2 tokens on Llama — the first
+attempt at this check crashed on exactly that, which is the intended loud failure).
+
+| model | form | seq | patch q | read | hops | last 2 tokens | names a candidate? |
+|---|---|---|---|---|---|---|---|
+| Llama | `fewshot_cat` | 18 | 15 | 17 | 2 | `'"'`, `' ->'` | **[]** |
+| Llama | `fewshot_syn` | 17 | 14 | 16 | 2 | `'"'`, `' ->'` | **[]** |
+| Llama | `fc_probe_last` (ref) | 75 | 66 | 74 | 8 | `'Answer'`, `':'` | all 4 |
+| Llama | `id07_tmpl` (ref) | 45 | 44 | 44 | 0 | — | [] |
+| Qwen3 | `fewshot_cat` | 17 | 14 | 16 | 2 | `'"'`, `' ->'` | **[]** |
+| Qwen3 | `fewshot_syn` | 16 | 13 | 15 | 2 | `'"'`, `' ->'` | **[]** |
+| Qwen3 | `fc_probe_last` (ref) | 52 | 39 | 51 | 12 | `'Answer'`, `':'` | all 4 |
+| Qwen3 | `id07_tmpl` (ref) | 22 | 21 | 21 | 0 | — | [] |
+
+Exemplar/candidate first-token collisions: **NONE** on either model against either vocabulary.
+
+The few-shot forms sit **between** the two reference extremes on the hop count (2, vs 0 for echo and
+8–12 for forced choice) — which is what the mechanism predicts: the slot is one mapping step away
+from the patched token rather than zero (repeat it) or many (walk to a printed list).
+
+`+2` guard tests (`tests/test_rah_preflight_spans.py` 7 → **9**), each **proven able to fail** by
+mutation (inserting `poison -> bad` as an exemplar turns the naming test red).
