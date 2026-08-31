@@ -505,7 +505,7 @@ phase's two would-be deliverable edits were **retracted in place**. **Artifacts 
 the `RAH_PREFLIGHT_TRANSPORT/1` schema has no commit, dirty, job-id or runtime field, so every job id
 and commit in the log is prose, checkable only against the SLURM logs.
 
-**3 preregistrations · 6 results · 28 corrections · 2 deep reviews · 16 artifacts · 0 corrections to
+**3 preregistrations · 7 results · 29 corrections · 2 deep reviews · 16 artifacts · 0 corrections to
 a measured value.**
 
 ## 1. The one-paragraph truth
@@ -766,7 +766,7 @@ falling back.
   read a passing cell as an estimate.
 * **Smoke every MODE**: `exemplar_candidate_collisions` was defined, documented, reported in the log
   as a verification result, and **never called** (`RAH2-C-015`).
-* **The numbers keep being right and the sentences keep being wrong** — 28 corrections in this phase
+* **The numbers keep being right and the sentences keep being wrong** — 29 corrections in this phase
   and **not one changed a value produced by a run**. Most were claims about what a correct number
   meant; the exceptions are *derived* magnitudes mis-transcribed in prose (`RAH2-C-006` 2–10 orders →
   1.39–9.56; `RAH2-C-010` ~5× → 7.3×/4.9×; `RAH2-C-012` "six" → ~6.8 orders; `RAH2-C-023` "22
