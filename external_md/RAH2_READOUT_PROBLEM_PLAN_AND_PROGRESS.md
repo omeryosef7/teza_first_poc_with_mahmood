@@ -751,6 +751,11 @@ control is run. That arm is **owed** and is not part of PR-003.
 
 ---
 
+> 🛑 **SUPERSEDED IN PART — read `RAH2-C-024` before quoting anything in this entry.** Its
+> registered-outcome table counts `positive_control_ok` on a **`natural_doublespeak`** run, i.e. the
+> test arm's own P(concept), and labels it "the positive control". No positive control existed in
+> this run. The **dev→held-out finding below is unaffected and stands**; the outcome table does not.
+
 ## `RAH2-R-003` — the ladder held-out run `RAH2-C-006` made owed — and it refutes the inference `RAH2-C-007` withdrew — 2026-08-31
 
 Jobs **827941** (Llama) / **827942** (Qwen3), both **COMPLETED**, held-out `lantern↔poison`, ladder
@@ -1163,3 +1168,107 @@ that nobody — including me — quotes it as a result.
 RAH summary's open problem both **stand**, and what RAH2 contributes is a **reduction of the search
 space** — semantic-constraint and in-context-mapping framings are ruled out, because they cannot
 report a concept that is sitting right in front of them.
+
+---
+
+# `RAH2-DR-002` part 2 — the claims auditor. It found the defect in my *verifier*
+
+The second auditor independently reached `RAH2-C-021` (the eight prior artifacts) and confirmed
+**every quoted number in `RAH2-R-003`…`R-006` matches its artifact to the digits quoted** — it
+re-derived all of them. The defects are again in scope words, and one is in the tool I built to catch
+scope words.
+
+## `RAH2-C-023` — **my verifier could not fail on 6 of its own assertions.** `RAH-C-007`, repeated
+
+`check()` used an **absolute** tolerance of `5e-4` against published values orders of magnitude
+smaller. Verified by mutation — each of these was a *wrong* value that the verifier passed:
+
+| published | mutated to | wrong by | old verifier |
+|---|---|---|---|
+| Qwen3 `synonym` 1.48e-08 | 5.0e-04 | **33 784×** | **PASS** |
+| Qwen3 `defn_oneword` 2.57e-08 | 4.9e-04 | 19 000× | **PASS** |
+| Llama `defn_oneword` 3.53e-05 | 4.9e-04 | 14× | **PASS** |
+| **Qwen3 held-out `id07_raw` 4.01e-04** | 9.0e-04 | 2.2× | **PASS** |
+| Llama `synonym` 0.0013 | 0.0017 | 31 % | **PASS** |
+| Qwen3 `fewshot_cat` 0.0087 | 0.0091 | 5 % | **PASS** |
+
+The fourth is a **headline number of `RAH2-R-005` §(b)** and of the (now retracted) deliverable edit.
+
+**And my fail-proof was the worst possible choice.** `RAH2-R-006` proved the verifier could fail by
+perturbing **0.8409 → 0.9409** — the value with the **most headroom in the file**. It demonstrated
+nothing about the six above. *A mutation test that picks the easiest value proves only that the
+harness runs.*
+
+**Three further defects in the same script:**
+
+* the verdict loop covered **6 of the 16** verdicts and compared each against a **hardcoded literal**
+  (`expect = (form == "id07_raw")`) rather than against R-005's published column — so it could not
+  disagree with the claim. It skipped `id07_tmpl`, **the only verdict asymmetric across models** and
+  therefore the only one where an error would matter;
+* the `2348×` figure was **printed but not asserted** — the assertion was `ub > 100 * sel`, a
+  **23×-loose** bound reported in the log as a checked result;
+* **`RAH2-R-006`'s "22 checks" is wrong**; the script registered 29 fail-conditions.
+
+**Fixed:** relative tolerance (1 % + denormal floor); all 16 verdicts checked against a transcription
+of the published column, including `id07_tmpl`; the ratio asserted to ±1 %; the count printed by the
+script rather than typed by me. Now **39 assertions**. **All six previously-vacuous mutations exit 1,
+and flipping the `id07_tmpl` Qwen3 verdict exits 1.**
+
+## `RAH2-C-024` — `RAH2-R-003`'s outcome table is wrong on more than model scoping
+
+`RAH2-C-017` marked R-002/R-003 *"SUPERSEDED on their model scoping and stand on everything else"*.
+Too generous for R-003: its gate column counts `positive_control_ok` on the **`natural_doublespeak`**
+runs `rah2ld_p_lp` / `rah2ld_q_lp`, and C-017 itself established that this field is *the test arm's
+own P(concept)*. **No positive control existed in that run**, so the label is a category error, not a
+scoping slip. R-003 also carried **no inline marker** — a reader stopping there got two withdrawn
+verdicts. **An inline `🛑 SUPERSEDED IN PART` header is now at the top of R-003.** Its dev→held-out
+finding is untouched and stands.
+
+## `RAH2-C-025` — *"the closest any exposure-clean form has come"* is refuted by its own table
+
+`RAH2-R-003` says `cat_cue` at 0.0389 is *"the closest any exposure-clean form has come"*. §1.1 lists
+`id07_tmpl` as naming **no** candidates, and R-003's own table **six lines above** gives it
+**0.980 → 0.990** on Llama, same quantity, same artifacts. The population named was *"any
+exposure-clean form"*; the population meant was *"the three new semantic-ladder forms"*.
+
+## `RAH2-C-026` — `RBD-R-033` is scoped to **behavioural** readouts
+
+`reports/RAH_ACTIVATION_ASSAY_REPORT.md:11` introduces it as *"a structural claim about **behavioural**
+readouts"*. `id07_raw` is an activation-level patchscope. So `RAH2-C-019`'s attempt to refute (A) with
+it crossed a population line **in a correction entry about crossing population lines** — while (B),
+the claim that does span *"either the behavioural or the activation level"*, was the one I quoted with
+that clause silently **truncated and unmarked by ellipsis**.
+
+`RAH2-C-020` already retracted the refutation of (A) on other grounds, so nothing downstream changes.
+Recorded because the reasoning was wrong for a **second, independent** reason I had not noticed.
+
+## `RAH2-C-027` — "the gate" is ambiguous in every entry after `RAH2-R-003`
+
+The artifacts carry **two**: `mass_gate: 0.05` (the registered option-mass metric) and
+`threshold: 0.1` (the transport/positive-control gate). `positive_control_ok` is computed **only**
+from the 0.1 threshold on `p_concept`; **the 0.05 mass gate is stored and never applied by the
+producer.** Entries move between them unannounced — R-003's *"0.78× the gate"* is the 0.05 one, its
+*"0/25 `positive_control_ok`"* four lines later is the 0.1 one. No conclusion flips. Every future
+entry must name which gate.
+
+## `RAH2-C-028` — `H1`'s registered population was narrowed without saying so
+
+§1.3 registers `H1` FALSIFIED as *"**every exposure-clean form** is below the mass gate on held-out
+material"*. `RAH2-R-005` writes *"the **semantic forms** cannot report a concept that is literally
+present"*. Under the max-over-(R,L) estimator R-004 itself published, exposure-clean `id07_raw` reads
+**0.750 / 0.941** held-out — above 0.05 — so the registered condition is met only on the
+selected-layer estimator. Also `RAH2-R-003`'s *"`H1` FALSIFIED for `cat_cue`"* is a per-form verdict
+where §1.3 defines `H1` **form-universally**.
+
+**Corrected `H1` statement:** *on the selected-layer estimator, every exposure-clean form except the
+0-hop echo readouts is below the mass gate on held-out material; the echo readouts are excluded not
+by mass but because `RAH2-C-020` shows they decode token identity.*
+
+## Also confirmed clean by this auditor
+
+Every number in R-003/C-017/R-004/C-018/R-005/R-006, independently re-derived — ratios, gate counts,
+`p_codeword` values, the "30× weaker" anomaly (30.6), "maxima at L = 0, 4, 6", "three orders" (969×),
+"2348×". The `exemplar_candidate_collisions` provenance claim checks out: present from
+`rah2p3_p_lp_20260831_154049` onward, absent in every earlier artifact. `n_donors: 8` in all 16 RAH2
+artifacts. The verifier is genuinely stdlib-only and asserts `donor_condition` on every artifact it
+opens.

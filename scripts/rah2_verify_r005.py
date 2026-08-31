@@ -14,6 +14,7 @@ import sys
 GATE_CONTROL = 0.1          # `RAH2-PR-001` positive-control threshold
 GATE_MASS = 0.05            # `RAH2-PR-001` option-mass gate
 FAILS = []
+N_CHECKS = [0]
 
 
 def one(pattern):
@@ -31,8 +32,14 @@ def best_pconc(d, form):
     return max(rows, key=lambda r: r["pos_ctrl_max"])
 
 
-def check(label, got, want, tol=5e-4):
-    ok = got is not None and abs(got - want) <= tol
+def check(label, got, want, tol=None):
+    """RELATIVE tolerance. `RAH2-C-023`: this used an ABSOLUTE 5e-4, which made 6 of the numeric
+    assertions unable to fail -- Qwen3 `synonym` 1.48e-08 could be mutated to 5e-4 (33 784x wrong)
+    and still PASS, as could the headline held-out 4.01e-04 -> 9e-4 (2.2x wrong). The original
+    fail-proof mutated 0.8409, the value with the MOST headroom in the file, and so demonstrated
+    nothing about the small ones. Published figures are quoted to 3-4 significant figures, so 1%
+    relative plus a denormal floor is the right band."""
+    ok = got is not None and abs(got - want) <= (1e-2 * abs(want) + 1e-15)
     print("  %-42s published %-12.6g artifact %-12.6g %s"
           % (label, want, got if got is not None else float("nan"), "OK" if ok else "MISMATCH"))
     if not ok:
@@ -54,13 +61,28 @@ for d, tag, table in ((pcf_p, "Llama", {"fc_probe_last": 0.9087, "id07_raw": 0.8
     for form, want in table.items():
         b = best_pconc(d, form)
         check("%s %s pos-control" % (tag, form), b["pos_ctrl_max"] if b else None, want)
+        N_CHECKS[0] += 1
 
+# R-005's published verdict column, transcribed here so the recomputation is checked against the
+# CLAIM rather than against a restatement of the code's own rule.
+PUBLISHED_VERDICT = {
+    "Llama": {"fc_probe_last": True, "id07_raw": True, "id07_tmpl": True, "fewshot_syn": False,
+              "fewshot_cat": False, "cat_cue": False, "synonym": False, "defn_oneword": False},
+    "Qwen3": {"fc_probe_last": True, "id07_raw": True, "id07_tmpl": False, "fewshot_syn": False,
+              "fewshot_cat": False, "cat_cue": False, "synonym": False, "defn_oneword": False},
+}
 print("\n== the validated-readout verdict (gate %.2f) -- recomputed, not read" % GATE_CONTROL)
 for d, tag in ((pcf_p, "Llama"), (pcf_q, "Qwen3")):
-    for form in ("id07_raw", "fewshot_syn", "fewshot_cat"):
+    # `RAH2-C-023`: this covered 6 of the 16 verdicts in R-005's table and compared each against a
+    # hardcoded literal rather than the published verdict. Now it covers ALL of them, including
+    # `id07_tmpl` -- the only verdict that is ASYMMETRIC across models and so the only one where an
+    # error would matter.
+    for form, expect in PUBLISHED_VERDICT[tag].items():
         b = best_pconc(d, form)
+        if b is None:
+            b = best_pconc({"grid": pc_p["grid"] if tag == "Llama" else pc_q["grid"]}, form)
         validated = b["pos_ctrl_max"] > GATE_CONTROL
-        expect = (form == "id07_raw")
+        N_CHECKS[0] += 1
         print("  %-24s validated=%-5s expected=%-5s %s"
               % (tag + " " + form, validated, expect, "OK" if validated == expect else "MISMATCH"))
         if validated != expect:
@@ -75,10 +97,12 @@ for pat, tag, want in (("rah2p3_p_cb_*.json", "Llama dev", 0.0353),
     assert d["donor_condition"] == "natural_doublespeak"
     rows = [r for r in d["grid"] if r["form"] == "id07_raw"]
     got = max(r["patched_option_mass_at_best"] for r in rows)
-    check("%s id07_raw mass" % tag, got, want, tol=6e-4)
+    check("%s id07_raw mass" % tag, got, want)
+    N_CHECKS[0] += 1
     # the held-out claim is "fails the gate at EVERY depth" -- check all five, not the best
     if "held-out" in tag:
         n_pass = sum(r["positive_control_ok"] for r in rows)
+        N_CHECKS[0] += 1
         print("     held-out gate: %d/%d depths pass  %s" % (n_pass, len(rows),
                                                              "OK" if n_pass == 0 else "MISMATCH"))
         if n_pass:
@@ -91,9 +115,13 @@ sel = max(r["patched_option_mass_at_best"] for r in rows)
 ub = max(pl["option_mass_mean"] for r in rows for pl in r["per_layer"])
 print("  Qwen3 held-out id07_raw: selected-layer %.6g vs max-over-(R,L) %.6g  ratio %.1fx"
       % (sel, ub, ub / sel))
-if not ub > 100 * sel:
+N_CHECKS[0] += 1
+# `RAH2-C-023`: was `ub > 100 * sel`, so the published 2348x was PRINTED but not ASSERTED and any
+# ratio above 100x passed -- a 23x-loose bound presented in the log as a checked result.
+if not abs(ub / sel - 2348.0) <= 0.01 * 2348.0:
     FAILS.append("C-018 upper-bound gap")
     print("  MISMATCH: C-018 claimed the upper bound is the misleading quantity")
 
-print("\n%s" % ("FAILED: " + ", ".join(FAILS) if FAILS else "ALL CHECKS PASS"))
+print("\n%d assertions" % N_CHECKS[0])
+print("%s" % ("FAILED: " + ", ".join(FAILS) if FAILS else "ALL CHECKS PASS"))
 sys.exit(1 if FAILS else 0)
