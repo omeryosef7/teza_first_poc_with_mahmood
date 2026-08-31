@@ -222,7 +222,11 @@ def fewshot_receiver_forms(concept, codeword, other_concept, other_codeword, pro
     hazard term -- so the demonstration cannot prime the answer. `EXEMPLAR_WORDS` is exported so a
     caller can assert no exemplar shares a first token with a candidate.
     """
-    keep = {"fc_probe_last", "id07_tmpl"}
+    # `RAH2-PR-003` adds `id07_raw`: the few-shot forms are UNTEMPLATED while both original
+    # references are TEMPLATED, so a mass difference confounded framing with the chat
+    # template. `id07_raw` is the echo frame WITHOUT the template -- it holds framing fixed
+    # and varies only what `fewshot_*` also varies, making the comparison attributable.
+    keep = {"fc_probe_last", "id07_tmpl", "id07_raw"}
     base = [f for f in receiver_forms(concept, codeword, other_concept, other_codeword, probe)
             if f["name"] in keep]
     return base + [
@@ -364,6 +368,17 @@ def main():
     probe_r = signals.readout_ids(tok, args.probe)
     print("[pf] labels %r -> ids %r ; probe %r -> %r"
           % (label_words, label_ids, args.probe, probe_r["primary_id"]))
+    # `RAH2-C-015`. This check existed but was NEVER CALLED when `RAH2-R-002` was published, while
+    # the log reported its result as a verification. A few-shot exemplar that shares a first token
+    # with a candidate would prime the answer vocabulary directly -- the exact exposure confound the
+    # forms exist to avoid -- and nothing would have errored. It now REFUSES rather than warns.
+    exemplar_clash = (exemplar_candidate_collisions(tok, label_words)
+                      if args.form_set == "fewshot" else [])
+    if exemplar_clash:
+        raise SystemExit("few-shot exemplars share a first token with a candidate: %r"
+                         % exemplar_clash)
+    print("[pf] exemplar/candidate first-token collisions: %s"
+          % ("NONE" if args.form_set == "fewshot" else "n/a (form_set != fewshot)"))
 
     # ---- donor capture: OWN tokenisation, block-index convention pinned (FATAL-3/4) ----------- #
     donor_reps = []
@@ -477,9 +492,10 @@ def main():
                    "per_layer": per_layer}
             results.append(rec)
             print("[pf] %-14s R=%-3d hops=%-3d  p_conc=%.4g (unpatched %.4g, uplift %+.4g) "
-                  "@L%-3d  p_code=%.4g  mass=%.3f  %s"
+                  "@L%-3d  p_code=%.4g  mass_unpatched=%.3f mass_patched=%.4g  %s"
                   % (form["name"], R, rec["hops"], rec["pos_ctrl_max"], p_unpatched, uplift,
                      rec["best_donor_L"], rec["p_codeword_at_best"], base_mass,
+                     rec["patched_option_mass_at_best"],
                      "PASS" if rec["positive_control_ok"] else "fail"))
 
     any_pass = [r for r in results if r["positive_control_ok"]]
@@ -487,6 +503,7 @@ def main():
            "n_layers": nL, "attn_implementation": "eager", "enable_thinking": args.enable_thinking,
            "concept": concept, "codeword": codeword, "probe": args.probe,
            "label_words": label_words, "label_ids": label_ids, "label_meta": label_meta,
+           "exemplar_candidate_collisions": exemplar_clash,
            "donor_condition": args.donor_condition, "n_donors": len(donors),
            "donor_n_examples": args.n_examples,
            "n_donor_candidates": len(cand),

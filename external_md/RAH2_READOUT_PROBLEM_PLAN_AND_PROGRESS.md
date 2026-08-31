@@ -623,3 +623,128 @@ four model×bank combinations, and the patch/read sites all match. The anti-fish
 > on held-out material. **On Llama, the phase CANNOT ANSWER** — the registered positive control was
 > never run and its substitute fails everywhere. `cat_cue`'s held-out status is **OPEN** pending jobs
 > 827941/827942. The population is **1 of 3** development banks and **1 of 2** held-out pairs.
+
+---
+
+# `RAH2-DR-001` part 2 — the code auditor, and the confound it found in my own design
+
+The second auditor read only the code. It found the same understatement as `RAH2-C-002` (arriving
+independently, with the same 138× `synonym` figure) and **three defects the claims audit could not
+see**. All verified by me before acceptance.
+
+## D13 `RAH2-C-013` — **the `H2` comparison is CONFOUNDED. `RAH2-R-002`'s falsification is DOWNGRADED**
+
+Verified from the artifacts:
+
+| form | `templated` |
+|---|---|
+| `id07_tmpl` (reference) | **True** |
+| `fc_probe_last` (reference) | **True** |
+| `fewshot_cat` | **False** |
+| `fewshot_syn` | **False** |
+
+`render_receiver` sends untemplated forms as **raw base-model completions with no chat template and
+no assistant header**. So the few-shot forms differ from both references on **two** axes at once:
+the framing (the thing `RAH2-PR-002` set out to test) **and** the presence of the chat template.
+
+**An instruct-tuned model can place little probability on a bare noun continuation outside its chat
+format for reasons that have nothing to do with in-context mapping.** Nothing in the artifact
+separates the two, and `RAH2-PR-002`'s CPU verification checked geometry and naming — it did not
+check that the comparison was controlled. **I designed this confound in and did not see it.**
+
+> **`RAH2-R-002`'s verdict is downgraded from `H2` FALSIFIED to `H2` CONFOUNDED — CANNOT ATTRIBUTE**,
+> pending `RAH2-PR-003`. The measurements stand; the causal reading of them does not. The Qwen3-only
+> scoping from `RAH2-C-003` still applies on top of this.
+
+## D14 `RAH2-C-014` — only the leading-space token id is ever scored
+
+`signals.readout_ids(...)["primary_id"]` scores `" word"` only (`full_word_ids` exists and is
+deliberately unused). Verified on both tokenizers, the bare and space-prefixed ids **always differ**:
+
+| word | `" bomb"` | `"bomb"` | bare is single-token? |
+|---|---|---|---|
+| bomb | 13054 | 79444 | yes |
+| knife | 22145 | 43820 | yes |
+| ticket | 11989 | 27632 | yes |
+| carrot, poison, lantern, missile, candle | — | 2 tokens each | **no** |
+
+The read slots differ in what they license: `fewshot_*` read after `' ->'` and `fc_probe_last` after
+`':'` — both license the space form; **`id07_tmpl` reads after `'\n\n'`, where a model would emit the
+bare form.**
+
+⚠ **Direction, stated precisely: this can only UNDERSTATE `id07_tmpl`'s mass, and only for
+`bomb`/`knife`/`ticket`** (the other five have multi-token bare forms whose first token is neither
+id). It therefore **does not** threaten the `H1`/`H2` falsifications — those forms read at
+space-licensing slots — but it **does** weaken the `id07_tmpl` **collapse** claim in `RAH2-R-002`,
+because an understated held-out mass makes a collapse look larger. **Magnitude unmeasured.** Filed
+as a known measurement limitation of every `id07_*` figure in this log.
+
+## D15 `RAH2-C-015` — the exemplar collision check was **DEAD CODE** while I reported its result
+
+`exemplar_candidate_collisions` was defined and **never called by `main()`**. The only other
+reference was a test docstring asserting *"checked in the run itself"*. Meanwhile
+`RAH2-PR-002`'s verification section reports *"Exemplar/candidate first-token collisions: NONE"* as a
+result.
+
+**That result is true** — I ran the check in a scratch script, and it is reproducible — but it was
+**not** in the pipeline, was **not** in any artifact, and could **not** have fired on a future bank.
+A bank whose codeword is `fruit` or `start` would collide with a `fewshot_cat`/`fewshot_syn` exemplar,
+prime the answer vocabulary directly, and report high mass for an "exposure-clean" form with nothing
+raising.
+
+**Fixed:** `main()` now calls it and **refuses** on collision, and the result is persisted to the
+artifact as `exemplar_candidate_collisions`, so it is attested rather than asserted in prose (which
+also closes D11 for this field).
+
+## D16 `RAH2-C-016` — the console `mass=` column printed the **unpatched** mass
+
+`print(... "mass=%.3f" ... base_mass)` — the console column named `mass` was
+`unpatched_option_mass`, while the JSON field of nearly the same name holds the patched value. Every
+`mass=0.000 fail` line I read during monitoring was the **prior**, not the result. No published
+number came from that column (all tables were built from the JSON), but it is exactly the kind of
+mislabel that produces one. **Fixed:** the line now prints `mass_unpatched=` and `mass_patched=`
+separately.
+
+## D17 — auditor findings NOT accepted
+
+* *"`rah2fs_q_lp_*.json` does not exist"* — **stale**; the auditor read the tree before the Qwen3
+  held-out job landed at 14:22:33. The file exists and `RAH2-R-002` uses it.
+* Its ordering claim (*"on Llama `id07_tmpl` 0.9800 beats `fc_probe_last` 0.8511, reversing the
+  ordering"*) is **arithmetically correct and accepted**, and is an *additional* flip beyond the
+  `synonym`/`cat_cue` one in `RAH2-C-005`. Recorded here rather than rejected.
+* `positive_control_ok` is **selection-inflated** (argmax over ~31–39 donor layers × 5 R, no
+  multiplicity correction) — accepted as a caveat and noted; it makes `RAH2-C-003`'s Llama
+  0-of-65 result *stronger*, not weaker.
+
+---
+
+## `RAH2-PR-003` — the untemplated control that makes `H2` attributable
+
+**Registered before the run. Committed before any `PR-003` forward pass.**
+
+`RAH2-C-013` leaves `H2` unattributable. The fix needs **no new form**: `id07_raw` — the untemplated
+echo receiver — already exists in the frozen Stage-A grid. Adding it to the **few-shot form set**
+(never to `receiver_forms`) gives an untemplated reference at the same template status as
+`fewshot_*`, so framing is the only axis left varying.
+
+| form | templated | framing |
+|---|---|---|
+| `fc_probe_last` | yes | names candidates |
+| `id07_tmpl` | yes | echo |
+| **`id07_raw`** | **no** | **echo** ← the control |
+| `fewshot_cat` / `fewshot_syn` | no | in-context mapping |
+
+**Fixed now, before the data:**
+
+| `id07_raw` result | what it licenses |
+|---|---|
+| **clears the 0.05 gate** while `fewshot_*` do not | the template is **not** the explanation → **`H2` FALSIFIED** is restored, on the models where a positive control fires |
+| **also fails** the gate | the untemplated condition is unreadable for *any* framing → **`H2` CANNOT ANSWER**; the few-shot numbers carry no weight and the confound is confirmed |
+| lands between | reported as-is; `H2` stays **CANNOT ATTRIBUTE** and the residual is quantified, not argued |
+
+Populations, gates and the split are `RAH2-PR-001`'s, **and this time the narrowing is stated
+rather than called unchanged**: development `carrot↔bomb` and held-out `lantern↔poison` only — 1 of 3
+development banks and 1 of 2 held-out pairs, per `RAH2-C-009`.
+
+⚠ Per `RAH2-C-003`, Llama cannot falsify anything in this phase until a **`direct_harmful`** positive
+control is run. That arm is **owed** and is not part of PR-003.

@@ -65,7 +65,11 @@ def test_pr002_fewshot_forms_name_no_candidate_and_are_two_hop():
     labels = ["poison", "lantern", "missile", "candle"]
     forms = pf.fewshot_receiver_forms(*labels, "widget")
     by = {f["name"]: f for f in forms}
-    assert set(by) == {"id07_tmpl", "fc_probe_last", "fewshot_cat", "fewshot_syn"}
+    assert set(by) == {"id07_raw", "id07_tmpl", "fc_probe_last", "fewshot_cat", "fewshot_syn"}
+    # `RAH2-PR-003`: the untemplated echo control must be present, or a mass difference between
+    # the few-shot forms and the references cannot be attributed to framing rather than template.
+    assert by["id07_raw"]["templated"] is False
+    assert all(by[n]["templated"] is False for n in ("fewshot_cat", "fewshot_syn"))
     for name in ("fewshot_cat", "fewshot_syn"):
         f = by[name]
         assert pf.names_any_candidate(f["body"], labels) == [], name
@@ -74,7 +78,7 @@ def test_pr002_fewshot_forms_name_no_candidate_and_are_two_hop():
         assert f["body"].count("\n") == 3, name        # three demonstrated pairs, then the probe
     # the reference extremes are carried through UNCHANGED from the frozen grid
     grid = {f["name"]: f for f in pf.receiver_forms(*labels, "widget")}
-    for name in ("id07_tmpl", "fc_probe_last"):
+    for name in ("id07_raw", "id07_tmpl", "fc_probe_last"):
         assert by[name] == grid[name], name
 
 
