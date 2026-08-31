@@ -3797,3 +3797,36 @@ Four reviews, and **every claim-level defect in all four was a SCOPE error, neve
 one.** `RAH-DR-004` adds: a correction can be applied to one document and not its three siblings
 (B1); a fix for one over-claim can introduce another (B2); and a mechanism can be generalised from
 the model that shows it while the second model **falsifies it** (B3).
+
+---
+
+## `RAH-R-026` — `B5` closed, and what a manifest can honestly attest about itself — 2026-08-31
+
+The manifest is re-run at **`9c97cfd0`**, the commit carrying every corrected deliverable, on a
+**clean tree** (`git status --porcelain` empty). It records `tree_dirty: false`.
+
+**The residual, stated rather than glossed.** Committing the manifest necessarily changes `HEAD`, so
+the manifest attests `9c97cfd0` while itself landing one commit later. **The only file differing
+between those two commits is the manifest.** That is the irreducible limit of a self-attesting
+artifact, and the honest form of the claim is:
+
+> *The manifest was executed on a clean tree at `9c97cfd0` and certifies every deliverable at that
+> commit. It cannot certify itself; the sole change between `9c97cfd0` and the manifest commit is
+> the manifest file.*
+
+That is what `reports/RAH_SPRINT_SUMMARY.md` and `RESEARCH_HANDOFF.md` now say — neither claims the
+manifest certifies the commit containing the manifest.
+
+### Sprint status: CLOSED
+
+All eight deliverables complete; four deep reviews run and their findings applied; the last review's
+five blocking defects fixed and re-verified.
+
+```
+Track A   A-IV / CANNOT ANSWER            RAH-R-018
+Track B   B-BLOCKED-BY-MATERIAL           RAH-R-021   (no causal arm run, ~20 GPU-h not spent)
+```
+
+**Final integrity record:** 9 preregistrations · 17 corrections · 4 deep reviews · 2 independent
+verifiers + 3 replay checks · 17 manifest numbers, 0 failures · 309 guard tests · **no ASR filtering
+at any point** · **no intervened arm interpreted on either track.**
