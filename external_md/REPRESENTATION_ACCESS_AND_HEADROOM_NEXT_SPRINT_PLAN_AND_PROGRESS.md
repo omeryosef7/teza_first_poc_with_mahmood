@@ -3376,3 +3376,85 @@ The audit was then read directly and the runs submitted by hand.
 Worth recording because it is the *inverse* of this sprint's usual failure: not a guard that passed
 vacuously, but a **gate that never fired at all** — which is the safe direction (nothing ran on an
 unverified bank), and which the 30-minute loop caught on its first pass.
+
+---
+
+## `RAH-R-021` — Track-B screening COMPLETE: **`B-BLOCKED-BY-MATERIAL`**. No confirmatory matrix is run — 2026-08-31
+
+**Status: CONFIRMATORY-SCREEN → the preregistered outcome `B-BLOCKED-BY-MATERIAL`, named in
+`RAH-PR-007` before any of this data existed.** Track B stops here.
+
+### The full screening table — every candidate, including every failure (§22)
+
+| cell | n | attacks | baseline ASR | domains | k_inf | qualifies | deterministic reason |
+|---|---|---|---|---|---|---|---|
+| **Llama × `carrot↔bomb`** | 152 | **25** | **0.1645** | 38 | 20 | **YES** | QUALIFIES |
+| Llama × `ticket↔knife` | 152 | 14 | 0.0921 | 38 | 10 | no | ASR 0.0921 < 0.1375 |
+| Qwen3 × `carrot↔bomb` | 152 | 11 | 0.0724 | 38 | 8 | no | ASR 0.0724 < 0.1375 |
+| Qwen3 × `ticket↔knife` | 152 | 5 | 0.0329 | 38 | **3** | no | ASR < 0.1375 **and** k_inf 3 < 6 |
+
+All four: judge 100 % pinned, `judge_status: ok` on 100 %, no duplicate ids, 38 domains,
+`natural_doublespeak × n_examples = 8`, cap 640, judged in one window. Refusal rates 0.013 / 0.217 /
+0.020 / 0.270.
+
+### The verdict
+
+**One cell of four qualifies, and it is the discovery pair on a single model.**
+
+* `ticket↔knife` — the pool's **only non-discovery pair** — fails on **both** models;
+* **`carrot↔bomb` fails on Qwen3 too** (0.0724). So there is **no qualifying cell on Qwen3 at all**,
+  and any confirmation would be **single-model** — which §29 says is not two independent
+  confirmations, and Qwen3 is the model whose binding collapse motivated the whole sprint.
+
+Per `RAH-PR-007`, `B-BLOCKED-BY-MATERIAL` means: **the confirmatory matrix is not run.** A
+confirmation on the discovery pair, on one model, is weaker than the design the sprint registered,
+and substituting it quietly is precisely what naming this outcome in advance was meant to prevent.
+**The ≈ 20 GPU-hour matrix is therefore not spent.**
+
+### What blocked it is MATERIAL, not the models
+
+Both facts are properties of the stimulus inventory:
+
+1. `RAH-PR-006` requires **k ≥ 30 domains**; only **5 of 37** banks reach it, covering **two** pairs;
+2. of those two, the non-discovery pair does not clear the ASR floor on either model.
+
+**The unblocking step is therefore a bank, not an experiment:** a 38-domain bank on a **new**
+lexical pair with a bomb-class concept. That needs fresh demonstration pools across 38 domains — a
+scoped, costed follow-up, recorded as the concrete next action rather than attempted here.
+
+### A well-controlled observation, scoped carefully
+
+The pair contrast is unusually clean — **same 38 domains, same verified-identical cut, same dose,
+same cap, same pinned judge, same window, same two models** — with only the lexical pair differing:
+
+| | `carrot↔bomb` | `ticket↔knife` | ratio |
+|---|---|---|---|
+| Llama | 0.1645 | 0.0921 | **1.79×** |
+| Qwen3 | 0.0724 | 0.0329 | **2.20×** |
+
+Direction consistent across both models. ⚠ **But the codeword and the concept change together**, so
+this is a **pair** effect and **cannot be attributed to the concept alone** — the same-codeword
+contrast that would isolate it (`ticket↔bomb` vs `ticket↔knife`) exists only on 6-domain material
+with a different cut. This is recorded as a **well-controlled observation**, not as a resolution of
+`RBD-C-017`, which downgraded exactly this claim to an observation for exactly this reason.
+
+It is, however, a **much better-controlled** version of that comparison than the one `RBD-C-017`
+criticised, where domains, role styles, dose, cap and judge all varied simultaneously.
+
+### Sprint status: both tracks are now resolved
+
+| track | outcome |
+|---|---|
+| **A** — representation vs access | **A-IV / CANNOT ANSWER** (`RAH-R-018`), with a transferable structural finding |
+| **B** — behavioural confirmation | **B-BLOCKED-BY-MATERIAL** (`RAH-R-021`), no causal arm run |
+
+Neither is the outcome the sprint hoped for, and both are preregistered outcomes reached by the
+registered rules rather than by judgement after the fact.
+
+### Checklist
+
+```
+[x] P8   screening algorithm frozen, then applied      RAH-PR-007 / RAH-R-021
+[x] P8   full candidate table published incl. failures RAH-R-021
+[-] P9   confirmatory matrix  -- NOT RUN, blocked by material, ~20 GPU-h not spent
+```
