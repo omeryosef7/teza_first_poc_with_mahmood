@@ -88,3 +88,25 @@ def test_pr002_exemplars_are_disjoint_from_the_candidate_vocabularies():
     for labels in (["poison", "lantern", "missile", "candle"],
                    ["bomb", "carrot", "knife", "ticket"]):
         assert not (set(pf.EXEMPLAR_WORDS) & set(labels))
+
+
+def test_d11_provenance_block_is_emitted_and_complete():
+    """`RAH2-DR-002` D11: provenance must be ATTESTED in the artifact, not asserted in prose.
+
+    Every job id and commit in the RAH2 log is prose, checkable only against SLURM logs that are not
+    part of the record. This asserts the block exists, carries the fields a reader needs, and is
+    actually wired into the written dict.
+
+    ⚠ The wiring half is a source check, not a round-trip: running `main()` needs a GPU and a model
+    load. It catches the key being dropped from `out`, not a bug in what it holds.
+    """
+    p = pf.provenance()
+    for k in ("git_commit", "git_dirty", "slurm_job_id", "slurm_nodelist", "hostname", "argv",
+              "started_utc", "finished_utc", "python"):
+        assert k in p, k
+    assert isinstance(p["git_dirty"], bool)          # never a string -- it is read as a condition
+    assert isinstance(p["argv"], list)
+    assert p["git_commit"] is None or len(p["git_commit"]) == 40
+    src = open(pf.__file__, encoding="utf-8").read()
+    assert '"provenance": prov' in src, "provenance() exists but is not written into the artifact"
+    assert 'prov["started_utc"] = started_utc' in src, "start time not stamped before the model load"

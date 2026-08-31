@@ -54,6 +54,7 @@ Usage (GPU):
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 
@@ -73,6 +74,33 @@ POSITIVE_CONTROL_THRESH = 0.1
 #: `07_patchscope_readout.INSPECTION_PROMPT` -- the ONLY configuration in this repository that has
 #: ever passed a patchscope positive control. Reproduced verbatim; do not "improve" it.
 ID_PROMPT = "hello hello\nworld world\ncat cat\nX"
+
+
+def provenance():
+    """`RAH2-DR-002` D11. Every job id, commit and `dirty=0` in the RAH2 log is **prose** — the
+    artifact schema carried none of it, so a reader could not check any of it without the SLURM
+    logs, which are not part of the record. This emits the block so provenance is **attested**.
+
+    Every field degrades to a string rather than raising: a provenance block must never be the
+    reason a completed sweep fails to persist. `git_commit` is None only if git itself is absent.
+    """
+    def _git(*a):
+        try:
+            return subprocess.run(("git",) + a, cwd=HERE, capture_output=True, text=True,
+                                  timeout=20).stdout.strip() or None
+        except Exception:                                   # noqa: BLE001 -- never block the write
+            return None
+    return {
+        "git_commit": _git("rev-parse", "HEAD"),
+        "git_dirty": bool(_git("status", "--porcelain")),
+        "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
+        "slurm_nodelist": os.environ.get("SLURM_JOB_NODELIST"),
+        "hostname": os.environ.get("HOSTNAME") or os.environ.get("SLURMD_NODENAME"),
+        "argv": sys.argv[1:],
+        "started_utc": None,          # filled by main(); the clock here is the LOGIN node's and
+        "finished_utc": None,         # skews ~3 min from the compute node (see the RAH2 log).
+        "python": sys.version.split()[0],
+    }
 
 
 def receiver_forms(concept, codeword, other_concept, other_codeword, probe):
@@ -338,6 +366,7 @@ def main():
     ap.add_argument("--outdir", default="outputs/boombness/rah_preflight")
     args = ap.parse_args()
 
+    started_utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     think = dc.parse_enable_thinking(args.enable_thinking)
 
     rows = [json.loads(l) for l in open(args.bank)]
@@ -499,7 +528,10 @@ def main():
                      "PASS" if rec["positive_control_ok"] else "fail"))
 
     any_pass = [r for r in results if r["positive_control_ok"]]
-    out = {"schema": SCHEMA, "model": args.model, "bank": os.path.abspath(args.bank),
+    prov = provenance()
+    prov["started_utc"] = started_utc
+    prov["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    out = {"schema": SCHEMA, "provenance": prov, "model": args.model, "bank": os.path.abspath(args.bank),
            "n_layers": nL, "attn_implementation": "eager", "enable_thinking": args.enable_thinking,
            "concept": concept, "codeword": codeword, "probe": args.probe,
            "label_words": label_words, "label_ids": label_ids, "label_meta": label_meta,

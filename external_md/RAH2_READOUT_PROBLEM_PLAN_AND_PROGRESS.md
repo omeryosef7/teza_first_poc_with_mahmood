@@ -529,6 +529,13 @@ So `RAH2-C-001`'s amendment retroactively obliges a **ladder held-out run**, whi
 **Submitted: jobs 827941 (Llama), 827942 (Qwen3).** Until they report, **`H1`'s held-out status for
 `cat_cue` is OPEN, not falsified.**
 
+> ✅ **CLOSED by `RAH2-R-003`** — they reported. `cat_cue` reads **0.0389 (Llama) / 0.0243
+> (Qwen3)** held-out, below the 0.05 mass gate under both readings. Per the standing scoping
+> (`RAH2-C-017`, reinstated by `RAH2-C-020`) that is a falsification on the model where an
+> exposure-clean positive control fires and CANNOT ANSWER on the other. **This marker is here so
+> a reader stopping at `RAH2-C-006` does not carry away "OPEN"** — the same defect `RAH2-C-024`
+> fixed at `RAH2-R-003`.
+
 ## D5 `RAH2-C-007` — `RAH2-R-001` made the exact inference `RAH2-C-001` says was not made
 
 `RAH2-R-001`: *"A form cannot climb 2–10 orders on a held-out pair when a better form fell 6."*
@@ -1337,3 +1344,46 @@ Two things worth keeping from this:
   that a warning contained its own violation.
 * **The guard fired on a document, not on code, and it fired on a commit I was confident in.** It is
   the only defect this phase that was caught by automation rather than by an auditor or by me.
+
+---
+
+## `RAH2-R-008` — the two items the log left owed, closed
+
+No registered gate remains and the queue is empty. Both outstanding **owed** items are now done; no
+new hypothesis was opened and no new receiver form was added.
+
+### 1. `RAH2-DR-002` D11 implemented — provenance is now ATTESTED, not asserted
+
+D11 recorded that every job id, commit and `dirty=0` in this log is **prose**, checkable only against
+SLURM logs that are not part of the record, and filed the fix as *"not yet implemented"*. It is now
+implemented: `provenance()` in `rah_preflight_transport.py` emits, into every artifact,
+
+`git_commit` · `git_dirty` · `slurm_job_id` · `slurm_nodelist` · `hostname` · `argv` ·
+`started_utc` · `finished_utc` · `python`
+
+Design notes worth keeping:
+
+* **Every field degrades to a string or `None` rather than raising.** A provenance block must never
+  be the reason a completed multi-hour sweep fails to persist — the opposite of this repo's usual
+  "resolvers should raise" rule, and deliberately so: this one is *metadata about* a result, not an
+  input *to* it.
+* `started_utc` is stamped **before the model load**, `finished_utc` at write. ⚠ Both are the
+  **running node's** clock, which was measured ~3 min from the login node's during this phase — so
+  they date the run, they do not order it against `squeue` output.
+* **Retrospective limitation:** the 16 RAH2 artifacts already on disk **cannot** be back-filled and
+  do not carry the block. Their provenance stays prose. This helps the next phase, not this one.
+
+`+1` guard test (`tests/test_rah_preflight_spans.py` 9 → **10**), **RED-checked**: dropping
+`"provenance": prov` from the written dict turns it red. ⚠ The wiring half is a **source check**, not
+a round-trip — running `main()` needs a GPU and a model load — so it catches the key being dropped,
+not a bug in what it holds. Stated here rather than left for an auditor to find.
+
+### 2. A stale `OPEN` marker closed in place
+
+`RAH2-C-006` ended *"`H1`'s held-out status for `cat_cue` is **OPEN, not falsified**"*. `RAH2-R-003`
+closed it, but **`RAH2-C-006` itself carried no forward pointer**, so a reader stopping there carried
+away "OPEN". A `✅ CLOSED by RAH2-R-003` marker is now inline at `RAH2-C-006` — the same defect
+`RAH2-C-024` fixed at `RAH2-R-003`, found by grepping the log for its own unresolved-status phrases.
+
+**That grep is worth inheriting**: `grep -n "is OPEN\|is owed\|not yet implemented\|filed, not"` over
+an append-only log finds every promise the log made to itself and did not visibly keep.
