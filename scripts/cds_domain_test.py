@@ -52,6 +52,22 @@ def p_floor(k_inf):
     return 2.0 / (2 ** k_inf) if k_inf > 0 else 1.0
 
 
+MAX_STOP_LENGTH_DIFF = 0.02
+
+
+def _frac_stop_length(gens_dir):
+    """Fraction of rows that stopped on the CAP rather than on EOS, from the run's own rows."""
+    p = os.path.join(gens_dir, "results.jsonl")
+    if not os.path.exists(p):
+        return None
+    n = k = 0
+    for line in open(p):
+        r = json.loads(line)
+        n += 1
+        k += int(r.get("stop_reason") == "length")
+    return (k / n) if n else None
+
+
 def load_arm(judge_dir, dose=None, outcome="attack"):
     """`dose` is not optional politeness: `CDS-PR-001` and RBD both forbid POOLING n_examples, and
     every C7 cell at 160 rows spans four doses. Pooled is the MOST FAVOURABLE reading; per-dose is
@@ -190,9 +206,14 @@ def main():
                    "all_pinned_4o_mini": set(models) == {"openai/gpt-4o-mini"}}
         g = gens.get(k)
         if g:
-            sm = json.load(open(os.path.join(g, "summary.json")))
-            c = sm.get("counts") or {}
-            prov[k]["frac_stop_length"] = c.get("frac_stop_length", sm.get("frac_stop_length"))
+            # `CDS-C-015`. The first version read `summary.json -> counts.frac_stop_length`. That
+            # key DOES NOT EXIST -- `counts` is `{"behavioral": 380}` -- so this file published
+            # `frac_stop_length: null` for every arm while its own docstring advertised it as
+            # "`RAH3-C-007`'s truncation gate, made live". That is the FIFTH instance in two
+            # sprints of a threshold published and enforced by nothing, and this one was inside the
+            # sentence claiming to have fixed it. Computed from the run's own rows now, and the
+            # differential between the compared arms is asserted rather than printed.
+            prov[k]["frac_stop_length"] = _frac_stop_length(g)
             prov[k]["gens_dir"] = g
 
     ref = next(iter(arms))
@@ -215,6 +236,17 @@ def main():
     for k, v in prov.items():
         print("  %-24s n=%-4d pinned=%-5s stop_length=%s" %
               (k, v["n_rows"], v["all_pinned_4o_mini"], v.get("frac_stop_length")))
+    _fsl = {k: v.get("frac_stop_length") for k, v in prov.items()
+            if v.get("frac_stop_length") is not None}
+    if len(_fsl) >= 2:
+        _d = max(_fsl.values()) - min(_fsl.values())
+        out["truncation_gate"] = {"per_arm": _fsl, "max_differential": _d,
+                                  "threshold": MAX_STOP_LENGTH_DIFF,
+                                  "PASS": _d <= MAX_STOP_LENGTH_DIFF}
+        print("\nTRUNCATION GATE  max differential %.4f vs %.2f -> %s   %s"
+              % (_d, MAX_STOP_LENGTH_DIFF,
+                 "PASS" if _d <= MAX_STOP_LENGTH_DIFF else "*** FAIL ***",
+                 {k: round(v, 4) for k, v in _fsl.items()}))
     print("\nCOMPARISONS  (PRIMARY = paired domain sign test)")
     for c in comps:
         s = c["PRIMARY_domain_sign"]

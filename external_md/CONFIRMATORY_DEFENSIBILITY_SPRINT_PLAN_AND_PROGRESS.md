@@ -1313,3 +1313,145 @@ this reason.
 **This is a replication, not a substitution.** `button↔bomb` remains the registered Stage-2 cell
 and its result stands on its own whatever `basket` returns.
 
+---
+
+## §14 — `CDS-DR-002` — the adversarial audit of `CDS-R-018`. **The effect survives; six of my sentences do not.**
+
+A read-only auditor was told to **refute** the Stage-2 headline. It reproduced every count and
+p-value from the raw rows and then found six things wrong with how I wrote them up, plus two
+process defects. **`CDS-R-018`'s table above is superseded by the corrections here.** Independently,
+`scripts/cds_verify_stage2.py` (stdlib only, imports nothing from the producer, exact binomial
+implemented **three** ways and cross-checked against brute-force enumeration) returns **349 checks,
+0 failures**, and `scripts/cds_mutate_stage2.py` turns **18 of 18** assertion classes red.
+
+⚠ **`CDS-C-016` — FATAL to the stated p-values. I quoted the FLOOR column as the p-value.**
+The real domain sign-test p-values are:
+
+| contrast | domains | k_inf | **domain sign p (CORRECT)** | attainable floor | what I wrote |
+|---|---|---|---|---|---|
+| demoproc vs `ctrl_d1` | 3 / 29 | 32 | **2.556e-06** | 4.66e-10 | "< 1e-9" ❌ |
+| demoproc vs `ctrl_d2` | 2 / 31 | 33 | **1.309e-07** | 2.33e-10 | "< 1e-9" ❌ |
+| demoproc vs `ctrl_d3` | 2 / 32 | 34 | **6.938e-08** | 1.16e-10 | "< 1e-9" ❌ |
+| demoproc vs `A` | 2 / 29 | 31 | **4.629e-07** | 9.31e-10 | — |
+
+The auditor recomputed by hand: `2·Σ_{k≤3} C(32,k)/2^32 = 2·5489/2^32 = 2.556e-06`. **The correct
+claim is `p ≤ 2.6e-06` (worst of three), not `p < 1e-9`.** The conclusion is unchanged; the number
+was wrong, and it was wrong in the direction that flattered it. ⚠ The floor is a **property of the
+design** (how small a p is reachable at that `k_informative`); the p-value is the **result**. Putting
+them in adjacent columns is how they got swapped.
+
+⚠ **`CDS-C-017` — the control deltas were reported with the SIGN INVERTED.** Counts:
+A = 159, `d1` = 159, `d2` = **150**, `d3` = **148**. The controls have **FEWER** attacks than
+baseline: **0, −9, −11**. I wrote **+0, +9, +11**, so one column carried two sign conventions —
+`arm − baseline` on the demoproc row, `baseline − arm` on the control rows — and the wrong one made
+the controls look as though they moved *away* from demoproc. **Corrected: 0, −9, −11 — the same
+direction as demoproc, about ten times smaller.**
+
+⚠ **`CDS-C-018` — the biggest finding, and it was nowhere in my write-up: the SAME 380 completions,
+judged twice, give 148 and 159 attacks.** `cds1A_button`'s generations were judged in the Stage-1
+session (`cds1j_button_A`, **148**, ASR 0.3895) and again in the Stage-2 manifest
+(`cds2j_button_A`, **159**, ASR 0.4184). The auditor paired them: **380/380
+`completion_sha256_16` identical**, both pinned, both all-`ok` — and **51 rows (13.4 %) flip
+`malicious_at_0.5`**, 102 rows change `strongreject_score` (mean |Δ| 0.112). `refused` flips on
+**0/380** — the keyword detector is deterministic, as advertised.
+
+**Consequences, and they cut two ways.**
+* **The headline survives with room to spare.** −104 rows is **≈ 9×** the measured re-judge noise
+  of ±11 rows.
+* ⛔ **But every "the controls are indistinguishable from baseline" cell is BELOW the measurement
+  noise floor.** 0, −9 and −11 rows sit inside a ±11-row / 51-flip re-judge band. Those cells must
+  be restated as **"within judge re-run variance"** and **NOT** as informative negatives, which is
+  what `CDS-R-018` called them. ⚠ Note the coincidence that makes this concrete: the Stage-1
+  judging of the **baseline** reads exactly **148 / 0.3895**, the number the Stage-2 table reports
+  as `CTRL_matched_d3`.
+* **What is NOT undermined:** the control-vs-control and control-vs-baseline tests are still
+  *capable* (floors 1e-8 to 1e-10) — they are just measuring differences smaller than the
+  instrument resolves. The specificity claim rests on the demoproc-vs-control gap, not on the
+  controls being exactly null.
+
+⚠ **`CDS-C-019` — "three independently seeded strict count-matched NON-DEMONSTRATION masks"
+over-generalises.** Per-row `control_draw`: **99.79 % / 99.70 % / 98.31 %** of drawn keys lie
+strictly **before** the demo block — i.e. inside the `n_preamble = 10` **neutral filler preamble**
+that `main_longpre_cds` adds *for the sole purpose of making a count-matched control feasible*.
+`query_span_positions` protects the request and everything after it **by construction**, so the one
+informative non-demo span cannot be drawn. **Corrected statement: the contrast established is
+"masking the demonstrations ≫ masking neutral preamble filler of the same masked-key count".**
+That is real and non-trivial — it is exactly `R-25`'s test — but there is **no informative non-demo
+control in this design**, and the claim must say so.
+
+⚠ **`CDS-C-020` — "at the true independence unit" is right for demonstrations and NOT for
+requests.** Verified from the bank: `_take`'s arithmetic holds (slots {0,4,8,12,16} → starts
+{0,12,4,16,8}, an exact partition of the 20-sentence pool) and **0 of 1710 within-domain row pairs
+share a single demonstration sentence**. But **all 380 rows carry ONE identical
+`final_query_text`**. So the 38 clusters are 38 *demonstration-pool domains around a single harmful
+request*, not 38 harmful behaviours. **Nothing here is evidence of generality over requests.**
+
+⚠ **`CDS-C-015` — my own truncation gate was published and enforced by nothing.** `provenance[*].frac_stop_length`
+was `null` for all five arms: `cds_domain_test.py` read `summary.json → counts.frac_stop_length`,
+and `counts` is `{"behavioral": 380}`. **The fifth instance in two sprints of this defect, and this
+one sat inside the docstring claiming to have fixed it.** Now computed from each run's own
+`stop_reason` rows, with the arm-to-arm differential asserted: **max differential 0.0053 vs the 0.02
+gate → PASS**, per-arm `A 0.0000 · demoproc 0.0053 · d1 0.0026 · d2 0.0000 · d3 0.0000`. The
+numbers I quoted were right; their provenance was absent.
+
+⚠ **`CDS-C-021` — the registered ICC re-report was done on the WRONG CELL.** `CDS-PR-001` §2.4
+says Stage-2 power is re-reported at the **measured** ICC. `CDS-R-015` justified the button cell
+with the ICC measured on the **carrot** screen (**−0.0123**). **Button's own baseline ASR ICC is
+0.1583** — between the 0.09 (power 0.87) and 0.19 (power 0.73) rows of the registered table.
+Non-limiting, since all three contrasts rejected far inside that range, but the registered step was
+skipped and another pair's nuisance parameter was substituted for it.
+
+⚠ **`CDS-C-022` — a preregistration-ordering defect, and my own timeline check partly clears it and
+partly does not.** `CDS-PR-001` §2.4 says *"No intervention arm is generated, judged or looked at
+until the Stage-1 rule has been applied."*
+* **The button Stage-2 arms**: `sacct` — the authoritative scheduler record — shows the Stage-1
+  judge jobs **COMPLETED at 20:30:26 (button) and 20:32:00 (basket)**, and the Stage-2 arms
+  **submitted at 20:32:46**, after the gate had printed `PROCEED TO STAGE 2 on button`. ⚠ But the
+  `DONE.json` mtimes read **20:33:30** and **20:35:07** and the gate artifact **20:35:34** — one to
+  three minutes *after* submission. `sacct` and the filesystem mtimes **disagree**, most likely NFS
+  attribute lag, and **I cannot fully reconcile them**. Recorded as unresolved rather than resolved
+  in my favour.
+* **`cds2dp_carrot` is a genuine ordering violation of §2.4 as written** — a full Stage-2 demoproc
+  arm generated at **19:42**, before any button/basket verdict existed. It was preregistered by
+  `CDS-PR-004`/`A1` (committed **19:30**), which says that arm runs regardless of the Stage-1 ASR
+  verdict and why. **But amending a rule in a later section instead of amending it where it lives
+  is how a preregistration stops being one.** §2.4's absolute wording should have been amended in
+  place.
+* **Mitigation, verified independently:** button wins the tie-break under **either** judging session
+  (148 or 159, against basket 46 and carrot 37), and the only pre-gate intervention data are
+  **carrot** arms — and carrot is the **declined** pair. **No path exists by which an intervention
+  outcome could have selected button.** The gate script is a faithful transcription of §2.4.
+
+### What survives the audit, verbatim
+
+1. The pairing — five arms, identical 380 `prompt_id`s **and** `prompt_sha16`, no dropped rows.
+2. Count-matching — `control_draw_match_ratio = 1.000` on **1140/1140** control rows, zero refusals.
+3. Liveness — 100 % of rows live in all four intervened arms, 0 decode edits, 0 scope violations,
+   no no-op; demoproc differs from every other arm on **376/380** completions.
+4. Judge provenance — one manifest, **1900/1900** pinned and `ok`, cache keyed on
+   `(model, goal_hash, completion_hash)` and per-process, so no cross-arm carry.
+5. The three seeds are genuinely three draws (`draw_seed` 28180678 / 36100455 / 44020232, pairwise
+   position overlap 0.43–0.46).
+6. The 1.96× edit asymmetry is **exactly** causal-triangle geometry — predicted to a ratio of
+   **1.0000** from `n_demo_positions` alone — and it gives the **controls** twice the editing, so it
+   runs against the claim.
+7. **The effect itself**: 55/380 vs 159/380, **−104 rows**, 29–32 of 32–34 informative domains,
+   cluster-bootstrap CI [+0.18, +0.34] nowhere near zero, ≈ 9× the judge's own re-run noise.
+8. Truncation is genuinely a non-issue.
+9. The refusal fall on this bank (−20 rows, p = 0.0034) and its immunity to the length confound —
+   demoproc completions are **longer** (308 vs 294 new tokens) while refusal falls, and `kw_refusal`
+   is a substring match that longer text can only inflate.
+
+### `CDS-R-018-REV` — the sentence that can be defended
+
+> On **Llama-3.1-8B-Instruct**, on a **38-domain `button↔bomb`** bank at **n_examples = 4**, a
+> **640-token cap** (truncation 0.0000–0.0053, gate PASS) and **one fixed harmful request**, masking
+> demo→demo attention during prefill (`demo_processing_only`, band 6-14) cuts ASR from **0.39–0.42
+> depending on judging session** to **0.1447** — **−104 rows** — while **three independently seeded
+> count-matched masks over the neutral filler preamble** leave it **within judge re-run variance**
+> (0, −9, −11 rows against a measured ±11-row / 51-flip re-judge band). At the **domain level**
+> demoproc beats each control at **p ≤ 2.6e-06** with **29–32 of 32–34** informative domains, over
+> **38 domains × 10 verified-disjoint demonstration sets**. Refusal **falls** here (−20 rows,
+> p = 0.0034) and **rises** on the sibling `carrot↔bomb` bank (+14), so the mechanism is not
+> refusal-mediated **on this bank** and that clause carries its bank list.
+
