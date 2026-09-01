@@ -507,6 +507,75 @@ denominator, not 380.
 **Verdicts:** `CONFIRMED` (all three contrasts reject in all three passes) · `CAPABLE NULL` (capable
 and one or more fail) · `VOID` (a pass aborts, mixes judges, or fails its hash join).
 
+### 7.2 `TSC-R-001` — **CONFIRMED.** The headline survives three independent judging passes, and the re-judge band is BIGGER than we thought
+
+Two further pinned passes (`tsc2ja`, `tsc2jb`) were run over the **existing** five-arm button
+manifest. **No completion was regenerated**; `completion_sha256_16` was asserted identical across
+passes on all 380 rows of all five arms, every row `judge_status = ok`, every row
+`judge_model_used = openai/gpt-4o-mini` — the analyser **refuses** rather than proceeding if any of
+those fails.
+
+**PRIMARY — the registered rule was: all three demoproc-vs-control domain sign tests must reject in
+every pass. They do.**
+
+| contrast | pass 2 (`cds2j`) | pass 3 (`tsc2ja`) | pass 4 (`tsc2jb`) |
+|---|---|---|---|
+| demoproc vs `ctrl_d1` | p = **2.556e-06**, k_inf 32 | p = **1.309e-07**, k_inf 33 | p = **1.309e-07**, k_inf 33 |
+| demoproc vs `ctrl_d2` | p = **1.309e-07**, k_inf 33 | p = **1.093e-05**, k_inf 33 | p = **1.624e-06**, k_inf 29 |
+| demoproc vs `ctrl_d3` | p = **6.938e-08**, k_inf 34 | p = **2.463e-07**, k_inf 32 | p = **6.165e-06**, k_inf 34 |
+
+**Worst case over 9 tests: p = 1.093e-05.** All nine `CAPABLE = true`. ✅ **`CONFIRMED`.**
+
+**Attack counts per arm per pass — this is the part that matters:**
+
+| pass | `A` | `demoproc` | `ctrl_d1` | `ctrl_d2` | `ctrl_d3` |
+|---|---|---|---|---|---|
+| pass 2 | 159 | 55 | 159 | 150 | 148 |
+| pass 3 | **147** | 55 | 160 | 139 | 147 |
+| pass 4 | **142** | **49** | 153 | 143 | 143 |
+| **majority vote** | **143** | **46** | **158** | **138** | **142** |
+
+**Row-level judge noise, measured on byte-identical text:**
+
+| arm | pairwise flip rate (rows) | flips on **distinct completions** | unanimous over 3 passes | **re-judge band** |
+|---|---|---|---|---|
+| `A` | 13.4 – **15.3 %** | 14.7 – 16.8 % | 299/380 = **78.7 %** | **17 rows** |
+| `demoproc` | 10.5 – 12.1 % | 10.9 – 12.5 % | 315/380 = 82.9 % | 6 rows |
+| `ctrl_d1` | 9.7 – 14.7 % | 10.7 – 16.2 % | 308/380 = 81.1 % | 7 rows |
+| `ctrl_d2` | 14.0 – **17.1 %** | 15.3 – 18.8 % | 292/380 = **76.8 %** | 11 rows |
+| `ctrl_d3` | 14.2 – 16.1 % | 15.7 – 17.7 % | 292/380 = 76.8 % | 5 rows |
+
+⚠ **`TSC-C-003` — the measured re-judge band on the baseline arm is 17 rows, not 11.** `CDS-C-018`
+had two passes and read ±11. With three it reads **±17** on `A` and only **76.8–82.9 %** of rows are
+unanimous. ⛔ **Every threshold this project states in rows must use 17, not 11.**
+
+**The instrument control, and it is decisive.** On the **`refused`** endpoint the same three passes
+give **42 / 42 / 42** on `A` and **22 / 22 / 22** on `demoproc`, with **0 flips out of 380** and
+**380/380 unanimous** in every pair. So the completions really are byte-identical, the join is sound,
+and the plumbing is deterministic: **100 % of the 10–17 % attack-label variance is the LLM judge and
+none of it is generation, ordering or hashing.**
+
+**Consequences.**
+* ✅ **The effect is far outside the noise.** −104 / −92 / −93 rows per pass, **−97 under majority
+  vote**, against a **17-row** band → **≈ 5.5×**. The conclusion never changes.
+* ⛔ **`CDS-C-018` is now proved rather than suspected: the 0 / −9 / −11 control cells are noise.**
+  Under majority vote the same three cells read **+15 / −5 / −1**, and **`ctrl_d1` changes SIGN**
+  (0 → +15). A quantity whose sign depends on which judging pass you happened to run is not an
+  informative negative. ⛔ **"the controls are indistinguishable from baseline" must not be written**;
+  the specificity claim rests on the demoproc-vs-control **gap**, which is 5.5× the band, and on
+  nothing about the controls being exactly null.
+* ⚠ **The baseline drifts DOWN monotonically across passes** (159 → 147 → 142) while `demoproc`
+  barely moves (55 → 55 → 49). The measured **effect size** therefore depends on the pass by ~12
+  rows. Report the majority-vote figure, and report the range.
+
+**Artifacts.** `outputs/boombness/cds_analysis/tsc2j{a,b}_button_{specificity,refusal}_domain_test.json`
+· `…/tsc_judge_robustness_button_{A,demoproc,ctrl_d1,ctrl_d2,ctrl_d3}_attack.json`
+· `…/tsc_judge_robustness_button_{A,demoproc}_refused.json`
+· analyser `scripts/tsc_judge_robustness.py` (stdlib only, scalar judge columns only, never opens
+`gens.jsonl`).
+
+---
+
 ## §8 — P4 — the request-diverse confirmatory bank
 
 **This is the most important generality gap in the thesis.** The current headline establishes
