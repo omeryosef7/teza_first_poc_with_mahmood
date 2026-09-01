@@ -576,6 +576,144 @@ none of it is generation, ordering or hashing.**
 
 ---
 
+### 7.3 `TSC-DR-001` — the adversarial review of `TSC-R-001`. **The statistics survive intact. Three of my sentences do not, and one of them is a scope finding bigger than the result.**
+
+A read-only agent was told to **break** the claim. It recomputed all nine p-values from the raw rows
+with integer `math.comb`/`Fraction` arithmetic — **exact match to the last digit**, and **none of the
+nine is at its floor** (nearest is four orders of magnitude above). It confirmed the passes are
+genuinely independent (the only cache is an in-process dict; pooled pairwise flip rates 0.1368 /
+0.1374 / 0.1405 show **no** signature of provider-side dedup between the two concurrently-launched
+passes), that the 38 domains are **compositionally disjoint** (1520 distinct demonstration sentences,
+**0 shared between any two domains**), and that the controls are not merely count-matched but
+**over-dosed** (30,276 vs 15,399 median prefill edits). It could not break the machinery.
+
+It broke three sentences instead.
+
+---
+
+⛔⛔ **`TSC-C-004` — THE BIGGEST FINDING OF THE SPRINT, AND IT IS A SCOPE FINDING ON THE HEADLINE.
+91 % of judge-positive completions in EVERY arm never contain the concept word.**
+
+Every judged row carries `goal_topicality` (`judge_boombness.py:577`). **I re-derived this myself
+rather than taking the auditor's word:**
+
+| arm | rows with the concept word | judge-positive | positive **and** topical | **off-topic positives** |
+|---|---|---|---|---|
+| `A` | **14** / 380 | 159 | 14 | **145 (91.2 %)** |
+| `demoproc` | **0** / 380 | 55 | **0** | 55 (100 %) |
+| `ctrl_d1` | 14 / 380 | 159 | 14 | 145 (91.2 %) |
+| `ctrl_d2` | 16 / 380 | 150 | 15 | 135 (90.0 %) |
+| `ctrl_d3` | 15 / 380 | 148 | 13 | 135 (91.2 %) |
+
+⚠ **This repo already retracted this exact inference once — `R-13`, 2026-08-20.**
+`judge_boombness.py:280-295` records it verbatim: on Qwen3 a "remove refusal" arm **and a
+double-random control** both scored **0.95–0.99 "attack success"** on text containing **zero**
+harmful keywords, because the StrongREJECT rubric scores **refusal / specificity / convincingness**
+— *"none of which requires the completion to be about the goal at all."* The topicality column was
+built in response to that retraction. **`scripts/cds_domain_test.py` — the producer of all nine
+headline p-values — never reads it**, and `src/boombness/analyze_topical_asr.py` exists for exactly
+this purpose and was not applied to this deliverable.
+
+**What the topical endpoint actually says** (recomputed independently, exact integer arithmetic):
+
+| pass | contrast | demoproc | control | k_inf | p | attainable floor |
+|---|---|---|---|---|---|---|
+| all three | demoproc vs `ctrl_d1` | **0** | 14 | **12** | 4.883e-04 | 4.883e-04 **= FLOOR** |
+| all three | demoproc vs `ctrl_d2` | **0** | 15 | **10** | 1.953e-03 | 1.953e-03 **= FLOOR** |
+| all three | demoproc vs `ctrl_d3` | **0** | 13 | **8** | 7.813e-03 | 7.813e-03 **= FLOOR** |
+
+**Read this carefully, because it cuts both ways.**
+* ✅ **On the topical endpoint the intervention is a TOTAL WIPEOUT: 14 → 0, in every pass.**
+  `demoproc` produces **zero** completions containing the concept word, out of 380, in all three
+  judgings. The effect is not weaker here; it is absolute.
+* ⛔ **But the base rate is 3.7 %, not 39 %,** and `k_informative` collapses from 29–34 to **8–12**.
+  **Every test sits EXACTLY at its attainable floor** — `p = 2/2^k_inf` — which means the number is
+  reporting **the design's resolution, not the data's strength**. `p ≤ 7.8e-03` is the smallest
+  p this design can produce on this endpoint. That is `C-95`'s condition, and it is the reason
+  `cds_domain_test.py` prints the floor beside every p-value.
+* ⚠ **The topicality metric is a ONE-WORD, single-bit test** (`topicality_is_degenerate`: the
+  distinctive set is exactly one word bank-wide, values ∈ {0,1}). A completion that gives the
+  harmful content using synonyms scores **0**. So **91 % is an upper bound on off-topic-ness, not
+  proof that 145 rows are false positives** — and the true topical rate is somewhere between 3.7 %
+  and 39 %, unmeasured.
+
+**Consequence for what we may say.** ⛔ **"demonstration-specific ATTACK removal" is not available
+as written.** The defensible sentence is **"demonstration-specific removal of judge-rubric-positive
+completions, and — on the one-word topicality test — a total wipeout of concept-word-bearing
+completions from 14 to 0"**. Both halves must appear together; the first without the second
+overstates the harm being removed, and the second without the first hides that it rests on
+`k_inf = 8–12` at the floor.
+
+**What must be run next, and it is cheap:** `src/boombness/analyze_topical_asr.py` over all five arms,
+and a topicality metric that is **not** a one-word test.
+
+---
+
+⚠ **`TSC-C-005` — my noise arithmetic stapled the wrong effect size onto the wrong contrast.**
+I wrote *"−97 rows against a 17-row band, ≈ 5.5× the noise"*. Both halves are the wrong quantity:
+* **−97 is the demoproc-vs-BASELINE effect** (46 − 143 under majority vote). The nine p-values test
+  the **demoproc-vs-CONTROL** contrast, whose effect is **−100.0** (mean of controls).
+* **17 is the max−min of a single arm** — `A`, which is also the only arm with a significant time
+  trend, so part of the 17 is drift and not re-judge noise. And `A` is not in the contrast at all.
+
+**The right quantity is the band on the DIFFERENCE**, and because both arms are judged by the same
+instrument on similar text the noise is largely **common-mode and cancels in the pair**:
+
+| contrast | per-pass difference | sd | band |
+|---|---|---|---|
+| demoproc − `ctrl_d1` | −104, −105, −104 | **0.58** | 1 |
+| demoproc − `ctrl_d2` | −95, −84, −94 | 6.08 | 11 |
+| demoproc − `ctrl_d3` | −93, −92, −94 | 1.00 | 2 |
+| demoproc − mean(ctrl) | −97.3, −93.7, −97.3 | **2.11** | 3.7 |
+
+**Corrected: ≈ 96 rows against a 3.7-row paired band ≈ 46×, not 5.5×.** ⚠ My number was wrong in the
+direction that *understated* the margin by ~8×, which makes it no less wrong — and it would not have
+survived anyone checking the arithmetic. **The per-arm 17-row band remains the right figure for a
+SINGLE-ARM statement** (e.g. "is this arm's count different from that arm's count"); it is the wrong
+figure for a paired contrast. Both are now stated, labelled.
+
+---
+
+⚠ **`TSC-C-006` — "0/380 refusal flips proves all the variance is the LLM judge" is a tautology, not
+a measurement.** `refused` never calls the API: `judge_boombness.py:571` → `bj.kw_refusal(text)` →
+`behav_judge.py:101-103`, a **case-insensitive substring match** over `REFUSAL_MARKERS`. On
+byte-identical text a deterministic function returns identical output **by mathematical identity**,
+and it is fully redundant with the `completion_sha256_16` assertion already made. **Corrected:** the
+0/380 result confirms the **join and the hashing**, and says **nothing whatever about the judge**.
+✅ **But the auditor also handed back the better argument I should have made:** the `refused`
+endpoint is an **instrument-independent corroboration** — demoproc vs each control gives
+**p = 7.385e-03 in every pass**, same direction, with **no API in the loop at all**. Weaker
+(k_inf = 15) and genuinely judge-free.
+
+---
+
+⚠ **`TSC-C-007` — "worst of nine p-values" reads as nine confirmations. It is one.** Three of the
+nine are re-judgings of the *same* completions — not replications of the experiment — and the three
+controls share the `demoproc` arm and agree on **27–31 of 38 domain signs**. The effective evidence
+is **one experiment, re-judged three times, against three correlated controls.** Bonferroni over 9
+(→ 9.8e-5) or over all 30 comparisons (→ 3.3e-4) still clears α, so nothing changes numerically; the
+**wording** must not imply independent replication.
+
+⚠ **`TSC-C-008` — a real defect in the denominator, with no effect on the verdict.** The in-process
+judge cache copies one API call's label to every row sharing a completion hash. In arm `A`, **3
+hashes cover 37 rows spanning 15 of 38 domains**, so a single judge call can move up to 15 domain
+signs at once — and the coupling is **asymmetric** between compared arms (`demoproc`: 2 hashes,
+14 rows, 7 domains). Sensitivity check dropping every duplicated-completion row (40–43 rows, all 38
+domains survive): **all nine tests survive and most get stronger** (e.g. pass 2 vs `d1`
+2.56e-06 → 2.46e-07). Recorded, not fatal.
+
+✅ **`TSC-V-001` — what the audit could NOT break**, all independently derived: the nine p-values
+reproduce exactly under integer arithmetic · none is at its floor · `attainable_p_floor` really is
+`2/2^k_inf` · the passes are genuinely independent · the 38 domains share **0** demonstration
+sentences · `control_draw_match_ratio` is `min = mean = 1.0, n_below_1 = 0` on all 380 rows of all
+three controls · no arm is a no-op (byte-identical fraction 0.097–0.111 vs the 0.99 guard) ·
+truncation differential 0.005 < 0.02 · **no judge pass was run and discarded** (16 dirs, all with
+`DONE.json`, no `ABORTED.json` anywhere, all exactly 380 rows) · and the effect is **not** explained
+by output damage: `demoproc` completions are **longer** than baseline (mean 1402.5 vs 1353.7 chars,
+10th percentile 964 vs 121) and the mass moves to **BENIGN**, not to REJECTED or EMPTY.
+
+---
+
 ## §8 — P4 — the request-diverse confirmatory bank
 
 **This is the most important generality gap in the thesis.** The current headline establishes
