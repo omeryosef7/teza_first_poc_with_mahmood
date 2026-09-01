@@ -24,6 +24,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_ARTIFACT = os.path.join(ROOT, "outputs/boombness/cds_analysis",
                                 "cds2_button_specificity_domain_test.json")
 JUDGE_ROOT = os.path.join(ROOT, "outputs/boombness/judge")
+#: PARAMETERISED 2026-09-02 (`TSC-P1`). These were module constants pinned to the button headline,
+#: so verifying the basket replication would have meant FORKING the verifier -- and a forked
+#: verifier is two instruments that drift apart, one of which quietly keeps an old assertion.
+#: They are now REQUIRED command-line inputs with the button values as defaults, and the design
+#: shape (`--expect-rows-per-domain`) must be stated EXPLICITLY by the caller: a design check that
+#: infers its own expectation from the data it is checking is not a check.
 JUDGE_PREFIX = "cds2j_button_"
 DOSE = 4
 ALPHA = 0.05
@@ -211,9 +217,39 @@ def derive(a_rows, b_rows):
 
 # ------------------------------------------------------------------ main
 def main():
+    global JUDGE_PREFIX, DOSE
     ap = argparse.ArgumentParser(description="independent verifier for the Stage-2 artifact")
     ap.add_argument("--artifact", default=DEFAULT_ARTIFACT)
+    ap.add_argument("--judge-prefix", default=JUDGE_PREFIX,
+                    help="the judge-dir prefix whose runs must be EXACTLY the arms in the artifact")
+    ap.add_argument("--dose", type=int, default=DOSE)
+    ap.add_argument("--expect-rows", type=int, default=380,
+                    help="rows per arm; REFUSES if any arm differs")
+    ap.add_argument("--expect-domains", type=int, default=38)
+    ap.add_argument("--expect-rows-per-domain", default="10:38",
+                    help="the design shape, as a comma list of ROWS:COUNT pairs, e.g. '10:37,7:1' "
+                         "for the basket population. Stated by the caller, never inferred: a check "
+                         "that reads its expectation off the data under test asserts nothing.")
+    ap.add_argument("--expect-arms", type=int, default=5)
     a = ap.parse_args()
+    JUDGE_PREFIX, DOSE = a.judge_prefix, a.dose
+    try:
+        want_shape = {}
+        for part in a.expect_rows_per_domain.split(","):
+            rows_s, cnt_s = part.split(":")
+            want_shape[int(rows_s)] = want_shape.get(int(rows_s), 0) + int(cnt_s)
+    except ValueError:
+        raise SystemExit("REFUSING: --expect-rows-per-domain must be 'ROWS:COUNT[,ROWS:COUNT...]', "
+                         "got %r" % a.expect_rows_per_domain)
+    if sum(r * c for r, c in want_shape.items()) != a.expect_rows:
+        raise SystemExit(
+            "REFUSING: --expect-rows-per-domain %r sums to %d rows but --expect-rows says %d. "
+            "The two describe the same population and disagreeing is a caller error, not a result."
+            % (a.expect_rows_per_domain, sum(r * c for r, c in want_shape.items()), a.expect_rows))
+    if sum(want_shape.values()) != a.expect_domains:
+        raise SystemExit(
+            "REFUSING: --expect-rows-per-domain %r names %d domains but --expect-domains says %d."
+            % (a.expect_rows_per_domain, sum(want_shape.values()), a.expect_domains))
     pub = json.load(open(a.artifact))
     print("VERIFYING %s\n" % a.artifact)
 
@@ -237,17 +273,19 @@ def main():
     check_num("meta/alpha", ALPHA, pub.get("alpha"))
     check_eq("meta/dose", DOSE, pub.get("dose"))
     check_eq("meta/outcome", "attack", pub.get("outcome"))
-    check_eq("meta/n_arms", 5, len(arms))
+    check_eq("meta/n_arms", a.expect_arms, len(arms))
     disc = sorted(d for d in os.listdir(JUDGE_ROOT) if d.startswith(JUDGE_PREFIX))
     used = sorted(os.path.basename(prov[k]["judge_dir"].rstrip("/")) for k in arms)
-    check_eq("prov/judge dirs are exactly the five %s* runs on disk" % JUDGE_PREFIX, used, disc)
+    check_eq("prov/judge dirs are exactly the %d %s* runs on disk" % (a.expect_arms, JUDGE_PREFIX),
+             used, disc)
 
     loaded = {}
     for k in arms:
         d = prov[k]["judge_dir"]
         rows, dups, total = load_arm(d)
         loaded[k] = rows
-        check_int("prov/%s n_rows at n_examples==%d is 380" % (k, DOSE), len(rows), 380)
+        check_int("prov/%s n_rows at n_examples==%d is %d" % (k, DOSE, a.expect_rows),
+                  len(rows), a.expect_rows)
         check("prov/%s no duplicate prompt_id" % k, dups == 0, "dups=%d" % dups)
         check("prov/%s every raw row is dose %d (no filtering happened)" % (k, DOSE),
               total == len(rows), "raw=%d kept=%d" % (total, len(rows)))
@@ -263,28 +301,67 @@ def main():
         check_eq("prov/%s published all_pinned_4o_mini flag" % k,
                  True, prov[k]["all_pinned_4o_mini"])
 
-    # published frac_stop_length must agree with the gens summary.json it names (scalar field only)
+    # ------------------------------------------------------------------ truncation gate
+    # ⚠ CORRECTED 2026-09-02 (`TSC-C-001`). This block used to read
+    # `summary.json -> counts.frac_stop_length`, which is exactly the source `CDS-C-015` found to be
+    # PERMANENTLY NULL (`counts` is `{"behavioral": N}`). When the producer was fixed to compute the
+    # fraction from each run's own `stop_reason` rows, the artifact gained real numbers and THIS
+    # VERIFIER WENT RED AGAINST THE ARTIFACT IT CERTIFIES -- five failures, all of the form
+    # `derived=None published=0.0053`, and all of them the verifier's fault, not the artifact's.
+    # A verifier that reads a field known to be null is asserting `None == None`: it could not have
+    # detected a corrupted truncation number either, so the green it used to print was vacuous.
+    #
+    # It now DERIVES the fraction from the raw rows, which is what "independent" means here, and it
+    # asserts the arm-to-arm differential against the published gate rather than only the per-arm
+    # values -- the differential is the quantity the gate is actually about.
+    TRUNC_GATE = 0.02
+    derived_fsl = {}
     for k in arms:
         g = prov[k].get("gens_dir")
         src = None
-        if g and os.path.exists(os.path.join(g, "summary.json")):
-            sm = json.load(open(os.path.join(g, "summary.json")))
-            src = (sm.get("counts") or {}).get("frac_stop_length", sm.get("frac_stop_length"))
+        if g and os.path.exists(os.path.join(g, "results.jsonl")):
+            n = kk = 0
+            with open(os.path.join(g, "results.jsonl")) as fh:
+                for line in fh:
+                    r = json.loads(line)
+                    n += 1
+                    kk += int(r.get("stop_reason") == "length")
+            src = (kk / n) if n else None
         else:
-            WARNINGS.append("arm %s: gens_dir has no summary.json" % k)
-        check_eq("prov/%s frac_stop_length matches its gens summary.json" % k,
-                 src, prov[k].get("frac_stop_length"))
+            WARNINGS.append("arm %s: gens_dir has no results.jsonl" % k)
+        derived_fsl[k] = src
+        check_num("prov/%s frac_stop_length re-derived from its own stop_reason rows" % k,
+                  src, prov[k].get("frac_stop_length"))
         if prov[k].get("frac_stop_length") is None:
-            WARNINGS.append("arm %s: frac_stop_length is NULL -- the truncation gate the producer "
-                            "docstring says it reports is UNPOPULATED in this artifact" % k)
+            check("prov/%s frac_stop_length is POPULATED (the gate `CDS-C-015` found unenforced)"
+                  % k, False, "published value is null")
+    live = {k: v for k, v in derived_fsl.items() if v is not None}
+    if len(live) >= 2:
+        diff = max(live.values()) - min(live.values())
+        check("gate/truncation differential %.4f <= %.2f across all arms" % (diff, TRUNC_GATE),
+              diff <= TRUNC_GATE,
+              "per-arm " + " ".join("%s=%.4f" % (k, v) for k, v in sorted(live.items())))
+    else:
+        check("gate/truncation differential computable from >=2 arms", False,
+              "only %d arm(s) yielded a fraction" % len(live))
 
     # balanced design: the domain sign test assumes each domain contributes rows in both arms
     sizes = {}
     for pid in loaded[arms[0]]:
         dm = loaded[arms[0]][pid]["domain"]
         sizes[dm] = sizes.get(dm, 0) + 1
-    check("design/38 domains x 10 rows, balanced", len(sizes) == 38 and set(sizes.values()) == {10},
-          "k_domains=%d rows_per_domain=%r" % (len(sizes), sorted(set(sizes.values()))))
+    # THE SHAPE IS COMPARED AGAINST WHAT THE CALLER DECLARED, not against itself. The button
+    # population is 38 x 10; the basket population is 37 x 10 + 1 x 7 because three rows were
+    # excluded by a DECLARED, outcome-independent exclusion (`TSC-PR-001`). An unbalanced design is
+    # legitimate and a SILENTLY unbalanced one is not, so the imbalance must be stated in advance.
+    got_shape = {}
+    for v in sizes.values():
+        got_shape[v] = got_shape.get(v, 0) + 1
+    check("design/%d domains, rows-per-domain histogram == declared %s"
+          % (a.expect_domains, a.expect_rows_per_domain),
+          len(sizes) == a.expect_domains and got_shape == want_shape,
+          "k_domains=%d got=%r want=%r" % (len(sizes), dict(sorted(got_shape.items())),
+                                           dict(sorted(want_shape.items()))))
 
     ref_ids = set(loaded[arms[0]])
     for k in arms[1:]:

@@ -160,7 +160,37 @@ def m_n_rows_paired(d):
     return "n_rows_paired", "%s vs %s: n_rows_paired %d -> %d" % (c["arm_a"], c["arm_b"], old, c["n_rows_paired"])
 
 
-MUTATIONS = [m_asr_a, m_asr_b, m_attacks, m_k_domains, m_domain_counts, m_k_informative,
+def m_frac_stop_length(d):
+    """`TSC-C-001`'s class. The truncation number is now RE-DERIVED from raw `stop_reason` rows, so
+    corrupting the published value must go red. Target the arm with the LEAST headroom -- the
+    smallest NON-ZERO fraction -- because a zero can be corrupted by any epsilon and proves nothing.
+    """
+    prov = d["provenance"]
+    live = {k: v["frac_stop_length"] for k, v in prov.items()
+            if isinstance(v.get("frac_stop_length"), (int, float)) and v["frac_stop_length"] > 0}
+    if not live:
+        raise KeyError("no arm has a non-zero frac_stop_length to corrupt")
+    k = min(live, key=live.get)
+    old = prov[k]["frac_stop_length"]
+    prov[k]["frac_stop_length"] = old * (1 + EPS)
+    return "frac_stop_length", "arm %s: %.17g -> %.17g (rel +1e-8)" % (k, old, prov[k]["frac_stop_length"])
+
+
+def m_frac_stop_length_null(d):
+    """The exact shape `CDS-C-015` found: the field present but NULL. It must not read as agreement.
+
+    This is the mutation the OLD verifier could not have caught -- it read the same null from
+    `summary.json` and asserted `None == None`, printing PASS. Kept as a named class so that
+    regression is visible if anyone re-points the check at a summary field again.
+    """
+    prov = d["provenance"]
+    k = sorted(prov)[0]
+    prov[k]["frac_stop_length"] = None
+    return "frac_stop_length_null", "arm %s: frac_stop_length -> null" % k
+
+
+MUTATIONS = [m_frac_stop_length, m_frac_stop_length_null,
+             m_asr_a, m_asr_b, m_attacks, m_k_domains, m_domain_counts, m_k_informative,
              m_sign_p, m_mcnemar_p, m_mcnemar_counts, m_noop, m_capable, m_p_floor,
              m_delta_asr, m_n_rows_paired, m_prov_nrows, m_prov_judge, m_prov_status,
              m_noop_verdict]

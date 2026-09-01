@@ -698,6 +698,44 @@ poorly-matched pseudo-demo that accidentally teaches the mapping would be worse 
 all, and the gate on its own baseline could decline it after the spend.
 
 
+## §11 — CORRECTIONS (append-only, `TSC-C-nnn`)
+
+⚠ **`TSC-C-001` — the Stage-2 verifier was RED against the artifact it certifies, and its green had
+been vacuous before that.** `scripts/cds_verify_stage2.py` read the published `frac_stop_length` and
+compared it against `summary.json → counts.frac_stop_length` — **the very field `CDS-C-015` proved is
+permanently `null`** (`counts` is `{"behavioral": 380}`). While the artifact also carried `null`, the
+check was asserting `None == None` and printing **PASS**: it could not have detected a corrupted
+truncation number either. When `CDS-C-015` fixed the **producer** to compute the fraction from each
+run's own `stop_reason` rows, the artifact was regenerated at **22:16:58** with real values and the
+verifier went **RED on five checks** — every one of them the verifier's fault.
+
+**Fixed.** The verifier now **re-derives** the fraction from `results.jsonl` `stop_reason`, which is
+what *independent* means here, and additionally asserts the **arm-to-arm differential** against the
+0.02 gate — the differential being the quantity the gate is actually about. It also fails loudly if a
+published `frac_stop_length` is `null`, so the original defect cannot return silently.
+Result: **350 checks, 0 failures, GREEN.**
+
+**Two new mutation classes** were added because a new check that the harness does not exercise is a
+new hole: `frac_stop_length` (corrupt the smallest **non-zero** fraction by 1e-8 relative — a zero
+can be corrupted by any epsilon and proves nothing) and `frac_stop_length_null` (**the exact shape the
+old verifier could not catch**, kept as a named class so the regression is visible if anyone
+re-points the check at a summary field). Harness now **20/20 red**.
+
+⚠ **The general lesson, and it is the fifth instance of this family in three sprints:** *a check
+whose two sides read the same broken source agrees with itself.* Grep every verifier for a field it
+compares against something derived from the same producer.
+
+⚠ **`TSC-C-002` — the verifier was pinned to one headline and would have been FORKED for the second.**
+`JUDGE_PREFIX`, the dose, the row count and the 38 × 10 design shape were module constants. Verifying
+`basket` would have meant copying the file — and a forked verifier is two instruments that drift
+apart, one of which quietly keeps an old assertion. They are now **required CLI inputs** with the
+button values as defaults, and **`--expect-rows-per-domain` must be stated explicitly by the caller**
+(`10:37,7:1` for basket) — with a refusal if it disagrees with `--expect-rows` or `--expect-domains`.
+⚠ **A design check that infers its expectation from the data under test asserts nothing**; an
+unbalanced design is legitimate and a *silently* unbalanced one is not.
+
+---
+
 ## §10 — PROGRESS LOG (append-only)
 
 * **2026-09-02, session open.** Read `reports/CDS_SPRINT_SUMMARY.md`, the `CDS` log §13/§14/§15,
