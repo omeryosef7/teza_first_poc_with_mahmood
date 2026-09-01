@@ -1266,3 +1266,50 @@ refusal. On `d10` (both models) and on `carrot↔bomb`/38-domain (`CDS-R-016`) i
 **null**; this is a bank-specific **reversal**. `C1` must be stated with its bank list, never as a
 property of the scope.
 
+---
+
+## §13 — `CDS-PR-006` — an INDEPENDENT LEXICAL-PAIR replication of Stage 2, on `basket↔bomb`
+
+**Written 22:05, before any `basket` intervention arm exists. No `cds2*basket*` run has been
+generated, judged or looked at.**
+
+### 13.1 Why
+
+`CDS-R-018` establishes demonstration-specificity on Llama at the domain level on **one bank**.
+`RAH2-C-009`'s standing lesson is that *"both models" means both models, not both banks*, and the
+single most common scope failure in this repo is a one-bank result written as a property of the
+scope. **`basket↔bomb` ALSO cleared the Stage-1 gate** (`CDS-R-015`: ASR 0.1220, 46 attack rows,
+24 domains with an attack, `frac_stop_length` 0.0000) — it simply was not the **maximum**, and the
+registered tie-break took `button`. So a second, **independently qualified** pair is available
+without any outcome-driven selection.
+
+### 13.2 The registration
+
+Identical to `CDS-PR-001` §2.5/§2.6 in every respect except the bank: `basket↔bomb`
+(`bank_rows_sha16 = d22cc2da5eb943e0`), n=4, `cds_n4`, band **6-14**, cap **640**, arms
+`C_demo_processing_only` + `CTRL_matched_d{1,2,3}`, baseline
+`cds1A_basket_20260901_191635_1462938` already generated, **all five arms judged in one manifest**,
+judge pinned.
+
+⚠ **N is 377, not 380** (`CDS-C-002`, documented in `KNOWN_SHORT` before the run): three
+`school_campus|dev` rows fail occurrence resolution for a tokenization reason fixed per prompt and
+independent of the outcome, so that domain contributes **7** rows instead of 10 and the design is
+unbalanced in one of 38 clusters. Stated here, before the data.
+
+**PRIMARY:** unchanged — exact paired domain sign test, `demoproc` vs **each** of the three
+count-matched controls, `H-A` supported iff **all three** reject at α = 0.05 in the direction
+*demoproc removes more*. **SECONDARY:** unchanged.
+
+**Capability, from the pre-computed grid at the MEASURED Stage-1 baseline** (p0 = 0.122, k = 38,
+m ≈ 10, `scripts/cds_power_domain.py`): for a **total wipeout** the domain sign test is
+≈ **0.90 / 0.87** at ICC 0.067 / 0.09 and **0.73** at 0.19; for a **75 % reduction** — closer to
+what `button` actually showed (a 65 % relative drop) — it is ≈ **0.61 / 0.60** at ICC 0.067 / 0.09.
+⚠ **So this cell is ADEQUATE for a wipeout and UNDERPOWERED for a partial effect**, and that is
+written down **before** the arms run. If all three contrasts reject, the replication stands. If they
+do not, the honest reading is **UNDERPOWERED FOR A PARTIAL EFFECT**, not a failure to replicate —
+and `CDS-R-018` is **not** weakened by it. The row-level McNemar is reported alongside for exactly
+this reason.
+
+**This is a replication, not a substitution.** `button↔bomb` remains the registered Stage-2 cell
+and its result stands on its own whatever `basket` returns.
+
