@@ -1093,6 +1093,195 @@ unbalanced design is legitimate and a *silently* unbalanced one is not.
 
 ---
 
+# WHAT WE CAN DEFEND TOMORROW
+
+*Every claim below is stated at its true scope. Where a number moved tonight, the corrected number
+is the one given. Where a test was incapable, it says so instead of reporting a null.*
+
+---
+
+## CLAIM 1 — Demonstration-specific removal, now on TWO independent lexical pairs
+
+### Claim
+On Llama-3.1-8B-Instruct, masking attention to the demonstration span at layers 6–14 removes
+judge-rubric-positive completions far more than three seeded, strictly count-matched masks of
+identical size drawn from non-demonstration positions do — **and this now holds on two independently
+qualified lexical pairs.**
+
+### Scope
+* **Model:** Llama-3.1-8B-Instruct (1 model).
+* **Lexical pairs:** **2** — `button↔bomb` and `basket↔bomb`, each independently cleared the same
+  preregistered Stage-1 headroom gate on **baseline only**.
+* **Independent harmful requests: 1.** ⛔ All rows in both banks carry one identical
+  `final_query_text`.
+* **Demonstration clusters:** 38 per bank, verified disjoint — **1520 distinct demonstration
+  sentences, 0 shared between any two domains**.
+* **Rows:** 380 (`button`) + 377 (`basket`) per arm; 5 arms each.
+* **Dose:** n=4. **Cap:** 640 tokens, `--attn-impl eager`. **Seed:** 20260901.
+
+### Evidence
+| pair | baseline | `demoproc` | vs `d1` | vs `d2` | vs `d3` |
+|---|---|---|---|---|---|
+| `button↔bomb` | 0.4184 (159) | **0.1447 (55)** | p = 2.56e-06 | 1.31e-07 | 6.94e-08 |
+| `basket↔bomb` | 0.1141 (43) | **0.0371 (14)** | p = 1.18e-02 | 9.11e-04 | 2.60e-03 |
+
+Relative drop **65 %** and **67 %**. Attainable floors 1e-6 to 1e-10, i.e. 4–10 orders below α.
+
+### Statistical unit
+The **demonstration-pool domain**, k = 38, exact paired sign test. ⛔ **Not the row** (row McNemar is
+secondary and descriptive). ⛔ **Not the request** — there is one.
+
+### Replication
+Same bank? No — **two different banks**. Independent lexical pair? **Yes.** Independent model?
+**Pending** (Qwen Stage 2 running; Stage 1 has already PROCEEDed). Independent requests? **No.**
+Independent demo pools? **Yes**, 38 disjoint pools per bank.
+
+### Controls
+Three seeded strictly count-matched non-demonstration masks, `match_ratio` **min = mean = 1.0000,
+n_below_1 = 0** on every row of every arm. ⚠ **They are NOT "matched controls" unqualified**: by
+position geometry they perform **≈ 1.95× MORE prefill edits** than the treatment (30,276 vs 15,399),
+so the contrast is **conservative** — the control does more damage and still shows less effect.
+⚠ **99.7 % of their drawn keys land in the neutral filler preamble**, so the established contrast is
+*demonstrations ≫ neutral filler of equal masked-key count*, not *demonstrations vs any active
+context*.
+
+### Judge robustness
+**Three independent pinned passes** on byte-identical completions (`button`). All nine
+demoproc-vs-control tests reject; **worst p = 1.093e-05**. Row-level flip rate **9.7–17.1 %**; only
+**76.8–82.9 %** of rows unanimous; **re-judge band 17 rows** on the baseline arm. Effect ≈ 96 rows
+against a **paired** band of **3.7 rows ≈ 46×**.
+
+### Verification
+`cds_verify_stage2.py`, stdlib only, importing nothing from the producer: **350 checks 0 failures**
+(button) and **351 checks 0 failures** (basket). Mutation harness **20/20 RED on both**.
+Adversarial review run and its findings incorporated (`TSC-DR-001`).
+
+### Strongest remaining limitation
+⛔ **ONE harmful request.** 38 clusters are 38 ways of teaching one mapping, not 38 behaviours.
+
+### Verdict
+**STRONG, SCOPED TO ONE REQUEST AND ONE MODEL.**
+
+---
+
+## CLAIM 2 — The removal survives the endpoint built to defeat style inflation
+
+### Claim
+On the conjunction `strongreject ≥ 0.5 AND the completion contains the concept word`, the
+intervention removes **all** such completions, on both pairs, while every control is flat.
+
+### Evidence
+| pair | baseline topical | `demoproc` topical | Δ vs baseline [cluster 95 % CI] | controls |
+|---|---|---|---|---|
+| `button↔bomb` | 0.037 | **0.000** | **−0.037 [−0.058, −0.018]** | +0.000 / +0.003 / −0.003 |
+| `basket↔bomb` | 0.013 | **0.000** | **−0.013 [−0.024, −0.003]** | +0.000 / −0.005 / −0.005 |
+
+### Strongest remaining limitation
+⛔ **The base rate is 3.7 % and 1.3 %, not 39 % and 11 %.** At the domain unit this endpoint gives
+`k_inf = 8–12` and **every test sits exactly at its attainable floor** — the p reports the design's
+resolution, not the data's strength. And `goal_topicality` is a **one-word, single-bit** test, so the
+true topical rate is **bounded, not measured**.
+
+### Verdict
+**SUPPORTED BUT SCOPED.** ⚠ This claim and `CLAIM 1` must always be stated **together**.
+
+---
+
+## CLAIM 3 — The removal is not explained by refusal returning
+
+### Claim
+On `button↔bomb`, the same intervention that removes 104 attack rows **reduces** refusal by 20 rows
+(p = 0.0034). On `basket↔bomb` refusal falls from 8 to 0 in the same direction.
+
+### Statistical unit / capability
+Domain, k = 38. ⚠ **On `basket` this test is `UNINFORMATIVE BY CONSTRUCTION`** — `k_inf = 2–5`,
+attainable floor **0.0625–0.5, above α**. ⛔ **It is not a null; no outcome could have reached
+significance.**
+
+### Verdict
+**SUPPORTED on `button`; CANNOT ANSWER on `basket`.**
+⛔ **`C1` ("`demo_processing_only` restores refusal") is BANK-SCOPED** — it restores refusal on `d10`
+(both models) and `carrot↔bomb`, and **reduces** it on `button↔bomb`.
+
+---
+
+## CLAIM 4 — Qwen3 is now a CAPABLE population on this design
+
+### Claim
+The Qwen3-14B `button↔bomb` baseline clears the same preregistered Stage-1 gate: ASR **0.2026**,
+**77** attack rows, **28 of 38** domains carrying an attack (floor 15), `frac_stop_length` **0.0000**,
+judge pinned, 380/380 hash-join. **PROCEED.**
+
+### Why it matters
+⛔ The **old** Qwen `C7` population failed at its own independence unit — every cell
+incapable-by-construction or capable-and-null (`CDS-R-005`). **This one is capable before any
+intervention arm is read**, so whatever Stage 2 returns is interpretable.
+
+### Verdict
+**Stage 1 CONFIRMED. Stage 2 OPEN** — four arms running, analysis and the model × intervention
+difference-in-differences preregistered (`TSC-PR-004`) before any Qwen intervention outcome exists.
+⚠ Baseline headroom differs between models (0.2026 vs 0.4184) and must be said wherever they are
+compared.
+
+---
+
+## CLAIM 5 — The measurement instrument, characterised
+
+### Claim
+The LLM judge flips **9.7–17.1 %** of labels on **byte-identical** text; only **76.8–82.9 %** of rows
+are unanimous over three passes; the per-arm re-judge band is **up to 17 rows**; the paired-contrast
+band is **3.7 rows**. The `refused` endpoint is deterministic (`kw_refusal`, a local substring match)
+and flips **0/380**.
+
+### Verdict
+**STRONG.** This is a reusable instrument characterisation, not a result about the intervention.
+⛔ Any difference at or below the relevant band **must** be reported as *within judge re-run
+variance*.
+
+---
+
+# CLAIMS WE MUST NOT SAY
+
+⛔ **"Boombness predicts jailbreak generally."** Between-level ρ +0.557 / within-level +0.098,
+descriptive only.
+⛔ **"`d_surface` is a GCG objective."** It is not a valid attack objective. GCG/MAC stay closed.
+⛔ **"Mapping installation is the jailbreak mechanism."** Installation is **not sufficient**; the
+clean evidence is one matched-skeleton contrast (2/24 vs 12/24, Fisher p = 0.0034), one pair.
+⛔ **"`demo_processing_only` always restores refusal."** It **reduces** refusal on `button↔bomb`.
+`C1` is bank-scoped and must carry its bank list every time it appears.
+⛔ **"Attack removal happens because refusal returns."** On the strongest bank refusal **falls**
+while attack falls.
+⛔ **"Concept binding always survives the intervention."**
+⛔ **"The old Qwen `C7` data establishes domain-level demonstration-specificity."** It fails at its
+own stated independence unit.
+⛔ **"38 domains means 38 independent harmful behaviours."** It is 38 demonstration pools around
+**one** request, on both banks.
+⛔ **"The current controls prove demonstrations are special relative to every other type of
+context."** 99.7 % of drawn keys are neutral filler preamble; there is **no informative non-demo
+control in this design**.
+⛔ **"matched control", unqualified.** Say **"key-count-matched; the control's edit count is ≈1.95×
+the treatment's by position geometry, which makes the contrast conservative."**
+⛔ **"`basket` failed to replicate."** The `CDS-R-020` run was **VOID for a bank defect**. ✅ And it
+has now **REPLICATED** (`TSC-R-004`), so the sentence is doubly wrong.
+⛔ **"The effect is cross-model."** Not until the Qwen Stage-2 arms are read. Stage 1 only says the
+population is capable.
+⛔ **"The effect generalizes across requests."** There is **one** request. The request-diverse bank
+is preregistered (`TSC-PR-005`) and its population drawn blind; it has **not** been run.
+⛔ **"Significant in Llama, non-significant in Qwen" as a model interaction.** The
+difference-in-differences is registered; use it or say nothing.
+⛔ **"The controls are indistinguishable from baseline."** Those cells (0 / −9 / −11) are **inside**
+the measured band; under majority vote they read +15 / −5 / −1 and **`ctrl_d1` changes sign**.
+⛔ **"Judge differences smaller than the measured re-run band are meaningful."** The band is
+**17 rows** per arm and **3.7 rows** paired — ⚠ **not the 11 that `CDS` reported from two passes.**
+⛔ **"Demonstration-specific ATTACK removal", without the topical sentence beside it.** 91 % of
+judge-positive completions in **every** arm never contain the concept word.
+⛔ **"Worst of nine p-values"** as if it were nine confirmations. It is **one** experiment, re-judged
+three times, against three controls agreeing on 27–31 of 38 domain signs.
+⛔ **"p < 1e-9"** anywhere. That was the **attainable floor** printed as the p-value; the p is
+2.6e-06. ⚠ Never put the floor and the p-value in adjacent unlabelled columns.
+
+---
+
 ## §10 — PROGRESS LOG (append-only)
 
 * **2026-09-02, session open.** Read `reports/CDS_SPRINT_SUMMARY.md`, the `CDS` log §13/§14/§15,
