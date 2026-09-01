@@ -1628,3 +1628,147 @@ phase carried forward most explicitly.
 **`RAH2` has no remaining open item.** Every preregistration is resolved or explicitly superseded,
 every correction is applied, every unresolved-status phrase in this log carries a forward pointer, and
 the one claim this log could not vouch for has now been checked and closed.
+
+---
+
+## `RAH2-C-032` — commit `7906faae` carries 226 lines of another session's code under a RAH2 message, and `RAH2-C-031`'s staging rule is the advice that failed
+
+**The last correction of this phase, and the only one about the repository rather than the science.**
+Established by a 9-agent audit whose every finding was independently reproduced before being written
+here; the commands are quoted so this is re-runnable.
+
+### 1. What `7906faae` actually contains
+
+Its message describes only the `RAH2-DR-003` / `C-030` provenance audit and ends **"PR-004
+unaffected"**. It touches three files (+384 / −25):
+
+| file | +/− | contents |
+|---|---|---|
+| `external_md/RAH2_..._PROGRESS.md` | +77 / −2 | **100 % RAH2** |
+| `tests/test_rah_preflight_spans.py` | +49 / −1 | **100 % RAH2** — all 49 are `C-030` guards |
+| `src/boombness/rah_preflight_transport.py` | **+258 / −22** | **32 RAH2, 226 RAH3** |
+
+```
+git diff --no-index --numstat <4e3fab1d:producer> <pre-commit backup>  ->  32  11
+git diff --no-index --numstat <pre-commit backup>  <7906faae:producer> -> 226  11
+git show --numstat 7906faae -- src/boombness/rah_preflight_transport.py -> 258  22
+```
+
+**32 + 226 = 258 and 11 + 11 = 22 — exact reconciliation with git.** The foreign 226 are
+`resolve_donor_capture`, `assert_capture_consistent`, `_char_spans`, `_codeword_tok_idx`,
+`sha256_file`, `_git_branch`, `_diff_sha256`, the `--capture-mode` / `--capture-offset` argparse
+block, the donor loop rewritten onto them, `rah3_eligible`, and the extended `prov[...]` fields.
+Ownership is corroborated **independently of the backup**:
+`git log --all -S'resolve_donor_capture' -- <path>` returns **`7906faae` alone** as the introducing
+commit, and RAH3's own §8 claims those symbols by name.
+
+⚠ **Qualifications, all published rather than buried.** A stricter content-only reading (capture
+mechanism + argparse + loop + cell fields only) gives **186**; the 40-line gap is `sha256_file`,
+`_git_branch`/`_diff_sha256` and the `prov` extensions, which RAH3's §8 also claims — so the honest
+band is **186–226, with 226 the figure git arithmetic forces**. One line,
+`prov['python_executable']`, is claimed by **neither** log, so **225** is the count excluding it. The
+pre-commit backup is an out-of-tree scratchpad file — **corroborating, not git-attested** — though
+its parent-diff being 100 % provenance-only is strong internal corroboration.
+
+### 2. RAH3's "14" is not a wrong measurement — it is a different one, and the distinction matters
+
+Their `RAH3-C-002` says *"plus 14 added lines of RAH3's `resolve_donor_capture` / `NON-COPY
+VIOLATION` implementation"*. Measured:
+
+```
+git show 7906faae | grep '^+' | grep -c 'RAH3\|NON-COPY'   ->  14   exactly
+```
+
+**14 is exactly right as a count of added lines that MENTION RAH3 markers. It is not a count of
+implementation lines**, which is 186–226 — an understatement of **13–16×**. Their *substantive*
+claim ("my uncommitted capture implementation was swept into your commit") is **correct, and
+understated by its own number**. ⚠ Which computation produced their 14 is **not established** —
+`capture_offset` also greps to 14, and two of their helpers happen to span 14 lines. Calling it an
+estimate would be inference, so it is not called one.
+
+> **The lesson, and it is a sharp one:** *that same grep is a sound TRIGGER and an unsound RULER.*
+> Run **before** committing, a non-zero hit is a correct STOP. Run **after**, as a measure of what
+> was swept, it undercounts by more than an order of magnitude. I published "~16× under" about a
+> peer earlier in this session; the accurate statement is that they measured a different quantity
+> correctly, and I should not have implied carelessness.
+
+### 3. Scope of the contamination — bounded, and clean in the other direction
+
+`4e3fab1d`, `83179b60`, `a4f5d7c8` are **log-only and clean** (`RAH3` appears solely in RAH2 prose
+*about* RAH3). Within `7906faae` the contamination is confined to the one producer file. The reverse
+direction is clean: `f2a42a6c` is 8 files, all `A`, all `rah3`-namespaced, **no RAH2-owned path**.
+
+And "RAH3 measured when their tree held less" is **ruled out**: the producer blob is byte-identical
+between `7906faae` and `f2a42a6c` (`7a62d51b…`), so the sweep took **100 %** of the producer-side
+changes. ⚠ Verified over these four commits only; nothing is claimed about earlier ones.
+
+### 4. Why `RAH2-C-031`'s rule failed — it is the advice, not the discipline
+
+`RAH2-C-031` states, verbatim:
+
+> *"stage by explicit path, never `git add -A` — an `-A` here would have swept the other session's
+> in-flight, uncommitted RAH3 files into a RAH2 commit."*
+
+**Two defects.**
+
+**(a) The tense is counterfactual and the event had already happened.** *"would have swept"* was
+written at `83179b60`, **12 min 19 s after** `7906faae` had already swept — **via exactly the
+explicit-path staging the bullet prescribes as the remedy.**
+
+**(b) The neighbouring claim is false.** `RAH2-C-031` also says RAH3's separate-script choice *"leaves
+the shared producer untouched"*. The producer is not untouched, and **RAH2 is who touched it**:
+`git show HEAD:<producer> | grep -c 'capture_offset'` → **16**.
+
+**The mechanism the bullet misses.** `git add -- <path>` snapshots the **current worktree content**
+of that path. It is scoped **by path, not by author, session or hunk.** Two distinct leaks:
+
+* **(a) shared-index leak** — a bare `git commit` commits whatever *anyone* staged. Fixed by
+  `git commit -- <paths>`.
+* **(b) same-file leak** — when two writers edit the *same* file, path scoping is **no protection at
+  all**, because the foreign edits are inside the very blob being snapshotted. **`7906faae` is
+  case (b), and `git commit -- <paths>` does not fix it.**
+
+⚠ And the file set carried **no signal**: `rah_preflight_transport.py` and
+`test_rah_preflight_spans.py` both **predate the RAH2/RAH3 split**. They are shared producers RAH2
+was legitimately editing — not files RAH2 owned. `git diff --cached --stat` would have shown three
+files, all plausibly in lane, and caught nothing.
+
+### 5. The rule that would have caught it
+
+**Structural, and the only convention-free one — use a separate worktree:**
+
+```
+git worktree add ../wt-rah2 behavioral-causality-sprint
+```
+
+A worktree has **its own index and its own checkout**, so leaks (a) and (b) are both impossible.
+
+**If already sharing a tree — gate on the staged CONTENT, not the file set:**
+
+```
+git diff --cached -- <paths> | grep -nE 'RAH3|NON-COPY|resolve_donor_capture|capture_mode'   # any hit = STOP
+git commit -m "..." -- <paths>
+```
+
+⚠ **This grep is sufficient only under a namespace-tagging discipline.** It fires here solely
+because RAH3 tagged its docstrings `RAH3-PR-001`; **untagged** foreign edits to a shared file slip
+straight past it. `git add -p` is hunk-scoped and would fix leak (b), but interactive add is
+unavailable in this harness; `git stash push --` is barred by standing repo rule.
+
+**Post-commit, verify what actually landed:**
+
+```
+git show --numstat HEAD
+git log --all --oneline -S'<my new symbol>' -- <path>
+```
+
+### 6. What is NOT being done, and why
+
+**History is not rewritten** — `7906faae` is public, RAH3 built on it, and its message stays
+materially wrong with this entry as the correction. **`RAH2-C-031` is not edited**; it stands with
+this entry superseding its staging bullet, per the append-only rule.
+
+> **The signature holds to the end.** Thirty-two corrections in this phase and **not one changed a
+> value produced by a run.** This last one is not about the science at all — it is about a commit
+> message that describes 32 lines of work while carrying 258 — and it is still the same failure
+> mode: *the numbers kept being right and the sentences around them kept being wrong.*
