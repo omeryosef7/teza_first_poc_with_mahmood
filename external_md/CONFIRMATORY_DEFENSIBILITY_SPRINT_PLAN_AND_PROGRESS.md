@@ -926,3 +926,24 @@ dropped after its number is seen.
 qualifying). It cannot manufacture a qualifying cell, which is why it is safe to write. It is
 timestamped and committed **before** the first judge job is launched.
 
+### `CDS-PR-004-A1` — the `C1` arm is fixed to `carrot↔bomb`, on two structural grounds
+
+Written **19:28**, while the first Stage-1 judge job (835239) was still running and **no CDS row had
+been judged anywhere**. `CDS-PR-004` §7.2 said the `C1` arm would use "the pair chosen by the
+Stage-1 rule". That rule reads an **ASR**, and `C1`'s endpoint is **refusal**, so making the `C1`
+arm wait on it couples two independent estimands and costs an hour of queue for no scientific
+reason. The arm is fixed to **`carrot↔bomb`** on two criteria that are **structural and were known
+before any CDS generation began**:
+
+1. **`C1` was established on `carrot↔bomb`.** The `d10` bank is `carrot`/`bomb`
+   (`boombness_prompt_bank_d10_meta.json`). Running the 38-domain arm on the same lexical pair makes
+   this a **scaled replication of the same population** — 10 domains → 38 — rather than a new pair
+   confounded with a domain change. `CDS-PR-001` §2.3's own instruction was a **fixed lexical pair**.
+2. **It is the only CDS bank with zero incidental repairs and 380/380 rows resolvable**
+   (`CDS-R-002`, `CDS-C-002`: basket needed `baskets=crates, basket=crate` and loses 3 rows to
+   `occurrence_count_mismatch`; button needed `button=switch`).
+
+Neither criterion can see an outcome. ⚠ If the Stage-1 ASR gate later selects a **different** pair,
+the `CDS-PR-001` Stage-2 control arms run on **that** pair and the `C1` arm stays on `carrot↔bomb`;
+the two estimands are then reported on different banks and **that fact is stated**, not blurred.
+
