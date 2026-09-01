@@ -21,7 +21,7 @@ If >= 1 cell qualifies, Stage 2 runs on the qualifying cell with the MOST baseli
 NOT re-scoped, the thresholds are NOT lowered, and no fourth pair is added.
 """
 from __future__ import annotations
-import argparse, collections, json, os
+import argparse, collections, hashlib, json, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA = "CDS_STAGE1_GATE/1"
@@ -44,15 +44,24 @@ def frac_stop_length(gens_dir):
 
 
 def gen_hashes(gens_dir):
-    """completion_sha256_16 of every generated row, for the hash join."""
+    """`CDS-C-014`. The hash join is between the JUDGE's `completion_sha256_16` and a hash the
+    GENERATION artifact does not store: `score_behavior`'s `results.jsonl` carries no such field,
+    and the completion text lives in `gens.jsonl` under `generation`. The first version read
+    `results.jsonl` and got an empty set, so the join reported 0/380 -- a precondition FAILING for
+    the wrong reason, which would have declined a cell on a defect in the checker rather than on the
+    data. Recomputed here the way `judge_boombness.py:137` does it:
+    `sha256(text.encode("utf-8")).hexdigest()[:16]` over the completion string."""
     out = set()
-    p = os.path.join(gens_dir, "results.jsonl")
+    p = os.path.join(gens_dir, "gens.jsonl")
+    if not os.path.exists(p):
+        return out
     with open(p) as fh:
         for line in fh:
             r = json.loads(line)
-            h = r.get("completion_sha256_16")
-            if h:
-                out.add(h)
+            t = r.get("generation")
+            if t is None:
+                continue
+            out.add(hashlib.sha256(t.encode("utf-8")).hexdigest()[:16])
     return out
 
 
