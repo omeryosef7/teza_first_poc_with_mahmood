@@ -362,8 +362,96 @@ regenerated, so the Stage-1 screen (`CDS-R-015`: basket ASR 0.1220, 46 attack ro
 an attack, `frac_stop_length` 0.0000) remains the screen for this cell and no fresh baseline or gate
 run is required.
 
-## §6 — P2 — capable Qwen3 replication
-**Status:** recon in progress.
+## §6 — P2 — the capable Qwen3 replication
+
+### 6.0 Why the old Qwen population cannot be rehabilitated
+
+`CDS-R-005`: analysed at the domain-level independence unit the paper claims, **every** Qwen3 `C7`
+cell is either incapable-by-construction (attainable p-floor above α) or capable-and-null
+(p = 0.45–0.73). The **row counts reproduce exactly** — this is a scope finding, not a refutation.
+The remedy is therefore to run Qwen on the **new capable design**, not to re-analyse the old cells.
+⛔ `"The old Qwen C7 data establishes domain-level demonstration-specificity"` is on the
+must-not-say list.
+
+### 6.1 `TSC-PR-003` — Stage 1, Qwen3 **BASELINE ONLY**, registered before generation
+
+**Nothing about Qwen3 on any `cds38` bank exists.** A sweep of all 695 `score_behavior/config.json`
+for `cds38` in `args.bank` returns **15 runs, all `meta-llama/Llama-3.1-8B-Instruct`**. There is no
+Qwen outcome on this population to have been looked at.
+
+| field | value |
+|---|---|
+| model | **`Qwen/Qwen3-14B`** — the only Qwen id in this repo, 78 runs, 1 distinct string |
+| bank | `boombness_prompt_bank_cds38_button_bomb.jsonl`, `bank_rows_sha16 = 17173f8adc42973e` |
+| lexical pair | `button ↔ bomb` — the **same** pair as the Llama headline, so the cross-model contrast is on identical material |
+| population | `behavioral` × `natural_doublespeak` × `cds_n4` × `n_examples=4` = **380 rows**, `--expect-n 380` |
+| independence unit | the demonstration-pool **domain**, k = 38 |
+| dose | n=4 · cap **640** · `--attn-impl eager` · `--dtype bfloat16` · `--seed 20260901` |
+| **`--enable-thinking false`** | **the one deliberate divergence from the Llama argv, and it is mandatory** — see below |
+| arm | `A_baseline` **only**. No intervention arm is generated, judged or looked at until the gate has been applied and its verdict written here. |
+| judge | `openai/gpt-4o-mini`, pinned |
+
+⚠ **Why `--enable-thinking false` is not an optional knob.** `ds_common.parse_enable_thinking`
+resolves `None` to *"do not pass the kwarg"*, and **Qwen3's template default is thinking-ON**. At a
+640-token cap a thinking arm can spend the whole budget inside `<think>`, which would depress ASR
+through truncation rather than through anything the experiment is about — exactly `CDS-R-009`'s
+`carrot↔bomb` × Qwen3 × cap-192 cell, which read **0.458 truncated**. Every Qwen3 640-cap
+behavioral run in this repo passes `--enable-thinking false` and every one reads
+**`frac_stop_length = 0.0000`**. `score_behavior.py` renders the template both ways and **aborts**
+if the flag is not binding, so a silent no-op is not possible. On Llama the flag is a genuine no-op
+(no thinking branch) and is therefore **not** added there.
+
+**The gate is `CDS-PR-001` §2.4's rule, reused verbatim as executable code**
+(`scripts/cds_stage1_gate.py`), not restated in prose. A cell QUALIFIES iff **all** of
+baseline ASR ≥ **0.10** · baseline attack rows ≥ **34** · domains with ≥ 1 attack ≥ **15**,
+with preconditions: control `match_ratio` min = 1.000 · `frac_stop_length` ≤ **0.02** ·
+`judge_model_used == openai/gpt-4o-mini` on 100 % of rows · every judged row hash-joining to its
+generation by `completion_sha256_16` · bank join by `bank_rows_sha16` with 0 mismatches.
+
+⚠ **The load-bearing criterion here is the DOMAIN count, not the pooled ASR.** `CDS-R-005`'s
+finding was that the old Qwen cells could not reach significance at k_informative, so
+*"≥ 15 domains with an attack"* is the number that decides whether a Qwen Stage 2 is capable at all.
+
+**Fallback, written now, before any Qwen number exists.** If `button↔bomb` fails the gate:
+screen `basket↔bomb` and `carrot↔bomb` on Qwen **baseline-only, both in one batch** (not
+sequentially — a sequential screen is a selection rule applied after seeing data), then apply
+`cds_stage1_gate.py` **verbatim**: the qualifying cell with the **most baseline attack rows**,
+ties → smaller dose, then alphabetical pair. If none qualifies → **DECLINED FOR POWER**, Qwen is
+reported as an **incapable population on this design**, and ⛔ **that is not a Qwen null and must
+never be written as one.**
+
+**Expected cost.** ~16–17 s/row measured on the two nearest Qwen3-14B 640-cap baseline arms
+(`scr_q_cb_…2909600` 15.9 s/row, `scr_q_tk_…2909601` 16.9 s/row) → **380 rows ≈ 105 min**; a
+contended node has read 45.3 s/row once, so **request 4 h**. Llama did the same arm in 7.5 s/row;
+Qwen3-14B is ≈ 2.1× slower here.
+
+**Verdicts:** `PROCEED` (gate passes → Stage 2 runs) · `DECLINED FOR POWER` (gate fails, and the
+population is **not** re-scoped, the thresholds are **not** lowered, and no fourth pair is added).
+
+### 6.2 `TSC-PR-004` — the Qwen Stage-2 arms and the model × intervention interaction
+
+**Registered now, before the Stage-1 verdict, and conditional on it.** If and only if Stage 1
+returns `PROCEED`, run the identical five-arm design: `A_baseline` · `C_demo_processing_only` ·
+`CTRL_matched_d{1,2,3}`, `attn_knockout` 6-14 α=1.0, scope `demo_processing_only`, seed 20260901,
+cap 640, eager, `--enable-thinking false`, **all five arms judged in one manifest**. Strict
+`match_ratio` = 1.000 required at pre-flight, checked CPU-side before any GPU minute, as in §5.3.
+
+**PRIMARY:** the same exact paired **domain** sign test, demoproc vs each of the three controls;
+`H-A` supported iff **all three** reject at α = 0.05.
+
+**The interaction, and the language rule that goes with it.**
+⛔ **"Significant in Llama, non-significant in Qwen" is NOT a model interaction and must never be
+written as one.** If both model populations exist, the model difference is tested **directly**: a
+difference-in-differences on the per-domain effect
+`Δ_d = (attacks_d | control) − (attacks_d | demoproc)`, paired **across models within domain** (the
+38 domains are the same 38 domains on the same bank), by an exact paired sign test on
+`Δ_d^Llama − Δ_d^Qwen`, with `k_informative` and the attainable floor reported. **This test is
+registered here, before any Qwen intervention outcome is read.**
+* Interaction rejects, Llama larger → **MODEL-SPECIFIC**.
+* Interaction does not reject and both models' primaries reject → **cross-model**, `REPLICATED`.
+* Qwen capable and its primary null while the interaction is underpowered → report **both**: a
+  `CAPABLE NULL` on Qwen and `DECLINED FOR POWER` on the interaction. Not one dressed as the other.
+
 
 ## §7 — P3 — judge robustness on the headline populations
 **Status:** recon in progress.
