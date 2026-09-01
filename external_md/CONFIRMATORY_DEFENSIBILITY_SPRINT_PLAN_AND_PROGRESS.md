@@ -1187,3 +1187,82 @@ positive control collapsing too, i.e. **untestable**, not "no effect".
 **BLOCKED**, per this sprint's charter and `RESEARCH_HANDOFF.md` §3 row 7. A plotted association is
 not a causal low-dimensional handle, and panel B is the reason.
 
+---
+
+## §12 — `CDS-R-018` — STAGE 2 EXECUTED. **`H-A` SUPPORTED. Demonstration-specificity is now cross-model AND cluster-level.**
+
+`button↔bomb`, Llama-3.1-8B-Instruct, n=4, **38 domains × 10 independent demonstration sets**,
+380 rows per arm, band **6-14**, cap **640**, everything except mask identity matched, **all five
+arms judged in ONE manifest** (job 835768, judge pinned `openai/gpt-4o-mini` on **1900/1900** rows,
+`judge_status` ok on all).
+
+| arm | ASR | attacks | Δ vs baseline | `frac_stop_length` | `total_prefill_edits` |
+|---|---|---|---|---|---|
+| `A_baseline` | **0.4184** | 159/380 | — | 0.0000 | — |
+| **`C_demo_processing_only`** | **0.1447** | **55/380** | **−104** | 0.0053 | 6 192 594 |
+| `CTRL_matched_d1` | 0.4184 | 159/380 | **+0** | 0.0026 | 12 154 527 |
+| `CTRL_matched_d2` | 0.3947 | 150/380 | **+9** | 0.0000 | 12 144 204 |
+| `CTRL_matched_d3` | 0.3895 | 148/380 | **+11** | 0.0000 | 11 980 692 |
+
+### PRIMARY (`CDS-PR-001` §2.6): `demoproc` vs each count-matched control, exact paired domain sign test
+
+| contrast | Δ rows | domains favouring demoproc | k_inf | **domain sign p** | attainable floor | capable? | cluster bootstrap 95 % CI |
+|---|---|---|---|---|---|---|---|
+| vs `CTRL_matched_d1` | **−104** | **29 / 32** | 32 | **< 1e-9** | 4.66e-10 | **YES** | [+0.2026, +0.3447] |
+| vs `CTRL_matched_d2` | **−95** | **31 / 33** | 33 | **< 1e-9** | 2.33e-10 | **YES** | [+0.1816, +0.3184] |
+| vs `CTRL_matched_d3` | **−93** | **32 / 34** | 34 | **< 1e-9** | 1.16e-10 | **YES** | [+0.1816, +0.3105] |
+
+**All three reject at α = 0.05 in the registered direction ⇒ `H-A` is SUPPORTED** under the
+registered intersection–union rule (conservative; no multiplicity correction owed).
+
+### The controls behave like each other and like the baseline — which is what makes it specificity
+
+| contrast | Δ rows | domain sign p | McNemar p | verdict |
+|---|---|---|---|---|
+| `d1` vs `A` | **+0** | 0.860 | 1.000 | indistinguishable |
+| `d2` vs `A` | +9 | 0.728 | 0.426 | indistinguishable |
+| `d3` vs `A` | +11 | 0.185 | 0.310 | indistinguishable |
+| `d1` vs `d2` | −9 | 0.557 | 0.407 | indistinguishable |
+| `d1` vs `d3` | −11 | 0.473 | 0.343 | indistinguishable |
+| `d2` vs `d3` | −2 | 0.856 | 0.920 | indistinguishable |
+
+**Every control-vs-control and control-vs-baseline test is CAPABLE (floors 1e-8 to 1e-10) and
+returns a null.** These are informative negatives, not incapable ones. **The effect is about which
+positions are masked, not how many.**
+
+### Controls, gates and liveness
+
+* `frac_rows_scope_live` = **1.000** in all four intervened arms; 0 decode edits, which is
+  `demo_processing_only`'s correct contract (`RBD-C-010`).
+* **Anti-`C-20` no-op guard**: `demoproc` differs from every control on **98.9 %** of completions,
+  and each control differs from baseline on **89–90 %**. **No arm is a no-op by construction** —
+  which is exactly how `C9`'s below-band control died.
+* **Truncation is released**: `frac_stop_length` 0.0000–0.0053, max differential **0.0053**, far
+  inside the 0.02 gate. The result cannot be a cap artefact.
+* ⚠ The controls carry **~1.96×** `demoproc`'s prefill edits (`CDS-R-008`). *"Dose-matched"* means
+  **matched masked-KEY count**, and the controls do about twice the attention editing and still
+  remove nothing — which makes the contrast **conservative**, not generous.
+* ⛔ **The first-192-token secondary was NOT computed, and the reason is a finding.** **86–92 % of
+  completions on this population exceed 192 tokens**, and the truncation differential between
+  `demoproc` (0.921) and baseline (0.861) would be **0.060 — three times the 0.02 gate.** Computing
+  it would reintroduce exactly the confound (`C-60`/`C-61`) that the released cap exists to remove.
+  Recorded as declined, with the number.
+
+### ⚠ `CDS-R-019` — and on this bank the SAME scope makes refusal FALL
+
+| endpoint | baseline | `demoproc` | Δ rows | domains ↓/↑ | k_inf | domain sign p | bootstrap 95 % CI |
+|---|---|---|---|---|---|---|---|
+| `kw_refusal` | 0.1105 | **0.0579** | **−20** | **12 / 1** | 13 | **0.0034** | **[−0.0921, −0.0211]** |
+| `kw_refusal`, `demoproc` vs `d1` | 0.0579 | 0.1079 | +19 | 2 / 13 | 15 | **0.0074** | [+0.0184, +0.0895] |
+
+**This is the strongest form `C2` has ever had.** `demo_processing_only` removes **104 attacks
+while refusal falls by 20 rows**, both at the domain level, on the same arms, in one judging
+session. *"It works by restoring refusal"* is not merely unsupported here — it is **contradicted in
+sign**.
+
+⚠ **And it is a real scope correction to `C1`.** `C1` says `demo_processing_only` **restores**
+refusal. On `d10` (both models) and on `carrot↔bomb`/38-domain (`CDS-R-016`) it does. On
+`button↔bomb`/38-domain it **significantly reduces** it. `R-146` had already found a bank-specific
+**null**; this is a bank-specific **reversal**. `C1` must be stated with its bank list, never as a
+property of the scope.
+
