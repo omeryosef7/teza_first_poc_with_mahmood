@@ -13,9 +13,12 @@ from __future__ import annotations
 import copy, json, os, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#: PARAMETERISED with the verifier (`TSC-C-002`). A mutation harness pinned to one artifact proves
+#: the verifier can go red on THAT artifact and nothing about the second headline it now certifies.
 ART = os.path.join(ROOT, "outputs/boombness/cds_analysis",
                    "cds2_button_specificity_domain_test.json")
 VERIFY = os.path.join(ROOT, "scripts", "cds_verify_stage2.py")
+VERIFY_ARGS = []
 EPS = 1e-8          # just above the verifier's 1e-9 relative tolerance
 
 
@@ -95,10 +98,30 @@ def m_mcnemar_counts(d):
 
 
 def m_noop(d):
-    c = argmin_comp(d, lambda c: c["NOOP_GUARD_frac_byte_identical"])
-    old = c["NOOP_GUARD_frac_byte_identical"]
-    c["NOOP_GUARD_frac_byte_identical"] = old * (1 + EPS)
-    return "noop_fraction", "%s vs %s: noop %.17g -> %.17g (rel +1e-8)" % (c["arm_a"], c["arm_b"], old, c["NOOP_GUARD_frac_byte_identical"])
+    """⚠ TARGET THE SMALLEST **NON-ZERO** FRACTION, not the smallest.
+
+    `TSC-C-009`. On the basket artifact `A vs demoproc` has a no-op fraction of EXACTLY 0.0, and
+    `0 * (1 + 1e-8) == 0` -- the harness wrote an unchanged file and then reported the verifier as
+    having a HOLE. It did not: nothing was mutated. A relative epsilon cannot perturb a zero, which
+    is the same trap that made an absolute tolerance vacuous in the verifier itself.
+
+    So: pick the least-headroom comparison among those with a non-zero fraction and corrupt it
+    relatively; if EVERY comparison is exactly zero, fall back to an additive epsilon, which is the
+    only perturbation a zero admits.
+    """
+    live = [c for c in d["comparisons"] if c["NOOP_GUARD_frac_byte_identical"] > 0]
+    if live:
+        c = min(live, key=lambda c: c["NOOP_GUARD_frac_byte_identical"])
+        old = c["NOOP_GUARD_frac_byte_identical"]
+        c["NOOP_GUARD_frac_byte_identical"] = old * (1 + EPS)
+        how = "rel +1e-8"
+    else:
+        c = d["comparisons"][0]
+        old = c["NOOP_GUARD_frac_byte_identical"]
+        c["NOOP_GUARD_frac_byte_identical"] = old + EPS
+        how = "abs +1e-8 (every comparison is exactly 0; a relative epsilon cannot move a zero)"
+    return "noop_fraction", "%s vs %s: noop %.17g -> %.17g (%s)" % (
+        c["arm_a"], c["arm_b"], old, c["NOOP_GUARD_frac_byte_identical"], how)
 
 
 def m_capable(d):
@@ -197,7 +220,7 @@ MUTATIONS = [m_frac_stop_length, m_frac_stop_length_null,
 
 
 def run_verifier(path):
-    r = subprocess.run([sys.executable, VERIFY, "--artifact", path],
+    r = subprocess.run([sys.executable, VERIFY, "--artifact", path] + VERIFY_ARGS,
                        capture_output=True, text=True)
     fails = [ln.split("|")[0].strip()[5:].strip()
              for ln in r.stdout.splitlines() if ln.startswith("FAIL")]
@@ -205,7 +228,20 @@ def run_verifier(path):
 
 
 def main():
+    global ART, VERIFY_ARGS
+    # argv after the script name is split at `--`: before it, the artifact; after it, the flags the
+    # verifier needs to describe that artifact's design (`--expect-rows-per-domain` and friends).
+    argv = sys.argv[1:]
+    if argv:
+        if "--" in argv:
+            i = argv.index("--")
+            head, VERIFY_ARGS = argv[:i], argv[i + 1:]
+        else:
+            head, VERIFY_ARGS = argv, []
+        if head:
+            ART = os.path.abspath(head[0])
     base = json.load(open(ART))
+    print("ARTIFACT %s\nVERIFIER ARGS %r\n" % (ART, VERIFY_ARGS))
     tmpd = tempfile.mkdtemp(prefix="cds_mutate_")
 
     print("BASELINE (unmutated published artifact)")

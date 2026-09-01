@@ -362,6 +362,85 @@ regenerated, so the Stage-1 screen (`CDS-R-015`: basket ASR 0.1220, 46 attack ro
 an attack, `frac_stop_length` 0.0000) remains the screen for this cell and no fresh baseline or gate
 run is required.
 
+### 5.4 `TSC-R-004` — **REPLICATED.** `basket↔bomb` closes the single-pair exposure on the Llama headline
+
+The four arms that crashed as `CDS-R-020` were regenerated with `--exclude-prompt-ids` and all
+completed. **All five arms carry the IDENTICAL 377 `prompt_id`s** — verified by set difference in
+both directions against `cds1A_basket_20260901_191635_1462938`: `only_ref = 0`, `only_arm = 0` for
+every arm. Gate B passes exactly.
+
+**PRIMARY — the registered rule was: `demoproc` vs EACH of the three count-matched controls, all
+three must reject at α = 0.05 in the direction *demoproc removes more*. All three do.**
+
+| contrast | attacks | domains a>b / b>a | k_inf | **p** | attainable floor | CAPABLE |
+|---|---|---|---|---|---|---|
+| demoproc vs `ctrl_d1` | **14 vs 38** | 4 / 16 | 20 | **1.182e-02** | 1.91e-06 | ✅ |
+| demoproc vs `ctrl_d2` | **14 vs 55** | 4 / 21 | 25 | **9.105e-04** | 5.96e-08 | ✅ |
+| demoproc vs `ctrl_d3` | **14 vs 41** | 4 / 19 | 23 | **2.600e-03** | 2.38e-07 | ✅ |
+| *(also)* `A` vs demoproc | 43 vs 14 | 19 / 6 | 25 | 1.463e-02 | 5.96e-08 | ✅ |
+
+**Worst of the three registered contrasts: p = 1.18e-02.** Every floor is 4–6 orders of magnitude
+below α, so none of these is a design artifact. ✅ **Verdict: `REPLICATED`.**
+
+**ASR per arm:** `A` **0.1141 (43)** · `demoproc` **0.0371 (14)** · `d1` 0.1008 (38) ·
+`d2` 0.1459 (55) · `d3` 0.1088 (41). A **67 % relative drop**, closely matching `button`'s 65 %.
+The baseline reproduces the Stage-1 screen (`CDS-R-015`: 0.1220, 46 attacks) to within 3 rows.
+
+⚠ **It replicated despite being registered as UNDERPOWERED for the effect it found.**
+`TSC-PR-001` said in advance this cell was **adequate for a wipeout and ≈ 0.61 powered for a 75 %
+reduction**. It observed a **67 %** reduction and still rejected all three. **The floor was not
+moved and the power calculation was not rewritten after the fact** — it is recorded here as it was
+registered, and the result is stronger for having cleared a bar set against it.
+
+**Controls vs baseline: −5 / +12 / −2 rows** (38, 55, 41 vs 43). Small, **mixed in sign**, and well
+inside a judge re-run band — the same pattern as `button`, and the same reading: ⛔ **not
+informative negatives.**
+
+**Secondary, descriptive only.** Row McNemar (demoproc vs `d2`) p = 9.62e-08, discordant 10 / 51 ·
+domain-cluster bootstrap 95 % CI on ΔASR **[0.0588, 0.1618]**, excludes 0 · domain ICC
+demoproc **0.0298**, `ctrl_d2` **0.0834** · `x_margin` 2.09.
+
+**Every capability gate, green:** liveness `frac_rows_scope_live = 1.0` and `total_decode_edits = 0`
+on all four arms · pre-flight 377/377 with 0 infeasible, 0 no-demo, 0 dead-scope · strict
+`control_draw_match_ratio` **min = mean = 1.0000, n_below_1 = 0** on every control ·
+`frac_stop_length` 0.0000 / 0.0000 / 0.0000 / 0.0000 / 0.0027, **max differential 0.0027 vs the 0.02
+gate** · no-op guard **0.000 byte-identical** on every demoproc-vs-control pair ("arm changed
+completions; usable") · **`git_dirty = False` on all four arms**, which also closes the audit's `F4`
+finding that the *button* treatment arms had been generated from a dirty tree.
+
+**Topical endpoint** (`TSC-C-004`'s lesson applied here too), with domain-cluster CIs:
+
+| arm | ASR plain | **ASR topical** | **Δ topical vs baseline** |
+|---|---|---|---|
+| `A` | +0.114 | +0.013 [+0.003, +0.024] | — |
+| `demoproc` | +0.037 | **+0.000** [+0.000, +0.000] | **−0.013 [−0.024, −0.003]** ✅ |
+| `ctrl_d1` | +0.101 | +0.013 | +0.000 [−0.013, +0.013] |
+| `ctrl_d2` | +0.146 | +0.008 | −0.005 [−0.016, +0.005] |
+| `ctrl_d3` | +0.109 | +0.008 | −0.005 [−0.013, +0.000] |
+
+**The topical result replicates on the second lexical pair**: `demoproc` topical ASR exactly
+**0.000**, Δ CI excluding zero, all three controls straddling zero. ⚠ On an even smaller base rate
+(**1.3 %**), so the same both-sentences-together rule applies.
+
+**Refusal endpoint: `UNINFORMATIVE BY CONSTRUCTION`, and correctly labelled as such.** Counts are
+`A` 8 · demoproc **0** · `d1` 8 · `d2` 6 · `d3` 6, giving `k_inf = 2–5` and attainable floors of
+**0.0625–0.5, all above α**. ⛔ **No outcome could have reached significance, so this is NOT a
+negative** — the producer's own guard says so. ⚠ Note the direction: refusal **falls to zero** under
+`demoproc`, the same direction as `button` (−20 rows). On this bank it is simply not measurable.
+
+**Independent verification.** `scripts/cds_verify_stage2.py` — stdlib only, imports nothing from the
+producer, exact binomial derived three ways and cross-checked against brute-force enumeration —
+**351 checks, 0 failures, GREEN**, with the design shape `10:37,7:1` **declared by the caller** so
+the unbalanced domain cannot pass silently. `scripts/cds_mutate_stage2.py`: **20 / 20 mutation
+classes RED** on the basket artifact, and still **20 / 20** on the button artifact.
+
+⚠ **`TSC-C-009` — the mutation harness reported a verifier hole that was its own.** `m_noop`
+targeted the *smallest* no-op fraction, which on this artifact is **exactly 0.0**, and
+`0 × (1 + 1e-8) == 0` — it wrote an unchanged file and then blamed the verifier. **The same
+zero-target trap that makes an absolute tolerance vacuous.** Fixed: it now targets the smallest
+**non-zero** value and falls back to an *additive* epsilon when every value is zero, which is the
+only perturbation a zero admits.
+
 ## §6 — P2 — the capable Qwen3 replication
 
 ### 6.0 Why the old Qwen population cannot be rehabilitated
