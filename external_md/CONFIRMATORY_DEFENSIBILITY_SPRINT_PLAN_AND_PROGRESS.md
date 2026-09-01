@@ -1006,3 +1006,77 @@ power table, and it means:
 * ⚠ Baseline `kw_refusal` is **0.0105**, far below `CDS-PR-004` §7.3's ceiling condition of 0.15, so
   the `C1` arm's capability table stands.
 
+### `CDS-R-015` — STAGE 1 COMPLETE. **`button↔bomb` QUALIFIES**, and Stage 2 is launched on it.
+
+All three screens judged, judge pinned, `scripts/cds_stage1_gate.py` applied unmodified:
+
+| pair | rows | domains | attack rows | baseline ASR | domains with ≥1 attack | `frac_stop_length` | hash join | **qualifies?** |
+|---|---|---|---|---|---|---|---|---|
+| carrot↔bomb | 380 | 38 | 37 | 0.0974 | 25 | 0.0026 | 380/380 | **no** — ASR by 0.0026 |
+| basket↔bomb | **377** | 38 | 46 | 0.1220 | 24 | 0.0000 | 377/377 | **YES** |
+| **button↔bomb** | 380 | 38 | **148** | **0.3895** | **35** of 38 | **0.0000** | 380/380 | **YES** |
+
+**`VERDICT: PROCEED TO STAGE 2 on button↔bomb (n=4)`** — the qualifying cell with the most baseline
+attack rows, per the tie-break registered in `CDS-PR-001` §2.4.
+
+**Two things this settles that the prior phase could not.**
+1. ⚠ **The neutral preamble does NOT destroy the Llama attack. That was a PAIR effect, not a
+   preamble effect.** `R-50 → R-52` declined Llama because `main_longpre` on `carrot↔bomb`/`d10`
+   dropped baseline ASR to 0.0625/0.0437, and the handoff generalised that to *"the fix costs the
+   phenomenon, and that is a trade which is NOT tunable by preamble length"*. With **the same
+   preamble mechanism, the same `n_preamble = 10`, the same model, the same 38 domains and the same
+   cap**, `button↔bomb` reads **0.3895** and `basket↔bomb` **0.1220**. The variable that mattered
+   was the **lexical pair**, and screening for headroom before committing to one — `RBD` §6's
+   *"single most actionable methodological finding"* — is what found it.
+2. **This is the first properly powered demonstration-specificity population in the project.**
+   148 attack rows across **35 of 38 domains**, ASR ICC measured (`CDS-R-014`) at ≈ 0 on the
+   sibling carrot screen. Against `CDS-PR-001` §2.4's capability table — which tops out at
+   p0 = 0.156 with domain-sign power 0.90–0.97 — a baseline of 0.39 is far above every row of it.
+
+⚠ **The 3 missing basket rows were PREDICTED, by tokenization, before any generation.**
+`CDS-C-002` named `school_campus|dev` slots 0/8/12 and the reason
+(`occurrence_count_mismatch: text=5, tokens=6`). The run failed **exactly** those three prompt ids —
+`f953fbbb2376f8db`, `56c76e11095a5d48`, `566c998c6df83a30` — and `scripts/cds_submit_judge.sh`
+**refused** the judge submission until the expected row count was corrected to 377. A pre-flight
+prediction confirmed by the run, and a guard that fired.
+
+**Stage 2 launched 20:32** — jobs 835492 (`C_demo_processing_only`), 835493/835494/835495
+(`CTRL_matched_d{1,2,3}`), all on `button↔bomb`, band **6-14**, cap **640**, 380 rows, everything
+except mask identity matched. The `A_baseline` arm is `cds1A_button_20260901_192643_1642929`,
+already generated, and **all five arms will be re-judged in ONE manifest** so the compared arms
+carry no cross-session judge drift.
+
+---
+
+## §10 — `CDS-R-016` — `CDS-PR-004` EXECUTED. **`C1` REPLICATES AT 38 DOMAINS.**
+
+`carrot↔bomb`, Llama-3.1-8B-Instruct, n=4, cap 640, band 6-14, 380 rows, 38 domains,
+`frac_rows_scope_live` **1.000**, 380/380 succeeded, judge pinned, **both arms judged in ONE
+manifest** (job 835507) so the contrast carries no cross-session drift.
+
+| endpoint | baseline | `demo_processing_only` | Δ rows | domains ↓/↑ | k_inf | **domain sign p** | attainable floor | capable? | cluster bootstrap 95 % CI | row McNemar p |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **`kw_refusal` (PRIMARY)** | 0.0105 (4/380) | **0.0474** (18/380) | **+14** | **0 / 7** | 7 | **0.0156** | 0.0156 | **YES** | **[+0.0105, +0.0711]** | 0.0026 |
+| ASR (secondary) | 0.0868 (33/380) | **0.0184** (7/380) | **−26** | **19 / 0** | 19 | **3.81e-06** | 3.81e-06 | **YES** | **[−0.0947, −0.0447]** | 1.0e-05 |
+
+1. ✅ **`C1` is confirmed at 38 domains, at the true independence unit.** The domain sign test
+   rejects, and again **p equals its own attainable floor** — `0 / 7`, i.e. **every informative
+   domain moved the same way**. Together with `CDS-R-010` (Llama and Qwen3 on `d10`, both at their
+   floors) this is `C1`'s **third** independent domain-level confirmation, now on a **38-domain**
+   population and a **different lexical dose/bank** from the original.
+   ⚠ The absolute size is much smaller here (+0.037 vs +0.163 on `d10`) because this population's
+   baseline refusal is **0.0105** — the effect is a rise from a near-zero floor, and the claim that
+   replicates is the **direction and the domain-consistency**, not the magnitude.
+2. **The ASR leg is the strongest domain-level attack-removal result in the project**: −26 rows,
+   **19 informative domains, all 19 in the same direction**, p = 3.8e-6, bootstrap
+   [−0.0947, −0.0447].
+   ⛔ **AND IT IS NOT A SPECIFICITY TEST, exactly as `CDS-PR-004` §7.3 said in advance.** There are
+   no count-matched controls on `carrot↔bomb`; this is `demoproc` vs baseline, which **every** scope
+   satisfies (`C3`). It must never be quoted as demonstration-specificity. The specificity question
+   is Stage 2's, on `button↔bomb`.
+3. ⚠ **Judge session drift, measured here on byte-identical completions.** The same
+   `cds1A_carrot` generations read **37/380** attacks in the Stage-1 judge session and **33/380** in
+   the Stage-2 session — a **4-row / 0.0105** difference, well inside this repo's measured judge
+   noise. **The Stage-1 gate used the Stage-1 number and is not revisited**; the `C1` contrast uses
+   the single-session pair, which is why `CDS-PR-001` §2.5 requires one manifest.
+

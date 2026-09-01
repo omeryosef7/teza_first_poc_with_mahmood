@@ -69,6 +69,15 @@ KNOWN_SHORT = {
         "§12.28: disk quota removed 77 of 608 rows (12.7%), concentrated in 11 of 38 domains, and "
         "the ledger's 586 disagrees with the 543 persisted. Kept as the negative example and "
         "superseded by d38beh2; it must never be analysed",
+    "cds1A_basket_20260901_191635_1462938":
+        "CDS-C-002: 3 of 380 rows (0.79%) in ONE domain (school_campus|dev, slots 0/8/12) raise "
+        "resolve:occurrence_count_mismatch text=5 tokens=6, because the basket bank's incidental "
+        "repair (baskets=crates, basket=crate) leaves a codeword occurrence that tokenises to six "
+        "pieces against five text matches. UNLIKE d38beh the attrition mechanism is TOKENISATION OF "
+        "THE CODEWORD, which is fixed per prompt and independent of the outcome -- and the three "
+        "prompt ids (f953fbbb2376f8db, 56c76e11095a5d48, 566c998c6df83a30) were named in the log "
+        "BEFORE any generation ran, from the tokenizer alone. The cell is analysed at n=377 with "
+        "school_campus at 7 rows instead of 10, and that imbalance is stated wherever it is used",
 }
 
 #: Degenerate-pass floor. If the scan finds fewer runs than this, the SCANNER has broken rather than
