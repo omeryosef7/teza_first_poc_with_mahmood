@@ -789,3 +789,72 @@ informative domains; `pre10`'s is uninformative by construction.** This instrume
 that**, by an independent path. Together with the `C7` row counts (`CDS-R-005`) that is **two**
 published results reproduced before the instrument was used on anything new.
 
+---
+
+## §7 — `CDS-PR-004` — `C1` at 38 domains. Registered BEFORE any Stage-1 outcome is read.
+
+**Written and committed while the Stage-1 screens were still generating. No CDS baseline arm has
+been judged; no ASR and no refusal rate from any CDS bank has been looked at.**
+
+### 7.1 Why this exists
+
+`CDS-R-010` established that **`C1` — `demo_processing_only` restores refusal — is the one claim in
+this project that survives inference at the domain level**, on both models. But it does so on
+**10 domains**, where the domain sign test's *attainable floor* is 0.0312 and the observed p **equals
+that floor**: the result is as strong as k = 10 permits and no stronger. `CDS-R-005` showed what
+happens to a 10-domain claim when the effect is smaller — `C7` is incapable or null everywhere.
+
+**`C1` is the claim most worth making unassailable, and the 38-domain material for it is already
+being generated**: the Stage-1 baseline arms *are* `C1`'s baseline arm. One additional arm buys
+`C1` a properly powered cluster-level test.
+
+### 7.2 The registration
+
+**H-C1-38.** On Llama-3.1-8B-Instruct, on the 38-domain `main_longpre_cds` population at n=4,
+`demo_processing_only` raises the keyword-refusal rate relative to the clean baseline.
+
+**Population, arms, settings:** identical to `CDS-PR-001` §2.3/§2.5 — the pair chosen by the
+Stage-1 rule, 380 rows, 38 domains, 10 disjoint demonstration sets per domain, knockout band
+**6-14**, cap **640**, judged in one invocation with the judge pinned.
+
+**Primary endpoint:** exact paired **domain sign test** on per-domain `kw_refusal` counts,
+`A_baseline` vs `C_demo_processing_only`, α = 0.05, with `k_informative` and the attainable floor
+`2/2^k_informative` reported. **Secondary:** row-level exact McNemar; domain-cluster bootstrap CI;
+measured domain ICC of the refusal outcome on the baseline arm.
+
+**Capability, computed before the data** (`scripts/cds_power_domain.py`,
+`outputs/boombness/cds_power/cds_power_refusal.json`), for the effect size `C1` actually reports —
+a **75 % relative** change between 0.22 and 0.056 — at k=38, m=10:
+
+| baseline rate | ICC 0.09 | ICC 0.19 | ICC 0.33 | ICC 0.45 |
+|---|---|---|---|---|
+| 0.22 | **0.953** | **0.916** | **0.820** | 0.711 |
+| 0.15 | 0.787 | 0.698 | 0.555 | 0.479 |
+
+⚠ These are **conservative by construction**: the simulator applies the measured *LLM-judge* flip
+rate (0.067–0.082), and `kw_refusal` is a **deterministic keyword detector with zero judge
+variance**. The real power is higher. ⚠ ICC is carried across the repo's own measured range
+(`RAH3-C-020`: 0.000–0.755) rather than assumed at 0.09; note `C-71` measured refusal ICC at
+**0.326–0.427** on the `d10` rescue arms, which is why 0.33 is in the table.
+
+### 7.3 This arm runs REGARDLESS of the Stage-1 ASR verdict — and here is why that is not a loophole
+
+`CDS-PR-001`'s Stage-1 gate governs the **ASR** estimand: whether a *demonstration-specificity*
+test is worth four intervention arms. `C1`'s endpoint is **refusal**, a different outcome with a
+different base rate and no judge variance, and its capability is computed above **independently of
+any ASR**. So:
+
+* Stage 1 **QUALIFIES** → all four `CDS-PR-001` arms run; the `demoproc` arm serves both estimands.
+* Stage 1 **DECLINES FOR POWER** → the three count-matched control arms are **NOT** run (the
+  demonstration-specificity claim stays `DECLINED`, exactly as registered), and **only** the
+  `demoproc` arm runs, for `C1` alone.
+
+⚠ **What this must never become:** if Stage 1 declines, the `demoproc` arm's ASR **must not** be
+reported as a demonstration-specificity result. Without the count-matched controls there is no
+specificity contrast at all — only `demoproc` vs baseline, which every scope satisfies (`C3`). Its
+ASR delta will be recorded in the artifact and labelled **NOT A SPECIFICITY TEST**.
+
+**Decline condition for this arm too:** if the Stage-1 baseline `kw_refusal` rate on the chosen bank
+is **> 0.15**, the design is a *ceiling* problem rather than a floor one and the capability table
+above does not apply; the arm is reported as **CAPABILITY NOT ESTABLISHED** and re-costed.
+
