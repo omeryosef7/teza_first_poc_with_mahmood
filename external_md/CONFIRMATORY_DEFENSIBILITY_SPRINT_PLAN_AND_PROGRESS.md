@@ -1080,3 +1080,110 @@ manifest** (job 835507) so the contrast carries no cross-session drift.
    noise. **The Stage-1 gate used the Stage-1 number and is not revisited**; the `C1` contrast uses
    the single-session pair, which is why `CDS-PR-001` §2.5 requires one manifest.
 
+---
+
+## §11 — `CDS-PR-005` — the Boombness-vs-ASR figure, added to the plan on request (2026-09-01, 21:05)
+
+**User request:** *"Can we add to create a graph of 'boombness' vs 'asr'? We have that? I want to
+create that so add it to the plan."*
+
+### 11.1 Two things this is NOT, stated first because both are live hazards
+
+⚠ **It is not a revival of `d_surface`/Boombness as a GCG/MAC objective.** That gate is closed by
+this sprint's own charter and by `RESEARCH_HANDOFF.md` §3 row 7, and **nothing in a descriptive
+figure reopens it**. A plotted association is not a causal low-dimensional handle; §7 Q8's answer
+(`BLOCKED and correctly so`) is unaffected either way.
+
+⚠ **It is the figure this project already RETRACTED once, and for a reason that is easy to
+re-commit.** `G2`'s published ρ was computed over a row set that **mixed sibling families — which
+SHARE demonstrations — with experimentally manipulated designed variance**. On the 90 clean prompts
+the within-domain ρ was **−0.052, p = 0.658**: a null on an underpowered sample. The `phase_d`
+preset exists specifically to make the question answerable, and its docstring is the record of why
+the first attempt was not. **Any figure that pools sibling families re-commits `G2`.**
+
+### 11.2 The registration
+
+**Estimand.** The within-condition association between a **prompt-level Boombness scalar** and
+**judged attack success** on the **same `prompt_id`**, at a **fixed `n_examples`**, on the
+**doublespeak arm only** (`condition == natural_doublespeak`, `query_kind == behavioral`).
+
+**Inclusion rule — structural, fixed before any correlation is computed:**
+1. the Boombness leg and the judged leg must join on `prompt_id` **and** agree on
+   `prompt_sha16` — a content hash, not just an id (`prompt_id` is a stable identity and can join
+   two runs that refer to different text);
+2. both legs must carry the **same `bank_rows_sha16`**;
+3. **independent families only** — rows whose `family_slot` is pairwise disjoint at that dose
+   (`_take` gives slot `s` a window starting at `3s mod 20`, so slots overlap unless
+   `3|s−s'| ≥ n`). `main`'s `families` block (slots 1, 2) is **excluded at n=4 and n=8** by this
+   rule, which is exactly the `G2` failure;
+4. a **single fixed dose**, never pooled;
+5. judged with the judge **pinned**, and the cell's `frac_stop_length` reported.
+
+**Independence unit: the DOMAIN.** Statistics: (a) the **within-domain** rank correlation
+(Spearman computed inside each domain, then combined), which is what `G2`'s retraction says the
+estimate must be; (b) a **domain-cluster bootstrap** CI on the pooled Spearman; (c) the difference
+in mean Boombness between jailbroken and non-jailbroken rows with a **domain-cluster** interval.
+The naive pooled row-level ρ is reported **only** beside the within-domain one, labelled as the
+quantity `G2` was retracted for.
+
+**The figure itself** must show, not hide, the design: one point per prompt, **coloured by judged
+outcome**, **faceted or symbol-coded by domain**, with the **within-domain** trend rather than one
+global regression line, and **n, k(domains), rows/domain and the dose in the caption**.
+
+**Decline condition.** If the largest joinable, independent-family, single-dose cell has fewer than
+**6 informative domains** or fewer than **~10 attack rows**, the figure is produced as
+**DESCRIPTIVE ONLY, NO STATISTIC**, and captioned as such. `RAH-R-006` is the standing warning here:
+this project's default row counts do not support a cluster-level estimate.
+
+**Caption that may be used if the analysis is capable:**
+> *Prompt-level Boombness against judged attack success, `<model>`, `<bank>`, n_examples = `<d>`,
+> independent families only (`<n>` prompts, `<k>` domains, `<m>` per domain), judge pinned.
+> Within-domain Spearman ρ = `<...>`, domain-cluster 95 % CI `<...>`.*
+
+**Caption that may NOT be used, ever:** any wording implying Boombness **predicts**, **drives**, or
+**is an objective for** attack success; and any pooled ρ quoted without its within-domain twin.
+
+### `CDS-R-017` — `CDS-PR-005` EXECUTED. The figure exists: `reports/CDS_FIG_boombness_vs_asr.png`
+
+Producer `scripts/cds_fig_boombness_vs_asr.py` — **CPU only, no new data, no GPU**. It **imports
+`analyze_phase_d.py`** (`build_metrics`, `level_of`, `within_domain_rho`, `spearman`) rather than
+re-deriving anything, so the plot and the published statistic cannot drift apart. Artifact:
+`outputs/boombness/cds_analysis/cds_fig_boombness_vs_asr.json`.
+
+**Population (chosen by `CDS-PR-005` §11.2's rule):** `phase_d` bank, Llama-3.1-8B-Instruct,
+`natural_doublespeak`, **heldout** split (the pre-registered test half), metric frozen at
+`d_surface / demo_max|L29|cos` — the metric `analyze_phase_d` had already **selected on dev**, so
+the figure cannot become a search over 210 candidates. Judge shards `pdJ0…pdJ5`, all `DONE`.
+**840 prompts = 60 independent families over 6 domains, 14 designed levels.**
+
+**It reproduces the published artifact exactly** (`outputs/boombness_followup/clean_fig9_correlation.json`,
+heldout, `d_surface × malicious_at_0.5`): pooled ρ **+0.2722** (published 0.27221), between-level ρ
+**+0.5571**, within-level mean ρ **+0.0980**. A third independent reproduction by this sprint's
+tooling.
+
+| statistic | value |
+|---|---|
+| pooled ρ (the quantity `G2` was retracted for) | **+0.272** |
+| **within-DOMAIN** mean ρ, 6 clusters | **+0.246**, 95 % CI **[0.108, 0.383]**, p = 0.0059 |
+| **BETWEEN-level** ρ, 14 levels | **+0.557** |
+| **WITHIN-level** mean ρ, 12 levels with outcome variance | **+0.098** |
+
+**What the three panels are for.** A shows the pooled relation — attack rate rising 3/141 → 40/140
+across Boombness sextiles, with domain-cluster bootstrap intervals. B shows the same correlation
+computed **inside** each designed level, where it collapses to a mean of **+0.098** and two of the
+twelve are **negative**. C shows the level means, where the association actually lives (+0.557).
+**A single pooled scatter would have shown the opposite of the truth**, which is precisely how `G2`
+happened.
+
+⚠ **Captions that are forbidden and why** (carried onto the figure itself, not only into this log):
+*"Boombness predicts ASR"* — retracted at n=234, ρ +0.307, and the clean-90 within-domain value is
+**−0.052, p = 0.658**. Anything **causal** — both steering signs suppress ASR, and the
+prediction-vs-causation Spearman is **−0.85**. Anything **specific to `d_surface`** — `d_naive`
+(+0.292) and `d_context` (+0.261) match or beat it on the same data. Anything implying **domain
+generality** — the 38-domain gate reads `P_seen +0.2700 → P_unseen −0.0550` with the `d_naive`
+positive control collapsing too, i.e. **untestable**, not "no effect".
+
+⚠ **This does not reopen the objective gate.** `d_surface`/Boombness as a GCG/MAC objective stays
+**BLOCKED**, per this sprint's charter and `RESEARCH_HANDOFF.md` §3 row 7. A plotted association is
+not a causal low-dimensional handle, and panel B is the reason.
+
