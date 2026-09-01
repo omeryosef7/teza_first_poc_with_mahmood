@@ -1020,8 +1020,9 @@ All three screens judged, judge pinned, `scripts/cds_stage1_gate.py` applied unm
 attack rows, per the tie-break registered in `CDS-PR-001` §2.4.
 
 **Two things this settles that the prior phase could not.**
-1. ⚠ **The neutral preamble does NOT destroy the Llama attack. That was a PAIR effect, not a
-   preamble effect.** `R-50 → R-52` declined Llama because `main_longpre` on `carrot↔bomb`/`d10`
+1. ⚠ **The neutral preamble's cost is PAIR-DEPENDENT; `R-52` generalised one pair's version of it.**
+   ⚠ On `carrot↔bomb` the cost is real and this sprint reproduces it (0.0974, declined). What is
+   false is the generalisation to a design law. `R-50 → R-52` declined Llama because `main_longpre` on `carrot↔bomb`/`d10`
    dropped baseline ASR to 0.0625/0.0437, and the handoff generalised that to *"the fix costs the
    phenomenon, and that is a trade which is NOT tunable by preamble length"*. With **the same
    preamble mechanism, the same `n_preamble = 10`, the same model, the same 38 domains and the same
@@ -1460,8 +1461,12 @@ until the Stage-1 rule has been applied."*
 
 # WHAT WE CAN DEFEND TOMORROW
 
-*Written 2026-09-01 ~22:40, after the adversarial audit and independent verification of every
-headline. Each row: claim · scope · N and independence unit · replication · controls · verification ·
+*Written 2026-09-01 ~22:40. ⚠ **Scope of "verified":** two headlines carry a dedicated
+stdlib-only verifier that imports nothing from its producer — Stage 2 (349 checks) and the
+installation analysis (176 checks). The rest (`C1` at 38 domains, the rescue interaction, `C13`,
+the 220/0 readout count) were checked by **reproducing an already-published number by an
+independent path** and, for the readout count, by an independent re-enumeration — which is weaker
+and is labelled as such per claim below. Each row: claim · scope · N and independence unit · replication · controls · verification ·
 strongest remaining limitation · verdict.*
 
 ---
@@ -1585,9 +1590,12 @@ filler do not.**
 * ⚠ **The judge's re-run noise on byte-identical text is ±11 rows / 51 label flips in 380 (13.4 %).**
   Measured tonight on the same completions judged in two sessions. **Any effect smaller than that is
   not resolvable by this instrument**, which retires several "indistinguishable" claims.
-* ⚠ **The neutral preamble never was the problem — it was a PAIR effect.** `R-52` declined Llama
-  because `main_longpre` dropped `carrot↔bomb` to 0.0625/0.0437 and generalised that to a trade
-  *"NOT tunable by preamble length"*. Same preamble, same length, same model, same 38 domains, same
+* ⚠ **The neutral preamble's cost is PAIR-DEPENDENT, and `R-52` generalised one pair's version of
+  it into a design law.** ⚠ On `carrot↔bomb` the cost is **real and reproduced tonight** — the
+  38-domain longpre baseline reads **0.0974** against 0.1437 for `d10` without the preamble, and
+  that cell **declined**. What is false is the generalisation: `R-52` measured
+  0.1562 → 0.0625/0.0437 on `carrot↔bomb`/`d10` and concluded a trade *"NOT tunable by preamble
+  length"*. Same preamble, same length, same model, same 38 domains, same
   cap: **`button↔bomb` reads 0.3895 and `basket↔bomb` 0.1220.** Screening headroom before committing
   to a pair — `RBD` §6's *"single most actionable methodological finding"* — is what found it.
 * ⚠ **`C7`, the claim this sprint set out to extend, does not survive its own stated independence
