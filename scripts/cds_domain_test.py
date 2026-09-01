@@ -52,7 +52,7 @@ def p_floor(k_inf):
     return 2.0 / (2 ** k_inf) if k_inf > 0 else 1.0
 
 
-def load_arm(judge_dir, dose=None):
+def load_arm(judge_dir, dose=None, outcome="attack"):
     """`dose` is not optional politeness: `CDS-PR-001` and RBD both forbid POOLING n_examples, and
     every C7 cell at 160 rows spans four doses. Pooled is the MOST FAVOURABLE reading; per-dose is
     strictly weaker because it shrinks `k_informative`. Both are reported, never one silently."""
@@ -64,7 +64,8 @@ def load_arm(judge_dir, dose=None):
                 continue
             rows[r["prompt_id"]] = {
                 "domain": r.get("domain"), "n_examples": r.get("n_examples"),
-                "attack": int(bool(r.get("malicious_at_0.5"))),
+                "attack": int(bool(r.get("malicious_at_0.5" if outcome == "attack"
+                                          else "refused"))),
                 "refused": int(bool(r.get("refused"))),
                 "sha": r.get("completion_sha256_16"),
                 "judge_model_used": r.get("judge_model_used"),
@@ -168,6 +169,10 @@ def main():
     ap.add_argument("--dose", type=int, default=None,
                     help="restrict to one n_examples. Doses are NEVER pooled in a registered "
                          "estimand; the pooled run is reported as the most favourable reading.")
+    ap.add_argument("--outcome", choices=["attack", "refused"], default="attack",
+                    help="`refused` swaps the endpoint to kw_refusal, which has ZERO judge "
+                         "variance -- C1 and C9's primary outcome. Every field named `attack` "
+                         "below then holds the refusal count; the artifact records which.")
     ap.add_argument("--boot", type=int, default=10000)
     ap.add_argument("--tag", default="cds")
     ap.add_argument("--out", default="outputs/boombness/cds_analysis")
@@ -175,7 +180,7 @@ def main():
     arms = collections.OrderedDict(x.split("=", 1) for x in a.arm)
     gens = dict(x.split("=", 1) for x in a.gens)
 
-    loaded = {k: load_arm(v, dose=a.dose) for k, v in arms.items()}
+    loaded = {k: load_arm(v, dose=a.dose, outcome=a.outcome) for k, v in arms.items()}
     prov = {}
     for k, rows in loaded.items():
         models = collections.Counter(r["judge_model_used"] for r in rows.values())
@@ -199,7 +204,7 @@ def main():
         for y in others[i + 1:]:
             comps.append(compare(loaded[x], loaded[y], x, y, boot=a.boot))
 
-    out = {"schema": SCHEMA, "alpha": ALPHA, "reference_arm": ref, "dose": a.dose,
+    out = {"schema": SCHEMA, "alpha": ALPHA, "reference_arm": ref, "dose": a.dose, "outcome": a.outcome,
            "provenance": prov, "comparisons": comps}
     d = os.path.join(ROOT, a.out)
     os.makedirs(d, exist_ok=True)

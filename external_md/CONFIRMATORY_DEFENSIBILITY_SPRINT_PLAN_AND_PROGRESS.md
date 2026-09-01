@@ -543,3 +543,93 @@ only by the absolute floor; `judge_pinned` mutated to a **real adjacent model id
    count changes. (The other two thresholds have margin: nearest installation to 0.75 is
    0.65/0.8333; nearest ASR to 0.05 is 0.0417/0.0875.)
 
+---
+
+## §5 — `CDS-PR-003` — the Llama × Qwen3 rescue INTERACTION, at the domain level
+
+⚠ **This is a SPECIFIED RE-ANALYSIS, not a blind preregistration.** The one-sample numbers it
+re-analyses (`C9`: Llama ΔASR **+0**, Qwen3 **+9 / +13 / +10 / +14**) are already published in
+`RESEARCH_HANDOFF.md` and were read before this was written. What is new is the **estimator**, and
+that is the point: the charter's instruction is *"pre-register a model × rescue interaction rather
+than performing two separate significance tests and inferring that models differ because one is
+significant and the other is not."* `R-104` already had to make exactly this fix for `C13`.
+
+**No new GPU.** The matched arms exist: at a **640-token cap**, on the **same** `d10` bank, both
+models, same dose set — `p7r640_L5 → p7r640_L14` (Llama) and `q7r640_L5 → q7r640_L17` (Qwen3), with
+`q6r640` on `d10_poolB` as a second Qwen3 pool.
+
+**Estimand.** Per domain, `d_m = (rescue count) − (comparator count)`; the interaction is
+`d_Llama − d_Qwen3`, **paired by domain** because both models ran the same bank rows.
+**Primary:** exact paired domain **sign test** with `k_informative` and its attainable floor.
+**Also:** an **exact randomisation test** — under the null the model label is exchangeable within a
+domain, so the reference distribution is the enumeration of all 2^k sign flips — and a
+domain-cluster bootstrap CI. Outcomes: **ASR** (the contested clause) and **`kw_refusal`** (which
+has zero judge variance).
+
+⚠ **The comparator is the below-band L5 patch, which `C-20` showed is BYTE-IDENTICAL to
+knockout-only.** That makes it a faithful stand-in for knockout-only and **not** an independent
+control; the byte-identical fraction is printed with every cell so this is visible, not assumed.
+
+### `CDS-R-007` — `CDS-PR-003` EXECUTED. The refusal effect is the SAME in both models; the ASR selectivity is NOT established as an interaction.
+
+640-token cap, `frac_stop_length` released, judge pinned `openai/gpt-4o-mini` on **100 %** of rows in
+all four arms, 160 rows each, 10 shared domains, paired by domain. Artifacts:
+`outputs/boombness/cds_analysis/cds_inter_{asr,refusal}_d10_640.json`, `cds_inter_asr_poolB_640.json`.
+
+**The one-sample numbers reproduce exactly**, by an independent path: Llama comparator→rescue
+**5 → 5 = +0** on ASR and **35 → 17 = −18** on refusal (`R-143`); Qwen3 **4 → 18 = +14** on ASR
+(`R-154`) and **23 → 6 = −17** on refusal.
+
+| outcome | cell | Llama Δ | Qwen3 Δ | interaction | domain sign p (floor) | **exact randomisation p** | cluster bootstrap 95 % CI |
+|---|---|---|---|---|---|---|---|
+| **ASR** | `d10`, matched | **+0** | **+14** | **−14 rows** | 0.508 (3.9e-3, **capable**) | **0.102** | **[−2.70, −0.20]** |
+| **ASR** | `d10_poolB` (Qwen3) | +0 | +10 | −10 rows | 0.453 (1.6e-2, capable) | **0.156** | [−2.20, **0.00**] |
+| **refusal** | `d10`, matched | **−18** | **−17** | **−1 row** | 0.727 (7.8e-3, capable) | **1.000** | [−1.90, +1.40] |
+
+**What this establishes.**
+
+1. ✅ **The rescue's REFUSAL effect is cross-model, and now as an interaction rather than as two
+   one-sample results.** Llama −18 and Qwen3 −17 differ by **one row** over 160; the exact
+   randomisation test on the 10 domains gives **p = 1.000** and the bootstrap CI **[−1.9, +1.4]**
+   straddles zero. This is the strongest form the claim has ever had: *the primary effect is
+   indistinguishable between model families on matched material at a released cap.*
+2. ⚠ **The SELECTIVITY clause — "and not the attack, on Llama only" — does NOT reach significance
+   as an interaction.** The direction is unambiguous and the size is large in rows (−14 and −10 in
+   two independent Qwen3 pools), and the cluster bootstrap on the primary cell excludes zero — but
+   the **exact randomisation test**, which is the principled test for a paired design with an
+   exchangeable label, gives **p = 0.102** and **0.156**, and the domain sign test gives 0.508 and
+   0.453. **Three domain-aware methods do not agree, and the two more conservative ones say no.**
+   With **k = 10 domains** this is the project's structural power problem again, not a surprise.
+3. **The honest sentence for tomorrow:** *"On matched 640-cap material the rescue restores refusal
+   equally in both models (interaction −1 row, p = 1.000). It restores attack on Qwen3 (+14, +10)
+   and not on Llama (+0), consistently in two pools; as a formal model × rescue interaction at the
+   domain level that difference is **directional and not established** (exact randomisation
+   p = 0.102 / 0.156, k = 10 domains)."* **Do not say the models are shown to differ.**
+4. ⚠ **Comparator caveat, printed not assumed:** the below-band L5 arm is byte-identical to the
+   rescue arm on **5.0 %** (Llama) and **0.6 %** (Qwen3) of rows, so it is a faithful stand-in for
+   knockout-only and **not** an independent control (`C-20`).
+5. ⚠ Doses `{1,2,4,8}` are pooled here, matching how `C9` itself is reported. That is the **most
+   powered** reading; per-dose is strictly weaker.
+
+### `CDS-R-008` — configuration smokes, and a scope note on what "dose-matched" means
+
+All three modes smoked at `--limit 8` on the carrot CDS bank before any full arm:
+`A_baseline` (8/8, 0 failures), `C_demo_processing_only` (8/8, `frac_rows_scope_live` **1.000**),
+`CTRL_matched_d1` (8/8, `frac_rows_scope_live` **1.000**). `median_n_demo_positions` = **46.5** keys
+at n=4. Zero decode edits in both intervened arms, which is `demo_processing_only`'s **correct**
+liveness contract (`RBD-C-010`: applying one scope's must-be-zero rule to another produced a false
+alarm three times).
+
+⚠ **The count-matched control matches the KEY COUNT, not the EDIT COUNT — and it is ~1.95× the
+intervention on edits.** Smoke: `demo_all` **83 628** total prefill edits, `nondemo_matched_d1`
+**162 936**. This is **not** something this sprint introduced: every published `C7` arm pair shows
+the same ratio — `q15` 3 692 777 vs 7 221 775 (1.96×), `p13` 3 017 169 vs 5 907 960 (1.96×),
+640-cap `dp640` 3 626 722 vs `c1_640` 7 108 321 (1.96×). The cause is structural: under
+`demo_processing_only` the edited rows are the demonstration positions, so masking demo→demo is
+causally triangular (≈ n²/2) while masking demo→non-demo is not (≈ n²).
+
+**Direction of the bias: it makes `C7` CONSERVATIVE.** The control applies about **twice** as many
+attention edits as the intervention and still removes less attack. But *"dose-matched"* in the
+handoff means **matched masked-key count**, and that is the sentence that should be written down —
+`match_ratio = 1.000` is a statement about keys.
+
