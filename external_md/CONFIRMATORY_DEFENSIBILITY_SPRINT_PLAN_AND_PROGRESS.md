@@ -1709,3 +1709,46 @@ slide, it is wrong.*
 36. ⛔ **Any p-value read from the column next to it.** Tonight the **attainable floor** was quoted
     as the **p-value** in a table that printed both (`CDS-C-016`).
 
+---
+
+## §15 — `CDS-R-020` — `CDS-PR-006` (the `basket↔bomb` replication) is **VOID FOR A BANK DEFECT**, not a failed replication
+
+All four intervention arms **FAILED** (`sacct`: 835946/835947 at 22:28:23, 835948 at 22:28:40;
+835949 cancelled once the cause was known). Cause, from the job stderr:
+
+```
+ValueError: occurrence_count_mismatch:text=5,tokens=6
+```
+
+**This is `CDS-C-002`, the defect named in this log by `prompt_id` before any generation ran** —
+`school_campus|dev` slots 0/8/12 — and it behaves **differently in an intervened arm than in a
+baseline arm**:
+
+* in `A_baseline` the failure ledger catches it and the run continues, **377/380** (documented in
+  `KNOWN_SHORT`);
+* in an **intervened** arm the same exception propagates out of the span-resolution path and
+  **kills the job**.
+
+**Verdicts, kept apart deliberately:**
+* ⛔ The basket replication is **VOID — the arms could not be generated.** It is **NOT** a failed
+  replication and **must never be reported as one**. `CDS-PR-006` said in advance that a basket
+  non-result does not weaken `CDS-R-018`; a *crash* weakens it even less than a null would.
+* ✅ **`CDS-R-018` on `button↔bomb` stands exactly as registered and audited.** It was never
+  contingent on this arm.
+* ⚠ **The failure is loud, and that is the good outcome.** Had the intervened path skipped the rows
+  the way the baseline does, the arms would have compared 377 rows to 377 and been fine — but a
+  silent skip in one arm and not another is precisely the shape that produces two different row sets
+  under one label. It crashed instead.
+
+**Empty run directories, named so they are never mistaken for data**:
+`cds2dp_basket_20260901_221757_2387687`, `cds2c1_basket_20260901_221757_2387688`,
+`cds2c2_basket_20260901_221820_2976848`, `cds2c3_basket_20260901_222634_1487349` — each has
+`config.json` and `RUNMETA.json` and **no `gens.jsonl`, no `results.jsonl`, no `DONE.json`**.
+
+**The remedy, for whoever runs this next** (do **not** improvise it at run time): either add an
+explicit `--exclude-prompt-ids` to `score_behavior.py` so the mechanical exclusion is *identical and
+declared* in every arm, or regenerate the basket bank with an incidental repair that does not leave
+a 5-text / 6-token mismatch. ⚠ Regenerating changes `bank_rows_sha16` and therefore **invalidates
+the Stage-1 screen**, so it needs a fresh baseline arm and a fresh gate run — which is why it was
+not done tonight rather than at 22:35.
+
