@@ -123,6 +123,21 @@ def main():
         per_dose[row["n_examples"]].append(
             {"n_demo": len(dk), "n_drawable_pool": pool, "match_ratio": ratio})
 
+    # `CDS-C-001`. WITHOUT THIS THE GATE PASSES ON AN EMPTY SELECTION. `all_doses_feasible` is
+    # `all(...)` over `out_doses`, and `all([])` is True -- so a bank whose `bank_block` names do
+    # not match `--bank-blocks` (the default is `core2x2,core2x2_slot3`, which no bank built from a
+    # custom preset carries) was certified FEASIBLE having had ZERO rows examined, with
+    # `per_dose: {}` sitting in the artifact as the only evidence. That is the same defect class as
+    # `RAH3-C-003` (a dead `mass_gate`) and `RAH3-C-007` (a published truncation threshold no code
+    # path reads): a gate whose passing condition is vacuously satisfiable. It is made LOUD here
+    # rather than silent, and it is the reason this file's verdict can be trusted at all.
+    if not per_dose:
+        raise SystemExit(
+            f"[feas] REFUSING: 0 rows matched the selection "
+            f"(n_examples={sorted(want_ne)}, conditions={sorted(want_c)}, "
+            f"query_kinds={sorted(want_q)}, bank_blocks={sorted(want_b)}) in {args.bank}. "
+            f"An empty selection would report all_doses_feasible=true on nothing at all. "
+            f"Check --bank-blocks against the bank's own bank_block values.")
     out_doses = {}
     for v in sorted(per_dose):
         rs = [x["match_ratio"] for x in per_dose[v]]

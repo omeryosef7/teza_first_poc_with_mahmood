@@ -674,6 +674,49 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                 b["n_preamble"] = _N_PREAMBLE_OVERRIDE or 10
         return blocks
 
+    if preset == "main_longpre_cds":
+        # `CDS-PR-001`. The ONLY preset in this file that is built around the number of
+        # INDEPENDENT DEMONSTRATION SETS rather than around a factor sweep, because that number --
+        # not the row count -- is what every cluster-level claim in this project is limited by
+        # (`RAH-R-006`; `RAH3`'s own Track-B table).
+        #
+        # WHY IT EXISTS. Llama's demonstration-specificity cell was DECLINED FOR POWER (`R-52`) on
+        # a bank with 10 domains and 40 rows per dose. The binding constraints are, in order:
+        #   1. a count-matched non-demo control needs as many maskable non-demo positions as the
+        #      demo block -> the `main_longpre` neutral preamble, `n_preamble = 10`, which is the
+        #      value `PR-20` fixed ON FEASIBILITY ALONE and the only one whose Llama ASR cost has
+        #      been measured (`R-178`). It is NOT re-tuned here: shrinking it to recover attack
+        #      rate would be selecting a design on the outcome, which is what `R-50` did.
+        #   2. `_take` returns pool[(3*slot + i) % 20], so slot s and slot 0 are disjoint only when
+        #      3s >= n and 3s + n <= 20. At n=8 that admits exactly ONE partner slot (3), i.e. 2
+        #      slots x 2 splits = 4 independent families per domain -- the ceiling `rbd12`'s note
+        #      already derived. At n=4 it admits FIVE mutually disjoint slots, {0, 4, 8, 12, 16},
+        #      whose starts are {0, 12, 4, 16, 8} and which therefore PARTITION the 20-sentence
+        #      pool into five disjoint 4-blocks: 10 independent families per domain.
+        # So the two doses are not interchangeable and neither is dropped: n=4 buys 2.5x the
+        # independent families, n=8 buys the longer demonstration block. They are separate
+        # pre-registered cells and are NEVER pooled (`RBD` §"do not silently pool doses").
+        #
+        # The `families` block of `main` is deliberately NOT reused: its slots are 1 and 2, which
+        # OVERLAP slot 0 at both these doses. Counting those rows as independent is the exact
+        # failure `G2` was retracted for.
+        #
+        # `semantic_forced_choice` rides along on every family stem so that installation and
+        # behaviour are measured on ONE population -- the `C-24` join failure, where 396 of 468
+        # behavioural stems had no probe side, cannot occur here.
+        return [
+            dict(name="cds_n4", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[4], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["behavioral", "semantic_forced_choice"],
+                 slots=[0, 4, 8, 12, 16], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+            dict(name="cds_n8", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[8], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["behavioral", "semantic_forced_choice"],
+                 slots=[0, 3], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+        ]
+
     if preset == "main_longctx":
         # R-25's bank-design fix, and the ONLY reason this preset exists.
         #
@@ -1231,7 +1274,7 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre",
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "main_longpre_cds",
                                          "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu",
                                          "rbd12_n16"],
                     default="main")

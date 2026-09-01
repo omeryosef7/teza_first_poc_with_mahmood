@@ -1,0 +1,96 @@
+{
+  "preset": "main_longpre_cds",
+  "seed": 20260901,
+  "codeword": "carrot",
+  "concept": "bomb",
+  "pools_sha16": "4cfc70c8688e4a3a",
+  "pools_path": "data/boombness_prompts/demo_pools_29dom.json",
+  "stats": {
+    "bank_rows_sha16": "5d45751f9b5ff3aa",
+    "n_rows": 4256,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 0,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 1064,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 1064,
+      "concept_in_benign_ctx": 1064,
+      "direct_harmful": 1064,
+      "natural_doublespeak": 1064
+    },
+    "by_block": {
+      "cds_n4": 3040,
+      "cds_n8": 1216
+    },
+    "by_query_kind": {
+      "behavioral": 2128,
+      "semantic_forced_choice": 2128
+    },
+    "by_n_examples": {
+      "4": 3040,
+      "8": 1216
+    },
+    "by_domain": {
+      "airport_apron": 112,
+      "airport_ground": 112,
+      "bakery_plant": 112,
+      "brewery_works": 112,
+      "campsite_park": 112,
+      "city_bridge": 112,
+      "construction_site": 112,
+      "dairy_plant": 112,
+      "farm_storage": 112,
+      "ferry_terminal": 112,
+      "film_studio": 112,
+      "fishing_harbour": 112,
+      "game_manual": 112,
+      "garden_centre": 112,
+      "harbour_dock": 112,
+      "hospital_supply": 112,
+      "hospital_ward_store": 112,
+      "hotel_service": 112,
+      "instructional": 112,
+      "lab_safety": 112,
+      "library_stacks": 112,
+      "mountain_refuge": 112,
+      "museum_archive": 112,
+      "news_report": 112,
+      "power_substation": 112,
+      "printing_works": 112,
+      "quarry_site": 112,
+      "rail_depot": 112,
+      "recycling_centre": 112,
+      "school_campus": 112,
+      "shipyard_slip": 112,
+      "sports_stadium": 112,
+      "subway_station": 112,
+      "telecom_exchange": 112,
+      "textile_mill": 112,
+      "theatre_backstage": 112,
+      "veterinary_clinic": 112,
+      "warehouse_logistics": 112
+    },
+    "by_split": {
+      "dev": 2128,
+      "heldout": 2128
+    },
+    "by_role_style": {
+      "plain": 4256
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "c5239c1601a869cc2825bce76362ec21b7d1145b",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-09-01T18:12:46"
+}
