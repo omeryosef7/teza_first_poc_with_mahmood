@@ -1772,3 +1772,26 @@ this entry superseding its staging bullet, per the append-only rule.
 > value produced by a run.** This last one is not about the science at all — it is about a commit
 > message that describes 32 lines of work while carrying 258 — and it is still the same failure
 > mode: *the numbers kept being right and the sentences around them kept being wrong.*
+
+### `RAH2-C-029` recurrence — the same guard refused the same defect again, in the file that documents it
+
+Committing `reports/RAH2_SPRINT_SUMMARY.md` was **REFUSED** by the pre-commit hook:
+
+```
+findings the claim ledger leans on that the deliverable never states: ['R-7', 'R-8']
+```
+
+The count-correction I had just written into both the summary and the handoff read *"Updated after
+`RAH2-PR-004`, `R-007`, `R-008`, …"* — **unprefixed**, which `tests/test_my_ledger_propagation.py`
+correctly reads as citing Doublespeak findings `R-7` and `R-8`.
+
+`RAH2-C-029` recorded exactly this defect, and the handoff sentence that states the rule —
+*"Always cite these ids with their full `RAH2-` prefix … the pre-commit hook refuses the commit"* —
+sits **at line 493 of the same file whose line 509 broke it**. Fixed by prefixing; all 16
+ledger-propagation guards pass.
+
+> **Third occurrence of one pattern this phase**: `RAH2-C-022` recurred inside the entry warning
+> about `RAH2-C-022`; `RAH2-C-029` was a rule stated by instantiating what it forbids; this is that
+> rule broken 16 lines below where it is written. **Knowing the rule, and having just written it
+> down, does not prevent breaking it — only the automated check does.** Both times the guard caught
+> it and I did not.

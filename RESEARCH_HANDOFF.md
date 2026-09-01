@@ -505,8 +505,10 @@ phase's two would-be deliverable edits were **retracted in place**. **Artifacts 
 the `RAH_PREFLIGHT_TRANSPORT/1` schema has no commit, dirty, job-id or runtime field, so every job id
 and commit in the log is prose, checkable only against the SLURM logs.
 
-**3 preregistrations · 7 results · 29 corrections · 2 deep reviews · 16 artifacts · 0 corrections to
-a measured value.**
+**4 preregistrations · 8 results · 32 corrections · 3 deep reviews · 16 artifacts · 0 corrections to
+a measured value.** (Updated after `RAH2-PR-004`, `RAH2-R-007`, `RAH2-R-008`, `RAH2-DR-003` and
+`RAH2-C-030`…`RAH2-C-032`;
+the standalone summary is `reports/RAH2_SPRINT_SUMMARY.md`.)
 
 ## 1. The one-paragraph truth
 
