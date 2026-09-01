@@ -162,6 +162,17 @@ def run_sha16(run_dir):
     return load_json(p).get("bank_rows_sha16")
 
 
+def _sec(pub, key):
+    """`CDS-C-012`. After `CDS-DR-001` the producer moved the cell-level aggregates under
+    `secondary_cell_level` and renamed `verdict` to `verdict_at_registered_unit_pair` -- because the
+    audit showed the rule's unit is the PAIR, not the cell. A verifier that reads only the old key
+    reports a FAILURE for a schema change rather than for a wrong number, which is noise where the
+    signal matters most. Look in both places, and never invent a value if neither exists."""
+    if key in pub:
+        return pub[key]
+    return (pub.get("secondary_cell_level") or {}).get(key)
+
+
 def main():
     ap = argparse.ArgumentParser(description="independent verifier for CDS-PR-002's published JSON")
     ap.add_argument("--published",
@@ -179,7 +190,10 @@ def main():
 
     ck.eq("header/dose is an int", isinstance(dose, int), True)
     ck.eq("header/pinned_judge", pub.get("pinned_judge"), PINNED)
-    ck.eq("header/thresholds", pub.get("thresholds"),
+    _pt = dict(pub.get("thresholds") or {})
+    for _k in ("min_install_n", "post_hoc_refusal_clean"):
+        _pt.pop(_k, None)          # added by CDS-C-003/the post-hoc stratification, not verdict inputs
+    ck.eq("header/thresholds", _pt,
           {"high_install": HIGH_INSTALL, "low_asr": LOW_ASR,
            "converse_install": CONV_INSTALL, "converse_asr": CONV_ASR})
 
@@ -256,20 +270,21 @@ def main():
     ck.eq("aggregate/count of cells with install_rate >= %.2f" % HIGH_INSTALL, len(hi), len(p_hi))
     ck.eq("aggregate/... of those with asr <= %.2f" % LOW_ASR, len(hi_lo), len(p_hi_lo))
     ck.eq("aggregate/distinct lexical pairs spanned by those cells",
-          [list(p) for p in hi_lo_pairs], pub.get("high_install_low_asr_pairs"))
+          [list(p) for p in hi_lo_pairs], _sec(pub, "hi_lo_pairs"))
     ck.eq("aggregate/converse cells (install < %.2f AND asr >= %.2f) count" % (CONV_INSTALL, CONV_ASR),
-          len(conv), len(pub.get("converse_cells") or []))
+          len(conv), len(_sec(pub, "converse_cells") or []))
     ck.eq("aggregate/converse cells identity",
           sorted((m["bank"], m["model"]) for m in conv),
-          sorted((c.get("bank"), c.get("model")) for c in (pub.get("converse_cells") or [])))
+          sorted((c.get("bank"), c.get("model")) for c in (_sec(pub, "converse_cells") or [])))
     ck.eq("aggregate/converse cells match the published cell list",
           sorted((c.get("bank"), c.get("model")) for c in p_conv),
-          sorted((c.get("bank"), c.get("model")) for c in (pub.get("converse_cells") or [])))
+          sorted((c.get("bank"), c.get("model")) for c in (_sec(pub, "converse_cells") or [])))
 
     verdict = ("SUPPORTED" if len(hi_lo_pairs) >= 2 else
                "SUPPORTED BUT SCOPED TO ONE PAIR" if len(hi_lo_pairs) == 1 else
                "NOT SUPPORTED AT THIS DOSE")
-    ck.eq("aggregate/verdict string", verdict, pub.get("verdict"))
+    ck.eq("aggregate/verdict string", verdict,
+          pub.get("verdict", pub.get("verdict_at_registered_unit_pair")))
     ck.truth("aggregate/verdict SUPPORTED iff >= 2 distinct pairs",
              (verdict == "SUPPORTED") == (len(hi_lo_pairs) >= 2),
              "%d distinct pairs -> %s" % (len(hi_lo_pairs), verdict))

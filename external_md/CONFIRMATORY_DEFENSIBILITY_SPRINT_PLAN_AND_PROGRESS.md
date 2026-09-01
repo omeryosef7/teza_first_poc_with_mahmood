@@ -742,3 +742,50 @@ dose, on one prompt skeleton — and it is robust.** Everything broader — "two
 pairs", the 0.0375–0.5833 span, the "14× spread", "below chance", and the `R-168` falsification —
 **does not survive and is withdrawn.**
 
+### `CDS-R-010` — `C1` (refusal restoration) DOES survive domain-level inference, on both models
+
+Same instrument, outcome switched to `kw_refusal` — a keyword detector with **zero judge variance**,
+so none of the judge-drift caveats that bind ASR apply here. Judge runs `p4bj_*` (Llama) and
+`q4bj_*` (Qwen3), `d10`, 160 rows, 10 domains, all pinned.
+
+| model | contrast | Δ rows | domains ↓/↑ | k_inf | **domain sign p** | attainable floor | capable? | cluster bootstrap 95 % CI |
+|---|---|---|---|---|---|---|---|---|
+| **Llama** | A vs `demo_processing_only` | **+26** | **0 / 6** | 6 | **0.0312** | 0.0312 | **YES** | **[+0.0563, +0.2875]** |
+| Llama | A vs `legacy_all_query` | −4 | 3 / 2 | 5 | 1.000 | 0.0625 | no | [−0.1187, +0.0500] |
+| Llama | A vs `response_query_only` | −7 | 2 / 0 | 2 | 0.500 | 0.500 | no | [−0.1250, 0.0000] |
+| Llama | A vs `query_prefill_only` | −7 | 2 / 0 | 2 | 0.500 | 0.500 | no | [−0.1250, 0.0000] |
+| **Qwen3** | A vs `demo_processing_only` | **+21** | **0 / 7** | 7 | **0.0156** | 0.0156 | **YES** | **[+0.0563, +0.2250]** |
+| Qwen3 | the other three scopes | −2 each | 1 / 0 | 1 | 1.000 | 1.000 | no | [−0.0375, 0.0000] |
+| Llama, `basket_bomb`, **640 cap** | A vs `demoproc` (`R-141`) | +12 | 0 / 4 | 4 | 0.125 | 0.125 | no | **[+0.0417, +0.2083]** |
+
+1. ✅ **`C1` is the claim in this project that survives the true independence unit.** On **both**
+   model families the domain sign test **rejects**, the cluster-bootstrap CI **excludes zero**, and
+   the sign-test p equals its own **attainable floor** — which means **every informative domain moved
+   the same way** (0 down / 6 up and 0 down / 7 up). That is the strongest pattern the test can
+   produce at k = 10 domains.
+2. ⚠ **The uniqueness clause is NOT established at the domain level.** The other three scopes are
+   **incapable** by construction (`k_informative` 1–5, floors 0.0625–1.000) precisely because they
+   barely move refusal. So *"no other scope restores refusal"* remains a **row-level** statement
+   plus a point estimate at or below zero — it is not a cluster-level negative, and it must not be
+   quoted as one.
+3. ⚠ The **640-cap** replication (`R-141`, `basket_bomb`, 96 rows, 4 informative domains) is
+   domain-**incapable**; its bootstrap CI nonetheless excludes zero. Quote it as a cap-release
+   *replication of the row-level effect*, not as a domain-level result.
+
+### `CDS-R-011` — `C13` re-derived, and it reproduces `C-95` exactly (a second instrument validation)
+
+`c13j640_*`, Llama, 640 cap, 160 rows, 10 domains. The three banks join on `prompt_id` **160/160**,
+which independently confirms `tests/test_preamble_is_the_only_difference.py`'s claim that they differ
+only by the preamble.
+
+| contrast | Δ rows | domains ↓/↑ | k_inf | domain sign p | floor | capable? | bootstrap 95 % CI | row McNemar p |
+|---|---|---|---|---|---|---|---|---|
+| d10 vs `pre12` | **−12** | 6 / 1 | 7 | **0.125** | 0.0156 | **YES** | **[−0.1437, −0.0063]** | 0.0169 |
+| d10 vs `pre10` | −11 | 4 / 1 | 5 | 0.375 | 0.0625 | no | [−0.1500, −0.0062] | 0.0522 |
+| `pre12` vs `pre10` | +1 | 2 / 3 | 5 | 1.000 | 0.0625 | no | [−0.0188, +0.0313] | 1.000 |
+
+**`C-95` says: `pre12`'s test was CAPABLE (k=7, floor 0.0156) and returned p = 0.125 on 6/7
+informative domains; `pre10`'s is uninformative by construction.** This instrument returns **exactly
+that**, by an independent path. Together with the `C7` row counts (`CDS-R-005`) that is **two**
+published results reproduced before the instrument was used on anything new.
+

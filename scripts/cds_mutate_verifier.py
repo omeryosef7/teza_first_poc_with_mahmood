@@ -71,15 +71,17 @@ def mut_pair_identity(d):
 
 
 def mut_pair_set(d):
-    old = copy.deepcopy(d["high_install_low_asr_pairs"])
-    d["high_install_low_asr_pairs"] = old[:-1]
-    return "high_install_low_asr_pairs %r -> %r" % (old, d["high_install_low_asr_pairs"])
+    sec = d["secondary_cell_level"]
+    old = copy.deepcopy(sec["hi_lo_pairs"])
+    sec["hi_lo_pairs"] = old[:-1]
+    return "hi_lo_pairs %r -> %r" % (old, sec["hi_lo_pairs"])
 
 
 def mut_verdict(d):
-    old = d["verdict"]
-    d["verdict"] = ("SUPPORTED BUT SCOPED TO ONE PAIR" if old == "SUPPORTED" else "SUPPORTED")
-    return "verdict %r -> %r" % (old, d["verdict"])
+    k = "verdict" if "verdict" in d else "verdict_at_registered_unit_pair"
+    old = d[k]
+    d[k] = ("SUPPORTED BUT SCOPED TO ONE PAIR" if old == "SUPPORTED" else "SUPPORTED")
+    return "%s %r -> %r" % (k, old, d[k])
 
 
 def mut_judge_pinned(d):
@@ -98,9 +100,10 @@ def mut_bank_sha(d):
 
 
 def mut_converse(d):
-    old = copy.deepcopy(d["converse_cells"])
-    d["converse_cells"] = old[:-1]
-    return "converse_cells: dropped 1 (%d -> %d)" % (len(old), len(d["converse_cells"]))
+    sec = d["secondary_cell_level"]
+    old = copy.deepcopy(sec["converse_cells"])
+    sec["converse_cells"] = old[:-1]
+    return "converse_cells: dropped 1 (%d -> %d)" % (len(old), len(sec["converse_cells"]))
 
 
 def ends(sfx):
