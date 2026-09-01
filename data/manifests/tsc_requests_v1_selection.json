@@ -1,0 +1,234 @@
+{
+ "schema": "TSC_REQUEST_SELECTION/1",
+ "source": "data/manifests/heldout_495.csv",
+ "source_n_rows": 495,
+ "seed": 20260903,
+ "per_category": 5,
+ "categories": [
+  "cyber_hacking_malware",
+  "fraud_financial_crime",
+  "weapons_explosives_mass_casualty",
+  "identity_theft_personal_data_theft",
+  "misinformation_disinformation",
+  "violent_crime_physical_harm",
+  "drugs_controlled_substances",
+  "theft_property_crime"
+ ],
+ "excluded_categories": {
+  "other_uncategorized": "not a category",
+  "child_exploitation": "n=7 below MIN_CATEGORY_N, and out of scope for anything this project publishes",
+  "terrorism_extremism": "n=9 below MIN_CATEGORY_N",
+  "academic_minor_dishonesty_deception": "n=8 below MIN_CATEGORY_N",
+  "privacy_surveillance": "n=7 below MIN_CATEGORY_N",
+  "self_harm_suicide": "object is a person, not a mappable noun -- PARADIGM SCOPE LIMIT",
+  "hate_speech_discrimination": "object is a speech act, not a mappable noun -- PARADIGM SCOPE LIMIT",
+  "harassment_bullying_stalking": "object is a person, not a mappable noun -- PARADIGM SCOPE LIMIT"
+ },
+ "min_category_n": 16,
+ "n_selected": 40,
+ "cluster_unit": "harmful_request",
+ "selection_sha16": "bed56c91e70a707c",
+ "selected": [
+  {
+   "task_id": "advbench_full_0214",
+   "category": "cyber_hacking_malware",
+   "duplicate_group": "advbench_full_0214"
+  },
+  {
+   "task_id": "advbench_full_0057",
+   "category": "cyber_hacking_malware",
+   "duplicate_group": "advbench_full_0057"
+  },
+  {
+   "task_id": "advbench_full_0355",
+   "category": "cyber_hacking_malware",
+   "duplicate_group": "advbench_full_0355"
+  },
+  {
+   "task_id": "advbench_full_0413",
+   "category": "cyber_hacking_malware",
+   "duplicate_group": "advbench_full_0413"
+  },
+  {
+   "task_id": "advbench_full_0215",
+   "category": "cyber_hacking_malware",
+   "duplicate_group": "advbench_full_0215"
+  },
+  {
+   "task_id": "advbench_full_0183",
+   "category": "fraud_financial_crime",
+   "duplicate_group": "advbench_full_0183"
+  },
+  {
+   "task_id": "advbench_full_0088",
+   "category": "fraud_financial_crime",
+   "duplicate_group": "advbench_full_0088"
+  },
+  {
+   "task_id": "advbench_full_0184",
+   "category": "fraud_financial_crime",
+   "duplicate_group": "advbench_full_0184"
+  },
+  {
+   "task_id": "advbench_full_0494",
+   "category": "fraud_financial_crime",
+   "duplicate_group": "advbench_full_0494"
+  },
+  {
+   "task_id": "advbench_full_0075",
+   "category": "fraud_financial_crime",
+   "duplicate_group": "advbench_full_0075"
+  },
+  {
+   "task_id": "advbench_full_0377",
+   "category": "weapons_explosives_mass_casualty",
+   "duplicate_group": "advbench_full_0377"
+  },
+  {
+   "task_id": "advbench_full_0012",
+   "category": "weapons_explosives_mass_casualty",
+   "duplicate_group": "advbench_full_0012"
+  },
+  {
+   "task_id": "advbench_full_0102",
+   "category": "weapons_explosives_mass_casualty",
+   "duplicate_group": "advbench_full_0102"
+  },
+  {
+   "task_id": "advbench_full_0335",
+   "category": "weapons_explosives_mass_casualty",
+   "duplicate_group": "advbench_full_0335"
+  },
+  {
+   "task_id": "advbench_full_0411",
+   "category": "weapons_explosives_mass_casualty",
+   "duplicate_group": "advbench_full_0411"
+  },
+  {
+   "task_id": "advbench_full_0365",
+   "category": "identity_theft_personal_data_theft",
+   "duplicate_group": "advbench_full_0365"
+  },
+  {
+   "task_id": "advbench_full_0280",
+   "category": "identity_theft_personal_data_theft",
+   "duplicate_group": "advbench_full_0280"
+  },
+  {
+   "task_id": "advbench_full_0305",
+   "category": "identity_theft_personal_data_theft",
+   "duplicate_group": "advbench_full_0305"
+  },
+  {
+   "task_id": "advbench_full_0110",
+   "category": "identity_theft_personal_data_theft",
+   "duplicate_group": "advbench_full_0110"
+  },
+  {
+   "task_id": "advbench_full_0153",
+   "category": "identity_theft_personal_data_theft",
+   "duplicate_group": "advbench_full_0153"
+  },
+  {
+   "task_id": "advbench_full_0449",
+   "category": "misinformation_disinformation",
+   "duplicate_group": "advbench_full_0449"
+  },
+  {
+   "task_id": "advbench_full_0040",
+   "category": "misinformation_disinformation",
+   "duplicate_group": "advbench_full_0040"
+  },
+  {
+   "task_id": "advbench_full_0315",
+   "category": "misinformation_disinformation",
+   "duplicate_group": "advbench_full_0315"
+  },
+  {
+   "task_id": "advbench_full_0372",
+   "category": "misinformation_disinformation",
+   "duplicate_group": "advbench_full_0372"
+  },
+  {
+   "task_id": "advbench_full_0407",
+   "category": "misinformation_disinformation",
+   "duplicate_group": "advbench_full_0407"
+  },
+  {
+   "task_id": "advbench_full_0442",
+   "category": "violent_crime_physical_harm",
+   "duplicate_group": "advbench_full_0442"
+  },
+  {
+   "task_id": "advbench_full_0360",
+   "category": "violent_crime_physical_harm",
+   "duplicate_group": "advbench_full_0360"
+  },
+  {
+   "task_id": "advbench_full_0317",
+   "category": "violent_crime_physical_harm",
+   "duplicate_group": "advbench_full_0317"
+  },
+  {
+   "task_id": "advbench_full_0200",
+   "category": "violent_crime_physical_harm",
+   "duplicate_group": "advbench_full_0200"
+  },
+  {
+   "task_id": "advbench_full_0331",
+   "category": "violent_crime_physical_harm",
+   "duplicate_group": "advbench_full_0331"
+  },
+  {
+   "task_id": "advbench_full_0309",
+   "category": "drugs_controlled_substances",
+   "duplicate_group": "advbench_full_0309"
+  },
+  {
+   "task_id": "advbench_full_0118",
+   "category": "drugs_controlled_substances",
+   "duplicate_group": "advbench_full_0118"
+  },
+  {
+   "task_id": "advbench_full_0441",
+   "category": "drugs_controlled_substances",
+   "duplicate_group": "advbench_full_0441"
+  },
+  {
+   "task_id": "advbench_full_0342",
+   "category": "drugs_controlled_substances",
+   "duplicate_group": "advbench_full_0342"
+  },
+  {
+   "task_id": "advbench_full_0420",
+   "category": "drugs_controlled_substances",
+   "duplicate_group": "advbench_full_0420"
+  },
+  {
+   "task_id": "advbench_full_0210",
+   "category": "theft_property_crime",
+   "duplicate_group": "advbench_full_0210"
+  },
+  {
+   "task_id": "advbench_full_0340",
+   "category": "theft_property_crime",
+   "duplicate_group": "advbench_full_0340"
+  },
+  {
+   "task_id": "advbench_full_0519",
+   "category": "theft_property_crime",
+   "duplicate_group": "advbench_full_0519"
+  },
+  {
+   "task_id": "advbench_full_0473",
+   "category": "theft_property_crime",
+   "duplicate_group": "advbench_full_0473"
+  },
+  {
+   "task_id": "advbench_full_0319",
+   "category": "theft_property_crime",
+   "duplicate_group": "advbench_full_0319"
+  }
+ ],
+ "note": "The (concept, template) derivation happens DOWNSTREAM of this file, on these exact task_ids. It can change how a request is phrased; it cannot change which requests are in the population."
+}
