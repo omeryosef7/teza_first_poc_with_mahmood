@@ -1455,3 +1455,249 @@ until the Stage-1 rule has been applied."*
 > p = 0.0034) and **rises** on the sibling `carrot↔bomb` bank (+14), so the mechanism is not
 > refusal-mediated **on this bank** and that clause carries its bank list.
 
+---
+---
+
+# WHAT WE CAN DEFEND TOMORROW
+
+*Written 2026-09-01 ~22:40, after the adversarial audit and independent verification of every
+headline. Each row: claim · scope · N and independence unit · replication · controls · verification ·
+strongest remaining limitation · verdict.*
+
+---
+
+### 1. Demonstration-specificity — **STRONG (newly cross-model, newly cluster-level)**
+
+**Claim.** Masking attention to the **demonstration positions** during prefill removes the
+doublespeak attack; **count-matched masks of identical size drawn from neutral non-demonstration
+filler do not.**
+
+* **Scope.** Llama-3.1-8B-Instruct, 38-domain `button↔bomb` bank, n_examples = 4, 640-token cap,
+  band 6-14, **one fixed harmful request**. Previously Qwen3-only and row-level (`C7`).
+* **N / unit.** 380 rows per arm; **38 domains × 10 verified-disjoint demonstration sets**
+  (0 of 1710 within-domain pairs share a demonstration sentence). **The unit is the domain.**
+* **Effect.** ASR **0.39–0.42 → 0.1447**, **−104 rows**. Controls: **0, −9, −11 rows**.
+  Domain sign test **p ≤ 2.6e-06** vs every control, **29–32 of 32–34** informative domains;
+  cluster-bootstrap CI **[+0.18, +0.34]**.
+* **Replication.** Second **model family** for `C7`; first **cluster-level** test of it anywhere.
+  ⚠ A second **lexical pair** (`basket↔bomb`, `CDS-PR-006`) was registered and launched and had
+  **not returned** at write-up time.
+* **Controls passed.** `match_ratio` 1.000 on **1140/1140** control rows · 3 independently seeded
+  draws (verified distinct, pairwise overlap 0.43–0.46) · liveness 100 %, 0 decode edits, 0 scope
+  violations · **no-op guard**: demoproc differs from every arm on 376/380 completions · truncation
+  gate **PASS** (max differential 0.0053 vs 0.02) · one judging manifest, 1900/1900 pinned and ok ·
+  identical `prompt_id` **and** `prompt_sha16` across all five arms.
+* **Verification.** `scripts/cds_verify_stage2.py` — stdlib only, imports nothing from the producer,
+  exact binomial derived **three independent ways** and cross-checked by brute-force enumeration:
+  **349 checks, 0 failures**. `scripts/cds_mutate_stage2.py`: **18/18** classes provably red.
+  Adversarial auditor: the effect **survives**; six of my sentences did not (`CDS-DR-002`).
+* **Strongest remaining limitation.** ⚠ **All 380 rows carry ONE identical harmful request.** The
+  38 clusters are 38 *demonstration pools*, not 38 behaviours — **this is not generality over
+  requests.** And the controls draw **99.7 %** of their keys from the neutral filler preamble,
+  because the only informative non-demo span (the request) is protected by construction.
+* **Verdict: `STRONG`**, with the two scope clauses above stated every time.
+
+### 2. `C1` — `demo_processing_only` restores refusal — **SUPPORTED BUT SCOPED (bank-dependent IN SIGN)**
+
+* **Scope.** Llama + Qwen3 on `d10` (both pools); Llama on `carrot↔bomb`/38-domain.
+  ⛔ **Reverses on `button↔bomb`/38-domain.**
+* **N / unit.** 160 rows / 10 domains (`d10`); 380 rows / 38 domains (`carrot`). Domain.
+* **Effect.** `d10`: Llama +0.1625, Qwen3 +0.1312 — domain sign test **p = 0.0312 and 0.0156, each
+  EQUAL TO ITS OWN ATTAINABLE FLOOR**, i.e. *every* informative domain moved the same way (0/6, 0/7);
+  both bootstrap CIs exclude zero. `carrot`/38-dom: +14 rows, 0/7 domains, **p = 0.0156 = floor**,
+  CI [+0.0105, +0.0711].
+* **Replication.** Three independent domain-level confirmations, two model families, two banks.
+* **Verification.** Endpoint is `kw_refusal`, a **deterministic** keyword detector — **0/380 flips
+  across two independent judging sessions**. Zero judge variance.
+* **Strongest remaining limitation.** ⛔ **On `button↔bomb` the same scope makes refusal FALL**
+  (0.1105 → 0.0579, −20 rows, 12 domains down / 1 up, **p = 0.0034**). `R-146` had found a
+  bank-specific *null*; this is a bank-specific **reversal**. Separately, the **uniqueness** clause
+  ("no other scope restores refusal") is **not** established at the domain level — the other three
+  scopes are incapable by construction (k_inf 1–5).
+* **Verdict: `SUPPORTED BUT SCOPED`** — always with the bank list, never as a property of the scope.
+
+### 3. `C2` — refusal restoration is **not** the route to attack removal — **STRONG**
+
+* **Scope.** `button↔bomb`/38-domain, Llama, one judging session.
+* **Effect.** `demo_processing_only` removes **104 attacks while refusal FALLS by 20 rows**
+  (p = 0.0034), both at the domain level, on the same arms.
+* **Verification.** The length confound runs the **wrong way**: demoproc completions are *longer*
+  (308 vs 294 new tokens) and `kw_refusal` is a substring match that longer text can only inflate —
+  yet refusal falls.
+* **Limitation.** One bank; on `carrot↔bomb` refusal rises instead. Both directions are consistent
+  with `C2` (refusal is not the route either way) but the *sign* is bank-specific.
+* **Verdict: `STRONG`** — this is the cleanest form `C2` has ever had.
+
+### 4. Installation is not sufficient for attack — **SUPPORTED, ONE MATCHED CONTRAST**
+
+* **Claim.** A bank can install the codeword→concept mapping **completely** and still produce almost
+  no successful attacks.
+* **Scope.** Llama-3.1-8B-Instruct, n_examples = 8, cap 640, the 6-domain / 24-family skeleton.
+* **The evidence that survived audit.** `window↔knife` **2/24** vs `ticket↔bomb` **12/24** — **same
+  model, same cap, same 6 domains, the same 24 structural family stems, installation 1.000 in
+  both**, differing **only in the substituted lexeme**. **Fisher exact p = 3.35e-03**, and
+  **p = 1.73e-02** under the worst case of every selection defect simultaneously.
+* **Verification.** `scripts/cds_verify_install_vs_asr.py`: **176 checks, 0 failures**;
+  15/15 mutation classes red.
+* **Limitation.** ⛔ The registered pair-level criterion returns **`SUPPORTED BUT SCOPED TO ONE
+  PAIR`**, and **zero** pairs survive once near-zero refusal is also required. Registered secondary
+  Spearman ρ = **+0.35 (pairs)** — weakly *toward* the null. Observational across banks.
+* **Verdict: `SUPPORTED BUT SCOPED`.**
+
+### 5. Llama vs Qwen3 rescue selectivity — **DECLINED / UNDERPOWERED as an interaction**
+
+* **What holds.** The rescue's **refusal** effect is **indistinguishable between model families**:
+  Llama −18, Qwen3 −17, interaction **one row**, exact randomisation **p = 1.000**, CI
+  [−1.9, +1.4]. Matched 640-cap arms, same bank, one judging session.
+* **What does not.** The **ASR selectivity** clause (Llama +0 vs Qwen3 +14 / +10) is **directional
+  and consistent in two Qwen3 pools** but reaches only **p = 0.102 / 0.156** by exact randomisation
+  at k = 10 domains.
+* **Verdict: `SUPPORTED BUT SCOPED` for the refusal half; `DECLINED / UNDERPOWERED` for the
+  selectivity half.** **Do not say the models are shown to differ on ASR.**
+
+### 6. No usable representation readout — **NEGATIVE, and now correctly scoped**
+
+* **Claim.** No readout is simultaneously exposure-clean, non-zero-hop, high-mass and validated on a
+  non-copy positive control.
+* **Re-derived independently tonight** (`CDS-R-012`): **220** exposure-clean multi-hop cells, **0**
+  clear the **0.1 transport positive control**. The missing-key trap is closed — reading a missing
+  `names_candidates` as clean reproduces the recorded wrong answer **320/39 digit-for-digit**, and
+  the 200 affected cells cannot qualify for a structural reason.
+* **Strongest remaining limitation.** ⚠ **Two of the 220 DO clear `MASS_GATE = 0.05`** (0.0965,
+  0.0658) while failing transport, and the closest cell is **3.5 % short**, not orders away. The
+  denominator is **180 distinct** cells from **36** configurations over **19 of 29** artifacts and
+  **2 of 4** banks; `patch_live_at_best` is unrecorded on **190 of 220**.
+* **Verdict: `NEGATIVE / FALSIFIED` for the 0.1 transport gate, scoped as above.**
+
+### 7. `C13` — a neutral preamble suppresses the attack on Llama — **SUPPORTED BUT SCOPED**
+
+* Re-derived independently: −12 rows at a released cap, row McNemar p = 0.0169, cluster bootstrap
+  [−0.144, −0.006]; domain sign test **capable and null (p = 0.125, 6/7 domains)**. **Exactly
+  reproduces `C-95`.**
+* **Verdict: `SUPPORTED BUT SCOPED` — row-level, not cluster-level.**
+
+### 8. Methodological results worth presenting in their own right
+
+* **The domain ICC that had no estimator now has one, and a measurement.** `RAH3-C-006` records
+  `ICC = 0.09` as *"the single most load-bearing input to the GO/NO-GO"* with **no estimator
+  anywhere in the repository**. Measured on the 38-domain carrot baseline: **ASR ICC = −0.0123**
+  (essentially zero); on the button baseline **0.1583**. Estimator: `cds_domain_test.icc_anova`.
+* ⚠ **The judge's re-run noise on byte-identical text is ±11 rows / 51 label flips in 380 (13.4 %).**
+  Measured tonight on the same completions judged in two sessions. **Any effect smaller than that is
+  not resolvable by this instrument**, which retires several "indistinguishable" claims.
+* ⚠ **The neutral preamble never was the problem — it was a PAIR effect.** `R-52` declined Llama
+  because `main_longpre` dropped `carrot↔bomb` to 0.0625/0.0437 and generalised that to a trade
+  *"NOT tunable by preamble length"*. Same preamble, same length, same model, same 38 domains, same
+  cap: **`button↔bomb` reads 0.3895 and `basket↔bomb` 0.1220.** Screening headroom before committing
+  to a pair — `RBD` §6's *"single most actionable methodological finding"* — is what found it.
+* ⚠ **`C7`, the claim this sprint set out to extend, does not survive its own stated independence
+  unit** (`CDS-R-005`). Every Qwen3 cell is incapable-by-construction or capable-and-null
+  (p = 0.45–0.73). **The row-level numbers reproduce exactly**; it is a scope result, not a
+  refutation — and it is the reason the Llama replication was built at 38 domains.
+* **Five thresholds published and enforced by nothing, in two sprints** — `RAH3-C-003`,
+  `RAH3-C-007`, `CDS-C-001`, `CDS-C-005`, `CDS-C-015` — **and the last one was inside the docstring
+  claiming to have fixed the pattern.** Grep every published threshold for a code path that reads it.
+
+---
+---
+
+# CLAIMS WE MUST NOT SAY
+
+*Everything retracted or over-generalised across RBD / RAH / RAH2 / RAH3 that tonight's experiments
+did **not** legitimately restore, plus this sprint's own retractions. If a sentence here appears in a
+slide, it is wrong.*
+
+### A. Retracted or corrected TONIGHT (`CDS`)
+
+1. ⛔ **"demoproc beats every control at p < 1e-9"** — that is the **attainable floor**, not the
+   p-value. The truth is **p ≤ 2.6e-06** (`CDS-C-016`).
+2. ⛔ **"the controls move +0, +9, +11 rows"** — the sign was inverted; they move **0, −9, −11**, the
+   same direction as demoproc (`CDS-C-017`).
+3. ⛔ **"the controls are indistinguishable from baseline — informative negatives."** Those
+   differences are **below the judge's own re-run noise** (±11 rows, 51 label flips on byte-identical
+   text). Say **"within judge re-run variance"** (`CDS-C-018`).
+4. ⛔ **"three count-matched NON-DEMONSTRATION masks."** 99.7 % of control keys are the **neutral
+   filler preamble**; the only informative non-demo span is protected by construction. Say
+   **"neutral preamble filler of the same masked-key count"** (`CDS-C-019`).
+5. ⛔ **"demonstration-specificity at the true independence unit"** *unqualified* — 38 clusters are
+   38 **demonstration pools around ONE identical harmful request** (`CDS-C-020`).
+6. ⛔ **"installation does not determine ASR — two distinct lexical pairs / a 14× spread /
+   0.0375–0.5833."** All artifacts of a tie-break that contradicted its own registration, a
+   cell-vs-pair unit mismatch, and a judge chosen by `listdir` order. Only the **matched-skeleton
+   contrast** survives (`CDS-C-004`, `CDS-C-006`, `CDS-C-008`, `CDS-R-009`).
+7. ⛔ **"`basket↔gun` falsifies `R-168`'s 'no bank produces attacks without installing'."**
+   **RETRACTED** — `R-168` quantified over a **dose-pooled** population where `basket_gun`'s ASR is
+   **0.104**, below the threshold `CDS-PR-002` introduced (`CDS-C-010`).
+8. ⛔ **"`basket↔gun` installation 0.417 is below chance."** 5/12 vs 0.5 gives **p = 0.774**, CI
+   [0.152, 0.723] (`CDS-C-010`).
+9. ⛔ **"9 distinct lexical pairs" as 9 independent draws** — eight of the banks share **one
+   24-family skeleton** and `bomb` is the concept of four pairs (`CDS-C-011`).
+10. ⛔ **"`C1`: `demo_processing_only` restores refusal"** as a property of the **scope**. It
+    **reverses** on `button↔bomb` (−20 rows, p = 0.0034) (`CDS-R-019`).
+11. ⛔ **"zero of the 220 exposure-clean multi-hop cells have ever passed"** *without naming the
+    gate* — **two clear `MASS_GATE = 0.05`**; zero clear the **0.1** transport control
+    (`CDS-C-013`). Never write a bare "the gate" (`RAH2-C-027`).
+12. ⛔ **"Llama's best exposure-clean multi-hop mass is 376× below `MASS_GATE`"** unscoped — that is
+    the RAH3 **offset** artifact only; corpus-wide it is **0.0658, ABOVE** the gate (`CDS-C-013`).
+13. ⛔ **Any Boombness-vs-ASR caption implying prediction, causation, `d_surface`-specificity, or
+    domain generality.** Within designed levels the correlation collapses to **+0.098**;
+    `d_naive` (+0.292) matches or beats `d_surface`; the 38-domain gate is **untestable**, not null
+    (`CDS-R-017`).
+14. ⛔ **"the Stage-1 screen was applied before any intervention arm was generated"** — a full
+    Stage-2 `demoproc` arm on `carrot↔bomb` ran **53 minutes earlier** under `CDS-PR-004`, and the
+    filesystem mtimes for the button gate **disagree with `sacct` by 1–3 minutes** and are
+    unresolved (`CDS-C-022`).
+15. ⛔ **"`carrot↔bomb` was declined because the effect is absent."** It was declined **by one row**
+    (0.0974 vs a 0.10 floor) with every other criterion passing, and its measured ICC says the
+    design would have been adequately powered (`CDS-R-013`/`R-014`).
+
+### B. Standing retractions from RBD / RAH / RAH2 / RAH3 — **none of these was restored tonight**
+
+16. ⛔ *"`demo_processing_only` works BY restoring refusal"* — and tonight it is **contradicted in
+    sign** on a second bank.
+17. ⛔ Any **ranking** of the three effective scopes by ASR — gaps are inside the margin.
+18. ⛔ *"The mapping stops being used when the attack dies"* — confounded with the outcome.
+19. ⛔ Dose-response as a **cross-model** mechanism — refuted on Qwen3.
+20. ⛔ *"The rescue restores the attack on Qwen3"* as a **pool-A** claim — failed its confirmatory
+    test on pool B.
+21. ⛔ **`d_surface` / Boombness as a GCG or MAC objective.** **Still BLOCKED.** Tonight's figure is
+    descriptive and reopens nothing.
+22. ⛔ Any claim that **`demo_processing_only` suppresses the attack** *in the RBD estimand* — that
+    estimand is **DECLINED on both models** and the T2 arithmetic passing does not change it.
+23. ⛔ **`RBD-R-029` as a general claim about composition** — Llama-specific.
+24. ⛔ `candle_missile` as **"VOID on both models"**; `legacy_all_query` as **"the no-mapping
+    control"**; any **T5** verdict on a Llama cell; the below-gate `PR-007`/`PR-008` numbers;
+    **T7 (`n_examples = 16`) as a headroom remedy**.
+25. ⛔ **The Track-A argmax shift** (probabilities of order 1e-8); **"~96×"** for the receiver-layer
+    improvement (it is 31× and 130×); **"0.1562"** as the `carrot↔bomb` screening baseline (it is
+    0.1645); **"all five prior patchscope failures were the receiver layer"** (there are seven);
+    **any R-profile statement as model-general**; **"the depth fraction transfers across models"**;
+    **"same donor"** for the 31×/130× ratios; **`exch` as a specificity control**; **the capped key
+    control as "dose-matched"**; **"N passed" from the pre-commit hook as "the suite is green"**.
+26. ⛔ **"`id07_raw` is an exposure-clean high-mass readout"** — a **0-hop token decoder**; inject
+    `carrot`, get `carrot` at 0.899, and it collapses **688×** off-surface.
+27. ⛔ **"`H0` was falsified"** — `H0` **stands**, now off-surface too. ⛔ **"`RBD-R-033` was
+    refuted"** — withdrawn. ⛔ **"Binding preservation is established"** — it is not.
+28. ⛔ **"`RAH-R-018` shows transport is present/absent"** — **A-IV / CANNOT ANSWER, permanently.**
+29. ⛔ **Any max over receiver-layer × donor-layer quoted as "transport strength"** — including
+    **0.1932**; that is `selection_max`, an upper bound. ⛔ *"Qwen3's positive control was 1.000"* —
+    it is 0.999999, **and the comparison it anchors is confounded**. ⛔ *"Every form collapses"* —
+    **false**, 5 of 50 rise.
+30. ⛔ **Any RAH3 number as held-out** — there is no held-out cell.
+31. ⛔ **`C9`'s below-band control as evidence of specificity** — byte-identical to knockout-only on
+    160/160 rows, a **no-op by construction**. ⛔ **`C12`'s ASR half** — 2 rows against a 1.9-row
+    floor. ⛔ **`C11`'s cited control** — withdrawn with `C-20`.
+32. ⛔ **`C2` as bank-general** — the non-refusal share of down-flips runs 44 %–100 % across 13
+    bank/model pairs, and on `p4bj`/`d10` it is 44 %.
+33. ⛔ **`C13`'s `pre10` arm as an informative negative** — uninformative by construction
+    (k = 5, floor 0.0625 > α).
+34. ⛔ **"exactly zero killed-by-refusal in every non-`demoproc` cell"** — pool B has one in each of
+    `legacy` and `respq`.
+
+### C. Two sentences to retire on sight
+
+35. ⛔ **"n = 160 / n = 380 rows"** as a sample size for a behavioural claim. The unit is the
+    **domain**, and where refusal ICC is 0.33–0.43 the effective n is **22–27, not 160**.
+36. ⛔ **Any p-value read from the column next to it.** Tonight the **attainable floor** was quoted
+    as the **p-value** in a table that printed both (`CDS-C-016`).
+
