@@ -44,9 +44,18 @@ independent lexical-pair replication, with its capability written down first).
 | `R-012` | The 220/0 readout statistic holds for the **0.1 transport gate**; **two cells clear `MASS_GATE`** | narrowed |
 | `R-014` | **The domain ICC that had no estimator: −0.0123** (carrot), **0.1583** (button) | closes `RAH3-C-006` |
 | `R-017` | Boombness-vs-ASR figure: between-level ρ **+0.557**, within-level **+0.098** | descriptive only |
+| `R-020` | The `basket↔bomb` replication arms **CRASHED** on the 3 rows named in advance by `CDS-C-002` | **VOID for a bank defect — NOT a failed replication** |
+| `C-023` | My own universal-quantifier sweep caught two over-claims **in the deliverable itself** | corrected before publication |
 
 ## What was declined, and why that is the point
 
+* **The independent lexical-pair replication (`CDS-PR-006`, `basket↔bomb`) is VOID.** All four
+  intervention arms died on `occurrence_count_mismatch` — the three `school_campus|dev` rows this
+  log named **by `prompt_id` before any generation ran**. Those rows are **skipped** by the failure
+  ledger in a baseline arm and **fatal** in an intervened one. ⚠ **This is not a failed replication
+  and must never be reported as one**; `CDS-PR-006` said in advance that a basket non-result does
+  not weaken `CDS-R-018`, and a crash weakens it less than a null would. **So the Llama headline
+  currently rests on ONE lexical pair**, and closing that is the first thing to do next.
 * **`carrot↔bomb` DECLINED FOR POWER by one row.** Every other criterion passed and the measured
   ICC says the design would have been adequately powered. **The floor was not moved.**
 * **The n=8 cell was dropped on TOKENIZATION** — `match_ratio` min 0.000 — before any ASR at either
@@ -67,7 +76,10 @@ dose-pooled population).
 
 ## Verification
 
-Two independent verifiers, neither importing its producer. Stage 2: **349 checks, 0 failures**,
+⚠ **Scope of "verified":** two headlines carry a dedicated stdlib-only verifier that imports nothing
+from its producer. The rest (`C1` at 38 domains, the rescue interaction, `C13`, the 220/0 readout
+count) were checked by **reproducing an already-published number by an independent path**, which is
+weaker, and by an independent re-enumeration for the readout count. Stage 2: **349 checks, 0 failures**,
 exact binomial derived **three ways** and cross-checked against brute-force enumeration;
 **18/18** mutation classes red. Installation analysis: **176 checks, 0 failures**; **15/15** red.
 The mutation harness **found four green holes in the first verifier**, all caused by an absolute
@@ -90,3 +102,19 @@ tolerance swallowing relative corruption of values down to 3e-19.
 * ⚠ **Screen headroom on baseline before committing to a lexical pair.** `R-52` generalised one
   pair's collapse under a neutral preamble into a design law; the same preamble on a different
   lexeme reads **0.3895**.
+
+## The next four things, in order
+
+1. **Close the single-pair exposure on the Llama headline.** Add an explicit `--exclude-prompt-ids`
+   to `score_behavior.py` so a mechanical row exclusion is *identical and declared* in every arm,
+   then re-run `CDS-PR-006` on `basket↔bomb`. ⚠ Regenerating the bank instead would change
+   `bank_rows_sha16` and **invalidate the Stage-1 screen**, so it needs a fresh baseline and a fresh
+   gate run.
+2. **Vary the request.** All 380 rows carry one identical harmful query, so the 38 clusters are 38
+   demonstration pools, not 38 behaviours. Until that changes, nothing here is generality over
+   requests.
+3. **Re-cost `carrot↔bomb` with a floor derived from a MEASURED ICC.** It declined at 0.0974 against
+   0.10 with every other criterion passing, and its ICC (−0.0123) says the design would have been
+   adequately powered. Set the floor from power, register it, and re-screen.
+4. **Give `C1` its bank list everywhere it appears.** It restores refusal on `d10` (both models) and
+   `carrot↔bomb`, and **reduces** it on `button↔bomb`. It is not a property of the scope.
