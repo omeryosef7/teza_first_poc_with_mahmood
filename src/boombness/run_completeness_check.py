@@ -78,6 +78,54 @@ KNOWN_SHORT = {
         "prompt ids (f953fbbb2376f8db, 56c76e11095a5d48, 566c998c6df83a30) were named in the log "
         "BEFORE any generation ran, from the tokenizer alone. The cell is analysed at n=377 with "
         "school_campus at 7 rows instead of 10, and that imbalance is stated wherever it is used",
+    "tsc1dp_basket_20260902_003952_2408231":
+        "TSC-PR-001 / TSC-C-002: the SAME three CDS-C-002 rows, now excluded EXPLICITLY rather than "
+        "ledgered. This is the C_demo_processing_only arm of the basket replication, run with "
+        "--exclude-prompt-ids data/boombness_prompts/exclusions/"
+        "cds38_basket_bomb_occurrence_mismatch.txt (exclude_prompt_ids_sha16=52ba6a6cfc3fe6f6, "
+        "n_excluded=3). CDS-R-020: the same tokenisation failure is SKIPPED by the failure ledger "
+        "in a baseline arm and FATAL in an intervened one, so the exclusion is declared up front "
+        "and identically in every arm instead of emerging from where the exception was caught. "
+        "All FIVE arms verified to carry the identical 377 prompt_ids (0 rows either-only against "
+        "cds1A_basket_20260901_191635_1462938). The shortfall is one domain, school_campus at 7 "
+        "rows instead of 10, it is the same domain in every arm, it is fixed by the tokenizer and "
+        "independent of any outcome, and it is stated wherever the cell is used",
+    "tsc1c1_basket_20260902_005544_1565940":
+        "TSC-PR-001 / TSC-C-002: the SAME three CDS-C-002 rows, now excluded EXPLICITLY rather than "
+        "ledgered. This is the CTRL_matched_d1 arm of the basket replication, run with "
+        "--exclude-prompt-ids data/boombness_prompts/exclusions/"
+        "cds38_basket_bomb_occurrence_mismatch.txt (exclude_prompt_ids_sha16=52ba6a6cfc3fe6f6, "
+        "n_excluded=3). CDS-R-020: the same tokenisation failure is SKIPPED by the failure ledger "
+        "in a baseline arm and FATAL in an intervened one, so the exclusion is declared up front "
+        "and identically in every arm instead of emerging from where the exception was caught. "
+        "All FIVE arms verified to carry the identical 377 prompt_ids (0 rows either-only against "
+        "cds1A_basket_20260901_191635_1462938). The shortfall is one domain, school_campus at 7 "
+        "rows instead of 10, it is the same domain in every arm, it is fixed by the tokenizer and "
+        "independent of any outcome, and it is stated wherever the cell is used",
+    "tsc1c2_basket_20260902_003917_1554639":
+        "TSC-PR-001 / TSC-C-002: the SAME three CDS-C-002 rows, now excluded EXPLICITLY rather than "
+        "ledgered. This is the CTRL_matched_d2 arm of the basket replication, run with "
+        "--exclude-prompt-ids data/boombness_prompts/exclusions/"
+        "cds38_basket_bomb_occurrence_mismatch.txt (exclude_prompt_ids_sha16=52ba6a6cfc3fe6f6, "
+        "n_excluded=3). CDS-R-020: the same tokenisation failure is SKIPPED by the failure ledger "
+        "in a baseline arm and FATAL in an intervened one, so the exclusion is declared up front "
+        "and identically in every arm instead of emerging from where the exception was caught. "
+        "All FIVE arms verified to carry the identical 377 prompt_ids (0 rows either-only against "
+        "cds1A_basket_20260901_191635_1462938). The shortfall is one domain, school_campus at 7 "
+        "rows instead of 10, it is the same domain in every arm, it is fixed by the tokenizer and "
+        "independent of any outcome, and it is stated wherever the cell is used",
+    "tsc1c3_basket_20260902_005544_1565941":
+        "TSC-PR-001 / TSC-C-002: the SAME three CDS-C-002 rows, now excluded EXPLICITLY rather than "
+        "ledgered. This is the CTRL_matched_d3 arm of the basket replication, run with "
+        "--exclude-prompt-ids data/boombness_prompts/exclusions/"
+        "cds38_basket_bomb_occurrence_mismatch.txt (exclude_prompt_ids_sha16=52ba6a6cfc3fe6f6, "
+        "n_excluded=3). CDS-R-020: the same tokenisation failure is SKIPPED by the failure ledger "
+        "in a baseline arm and FATAL in an intervened one, so the exclusion is declared up front "
+        "and identically in every arm instead of emerging from where the exception was caught. "
+        "All FIVE arms verified to carry the identical 377 prompt_ids (0 rows either-only against "
+        "cds1A_basket_20260901_191635_1462938). The shortfall is one domain, school_campus at 7 "
+        "rows instead of 10, it is the same domain in every arm, it is fixed by the tokenizer and "
+        "independent of any outcome, and it is stated wherever the cell is used",
 }
 
 #: Degenerate-pass floor. If the scan finds fewer runs than this, the SCANNER has broken rather than
