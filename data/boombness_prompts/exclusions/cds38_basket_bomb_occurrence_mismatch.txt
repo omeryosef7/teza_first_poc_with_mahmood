@@ -1,0 +1,26 @@
+# DECLARED, OUTCOME-INDEPENDENT ROW EXCLUSION
+# bank      : data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb.jsonl
+# population: query_kind=behavioral & condition=natural_doublespeak & bank_block=cds_n4 & n_examples=4
+# effect    : 380 -> 377 rows; domain school_campus contributes 7 rows instead of 10.
+#
+# WHY THESE THREE ROWS. The basket bank's incidental repair (baskets->crates, basket->crate) leaves
+# a codeword occurrence that tokenises to SIX pieces against FIVE text matches, so
+# `resolve_occurrences` raises `occurrence_count_mismatch:text=5,tokens=6`. The mechanism is
+# TOKENISATION OF THE CODEWORD -- fixed per prompt, computable from the tokenizer alone, and
+# completely independent of any generation, judge label or outcome.
+#
+# WHEN THEY WERE NAMED. Before any basket generation existed, as `CDS-C-002`, by prompt_id, and
+# recorded in `run_completeness_check.KNOWN_SHORT`. The baseline arm
+# `cds1A_basket_20260901_191635_1462938` already dropped exactly these three via its failure ledger
+# (summary.json -> failures.failure_example_ids), which is why it holds 377 rows.
+#
+# WHY THE FILE EXISTS. `CDS-R-020`: the same exception is SKIPPED in a baseline arm and FATAL in an
+# intervened one (the knockout pre-flight resolves every row outside any `try`). Passing this file
+# to every intervention arm makes the exclusion identical and declared across arms instead of
+# emergent from where the exception happened to be caught.
+#
+# NO OUTCOME INFORMATION WAS USED TO BUILD THIS LIST, and no row may be added to it after outcomes
+# are observed.
+566c998c6df83a30
+56c76e11095a5d48
+f953fbbb2376f8db

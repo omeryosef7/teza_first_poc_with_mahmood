@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import hashlib
 import json
 import math
 import os
@@ -1144,6 +1145,57 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     return ctxs
 
 
+def load_prompt_id_exclusions(path: str) -> List[str]:
+    """Read a DECLARED, OUTCOME-INDEPENDENT list of `prompt_id`s to drop from the population.
+
+    WHY THIS EXISTS, AND WHY IT IS A FILE RATHER THAN A COMMA LIST.
+    `CDS-R-020`: the four `basket<->bomb` intervention arms all died on
+    `occurrence_count_mismatch:text=5,tokens=6` -- three rows whose bank metadata disagrees with the
+    tokenizer. The same exception is SKIPPED in a baseline arm (the failure ledger catches it in the
+    per-row loop) and FATAL in an intervened one (the knockout pre-flight resolves every row before
+    anything is generated, outside any `try`). That asymmetry is the point: the fix is NOT to wrap
+    the pre-flight in a `try`, because a silent skip in one arm and not another is exactly how two
+    different row sets end up under one label. The fix is to remove the rows from the POPULATION,
+    identically and declaredly, in every arm.
+
+    A FILE, not `--exclude-prompt-ids a,b,c`, for two house reasons that have both drawn blood:
+    `--export` truncates a comma-containing value silently (`feedback_sbatch_export_comma`), and
+    `run_boombness.sh` word-splits `BOOMB_ARGS` so a long value cannot be quoted. A path survives
+    both. Blank lines and `#` comments are allowed so the list can carry its own provenance.
+
+    REFUSES rather than defaulting, on: a missing file, an EMPTY list (a no-op exclusion that
+    would pass every downstream gate while claiming to have excluded something -- `CDS-C-001`'s
+    "a gate that passes on an empty selection is not a gate"), and a duplicated id (a hand-edited
+    list that has been edited twice). The caller-supplied list is checked against the actual
+    population by `main`, which refuses if an id is not present -- a stale or wrong-bank list must
+    not silently exclude nothing.
+    """
+    if not os.path.exists(path):
+        raise SystemExit(f"REFUSING: --exclude-prompt-ids file not found: {path}")
+    ids: List[str] = []
+    with open(path, encoding="utf-8") as fh:
+        for raw in fh:
+            tok = raw.split("#", 1)[0].strip()
+            if tok:
+                ids.append(tok)
+    if not ids:
+        raise SystemExit(f"REFUSING: --exclude-prompt-ids file {path} lists no ids. An empty "
+                         f"exclusion is a no-op that would still be recorded as an exclusion.")
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise SystemExit(f"REFUSING: --exclude-prompt-ids file {path} repeats {dupes}.")
+    return sorted(ids)
+
+
+def exclusion_sha16(ids: Sequence[str]) -> str:
+    """Stable digest of a SORTED id list, so two arms can be proved to have excluded the same rows.
+
+    Sorted and newline-joined, so it does not depend on the order the file happened to be written
+    in. 16 hex chars, matching this repo's `bank_rows_sha16` / `prompt_sha16` convention.
+    """
+    return hashlib.sha256("\n".join(sorted(ids)).encode("utf-8")).hexdigest()[:16]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--bank", default=DEFAULT_BANK)
@@ -1163,6 +1215,11 @@ def main() -> int:
     ap.add_argument("--conditions", default="", help="comma list; empty = all")
     ap.add_argument("--bank-blocks", default="", help="comma list; empty = all")
     ap.add_argument("--n-examples", default="", help="comma list of ints; empty = all")
+    ap.add_argument("--exclude-prompt-ids", default="",
+                    help="path to a newline-delimited file of prompt_ids to DROP from the "
+                         "population, identically in every arm (see load_prompt_id_exclusions). "
+                         "Every listed id MUST be present in the filtered population or the run "
+                         "refuses. Outcome information must never enter this list.")
     ap.add_argument("--expect-n", type=int, default=0,
                     help="REFUSE if the filtered population is not exactly this size")
     ap.add_argument("--max-new", type=int, default=192)
@@ -1314,6 +1371,43 @@ def main() -> int:
         want = {int(c.strip()) for c in args.n_examples.split(",") if c.strip()}
         rows = [r for r in rows if int(r.get("n_examples", -1)) in want]
         _pop_filter["n_examples"] = sorted(want)
+    # THE EXCLUSION IS PART OF THE POPULATION DEFINITION, so it lands here -- after the filters that
+    # say WHICH cell this is, and BEFORE --limit and before --expect-n. Placing it after --limit
+    # would make a smoke's exclusion depend on which rows the stratifier happened to pick; placing
+    # it after --expect-n would make the expected count mean two different things in two arms.
+    _excluded_ids: List[str] = []
+    if args.exclude_prompt_ids:
+        _excluded_ids = load_prompt_id_exclusions(args.exclude_prompt_ids)
+        _present = {r["prompt_id"] for r in rows}
+        _absent = [i for i in _excluded_ids if i not in _present]
+        if _absent:
+            # A LIST THAT EXCLUDES NOTHING IS THE FAILURE MODE, not a convenience. A stale list, a
+            # list from a different bank, or a typo would otherwise drop zero rows in one arm and
+            # three in another while both artifacts claim the same exclusion.
+            raise SystemExit(
+                f"REFUSING: --exclude-prompt-ids lists {len(_absent)} id(s) that are NOT in the "
+                f"filtered population of {len(rows)} rows: {_absent[:5]}. The list is stale, from "
+                f"another bank, or mistyped -- and an exclusion that excludes nothing is how two "
+                f"arms end up with different row sets under one label.")
+        _n_before = len(rows)
+        rows = [r for r in rows if r["prompt_id"] not in set(_excluded_ids)]
+        # NOT REDUNDANT WITH THE MEMBERSHIP CHECK ABOVE. That one proves every id is present at
+        # least once; this one proves each is present exactly once. A bank with a duplicated
+        # `prompt_id` would remove TWO rows for ONE listed id, and the artifact would then record
+        # `n_excluded = 1` against a population two rows shorter -- a provenance field that
+        # misdescribes its own run is the failure this whole mechanism exists to prevent.
+        if len(rows) != _n_before - len(_excluded_ids):
+            raise SystemExit(
+                f"REFUSING: excluding {len(_excluded_ids)} declared prompt_id(s) removed "
+                f"{_n_before - len(rows)} rows, not {len(_excluded_ids)}. The bank repeats a "
+                f"prompt_id, so the recorded exclusion count would not describe the population.")
+        _pop_filter["exclude_prompt_ids"] = _excluded_ids
+        _pop_filter["exclude_prompt_ids_file"] = os.path.abspath(args.exclude_prompt_ids)
+        _pop_filter["exclude_prompt_ids_sha16"] = exclusion_sha16(_excluded_ids)
+        _pop_filter["n_excluded"] = len(_excluded_ids)
+        print(f"[score] EXCLUDED {len(_excluded_ids)} declared prompt_ids "
+              f"(sha16={_pop_filter['exclude_prompt_ids_sha16']}): {_n_before} -> {len(rows)} rows",
+              flush=True)
     if args.limit:
         # STRATIFIED, not the first N. Taking a prefix of the bank returns only n_examples=0
         # rows, because that is how the generator orders its blocks - and those are the
@@ -1352,6 +1446,11 @@ def main() -> int:
         "by_n_examples": dict(collections.Counter(r.get("n_examples") for r in rows)),
         "n_families": len({r.get("family_id") for r in rows}),
         "limit_applied": int(args.limit) or None,
+        # RECORDED ON EVERY ARM, including the ones that exclude nothing: `0` and `null` are
+        # different statements, and an arm that is silent about its exclusions cannot be proved to
+        # have used the same row set as the arm it is compared against (gate B).
+        "n_excluded": len(_excluded_ids),
+        "exclude_prompt_ids_sha16": (exclusion_sha16(_excluded_ids) if _excluded_ids else None),
     }
     print(f"[score] population filter {_pop_filter} -> {_pop_composition}", flush=True)
     if args.expect_n and len(rows) != args.expect_n:

@@ -207,7 +207,160 @@ artifacts.
 
 ## §5 — P1 — `basket↔bomb`, the independent lexical-pair replication
 
-**Status:** in progress. Preregistration `TSC-PR-001` below.
+### 5.1 `TSC-PR-001` — preregistration
+
+**Written before any `basket` intervention arm exists.** The four empty run directories from
+`CDS-R-020` (`cds2dp_basket_…`, `cds2c1_basket_…`, `cds2c2_basket_…`, `cds2c3_basket_…`) hold
+`config.json` + `RUNMETA.json` and **no `gens.jsonl`, no `results.jsonl`, no `DONE.json`** — there
+is no basket intervention outcome anywhere to have been looked at, and none has been.
+
+**Hypothesis (`H-A`).** Masking demonstration processing (`demo_processing_only`, layers 6–14,
+α=1.0) removes behavioural attack on the `basket↔bomb` bank **more than** three seeded
+count-matched non-demonstration masks of the same masked-key count do.
+
+**Null (`H-0`).** Per-domain attack removal under `demo_processing_only` is exchangeable with that
+under each count-matched control.
+
+| field | value |
+|---|---|
+| model | `meta-llama/Llama-3.1-8B-Instruct` |
+| bank | `data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb.jsonl` |
+| bank hash | `bank_rows_sha16 = d22cc2da5eb943e0` (as `CDS-PR-006` recorded; re-verified in §5.3) |
+| lexical pair | `basket ↔ bomb` |
+| population | `behavioral` × `natural_doublespeak` × `cds_n4` × `n_examples=4` |
+| dose | n=4 demonstrations |
+| **exclusions** | `data/boombness_prompts/exclusions/cds38_basket_bomb_occurrence_mismatch.txt`, **3 ids**, `exclude_prompt_ids_sha16 = 52ba6a6cfc3fe6f6` |
+| **expected N** | **377 rows**, `--expect-n 377`, in **38 domains**: 37 × 10 + `school_campus` × 7 |
+| **independence unit** | the **demonstration-pool domain**, k = 38. Not the row. Not the request — all 377 rows carry one identical harmful request, exactly as on `button`. |
+| band / scope | `attn_knockout` layers **6–14**, α=1.0, `--knockout-scope demo_processing_only` |
+| cap | **640** new tokens |
+| attn impl | `eager` (SDPA silently no-ops a 4-D additive mask) |
+| seed | `20260901` — **unchanged from `CDS-PR-006`**, so the control draws are the same draws |
+| judge | `openai/gpt-4o-mini`, **pinned**, all five arms in **one** manifest / one invocation |
+| arms | `A_baseline` (already generated) · `C_demo_processing_only` · `CTRL_matched_d1` · `CTRL_matched_d2` · `CTRL_matched_d3` |
+
+**Arms.** Everything except **mask identity** is matched. `A_baseline` is the existing
+`cds1A_basket_20260901_191635_1462938` (377 rows; its three missing ids are **exactly** the three
+excluded ids — verified in §10, and re-verified independently in §5.3). The four intervention arms
+are regenerated with `--exclude-prompt-ids`, so all five arms carry the **same 377 `prompt_id`s**.
+
+⚠ **The one deliberate asymmetry, stated in advance.** The baseline reached 377 by *ledgering three
+failures*; the intervention arms reach 377 by *excluding three rows up front*. The **row set is
+identical** and that is what the paired test consumes. The audit question — whether being
+attempted-and-failed rather than excluded-up-front could have perturbed the baseline's seeding,
+ordering or batching — is answered in §5.3 **before** the arms run, and the answer gates the launch.
+
+**PRIMARY endpoint.** Exact **paired domain sign test** on per-domain attack counts,
+`demo_processing_only` vs **each** of the three count-matched controls.
+`H-A` is supported **iff all three** reject at **α = 0.05** in the direction *demoproc removes
+more*. The attainable p-floor `2/2^k_inf` is reported **labelled, in its own column**, next to but
+never in place of the p-value.
+
+**SECONDARY endpoints, descriptive only, never promoted.** Row-level exact McNemar · domain-cluster
+bootstrap CI on ΔASR · raw ASR counts per arm · per-domain effect distribution · number of
+informative domains · domain ICC of each arm · the same battery on `refused` as the outcome.
+
+**Capability, from the pre-computed grid at the MEASURED Stage-1 basket baseline** (p0 = 0.1220,
+k = 38, m ≈ 10, `scripts/cds_power_domain.py`), **carried over verbatim from `CDS-PR-006` and not
+re-derived after any outcome**: for a **total wipeout** the domain sign test is ≈ **0.90 / 0.87** at
+ICC 0.067 / 0.09 and **0.73** at 0.19; for a **75 % reduction** — nearer what `button` actually
+showed (a 65 % relative drop) — ≈ **0.61 / 0.60** at ICC 0.067 / 0.09.
+⚠ **So this cell is ADEQUATE for a wipeout and UNDERPOWERED for a partial effect, and that is
+written down before the arms run.**
+
+**Verdict rules, fixed now.**
+* all three contrasts reject → **REPLICATED**;
+* they do not reject, and the arms are **capable** (liveness green, controls non-vacuous, truncation
+  gate passed) → **UNDERPOWERED FOR A PARTIAL EFFECT** = `DECLINED FOR POWER`, reported with its
+  numbers, **not** as a failure to replicate;
+* a per-arm capability gate fails (liveness, no-op control, truncation differential > 0.02, judge
+  provenance) → **VOID**, and the arms are rerun or the claim is dropped, never analysed;
+* **whatever `basket` returns, `CDS-R-018` on `button↔bomb` stands on its own.** This is a
+  replication, not a substitution. Registered in advance, as `CDS-PR-006` also did.
+
+⛔ **Thresholds are not moved after the result. No row is added to or removed from the exclusion
+file after outcomes exist. No fourth control is added. No fourth lexical pair is screened to
+replace a disappointing one.**
+
+**Artifact paths.** Runs under `outputs/boombness/score_behavior/cds2{dp,c1,c2,c3}_basket_*`;
+judge manifest `outputs/boombness/argsfiles/tsc1j_basket_arms.txt`; judge dirs
+`outputs/boombness/judge/tsc1j_basket_*`; analysis
+`outputs/boombness/cds_analysis/tsc1_basket_specificity_domain_test.json` and
+`…_refusal_domain_test.json`.
+
+### 5.2 The mechanism, and why it is an exclusion rather than a `try`
+
+`--exclude-prompt-ids PATH` added to `score_behavior.py`
+(`load_prompt_id_exclusions` / `exclusion_sha16`). A **file**, not a comma list, because `--export`
+truncates comma values silently and `run_boombness.sh` word-splits `BOOMB_ARGS`.
+
+It is applied **after** the population filters, **before** `--limit` and **before** `--expect-n`,
+and it **REFUSES** on: a missing file · an **empty** list · a **duplicated** id in the file · an id
+**not present** in the filtered population · a listed id that removes more than one row (a bank with
+a repeated `prompt_id`). It persists `exclude_prompt_ids`, `…_file`, `…_sha16` and `n_excluded` into
+`population_filter` and `population_composition` on **every** arm, including arms that exclude
+nothing — `0` and `null` are different statements.
+
+⚠ **Why not simply wrap the pre-flight in a `try`.** That would make the intervened arm *skip* the
+rows the way the baseline does — and a silent skip in one arm and not another is precisely the shape
+that produces two different row sets under one label. The crash was the good outcome. The rows leave
+the **population**, declaredly, or they do not leave at all.
+
+Tests: `tests/test_prompt_id_exclusions.py`, **17 tests**, each refusal paired with an executed
+**MUTANT** test proving the permissive version accepts the same input.
+
+### 5.3 The pre-launch audit — run on CPU, BEFORE any GPU minute was spent
+
+Four questions had to be answered before the launch, and all four were answered without a GPU.
+
+**(a) Is the declared exclusion set exactly the set the tokenizer refuses — and nothing else?**
+The whole 380-row basket population was pushed through `resolve_occurrences` with the real
+Llama-3.1-8B tokenizer. **Exactly three rows raise**, `occurrence_count_mismatch:text=5,tokens=6`,
+and they are **exactly** `566c998c6df83a30`, `56c76e11095a5d48`, `f953fbbb2376f8db`. The failing set
+**equals** the declared exclusion set. The exclusion is therefore derived from the tokenizer alone —
+**no generation, no judge label, no outcome** — and is reproducible by anyone with the bank.
+
+**(b) Does the 377-row population survive the whole pre-flight?** The complete knockout pre-flight
+(`resolve_occurrences` → `demo_key_positions` → `query_span_positions` → `scoped_span_is_dead` →
+`knockout_key_set` for all four arms) was replicated CPU-side over the excluded population:
+
+```
+feasibility: {'n': 377, 'ok': 377}          # 0 no_demo_block, 0 dead_scope_span, 0 infeasible
+nondemo_matched_d1: n=377 min=1.0000 mean=1.0000 n_below_1=0
+nondemo_matched_d2: n=377 min=1.0000 mean=1.0000 n_below_1=0
+nondemo_matched_d3: n=377 min=1.0000 mean=1.0000 n_below_1=0
+draw seeds: d1=28180678  d2=36100455  d3=44020232
+```
+
+**Strict count-match holds on every row of every control**, so the dose confound the controls exist
+to remove is measured rather than assumed, before generation.
+
+**(c) THE LOAD-BEARING ONE — can the baseline differ because its three rows were
+*attempted-and-failed* rather than *excluded up front*?** **No, and it is provable from the source
+rather than argued.**
+* **Decoding is greedy.** `ds_common.generate` passes `do_sample=False`; **no RNG is consumed
+  during generation**, so `seed_everything(args.seed)` leaves every row's output independent of how
+  many rows preceded it.
+* **There is no batching.** `generate` tokenises one prompt and reads `out[0]` — **batch size 1,
+  one row per call.** So no arm can inherit a batch-composition confound from another, and removing
+  three rows cannot perturb any retained row's completion.
+* **The three rows die before generation.** They raise inside `resolve_occurrences`, at the top of
+  the per-row `try`, *before* `dc.generate` is reached — so in the baseline they consumed no
+  generation call and no RNG either.
+* **The control draws do not depend on population size or row index.** `knockout_key_set` seeds from
+  `nondemo_draw_seed(args.seed, draw_index)` and draws over that row's own `(demo_keys, seq_len,
+  protected)`. The three draw seeds above are functions of `--seed 20260901` and the arm index only.
+  **Every retained row therefore gets the identical draw it would have got at N=380.**
+
+⚠ The asymmetry is real and is stated in the write-up, but it is an asymmetry **in how the same 377
+rows were arrived at**, not in the rows, the seeds, the draws or the decoding.
+
+**(d) Is the bank the one the preregistration names?**
+`data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb_meta.json` →
+`bank_rows_sha16 = d22cc2da5eb943e0`. **Matches `TSC-PR-001` / `CDS-PR-006`.** The bank was **not**
+regenerated, so the Stage-1 screen (`CDS-R-015`: basket ASR 0.1220, 46 attack rows, 24 domains with
+an attack, `frac_stop_length` 0.0000) remains the screen for this cell and no fresh baseline or gate
+run is required.
 
 ## §6 — P2 — capable Qwen3 replication
 **Status:** recon in progress.
