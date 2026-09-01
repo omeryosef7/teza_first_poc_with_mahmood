@@ -706,7 +706,7 @@ It broke three sentences instead.
 ---
 
 ⛔⛔ **`TSC-C-004` — THE BIGGEST FINDING OF THE SPRINT, AND IT IS A SCOPE FINDING ON THE HEADLINE.
-91 % of judge-positive completions in EVERY arm never contain the concept word.**
+90-100 % of judge-positive completions in every arm never contain the concept word.**
 
 Every judged row carries `goal_topicality` (`judge_boombness.py:577`). **I re-derived this myself
 rather than taking the auditor's word:**
@@ -1093,6 +1093,23 @@ unbalanced design is legitimate and a *silently* unbalanced one is not.
 
 ---
 
+⚠ **`TSC-C-010` — my own universal-quantifier sweep caught three things in tonight's write-up.**
+Grepping my own text for `every / all / none / always / never / any` and asking only *"does this
+sentence name its population?"* — the habit that caught two over-claims last sprint — found:
+1. **Pool disjointness was verified on `button` and written for BOTH banks.** ⚠ A property checked
+   on one bank and asserted of two. **Fixed by checking, not by softening:** `basket` independently
+   returns **380 distinct demonstration blocks, 1520 distinct sentences, 0 shared across domains,
+   1 distinct `final_query_text`** — figures identical to `button`. The sentence is now true and
+   says which banks were checked.
+2. **"91 % in every arm"** — the per-arm values are 90.0 / 91.2 / 91.2 / 91.2 and **100 %** on
+   `demoproc`. One number stated for five different ones. Now a range, with `demoproc`'s 100 %
+   named, because that arm being at 100 % is the *point*.
+3. **"every control is flat"** — "flat" is not a measurement. Now: **every control's Δ confidence
+   interval includes zero**, which is what was actually computed (`ctrl_d3` on `basket` has upper
+   bound exactly +0.000, so the weaker word would have been hiding a boundary case).
+
+---
+
 # WHAT WE CAN DEFEND TOMORROW
 
 *Every claim below is stated at its true scope. Where a number moved tonight, the corrected number
@@ -1114,8 +1131,10 @@ qualified lexical pairs.**
   preregistered Stage-1 headroom gate on **baseline only**.
 * **Independent harmful requests: 1.** ⛔ All rows in both banks carry one identical
   `final_query_text`.
-* **Demonstration clusters:** 38 per bank, verified disjoint — **1520 distinct demonstration
-  sentences, 0 shared between any two domains**.
+* **Demonstration clusters:** 38 per bank, verified disjoint **on BOTH banks independently**
+  (`TSC-C-010`): 380 distinct demonstration blocks, **1520 distinct sentences, 0 shared between any
+  two domains**, and **exactly 1 distinct `final_query_text`** — each figure identical for `button`
+  and `basket`.
 * **Rows:** 380 (`button`) + 377 (`basket`) per arm; 5 arms each.
 * **Dose:** n=4. **Cap:** 640 tokens, `--attn-impl eager`. **Seed:** 20260901.
 
@@ -1168,7 +1187,8 @@ Adversarial review run and its findings incorporated (`TSC-DR-001`).
 
 ### Claim
 On the conjunction `strongreject ≥ 0.5 AND the completion contains the concept word`, the
-intervention removes **all** such completions, on both pairs, while every control is flat.
+intervention removes **all** such completions, on both pairs, while **every control's Δ
+confidence interval includes zero**.
 
 ### Evidence
 | pair | baseline topical | `demoproc` topical | Δ vs baseline [cluster 95 % CI] | controls |
@@ -1274,7 +1294,8 @@ the measured band; under majority vote they read +15 / −5 / −1 and **`ctrl_d
 ⛔ **"Judge differences smaller than the measured re-run band are meaningful."** The band is
 **17 rows** per arm and **3.7 rows** paired — ⚠ **not the 11 that `CDS` reported from two passes.**
 ⛔ **"Demonstration-specific ATTACK removal", without the topical sentence beside it.** 91 % of
-judge-positive completions in **every** arm never contain the concept word.
+judge-positive completions in **every** arm (90.0 %, 91.2 %, 91.2 %, 91.2 %, and **100 %** on
+`demoproc`) never contain the concept word.
 ⛔ **"Worst of nine p-values"** as if it were nine confirmations. It is **one** experiment, re-judged
 three times, against three controls agreeing on 27–31 of 38 domain signs.
 ⛔ **"p < 1e-9"** anywhere. That was the **attainable floor** printed as the p-value; the p is
