@@ -1257,9 +1257,10 @@ The **demonstration-pool domain**, k = 38, exact paired sign test. ⛔ **Not the
 secondary and descriptive). ⛔ **Not the request** — there is one.
 
 ### Replication
-Same bank? No — **two different banks**. Independent lexical pair? **Yes.** Independent model?
-**Pending** (Qwen Stage 2 running; Stage 1 has already PROCEEDed). Independent requests? **No.**
-Independent demo pools? **Yes**, 38 disjoint pools per bank.
+Same bank? No — **two different banks**. Independent lexical pair? **Yes.**
+Independent model? ⛔ **NO — it does NOT replicate on Qwen3-14B** (`TSC-R-005`, a well-powered
+`CAPABLE NULL`, and the registered interaction says **MODEL-SPECIFIC**). Independent requests?
+**No.** Independent demo pools? **Yes**, 38 disjoint pools per bank.
 
 ### Controls
 Three seeded strictly count-matched non-demonstration masks, `match_ratio` **min = mean = 1.0000,
@@ -1282,10 +1283,11 @@ against a **paired** band of **3.7 rows ≈ 46×**.
 Adversarial review run and its findings incorporated (`TSC-DR-001`).
 
 ### Strongest remaining limitation
-⛔ **ONE harmful request.** 38 clusters are 38 ways of teaching one mapping, not 38 behaviours.
+⛔ **ONE harmful request**, and ⛔ **ONE model.** 38 clusters are 38 ways of teaching one mapping,
+not 38 behaviours; and the effect is now **measured to be absent on Qwen3**, not merely untested.
 
 ### Verdict
-**STRONG, SCOPED TO ONE REQUEST AND ONE MODEL.**
+**STRONG ON LLAMA, SCOPED TO ONE REQUEST, AND MODEL-SPECIFIC.**
 
 ---
 
@@ -1331,23 +1333,70 @@ significance.**
 
 ---
 
-## CLAIM 4 — Qwen3 is now a CAPABLE population on this design
+## CLAIM 4 — The effect is MODEL-SPECIFIC, measured rather than inferred
 
 ### Claim
-The Qwen3-14B `button↔bomb` baseline clears the same preregistered Stage-1 gate: ASR **0.2026**,
-**77** attack rows, **28 of 38** domains carrying an attack (floor 15), `frac_stop_length` **0.0000**,
-judge pinned, 380/380 hash-join. **PROCEED.**
+On the identical bank, rows, dose, band, scope, seed, cap and judge, the intervention removes
+**63–65 %** of judge-positive completions on Llama-3.1-8B and **−1 % to +11 %** on Qwen3-14B, and a
+preregistered exact paired **model × intervention** sign test over the 38 shared domains rejects on
+its registered primary scale against **all three** controls.
 
-### Why it matters
-⛔ The **old** Qwen `C7` population failed at its own independence unit — every cell
-incapable-by-construction or capable-and-null (`CDS-R-005`). **This one is capable before any
-intervention arm is read**, so whatever Stage 2 returns is interpretable.
+### Scope
+2 models · 1 lexical pair (`button↔bomb`) · 1 request · 38 domains · 380 rows/arm · 5 arms/model.
+
+### Evidence
+Qwen primary: demoproc vs `d1`/`d2`/`d3` = **72 vs 71 / 81 / 74**, p = **1.000 / 0.487 / 0.864**,
+`k_inf` = **30 / 33 / 34**, floors 1e-9 to 1e-10, ⛔ **all CAPABLE — a well-powered null, not an
+underpowered one**. Bootstrap CI on ΔASR **[−0.0605, +0.0553]**. Byte-identical fraction **0.000**,
+so the intervention **did** change completions.
+Interaction: absolute **p = 1.88e-03 / 2.10e-03 / 6.16e-06 (3/3)**; scale-free normalised
+**p = 0.052 / 0.169 / 1.51e-03 (1/3)**, direction agreeing in all three.
+
+### Statistical unit
+The domain, k = 38, **paired across models by domain identity on the same 380 prompt ids** — the
+script refuses if the two models cover different rows or disagree about any row's domain.
+
+### Judge robustness
+Single pass on the Qwen arms (all five in one manifest). ⚠ The Qwen `A` arm judged twice reads
+**77** (Stage-1) and **73** (Stage-2) on byte-identical completions — a 4-row difference, consistent
+with the measured band and far below the effect being tested.
+
+### Verification
+`cds_verify_stage2.py` **351 checks, 0 failures GREEN**; mutation harness **20/20 RED**.
+
+### Strongest remaining limitation
+⛔⛔ **Qwen's baseline topical ASR is 0.000 in every arm** (`TSC-C-011`). On the endpoint that
+requires the completion to be about the goal, **Qwen never exhibited the behaviour**, so the models
+cannot be compared there at all — part of the "model difference" is that **Qwen was never doing the
+thing being removed**. ⚠ Also: one lexical pair, one request, and the absolute scale confounds effect
+size with the unequal baselines (0.4184 vs 0.1920), which is why both scales are reported.
 
 ### Verdict
-**Stage 1 CONFIRMED. Stage 2 OPEN** — four arms running, analysis and the model × intervention
-difference-in-differences preregistered (`TSC-PR-004`) before any Qwen intervention outcome exists.
-⚠ Baseline headroom differs between models (0.2026 vs 0.4184) and must be said wherever they are
-compared.
+**MODEL-SPECIFIC** — on the rubric endpoint. ⛔ **CANNOT ANSWER on the topical endpoint.**
+
+---
+
+## CLAIM 4b — Refusal and attack dissociate, in opposite directions, on the two models
+
+### Claim
+The same intervention removes **all 150** refusals on Qwen (controls remove 0 / 5 / 2) while moving
+attack by **one row** (73 → 72); on Llama it **reduces** refusal by 20 rows while removing **104**
+attack rows.
+
+### Evidence
+Qwen `A` vs `demoproc` on `refused`: **150 → 0**, k_inf 33, p = 2.328e-10 (⚠ **exactly at the
+attainable floor** — all 33 informative domains fall the same way, so the number is the design's
+resolution; the 150 → 0 effect is not). ⚠ `refused` is the **deterministic** endpoint (`kw_refusal`,
+a local substring match), so this result carries **zero judge variance**.
+
+### Why it matters
+⛔ **No "attack removal happens because refusal returns" account survives both models.** Where
+refusal is annihilated, attack does not move; where attack collapses, refusal falls too. It also
+shows the intervention is **live, large and model-general in its effect on behaviour** — what is
+model-specific is **which** behaviour it changes.
+
+### Verdict
+**STRONG.**
 
 ---
 
@@ -1389,12 +1438,18 @@ control in this design**.
 the treatment's by position geometry, which makes the contrast conservative."**
 ⛔ **"`basket` failed to replicate."** The `CDS-R-020` run was **VOID for a bank defect**. ✅ And it
 has now **REPLICATED** (`TSC-R-004`), so the sentence is doubly wrong.
-⛔ **"The effect is cross-model."** Not until the Qwen Stage-2 arms are read. Stage 1 only says the
-population is capable.
+⛔ **"The effect is cross-model."** ⛔ **It is not.** Qwen3-14B is a **well-powered CAPABLE NULL**
+and the registered interaction says **MODEL-SPECIFIC**.
+⛔ **And equally: "the effect is Llama-specific", full stop.** Qwen's **baseline** topical ASR is
+**0.000 in every arm**, so on the endpoint that requires the harmful content Qwen was never doing
+the thing being removed, and the models cannot be compared there.
 ⛔ **"The effect generalizes across requests."** There is **one** request. The request-diverse bank
 is preregistered (`TSC-PR-005`) and its population drawn blind; it has **not** been run.
-⛔ **"Significant in Llama, non-significant in Qwen" as a model interaction.** The
-difference-in-differences is registered; use it or say nothing.
+⛔ **"Significant in Llama, non-significant in Qwen" as a model interaction.** ✅ The
+difference-in-differences was registered **before any Qwen outcome existed** and it **was run** —
+quote **that** (absolute 3/3, normalised 1/3), never the two separate verdicts.
+⛔ **"Qwen shows no effect."** It shows **no ATTACK effect**; it shows a **150 → 0 refusal effect**
+that the controls do not.
 ⛔ **"The controls are indistinguishable from baseline."** Those cells (0 / −9 / −11) are **inside**
 the measured band; under majority vote they read +15 / −5 / −1 and **`ctrl_d1` changes sign**.
 ⛔ **"Judge differences smaller than the measured re-run band are meaningful."** The band is

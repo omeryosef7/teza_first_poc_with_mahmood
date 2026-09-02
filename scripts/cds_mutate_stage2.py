@@ -191,12 +191,23 @@ def m_frac_stop_length(d):
     prov = d["provenance"]
     live = {k: v["frac_stop_length"] for k, v in prov.items()
             if isinstance(v.get("frac_stop_length"), (int, float)) and v["frac_stop_length"] > 0}
-    if not live:
-        raise KeyError("no arm has a non-zero frac_stop_length to corrupt")
-    k = min(live, key=live.get)
-    old = prov[k]["frac_stop_length"]
-    prov[k]["frac_stop_length"] = old * (1 + EPS)
-    return "frac_stop_length", "arm %s: %.17g -> %.17g (rel +1e-8)" % (k, old, prov[k]["frac_stop_length"])
+    if live:
+        k = min(live, key=live.get)
+        old = prov[k]["frac_stop_length"]
+        prov[k]["frac_stop_length"] = old * (1 + EPS)
+        how = "rel +1e-8"
+    else:
+        # ⚠ `TSC-C-012`, and it is the SAME zero-target trap as `m_noop` -- I fixed it there and
+        # left it here. The Qwen arms are `frac_stop_length == 0.0` on all five, so the
+        # non-zero requirement raised KeyError and took the whole harness down with it. A
+        # mutation class that CRASHES on a legitimate artifact is worse than one that is weak:
+        # it stops every later class from running at all.
+        k = sorted(prov)[0]
+        old = prov[k]["frac_stop_length"]
+        prov[k]["frac_stop_length"] = (old or 0.0) + EPS
+        how = "abs +1e-8 (every arm is exactly 0; a relative epsilon cannot move a zero)"
+    return "frac_stop_length", "arm %s: %.17g -> %.17g (%s)" % (
+        k, old, prov[k]["frac_stop_length"], how)
 
 
 def m_frac_stop_length_null(d):
