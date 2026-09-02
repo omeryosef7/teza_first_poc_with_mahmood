@@ -1237,3 +1237,77 @@ Submitted: **`839782`** (`KO-3` demo) and **`839783`** (`KO-3` count-matched con
 ⚠ **Auditability gap to close:** per-row control-draw **positions** are not persisted to
 `results.jsonl` (only counts), so the control's disjointness from the demonstration block is a
 **code guarantee, not an artifact fact**. Recorded as a defect to fix before publication.
+
+### `DCS-R-006` — `KO-1` is a **well-powered null on attack** and **halves refusal**. `KO-2` is confirmed uninformative.
+
+Judge: **one invocation, all six arms**, `openai/gpt-4o-mini` pinned, `judge_status = ok` on
+2280/2280 rows, 380 per arm, row sets identical within each cell (asserted).
+Artifacts: `outputs/boombness/judge/dcsko_*`; DiD: `outputs/boombness/dcs_analysis/dcs_ko1_ko2_did.json`.
+
+**Per-arm, `malicious_at_0.5`:**
+
+| cell | baseline | `KO` | control |
+|---|---|---|---|
+| `C` `natural_doublespeak` | 153 (0.4026) | **164 (0.4316)** | 147 (0.3868) |
+| `B` `direct_harmful` | 10 (0.0263) | 8 (0.0211) | 10 (0.0263) |
+
+⚠ The `C` baseline **0.4026** reproduces `TSC`'s independently measured 0.3895 — the population is
+behaving as the prior sprint recorded.
+
+**Cell `C`, domain-clustered (38 domains):**
+
+| endpoint | `KO` − baseline | domains | p | floor | vs 17-row band |
+|---|---|---|---|---|---|
+| `malicious_at_0.5` | **+11** | 18+/14− | 0.597 | 4.66e-10 | below |
+| StrongREJECT (continuous) | +12.25 | 21+/17− | 0.627 | 7.28e-12 | below |
+| **`refused`** | **−21** | **0+/13−** | **2.44e-04** | 2.44e-04 | **above** |
+
+⇒ **The attack endpoint is a genuine, well-powered null** — `k_informative` 32/38 and floors around
+1e-10, so the design could easily have detected an effect. `KO` − control is +17 rows, exactly *at*
+the judge band and non-significant (p = 0.265). ⛔ The intervention does not reduce attack success;
+the point estimate is a small **increase**.
+
+⇒ **Refusal falls by half (42 → 21), with every one of the 13 informative domains moving the same
+way.** ⚠ p = 2.44e-04 **equals its attainable floor exactly** — this is the strongest result the
+design could produce, not a strong result in an unconstrained design, and it must always be quoted
+with the floor.
+
+**`DCS-C-007` is confirmed empirically, not just predicted.** Cell `B` baseline is **10/380 =
+0.0263** (I predicted ≈16 from prior runs). The registered DiD prints, from
+`scripts/dcs_cell_interaction.py`: absolute — *no detectable interaction*, p = 0.185; normalised —
+**`UNINFORMATIVE BY CONSTRUCTION`, `k_informative = 1`**, because only **one** domain has a non-zero
+`B` baseline to normalise by.
+
+⚠ **Read the DiD's label carefully.** The analyzer says "no detectable interaction (outcome `E`)",
+but outcome `E` means *both cells fall equally*. **Neither fell.** The per-cell line —
+`C: baseline=153 ko=164 removed=-11` / `B: baseline=10 ko=8 removed=2` — is what distinguishes
+them, and it is in the artifact precisely because a DiD of zero from two nulls is not a DiD of zero
+from two equal effects. ⛔ **This experiment does not select outcome `E`; it returns a null for
+`KO-1` and a `CANNOT ANSWER` for `KO-2`.**
+
+### `DCS-R-007` — the three channels under one intervention, and what they jointly say
+
+Same intervention, same 380 rows, same 38 domains, cell `C`:
+
+| channel | result |
+|---|---|
+| **semantic mapping** (`semantic_logodds`) | **preserved**; +0.278 vs baseline (25+/13−, p = 0.073 on the preregistered sign test) |
+| **attack** (`malicious_at_0.5`) | **unchanged**; +11 rows (18+/14−, p = 0.597), well-powered null |
+| **refusal** (`kw_refusal`) | **halved**; −21 rows (0+/13−, p = 2.44e-04 = its floor) |
+
+Against §1.8's four-cell taxonomy this is *"semantic mapping unchanged **and** attack unchanged"* —
+the intervention moves **neither** of the two channels the experiment was designed around, while
+reliably moving a third the design treated as a covariate.
+
+⚠ **This mirrors `TSC-R-006`** (on Qwen3, a *different* model and a *different* knockout scope, the
+same intervention removed **all 150 refusals while moving attack by one row**). Two models, two
+scopes, the same dissociation: **refusal is movable without attack following.** That is now a
+cross-model, cross-scope pattern rather than a single-run curiosity, and it is consistent with the
+project's standing conclusion that refusal-suppression rather than concept-injection is the causal
+locus.
+
+⛔ **What this does NOT license.** `refused` is `kw_refusal`, a **16-marker substring match that
+never calls the API**. It attests the join and the text, not the judge. A refusal drop with no ASR
+change is fully consistent with the model producing non-refusal-shaped text that is still not a
+successful attack. ⚠ Note the topical endpoint moves the *opposite* way to any "more compliant"
+story: 14 → 9 exact-concept positives.
