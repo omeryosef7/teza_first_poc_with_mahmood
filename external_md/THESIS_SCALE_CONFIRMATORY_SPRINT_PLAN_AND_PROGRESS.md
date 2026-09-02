@@ -1695,6 +1695,66 @@ variance*.
 
 ---
 
+## CLAIM 6 — The paradigm is constructible for only a minority of a standard harm benchmark
+
+### Claim
+Applying a **pre-declared, fully mechanical** constructibility filter to a blind category-balanced
+draw from AdvBench held-out, the doublespeak frame can be built for **8 of 40 requests (20.0 %)**;
+and the **entire 495-row benchmark affords only 15 distinct mappable object-concepts**, 11 of them in
+just two categories.
+
+### Scope
+`data/manifests/heldout_495.csv` (AdvBench held-out, 495 rows, 16 categories) · 8 registered
+categories, 367 eligible rows · lexicon of 46 count nouns committed **before** the filter existed ·
+draw seed 20260903, `selection_sha16 = bed56c91e70a707c`.
+
+### Evidence
+40 → 8. Attrition: **`NO_OBJECT_NOUN` 24** (the paradigm limit — most AdvBench requests name an
+**act**, not a thing), **`DUPLICATE_CONCEPT` 8** (benchmark redundancy — five of forty are bomb
+requests). 3 of 8 categories lose **all five** drawn requests. Whole-benchmark ceiling: 114 matching
+rows → **15 distinct concepts**; `bomb` alone covers 22 rows.
+
+### Statistical unit
+The harmful **request** — and the point of the claim is that there are far fewer independent ones
+available than a row count suggests.
+
+### Verification
+`tests/test_tsc_request_filter.py`, **15 tests**, including that the artifact leaks **no source
+instruction or 40-char fragment**, that every drawn request gets exactly one verdict from a closed
+reason set, and that the tokenizer gate can refuse. Anti-tuning check declared before it ran:
+category-matched **40.0 % vs 30.0 %, Fisher p = 0.208**, with weapons and drugs identical at 100 %.
+
+### Strongest remaining limitation
+⚠ The lexicon is a **declared design input authored by me**, and I had read the 40 drawn instructions
+before writing it. The anti-tuning check is reassuring, **not proof** — n = 5 per drawn category
+cannot exclude a modest effect.
+
+### Verdict
+**STRONG as a scope statement about the method.** ⚠ It is a statement about **AdvBench and this
+lexicon**, not about harmful requests in general.
+
+---
+
+## CLAIM 7 — P4 is DECLINED FOR POWER, and that decision is itself evidence
+
+### Claim
+At the surviving **k = 8**, the request-level design reaches **0.414** power for a total wipeout and
+**0.202** for a partial effect against inherited floors of ≈ 0.87 and ≈ 0.6. **P4 was not launched.**
+
+### Evidence
+`scripts/cds_power_domain.py` at k = 8, m = 10, measured ICCs 0.0298 / 0.09 / 0.1583, 4000 reps.
+⛔ **The design tolerates zero discordant requests** — 1 of 8 gives p = 0.0703 — while the Llama
+headline itself ran at 5.9–9.4 % discordant. Mean `k_inf` 5.4–6.7 straddles the registered
+`k_inf ≥ 6` floor. Even at the benchmark ceiling k = 15, m = 10 gives 0.28–0.51 for a partial
+effect; only **k = 15 × m = 20 (300 rows/arm)** reaches ≈ 0.59.
+
+### Verdict
+**DECLINED FOR POWER.** ⛔ The filter was not relaxed, the lexicon not extended, the draw not
+repeated, no threshold moved. **The request-level generality question cannot be answered from
+AdvBench at adequate power — the binding constraint is the benchmark, not compute.**
+
+---
+
 # CLAIMS WE MUST NOT SAY
 
 ⛔ **"Boombness predicts jailbreak generally."** Between-level ρ +0.557 / within-level +0.098,
@@ -1723,8 +1783,12 @@ and the registered interaction says **MODEL-SPECIFIC**.
 ⛔ **And equally: "the effect is Llama-specific", full stop.** Qwen's **baseline** topical ASR is
 **0.000 in every arm**, so on the endpoint that requires the harmful content Qwen was never doing
 the thing being removed, and the models cannot be compared there.
-⛔ **"The effect generalizes across requests."** There is **one** request. The request-diverse bank
-is preregistered (`TSC-PR-005`) and its population drawn blind; it has **not** been run.
+⛔ **"The effect generalizes across requests."** There is **one** request, and the request-diverse
+test was **`DECLINED FOR POWER`** (`TSC-R-007`) — ⛔ **not run, and not runnable from AdvBench at
+adequate power**: only 8 of 40 drawn requests are constructible and the whole benchmark affords 15
+distinct mappable concepts.
+⛔ **And equally: "we showed the effect does not generalize across requests."** ⛔ **Nothing was
+run.** A decline is not a null.
 ⛔ **"Significant in Llama, non-significant in Qwen" as a model interaction.** ✅ The
 difference-in-differences was registered **before any Qwen outcome existed** and it **was run** —
 quote **that** (absolute 3/3, normalised 1/3), never the two separate verdicts.

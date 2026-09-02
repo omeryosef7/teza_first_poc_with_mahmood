@@ -10,7 +10,8 @@ Branch `behavioral-causality-sprint`, `053531b3..`.
 
 The sprint was asked to close the specific weaknesses that stopped the strongest existing claim from
 being thesis-level evidence, using preregistered, properly powered, falsifiable tests. **Four of the
-five closed, and two of them closed by returning a negative.** The `basket↔bomb` replication that
+five closed, two of them by returning a negative, and the fifth was DECLINED on its own
+preregistered power rule rather than run underpowered.** The `basket↔bomb` replication that
 was VOID now **REPLICATES**, so the Llama headline no longer rests on one lexical pair. The headline
 **survives three independent judging passes**. Qwen3-14B was run on a genuinely capable population
 for the first time and is a **well-powered CAPABLE NULL**, and the model × intervention interaction —
@@ -42,6 +43,8 @@ execution deliberately deferred).
 | `C-004` | **90–100 % of judge-positive completions in EVERY arm never contain the concept word** | scope, not refutation |
 | `C-011` | **Qwen's BASELINE topical ASR is 0.000 in every arm** — the models cannot be compared on that endpoint | **CANNOT ANSWER** |
 | `PR-005` | Request-diverse population **drawn blind**: 40 requests, 8 categories, `selection_sha16 = bed56c91e70a707c` | preregistered |
+| `R-007` | **P4 DECLINED FOR POWER.** A pre-declared mechanical filter keeps **8 of 40** (yield 20 %); power 0.41 (wipeout) / 0.20 (partial) against floors of ≈0.87 / ≈0.6 | **DECLINED** |
+| `R-007b` | The **whole 495-row AdvBench affords only 15 distinct mappable concepts**, 11 of them cyber or weapons | scope statement about the method |
 
 ## What the adversarial review took away
 
@@ -106,11 +109,15 @@ test asserts nothing.
 
 ## The next four things, in order
 
-1. **Vary the request.** Still the largest gap, and now the only untouched one. The population is
-   already drawn blind (`selection_sha16 = bed56c91e70a707c`); the long pole is **200 harm-pool
-   generations**, which is API work, not GPU. ⚠ **Before building it, resolve the blocker in
-   `TSC-Q-001`** — a large fraction of AdvBench requests have **no single-word object noun** the
-   codeword can be mapped onto, so the drawn 40 may not yield 40 usable requests.
+1. **Vary the request — but not from AdvBench alone.** `TSC-Q-001` was answered (AdvBench-sourced,
+   mechanical filter) and the answer was **`DECLINED FOR POWER`**: 8 of 40 survive, and the entire
+   benchmark affords **15** distinct mappable concepts, 11 of them cyber or weapons. ⛔ The
+   constraint is **the benchmark, not compute**. The options, none taken unilaterally: a
+   re-registered blind draw from the filtered-eligible pool at **k = 15 × m = 20** (the only
+   configuration reaching the power floor, and it would have to declare "6 categories dominated by
+   cyber and weapons" in advance); a **second harm source** to widen the concept inventory; or
+   accepting that this paradigm's request-generality is bounded by how many harmful **objects**
+   exist, and saying so.
 2. **Replace the one-word topicality test.** Every topical number in this sprint is bounded by a
    single-bit indicator on one word. A synonym-aware measure would turn the tightest scope limit
    into a real measurement.
