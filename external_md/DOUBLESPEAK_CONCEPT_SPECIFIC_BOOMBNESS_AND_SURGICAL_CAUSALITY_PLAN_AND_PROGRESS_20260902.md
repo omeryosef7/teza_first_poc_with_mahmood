@@ -724,3 +724,64 @@ The first `dcs_rowwise` artifact on disk reported `algebra_check.passed = false`
 ⚠ Worth keeping: the model was loaded in **bfloat16**, which was the obvious suspect and was
 **wrong** — both sides of the comparison descend from the same stored float32 cell means and
 float32 projection columns, so bf16 cancels. The plausible cause and the real one differed.
+
+### `DCS-C-004` — ⚠ CORRECTION to `DCS-R-003`(b): the right statistic is weaker than the one I quoted
+
+`DCS-R-003`(b) quoted Spearman ρ from the series `C_minus_A_paired`, which **includes the final
+query occurrence**. The query occurrence is not a demonstration, and the question in §8 is whether
+the representation builds *across demonstrations*. The artifact carries both series; the correct
+one is `C_minus_A_paired__demos_only`. Recomputed independently over **all** 288 (query_kind ×
+`n_examples` × layer) demonstration-only series per bank — not the 4 layers I sampled:
+
+| series | `button_bomb` | `basket_bomb` |
+|---|---|---|
+| **demos only** (correct for §8) | median ρ **−0.048**, frac ρ>0 = 0.465, strictly increasing **14/288** | median ρ **+0.278**, frac ρ>0 = 0.667, strictly increasing **26/288** |
+| including the query occurrence (what I quoted) | median ρ −0.383, frac ρ>0 = 0.294 | median ρ −0.100, frac ρ>0 = 0.438 |
+
+⇒ On demonstrations alone **the two banks disagree in sign**, both near zero. The defensible
+statement is therefore **"no reproducible monotone trend across demonstrations"** — *not* "ρ goes
+negative at `n_examples=16` on both banks", which was true of the series I happened to quote at the
+four layers I happened to print. The conclusion of `DCS-R-003` (no progressive accumulation) is
+**unchanged**; its stated evidence is corrected and is weaker than written. `R-003`(a) and (c) used
+the full series appropriately and stand.
+
+### `DCS-R-004` — the null control, and 480/480 with clustered CIs
+
+Independently recomputed from the artifact, both banks:
+
+* ✅ **`n_examples = 0` gives paired `C−A` of exactly `0.000e+00`** at **all 96** (32 layers × 3
+  query kinds) cells. With no demonstrations, `A` and `C` are byte-identical prompts, so an exact
+  zero is the correct answer and the pipeline returns it. This is the null control this metric has
+  never had.
+* Paired `C−A` mean is positive in **480/480** (`n_examples>0`) cells and the **domain-clustered**
+  95 % CI excludes zero in **480/480**, in both banks.
+
+⚠ **This is not as strong as it looks and must not be reported as independent evidence.** `cand1`
+*is defined* as `mean(h_C) − mean(h_A)`, so positivity is expected by construction. The non-trivial
+content is that it is **cross-fit** — every row is scored on directions fitted on the *other* split
+(`is_self_fit = False` for all 15768 rows) — so it is a held-out generalization result, and nothing
+more.
+
+### `DCS-C-005` — ⛔ the L6–L12 peak does **not** appear in the per-row effect size
+
+`DCS-R-001` located a peak at **L6–L12** in `toward_B_frac` and noted it coincides with the L6–14
+knockout band. The per-row data does **not** corroborate that. Standardized paired `C−A`
+(mean / sd across families — scale-free, unlike the raw dot products, whose magnitude tracks a
+hidden-state norm that grows ~100× across the stack), `behavioral`, `n_examples=4`:
+
+| bank | L0 | L4 | L6 | L8 | L10 | L12 | L14 | L18 | L24 | L31 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `button_bomb` | **3.58** | 2.62 | 2.56 | 2.43 | 2.54 | 3.04 | 2.99 | 2.14 | 2.00 | 2.67 |
+| `basket_bomb` | **4.07** | 3.48 | 3.83 | 3.33 | 3.08 | 3.28 | 3.19 | 2.02 | 1.85 | 1.83 |
+
+There is **no L6–L12 peak**; the effect size is largest at **L0** and broadly *declines* with depth.
+
+⇒ The two statistics measure different things — `toward_B_frac` is a between-cell-mean **distance
+ratio**, the standardized `C−A` is a per-family **effect size** — and only the first shows the
+peak. ⛔ **The sentence "the representation effect peaks at L6–L12, coinciding with the knockout
+band" is therefore not supported by the per-row data and must not be used.** `DCS-R-001`'s layer
+profile stands as a statement about cell-mean geometry **only**, and the coincidence with the
+knockout band drops from "suggestive convergence" to "one of two statistics, and not the one with
+per-family variance."
+
+⚠ Note the direction of the error: the retracted framing was the one that made the story tidier.
