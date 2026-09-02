@@ -1649,3 +1649,47 @@ count"*).
 reading the call site.* `DCS-PR-003`'s verification gate — "all three cell-`C` arms must return
 exactly 377 rows or the replication is void" — was the right instinct and is what turned an
 untested assumption into a caught failure rather than a silent one.
+
+### `DCS-R-011` — ✅ `basket↔bomb` **REPLICATES** the specificity result. ⛔ But "opposite directions" does **not**.
+
+Independent lexical pair, identical design (`KO-3`, L6–14, `semantic_forced_choice`, dose-matched
+control, seed 20260901). Cell `C` at **n = 377** under the declared exclusion (`DCS-PR-003`,
+`sha16 ee8b3388ee577b69`, `n_excluded = 3`, **0 failures** in all three arms — the `PR-003`
+verification gate passes); cell `B` at n = 380. 38 domains.
+
+| | `button↔bomb` (`R-010`) | `basket↔bomb` (`R-011`) |
+|---|---|---|
+| `C` baseline → `KO-3` | +5.188 → −2.756 | **+6.794 → −3.803** |
+| `C`: `KO-3` − control | **−8.081** (1+/37−) | **−10.782** (1+/37−, p = 2.84e-10) |
+| `B` baseline → `KO-3` | +6.272 → **+7.780** | +10.672 → **+9.131** |
+| `B`: `KO-3` − control | **+1.808** (31+/7−) | **−1.466** (5+/33−, p = 4.26e-06) |
+| **DiD** | **−9.889**, 1+/37−, p = 2.838e-10 | **−9.352**, 1+/37−, **p = 2.838e-10** |
+
+✅ **The headline replicates, and closely.** Two independent codewords give DiD **−9.889** and
+**−9.352**, both **1+/37− domains**, both at p = 2.838e-10 against a floor of 7.28e-12. The `C`-cell
+sign flip reproduces (+6.79 → −3.80). **`DCS-B-005` is closed.**
+✅ **Preregistered robustness passes:** dropping `school_campus` entirely (the domain carrying the
+bank defect) gives DiD **−9.264**, 1+/36−, p = 5.53e-10 — same verdict, so the primary is reportable.
+
+⛔ **The "opposite directions" claim does NOT replicate and is hereby scoped to `button`.**
+In `button`, cell `B` moved **up** (+1.808). In `basket`, cell `B` moves **down** (−1.466, 5+/33−,
+p = 4.26e-06) — same direction as `C`, just **7× smaller**. So the correct general statement is a
+**magnitude** claim, not a sign claim:
+
+> `KO-3` reduces the concept reading **far more** where the word is a remapped codeword than where
+> it is the concept itself (−10.78 vs −1.47 on `basket`; −8.08 vs +1.81 on `button`).
+
+⚠ `DCS-R-010`'s framing — *"the cells move in opposite directions, and generic damage cannot
+selectively improve one cell"* — was the strongest form of the argument and it holds **only on
+`button`**. On `basket` the generic-damage objection must instead be answered by the **magnitude
+ratio** and by the dose-matched controls, which remain inert-in-magnitude in both banks.
+⇒ `DCS-A-002`'s argmax evidence (4 → 104 vs 21 → 6) is likewise **`button`-specific** until
+recomputed on `basket`.
+
+⚠ A plausible reason, recorded as a hypothesis and **not** as a finding: `basket`'s `B` baseline is
+**+10.672** against `button`'s +6.272, i.e. much closer to ceiling, so there is little room for the
+concept reading to rise. Testing that would need a bank where `B` sits lower — not run.
+
+**Net:** the phase's headline is now a **two-pair, cross-lexical** result, and one of its rhetorical
+supports has been withdrawn. `DCS-B-005` closes; the scope line that must accompany every `n = 38`
+becomes *"38 domains × 2 codewords × 1 concept × 1 model."*
