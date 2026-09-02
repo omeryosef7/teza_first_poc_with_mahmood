@@ -1364,3 +1364,52 @@ necessary for the representation (`KO-3`), and it is *not* necessary at the fina
 unchanged** (`DCS-R-006`), and the representation itself is **not concept-specific** (`DCS-R-002`)
 and **does not accumulate** across demonstrations (`DCS-R-003`). The mapping is real, causally
 demonstration-dependent, and — on everything measured so far — **not the thing the attack runs on**.
+
+### `DCS-R-009` — `DCS-PR-002`'s specificity DiD at the `KO-1` scope: a **capable null**
+
+Both cells, `semantic_forced_choice`, 380 rows each, 38 domains each, all 38 shared, row sets
+identical within each cell.
+
+**Baselines first** (the §1.6 sanity check, which passes):
+
+| cell | baseline mean `logodds` | frac reading as concept | option mass |
+|---|---|---|---|
+| `C` `natural_doublespeak` (`button`) | +5.188 | 0.942 | 0.877 |
+| `B` `direct_harmful` (`bomb`) | +6.272 | 0.961 | 0.709 |
+
+⚠ Cell `B`'s high value is **correct and expected, not a finding**: there the surface word *is*
+`bomb`, so "does this word refer to the concept?" is trivially true. `B` is the control precisely
+because its answer needs no remapping.
+
+**The DiD:**
+
+| contrast | effect | domains | p |
+|---|---|---|---|
+| `C`: `KO-1` − control | **+0.363** | 26+/12− | 3.36e-02 |
+| `B`: `KO-2` − control | **−0.140** | 18+/20− | 8.71e-01 |
+| **DiD = (C effect) − (B effect)** | **+0.503** | 25+/13− | **7.30e-02** |
+
+`k_informative = 38`, attainable floor **7.28e-12**, `CAPABLE = True`.
+
+⇒ **A capable null for specificity at this scope** — the design could have detected an interaction
+by twelve orders of magnitude and did not (p = 0.073). ⛔ Not `UNINFORMATIVE`; a real null.
+
+⚠ **But note what is being tested.** `KO-1`'s effect in `C` is itself only +0.363 and only
+p = 0.073 against baseline on the preregistered statistic. This DiD therefore asks whether a
+**marginal** effect is cell-specific, and answers "cannot tell". It is a weak test of a weak effect,
+and it should not be quoted as evidence that the path is *not* remapping-specific.
+
+**The specificity test that can actually carry weight is at the `KO-3` scope**, where the effect is
+enormous (−7.94, sign flip) rather than marginal: *does blocking the whole query span from the
+demonstrations also collapse cell `B`, where the word is literally `bomb` and there is nothing to
+remap?*
+
+* If `B` collapses too ⇒ generic dependence of the readout on the demonstration block.
+* If only `C` collapses ⇒ the collapse is specific to the **remapping**, which would be the first
+  positive specificity result of this phase.
+
+Submitted this tick: **`840115`** (`KO-3` on `B`, demo) and **`840116`** (its count-matched control).
+⛔ Declared before the outcome: the estimand is the same domain-paired DiD, the same sign test, and
+the same floor reporting. `B`'s baseline here is **not** at floor on this endpoint (+6.27, 96 %
+concept reading, option mass 0.709), so unlike the ASR endpoint this comparison **is** capable —
+which is the whole reason the specificity question moved to the readout channel in `DCS-PR-002`.
