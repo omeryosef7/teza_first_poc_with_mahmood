@@ -902,3 +902,30 @@ the most precise published account of how demonstrations aggregate — the n-sho
 a linear combination of per-example sub-FVs, with informativeness reweighting. Our saturation
 result (no accumulation; flat in `n_examples`) is a directly comparable data point and should be
 positioned against it rather than reported in isolation.
+
+### `DCS-PR-001a` — 2026-09-02 — clarification, still before any outcome: the DiD pairs by **domain**, not by prompt
+
+Found while preparing the analyzer, and recorded now because it changes what the test can claim.
+
+`scripts/tsc_model_interaction.py` implements exactly the estimand shape `DCS-PR-001` needs — a
+paired sign test on the difference of per-domain deltas, with `k_informative` and the attainable
+floor reported beside it. ⛔ **But it cannot be reused unchanged**, and the reason is scientific,
+not clerical: it **refuses** when its two factor levels cover different `prompt_id` sets. For
+`model × intervention` that refusal was right — Llama and Qwen ran the *same* 380 prompts, so
+pairing by domain was pairing by row. For `cell × intervention` it cannot hold, because
+`C` (`natural_doublespeak`) and `B` (`direct_harmful`) are **different prompts by construction**.
+
+⇒ The `C`-vs-`B` DiD is paired **by domain only** — 38 clusters of *different* rows — which is
+**strictly weaker pairing** than the model interaction had, and the write-up must say so. The
+per-arm baseline↔intervened contrasts *within* a cell remain row-paired and are unaffected.
+
+**Implementation rule that follows:** the DiD analyzer will **import** `two_sided_sign_p` and the
+reporting conventions from `tsc_model_interaction.py` rather than copy them — one definition of the
+sign test, per standing rule 8 ("parameterize, never fork") — while carrying its own, weaker
+pairing contract and asserting *domain-set* identity where the parent asserts *row-set* identity.
+
+⚠ Consequence for interpretation, declared now: because `C` and `B` differ in baseline rate as well
+as in content, the DiD is reported in **both** absolute (rows removed) and **normalised**
+(fraction of that domain's own baseline) form, with domains at zero baseline **dropped and
+counted, never imputed** — the same two-form rule `TSC-PR-004` imposed for unequal headroom.
+⛔ Neither form may stand alone.
