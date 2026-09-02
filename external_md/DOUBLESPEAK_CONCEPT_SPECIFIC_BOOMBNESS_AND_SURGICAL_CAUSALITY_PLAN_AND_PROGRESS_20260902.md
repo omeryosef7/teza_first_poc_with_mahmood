@@ -1693,3 +1693,42 @@ concept reading to rise. Testing that would need a bank where `B` sits lower —
 **Net:** the phase's headline is now a **two-pair, cross-lexical** result, and one of its rhetorical
 supports has been withdrawn. `DCS-B-005` closes; the scope line that must accompany every `n = 38`
 becomes *"38 domains × 2 codewords × 1 concept × 1 model."*
+
+### `DCS-PR-004` — 2026-09-03 — preregistered: does **destroying** the mapping move the attack?
+
+The phase's central question, and the only remaining test that can connect representation to
+behavior. Declared **before** any generation exists.
+
+**Why this and not `KO-1`.** `KO-1` left the mapping intact (`R-005`), so its behavioral null
+(`R-006`) says nothing about whether the mapping matters — nothing was removed. `KO-3` **destroys**
+the mapping: cell `C` log-odds +5.19 → −2.76 on `button` and +6.79 → −3.80 on `basket`, a sign flip
+to the literal reading, replicated across two codewords (`R-010`, `R-011`). ⇒ `KO-3` on the
+**behavioral** endpoint is the properly-powered mediation test this phase has been building toward.
+
+**Design.** Same bank / block / dose / band / seed as `DCS-PR-001`
+(`cds38_button_bomb`, `cds_n4`, `n_examples=4`, `behavioral`, L6–14, `--max-new 640`, eager,
+seed 20260901). Two new arms, **`840866`** (`KO-3` demo) and **`840867`** (count-matched control);
+the existing `dcs_C_baseline` (153/380, ASR 0.4026) is shared. 380 rows, 38 domains.
+
+**Power, checked in advance this time** (`DCS-C-007`'s lesson): baseline is **153** attacks, so the
+maximum removable is 153 rows against a 17-row judge band — **9× headroom**. ✅ Capable. ⛔ This is
+the check I failed to run before `KO-2`.
+
+**The two admissible outcomes, both declared now:**
+* **Attack falls** ⇒ the demonstration→query path is causal for *behavior*, not only for the
+  representation. That would be the first positive representation↔behavior link in this project's
+  history and would reopen the objective question (§1.7 `R6`).
+* **Attack unchanged** ⇒ ⛔ **the mapping can be destroyed outright without the attack changing.**
+  Combined with `R-002` (not concept-specific) and `R-006`, that is the strongest form of the
+  representation ≠ behavior dissociation this project can state: not "we failed to move it", but
+  "we moved it to a sign flip and behavior did not follow."
+
+⚠ **Confounds already known and to be reported with the result:**
+* `KO-3` is a **large** intervention (median 66 816 mask cells). The count-matched control at the
+  same dose is what separates "demonstration keys" from "damage"; on the readout channel that
+  control was inert-in-magnitude (+0.137).
+* A **generation-corruption diagnostic is mandatory** here in a way it was not for the readout:
+  if `KO-3` degrades fluency, an ASR drop would be damage, not mediation. `gen_empty`,
+  `gen_truncated`, `n_chars` and `stop_reason` distributions will be compared against baseline and
+  control **before** any ASR number is interpreted.
+* All three arms go into **one** judge invocation with the existing baseline, per §1.9.
