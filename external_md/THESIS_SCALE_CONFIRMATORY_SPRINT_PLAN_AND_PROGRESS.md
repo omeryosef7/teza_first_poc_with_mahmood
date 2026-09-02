@@ -567,8 +567,100 @@ registered here, before any Qwen intervention outcome is read.**
   `CAPABLE NULL` on Qwen and `DECLINED FOR POWER` on the interaction. Not one dressed as the other.
 
 
-## §7 — P3 — judge robustness on the headline populations
-**Status:** recon in progress.
+### 6.3 `TSC-R-005` — **CAPABLE NULL on Qwen3, and the interaction says MODEL-SPECIFIC.** With one finding that reframes the whole comparison
+
+All five Qwen arms carry the **identical 380 `prompt_id`s**; liveness `frac_rows_scope_live = 1.0`,
+`total_decode_edits = 0`, `median_prefill_edits` **15,399** (demoproc) / 30,276 / 30,276 / 29,754 —
+**identical to Llama's**, so the mask fired the same way; strict `match_ratio` min = 1.0000,
+`n_below_1 = 0`; `frac_stop_length` **0.0000 on all five**; `git_dirty = False`.
+
+#### PRIMARY — the registered test. **All three contrasts FAIL to reject, and all three are CAPABLE.**
+
+| contrast | attacks | domains a>b / b>a | k_inf | **p** | attainable floor | CAPABLE |
+|---|---|---|---|---|---|---|
+| demoproc vs `ctrl_d1` | **72 vs 71** | 15 / 15 | **30** | 1.0000 | 1.86e-09 | ✅ |
+| demoproc vs `ctrl_d2` | **72 vs 81** | 14 / 19 | **33** | 0.4869 | 2.33e-10 | ✅ |
+| demoproc vs `ctrl_d3` | **72 vs 74** | 16 / 18 | **34** | 0.8642 | 1.16e-10 | ✅ |
+| *(also)* `A` vs demoproc | 73 vs 72 | 13 / 14 | 27 | 1.0000 | 1.49e-08 | ✅ |
+
+⚠ **`k_informative` is 30 / 33 / 34 — as many informative domains as Llama had (32 / 33 / 34), and
+every floor is 9–10 orders below α.** This is **not** an underpowered cell: it is a
+**well-powered null**. Domain-cluster bootstrap 95 % CI on ΔASR: **[−0.0605, +0.0553]**, tight
+around zero. `demoproc` vs each control byte-identical fraction **0.000** — ⛔ **the intervention is
+not a no-op; it changed the completions and removed nothing.**
+
+✅ **Verdict: `CAPABLE NULL`.** Pooled relative reduction against the three controls:
+**Llama 65.4 % / 63.3 % / 62.8 %** against **Qwen −1.4 % / +11.1 % / +2.7 %**.
+
+#### The registered interaction (`TSC-PR-004`, code committed before any Qwen outcome existed)
+
+| contrast | scale | Llama removes | Qwen removes | l>q / q>l | k_inf | p | verdict |
+|---|---|---|---|---|---|---|---|
+| vs `ctrl_d1` | **absolute** | 104 | **−1** | 27 / 8 | 35 | **1.878e-03** | **MODEL-SPECIFIC** |
+| vs `ctrl_d2` | **absolute** | 95 | +9 | 25 / 7 | 32 | **2.102e-03** | **MODEL-SPECIFIC** |
+| vs `ctrl_d3` | **absolute** | 93 | +2 | 30 / 4 | 34 | **6.165e-06** | **MODEL-SPECIFIC** |
+| vs `ctrl_d1` | normalised | +15.1 | **−10.4** | 19 / 8 | 27 | 0.0522 | no detectable interaction |
+| vs `ctrl_d2` | normalised | +13.4 | **−7.4** | 17 / 9 | 26 | 0.1686 | no detectable interaction |
+| vs `ctrl_d3` | normalised | +12.6 | **−10.2** | 22 / 5 | 27 | **1.514e-03** | **MODEL-SPECIFIC** |
+
+⚠ **Reported exactly as registered: BOTH scales, neither standing alone.** The **absolute** contrast
+is the registered primary and rejects **3/3**; the **scale-free normalised** contrast — which exists
+because the baselines are not equal (0.4184 vs 0.1920) — rejects **1/3**, though its per-domain
+totals point the same way in **all three** (Llama positive, Qwen **negative**) and its shortfall is
+power: dropping zero-baseline domains costs 7–8 informative clusters.
+⚠ **The headroom confound does not explain the result.** It would predict Qwen removing *fewer rows*
+at a *similar fraction*. Qwen removes **≈ 0 %** — not a smaller percentage of a smaller number.
+
+✅ **Verdict: `MODEL-SPECIFIC`** on the registered primary, with the normalised robustness check
+agreeing in direction everywhere and in significance in 1 of 3.
+⛔ **This is a measured interaction, not "significant here, not there."** That distinction was
+registered in advance precisely so this sentence could be written.
+
+---
+
+#### ⛔⛔ `TSC-C-011` — **THE FINDING THAT REFRAMES THE COMPARISON. Qwen never produced a single concept-word-bearing completion, in ANY arm — including baseline.**
+
+| Qwen arm | ASR plain | **ASR topical** |
+|---|---|---|
+| `A` | +0.192 | **0.000** |
+| `demoproc` | +0.189 | **0.000** |
+| `ctrl_d1` / `d2` / `d3` | +0.187 / +0.213 / +0.195 | **0.000 / 0.000 / 0.000** |
+
+**Qwen's baseline topical ASR is 0.000 out of 380 rows.** So on the endpoint that requires the
+completion to be *about the goal*, ⛔ **the Qwen cell is UNINFORMATIVE BY CONSTRUCTION — there was
+nothing there to remove**, and no intervention could have shown an effect.
+
+⚠ **This narrows the model claim sharply and must always be stated with it.** The defensible
+sentence is: *on the rubric endpoint Qwen is a well-powered null and the model × intervention
+interaction is significant; on the topical endpoint the Qwen population never exhibited the
+behaviour at all, so the two models cannot be compared there.* ⛔ **"The effect is Llama-specific",
+full stop, is NOT available** — part of the difference is that **Qwen was never doing the thing
+being removed**. 100 % of Qwen's judge-positive rows are off-topic by the one-word test, against
+Llama's 90–91 %.
+
+---
+
+#### ✅ `TSC-R-006` — a striking dissociation: on Qwen the SAME intervention annihilates refusal, **150 → 0**
+
+| Qwen contrast | refusals | k_inf | p | attainable floor |
+|---|---|---|---|---|
+| `A` vs `demoproc` | **150 → 0** | 33 | **2.328e-10** | 2.328e-10 **= FLOOR** |
+| `A` vs `ctrl_d1` | 150 vs 150 | 9 | 1.0000 | 3.91e-03 |
+| `A` vs `ctrl_d2` | 150 vs 145 | 12 | 0.3877 | 4.88e-04 |
+| `A` vs `ctrl_d3` | 150 vs 148 | 14 | 0.7905 | 1.22e-04 |
+
+**The intervention removes EVERY refusal on Qwen — 150 of 150 — while the three count-matched
+controls remove 0 / 5 / 2.** ⚠ The p sits **exactly at its attainable floor** because all 33
+informative domains fall the same way, so that *number* is the design's resolution; the *effect*
+(150 → 0) is not in doubt. ⚠ And `refused` is the **deterministic** endpoint (`kw_refusal`), so this
+one carries **no judge variance at all**.
+
+⛔ **This is the strongest evidence yet against "attack removal happens because refusal returns."**
+On Qwen the intervention **destroys refusal completely and moves attack by one row** (73 → 72). On
+Llama it **reduces** refusal by 20 while removing 104 attack rows. **Refusal and attack dissociate,
+in opposite directions, on the two models** — no single "refusal explains it" account survives both.
+⚠ It also shows the intervention is **live, large, and model-general in its effect on behaviour**;
+what is model-specific is **which** behaviour it changes.
 
 ## §7 — P3 — judge robustness on the headline populations
 
