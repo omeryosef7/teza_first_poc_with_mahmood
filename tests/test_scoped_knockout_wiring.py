@@ -61,12 +61,16 @@ class _FakeScoped:
     kind = "scoped"
 
     def __init__(self, model, layer_idxs, blocked_keys=None, mode="legacy_all_query",
-                 query_span=None, demo_span=None, heads=None, stats=None):
+                 query_span=None, demo_span=None, heads=None, stats=None, surface_span=None):
         self.layers = list(layer_idxs)
         self.blocked_keys = list(blocked_keys or [])
         self.mode = mode
         self.query_span = None if query_span is None else set(query_span)
         self.demo_span = None if demo_span is None else set(demo_span)
+        # DCS 2026-09-02: the surgical scope's destination rows. Mirrored here because a fake that
+        # accepts fewer arguments than the real class turns a dropped argument into a TypeError in
+        # the tests and a SILENT no-op in production -- the wrong way round.
+        self.surface_span = None if surface_span is None else set(surface_span)
         self.heads, self.stats = heads, stats
 
 
@@ -80,8 +84,10 @@ class _PC:
         return k
 
     def ScopedAttentionKnockout(self, model, layers, blocked_keys=None, mode="legacy_all_query",
-                                query_span=None, demo_span=None, heads=None, stats=None):
-        k = _FakeScoped(model, layers, blocked_keys, mode, query_span, demo_span, heads, stats)
+                                query_span=None, demo_span=None, heads=None, stats=None,
+                                surface_span=None):
+        k = _FakeScoped(model, layers, blocked_keys, mode, query_span, demo_span, heads, stats,
+                        surface_span)
         self.made.append(k)
         return k
 
@@ -232,7 +238,8 @@ def test_the_wiring_matches_the_real_constructor_signature():
     """
     pc = _pc_module()
     p = inspect.signature(pc.ScopedAttentionKnockout.__init__).parameters
-    for kw in ("blocked_keys", "mode", "query_span", "demo_span", "heads", "stats"):
+    for kw in ("blocked_keys", "mode", "query_span", "demo_span", "heads", "stats",
+               "surface_span"):
         assert kw in p, f"ScopedAttentionKnockout no longer takes {kw!r}"
     assert p["mode"].default == "legacy_all_query", \
         "the real class's default mode changed; the fake no longer mirrors it"

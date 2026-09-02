@@ -572,3 +572,69 @@ in a space whose norms grow ~30× across the stack; `cell_means` are pre-aggrega
 "concepts" are four separate banks each with its **own** `B` cell, so this is a **replication across
 concepts, not a specificity control** — a true control requires `C` from the `bomb` bank measured
 against a *`knife`* anchor, which needs a shared basis these banks do not provide.
+
+### `DCS-004` — 2026-09-02 — `P4` implemented: the `target_surface_row_only` knockout scope
+
+`DCS-B-001` cleared: the HF cache moved to `/vol/scratch/omeryosef/hf_cache` behind a symlink
+(job 838466, 65 G, 242 files both sides, **0 broken symlinks**, blobs resolving at full size),
+old copy deleted, quota now 141.6 G of 200 G. A **write guard** was added to
+`src/boombness/slurm/run_boombness.sh`: it writes and reads back 10 MB in `outputs/` and refuses the
+run otherwise. Dry-run both ways before trusting it — PASSES on the healthy FS, REFUSES with exit 1
+on an unwritable one. ⚠ It writes **10 MB, not a token file**: the failure is size-dependent, and a
+5-byte probe succeeded in the same second a 100-byte write returned `EDQUOT`.
+
+**One new scope, covering both KO-1 and KO-2.** `target_surface` is the bank's own field for the
+word the query uses — the **codeword** in cells A/C and the explicit **concept** in cells B/E — so
+"block the final `target_surface` occurrence from seeing the demonstrations" *is* KO-1 in the
+Doublespeak cell and its own matched specificity control KO-2 in the direct-harmful cell, through
+**one code path and therefore one dose**. Two modes would have been two chances for the treatment
+and its control to differ by something other than the cell, which is the entire comparison.
+
+Implementation, ~40 lines across the six sites the audit enumerated:
+`pair_common.py` — mode name, both liveness tables, `resolve_scoped_query_rows` branch,
+`ScopedAttentionKnockout(surface_span=...)` with an empty-span refusal **and** a containment check
+that the span lies inside the query span; `score_behavior.py` — `target_surface_positions()`, the
+`make_intervention` signature, the composed-arm recursion, the hook construction, the readout
+twin-check sentinel, and per-row resolution + provenance.
+⛔ `AttentionKnockout` was **not** patched to work at decode; it is dead there by design.
+
+**Tests: 510 pass.** Six new ones assert what a silently-widened scope would break — the edited
+cells are exactly `{(0,9,2),(0,9,3)}`, the rows are a **strict subset** of `query_prefill_only`'s,
+decode edits are exactly 0, an empty span **raises**, a span outside the query **raises**, and the
+dose is strictly ordered below every wider scope. Three pre-existing tests demanded a deliberate
+update (a stats-key allowlist, the measurable-modes list, the wiring fakes) and got one.
+
+### `DCS-C-001` — ⚠ CORRECTED before use: the position resolver returned an empty span on **every** real row
+
+The first implementation of `target_surface_positions` selected tokens by **containment**
+(`a >= lo and b <= hi`), copying `demo_key_positions`. Run end-to-end against the real bank and the
+real Llama tokenizer it resolved **0 of 1032** rows, every one reporting
+`no_target_surface_occurrence_inside_query_span` while the word was plainly present.
+
+**Cause.** Llama's BPE emits `" button"` as ONE token whose offset span **starts at the leading
+space**, so `a == lo − 1` and the token is rejected for being one character too wide.
+`demo_key_positions` survives the identical predicate only because it matches a long block, where
+losing the two boundary tokens does not change the answer; for a **single word** it removes the
+answer entirely.
+
+**Fix.** Overlap (`a < hi and b > lo`), with membership tested on the **last** subtoken — the repo's
+canonical `codeword_last` index, the same position the extraction pipeline reads representations at.
+
+After the fix, on `boombness_prompt_bank_button_bomb.jsonl`, `query_kind=behavioral`, core 2×2:
+
+| cell | rows resolved | `target_surface` | decoded token at the resolved row |
+|---|---|---|---|
+| `benign_literal` (A) | 360 | `button` | `' button'` |
+| `natural_doublespeak` (C) | 456 | `button` | `' button'` |
+| `concept_in_benign_ctx` (E) | 108 | `bomb` | `' bomb'` |
+| `direct_harmful` (B) | 108 | `bomb` | `' bomb'` |
+
+**1032 / 1032 resolved**; the only exclusions are **48** rows with `no_demo_block` (`n_examples=0`,
+which cannot carry a demonstration knockout at all) — ledgered, not skipped silently.
+
+⚠ **This bug would not have been caught by the unit tests.** All 63 synthetic tests passed against
+the broken resolver, because the toy harness hands the scope its span directly and never exercises
+the tokenizer. It was caught only by running the resolver against the real bank **before** any GPU
+time was spent — which is the one step the plan's section 1.12 insists on and the reason a null
+from this scope can now be believed. ⛔ A no-op knockout scores as a clean null, and this one would
+have scored as a null on every row of every arm.

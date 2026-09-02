@@ -61,6 +61,10 @@ SEQ = 12
 DEMO = frozenset({2, 3, 4, 5})
 QSPAN = frozenset({8, 9, 10, 11})
 KEYS = [2, 3]          # a subset of the demo block, so "which keys" is falsifiable
+# ONE row inside QSPAN: the final `target_surface` occurrence for `target_surface_row_only`.
+# Deliberately NOT the last row of the query span -- if it were, this scope and a "last row"
+# bug would be indistinguishable in every test below.
+SURFACE = frozenset({9})
 
 
 def _cells_changed(seen, base):
@@ -80,6 +84,7 @@ def _keys_changed(seen, base):
 def _scoped(model, mode, keys=KEYS, layers=(0,), **kw):
     kw.setdefault("query_span", QSPAN)
     kw.setdefault("demo_span", DEMO)
+    kw.setdefault("surface_span", SURFACE)
     return ScopedAttentionKnockout(model, list(layers), blocked_keys=list(keys), mode=mode, **kw)
 
 
@@ -125,10 +130,17 @@ def test_legacy_mode_is_byte_identical_to_AllQueryAttentionKnockout():
     for k in sorted(overlap):
         assert s_old[k] == s_new[k], f"stats['{k}'] diverged: {s_old[k]} vs {s_new[k]}"
     extra = set(s_new) - set(s_old)
+    # UPDATED 2026-09-02 (DCS phase): +n_surface_span_positions, +surface_span_positions for the
+    # `target_surface_row_only` scope. Both are pure ARTIFACT fields recording which rows the
+    # surgical scope was handed; neither is read by the mask algebra, which is why the
+    # byte-identity of `legacy_all_query` above is unaffected. Asserted exactly on purpose: a
+    # stats key appearing without anyone deciding it should is how an artifact schema drifts away
+    # from the readers that parse it.
     assert extra == {"n_prefill_edits", "n_query_rows_edited", "n_keys_masked", "mode",
                      "n_blocked_keys", "n_query_span_positions", "n_demo_span_positions",
                      "query_span_bounds", "demo_span_bounds", "liveness_required",
-                     "liveness_must_be_zero"}, (
+                     "liveness_must_be_zero",
+                     "n_surface_span_positions", "surface_span_positions"}, (
         f"the set of NEW stats keys changed: {sorted(extra)}; update this list deliberately")
     assert s_new["n_edits"] == s_new["n_prefill_edits"] + s_new["n_decode_edits"]
 
@@ -456,3 +468,88 @@ def test_resolved_spans_are_recorded_in_stats_so_a_null_is_interpretable():
     assert stats["n_blocked_keys"] == len(KEYS)
     assert stats["n_query_rows_edited"] == len(QSPAN)
     assert stats["n_keys_masked"] == len(KEYS)
+
+
+# --------------------------------------------------------------------------- #
+# DCS PHASE (2026-09-02) — `target_surface_row_only`, the surgical KO-1/KO-2 scope
+#
+# This scope's entire scientific claim is "ONLY the final target-surface occurrence stopped
+# seeing the demonstrations". Every failure mode that would quietly turn it into a different
+# experiment is asserted here, because a scope that has silently widened produces a LARGER
+# effect and reads as a stronger result -- the direction of error that never gets questioned.
+# --------------------------------------------------------------------------- #
+def test_target_surface_row_only_edits_exactly_the_surface_rows_at_prefill():
+    """The rows edited are EXACTLY SURFACE -- not the query span, not the last row."""
+    model = ToyModel(n_layers=1)
+    base = _prefill_mask(SEQ)
+    with _scoped(model, "target_surface_row_only"):
+        seen = _run(model, base, seq=SEQ)[0]
+    assert _cells_changed(seen, base) == {(0, 9, 2), (0, 9, 3)}
+    assert _rows_changed(seen, base) == set(SURFACE)
+    # STRICT subset of the wider query scope: if these were equal, two rungs of the ladder would
+    # be the same experiment wearing two names, and a null at the narrow scope would be
+    # uninterpretable.
+    model2 = ToyModel(n_layers=1)
+    with _scoped(model2, "query_prefill_only"):
+        wide = _rows_changed(_run(model2, base, seq=SEQ)[0], base)
+    assert set(SURFACE) < wide, f"{sorted(SURFACE)} not a strict subset of {sorted(wide)}"
+
+
+def test_target_surface_row_only_makes_zero_decode_edits():
+    """Prefill-only BY DESIGN; the per-mode gate must agree, not a global n_decode_edits>0 gate."""
+    model = ToyModel(n_layers=1)
+    stats = {}
+    with _scoped(model, "target_surface_row_only", stats=stats) as ko:
+        _run(model, _prefill_mask(SEQ), seq=SEQ)
+        for s in range(3):
+            dec = _run(model, _decode_mask(SEQ + s), seq=1)[0]
+            assert _cells_changed(dec, _decode_mask(SEQ + s)) == set(), f"decode step {s} edited"
+    assert stats["n_prefill_edits"] > 0
+    assert stats["n_decode_edits"] == 0
+    assert ko.liveness_violations() == []
+    assert scoped_liveness_violations("target_surface_row_only", stats) == []
+
+
+def test_target_surface_row_only_dose_is_smaller_than_every_wider_scope():
+    """Dose ordering is a property of the ladder, and dose-matched controls depend on it."""
+    base = _prefill_mask(SEQ)
+    doses = {}
+    for mode in ("target_surface_row_only", "query_prefill_only", "legacy_all_query"):
+        model = ToyModel(n_layers=1)
+        stats = {}
+        with _scoped(model, mode, stats=stats):
+            _run(model, base, seq=SEQ)
+        doses[mode] = stats["n_prefill_edits"]
+    assert 0 < doses["target_surface_row_only"] < doses["query_prefill_only"] \
+        <= doses["legacy_all_query"], doses
+
+
+def test_target_surface_row_only_refuses_an_empty_span():
+    """An empty span would be a no-op knockout that scores as a clean null. It must RAISE."""
+    m = ToyModel(SEQ)
+    for bad in (None, frozenset()):
+        with pytest.raises(ValueError, match="surface_span"):
+            ScopedAttentionKnockout(m, [0], blocked_keys=KEYS,
+                                    mode="target_surface_row_only",
+                                    query_span=QSPAN, demo_span=DEMO, surface_span=bad)
+
+
+def test_target_surface_row_only_refuses_a_span_outside_the_query():
+    """A surface span resolved against a DIFFERENT tokenization lands outside the query span.
+
+    That is the ~9-token-shift bug class this repo has hit before: the run still completes and
+    still reports edits, but it answers a different question. Refuse at construction.
+    """
+    m = ToyModel(SEQ)
+    with pytest.raises(ValueError, match="not contained in query_span"):
+        ScopedAttentionKnockout(m, [0], blocked_keys=KEYS, mode="target_surface_row_only",
+                                query_span=QSPAN, demo_span=DEMO,
+                                surface_span=frozenset({3}))   # inside the DEMO block, not the query
+
+
+def test_target_surface_row_only_span_resolver_matches_the_hook():
+    """The gate, the hook and the consumer must all read ONE definition of the row set."""
+    assert resolve_scoped_query_rows("target_surface_row_only", False, QSPAN, DEMO, SURFACE) == SURFACE
+    assert resolve_scoped_query_rows("target_surface_row_only", True, QSPAN, DEMO, SURFACE) == frozenset()
+    # a caller that forgets the new argument gets "edit nothing", never "edit everything"
+    assert resolve_scoped_query_rows("target_surface_row_only", False, QSPAN, DEMO) == frozenset()

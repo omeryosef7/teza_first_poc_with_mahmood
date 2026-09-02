@@ -429,10 +429,15 @@ def readout_liveness_contract(scope, query_kinds=()):
     # WHICH ROWS each mode may edit at prefill, asked of the hook's own resolver with sentinel
     # spans. Only the SHAPE of the answer matters (all rows / the query span / the demo span /
     # nothing), never the particular positions.
-    _q, _d = frozenset({1, 2}), frozenset({7, 8})
+    # `_s` is the sentinel SURFACE span for `target_surface_row_only`. It must be a non-empty
+    # SUBSET of `_q` -- the real span is one occurrence inside the query -- because without it the
+    # resolver correctly answers "edit nothing" and this gate would refuse a mode that is in fact
+    # perfectly satisfiable at prefill. Distinct from `_q` and `_d` so the twin-check below can
+    # still tell the three scopes apart.
+    _q, _d, _s = frozenset({1, 2}), frozenset({7, 8}), frozenset({2})
 
     def _prefill_rows(mode):
-        return pc.resolve_scoped_query_rows(mode, False, _q, _d)
+        return pc.resolve_scoped_query_rows(mode, False, _q, _d, _s)
 
     mine = _prefill_rows(scope)
     if mine is not None and not mine:
@@ -709,6 +714,81 @@ def query_span_positions(tok, row, templated, demo_keys):
     return {i for i, (a, b) in enumerate(enc["offset_mapping"]) if b > lo and b > a}
 
 
+def target_surface_positions(tok, row, templated, query_span):
+    """Absolute token indices of the FINAL `target_surface` occurrence INSIDE the query span.
+
+    This is the destination row set for the `target_surface_row_only` knockout scope -- the most
+    surgical rung of the DCS ladder (plan section 1.8, KO-1 and KO-2).
+
+    WHY ONE FUNCTION SERVES BOTH KO-1 AND KO-2. `target_surface` is the bank's own field for "the
+    word the query actually uses": the CODEWORD in cells A/C and the explicit CONCEPT in cells
+    B/E. So this returns the final `button` row in natural_doublespeak and the final `bomb` row in
+    direct_harmful, with one code path and therefore one dose. Two functions would have been two
+    chances for the treatment and its own specificity control to differ by something other than
+    the cell -- which is the entire comparison.
+
+    ⛔ EMPTY NEEDLE. `target_surface` is the EMPTY STRING on external-harmful-set rows, and an
+    empty needle matches at EVERY token. That exact bug killed 179/179 rows in three ClearHarm
+    arms while SLURM reported COMPLETED 0:0. It is handled before any search, not after.
+
+    ⛔ CONSTRAINED TO THE QUERY SPAN. The codeword also appears throughout the demonstrations; the
+    final DEMO occurrence is a different scientific question from the final QUERY occurrence, and
+    a ~9-token shift between them has silently changed the question in this repo before. The
+    caller's `query_span` is the authority, and a match outside it is not a candidate.
+
+    Offsets come from the SAME `templated` string the generator tokenises, never a re-templating:
+    a second templating path can disagree with the first (enable_thinking, specials) and the mask
+    would then cut an arbitrary window while every downstream number looked healthy.
+
+    Returns (positions, reason_or_None), matching demo_key_positions' contract.
+    """
+    needle = (row.get("target_surface") or "").strip()
+    if not needle:
+        return [], "empty_target_surface"
+    if not query_span:
+        return [], "empty_query_span"
+    enc = tok(templated, add_special_tokens=False, return_offsets_mapping=True)
+    offs = enc["offset_mapping"]
+    low = templated.lower()
+    nlow = needle.lower()
+    # Character-level occurrences, word-boundary aware so `button` does not match `buttons`.
+    hits = []
+    start = 0
+    while True:
+        ci = low.find(nlow, start)
+        if ci < 0:
+            break
+        start = ci + 1
+        before_ok = ci == 0 or not (low[ci - 1].isalnum() or low[ci - 1] == "_")
+        j = ci + len(nlow)
+        after_ok = j >= len(low) or not (low[j].isalnum() or low[j] == "_")
+        if before_ok and after_ok:
+            hits.append((ci, j))
+    if not hits:
+        return [], "target_surface_not_found_in_templated"
+    # Keep only occurrences inside the query span, then take the LAST one.
+    #
+    # ⚠ OVERLAP, NOT CONTAINMENT. A containment test (`a >= lo and b <= hi`) selects ZERO tokens
+    # here: Llama's BPE emits " button" as ONE token whose offset span STARTS AT THE LEADING
+    # SPACE, so `a == lo - 1` and the token is rejected for being one character too wide. That
+    # silently returned an empty span for 1032 of 1032 real bank rows -- every occurrence reported
+    # "not found" while the word was plainly there. `demo_key_positions` survives the same
+    # predicate only because it matches a long block where losing the two boundary tokens does not
+    # change the answer; for a single word it removes the answer entirely.
+    #
+    # Membership is tested on the LAST subtoken, which is the repo's canonical `codeword_last`
+    # position -- the same index the extraction pipeline reads its representations at. Testing all
+    # subtokens would re-introduce the boundary problem at the query-span edge.
+    in_query = []
+    for lo, hi in hits:
+        pos = [i for i, (a, b) in enumerate(offs) if b > a and a < hi and b > lo]
+        if pos and pos[-1] in query_span:
+            in_query.append(pos)
+    if not in_query:
+        return [], "no_target_surface_occurrence_inside_query_span"
+    return in_query[-1], None
+
+
 def parse_nondemo_draw_arm(name):
     """(policy, draw_index) for a control-draw arm name, else None. 1-based index."""
     for policy, pref in NONDEMO_DRAW_PREFIX.items():
@@ -853,7 +933,8 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None, dra
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
-                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None):
+                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None,
+                      surface_span=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -901,7 +982,7 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                                          demo_keys=demo_keys, seq_len=seq_len,
                                          knock_stats=knock_stats, protected=protected,
                                          knock_heads=knock_heads, knock_scope=knock_scope,
-                                         draw_log=draw_log))
+                                         draw_log=draw_log, surface_span=surface_span))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
@@ -949,10 +1030,14 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         if knock_scope == DEFAULT_KNOCKOUT_SCOPE:
             return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
                                                  heads=knock_heads, stats=knock_stats)]
+        # `surface_span` is the newest passenger: dropping it demotes the SURGICAL scope to a
+        # no-op, and the hook refuses an empty span precisely so that shows up as a crash rather
+        # than as a clean null. tests/test_scoped_knockout_wiring.py covers this line.
         return [pc.ScopedAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
                                            mode=knock_scope,
                                            query_span=protected, demo_span=demo_keys,
-                                           heads=knock_heads, stats=knock_stats)]
+                                           heads=knock_heads, stats=knock_stats,
+                                           surface_span=surface_span)]
     if name == "refusalness":
         import refusalness as _rf
         # pass the model so the per-model direction file is chosen, and assert the width
@@ -1961,13 +2046,38 @@ def main() -> int:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
 
-        dk, dk_reason, prot = ([], None, None)
+        dk, dk_reason, prot, surf = ([], None, None, None)
         if _wants_knockout:
             dk, dk_reason = demo_key_positions(lm.tokenizer, row, templated_r)
             if dk_reason:
                 ledger.fail(f"demokeys:{dk_reason}", row["prompt_id"])
                 continue
             prot = query_span_positions(lm.tokenizer, row, templated_r, dk)
+            # SURGICAL SCOPE ONLY (DCS phase, plan section 1.8). Resolved from the SAME
+            # `templated_r` the demo block and query span come from, so all three spans share one
+            # tokenization -- the ~9-token drift between two templating paths has silently changed
+            # the question in this repo before.
+            #
+            # A row whose final target-surface occurrence cannot be located is LEDGERED and
+            # SKIPPED, never passed through: the hook refuses an empty span, and the alternative
+            # to refusing is a no-op knockout that scores as a clean null. Because the skip is
+            # ledgered by prompt_id, the excluded rows can be replayed into every OTHER arm as a
+            # declared population exclusion, which is the standing rule (crash > silent skip).
+            if _knock_scope == "target_surface_row_only":
+                surf, surf_reason = target_surface_positions(
+                    lm.tokenizer, row, templated_r, prot)
+                if surf_reason:
+                    ledger.fail(f"surfacespan:{surf_reason}", row["prompt_id"])
+                    continue
+                # PROVENANCE, NOT A LOG LINE (plan section 1.8). The exact rows and the exact
+                # DECODED text at them go in the artifact: "which token did you actually cut" is
+                # the first question anyone asks of a result at this scope, and a position index
+                # alone cannot answer it -- a 9-token shift looks identical in the integers.
+                base["surface_span_positions"] = list(surf)
+                base["surface_span_tokens"] = [
+                    lm.tokenizer.decode([ids_r[i]]) for i in surf if i < len(ids_r)]
+                base["surface_span_target"] = row.get("target_surface")
+                base["surface_span_n_tokens"] = len(surf)
 
         knock_stats = {} if _wants_knockout else None
         # THE DRAW IS PERSISTED, not only seeded. `knock_draw` comes back holding the exact key
@@ -1980,7 +2090,7 @@ def main() -> int:
                                      demo_keys=dk, seq_len=len(ids_r),
                                      knock_stats=knock_stats, protected=prot,
                                      knock_heads=_knock_heads, knock_scope=_knock_scope,
-                                     draw_log=knock_draw)
+                                     draw_log=knock_draw, surface_span=surf)
             import contextlib
             # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) --------
             # ORDERING MATTERS AND IT BIT ME. An earlier draft captured the donor BEFORE

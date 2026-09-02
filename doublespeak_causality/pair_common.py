@@ -617,6 +617,21 @@ SCOPED_KNOCKOUT_MODES = (
     "decode_only",            # decode only; prefill left completely alone
     "response_query_only",    # final-query rows at prefill + every generated row at decode
     "demo_processing_only",   # prefill only, only the rows INSIDE the demonstration block
+    # ADDED 2026-09-02 (DCS phase, plan section 1.8 KO-1/KO-2). The most SURGICAL scope in the
+    # ladder: prefill only, and only the rows of ONE token occurrence in the query -- the final
+    # occurrence of the prompt's `target_surface`.
+    #
+    # WHY ONE MODE COVERS BOTH KO-1 AND KO-2. `target_surface` is a bank field that already holds
+    # the CODEWORD in cells A/C and the explicit CONCEPT in cells B/E. So "block the final
+    # target-surface row from seeing the demonstrations" is literally KO-1 in the Doublespeak cell
+    # and its own matched specificity control KO-2 in the direct-harmful cell, with ONE code path
+    # and ONE dose. Two modes would have been two chances to make them differ by something other
+    # than the cell, which is the comparison the whole experiment rests on.
+    #
+    # Distinct from `query_prefill_only`, which blocks the WHOLE query span: if the narrow scope is
+    # null and the wide one is not, the mapping is built during demonstration processing rather
+    # than retrieved at the final surface token. Collapsing them would erase that answer.
+    "target_surface_row_only",
 )
 
 # mode -> counters that MUST be > 0 for the run to be reportable (PROOF OF LIFE)
@@ -626,6 +641,7 @@ LIVENESS_REQUIREMENT: Dict[str, tuple] = {
     "decode_only":          ("n_decode_edits",),
     "response_query_only":  ("n_prefill_edits", "n_decode_edits"),
     "demo_processing_only": ("n_prefill_edits",),
+    "target_surface_row_only": ("n_prefill_edits",),
 }
 
 # mode -> counters that MUST be exactly 0; a non-zero one means the scoping leaked and the
@@ -636,12 +652,14 @@ LIVENESS_MUST_BE_ZERO: Dict[str, tuple] = {
     "decode_only":          ("n_prefill_edits",),
     "response_query_only":  (),
     "demo_processing_only": ("n_decode_edits",),
+    "target_surface_row_only": ("n_decode_edits",),
 }
 
 
 def resolve_scoped_query_rows(mode: str, is_decode: bool,
                               query_span: Optional[frozenset],
-                              demo_span: Optional[frozenset]):
+                              demo_span: Optional[frozenset],
+                              surface_span: Optional[frozenset] = None):
     """Which ABSOLUTE query positions `mode` may edit on THIS forward pass.
 
     Returns None for "every row of this chunk" (no per-row filter), otherwise a set of
@@ -662,6 +680,12 @@ def resolve_scoped_query_rows(mode: str, is_decode: bool,
         return frozenset() if is_decode else (query_span or frozenset())
     if mode == "demo_processing_only":
         return frozenset() if is_decode else (demo_span or frozenset())
+    if mode == "target_surface_row_only":
+        # Prefill only, and only the ONE occurrence's rows. `surface_span` is deliberately a
+        # separate argument rather than a narrowed `query_span`: the query span is still needed
+        # by the twin-check in the consumer, and overloading one argument with two meanings is how
+        # a scope silently becomes a different intervention than the one being reported.
+        return frozenset() if is_decode else (surface_span or frozenset())
     raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
 
 
@@ -707,7 +731,7 @@ class ScopedAttentionKnockout:
     """
 
     def __init__(self, model, layer_idxs, blocked_keys, mode: str = "legacy_all_query",
-                 query_span=None, demo_span=None, heads=None, stats=None):
+                 query_span=None, demo_span=None, heads=None, stats=None, surface_span=None):
         if mode not in SCOPED_KNOCKOUT_MODES:
             raise ValueError(f"unknown scoped knockout mode {mode!r}; "
                              f"known: {SCOPED_KNOCKOUT_MODES}")
@@ -716,12 +740,30 @@ class ScopedAttentionKnockout:
         self.k = sorted(set(int(x) for x in blocked_keys))
         self.query_span = None if query_span is None else frozenset(int(x) for x in query_span)
         self.demo_span = None if demo_span is None else frozenset(int(x) for x in demo_span)
+        self.surface_span = (None if surface_span is None
+                             else frozenset(int(x) for x in surface_span))
         if mode in ("query_prefill_only", "response_query_only") and not self.query_span:
             raise ValueError(f"mode {mode!r} needs a non-empty query_span (absolute positions of "
                              f"the final-query span); an empty one is a no-op knockout")
         if mode == "demo_processing_only" and not self.demo_span:
             raise ValueError(f"mode {mode!r} needs a non-empty demo_span (absolute positions of "
                              f"the demonstration block); an empty one is a no-op knockout")
+        if mode == "target_surface_row_only" and not self.surface_span:
+            raise ValueError(f"mode {mode!r} needs a non-empty surface_span (absolute positions of "
+                             f"the FINAL target_surface occurrence in the query); an empty one is a "
+                             f"no-op knockout that would score as a clean null")
+        # SURGICAL SCOPES MUST NOT SILENTLY WIDEN. This scope's whole claim is that it edits ONE
+        # occurrence's rows, so a span that has leaked outside the query span is a different
+        # experiment wearing this one's name. Checked here, at construction, because by the time
+        # the counters are read the forward pass has already happened.
+        if (mode == "target_surface_row_only" and self.query_span
+                and not self.surface_span <= self.query_span):
+            raise ValueError(
+                f"mode {mode!r}: surface_span is not contained in query_span "
+                f"(surface={sorted(self.surface_span)[:8]}..., "
+                f"query bounds=[{min(self.query_span)},{max(self.query_span)}]). The final "
+                f"target-surface occurrence must lie inside the query, or the positions were "
+                f"resolved against a different tokenization than the one being run.")
         self.heads = None if heads is None else list(heads)
         self.n_heads = int(model.config.num_attention_heads)
         self._handles = []
@@ -738,10 +780,17 @@ class ScopedAttentionKnockout:
                                                 else len(self.query_span))
         self.stats["n_demo_span_positions"] = (0 if self.demo_span is None
                                                else len(self.demo_span))
+        self.stats["n_surface_span_positions"] = (0 if self.surface_span is None
+                                                  else len(self.surface_span))
         self.stats["query_span_bounds"] = (None if not self.query_span
                                            else [min(self.query_span), max(self.query_span)])
         self.stats["demo_span_bounds"] = (None if not self.demo_span
                                           else [min(self.demo_span), max(self.demo_span)])
+        # The surgical scope's positions go in the artifact IN FULL, not as bounds: a two-token
+        # span is small enough to record exactly, and "which rows did you actually cut" is the
+        # first question anyone will ask of a null at this scope.
+        self.stats["surface_span_positions"] = (None if not self.surface_span
+                                                else sorted(self.surface_span))
         self.stats["liveness_required"] = list(LIVENESS_REQUIREMENT[mode])
         self.stats["liveness_must_be_zero"] = list(LIVENESS_MUST_BE_ZERO[mode])
 
@@ -762,7 +811,8 @@ class ScopedAttentionKnockout:
         n_q, kv_len = am.shape[2], am.shape[3]
         past = kv_len - n_q                     # absolute position of query row 0
         is_decode = (n_q == 1)
-        allowed = resolve_scoped_query_rows(self.mode, is_decode, self.query_span, self.demo_span)
+        allowed = resolve_scoped_query_rows(self.mode, is_decode, self.query_span, self.demo_span,
+                                            self.surface_span)
         n_edits = 0
         n_keys_masked = 0
         rows_touched = set()

@@ -328,11 +328,18 @@ def test_every_counter_the_readout_contract_declares_is_actually_consulted(scope
 
 
 def test_which_modes_are_measurable_is_derived_not_listed():
-    """The admitted set must be exactly the three prefill-measurable modes -- computed by the
-    shipped code from the hook's own resolver, not from a name list in score_behavior."""
+    """The admitted set must be exactly the prefill-measurable modes -- computed by the shipped
+    code from the hook's own resolver, not from a name list in score_behavior.
+
+    UPDATED 2026-09-02 (DCS phase): `target_surface_row_only` joins the set. It is prefill-only
+    like `demo_processing_only`, so it is measurable on a FORWARD-ONLY readout row, which is
+    exactly what the KO-1/KO-2 semantic readouts need. Asserted as an explicit list on purpose --
+    a mode becoming silently measurable is a mode whose readout contract nobody chose.
+    """
     import score_behavior as sb
     assert sorted(_measurable()) == sorted(["legacy_all_query", "query_prefill_only",
-                                            "demo_processing_only"])
+                                            "demo_processing_only",
+                                            "target_surface_row_only"])
     src = ast.get_source_segment(_src(), next(
         n for n in ast.walk(ast.parse(_src()))
         if isinstance(n, ast.FunctionDef) and n.name == "readout_liveness_contract"))
