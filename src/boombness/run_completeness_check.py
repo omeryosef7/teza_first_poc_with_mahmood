@@ -65,6 +65,19 @@ ROW_FILE = {
 #: Runs known to be short, with the reason. A short run is not automatically a defect — but silence
 #: about one is. Same convention as `ledger_propagation_check.METHOD_ONLY`.
 KNOWN_SHORT = {
+    "dcsbk_C_baseline_20260903_001039_2020176":
+        "DCS-PR-003: 3 of 380 rows (0.79%) in ONE domain (school_campus|dev, "
+        "semantic_forced_choice) raise resolve:occurrence_count_mismatch text=6 tokens=7. This is "
+        "the SAME basket-bank tokenisation defect as CDS-C-002, on the forced-choice rows instead "
+        "of the behavioral ones, so the prompt_ids differ (fe58e74c6db2c963, 5569ed8ebf385e15, "
+        "6720558908e9e2a2) and the counts are one higher. The mechanism is TOKENISATION OF THE "
+        "CODEWORD -- fixed per prompt, computable from the tokenizer alone, independent of any "
+        "outcome. This run LEDGERED them; the two intervened arms of the same wave (840376, "
+        "840377) went FATAL on the identical rows, which is CDS-R-020 reproduced exactly. "
+        "SUPERSEDED by 840623/840624/840625, which pass "
+        "data/boombness_prompts/exclusions/cds38_basket_bomb_occurrence_mismatch_forcedchoice.txt "
+        "to every arm so the exclusion is declared and identical rather than emergent from where "
+        "the exception was caught. This dir is kept as the record of the failure, not analysed",
     "d38beh_20260829_022027_2389958":
         "§12.28: disk quota removed 77 of 608 rows (12.7%), concentrated in 11 of 38 domains, and "
         "the ledger's 586 disagrees with the 543 persisted. Kept as the negative example and "

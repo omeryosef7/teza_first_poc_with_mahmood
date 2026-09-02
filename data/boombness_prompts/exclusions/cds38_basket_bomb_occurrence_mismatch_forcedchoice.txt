@@ -1,0 +1,33 @@
+# DECLARED, OUTCOME-INDEPENDENT ROW EXCLUSION
+# bank      : data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb.jsonl
+# population: query_kind=semantic_forced_choice & condition=natural_doublespeak & bank_block=cds_n4 & n_examples=4
+# effect    : 380 -> 377 rows; domain school_campus contributes 7 rows instead of 10.
+#
+# COMPANION FILE to cds38_basket_bomb_occurrence_mismatch.txt, which covers the SAME defect in the
+# SAME domain on the `behavioral` rows. These are DIFFERENT prompt_ids: the forced-choice template
+# mentions the codeword once more, so the mismatch reads `text=6,tokens=7` here against
+# `text=5,tokens=6` there. Same bank, same mechanism, same domain, different query kind.
+#
+# WHY THESE THREE ROWS. The basket bank's incidental repair (baskets->crates, basket->crate) leaves
+# a codeword occurrence that tokenises to one more piece than the text matches, so
+# `resolve_occurrences` raises `occurrence_count_mismatch`. The mechanism is TOKENISATION OF THE
+# CODEWORD -- fixed per prompt, computable from the tokenizer alone, and completely independent of
+# any generation, judge label or outcome.
+#
+# WHEN THEY WERE NAMED. As `DCS-PR-003`, from the cell-C BASELINE arm's failure ledger
+# (dcsbk_C_baseline_20260903_001039_2020176, summary.json -> failures.failure_example_ids), before
+# any intervened basket outcome existed -- both intervened arms had FAILED to produce any rows at
+# that point, so no outcome information could have entered this list.
+#
+# WHY THE FILE EXISTS. `CDS-R-020`, reproduced exactly on 2026-09-03: the same exception is SKIPPED
+# by the failure ledger in a baseline arm and FATAL in an intervened one, because the knockout
+# pre-flight resolves every row OUTSIDE any `try`. Jobs 840376 and 840377 (the KO-3 demo and its
+# count-matched control) both exited FAILED while the baseline quietly returned 377. Passing this
+# file to every arm makes the exclusion identical and declared across arms instead of emergent from
+# where the exception happened to be caught.
+#
+# NO OUTCOME INFORMATION WAS USED TO BUILD THIS LIST, and no row may be added to it after outcomes
+# are observed.
+fe58e74c6db2c963
+5569ed8ebf385e15
+6720558908e9e2a2

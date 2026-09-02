@@ -1577,3 +1577,75 @@ effect**, not a confound.
 concept/codeword pair on ONE model**. That is 38 *contexts for a single mapping*, **not 38
 mappings**. (Measured ICC ≈ 0.34 in cell `B`, so domain is the right independence unit and is not
 inflating anything.)
+
+### `DCS-PR-003` — 2026-09-03 — the `basket` bank's 3-row defect, declared **before** the replication's outcome exists
+
+The `basket↔bomb` replication of `R-010` was submitted (`840375`–`840380`). Its cell-`C` baseline
+returned **377 of 380** rows, against 380 in every cell-`B` arm. Cause, from the failure ledger:
+
+    resolve:occurrence_count_mismatch:text=6,tokens=7   ×3
+    fe58e74c6db2c963 · 5569ed8ebf385e15 · 6720558908e9e2a2
+
+All three are `school_campus` / `natural_doublespeak` / `semantic_forced_choice` / `dev` /
+`n_examples=4` / `cds_n4`. ⚠ **These are the exact rows that VOIDed `CDS-PR-006`**, the previous
+`basket` replication attempt (`CDS-C-002` named them by `prompt_id` before any generation ran).
+They are a **bank defect**, not a result, and the `button` bank does not have it (380/380 there).
+
+**Declared handling, before any replication outcome is read:**
+* The three ids are written to `runargs/dcs/exclude_basket_3rows.txt` and are a **population
+  exclusion**, not a silent skip. Every arm ledgers them identically at *resolve* time — **before**
+  any intervention is constructed — so ⛔ the `CDS` failure mode (baseline *ledgers* while the
+  intervened arm *raises*, leaving two arms with different row sets under one label) **cannot occur
+  here**; it is a pre-intervention resolver failure, symmetric across arms by construction.
+* ⚠ **They cannot be excluded from cell `B`, because they do not exist there.** `B` rows carry no
+  codeword, so no occurrence mismatch arises and `B`'s `prompt_id`s are different rows entirely.
+  ⇒ The imbalance is real and is stated rather than hidden: in the cross-cell DiD, `school_campus`
+  contributes a `C` mean over **7** rows and a `B` mean over **10**. Every other domain is 10 vs 10.
+* **Primary** analysis: all 38 domains, with that imbalance declared.
+* **Robustness, preregistered here:** the DiD **recomputed with `school_campus` dropped entirely**
+  (37 domains). If the two disagree, the primary is not reportable.
+* Verification required before reading the replication: all three cell-`C` arms must return
+  **exactly 377** rows and the same three ledgered ids. A `C` arm returning 380, or a different
+  failure set, means something other than the known defect occurred and the replication is void.
+
+### `DCS-C-014` — ⚠ `CDS-R-020` reproduced **exactly**, one day after reading it, and caught by two guards
+
+`DCS-PR-003` argued — before the arms finished — that the 3-row basket defect *"cannot* produce the
+`CDS` failure mode, because it is a pre-intervention resolver failure, symmetric across arms by
+construction." ⛔ **That reasoning was wrong, and the run disproved it within the hour.**
+
+* `dcsbk_C_baseline` (**840375**): `COMPLETED`, **377** rows — the 3 rows **ledgered**.
+* `dcsbk_C_qpo_demo` (**840376**) and `dcsbk_C_qpo_ctrl_d1` (**840377**): both **`FAILED`**, zero
+  rows persisted.
+
+The mechanism is the one `CDS-R-020` records and I failed to apply: **the knockout pre-flight
+resolves every row OUTSIDE any `try`**, so an identical `resolve` exception is *ledgered* in a
+baseline arm and *fatal* in an intervened one. My "symmetric by construction" claim was an
+assertion about code I had not checked at that call site.
+
+⚠ **Two independent guards caught this, neither of them me:**
+1. the intervened arms **crashed** rather than silently returning a different row set — the repo's
+   "a crash is a better failure than a silent skip" design, working;
+2. the **pre-commit hook refused the commit**: `run_completeness_check` flagged
+   `SHORT dcsbk_C_baseline…: persisted 377 rows against --expect-n 380`. ⛔ I did **not** use
+   `--no-verify`.
+
+**Fix, following the existing convention rather than inventing one.** A companion exclusion file
+`data/boombness_prompts/exclusions/cds38_basket_bomb_occurrence_mismatch_forcedchoice.txt` now sits
+beside the `behavioral` one from `CDS`. ⚠ **They are different rows**: the forced-choice template
+mentions the codeword once more, so the mismatch is `text=6,tokens=7` here against `text=5,tokens=6`
+there, and the three `prompt_id`s differ. Same bank, same domain, same mechanism, different query
+kind. All three cell-`C` arms are resubmitted (**840623/840624/840625**) with
+`--exclude-prompt-ids` and `--expect-n 377`, so the exclusion is **declared and identical in every
+arm** instead of emergent from where the exception was caught.
+
+The superseded baseline is documented in `run_completeness_check.KNOWN_SHORT` with the mechanism and
+its supersession — **kept as the record of the failure, not deleted and not analysed**. The guard is
+green again on its own terms (`7 documented short`, *"every finished run persisted its full row
+count"*).
+
+⚠ **The lesson, stated plainly because I have now made this class of error twice in two days**
+(`DCS-C-007` was the other): *I preregistered a claim about how the code would behave without
+reading the call site.* `DCS-PR-003`'s verification gate — "all three cell-`C` arms must return
+exactly 377 rows or the replication is void" — was the right instinct and is what turned an
+untested assumption into a caught failure rather than a silent one.
