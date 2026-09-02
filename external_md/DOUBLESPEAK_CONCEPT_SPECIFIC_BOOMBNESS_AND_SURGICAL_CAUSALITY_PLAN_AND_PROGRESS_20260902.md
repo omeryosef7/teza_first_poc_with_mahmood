@@ -1413,3 +1413,57 @@ Submitted this tick: **`840115`** (`KO-3` on `B`, demo) and **`840116`** (its co
 the same floor reporting. `B`'s baseline here is **not** at floor on this endpoint (+6.27, 96 %
 concept reading, option mass 0.709), so unlike the ASR endpoint this comparison **is** capable —
 which is the whole reason the specificity question moved to the readout channel in `DCS-PR-002`.
+
+### `DCS-R-010` — ✅ **OUTCOME `F`: the demonstration→query path is REMAPPING-SPECIFIC.** The two cells move in *opposite* directions.
+
+`KO-3` (`query_prefill_only`, whole query span → demonstration columns, L6–14), both cells,
+`semantic_forced_choice`, 380 rows and 38 domains per cell, identical dose (**66 816** mask cells in
+every intervened arm), row sets identical within each cell, all 38 domains shared.
+
+| cell | baseline | `KO-3` | **vs its dose-matched control** | domains | p | option mass |
+|---|---|---|---|---|---|---|
+| `C` `natural_doublespeak` (`button`) | +5.188 | **−2.756** | **−8.081** | **1+/37−** | 2.84e-10 | 0.877 → 0.353 |
+| `B` `direct_harmful` (`bomb`) | +6.272 | **+7.780** | **+1.808** | **31+/7−** | 1.16e-04 | 0.709 → 0.780 |
+
+Both count-matched controls are inert at that dose: `C` control **+0.137**, `B` control **−0.300**.
+
+**The DiD:** mean **−9.889**, **37 of 38 domains** in the same direction, exact two-sided sign
+p = **2.84e-10**, attainable floor 7.28e-12, `CAPABLE = True`.
+⇒ **`REMAPPING-SPECIFIC` — outcome `F`** in §1.10's taxonomy, the outcome that requires
+`button→demo` KO to affect Doublespeak far more than `bomb→demo` KO affects direct-harmful.
+
+**It is stronger than "more strongly": the cells move in opposite directions.** Cutting the query
+span off from the demonstrations
+* **destroys** the codeword's concept reading in `C` — sign flip, back to the *literal* reading; and
+* **strengthens** the concept reading in `B`, where the word already *is* `bomb`.
+
+That is exactly what a remapping account predicts. In `C` the demonstrations are the *source* of the
+mapping, so removing them returns `button` to meaning button. In `B` there is no mapping to carry —
+the word is already the concept — and the demonstrations act as competing context, so removing them
+makes the literal-concept reading *cleaner*.
+
+⚠ **Why this cannot be generic damage**, stated with the number that rules it out: the identical
+66 816-cell intervention applied to the identical band, dose and seed makes cell `B` go **up**.
+A broken forward pass cannot selectively improve one cell's readout while inverting the other's.
+This is the control the whole 2×2 design existed to provide, and it is the reason `DCS-C-007`'s loss
+of the ASR-endpoint DiD did not cost the phase its specificity test.
+
+⚠ **Scope and limits, recorded with the result:**
+* Paired **by domain only** across cells (`DCS-PR-001a`) — `C` and `B` are different prompts by
+  construction. Within-cell contrasts are row-paired.
+* `KO-3` cuts the **whole query span**; it does not localise to the readout row versus the
+  intervening query tokens (`DCS-R-008`). The specificity claim is about *the path*, not about a
+  single position.
+* Option mass moves in opposite directions too (`C` 0.877→0.353, `B` 0.709→0.780). `semantic_logodds`
+  is algebraically mass-invariant (`DCS-C-008`), so the DiD is not a mass artifact — but ⛔ no
+  `p_concept`-based claim may be made here without handling it.
+* This is a **representation-level** result. It says nothing about attack behavior, where `KO-1` was
+  a well-powered null (`DCS-R-006`) and `KO-3` has not been run behaviorally.
+
+**How this changes the phase's picture.** Until now every result was a negative: not concept-specific
+(`R-002`), no accumulation (`R-003`), no effect at the codeword token on representation (`R-005`) or
+on attack (`R-006`). `R-010` is the first **positive** causal finding: there *is* a
+demonstration→query information path, it *is* necessary for the remapping, and it *is* specific to
+the remapping rather than to context-processing in general. ⚠ It remains true that this path's
+representation is **not concept-specific** (`R-002`) and that cutting it at the codeword token
+changes **no behavior** (`R-006`) — the mechanism is real and its link to the attack is still absent.
