@@ -1467,3 +1467,103 @@ demonstration→query information path, it *is* necessary for the remapping, and
 the remapping rather than to context-processing in general. ⚠ It remains true that this path's
 representation is **not concept-specific** (`R-002`) and that cutting it at the codeword token
 changes **no behavior** (`R-006`) — the mechanism is real and its link to the attack is still absent.
+
+### `DCS-A-002` — adversarial audit of `DCS-R-010`: **outcome `F` survives**, and the generic-damage hypothesis is *refuted*, not merely unfalsified
+
+A second read-only agent was told to break the headline, and was pointed at the failure mode I
+judged most likely. It could not break it.
+
+**Reproduced exactly** (Fraction-exact binomials): C −8.0808 (1+/37−, p = 2.838e-10), B +1.8083
+(31+/7−, p = 1.162e-04), DiD **−9.8890**, 37/38, p = 2.838e-10, floor 7.276e-12.
+
+**✅ Generic damage REFUTED by the raw absolute log-probabilities** (the table that settles it):
+
+| arm | `logp_concept` | `logp_codeword` | `logodds` | `option_mass` |
+|---|---|---|---|---|
+| C baseline | −0.539 | −5.728 | +5.188 | 0.804 |
+| **C `KO-3`** | **−4.038** | **−1.282** | **−2.756** | **0.366** |
+| B baseline | −0.487 | −6.759 | +6.272 | 0.693 |
+| **B `KO-3`** | **−0.377** | **−8.157** | **+7.780** | **0.739** |
+
+The hypothesis I flagged — *"in B both sides collapse but codeword collapses more"* — **does not
+occur**: in cell `B`, `logp_concept` **rises** (−0.487 → −0.377) and `option_mass` **rises**
+(0.693 → 0.739). Nothing degrades. Zero non-finite values, `n_variants` 2/2 everywhere, no row below
+the mass gate in any arm.
+
+**✅ A discrete, mass-free, scale-free replication of the opposite directions**, using no log-odds
+at all — the argmax over the option pair:
+
+| arm | argmax = concept | argmax = codeword |
+|---|---|---|
+| C baseline | 345 | **4** |
+| C `KO-3` | 19 | **104** |
+| B baseline | 350 | **21** |
+| B `KO-3` | 362 | **6** |
+
+Same intervention, byte-identical `concept_token_ids`/`codeword_token_ids` across all six runs: the
+codeword's argmax share goes **4 → 104** in `C` and **21 → 6** in `B`. ⛔ No mass or scale argument
+can touch this version, and generic damage cannot produce it.
+
+**✅ Mass-invariance PROVEN, not merely tested.** `signals.py:735-757`: each option's score is a
+`log_softmax` over the **full vocabulary**, summed over variant tokens, `logsumexp`-ed over variants
+— an *absolute* log-probability, never renormalised within the option set; `option_mass` is computed
+separately at `:755` and never feeds the scores. Numerically
+`max|semantic_logodds − (logp_concept − logp_codeword)| = 0.00e+00` in all six arms.
+
+**✅ Cell comparability is stronger than claimed.** `C` and `B` share **zero** `prompt_sha16`, yet
+paired by `family_id` they are **token-geometrically identical**: 0/380 mismatches on `seq_len`,
+`n_demo_positions`, `demo_key_min/max`, and both span bounds; `n_target_occurrences` = 6 on 380/380
+in both. The cross-cell dose claim holds at the **position** level, not just the count level.
+
+**✅ Robustness.** 37/38 is nowhere near the cliff — the sign test would need **12 domains to flip**
+(loses α at k=13). LOO DiD range [−10.177, −9.761]; cluster bootstrap CI **[−10.891, −8.816]**;
+dev −10.215 and heldout −9.564, both 37/38. The single positive domain, `museum_archive`, is
+**explained**: its `C` baseline log-odds is −6.275, i.e. the remapping never installed there, so
+there was nothing for `KO-3` to remove.
+
+### `DCS-C-011` — ⚠ four corrections to `DCS-R-010`
+
+1. ⛔ **"Both controls are inert" is wrong.** By sign test, C's control is **31+/7− (p = 1.16e-04)**
+   and B's is **6+/32− (p = 2.43e-05)** — small in magnitude (|Δ| < 0.31) but **not** sign-null, and
+   in *opposite* directions, giving the controls their own mini-DiD of **+0.437**. That is 4.4 % of
+   −9.889 and does not threaten the result. Correct wording: *"both controls are negligible in
+   magnitude though not sign-null."*
+2. ⚠ **66 816 is the MEDIAN dose, not a constant.** Per-row edits range **48 384–108 288**
+   (mean 68 125.6). Quote it as a median.
+3. ⚠ **Cell `B`'s +1.808 is 93 % codeword *suppression*, not concept enhancement**:
+   `Δlogp_concept = +0.126` vs `Δlogp_codeword = −1.682`. The concept side genuinely is near ceiling
+   in `B` (baseline −0.503, ≤ +0.50 available) — but the side carrying the effect (codeword, −6.47)
+   has ample headroom, so the ceiling exists and is **not load-bearing**.
+4. ⚠ **Scope boundary that must not be reported silently:** the specificity DiD exists **only at the
+   full-query-span scope**. At the surgical `target_surface_row_only` scope the same DiD is
+   **+0.503, 13/38 — a clean null** (`DCS-R-009`). Both are true; the claim is about the *path*, and
+   it does not survive narrowing to the codeword row.
+
+### `DCS-C-012` — ⚠ a provenance scare, chased down and resolved clean
+
+`RUNMETA.json` carries **three distinct `git_commit` values** across the six runs, and disagrees
+with `metadata.json` on two of them (`C_qpo_demo`: 45868c23 vs d109d54f; `B_baseline`: 4155c518 vs
+32c1771a) — the repo HEAD moved **mid-run** under a concurrent writer, which also explains
+`git_dirty: null` on the arm carrying the headline.
+
+**Resolved:** `git diff --stat 4155c518 38ddd0fd -- src/` is **empty**. Every commit across the whole
+span touches only the progress markdown and `runargs/dcs/*.txt`. **Identical code ran in all six
+arms.** ⚠ Recorded because a reader who greps `RUNMETA` will find this and should not have to
+re-derive the answer.
+
+### `DCS-C-013` — ⚠ the strongest remaining objection is interpretive, and must be pre-empted in the write-up
+
+Under `KO-3`, cell `C`'s argmax **leaves the option set on 257/380 rows** and option mass falls
+0.804 → 0.366, while cell `B` stays on-option on 368/380 with mass **rising**. ⇒ After the
+intervention the two cells are **not in comparable measurement regimes**, and a reviewer will say so.
+
+**The defense, which must be argued in the text rather than left for the reader to find:** the
+dose-matched control blocks the same number of keys in the same rows of the *same cell-`C` prompts*
+and leaves mass at **0.798** with **347/380** on-option. So the derailment tracks **which** keys are
+blocked — the demonstration columns — not cell `C`'s fragility. That makes the derailment **the
+effect**, not a confound.
+
+⚠ **Scope, to be stated wherever `n = 38` appears:** the corpus is **38 domains for ONE
+concept/codeword pair on ONE model**. That is 38 *contexts for a single mapping*, **not 38
+mappings**. (Measured ICC ≈ 0.34 in cell `B`, so domain is the right independence unit and is not
+inflating anything.)
