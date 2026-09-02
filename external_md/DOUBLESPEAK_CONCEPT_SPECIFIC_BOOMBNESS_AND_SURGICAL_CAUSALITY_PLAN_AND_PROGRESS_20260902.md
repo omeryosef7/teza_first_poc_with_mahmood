@@ -13,53 +13,63 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 
 ## 0. LIVE STATUS
 
-*(updated every tick. On 2026-09-02 every number here is **inherited** — this phase has produced no
-outcome of its own.)*
+*(declared-live section, rewritten each tick. Last update **2026-09-03**, after `DCS-A-002`.
+Everything below is this phase's own measurement unless marked *inherited*.)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
-| claim | artifact | scope |
-|---|---|---|
-| `demo_processing_only` attention knockout (L6–14, α=1.0, `n_examples=4`, Llama-3.1-8B-Instruct) cuts the rubric endpoint: `button↔bomb` 159/380 → 55/380; `basket↔bomb` 43/377 → 14/377 | `TSC-R-001`, `TSC-R-004` | rubric endpoint only; controls `CTRL_matched_d1/d2/d3` |
-| Qwen3-14B under the same design is a **capable null** (p = 1.0000 / 0.4869 / 0.8642, `k_inf` 30–34, floors ≈1e-10) ⇒ the effect is **model-specific** by a preregistered interaction | `TSC-R-005` | interaction rejects 3/3 absolute, 1/3 normalised |
-| On Qwen the same intervention removes **all 150 refusals** while attack moves by one row | `TSC-R-006` | `refused` = substring matcher; unexplained |
-| `d_surface` does **not** predict ASR on the clean population: ρ = −0.0518 (p = 0.658, n = 90); ρ = −0.0660 (p = 0.493, n = 108) | `G2` clean re-analysis | ⚠ the three clean samples are **nested**, not independent |
-| 90–100 % of judge-positive completions in **every** arm never contain the concept word | `TSC-C-004` | scope statement, not a refutation |
+| # | claim | evidence | scope |
+|---|---|---|---|
+| `R-010` | **The demonstration→query path is NECESSARY for the remapping and SPECIFIC to it.** `KO-3` (whole query span ↛ demos, L6–14) drives cell `C` from +5.19 to **−2.76** log-odds — a sign flip to the literal reading — while driving cell `B` (where the word already *is* the concept) *up* to +7.78. DiD **−9.889**, **37/38 domains**, p = 2.84e-10, floor 7.28e-12 | 6 arms × 380 rows × 38 domains; both dose-matched controls negligible (|Δ| < 0.31); adversarially audited (`DCS-A-002`) | Llama-3.1-8B, **one** codeword/concept pair, full-query-span scope only |
+| `R-010b` | The same reversal appears in the **discrete argmax**, which no mass or scale argument can touch: codeword-argmax share **4 → 104** in `C`, **21 → 6** in `B` | `DCS-A-002` | as above |
+| `R-006` | **`KO-1` (final codeword row ↛ demos) is a well-powered NULL on attack**: +11 rows, 18+/14−, p = 0.597, floor 4.66e-10; StrongREJECT +12.25, p = 0.627. Both below the 17-row judge band | one judge invocation, 6 arms, 2280 rows | Llama, cell `C` |
+| `R-006b` | The same intervention **halves refusal**: 42 → 21, **0+/13− domains**, p = 2.44e-04 ⚠ *equal to its attainable floor* | as above | `refused` is a substring matcher, not the judge |
+| `R-005` | `KO-1` leaves the **mapping intact** (+0.278 vs baseline, 25+/13−, p = 0.073) | 3 arms × 380 rows; audited (`DCS-A-001`) | preregistered sign test |
+| `R-002` | The codeword→concept movement is **NOT concept-specific**: `knife`/`gun`/`club` match or exceed `bomb`, all differences inside the measured noise band | 10 banks, dev/heldout | cell-mean geometry |
+| `R-003` | The shift **does not accumulate**: final > first in 32/32 cells, but demonstrations-only ρ disagrees in sign between banks and the effect is flat in `n_examples` | 2 banks × 32 layers | per-row, cross-fit |
+| `R-004` | **Null control fires exactly:** at `n_examples = 0`, paired `C−A` is `0.000e+00` at all 96 cells | 2 banks | A and C are byte-identical without demos |
+| *inherited* | `demo_processing_only` L6–14 cuts the Llama rubric endpoint on two lexical banks; Qwen3-14B is a **capable null**; `d_surface` does not predict ASR | `TSC-R-001/004/005`, `G2` | unchanged |
 
 ### CLAIMS WE MUST NOT SAY
 
-* ⛔ "`d_surface` is a validated Boombness metric." It is this phase's **benchmark failure case**.
-  The published ρ = +0.2618 (p = 5.0e-4, n = 234) is **RETRACTED** (contaminated population) and the
-  L8 ρ = +0.342 with it. Never revive either.
-* ⛔ "Blocking demonstration attention removes the attack." The endpoint is a general rubric. On the
-  topical endpoint the effect holds but `k_inf` collapses to 8–12, every test sits **at its
-  attainable floor**, and the quantity removed is **3.7 % of rows, not 39 %**.
-* ⛔ "The mechanism does not exist in Qwen." Qwen's *attack* null is capable; Qwen's *topical*
-  baseline is 0.000 in **every** arm and can answer nothing (`TSC-C-011`).
-* ⛔ Calling any direction "Boombness" or "a bombness direction" without its pair — the repo's own
-  retraction (`R-23`/`R-24`) requires the form `d_surface_carrot_bomb`.
-* ⛔ `d_surface`/Boombness as a GCG/MAC objective. **BLOCKED and stays blocked**: both steering signs
-  suppress ASR, prediction-vs-causation ρ = −0.85, and `d_naive` (+0.292) and `d_context` (+0.261)
-  match or beat it.
-* ⛔ Any p quoted without its design's attainable floor (`pvalue_hygiene_check` gates this).
-* ⛔ Citing the L18 demonstration-transplant result (+0.6887) as current — see `DCS-B-003`.
+* ⛔ **"The mapping is constructed during demonstration processing"** — `DCS-C-010` **RETRACTED** this.
+  `KO-3` shows retrieval happens somewhere in the query span; **which** position is untested.
+* ⛔ **"`KO-1` shows the mapping is not retrieved at the codeword token, therefore outcome `D`"** —
+  `KO-1` licenses only *"the final codeword token's own L6–14 demonstration attention is not
+  necessary."*
+* ⛔ **"Both `KO-3` controls are inert"** — they are **negligible in magnitude, not sign-null**
+  (`C-011`): 31+/7− and 6+/32−.
+* ⛔ **"The specificity result holds at the surgical scope"** — it is a **clean null** there
+  (+0.503, 13/38). The claim is about the **path**, at full-query-span scope only.
+* ⛔ **"38 domains" as if it were 38 mappings** — it is **38 contexts for ONE mapping on ONE model**.
+* ⛔ **"`R-001`'s L6–L12 peak"** — `C-005` retracted it; absent from the per-row effect size.
+* ⛔ **"`R-010` is a discovery of the representation phenomenon"** — the representation convergence is
+  **Yona et al. ACL 2026**; ours is a **replication**. The *causal intervention* is the new part
+  (`DCS-006`).
+* ⛔ `d_surface` as validated, or as a GCG/MAC objective. Still **BLOCKED**.
+* ⛔ Any p without its attainable floor.
 
 ### CURRENT BLOCKERS
 
 | id | blocker | state |
 |---|---|---|
-| `DCS-B-001` | **Disk quota.** `/home/sharifm` user quota is exactly 200 GiB and exactly full; writes >~5 B fail `EDQUOT` **from login and compute nodes alike** (probe job 838360 on n-803: `PROJECT_WRITE_FAIL`). No artifact, log, or document could be written. | being cleared — see `DCS-002` |
-| `DCS-B-002` | **Paradigm ceiling.** The whole 495-row AdvBench affords only **15** distinct mappable concepts, 11 of them cyber or weapons. Request-generality is bounded by the benchmark, not by compute. | inherited, structural |
-| `DCS-B-003` | The L18 transplant result (`frac_of_span` +0.6887, CI [+0.5128, +0.9742], n = 24 families / 6 domains) is **neither retracted nor re-affirmed** — it appears in no sprint summary since 2026-08-24. Its `frac_of_span` denominator is a ceiling measured in a tail (donor option mass 0.0074). | must be re-affirmed before it may be cited |
-| `DCS-B-004` | The topical endpoint is **degenerate on the cds38 banks**: exactly **one** distinct distinctive word bank-wide, values ∈ {0, 1}. It is a concept-word presence test, not a topicality measure. | §1.9 declares the fix |
+| `DCS-B-002` | AdvBench affords only **15** mappable concepts — request-generality is bounded by the benchmark | inherited, structural |
+| `DCS-B-003` | The L18 transplant result is **neither retracted nor re-affirmed**; may not be cited | open |
+| `DCS-B-004` | The topical endpoint is degenerate on these banks (one distinctive word, values ∈ {0,1}) | open |
+| `DCS-B-005` | **`R-010` rests on one lexical pair.** `basket↔bomb` replication submitted this tick (`840375–840380`) | **in flight** |
+| `DCS-B-006` | **`C-013`:** after `KO-3` the two cells are not in comparable measurement regimes (C leaves the option set on 257/380 rows). Defense exists and is strong, but must be **argued in the text** | write-up task |
+| `DCS-B-007` | Per-row control-draw **positions** are not persisted, so control/demo disjointness is a code guarantee, not an artifact fact | defect to fix |
 
 ### NEXT 3 HIGHEST-VALUE EXPERIMENTS
 
-1. **`P2`** — the concept-specific difference-of-means suite with **`d_C_minus_A` as PRIMARY**.
-   Computable **offline from `directions_fit_*.pt['cell_means']`, no GPU** (see `DCS-001` §5).
-2. **`P4/KO-1`** — final query-**codeword** occurrence → demonstration columns only.
-3. **`P4/KO-2`** — the matched specificity control: final query-**concept** occurrence → the *same*
-   columns, on cell `B`. The `intervention × condition` interaction is the payload; neither arm alone.
+1. **`basket↔bomb` replication of `R-010`** — in flight. Closes `DCS-B-005`, the single largest scope
+   limit on the headline.
+2. **A readout-row-only scope** — `KO-3` cuts the whole query span and cannot say *which* position
+   retrieves. `SCOPED_KNOCKOUT_MODES` has no such mode; the machinery added this phase makes it a
+   small extension. This is what would turn "somewhere in the query span" into a position.
+3. **`KO-3` on the behavioral endpoint** — `KO-3` destroys the representation; `KO-1` left attack
+   unchanged. Whether *destroying* the mapping moves the attack is the one test that could still
+   connect representation to behavior — and it is the phase's central question.
 
 ---
 
