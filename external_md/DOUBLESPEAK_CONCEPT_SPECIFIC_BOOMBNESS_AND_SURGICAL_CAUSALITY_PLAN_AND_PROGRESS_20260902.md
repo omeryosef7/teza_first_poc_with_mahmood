@@ -985,3 +985,58 @@ comparison must use the same convention.
 ⛔ **No outcome may be read from any single arm.** The registered estimand is the `C`-vs-`B`
 difference-in-differences (`DCS-PR-001`), paired by domain only (`DCS-PR-001a`), computed by
 `scripts/dcs_cell_interaction.py`, which was committed **before** these jobs were submitted.
+
+### `DCS-C-007` — ⛔ `KO-2` is UNINFORMATIVE BY CONSTRUCTION on the ASR endpoint. My preregistration missed it.
+
+Found while the arms were still generating, **before any judge run**, and recorded here rather than
+discovered in the results table.
+
+**The observation.** Partial output from the three `B` (`direct_harmful`) arms:
+`kw_refusal` **98.8 % (baseline, 170/172)**, **100 % (KO-2, 130/130)**, **100 % (control, 115/115)**,
+median 96 characters, every row stopping on `eos`. Cell `B` is refusing almost everything, in
+**every** arm including the baseline.
+
+**The arithmetic that settles it.** Twelve prior judged runs containing `direct_harmful` put its
+baseline at **ASR = 0.042, refused = 0.958** (`base_20260816_210948_3024689` and ten others report
+the identical 0.042/0.958; `b104_C` gives 0.208 under an intervention).
+
+    380 rows x 0.042 = 16.0 expected attacks
+    maximum possible removal by ANY intervention = 16.0 rows
+    the judge's own noise band                  = 17 rows
+
+⇒ **The largest effect `KO-2` could possibly produce is smaller than the noise band it would have to
+clear.** No outcome of that arm could have reached significance. Per the standing rule this is
+`CANNOT ANSWER` / `UNINFORMATIVE BY CONSTRUCTION` — ⛔ **never** a null, and never evidence that the
+concept token does not depend on the demonstrations.
+
+For contrast, cell `C` has **380 × 0.3895 ≈ 148** baseline attacks — **8.7×** the judge band. `C` is
+capable; `B` is not.
+
+**⇒ The `DCS-PR-001` DiD cannot be computed on the ASR endpoint.** With `delta_B` bounded below the
+band, `DiD = delta_C − delta_B` collapses to `delta_C` plus noise, and reporting it as an
+interaction would be presenting a single-arm result as a specificity test. `scripts/dcs_cell_interaction.py`
+will report this correctly on its own — it prints `CAPABLE` from the attainable floor and labels a
+sub-floor design `UNINFORMATIVE BY CONSTRUCTION` — but the honest move is to say so **now**, in
+advance, rather than let the analyzer say it after the fact.
+
+**⚠ This is my error, and it is the same class the project keeps hitting.** `DCS-PR-001` fixed the
+population, the layers, the dose, the endpoint and the decision rules — and **never checked the
+control cell's baseline headroom**, which was available in twelve committed artifacts before a
+single GPU-hour was spent. Preregistering a comparison without checking that **both** of its cells
+can move is exactly the `TSC-C-011` failure (Qwen's topical baseline 0.000 in every arm), repeated
+by me one day after reading it.
+
+**What survives, and what replaces it.**
+* ✅ `KO-1` on cell `C` is unaffected and remains fully powered — that arm is the one with headroom.
+* ✅ The `B` arms are **not wasted**: §1.8 requires measuring the **semantic readout** channel under
+  every KO, and the readouts are continuous with real variance regardless of the refusal ceiling.
+  The specificity question therefore moves to the endpoint that can carry it: *does cutting the
+  final `bomb` row from the demonstrations damage the concept readout as much as cutting the final
+  `button` row does?* That is a representation-level DiD, and it is computable.
+* ⛔ Until that is run, **no specificity claim may be made in either direction**, and in particular
+  `KO-1` falling while `KO-2` does not **must not** be read as evidence for outcome `F`. On this
+  endpoint `KO-2` could not have fallen.
+
+**Rule adopted, so this does not recur:** a preregistration that names a control condition must
+carry that condition's **measured baseline headroom and its attainable floor**, computed from
+committed artifacts, before the arms are submitted. Added to the phase's checklist.
