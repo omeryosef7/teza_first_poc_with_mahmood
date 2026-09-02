@@ -1148,3 +1148,92 @@ a significant effect.**
 ⛔ **This is not yet a specificity claim.** The `B`-cell readout arms (`839730/731/732`) are running;
 until the representation-level DiD of `DCS-PR-002` is computed, `KO-1`'s behaviour on cell `C` says
 nothing about whether the path is remapping-specific.
+
+### `DCS-A-001` — adversarial audit of `DCS-R-005`: the numbers held, three of my sentences did not
+
+A read-only agent was told to **break** `DCS-R-005`. It could not break the data. It broke the
+write-up in three places — two of which understated the result and one of which overstated it.
+
+**What survived, verified independently:**
+* Every published number reproduces **to the digit**: baseline mean +5.188339, 358/380 = 0.942105,
+  deltas +0.278168 / −0.084807 / **+0.362975**, sign test 26+/12− exact p = **3.355244e-02**, floor
+  7.275957e-12.
+* **Mask liveness per row:** `hook_n_prefill_edits` min 1512 / median 2088, **0 rows at zero**;
+  decode edits 0 on 380/380; `hook_liveness_violations` empty on 380/380.
+* **Dose is matched key-for-key, row-by-row**, not merely in distribution: `total_prefill_edits`
+  **808992 in both arms**, and `hook_n_prefill_edits == 36 × hook_n_blocked_keys` on 380/380.
+* **Positions:** `surface_span_n_tokens == 1` on all rows; **0** rows outside the query span; **0**
+  inside the demo span; KO and control resolve the **identical** position on all 380 prompt_ids.
+* **No leakage / no config drift:** identical `prompt_id` sets, `prompt_sha16` maps, domain maps
+  (38 × exactly 10), `bank_file_sha16`, `bank_rows_sha16`, tokenizer sha, git sha, `git_dirty=false`.
+  Field-by-field config diff shows **only** `intervene`/`arm`/`tag`/`run_id`/`argv`/timestamps/host.
+* **No generic damage:** 380/380 succeeded, no non-finite values anywhere, `top1_id` changed on only
+  **14/380** rows, and option mass *rose* (0.877 → 0.901) — the opposite of degraded computation.
+
+### `DCS-C-008` — ⚠ CORRECTED: my option-mass caveat was **wrong**, and it understated the result
+
+`DCS-R-005` warned that the +0.363 might be inflated by the +0.0365 rise in `option_mass`.
+**That is algebraically impossible and the caveat is withdrawn.**
+`semantic_logodds = logp_concept − logp_codeword`, each a logsumexp over that option's variants
+(`signals.py:744-751`), so a common mass factor **cancels**: verified numerically at
+`max |logodds − (log share_c − log share_w)| = 1.78e-15` over all 380 rows. Corroborating, the KO
+moves the two sides in **opposite** directions (`logp_concept` **+0.158**, `logp_codeword`
+**−0.205**), which no uniform rescaling can produce.
+
+⚠ **`DCS-R-005`'s multiplicity sentence is also corrected.** "Does not survive Holm (0.0336 × 7 =
+0.235)" is true **only of the sign test**, which discards magnitude. Over the same 38 domain means:
+
+| test on `KO − control` | p |
+|---|---|
+| sign test — **the preregistered statistic** (§1.9) | 3.36e-02 |
+| Wilcoxon signed-rank over domain means | **1.74e-04** |
+| paired t over domain means | **2.12e-04** |
+
+Holm × 7 on the Wilcoxon gives **1.2e-03**, clearing comfortably.
+⛔ **But the sign test is what `DCS-PR-001` registered, and it stays the headline.** Swapping to a
+magnitude-aware test *because it returns a smaller p* is precisely the post-hoc statistic-shopping
+this phase forbids. The Wilcoxon/t are reported as **secondary and exploratory**, and the
+preregistered result remains **p = 0.0336, fragile to a single domain flip** (25+/13− → p = 0.073).
+
+### `DCS-C-009` — ⚠ CORRECTED: the control is **not** inert
+
+`DCS-R-005` called the control's −0.085 "essentially nothing". Wrong in **consistency**, if not in
+magnitude: `control − baseline` is **4+/34−** domains, sign p = **6.04e-07**. Blocking 59 arbitrary
+non-demonstration, non-query keys **reliably shaves the mapping a little**.
+⇒ Part of the +0.363 gap is the control going *down*, not the KO going up. The cleaner statement of
+the KO's own effect is `KO − baseline = +0.278`, which is **25+/13−, sign p = 0.073** — i.e. **not
+significant on the preregistered statistic.**
+
+### `DCS-C-010` — ⛔ RETRACTED: `DCS-R-005` does **not** establish outcome `D`
+
+This is the audit's most important finding and it removes the interpretive half of `R-005`.
+
+Measured from the artifacts: the knocked-out token sits **`query_lo + 21`, exactly 10 tokens before
+the end of the templated prompt**, and the readout is scored **after** the appended `Answer:`
+prefix — further downstream still. So under this intervention:
+
+* all **≥11 downstream positions**, *including the position the log-odds is actually read at*,
+  retain **completely unblocked attention to the entire demonstration block at all 32 layers**; and
+* the codeword token itself retains **23 of its 32 layers** (only L6–14 are cut).
+
+⇒ The null licenses exactly one sentence: **"the final codeword token's own L6–14 attention to the
+demonstrations is not necessary for the mapping to appear in the answer distribution."**
+⛔ It **cannot** distinguish
+`D` "constructed during demonstration processing" from
+`D′` "retrieved later — at the answer/readout position or at any of the 10 intervening query
+tokens" from
+`D″` "retrieved at the codeword token through layers outside 6–14".
+
+**The sentence "the mapping is constructed during demonstration processing, not retrieved at the
+final codeword token" is RETRACTED.** `D′` explains the null equally well and was untested.
+
+**Acted on immediately, not deferred:** `KO-3` (`query_prefill_only`) blocks the **whole** query
+span — including the readout position — from the demonstrations, at the same band, dose and seed.
+That is the plan's own §1.8 ladder rung, and it is the disambiguator: if `KO-3` destroys the mapping
+while `target_surface_row_only` does not, the mapping is **retrieved late**, and `D` is wrong.
+Submitted: **`839782`** (`KO-3` demo) and **`839783`** (`KO-3` count-matched control); the
+`dcsro_C_baseline` arm is shared.
+
+⚠ **Auditability gap to close:** per-row control-draw **positions** are not persisted to
+`results.jsonl` (only counts), so the control's disjointness from the demonstration block is a
+**code guarantee, not an artifact fact**. Recorded as a defect to fix before publication.
