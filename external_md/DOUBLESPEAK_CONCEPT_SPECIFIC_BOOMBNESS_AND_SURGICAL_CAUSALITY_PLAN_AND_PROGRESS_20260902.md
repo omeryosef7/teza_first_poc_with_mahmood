@@ -929,3 +929,59 @@ as in content, the DiD is reported in **both** absolute (rows removed) and **nor
 (fraction of that domain's own baseline) form, with domains at zero baseline **dropped and
 counted, never imputed** — the same two-form rule `TSC-PR-004` imposed for unequal headroom.
 ⛔ Neither form may stand alone.
+
+### `DCS-C-006` — ⚠ the smoke refused, correctly: the pre-flight declared the scope universally dead
+
+Job **839069** (`FAILED`, 8:13) refused with `dead_scope_span: 4/4` before generating anything.
+
+**Cause.** `scoped_span_is_dead` (`score_behavior.py:288`) forwarded `query_span` and `demo_span` to
+`resolve_scoped_query_rows` but **not** `surface_span`, so `target_surface_row_only` resolved to the
+empty set on every row and a perfectly healthy scope was called dead.
+**The per-row site had been wired and the PRE-FLIGHT site had not** — the same one-of-two-paths
+shape this module's own comments record for `control_seed` (twice) and `knock_scope` (once).
+
+⚠ **Note the direction of the failure: it REFUSED rather than running a no-op and reporting a clean
+null.** That is the pre-flight doing exactly the job it was built for, and it is the second time
+today this scope was saved by a guard rather than by a result (`DCS-C-001` was the first).
+
+**Fix.** The pre-flight now resolves the surgical span **itself**, from the same `templated` string
+the per-row loop uses, so the two populations agree by construction rather than by coincidence; a
+row whose span cannot be resolved is counted and named. Two regression tests assert **both**
+directions (with a span → alive, without → genuinely dead) plus that the other four scopes are
+unaffected, because a check that cannot go red is worse than no check.
+
+### `DCS-007` — 2026-09-02 — ✅ the `KO-1` pre-flight gate PASSES; the six arms are submitted
+
+Job **839175** `COMPLETED` (1:56), 4 rows, `natural_doublespeak`, `--attn-impl eager`.
+Artifact: `outputs/boombness/score_behavior/dcs_smoke_C_ko1_20260902_210158_1789984`.
+
+Every condition `DCS-PR-001` required of the smoke, measured:
+
+| check | required | measured |
+|---|---|---|
+| span resolves | all rows | `dead_scope_span: 0`, `frac_rows_scope_live: 1.0` |
+| prefill edits | **> 0** | median **423**, total **1701** (per row 414–441) |
+| decode edits | **exactly 0** | `total_decode_edits: 0`, `frac_rows_decode_live: 0.0` |
+| scope leakage | none | `scope_violations: {}`, per-row `hook_liveness_violations: []` |
+| attention impl | eager | `eager` |
+| generation | non-empty | 64 new tokens, 309–338 chars, `failures: {}` |
+
+**The number that proves it is surgical: `hook_n_query_rows_edited = 9` on every row** — one
+destination row × 9 layers (L6–14). Not the 24-token query span, not the whole prompt. The
+per-row provenance carries `surface_span_positions` (e.g. `[200]`), `surface_span_tokens`
+(`[' button']`) and `surface_span_target` (`button`), so the destination is auditable per row rather
+than asserted.
+
+⚠ **Dose arithmetic, checked rather than assumed:** 414–441 prefill edits ≈ 46–49 demonstration key
+columns × 9 layers × 1 destination row. The eager mask has head-dim 1 (broadcast over heads), so an
+"edit" here is a mask cell, not a head-cell — the figure is **not** multiplied by 32, and any dose
+comparison must use the same convention.
+
+**Submitted** (six jobs, at the house cap of 6):
+`839200` C baseline · `839201` **C `KO-1`** · `839202` C control d1 ·
+`839203` B baseline · `839204` **B `KO-2`** · `839205` B control d1.
+380 rows each, `--max-new 640`, seed 20260901, eager, L6–14.
+
+⛔ **No outcome may be read from any single arm.** The registered estimand is the `C`-vs-`B`
+difference-in-differences (`DCS-PR-001`), paired by domain only (`DCS-PR-001a`), computed by
+`scripts/dcs_cell_interaction.py`, which was committed **before** these jobs were submitted.
