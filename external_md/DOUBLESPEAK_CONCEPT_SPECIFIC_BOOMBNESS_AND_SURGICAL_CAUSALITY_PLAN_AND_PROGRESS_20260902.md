@@ -1040,3 +1040,56 @@ by me one day after reading it.
 **Rule adopted, so this does not recur:** a preregistration that names a control condition must
 carry that condition's **measured baseline headroom and its attainable floor**, computed from
 committed artifacts, before the arms are submitted. Added to the phase's checklist.
+
+### `DCS-PR-002` — 2026-09-02 — the specificity test moves to the readout channel, preregistered
+
+`DCS-C-007` established that the ASR endpoint cannot carry the `C`-vs-`B` specificity comparison:
+cell `B`'s maximum possible removal (≈16 rows) is below the judge's 17-row band. `DCS-PR-002`
+declares the replacement **before any readout outcome exists**.
+
+**Why this endpoint can carry it.** The behavioral arms turned out to record **no semantic channel
+at all** — their `readout` column is the literal string `"generation"`, a label, not a measurement.
+So this is a **new wave**, not a re-analysis. The `cds38` bank carries
+`semantic_forced_choice` at **380 rows per condition** at `cds_n4`/`n_examples=4` — exactly matched
+to the behavioral rows, same 38 domains.
+
+`semantic_forced_choice` is the whole-answer forced-choice readout (`RO-2`, `signals.py:693`
+`string_option_readout`), which §1.6 already names the canonical semantic readout, and it is
+**continuous** — so a refusal ceiling on the generation endpoint does not bound it.
+
+✅ **Checked in advance, not assumed:** `target_surface_row_only` is prefill-only, and
+`tests/test_readout_liveness.py` asserts it is in the derived set of modes measurable on a
+**forward-only** readout row. A mode requiring decode edits would be unsatisfiable here and the
+run would (correctly) refuse.
+
+**Six arms**, same scope / band / dose / seed as `DCS-PR-001`, `--max-new 8 --min-option-mass 0.05`:
+
+| cell | baseline | KO | count-matched control |
+|---|---|---|---|
+| `C` `natural_doublespeak` | `dcsro_C_baseline` | `dcsro_C_surfacerow_demo` | `dcsro_C_surfacerow_ctrl_d1` |
+| `B` `direct_harmful` | `dcsro_B_baseline` | `dcsro_B_surfacerow_demo` | `dcsro_B_surfacerow_ctrl_d1` |
+
+**The estimand.** A representation-level DiD on the forced-choice log-odds:
+*does cutting the final `button` row from the demonstrations damage the concept readout more than
+cutting the final `bomb` row does?* Paired by domain (`DCS-PR-001a` applies unchanged).
+
+**Gates fixed now.**
+* ⛔ `option_mass_gate` at **0.05**, fatal on the `none` arm. A median option mass of 4.4e-05 has
+  already reversed a headline sign in this repo; a readout below the gate is not a measurement.
+* ⛔ The `C` baseline must show the mapping is actually installed. If the baseline forced choice
+  does not favour the concept reading in cell `C`, there is no mapping to destroy and the KO
+  answers nothing — that is a `CANNOT ANSWER`, declared here rather than after.
+* Both cells' baselines are reported with their own spread **before** any KO contrast is read.
+
+**Submitted:** `839508` C baseline · `839509` C KO · `839510` C control. The three `B` readout arms
+follow when the behavioral `C` arms free their slots (house cap 6 concurrent; currently at 6).
+
+### `DCS-008` — the three `B` behavioral arms are complete and verified
+
+380 rows each. `frac_rows_scope_live = 1.0`, `median_decode_edits = 0`, `attn_implementation
+= eager`, `dead_scope_span = 0`, `by_n_examples 4: {n: 380, ok: 380, bad: 0}` in all three.
+
+**Dose match, at the realized level rather than the drawn level:** `median_prefill_edits = 522.0` in
+**both** the treatment and the count-matched control, and the draw ledger reports
+`control_draw_match_ratio` min **1.000**, mean **1.000**, `n_below_1 = 0`. ⛔ This is the check that
+prevents the retracted "random control ≥ demo knockout" reading; it is measured per row, not assumed.
