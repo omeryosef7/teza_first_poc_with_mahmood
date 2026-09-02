@@ -638,3 +638,89 @@ the tokenizer. It was caught only by running the resolver against the real bank 
 time was spent — which is the one step the plan's section 1.12 insists on and the reason a null
 from this scope can now be believed. ⛔ A no-op knockout scores as a clean null, and this one would
 have scored as a null on every row of every arm.
+
+### `DCS-005` — 2026-09-02 — `P1`/`P3` landed (3 parallel workstreams)
+
+`src/boombness/dcs_metadata.py` (sidecar metadata + structural prompt audit + mutation self-test),
+`src/boombness/dcs_rowwise.py` (per-row candidate projections + occurrence trajectory),
+`reports/DCS_LITERATURE_MATRIX.md`. Artifacts in `outputs/boombness/dcs_meta/` and
+`outputs/boombness/dcs_geom/`.
+
+⚠ The metadata is written as a **sidecar**, never as new bank fields: adding keys to a bank row
+unconditionally breaks `tests/test_bank_regenerates_byte_identically.py` and every
+`bank_rows_sha16` join. The audit carries a mutation self-test — **4/4 planted mutations go red**
+(occurrence count, surface identity, masked contrast, query identity).
+
+### `DCS-C-002` — ⚠ CORRECTED: the `basket` replication is **not** compromised
+
+`DCS-001` item 3 said the `button`/`basket` replication was "partly an illusion" on the strength of
+the audit's `44/200` sample. **Measured exactly, that framing was wrong in the direction that
+matters, and it is withdrawn.**
+
+On the `cds38` banks the TSC replication actually used (4256 rows each,
+`bank_file_sha16` `db351646a3bb004b` vs `7136eb6f5ee9bbb7`):
+
+| cell | shared rows | byte-identical | fraction |
+|---|---|---|---|
+| `A` `benign_literal` | 1064 | **0** | 0.000 |
+| `C` `natural_doublespeak` | 1064 | **0** | 0.000 |
+| `B` `direct_harmful` | 1064 | 519 | 0.488 |
+| `E` `concept_in_benign_ctx` | 1064 | 512 | 0.481 |
+
+`identical_set_is_exactly_cells_B_and_E = true`, and within B/E only the **`behavioral`** rows are
+shared — the `semantic_forced_choice` rows are not, because those **do** contain the codeword
+(532 per cell).
+
+⇒ **Cells `A` and `C` are 0.000 identical.** `TSC-R-004` (`basket↔bomb` 43/377 → 14/377) is a
+`natural_doublespeak` result, i.e. **cell `C`**, so it is a genuinely independent lexical
+replication and stands unchanged. What is *not* independent across lexical banks is the pair
+`B`/`E` on behavioral rows — which is exactly the pair with no codeword in it, so the sharing is a
+property of the design rather than a defect. Any future claim that treats `B` or `E` as replicated
+across `button` and `basket` is the one that must be refused.
+
+### `DCS-R-003` — the shift is established **early and saturates**; it does not accumulate
+
+Per-row `cand1 = C − A`, paired within `family_id`, `query_kind=behavioral`, Llama, both banks.
+The algebra reconstruction is re-asserted at runtime and **passes on both banks**
+(worst rel err 8.8e-05 / 6.8e-05 against a 1e-04 tolerance; `n_common = 15768`, definedness
+identical across all eight metrics by construction).
+Artifact: `outputs/boombness/dcs_geom/dcs_rowwise_bomb.json`.
+
+**(a) Final query occurrence > first occurrence in 32 of 32 cells (2 banks × 4 layers × 4
+`n_examples`) — fraction 1.00.** Typical magnitude roughly doubles to triples
+(`button`, L12, `n_examples=4`: 2.47 → 7.25).
+
+**(b) ⛔ But it is NOT progressive accumulation across demonstrations.** Spearman ρ over occurrence
+index is +1.00 at `n_examples=2`, decays through `n_examples=4` and `8`, and goes **negative** at
+`n_examples=16` on **both** banks (`button` −0.31 to −0.62; `basket` −0.21 to −0.36), with up-steps
+at roughly half of all steps. The first demonstration does most of the work; the intermediate
+occurrences drift rather than climb.
+
+**(c) More demonstrations do not produce a larger effect at the final occurrence.** `button`, L12,
+final-occurrence value by `n_examples` 2/4/8/16: **7.01 / 7.25 / 7.10 / 6.54** — flat, and if
+anything decreasing.
+
+⇒ This answers §8's question directly and in the negative: **the codeword does not become
+progressively more bomb-like as the model consumes more demonstrations.** It saturates after
+approximately one. ⚠ Reported per `query_kind` and never pooled, per §1.7 — the
+`semantic_one_word` rows show a *different* shape (a mid-sequence peak with a sharp drop at the
+final occurrence), which is why pooling them would have manufactured a trend that exists in
+neither.
+
+### `DCS-C-003` — ⚠ a stale artifact and a self-check that was wrong
+
+The first `dcs_rowwise` artifact on disk reported `algebra_check.passed = false`
+(`worst_rel_err = 1.78e-03`). Two separate problems, both found by re-deriving rather than reading:
+
+1. **The artifact was stale** — it carried a key (`max_rel_err`) the current script no longer
+   emits, i.e. the script had been revised after the run that produced it. ⛔ An artifact whose
+   producer has moved on is not evidence; re-running is not optional.
+2. **The old check used a naive relative denominator** and so blew up on near-orthogonal
+   (`cos ≈ 0`) comparisons, which are numerically meaningless. An independent recomputation of the
+   same quantity on the non-degenerate comparisons gave **max rel err 2.1e-06**, three orders of
+   magnitude inside tolerance. The current version separates a cos-scaled error from a naive one
+   and **skips 18–33 degenerate comparisons of 1024 by a declared rule**; it passes.
+
+⚠ Worth keeping: the model was loaded in **bfloat16**, which was the obvious suspect and was
+**wrong** — both sides of the comparison descend from the same stored float32 cell means and
+float32 projection columns, so bf16 cancels. The plausible cause and the real one differed.
