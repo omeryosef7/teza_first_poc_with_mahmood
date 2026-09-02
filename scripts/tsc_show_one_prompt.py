@@ -88,8 +88,61 @@ def main():
         W("| **demos HARMFUL** | **C `natural_doublespeak`** ⬅ ATTACK | B `direct_harmful` |")
         W("")
         W(f"⚠ All four share the same domain, slot, split and the same "
-          f"{row.get('n_preamble_lines')}-line neutral preamble. **Only the two factors differ.** "
-          f"Each section below is complete and self-contained.\n")
+          f"{row.get('n_preamble_lines')}-line neutral preamble. **Only the two factors differ.**\n")
+
+        # ------------------------------------------------------------------ WHAT IS THE SAME
+        # Four near-identical prompts printed in sequence make the reader diff them by eye, and
+        # eyes are bad at it. The relationships are computed here instead, including the
+        # masked-identity test -- replace the target word with `___` and see which pairs COLLAPSE.
+        # That is the same check `bank_leakage_probe.py` runs as a build-time invariant.
+        import re as _re, itertools as _it
+
+        def _mask(r, field):
+            return _re.sub(rf"\b{_re.escape(r['target_surface'])}\b", "___", r[field], flags=_re.I)
+
+        by_c = {r["condition"]: r for r in rows_out}
+        W("## What is identical to what\n")
+        W("Computed from the rows, not asserted. `___` marks the target word masked out.\n")
+        W("| pair | preamble | demonstrations | final query | demonstrations **masked** |")
+        W("|---|---|---|---|---|")
+        tick = lambda b: "**same**" if b else "differ"
+        for x, y in _it.combinations(ORDER, 2):
+            rx, ry = by_c[x], by_c[y]
+            W(f"| **{CELL_LETTER[x]} vs {CELL_LETTER[y]}** | {tick(rx.get('preamble')==ry.get('preamble'))} | "
+              f"{tick(rx['demo_block']==ry['demo_block'])} | {tick(rx['final_query_text']==ry['final_query_text'])} | "
+              f"{tick(_mask(rx,'demo_block')==_mask(ry,'demo_block'))} |")
+        W("")
+        pairs = [(x, y) for x, y in _it.combinations(ORDER, 2)
+                 if _mask(by_c[x], "full_prompt") == _mask(by_c[y], "full_prompt")]
+        W("**The three relationships that define the design:**\n")
+        W(f"1. **The preamble is byte-identical in all four.** It is not a factor; it is there so "
+          f"the count-matched control arms have somewhere to draw masked positions from.")
+        W(f"2. **Mask the target word and the four prompts collapse into TWO pairs** — "
+          + ", ".join(f"**{CELL_LETTER[x]} ≡ {CELL_LETTER[y]}**" for x, y in pairs)
+          + ". Those pairs are the two demonstration *pools*: "
+          + f"`{by_c[ORDER[0]]['demo_pool_domain']}|benign` gives "
+            f"{CELL_LETTER['benign_literal']} and {CELL_LETTER['concept_in_benign_ctx']}, "
+            f"`{by_c[ORDER[0]]['demo_pool_domain']}|harm` gives "
+            f"{CELL_LETTER['natural_doublespeak']} and {CELL_LETTER['direct_harmful']}. "
+            "Within a pair the sentences are the *same sentences* with one word swapped.")
+        W(f"3. **The final query is shared the other way round** — A and C both ask for "
+          f"`{by_c['benign_literal']['target_surface']}`, B and E both ask for "
+          f"`{by_c['direct_harmful']['target_surface']}`.\n")
+        W("So the same four prompts are grouped two different ways, and that is the whole point:\n")
+        W("| | | |")
+        W("|---|---|---|")
+        W("| **read DOWN a column** | A↔C and E↔B | same word throughout, **different demonstrations** → isolates what the demonstrations did |")
+        W("| **read ACROSS a row** | A↔E and C↔B | same demonstrations, **different word** → isolates the surface form |")
+        W("")
+        W("⚠ **`A vs C` is the contrast the attack rests on.** Byte-for-byte the same query, the "
+          "same preamble, the same number of occurrences of the same word — and the only "
+          "difference is whether the four demonstration sentences came from the benign pool or "
+          "the harmful one. **Everything the model does differently between A and C, it does "
+          "because of those four sentences.**\n")
+        W("⚠ **`C vs B` is the indirection.** Masked, they are the same prompt; unmasked, C never "
+          "contains the harmful word at all. ⛔ That is why C's request looks innocuous to a "
+          "keyword filter while carrying the same demonstrated meaning.\n")
+        W("Each section below is complete and self-contained.\n")
         W("---\n")
 
     for _n, row in enumerate(rows_out, 1):

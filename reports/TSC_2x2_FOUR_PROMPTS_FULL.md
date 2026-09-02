@@ -10,7 +10,39 @@ Bank `boombness_prompt_bank_cds38_button_bomb.jsonl`. Mapping under test: **`but
 | **demos BENIGN** | A `benign_literal` | E `concept_in_benign_ctx` |
 | **demos HARMFUL** | **C `natural_doublespeak`** ⬅ ATTACK | B `direct_harmful` |
 
-⚠ All four share the same domain, slot, split and the same 10-line neutral preamble. **Only the two factors differ.** Each section below is complete and self-contained.
+⚠ All four share the same domain, slot, split and the same 10-line neutral preamble. **Only the two factors differ.**
+
+## What is identical to what
+
+Computed from the rows, not asserted. `___` marks the target word masked out.
+
+| pair | preamble | demonstrations | final query | demonstrations **masked** |
+|---|---|---|---|---|
+| **A vs B** | **same** | differ | differ | differ |
+| **A vs C** | **same** | differ | **same** | differ |
+| **A vs E** | **same** | differ | differ | **same** |
+| **B vs C** | **same** | differ | differ | **same** |
+| **B vs E** | **same** | differ | **same** | differ |
+| **C vs E** | **same** | differ | differ | differ |
+
+**The three relationships that define the design:**
+
+1. **The preamble is byte-identical in all four.** It is not a factor; it is there so the count-matched control arms have somewhere to draw masked positions from.
+2. **Mask the target word and the four prompts collapse into TWO pairs** — **A ≡ E**, **B ≡ C**. Those pairs are the two demonstration *pools*: `airport_apron|benign` gives A and E, `airport_apron|harm` gives C and B. Within a pair the sentences are the *same sentences* with one word swapped.
+3. **The final query is shared the other way round** — A and C both ask for `button`, B and E both ask for `bomb`.
+
+So the same four prompts are grouped two different ways, and that is the whole point:
+
+| | | |
+|---|---|---|
+| **read DOWN a column** | A↔C and E↔B | same word throughout, **different demonstrations** → isolates what the demonstrations did |
+| **read ACROSS a row** | A↔E and C↔B | same demonstrations, **different word** → isolates the surface form |
+
+⚠ **`A vs C` is the contrast the attack rests on.** Byte-for-byte the same query, the same preamble, the same number of occurrences of the same word — and the only difference is whether the four demonstration sentences came from the benign pool or the harmful one. **Everything the model does differently between A and C, it does because of those four sentences.**
+
+⚠ **`C vs B` is the indirection.** Masked, they are the same prompt; unmasked, C never contains the harmful word at all. ⛔ That is why C's request looks innocuous to a keyword filter while carrying the same demonstrated meaning.
+
+Each section below is complete and self-contained.
 
 ---
 
