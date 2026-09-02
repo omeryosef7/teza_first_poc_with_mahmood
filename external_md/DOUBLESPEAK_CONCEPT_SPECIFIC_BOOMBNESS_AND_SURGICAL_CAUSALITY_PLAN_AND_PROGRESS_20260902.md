@@ -1093,3 +1093,58 @@ follow when the behavioral `C` arms free their slots (house cap 6 concurrent; cu
 **both** the treatment and the count-matched control, and the draw ledger reports
 `control_draw_match_ratio` min **1.000**, mean **1.000**, `n_below_1 = 0`. ⛔ This is the check that
 prevents the retracted "random control ≥ demo knockout" reading; it is measured per row, not assumed.
+
+### `DCS-R-005` — ⛔ `KO-1` does **NOT** destroy the semantic mapping. The point estimate is an *increase*.
+
+Cell `C` (`natural_doublespeak`), `semantic_forced_choice`, Llama, L6–14, `--attn-impl eager`.
+Three arms × **380 rows**, **38 domains**, **row sets byte-identical across all three arms**
+(asserted, not assumed). Artifacts: `outputs/boombness/score_behavior/dcsro_C_{baseline,surfacerow_demo,surfacerow_ctrl_d1}_*`.
+
+**Gate first, as `DCS-PR-002` required.** The mapping *is* installed at baseline: mean
+`semantic_logodds = +5.19`, and **94.2 %** of rows favour the concept (`bomb`) reading over the
+literal (`button`) one. Option mass median **0.877–0.901**, `frac_above_1pct = 1.0`, gate **PASS**,
+`reportable: true`. So there was a mapping to destroy, and the readout is trustworthy.
+
+**The result** — paired per-row deltas, positive = *more* concept-like:
+
+| contrast | `semantic_logodds` |
+|---|---|
+| `KO-1` − baseline | **+0.278** |
+| dose-matched control − baseline | −0.085 |
+| **`KO-1` − control** | **+0.363** |
+
+Domain-clustered sign test on `KO − control`: **26 + / 12 −** of 38 domains, p = **3.36e-02**,
+attainable floor 7.28e-12, `CAPABLE = True`.
+
+⇒ **Blocking the final `button` token from attending to the demonstration block does not weaken the
+semantic mapping.** It is preserved, and the point estimate moves *the other way*. Per §1.10 this is
+**outcome `D`**: the mapping is **constructed during demonstration processing, not retrieved at the
+final codeword token**. It is an evaluated negative for the "the query token stores/retrieves the
+mapping" hypothesis — the hypothesis `KO-1` was built to test.
+
+⚠ **A confound I have to state, because it inflates most of the table.** Seven metrics were
+computed; six move in the same direction, four of them at the attainable floor with **38/0** domains
+(`p_concept` +0.0421, `margin_p_diff` +0.0477, `logp_concept` +0.1581, all p = 7.28e-12).
+**But `option_mass` itself rises by +0.0365 with 38/0 domains as well.** If the intervention puts
+more total probability on the two options, `p_concept` rises without the *relative* reading having
+moved. ⛔ The mass-dependent metrics therefore cannot carry this claim.
+The **mass-invariant** statistic is `semantic_logodds` (= `logp_concept − logp_codeword`), and it is
+the weaker one: **+0.363, p = 0.0336 uncorrected**. Under Holm over the 7-metric family that does
+**not** survive (0.0336 × 7 = 0.235). ⛔ **The increase must be reported as a point estimate, not as
+a significant effect.**
+
+**What is solid, and what is not:**
+* ✅ **Solid — the negative.** On every metric, mass-invariant included, `KO-1` fails to reduce the
+  concept reading. Nothing here is consistent with "the mapping is destroyed."
+* ⚠ **Not solid — the increase.** Direction is consistent (26/12 domains) but the effect is ~7 % of
+  the baseline magnitude (+0.36 against +5.19) and does not survive multiplicity correction.
+* ⚠ **Heterogeneous by domain**, not outlier-driven: per-domain means run `game_manual` +2.02 to
+  `shipyard_slip` −0.47, IQR [−0.04, +0.64]. Dropping the top 3 domains gives +0.25; dropping the
+  bottom 3 gives +0.42.
+* ✅ **Not generic damage.** The dose-matched control (identical realized dose, non-demonstration
+  keys) moves the readout by **−0.085** — essentially nothing. The effect is specific to blocking
+  *demonstration* keys, not to blocking keys.
+
+⛔ **This is not yet a specificity claim.** The `B`-cell readout arms (`839730/731/732`) are running;
+until the representation-level DiD of `DCS-PR-002` is computed, `KO-1`'s behaviour on cell `C` says
+nothing about whether the path is remapping-specific.
