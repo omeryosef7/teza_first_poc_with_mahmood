@@ -1732,3 +1732,29 @@ the check I failed to run before `KO-2`.
   `gen_truncated`, `n_chars` and `stop_reason` distributions will be compared against baseline and
   control **before** any ASR number is interpreted.
 * All three arms go into **one** judge invocation with the existing baseline, per §1.9.
+
+### `DCS-008b` — `DCS-PR-004`'s generation-corruption diagnostic: **clean** (partial, run before any ASR exists)
+
+`PR-004` made this mandatory *before* any ASR number may be interpreted, because `KO-3` is a large
+intervention and a fluency collapse would make an ASR drop damage rather than mediation. Measured on
+the arms mid-flight (144/159 of 380 so far), against the completed baseline:
+
+| arm | n | empty | truncated | median chars | p10 | p90 | stop reason | median prefill edits |
+|---|---|---|---|---|---|---|---|---|
+| baseline | 380 | **0** | **0** | 1447 | 121 | 1958 | `eos` 380/380 | — |
+| `KO-3` demo | 144 | **0** | **0** | 1467 | 1036 | 1879 | `eos` 144/144 | **12 528** |
+| `KO-3` control | 159 | **0** | **0** | 1521 | 98 | 2033 | `eos` 159/159 | **12 528** |
+
+✅ **No corruption.** Zero empty and zero truncated generations in every arm; **100 % stop on
+`eos`**, none on `length`; median length is *unchanged* (1447 / 1467 / 1521). ⇒ Whatever `KO-3` does
+to the attack endpoint, it is **not** producing it by breaking generation.
+
+✅ **Dose matched at the realized level:** median prefill edits **12 528 in both** intervened arms.
+⚠ Note this is *not* the 66 816 of the readout arms — the behavioral prompts have one prefill
+forward where the forced-choice readout has four, and a different query-span size. ⛔ Dose figures
+are **not** comparable across endpoints and must always be quoted with the endpoint.
+
+⚠ One asymmetry to watch when the arms complete: the `KO-3` demo arm's **p10 length is 1036** against
+the baseline's **121** and the control's **98** — the short tail is *missing* under the knockout.
+Short completions in the baseline are typically refusals, which is consistent with `R-006b`'s
+refusal drop, but it is stated here as an observation to be checked at n = 380, not as a result.
