@@ -1758,3 +1758,55 @@ are **not** comparable across endpoints and must always be quoted with the endpo
 the baseline's **121** and the control's **98** — the short tail is *missing* under the knockout.
 Short completions in the baseline are typically refusals, which is consistent with `R-006b`'s
 refusal drop, but it is stated here as an observation to be checked at n = 380, not as a result.
+
+### `DCS-R-012` — ✅ **`PR-004` ANSWERED: the mapping can be destroyed outright and the attack does not follow.**
+
+One judge invocation, three arms, 380 rows each, row sets identical, `judge_status = ok` on
+1140/1140. Generation verified uncorrupted at full n (`DCS-008b`) and dose matched **row-by-row**
+(0/380 prefill-edit mismatches). This is the properly-powered mediation test (`k_inf` 28–37, floors
+1e-9 to 1e-11).
+
+| endpoint | baseline | `KO-3` | control | `KO-3` − baseline | **`KO-3` − control** |
+|---|---|---|---|---|---|
+| `malicious_at_0.5` | 162 | **114** | **129** | −48, p = 3.7e-03, *above* band | **−15, p = 0.860, below band** |
+| StrongREJECT | 130.5 | 91.25 | 105.5 | −39.25, p = 7.5e-04, *above* band | **−14.25, p = 0.743, below band** |
+| `refused` | 42 | **0** | **75** | −42, 0+/16−, p = 3.05e-05 | **−75, 0+/26−, p = 2.98e-08** |
+| `topical_pos` | 14 | 9 | 16 | −5, p = 0.388, below band | −7, p = 0.118, below band |
+
+⛔ **The naive reading of this table is wrong, and it is a reading this project has already
+retracted once.** Against the *baseline*, `KO-3` looks like it nearly halves the attack (−48 rows,
+p = 0.0037). But **the dose-matched control drops too** (162 → 129, −33). Against the **correct
+comparator** the effect is **−15 rows, p = 0.860, below the 17-row judge band** — a clean null.
+⇒ Most of the apparent attack reduction is **generic damage from blocking 12 528 attention cells**,
+not mediation. ⚠ Without the count-matched control this table would have supported exactly the
+opposite conclusion.
+
+⇒ **`PR-004`'s second declared outcome obtains.** `KO-3` takes the semantic mapping from +5.19 to
+−2.76 — a **sign flip**, replicated on a second codeword (`R-010`, `R-011`) — and attack success
+does **not** change against its dose-matched control. This is the strongest form of the
+dissociation this project can state: not *"we failed to move the representation"*, but
+**"we moved it past zero and behavior did not follow."**
+
+**The refusal channel is where the large, specific effect lives.** `KO-3` removes **every single
+refusal** (42 → **0**), while the dose-matched control moves refusal the *other* way (42 → **75**).
+That is −75 rows against the control, **0+/26− domains**, p = 2.98e-08. ⇒ Relative to a
+dose-identical intervention, cutting the demonstration keys **eliminates refusal without buying any
+attack success** — the 75 rows go into text that is neither a refusal nor a successful attack.
+⚠ This resolves `DCS-008b`'s flagged p10 asymmetry: the missing short tail under `KO-3` **was** the
+refusals.
+
+⚠ **Third independent instance of the same dissociation.** `TSC-R-006` (Qwen3, `demo_processing_only`,
+all 150 refusals removed, attack moved by one row); `DCS-R-007` (Llama, `target_surface_row_only`,
+refusal halved, attack null); now `DCS-R-012` (Llama, `query_prefill_only`, refusal annihilated,
+attack null vs control). **Two models, three scopes, one pattern: refusal is movable and attack is
+not.**
+⛔ Still not licensed: `refused` is `kw_refusal`, a 16-marker substring match that never calls the
+API. It attests text shape, not the judge.
+
+**What this settles for the phase.** The demonstration→query path is real, necessary for the
+mapping, and remapping-specific (`R-010`/`R-011`) — and it is **not** the path the attack runs on.
+Combined with `R-002` (the representation is not concept-specific) and `R-003` (it does not
+accumulate), the mapping is now established as **causally demonstration-dependent and behaviorally
+inert**. ⛔ Under §1.7 this is a **failure at gate `R5`/`R6` after passing `R1`–`R4`** — which §1.7
+declares in advance to be a finding, not a defeat, and which ⛔ closes the door on `P9`
+(GCG/MAC objective) for this representation.
