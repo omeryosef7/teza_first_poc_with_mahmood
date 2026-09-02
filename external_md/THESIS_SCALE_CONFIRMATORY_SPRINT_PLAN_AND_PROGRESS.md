@@ -1110,6 +1110,20 @@ sentence name its population?"* — the habit that caught two over-claims last s
 
 ---
 
+⚠ **`TSC-H-001` — a HAZARD for whoever inherits this tree, not a result.**
+`tests/test_rah_preflight_spans.py::test_d11_provenance_block_is_emitted_and_complete` **failed once
+in six pre-commit runs tonight and passes in isolation every time.** It calls
+`rah_preflight_transport.provenance()`, which shells out to `git` for `git_commit` and `git_dirty` —
+and the **pre-commit hook runs it from inside a `git commit`**, while git holds `index.lock`, in a
+tree with a **concurrent writer**. So the guard samples live git state at the one moment that state
+is guaranteed to be in flux. ⚠ **It is flaky by construction, and a flaky guard is one people learn
+to re-run rather than read.** Not fixed here — it belongs to another session's `RAH2` work and
+editing it mid-sprint would collide — but it is recorded so the next failure is diagnosed in seconds
+instead of being taken for a real regression. ⛔ **Do not "fix" it by removing it from
+`GUARD_TESTS`.**
+
+---
+
 # WHAT WE CAN DEFEND TOMORROW
 
 *Every claim below is stated at its true scope. Where a number moved tonight, the corrected number
