@@ -1311,3 +1311,56 @@ never calls the API**. It attests the join and the text, not the judge. A refusa
 change is fully consistent with the model producing non-refusal-shaped text that is still not a
 successful attack. ⚠ Note the topical endpoint moves the *opposite* way to any "more compliant"
 story: 14 → 9 exact-concept positives.
+
+### `DCS-R-008` — ✅ `KO-3` DESTROYS the mapping. The demonstrations are necessary; retrieval is **not** at the codeword token.
+
+The disambiguator `DCS-C-010` demanded, run the same tick it was demanded. Cell `C`,
+`semantic_forced_choice`, 380 rows, 38 domains, all four arms sharing the baseline's row set.
+Same band (L6–14), same seed, same `eager`, same bank.
+
+| arm | mean `logodds` | vs baseline | domains | p | option mass | median edits |
+|---|---|---|---|---|---|---|
+| baseline | **+5.188** | — | — | — | 0.877 | — |
+| `KO-1` final codeword row → demos | +5.467 | +0.278 | 25+/13− | 7.30e-02 | 0.901 | 2 088 |
+| `KO-1` dose-matched control | +5.104 | −0.085 | 4+/34− | 6.04e-07 | 0.877 | 2 088 |
+| **`KO-3` whole query span → demos** | **−2.756** | **−7.944** | **1+/37−** | **2.84e-10** | 0.353 | 66 816 |
+| `KO-3` dose-matched control | +5.325 | +0.137 | 31+/7− | 1.16e-04 | 0.872 | 66 816 |
+
+`KO-3` − its own control: **−8.081**, **1+/37−** domains, p = **2.84e-10** (floor 7.28e-12).
+
+**The log-odds does not merely fall — it changes sign.** From +5.19 (94 % of rows reading the
+codeword as the concept) to −2.76, i.e. the model reverts to the **literal** reading. The mapping is
+not weakened; it is undone.
+
+⇒ **The demonstrations are causally necessary for the semantic mapping**, and **retrieval happens at
+query positions other than the final codeword token** — `D′` from `DCS-A-001`, now measured.
+Together with `DCS-R-005`:
+
+* cutting **only** the final `button` row from the demonstrations: mapping **intact** (+0.28);
+* cutting the **whole query span**, readout position included: mapping **destroyed** (−7.94).
+
+⚠ **The dose asymmetry is real and is why the control matters.** `KO-3` edits **32×** more mask
+cells than `KO-1` (66 816 vs 2 088 median). That alone could destroy anything — which is exactly
+what its **count-matched control** tests, at the *same* 66 816 dose against non-demonstration keys:
+it moves the readout **+0.137**, i.e. it does not destroy the mapping at all. ⇒ The collapse is
+specific to blocking **demonstration** keys, not to blocking 66 816 mask cells.
+
+⚠ **Stated, not buried:** `KO-3`'s option mass falls 0.877 → **0.353**. That is well above the 0.05
+gate and the run is `reportable`, and `semantic_logodds` is algebraically mass-invariant
+(`DCS-C-008`, verified to 1.8e-15) — so the −7.94 is not a mass artifact. But the readout *is*
+markedly less concentrated under this intervention, and any claim about `p_concept` (rather than the
+log-odds) under `KO-3` would have to handle that.
+
+⚠ **What is still not pinned.** `KO-3` cuts the whole query span — the ~10 intervening query tokens
+**and** the readout position. It does not say **which**. The natural next rung is a readout-row-only
+scope, which does **not** currently exist (`SCOPED_KNOCKOUT_MODES` has no such mode; the surgical
+machinery added this phase makes it a small extension). ⛔ Until that runs, "retrieved at the answer
+position" is the leading hypothesis, **not** an established one — the same discipline `C-010`
+imposed on outcome `D`.
+
+**Where this leaves the phase's central question.** The demonstration→query information path *is*
+necessary for the representation (`KO-3`), and it is *not* necessary at the final codeword token
+(`KO-1`). But the same `KO-1` that leaves the representation intact also leaves **attack success
+unchanged** (`DCS-R-006`), and the representation itself is **not concept-specific** (`DCS-R-002`)
+and **does not accumulate** across demonstrations (`DCS-R-003`). The mapping is real, causally
+demonstration-dependent, and — on everything measured so far — **not the thing the attack runs on**.
