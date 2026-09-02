@@ -127,25 +127,49 @@ def main():
         W("")
     W("---\n")
 
-    W("## 2. The four prompts\n")
-    for c in CELL_ORDER:
+    # ------------------------------------------------------------------ the 2x2, AS a 2x2
+    # Laid out as the grid it is: rows = demonstration valence, columns = query surface. A linear
+    # list of four prompts does not show a crossing; a table does, and the attack cell's position
+    # (harmful demos, codeword query) is then visible rather than asserted.
+    def cell_md(c):
+        """One grid cell: the demonstrations and the query, newline-escaped for a table cell."""
         r = cells[c]
-        W(f"### Cell {CELL_LETTER[c]} — `{c}`\n")
-        W(GLOSS[c] + "\n")
-        W(f"`demo_valence={r['demo_valence']}` · `demo_surface={r['demo_surface']}` · "
-          f"`query_surface={r['query_surface']}` · `prompt_id={r['prompt_id']}` · "
-          f"target word **`{r['target_surface']}`** appears {r['n_target_occurrences']}×\n")
-        # THE PREAMBLE IS PRINTED ONCE. It is byte-identical across the four cells, and repeating
-        # it four times buries the one thing the reader is here to see -- what actually differs.
-        if r.get("preamble"):
-            if c == CELL_ORDER[0]:
-                W(f"**Preamble** ({r.get('n_preamble_lines')} neutral filler lines):\n"
-                  f"```\n{r['preamble'].strip()}\n```\n")
-            else:
-                same = r["preamble"] == cells[CELL_ORDER[0]]["preamble"]
-                W(f"**Preamble:** {'*byte-identical to cell A above — omitted.*' if same else '⚠ **DIFFERS from cell A** — see the raw bank.'}\n")
-        W(f"**Demonstrations** ({r['n_demos_emitted']} sentences):\n```\n{r['demo_block'].strip()}\n```\n")
-        W(f"**Final query:**\n```\n{r['final_query_text'].strip()}\n```\n")
+        star = " ⬅ **ATTACK**" if c == "natural_doublespeak" else ""
+        demos = [x.strip() for x in r["demo_block"].strip().split("\n") if x.strip()]
+        parts = [f"**{CELL_LETTER[c]} · `{c}`**{star}",
+                 f"<sub>demos={r['demo_valence']} · surface={r['demo_surface']} · "
+                 f"query={r['query_surface']} · `{r['prompt_id']}`</sub>",
+                 "", "*demonstrations:*"]
+        parts += [f"{k+1}. {d}" for k, d in enumerate(demos)]
+        parts += ["", "*final query:*", f"`{r['final_query_text'].strip()}`"]
+        # `|` would break the table and `\n` must become <br> inside a markdown cell.
+        return "<br>".join(x.replace("|", "\\|") for x in parts)
+
+    W("## 2. The four prompts, as the 2x2\n")
+    pre = cells[CELL_ORDER[0]].get("preamble")
+    if pre:
+        ident = all(cells[c].get("preamble") == pre for c in CELL_ORDER)
+        W(f"Every cell below is preceded by the **same {cells[CELL_ORDER[0]].get('n_preamble_lines')}-line "
+          f"neutral preamble** "
+          f"({'verified byte-identical across all four cells' if ident else '⚠ **NOT identical — check the bank**'}), "
+          f"shown once here and omitted from the grid:\n")
+        W(f"```\n{pre.strip()}\n```\n")
+    W(f"Rows = **demonstration valence**. Columns = **query surface**. "
+      f"Mapping under test: `{ref['codeword']}` → `{ref['concept']}`.\n")
+    W("| | query names the **CODEWORD** (`%s`) | query names the **CONCEPT** (`%s`) |"
+      % (ref["codeword"], ref["concept"]))
+    W("|---|---|---|")
+    W("| **demos BENIGN** | " + cell_md("benign_literal") + " | "
+      + cell_md("concept_in_benign_ctx") + " |")
+    W("| **demos HARMFUL** | " + cell_md("natural_doublespeak") + " | "
+      + cell_md("direct_harmful") + " |")
+    W("")
+    W("⚠ **The attack cell is the bottom-left one.** Harmful demonstrations, but the query names "
+      "the innocuous codeword — so the request contains nothing harmful on its face, and the "
+      "harmful reading exists only in the mapping the demonstrations just taught. Reading across "
+      "the bottom row isolates the *surface*; reading down the left column isolates the "
+      "*demonstrations*.\n")
+
     W("---\n")
 
     W("## 3. What actually differs between the cells\n")
