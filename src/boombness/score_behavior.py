@@ -285,7 +285,7 @@ def knockout_row_stats(stats):
     return ks
 
 
-def scoped_span_is_dead(scope, query_span, demo_span):
+def scoped_span_is_dead(scope, query_span, demo_span, surface_span=None):
     """True if `scope` resolves to NO query rows on EITHER half of the computation for this row.
 
     Such a row is a no-op knockout, and a no-op knockout scores as a perfectly healthy null.
@@ -298,8 +298,13 @@ def scoped_span_is_dead(scope, query_span, demo_span):
     so this cannot drift from the mode it is checking. `None` means "every row" and is never dead.
     """
     pc = pair()
-    pre = pc.resolve_scoped_query_rows(scope, False, query_span, demo_span)
-    dec = pc.resolve_scoped_query_rows(scope, True, query_span, demo_span)
+    # ⚠ `surface_span` MUST be forwarded. Omitting it makes `target_surface_row_only` resolve to
+    # the empty set on EVERY row, so this feasibility check declares a perfectly healthy scope
+    # universally dead and the whole arm refuses to start. That is exactly what happened on the
+    # first smoke of that scope (job 839069: dead_scope_span 4/4) -- the same one-of-two-paths
+    # shape this module keeps being bitten by, caught here by its own guard rather than by a null.
+    pre = pc.resolve_scoped_query_rows(scope, False, query_span, demo_span, surface_span)
+    dec = pc.resolve_scoped_query_rows(scope, True, query_span, demo_span, surface_span)
     return (pre is not None and not pre) and (dec is not None and not dec)
 
 
@@ -1833,10 +1838,21 @@ def main() -> int:
             if _why:
                 _feas["no_demo_block"] += 1; _b["bad"] += 1; _bad.append((_r["prompt_id"], _why)); continue
             _prot = query_span_positions(lm.tokenizer, _r, _t, _dk)
+            # The surgical scope's destination rows are resolved HERE TOO, from the same
+            # `templated` string, so the pre-flight population and the per-row population agree by
+            # construction rather than by coincidence.
+            _surf = None
+            if _knock_scope == "target_surface_row_only":
+                _surf, _surf_why = target_surface_positions(lm.tokenizer, _r, _t, _prot)
+                if _surf_why:
+                    _feas["dead_scope_span"] += 1
+                    _b["bad"] += 1
+                    _bad.append((_r["prompt_id"], f"surfacespan:{_surf_why}"))
+                    continue
             # THE SPANS ARE PART OF FEASIBILITY, not only the keys: a scoped mode whose rows
             # resolve to nothing on this row is a no-op knockout, and a no-op knockout scores as a
             # clean null. Checked here so it costs a pre-flight, not a written artifact.
-            if scoped_span_is_dead(_knock_scope, _prot, _dk):
+            if scoped_span_is_dead(_knock_scope, _prot, _dk, _surf):
                 _feas["dead_scope_span"] += 1
                 _b["bad"] += 1
                 _bad.append((_r["prompt_id"], f"scope {_knock_scope}: no query rows resolve"))

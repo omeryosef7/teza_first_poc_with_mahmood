@@ -456,6 +456,37 @@ def test_a_scope_with_rows_to_edit_is_feasible():
     assert sb.scoped_span_is_dead("legacy_all_query", set(), []) is False
 
 
+def test_surgical_scope_is_not_declared_dead_when_it_has_a_span():
+    """REGRESSION (2026-09-02, job 839069: dead_scope_span 4/4).
+
+    `scoped_span_is_dead` forwarded `query_span` and `demo_span` to the resolver but NOT
+    `surface_span`, so `target_surface_row_only` resolved to the empty set on every row and the
+    pre-flight declared a perfectly healthy scope universally dead. The arm refused to start.
+
+    The same one-of-two-paths shape that has bitten `control_seed` twice and `knock_scope` once:
+    the per-row site was wired and the PRE-FLIGHT site was not. Both directions are asserted here,
+    because a check that cannot go red is worse than no check.
+    """
+    import score_behavior as sb
+    SURF = frozenset({min(PROT)}) if PROT else frozenset({1})
+    # WITH a span: alive at prefill, so not dead.
+    assert sb.scoped_span_is_dead("target_surface_row_only", PROT, DEMO, SURF) is False
+    # WITHOUT a span: genuinely dead -- an empty span really is a no-op knockout.
+    assert sb.scoped_span_is_dead("target_surface_row_only", PROT, DEMO, None) is True
+    assert sb.scoped_span_is_dead("target_surface_row_only", PROT, DEMO, frozenset()) is True
+    # The other scopes must be UNAFFECTED by the new argument.
+    assert sb.scoped_span_is_dead("query_prefill_only", PROT, DEMO, SURF) is False
+    assert sb.scoped_span_is_dead("demo_processing_only", PROT, DEMO, SURF) is False
+
+
+def test_the_preflight_resolves_the_surface_span_it_checks():
+    """The pre-flight must resolve the span itself, or it is checking a different population than
+    the per-row loop later runs -- and the two disagreeing silently is the whole failure mode."""
+    src = _src()
+    assert "target_surface_positions(lm.tokenizer, _r, _t, _prot)" in src,         "the pre-flight no longer resolves the surgical span from the same templated string"
+    assert "scoped_span_is_dead(_knock_scope, _prot, _dk, _surf)" in src,         "the pre-flight no longer forwards the surface span to the feasibility check"
+
+
 def test_the_preflight_consults_the_hooks_own_row_resolver():
     """Restating the span algebra beside the hook is how it drifts; it must be derived from it."""
     src = _src()
