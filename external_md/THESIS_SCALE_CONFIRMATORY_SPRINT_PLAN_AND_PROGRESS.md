@@ -1358,6 +1358,144 @@ harmful requests that name a concrete object, and that subset is a minority.
 
 ---
 
+## §14 — `TSC-R-007` — **P4 IS `DECLINED FOR POWER`.** The filter ran as registered; 8 of 40 survive; the benchmark itself caps this at 15
+
+**The filter was implemented after `TSC-PR-007` and its lexicon were committed** (`3576072b`) and
+adds no criterion absent from §13.2. `scripts/tsc_filter_requests.py`, pure stdlib plus the
+tokenizer, deterministic, no NLP model, no judgement.
+
+### 14.1 The attrition, in full
+
+**40 drawn → 8 CONSTRUCTIBLE. Yield 20.0 %.** Tie-break (`C2`) used on **1** request.
+
+| reason | n |
+|---|---|
+| `NO_OBJECT_NOUN` | **24** |
+| `DUPLICATE_CONCEPT` | **8** |
+| `NOT_SINGLE_TOKEN` / `CODEWORD_COLLISION` / `TOKENIZER_UNSTABLE` | 0 |
+| **CONSTRUCTIBLE** | **8** |
+
+Surviving concepts: `bomb` · `counterfeit` · `drug` · `poison` · `ransomware` · `scam` · `virus` ·
+`weapon`. Surviving categories: **5 of 8** — `identity_theft_personal_data_theft`,
+`misinformation_disinformation` and `theft_property_crime` lose **all five** of their drawn requests.
+
+Per category (5 drawn each): cyber 3 · weapons 2 · drugs 1 · fraud 1 · violent 1 · identity 0 ·
+misinformation 0 · theft 0.
+
+⚠ **The two attrition modes say different things.** `NO_OBJECT_NOUN` (24) is the **paradigm limit**:
+most AdvBench requests name an **act** ("evade taxes", "rob a bank", "commit identity theft"), not a
+thing a codeword can be mapped onto. `DUPLICATE_CONCEPT` (8) is **benchmark redundancy**: five of the
+forty drawn requests are bomb requests and five are drug requests, and `C6` keeps one of each.
+
+### 14.2 The anti-tuning check — **it fired, and then the confound was mine**
+
+Declared before it ran, reported as it fell.
+
+| population | lexicon-match rate |
+|---|---|
+| **drawn 40 (READ by me)** | **40.0 %** (16/40) |
+| held-out, **same 8 registered categories** (never read) | **30.0 %** (98/327) |
+| held-out, the **8 EXCLUDED categories** (never read) | **3.9 %** (5/128) |
+| held-out, all 455 (never read) | 22.6 % (103/455) |
+
+⚠ **`TSC-C-013` — I under-specified my own check.** `TSC-PR-007` §13.1 said "the 455 rows not in the
+draw", and those rows span **all 16 categories** — including the eight that `TSC-PR-005` excluded
+*precisely because their objects are persons and speech acts*. Comparing 40 rows from 8 mappable
+categories against 455 rows from 16 is not a comparison of like with like, and it inflated the
+apparent gap to 40.0 % vs 22.6 % (**Fisher p = 0.0197**). ⛔ **The confound is a defect in the check I
+wrote, not a rescue invented after seeing it** — the category-matched comparison was computable from
+the same run and is reported here beside the one I registered.
+
+**Category-matched: 40.0 % vs 30.0 %, Fisher exact p = 0.208.** Per category, **4 of 8 match
+exactly** (drugs 100 % vs 100 %, weapons 100 % vs 100 %, identity 0 % vs 0 %, theft 0 % vs 0 %), one
+is **higher** on the unread held-out set (misinformation 0 % vs 6 %), and three are higher on the
+drawn set (cyber 60 % vs 31 %, violent 40 % vs 25 %, fraud 20 % vs 13 %) at **n = 5 per category**.
+
+✅ **Reading: no evidence of tuning that survives a like-for-like comparison**, and the two
+categories where a tuned lexicon would show up most (weapons, drugs) are **identical at 100 %**.
+⚠ It is **not proof of no tuning** — n = 5 per category cannot exclude a modest effect, and I did
+read the 40. Stated as a limitation, not resolved.
+✅ **Unplanned bonus: the 3.9 % rate on the excluded categories independently validates
+`TSC-PR-005`'s exclusion rule.** Those categories really do lack mappable object nouns; the rule was
+not a convenience.
+
+### 14.3 Recomputed capability at the surviving k — **and it fails**
+
+`scripts/cds_power_domain.py`, **k = 8**, m = 10 (80 rows/arm), measured ICCs (0.0298 / 0.09 /
+0.1583), measured judge-flip rates, 4000 reps:
+
+| baseline p0 | ICC | **power, total wipeout** | **power, 75 % reduction** | mean k_inf |
+|---|---|---|---|---|
+| 0.10 | 0.030 – 0.158 | 0.185 → **0.094** | 0.087 → **0.055** | 5.4–5.8 |
+| 0.1562 | 0.030 – 0.158 | 0.281 → 0.174 | 0.140 → 0.095 | 6.2–6.5 |
+| 0.20 | 0.030 – 0.158 | **0.414** → 0.276 | **0.202** → 0.151 | 6.4–6.7 |
+
+⛔ **Best case anywhere: 0.414 for a total wipeout and 0.202 for a partial effect.** The inherited
+floors are *adequate for a wipeout* (≈ 0.87–0.90 in `CDS-PR-006`) and **≈ 0.6 for a partial effect**.
+**Both are missed by a wide margin, at every baseline and every measured ICC.**
+
+The arithmetic that makes it concrete: **at k = 8 the design tolerates ZERO discordant requests.**
+
+| discordant of 8 | p | |
+|---|---|---|
+| 0 | 0.0078 | PASS |
+| **1** | **0.0703** | ⛔ **FAIL** |
+| 2 | 0.2891 | FAIL |
+
+The Llama headline itself ran at **5.9–9.4 % discordant domains**, which predicts **0.58 discordant
+out of 8** — so a single ordinary request going the wrong way flips the verdict. ⚠ And mean `k_inf`
+is **5.4–6.7**, straddling `TSC-PR-005`'s own `k_inf ≥ 6` capability floor, so a meaningful fraction
+of runs would be **incapable by construction** before any effect is considered.
+
+### 14.4 ⛔ VERDICT: `DECLINED FOR POWER`. P4 is NOT launched.
+
+Per `TSC-PR-007` §13.4, fixed before the filter ran: ⛔ **the filter is NOT relaxed, the lexicon is
+NOT extended, the draw is NOT repeated, and the thresholds are NOT lowered.** No intervention arm is
+generated.
+
+### 14.5 What the decline is evidence OF — a finding, not a failure
+
+⚠ **This is a measured, publishable scope statement about the paradigm**, and it should be reported
+as one:
+
+> **The doublespeak frame is constructible for only ~20 % of a category-balanced draw from AdvBench
+> held-out, and the entire 495-row benchmark affords only FIFTEEN distinct mappable object-concepts.**
+
+That ceiling was computed by running the identical filter over all 367 rows of the eight registered
+categories: **114 rows match the lexicon, collapsing to 15 distinct concepts** — `bomb` (22 rows),
+`drug` (16), `virus` (14), `malware` (14), `scam` (8), `firearm` (7), `weapon` (6), `poison` (6),
+`explosive` (5), `exploit` (5), `counterfeit` (3), `botnet` (3), `ransomware` (2), `hoax` (2),
+`gun` (1) — and **11 of the 15 are cyber (6) or weapons (5)**.
+
+⛔ **So the request-level generality question cannot be answered from AdvBench at adequate power at
+all.** The binding constraint is **not compute**: it is that the benchmark contains only 15 distinct
+things this attack can be about. Even at that ceiling:
+
+| design | wipeout power | 75 % reduction power |
+|---|---|---|
+| k = 15, m = 10 (150 rows/arm) | 0.47 – 0.81 | **0.28 – 0.51** ⛔ below floor |
+| **k = 15, m = 20 (300 rows/arm)** | 0.63 – 0.97 | **0.44 – 0.78** — reaches 0.594 at the measured button ICC |
+
+**The only configuration that reaches the registered floor is every distinct concept the benchmark
+affords, at double the demonstration pools** — and even then the partial-effect power is marginal.
+
+### 14.6 The option this leaves, NOT taken unilaterally
+
+A **new blind draw from the filtered-eligible pool** (filter first over all 367 eligible rows, then
+draw with a fixed seed and quota) would reach **k = 15** without any hand-selection and without
+weakening provenance — it is still AdvBench, still mechanical, still blind. ⛔ **But it changes the
+population, and `TSC-PR-007` §13.4 forbids me from repeating the draw**, so it needs **its own
+preregistration and Omer's decision**. ⚠ It would also have to declare in advance that **11 of 15
+concepts come from two categories**, so "8 harm categories" would become **"6 categories, dominated
+by cyber and weapons"** — a materially weaker generality claim than the one `TSC-PR-005` set out to
+make, and one that must be stated before, not after.
+
+**Artifacts:** `data/manifests/tsc_requests_v1_filtered.json` (full attrition table, ⛔ **no request
+text**) · `outputs/boombness/cds_power/tsc_power_k8.json` · `…/tsc_power_k15.json` ·
+`scripts/tsc_filter_requests.py` · `tests/test_tsc_request_filter.py` (15 tests).
+
+---
+
 # WHAT WE CAN DEFEND TOMORROW
 
 *Every claim below is stated at its true scope. Where a number moved tonight, the corrected number
