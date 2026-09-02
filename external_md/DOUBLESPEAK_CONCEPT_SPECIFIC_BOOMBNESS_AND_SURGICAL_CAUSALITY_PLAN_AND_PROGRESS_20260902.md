@@ -844,3 +844,61 @@ context dependence; `DiD ≫ 0` ⇒ **outcome F**, a remapping-specific informat
 > 0, decode edits **exactly 0**, `surface_span_positions` present and decoding to the expected
 word, and a non-empty completion. ⛔ If the liveness counters are not live, the arms are not
 submitted — a no-op knockout scores as a clean null on every row.
+
+### `DCS-006` — 2026-09-02 — literature review: what is ours, and what is already published
+
+`reports/DCS_LITERATURE_MATRIX.md`. ⚠ **Read this before writing any novelty claim.**
+
+**⛔ One work substantially overlaps, and it is the paper this project extends:**
+**Yona, Sarid, Karasik & Gandelsman, "In-Context Representation Hijacking", ACL 2026
+(arXiv 2512.03771).**
+
+1. ⛔ **`DCS-R-001` is a REPLICATION, not a discovery.** They already claim, with logit lens and
+   Patchscopes over 29 harmful requests, that the benign token's representation progressively
+   acquires the harmful concept's semantics across layers. Our `toward_B_frac` is a **different
+   instrument** (difference-of-means geometry over cell means) measuring **the same claim**. It may
+   be presented as *a replication with a stronger control* — never as a finding.
+2. ⚠ **`DCS-R-002` is partly anticipated.** Their Appendix D varies the **codeword** across lexical
+   categories, finds ASR flat, and concludes the attack "exploits a fundamental, general-purpose
+   mechanism of in-context learning rather than relying on specific properties of particular token
+   pairs." We vary the **harmful concept** and measure **geometry**, which is the sharper negative
+   for a "Boombness" construct — but a reviewer who has read their Appendix D will not be
+   surprised, and we must not write as though they would.
+3. ✅ **What they do not have: any internal causal intervention.** Their interpretability is
+   entirely read-out; the only causal manipulation in the paper is at the **prompt** level. So no
+   claim of the form "this internal pathway is necessary for the attack's behavior" is anticipated
+   by them — which is exactly `KO-1`/`KO-2` (`DCS-PR-001`), and exactly the capable cross-family
+   Qwen null.
+
+**⚠ A layer tension — and `DCS-C-005` partly resolves it.** Their §3.4 argues that at layer 12 the
+benign token's semantics are **not yet altered**, the shift arriving mid-to-late. `DCS-R-001` put a
+`toward_B_frac` peak at **L6–L12**, *decaying* through the mid-stack — pointing the opposite way.
+`DCS-C-005` then found that peak **does not exist in the per-row standardized effect size**, which
+is largest at L0 and declines. ⇒ The apparent contradiction is at least partly an artifact of the
+distance-ratio statistic, and ⛔ we may not cite their layer claim as agreeing with ours, nor ours
+as refuting theirs, on current evidence.
+
+**Second-order: `representation ≠ behavior` is a 2026 consensus, not a discovery.**
+Walsh & Barkett (arXiv 2605.25151) publish the dissociation standalone, with SAE evidence that
+probe-aligned and control-aligned features are disjoint; Yin, Han & Li (ICML 2026 oral,
+arXiv 2606.28153) publish the mirror image. Our version is novel only **as an instance** — a safety
+setting, on an in-context-*constructed* concept.
+**Method provenance:** the attention knockout is Geva et al. 2023 (arXiv 2304.14767), and
+Ben-Tov, Geva & Sharif (TACL 2026) own it on an attack-carrying span with a behavioral endpoint.
+⛔ The design must be cited as theirs, redirected at a demonstration block — not presented as new.
+
+**⇒ The defensible novelty is the causal combination**, not the geometry: demonstration-block
+knockout **+** a StrongREJECT rubric endpoint **+** a preregistered `intervention × condition`
+interaction with matched controls **+** a *capable* cross-family null — plus the CI-backed
+**negative** for a mechanistically derived attack objective (§1.8: `d_surface` as a GCG/MAC target
+is blocked; both steering signs suppress ASR, prediction-vs-causation ρ = −0.85, naive baselines
+match or beat it). Negatives of that shape are near-absent from the published record.
+
+⇒ **This raises, not lowers, the value of `DCS-PR-001`.** The representation results are a
+replication; the knockout is the part no one else has run.
+
+**Also relevant to `DCS-R-003`:** Wang, Wang, Bakalova & Hahn (ICML 2026, arXiv 2605.16591) give
+the most precise published account of how demonstrations aggregate — the n-shot function vector as
+a linear combination of per-example sub-FVs, with informativeness reweighting. Our saturation
+result (no accumulation; flat in `n_examples`) is a directly comparable data point and should be
+positioned against it rather than reported in isolation.
