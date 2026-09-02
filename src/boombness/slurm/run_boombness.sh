@@ -79,6 +79,31 @@ echo "=== boombness: $BOOMB_SCRIPT ==="; date; hostname
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)  dirty=$(git status --porcelain 2>/dev/null | wc -l)"
 echo "args: $BOOMB_ARGS"
 
+# WRITABILITY GUARD (2026-09-02, DCS-002). The user quota on this filesystem is enforced at a limit
+# the `quota` command does not display, and when it is reached every write fails EDQUOT -- on the
+# COMPUTE NODES too, not just the login node. This has now silently truncated a run TWICE; run
+# `d38beh_20260829_022027_2389958` is quarantined for exactly this, with 61 designed rows that no
+# file comparison can see because the file simply stops.
+#
+# Why a real write and not `df`: df reported 5.4T free on the volume while a 100-byte write returned
+# EDQUOT, because the binding limit is a qtree/user quota, not volume space. And why 10MB and not a
+# few bytes: the failure is SIZE-DEPENDENT at the boundary -- a 5-byte write SUCCEEDED in the same
+# second a 100-byte write failed, so a token `touch` reports healthy while every real artifact fails.
+#
+# Refuse here, before the model is loaded, rather than after hours of GPU time have produced rows
+# that cannot be persisted. A crash is a better failure than a silent skip.
+_WGUARD="$PROJECT_DIR/outputs/boombness/.writeguard_$$"
+if ! head -c 10000000 /dev/zero > "$_WGUARD" 2>/dev/null || [ "$(stat -c %s "$_WGUARD" 2>/dev/null)" != "10000000" ]; then
+  echo "ERROR cannot write 10MB to outputs/ -- disk quota is exhausted (EDQUOT)."
+  echo "  Wrote: $(stat -c %s "$_WGUARD" 2>/dev/null || echo 0) of 10000000 bytes"
+  echo "  quota: $(quota 2>/dev/null | tail -1)"
+  echo "  REFUSING to start: this run would consume GPU time and fail to persist its rows."
+  rm -f "$_WGUARD"
+  exit 1
+fi
+rm -f "$_WGUARD"
+echo "write guard ok: 10MB round-trip to outputs/"
+
 # GPU guard. The first line of nvidia-smi only: a job that lands on a mixed node must still fail
 # rather than silently run bfloat16 flash attention on a card that cannot do it.
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"
