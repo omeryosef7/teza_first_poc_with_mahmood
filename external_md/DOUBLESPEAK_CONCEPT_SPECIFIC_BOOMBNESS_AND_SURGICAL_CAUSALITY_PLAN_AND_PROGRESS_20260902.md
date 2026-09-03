@@ -2123,3 +2123,78 @@ criterion can be applied to a **complete** set rather than a convenience sample,
 before their outcomes: **every** draw that meets the refusal criterion enters the analysis, and if
 more than one qualifies **all** qualifying contrasts are reported — never the most favourable.
 If the qualifying draws disagree, that disagreement is the result.
+
+### `DCS-A-004` / `DCS-C-016` — audit of `R-016`: the positive **survives as directional only**, and two of my factual claims are **FALSE**
+
+**⛔ RETRACTION 1 — "all six arms judged in ONE invocation" is false.** `RUNMETA.json` shows **six
+processes in two batches at two git commits**: batch A 05:11:17 (`baseline`, **`KO-3`**, `d1`), batch
+B 05:24 (`d2`, `d3`, `capped_d1`). ⚠ **The table refutes itself**: `d1` (batch A) scores **117**
+attacks and `capped_d1` (batch B) scores **135** on **byte-identical text** — an **+18-attack drift
+across the batch boundary, in exactly the direction that inflates my `KO-3`(A) vs `d2`(B)
+contrast.** Naive debiasing gives **−36 + 18 = −18**, which sits *at* the project's 17-row band.
+⚠ Mitigating: the inter-commit diff touches **only the markdown log**, generation is greedy and
+deterministic, so this is `gpt-4o-mini` nondeterminism, not a code change — but my caveat
+*"internally consistent because all six arms were judged together"* was **wrong and load-bearing**.
+
+**⛔ RETRACTION 2 — "four controls", and the plan to "exhaust a family of six draws", are false.**
+`capped_dK ≡ matched_dK` **by construction on this bank**: `capped` differs from `strict` only when
+the pool is too small (`score_behavior.py:833-866`), and the measured `min(pool − demo_keys)` is
+**+57**. Verified independently: `matched_d1` vs `capped_d1` are **380/380 byte-identical
+completions**. ⇒ There are **three** distinct draws, not four or six. `DCS-R-015`'s "three of four
+draws induce refusal" is really **2 of 3**, and `DCS-016`'s promised six-point correlation would
+have been **a fabrication**.
+
+**⚠ The selection critique is confirmed and is larger than I estimated — but it does not produce the
+effect.** `r(refusal Δ, attack) = −0.97` over the distinct draws; regression predicts 151.1 attacks
+at `d2`'s refusal level against its actual 155. ⇒ **"Pick the refusal-neutral control" *is*
+mechanically "pick the highest-attack control."** Partly structural: **0 rows in any arm are both
+`refused` and `malicious_at_0.5`**, so attack ≤ 380 − refused by construction.
+✅ **Why it survives anyway:** `KO-3` sits at `refused = 0`, the *most* attack-favourable point on
+that constraint — the control trend extrapolates to **197.9** attacks there and `KO-3` has **119**, a
+deficit of ~79. And on the composition-free endpoint — **attack rate among non-refused rows** —
+`KO-3` is **0.313**, below **every** control (0.384–0.473) and below the baseline (0.453). ⇒ The
+selection bias runs the **wrong way** to manufacture this.
+
+**⚠ Judge nondeterminism is the real adversary.** A third independent judging of `d1`'s identical
+text exists: **117 / 129 / 135** attacks (13.2 % label flips). Null McNemars on byte-identical text:
+−12 (p = 0.104), +6 (0.489), **+18 (p = 0.0114)**, +5 (0.576) ⇒ **an empirical type-I rate near 25 %
+at α = 0.05 from judge noise alone.** Against that empirical null (mean +4.25, sd 12.34), −36 gives
+**z = −2.92**. ✅ And the finding **replicates on the other `KO-3` judging**: `d2` vs `KO-3` run 1 =
+**−41, p = 6.99e-04**.
+
+**⚠ Further corrections:**
+* **The effect does not replicate across the pre-declared split**: `dev` net **−9, p = 0.349**;
+  `heldout` net **−27, p = 0.0018**. It lives in one half.
+* ⛔ **The topical contrast vs `d2` is p = 0.238** and the endpoint is `UNINFORMATIVE BY
+  CONSTRUCTION` by this phase's own 17-row rule (14 baseline positives). **Do not cite it either way.**
+* ⚠ Quote **the direction, not the magnitude**: −36 is inflated by selection.
+* ✅ **Preregistration verified clean**: the criterion commit is timestamped 03:40:58, `d2`'s
+  generation began 03:59:50, and `refused` is a deterministic substring matcher with no API call. No
+  shopping occurred.
+* ✅ Dose matching, joins, absolute-position indices and generation quality all pass. `KO-3` is the
+  **longest**-writing arm (p10 = 940 vs 98–121 elsewhere); the 90 lost attacks became **long
+  non-attacking prose** (mean 1371 chars), not incoherence. The degradation hypothesis is dead.
+* ✅ Domain-clustered permutation **p = 0.0089**; 24−/10+ domains, sign p = 0.024; Bonferroni over 3
+  distinct controls → **0.0267**. Survives, barely.
+
+⇒ **`R-016` is downgraded to: *`KO-3` reduces attack relative to a dose-matched, refusal-neutral
+control — direction established, magnitude not.*** ⛔ The headline "−36 attacks, p = 0.0034" must not
+be quoted as-is.
+
+### `DCS-PR-005` — the fix, declared before the replicate judging runs
+
+The audit's cheap settling test, and it is **already half-submitted by accident**: jobs **842088**
+and **842089** will regenerate `d2`'s and `d3`'s **exact bytes** (greedy decoding, identical seed and
+args, `capped ≡ matched`). ⛔ **They must NOT be scored as new draws** — that would be the
+fabrication `C-016` just retracted.
+
+**They are scored as RE-JUDGE REPLICATES.** Declared now:
+* One judge invocation containing **`KO-3`, `d2`, `capped_d2`(≡`d2` bytes), `d3`, `capped_d3`(≡`d3`
+  bytes)** — so `d2`'s text is judged **twice inside a single batch**, removing the cross-batch drift
+  that `C-016` measured at +18.
+* **Pre-flight assertion:** `capped_d2` must be byte-identical to `d2` on 380/380 completions, and
+  `capped_d3` to `d3`. ⛔ If not, they are genuinely different draws and this entire framing is void.
+* **Decision rule, fixed now:** if `d2`'s attack count over its judgings stays **≥ ~145** while
+  `KO-3` stays **≈ 116–119**, the claim stands at roughly **−30**. If `d2` re-judges near **137**,
+  the effect is **≈ −18** and sits **on the noise band**, i.e. `CANNOT ANSWER`.
+* The `dev`/`heldout` split asymmetry is reported with whatever comes back, not after.
