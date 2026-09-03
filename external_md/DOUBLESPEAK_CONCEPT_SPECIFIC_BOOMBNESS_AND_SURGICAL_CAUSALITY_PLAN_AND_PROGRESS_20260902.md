@@ -2217,3 +2217,58 @@ provenance; the outage delays measurement, not data. The `PR-005` decision rule 
 declared: `d2` holding **≥ ~145** attacks against `KO-3` at **≈ 116–119** leaves the claim near
 **−30**; `d2` re-judging near **137** puts the effect at **≈ −18**, on the noise band, i.e.
 `CANNOT ANSWER`. ⛔ That rule was fixed before the replicate text existed and is not revisited now.
+
+### `DCS-R-017` — ✅ `PR-005` RESOLVES **in favour of the claim**, and measures the noise floor that made `C-016a` possible
+
+All six arms judged in **one batch** (`dcsrep`, job 842332), 380 rows each. `d2`'s and `d3`'s
+byte-identical replicates (`PR-005` pre-flight: 380/380) let judge noise be measured **inside** a
+single invocation for the first time.
+
+**Attack counts, same batch:** `KO-3` **122** · `d2` **151** / `d2′` **158** · `d3` **121** / `d3′` **124**.
+
+**⇒ The measurement that matters most — judge noise WITHIN a batch, on identical text:**
+
+| null pair (identical bytes) | net | McNemar p |
+|---|---|---|
+| `d2` vs `d2′` | **+7** | 0.360 |
+| `d3` vs `d3′` | **+3** | 0.780 |
+
+⚠ **Compare `C-016a`'s CROSS-batch null on identical text: +18, p = 0.011.** ⇒ Within one invocation
+the judge's own spread is **+3 to +7 and non-significant**; across invocations it was **+18 and
+significant**. **The one-invocation rule is now empirically vindicated rather than merely asserted**,
+and `C-016a`'s +18 is confirmed as a *cross-batch* artifact — exactly the defect it named.
+
+**The contrast, both judgings of the same control text, same batch:**
+
+| contrast | net | McNemar p |
+|---|---|---|
+| `KO-3` vs `d2` (A) | **−29** | 2.15e-02 |
+| `KO-3` vs `d2′` (B) | **−36** | 4.91e-03 |
+
+⇒ Both sit **far outside** the measured within-batch noise band (+3 to +7).
+
+**`PR-005`'s decision rule, applied as written and not renegotiated:** `d2` over three independent
+judgings is **155 / 151 / 158** — every one **≥ 145**. `KO-3` is **119 / 122**, inside the expected
+116–119 ± noise. ⇒ **The rule's first branch obtains: the claim stands at roughly −30.**
+
+**⚠ The audit's `dev`/`heldout` caveat REPRODUCES and is not resolved:**
+
+| split | `KO-3` vs `d2` (A) | `KO-3` vs `d2′` (B) |
+|---|---|---|
+| `dev` (n = 190) | −5, p = 0.640 | −10, p = 0.314 |
+| `heldout` (n = 190) | **−24, p = 7.9e-03** | **−26, p = 3.8e-03** |
+
+⛔ **The effect still lives almost entirely in the held-out half.** This replicates the audit's
+finding on fresh judgings and must be reported with the headline. It is the strongest remaining
+argument that the magnitude is unstable — ⚠ though note the direction is negative in **both** halves
+under both judgings, so it is a magnitude instability, not a sign flip.
+
+**Domain-clustered sign test** (the independence unit): 23−/11+ domains, p = 0.058 (judging A);
+25−/8+, p = 4.55e-03 (judging B). ⚠ Judging A sits just **above** α — so the clustered test is
+**sensitive to which judging is used**, which is itself a statement about how much of this rests on
+judge noise.
+
+⇒ **`R-016` is upgraded from "direction only" to "direction established; magnitude ≈ −30 with a
+measured within-batch noise floor of ±7."** ⛔ Still **not** established: stability across the
+pre-declared split, and the selection inflation (`d2` remains the weakest of three distinct draws).
+⛔ The topical endpoint remains `UNINFORMATIVE BY CONSTRUCTION` and is not cited either way.
