@@ -1976,3 +1976,32 @@ structural rather than a matter of finding a better seed.
 ⇒ **Net effect on the phase's claims:** the `KO-1` half of the dissociation (*mapping intact, attack
 unchanged, refusal halved*) is **strengthened** — same conclusion, correct test, verified-exchangeable
 control. Only the `KO-3` mediation contrast remains `CANNOT ANSWER`.
+
+### `DCS-015` — `B-008` early read (⚠ INDICATIVE ONLY) and the §47 Slack draft
+
+**Refusal-neutrality of the three new control draws, read from `gens.jsonl` directly** — `refused`
+is `kw_refusal`, a substring matcher that never calls the API, so this needs no judge run:
+
+| control | rows so far | refused | Δ vs baseline **on the common rows** |
+|---|---|---|---|
+| `nondemo_matched_d1` (complete, **known bad**) | 380 | 75 | **+33** |
+| `nondemo_matched_d2` | 296 | 35 | **+8** |
+| `nondemo_matched_d3` | 197 | 44 | **+32** |
+| `nondemo_capped_d1` | 192 | 31 | **+20** |
+
+⛔ **These are partial and are NOT the decision.** `DCS-R-013` declared the criterion at **n = 380**,
+and it stays there. Recorded now only so the eventual choice cannot be mistaken for a post-hoc one.
+
+⚠ **A selection hazard I am flagging against myself.** `d2` currently looks neutral and the other
+two do not. Refusal and attack are correlated, so choosing a comparator on refusal *could* select
+indirectly on the attack outcome. Mitigations, fixed now: **(a)** the criterion stays
+refusal-neutrality, never attack rate; **(b)** the attack numbers for **all four** controls will be
+reported, not only the qualifying one, so the reader sees the full sensitivity; **(c)** if more than
+one qualifies, all qualifying controls are reported, not the most favourable.
+
+**§47 deliverable written:** `reports/DCS_SLACK_DRAFT_MATAN_MAHMOOD.md`.
+⛔ **DRAFT ONLY — not sent, and no Slack integration exists or was used.** It leads with the
+negative (not concept-specific), states the `R-012` retraction in the body rather than burying it,
+carries the scope line, and asks Matan and Mahmood the two open design questions: what to do if no
+refusal-neutral control exists at that dose, and how to position the work against Yona et al.
+ACL 2026 given that the representational half is a replication and only the causal half is ours.
