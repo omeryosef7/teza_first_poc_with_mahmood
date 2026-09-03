@@ -3168,3 +3168,36 @@ My table above is **vocabulary-wide** argmax. Both are correct and they answer d
 ⛔ quoting one as if it were the other would misdescribe the readout. The audit's version is the
 right one for "which option does the model pick"; mine is the right one for "is the option pair even
 where the mass is".
+
+### `DCS-R-028` — 0 of 3 Qwen draws qualify, and a **structural** reason the criterion may be unsatisfiable here
+
+| draw | `refused` | Δ vs baseline (150) | verdict |
+|---|---|---|---|
+| `s901_d1` | 189 | **+39** | ⛔ |
+| `s901_d2` | 197 | **+47** | ⛔ |
+| `s901_d3` | 217 | **+67** | ⛔ |
+
+Final two draws submitted (`847493`, `847494`) to complete `R-027`'s stopping rule of **6**, each
+with its `--intervene` spec **verified to have 4 colon-parts before submission** (`C-020`'s check,
+now a guard in the helper rather than a habit).
+
+⚠ **A methodological problem this exposes, which is not about Qwen.** The ±17 band is a **judge-noise
+band in absolute rows**, and that is correct for comparing two counts. But `R-015` uses it as a
+**control-qualification** criterion, and there its stringency depends entirely on the baseline:
+
+| model | baseline refusals | rejected-draw Δ | Δ as % of baseline |
+|---|---|---|---|
+| Llama | 42 | +33, +52, +32 | 79 %, 124 %, 76 % |
+| Qwen | **150** | +39, +47, +67 | **26 %, 31 %, 45 %** |
+
+⇒ **Qwen's controls perturb refusal *proportionally less* than Llama's rejected draws did, and are
+rejected anyway**, because ±17 rows is a far tighter relative target at a base of 150 than at 42.
+⛔ So a Qwen `CANNOT ANSWER` at 6 draws would be an artifact of applying an **absolute** band as a
+**relative** criterion — not evidence that Qwen's controls are unusually disruptive.
+
+⛔ **Declared before the last two draws return, so it cannot be chosen afterwards:** if 0 of 6
+qualify, the reported conclusion is *"the refusal-neutrality criterion is unsatisfiable on a
+high-refusal model at this dose"* — a limitation of **`R-015`'s criterion**, ⛔ never "Qwen shows no
+behavioral effect" and ⛔ never a relaxed band chosen to admit a draw. ⚠ Relaxing the band **after**
+seeing that none qualify is exactly the shopping this phase has refused twice
+(`R-015`, `PR-006`), and it stays refused.
