@@ -2307,3 +2307,41 @@ control-draw identities; magnitude ≈ **−30** against a measured within-batch
 the split objection **resolved as not-established**; the remaining live caveats are the **selection
 inflation** (`d2` is the weakest of three distinct draws) and the fact that **91 % of the endpoint is
 off-goal text**.
+
+### `DCS-PR-006` — breaking the selection dependence: three genuinely new control draws at a second seed
+
+The last live caveat on `R-016`/`R-017` is that the refusal criterion **provably favours the
+weakest draw** (r = −0.97 between refusal Δ and attack count), and only **one** of the three
+distinct draws qualified. One qualifying control cannot separate "refusal-neutral controls show the
+effect" from "this particular draw happens to be weak".
+
+**The control family is not actually exhausted.** `nondemo_draw_seed(control_seed, draw_index) =
+control_seed + draw_index × STRIDE` (`score_behavior.py:807-813`), and `control_seed` is `--seed`.
+⇒ **A different `--seed` yields genuinely different draws at the same dose and policy.**
+✅ Verified safe for the comparison: generation is **greedy** (`ds_common.py:1013`, `do_sample=False`),
+so `--seed` moves the *control positions* and nothing else — the treatment arm is untouched and the
+existing `KO-3` generations remain the correct comparator.
+
+**Submitted:** `nondemo_matched_d1/d2/d3` at **`--seed 20260904`** (**842660 / 842661 / 842662**),
+identical bank, block, dose, band, scope and decoding. This yields **three more independent draws**,
+for six distinct draws in total.
+
+⛔ **Declared before any of their outcomes, and unchanged from `DCS-R-013`:**
+* The qualifying criterion remains **refusal-neutrality vs baseline** (|Δ `refused`| ≤ 17), applied
+  from `gens.jsonl` **before** any judging — judge-free, so the ordering is again enforced by
+  construction rather than by discipline.
+* **Every** qualifying draw enters the analysis; **all** qualifying contrasts are reported, never
+  the most favourable. ⛔ If the new qualifying draws disagree with `d2`, **that disagreement is the
+  result**.
+* All arms compared must be judged in **one invocation** — `DCS-R-017` measured the within-batch
+  noise floor at **±7** against **+18** across batches, so this is now an empirical requirement, not
+  a convention.
+
+**What each outcome would mean, fixed now:**
+* ≥1 new draw qualifies **and** shows a comparable negative contrast ⇒ the selection objection is
+  **answered**: the effect is not an artifact of one weak draw.
+* New draws qualify but show **no** contrast ⇒ `R-016` is a property of `d2` specifically and the
+  behavioral claim **collapses to `CANNOT ANSWER`**.
+* **No** new draw qualifies ⇒ refusal-neutrality at this dose is a **rare** property (1 in 6), which
+  weakens the comparator design itself and must be reported as a limitation of the method rather
+  than a result about the model.
