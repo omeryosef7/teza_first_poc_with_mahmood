@@ -2682,3 +2682,27 @@ which was the question — and cannot attribute the threshold to rows rather tha
 > position carries it, and no pair does either — but roughly a quarter of the query span suffices**,
 > after which the effect saturates. The matched controls are inert across a 32× dose range, so this
 > is a property of the demonstration keys, not of the amount of attention removed.
+
+### `DCS-C-018` — ⚠ process failure of mine: concurrent background commits collided on the index lock
+
+Four consecutive entries (`R-019` tail, `019`, `R-021`, `PR-008`) were committed with
+`nohup git commit &` while an earlier one was still inside the pre-commit hook. Git takes
+`.git/index.lock` for the whole commit, and the hook here runs `check_all.py` plus 341 guard tests —
+**165 s on a quiet filesystem, and far longer under NFS load** — so each new background commit hit
+`Unable to create '.git/index.lock'` and died silently in its own log file.
+
+⚠ **Nothing was lost**: every entry lives in the append-only markdown, which was committed intact by
+the one commit that did acquire the lock (`156e5f78`). But three commit *messages* were discarded,
+and for ~40 minutes `git log` did not reflect work that was already on disk — ⛔ exactly the kind of
+gap that makes a later reader distrust the record.
+
+**Cause:** I treated `git commit` as a fire-and-forget background job because the hook is slow. It is
+not fire-and-forget — it holds a global repository lock.
+**Rule adopted:** ⛔ **never run `git commit` in the background in this repo.** Run it in the
+foreground with a long timeout (the hook legitimately needs 3+ minutes), or batch several entries
+into **one** commit. This is the third distinct way the shared tree has bitten this phase, after
+`git add -A` scope and a peer's `index.lock`.
+
+⚠ Note this is **not** the peer-contention case from the house rules: `ps` showed **no other git
+process**, and the lock was mine each time. The fix is sequencing my own commits, not waiting on
+someone else's.
