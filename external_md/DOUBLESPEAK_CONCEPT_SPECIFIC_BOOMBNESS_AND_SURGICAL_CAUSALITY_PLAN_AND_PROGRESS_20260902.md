@@ -2345,3 +2345,30 @@ for six distinct draws in total.
 * **No** new draw qualifies ⇒ refusal-neutrality at this dose is a **rare** property (1 in 6), which
   weakens the comparator design itself and must be reported as a limitation of the method rather
   than a result about the model.
+
+### `DCS-018` — `PR-006` pre-flight: the new-seed draws are genuinely different ✅
+
+The check `C-016b` taught me to run **before** relying on a set of "new" draws, applied
+proactively this time rather than after an auditor found the duplication. Partial arms, per-row
+comparison of the persisted `control_draw` positions against the seed-20260901 draws of the same
+index:
+
+| pair | common rows | identical generations | **identical draw positions** | verdict |
+|---|---|---|---|---|
+| `seed904_d1` vs `seed901_d1` | 210 | 19/210 | **0 / 210** | ✅ DIFFERENT |
+| `seed904_d2` vs `seed901_d2` | 205 | 14/205 | **0 / 205** | ✅ DIFFERENT |
+| `seed904_d3` vs `seed901_d3` | 192 | 24/192 | **0 / 192** | ✅ DIFFERENT |
+
+⇒ **Not one row draws the same positions**, so `PR-006`'s premise holds and these are three
+genuinely independent controls rather than the `capped ≡ matched` duplication in another costume.
+⚠ The ~7–12 % of byte-identical *generations* is expected coincidental agreement — rows where the
+model's greedy output is unchanged by which non-demonstration keys were cut — and is not evidence
+of a shared draw, since the positions differ on 100 % of those same rows.
+
+⚠ Recorded as method, not decoration: `C-016b` cost a retraction because a "new" control was a
+duplicate **by construction** and nobody checked. The cheap check is a per-row comparison of the
+persisted draw positions, and it is now run **before** the arms are used, on partial data, while
+there is still time to abandon the design.
+
+⛔ This changes nothing about the criterion: refusal-neutrality is still applied from `gens.jsonl` at
+**n = 380**, before any judging, and `DCS-PR-006`'s three declared outcomes stand.
