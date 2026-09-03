@@ -2766,3 +2766,33 @@ cells) runs **only if**:
 ⚠ If the gate fails, that is a **capability-limited** result and is reported as such. This phase has
 already produced one (`C-007`, cell `B` on the ASR endpoint) and the distinction between "incapable
 test" and "capable null" is the thing `TSC` insisted on hardest.
+
+### `DCS-R-023` — ✅ Qwen3-14B **PASSES** the `PR-009` capability gate on all three criteria
+
+`semantic_forced_choice`, same bank / block / dose / seed, `--enable-thinking false`, n = 380 each.
+
+| cell | n | mean `logodds` | frac > 0 | option mass (median) | gate | reportable |
+|---|---|---|---|---|---|---|
+| `C` `natural_doublespeak` | 380 | **+10.140** | 0.813 | **0.999** | PASS | True |
+| `B` `direct_harmful` | 380 | **+30.707** | 0.997 | **1.000** | PASS | True |
+| *Llama reference* | 380 | +5.188 / +6.272 | 0.942 / 0.961 | 0.877 / 0.709 | — | — |
+
+⇒ **Gate 1** (C positive — the mapping is installed) ✅ · **Gate 2** (option mass on both) ✅ ·
+**Gate 3** (B positive — the contrast has a reference) ✅ ⇒ **Stage 2 proceeds.**
+⚠ This is **not** `TSC-C-011`: on the *readout* channel Qwen is fully capable, which is exactly why
+`DCS-PR-002` moved the specificity question here after the ASR endpoint failed on cell `B`.
+
+**Two differences from Llama worth recording before the intervention, not after:**
+1. ⚠ **Qwen's `C` mean is ~2× Llama's (+10.14 vs +5.19) but its `frac > 0` is LOWER (0.813 vs
+   0.942).** A larger mean over fewer positive rows implies a **more bimodal** distribution — Qwen
+   maps strongly where it maps and not at all elsewhere, where Llama maps moderately almost
+   everywhere. ⇒ Domain-clustered tests are the right unit here too, and a mean-only comparison
+   across models would be misleading.
+2. ⚠ **Cell `B` sits at +30.7 with option mass 1.000 — effectively saturated.** `R-011` already
+   found that `basket`'s higher `B` baseline (+10.67) coincided with the failure of the
+   "opposite directions" claim. ⛔ So the `B` side of a Qwen specificity DiD may be **ceiling-limited
+   before the intervention runs**, and if `B` barely moves that must be read as a ceiling, not as
+   evidence of specificity. Declared now.
+
+**Stage 2 submitted** (2 jobs, respecting the ≤2 concurrent Qwen rule): cell `C` `KO-3` at band
+**7–17** and its count-matched control. Cell `B`'s pair follows when these free their slots.
