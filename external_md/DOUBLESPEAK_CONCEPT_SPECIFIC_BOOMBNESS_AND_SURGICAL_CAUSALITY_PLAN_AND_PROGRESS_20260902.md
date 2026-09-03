@@ -3105,3 +3105,32 @@ wrong; bypassing is then a visible, deliberate act"* — and this entry is that 
 ⚠ **`DCS-B-012` (new):** three guards scale with the number of runs, not the diff. At 755 runs the
 hook costs 30–90 min under NFS load and blocks all commits. ⇒ They need an incremental mode (check
 only runs touched since the last commit, or since a stored watermark) before the store grows further.
+
+### `DCS-C-020` — ⚠ my own zsh-modifier bug corrupted two argsfiles. **The crash is the story.**
+
+Jobs `847243` and `847244` both `FAILED`. Two different causes:
+
+* `847244` — **`ValueError: not enough values to unpack (expected 4, got 3)`** at
+  `score_behavior.py:1697`, `part.split(":")`. The written argsfile contained:
+
+      --intervene nondemo_matched_d/home/sharifm/.../1ttn_knockout:7-17:1.0
+
+  ⇒ I wrote `nondemo_matched_d$2:attn_knockout` in a helper. **In zsh, `$2:a` is a
+  *modifier*** (`:a` = absolute path), so `$2:a` expanded to the absolute path of `1` and
+  `ttn_knockout` was left behind. This is the repo's documented zsh hazard, and I walked into it
+  despite having hit its sibling (unquoted `$VAR` not word-splitting) earlier in this same phase.
+  **Fix:** `${k}:attn_knockout` — brace the variable so the `:` cannot be read as a modifier.
+* `847243` — `slurmstepd: error: Unable to move pid ... to init root cgroup (null)`. **Infrastructure**,
+  not code; the same argsfile was also corrupt and would have failed next.
+
+⚠ **What matters is that it crashed rather than ran.** The corrupted spec produced an
+**unparseable** `--intervene`, so the job died at argument time — *before* loading Qwen, before any
+generation, and long before anything could be scored. ⇒ A malformed control arm **cannot** enter a
+comparison as a silently-wrong draw. Compare `DCS-C-001`, where a resolver bug produced an *empty*
+span that would have scored as a clean null on every row: the difference between the two is entirely
+whether the failure mode is parse-time or semantic.
+
+**Verified before resubmitting**, rather than after: each regenerated spec was checked to have
+exactly **4 colon-separated parts** — `nondemo_matched_d3:attn_knockout:7-17:1.0` ✅ and
+`nondemo_matched_d1:attn_knockout:7-17:1.0` ✅. Both resubmitted; the `R-027` stopping rule (search to
+6 Qwen draws) is unchanged and these two count toward it.
