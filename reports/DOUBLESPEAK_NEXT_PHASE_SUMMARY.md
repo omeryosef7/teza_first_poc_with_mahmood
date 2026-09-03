@@ -26,11 +26,14 @@ annihilates to zero), which masked the effect and produced a false null; against
 **refusal-neutral** control of the three that exist, `KO-3` removes attacks with the direction
 confirmed across two independent judgings, domain clustering (p = 0.0089), 24 of 34 non-tied
 domains, and a composition-free endpoint on which `KO-3` sits below every control and the baseline.
-⚠ **The magnitude is ≈ −30 against a measured within-batch judge-noise floor of ±7** (established
-by re-judging byte-identical text inside one invocation), but it is inflated by a selection
-criterion that provably favours the highest-attack control (r = −0.97), and **91 % of the endpoint
-is off-goal text**. ⚠ The apparent `dev`/`heldout` asymmetry was tested directly and is **not**
-distinguishable from chance (permutation p = 0.14 / 0.23). So: the mechanism is real,
+⚠ **The magnitude is ≈ −30 of 153 rows, consistent across 3 refusal-neutral controls × 2 seeds × 4
+judgings (−41, −21, −28)** — but ⛔ **at the domain level, the independence unit this project
+declared for itself, it does not reach significance** (sign p = 0.061 / 0.150 / 0.136; pooled
+p = 0.405; only a magnitude-aware clustered permutation reaches p = 0.032). The design is genuinely
+underpowered at that unit, and **38 domains is the ceiling that exists** — fixing it needs new
+demonstration pools, not more rows, judgings or seeds. The `dev`/`heldout` asymmetry was tested
+directly and is **not** distinguishable from chance (p = 0.14 / 0.23); **91 % of the endpoint is
+off-goal text**. So: the mechanism is real,
 demonstration-built, remapping-specific, and **behaviorally causal in direction**; gate `R5` is
 passed at the query-span scope and **fails at the codeword-row scope**, and the magnitude awaits
 replicate judging (`DCS-PR-005`).
@@ -55,7 +58,7 @@ column existed.
 |---|---|---|---|
 | `R-010`/`R-011` | **The demonstration→query path is necessary for the remapping and specific to it.** `KO-3` (whole query span ↛ demonstrations, L6–14) drives the codeword cell from **+5.19 → −2.76** (`button`) and **+6.79 → −3.80** (`basket`) — a sign flip to the literal reading — while barely moving the cell where the word *is* the concept. **DiD −9.889 and −9.352, both 1+/37− domains, both p = 2.838e-10**, floor 7.28e-12 | 2 codewords × 6 arms × ~380 rows × 38 domains; dose-matched controls negligible; adversarially audited (`DCS-A-002`) | **REPLICATED, remapping-specific** |
 | `R-012b` | **Refusal is annihilated by `KO-3`**: 42 → **0**, while the dose-matched control moves it the *other* way (42 → **75**). −75 rows vs control, **0+/26− domains, p = 2.98e-08** | as above | **STRONG, and endpoint-scoped** |
-| `R-016` (dir. only) | **`KO-3` reduces attack against a refusal-neutral control.** Direction confirmed across two independent judgings (−36 and −41), domain-clustered permutation **p = 0.0089**, 24−/10+ domains, and a composition-free endpoint (attack rate among non-refused rows) where `KO-3` is **0.313** vs every control 0.384–0.473 and baseline 0.453 | 6 arms × 380; audited (`DCS-A-004`) | **DIRECTION ONLY** — magnitude retracted by `C-016c` |
+| `R-016`/`R-019` | **`KO-3` reduces attack against refusal-neutral controls — in DIRECTION.** All 3 qualifying controls negative (−41, −21, −28; mean **−30** of 153), across 2 seeds and 4 judgings. Composition-free endpoint: `KO-3` attack rate among non-refused rows **0.313** vs every control 0.384–0.473 and baseline 0.453. ✅ The prospective prediction held — a **rejected** draw (+32 refusals) shows no contrast (−16, p = 0.221) | 6 arms × 380; audited (`DCS-A-004`) | **DIRECTION ONLY.** ⛔ Not significant at the domain independence unit (0.061/0.150/0.136; pooled 0.405) |
 | `R-002` | **The movement is NOT concept-specific.** Against `knife`/`gun`/`club`, three of four comparisons run the *other* way and every difference is inside the measured split-to-split band (median 0.015, p90 0.044) | 10 banks, dev + heldout | **evaluated negative** |
 | `R-003` | **The shift does not accumulate.** Final occurrence > first in 32/32 cells, but demonstrations-only ρ **disagrees in sign between banks** (−0.048 vs +0.278) and the effect is flat in `n_examples` (7.01/7.25/7.10/6.54) | 2 banks × 32 layers, per-row, cross-fit | **evaluated negative** |
 | `R-004` | **Null control fires exactly:** at `n_examples = 0` the paired `C−A` is `0.000e+00` at all 96 cells — correct, since A and C are byte-identical without demonstrations | 2 banks | **positive control** |
@@ -169,6 +172,12 @@ ICC ≈ 0.34, so domain is the correct independence unit.
   the option set on 257/380 rows). The defense — the dose-matched control on the *same* prompts
   keeps mass at 0.798 — is strong but **must be argued in the text**.
 * `DCS-B-003`: the L18 transplant result is neither retracted nor re-affirmed; **not citable**.
+* `DCS-B-009`: ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
+  cannot resolve a ~20 % relative effect by a clustered sign test (`k_inf` 36, floor 2.9e-11 — a
+  true underpowering, not a floor limitation). **38 is the maximum that exists** in any
+  demonstration-pool file in the repo; the other 38-domain files are the *same* 38 under different
+  lexical pairs. Resolving it requires **generating new pools**, a new-data task for a separate
+  preregistration.
 
 ## VERIFICATION
 
