@@ -1881,3 +1881,52 @@ used.** It is not established, and under a defensible correction the data point 
 against baseline (`refused` within band), **plus** McNemar as the primary test since the rows are
 paired, **plus** a refusal-stratified analysis reported beside the face-value number.
 ⇒ Recorded as `DCS-B-008`, and it is now the phase's top open experiment.
+
+### `DCS-R-013` — `B-008` part 1: the correct paired test and the refusal strata, on existing data
+
+Recomputed independently (exact McNemar, `math.comb`, no approximation), same 380 paired rows.
+
+**McNemar, `malicious_at_0.5`** — reproduces `DCS-A-003` exactly:
+
+| contrast | gained | lost | discordant | net | exact p |
+|---|---|---|---|---|---|
+| `KO-3` vs baseline | 50 | 98 | 148 | **−48** | 9.83e-05 |
+| control vs baseline | 41 | 74 | 115 | **−33** | **2.69e-03** |
+| **`KO-3` vs control** | 62 | 77 | 139 | **−15** | **0.2349** |
+
+⇒ The face-value contrast is **p = 0.235, not 0.860**. ⛔ My reported figure came from the wrong
+test; the direction of the correction is toward *less* evidence for a null, not more.
+⚠ Note the churn the net conceals: **139 discordant rows** for a net of −15.
+
+**The exchangeability violation, quantified on the artifact:**
+
+    control rows converted ATTACK -> REFUSE : 19
+    KO-3 refusals in the whole arm          : 0
+    control refusals 75  vs  baseline 42
+
+**Three estimates of the same quantity, and which are defensible:**
+
+| estimator | `KO-3` − control | p | defensible? |
+|---|---|---|---|
+| face value | **−15** | 0.235 | ✅ but **biased toward zero** — it subtracts a refusal channel `KO-3` cannot express |
+| refusal-credited (control credited an attack on the 19 rows it converted) | **−34** | McNemar 5.1e-03 | ✅ the audit's `CF-A`; the defensible correction |
+| stratum where the control did not refuse (n = 305) | **−40** | 2.27e-04 | ⛔ **NO** — conditions on a **post-treatment** variable |
+
+⚠ The complementary stratum (control *did* refuse, n = 75) gives `+25` at p = 5.96e-08, but it is
+**tautological**: the control has 0 attacks there *by construction*, so `KO-3` can only score ≥. ⛔ It
+must never be quoted as evidence in either direction, and its tiny p is an artifact of that
+degeneracy.
+
+⇒ **`CANNOT ANSWER` stands, but the direction of the bias is now known.** The true effect is bounded
+on **[−15, −40]**, every correction for the comparator's refusal channel moves it *away* from zero,
+and the defensible point estimate (−34, p = 0.0051) would be a **positive** result. ⛔ What may
+**not** be said is "the attack is unchanged"; what may **not** yet be said is "the attack falls".
+
+**`B-008` part 2, submitted this tick:** three further count-matched control draws at the identical
+scope, band and dose — `nondemo_matched_d2` (**841428**), `nondemo_matched_d3` (**841429**),
+`nondemo_capped_d1` (**841430**). ⛔ Declared before their outcomes: the **selection rule is
+refusal-neutrality against baseline, not attack rate** — a control qualifies iff its `refused` count
+sits within the 17-row judge band of the baseline's 42. Choosing a comparator by its attack number
+would be exactly the shopping this phase forbids. If **none** qualifies, that is itself the finding:
+the non-demonstration key pool cannot furnish a refusal-neutral control at this dose, and the
+mediation question is **not answerable with this control family**.
