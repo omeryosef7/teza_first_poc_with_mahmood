@@ -2198,3 +2198,22 @@ fabrication `C-016` just retracted.
   `KO-3` stays **≈ 116–119**, the claim stands at roughly **−30**. If `d2` re-judges near **137**,
   the effect is **≈ −18** and sits **on the noise band**, i.e. `CANNOT ANSWER`.
 * The `dev`/`heldout` split asymmetry is reported with whatever comes back, not after.
+
+### `DCS-017` — 2026-09-03 — `PR-005` pre-flight **PASSES**; judge blocked by a cluster outage
+
+**Pre-flight assertion, run before any judging** (`DCS-PR-005`): `capped_d2` vs `matched_d2` and
+`capped_d3` vs `matched_d3` are **380/380 byte-identical completions**, identical `prompt_id` sets.
+✅ ⇒ They are **re-judge replicates**, exactly as `C-016b` predicted from
+`score_behavior.py:833-866`, and ⛔ **not** new draws. Had this failed, the replicate framing would
+have been void and they would have had to be treated as a fourth and fifth draw.
+
+⚠ **Blocked:** `scontrol ping` reports **`Slurmctld(primary) at op-controller2 is DOWN`** and
+`sinfo` cannot contact the controller — a cluster-wide outage, not a queue or fair-share problem.
+⛔ The judge is **not** run on the login node (`import openai` hangs >90 s under NFS contention;
+standing rule), so the replicate judging waits for the controller.
+
+**Nothing is lost by the wait.** All six generation arms are complete and on disk with their
+provenance; the outage delays measurement, not data. The `PR-005` decision rule stays exactly as
+declared: `d2` holding **≥ ~145** attacks against `KO-3` at **≈ 116–119** leaves the claim near
+**−30**; `d2` re-judging near **137** puts the effect at **≈ −18**, on the noise band, i.e.
+`CANNOT ANSWER`. ⛔ That rule was fixed before the replicate text existed and is not revisited now.
