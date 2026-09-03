@@ -1810,3 +1810,74 @@ accumulate), the mapping is now established as **causally demonstration-dependen
 inert**. ⛔ Under §1.7 this is a **failure at gate `R5`/`R6` after passing `R1`–`R4`** — which §1.7
 declares in advance to be a finding, not a defeat, and which ⛔ closes the door on `P9`
 (GCG/MAC objective) for this representation.
+
+### `DCS-A-003` / `DCS-C-015` — ⛔ **`DCS-R-012`'s NULL IS RETRACTED.** Wrong test, and a non-exchangeable control.
+
+An adversarial audit of the null reproduced every number to the digit, confirmed the join is perfect
+(same 380 ids in the same order, `goal_sha256_16` identical per id across arms, `judge_status = ok`
+1140/1140, identical bank shas), and confirmed generation is uncorrupted at full n. **It then broke
+the claim in two independent ways.**
+
+**⛔ (1) The reported statistic is the wrong test and is underpowered by ~2×.**
+Rows are **1:1 paired by `prompt_id`, in identical order** — so the correct test is **McNemar**, not
+a domain sign test. Simulated MDE (4000 trials, α = 0.05):
+
+| additional true reduction | `KO3 − ctrl` | power, domain sign test (**as I reported**) | power, row-paired McNemar |
+|---|---|---|---|
+| 25 rows (≈31 % of control) | −40 | **0.106** | 1.000 |
+| 40 rows (43 %) | −55 | 0.876 | 1.000 |
+
+⇒ **The reported test's MDE is ≈ −55 rows, a 43 % reduction.** A 30 % reduction had power **0.10**.
+⛔ By the phase's own standard that is **not a capable null**. McNemar on the same data gives
+**p = 0.235**, not 0.860 — still non-significant, but nowhere near "clean".
+Cluster bootstrap over 38 domains: **−15, 95 % CI [−45, +14]** — the interval **admits a 35 %
+reduction**.
+
+**⛔ (2) "Below the 17-row judge band" is a category error, and I made it repeatedly.**
+The band is *measurement noise on a single arm's count*. Being below it means an observation is not
+distinguishable from noise; it does **not** bound the true effect, which the CI shows could be −45.
+And the noise on a **difference of two independently judged arms** is ≈ √2 × 17 ≈ **24 rows**, not
+17. ⚠ Every "below the band" verdict in this phase must be re-read with that correction.
+
+**⛔ (3) The control is over-strong AND mechanistically non-exchangeable — this is the fatal one.**
+Dose matching is **flawless** (0/380 row mismatches on every counter; totals byte-identical at
+4 853 952 prefill edits). But dose-matched is not effect-matched. The transition tables:
+
+    base -> ctrl :  ATTACK ->{A:88  R:19  N:55}   REFUSE ->{A: 0  R:42  N: 0}
+    base -> KO-3 :  ATTACK ->{A:64  R: 0  N:98}   REFUSE ->{A:14  R: 0  N:28}
+
+**The control suppresses attack *by making the model refuse*** — 19 direct `ATTACK→REFUSE`
+conversions, refusal +33 rows (21+/0−, p = 9.54e-07), and all 42 baseline refusals preserved.
+**`KO-3` has zero refusals in the entire arm**, so refusal-mediated suppression is **structurally
+unavailable** to it. ⇒ Subtracting the control subtracts a mechanism `KO-3` cannot express. The
+refusal channel moving in **opposite directions** (−42 vs +33) is direct evidence the exchangeability
+assumption fails.
+
+**Sensitivity, discounting only that channel** (crediting the control the 19 rows it converted
+`ATTACK→REFUSE`): **`KO3 − ctrl = −34 rows`, McNemar p = 0.0051** — i.e. **`PR-004`'s FIRST declared
+outcome**, the opposite of what I recorded. The point estimate is bounded on **[−15, −40]** across
+face-value and refusal-discounted comparators.
+
+⇒ **`DCS-R-012` is retracted and replaced by `CANNOT ANSWER — the comparator is not exchangeable.`**
+⛔ The sentence *"we moved the representation past zero and behavior did not follow"* **must not be
+used.** It is not established, and under a defensible correction the data point the other way.
+
+**Three further findings that stand on their own:**
+* ⚠ **Net counts hide near-total churn.** `KO-3` destroys 98 baseline attacks and **creates 50**
+  (36 `NEITHER→ATTACK`, 14 `REFUSE→ATTACK`); the control destroys 74 and creates 41. A net of −48
+  on ~140 flipping rows is re-randomisation, not suppression, and any mediation reading of a net
+  count under that churn is fragile.
+* ⚠ **`R-13`'s topicality failure mode, again.** Only **14 of 162** baseline "attacks" have
+  `goal_topicality ≥ 0.5` — **91 % of the headline endpoint is off-goal text**. The topical row is
+  not a null, it is **uninformative** (`k_inf` tiny, every contrast far below any band).
+* ⚠ **`PR-004` declared four endpoints and named none primary.** `malicious_at_0.5` was chosen post
+  hoc (the module's canonical threshold is 0.25). Immaterial here — all four agree in sign — but it
+  is a preregistration defect and is recorded as one.
+* ⚠ Baseline drift: `PR-004` quoted 153/380; this judge run gives **162** on the *same* generations
+  — consistent with the 13.4 % flip rate, but the declared power argument referenced a different
+  measurement of the same arm.
+
+**What would settle it, preregistered here:** a dose-matched control **verified refusal-neutral**
+against baseline (`refused` within band), **plus** McNemar as the primary test since the rows are
+paired, **plus** a refusal-stratified analysis reported beside the face-value number.
+⇒ Recorded as `DCS-B-008`, and it is now the phase's top open experiment.

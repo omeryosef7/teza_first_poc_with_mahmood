@@ -19,12 +19,16 @@ flip back to the literal meaning**, replicated on a second codeword, against a d
 that does nothing. That path is **remapping-specific**: the identical intervention barely moves the
 cell where the word already *is* the concept (DiD −9.89 and −9.35 on two codewords, 37/38 domains,
 p = 2.8e-10). But the representation is **not specific to the harmful concept** (knife/gun/club
-match or exceed bomb), **does not accumulate** across demonstrations, and — the decisive test —
-**can be destroyed outright without the attack changing** (−15 rows vs its dose-matched control,
-p = 0.86, a capable null). **The mechanism is real, demonstration-built, remapping-specific, and
-behaviorally inert.** Under the phase's own preregistered gates that is a failure at `R5`/`R6` after
-passing `R1`–`R4`, which was declared in advance to be a finding rather than a defeat, and it closes
-the door on a GCG/MAC objective built on this representation.
+match or exceed bomb) and **does not accumulate** across demonstrations.
+⛔ **The decisive mediation test is UNRESOLVED**: `DCS-R-012` first reported that the
+mapping can be destroyed without the attack changing, and an adversarial audit **retracted that null**
+— the test was a domain sign test on row-paired data (MDE ≈ 43 % reduction) and the dose-matched
+control turned out to suppress attack **by inducing refusal**, a channel `KO-3` annihilates to zero,
+so the subtraction removes a mechanism the treatment cannot express. Under a refusal-discounted
+comparator the effect is **−34 rows, McNemar p = 0.0051** — the opposite conclusion. **The honest
+status is `CANNOT ANSWER` pending a refusal-neutral control.** So: the mechanism is real,
+demonstration-built and remapping-specific; whether it is behaviorally causal is **open**, and the
+gates `R5`/`R6` are **untested**, not failed.
 
 ---
 
@@ -45,20 +49,26 @@ column existed.
 | # | result | evidence | verdict |
 |---|---|---|---|
 | `R-010`/`R-011` | **The demonstration→query path is necessary for the remapping and specific to it.** `KO-3` (whole query span ↛ demonstrations, L6–14) drives the codeword cell from **+5.19 → −2.76** (`button`) and **+6.79 → −3.80** (`basket`) — a sign flip to the literal reading — while barely moving the cell where the word *is* the concept. **DiD −9.889 and −9.352, both 1+/37− domains, both p = 2.838e-10**, floor 7.28e-12 | 2 codewords × 6 arms × ~380 rows × 38 domains; dose-matched controls negligible; adversarially audited (`DCS-A-002`) | **REPLICATED, remapping-specific** |
-| `R-012` | **Destroying the mapping does not move the attack.** vs the dose-matched control: `malicious_at_0.5` **−15 rows, p = 0.860**; StrongREJECT −14.25, p = 0.743. Both below the 17-row judge band, `k_inf` 28–37, floors 1e-9…1e-11 | one judge invocation, 3 arms × 380, generation verified uncorrupted, dose matched row-by-row (0/380 mismatches) | **CAPABLE NULL** |
-| `R-012b` | **Refusal is annihilated by the same intervention**: 42 → **0**, while the dose-matched control moves it the *other* way (42 → **75**). −75 rows vs control, **0+/26− domains, p = 2.98e-08** | as above | **STRONG, and endpoint-scoped** |
+| `R-012b` | **Refusal is annihilated by `KO-3`**: 42 → **0**, while the dose-matched control moves it the *other* way (42 → **75**). −75 rows vs control, **0+/26− domains, p = 2.98e-08** | as above | **STRONG, and endpoint-scoped** |
 | `R-002` | **The movement is NOT concept-specific.** Against `knife`/`gun`/`club`, three of four comparisons run the *other* way and every difference is inside the measured split-to-split band (median 0.015, p90 0.044) | 10 banks, dev + heldout | **evaluated negative** |
 | `R-003` | **The shift does not accumulate.** Final occurrence > first in 32/32 cells, but demonstrations-only ρ **disagrees in sign between banks** (−0.048 vs +0.278) and the effect is flat in `n_examples` (7.01/7.25/7.10/6.54) | 2 banks × 32 layers, per-row, cross-fit | **evaluated negative** |
 | `R-004` | **Null control fires exactly:** at `n_examples = 0` the paired `C−A` is `0.000e+00` at all 96 cells — correct, since A and C are byte-identical without demonstrations | 2 banks | **positive control** |
 | `R-006` | `KO-1` (final codeword row ↛ demonstrations) is a **well-powered null on attack** (+11 rows, p = 0.597, floor 4.66e-10) and **halves refusal** (−21, 0+/13−, p = 2.44e-04 = its floor) | 6 arms × 380 | **null + refusal effect** |
 | `R-005` | `KO-1` leaves the **mapping intact** (+0.278, 25+/13−, p = 0.073 on the preregistered sign test) | 3 arms × 380; audited (`DCS-A-001`) | **null** |
 
-### The dissociation, stated once
+### The dissociation — ⚠ NARROWED by `C-015`
 
-**Two models, three knockout scopes, one pattern: refusal is movable and attack is not.**
-`TSC-R-006` (Qwen3, `demo_processing_only`: all 150 refusals removed, attack moved by one row) ·
-`DCS-R-007` (Llama, `target_surface_row_only`: refusal halved, attack null) ·
-`DCS-R-012` (Llama, `query_prefill_only`: refusal annihilated, attack null vs control).
+Every scope tested moves **refusal** by a large, well-powered margin:
+`TSC-R-006` (Qwen3, `demo_processing_only`: all 150 refusals removed) ·
+`DCS-R-007` (Llama, `target_surface_row_only`: refusal halved, p = 2.44e-04) ·
+`DCS-R-012b` (Llama, `query_prefill_only`: refusal 42 → **0**, control 42 → **75**, p = 2.98e-08).
+
+⛔ **But "and attack is not" now holds only where the attack test was capable.** It stands for
+`KO-1` (`R-006`: +11 rows, `k_inf` 32, floor 4.66e-10, and the mapping was never destroyed there).
+It does **NOT** stand for `KO-3`: `C-015` retracted that null, and under a refusal-discounted
+comparator the attack effect is −34 rows at McNemar p = 0.0051. ⚠ The refusal half of the
+dissociation is solid on two models and three scopes; the attack half is **open** at the one scope
+that actually destroys the representation.
 
 ---
 
@@ -98,6 +108,7 @@ column existed.
 | `C-005` | `R-001`'s **L6–L12 peak** | Absent from the per-row standardized effect size, which is largest at L0 and declines. The peak exists only in a between-cell-mean distance ratio. |
 | `C-008` | `R-005`'s **option-mass caveat** | Algebraically impossible: `logodds` is a difference of logsumexps over the full vocabulary, verified mass-invariant to 1.8e-15. The caveat *understated* the result. |
 | `C-009`/`C-011` | "**The controls are inert**" | Negligible in magnitude (|Δ| < 0.31) but **not sign-null**: 31+/7− and 6+/32−. |
+| `C-015` | **`R-012`'s null — "the mapping can be destroyed without the attack changing"** | Two independent defects. (a) Reported via a **domain sign test on row-paired data**; the correct McNemar gives p = 0.235, not 0.860, and the sign test's MDE is a **43 % reduction** — a 30 % reduction had power 0.10. (b) The dose-matched control suppresses attack **by inducing refusal** (19 direct `ATTACK→REFUSE`, refusal +33, p = 9.5e-07), a channel `KO-3` annihilates to **zero**, so the comparator is **not exchangeable**. Refusal-discounted: **−34 rows, McNemar p = 0.0051**. Status: **CANNOT ANSWER** |
 | `C-004` | `R-003(b)`'s ρ figures | Quoted from the series *including* the query occurrence at 4 sampled layers; the demonstrations-only series over all 288 is the correct statistic. |
 | `C-002` | "The `basket` replication is partly an illusion" | Measured exactly: cells `A` and `C` are **0.000** byte-identical across lexical banks. Only `B`/`E` share behavioral rows, and those are the cells with no codeword. `TSC-R-004` stands. |
 | *inherited* | `d_surface` as validated, or as a GCG/MAC objective | Still **BLOCKED**. `R-012` closes the door for the new representation too. |
@@ -125,6 +136,11 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## OPEN QUESTIONS
 
+0. ⛔ **THE PHASE'S TOP OPEN EXPERIMENT (`DCS-B-008`): is the path behaviorally causal?** Needs a
+   dose-matched control **verified refusal-neutral** vs baseline, **McNemar** as the primary test
+   (the rows are paired), and a refusal-stratified analysis beside the face-value number. The
+   current answer is bounded on **[−15, −40] rows** depending on the comparator and is **not
+   resolved in either direction**.
 1. **Which position retrieves?** `KO-3` cuts the whole query span and cannot separate the readout
    position from the ~10 intervening query tokens. A readout-row-only scope does not exist;
    the machinery added this phase makes it a small extension.
