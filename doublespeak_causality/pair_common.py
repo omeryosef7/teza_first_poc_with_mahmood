@@ -645,6 +645,16 @@ SCOPED_KNOCKOUT_MODES = (
     # whole query span. If the last row alone reproduces `query_prefill_only`, retrieval happens AT
     # THE READOUT; if it does not, retrieval is distributed across the span.
     "prompt_last_row_only",
+    # ADDED 2026-09-03 (DCS-B-010). The ladder so far has TWO 1-row nulls and ONE 32-row collapse,
+    # which a "retrieval is distributed" account and a "row-count threshold" account explain
+    # equally well. Separating them needs intermediate row counts, so this scope takes an
+    # ARBITRARY caller-supplied row set through the same `surface_span` plumbing
+    # `target_surface_row_only` already uses -- the consumer passes the last K rows of the query
+    # span, and K is swept.
+    #
+    # One mode rather than one mode per K, because a family of near-identical named modes is a
+    # family of places for them to drift apart.
+    "query_last_k_rows",
 )
 
 # mode -> counters that MUST be > 0 for the run to be reportable (PROOF OF LIFE)
@@ -656,6 +666,7 @@ LIVENESS_REQUIREMENT: Dict[str, tuple] = {
     "demo_processing_only": ("n_prefill_edits",),
     "target_surface_row_only": ("n_prefill_edits",),
     "prompt_last_row_only": ("n_prefill_edits",),
+    "query_last_k_rows": ("n_prefill_edits",),
 }
 
 # mode -> counters that MUST be exactly 0; a non-zero one means the scoping leaked and the
@@ -668,6 +679,7 @@ LIVENESS_MUST_BE_ZERO: Dict[str, tuple] = {
     "demo_processing_only": ("n_decode_edits",),
     "target_surface_row_only": ("n_decode_edits",),
     "prompt_last_row_only": ("n_decode_edits",),
+    "query_last_k_rows": ("n_decode_edits",),
 }
 
 
@@ -701,6 +713,11 @@ def resolve_scoped_query_rows(mode: str, is_decode: bool,
         if is_decode:
             return frozenset()
         return frozenset({max(query_span)}) if query_span else frozenset()
+    if mode == "query_last_k_rows":
+        # Prefill only; the row set is supplied verbatim by the consumer via `surface_span`, which
+        # is the same channel `target_surface_row_only` uses. The consumer, not this resolver, owns
+        # the definition of "last K" so that K appears in exactly one place.
+        return frozenset() if is_decode else (surface_span or frozenset())
     if mode == "target_surface_row_only":
         # Prefill only, and only the ONE occurrence's rows. `surface_span` is deliberately a
         # separate argument rather than a narrowed `query_span`: the query span is still needed
@@ -769,6 +786,9 @@ class ScopedAttentionKnockout:
         if mode == "demo_processing_only" and not self.demo_span:
             raise ValueError(f"mode {mode!r} needs a non-empty demo_span (absolute positions of "
                              f"the demonstration block); an empty one is a no-op knockout")
+        if mode == "query_last_k_rows" and not self.surface_span:
+            raise ValueError(f"mode {mode!r} needs a non-empty surface_span (the last K query rows); "
+                             f"an empty one is a no-op knockout that would score as a clean null")
         if mode == "target_surface_row_only" and not self.surface_span:
             raise ValueError(f"mode {mode!r} needs a non-empty surface_span (absolute positions of "
                              f"the FINAL target_surface occurrence in the query); an empty one is a "

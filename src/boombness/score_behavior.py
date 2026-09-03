@@ -1413,6 +1413,12 @@ def main() -> int:
                          "never knocked out is a no-op dressed as an experiment, and is refused. "
                          "Donor and recipient are the SAME templated string, and DonorPatch "
                          "re-verifies token identity over the patched span before writing.")
+    ap.add_argument("--knockout-last-k", type=int, default=0,
+                    help="ONLY for --knockout-scope query_last_k_rows (DCS-B-010): cut the LAST K "
+                         "rows of the query span from the demonstrations. K is swept to separate "
+                         "'retrieval is distributed across the span' from 'a row-count threshold', "
+                         "which the 1-row and 32-row rungs cannot distinguish. Must be >=1 for that "
+                         "scope and is REFUSED for any other, so it cannot silently do nothing.")
     ap.add_argument("--knockout-scope", default=DEFAULT_KNOCKOUT_SCOPE,
                     help="query-row scope for attn_knockout arms: legacy_all_query (default, "
                          "byte-identical to every Phase 2-4 arm), query_prefill_only, decode_only, "
@@ -1442,6 +1448,13 @@ def main() -> int:
     # raises ValueError on an unknown mode, but it is constructed INSIDE the per-row `try`, so that
     # raise would become N silent ledger failures and a written summary.json rather than a refusal.
     _knock_scope = args.knockout_scope.strip()
+    if args.knockout_last_k and _knock_scope != "query_last_k_rows":
+        raise SystemExit(f"[score] REFUSING: --knockout-last-k={args.knockout_last_k} is only "
+                         f"meaningful with --knockout-scope query_last_k_rows, got {_knock_scope!r}. "
+                         f"A flag that reaches nothing must never run.")
+    if _knock_scope == "query_last_k_rows" and int(args.knockout_last_k) < 1:
+        raise SystemExit("[score] REFUSING: --knockout-scope query_last_k_rows needs "
+                         "--knockout-last-k >= 1; K=0 is a no-op knockout that scores as a null.")
     if _knock_scope not in pc.SCOPED_KNOCKOUT_MODES:
         raise SystemExit(f"[score] REFUSING: unknown --knockout-scope {args.knockout_scope!r}; "
                          f"known: {list(pc.SCOPED_KNOCKOUT_MODES)}")
@@ -1842,7 +1855,13 @@ def main() -> int:
             # `templated` string, so the pre-flight population and the per-row population agree by
             # construction rather than by coincidence.
             _surf = None
-            if _knock_scope == "target_surface_row_only":
+            if _knock_scope == "query_last_k_rows":
+                _q = sorted(_prot)
+                _surf = frozenset(_q[-int(args.knockout_last_k):]) if _q else frozenset()
+                if not _surf:
+                    _feas["dead_scope_span"] += 1; _b["bad"] += 1
+                    _bad.append((_r["prompt_id"], "query_last_k_rows:empty_query_span")); continue
+            elif _knock_scope == "target_surface_row_only":
                 _surf, _surf_why = target_surface_positions(lm.tokenizer, _r, _t, _prot)
                 if _surf_why:
                     _feas["dead_scope_span"] += 1
@@ -2079,7 +2098,15 @@ def main() -> int:
             # to refusing is a no-op knockout that scores as a clean null. Because the skip is
             # ledgered by prompt_id, the excluded rows can be replayed into every OTHER arm as a
             # declared population exclusion, which is the standing rule (crash > silent skip).
-            if _knock_scope == "target_surface_row_only":
+            if _knock_scope == "query_last_k_rows":
+                _qs = sorted(prot)
+                surf = frozenset(_qs[-int(args.knockout_last_k):]) if _qs else frozenset()
+                if not surf:
+                    ledger.fail("surfacespan:query_last_k_rows_empty", row["prompt_id"]); continue
+                base["surface_span_positions"] = sorted(surf)
+                base["surface_span_n_tokens"] = len(surf)
+                base["knockout_last_k"] = int(args.knockout_last_k)
+            elif _knock_scope == "target_surface_row_only":
                 surf, surf_reason = target_surface_positions(
                     lm.tokenizer, row, templated_r, prot)
                 if surf_reason:

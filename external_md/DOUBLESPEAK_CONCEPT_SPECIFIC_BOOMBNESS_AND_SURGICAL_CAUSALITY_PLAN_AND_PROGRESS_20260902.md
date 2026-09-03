@@ -2522,3 +2522,163 @@ their union is still strictly inside the span. **153 tests pass.**
   never as either extreme.
 * The comparator is the **dose-matched control at the same scope**, not the baseline — `C-015`'s
   lesson, applied in advance this time rather than after an audit.
+
+### `DCS-019` — periodic review: headline recomputability, and `KO-4`'s treatment arm
+
+**Recomputability check** (§32 / the "can every headline value be recomputed" review item), run
+independently from the committed artifacts rather than from any analysis script's cached output:
+
+| headline | published | recomputed | |
+|---|---|---|---|
+| `R-010` `button` DiD | −9.889, 1+/37−, p = 2.838e-10 | **−9.889, 1+/37−, p = 2.838e-10** | ✅ MATCH |
+| `R-011` `basket` DiD | −9.352, 1+/37−, p = 2.838e-10 | **−9.352, 1+/37−, p = 2.838e-10** | ✅ MATCH |
+| `R-005` cell-`C` baseline | +5.188 mean, 0.942 frac | **+5.188, 0.942** | ✅ MATCH |
+
+⇒ The mechanism headlines are reproducible to the digit from `results.jsonl` alone.
+
+**`KO-4` treatment arm complete and verified live:** 380 rows, `prefill = 2088`, `decode = 0`,
+`hook_n_query_rows_edited = 36` (9 layers × 4 readout forwards × **1 row**), **0** liveness
+violations, scope confirmed `prompt_last_row_only`.
+
+**Readout, against the shared baseline** — the control arm (843377) is still generating:
+
+| arm | rows edited/layer/forward | mean `logodds` |
+|---|---|---|
+| baseline | — | **+5.188** |
+| `KO-1` codeword row | 1 | +5.467 |
+| **`KO-4` readout row** | **1** | **+5.149** |
+| `KO-3` whole query span | **32** | **−2.756** |
+
+⇒ Blocking the readout row alone moves the mapping by **−0.04**. ⛔ Preliminary — the declared
+comparator is the dose-matched control at the same scope, not the baseline.
+
+⚠ **A confound I am recording BEFORE the control lands, because it is the reading I would otherwise
+be tempted to write.** `PR-007` declared that a `KO-4` null while `KO-3` collapses means retrieval is
+**distributed across the query span**. But `KO-1` and `KO-4` are **both single-row** scopes at dose
+2088, and `KO-3` blocks **32 rows** at dose 66 816 — **32×** more. ⇒ Two nulls at one row and a
+collapse at 32 rows is **equally consistent with a dose threshold in the number of retrieving rows**
+as with genuinely distributed retrieval. ⛔ These three points **cannot** separate those readings.
+
+⚠ What the existing controls do and do not exclude: the dose-matched control at 66 816 is inert
+(+0.137), so the `KO-3` collapse is **not generic damage at that dose** — but that says nothing about
+whether a *threshold number of rows* is required. Separating them needs a **row dose-ladder**
+(block the last 2 / 4 / 8 / 16 query rows), which is a new scope family and is **not** run.
+
+⇒ Recorded as **`DCS-B-010`**: *"distributed retrieval" and "row-count threshold" are not
+distinguished by the current ladder.* ⛔ Neither may be asserted, and `PR-007`'s second branch must
+be reported with this caveat attached rather than as a clean falsification of the
+retrieved-at-the-answer hypothesis.
+
+### `DCS-R-021` — ✅ the knockout ladder is COMPLETE. **No single query row carries the mapping.**
+
+Cell `C`, `semantic_forced_choice`, 380 rows, 38 domains, each rung against **its own dose-matched
+control at the same scope** (not the baseline — `C-015`'s rule, applied throughout).
+Baseline mean `logodds` = **+5.188**.
+
+| rung | query rows cut | dose | mean `logodds` | **vs its control** | domains | sign p |
+|---|---|---|---|---|---|---|
+| `KO-1` final **codeword** row | **1** | 2 088 | +5.467 | **+0.363** | 26+/12− | 3.36e-02 |
+| **`KO-4` final **readout** row** | **1** | 2 088 | +5.149 | **−0.013** | 15+/23− | **0.256** |
+| `KO-3` **whole** query span | **32** | 66 816 | **−2.756** | **−8.081** | 1+/37− | 2.84e-10 |
+
+⇒ **`KO-4` is a clean null** (−0.013, p = 0.256, 15+/23−). Blocking the position where the
+forced-choice answer is actually scored, from the demonstrations, at the same band and dose as
+`KO-1`, does **nothing**.
+
+⇒ **Neither single query row carries the mapping** — not the codeword occurrence, not the readout
+row — **while cutting all 32 rows destroys it and flips its sign.**
+
+⚠ **Per `DCS-B-010`, this does NOT license "retrieval is distributed across the query span."** Both
+nulls are at **1 row / dose 2 088** and the collapse is at **32 rows / dose 66 816**. A **row-count
+threshold** explains the same three points. ⛔ `PR-007`'s second branch is reported **with this
+caveat attached**, and the leading hypothesis since `DCS-A-001` — *"retrieved at the answer
+position"* — is **falsified only in its strong form**: the readout row is not *sufficient* to carry
+retrieval; whether it is *part* of a distributed mechanism is untested.
+
+**What the ladder now establishes, stated at the strength the design supports:**
+* ✅ The demonstration→query path is **necessary** for the remapping (`R-008`) and **specific** to it
+  (`R-010`/`R-011`, two codewords, DiD −9.89/−9.35, 37/38 domains).
+* ✅ **No single query position is sufficient to carry it** — two disjoint single-row scopes, both
+  null, at a dose where the wide scope's own control is inert.
+* ⛔ **Unresolved:** distributed mechanism vs row-count threshold (`B-010`), which needs a row
+  dose-ladder (2 / 4 / 8 / 16 rows) that this phase did not build.
+
+⇒ The §1.8 ladder is **complete as designed**: `KO-1` ✅ · `KO-2` ⛔ uninformative on ASR (`C-007`),
+answered on the readout channel (`R-009`) · `KO-3` ✅ · `KO-4` ✅ · `KO-5` inherited (`TSC-R-001`).
+
+### `DCS-PR-008` — `B-010`'s row dose-ladder, built and submitted
+
+`R-021` left exactly one mechanistic question live: **two 1-row nulls and one 32-row collapse are
+explained equally well by "retrieval is distributed across the query span" and by "a row-count
+threshold."** `B-010` said only intermediate row counts could separate them. They now exist.
+
+**New scope `query_last_k_rows` + `--knockout-last-k K`.** The scope takes an **arbitrary
+caller-supplied row set** through the same `surface_span` channel `target_surface_row_only` already
+uses; the **consumer** computes "the last K rows of the query span", so **K lives in exactly one
+place**. ⛔ One mode, not one mode per K — a family of near-identical named modes is a family of
+places for them to drift apart.
+
+**Argument-time refusals** (a flag that reaches nothing must never run): `--knockout-last-k` with
+any other scope is **refused**, and `query_last_k_rows` with `K < 1` is **refused** — K = 0 would be
+a no-op knockout that scores as a clean null, the failure mode this phase has already hit twice.
+
+**160 tests pass**, including two that make the ladder interpretable rather than assumed:
+* dose is **strictly monotone in K** (K = 1 < 2 < 4);
+* ⚠ **K = |query span| reproduces `query_prefill_only` byte-for-byte in edit count** — so the ladder
+  provably *connects* to the rung it interpolates toward. Without that identity the ladder and
+  `KO-3` could be measuring different things.
+
+**Submitted — 6 arms at the house cap, every rung with its own dose-matched control:**
+`K = 2` (843702/843703) · `K = 8` (843704/843705) · `K = 16` (843706/843707).
+With the existing `K = 1` (`KO-4`) and `K = 32` (`KO-3`) this gives a **five-point ladder,
+1 → 2 → 8 → 16 → 32**, all on cell `C`, same band, seed, bank and dose policy.
+
+⛔ **Declared before any outcome:**
+* **Smooth / graded** rise in effect with K ⇒ **distributed** retrieval: no privileged position, and
+  the mapping is carried by the *aggregate* of query rows.
+* **Step** at some K ⇒ a **row-count threshold**, and "distributed" is the wrong description.
+* **Flat until K ≈ 32** ⇒ the effect needs essentially the whole span, which would make even
+  "threshold" too strong a claim.
+* Each rung is read against **its own** dose-matched control, never the baseline (`C-015`).
+* ⚠ The ladder is confounded between **row count** and **dose** by construction — they rise
+  together. What it can separate is *graded vs step*, which is the actual question; it cannot
+  attribute the effect to rows rather than to total edited cells.
+
+### `DCS-R-022` — ✅ `B-010` RESOLVED: it is a **THRESHOLD**, not distributed retrieval. And the controls are inert at every dose.
+
+Five-point ladder, cell `C`, `semantic_forced_choice`, 380 rows, 38 domains, **each rung against its
+own dose-matched control at its own scope**. Baseline mean `logodds` = **+5.188**.
+
+| K rows cut | dose | demo `logodds` | **control `logodds`** | demo − control | % of K=32 effect | domains | sign p |
+|---|---|---|---|---|---|---|---|
+| 1 | 2 088 | +5.149 | +5.163 | **−0.013** | 0.2 % | 15+/23− | 0.256 |
+| 2 | 4 176 | +5.150 | +5.161 | **−0.012** | 0.1 % | 15+/23− | 0.256 |
+| **8** | 16 704 | **−1.246** | +5.370 | **−6.616** | **81.9 %** | **0+/38−** | **7.28e-12** |
+| 16 | 33 408 | −2.510 | +5.378 | −7.888 | 97.6 % | 1+/37− | 2.84e-10 |
+| 32 | 66 816 | −2.756 | +5.325 | −8.081 | 100 % | 1+/37− | 2.84e-10 |
+
+⇒ **`PR-008`'s second branch obtains: a STEP, not a graded rise.** The effect is **0.1 % of full at
+K = 2 and 81.9 % at K = 8** — it appears between 2 and 8 rows and then **saturates**: K = 16 is
+already 97.6 %, and doubling again to 32 adds 2.4 %.
+
+⛔ **"Retrieval is distributed across the query span" is therefore the WRONG description**, and it
+was the pre-declared branch I would have written from `R-021` alone. `B-010` is closed: the
+mechanism needs a **threshold set of query rows (between 3 and 8)**, after which further rows add
+almost nothing.
+
+✅ **The dose confound `PR-008` flagged is answered by the controls, not by argument.** The
+count-matched controls sit at **+5.16 / +5.16 / +5.37 / +5.38 / +5.33** across doses spanning
+**2 088 → 66 816 mask cells — a 32× range — every one of them at or slightly above the +5.188
+baseline.** ⇒ ⛔ There is **no dose effect at all** in the control family; blocking 66 816
+non-demonstration cells does nothing. The step is specific to **which** keys are cut, and the
+ladder's own controls establish that at five separate doses rather than one.
+
+⚠ **What is still confounded, stated plainly:** row count and dose rise together by construction, so
+"≥ 8 rows" and "≥ 16 704 cells" are the same observation. The ladder separates **graded from step** —
+which was the question — and cannot attribute the threshold to rows rather than to edited cells.
+
+⇒ **Revised mechanistic statement, at the strength the design supports:**
+> The demonstration→query path is necessary for the remapping and specific to it. **No single query
+> position carries it, and no pair does either — but roughly a quarter of the query span suffices**,
+> after which the effect saturates. The matched controls are inert across a 32× dose range, so this
+> is a property of the demonstration keys, not of the amount of attention removed.

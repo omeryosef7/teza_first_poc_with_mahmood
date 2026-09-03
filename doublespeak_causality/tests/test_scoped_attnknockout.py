@@ -610,3 +610,36 @@ def test_prompt_last_row_only_makes_zero_decode_edits():
             _run(model, _decode_mask(SEQ + s), seq=1)
     assert stats["n_prefill_edits"] > 0 and stats["n_decode_edits"] == 0
     assert ko.liveness_violations() == []
+
+
+def test_query_last_k_rows_takes_the_row_set_verbatim_and_refuses_an_empty_one():
+    """DCS-B-010's dose ladder. The consumer owns the definition of "last K"; this scope must pass
+    the given rows through unchanged, so that K lives in exactly one place."""
+    for span in (frozenset({11}), frozenset({10, 11}), frozenset({8, 9, 10, 11})):
+        assert resolve_scoped_query_rows("query_last_k_rows", False, QSPAN, DEMO, span) == span
+        assert resolve_scoped_query_rows("query_last_k_rows", True, QSPAN, DEMO, span) == frozenset()
+    # an empty set is a no-op knockout and must RAISE, not score as a null
+    m = ToyModel(n_layers=1)
+    for bad in (None, frozenset()):
+        with pytest.raises(ValueError, match="surface_span"):
+            ScopedAttentionKnockout(m, [0], blocked_keys=KEYS, mode="query_last_k_rows",
+                                    query_span=QSPAN, demo_span=DEMO, surface_span=bad)
+
+
+def test_query_last_k_rows_dose_is_monotone_in_k():
+    """The ladder is only interpretable if dose rises with K and lands on query_prefill_only at K=|Q|."""
+    base = _prefill_mask(SEQ)
+    doses = {}
+    for k in (1, 2, 4):
+        span = frozenset(sorted(QSPAN)[-k:])
+        model = ToyModel(n_layers=1); stats = {}
+        with _scoped(model, "query_last_k_rows", surface_span=span, stats=stats):
+            _run(model, base, seq=SEQ)
+        doses[k] = stats["n_prefill_edits"]
+    assert doses[1] < doses[2] < doses[4], doses
+    model = ToyModel(n_layers=1); stats = {}
+    with _scoped(model, "query_prefill_only", stats=stats):
+        _run(model, base, seq=SEQ)
+    assert doses[4] == stats["n_prefill_edits"], (
+        "K = |query span| must reproduce query_prefill_only exactly, or the ladder does not "
+        "connect to the rung it is meant to interpolate toward")
