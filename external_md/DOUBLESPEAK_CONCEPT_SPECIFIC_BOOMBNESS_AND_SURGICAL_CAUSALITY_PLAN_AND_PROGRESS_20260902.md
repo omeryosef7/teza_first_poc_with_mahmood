@@ -3134,3 +3134,37 @@ whether the failure mode is parse-time or semantic.
 exactly **4 colon-separated parts** — `nondemo_matched_d3:attn_knockout:7-17:1.0` ✅ and
 `nondemo_matched_d1:attn_knockout:7-17:1.0` ✅. Both resubmitted; the `R-027` stopping rule (search to
 6 Qwen draws) is unchanged and these two count toward it.
+
+### `DCS-025` — periodic review: does `semantic_logodds` **mean** what every claim assumes?
+
+The review item this phase had not done — *"does the conclusion survive looking at raw examples?"* —
+executed as a **structural** check rather than by reading completions: cross-check the scalar every
+headline rests on against the model's **own discrete choice** (`top1_id` vs the concept/codeword
+token ids in `metadata.json`).
+
+| arm | n | sign agrees with argmax | disagrees | argmax outside the option pair |
+|---|---|---|---|---|
+| Llama `C` baseline | 380 | 1 / 1 | **0** | **379** |
+| Llama `C` `KO-3` | 380 | 2 / 2 | **0** | **378** |
+| Qwen `C` baseline | 380 | 377 / 377 | **0** | 3 |
+| Qwen `C` `KO-3` | 380 | 380 / 380 | **0** | **0** |
+
+✅ **Zero disagreements anywhere.** Wherever the model's top-1 token *is* one of the two options, its
+sign matches `semantic_logodds` in **100 %** of rows across both models and both arms. ⇒ The scalar
+is not a construct floating free of the model's behaviour.
+
+⚠ **The asymmetry is real and is a model difference, not a defect.** On Llama the single most likely
+next token at the readout position is **usually neither option** (`top1_id = 33909` on a row whose
+log-odds is +7.47, against `concept_token_ids = [13054]`, `codeword = [3215]`); on Qwen it usually
+**is** the concept token (`12764`). ⇒ Llama spreads its top-1 mass off the option pair while still
+strongly preferring concept *between* the two; Qwen puts it directly on the concept token.
+⛔ This does **not** weaken `semantic_logodds`, which is explicitly a **relative** measure between
+two options — but it does mean **vocabulary-argmax is not interchangeable with option-restricted
+argmax** on Llama.
+
+⚠ **Correcting my own reading of `DCS-A-002`:** that audit reported Llama `C_base` as
+"345 argmax = concept / 4 = codeword / 31 off-option". Those are **option-restricted** argmax counts.
+My table above is **vocabulary-wide** argmax. Both are correct and they answer different questions;
+⛔ quoting one as if it were the other would misdescribe the readout. The audit's version is the
+right one for "which option does the model pick"; mine is the right one for "is the option pair even
+where the mass is".
