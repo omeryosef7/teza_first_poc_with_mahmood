@@ -2732,3 +2732,37 @@ ran. The `dcs_figures.py` docstring records this so the gap is legible from the 
 ⚠ **Panel D carries its own limitation in the caption**: it shows **4 of 6** control draws — only
 those judged in a *single* invocation — because `C-016a` measured **+18 rows of cross-batch judge
 drift on byte-identical text**, which is larger than several of the contrasts being compared.
+
+### `DCS-PR-009` — `P8` model replication: Qwen3-14B, **staged**, capability check first
+
+Every mechanistic result in this phase (`R-008`, `R-010`, `R-011`, `R-021`, `R-022`) is on **one
+model**. §1.9 requires Qwen only after the design is frozen — it is — and **only after its dynamic
+range is checked**, because `TSC-C-011` is the standing precedent: Qwen's *topical* baseline was
+0.000 in every arm and could answer nothing, and reporting that as a mechanistic null would have
+been wrong.
+
+⚠ **Two Qwen-specific settings, both taken from the prior sprint's committed argsfiles rather than
+guessed:**
+* **`--enable-thinking false`.** ⛔ Qwen3 defaults to thinking-ON, which injects `<think></think>`
+  into the assistant prefix and **moves the readout position**. §1.9: a `<think>` control token is
+  never treated as the Llama readout position.
+* **Band `7-17`, not `6-14`.** Qwen3-14B has 40 layers against Llama's 32; `7-17` is the band the
+  `q4b` arms used, i.e. the same *relative* depth. ⛔ Reusing `6-14` would be comparing different
+  parts of the network and calling it a replication.
+
+**Stage 1, submitted (`844261` C, `844262` B):** baselines only, `semantic_forced_choice`, same bank,
+block, dose and seed. ⚠ **Two jobs, not six** — the house rule is **≤2 concurrent Qwen3-14B loads
+total** (the bottleneck is shared NFS, not the node; measured when 4 jobs sat at 0 rows for 16–28 min).
+
+⛔ **The gate, declared before the baselines return** — Stage 2 (KO-3 + dose-matched control, both
+cells) runs **only if**:
+1. cell `C`'s baseline `semantic_logodds` is **positive** — i.e. Qwen actually installs the mapping.
+   If it does not, there is nothing to knock out and the answer is `CANNOT ANSWER`, **not** "the
+   mechanism is absent in Qwen".
+2. option mass clears the **0.05** gate on both cells, so the readout is a measurement rather than a
+   tail.
+3. cell `B`'s baseline is positive too — otherwise the specificity contrast has no reference.
+
+⚠ If the gate fails, that is a **capability-limited** result and is reported as such. This phase has
+already produced one (`C-007`, cell `B` on the ASR endpoint) and the distinction between "incapable
+test" and "capable null" is the thing `TSC` insisted on hardest.
