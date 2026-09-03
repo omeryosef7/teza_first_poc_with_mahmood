@@ -553,3 +553,60 @@ def test_target_surface_row_only_span_resolver_matches_the_hook():
     assert resolve_scoped_query_rows("target_surface_row_only", True, QSPAN, DEMO, SURFACE) == frozenset()
     # a caller that forgets the new argument gets "edit nothing", never "edit everything"
     assert resolve_scoped_query_rows("target_surface_row_only", False, QSPAN, DEMO) == frozenset()
+
+
+# --------------------------------------------------------------------------- #
+# DCS PHASE (2026-09-03) -- `prompt_last_row_only`, the KO-4 rung
+#
+# This scope exists to separate "retrieved at the readout row" from "retrieved across the query
+# span". Its whole value is that it is a STRICT SUBSET of query_prefill_only and DISJOINT from
+# target_surface_row_only wherever the codeword is not the last token -- if either property fails
+# the three rungs are not separable and the ladder answers nothing.
+# --------------------------------------------------------------------------- #
+def test_prompt_last_row_only_edits_exactly_the_final_query_row():
+    model = ToyModel(n_layers=1)
+    base = _prefill_mask(SEQ)
+    with _scoped(model, "prompt_last_row_only"):
+        seen = _run(model, base, seq=SEQ)[0]
+    assert _rows_changed(seen, base) == {max(QSPAN)}
+    assert _cells_changed(seen, base) == {(0, 11, 2), (0, 11, 3)}
+
+
+def test_prompt_last_row_only_is_derived_from_query_span_not_a_new_argument():
+    """It must be computable from the span the consumer already resolves, or the two can disagree."""
+    assert resolve_scoped_query_rows("prompt_last_row_only", False, QSPAN, DEMO) == frozenset({11})
+    assert resolve_scoped_query_rows("prompt_last_row_only", True, QSPAN, DEMO) == frozenset()
+    # a narrower query span moves the row -- proving it is derived, not hard-coded
+    assert resolve_scoped_query_rows("prompt_last_row_only", False, frozenset({5, 6}), DEMO) \
+        == frozenset({6})
+    # no span -> edit nothing, never edit everything
+    assert resolve_scoped_query_rows("prompt_last_row_only", False, frozenset(), DEMO) == frozenset()
+
+
+def test_the_three_rungs_are_separable():
+    """codeword row / last row / whole span must be a strict, disjoint-where-it-matters ladder."""
+    base = _prefill_mask(SEQ)
+    rows = {}
+    for mode in ("target_surface_row_only", "prompt_last_row_only", "query_prefill_only"):
+        model = ToyModel(n_layers=1)
+        with _scoped(model, mode):
+            rows[mode] = _rows_changed(_run(model, base, seq=SEQ)[0], base)
+    surf, last, wide = (rows["target_surface_row_only"], rows["prompt_last_row_only"],
+                        rows["query_prefill_only"])
+    assert surf < wide and last < wide, "each narrow rung must be a STRICT subset of the wide one"
+    assert surf.isdisjoint(last), (
+        f"the codeword row {sorted(surf)} and the last row {sorted(last)} overlap; with SURFACE "
+        f"deliberately not the final query token these rungs must be disjoint or they answer the "
+        f"same question")
+    assert surf | last < wide, "their union must still be strictly inside the query span"
+
+
+def test_prompt_last_row_only_makes_zero_decode_edits():
+    model = ToyModel(n_layers=1)
+    stats = {}
+    with _scoped(model, "prompt_last_row_only", stats=stats) as ko:
+        _run(model, _prefill_mask(SEQ), seq=SEQ)
+        for s in range(3):
+            _run(model, _decode_mask(SEQ + s), seq=1)
+    assert stats["n_prefill_edits"] > 0 and stats["n_decode_edits"] == 0
+    assert ko.liveness_violations() == []

@@ -2482,3 +2482,43 @@ Matan and Mahmood in exactly these terms: the direction is consistent across 3 c
 4 judgings at ≈ −30 of 153 rows, and the design **cannot** certify it at the independence unit the
 project itself declared. ⛔ Reporting the row-level `p = 0.0016` instead would be substituting a
 unit we know to be wrong for one we know to be underpowered.
+
+### `DCS-PR-007` — `KO-4` built and submitted: **which query position retrieves?**
+
+`DCS-C-010` retracted outcome `D` because `KO-1` could not distinguish "constructed during
+demonstration processing" from "retrieved later"; `DCS-R-008` then showed retrieval **is** in the
+query span but `query_prefill_only` cuts the **whole** span and cannot localise it. That has been
+this phase's open question 1 since. It is now buildable.
+
+**New scope `prompt_last_row_only`** (`pair_common.py`): prefill only, destination = **the last row
+of the query span**, i.e. the position the forced-choice answer is scored at.
+✅ **No new plumbing.** The row is `max(query_span)` — derived from the span the consumer already
+resolves. ⛔ Deliberately **not** a second `surface_span`-style argument: a scope computable from an
+existing argument must be, or the two can silently disagree (the `C-016b` failure shape).
+
+**The ladder is now separable, and that separability is unit-tested rather than assumed:**
+
+| rung | destination rows |
+|---|---|
+| `target_surface_row_only` | the final **codeword** occurrence |
+| **`prompt_last_row_only`** | the final **query/readout** row |
+| `query_prefill_only` | the **whole** query span |
+
+`test_the_three_rungs_are_separable` asserts each narrow rung is a **strict** subset of the wide
+one, that the codeword row and the last row are **disjoint** (the synthetic fixture puts `SURFACE`
+deliberately *not* at the end — otherwise the two rungs would answer the same question), and that
+their union is still strictly inside the span. **153 tests pass.**
+
+**Submitted:** `843376` (`KO-4` demo) and `843377` (its count-matched control), cell `C`,
+`semantic_forced_choice`, same band / dose / seed / bank; the existing `dcsro_C_baseline` is shared.
+
+⛔ **Declared before the outcome:**
+* If `KO-4` alone reproduces `KO-3`'s collapse (baseline +5.19 → ≈ −2.8), retrieval happens **at the
+  readout row** and the ~10 intervening query tokens are not required.
+* If `KO-4` is a **null** while `KO-3` collapses, retrieval is **distributed** across the query span
+  and no single position carries it — which would make "retrieved at the answer position", the
+  leading hypothesis since `DCS-A-001`, **wrong**.
+* Anything between is a **partial** localisation and is reported as a proportion of `KO-3`'s effect,
+  never as either extreme.
+* The comparator is the **dose-matched control at the same scope**, not the baseline — `C-015`'s
+  lesson, applied in advance this time rather than after an audit.

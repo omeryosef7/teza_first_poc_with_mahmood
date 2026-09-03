@@ -632,6 +632,19 @@ SCOPED_KNOCKOUT_MODES = (
     # null and the wide one is not, the mapping is built during demonstration processing rather
     # than retrieved at the final surface token. Collapsing them would erase that answer.
     "target_surface_row_only",
+    # ADDED 2026-09-03 (DCS phase, DCS-C-010 / open question 1). `query_prefill_only` cuts the WHOLE
+    # query span and therefore cannot say WHICH position retrieves the mapping -- the ~10 intervening
+    # query tokens, or the final row where the forced-choice answer is actually scored. This scope
+    # isolates the LAST row of the query span.
+    #
+    # It needs no new plumbing: the last query position is `max(query_span)`, derived from the span
+    # the consumer already resolves. Deliberately NOT a second `surface_span`-style argument -- a
+    # scope computable from an existing argument should be, or the two can disagree.
+    #
+    # Together with `target_surface_row_only` the ladder becomes separable: codeword row / last row /
+    # whole query span. If the last row alone reproduces `query_prefill_only`, retrieval happens AT
+    # THE READOUT; if it does not, retrieval is distributed across the span.
+    "prompt_last_row_only",
 )
 
 # mode -> counters that MUST be > 0 for the run to be reportable (PROOF OF LIFE)
@@ -642,6 +655,7 @@ LIVENESS_REQUIREMENT: Dict[str, tuple] = {
     "response_query_only":  ("n_prefill_edits", "n_decode_edits"),
     "demo_processing_only": ("n_prefill_edits",),
     "target_surface_row_only": ("n_prefill_edits",),
+    "prompt_last_row_only": ("n_prefill_edits",),
 }
 
 # mode -> counters that MUST be exactly 0; a non-zero one means the scoping leaked and the
@@ -653,6 +667,7 @@ LIVENESS_MUST_BE_ZERO: Dict[str, tuple] = {
     "response_query_only":  (),
     "demo_processing_only": ("n_decode_edits",),
     "target_surface_row_only": ("n_decode_edits",),
+    "prompt_last_row_only": ("n_decode_edits",),
 }
 
 
@@ -680,6 +695,12 @@ def resolve_scoped_query_rows(mode: str, is_decode: bool,
         return frozenset() if is_decode else (query_span or frozenset())
     if mode == "demo_processing_only":
         return frozenset() if is_decode else (demo_span or frozenset())
+    if mode == "prompt_last_row_only":
+        # Prefill only, and only the LAST row of the query span. Derived from `query_span` rather
+        # than taken as its own argument, so it cannot drift from the span the consumer resolved.
+        if is_decode:
+            return frozenset()
+        return frozenset({max(query_span)}) if query_span else frozenset()
     if mode == "target_surface_row_only":
         # Prefill only, and only the ONE occurrence's rows. `surface_span` is deliberately a
         # separate argument rather than a narrowed `query_span`: the query span is still needed

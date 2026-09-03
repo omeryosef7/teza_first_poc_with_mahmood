@@ -339,7 +339,8 @@ def test_which_modes_are_measurable_is_derived_not_listed():
     import score_behavior as sb
     assert sorted(_measurable()) == sorted(["legacy_all_query", "query_prefill_only",
                                             "demo_processing_only",
-                                            "target_surface_row_only"])
+                                            "target_surface_row_only",
+                                            "prompt_last_row_only"])
     src = ast.get_source_segment(_src(), next(
         n for n in ast.walk(ast.parse(_src()))
         if isinstance(n, ast.FunctionDef) and n.name == "readout_liveness_contract"))
