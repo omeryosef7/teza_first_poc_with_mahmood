@@ -62,7 +62,7 @@ column existed.
 
 ### The dissociation — ⚠ NARROWED by `C-015`
 
-Every scope tested moves **refusal** by a large, well-powered margin:
+All **three** knockout scopes tested move **refusal** by a large, well-powered margin:
 `TSC-R-006` (Qwen3, `demo_processing_only`: all 150 refusals removed) ·
 `DCS-R-007` (Llama, `target_surface_row_only`: refusal halved, p = 2.44e-04) ·
 `DCS-R-012b` (Llama, `query_prefill_only`: refusal 42 → **0**, control 42 → **75**, p = 2.98e-08).
@@ -73,7 +73,7 @@ conversions — the mapping was never destroyed there either). It does **NOT** h
 against the refusal-neutral control the attack **does** fall (`R-016`, direction established).
 ⇒ **The dissociation is scope-dependent, and that is the finding.** Cutting the demonstrations off
 the *codeword row* changes neither representation nor attack; cutting them off the *whole query
-span* changes **both**. Refusal moves under every scope tested.
+span* changes **both**. Refusal moves under all three scopes tested.
 
 ---
 
@@ -169,8 +169,10 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## VERIFICATION
 
-Two headline findings each carry an independent adversarial audit that reproduced every published
-number to the digit and attacked the named failure modes (`DCS-A-001`, `DCS-A-002`). The
+**Three** headline findings each carry an independent adversarial audit (`DCS-A-001`, `DCS-A-002`,
+`DCS-A-004`). All three reproduced every published *number* to the digit; ⚠ the third nonetheless
+**falsified two published claims** (`C-016a`, `C-016b`) and halved a third — reproducing the
+arithmetic is not the same as confirming the sentences around it. The
 `run_completeness_check` pre-commit guard **refused two commits** during the phase (377-vs-380 rows,
 then non-uniform domain loss); ⛔ `--no-verify` was never used. All 9 deliverable guards and 341
 guard tests pass at every commit. Three bugs were caught **before** they produced a result: a

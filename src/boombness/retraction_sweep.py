@@ -242,6 +242,14 @@ DELIVERABLES = [
     # Verified BEFORE wiring in, not after: a --paths dry-run over it reports 0 unqualified
     # occurrences, so this addition does not turn the build red on arrival.
     "external_md/BOOMBNESS_DSURFACE_NEXT_PHASE_PLAN_AND_PROGRESS.md",
+    # ADDED 2026-09-03 (DCS phase). Same reasoning as the line above, applied to this phase's own
+    # deliverables: the DCS log is the authoritative live record for the phase and the summary is
+    # its published face, so until now the entire phase was invisible to this sweep -- a retracted
+    # figure could resurface in either and nothing would notice. Verified BEFORE wiring in, not
+    # after: a --paths dry-run over both reports 0 unqualified occurrences, so this addition does
+    # not turn the build red on arrival.
+    "external_md/DOUBLESPEAK_CONCEPT_SPECIFIC_BOOMBNESS_AND_SURGICAL_CAUSALITY_PLAN_AND_PROGRESS_20260902.md",
+    "reports/DOUBLESPEAK_NEXT_PHASE_SUMMARY.md",
     # NOT swept (2026-08-21): the two mid-session sanity checks are DATED SNAPSHOTS of what was
     # believed on 2026-08-17/18, superseded in full by the continuation log. Sweeping them flags the
     # historical record as a defect -- the same reason BOOMBNESS_SPRINT_PROGRESS.md is excluded.
