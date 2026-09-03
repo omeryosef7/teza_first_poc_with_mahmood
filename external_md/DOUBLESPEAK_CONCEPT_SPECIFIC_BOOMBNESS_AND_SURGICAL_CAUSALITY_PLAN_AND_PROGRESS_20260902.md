@@ -2403,3 +2403,82 @@ as the negative control) + baseline — six arms, ONE invocation.** ⚠ Includin
 deliberate: if the refusal-suppression story in `C-015` is right, `seed904_d3` (+32 refusals) should
 land near `KO-3`'s attack count and show **no** contrast, exactly as `d1`/`d3` did — a prediction
 made **before** the judging rather than fitted after it.
+
+### `DCS-R-019` — ⚠ `PR-006` resolves: **direction survives, significance at the independence unit does NOT.**
+
+All six arms, **one invocation** (`dcssel`, job 842907), 380 rows, 38 domains.
+Baseline **153** attacks · `KO-3` **118**.
+
+| control | status | Δ refused | attacks | `KO-3` − ctrl | row McNemar p | **domain sign p** |
+|---|---|---|---|---|---|---|
+| `seed901_d2` | ✅ qualify | +10 | 159 | **−41** | 1.65e-03 | **0.061** |
+| `seed904_d1` | ✅ qualify | +14 | 139 | **−21** | 0.106 | **0.150** |
+| `seed904_d2` | ✅ qualify | +7 | 146 | **−28** | 2.61e-02 | **0.136** |
+| `seed904_d3` | ⛔ rejected | +32 | 134 | −16 | 0.221 | 0.585 |
+
+✅ **The pre-registered prediction about the rejected draw holds**: `seed904_d3` (+32 refusals) shows
+**no significant contrast** (−16, p = 0.221), as `C-015`'s refusal-suppression account required. That
+prediction was made **before** this judging.
+
+✅ **Direction is robust to control choice: all three qualifying contrasts are negative** (−41, −21,
+−28), mean **−30** — matching `R-017`'s estimate from a different seed and a different judging.
+
+⛔ **But at the declared independence unit the evidence does not reach α.** §1.9 fixes **domain** as
+the independence unit. The domain-clustered sign test gives **0.061 / 0.150 / 0.136 — none below
+0.05**, and pooling over the three qualifying controls gives **15+/21−, p = 0.405**. Only the
+magnitude-aware clustered permutation reaches significance (**p = 0.032**), and the row-level
+McNemar — which ignores clustering — is significant in 2 of 3.
+⇒ **Row-level significance is an artifact of treating 380 correlated rows as independent.**
+
+⚠ **The selection inflation is confirmed quantitatively.** The originally-selected `d2` gives the
+**largest** contrast (−41); the two draws found later give −21 and −28. ⇒ `R-016`'s −36 and
+`R-017`'s −30 were **drawn from the favourable end**, and the honest pooled figure is **−30 with a
+range of −21 to −41 across equally-valid controls**.
+
+⇒ **`R-016`/`R-017` are downgraded again, and this is the settled position:**
+> `KO-3` reduces attack success against refusal-neutral controls **in direction, consistently across
+> 3 controls × 2 seeds × 4 judgings**, by ≈ **30 rows of 153**. ⛔ **At the domain level — the unit
+> this project declared as its own — the effect does not reach significance under the preregistered
+> sign test.** It reaches it only under a magnitude-aware clustered permutation (p = 0.032).
+
+⛔ **What must not be said:** "KO-3 significantly reduces attack" without naming the test, and
+"p = 0.0016" (that is `d2` alone, row-level, unclustered, and the most favourable of three).
+✅ What may be said: the direction is consistent and the mechanism prediction about rejected draws
+was confirmed prospectively.
+
+⚠ **`DCS-B-009` (new):** the design is **underpowered at its own independence unit**. 38 domains × 10
+rows cannot resolve a ~20 % relative effect at the domain level; `k_inf` is 36 with a floor of
+2.9e-11, so this is a **true** underpowering, not a floor limitation. Resolving it needs more
+domains, not more rows or more judgings.
+
+### `DCS-R-020` — `B-009` answered: **38 domains is the ceiling with existing pools.** The limit is inventory, not compute.
+
+`R-019` established that the behavioral claim is underpowered **at its own independence unit** — the
+domain-clustered sign test cannot resolve a ~20 % relative effect over 38 clusters, with `k_inf = 36`
+against a floor of 2.9e-11 (a **true** underpowering, not a floor limitation). The fix is more
+domains. Surveyed every demonstration-pool file in the repo:
+
+| pool file | domains |
+|---|---|
+| **`demo_pools_29dom.json`** *(the cds38 source, name notwithstanding)* | **38** |
+| `demo_pools_apple_drug.json`, `demo_pools_candle_missile.json` | 38 (same set) |
+| `demo_pools_rbd_*` | 20 |
+| `demo_pools_lantern_poison_rbd12.json` | 12 |
+| `demo_pools_d10*.json`, `demo_pools_benign_forklift.json` | 10 |
+| `demo_pools.json`, `_arrow`, `_club`, `_gun`, `_knife` | 6 |
+
+⇒ **38 is the maximum that exists**, and the `cds38` bank already uses all of it (verified: 38
+domains × 40 rows in the `cds_n4`/`behavioral`/`n=4` cell — 10 per condition × 4 conditions).
+⛔ No larger pool is available, and **no combination of existing pools adds domains**: the 38-domain
+files are the *same* 38 domains under different lexical pairs.
+
+⇒ **`B-009` is not resolvable by analysis, by more rows, by more judgings, or by more seeds.** It
+requires **generating new demonstration pools** (`src/boombness/slurm/run_demo_pools.sh`, an
+OpenAI-API bank-construction job), which is a new-data task rather than a new-experiment one, and
+one whose cost and validity checks belong in a separate preregistration.
+
+⚠ **This is the honest ceiling of the behavioral half of this phase**, and it should be stated to
+Matan and Mahmood in exactly these terms: the direction is consistent across 3 controls × 2 seeds ×
+4 judgings at ≈ −30 of 153 rows, and the design **cannot** certify it at the independence unit the
+project itself declared. ⛔ Reporting the row-level `p = 0.0016` instead would be substituting a
+unit we know to be wrong for one we know to be underpowered.
