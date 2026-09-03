@@ -2796,3 +2796,40 @@ test" and "capable null" is the thing `TSC` insisted on hardest.
 
 **Stage 2 submitted** (2 jobs, respecting the ≤2 concurrent Qwen rule): cell `C` `KO-3` at band
 **7–17** and its count-matched control. Cell `B`'s pair follows when these free their slots.
+
+### `DCS-R-024` — ✅ **`KO-3` REPLICATES ON QWEN3-14B, ~3× stronger.** The mechanism is cross-model.
+
+Cell `C`, `semantic_forced_choice`, n = 380, 38 domains, band **7–17** (Qwen's 40 layers, same
+relative depth as Llama's 6–14), `--enable-thinking false`, against its own dose-matched control.
+
+| arm | mean `logodds` | frac > 0 | option mass |
+|---|---|---|---|
+| baseline | **+10.140** | 0.813 | 0.999 |
+| **`KO-3`** | **−13.080** | **0.021** | 1.000 |
+| dose-matched control | +10.357 | 0.824 | 0.999 |
+
+**`KO-3` − control = −23.437, 1+/37− domains, p = 2.838e-10.**
+*(Llama: −8.081, 1+/37−, p = 2.838e-10.)*
+
+⇒ **The sign flip replicates on a second model at ~3× the magnitude**, with the **identical domain
+split (1+/37−)** and an **inert control** (+10.36 vs +10.14 baseline — the control does nothing on
+Qwen either). ⚠ `frac > 0` collapses from **0.813 to 0.021**: after the knockout only **2 %** of rows
+still read the codeword as the concept. On Llama the same intervention left the mean negative but
+less completely inverted.
+
+⇒ ⛔ **This closes the phase's largest scope limitation.** Every mechanistic result to this point was
+one model; `R-008`/`R-010`/`R-021`/`R-022` now have a cross-family replication of their core
+intervention.
+
+⚠ **And it sharpens the phase's central dissociation into something new.** `TSC-R-005` established
+that on the **attack** endpoint Qwen3-14B is a well-powered **capable null** — the behavioral effect
+is **model-specific**. Here, on the **representation** endpoint, the *same model* replicates the
+*same intervention* **more strongly than Llama**. ⇒ **The mechanism is cross-model; only its link to
+behavior is model-specific.** That is a sharper statement than "representation ≠ behavior", and it
+is the first time this project has had both halves measured on the same model with the same scope.
+⛔ It is not yet a formal interaction — that needs the Qwen behavioral arms at this scope, which are
+not run.
+
+**Cell `B` submitted** (`845117` / `845118`) to complete the Qwen specificity DiD. ⚠ `R-023` already
+flagged that `B`'s baseline is **+30.7 at option mass 1.000 — effectively saturated** — so if `B`
+barely moves, that is a **ceiling**, not evidence of specificity. Declared before those arms return.
