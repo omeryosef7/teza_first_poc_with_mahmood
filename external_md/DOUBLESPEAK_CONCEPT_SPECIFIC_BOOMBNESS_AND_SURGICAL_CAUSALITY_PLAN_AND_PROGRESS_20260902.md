@@ -2372,3 +2372,34 @@ there is still time to abandon the design.
 
 ⛔ This changes nothing about the criterion: refusal-neutrality is still applied from `gens.jsonl` at
 **n = 380**, before any judging, and `DCS-PR-006`'s three declared outcomes stand.
+
+### `DCS-R-018` — `PR-006`: **3 of 6** draws qualify. Two are new, and they were selected before any judging.
+
+Criterion applied at n = 380 from `gens.jsonl`, judge-free, unchanged from `DCS-R-013`:
+
+| draw | `refused` | Δ vs baseline (42) | verdict |
+|---|---|---|---|
+| `seed901_d1` | 75 | +33 | ⛔ REJECTED |
+| **`seed901_d2`** | 52 | **+10** | ✅ QUALIFIES |
+| `seed901_d3` | 94 | +52 | ⛔ REJECTED |
+| **`seed904_d1`** | 56 | **+14** | ✅ QUALIFIES |
+| **`seed904_d2`** | 49 | **+7** | ✅ QUALIFIES |
+| `seed904_d3` | 74 | +32 | ⛔ REJECTED |
+
+⇒ **Refusal-neutrality is not rare: 3 of 6 draws (50 %).** ⚠ That **falsifies my own `DCS-R-014`
+speculation** that a neutral control might not exist at this dose because the draw must consume most
+of the non-demonstration pool — it exists in half of all draws, and the seed-901 sample (1 of 3) was
+simply unlucky. ⛔ `PR-006`'s third declared branch ("no new draw qualifies ⇒ the comparator design
+is the limitation") **does not obtain**.
+
+**Why this is the test that matters.** `R-016`/`R-017` rested on **one** qualifying control, so
+"refusal-neutral controls show the effect" could not be separated from "`d2` happens to be weak".
+There are now **three** qualifying controls from **two independent seeds**. ⛔ Per `PR-006`, **all
+three contrasts are reported** and if they disagree **that disagreement is the result** — I do not
+get to keep the favourable one.
+
+**Judge submitted (`842907`): `KO-3` + all three qualifying controls + `seed904_d3` (a rejected draw,
+as the negative control) + baseline — six arms, ONE invocation.** ⚠ Including a *rejected* draw is
+deliberate: if the refusal-suppression story in `C-015` is right, `seed904_d3` (+32 refusals) should
+land near `KO-3`'s attack count and show **no** contrast, exactly as `d1`/`d3` did — a prediction
+made **before** the judging rather than fitted after it.
