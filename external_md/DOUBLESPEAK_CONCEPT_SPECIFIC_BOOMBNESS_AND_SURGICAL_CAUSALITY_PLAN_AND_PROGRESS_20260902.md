@@ -2005,3 +2005,39 @@ negative (not concept-specific), states the `R-012` retraction in the body rathe
 carries the scope line, and asks Matan and Mahmood the two open design questions: what to do if no
 refusal-neutral control exists at that dose, and how to position the work against Yona et al.
 ACL 2026 given that the representational half is a replication and only the causal half is ours.
+
+### `DCS-R-015` — `B-008`: the refusal-neutrality criterion applied at n = 380. **Exactly one control qualifies.**
+
+Criterion, declared in `DCS-R-013` before these arms existed: a control qualifies iff its `refused`
+count sits within the 17-row band of the baseline's **42**. ✅ **Applied before any attack number
+existed** — `refused` is judge-free (`kw_refusal`, a substring matcher), while attack requires the
+judge, which had not been run. The ordering is enforced by construction, not by discipline.
+
+| control arm | n | `refused` | Δ vs baseline | new refusals | verdict |
+|---|---|---|---|---|---|
+| `nondemo_matched_d1` | 380 | 75 | **+33** | 33 | ⛔ **REJECTED** |
+| **`nondemo_matched_d2`** | 380 | **52** | **+10** | 13 | ✅ **QUALIFIES** |
+| `nondemo_matched_d3` | 380 | 94 | **+52** | 52 | ⛔ **REJECTED** |
+| `nondemo_capped_d1` | 380 | 75 | **+33** | 33 | ⛔ **REJECTED** |
+| *(treatment)* `KO-3` | 380 | **0** | −42 | — | — |
+
+⇒ **Three of four count-matched draws induce refusal; one does not.** This **refines** `DCS-R-014`'s
+prediction rather than confirming it: I argued a refusal-neutral control might not *exist* at this
+dose because the draw must consume most of the non-demonstration pool. It does exist — but it is
+**1 of 4 draws**, so the induction is a property of *most* draws at this dose rather than of all of
+them. ⚠ Had `d1` been the only control run, as originally planned, the mediation question would have
+been answered wrongly and confidently.
+
+⚠ **`d2` is not perfectly inert**: +10 refusals and 13 new ones. It is *within* the declared band,
+which is the criterion, not a claim of exact neutrality.
+
+**Judge submitted (`841816`): all six arms in ONE invocation** — baseline, `KO-3`, and all four
+controls, 380 rows each. ⛔ The three new controls could not be judged separately from `KO-3`: judge
+drift cancels only within a single invocation, so a cross-session `KO-3 − d2` contrast would carry
+the 13.4 % flip rate as uncancelled noise. Re-judging the two already-scored arms is the cost of a
+valid comparison, and `DCS-C-015`'s baseline drift (153 → 162 on identical generations) is the
+direct evidence for why.
+
+⛔ **Still declared, before the judge returns:** the attack numbers for **all four** controls will be
+reported, not only `d2`'s; McNemar is the primary test (the rows are paired); and the estimate stays
+`CANNOT ANSWER` unless the qualifying control's contrast is both capable and unambiguous.
