@@ -2041,3 +2041,56 @@ direct evidence for why.
 ⛔ **Still declared, before the judge returns:** the attack numbers for **all four** controls will be
 reported, not only `d2`'s; McNemar is the primary test (the rows are paired); and the estimate stays
 `CANNOT ANSWER` unless the qualifying control's contrast is both capable and unambiguous.
+
+### `DCS-R-016` — ✅ **`B-008` ANSWERED, and it REVERSES `R-012`. `KO-3` DOES reduce attack success.**
+
+All six arms, **one judge invocation**, 380 rows each, `judge_status = ok`, 38 domains, row sets
+identical. Baseline **153** attacks / 42 refusals; `KO-3` **119** attacks / **0** refusals.
+
+| control | Δ refused | control attacks | `KO-3` − control | gained | lost | **McNemar p** | `A→R` |
+|---|---|---|---|---|---|---|---|
+| `d1` ⛔ rejected | +33 | 117 | **+2** | 75 | 73 | 0.935 | 17 |
+| **`d2` ✅ QUALIFIES** | **+10** | **155** | **−36** | 54 | 90 | **3.39e-03** | 6 |
+| `d3` ⛔ rejected | +52 | 118 | **+1** | 74 | 73 | 1.000 | 24 |
+| `capped_d1` ⛔ rejected | +33 | 135 | −16 | 71 | 87 | 0.233 | 17 |
+
+⇒ **Against the only refusal-neutral control, `KO-3` removes 36 attacks, McNemar p = 0.0034.**
+StrongREJECT agrees: baseline 122.75, **`KO-3` 95.12**, `d2` 125.62.
+
+**The diagnosis in `DCS-C-015` is confirmed exactly, and the table shows the mechanism.** The
+qualifying control `d2` is **inert on attack** (155 vs baseline's 153) *and* near-inert on refusal
+(+10). The three rejected controls all land at **117–135 attacks** — they suppress attack *by
+inducing refusal* (+33, +52, +33), which drags them down to `KO-3`'s level and makes the contrast
+vanish (p = 0.935, 1.000, 0.233). ⛔ **The null in `R-012` was the rejected control's refusal
+suppression, not an absence of effect.**
+
+⚠ **Robustness in the conservative direction:** crediting `d2` an attack on the 6 rows it converted
+`ATTACK→REFUSE` *widens* the gap to **−42**. The estimate does not depend on that adjustment.
+
+⇒ **`DCS-PR-004`'s FIRST declared outcome obtains: the demonstration→query path is causal for
+behavior, not only for the representation.** With `R-010`/`R-011` (the same intervention destroys
+the mapping, sign-flipped, on two codewords, remapping-specific) this is the project's **first
+positive representation↔behavior link**.
+
+⚠ **What flips and what does not.**
+* ⛔ **`R-012` is superseded**, and `C-015`'s "cannot answer" is now answered. The sentence *"we
+  moved the representation past zero and behavior did not follow"* is **false** and must never be
+  revived.
+* ⚠ The **`KO-1` half is unchanged**: `R-006`/`R-014` used a control verified refusal-neutral
+  (Δ = 0, zero `A→R`) and remains a valid null. So the dissociation holds **at the codeword-row
+  scope** and **fails at the query-span scope** — the two scopes genuinely differ, which is the
+  ladder doing its job.
+* ⚠ Gate `R5` (§1.7) is now **passed** at the `KO-3` scope. `R6` requires the effect to exceed
+  matched controls — which is what this table is — so the **GCG/MAC question reopens**, ⛔ though
+  not for `d_surface`, which stays blocked on its own evidence.
+
+⚠ **Not yet established, and required before this is quoted as a headline:**
+1. **Adversarial audit** (§44) — this is a strong positive that reverses a published null, i.e.
+   exactly the profile that most needs breaking. **Not yet run.**
+2. Only **1 of 4** draws was refusal-neutral. `d2` is a single draw; the contrast should be
+   replicated on further neutral draws before the effect size is quoted precisely.
+3. ⚠ **91 % of the attack endpoint is off-goal** (`C-015`): 14 of 162 baseline attacks are
+   on-goal. This is a claim about the rubric endpoint, **not** about bomb-specific behavior.
+4. Baseline reads **153** here against **162** in `dcsmed` on byte-identical generations — the
+   13.4 % judge flip rate again. ⇒ ⛔ Cross-invocation comparisons remain invalid; this table is
+   internally consistent because all six arms were judged together.
