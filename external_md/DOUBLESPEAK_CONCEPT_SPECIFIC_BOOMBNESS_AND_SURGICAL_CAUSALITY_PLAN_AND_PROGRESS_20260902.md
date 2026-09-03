@@ -2094,3 +2094,32 @@ positive representation↔behavior link**.
 4. Baseline reads **153** here against **162** in `dcsmed` on byte-identical generations — the
    13.4 % judge flip rate again. ⇒ ⛔ Cross-invocation comparisons remain invalid; this table is
    internally consistent because all six arms were judged together.
+
+### `DCS-016` — `R-016` sent for adversarial audit; two further control draws submitted
+
+⛔ **`R-016` is NOT admissible until audited.** It is a strong positive that **reverses a published
+null in the same phase**, which is the profile most in need of breaking — and the two prior audits
+each cost a claim (`C-010`, `C-015`). Audit dispatched with the threat I judge most dangerous named
+explicitly:
+
+> **The selection problem.** One of four controls qualified, and it is the **only one that yields a
+> significant result**. If controls that induce refusal *necessarily* have fewer attacks, then
+> "pick the refusal-neutral control" is mechanically "pick the control with the most attacks", and
+> the −36 is a **selection artifact** rather than an effect.
+
+⚠ The raw table is consistent with *both* readings and I cannot separate them by inspection:
+attacks are 117 / 155 / 118 / 135 against refusal deltas +33 / +10 / +52 / +33 — the qualifying
+control has the most attacks. The auditor is asked to quantify the (refusal Δ, attack count)
+relationship across the four draws and say whether the criterion is genuinely outcome-independent.
+
+**`NONDEMO_CONTROL_N_DRAWS = 3`** (`score_behavior.py:662`), so the control family is exactly six
+draws: `nondemo_matched_d1–d3` and `nondemo_capped_d1–d3`. Four are run; the remaining two —
+**`nondemo_capped_d2` (842088)** and **`nondemo_capped_d3` (842089)** — are submitted this tick,
+which **exhausts the family**.
+
+⇒ Why that matters for the selection question: with all six draws scored, the refusal-neutrality
+criterion can be applied to a **complete** set rather than a convenience sample, and the
+(refusal, attack) relationship can be estimated over six points instead of four. ⛔ Declared now,
+before their outcomes: **every** draw that meets the refusal criterion enters the analysis, and if
+more than one qualifies **all** qualifying contrasts are reported — never the most favourable.
+If the qualifying draws disagree, that disagreement is the result.
