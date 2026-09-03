@@ -61,6 +61,8 @@ column existed.
 | `R-016`/`R-019` | **`KO-3` reduces attack against refusal-neutral controls — in DIRECTION.** All 3 qualifying controls negative (−41, −21, −28; mean **−30** of 153), across 2 seeds and 4 judgings. Composition-free endpoint: `KO-3` attack rate among non-refused rows **0.313** vs every control 0.384–0.473 and baseline 0.453. ✅ The prospective prediction held — a **rejected** draw (+32 refusals) shows no contrast (−16, p = 0.221) | 6 arms × 380; audited (`DCS-A-004`) | **DIRECTION ONLY.** ⛔ Not significant at the domain independence unit (0.061/0.150/0.136; pooled 0.405) |
 | `R-021`/`R-022` | **No single query position carries the mapping, but ~¼ of the span suffices.** Five-point row ladder, each rung against its own dose-matched control: K=1 **−0.013**, K=2 **−0.012**, K=8 **−6.616** (0+/38−, p=7.28e-12), K=16 −7.888, K=32 −8.081. A **step** between 2 and 8 rows, then saturation (K=16 already 97.6 % of full). ⚠ Controls are **inert across a 32× dose range** (+5.16…+5.38 vs baseline +5.188), so the step is about *which* keys are cut, not how many cells | 10 arms × 380 × 38 domains | **THRESHOLD, not distributed** |
 | `R-024` | **`KO-3` REPLICATES ON QWEN3-14B at ~3× the magnitude.** Cell `C` baseline +10.140 → `KO-3` **−13.080** (frac > 0 collapses **0.813 → 0.021**), control inert at +10.357. **−23.437 vs control, 1+/37− domains, p = 2.838e-10** — the *identical* domain split as Llama. Band 7–17 (same relative depth as 6–14 on 40 layers), `--enable-thinking false`, capability gate passed first (`R-023`) | 4 arms × 380 × 38 domains | **CROSS-MODEL** |
+| `R-025` | **The specificity DiD replicates on Qwen3-14B.** Cell `C` −23.437 vs its control, cell `B` **−1.238 (p = 0.256)**; **DiD −22.198, 1+/37−, p = 2.838e-10**. ⚠ The three settings share the *same* 1+/37− sign pattern, so the identical p-values are **one pattern replicated, not three independent tests** | 4 arms × 380 × 38 domains | **CROSS-MODEL SPECIFICITY** |
+| `R-026` | **Qwen `KO-3` removes ALL 150 refusals** (judge-free). ⚠ `TSC-R-006` reported the same 150 removed at a *different* scope — so Qwen's refusal behaviour on this population is 150 rows and **both** demonstration-cutting scopes annihilate it | n = 380 | **refusal, 2 models × 4 scopes** |
 | `R-002` | **The movement is NOT concept-specific.** Against `knife`/`gun`/`club`, three of four comparisons run the *other* way and every difference is inside the measured split-to-split band (median 0.015, p90 0.044) | 10 banks, dev + heldout | **evaluated negative** |
 | `R-003` | **The shift does not accumulate.** Final occurrence > first in 32/32 cells, but demonstrations-only ρ **disagrees in sign between banks** (−0.048 vs +0.278) and the effect is flat in `n_examples` (7.01/7.25/7.10/6.54) | 2 banks × 32 layers, per-row, cross-fit | **evaluated negative** |
 | `R-004` | **Null control fires exactly:** at `n_examples = 0` the paired `C−A` is `0.000e+00` at all 96 cells — correct, since A and C are byte-identical without demonstrations | 2 banks | **positive control** |
@@ -153,6 +155,12 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## OPEN QUESTIONS
 
+0a. ⛔ **The Qwen behavioral interaction is BLOCKED BY ITS OWN CRITERION** (`R-028`). 0 of 4
+   completed draws qualify as refusal-neutral (+39, +47, +67, +56 against a ±17 band). The band is
+   an **absolute** judge-noise figure used as a **relative** qualification rule: Qwen's controls
+   perturb refusal by **26–45 %** of a 150 baseline and are rejected, while Llama's *rejected*
+   draws perturbed **76–124 %** of a 42 baseline. ⇒ A 0/6 outcome is a limitation of the
+   **criterion**, ⛔ never "Qwen shows no behavioral effect".
 0. ⛔ **THE PHASE'S TOP OPEN EXPERIMENT (`DCS-PR-005`): what is the MAGNITUDE?** Direction is
    established across **four independent judgings** (`R-016`, `R-017`). The size is ≈ **−30** with a
    measured within-batch noise floor of **±7**, but remains inflated by a selection criterion that
