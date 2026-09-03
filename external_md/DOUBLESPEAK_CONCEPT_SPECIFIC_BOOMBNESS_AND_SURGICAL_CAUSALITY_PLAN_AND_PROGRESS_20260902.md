@@ -2833,3 +2833,25 @@ not run.
 **Cell `B` submitted** (`845117` / `845118`) to complete the Qwen specificity DiD. ⚠ `R-023` already
 flagged that `B`'s baseline is **+30.7 at option mass 1.000 — effectively saturated** — so if `B`
 barely moves, that is a **ceiling**, not evidence of specificity. Declared before those arms return.
+
+### `DCS-021` — periodic review: **no post-hoc layer selection anywhere in this phase**
+
+The review item this phase had not yet checked, and the one §1.9 treats as a multiplicity family:
+*"the best layer is never chosen on the confirmation set."* Audited mechanically over every argsfile
+this phase produced:
+
+    35 x attn_knockout:6-14     (every Llama arm)
+     4 x attn_knockout:7-17     (every Qwen arm)
+
+⇒ **Exactly one band per model, across all 39 intervention arms.** No sweep was run, so no layer was
+selected — post-hoc or otherwise. Both bands were **inherited**: `6-14` is the published
+`demo_processing_only` band (`TSC-R-001`), and `7-17` is the band the prior sprint's `q4b` Qwen arms
+used, at the same *relative* depth on 40 layers.
+
+⚠ The corollary is a **limitation, not a clean bill of health**: because no sweep was run, this phase
+**cannot say the effect is localised to L6–14**. Every knockout result is conditional on a band
+chosen by an earlier sprint for a different endpoint. ⛔ A layer profile (§42's Figure 8) is
+therefore **absent by design**, and "the effect lives at L6–14" is **not** among the phase's claims.
+
+**Summary report updated** with `R-023`/`R-024`, and the scope line corrected: the **mechanism** is
+now two model families; the **behavioral** half remains Llama-only.

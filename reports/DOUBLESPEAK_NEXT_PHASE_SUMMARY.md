@@ -60,6 +60,7 @@ column existed.
 | `R-012b` | **Refusal is annihilated by `KO-3`**: 42 → **0**, while the dose-matched control moves it the *other* way (42 → **75**). −75 rows vs control, **0+/26− domains, p = 2.98e-08** | as above | **STRONG, and endpoint-scoped** |
 | `R-016`/`R-019` | **`KO-3` reduces attack against refusal-neutral controls — in DIRECTION.** All 3 qualifying controls negative (−41, −21, −28; mean **−30** of 153), across 2 seeds and 4 judgings. Composition-free endpoint: `KO-3` attack rate among non-refused rows **0.313** vs every control 0.384–0.473 and baseline 0.453. ✅ The prospective prediction held — a **rejected** draw (+32 refusals) shows no contrast (−16, p = 0.221) | 6 arms × 380; audited (`DCS-A-004`) | **DIRECTION ONLY.** ⛔ Not significant at the domain independence unit (0.061/0.150/0.136; pooled 0.405) |
 | `R-021`/`R-022` | **No single query position carries the mapping, but ~¼ of the span suffices.** Five-point row ladder, each rung against its own dose-matched control: K=1 **−0.013**, K=2 **−0.012**, K=8 **−6.616** (0+/38−, p=7.28e-12), K=16 −7.888, K=32 −8.081. A **step** between 2 and 8 rows, then saturation (K=16 already 97.6 % of full). ⚠ Controls are **inert across a 32× dose range** (+5.16…+5.38 vs baseline +5.188), so the step is about *which* keys are cut, not how many cells | 10 arms × 380 × 38 domains | **THRESHOLD, not distributed** |
+| `R-024` | **`KO-3` REPLICATES ON QWEN3-14B at ~3× the magnitude.** Cell `C` baseline +10.140 → `KO-3` **−13.080** (frac > 0 collapses **0.813 → 0.021**), control inert at +10.357. **−23.437 vs control, 1+/37− domains, p = 2.838e-10** — the *identical* domain split as Llama. Band 7–17 (same relative depth as 6–14 on 40 layers), `--enable-thinking false`, capability gate passed first (`R-023`) | 4 arms × 380 × 38 domains | **CROSS-MODEL** |
 | `R-002` | **The movement is NOT concept-specific.** Against `knife`/`gun`/`club`, three of four comparisons run the *other* way and every difference is inside the measured split-to-split band (median 0.015, p90 0.044) | 10 banks, dev + heldout | **evaluated negative** |
 | `R-003` | **The shift does not accumulate.** Final occurrence > first in 32/32 cells, but demonstrations-only ρ **disagrees in sign between banks** (−0.048 vs +0.278) and the effect is flat in `n_examples` (7.01/7.25/7.10/6.54) | 2 banks × 32 layers, per-row, cross-fit | **evaluated negative** |
 | `R-004` | **Null control fires exactly:** at `n_examples = 0` the paired `C−A` is `0.000e+00` at all 96 cells — correct, since A and C are byte-identical without demonstrations | 2 banks | **positive control** |
@@ -144,8 +145,10 @@ cross-family null **+** a CI-backed negative for a mechanistically derived attac
 
 ## SCOPE — the line that accompanies every number
 
-**38 domains × 2 codewords × 1 concept (`bomb`) × 1 model (Llama-3.1-8B-Instruct) × one layer band
-(L6–14) × one dose.** That is 38 *contexts for a single mapping*, **not** 38 mappings. Measured
+**38 domains × 2 codewords × 1 concept (`bomb`) × one layer band per model × one dose.**
+⚠ The **mechanism** (`KO-3`) is now measured on **two model families** — Llama-3.1-8B-Instruct
+(L6–14) and Qwen3-14B (L7–17, same relative depth) — and replicates on both. The **behavioral**
+half remains **Llama-only**. That is 38 *contexts for a single mapping*, **not** 38 mappings. Measured
 ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## OPEN QUESTIONS
@@ -163,7 +166,11 @@ ICC ≈ 0.34, so domain is the correct independence unit.
    same observation — the ladder separates *graded from step*, not rows from cells.
 2. **Where do the 75 rows go?** `KO-3` eliminates refusal without buying attack success. What that
    text *is* has not been characterised.
-3. **Does `R-010` hold on a second concept, and on Qwen3?** Neither run.
+3. **Does `R-010` hold on a second concept?** Not run. ✅ **On Qwen3 it does** (`R-024`) — the
+   mechanism replicates cross-family at ~3× the magnitude, which makes the standing dissociation
+   sharper: **the mechanism is cross-model; only its link to behavior is model-specific**
+   (`TSC-R-005` is a capable null on Qwen's *attack* endpoint). ⛔ Not yet a formal interaction —
+   that needs Qwen behavioral arms at this scope.
 4. **Is the `basket` ceiling the reason "opposite directions" failed?** Untested.
 
 ## KNOWN DEFECTS
