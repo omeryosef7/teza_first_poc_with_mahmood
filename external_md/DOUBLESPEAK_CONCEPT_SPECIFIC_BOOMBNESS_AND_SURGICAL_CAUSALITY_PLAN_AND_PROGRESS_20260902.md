@@ -1930,3 +1930,49 @@ sits within the 17-row judge band of the baseline's 42. Choosing a comparator by
 would be exactly the shopping this phase forbids. If **none** qualifies, that is itself the finding:
 the non-demonstration key pool cannot furnish a refusal-neutral control at this dose, and the
 mediation question is **not answerable with this control family**.
+
+### `DCS-R-014` — the `C-015` correction applied **everywhere**, not only where the auditor pointed: `R-006` **survives**
+
+Standing rule: *a rule applied only where an auditor pointed is not a rule.* `C-015` condemned two
+things — the sign test on paired rows, and a control that is not exchangeable. Both were re-checked
+against `R-006` (`KO-1`, `target_surface_row_only`), which had never been audited for either.
+
+**McNemar, cell `C`, same 380 paired rows:**
+
+| contrast | endpoint | gained | lost | disc | net | McNemar p |
+|---|---|---|---|---|---|---|
+| `KO-1` vs baseline | attack | 71 | 60 | 131 | **+11** | 0.382 |
+| `KO-1` vs control | attack | 73 | 56 | 129 | **+17** | 0.159 |
+| `KO-1` vs baseline | `refused` | 1 | 22 | 23 | **−21** | **5.72e-06** |
+
+✅ **And the decisive check — `KO-1`'s control passes the `B-008` refusal-neutrality criterion
+exactly:**
+
+    baseline refused = 42     KO-1 control refused = 42     |diff| = 0   (band 17)
+    control ATTACK -> REFUSE conversions = 0
+
+⇒ **`R-006` is not affected by the `C-015` exchangeability violation.** Its control changes refusal
+by **zero rows** and converts **zero** attacks into refusals, so subtracting it does not remove a
+channel the treatment lacks. The attack null there is **valid**, and it now rests on the *correct*
+paired test (p = 0.382 / 0.159 rather than the sign test's 0.597). ⚠ The point estimate is `+17` —
+i.e. `KO-1` if anything *raises* attack slightly, which is the opposite of the hypothesis and
+consistent with `R-005`'s intact mapping.
+
+**Why one control is exchangeable and the other is not — a mechanistic diagnostic, not an excuse:**
+
+| scope | dose (median mask cells) | control refusal vs baseline | `ATTACK→REFUSE` |
+|---|---|---|---|
+| `target_surface_row_only` (`KO-1`) | **2 088** | 42 → **42** (Δ 0) | **0** |
+| `query_prefill_only` (`KO-3`) | **12 528** | 42 → **75** (Δ +33, p = 9.5e-07) | **19** |
+
+⇒ The refusal induction is a **dose effect of the control**, not a property of the non-demonstration
+pool as such. At 2 088 cells a count-matched non-demonstration draw is behaviorally inert; at 12 528
+— where the draw necessarily consumes most of the ~53-token non-demonstration pool, i.e. the chat
+template and preamble — it reliably pushes the model into refusal. ⚠ This predicts that a
+refusal-neutral control **may not exist at `KO-3`'s dose within this pool**, which is exactly what
+`841428`/`841429`/`841430` are testing. If they all induce refusal, the answer to `B-008` is
+structural rather than a matter of finding a better seed.
+
+⇒ **Net effect on the phase's claims:** the `KO-1` half of the dissociation (*mapping intact, attack
+unchanged, refusal halved*) is **strengthened** — same conclusion, correct test, verified-exchangeable
+control. Only the `KO-3` mediation contrast remains `CANNOT ANSWER`.
