@@ -2855,3 +2855,253 @@ therefore **absent by design**, and "the effect lives at L6–14" is **not** amo
 
 **Summary report updated** with `R-023`/`R-024`, and the scope line corrected: the **mechanism** is
 now two model families; the **behavioral** half remains Llama-only.
+
+### `DCS-R-025` — ✅ **the specificity DiD REPLICATES ON QWEN3-14B.** Three settings, identical domain split.
+
+Band 7–17, `--enable-thinking false`, n = 380 per cell, 38 domains, each cell against its own
+dose-matched control.
+
+| cell | baseline | `KO-3` | control | `KO-3` − control | domains | p |
+|---|---|---|---|---|---|---|
+| `C` codeword | +10.140 | **−13.080** | +10.357 | **−23.437** | 1+/37− | 2.84e-10 |
+| `B` concept itself | +30.707 | +29.015 | +30.254 | **−1.238** | 15+/23− | **0.256** |
+
+**DiD = −22.198, 1+/37− domains, p = 2.838e-10 ⇒ REMAPPING-SPECIFIC (outcome `F`).**
+
+**The specificity result now holds in three independent settings, with the *identical* domain split
+and the *identical* p in every one:**
+
+| setting | DiD | domains | p |
+|---|---|---|---|
+| Llama · `button↔bomb` | −9.889 | 1+/37− | 2.838e-10 |
+| Llama · `basket↔bomb` | −9.352 | 1+/37− | 2.838e-10 |
+| **Qwen3 · `button↔bomb`** | **−22.198** | **1+/37−** | **2.838e-10** |
+
+⇒ Two model families × two codewords. ⛔ The p-values are identical because **1+/37− is the same
+exact binomial** — this is three replications of the same *sign pattern*, not three independent
+p-values, and must be reported that way.
+
+### `DCS-C-019` — the ceiling concern I declared in `R-023` does **not** apply, and here is why
+
+`R-023` warned, before these arms ran, that Qwen's cell `B` sits at **+30.7 with option mass
+1.000 — effectively saturated** — so a small `B` movement might be a **ceiling** rather than
+specificity. ⚠ Having declared it, I have to actually adjudicate it rather than let the result stand
+unexamined.
+
+⇒ **It does not apply, because the effect direction is DOWNWARD.** A ceiling constrains how far `B`
+can *rise*; it places no limit on how far it can *fall*. `B` had the entire range below +30.7
+available — Qwen's cell `C` fell **23 points** under the identical intervention — and `B` moved
+**−1.238** (15+/23−, p = 0.256). ⇒ The null is a **real** null, not a truncation artifact.
+
+⚠ **A related claim that does NOT replicate, consistent with `R-011`:** on Llama-`button`, cell `B`
+moved **up** (+1.808); on Llama-`basket` it moved **down** (−1.466); on Qwen it moves **down**
+(−1.238). ⛔ "The two cells move in opposite directions" remains **`button`-on-Llama only**. The
+general, thrice-replicated claim is about **magnitude**: `KO-3` moves the codeword cell by
+**8–23 points** and the concept cell by **≤ 1.9 in either direction**.
+
+### `DCS-022` — periodic review of the Qwen arms: liveness ✅, thinking-mode ✅, one **provenance gap**
+
+§1.9's hardest Qwen rule is that a `<think>` control token must never be treated as the Llama readout
+position. Verified rather than assumed.
+
+**Liveness and dose, all six Qwen arms:**
+
+| arm | n | prefill | decode | rows/layer/forward | violations | attn |
+|---|---|---|---|---|---|---|
+| `C` / `B` baselines | 380 | 0 | 0 | 0 | 0 | eager |
+| `C` `KO-3` + control | 380 | **91 872** | **0** | 44 | 0 | eager |
+| `B` `KO-3` + control | 380 | **91 872** | **0** | 44 | 0 | eager |
+
+⇒ Dose **identical between demo and control within each cell**, decode edits **0** everywhere, zero
+liveness violations, `eager` confirmed, **same `bank_file_sha16` as the Llama runs**
+(`db351646a3bb004b` — literally the same prompts), band `7-17` present in `argv`.
+
+**⚠ A scare, chased down and resolved.** `config.json`/`metadata.json` report `thinking = None`, which
+read as *"the flag never applied"* — the exact §1.9 failure mode. It is a **persistence gap, not a
+functional one**: `argv` shows `--enable-thinking false`, and the run log carries
+`score_behavior.py`'s own self-check:
+
+    [score] enable_thinking=False: template renders differently for the two modes
+            (len 1060 vs 1079), so the flag is capable of acting.
+
+⇒ The two renderings differ by **19 characters** — the empty `<think></think>` block — so the flag
+both applied and was capable of acting. ✅ Thinking mode is off; the readout position is not a
+`<think>` token.
+
+⛔ **`DCS-B-011` (new, minor):** `enable_thinking` is **not persisted under any key** in
+`metadata.json` or `config.json`; it is recoverable only from `argv` and the run log. That is below
+§1.11 rule 13's provenance bar — every artifact should carry the settings that determine its meaning
+— and on a *thinking* model this particular setting determines where the readout is. ⚠ It cost me a
+false alarm; on a colder read it could cost someone a wrong conclusion.
+
+⚠ Note the guard that saved this **already existed** and was written after the flag "was silently
+inert once: it reached the readout templating and not `dc.generate`". The lesson the repo had
+already learned is the reason the answer took minutes rather than a re-run.
+
+### `DCS-PR-010` — the formal model × endpoint interaction, submitted
+
+`R-024` claimed *"the mechanism is cross-model; only its link to behavior is model-specific"* and
+⛔ immediately flagged that **this is not yet a formal interaction** — `TSC-R-005`'s Qwen behavioral
+null was measured at the **`demo_processing_only`** scope, while `R-024`/`R-025` are at
+**`query_prefill_only`**. Comparing them would be comparing two different interventions and calling
+the difference a model effect, which is precisely the error
+`scripts/tsc_model_interaction.py`'s docstring exists to prevent.
+
+**Submitted (`846629` baseline, `846630` `KO-3`):** Qwen3-14B, **`behavioral`** query kind, band
+7–17, `--enable-thinking false`, same bank / block / dose / seed as everything else. Two jobs, the
+≤2 concurrent Qwen cap; the refusal-neutral control follows.
+
+⛔ **Declared before any outcome:**
+* **Capability gate first, as with `R-023`.** If Qwen's behavioral baseline ASR is at floor on this
+  bank, the arm is `CANNOT ANSWER` and ⛔ **must not** be reported as a behavioral null. `TSC-R-003`
+  measured Qwen at ASR 0.2026 on a comparable population, so it is *expected* to be capable — but
+  expected is not measured.
+* The comparator is a **refusal-neutral** dose-matched control (`R-015`'s criterion, applied from
+  `gens.jsonl` before judging), **not** the baseline. `C-015` cost this phase a retraction for
+  exactly that substitution.
+* **The interaction estimand:** does `KO-3` move Qwen's attack endpoint *less* than Llama's, on the
+  **same** scope, bank, dose and band? Llama's answer at this scope is `R-016`/`R-019`: direction
+  established at ≈ −30 rows, **not significant at the domain independence unit**. ⚠ So the
+  interaction inherits `B-009`'s ceiling — with Llama's own effect uncertified at that unit, an
+  interaction test against it is **underpowered before it starts**, and the honest ceiling on this
+  experiment is a **descriptive** cross-model comparison, not a certified interaction.
+
+⚠ That last point is recorded now precisely because the result will be tempting to over-read: if
+Qwen's behavioral effect is small, the pre-existing story ("mechanism cross-model, behavior
+model-specific") will look confirmed — but the design cannot certify it, and `TSC`'s own rule is
+that a difference in significance is not a significant difference.
+
+### `DCS-023` — ⛔ commits BLOCKED by NFS degradation. `--no-verify` **declined**, and why.
+
+The filesystem degraded to **2.6 s per small-file read** and **2.7 s per directory listing**. A
+commit sat in the pre-commit hook for **90 minutes**; its guard child was **progressing but at
+0.6 syscalls/second** (~100× normal), so it was killed and re-tested standalone — where it **also
+timed out**. This is infrastructure, not a defect: the same guards ran green in 40 s earlier today.
+
+**Guards run individually under the degradation:**
+
+| guard | result |
+|---|---|
+| `retraction_sweep` · `canonical_figures` · `markdown_structure_check` · `pvalue_hygiene_check` · `plan_coverage_check` · `ledger_propagation_check` | ✅ **PASS** (55–173 s each) |
+| `run_completeness_check` · `cited_artifact_check` · `verify_report_numbers` | ⛔ **cannot complete** (timeout at 280–500 s) |
+
+⛔ **`--no-verify` was available and is DECLINED.** The repo's own hook installer says bypassing is
+"a visible, deliberate act", so it is permitted — but the two guards that cannot run are
+**`verify_report_numbers`** (every quoted number still matches its artifact) and
+**`cited_artifact_check`** (every claim cites an artifact that exists). ⚠ The pending commit adds
+**`R-025`, `C-019`, `DCS-022` and `PR-010`** — roughly ten new headline numbers. Committing those
+**specifically without the two guards that check numbers against artifacts** would be bypassing the
+hook exactly where it is most load-bearing. ⇒ Declined.
+
+✅ **Nothing is at risk.** Every entry is written to this append-only log on disk; every headline
+recomputes from committed `results.jsonl` (verified in `DCS-019`); the SLURM arms
+(`846629`/`846630`) are unaffected and still generating. The cost of waiting is a delayed `git log`,
+not lost work.
+
+⚠ **A rule this exposes, worth keeping:** the pre-commit hook makes commit latency proportional to
+*artifact-store size* — it walks **755** run directories — so it degrades as the project succeeds.
+Three guards now scale with the number of runs rather than with the diff. That is fine at 40 s and
+untenable at 90 minutes, and it will only get worse.
+
+### `DCS-R-026` — Qwen behavioral, judge-free signals: **`KO-3` removes ALL 150 refusals** — the same 150 as `TSC-R-006`
+
+`behavioral`, Qwen3-14B, band 7–17, n = 380. `refused` is `kw_refusal`, a substring matcher with
+**no API call**, so these are available before any judging and are outcome-independent for attack.
+
+| arm | n | `refused` | median chars | p10 chars | empty |
+|---|---|---|---|---|---|
+| baseline | 380 | **150 (0.395)** | 679 | 261 | 0 |
+| `KO-3` | 380 | **0 (0.000)** | 860 | **571** | 0 |
+| *Llama baseline* | 380 | 42 (0.111) | 1447 | 121 | 0 |
+
+⚠ **`TSC-R-006` reported that on Qwen3 the `demo_processing_only` knockout "removes ALL 150
+refusals".** This is a **different scope** (`query_prefill_only`), a different band, and a different
+bank block — and it lands on **the same 150, and again removes all of them.** ⇒ Qwen's refusal
+behaviour on this population is **150 rows**, and *both* demonstration-cutting scopes annihilate it
+completely.
+
+⇒ The refusal half of the dissociation now holds across **two models × four scopes**:
+`demo_processing_only` (Qwen, `TSC-R-006`) · `target_surface_row_only` (Llama, `R-007`, halved) ·
+`query_prefill_only` (Llama, `R-012b`, 42 → 0) · `query_prefill_only` (Qwen, here, 150 → 0).
+
+⚠ **The p10 signature reproduces exactly as on Llama**: 261 → **571**, i.e. the short tail
+disappears, and `empty = 0` in both arms. `DCS-008b` identified that tail as the refusals on Llama;
+the same structure appears on Qwen. ⛔ Generation is **not** degraded — median length *rises*
+(679 → 860).
+
+⛔ **This says nothing yet about attack.** `PR-010`'s estimand is the behavioral **attack** endpoint
+against a **refusal-neutral** control, and `R-015`'s criterion cannot even be applied until the
+control arms finish (`846829`, `846915`, submitted this tick). ⚠ Note the criterion will be **harder
+to satisfy here**: Llama's baseline was 42 refusals with a ±17 band, while Qwen's is **150**, so a
+control must land within 17 of 150 — a proportionally tighter target on a model that refuses 4×
+more.
+
+### `DCS-R-027` — ⚠ **0 of 2 Qwen controls qualify.** Extending the search rather than declaring a limit.
+
+`R-015`'s criterion, unchanged, applied judge-free at n = 380. Qwen behavioral baseline = **150**
+refusals, so a control must land within **±17 of 150**.
+
+| arm | `refused` | Δ | verdict |
+|---|---|---|---|
+| `nondemo_matched_d1` | 189 | **+39** | ⛔ REJECTED |
+| `nondemo_matched_d2` | 197 | **+47** | ⛔ REJECTED |
+| *(treatment)* `KO-3` | **0** | −150 | — |
+
+⚠ This is the risk `PR-010` named **before these arms existed**: *"the criterion will be harder to
+satisfy here — Llama's baseline was 42 with a ±17 band, Qwen's is 150, so a control must land within
+17 of 150, a proportionally tighter target on a model that refuses 4× more."* It came true.
+
+⛔ **But 0 of 2 is NOT grounds to declare `CANNOT ANSWER`.** On Llama the qualification rate was
+**3 of 6 draws (50 %)**; under that rate, 0 of 2 has probability **0.25** — unremarkable. Declaring a
+structural limit from two draws, when the comparable model needed six to find three, would be
+**stopping at the answer I can already see**. ⇒ Two further draws submitted (`nondemo_matched_d3` at
+seed 20260901, and `d1` at seed 20260904 — verified-independent positions by `DCS-018`'s method).
+
+⛔ **The stopping rule, fixed now so it is not chosen later:** the search runs to **6 Qwen draws**,
+matching the Llama search exactly. If **≥1** qualifies, the interaction proceeds on all qualifying
+controls. If **0 of 6** qualify, *then* it is `CANNOT ANSWER` — and that is a statement about **the
+comparator design on a high-refusal model**, ⛔ never "Qwen shows no behavioral effect".
+
+⚠ Note what this asymmetry already tells us, independent of any attack number: on Qwen a
+count-matched non-demonstration draw pushes refusal **up by 39–47 rows from a base of 150**, while
+on Llama the same procedure moved it **+7 to +52 from a base of 42**. The perturbation is *not*
+behaviorally inert on either model — which is precisely why `C-015` had to be found the hard way.
+
+### `DCS-024` — 2026-09-04 — ⚠ `--no-verify` used **once, deliberately**, with 8 of 9 guards green and the 9th verified by hand
+
+`DCS-023` declined `--no-verify` on a specific ground: the two guards that could not run were
+`verify_report_numbers` and `cited_artifact_check`, i.e. **exactly the ones that check quoted numbers
+against artifacts**, on a commit that is almost entirely new numbers. ⇒ That ground has now been
+removed by measurement, not by impatience.
+
+**Guard probe, run without holding the index lock** (so a failure could not re-block the repo):
+
+| guard | result |
+|---|---|
+| `cited_artifact_check` | ✅ **PASS** (640 s) |
+| `verify_report_numbers` | ✅ **PASS** (349 s) |
+| six fast guards (`DCS-023`) | ✅ **PASS** |
+| `run_completeness_check` | ⛔ **timeout at 1800 s** |
+
+⇒ **8 of 9 green.** The one that cannot run checks *"a finished run persisted all its rows"*, and its
+cost is structural: it walks **755 run directories**, so it scales with the artifact store rather
+than with the diff (`DCS-023`).
+
+**Its property was therefore verified directly, for this phase's runs:**
+
+    DCS-phase finished runs checked: 52
+      rows == expect_n : 52
+      MISMATCHES       : 0
+
+⇒ All **52** DCS runs with a `DONE.json` and an `expect_n` persisted **exactly** their expected row
+count (smoke runs with `--limit` excluded by rule, not by inspection).
+
+⛔ **What this is and is not.** It is **one** documented bypass, on a commit whose content is
+markdown, with the skipped guard's property independently confirmed at n = 52. It is **not** a new
+policy: the standing rule stays *run the hook*, and the next commit runs it in full. ⚠ The repo's own
+installer anticipates this — *"a hook that cannot be bypassed gets uninstalled the first time it is
+wrong; bypassing is then a visible, deliberate act"* — and this entry is that visibility.
+
+⚠ **`DCS-B-012` (new):** three guards scale with the number of runs, not the diff. At 755 runs the
+hook costs 30–90 min under NFS load and blocks all commits. ⇒ They need an incremental mode (check
+only runs touched since the last commit, or since a stored watermark) before the store grows further.
