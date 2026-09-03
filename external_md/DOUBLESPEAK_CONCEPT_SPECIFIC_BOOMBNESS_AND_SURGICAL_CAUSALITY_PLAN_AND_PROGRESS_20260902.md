@@ -2272,3 +2272,38 @@ judge noise.
 measured within-batch noise floor of ±7."** ⛔ Still **not** established: stability across the
 pre-declared split, and the selection inflation (`d2` remains the weakest of three distinct draws).
 ⛔ The topical endpoint remains `UNINFORMATIVE BY CONSTRUCTION` and is not cited either way.
+
+### `DCS-C-017` — ⚠ CORRECTED: "the effect lives in the held-out half" is **not established**. I made the difference-in-significance error.
+
+`DCS-R-017` reported the `dev`/`heldout` asymmetry as a live threat: dev −5/−10 (p = 0.64/0.31),
+heldout −24/−26 (p = 0.008/0.004), and wrote *"the effect still lives almost entirely in the held-out
+half."* ⛔ **That sentence compares two p-values instead of testing the difference, which is the one
+error this repository has a module docstring warning about** — `scripts/tsc_model_interaction.py`
+opens with *"'Significant in Llama, non-significant in Qwen' is NOT a model interaction and must
+never be written as one. Two tests that disagree about significance can easily have effects that do
+not differ; the difference has to be tested directly."* I applied that rule to models in
+`DCS-PR-001a` and then failed to apply it to splits.
+
+**Tested directly** — permutation over the per-row paired differences, 20 000 relabellings,
+seed 20260903:
+
+| judging | dev net | heldout net | dev−heldout rate diff | **permutation p on the ASYMMETRY** |
+|---|---|---|---|---|
+| A | −5 (n = 190) | −24 (n = 190) | +0.1000 | **0.1417** |
+| B | −10 | −26 | +0.0842 | **0.2306** |
+
+⇒ **The split difference is not distinguishable from chance under either judging.** ⚠ And `dev` is
+**not** underpowered: it carries **73 / 80 discordant pairs** against `heldout`'s **76**, so this is
+not a power asymmetry either — the two halves simply have overlapping estimates.
+
+⇒ Correct statement: **the effect is negative in both halves under both judgings; one half reaches
+significance and the other does not, and that difference is itself within chance.** ⛔ *"The effect
+lives in the held-out half"* is withdrawn. ✅ What survives is the pooled estimate with its
+split-level variability stated — which is weaker than "it replicates in both halves" and stronger
+than "it only works in one".
+
+⇒ **`R-016`/`R-017` net status:** direction established across **four independent judgings** and two
+control-draw identities; magnitude ≈ **−30** against a measured within-batch noise floor of **±7**;
+the split objection **resolved as not-established**; the remaining live caveats are the **selection
+inflation** (`d2` is the weakest of three distinct draws) and the fact that **91 % of the endpoint is
+off-goal text**.

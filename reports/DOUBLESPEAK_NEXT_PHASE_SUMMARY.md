@@ -26,9 +26,11 @@ annihilates to zero), which masked the effect and produced a false null; against
 **refusal-neutral** control of the three that exist, `KO-3` removes attacks with the direction
 confirmed across two independent judgings, domain clustering (p = 0.0089), 24 of 34 non-tied
 domains, and a composition-free endpoint on which `KO-3` sits below every control and the baseline.
-⚠ **The magnitude is not established** — the selection criterion provably favours the
-highest-attack control (r = −0.97), the judge's own re-run spread on byte-identical text reaches 18
-rows, and the effect is absent in the pre-declared `dev` half. So: the mechanism is real,
+⚠ **The magnitude is ≈ −30 against a measured within-batch judge-noise floor of ±7** (established
+by re-judging byte-identical text inside one invocation), but it is inflated by a selection
+criterion that provably favours the highest-attack control (r = −0.97), and **91 % of the endpoint
+is off-goal text**. ⚠ The apparent `dev`/`heldout` asymmetry was tested directly and is **not**
+distinguishable from chance (permutation p = 0.14 / 0.23). So: the mechanism is real,
 demonstration-built, remapping-specific, and **behaviorally causal in direction**; gate `R5` is
 passed at the query-span scope and **fails at the codeword-row scope**, and the magnitude awaits
 replicate judging (`DCS-PR-005`).
@@ -145,11 +147,12 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 ## OPEN QUESTIONS
 
 0. ⛔ **THE PHASE'S TOP OPEN EXPERIMENT (`DCS-PR-005`): what is the MAGNITUDE?** Direction is
-   established (`R-016`, downgraded by `C-016`). The size is not: −36 is inflated by a selection
-   criterion that provably favours the highest-attack control, the judge's re-run spread on
-   byte-identical completions reaches **18 rows**, and the effect is absent in `dev` (p = 0.349)
-   while present in `heldout` (p = 0.0018). Replicate judging is submitted with its decision rule
-   fixed in advance.
+   established across **four independent judgings** (`R-016`, `R-017`). The size is ≈ **−30** with a
+   measured within-batch noise floor of **±7**, but remains inflated by a selection criterion that
+   provably favours the highest-attack control (r = −0.97). ⚠ The `dev`/`heldout` objection was
+   tested directly and is **not established** (`C-017`, permutation p = 0.14 / 0.23). What is still
+   open: a **second refusal-neutral draw** to break the selection dependence, and an endpoint that
+   is not 91 % off-goal.
 1. **Which position retrieves?** `KO-3` cuts the whole query span and cannot separate the readout
    position from the ~10 intervening query tokens. A readout-row-only scope does not exist;
    the machinery added this phase makes it a small extension.
