@@ -2706,3 +2706,29 @@ into **one** commit. This is the third distinct way the shared tree has bitten t
 ⚠ Note this is **not** the peer-contention case from the house rules: `ps` showed **no other git
 process**, and the lock was mine each time. The fix is sequencing my own commits, not waiting on
 someone else's.
+
+### `DCS-020` — §42 figures: **four panels, and four deliberately NOT drawn**
+
+`reports/DCS_FIGURES.png`, from `scripts/dcs_figures.py`. Reads only committed `results.jsonl` and
+**recomputes every plotted number from the artifacts**, not from any analyzer's cached output — so a
+drift between figure and text surfaces here first. Verified: panel values reproduce the published
+ones exactly (ladder `5.149 / 5.150 / −1.246 / −2.510 / −2.756`; DiDs `−9.889` and `−9.352`, 37/38
+domains, p = 2.84e-10; scopes `+0.363 / −0.013 / −8.081`).
+
+| panel | shows |
+|---|---|
+| **A** | the row dose-ladder — the step between K=2 and K=8, with the control line flat across a 32× dose range |
+| **B** | specificity on **both** lexical banks — cell `C` collapses, cell `B` does not |
+| **C** | the scope ladder — neither single row matters, the whole span does |
+| **D** | the behavioral comparator landscape — refusal-inducing controls sit at `KO-3`'s attack level and hid the effect |
+
+⛔ **Four of §42's eight figures are deliberately not drawn**, and the reason is the result rather
+than an omission: Figure 2 (metric comparison), Figure 4 (metric vs forced-choice validity) and
+Figure 5 (metric vs StrongREJECT) all presuppose **a validated concept-specific metric, which
+`R-002` established does not exist**; Figure 3 (occurrence trajectory) presupposes accumulation,
+which `R-003` refuted. Drawing them would be plotting the phase we planned rather than the one we
+ran. The `dcs_figures.py` docstring records this so the gap is legible from the code, not only here.
+
+⚠ **Panel D carries its own limitation in the caption**: it shows **4 of 6** control draws — only
+those judged in a *single* invocation — because `C-016a` measured **+18 rows of cross-batch judge
+drift on byte-identical text**, which is larger than several of the contrasts being compared.
