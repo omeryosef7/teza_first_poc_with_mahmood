@@ -3862,3 +3862,46 @@ concept.
 ✅ **`B-006` is resolved with data rather than argued in text.** "Are the cells in comparable
 measurement regimes after `KO-3`?" — **on Qwen yes** (`option_mass` 1.000 everywhere); **on Llama no**
 in cell C only. The defect was real and is **Llama-specific**.
+
+### `R-033` — `PR-013`'s dose-matched control is **structurally impossible** in the rbd banks, and the reason is a bank field
+
+Job **848538** (`lp_ctrl`) refused in 20 s, before generating:
+
+> `REFUSING before generating: 160 of 160 rows cannot carry this knockout (0 without a demo block,
+> 160 whose control cannot be built …). Fix the arm or the population — do NOT rescope to the
+> feasible rows, because demo length IS the dose variable.`
+
+`control_draw_match_ratio` is **0.000 on all 160 rows** — not "small", **zero keys drawable**.
+
+**Why, measured rather than guessed.** `demo_block / full_prompt`:
+
+| bank | `n_examples` | demo share of prompt | preamble |
+|---|---|---|---|
+| `cds38_button_bomb` (headline) | 4 | **0.307** (min 0.245) | **10 lines, 57.5 % of prompt** |
+| `rbd_lantern_poison` (`PR-013`) | 8 | **0.847** (min 0.807) | ⛔ **field does not exist** |
+
+⇒ The strict control draws non-demonstration keys to match the demonstration dose. In cds38 the
+**preamble** supplies them. The rbd banks have **no preamble at all** and run at `n=8`, so the prompt
+is ~85 % demonstration and the non-demonstration pool is empty. ⚠ **The control's feasibility is a
+property of how the bank was built, not of the intervention** — and `PR-013` declared `n_examples=8`
+as a *power* difference. It is not: it silently removed an arm.
+
+⛔ **A `capped` control is not a fallback here.** `nondemo_capped_d1` tolerates `match_ratio < 1`, but
+the ratio is **0.0** — a capped arm would mask **zero** keys and be a literal no-op mislabelled as a
+comparator. ⛔ And rescoping to feasible rows is exactly what the guard forbids, for the right reason.
+
+**Status of `PR-013`, stated without softening.**
+* ✅ **Primary endpoint is unaffected** — per-domain paired Δ`semantic_logodds` in cell C, `KO` vs
+  **baseline**. Both arms completed: `lp_base` and `lp_demo`, **160 rows each**, 80/80 across cells,
+  20 domains, `prefill_edits` 109 440–186 624 (live, non-trivial).
+* ⛔ **Secondary (b), control inertness, CANNOT BE RUN** in these banks. Not "was not run" — cannot
+  be. It is not evidence either way and will not be reported as reassurance.
+* ⇒ The generality test can show the demonstrations **carry** the reading; it **cannot** rule out
+  generic attention damage *on these concepts*. That was ruled out on `bomb` (`R-010`/`R-011`,
+  controls inert at 32× dose range) and is **inherited, not re-verified**. ⚠ Stated in the summary as
+  inherited.
+
+⚠ **`PR-013`'s declared outcomes stand unchanged** — this narrows what the run can support, it does
+not license reinterpreting what it does support. `cm_ctrl` (848541) is being allowed to run rather
+than cancelled: if it refuses identically on a **different concept**, the infeasibility is confirmed
+structural rather than lantern-specific, for the price of 20 s.
