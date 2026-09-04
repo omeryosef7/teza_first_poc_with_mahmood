@@ -67,12 +67,18 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 8 | `C-034` | ⚠ my verifier bands were **hardcoded** ⇒ one false ANTI-CONSERVATIVE alarm on `E` (0.0767 at n=300; **0.0490** at n=3000) and one **withdrawn** claim from `A-006`. Band now **derived from N** | ✅ |
 | 9 | `DCS-036` | the **collaborator draft** was **19 entries stale** and said two answered questions were still open. Rewritten; the **−0.907** is now an explicit do-not-send | ✅ |
 | 9 | `C-035` | ⚠ our **novelty claim** overstated us by the literature matrix's **own** bar: we clear it on **refusal**, ⛔ not on **ASR**. No number moved — prose true when written became false | ✅ |
+| 10 | `R-056` | **`B-009` sized from MEASURED parameters**: power **0.311** at k=38 (which explains `R-019`), **0.814** at k=114. ⛔ Also **corrected my own advice** — splitting across two concepts halves power | ✅ |
+| 10 | `PR-024` | preregistered; **78 domains authored** (k=38→116), text audit passes, `test_bank_regenerates_byte_identically` still green (the `C-10` fix) | ✅ |
+| 11 | — | pool generation submitted (**850676**), parameters copied from the existing pools' `_meta` — the CLI default seed is **20260816**, the real one **20260828** | ⏳ |
+| 11 | `DCS-037` | pool audit **mutation-tested before it judges anything**: 7/7, every refusal fires; the cross-domain-duplicate non-refusal is pinned as a **recorded judgement call** | ✅ |
+| 12 | `PR-024a` | ⛔ closed the **comparator freedom** `PR-024` left open — primary is now a **conjunction over all three** controls, no selection; refusal-neutrality selection is discredited (`C-023`) | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| *(nothing in flight)* | — | `squeue` **empty**, GPU and CPU. All 10 preregistrations closed |
+| `PR-024` / `B-009` pool generation, 78 domains × 4 valences | 850676 | ⏳ `cpu-killable` |
+| `PR-024` bank build + 5 behavioural arms (~13.5 GPU-h) | — | queued behind the pool audit |
 
 ## Standing rules being followed this session
 
