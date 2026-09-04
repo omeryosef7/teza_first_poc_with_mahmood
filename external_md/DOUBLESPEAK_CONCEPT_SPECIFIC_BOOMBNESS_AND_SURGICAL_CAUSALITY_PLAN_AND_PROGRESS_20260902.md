@@ -3505,3 +3505,32 @@ isolation still cannot state its own thinking mode. It downgrades the defect fro
 
 ⚠ Nothing here changes a number. This tick bought **reproducibility of the layer story**, which had
 been asserted rather than committed.
+
+### `C-021` — correction to `DCS-030`: that commit contained **none** of the files it names
+
+⛔ **`f8df7a1c` is a commit whose message is false about its own contents.** It reads
+*"commit 26 untracked argsfiles"* and its stat line is **`1 file changed, 28 insertions`** — the log
+entry alone. Every argsfile it describes stayed untracked.
+
+**Cause — a sharp edge in the rule this repo adopted for its own safety.** `feedback_git_commit_path_limited`
+requires `git commit -- <paths>` here, because a shared index means `git add -A` has swept a peer's
+work three times. But `git commit -- <paths>` operates on **tracked** files only; handed a path
+containing nothing but untracked files it commits **nothing from that path and still exits 0**. The
+guard that prevents sweeping foreign work also silently drops new files, and it does so **without a
+non-zero exit, without a warning, and with the pre-commit suite passing 341/341** — every signal I
+normally read said success.
+
+⚠ **The only thing that caught it was a post-commit re-count** (`git status --short runargs/dcs | wc -l`
+→ still `26`) placed in the same command as the commit. Had I trusted the exit code and the green
+test suite, the log would now assert reproducibility that does not exist — the precise failure mode
+`feedback_check_reads_same_broken_source` names, arriving from the direction of version control.
+
+**Fix.** Staged the 26 by exact path via `git add --pathspec-from-file`, then verified **26 staged and
+0 staged outside `runargs/dcs`** before committing — keeping the shared-tree protection while making
+the add explicit rather than wildcard.
+
+**Standing rule added:** in this tree, a commit that is supposed to introduce **new** files must be
+followed by a re-count of the untracked set, not by reading its exit status. `DCS-030`'s findings
+(the 12-file dedupe to 2 lines, the 5/5/5 and 6/9/8 widths, the 14 Qwen `--enable-thinking false`)
+were all verified before this and **stand unchanged**; only its claim to have *committed* them was
+wrong.
