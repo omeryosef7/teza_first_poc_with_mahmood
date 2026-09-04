@@ -5003,3 +5003,33 @@ independently and is unaffected: installation is **not** a prompt-length or dose
 *external* ground truth (human ratings, or corpus co-occurrence of the concept with each domain's
 vocabulary). That is a new instrument, a new preregistration, and a decision for Omer, not a repair
 of this one.
+
+### `DCS-034` — `R-046` lands directly on `PR-014`, and the caveat is declared **before** its result exists
+
+`PR-014`'s primary is an exact McNemar p on judge labels from the same API family `R-046` just showed
+is **nondeterministic at `temperature 0`**. ⚠ Written now, while job 849653 is on **arm 6 of 8**, so
+it cannot be mistaken for a caveat invented to soften whatever comes back.
+
+⛔ **What `R-046` does NOT license.** It is measured on the **plausibility rubric**, 114 ratings, 1
+flip. The **attack** rubric is a different prompt, a different output space and a different length.
+⇒ ⛔ No number from `R-046` may be transferred to `PR-014` as a noise estimate, and I am not going to
+write *"±1 in 38"* anywhere near an ASR.
+
+✅ **What it does mean.** `PR-014`'s exact McNemar treats each row's label as **fixed**. It is not:
+there is an **unmeasured** label-noise floor, and the p-value is conditional on the labels drawn.
+⇒ Three consequences, all binding:
+1. ⚠ The reported p is **not** a bound on how often this comparison would come out this way if
+   re-judged. `C-016a` (18-attack drift) and `R-017` (a measured re-judge band of **17 rows** per
+   arm, **3.7** paired, over three passes) are the phase's only real handles on that, and they are
+   the ones to quote — not `R-046`'s.
+2. ✅ Judging all 8 arms in **one invocation** was already the design (`PR-014`), and `R-046`
+   **strengthens** the reason: within one invocation the arms at least share whatever the endpoint
+   was doing that hour.
+3. ⛔ A `PR-014` result that lands **near α** must be reported as **near α with an unmeasured label
+   noise floor**, ⛔ never as a clean pass. Declared now precisely because I cannot yet know whether
+   it will land there.
+
+⚠ **The honest gap, named rather than closed:** nobody has measured judge nondeterminism on the
+**attack** rubric within a single configuration. `R-017`'s 17-row band mixes that with cross-session
+variation. Separating them costs one extra judging pass of one arm — ⛔ **not run this tick**, and
+listed as `B-014` so it is not lost.

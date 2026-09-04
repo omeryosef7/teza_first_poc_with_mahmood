@@ -31,16 +31,22 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 1 | `C-028` | my pre-flight never asked whether the predictor had **room to move** | ✅ |
 | 1 | `PR-018a`/`R-043` | the strict control refused; `capped` is legitimate here (ratio 0.9967, not `R-033`'s 0.0). Contrast **−0.404, p = 0.0482**; control ρ **−0.040** | ✅ |
 | 1 | `C-029`/`B-013` | my severity estimate for the 11 under-matched rows was wrong; and the per-row ratio is **not persisted** despite the artifact saying it is | ✅ |
+| 1 | — | **deliverables re-synced**: summary, `LIVE STATUS`, and `DCS_FIGURES.png` gains **panels F and G**; the PNG was **read back** and three layout defects were fixed (`C-026`) | ✅ |
 | 2 | `DCS-033` | `PR-014`'s bounding analyzer committed **while the judge was on arm 5 of 8**; closes the row-assignment freedom the prereg left open | ✅ |
 | 2 | `C-030` | ⛔ **`PR-014`'s bound points the wrong way** — the refusal-adjusted end is the **favourable** one, not the hostile one. Caught and corrected **before** the analysis ran | ✅ |
 | 2 | `A-007` | self code review of that analyzer: 5/5 pass, incl. `C-030` turned into an **executable invariant** (300/300) and a 3-mutant harness (3/3) | ✅ |
-| 1 | — | **deliverables re-synced**: summary, `LIVE STATUS`, and `DCS_FIGURES.png` gains **panels F and G**; the PNG was **read back** and three layout defects were fixed (`C-026`) | ✅ |
+| 2 | `R-044` | exploratory screen: installation is ⛔ **not** a prompt-length or dose artifact (ρ = −0.000, p = 0.9996); 2 of 7 candidates struck as **tautological** | ✅ |
+| 2 | `PR-019` → `R-045` | plausibility instrument: reliability gate **FIRED** (5 of 38 over a gate of 4) ⇒ ⛔ `CANNOT ANSWER`; threshold **not** moved | ✅ |
+| 2 | `R-046` | ⛔ **`temperature 0` is NOT deterministic** — an identical re-run flipped 1 of 38 rating vectors and moved the gate count 5 → 6 | ✅ |
+| 2 | `C-031` | `RUBRIC_B` invents its own settings when given one item; the **strict parser refused**, and the lenient fallback would have mislabelled every domain | ✅ |
+| 2 | `R-047` | ⛔ **`PR-019a` STOPS** — `CANNOT ANSWER` on this instrument family, as declared. The available repair is recorded and **not taken** | ✅ |
+| 2 | `DCS-034` | `R-046`'s consequence for `PR-014` declared **before** its result exists; new blocker `B-014` | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ arm **5 of 8**; analyzer + verifier already committed |
+| `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ arm **6 of 8**; analyzer, verifier and caveat all committed ahead of it |
 | *(GPU queue empty)* | — | all `PR-018`/`PR-018a` arms complete |
 
 ## Standing rules being followed this session
