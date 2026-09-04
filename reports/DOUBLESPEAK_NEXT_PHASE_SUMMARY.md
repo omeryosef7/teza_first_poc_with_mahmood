@@ -171,10 +171,16 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## OPEN QUESTIONS
 
-0a. ⏳ **IN FLIGHT.** The Qwen behavioral interaction is re-analysed by **bounding** rather than comparator
-   selection (`PR-014`); it was `BLOCKED-ON-CREDITS` (`C-024`) and the account was refilled on **2026-09-04**, so all
-   **8** arms are being judged in **one** invocation (job 849653). ⛔ Until it returns, the standing statement is
-   unchanged and *"Qwen shows no behavioral effect"* remains forbidden.
+0a. ⚠ **ANSWERED — `CONFOUND-LIMITED` (`R-048`).** All 8 Qwen arms judged in one invocation, 380 rows each.
+   Face value gives `KO-3 − control` = **+23…+45**, significant on **all six** draws; the refusal adjustment gives
+   **−11…−32**. ⛔ **All six brackets straddle zero and 0 of 6 directional claims survive** ⇒ `PR-014`'s second
+   declared branch verbatim. ⛔ Forbidden in **both** directions: *"`KO-3` increases attack on Qwen"* is the face
+   value and is exactly what the confound predicts (`KO-3` refuses **0**, controls ~200) — note it is the **opposite
+   sign to Llama** (`R-016`), which is why it may not be reported before the confound is excluded; *"`KO-3` reduces
+   attack"* is the adjusted end, significant on 2 of 6; and *"Qwen shows no behavioral effect"* remains forbidden
+   because a straddling bracket is **undetermined**, not null. ⇒ `R-029` is **superseded, not vindicated**: the
+   contrast has now been computed on all six draws with no comparator selection, and the statement moves from
+   *"never measured"* to *"measured, and the confound is larger than the effect it would have to survive."*
 0b. ⛔ **Is the installation gradient CAUSAL?** `R-041`/`R-043` are correlational across domains. `PR-018`'s attempt
    to manipulate installation failed for lack of headroom (`R-042`: 0.908 at n=4, 25/38 domains at ceiling), and
    `cds38` carries no **low-dose** block — `{cds_n4, cds_n8}` is the whole block set. ⇒ Answering it needs a new
@@ -204,6 +210,14 @@ ICC ≈ 0.34, so domain is the correct independence unit.
    (`TSC-R-005` is a capable null on Qwen's *attack* endpoint). ⛔ Not yet a formal interaction —
    that needs Qwen behavioral arms at this scope.
 4. **Is the `basket` ceiling the reason "opposite directions" failed?** Untested.
+
+## THE REFUSAL/ATTACK GAP — replicated on a second model, judge-free
+
+✅ **`R-048`: `KO-3` removes ALL 150 Qwen refusals and buys only +21 attacks** (74 → 95). ⇒ **86 % of the removed
+refusals did not become attacks.** ⚠ This is the Qwen counterpart of open question 2 on Llama (*"`KO-3` eliminates
+refusal without buying attack success — where do the rows go?"*), now seen on **two model families**, at 150-row
+scale, and it requires **no between-arm judge comparison** to state — only a baseline-vs-`KO-3` count within one
+invocation. ⛔ It does **not** rescue the directional contrast, which stays `CONFOUND-LIMITED`.
 
 ## KNOWN DEFECTS
 

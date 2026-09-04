@@ -13,8 +13,8 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 
 ## 0. LIVE STATUS
 
-*(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-043`/`B-013`.
-⏳ `PR-014` judging live (849653); GPU queue empty.)*
+*(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-048`/`C-033`.
+⏳ `PR-020` noise floor live (849779); `PR-014` closed; GPU queue empty.)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
@@ -29,7 +29,7 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 | `R-037` | **Layer-specificity is PARTIAL.** The identical knockout at 15–23 is **13.6 % / 17.2 %** of the 6–14 magnitude and **opposite in sign** | ⛔ **not** inert — significant at floor; ⛔ ⚠ *"15–23 is inert"* is **bank-specific**, false on `rbd` |
 | `R-035` | **Generality: 1 of 2 new concepts.** `lantern`→`poison` passes (−7.760, 0+/20−, at floor); `candle`→`missile` fails (p = 0.115) | ⛔ **MIXED**; ⛔ may not be stated as *"generalises"* |
 | `R-006`/`R-014` | `KO-1` leaves mapping **and** attack unchanged, on a **verified refusal-neutral** control | valid null |
-| `R-012b`/`R-026` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0** | 2 models × 4 scopes |
+| `R-012b`/`R-026`/`R-048` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0** — and on Qwen the 150 removed refusals buy only **+21** attacks (74→95), so **86 % do not become attacks** | 2 models × 4 scopes; the 86 % is judge-free within one invocation |
 | `R-016`/`R-017`/`R-019` | `KO-3` reduces Llama attack **in direction** (≈−30 of 153) | ⛔ **not** significant at the domain independence unit |
 | `R-002` / `R-003` / `R-004` | ⛔ not concept-specific · ⛔ does not accumulate · ✅ null control exact (0.000e+00 at 96 cells) | evaluated negatives + positive control |
 
@@ -43,7 +43,12 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 * ⛔ **"Layers 15–23 are inert"** without naming the bank (`R-037`).
 * ⛔ **"`candle` failed because its mapping is weak"** as an *explanation* — `R-038` tested it and the
   declared conjunction **failed**.
-* ⛔ "Qwen shows no behavioral effect" — `R-029`: **no attack contrast was ever computed** there.
+* ⛔ **"`KO-3` increases attack on Qwen"** — `R-048`: that is the **face value**, and it is what the
+  refusal confound predicts (`KO-3` refuses **0**, controls **~200**). ⚠ It is the **opposite sign
+  to Llama** and that is *why* it cannot be reported, not a reason to.
+* ⛔ **"`KO-3` reduces attack on Qwen"** — the **adjusted** end; significant on only 2 of 6.
+* ⛔ **"Qwen shows no behavioral effect"** — still forbidden. All six brackets **straddle zero**,
+  which is **undetermined**, not null.
 * ⛔ "`KO-3` significantly reduces attack" without naming the test; never `p = 0.0016`.
 * ⛔ "Retrieval is distributed across the query span" — `R-022` shows a **threshold**.
 * ⛔ "The mapping is constructed during demonstration processing" (`C-010`), the **L6–L12 peak**
@@ -59,7 +64,8 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 | `0b` | **Is the gradient causal?** `cds38`'s block set is `{cds_n4, cds_n8}` — there is **no low-dose block**, so installation cannot be lowered. Needs **bank construction** + a new preregistration |
 | `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** ⇒ needs **new demonstration pools** |
 | `B-013` | per-row `control_draw_match_ratio` **not persisted** although the artifact's note says it is; recovered from `hook_n_keys_masked`, workaround assumes row-aligned arms |
-| `R-029`→⏳ | Qwen behavioral: `PR-014`'s bounding analysis is **judging now** (849653); credits restored 2026-09-04 |
+| `R-029`→closed | superseded by `R-048`: the contrast **was** computed on all 6 draws. ⛔ Now limited by the **confound**, not by comparator selection |
+| `B-014` | judge nondeterminism on the **attack** rubric is unmeasured; `PR-020` (849779) is measuring an upper bound on it |
 | `B-006` | after `KO-3` the two cells are in different measurement regimes; defense exists, must be **argued in text** |
 | `B-007` | control-draw **positions** not persisted — disjointness is a code guarantee, not an artifact fact |
 | `B-011` | `enable_thinking` not persisted in metadata |

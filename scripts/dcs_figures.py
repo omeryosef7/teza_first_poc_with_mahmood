@@ -366,11 +366,20 @@ def main():
                     "─────────────────────────────\n"
                     "- Llama: direction only (~-30 of 153); NOT\n"
                     "  significant at the domain independence unit.\n"
-                    "- Qwen: CANNOT ANSWER by comparator choice -\n"
-                    "  0 of 6 draws meet the +-17 tolerance;\n"
-                    "  C-023: that was never a judge band.\n"
-                    "  PR-014 re-analyses by BOUNDING - credits\n"
-                    "  restored 2026-09-04, all 8 arms JUDGING NOW.",
+                    "- Qwen: CONFOUND-LIMITED (R-048). All 8 arms\n"
+                    "  judged in one invocation. Face value gives\n"
+                    "  KO-ctrl = +23..+45 (all 6 significant); the\n"
+                    "  refusal adjustment gives -11..-32. ALL SIX\n"
+                    "  BRACKETS STRADDLE ZERO => the sign is NOT\n"
+                    "  determined. Forbidden both ways: 'increases'\n"
+                    "  is the face value and is what the confound\n"
+                    "  predicts (KO-3 refuses 0, controls ~200);\n"
+                    "  'reduces' is the adjusted end (2 of 6); and\n"
+                    "  'no effect' is still forbidden -- a straddling\n"
+                    "  bracket is undetermined, not null.\n"
+                    "- Judge-free and it survives: KO-3 removes ALL\n"
+                    "  150 refusals and buys only +21 attacks\n"
+                    "  (74->95), so 86% do not become attacks.",
                     fontsize=7.0, va="top", family="monospace")
     axes[2][1].text(0.52, 1.00,
                     "Generality (PR-013 / R-035)\n"

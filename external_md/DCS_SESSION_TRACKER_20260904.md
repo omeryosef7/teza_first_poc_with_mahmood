@@ -41,12 +41,17 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 2 | `C-031` | `RUBRIC_B` invents its own settings when given one item; the **strict parser refused**, and the lenient fallback would have mislabelled every domain | ✅ |
 | 2 | `R-047` | ⛔ **`PR-019a` STOPS** — `CANNOT ANSWER` on this instrument family, as declared. The available repair is recorded and **not taken** | ✅ |
 | 2 | `DCS-034` | `R-046`'s consequence for `PR-014` declared **before** its result exists; new blocker `B-014` | ✅ |
+| 3 | `PR-020` | preregistered **while `PR-014` had no result**: measure `B-014`, the judge noise floor on the **attack** rubric | ✅ |
+| 3 | `C-032` | ⚠ I repeated `C-018` — two backgrounded commits collided on the index lock; the symptom reads as a bad pathspec, and deleting the lock would have been destructive | ✅ |
+| 3 | `R-048` | ⚠ **`PR-014` ANSWERED: `CONFOUND-LIMITED`.** All 6 brackets **straddle zero**; 0 of 6 directional claims survive. Judge-free: `KO-3` removes **150** refusals, buys **+21** attacks (**86 %** do not convert) | ✅ |
+| 3 | `C-033` | ⚠ `C-030` named the conservative end **unconditionally**; which end it is depends on the **sign**. Analyzer now reports the **bracket** | ✅ |
+| 3 | — | `R-048` propagated to the summary, `LIVE STATUS` and the **figure scope card** (read back and verified) | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ arm **6 of 8**; analyzer, verifier and caveat all committed ahead of it |
+| `PR-020` judge noise floor, repeat pass on one arm | 849779 | ⏳ `cpu-killable`, running |
 | *(GPU queue empty)* | — | all `PR-018`/`PR-018a` arms complete |
 
 ## Standing rules being followed this session
