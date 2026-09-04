@@ -5799,3 +5799,53 @@ categorical claim rests on `A` and `B`, not on `E`, in this population.
 ⇒ ✅ **`R-052`'s question is ANSWERED.** It said only a low-dose block could settle whether the
 gradient lives in the varying subrange. The block was built, both gates passed, and the answer is
 **no**.
+
+### `A-010` — **self code review: the audit of the AUDITOR**, and it found a defect in my own verifiers
+
+`scripts/dcs_audit_r041.py` produced `A-009`, `R-053` and `R-055` — the entire narrowing of this
+phase's headline across three populations — and **nothing verified it**. `A-006`/`A-007` set the
+pattern: the statistic that carries a conclusion gets a verifier with a mutation harness.
+
+Committed `scripts/dcs_verify_audit_r041.py`. ✅ **PASS**, six checks:
+
+| check | result |
+|---|---|
+| `contrast_on` refuses a zero-variance predictor | ✅ |
+| leave-one-out really is *n* distinct subsets of size *n*−1 | ✅ |
+| the ceiling subset is exactly the complement of installation = 1.0 | ✅ |
+| **attack `E`** null calibration | ✅ (see `C-034`) |
+| **attack `E` POWER** — a null test that never rejects is useless | ✅ **59/60** planted differences detected |
+| mutant: one **global** coin instead of a **per-domain** swap | ✅ **CAUGHT** (p = 1.000 vs 0.024) |
+
+⚠ **`E` was the check worth writing.** It is hand-written, appears in no other file, and its p-value
+was quoted in all three audits. The mutant is the specific miswrite available: swapping the arm label
+**once for all domains** instead of per domain. It produces **p = 1.000** — a test that can never
+reject — and would have made every `E` line in this phase look like a failure.
+
+### `C-034` — ⚠ **my verifier bands were hardcoded**, and it cost one false alarm and one false claim
+
+Both verifiers used a **fixed** acceptance band `(0.030, 0.075)` for a Monte-Carlo rejection rate.
+⛔ **A fixed band is valid at exactly one *N*** and silently becomes a false-alarm generator below it.
+
+**Consequence 1 — a false alarm I nearly wrote up as a defect.** At **n = 300** the new verifier
+flagged attack `E` as **ANTI-CONSERVATIVE** at 0.0767 — which, if true, would have meant *"every `E`
+pass in this phase is suspect."* ⚠ 0.0767 is only **2.1 SE** above nominal at that *N*. ✅ A
+**3 000-draw** re-run puts the true rate at **0.0490** (95 % CI ± 0.0078) — **consistent with
+nominal**. ⇒ `E` is correctly calibrated and no `E` result changes.
+⚠ ⛔ **Writing that up without the re-run would have been `R-051`'s error exactly** — treating a
+single-estimate fluctuation as a systematic property. That is the **third** time this session
+(`R-045`'s gate count moving 5→6; `R-051`'s "systematic" control gradient; this) and the pattern is
+now explicit: **a stability claim from one estimate is not a stability claim.**
+
+**Consequence 2 — a claim in `A-006` is WITHDRAWN.** `A-006` reported the contrast test's null
+calibration as **0.0275 ⇒ "CONSERVATIVE"**, and I wrote: *"so `R-041`'s p = 2.0e-04 is if anything an
+**over**-estimate."* ⛔ **Withdrawn.** At n = 400 the correct 3-SE band is **[0.017, 0.083]**, and
+0.0275 sits **inside** it — there is **no evidence of conservatism**. ⚠ The number was right; the
+**label** was an artifact of a band that was too tight, and I stated it as fact.
+✅ **No conclusion moves**: the conservatism remark was a bonus caveat that nothing rested on, and
+`R-041` is in any case superseded by `R-055`'s categorical claim.
+
+✅ **Fixed at the root**, in both verifiers: the band is now **derived from *N*** —
+`alpha ± 3·sqrt(alpha(1−alpha)/n)` — so it self-adjusts and cannot silently mis-flag at a different
+draw count. Both suites re-run: **PASS**, and the contrast test's 0.0275 now correctly reads **OK**
+rather than "conservative".

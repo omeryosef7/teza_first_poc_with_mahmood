@@ -25,7 +25,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "scripts", "dcs_installation_gradient.py")
 ALPHA = 0.05
 # a Monte-Carlo rejection rate is itself noisy; this band is +-3 binomial SE at the N used below
-BAND = (0.030, 0.075)
+def band(n_draw, alpha=0.05, k=3.0):
+    """Monte-Carlo acceptance band for a rejection-rate estimate, DERIVED from the
+    number of draws rather than hardcoded. A fixed band is only valid at one N and
+    silently becomes a false-alarm generator at smaller N -- which is exactly what a
+    hardcoded (0.030, 0.075) did here: at n=300 it flagged a correctly-calibrated
+    test as ANTI-CONSERVATIVE, and a 3000-draw re-run put the true rate at 0.0490."""
+    se = (alpha * (1 - alpha) / max(1, n_draw)) ** 0.5
+    return (max(0.0, alpha - k * se), alpha + k * se)
 
 
 def load():
@@ -93,10 +100,10 @@ def check_calibration(g, fails):
 
     for name, fn, seed in (("single-arm", single, 11), ("contrast", contrast, 13)):
         rate, tot = _null_rate(fn, 400, 600, seed)
-        verdict = "OK" if BAND[0] <= rate <= BAND[1] else (
-            "CONSERVATIVE (safe direction)" if rate < BAND[0] else "ANTI-CONSERVATIVE")
+        verdict = "OK" if band(tot)[0] <= rate <= band(tot)[1] else (
+            "CONSERVATIVE (safe direction)" if rate < band(tot)[0] else "ANTI-CONSERVATIVE")
         print(f"3. null calibration, {name:10s}: P(p<{ALPHA}) = {rate:.4f} over {tot} draws -> {verdict}")
-        if rate > BAND[1]:
+        if rate > band(tot)[1]:
             fails.append(f"{name} permutation test is ANTI-CONSERVATIVE at {rate:.4f}")
 
 
