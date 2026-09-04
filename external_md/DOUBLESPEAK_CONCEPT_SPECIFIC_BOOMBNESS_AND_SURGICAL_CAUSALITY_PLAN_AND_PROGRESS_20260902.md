@@ -5509,3 +5509,57 @@ estimand *within* a population; it is **not** a better estimate of a general eff
 > ⛔ The effect is **not** demonstrated within the partially-installed subrange alone
 > (13 domains, contrast −0.503, p = 0.343), and the comparator is **not** reliably inert, so the
 > −0.907 contrast is **population-specific and inflated**.
+
+### `R-052` — the **installation ceiling is structural**, and it produces a catch-22
+
+`A-009`'s attack `C` left a specific question: is there a **held-out** population with enough
+low-installation domains to test the gradient within the varying subrange? Surveyed every baseline in
+the repo. ⚠ **Predictor only** — no knockout arm read, no delta, no correlation computed.
+
+| population | domains | mean | sd | **< 1.0** | **≤ 0.25** | control? |
+|---|---|---|---|---|---|---|
+| Llama `cds38` `button` (**headline**) | 38 | 0.908 | 0.197 | **13** | **1** | ✅ |
+| Llama `cds38` `basket` (held out) | 38 | 0.913 | 0.196 | 11 | **1** | ✅ |
+| Llama `cds38` `button` n=8 | 38 | 0.928 | 0.189 | 7 | **1** | ✅ |
+| **Qwen3-14B `cds38` `button`** (held out) | 38 | 0.805 | 0.205 | **30** | **1** | ✅ |
+| Llama `rbd` `lantern` n=8 / n=16 | 20 | 0.887 / 0.950 | 0.185 / 0.150 | 6 / 2 | **0** | ⛔ `R-033` |
+| Llama `rbd` `candle` n=8 / n=16 ⚠ **SOURCE** | 20 | 0.400 / 0.525 | 0.310 / 0.432 | 19 / 12 | **8 / 7** | ⛔ `R-033` |
+
+⛔ **The catch-22 is exact and it is structural.** The **only** populations with real
+low-installation mass are `candle` — which is the **exploratory source** of the hypothesis (`R-039`)
+**and** has **no control**, because `R-033` proved the dose-matched control is impossible in the
+`rbd` banks. Every population that **has** a control sits at **1 low-installation domain**. ⇒ The
+low-vs-high split is `CANNOT_ANSWER` **everywhere it could be trusted**, and that is a property of
+what the repo contains, not of what was tried.
+
+⚠ Same family as `feedback_paradigm_constructibility_ceiling`: the binding constraint is the
+**bank**, not compute. ⇒ ⛔ No re-analysis can fix it; a **low-dose block** is the only route.
+
+✅ **One opening the survey did find.** **Qwen has 30 of 38 domains below the ceiling**, against
+Llama's 13 — more than double the usable subrange, on a population that **has** a control. ⇒ `A-009`'s
+attack `C` can be run there at meaningfully better power. `PR-022`.
+
+## `PR-022` — PREREGISTRATION: `A-009`'s attack `C`, on Qwen, where the subrange is 30 domains
+
+⚠ **Frozen before the statistic is computed.** ⛔ **Blinding, stated exactly:** Qwen's full-sample
+ρ<sub>KO</sub> (−0.734) and contrast (−0.407, p = 0.0594) are **already published** (`R-040`,
+`R-043`). The **within-varying-subrange** quantity has **never** been computed on any population
+except Llama's 13 domains. ⇒ The *population* is not blind; the *statistic* is.
+
+**Design.** Identical to `A-009` attack `C`, same committed code path
+(`dcs_audit_r041.py --baseline dcsqw_C_baseline --knockout dcsqw_C_qpo_demo --control
+dcsqw_C_qpo_ctrl --model Qwen/Qwen3-14B`): drop the domains at installation = 1.0, recompute
+ρ<sub>KO</sub>, ρ<sub>ctrl</sub> and the contrast on the remainder, seeded permutation p.
+
+⛔ **Declared outcomes.**
+* **Contrast negative and p < 0.05 on the ~30 varying domains** ⇒ the gradient **is** demonstrated
+  within the varying subrange on a second model, and `A-009` `C`'s damage on Llama is attributable to
+  **n = 13**, not to a ceiling-vs-rest artifact. ⛔ This does **not** un-narrow the Llama claim — it
+  adds a population where the narrower test passes.
+* **Null** ⇒ `A-009` `C` **replicates on a second model**, and the narrowing hardens: the gradient is
+  demonstrated **only** across the full range, dominated by ceiling-vs-rest, on **both** models. ⚠ This
+  is the outcome that damages the finding further and it must be reported as prominently as the other.
+* **Degenerate** (too few varying domains after the drop) ⇒ `CANNOT ANSWER`, consistent with `R-052`.
+
+⚠ **Whatever it returns, the Llama numbers stand as published in `A-009`/`R-051`.** ⛔ A second model
+cannot repair a limit measured on the first.
