@@ -1277,6 +1277,19 @@ def incidental_codeword_collisions(pools: Dict, codeword: str) -> List[str]:
     return out
 
 
+def _sub_with_plural(a: str, b: str, sent: str) -> str:
+    """Replace `a` (singular or plural) with `b`, preserving number. Mirrors the detector's
+    `\b{word}s?\b`, which is the whole point of `DCS-C-037`."""
+    def _r(m):
+        return _plural_of(b) if m.group(1) else b
+    return re.sub(rf"(?i)\b{re.escape(a)}(s?)\b", _r, sent)
+
+
+def _plural_of(w: str) -> str:
+    """English plural for a repair target. `switch` -> `switches`, `peeler` -> `peelers`."""
+    return w + ("es" if w.lower().endswith(("s", "x", "z", "ch", "sh")) else "s")
+
+
 def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
     """Reword incidental collisions IN MEMORY, leaving demo_pools.json byte-identical on disk.
 
@@ -1301,7 +1314,12 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
             # where the word is incidental, which is the only place a collision can exist.
             if a.casefold() == nat:
                 continue
-            p["sentences"] = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, sent) for sent in p["sentences"]]
+            # DCS-C-037: the DETECTOR matches `\b{word}s?\b` (singular OR plural) while this
+            # repair matched the SINGULAR ONLY, so a plural collision was detected and could never
+            # be repaired -- the bank simply refused forever. Unreachable for the canonical banks
+            # (their three collisions are singular), which is why it survived. Match what the
+            # detector matches, and carry the plural across so "buttons" -> "switches".
+            p["sentences"] = [_sub_with_plural(a, b, sent) for sent in p["sentences"]]
         for split in ("dev", "heldout"):
             if isinstance(pool.get(split), list):
                 v = pool[split]

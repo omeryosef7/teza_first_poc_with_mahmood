@@ -6106,3 +6106,50 @@ bank that built cleanly and was subtly wrong.
 **0.97 % / 0.30 % / 0.26 % / 0.06 %**. ⇒ Low, concentrated in the word-free `filler` pool where
 identical short log lines are most likely by chance, and ⛔ **not** waved through: `B-009` exists to
 strengthen the domain unit, so the number travels with the result rather than being dropped.
+
+### `C-037` — ⛔ a **real bug in shared code**: the collision detector and its repair use different matchers
+
+The 116-domain bank refused to build: *"3 pool sentence(s) already contain 'button' incidentally"* —
+**despite** `--incidental-replace "button=switch"` being passed. Diagnosed without echoing any
+sentence text:
+
+| | regex | matches |
+|---|---|---|
+| **detector** `incidental_codeword_collisions` | `\b{word}s?\b` | singular **and plural** |
+| **repair** `apply_incidental_repairs` | `\b{word}\b` | **singular only** |
+
+⇒ **A plural collision is DETECTED and can NEVER be REPAIRED.** All three offending sentences contain
+`buttons`, zero contain `button`. The bank would have refused **forever**, with a message telling me
+to use a flag that could not fix it.
+
+⚠ **`feedback_matcher_scope_bug_class` again, and in its nastiest form** — not a loose matcher
+over-reporting or a strict one under-reporting, but **two matchers for the same concept disagreeing
+with each other**, so the guard and its remedy are permanently out of step.
+
+✅ **Pre-existing and unreachable until now.** The canonical banks' three collisions are all
+**singular**, so the repair happened to work and nobody could have hit this. It surfaces only when a
+pool contains a plural form — which 78 new domains eventually produced.
+
+✅ **Fixed at the root:** the repair now mirrors the detector, `\b{word}(s?)\b`, and **carries the
+number across** — `buttons` → `switches`, not `switchs` — via a small `_plural_of` helper handling the
+sibilant case. Applied to **both** substitution sites (the `sentences` list and the `dev`/`heldout`
+split branch), which had the identical asymmetry.
+
+✅ **Verified safe rather than assumed safe:** `tests/test_bank_regenerates_byte_identically.py`
+**passes**. ⛔ The fix can only affect banks that currently **refuse to build**, and a bank that
+refuses has no committed artifact to move — so no published result can shift.
+
+### `R-058` — the **116-domain bank** exists
+
+`main_longpre_cds` on the 116-domain pools, `button`→`bomb`, seed 20260901,
+`--incidental-replace "button=switch"`.
+
+| | |
+|---|---|
+| rows | **12 992** |
+| 2×2 families checked | **3 248**, ✅ **0 alignment violations** |
+| duplicate `prompt_id` rows dropped | ✅ **0** |
+| blocks | `cds_n4` **9 280** · `cds_n8` 3 712 |
+| ⇒ behavioural cell C at `cds_n4` | **1 160 rows** (116 domains × 10) |
+
+⇒ `PR-024a`'s five arms run at `--expect-n 1160`, against the 380 that gave **0.311** power.
