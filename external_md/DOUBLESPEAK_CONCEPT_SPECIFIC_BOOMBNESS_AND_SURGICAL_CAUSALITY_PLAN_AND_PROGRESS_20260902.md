@@ -6191,3 +6191,32 @@ pairing that the **entire domain sign test** rests on would have been silently w
 ⚠ **The lesson is about ordering, not about the bug:** ⛔ never rewrite an input artifact while a job
 that reads it is in flight. The cost here was 8 minutes of GPU; the cost of not noticing would have
 been a result.
+
+### `A-011` — regression test for `C-037`/`C-037b`, and **the test I would have trusted misses the second bug**
+
+Both `C-037` fixes touched shared code with **nothing pinning them**, and `C-037b` proved those two
+branches drift apart exactly that way. Committed `tests/test_incidental_repair_plural.py` — 4 tests,
+in the pytest suite so it runs on **every commit**, not a standalone script.
+
+⛔ **A test that passes against the buggy code is worthless, so both pre-fix behaviours were
+simulated and replayed.** The result is the useful part:
+
+| test | catches `C-037` (singular-only everywhere) | catches `C-037b` (plural on `sentences` only) |
+|---|---|---|
+| **detector-still-fires** — run `incidental_codeword_collisions` over the *repaired* pools | ✅ CAUGHT (2 hits) | ⛔ **MISSED — 0 hits** |
+| **every-field** — assert `sentences`, `dev` **and** `heldout` are all clean | ✅ CAUGHT | ✅ **CAUGHT** (`dev`, `heldout` dirty) |
+
+⚠ **The detector-based invariant is the one that felt strongest, and it is the one that fails.**
+It asks *"does the guard still complain?"* — but the guard reads **`sentences`**, which `C-037b` had
+already repaired. ⇒ It reports clean while the field the **builder** reads is still dirty. **That is
+precisely why `C-037b` reached a 12 992-row bank**, and it was caught only by `resolve_occurrences`
+three layers downstream.
+
+⇒ ⛔ **An invariant expressed in terms of a guard inherits that guard's blind spots.** The test that
+works is the one stated over the **fields the consumer actually reads**, independently of what any
+guard inspects. ⚠ Same family as `feedback_check_reads_same_broken_source` — a check that consults
+the producer's own view of itself.
+
+✅ Also pinned: the pre-existing contract that a pool's **own natural word is never rewritten** (for
+`knife` the collision *is* the concept; a blanket replace would turn every harm pool into sentences
+about a peeler), so the plural change cannot loosen it.
