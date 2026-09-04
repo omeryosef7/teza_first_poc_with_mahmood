@@ -5733,3 +5733,68 @@ does not deliver the latter.
 **Stage 3 submitted** (850389 `demo_all`, 850390 `nondemo_matched_d1`), band 6–14,
 `query_prefill_only`, every other setting copied from `dcsro_C_*`. Analysis will be
 `scripts/dcs_audit_r041.py` **unchanged**.
+
+### `R-055` — ⛔ **`PR-023` Stage 3: the NULL branch. Attack `C` fails a THIRD time, on data built to make it pass**
+
+Arms 850389/850390 `COMPLETED`, 380 rows each, `infeasible_control` **0** — the control that `R-033`
+found impossible in the `rbd` banks builds cleanly here, as Stage 1's 9.20× predicted.
+
+**Full sample (38 domains):** ρ<sub>KO</sub> **−0.693**, ρ<sub>ctrl</sub> **−0.086**, contrast
+**−0.607**, p = **0.0043**.
+
+| attack | result on `cds_n1` |
+|---|---|
+| **A** leave-one-out | ✅ contrast **[−0.684, −0.513]**, worst p = 0.018, no sign flip |
+| **B** 3 operationalisations | ✅ −0.585 / −0.607 / −0.653, all p ≤ 0.006 |
+| **C** varying subrange (**33 domains**) | ⛔ **−0.284, p = 0.210** |
+| **D** control gradient | ✅ **−0.086**, LOO [−0.169, −0.039] — near-inert |
+| **E** arm-exchangeable null | ⚠ **p = 0.0615** — does not clear α |
+
+⛔ **`PR-023` declared: *"Null with a genuinely varying predictor ⇒ the categorical reading of `R-053`
+is confirmed on purpose-built data, and the continuous gradient is dead, not merely undemonstrated
+… it must be reported as the primary finding, not as a failure of the bank."*** It is the outcome,
+and I am held to every clause.
+
+⛔ **Three populations, three failures, and power is now decisively excluded:**
+
+| population | varying subrange | contrast | p |
+|---|---|---|---|
+| Llama n=4 | 13 | −0.503 | 0.343 |
+| Qwen n=4 | 30 | −0.173 | 0.504 |
+| **Llama n=1 (built for this)** | **33** | **−0.284** | **0.210** |
+
+⇒ The subrange grew from 13 → 33 by deliberate construction, on the model and bank where the effect
+is **strongest** (ρ<sub>KO</sub> −0.693, the largest in the phase), with a **near-inert** control —
+and it still does not reach α. ⛔ **"It only failed for lack of power" is dead.**
+
+✅ **And the mechanism is now shown cleanly, which is the real result.** On the *same arm*:
+
+| | full 38 domains | the 33 varying domains |
+|---|---|---|
+| ρ<sub>KO</sub> | −0.693 | −0.622 |
+| **ρ<sub>ctrl</sub>** | **−0.086** (near zero) | **−0.338** |
+
+⇒ **Conditioning on the varying subrange CREATES the control's gradient**, from −0.09 to −0.34, on an
+arm that received **no demonstration knockout at all**. That is textbook **regression to the mean** —
+conditioning on non-extreme baseline values manufactures exactly this correlation — and it is now
+demonstrated **within a single arm** rather than inferred. ⇒ Within the subrange the two arms converge
+because **both** are measuring RTM; across the full range they diverge because the knockout does
+something the control does not.
+
+✅ **What this establishes, and it is a positive claim, not just a negative:**
+> The demonstration knockout's effect is **larger in fully-installed domains than in
+> partially-installed ones** — a **categorical** contrast, robust to leave-one-out and to three
+> operationalisations on **three** populations spanning two models and three doses. ⛔ There is **no
+> evidence for a continuous dose-response within the partially-installed range**, on any population,
+> including one constructed specifically to provide it, and the apparent within-range gradient is
+> **accounted for by regression to the mean**.
+
+⛔ **Limits that stand.** ⚠ The low-dose rows are **new prompts**, so dose is confounded with
+population (`PR-023` declared this and it is not removed by the result). ⚠ Only **1** domain sits at
+≤ 0.25 even at n=1, so `R-039`'s reversal is still untestable. ⚠ `E` at **p = 0.0615** means the
+low-dose full-range contrast does **not** survive the arm-exchangeable null either — ⛔ so the
+categorical claim rests on `A` and `B`, not on `E`, in this population.
+
+⇒ ✅ **`R-052`'s question is ANSWERED.** It said only a low-dose block could settle whether the
+gradient lives in the varying subrange. The block was built, both gates passed, and the answer is
+**no**.
