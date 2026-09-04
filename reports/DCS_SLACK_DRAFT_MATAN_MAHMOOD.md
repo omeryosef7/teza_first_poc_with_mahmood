@@ -23,12 +23,21 @@ explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and bot
 >
 > **What is real is the causal path.** Blocking the query span from attending to the demonstrations
 > takes the model's own forced-choice reading of `button` from **+5.19 to −2.76** log-odds — a sign
-> flip back to the *literal* meaning — against a dose-matched control that does nothing. It
+> flip **away from the harmful concept** — against a dose-matched control that does nothing. It
 > **replicates on `basket`** and **on Qwen3-14B at ~3× the magnitude** (there `frac>0` collapses
 > 0.813 → 0.021). And it is **remapping-specific**: the same cut barely moves the cell where the word
 > already *is* `bomb`. DiD −9.9 / −9.4 / −22.2. ⚠ One caveat we put on the figure itself: all three
 > share the same 1+/37− sign pattern, so those identical p-values are **one pattern replicated, not
 > three independent tests**.
+>
+> **What the model actually says** (we decoded it this week rather than trusting the log-odds).
+> The concept answer is destroyed on both models — Llama ` Bomb` **345→19** of 380, Qwen ` bomb`
+> **306→8**. ⚠ But the *replacement* differs: Qwen cleanly restores the literal codeword (` button`
+> in **97.9 %** of rows, with the two options still holding ~all the probability), while Llama mostly
+> answers ` Neither` (**67.1 %**; only **26.8 %** say ` Button`) and its option mass collapses
+> 0.88→0.35. So "the codeword reverts to its literal meaning" is a **Qwen** statement; on Llama the
+> honest one is "the word stops resolving to anything." ✅ Specificity survives at the surface on both:
+> the cell where the word already *is* `bomb` barely moves.
 >
 > **Where in the network.** We ran the layer sweep we'd been missing. At equal dose the effect is
 > **distributed across layers 0–14, peaks at 10–14, and is absent above 14**. The L6–14 band we
