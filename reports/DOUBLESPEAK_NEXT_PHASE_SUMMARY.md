@@ -210,3 +210,28 @@ guard tests pass at every commit. Three bugs were caught **before** they produce
 position resolver that returned an empty span on 1032/1032 real rows, a pre-flight that declared the
 new scope universally dead, and `CDS-R-020` reproduced exactly (ledgered in a baseline arm, fatal in
 an intervened one).
+
+## ARTIFACT AVAILABILITY
+
+⚠ **Read this before treating any number above as recomputable.** For most of the phase **none** of
+its outputs were in version control — `.gitignore` carries a bare `outputs/`, so `git status` cannot
+list them and their absence was invisible (`DCS-031`). **0 of 674** artifact files were tracked, while
+**1166** from earlier sprints were.
+
+**In the repo now.** Every run's `config.json`, `RUNMETA.json`, `metadata.json`, `summary.json` and
+`DONE.json` (**503 files, 5.0M**), the analysis outputs this report cites (`dcs_geom_all.json`,
+`dcs_geom_button_bomb.json`, `dcs_ko1_ko2_did.json`, `audit.json`, `attrition.json`), and — added in
+`C-021` — the **argsfile for every submission**, including the full layer sweep behind the graded-layer
+finding. So the **exact command and configuration** behind every number here is retrievable.
+
+⛔ **Not in the repo, deliberately.** `results.jsonl` (**49M**), `gens.jsonl` (**24M**) and
+`dcs_rowwise_*.json` (**136M**). This follows the repo's own stated rule — `.gitignore:19` omits large
+artifacts as *"reproducible from the run config"* — but it has a consequence worth stating plainly
+rather than leaving to be discovered:
+
+> Phase headlines are **reproducible by rerunning** the committed configs on GPU. They are **not
+> recomputable from the repository alone.** `results.jsonl` is what the DiD scripts read, and it is
+> not here.
+
+Whether to track it is `B-013` — a shared-tree footprint decision (it would nearly double tracked
+outputs), pending, and **not** a scientific judgement to be made unilaterally.
