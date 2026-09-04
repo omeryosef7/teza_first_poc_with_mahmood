@@ -3362,3 +3362,34 @@ worked, with the limits left in a markdown file nobody opens, is how a figure ov
 
 Verified by **rendering and reading the image back** (`DCS-020`'s check): panel E's values match
 `R-030` exactly, and a legend/annotation overlap in panel B was found and fixed.
+
+### `DCS-PR-012` — the finer sweep, designed to **remove `R-030`'s own caveat**
+
+`R-030` established localisation but carried one limitation of its own: the four bands were
+**6/9/9/8 layers wide**, so their doses differed (44 544 / 66 816 / 66 816 / 59 392) and
+**cross-band magnitudes were never dose-matched to each other**. Only the *within*-band comparisons
+were controlled. ⇒ This follow-up is built to fix exactly that, not to extend coverage.
+
+**Three bands of EQUAL width — 5 layers each — tiling the region where the effect lives:**
+
+| band | layers | jobs |
+|---|---|---|
+| **0–4** | 5 | 847780 / 847781 |
+| **5–9** | 5 | 847782 / 847783 |
+| **10–14** | 5 | 847784 / 847785 |
+
+⇒ Equal width means **equal dose by construction**, so for the first time in this phase
+**cross-band magnitudes are directly comparable** rather than confounded with how many layers each
+band happens to contain. Each band still carries its **own** dose-matched control.
+
+⛔ **Declared before any outcome:**
+* Multiplicity family = **{3 bands}**, corrected within itself; ⛔ this does **not** re-open `R-008`
+  or restate any result at a new band, and the phase headline stays at 6–14.
+* **What the outcomes mean:** a single dominant band ⇒ localisation sharpens to ~5 layers. Two or
+  three comparable bands ⇒ the effect is **distributed across the early-mid stack** and "L6–14" is a
+  convenient window rather than a mechanism boundary. A peak at **0–4** ⇒ ⚠ the inherited band is
+  **off-centre**, and `R-030`'s "best of four" was an artifact of its coarse tiling.
+* ⚠ **The 6–14 result straddles two of these bands** (5–9 and 10–14) and overlaps a third (0–4 shares
+  no layer with it). ⇒ These are **not** nested comparisons and the finer bands cannot be summed to
+  reproduce −8.08; they answer *where within 0–14*, not *how much of −8.08 came from where*.
+* Specs verified to 4 colon-parts before submission (`C-020`'s guard).
