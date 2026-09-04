@@ -6244,3 +6244,34 @@ inside its 6 h wall limit.
 ⚠ **Recorded because a rule not followed needs a reason on the record**, exactly like one that is.
 ⛔ If it is still `PENDING` when the other four have finished, that *would* be anomalous and worth
 acting on; queued-behind-my-own-work is not.
+
+### `R-059` — the two halves of the 116-domain bank are **structurally homogeneous**, checked before any outcome
+
+⚠ Run while the arms were at 400/1160, so **no attack number existed**. `PR-024` declared the new
+rows are a **larger population, not a re-slicing** — this measures how much larger a difference that
+actually is, on quantities that are fixed by construction rather than by the model.
+
+| | rows | domains | prompt tokens (median [min–max]) | demo tokens | preamble chars | `n_target` |
+|---|---|---|---|---|---|---|
+| **OLD 38** | 380 | 38 | **191.0** [157–241] | **59.0** [43–95] | 612 | 5.0 |
+| **NEW 78** | 780 | 78 | **192.0** [165–239] | **59.0** [45–92] | 631 | 5.0 |
+
+| difference (NEW − OLD) | |
+|---|---|
+| median prompt tokens | **+1.0** (**+0.5 %**) |
+| median demonstration tokens | **+0.0** (**0.0 %**) |
+
+✅ **The demonstration block — which IS the intervention dose — is identical to the token.** That
+matters more than the prompt length: `KO-3` masks demonstration keys, so a systematic difference in
+`demo_block` size between halves would mean the two halves received **different-sized interventions**,
+and any half-vs-half difference in the result would be confounded with dose. It is 59.0 in both, with
+near-identical ranges (43–95 vs 45–92).
+
+✅ `n_target_occurrences` is **5.0** in both, so the exact-word-swap invariant holds identically
+across halves — the property `C-037b` broke and `resolve_occurrences` caught.
+
+⇒ ⛔ **This does not remove `PR-024`'s declared limitation** — the new rows are still new prompts, and
+*semantic* differences between domains are exactly what a domain is. What it removes is the
+**structural** reading of that confound: if the behavioural result differs between halves, it will
+**not** be because one half got longer prompts or a bigger intervention. ⚠ Recorded now precisely so
+that check cannot be run *after* seeing a half-vs-half split and presented as reassurance.
