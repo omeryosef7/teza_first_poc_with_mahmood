@@ -3978,3 +3978,58 @@ and converted a one-concept observation into a confirmed structural fact.
 
 ⇒ `PR-013` closed. Queue empty. **Six arms submitted, four generated (160 rows each, 80/80 across
 cells, 20 domains), two refused by design.**
+
+---
+
+## `PR-015` — PREREGISTRATION: a **layer placebo** for the missing control, and a **dose test** of my own excuse
+
+⚠ **Frozen before submission.** `PR-013` left two loose ends and each is answerable with banks already
+in the repo. Both are **risks to `R-035`, not confirmations of it**, and that is why they are worth
+running.
+
+### Part A — layer placebo, standing in for the control `R-033` proved impossible
+
+⛔ `R-033`: no dose-matched control can exist in the rbd banks (no `preamble`, `n=8`, ~85 %
+demonstration, `match_ratio` 0.000 on **both** concepts). So generic attention damage is currently
+**unexcluded** on `poison` and `missile`.
+
+**A control the bank *can* carry.** Run the **identical** `demo_all` knockout, on the **identical**
+rows, at the **identical** dose — but at layers **15–23**, which `R-031` measured as **inert** on
+Llama. Same keys, same count, different band. ⛔ This is not a substitute for a non-demonstration
+control and will never be called one: it holds the *target* fixed and varies the *layers*, so it
+tests **layer-specificity**, not **demonstration-specificity**.
+
+⚠ **This can falsify `R-035`'s lantern pass.** If cell C moves as much at 15–23 as at 6–14, the
+lantern effect is **generic damage from cutting a large fraction of the prompt**, and `R-035`'s ✅
+becomes an artifact.
+
+* **Placebo inert** (Δ at 15–23 ≈ 0, not significant): the lantern effect is **layer-specific** ⇒ the
+  strongest generic-damage exclusion available in these banks.
+* **Placebo active** (Δ at 15–23 comparable to 6–14): ⛔ `R-035`'s lantern pass is **RETRACTED** as
+  generic damage. Declared now so it cannot be renegotiated later.
+* **Intermediate** (present but clearly smaller): reported as **partial** exclusion, quantified as a
+  ratio, ⛔ not rounded up to "layer-specific".
+
+### Part B — does the "weak mapping" excuse survive a dose test?
+
+⚠ `R-035` offered an explanation for `candle`'s failure: its mapping is weak *before* any intervention
+(concept-answer **0.400** vs 0.887/0.908). ⛔ **That was an observation dressed as an explanation, and
+it is testable.** `rbdn16_*` runs the same 20 domains at **`n_examples=16`** — double the
+demonstrations.
+
+* **Excuse supported**: `candle`'s baseline concept-answer rises materially above **0.400** at n=16
+  **and** the cell-C effect becomes significant ⇒ candle's failure was **power/mapping strength**.
+* **Excuse falsified**: baseline stays ≈ 0.400 despite doubled demonstrations ⇒ `missile` resists this
+  paradigm for a reason unrelated to dose, and ⛔ `R-035`'s explanatory sentence is **withdrawn** —
+  the failure stands unexplained rather than excused.
+* `lantern` at n=16 is run **alongside** as the positive control for the dose manipulation itself.
+
+⚠ **Declared before results:** Part B's n=16 rows are **40 per cell** (2/domain, 20 domains), so the
+sign test is over 20 domains with a floor of **1.907e-06** but **half** the rows per domain. ⛔ A null
+in Part B is therefore **weaker evidence** than Part A's, and will not be reported as a clean null.
+⛔ `n=16` makes the control *more* impossible (demo share **0.917**), so Part B inherits Part A's
+exclusion and adds none of its own.
+
+**Design:** Llama, `query_prefill_only`, seed 20260901, `--max-new 8`, `--min-option-mass 0.05`, bf16,
+eager, both cells per job. Part A `--expect-n 160` at band 15–23; Part B `--expect-n 80` at band 6–14.
+Primary statistic unchanged from `PR-013`: per-domain paired Δ`semantic_logodds`, cell C, sign test.
