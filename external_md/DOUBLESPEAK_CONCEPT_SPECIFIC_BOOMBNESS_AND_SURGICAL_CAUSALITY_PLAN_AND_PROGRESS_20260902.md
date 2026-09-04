@@ -4311,3 +4311,97 @@ reported quantity is the **contrast** ρ<sub>KO</sub> − ρ<sub>placebo</sub>.
   rather than gaining an explanation. ⛔ I will not reach for the uncontrolled arms to rescue it.
 * **RANGE-LIMITED** — direction right but not significant at the declared α ⇒ reported as such and
   attributed to the pre-flight's measured lack of low-installation domains, ⛔ not to "noise".
+
+### `R-040` — `PR-016` verdict: ⚠ **RANGE-LIMITED**, the branch the pre-flight predicted
+
+| population | role | ρ<sub>KO</sub> | perm p | placebo ρ | **contrast** | **contrast perm p** |
+|---|---|---|---|---|---|---|
+| `lantern` n=8 | **PRIMARY, held out, controlled** | **−0.281** | **0.228** | +0.345 | **−0.627** | **0.0749** |
+| `lantern` n=16 | held out, ⛔ uncontrolled | −0.405 | 0.092 | — | — | — |
+| `button`→`bomb` **Qwen** | held out, ⛔ uncontrolled | **−0.734** | **< 1e-4** | — | — | — |
+| `candle` n=8 | ⚠ exploratory **source** | −0.851 | < 1e-4 | **−0.460** (p = 0.042) | −0.390 | 0.0893 |
+
+⛔ **`SUPPORTED` requires ρ < 0 **and** p < 0.05 on the primary. p = 0.228. It is not supported.** The
+branch that obtains is **`RANGE-LIMITED`**: the direction is right on **4 of 4** populations, and the
+primary does not reach the declared α. Per `PR-016` this is attributed to the pre-flight's **measured**
+lack of low-installation domains (`lantern` sd 0.185, **0** domains ≤ 0.25), ⛔ not to "noise", and
+⛔ the uncontrolled Qwen ρ is **not** reached for to rescue it.
+
+✅ **The most useful number here is one I nearly did not compute.** Both component ρ on the primary are
+non-significant (0.228, 0.137) while their *difference* is −0.627 — and quoting that as evidence is
+precisely the **difference-in-significance** error `C-017` already caught me making in this phase. So a
+**joint permutation of the shared predictor** was added to the analyzer and the contrast tested
+directly: **p = 0.0749**. ⇒ ⛔ The contrast does **not** clear α either, and without that test I would
+have written it up as though it did. ⚠ The addition is recorded as post-hoc **in the docstring of the
+function itself**, and it does not change the estimand — `PR-016` already named the contrast as the
+reported quantity; it had simply never been given a p-value.
+
+⚠ **Regression to the mean is real and large, which is the other thing worth keeping.** On the
+exploratory source the *placebo* alone gives ρ = **−0.460, p = 0.042**. ⇒ ⛔ A raw ρ between baseline
+installation and Δ is **substantially mechanical**, and any future version of this analysis that
+reports ρ without a same-dose comparator is reporting an artifact. ⚠ On `lantern` the placebo ρ is
+**+0.345** — opposite sign — so the mechanical component is **not a constant** across banks and cannot
+be subtracted analytically. It has to be measured per population.
+
+### `C-027` — ⚠ CORRECTED: `PR-016`'s limit #2 is **FALSE**. The Llama headline **can** enter the test
+
+`PR-016` declared, before running: *"the Llama `button`→`bomb` headline cannot enter this test at all —
+that run predates the `top1_id` field."*
+
+⛔ **That is wrong, and the error is in the key, not the corpus.** The pre-flight probed
+`dcs_C_baseline` — which is the **behavioral** arm (`--query-kinds behavioral --max-new 640`), and
+behavioral rows legitimately carry no forced-choice surface token. The Llama **readout** arm is
+`dcsro_C_baseline`, and it carries `top1_id` on all **380** rows, as do `dcsro_C_qpo_demo` and
+`dcsro_C_qpo_ctrl_d1`.
+
+⚠ `feedback_matcher_scope_bug_class` for the second time in three days — `A-005`'s regex was the
+first. The audit looked at the wrong key and reported the corpus as deficient. ⇒ **Reading the corpus
+cleared it in one command**, and the declared limit that followed from it was published for four hours.
+
+✅ **And it opens something better than what `PR-016` had.** Both headline populations carry a
+**dose-matched non-demonstration control** — `nondemo_matched_d1:attn_knockout:6-14:1.0`, the arm
+`R-033` proved *structurally impossible* in the `rbd` banks and `R-033a` showed has **3.03×** headroom
+in `cds38`. That is a **strictly better** regression-to-the-mean comparator than the layer placebo:
+same band, same dose, same rows, **mechanism absent by construction** rather than by an inherited and
+now-falsified assumption about layer inertness (`R-037`).
+
+## `PR-017` — PREREGISTRATION: the installation gradient on the **headline** populations, with the **real** control
+
+⚠ **Frozen before any number below is computed.** `PR-016` was `RANGE-LIMITED` on a bank with almost no
+installation variance and a placebo whose own premise `R-037` falsified. `C-027` shows the two
+headline populations have both the variance and a **true dose-matched non-demonstration control**.
+
+**Same estimand, same committed analyzer, one substitution:** the comparator arm passed as
+`--placebo` is the **`nondemo_matched_d1` control** rather than the layer placebo. ⛔ This is a
+substitution I must justify against the charge of comparator-shopping, and the justification is
+**stated before the result exists**: the layer placebo was only ever a stand-in for a control that
+did not exist in the `rbd` banks (`R-033`), and in `cds38` the control **does** exist and was
+preregistered back in `PR-001`. ⛔ If the contrast fails here, I do **not** get to go back to the
+layer placebo.
+
+**Populations, and exactly how blind each one is — stated now, because it differs:**
+
+| population | domains | blind? |
+|---|---|---|
+| `button`→`bomb` **Llama** (`dcsro_*`) | 38 | ✅ **fully blind** — no ρ, no contrast, nothing computed on it |
+| `button`→`bomb` **Qwen** (`dcsqw_*`) | 38 | ⚠ **partly** — its *uncontrolled* ρ (−0.734) is already published in `R-040`; its **contrast** is not |
+
+⇒ ⛔ **The primary is Llama.** Qwen is a replication whose ρ I have already seen, and it is labelled
+that way wherever it appears.
+
+⛔ **Declared outcomes.**
+* **SUPPORTED** — Llama contrast < 0 at perm p < 0.05 ⇒ the causal effect is **graded by installation**,
+  net of regression to the mean, on the phase's headline population. This would make the mechanism
+  claim quantitative rather than binary, and `R-039` stops being exploratory.
+* **NOT SUPPORTED** — contrast ≥ 0 or p ≥ 0.05 ⇒ ⛔ `R-039` remains exploratory and **unreplicated on
+  any controlled population**, and `R-035`'s `candle` failure keeps its status of *unexplained*. ⛔ The
+  Qwen replication does not overturn a Llama null; a partly-unblinded arm cannot rescue a blind one.
+* **SPLIT** — the two models disagree ⇒ reported as **model-dependent**, with `R-024`'s cross-model
+  positive stated beside it, and ⛔ neither model's result promoted to the headline.
+
+⚠ **One threat I can name in advance and cannot remove.** `install` and Δ share a baseline, so the
+contrast is the estimand precisely because ρ is not. If the **control** arm turns out to move cell C
+about as much as the knockout does, the contrast will be near zero for a reason that has nothing to do
+with installation — and `R-006`'s finding that `KO-1` is a well-powered null says the controls in this
+family *are* inert on the readout. ⇒ That makes a null contrast **interpretable**, not ambiguous, and
+I am recording the reasoning before I know which way it went.

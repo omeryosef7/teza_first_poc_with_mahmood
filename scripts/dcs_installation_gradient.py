@@ -128,6 +128,35 @@ def spearman_perm(x, y, seed=PERM_SEED, n_perm=N_PERM):
     return rho, (hits + 1) / (n_perm + 1), f"{n_perm} seeded shuffles (seed {seed})"
 
 
+def contrast_perm(x, y_ko, y_pl, seed=PERM_SEED, n_perm=N_PERM):
+    """Two-sided permutation p for the CONTRAST rho_ko - rho_placebo.
+
+    ADDED AFTER the first PR-016 run, and the reason is on the record: both component rhos came
+    back non-significant on the primary population, and reporting a large contrast between two
+    non-significant numbers is the difference-in-significance error `DCS-C-017` already caught in
+    this phase. The estimand does not change -- PR-016 named the contrast as the reported
+    quantity -- this only gives it the p-value it should have been given at the start.
+
+    The null is `install` carries no association with EITHER arm, so one shuffle of the shared
+    predictor feeds both rhos. That keeps the knockout/placebo pairing intact: the two arms are
+    measured on the SAME domains against the SAME baseline, and permuting them independently
+    would test a null nobody proposed.
+    """
+    rx = _rank(x)
+    rk, rp = _rank(y_ko), _rank(y_pl)
+    obs = pearson(rx, rk) - pearson(rx, rp)
+    if math.isnan(obs):
+        return obs, 1.0, "DEGENERATE"
+    rnd = random.Random(seed)
+    shuf = list(rx)
+    hits = 0
+    for _ in range(n_perm):
+        rnd.shuffle(shuf)
+        if abs(pearson(shuf, rk) - pearson(shuf, rp)) >= abs(obs) - 1e-12:
+            hits += 1
+    return obs, (hits + 1) / (n_perm + 1), f"{n_perm} seeded joint shuffles (seed {seed})"
+
+
 def split_report(install: dict, delta: dict) -> dict:
     lo = [d for d in delta if install[d] <= LOW]
     hi = [d for d in delta if install[d] >= HIGH]
@@ -191,16 +220,27 @@ def main() -> None:
            "concept_token": a.concept_token,
            "role": "HELD_OUT_TEST" if a.held_out else "EXPLORATORY_SOURCE",
            "arms": {"baseline": a.baseline, "knockout": a.knockout, "placebo": a.placebo},
-           "knockout": analyse(inst, paired_delta(ko, base, "knockout"), "knockout")}
+           "knockout": analyse(inst, d_ko := paired_delta(ko, base, "knockout"), "knockout")}
 
     if a.placebo:
-        out["placebo"] = analyse(inst, paired_delta(load(a.placebo), base, "placebo"), "placebo")
-        out["rho_contrast"] = out["knockout"]["spearman_rho"] - out["placebo"]["spearman_rho"]
+        d_pl = paired_delta(load(a.placebo), base, "placebo")
+        out["placebo"] = analyse(inst, d_pl, "placebo")
+        doms = sorted(set(inst) & set(d_ko) & set(d_pl))
+        c, cp, chow = contrast_perm([inst[d] for d in doms],
+                                    [d_ko[d] for d in doms], [d_pl[d] for d in doms])
+        out["rho_contrast"] = c
+        out["rho_contrast_perm_p"] = cp
+        out["rho_contrast_perm_method"] = chow
+        out["CONTRAST_NOTE"] = (
+            "the contrast is the reported quantity (PR-016). Its p-value is tested DIRECTLY by a "
+            "joint permutation of the shared predictor -- NOT inferred from the two component "
+            "p-values, which would be the difference-in-significance error of DCS-C-017.")
     else:
         out["placebo"] = {"STATUS": "NOT_RUN",
                           "why": "without a placebo arm the regression-to-the-mean component of "
                                  "rho is unmeasured; rho_knockout alone is NOT the result"}
         out["rho_contrast"] = None
+        out["rho_contrast_perm_p"] = None
 
     os.makedirs(a.out, exist_ok=True)
     dst = os.path.join(a.out, f"{a.tag}_{a.label}.json")
@@ -220,7 +260,8 @@ def main() -> None:
         print(f"  {k:9s} nD={r['n_domains']:3d} rho={r['spearman_rho']:+.3f} "
               f"p={r['perm_p']:.4f}  install sd={r['install_sd']:.3f}  {bs}")
     if out["rho_contrast"] is not None:
-        print(f"  CONTRAST rho_ko - rho_placebo = {out['rho_contrast']:+.3f}")
+        print(f"  CONTRAST rho_ko - rho_placebo = {out['rho_contrast']:+.3f}  "
+              f"perm p={out['rho_contrast_perm_p']:.4f}")
     print(f"  -> {dst}")
 
 
