@@ -3450,3 +3450,30 @@ rather than left carrying `R-030`'s stronger reading.
 one — `R-030` removed an assumption, `R-031` removed `R-030`'s dose confound, and this entry
 propagates the weaker-but-correct reading into the artifacts a reader actually sees. The headline
 number (**−8.08 at 6–14**) has not moved once; **what it is a claim about** has moved three times.
+
+### `DCS-029` — §47 Slack draft rewritten for the completed phase (still **NOT SENT**)
+
+`reports/DCS_SLACK_DRAFT_MATAN_MAHMOOD.md`. The previous version predated the entire Qwen wave, both
+layer sweeps, and `R-029` — i.e. it was describing a phase that no longer existed.
+
+**Structure, deliberately:** it opens with the **negative** (`R-002`: not concept-specific, so it
+should not be called "Boombness"), then the causal path that *is* real, then where in the network,
+then which token — and only then the behavioural half, stated as **stuck** rather than softened.
+
+⛔ **Four things the notes-to-Omer section forbids letting travel alone**, because each reads as
+stronger than it is when quoted without its next sentence:
+* *"≈ −30 of 153"* — reads as an established behavioural effect; it is direction-only and **not
+  significant at the independence unit**.
+* the three DiD p-values — **one sign pattern replicated**, not three independent tests.
+* the Qwen behavioural silence — a **criterion** limitation; ⛔ no attack contrast was ever computed
+  there, so "Qwen shows no effect" is not available in either direction.
+* *"L6–14"* — the effect is **graded over 0–14**; the inherited band contains the peak, not the
+  boundary.
+
+⚠ It also states plainly that **the representational half replicates Yona et al. (ACL 2026)** and
+that only the **causal** half is ours — put in the message body rather than a footnote, because that
+is the sentence most likely to be dropped when work is summarised upward.
+
+The draft ends with *"what would change your mind"*: new demonstration pools (behavioural claim), a
+second harmful concept (generality), and a **relative** refusal-neutrality band declared **in
+advance** (Qwen). ⛔ Still unsent; no Slack integration exists or was used.

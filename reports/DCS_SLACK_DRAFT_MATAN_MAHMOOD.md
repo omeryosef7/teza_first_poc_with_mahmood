@@ -1,82 +1,81 @@
 # Slack draft — Matan & Mahmood (§47)
 
 ⛔ **DRAFT ONLY. NOT SENT.** No Slack integration is configured and none was used. Send only on
-explicit instruction from Omer.
+explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and both layer sweeps.
 
 ---
 
 ## Message 1 — the update
 
-> Following up on the Sep 2 discussion. Short version: we built the concept-specific measurement you
-> asked for, and the honest answer is that the representation is real and demonstration-caused but
-> **not** concept-specific, and whether it drives the attack is still open.
+> Following up on the Sep 2 discussion. Headline: **the mechanism you asked about is real, causal and
+> replicates across models — and it is not the thing the attack runs on.** Full log is append-only
+> with every retraction kept in place; one figure summarises it.
 >
 > **What we changed after the discussion.** Dropped `d_surface` as the object of study and went back
-> to the 2×2 as you suggested. The primary candidate was your `C − A` (same codeword `button`, only
-> the demonstration context changes). Everything was preregistered before any forward pass, and the
-> log is append-only with every retraction kept in place.
+> to the 2×2, with your `C − A` (same codeword, only the demonstrations change) as the primary
+> candidate. Everything preregistered before any forward pass.
 >
-> **Did the concept-specific Boombness work?** Partly, and the negative is the interesting half.
-> A codeword→concept movement exists and is **causally demonstration-dependent**: blocking the
-> query span from attending to the demonstrations (L6–14) takes the model's own forced-choice
-> reading of `button` from **+5.19 to −2.76** log-odds — a sign flip back to the *literal* meaning —
-> against a dose-matched control that does nothing. It **replicates on `basket`** (+6.79 → −3.80),
-> and it is **remapping-specific**: the same intervention barely moves the cell where the word
-> already *is* `bomb` (DiD −9.89 and −9.35, 37/38 domains, p = 2.8e-10).
-> ⛔ **But it is not specific to the harmful concept.** Running the identical geometry on
-> `knife`/`gun`/`club` banks, three of four comparisons go the *other* way — every difference sits
-> inside the measured noise band. So it should not be called "Boombness"; it is a property of the
-> demonstration paradigm, not of `bomb`. It also **does not accumulate**: one demonstration does
-> essentially all the work, and the effect is flat in `n_examples`.
+> **Did concept-specific Boombness work? No — and that's the first result.** Running the identical
+> geometry on `knife`/`gun`/`club` banks, three of four comparisons go the *other* way, all inside
+> the measured noise band. So it should not be called "Boombness": it is a property of the
+> demonstration paradigm, not of `bomb`. It also **does not accumulate** — roughly one demonstration
+> does the work, and the effect is flat in `n_examples`.
 >
-> **The surgical final-`button`→demos knockout.** Null on everything we care about. The mapping
-> stays intact (+0.28) and attack is unchanged (+11 rows, McNemar p = 0.38) — with a control we
-> verified is refusal-neutral (refusal 42 vs 42, zero attack→refusal conversions). What it *does* do
-> is **halve refusal**. So cutting that one token off the demonstrations changes neither the
-> representation nor the attack.
+> **What is real is the causal path.** Blocking the query span from attending to the demonstrations
+> takes the model's own forced-choice reading of `button` from **+5.19 to −2.76** log-odds — a sign
+> flip back to the *literal* meaning — against a dose-matched control that does nothing. It
+> **replicates on `basket`** and **on Qwen3-14B at ~3× the magnitude** (there `frac>0` collapses
+> 0.813 → 0.021). And it is **remapping-specific**: the same cut barely moves the cell where the word
+> already *is* `bomb`. DiD −9.9 / −9.4 / −22.2. ⚠ One caveat we put on the figure itself: all three
+> share the same 1+/37− sign pattern, so those identical p-values are **one pattern replicated, not
+> three independent tests**.
 >
-> **The direct-`bomb` control.** ⛔ On the ASR endpoint it **cannot answer** — `direct_harmful`
-> baseline is 10/380, so the largest possible effect is smaller than the judge's own noise band.
-> That was my planning error; I moved the specificity test to the semantic readout, where the cell
-> is not at floor, and that is where the DiD above comes from.
+> **Where in the network.** We ran the layer sweep we'd been missing. At equal dose the effect is
+> **distributed across layers 0–14, peaks at 10–14, and is absent above 14**. The L6–14 band we
+> inherited from the last sprint contains the peak but is **not** the mechanism's boundary — layers
+> 0–5 contribute substantially too.
 >
-> **Is it Doublespeak-specific or generic context disruption?** Specific — but at the *path* level,
-> not the single-token level. The whole-query-span knockout is remapping-specific on two codewords;
-> the single-codeword-row knockout is a clean null. Both are true and the difference is the result.
+> **Which token?** Neither the final `button` nor the readout row matters on its own (both null at
+> the same dose). A **threshold of ~3–8 query rows** does, after which it saturates. So no single
+> position carries the mapping.
 >
-> **The one thing I do not have.** Whether destroying the mapping moves the attack. We ran it, I
-> reported a null, and an adversarial audit **retracted it**: I used a domain sign test on
-> row-paired data (its MDE was a 43 % reduction), and the dose-matched control turned out to
-> suppress attack *by inducing refusal* — a channel the treatment annihilates to zero, so the
-> subtraction removes a mechanism the treatment cannot express. Corrected, the estimate is bounded
-> on **[−15, −40] rows**, defensible point estimate **−34 (McNemar p = 0.005)**. Status:
-> **cannot answer** until we have a control verified refusal-neutral at that dose. Three more draws
-> are running; the diagnostic says the induction is a *dose* effect, so a neutral control may not
-> exist in that pool — which would itself be the answer.
+> **The behavioural link is where we're stuck, and I want to be straight about it.** On Llama, cutting
+> the path reduces attack **in direction** (≈ −30 of 153, consistent across 3 refusal-neutral controls
+> × 2 seeds × 4 judgings) — but it **does not reach significance at the domain independence unit**,
+> and 38 domains is **all that exists** in our pools, so no amount of further judging fixes it. On
+> Qwen we **cannot answer at all**: 0 of 6 control draws meet refusal-neutrality, because our ±17-row
+> band is an *absolute* judge-noise figure and Qwen's baseline is 150 refusals rather than 42 — a
+> 3.6× stricter relative test. That is a limitation of our criterion, **not** evidence that Qwen shows
+> no effect; we never computed an attack contrast there.
 >
-> **Two decisions I would like your view on.**
-> 1. If no refusal-neutral control exists at that dose, do we (a) accept a refusal-stratified
->    estimate with its assumption stated, or (b) redesign the control (e.g. block a random *subset
->    of demonstration* keys rather than non-demonstration keys)? I lean (b).
-> 2. The representational half replicates **Yona et al., ACL 2026** — they already show the
->    convergence with logit lens and Patchscopes, and their Appendix D anticipates the
->    codeword-generality point. Our novelty is the **causal** half (no internal intervention in that
->    paper). Do we frame this as a causal follow-up to them, or hold for the mediation answer?
+> **One thing that replicates everywhere:** refusal. Llama 42 → 0, Qwen **150 → 0** — and that is the
+> same 150 the earlier sprint removed with a *different* scope. Two models, four scopes.
+>
+> **Two decisions I'd like your view on.**
+> 1. **New demonstration pools.** The only way to certify the behavioural effect at our own
+>    independence unit. New data, own preregistration, API budget. Worth it?
+> 2. **Positioning.** The representational half **replicates Yona et al., ACL 2026** — they already
+>    show the convergence with logit lens and Patchscopes, and their Appendix D anticipates the
+>    codeword-generality point. Ours that is new is the **causal** half: they perform no internal
+>    intervention. Frame as a causal follow-up to them, or hold?
 
 ## Message 2 — scheduling
 
-> Could we get 30 minutes this week to decide the mediation-control design and how we position this
+> Could we get 30 minutes this week to decide the demonstration-pool question and how we position
 > against the ACL 2026 paper?
 
 ---
 
 ## Notes for Omer before sending
 
-* Every number above is in `reports/DOUBLESPEAK_NEXT_PHASE_SUMMARY.md` with its artifact path.
-* ⚠ The message deliberately leads with the negative (`not concept-specific`) and states the
-  retraction in the middle rather than burying it. If you would rather it opened with the
-  replication, that is a presentation choice, not a factual one.
-* ⛔ Do not let the `−34 rows, p = 0.005` figure travel without the sentence that follows it. On its
-  own it reads as a positive mediation result, which is exactly what is **not** established.
-* Scope line if asked: 38 domains × 2 codewords × 1 concept × 1 model (Llama-3.1-8B-Instruct) ×
-  one layer band. That is 38 contexts for a single mapping, not 38 mappings.
+* Every number is in `reports/DOUBLESPEAK_NEXT_PHASE_SUMMARY.md` with its artifact path; the figure
+  is `reports/DCS_FIGURES.png` and carries its own scope card.
+* ⚠ The message leads with the **negative** and states the behavioural limitation plainly. If you'd
+  rather open with the cross-model replication, that's a presentation choice, not a factual one.
+* ⛔ Do not let *"≈ −30 of 153"* travel without the sentence after it — alone it reads as an
+  established behavioural effect, which is exactly what it is **not**.
+* ⛔ Do not let the three DiD p-values travel as three independent results.
+* Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families.** That is 38
+  *contexts* for a single mapping, not 38 mappings.
+* If asked "what would change your mind": new pools (for the behavioural claim), a second harmful
+  concept (for generality), and a relative refusal-neutrality band declared **in advance** (for Qwen).
