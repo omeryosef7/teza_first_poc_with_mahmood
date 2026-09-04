@@ -5679,3 +5679,57 @@ is a **new population**, not a re-slicing of the old one. A difference between `
 `cds_n4` therefore confounds **dose** with **population**. ⛔ The 38 domains, pools, slots and
 preamble are held identical precisely to make that confound as small as construction allows, but it
 is **not zero** and will be stated with the result.
+
+### `R-054` — `PR-023` Stages 1–2: ✅ **both gates PASS.** The knob turns, and it turns monotonically
+
+**Bank built.** `main_longpre_cds_lowdose`, 10 336 rows, **0** alignment violations, **0** duplicate
+`prompt_id`s. Incidental repair `button→switch`, copied from the canonical bank's own meta rather
+than invented. ✅ `tests/test_bank_regenerates_byte_identically.py` **passes** — no existing bank moved.
+
+✅ **Internal-consistency check I am glad I ran.** The `cds_n4` block appears in **both** banks and
+must be byte-identical, or the derived preset perturbed something and dose is no longer the only
+difference. **sha `6ec02ba3160dc488` in both**, 3 040 rows each. ⇒ The low-dose blocks are a clean
+extension, not a re-derivation.
+
+**Stage 1 — control feasibility, in TOKENS (`R-033a`'s unit).**
+
+| block | demo tok | non-demo tok | max `match_ratio` |
+|---|---|---|---|
+| `cds_n1` | 15.0 | 138.0 | ✅ **9.20×** |
+| `cds_n2` | 30.0 | 138.5 | ✅ **4.62×** |
+| `cds_n4` | 59.0 | 140.0 | 2.37× |
+| `cds_n8` | 120.0 | 140.0 | 1.17× |
+
+✅ **Gate PASSES**, and the prediction `PR-023` recorded — *feasibility improves at low dose because
+the demonstration block shrinks while the preamble is unchanged* — holds by a wide margin.
+
+⚠ **A discrepancy I am flagging rather than smoothing.** `R-033a` reported `cds38` n=4 at **3.03×**;
+I measure **2.37×**. Demo tokens agree (58 vs 59); non-demo does not (176 vs 140). The cause is the
+**unit of `seq`**: `R-033a` measured `seq_len` from the **run**, which includes chat-template tokens;
+this measures the raw `full_prompt`. ⇒ These numbers are **not interchangeable**, and mine
+**understate** headroom — conservative, which is the safe direction for a gate, but it must not be
+quoted against `R-033a`'s.
+
+**Stage 2 — the knob-check, `PR-018`'s lesson as a hard gate.**
+
+| dose | mean install | sd | **≤ 0.75** | ≤ 0.25 | **at 1.0** |
+|---|---|---|---|---|---|
+| **n = 1** | **0.708** | 0.232 | ✅ **20** | 1 | **5** |
+| n = 2 | 0.847 | 0.207 | 8 | 1 | 14 |
+| n = 4 (existing) | 0.908 | 0.197 | 4 | 1 | **25** |
+
+✅ **Gate PASSES at n=1** (needed > 13; got **20**). ⚠ **Installation is itself monotone in dose** —
+0.708 → 0.847 → 0.908 — which is the dose-response `PR-018` looked for and could not find, because it
+pushed **up** into a ceiling. The lever works in the direction with headroom.
+
+⇒ **The varying subrange at n=1 is 33 domains** (only 5 at ceiling), against Llama n=4's **13** and
+Qwen's **30**. That is the population `A-009` attack `C` and `R-053` could not be tested on.
+
+⛔ **One limit the gate does NOT fix, stated now.** Even at n=1 only **1** domain sits at ≤ 0.25.
+⇒ `R-039`'s **reversal** at install ≈ 0 remains untestable here, and the low-vs-high **split** stays
+`CANNOT_ANSWER` — `PR-023` was designed for the **varying subrange**, not for the low tail, and it
+does not deliver the latter.
+
+**Stage 3 submitted** (850389 `demo_all`, 850390 `nondemo_matched_d1`), band 6–14,
+`query_prefill_only`, every other setting copied from `dcsro_C_*`. Analysis will be
+`scripts/dcs_audit_r041.py` **unchanged**.

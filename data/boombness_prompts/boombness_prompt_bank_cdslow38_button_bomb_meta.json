@@ -1,0 +1,102 @@
+{
+  "preset": "main_longpre_cds_lowdose",
+  "seed": 20260901,
+  "codeword": "button",
+  "concept": "bomb",
+  "pools_sha16": "4cfc70c8688e4a3a",
+  "pools_path": "data/boombness_prompts/demo_pools_29dom.json",
+  "stats": {
+    "bank_rows_sha16": "70709f0bf8c816c0",
+    "n_rows": 10336,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 0,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 2584,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 2584,
+      "concept_in_benign_ctx": 2584,
+      "direct_harmful": 2584,
+      "natural_doublespeak": 2584
+    },
+    "by_block": {
+      "cds_n1": 3040,
+      "cds_n2": 3040,
+      "cds_n4": 3040,
+      "cds_n8": 1216
+    },
+    "by_query_kind": {
+      "behavioral": 5168,
+      "semantic_forced_choice": 5168
+    },
+    "by_n_examples": {
+      "1": 3040,
+      "2": 3040,
+      "4": 3040,
+      "8": 1216
+    },
+    "by_domain": {
+      "airport_apron": 272,
+      "airport_ground": 272,
+      "bakery_plant": 272,
+      "brewery_works": 272,
+      "campsite_park": 272,
+      "city_bridge": 272,
+      "construction_site": 272,
+      "dairy_plant": 272,
+      "farm_storage": 272,
+      "ferry_terminal": 272,
+      "film_studio": 272,
+      "fishing_harbour": 272,
+      "game_manual": 272,
+      "garden_centre": 272,
+      "harbour_dock": 272,
+      "hospital_supply": 272,
+      "hospital_ward_store": 272,
+      "hotel_service": 272,
+      "instructional": 272,
+      "lab_safety": 272,
+      "library_stacks": 272,
+      "mountain_refuge": 272,
+      "museum_archive": 272,
+      "news_report": 272,
+      "power_substation": 272,
+      "printing_works": 272,
+      "quarry_site": 272,
+      "rail_depot": 272,
+      "recycling_centre": 272,
+      "school_campus": 272,
+      "shipyard_slip": 272,
+      "sports_stadium": 272,
+      "subway_station": 272,
+      "telecom_exchange": 272,
+      "textile_mill": 272,
+      "theatre_backstage": 272,
+      "veterinary_clinic": 272,
+      "warehouse_logistics": 272
+    },
+    "by_split": {
+      "dev": 5168,
+      "heldout": 5168
+    },
+    "by_role_style": {
+      "plain": 10336
+    }
+  },
+  "incidental_repairs": {
+    "button": "switch"
+  },
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-003",
+  "git_commit": "48df70b11e34ffef96f54479772fb21ef6cfaa95",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA TITAN Xp",
+  "timestamp": "2026-09-04T19:07:25"
+}
