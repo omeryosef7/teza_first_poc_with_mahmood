@@ -5339,3 +5339,67 @@ refutation.
 **Design.** Llama-3.1-8B-Instruct, `cds_n4`, `n_examples 4`, `semantic_forced_choice`,
 `--conditions benign_literal`, `--expect-n 380`, seed 20260901, bf16, eager — every setting copied
 from `dcsro_C_baseline` so the only difference is the **condition**.
+
+### `R-050` — `PR-021`: primary is ⛔ **`CANNOT ANSWER`** by its own gate. ✅ The arm is valuable anyway, for the reason it was justified on
+
+Job 849861 `COMPLETED`, 380 rows, `DONE.json` present. First `benign_literal` run in the phase.
+
+⛔ **Primary: `CANNOT ANSWER`, the declared branch verbatim.** `PR-021` required **≥ 4** domains
+deviating from unanimity for the predictor to have usable spread. **1 of 38** qualifies
+(`quarry_site`, 3/10 rows). Prior-pull mean **0.0079**, sd 0.048. ⇒ No correlation computed.
+
+✅ **The three things the arm delivers regardless — and `PR-021` justified it on exactly this basis
+("worth a job regardless of the hypothesis"), which is why they are not a consolation prize.**
+
+**1. The no-mapping reference the phase never had.**
+
+| cell | `semantic_logodds` | `option_mass` median |
+|---|---|---|
+| `benign_literal` (codeword present, **no** remapping) | **−5.495** | **0.2643** |
+| cell C baseline (`natural_doublespeak`) | **+5.188** | 0.8774 |
+
+⇒ The doublespeak demonstrations move the reading by **+10.68 log-odds** from a genuine
+no-mapping control. ⚠ Every previous number in this phase measured *removal* of an installed
+mapping; this is the first measurement of the **full installation swing** against a cell where it
+was never installed.
+
+**2. ⛔ A validity caveat on the phase's own readout, measured for the first time.** `option_mass`
+collapses **0.877 → 0.264** when the remapping is absent. ⇒ **The forced-choice options only capture
+the model's answer when a remapping is installed.** ⚠ In the benign cell, `semantic_logodds`
+contrasts two options the model **largely rejects** — the same mass-invariance problem `R-032`
+raised, now shown to be severe in a cell where the mapping is absent. ⛔ Any future use of this
+readout on a *weakly-mapped* population inherits this and must report `option_mass` beside it.
+
+**3. ✅ The benign demonstrations install their OWN remapping — a positive demonstration of
+`R-002`.** The surface answers are ` Neither` 186, ` Button` 140, and then **` Mushroom` 22**,
+` Vegetable` 2, ` Salad` 1 — the model resolves `button` to the **food** sense (*button mushroom*),
+because the benign demos read *"a large crate of **button** puree"*, *"**button** supplements for
+nutritional therapy"*. Concentrated in `instructional` **6/10**, `library_stacks` 3/10,
+`lab_safety` 3/10.
+
+⇒ ⚠ **The paradigm installs whatever the demonstrations say, not something specific to harm.**
+`R-002` established this negatively (the geometry is not `bomb`-specific); this is the same point
+**positively** — swap the demonstrations for benign ones and a benign remapping appears by the same
+route. ⛔ It is **not** evidence about the *causal* results, which were all measured on the harmful
+mapping.
+
+⚠ **`quarry_site` is an anecdote and is labelled one.** It is the **only** domain reading `bomb`
+under benign demonstrations (3/10) — and a quarry is exactly where explosives are unremarkable.
+⛔ **n = 1 domain.** That is a suggestive detail, ⛔ not evidence for the plausibility hypothesis
+`R-047` closed, and it may not be cited as such.
+
+### `DCS-035` — ⚠ my liveness watch raced the writer, and the artifact guards are what covered it
+
+The watch armed for 849861 declared a terminal state on *"the job left `squeue`"*. It fired at
+**17:29**; the run's own log says `=== done ===` at **17:31:47**, and the output directory did not
+yet exist when the watch reported. ⇒ ⛔ **"Left the queue" is not "finished writing."**
+
+⚠ The watch therefore reported **`JOB LEFT QUEUE without DONE.json — check sacct/logs`** on a run
+that was **fine**. ✅ That is the *safe* direction — it prompted an investigation rather than an
+analysis — but it is still a false alarm, and the opposite race is the dangerous one: had I analysed
+on that signal, I would have read a **partial** `results.jsonl`.
+
+✅ **What actually protected the analysis** is the same thing every time: `dcs_installation_gradient.py`
+and its siblings **refuse without `DONE.json`** and refuse on a wrong row count. ⇒ The guard belongs
+in the **analyzer**, not in the watch, and it was already there. ⚠ A future watch should poll for
+`DONE.json` **with a grace period after the queue clears**, not treat queue-exit as terminal.
