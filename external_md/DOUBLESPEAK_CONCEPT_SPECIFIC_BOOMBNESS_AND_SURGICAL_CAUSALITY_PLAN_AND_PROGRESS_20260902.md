@@ -6220,3 +6220,27 @@ the producer's own view of itself.
 ✅ Also pinned: the pre-existing contract that a pool's **own natural word is never rewritten** (for
 `knife` the collision *is* the concept; a blanket replace would turn every harm pool into sentences
 about a peeler), so the plural change cannot loosen it.
+
+### `DCS-038` — the 30-minute stall rule says resubmit `850796`. ⛔ **I am not going to, and here is why**
+
+`850796` has been `PENDING (Resources)` since **22:02:37**, crossing the 30-minute threshold
+`feedback_slurm_pending_30m_resubmit` sets. ⚠ The rule's **remedy is unavailable and its rationale
+does not apply**, so following its letter would be cargo-culting.
+
+⛔ **There is nothing to widen.** `DCS-032`'s fix was to add `n-801` to a nodelist that was missing
+it. `run_boombness.sh` now names **all six** L40S nodes (`n-801…805`, `t-806`); the job is already
+eligible everywhere it can run. A resubmission would be byte-identical.
+
+⛔ **And the rule's rationale points the other way.** It exists for jobs stalled behind **fair-share
+priority**, where a *different* config can help. `850796` is `Resources`, not `Priority` — and 4 of
+the 5 occupied slots are **my own arms**. ⇒ It is queued behind work I want to finish; cancelling
+would surrender its position and gain nothing. `DCS-032` reached this conclusion itself: *"I will not
+keep cancelling and resubmitting: that burns position without addressing fair-share."*
+
+✅ **Measured rather than assumed:** occupancy is 5/8/7/7 jobs on `n-801/802/804/805`, so the cluster
+is genuinely full, and `850796` starts the moment one of my four finishes — which is ~2 h away, well
+inside its 6 h wall limit.
+
+⚠ **Recorded because a rule not followed needs a reason on the record**, exactly like one that is.
+⛔ If it is still `PENDING` when the other four have finished, that *would* be anomalous and worth
+acting on; queued-behind-my-own-work is not.

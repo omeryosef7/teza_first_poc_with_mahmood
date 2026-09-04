@@ -77,6 +77,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 14 | `C-037b` | ⚠ my own fix was **incomplete** — it reached `sentences` but not `dev`/`heldout`, **the field `build_prompt` actually reads**. Third scope mismatch: guard and builder read different fields | ✅ |
 | 14 | `C-037c` | ⚠ **near-miss**: I rebuilt the bank 10 min into a running arm. `prompt_id`s are identical across builds, so pairing would have been **silently wrong**. Cancelled + resubmitted all five | ✅ |
 | 14 | `PR-024a` | five arms resubmitted (850792–850796); knockout pre-flight **1160 rows, 0 infeasible_control** | ⏳ |
+| 15 | `A-011` | regression test for `C-037`/`C-037b` — and ⚠ **the detector-based invariant MISSES `C-037b`**; only the every-field test catches it. A guard-shaped invariant inherits the guard's blind spots | ✅ |
+| 15 | `DCS-038` | the 30-min stall rule says resubmit `850796`; ⛔ **not doing it** — nodelist is already all six nodes and it is queued behind **my own** arms. Reason recorded | ✅ |
 
 ## Live
 
