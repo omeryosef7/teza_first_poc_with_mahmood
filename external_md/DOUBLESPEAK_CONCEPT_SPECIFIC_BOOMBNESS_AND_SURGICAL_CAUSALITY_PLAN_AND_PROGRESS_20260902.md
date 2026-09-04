@@ -4603,3 +4603,72 @@ That is **anti-conservative**, it is named now, and:
   the **primary** stands and the disagreement is reported.
 * ⛔ **`PR-018`'s prediction 1 stays AMBIGUOUS and 2 stays VOID regardless of how this comes out.**
   This amendment can only speak to prediction 3.
+
+### `R-043` — `PR-018a`: ✅ the installation gradient **replicates at a second dose, with a real control**
+
+Job 849706, `nondemo_capped_d1`, 152 rows, `infeasible_control` **0**.
+
+| | ρ<sub>KO</sub> | ρ<sub>control</sub> | **contrast** | **perm p** |
+|---|---|---|---|---|
+| **PRIMARY** — all 152 rows | **−0.444** (p = 0.0049) | **−0.040** (p = 0.817) | **−0.404** | **0.0482** |
+| **SECONDARY** — 11 under-matched rows dropped from **both** arms | −0.525 | −0.142 | −0.383 | 0.0660 |
+| *(for comparison)* `R-041`, same 38 domains at n = 4 | −0.594 | +0.312 | −0.907 | 2.0e-04 |
+
+✅ **The dose-matched control shows essentially no gradient** (ρ = −0.040, p = 0.817) while the
+knockout shows a clear one. ⇒ `R-041`'s result **replicates at a second dose on the same 38 domains**,
+against a comparator that receives the same number of masked keys in the same band.
+
+⛔ **Two things this is not.**
+1. ⛔ **Not an independent population.** n=4 and n=8 are the **same bank and the same 38 domains**; this
+   is a *second dose*, not a *second sample*. The two contrasts are **not** two independent p-values.
+2. ⛔ **Not a rescue of `PR-018`.** Prediction 1 stays **AMBIGUOUS** and prediction 2 stays **VOID**
+   (`R-042`). `PR-018a` was declared to speak only to prediction 3, and it does only that.
+
+⚠ **Primary and sensitivity agree on the estimate and differ on the p — and that is not a
+disagreement.** −0.404 vs −0.383 is a **5 %** change in the point estimate; the p moves 0.048 → 0.066
+because dropping 11 of 152 rows costs power. ⛔ Calling the sensitivity a failed replication would be
+the **difference-in-significance** error for the third time in this phase (`C-017`, `R-040`). ⇒
+Reported as: **the estimate is stable under the exclusion; neither version is comfortably inside α.**
+⚠ p = 0.0482 is marginal and is written as marginal wherever it appears.
+
+### `C-029` — ⚠ CORRECTED: my `PR-018a` estimate of the under-matched rows' severity was **wrong**
+
+`PR-018a` inferred, from the strict arm's `control_draw_match_ratio` mean of **0.9276** over 152 rows
+with 141 at 1.0, that the 11 bad rows must sit at **≈ 0.006** — "the longest-demonstration rows, where
+the non-demo pool runs out."
+
+⛔ **False.** The capped arm measured them directly: **min 0.9080, mean 0.9967**, and the 11
+under-matched rows average **0.9546**. They can draw **91–99 %** of the keys they need, not 0.6 %.
+
+⚠ **The arithmetic failed because the field means different things in the two arm types**, which the
+artifact's own note says: *"A `strict` arm cannot report < 1.0: it refuses the row instead."* ⇒ In a
+strict arm the 11 refused rows contribute **0.0**, so 141/152 = **0.9276** exactly — I was reading a
+**refusal indicator** as a **severity measure**. ⛔ Same family as `feedback_matcher_scope_bug_class`:
+the number was right and I asked it the wrong question.
+
+✅ **The correction runs in the safe direction and does not change any conclusion**: the control is
+*better* matched than declared, so the anti-conservative bias `PR-018a` warned about is **~0.3 % of
+keys on average**, not the material distortion I prepared for. ⛔ Recorded anyway — a declared
+limitation that turns out to be too pessimistic is still a declared limitation that was wrong.
+
+### `B-013` — ⛔ NEW BLOCKER: the per-row control match ratio is **not persisted**, though the artifact says it is
+
+`control_draw_note` states: *"every row carries its own ratio in `control_draw_match_ratio`."*
+⛔ **It does not.** `results.jsonl` rows carry **no** such field on any arm; only the aggregate
+(`n`, `min`, `mean`, `n_below_1`) survives, in `metadata.json`.
+
+⚠ **This blocked `PR-018a`'s declared secondary directly** — the exclusion set was defined as "the
+under-matched rows", and the artifact cannot name them.
+
+✅ **Recovered by a different route, and the recovery was validated before use:** the realised dose is
+in every row as `hook_n_keys_masked`, so `control/knockout` per `prompt_id` gives the ratio from the
+**hooks themselves**. It returns **exactly 11** rows below 1.0 — matching `metadata.json`'s
+`n_below_1: 11` — and their ratios (0.9080–0.9861) bracket the metadata `min` of 0.9080. ⇒ The
+secondary ran, on a quantity measured downstream of the intervention rather than upstream of it,
+⚠ which is arguably the **better** field to have used in the first place.
+
+⛔ **The blocker stands even though it was worked around**: a note asserting a field that does not
+exist will mislead the next reader, and the workaround depends on the control and knockout arms
+being row-aligned — true here, not true in general. ⇒ Fix is to persist the per-row ratio, or to
+correct the note. ⚠ ⛔ **Not attempted in this tick**: it is a change to the generator, and every
+existing artifact in the phase was produced without it.
