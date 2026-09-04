@@ -3967,3 +3967,14 @@ p = 1.000** — a perfect null. ⛔ With `R-033`'s control **structurally unavai
 replicate on `missile`**, where the mapping is weak at baseline and no control exists. ⛔ The phase
 may **not** say "generalises across harmful concepts" — it may say **"replicated on one of two new
 concepts, with the failure associated with a weak baseline mapping."**
+
+### `R-036` — `R-033`'s infeasibility confirmed **structural**: `cm_ctrl` refused identically
+
+Job **848541** (`candle`→`missile` control) refused in **20 s** with the byte-identical message and
+the same `160 of 160 … control cannot be built`. ⇒ The dose-matched control is unavailable across
+**both** rbd concepts, so `R-033`'s diagnosis is a property of **bank construction** (no `preamble`
+field, `n=8`, ~85 % demonstration) rather than anything about `lantern`. ✅ Letting it run cost 20 s
+and converted a one-concept observation into a confirmed structural fact.
+
+⇒ `PR-013` closed. Queue empty. **Six arms submitted, four generated (160 rows each, 80/80 across
+cells, 20 domains), two refused by design.**
