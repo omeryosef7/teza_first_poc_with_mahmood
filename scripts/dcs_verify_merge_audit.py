@@ -5,11 +5,17 @@
 bank that 16 GPU-hours will be spent on. A guard that has never rejected anything is not a guard, so
 each refusal is fired deliberately here on synthetic pools.
 
-⛔ It also pins one NON-refusal: a sentence appearing in two domains is REPORTED, not fatal. That is
+⛔ It pins TWO non-refusals: a sentence appearing in two domains is REPORTED, not fatal. That is
 a deliberate choice and it is recorded rather than left implicit -- with 116 domains x 40 sentences
 per valence, an identical short filler line arising twice is plausible by chance, and blocking a
 16-GPU-hour run on one collision would be the wrong trade. ⚠ Any non-zero count is reported as a
 caveat on domain independence, which is the unit `B-009` exists to strengthen.
+
+⛔ The second non-refusal is an INCIDENTAL COLLISION. `DCS-C-036` rescoped that from fatal to
+reported: pools are written around ONE codeword and one concept, so every OTHER codeword appearing
+incidentally is expected -- those banks are built by substitution, and `prompt_families` already
+refuses at bank build with a per-codeword guard and `--incidental-replace`. The old rule rejected
+27 of the CANONICAL pools, i.e. the ones every committed bank was built from.
 
 Synthetic pools only -- no real sentence text is read or emitted.
 """
@@ -55,9 +61,14 @@ def main() -> None:
             True, "domain in BOTH halves -> REFUSE"),
         run(A, (META, {**pool("beta", "benign", ["only carrot one", "only carrot two"])}),
             True, "short pool -> REFUSE"),
+        # DCS-C-036: this expectation was flipped from REFUSE to report-only, and the harness
+        # CAUGHT the change rather than letting it pass silently -- which is the point of pinning
+        # a contract. Pool-level collision-freedom was the wrong rule: 27 of the CANONICAL
+        # 38-domain pools carry these words, so every committed bank in the phase was built from
+        # pools the old check rejected. Collisions are repaired at BANK BUILD, per codeword.
         run(A, (META, {**pool("beta", "benign", ["carrot and a knife", "b carrot two",
                                                  "b carrot three", "b carrot four"])}),
-            True, "collision: 'knife' in a BENIGN pool -> REFUSE"),
+            False, "collision in a pool -> REPORTED, not fatal (C-036)"),
         run(A, (META, {**pool("beta", "harm", ["a bomb here", "q bomb", "r bomb", "s bomb"])}),
             False, "duplicate sentence across domains -> reported, NOT fatal"),
     ]

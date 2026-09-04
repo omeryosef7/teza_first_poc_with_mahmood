@@ -6054,3 +6054,55 @@ confound can be larger than the effect. ⚠ If the brackets straddle zero the re
 and the repo has measured 0.000–0.755. The achieved power is recomputed once the arms exist, and if
 the realised ICC is materially higher the design is reported as **underpowered** at whatever `k` it
 achieved — ⛔ not silently defended by the pre-run number.
+
+### `C-036` — ⚠ **my pool audit rejected the CANONICAL pools.** The matcher was wrong, not the data
+
+`PR-024`'s merge audit **REFUSED**: *"94 pool(s) with an incidental collision."* ⛔ Before touching the
+pools I asked the question `feedback_matcher_scope_bug_class` exists for — **is it flagging the
+existing data too?**
+
+⛔ **It was. 27 of the 94 are in the CANONICAL 38-domain pools** — the ones **every committed bank in
+this phase was built from, including the `button`→`bomb` headline.** ⇒ A criterion that rejects the
+data behind every published result in the phase is a **broken criterion**, not a discovery.
+
+**Why it was wrong, in one sentence.** Pools are written around **one** codeword (`carrot`) and
+**one** concept (`bomb`); every *other* codeword appearing incidentally is **expected**, because
+those banks are built by **substitution**. The repo already handles it exactly where it matters —
+at **bank build**, per codeword, via `prompt_families.incidental_codeword_collisions()` plus
+`--incidental-replace`, which **refuses and names the offending pools**. ⚠ **I used that mechanism
+myself** four hours ago (`--incidental-replace "button=switch"`, copied from the canonical bank's
+meta) and then wrote a pool-level guard that contradicts it.
+
+✅ **Rescoped:** collisions are **reported, never fatal**, and the report is now *actionable* — it
+prints per word what the bank build will need:
+
+| word | pools | consequence |
+|---|---|---|
+| `basket` | **61** | a `basket` bank needs `--incidental-replace` |
+| `button` | **13** | the `button` bank needs `button=switch` (as already used) |
+| `window` | 12 · `ticket` 5 · `knife` 2 · `candle`/`gun`/`lantern` 1 each | per-bank repair |
+
+✅ **And the mutation harness caught the contract change rather than letting it pass.** Flipping that
+expectation turned `dcs_verify_merge_audit.py` **red** on the very next run; the fix is recorded in
+the harness itself, so the *reason* the rule is report-only travels with the test. ⛔ Had the harness
+not pinned it, I would have silently loosened a guard and had no record of why.
+
+### `R-057` — the **116-domain pool set** exists and passes
+
+| | |
+|---|---|
+| domains | **38 existing + 78 new = 116** |
+| pools | **464**, ✅ **0 short** (all 40 sentences) |
+| homogeneous on | generator, seed, concept, codeword, remap source, `n_per_pool`, `per_split` |
+| `content_sha16` | **`976aa2b0b617118d`** |
+
+✅ **Homogeneity was verified, not assumed** — and it mattered: the generator's CLI default seed is
+**20260816** while the canonical pools used **20260828**. Taking the parameters from the existing
+pools' own `_meta` is the only reason the two halves match, and a mismatch here would have produced a
+bank that built cleanly and was subtly wrong.
+
+⚠ **Cross-domain duplicate sentences, reported as the declared caveat on domain independence:**
+`filler` **45**, `remap` 14, `harm` 12, `benign` **3** — against **4 640** sentences per valence, i.e.
+**0.97 % / 0.30 % / 0.26 % / 0.06 %**. ⇒ Low, concentrated in the word-free `filler` pool where
+identical short log lines are most likely by chance, and ⛔ **not** waved through: `B-009` exists to
+strengthen the domain unit, so the number travels with the result rather than being dropped.

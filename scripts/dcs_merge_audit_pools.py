@@ -109,24 +109,43 @@ def main() -> None:
            "params": {k: ma.get(k) for k in MUST_MATCH},
            "short_pools": short,
            "incidental_collisions": {k: v for k, v in coll.items()},
+           "incidental_collisions_by_word": dict(collections.Counter(
+               w for v in coll.values() for w in v)),
+           "COLLISION_NOTE": ("NOT fatal at the pool level (DCS-C-036): 27 of the canonical "
+                              "38-domain pools also carry these, so every committed bank was built "
+                              "from pools this check once rejected. Collisions are repaired at BANK "
+                              "BUILD, per codeword, by prompt_families' own guard plus "
+                              "--incidental-replace."),
            "cross_domain_duplicate_sentences": {k: len(v) for k, v in dupes.items()},
            "NOTE": "pool ids and counts only; no sentence text is emitted (plan section 13)"}
 
     print(f"domains  {len(da)} existing + {len(db)} new = {len(doms)}")
     print(f"pools    {len(merged)}   homogeneous on {', '.join(MUST_MATCH)}")
     print(f"short pools (<{a.expect_n}): {len(short)} {short[:6]}")
-    print(f"incidental collisions: {len(coll)} pools {sorted(coll)[:6]}")
+    byword = collections.Counter(w for v in coll.values() for w in v)
+    print(f"incidental collisions: {len(coll)} pools -- NOT fatal (C-036); the bank build repairs "
+          f"these per codeword via --incidental-replace")
+    for w, n in byword.most_common():
+        print(f"    {w:>8s}: {n:3d} pool(s)  -> a {w} bank needs --incidental-replace \"{w}=<alt>\"")
     print(f"cross-domain duplicate sentences: {dict(rep['cross_domain_duplicate_sentences'])}")
 
     os.makedirs(os.path.dirname(a.report), exist_ok=True)
     json.dump(rep, open(a.report, "w"), indent=2, sort_keys=True)
 
-    fatal = bool(short or coll)
+    # DCS-C-036. Incidental collisions are NOT fatal at the pool level, and treating them as such
+    # was a mis-scoped guard: 27 of the CANONICAL 38-domain pools fail it, i.e. every committed bank
+    # in this phase -- including the headline -- was built from pools this check would have rejected.
+    # The repo handles collisions where they actually matter: at BANK BUILD, per codeword, via
+    # `prompt_families.incidental_codeword_collisions()` + `--incidental-replace`, which REFUSES and
+    # names the offending pools. Pools are written around ONE codeword (carrot) and one concept
+    # (bomb); every other codeword appearing incidentally is EXPECTED, because those banks are built
+    # by substitution. => Reported here as information the bank build will need, never as a veto.
+    fatal = bool(short)
     if fatal:
         rep["VERDICT"] = "REFUSED"
         json.dump(rep, open(a.report, "w"), indent=2, sort_keys=True)
-        sys.exit(f"REFUSING to write the merged pools: {len(short)} short pool(s), "
-                 f"{len(coll)} pool(s) with an incidental collision. See {a.report}")
+        sys.exit(f"REFUSING to write the merged pools: {len(short)} short pool(s). "
+                 f"See {a.report}")
 
     out = {"_meta": dict(ma), "pools": merged}
     out["_meta"]["domains"] = doms
