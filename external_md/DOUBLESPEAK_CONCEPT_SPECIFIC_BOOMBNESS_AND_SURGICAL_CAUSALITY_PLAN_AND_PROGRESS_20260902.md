@@ -4145,3 +4145,169 @@ of n-801/802/803/805. ⇒ The blocker is **priority, not capacity** — consiste
 the resubmission also stalls the honest conclusion is that the queue, not the config, is the
 constraint. ⛔ I will not keep cancelling and resubmitting: that burns position without addressing
 fair-share.
+
+### `R-037` — `PR-015` Part A: the layer placebo. ⚠ **INTERMEDIATE**, and the placebo's own premise is falsified
+
+Jobs 849114–849119 all `COMPLETED`; six run dirs carry `DONE.json` at the declared row counts
+(160/160/80/80/80/80). Reused `scripts/dcs_generality.py` unchanged — the `PR-013` analyzer, written
+before any `PR-013` arm finished — so nothing about this analysis was authored after seeing the arms.
+
+**The identical `demo_all` knockout, identical rows, identical dose, moved from band 6–14 to 15–23:**
+
+| concept | cell C Δ at **6–14** (`R-035`) | cell C Δ at **15–23** (placebo) | \|ratio\| | sign |
+|---|---|---|---|---|
+| `lantern`→`poison` | **−7.760**, 0+/20−, p = 1.907e-06 | **+1.058**, 20+/0−, p = 1.907e-06 | **13.6 %** | ⚠ **opposite** |
+| `candle`→`missile` | −2.333, 6+/14−, p = 0.115 | **+0.401**, 18+/2−, p = 4.025e-04 | **17.2 %** | ⚠ **opposite** |
+
+⛔ **The declared branch is `INTERMEDIATE`, and I am held to it.** `PR-015` defined *inert* as
+"Δ ≈ 0, **not significant**". The placebo is **significant at the attainable floor** on `lantern`
+(20+/0−) and at p = 4.0e-04 on `candle`. It is therefore **not** inert, and this is reported as a
+**partial** exclusion quantified as a ratio — **13.6 % / 17.2 %** of the 6–14 magnitude. ⛔ It is
+**not** rounded up to "layer-specific", which the preregistration explicitly forbids.
+
+⚠ **The sign reversal was not an anticipated branch, and it is the most informative thing here.**
+`PR-015`'s three branches were defined on **magnitude** alone. Generic attention damage — the
+hypothesis this placebo exists to exclude — predicts cell C moves in the **same** direction at any
+band, because the damage is the same damage. It moves the **other way**. ⇒ The result argues against
+generic damage more strongly than an "intermediate" verdict sounds, and ⛔ that argument is recorded
+as an **unanticipated observation**, not as a criterion the run passed.
+
+⛔ **A premise of my own design is falsified, and it is a caveat on `R-031`, not on `R-030`.**
+`PR-015` chose 15–23 because `R-031` measured it as **inert (+0.15)** — on the **`cds38 button→bomb`**
+bank, on Llama. On the `rbd` banks that band is **not** inert: it produces a small, extremely
+consistent **positive** shift in cell C and a small **negative** shift in cell B (−0.368 / −0.582),
+so the specificity DiD at 15–23 is **+1.426** (20+/0−, at floor) and **+0.983** (19+/1−, p = 4.0e-05)
+— *opposite in sign* to the DiD at 6–14. ⚠ **Band inertness does not transfer across banks**, and any
+future placebo must re-measure it on the bank it will be used in rather than inheriting it. ⇒ Added to
+`CLAIMS WE MUST NOT SAY`: ⛔ *"layers 15–23 are inert"* without naming the bank.
+
+✅ **What `R-035`'s lantern pass retains.** The generic-damage threat is **reduced but not removed**:
+at the same dose on the same rows a band change reduces the effect to ~1/7 of its size **and flips
+its sign**. Combined with `R-033a` (cells C and B receive an intervention identical **to the digit** —
+`demo_span` 117.5, `keys_masked` 4230, `prefill_edits` 135 360 — and diverge anyway), the exclusion now
+rests on **two** independent invariances. ⛔ Neither is the non-demonstration control `R-033` proved
+structurally impossible in these banks, and the summary continues to say so.
+
+### `R-038` — `PR-015` Part B: the dose test. ⛔ **My "weak mapping" excuse is NOT supported**
+
+`rbdn16_*` at `n_examples = 16`, 40 rows/cell, 20 domains, floor 1.907e-06. `lantern` is the positive
+control for the dose manipulation itself.
+
+| | measure | **n = 8** | **n = 16** |
+|---|---|---|---|
+| `lantern` (positive control) | cell C Δ log-odds | −7.760, 0+/20−, **1.907e-06** | **−8.385**, 0+/20−, **1.907e-06** |
+| | baseline concept-answer frac | 0.888 | **0.950** |
+| `candle` | **primary**: cell C Δ log-odds | −2.333, **6+/14−**, p = **0.115** | **−3.418**, **6+/14−**, p = **0.115** |
+| | baseline concept-answer frac | **0.400** | **0.525** |
+| | decision-level DiD *(post-hoc, `R-034`)* | −0.400, 0+/15−, 6.10e-05 | −0.475, 0+/12−, 4.88e-04 |
+
+✅ **The dose manipulation worked.** `lantern` replicates at double the demonstrations and gets
+*stronger*; its baseline installation rises 0.888 → 0.950. The n=16 banks are not broken.
+
+⛔ **`PR-015`'s "excuse supported" branch is a CONJUNCTION and it FAILS.** It required the baseline
+concept-answer to rise materially above 0.400 **and** the cell-C effect to become significant. The
+first happened (**0.400 → 0.525**, +31 % relative); the second **did not** — p = 0.115, and the sign
+split is **bit-identical**, 6+/14− at both doses. ⇒ ⛔ Per `PR-015` I may **not** report that
+`candle`'s failure was power or mapping strength.
+
+⚠ **Nor does the falsification branch obtain verbatim** — it required the baseline to *stay* ≈ 0.400,
+and it rose. This is a **third, mixed outcome**, and that is the second preregistration in two days
+whose declared branches did not partition the space (`R-035` was the first). ⚠ Worth carrying
+forward as a design lesson: branches defined on a **conjunction** leave the most likely region — one
+conjunct satisfied — unlabelled.
+
+⛔ **The magnitude grew 47 % (−2.333 → −3.418) and the consistency did not move at all.** That is the
+number that kills the excuse: more demonstrations make the effect **bigger where it acts** without
+making it act **anywhere new**. A power problem improves consistency; this did not.
+
+✅ **And that points at what is actually going on** — `R-039`.
+
+### `R-039` — ⚠ **EXPLORATORY, hypothesis-generating:** the effect is graded by how much mapping was **installed**
+
+⛔ **Post-hoc. Formed by looking at `candle`'s per-domain deltas after `R-038`.** It is written here so
+the ordering is on the record, and it is tested out-of-sample by `PR-016`, preregistered below and
+committed before the held-out numbers are computed. ⛔ It carries no headline and rescues no arm that
+failed a declared primary.
+
+**The observation that started it.** `candle`'s 6 wrong-sign domains are not resampling noise: across
+an *independent doubling of the dose* the per-domain sign is concordant **18 / 20**, and **5 of the 6**
+positive domains are the **same** domains (`hospital_supply`, `hospital_ward_store`, `hotel_service`,
+`library_stacks`, `recycling_centre`).
+
+**Sorting the domains by baseline installation — the fraction of baseline rows whose argmax answer is
+the concept — orders the effect almost perfectly:**
+
+| | domains with install ≤ 0.25 | domains with install ≥ 0.75 |
+|---|---|---|
+| `candle` **n = 8** | n = 8, mean Δ **+0.980**, 6/8 **positive** | n = 5, mean Δ **−5.599**, **0/5** positive |
+| `candle` **n = 16** | n = 7, mean Δ **−0.249**, 5/7 **positive** | n = 8, mean Δ **−6.374**, **0/8** positive |
+
+⇒ `power_substation` (install 1.000) gives Δ **−8.326** — as large as `lantern`'s whole-population
+−7.760. ⚠ **`candle`→`missile` is therefore not a weak-mechanism concept.** It is a **mixture**: the
+mechanism runs at full strength in the domains where the remapping installed, and is absent or
+reversed in the domains where it never did. ⇒ `R-035`'s preregistered sign test failed on a
+**population** property, not on the mechanism — which is a different sentence from "the mapping is
+weak", and the one the data supports.
+
+⛔ **Two confounds I can name now, before testing anything.**
+1. **Floor.** A domain at install = 0 cannot fall further, so a *null* there is mechanical. ⚠ But
+   these domains **rise** (+1.14 … +3.20 at n=8), and a floor cannot produce a rise.
+2. **Regression to the mean.** Δ is computed against the same baseline that supplies the predictor, so
+   a negative correlation is partly mechanical. ✅ `PR-016` controls this with the **layer placebo**:
+   the same statistic on the 15–23 arms, where RTM is present and the mechanism is not.
+
+## `PR-016` — PREREGISTRATION: is the causal effect **graded by installation**, out of sample?
+
+⚠ **Frozen, with `scripts/dcs_installation_gradient.py`, before a single held-out number exists.**
+`R-039` is exploratory and was formed on `candle`→`missile`. This tests its prediction on concepts
+that played no part in forming it. The analyzer is committed in the same commit as this section.
+
+**Hypothesis.** Per domain, the size of the `demo_all` knockout effect on cell C is **graded by how
+much of the remapping was installed at baseline** — measured as the fraction of baseline rows whose
+argmax answer is the concept word.
+
+**Primary statistic.** Spearman ρ(`install_d`, `Δ_d`) over domains, `Δ_d` row-paired by `prompt_id`.
+Predicted **negative**. Two-sided seeded permutation p (20 000 shuffles, seed 20260904; exact when
+n ≤ 8). Midranks, because installation is heavily tied at small rows/domain.
+
+⛔ **ρ alone is not the result, and the artifact refuses to let it be.** `Δ` is measured against the
+same baseline that supplies `install`, so part of any negative ρ is **regression to the mean**. The
+control is the `PR-015` **layer placebo**: the identical intervention on the identical rows at 15–23,
+where RTM is present and the mechanism is not (`R-037`: 13.6 % of the magnitude, opposite sign). The
+reported quantity is the **contrast** ρ<sub>KO</sub> − ρ<sub>placebo</sub>.
+
+### Pre-flight, already run, reading **only the predictor** — no arm's Δ was computed
+
+| population | domains | install mean | sd | ≤ 0.25 | ≥ 0.75 | placebo exists? |
+|---|---|---|---|---|---|---|
+| `candle`→`missile` n=8/n=16 | 20 | 0.400 / 0.525 | 0.310 | **8 / 7** | 5 / 8 | ✅ n=8 only |
+| `lantern`→`poison` n=8 | 20 | 0.887 | 0.185 | **0** | 17 | ✅ |
+| `lantern`→`poison` n=16 | 20 | 0.950 | 0.150 | **0** | 18 | ⛔ |
+| `button`→`bomb` **Qwen3-14B** | 38 | 0.805 | 0.205 | **1** | 30 | ⛔ |
+| `button`→`bomb` **Llama** | — | ⛔ **undefined** | — | — | — | — |
+
+⛔ **Three limits declared now, so none of them can become a discovery later.**
+1. **The binary split is `CANNOT ANSWER` out of sample.** The held-out banks contain **0, 0 and 1**
+   low-installation domains. The *reversal* half of `R-039` — Δ > 0 where install ≈ 0 — is
+   **untestable** here, and the script emits `CANNOT_ANSWER` rather than running it at n < 3.
+   Only the **graded** half is under test.
+2. **The Llama `button`→`bomb` headline cannot enter this test at all** — that run predates the
+   `top1_id` field, so installation is undefined on it. ⛔ Not "was not tested": cannot be, without a
+   re-generation. Recorded as a gap, not as a result.
+3. **Only `lantern` n=8 carries the RTM control.** `lantern` n=16 and Qwen have no placebo arm, and
+   ⛔ I will **not** invent an inert band for Qwen by inheriting Llama's — that is exactly the error
+   `R-037` caught. Those two are reported as **uncontrolled** ρ and cannot carry the conclusion.
+
+⇒ **The preregistered test is therefore ONE fully-controlled held-out population** (`lantern` n=8,
+20 domains, install sd 0.185) **plus two uncontrolled replications.** ⚠ That is thin, it is thin
+*before* I look, and saying so afterwards would be worthless.
+
+⛔ **Declared outcomes.**
+* **SUPPORTED** — `lantern` n=8 gives ρ < 0 at p < 0.05 **and** the contrast against its placebo is
+  clearly negative ⇒ the graded-installation reading is supported out of sample, at the stated scope
+  (high-installation range only).
+* **NOT SUPPORTED** — ρ ≥ 0, or p ≥ 0.05, or the placebo reproduces the same ρ ⇒ ⛔ `R-039` stays
+  **exploratory and unreplicated**, and the `R-035` failure keeps its recorded status of *unexplained*
+  rather than gaining an explanation. ⛔ I will not reach for the uncontrolled arms to rescue it.
+* **RANGE-LIMITED** — direction right but not significant at the declared α ⇒ reported as such and
+  attributed to the pre-flight's measured lack of low-installation domains, ⛔ not to "noise".
