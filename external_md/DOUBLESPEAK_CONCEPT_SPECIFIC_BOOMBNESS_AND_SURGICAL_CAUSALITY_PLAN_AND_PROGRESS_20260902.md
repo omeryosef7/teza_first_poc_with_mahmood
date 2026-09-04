@@ -4033,3 +4033,28 @@ exclusion and adds none of its own.
 **Design:** Llama, `query_prefill_only`, seed 20260901, `--max-new 8`, `--min-option-mass 0.05`, bf16,
 eager, both cells per job. Part A `--expect-n 160` at band 15–23; Part B `--expect-n 80` at band 6–14.
 Primary statistic unchanged from `PR-013`: per-domain paired Δ`semantic_logodds`, cell C, sign test.
+
+### `C-026` — **plots vs JSON** audit: the figure was still asserting three retracted things
+
+`reports/DCS_FIGURES.png` is the artifact most likely to be read **instead of** the report, so a stale
+claim there outlives its retraction. Three were live:
+
+1. ⛔ Panel A annotated the effect as *"sign flip: literal reading"* — `R-032` showed that is a **Qwen**
+   statement; on Llama the model mostly answers ` Neither` (67.1 %). → now *"away from the concept
+   reading (R-032: Llama mostly says 'Neither')"*.
+2. ⛔ Panel D's legend read *"refusal-neutral (qualifies)"* and its axis shaded *"±17-row **judge
+   band**"* — `C-023` measured the judge band on `refused` as **0**; the ±17 came from *attack* labels.
+   → legend now *"within ±17 tolerance (still +7..+14 refusals)"*, axis says **TOLERANCE, not a judge
+   band**, and the panel title carries *"NO control is truly refusal-neutral"*.
+3. ⛔ The scope card still gave `R-029`'s withdrawn absolute-vs-relative explanation. → replaced with
+   comparator-choice + `PR-014` bounding + the `C-024` credit block, and a new **Generality** block
+   recording `PR-013` as **MIXED 1 of 2** with `R-033`'s missing control.
+
+⚠ **The figure was regenerated and then read back as an image**, which is the only check that catches
+layout damage — this is the fourth time in the phase that reading the rendered PNG caught something a
+code diff could not. All five edits landed legibly; no panel lost data.
+
+⚠ **What this audit item is really for.** Every one of these three was corrected in the log and the
+summary **on the day it was found**, and all three still sat uncorrected in the figure. ⇒ Propagating
+a retraction to prose is **not** propagating it; the plots are a separate surface and need their own
+sweep.

@@ -99,7 +99,8 @@ def main():
     ax.set_title("A  Row dose-ladder: a STEP between K=2 and K=8, then saturation\n"
                  f"forced-choice readout · n={n} rows · {ndom} domains · cds38_button_bomb",
                  fontsize=9.6, loc="left")
-    ax.annotate("sign flip:\nliteral reading", xy=(8, demo[2]), xytext=(2.6, -0.4),
+    ax.annotate("sign flip: away from the\nconcept reading (R-032:\nLlama mostly says 'Neither')",
+                xy=(8, demo[2]), xytext=(2.15, -0.55),
                 fontsize=8.4, color="#c1272d",
                 arrowprops=dict(arrowstyle="->", color="#c1272d", lw=1.2))
     ax.legend(fontsize=8.6, loc="center left")
@@ -200,7 +201,7 @@ def main():
         ys = [v[1] for v in jd.values()]
         qual = [l.endswith("*") for l in jd]
         ax.scatter([x for x, q in zip(xs, qual) if q], [y for y, q in zip(ys, qual) if q],
-                   s=95, color="#2b6cb0", zorder=3, label="refusal-neutral (qualifies)")
+                   s=95, color="#2b6cb0", zorder=3, label="within ±17 tolerance (still +7..+14 refusals)")
         ax.scatter([x for x, q in zip(xs, qual) if not q], [y for y, q in zip(ys, qual) if not q],
                    s=95, color="#8a8a8a", marker="X", zorder=3, label="induces refusal (rejected)")
         for l, (dx, y) in jd.items():
@@ -209,9 +210,10 @@ def main():
         ax.axhline(153, color="0.45", ls=":", lw=1.4, label="baseline attacks (153)")
         ax.axhline(118, color="#c1272d", ls="--", lw=1.6, label="KO-3 attacks (118)")
         ax.axvspan(-17, 17, color="#2b6cb0", alpha=0.10)
-        ax.set_xlabel("Δ refusals vs baseline   (shaded = ±17-row judge band)")
+        ax.set_xlabel("Δ refusals vs baseline   (shaded = ±17 TOLERANCE, not a judge band;\nC-023: measured band on `refused` is 0)")
         ax.set_ylabel("attacks (malicious_at_0.5)")
         ax.set_title("D  Controls that induce refusal suppress attack, and hid the effect\n"
+                     "C-023: NO control is truly refusal-neutral (+7/+10/+14, 0-noise metric)\n"
                      f"behavioral endpoint · n=380 · 38 domains · {len(jd)} of 6 draws\n"
                      f"(only draws judged in ONE invocation; cross-batch drift is +18 rows)",
                      fontsize=9.6, loc="left")
@@ -275,8 +277,20 @@ def main():
                     "─────────────────────────────\n"
                     "• Llama: direction only (~−30 of 153); NOT\n"
                     "  significant at the domain independence unit.\n"
-                    "• Qwen: CANNOT ANSWER — 0 of 6 controls meet\n"
-                    "  refusal-neutrality at a 150 baseline.",
+                    "• Qwen: CANNOT ANSWER by comparator choice —\n"
+                    "  0 of 6 draws meet the ±17 tolerance;\n"
+                    "  C-023: that was never a judge band.\n"
+                    "  PR-014 re-analyses by BOUNDING (blocked\n"
+                    "  on API credits, C-024).\n\n"
+                    "Generality (PR-013 / R-035)\n"
+                    "─────────────────────────────\n"
+                    "• MIXED, 1 of 2: lantern→poison PASSES\n"
+                    "  (0+/20−, p=1.9e−06); candle→missile\n"
+                    "  FAILS (6+/14−, p=0.115; weak baseline\n"
+                    "  concept-answer 0.400).\n"
+                    "• R-033: dose-matched control IMPOSSIBLE\n"
+                    "  in those banks ⇒ generic damage NOT\n"
+                    "  excluded there, only inherited.",
                     fontsize=8.4, va="top", family="monospace")
 
     fig.tight_layout(rect=[0, 0.010, 1, 0.976])
