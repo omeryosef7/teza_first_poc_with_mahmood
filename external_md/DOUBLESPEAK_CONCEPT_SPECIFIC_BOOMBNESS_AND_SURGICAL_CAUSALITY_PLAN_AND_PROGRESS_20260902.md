@@ -3905,3 +3905,65 @@ comparator. ⛔ And rescoping to feasible rows is exactly what the guard forbids
 not license reinterpreting what it does support. `cm_ctrl` (848541) is being allowed to run rather
 than cancelled: if it refuses identically on a **different concept**, the infeasibility is confirmed
 structural rather than lantern-specific, for the price of 20 s.
+
+### `R-034` — a **decision-level** specificity endpoint. ⚠ **POST-HOC**, and labelled so wherever it appears
+
+`R-033` produced a contradiction worth taking seriously: on `lantern`→`poison` the log-odds DiD was
+**−1.336, 8+/12−, p = 0.503** — no specificity — while the **surface answers** were perfectly specific
+(cell C ` Poison` **87.5 % → 8.8 %**; cell B poison **80/80 → 80/80**).
+
+**The cause is margin compression, not a real failure.** Cell B's log-odds is enormous at baseline
+(**+13.5**) and falls to **+7.06** under `KO-3` while the argmax answer never changes. A DiD on
+log-odds therefore mixes *"the reading changed"* with *"an already-saturated margin shrank"*. The
+specificity claim is about the **reading**.
+
+**New endpoint** (`scripts/dcs_surface_readout.py --did-both`): per domain, the fraction of rows whose
+**argmax answer** is the concept; DiD = Δ(cell C) − Δ(cell B); exact sign test.
+
+✅ **Validated against results this phase already published, before being used to judge anything new:**
+
+| population | decision-level DiD | log-odds DiD (published) |
+|---|---|---|
+| `button`→`bomb`, Llama | **−0.889, 1+/37−, p = 2.838e-10** | −9.889, **1+/37−, p = 2.838e-10** |
+| `button`→`bomb`, Qwen | −0.776, 0+/37− (1 tie), p = 1.455e-11 | −22.198 |
+
+⇒ On the headline it reproduces the **identical sign pattern and p-value to the digit**. It is not a
+more permissive test; it is the same test asked at the decision level.
+
+⛔ **BUT IT IS POST-HOC AND THAT GOVERNS HOW IT MAY BE USED.** It was written **today**, **after**
+seeing `lantern`'s log-odds DiD fail. `PR-013`'s declared primary is the **log-odds** sign test in
+cell C, and this endpoint ⛔ **does not replace it, does not rescue any arm that failed it, and does
+not appear in a headline**. It is reported as **exploratory**, and its legitimate contribution is
+**explaining** an anomaly — an explanation that happens to be checkable against the published
+`bomb` numbers, which is why it is worth recording at all rather than discarding.
+
+### `R-035` — `PR-013` verdict: ⚠ **MIXED**, which is the branch I declared I would not spin
+
+Per the **declared primary** (per-domain paired Δ`semantic_logodds`, cell C, two-sided sign test,
+n = 20 domains, floor 1.907e-06):
+
+| concept | cell C Δ | domains | **p** | primary verdict |
+|---|---|---|---|---|
+| `lantern`→`poison` | **−7.760** | **0+/20−** | **1.907e-06** (at floor) | ✅ **PASSES** |
+| `candle`→`missile` | −2.333 | 6+/14− | **0.115** | ⛔ **FAILS** |
+
+⛔ **`PR-013`'s third branch obtains verbatim: *"Mixed — reported as mixed; the replicating concept
+does NOT become the headline."*** I am held to that.
+
+**What the failure appears to be, recorded as observation not defence.** `candle`→`missile`'s
+remapping is **weak at baseline**: the concept-answer fraction in cell C is only **0.400**, against
+**0.887** (lantern), **0.908** (button/Llama) and **0.805** (button/Qwen). ⚠ The model only adopts the
+codeword→concept mapping in 40 % of rows **before any intervention** — so there is far less to remove,
+and the sign test is correspondingly noisy. ⇒ This looks like a **weak mapping**, not a contradicted
+mechanism. ⛔ But "looks like" is not a result, and the preregistered test **failed**.
+
+⚠ **A second observation that cuts against me.** In `candle`, cell **B** moved *more* than cell C
+(−3.045, 1+/19−, p = 4.005e-05 vs −2.333, p = 0.115), and the log-odds DiD is **+0.712, 10+/10−,
+p = 1.000** — a perfect null. ⛔ With `R-033`'s control **structurally unavailable**, generic damage
+**cannot be excluded** on this concept. That is the honest ceiling on what this run supports.
+
+⇒ **Standing claim after `PR-013`:** the causal path is established on **`bomb`** (2 codewords ×
+2 models, controls inert) and **replicates on `poison`** by the declared primary; it **did not
+replicate on `missile`**, where the mapping is weak at baseline and no control exists. ⛔ The phase
+may **not** say "generalises across harmful concepts" — it may say **"replicated on one of two new
+concepts, with the failure associated with a weak baseline mapping."**

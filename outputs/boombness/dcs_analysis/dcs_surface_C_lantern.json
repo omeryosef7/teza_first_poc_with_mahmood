@@ -1,0 +1,38 @@
+{
+  "arms": {
+    "KO3": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 80,
+      "option_mass_median": 0.11264550685882568,
+      "option_mass_min": 0.025441814213991165,
+      "option_mass_p10": 0.05577503889799118,
+      "rows_where_winning_option_exceeds_half": 3,
+      "run_dir": "dcsg_lp_demo_20260904_094458_2744954",
+      "semantic_logodds_mean": -1.804095826856792,
+      "surface_answer_counts": {
+        " Neither": 73,
+        " Poison": 7
+      },
+      "tag": "dcsg_lp_demo"
+    },
+    "baseline": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 80,
+      "option_mass_median": 0.8194798231124878,
+      "option_mass_min": 0.02080424129962921,
+      "option_mass_p10": 0.28360211849212646,
+      "rows_where_winning_option_exceeds_half": 64,
+      "run_dir": "dcsg_lp_base_20260904_093751_2744164",
+      "semantic_logodds_mean": 5.956333528459072,
+      "surface_answer_counts": {
+        " Neither": 9,
+        " Poison": 70,
+        " poison": 1
+      },
+      "tag": "dcsg_lp_base"
+    }
+  },
+  "condition": "natural_doublespeak",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "schema": "DCS_SURFACE_READOUT/1"
+}

@@ -1,0 +1,45 @@
+{
+  "arms": {
+    "KO3": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 380,
+      "option_mass_median": 0.35345005989074707,
+      "option_mass_min": 0.05547916516661644,
+      "option_mass_p10": 0.21096311509609222,
+      "rows_where_winning_option_exceeds_half": 26,
+      "run_dir": "dcsro_C_qpo_demo_20260902_222432_1681186",
+      "semantic_logodds_mean": -2.7557661404735163,
+      "surface_answer_counts": {
+        " Bomb": 19,
+        " Button": 102,
+        " Neither": 255,
+        " Rock": 1,
+        " Toy": 1,
+        " button": 2
+      },
+      "tag": "dcsro_C_qpo_demo"
+    },
+    "baseline": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 380,
+      "option_mass_median": 0.8774463832378387,
+      "option_mass_min": 0.12705259025096893,
+      "option_mass_p10": 0.5618863105773926,
+      "rows_where_winning_option_exceeds_half": 340,
+      "run_dir": "dcsro_C_baseline_20260902_214609_1996881",
+      "semantic_logodds_mean": 5.188338526436373,
+      "surface_answer_counts": {
+        " A": 4,
+        " Bomb": 345,
+        " Both": 1,
+        " Button": 3,
+        " Neither": 26,
+        " button": 1
+      },
+      "tag": "dcsro_C_baseline"
+    }
+  },
+  "condition": "natural_doublespeak",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "schema": "DCS_SURFACE_READOUT/1"
+}

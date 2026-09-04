@@ -102,14 +102,18 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", required=True)
     ap.add_argument("--knockout", required=True)
-    ap.add_argument("--control", required=True)
+    ap.add_argument("--control", default="",
+                    help="omit ONLY when the dose-matched control is structurally "
+                         "infeasible in this bank (see DCS-R-033); the secondary "
+                         "endpoint is then recorded as UNAVAILABLE, never as passing")
     ap.add_argument("--concept", required=True, help="label only, e.g. lantern_poison")
     ap.add_argument("--expect-per-cell", type=int, default=80)
     ap.add_argument("--tag", default="dcs_generality")
     ap.add_argument("--out", default=os.path.join(ROOT, "outputs/boombness/dcs_analysis"))
     a = ap.parse_args()
 
-    base, ko, ctrl = load(a.baseline), load(a.knockout), load(a.control)
+    base, ko = load(a.baseline), load(a.knockout)
+    ctrl = load(a.control) if a.control else None
     out = {"schema": SCHEMA, "concept": a.concept, "alpha": ALPHA,
            "arms": {"baseline": a.baseline, "knockout": a.knockout, "control": a.control},
            "cells": {}}
@@ -117,14 +121,26 @@ def main() -> None:
     dom_sets = {}
     for cell in ("C", "B"):
         ko_d, n = paired_domain_deltas(ko, base, cell, a.expect_per_cell)
-        ct_d, _ = paired_domain_deltas(ctrl, base, cell, a.expect_per_cell)
-        if set(ko_d) != set(ct_d):
-            sys.exit(f"REFUSING cell {cell}: KO and control cover different domains")
+        entry = {"condition": CELLS[cell], "n_rows": n,
+                 "knockout": sign_report(ko_d, f"{cell}: KO - baseline"),
+                 "_ko_deltas": ko_d}
+        if ctrl is not None:
+            ct_d, _ = paired_domain_deltas(ctrl, base, cell, a.expect_per_cell)
+            if set(ko_d) != set(ct_d):
+                sys.exit(f"REFUSING cell {cell}: KO and control cover different domains")
+            entry["control"] = sign_report(ct_d, f"{cell}: control - baseline")
+        else:
+            entry["control"] = {
+                "STATUS": "UNAVAILABLE_BY_CONSTRUCTION",
+                "why": ("the strict dose-matched control cannot be built in this bank: "
+                        "control_draw_match_ratio is 0.0 on every row because the prompt is "
+                        "~85% demonstration and there is no preamble to draw non-demo keys from "
+                        "(DCS-R-033). This is NOT a passing control and must never be reported "
+                        "as one; generic-damage exclusion for this concept is INHERITED from the "
+                        "bomb banks, not re-verified here."),
+            }
         dom_sets[cell] = set(ko_d)
-        out["cells"][cell] = {"condition": CELLS[cell], "n_rows": n,
-                              "knockout": sign_report(ko_d, f"{cell}: KO - baseline"),
-                              "control": sign_report(ct_d, f"{cell}: control - baseline"),
-                              "_ko_deltas": ko_d, "_ctrl_deltas": ct_d}
+        out["cells"][cell] = entry
 
     if dom_sets["C"] != dom_sets["B"]:
         sys.exit("REFUSING: cells C and B cover different domain sets; the DiD would not be paired")
@@ -137,7 +153,7 @@ def main() -> None:
         "strictly weaker than the within-cell row-paired tests above")
 
     for cell in ("C", "B"):
-        out["cells"][cell].pop("_ko_deltas"); out["cells"][cell].pop("_ctrl_deltas")
+        out["cells"][cell].pop("_ko_deltas")
 
     os.makedirs(a.out, exist_ok=True)
     dst = os.path.join(a.out, f"{a.tag}_{a.concept}.json")
@@ -148,6 +164,9 @@ def main() -> None:
     for cell in ("C", "B"):
         for arm in ("knockout", "control"):
             r = out["cells"][cell][arm]
+            if "STATUS" in r:
+                print(f"  {cell}: control                          {r['STATUS']}")
+                continue
             print(f"  {r['label']:34s} mean={r['mean_delta']:+8.3f}  "
                   f"{r['pos']}+/{r['neg']}-  p={r['sign_p']:.3e}  floor={r['attainable_p_floor']:.2e}")
     r = out["specificity_did"]

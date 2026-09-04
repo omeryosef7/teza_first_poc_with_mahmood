@@ -1,0 +1,37 @@
+{
+  "NOTE": "decision-level specificity: DiD on the per-domain fraction of rows whose ARGMAX answer is the concept. Immune to margin compression in a saturated cell, which DCS-R-033 showed can sink a log-odds DiD while the answers are perfectly specific.",
+  "arms": {
+    "KO3": "dcsro_C_qpo_demo",
+    "KO3B": "dcsro_B_qpo_demo",
+    "baseline": "dcsro_C_baseline",
+    "baselineB": "dcsro_B_baseline"
+  },
+  "attainable_p_floor": 7.275957614183426e-12,
+  "cells": {
+    "B": {
+      "baseline_concept_frac": 0.9210526315789473,
+      "ko_concept_frac": 0.9526315789473684,
+      "n_domains": 38,
+      "n_rows": 380
+    },
+    "C": {
+      "baseline_concept_frac": 0.9078947368421053,
+      "ko_concept_frac": 0.05,
+      "n_domains": 38,
+      "n_rows": 380
+    }
+  },
+  "cells_from_separate_runs": true,
+  "concept_token": "bomb",
+  "did_mean": -0.8894736842105263,
+  "k_informative": 38,
+  "mean_delta_concept_frac": {
+    "B": 0.03157894736842105,
+    "C": -0.8578947368421053
+  },
+  "neg": 37,
+  "pos": 1,
+  "schema": "DCS_SURFACE_DID/1",
+  "sign_p": 2.837623469531536e-10,
+  "ties": 0
+}

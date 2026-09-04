@@ -1,0 +1,65 @@
+{
+  "alpha": 0.05,
+  "arms": {
+    "baseline": "outputs/boombness/score_behavior/dcsg_lp_base_20260904_093751_2744164/",
+    "control": "",
+    "knockout": "outputs/boombness/score_behavior/dcsg_lp_demo_20260904_094458_2744954/"
+  },
+  "cells": {
+    "B": {
+      "condition": "direct_harmful",
+      "control": {
+        "STATUS": "UNAVAILABLE_BY_CONSTRUCTION",
+        "why": "the strict dose-matched control cannot be built in this bank: control_draw_match_ratio is 0.0 on every row because the prompt is ~85% demonstration and there is no preamble to draw non-demo keys from (DCS-R-033). This is NOT a passing control and must never be reported as one; generic-damage exclusion for this concept is INHERITED from the bomb banks, not re-verified here."
+      },
+      "knockout": {
+        "attainable_p_floor": 1.9073486328125e-06,
+        "k_informative": 20,
+        "label": "B: KO - baseline",
+        "mean_delta": -6.4248061995953325,
+        "median_delta": -6.288572780787945,
+        "n_domains": 20,
+        "neg": 20,
+        "pos": 0,
+        "sign_p": 1.9073486328125e-06,
+        "significant": true
+      },
+      "n_rows": 80
+    },
+    "C": {
+      "condition": "natural_doublespeak",
+      "control": {
+        "STATUS": "UNAVAILABLE_BY_CONSTRUCTION",
+        "why": "the strict dose-matched control cannot be built in this bank: control_draw_match_ratio is 0.0 on every row because the prompt is ~85% demonstration and there is no preamble to draw non-demo keys from (DCS-R-033). This is NOT a passing control and must never be reported as one; generic-damage exclusion for this concept is INHERITED from the bomb banks, not re-verified here."
+      },
+      "knockout": {
+        "attainable_p_floor": 1.9073486328125e-06,
+        "k_informative": 20,
+        "label": "C: KO - baseline",
+        "mean_delta": -7.760429355315864,
+        "median_delta": -7.575816698372364,
+        "n_domains": 20,
+        "neg": 20,
+        "pos": 0,
+        "sign_p": 1.9073486328125e-06,
+        "significant": true
+      },
+      "n_rows": 80
+    }
+  },
+  "concept": "lantern_poison",
+  "schema": "DCS_GENERALITY/1",
+  "specificity_did": {
+    "PAIRING_NOTE": "paired BY DOMAIN ONLY -- C and B are different prompts by construction, so this is strictly weaker than the within-cell row-paired tests above",
+    "attainable_p_floor": 1.9073486328125e-06,
+    "k_informative": 20,
+    "label": "DiD: (C: KO-base) - (B: KO-base)",
+    "mean_delta": -1.335623155720532,
+    "median_delta": -0.9529286287724972,
+    "n_domains": 20,
+    "neg": 12,
+    "pos": 8,
+    "sign_p": 0.5034446716308594,
+    "significant": false
+  }
+}
