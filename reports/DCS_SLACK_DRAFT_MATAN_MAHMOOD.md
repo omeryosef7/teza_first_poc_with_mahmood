@@ -1,78 +1,82 @@
 # Slack draft — Matan & Mahmood (§47)
 
 ⛔ **DRAFT ONLY. NOT SENT.** No Slack integration is configured and none was used. Send only on
-explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and both layer sweeps.
+explicit instruction from Omer. Rewritten **2026-09-04 evening**, after the generality run closed,
+the Qwen behavioural analysis completed, and the installation result was audited three times and
+narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not be sent.
 
 ---
 
 ## Message 1 — the update
 
-> Following up on the Sep 2 discussion. Headline: **the mechanism you asked about is real, causal and
-> replicates across models — and it is not the thing the attack runs on.** Full log is append-only
-> with every retraction kept in place; one figure summarises it.
+> Following up on the Sep 2 discussion. Headline unchanged: **the mechanism you asked about is real,
+> causal and replicates across models — and it is not the thing the attack runs on.** What's new is
+> that we spent today attacking our own results, and two of them got smaller. Full log is
+> append-only with every retraction kept in place; one figure summarises it.
 >
-> **What we changed after the discussion.** Dropped `d_surface` as the object of study and went back
-> to the 2×2, with your `C − A` (same codeword, only the demonstrations change) as the primary
-> candidate. Everything preregistered before any forward pass.
+> **Did concept-specific Boombness work? No — and that's still the first result.** On
+> `knife`/`gun`/`club` three of four comparisons go the *other* way, all inside the measured noise
+> band. New this week, the same point **positively**: run the identical paradigm with **benign**
+> demonstrations ("a large crate of *button* puree") and the model installs a **benign** remapping —
+> it answers ` Mushroom` on 22 of 380 rows and ` Bomb` on 3. ⇒ The paradigm installs **whatever the
+> demonstrations say**. Nothing about it is specific to harm.
 >
-> **Did concept-specific Boombness work? No — and that's the first result.** Running the identical
-> geometry on `knife`/`gun`/`club` banks, three of four comparisons go the *other* way, all inside
-> the measured noise band. So it should not be called "Boombness": it is a property of the
-> demonstration paradigm, not of `bomb`. It also **does not accumulate** — roughly one demonstration
-> does the work, and the effect is flat in `n_examples`.
+> **The causal path is the solid result.** Blocking the query span from attending to the
+> demonstrations takes the forced-choice reading of `button` from **+5.19 → −2.76** log-odds against
+> a dose-matched control that does nothing; it **replicates on `basket`** and **on Qwen3-14B at ~3×**
+> the magnitude, and it is **remapping-specific**. ⚠ Same caveat as before, on the figure itself: all
+> three share the 1+/37− sign pattern, so those identical p-values are **one pattern replicated, not
+> three independent tests**. We also now have the missing reference cell: with the codeword present
+> but **no** remapping installed, the reading sits at **−5.50**, so the demonstrations move it
+> **+10.7 log-odds**. That's the first measurement of *installation* rather than its removal.
 >
-> **What is real is the causal path.** Blocking the query span from attending to the demonstrations
-> takes the model's own forced-choice reading of `button` from **+5.19 to −2.76** log-odds — a sign
-> flip **away from the harmful concept** — against a dose-matched control that does nothing. It
-> **replicates on `basket`** and **on Qwen3-14B at ~3× the magnitude** (there `frac>0` collapses
-> 0.813 → 0.021). And it is **remapping-specific**: the same cut barely moves the cell where the word
-> already *is* `bomb`. DiD −9.9 / −9.4 / −22.2. ⚠ One caveat we put on the figure itself: all three
-> share the same 1+/37− sign pattern, so those identical p-values are **one pattern replicated, not
-> three independent tests**.
+> **Generality across harmful concepts: MIXED, 1 of 2 — and we're reporting it as mixed.**
+> `lantern`→`poison` **passes** the preregistered test (0+/20− domains, p at the attainable floor);
+> `candle`→`missile` **fails** (6+/14−, p = 0.115). ⛔ Neither bank can carry a dose-matched control
+> — they have no preamble, so the prompt is ~85 % demonstration and the control has nothing to draw
+> from. So generic attention damage is **excluded on `bomb` and inherited, not re-verified, there.**
 >
-> **What the model actually says** (we decoded it this week rather than trusting the log-odds).
-> The concept answer is destroyed on both models — Llama ` Bomb` **345→19** of 380, Qwen ` bomb`
-> **306→8**. ⚠ But the *replacement* differs: Qwen cleanly restores the literal codeword (` button`
-> in **97.9 %** of rows, with the two options still holding ~all the probability), while Llama mostly
-> answers ` Neither` (**67.1 %**; only **26.8 %** say ` Button`) and its option mass collapses
-> 0.88→0.35. So "the codeword reverts to its literal meaning" is a **Qwen** statement; on Llama the
-> honest one is "the word stops resolving to anything." ✅ Specificity survives at the surface on both:
-> the cell where the word already *is* `bomb` barely moves.
+> **The result we spent the day on, and how it shrank.** We found that the knockout's effect is
+> bigger in domains where more of the remapping was installed to begin with. Initially that looked
+> like a clean dose-response. ⚠ **It isn't, and we broke it ourselves.** Three audits later:
+> * ✅ **What survives:** the effect is **larger in fully-installed domains than in
+>   partially-installed ones** — categorical, robust to leave-one-out and to three different ways of
+>   measuring "installed", across **4 settings and 2 models**.
+> * ⛔ **What doesn't:** there is **no continuous gradient within the partially-installed range**. We
+>   tested it three times (13, 30 and **33** domains) and it fails every time — the last on a bank we
+>   **built specifically** to supply that range.
+> * ✅ **And we can say why**, which is the part worth reading: on that new bank the *control* arm's
+>   gradient moves **−0.09 → −0.34** purely by restricting to the varying domains, **with no knockout
+>   applied at all.** That's regression to the mean, shown inside a single arm. Within that range both
+>   arms are measuring RTM; across the full range they diverge because the knockout does something
+>   the control doesn't.
 >
-> **Where in the network.** We ran the layer sweep we'd been missing. At equal dose the effect is
-> **distributed across layers 0–14, peaks at 10–14, and is absent above 14**. The L6–14 band we
-> inherited from the last sprint contains the peak but is **not** the mechanism's boundary — layers
-> 0–5 contribute substantially too.
+> **Qwen behavioural — answered, and the answer is "confound-limited".** All 8 arms judged in one
+> invocation. Face value says `KO-3` has *more* attacks than every control (+23…+45, all
+> significant); correcting for the fact that every control induces ~50 extra refusals says *fewer*
+> (−11…−32). **All six brackets straddle zero.** ⛔ So we cannot sign the effect — and note that is
+> **not** "Qwen shows no behavioural effect", which remains unsupported. ✅ One judge-free fact does
+> survive intact and I think it's the interesting one: `KO-3` removes **all 150** refusals and buys
+> only **+21** attacks. **86 % of removed refusals do not become attacks.**
 >
-> **Which token?** Neither the final `button` nor the readout row matters on its own (both null at
-> the same dose). A **threshold of ~3–8 query rows** does, after which it saturates. So no single
-> position carries the mapping.
+> **Two methods notes you'll want if you use the same judge.** (1) `temperature 0` is **not
+> deterministic** on the OpenAI endpoint — we caught it because a refactor made us re-run a published
+> result and it came back different. (2) We measured the judge's own noise floor on the attack rubric:
+> **18 of 380 labels** flip on a byte-identical re-judge (net +6), while the **refusal** label flips
+> **0 of 380**. Small enough that it doesn't explain the Qwen result.
 >
-> **The behavioural link is where we're stuck, and I want to be straight about it.** On Llama, cutting
-> the path reduces attack **in direction** (≈ −30 of 153, consistent across 3 near-neutral controls
-> × 2 seeds × 4 judgings) — but it **does not reach significance at the domain independence unit**,
-> and 38 domains is **all that exists** in our pools, so no amount of further judging fixes it. On
-> Qwen we **cannot answer by comparator selection**: 0 of 6 draws meet our refusal-neutrality
-> tolerance. ⚠ And checking that tolerance this week showed it was never justified — the ±17 came
-> from *attack* labels, while the refusal metric is a deterministic string matcher whose measured
-> judge band is **0**. So it is a tolerance for residual confound, not a noise band, on either model.
-> We are therefore re-analysing Qwen by **bounding** the confound rather than selecting a clean
-> control. That is a limitation of our criterion, **not** evidence that Qwen shows no effect; we
-> never computed an attack contrast there.
+> **One decision I'd like your view on** (the other one from last time is now closed — we built the
+> low-dose bank ourselves and it settled the question). **New demonstration pools.** Still the only
+> way to certify the behavioural effect at our own independence unit: 38 domains is **all that
+> exists** in our pools, so no amount of further judging fixes it. Cost is **GPU time and a design
+> decision**, not money — judging is ~**$0.08 per 380-row arm**. The real question is whether new
+> domains should extend to a **second harmful concept** (generality + power together) or just deepen
+> `bomb` (power only). Given `candle`→`missile` failed, I lean toward generality — but that's exactly
+> what I'd like to argue about.
 >
-> **One thing that replicates everywhere:** refusal. Llama 42 → 0, Qwen **150 → 0** — and that is the
-> same 150 the earlier sprint removed with a *different* scope. Two models, four scopes.
->
-> **Two decisions I'd like your view on.**
-> 1. **New demonstration pools.** The only way to certify the behavioural effect at our own
->    independence unit. The cost is **GPU queue time and a design decision**, not money — judging is
->    `gpt-4o-mini` at roughly **$0.08 per 380-row arm**, so even a 4x expansion is tens of dollars.
->    The real question is whether new domains should extend to a **second harmful concept** (buying
->    generality and power together) or just deepen `bomb` (power only). Worth it?
-> 2. **Positioning.** The representational half **replicates Yona et al., ACL 2026** — they already
->    show the convergence with logit lens and Patchscopes, and their Appendix D anticipates the
->    codeword-generality point. Ours that is new is the **causal** half: they perform no internal
->    intervention. Frame as a causal follow-up to them, or hold?
+> **Positioning, unchanged.** The representational half **replicates Yona et al., ACL 2026**; ours
+> that's new is the **causal** half — they perform no internal intervention. Frame as a causal
+> follow-up, or hold?
 
 ## Message 2 — scheduling
 
@@ -85,14 +89,21 @@ explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and bot
 
 * Every number is in `reports/DOUBLESPEAK_NEXT_PHASE_SUMMARY.md` with its artifact path; the figure
   is `reports/DCS_FIGURES.png` and carries its own scope card.
-* ⚠ The message leads with the **negative** and states the behavioural limitation plainly. If you'd
-  rather open with the cross-model replication, that's a presentation choice, not a factual one.
-* ⛔ Do not let *"≈ −30 of 153"* travel without the sentence after it — alone it reads as an
-  established behavioural effect, which is exactly what it is **not**.
+* ⚠ The message leads with the **negative** and states both live limitations plainly. Opening with
+  the cross-model replication instead is a presentation choice, not a factual one.
+* ⛔ **Do not let the installation result travel as a "dose-response" or a "gradient."** It is
+  **categorical**. The continuous version was tested three times, including on a bank built to
+  provide it, and is explained by regression to the mean. ⚠ An earlier version of this draft would
+  have quoted a contrast of −0.907; that number is **population-specific and inflated** and must not
+  be sent.
+* ⛔ Do not let *"≈ −30 of 153"* (Llama attack) travel without the sentence after it.
 * ⛔ Do not let the three DiD p-values travel as three independent results.
-* Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families.** That is 38
-  *contexts* for a single mapping, not 38 mappings.
-* If asked "what would change your mind": new pools (for the behavioural claim), a second harmful
-  concept (for generality; **now running** — `lantern`→`poison` and `candle`→`missile`), and for Qwen
-  a bounded re-analysis rather than the relative band we previously proposed (that proposal is
-  withdrawn — see the refusal-metric note above).
+* ⛔ Do not let *"86 % of removed refusals do not become attacks"* be read as an attack **contrast** —
+  it is a baseline-vs-`KO-3` count inside one judging invocation, which is precisely why it survives
+  the confound that kills the contrast.
+* Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families × 4 doses.** That is
+  38 *contexts* for a single mapping, not 38 mappings.
+* If asked "what would change your mind": **new pools** (the behavioural claim) and **a second
+  harmful concept at adequate power** (generality — the one we ran was mixed). ⚠ The low-dose
+  question is **closed**: we built the bank, both pre-registered gates passed, and the continuous
+  gradient still failed. That one is settled, not pending.

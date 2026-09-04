@@ -5849,3 +5849,33 @@ calibration as **0.0275 ⇒ "CONSERVATIVE"**, and I wrote: *"so `R-041`'s p = 2.
 `alpha ± 3·sqrt(alpha(1−alpha)/n)` — so it self-adjusts and cannot silently mis-flag at a different
 draw count. Both suites re-run: **PASS**, and the contrast test's 0.0275 now correctly reads **OK**
 rather than "conservative".
+
+### `DCS-036` — the §47 Slack draft was **19 result-entries stale**, and it is the surface that leaves the repo
+
+`reports/DCS_SLACK_DRAFT_MATAN_MAHMOOD.md` was last rewritten at **09:49** today and mentions **none**
+of `R-037 … R-055`. ⚠ Every other surface got a propagation pass this session — the log, the summary,
+the figure, memory — and the one artifact that would be **sent to other people** did not.
+
+⛔ **Two of its statements were not merely incomplete but WRONG by this evening:**
+1. *"a second harmful concept … **now running**"* — it **closed** as `R-035`: **MIXED, 1 of 2**.
+2. *"We are therefore re-analysing Qwen by **bounding**"* — that **completed** as `R-048`:
+   **`CONFOUND-LIMITED`**, with all six brackets straddling zero.
+⇒ A collaborator reading it would have been told two open questions were open that are now answered.
+
+✅ **Rewritten for the settled state.** Added: the benign-remapping result (`R-050`) as the *positive*
+form of `R-002`; the +10.68 installation swing; `R-035`'s mixed verdict **with** the structural
+reason no control exists there; `R-048` **with** the 86 % refusal/attack fact that survives it; the
+judge-nondeterminism methods notes (`R-046`, `R-049`) as something they'd want if they use the same
+judge; and the installation result **in its categorical form with the RTM explanation**.
+
+⛔ **The riskiest sentence in the phase is now an explicit do-not-send.** An earlier version of this
+draft would have quoted the contrast as **−0.907**. That number is population-specific and inflated
+(`R-051`), and it would have gone to collaborators as *the* effect size. The notes section names it
+and forbids it. ⚠ **This is `C-026`'s lesson at the surface where it costs most**: a retracted claim
+in a figure misleads a reader; one in a sent message misleads a colleague who then repeats it.
+
+✅ **Guarded rather than eyeballed:** a stale-claim sweep over the file must return **zero** hits for
+`now running` / `being re-analysed` / `−0.907`. It returns **1**, and a positional check confirms the
+single hit is inside the **Notes for Omer** block — i.e. the deliberate prohibition, not a live claim.
+
+⛔ **Still NOT SENT**, and no Slack integration exists or was used.
