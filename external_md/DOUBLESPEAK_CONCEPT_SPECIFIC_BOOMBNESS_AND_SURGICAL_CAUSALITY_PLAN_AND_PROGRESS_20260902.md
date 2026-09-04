@@ -4921,3 +4921,85 @@ tolerance applied to *paraphrase* sensitivity instead of *order* sensitivity.
 * **Primary, unchanged:** Spearman ρ(plausibility, installation), 38 domains, seeded permutation p,
   predicted **positive**, α = 0.05, one look. The `PR-016`-style range limit stands: installation is
   **1.00 in 25 of 38** domains, so a null is **weak evidence** and is reported as range-limited.
+
+### `R-046` — ⛔ **`temperature = 0` is NOT deterministic on this endpoint**, and my own regression check found it
+
+`run_plausibility.sh` re-ran `PR-019`'s **original** batched instrument before running `PR-019a`,
+purely as a refactor guard: the per-item change moved that loop into `_batched`, and `R-045` is a
+published result, so a refactor that silently changed it would be invisible.
+
+**Same seed, same three shuffled orders (verified equal), same model, same rubric, `temperature 0`:**
+
+| | run 1 (`R-045`) | run 2 (regression) |
+|---|---|---|
+| domains whose 3-pass rating vector changed | — | **1 of 38** (`recycling_centre` `[3,2,2]` → `[3,2,1]`) |
+| domains over the spread gate | **5** | **6** |
+| verdict | UNRELIABLE | UNRELIABLE |
+
+✅ **`R-045`'s VERDICT is robust; `R-045`'s COUNT is not.** Both runs exceed the gate of 4, so
+`PR-019` remains `CANNOT ANSWER` on either draw. ⛔ But the number I quoted — *"missed by exactly
+one domain"* — is itself a **random variable**, and a single flipped rating moved it.
+
+⚠ **This retroactively vindicates refusing to move the threshold from 4 to 5.** I wrote in `R-045`
+that a gate of 5 would have passed. Two hours later the same instrument produced **6**. ⇒ Had I
+relaxed the gate to match the observed count, the *next* run would have failed it anyway — the
+count was never a property of the instrument, only of a draw from it.
+
+⚠ **A phase-wide implication, stated as a candidate and not a conclusion.** `C-016a` found an
+18-attack drift between two judging sessions on **byte-identical** completions and attributed it to
+cross-session variation. ⛔ `R-046` shows the endpoint is nondeterministic at `temperature 0`
+*within* a configuration, which is a simpler partial explanation for **some** of that drift. ⚠ It is
+**not** a retraction of `C-016a` — the magnitudes are not comparable (1 flip in 114 ratings here vs
+18 labels in 380 rows there) and no one has measured judge-call nondeterminism on the attack rubric.
+⇒ Recorded as **worth measuring**, not as answered.
+
+### `C-031` — ⚠ `PR-019a`'s paraphrase is **non-functional** for per-item use, and the strict parser is why we know
+
+`PR-019a` crashed in pass 1: `REFUSING per-item pass 1: 'game_manual' unrated`. Reproduced directly:
+
+| rubric | single-item reply |
+|---|---|
+| `RUBRIC` (A) | `'game_manual\t1'` ✅ |
+| `RUBRIC_B` | `'office\t1\nconstruction_site\t3\nmilitary_base\t5\nairport\t4\nschool\t2\n…'` ⛔ |
+
+⛔ **`RUBRIC_B` ignores the item it was given and invents its own list of ten settings.** Its wording
+(*"score every place of work"*, *"one line per place of work, in the order listed"*) reads as a
+request to enumerate workplaces when only one is supplied; `RUBRIC`'s (*"Rate each setting … in the
+order given"*) does not.
+
+✅ **The strict parser refused, and a lenient one would have been catastrophic here.** The fallback I
+was about to write — *"in per-item mode, if the reply contains exactly one integer 1–5, use it"* —
+would have taken **`office`'s** rating of **1** and recorded it as **`game_manual`'s**, for every
+domain, silently. ⇒ ⛔ A parser that guesses is worse than a crash, and this is the concrete case.
+⚠ Same family as `feedback_matcher_scope_bug_class`: leniency in a matcher manufactures data.
+
+### `R-047` — ⛔ **`PR-019a` STOPS. `CANNOT ANSWER` on this instrument family, as declared**
+
+`PR-019a` bound me in advance: *"If `PR-019a` also fails its gate, the question is `CANNOT ANSWER`
+on this instrument family and I stop. ⚠ A third framing would be shopping and is ruled out **now**,
+not later."*
+
+⚠ **Strictly, it did not fail its gate — it never reached the gate**, because `RUBRIC_B` does not
+answer the question at all (`C-031`). That is a different failure condition from the one I wrote,
+and it is exactly the kind of gap through which a third attempt gets justified. ⛔ **I am reading it
+as the stop condition**, and recording the repair I could have argued for so the choice is visible:
+
+> `R-046` falsified the premise that made a paraphrase necessary. I introduced `RUBRIC_B` because
+> repeating an identical prompt at `temperature 0` would be a gate that cannot fail — and `R-046`
+> proves such repeats **do** vary. So "per-item, `RUBRIC` only, three repeats" is a defensible
+> `PR-019b` that needs no new framing at all.
+
+⛔ **I am not running it.** Repeat-spread is a **laxer** gate than paraphrase-spread — identical
+prompts vary less than reworded ones — so adopting it after two failures is choosing the easiest
+remaining test of a hypothesis I want to be true. ⚠ The argument for it is genuine; that is what
+makes it dangerous.
+
+⇒ **Standing position.** The plausibility hypothesis for `R-044`'s pattern is **untested**, and
+⛔ the domain list may not be narrated as if it were explained. ✅ `R-044`'s **negative** stands
+independently and is unaffected: installation is **not** a prompt-length or dose artifact
+(ρ = −0.000, p = 0.9996).
+
+⇒ ⚠ **What would actually answer it** — and it is not an LLM rater: a plausibility measure with an
+*external* ground truth (human ratings, or corpus co-occurrence of the concept with each domain's
+vocabulary). That is a new instrument, a new preregistration, and a decision for Omer, not a repair
+of this one.
