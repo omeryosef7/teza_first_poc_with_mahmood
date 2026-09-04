@@ -4058,3 +4058,36 @@ code diff could not. All five edits landed legibly; no panel lost data.
 summary **on the day it was found**, and all three still sat uncorrected in the figure. ⇒ Propagating
 a retraction to prose is **not** propagating it; the plots are a separate surface and need their own
 sweep.
+
+### `R-033a` — the control infeasibility in **tokens**, and a dose fact that strengthens `R-035`
+
+The **token-positions** review item, run on the new banks for the first time.
+
+⚠ **`R-033` explained the infeasibility in characters (84.7 % demonstration). That is the wrong
+unit** — the control draws **keys**, i.e. tokens. Recomputed from the runs themselves:
+
+| population | demo tokens | seq tokens | non-demo available | max attainable `match_ratio` | |
+|---|---|---|---|---|---|
+| `button`→`bomb`, n=4 | 58.0 | 234.0 | **176.0** | **3.03×** | ✅ feasible, 3× headroom |
+| `lantern`→`poison`, n=8 | 117.5 | 180.5 | **63.0** | **0.54** | ⛔ impossible |
+| `candle`→`missile`, n=8 | 113.5 | 176.5 | **63.0** | **0.56** | ⛔ impossible |
+
+⇒ The rbd banks have **roughly half** the non-demonstration tokens the control needs; cds38 has
+**three times** more than it needs. ⚠ Note the non-demo pool is **63 tokens in both** rbd banks while
+the demand differs — the shortfall is driven by the demonstration block **growing** (58 → ~115
+tokens at n=8), not by the context shrinking. ⇒ ⛔ A dose-matched control here would require either a
+preamble or n=4, and **neither exists in these banks**.
+
+✅ **A dose fact that materially strengthens `R-035`'s specificity reading.** Cells C and B in the
+same run receive an **identical** intervention — `demo_span` **117.5**, `query_span` **32.0**,
+`seq_len` **180.5**, `keys_masked` **4230**, `prefill_edits` **135 360**, medians equal **to the digit**
+across both cells (candle likewise: 113.5 / 32.0 / 176.5 / 4086 / 130 752). ⇒ The C-vs-B contrast is
+**not** confounded by intervention size: same rows-cut, same keys-masked, same layers — different
+outcome. That is the cleanest form of the specificity argument available in this run, and it holds
+**despite** the missing non-demonstration control, because it varies the *target's role* while holding
+the *dose* exactly fixed.
+
+✅ **Contract checks pass on the new banks:** `hook_n_decode_edits` **max 0** on every arm (correct for
+a forward-only readout — the reduced contract requires decode edits to be zero), and
+`hook_liveness_violations` **0** across all four runs. ⛔ No repeat of `C-001`'s silent
+position-resolver failure: the spans are non-empty, plausible, and equal where they must be.
