@@ -4521,3 +4521,85 @@ prediction 3 as `CANNOT ANSWER` exactly as `PR-013` did.
 this bank (the block set is `{cds_n4, cds_n8}`). ⇒ The **reversal** at install ≈ 0 stays
 `candle`-only and exploratory, and the low-vs-high split will remain `CANNOT_ANSWER` on this
 population. ⛔ Building a low-dose block is new bank construction and a separate preregistration.
+
+### `R-042` — ⛔ **`PR-018`: the manipulation did not manipulate. Predictions 2–3 are VOID, by my own declared rule**
+
+Jobs 849686/849687 `COMPLETED` at 152 rows each; 849688 (the control) **refused before generating**
+— handled in `PR-018a` below. `cds_n8` had never been run; these are its first numbers.
+
+**Prediction 1 — installation rises — ⚠ AMBIGUOUS, and that decides everything after it.**
+
+| | n = 4 | n = 8 |
+|---|---|---|
+| mean per-domain installation | **0.908** | **0.928** |
+| per-domain change | — | **9 +, 4 −, 25 ties** (two-sided sign p ≈ 0.27) |
+
+⛔ **The knob barely turned.** `R-038` measured a real rise on the `rbd` banks (0.888 → 0.950,
+0.400 → 0.525) — but those started with room. `cds38` starts at **0.908**, and **25 of 38 domains
+are already at their per-domain ceiling at n = 4**. Doubling the demonstrations could not raise a
+quantity that is already nearly maximal.
+
+⇒ ⛔ **`PR-018` declared: *"If it does not rise, the manipulation failed and predictions 2–3 are
+void, not falsified."*** I am held to that. **Predictions 2 and 3 are VOID as tests of installation.**
+
+**Prediction 2 — the effect grows — ✅ strongly, and ⛔ it does NOT mean what `PR-018` wanted it to.**
+Mean per-domain Δ`semantic_logodds` goes **−7.944 → −9.025**, with **34 of 38 domains more negative**,
+sign p = **6.04e-07** (floor 7.28e-12). ⚠ **This is a dose effect, not an installation effect.** More
+demonstrations is a **longer demonstration block**, so the knockout masks **more keys** — precisely the
+relation `R-022`'s row ladder already established (K = 1 → −0.01, K = 8 → −6.62, K = 32 → −8.08).
+⛔ Since installation did not move, nothing here attributes the growth to installation, and I will not
+present a 6e-07 as though it did.
+
+**Prediction 3 — the gradient at the new dose — direction right, ⛔ uncontrolled.** ρ = **−0.444**,
+p = **0.0049**, 38 domains, install sd 0.189. ⚠ `R-040` established that a **raw** ρ is substantially
+mechanical (the `candle` placebo alone gave −0.460), so an uncontrolled ρ **cannot carry** the
+conclusion. `PR-018a` runs the comparator this needs.
+
+⇒ ⛔ **Standing position is unchanged: `R-041` remains CORRELATIONAL.** `PR-018` was built to make it
+causal and **did not**, because the intended manipulation had no headroom on this population. ⛔ The
+phase may **not** say installation was manipulated, and may **not** cite `PR-018` as causal support.
+
+### `C-028` — ⚠ my `PR-018` pre-flight checked three things and missed the one that mattered
+
+`PR-018`'s pre-flight measured row counts (152, 4/domain), the control's demonstration share (0.477
+with a preamble), and confirmed `cds_n8` had never been run. ⛔ **It never asked whether the predictor
+had room to move.** Baseline installation on this bank is **0.908** — I had that number in `R-041`'s
+own output, in the same session, and did not look at it before designing a dose manipulation of it.
+
+⚠ **This is a ceiling check, and it is a general one**: before manipulating a bounded quantity, read
+its **current distance from the bound**, not just its variance. `PR-016`'s pre-flight did measure
+variance (sd 0.185–0.205) and even *that* would have shown 25/38 domains pinned at 1.0.
+
+✅ **The cost was small and the declared rule contained it** — three cheap arms, and `PR-018`'s
+"void, not falsified" branch meant the strong 6e-07 could not be quietly promoted into support. ⛔ Had
+I not written that branch first, a 34/38 sign test would have been very easy to report as the causal
+upgrade it is not.
+
+## `PR-018a` — AMENDMENT: the control refused, and `capped` is legitimate **here** where `R-033` said it was not
+
+Job 849688 refused in the pre-flight:
+
+> `REFUSING before generating: 11 of 152 rows cannot carry this knockout (0 without a demo block,
+> 11 whose control cannot be built …)`, `control_draw_match_ratio` mean **0.9276**, `n_below_1` **11**.
+
+⚠ **This is a materially different situation from `R-033` and the difference is the whole argument.**
+There, `match_ratio` was **0.000 on 160/160** rows and a `capped` arm would have masked **zero** keys —
+a literal no-op mislabelled as a comparator, which is why `R-033` refused it. Here **141 of 152 rows
+match at exactly 1.0** and the shortfall is concentrated in **11** rows (their implied mean ratio is
+≈ 0.006 — the longest-demonstration rows, where the non-demo pool runs out).
+
+⇒ `nondemo_capped_d1` on this population is a **genuine dose-matched control on 93 % of rows**, and
+⛔ `R-033`'s rejection of `capped` does **not** transfer — it was a rejection of a **0.0** ratio, not
+of the arm type.
+
+⛔ **Declared before running, including the direction of the bias.** On those 11 rows the control
+receives **less** dose than the knockout, so the knockout-minus-control contrast is **inflated** there.
+That is **anti-conservative**, it is named now, and:
+* **PRIMARY** — the contrast on all **152** rows, reported *with* the statement that 11 rows are
+  under-matched.
+* **SECONDARY (sensitivity)** — the same contrast with those 11 rows removed from **both** arms.
+  ⛔ Declared **now**, before any outcome, and reported as **secondary** because a symmetric exclusion
+  still selects on demonstration length — the dose variable. ⛔ If primary and sensitivity disagree,
+  the **primary** stands and the disagreement is reported.
+* ⛔ **`PR-018`'s prediction 1 stays AMBIGUOUS and 2 stays VOID regardless of how this comes out.**
+  This amendment can only speak to prediction 3.

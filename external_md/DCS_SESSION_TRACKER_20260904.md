@@ -23,14 +23,17 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 1 | `PR-016` | preregistered **with its analyzer**, three limits declared first | ✅ |
 | 1 | `R-040` | `PR-016` → **RANGE-LIMITED**; contrast given a direct permutation p (0.0749) rather than the `C-017` error | ✅ |
 | 1 | `C-027` | ⚠ `PR-016`'s limit #2 was **FALSE** — probed the behavioral arm instead of the readout arm | ✅ |
-| 1 | `PR-017` | preregistered: the gradient on **both headline populations** with the real dose-matched control | ⏳ |
+| 1 | `PR-017` | preregistered: the gradient on **both headline populations** with the real dose-matched control | ✅ |
+| 1 | `R-041` | ✅ **`PR-017` SUPPORTED on the blind primary** — Llama contrast **−0.907**, perm **p = 2.0e-04**. The effect is **graded by installation** | ✅ |
+| 1 | `A-006` | self code review of the new statistic: ρ vs scipy 2.2e-16 on tied data, null calibration 0.035/0.0275, mutation harness **3/3 caught** | ✅ |
+| 1 | `PR-018` | preregistered + submitted: **manipulate** installation via the never-run `cds_n8` block (849686–849688) | ⏳ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
 | `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ `cpu-killable`, running |
-| `PR-017` headline installation gradient | — | ⏳ analysis-only, runs once its prereg commit lands |
+| `PR-018` dose manipulation, 3 arms on `cds_n8` | 849686–849688 | ⏳ `killable`, 2 running / 1 pending |
 
 ## Standing rules being followed this session
 
