@@ -46,13 +46,15 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 3 | `R-048` | ⚠ **`PR-014` ANSWERED: `CONFOUND-LIMITED`.** All 6 brackets **straddle zero**; 0 of 6 directional claims survive. Judge-free: `KO-3` removes **150** refusals, buys **+21** attacks (**86 %** do not convert) | ✅ |
 | 3 | `C-033` | ⚠ `C-030` named the conservative end **unconditionally**; which end it is depends on the **sign**. Analyzer now reports the **bracket** | ✅ |
 | 3 | — | `R-048` propagated to the summary, `LIVE STATUS` and the **figure scope card** (read back and verified) | ✅ |
+| 3 | `R-049` | `PR-020` answered: noise floor **18/380** (net +6) — **too small to explain `R-048`**; ✅ `refused` **0/380**, so `C-023` holds and the bound's input is verified deterministic | ✅ |
+| 3 | `A-008` | coverage audit: **10 of 10** preregistrations closed, read from the corpus not a regex; both verifier suites re-run **PASS** | ✅ |
+| 3 | — | `R-049` propagated to summary + `LIVE STATUS`; `B-014` closed | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-020` judge noise floor, repeat pass on one arm | 849779 | ⏳ `cpu-killable`, running |
-| *(GPU queue empty)* | — | all `PR-018`/`PR-018a` arms complete |
+| *(nothing in flight)* | — | `squeue` **empty**, GPU and CPU. All 10 preregistrations closed |
 
 ## Standing rules being followed this session
 

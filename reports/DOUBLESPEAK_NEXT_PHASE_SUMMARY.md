@@ -181,6 +181,12 @@ ICC ≈ 0.34, so domain is the correct independence unit.
    because a straddling bracket is **undetermined**, not null. ⇒ `R-029` is **superseded, not vindicated**: the
    contrast has now been computed on all six draws with no comparator selection, and the statement moves from
    *"never measured"* to *"measured, and the confound is larger than the effect it would have to survive."*
+   ✅ **The noise floor is now measured and does not rescue it (`R-049`).** One arm re-judged at byte-identical
+   settings in a fresh invocation flips **18 of 380** attack labels (net **+6**) — order **±6–8** on McNemar's
+   `ko_only − ctrl_only`, against observed deltas of **+23…+45**, a **3–6×** margin. ⇒ ⛔ Both of `R-048`'s ends
+   are **real signals that disagree**; the limitation is the **confound**, not judge noise. ✅ And **`refused`
+   flipped 0 of 380**, so `C-023` holds on new data and `R-048`'s bounding construction — which counts induced
+   refusals — rests on a verified-deterministic quantity.
 0b. ⛔ **Is the installation gradient CAUSAL?** `R-041`/`R-043` are correlational across domains. `PR-018`'s attempt
    to manipulate installation failed for lack of headroom (`R-042`: 0.908 at n=4, 25/38 domains at ceiling), and
    `cds38` carries no **low-dose** block — `{cds_n4, cds_n8}` is the whole block set. ⇒ Answering it needs a new
@@ -227,6 +233,10 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
   the option set on 257/380 rows). The defense — the dose-matched control on the *same* prompts
   keeps mass at 0.798 — is strong but **must be argued in the text**.
 * `DCS-B-003`: the L18 transplant result is neither retracted nor re-affirmed; **not citable**.
+* `DCS-B-014` → ✅ **CLOSED by `R-049`**: judge nondeterminism on the **attack** rubric is now measured —
+  **18 / 380** labels, net **+6**, `refused` **0 / 380**. ⛔ Scope: *same arm, same configuration, second
+  invocation*, so it is an **upper bound** containing cross-invocation drift, measured on **one** arm — not "the
+  judge's intrinsic noise".
 * `DCS-B-013`: ⛔ the per-row **control match ratio is not persisted**, although the artifact's own
   `control_draw_note` states that *"every row carries its own ratio in `control_draw_match_ratio`"*. Only the
   aggregate survives, in `metadata.json`. ⚠ It blocked `PR-018a`'s declared secondary; recovered from

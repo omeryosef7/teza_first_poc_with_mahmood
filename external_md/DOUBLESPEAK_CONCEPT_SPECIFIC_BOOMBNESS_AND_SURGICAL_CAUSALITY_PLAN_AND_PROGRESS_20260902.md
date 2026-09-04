@@ -14,7 +14,8 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 ## 0. LIVE STATUS
 
 *(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-048`/`C-033`.
-⏳ `PR-020` noise floor live (849779); `PR-014` closed; GPU queue empty.)*
+**all queues empty**; `PR-014` and `PR-020` closed; **10 of 10** of this session's preregistrations
+have recorded outcomes (`A-008`).)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
@@ -65,7 +66,7 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 | `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** ⇒ needs **new demonstration pools** |
 | `B-013` | per-row `control_draw_match_ratio` **not persisted** although the artifact's note says it is; recovered from `hook_n_keys_masked`, workaround assumes row-aligned arms |
 | `R-029`→closed | superseded by `R-048`: the contrast **was** computed on all 6 draws. ⛔ Now limited by the **confound**, not by comparator selection |
-| `B-014` | judge nondeterminism on the **attack** rubric is unmeasured; `PR-020` (849779) is measuring an upper bound on it |
+| `B-014`→closed | measured by `R-049`: **18 / 380** attack labels, net **+6**; `refused` **0 / 380**. ⛔ Too small to explain `R-048` — the limit is the **confound**, not noise |
 | `B-006` | after `KO-3` the two cells are in different measurement regimes; defense exists, must be **argued in text** |
 | `B-007` | control-draw **positions** not persisted — disjointness is a code guarantee, not an artifact fact |
 | `B-011` | `enable_thinking` not persisted in metadata |
@@ -5251,3 +5252,39 @@ be written as a replication.
 bound** on call-level nondeterminism that necessarily contains cross-invocation drift. ⛔ It is not
 "the judge's intrinsic noise", and it was measured on **one** arm, not eight. `PR-020` forbade
 re-judging any other arm and that stands.
+
+### `A-008` — **coverage** audit of this session, and a verifier regression
+
+⚠ `A-005` established the failure this item exists to catch: a preregistration that goes unmentioned
+once its answer stops being convenient. ⛔ It also established that a **regex** window is the wrong
+instrument — it produced three false positives last time — so this was done by **reading the
+resolving entry** for each.
+
+| preregistration | resolved by | outcome |
+|---|---|---|
+| `PR-013` | `R-035` | ⚠ **MIXED**, 1 of 2 concepts |
+| `PR-014` | `R-048` | ⚠ **CONFOUND-LIMITED** |
+| `PR-015` A / B | `R-037` / `R-038` | ⚠ **INTERMEDIATE** / ⛔ **excuse NOT supported** |
+| `PR-016` | `R-040` | ⚠ **RANGE-LIMITED** |
+| `PR-017` | `R-041` | ✅ **SUPPORTED** on the blind primary |
+| `PR-018` | `R-042` | ⛔ predictions 2–3 **VOID** — the manipulation did not manipulate |
+| `PR-018a` | `R-043` | ✅ contrast **−0.404**, p = 0.0482 |
+| `PR-019` | `R-045` | ⛔ **CANNOT ANSWER** — reliability gate fired |
+| `PR-019a` | `R-047` | ⛔ **STOPPED**, as declared |
+| `PR-020` | `R-049` | ✅ answered; `C-023` holds |
+
+✅ **10 of 10 closed. None abandoned.** ⚠ And the distribution is worth stating plainly: **one**
+clean positive (`R-041`), **one** supporting replication (`R-043`), and **eight** outcomes that are
+negative, undetermined, void or stopped. ⛔ A session that produced one headline out of ten
+registrations is the *expected* shape when the registrations are written before the answers — and
+a phase log that showed the opposite ratio would be the suspicious one.
+
+✅ **Verifier regression, both suites, after this tick's analyzer edits**
+(`dcs_pr014_bound.py` became sign-aware in `C-033`):
+
+| suite | result |
+|---|---|
+| `dcs_verify_installation_gradient.py` | ✅ **PASS** — ρ vs scipy 2.2e-16, null calibration 0.035/0.0275, mutants 3/3 |
+| `dcs_verify_pr014_bound.py` | ✅ **PASS** — McNemar vs scipy 1.55e-15, `C-030` invariant 300/300, mutants 3/3 |
+
+⚠ **Queue state:** `squeue` empty, GPU and CPU. ⇒ Nothing is in flight and no result is pending.
