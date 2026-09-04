@@ -5563,3 +5563,55 @@ dcsqw_C_qpo_ctrl --model Qwen/Qwen3-14B`): drop the domains at installation = 1.
 
 ⚠ **Whatever it returns, the Llama numbers stand as published in `A-009`/`R-051`.** ⛔ A second model
 cannot repair a limit measured on the first.
+
+### `R-053` — ⛔ **`PR-022` returns the NULL branch. Attack `C` REPLICATES on Qwen at n = 30**, and the full audit is worse
+
+`PR-022` declared: *"Null ⇒ `A-009` `C` replicates on a second model, and the narrowing hardens …
+⚠ This is the outcome that damages the finding further and it must be reported as prominently as the
+other."* ⛔ **It is the outcome.**
+
+| attack | Llama (`A-009`) | **Qwen (`PR-022`)** |
+|---|---|---|
+| **C** — varying subrange | −0.503, p = 0.343 (**n = 13**) | ⛔ **−0.173, p = 0.504** (**n = 30**) |
+| **A** — leave-one-out | ✅ worst p = 8.0e-04 | ⛔ **worst p = 0.127 — loses α** |
+| **E** — arm-exchangeable null | ✅ p = 9.5e-04 | ⛔ **p = 0.165 — does not survive** |
+| **B** — 3 operationalisations | ✅ −0.799…−0.907 | ⚠ −0.407 / −0.407 / **−0.491** (only the continuous one clears α) |
+| **D** — control gradient | +0.312 (always positive) | **−0.326** (always negative) |
+
+⛔ **`n = 30` kills the power defence.** `A-009` `C` left two readings open on Llama, one of which was
+*"n = 13 simply lacks power"*. Qwen's varying subrange is **30 domains** — more than double — and the
+contrast there is **−0.173, p = 0.504**, i.e. **smaller**, not merely noisier. ⇒ ⛔ The power reading
+is **eliminated**. On **both** models the gradient is **not demonstrated within the varying
+subrange**.
+
+⚠ **And the mechanism is now visible, which is the part that matters.** On Qwen's 30 varying domains
+ρ<sub>KO</sub> = **−0.601** — still substantial — but ρ<sub>ctrl</sub> = **−0.428**. ⇒ **Within the
+varying subrange the knockout's gradient is very nearly matched by the control's.** That is what
+regression to the mean predicts (`R-040` measured RTM as large and sign-unstable). ⇒ ⛔ **The
+knockout-specific excess appears only once the ceiling domains are included.**
+
+⇒ **Standing position, and it is materially weaker than this morning's:**
+> ✅ ρ<sub>KO</sub> is negative and substantial everywhere measured (**−0.594 / −0.444 / −0.734**
+> full-sample; **−0.352 / −0.601** within the varying subranges) and robust to operationalisation.
+> ⛔ **But the KNOCKOUT-SPECIFIC part of it — the contrast against a dose-matched control — is
+> demonstrated only ACROSS the full installation range, and on both models it is dominated by the
+> contrast between fully-installed domains and the rest.** ⛔ Within the varying subrange the control
+> reproduces most of the knockout's gradient, which is what RTM predicts.
+> ⛔ The Qwen contrast additionally fails leave-one-out and the arm-exchangeable null.
+
+⛔ **What may no longer be said, added to the standing list:** *"the effect is graded by installation"*
+as a **continuous** claim. The supported claim is **categorical**: *fully-installed domains lose more
+than partially-installed ones.* ⚠ That is still a real and interesting result — it says the
+intervention removes a mapping in proportion to whether the mapping was **there** — but it is **not**
+the dose-response I wrote at `R-041`.
+
+✅ **Two things this strengthens rather than weakens.**
+1. ⚠ **`R-052`'s catch-22 is now the binding constraint on the whole line of work**, not a side note.
+   The varying subrange is where the claim lives or dies, every population that has a control is at
+   ceiling there, and the only low-installation populations are the exploratory source with no
+   control. ⇒ **A low-dose block is no longer the *better* of two options — it is the only route to
+   settling this.**
+2. ✅ **The audit machinery earned its keep twice.** `A-009` was written to attack `R-041` and it
+   found the ceiling; `PR-022` re-ran it on a second model **through the identical committed code
+   path** and eliminated the power defence I would otherwise have leaned on. ⛔ Neither result would
+   exist if the attacks had been chosen after seeing the numbers.
