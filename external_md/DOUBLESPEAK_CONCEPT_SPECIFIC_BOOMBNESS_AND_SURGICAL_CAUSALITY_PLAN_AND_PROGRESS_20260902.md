@@ -3258,3 +3258,42 @@ Llama·`button` (−9.9), Llama·`basket` (−9.4), **Qwen3-14B·`button` (−22
 
 ⚠ Both were caught by **rendering the image and reading it back**, not by trusting that the script
 wrote successfully — the same check that caught the overlapping annotations in `DCS-020`.
+
+### `DCS-PR-011` — the layer sweep: testing the phase's **largest unexamined assumption**
+
+`DCS-021` audited this phase and found **no post-hoc layer selection** — exactly one band per model
+across all 39 intervention arms. ⚠ But it also recorded the corollary I want to act on rather than
+leave standing: *because no sweep was run, this phase **cannot say the effect is localised to
+L6–14**.* Every knockout result is conditional on a band an **earlier sprint** chose for a
+**different endpoint** (`demo_processing_only`, behavioral ASR). That is the largest assumption still
+holding up the mechanism half.
+
+**Submitted — 6 arms, every band with its own dose-matched control**, cell `C`,
+`semantic_forced_choice`, all else identical to `R-008`:
+
+| band | layers | jobs |
+|---|---|---|
+| **0–5** | early | 847637 / 847638 |
+| *6–14* | *the inherited band* | *already run (`R-008`: −8.081)* |
+| **15–23** | mid-late | 847639 / 847640 |
+| **24–31** | late | 847641 / 847642 |
+
+⇒ A **four-point layer profile** over the whole 32-layer stack, each point read against its own
+control.
+
+⛔ **Declared before any outcome, because §1.9 makes a layer sweep a multiplicity family:**
+* The sweep is **exploratory / descriptive**. ⛔ It does **not** re-open or re-test `R-008`, whose
+  band was fixed in advance; a band that happens to beat 6–14 here **does not** become the phase's
+  headline, and no existing result is restated at a new band.
+* The multiplicity family is **{4 bands}**; any per-band claim carries Holm over 4.
+* **What the outcomes mean:** effect concentrated at 6–14 ⇒ the inherited band was well chosen and
+  localisation is *supported*. Effect present at **every** band ⇒ ⛔ the intervention is **not
+  layer-localised at all**, and every "L6–14" phrasing in this phase must be re-read as "at the band
+  we happened to cut". Effect **larger elsewhere** ⇒ the inherited band is **suboptimal**, which is
+  a finding about the prior sprint's choice and ⚠ would mean this phase has been measuring a
+  *weaker* version of its own effect throughout.
+* Each `--intervene` spec was **verified to 4 colon-parts before submission** (`C-020`'s guard).
+
+⚠ The third outcome is the uncomfortable one and is the reason to run this: it would not overturn
+any result, but it would mean the phase's headline magnitudes are lower bounds chosen by inheritance
+rather than by measurement.
