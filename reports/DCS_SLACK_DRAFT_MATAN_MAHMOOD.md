@@ -53,7 +53,10 @@ explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and bot
 >
 > **Two decisions I'd like your view on.**
 > 1. **New demonstration pools.** The only way to certify the behavioural effect at our own
->    independence unit. New data, own preregistration, API budget. Worth it?
+>    independence unit. The cost is **GPU queue time and a design decision**, not money — judging is
+>    `gpt-4o-mini` at roughly **$0.08 per 380-row arm**, so even a 4x expansion is tens of dollars.
+>    The real question is whether new domains should extend to a **second harmful concept** (buying
+>    generality and power together) or just deepen `bomb` (power only). Worth it?
 > 2. **Positioning.** The representational half **replicates Yona et al., ACL 2026** — they already
 >    show the convergence with logit lens and Patchscopes, and their Appendix D anticipates the
 >    codeword-generality point. Ours that is new is the **causal** half: they perform no internal

@@ -63,7 +63,8 @@ Experiments complete; `squeue` empty.)*
 ### NEXT 3 HIGHEST-VALUE EXPERIMENTS
 
 1. **New demonstration pools** to break the 38-domain ceiling — the only way to certify the
-   behavioral effect at the declared unit. Needs a preregistration and API budget.
+   behavioral effect at the declared unit. Needs a preregistration and GPU queue time; see `C-022`
+   for why the API cost previously named here is negligible.
 2. ✅ **DONE (`R-030`).** The sweep ran; localisation is supported and the inherited band is the
    strongest of four. ⚠ Follow-up worth having: a **finer** sweep around 0–14, and the unexplained
    **consistent positive at 24–31** (+0.75 on **38/38** domains) — the only place in this phase a
@@ -3571,3 +3572,34 @@ the DiD scripts actually read. It is regenerable from the now-committed configs,
 GPU work. Tracking it would nearly double the repo's tracked-output footprint in a **shared** tree, so
 it is a collaborator-affecting decision rather than a scientific one. ⛔ Until it is made, the honest
 statement is that phase headlines are **reproducible by rerunning**, not **recomputable from the repo**.
+
+### `C-022` — correction: `B-009`'s cost was misstated; **API budget is not a blocker**
+
+Omer asked directly whether `B-009` needs more OpenAI budget. Costing it properly showed the answer
+is **no**, and that two committed deliverables said otherwise.
+
+**The arithmetic, from what was actually run** (`runargs/dcs/*`, `tsc_judge_robustness_*`): an arm is
+**380 rows**; attack completions are capped at **`--max-new 640`**; the judge is **`gpt-4o-mini`**. That
+is roughly 800–1000 input tokens and ~100 output per row, so at list pricing ≈ **$0.0002/row ≈ $0.08
+per arm**. Scaling 38 → 150 domains and running six arms × two seeds × three judge passes × two
+models is ~**108k rows ≈ $21**. ⚠ This is an order-of-magnitude estimate from token counts and list
+prices, **not** a billing readout.
+
+⛔ **The error and why it mattered.** Both `B-009` here and §47's message named *"API budget"* alongside
+new data and a new preregistration — placing a genuine multi-day cost and a **~$20 rounding error**
+side by side as though comparable. That inflates the apparent size of the ask and invites the wrong
+answer for the wrong reason: a *"too expensive"* refusal aimed at a cost that does not exist. Both
+now name **GPU queue time** as the real expense.
+
+**What `B-009` actually needs, restated honestly:**
+* **GPU time** — regenerating every arm (baseline, knockout, controls) across two models. Days of
+  L40S queue. This is the whole cost.
+* **A design decision only Omer can make** — ⚠ *what the new domains are*. Today's 38 are **38 contexts
+  for one mapping** (`button`→`bomb`). More of the same buys **power without generality**; extending to
+  a second harmful concept buys **both**, but is a different preregistration making a different claim.
+* Bank construction + a preregistration frozen **before** any generation.
+
+⚠ Note the shape of this correction: it makes the ask **smaller and clearer**, and it was produced by
+a direct question rather than by an audit. The costing had never been done — *"API budget"* had been
+carried as an unexamined assumption from the phase's first plan through to a message drafted for
+supervisors.
