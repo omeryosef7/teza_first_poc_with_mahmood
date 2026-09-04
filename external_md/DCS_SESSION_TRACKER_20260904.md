@@ -31,13 +31,16 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 1 | `C-028` | my pre-flight never asked whether the predictor had **room to move** | ✅ |
 | 1 | `PR-018a`/`R-043` | the strict control refused; `capped` is legitimate here (ratio 0.9967, not `R-033`'s 0.0). Contrast **−0.404, p = 0.0482**; control ρ **−0.040** | ✅ |
 | 1 | `C-029`/`B-013` | my severity estimate for the 11 under-matched rows was wrong; and the per-row ratio is **not persisted** despite the artifact saying it is | ✅ |
+| 2 | `DCS-033` | `PR-014`'s bounding analyzer committed **while the judge was on arm 5 of 8**; closes the row-assignment freedom the prereg left open | ✅ |
+| 2 | `C-030` | ⛔ **`PR-014`'s bound points the wrong way** — the refusal-adjusted end is the **favourable** one, not the hostile one. Caught and corrected **before** the analysis ran | ✅ |
+| 2 | `A-007` | self code review of that analyzer: 5/5 pass, incl. `C-030` turned into an **executable invariant** (300/300) and a 3-mutant harness (3/3) | ✅ |
 | 1 | — | **deliverables re-synced**: summary, `LIVE STATUS`, and `DCS_FIGURES.png` gains **panels F and G**; the PNG was **read back** and three layout defects were fixed (`C-026`) | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ `cpu-killable`, running |
+| `PR-014` Qwen behavioural judging, 8 arms, one invocation | 849653 | ⏳ arm **5 of 8**; analyzer + verifier already committed |
 | *(GPU queue empty)* | — | all `PR-018`/`PR-018a` arms complete |
 
 ## Standing rules being followed this session
