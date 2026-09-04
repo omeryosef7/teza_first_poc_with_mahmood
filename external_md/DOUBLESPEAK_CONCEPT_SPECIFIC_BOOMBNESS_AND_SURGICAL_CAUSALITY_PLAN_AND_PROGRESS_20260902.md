@@ -4091,3 +4091,35 @@ the *dose* exactly fixed.
 a forward-only readout — the reduced contract requires decode edits to be zero), and
 `hook_liveness_violations` **0** across all four runs. ⛔ No repeat of `C-001`'s silent
 position-resolver failure: the spans are non-empty, plausible, and equal where they must be.
+
+### `A-005` — **coverage** audit: every preregistration in this phase has a recorded outcome
+
+Swept all **15** preregistrations for a resolving entry. ✅ **14 of 15 closed, 1 in flight** — no
+preregistration was quietly abandoned, which is the specific failure this item exists to catch (a
+declared test that goes unmentioned once its answer stops being convenient).
+
+| | resolution |
+|---|---|
+| `PR-001` | DiD run; `PR-001a` clarified domain-pairing before any outcome |
+| `PR-002` | → `R-009`: **capable null** at the `KO-1` scope |
+| `PR-003` | `basket` 3-row defect declared **before** the replication's outcome |
+| `PR-004` | **ANSWERED** — mapping destroyed, attack does not follow |
+| `PR-005` | pre-flight **PASSES**; judging blocked by a cluster outage |
+| `PR-006` | three declared outcomes stand; **3 of 6** draws qualified |
+| `PR-007` | **second branch** reported, with its stated caveat |
+| `PR-008` | **second branch**: a STEP, not a graded rise |
+| `PR-009` | → `R-023`: Qwen3-14B **PASSES** the capability gate on all three criteria |
+| `PR-010` | **`CANNOT ANSWER`** |
+| `PR-011` | **first** declared outcome: effect concentrated early-to-mid |
+| `PR-012` | **second** declared outcome, with a peak |
+| `PR-013` | → `R-035`: **MIXED**, third branch verbatim |
+| `PR-014` | **BLOCKED-ON-CREDITS** (`C-024`) — frozen, not cancelled |
+| `PR-015` | ⏳ **in flight** (848867–848872) |
+
+⚠ **The audit's own instrument was wrong first, which is the point worth keeping.** A regex scanning
+110 characters past each mention flagged `PR-002`, `PR-007` and `PR-009` as unresolved. All **three
+were false positives** — each is resolved in a *later* entry under a different id (`R-009`, the second
+branch, `R-023`) and the window never reached it. ⇒ `feedback_matcher_scope_bug_class` again: the
+audit failed on the **matcher**, not the corpus, and reading the corpus cleared all three in under a
+minute. ⛔ Had I trusted the scan I would have "discovered" three abandoned preregistrations that do
+not exist and written three unnecessary corrections.
