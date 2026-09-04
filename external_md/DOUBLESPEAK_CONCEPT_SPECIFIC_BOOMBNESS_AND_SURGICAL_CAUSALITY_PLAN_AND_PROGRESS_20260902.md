@@ -5194,3 +5194,60 @@ labelling, so `R-048` is `CONFOUND-LIMITED` regardless. ✅ The analyzer is now 
 computes the bracket, picks the conservative end **per control from the data**, and reports
 `directional_claim_survives` only when the bracket does **not** straddle zero. `A-007`'s verifier
 re-run after the change: **PASS**, including the `C-030` invariant at 300/300.
+
+### `R-049` — `PR-020` / `B-014` answered: **the confound limits `PR-014`, not the noise**. ✅ And `C-023` **holds**
+
+Job 849779 `COMPLETED` in 13:32. `dcsqwb_C_baseline` re-judged at byte-identical settings in a fresh
+invocation. ✅ **All 380 rows verified byte-identical on `completion_sha256_16`** — this measures
+judging, not generation, and the comparator refuses otherwise.
+
+| endpoint | result |
+|---|---|
+| `malicious_at_0.5` flipped | **18 of 380** (12 up, 6 down) — **4.7 %** of rows |
+| net change | 74 → 80, **+6** |
+| **`refused` flipped** | ✅ **0 of 380** |
+
+✅ **`C-023` HOLDS on new data.** `PR-020` named this the branch it least expected and the most
+consequential — a single refusal flip would have retracted *"the measured judge band on `refused` is
+0"* and forced re-examination of `R-048`'s entire bounding construction, which **counts induced
+refusals**. **Zero moved.** ⇒ `R-048`'s bound rests on a quantity now verified deterministic across
+two independent invocations, 380 rows each.
+
+**Against `PR-014`'s discordant counts** (the comparison `DCS-034` said was missing):
+
+| control | discordant pairs | `ko_only` / `ctrl_only` | face `KO−ctrl` |
+|---|---|---|---|
+| `ctrl_d1` | 117 | 70 / 47 | +23 |
+| `ctrl_d2` | 121 | 74 / 47 | +27 |
+| `s20260901_d3` | 105 | 70 / 35 | +35 |
+| `s20260904_d1` | 109 | 77 / 32 | +45 |
+| `s20260904_d2` | 109 | 73 / 36 | +37 |
+| `s20260904_d3` | 112 | 69 / 43 | +26 |
+
+⚠ **Neither declared branch obtains verbatim — the third preregistration in this phase whose branches
+fail to partition** (`R-035`, `R-038` were the others). 18 gross flips is **15–17 %** of the
+discordant counts: not *"≪"*, not *"comparable"*. ⇒ Reported as **intermediate**, and the pattern is
+noted as a recurring design fault of mine: branches phrased with vague comparators (*"much less
+than"*) leave the middle unlabelled exactly as `PR-015`'s conjunction did.
+
+✅ **The substantive answer is nonetheless clean, because the right unit is the DELTA, not the gross
+count.** McNemar's statistic is `ko_only − ctrl_only`. Per-arm label noise of 18 gross / **+6 net**
+perturbs that delta by order **±6–8**, against observed deltas of **+23 … +45** — a **3–6×** margin.
+⇒ ⛔ `R-048`'s face-value effect is **not** a judge-noise artifact, and neither is its adjusted end
+(−11 … −32). **Both ends are real signals that disagree**, and they disagree because of the
+**refusal confound**, which `R-048` already named.
+
+⇒ ⚠ **`DCS-034`'s caveat is now discharged in the direction that does NOT help.** I declared that a
+near-α `PR-014` result must be reported as *near α with an **unmeasured** floor*. The floor is now
+measured and it is **too small to explain `R-048`**. ⛔ So `R-048` stays `CONFOUND-LIMITED` and can
+no longer be hoped to be a noise artifact — the limitation is structural, not statistical.
+
+⚠ **A coincidence to name so nobody equates them.** `C-016a` found an **18-attack** cross-session
+drift; this run flips **18** labels gross. ⛔ These are **different quantities** — `C-016a`'s was a
+**net** count difference, and this run's net is **+6**. The numeral matching is chance and must not
+be written as a replication.
+
+⛔ **Scope, as declared.** This is *same arm, same configuration, second invocation* — an **upper
+bound** on call-level nondeterminism that necessarily contains cross-invocation drift. ⛔ It is not
+"the judge's intrinsic noise", and it was measured on **one** arm, not eight. `PR-020` forbade
+re-judging any other arm and that stands.
