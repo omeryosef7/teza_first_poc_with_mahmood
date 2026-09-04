@@ -27,6 +27,7 @@ Experiments complete; `squeue` empty.)*
 | `R-002` | ⛔ **The movement is NOT concept-specific** — knife/gun/club match or exceed bomb | evaluated negative |
 | `R-003` | ⛔ **It does not accumulate** across demonstrations | evaluated negative |
 | `R-004` | ✅ Null control exact: `n_examples=0` → `0.000e+00` at all 96 cells | positive control |
+| `R-030` | **The effect is layer-localised early-to-mid, and the inherited band is the best of four.** 0–5 **−4.30**, **6–14 −8.08**, 15–23 **+0.15**, 24–31 **+0.75**; each band vs its own dose-matched control | ⚠ band widths differ (6/9/9/8) so cross-band doses are not matched |
 | `R-006`/`R-014` | `KO-1` leaves mapping **and** attack unchanged, on a **verified refusal-neutral** control (Δ=0, zero conversions) | valid null |
 | `R-012b`/`R-026` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0**, the same 150 `TSC-R-006` removed at a *different* scope | 2 models × 4 scopes |
 | `R-016`/`R-017`/`R-019` | `KO-3` reduces Llama attack **in direction** (≈−30 of 153, 3 controls × 2 seeds × 4 judgings) | ⛔ **not** significant at the domain independence unit |
@@ -40,7 +41,10 @@ Experiments complete; `squeue` empty.)*
 * ⛔ "The mapping is constructed during demonstration processing" (`C-010`), the **L6–L12 peak**
   (`C-005`), "the controls are inert" as a *sign* claim (`C-011`), "the effect lives in the held-out
   half" (`C-017`), "the two cells move in opposite directions" (button-on-Llama only, `R-011`/`R-025`).
-* ⛔ "The effect is localised to L6–14" — **no layer sweep was ever run** (`DCS-021`).
+* ⚠ "The effect is localised to L6–14" — **now SUPPORTED** by `R-030`'s four-band sweep
+  (0–5 −4.30 · **6–14 −8.08** · 15–23 +0.15 · 24–31 +0.75), superseding `DCS-021`'s prohibition.
+  ⛔ Still not claimable: a **per-layer** profile, or that 6–14 is optimal among *finer* bands —
+  four coarse bands of unequal width are not a localisation curve.
 * ⛔ Three p-values of 2.8e-10 as independent evidence — one sign pattern, three times.
 * ⛔ `d_surface` as validated or as a GCG/MAC objective.
 
@@ -60,8 +64,10 @@ Experiments complete; `squeue` empty.)*
 
 1. **New demonstration pools** to break the 38-domain ceiling — the only way to certify the
    behavioral effect at the declared unit. Needs a preregistration and API budget.
-2. **A layer sweep** — every knockout result is conditional on a band inherited from an earlier
-   sprint *for a different endpoint*; localisation is currently unclaimable.
+2. ✅ **DONE (`R-030`).** The sweep ran; localisation is supported and the inherited band is the
+   strongest of four. ⚠ Follow-up worth having: a **finer** sweep around 0–14, and the unexplained
+   **consistent positive at 24–31** (+0.75 on **38/38** domains) — the only place in this phase a
+   demonstration knockout has a positive sign.
 3. **A second harmful concept** through the identical pipeline — `R-002` says the geometry is not
    bomb-specific, so whether the *causal* result is concept-general is open.
 
