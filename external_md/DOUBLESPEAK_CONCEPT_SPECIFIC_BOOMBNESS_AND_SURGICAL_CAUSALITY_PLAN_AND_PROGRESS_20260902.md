@@ -5985,3 +5985,27 @@ runs **before** any arm.
 re-slicing — the same confound `PR-023` carried. ⛔ ICC is a **point estimate from one bank** and the
 repo has measured it from **0.000 to 0.755**; at ICC 0.45 the required `k` would be far larger, and
 the achieved power will be **recomputed from the realised ICC** once the arms exist, not assumed.
+
+### `DCS-037` — `PR-024`'s pool audit, **mutation-tested before it judges anything**
+
+The pool audit is the only thing between a bad demonstration pool and a 116-domain bank that **16
+GPU-hours** will be spent on. Committed `scripts/dcs_verify_merge_audit.py` and fired every refusal
+deliberately, on **synthetic** pools — no real sentence text is read or emitted.
+
+✅ **7/7 PASS**: a clean pair merges; **seed mismatch**, **codeword mismatch**, a **domain present in
+both halves**, a **short pool**, and a **collision** (`knife` in a `benign` pool) each **refuse and
+write no merged file**.
+
+⛔ **One NON-refusal is pinned deliberately, and it is a judgement call I am recording rather than
+leaving implicit.** A sentence appearing in **two domains** is **reported, not fatal**. With 116
+domains × 40 sentences per valence, an identical short `filler` line arising twice is plausible by
+chance, and blocking a 16-GPU-hour run on one collision would be the wrong trade. ⚠ **But any
+non-zero count is reported as a caveat on domain independence** — which is precisely the unit
+`B-009` exists to strengthen, so it cannot be waved through silently. ⛔ I am **not** inventing a
+numeric threshold: nothing measured justifies one, and a made-up cutoff would be worse than an
+honest count reported with the result.
+
+⚠ **Why the audit needed its own test at all.** `PR-024` checked the domain **templates** before
+generation. Templates are *prompts*; the generator writes the *sentences*. A template that never says
+`bomb` can still elicit a `benign` sentence containing it — so the same criteria must re-run on the
+**output**, and the thing re-running them must itself be known to reject.
