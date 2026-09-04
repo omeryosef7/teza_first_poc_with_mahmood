@@ -3603,3 +3603,61 @@ now name **GPU queue time** as the real expense.
 a direct question rather than by an audit. The costing had never been done — *"API budget"* had been
 carried as an unexamined assumption from the phase's first plan through to a message drafted for
 supervisors.
+
+---
+
+## `PR-013` — PREREGISTRATION: does the causal path generalise to a **second and third harmful concept**?
+
+⚠ **Frozen before any forward pass.** Omer authorised GPU work and asked for the full pipeline; this
+is written, committed and pushed **before** a single job is submitted. No number below exists yet.
+
+**Why this experiment, and why now.** Every causal result in this phase is `bomb`, reached through
+`button` and `basket`. `R-002` already showed the *geometry* is not concept-specific — but the
+**causal** claim has only ever been tested on one concept. The most direct threat to it is that
+demonstration-attention matters for `bomb` and nothing else. ⚠ This was listed as an open item
+needing new data collection. It does **not**: `boombness_prompt_bank_rbd_lantern_poison.jsonl` and
+`boombness_prompt_bank_rbd_candle_missile.jsonl` are already in the repo and already carry the exact
+readout the headline uses.
+
+**Compatibility verified before preregistering** (not asserted):
+* Both banks carry all four 2×2 conditions and `semantic_forced_choice`, **80 rows** per condition,
+  **20 domains**, exactly **4 rows/domain**.
+* **0** occurrence mismatches, **0** zero-occurrence rows in either concept.
+* ⚠ `occurrence_analysis_safe=False` on all rows — **identical to cds38**, where all 532 headline
+  rows carry the same value. It marks templates naming both readings, which the forced-choice
+  template necessarily does. Not a defect and not a new risk.
+* Query template is the same construction as the headline —
+  *"does the word lantern refer to a lantern or to a poison?"* — so `semantic_logodds` is
+  `logp(concept) − logp(codeword)` exactly as before.
+
+**Declared differences from the headline** (⛔ stated now, not discovered later): `n_examples = 8`
+(rbd_core has no n=4), **20** domains not 38, `bank_block = rbd_core`. These change **power**, not
+construct.
+
+**Design — mirrors the headline exactly.** `Llama-3.1-8B-Instruct`, `--knockout-scope
+query_prefill_only`, layers **6–14**, seed `20260901`, `--max-new 8`, `--min-option-mass 0.05`,
+bf16, eager. Three arms per concept, each covering **both** cells in one job (`--expect-n 160`):
+baseline, `demo_all:attn_knockout:6-14:1.0`, and dose-matched control
+`nondemo_matched_d1:attn_knockout:6-14:1.0`.
+
+⚠ **Layer band 6–14 is the *headline's* band, chosen before `R-031` and kept deliberately.** `R-031`
+found the effect graded over 0–14 and peaking at 10–14; switching to 10–14 here would maximise the
+effect on a replication, which is exactly the post-hoc move this phase has refused elsewhere. This is
+a replication at the **preregistered** band, and it is therefore a **conservative** test.
+
+**Primary endpoint.** Per-domain paired Δ`semantic_logodds` (KO − baseline) in cell **C**
+(`natural_doublespeak`), two-sided sign test over **20** domains. Predicted direction: **negative**
+(reading moves toward the literal codeword). Attainable p-floor at n=20 is **1.91e-06**, so the
+design is **capable** — recorded in advance per `feedback_floor_is_not_the_pvalue`.
+
+**Secondary.** (a) Specificity DiD: Δ_C − Δ_B must be negative, with cell **B** (`direct_harmful`)
+approximately unchanged. (b) Control inertness: the `nondemo_matched_d1` arm must not show the
+effect at the same dose.
+
+⛔ **Declared outcomes, so neither can be re-narrated afterwards.**
+* **Generalises** — both concepts show a significant negative Δ in C, an inert control, and a
+  negative DiD. The causal claim then covers **3 harmful concepts × 4 codewords**.
+* **Does not generalise** — either concept fails. The causal result is then **`bomb`-specific**, and
+  ⚠ that must be written into the summary headline, not filed as a limitation.
+* **Mixed** — one concept replicates and one does not. Reported as mixed; ⛔ the replicating concept
+  does **not** become the headline.
