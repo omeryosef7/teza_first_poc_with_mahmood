@@ -4405,3 +4405,69 @@ about as much as the knockout does, the contrast will be near zero for a reason 
 with installation — and `R-006`'s finding that `KO-1` is a well-powered null says the controls in this
 family *are* inert on the readout. ⇒ That makes a null contrast **interpretable**, not ambiguous, and
 I am recording the reasoning before I know which way it went.
+
+### `R-041` — ✅ **`PR-017` SUPPORTED on the blind primary.** The causal effect is **graded by how much was installed**
+
+| population | blinding | ρ<sub>KO</sub> | p | control ρ | **contrast** | **contrast p** | verdict |
+|---|---|---|---|---|---|---|---|
+| `button`→`bomb` **Llama**, 38 domains | ✅ **fully blind** | **−0.594** | **1.0e-04** | **+0.312** (p = 0.058) | **−0.907** | **2.0e-04** | ✅ **SUPPORTED** |
+| `button`→`bomb` **Qwen3-14B**, 38 domains | ⚠ ρ pre-seen, contrast blind | −0.734 | < 1e-4 | −0.326 (p = 0.045) | −0.407 | **0.0594** | ⚠ same sign, **does not clear α** |
+
+**What the primary says.** On the phase's headline population, the per-domain size of the
+`demo_all` knockout's effect on cell C is **predicted by the per-domain baseline installation** —
+the fraction of baseline rows whose argmax answer is already the concept — and it survives
+subtraction of the same statistic measured on the **dose-matched non-demonstration control**
+(`nondemo_matched_d1`, same band, same rows, same key count, mechanism absent by construction).
+
+⇒ ⚠ **This changes the *kind* of claim the phase can make.** `R-008`/`R-010`/`R-025` established the
+demonstration→query path as **necessary** — a binary statement. `R-041` makes it **quantitative**:
+the knockout removes *approximately as much of the mapping as was there to remove*, domain by
+domain. A dose-response between an independently-measured amount of mechanism and the size of the
+causal effect is a **materially stronger** form of evidence than a sign test, because a generic
+disruption has no reason to track a quantity it cannot see.
+
+✅ **And it retro-explains `R-035` without rescuing it.** `candle`→`missile` failed its preregistered
+sign test because its domains span the installation range (**8** at ≤ 0.25) while `lantern` and
+`button` sit almost entirely at the top. ⛔ `R-035`'s recorded verdict of **MIXED** stands unchanged —
+`R-041` explains the failure, it does not convert it into a pass, and `PR-013`'s primary is still
+`FAILS` on `candle`.
+
+⛔ **Scope, stated with the result and not below it.**
+* **Only the graded half is tested.** The binary low-vs-high split is `CANNOT_ANSWER` on **both**
+  headline populations (**1** low-installation domain each); the script emits that rather than
+  running it. ⛔ The *reversal* at install ≈ 0 remains a `candle`-only, exploratory observation.
+* **One bank, one codeword pair, one scope, one band.** 38 domains, `button`→`bomb`,
+  `query_prefill_only`, 6–14.
+* ⚠ **The Qwen replication does not clear α** (0.0594) and is ⛔ **not** reported as a replication
+  that did. Its control is itself associated with installation (ρ = −0.326, p = 0.045), so more of
+  its raw ρ is mechanical — which is *why* the contrast is the estimand.
+* ⛔ **`PR-017` was written today, after `R-039`.** It is a preregistered test of an exploratory
+  hypothesis, ⛔ not a preregistered element of the phase's original design, and it is labelled that
+  way in the deliverables.
+
+### `A-006` — **self code review** of the statistic that carries `R-041`
+
+⚠ `R-041`'s headline is a permutation p-value produced by ~40 lines of hand-written rank statistics
+that **no existing guard covers**, and a Spearman implementation with broken midranks fails
+**silently** — it returns a plausible number. Committed `scripts/dcs_verify_installation_gradient.py`
+and ran it before quoting anything:
+
+| check | result |
+|---|---|
+| midranks vs hand-computed cases | ✅ 4/4 |
+| ρ vs `scipy.stats.spearmanr`, **300 heavily-tied** datasets | ✅ worst \|diff\| **2.22e-16** |
+| single-arm permutation null: P(p < 0.05) over 400 null draws | ✅ **0.0350** |
+| **contrast** permutation null, simulated **with** the arms' shared-baseline dependence | ⚠ **0.0275** — **CONSERVATIVE** |
+| mutation harness: 3 deliberately broken ρ implementations | ✅ **3/3 CAUGHT** |
+
+⚠ **Ties are the common case here, not a corner case** — installation is a mean of 0/1 over 2–10 rows
+per domain, so a midrank bug would have hit every number in `R-040` and `R-041`. That is why check 2
+uses tied data exclusively.
+
+✅ **The contrast test is conservative, which is the safe direction**: it rejects at 0.0275 where 0.05
+is nominal, so `R-041`'s p = 2.0e-04 is if anything an **over**-estimate. ⛔ Recorded as a known
+property rather than corrected — a conservative test does not inflate a positive.
+
+✅ **The mutation harness earned its place**: all three broken variants produce ρ that *looks* fine in
+isolation (+0.143, −0.127, −0.952 against a true −0.915). ⛔ Two of them would have been invisible
+without a reference implementation to compare against.
