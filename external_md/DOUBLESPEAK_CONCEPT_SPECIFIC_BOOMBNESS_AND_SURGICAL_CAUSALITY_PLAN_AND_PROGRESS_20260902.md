@@ -6299,3 +6299,34 @@ destroyed the only on-disk trace of a defect worth remembering.
 
 ✅ **`run_completeness_check` re-run with them present:** *"every finished run persisted its full row
 count"*, 370 finished runs, 10 documented short. The quarantine changes no guard's verdict.
+
+### `R-060` — the intervention **dose is matched to the digit** across knockout and both controls
+
+⚠ Recorded with **4 of 5 arms complete and nothing judged** — no attack number exists for any arm.
+Same timing discipline as `R-059`: a dose-matching check run *after* seeing a contrast is worth much
+less than one run before.
+
+| arm | `keys_masked` median | min | max |
+|---|---|---|---|
+| `demo_all` (**`KO-3`**) | **522** | 378 | 846 |
+| `nondemo_matched_d1` | **522** | 378 | 846 |
+| `nondemo_matched_d2` | **522** | 378 | 846 |
+
+✅ **Identical across all three, at every quantile checked.** ⇒ The controls mask **the same number of
+keys** as the knockout and differ only in **which** keys — non-demonstration rather than
+demonstration. That is the count-matching contract doing exactly what it exists for, and it means a
+`KO-3` − control difference **cannot** be attributed to intervention size.
+
+⚠ **This is `R-033a`'s argument, transplanted to the comparison that matters.** There it was
+cell C vs cell B receiving an identical intervention; here it is **knockout vs control**, which is
+`PR-024a`'s actual estimand. ⛔ `R-033` proved this comparator is **structurally impossible** in the
+`rbd` banks — it exists here only because `cds116` inherits `cds38`'s 10-line preamble.
+
+✅ **Contract checks on all four completed arms**: `1160` rows, **116 domains at exactly 10 rows
+each** (a perfectly balanced design — an unbalanced one would silently weight domains in the sign
+test), `hook_n_decode_edits` **max 0** and `hook_n_prefill_edits` **min 9 072`. ⇒ The knockout touched
+prefill and **never** decode across 640-token generation, which is the `query_prefill_only` contract
+and the check that would catch an intervention leaking into the generation itself.
+
+⚠ Wall times **128–151 min/arm**, against the ~2.7 h `R-056` projected from 8.39 s/row — the estimate
+that sized the whole experiment was right to within about 10 %.

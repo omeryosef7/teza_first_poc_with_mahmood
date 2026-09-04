@@ -81,6 +81,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 15 | `DCS-038` | the 30-min stall rule says resubmit `850796`; ⛔ **not doing it** — nodelist is already all six nodes and it is queued behind **my own** arms. Reason recorded | ✅ |
 | 16 | `R-059` | the two bank halves are **structurally homogeneous** — demo tokens identical to the digit (59.0), so the halves get the same intervention **dose**. Run at 400/1160, before any outcome | ✅ |
 | 16 | `DCS-039` | `C-037c`'s wreckage was still on disk under the **live tag prefix**, incl. **53 rows from the pre-fix bank**. Every selector verified to filter on `DONE.json`; dirs **quarantined**, not deleted | ✅ |
+| 17 | `DCS-038`→held | `850796` started **on its own** at 23:39, as predicted when I declined the 30-min stall rule. Queued behind my own work, not fair-share | ✅ |
+| 17 | `R-060` | **dose matched to the digit** — `keys_masked` 522/378/846 identical for `KO-3`, `d1`, `d2`. Recorded with **nothing judged** | ✅ |
 
 ## Live
 
