@@ -5446,3 +5446,59 @@ on data already in the repo. ⇒ Listed as `B-015`.
 to three independent operationalisations of the predictor (**B**), and to an arm-exchangeability null
 (**E**). ⛔ It is **not** established within the varying subrange (**C**), and its comparator is **not
 inert** (**D**).
+
+### `R-051` — `B-015`: ⛔ my preamble mechanism is **REFUTED**, `A-009`'s `D` narrows, and **the headline contrast is inflated**
+
+`A-009` offered an untested mechanism for the control's positive gradient: *the control masks
+preamble keys, so damaging the preamble in a high-installation domain makes the model lean harder on
+the demonstrations.* It predicted the gradient should **vanish without a preamble**. ⚠ That test is
+unavailable — `R-033` showed the `rbd` banks have **no control at all** (`match_ratio` 0.000). So the
+available test is the opposite one: **every** population that HAS a control also has a preamble.
+
+| population | preamble | ρ<sub>ctrl</sub> | perm p |
+|---|---|---|---|
+| Llama · `cds38` · n=4 · `button` (**the `R-041` headline**) | yes | **+0.312** | 0.058 |
+| Llama · `cds38` · n=8 · `button` | yes | −0.040 | 0.817 |
+| Llama · `cds38` · n=4 · **`basket`** | yes | **−0.018** | 0.914 |
+| Qwen3-14B · `cds38` · n=4 · `button` | yes | **−0.326** | 0.045 |
+
+⛔ **The preamble mechanism is refuted.** All four have a preamble and the gradient is **+0.31, −0.04,
+−0.02, −0.33** — it flips sign across dose, across codeword, and across model on the **same bank
+family**. A property of the preamble cannot do that.
+
+⛔ **And `A-009`'s `D` must itself be narrowed.** `D` called the control gradient *"systematic"* on
+the strength of leave-one-out stability. ⚠ **LOO stability does not protect against a
+population-level fluctuation** — it only shows no single domain drives it. On the **`basket`** bank,
+the *same model at the same dose*, the gradient is **−0.018 (p = 0.914)**. ⇒ The **+0.312 is
+population-specific**, and the honest reading is that it is a **single-population fluctuation**, not a
+property of dose-matched controls.
+
+⛔ **This deflates my own headline number, and that is the point of the check.** If the control's
++0.312 is a fluctuation rather than a nuisance to be removed, then the **−0.907** contrast is
+**inflated** by a comparator that happens to point the wrong way in exactly the population I
+headlined. ⇒ **The reproducible quantity is ρ<sub>KO</sub>, not the contrast:**
+
+| population | ρ<sub>KO</sub> |
+|---|---|
+| Llama n=4 | **−0.594** |
+| Llama n=8 | **−0.444** |
+| Qwen3-14B | **−0.734** |
+
+⚠ All three negative, three settings, two models. ⇒ ⛔ **Quote ρ<sub>KO</sub> ≈ −0.44 … −0.73 as the
+finding, and the contrast only with its population named.** The `−0.907` may **not** stand as *the*
+effect size.
+
+⚠ **What the contrast machinery was FOR, and what this says about it.** It was built because `R-040`
+found regression to the mean is large and its sign flips by bank (`candle` placebo −0.460, `lantern`
++0.345). ✅ That concern was correct in kind. ⚠ But across the four populations with a real control,
+the comparator is **near-inert on average** — so the RTM correction is **smaller than feared**, and
+subtracting a noisy comparator **adds** variance to the estimate. ⇒ The contrast remains the right
+estimand *within* a population; it is **not** a better estimate of a general effect size.
+
+✅ **What survives `A-009` and `R-051` together, stated as it should be published:**
+> Per-domain baseline installation predicts the size of the `demo_all` knockout's effect on cell C.
+> ρ<sub>KO</sub> = **−0.594** (Llama n=4), **−0.444** (Llama n=8), **−0.734** (Qwen3-14B) — three
+> settings, two models, robust to leave-one-out and to three operationalisations of the predictor.
+> ⛔ The effect is **not** demonstrated within the partially-installed subrange alone
+> (13 domains, contrast −0.503, p = 0.343), and the comparator is **not** reliably inert, so the
+> −0.907 contrast is **population-specific and inflated**.
