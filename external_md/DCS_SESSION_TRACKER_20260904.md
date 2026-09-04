@@ -63,6 +63,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 7 | `R-054` | Stages 1–2 **both gates pass**: control **9.20×** headroom, installation **0.708** vs 0.908, **20** domains ≤0.75 (gate 13). Installation is **monotone in dose** | ✅ |
 | 7 | `R-055` | ⛔ **NULL branch: attack `C` fails a THIRD time** at **33** domains on purpose-built data (p=0.210) ⇒ power is dead. ✅ The within-range gradient **IS RTM** — control ρ **−0.086 → −0.338** by conditioning alone | ✅ |
 | 7 | — | settled claim propagated to summary, `LIVE STATUS`, figure (panel F + card); blocker `0b` **closed** | ✅ |
+| 8 | `A-010` | **self code review of the auditor** — `dcs_audit_r041.py` carried three populations' conclusions with **no** verifier. Now 6 checks incl. attack `E`'s **power** (59/60) and a mutant that makes `E` unable to reject | ✅ |
+| 8 | `C-034` | ⚠ my verifier bands were **hardcoded** ⇒ one false ANTI-CONSERVATIVE alarm on `E` (0.0767 at n=300; **0.0490** at n=3000) and one **withdrawn** claim from `A-006`. Band now **derived from N** | ✅ |
 
 ## Live
 
