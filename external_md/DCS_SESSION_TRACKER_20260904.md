@@ -72,13 +72,17 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 11 | — | pool generation submitted (**850676**), parameters copied from the existing pools' `_meta` — the CLI default seed is **20260816**, the real one **20260828** | ⏳ |
 | 11 | `DCS-037` | pool audit **mutation-tested before it judges anything**: 7/7, every refusal fires; the cross-domain-duplicate non-refusal is pinned as a **recorded judgement call** | ✅ |
 | 12 | `PR-024a` | ⛔ closed the **comparator freedom** `PR-024` left open — primary is now a **conjunction over all three** controls, no selection; refusal-neutrality selection is discredited (`C-023`) | ✅ |
+| 13 | `C-036`/`R-057` | my pool audit **rejected the canonical pools** (27 of them) ⇒ matcher rescoped; **116-domain pool set** built, 464 pools, 0 short, homogeneous | ✅ |
+| 13 | `C-037`/`R-058` | ⛔ **real shared-code bug**: collision detector matches `word s?`, repair matched singular only ⇒ plural collisions detectable but **unrepairable**. Fixed; 116-domain bank built, 12 992 rows, 0 violations | ✅ |
+| 14 | `C-037b` | ⚠ my own fix was **incomplete** — it reached `sentences` but not `dev`/`heldout`, **the field `build_prompt` actually reads**. Third scope mismatch: guard and builder read different fields | ✅ |
+| 14 | `C-037c` | ⚠ **near-miss**: I rebuilt the bank 10 min into a running arm. `prompt_id`s are identical across builds, so pairing would have been **silently wrong**. Cancelled + resubmitted all five | ✅ |
+| 14 | `PR-024a` | five arms resubmitted (850792–850796); knockout pre-flight **1160 rows, 0 infeasible_control** | ⏳ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-024` / `B-009` pool generation, 78 domains × 4 valences | 850676 | ⏳ `cpu-killable` |
-| `PR-024` bank build + 5 behavioural arms (~13.5 GPU-h) | — | queued behind the pool audit |
+| `PR-024a` five behavioural arms, 116 domains × 10 rows | 850792–850796 | ⏳ 3 running / 2 queued, ~2.7 h each |
 
 ## Standing rules being followed this session
 
