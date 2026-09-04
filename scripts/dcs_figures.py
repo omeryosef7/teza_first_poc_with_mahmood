@@ -72,8 +72,9 @@ def main():
     b_mean = st.mean([base[p]["semantic_logodds"] for p in ref])
 
     fig, axes = plt.subplots(2, 2, figsize=(13.6, 9.4))
-    fig.suptitle(f"Doublespeak concept-specific phase (DCS) — {MODEL}, band {BAND}, "
-                 f"cell C = natural_doublespeak unless stated", fontsize=11.5, y=0.985)
+    fig.suptitle("Doublespeak concept-specific phase (DCS) — cell C = natural_doublespeak; "
+                 "Llama-3.1-8B-Instruct @ L6-14 unless a panel states otherwise",
+                 fontsize=11.5, y=0.985)
 
     # ---- A: the row dose-ladder (R-022) -- the phase's cleanest mechanistic result -------------
     ax = axes[0][0]
@@ -107,12 +108,16 @@ def main():
     # ---- B: specificity DiD, both codewords (R-010 / R-011) -----------------------------------
     ax = axes[0][1]
     labels, cvals, bvals, dids = [], [], [], []
-    for pair, pre in (("button↔bomb", "dcsro"), ("basket↔bomb", "dcsbk")):
+    for pair, pre in (("Llama\nbutton↔bomb", "dcsro"), ("Llama\nbasket↔bomb", "dcsbk"),
+                      ("Qwen3-14B\nbutton↔bomb", "dcsqw")):
         per = {}
         for cell, tag in (("C", "C"), ("B", "B")):
             bb = rows(f"{pre}_{tag}_baseline")
             k = rows(f"{pre}_{tag}_qpo_demo")
-            c = rows(f"{pre}_{tag}_qpo_ctrl_d1")
+            try:
+                c = rows(f"{pre}_{tag}_qpo_ctrl_d1")
+            except IndexError:
+                c = rows(f"{pre}_{tag}_qpo_ctrl")   # Qwen arms use the un-suffixed control tag
             rr = sorted(bb)
             per[cell] = per_domain(k, c, rr, bb)
         doms = sorted(set(per["C"]) & set(per["B"]))
@@ -129,16 +134,19 @@ def main():
            label="cell B (concept itself) — KO − control")
     ax.axhline(0, color="0.3", lw=1.0)
     for i, (m, hi, lo, p, nd) in enumerate(dids):
-        ax.annotate(f"DiD {m:+.2f}   {lo}/{nd} domains   p={p:.1e}",
-                    xy=(i, 3.0), ha="center", va="center", fontsize=8.4,
-                    bbox=dict(boxstyle="round,pad=0.30", fc="white", ec="0.6", lw=0.8))
-    ax.set_ylim(min(cvals) - 1.6, 4.4)
+        ax.annotate(f"DiD {m:+.1f}\n{lo}/{nd} dom", xy=(i, 3.4), ha="center", va="center",
+                    fontsize=8.0,
+                    bbox=dict(boxstyle="round,pad=0.24", fc="white", ec="0.6", lw=0.8))
+    ax.set_ylim(min(cvals) - 2.0, 6.4)
+    ax.annotate("all three: 1+/37−, p = 2.8e-10", xy=(0.5, 0.035), xycoords="axes fraction",
+                ha="center", va="bottom", fontsize=8.2, style="italic", color="0.35")
     ax.set_xticks(list(x))
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels(labels, fontsize=8.6)
     ax.set_ylabel("Δ semantic_logodds vs dose-matched control")
     ax.set_title("B  Specificity: the whole-query knockout hits the codeword, not the concept\n"
-                 f"KO-3 · forced-choice · n=380/377 per cell · 38 domains · both lexical banks",
-                 fontsize=9.6, loc="left")
+                 "KO-3 · forced-choice · n=377-380/cell · 38 domains · 2 models × 2 codewords\n"
+                 "⚠ one sign pattern replicated 3×, NOT 3 independent p-values",
+                 fontsize=9.0, loc="left")
     ax.legend(fontsize=8.4, loc="lower right")
     ax.grid(alpha=0.25, axis="y")
 

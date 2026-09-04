@@ -3246,3 +3246,21 @@ harder to un-publish than one never computed. ⚠ The arms are **not wasted**: t
 qualification band should be **relative** (e.g. Δ ≤ 25 % of baseline refusals) with the *judge* band
 kept absolute for count comparisons. ⛔ Changing it **now** would admit 2 of the 6 Qwen draws and
 unblock the interaction — which is exactly why it is not being changed now.
+
+### `DCS-026` — figures extended to the cross-model result
+
+`reports/DCS_FIGURES.png` regenerated. **Panel B now carries all three specificity settings** —
+Llama·`button` (−9.9), Llama·`basket` (−9.4), **Qwen3-14B·`button` (−22.2)** — recomputed from
+`results.jsonl` at draw time, matching the published values exactly.
+
+⚠ **Two caption defects fixed, both of the kind that mislead rather than merely look wrong:**
+1. The figure's global title still read *"Llama-3.1-8B-Instruct, band L6-14"* after a **Qwen** panel
+   was added — a title that silently mislabels a model. Now: *"Llama-3.1-8B-Instruct @ L6-14 unless
+   a panel states otherwise"*, with each panel naming its own model.
+2. The panel-B subtitle now states in the figure itself: **"one sign pattern replicated 3×, NOT
+   3 independent p-values"**, with `all three: 1+/37−, p = 2.8e-10` under the axis. ⇒ Three bars at
+   p = 2.8e-10 read as overwhelming independent evidence; the caveat has to live **on the figure**,
+   because a figure travels without its log.
+
+⚠ Both were caught by **rendering the image and reading it back**, not by trusting that the script
+wrote successfully — the same check that caught the overlapping annotations in `DCS-020`.
