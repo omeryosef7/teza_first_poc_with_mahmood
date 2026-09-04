@@ -49,6 +49,10 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 3 | `R-049` | `PR-020` answered: noise floor **18/380** (net +6) — **too small to explain `R-048`**; ✅ `refused` **0/380**, so `C-023` holds and the bound's input is verified deterministic | ✅ |
 | 3 | `A-008` | coverage audit: **10 of 10** preregistrations closed, read from the corpus not a regex; both verifier suites re-run **PASS** | ✅ |
 | 3 | — | `R-049` propagated to summary + `LIVE STATUS`; `B-014` closed | ✅ |
+| 4 | `PR-021` | preregistered + ran the **never-run `benign_literal`** cell (849861) — the codeword present with **no** remapping | ✅ |
+| 4 | `R-050` | primary ⛔ **`CANNOT ANSWER`** (1 of 38 domains, gate needed 4). ✅ But: full installation swing **+10.68**; `option_mass` **0.877→0.264** without a mapping; benign demos install a **benign** remapping (` Mushroom` 22/380) | ✅ |
+| 4 | `DCS-035` | my watch treated *left `squeue`* as terminal and raced the writer; the **analyzer's** `DONE.json` guard is what covered it | ✅ |
+| 4 | — | `R-050` propagated to summary `SCOPE` + `ESTABLISHED` and to `LIVE STATUS` | ✅ |
 
 ## Live
 

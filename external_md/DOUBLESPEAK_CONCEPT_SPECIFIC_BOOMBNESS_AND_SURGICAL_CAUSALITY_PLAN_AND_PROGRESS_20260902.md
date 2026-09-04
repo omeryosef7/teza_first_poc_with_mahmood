@@ -14,8 +14,8 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 ## 0. LIVE STATUS
 
 *(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-048`/`C-033`.
-**all queues empty**; `PR-014` and `PR-020` closed; **10 of 10** of this session's preregistrations
-have recorded outcomes (`A-008`).)*
+**all queues empty**; **11 of 11** of this session's preregistrations have recorded outcomes
+(`A-008` + `PR-021`→`R-050`).)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
