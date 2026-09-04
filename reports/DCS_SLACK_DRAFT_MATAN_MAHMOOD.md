@@ -40,13 +40,16 @@ explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and bot
 > position carries the mapping.
 >
 > **The behavioural link is where we're stuck, and I want to be straight about it.** On Llama, cutting
-> the path reduces attack **in direction** (≈ −30 of 153, consistent across 3 refusal-neutral controls
+> the path reduces attack **in direction** (≈ −30 of 153, consistent across 3 near-neutral controls
 > × 2 seeds × 4 judgings) — but it **does not reach significance at the domain independence unit**,
 > and 38 domains is **all that exists** in our pools, so no amount of further judging fixes it. On
-> Qwen we **cannot answer at all**: 0 of 6 control draws meet refusal-neutrality, because our ±17-row
-> band is an *absolute* judge-noise figure and Qwen's baseline is 150 refusals rather than 42 — a
-> 3.6× stricter relative test. That is a limitation of our criterion, **not** evidence that Qwen shows
-> no effect; we never computed an attack contrast there.
+> Qwen we **cannot answer by comparator selection**: 0 of 6 draws meet our refusal-neutrality
+> tolerance. ⚠ And checking that tolerance this week showed it was never justified — the ±17 came
+> from *attack* labels, while the refusal metric is a deterministic string matcher whose measured
+> judge band is **0**. So it is a tolerance for residual confound, not a noise band, on either model.
+> We are therefore re-analysing Qwen by **bounding** the confound rather than selecting a clean
+> control. That is a limitation of our criterion, **not** evidence that Qwen shows no effect; we
+> never computed an attack contrast there.
 >
 > **One thing that replicates everywhere:** refusal. Llama 42 → 0, Qwen **150 → 0** — and that is the
 > same 150 the earlier sprint removed with a *different* scope. Two models, four scopes.
@@ -81,4 +84,6 @@ explicit instruction from Omer. Rewritten 2026-09-04 after the Qwen wave and bot
 * Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families.** That is 38
   *contexts* for a single mapping, not 38 mappings.
 * If asked "what would change your mind": new pools (for the behavioural claim), a second harmful
-  concept (for generality), and a relative refusal-neutrality band declared **in advance** (for Qwen).
+  concept (for generality; **now running** — `lantern`→`poison` and `candle`→`missile`), and for Qwen
+  a bounded re-analysis rather than the relative band we previously proposed (that proposal is
+  withdrawn — see the refusal-metric note above).
