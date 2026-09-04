@@ -220,10 +220,13 @@ def main():
 
     # ---- E: the layer profile (R-030) -- section 42 Figure 8, absent by design until the sweep ---
     axE = axes[2][0]
-    bands = [("0-5", "dcsLb00_05_demo", "dcsLb00_05_ctrl"),
-             ("6-14", "dcsro_C_qpo_demo", "dcsro_C_qpo_ctrl_d1"),
-             ("15-23", "dcsLb15_23_demo", "dcsLb15_23_ctrl"),
-             ("24-31", "dcsLb24_31_demo", "dcsLb24_31_ctrl")]
+    # EQUAL-WIDTH bands (5 layers, dose 37 120 each) so cross-band magnitudes are comparable;
+    # the two late bands come from the coarse sweep and are marked as such in the title.
+    bands = [("0-4", "dcsFf00_04_demo", "dcsFf00_04_ctrl"),
+             ("5-9", "dcsFf05_09_demo", "dcsFf05_09_ctrl"),
+             ("10-14", "dcsFf10_14_demo", "dcsFf10_14_ctrl"),
+             ("15-23\n(9L)", "dcsLb15_23_demo", "dcsLb15_23_ctrl"),
+             ("24-31\n(8L)", "dcsLb24_31_demo", "dcsLb24_31_ctrl")]
     bl, be, bp = [], [], []
     for lbl, dt, ct in bands:
         D, C = rows(dt), rows(ct)
@@ -235,18 +238,22 @@ def main():
     cols = ["#c1272d" if e < -1 else ("#2b6cb0" if e > 0.3 else "#8a8a8a") for e in be]
     axE.bar(range(len(bl)), be, 0.58, color=cols)
     axE.axhline(0, color="0.3", lw=1.0)
-    axE.set_ylim(min(be) - 2.4, 3.4)
+    axE.set_ylim(min(be) - 2.6, 3.4)
     for i, (e, (hi, lo, pv)) in enumerate(zip(be, bp)):
         axE.annotate(f"{e:+.2f}\n{hi}+/{lo}−", xy=(i, 2.0), ha="center", va="center", fontsize=8.0,
                      bbox=dict(boxstyle="round,pad=0.24", fc="white", ec="0.6", lw=0.8))
     axE.set_xticks(range(len(bl)))
-    axE.set_xticklabels([b + ("\n(inherited)" if b == "6-14" else "") for b in bl], fontsize=8.8)
+    axE.set_xticklabels(bl, fontsize=8.4)
+    axE.axvspan(-0.5, 2.5, color="#c1272d", alpha=0.06)
+    axE.annotate("equal width (5L, dose 37 120)\n→ magnitudes comparable", xy=(1.0, min(be) - 1.5),
+                 ha="center", va="center", fontsize=7.6, color="0.35", style="italic")
     axE.set_xlabel("layer band cut from the demonstrations")
     axE.set_ylabel("Δ semantic_logodds vs dose-matched control")
-    axE.set_title("E  Layer profile: the effect IS localised early-to-mid\n"
+    axE.set_title("E  Layer profile: DISTRIBUTED over 0-14, peak at 10-14, absent above 14\n"
                   "KO-3 · each band vs its OWN dose-matched control · n=380 · 38 domains\n"
-                  "⚠ band widths differ (6/9/9/8 layers) so cross-band doses are NOT matched",
-                  fontsize=9.0, loc="left")
+                  "⚠ shaded bands are equal-width/equal-dose; the two right-hand bands are 9L/8L "
+                  "(coarse sweep) and are NOT dose-comparable to them",
+                  fontsize=8.8, loc="left")
     axE.grid(alpha=0.25, axis="y")
 
     axes[2][1].axis("off")

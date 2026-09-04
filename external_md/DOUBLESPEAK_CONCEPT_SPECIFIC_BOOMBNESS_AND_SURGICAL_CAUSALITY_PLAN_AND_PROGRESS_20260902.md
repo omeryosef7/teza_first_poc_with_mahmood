@@ -41,10 +41,10 @@ Experiments complete; `squeue` empty.)*
 * ⛔ "The mapping is constructed during demonstration processing" (`C-010`), the **L6–L12 peak**
   (`C-005`), "the controls are inert" as a *sign* claim (`C-011`), "the effect lives in the held-out
   half" (`C-017`), "the two cells move in opposite directions" (button-on-Llama only, `R-011`/`R-025`).
-* ⚠ "The effect is localised to L6–14" — **now SUPPORTED** by `R-030`'s four-band sweep
-  (0–5 −4.30 · **6–14 −8.08** · 15–23 +0.15 · 24–31 +0.75), superseding `DCS-021`'s prohibition.
-  ⛔ Still not claimable: a **per-layer** profile, or that 6–14 is optimal among *finer* bands —
-  four coarse bands of unequal width are not a localisation curve.
+* ⚠ "The effect is **localised to L6–14**" — ⛔ **too strong.** `R-031`'s equal-dose sweep shows it
+  is **distributed across 0–14** (0–4 −3.39 · 5–9 −2.99 · **10–14 −5.65**, no band null) and absent
+  above 14 (15–23 +0.15). ⇒ Say *"lives in 0–14, peaks at 10–14, absent above 14"*. 6–14 is a
+  well-placed **window**, not the mechanism's extent. ⛔ Still not claimable: a per-layer profile.
 * ⛔ Three p-values of 2.8e-10 as independent evidence — one sign pattern, three times.
 * ⛔ `d_surface` as validated or as a GCG/MAC objective.
 
@@ -3426,3 +3426,27 @@ recorded **only** to show why the arithmetic is unavailable, not as evidence of 
 ⇒ Net: the phase's headline is **unchanged** (6–14 was fixed in advance and remains the reported
 band), but its *interpretation* is corrected — 6–14 is a **well-placed window over a graded
 early-mid mechanism**, not the mechanism's extent.
+
+### `DCS-028` — deliverables re-synced to the graded layer story
+
+`R-031` changed what the layer result *means*, so both deliverables and the figure were corrected
+rather than left carrying `R-030`'s stronger reading.
+
+* **§0 must-not-say**: *"localised to L6–14"* was listed as **SUPPORTED** two ticks ago on `R-030`'s
+  coarse sweep. ⚠ It is now marked **too strong**: the equal-dose sweep shows the effect is
+  **distributed across 0–14** with no null band. ⇒ The entry has moved **twice** — forbidden
+  (`DCS-021`, no sweep) → supported (`R-030`, coarse) → **qualified** (`R-031`, equal-dose). That is
+  the list working as intended, not churn.
+* **Summary**: `R-030`'s row replaced by a combined `R-030`/`R-031` row reading *"lives in 0–14,
+  peaks at 10–14, absent above 14 — **graded, not bounded at 6–14**"*, with the note that the
+  inherited window contains the peak while **layers 0–5 also contribute**.
+* **Figure panel E** now plots the **equal-width, equal-dose** bands (0–4 / 5–9 / 10–14) as the
+  primary series, **shaded** to mark them as mutually comparable, with 15–23 and 24–31 kept beside
+  them and **labelled `(9L)` / `(8L)`** plus a title warning that they are **not dose-comparable**.
+  ⛔ Plotting five bars of different widths on one axis without that mark is precisely how a reader
+  would infer a false magnitude ordering.
+
+⚠ **The pattern worth naming:** each of the last three ticks tightened a claim rather than extending
+one — `R-030` removed an assumption, `R-031` removed `R-030`'s dose confound, and this entry
+propagates the weaker-but-correct reading into the artifacts a reader actually sees. The headline
+number (**−8.08 at 6–14**) has not moved once; **what it is a claim about** has moved three times.
