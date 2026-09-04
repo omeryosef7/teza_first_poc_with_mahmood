@@ -6153,3 +6153,41 @@ refuses has no committed artifact to move — so no published result can shift.
 | ⇒ behavioural cell C at `cds_n4` | **1 160 rows** (116 domains × 10) |
 
 ⇒ `PR-024a`'s five arms run at `--expect-n 1160`, against the 380 that gave **0.311** power.
+
+### `C-037b` — my own `C-037` fix was **incomplete**, and the field it missed is the one that matters
+
+Four of the five arms died in 63 s: `ValueError: occurrence_count_mismatch:text=5,tokens=6`. ✅ Only
+the **intervened** arms — the baseline has no spans to resolve, which localised it immediately.
+
+**Diagnosed without guessing.** A word-boundary regex over all 4 640 behavioural rows found **0**
+mismatches, so the declared counts agree with the text; the **tokeniser** finder disagreed on **14**
+rows — all in the **new 78**, all in exactly the **three domains `C-037` touched**
+(`orchard_store`, `coal_yard`, `hydro_station`). The extra occurrence was the plural **`buttons`**.
+
+⛔ **`C-037`'s fix reached `sentences` and NOT `dev`/`heldout`.** The two branches differ by an
+`isinstance(x, str) else x` guard, so my patch matched one line and not the other. Measured after the
+fix: `sentences` 16 → **0**, `dev` 12 → **2**, `heldout` 4 → **1**.
+
+⛔ **And that is the field that matters, which makes this a THIRD scope mismatch, not a typo.**
+`build_prompt` draws from **`dev`/`heldout`**; the collision **detector** reads **`sentences`**. ⇒ The
+detector saw a **repaired** pool, reported no collision, and the builder then used an **unrepaired**
+one. Guard and remedy disagreed at `C-037`; here **guard and builder read different fields.**
+
+✅ Fixed; after it, `sentences`/`dev`/`heldout` are all **0**, the byte-identical regeneration test
+**passes**, and the bank rebuilt with **0 occurrence mismatches across all 4 640 rows**.
+
+### `C-037c` — ⚠ the near-miss that would have been **invisible**: I rebuilt the bank under a running job
+
+`850773` (baseline) started **21:54:21**. The corrected bank was written **22:04:54** — **ten minutes
+later**. ⇒ The baseline was reading the **pre-fix** bank while the four resubmitted arms would read
+the corrected one.
+
+⛔ **Nothing downstream would have caught it.** The analyzers assert **`prompt_id` set equality**, and
+the ids are **identical** across the two builds — only the *text* of 14 rows differs. ⇒ A baseline
+from bank A paired against knockouts from bank B would have passed every guard in the repo, and the
+pairing that the **entire domain sign test** rests on would have been silently wrong.
+
+✅ **Cancelled `850773` and resubmitted all five** (850792–850796) so every arm reads one bank.
+⚠ **The lesson is about ordering, not about the bug:** ⛔ never rewrite an input artifact while a job
+that reads it is in flight. The cost here was 8 minutes of GPU; the cost of not noticing would have
+been a result.

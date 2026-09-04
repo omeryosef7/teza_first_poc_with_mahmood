@@ -1326,7 +1326,12 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
                 for a, b in repairs.items():
                     if a.casefold() == nat:
                         continue
-                    v = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, x) if isinstance(x, str) else x for x in v]
+                    # DCS-C-037b: this branch kept the SINGULAR-only regex after the
+                    # `sentences` branch above was fixed, and it is the one that matters --
+                    # `build_prompt` draws from `dev`/`heldout`, while the collision DETECTOR
+                    # reads `sentences`. So the detector saw a repaired pool and the builder
+                    # used an unrepaired one. Same asymmetry as C-037, one field deeper.
+                    v = [_sub_with_plural(a, b, x) if isinstance(x, str) else x for x in v]
                 p[split] = v
         out[name] = p
     return out

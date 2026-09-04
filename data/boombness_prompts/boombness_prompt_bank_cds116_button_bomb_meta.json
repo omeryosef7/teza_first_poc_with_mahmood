@@ -6,7 +6,7 @@
   "pools_sha16": "976aa2b0b617118d",
   "pools_path": "data/boombness_prompts/demo_pools_116dom.json",
   "stats": {
-    "bank_rows_sha16": "40698d92ec347460",
+    "bank_rows_sha16": "d46a48ccc3df66d2",
     "n_rows": 12992,
     "n_duplicate_prompt_id_rows_dropped": 0,
     "duplicate_drops_by_condition": {},
@@ -166,11 +166,11 @@
   },
   "incidental_collisions_after_repair": [],
   "hostname": "c-003",
-  "git_commit": "254b8384d62e43eb5ebf3448524849752a988336",
+  "git_commit": "4073e33c6ada16e16ef13df442c130dd0759feb8",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA TITAN Xp",
-  "timestamp": "2026-09-04T21:52:21"
+  "timestamp": "2026-09-04T22:01:40"
 }
