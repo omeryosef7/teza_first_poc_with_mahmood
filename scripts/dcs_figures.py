@@ -311,13 +311,16 @@ def main():
     axF.set_xlabel("baseline INSTALLATION  (per-domain fraction of rows whose argmax answer "
                    "is already 'bomb')")
     axF.set_ylabel("Δ semantic_logodds vs baseline")
-    axF.set_title("F  The effect is GRADED by how much was installed (R-041, narrowed by A-009/R-051)\n"
+    axF.set_title("F  Fully-installed domains lose MORE than partially-installed ones\n"
+                  "    (R-041, narrowed by A-009/R-051 and again by R-053 -- CATEGORICAL, not a gradient)\n"
                   "button→bomb · Llama · L6-14 · n=380 · 38 domains · cell C\n"
                   "rho_KO = −0.594 here; −0.444 (n=8) and −0.734 (Qwen) elsewhere — 3 settings, 2 models\n"
                   "[!] the −0.907 CONTRAST is population-specific and inflated: this control's +0.312\n"
                   "does not reproduce (−0.04 / −0.02 / −0.33 on three other populations, R-051)\n"
-                  "[!] NOT shown on the 13 varying domains alone: −0.503, p = 0.343 (A-009 attack C)",
-                  fontsize=8.4, loc="left")
+                  "[!] NOT shown within the varying subrange on EITHER model: Llama −0.503 p=0.343\n"
+                  "(n=13); Qwen −0.173 p=0.504 (n=30, so power is not the explanation, R-053). There\n"
+                  "rho_ctrl −0.428 nearly matches rho_KO −0.601 -- what regression to the mean predicts",
+                  fontsize=8.0, loc="left")
     axF.legend(fontsize=7.8, loc="lower left")
     axF.grid(alpha=0.25)
 
@@ -409,25 +412,26 @@ def main():
                     "Installation gradient (R-041/R-043)\n"
                     "─────────────────────────────\n"
                     "- CORRELATIONAL across domains.\n"
-                    "- A-009 audit: survives leave-one-out (38\n"
-                    "  subsets), 3 operationalisations, and an\n"
-                    "  arm-exchangeable null. But attack C LANDS:\n"
-                    "  on the 13 domains that actually vary the\n"
-                    "  contrast is -0.503 at p=0.343, so the result\n"
-                    "  is dominated by ceiling-vs-rest.\n"
-                    "- R-051: the -0.907 contrast is inflated. This\n"
-                    "  control's +0.312 gradient does NOT reproduce\n"
-                    "  (-0.04 / -0.02 / -0.33 elsewhere). Quote\n"
-                    "  rho_KO = -0.594 / -0.444 / -0.734 instead.\n"
-                    "- PR-018 tried to manipulate it and the\n"
-                    "  knob would not turn: 0.908 -> 0.928,\n"
-                    "  25/38 domains already at ceiling\n"
-                    "  => predictions 2-3 VOID (R-042).\n"
-                    "- The low-vs-high split is CANNOT_ANSWER\n"
-                    "  on every population that has a control\n"
-                    "  (1 low-installation domain each).\n"
-                    "- The reversal at install~0 is candle-only\n"
-                    "  and EXPLORATORY.",
+                    "- CATEGORICAL, not a continuous gradient\n"
+                    "  (R-053). Attack C LANDS ON BOTH MODELS:\n"
+                    "  Llama -0.503 p=0.343 (n=13); Qwen -0.173\n"
+                    "  p=0.504 (n=30 -- so NOT a power problem).\n"
+                    "  Within the varying subrange rho_ctrl -0.428\n"
+                    "  nearly matches rho_KO -0.601, which is what\n"
+                    "  regression to the mean predicts.\n"
+                    "- On Llama the contrast survives LOO, 3\n"
+                    "  operationalisations and an arm-exchangeable\n"
+                    "  null; on Qwen it fails A (p=0.127) and E\n"
+                    "  (p=0.165) as well as C.\n"
+                    "- R-051: the -0.907 contrast is inflated;\n"
+                    "  this control's +0.312 does NOT reproduce\n"
+                    "  (-0.04 / -0.02 / -0.33). Quote rho_KO.\n"
+                    "- R-052: every population WITH a control has\n"
+                    "  just 1 low-installation domain. The only\n"
+                    "  ones with spread (candle) are the source\n"
+                    "  AND have no control (R-033) => a low-dose\n"
+                    "  block is the only route to settling this.\n"
+                    "- PR-018's manipulation had no headroom (R-042).",
                     fontsize=7.0, va="top", family="monospace")
 
     fig.subplots_adjust(left=0.075, right=0.985, top=0.955, bottom=0.035,

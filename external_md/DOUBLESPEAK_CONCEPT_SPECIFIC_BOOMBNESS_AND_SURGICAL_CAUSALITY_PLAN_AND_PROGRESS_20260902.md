@@ -22,7 +22,7 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 | # | claim | scope |
 |---|---|---|
 | `R-008`/`R-010`/`R-011`/`R-025` | **The demonstration→query path is necessary for the remapping and specific to it.** DiD **−9.89** (Llama·button), **−9.35** (Llama·basket), **−22.20** (Qwen·button) | ⚠ all three share the **same 1+/37− sign pattern** — one pattern replicated 3×, **not** 3 independent p-values |
-| **`R-041`/`R-043`** ⚠ narrowed | **The effect is GRADED by how much was installed.** ρ<sub>KO</sub> = **−0.594** / **−0.444** / **−0.734** (Llama n=4, Llama n=8, Qwen) — 3 settings, 2 models. Survives leave-one-out, 3 operationalisations, and an arm-exchangeable null (`A-009` A/B/E) | ⛔ **not** demonstrated on the 13 varying domains alone (−0.503, **p = 0.343**); ⛔ the **−0.907** contrast is **population-specific and inflated** (`R-051`) |
+| **`R-041`/`R-043`** ⚠ narrowed **twice** | **Fully-installed domains lose MORE than partially-installed ones** — ⚠ **categorical, not a continuous gradient** (`R-053`). ρ<sub>KO</sub> −0.594 / −0.444 / −0.734, robust to LOO and 3 operationalisations | ⛔ knockout-specific contrast holds only **across the full range**; within the varying subrange **Llama p = 0.343 (n=13)** and **Qwen p = 0.504 (n=30)**, where ρ<sub>ctrl</sub> −0.428 ≈ ρ<sub>KO</sub> −0.601 (**RTM**) |
 | `R-021`/`R-022` | **No single query position carries it; ~¼ of the span does.** K=1 −0.01, K=2 −0.01, **K=8 −6.62**, K=16 −7.89, K=32 −8.08 — a **step**, then saturation | ⚠ row count and dose rise together |
 | `R-022` controls | **Controls inert across a 32× dose range** (+5.16…+5.38 vs +5.19 baseline) | the step is about *which* keys are cut |
 | `R-024` | **The mechanism is cross-model.** Qwen3-14B replicates `KO-3` at ~3× Llama's magnitude; `frac>0` collapses **0.813 → 0.021** | capability gate passed first (`R-023`) |
@@ -44,6 +44,10 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 * ⛔ **"Layers 15–23 are inert"** without naming the bank (`R-037`).
 * ⛔ **"`candle` failed because its mapping is weak"** as an *explanation* — `R-038` tested it and the
   declared conjunction **failed**.
+* ⛔ **"the effect is GRADED by installation"** as a **continuous** claim — `R-053`: within the
+  varying subrange the control reproduces most of it. Say **categorical**: *fully-installed domains
+  lose more than partially-installed ones.*
+* ⛔ **"attack `C` only failed for lack of power"** — `PR-022`, n = 30, contrast **smaller** not noisier.
 * ⛔ **"the gradient's effect size is −0.907"** — `R-051`: inflated by a control gradient that does
   not reproduce (+0.31 vs −0.04 / −0.02 / −0.33). Quote **ρ<sub>KO</sub>**, and the contrast only
   with its population named.

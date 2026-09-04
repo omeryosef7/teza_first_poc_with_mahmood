@@ -56,6 +56,9 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 5 | `A-009` | **adversarial audit of `R-041`**, five attacks declared in the committed script first. A/B/E ✅ survive; ⛔ **C lands** (13 varying domains: −0.503, **p = 0.343**); ⛔ **D**: the control's gradient is real | ✅ |
 | 5 | `R-051` | `B-015`: ⛔ my preamble mechanism **refuted** (4 populations, all with preamble, ρ = +0.31/−0.04/−0.02/−0.33); `A-009` D narrowed to **population-specific**; ⛔ **the −0.907 headline is inflated** ⇒ quote **ρ<sub>KO</sub> −0.44…−0.73** | ✅ |
 | 5 | — | narrowing propagated to summary (new **NARROWED** section), `LIVE STATUS`, and the figure (**panels F and G + card**), PNG read back | ✅ |
+| 6 | `R-052` | the installation **ceiling is structural**: every population with a control has **1** low-installation domain; the only ones with spread (`candle`) are the **source** and have **no control** ⇒ a low-dose block is the only route | ✅ |
+| 6 | `PR-022`/`R-053` | ⛔ **NULL branch: attack `C` REPLICATES on Qwen at n=30** (−0.173, p=0.504) — power is **not** the explanation. Qwen also fails `A` and `E`. Within the subrange ρ<sub>ctrl</sub> −0.428 ≈ ρ<sub>KO</sub> −0.601 ⇒ **RTM** | ✅ |
+| 6 | — | claim narrowed to **CATEGORICAL** and propagated to summary, `LIVE STATUS` and the figure; card **compressed** and a **per-column width guard** added after text overran the page edge | ✅ |
 
 ## Live
 
