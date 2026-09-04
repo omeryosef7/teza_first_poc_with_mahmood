@@ -71,7 +71,7 @@ def main():
     n, ndom = len(ref), len({base[p]["domain"] for p in ref})
     b_mean = st.mean([base[p]["semantic_logodds"] for p in ref])
 
-    fig, axes = plt.subplots(3, 2, figsize=(13.6, 13.8))
+    fig, axes = plt.subplots(4, 2, figsize=(13.6, 22.6))
     fig.suptitle("Doublespeak concept-specific phase (DCS) — cell C = natural_doublespeak; "
                  "Llama-3.1-8B-Instruct @ L6-14 unless a panel states otherwise",
                  fontsize=11.5, y=0.985)
@@ -210,6 +210,9 @@ def main():
         ax.axhline(153, color="0.45", ls=":", lw=1.4, label="baseline attacks (153)")
         ax.axhline(118, color="#c1272d", ls="--", lw=1.6, label="KO-3 attacks (118)")
         ax.axvspan(-17, 17, color="#2b6cb0", alpha=0.10)
+        # the right-most point sits at dx~32 and its label was CLIPPED at the axes edge;
+        # a data label a reader cannot finish is a legibility defect in a deliverable
+        ax.margins(x=0.16)
         ax.set_xlabel("Δ refusals vs baseline   (shaded = ±17 TOLERANCE, not a judge band;\nC-023: measured band on `refused` is 0)")
         ax.set_ylabel("attacks (malicious_at_0.5)")
         ax.set_title("D  Controls that induce refusal suppress attack, and hid the effect\n"
@@ -258,42 +261,149 @@ def main():
                   fontsize=8.8, loc="left")
     axE.grid(alpha=0.25, axis="y")
 
+    # ---- F: the installation gradient (R-041) -- the phase's newest headline ------------------
+    # Recomputed from results.jsonl here, deliberately, NOT read from dcsp17_*.json: a figure that
+    # reads the analyzer's cache cannot disagree with it, and disagreement is what this panel is
+    # supposed to be able to show (`C-026`).
+    from transformers import AutoTokenizer  # noqa: E402  -- only needed to decode top1_id
+    _tok = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+
+    def _install(tagrows, needle):
+        per = collections.defaultdict(list)
+        for r in tagrows.values():
+            per[r["domain"]].append(
+                1.0 if needle in _tok.decode([r["top1_id"]]).strip().lower() else 0.0)
+        return {k: st.mean(v) for k, v in per.items()}
+
+    def _rank(xs):
+        order = sorted(range(len(xs)), key=lambda i: xs[i])
+        rk = [0.0] * len(xs)
+        i = 0
+        while i < len(order):
+            j = i
+            while j + 1 < len(order) and xs[order[j + 1]] == xs[order[i]]:
+                j += 1
+            for k in range(i, j + 1):
+                rk[order[k]] = (i + j) / 2.0 + 1.0
+            i = j + 1
+        return rk
+
+    def _rho(x, y):
+        rx, ry = _rank(x), _rank(y)
+        mx, my = st.mean(rx), st.mean(ry)
+        num = sum((u - mx) * (v - my) for u, v in zip(rx, ry))
+        dx = math.sqrt(sum((u - mx) ** 2 for u in rx))
+        dy = math.sqrt(sum((v - my) ** 2 for v in ry))
+        return num / (dx * dy) if dx and dy else float("nan")
+
+    axF = axes[3][0]
+    inst = _install(base, "bomb")
+    d_ko = per_domain(rows("dcsro_C_qpo_demo"), base, ref, base)
+    d_ct = per_domain(rows("dcsro_C_qpo_ctrl_d1"), base, ref, base)
+    doms = sorted(set(inst) & set(d_ko) & set(d_ct))
+    xs = [inst[d] for d in doms]
+    axF.scatter(xs, [d_ko[d] for d in doms], s=34, color="#1f4e79", zorder=3,
+                label=f"KO-3 (demo_all)  rho={_rho(xs, [d_ko[d] for d in doms]):+.3f}")
+    axF.scatter(xs, [d_ct[d] for d in doms], s=34, marker="^", facecolors="none",
+                edgecolors="#c0504d", zorder=3,
+                label=f"dose-matched control  rho={_rho(xs, [d_ct[d] for d in doms]):+.3f}")
+    axF.axhline(0, color="0.55", lw=1.0, ls=":")
+    axF.set_xlabel("baseline INSTALLATION  (per-domain fraction of rows whose argmax answer "
+                   "is already 'bomb')")
+    axF.set_ylabel("Δ semantic_logodds vs baseline")
+    axF.set_title("F  The effect is GRADED by how much was installed (R-041)\n"
+                  "button→bomb · Llama · L6-14 · n=380 · 38 domains · cell C\n"
+                  "contrast rho_KO − rho_control = −0.907, permutation p = 2.0e−04\n"
+                  "⚠ CORRELATIONAL across domains — PR-018's manipulation had no headroom (R-042)",
+                  fontsize=8.8, loc="left")
+    axF.legend(fontsize=7.8, loc="lower left")
+    axF.grid(alpha=0.25)
+
+    # ---- G: every contrast measured, and which ones clear alpha --------------------------------
+    axG = axes[3][1]
+    contrasts = [("Llama n=4\n(blind primary)", -0.907, 2.0e-04),
+                 ("Llama n=8\n(same 38 domains)", -0.404, 0.0482),
+                 ("Qwen3-14B\n(rho pre-seen)", -0.407, 0.0594),
+                 ("candle n=8\n(EXPLORATORY source)", -0.390, 0.0893)]
+    ypos = list(range(len(contrasts)))[::-1]
+    for y, (lab, c, pv) in zip(ypos, contrasts):
+        clears = pv < 0.05
+        axG.barh(y, c, height=0.5, color="#1f4e79" if clears else "0.72",
+                 edgecolor="0.25", zorder=3)
+        axG.text(0.02, y, f"{c:+.3f}   p={pv:.1e}" + ("  ✓ < α" if clears else "  ✗ not < α"),
+                 ha="left", va="center", fontsize=8.0)
+    axG.set_yticks(ypos)
+    axG.set_yticklabels([c[0] for c in contrasts], fontsize=8.0)
+    axG.set_xlim(-1.05, 0.72)
+    axG.axvline(0, color="0.4", lw=1.1)
+    axG.set_xlabel("contrast  rho_KO − rho_control   (negative = graded by installation)")
+    axG.set_title("G  Every contrast measured, alpha=0.05, seeded permutation\n"
+                  "[!] n=4 and n=8 are the SAME 38 domains at two doses — a second DOSE,\n"
+                  "not a second SAMPLE, so these are NOT independent p-values\n"
+                  "[!] Qwen does NOT clear alpha and is not reported as a replication that did",
+                  fontsize=8.8, loc="left")
+    axG.grid(alpha=0.25, axis="x")
+
     axes[2][1].axis("off")
-    axes[2][1].text(0.02, 0.96,
+    # TWO COLUMNS, not one. The card grew by two blocks this tick and a single column ran off the
+    # bottom of its axes into panel G's title -- caught by reading the rendered PNG back, which is
+    # the only check that sees layout damage (`C-026`).
+    axes[2][1].text(0.00, 1.00,
                     "Scope carried by every panel\n"
                     "─────────────────────────────\n"
-                    "38 domains × 2 codewords × 1 concept (bomb)\n"
-                    "× 2 model families × one dose policy.\n"
+                    "38 domains x 2 codewords x 1 concept (bomb)\n"
+                    "x 2 model families x one dose policy.\n"
                     "That is 38 CONTEXTS for a single mapping,\n"
                     "not 38 mappings.\n\n"
                     "Not shown, and why\n"
                     "─────────────────────────────\n"
-                    "• metric-comparison / validity / metric-vs-ASR\n"
-                    "  panels presuppose a validated concept-specific\n"
-                    "  metric — R-002 found none exists.\n"
-                    "• occurrence-trajectory panel presupposes\n"
-                    "  accumulation — R-003 refuted it.\n\n"
+                    "- metric-comparison / validity / metric-vs-ASR\n"
+                    "  panels presuppose a validated concept-\n"
+                    "  specific metric - R-002 found none exists.\n"
+                    "- occurrence-trajectory panel presupposes\n"
+                    "  accumulation - R-003 refuted it.\n\n"
                     "Behavioural status\n"
                     "─────────────────────────────\n"
-                    "• Llama: direction only (~−30 of 153); NOT\n"
+                    "- Llama: direction only (~-30 of 153); NOT\n"
                     "  significant at the domain independence unit.\n"
-                    "• Qwen: CANNOT ANSWER by comparator choice —\n"
-                    "  0 of 6 draws meet the ±17 tolerance;\n"
+                    "- Qwen: CANNOT ANSWER by comparator choice -\n"
+                    "  0 of 6 draws meet the +-17 tolerance;\n"
                     "  C-023: that was never a judge band.\n"
-                    "  PR-014 re-analyses by BOUNDING (blocked\n"
-                    "  on API credits, C-024).\n\n"
+                    "  PR-014 re-analyses by BOUNDING - credits\n"
+                    "  restored 2026-09-04, all 8 arms JUDGING NOW.",
+                    fontsize=7.0, va="top", family="monospace")
+    axes[2][1].text(0.52, 1.00,
                     "Generality (PR-013 / R-035)\n"
                     "─────────────────────────────\n"
-                    "• MIXED, 1 of 2: lantern→poison PASSES\n"
-                    "  (0+/20−, p=1.9e−06); candle→missile\n"
-                    "  FAILS (6+/14−, p=0.115; weak baseline\n"
-                    "  concept-answer 0.400).\n"
-                    "• R-033: dose-matched control IMPOSSIBLE\n"
-                    "  in those banks ⇒ generic damage NOT\n"
-                    "  excluded there, only inherited.",
-                    fontsize=8.4, va="top", family="monospace")
+                    "- MIXED, 1 of 2: lantern->poison PASSES\n"
+                    "  (0+/20-, p=1.9e-06); candle->missile\n"
+                    "  FAILS (6+/14-, p=0.115).\n"
+                    "- R-033: dose-matched control IMPOSSIBLE\n"
+                    "  in those banks => generic damage NOT\n"
+                    "  excluded there, only inherited.\n"
+                    "- R-037: the layer placebo is NOT inert -\n"
+                    "  13.6%/17.2% of the 6-14 magnitude, and\n"
+                    "  OPPOSITE in sign => PARTIAL exclusion.\n"
+                    "- R-038: the 'weak mapping' excuse for\n"
+                    "  candle is NOT supported. Doubling demos\n"
+                    "  moved the magnitude 47% and the sign\n"
+                    "  split 0 rows.\n\n"
+                    "Installation gradient (R-041/R-043)\n"
+                    "─────────────────────────────\n"
+                    "- CORRELATIONAL across domains.\n"
+                    "- PR-018 tried to manipulate it and the\n"
+                    "  knob would not turn: 0.908 -> 0.928,\n"
+                    "  25/38 domains already at ceiling\n"
+                    "  => predictions 2-3 VOID (R-042).\n"
+                    "- The low-vs-high split is CANNOT_ANSWER\n"
+                    "  on every population that has a control\n"
+                    "  (1 low-installation domain each).\n"
+                    "- The reversal at install~0 is candle-only\n"
+                    "  and EXPLORATORY.",
+                    fontsize=7.0, va="top", family="monospace")
 
-    fig.tight_layout(rect=[0, 0.010, 1, 0.976])
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.955, bottom=0.035,
+                        hspace=0.62, wspace=0.26)
     os.makedirs(a.out, exist_ok=True)
     p = os.path.join(a.out, "DCS_FIGURES.png")
     fig.savefig(p, dpi=185)

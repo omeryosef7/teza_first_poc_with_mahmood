@@ -64,7 +64,8 @@ column existed.
 | `R-025` | **The specificity DiD replicates on Qwen3-14B.** Cell `C` −23.437 vs its control, cell `B` **−1.238 (p = 0.256)**; **DiD −22.198, 1+/37−, p = 2.838e-10**. ⚠ The three settings share the *same* 1+/37− sign pattern, so the identical p-values are **one pattern replicated, not three independent tests** | 4 arms × 380 × 38 domains | **CROSS-MODEL SPECIFICITY** |
 | `R-026` | **Qwen `KO-3` removes ALL 150 refusals** (judge-free). ⚠ `TSC-R-006` reported the same 150 removed at a *different* scope — so Qwen's refusal behaviour on this population is 150 rows and **both** demonstration-cutting scopes annihilate it | n = 380 | **refusal, 2 models × 4 scopes** |
 | `R-030`/`R-031` | **The effect lives in layers 0–14, peaks at 10–14, and is absent above 14.** Equal-dose 5-layer bands: 0–4 **−3.39**, 5–9 **−2.99**, **10–14 −5.65** (0+/38−) — **no band null**; coarse sweep adds 15–23 **+0.15**, 24–31 **+0.75** | 14 arms × 380 × 38 domains | **GRADED, not bounded at 6–14** ⚠ the inherited window contains the peak but layers 0–5 also contribute |
-| `PR-013`/`R-035` | ⚠ **Generality across harmful concepts: MIXED.** Same pipeline, preregistered band 6–14, on two concepts already in-repo. `lantern`→`poison` **PASSES** the declared primary (Δ **−7.760**, **0+/20−**, p = **1.907e-06**, at floor). `candle`→`missile` **FAILS** (−2.333, 6+/14−, p = **0.115**) — its mapping is weak *before* any intervention (concept-answer **0.400** vs 0.887/0.908 elsewhere). ⛔ Dose-matched control **structurally impossible** in these banks (`R-033`: no preamble ⇒ prompt is ~85 % demonstration, `match_ratio` 0.000), confirmed on **both** concepts ⇒ generic damage **not excluded here**, only inherited from `bomb` | 2 concepts × 160 rows × 20 domains | **MIXED — 1 of 2; may NOT be stated as "generalises"** |
+| `R-041`/`R-043` | ✅ **The effect is GRADED by how much of the remapping was installed.** Per domain, baseline *installation* — the fraction of baseline rows whose argmax answer is already the concept — predicts the size of `KO-3`'s effect on cell `C`. Llama, 38 domains, **blind**: ρ **−0.594** (p = 1.0e-04) against the **dose-matched non-demonstration control** at **+0.312** ⇒ **contrast −0.907, permutation p = 2.0e-04**. Replicates at `n_examples=8` on the same 38 domains (contrast **−0.404**, p = **0.0482** marginal; control ρ **−0.040**, p = 0.817). ⚠ Qwen contrast **−0.407, p = 0.0594 — does NOT clear α**. ⇒ The mechanism claim becomes a **dose-response**, not merely *necessary* | 3 populations × 38 domains; statistic self-reviewed against `scipy` and a 3-mutant harness (`A-006`) | ⚠ **CORRELATIONAL across domains.** `PR-018` tried to make it causal by manipulating installation and the knob would not turn (`R-042`) |
+| `PR-013`/`R-035` | ⚠ **Generality across harmful concepts: MIXED.** Same pipeline, preregistered band 6–14, on two concepts already in-repo. `lantern`→`poison` **PASSES** the declared primary (Δ **−7.760**, **0+/20−**, p = **1.907e-06**, at floor). `candle`→`missile` **FAILS** (−2.333, 6+/14−, p = **0.115**) — its mapping is weak *before* any intervention (concept-answer **0.400** vs 0.887/0.908 elsewhere). ⛔ Dose-matched control **structurally impossible** in these banks (`R-033`: no preamble ⇒ prompt is ~85 % demonstration, `match_ratio` 0.000), confirmed on **both** concepts ⇒ generic damage **not excluded here**, only inherited from `bomb`. ⚠ `R-037`: the layer placebo (identical keys at 15–23) is **not inert** — it is **13.6 % / 17.2 %** of the 6–14 magnitude with the **opposite sign**, so generic damage is **partially** excluded, not excluded. ⛔ `R-038`: the *weak-mapping* explanation offered for `candle` is **NOT supported** — doubling demonstrations raised installation 0.400→0.525 and grew the effect 47 %, while the sign split stayed **bit-identical** (6+/14−, p = 0.115). `R-039`/`R-041` supply the explanation instead: `candle`'s domains **span** the installation range while `lantern`/`button` sit at the ceiling | 2 concepts × 160 rows × 20 domains, + 4 arms at n=16 and 2 layer-placebo arms | **MIXED — 1 of 2; may NOT be stated as "generalises"** |
 | `R-029` (corrected by `C-023`) | ⛔ **Qwen behavioral = `CANNOT ANSWER` by comparator selection.** 0 of 6 draws meet the ±17 tolerance at a 150 baseline. ⚠ `R-029`'s *explanation* is **WITHDRAWN**: it blamed an absolute-vs-relative band, but `refused` is `kw_refusal` — deterministic, **measured judge band = 0** — so there was never a noise band to rescale. The ±17 is a tolerance borrowed from `malicious_at_0.5`. ⇒ Re-analysed by **bounding**, not selection (`PR-014`) | 6 draws × 380 | **criterion limitation, NOT a null** |
 | `R-002` | **The movement is NOT concept-specific.** Against `knife`/`gun`/`club`, three of four comparisons run the *other* way and every difference is inside the measured split-to-split band (median 0.015, p90 0.044) | 10 banks, dev + heldout | **evaluated negative** |
 | `R-003` | **The shift does not accumulate.** Final occurrence > first in 32/32 cells, but demonstrations-only ρ **disagrees in sign between banks** (−0.048 vs +0.278) and the effect is flat in `n_examples` (7.01/7.25/7.10/6.54) | 2 banks × 32 layers, per-row, cross-fit | **evaluated negative** |
@@ -97,6 +98,14 @@ span* changes **both**. Refusal moves under all three scopes tested.
   is the shopping this phase forbids.
 * `R-009`: specificity at the `KO-1` scope is a **capable null** (DiD +0.503, p = 0.073), but it is
   a weak test of a weak effect and must not be read as evidence against specificity.
+* `R-039`: the **reversal** at installation ≈ 0 — domains where the mapping never installed move the *other*
+  way under the knockout (+1.14 … +3.20) — is **`candle`-only and exploratory**. ⛔ It is `CANNOT_ANSWER` on both
+  headline populations, which contain **1** low-installation domain each, and the analyzer emits that rather than
+  running a split at n < 3.
+* `R-042`: `cds_n8` (a never-before-run block) makes the effect grow — mean per-domain Δ **−7.944 → −9.025**,
+  **34/38** domains, p = **6.04e-07**. ⛔ **VOID as evidence about installation**, by `PR-018`'s own declared rule:
+  installation barely moved (0.908 → 0.928, 25/38 domains already at ceiling), so this is a **dose** effect of the
+  kind `R-022`'s row ladder already established, and it is **not** counted as support for `R-041`.
 * The hypothesis that `basket`'s cell-`B` ceiling (+10.67 vs `button`'s +6.27) explains the failed
   "opposite directions" replication. **Not tested.**
 
@@ -151,6 +160,10 @@ cross-family null **+** a CI-backed negative for a mechanistically derived attac
 ## SCOPE — the line that accompanies every number
 
 **38 domains × 2 codewords × 1 concept (`bomb`) × one layer band per model × one dose.**
+⚠ **The installation gradient (`R-041`/`R-043`) has its own scope and it is narrower**: one bank, one codeword pair,
+two doses of the *same* 38 domains — a second **dose**, not a second **sample**, so the two contrasts are ⛔ **not**
+two independent p-values. Only the **graded** half is tested anywhere; the low-vs-high split is `CANNOT_ANSWER` on
+every population with a control.
 ⚠ The **mechanism** (`KO-3`) is now measured on **two model families** — Llama-3.1-8B-Instruct
 (L6–14) and Qwen3-14B (L7–17, same relative depth) — and replicates on both. The **behavioral**
 half remains **Llama-only**. That is 38 *contexts for a single mapping*, **not** 38 mappings. Measured
@@ -158,7 +171,15 @@ ICC ≈ 0.34, so domain is the correct independence unit.
 
 ## OPEN QUESTIONS
 
-0a. ⛔ **The Qwen behavioral interaction is BLOCKED BY ITS OWN CRITERION** (`R-028`). 0 of 4
+0a. ⏳ **IN FLIGHT.** The Qwen behavioral interaction is re-analysed by **bounding** rather than comparator
+   selection (`PR-014`); it was `BLOCKED-ON-CREDITS` (`C-024`) and the account was refilled on **2026-09-04**, so all
+   **8** arms are being judged in **one** invocation (job 849653). ⛔ Until it returns, the standing statement is
+   unchanged and *"Qwen shows no behavioral effect"* remains forbidden.
+0b. ⛔ **Is the installation gradient CAUSAL?** `R-041`/`R-043` are correlational across domains. `PR-018`'s attempt
+   to manipulate installation failed for lack of headroom (`R-042`: 0.908 at n=4, 25/38 domains at ceiling), and
+   `cds38` carries no **low-dose** block — `{cds_n4, cds_n8}` is the whole block set. ⇒ Answering it needs a new
+   `n_examples ∈ {1,2}` block, i.e. **bank construction and a separate preregistration**, not a re-run.
+0c. ⛔ **The Qwen behavioral interaction is BLOCKED BY ITS OWN CRITERION** (`R-028`). 0 of 4
    completed draws qualify as refusal-neutral (+39, +47, +67, +56 against a ±17 band). The band is
    an **absolute** judge-noise figure used as a **relative** qualification rule: Qwen's controls
    perturb refusal by **26–45 %** of a 150 baseline and are rejected, while Llama's *rejected*
@@ -192,6 +213,11 @@ ICC ≈ 0.34, so domain is the correct independence unit.
   the option set on 257/380 rows). The defense — the dose-matched control on the *same* prompts
   keeps mass at 0.798 — is strong but **must be argued in the text**.
 * `DCS-B-003`: the L18 transplant result is neither retracted nor re-affirmed; **not citable**.
+* `DCS-B-013`: ⛔ the per-row **control match ratio is not persisted**, although the artifact's own
+  `control_draw_note` states that *"every row carries its own ratio in `control_draw_match_ratio`"*. Only the
+  aggregate survives, in `metadata.json`. ⚠ It blocked `PR-018a`'s declared secondary; recovered from
+  `hook_n_keys_masked` (control ÷ knockout per `prompt_id`), and the recovery was **validated against the metadata
+  count before use** — but the workaround assumes the two arms are row-aligned, which is not true in general.
 * `DCS-B-009`: ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
   cannot resolve a ~20 % relative effect by a clustered sign test (`k_inf` 36, floor 2.9e-11 — a
   true underpowering, not a floor limitation). **38 is the maximum that exists** in any

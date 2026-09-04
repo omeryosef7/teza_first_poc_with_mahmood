@@ -13,38 +13,42 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 
 ## 0. LIVE STATUS
 
-*(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-029`/`DCS-026`.
-Experiments complete; `squeue` empty.)*
+*(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-043`/`B-013`.
+⏳ `PR-014` judging live (849653); GPU queue empty.)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
 | # | claim | scope |
 |---|---|---|
-| `R-008`/`R-010`/`R-011`/`R-025` | **The demonstration→query path is necessary for the remapping and specific to it.** `KO-3` drives the codeword cell's forced-choice log-odds through zero to the *literal* reading, while barely moving the cell where the word already **is** the concept. DiD **−9.89** (Llama·button), **−9.35** (Llama·basket), **−22.20** (Qwen·button) | ⚠ all three share the **same 1+/37− sign pattern** — one pattern replicated 3×, **not** 3 independent p-values |
-| `R-021`/`R-022` | **No single query position carries it; ~¼ of the span does.** Row ladder K=1 −0.01, K=2 −0.01, **K=8 −6.62**, K=16 −7.89, K=32 −8.08 — a **step**, then saturation | ⚠ row count and dose rise together; separates *graded vs step*, not rows from cells |
+| `R-008`/`R-010`/`R-011`/`R-025` | **The demonstration→query path is necessary for the remapping and specific to it.** DiD **−9.89** (Llama·button), **−9.35** (Llama·basket), **−22.20** (Qwen·button) | ⚠ all three share the **same 1+/37− sign pattern** — one pattern replicated 3×, **not** 3 independent p-values |
+| **`R-041`/`R-043`** | ✅ **NEW — the effect is GRADED by how much was installed.** Per-domain baseline installation predicts `KO-3`'s effect size: Llama, 38 domains, blind, ρ **−0.594**; against the dose-matched non-demonstration control (ρ **+0.312**) the **contrast is −0.907, perm p = 2.0e-04**. Replicates at n=8 (contrast −0.404, p = 0.0482, control ρ −0.040) | ⚠ **CORRELATIONAL** across domains; ⛔ same bank, same 38 domains at two doses — a second **dose**, not a second **sample** |
+| `R-021`/`R-022` | **No single query position carries it; ~¼ of the span does.** K=1 −0.01, K=2 −0.01, **K=8 −6.62**, K=16 −7.89, K=32 −8.08 — a **step**, then saturation | ⚠ row count and dose rise together |
 | `R-022` controls | **Controls inert across a 32× dose range** (+5.16…+5.38 vs +5.19 baseline) | the step is about *which* keys are cut |
 | `R-024` | **The mechanism is cross-model.** Qwen3-14B replicates `KO-3` at ~3× Llama's magnitude; `frac>0` collapses **0.813 → 0.021** | capability gate passed first (`R-023`) |
-| `R-002` | ⛔ **The movement is NOT concept-specific** — knife/gun/club match or exceed bomb | evaluated negative |
-| `R-003` | ⛔ **It does not accumulate** across demonstrations | evaluated negative |
-| `R-004` | ✅ Null control exact: `n_examples=0` → `0.000e+00` at all 96 cells | positive control |
-| `R-030` | **The effect is layer-localised early-to-mid, and the inherited band is the best of four.** 0–5 **−4.30**, **6–14 −8.08**, 15–23 **+0.15**, 24–31 **+0.75**; each band vs its own dose-matched control | ⚠ band widths differ (6/9/9/8) so cross-band doses are not matched |
-| `R-006`/`R-014` | `KO-1` leaves mapping **and** attack unchanged, on a **verified refusal-neutral** control (Δ=0, zero conversions) | valid null |
-| `R-012b`/`R-026` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0**, the same 150 `TSC-R-006` removed at a *different* scope | 2 models × 4 scopes |
-| `R-016`/`R-017`/`R-019` | `KO-3` reduces Llama attack **in direction** (≈−30 of 153, 3 controls × 2 seeds × 4 judgings) | ⛔ **not** significant at the domain independence unit |
+| `R-030`/`R-031` | **Lives in 0–14, peaks at 10–14, absent above 14.** Equal-dose bands 0–4 −3.39 · 5–9 −2.99 · **10–14 −5.65**; 15–23 +0.15, 24–31 +0.75 | ⛔ ⚠ *"localised to 6–14"* is **too strong**; ⛔ no per-layer profile is claimable |
+| `R-037` | **Layer-specificity is PARTIAL.** The identical knockout at 15–23 is **13.6 % / 17.2 %** of the 6–14 magnitude and **opposite in sign** | ⛔ **not** inert — significant at floor; ⛔ ⚠ *"15–23 is inert"* is **bank-specific**, false on `rbd` |
+| `R-035` | **Generality: 1 of 2 new concepts.** `lantern`→`poison` passes (−7.760, 0+/20−, at floor); `candle`→`missile` fails (p = 0.115) | ⛔ **MIXED**; ⛔ may not be stated as *"generalises"* |
+| `R-006`/`R-014` | `KO-1` leaves mapping **and** attack unchanged, on a **verified refusal-neutral** control | valid null |
+| `R-012b`/`R-026` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0** | 2 models × 4 scopes |
+| `R-016`/`R-017`/`R-019` | `KO-3` reduces Llama attack **in direction** (≈−30 of 153) | ⛔ **not** significant at the domain independence unit |
+| `R-002` / `R-003` / `R-004` | ⛔ not concept-specific · ⛔ does not accumulate · ✅ null control exact (0.000e+00 at 96 cells) | evaluated negatives + positive control |
 
 ### CLAIMS WE MUST NOT SAY
 
+* ⛔ **"Installation was manipulated"** or **"the gradient is causal"** — `R-042`: the knob did not
+  turn (0.908 → 0.928, 25/38 domains at ceiling) and `PR-018`'s predictions 2–3 are **VOID**.
+* ⛔ **"The effect grows with dose, therefore installation drives it"** — `R-042`'s 34/38, p = 6e-07 is a
+  **dose** effect of the kind `R-022` already established, and installation did not move.
+* ⛔ **"The gradient replicates on Qwen"** — `R-043`: contrast −0.407, **p = 0.0594**, does not clear α.
+* ⛔ **"Layers 15–23 are inert"** without naming the bank (`R-037`).
+* ⛔ **"`candle` failed because its mapping is weak"** as an *explanation* — `R-038` tested it and the
+  declared conjunction **failed**.
 * ⛔ "Qwen shows no behavioral effect" — `R-029`: **no attack contrast was ever computed** there.
-* ⛔ "`KO-3` significantly reduces attack" without naming the test; and never `p = 0.0016`
-  (one control, row-level, unclustered, most favourable of three).
+* ⛔ "`KO-3` significantly reduces attack" without naming the test; never `p = 0.0016`.
 * ⛔ "Retrieval is distributed across the query span" — `R-022` shows a **threshold**.
 * ⛔ "The mapping is constructed during demonstration processing" (`C-010`), the **L6–L12 peak**
   (`C-005`), "the controls are inert" as a *sign* claim (`C-011`), "the effect lives in the held-out
-  half" (`C-017`), "the two cells move in opposite directions" (button-on-Llama only, `R-011`/`R-025`).
-* ⚠ "The effect is **localised to L6–14**" — ⛔ **too strong.** `R-031`'s equal-dose sweep shows it
-  is **distributed across 0–14** (0–4 −3.39 · 5–9 −2.99 · **10–14 −5.65**, no band null) and absent
-  above 14 (15–23 +0.15). ⇒ Say *"lives in 0–14, peaks at 10–14, absent above 14"*. 6–14 is a
-  well-placed **window**, not the mechanism's extent. ⛔ Still not claimable: a per-layer profile.
+  half" (`C-017`), "the two cells move in opposite directions" (button-on-Llama only).
 * ⛔ Three p-values of 2.8e-10 as independent evidence — one sign pattern, three times.
 * ⛔ `d_surface` as validated or as a GCG/MAC objective.
 
@@ -52,25 +56,25 @@ Experiments complete; `squeue` empty.)*
 
 | id | blocker |
 |---|---|
-| `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** in any pool file ⇒ needs **new demonstration pools** (new data, new preregistration) |
-| `R-029` | Qwen behavioral interaction `CANNOT ANSWER`: **0 of 6** draws qualify because a ±17 **absolute** band is a 3.6× stricter *relative* test at a 150 baseline ⇒ a future prereg should use a **relative** band, declared before outcomes |
-| `B-010`→closed | resolved by `R-022` |
+| `0b` | **Is the gradient causal?** `cds38`'s block set is `{cds_n4, cds_n8}` — there is **no low-dose block**, so installation cannot be lowered. Needs **bank construction** + a new preregistration |
+| `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** ⇒ needs **new demonstration pools** |
+| `B-013` | per-row `control_draw_match_ratio` **not persisted** although the artifact's note says it is; recovered from `hook_n_keys_masked`, workaround assumes row-aligned arms |
+| `R-029`→⏳ | Qwen behavioral: `PR-014`'s bounding analysis is **judging now** (849653); credits restored 2026-09-04 |
 | `B-006` | after `KO-3` the two cells are in different measurement regimes; defense exists, must be **argued in text** |
 | `B-007` | control-draw **positions** not persisted — disjointness is a code guarantee, not an artifact fact |
-| `B-011` | `enable_thinking` not persisted in metadata (recoverable only from argv/log) |
-| `B-012` | three guards scale with **run count** (755 dirs), not the diff — 30–90 min commits under NFS load |
+| `B-011` | `enable_thinking` not persisted in metadata |
+| `B-012` | three guards scale with **run count** (755 dirs), not the diff — slow commits under NFS load |
 
 ### NEXT 3 HIGHEST-VALUE EXPERIMENTS
 
-1. **New demonstration pools** to break the 38-domain ceiling — the only way to certify the
-   behavioral effect at the declared unit. Needs a preregistration and GPU queue time; see `C-022`
-   for why the API cost previously named here is negligible.
-2. ✅ **DONE (`R-030`).** The sweep ran; localisation is supported and the inherited band is the
-   strongest of four. ⚠ Follow-up worth having: a **finer** sweep around 0–14, and the unexplained
-   **consistent positive at 24–31** (+0.75 on **38/38** domains) — the only place in this phase a
-   demonstration knockout has a positive sign.
-3. **A second harmful concept** through the identical pipeline — `R-002` says the geometry is not
-   bomb-specific, so whether the *causal* result is concept-general is open.
+1. **A low-dose block on `cds38`** (`n_examples ∈ {1,2}`, same 38 domains). It is the *only* way to
+   manipulate installation downward on a population that has a working control, and it would convert
+   `R-041` from correlational to causal. ⚠ New bank rows ⇒ new preregistration.
+2. **New demonstration pools** to break the 38-domain ceiling — the only way to certify the
+   behavioral effect at the declared unit (`B-009`).
+3. **A per-domain predictor of installation itself.** `R-039` found the low-installation domains are
+   *stable* across an independent dose doubling (18/20 concordance, 5 of 6 identical), so installation
+   is a property of the domain, not noise. ⛔ What that property **is** is uncharacterised.
 
 ---
 
