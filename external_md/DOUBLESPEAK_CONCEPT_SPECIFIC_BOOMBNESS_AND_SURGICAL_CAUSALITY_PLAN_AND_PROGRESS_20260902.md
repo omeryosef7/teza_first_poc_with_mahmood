@@ -5909,3 +5909,79 @@ reminder that a narrowed result also invalidates **prose that was true when writ
 
 ✅ **And it was found by applying a document's own definition to the document's own author** — the
 matrix defines the bar, and nobody had run our results against it since `R-019`/`R-048` existed.
+
+### `R-056` — `B-009` sized from **measured** parameters: **114 domains**, and it corrects my own advice
+
+Omer authorised `B-009` in full. ⛔ **Before authoring a single domain**, the size was computed rather
+than chosen — `C-028`'s lesson, which cost `PR-018` its whole design. Reused
+`scripts/cds_power_domain.py` unchanged, at **this phase's measured** values, not its defaults:
+`p0 = 0.403` (153/380 baseline attacks, `R-016`), `eff = 0.196` (the measured ≈−30 of 153),
+`m = 10` rows/domain, `ICC = 0.158` (measured on the `button` bank), judge flip rate **0.0658** from
+the **measured** curve.
+
+| domains `k` | rows | mean `k_inf` | **power, domain sign test** | power, row McNemar |
+|---|---|---|---|---|
+| **38 (what we have)** | 380 | 31.0 | **0.311** | 0.513 |
+| 76 | 760 | 61.9 | 0.632 | 0.803 |
+| **114** | 1140 | 92.8 | ✅ **0.814** | 0.933 |
+| 152 | 1520 | 123.8 | 0.918 | 0.982 |
+
+✅ **This quantitatively explains `R-019`.** At 38 domains the design had **31 % power** for the
+effect it was looking for. ⇒ `R-019`'s p = 0.061 / 0.150 / 0.136 was **the expected outcome of an
+underpowered test**, not evidence about the effect. ⛔ It remains true that a null there was never
+informative — now we can say *how* uninformative.
+
+⇒ **`B-009` needs `k = 114`, i.e. 76 NEW domains.** ⚠ 76 is not a round number chosen for comfort; it
+is what 0.80 power requires at the measured effect and ICC.
+
+⛔ **AND IT CORRECTS THE ADVICE I GAVE OMER.** I told him I *"lean toward generality — a second
+harmful concept"* for the new pools. **The power calculation says the opposite.** Splitting 114
+domains across two concepts gives ~57 each, i.e. power ≈ **0.5** per concept — *worse than useless
+for `B-009`'s actual purpose*, which is to certify the behavioural effect at its own independence
+unit. ⇒ **All 114 domains go on ONE concept.**
+
+✅ **And the tension dissolves at no cost.** The pools are **concept-agnostic in structure**: the
+`harm` valence carries the concept word and `prompt_families` substitutes it at build time (the
+exact-word-swap invariant). ⇒ The same 76 new domains can be rebuilt for a **second concept later
+with zero additional pool-generation cost**. Generality is a *different question* — `PR-013` already
+answered it as **MIXED** — and it gets its own bank, not a halving of this one.
+
+**Cost, measured from existing runs rather than estimated:** a 380-row behavioural arm takes
+**~51 min** (8.39 s/row at `max-new 640`) ⇒ 1140 rows ≈ **2.7 h/arm**, **~16 GPU-hours** for six
+arms, which parallelises to roughly one evening at the 6-job cap. Judging **~$1.44**; pool
+generation **~$1**. ⇒ The binding cost is **GPU queue time**, exactly as the §47 draft told Matan and
+Mahmood.
+
+## `PR-024` — PREREGISTRATION: `B-009`, 76 new demonstration domains at `k = 114`
+
+⚠ **Frozen before any domain is authored.** Authorised by Omer ("go do 1 fully").
+
+**Design.** 76 new domains, same register as the existing 38 (institutional workplace settings, each
+with two named sub-locations), added to `DOMAINS` in `src/boombness/demo_pools.py`. ✅ Adding entries
+is **safe by construction**: `prompt_families` computes
+`pool_domains = [d for d in DOMAINS if f"{d}|benign" in pools]`, so a domain is **inert until its
+pools exist** and canonical regeneration cannot break (the `C-10` fix).
+
+⛔ **Acceptance criteria — adopting `PR-35` UNCHANGED, and they are about the TEXT, never the
+result.** Each domain is accepted or rejected on: field completeness; article agreement; register
+match against the existing 38; two-sided naturalness (the `benign` and `harm` framings must both read
+as ordinary logs); and **incidental-collision freedom against EVERY codeword and concept in use** —
+`carrot`, `ticket`, `basket`, `button`, `window`, `lantern`, `candle`, `bomb`, `knife`, `gun`,
+`poison`, `missile`. ⛔ **A domain is NEVER accepted or rejected on its effect size**, and the audit
+runs **before** any arm.
+
+⛔ **Declared outcomes.**
+* **Effect significant at the domain sign test, k = 114** ⇒ `B-009` is **resolved**: the behavioural
+  half is certified at its own independence unit, and the phase's novelty claim (`C-035`) extends
+  from refusal to **attack success**.
+* **Null at k = 114** ⇒ ⛔ a **well-powered null at 0.81 power** — which is a *result*, not a failure,
+  and would say the representational effect does **not** carry to attack success on Llama. ⚠ This
+  must be reported as prominently as the positive; it is the outcome that would most change the
+  paper.
+* **Pool audit rejects enough domains to leave k < 100** ⇒ report the achieved `k` and its power
+  **before** unblinding any arm, and state the design as underpowered if it is.
+
+⚠ **Declared limits.** ⛔ The new domains are **new prompts**, so this is a larger population, not a
+re-slicing — the same confound `PR-023` carried. ⛔ ICC is a **point estimate from one bank** and the
+repo has measured it from **0.000 to 0.755**; at ICC 0.45 the required `k` would be far larger, and
+the achieved power will be **recomputed from the realised ICC** once the arms exist, not assumed.
