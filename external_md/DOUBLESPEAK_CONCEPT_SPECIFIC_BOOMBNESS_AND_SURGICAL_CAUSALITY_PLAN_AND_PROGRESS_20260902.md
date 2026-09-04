@@ -3661,3 +3661,50 @@ effect at the same dose.
   ⚠ that must be written into the summary headline, not filed as a limitation.
 * **Mixed** — one concept replicates and one does not. Reported as mixed; ⛔ the replicating concept
   does **not** become the headline.
+
+### `C-023` — the refusal-neutrality criterion was justified by a number measured on the **wrong outcome**
+
+Preparing `R-029`'s follow-up, I went to measure Qwen's judge-noise band so the band could be
+model-specific rather than guessed. ⚠ **The measurement already existed and says something different
+from what the criterion assumes.**
+
+**Measured, in artifacts committed during this phase:**
+
+| outcome | arm | pass2 / pass3 / pass4 | band |
+|---|---|---|---|
+| `malicious_at_0.5` | `button_A` | 159 / 147 / 142 | **17** |
+| `refused` | `button_A` | **42 / 42 / 42** | **0** |
+| `refused` | `button_demoproc` | **22 / 22 / 22** | **0** |
+
+⛔ **The judge-noise band on `refused` is 0, not 17** — three independent passes, two arms, counts
+*exactly* identical. And the reason is structural, not lucky: `refused` is **`kw_refusal`, a 16-marker
+substring matcher that never calls the judge**. Its band is 0 **by construction**. The log states this
+itself at `R-015` (*"judge-free … while attack requires the judge"*) — the fact was recorded and its
+consequence was not drawn.
+
+⛔ **So the criterion `|Δ refused| ≤ 17` has no noise justification.** The 17 was measured on
+`malicious_at_0.5` and applied to a deterministic metric. It is a **tolerance for residual confound**,
+not a measurement band, and `R-015`/`R-018`/`R-027` all present it as the latter.
+
+**What that does to "refusal-neutral".** The three controls behind the Llama behavioural direction
+carry Δ`refused` of **+10** (`seed901_d2`), **+14** (`seed904_d1`) and **+7** (`seed904_d2`). On a
+zero-noise metric these are **real refusal induction**, not measurement scatter. ⛔ Calling them
+*"verified refusal-neutral"* overstates them; they are refusal-**near**-neutral within an arbitrary
+tolerance. `C-015` retracted `R-012` precisely because a control suppressed attack *by inducing
+refusal* — that channel is **reduced but not eliminated** in every qualifying control.
+
+✅ **The direction of the resulting bias is favourable, and this is why no headline moves.** A control
+with extra refusals produces artificially *fewer* attacks, so `KO-3 − control` is pulled **toward
+zero**. The ≈ −30 is therefore **conservative** — understated, not inflated. This matches `C-015`'s
+own finding that discounting the refusal channel *strengthened* the effect to −34. ⚠ The defect is in
+the **justification and the label**, not in the sign.
+
+⛔ **`R-029`'s framing is withdrawn.** It said Qwen's 0-of-6 arose because *"a ±17 **absolute** band is
+a 3.6× stricter **relative** test at a 150 baseline"*, and prescribed a **relative** band. There was
+never a noise band to rescale — absolute *or* relative. The honest statement is that **an arbitrary
+tolerance, borrowed from a different outcome, was met by 3 of 6 Llama draws and 0 of 6 Qwen draws.**
+⚠ Had I acted on `R-029` as written, I would have replaced one unjustified number with another and
+called it principled.
+
+⚠ Note what produced this: **not** an audit of the criterion, but an attempt to *implement* `R-029`'s
+recommendation. The instrument I reached for to extend the claim is what falsified it.
