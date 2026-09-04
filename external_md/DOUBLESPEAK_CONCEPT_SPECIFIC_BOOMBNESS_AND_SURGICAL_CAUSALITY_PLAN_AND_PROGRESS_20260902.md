@@ -3753,3 +3753,40 @@ text. On `cpu-killable`, never the login node. Cost ≈ **$0.65** total (`C-022`
   positive. This is the likeliest outcome and it must not be softened.
 * **No face-value effect** — Qwen behavioural is a **capable null**, and the model-specificity of the
   behavioural half becomes a finding rather than a gap.
+
+### `C-024` — ⛔ **the OpenAI account has no credits.** `C-022` answered the wrong question
+
+Job **848440** (`FAILED`, exit `1:0`, 2:32) died on every row with:
+
+> `litellm.RateLimitError: OpenAIException - You have no credits remaining.`
+
+⛔ **This reverses the answer I gave Omer two hours ago.** He asked directly whether `B-009` needs
+more OpenAI budget. I costed the *experiment* — `$0.08`/arm, `$0.65` for this batch, `~$21` for a
+150-domain expansion — and answered **"no, and I was wrong to list it as a cost."** ⚠ That arithmetic
+is still correct and it was **not the question**. I costed the marginal spend and never checked the
+**balance**. The account is at zero, so the cheapest possible API job fails exactly as hard as the
+most expensive one.
+
+⚠ `C-022` is therefore **not retracted but re-scoped**: *marginal* judging cost is negligible;
+*current* judging capacity is **zero**. Those are different claims and I collapsed them.
+
+✅ **The guard worked, and it is worth recording what it prevented.** The pre-flight refused before
+writing anything:
+
+> `judge backend pre-flight FAILED: requested 'openai/gpt-4o-mini' but the response was stamped None.
+> The backend does not honour the pin … Refusing to start the run.`
+
+⛔ Without it the run would have written **380 rows/arm stamped with a `judge_model_pinned` that was
+never true**, and the failure would have looked like judge disagreement rather than an empty account.
+**0** judge directories were created; **no** partial or corrupt artifact exists.
+
+**Blast radius — deliberately small.**
+* ⛔ **Blocked:** `PR-014` (Qwen behavioural, all 8 arms), and **every** attack/StrongREJECT endpoint
+  phase-wide. `B-009`'s judging too, whenever it happens.
+* ✅ **Unaffected:** the `PR-013` generality run (jobs 848362–848367) — `semantic_forced_choice` is
+  computed from **logits on the GPU** and calls no API. The phase's *representational* half never
+  needed the judge. ⚠ `refused` is also unaffected: `kw_refusal` is a substring matcher — the very
+  property `C-023` turned on.
+
+⇒ `PR-014` is **BLOCKED-ON-CREDITS**, not cancelled: preregistration frozen, generations complete
+and verified at 380 rows × 8 arms, batch script committed. It runs unchanged the hour credits exist.
