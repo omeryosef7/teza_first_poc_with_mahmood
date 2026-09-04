@@ -1,0 +1,772 @@
+{
+  "phase": "DCS P1 (plan Sec 3 metadata backfill + Sec 4 structural prompt audit)",
+  "plan": "external_md/DOUBLESPEAK_CONCEPT_SPECIFIC_BOOMBNESS_AND_SURGICAL_CAUSALITY_PLAN_AND_PROGRESS_20260902.md",
+  "audit_brief": "reports/DCS_P0_AUDIT_BRIEF.md",
+  "definitions": {
+    "context_kind": "demo_valence -> {benign:'benign', harm:'harmful'}; else ambiguous",
+    "lexical_bank": "f'{codeword}_{concept}'; pools_sha16 kept as a separate field",
+    "demo_template_id": "sha16(demo_pool_domain|demo_valence|split|family_slot|n_examples|pools_sha16)",
+    "query_template_id": "sha16(prompt_families.QUERY_KINDS[query_kind]['template'])",
+    "request_id": "(run_id, prompt_id, arm) -- not constructible for an existing bank",
+    "benign_concept": "pools[f'{demo_pool_domain}|benign']['natural_word'] (NOT row-local)"
+  },
+  "ambiguity_rules": [
+    "AMB-SURFACE-EMPTY",
+    "AMB-SURFACE-KIND",
+    "AMB-CONCEPT-DISAGREE",
+    "AMB-BANK-PAIR-DISAGREE",
+    "AMB-CONTEXT",
+    "AMB-BENIGN-CONCEPT",
+    "AMB-QUERY-TEMPLATE"
+  ],
+  "banks_written": {
+    "button_bomb": "dcs_meta__button_bomb.jsonl",
+    "basket_bomb": "dcs_meta__basket_bomb.jsonl",
+    "cds38_button_bomb": "dcs_meta__cds38_button_bomb.jsonl",
+    "cds38_basket_bomb": "dcs_meta__cds38_basket_bomb.jsonl"
+  },
+  "attrition": [
+    {
+      "bank": "button_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_button_bomb.jsonl",
+      "bank_file_sha16": "95a3a8017f9ab180",
+      "bank_rows_sha16": "debe267f05efb9ab",
+      "bank_rows_sha16_claimed_by_meta": "debe267f05efb9ab",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main",
+      "seed": 20260816,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+      "pools_present": true,
+      "pools_sha16": "b5e399712b996b7d",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "button_bomb",
+      "n_rows_in_bank": 2736,
+      "n_metadata_rows_emitted": 2736,
+      "n_ambiguous": 96,
+      "n_analysable": 2640,
+      "ambiguous_by_rule": {
+        "AMB-CONTEXT": 96
+      },
+      "n_core_2x2": 2592,
+      "n_core_2x2_analysable": 2568,
+      "n_core_2x2_excluded": 24,
+      "field_coverage_non_null": {
+        "surface_word": 2736,
+        "surface_kind": 2736,
+        "harmful_concept": 2736,
+        "benign_concept": 2736,
+        "lexical_bank": 2736,
+        "context_kind": 2640,
+        "query_template_id": 2736,
+        "demo_template_id": 2736
+      },
+      "benign_concept_values": {
+        "carrot": 2736
+      },
+      "context_kind_values": {
+        "harmful": 1368,
+        "benign": 1272,
+        "None": 96
+      },
+      "n_distinct_query_template_id": 4,
+      "n_distinct_demo_template_id": 432,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__button_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__button_bomb.jsonl"
+    },
+    {
+      "bank": "basket_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_basket_bomb.jsonl",
+      "bank_file_sha16": "2263fef44dfdfeaa",
+      "bank_rows_sha16": "113fc7b6f792f1c6",
+      "bank_rows_sha16_claimed_by_meta": "113fc7b6f792f1c6",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main",
+      "seed": 20260816,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+      "pools_present": true,
+      "pools_sha16": "b5e399712b996b7d",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "basket_bomb",
+      "n_rows_in_bank": 2736,
+      "n_metadata_rows_emitted": 2736,
+      "n_ambiguous": 96,
+      "n_analysable": 2640,
+      "ambiguous_by_rule": {
+        "AMB-CONTEXT": 96
+      },
+      "n_core_2x2": 2592,
+      "n_core_2x2_analysable": 2568,
+      "n_core_2x2_excluded": 24,
+      "field_coverage_non_null": {
+        "surface_word": 2736,
+        "surface_kind": 2736,
+        "harmful_concept": 2736,
+        "benign_concept": 2736,
+        "lexical_bank": 2736,
+        "context_kind": 2640,
+        "query_template_id": 2736,
+        "demo_template_id": 2736
+      },
+      "benign_concept_values": {
+        "carrot": 2736
+      },
+      "context_kind_values": {
+        "harmful": 1368,
+        "benign": 1272,
+        "None": 96
+      },
+      "n_distinct_query_template_id": 4,
+      "n_distinct_demo_template_id": 432,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__basket_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__basket_bomb.jsonl"
+    },
+    {
+      "bank": "cds38_button_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+      "bank_file_sha16": "db351646a3bb004b",
+      "bank_rows_sha16": "17173f8adc42973e",
+      "bank_rows_sha16_claimed_by_meta": "17173f8adc42973e",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main_longpre_cds",
+      "seed": 20260901,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools_29dom.json",
+      "pools_present": true,
+      "pools_sha16": "4cfc70c8688e4a3a",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "button_bomb",
+      "n_rows_in_bank": 4256,
+      "n_metadata_rows_emitted": 4256,
+      "n_ambiguous": 0,
+      "n_analysable": 4256,
+      "ambiguous_by_rule": {},
+      "n_core_2x2": 4256,
+      "n_core_2x2_analysable": 4256,
+      "n_core_2x2_excluded": 0,
+      "field_coverage_non_null": {
+        "surface_word": 4256,
+        "surface_kind": 4256,
+        "harmful_concept": 4256,
+        "benign_concept": 4256,
+        "lexical_bank": 4256,
+        "context_kind": 4256,
+        "query_template_id": 4256,
+        "demo_template_id": 4256
+      },
+      "benign_concept_values": {
+        "carrot": 4256
+      },
+      "context_kind_values": {
+        "benign": 2128,
+        "harmful": 2128
+      },
+      "n_distinct_query_template_id": 2,
+      "n_distinct_demo_template_id": 1064,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__cds38_button_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__cds38_button_bomb.jsonl"
+    },
+    {
+      "bank": "cds38_basket_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb.jsonl",
+      "bank_file_sha16": "7136eb6f5ee9bbb7",
+      "bank_rows_sha16": "d22cc2da5eb943e0",
+      "bank_rows_sha16_claimed_by_meta": "d22cc2da5eb943e0",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main_longpre_cds",
+      "seed": 20260901,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools_29dom.json",
+      "pools_present": true,
+      "pools_sha16": "4cfc70c8688e4a3a",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "basket_bomb",
+      "n_rows_in_bank": 4256,
+      "n_metadata_rows_emitted": 4256,
+      "n_ambiguous": 0,
+      "n_analysable": 4256,
+      "ambiguous_by_rule": {},
+      "n_core_2x2": 4256,
+      "n_core_2x2_analysable": 4256,
+      "n_core_2x2_excluded": 0,
+      "field_coverage_non_null": {
+        "surface_word": 4256,
+        "surface_kind": 4256,
+        "harmful_concept": 4256,
+        "benign_concept": 4256,
+        "lexical_bank": 4256,
+        "context_kind": 4256,
+        "query_template_id": 4256,
+        "demo_template_id": 4256
+      },
+      "benign_concept_values": {
+        "carrot": 4256
+      },
+      "context_kind_values": {
+        "benign": 2128,
+        "harmful": 2128
+      },
+      "n_distinct_query_template_id": 2,
+      "n_distinct_demo_template_id": 1064,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 8,
+      "incidental_codeword_by_domain": {
+        "school_campus": 8
+      },
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__cds38_basket_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__cds38_basket_bomb.jsonl"
+    }
+  ],
+  "audit": {
+    "button_bomb": {
+      "n_core_2x2_families_seen": 1008,
+      "n_core_2x2_families_incomplete": 624,
+      "n_core_2x2_families_complete": 384,
+      "AUD_SURFACE": {
+        "n_families": 384,
+        "A_C_same_codeword": 384,
+        "E_B_same_concept": 384,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_ALIGN": {
+        "n_families": 384,
+        "clean": 384,
+        "violation_kinds": {},
+        "pass": true
+      },
+      "AUD_CONTRAST": {
+        "n_families": 384,
+        "ctx_query_identical_AC": 384,
+        "ctx_query_identical_EB": 384,
+        "ctx_demo_differs_AC": 336,
+        "ctx_demo_differs_EB": 336,
+        "ctx_demo_degenerate_zero_demo_AC": 48,
+        "ctx_demo_degenerate_zero_demo_EB": 48,
+        "surf_masked_identical_AE": 384,
+        "surf_masked_identical_CB": 384,
+        "query_template_id_uniform": 384,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_OCCUR_selfderived": {
+        "n_checked": 2736,
+        "codeword_mismatch": 0,
+        "concept_mismatch": 0,
+        "target_mismatch": 0,
+        "mismatch_ids": [],
+        "pass": true
+      },
+      "AUD_OCCUR_vs_results_jsonl": [
+        {
+          "run_dir": "outputs/boombness/extract_boombness/x2fit_button_bomb_20260824_015451_272450",
+          "run_bank_file_sha16": "95a3a8017f9ab180",
+          "run_bank_rows_sha16": "debe267f05efb9ab",
+          "bank_file_sha16": "95a3a8017f9ab180",
+          "bank_rows_sha16": "debe267f05efb9ab",
+          "n_result_rows": 15768,
+          "n_joined": 15768,
+          "n_sha_mismatch": 0,
+          "n_no_such_prompt_id": 0,
+          "n_occ_field_absent": 0,
+          "n_occ_agree": 13704,
+          "n_occ_disagree": 0,
+          "n_skipped_occurrence_unsafe": 2064,
+          "disagree_ids": [],
+          "pass": true
+        }
+      ]
+    },
+    "basket_bomb": {
+      "n_core_2x2_families_seen": 1008,
+      "n_core_2x2_families_incomplete": 624,
+      "n_core_2x2_families_complete": 384,
+      "AUD_SURFACE": {
+        "n_families": 384,
+        "A_C_same_codeword": 384,
+        "E_B_same_concept": 384,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_ALIGN": {
+        "n_families": 384,
+        "clean": 384,
+        "violation_kinds": {},
+        "pass": true
+      },
+      "AUD_CONTRAST": {
+        "n_families": 384,
+        "ctx_query_identical_AC": 384,
+        "ctx_query_identical_EB": 384,
+        "ctx_demo_differs_AC": 336,
+        "ctx_demo_differs_EB": 336,
+        "ctx_demo_degenerate_zero_demo_AC": 48,
+        "ctx_demo_degenerate_zero_demo_EB": 48,
+        "surf_masked_identical_AE": 384,
+        "surf_masked_identical_CB": 384,
+        "query_template_id_uniform": 384,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_OCCUR_selfderived": {
+        "n_checked": 2736,
+        "codeword_mismatch": 0,
+        "concept_mismatch": 0,
+        "target_mismatch": 0,
+        "mismatch_ids": [],
+        "pass": true
+      },
+      "AUD_OCCUR_vs_results_jsonl": [
+        {
+          "run_dir": "outputs/boombness/extract_boombness/x2fit_basket_bomb_20260823_204217_239421",
+          "run_bank_file_sha16": "2263fef44dfdfeaa",
+          "run_bank_rows_sha16": "113fc7b6f792f1c6",
+          "bank_file_sha16": "2263fef44dfdfeaa",
+          "bank_rows_sha16": "113fc7b6f792f1c6",
+          "n_result_rows": 15768,
+          "n_joined": 15768,
+          "n_sha_mismatch": 0,
+          "n_no_such_prompt_id": 0,
+          "n_occ_field_absent": 0,
+          "n_occ_agree": 13704,
+          "n_occ_disagree": 0,
+          "n_skipped_occurrence_unsafe": 2064,
+          "disagree_ids": [],
+          "pass": true
+        }
+      ]
+    },
+    "cds38_button_bomb": {
+      "n_core_2x2_families_seen": 1064,
+      "n_core_2x2_families_incomplete": 0,
+      "n_core_2x2_families_complete": 1064,
+      "AUD_SURFACE": {
+        "n_families": 1064,
+        "A_C_same_codeword": 1064,
+        "E_B_same_concept": 1064,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_ALIGN": {
+        "n_families": 1064,
+        "clean": 1064,
+        "violation_kinds": {},
+        "pass": true
+      },
+      "AUD_CONTRAST": {
+        "n_families": 1064,
+        "ctx_query_identical_AC": 1064,
+        "ctx_query_identical_EB": 1064,
+        "ctx_demo_differs_AC": 1064,
+        "ctx_demo_differs_EB": 1064,
+        "ctx_demo_degenerate_zero_demo_AC": 0,
+        "ctx_demo_degenerate_zero_demo_EB": 0,
+        "surf_masked_identical_AE": 1064,
+        "surf_masked_identical_CB": 1064,
+        "query_template_id_uniform": 1064,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_OCCUR_selfderived": {
+        "n_checked": 4256,
+        "codeword_mismatch": 0,
+        "concept_mismatch": 0,
+        "target_mismatch": 0,
+        "mismatch_ids": [],
+        "pass": true
+      },
+      "AUD_OCCUR_vs_results_jsonl": []
+    },
+    "cds38_basket_bomb": {
+      "n_core_2x2_families_seen": 1064,
+      "n_core_2x2_families_incomplete": 0,
+      "n_core_2x2_families_complete": 1064,
+      "AUD_SURFACE": {
+        "n_families": 1064,
+        "A_C_same_codeword": 1064,
+        "E_B_same_concept": 1064,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_ALIGN": {
+        "n_families": 1064,
+        "clean": 1064,
+        "violation_kinds": {},
+        "pass": true
+      },
+      "AUD_CONTRAST": {
+        "n_families": 1064,
+        "ctx_query_identical_AC": 1064,
+        "ctx_query_identical_EB": 1064,
+        "ctx_demo_differs_AC": 1064,
+        "ctx_demo_differs_EB": 1064,
+        "ctx_demo_degenerate_zero_demo_AC": 0,
+        "ctx_demo_degenerate_zero_demo_EB": 0,
+        "surf_masked_identical_AE": 1064,
+        "surf_masked_identical_CB": 1064,
+        "query_template_id_uniform": 1064,
+        "violations": [],
+        "pass": true
+      },
+      "AUD_OCCUR_selfderived": {
+        "n_checked": 4256,
+        "codeword_mismatch": 0,
+        "concept_mismatch": 0,
+        "target_mismatch": 0,
+        "mismatch_ids": [],
+        "pass": true
+      },
+      "AUD_OCCUR_vs_results_jsonl": []
+    }
+  },
+  "crossbank_byte_identity": [
+    {
+      "bank_a": "button_bomb",
+      "bank_b": "basket_bomb",
+      "bank_a_file_sha16": "95a3a8017f9ab180",
+      "bank_b_file_sha16": "2263fef44dfdfeaa",
+      "bank_a_rows_sha16": "debe267f05efb9ab",
+      "bank_b_rows_sha16": "113fc7b6f792f1c6",
+      "n_rows_a": 2736,
+      "n_rows_b": 2736,
+      "n_prompt_ids_shared": 2736,
+      "n_prompt_ids_only_a": 0,
+      "n_prompt_ids_only_b": 0,
+      "n_byte_identical": 618,
+      "n_byte_different": 2118,
+      "identical_by_cell": {
+        "E": 306,
+        "B": 312
+      },
+      "identical_cells_covered": [
+        "B",
+        "E"
+      ],
+      "total_shared_by_cell": {
+        "A": 816,
+        "C": 1008,
+        "B": 384,
+        "E": 384,
+        "F": 72,
+        "D": 72
+      },
+      "frac_identical_within_cell": {
+        "A": 0.0,
+        "B": 0.8125,
+        "C": 0.0,
+        "D": 0.0,
+        "E": 0.796875,
+        "F": 0.0
+      },
+      "identical_by_cell_x_query_kind_x_n_examples": {
+        "B|behavioral|n0": 12,
+        "B|behavioral|n1": 24,
+        "B|behavioral|n16": 12,
+        "B|behavioral|n2": 24,
+        "B|behavioral|n4": 24,
+        "B|behavioral|n8": 24,
+        "B|comprehension_usage|n0": 12,
+        "B|comprehension_usage|n1": 12,
+        "B|comprehension_usage|n16": 12,
+        "B|comprehension_usage|n2": 12,
+        "B|comprehension_usage|n4": 12,
+        "B|comprehension_usage|n8": 12,
+        "B|semantic_one_word|n0": 12,
+        "B|semantic_one_word|n1": 24,
+        "B|semantic_one_word|n16": 12,
+        "B|semantic_one_word|n2": 24,
+        "B|semantic_one_word|n4": 24,
+        "B|semantic_one_word|n8": 24,
+        "E|behavioral|n0": 12,
+        "E|behavioral|n1": 24,
+        "E|behavioral|n16": 11,
+        "E|behavioral|n2": 24,
+        "E|behavioral|n4": 24,
+        "E|behavioral|n8": 23,
+        "E|comprehension_usage|n0": 12,
+        "E|comprehension_usage|n1": 12,
+        "E|comprehension_usage|n16": 11,
+        "E|comprehension_usage|n2": 12,
+        "E|comprehension_usage|n4": 12,
+        "E|comprehension_usage|n8": 11,
+        "E|semantic_one_word|n0": 12,
+        "E|semantic_one_word|n1": 24,
+        "E|semantic_one_word|n16": 11,
+        "E|semantic_one_word|n2": 24,
+        "E|semantic_one_word|n4": 24,
+        "E|semantic_one_word|n8": 23
+      },
+      "different_by_cell_x_query_kind_x_n_examples": {
+        "A|behavioral|n0": 12,
+        "A|behavioral|n1": 24,
+        "A|behavioral|n16": 12,
+        "A|behavioral|n2": 108,
+        "A|behavioral|n4": 108,
+        "A|behavioral|n8": 108,
+        "A|comprehension_usage|n0": 12,
+        "A|comprehension_usage|n1": 12,
+        "A|comprehension_usage|n16": 12,
+        "A|comprehension_usage|n2": 12,
+        "A|comprehension_usage|n4": 12,
+        "A|comprehension_usage|n8": 12,
+        "A|semantic_forced_choice|n0": 12,
+        "A|semantic_forced_choice|n1": 12,
+        "A|semantic_forced_choice|n16": 12,
+        "A|semantic_forced_choice|n2": 12,
+        "A|semantic_forced_choice|n4": 12,
+        "A|semantic_forced_choice|n8": 12,
+        "A|semantic_one_word|n0": 12,
+        "A|semantic_one_word|n1": 24,
+        "A|semantic_one_word|n16": 12,
+        "A|semantic_one_word|n2": 84,
+        "A|semantic_one_word|n4": 84,
+        "A|semantic_one_word|n8": 84,
+        "B|semantic_forced_choice|n0": 12,
+        "B|semantic_forced_choice|n1": 12,
+        "B|semantic_forced_choice|n16": 12,
+        "B|semantic_forced_choice|n2": 12,
+        "B|semantic_forced_choice|n4": 12,
+        "B|semantic_forced_choice|n8": 12,
+        "C|behavioral|n0": 36,
+        "C|behavioral|n1": 24,
+        "C|behavioral|n16": 12,
+        "C|behavioral|n2": 108,
+        "C|behavioral|n4": 162,
+        "C|behavioral|n8": 126,
+        "C|comprehension_usage|n0": 12,
+        "C|comprehension_usage|n1": 12,
+        "C|comprehension_usage|n16": 12,
+        "C|comprehension_usage|n2": 12,
+        "C|comprehension_usage|n4": 12,
+        "C|comprehension_usage|n8": 12,
+        "C|semantic_forced_choice|n0": 12,
+        "C|semantic_forced_choice|n1": 12,
+        "C|semantic_forced_choice|n16": 12,
+        "C|semantic_forced_choice|n2": 12,
+        "C|semantic_forced_choice|n4": 12,
+        "C|semantic_forced_choice|n8": 12,
+        "C|semantic_one_word|n0": 36,
+        "C|semantic_one_word|n1": 24,
+        "C|semantic_one_word|n16": 12,
+        "C|semantic_one_word|n2": 84,
+        "C|semantic_one_word|n4": 138,
+        "C|semantic_one_word|n8": 102,
+        "D|behavioral|n0": 12,
+        "D|behavioral|n4": 12,
+        "D|behavioral|n8": 12,
+        "D|semantic_one_word|n0": 12,
+        "D|semantic_one_word|n4": 12,
+        "D|semantic_one_word|n8": 12,
+        "E|behavioral|n16": 1,
+        "E|behavioral|n8": 1,
+        "E|comprehension_usage|n16": 1,
+        "E|comprehension_usage|n8": 1,
+        "E|semantic_forced_choice|n0": 12,
+        "E|semantic_forced_choice|n1": 12,
+        "E|semantic_forced_choice|n16": 12,
+        "E|semantic_forced_choice|n2": 12,
+        "E|semantic_forced_choice|n4": 12,
+        "E|semantic_forced_choice|n8": 12,
+        "E|semantic_one_word|n16": 1,
+        "E|semantic_one_word|n8": 1,
+        "F|behavioral|n0": 12,
+        "F|behavioral|n4": 12,
+        "F|behavioral|n8": 12,
+        "F|semantic_one_word|n0": 12,
+        "F|semantic_one_word|n4": 12,
+        "F|semantic_one_word|n8": 12
+      },
+      "identical_set_is_exactly_cells_B_and_E": true,
+      "BE_nonidentical_by_class": {
+        "B|contains_codeword": 72,
+        "E|contains_codeword": 72,
+        "E|demo_block_differs_only": 6
+      },
+      "BE_nonidentical_class_by_demo_pool_domain": {
+        "contains_codeword": {
+          "city_bridge": 24,
+          "farm_storage": 24,
+          "game_manual": 24,
+          "instructional": 24,
+          "lab_safety": 24,
+          "news_report": 24
+        },
+        "demo_block_differs_only": {
+          "farm_storage": 6
+        }
+      },
+      "BE_demo_block_char_length_delta_histogram": {
+        "1": 6
+      },
+      "BE_identical_though_codeword_present_by_cell_domain": {},
+      "n_BE_unexplained": 0
+    },
+    {
+      "bank_a": "cds38_button_bomb",
+      "bank_b": "cds38_basket_bomb",
+      "bank_a_file_sha16": "db351646a3bb004b",
+      "bank_b_file_sha16": "7136eb6f5ee9bbb7",
+      "bank_a_rows_sha16": "17173f8adc42973e",
+      "bank_b_rows_sha16": "d22cc2da5eb943e0",
+      "n_rows_a": 4256,
+      "n_rows_b": 4256,
+      "n_prompt_ids_shared": 4256,
+      "n_prompt_ids_only_a": 0,
+      "n_prompt_ids_only_b": 0,
+      "n_byte_identical": 1031,
+      "n_byte_different": 3225,
+      "identical_by_cell": {
+        "B": 519,
+        "E": 512
+      },
+      "identical_cells_covered": [
+        "B",
+        "E"
+      ],
+      "total_shared_by_cell": {
+        "A": 1064,
+        "C": 1064,
+        "E": 1064,
+        "B": 1064
+      },
+      "frac_identical_within_cell": {
+        "A": 0.0,
+        "B": 0.487782,
+        "C": 0.0,
+        "E": 0.481203
+      },
+      "identical_by_cell_x_query_kind_x_n_examples": {
+        "B|behavioral|n4": 371,
+        "B|behavioral|n8": 148,
+        "E|behavioral|n4": 367,
+        "E|behavioral|n8": 145
+      },
+      "different_by_cell_x_query_kind_x_n_examples": {
+        "A|behavioral|n4": 380,
+        "A|behavioral|n8": 152,
+        "A|semantic_forced_choice|n4": 380,
+        "A|semantic_forced_choice|n8": 152,
+        "B|behavioral|n4": 9,
+        "B|behavioral|n8": 4,
+        "B|semantic_forced_choice|n4": 380,
+        "B|semantic_forced_choice|n8": 152,
+        "C|behavioral|n4": 380,
+        "C|behavioral|n8": 152,
+        "C|semantic_forced_choice|n4": 380,
+        "C|semantic_forced_choice|n8": 152,
+        "E|behavioral|n4": 13,
+        "E|behavioral|n8": 7,
+        "E|semantic_forced_choice|n4": 380,
+        "E|semantic_forced_choice|n8": 152
+      },
+      "identical_set_is_exactly_cells_B_and_E": true,
+      "BE_nonidentical_by_class": {
+        "B|contains_codeword": 532,
+        "B|preamble_differs": 13,
+        "E|contains_codeword": 532,
+        "E|demo_block_differs_only": 7,
+        "E|preamble_differs": 13
+      },
+      "BE_nonidentical_class_by_demo_pool_domain": {
+        "contains_codeword": {
+          "airport_apron": 28,
+          "airport_ground": 28,
+          "bakery_plant": 28,
+          "brewery_works": 28,
+          "campsite_park": 28,
+          "city_bridge": 28,
+          "construction_site": 28,
+          "dairy_plant": 28,
+          "farm_storage": 28,
+          "ferry_terminal": 28,
+          "film_studio": 28,
+          "fishing_harbour": 28,
+          "game_manual": 28,
+          "garden_centre": 28,
+          "harbour_dock": 28,
+          "hospital_supply": 28,
+          "hospital_ward_store": 28,
+          "hotel_service": 28,
+          "instructional": 28,
+          "lab_safety": 28,
+          "library_stacks": 28,
+          "mountain_refuge": 28,
+          "museum_archive": 28,
+          "news_report": 28,
+          "power_substation": 28,
+          "printing_works": 28,
+          "quarry_site": 28,
+          "rail_depot": 28,
+          "recycling_centre": 28,
+          "school_campus": 28,
+          "shipyard_slip": 28,
+          "sports_stadium": 28,
+          "subway_station": 28,
+          "telecom_exchange": 28,
+          "textile_mill": 28,
+          "theatre_backstage": 28,
+          "veterinary_clinic": 28,
+          "warehouse_logistics": 28
+        },
+        "demo_block_differs_only": {
+          "film_studio": 2,
+          "garden_centre": 1,
+          "recycling_centre": 2,
+          "subway_station": 2
+        },
+        "preamble_differs": {
+          "airport_ground": 8,
+          "harbour_dock": 10,
+          "printing_works": 8
+        }
+      },
+      "BE_demo_block_char_length_delta_histogram": {
+        "1": 7
+      },
+      "BE_identical_though_codeword_present_by_cell_domain": {
+        "B|school_campus": 4,
+        "E|school_campus": 4
+      },
+      "n_BE_unexplained": 0
+    }
+  ],
+  "self_test": {
+    "baseline_all_pass": true,
+    "M1_occurrence_count_goes_red": true,
+    "M2_surface_identity_goes_red": true,
+    "M3_masked_contrast_goes_red": true,
+    "M4_query_identity_goes_red": true,
+    "all_mutations_detected": true
+  },
+  "banks_never_modified": true,
+  "note": "sidecar-only: no bank file, no prompt_families.py, and no bank_rows_sha16 was touched, so tests/test_bank_regenerates_byte_identically.py is unaffected.",
+  "failures": {
+    "n_attempted": 13984,
+    "n_succeeded": 13792,
+    "n_failed": 192,
+    "failure_reasons": {
+      "ambiguous_excluded": 192
+    },
+    "failure_example_ids": {
+      "ambiguous_excluded": [
+        "button_bomb",
+        "basket_bomb"
+      ]
+    }
+  },
+  "n_result_rows": 4
+}

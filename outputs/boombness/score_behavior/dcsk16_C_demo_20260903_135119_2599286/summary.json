@@ -1,0 +1,74 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "arm": "C_ro_k16_demo",
+  "n_bank_rows": 380,
+  "option_mass": {
+    "semantic/semantic_forced_choice": {
+      "n": 380,
+      "median": 0.373089075088501,
+      "median_true": 0.3718339055776596,
+      "p10": 0.22206051647663116,
+      "p90": 0.5483427047729492,
+      "max": 0.9034230709075928,
+      "frac_above_1pct": 1.0,
+      "reportable": true,
+      "median_note": "`median` is the upper-middle element and is kept for continuity with historical runs; `median_true` is the actual median and is what `reportable` is computed from."
+    }
+  },
+  "knockout_liveness": {
+    "n_rows": 380,
+    "frac_rows_decode_live": 0.0,
+    "median_decode_edits": 0.0,
+    "min_decode_forwards": 0,
+    "median_n_demo_positions": 58.0,
+    "attn_implementation": "eager",
+    "knockout_scope": "query_last_k_rows",
+    "liveness_required": [
+      "n_prefill_edits",
+      "n_prefill_forward"
+    ],
+    "liveness_must_be_zero": [
+      "n_decode_edits"
+    ],
+    "liveness_readout_only": true,
+    "frac_rows_scope_live": 1.0,
+    "median_prefill_edits": 33408.0,
+    "min_prefill_forwards": 36,
+    "total_prefill_edits": 12943872,
+    "total_decode_edits": 0,
+    "scope_violations": {}
+  },
+  "option_mass_gate": "PASS",
+  "answer_prefix": "Answer:",
+  "counts": {
+    "semantic": 380
+  },
+  "n_generations": 0,
+  "gens_path": null,
+  "intervention": {
+    "direction": "demo_all",
+    "mode": "attn_knockout",
+    "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "alpha": 1.0,
+    "knockout_scope": "query_last_k_rows"
+  },
+  "note": "ASR is NOT computed here \u2014 run judge_boombness.py on gens.jsonl",
+  "failures": {
+    "n_attempted": 380,
+    "n_succeeded": 380,
+    "n_failed": 0,
+    "failure_reasons": {},
+    "failure_example_ids": {}
+  },
+  "n_result_rows": 380
+}

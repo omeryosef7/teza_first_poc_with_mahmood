@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsqwb_C_s20260904_d1_20260904_003745_3626007",
+  "status": "ok",
+  "rows_written": 380,
+  "end_ts": "2026-09-04T01:42:59",
+  "end_epoch": 1788475379.4180894,
+  "wall_seconds": 3901.809,
+  "experiment": "score_behavior"
+}

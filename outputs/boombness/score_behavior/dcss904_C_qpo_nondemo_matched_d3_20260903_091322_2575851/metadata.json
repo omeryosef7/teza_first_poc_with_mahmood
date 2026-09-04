@@ -1,0 +1,412 @@
+{
+  "schema": "BOOMBNESS_META/1",
+  "experiment": "score_behavior",
+  "run_id": "dcss904_C_qpo_nondemo_matched_d3_20260903_091322_2575851",
+  "plan": "docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md",
+  "command": "src/boombness/score_behavior.py --bank /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl --query-kinds behavioral --bank-blocks cds_n4 --n-examples 4 --max-new 640 --dtype bfloat16 --seed 20260904 --model meta-llama/Llama-3.1-8B-Instruct --attn-impl eager --expect-n 380 --conditions natural_doublespeak --knockout-scope query_prefill_only --intervene nondemo_matched_d3:attn_knockout:6-14:1.0 --arm C_beh_qpo_s904_nondemo_matched_d3 --tag dcss904_C_qpo_nondemo_matched_d3",
+  "argv": [
+    "src/boombness/score_behavior.py",
+    "--bank",
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+    "--query-kinds",
+    "behavioral",
+    "--bank-blocks",
+    "cds_n4",
+    "--n-examples",
+    "4",
+    "--max-new",
+    "640",
+    "--dtype",
+    "bfloat16",
+    "--seed",
+    "20260904",
+    "--model",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "--attn-impl",
+    "eager",
+    "--expect-n",
+    "380",
+    "--conditions",
+    "natural_doublespeak",
+    "--knockout-scope",
+    "query_prefill_only",
+    "--intervene",
+    "nondemo_matched_d3:attn_knockout:6-14:1.0",
+    "--arm",
+    "C_beh_qpo_s904_nondemo_matched_d3",
+    "--tag",
+    "dcss904_C_qpo_nondemo_matched_d3"
+  ],
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "slurm_job_id": "842662",
+  "slurm_nodelist": "n-802",
+  "n_result_rows": 380,
+  "wall_seconds": 2810.16,
+  "finished_at": "2026-09-03T10:00:12",
+  "hostname": "n-802",
+  "git_commit": "38321d3c0b704da21238470a2edb1a58949c2a6c",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "timestamp": "2026-09-03T10:00:12",
+  "population_filter": {
+    "query_kinds": [
+      "behavioral"
+    ],
+    "conditions": [
+      "natural_doublespeak"
+    ],
+    "bank_blocks": [
+      "cds_n4"
+    ],
+    "n_examples": [
+      4
+    ]
+  },
+  "population_composition": {
+    "n": 380,
+    "by_condition": {
+      "natural_doublespeak": 380
+    },
+    "by_bank_block": {
+      "cds_n4": 380
+    },
+    "by_domain": {
+      "hospital_supply": 10,
+      "airport_ground": 10,
+      "power_substation": 10,
+      "quarry_site": 10,
+      "library_stacks": 10,
+      "dairy_plant": 10,
+      "shipyard_slip": 10,
+      "textile_mill": 10,
+      "telecom_exchange": 10,
+      "warehouse_logistics": 10,
+      "harbour_dock": 10,
+      "museum_archive": 10,
+      "rail_depot": 10,
+      "farm_storage": 10,
+      "city_bridge": 10,
+      "lab_safety": 10,
+      "news_report": 10,
+      "game_manual": 10,
+      "instructional": 10,
+      "hospital_ward_store": 10,
+      "airport_apron": 10,
+      "school_campus": 10,
+      "hotel_service": 10,
+      "ferry_terminal": 10,
+      "sports_stadium": 10,
+      "theatre_backstage": 10,
+      "bakery_plant": 10,
+      "recycling_centre": 10,
+      "campsite_park": 10,
+      "construction_site": 10,
+      "fishing_harbour": 10,
+      "printing_works": 10,
+      "garden_centre": 10,
+      "veterinary_clinic": 10,
+      "mountain_refuge": 10,
+      "film_studio": 10,
+      "subway_station": 10,
+      "brewery_works": 10
+    },
+    "by_split": {
+      "dev": 190,
+      "heldout": 190
+    },
+    "by_n_examples": {
+      "4": 380
+    },
+    "n_families": 380,
+    "limit_applied": null,
+    "n_excluded": 0,
+    "exclude_prompt_ids_sha16": null
+  },
+  "demo_deleted": false,
+  "answer_prefix": "Answer:",
+  "answer_prefix_rationale": "forward readouts are scored at the token after this text. Empty reproduces the pre-2026-08-18 behaviour, in which the options held a median 4.4e-05 (comprehension) / 5.6e-06 (semantic) of next-token mass on the committed baseline.",
+  "min_option_mass": 0.05,
+  "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+  "bank_file_sha16": "db351646a3bb004b",
+  "bank_rows_sha16": "17173f8adc42973e",
+  "bank_n_rows": 4256,
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "model_revision": null,
+  "model_revision_requested": null,
+  "model_revision_resolved_commit": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "model_revision_resolution_source": "hf_cache_ref:main",
+  "model_revision_unresolved_reason": null,
+  "tokenizer": "meta-llama/Llama-3.1-8B-Instruct",
+  "tokenizer_revision_requested": null,
+  "tokenizer_revision_resolved_commit": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "tokenizer_revision_resolution_source": "hf_cache_ref:main",
+  "tokenizer_revision_unresolved_reason": null,
+  "tokenizer_snapshot_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659",
+  "dtype": "torch.bfloat16",
+  "attn_implementation": "eager",
+  "tokenizer_files_sha16": "813ffe05da8767ce",
+  "tokenizer_files_hashed": [
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "special_tokens_map.json"
+  ],
+  "tokenizer_files_bytes": 9141304,
+  "num_layers": 32,
+  "intervention": {
+    "direction": "nondemo_matched_d3",
+    "mode": "attn_knockout",
+    "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "alpha": 1.0
+  },
+  "intervention_specs": [
+    {
+      "direction": "nondemo_matched_d3",
+      "mode": "attn_knockout",
+      "layers": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "alpha": 1.0
+    }
+  ],
+  "intervention_direction_file": null,
+  "realized_dose": {},
+  "dose_metric_note": "variance = frac*(1-(1-alpha)^2); norm = alpha*sqrt(frac). They are NOT monotone-equivalent at partial alpha and they disagree about dose-matching by ~10x in alpha (C-2).",
+  "dose_unit": "gap (alpha=1 == one diff-of-means) for mode=add; for mode=project_out see realized_dose, NOT alpha",
+  "knockout_feasibility": {
+    "n_rows": 380,
+    "no_demo_block": 0,
+    "infeasible_control": 0,
+    "dead_scope_span": 0,
+    "knockout_scope": "query_prefill_only",
+    "by_n_examples": {
+      "4": {
+        "n": 380,
+        "ok": 380,
+        "bad": 0
+      }
+    },
+    "control_draw_match_ratio": {
+      "nondemo_matched_d3|n_examples=4": {
+        "n": 380,
+        "min": 1.0,
+        "mean": 1.0,
+        "n_below_1": 0
+      }
+    },
+    "control_draw_seeds": {
+      "nondemo_matched_d3": 44020235
+    },
+    "control_draw_note": "match_ratio = drawn keys / demo keys, per row. A `strict` (nondemo_matched_d*) arm cannot report < 1.0: it refuses the row instead. A `capped` (nondemo_capped_d*) arm can, and every row carries its own ratio in control_draw_match_ratio."
+  },
+  "readout_mode": "whole_answer",
+  "semantic_variants": {
+    "concept": [
+      " bomb",
+      " Bomb"
+    ],
+    "codeword": [
+      " button",
+      " Button"
+    ]
+  },
+  "comprehension_variants": {
+    "literal": [
+      " literal",
+      " Literal"
+    ],
+    "coded": [
+      " coded",
+      " Coded"
+    ]
+  },
+  "readout_ids": {
+    "mode": "primary",
+    "concept": {
+      "word": "bomb",
+      "primary_id": 13054,
+      "primary_piece": " bomb",
+      "full_word_ids": [
+        13054,
+        33909,
+        79444,
+        92826
+      ],
+      "full_word_pieces": [
+        " bomb",
+        " Bomb",
+        "bomb",
+        "Bomb"
+      ],
+      "variants": {
+        "bare": [
+          79444
+        ],
+        "space": [
+          13054
+        ],
+        "cap": [
+          92826
+        ],
+        "space_cap": [
+          33909
+        ]
+      },
+      "rejected_first_ids": []
+    },
+    "codeword": {
+      "word": "button",
+      "primary_id": 3215,
+      "primary_piece": " button",
+      "full_word_ids": [
+        1597,
+        2208,
+        3215,
+        6739
+      ],
+      "full_word_pieces": [
+        "Button",
+        "button",
+        " button",
+        " Button"
+      ],
+      "variants": {
+        "bare": [
+          2208
+        ],
+        "space": [
+          3215
+        ],
+        "cap": [
+          1597
+        ],
+        "space_cap": [
+          6739
+        ]
+      },
+      "rejected_first_ids": []
+    },
+    "concept_ids": [
+      13054
+    ],
+    "codeword_ids": [
+      3215
+    ]
+  },
+  "comprehension_readout_ids": {
+    "literal": {
+      "word": "literal",
+      "primary_id": 24016,
+      "primary_piece": " literal",
+      "full_word_ids": [
+        17802,
+        24016,
+        36885,
+        50774
+      ],
+      "full_word_pieces": [
+        "Literal",
+        " literal",
+        "literal",
+        " Literal"
+      ],
+      "variants": {
+        "bare": [
+          36885
+        ],
+        "space": [
+          24016
+        ],
+        "cap": [
+          17802
+        ],
+        "space_cap": [
+          50774
+        ]
+      },
+      "rejected_first_ids": []
+    },
+    "coded": {
+      "word": "coded",
+      "primary_id": 47773,
+      "primary_piece": " coded",
+      "full_word_ids": [
+        47773,
+        66630
+      ],
+      "full_word_pieces": [
+        " coded",
+        "coded"
+      ],
+      "variants": {
+        "bare": [
+          66630
+        ],
+        "space": [
+          47773
+        ],
+        "cap": [
+          34,
+          6879
+        ],
+        "space_cap": [
+          356,
+          6879
+        ]
+      },
+      "rejected_first_ids": [
+        34,
+        356
+      ]
+    }
+  },
+  "concept_token_ids": [
+    13054
+  ],
+  "codeword_token_ids": [
+    3215
+  ],
+  "comprehension_token_ids": {
+    "literal": [
+      24016
+    ],
+    "coded": [
+      47773
+    ]
+  },
+  "arm": "C_beh_qpo_s904_nondemo_matched_d3",
+  "seed": 20260904,
+  "seed_source": "args.seed",
+  "seeds_applied": [
+    {
+      "label": "main",
+      "seed": 20260904
+    }
+  ],
+  "seeds_applied_truncated": false,
+  "n_seeds_applied": 1,
+  "n_distinct_seeds_applied": 1,
+  "seeds_applied_after_run_start": [],
+  "seed_never_applied": false,
+  "git_dirty": false
+}

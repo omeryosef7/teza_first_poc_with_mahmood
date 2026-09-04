@@ -1,0 +1,63 @@
+{
+  "model": "Qwen/Qwen3-14B",
+  "arm": "qwbeh_C_ctrl_d2",
+  "n_bank_rows": 380,
+  "option_mass": {},
+  "knockout_liveness": {
+    "n_rows": 380,
+    "frac_rows_decode_live": 0.0,
+    "median_decode_edits": 0.0,
+    "min_decode_forwards": 363,
+    "median_n_demo_positions": 58.0,
+    "attn_implementation": "eager",
+    "knockout_scope": "query_prefill_only",
+    "liveness_required": [
+      "n_prefill_edits"
+    ],
+    "liveness_must_be_zero": [
+      "n_decode_edits"
+    ],
+    "liveness_readout_only": false,
+    "frac_rows_scope_live": 1.0,
+    "median_prefill_edits": 17864.0,
+    "min_prefill_forwards": 11,
+    "total_prefill_edits": 6922608,
+    "total_decode_edits": 0,
+    "scope_violations": {}
+  },
+  "option_mass_gate": "PASS",
+  "answer_prefix": "Answer:",
+  "counts": {
+    "behavioral": 380
+  },
+  "n_generations": 380,
+  "gens_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/dcsqwb_C_ctrl_d2_20260903_224723_2592215/gens.jsonl",
+  "intervention": {
+    "direction": "nondemo_matched_d2",
+    "mode": "attn_knockout",
+    "layers": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "alpha": 1.0,
+    "knockout_scope": "query_prefill_only"
+  },
+  "note": "ASR is NOT computed here \u2014 run judge_boombness.py on gens.jsonl",
+  "failures": {
+    "n_attempted": 380,
+    "n_succeeded": 380,
+    "n_failed": 0,
+    "failure_reasons": {},
+    "failure_example_ids": {}
+  },
+  "n_result_rows": 380
+}

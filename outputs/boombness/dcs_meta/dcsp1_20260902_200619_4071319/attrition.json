@@ -1,0 +1,208 @@
+{
+  "attrition": [
+    {
+      "bank": "button_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_button_bomb.jsonl",
+      "bank_file_sha16": "95a3a8017f9ab180",
+      "bank_rows_sha16": "debe267f05efb9ab",
+      "bank_rows_sha16_claimed_by_meta": "debe267f05efb9ab",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main",
+      "seed": 20260816,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+      "pools_present": true,
+      "pools_sha16": "b5e399712b996b7d",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "button_bomb",
+      "n_rows_in_bank": 2736,
+      "n_metadata_rows_emitted": 2736,
+      "n_ambiguous": 96,
+      "n_analysable": 2640,
+      "ambiguous_by_rule": {
+        "AMB-CONTEXT": 96
+      },
+      "n_core_2x2": 2592,
+      "n_core_2x2_analysable": 2568,
+      "n_core_2x2_excluded": 24,
+      "field_coverage_non_null": {
+        "surface_word": 2736,
+        "surface_kind": 2736,
+        "harmful_concept": 2736,
+        "benign_concept": 2736,
+        "lexical_bank": 2736,
+        "context_kind": 2640,
+        "query_template_id": 2736,
+        "demo_template_id": 2736
+      },
+      "benign_concept_values": {
+        "carrot": 2736
+      },
+      "context_kind_values": {
+        "harmful": 1368,
+        "benign": 1272,
+        "None": 96
+      },
+      "n_distinct_query_template_id": 4,
+      "n_distinct_demo_template_id": 432,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__button_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__button_bomb.jsonl"
+    },
+    {
+      "bank": "basket_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_basket_bomb.jsonl",
+      "bank_file_sha16": "2263fef44dfdfeaa",
+      "bank_rows_sha16": "113fc7b6f792f1c6",
+      "bank_rows_sha16_claimed_by_meta": "113fc7b6f792f1c6",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main",
+      "seed": 20260816,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+      "pools_present": true,
+      "pools_sha16": "b5e399712b996b7d",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "basket_bomb",
+      "n_rows_in_bank": 2736,
+      "n_metadata_rows_emitted": 2736,
+      "n_ambiguous": 96,
+      "n_analysable": 2640,
+      "ambiguous_by_rule": {
+        "AMB-CONTEXT": 96
+      },
+      "n_core_2x2": 2592,
+      "n_core_2x2_analysable": 2568,
+      "n_core_2x2_excluded": 24,
+      "field_coverage_non_null": {
+        "surface_word": 2736,
+        "surface_kind": 2736,
+        "harmful_concept": 2736,
+        "benign_concept": 2736,
+        "lexical_bank": 2736,
+        "context_kind": 2640,
+        "query_template_id": 2736,
+        "demo_template_id": 2736
+      },
+      "benign_concept_values": {
+        "carrot": 2736
+      },
+      "context_kind_values": {
+        "harmful": 1368,
+        "benign": 1272,
+        "None": 96
+      },
+      "n_distinct_query_template_id": 4,
+      "n_distinct_demo_template_id": 432,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__basket_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__basket_bomb.jsonl"
+    },
+    {
+      "bank": "cds38_button_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+      "bank_file_sha16": "db351646a3bb004b",
+      "bank_rows_sha16": "17173f8adc42973e",
+      "bank_rows_sha16_claimed_by_meta": "17173f8adc42973e",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main_longpre_cds",
+      "seed": 20260901,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools_29dom.json",
+      "pools_present": true,
+      "pools_sha16": "4cfc70c8688e4a3a",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "button_bomb",
+      "n_rows_in_bank": 4256,
+      "n_metadata_rows_emitted": 4256,
+      "n_ambiguous": 0,
+      "n_analysable": 4256,
+      "ambiguous_by_rule": {},
+      "n_core_2x2": 4256,
+      "n_core_2x2_analysable": 4256,
+      "n_core_2x2_excluded": 0,
+      "field_coverage_non_null": {
+        "surface_word": 4256,
+        "surface_kind": 4256,
+        "harmful_concept": 4256,
+        "benign_concept": 4256,
+        "lexical_bank": 4256,
+        "context_kind": 4256,
+        "query_template_id": 4256,
+        "demo_template_id": 4256
+      },
+      "benign_concept_values": {
+        "carrot": 4256
+      },
+      "context_kind_values": {
+        "benign": 2128,
+        "harmful": 2128
+      },
+      "n_distinct_query_template_id": 2,
+      "n_distinct_demo_template_id": 1064,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 0,
+      "incidental_codeword_by_domain": {},
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__cds38_button_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__cds38_button_bomb.jsonl"
+    },
+    {
+      "bank": "cds38_basket_bomb",
+      "present": true,
+      "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_basket_bomb.jsonl",
+      "bank_file_sha16": "7136eb6f5ee9bbb7",
+      "bank_rows_sha16": "d22cc2da5eb943e0",
+      "bank_rows_sha16_claimed_by_meta": "d22cc2da5eb943e0",
+      "bank_rows_sha16_matches_meta": true,
+      "preset": "main_longpre_cds",
+      "seed": 20260901,
+      "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools_29dom.json",
+      "pools_present": true,
+      "pools_sha16": "4cfc70c8688e4a3a",
+      "pools_sha16_matches_file": true,
+      "lexical_bank": "basket_bomb",
+      "n_rows_in_bank": 4256,
+      "n_metadata_rows_emitted": 4256,
+      "n_ambiguous": 0,
+      "n_analysable": 4256,
+      "ambiguous_by_rule": {},
+      "n_core_2x2": 4256,
+      "n_core_2x2_analysable": 4256,
+      "n_core_2x2_excluded": 0,
+      "field_coverage_non_null": {
+        "surface_word": 4256,
+        "surface_kind": 4256,
+        "harmful_concept": 4256,
+        "benign_concept": 4256,
+        "lexical_bank": 4256,
+        "context_kind": 4256,
+        "query_template_id": 4256,
+        "demo_template_id": 4256
+      },
+      "benign_concept_values": {
+        "carrot": 4256
+      },
+      "context_kind_values": {
+        "benign": 2128,
+        "harmful": 2128
+      },
+      "n_distinct_query_template_id": 2,
+      "n_distinct_demo_template_id": 1064,
+      "request_id_status": "ABSENT_NO_RUN_CONTEXT",
+      "n_incidental_codeword_in_concept_cell": 8,
+      "incidental_codeword_by_domain": {
+        "school_campus": 8
+      },
+      "exclusion_candidates_file": "exclude_candidates__incidental_codeword__cds38_basket_bomb.txt",
+      "exclusion_candidates_note": "CANDIDATES ONLY -- this run applies no exclusion. Declare them in every arm or in none.",
+      "sidecar": "dcs_meta__cds38_basket_bomb.jsonl"
+    }
+  ]
+}

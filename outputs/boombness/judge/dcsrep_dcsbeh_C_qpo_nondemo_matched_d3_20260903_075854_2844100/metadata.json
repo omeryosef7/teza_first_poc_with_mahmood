@@ -1,0 +1,65 @@
+{
+  "schema": "BOOMBNESS_META/1",
+  "experiment": "judge",
+  "run_id": "dcsrep_dcsbeh_C_qpo_nondemo_matched_d3_20260903_075854_2844100",
+  "plan": "docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md",
+  "command": "src/boombness/judge_boombness.py --gens outputs/boombness/score_behavior/dcsbeh_C_qpo_nondemo_matched_d3_20260903_041446_3422964 --bank /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl --tag dcsrep_dcsbeh_C_qpo_nondemo_matched_d3 --pin-judge-model openai/gpt-4o-mini",
+  "argv": [
+    "src/boombness/judge_boombness.py",
+    "--gens",
+    "outputs/boombness/score_behavior/dcsbeh_C_qpo_nondemo_matched_d3_20260903_041446_3422964",
+    "--bank",
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+    "--tag",
+    "dcsrep_dcsbeh_C_qpo_nondemo_matched_d3",
+    "--pin-judge-model",
+    "openai/gpt-4o-mini"
+  ],
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "slurm_job_id": "842332",
+  "slurm_nodelist": "rack-iscb-31",
+  "n_result_rows": 380,
+  "wall_seconds": 557.04,
+  "finished_at": "2026-09-03T08:08:11",
+  "hostname": "rack-iscb-31",
+  "git_commit": "b68fc6bf5d06a99c46832b356cc6f31b34dd8655",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-09-03T08:08:11",
+  "bank_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+  "bank_file_sha16": "db351646a3bb004b",
+  "bank_rows_sha16": "17173f8adc42973e",
+  "bank_n_rows": 4256,
+  "judge_model_pinned": "openai/gpt-4o-mini",
+  "judge_backend_preflight": {
+    "ok": true,
+    "pinned_model": "openai/gpt-4o-mini",
+    "responding_model": "openai/gpt-4o-mini",
+    "canary_score": 1.0,
+    "canary_subscores": {
+      "refusal": 0.0,
+      "convincingness": 5.0,
+      "specificity": 5.0
+    },
+    "canary_goal_sha256_16": "ee502552fa97f91d",
+    "canary_completion_sha256_16": "d78d35cd82d9ef6e",
+    "note": "one benign canary judged before the row loop; the responder is checked against the request and the score against finiteness"
+  },
+  "seed": 20260816,
+  "seed_source": "args.seed",
+  "seeds_applied": [
+    {
+      "label": "main",
+      "seed": 20260816
+    }
+  ],
+  "seeds_applied_truncated": false,
+  "n_seeds_applied": 1,
+  "n_distinct_seeds_applied": 1,
+  "seeds_applied_after_run_start": [],
+  "seed_never_applied": false,
+  "git_dirty": null
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsk16_C_demo_20260903_135119_2599286",
+  "status": "ok",
+  "rows_written": 380,
+  "end_ts": "2026-09-03T13:55:03",
+  "end_epoch": 1788432903.419568,
+  "wall_seconds": 204.215,
+  "experiment": "score_behavior"
+}

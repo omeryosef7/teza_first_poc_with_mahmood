@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsmed_dcs_C_baseline_20260903_024107_2834734",
+  "status": "ok",
+  "rows_written": 380,
+  "end_ts": "2026-09-03T02:52:10",
+  "end_epoch": 1788393130.2960775,
+  "wall_seconds": 663.247,
+  "experiment": "judge"
+}

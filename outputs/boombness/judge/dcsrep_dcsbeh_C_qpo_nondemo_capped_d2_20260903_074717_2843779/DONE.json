@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsrep_dcsbeh_C_qpo_nondemo_capped_d2_20260903_074717_2843779",
+  "status": "ok",
+  "rows_written": 380,
+  "end_ts": "2026-09-03T07:57:21",
+  "end_epoch": 1788411441.705261,
+  "wall_seconds": 604.309,
+  "experiment": "judge"
+}

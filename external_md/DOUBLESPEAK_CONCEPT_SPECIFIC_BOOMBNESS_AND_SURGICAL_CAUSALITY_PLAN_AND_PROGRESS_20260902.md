@@ -3534,3 +3534,40 @@ followed by a re-count of the untracked set, not by reading its exit status. `DC
 (the 12-file dedupe to 2 lines, the 5/5/5 and 6/9/8 widths, the 14 Qwen `--enable-thinking false`)
 were all verified before this and **stand unchanged**; only its claim to have *committed* them was
 wrong.
+
+### `DCS-031` — generalising `C-021`: **0 of 674** of this phase's output files were in the repo
+
+`C-021` raised the obvious question — did the same silent drop hit anything else? A full-tree
+`git status -uall` returned **0 untracked**, which looked like a clean bill of health and was not one.
+
+⚠ **The sweep was blind by construction.** `.gitignore:11` is a bare `outputs/`, so `git status` can
+**never** list an output artifact no matter how important it is. Checking the paths the summary
+actually cites found 3 that exist on disk and are absent from git; widening to every dcs-phase
+artifact found **674 files, of which 0 were tracked** — against **1166** tracked output files from
+earlier sprints, which had been force-added. The 3 cited files were a symptom; the phase had simply
+never applied the convention once.
+
+⛔ **A second lesson about verification instruments, on the same day as `C-021`.** There I trusted an
+exit code; here I trusted `git status`. Both reported success because both were answering a narrower
+question than the one I was asking. `feedback_matcher_scope_bug_class` in the same shape: the wrong
+key sees nothing and reports nothing.
+
+**Where the line was drawn, and why it is the repo's line rather than mine.** Tracked outputs
+elsewhere are summaries, manifests and analysis JSONs totalling **58M** — never raw rows. This phase's
+674 files are **234M**, dominated by `dcs_rowwise_*.json` (**68M + 34M + 34M**), `results.jsonl`
+(**49M**) and `gens.jsonl` (**24M**). Force-added the provenance-and-summary layer only:
+`RUNMETA.json`/`config.json`/`summary.json`/`metadata.json`/`DONE.json` across all runs, plus
+`dcs_geom_all.json`, `dcs_geom_button_bomb.json`, `dcs_ko1_ko2_did.json`, `audit.json`,
+`attrition.json` — **503 files, 5.0M**, verified to contain **0** row-level files and **0** paths
+outside `outputs/boombness/`.
+
+**This is coherent with the repo's stated philosophy rather than a compromise.** `.gitignore:19`
+justifies omitting activation caches because they are *"reproducible from the run config"* — and
+`C-021` has just put every run config in the repo. Config + argsfile + deterministic seed is the
+reproducibility mechanism here; the row files are its output, not its source.
+
+⚠ **Open, and a judgement call I am not making alone (`B-013`).** `results.jsonl` (**49M**) is what
+the DiD scripts actually read. It is regenerable from the now-committed configs, but only by rerunning
+GPU work. Tracking it would nearly double the repo's tracked-output footprint in a **shared** tree, so
+it is a collaborator-affecting decision rather than a scientific one. ⛔ Until it is made, the honest
+statement is that phase headlines are **reproducible by rerunning**, not **recomputable from the repo**.

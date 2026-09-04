@@ -1,0 +1,19 @@
+{
+  "experiment": "dcs_meta",
+  "run_id": "dcsp1_20260902_200619_4071319",
+  "seed": null,
+  "seed_source": null,
+  "args": {
+    "banks": [
+      "button_bomb",
+      "basket_bomb",
+      "cds38_button_bomb",
+      "cds38_basket_bomb"
+    ],
+    "tag": "dcsp1",
+    "results_glob": [
+      "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/*/metadata.json"
+    ],
+    "self_test": true
+  }
+}

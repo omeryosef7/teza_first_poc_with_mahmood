@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsp1_20260902_200619_4071319",
+  "status": "ok",
+  "rows_written": 4,
+  "end_ts": "2026-09-02T20:06:34",
+  "end_epoch": 1788368794.7196462,
+  "wall_seconds": 9.601,
+  "experiment": "dcs_meta"
+}

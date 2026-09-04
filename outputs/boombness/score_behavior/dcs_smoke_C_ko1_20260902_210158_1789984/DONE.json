@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcs_smoke_C_ko1_20260902_210158_1789984",
+  "status": "ok",
+  "rows_written": 4,
+  "end_ts": "2026-09-02T21:03:40",
+  "end_epoch": 1788372220.0217803,
+  "wall_seconds": 91.828,
+  "experiment": "score_behavior"
+}

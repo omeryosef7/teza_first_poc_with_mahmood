@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dcsmed_dcsbeh_C_qpo_ctrl_d1_20260903_024107_2834897",
+  "status": "ok",
+  "rows_written": 380,
+  "end_ts": "2026-09-03T02:51:02",
+  "end_epoch": 1788393062.376037,
+  "wall_seconds": 595.355,
+  "experiment": "judge"
+}

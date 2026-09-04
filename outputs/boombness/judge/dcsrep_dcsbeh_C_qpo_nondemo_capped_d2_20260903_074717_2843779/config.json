@@ -1,0 +1,17 @@
+{
+  "experiment": "judge",
+  "run_id": "dcsrep_dcsbeh_C_qpo_nondemo_capped_d2_20260903_074717_2843779",
+  "seed": 20260816,
+  "seed_source": "args.seed",
+  "args": {
+    "gens": "outputs/boombness/score_behavior/dcsbeh_C_qpo_nondemo_capped_d2_20260903_062514_2559875",
+    "bank": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_cds38_button_bomb.jsonl",
+    "limit": 0,
+    "offset": 0,
+    "max_null_frac": 0.05,
+    "seed": 20260816,
+    "tag": "dcsrep_dcsbeh_C_qpo_nondemo_capped_d2",
+    "pin_judge_model": "openai/gpt-4o-mini",
+    "allow_partial_gens": false
+  }
+}
