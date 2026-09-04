@@ -3393,3 +3393,36 @@ band happens to contain. Each band still carries its **own** dose-matched contro
   no layer with it). ⇒ These are **not** nested comparisons and the finer bands cannot be summed to
   reproduce −8.08; they answer *where within 0–14*, not *how much of −8.08 came from where*.
 * Specs verified to 4 colon-parts before submission (`C-020`'s guard).
+
+### `DCS-R-031` — ⚠ the equal-width sweep: the effect is **DISTRIBUTED across 0–14**, not confined to the inherited band
+
+Three bands of **5 layers each**, cell `C`, n = 380, 38 domains, each against its own dose-matched
+control. ✅ **Doses identical across bands by construction: 37 120 everywhere** — so for the first
+time cross-band magnitudes are directly comparable, which is what `PR-012` was built to fix.
+
+| band | dose | demo | control | **demo − control** | domains | sign p | Holm ×3 |
+|---|---|---|---|---|---|---|---|
+| 0–4 | 37 120 | +2.231 | +5.617 | **−3.385** | 1+/37− | 2.84e-10 | 8.5e-10 |
+| 5–9 | 37 120 | +2.309 | +5.294 | **−2.985** | 1+/37− | 2.84e-10 | 8.5e-10 |
+| **10–14** | 37 120 | **−0.446** | +5.201 | **−5.647** | **0+/38−** | 7.28e-12 | 2.2e-11 |
+
+⇒ **`PR-012`'s second declared outcome obtains, with a peak.** **Every** 5-layer window in 0–14
+destroys a substantial part of the mapping (−3.0 to −5.6, all at Holm-corrected p ≤ 8.5e-10);
+**no band is null**. `10–14` is strongest at ~1.7–1.9× the other two, but this is a **gradient, not
+a boundary**.
+
+⚠ **This REFINES `R-030` and partly qualifies it.** `R-030` read as *"concentrated early-to-mid, and
+the inherited band is best of four"*. At equal dose the picture is: the mechanism is **spread over
+layers 0–14 with a maximum at 10–14**, and — from `R-030`'s coarse sweep — **vanishes above 14**
+(15–23 = +0.15). ⇒ **The inherited 6–14 window contains the peak but is not a mechanism boundary**:
+layers **0–5 contribute substantially** and sit outside it. ⛔ *"The effect is localised to L6–14"*
+should be stated as *"the effect lives in layers 0–14, peaks at 10–14, and is absent above 14"*.
+
+⛔ **Honouring `PR-012`'s own warning:** these bands are **not nested** with 6–14 and **must not be
+summed**. ⚠ It is tempting — `5–9` + `10–14` = −8.63 against `6–14`'s −8.08 — but those share four
+layers with the inherited band and none of this is additive by construction. The comparison is
+recorded **only** to show why the arithmetic is unavailable, not as evidence of additivity.
+
+⇒ Net: the phase's headline is **unchanged** (6–14 was fixed in advance and remains the reported
+band), but its *interpretation* is corrected — 6–14 is a **well-placed window over a graded
+early-mid mechanism**, not the mechanism's extent.
