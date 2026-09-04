@@ -13,63 +13,57 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 
 ## 0. LIVE STATUS
 
-*(declared-live section, rewritten each tick. Last update **2026-09-03**, after `DCS-A-002`.
-Everything below is this phase's own measurement unless marked *inherited*.)*
+*(declared-live section, rewritten each tick. Last update **2026-09-04**, after `R-029`/`DCS-026`.
+Experiments complete; `squeue` empty.)*
 
 ### WHAT WE CAN DEFEND TOMORROW
 
-| # | claim | evidence | scope |
-|---|---|---|---|
-| `R-010` | **The demonstration→query path is NECESSARY for the remapping and SPECIFIC to it.** `KO-3` (whole query span ↛ demos, L6–14) drives cell `C` from +5.19 to **−2.76** log-odds — a sign flip to the literal reading — while driving cell `B` (where the word already *is* the concept) *up* to +7.78. DiD **−9.889**, **37/38 domains**, p = 2.84e-10, floor 7.28e-12 | 6 arms × 380 rows × 38 domains; both dose-matched controls negligible (|Δ| < 0.31); adversarially audited (`DCS-A-002`) | Llama-3.1-8B, **one** codeword/concept pair, full-query-span scope only |
-| `R-010b` | The same reversal appears in the **discrete argmax**, which no mass or scale argument can touch: codeword-argmax share **4 → 104** in `C`, **21 → 6** in `B` | `DCS-A-002` | as above |
-| `R-006` | **`KO-1` (final codeword row ↛ demos) is a well-powered NULL on attack**: +11 rows, 18+/14−, p = 0.597, floor 4.66e-10; StrongREJECT +12.25, p = 0.627. Both below the 17-row judge band | one judge invocation, 6 arms, 2280 rows | Llama, cell `C` |
-| `R-006b` | The same intervention **halves refusal**: 42 → 21, **0+/13− domains**, p = 2.44e-04 ⚠ *equal to its attainable floor* | as above | `refused` is a substring matcher, not the judge |
-| `R-005` | `KO-1` leaves the **mapping intact** (+0.278 vs baseline, 25+/13−, p = 0.073) | 3 arms × 380 rows; audited (`DCS-A-001`) | preregistered sign test |
-| `R-002` | The codeword→concept movement is **NOT concept-specific**: `knife`/`gun`/`club` match or exceed `bomb`, all differences inside the measured noise band | 10 banks, dev/heldout | cell-mean geometry |
-| `R-003` | The shift **does not accumulate**: final > first in 32/32 cells, but demonstrations-only ρ disagrees in sign between banks and the effect is flat in `n_examples` | 2 banks × 32 layers | per-row, cross-fit |
-| `R-004` | **Null control fires exactly:** at `n_examples = 0`, paired `C−A` is `0.000e+00` at all 96 cells | 2 banks | A and C are byte-identical without demos |
-| *inherited* | `demo_processing_only` L6–14 cuts the Llama rubric endpoint on two lexical banks; Qwen3-14B is a **capable null**; `d_surface` does not predict ASR | `TSC-R-001/004/005`, `G2` | unchanged |
+| # | claim | scope |
+|---|---|---|
+| `R-008`/`R-010`/`R-011`/`R-025` | **The demonstration→query path is necessary for the remapping and specific to it.** `KO-3` drives the codeword cell's forced-choice log-odds through zero to the *literal* reading, while barely moving the cell where the word already **is** the concept. DiD **−9.89** (Llama·button), **−9.35** (Llama·basket), **−22.20** (Qwen·button) | ⚠ all three share the **same 1+/37− sign pattern** — one pattern replicated 3×, **not** 3 independent p-values |
+| `R-021`/`R-022` | **No single query position carries it; ~¼ of the span does.** Row ladder K=1 −0.01, K=2 −0.01, **K=8 −6.62**, K=16 −7.89, K=32 −8.08 — a **step**, then saturation | ⚠ row count and dose rise together; separates *graded vs step*, not rows from cells |
+| `R-022` controls | **Controls inert across a 32× dose range** (+5.16…+5.38 vs +5.19 baseline) | the step is about *which* keys are cut |
+| `R-024` | **The mechanism is cross-model.** Qwen3-14B replicates `KO-3` at ~3× Llama's magnitude; `frac>0` collapses **0.813 → 0.021** | capability gate passed first (`R-023`) |
+| `R-002` | ⛔ **The movement is NOT concept-specific** — knife/gun/club match or exceed bomb | evaluated negative |
+| `R-003` | ⛔ **It does not accumulate** across demonstrations | evaluated negative |
+| `R-004` | ✅ Null control exact: `n_examples=0` → `0.000e+00` at all 96 cells | positive control |
+| `R-006`/`R-014` | `KO-1` leaves mapping **and** attack unchanged, on a **verified refusal-neutral** control (Δ=0, zero conversions) | valid null |
+| `R-012b`/`R-026` | **Refusal moves under every scope tested** — Llama 42→0; **Qwen 150→0**, the same 150 `TSC-R-006` removed at a *different* scope | 2 models × 4 scopes |
+| `R-016`/`R-017`/`R-019` | `KO-3` reduces Llama attack **in direction** (≈−30 of 153, 3 controls × 2 seeds × 4 judgings) | ⛔ **not** significant at the domain independence unit |
 
 ### CLAIMS WE MUST NOT SAY
 
-* ⛔ **"The mapping is constructed during demonstration processing"** — `DCS-C-010` **RETRACTED** this.
-  `KO-3` shows retrieval happens somewhere in the query span; **which** position is untested.
-* ⛔ **"`KO-1` shows the mapping is not retrieved at the codeword token, therefore outcome `D`"** —
-  `KO-1` licenses only *"the final codeword token's own L6–14 demonstration attention is not
-  necessary."*
-* ⛔ **"Both `KO-3` controls are inert"** — they are **negligible in magnitude, not sign-null**
-  (`C-011`): 31+/7− and 6+/32−.
-* ⛔ **"The specificity result holds at the surgical scope"** — it is a **clean null** there
-  (+0.503, 13/38). The claim is about the **path**, at full-query-span scope only.
-* ⛔ **"38 domains" as if it were 38 mappings** — it is **38 contexts for ONE mapping on ONE model**.
-* ⛔ **"`R-001`'s L6–L12 peak"** — `C-005` retracted it; absent from the per-row effect size.
-* ⛔ **"`R-010` is a discovery of the representation phenomenon"** — the representation convergence is
-  **Yona et al. ACL 2026**; ours is a **replication**. The *causal intervention* is the new part
-  (`DCS-006`).
-* ⛔ `d_surface` as validated, or as a GCG/MAC objective. Still **BLOCKED**.
-* ⛔ Any p without its attainable floor.
+* ⛔ "Qwen shows no behavioral effect" — `R-029`: **no attack contrast was ever computed** there.
+* ⛔ "`KO-3` significantly reduces attack" without naming the test; and never `p = 0.0016`
+  (one control, row-level, unclustered, most favourable of three).
+* ⛔ "Retrieval is distributed across the query span" — `R-022` shows a **threshold**.
+* ⛔ "The mapping is constructed during demonstration processing" (`C-010`), the **L6–L12 peak**
+  (`C-005`), "the controls are inert" as a *sign* claim (`C-011`), "the effect lives in the held-out
+  half" (`C-017`), "the two cells move in opposite directions" (button-on-Llama only, `R-011`/`R-025`).
+* ⛔ "The effect is localised to L6–14" — **no layer sweep was ever run** (`DCS-021`).
+* ⛔ Three p-values of 2.8e-10 as independent evidence — one sign pattern, three times.
+* ⛔ `d_surface` as validated or as a GCG/MAC objective.
 
 ### CURRENT BLOCKERS
 
-| id | blocker | state |
-|---|---|---|
-| `DCS-B-002` | AdvBench affords only **15** mappable concepts — request-generality is bounded by the benchmark | inherited, structural |
-| `DCS-B-003` | The L18 transplant result is **neither retracted nor re-affirmed**; may not be cited | open |
-| `DCS-B-004` | The topical endpoint is degenerate on these banks (one distinctive word, values ∈ {0,1}) | open |
-| `DCS-B-005` | **`R-010` rests on one lexical pair.** `basket↔bomb` replication submitted this tick (`840375–840380`) | **in flight** |
-| `DCS-B-006` | **`C-013`:** after `KO-3` the two cells are not in comparable measurement regimes (C leaves the option set on 257/380 rows). Defense exists and is strong, but must be **argued in the text** | write-up task |
-| `DCS-B-007` | Per-row control-draw **positions** are not persisted, so control/demo disjointness is a code guarantee, not an artifact fact | defect to fix |
+| id | blocker |
+|---|---|
+| `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** in any pool file ⇒ needs **new demonstration pools** (new data, new preregistration) |
+| `R-029` | Qwen behavioral interaction `CANNOT ANSWER`: **0 of 6** draws qualify because a ±17 **absolute** band is a 3.6× stricter *relative* test at a 150 baseline ⇒ a future prereg should use a **relative** band, declared before outcomes |
+| `B-010`→closed | resolved by `R-022` |
+| `B-006` | after `KO-3` the two cells are in different measurement regimes; defense exists, must be **argued in text** |
+| `B-007` | control-draw **positions** not persisted — disjointness is a code guarantee, not an artifact fact |
+| `B-011` | `enable_thinking` not persisted in metadata (recoverable only from argv/log) |
+| `B-012` | three guards scale with **run count** (755 dirs), not the diff — 30–90 min commits under NFS load |
 
 ### NEXT 3 HIGHEST-VALUE EXPERIMENTS
 
-1. **`basket↔bomb` replication of `R-010`** — in flight. Closes `DCS-B-005`, the single largest scope
-   limit on the headline.
-2. **A readout-row-only scope** — `KO-3` cuts the whole query span and cannot say *which* position
-   retrieves. `SCOPED_KNOCKOUT_MODES` has no such mode; the machinery added this phase makes it a
-   small extension. This is what would turn "somewhere in the query span" into a position.
-3. **`KO-3` on the behavioral endpoint** — `KO-3` destroys the representation; `KO-1` left attack
-   unchanged. Whether *destroying* the mapping moves the attack is the one test that could still
-   connect representation to behavior — and it is the phase's central question.
+1. **New demonstration pools** to break the 38-domain ceiling — the only way to certify the
+   behavioral effect at the declared unit. Needs a preregistration and API budget.
+2. **A layer sweep** — every knockout result is conditional on a band inherited from an earlier
+   sprint *for a different endpoint*; localisation is currently unclaimable.
+3. **A second harmful concept** through the identical pipeline — `R-002` says the geometry is not
+   bomb-specific, so whether the *causal* result is concept-general is open.
 
 ---
 
