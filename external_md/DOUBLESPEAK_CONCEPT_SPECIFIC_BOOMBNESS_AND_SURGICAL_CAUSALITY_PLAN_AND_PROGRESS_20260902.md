@@ -6275,3 +6275,27 @@ across halves — the property `C-037b` broke and `resolve_occurrences` caught.
 **structural** reading of that confound: if the behavioural result differs between halves, it will
 **not** be because one half got longer prompts or a bigger intervention. ⚠ Recorded now precisely so
 that check cannot be run *after* seeing a half-vs-half split and presented as reassurance.
+
+### `DCS-039` — `C-037c`'s wreckage was still on disk, under the **live tag prefix**
+
+The failed first submission left **five** output dirs sharing the current runs' tag prefixes. Four
+are empty (the arms that died in `resolve_occurrences` before writing), and one is not:
+⛔ **`dcsp24_base_…215445` holds 53 rows generated against the PRE-FIX bank** — the artifact
+`C-037c` was about, sitting next to the real baseline with a name every `dcsp24_base_*` glob matches.
+
+✅ **Every selector in the pipeline was checked, not assumed, and all filter on `DONE.json`:**
+`judge_pr024_behavioral.sh`'s `pick()`, `dcs_installation_gradient.py`'s, and `dcs_audit_r041.py`'s.
+Simulated live: with no arm yet complete, `pick()` returns **nothing** for all five tags, so the judge
+would **refuse** rather than judge a partial — which is the designed behaviour.
+
+⚠ **But "the guard happens to catch it" is not a reason to leave a landmine.** `C-021` and `DCS-031`
+are this phase's record of provenance debris causing real confusion, and a 53-row file from a
+**different bank** is the worst kind: the analyzers assert `prompt_id` set equality, and those 53 ids
+are a **subset** of the real run's, so a tool that read it would fail on count, not on identity.
+
+✅ **Quarantined, not deleted** — renamed to `VOID_C037c_*`, which no `dcsp24_*` glob matches. They
+remain as evidence of the `C-037b`/`C-037c` failure rather than being erased. ⛔ Deleting would have
+destroyed the only on-disk trace of a defect worth remembering.
+
+✅ **`run_completeness_check` re-run with them present:** *"every finished run persisted its full row
+count"*, 370 finished runs, 10 documented short. The quarantine changes no guard's verdict.

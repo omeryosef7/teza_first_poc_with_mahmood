@@ -79,6 +79,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 14 | `PR-024a` | five arms resubmitted (850792–850796); knockout pre-flight **1160 rows, 0 infeasible_control** | ⏳ |
 | 15 | `A-011` | regression test for `C-037`/`C-037b` — and ⚠ **the detector-based invariant MISSES `C-037b`**; only the every-field test catches it. A guard-shaped invariant inherits the guard's blind spots | ✅ |
 | 15 | `DCS-038` | the 30-min stall rule says resubmit `850796`; ⛔ **not doing it** — nodelist is already all six nodes and it is queued behind **my own** arms. Reason recorded | ✅ |
+| 16 | `R-059` | the two bank halves are **structurally homogeneous** — demo tokens identical to the digit (59.0), so the halves get the same intervention **dose**. Run at 400/1160, before any outcome | ✅ |
+| 16 | `DCS-039` | `C-037c`'s wreckage was still on disk under the **live tag prefix**, incl. **53 rows from the pre-fix bank**. Every selector verified to filter on `DONE.json`; dirs **quarantined**, not deleted | ✅ |
 
 ## Live
 
