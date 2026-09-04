@@ -6330,3 +6330,33 @@ and the check that would catch an intervention leaking into the generation itsel
 
 ⚠ Wall times **128–151 min/arm**, against the ~2.7 h `R-056` projected from 8.39 s/row — the estimate
 that sized the whole experiment was right to within about 10 %.
+
+### `A-012` — self code review: audit the script that will compute `PR-024a`'s **primary**
+
+`scripts/cds_domain_test.py` decides whether `B-009` resolves, came from the `CDS` sprint, and had
+**never been audited here**. Committed `scripts/dcs_verify_domain_test.py` and ran it **while the
+judge was on arm 1 of 5**, so it is fixed before the numbers it validates exist. ✅ **PASS:**
+
+| check | result |
+|---|---|
+| exact two-sided binomial vs `scipy.binomtest`, **all** (x, n ≤ 59) | ✅ worst \|diff\| **5.55e-16** |
+| `p_floor` equals p at a unanimous split, k = 1…39 | ✅ |
+| `CAPABLE` flag: k = 116 floor **2.41e-35** → capable; k = 4 floor **0.125** → not | ✅ |
+| ICC recovery at true 0.05 / 0.16 / 0.40 / 0.60 | ✅ **0.048 / 0.156 / 0.406 / 0.605** |
+| a **tied** domain is not counted informative | ✅ |
+
+⇒ At `PR-024a`'s `k = 116` the attainable floor is **2.4e-35**, so the design is capable by a margin
+of thirty orders of magnitude — the failure mode `C-007` recorded (`UNINFORMATIVE BY CONSTRUCTION`,
+where no outcome could have reached significance) is **structurally impossible** here. ⚠ Capable is
+not the same as powered: `R-056` puts power at **0.814**, and that is the number that governs.
+
+⛔ **Check 4 failed on first writing, and the estimator was fine.** My simulator called
+`betavariate()` **inside the row comprehension**, giving every *row* its own cluster probability —
+ICC = 0 data by construction. The estimator was correctly reporting ≈ 0 and I was seconds from filing
+a bug against the script that computes the phase's primary.
+
+⚠ **That is the THIRD audit in this phase to fail on its own instrument** — `A-005`'s regex window,
+`C-036`'s collision rule, and now this. ⇒ The pattern is explicit enough to state as a rule: **when a
+check disagrees with a long-standing artifact, suspect the check first.** The fixed simulator is kept
+in the verifier with the trap described in its docstring, rather than silently corrected, so the next
+reader sees why it draws one `p_d` per domain.
