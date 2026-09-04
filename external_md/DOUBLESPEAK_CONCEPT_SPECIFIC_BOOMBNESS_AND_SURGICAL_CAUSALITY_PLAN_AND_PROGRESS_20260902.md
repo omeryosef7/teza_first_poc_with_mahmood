@@ -5106,3 +5106,85 @@ not "don't background commits", it is **"never have two in flight at once"**.
 ✅ **What the log bought.** `C-018` existed, so this was diagnosed in one command instead of being
 read as a filesystem problem. ⛔ That it happened anyway is the point: a recorded lesson stopped the
 *misdiagnosis*, not the *mistake*.
+
+### `R-048` — ⚠ **`PR-014` ANSWERED: `CONFOUND-LIMITED`.** The Qwen behavioural sign is **not determined**
+
+Job 849653 `COMPLETED` in 1:43:56. All **8** arms judged in **one** invocation, 380 rows each,
+`judge_model_used` = `openai/gpt-4o-mini` on every row of every arm.
+
+| arm | refused | attacks |
+|---|---|---|
+| baseline | 150 | **74** |
+| `KO-3` | **0** | **95** |
+| 6 controls | 189 – 217 | 50 – 72 |
+
+| control | induced | **face value** `KO−ctrl` | p | **refusal-adjusted** | p | bracket |
+|---|---|---|---|---|---|---|
+| `ctrl_d1` | +39 | **+23** | 0.0415 | **−16** | 0.0888 | ⚠ straddles 0 |
+| `ctrl_d2` | +47 | **+27** | 0.0177 | **−20** | **0.0286** | ⚠ straddles 0 |
+| `s20260901_d3` | +67 | **+35** | 0.0008 | **−32** | **0.0001** | ⚠ straddles 0 |
+| `s20260904_d1` | +56 | **+45** | 0.0000 | **−11** | 0.2416 | ⚠ straddles 0 |
+| `s20260904_d2` | +52 | **+37** | 0.0005 | **−15** | 0.0912 | ⚠ straddles 0 |
+| `s20260904_d3` | +39 | **+26** | 0.0178 | **−13** | 0.1597 | ⚠ straddles 0 |
+
+⛔ **All 6 brackets straddle zero. 0 of 6 directional claims survive at their conservative end.**
+
+⇒ **`PR-014`'s second declared outcome obtains verbatim: *"Face-value effect present, bound kills
+it — reported as confound-limited, ⛔ not as a positive. This is the likeliest outcome and it must
+not be softened."*** I am held to that, including the last clause.
+
+⛔ **What may NOT be said, in both directions.**
+* ⛔ **"`KO-3` increases attack on Qwen"** — that is the *face value*, and it is exactly what the
+  refusal confound predicts: `KO-3` refuses **0** times while every control refuses **~200**, so
+  `KO-3` has vastly more opportunity to attack. ⚠ Note this is the **opposite** sign to Llama
+  (`R-016`, ≈ −30 of 153) and it would be a striking cross-model contrast — ⛔ which is precisely
+  why it may not be reported before the confound is excluded, and it is not.
+* ⛔ **"`KO-3` reduces attack on Qwen"** — that is the *adjusted* end, significant on only 2 of 6.
+* ⛔ **"Qwen shows no behavioral effect"** — still forbidden. A bracket that straddles zero is
+  **undetermined**, not null.
+
+⚠ **`R-029` is superseded, not vindicated.** It said `CANNOT ANSWER` because *no attack contrast had
+ever been computed*. One now has been, on all six draws, with no comparator selection. ⇒ The
+standing statement changes from *"never measured"* to **"measured, and the refusal confound is
+larger than the effect it would have to survive."** ⛔ That is a stronger and more useful negative,
+and it is still a negative.
+
+✅ **The secondary points the same way as the adjusted end and still cannot carry it.** Attack rate
+among non-refused rows: `KO-3` **0.2500** vs controls **0.2874 – 0.3770**, all six higher.
+⛔ `PR-014` declared this endpoint conditions on a **post-treatment** variable — a collider of
+unknown bias direction — and *"will not be used to carry a conclusion the bound does not support"*.
+⚠ It agrees with the adjusted end on **6 of 6**, which is worth recording and is **not** evidence.
+
+✅ **A judge-free fact that survives all of this, and it is the interesting one.** `KO-3` removes
+**all 150** refusals and buys only **+21** attacks (74 → 95). ⇒ **86 % of the removed refusals did
+not become attacks.** ⚠ That is the Qwen counterpart of the phase's open question 2 on Llama
+(*"`KO-3` eliminates refusal without buying attack success — where do the rows go?"*), now
+replicated on a second model at a 150-row scale, and it needs **no judge comparison between arms**
+to state.
+
+### `C-033` — ⚠ CORRECTED: `C-030` named the conservative end **unconditionally**, and it depends on the sign
+
+`C-030` established — correctly — that the refusal adjustment can only move `KO−ctrl` **downward**,
+and concluded that **face value is the conservative end**.
+
+⛔ **That conclusion was conditional on an assumed sign and the assumption is not stated in it.**
+It presumed the claim under test was *"`KO-3` reduces attack"*, which is **Llama's** direction
+(`R-016`). Qwen's face-value effect is an **increase**, and for an increase claim the roles swap:
+the adjusted end becomes the conservative one. ⇒ The general rule:
+
+| observed face-value sign | conservative end |
+|---|---|
+| negative (a reduction claim) | **face value** |
+| positive (an increase claim) | **the adjusted end** |
+
+⇒ ⛔ **Which end is conservative cannot be fixed in a preregistration**, because it depends on a
+result the preregistration does not have. **The correct pre-declaration is "report the bracket"**,
+and `C-030`'s arithmetic — that the adjustment moves in one direction only — is what makes the
+bracket well-defined. ✅ `C-030`'s *arithmetic* stands; only its *labelling* is corrected.
+
+⚠ **Ordering, stated plainly.** This was found **after** running the analysis, because the sign came
+out the other way. ⛔ It changes no number and no verdict — every bracket straddles zero under either
+labelling, so `R-048` is `CONFOUND-LIMITED` regardless. ✅ The analyzer is now **sign-aware**: it
+computes the bracket, picks the conservative end **per control from the data**, and reports
+`directional_claim_survives` only when the bracket does **not** straddle zero. `A-007`'s verifier
+re-run after the change: **PASS**, including the `C-030` invariant at 300/300.

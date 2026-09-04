@@ -166,40 +166,54 @@ def main() -> None:
               f"{' *' if b['significant'] else ''}"
               + ("   SHORTFALL!" if bookkeeping["SHORTFALL"] else ""))
 
-    # DCS-C-030: PR-014 called the corrected end "maximally hostile". IT IS NOT. The correction
-    # only ever ADDS attacks to the CONTROL and never to KO-3, so it can only make `KO - ctrl`
-    # MORE negative -- i.e. it makes the reduction look LARGER. The conservative end of the
-    # interval is FACE VALUE, and the survival criterion is therefore evaluated there.
-    surv = [l for l, e in out["controls"].items()
-            if e["face_value"]["delta_attacks"] < 0 and e["face_value"]["significant"]]
-    favourable = [l for l, e in out["controls"].items()
-                  if e["bounded"]["delta_attacks"] < 0 and e["bounded"]["significant"]]
+    # DCS-C-030 / DCS-C-033. C-030 established that the refusal adjustment can only move
+    # `KO - ctrl` DOWNWARD, and concluded face value was therefore "the conservative end". That
+    # conclusion was conditional on an assumed SIGN -- it assumed the claim under test was
+    # "KO-3 REDUCES attack", which is Llama's direction (R-016). Which end is conservative actually
+    # depends on the sign of the observed effect, and that is unknown when a preregistration is
+    # written. So the reported quantity is the BRACKET, and the conservative end is chosen per
+    # control from the data:
+    #   face > 0 (an INCREASE claim)  -> the adjusted end is the conservative one
+    #   face < 0 (a REDUCTION claim)  -> face value is the conservative one
+    # If the bracket straddles zero, the SIGN IS NOT DETERMINED and no directional claim survives,
+    # whichever end happens to be significant.
+    per = {}
+    for label, e in out["controls"].items():
+        f, b = e["face_value"]["delta_attacks"], e["bounded"]["delta_attacks"]
+        cons_end = "bounded" if f > 0 else "face_value"
+        straddles = (f > 0) != (b > 0)
+        per[label] = {"bracket": sorted((f, b)), "straddles_zero": straddles,
+                      "conservative_end": cons_end,
+                      "conservative_delta": e[cons_end]["delta_attacks"],
+                      "conservative_p": e[cons_end]["mcnemar_p"],
+                      "directional_claim_survives": bool(
+                          not straddles and e[cons_end]["significant"])}
+        e["bracket"] = per[label]
+    surv = sorted(l for l, v in per.items() if v["directional_claim_survives"])
+    strad = sorted(l for l, v in per.items() if v["straddles_zero"])
     out["VERDICT"] = {
         "controls_total": len(out["controls"]),
-        "CONSERVATIVE_END_is_face_value": sorted(surv),
-        "n_surviving_conservative": len(surv),
-        "favourable_end_bounded": sorted(favourable),
-        "n_surviving_favourable": len(favourable),
-        "DIRECTION_NOTE": ("DCS-C-030. The refusal-adjusted end is the FAVOURABLE end, not the "
-                           "hostile one: the control refuses MORE than KO-3, so its raw attack "
-                           "count is suppressed, so `KO - ctrl` is already biased TOWARD ZERO and "
-                           "face value already understates any reduction. Crediting the control "
-                           "with its induced refusals as attacks can only enlarge the reduction. "
-                           "=> The two ends BRACKET the effect; the conclusion is carried by the "
-                           "conservative (face-value) end, and the bounded end is reported as an "
-                           "upper bound on the magnitude, never as robustness."),
+        "n_brackets_straddling_zero": len(strad),
+        "controls_straddling_zero": strad,
+        "directional_claim_survives_on": surv,
+        "n_surviving": len(surv),
+        "DIRECTION_NOTE": ("DCS-C-033. The refusal adjustment can only move KO-ctrl DOWNWARD "
+                           "(C-030), so WHICH end is conservative depends on the SIGN of the "
+                           "observed effect: face value is conservative for a reduction claim, "
+                           "the adjusted end is conservative for an increase claim. C-030 named "
+                           "face value unconditionally because it assumed Llama's reduction "
+                           "direction. The reported quantity is the BRACKET."),
         "READING": ("PR-014's declared outcomes: effect survives / face-value effect present but "
-                    "the confound is not excluded (report as CONFOUND-LIMITED, NOT as a "
-                    "positive) / no face-value effect (Qwen behavioural is a capable null). The "
-                    "branch is chosen from these numbers, not softened.")}
+                    "the bound kills it (report as CONFOUND-LIMITED, NOT as a positive) / no "
+                    "face-value effect (Qwen behavioural is a capable null). A bracket that "
+                    "straddles zero is the SECOND branch and must not be softened.")}
 
     os.makedirs(a.out, exist_ok=True)
     dst = os.path.join(a.out, f"{a.tag}.json")
     json.dump(out, open(dst, "w"), indent=2, sort_keys=True)
-    print(f"\nCONSERVATIVE end (face value, negative AND significant): "
-          f"{len(surv)} of {len(out['controls'])}  {sorted(surv)}")
-    print(f"favourable end (refusal-adjusted): {len(favourable)} of {len(out['controls'])}  "
-          f"{sorted(favourable)}   <- C-030: this end is NOT the hostile one")
+    print(f"\nbrackets straddling zero: {len(strad)} of {len(out['controls'])}  {strad}")
+    print(f"directional claim survives at the conservative end: {len(surv)} of "
+          f"{len(out['controls'])}  {surv}")
     print(f"-> {dst}")
 
 
