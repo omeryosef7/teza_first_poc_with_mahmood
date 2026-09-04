@@ -3477,3 +3477,31 @@ is the sentence most likely to be dropped when work is summarised upward.
 The draft ends with *"what would change your mind"*: new demonstration pools (behavioural claim), a
 second harmful concept (generality), and a **relative** refusal-neutrality band declared **in
 advance** (Qwen). ⛔ Still unsent; no Slack integration exists or was used.
+
+### `DCS-030` — provenance gap closed: 26 argsfiles were untracked, including the entire layer sweep
+
+Loop tick, queue empty, tree otherwise clean. `git status runargs/dcs` showed **26 untracked**
+argsfiles against **42 tracked** from the same phase — and `runargs/` is **not** in `.gitignore`, with
+**278** argsfiles tracked from earlier sprints. So the repo convention is unambiguous and this phase
+had drifted from it halfway through.
+
+⚠ **What was missing matters more than the count.** The untracked set was the entire `Ff*`/`Lb*`
+layer sweep — the exact submissions behind `R-030`/`R-031`, the **graded layer story**, one of the
+phase's headline claims — plus all 14 Qwen submissions. The numbers were in the artifacts and the
+log, but *what command produced them* was recoverable only from my own prose.
+
+**Verified before committing, from the argsfiles rather than from my notes.** Stripping band, `--arm`
+and `--tag` from all **12** layer files and deduping yields **exactly 2** lines — `demo_all` and
+`nondemo_matched_d1`, identical in bank, seed `20260901`, `--n-examples 4`, `--expect-n 380`,
+`--knockout-scope query_prefill_only`, `--attn-impl eager`. The dose-matched-control design and the
+single-seed discipline are therefore confirmed **by the submitted commands themselves**. Band widths
+read out as `0-4`/`5-9`/`10-14` = **5, 5, 5** and `0-5`/`15-23`/`24-31` = **6, 9, 8**, which is
+exactly the equal-width vs not-dose-comparable split the `DCS-028` figure labels.
+
+**Partial movement on `B-011`.** All **14** Qwen argsfiles carry `--enable-thinking false`. ⚠ This
+does **not** fix `B-011` — the flag is still absent from output metadata, so an artifact read in
+isolation still cannot state its own thinking mode. It downgrades the defect from *unrecoverable* to
+*recoverable from the repo*, which is a weaker claim and is all that is being made here.
+
+⚠ Nothing here changes a number. This tick bought **reproducibility of the layer story**, which had
+been asserted rather than committed.
