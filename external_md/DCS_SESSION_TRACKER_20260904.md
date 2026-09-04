@@ -65,6 +65,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 7 | — | settled claim propagated to summary, `LIVE STATUS`, figure (panel F + card); blocker `0b` **closed** | ✅ |
 | 8 | `A-010` | **self code review of the auditor** — `dcs_audit_r041.py` carried three populations' conclusions with **no** verifier. Now 6 checks incl. attack `E`'s **power** (59/60) and a mutant that makes `E` unable to reject | ✅ |
 | 8 | `C-034` | ⚠ my verifier bands were **hardcoded** ⇒ one false ANTI-CONSERVATIVE alarm on `E` (0.0767 at n=300; **0.0490** at n=3000) and one **withdrawn** claim from `A-006`. Band now **derived from N** | ✅ |
+| 9 | `DCS-036` | the **collaborator draft** was **19 entries stale** and said two answered questions were still open. Rewritten; the **−0.907** is now an explicit do-not-send | ✅ |
+| 9 | `C-035` | ⚠ our **novelty claim** overstated us by the literature matrix's **own** bar: we clear it on **refusal**, ⛔ not on **ASR**. No number moved — prose true when written became false | ✅ |
 
 ## Live
 
