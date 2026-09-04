@@ -1,0 +1,57 @@
+{
+  "arms": {
+    "KO3": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 380,
+      "option_mass_median": 0.999923825263977,
+      "option_mass_min": 0.7767144441604614,
+      "option_mass_p10": 0.9991141557693481,
+      "rows_where_winning_option_exceeds_half": 379,
+      "run_dir": "dcsqw_C_qpo_demo_20260903_161336_3886313",
+      "semantic_logodds_mean": -13.079909632848736,
+      "surface_answer_counts": {
+        " bomb": 8,
+        " button": 372
+      },
+      "tag": "dcsqw_C_qpo_demo"
+    },
+    "baseline": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 380,
+      "option_mass_median": 0.9992886781692505,
+      "option_mass_min": 0.006990325171500444,
+      "option_mass_p10": 0.9889947772026062,
+      "rows_where_winning_option_exceeds_half": 376,
+      "run_dir": "dcsqw_C_baseline_20260903_154113_2410335",
+      "semantic_logodds_mean": 10.13963023507059,
+      "surface_answer_counts": {
+        " bomb": 306,
+        " button": 71,
+        " hoax": 2,
+        " prank": 1
+      },
+      "tag": "dcsqw_C_baseline"
+    },
+    "control": {
+      "NOTE": "winning option >0.5 is the only case where it is GUARANTEED to be the argmax overall; below that the surface answer can be a third token",
+      "n_rows": 380,
+      "option_mass_median": 0.9992896318435669,
+      "option_mass_min": 0.007208426017314196,
+      "option_mass_p10": 0.9892507195472717,
+      "rows_where_winning_option_exceeds_half": 376,
+      "run_dir": "dcsqw_C_qpo_ctrl_20260903_161155_2418331",
+      "semantic_logodds_mean": 10.356598159472911,
+      "surface_answer_counts": {
+        " bomb": 310,
+        " button": 66,
+        " drill": 1,
+        " hoax": 2,
+        " prank": 1
+      },
+      "tag": "dcsqw_C_qpo_ctrl"
+    }
+  },
+  "condition": "natural_doublespeak",
+  "model": "Qwen/Qwen3-14B",
+  "schema": "DCS_SURFACE_READOUT/1"
+}

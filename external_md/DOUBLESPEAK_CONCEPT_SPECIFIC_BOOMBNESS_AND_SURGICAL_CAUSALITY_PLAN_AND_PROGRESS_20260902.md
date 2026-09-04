@@ -3815,3 +3815,50 @@ for that, and it did its job.
 ⛔ **Not a wasted tick.** The five still-pending siblings were cancelled before they burned a slot each
 on the identical error, because the first failure was diagnosed instead of being read as ordinary
 queue churn.
+
+### `R-032` — the **surface** readout: what the model would actually say. Specificity confirmed; *"flips to the literal reading"* is **model-dependent**
+
+The `raw examples` review item, finally done properly. The headline endpoint is
+`semantic_logodds = logp_concept − logp_codeword` — deliberately **mass-invariant**, i.e. blind to
+everything the model might emit that is neither option. That is the right property for a clean
+contrast and the **wrong** property for the sentence *"a sign flip back to the literal meaning"*,
+which is a claim about the **answer**. New committed analyzer `scripts/dcs_surface_readout.py`
+decodes `top1_id` and reports it beside `option_mass`.
+
+**Llama-3.1-8B, cell C (`button`→`bomb`), n = 380:**
+
+| arm | ` Bomb` | ` Neither` | ` Button` | `option_mass` median |
+|---|---|---|---|---|
+| baseline | **345** (90.8 %) | 26 | 3 | 0.877 |
+| control `d1` | **347** (91.3 %) | 23 | 1 | 0.872 |
+| **`KO-3`** | **19** (5.0 %) | **255 (67.1 %)** | **102 (26.8 %)** | **0.353** |
+
+⛔ **On Llama the flip is mostly to `Neither`, not to the codeword.** The *concept* reading is
+destroyed — **345 → 19**, an enormous and unambiguous causal effect — but what replaces it is the
+model declining **both** options in **67 %** of rows. Only **26.8 %** answer ` Button`. ⚠ And
+`option_mass` collapses **0.877 → 0.353**: under `KO-3` the two options hold about a third of the
+probability, so the log-odds is still valid but is computed inside a **shrinking slice**. Rows where
+the winning option exceeds 0.5 — the only case where it is *guaranteed* to be the argmax — fall
+**340/380 → 26/380**.
+
+**Qwen3-14B, cell C — the opposite, and cleaner than the log-odds implied:**
+
+| arm | ` bomb` | ` button` | `option_mass` median |
+|---|---|---|---|
+| baseline | **306** (80.5 %) | 71 | 0.999 |
+| control | **310** (81.6 %) | 66 | 0.999 |
+| **`KO-3`** | 8 (2.1 %) | **372 (97.9 %)** | **1.000** |
+
+✅ **On Qwen it *is* a clean restoration of the literal reading at the surface**, with **no** mass
+collapse (`option_mass` 1.000, winner > 0.5 in **379/380**). A **97.9 %** surface flip is a stronger
+statement than any log-odds number.
+
+✅ **Specificity holds at the surface on both models** — the strongest form of that claim so far,
+because it needs no metric at all. Llama cell B: ` Bomb`+` bomb` **350 → 362**, `Neither` **7 → 2**,
+`option_mass` **0.709 → 0.780**. Qwen cell B: ` bomb` **379 → 376**. ⇒ The same cut that annihilates
+the concept reading where the word is a **codeword** leaves it untouched where the word **is** the
+concept.
+
+✅ **`B-006` is resolved with data rather than argued in text.** "Are the cells in comparable
+measurement regimes after `KO-3`?" — **on Qwen yes** (`option_mass` 1.000 everywhere); **on Llama no**
+in cell C only. The defect was real and is **Llama-specific**.
