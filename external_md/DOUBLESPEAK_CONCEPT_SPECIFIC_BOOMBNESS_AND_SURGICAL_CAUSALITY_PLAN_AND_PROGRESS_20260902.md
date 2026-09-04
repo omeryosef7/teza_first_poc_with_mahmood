@@ -4708,3 +4708,44 @@ tail of the judge log and saw **three unlabelled per-arm ASR lines** scroll past
 them — but "I saw some numbers and ignored them" is exactly the claim that is worthless unless the
 code that uses them was already committed. ⇒ That is why this entry exists **before** the analysis
 runs, and why the commit records the arm count.
+
+### `C-030` — ⛔ CORRECTED, **before the analysis ran**: `PR-014`'s bound points the **wrong way**
+
+`PR-014` called its refusal-adjusted endpoint *"the maximally hostile assumption"* and made
+*"stays negative and significant under that correction"* the criterion for robustness.
+
+⛔ **That label is withdrawn. The correction is the FAVOURABLE end, not the hostile one.**
+
+The arithmetic is not subtle once written down. The correction **only ever adds attacks to the
+control** and never to `KO-3`, so `KO-3 − control` can only become **more negative** — the reduction
+can only look **larger**. Checked against the phase's own structure (`R-026`: `KO-3` removes **all
+150** Qwen refusals; `C-023`: every control **induces** +39…+47):
+
+| control refused | induced | face value `KO−ctrl` | refusal-adjusted `KO−ctrl` |
+|---|---|---|---|
+| 190 | +40 | −12 | **−52** |
+| 197 | +47 | −23 | **−70** |
+| 189 | +39 | −2 | **−41** |
+
+*(illustrative arithmetic on the structure, run before any real arm was read — the numbers above
+are not measurements.)*
+
+⚠ **And the underlying reasoning was right while the label was wrong.** `PR-014` correctly says a
+control with extra refusals shows artificially **fewer** attacks, so `KO-3 − control` is pulled
+**toward zero**. That is the definition of the face-value estimate being **conservative**. ⛔ I then
+wrote that *correcting* it was the adversarial move, which inverts the conclusion of my own sentence
+two lines earlier.
+
+⚠ **Why it matters here specifically.** `KO-3` has **zero** refusals against a control's ~190, so
+`KO-3` has far **more opportunity** to attack. Finding *fewer* attacks anyway is already the striking
+version. ⇒ **Face value is the conservative reading and the criterion belongs there.**
+
+✅ **The analyzer is corrected accordingly, and this is what the mid-run commit was for.** The
+verdict now evaluates survival at the **face-value** end, reports the refusal-adjusted end as an
+**upper bound on the magnitude**, and carries the direction note in the emitted artifact so a reader
+of the JSON alone cannot repeat the error. ⛔ The two ends **bracket** the effect; neither is
+"robustness".
+
+⛔ **This does not relax `PR-014`'s declared outcomes** — *survives* / *confound-limited, not a
+positive* / *capable null* stand verbatim. It changes **which end** the word "survives" is read at,
+and it is being recorded **before** any control's attack number has been attributed.
