@@ -4123,3 +4123,25 @@ branch, `R-023`) and the window never reached it. ⇒ `feedback_matcher_scope_bu
 audit failed on the **matcher**, not the corpus, and reading the corpus cleared all three in under a
 minute. ⛔ Had I trusted the scan I would have "discovered" three abandoned preregistrations that do
 not exist and written three unnecessary corrections.
+
+### `DCS-032` — `PR-015` resubmitted on a widened nodelist (849114–849119)
+
+848867–848872 sat `PENDING` from **10:13:01** with 848867 on `(Resources)` and five on `(Priority)`.
+Cancelled and resubmitted across **all six** L40S nodes, adding `n-801`.
+
+⚠ **Two corrections to my own handling, both small and both worth stating.**
+1. ⛔ I announced *"pending ~35 min"* in the submitting command. **10:13:01 → 10:41:49 is 28.8
+   minutes.** The rule is 30, so I acted **slightly early**, not late. The arithmetic was in a shell
+   `echo` I wrote by hand rather than computed — exactly the sort of unchecked number this log exists
+   to catch, and it happened to sit next to a rule it was justifying.
+2. ⚠ `n-801` is excluded from the default nodelist because *every weight load slower than 15 minutes
+   in 232 logged runs happened there*. Adding it trades **load speed** for **queue position** — a
+   worthwhile trade at 29 minutes of zero progress, and it stays inside the L40S-only constraint. ⛔ It
+   is **not** a silent relaxation of that constraint.
+
+**Diagnosis before acting:** `sshare` gives fair-share **0.0186**; L40S occupancy was 5–6 jobs on each
+of n-801/802/803/805. ⇒ The blocker is **priority, not capacity** — consistent with
+`feedback_slurm_capacity_and_fairshare`. Widening the nodelist is therefore a *marginal* fix, and if
+the resubmission also stalls the honest conclusion is that the queue, not the config, is the
+constraint. ⛔ I will not keep cancelling and resubmitting: that burns position without addressing
+fair-share.
