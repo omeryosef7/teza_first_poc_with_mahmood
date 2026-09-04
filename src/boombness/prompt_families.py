@@ -717,6 +717,49 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                  slots=[0, 3], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
         ]
 
+    if preset == "main_longpre_cds_lowdose":
+        # `DCS-PR-023`, 2026-09-04. DERIVES from `main_longpre_cds` and appends two LOW doses.
+        #
+        # WHY IT EXISTS. `A-009` attack `C` and `PR-022`/`R-053` showed the installation gradient is
+        # NOT demonstrated within the VARYING subrange on either model -- and `R-052` showed why no
+        # existing population can test it: every bank that HAS a dose-matched control sits at 1
+        # low-installation domain, and the only banks with real spread (`rbd` candle) are the
+        # exploratory SOURCE and cannot carry a control at all (`R-033`). Lowering the dose is the
+        # only lever that produces low-installation domains in a bank that also has a control.
+        #
+        # WHY IT IS A DERIVED PRESET AND NOT AN EDIT. Exactly `main_ne12`'s reasoning: editing
+        # `N_EXAMPLES` or the `cds` blocks would change what every existing preset generates and turn
+        # `tests/test_bank_regenerates_byte_identically.py` red for banks nobody touched -- a change
+        # to the meaning of every historical `bank_rows_sha16` at a distance. Deriving leaves every
+        # existing preset byte-stable.
+        #
+        # SLOTS. `_take` starts each family at `(3*slot) % 20`, so slot s and slot t are disjoint at
+        # dose n iff their n-blocks do not overlap mod 20. The `cds_n4` set {0,4,8,12,16} is
+        # MUTUALLY DISJOINT AT n=1 AND n=2 as well (verified), so it is reused UNCHANGED. That is
+        # deliberate: holding the slot set, the preamble, the splits, the conditions and the query
+        # kinds fixed makes DOSE the only thing that varies between `cds_n1`/`cds_n2` and `cds_n4`.
+        # `PR-018` failed because it moved the dose UP into a ceiling; this moves it DOWN, and the
+        # comparison is only interpretable if nothing else moves.
+        #
+        # PREAMBLE. `n_preamble` stays at 10. `R-178`/`PR-20` fixed it on feasibility alone and
+        # `R-50` is the recorded failure of re-tuning a design parameter to improve an outcome. It
+        # is ALSO what makes the control feasible here: the demonstration block SHRINKS at low dose
+        # while the non-demonstration pool is unchanged, so the count-matched control gets strictly
+        # MORE headroom than the 3.03x `R-033a` measured at n=4. That is a prediction, and
+        # `PR-023`'s pre-flight measures it rather than assuming it.
+        return _blocks("main_longpre_cds", domains) + [
+            dict(name="cds_n1", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[1], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["behavioral", "semantic_forced_choice"],
+                 slots=[0, 4, 8, 12, 16], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+            dict(name="cds_n2", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[2], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["behavioral", "semantic_forced_choice"],
+                 slots=[0, 4, 8, 12, 16], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+        ]
+
     if preset == "main_longctx":
         # R-25's bank-design fix, and the ONLY reason this preset exists.
         #
@@ -1274,7 +1317,7 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "main_longpre_cds",
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "main_longpre_cds", "main_longpre_cds_lowdose",
                                          "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu",
                                          "rbd12_n16"],
                     default="main")

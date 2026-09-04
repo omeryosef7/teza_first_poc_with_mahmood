@@ -5619,3 +5619,63 @@ the dose-response I wrote at `R-041`.
    found the ceiling; `PR-022` re-ran it on a second model **through the identical committed code
    path** and eliminated the power defence I would otherwise have leaned on. ⛔ Neither result would
    exist if the attacks had been chosen after seeing the numbers.
+
+## `PR-023` — PREREGISTRATION: the **low-dose block**, staged, with the knob-check as a gate
+
+⚠ **Frozen before any row is generated.** ⛔ **Proceeding without an explicit go-ahead, and saying so.**
+I flagged this to Omer twice and got status questions rather than a decision, while the standing
+instruction has been to continue the phase. The work is **cheap, additive and discardable** — a new
+bank *file*, a derived preset that leaves every existing preset byte-stable, and ~4 arms of a few
+minutes each. ⛔ If he disagrees, nothing needs unwinding beyond deleting one bank file.
+
+**Why this and nothing else.** `R-052` established the constraint is **structural**: the claim now
+lives or dies in the **varying installation subrange**, every bank that has a dose-matched control
+sits at **1** low-installation domain, and the only banks with spread are the exploratory source
+which **cannot** carry a control (`R-033`). ⇒ No re-analysis can settle it. Lowering the dose is the
+only lever that produces low-installation domains **in a bank that also has a control**.
+
+**Design — `main_longpre_cds_lowdose`, a DERIVED preset** (`main_ne12`'s convention; ✅
+`tests/test_bank_regenerates_byte_identically.py` **passes**, so no existing bank moved). Two new
+blocks, `cds_n1` and `cds_n2`, **identical to `cds_n4` in every respect except dose**: same 38
+domains, same splits, same conditions, same query kinds, same `n_preamble = 10`, and the **same slot
+set `{0,4,8,12,16}`** — verified **mutually disjoint at n=1 and n=2**, so independence is preserved
+without changing rows/domain. ⚠ `PR-018` failed because it moved the dose **up** into a ceiling; this
+moves it **down**, and the comparison is interpretable only if nothing else moves.
+
+### Stage 1 — feasibility, CPU only, no GPU
+Measure, on the generated rows: demonstration tokens, non-demonstration tokens available, and the
+implied maximum `match_ratio` — **in tokens, not characters** (`R-033a`'s correction).
+* ⛔ **Gate:** if the count-matched control is **not** feasible at n=1 **and** n=2, `PR-023` stops at
+  Stage 1 and reports `CANNOT ANSWER` — the same outcome `R-033` recorded for the `rbd` banks.
+* ⚠ **Prediction, recorded so it can be wrong:** feasibility should **improve** versus `n=4`'s
+  measured **3.03×**, because the demonstration block shrinks while the preamble is unchanged.
+
+### Stage 2 — the knob-check, one baseline arm per dose
+⛔ **This is `PR-018`'s lesson as a hard gate.** `PR-018` moved a predictor that had no headroom and
+its later predictions were **VOID**. Here the knob must be shown to turn **before** any knockout runs.
+* **Gate:** the number of domains with installation **≤ 0.75** must **exceed 13** (the `cds_n4` count
+  of domains below ceiling) at n=1 or n=2.
+* ⛔ **If it does not, `PR-023` stops at Stage 2** and reports that lowering the dose does **not**
+  lower installation — which would itself be a finding about the paradigm, and ⛔ would **not** be
+  written up as a failed attempt at something else.
+
+### Stage 3 — the test, only if Stages 1–2 pass
+Baseline + `demo_all` knockout + `nondemo_matched_d1` control at the winning dose, band 6–14,
+`query_prefill_only`, seed 20260901 — every setting copied from `dcsro_C_*`. Analysis is
+`scripts/dcs_audit_r041.py` **unchanged**, the same committed code path `A-009` and `PR-022` used.
+
+⛔ **Declared outcomes.**
+* **Contrast negative and p < 0.05 within the varying subrange** ⇒ the gradient **is** demonstrated
+  where it matters, on a population built for the purpose. ⚠ This would **not** retroactively repair
+  Llama's or Qwen's subranges — it adds the population where the test can actually be run.
+* **Null with a genuinely varying predictor** ⇒ ⛔ the categorical reading of `R-053` is **confirmed
+  on purpose-built data**, and the continuous gradient is **dead**, not merely undemonstrated. ⚠ This
+  is the more likely outcome given `R-053` and it must be reported as the primary finding, not as a
+  failure of the bank.
+* **Stage 1 or 2 gate fails** ⇒ `CANNOT ANSWER`, reported at the stage it stopped.
+
+⚠ **One thing I cannot fix and am not pretending to:** the low-dose rows are **new prompts**, so this
+is a **new population**, not a re-slicing of the old one. A difference between `cds_n1/2` and
+`cds_n4` therefore confounds **dose** with **population**. ⛔ The 38 domains, pools, slots and
+preamble are held identical precisely to make that confound as small as construction allows, but it
+is **not zero** and will be stated with the result.
