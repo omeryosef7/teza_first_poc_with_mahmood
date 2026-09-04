@@ -4854,3 +4854,70 @@ the phase's judge, and credits are live as of `C-024`'s reversal), on a prompt t
 ⚠ **A limit I can name now.** Installation is at **1.00 in 25 of 38 domains** (`R-042`), so the
 predictor has little room to discriminate at the top. ⇒ A null here is **weak evidence**, exactly as
 in `PR-016`, and will be reported as range-limited rather than as a refutation.
+
+### `R-045` — ⛔ **`PR-019` = `CANNOT ANSWER`. The reliability gate fired, by exactly one domain**
+
+Job 849729, three shuffled batched passes, `gpt-4o-mini-2024-07-18`, 38/38 domains rated in every
+pass, model pin verified on each response.
+
+| | |
+|---|---|
+| gate (declared in `PR-019`) | at most **4** domains may have max−min spread **> 1** |
+| observed | **5** domains over ⇒ **UNRELIABLE** |
+| spread distribution | **24** domains at 0, **9** at 1, **5** at 2 |
+| verdict | ⛔ **`CANNOT ANSWER`** — no correlation computed |
+
+⛔ **The ratings are not reported here, and that is the declared behaviour, not an oversight.**
+`PR-019` said: *"the ratings are **not** reported descriptively as a consolation."* They exist in
+`outputs/boombness/dcs_analysis/dcs_plausibility_button_bomb.json` and ⛔ **no number derived from
+them appears in this log or in any deliverable.**
+
+⛔ **It missed by ONE domain and the threshold is not moving.** A gate of 5 would have passed this
+instrument. I set 4 before seeing anything, and the entire value of a pre-declared gate is that it
+binds when it is inconvenient — this is the first time in the phase one has actually fired against
+me, and moving it now would retroactively make every other declared threshold decorative.
+
+⚠ **The failure is NOT a technicality, and the domain list is why.** The five unstable domains are
+`airport_apron`, `airport_ground`, `harbour_dock`, `quarry_site`, `shipyard_slip` — every one a
+**transport or heavy-industrial** setting, i.e. exactly the settings where a bomb's plausibility is
+genuinely contestable (cargo, explosives handling, blasting). ⇒ The instrument is unstable
+**precisely on the domains the hypothesis most depends on**, and their shuffle positions vary
+widely (e.g. `harbour_dock` at index 0, 9, 23). ⛔ A gate at 5 would have licensed a correlation
+driven by the least reliable items.
+
+✅ **The design's own diagnostic worked.** The batched-and-shuffled construction existed to detect
+**order sensitivity**, because a repeated identical prompt at temperature 0 could only have produced
+a check that cannot fail (`feedback_check_reads_same_broken_source`). It detected order sensitivity.
+⇒ The instrument failed; the *test of the instrument* succeeded, and that is the only reason the
+failure is visible at all.
+
+## `PR-019a` — PREREGISTRATION: the same question with the batching removed **by construction**
+
+⚠ **Frozen before any per-item rating exists, and ⛔ this is instrument repair, not instrument
+shopping — here is the argument, made before the result.**
+
+`R-045`'s failure mode is **specific, known, and caused by a design choice I made and documented**:
+batching 38 items into one call lets the rater **rank items against each other**, so position in the
+list perturbs the score. Per-item calls remove that **by construction** — there is no list to be
+positioned in. ⛔ This is not "try again until it passes": it changes the mechanism the failure was
+attributed to, and the attribution was recorded **before** the fix was designed.
+
+**Design.** One call per domain, `temperature 0`, identical rubric text (already committed,
+unchanged), `n = 38` calls ≈ $0.01. Reliability is re-gated on a **different and stricter** axis,
+since per-item calls cannot have order effects: each domain is rated under **two paraphrases** of
+the rubric, and the gate is **max−min spread > 1 on more than 4 of 38**, i.e. numerically the same
+tolerance applied to *paraphrase* sensitivity instead of *order* sensitivity.
+
+⛔ **Binding declarations.**
+* ⛔ **`R-045`'s `CANNOT ANSWER` is permanent.** `PR-019` is closed as unanswerable and is **not**
+  reopened by whatever `PR-019a` returns.
+* ⛔ **The failed batch's ratings are never pooled, averaged, or compared with the new ones.** They
+  are a discarded instrument, not a first replicate.
+* ⛔ **Both instruments are reported together, always** — including in the deliverables — so a reader
+  learns that the first attempt failed its reliability gate. ⛔ Reporting only the one that worked is
+  the exact failure this section exists to forbid.
+* ⛔ **If `PR-019a` also fails its gate, the question is `CANNOT ANSWER` on this instrument family**
+  and I stop. ⚠ A third framing would be shopping and is ruled out **now**, not later.
+* **Primary, unchanged:** Spearman ρ(plausibility, installation), 38 domains, seeded permutation p,
+  predicted **positive**, α = 0.05, one look. The `PR-016`-style range limit stands: installation is
+  **1.00 in 25 of 38** domains, so a null is **weak evidence** and is reported as range-limited.
