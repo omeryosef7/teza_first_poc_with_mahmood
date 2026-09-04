@@ -3790,3 +3790,28 @@ never true**, and the failure would have looked like judge disagreement rather t
 
 ⇒ `PR-014` is **BLOCKED-ON-CREDITS**, not cancelled: preregistration frozen, generations complete
 and verified at 380 rows × 8 arms, batch script committed. It runs unchanged the hour credits exist.
+
+### `C-025` — `PR-013`'s first submission passed a **path** where the wrapper wants a **filename**
+
+Jobs 848362–848367 died in **16 seconds**:
+
+> `python: can't open file '.../src/boombness/src/boombness/score_behavior.py'`
+
+I passed `BOOMB_SCRIPT=src/boombness/score_behavior.py`; `run_boombness.sh` prepends `src/boombness/`
+itself and its own usage line says `BOOMB_SCRIPT=extract_boombness.py` — a bare filename. Resubmitted
+as **848536–848541** with `BOOMB_SCRIPT=score_behavior.py`.
+
+✅ **Cheap, loud, and non-corrupting** — the opposite of this phase's dangerous failures. It died
+**before** model load, wrote **0** rows and **0** output directories, and the exit code was non-zero.
+⚠ Worth contrasting with `C-021`, where the wrong thing **succeeded silently**. A failure that
+announces itself in 16 seconds costs nothing; a success that is quietly empty cost two commits and an
+audit to find.
+
+⚠ **Both pre-flight guards had already passed and correctly so**: `write guard ok: 10MB round-trip`
+and `GPU ok: NVIDIA L40S`. The 10MB guard exists because a disk quota silently truncated a run twice.
+Neither guard covers argument well-formedness, and neither should — the interpreter is the right place
+for that, and it did its job.
+
+⛔ **Not a wasted tick.** The five still-pending siblings were cancelled before they burned a slot each
+on the identical error, because the first failure was diagnosed instead of being read as ordinary
+queue churn.
