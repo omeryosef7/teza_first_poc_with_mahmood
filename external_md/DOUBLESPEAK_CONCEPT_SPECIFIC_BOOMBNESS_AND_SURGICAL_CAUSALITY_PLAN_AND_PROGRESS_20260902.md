@@ -4471,3 +4471,53 @@ property rather than corrected — a conservative test does not inflate a positi
 ✅ **The mutation harness earned its place**: all three broken variants produce ρ that *looks* fine in
 isolation (+0.143, −0.127, −0.952 against a true −0.915). ⛔ Two of them would have been invisible
 without a reference implementation to compare against.
+
+## `PR-018` — PREREGISTRATION: **manipulate** installation instead of merely observing it
+
+⚠ **Frozen before the three arms are submitted.** `R-041` is a **cross-domain correlation**: domains
+that happen to have more installed lose more under the knockout. The obvious next question is whether
+installation is a **cause** of the effect size or a marker of something else about those domains
+(topic, plausibility, tokenisation). ⛔ A correlation over 38 domains cannot separate those.
+
+**The manipulation already exists in the bank and has never been run.** The headline bank
+`cds38_button_bomb` carries a second block, **`cds_n8`** — the **same 38 domains** at
+`n_examples = 8` instead of 4. `R-038` measured that doubling demonstrations **raises** installation
+(`lantern` 0.888 → 0.950, `candle` 0.400 → 0.525) on a different bank. ⇒ `cds_n8` is a
+**dose knob on the predictor**, applied to the *same domains* that produced `R-041`.
+
+⚠ **`cds_n8` has never been run in this phase or any earlier one** — verified by scanning every
+`dcs*` run's `config.json` for a `cds_n8` bank block: **zero** hits. So every number below is new.
+
+**Three arms**, mirroring `dcsro_C_*` exactly and differing only in the block/dose:
+`dcsp18_n8_base`, `dcsp18_n8_demo` (`demo_all:attn_knockout:6-14:1.0`), `dcsp18_n8_ctrl`
+(`nondemo_matched_d1:...`), all `query_prefill_only`, seed 20260901, `--expect-n 152`.
+
+⛔ **Declared predictions, in the order they will be read.**
+1. **Installation rises.** Per-domain baseline installation at n=8 > at n=4. ⚠ If it does **not**
+   rise, the manipulation failed and predictions 2–3 are **void, not falsified** — I will say the
+   knob did not turn rather than that the hypothesis died.
+2. **PRIMARY — the whole-population effect grows.** Cell C's mean per-domain Δ`semantic_logodds`
+   under `demo_all` is **more negative** at n=8 than the n=4 value of the same 38 domains. One-sided
+   by prediction, reported two-sided. ⛔ If the effect **shrinks**, `R-041`'s reading is in trouble
+   and that will be written as such.
+3. **The gradient replicates at the new dose.** `R-041`'s contrast (ρ<sub>KO</sub> − ρ<sub>ctrl</sub>)
+   is negative at n=8, using the committed `dcs_installation_gradient.py` unchanged.
+
+⛔ **Power, declared before the run because it is worse here and I will not discover it afterwards.**
+`cds_n8` has **152** forced-choice rows in cell C — **4 rows/domain**, against n=4's **10**. So
+(a) per-domain deltas are noisier, and (b) installation can only take **5** values (0, .25, .5, .75, 1)
+instead of 11. ⚠ ⇒ A **weaker** ρ at n=8 is expected on measurement grounds alone and ⛔ must **not**
+be read as the gradient failing. The comparison that carries prediction 3 is the **sign and the
+contrast**, not ρ's magnitude against `R-041`'s −0.594.
+
+✅ **Pre-flight on the control's feasibility, measured not assumed** (`R-033`'s lesson): `cds_n8`'s
+demonstration share of the prompt is **median 0.477, max 0.554**, and the block **has a preamble**
+(median 614 chars). ⇒ The non-demonstration pool is roughly as large as the demonstration block, so
+`nondemo_matched_d1` should be constructible — unlike the `rbd` banks at 0.847 with no preamble.
+⛔ Stated as an **expectation**; the run's own guard decides, and if it refuses, `PR-018` reports
+prediction 3 as `CANNOT ANSWER` exactly as `PR-013` did.
+
+⚠ **What `PR-018` still cannot do.** `cds_n8` raises the dose; nothing in the repo **lowers** it on
+this bank (the block set is `{cds_n4, cds_n8}`). ⇒ The **reversal** at install ≈ 0 stays
+`candle`-only and exploratory, and the low-vs-high split will remain `CANNOT_ANSWER` on this
+population. ⛔ Building a low-dose block is new bank construction and a separate preregistration.
