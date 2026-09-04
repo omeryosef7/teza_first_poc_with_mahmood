@@ -6009,3 +6009,48 @@ honest count reported with the result.
 generation. Templates are *prompts*; the generator writes the *sentences*. A template that never says
 `bomb` can still elicit a `benign` sentence containing it — so the same criteria must re-run on the
 **output**, and the thing re-running them must itself be known to reject.
+
+## `PR-024a` — AMENDMENT: close the comparator freedom **before** the pools exist
+
+⚠ **Frozen at 53 of 78 domains generated. No bank, no arm, no attack number.** `PR-024` declared the
+primary as *"significant at the domain sign test, k = 114"* and ⛔ **did not say against WHICH
+comparator.** That is a degree of freedom I would otherwise be choosing after seeing three answers —
+`DCS-033` closed exactly this gap for `PR-014`, and the same discipline applies before it can bite.
+
+⛔ **Why "the refusal-neutral control" is NOT available as the answer.** `R-015` found *exactly one*
+Llama control qualified at n = 380; `R-018` found 3 of 6 across two seeds; and `C-023` then showed the
+neutrality criterion was **justified by a number measured on the wrong outcome** — the ±17 came from
+*attack* labels while `refused` is a deterministic matcher with a measured band of **0**. ⇒ Selecting
+a comparator on refusal-neutrality is **discredited**, and `PR-014` replaced it with **bounding**.
+
+**Arms (5).** `baseline` · `demo_all` (`KO-3`) · `nondemo_matched_d1` · `d2` · `d3` — all at band
+6–14, `query_prefill_only`, `--query-kinds behavioral`, `--max-new 640`, seed 20260901, every other
+setting copied from `dcsbeh_C_*`. ⇒ **~13.5 GPU-hours**, five arms.
+
+⛔ **PRIMARY, declared now.** Per-domain paired attack counts, exact sign test over the **116**
+domains, `KO-3` vs **each of the three** dose-matched controls. **All three are reported — there is
+no selection.** The claim requires the sign test to be significant at α = 0.05 against **ALL THREE**,
+a conjunction. ⚠ That is deliberately conservative: it cannot be satisfied by a favourable draw, and
+it is stricter than `R-016`, which reported a direction across controls chosen for neutrality.
+
+**SECONDARY, and it carries no conclusion the primary does not.** `PR-014`'s bracket
+(`scripts/dcs_pr014_bound.py`, unchanged) on each control, because `R-048` showed the refusal
+confound can be larger than the effect. ⚠ If the brackets straddle zero the result is
+**`CONFOUND-LIMITED`** regardless of the sign test, exactly as on Qwen.
+
+⛔ **Declared outcomes, replacing `PR-024`'s single line.**
+* **Significant against all three controls, brackets not straddling** ⇒ `B-009` **resolved**; the
+  behavioural half is certified at its own independence unit and `C-035`'s novelty claim extends from
+  refusal to attack success.
+* **Significant against some but not all three** ⇒ ⛔ reported as **NOT resolved**, with all three
+  p-values. ⛔ The best of three may not be quoted alone — that is `R-016`'s error, which `C-016`
+  corrected.
+* **Null against all three at 0.81 power** ⇒ a **well-powered null**, which is a *result*: the
+  representational effect does not carry to attack success on Llama. ⚠ Reported as prominently as a
+  positive; it is the outcome that would most change the paper.
+* **Brackets straddle zero** ⇒ **`CONFOUND-LIMITED`**, and the sign test does **not** override it.
+
+⚠ **Power is recomputed from the REALISED ICC, not assumed.** `R-056` used ICC = 0.158 from one bank
+and the repo has measured 0.000–0.755. The achieved power is recomputed once the arms exist, and if
+the realised ICC is materially higher the design is reported as **underpowered** at whatever `k` it
+achieved — ⛔ not silently defended by the pre-run number.
