@@ -3297,3 +3297,38 @@ control.
 ⚠ The third outcome is the uncomfortable one and is the reason to run this: it would not overturn
 any result, but it would mean the phase's headline magnitudes are lower bounds chosen by inheritance
 rather than by measurement.
+
+### `DCS-R-030` — ✅ the layer sweep: **the effect IS localised, and the inherited band is the best of four**
+
+Cell `C`, `semantic_forced_choice`, n = 380, 38 domains, **each band against its own dose-matched
+control**. Baseline +5.188.
+
+| band | layers | dose | demo | control | **demo − control** | domains | sign p | Holm ×4 |
+|---|---|---|---|---|---|---|---|---|
+| 0–5 | 6 | 44 544 | +1.321 | +5.617 | **−4.297** | 1+/37− | 2.84e-10 | 1.1e-09 |
+| **6–14** *(inherited)* | 9 | 66 816 | **−2.756** | +5.325 | **−8.081** | 1+/37− | 2.84e-10 | 1.1e-09 |
+| 15–23 | 9 | 66 816 | +5.399 | +5.252 | **+0.146** | 27+/11− | 1.39e-02 | 5.5e-02 |
+| 24–31 | 8 | 59 392 | +5.943 | +5.189 | **+0.754** | 38+/0− | 7.28e-12 | 2.9e-11 |
+
+⇒ **`PR-011`'s FIRST declared outcome obtains: the effect is concentrated early-to-mid and the
+inherited band is the strongest of the four.** The mapping can be destroyed at **0–5** (−4.30) and
+**6–14** (−8.08, the sign flip), and is **gone by 15–23** (+0.15). ⛔ The uncomfortable third outcome —
+"the headline magnitudes are lower bounds chosen by inheritance" — **does not obtain**; 6–14 is not a
+lucky inheritance but the best band tested.
+
+⚠ **The dose caveat, because band widths differ.** Bands span 6/9/9/8 layers, so doses differ
+(44 544 / 66 816 / 66 816 / 59 392) and **cross-band magnitudes are not dose-matched to each other**
+— only *within* each band is the comparison controlled. Per-layer: **0–5 = −0.72/layer** vs
+**6–14 = −0.90/layer**, so 6–14 leads on the normalised figure too, but this is a *descriptive*
+adjustment and not a designed contrast.
+
+⚠ **An unexpected consistent positive at 24–31: +0.754 with 38+/0− domains, p = 7.28e-12.** Cutting
+demonstration attention in the **late** stack makes the concept reading slightly *stronger*, on
+**every single domain**. ⛔ Small (9 % of the 6–14 effect) and **exploratory** — it is one of four
+bands in a declared multiplicity family, it was not predicted, and no claim is made from it. ⚠ It is
+recorded because it is the only place in this phase where a demonstration knockout has a *consistent
+positive* sign, and a future layer-resolved design should look at it rather than rediscover it.
+
+⇒ **What this licenses that `DCS-021` forbade:** the phrase *"the effect is layer-localised to the
+early-mid stack"* is now **supported by measurement** rather than inherited — with the standing
+qualifier that four coarse bands are not a per-layer profile.
