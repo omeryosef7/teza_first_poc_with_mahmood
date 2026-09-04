@@ -53,6 +53,9 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 4 | `R-050` | primary ⛔ **`CANNOT ANSWER`** (1 of 38 domains, gate needed 4). ✅ But: full installation swing **+10.68**; `option_mass` **0.877→0.264** without a mapping; benign demos install a **benign** remapping (` Mushroom` 22/380) | ✅ |
 | 4 | `DCS-035` | my watch treated *left `squeue`* as terminal and raced the writer; the **analyzer's** `DONE.json` guard is what covered it | ✅ |
 | 4 | — | `R-050` propagated to summary `SCOPE` + `ESTABLISHED` and to `LIVE STATUS` | ✅ |
+| 5 | `A-009` | **adversarial audit of `R-041`**, five attacks declared in the committed script first. A/B/E ✅ survive; ⛔ **C lands** (13 varying domains: −0.503, **p = 0.343**); ⛔ **D**: the control's gradient is real | ✅ |
+| 5 | `R-051` | `B-015`: ⛔ my preamble mechanism **refuted** (4 populations, all with preamble, ρ = +0.31/−0.04/−0.02/−0.33); `A-009` D narrowed to **population-specific**; ⛔ **the −0.907 headline is inflated** ⇒ quote **ρ<sub>KO</sub> −0.44…−0.73** | ✅ |
+| 5 | — | narrowing propagated to summary (new **NARROWED** section), `LIVE STATUS`, and the figure (**panels F and G + card**), PNG read back | ✅ |
 
 ## Live
 

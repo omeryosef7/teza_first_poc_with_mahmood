@@ -311,11 +311,13 @@ def main():
     axF.set_xlabel("baseline INSTALLATION  (per-domain fraction of rows whose argmax answer "
                    "is already 'bomb')")
     axF.set_ylabel("Δ semantic_logodds vs baseline")
-    axF.set_title("F  The effect is GRADED by how much was installed (R-041)\n"
+    axF.set_title("F  The effect is GRADED by how much was installed (R-041, narrowed by A-009/R-051)\n"
                   "button→bomb · Llama · L6-14 · n=380 · 38 domains · cell C\n"
-                  "contrast rho_KO − rho_control = −0.907, permutation p = 2.0e−04\n"
-                  "⚠ CORRELATIONAL across domains — PR-018's manipulation had no headroom (R-042)",
-                  fontsize=8.8, loc="left")
+                  "rho_KO = −0.594 here; −0.444 (n=8) and −0.734 (Qwen) elsewhere — 3 settings, 2 models\n"
+                  "[!] the −0.907 CONTRAST is population-specific and inflated: this control's +0.312\n"
+                  "does not reproduce (−0.04 / −0.02 / −0.33 on three other populations, R-051)\n"
+                  "[!] NOT shown on the 13 varying domains alone: −0.503, p = 0.343 (A-009 attack C)",
+                  fontsize=8.4, loc="left")
     axF.legend(fontsize=7.8, loc="lower left")
     axF.grid(alpha=0.25)
 
@@ -338,10 +340,12 @@ def main():
     axG.axvline(0, color="0.4", lw=1.1)
     axG.set_xlabel("contrast  rho_KO − rho_control   (negative = graded by installation)")
     axG.set_title("G  Every contrast measured, alpha=0.05, seeded permutation\n"
-                  "[!] n=4 and n=8 are the SAME 38 domains at two doses — a second DOSE,\n"
-                  "not a second SAMPLE, so these are NOT independent p-values\n"
+                  "[!] the CONTRAST is not the headline quantity — R-051 shows the comparator is\n"
+                  "not reliably inert, so quote rho_KO and name the population for a contrast\n"
+                  "[!] n=4 and n=8 are the SAME 38 domains at two doses — a second DOSE, not a\n"
+                  "second SAMPLE, so these are NOT independent p-values\n"
                   "[!] Qwen does NOT clear alpha and is not reported as a replication that did",
-                  fontsize=8.8, loc="left")
+                  fontsize=8.4, loc="left")
     axG.grid(alpha=0.25, axis="x")
 
     axes[2][1].axis("off")
@@ -405,6 +409,16 @@ def main():
                     "Installation gradient (R-041/R-043)\n"
                     "─────────────────────────────\n"
                     "- CORRELATIONAL across domains.\n"
+                    "- A-009 audit: survives leave-one-out (38\n"
+                    "  subsets), 3 operationalisations, and an\n"
+                    "  arm-exchangeable null. But attack C LANDS:\n"
+                    "  on the 13 domains that actually vary the\n"
+                    "  contrast is -0.503 at p=0.343, so the result\n"
+                    "  is dominated by ceiling-vs-rest.\n"
+                    "- R-051: the -0.907 contrast is inflated. This\n"
+                    "  control's +0.312 gradient does NOT reproduce\n"
+                    "  (-0.04 / -0.02 / -0.33 elsewhere). Quote\n"
+                    "  rho_KO = -0.594 / -0.444 / -0.734 instead.\n"
                     "- PR-018 tried to manipulate it and the\n"
                     "  knob would not turn: 0.908 -> 0.928,\n"
                     "  25/38 domains already at ceiling\n"
