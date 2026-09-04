@@ -22,7 +22,7 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 | # | claim | scope |
 |---|---|---|
 | `R-008`/`R-010`/`R-011`/`R-025` | **The demonstration→query path is necessary for the remapping and specific to it.** DiD **−9.89** (Llama·button), **−9.35** (Llama·basket), **−22.20** (Qwen·button) | ⚠ all three share the **same 1+/37− sign pattern** — one pattern replicated 3×, **not** 3 independent p-values |
-| **`R-041`/`R-043`** ⚠ narrowed **twice** | **Fully-installed domains lose MORE than partially-installed ones** — ⚠ **categorical, not a continuous gradient** (`R-053`). ρ<sub>KO</sub> −0.594 / −0.444 / −0.734, robust to LOO and 3 operationalisations | ⛔ knockout-specific contrast holds only **across the full range**; within the varying subrange **Llama p = 0.343 (n=13)** and **Qwen p = 0.504 (n=30)**, where ρ<sub>ctrl</sub> −0.428 ≈ ρ<sub>KO</sub> −0.601 (**RTM**) |
+| **`R-041`/`R-043`** ✅ **settled** (`R-055`) | **Fully-installed domains lose MORE — CATEGORICALLY.** ρ<sub>KO</sub> −0.693 / −0.594 / −0.444 / −0.734 over **3 populations, 2 models, 3 doses**; `A` and `B` pass on all | ⛔ **no** continuous dose-response: attack `C` fails at 13/30/**33** domains (p = 0.343/0.504/**0.210**); ✅ the within-range gradient **is RTM** — control ρ **−0.086 → −0.338** by conditioning alone |
 | `R-021`/`R-022` | **No single query position carries it; ~¼ of the span does.** K=1 −0.01, K=2 −0.01, **K=8 −6.62**, K=16 −7.89, K=32 −8.08 — a **step**, then saturation | ⚠ row count and dose rise together |
 | `R-022` controls | **Controls inert across a 32× dose range** (+5.16…+5.38 vs +5.19 baseline) | the step is about *which* keys are cut |
 | `R-024` | **The mechanism is cross-model.** Qwen3-14B replicates `KO-3` at ~3× Llama's magnitude; `frac>0` collapses **0.813 → 0.021** | capability gate passed first (`R-023`) |
@@ -73,7 +73,8 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 
 | id | blocker |
 |---|---|
-| `0b` | **Is the gradient causal?** `cds38`'s block set is `{cds_n4, cds_n8}` — there is **no low-dose block**, so installation cannot be lowered. Needs **bank construction** + a new preregistration |
+| `0b`→**closed** | ✅ `PR-023` built the low-dose block `R-052` said was the only route. Both gates passed (control **9.20×**, installation **0.708** vs 0.908, **20** domains ≤0.75). ⛔ The within-range gradient is **RTM**, not causal |
+| `0b-old` | **Is the gradient causal?** `cds38`'s block set is `{cds_n4, cds_n8}` — there is **no low-dose block**, so installation cannot be lowered. Needs **bank construction** + a new preregistration |
 | `B-009` | Llama behavioral effect **uncertified at its own independence unit**; **38 domains is all that exists** ⇒ needs **new demonstration pools** |
 | `B-013` | per-row `control_draw_match_ratio` **not persisted** although the artifact's note says it is; recovered from `hook_n_keys_masked`, workaround assumes row-aligned arms |
 | `R-029`→closed | superseded by `R-048`: the contrast **was** computed on all 6 draws. ⛔ Now limited by the **confound**, not by comparator selection |

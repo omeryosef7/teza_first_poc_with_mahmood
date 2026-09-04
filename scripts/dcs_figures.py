@@ -312,14 +312,16 @@ def main():
                    "is already 'bomb')")
     axF.set_ylabel("Δ semantic_logodds vs baseline")
     axF.set_title("F  Fully-installed domains lose MORE than partially-installed ones\n"
-                  "    (R-041, narrowed by A-009/R-051 and again by R-053 -- CATEGORICAL, not a gradient)\n"
+                  "    (R-041; narrowed by A-009/R-051/R-053, SETTLED by PR-023/R-055 -- CATEGORICAL)\n"
                   "button→bomb · Llama · L6-14 · n=380 · 38 domains · cell C\n"
-                  "rho_KO = −0.594 here; −0.444 (n=8) and −0.734 (Qwen) elsewhere — 3 settings, 2 models\n"
+                  "rho_KO = −0.594 here; −0.693 (n=1), −0.444 (n=8), −0.734 (Qwen) — 4 settings, 2 models\n"
                   "[!] the −0.907 CONTRAST is population-specific and inflated: this control's +0.312\n"
                   "does not reproduce (−0.04 / −0.02 / −0.33 on three other populations, R-051)\n"
-                  "[!] NOT shown within the varying subrange on EITHER model: Llama −0.503 p=0.343\n"
-                  "(n=13); Qwen −0.173 p=0.504 (n=30, so power is not the explanation, R-053). There\n"
-                  "rho_ctrl −0.428 nearly matches rho_KO −0.601 -- what regression to the mean predicts",
+                  "[!] SETTLED (R-055): no continuous dose-response within the partially-installed\n"
+                  "range. Attack C fails on ALL THREE populations -- 13 dom p=0.343, 30 dom p=0.504,\n"
+                  "33 dom p=0.210 on a bank BUILT to supply the range. The within-range gradient is\n"
+                  "REGRESSION TO THE MEAN: on cds_n1 the CONTROL's rho moves -0.086 -> -0.338 by\n"
+                  "conditioning on the subrange alone, with no knockout applied.",
                   fontsize=8.0, loc="left")
     axF.legend(fontsize=7.8, loc="lower left")
     axF.grid(alpha=0.25)
@@ -412,13 +414,15 @@ def main():
                     "Installation gradient (R-041/R-043)\n"
                     "─────────────────────────────\n"
                     "- CORRELATIONAL across domains.\n"
-                    "- CATEGORICAL, not a continuous gradient\n"
-                    "  (R-053). Attack C LANDS ON BOTH MODELS:\n"
-                    "  Llama -0.503 p=0.343 (n=13); Qwen -0.173\n"
-                    "  p=0.504 (n=30 -- so NOT a power problem).\n"
-                    "  Within the varying subrange rho_ctrl -0.428\n"
-                    "  nearly matches rho_KO -0.601, which is what\n"
-                    "  regression to the mean predicts.\n"
+                    "- CATEGORICAL, and now SETTLED (R-055).\n"
+                    "  Attack C fails on all 3 populations:\n"
+                    "  13 dom p=0.343, 30 dom p=0.504, 33 dom\n"
+                    "  p=0.210 -- the last on a low-dose bank\n"
+                    "  BUILT to supply the range (PR-023).\n"
+                    "- The within-range gradient IS regression to\n"
+                    "  the mean: on cds_n1 the CONTROL's rho moves\n"
+                    "  -0.086 -> -0.338 by conditioning on the\n"
+                    "  subrange alone, no knockout applied.\n"
                     "- On Llama the contrast survives LOO, 3\n"
                     "  operationalisations and an arm-exchangeable\n"
                     "  null; on Qwen it fails A (p=0.127) and E\n"

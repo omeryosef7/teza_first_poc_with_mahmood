@@ -59,6 +59,10 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 6 | `R-052` | the installation **ceiling is structural**: every population with a control has **1** low-installation domain; the only ones with spread (`candle`) are the **source** and have **no control** ⇒ a low-dose block is the only route | ✅ |
 | 6 | `PR-022`/`R-053` | ⛔ **NULL branch: attack `C` REPLICATES on Qwen at n=30** (−0.173, p=0.504) — power is **not** the explanation. Qwen also fails `A` and `E`. Within the subrange ρ<sub>ctrl</sub> −0.428 ≈ ρ<sub>KO</sub> −0.601 ⇒ **RTM** | ✅ |
 | 6 | — | claim narrowed to **CATEGORICAL** and propagated to summary, `LIVE STATUS` and the figure; card **compressed** and a **per-column width guard** added after text overran the page edge | ✅ |
+| 7 | `PR-023` | built the **low-dose block** `R-052` said was the only route — a **derived** preset (`main_ne12`'s convention); byte-identical regeneration test **passes**, shared `cds_n4` sha identical | ✅ |
+| 7 | `R-054` | Stages 1–2 **both gates pass**: control **9.20×** headroom, installation **0.708** vs 0.908, **20** domains ≤0.75 (gate 13). Installation is **monotone in dose** | ✅ |
+| 7 | `R-055` | ⛔ **NULL branch: attack `C` fails a THIRD time** at **33** domains on purpose-built data (p=0.210) ⇒ power is dead. ✅ The within-range gradient **IS RTM** — control ρ **−0.086 → −0.338** by conditioning alone | ✅ |
+| 7 | — | settled claim propagated to summary, `LIVE STATUS`, figure (panel F + card); blocker `0b` **closed** | ✅ |
 
 ## Live
 
