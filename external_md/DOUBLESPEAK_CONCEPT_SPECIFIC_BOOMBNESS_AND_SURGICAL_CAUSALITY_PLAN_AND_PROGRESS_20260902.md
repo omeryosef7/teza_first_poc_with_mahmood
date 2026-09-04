@@ -5076,3 +5076,33 @@ and this is a direct check of that claim on new data.
 
 ⛔ **Two things this may not become.** It may **not** be used to re-judge any *other* arm, and it may
 **not** be run a second time if the first answer is inconvenient. One arm, one extra pass, one look.
+
+### `C-032` — ⚠ process failure: **I repeated `C-018` exactly**, one day later
+
+`C-018` (2026-09-03) recorded: *"never background concurrent git commits here; they collide on the
+index lock."* Today I fired the `PR-020` tooling commit while the `PR-020` preregistration commit
+was still inside `check_all.py`. Result:
+
+> `Another git process seems to be running … remove the file manually to continue.`
+> `error: pathspec 'scripts/judge_pr020_repeat.sh' did not match any file(s) known to git`
+
+⚠ **The failure mode is worse than it looks, and worth stating.** The collision landed on `git add`,
+so the `git commit -- <paths>` that followed reported *"pathspec did not match"* — a message that
+reads like **"you named a file that does not exist"**, not like **"another git process is
+running"**. ⛔ Diagnosing it as a typo and re-typing the paths would have failed again, identically.
+
+⛔ **And I nearly compounded it.** `.git/index.lock` was present when I looked, and the obvious next
+move — delete the stale lock — would have been **destructive**: the other commit's guard suite was
+**still running** and holding it legitimately. ✅ Checked for live `git`/guard processes *before*
+touching it; by the second check the guards had finished, the lock had cleared on its own, and the
+preregistration commit had landed as `dd40a93f`. ⇒ **Nothing was lost and nothing needed forcing.**
+
+⚠ **Why it recurred, honestly.** `B-012` — the guards scale with **run count** (755 dirs), not the
+diff — means a commit here occupies the index for **minutes**. Backgrounding one commit and
+continuing to work is correct; backgrounding a **second** one before the first returns is the bug,
+and the long guard window makes the two look temporally separate when they are not. ⇒ The rule is
+not "don't background commits", it is **"never have two in flight at once"**.
+
+✅ **What the log bought.** `C-018` existed, so this was diagnosed in one command instead of being
+read as a filesystem problem. ⛔ That it happened anyway is the point: a recorded lesson stopped the
+*misdiagnosis*, not the *mistake*.
