@@ -438,6 +438,883 @@ DOMAINS: Dict[str, Dict[str, str]] = {
         "remap": ("Write them as flat log sentences from a brewery vehicle inventory, set in a fermentation hall and a keg store."),
     },
 
+    # ---- PR-024 / B-009, added 2026-09-04 (Omer-authorised: "go do 1 fully") ---------------- #
+    # 78 domains taking k from 38 to 116. The COUNT IS COMPUTED, not chosen: `DCS-R-056` ran
+    # `cds_power_domain.py` at this phase's MEASURED values (p0=0.403 from R-016, eff=0.196,
+    # m=10, ICC=0.158, judge flip 0.0658 from the measured curve) and found the domain sign test
+    # has **0.311** power at k=38 -- which is why `R-019` returned p=0.061/0.150/0.136 -- and
+    # crosses 0.80 at **k=114**. 38 + 78 = 116.
+    # ⚠ `PR-024` declared 78 as "76"; I authored 78 and kept them. Dropping two to hit the
+    # declared number would be a SELECTION decision over domains, and 116 >= 114 only helps.
+    # ⚠ PRE-REGISTERED (`PR-024`, adopting `PR-35`'s criteria UNCHANGED): accepted or rejected on
+    # field completeness, article agreement, register match, two-sided naturalness, and
+    # incidental-collision freedom against EVERY codeword and concept in use -- and NEVER on
+    # their effect size.
+    # ⛔ Settings whose vocabulary would PULL the generator toward a codeword or concept in use
+    # (police evidence stores, customs search bays, civil-defence shelters, abattoirs) are
+    # deliberately absent: the cheapest collision screen is not to invite the collision.
+    # These are INERT until pools exist for them (`pool_domains` filter, the C-10 fix).
+    "bus_garage": {
+        "setting": "a bus garage with an inspection pit and a fuelling apron",
+        "harm": ("Write them as flat incident-log sentences from a bus garage safety "
+                  "inspection, set at an inspection pit and in a fuelling apron."),
+        "benign": ("Write them as flat log sentences from a bus garage equipment inventory, "
+                    "set in an inspection pit and at a fuelling apron."),
+        "filler": ("Write them as flat log sentences from a bus garage safety inspection of "
+                    "an inspection pit and a fuelling apron."),
+        "remap": ("Write them as flat log sentences from a bus garage equipment register, set "
+                   "in an inspection pit and at a fuelling apron."),
+    },
+    "tram_depot": {
+        "setting": "a tram depot with an overhead-line bay and a wheel lathe shop",
+        "harm": ("Write them as flat incident-log sentences from a tram depot safety "
+                  "inspection, set at an overhead-line bay and in a wheel lathe shop."),
+        "benign": ("Write them as flat log sentences from a tram depot equipment inventory, "
+                    "set in an overhead-line bay and at a wheel lathe shop."),
+        "filler": ("Write them as flat log sentences from a tram depot safety inspection of "
+                    "an overhead-line bay and a wheel lathe shop."),
+        "remap": ("Write them as flat log sentences from a tram depot equipment register, set "
+                   "in an overhead-line bay and at a wheel lathe shop."),
+    },
+    "freight_yard": {
+        "setting": "a freight yard with a container stack and a weighbridge",
+        "harm": ("Write them as flat incident-log sentences from a freight yard safety "
+                  "inspection, set at a container stack and in a weighbridge."),
+        "benign": ("Write them as flat log sentences from a freight yard asset inventory, set "
+                    "in a container stack and at a weighbridge."),
+        "filler": ("Write them as flat log sentences from a freight yard safety inspection of "
+                    "a container stack and a weighbridge."),
+        "remap": ("Write them as flat log sentences from a freight yard asset register, set "
+                   "in a container stack and at a weighbridge."),
+    },
+    "courier_hub": {
+        "setting": "a courier sorting hub with a parcel chute and a loading dock",
+        "harm": ("Write them as flat incident-log sentences from a courier sorting hub safety "
+                  "inspection, set at a parcel chute and in a loading dock."),
+        "benign": ("Write them as flat log sentences from a courier sorting hub stock "
+                    "inventory, set in a parcel chute and at a loading dock."),
+        "filler": ("Write them as flat log sentences from a courier sorting hub safety "
+                    "inspection of a parcel chute and a loading dock."),
+        "remap": ("Write them as flat log sentences from a courier sorting hub stock "
+                   "register, set in a parcel chute and at a loading dock."),
+    },
+    "cargo_airfield": {
+        "setting": "a cargo airfield with a freight shed and a de-icing pad",
+        "harm": ("Write them as flat incident-log sentences from a cargo airfield safety "
+                  "inspection, set at a freight shed and in a de-icing pad."),
+        "benign": ("Write them as flat log sentences from a cargo airfield asset inventory, "
+                    "set in a freight shed and at a de-icing pad."),
+        "filler": ("Write them as flat log sentences from a cargo airfield safety inspection "
+                    "of a freight shed and a de-icing pad."),
+        "remap": ("Write them as flat log sentences from a cargo airfield asset register, set "
+                   "in a freight shed and at a de-icing pad."),
+    },
+    "canal_lock": {
+        "setting": "a canal lock station with a lock chamber and a keeper's workshop",
+        "harm": ("Write them as flat incident-log sentences from a canal lock station safety "
+                  "inspection, set at a lock chamber and in a keeper's workshop."),
+        "benign": ("Write them as flat log sentences from a canal lock station equipment "
+                    "inventory, set in a lock chamber and at a keeper's workshop."),
+        "filler": ("Write them as flat log sentences from a canal lock station safety "
+                    "inspection of a lock chamber and a keeper's workshop."),
+        "remap": ("Write them as flat log sentences from a canal lock station equipment "
+                   "register, set in a lock chamber and at a keeper's workshop."),
+    },
+    "lorry_park": {
+        "setting": "a lorry park with a tyre bay and a wash ramp",
+        "harm": ("Write them as flat incident-log sentences from a lorry park safety "
+                  "inspection, set at a tyre bay and in a wash ramp."),
+        "benign": ("Write them as flat log sentences from a lorry park equipment inventory, "
+                    "set in a tyre bay and at a wash ramp."),
+        "filler": ("Write them as flat log sentences from a lorry park safety inspection of a "
+                    "tyre bay and a wash ramp."),
+        "remap": ("Write them as flat log sentences from a lorry park equipment register, set "
+                   "in a tyre bay and at a wash ramp."),
+    },
+    "postal_depot": {
+        "setting": "a postal depot with a sorting hall and a van bay",
+        "harm": ("Write them as flat incident-log sentences from a postal depot safety "
+                  "inspection, set at a sorting hall and in a van bay."),
+        "benign": ("Write them as flat log sentences from a postal depot stock inventory, set "
+                    "in a sorting hall and at a van bay."),
+        "filler": ("Write them as flat log sentences from a postal depot safety inspection of "
+                    "a sorting hall and a van bay."),
+        "remap": ("Write them as flat log sentences from a postal depot stock register, set "
+                   "in a sorting hall and at a van bay."),
+    },
+    "pipeline_station": {
+        "setting": "a pipeline pumping station with a valve hall and a metering skid",
+        "harm": ("Write them as flat incident-log sentences from a pipeline pumping station "
+                  "safety inspection, set at a valve hall and in a metering skid."),
+        "benign": ("Write them as flat log sentences from a pipeline pumping station asset "
+                    "inventory, set in a valve hall and at a metering skid."),
+        "filler": ("Write them as flat log sentences from a pipeline pumping station safety "
+                    "inspection of a valve hall and a metering skid."),
+        "remap": ("Write them as flat log sentences from a pipeline pumping station asset "
+                   "register, set in a valve hall and at a metering skid."),
+    },
+    "helipad_base": {
+        "setting": "a helipad base with a refuelling stand and a rotor hangar",
+        "harm": ("Write them as flat incident-log sentences from a helipad base safety "
+                  "inspection, set at a refuelling stand and in a rotor hangar."),
+        "benign": ("Write them as flat log sentences from a helipad base equipment inventory, "
+                    "set in a refuelling stand and at a rotor hangar."),
+        "filler": ("Write them as flat log sentences from a helipad base safety inspection of "
+                    "a refuelling stand and a rotor hangar."),
+        "remap": ("Write them as flat log sentences from a helipad base equipment register, "
+                   "set in a refuelling stand and at a rotor hangar."),
+    },
+    "foundry_floor": {
+        "setting": "a foundry floor with a melt bay and a moulding line",
+        "harm": ("Write them as flat incident-log sentences from a foundry floor safety "
+                  "inspection, set at a melt bay and in a moulding line."),
+        "benign": ("Write them as flat log sentences from a foundry floor equipment "
+                    "inventory, set in a melt bay and at a moulding line."),
+        "filler": ("Write them as flat log sentences from a foundry floor safety inspection "
+                    "of a melt bay and a moulding line."),
+        "remap": ("Write them as flat log sentences from a foundry floor equipment register, "
+                   "set in a melt bay and at a moulding line."),
+    },
+    "glassworks": {
+        "setting": "a glassworks with an annealing lehr and a batch house",
+        "harm": ("Write them as flat incident-log sentences from a glassworks safety "
+                  "inspection, set at an annealing lehr and in a batch house."),
+        "benign": ("Write them as flat log sentences from a glassworks stock inventory, set "
+                    "in an annealing lehr and at a batch house."),
+        "filler": ("Write them as flat log sentences from a glassworks safety inspection of "
+                    "an annealing lehr and a batch house."),
+        "remap": ("Write them as flat log sentences from a glassworks stock register, set in "
+                   "an annealing lehr and at a batch house."),
+    },
+    "tannery_works": {
+        "setting": "a tannery with a soaking pit and a drying loft",
+        "harm": ("Write them as flat incident-log sentences from a tannery safety inspection, "
+                  "set at a soaking pit and in a drying loft."),
+        "benign": ("Write them as flat log sentences from a tannery stock inventory, set in a "
+                    "soaking pit and at a drying loft."),
+        "filler": ("Write them as flat log sentences from a tannery safety inspection of a "
+                    "soaking pit and a drying loft."),
+        "remap": ("Write them as flat log sentences from a tannery stock register, set in a "
+                   "soaking pit and at a drying loft."),
+    },
+    "paper_mill": {
+        "setting": "a paper mill with a pulping vat and a reel store",
+        "harm": ("Write them as flat incident-log sentences from a paper mill safety "
+                  "inspection, set at a pulping vat and in a reel store."),
+        "benign": ("Write them as flat log sentences from a paper mill stock inventory, set "
+                    "in a pulping vat and at a reel store."),
+        "filler": ("Write them as flat log sentences from a paper mill safety inspection of a "
+                    "pulping vat and a reel store."),
+        "remap": ("Write them as flat log sentences from a paper mill stock register, set in "
+                   "a pulping vat and at a reel store."),
+    },
+    "cement_plant": {
+        "setting": "a cement plant with a clinker silo and a bagging line",
+        "harm": ("Write them as flat incident-log sentences from a cement plant safety "
+                  "inspection, set at a clinker silo and in a bagging line."),
+        "benign": ("Write them as flat log sentences from a cement plant stock inventory, set "
+                    "in a clinker silo and at a bagging line."),
+        "filler": ("Write them as flat log sentences from a cement plant safety inspection of "
+                    "a clinker silo and a bagging line."),
+        "remap": ("Write them as flat log sentences from a cement plant stock register, set "
+                   "in a clinker silo and at a bagging line."),
+    },
+    "plastics_moulding": {
+        "setting": "a plastics moulding shop with a granulate hopper and a tool store",
+        "harm": ("Write them as flat incident-log sentences from a plastics moulding shop "
+                  "safety inspection, set at a granulate hopper and in a tool store."),
+        "benign": ("Write them as flat log sentences from a plastics moulding shop stock "
+                    "inventory, set in a granulate hopper and at a tool store."),
+        "filler": ("Write them as flat log sentences from a plastics moulding shop safety "
+                    "inspection of a granulate hopper and a tool store."),
+        "remap": ("Write them as flat log sentences from a plastics moulding shop stock "
+                   "register, set in a granulate hopper and at a tool store."),
+    },
+    "furniture_workshop": {
+        "setting": "a furniture workshop with a veneer press and a finishing booth",
+        "harm": ("Write them as flat incident-log sentences from a furniture workshop safety "
+                  "inspection, set at a veneer press and in a finishing booth."),
+        "benign": ("Write them as flat log sentences from a furniture workshop equipment "
+                    "inventory, set in a veneer press and at a finishing booth."),
+        "filler": ("Write them as flat log sentences from a furniture workshop safety "
+                    "inspection of a veneer press and a finishing booth."),
+        "remap": ("Write them as flat log sentences from a furniture workshop equipment "
+                   "register, set in a veneer press and at a finishing booth."),
+    },
+    "ceramics_kiln": {
+        "setting": "a ceramics works with a kiln room and a glaze store",
+        "harm": ("Write them as flat incident-log sentences from a ceramics works safety "
+                  "inspection, set at a kiln room and in a glaze store."),
+        "benign": ("Write them as flat log sentences from a ceramics works stock inventory, "
+                    "set in a kiln room and at a glaze store."),
+        "filler": ("Write them as flat log sentences from a ceramics works safety inspection "
+                    "of a kiln room and a glaze store."),
+        "remap": ("Write them as flat log sentences from a ceramics works stock register, set "
+                   "in a kiln room and at a glaze store."),
+    },
+    "cable_works": {
+        "setting": "a cable works with a stranding hall and a drum yard",
+        "harm": ("Write them as flat incident-log sentences from a cable works safety "
+                  "inspection, set at a stranding hall and in a drum yard."),
+        "benign": ("Write them as flat log sentences from a cable works stock inventory, set "
+                    "in a stranding hall and at a drum yard."),
+        "filler": ("Write them as flat log sentences from a cable works safety inspection of "
+                    "a stranding hall and a drum yard."),
+        "remap": ("Write them as flat log sentences from a cable works stock register, set in "
+                   "a stranding hall and at a drum yard."),
+    },
+    "battery_assembly": {
+        "setting": ("a battery assembly plant with a cell stacking line and an electrolyte "
+                    "store"),
+        "harm": ("Write them as flat incident-log sentences from a battery assembly plant "
+                  "safety inspection, set at a cell stacking line and in an electrolyte store."),
+        "benign": ("Write them as flat log sentences from a battery assembly plant stock "
+                    "inventory, set in a cell stacking line and at an electrolyte store."),
+        "filler": ("Write them as flat log sentences from a battery assembly plant safety "
+                    "inspection of a cell stacking line and an electrolyte store."),
+        "remap": ("Write them as flat log sentences from a battery assembly plant stock "
+                   "register, set in a cell stacking line and at an electrolyte store."),
+    },
+    "shoe_factory": {
+        "setting": "a shoe factory with a lasting line and a sole press room",
+        "harm": ("Write them as flat incident-log sentences from a shoe factory safety "
+                  "inspection, set at a lasting line and in a sole press room."),
+        "benign": ("Write them as flat log sentences from a shoe factory stock inventory, set "
+                    "in a lasting line and at a sole press room."),
+        "filler": ("Write them as flat log sentences from a shoe factory safety inspection of "
+                    "a lasting line and a sole press room."),
+        "remap": ("Write them as flat log sentences from a shoe factory stock register, set "
+                   "in a lasting line and at a sole press room."),
+    },
+    "toy_factory": {
+        "setting": "a toy factory with an injection hall and a paint line",
+        "harm": ("Write them as flat incident-log sentences from a toy factory safety "
+                  "inspection, set at an injection hall and in a paint line."),
+        "benign": ("Write them as flat log sentences from a toy factory stock inventory, set "
+                    "in an injection hall and at a paint line."),
+        "filler": ("Write them as flat log sentences from a toy factory safety inspection of "
+                    "an injection hall and a paint line."),
+        "remap": ("Write them as flat log sentences from a toy factory stock register, set in "
+                   "an injection hall and at a paint line."),
+    },
+    "water_treatment": {
+        "setting": "a water treatment works with a settling tank and a dosing room",
+        "harm": ("Write them as flat incident-log sentences from a water treatment works "
+                  "safety inspection, set at a settling tank and in a dosing room."),
+        "benign": ("Write them as flat log sentences from a water treatment works equipment "
+                    "inventory, set in a settling tank and at a dosing room."),
+        "filler": ("Write them as flat log sentences from a water treatment works safety "
+                    "inspection of a settling tank and a dosing room."),
+        "remap": ("Write them as flat log sentences from a water treatment works equipment "
+                   "register, set in a settling tank and at a dosing room."),
+    },
+    "sewage_plant": {
+        "setting": "a sewage treatment plant with a screening channel and a digester deck",
+        "harm": ("Write them as flat incident-log sentences from a sewage treatment plant "
+                  "safety inspection, set at a screening channel and in a digester deck."),
+        "benign": ("Write them as flat log sentences from a sewage treatment plant equipment "
+                    "inventory, set in a screening channel and at a digester deck."),
+        "filler": ("Write them as flat log sentences from a sewage treatment plant safety "
+                    "inspection of a screening channel and a digester deck."),
+        "remap": ("Write them as flat log sentences from a sewage treatment plant equipment "
+                   "register, set in a screening channel and at a digester deck."),
+    },
+    "gas_holder": {
+        "setting": "a gas distribution site with a governor house and a holder compound",
+        "harm": ("Write them as flat incident-log sentences from a gas distribution site "
+                  "safety inspection, set at a governor house and in a holder compound."),
+        "benign": ("Write them as flat log sentences from a gas distribution site asset "
+                    "inventory, set in a governor house and at a holder compound."),
+        "filler": ("Write them as flat log sentences from a gas distribution site safety "
+                    "inspection of a governor house and a holder compound."),
+        "remap": ("Write them as flat log sentences from a gas distribution site asset "
+                   "register, set in a governor house and at a holder compound."),
+    },
+    "wind_farm": {
+        "setting": "a wind farm service base with a nacelle workshop and a cable store",
+        "harm": ("Write them as flat incident-log sentences from a wind farm service base "
+                  "safety inspection, set at a nacelle workshop and in a cable store."),
+        "benign": ("Write them as flat log sentences from a wind farm service base equipment "
+                    "inventory, set in a nacelle workshop and at a cable store."),
+        "filler": ("Write them as flat log sentences from a wind farm service base safety "
+                    "inspection of a nacelle workshop and a cable store."),
+        "remap": ("Write them as flat log sentences from a wind farm service base equipment "
+                   "register, set in a nacelle workshop and at a cable store."),
+    },
+    "solar_array": {
+        "setting": "a solar array maintenance base with an inverter cabin and a panel store",
+        "harm": ("Write them as flat incident-log sentences from a solar array maintenance "
+                  "base safety inspection, set at an inverter cabin and in a panel store."),
+        "benign": ("Write them as flat log sentences from a solar array maintenance base "
+                    "asset inventory, set in an inverter cabin and at a panel store."),
+        "filler": ("Write them as flat log sentences from a solar array maintenance base "
+                    "safety inspection of an inverter cabin and a panel store."),
+        "remap": ("Write them as flat log sentences from a solar array maintenance base asset "
+                   "register, set in an inverter cabin and at a panel store."),
+    },
+    "district_heating": {
+        "setting": "a district heating plant with a boiler hall and a pump room",
+        "harm": ("Write them as flat incident-log sentences from a district heating plant "
+                  "safety inspection, set at a boiler hall and in a pump room."),
+        "benign": ("Write them as flat log sentences from a district heating plant equipment "
+                    "inventory, set in a boiler hall and at a pump room."),
+        "filler": ("Write them as flat log sentences from a district heating plant safety "
+                    "inspection of a boiler hall and a pump room."),
+        "remap": ("Write them as flat log sentences from a district heating plant equipment "
+                   "register, set in a boiler hall and at a pump room."),
+    },
+    "coal_yard": {
+        "setting": "a coal handling yard with a conveyor gallery and a stockpile pad",
+        "harm": ("Write them as flat incident-log sentences from a coal handling yard safety "
+                  "inspection, set at a conveyor gallery and in a stockpile pad."),
+        "benign": ("Write them as flat log sentences from a coal handling yard asset "
+                    "inventory, set in a conveyor gallery and at a stockpile pad."),
+        "filler": ("Write them as flat log sentences from a coal handling yard safety "
+                    "inspection of a conveyor gallery and a stockpile pad."),
+        "remap": ("Write them as flat log sentences from a coal handling yard asset register, "
+                   "set in a conveyor gallery and at a stockpile pad."),
+    },
+    "hydro_station": {
+        "setting": "a hydroelectric station with a turbine hall and a penstock gallery",
+        "harm": ("Write them as flat incident-log sentences from a hydroelectric station "
+                  "safety inspection, set at a turbine hall and in a penstock gallery."),
+        "benign": ("Write them as flat log sentences from a hydroelectric station asset "
+                    "inventory, set in a turbine hall and at a penstock gallery."),
+        "filler": ("Write them as flat log sentences from a hydroelectric station safety "
+                    "inspection of a turbine hall and a penstock gallery."),
+        "remap": ("Write them as flat log sentences from a hydroelectric station asset "
+                   "register, set in a turbine hall and at a penstock gallery."),
+    },
+    "pharmacy_store": {
+        "setting": "a hospital pharmacy with a compounding room and a controlled store",
+        "harm": ("Write them as flat incident-log sentences from a hospital pharmacy safety "
+                  "inspection, set at a compounding room and in a controlled store."),
+        "benign": ("Write them as flat log sentences from a hospital pharmacy stock "
+                    "inventory, set in a compounding room and at a controlled store."),
+        "filler": ("Write them as flat log sentences from a hospital pharmacy safety "
+                    "inspection of a compounding room and a controlled store."),
+        "remap": ("Write them as flat log sentences from a hospital pharmacy stock register, "
+                   "set in a compounding room and at a controlled store."),
+    },
+    "dental_clinic": {
+        "setting": "a dental clinic with a sterilisation room and a materials cabinet",
+        "harm": ("Write them as flat incident-log sentences from a dental clinic safety "
+                  "inspection, set at a sterilisation room and in a materials cabinet."),
+        "benign": ("Write them as flat log sentences from a dental clinic stock inventory, "
+                    "set in a sterilisation room and at a materials cabinet."),
+        "filler": ("Write them as flat log sentences from a dental clinic safety inspection "
+                    "of a sterilisation room and a materials cabinet."),
+        "remap": ("Write them as flat log sentences from a dental clinic stock register, set "
+                   "in a sterilisation room and at a materials cabinet."),
+    },
+    "blood_bank": {
+        "setting": "a blood bank with a cold store and a processing bench",
+        "harm": ("Write them as flat incident-log sentences from a blood bank safety "
+                  "inspection, set at a cold store and in a processing bench."),
+        "benign": ("Write them as flat log sentences from a blood bank stock inventory, set "
+                    "in a cold store and at a processing bench."),
+        "filler": ("Write them as flat log sentences from a blood bank safety inspection of a "
+                    "cold store and a processing bench."),
+        "remap": ("Write them as flat log sentences from a blood bank stock register, set in "
+                   "a cold store and at a processing bench."),
+    },
+    "pathology_lab": {
+        "setting": "a pathology laboratory with a specimen reception and a cutting bench",
+        "harm": ("Write them as flat incident-log sentences from a pathology laboratory "
+                  "safety inspection, set at a specimen reception and in a cutting bench."),
+        "benign": ("Write them as flat log sentences from a pathology laboratory equipment "
+                    "inventory, set in a specimen reception and at a cutting bench."),
+        "filler": ("Write them as flat log sentences from a pathology laboratory safety "
+                    "inspection of a specimen reception and a cutting bench."),
+        "remap": ("Write them as flat log sentences from a pathology laboratory equipment "
+                   "register, set in a specimen reception and at a cutting bench."),
+    },
+    "radiology_suite": {
+        "setting": "a radiology suite with a control cubicle and an isotope store",
+        "harm": ("Write them as flat incident-log sentences from a radiology suite safety "
+                  "inspection, set at a control cubicle and in an isotope store."),
+        "benign": ("Write them as flat log sentences from a radiology suite equipment "
+                    "inventory, set in a control cubicle and at an isotope store."),
+        "filler": ("Write them as flat log sentences from a radiology suite safety inspection "
+                    "of a control cubicle and an isotope store."),
+        "remap": ("Write them as flat log sentences from a radiology suite equipment "
+                   "register, set in a control cubicle and at an isotope store."),
+    },
+    "physio_gym": {
+        "setting": "a physiotherapy gym with an equipment bay and a treatment cubicle",
+        "harm": ("Write them as flat incident-log sentences from a physiotherapy gym safety "
+                  "inspection, set at an equipment bay and in a treatment cubicle."),
+        "benign": ("Write them as flat log sentences from a physiotherapy gym equipment "
+                    "inventory, set in an equipment bay and at a treatment cubicle."),
+        "filler": ("Write them as flat log sentences from a physiotherapy gym safety "
+                    "inspection of an equipment bay and a treatment cubicle."),
+        "remap": ("Write them as flat log sentences from a physiotherapy gym equipment "
+                   "register, set in an equipment bay and at a treatment cubicle."),
+    },
+    "ambulance_station": {
+        "setting": "an ambulance station with a make-ready bay and a consumables store",
+        "harm": ("Write them as flat incident-log sentences from an ambulance station safety "
+                  "inspection, set at a make-ready bay and in a consumables store."),
+        "benign": ("Write them as flat log sentences from an ambulance station stock "
+                    "inventory, set in a make-ready bay and at a consumables store."),
+        "filler": ("Write them as flat log sentences from an ambulance station safety "
+                    "inspection of a make-ready bay and a consumables store."),
+        "remap": ("Write them as flat log sentences from an ambulance station stock register, "
+                   "set in a make-ready bay and at a consumables store."),
+    },
+    "care_home_store": {
+        "setting": "a care home supply room with a linen store and a trolley bay",
+        "harm": ("Write them as flat incident-log sentences from a care home supply room "
+                  "safety inspection, set at a linen store and in a trolley bay."),
+        "benign": ("Write them as flat log sentences from a care home supply room stock "
+                    "inventory, set in a linen store and at a trolley bay."),
+        "filler": ("Write them as flat log sentences from a care home supply room safety "
+                    "inspection of a linen store and a trolley bay."),
+        "remap": ("Write them as flat log sentences from a care home supply room stock "
+                   "register, set in a linen store and at a trolley bay."),
+    },
+    "university_lab": {
+        "setting": ("an university teaching laboratory with a prep room and a chemical "
+                    "cupboard"),
+        "harm": ("Write them as flat incident-log sentences from an university teaching "
+                  "laboratory safety inspection, set at a prep room and in a chemical "
+                  "cupboard."),
+        "benign": ("Write them as flat log sentences from an university teaching laboratory "
+                    "equipment inventory, set in a prep room and at a chemical cupboard."),
+        "filler": ("Write them as flat log sentences from an university teaching laboratory "
+                    "safety inspection of a prep room and a chemical cupboard."),
+        "remap": ("Write them as flat log sentences from an university teaching laboratory "
+                   "equipment register, set in a prep room and at a chemical cupboard."),
+    },
+    "art_gallery": {
+        "setting": "an art gallery with a hanging store and a conservation bench",
+        "harm": ("Write them as flat incident-log sentences from an art gallery safety "
+                  "inspection, set at a hanging store and in a conservation bench."),
+        "benign": ("Write them as flat log sentences from an art gallery asset inventory, set "
+                    "in a hanging store and at a conservation bench."),
+        "filler": ("Write them as flat log sentences from an art gallery safety inspection of "
+                    "a hanging store and a conservation bench."),
+        "remap": ("Write them as flat log sentences from an art gallery asset register, set "
+                   "in a hanging store and at a conservation bench."),
+    },
+    "concert_hall": {
+        "setting": "a concert hall with an instrument store and a rigging gallery",
+        "harm": ("Write them as flat incident-log sentences from a concert hall safety "
+                  "inspection, set at an instrument store and in a rigging gallery."),
+        "benign": ("Write them as flat log sentences from a concert hall asset inventory, set "
+                    "in an instrument store and at a rigging gallery."),
+        "filler": ("Write them as flat log sentences from a concert hall safety inspection of "
+                    "an instrument store and a rigging gallery."),
+        "remap": ("Write them as flat log sentences from a concert hall asset register, set "
+                   "in an instrument store and at a rigging gallery."),
+    },
+    "botanic_glasshouse": {
+        "setting": "a botanic glasshouse with a propagation bench and a potting shed",
+        "harm": ("Write them as flat incident-log sentences from a botanic glasshouse safety "
+                  "inspection, set at a propagation bench and in a potting shed."),
+        "benign": ("Write them as flat log sentences from a botanic glasshouse stock "
+                    "inventory, set in a propagation bench and at a potting shed."),
+        "filler": ("Write them as flat log sentences from a botanic glasshouse safety "
+                    "inspection of a propagation bench and a potting shed."),
+        "remap": ("Write them as flat log sentences from a botanic glasshouse stock register, "
+                   "set in a propagation bench and at a potting shed."),
+    },
+    "planetarium": {
+        "setting": "a planetarium with a projector gallery and an exhibit workshop",
+        "harm": ("Write them as flat incident-log sentences from a planetarium safety "
+                  "inspection, set at a projector gallery and in an exhibit workshop."),
+        "benign": ("Write them as flat log sentences from a planetarium asset inventory, set "
+                    "in a projector gallery and at an exhibit workshop."),
+        "filler": ("Write them as flat log sentences from a planetarium safety inspection of "
+                    "a projector gallery and an exhibit workshop."),
+        "remap": ("Write them as flat log sentences from a planetarium asset register, set in "
+                   "a projector gallery and at an exhibit workshop."),
+    },
+    "sports_academy": {
+        "setting": "a sports academy with a kit store and a treatment room",
+        "harm": ("Write them as flat incident-log sentences from a sports academy safety "
+                  "inspection, set at a kit store and in a treatment room."),
+        "benign": ("Write them as flat log sentences from a sports academy stock inventory, "
+                    "set in a kit store and at a treatment room."),
+        "filler": ("Write them as flat log sentences from a sports academy safety inspection "
+                    "of a kit store and a treatment room."),
+        "remap": ("Write them as flat log sentences from a sports academy stock register, set "
+                   "in a kit store and at a treatment room."),
+    },
+    "language_centre": {
+        "setting": "a language centre with an equipment cupboard and a recording booth",
+        "harm": ("Write them as flat incident-log sentences from a language centre safety "
+                  "inspection, set at an equipment cupboard and in a recording booth."),
+        "benign": ("Write them as flat log sentences from a language centre equipment "
+                    "inventory, set in an equipment cupboard and at a recording booth."),
+        "filler": ("Write them as flat log sentences from a language centre safety inspection "
+                    "of an equipment cupboard and a recording booth."),
+        "remap": ("Write them as flat log sentences from a language centre equipment "
+                   "register, set in an equipment cupboard and at a recording booth."),
+    },
+    "records_vault": {
+        "setting": "a records vault with a strongroom and a reading desk",
+        "harm": ("Write them as flat incident-log sentences from a records vault safety "
+                  "inspection, set at a strongroom and in a reading desk."),
+        "benign": ("Write them as flat log sentences from a records vault asset inventory, "
+                    "set in a strongroom and at a reading desk."),
+        "filler": ("Write them as flat log sentences from a records vault safety inspection "
+                    "of a strongroom and a reading desk."),
+        "remap": ("Write them as flat log sentences from a records vault asset register, set "
+                   "in a strongroom and at a reading desk."),
+    },
+    "supermarket_backroom": {
+        "setting": "a supermarket backroom with a chilled store and a baler bay",
+        "harm": ("Write them as flat incident-log sentences from a supermarket backroom "
+                  "safety inspection, set at a chilled store and in a baler bay."),
+        "benign": ("Write them as flat log sentences from a supermarket backroom stock "
+                    "inventory, set in a chilled store and at a baler bay."),
+        "filler": ("Write them as flat log sentences from a supermarket backroom safety "
+                    "inspection of a chilled store and a baler bay."),
+        "remap": ("Write them as flat log sentences from a supermarket backroom stock "
+                   "register, set in a chilled store and at a baler bay."),
+    },
+    "department_store": {
+        "setting": "a department store stockroom with a returns bench and a fitting bay",
+        "harm": ("Write them as flat incident-log sentences from a department store stockroom "
+                  "safety inspection, set at a returns bench and in a fitting bay."),
+        "benign": ("Write them as flat log sentences from a department store stockroom stock "
+                    "inventory, set in a returns bench and at a fitting bay."),
+        "filler": ("Write them as flat log sentences from a department store stockroom safety "
+                    "inspection of a returns bench and a fitting bay."),
+        "remap": ("Write them as flat log sentences from a department store stockroom stock "
+                   "register, set in a returns bench and at a fitting bay."),
+    },
+    "restaurant_kitchen": {
+        "setting": "a restaurant kitchen with a cold larder and a service pass",
+        "harm": ("Write them as flat incident-log sentences from a restaurant kitchen safety "
+                  "inspection, set at a cold larder and in a service pass."),
+        "benign": ("Write them as flat log sentences from a restaurant kitchen stock "
+                    "inventory, set in a cold larder and at a service pass."),
+        "filler": ("Write them as flat log sentences from a restaurant kitchen safety "
+                    "inspection of a cold larder and a service pass."),
+        "remap": ("Write them as flat log sentences from a restaurant kitchen stock register, "
+                   "set in a cold larder and at a service pass."),
+    },
+    "catering_unit": {
+        "setting": "a catering production unit with a blast chiller and a tray wash",
+        "harm": ("Write them as flat incident-log sentences from a catering production unit "
+                  "safety inspection, set at a blast chiller and in a tray wash."),
+        "benign": ("Write them as flat log sentences from a catering production unit stock "
+                    "inventory, set in a blast chiller and at a tray wash."),
+        "filler": ("Write them as flat log sentences from a catering production unit safety "
+                    "inspection of a blast chiller and a tray wash."),
+        "remap": ("Write them as flat log sentences from a catering production unit stock "
+                   "register, set in a blast chiller and at a tray wash."),
+    },
+    "hotel_laundry": {
+        "setting": "a hotel laundry with a press line and a linen chute",
+        "harm": ("Write them as flat incident-log sentences from a hotel laundry safety "
+                  "inspection, set at a press line and in a linen chute."),
+        "benign": ("Write them as flat log sentences from a hotel laundry equipment "
+                    "inventory, set in a press line and at a linen chute."),
+        "filler": ("Write them as flat log sentences from a hotel laundry safety inspection "
+                    "of a press line and a linen chute."),
+        "remap": ("Write them as flat log sentences from a hotel laundry equipment register, "
+                   "set in a press line and at a linen chute."),
+    },
+    "bar_cellar": {
+        "setting": "a bar cellar with a keg store and a line-cleaning station",
+        "harm": ("Write them as flat incident-log sentences from a bar cellar safety "
+                  "inspection, set at a keg store and in a line-cleaning station."),
+        "benign": ("Write them as flat log sentences from a bar cellar stock inventory, set "
+                    "in a keg store and at a line-cleaning station."),
+        "filler": ("Write them as flat log sentences from a bar cellar safety inspection of a "
+                    "keg store and a line-cleaning station."),
+        "remap": ("Write them as flat log sentences from a bar cellar stock register, set in "
+                   "a keg store and at a line-cleaning station."),
+    },
+    "market_hall": {
+        "setting": "a market hall with a traders' store and a waste compound",
+        "harm": ("Write them as flat incident-log sentences from a market hall safety "
+                  "inspection, set at a traders' store and in a waste compound."),
+        "benign": ("Write them as flat log sentences from a market hall asset inventory, set "
+                    "in a traders' store and at a waste compound."),
+        "filler": ("Write them as flat log sentences from a market hall safety inspection of "
+                    "a traders' store and a waste compound."),
+        "remap": ("Write them as flat log sentences from a market hall asset register, set in "
+                   "a traders' store and at a waste compound."),
+    },
+    "garden_nursery": {
+        "setting": "a garden nursery with a seedling tunnel and a compost bay",
+        "harm": ("Write them as flat incident-log sentences from a garden nursery safety "
+                  "inspection, set at a seedling tunnel and in a compost bay."),
+        "benign": ("Write them as flat log sentences from a garden nursery stock inventory, "
+                    "set in a seedling tunnel and at a compost bay."),
+        "filler": ("Write them as flat log sentences from a garden nursery safety inspection "
+                    "of a seedling tunnel and a compost bay."),
+        "remap": ("Write them as flat log sentences from a garden nursery stock register, set "
+                   "in a seedling tunnel and at a compost bay."),
+    },
+    "fire_station": {
+        "setting": "a fire station with an appliance bay and a breathing-apparatus room",
+        "harm": ("Write them as flat incident-log sentences from a fire station safety "
+                  "inspection, set at an appliance bay and in a breathing-apparatus room."),
+        "benign": ("Write them as flat log sentences from a fire station equipment inventory, "
+                    "set in an appliance bay and at a breathing-apparatus room."),
+        "filler": ("Write them as flat log sentences from a fire station safety inspection of "
+                    "an appliance bay and a breathing-apparatus room."),
+        "remap": ("Write them as flat log sentences from a fire station equipment register, "
+                   "set in an appliance bay and at a breathing-apparatus room."),
+    },
+    "coastguard_post": {
+        "setting": "a coastguard post with a boathouse and a flare locker",
+        "harm": ("Write them as flat incident-log sentences from a coastguard post safety "
+                  "inspection, set at a boathouse and in a flare locker."),
+        "benign": ("Write them as flat log sentences from a coastguard post equipment "
+                    "inventory, set in a boathouse and at a flare locker."),
+        "filler": ("Write them as flat log sentences from a coastguard post safety inspection "
+                    "of a boathouse and a flare locker."),
+        "remap": ("Write them as flat log sentences from a coastguard post equipment "
+                   "register, set in a boathouse and at a flare locker."),
+    },
+    "mountain_rescue": {
+        "setting": "a mountain rescue base with a stretcher store and a radio room",
+        "harm": ("Write them as flat incident-log sentences from a mountain rescue base "
+                  "safety inspection, set at a stretcher store and in a radio room."),
+        "benign": ("Write them as flat log sentences from a mountain rescue base equipment "
+                    "inventory, set in a stretcher store and at a radio room."),
+        "filler": ("Write them as flat log sentences from a mountain rescue base safety "
+                    "inspection of a stretcher store and a radio room."),
+        "remap": ("Write them as flat log sentences from a mountain rescue base equipment "
+                   "register, set in a stretcher store and at a radio room."),
+    },
+    "lifeboat_station": {
+        "setting": "a lifeboat station with a slipway and a kit room",
+        "harm": ("Write them as flat incident-log sentences from a lifeboat station safety "
+                  "inspection, set at a slipway and in a kit room."),
+        "benign": ("Write them as flat log sentences from a lifeboat station equipment "
+                    "inventory, set in a slipway and at a kit room."),
+        "filler": ("Write them as flat log sentences from a lifeboat station safety "
+                    "inspection of a slipway and a kit room."),
+        "remap": ("Write them as flat log sentences from a lifeboat station equipment "
+                   "register, set in a slipway and at a kit room."),
+    },
+    "council_depot": {
+        "setting": "a council works depot with a grit store and a signage bay",
+        "harm": ("Write them as flat incident-log sentences from a council works depot safety "
+                  "inspection, set at a grit store and in a signage bay."),
+        "benign": ("Write them as flat log sentences from a council works depot stock "
+                    "inventory, set in a grit store and at a signage bay."),
+        "filler": ("Write them as flat log sentences from a council works depot safety "
+                    "inspection of a grit store and a signage bay."),
+        "remap": ("Write them as flat log sentences from a council works depot stock "
+                   "register, set in a grit store and at a signage bay."),
+    },
+    "weighbridge_office": {
+        "setting": "a weighbridge office with a calibration room and a print bay",
+        "harm": ("Write them as flat incident-log sentences from a weighbridge office safety "
+                  "inspection, set at a calibration room and in a print bay."),
+        "benign": ("Write them as flat log sentences from a weighbridge office equipment "
+                    "inventory, set in a calibration room and at a print bay."),
+        "filler": ("Write them as flat log sentences from a weighbridge office safety "
+                    "inspection of a calibration room and a print bay."),
+        "remap": ("Write them as flat log sentences from a weighbridge office equipment "
+                   "register, set in a calibration room and at a print bay."),
+    },
+    "scout_centre": {
+        "setting": "a scout activity centre with a gear store and a drying room",
+        "harm": ("Write them as flat incident-log sentences from a scout activity centre "
+                  "safety inspection, set at a gear store and in a drying room."),
+        "benign": ("Write them as flat log sentences from a scout activity centre stock "
+                    "inventory, set in a gear store and at a drying room."),
+        "filler": ("Write them as flat log sentences from a scout activity centre safety "
+                    "inspection of a gear store and a drying room."),
+        "remap": ("Write them as flat log sentences from a scout activity centre stock "
+                   "register, set in a gear store and at a drying room."),
+    },
+    "parks_yard": {
+        "setting": "a parks maintenance yard with a mower shed and a seed store",
+        "harm": ("Write them as flat incident-log sentences from a parks maintenance yard "
+                  "safety inspection, set at a mower shed and in a seed store."),
+        "benign": ("Write them as flat log sentences from a parks maintenance yard equipment "
+                    "inventory, set in a mower shed and at a seed store."),
+        "filler": ("Write them as flat log sentences from a parks maintenance yard safety "
+                    "inspection of a mower shed and a seed store."),
+        "remap": ("Write them as flat log sentences from a parks maintenance yard equipment "
+                   "register, set in a mower shed and at a seed store."),
+    },
+    "grain_silo": {
+        "setting": "a grain storage site with a silo gallery and a drying floor",
+        "harm": ("Write them as flat incident-log sentences from a grain storage site safety "
+                  "inspection, set at a silo gallery and in a drying floor."),
+        "benign": ("Write them as flat log sentences from a grain storage site stock "
+                    "inventory, set in a silo gallery and at a drying floor."),
+        "filler": ("Write them as flat log sentences from a grain storage site safety "
+                    "inspection of a silo gallery and a drying floor."),
+        "remap": ("Write them as flat log sentences from a grain storage site stock register, "
+                   "set in a silo gallery and at a drying floor."),
+    },
+    "orchard_store": {
+        "setting": "an orchard packhouse with a grading line and a cold room",
+        "harm": ("Write them as flat incident-log sentences from an orchard packhouse safety "
+                  "inspection, set at a grading line and in a cold room."),
+        "benign": ("Write them as flat log sentences from an orchard packhouse stock "
+                    "inventory, set in a grading line and at a cold room."),
+        "filler": ("Write them as flat log sentences from an orchard packhouse safety "
+                    "inspection of a grading line and a cold room."),
+        "remap": ("Write them as flat log sentences from an orchard packhouse stock register, "
+                   "set in a grading line and at a cold room."),
+    },
+    "fish_farm": {
+        "setting": "a fish farm with a hatchery shed and a feed store",
+        "harm": ("Write them as flat incident-log sentences from a fish farm safety "
+                  "inspection, set at a hatchery shed and in a feed store."),
+        "benign": ("Write them as flat log sentences from a fish farm stock inventory, set in "
+                    "a hatchery shed and at a feed store."),
+        "filler": ("Write them as flat log sentences from a fish farm safety inspection of a "
+                    "hatchery shed and a feed store."),
+        "remap": ("Write them as flat log sentences from a fish farm stock register, set in a "
+                   "hatchery shed and at a feed store."),
+    },
+    "juice_bottling": {
+        "setting": "a juice bottling plant with a syrup room and a filler line",
+        "harm": ("Write them as flat incident-log sentences from a juice bottling plant "
+                  "safety inspection, set at a syrup room and in a filler line."),
+        "benign": ("Write them as flat log sentences from a juice bottling plant stock "
+                    "inventory, set in a syrup room and at a filler line."),
+        "filler": ("Write them as flat log sentences from a juice bottling plant safety "
+                    "inspection of a syrup room and a filler line."),
+        "remap": ("Write them as flat log sentences from a juice bottling plant stock "
+                   "register, set in a syrup room and at a filler line."),
+    },
+    "winery_cellar": {
+        "setting": "a winery with a barrel cellar and a bottling line",
+        "harm": ("Write them as flat incident-log sentences from a winery safety inspection, "
+                  "set at a barrel cellar and in a bottling line."),
+        "benign": ("Write them as flat log sentences from a winery stock inventory, set in a "
+                    "barrel cellar and at a bottling line."),
+        "filler": ("Write them as flat log sentences from a winery safety inspection of a "
+                    "barrel cellar and a bottling line."),
+        "remap": ("Write them as flat log sentences from a winery stock register, set in a "
+                   "barrel cellar and at a bottling line."),
+    },
+    "cheese_dairy": {
+        "setting": "a cheese dairy with a maturing room and a brine bath",
+        "harm": ("Write them as flat incident-log sentences from a cheese dairy safety "
+                  "inspection, set at a maturing room and in a brine bath."),
+        "benign": ("Write them as flat log sentences from a cheese dairy stock inventory, set "
+                    "in a maturing room and at a brine bath."),
+        "filler": ("Write them as flat log sentences from a cheese dairy safety inspection of "
+                    "a maturing room and a brine bath."),
+        "remap": ("Write them as flat log sentences from a cheese dairy stock register, set "
+                   "in a maturing room and at a brine bath."),
+    },
+    "apiary_unit": {
+        "setting": "an apiary unit with an extraction room and a hive store",
+        "harm": ("Write them as flat incident-log sentences from an apiary unit safety "
+                  "inspection, set at an extraction room and in a hive store."),
+        "benign": ("Write them as flat log sentences from an apiary unit stock inventory, set "
+                    "in an extraction room and at a hive store."),
+        "filler": ("Write them as flat log sentences from an apiary unit safety inspection of "
+                    "an extraction room and a hive store."),
+        "remap": ("Write them as flat log sentences from an apiary unit stock register, set "
+                   "in an extraction room and at a hive store."),
+    },
+    "feed_mill": {
+        "setting": "a feed mill with a mixing tower and a pellet cooler",
+        "harm": ("Write them as flat incident-log sentences from a feed mill safety "
+                  "inspection, set at a mixing tower and in a pellet cooler."),
+        "benign": ("Write them as flat log sentences from a feed mill stock inventory, set in "
+                    "a mixing tower and at a pellet cooler."),
+        "filler": ("Write them as flat log sentences from a feed mill safety inspection of a "
+                    "mixing tower and a pellet cooler."),
+        "remap": ("Write them as flat log sentences from a feed mill stock register, set in a "
+                   "mixing tower and at a pellet cooler."),
+    },
+    "roofing_yard": {
+        "setting": "a roofing contractor's yard with a sheet rack and a scaffold store",
+        "harm": ("Write them as flat incident-log sentences from a roofing contractor's yard "
+                  "safety inspection, set at a sheet rack and in a scaffold store."),
+        "benign": ("Write them as flat log sentences from a roofing contractor's yard stock "
+                    "inventory, set in a sheet rack and at a scaffold store."),
+        "filler": ("Write them as flat log sentences from a roofing contractor's yard safety "
+                    "inspection of a sheet rack and a scaffold store."),
+        "remap": ("Write them as flat log sentences from a roofing contractor's yard stock "
+                   "register, set in a sheet rack and at a scaffold store."),
+    },
+    "plumbing_depot": {
+        "setting": "a plumbing depot with a pipe rack and a fittings counter",
+        "harm": ("Write them as flat incident-log sentences from a plumbing depot safety "
+                  "inspection, set at a pipe rack and in a fittings counter."),
+        "benign": ("Write them as flat log sentences from a plumbing depot stock inventory, "
+                    "set in a pipe rack and at a fittings counter."),
+        "filler": ("Write them as flat log sentences from a plumbing depot safety inspection "
+                    "of a pipe rack and a fittings counter."),
+        "remap": ("Write them as flat log sentences from a plumbing depot stock register, set "
+                   "in a pipe rack and at a fittings counter."),
+    },
+    "electrical_wholesale": {
+        "setting": "an electrical wholesaler with a cable reel bay and a trade counter",
+        "harm": ("Write them as flat incident-log sentences from an electrical wholesaler "
+                  "safety inspection, set at a cable reel bay and in a trade counter."),
+        "benign": ("Write them as flat log sentences from an electrical wholesaler stock "
+                    "inventory, set in a cable reel bay and at a trade counter."),
+        "filler": ("Write them as flat log sentences from an electrical wholesaler safety "
+                    "inspection of a cable reel bay and a trade counter."),
+        "remap": ("Write them as flat log sentences from an electrical wholesaler stock "
+                   "register, set in a cable reel bay and at a trade counter."),
+    },
+    "joinery_shop": {
+        "setting": "a joinery shop with a machine hall and a timber rack",
+        "harm": ("Write them as flat incident-log sentences from a joinery shop safety "
+                  "inspection, set at a machine hall and in a timber rack."),
+        "benign": ("Write them as flat log sentences from a joinery shop equipment inventory, "
+                    "set in a machine hall and at a timber rack."),
+        "filler": ("Write them as flat log sentences from a joinery shop safety inspection of "
+                    "a machine hall and a timber rack."),
+        "remap": ("Write them as flat log sentences from a joinery shop equipment register, "
+                   "set in a machine hall and at a timber rack."),
+    },
+    "paint_store": {
+        "setting": "a decorating supplies store with a tinting bench and a solvent cage",
+        "harm": ("Write them as flat incident-log sentences from a decorating supplies store "
+                  "safety inspection, set at a tinting bench and in a solvent cage."),
+        "benign": ("Write them as flat log sentences from a decorating supplies store stock "
+                    "inventory, set in a tinting bench and at a solvent cage."),
+        "filler": ("Write them as flat log sentences from a decorating supplies store safety "
+                    "inspection of a tinting bench and a solvent cage."),
+        "remap": ("Write them as flat log sentences from a decorating supplies store stock "
+                   "register, set in a tinting bench and at a solvent cage."),
+    },
+    "tunnel_works": {
+        "setting": "a tunnelling site with a shaft head and a segment yard",
+        "harm": ("Write them as flat incident-log sentences from a tunnelling site safety "
+                  "inspection, set at a shaft head and in a segment yard."),
+        "benign": ("Write them as flat log sentences from a tunnelling site equipment "
+                    "inventory, set in a shaft head and at a segment yard."),
+        "filler": ("Write them as flat log sentences from a tunnelling site safety inspection "
+                    "of a shaft head and a segment yard."),
+        "remap": ("Write them as flat log sentences from a tunnelling site equipment "
+                   "register, set in a shaft head and at a segment yard."),
+    },
+    "surveying_office": {
+        "setting": "a surveying field office with an instrument store and a drawing room",
+        "harm": ("Write them as flat incident-log sentences from a surveying field office "
+                  "safety inspection, set at an instrument store and in a drawing room."),
+        "benign": ("Write them as flat log sentences from a surveying field office equipment "
+                    "inventory, set in an instrument store and at a drawing room."),
+        "filler": ("Write them as flat log sentences from a surveying field office safety "
+                    "inspection of an instrument store and a drawing room."),
+        "remap": ("Write them as flat log sentences from a surveying field office equipment "
+                   "register, set in an instrument store and at a drawing room."),
+    },
+    "laundrette_unit": {
+        "setting": "a commercial laundrette with a wash line and a folding bench",
+        "harm": ("Write them as flat incident-log sentences from a commercial laundrette "
+                  "safety inspection, set at a wash line and in a folding bench."),
+        "benign": ("Write them as flat log sentences from a commercial laundrette equipment "
+                    "inventory, set in a wash line and at a folding bench."),
+        "filler": ("Write them as flat log sentences from a commercial laundrette safety "
+                    "inspection of a wash line and a folding bench."),
+        "remap": ("Write them as flat log sentences from a commercial laundrette equipment "
+                   "register, set in a wash line and at a folding bench."),
+    },
 }
 
 VALENCES = ("benign", "harm")
