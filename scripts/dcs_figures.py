@@ -71,7 +71,7 @@ def main():
     n, ndom = len(ref), len({base[p]["domain"] for p in ref})
     b_mean = st.mean([base[p]["semantic_logodds"] for p in ref])
 
-    fig, axes = plt.subplots(2, 2, figsize=(13.6, 9.4))
+    fig, axes = plt.subplots(3, 2, figsize=(13.6, 13.8))
     fig.suptitle("Doublespeak concept-specific phase (DCS) — cell C = natural_doublespeak; "
                  "Llama-3.1-8B-Instruct @ L6-14 unless a panel states otherwise",
                  fontsize=11.5, y=0.985)
@@ -138,8 +138,8 @@ def main():
                     fontsize=8.0,
                     bbox=dict(boxstyle="round,pad=0.24", fc="white", ec="0.6", lw=0.8))
     ax.set_ylim(min(cvals) - 2.0, 6.4)
-    ax.annotate("all three: 1+/37−, p = 2.8e-10", xy=(0.5, 0.035), xycoords="axes fraction",
-                ha="center", va="bottom", fontsize=8.2, style="italic", color="0.35")
+    ax.annotate("all three: 1+/37−, p = 2.8e-10", xy=(0.02, 0.035), xycoords="axes fraction",
+                ha="left", va="bottom", fontsize=8.2, style="italic", color="0.35")
     ax.set_xticks(list(x))
     ax.set_xticklabels(labels, fontsize=8.6)
     ax.set_ylabel("Δ semantic_logodds vs dose-matched control")
@@ -218,7 +218,61 @@ def main():
         ax.legend(fontsize=8.0, loc="lower left")
         ax.grid(alpha=0.25)
 
-    fig.tight_layout(rect=[0, 0.012, 1, 0.968])
+    # ---- E: the layer profile (R-030) -- section 42 Figure 8, absent by design until the sweep ---
+    axE = axes[2][0]
+    bands = [("0-5", "dcsLb00_05_demo", "dcsLb00_05_ctrl"),
+             ("6-14", "dcsro_C_qpo_demo", "dcsro_C_qpo_ctrl_d1"),
+             ("15-23", "dcsLb15_23_demo", "dcsLb15_23_ctrl"),
+             ("24-31", "dcsLb24_31_demo", "dcsLb24_31_ctrl")]
+    bl, be, bp = [], [], []
+    for lbl, dt, ct in bands:
+        D, C = rows(dt), rows(ct)
+        pd = per_domain(D, C, ref, base)
+        hi, lo, pv = sign_p(list(pd.values()))
+        bl.append(lbl)
+        be.append(st.mean([D[q]["semantic_logodds"] - C[q]["semantic_logodds"] for q in ref]))
+        bp.append((hi, lo, pv))
+    cols = ["#c1272d" if e < -1 else ("#2b6cb0" if e > 0.3 else "#8a8a8a") for e in be]
+    axE.bar(range(len(bl)), be, 0.58, color=cols)
+    axE.axhline(0, color="0.3", lw=1.0)
+    axE.set_ylim(min(be) - 2.4, 3.4)
+    for i, (e, (hi, lo, pv)) in enumerate(zip(be, bp)):
+        axE.annotate(f"{e:+.2f}\n{hi}+/{lo}−", xy=(i, 2.0), ha="center", va="center", fontsize=8.0,
+                     bbox=dict(boxstyle="round,pad=0.24", fc="white", ec="0.6", lw=0.8))
+    axE.set_xticks(range(len(bl)))
+    axE.set_xticklabels([b + ("\n(inherited)" if b == "6-14" else "") for b in bl], fontsize=8.8)
+    axE.set_xlabel("layer band cut from the demonstrations")
+    axE.set_ylabel("Δ semantic_logodds vs dose-matched control")
+    axE.set_title("E  Layer profile: the effect IS localised early-to-mid\n"
+                  "KO-3 · each band vs its OWN dose-matched control · n=380 · 38 domains\n"
+                  "⚠ band widths differ (6/9/9/8 layers) so cross-band doses are NOT matched",
+                  fontsize=9.0, loc="left")
+    axE.grid(alpha=0.25, axis="y")
+
+    axes[2][1].axis("off")
+    axes[2][1].text(0.02, 0.96,
+                    "Scope carried by every panel\n"
+                    "─────────────────────────────\n"
+                    "38 domains × 2 codewords × 1 concept (bomb)\n"
+                    "× 2 model families × one dose policy.\n"
+                    "That is 38 CONTEXTS for a single mapping,\n"
+                    "not 38 mappings.\n\n"
+                    "Not shown, and why\n"
+                    "─────────────────────────────\n"
+                    "• metric-comparison / validity / metric-vs-ASR\n"
+                    "  panels presuppose a validated concept-specific\n"
+                    "  metric — R-002 found none exists.\n"
+                    "• occurrence-trajectory panel presupposes\n"
+                    "  accumulation — R-003 refuted it.\n\n"
+                    "Behavioural status\n"
+                    "─────────────────────────────\n"
+                    "• Llama: direction only (~−30 of 153); NOT\n"
+                    "  significant at the domain independence unit.\n"
+                    "• Qwen: CANNOT ANSWER — 0 of 6 controls meet\n"
+                    "  refusal-neutrality at a 150 baseline.",
+                    fontsize=8.4, va="top", family="monospace")
+
+    fig.tight_layout(rect=[0, 0.010, 1, 0.976])
     os.makedirs(a.out, exist_ok=True)
     p = os.path.join(a.out, "DCS_FIGURES.png")
     fig.savefig(p, dpi=185)

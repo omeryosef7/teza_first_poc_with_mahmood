@@ -3332,3 +3332,27 @@ positive* sign, and a future layer-resolved design should look at it rather than
 ⇒ **What this licenses that `DCS-021` forbade:** the phrase *"the effect is layer-localised to the
 early-mid stack"* is now **supported by measurement** rather than inherited — with the standing
 qualifier that four coarse bands are not a per-layer profile.
+
+### `DCS-027` — §42 **Figure 8 now exists**, and the figure carries its own scope card
+
+`DCS-020` recorded Figure 8 (layer profile) as **"absent by design"** — no sweep had been run, so
+there was nothing to plot. `R-030` created it. `reports/DCS_FIGURES.png` is now **five panels**:
+
+**A** row dose-ladder (step at K=8) · **B** specificity, 2 models × 2 codewords · **C** scope ladder
+(no single row) · **D** the behavioral comparator landscape · **E** *(new)* **layer profile** —
+0–5 −4.30, **6–14 −8.08**, 15–23 +0.15, 24–31 +0.75, each band against its **own** dose-matched
+control, with the band-width/dose caveat in the panel title.
+
+⚠ **The sixth cell is deliberately not a plot.** It is a **scope card** stating, on the figure
+itself: the population (*"38 **contexts** for a single mapping, not 38 mappings"*), **which §42
+figures are missing and why** (`R-002` found no validated concept-specific metric; `R-003` refuted
+accumulation), and the **behavioural status** (Llama direction-only and not significant at the
+independence unit; Qwen `CANNOT ANSWER` at 0 of 6 controls).
+
+⇒ Rationale: **a figure travels without its log.** Every caveat that determines how these panels
+should be read now rides on the image — the same reasoning that put *"one sign pattern replicated
+3×, NOT 3 independent p-values"* into panel B's subtitle in `DCS-026`. ⛔ Panels showing only what
+worked, with the limits left in a markdown file nobody opens, is how a figure overstates a phase.
+
+Verified by **rendering and reading the image back** (`DCS-020`'s check): panel E's values match
+`R-030` exactly, and a legend/annotation overlap in panel B was found and fixed.
