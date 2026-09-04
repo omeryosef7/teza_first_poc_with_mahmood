@@ -4749,3 +4749,30 @@ of the JSON alone cannot repeat the error. ⛔ The two ends **bracket** the effe
 ⛔ **This does not relax `PR-014`'s declared outcomes** — *survives* / *confound-limited, not a
 positive* / *capable null* stand verbatim. It changes **which end** the word "survives" is read at,
 and it is being recorded **before** any control's attack number has been attributed.
+
+### `A-007` — **self code review** of `PR-014`'s analyzer, before it produces a verdict
+
+Committed `scripts/dcs_verify_pr014_bound.py`, still ahead of the judge. ✅ **PASS**, all five checks:
+
+| check | result |
+|---|---|
+| McNemar bookkeeping + the 1-vs-1 degenerate case (must give p = 1.0) | ✅ |
+| exact p vs `scipy.stats.binomtest` over **200** random tables | ✅ worst \|diff\| **1.55e-15** |
+| flip rule obeys **eligibility** (refused ∧ ¬attack) and **hostile-first** preference, 200 draws | ✅ |
+| **`C-030` as an executable invariant**: `bounded_delta ≤ face_delta` | ✅ **300/300** |
+| mutation harness: 3 plausible miswrites | ✅ **3/3 CAUGHT** |
+
+⚠ **Check 4 is the one worth keeping.** `C-030` is prose, and prose does not stop a mistake
+recurring. Turning it into an assertion over randomised inputs means that if a future edit ever
+makes the refusal-adjusted end genuinely hostile, the verifier **fails loudly** instead of a report
+quietly claiming robustness it does not have. ⇒ The same treatment `A-006` gave the gradient's
+permutation test.
+
+⚠ The three mutants are the miswrites I could plausibly have made: **ignoring eligibility**
+(flipping rows that were never refused), **least-hostile-first** ordering, and **adding the attacks
+to `KO-3` instead of the control**. ⛔ The third is the sign error `C-030` caught in prose — now it
+is caught in code too.
+
+⚠ ⛔ **What this audit does NOT cover, stated so it is not mistaken for coverage**: it validates the
+**statistic**, not the **population**. Whether 380 rows on one bank at one scope can carry a Qwen
+behavioural conclusion is `B-009`'s question and no verifier can answer it.
