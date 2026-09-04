@@ -5879,3 +5879,33 @@ in a figure misleads a reader; one in a sent message misleads a colleague who th
 single hit is inside the **Notes for Omer** block — i.e. the deliberate prohibition, not a live claim.
 
 ⛔ **Still NOT SENT**, and no Slack integration exists or was used.
+
+### `C-035` — ⚠ the **novelty claim** overstated us, judged by the literature matrix's **own** definition
+
+Swept the last two deliverables for staleness. `RESEARCH_HANDOFF.md` (2026-08-25) belongs to the
+**prior** phase, names its own date and points at a different log — correctly stale, out of scope.
+`reports/DCS_LITERATURE_MATRIX.md` (2026-09-02) contained one claim today's results bear on, and it is
+the one that matters most: **what is new in ours versus Yona et al.**
+
+It read: *"an internal **causal** intervention on the demonstration block **with a behavioral
+endpoint** — they have none."*
+
+⛔ **Judged by the matrix's own stated bar** — *"`Y` only if the paper performs an intervention on the
+model's internals **and** measures the change in a behavioral endpoint (ASR, refusal rate, task
+accuracy)"* — **we score `Y` on refusal and NOT on attack success**:
+* ✅ **Refusal:** Llama **42→0**, Qwen **150→0**, well-powered, 2 models × 4 scopes. Clears the bar.
+* ⛔ **ASR:** `R-019` — Llama is **direction-only**, not significant at the domain independence unit.
+  `R-048` — Qwen is **`CONFOUND-LIMITED`**, sign undetermined.
+
+⚠ **In this literature *"behavioral endpoint"* is read as ASR.** So the unqualified sentence claims
+the thing we spent the whole day establishing we cannot claim. ⇒ Corrected in place: the novelty is
+that we run the internal causal intervention they lack **and tie it to refusal** — ⛔ **not** that we
+have tied one to attack success.
+
+⚠ **Why this one was easy to miss.** It is not a *number* that moved, so no plots-vs-JSON or
+stale-claim sweep would catch it — it is a **qualitative claim whose supporting evidence changed
+underneath it**. ⇒ The retraction sweeps this phase runs look for retracted **numbers**; this is a
+reminder that a narrowed result also invalidates **prose that was true when written**.
+
+✅ **And it was found by applying a document's own definition to the document's own author** — the
+matrix defines the bar, and nobody had run our results against it since `R-019`/`R-048` existed.
