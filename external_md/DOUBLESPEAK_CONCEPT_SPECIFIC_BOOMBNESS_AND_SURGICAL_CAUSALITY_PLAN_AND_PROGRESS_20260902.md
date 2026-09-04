@@ -5403,3 +5403,46 @@ on that signal, I would have read a **partial** `results.jsonl`.
 and its siblings **refuse without `DONE.json`** and refuse on a wrong row count. ⇒ The guard belongs
 in the **analyzer**, not in the watch, and it was already there. ⚠ A future watch should poll for
 `DONE.json` **with a grace period after the queue clears**, not treat queue-exit as terminal.
+
+### `A-009` — **adversarial audit of `R-041`**: 4 of 5 attacks survived, ⛔ **one landed and narrows the claim**
+
+All five attacks were named in `scripts/dcs_audit_r041.py` and **committed before any of them ran**
+(`c06a64f6`), including my recorded prediction that **C** was the one most likely to land.
+
+| | attack | result |
+|---|---|---|
+| **A** | leave-one-domain-out, all 38 subsets | ✅ **SURVIVES** — contrast stays in **[−0.974, −0.826]**, worst p = **8.0e-04** (dropping `film_studio`). No sign flip, never loses α |
+| **B** | three installation operationalisations | ✅ **SURVIVES** — `argmax` −0.907 (p = 2.0e-04) · `p_concept>0.5` −0.799 (1.4e-03) · continuous mean `p_concept` −0.823 (8.5e-04). ρ<sub>KO</sub> is −0.59…−0.63 throughout |
+| **C** | **the ceiling** — drop the 25 domains pinned at 1.0 | ⛔ **LANDS.** On the 13 domains that vary: contrast **−0.503**, **p = 0.343** |
+| **D** | the control's own gradient | ⛔ **REAL AND STABLE** — ρ<sub>ctrl</sub> = +0.312, LOO range **[+0.272, +0.399]**, **always positive** |
+| **E** | arm-exchangeable null (swap KO/control label per domain) | ✅ **SURVIVES** — p = **9.5e-04** |
+
+⛔ **`C` FORCES A NARROWING AND I AM MAKING IT.** The full-sample contrast is **not** reproduced at α
+within the varying subrange. ⚠ Both readings must be stated because the data does not separate them:
+* the evidence is **dominated by the contrast between fully-installed domains and the rest** — a
+  two-group difference wearing a gradient's clothes; or
+* **n = 13 simply lacks power** — the direction is preserved and the magnitude is still **over half**
+  the full-sample value (−0.503 vs −0.907), which a pure two-group artifact need not produce.
+⇒ ⛔ **The claim may no longer be stated as an unqualified gradient.** The publishable form is:
+**"installation predicts effect size across the full range; the evidence is dominated by the
+contrast between fully-installed domains and the rest, and within the 13 partially-installed
+domains the same direction holds but does not reach α (−0.503, p = 0.343)."**
+
+⛔ **`D` is worse than a caveat — it is something I never explained and implied away.** A
+dose-matched **non-demonstration** control shows a **systematic positive** installation gradient,
+stable under every leave-one-out subset. ⇒ The contrast is **not** "effect minus an inert nuisance";
+it is a **difference between two opposite systematic gradients**. ⚠ `R-043` described the n=8
+control as showing *"essentially no gradient"* (ρ = −0.040) and that is true **there** — but at n=4
+it is **+0.312 and never negative**, and I reported that number without flagging it as systematic.
+
+⚠ **A mechanism I can offer and have NOT tested**, recorded as a hypothesis so it is not mistaken for
+a finding: the control masks **non-demonstration** keys, largely in the preamble; damaging the
+preamble in a **high-installation** domain may push the model to lean *harder* on the demonstrations,
+raising the concept reading. ⛔ Untested. It predicts the control's gradient should vanish in a bank
+with no preamble — and `R-033` showed the `rbd` banks have none, which is a check available for free
+on data already in the repo. ⇒ Listed as `B-015`.
+
+✅ **What the audit leaves standing.** The headline direction is robust to any single domain (**A**),
+to three independent operationalisations of the predictor (**B**), and to an arm-exchangeability null
+(**E**). ⛔ It is **not** established within the varying subrange (**C**), and its comparator is **not
+inert** (**D**).
