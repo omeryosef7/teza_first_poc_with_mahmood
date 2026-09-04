@@ -3708,3 +3708,48 @@ called it principled.
 
 ⚠ Note what produced this: **not** an audit of the criterion, but an attempt to *implement* `R-029`'s
 recommendation. The instrument I reached for to extend the claim is what falsified it.
+
+## `PR-014` — PREREGISTRATION: the Qwen behavioural contrast, analysed by **bounding** rather than by comparator selection
+
+⚠ **Frozen before any Qwen attack number exists.** All 8 Qwen behavioural arms are generated and
+carry `DONE.json`; **none has been judged**. `refused` is judge-free, so every number used to design
+this analysis was available without touching the attack endpoint. ⛔ The ordering is enforced by
+construction, not by discipline.
+
+**Why the obvious design is unavailable.** `R-029` prescribed a **relative** refusal-neutrality band.
+`C-023` withdrew that: `refused` has a **measured judge band of 0** and is deterministic, so there is
+no noise band to rescale in either direction. Selecting a comparator by a tolerance would repeat the
+original error with a different constant. ⛔ All **6** Qwen draws induce refusal (**+39 … +47** on a
+150 baseline); **no** refusal-neutral Qwen control exists in this pool, and I am not going to keep
+drawing until one appears — that is selection on the nuisance variable.
+
+**So the confound is not removed by design. It is *bounded* by analysis.**
+
+**Primary endpoint.** Row-paired **McNemar** on `malicious_at_0.5`, `KO-3` vs each control, all 6
+reported. McNemar because the rows are 1:1 paired by `prompt_id` — the error `C-015` retracted `R-012`
+for.
+
+**The bound (this is the load-bearing part).** A control with extra refusals shows artificially
+**fewer** attacks, so `KO-3 − control` is pulled toward zero — the estimate is **conservative**. The
+adversarial correction is therefore to credit the control with its induced refusals as **would-be
+attacks**: add **all** `(control_refused − 150)` induced refusals to the control's attack count, the
+maximally hostile assumption, and recompute. ✅ If `KO-3 − control` stays negative and significant
+under that correction, the conclusion is robust to the entire confound **without** selecting a
+comparator.
+
+⛔ **Declared limitation of the alternative I am not making primary.** "Attack rate among non-refused
+rows" is composition-free and tempting, and it conditions on a **post-treatment** variable — a
+collider, whose bias direction is unknown and could run either way. It is reported as **secondary**
+and ⛔ will not be used to carry a conclusion the bound does not support.
+
+**Judging.** All **8** arms in **one** `judge_boombness.py` invocation, `openai/gpt-4o-mini` pinned —
+`C-016a` caught me splitting arms across sessions and finding an 18-attack drift on byte-identical
+text. On `cpu-killable`, never the login node. Cost ≈ **$0.65** total (`C-022`).
+
+⛔ **Declared outcomes.**
+* **Effect survives the bound** — the Qwen behavioural claim is established, and `R-029`'s
+  `CANNOT ANSWER` is lifted on **stronger** grounds than the design it asked for.
+* **Face-value effect present, bound kills it** — reported as *confound-limited*, ⛔ **not** as a
+  positive. This is the likeliest outcome and it must not be softened.
+* **No face-value effect** — Qwen behavioural is a **capable null**, and the model-specificity of the
+  behavioural half becomes a finding rather than a gap.
