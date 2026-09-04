@@ -5033,3 +5033,46 @@ there is an **unmeasured** label-noise floor, and the p-value is conditional on 
 **attack** rubric within a single configuration. `R-017`'s 17-row band mixes that with cross-session
 variation. Separating them costs one extra judging pass of one arm — ⛔ **not run this tick**, and
 listed as `B-014` so it is not lost.
+
+## `PR-020` — PREREGISTRATION: measure `B-014` — judge nondeterminism on the **attack** rubric
+
+⚠ **Frozen while 849653 is on arm 7 of 8. No `PR-014` attack contrast exists.** That timing is the
+point: deciding to measure a noise floor *after* seeing a marginal p is indistinguishable from
+looking for an excuse, and `DCS-034` has already declared that a near-α `PR-014` result must be
+reported as near-α **with an unmeasured floor**. This is the measurement that would remove the word
+*unmeasured* — and it is chosen now, when I cannot know whether I will want it.
+
+**The gap (`B-014`).** `R-046` measured `temperature 0` nondeterminism on the **plausibility**
+rubric (1 flip in 114 ratings). ⛔ Nothing transfers from that to the **attack** rubric — different
+prompt, different output space, far longer completions. And `R-017`'s **17-row** re-judge band
+(3.7 paired) mixes call-level nondeterminism with **cross-session** variation, which `C-016a` showed
+is real and large. ⇒ Neither existing number is the one `PR-014` needs.
+
+**Design — the smallest thing that answers it.** After 849653 completes, re-judge **exactly one**
+arm — `dcsqwb_C_baseline`, chosen **now** and named here so it cannot be selected later — through
+`judge_boombness.py` at **byte-identical settings** (same pin, same seed, same bank, same run dir),
+in a **fresh invocation**. 380 rows, ≈ **$0.08**.
+
+⛔ **What it measures, stated precisely, because the obvious over-claim is available.** It is
+*same arm, same configuration, second invocation*. That is an **upper bound** on call-level
+nondeterminism: it necessarily includes whatever cross-invocation drift exists, so it **cannot**
+isolate within-call variation. ⛔ It may **not** be described as "the judge's intrinsic noise". ✅ It
+is nonetheless the right comparator for `PR-014`, whose eight arms were judged in **one** invocation
+— a bound that is *conservative* for that comparison is exactly what a caveat needs.
+
+**Endpoints.** (a) Number of `malicious_at_0.5` labels that flip, of 380; (b) the same as a paired
+count against the first pass; (c) whether `refused` flips at all — `C-023` measured its band as **0**
+and this is a direct check of that claim on new data.
+
+⛔ **Declared readings.**
+* **Flips ≪ `PR-014`'s discordant counts** ⇒ `DCS-034`'s caveat is **quantified and small**, and
+  `PR-014`'s p may be reported with a measured floor beside it.
+* **Flips comparable to the discordant counts** ⇒ ⛔ `PR-014`'s McNemar is **not interpretable at
+  face value**, whatever it says, and that must be stated **as prominently as the p-value**.
+* **`refused` flips at all** ⇒ ⛔ `C-023`'s "measured judge band on `refused` is 0" is **RETRACTED**,
+  and every claim resting on refusal being deterministic — including `PR-014`'s entire bounding
+  construction, which counts induced refusals — needs re-examination. ⚠ This is the branch I least
+  expect and the most consequential; naming it now is the only way it stays cheap.
+
+⛔ **Two things this may not become.** It may **not** be used to re-judge any *other* arm, and it may
+**not** be run a second time if the first answer is inconvenient. One arm, one extra pass, one look.
