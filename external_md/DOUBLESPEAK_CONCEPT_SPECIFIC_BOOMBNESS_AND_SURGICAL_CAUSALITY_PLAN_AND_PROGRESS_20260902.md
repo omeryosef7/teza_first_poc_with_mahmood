@@ -4676,3 +4676,35 @@ exist will mislead the next reader, and the workaround depends on the control an
 being row-aligned — true here, not true in general. ⇒ Fix is to persist the per-row ratio, or to
 correct the note. ⚠ ⛔ **Not attempted in this tick**: it is a change to the generator, and every
 existing artifact in the phase was produced without it.
+
+### `DCS-033` — `PR-014`'s analyzer, committed **while the judge was still running**
+
+Job 849653 has been up for ~55 min. At the moment of this commit: **4 of 8** arms carry
+`DONE.json`, **5** started. ⇒ `scripts/dcs_pr014_bound.py` is fixed before **at least three**
+arms — including controls — have an attack number at all. ⚠ `PR-014` itself was frozen earlier
+still, when **none** had been judged.
+
+⛔ **The one thing `PR-014` left open, and I am closing it now rather than later.** The
+preregistration fixed the bound's **count** — *"add **all** `(control_refused − 150)` induced
+refusals to the control's attack count"* — and said nothing about **which rows** get flipped. Left
+unspecified, that is a degree of freedom I would be choosing after seeing the answer. **Declared
+here:** the flips are spent **maximally hostilely** — eligible rows are control rows with
+`refused = 1, attack = 0` (only an *induced refusal* can be argued to have concealed an attack), and
+they are spent **first** on rows **discordant in `KO-3`'s favour**, because flipping those destroys a
+discordant pair on `KO-3`'s side and shrinks the contrast fastest. ⇒ The reported bound is the
+**worst case** over assignments consistent with `PR-014`'s count.
+
+✅ **Reuses `scripts/cds_domain_test.py`** for `load_arm` and the exact two-sided binomial rather than
+re-implementing either — the same loader the `CDS` sprint's domain tests ran on.
+
+⛔ **Refusals it performs rather than reports around**: a missing `DONE.json`, a row count ≠ 380, or
+**more than one distinct `judge_model_used` inside a single arm**. The last one exists because
+`C-016a` found an 18-attack drift between sessions on byte-identical text; `PR-014` answers it by
+judging all 8 arms in **one** invocation, and this guard checks that the artifact agrees.
+
+⚠ **A partial-peek I am recording rather than hiding.** While checking liveness this tick I read the
+tail of the judge log and saw **three unlabelled per-arm ASR lines** scroll past (`0.2500`, `0.1895`,
+`0.1789`). I did not attribute them to arms, and the analyzer above was written without consulting
+them — but "I saw some numbers and ignored them" is exactly the claim that is worthless unless the
+code that uses them was already committed. ⇒ That is why this entry exists **before** the analysis
+runs, and why the commit records the arm count.
