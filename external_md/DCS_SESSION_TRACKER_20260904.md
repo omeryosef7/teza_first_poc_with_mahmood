@@ -114,7 +114,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 
 | what | id | state |
 |---|---|---|
-| `852000`-`852004` (PR-028, 5 control draws) | `PR-028` | 2 RUNNING (n-802/n-803), 3 PENDING; ~2.7 h each |
+| `852000`-`852004` (PR-028, 5 control draws) | `PR-028` | **1 of 5 COMPLETE** — `s20260906_d1` 1160/1160, contract fully verified (116 dom x 10, keys_masked med **522**, decode_edits **0**, match_ratio **1.0**, seed 28180683, 0 liveness violations, truncation 0.09% = same as the PR-024 controls). Other 4 at 648-829/1160, ETA ~12:30-13:00. Contract entry held until all five land |
 
 ## Standing rules being followed this session
 
