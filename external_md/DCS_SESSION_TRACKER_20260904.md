@@ -89,6 +89,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 20 | `PR-025`/`R-062` | the refusal confound is **regular in direction** (pooled ρ **−0.378**, consistent in all 3 controls, survives the RTM restriction) but ⛔ **not in magnitude** — conversion **0.057–0.350** vs the bracket's assumed **1.000** | ✅ |
 | 20 | — | ⚠ `R-062` **corrects `R-061`'s own emphasis**; the overstated *"bracket is unanimous"* framing was propagated out of the log into **both** deliverables, incl. the collaborator draft, and is now fixed there too | ✅ |
 | 21 | `PR-026`/`R-063` | calibrated bracket applied **symmetrically**: **[−147,−66] / [−140,−87] / [−129,−29]**, entirely negative for all three and **half the width**. ⛔ `PR-014`'s bracket is wrong at **both** ends. Verdict unchanged: `B-009` **NOT RESOLVED** | ✅ |
+| 21 | `C-038` | ⚠ **over-corrected, then over-corrected back** — `R-061` trusted the adjusted end, `R-062` trusted the face end, and on `d3` the face value lies **outside** `R-063`'s interval. Checking a two-ended bracket **one end at a time** makes the other look right by contrast | ✅ |
 
 ## Live
 

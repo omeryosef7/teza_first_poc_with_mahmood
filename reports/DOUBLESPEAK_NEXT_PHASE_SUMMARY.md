@@ -281,11 +281,14 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
   0.05**, which is exactly the observed pattern. ⇒ ⛔ **Domain count was not the binding constraint.**
   The controls induce refusal loads of **+35 / +133 / +200**, and the **between-control spread
   (0.0586) exceeds the effect (0.0391)** — the comparator draw matters more than the intervention.
-  ⚠ The bracket's adjusted end (−112 / −183 / −209, 0 of 3 straddling) is **weaker than it reads**
-  (`R-062`): it assumes **every** induced refusal is a would-be attack, i.e. conversion **1.000**,
-  while the measured conversion is **0.057–0.350** — so the adjusted end **over-credits the control
-  by 3–17×** and the true value sits much nearer the face value. `PR-024a` binds the verdict to the
-  primary in any case. ⇒ **More domains will not fix this; controls matched on induced
+  ⛔ **`PR-014`'s bracket is wrong at BOTH ends** (`R-062`, `R-063`). Its adjusted end assumes every
+  induced refusal is a would-be attack (conversion **1.000**) against a measured **0.057–0.350**, so
+  it **over-credits the control by 3–17×**; its face end **fails to debit `KO-3`** for clearing all
+  **144** baseline refusals, which by the same mechanism gifted it attacks. ✅ Applying the measured
+  conversion **symmetrically to both arms** gives **[−147, −66] / [−140, −87] / [−129, −29]** —
+  entirely negative for all three, and **half the width**. ⚠ On `d3` the face value (**−9**) lies
+  **outside** that interval, so "nearer the face value" would be wrong too. `PR-024a` binds the
+  verdict to the primary in any case. ⇒ **More domains will not fix this; controls matched on induced
   refusal would**, and `C-023` showed those cannot be selected post hoc.
 * `DCS-B-009` (original statement, superseded above): ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
   cannot resolve a ~20 % relative effect by a clustered sign test (`k_inf` 36, floor 2.9e-11 — a

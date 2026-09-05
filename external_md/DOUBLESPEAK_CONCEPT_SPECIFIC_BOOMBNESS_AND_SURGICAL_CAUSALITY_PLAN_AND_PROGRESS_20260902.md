@@ -6598,3 +6598,31 @@ honestly; it does not certify it. ⛔ Anyone quoting `[−129, −29]` as the re
 **controls**; `KO-3`'s own conversion is **unobservable** — there is no arm in which `KO-3` refuses.
 Applying the controls' `c` to `KO-3` is an assumption, not a measurement, and the interval is only as
 good as it.
+
+### `C-038` — ⚠ I over-corrected, then over-corrected back. The **pattern** is worth more than either fix
+
+Three statements about the same bracket, in three hours, each superseding the last:
+
+| | claim | fault |
+|---|---|---|
+| `R-061` | *"the bracket is unanimous, 0 of 3 straddle zero"* | ⛔ treated the adjusted end as plausible |
+| `R-062` | *"the true value sits much nearer the **face** value"* | ⛔ treated the **face** end as unbiased |
+| `R-063` | calibrated interval, both arms, **[−147,−66] / [−140,−87] / [−129,−29]** | ✅ neither end is right |
+
+⛔ **`R-062`'s propagated sentence was wrong and it reached both deliverables.** On `d3` the face
+value is **−9** and the calibrated interval is **[−129.4, −28.6]** — the face value lies **outside**
+it. ⇒ *"Nearer the face value"* was not a hedge; it was a second error in the opposite direction from
+the first.
+
+⚠ **What produced both.** Each time I found a bias, I moved my estimate to the **other endpoint**
+rather than asking whether that endpoint had its own bias. ⛔ The `PR-014` bracket has **two** ends
+and I checked them **one at a time**, so each check made the *other* end look correct by contrast.
+⇒ The fix was not a better endpoint but a **model** — apply the measured conversion to **both** arms
+and let the interval fall where it does.
+
+✅ **Caught the same way as `C-026`'s propagation**: grep the deliverables for the exact phrasing the
+new result invalidates. Both carried it; both are corrected. ⚠ Three hours, three versions, and the
+only one that survives is the one that stopped choosing between endpoints.
+
+⛔ **None of this touches the verdict.** `B-009` is `NOT RESOLVED` on the primary — 1 of 3 — and every
+version of the bracket has been a **secondary** throughout.
