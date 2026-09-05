@@ -6479,3 +6479,49 @@ holds pooled but not within-control would be a between-control artifact rather t
 ceiling/RTM lesson applies: I will report whether the relationship survives restricting to cells with
 **non-extreme** baseline refusal. ⛔ It re-uses `R-061`'s data and can therefore **not** be treated as
 independent confirmation of anything in it.
+
+### `R-062` — `PR-025`: the refusal confound is **regular**, and that ⛔ **narrows `R-061`'s bracket from the inside**
+
+**PRIMARY — per-domain refusal induction vs attack suppression, 3 × 116 = 348 control-domain cells:**
+
+| | ρ | perm p |
+|---|---|---|
+| **pooled** | **−0.378** | **5.0e-05** |
+| within `d1` | −0.412 | < 1e-4 |
+| within `d2` | −0.359 | < 1e-4 |
+| within `d3` | −0.352 | 1.0e-04 |
+| restricted to **non-extreme** baseline refusal (192 cells) | **−0.315** | **5.0e-05** |
+
+✅ **`PR-025`'s first branch obtains**: negative, of near-identical magnitude in **all three** controls,
+and it **survives** the ceiling/RTM restriction `A-009` taught me to run. ⇒ The confound is a
+**regular mechanism**, not an idiosyncrasy of a particular draw.
+
+⛔ **But the MAGNITUDE is not regular, and that is the consequential part.** The correlation says
+*more induced refusal ⇒ fewer attacks*; it does **not** say how many. Measured against baseline:
+
+| control | induced refusals | attacks lost | **conversion** |
+|---|---|---|---|
+| `d1` | +133 | −29 | **0.218** |
+| `d2` | +35 | −2 | **0.057** |
+| `d3` | +200 | −70 | **0.350** |
+
+⛔ **`PR-014`'s bracket assumes a conversion of 1.000** — that *every* induced refusal is a would-be
+attack. Observed conversion is **0.057–0.350**, so the adjusted end **over-credits the control by
+3–17×**. ⇒ ⚠ **`R-061`'s "0 of 3 brackets straddle zero" is therefore weaker than it reads**: the two
+endpoints are not equally plausible, and the true value sits **much closer to the face value** than
+to the adjusted one. ⛔ I reported that bracket as unanimous support for the direction; **that support
+is thinner than I presented it**, and this entry corrects the emphasis.
+
+⚠ **A structural observation, labelled as such.** Correcting each control by its **own observed**
+attack loss returns all three to ≈ **397** attacks — exactly the baseline. ⇒ On this data the three
+controls differ from baseline **mainly through refusal induction**, and a fully refusal-corrected
+contrast collapses to **`KO-3` vs baseline: 318 vs 397, −79 attacks**. ⛔ This is **not** a licence to
+adopt that as the estimand: the controls exist to absorb **generic attention damage**, and collapsing
+them to baseline assumes they do nothing else — which is the very thing they were built to test. ⚠ It
+is recorded because it bounds how much the comparator can be contributing.
+
+⇒ **What this gives the design question, and nothing more.** Refusal induction is **predictable in
+direction** but **not in magnitude** across draws. ⇒ Matching controls on *predicted* refusal would
+**reduce** the between-control spread `R-061` measured, but ⛔ would **not** eliminate it, because the
+attacks-per-refusal rate itself varies **6×** between draws. ⚠ That is a genuine input to the
+collaborators' decision and ⛔ still not a decision I should take.
