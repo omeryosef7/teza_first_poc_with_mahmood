@@ -2689,3 +2689,67 @@ rows really are `PR-032` §11.3's population.
 written. And ⚠ **two verifiers now exist for one result** — that is deliberate and stays: the first
 reasons about arms and statistics, the second about rows and joins, and neither subsumes the other.
 
+
+---
+
+## §37 — `DCS-C-056` — the `PR-035` verifier CANNOT VERIFY THE `PR-035` HEADLINE. Closed before the result exists.
+
+A red-team ran `scripts/dcs_verify_pr035.py` (14 checks, 1750 lines) end to end, confirmed **all
+eleven of its detections are real and each fires on its own designated check**, confirmed it imports
+nothing from the producer, and confirmed its `C2b` cache-binding instrument is a genuine independent
+recomputation (matched caches agree at q95 relative error **5.7e-07**; a cross-bank cache sits at
+**5.3e-01**). Then it named the root hole:
+
+> *"`C6` recomputes the `n_examples=0` blocking null and **NOTHING ELSE**, so the `P2` PRIMARY — the
+> number §28.9 gates promotion on — is read from the producer as ground truth and only checked for
+> internal arithmetic consistency."*
+
+⇒ ⛔ **A fabricated headline passes all fourteen checks.** The red-team rewrote `P2_primary` to a
+self-consistent `POSITIVE` (**acc 0.2953 → 0.7200, p 0.9901 → 0.0099**) on a fixture whose cell-`C`
+rows are **pure noise**, and every check still agreed — because they check the producer **against
+itself**. That is `derived-field circularity`, which Omer's brief §25 names outright and which
+`C-049` §22.5 already caught once, one layer down.
+
+⚠ ⛔ **Those two numbers are from the red-team's OWN SYNTHETIC FIXTURE, not from this experiment.**
+Verified: `outputs/boombness/dcs_analysis/dcs_bombness_specificity.json` **did not exist** when they
+were produced — the producer was still running. ⇒ No `PR-035` outcome has been read by anyone.
+Recorded here so their later reappearance cannot be mistaken for a result.
+
+### 37.1 Six further corruptions that survived, all leaving 14/14 PASS
+
+| | corruption |
+|---|---|
+| X1 | a fabricated, self-consistent `POSITIVE` headline |
+| X2 | `P2_primary.picks` deleted entirely — the fold table simply absent |
+| X3 | a layer of `20` (outside L6–14) written as the JSON **string** `"20"` |
+| X4 | ⛔ **§28.2's defect applied to the PRIMARY** — (layer, C) grid-searched on the test cell's own labels instead of cell `B`. `C5b` checks that only for the null. |
+| X5/X7 | the §23.5 clause-5 (length) and clause-4 (knife-vs-club) controls **deleted** |
+| X6 | ⛔ **a producer-side cross-bank join for ONE class** — `gun`'s rows joined to `button_club`'s cache. Lossless, because `prompt_id` collides 8-way; `C2b` binds caches per **run**, not per **class**. |
+
+### 37.2 The fix: recompute the headline, do not audit it
+
+`scripts/dcs_verify_pr035_primary.py` re-implements the primary **from the preregistration text**,
+imports nothing from the producer, and reads the producer JSON **only as the claim under test**:
+
+* **V1** population rebuilt from the banks with §28.1's exclusion
+* **V2** `(layer, C)` picks recomputed **on cell `B`**; on mismatch it re-runs selection on the test
+  cell's own labels and **says whether THAT is what the producer did** — X4, checked on the primary
+* **V3** `P2` held-out accuracy recomputed per domain, exact match required
+* **V4** the group-permutation p with **its own seed (90613, not the producer's 20260905)**, compared
+  inside a stated Monte-Carlo band, **and** required to fall on the same side of α
+* **V5** the §23.5 clause-4 knife-vs-club control, recomputed the same way
+* **V6** ⛔ **per-CLASS cache binding** — each class's states must come from **its own** bank's run,
+  checked by `‖rep‖` against that run's own `hnorm|L` column. Closes X6.
+
+### 37.3 ⚠ `DCS-043` (operational) — the primary was moved off the login node
+
+The producer ran **41 minutes with no output at 1133 % CPU and 2.4 GB RSS on the LOGIN NODE**. ⛔ My
+own `C-053` §28.2 fix caused it: giving the blocking null a cell-`B` selection added a
+9-layer × 4-`C` × 6-fold grid **per outer fold**, and the same is now true of every instrument —
+on the order of 15–20 k logistic fits. `src/boombness/slurm/run_analysis_cpu.sh` exists for exactly
+this and its header says so (*"the LOGIN NODE is not a safe place for it"*).
+
+⇒ Killed (**no output had been produced; nothing was lost**) and resubmitted as **job 854173**,
+`cpu-killable`, 16 CPUs, 48 GB, 10 h. ⚠ Recorded because *"a correctness fix made the analysis 30×
+more expensive"* is a real and easily-missed consequence of `C-053`.
+
