@@ -2324,3 +2324,90 @@ verbatim. ⚠ What §31 does mean is that a **`CODEWORD-ROW`** result would now 
 *two* independent nulls, and §30.6 already requires that such a result be **reconciled** with `KO-1`
 rather than quietly replacing it.
 
+
+---
+
+## §32 — `DCS-A-025` — ⛔ LITERATURE: a closer precedent for our intervention exists, and the dissociation framing was published four days ago. **FOR OMER / MATAN.**
+
+A bounded literature re-check found **five** overlapping works absent from both
+`reports/DCS_LITERATURE_MATRIX.md` and `A-022` (§16). ⚠ **I re-fetched the three consequential ones
+myself and quote them verbatim** rather than relying on the audit agent.
+
+### 32.1 ⛔ `F-1` — the closest precedent yet for the demonstration→query intervention
+
+**Bakalova, Veitsman, Huang & Hahn, "Contextualize-then-Aggregate: Circuits for In-Context Learning
+in Gemma-2 2B", arXiv 2504.00132** (v1 2025-03-31, v4 2025-09-17). ⚠ The matrix cites this paper's
+**follow-up** (2605.16591, matrix line 103) and **missed the parent that contains the ablation**.
+
+Verified verbatim from `arxiv.org/html/2504.00132v4`:
+
+> *"When we **ablate** an edge from position A to position B, the key (K) and value (V) activations
+> of A when queried by B are replaced with activations computed on a corrupted prompt."*
+> *"This patching is applied simultaneously at each layer and head."*
+
+and it ablates **`y_i → t_{N+1}`** edges — demonstration outputs to the final prediction position —
+scoring **accuracy drop**.
+
+⇒ ⛔ **"We are the first to causally intervene on demonstration→query attention in ICL" is FALSE and
+must never be written.** This is a closer precedent than Hendel (2310.15916) or Todd (2310.15213),
+the two `A-022` §16.1 used to kill the earlier unqualified novelty sentence.
+
+**✅ What survives, stated narrowly:** they *patch counterfactual K/V*, we *zero attention*; they run
+**all layers and heads simultaneously**, we run a **layer band**; they score **task accuracy**, we
+score a **semantic readout** and a safety endpoint; they intervene on a **single query position**, so
+they never vary query-row count — ⛔ **there is no analogue of our K ladder**; and they have **no
+attack, no semantic remapping, and no `intervention × condition` interaction.**
+
+### 32.2 ⛔ `F-2` — the representation/behaviour dissociation framing is PUBLISHED, 2026-09-02
+
+**Sudheendra & Srivastava, "When Decodability Is Not Enough: Logical Validity Representations,
+Behavioral Dissociation, and Causal Tests in Language Models", arXiv 2609.02438**, submitted
+**2026-09-02 — four days ago**, and missed by `A-022`'s 2026-09-05 re-check. Abstract verified
+verbatim by me:
+
+> *"Despite near-chance behavioral performance, logical validity is often almost perfectly decodable
+> from hidden states and remains strongly decodable under **held-out templates, domains, and
+> inference families**. … **interventions along probe-derived validity directions have only weak,
+> nonspecific effects compared with random controls.** Our results suggest that **representing** a
+> property, **expressing** it in behavior, and **using it causally** are distinct."*
+
+⛔ **This is `PR-035`'s design shape and §36's "dissociation result" framing, already in print.**
+Five open-weight models, matched valid/invalid pairs, held-out templates/domains/families,
+probe-direction interventions benchmarked against random controls.
+
+⚠ **It does not scoop us** — different property (logical validity, not *which concept a codeword was
+remapped to*), no attack, no in-context remapping, no attention intervention. ⛔ **But the
+representation ≠ behaviour framing may no longer be presented as our observation.** It must be cited,
+and our contribution stated as the *concept-identity* and *attention-causal* case of it.
+
+### 32.3 `F-3` — a probe-vs-causal dissociation ON LLAMA, INSIDE ICL, that `A-022` recorded only at snippet level
+
+**Cheng & Zhang, arXiv 2605.04061**, central sentence:
+
+> *"probing accuracy completely fails to predict causal importance. Single-position activation
+> intervention achieves **0 % task transfer across all 28 layers of Llama-3.2-3B — despite 100 %
+> probing accuracy at those same positions**."*
+
+⚠ `A-022` §16.5 scoped this as bearing on `R-022`'s step in K. ⛔ It bears **directly on `PR-035`**:
+it is the strongest published warning that a probe result of ours, however clean, **predicts nothing
+about causal use**. ⇒ `PR-035` §23.5's `POSITIVE` wording must not imply causal relevance.
+`F-4`: its venue is **LION 2026 + ICLR 2026 *workshops***, resolving the flag `A-022` §16.5 left open.
+
+### 32.4 `Q-002` — ⚠ FOR OMER AND MATAN, flagged rather than absorbed
+
+1. **The novelty sentence must be narrowed again**, for the second time this phase (`A-022` was the
+   first). The defensible claim is now: *zeroing demonstration→query attention **within a layer
+   band**, on a **semantic-remapping** condition, with an **`intervention × condition` interaction**
+   and a **query-row-count threshold** — none of which 2504.00132 does.* ⛔ Not "the first internal
+   causal intervention on ICL demonstration→query flow".
+2. **2609.02438 is four days old.** If our positioning leans on representation/behaviour
+   dissociation, it is now a *citation*, not a *contribution*. ⚠ This may change which half of the
+   paper is the headline, and that is a **positioning decision for Omer and Matan, not for me.**
+
+### 32.5 What did NOT close
+
+⚠ The **query-row threshold** axis again returned nothing on target across four search phrasings and
+an arXiv API query. ⛔ Recorded as a **null search, not as evidence of novelty** — the standing rule
+(§16.5) that novelty is never claimed from a search that found nothing is unchanged. The OpenReview
+blind spot named in §16.5 remains open.
+
