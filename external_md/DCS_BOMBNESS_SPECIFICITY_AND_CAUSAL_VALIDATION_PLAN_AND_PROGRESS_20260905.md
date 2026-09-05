@@ -1320,3 +1320,69 @@ caveat, now visible **within** the ladder itself, and it travels with every rung
 ⚠ K=1 and K=32 have no `dcsk*` arm directories (they were run under different arm names —
 K=32 is the full `query_prefill_only` scope). They are quoted from the log as context, ⛔ **not**
 recomputed here, and the analyzer's Holm family is the **five new rungs only**.
+
+---
+
+## §21 — `DCS-R-078` — the `PR-034` gate: the mappings DO install, `gun` does not, and bomb installs 3× harder than any hard negative
+
+**First confirmatory result of this phase.** Jobs 853646–853649, `score_behavior.py`, 48/48 rows each,
+6 domains, 24 cell `A` + 24 cell `C`, `n_examples ∈ {4,8}`, **zero failures on every arm**, contracts
+checked before any delta was computed.
+
+| bank | cell `A` | cell `C` | **Δ_inst** | domains + | `option_mass` A→C | gate |
+|---|---|---|---|---|---|---|
+| `button_bomb` | −7.272 | **+5.812** | **+13.084** | **6/6** | 0.146 → 0.836 | ✅ PASS |
+| `button_club` | −1.941 | +4.494 | +6.435 | 6/6 | 0.125 → 0.388 | ✅ PASS |
+| `button_knife` | −2.022 | +2.068 | +4.089 | 6/6 | 0.296 → 0.752 | ✅ PASS |
+| `button_gun` | −3.692 | **+0.406** | +4.098 | **4/6** | 0.136 → 0.451 | ⛔ **FAIL** |
+
+**VERDICT: PARTIAL** — `gun` NOT INSTALLED. Per `PR-033` §14.4, declared in advance: the `PR-031`
+primary is reported **both with and without `gun`**, neither promoted.
+
+### 21.1 What this settles
+
+✅ **`C-048` is confirmed from the other side.** The 6-domain `main` banks install the bomb mapping
+**decisively** — a **sign flip** from −7.272 to +5.812, **+13.08 log-odds**, all six domains, with
+option mass rising **0.146 → 0.836**. That is the same order as `R-050`'s **+10.68** swing on
+`cds38`. ⇒ The L16 logit-lens gate was measuring nothing, exactly as `C-048` argued, and the
+population is sound. ⛔ The earlier "VOID — bomb does not install" reading was an instrument
+artifact and must never be cited.
+
+⚠ `gun` fails on **consistency, not magnitude**: its Δ (+4.098) is essentially identical to `knife`'s
+(+4.089), which passes 6/6. `gun` reaches only **4/6** domains and its cell `C` mean (+0.406) sits
+barely above the decision boundary. ⇒ State it as **"gun's mapping installs inconsistently across
+domains"**, ⛔ never "gun does not remap".
+
+⚠ `club` **passes** (6/6, +6.435) despite the polysemy documented in `A-020` §8.3. ⛔ This does **not**
+retract that exclusion: the gate measures *whether the forced-choice reading moves toward the
+concept word*, not *whether the demonstrations teach a coherent weapon sense*. `club` remains
+excluded from the primary on its pre-outcome mechanistic grounds, and now carries the added note
+that it installs **something** — plausibly the room/social sense its pools actually describe.
+
+### 21.2 ⛔ A NEW CONFOUND, created by this result, declared BEFORE the primary is run
+
+**Bomb installs roughly three times harder than any hard negative** (+13.08 vs +4.09 / +4.10 / +6.44),
+and its option mass is far higher (0.836 vs 0.388–0.752).
+
+⇒ A 3-way classifier could separate `bomb` from `knife`/`gun` by **how strongly the codeword has been
+remapped** — a magnitude/degree-of-remapping direction — rather than by **which concept** it was
+remapped to. ⛔ A `P2` POSITIVE would then **not** mean "bomb-specific", and it is exactly the
+"generic remapping" alternative this phase exists to exclude.
+
+**This was not anticipated in `PR-031`.** It is recorded now, before `P2` is run, with its controls
+fixed:
+
+1. **MANDATORY CONTROL — `knife` vs `club`, 2-way, bomb excluded entirely.** Their installation
+   strengths (+4.089, +6.435) are far closer to each other than either is to bomb, and **bomb is not
+   in the problem at all**, so a strength direction anchored on bomb cannot drive it. ⛔ If this
+   control is at chance while the bomb-containing contrast succeeds, the `P2` positive is
+   **attributed to remapping strength, not concept identity**, and may not be called Bombness.
+2. **Installation-strength covariate.** Per-row `semantic_logodds` from these very arms is regressed
+   against the probe's decision; reported beside the primary.
+3. **The primary is reported in all three forms** — 3-way {bomb, knife, gun}, 2-way {bomb, knife}
+   (the `gun`-excluded version the gate mandates), and the knife-vs-club control — with **none**
+   promoted after the fact.
+
+⚠ Stated plainly: this confound is serious enough that a `P2` positive **cannot** be called
+concept-specific unless control (1) also succeeds. That condition is fixed here, before the numbers
+exist.
