@@ -1053,3 +1053,70 @@ already found the geometry proxy non-specific with knife and club **exceeding** 
 until `PR-031` reports.
 
 ⛔ **Nothing is being purchased on this question without Omer.**
+
+---
+
+## §16 — `DCS-A-022` — LITERATURE RE-CHECK: the novelty claim narrows, and one sentence must never be written
+
+Bounded re-check (~25 min) against `reports/DCS_LITERATURE_MATRIX.md` (24 rows, written 2026-09-02).
+⚠ **This materially narrows the novelty claim and Omer should see it.**
+
+### 16.1 ⛔ The sentence that must never be written
+
+> *"Nobody has causally intervened on the demonstration→query pathway in in-context learning."*
+
+**This is FALSE and has been since 2023–24.** Both directions of that intervention are published:
+
+* **Hendel, Geva & Globerson, 2310.15916** (Findings EMNLP 2023) — compresses demonstrations into a
+  single task vector `θ(S)` and **patches it into a separate zero-shot pass at the query**. That is a
+  *sufficiency* intervention on the demonstration→query path.
+* **Todd et al., 2310.15213** (ICLR 2024) — identifies function-vector heads by **causal mediation**
+  (Geva lineage) and ablates them, degrading ICL. A *necessity* intervention on the same path.
+
+⇒ This phase's method is a **redirection** of an existing intervention, not an invention — exactly
+the status the matrix already correctly assigns to Ben-Tov for span knockout. ⛔ Any sentence
+claiming novelty on the intervention axis **alone** is now falsifiable by citation.
+
+### 16.2 New work that materially overlaps
+
+| id | what it establishes | what it threatens | verified |
+|---|---|---|---|
+| **2305.14160** — Wang et al., *Label Words are Anchors*, EMNLP 2023 | Sets `A_l(p,i)=0` for label-word positions in the **first-5 vs last-5 layer** bands and measures ICL collapse; Appendix D sweeps the number of isolated layers | The **closest method precedent inside ICL**, and it was **missing from the matrix**. Limits: its blocked edge is text→label *inside* the demonstrations, not demo→query, and its demo→query claim is **correlational** (AUC≈0.8), explicitly not a knockout | ✓ full PDF |
+| **2605.04061** — Cheng & Zhang, *Single-Position Intervention Fails* | Single-position intervention **0 %** success, multi-position up to **96 %**; query position "strictly necessary"; a **"universal intervention window at ~30 % depth"** (≈L10 of 32) | ⚠ **The most direct threat to `R-022`'s step in K.** "The ICL pathway is distributed, not single-position" is now **published**, and its independently-found depth window **coincides with our L6–14**. ⇒ K must be framed as a *quantitative localisation on a new axis (query rows)*, ⛔ **not** as the discovery that the pathway is distributed | ⚠ abstract only |
+| **2605.28854** — Xiong et al., COLM 2026 | Causal interventions amplifying the task axis are "insufficient to improve behavioral performance or induce representational reorganization" | Representation≠behaviour **in the ICL setting itself** — closer than Walsh & Barkett. Makes our dissociation concession sharper and the citation mandatory | ⚠ abstract only |
+| **2609.00064** — Zhang et al. (2026-08-30) | Attention-level ICL metrics saturate while behavioural metrics degrade (MMLU 0.371→0.279) | Post-matrix. A direct caution against inferring behaviour from an attention/readout endpoint | ⚠ abstract only |
+| **2608.03210** — Zhu et al., *ICO* (2026-08-04) | Black-box semantic-shift jailbreak, 74.6 % ASR, no mechanistic analysis | No threat to the mechanism; further crowds the **phenomenon** side | ⚠ abstract only |
+
+### 16.3 ✅ The novelty that survives
+
+Nothing found performs an internal causal intervention on the demonstration→query path **for a
+codeword-remapping / semantic-shift jailbreak**. But the claim is now a **three-way intersection**,
+not a single-axis claim:
+
+> attention knockout of demonstration→query edges · layer-banded · **on an in-context semantic-remapping
+> attack** · with a cross-family capable null.
+
+Each component is separately owned — the knockout by Geva/Ben-Tov, the ICL pathway intervention by
+Todd/Hendel/Crosbie/Wang/Cheng&Zhang, the phenomenon by Yona et al., the dissociation by
+Walsh&Barkett/Xiong/Zhang. **Only the intersection is ours.**
+
+### 16.4 ⛔ A wording correction that applies to this phase's own headline
+
+Our headline is a **readout** endpoint (forced-choice log-odds +5.19 → −2.76) and the behavioural
+link is **not established** (`R-075`). Two 2026 papers (2609.00064, 2605.28854) exist precisely to
+caution against inferring behaviour from such an endpoint. ⇒ Write **"abolishes the forced-choice
+preference"**, ⛔ never **"destroys the remapping"**. This applies to the summary and the
+collaborator draft, and is adopted as a standing wording rule for this phase.
+
+### 16.5 ⚠ The uncovered risk, stated rather than hidden
+
+* Only **2305.14160** was read in full; the other five are **abstract-level**.
+* **2605.04061's venue string is self-contradictory** ("LION 2026 (ICLR 2026)") — ⛔ verify before citing.
+* Semantic Scholar returns only **4** citations for Yona et al. — implausibly few for an ACL 2026
+  paper; the index lags, so post-August-2026 work may be invisible.
+* ⛔ **No OpenReview / proceedings search was performed.** A competing mechanistic Doublespeak paper
+  under review right now would be invisible to arXiv and Semantic Scholar alike. **This is the single
+  largest uncovered risk and web search cannot close it.**
+* Topic-6 searches (query-row thresholds) returned nothing on target. ⚠ Reported as a **null search,
+  not a gap** — the vocabulary for that axis is not standardised. ⛔ Novelty is never claimed because
+  a search returned nothing.

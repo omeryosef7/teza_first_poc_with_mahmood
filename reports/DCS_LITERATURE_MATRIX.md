@@ -237,3 +237,42 @@ geometry alone is not.
 in US-region search; it is not a systematic review, has no inclusion protocol beyond the eleven topics
 in the brief, and searched no venue proceedings directly. Absence of a work from this matrix is weak
 evidence of its non-existence. The half of the matrix marked **†snippet** has not been read.
+
+---
+
+## 5. Re-check 2026-09-05 (`DCS-A-022`) — five additions, one of which changes the framing
+
+Appended, not merged into §1–§4: the rows above are the 2026-09-02 state and are left standing.
+Bounded re-check, ~25 min. ⚠ Verification levels are lower here than in §1 — only the first row was
+read in full.
+
+| id | venue / date | what it does | bearing on our position | verified |
+|---|---|---|---|---|
+| `2305.14160` | EMNLP 2023 | "Label Words are Anchors". Zeroes attention `A_l(p,i)` at label-word positions in first-5 / last-5 layer bands; App. D sweeps the number of isolated layers | **Closest method precedent inside ICL, and it was missing.** Cite as provenance beside `2304.14767`. Limits: edge is text→label *within* demos, not demo→query; its demo→query claim is correlational (AUC≈0.8), not a knockout | ✓ full PDF |
+| `2605.04061` | ⚠ venue string self-contradictory — **verify before citing** | "Single-Position Intervention Fails". Single-position 0 %, multi-position ≤96 %; query position strictly necessary; "universal intervention window at ~30 % depth" (≈L10/32) | ⚠ **Most direct threat to the K-step.** Publishes "the ICL pathway is distributed, not single-position", and its depth window coincides with our L6–14. Frame K as quantitative localisation on the **query-row axis**, not as discovering distribution | ⚠ abstract |
+| `2605.28854` | COLM 2026 | Representational geometry reorganises during ICL; task-axis amplification "insufficient to improve behavioral performance" | Representation≠behaviour **inside ICL** — closer than `2605.25151`. Citation now mandatory | ⚠ abstract |
+| `2609.00064` | 2026-08-30 | Attention-level ICL metrics saturate while behaviour degrades | Post-matrix. Cautions directly against inferring behaviour from a readout endpoint | ⚠ abstract |
+| `2608.03210` | 2026-08-04 | ICO: black-box semantic-shift jailbreak, 74.6 % ASR, no mech analysis | Crowds the **phenomenon**, not the mechanism | ⚠ abstract |
+
+**Also missing by name and to be added:** `2310.15916` (Hendel et al., task vectors) and `2310.15213`
+(Todd et al., function vectors). The matrix cited only their descendants.
+
+### 5.1 ⛔ Correction to §2's framing
+
+§2 concluded that the internal causal intervention is ours. That **stands only as an intersection**.
+The sentence *"nobody has causally intervened on the demonstration→query pathway in ICL"* is **FALSE**:
+`2310.15916` patches a demonstration-derived vector into the query pass (sufficiency) and
+`2310.15213` ablates function-vector heads by causal mediation (necessity). What remains ours is the
+**intersection**: demo→query attention knockout, layer-banded, **on an in-context semantic-remapping
+attack**, with a cross-family capable null.
+
+### 5.2 ⛔ Standing wording rule
+
+Write **"abolishes the forced-choice preference"**, never *"destroys the remapping"* — the endpoint
+is a readout and the behavioural link is `NOT ESTABLISHED` (`R-075`); `2609.00064` and `2605.28854`
+are exactly the papers a reviewer would cite against the stronger wording.
+
+### 5.3 ⚠ Largest uncovered risk
+
+No OpenReview / proceedings search was performed. A competing mechanistic Doublespeak paper under
+review would be invisible to both arXiv and Semantic Scholar. Web search cannot close this.
