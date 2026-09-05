@@ -1,0 +1,1065 @@
+{
+ "preregistration": "DCS-PR-032",
+ "alpha": 0.05,
+ "expect_n": 380,
+ "note": "query_last_k_rows cuts _q[-K:]; rows and cut cells rise together by construction. STEP vs RAMP only; NOT rows vs cells.",
+ "rungs": {
+  "K1": {
+   "K": 1,
+   "is_new": false,
+   "n_domains": 38,
+   "mean_delta": -0.013155957664314044,
+   "median_delta": -0.009764454141258927,
+   "n_negative": 23,
+   "demo_mean": 5.149483694312605,
+   "ctrl_mean": 5.162639651976917,
+   "option_mass_demo": 0.8788905441761017,
+   "option_mass_ctrl": 0.8780849874019623,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 36.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 23,
+    "p": 0.2558750795433298,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "23/38 negative, p=0.2559 \u2014 informative null (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -0.005069910734891714,
+    "airport_ground": -0.010504254698753712,
+    "bakery_plant": -0.030086223036050797,
+    "brewery_works": 0.018334154784679146,
+    "campsite_park": 0.028431478142739053,
+    "city_bridge": -0.025402802228927435,
+    "construction_site": -0.00994767472147906,
+    "dairy_plant": -0.03993634581565875,
+    "farm_storage": 0.020475999265909373,
+    "ferry_terminal": -0.053395521640777766,
+    "film_studio": -0.03190558254718778,
+    "fishing_harbour": -0.04621839746832901,
+    "game_manual": 0.01862248629331642,
+    "garden_centre": -0.0635292813181878,
+    "harbour_dock": 0.009770340472459615,
+    "hospital_supply": 0.011745914071798147,
+    "hospital_ward_store": 0.0039299011230475855,
+    "hotel_service": -0.017017865180968705,
+    "instructional": 0.0339541956782341,
+    "lab_safety": 0.02012628763914126,
+    "library_stacks": 0.012865762412547888,
+    "mountain_refuge": -0.008980025351046805,
+    "museum_archive": -0.06048902869224548,
+    "news_report": 0.017683549970388235,
+    "power_substation": -0.07654366195201856,
+    "printing_works": -0.08645743280649221,
+    "quarry_site": -0.029837219417095717,
+    "rail_depot": -0.03305310606956535,
+    "recycling_centre": 0.02270749658346105,
+    "school_campus": -0.009581233561038793,
+    "shipyard_slip": -0.031463676691054765,
+    "sports_stadium": -0.027274245023727772,
+    "subway_station": -0.05113581791520083,
+    "telecom_exchange": 0.01950355097651535,
+    "textile_mill": 0.025689806044101537,
+    "theatre_backstage": -0.025783133506774858,
+    "veterinary_clinic": -0.005469319224357783,
+    "warehouse_logistics": 0.015314444899559021
+   }
+  },
+  "K2": {
+   "K": 2,
+   "is_new": false,
+   "n_domains": 38,
+   "mean_delta": -0.01153968596144729,
+   "median_delta": -0.013512169197201551,
+   "n_negative": 23,
+   "demo_mean": 5.1497424954254365,
+   "ctrl_mean": 5.161282181386885,
+   "option_mass_demo": 0.8781132102012634,
+   "option_mass_ctrl": 0.8793613910675049,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 72.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 23,
+    "p": 0.2558750795433298,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "23/38 negative, p=0.2559 \u2014 informative null (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -0.04768058806657827,
+    "airport_ground": 0.011966270208358942,
+    "bakery_plant": -0.02405442818999326,
+    "brewery_works": 0.027318492531776428,
+    "campsite_park": -0.018334063887595953,
+    "city_bridge": -0.09858666062355059,
+    "construction_site": -0.06151852086186427,
+    "dairy_plant": -0.034212101995945154,
+    "farm_storage": -0.015295527130365194,
+    "ferry_terminal": -0.0017710000276567328,
+    "film_studio": 0.036204753816127755,
+    "fishing_harbour": -0.01596080288291013,
+    "game_manual": 0.062107609212397996,
+    "garden_centre": 0.015744756162166418,
+    "harbour_dock": 0.01877041533589363,
+    "hospital_supply": -0.004403559863567441,
+    "hospital_ward_store": -0.03094628602266347,
+    "hotel_service": -0.0364834040403359,
+    "instructional": 0.021061341464519323,
+    "lab_safety": 0.022786194086075184,
+    "library_stacks": 0.023666876554488958,
+    "mountain_refuge": 0.024728670716285706,
+    "museum_archive": -0.049089282751083374,
+    "news_report": -0.004613138735294342,
+    "power_substation": -0.011728811264037908,
+    "printing_works": -0.08142828196287155,
+    "quarry_site": -0.016861535608768463,
+    "rail_depot": -0.02443001270294154,
+    "recycling_centre": -0.016669892519712626,
+    "school_campus": 0.011716160178184332,
+    "shipyard_slip": 0.004042495787143885,
+    "sports_stadium": -0.03185724839568138,
+    "subway_station": 0.004976027458906351,
+    "telecom_exchange": 0.0014405280351637018,
+    "textile_mill": -0.029778839647770283,
+    "theatre_backstage": 0.0007875800132752797,
+    "veterinary_clinic": -0.036851285398006084,
+    "warehouse_logistics": -0.03327096551656705
+   }
+  },
+  "K3": {
+   "K": 3,
+   "is_new": true,
+   "n_domains": 38,
+   "mean_delta": -0.0696646653311817,
+   "median_delta": -0.06132291294634307,
+   "n_negative": 35,
+   "demo_mean": 5.158539835344019,
+   "ctrl_mean": 5.228204500675202,
+   "option_mass_demo": 0.8790338039398193,
+   "option_mass_ctrl": 0.8800300657749176,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 108.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 35,
+    "p": 6.677873898297548e-08,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "35/38 negative, p=0.0000 \u2014 SIGNIFICANT (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -0.0857430927455427,
+    "airport_ground": -0.07266067266464216,
+    "bakery_plant": -0.10854450017213768,
+    "brewery_works": 0.0051245003938675815,
+    "campsite_park": -0.007150266319513321,
+    "city_bridge": -0.10994299054145795,
+    "construction_site": -0.0794360563158989,
+    "dairy_plant": -0.05111575424671155,
+    "farm_storage": -0.036359022557735265,
+    "ferry_terminal": -0.016071701049804155,
+    "film_studio": -0.05742352306842813,
+    "fishing_harbour": -0.18870643079280836,
+    "game_manual": -0.024190522730350494,
+    "garden_centre": 0.0303811416029931,
+    "harbour_dock": -0.0640980489552021,
+    "hospital_supply": -0.09558175951242465,
+    "hospital_ward_store": -0.04245778471231443,
+    "hotel_service": -0.046662533283234,
+    "instructional": -0.04133512526750582,
+    "lab_safety": -0.014120909571647466,
+    "library_stacks": 0.0032887473702434278,
+    "mountain_refuge": -0.032725319266319275,
+    "museum_archive": -0.28564954996109027,
+    "news_report": -0.021947734802961527,
+    "power_substation": -0.11200527846813202,
+    "printing_works": -0.11379629075527209,
+    "quarry_site": -0.07476285696029628,
+    "rail_depot": -0.0860898420214653,
+    "recycling_centre": -0.05784665942192113,
+    "school_campus": -0.05854777693748403,
+    "shipyard_slip": -0.13116484135389328,
+    "sports_stadium": -0.09527364075183886,
+    "subway_station": -0.11671554967761111,
+    "telecom_exchange": -0.12046736031770688,
+    "textile_mill": -0.06655074805021322,
+    "theatre_backstage": -0.10093706548213954,
+    "veterinary_clinic": -0.03210586383938807,
+    "warehouse_logistics": -0.037864599376916885
+   },
+   "holm_p": 2.6711495593190193e-07,
+   "significant": true
+  },
+  "K4": {
+   "K": 4,
+   "is_new": true,
+   "n_domains": 38,
+   "mean_delta": -0.019435160861987762,
+   "median_delta": -0.05137087441980848,
+   "n_negative": 21,
+   "demo_mean": 5.211577582280887,
+   "ctrl_mean": 5.231012743142874,
+   "option_mass_demo": 0.8798700571060181,
+   "option_mass_ctrl": 0.8804160356521606,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 144.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 21,
+    "p": 0.6271025701571489,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "21/38 negative, p=0.6271 \u2014 informative null (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": 0.08283379301428795,
+    "airport_ground": 0.4000494219362736,
+    "bakery_plant": -0.24240008741617203,
+    "brewery_works": -0.1235395073890686,
+    "campsite_park": 0.09239715188741737,
+    "city_bridge": -0.13215884864330274,
+    "construction_site": -0.21283988058567083,
+    "dairy_plant": 0.15756016522645933,
+    "farm_storage": 0.02848589569330162,
+    "ferry_terminal": -0.027267012000083746,
+    "film_studio": -0.16326276063919076,
+    "fishing_harbour": -0.3423097997903817,
+    "game_manual": -0.3075105622410774,
+    "garden_centre": -0.06069177687168148,
+    "harbour_dock": 0.1498721301555639,
+    "hospital_supply": -0.05823949202895129,
+    "hospital_ward_store": 0.22215618342161125,
+    "hotel_service": 0.010836850106716867,
+    "instructional": 0.1841697975993153,
+    "lab_safety": 0.023849056661129353,
+    "library_stacks": -0.20266014784574526,
+    "mountain_refuge": 0.03604933172464353,
+    "museum_archive": 0.4366313457489017,
+    "news_report": 0.22149730697274173,
+    "power_substation": 0.04051229059696215,
+    "printing_works": 0.10498811155557686,
+    "quarry_site": -0.06282629966735787,
+    "rail_depot": -0.11037433445453626,
+    "recycling_centre": -0.06359022930264491,
+    "school_campus": -0.21718483418226242,
+    "shipyard_slip": 0.13101667761802638,
+    "sports_stadium": -0.23956183642149043,
+    "subway_station": -0.2955532483756542,
+    "telecom_exchange": -0.16726222485303843,
+    "textile_mill": -0.05476703494787216,
+    "theatre_backstage": -0.10322427153587332,
+    "veterinary_clinic": 0.1737572804093368,
+    "warehouse_logistics": -0.04797471389174479
+   },
+   "holm_p": 1.0,
+   "significant": false
+  },
+  "K5": {
+   "K": 5,
+   "is_new": true,
+   "n_domains": 38,
+   "mean_delta": 0.02248417531189162,
+   "median_delta": 0.01048823297023782,
+   "n_negative": 18,
+   "demo_mean": 5.2089760692692115,
+   "ctrl_mean": 5.18649189395732,
+   "option_mass_demo": 0.8777331709861755,
+   "option_mass_ctrl": 0.8788948357105255,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 180.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 18,
+    "p": 0.8714146793645341,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "18/38 negative, p=0.8714 \u2014 informative null (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": 0.11653424650430733,
+    "airport_ground": 0.4110282838344572,
+    "bakery_plant": -0.20417005419731105,
+    "brewery_works": -0.09802685678005219,
+    "campsite_park": 0.07835831791162473,
+    "city_bridge": -0.06695329546928441,
+    "construction_site": -0.1606375992298128,
+    "dairy_plant": 0.14629407525062543,
+    "farm_storage": 0.07288993224501628,
+    "ferry_terminal": 0.07385114878416044,
+    "film_studio": -0.14187463819980628,
+    "fishing_harbour": -0.16971086710691452,
+    "game_manual": -0.2509622290730471,
+    "garden_centre": 0.019526660442352295,
+    "harbour_dock": 0.12779110744595545,
+    "hospital_supply": -0.009391587227582932,
+    "hospital_ward_store": 0.26271995604038256,
+    "hotel_service": 0.07763310223817843,
+    "instructional": 0.2792224809527397,
+    "lab_safety": 0.10263137072324735,
+    "library_stacks": -0.20183364599943232,
+    "mountain_refuge": 0.09820068925619108,
+    "museum_archive": 0.39130030870437604,
+    "news_report": 0.339919259399176,
+    "power_substation": 0.08818546831607854,
+    "printing_works": 0.161062547564506,
+    "quarry_site": -0.08212448507547343,
+    "rail_depot": -0.09497613236308133,
+    "recycling_centre": -0.06312436088919693,
+    "school_campus": -0.2614521145820623,
+    "shipyard_slip": 0.21651866957545263,
+    "sports_stadium": -0.24226309806108492,
+    "subway_station": -0.2586868248879908,
+    "telecom_exchange": -0.07535172477364505,
+    "textile_mill": 0.0014498054981233466,
+    "theatre_backstage": -0.07089684903621674,
+    "veterinary_clinic": 0.24583200141787476,
+    "warehouse_logistics": -0.004114407300948919
+   },
+   "holm_p": 1.0,
+   "significant": false
+  },
+  "K6": {
+   "K": 6,
+   "is_new": true,
+   "n_domains": 38,
+   "mean_delta": -0.5014503033929749,
+   "median_delta": -0.46405226588249193,
+   "n_negative": 34,
+   "demo_mean": 4.686147028815589,
+   "ctrl_mean": 5.187597332208565,
+   "option_mass_demo": 0.8529664874076843,
+   "option_mass_ctrl": 0.8766664862632751,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 216.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 34,
+    "p": 6.038535502739251e-07,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "34/38 negative, p=0.0000 \u2014 SIGNIFICANT (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -0.356547018885613,
+    "airport_ground": 0.012601172178984044,
+    "bakery_plant": -0.989243455976248,
+    "brewery_works": -0.7267848700284958,
+    "campsite_park": -0.5457549192011362,
+    "city_bridge": -0.37138399630784935,
+    "construction_site": -0.43034120947122645,
+    "dairy_plant": -0.692290224134922,
+    "farm_storage": -0.17237844318151474,
+    "ferry_terminal": -0.007130780816077653,
+    "film_studio": -0.5306191965937614,
+    "fishing_harbour": -0.7277153164148329,
+    "game_manual": -0.5625579953193665,
+    "garden_centre": -0.4547584399580953,
+    "harbour_dock": -0.41903143003582954,
+    "hospital_supply": -0.9147241286933421,
+    "hospital_ward_store": -0.43798070996999705,
+    "hotel_service": -0.6360674686729908,
+    "instructional": 0.009839007258415577,
+    "lab_safety": -0.3659775510430334,
+    "library_stacks": -0.8082754537463188,
+    "mountain_refuge": -0.49294776767492365,
+    "museum_archive": 0.33345842361450195,
+    "news_report": 0.10304326638579386,
+    "power_substation": -0.18154585957527125,
+    "printing_works": -0.20771233290433866,
+    "quarry_site": -0.4733460918068886,
+    "rail_depot": -0.38236709386110324,
+    "recycling_centre": -1.1502973183989527,
+    "school_campus": -1.1456880226731299,
+    "shipyard_slip": -0.4412252001464365,
+    "sports_stadium": -1.0540505863726137,
+    "subway_station": -0.79285851418972,
+    "telecom_exchange": -0.35159163922071457,
+    "textile_mill": -0.5726504184305661,
+    "theatre_backstage": -1.0868902772665023,
+    "veterinary_clinic": -0.21436212435364688,
+    "warehouse_logistics": -0.816957543045282
+   },
+   "holm_p": 1.8115606508217752e-06,
+   "significant": true
+  },
+  "K7": {
+   "K": 7,
+   "is_new": true,
+   "n_domains": 38,
+   "mean_delta": -5.9849059979186245,
+   "median_delta": -6.044060855358839,
+   "n_negative": 38,
+   "demo_mean": -0.5984822276783618,
+   "ctrl_mean": 5.386423770240263,
+   "option_mass_demo": 0.4087299406528473,
+   "option_mass_ctrl": 0.885829895734787,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 252.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 38,
+    "p": 7.275957614183426e-12,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "38/38 negative, p=0.0000 \u2014 SIGNIFICANT (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -5.409011080116034,
+    "airport_ground": -3.502545639872551,
+    "bakery_plant": -7.4687689483165745,
+    "brewery_works": -5.854018367826939,
+    "campsite_park": -5.908808140456677,
+    "city_bridge": -6.261924767494202,
+    "construction_site": -6.067462964355945,
+    "dairy_plant": -5.383395391702652,
+    "farm_storage": -5.474232620000839,
+    "ferry_terminal": -3.8844134621322155,
+    "film_studio": -4.741597416996956,
+    "fishing_harbour": -6.877335218340159,
+    "game_manual": -6.0206587463617325,
+    "garden_centre": -7.014297594130039,
+    "harbour_dock": -7.313872104138136,
+    "hospital_supply": -6.699037396162748,
+    "hospital_ward_store": -6.921145690977573,
+    "hotel_service": -5.458365920186043,
+    "instructional": -5.480474877357483,
+    "lab_safety": -6.8871282070875175,
+    "library_stacks": -7.675652951002121,
+    "mountain_refuge": -4.605499982833862,
+    "museum_archive": -0.9764012694358826,
+    "news_report": -7.2990003466606135,
+    "power_substation": -3.8061973541975016,
+    "printing_works": -5.103497903048993,
+    "quarry_site": -5.996771889925003,
+    "rail_depot": -5.994601835310459,
+    "recycling_centre": -6.517938048392534,
+    "school_campus": -8.61559334397316,
+    "shipyard_slip": -6.459289253503084,
+    "sports_stadium": -6.582219519466162,
+    "subway_station": -4.349812729656697,
+    "telecom_exchange": -5.467017721384764,
+    "textile_mill": -7.528289042413235,
+    "theatre_backstage": -7.567515024542809,
+    "veterinary_clinic": -6.935499718785286,
+    "warehouse_logistics": -7.317135432362556
+   },
+   "holm_p": 3.637978807091713e-11,
+   "significant": true
+  },
+  "K8": {
+   "K": 8,
+   "is_new": false,
+   "n_domains": 38,
+   "mean_delta": -6.616111537245543,
+   "median_delta": -6.985901210457087,
+   "n_negative": 38,
+   "demo_mean": -1.24621524493161,
+   "ctrl_mean": 5.369896292313933,
+   "option_mass_demo": 0.36780939996242523,
+   "option_mass_ctrl": 0.882347822189331,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 288.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 38,
+    "p": 7.275957614183426e-12,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "38/38 negative, p=0.0000 \u2014 SIGNIFICANT (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -6.13656647130847,
+    "airport_ground": -4.618316100537777,
+    "bakery_plant": -8.324545542895795,
+    "brewery_works": -5.829393653571605,
+    "campsite_park": -6.569968117028474,
+    "city_bridge": -6.989237375557423,
+    "construction_site": -6.9825650453567505,
+    "dairy_plant": -5.889684715867043,
+    "farm_storage": -6.088605972379447,
+    "ferry_terminal": -4.752578461170197,
+    "film_studio": -5.050877276062965,
+    "fishing_harbour": -7.509117498993874,
+    "game_manual": -6.233809086680413,
+    "garden_centre": -7.342503477633,
+    "harbour_dock": -8.014303456991911,
+    "hospital_supply": -7.0600086830556394,
+    "hospital_ward_store": -7.666104072332383,
+    "hotel_service": -6.156135615706443,
+    "instructional": -5.7856135815382,
+    "lab_safety": -7.627245683968067,
+    "library_stacks": -8.310548244416713,
+    "mountain_refuge": -5.354453147947788,
+    "museum_archive": -1.1681956052780151,
+    "news_report": -8.019263499975205,
+    "power_substation": -4.342110238969326,
+    "printing_works": -5.6263613000512125,
+    "quarry_site": -6.8611917600035675,
+    "rail_depot": -6.998072641342878,
+    "recycling_centre": -7.3672792173922055,
+    "school_campus": -9.1688177511096,
+    "shipyard_slip": -7.4734690800309185,
+    "sports_stadium": -7.097394999861717,
+    "subway_station": -4.946337895095349,
+    "telecom_exchange": -6.180494372546673,
+    "textile_mill": -8.368189442902803,
+    "theatre_backstage": -7.881074616312981,
+    "veterinary_clinic": -7.505462446808815,
+    "warehouse_logistics": -8.116342266649008
+   }
+  },
+  "K16": {
+   "K": 16,
+   "is_new": false,
+   "n_domains": 38,
+   "mean_delta": -7.888374126918222,
+   "median_delta": -8.398560102283955,
+   "n_negative": 37,
+   "demo_mean": -2.510442827014547,
+   "ctrl_mean": 5.377931299903674,
+   "option_mass_demo": 0.3718339055776596,
+   "option_mass_ctrl": 0.8748476505279541,
+   "keys_masked": 2088.0,
+   "query_rows_edited": 576.0,
+   "sign_test": {
+    "k_informative": 38,
+    "n_negative": 37,
+    "p": 2.837623469531536e-10,
+    "attainable_floor": 7.275957614183426e-12,
+    "alpha": 0.05,
+    "can_reach_alpha": true,
+    "n_clusters": 38
+   },
+   "sign_summary": "37/38 negative, p=0.0000 \u2014 SIGNIFICANT (attainable floor 0.0000, so the test was capable of clearing alpha=0.05)",
+   "per_domain": {
+    "airport_apron": -8.30330170094967,
+    "airport_ground": -7.213697466254235,
+    "bakery_plant": -9.296267949789762,
+    "brewery_works": -7.2103931829333305,
+    "campsite_park": -8.085939671099187,
+    "city_bridge": -8.49381850361824,
+    "construction_site": -9.468997496366502,
+    "dairy_plant": -7.4834707349538805,
+    "farm_storage": -7.831341839581728,
+    "ferry_terminal": -7.113503254204988,
+    "film_studio": -2.8592828840017317,
+    "fishing_harbour": -8.994050915539265,
+    "game_manual": -4.822838175296783,
+    "garden_centre": -7.9076628357172005,
+    "harbour_dock": -9.914706940948964,
+    "hospital_supply": -7.335959876328706,
+    "hospital_ward_store": -10.627569815516472,
+    "hotel_service": -8.54690959751606,
+    "instructional": -6.120820155739784,
+    "lab_safety": -8.97876809835434,
+    "library_stacks": -9.634243887662887,
+    "mountain_refuge": -6.973423174023628,
+    "museum_archive": 1.6155767083168033,
+    "news_report": -8.54664313569665,
+    "power_substation": -6.595419032871723,
+    "printing_works": -8.234809127449989,
+    "quarry_site": -8.52662931829691,
+    "rail_depot": -8.873957939445972,
+    "recycling_centre": -9.293219043314458,
+    "school_campus": -9.726977322995662,
+    "shipyard_slip": -8.548120133578777,
+    "sports_stadium": -9.314285008609295,
+    "subway_station": -6.650992001593113,
+    "telecom_exchange": -6.430077449977398,
+    "textile_mill": -10.679698622971774,
+    "theatre_backstage": -6.860442084074021,
+    "veterinary_clinic": -9.911337050050497,
+    "warehouse_logistics": -9.964218103885651
+   }
+  }
+ },
+ "contracts": {
+  "K1": {
+   "demo": {
+    "arm": "k1_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 36.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8788905441761017,
+    "knockout_last_k": [
+     1
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k1_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 36.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8780849874019623,
+    "knockout_last_k": [
+     1
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K2": {
+   "demo": {
+    "arm": "k2_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 72.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8781132102012634,
+    "knockout_last_k": [
+     2
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k2_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 72.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8793613910675049,
+    "knockout_last_k": [
+     2
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K3": {
+   "demo": {
+    "arm": "k3_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 108.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8790338039398193,
+    "knockout_last_k": [
+     3
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k3_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 108.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8800300657749176,
+    "knockout_last_k": [
+     3
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K4": {
+   "demo": {
+    "arm": "k4_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 144.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8798700571060181,
+    "knockout_last_k": [
+     4
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k4_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 144.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8804160356521606,
+    "knockout_last_k": [
+     4
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K5": {
+   "demo": {
+    "arm": "k5_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 180.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8777331709861755,
+    "knockout_last_k": [
+     5
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k5_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 180.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8788948357105255,
+    "knockout_last_k": [
+     5
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K6": {
+   "demo": {
+    "arm": "k6_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 216.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8529664874076843,
+    "knockout_last_k": [
+     6
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k6_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 216.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8766664862632751,
+    "knockout_last_k": [
+     6
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K7": {
+   "demo": {
+    "arm": "k7_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 252.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.4087299406528473,
+    "knockout_last_k": [
+     7
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k7_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 252.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.885829895734787,
+    "knockout_last_k": [
+     7
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K8": {
+   "demo": {
+    "arm": "k8_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 288.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.36780939996242523,
+    "knockout_last_k": [
+     8
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k8_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 288.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.882347822189331,
+    "knockout_last_k": [
+     8
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "K16": {
+   "demo": {
+    "arm": "k16_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 576.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.3718339055776596,
+    "knockout_last_k": [
+     16
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k16_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 576.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.8748476505279541,
+    "knockout_last_k": [
+     16
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  }
+ },
+ "void": [],
+ "arm_dirs": {
+  "K1": {
+   "demo": "dcsk1_C_demo_20260906_004613_2935018",
+   "ctrl": "dcsk1_C_ctrl_20260906_004620_3352345"
+  },
+  "K2": {
+   "demo": "dcsk2_C_demo_20260903_134548_2598403",
+   "ctrl": "dcsk2_C_ctrl_20260903_135045_3878102"
+  },
+  "K3": {
+   "demo": "dcsk3_C_demo_20260905_221559_2937149",
+   "ctrl": "dcsk3_C_ctrl_20260905_221733_2915218"
+  },
+  "K4": {
+   "demo": "dcsk4_C_demo_20260906_003234_2932752",
+   "ctrl": "dcsk4_C_ctrl_20260906_003515_3349702"
+  },
+  "K5": {
+   "demo": "dcsk5_C_demo_20260906_003529_3349939",
+   "ctrl": "dcsk5_C_ctrl_20260906_003521_3349838"
+  },
+  "K6": {
+   "demo": "dcsk6_C_demo_20260906_003656_2933842",
+   "ctrl": "dcsk6_C_ctrl_20260906_004124_2934423"
+  },
+  "K7": {
+   "demo": "dcsk7_C_demo_20260906_004128_3351288",
+   "ctrl": "dcsk7_C_ctrl_20260906_004128_3351289"
+  },
+  "K8": {
+   "demo": "dcsk8_C_demo_20260903_135021_2598959",
+   "ctrl": "dcsk8_C_ctrl_20260903_135119_2599287"
+  },
+  "K16": {
+   "demo": "dcsk16_C_demo_20260903_135119_2599286",
+   "ctrl": "dcsk16_C_ctrl_20260903_135503_2600269"
+  },
+  "K32": {
+   "demo": null,
+   "ctrl": null,
+   "status": "MISSING ARM"
+  }
+ },
+ "skipped_incomplete": {},
+ "session_anchor_K8_rerun": {
+  "arm_dirs": {
+   "demo": "dcsk8r_C_demo_20260906_002412_2931820",
+   "ctrl": "dcsk8r_C_ctrl_20260906_003045_3348894"
+  },
+  "n_domains": 38,
+  "mean_delta": -6.616111537245543,
+  "contracts": {
+   "demo": {
+    "arm": "k8r_demo",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 288.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.36780939996242523,
+    "knockout_last_k": [
+     8
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   },
+   "ctrl": {
+    "arm": "k8r_ctrl",
+    "n_rows": 380,
+    "n_domains": 38,
+    "keys_masked_median": 2088.0,
+    "query_rows_edited_median": 288.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.882347822189331,
+    "knockout_last_k": [
+     8
+    ],
+    "ok_n": true,
+    "ok_liveness": true
+   }
+  },
+  "dose_matched": true,
+  "inherited_K8": -6.616111537245543,
+  "abs_diff_vs_inherited": 0.0,
+  "rel_diff_vs_inherited": 0.0
+ },
+ "holm_family": {
+  "declared": [
+   "K3",
+   "K4",
+   "K5",
+   "K6",
+   "K7"
+  ],
+  "present": [
+   "K3",
+   "K4",
+   "K5",
+   "K6",
+   "K7"
+  ],
+  "absent": [],
+  "m": 5
+ },
+ "k8_reference": -6.616111537245543,
+ "threshold_magnitude": 3.3080557686227716,
+ "K_star": 7,
+ "profile": [
+  [
+   1,
+   -0.013155957664314044
+  ],
+  [
+   2,
+   -0.01153968596144729
+  ],
+  [
+   3,
+   -0.0696646653311817
+  ],
+  [
+   4,
+   -0.019435160861987762
+  ],
+  [
+   5,
+   0.02248417531189162
+  ],
+  [
+   6,
+   -0.5014503033929749
+  ],
+  [
+   7,
+   -5.9849059979186245
+  ],
+  [
+   8,
+   -6.616111537245543
+  ]
+ ],
+ "shape_adjacent_pairs": [
+  [
+   1,
+   2
+  ],
+  [
+   2,
+   3
+  ],
+  [
+   3,
+   4
+  ],
+  [
+   4,
+   5
+  ],
+  [
+   5,
+   6
+  ],
+  [
+   6,
+   7
+  ],
+  [
+   7,
+   8
+  ]
+ ],
+ "shape_gaps": [],
+ "shape": "STEP",
+ "largest_single_rung_rise": [
+  6,
+  7,
+  0.8288033936030881
+ ]
+}

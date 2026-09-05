@@ -1,0 +1,491 @@
+{
+ "preregistration": "DCS-PR-037 (\u00a730)",
+ "alpha": 0.05,
+ "expect_n": 168,
+ "independence_unit": "domain",
+ "n_domains_declared": 6,
+ "attainable_p_floor": 0.03125,
+ "holm_family_size": 1,
+ "note": "EXACTLY ONE significance test (\u00a730.3/\u00a730.5). All other rungs are descriptive with NO p-value: at n=6 domains any family with m>=2 has an attainable adjusted floor above alpha and is uninformative by construction.",
+ "arms": {
+  "base": {
+   "demo": "dcssow_base_demo_20260906_011640_2940297"
+  },
+  "k5": {
+   "demo": "dcssow_k5_demo_20260906_011236_2954958"
+  },
+  "k6": {
+   "demo": "dcssow_k6_demo_20260906_011234_2939402"
+  },
+  "k9": {
+   "demo": "dcssow_k9_demo_20260906_010600_2953231"
+  },
+  "k10": {
+   "demo": "dcssow_k10_demo_20260906_010719_2937733"
+  },
+  "ref": {
+   "demo": "dcssow_ref_demo_20260906_010919_2938521"
+  },
+  "ko1": {
+   "demo": "dcssow_ko1_demo_20260906_011056_2938960"
+  }
+ },
+ "contracts": {
+  "base": {
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "k5": {
+   "demo": {
+    "arm": "k5_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 180.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2797919809818268,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "k6": {
+   "demo": {
+    "arm": "k6_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 216.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2817140966653824,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "k9": {
+   "demo": {
+    "arm": "k9_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 324.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.10527772456407547,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "k10": {
+   "demo": {
+    "arm": "k10_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 360.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.24343618750572205,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "ref": {
+   "demo": {
+    "arm": "ref_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 1008.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.22722674906253815,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  },
+  "ko1": {
+   "demo": {
+    "arm": "ko1_demo",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 2754.0,
+    "query_rows_edited_median": 36.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.47829289734363556,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   },
+   "baseline": {
+    "arm": "baseline",
+    "n_rows": 168,
+    "n_domains": 6,
+    "keys_masked_median": 0.0,
+    "query_rows_edited_median": 0.0,
+    "liveness_violations": 0,
+    "decode_edits_max": 0,
+    "option_mass_median": 0.2942196726799011,
+    "rows_per_domain": {
+     "farm_storage": 28,
+     "city_bridge": 28,
+     "lab_safety": 28,
+     "news_report": 28,
+     "game_manual": 28,
+     "instructional": 28
+    },
+    "uniform_domains": true,
+    "ok_n": true,
+    "ok_domains": true,
+    "ok_liveness": true
+   }
+  }
+ },
+ "void": [],
+ "skipped_incomplete": {},
+ "deltas": {
+  "k5": {
+   "per_domain": {
+    "city_bridge": -1.274452655443123,
+    "farm_storage": -1.0445619342582566,
+    "game_manual": -1.110193022659847,
+    "instructional": 0.20399370257343596,
+    "lab_safety": -1.4393366596528463,
+    "news_report": 0.02274112509829651
+   },
+   "n_domains": 6,
+   "mean_delta": -0.7736349073903902,
+   "demo_mean": 2.595968229962247,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.2797919809818268,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 180.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 12.116979548051534
+  },
+  "k6": {
+   "per_domain": {
+    "city_bridge": -1.336608563150678,
+    "farm_storage": -1.048120640218258,
+    "game_manual": -1.143146170037134,
+    "instructional": 0.2288872695394928,
+    "lab_safety": -1.4189346326248988,
+    "news_report": 0.09873091110161347
+   },
+   "n_domains": 6,
+   "mean_delta": -0.7698653042316437,
+   "demo_mean": 2.5997378331209933,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.2817140966653824,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 216.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 12.05793851468752
+  },
+  "k9": {
+   "per_domain": {
+    "city_bridge": -3.7645350673368996,
+    "farm_storage": -3.0743406170180867,
+    "game_manual": -2.354229765278953,
+    "instructional": -2.3707788991076604,
+    "lab_safety": -3.5912272674696784,
+    "news_report": -2.7555894064051767
+   },
+   "n_domains": 6,
+   "mean_delta": -2.985116837102743,
+   "demo_mean": 0.38448630024989444,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.10527772456407547,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 324.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 46.75409462291219
+  },
+  "k10": {
+   "per_domain": {
+    "city_bridge": -7.253524716411318,
+    "farm_storage": -5.380429943757398,
+    "game_manual": -6.6275909798485895,
+    "instructional": -5.489782763378961,
+    "lab_safety": -6.157397312777383,
+    "news_report": -5.424224466085434
+   },
+   "n_domains": 6,
+   "mean_delta": -6.0554916970431805,
+   "demo_mean": -2.685888559690543,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.24343618750572205,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 360.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 94.84353452195262
+  },
+  "ref": {
+   "per_domain": {
+    "city_bridge": -7.505718728261334,
+    "farm_storage": -5.92392011731863,
+    "game_manual": -6.950038241488594,
+    "instructional": -5.690022232277053,
+    "lab_safety": -6.4593919813632965,
+    "news_report": -5.779213388051305
+   },
+   "n_domains": 6,
+   "mean_delta": -6.384717448126701,
+   "demo_mean": -3.015114310774065,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.22722674906253815,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 1008.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 100.00000000000001
+  },
+  "ko1": {
+   "per_domain": {
+    "city_bridge": -2.628172695636749,
+    "farm_storage": -1.966051914862224,
+    "game_manual": -3.6035256886056493,
+    "instructional": -1.23447459084647,
+    "lab_safety": -1.688046851328441,
+    "news_report": -1.3924557705010687
+   },
+   "n_domains": 6,
+   "mean_delta": -2.0854545852967674,
+   "demo_mean": 1.2841485520558698,
+   "ctrl_mean": 3.369603137352637,
+   "option_mass_demo": 0.47829289734363556,
+   "option_mass_baseline": 0.2942196726799011,
+   "query_rows_edited": 36.0,
+   "keys_masked": 2754.0,
+   "pct_of_reference": 32.66322436725289
+  }
+ },
+ "keys_masked_by_arm": {
+  "k5": 2754.0,
+  "k6": 2754.0,
+  "k9": 2754.0,
+  "k10": 2754.0,
+  "ref": 2754.0,
+  "ko1": 2754.0
+ },
+ "reference_delta_prefill": -6.384717448126701,
+ "scaffold_control_K5": {
+  "mean_delta": -0.7736349073903902,
+  "frac_of_reference": 0.12116979548051535,
+  "bar": 0.2,
+  "passes": true
+ },
+ "primary": {
+  "estimand": "per-domain inc(d) = delta_K10(d) - delta_K9(d); the codeword row's own increment",
+  "per_domain": {
+   "city_bridge": -3.4889896490744188,
+   "farm_storage": -2.306089326739311,
+   "game_manual": -4.273361214569636,
+   "instructional": -3.1190038642713005,
+   "lab_safety": -2.5661700453077048,
+   "news_report": -2.6686350596802573
+  },
+  "n_domains": 6,
+  "mean_inc": -3.0703748599404386,
+  "n_negative": 6,
+  "n_positive": 0,
+  "n_nonzero": 6,
+  "sign_test_p": 0.03125,
+  "attainable_floor": 0.03125,
+  "magnitude_gain": 3.0703748599404377,
+  "magnitude_gain_frac_of_reference": 0.48089439899040426,
+  "bar_big": 0.5,
+  "bar_small": 0.2
+ },
+ "verdict": "CANNOT ANSWER \u2014 sign test p=0.0312 (6/6 negative) with magnitude gain 48.1% of |delta_prefill|, which falls between the 20% and 50% bars. \u26d4 This is NOT a null."
+}
