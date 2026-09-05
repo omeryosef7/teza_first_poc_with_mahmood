@@ -1293,3 +1293,30 @@ the submission layer.
 ✅ All completed arms verified: identical config signature, **2736 rep stacks each**, all 1296
 analysed rows present, **zero** occurrence-resolution failures, and each job's log header confirms
 `extract_boombness.py` ran with its own argsfile (the `C-047` check, §12.1).
+
+---
+
+## §20 — `DCS-A-023` — the `PR-032` analyzer reproduces `R-022`'s published rungs exactly, before its own data
+
+`scripts/dcs_kladder_analysis.py`, committed before any K = 3…7 arm exists. Run against the
+**inherited** arms already on disk it recovers the published ladder to the digit:
+
+| K | this analyzer | `R-022` as published | domains negative | `option_mass` (demo) |
+|---|---|---|---|---|
+| 2 | **−0.0115**, p = 2.559e-01 | −0.012, p = 0.256 | 23/38 | 0.878 |
+| 8 | **−6.6161**, p = 7.276e-12 | −6.616, p = 7.28e-12 | **38/38** | 0.368 |
+| 16 | **−7.8884**, p = 2.838e-10 | −7.888, p = 2.84e-10 | 37/38 | 0.372 |
+
+✅ Written from the preregistration rather than from the old analysis code, and reproducing three
+independent published numbers is meaningful evidence that the new rungs will be measured on the same
+scale as the old ones. ⚠ It is **not** evidence that `R-022`'s *interpretation* was right — `A-004`
+reproduced every number of a claim it then had to falsify. It establishes comparability, nothing more.
+
+⚠ **Also recovered, and it matters for reading the ladder:** `option_mass` collapses **0.878 → 0.368**
+between K=2 and K=8. So the rungs that show the effect are also the rungs where the forced-choice
+options hold about a third of the model's probability. This is `B-006`/`R-050`'s measurement-regime
+caveat, now visible **within** the ladder itself, and it travels with every rung quoted.
+
+⚠ K=1 and K=32 have no `dcsk*` arm directories (they were run under different arm names —
+K=32 is the full `query_prefill_only` scope). They are quoted from the log as context, ⛔ **not**
+recomputed here, and the analyzer's Holm family is the **five new rungs only**.
