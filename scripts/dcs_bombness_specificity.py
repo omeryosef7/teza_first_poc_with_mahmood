@@ -89,15 +89,18 @@ def build_rows(bank_rows, layers, reps, *, channel, cells, n_examples, bank_sha,
     IS the concept by construction (48/48 rows contain it, so applying it there empties the cell).
     """
     pat = re.compile(r"\b" + re.escape(concept) + r"\b", re.IGNORECASE)
-    out, missing, excluded = [], 0, collections.Counter()
+    out, missing, excluded, retained = [], 0, collections.Counter(), collections.Counter()
     for r in bank_rows:
         if r.get("query_kind") != channel or r.get("cell") not in cells:
             continue
         if n_examples is not None and r.get("n_examples") not in n_examples:
             continue
-        if exclude_concept_word and pat.search(r["full_prompt"]):
+        # C-053 §28.1: the exclusion is ONE uniform rule over all cells -- concept word present AND
+        # this row's surface is NOT that word. No cell is named, so there is no carve-out to defend.
+        if exclude_concept_word and pat.search(r["full_prompt"]) and r.get("target_surface") != concept:
             excluded[f'{r["cell"]}/{r.get("bank_block")}/n{r["n_examples"]}'] += 1
             continue
+        retained[f'{r["cell"]}/{r.get("bank_block")}/n{r["n_examples"]}'] += 1
         pid = r["prompt_id"]
         if pid not in reps:
             missing += 1
@@ -107,7 +110,7 @@ def build_rows(bank_rows, layers, reps, *, channel, cells, n_examples, bank_sha,
                         n_examples=r["n_examples"], family=r.get("family_id"),
                         codeword=codeword, concept=concept, n_chars=len(r["full_prompt"]),
                         vec=reps[pid], layers=layers))
-    return out, missing, dict(excluded)
+    return out, missing, dict(excluded), dict(retained)
 
 
 def X_at(rows, layer, layers):
@@ -116,8 +119,16 @@ def X_at(rows, layer, layers):
 
 
 # ---------------------------------------------------------------- core classifier
-def fit_predict(train, test, layer, layers, C, classes, label_of):
-    """L2 multinomial logistic regression. Standardised with TRAINING-FOLD statistics only."""
+def fit_predict(train, test, layer, layers, C, classes, label_of, balanced=False):
+    """L2 multinomial logistic regression. Standardised with TRAINING-FOLD statistics only.
+
+    `balanced` (C-053 §28.5) reports the mean of per-class recalls and weights the classes in the
+    fit. It is mandatory for any contrast whose classes are not roughly equal in size: the cell-F
+    comparator is 228 bomb rows against 24, so a constant "bomb" predictor scores 0.906 against a
+    printed chance of 0.5, and the group-permutation null does NOT absorb that -- permuting swaps
+    which class is the majority, so the null sits near 0.5 while the observed statistic is lifted
+    by imbalance alone. That is a manufactured positive, and it is the C-049 signature.
+    """
     from sklearn.linear_model import LogisticRegression
     ytr = np.array([classes.index(label_of(r)) for r in train])
     yte = np.array([classes.index(label_of(r)) for r in test])
@@ -127,11 +138,17 @@ def fit_predict(train, test, layer, layers, C, classes, label_of):
     mu, sd = Xtr.mean(0), Xtr.std(0)
     sd[sd < 1e-8] = 1.0
     Xtr, Xte = (Xtr - mu) / sd, (Xte - mu) / sd
-    clf = LogisticRegression(C=C, max_iter=3000)  # sklearn>=1.5: multinomial is the default for lbfgs
+    clf = LogisticRegression(C=C, max_iter=3000,
+                             class_weight=("balanced" if balanced else None))
     clf.fit(Xtr, ytr)
     pred = clf.predict(Xte)
     proba = clf.predict_proba(Xte)
-    return dict(acc=float((pred == yte).mean()), n=len(yte), pred=pred.tolist(),
+    if balanced:
+        recs = [float((pred[yte == k] == k).mean()) for k in sorted(set(yte.tolist()))]
+        acc = float(np.mean(recs)) if recs else 0.0
+    else:
+        acc = float((pred == yte).mean())
+    return dict(acc=acc, n=len(yte), balanced=bool(balanced), pred=pred.tolist(),
                 true=yte.tolist(), proba=proba.tolist(), classes=list(classes))
 
 
@@ -162,7 +179,7 @@ def select_layer_C(sel_rows, layers, classes, label_of):
 
 
 def loo_domain(rows, layers, classes, label_of, *, selection_rows=None, tag="", group="domain",
-               train_rows=None):
+               train_rows=None, balanced=False):
     """Outer leave-one-GROUP-out (group='domain' is the declared unit; 'block' gives the
     held-out template-family secondary of PR-031c §9.2).
 
@@ -193,18 +210,19 @@ def loo_domain(rows, layers, classes, label_of, *, selection_rows=None, tag="", 
         if pick is None:
             continue
         L, C = pick
-        res = fit_predict(tr, te, L, layers, C, classes, label_of)
+        res = fit_predict(tr, te, L, layers, C, classes, label_of, balanced=balanced)
         if res:
             per_domain[d] = res["acc"]
             picks[d] = dict(layer=L, C=C, n_test=res["n"], n_train=len(tr))
             # PR-031a §7.6 capability gate: the fit must beat chance ON ITS OWN TRAINING FOLD.
-            selfr = fit_predict(tr, tr, L, layers, C, classes, label_of)
+            selfr = fit_predict(tr, tr, L, layers, C, classes, label_of, balanced=balanced)
             if selfr:
                 train_acc[d] = selfr["acc"]
     ch = chance(len(classes))
     deltas = [per_domain[d] - ch for d in sorted(per_domain)]
     st = cluster_sign_test(deltas, alpha=ALPHA)
-    return dict(tag=tag, classes=list(classes), chance=ch, group=group, per_domain=per_domain,
+    return dict(tag=tag, classes=list(classes), chance=ch, group=group, balanced=bool(balanced),
+                metric=("balanced_accuracy" if balanced else "accuracy"), per_domain=per_domain,
                 picks=picks, train_fold_acc=train_acc,
                 mean_train_fold_acc=float(np.mean(list(train_acc.values()))) if train_acc else None,
                 fit_capable=bool(train_acc and float(np.mean(list(train_acc.values()))) > ch),
@@ -262,7 +280,8 @@ def group_permute(rows, rng, classes):
     return out
 
 
-def loo_with_picks(rows, layers, classes, label_of, picks, train_rows=None, train_label_of=None):
+def loo_with_picks(rows, layers, classes, label_of, picks, train_rows=None, train_label_of=None,
+                   balanced=False, group="domain"):
     """Outer LOO-domain using a FIXED (layer, C) per fold -- no selection inside.
 
     When `train_rows` is given the training population is separate (P1), and it keeps its REAL
@@ -272,15 +291,18 @@ def loo_with_picks(rows, layers, classes, label_of, picks, train_rows=None, trai
     per_domain = {}
     pool_tr = rows if train_rows is None else train_rows
     tr_lab = label_of if train_label_of is None else train_label_of
-    for d in sorted({r["domain"] for r in rows}):
+    # `group` must match how `picks` is keyed. The LOBO secondary folds on bank_block, and
+    # iterating domains there would match no pick at all and silently return an empty null (p=None).
+    for d in sorted({r[group] for r in rows}):
         if d not in picks:
             continue
-        tr = [r for r in pool_tr if r.get("domain") != d]
-        te = [r for r in rows if r["domain"] == d]
+        tr = [r for r in pool_tr if r.get(group) != d]
+        te = [r for r in rows if r[group] == d]
         if not tr or not te or len({tr_lab(r) for r in tr}) < len(classes):
             continue
         if train_rows is None:
-            res = fit_predict(tr, te, picks[d]["layer"], layers, picks[d]["C"], classes, label_of)
+            res = fit_predict(tr, te, picks[d]["layer"], layers, picks[d]["C"], classes, label_of,
+                              balanced=balanced)
         else:
             res = fit_predict_xy(tr, te, picks[d]["layer"], layers, picks[d]["C"], classes,
                                  tr_lab, label_of)
@@ -307,7 +329,7 @@ def fit_predict_xy(train, test, layer, layers, C, classes, train_label_of, test_
 
 
 def permutation_test(rows, layers, classes, label_of, picks, n_perm, seed, observed_mean,
-                     train_rows=None):
+                     train_rows=None, balanced=False, group="domain"):
     """One-sided permutation p on the mean held-out accuracy, in the PREDICTED direction.
 
     The (layer, C) picks are held fixed and are legitimate to reuse: PR-031 selects them on cell B,
@@ -319,7 +341,7 @@ def permutation_test(rows, layers, classes, label_of, picks, n_perm, seed, obser
     for _ in range(n_perm):
         perm_rows = group_permute(rows, rng, perm_classes)
         pd = loo_with_picks(perm_rows, layers, classes, lambda r: r["perm_label"], picks,
-                            train_rows=train_rows,
+                            train_rows=train_rows, balanced=balanced, group=group,
                             train_label_of=None if train_rows is None else label_of)
         if pd:
             null.append(float(np.mean(list(pd.values()))))
@@ -453,13 +475,19 @@ def main() -> int:
 
     # ---- PR-035 §23.3: class-set completeness. A missing bank must NEVER silently become a
     # smaller problem scored against the larger chance level (C4).
-    need_primary = [(PRIMARY_CODEWORD, c) for c in PRIMARY_CLASSES]
+    # A-04/C-053 §28.4: the assertion covered the three primary classes only, so `club` -- needed
+    # for the §23.5(4) DECISION-CRITICAL knife-vs-club control -- could silently vanish, and a
+    # MISSING control then reads as a control that FAILED. Every class this run uses is required.
+    need_primary = [(PRIMARY_CODEWORD, c) for c in PRIMARY_CLASSES] + [(PRIMARY_CODEWORD, "club")]
     missing_primary = [k for k in need_primary if k not in runs]
     if missing_primary:
-        raise SystemExit(f"VOID: primary class set incomplete -- no run for {missing_primary}. "
-                         f"Refusing to score a reduced class set against chance 1/{len(PRIMARY_CLASSES)}.")
+        raise SystemExit(f"VOID: class set incomplete -- no run for {missing_primary}. Refusing to "
+                         f"score a reduced class set, and refusing to report a missing "
+                         f"knife-vs-club control as a failed one (§23.5 clause 4).")
 
-    pool, provenance, excl_report, missing_total, rows_total = {}, {}, {}, 0, 0
+    pool, provenance, excl_report, retain_report = {}, {}, {}, {}
+    provenance_bank_check = {}
+    missing_total, rows_total = 0, 0
     for (cw, cc) in sorted(runs):
         bp = os.path.join(a.bank_dir, f"boombness_prompt_bank_{cw}_{cc}.jsonl")
         sha = hashlib.sha256(open(bp, "rb").read()).hexdigest()[:16]
@@ -467,15 +495,38 @@ def main() -> int:
         if len(bank) != EXPECT_ROWS_PER_BANK:
             raise SystemExit(f"VOID: {cw}_{cc} has {len(bank)} rows, expected {EXPECT_ROWS_PER_BANK}")
         layers, reps = load_reps(runs[(cw, cc)])
-        # C-050 §25.2: the concept-word exclusion applies to every TEST population and to A.
-        # Cell B is exempt: it is training/selection only, and its surface word IS the concept.
-        for cellset, nex, name, excl_cw in (
-                (("C",), PRIMARY_NEXAMPLES, "C", True), (("B",), PRIMARY_NEXAMPLES, "B", False),
-                (("A",), PRIMARY_NEXAMPLES, "A", True), (("F",), PRIMARY_NEXAMPLES, "F", True),
-                (("C",), (0,), "C_n0", True)):
-            rws, miss, excl = build_rows(bank, layers, reps, channel=a.channel, cells=cellset,
-                                         n_examples=nex, bank_sha=sha, codeword=cw, concept=cc,
-                                         exclude_concept_word=excl_cw)
+        # C-1/C-053 §28.3: THE JOIN IS ON prompt_id, WHICH COLLIDES 8-WAY ACROSS BANKS
+        # (2,736 distinct ids over 21,888 rows). The rep caches are keyed the same way and all
+        # eight have IDENTICAL key sets, so a mis-pointed run dir would join another bank's hidden
+        # states with zero missing rows, no VOID, and a plausible headline. The compound key this
+        # file's own docstring demands was constructed and never read. Refuse instead: the run must
+        # declare the bank it came from, and that declaration must match this bank byte-for-byte.
+        meta_p = os.path.join(runs[(cw, cc)], "metadata.json")
+        if not os.path.exists(meta_p):
+            raise SystemExit(f"VOID: {cw}_{cc} run has no metadata.json; cannot verify the bank it "
+                             f"was extracted from, and prompt_id alone is not a key.")
+        rmeta = json.load(open(meta_p))
+        if rmeta.get("bank_file_sha16") != sha:
+            raise SystemExit(
+                f"VOID: {cw}_{cc} run was extracted from bank_file_sha16="
+                f"{rmeta.get('bank_file_sha16')} but is being joined to {os.path.basename(bp)} "
+                f"(sha16={sha}). Refusing a cross-bank join.")
+        if os.path.basename(rmeta.get("bank_path", "")) != os.path.basename(bp):
+            raise SystemExit(f"VOID: {cw}_{cc} run bank_path {rmeta.get('bank_path')} != {bp}")
+        if int(rmeta.get("bank_n_rows", -1)) != len(bank):
+            raise SystemExit(f"VOID: {cw}_{cc} run bank_n_rows {rmeta.get('bank_n_rows')} != {len(bank)}")
+        provenance_bank_check[f"{cw}_{cc}"] = dict(bank_file_sha16=sha,
+                                                   bank_rows_sha16=rmeta.get("bank_rows_sha16"),
+                                                   tokenizer_files_sha16=rmeta.get("tokenizer_files_sha16"),
+                                                   verified=True)
+        # C-053 §28.1: ONE uniform rule, every cell, no carve-out.
+        for cellset, nex, name in ((("C",), PRIMARY_NEXAMPLES, "C"), (("B",), PRIMARY_NEXAMPLES, "B"),
+                                   (("A",), PRIMARY_NEXAMPLES, "A"), (("F",), PRIMARY_NEXAMPLES, "F"),
+                                   (("C",), (0,), "C_n0")):
+            rws, miss, excl, kept = build_rows(bank, layers, reps, channel=a.channel, cells=cellset,
+                                               n_examples=nex, bank_sha=sha, codeword=cw, concept=cc,
+                                               exclude_concept_word=True)
+            retain_report[f"{cw}_{cc}/{name}"] = kept
             pool[(cw, cc, name)] = rws
             missing_total += miss; rows_total += len(rws) + miss
             if excl:
@@ -497,15 +548,27 @@ def main() -> int:
                primary_classes=list(PRIMARY_CLASSES), alpha=ALPHA, n_perm=a.n_perm,
                provenance=provenance, n_examples_primary=list(PRIMARY_NEXAMPLES),
                occurrence_failure_frac=frac_missing,
-               excluded_concept_word_rows=excl_report)
+               excluded_concept_word_rows=excl_report, retained_rows=retain_report,
+               bank_join_verified=provenance_bank_check)
 
     def gather(cw, classes, name):
         return [r for c in classes for r in pool.get((cw, c, name), [])]
 
+    # Cell B is the DECLARED selection population (§23.6) and must exist before the null uses it.
+    B = gather(PRIMARY_CODEWORD, PRIMARY_CLASSES, "B")
+    B_sel = B
+    if not B:
+        raise SystemExit("VOID: cell B is empty -- the declared layer/C selection population "
+                         "(§23.6) has no rows, so no pick in this run is the declared statistic.")
+
     # ================= NULL CONTROL FIRST, AND IT BLOCKS (PR-035 §23.2) =================
     n0 = gather(PRIMARY_CODEWORD, PRIMARY_CLASSES, "C_n0")
     if n0:
-        obs0 = loo_domain(n0, layers, PRIMARY_CLASSES, lab, tag="null_n0")
+        # A-03/C-053 §28.2: picks MUST come from cell B. Selecting them on n0's own true
+        # labels destroys the exchangeability argument PR-031d §10.3 uses to license
+        # freezing them -- and this is the one number that decides VOID.
+        obs0 = loo_domain(n0, layers, PRIMARY_CLASSES, lab, selection_rows=B_sel,
+                          tag="null_n0")
         p0 = permutation_test(n0, layers, PRIMARY_CLASSES, lab, obs0["picks"], a.n_perm,
                               20260905, obs0["mean_acc"])
         res["null_n_examples_0"] = dict(observed=obs0, permutation=p0)
@@ -523,7 +586,6 @@ def main() -> int:
 
     # ================= primary and its mandated companions =================
     C_rows = gather(PRIMARY_CODEWORD, PRIMARY_CLASSES, "C")
-    B = gather(PRIMARY_CODEWORD, PRIMARY_CLASSES, "B")
     res["P2_primary"] = loo_domain(C_rows, layers, PRIMARY_CLASSES, lab, selection_rows=B,
                                    tag="P2_primary_button_3way")
     res["P2_primary_permutation"] = permutation_test(C_rows, layers, PRIMARY_CLASSES, lab,
@@ -546,6 +608,19 @@ def main() -> int:
         res["P1_trainB_testC"]["mean_acc"], train_rows=train_p1)
     res["P1_train_population"] = dict(n_B=len(B), n_A=len(A_rows),
                                       n_train_classes=len({p1lab(r) for r in train_p1}))
+    # A-06/C-053 §28.7: PR-031 §6.6's capability gate -- P1 may not be read at all unless the probe
+    # can do the task on the cell it was TRAINED on. `P1_CAPABILITY_GATE` had become dead code.
+    p1_cap = loo_domain(B, layers, PRIMARY_CLASSES, lab, selection_rows=B_sel, tag="P1_capability_B")
+    res["P1_capability_heldout_B"] = p1_cap
+    res["P1_capability_gate"] = dict(
+        threshold=P1_CAPABILITY_GATE, observed=p1_cap.get("mean_acc"),
+        passes=bool(p1_cap.get("mean_acc") is not None
+                    and p1_cap["mean_acc"] >= P1_CAPABILITY_GATE))
+    if not res["P1_capability_gate"]["passes"]:
+        res["P1_trainB_testC_STATUS"] = (
+            "UNINFORMATIVE — held-out cell-B accuracy is below the PR-031 §6.6 gate of "
+            f"{P1_CAPABILITY_GATE}, so the probe cannot do the task on the cell it trained on. "
+            "P1 is reported but may not be read either way.")
 
     # R-078 §21.2 mandated contrasts
     for name, pair in (("P2_bomb_vs_knife_2way_gun_excluded", ("bomb", "knife")),
@@ -568,19 +643,33 @@ def main() -> int:
         rows_f = C_bomb + F
         flab = lambda r: r.get("f_label", "bomb")
         res["P2_bomb_vs_benign_remap"] = loo_domain(rows_f, layers, ("bomb", "benign_remap"), flab,
-                                                    tag="bomb_vs_benign_remap")
+                                                    tag="bomb_vs_benign_remap", balanced=True)
         # C-050 §25.4: this contrast had NO permutation test, so §23.4(2)'s instrument produced a
         # number with no inference attached. Its groups are CELLS, not concepts -- hence perm_group.
         res["P2_bomb_vs_benign_remap_permutation"] = permutation_test(
             rows_f, layers, ("bomb", "benign_remap"), flab,
             res["P2_bomb_vs_benign_remap"]["picks"], a.n_perm, 20260905,
-            res["P2_bomb_vs_benign_remap"]["mean_acc"])
+            res["P2_bomb_vs_benign_remap"]["mean_acc"], balanced=True)
+        # C-053 §28.5: cells C and F sit in DISJOINT template blocks (C never uses
+        # extra_conditions; F is only extra_conditions), so this contrast is perfectly confounded
+        # with presentation. The confound can only HELP separability, which fixes the
+        # interpretation asymmetrically and BEFORE the numbers: a NEGATIVE here is informative,
+        # a POSITIVE is NOT attributable to concept. It is not in §23.5's verdict rule either way.
+        res["P2_bomb_vs_benign_remap_BLOCK_CONFOUND"] = dict(
+            C_blocks=sorted({r["block"] for r in C_bomb}), F_blocks=sorted({r["block"] for r in F}),
+            disjoint=bool(not ({r["block"] for r in C_bomb} & {r["block"] for r in F})),
+            interpretation="NEGATIVE informative; POSITIVE not attributable to concept")
         res["P2_bomb_vs_benign_remap_n"] = dict(n_C_bomb=len(C_bomb), n_F=len(F))
 
     # held-out TEMPLATE FAMILY (PR-031c §9.2)
     if len({r["block"] for r in C_rows}) > 1:
         res["P2_leave_one_block_out"] = loo_domain(C_rows, layers, PRIMARY_CLASSES, lab,
                                                    tag="P2_LOBO", group="block")
+        # A-08/C-053 §28.6: without this the one instrument PR-031c §9.2 added was judged by the
+        # sign-vs-1/k rule that PR-031d §10.2 MEASURED at an 8.3% false-positive rate.
+        res["P2_leave_one_block_out_permutation"] = permutation_test(
+            C_rows, layers, PRIMARY_CLASSES, lab, res["P2_leave_one_block_out"]["picks"],
+            a.n_perm, 20260905, res["P2_leave_one_block_out"]["mean_acc"], group="block")
 
     # lexical transfer, only if that class set is complete
     if all((("basket"), c) in runs for c in PRIMARY_CLASSES):
@@ -610,15 +699,27 @@ def main() -> int:
         res["verdict"] = (f"VOID — the length-only control reaches the probe's significance band "
                           f"(length acc {lenc:.4f} > null q95 {null_q95:.4f}); prompt length alone "
                           f"could produce this separation (PR-035 §23.5 clause 5)")
-    elif pp is not None and pp <= ALPHA and above and ctrl is not None and ctrl <= ALPHA:
+    elif pp is None:
+        res["verdict"] = ("CANNOT ANSWER — the primary permutation produced no p (no usable "
+                          "replicate). This is NOT a null.")
+    elif ctrl is None and pp <= ALPHA and above:
+        # A-04: a control that was never computed is not a control that failed.
+        res["verdict"] = ("CANNOT ANSWER — the 3-way clears but the §23.5(4) knife-vs-club control "
+                          "WAS NOT COMPUTED, so remapping strength cannot be excluded. A missing "
+                          "control is not a failed control, and this is NOT a null.")
+    elif pp <= ALPHA and above and ctrl <= ALPHA:
         res["verdict"] = ("POSITIVE — concept-specific: 3-way clears and the bomb-absent "
                           "knife-vs-club control clears too, so it is not remapping strength")
-    elif pp is not None and pp <= ALPHA and above:
+    elif pp <= ALPHA and above:
         res["verdict"] = ("NOT ATTRIBUTABLE — the 3-way clears but the bomb-absent control does "
                           "NOT, so the separation is attributed to REMAPPING STRENGTH (R-078 §21.2) "
                           "and may NOT be called Bombness")
     else:
         res["verdict"] = "NEGATIVE — the codeword state does not carry which concept was installed"
+    res["verdict_inputs"] = dict(P2_perm_p=pp, knife_club_ctrl_p=ctrl, above_null=bool(above),
+                                 length_clause_passes=bool(length_ok),
+                                 fit_capable=bool(res["P2_primary"]["fit_capable"]),
+                                 null_control_passed=True)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=1, default=str)

@@ -1984,3 +1984,150 @@ rule correctly refused to name STEP or RAMP without it and printed `INCOMPLETE`.
 present the STEP criterion would fire at K=6→7 (0.076 < 0.20, 0.905 > 0.50), but ⛔ it is **not**
 called until the declared profile is complete.
 
+
+---
+
+## §28 — `DCS-C-053` / `DCS-A-024` — the 33-agent adversarial audit, and the seven further defects it found in my own repair
+
+An eight-track read-only adversarial audit (33 agents, 0 errors) was run against `PR-035`, its
+analyzer, its verifier, the bank metadata, the statistics, the submission path and the literature.
+⛔ **It found more wrong with my own `C-050` repair than `C-050` found wrong with `PR-035`.** The
+findings that survived my own re-reading of the source are recorded here; the ones that did not are
+recorded as refuted, including one of mine.
+
+### 28.0 ⚠ A process failure of mine, recorded first
+
+⛔ **I edited the analyzer while it was being audited.** The audit observed the file change **five
+times in ~5 minutes** and caught it in two states that could not have executed at all (a `NameError`
+and a `TypeError`). `PR-035`'s premise is a **frozen** instrument. ⇒ **Rule adopted:** the analyzer
+is committed and its sha recorded **before** the audit that signs it off, and before it is run on
+real caches. This entry's commit is that freeze.
+
+### 28.1 ⛔ `C-050` §25.2's cell-`B` carve-out is SUPERSEDED by a strictly better rule
+
+`C-050` §25.2 exempted cell `B` **by name**. The audit's verdict on that is one I accept: exempting a
+named cell is *an amendment, not a reading*, and it leaves a carve-out to defend.
+
+⚠ It also showed my `C-050` was **understated**: with `B` empty it is not only `P1` that dies — the
+**`P2` PRIMARY's layer/`C` selection population** is cell `B` (§23.6), so the headline instrument
+returns `mean_acc=None` and the analyzer prints *"VOID — P2's fit does not beat chance on its own
+training fold"*, ⛔ **a void attributed to a false cause.**
+
+**The replacement rule, which names no cell:**
+
+> ⛔ EXCLUDE every row whose `full_prompt` contains its bank's concept word on word boundaries
+> **AND whose `target_surface` is not that word.**
+
+Verified by me directly against the banks, not taken on the audit's word:
+
+| cell | `target_surface` | rows | old rule excludes | **new rule excludes** |
+|---|---|---|---|---|
+| `C` (primary test) | `button` | 240 | 12 | **12** |
+| `C`, n=0 (blocking null) | `button` | 36 | 12 | **12** |
+| `A` | `button` | 168 | 0 | **0** |
+| `F` | `button` | 24 | 0 (`club` 2) | **0** (`club` 2) |
+| `B` | **`bomb`** | 48 | **48** | **0** |
+
+⇒ Identical removals everywhere the old rule was defensible, and cell `B` survives **because the
+concept word is its declared surface, not an incidental leak**. The rule is still mechanical,
+prompt-text-plus-design-field only, pre-outcome, and now **uniform over every cell**.
+
+### 28.2 ⛔ The blocking null was not computing the declared statistic
+
+`loo_domain(n0, …)` was called with **no `selection_rows`**, so its `(layer, C)` picks were
+grid-searched on **the null rows' own true labels**. ⛔ That destroys the exact exchangeability
+argument `PR-031d` §10.3 uses to license freezing the picks across permutations — *"`PR-031` §6.3
+selects them on cell `B`, which the permutation does not touch"*. ⇒ **The single number that decides
+whether the run is VOID was not the preregistered statistic.** Fixed: the null now selects on cell
+`B`, like the primary. The analyzer also now refuses to run at all if cell `B` is empty.
+
+### 28.3 ⛔ CRITICAL — the analyzer joined hidden states on `prompt_id`, which collides 8-way
+
+`build_rows` constructs `key=(bank_sha, pid)` — its own docstring says *"prompt_id ALONE IS NOT A
+KEY"* — and then joins with **`vec=reps[pid]`**. The compound key is **never read anywhere in the
+file**. Measured by the audit and confirmed by me: `prompt_id = sha256(family_id + '|' + condition)`
+depends on neither text nor codeword nor concept, so there are **2,736 distinct ids over 21,888
+rows**, and the eight rep caches have **identical key sets**.
+
+⇒ A mis-pointed run directory would have joined **another bank's hidden states**, reported **zero
+missing rows**, raised **no VOID**, and produced a plausible headline. ⚠ `prompt_sha16` is not a
+fallback — 5,020 duplicates globally, and 3 of 24 `button` cell-`F` prompts are **byte-identical**
+between `bomb` and `knife`.
+
+**Fixed:** every run directory must carry `metadata.json`, and its `bank_file_sha16`, `bank_path`
+basename and `bank_n_rows` must match the bank being joined, or the run is VOID. Verified that the
+repo's `bank_file_sha16` is `sha256(file)[:16]`, matching the analyzer's own hash.
+
+### 28.4 A missing control was reported as a control that FAILED
+
+§23.3's completeness assertion covered `button × {bomb, knife, gun}` only, so **`club`** — required
+for §23.5 clause 4, the **decision-critical** knife-vs-club control — could silently vanish, and
+`ctrl is None` then fell through to `NOT ATTRIBUTABLE`. ⛔ That reports a control that was never
+computed as a control that failed. Fixed: `club` is required, and a missing control now yields
+**`CANNOT ANSWER`**, which §23.5 named and the code never had a branch for.
+
+### 28.5 ⛔ The cell-`F` comparator, as I built it, would have manufactured a positive
+
+I added the permutation null `C-050` §25.4 said was missing. ⚠ **That was not sufficient.** The
+contrast is **228 bomb rows against 24** — a constant "bomb" predictor scores **0.906** against a
+printed chance of **0.5** — and ⛔ **the group-permutation null does not absorb this**, because
+permuting swaps which class is the majority: the null sits near 0.5 while the observed statistic is
+lifted by imbalance alone. Fixed: `class_weight="balanced"` and **balanced accuracy** (mean per-class
+recall), under which a constant predictor scores exactly 0.5.
+
+⛔ **A structural confound that cannot be fixed, declared now.** Cells `C` and `F` sit in
+**DISJOINT template blocks** — `C` spans `{consistency, core2x2, core2x2_slot3, position, role_style,
+strength}` and `F` is **only** `extra_conditions`. There is no block-matched version of this contrast
+in these banks. Since the confound can only **help** separability, the interpretation is fixed
+asymmetrically and **before** the numbers:
+
+* a **NEGATIVE** here is informative — bomb and generic remapping are not separable *even with a
+  presentation cue aligned to the label*;
+* ⛔ a **POSITIVE** is **NOT attributable to concept** and may not be cited as Bombness evidence.
+
+### 28.6 The held-out-template secondary had no permutation null
+
+§23.4(3)'s leave-one-`bank_block`-out was judged by the sign-vs-1/k rule that `PR-031d` §10.2
+**measured at an 8.3 % false-positive rate** — the rule that section exists to replace. Fixed.
+⚠ Fixing it exposed a second bug I had introduced: `loo_with_picks` iterated **domains** while LOBO's
+picks are keyed by **block**, so the permutation would have matched no fold and returned `p=None`
+silently. The fold group is now threaded through.
+
+### 28.7 `P1`'s capability gate was dead code
+
+`P1_CAPABILITY_GATE = 0.60` (`PR-031` §6.6) was defined and never used. Restored: `P1` is now gated
+on held-out cell-`B` accuracy, and below the gate it is marked **UNINFORMATIVE — may not be read
+either way**, not reported as a concept result.
+
+### 28.8 ✅ One of MY claims was REFUTED, and I am recording it as such
+
+I asserted that cell `F`'s `target_semantic` field is **wrong** — it reads `bomb` while the
+demonstrations teach **bicycle**. ⛔ **That claim is REFUTED.** `prompt_families.py:572` sets
+`"target_semantic": concept` **unconditionally**, two lines above `"concept": concept`; the fields
+agree on **21,888/21,888 rows** of all eight banks; the repo documents it as an alias; and ⛔ **the
+`PR-035` analyzer never reads it.** It is therefore a bank-level constant, equally "wrong" for cells
+`A` and `D`, and singling out `F` was my error.
+
+⚠ **What survives** is smaller and different: a **documentation gloss**, at
+`scripts/tsc_show_one_prompt.py:183`, which describes the field as *"what that word is taken to mean
+here"* — false for `A`, `D` and `F`. ⛔ **Do not "fix" the bank**: changing those bytes changes
+`bank_rows_sha16` and breaks every result-to-bank join. The confirmed facts about cell `F` stand and
+are better than I thought: it teaches **bicycle in all eight banks by construction**
+(`demo_pools.py:1329 REMAP_SOURCE_WORD = "bicycle"`), no cell-`F` prompt anywhere contains the literal
+word, and prompt length alone does not separate it (0.48–0.50 LOO).
+
+⚠ ⛔ **But cell `F` is a DIFFERENT CORPUS in each concept bank** — each draws its `|remap` pool from
+its own pools file, overlap 0–10/40 sentences. That is `A-020` §8.1's blocker, recorded for cell `A`
+only, and it applies **verbatim to cell `F`**. It does not bite the bomb-vs-`F` contrast (both sides
+are from the bomb bank) but ⛔ **forbids any cross-bank cell-`F` comparison.**
+
+### 28.9 Still open, not silently dropped
+
+* §9.3's pre-declared **4-way-with-`club`** secondary was deleted by the `C-050` edit and is not yet
+  restored.
+* §21.2(2)'s **installation-strength covariate** is still absent.
+* The **verifier** `dcs_verify_bombness_specificity.py` remains unrepaired (`C-049` §22.5's finding
+  that its mutation harness passes on undetected corruption is **confirmed** by this audit, 13
+  findings). ⛔ **No `PR-035` result may be promoted until the verifier is rebuilt**, since a verifier
+  that reads the producer's derived fields proves nothing.
+
