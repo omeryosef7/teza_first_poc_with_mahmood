@@ -438,11 +438,15 @@ def main():
                     "- R-051: the -0.907 contrast is inflated;\n"
                     "  this control's +0.312 does NOT reproduce\n"
                     "  (-0.04 / -0.02 / -0.33). Quote rho_KO.\n"
-                    "- R-052: every population WITH a control has\n"
-                    "  just 1 low-installation domain. The only\n"
-                    "  ones with spread (candle) are the source\n"
-                    "  AND have no control (R-033) => a low-dose\n"
-                    "  block is the only route to settling this.\n"
+                    "- R-064: the ceiling is a PARADIGM property,\n"
+                    "  not a property of these 38 domains. 78 NEW\n"
+                    "  domains, authored independently, reproduce\n"
+                    "  the distribution almost exactly (mean 0.900\n"
+                    "  vs 0.908, sd 0.192 vs 0.197). Low-install\n"
+                    "  yield is 3.45% either way, so ~580 domains\n"
+                    "  would be needed -- NOT a better bank, and\n"
+                    "  NOT the low-dose block, which was built\n"
+                    "  (R-054) and gave only 1 domain <=0.25.\n"
                     "- PR-018's manipulation had no headroom (R-042).",
                     fontsize=6.2, va="top", family="monospace")
 

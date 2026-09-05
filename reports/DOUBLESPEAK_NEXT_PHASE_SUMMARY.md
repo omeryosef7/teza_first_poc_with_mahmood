@@ -102,7 +102,11 @@ span* changes **both**. Refusal moves under all three scopes tested.
 * `R-039`: the **reversal** at installation ≈ 0 — domains where the mapping never installed move the *other*
   way under the knockout (+1.14 … +3.20) — is **`candle`-only and exploratory**. ⛔ It is `CANNOT_ANSWER` on both
   headline populations, which contain **1** low-installation domain each, and the analyzer emits that rather than
-  running a split at n < 3.
+  running a split at n < 3. ⛔ **`R-064`: that scarcity is a property of the PARADIGM, not of these
+  domains.** 78 independently-authored new domains reproduce the installation distribution almost
+  exactly (mean **0.900 vs 0.908**, sd **0.192 vs 0.197**), and the low-installation yield is
+  **3.45 %** either way ⇒ a usable low tail needs **~580 domains**. ⛔ Not a better bank, and not the
+  low-dose block — that was built (`R-054`) and yielded **1** such domain.
 * `R-042`: `cds_n8` (a never-before-run block) makes the effect grow — mean per-domain Δ **−7.944 → −9.025**,
   **34/38** domains, p = **6.04e-07**. ⛔ **VOID as evidence about installation**, by `PR-018`'s own declared rule:
   installation barely moved (0.908 → 0.928, 25/38 domains already at ceiling), so this is a **dose** effect of the
