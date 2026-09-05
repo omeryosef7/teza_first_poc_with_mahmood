@@ -7356,3 +7356,39 @@ that makes a positive easier, not harder. ⛔ A *significant* result therefore c
 for correlation between arm-level ASRs, and I am not converting one into the other. ⇒ Reported as a
 declared, bounded-direction limitation rather than a correction — ⛔ inventing a correction factor
 from an unmapped proxy is how `PR-014`'s bracket went wrong at both ends (`C-038`).
+
+### `C-042` — ⚠ an early preview puts `R-068`'s **magnitude** in doubt; its **design conclusion** is unaffected
+
+✅ **Judging is healthy**, checked on the partial rather than after five hours: `judge_status` **ok on
+1027/1027**, one model throughout, 106 within-invocation cache hits (expected — the cache
+de-duplicates identical triples inside one run).
+
+⚠ **And the partial `dcsp24_base` arm already has both sets of labels on byte-identical text.**
+**PREVIEW, NOT A RESULT** — one arm, incomplete, and the preregistered analyzer will judge this on
+five arms when the run finishes:
+
+* **134 flips of 1027** = **13.0 %** of labels moved;
+* **68 up, 66 down**, **net +2** ⇒ drift ≈ **+0.0019**.
+
+⛔ **This does not sit comfortably with `R-068`, which I wrote three ticks ago.** `R-068` argued the
+two *direct re-judge* figures (0.0119, 0.0158) agreed and that `judge_session_drift.json`'s **0.0020**
+was "the wrong number to have treated as the low end". ⚠ This preview lands at **0.0019** — almost
+exactly that supposedly-wrong number.
+
+⚠ **I am deliberately NOT reversing `R-068` on this.** That would be
+[[feedback-dont-flee-to-the-other-endpoint]] performed in a single day: `R-068` moved my estimate to
+one end on two measurements, and one partial arm is not grounds to move it back to the other. ⇒ The
+honest position is that the **magnitude is open** and will be decided by `PR-028c` on **5 × 1160**
+byte-identical rows, by an analyzer frozen before any of this was visible (`A-016`).
+
+✅ **What the preview does support independently:** the **13 % flip rate** matches this repository's
+standing figure — *the judge flips ~13 % of labels on byte-identical text* — while the **net** is
+near zero. ⇒ Large per-row instability with a small systematic component is consistent with **both**
+prior numbers being right about **different quantities**: flip rate ≠ net offset.
+
+⇒ ⛔ **`R-068`'s operational conclusion stands regardless of how the magnitude resolves.** Judging all
+ten arms in one session is correct because raw ASR levels do not transport across sessions
+(the peer's paired-delta finding), *not* because the offset is any particular size. The re-judge is
+running and remains the right call even if the drift turns out to be 0.002. ⚠ What must change if
+`PR-028c` confirms ~0.002 is the **"19-25 % bias"** figure in `R-068`, which would then be an
+overstatement.
