@@ -7392,3 +7392,38 @@ ten arms in one session is correct because raw ASR levels do not transport acros
 running and remains the right call even if the drift turns out to be 0.002. ⚠ What must change if
 `PR-028c` confirms ~0.002 is the **"19-25 % bias"** figure in `R-068`, which would then be an
 overstatement.
+
+### `R-071` — ⚠ INTERIM (**1 of 5 arms**): the first complete re-judge shows **no systematic offset**
+
+`p28j_dcsp24_base` finished (1160 rows, `DONE`). Run through `dcs_judge_drift_p24j_vs_p28j.py` —
+frozen at `PR-028c` before any label existed, and mutation-tested against planted truth at `A-016`.
+
+| quantity | value |
+|---|---|
+| byte-identical rows | **1160** (**0** excluded for sha mismatch) |
+| labels flipped | **152 / 1160 = 13.1 %** |
+| direction | **78 up, 74 down** |
+| **net** | **+4** ⇒ drift **+0.00345** |
+| exact two-sided binomial vs symmetric noise | **p = 0.8078** |
+| refusal-label flips | **0** |
+
+⇒ ⛔ **`NO SYSTEMATIC OFFSET`** on this arm: net is **0.32 sd** from zero, and the ASR moved
+0.3422 → 0.3457.
+
+✅ **`C-023` gets a stronger footing than it had.** It assumes refusal labels are stable under
+re-judging; `R-049` supported that on **380** rows and this adds **1160** more with **0** flips.
+
+✅ **The 13 % flip rate reproduces exactly**, matching this repository's standing figure for
+byte-identical text and `C-042`'s partial. ⇒ Confirms the distinction `C-042` drew: **flip rate is
+not net offset**, and conflating them is what made the drift literature look contradictory.
+
+⚠ **SCOPE — this is 1 of 5 and is NOT the preregistered measurement.** ⛔ It is also **not** yet
+grounds to overturn `R-068`'s magnitude, for a reason beyond caution: this is the **baseline** arm at
+ASR **0.342**, and drift could plausibly depend on where an arm sits relative to the rubric's
+decision boundary. The remaining four span `KO-3` (0.274) and the controls (0.282-0.341), which is
+precisely the range that matters. ⇒ `PR-028c` reports the pooled five.
+
+⚠ **Standing correction if the pattern holds:** at ~0.003 the mixing bias would be
+(5/8)·0.003 ≈ **0.002**, about **5 %** of the −0.0391 effect — not `R-068`'s **19-25 %**. That figure
+would then be withdrawn. ⛔ `R-068`'s *design* conclusion is unaffected either way, and the re-judge
+was still correct: raw ASR levels do not transport across sessions regardless of the offset's size.
