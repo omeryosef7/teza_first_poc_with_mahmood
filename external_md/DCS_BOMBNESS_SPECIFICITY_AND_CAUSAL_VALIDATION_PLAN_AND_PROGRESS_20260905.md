@@ -1017,3 +1017,39 @@ concept · codeword · condition/cell · domain · `n_examples` · intended mapp
 and, where a forced-choice arm exists, `semantic_logodds` **with `option_mass` beside it**.
 Reported as **distributions, not means alone**, with floor/ceiling prevalence and any domain where
 the mapping never installs named explicitly. ⛔ Non-installing domains are **not** dropped.
+
+---
+
+## §15 — `DCS-Q-001` — for Omer: does the aligned rebuild get funded, and on what result?
+
+**Not blocking.** `PR-031` runs first and is free; this question only becomes live when it lands.
+
+**The situation.** Concept-backed hard negatives exist **only at 6 domains** (`A-019`, `B-017`).
+The headline causal results live at **38 domains** on a different preset (`main_longpre_cds`, with a
+preamble). So `PR-031` can answer *"is there a bomb-specific readout?"* on a 6-domain population,
+but ⛔ **its answer does not transfer to the population where the causal results were measured**, and
+stage **S3** (causal validation of any promoted score, i.e. does `KO-3` destroy Bombness) is
+**blocked** until an aligned `cds`-format comparator exists.
+
+**The rebuild (`S1b`, §8.9).** Copy `demo_pools_29dom.json` per comparator concept; keep `|benign`,
+`|filler` and `|remap` **byte-identical** to bomb's; regenerate **only** the 38 `|harm` pools. Cells
+`A`, `E`, `F` then become identical across concepts by construction and the manipulation is confined
+to the estimand — which also repairs `A-020` §8.1 (the divergent benign corpora), the defect that
+demoted `P1`. Requires: a `valence` subset flag in `generate_pools` (it has only a `domains` flag),
+a **polysemy screen** that no existing guard performs (nothing caught `club`), and `gpt-4o-mini`
+calls for 38 pools × 1 valence × N concepts.
+
+**The question.** Which of these, and is the spend approved?
+
+| option | when it makes sense |
+|---|---|
+| **A — rebuild 2 concepts** (knife, gun) at 38 domains | if `PR-031` is POSITIVE or CANNOT ANSWER at 6 domains. Gives a properly powered specificity test **and** unblocks S3 on the headline population. |
+| **B — rebuild nothing** | if `PR-031` is a clean NEGATIVE at 6 domains. A negative that survives the *most favourable* aligned setting available is informative on its own, and §36 of the brief already treats it as a valuable result. |
+| **C — rebuild, but only after S4** | the K = 3…7 ladder (`PR-032`) is independent, cheap, and already preregistered; its result may matter more to the paper than concept specificity does. |
+
+⚠ My own reading, stated so it can be argued with: **B is more likely than it looks.** `R-002`
+already found the geometry proxy non-specific with knife and club **exceeding** bomb, and `A-020`
+§8.5 notwithstanding, the hard negatives here are all weapons. ⇒ I would not spend on the rebuild
+until `PR-031` reports.
+
+⛔ **Nothing is being purchased on this question without Omer.**
