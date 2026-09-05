@@ -86,6 +86,8 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 18 | `A-012` | self review of `cds_domain_test.py` **before** it computed the primary: 5/5. ⚠ Check 4 failed on **my own simulator** — third audit this phase to fail on its instrument | ✅ |
 | 18 | `R-061` | ⛔ **`B-009` NOT RESOLVED** — 1 of 3 on the declared conjunction (p = 0.175 / **0.0096** / 0.466). ⚠ Realised power 0.35/0.65/0.05 explains the pattern; **control spread 0.0586 > effect 0.0391** | ✅ |
 | 19 | — | `R-061` propagated: summary `B-009` entry, `LIVE STATUS` blockers + two new must-not-say entries, and the **collaborator ask rewritten** — the question is no longer *more domains or a second concept* | ✅ |
+| 20 | `PR-025`/`R-062` | the refusal confound is **regular in direction** (pooled ρ **−0.378**, consistent in all 3 controls, survives the RTM restriction) but ⛔ **not in magnitude** — conversion **0.057–0.350** vs the bracket's assumed **1.000** | ✅ |
+| 20 | — | ⚠ `R-062` **corrects `R-061`'s own emphasis**; the overstated *"bracket is unanimous"* framing was propagated out of the log into **both** deliverables, incl. the collaborator draft, and is now fixed there too | ✅ |
 
 ## Live
 

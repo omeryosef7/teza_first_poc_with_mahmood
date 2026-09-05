@@ -85,9 +85,11 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
 > (0.039).** Which control you pick decides your p-value, anywhere from 0.01 to 0.47, from the same
 > data.
 >
-> ✅ **The refusal-adjusted bracket is unanimous** — −112, −183, −209, none straddling zero — so the
-> direction is not in doubt. But our preregistration ties the verdict to the primary, and I'm holding
-> to that.
+> **The refusal-adjusted bracket points one way** — −112, −183, −209, none straddling zero — ⚠ but I
+> checked what it assumes and it is weaker than it looks. It credits the control with **every**
+> induced refusal as a would-be attack; the conversion we actually measure is **6–35 %**, so that end
+> over-credits by 3–17×. ⇒ The direction is supported, ⛔ **not** established, and our preregistration
+> ties the verdict to the primary regardless.
 >
 > ⇒ **So the question is no longer "more domains, or a second concept?"** Neither fixes this. It is:
 > **can we build controls matched on induced refusal?** We showed earlier that we cannot select them
