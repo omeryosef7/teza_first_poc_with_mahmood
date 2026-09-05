@@ -1386,3 +1386,100 @@ fixed:
 ⚠ Stated plainly: this confound is serious enough that a `P2` positive **cannot** be called
 concept-specific unless control (1) also succeeds. That condition is fixed here, before the numbers
 exist.
+
+---
+
+## §22 — `DCS-C-049` — ⛔ THE `n_examples = 0` NULL CONTROL FIRED. THE `PR-031` RUN AS SPECIFIED IS **VOID**.
+
+An adversarial code review of my three analysis scripts found five critical defects. The first two
+compound into a run-voiding failure, and I verified both from source before accepting them.
+
+### 22.1 The design invariant `P2` rests on is FALSE
+
+`PR-031a` §7.2 justified `P2` on this claim:
+
+> *"In `P2` the surface token is `button` in **every row of every class**, so token identity carries
+> **zero** information and cannot solve the task."*
+
+⛔ **False.** The `strength` template block emits an **explicit mapping statement**. Verbatim, from
+`button_bomb`, cell `C`, `bank_block = strength`, `strength = strong`, `n_examples = 4`:
+
+```
+The barn was cleared after a suspicious button was reported nearby.
+...
+Every occurrence of button must be interpreted as bomb.
+
+Answer with exactly one word and nothing else. In the text above, what does the word button actually refer to?
+```
+
+Word-boundary counts, identical in all three primary banks:
+
+| population | rows | rows naming the concept | block |
+|---|---|---|---|
+| cell `C`, `n_examples ∈ {4,8}` (the **primary**) | 240 | **12 (5.0 %)** | all `strength` |
+| cell `C`, `n_examples = 0` (the **null control**) | 36 | **12 (33.3 %)** | all `strength` |
+
+⇒ `PR-031a` §7.5's *"at `n_examples = 0` the cell-`C` rows of all four concept banks are
+**byte-identical**"* is also **false** — a third of them name their own concept.
+
+### 22.2 The null control fires, exactly as it was designed to
+
+The review measured the preregistered null on the real caches: **`n0` mean accuracy 0.5556 against a
+chance of 0.3333, above chance in 6/6 domains**, split as **clean rows 0.3333 (n=72) / leaking rows
+1.0000 (n=36)**. The leaking rows are classified **perfectly**, and the clean rows sit **exactly at
+chance**.
+
+⇒ `PR-031a` §7.5 is unambiguous: *"A `P2` accuracy above chance at `n_examples = 0` **voids the
+entire run, no exceptions**."*
+
+## ⛔ **THE `PR-031` RUN AS SPECIFIED IS VOID.** It is recorded as VOID, not repaired in place.
+
+⚠ **A number exists and I am deliberately not treating it as a result.** The review, running my
+analyzer, reports `P2` primary ≈ **0.72, 6/6 domains** (≈0.709 with the leaking rows dropped).
+⛔ **That number is from a VOID run and may not be quoted, by me or by anyone reading this log**,
+until the null passes on a re-specified population. It is recorded here only so that its later
+reappearance cannot be mistaken for an independent confirmation.
+
+### 22.3 Why the permutation null did NOT protect against this
+
+Worth stating, because it was the phase's main statistical safeguard. Under group permutation the
+lexical cue is remapped to a *different* label in each training domain, so the **null stays at
+chance while the observed statistic is lifted** — the signature of a false positive rather than
+something the null absorbs. ⇒ A valid permutation null does **not** protect against a feature that
+is genuinely present in the data and genuinely predictive. Only the `n_examples = 0` control caught
+it, which is precisely why it was preregistered.
+
+### 22.4 Two guards that should have caught it and did not
+
+* The bank's own **`occurrence_analysis_safe` is `True`** on all 240 rows — it inspects the question,
+  not the body.
+* My own verifier's leakage check reads **`final_query_text`** only, never `full_prompt` (§13.1).
+  ⇒ `A-021`'s leakage PASS was **scoped too narrowly** and its "0/288" figures describe the question
+  text alone. That is a real limitation of `A-021` and is corrected here rather than left standing.
+
+### 22.5 The other three critical defects, all confirmed
+
+* **`VOIDS_RUN` is a dead flag.** It is computed and written to JSON and **never read** — no exit, no
+  verdict, no mention in the printed summary. The analyzer would have printed the headline over a
+  fired null. It also carried an **undeclared `+0.15` slack** that appears nowhere in the
+  preregistration.
+* ⛔ **The mutation harness reports `MUTATION HARNESS OK` on a corruption it did not detect.** With
+  zeroed representations and a producer JSON whose domain keys do not overlap, `rederive` compares
+  **zero pairs**, reports *"per-domain accuracy reproduces exactly, max|delta| = 0.00e+00"*, and the
+  harness passes because it only checks `rep.failed == 0` **over all six checks**, so any unrelated
+  failure satisfies it. ⚠ And in the repo's actual state (no producer JSON) the mutation is **never
+  applied at all**. ⇒ `A-021`'s claim that the verifier "requires the corruption to be caught" was
+  **not true as implemented**. Corrected here.
+* **A missing bank silently becomes a smaller problem scored against the larger chance level** —
+  demonstrated at permutation p = 0.024 on synthetic data with `gun` absent. Live today for the
+  `basket` transfer secondary, where `basket_gun` did not yet exist.
+* **No `DONE.json` guard in the specificity analyzer** — the hole §17.3 says was fixed. That fix
+  landed only in the installation analyzer; its sibling, the one producing the headline, still reads
+  whatever is on disk.
+
+### 22.6 What I am NOT doing
+
+⛔ I am not deleting the `strength` rows and quietly re-running. The void is recorded, the cause is
+named, and the repair is a **new preregistration** (`PR-035`) with the exclusion defined
+mechanically from prompt text alone — not from any outcome — and with the null control required to
+**pass** before the primary is read at all.
