@@ -276,3 +276,45 @@ are exactly the papers a reviewer would cite against the stronger wording.
 
 No OpenReview / proceedings search was performed. A competing mechanistic Doublespeak paper under
 review would be invisible to both arXiv and Semantic Scholar. Web search cannot close this.
+
+---
+
+## 6. Re-check of 2026-09-06 (`DCS-A-025`) — five works the matrix and `A-022` both missed
+
+**Protocol.** Bounded re-check over the same 11 topics, run by a dedicated audit agent; ⚠ **the three
+consequential rows below were then re-fetched and quoted verbatim by the orchestrating session
+itself**, so they are **✓fetched**, not †snippet. Two lower-severity rows remain †snippet and are
+marked.
+
+| id | work | date | verification | what overlaps | what remains ours |
+|---|---|---|---|---|---|
+| **F-1** | **Bakalova, Veitsman, Huang & Hahn — "Contextualize-then-Aggregate: Circuits for In-Context Learning in Gemma-2 2B", arXiv **2504.00132** (v1 2025-03-31, v4 2025-09-17) | 2025 | **✓fetched** (abs + `arxiv.org/html/2504.00132v4`) | ⛔ **Causally ablates `y_i → t_{N+1}` edges — demonstration outputs to the query position — in ICL.** Verbatim: *"When we ablate an edge from position A to position B, the key (K) and value (V) activations of A when queried by B are replaced with activations computed on a corrupted prompt"*; *"This patching is applied simultaneously at each layer and head."* Scores **accuracy drop**. | We **zero attention** (they patch counterfactual K/V); **a layer band** (they use all layers and heads); a **semantic-remapping attack** with an **`intervention × condition` interaction** (they have none); and we **vary query-row count** — they intervene on a **single** query position, so ⛔ **there is no analogue of the K ladder.** |
+| **F-2** | **Sudheendra & Srivastava — "When Decodability Is Not Enough: Logical Validity Representations, Behavioral Dissociation, and Causal Tests in Language Models", arXiv **2609.02438** | **2026-09-02** | **✓fetched** (abstract quoted in full) | ⛔ **The representation/behaviour dissociation framing, in `PR-035`'s design shape.** Verbatim: *"…remains strongly decodable under **held-out templates, domains, and inference families** … **interventions along probe-derived validity directions have only weak, nonspecific effects compared with random controls** … representing …, expressing it in behavior, and using it causally are **distinct**."* Five open-weight models. | Different property (**logical validity**, not *which concept a codeword was remapped to*); **no attack**; **no in-context remapping**; **no attention intervention**. ⛔ But the dissociation framing is now a **citation, not a contribution**. |
+| **F-3** | Cheng & Zhang — "Single-Position Intervention Fails: Distributed Output Templates Drive In-Context Learning", arXiv **2605.04061** | 2026-04-10 | **✓fetched** (upgrades `A-022`'s †snippet row) | ⛔ *"probing accuracy completely fails to predict causal importance. Single-position activation intervention achieves **0 % task transfer across all 28 layers of Llama-3.2-3B — despite 100 % probing accuracy at those same positions**."* **On Llama, inside ICL.** | Nothing of ours is scooped, but ⇒ ⛔ **`PR-035`'s `POSITIVE` wording must not imply causal relevance.** `A-022` §16.5 mis-scoped this as bearing only on `R-022`. |
+| **F-4** | *(venue correction, not a new work)* `2605.04061` | — | ✓fetched | — | Resolves `A-022` §16.5's open flag: the venue is **LION 2026 + ICLR 2026 *workshops***, ⛔ **not** "ICLR 2026". |
+| **F-5** | arXiv **2607.13075** ("The Entanglement Wall: Activation-Space Probes as Risk Detectors, Not Context Adjudicators") and arXiv **2507.21141** | 2026 / 2025 | **†snippet** | Probe-side work on whether residual-stream probes separate a *named* harmful concept from generic risk — `PR-035`'s exact question. | Threatens nothing; they are **missing citations** for the specificity half. ⛔ Do not cite either without opening it. |
+
+### 6.1 ⛔ Correction to §5.1, which is now itself too generous
+
+§5.1 said the surviving intersection is *"demo→query attention knockout, layer-banded, on an
+in-context semantic-remapping attack, with a cross-family capable null"*, having killed the
+unqualified sentence using `2310.15916` and `2310.15213`. **`2504.00132` is a closer precedent than
+either**: it ablates the **demonstration→query edge itself**, which those two do not.
+
+⛔ **The sentence "we are the first to causally intervene on demonstration→query attention in ICL"
+is FALSE and must never be written.** The intersection that survives is narrower and is stated in
+`DCS-A-025` §32.1.
+
+### 6.2 ⚠ For the paper's positioning — `DCS-Q-002`, needs Omer and Matan
+
+`2609.02438` is **four days old** and publishes the representation ≠ behaviour framing. If our
+positioning leans on that dissociation, it becomes a **citation** rather than a contribution, which
+may change **which half of the paper leads**. ⛔ That is a positioning decision for the humans.
+
+### 6.3 What did NOT close
+
+⚠ The **query-row threshold** axis returned nothing on target across four search phrasings **and** an
+arXiv API query (`all:"attention knockout" AND all:"in-context"`, 4 hits, all already in the matrix).
+⛔ Recorded as a **null search, not as evidence of novelty** — §5.3's rule is unchanged.
+§5.3's **OpenReview blind spot remains open**; web search did not close it.
+
