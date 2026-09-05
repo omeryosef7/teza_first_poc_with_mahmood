@@ -6667,3 +6667,46 @@ ratio, from preregistrations written before the answers, would be the suspicious
 `R-041`'s contrast **−0.907** → `R-051` (population-specific, inflated) → `R-055` (categorical, the
 continuous reading explained by RTM). ⇒ The number that survives is smaller and the claim behind it
 is better founded.
+
+## `PR-027` — PREREGISTRATION: attack `C` at **116 domains**, staged on a predictor-only gate
+
+⚠ **Frozen before any readout arm on `cds116` exists** — verified never run (no `dcs*` config names
+that bank with a forced-choice query kind).
+
+**The opportunity.** `A-009`'s attack `C` — *is the installation gradient demonstrated within the
+varying subrange?* — has only ever been testable at **13** (Llama n=4), **30** (Qwen) and **33**
+(`cds_n1`) domains, and failed at all three (`R-055`). ⛔ `R-052` established the ceiling is
+**structural**: every population with a control sits at ~1 low-installation domain. ⚠ But `cds116`
+carries **78 domains that have never been measured on this readout**, and its forced-choice rows cost
+**minutes** (1160 rows at `max-new 8`), not the 13.5 GPU-hours the behavioural arms cost.
+
+⇒ The question is simply whether **78 new settings** happen to span more installation range than the
+original 38 did. ⛔ I do not know, and `R-054`'s `cds_n1` result (only **1** domain ≤ 0.25 even at the
+lowest dose) is a reason for pessimism, not optimism.
+
+### Stage 1 — predictor only, one baseline arm
+Run `cds116` cell C forced-choice baseline (1160 rows). Measure the installation distribution.
+⛔ **No knockout, no control, no contrast.**
+
+* ⛔ **GATE:** the varying subrange (domains with installation < 1.0) must exceed **40** — comfortably
+  more than the 33 `cds_n1` gave — **and** the count at ≤ 0.25 must exceed **5**, since `R-055` showed
+  a large subrange alone is not enough when it sits entirely in the upper range.
+* ⛔ **If the gate fails, `PR-027` STOPS at Stage 1** and reports that domain diversity does **not**
+  buy installation range — which would make `R-052`'s ceiling a property of the **paradigm**, not of
+  the particular 38 domains, and that is a stronger statement than `R-052` currently makes.
+
+### Stage 2 — only if the gate passes
+`demo_all` knockout + `nondemo_matched_d1` control at band 6–14, `query_prefill_only`, then
+`scripts/dcs_audit_r041.py` **unchanged** — the same committed code path `A-009`, `PR-022` and
+`PR-023` used, so the fourth population is directly comparable to the other three.
+
+⛔ **Declared outcomes.**
+* **Attack `C` significant at k > 40** ⇒ the within-subrange gradient **is** demonstrable and the
+  three prior failures were power after all. ⚠ That would **reopen** `R-053`'s conclusion, and I
+  would have to say so plainly rather than treat it as a new finding.
+* **Attack `C` fails a FOURTH time** ⇒ `R-055`'s categorical reading holds on a fourth, larger
+  population, and the continuous gradient is finished.
+* **Gate fails** ⇒ Stage 1 result as above; ⛔ no contrast is computed and none is reported.
+
+⚠ **This cannot rescue `B-009`** — different endpoint, different question. `B-009` is `NOT RESOLVED`
+regardless.
