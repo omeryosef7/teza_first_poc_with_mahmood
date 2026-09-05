@@ -135,7 +135,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 
 | what | id | state |
 |---|---|---|
-| `852324` p28judge (10-arm re-judge) | `PR-028b` | **6 of 10 judged**, 3h27m, ETA ~18:45. QA: every arm 1160 rows, `judge_status` **ok on all**, **all job 852324** (so `A-017`'s session guard passes by construction). ✅ Re-judged refusal counts reproduce `p24j` **exactly** (144/277/179/344/0) — independent confirmation of `R-074`'s 0-flip finding. ⛔ Primary held until K=8 (no interim look at the headline test) |
+| *(nothing in flight)* | `PR-028` | **COMPLETE** — all 10 arms judged in one session (852324, 5h28m, ~$2.50). Primary `R-075` = **UNDERPOWERED NEGATIVE**; drift `R-074` = **NOT ESTABLISHED**; geometry `R-076` = **no predictor** |
 
 ## Standing rules being followed this session
 
