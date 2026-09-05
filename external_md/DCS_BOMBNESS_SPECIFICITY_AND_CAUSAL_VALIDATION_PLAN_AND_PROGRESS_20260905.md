@@ -1562,3 +1562,103 @@ This is the **second** void-and-respecify in this phase (`C-048` on the gate, `C
 were caught by preregistered controls or by adversarial review, neither by the analysis returning
 something implausible. ⛔ If `PR-035`'s null control fires again, the honest conclusion is that this
 population cannot support the test and the answer is `CANNOT ANSWER` — **not** a third respecification.
+
+---
+
+## §24 — `DCS-042` (operational) — SECOND TAKEOVER OF THIS PHASE, and what was and was not stopped
+
+**Opened 2026-09-06 00:15 IDT.** This section is written by a *new* session. The session that wrote
+§0–§23 (`teza-…-a5`) has **exited**. It sent no handover message to anyone; ⚠ **this log is the
+entire handover**, which is precisely what it was written for.
+
+| field | value |
+|---|---|
+| orchestrator | `teza-first-poc-with-mahmood-ad` (tmux `c23:0`, pid 198942) |
+| branch | `behavioral-causality-sprint` |
+| commit at takeover | `16ecf537` (`DCS-PR-035`) |
+| working tree at takeover | `scripts/dcs_bombness_specificity.py` modified **+158/−78**; `reports/SPRINT_SUMMARY_2026-09-02_TO_09-05.md` untracked (117,888 B) |
+| SLURM at takeover | **`squeue -u omeryosef` = 0 rows for this project** |
+
+### 24.1 ⛔ Nothing was cancelled, because nothing was running
+
+State was inventoried **before** any action. `squeue` was **empty**. `sacct` from 2026-09-05T18:00
+shows every `boomb` job of this phase already terminal (`853040`–`853712`, all `COMPLETED 0:0`).
+
+⛔ **No job was cancelled by this takeover. No process was killed. No artifact was deleted.**
+Any future sentence claiming this session "cancelled a competing campaign" would be false.
+
+⚠ Two long-running jobs of Omer's — `740944` (`phi4_x1`) and `741053`/`741054` (`gcg_v3_arm`),
+elapsed 27 days — belong to an **unrelated project** and were deliberately left untouched.
+
+### 24.2 Live peers, and how exclusivity was actually obtained
+
+Three Claude sessions had this repository as cwd: this one, `teza-…-a1` (tmux `c1`) and
+`teza-…-0d` (tmux `c22`). Both peers were **idle**, and repository mtimes confirmed **zero writes in
+the preceding 4 hours**.
+
+Exclusivity was obtained by **messaging both peers**, not by killing them. Both replied in writing
+agreeing not to edit `external_md/DCS_*`, `src/boombness/**` or `scripts/dcs_*.py`, not to submit
+SLURM jobs, and not to commit/stash/restore on this branch. ⚠ Both independently reported that this
+is the **third** time exclusivity has been asserted on this branch (`a5` claimed it ~12 h earlier,
+itself succeeding a Remote-Control session). ⛔ The lock remains **advisory** — the checkout and the
+git index are shared — so `git commit -- <explicit paths>` remains the only safe commit form, exactly
+as §0.1 recorded.
+
+### 24.3 Two orphans from `a5`, adopted rather than discarded
+
+1. `scripts/dcs_bombness_specificity.py`, +158/−78 uncommitted — `a5` was **mid-implementation** of
+   `PR-035` §23.3/§23.4 when it exited. Inspected and **preserved**; it is finished and committed
+   under this session's entries, not reverted.
+2. `reports/SPRINT_SUMMARY_2026-09-02_TO_09-05.md`, untracked — a self-contained TSC+DCS account
+   `a5` authored and never landed. Adopted.
+3. ⚠ `stash@{0}` — reported by a peer as created **2026-08-22**, base `3018852e`, containing exactly
+   one file (`reports/boombness_objective_sprint_report.md`, +25/−483). It is a **two-week-old
+   stash, not in-flight work from this sprint**, and popping it would delete ~483 lines of a report
+   against a much newer tree. ⛔ Left untouched; flagged for Omer rather than carried forward.
+
+### 24.4 Submission record — `PR-032`, the K = 3…7 ladder
+
+Submitted 2026-09-06 00:2x IDT, **6 arms = the declared concurrency cap**, `score_behavior.py`,
+argsfiles committed at `20b0b7e8`:
+
+| job | argsfile | rung |
+|---|---|---|
+| 854028 | `dcsk8r_C_demo` | K=8 **re-run anchor** |
+| 854029 | `dcsk8r_C_ctrl` | K=8 re-run anchor |
+| 854030 | `dcsk3_C_demo` | K=3 |
+| 854031 | `dcsk3_C_ctrl` | K=3 |
+| 854032 | `dcsk4_C_demo` | K=4 |
+| 854033 | `dcsk4_C_ctrl` | K=4 |
+
+Held back to respect the cap: K=5, 6, 7 (6 arms), submitted as these drain.
+
+**Why a K=8 re-run exists at all.** §11.7 makes "the K=8 rung **re-run in this session** does not
+reproduce the inherited −6.616" a kill criterion for the whole ladder, but §11.3's arm table lists
+only the 10 new arms, so the criterion was **unevaluable as written**. Two arms `dcsk8r_C_{demo,ctrl}`
+were created to make it evaluable. ⛔ They are **not a sixth rung**: they enter **no** Holm family
+(§11.4's family remains the five new rungs), and they are a *replication of an existing anchor*, not
+a new comparison. Their argsfiles differ from `dcsk8_C_*` in `--arm` and `--tag` **only** —
+verified by literal token diff, 2 differing tokens each.
+
+**Pre-flight performed before submission** (all four checks, per §24 of Omer's brief and `C-047`):
+1. Each of `dcsk{3,4,5,6,7}_C_{demo,ctrl}` differs from `dcsk8_C_{demo,ctrl}` in
+   `--knockout-last-k`, `--arm`, `--tag` and **nothing else** — verified by normalised token diff,
+   10/10 files.
+2. **Quote guard**: no `"` or `'` in any argsfile (the wrapper word-splits `BOOMB_ARGS`; a quoted
+   multi-word value killed job 766661 after allocation).
+3. ⛔ **The `C-047` variable name was checked in the wrapper source, not assumed.**
+   `run_boombness.sh:56-58` reads **`BOOMB_SCRIPT`** and **`BOOMB_ARGSFILE`**; `C-047`'s six lost
+   jobs passed `ARGSFILE=`, which the wrapper never reads, so both fell back to defaults. The form
+   submitted here is
+   `sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=<abs>/runargs/dcs/<f>.txt`.
+4. ⛔ **`--arm` does not feed the control draw.** Verified in source: `score_behavior.py:2132` passes
+   `control_seed=args.seed`, and `nondemo_draw_seed(control_seed, draw_index)` (`:807-813`) takes the
+   draw index from the **`--intervene` spec name** (`nondemo_matched_d1`), not from `--arm`. So
+   renaming the arm for the re-run leaves the control draw **bit-identical** — which is what makes it
+   a reproduction test rather than a new draw. (This is the `control_seed`-propagation class of bug
+   the file's own comments at `:958` and `:977` record having been hit twice before.)
+
+**Verification rule for these jobs, fixed now:** each log's first line must read
+`=== boombness: score_behavior.py ===` and its `args:` line must equal the argsfile byte-for-byte.
+⛔ A job whose header says `extract_boombness.py` is a `C-047` recurrence and its output is VOID.
+
