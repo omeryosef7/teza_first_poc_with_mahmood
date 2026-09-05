@@ -1,9 +1,11 @@
 # Slack draft — Matan & Mahmood (§47)
 
 ⛔ **DRAFT ONLY. NOT SENT.** No Slack integration is configured and none was used. Send only on
-explicit instruction from Omer. Rewritten **2026-09-04 evening**, after the generality run closed,
-the Qwen behavioural analysis completed, and the installation result was audited three times and
-narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not be sent.
+explicit instruction from Omer. Rewritten **2026-09-05 evening**, after the `K = 8`
+control-distribution experiment finished (`PR-028`), the ten-arm single-session re-judge closed the
+drift question, and the predicted-refusal route was closed. ⚠ Every earlier draft predates **all** of
+that; in particular the previous one's central ask has since been **answered in the negative** and
+must not be sent.
 
 ---
 
@@ -79,11 +81,27 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
 > power was **0.65 / 0.35 / 0.05** against the three observed effects — which is precisely the
 > pattern we got. ⇒ **Domain count was never the binding constraint.**
 >
-> **What is.** The three controls induce very different refusal loads — **+35, +133, +200** — and
-> refusal suppresses attack, so each control's ASR is depressed by a different amount. Concretely:
-> **the spread between our controls (0.059) is larger than the effect we're trying to measure
-> (0.039).** Which control you pick decides your p-value, anywhere from 0.01 to 0.47, from the same
-> data.
+> **What is — and we have now measured it properly, which changed the picture again.** The controls
+> induce very different refusal loads, so each control's ASR is depressed by a different amount, and
+> which control you pick decides your p-value (0.01 to 0.47 on identical data). On three draws that
+> spread looked like 0.059 against an effect of 0.039. ⇒ So we stopped picking a comparator at all:
+> we ran **eight** dose-matched draws and tested `KO-3` against the control **distribution**, with
+> the between-control sd as the error term. **~10 GPU-hours, and all ten arms re-judged in a single
+> session** so no cross-session offset could land on it.
+>
+> **Result: δ = −0.0222, t(7) = −0.80, p = 0.449 — and it is an UNDERPOWERED negative, not a clean
+> one.** The realised between-control sd came in at **0.0783**, **2.65×** what we sized on, so the
+> minimum effect we could have detected (**0.0655**) is **larger than the effect we were looking for**
+> (0.0391). Real power was **0.23**. ⛔ So this is **not evidence of absence** and we are not
+> reporting it as one.
+>
+> **The reason is the finding, and I think it's the most interesting thing in the sprint.**
+> **Dose-matched controls are not an exchangeable population.** At *identical* dose — same number of
+> masked keys (522), same match ratio (1.000), verified on all eight — induced refusal ranges from
+> **−7 to +562**, a **25-fold** spread, and ASR from **0.126 to 0.374**. We checked the extreme arm
+> for a defect and it has none. ⇒ **Which positions you mask dominates behaviour at constant dose.**
+> The "dose-matched control" is not one intervention with noise; it is a **family of very different
+> interventions**.
 >
 > **On the direction, I went back and forth twice, so here is the settled version.** Our
 > refusal-adjusted bracket credits the control with **every** induced refusal as a would-be attack —
@@ -95,10 +113,21 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
 > direction is **well supported**; ⛔ it is still **not** the certified result, because our
 > preregistration ties that to the primary, which is 1 of 3.
 >
-> ⇒ **So the question is no longer "more domains, or a second concept?"** Neither fixes this. It is:
-> **can we build controls matched on induced refusal?** We showed earlier that we cannot select them
-> post hoc without repeating a mistake we already retracted, so this needs a design, not a filter.
-> **That's what I'd like the 30 minutes for.**
+> ⇒ **Last time I said the question was "can we build controls matched on induced refusal?" We tried,
+> and that route is now closed — so the ask has changed.** Selecting on *observed* refusal is post-hoc
+> (we retracted that once already). Matching on *predicted* refusal needs a predictor, and we went
+> looking: mask geometry predicts induced refusal neither **within** draws (7 features, 8 draws, sign
+> test that could have concluded — 0 of 4 consistent) nor **between** them (best ρ = 0.24, n = 8).
+> ⚠ Bounded honestly: at n = 8 we could only have caught |ρ| ≳ 0.71, so this closes *that feature
+> set*, not the idea.
+>
+> ⇒ **The real question, and what I'd like the 30 minutes for: do we keep buying draws, or change the
+> estimand?** I have **24 more draws running now** (K = 32, ~55 GPU-h), which is powered **0.78** for
+> the effect we hypothesised (−0.039) but only **0.34** for the one we actually observed (−0.022).
+> Detecting −0.022 would need **K ≈ 105**, roughly 240 GPU-hours — which I don't think is a
+> proportionate spend. ⇒ So either the behavioural claim rests on a test we can afford to run, or we
+> attack the **variance** rather than the sample size, or we reframe the paper around the
+> **representation/behaviour dissociation** — which is what the data actually supports.
 >
 > **Positioning, unchanged.** The representational half **replicates Yona et al., ACL 2026**; ours
 > that's new is the **causal** half — they perform no internal intervention. Frame as a causal
@@ -129,8 +158,15 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
   the confound that kills the contrast.
 * Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families × 4 doses.** That is
   38 *contexts* for a single mapping, not 38 mappings.
-* If asked "what would change your mind": ⛔ **not new pools** — we ran them (116 domains) and the
-  constraint turned out to be control exchangeability, not `k`. It is **controls matched on induced
-  refusal**, and **a second harmful concept at adequate power** (generality — the one we ran was mixed). ⚠ The low-dose
-  question is **closed**: we built the bank, both pre-registered gates passed, and the continuous
-  gradient still failed. That one is settled, not pending.
+* If asked "what would change your mind": ⛔ **not new pools** (we ran 116 domains; `k` was never the
+  constraint) and ⛔ **no longer "controls matched on induced refusal"** — we tried and there is no
+  predictor to match on (mask geometry fails within and between draws). What remains: **a second
+  harmful concept at adequate power** (generality was mixed, 1 of 2), and **an estimator that
+  differences out the refusal nuisance** rather than averaging over it. ⚠ The low-dose question is
+  **closed**: we built the bank, both gates passed, and the continuous gradient still failed.
+* ⛔ **Do not let the K = 8 null travel as "the attack doesn't work."** It is an *underpowered*
+  negative — our own minimum detectable effect was larger than the effect sought. The correct
+  sentence is "the behavioural effect is **not established**, and is bounded below ~0.066."
+* ⚠ One methods note worth adding if they ask about the judge: re-judging **5800 byte-identical rows**
+  flips **12.6 %** of attack labels but the **net** is −54, i.e. session drift is **not established**
+  (arm-level p = 0.17, CI spans zero). The **refusal** label flipped **0 of 5800**.
