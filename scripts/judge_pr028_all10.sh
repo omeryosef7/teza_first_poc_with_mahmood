@@ -18,6 +18,19 @@
 # ⛔ RUN ON cpu-killable, NEVER THE LOGIN NODE (`import openai` hangs >90s under NFS contention).
 set -euo pipefail
 R=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+cd "$R"
+# CONDA + .env, matching scripts/judge_angle24.sh. Without these the run dies under sbatch with
+# "OPENAI_API_KEY is not set" -- the key lives in .env and is NOT in the batch environment.
+source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
+conda activate poc_stage2
+if [ -f "$R/.env" ]; then set -a; source "$R/.env"; set +a; fi
+export PYTHONPATH="$R/src/boombness:${PYTHONPATH:-}"
+# B-016: the artifacts record only the judge ALIAS, so bound the served SNAPSHOT around the run.
+snap () { curl -s --max-time 20 -H "Authorization: Bearer ${OPENAI_API_KEY:-}" \
+    -H "Content-Type: application/json" \
+    -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ok"}],"max_tokens":1}' \
+    https://api.openai.com/v1/chat/completions | python -c \
+    'import json,sys; print(json.load(sys.stdin).get("model","UNKNOWN"))' 2>/dev/null || echo UNKNOWN; }
 BANK=$R/data/boombness_prompts/boombness_prompt_bank_cds116_button_bomb.jsonl
 S=$R/outputs/boombness/score_behavior
 # `|| true` IS LOAD-BEARING. Without it `ls -d` on a not-yet-created arm returns non-zero, and
@@ -46,6 +59,7 @@ for tag in $TAGS; do
   echo "pre-flight OK  $tag  <- $(basename "$dir")  rows=$rows"
 done
 echo "=== all 10 arms present and complete; judging in ONE invocation ==="
+SNAP_BEFORE=$(snap); echo "B-016 served snapshot BEFORE: $SNAP_BEFORE"
 
 for tag in $TAGS; do
   dir=$(pick "$tag")
@@ -53,3 +67,10 @@ for tag in $TAGS; do
   python -u $R/src/boombness/judge_boombness.py --gens "$dir" --bank "$BANK" \
     --pin-judge-model openai/gpt-4o-mini --seed 20260905 --tag "p28j_${tag}"
 done
+SNAP_AFTER=$(snap)
+echo "B-016 served snapshot BEFORE: $SNAP_BEFORE"
+echo "B-016 served snapshot AFTER : $SNAP_AFTER"
+if [ "$SNAP_BEFORE" != "$SNAP_AFTER" ]; then
+  echo "⛔ SNAPSHOT ROTATED MID-RUN ($SNAP_BEFORE -> $SNAP_AFTER): the p28j labels are an average"
+  echo "   over two judges. PR-028c's drift number and the primary both need this stated."
+fi

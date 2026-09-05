@@ -7211,3 +7211,43 @@ repo, no test arm in the real judge directory, mirror deleted.
 ⚠ **This validates the instrument, not the answer.** The real drift may be far smaller than the
 planted +0.01327 — `judge_session_drift.json` says 0.0020 — and `B-016` still applies: whatever
 number comes back **cannot separate sampling noise from a snapshot rotation**.
+
+### `R-068` — the judge-drift disagreement is **resolved**, from the repo's own prior work, and `PR-028b` was **necessary** rather than merely prudent
+
+`PR-028b` was written against two estimates that disagree 8× (0.0020 vs 0.0158) and I recorded that I
+could not tell which was right. ✅ **A third, independent measurement was already in this repository**
+and I had not found it. From `DEMONSTRATION_RETRIEVAL_..._PLAN_AND_PROGRESS.md` (a **peer's**
+corroboration, not my own work) and restated in `scripts/judge_angle24.sh`'s header:
+
+> identical generations moved a baseline ASR **0.1714 → 0.1595** across sessions, while a **paired**
+> delta reproduced **to four decimals**.
+
+| source | drift on raw ASR | kind |
+|---|---|---|
+| `judge_session_drift.json` | **0.0020** | min-max over 13 sessions, AdvBench, ASR 0.065 |
+| `R-049` | **0.0158** | direct re-judge, this bank |
+| **peer, independent** | **0.0119** | direct re-judge, `natural_doublespeak` |
+
+⇒ ✅ **The disagreement is a difference of kind, not a contradiction.** The two *direct re-judge*
+measurements agree (**0.0119** and **0.0158**); the outlier is the min-max across a tight cluster of
+13 sessions on a **different bank at ASR 0.065**. ⛔ **0.0020 is the wrong number to have treated as
+the low end** — cross-session drift on raw ASR is **~0.012-0.016**.
+
+⇒ ⛔ **`PR-028b`'s re-judge is therefore necessary, not cautious.** Mixing sessions would have biased
+the primary by (5/8)·0.012-0.016 = **0.0075 to 0.0099** against an effect of **−0.0391** — **19-25 %**
+— and in an unknown direction. ⚠ I had put the lower bound of that range at 3 %.
+
+✅ **And the peer's second clause is the structural point.** *Paired* deltas transport across
+sessions; **raw ASR levels do not**. `PR-028`'s primary compares `KO-3`'s ASR against the **mean of
+the control ASRs** — those are raw levels across arms, so the estimand is in the class that does
+**not** transport. ⇒ Judging all ten arms in one session is not a hygiene preference; it is what
+makes the primary's estimand well-defined at all.
+
+⚠ **Two fixes this forced in the judging path, found before submission, not after a failed run.**
+* `judge_pr028_all10.sh` never sourced `.env` or activated conda — copied from a script whose caller
+  did it. ⛔ Under `sbatch` it would have died at the first arm with *"OPENAI_API_KEY is not set"*.
+  Now matches `judge_angle24.sh`'s pattern; `sbatch` wrapper added at
+  `src/boombness/slurm/run_pr028_judge.sh` (**cpu-killable**, per the standing rule).
+* `B-016`'s mitigation is now **in the script**, not in my intentions: it probes the served snapshot
+  **before and after** the run, prints both, and warns explicitly if the snapshot **rotated
+  mid-run** — in which case the `p28j` labels are themselves an average over two judges.
