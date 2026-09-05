@@ -6440,3 +6440,42 @@ directionally unanimous, the design is adequately powered **only** where the con
 induce heavy refusal, and **control-to-control variance is larger than the effect**. ⚠ More domains
 will not fix that. ⇒ What would: **controls matched on induced refusal**, which `C-023` showed cannot
 be selected post hoc and which no existing draw provides.
+
+## `PR-025` — PREREGISTRATION: is the refusal confound **quantifiable**, and therefore designable-around?
+
+⚠ **Frozen before the statistic is computed.** `R-061` ended on a design question I said belongs to
+Omer and the collaborators: *can controls matched on induced refusal be built?* ⛔ I am **not**
+answering that. This asks the strictly prior, analysis-only question that would **inform** it, on data
+already collected: **is the refusal→attack suppression relationship regular enough to design against,
+or is it idiosyncratic?**
+
+**Why it is worth asking now.** The three controls are seeded draws of the **same number** of
+non-demonstration keys (`R-060`: `keys_masked` **522** median, identical across arms), differing only
+in **which** keys. That alone produced refusal loads of **+35 / +133 / +200** — a **5.7×** spread from
+key selection. ⛔ `B-007` records that control-draw **positions are not persisted**, so *which* keys
+cannot be analysed. ⇒ What can be analysed is the **consequence**.
+
+⛔ **PRIMARY.** Per domain `d` and per control `c`: does **refusal induction**
+`Δrefused_{c,d} = refused_{c,d} − refused_{base,d}` predict **attack suppression**
+`Δattack_{c,d} = attack_{c,d} − attack_{base,d}`? Pooled across the **3 × 116 = 348** control-domain
+cells, Spearman ρ, seeded permutation p. Predicted **negative** (more induced refusal ⇒ fewer
+attacks). α = 0.05.
+
+**SECONDARY.** The same ρ computed **within each control separately**, because a relationship that
+holds pooled but not within-control would be a between-control artifact rather than a mechanism.
+
+⛔ **Declared outcomes.**
+* **Strong and consistent** (pooled ρ clearly negative, and same sign in all three controls) ⇒ the
+  confound is **regular**, so a control could in principle be **matched on predicted refusal** rather
+  than selected on observed refusal — which is the thing `C-023` forbade. ⚠ That would be a
+  *design input*, ⛔ not a licence to re-analyse `R-061` with a corrected comparator.
+* **Weak or inconsistent** ⇒ refusal induction is **idiosyncratic to the draw**, and matching on it is
+  not a route. ⇒ `R-061`'s limit is **structural**, and the honest recommendation to the collaborators
+  becomes a different design entirely.
+* **Positive ρ** ⇒ ⛔ my whole reading of `R-061` is wrong and must be revisited before anything else.
+
+⚠ **Declared limits.** ⛔ This is **correlational across domains**, exactly as `R-041` was, and
+`A-009`/`R-053` are the record of how that can mislead — so ⛔ **no causal language**, and the
+ceiling/RTM lesson applies: I will report whether the relationship survives restricting to cells with
+**non-extreme** baseline refusal. ⛔ It re-uses `R-061`'s data and can therefore **not** be treated as
+independent confirmation of anything in it.
