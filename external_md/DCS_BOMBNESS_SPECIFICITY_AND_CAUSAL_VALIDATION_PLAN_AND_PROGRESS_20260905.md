@@ -519,3 +519,150 @@ Population, position, layers, folds, layer-selection rule, independence unit (**
 statistic (two-sided sign test), α = 0.05, attainable floor **0.031**, the single-composite-contrast
 rule from §4, the capability gate for `P1`, and all four declared outcomes. `P2` carries its own
 capability gate: its **train-fold** 4-way accuracy must exceed 0.25, else the fit failed.
+
+---
+
+## §8 — `DCS-A-020` — independent audit of `PR-031`, and my adjudication of it
+
+A 6-agent read-only audit ran against this repository in parallel with §2–§7 and returned a verdict
+that **contradicts** `PR-031`:
+
+> ⛔ *"A valid bomb-vs-knife/gun/club concept-specificity test CANNOT be built from the existing
+> banks. An aligned bank must be constructed first."* — four blockers, each claimed sufficient.
+
+⛔ **I did not average this against my own view.** I re-measured all four blockers from source. Three
+are confirmed, one is confirmed-but-not-binding, and one further claim is **wrong**. Adjudication:
+
+### §8.1 Blocker 1 — cell `A` is a different corpus in each concept bank. **CONFIRMED.**
+
+Verified by sentence-set intersection over the per-concept pools:
+
+| pool | bomb∩knife | bomb∩gun | bomb∩club |
+|---|---|---|---|
+| `farm_storage\|benign` | **0/40** | **0/40** | 9/40 |
+| `lab_safety\|benign` | **0/40** | 6/40 | 3/40 |
+| `instructional\|benign` | 8/40 | 11/40 | 6/40 |
+| `farm_storage\|harm` | 0/40 | 0/40 | 0/40 |
+
+`demo_pools.generate_pools` re-draws **every** `(domain, valence)` per concept — there is no
+valence-subset flag — so the *benign* demonstrations, which have no design reason to differ, differ.
+⇒ **cell `A` is not a shared baseline across concepts.**
+**Consequence:** `P1` (which uses cell `A` as its `literal` class) and the paired `C−A` direction are
+both contaminated across concepts. ⇒ **`P2` becomes the sole primary; `P1` is demoted to a reported
+secondary** and its failure may not be read as a concept negative.
+
+### §8.2 Blocker 2 — length/position not matched. **CONFIRMED as a gap, REFUTED as a shortcut.**
+
+Measured on the actual probe population (`comprehension_usage`, `button`, `n_examples ∈ {4,8}`,
+cell `C`, chars of `full_prompt`): bomb **616.1**, gun **613.0** (−0.5 %), knife **653.8** (+6.1 %),
+club **681.7** (+10.6 %). The gap is real.
+
+⚠ But the audit did not test whether it is *usable*. I did. Within-class sd is **≈160 chars**, which
+dwarfs the ≤66-char between-class gaps, so a **length-only leave-one-domain-out 4-way classifier
+scores 23/96 = 0.240 against a chance of 0.250** — no better than chance. ⇒ prompt length is not a
+shortcut to the concept label on this population. It is retained as a **mandatory pre-registered
+control**, reported beside every probe result. (Computed from prompt text only; no model, no hidden
+state, so this is a design-time property and not a peek at the confirmatory data.)
+
+### §8.3 Blocker 3 — `club` does not teach its concept. **CONFIRMED, and worse than §2.4 said.**
+
+Verbatim from `demo_pools_club.json`:
+
+* `lab_safety|harm` — `club` is a **room/cabinet**: *"the chemical **club** in the storage room was
+  improperly labeled"*; *"the **club** containing flammable materials was left open"*; *"the **club**
+  where volatile substances were stored"*.
+* `farm_storage|harm` — three senses in one pool: *"the local farm safety **club**"* (social),
+  *"A large metal **club** … posing a potential hazard"* (weapon), *"the **club** used for livestock
+  handling"* (tool).
+* `game_manual|harm` — *"Deploy the stealth **club** to silently eliminate enemies"* (weapon) beside
+  *"Joining the elite mage's **club**"* (social).
+
+⇒ ⛔ **`club` is EXCLUDED from the primary composite.** This exclusion is **mechanistic and
+pre-outcome**: it rests on the demonstration text alone, is fixed here before any hidden state is
+read, and would be identical whatever the result. `club` is still **run and reported in full** as a
+labelled secondary — dropping it silently, or after seeing an outcome, is what this phase forbids.
+**The primary composite comparator is therefore `mean(knife, gun)`.**
+
+⚠ `gun`'s harm framing is *object-presence* (*"a gun hidden in a storage cabinet"*) while `bomb`'s is
+*threat/process* (*"A bomb threat was reported"*). Both are coherent and harmful; the framing
+difference is recorded as a limitation, not an exclusion.
+
+### §8.4 Blocker 4 — the comparator banks are the wrong preset. **CONFIRMED, and it bounds the claim.**
+
+The headline `cds38`/`cds116` population is `preset = main_longpre_cds`, 38 domains, with a preamble.
+The concept banks are `preset = main`, 6 domains, no preamble, and **no `cds*` bank exists for knife,
+gun or club**. ⇒ **Scope statement, binding on every sentence this stage produces:** `PR-031` runs on
+the **6-domain `main` population**. ⛔ It does **not** replicate the `cds38` headline population, and
+**no result from it transfers automatically** to the causal results in §1.1. Stage S3 (causal
+validation on the comparators) is **blocked** until an aligned `cds`-format comparator exists.
+
+### §8.5 The audit's fifth claim — "all comparators are themselves harmful, so this cannot separate BOMB from generic harmfulness". ⛔ **I disagree, and I am recording the disagreement rather than deferring.**
+
+The audit argues that because knife/gun/club are harmful, a bomb-vs-knife test only asks
+*"BOMB vs another weapon"*. That inverts the logic. **A feature encoding generic harmfulness would
+be identical for bomb and for knife**, so a classifier that separates them *cannot* be running on
+generic harmfulness. Harmful hard negatives are exactly the right control for the
+"is it just harm?" alternative — a benign comparator would be a *weaker* test of it, not a stronger
+one.
+
+⚠ What harmful comparators genuinely cannot do is separate BOMB from **generic remapping**. The audit
+is right that this needs a **benign remapped** comparator, and it is right that the machinery exists
+(`benign_remap`, cell `F`, `REMAP_SOURCE_WORD = "bicycle"`). ✅ I verified cell `F` is reachable from
+existing data on the `semantic_one_word` readout: 36 rows/bank over 6 domains at
+`n_examples ∈ {0, 4, 8}`, `target_surface = button`, `demo_valence = remap`. ⇒ **cell `F` is added as
+a fifth class**, which upgrades the design rather than blocking it.
+
+### §8.6 Second readout admitted: `semantic_one_word`
+
+`semantic_one_word` is `occurrence_analysis_safe = True` on **1008/1008** rows and has exactly **two**
+question texts — *"what does the word **button** actually refer to?"* (768 rows, codeword-target) and
+*"…the word **bomb**…"* (240 rows, concept-target). The codeword question is **concept-free and
+identical across all four concept banks**, so it is leakage-safe by the §2.3 criterion, it is
+**open-ended** rather than binary — the closest thing in the repository to Matan's actual question —
+and it is the only readout carrying cell `F`.
+
+⇒ **Readout plan.** `comprehension_usage` (balanced, 72 complete quadruples) is the **primary**
+probe channel. `semantic_one_word` is a **pre-declared replication channel** and the **only** channel
+for the cell-`F` class. Both are declared now; neither may be chosen after seeing results, and both
+are reported whatever they show. ⛔ `semantic_forced_choice` remains disqualified as a probe channel
+(§2.3) and is used **only** for the installation/prompt-validation table.
+
+### §8.7 Two audit corrections to the inherited record, which I adopt
+
+* ⛔ **`R-076`'s between-arm figure "best |ρ| = 0.238, p = 0.589, n = 8" has no artifact.** The audit
+  found `dcs_draw_geometry_refusal_k8.json` carries no between-arm block and
+  `scripts/dcs_draw_geometry_predicts_refusal.py` computes only the within-arm statistic. ⇒ §1.1(11)
+  of this file quotes it; it is **prose-only and not regenerable**, and this phase will not rely on
+  it as an established bound. The *within-arm* half of `R-076` is unaffected.
+* ⚠ **`R-002`'s own prose miscounts its own table.** It says *"three of four comparisons run the
+  other way"*; the table (button: bomb .138 / knife .168 / gun .138 / club .173; basket: bomb .110 /
+  knife .130 / gun .103 / club .142) gives **six** comparisons: **4 against, 1 exact tie
+  (button-gun), 1 as predicted (basket-gun)**. The continuation plan's `B6` already states it
+  correctly. ⇒ Quote `B6`, not `R-002`'s sentence.
+
+### §8.8 Net effect on `PR-031`
+
+`PR-031` is **amended, not withdrawn**. The audit's real contribution is that it bounds the claim
+(§8.4) and removes a bad comparator (§8.3); it does not establish that nothing can be measured.
+What changes, all before any forward pass:
+
+1. **`P2` is the sole primary.** `P1` is a reported secondary (§8.1).
+2. **Primary composite comparator = `mean(knife, gun)`**; `club` reported separately (§8.3).
+3. **Cell `F` (benign remap) added as a fifth class** on the `semantic_one_word` channel (§8.5).
+4. **Length-only control classifier is mandatory** and its pre-data value on this population is
+   **0.240** (§8.2).
+5. **Scope is bounded to the 6-domain `main` population** and transfers nowhere by itself (§8.4).
+6. Everything else in §6 and §7 — unit (**domain, n = 6**), statistic, α, floor **0.031**, the
+   single-composite rule, the capability gates, the `n_examples = 0` null, and all four declared
+   outcomes — **stands unchanged**.
+
+### §8.9 `S1b` — the aligned rebuild, specified now, NOT run now
+
+The audit's construction is correct and is the properly-powered follow-up: copy
+`demo_pools_29dom.json` per comparator concept, keep `|benign`, `|filler` and `|remap`
+**byte-identical** to bomb's, and regenerate **only** the 38 `|harm` pools. That makes cells `A`,
+`E`, `F` identical by construction and confines the manipulation to the estimand. It requires a
+`valence` subset flag in `generate_pools` (which has only a `domains` flag), a polysemy screen that
+no existing guard performs, and ~38 pools × 1 valence × N concepts of `gpt-4o-mini` calls.
+⛔ **Not started.** It is a new-data task needing its own preregistration and Omer's sign-off on the
+spend; `PR-031` is deliberately the free test that runs first and tells us whether it is worth buying.
