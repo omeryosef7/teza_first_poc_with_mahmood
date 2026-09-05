@@ -7017,3 +7017,46 @@ reads *"Current work: `PR-024`/`B-009` — **76** new demonstration domains to r
 **k = 116** (`PR-024`), `B-009` ran and is **NOT RESOLVED** (`R-061`), and `R-056`'s 0.814 was
 replaced by the **realised** power **0.65 / 0.35 / 0.05** once the base rate came in at 0.32 rather
 than 0.403. ⇒ Do **not** rebuild pools on the strength of that line; the live work is `PR-028`.
+
+## `PR-028a` — the `PR-028` analyzer, frozen **while the arms were still generating**, plus one caveat the dry run forced
+
+⚠ **Committed at 11:0x on 2026-09-05, with 852000-852004 at 113-351 of 1160 rows.** `scripts/dcs_pr028_primary.py`
+implements `PR-028`'s primary and nothing else; it existed before any number it will judge.
+
+✅ **Contract spot-check on the partial arms** (all five, at 113-351 rows): `decode_edits` max **0**,
+`control_draw_match_ratio` **1.000**, `n_examples` **{4}**, `keys_masked` median **513-531** against
+`R-060`'s **522**, and the five draw seeds are exactly the declared **28180682 / 36100459 / 44020236
+/ 28180683 / 36100460**. ⇒ Nothing to abort for. ✅ Every row carries `control_draw`, as `R-066` says
+behavioural arms do.
+
+✅ **The calibration formula was rederived from `R-063`'s own published table, not re-invented**, and
+asserted before use: `calibrated_delta_k(c) = face_k − c·(removed_by_KO3 + induced_by_ctrl_k)`
+reproduces **[−146.9, −65.8] / [−139.7, −87.2] / [−129.4, −28.6]** — `R-063`'s three intervals to
+0.1 rows. ✅ `load_arm` is **imported from `cds_domain_test.py`**, so there is exactly one ASR
+definition in the phase. ✅ The t-tail has a no-scipy fallback agreeing with scipy to **1e-11**.
+
+✅ **Dry run at K=3 reproduces `PR-028`'s sizing inputs exactly** — between-control sd **0.0295**,
+delta **−0.0391**, t(2) = −2.293, **p = 0.1488** against the preregistered **0.149**. ⇒ The analyzer
+computes the quantity the design was sized on, verified against a number frozen before it existed.
+
+⛔ **DEFECT FOUND AND FIXED IN THE DRY RUN.** The verdict string read *"WELL-POWERED NEGATIVE at
+K=3"*. ⛔ False: `PR-028` predicts **p = 0.149 at K=3 even if the effect is real**, so a null there is
+**foreseen**, not evidence of absence. A reader scanning only the verdict line would have taken an
+expected null as a finding. "Well-powered negative" is now gated on **K ≥ 8**; below it the verdict
+reads `UNDERPOWERED — NOT the preregistered primary`.
+
+⚠ **NEW CAVEAT, DECLARED BEFORE THE DATA — the calibration can manufacture its own significance.**
+Induced refusal is not merely a bias, it is **most of the between-control spread**. Subtracting
+`c·induced` therefore subtracts most of the **error term** too. Measured on the K=3 dry run:
+
+| | raw | `c` = 0.057 | `c` = 0.350 |
+|---|---|---|---|
+| between-control sd | 0.0295 | 0.0256 | **0.0076** |
+| p | 0.1488 | 0.0715 | **0.0013** |
+
+⇒ At `c_hi` the correction removes **74 %** of the spread, and the p falls two orders of magnitude.
+⛔ **That p is a property of the correction, not of the data.** ⇒ The analyzer now prints the
+shrinkage ratio and refuses to let `c_hi` be read alone; the calibrated result is quoted as the
+**range across `c`, together with the shrinkage**. ⚠ This strengthens `PR-028`'s existing
+"significant raw but not calibrated ⇒ `CONFOUND-LIMITED`" branch: the converse — calibrated-only
+significance — is now explicitly **not** sufficient.
