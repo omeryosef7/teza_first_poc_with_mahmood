@@ -6973,3 +6973,47 @@ off the confounded pooled test. It now takes its verdict from the within-arm pri
 pooled figure under a `CONFOUNDED` label with no verdict attached, and excludes degenerate features.
 ✅ It also refuses to report at all unless its own null calibration passes on outcome-shuffled data
 (1 / 7 false rejects at α = 0.05, expected 0.4).
+
+### `A-014` — 4-hourly self review: six verifiers green, and an adversarial audit of the `R-067` analyzer
+
+Due at 4 h from `A-013` (06:07 → 10:41).
+
+✅ **Verifier suite re-run, all green:** `dcs_verify_installation_gradient`, `dcs_verify_pr014_bound`,
+`dcs_verify_audit_r041`, `dcs_verify_merge_audit` (7/7), `dcs_verify_domain_test`, and the new
+`dcs_verify_draw_regenerable` (identity-verified). Plus the pre-commit gate: **9 deliverable guards**
+and **341 tests**.
+
+⛔ **`R-067` returned a null, and a null is only worth having if the instrument could have returned
+the opposite.** `scripts/dcs_audit_r067.py` mutates the **data** — never the analyzer — and asserts
+the analyzer changes its mind in the direction each mutation implies:
+
+| mutation | required behaviour | result |
+|---|---|---|
+| **M1** feature planted = the residualised outcome | sign-consistent, **positive** | ✅ +0.552 / +0.381 / +0.660 |
+| **M2** the same, sign flipped | sign-consistent, **negative** | ✅ −0.552 / −0.381 / −0.660 |
+| **M3** feature constant inside `d3` | flagged **DEGENERATE**, excluded | ✅ `d3=None`, not scored 0.0 |
+| **M4** pure noise | consistent at **chance**, not above | ✅ 7/20, chance 0.25 ⇒ expect 5.0 |
+| **M5** outcome shuffled | null calibration near nominal | ✅ 0/7 reject at α = 0.05 |
+
+⇒ **5/5.** ✅ The analyzer **does** detect a real within-arm signal when one is planted (M1/M2), so
+`R-067`'s `NO USABLE WITHIN-ARM SIGNAL` is a **measured null, not a vacuous one**.
+
+⚠ **The audit's own first run FAILED M4, and the fault was mine, not the analyzer's.** I had written
+`ok = n_cons <= 6`, a **hardcoded** threshold. At k = 3, P(all k rhos share a sign) = 2/2³ = **0.25**,
+so over 20 trials the expectation is **5.0** with sd **1.94** — the observed **7** sits inside one sd.
+⛔ This is **`C-034` repeated inside the instrument built to catch exactly this class of error**: an
+acceptance band valid at one N, applied at another. Band now derived as `mu ± 3 sd` from k and the
+trial count, and the printout states the chance rate so the number cannot be read without it.
+
+✅ **M4 is also an independent, empirical confirmation of `R-067`'s scope caveat.** `R-067` argued
+from the sign-test floor that k = 3 cannot conclude; M4 **measures** it — **7 of 20 pure-noise
+features looked sign-consistent**. ⇒ The single "consistent" feature in `R-067` (`spread_norm`) is
+exactly what noise produces at this k, which is independent grounds for the caveat already recorded
+against it (13× narrower range in `d3`).
+
+⚠ **Stale standing instruction, recorded so it stops misdirecting ticks.** The loop prompt still
+reads *"Current work: `PR-024`/`B-009` — **76** new demonstration domains to reach **k=114** (power
+**0.814** per `R-056`)"*. ⛔ All four facts are superseded: **78** domains were built, reaching
+**k = 116** (`PR-024`), `B-009` ran and is **NOT RESOLVED** (`R-061`), and `R-056`'s 0.814 was
+replaced by the **realised** power **0.65 / 0.35 / 0.05** once the base rate came in at 0.32 rather
+than 0.403. ⇒ Do **not** rebuild pools on the strength of that line; the live work is `PR-028`.
