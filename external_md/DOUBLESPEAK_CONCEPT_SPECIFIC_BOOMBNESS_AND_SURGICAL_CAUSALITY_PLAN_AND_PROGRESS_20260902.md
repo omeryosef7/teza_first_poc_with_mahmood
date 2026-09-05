@@ -7864,3 +7864,22 @@ the search must move to what the masked keys were **carrying**, not where they s
 
 ✅ `R-063`'s arm-level calibration keeps its footing (it presumes a real arm-level quantity).
 ⚠ `R-070`'s per-arm-vs-per-row seeding hypothesis remains **un-run** and is *not* what this tested.
+
+### `DCS-040` — the "cap 2 model-loading jobs per node" rule **mis-predicts**; the predictor is *concurrent* loads node-wide
+
+`PR-029`'s first wave landed **3 of my jobs on n-805** and 1 on n-802. My standing operational rule
+says 3 loaders on one node causes a ~16× weight-load slowdown, so n-805 should have been the problem.
+
+⛔ **It was the opposite.** All three n-805 jobs reached `Loading weights: 100%` in seconds. The
+**n-802** job sat at **25 % after 9:28** with ~24 min remaining — roughly **1000×** slower.
+
+✅ **Cause, checked rather than assumed.** n-805's other occupants are `ordavids1` jobs **7-13 hours
+old**, long past their I/O phase. n-802 carries `talbenyish`'s job started **12 minutes** earlier —
+i.e. loading **concurrently** with mine.
+
+⇒ ⚠ **The rule should be: weight-load time is set by how many jobs are loading on that node at that
+moment, regardless of owner.** ⛔ Counting *my own* jobs per node does not predict it, and I cannot
+see other users' start times before submitting. ⇒ The rule is **not actionable as a placement
+constraint**; what is actionable is the diagnostic — ⛔ never infer a stall from elapsed time, read
+the **progress bar** (`feedback_slurm_stall_diagnostic`), which correctly shows this job progressing.
+✅ Not a stall; no action taken.
