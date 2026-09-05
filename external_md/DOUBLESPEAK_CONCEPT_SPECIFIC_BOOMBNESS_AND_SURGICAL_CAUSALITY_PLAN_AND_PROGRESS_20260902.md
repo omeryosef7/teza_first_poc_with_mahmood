@@ -7519,3 +7519,59 @@ that string is **correct code and an unlicensed conclusion** at an interim look.
 `PR-028c`'s frozen analyzer. ⛔ Interim numbers are trend-tracking only and no interim `SYSTEMATIC
 OFFSET` string is quotable. ⚠ The direction and rough magnitude are informative and are what
 `R-073` reports; the **significance** is not.
+
+### `R-074` — `PR-028c` FINAL (**5 of 5**): judge-session drift is **NOT ESTABLISHED**, and the whole `R-068` arc resolves as *undetermined*
+
+All five `p24j`-comparable arms re-judged in one session (852324). ⛔ **One readout, as `C-043`
+bound.**
+
+| arm | ASR `p24j` → `p28j` | flips | net |
+|---|---|---|---|
+| `base` | 0.3422 → 0.3457 | 152 | **+4** |
+| `demo` (`KO-3`) | 0.2741 → 0.2526 | 163 | **−25** |
+| `d1` | 0.3172 → 0.2991 | 119 | **−21** |
+| `d2` | 0.3405 → 0.3448 | 151 | **+5** |
+| `d3` | 0.2819 → 0.2672 | 143 | **−17** |
+
+**5800 byte-identical rows, 0 sha exclusions, 728 flips (12.6 %), net −54, drift −0.00931.**
+
+⛔ **The preregistered test is at the WRONG UNIT, and saying so costs me the result.** `PR-028c`
+specified an exact binomial over flips: **p = 0.0494**. But 5800 rows are **not** 5800 independent
+replicates of a *session* offset — there are **five arms**, and rows cluster inside them (this phase
+measured domain ICC **0.089-0.112**). A session offset is an **arm-level** quantity, so the arm is
+the replicate:
+
+* **arm-level:** mean **−0.00931**, sd 0.01229, SE 0.00550, **t(4) = −1.69, p = 0.1655**,
+  **95 % CI [−0.0246, +0.0060]**;
+* sign test over arms: **3 of 5** negative — nothing;
+* homogeneity of the five offsets: **χ²(4) = 5.859, p = 0.210** ⇒ one **common** offset is
+  consistent with the data.
+
+⇒ ✅ **VERDICT: `NO ESTABLISHED OFFSET`.** Point estimate −0.0093, and the interval **spans zero**.
+⚠ This is `C-016`/`R-016`'s independence-unit error appearing **inside my own preregistered
+analyzer** — the third time this phase (`R-067` was the second). ✅ The correction moves **away** from
+significance (0.049 → 0.166), so it is not a search for a better p.
+
+⇒ ⛔ **`R-068`'s "19-25 % bias" is WITHDRAWN as overstated.** The honest statement: the mixing bias is
+**not established**; its point estimate is (5/8)·(−0.0093) = **−0.0058**, about **15 %** of the
+−0.0391 effect, with an interval spanning **−39 % to +10 %**. ⚠ The CI is wide enough to contain
+**both** `judge_session_drift.json`'s 0.0020 **and** `R-049`'s 0.0158 ⇒ **the data cannot
+distinguish the competing estimates**, which is the actual answer to the question `R-068` claimed to
+have settled.
+
+✅ **`PR-028b`'s re-judge remains correct, on the argument that never depended on magnitude:** raw
+ASR levels do not transport across sessions (the peer's paired-delta finding), and `PR-028`'s primary
+compares raw ASR **levels** across arms. ⚠ It is now insurance against an **unquantified** risk
+rather than a **measured** one — which is a weaker justification than `R-068` claimed and still a
+sufficient one.
+
+✅ **`C-023` is now very strongly supported:** **0** refusal-label flips across **5800** re-judged
+rows, on top of `R-049`'s 380. ✅ The **12.6 %** flip rate reproduces this repository's standing
+figure for byte-identical text.
+
+⚠ **Analyzer changed at readout, additively and on the record:** the arm-level test and CI are now
+printed **alongside** the preregistered binomial, which is retained verbatim and labelled
+*"WRONG UNIT, reported for the record only"*. ⛔ Not a silent swap. ⚠ A helper insert **silently
+no-op'd** on a non-matching anchor first (the edit targeted a function that lives in the *other*
+script); caught by the `NameError` on the next run and redone with assertions on both the anchor and
+the result.
