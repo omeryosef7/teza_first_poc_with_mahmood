@@ -2411,3 +2411,89 @@ an arXiv API query. ⛔ Recorded as a **null search, not as evidence of novelty*
 (§16.5) that novelty is never claimed from a search that found nothing is unchanged. The OpenReview
 blind spot named in §16.5 remains open.
 
+
+---
+
+## §33 — `DCS-PR-037a` / `DCS-B-018` — ⛔ THE DOSE-MATCHED CONTROL IS INFEASIBLE ON THIS BANK. Pre-data amendment.
+
+⚠ **Provenance:** all six `demo` arms completed; **all six `ctrl` arms FAILED**. ⛔ **No
+`semantic_logodds` value from any arm of this experiment has been read.** The only fields inspected
+are contract fields (`n`, domain count, `hook_n_keys_masked`, `hook_n_query_rows_edited`,
+`hook_liveness_violations`) and the pre-flight refusal messages. This amendment is written on a
+**mechanical infeasibility**, not on an outcome.
+
+### 33.1 The blocker, as the repo's own pre-flight reported it
+
+Every `nondemo_matched_d1` arm refused **before generating**:
+
+> *"REFUSING before generating: **164 of 168 rows** cannot carry this knockout … whose control cannot
+> be built … **Fix the arm or the population — do NOT rescope to the feasible rows, because demo
+> length IS the dose variable** and dropping the long-demo rows silently changes the experiment."*
+
+| `n_examples` | rows | control feasible | `control_draw_match_ratio` mean |
+|---|---|---|---|
+| 4 | 84 | **4** | **0.048** |
+| 8 | 84 | **0** | **0.000** |
+
+⇒ On the **main** `button_bomb` bank the demonstrations occupy nearly the whole prompt, so there are
+**not enough non-demonstration key positions** to draw a count-matched control. ⚠ This is the
+constraint §1.2/§4.12 already recorded — *"the old banks cannot construct the same dose-matched
+control because of their prompt format"* — met on a new population. `PR-037` §30.4 asserted 12
+feasible arms **without checking it**, and that was my error.
+
+⛔ **I am NOT rescoping to the 4 feasible rows.** The pre-flight forbids it, and it would condition
+the population on demo length, which is the dose variable.
+
+### 33.2 Why the control is not needed for THIS estimand — verified, not assumed
+
+Measured across all six completed `demo` arms:
+
+| arm | `keys_masked` | `query_rows_edited` |
+|---|---|---|
+| `ko1` (target-surface row) | **2754** | 36 |
+| K=5 | **2754** | 180 |
+| K=6 | **2754** | 216 |
+| K=9 | **2754** | 324 |
+| K=10 | **2754** | 360 |
+| `ref` (whole query span) | **2754** | 1008 |
+
+⇒ ⛔ **`keys_masked` is IDENTICAL — 2754 — in every arm.** The rungs mask the *same demonstration
+keys*; they differ **only** in how many query rows are blocked from reading them. K=9 and K=10 differ
+by **exactly 36 edited rows and nothing else**.
+
+The `nondemo_matched` control exists to absorb *"masking this many keys hurts regardless of which
+keys"*. ⇒ In a **between-rung increment** that quantity is **held fixed by construction**, and the
+control cancels: `inc(d) = [demo_K10 − ctrl_K10] − [demo_K9 − ctrl_K9] ≈ demo_K10 − demo_K9`
+whenever `ctrl_K10 ≈ ctrl_K9`, which is guaranteed here because both controls would mask the same
+2754 keys.
+
+### 33.3 The amendment
+
+* **ADDED:** one unintervened **baseline** arm (`dcssow_base_demo`, job 854139) — feasible, since no
+  control draw is required. Same population, same seed, no `--intervene`.
+* **CHANGED:** `Δ_K(d) ≔ mean semantic_logodds(demo_K, d) − mean semantic_logodds(baseline, d)`.
+* ⛔ **THE SINGLE PRIMARY IS UNCHANGED IN SUBSTANCE.** `inc(d) = Δ_K10(d) − Δ_K9(d)`; the baseline
+  cancels exactly, so this is `demo_K10(d) − demo_K9(d)`. Two-sided sign test, **n = 6 domains,
+  m = 1**, floor 0.03125. §30.6's four outcome branches and both magnitude bars (0.2 / 0.5 ×
+  `|Δ_ref|`) stand **verbatim**.
+* **ADDED, as the internal negative control the `ctrl` arms would have provided:** **K=5**. It masks
+  the *same 2754 keys* at 180 rows, **all of them chat scaffold** (§30.2). ⇒ If `|Δ_K5|` is not small
+  relative to `|Δ_ref|`, then masking *per se* moves this readout and ⛔ **the whole rung comparison
+  is uninterpretable** — declared here as an additional **VOID** condition, before the data:
+  **VOID if `|Δ_K5| ≥ 0.2 · |Δ_ref|`.**
+
+### 33.4 ⚠ What is LOST, stated plainly rather than glossed
+
+⛔ Without `nondemo_matched` arms this experiment can **no longer** ask *"is the effect specific to
+demonstration keys, or would masking any 2754 keys do it?"* on this population. That question is
+answered for the **38-domain forced-choice** ladder (`R-080`, every rung dose-matched) and is
+**NOT** answered here. ⇒ `PR-037`'s result is a **localisation within the query span**, conditional
+on the demonstration-key effect established elsewhere. ⛔ It may not be cited as independent evidence
+that demonstration keys specifically matter.
+
+### 33.5 Cost
+
+Six wasted GPU arms (~25 min). ⚠ Recorded rather than hidden. The pre-flight did its job: it refused
+**before** generation on all six, so nothing partial was written and no arm produced a number that
+could have been mistaken for a result.
+
