@@ -239,6 +239,15 @@ ICC ≈ 0.34, so domain is the correct independence unit.
    tested directly and is **not established** (`C-017`, permutation p = 0.14 / 0.23). What is still
    open: a **second refusal-neutral draw** to break the selection dependence, and an endpoint that
    is not 91 % off-goal.
+   ⚠ **ADDRESSED, AND THE ANSWER IS THAT THE MAGNITUDE IS NOT ESTIMABLE AT THIS K (`R-075`,
+   2026-09-05).** The selection dependence was broken the right way — not by finding a better draw
+   but by **removing the choice**: `PR-028` ran **eight** draws and tested `KO-3` against the control
+   **distribution**. ⇒ δ = **−0.0222**, t(7) = −0.80, **p = 0.449**, and the realised between-control
+   sd (**0.0783**) is **2.65×** what the sizing assumed, putting the minimum detectable effect
+   (**0.0655**) **above** the effect sought. ⛔ So "≈ −30" cannot be defended as a magnitude: at
+   K = 8 the comparator population is too variable to pin it, and **K ≈ 24** would be needed.
+   ⛔ The variability is not noise to be averaged away — at **identical dose** the eight draws induce
+   **−7 to +562** refusals, so the "control" is a **family of very different interventions**.
 1. ✅ **ANSWERED (`R-021`/`R-022`).** Neither the codeword row nor the readout row carries the
    mapping (both null at K=1); a threshold set of 3–8 query rows does, after which it saturates.
    ⚠ Row count and dose rise together by construction, so "≥8 rows" and "≥16 704 cells" are the
@@ -302,8 +311,45 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
   conversion **symmetrically to both arms** gives **[−147, −66] / [−140, −87] / [−129, −29]** —
   entirely negative for all three, and **half the width**. ⚠ On `d3` the face value (**−9**) lies
   **outside** that interval, so "nearer the face value" would be wrong too. `PR-024a` binds the
-  verdict to the primary in any case. ⇒ **More domains will not fix this; controls matched on induced
-  refusal would**, and `C-023` showed those cannot be selected post hoc.
+  verdict to the primary in any case. ⇒ **More domains will not fix this.**
+  ⛔ **And the repair that entry proposed — "controls matched on induced refusal" — is now CLOSED
+  (`R-076`, 2026-09-05).** Matching on *observed* refusal is post-hoc (`C-023`); matching on
+  *predicted* refusal needs a predictor, and there is none: mask geometry fails to predict refusal
+  **within** arms (7 features, k = 8 draws, sign-test floor 0.0078, **0/4** consistent) and
+  **between** them (best |ρ| = **0.238**, p = 0.59, n = 8 arms). ⚠ Bounded: n = 8 excludes only
+  |ρ| ≳ 0.71, so this closes *this* feature set, not the idea.
+
+* `DCS-PR-028` → ⛔ **THE K = 8 PRIMARY IS AN `UNDERPOWERED NEGATIVE` (`R-075`, 2026-09-05).**
+  Rather than choose a comparator, treat the control draw as a **random effect** and test `KO-3`
+  against the control **distribution**, with the between-control sd as the error term. Eight draws
+  (3 existing + 5 new, ~10.1 GPU-h), all ten arms re-judged in **one** session (`PR-028b`, ~$2.50,
+  11,600 rows, `judge_status` ok on all).
+  **Result:** `KO-3` ASR **0.2526** vs control mean **0.2748**, δ = **−0.0222**, t(7) = −0.80,
+  **p = 0.449**.
+  ⛔ **Not a well-powered negative** — the design's own declared branch fired instead. The realised
+  between-control sd is **0.0783**, **2.65×** the **0.0295** the K = 8 sizing rested on, so the
+  minimum detectable effect (**0.0655**) is **larger than the −0.0391 the design set out to
+  detect**; realised power against that effect is **0.232**. **80 % power would need K ≈ 24.**
+  ⇒ The behavioural half is **NOT ESTABLISHED on Llama**, and this null is **not evidence of
+  absence**.
+  ⛔ **The cause is the substantive finding: dose-matched controls are NOT an exchangeable
+  population.** At *identical* dose (`keys_masked` median **522.0**, `match_ratio` **1.000**,
+  verified on all eight) induced refusal spans **−7 to +562** — a **25-fold** range — and ASR spans
+  **0.126–0.374**. The extreme arm was checked and has no defect. ⇒ **Which positions are masked
+  dominates behaviour at constant dose.**
+  ⚠ Calibration does not rescue it: `c = 0.057` → p = 0.176, and the `c = 0.350` p is **not
+  quotable** because the correction removes **59 %** of the between-control spread — declared in
+  `PR-028a` **before** the data.
+
+* `DCS-B-016`/`R-074` → ⚠ **judge-session drift is `NOT ESTABLISHED`.** Re-judging five arms on
+  **5800 byte-identical rows** gives **728 flips (12.6 %)** but net **−54**: arm-level
+  **t(4) = −1.69, p = 0.166, 95 % CI [−0.0246, +0.0060]**. ⛔ The preregistered **row-level**
+  binomial (p = 0.0494) is at the **wrong unit** — 5800 rows are not 5800 replicates of a *session*
+  offset; there are five arms. ⇒ The CI contains **both** prior estimates (0.0020 and 0.0158), so
+  the data **cannot distinguish** them. ✅ **`C-023` is strongly supported: 0 refusal-label flips in
+  5800 rows.** ⚠ Artifacts record the judge **alias**, never the served **snapshot**, so drift and
+  a silent model rotation are not separable in general — though for this run the snapshot was
+  probed **identical before and after**.
 * `DCS-B-009` (original statement, superseded above): ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
   cannot resolve a ~20 % relative effect by a clustered sign test (`k_inf` 36, floor 2.9e-11 — a
   true underpowering, not a floor limitation). **38 is the maximum that exists** in any
