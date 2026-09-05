@@ -7470,3 +7470,52 @@ Due at `A-014` + 3 h 51 m. `dcs_verify_installation_gradient`, `dcs_verify_pr014
 **5/5 mutations**. ✅ Pre-commit gate green throughout the interval: **9 deliverable guards**,
 **341 tests**. ⚠ Nothing new to audit this cycle that has not already been mutation-tested
 (`A-015` prompt-identity, `A-016` byte-identity, `A-017` session id).
+
+### `R-073` — ⚠ INTERIM (**3 of 5**): the estimate has walked to **−0.0121**, and `R-068`'s magnitude now looks **supported**
+
+`p28j_dcsp24_d1` finished — the first **control** arm, so the comparison now spans baseline,
+knockout and control.
+
+| arm | ASR `p24j` → `p28j` | flips | net | binom p |
+|---|---|---|---|---|
+| `base` | 0.3422 → 0.3457 | 152 | **+4** | 0.808 |
+| `demo` (`KO-3`) | 0.2741 → 0.2526 | 163 | **−25** | 0.060 |
+| `d1` | 0.3172 → 0.2991 | 119 | **−21** | 0.066 |
+| **pooled** | — | **434** | **−42** | **0.0489** |
+
+⇒ Pooled drift **−0.01207** over **3480** byte-identical rows, **0** sha exclusions, **0** refusal
+flips.
+
+✅ **Homogeneity is still not rejected: χ²(2) = 3.615, p = 0.164.** ⇒ The three arms remain consistent
+with **one common offset**, and `R-072`'s tempting "arms drift in opposite directions" is **still not
+a finding**. ⚠ A *common* offset is the case `R-068` assumed — and a common offset is exactly what
+(5/8)·δ describes.
+
+⛔ **THE ESTIMATE HAS MOVED MONOTONICALLY AS ARMS ACCUMULATED, AND THE EARLY LOOKS WERE MISLEADING:**
+**+0.0019** (partial `base`, `C-042`) → **+0.0034** (complete `base`, `R-071`) → **−0.0091**
+(2 arms) → **−0.0121** (3 arms). ⇒ `base` is the **atypical** arm; both intervened arms sit near
+**−0.02**. ⇒ ⚠ **`R-068`'s 0.012-0.016 is now the range the data is walking into**, and
+`C-042`/`R-071`'s doubt about it rested on the **baseline arm alone**.
+
+✅ **This is the discipline paying off, and it is worth naming.** `C-042` said explicitly: *"I am
+deliberately NOT reversing `R-068` on this"*, because moving to one end on two measurements and back
+on one partial arm is [[feedback-dont-flee-to-the-other-endpoint]]. ⇒ Had I reversed `R-068` at
+`C-042`, I would have had to reverse it **back** two ticks later. The standing correction `R-071`
+filed — "withdraw the 19-25 % figure if drift is ~0.003" — is **not** being triggered.
+
+### `C-043` — ⛔ I have been **peeking**: the p = 0.0489 above is not a 0.05-level result
+
+I have now run the drift analyzer at **1, 2 and 3** arms. `PR-028c` specified the **five-arm**
+measurement; every earlier run is an **interim look**, and repeated looks at accumulating data
+inflate the false-positive rate.
+
+⛔ **Quantified rather than hand-waved.** Simulating the null (no drift) with the observed
+per-arm flip counts, **P(cross p < 0.05 at ≥ 1 of 5 sequential looks) = 0.130** (519/4000). ⇒ A
+nominal **0.0489** at the third look corresponds to roughly a **13 %** family-wise error rate, not
+5 %. ⛔ The analyzer prints `VERDICT: SYSTEMATIC OFFSET` because it applies `p < 0.05` mechanically;
+that string is **correct code and an unlicensed conclusion** at an interim look.
+
+⇒ **Binding for the rest of this run:** the drift verdict is taken **once**, at **5 arms**, from
+`PR-028c`'s frozen analyzer. ⛔ Interim numbers are trend-tracking only and no interim `SYSTEMATIC
+OFFSET` string is quotable. ⚠ The direction and rough magnitude are informative and are what
+`R-073` reports; the **significance** is not.
