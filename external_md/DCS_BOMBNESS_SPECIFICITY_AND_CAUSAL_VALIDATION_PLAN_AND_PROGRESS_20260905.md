@@ -962,3 +962,58 @@ stated reason.
 ⚠ The verifier currently reports **1 FAIL**, and that is **correct behaviour**: `button_bomb`'s
 rep cache does not exist yet because job 853582 is still running. It is designed to fail on an
 incomplete population rather than analyse one.
+
+---
+
+## §14 — `DCS-PR-033` — INSTALLATION GATE: "do these prompts even work?", and a gap in my own `PR-031`
+
+**Written 2026-09-05 while the extraction arms were still running. ⛔ No value of any field named
+below has been read.**
+
+### 14.1 The gap in `PR-031`
+
+`PR-031` §6.6 gates on whether the **probe** can read a concept (held-out cell-`B` accuracy ≥ 0.60).
+It does **not** gate on whether the knife / gun / club **mappings actually install**. That is a real
+hole, and it is exactly the question Matan raised as *"do all these prompts even work?"*:
+
+> If `knife` never installs, then cell `C` of the knife bank ≈ cell `A` of the knife bank, and a
+> bomb-vs-knife classifier could separate them **easily and for entirely the wrong reason** — bomb
+> installed and knife did not. That would look like concept specificity and be nothing of the kind.
+
+⇒ An installation gate is **mandatory**, and it must be declared before the numbers are seen.
+
+### 14.2 It costs zero additional GPU
+
+The extraction arms already in flight persist a **logit-lens** readout at the final target
+occurrence — `ll|L{0,4,8,12,16,20,24,28,31}|{p_concept, p_codeword, rank_concept, boombness}` —
+because `extract_boombness.py` computes it on the same forward pass. ✅ This is item 2 of Matan's
+list (*"logit-lens / forced-choice style readout"*) and it is **already paid for**.
+
+### 14.3 The gate, fixed now
+
+* **Population:** identical to `PR-031` — `semantic_one_word`, cells `A` and `C`, `n_examples ∈ {4,8}`,
+  6 domains, paired within `(bank, family)`.
+* **Installation index** for concept `c`: per-domain paired
+  `Δ_inst(c, d) = mean_C[ ll|L16|boombness ] − mean_A[ ll|L16|boombness ]`.
+* **Layer L16 is pre-declared** and is deliberately **outside the L6–14 probe band**, so the gate is
+  not the same measurement as the thing it gates. The full layer profile
+  (L0, 4, 8, 12, 16, 20, 24, 28, 31) and both `p_concept` and `p_codeword` are reported beside it.
+* **PASS for concept `c`:** `Δ_inst(c, d) > 0` in **≥ 5 of 6** domains **and** the concept mean > 0.
+
+### 14.4 What happens on failure — declared in advance, so no drop is post-hoc
+
+| outcome | consequence |
+|---|---|
+| all of bomb / knife / gun PASS | `PR-031` primary stands as written. |
+| a hard negative FAILS | it is reported as **NOT INSTALLED**, and the `PR-031` primary is reported **both with and without it** — both numbers, always, neither promoted over the other. ⛔ Dropping it silently, or only reporting the version that looks better, is forbidden. |
+| **bomb** FAILS | ⛔ the entire specificity test is **VOID** — there is no installed bomb mapping to be specific about. Report and stop; do not reinterpret. |
+| ≥ 2 of 3 FAIL | the design has no usable comparator set at 6 domains ⇒ `PR-031` returns **CANNOT ANSWER**, and the aligned rebuild `S1b` (§8.9) becomes the only route. |
+
+### 14.5 The prompt-validation table Matan asked for
+
+Produced for **every** population used in this phase, from the same artifacts:
+concept · codeword · condition/cell · domain · `n_examples` · intended mapping ·
+`ll|L*|p_concept` · `ll|L*|p_codeword` · `rank_concept` · installation status ·
+and, where a forced-choice arm exists, `semantic_logodds` **with `option_mass` beside it**.
+Reported as **distributions, not means alone**, with floor/ceiling prevalence and any domain where
+the mapping never installs named explicitly. ⛔ Non-installing domains are **not** dropped.
