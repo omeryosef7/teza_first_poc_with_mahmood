@@ -2626,3 +2626,66 @@ exit 0, 7/7.** ⛔ This is the property `C-049` §22.5 found the *old* verifier 
 verification confirms the **numbers and the population**, ⛔ **not** the interpretation — `R-081`'s
 bound (§27.4/§29.2) and `C-054`'s template restriction stand exactly as written.
 
+
+---
+
+## §36 — `DCS-C-055` — ⛔ `A-026` PROMOTED `R-080` ON A VERIFIER THAT SEVEN CORRUPTIONS WALK STRAIGHT THROUGH. Corrected, and closed.
+
+⚠ **§35 was written too soon.** A red-team agent ran `scripts/dcs_verify_kladder.py` end to end,
+confirmed **all seven of its claimed detections are real** (and that the `C-049` §22.5 bind-to-the-
+designated-check defect is genuinely absent — it proved this by feeding it a mutation bound to the
+wrong check, which correctly printed `NOT CAUGHT` and exited 1), and then found **seven corruption
+classes it passes on**. ⛔ **My §35 sentence "R-080 and R-081 are promoted" was stronger than the
+evidence supported, and I am correcting it rather than leaving it standing.**
+
+### 36.1 What walked through, and why it is one flaw
+
+| | corruption | why it survived |
+|---|---|---|
+| **X1** | `semantic_logodds` nulled on **9 of 10 rows** of both K=7 arms | the delta is then computed on **38** readouts while `results.jsonl` still has 380 lines and `DONE.json` still says `rows_written=380`. The verifier counted **JSON LINES**, not usable readouts. |
+| **X2** | `results.jsonl` **swapped** between the demo and control dirs | the producer is internally consistent with the swapped rows, so **`K7` flips −5.94 → +5.94** and `n_negative` 38 → 0 — ⛔ *blocking demonstrations would appear to STRENGTHEN the mapping* — with all seven checks passing. |
+| **X3** | the anchor's rows replaced by **byte-copies of `dcsk8`'s** | §11.7's `absolute_difference = 0` — **`A-026`'s own headline** — becomes true by construction. |
+| **X4/X5** | bank replaced by a disjoint population / every scored row relabelled | ⛔ **the bank was never joined to the scored rows at all.** |
+| **X6/X7** | producer deletes whole blocks / drops a rung whose arms are complete on disk | the verifier **iterates the producer's own key set**, so coverage silently evaporates instead of failing. |
+
+⇒ ⛔ **They are one flaw wearing seven costumes.** The verifier reasoned about **arm directories** and
+**the producer's key set**, and never looked **inside a scored row** or **joined it to the bank**.
+⚠ **The general lesson, which outlives this file: a verifier that iterates the producer's own key set
+can be made VACUOUS BY THE PRODUCER.** Nothing about `C-049`'s harness discipline prevents that; it is
+a different failure, one layer up.
+
+### 36.2 The fix, and its result
+
+`scripts/dcs_verify_kladder_rowlevel.py`. Every scored row already carries `arm`,
+`knockout_last_k`, `prompt_id`, `family_id` and the population fields — the first verifier simply
+never read them. Five checks, with the expected key set and rung set declared **in the verifier from
+the preregistration**, not read from the producer:
+
+| check | on the real artifacts |
+|---|---|
+| **R1** denominator — **non-null** readouts = 380, uniform over 38 domains, every arm | ✅ PASS |
+| **R2** row-level arm identity — every row carries its own `arm` and `K` | ✅ PASS |
+| **R3** ⛔ **the anchor is a RE-RUN, not a byte-copy of `dcsk8`** | ✅ PASS |
+| **R4** bank join — rows join the declared bank **and** `PR-032` §11.3's declared population | ✅ PASS |
+| **R5** coverage — every declared block present; **no rung complete on disk is missing from the producer** | ✅ PASS |
+
+`MUTATION HARNESS OK — every corruption was caught by its designated check.` **8/8**, e.g.
+
+* X2 → `R2`: *"`dcsk7_C_demo`: rows carry `arm=['C_ro_k7_ctrl']`, expected `'C_ro_k7_demo'`"*
+* X3 → `R3`: *"the anchor's `results.jsonl` is BYTE-IDENTICAL to `dcsk8`'s; §11.7's
+  `absolute_difference = 0` is then true by construction and proves nothing"*
+* X7 → `R5`: *"rungs [16] have COMPLETE arms on disk but are absent from the producer's `rungs`"*
+
+### 36.3 ✅ Net effect on the result
+
+⇒ **`R-080` / `R-081` survive, and are now verified on a much stronger basis than §35 claimed.**
+In particular **`R3` PASSES on the real artifacts**, so §11.7's `absolute_difference = 0` is a
+**genuine reproduction** and not a copy — ⚠ which §35 asserted **without having checked it**.
+`R2` passing rules out the arm swap; `R1` rules out the silent denominator; `R4` confirms the scored
+rows really are `PR-032` §11.3's population.
+
+⛔ **What has NOT changed:** verification covers the **numbers and the population**, never the
+**interpretation**. `R-081`'s bound (§27.4) and `C-054`'s template restriction stand exactly as
+written. And ⚠ **two verifiers now exist for one result** — that is deliberate and stays: the first
+reasons about arms and statistics, the second about rows and joins, and neither subsumes the other.
+
