@@ -7692,3 +7692,58 @@ passing at 46/45.
 
 ✅ Behavioural status rewritten to the `PR-028` outcome and the Qwen block condensed by 5 lines to fit;
 ✅ re-read the regenerated PNG and the collision is gone.
+
+### `C-045` — `R-075`'s "**K ≈ 24** for 80 % power" is **wrong**; it came from a crude formula
+
+`R-075` closed by saying 80 % power at the realised sd needs **K ≈ 24**. ⛔ That was computed from a
+rough normal-approximation inequality, not from the sampling distribution of the statistic actually
+used. Recomputed with the **non-central t** at df = K − 1:
+
+| K | SE | MDE | power(−0.0391) | power(−0.0222) |
+|---|---|---|---|---|
+| 8 (done) | 0.0277 | 0.0655 | **0.23** | 0.11 |
+| 24 | 0.0160 | 0.0331 | **0.65** | 0.27 |
+| **32** | 0.0138 | 0.0282 | **0.78** | 0.34 |
+| 52 | 0.0109 | 0.0218 | 0.94 | 0.52 |
+| 105 | 0.0076 | 0.0152 | 1.00 | 0.82 |
+
+⇒ **K = 24 buys 0.65, not 0.80.** The first K reaching conventional power for the hypothesised effect
+is **32**. ⚠ Same error class as `C-034`: a number quoted from an approximation rather than derived
+from the estimator in use.
+
+## `PR-029` — PREREGISTRATION: extend the control population to **K = 32**
+
+⚠ **Frozen before the first arm returns.** 24 new draws submitted (853040-…, 6 at a time per the
+standing parallelism rule); seeds verified **distinct from the existing 8 and from each other**
+(24/24 argsfiles read back and checked).
+
+**PRIMARY, unchanged from `PR-028`:** `KO-3` against the control **distribution**, between-control sd
+as the error term, reported **raw and `R-063`-calibrated**, with `PR-028a`'s shrinkage caveat and
+`R-070`'s anti-conservatism caveat carried forward.
+
+⛔ **DECLARED HONESTLY, BEFORE THE DATA: this is powered for the effect the phase HYPOTHESISED, not
+for the effect it OBSERVED.** K = 32 gives **0.78** against −0.0391 but only **0.34** against the
+observed **−0.0222**. ⇒ ⚠ **A null is the more likely outcome even if a −0.022 effect is real**, and
+it will be reported as bounding the effect (MDE **0.0282**), **never** as absence. Detecting −0.0222
+would need **K ≈ 105** ⇒ ~240 GPU-h, which is **not** proposed.
+
+**Cost:** 24 arms × ~2.3 GPU-h ≈ **55 GPU-h**; then **34 arms** (32 controls + `KO-3` + baseline)
+re-judged in **one** session ≈ **$8.3**, ~16 h. ⚠ The judge wrapper's `--time=08:00:00` is **too
+short for 34 arms** and must be raised before submitting — recorded now so it is not discovered at
+hour eight.
+
+✅ **The secondary is arguably worth more than the primary, and is guaranteed to deliver.** `R-075`
+found dose-matched controls are **not exchangeable** (induced refusal −7…+562 at identical dose) on
+**8** draws. At **32** the *distribution* of that quantity becomes describable: is the +562 arm a
+tail or a second mode? is induced refusal continuous or bimodal? does ASR fall off monotonically with
+it? ⇒ This does **not** depend on the primary clearing α.
+
+⛔ **Declared outcomes.**
+* **Significant raw AND across the calibrated `c` range** ⇒ the behavioural effect is established
+  against the comparator population. ⚠ Still does not resolve `B-009`'s conjunction (`R-061`).
+* **Significant raw only** ⇒ `CONFOUND-LIMITED`, as `R-048`.
+* **Null** ⇒ reported as **"effect bounded below 0.028, not absent"**, and ⛔ **the K ladder stops
+  here** — `K ≈ 105` is not a proportionate spend and the phase moves to the variance problem instead.
+* **Realised sd materially above 0.0783** ⇒ even K = 32 is under-sized, and the control population is
+  wider than two independent estimates now say; ⇒ stop adding draws, the comparator itself is the
+  problem.
