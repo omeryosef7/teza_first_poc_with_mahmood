@@ -6626,3 +6626,44 @@ only one that survives is the one that stopped choosing between endpoints.
 
 ⛔ **None of this touches the verdict.** `B-009` is `NOT RESOLVED` on the primary — 1 of 3 — and every
 version of the bracket has been a **secondary** throughout.
+
+### `A-013` — closing audit: **coverage 15/15**, and every verifier re-run together
+
+⚠ The regex form of this audit was tried first and was **useless** — mentions of a `PR-` id are
+everywhere by now, so a window scan says nothing. ⛔ `A-005` recorded exactly that failure and it
+recurred immediately. ⇒ Re-done by requiring each preregistration's **resolving entry to exist as its
+own heading**, which is a structural fact rather than a proximity guess.
+
+| | resolved by | | | resolved by |
+|---|---|---|---|---|
+| `PR-015` | `R-037`/`R-038` | | `PR-021` | `R-050` |
+| `PR-016` | `R-040` | | `PR-022` | `R-053` |
+| `PR-017` | `R-041` | | `PR-023` | `R-054`/`R-055` |
+| `PR-018` | `R-042` | | `PR-024` | `R-061` |
+| `PR-018a` | `R-043` | | `PR-024a` | `R-061` |
+| `PR-019` | `R-045` | | `PR-025` | `R-062` |
+| `PR-019a` | `R-047` | | `PR-026` | `R-063` |
+| `PR-020` | `R-049` | | | |
+
+✅ **15 of 15 closed, 0 unresolved.**
+
+✅ **Every verifier written this session, re-run together, after all of tonight's edits:**
+
+| suite | |
+|---|---|
+| `dcs_verify_installation_gradient` | ✅ PASS |
+| `dcs_verify_pr014_bound` | ✅ PASS |
+| `dcs_verify_audit_r041` | ✅ PASS |
+| `dcs_verify_merge_audit` | ✅ PASS (7/7) |
+| `dcs_verify_domain_test` | ✅ PASS |
+| `pytest`: plural repair + byte-identical regeneration | ✅ 7 passed |
+
+⚠ **The distribution of this session's 15, stated plainly**: **two** clean positives (`R-041`,
+`R-043`), **one** supporting replication (`R-063`), and **twelve** outcomes that are negative,
+narrowed, void, stopped, `CANNOT ANSWER` or `NOT RESOLVED`. ⛔ A session that produced the opposite
+ratio, from preregistrations written before the answers, would be the suspicious one.
+
+⚠ **And the headline moved twice, both times downward, both times by my own declared checks:**
+`R-041`'s contrast **−0.907** → `R-051` (population-specific, inflated) → `R-055` (categorical, the
+continuous reading explained by RTM). ⇒ The number that survives is smaller and the claim behind it
+is better founded.

@@ -91,6 +91,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 21 | `PR-026`/`R-063` | calibrated bracket applied **symmetrically**: **[−147,−66] / [−140,−87] / [−129,−29]**, entirely negative for all three and **half the width**. ⛔ `PR-014`'s bracket is wrong at **both** ends. Verdict unchanged: `B-009` **NOT RESOLVED** | ✅ |
 | 21 | `C-038` | ⚠ **over-corrected, then over-corrected back** — `R-061` trusted the adjusted end, `R-062` trusted the face end, and on `d3` the face value lies **outside** `R-063`'s interval. Checking a two-ended bracket **one end at a time** makes the other look right by contrast | ✅ |
 | 22 | — | `B-009` reaches the **figure**, the last surface: behavioural status rewritten from *direction only* to `NOT RESOLVED` + the control-spread constraint. Width guard caught **9** over-wide lines; card font 7.0→6.2 after read-back showed overflow | ✅ |
+| 23 | `A-013` | closing audit: **15/15** preregistrations resolved (by resolving-entry heading, not a regex window — `A-005`'s failure recurred on the first try); **all 5 verifiers + 7 pytest** re-run and green | ✅ |
 
 ## Live
 
