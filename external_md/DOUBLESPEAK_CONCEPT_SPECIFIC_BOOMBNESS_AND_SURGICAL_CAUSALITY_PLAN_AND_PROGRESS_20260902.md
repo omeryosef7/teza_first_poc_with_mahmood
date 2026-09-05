@@ -7883,3 +7883,38 @@ see other users' start times before submitting. ⇒ The rule is **not actionable
 constraint**; what is actionable is the diagnostic — ⛔ never infer a stall from elapsed time, read
 the **progress bar** (`feedback_slurm_stall_diagnostic`), which correctly shows this job progressing.
 ✅ Not a stall; no action taken.
+
+### `C-047` — `PR-029`'s six arms ran the **wrong script**, reported `COMPLETED 0:0`, and produced **nothing**
+
+⛔ **`PR-029` generated no data at all.** All six jobs (853040-853045) exited **`COMPLETED`, exit
+`0:0`**, in **11-27 min** against an expected ~2.3 h, and **no `dcsp29_*` arm directory exists**.
+
+⛔ **Cause: I invented the environment variable.** `src/boombness/slurm/run_boombness.sh` reads
+**`BOOMB_SCRIPT`** and **`BOOMB_ARGSFILE`**, and — the part that made it silent —
+**`BOOMB_SCRIPT` DEFAULTS TO `extract_boombness.py`** (line 56). I submitted with
+`--export=ALL,ARGSFILE=...`, a name it never reads, so every job fell through to the default and ran
+the **extraction** pipeline on **its own default config**, writing to
+`outputs/boombness/extract_boombness/`. ⚠ The correct form is documented **in that script's own
+header** (lines 34-41), which I did not read before submitting.
+
+⚠ **Why nothing caught it.** ⛔ `sacct` says `COMPLETED 0:0` — the jobs *did* succeed, at the wrong
+task. `PR-028`'s equivalent submission had worked, so I copied the shape of the command without
+re-reading the runner. ⇒ Every guard this phase owns checks **artifacts** (`DONE.json`, row counts,
+contracts, prompt hashes); **none checks that the artifact I expected was even attempted**. A
+missing arm looks identical to an arm not yet started.
+
+**Cost:** ~**1.7 GPU-h** wasted. ✅ No scientific result is affected — `PR-029` had produced nothing,
+so nothing entered any analysis.
+
+✅ **Contained.** The six stray runs were written under the **live `run_*` prefix** in
+`extract_boombness/`, where they are indistinguishable by name from legitimate extraction runs and a
+"newest run" selector would have picked one up. ⇒ **Quarantined to `VOID_wrongscript_*`**; **0**
+live `run_*` dirs remain from that window (`DCS-039`, `C-041` — third time this phase that wreckage
+under a live prefix had to be quarantined).
+
+⇒ **To resume `PR-029`** (⛔ not being resumed now — Omer stopped all work): the 24 argsfiles at
+`runargs/dcs/dcsp29_*.txt` are committed and valid, seeds verified distinct from the existing 8.
+Correct submission:
+`sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=<abs path> src/boombness/slurm/run_boombness.sh`
+⚠ **Verify the first arm writes a `dcsp29_*` directory before submitting the rest** — that is the
+check whose absence made this silent.

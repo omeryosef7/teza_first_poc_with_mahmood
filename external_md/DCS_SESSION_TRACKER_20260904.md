@@ -141,12 +141,14 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 50 | `R-077` | ✅ **`PR-030` GATE PASSES: the 0.0783 is a REAL draw offset — 93.5 % of it.** Split-half **ρ = +0.988** [0.923, 1.000] vs a null of +0.047 ⇒ an arm's ASR is **near-deterministic** in its draw. Variance: draw **93.5 %**, sampling **5.3 %** (ICC 0.097, DEFF 1.87), judge **1.2 %** (empirical, `R-074`). ⇒ **`PR-029` proceeds**; √K divides a quantity that is really there | ✅ |
 | 50 | — | ⚠ First time the phase **decomposed** that number instead of quoting it — 0.0295/0.0586/0.0783 were all asserted as pure draw heterogeneity and it could have gone the other way. ⇒ ✅ Upgrades `R-075` from **nuisance to target**: the 25× refusal spread is a **reproducible function of which positions are masked**, and `R-076` already excluded positional geometry ⇒ search what the keys were **carrying** (plan #3, attention mass) | ✅ |
 | 51 | `DCS-040` | ⛔ My **'cap 2 loaders per node'** rule **mis-predicted**: **3** of my jobs on n-805 all loaded in seconds, while the **lone** job on n-802 sat at **25% after 9:28** (~1000× slower). ✅ Cause checked: n-805's co-tenants are **7-13 h old** (past I/O), n-802 shares with another user's job started **12 min** earlier. ⇒ The predictor is **concurrent loads node-wide, any owner** — not my job count, and not visible before submitting. ⇒ Rule is **not actionable for placement**; the actionable part is reading the **progress bar**, which shows this one progressing, not stalled | ✅ |
+| 52 | `C-047` | ⛔ **`PR-029` produced NOTHING** — all 6 jobs exited `COMPLETED 0:0` in 11-27 min having run the **wrong script**. `run_boombness.sh` reads `BOOMB_SCRIPT`/`BOOMB_ARGSFILE` and **`BOOMB_SCRIPT` defaults to `extract_boombness.py`**; I exported `ARGSFILE=`, a name it never reads, so every job ran the **default extraction** pipeline. Correct usage is in that script's own header, which I did not read. ~**1.7 GPU-h** wasted; no result affected | ✅ |
+| 52 | — | ⚠ **No guard caught it**: every guard checks artifacts (`DONE.json`, rows, contracts, hashes); **none checks that the expected artifact was attempted** — a missing arm looks like one not yet started, and `sacct` said COMPLETED. ✅ 6 stray runs quarantined to `VOID_wrongscript_*` (live `run_*` prefix — 3rd such quarantine this phase). ⇒ Resume needs `BOOMB_SCRIPT=score_behavior.py`, **verifying arm 1 writes a `dcsp29_*` dir before submitting the rest** | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| *(nothing in flight)* | `PR-028` | **COMPLETE** — all 10 arms judged in one session (852324, 5h28m, ~$2.50). Primary `R-075` = **UNDERPOWERED NEGATIVE**; drift `R-074` = **NOT ESTABLISHED**; geometry `R-076` = **no predictor** |
+| *(nothing in flight — all work STOPPED at Omer's instruction 20:2x)* | `PR-029` | **CANCELLED mid-flight**; produced nothing (`C-047`). Argsfiles committed and valid; resume needs the corrected `--export` |
 
 ## Standing rules being followed this session
 
