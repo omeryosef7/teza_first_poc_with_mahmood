@@ -7427,3 +7427,46 @@ precisely the range that matters. ⇒ `PR-028c` reports the pooled five.
 (5/8)·0.003 ≈ **0.002**, about **5 %** of the −0.0391 effect — not `R-068`'s **19-25 %**. That figure
 would then be withdrawn. ⛔ `R-068`'s *design* conclusion is unaffected either way, and the re-judge
 was still correct: raw ASR levels do not transport across sessions regardless of the offset's size.
+
+### `R-072` — ⚠ INTERIM (**2 of 5**): still no offset pooled, and the apparent arm disagreement is **not** established
+
+`p28j_dcsp24_demo` (the `KO-3` arm) finished, giving the different-ASR case `R-071` said was the one
+that mattered.
+
+| arm | ASR `p24j` → `p28j` | flips | up / down | net | binomial p |
+|---|---|---|---|---|---|
+| `base` | 0.3422 → 0.3457 | 152 | 78 / 74 | **+4** | 0.808 |
+| `demo` (`KO-3`) | 0.2741 → **0.2526** | 163 | 69 / 94 | **−25** | **0.060** |
+| **pooled** | — | **315** | 147 / 168 | **−21** | **0.260** |
+
+⇒ Pooled drift **−0.00905**, **1.18 sd** from zero ⇒ ⛔ **still `NO SYSTEMATIC OFFSET`**.
+
+⛔ **The tempting claim here is that the arms drift in OPPOSITE directions — and it does not survive
+being tested.** `+0.0034` against `−0.0216` looks like a real split, and the `KO-3` arm alone is
+borderline at **p = 0.060**. ✅ Tested rather than asserted: homogeneity of the two arms' offsets
+gives **χ²(1) = 2.55, p = 0.110** (Fisher **0.115**) ⇒ **a single shared offset is not rejected**.
+⚠ So "drift is arm-dependent" is **not** a finding at 2/5, and neither is "`KO-3` drifts negatively"
+— that rests on one arm at p = 0.060 with two arms examined. ⇒ Recorded as **not established**, which
+is the whole reason the test was run before writing the sentence.
+
+⚠ **But if it *does* hold up at 5/5 it changes the shape of the problem, so it is flagged now.** An
+**arm-dependent** offset cannot be corrected for by any single δ — `R-068`'s framing assumed one
+constant applied to 5 of 8 controls. ⇒ It could only be **avoided**, which is exactly what
+`PR-028b`'s one-session re-judge does. ⇒ Either way the re-judge was right; only the *reason* would
+change.
+
+✅ **`C-023` now rests on 2320 re-judged rows with 0 refusal-label flips** (plus `R-049`'s 380).
+✅ **0** sha exclusions across both arms.
+
+⚠ `KO-3`'s ASR moving 0.2741 → 0.2526 means the primary computed on `p28j` labels will **not**
+reproduce the K=3 dry run's numbers, and should not be expected to. ⛔ That is the intended
+consequence of judging in one session, not a discrepancy to reconcile.
+
+### `A-018` — 4-hourly self review: seven checks, all green
+
+Due at `A-014` + 3 h 51 m. `dcs_verify_installation_gradient`, `dcs_verify_pr014_bound`,
+`dcs_verify_audit_r041`, `dcs_verify_merge_audit` (7/7), `dcs_verify_domain_test`,
+`dcs_verify_draw_regenerable` (identity-verified) — **all PASS** — plus `dcs_audit_r067` at
+**5/5 mutations**. ✅ Pre-commit gate green throughout the interval: **9 deliverable guards**,
+**341 tests**. ⚠ Nothing new to audit this cycle that has not already been mutation-tested
+(`A-015` prompt-identity, `A-016` byte-identity, `A-017` session id).
