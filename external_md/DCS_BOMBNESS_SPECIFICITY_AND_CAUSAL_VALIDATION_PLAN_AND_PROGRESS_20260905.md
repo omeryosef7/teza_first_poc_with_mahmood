@@ -1803,3 +1803,90 @@ exclusion from the primary, `gun`'s `PARTIAL` status from `R-078`, and the §23.
 ⛔ **No threshold was moved.** The analyzer's self-test passes after every change above
 (planted signal 1.000, pure noise 0.250 vs chance 0.333).
 
+
+---
+
+## §26 — `DCS-R-079` / `DCS-PR-036` — ⛔ WHAT `K` ACTUALLY CUTS. Rungs 1–5 cut ONLY chat-template scaffold, and that reframes the whole ladder.
+
+**Written 2026-09-06 01:0x IDT.** ⚠ **Provenance of this entry, stated precisely because it matters:**
+the K=4, K=5 and K=6-demo arms had already **finished on disk** when this was written. ⛔ **No row of
+any K=4…7 arm has been read.** The prediction below is committed to git **before** the analyzer is
+run over them; the commit order is the evidence, and any reader may check it.
+
+### 26.1 The structural fact, recovered deterministically from the tokenizer
+
+`--knockout-scope query_last_k_rows` cuts `_q[-K:]`, and `query_span_positions`
+(`score_behavior.py:694-718`) anchors on `final_query_text` and runs to the **true end of the
+templated prompt — generation header included**. So the last-K rows are the last K tokens of the
+**whole chat-templated prompt**, not of the question.
+
+Over **all 380 prompts** of the `PR-032` population (`cds38_button_bomb`, `cds_n4`, `n_examples=4`,
+`natural_doublespeak`, Llama-3.1-8B-Instruct chat template), the token **newly entering the cut** at
+each rung is **invariant — 380/380, zero variation**:
+
+| rung | token newly cut | what it is |
+|---|---|---|
+| K=1 | `'\n\n'` | chat scaffold |
+| K=2 | `'<\|end_header_id\|>'` | chat scaffold |
+| K=3 | `'assistant'` | chat scaffold (generation header) |
+| K=4 | `'<\|start_header_id\|>'` | chat scaffold |
+| K=5 | `'<\|eot_id\|>'` | chat scaffold (end of user turn) |
+| **K=6** | **`'?'`** | **first USER-TEXT token** |
+| **K=7** | **`' bomb'`** | **first CONTENT word** |
+| K=8 | `' a'` | question text |
+| K=9 | `' to'` | question text |
+
+⇒ ⛔ **Rungs K = 1, 2, 3, 4, 5 never touch the question at all.** They block demonstration attention
+only from Llama's own generation-header scaffold.
+
+### 26.2 What this retires, and what it does NOT
+
+⛔ **`R-021`/`R-022`'s framing must be corrected.** *"K=1 and K=2 have no effect"* was read as *"one or
+two query rows do not need demonstration access"*. The licensed statement is far narrower:
+
+> *the last one or two tokens of the chat template's generation header do not need demonstration
+> attention.*
+
+That is close to trivially expected and is **not** a statement about the query. ⚠ The same correction
+applies to this session's own K=3 rung (§26.4).
+
+⛔ **What is NOT retired:** K=8/16/32's large destructive effect stands exactly as measured — those
+rungs *do* reach question content. `R-010`/`R-011`'s whole-query result (`KO-3`) is untouched, since
+it cuts the entire query span. ⚠ And this does **not** show the effect is "really" about one token:
+row count and cut-cell count still rise together (§11.2), and K=7 cuts K=6's tokens too.
+
+### 26.3 `DCS-PR-036` — the prediction, fixed before the rungs are read
+
+If the ladder's transition is driven by **the cut reaching question content** rather than by row
+count, then:
+
+* **P-A.** K=4 and K=5 — both pure scaffold — stay in the K=1…3 regime: `|Δ| < 0.20 · |Δ₈| = 1.323`.
+* **P-B.** The first rung that both clears Holm-adjusted p ≤ 0.05 **and** reaches
+  `|Δ| ≥ 0.5·|Δ₈| = 3.308` (§11.5's `K*`) is **K = 6 or K = 7**, i.e. the first rungs that include
+  user text.
+* **P-C.** The single largest one-rung rise in |Δ| falls at **K=5→6 or K=6→7**.
+
+⛔ **Declared falsifier, so this cannot be rescued after the fact:** if K=4 or K=5 shows
+`|Δ| ≥ 1.323`, **P-A is FALSE** and the "content-boundary" account is wrong — the quantity that
+matters is then row count or cut-cell count, not token semantics, and this section says so.
+⚠ If K* = 6, ⛔ note that `'?'` is *punctuation*, and a punctuation boundary would be evidence for a
+**positional/aggregation** account, not a semantic one. The two are distinguished by which rung moves,
+and I am not free to call either outcome "semantic" afterwards.
+
+### 26.4 ⚠ A confound this creates for `K = 7`, declared now
+
+The token entering at **K=7 is `' bomb'`** — and it is `' bomb'` because the `semantic_forced_choice`
+question **names both options** (*"…refer to a button or to a bomb?"*). `A-019` §2.3 already
+disqualified this channel as a *probe* input for exactly that reason.
+
+⇒ If the jump lands at K=7, ⛔ it may **NOT** be reported as *"blocking the codeword's query row
+breaks the mapping"*. The row being cut carries the **explicit concept word of the readout template**,
+so a K=7 jump is at least as consistent with *"the option word in the question needs demonstration
+access"* as with anything about the codeword. ⛔ Distinguishing those requires a rung ladder on a
+readout whose question does **not** name the concept (`semantic_one_word`), which is **not** run here
+and is **not** funded by `PR-032`.
+
+⚠ This is a limitation of the inherited ladder population, discovered now rather than after the
+result. It bounds §11.6's "which tokens enter the cut" analysis from descriptive to **structurally
+confounded on the decisive rung**.
+
