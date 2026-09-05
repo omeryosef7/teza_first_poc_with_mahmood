@@ -1120,3 +1120,123 @@ collaborator draft, and is adopted as a standing wording rule for this phase.
 * Topic-6 searches (query-row thresholds) returned nothing on target. ⚠ Reported as a **null search,
   not a gap** — the vocabulary for that axis is not standardised. ⛔ Novelty is never claimed because
   a search returned nothing.
+
+---
+
+## §17 — `DCS-C-048` — the `PR-033` gate layer is DEGENERATE. The gate is VACUOUS, not failed.
+
+**First data read of this phase, and it falsified my own instrument rather than a hypothesis.**
+
+### 17.1 What the gate returned, and why it is not a result
+
+`PR-033` §14.3 pre-declared the installation gate at **logit-lens L16**. Run on
+`button × {bomb, knife, gun, club}` it returns:
+
+| bank | domains positive | mean Δ(C−A) | gate |
+|---|---|---|---|
+| `button_bomb` | **3/6** | −0.2770 | fail |
+| `button_knife` | 3/6 | +0.0881 | fail |
+| `button_gun` | 1/6 | −0.4596 | fail |
+| `button_club` | 3/6 | +0.0942 | fail |
+
+Read naively that says *"bomb does not install"* and **VOIDs the whole phase**. ⛔ **It says no such
+thing.** The phase's own standing rule — `option_mass` travels beside every log-odds (`R-032`,
+`R-050`) — applied to the logit lens:
+
+| layer | option mass (C) | option mass (A) | Δ boombness | domains + |
+|---|---|---|---|---|
+| 0 | 4.74e-06 | 5.04e-06 | +0.106 | 6/6 |
+| 8 | 4.96e-05 | 5.34e-05 | −0.346 | 2/6 |
+| 12 | 1.42e-05 | 9.27e-06 | +0.627 | 4/6 |
+| **16 ← the gate** | **1.18e-05** | **7.93e-06** | **−0.277** | **3/6** |
+| 20 | 2.36e-03 | 1.01e-04 | −1.500 | 2/6 |
+| 24 | 8.98e-04 | 8.99e-04 | +0.502 | 5/6 |
+| 28 | 1.53e-03 | 1.13e-03 | +1.227 | 5/6 |
+| 31 | 3.69e-04 | 4.48e-04 | **+3.441** | **6/6** |
+
+⇒ At L16 the model holds **~1e-5** total probability across both options. `boombness` there is a
+**ratio of two numbers the model does not hold**. ⇒ The gate is **VACUOUS, not failed** — precisely
+the lesson `R-067` already recorded for `min_dist_to_query` (*"a degenerate feature makes the
+hypothesis VACUOUS, not false"*), now applied to my own preregistration.
+
+⛔ The analyzer has been changed to **emit `VACUOUS` rather than `VOID`** when gate-layer option mass
+is below 1e-4, so this cannot be misread later. The threshold is in code, not prose.
+
+### 17.2 ⛔ Why I did NOT simply move the gate to L31
+
+L31 gives **+3.441, 6/6 domains** — a clean pass. It is also the canonical logit-lens endpoint (the
+model's actual output distribution), so there is a real a-priori argument for it.
+
+**I am not taking it, and the reason must be on the record: the verdict is rule-dependent.**
+
+* "use the model's output distribution" → **L31** → Δ +3.441, 6/6 → **PASS**
+* "use the shallowest layer with option mass > 1e-4" → **L20** → Δ −1.500, 2/6 → **FAIL**
+
+Both rules are defensible. I have now **seen both numbers**. Choosing between them at this point is
+selecting a statistic after seeing its result — the shopping this phase forbids, and L31 happens to
+be *both* the canonical choice **and** the maximum-Δ layer, which is exactly the coincidence that
+should make one suspicious. ⇒ The logit lens is **not a reliable gate on this population** and is
+demoted to a **diagnostic**.
+
+### 17.3 A second defect found in the same read
+
+The descriptives table lacked the `is_final_occurrence` filter that `installation()` had, so it
+averaged over **all** target occurrences including the demonstration ones — cell `A` read
+**n = 1176** in one table against **168** in the other. Two tables in one artifact described
+different populations. **Fixed**; both now filter identically.
+
+⚠ And a third: the analyzer read `basket_bomb` **while its job was still writing**, reporting a
+3-domain figure for a 6-domain bank as if final. ⛔ A partially written `results.jsonl` is
+indistinguishable from a small one. **Fixed**: `load_results` now refuses any run without
+`DONE.json` — the same class of hole as `C-047`, where a missing artifact looked like a finished one.
+
+---
+
+## §18 — `DCS-PR-034` — the installation gate, re-specified on the phase's OWN validated instrument
+
+**Written before any forced-choice arm on these banks exists.**
+
+### 18.1 Rationale
+
+Rather than pick a logit-lens layer after seeing the profile (§17.2), the gate moves to the
+instrument this phase has used for installation throughout and has calibrated: the **forced-choice
+readout**, `semantic_logodds` with `option_mass` beside it — the same measure behind `R-050`'s
+installation figure of 0.908 and the +10.68 swing.
+
+⚠ **On the apparent contradiction with §2.3.** `semantic_forced_choice` is disqualified as the
+**probe** channel because its question names the concept, so a classifier reading hidden states could
+read the answer off the question. That objection **does not apply here**: this gate does not read
+hidden states, it asks *the model* its own answer, and the question *"does the word button refer to a
+button or to a bomb?"* **is** the installation measurement. ⇒ Leakage disqualifies a channel for a
+**probe**, not for an **endpoint**. The two uses are kept strictly separate.
+
+### 18.2 Design
+
+| field | value |
+|---|---|
+| banks | the same 8 (`{button, basket} × {bomb, knife, gun, club}`) |
+| selection | `--query-kinds semantic_forced_choice --bank-blocks core2x2 --n-examples 4,8 --conditions benign_literal,natural_doublespeak` |
+| n | **48 rows/bank** (24 cell `A` + 24 cell `C`), **6 domains**, `--expect-n 48` |
+| readout | `--max-new 8 --min-option-mass 0.05`, no judge, no intervention |
+| model / dtype / seed | `Llama-3.1-8B-Instruct`, bfloat16, 20260905 |
+| cost | minutes per arm |
+
+### 18.3 The gate, fixed now
+
+* **Installation index** for concept `c`: per-domain paired
+  `Δ_inst(c,d) = mean_C[semantic_logodds] − mean_A[semantic_logodds]`.
+* **PASS:** `Δ_inst > 0` in **≥ 5 of 6** domains **and** concept mean > 0.
+* **`option_mass` is reported for every cell and every bank**, and ⛔ if median `option_mass` in
+  either cell is < 0.05 the arm is reported as **MASS-LIMITED** and its Δ is not quoted alone —
+  the `R-050` limitation, applied in advance rather than discovered afterwards.
+* The consequence table of `PR-033` §14.4 (bomb fails ⇒ VOID · ≥2 fail ⇒ CANNOT ANSWER · one hard
+  negative fails ⇒ report the primary both with and without it) **carries over unchanged**.
+
+### 18.4 ⚠ What this costs in credibility, stated plainly
+
+This is the **second** instrument specified for the same gate. The first was mis-specified and I
+found that out by running it. ⛔ The correct reading is **not** "the gate was tuned until it passed"
+— `PR-034`'s verdict is **not yet known**, and its failure conditions are the same ones `PR-033`
+declared. But the sequence is on the record so a reader can judge it, and if `PR-034` also fails,
+⛔ **there is no third instrument**: the honest conclusion would be that installation cannot be
+established on the 6-domain `main` banks, and `PR-031` returns `CANNOT ANSWER`.

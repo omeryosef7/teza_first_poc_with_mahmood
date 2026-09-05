@@ -26,10 +26,21 @@ REPORT_LAYERS = (0, 4, 8, 12, 16, 20, 24, 28, 31)
 PRIMARY_NEXAMPLES = (4, 8)
 CHANNEL = "semantic_one_word"
 MIN_DOMAINS_POSITIVE = 5             # of 6
+DEGENERATE_OPTION_MASS = 1e-4        # C-048: below this the logit lens holds no mass
 N_DOMAINS = 6
 
 
 def load_results(run_dir):
+    """⛔ Only ever consume a COMPLETED run.
+
+    Added 2026-09-05 after this analyzer silently read `basket_bomb` while its job was still
+    writing, and reported a 3-domain installation figure for a 6-domain bank as though it were
+    final. A partially written `results.jsonl` is indistinguishable from a small one unless the
+    completion sentinel is checked, and this repo's whole guard philosophy is that a missing
+    artifact must not look like a finished one (`C-047`).
+    """
+    if not os.path.exists(os.path.join(run_dir, "DONE.json")):
+        return None
     p = os.path.join(run_dir, "results.jsonl")
     if not os.path.exists(p):
         return None
@@ -67,6 +78,12 @@ def descriptives(rows):
         for r in rows:
             if r.get("query_kind") != CHANNEL or r.get("n_examples") not in PRIMARY_NEXAMPLES:
                 continue
+            # BUGFIX 2026-09-05: this filter was missing, so the descriptives table averaged over
+            # ALL target occurrences (including the demonstration ones) while `installation()`
+            # used final occurrences only. The two tables therefore described DIFFERENT
+            # populations -- cell A read n=1176 here against 168 there.
+            if not r.get("is_final_occurrence", True):
+                continue
             if kb not in r:
                 continue
             per_cell[r["cell"]]["boombness"].append(float(r[kb]))
@@ -74,6 +91,10 @@ def descriptives(rows):
                 per_cell[r["cell"]]["p_concept"].append(float(r[kp]))
             if kc in r:
                 per_cell[r["cell"]]["p_codeword"].append(float(r[kc]))
+            if kp in r and kc in r:
+                # PHASE-WIDE RULE (R-032/R-050): option mass travels beside every log-odds.
+                # At L<=16 this is ~1e-5, which is what made the L16 gate VACUOUS (C-048).
+                per_cell[r["cell"]]["option_mass"].append(float(r[kp]) + float(r[kc]))
         stat = {}
         for cell, d in per_cell.items():
             stat[cell] = {k: dict(n=len(v), mean=float(np.mean(v)), sd=float(np.std(v)),
@@ -120,7 +141,19 @@ def main():
     # ---- the declared consequences (PR-033 §14.4)
     prim = {c: verdicts.get(f"button_{c}") for c in ("bomb", "knife", "gun")}
     failed = [c for c, v in prim.items() if v is False]
-    if prim.get("bomb") is False:
+    # C-048: distinguish a DEGENERATE instrument from a real negative. If the logit lens has no
+    # mass on either option at the gate layer, `boombness` there is a ratio of two ~0 numbers and
+    # the gate is VACUOUS, not failed -- the R-067 `min_dist_to_query` lesson, applied to myself.
+    masses = [b["descriptives"].get(f"L{GATE_LAYER}", {}).get(c, {}).get("option_mass", {}).get("mean")
+              for b in res["banks"].values() for c in ("A", "C")]
+    masses = [m for m in masses if m is not None]
+    res["gate_layer_option_mass_mean"] = float(np.mean(masses)) if masses else None
+    if masses and float(np.mean(masses)) < DEGENERATE_OPTION_MASS:
+        verdict = (f"VACUOUS — the pre-declared gate layer L{GATE_LAYER} carries option mass "
+                   f"{np.mean(masses):.2e} < {DEGENERATE_OPTION_MASS:.0e}. The statistic is a ratio "
+                   f"of two probabilities the model does not hold. ⛔ NOT a finding that the "
+                   f"mapping fails to install. See C-048 / PR-034.")
+    elif prim.get("bomb") is False:
         verdict = "VOID — bomb does not install; there is no mapping to be specific about"
     elif len(failed) >= 2:
         verdict = "CANNOT ANSWER — >=2 of 3 primary concepts do not install"
