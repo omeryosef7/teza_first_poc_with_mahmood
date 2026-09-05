@@ -378,27 +378,27 @@ def main():
                     "  accumulation - R-003 refuted it.\n\n"
                     "Behavioural status\n"
                     "─────────────────────────────\n"
-                    "- Llama: B-009 RUN at k=116 (78 new domains),\n"
-                    "  NOT RESOLVED (R-061). Conjunction over all 3\n"
-                    "  dose-matched controls = 1 of 3:\n"
-                    "  p = 0.175 / 0.0096 / 0.466. Never quote the\n"
-                    "  0.0096 alone.\n"
-                    "  [!] Domain count was NOT the constraint. The\n"
-                    "  controls induce +35/+133/+200 refusals and the\n"
-                    "  between-control spread (0.0586) EXCEEDS the\n"
-                    "  effect (0.0391) -- the comparator draw decides\n"
-                    "  the p-value, 0.01 to 0.47 on identical data.\n"
-                    "- Qwen: CONFOUND-LIMITED (R-048). All 8 arms\n"
-                    "  judged in one invocation. Face value gives\n"
-                    "  KO-ctrl = +23..+45 (all 6 significant); the\n"
-                    "  refusal adjustment gives -11..-32. ALL SIX\n"
-                    "  BRACKETS STRADDLE ZERO => the sign is NOT\n"
-                    "  determined. Forbidden both ways: 'increases'\n"
-                    "  is the face value and is what the confound\n"
-                    "  predicts (KO-3 refuses 0, controls ~200);\n"
-                    "  'reduces' is the adjusted end (2 of 6); and\n"
-                    "  'no effect' is still forbidden -- a straddling\n"
-                    "  bracket is undetermined, not null.\n"
+                    "- Llama: NOT ESTABLISHED (R-075). PR-028 removed\n"
+                    "  the comparator CHOICE: K=8 draws vs the control\n"
+                    "  DISTRIBUTION, 10 arms judged in ONE session.\n"
+                    "  d=-0.0222, t(7)=-0.80, p=0.449.\n"
+                    "  [!] UNDERPOWERED, not a clean negative: sd\n"
+                    "  0.0783 = 2.65x the 0.0295 sized on, so MDE\n"
+                    "  0.0655 EXCEEDS the -0.0391 sought (power\n"
+                    "  0.232; K~24). NOT evidence of absence.\n"
+                    "  [!] WHY: at IDENTICAL dose (keys_masked 522,\n"
+                    "  match_ratio 1.0, all 8) induced refusal spans\n"
+                    "  -7..+562 (25x) => dose-matched controls are\n"
+                    "  NOT exchangeable. B-009 still NOT RESOLVED.\n"
+                    "  R-076: predicted-refusal control CLOSED --\n"
+                    "  geometry predicts neither within (0/4) nor\n"
+                    "  between (rho 0.238) arms.\n"
+                    "- Qwen: CONFOUND-LIMITED (R-048). 8 arms, one\n"
+                    "  invocation. Face value KO-ctrl = +23..+45 (all\n"
+                    "  6 signif.); refusal-adjusted -11..-32. ALL SIX\n"
+                    "  BRACKETS STRADDLE ZERO => sign NOT determined.\n"
+                    "  Forbidden both ways, and 'no effect' too -- a\n"
+                    "  straddling bracket is undetermined, not null.\n"
                     "- Judge-free and it survives: KO-3 removes ALL\n"
                     "  150 refusals and buys only +21 attacks\n"
                     "  (74->95), so 86% do not become attacks.",
@@ -454,6 +454,25 @@ def main():
                         hspace=0.62, wspace=0.26)
     os.makedirs(a.out, exist_ok=True)
     p = os.path.join(a.out, "DCS_FIGURES.png")
+    # LAYOUT GUARD. The scope card has overflowed twice: once on WIDTH (fixed by shrinking the
+    # font) and once on HEIGHT, when a result added ten lines and the left column ran off its box
+    # into panel G's title. A width check alone cannot see that. Both budgets are asserted here,
+    # derived from the column that is known to render correctly.
+    import re as _re
+    _src = open(__file__).read()
+    for _x, _maxlines in (("0.00", 48), ("0.52", 48)):
+        _m = _re.search(rf'axes\[2\]\[1\]\.text\({_x}, 1\.00,\s*(.*?)fontsize=6\.2', _src, _re.S)
+        if not _m:
+            raise SystemExit(f"[dcs-fig] layout guard: could not find scope-card column x={_x}")
+        _lines = "".join(_re.findall(r'"((?:[^"\\]|\\.)*)"', _m.group(1))).split("\\n")
+        _w = max(len(t) for t in _lines)
+        if len(_lines) > _maxlines or _w > 50:
+            raise SystemExit(
+                f"[dcs-fig] layout guard FAILED for column x={_x}: {len(_lines)} lines "
+                f"(max {_maxlines}), width {_w} (max 50). The card will overflow into panel G. "
+                f"Trim the text -- do NOT just shrink the font.")
+        print(f"[dcs-fig] layout guard OK: column x={_x} {len(_lines)} lines, width {_w}")
+
     fig.savefig(p, dpi=185)
     print(f"[dcs-fig] wrote {p}")
     print(f"[dcs-fig] panel A ladder: K={ks} demo={[round(v,3) for v in demo]} "

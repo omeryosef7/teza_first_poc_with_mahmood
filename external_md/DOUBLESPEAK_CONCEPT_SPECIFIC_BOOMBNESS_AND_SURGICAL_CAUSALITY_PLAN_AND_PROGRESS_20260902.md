@@ -7673,3 +7673,22 @@ as post-hoc. `R-066` then removed the data obstacle by showing every draw's posi
 predictor.** Mask geometry does not predict refusal within arms (k = 8, floor 0.0078) or between them
 (n = 8). ⚠ A predicted-refusal control would need a feature set that is not mask geometry, and
 `R-075` says the thing to be predicted varies **25-fold** at constant dose.
+
+### `C-044` — the figure's scope card **overflowed into panel G**, and the guard I thought existed did not
+
+`R-074`/`R-075`/`R-076` reached the figure, the surface `C-026` records as the one that goes stale
+silently. ⚠ Writing the behavioural status added **10 lines** to the left column, and the rendered
+card ran **off its box into panel G's title**, overlapping it.
+
+⛔ **Caught by reading the PNG back, not by any check.** I had recorded a "per-column width guard" as
+existing; ⛔ it was a **one-off measurement I ran once and never committed**, and in any case a width
+check cannot see **vertical** overflow. ⇒ `scripts/dcs_figures.py` had **no layout guard at all**.
+
+✅ **Fixed, and the guard is now in the script:** it parses both scope-card columns out of its own
+source and **refuses to render** above **48 lines** or **50 chars** per column, naming the column and
+saying *"trim the text — do NOT just shrink the font"* (shrinking the font is how the previous
+overflow was papered over). ✅ Confirmed it **fires**: it failed the first repair at 51 lines before
+passing at 46/45.
+
+✅ Behavioural status rewritten to the `PR-028` outcome and the Qwen block condensed by 5 lines to fit;
+✅ re-read the regenerated PNG and the collision is gone.
