@@ -35,6 +35,9 @@ MATCHED_CONTROL_RUNG = 9        # ' actually' -- all trailing content EXCEPT the
 BIG = 0.5                       # §30.6 CODEWORD-ROW magnitude bar, x |delta_ref|
 SMALL = 0.2                     # §30.6 NOT-THE-CODEWORD magnitude bar, x |delta_ref|
 MIN_REF_MAGNITUDE = 1.0         # §30.6 VOID/CANNOT-ANSWER: too small to normalise against
+BASE_TAG = "base"               # PR-037a §33.3: unintervened baseline replaces the infeasible ctrl
+SCAFFOLD_CONTROL_RUNG = 5       # PR-037a §33.3: same 2754 keys, 180 rows, ALL chat scaffold
+SCAFFOLD_VOID_FRAC = 0.2        # PR-037a §33.3 VOID: |delta_K5| >= 0.2*|delta_ref| => masking per se
 
 
 def sign_test_two_sided(vals):
@@ -129,20 +132,35 @@ def main() -> int:
                     "adjusted floor above alpha and is uninformative by construction.",
                arms={}, contracts={}, void=[], skipped_incomplete={}, deltas={})
 
+    # PR-037a §33.3: the comparator is the UNINTERVENED BASELINE, not a nondemo_matched control,
+    # which is infeasible on this bank (B-018: 164/168 rows, match_ratio 0.048 / 0.000).
+    bd = find_arm(a.root, f"{BASE_TAG}_demo", res["skipped_incomplete"])
+    if not bd:
+        res["verdict"] = ("CANNOT ANSWER — the unintervened baseline arm (PR-037a §33.3) is missing, "
+                          "so no delta can be formed. This is NOT a null.")
+        return _write(res, a.out)
+    base_rows = load_arm(bd)
+    cB = contract(base_rows, "baseline")
+    res["arms"][BASE_TAG] = dict(demo=os.path.basename(bd))
+    res["contracts"][BASE_TAG] = dict(baseline=cB)
+    if not (cB["ok_n"] and cB["ok_domains"] and cB["uniform_domains"]):
+        res["void"].append(dict(arm=BASE_TAG, reasons=["baseline contract failed"]))
+        res["verdict"] = "VOID — the baseline arm fails its contract; every delta rests on it."
+        return _write(res, a.out)
+
     tags = [f"k{K}" for K in RUNGS] + [REF_TAG, KO1_TAG]
     for tag in tags:
         dd = find_arm(a.root, f"{tag}_demo", res["skipped_incomplete"])
-        cd = find_arm(a.root, f"{tag}_ctrl", res["skipped_incomplete"])
-        if not dd or not cd:
-            res["arms"][tag] = dict(demo=dd, ctrl=cd, status="MISSING ARM")
+        if not dd:
+            res["arms"][tag] = dict(demo=None, status="MISSING ARM")
             continue
-        res["arms"][tag] = dict(demo=os.path.basename(dd), ctrl=os.path.basename(cd))
-        demo, ctrl = load_arm(dd), load_arm(cd)
-        if demo is None or ctrl is None:
+        res["arms"][tag] = dict(demo=os.path.basename(dd))
+        demo, ctrl = load_arm(dd), base_rows
+        if demo is None:
             res["arms"][tag]["status"] = "UNREADABLE"
             continue
-        cD, cC = contract(demo, f"{tag}_demo"), contract(ctrl, f"{tag}_ctrl")
-        res["contracts"][tag] = dict(demo=cD, ctrl=cC)
+        cD, cC = contract(demo, f"{tag}_demo"), cB
+        res["contracts"][tag] = dict(demo=cD, baseline=cC)
         bad = []
         if not (cD["ok_n"] and cC["ok_n"]):
             bad.append(f"n != {EXPECT_N} (demo {cD['n_rows']}, ctrl {cC['n_rows']})")
@@ -152,9 +170,10 @@ def main() -> int:
             bad.append("NON-UNIFORM domain loss")
         if not (cD["ok_liveness"] and cC["ok_liveness"]):
             bad.append("liveness violation or decode edit")
-        if cD["keys_masked_median"] != cC["keys_masked_median"]:
-            bad.append(f"DOSE MISMATCH keys_masked {cD['keys_masked_median']} vs "
-                       f"{cC['keys_masked_median']}")
+        # PR-037a §33.2: the increment is valid only because every rung masks the SAME keys.
+        # Assert it rather than trusting it -- if two rungs differ in keys_masked, the between-rung
+        # difference is no longer a pure "which query rows" contrast and the estimand is broken.
+        res.setdefault("_keys_seen", {})[tag] = cD["keys_masked_median"]
         if bad:
             res["void"].append(dict(arm=tag, reasons=bad))
             continue
@@ -167,8 +186,17 @@ def main() -> int:
             mean_delta=float(np.mean(list(delta.values()))),
             demo_mean=float(np.mean(list(dmean.values()))),
             ctrl_mean=float(np.mean(list(cmean.values()))),
-            option_mass_demo=cD["option_mass_median"], option_mass_ctrl=cC["option_mass_median"],
+            option_mass_demo=cD["option_mass_median"], option_mass_baseline=cC["option_mass_median"],
             query_rows_edited=cD["query_rows_edited_median"], keys_masked=cD["keys_masked_median"])
+
+    # PR-037a §33.2: every rung must mask the SAME demonstration keys, or the increment is not a
+    # pure query-row contrast. This is the assumption the amendment rests on; it is checked, not assumed.
+    ks = res.pop("_keys_seen", {})
+    res["keys_masked_by_arm"] = ks
+    if ks and len(set(ks.values())) != 1:
+        res["verdict"] = (f"VOID — rungs do not mask the same keys ({ks}); the between-rung "
+                          f"increment is not a pure query-row contrast (PR-037a §33.2).")
+        return _write(res, a.out)
 
     # ---------------- the 100% normaliser
     ref = res["deltas"].get(REF_TAG, {}).get("mean_delta")
@@ -185,6 +213,22 @@ def main() -> int:
 
     for tag, d in res["deltas"].items():
         d["pct_of_reference"] = 100.0 * abs(d["mean_delta"]) / abs(ref)
+
+    # ---------------- PR-037a §33.3: the scaffold negative control, now a VOID condition
+    d5 = res["deltas"].get(f"k{SCAFFOLD_CONTROL_RUNG}")
+    if d5 is not None:
+        frac5 = abs(d5["mean_delta"]) / abs(ref)
+        res["scaffold_control_K5"] = dict(mean_delta=d5["mean_delta"], frac_of_reference=frac5,
+                                          bar=SCAFFOLD_VOID_FRAC, passes=bool(frac5 < SCAFFOLD_VOID_FRAC))
+        if frac5 >= SCAFFOLD_VOID_FRAC:
+            res["verdict"] = (
+                f"VOID — the K=5 scaffold control moves the readout by {frac5:.1%} of "
+                f"|delta_ref| (bar {SCAFFOLD_VOID_FRAC:.0%}). K=5 masks the same 2754 keys at rows "
+                f"that are ALL chat scaffold, so masking per se moves this readout and no "
+                f"between-rung comparison here is interpretable (PR-037a §33.3).")
+            return _write(res, a.out)
+    else:
+        res["scaffold_control_K5"] = "MISSING — the PR-037a §33.3 negative control was not run"
 
     # ---------------- THE SINGLE PRIMARY (§30.5): the K=9 -> K=10 paired increment
     d9 = res["deltas"].get(f"k{MATCHED_CONTROL_RUNG}")
@@ -240,6 +284,10 @@ def _write(res, out):
         for v in res["void"]:
             print(f"  {v['arm']}: {v['reasons']}")
         print()
+    sc = res.get("scaffold_control_K5")
+    if isinstance(sc, dict):
+        print(f"K=5 scaffold control: delta={sc['mean_delta']:+.4f} = {sc['frac_of_reference']:.1%} "
+              f"of |delta_ref|  bar={sc['bar']:.0%}  -> {'PASS' if sc['passes'] else 'VOID'}\n")
     print(f"{'arm':>6} {'mean_delta':>11} {'%of ref':>8} {'q_rows':>8} {'keys':>7} {'opt_mass':>9}")
     order = [f"k{K}" for K in RUNGS] + [KO1_TAG, REF_TAG]
     for tag in order:
