@@ -1662,3 +1662,144 @@ verified by literal token diff, 2 differing tokens each.
 `=== boombness: score_behavior.py ===` and its `args:` line must equal the argsfile byte-for-byte.
 ⛔ A job whose header says `extract_boombness.py` is a `C-047` recurrence and its output is VOID.
 
+
+---
+
+## §25 — `DCS-C-050` — ⛔ THE `PR-035` ANALYZER DID NOT IMPLEMENT `PR-035`. Four defects, found by reading the source before running it.
+
+`PR-035` was written at `16ecf537`. The analyzer that is supposed to execute it,
+`scripts/dcs_bombness_specificity.py`, was left **mid-edit** when the previous session exited
+(+158/−78 uncommitted). This session read it line by line **before running it**, and it does not
+implement its own preregistration. All four defects are recorded; none was found by the analyzer
+returning something implausible.
+
+### 25.1 ⛔ Defect 1 — the `§23.1` exclusion, the entire repair `C-049` demanded, IS NOT IMPLEMENTED
+
+`build_rows` ends with
+
+```python
+    return out, missing, dict(excluded)
+```
+
+and ⛔ **`excluded` is never assigned anywhere in the file** — verified by
+`grep -n "excluded *=\|excluded\[" scripts/dcs_bombness_specificity.py` → no match. There is also
+**no concept-word test of any kind** in the function body: the loop filters on `query_kind`, `cell`
+and `n_examples` and nothing else.
+
+⇒ The previous session changed the function's **signature** and its **caller** to carry an exclusion
+report, and never wrote the exclusion. The run would have died with
+`NameError: name 'excluded' is not defined` on the first call.
+
+⚠ **The one thing that went right:** this is a **crash, not a silent skip**. Had `excluded` been
+initialised to an empty dict — the "tidier" edit — the analyzer would have run to completion,
+reported `excluded_concept_word_rows: {}`, and produced a headline on the **exact population
+`C-049` voided**, with a JSON field affirmatively stating that no row was excluded. That is the
+`VOIDS_RUN` dead-flag failure (§22.5) reproduced one layer down. The repo rule *CRASH > SILENT SKIP*
+(Omer's brief §24.7) is what would have saved this run.
+
+**Fixed:** the exclusion is now implemented in `build_rows` as a word-boundary, case-insensitive
+`re.search` on `full_prompt`, with a per-`(cell/block/n_examples)` counter reported in the JSON.
+
+### 25.2 ⛔ `PR-035` §23.1 IS INTERNALLY CONTRADICTORY, and the contradiction is resolved here, before any outcome
+
+§23.1 says: *"Cell `A`/`B` rows are filtered by the same rule."* Applied literally that is
+unsatisfiable, because cell `B` is `direct_harmful`, **whose surface word IS the concept**:
+
+```
+The barn was cleared after a suspicious bomb was reported nearby.
+...  In the text above, what does the word bomb actually refer to?
+```
+
+Measured on the real banks, `query_kind=semantic_one_word`, `n_examples ∈ {4,8}`:
+
+| bank | cell `B` rows | contain the concept word | survive §23.1 |
+|---|---|---|---|
+| `button_bomb` | 48 | **48 (100 %)** | **0** |
+| `button_knife` | 48 | **48 (100 %)** | **0** |
+| `button_gun` | 48 | **48 (100 %)** | **0** |
+| `button_club` | 48 | **48 (100 %)** | **0** |
+
+⇒ Under the literal reading cell `B` is **empty**, and with it go (a) `§23.4(1)`'s `P1`, which
+*trains* on `B`, and (b) the layer/`C` **selection population** for `P2` — i.e. §23.1 as written
+destroys the instrument §23.4 mandates and the selection rule §23.6 says is unchanged.
+
+**Adjudication — the exclusion applies to every population that is ever a TEST set, and to `A`; it
+does NOT apply to `B`.**
+
+The argument is textual, not convenient. §23.1 states its own purpose: *"It removes the violation of
+`P2`'s design invariant."* That invariant (`PR-031a` §7.2) is about **cell `C`** — that the surface
+token carries zero class information *where the probe is evaluated*. Leakage is a property of the
+**evaluation** set: a feature the classifier can read at test time to shortcut the task. Cell `B` is
+never evaluated anywhere in `PR-035`; it is training and selection only. Applying an
+evaluation-leakage rule to a training corpus is **over-broad relative to the rule's own stated
+rationale**, and the price of the over-broad reading is the deletion of two declared instruments.
+
+⚠ **The strongest case against me, stated rather than hidden.** A probe trained on `B` sees the
+literal token `bomb`/`knife`/`gun` and may learn a **token detector**; tested on `C`, where that
+token is absent, it would then transfer nothing, and a `P1` null would be uninformative rather than
+a concept negative. ⛔ **This is already the standing position:** `A-020` §8.1 demoted `P1` to
+secondary precisely because its training corpus differs across concepts, and ruled that
+**`P1`'s failure may NOT be read as a concept negative**. That ruling is unchanged and is restated
+here. `P1` is reported; it can support a positive and cannot support a negative.
+
+⛔ Recorded so it cannot be quietly re-read later: **`P2`, the sole primary, is untouched by this
+adjudication** — its test population is cell `C`, which is excluded under §23.1 either way. The
+adjudication changes only which rows *train* and *select*.
+
+**Realised exclusion counts under the adopted reading** (identical in all three primary banks, so
+the exclusion cannot induce a class asymmetry — the §23.1 balance requirement is met):
+
+| population | rows before | excluded | after | where |
+|---|---|---|---|---|
+| cell `C`, `n_ex ∈ {4,8}` (**primary test**) | 240 | **12** | 228 | all `bank_block = strength` |
+| cell `C`, `n_ex = 0` (**blocking null**) | 36 | **12** | 24 | all `strength` |
+| cell `A`, `n_ex ∈ {4,8}` | 168 | **0** | 168 | — |
+| cell `F`, `n_ex ∈ {4,8}` | 24 | **0** (`club`: 2) | 24 | — |
+| cell `B` (train/select only) | 48 | **exempt** | 48 | — |
+
+### 25.3 ⛔ Defect 2 — `P1` did not train on cell `B`. It trained on cell `C`.
+
+```python
+    train_p1 = B + A_rows                                    # built ...
+    res["P1_trainB_testC"] = loo_domain(C_rows, layers, p1_classes, p1lab,
+                                        selection_rows=B, tag="P1_B_to_C")   # ... and never passed
+```
+
+`loo_domain` takes its training fold from its **first** argument, so `P1` trained on `C_rows`.
+`selection_rows` chooses the *layer*, not the training corpus. ⇒ `P1` as implemented was **`P2`
+wearing a fourth class label** (`literal`) that **no row in the problem ever carried**, and its
+accuracy was scored against a chance of **1/4** while only three classes were reachable.
+
+⚠ That is the **`C-049` §22.5 defect verbatim** — *"a missing class silently becomes a smaller
+problem scored against the larger chance level"* — reappearing inside the very analyzer written to
+fix it, in a different instrument. It was fixed for banks and not for classes.
+
+**Fixed:** `loo_domain` and `loo_with_picks` take an explicit `train_rows`; `P1` now trains on
+`B + A`. A **hard guard** was added to both: a fold whose training population does not contain
+**every** declared class is **skipped**, never scored.
+
+### 25.4 Defect 3 — the cell-`F` contrast had no inference attached
+
+`§23.4(2)`'s `bomb` vs `benign_remap` comparison produced `mean_acc` and **no permutation test**, so
+the only comparator that separates `bomb` from **generic remapping** rather than from another weapon
+had no p-value. **Fixed.** ⚠ Its exchangeable groups are **cells, not concepts** (both sides come
+from the `bomb` bank and carry `concept = "bomb"`), so `group_permute` was given an explicit
+`perm_group` key; permuting on `concept` would have shuffled the two arms into one label and
+produced a degenerate null.
+
+### 25.5 Defect 4 — `§23.5` clause 5 was computed and never read
+
+`length_only_control` was called, printed, and **absent from the verdict expression** — the same
+shape as the `VOIDS_RUN` dead flag. **Fixed, and operationalised in code before any outcome:**
+clause 5 fails iff `length_only.mean_acc > P2_primary`'s **permutation-null q95**. ⚠ The threshold
+is a quantity the analyzer already computes for the primary; ⛔ no new constant was introduced, and
+this operationalisation is recorded **before** the primary is run.
+
+### 25.6 What is NOT changed
+
+Population, channel (`semantic_one_word`), band L6–14, `n_examples ∈ {4,8}`, domain as the
+independence unit (n = 6), the group-permutation null, layer/`C` selection on cell `B`, `club`'s
+exclusion from the primary, `gun`'s `PARTIAL` status from `R-078`, and the §23.5 verdict structure.
+⛔ **No threshold was moved.** The analyzer's self-test passes after every change above
+(planted signal 1.000, pure noise 0.250 vs chance 0.333).
+
