@@ -7635,3 +7635,41 @@ test **mildly anti-conservative**, which cannot manufacture a null.
 * ⛔ `A-015`'s `prompt_sha16` guard called its loader **inside** the comprehension over ids,
   re-reading a 1160-row file 1160 times per arm — **O(n²)** I/O that took the primary from **3.6 s**
   to minutes. Hoisted; ✅ the guard's behaviour is unchanged and still passed on all eight arms.
+
+### `R-076` — `R-067` re-run at **k = 8** confirms its null, and the **25-fold** refusal spread is **unexplained** by mask geometry
+
+Two questions, both now answerable because all eight controls are judged in one session.
+
+✅ **1. The promised k = 8 re-run confirms `R-067`.** `R-067` returned no within-arm geometry signal
+but could not conclude: at k = 3 the sign test's floor is 0.25. At **k = 8** the floor is **0.0078**,
+so the test can now conclude — and it returns **0 of 4** non-degenerate features sign-consistent.
+⇒ ⛔ **`NO USABLE WITHIN-ARM SIGNAL`, now at a k that could have detected one.**
+✅ **And `R-067`'s specific prediction is borne out:** `spread_norm`, the single "consistent" feature
+at k = 3, is **not consistent at k = 8** (+0.047 … **−0.255**). `R-067` said it was what noise
+produces at that k, having measured 7/20 noise features looking consistent there. ⇒ It was.
+
+⛔ **2. NEW, and motivated by `R-075`: arm-level geometry does not explain the spread either.**
+`R-075` found induced refusal ranging **−7 to +562** at *identical* dose, so the obvious hypothesis
+is that some property of *where* the mask lands drives it. Correlating each arm's mean geometry
+against its induced refusal, across the **8** arms (induced: −7, 22, 35, 133, 137, 200, 210, 562):
+
+| feature | ρ | perm p |
+|---|---|---|
+| `n_runs_norm` | **+0.238** | 0.589 |
+| `frac_first_quarter` | −0.071 | 0.883 |
+| every other feature | ≤ 0.024 | ≥ 0.976 |
+
+⇒ ⛔ **Nothing.** Best |ρ| = 0.238 against a Bonferroni α of 0.0071 over 7 features.
+
+⚠ **SCOPE, and it is severe: n = 8 arms.** Measured against a permutation null, detecting a
+correlation at n = 8 needs **|ρ| ≥ 0.714** uncorrected and **|ρ| ≥ 0.857** after Bonferroni. ⇒ This
+excludes only a **very strong** monotone relationship. ⛔ It is **not** evidence that geometry is
+irrelevant — it is evidence that **these seven features, at this n, do not explain a 25-fold spread**.
+
+⇒ **Consequence, and it closes a loop opened three days ago.** `R-061` identified a control matched
+on *predicted* refusal as the fix for the confound. `C-023` killed matching on **observed** refusal
+as post-hoc. `R-066` then removed the data obstacle by showing every draw's positions are persisted.
+⛔ **The route is still closed — now for a different and better-established reason: there is no
+predictor.** Mask geometry does not predict refusal within arms (k = 8, floor 0.0078) or between them
+(n = 8). ⚠ A predicted-refusal control would need a feature set that is not mask geometry, and
+`R-075` says the thing to be predicted varies **25-fold** at constant dose.
