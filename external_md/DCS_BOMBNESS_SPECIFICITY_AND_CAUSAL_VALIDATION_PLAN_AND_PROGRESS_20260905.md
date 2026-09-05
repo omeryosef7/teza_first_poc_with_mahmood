@@ -1890,3 +1890,97 @@ and is **not** funded by `PR-032`.
 result. It bounds §11.6's "which tokens enter the cut" analysis from descriptive to **structurally
 confounded on the decisive rung**.
 
+
+---
+
+## §27 — `DCS-R-080` — THE LADDER RESOLVES. `PR-036` confirmed on all three predictions: the requirement begins exactly where the cut reaches question content.
+
+**`PR-032` + `PR-036`, complete for K = 2…8.** Analyzer `scripts/dcs_kladder_analysis.py` at `605e71c9`,
+committed before any of these rungs was read. Zero VOID rungs; all contracts pass
+(n = 380, 38 domains, `keys_masked` identical demo-vs-control on every rung, 0 liveness violations,
+0 decode edits, eager attention).
+
+### 27.1 ✅ `§11.7`'s kill criterion: the K=8 re-run reproduces the inherited value **EXACTLY**
+
+| | value |
+|---|---|
+| inherited `K=8` (2026-09-03, `dcsk8`) | **−6.616111537245543** |
+| this session's re-run (2026-09-06, `dcsk8r`, different node) | **−6.616111537245543** |
+| absolute difference | **0.000000** |
+
+⇒ ⛔ The ladder is **not** suspect under §11.7. ⚠ Note what this does and does not show: it shows the
+**pipeline is deterministic** to the last digit across three days and different hardware — a strong
+infrastructure result — ⛔ **not** that the measurement is externally valid.
+
+### 27.2 The profile, with the token each rung newly cuts
+
+| K | token newly cut | Δ (demo − control) | % of Δ₈ | domains − | p | Holm | `option_mass` |
+|---|---|---|---|---|---|---|---|
+| 2 | `<\|end_header_id\|>` | −0.0115 | 0.2 % | 23/38 | 2.56e-01 | — | 0.878 |
+| 3 | `assistant` | −0.0697 | 1.1 % | **35/38** | 6.68e-08 | ~0 | 0.879 |
+| 4 | `<\|start_header_id\|>` | −0.0194 | 0.3 % | 21/38 | 6.27e-01 | 1.000 | 0.880 |
+| 5 | `<\|eot_id\|>` | **+0.0225** | 0.3 % | 18/38 | 8.71e-01 | 1.000 | 0.878 |
+| **6** | **`?`** | **−0.5015** | **7.6 %** | **34/38** | 6.04e-07 | ~0 | 0.853 |
+| **7** | **`' bomb'`** | **−5.9849** | **90.5 %** | **38/38** | 7.28e-12 | ~0 | 0.409 |
+| 8 | `' a'` | −6.6161 | 100 % | 38/38 | 7.28e-12 | — | 0.368 |
+| 16 | — | −7.8884 | 119.2 % | 37/38 | 2.84e-10 | — | 0.372 |
+
+**`K* = 7`** (§11.5: smallest K with Holm p ≤ 0.05 **and** |Δ| ≥ 0.5·|Δ₈| = 3.308).
+Largest single-rung rise: **K=6 → K=7, +82.9 percentage points**.
+
+### 27.3 All three `PR-036` predictions confirmed
+
+* ✅ **P-A** — K=4 (0.3 %) and K=5 (0.3 %) stay far below the 20 % bar. The declared falsifier
+  (|Δ| ≥ 1.323 at K=4 or K=5) did **not** fire.
+* ✅ **P-B** — `K* = 7`, inside the predicted {6, 7}.
+* ✅ **P-C** — the largest one-rung rise is K=6→7.
+
+⇒ **Five rungs of pure chat-template scaffold do essentially nothing. The first user-text token
+(`?`) buys 7.6 %. The next token — the first content word — buys 82.9 more.**
+
+### 27.4 ⛔ THE BOUND ON THIS RESULT, declared in `§26.4` before the numbers existed
+
+The token entering at K=7 is **`' bomb'`**, and it is there because the `semantic_forced_choice`
+question **names both options** (*"…refer to a button or to a bomb?"*). Therefore:
+
+⛔ **This may NOT be written as "the codeword's query row is where the mapping is read."** The row is
+the **option word of the readout template**. A reading at least as consistent with the data is:
+*the question's concept-option token is where demonstration information is integrated for this
+readout*, which is a fact about the **instrument** as much as about the mechanism.
+
+⛔ It also may not be written as *"the mechanism is one token"*: K=7 cuts K=1…6's tokens as well, and
+row count and cut-cell count still rise together (§11.2).
+
+**What separates the two readings** is a ladder on `semantic_one_word`, whose question never names the
+concept. ⚠ That is **not run**, **not funded by `PR-032`**, and is the single highest-value follow-up
+this result creates. Recorded as an open experiment, not as a caveat to be quietly dropped.
+
+### 27.5 ⚠ Three things that do not fit a clean story, reported rather than smoothed
+
+1. **The profile is NOT monotone.** K=5 is **+0.0225** — the *wrong sign*, 18/38 domains. Small, but
+   it means "Δ grows with K" is false as stated.
+2. **K=3 is significant and K=4, K=5 are not.** K=3 reaches 35/38 domains at p = 6.7e-08 on a
+   magnitude of **1.1 %**; the two rungs above it sit at chance. ⇒ ⛔ Significance at n = 38 domains
+   does **not** imply a mechanistically meaningful effect, and the K=3 rung is the phase's cleanest
+   demonstration of that. ⚠ It has no explanation; the token is `assistant`, a scaffold token, and
+   why blocking *its* demonstration attention moves the readout consistently-but-negligibly is
+   **unknown**. It is not claimed as anything.
+3. **`option_mass` collapses across the transition** — 0.878 → 0.853 → **0.409** → 0.368. So the
+   rungs that carry the effect are again measured where the forced-choice options hold under half the
+   model's probability (`B-006`/`R-050`'s standing limit). ⚠ Note the collapse tracks Δ closely,
+   which means it is **not** an independent check.
+
+### 27.6 What this corrects in the inherited record
+
+⛔ `R-021`/`R-022`'s bracketing — *"the transition is between 3 and 8 rows"* — is superseded. The
+transition is between **K=6 and K=7**, and the rungs below it were **not query rows at all** (§26).
+⛔ Any sentence of the form *"one or two query rows do not need demonstration access"* must not be
+written. ⚠ `R-022`'s K=8/16/32 numbers are unchanged and are reproduced exactly here.
+
+### 27.7 Open
+
+`K=1` (jobs 854108/854109) was submitted to complete the 8-point profile §11.5 requires; the shape
+rule correctly refused to name STEP or RAMP without it and printed `INCOMPLETE`. ⚠ On the seven rungs
+present the STEP criterion would fire at K=6→7 (0.076 < 0.20, 0.905 > 0.50), but ⛔ it is **not**
+called until the declared profile is complete.
+
