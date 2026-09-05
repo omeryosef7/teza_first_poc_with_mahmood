@@ -93,11 +93,15 @@ def one_sample(ko_value, ctrl_values):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ko", default="outputs/boombness/judge/p24j_dcsp24_demo_*")
-    ap.add_argument("--baseline", default="outputs/boombness/judge/p24j_dcsp24_base_*")
+    # DEFAULTS POINT AT THE p28j_ RE-JUDGE (PR-028b), not at the original p24j labels. The old
+    # labels are still on disk and still valid for what they measured, but feeding them here would
+    # silently mix judge sessions -- and mixing is the exact bias PR-028b exists to remove. Before
+    # the re-judge exists this simply reports the arm as not found, which is the right refusal.
+    ap.add_argument("--ko", default="outputs/boombness/judge/p28j_dcsp24_demo_*")
+    ap.add_argument("--baseline", default="outputs/boombness/judge/p28j_dcsp24_base_*")
     ap.add_argument("--controls", nargs="+", default=[
-        "outputs/boombness/judge/p24j_dcsp24_d1_*", "outputs/boombness/judge/p24j_dcsp24_d2_*",
-        "outputs/boombness/judge/p24j_dcsp24_d3_*",
+        "outputs/boombness/judge/p28j_dcsp24_d1_*", "outputs/boombness/judge/p28j_dcsp24_d2_*",
+        "outputs/boombness/judge/p28j_dcsp24_d3_*",
         "outputs/boombness/judge/p28j_dcsp28_s20260905_d1_*",
         "outputs/boombness/judge/p28j_dcsp28_s20260905_d2_*",
         "outputs/boombness/judge/p28j_dcsp28_s20260905_d3_*",

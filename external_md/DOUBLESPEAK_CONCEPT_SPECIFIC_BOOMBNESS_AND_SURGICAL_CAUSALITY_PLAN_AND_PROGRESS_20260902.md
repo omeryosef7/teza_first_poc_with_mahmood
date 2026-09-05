@@ -7104,3 +7104,33 @@ pre-flight exists to detect. Either killed the script at `dir=$(pick …)` **bef
 message printed, yielding **exit 1 with no reason**. ⇒ ⛔ A pre-flight whose only job is to name the
 unready arm, failing without naming it. Fixed by wrapping the whole pipeline; verified it now prints
 `REFUSING dcsp28_s20260905_d1: no run dir carrying DONE.json`.
+
+### `PR-028c` — the drift analyzer, also frozen before its data, and one foot-gun closed
+
+⚠ **Written while the arms were at 399-682 of 1160 rows**, before a single `p28j_` label existed —
+so `PR-028b`'s bonus measurement cannot be tuned to its own answer.
+`scripts/dcs_judge_drift_p24j_vs_p28j.py`.
+
+⛔ **Byte-identity is checked, never assumed.** Drift is only drift if the completion did not change,
+so rows are matched on `prompt_id` **and** required to share `completion_sha256_16`; mismatches are
+**excluded and counted**, not averaged in. ⚠ This is the mistake `judge_session_drift.json` records
+against itself in its own `coverage_rule_history` — a partial arm read as drift and moved the
+headline. ⇒ Guarded structurally rather than remembered.
+
+✅ **The test is on the NET, not the flip count**, because only a systematic offset biases the
+primary. Under symmetric noise the up-flips are `Binomial(n_flips, 0.5)`, giving an exact two-sided
+binomial test. ✅ Verified against `scipy.stats.binomtest` on five (k, n) pairs — agreement to
+**2.8e-16** or exact.
+
+✅ **And it replays `R-049` as a sanity check on the instrument:** 18 flips, net +6 ⇒ **p = 0.2379**.
+⇒ ⛔ `R-049`'s net was **never** an established offset, only a plausible one — which is precisely why
+`PR-028b` removes the term instead of correcting for it. The new estimate will rest on **~15× the
+flips**, over 5 × 1160 byte-identical rows on the bank that matters.
+
+✅ **Foot-gun closed in `dcs_pr028_primary.py`.** Its defaults pointed at the **`p24j_`** labels for
+`KO-3`, the baseline and `d1`-`d3`. Anyone running it with defaults after the re-judge would have
+silently mixed judge sessions — the exact bias `PR-028b` exists to remove, reintroduced by a default
+value. ⚠ The tag-prefix guard would have caught it, but a guard that fires on the default path is a
+design that expects to be wrong. Defaults now name the **`p28j_`** re-judge; before it exists they
+refuse with *"KO-3 or baseline judged arm not found"*, and the K=3 dry run remains reproducible by
+naming the old session explicitly (re-verified: δ **−0.0391**, t(2) = −2.293, **p = 0.1488**).
