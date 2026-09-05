@@ -2275,3 +2275,52 @@ descriptively and **no rung among them may be promoted after the fact**. ⛔ It 
 codeword, one concept, 6 domains. ⛔ A `NOT-THE-CODEWORD` result does **not** show the codeword row is
 irrelevant to the *attack*; it is a representation readout only.
 
+
+---
+
+## §31 — `DCS-R-082` — the effect is COMPLETE BEFORE the codeword's own query row is ever cut
+
+⚠ **This is not a new experiment and it carries no p-value of its own.** It is what the *already
+committed* token table (`R-079`, §26.1) says when read against the *already committed* profile
+(`R-080`/`R-081`, §27/§29). Both were committed before the rungs were read; combining them is a
+structural reading, not a new test.
+
+Extending the token table over the same 380 prompts, **380/380, zero variation**:
+
+| K | 6 | **7** | 8 | 9 | 10 | **11** | 12 | 13 | 14 | **15** |
+|---|---|---|---|---|---|---|---|---|---|---|
+| token | `?` | **`' bomb'`** | `' a'` | `' to'` | `' or'` | **`' button'`** | `' a'` | `' to'` | `' refer'` | **`' button'`** |
+| % of Δ₈ | 7.6 % | **90.5 %** | 100 % | | | | | | | |
+
+⇒ ⛔ **Neither occurrence of the CODEWORD enters the cut until `K = 11`, and the effect has reached
+100 % of Δ₈ by `K = 8`.**
+
+### 31.1 What follows
+
+✅ **The codeword's own query rows are not necessary for this effect** — shown *inside the ladder
+itself*, on the same 380 prompts and the same readout, with no extra arm. This is an **independent
+confirmation of `KO-1`** (`R-005`/`R-006`: final codeword row ↛ demos leaves the mapping intact,
++0.278, 25+/13−, p = 0.073), reached by a completely different route and on a different population.
+⚠ Two independent routes to the same null is meaningfully stronger than either alone — ⛔ but it is
+still a **null**, and neither route establishes that the codeword row does *nothing*.
+
+⇒ Of §30.1's three readings, **H-codeword is disfavoured by `R-081` itself**, before `PR-037` runs.
+The live contest is **H-boundary** (any user-text row) versus **H-concept-option** (the row bearing
+the concept word). ⚠ And `R-081` already discriminates *those* partially too: K=6 (`?`, the first
+user-text row) delivers only **7.6 %**, while adding `' bomb'` delivers **82.9 more**. ⇒ H-boundary
+does not survive well either.
+
+### 31.2 ⛔ What this does NOT license, and why `PR-037` still runs unchanged
+
+⛔ It does **not** establish H-concept-option. `' bomb'` at K=7 is confounded with **position**: it
+is simultaneously the concept word *and* the last content token of the question. A ladder cannot
+separate "this token's identity" from "this token's position" **within a single template** —
+which is exactly why `PR-037` uses a **second template** where the concept word is absent and the
+codeword sits at a known, different position.
+
+⛔ **`PR-037`'s declared outcomes in §30.6 are NOT changed by this section.** I am recording a prior,
+not editing a preregistration. Its single primary (K=9→K=10) and all four outcome branches stand
+verbatim. ⚠ What §31 does mean is that a **`CODEWORD-ROW`** result would now be surprising against
+*two* independent nulls, and §30.6 already requires that such a result be **reconciled** with `KO-1`
+rather than quietly replacing it.
+
