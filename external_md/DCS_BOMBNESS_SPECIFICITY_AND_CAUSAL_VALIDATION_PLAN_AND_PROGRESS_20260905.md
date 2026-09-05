@@ -797,3 +797,131 @@ declared rule: `POSITIVE` requires observed mean accuracy **above** the permutat
 carries `--self-test` (planted-signal detection and noise behaviour) and `--calibrate N`
 (end-to-end false-positive rate). ⛔ If either fails, the analyzer prints
 `SELF-TEST FAILED — analyzer is not trustworthy` and exits non-zero.
+
+---
+
+## §11 — `DCS-PR-032` — PREREGISTRATION: the surgical row ladder, K = 3…7
+
+**Written 2026-09-05 before any K=3…7 arm exists.** Scientifically **independent** of `PR-031`
+(different question, different population, different readout), so it may run concurrently under the
+stage-gate rule. ⛔ Its result cannot change `PR-031`'s design and vice versa.
+
+### 11.1 Question
+
+`R-021`/`R-022` bracket the transition between **K = 2 (null)** and **K = 8 (large)** and the rungs
+3–7 were never run. Inherited anchors, each rung against its own dose-matched control, baseline
++5.188:
+
+| K | Δ (demo − control) | % of K=32 | domains | p |
+|---|---|---|---|---|
+| 1 | −0.013 | 0.2 % | 15+/23− | 0.256 |
+| 2 | −0.012 | 0.1 % | 15+/23− | 0.256 |
+| **3–7** | **NEVER RUN** | | | |
+| 8 | **−6.616** | 81.9 % | 0+/38− | 7.28e-12 |
+| 16 | −7.888 | 97.6 % | 1+/37− | 2.84e-10 |
+| 32 | −8.081 | 100 % | 1+/37− | 2.84e-10 |
+
+⇒ **Where between 2 and 8 does it happen, and is it a step or a ramp?**
+
+### 11.2 Row semantics, verified in code before designing
+
+`--knockout-scope query_last_k_rows` cuts `_q[-K:]` (`score_behavior.py:1860`, `:2103`) — the **last
+K rows of the query span**, counted from the end. K therefore indexes *destination rows*, and
+⚠ row count and cut-cell count rise together by construction, so this ladder separates **step from
+ramp**, ⛔ **not** rows from cells. That limitation is inherited verbatim from `R-022` and is not
+weakened here.
+
+### 11.3 Design — every setting inherited from the existing rungs, byte-comparable
+
+| field | value |
+|---|---|
+| bank | `boombness_prompt_bank_cds38_button_bomb.jsonl` |
+| block / dose | `--bank-blocks cds_n4 --n-examples 4` |
+| condition | `natural_doublespeak` (cell `C`) |
+| n | **380 rows, 38 domains** (`--expect-n 380`) |
+| readout | `--query-kinds semantic_forced_choice --max-new 8 --min-option-mass 0.05` |
+| layers / attn | `6-14`, `--attn-impl eager` (mandatory — SDPA has silently dropped custom masks) |
+| model / seed | `Llama-3.1-8B-Instruct`, `--seed 20260901` (inherited) |
+| arms | **10**: for each K ∈ {3,4,5,6,7}, `demo_all` **and** its own `nondemo_matched_d1` control |
+| judge | ⛔ **none.** No generation beyond 8 tokens, no StrongREJECT, no refusal confound. |
+
+### 11.4 Statistics
+
+* **Independence unit: domain, n = 38.** Estimand per rung: mean over domains of the paired
+  per-domain Δ = `semantic_logodds(demo) − semantic_logodds(control)`.
+* **Test per rung:** two-sided sign test over 38 domains. **Attainable floor 2/2³⁸ = 7.28e-12.**
+* **Multiplicity: Holm over the 5 new rungs.** All five are reported whatever they show.
+* `option_mass` reported beside every log-odds (phase-wide rule, `R-032`/`R-050`).
+
+### 11.5 Threshold localisation — the rule, fixed now
+
+**K\*** ≔ the smallest K ∈ {3,…,8} with Holm-adjusted p ≤ 0.05 **and** |Δ_K| ≥ 0.5·|Δ_{K=8}| = **3.308**.
+The full 8-point profile (1, 2, 3, 4, 5, 6, 7, 8) is reported regardless of where K\* lands.
+
+Declared shapes, so the answer is not chosen after the fact:
+* **STEP** — Δ stays < 20 % of Δ₈ up to some K, then jumps above 50 % in one rung.
+* **RAMP** — Δ grows monotonically with no single rung contributing > 40 % of the total rise.
+* **NEITHER** — non-monotone; reported as such, with no mechanism claimed.
+
+### 11.6 Which tokens enter the cut — descriptive only
+
+For each K the tokens newly cut between K−1 and K are recovered **offline and deterministically**
+from the tokenizer over the same 380 prompts, and reported: decoded text, position from end, and
+frequency across prompts. ⛔ **No semantic claim is made from this.** If a hypothesis emerges
+(punctuation, instruction verb, the codeword, response scaffold), it requires its **own**
+preregistered subset intervention against a dose-matched subset. ⛔ Sweeping subsets until one is
+significant is forbidden (`PR-13` class).
+
+### 11.7 VOID / kill
+
+* Any arm with `control_draw_match_ratio` < 1.000 on any row, or realised `n` ≠ 380, or non-uniform
+  domain loss ⇒ **that rung's pair is VOID, not reinterpreted**.
+* Any arm whose realised `keys_masked` differs between demo and its control ⇒ VOID (dose broken).
+* If the K=8 rung re-run in this session does not reproduce the inherited −6.616 within the
+  measured session tolerance, ⚠ the **whole ladder is suspect** and is reported as such rather than
+  merged with the inherited rungs.
+* ⛔ **The ladder does not extend past 8.** K > 32 is a closed route (§1.2).
+
+---
+
+## §12 — SUBMISSION RECORD — `PR-031` extraction (2026-09-05)
+
+### 12.1 Smoke first, as the repo's own rule requires
+
+| field | value |
+|---|---|
+| job | **853482**, `killable`, node **n-802** |
+| result | **COMPLETED 0:0**, elapsed **00:13:03** |
+| argsfile | `runargs/bombspec/smoke_button_bomb.txt` (`--limit 300`) |
+| run dir | `outputs/boombness/extract_boombness/bombspec_smoke_20260905_211415_2908244` |
+| failures | `{}` — **zero** occurrence-resolution failures on 300 rows |
+| cache | `cache/final_occurrence_reps.pt` — 300 stacks, `[9, 4096]` float16, layers 6–14, `position codeword_last`, convention `block_L == hidden_states[L+1]` |
+
+✅ **The `C-047` failure mode is verified absent.** The job log's own header reads
+`=== boombness: extract_boombness.py ===` and echoes the full argsfile, so the wrapper read
+`BOOMB_SCRIPT` and `BOOMB_ARGSFILE` as intended rather than silently falling back to its default.
+⇒ **Standing rule adopted for this phase: read the `boombness:` line and the `args:` line of every
+new job's log before trusting any artifact from it.** That check costs nothing and is exactly what
+would have caught `C-047` in minutes instead of after ~1.8 GPU-h.
+
+⚠ n-802 spent **3:42 of the 13:03 on the first two weight shards** (75 s and 117 s) before the
+loader recovered to >5 it/s. This is `DCS-040`'s pattern: the actionable signal is the progress bar
+moving, not the node identity.
+
+### 12.2 Production arms — 6 submitted, cap respected
+
+| job | bank | argsfile |
+|---|---|---|
+| **853582** | `button_bomb` | `runargs/bombspec/bs_button_bomb.txt` |
+| **853583** | `button_knife` | `runargs/bombspec/bs_button_knife.txt` |
+| **853584** | `button_gun` | `runargs/bombspec/bs_button_gun.txt` |
+| **853585** | `button_club` | `runargs/bombspec/bs_button_club.txt` |
+| **853586** | `basket_bomb` | `runargs/bombspec/bs_basket_bomb.txt` |
+| **853587** | `basket_knife` | `runargs/bombspec/bs_basket_knife.txt` |
+
+`basket_gun` and `basket_club` are **held back** to respect the **6 concurrent GPU job** cap and are
+submitted as slots free. All eight argsfiles are identical except for the bank path and the tag,
+verified mechanically (bank↔tag matched, no quote-guard violations).
+
+⛔ These are **readout/extraction only** — no generation, no judge, no knockout. They cannot answer
+`PR-031`; they only produce the hidden states it consumes.
