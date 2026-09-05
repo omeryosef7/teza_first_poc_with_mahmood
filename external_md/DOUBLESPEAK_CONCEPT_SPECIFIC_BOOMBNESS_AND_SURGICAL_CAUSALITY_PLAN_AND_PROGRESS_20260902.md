@@ -6710,3 +6710,46 @@ Run `cds116` cell C forced-choice baseline (1160 rows). Measure the installation
 
 ⚠ **This cannot rescue `B-009`** — different endpoint, different question. `B-009` is `NOT RESOLVED`
 regardless.
+
+### `R-064` — ⛔ `PR-027` **STOPS at Stage 1**, and the ceiling is a property of the **PARADIGM**
+
+First forced-choice readout on `cds116`, 1160 rows, cell C. ⛔ **Predictor only — no knockout, no
+control, no contrast was computed**, exactly as `PR-027` declared for this branch.
+
+| | mean | sd | **< 1.0** | **≤ 0.25** |
+|---|---|---|---|---|
+| all 116 domains | 0.903 | 0.194 | **46** | **4** |
+| the **OLD 38** | 0.908 | 0.197 | 13 | 1 |
+| the **NEW 78** | **0.900** | **0.192** | 33 | 3 |
+
+⛔ **GATE FAILS.** Subrange **46 > 40** ✅, but domains at ≤ 0.25 are **4**, not the **> 5** required.
+⚠ `PR-027` set the second criterion because `R-055` showed a large subrange is worthless when it sits
+entirely in the upper range — and that is precisely the situation again. ⇒ **Stage 2 does not run.**
+
+✅ **And the Stage-1 result is worth more than Stage 2 would have been.** The **78 new domains** were
+authored independently, in a different session, across nine sectors chosen for diversity — and they
+reproduce the original 38's installation distribution **almost exactly**: mean **0.900 vs 0.908**,
+sd **0.192 vs 0.197**. ⇒ **Tripling domain diversity changed nothing.**
+
+⇒ ⛔ **`R-052`'s ceiling is a property of the PARADIGM, not of the particular 38 domains.** That is a
+strictly stronger claim than `R-052` could make, and `PR-027`'s failing branch is what licenses it.
+
+⚠ **Quantified, so the next design does not have to rediscover it.** The rate of low-installation
+domains is **4/116 = 3.45 %**, essentially identical in both halves. ⇒ To obtain a usable
+low-installation subrange the paradigm needs:
+
+| target | domains required |
+|---|---|
+| 6 | ~**174** |
+| 20 | ~**580** |
+| 40 | ~**1 160** |
+
+⛔ At ~13.5 GPU-hours per 116 domains for the behavioural endpoint, a 580-domain design is **~68
+GPU-hours** of generation before judging. ⚠ That is not obviously prohibitive — but it is a decision
+about scale, and it should be made knowing the yield is **3.45 %** rather than hoping better domains
+will help. **They do not.**
+
+⇒ **Standing position, unchanged and now better founded.** The within-subrange gradient has failed at
+**13, 30, 33** domains (`R-055`) and cannot be tested at **116** because the low tail does not exist.
+⛔ `R-055`'s categorical reading stands, and the route to overturning it is **~580 domains**, not a
+better bank.

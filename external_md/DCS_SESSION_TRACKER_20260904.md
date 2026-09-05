@@ -92,6 +92,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 21 | `C-038` | ⚠ **over-corrected, then over-corrected back** — `R-061` trusted the adjusted end, `R-062` trusted the face end, and on `d3` the face value lies **outside** `R-063`'s interval. Checking a two-ended bracket **one end at a time** makes the other look right by contrast | ✅ |
 | 22 | — | `B-009` reaches the **figure**, the last surface: behavioural status rewritten from *direction only* to `NOT RESOLVED` + the control-spread constraint. Width guard caught **9** over-wide lines; card font 7.0→6.2 after read-back showed overflow | ✅ |
 | 23 | `A-013` | closing audit: **15/15** preregistrations resolved (by resolving-entry heading, not a regex window — `A-005`'s failure recurred on the first try); **all 5 verifiers + 7 pytest** re-run and green | ✅ |
+| 24 | `PR-027`/`R-064` | ⛔ gate **FAILS** (46>40 ✅ but only **4** domains ≤0.25, need >5) ⇒ **stops at Stage 1**. ✅ The 78 NEW domains reproduce the old 38's installation distribution almost exactly (0.900/0.192 vs 0.908/0.197) ⇒ **the ceiling is a PARADIGM property**; low-installation yield **3.45 %**, so ~580 domains would be needed | ✅ |
 
 ## Live
 
