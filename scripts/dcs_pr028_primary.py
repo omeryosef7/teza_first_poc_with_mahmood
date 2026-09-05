@@ -146,6 +146,26 @@ def main():
             sys.exit("   refusing; pass --allow-mixed-sessions to override deliberately")
         print("   ⚠ OVERRIDDEN: results below are session-confounded and must say so.")
 
+    # ⛔ PROMPT IDENTITY, NOT JUST PROMPT ID. C-037c rebuilt the bank mid-phase and the prompt_ids
+    # were IDENTICAL across builds while the content differed -- so pairing on prompt_id alone
+    # would have compared a baseline from bank A against knockouts from bank B and passed every
+    # other guard. prompt_sha16 is the content hash; it must agree on every paired row.
+    def _shas(jd):
+        out = {}
+        for line in open(os.path.join(jd, "results.jsonl")):
+            r = json.loads(line)
+            out[r["prompt_id"]] = r.get("prompt_sha16")
+        return out
+    ref_shas = _shas(kod)
+    for nm, jd in [("baseline", based)] + [(nm, newest(pat)) for nm, pat
+                                           in zip([c[0] for c in ctrls], a.controls)]:
+        if jd is None:
+            continue
+        bad = [i for i in ids if _shas(jd).get(i) != ref_shas.get(i)]
+        if bad:
+            sys.exit(f"⛔ {nm}: {len(bad)} paired rows differ in prompt_sha16 from KO-3 -- these "
+                     f"arms were built from DIFFERENT bank contents (C-037c). Refusing.")
+
     ids = sorted(ids)
     n = len(ids)
     if n == 0: sys.exit("no common prompt ids across the arms")

@@ -7134,3 +7134,28 @@ value. ⚠ The tag-prefix guard would have caught it, but a guard that fires on 
 design that expects to be wrong. Defaults now name the **`p28j_`** re-judge; before it exists they
 refuse with *"KO-3 or baseline judged arm not found"*, and the K=3 dry run remains reproducible by
 naming the old session explicitly (re-verified: δ **−0.0391**, t(2) = −2.293, **p = 0.1488**).
+
+### `A-015` — the five new arms are **comparable** to `PR-024`'s, and the check is now a guard
+
+The `PR-028` primary **pairs arms on `prompt_id`**. ⛔ That is not sufficient on its own: `C-037c`
+rebuilt the bank mid-phase and the `prompt_id`s were **identical across builds** while the content
+differed — a baseline from bank A against knockouts from bank B would have passed every other guard
+in the phase. ⇒ Checked before spending the judge budget, not after.
+
+✅ **Measured on all five partial arms** (431-759 of 1160 rows): same bank file
+(`boombness_prompt_bank_cds116_button_bomb.jsonl`, sha16 `de4818a6c08fd6ad`), every `prompt_id`
+present in the `PR-024` reference, and **0 `prompt_sha16` mismatches** on every shared row
+(611 / 611, 611 / 611, 515 / 515, 759 / 759, 431 / 431). ⇒ The pairing is sound and the `C-037c`
+class is excluded.
+
+✅ **Promoted from a one-off check to a guard.** `dcs_pr028_primary.py` now asserts `prompt_sha16`
+agreement against `KO-3` on every paired row of every arm and **exits** naming the offending arm and
+count. ⇒ The next person to point it at a mismatched bank cannot get a number out of it.
+
+⚠ **My first attempt to test that guard was not a test.** I pointed it at a Qwen arm expecting a
+refusal; it passed — correctly, because `dcsqwb` runs the **same `cds116` bank**, so identical
+`prompt_sha16` is the right answer there. ⛔ A different *model* is not a different *prompt corpus*.
+✅ Re-tested with a synthetic arm carrying **40 corrupted `prompt_sha16` rows**: it refuses with
+*"40 paired rows differ in prompt_sha16 from KO-3"*, and still passes the genuinely-matched K=3 set
+(δ **−0.0391**, p **0.1488**, unchanged). ⇒ The guard is confirmed to fire **and** confirmed not to
+fire spuriously — a guard seen passing only is not evidence.
