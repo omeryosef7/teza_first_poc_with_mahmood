@@ -6560,3 +6560,41 @@ both ends.
 ⚠ **Limits.** ⛔ `c` is measured on the **controls**, and `KO-3`'s own conversion is **unobservable** —
 there is no arm where `KO-3` refuses. Applying the controls' `c` to `KO-3` is an **assumption**, and
 the interval is only as good as it. ⛔ Correlational, same-data, and **not** independent of `R-061`.
+
+### `R-063` — `PR-026`: the calibrated interval is **entirely negative for all three**, and **half the width**
+
+Applying the **measured** conversion `c ∈ [0.057, 0.350]` (`R-062`) to **both** arms — debiting
+`KO-3` for the 144 refusals it removed, crediting each control for the refusals it induced:
+
+| control | face (`c` = 0) | `PR-014` adjusted (`c` = 1.000) | **calibrated interval** |
+|---|---|---|---|
+| `d1` | −50 | −183 | **[−146.9, −65.8]** |
+| `d2` | −77 | −112 | **[−139.6, −87.2]** |
+| `d3` | **−9** | −209 | **[−129.4, −28.6]** |
+
+✅ **First declared branch: entirely negative for all three, across the whole measured range.** ⇒ The
+direction does not depend on the conversion rate, once the rate is applied **symmetrically**.
+
+✅ **And it is a much tighter statement.** On `d3` — the control that made the face-value comparison
+look like nothing — the `PR-014` bracket spans **200 rows** [−209, −9]; the calibrated interval spans
+**101** [−129.4, −28.6]. ⇒ **Half the width**, and its least-favourable end is **−28.6** rather than
+**−9**.
+
+⚠ **The reason `d3`'s face value looked like nothing is now visible, and it is my error in the other
+direction.** `R-062` established that the `PR-014` bracket **over-credits the control**. The face
+value has the opposite fault: it **fails to debit `KO-3`** for having cleared **all 144** baseline
+refusals, which by the same measured mechanism gifted it attacks it would not otherwise have had.
+⇒ ⛔ **`PR-014`'s bracket is wrong at BOTH ends** — over-crediting one arm at one end, under-debiting
+the other at the other. The calibrated interval is the first version that treats the two arms
+consistently.
+
+⛔ **AND IT CHANGES NOTHING ABOUT THE VERDICT.** `PR-026` said so before computing and I am held to
+it: `R-061`'s primary is the **domain sign test at the independence unit**, it came back **1 of 3**,
+and ⛔ **`B-009` remains NOT RESOLVED**. This is a **secondary** that describes the direction more
+honestly; it does not certify it. ⛔ Anyone quoting `[−129, −29]` as the result rather than
+`p = 0.175 / 0.0096 / 0.466` is quoting the wrong number.
+
+⚠ **The assumption this rests on, restated because it is load-bearing.** `c` is measured on the
+**controls**; `KO-3`'s own conversion is **unobservable** — there is no arm in which `KO-3` refuses.
+Applying the controls' `c` to `KO-3` is an assumption, not a measurement, and the interval is only as
+good as it.

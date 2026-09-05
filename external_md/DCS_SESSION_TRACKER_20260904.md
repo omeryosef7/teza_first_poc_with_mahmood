@@ -88,6 +88,7 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 19 | — | `R-061` propagated: summary `B-009` entry, `LIVE STATUS` blockers + two new must-not-say entries, and the **collaborator ask rewritten** — the question is no longer *more domains or a second concept* | ✅ |
 | 20 | `PR-025`/`R-062` | the refusal confound is **regular in direction** (pooled ρ **−0.378**, consistent in all 3 controls, survives the RTM restriction) but ⛔ **not in magnitude** — conversion **0.057–0.350** vs the bracket's assumed **1.000** | ✅ |
 | 20 | — | ⚠ `R-062` **corrects `R-061`'s own emphasis**; the overstated *"bracket is unanimous"* framing was propagated out of the log into **both** deliverables, incl. the collaborator draft, and is now fixed there too | ✅ |
+| 21 | `PR-026`/`R-063` | calibrated bracket applied **symmetrically**: **[−147,−66] / [−140,−87] / [−129,−29]**, entirely negative for all three and **half the width**. ⛔ `PR-014`'s bracket is wrong at **both** ends. Verdict unchanged: `B-009` **NOT RESOLVED** | ✅ |
 
 ## Live
 
