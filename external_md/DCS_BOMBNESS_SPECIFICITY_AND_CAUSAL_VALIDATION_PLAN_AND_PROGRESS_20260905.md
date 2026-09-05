@@ -1483,3 +1483,82 @@ it, which is precisely why it was preregistered.
 named, and the repair is a **new preregistration** (`PR-035`) with the exclusion defined
 mechanically from prompt text alone — not from any outcome — and with the null control required to
 **pass** before the primary is read at all.
+
+---
+
+## §23 — `DCS-PR-035` — the specificity primary, re-specified after the void
+
+Replaces `PR-031`/`031a`/`031c`/`031d` as the operative preregistration. Everything they fixed that
+is not named below **carries over unchanged**.
+
+### 23.1 The exclusion, defined from prompt text alone
+
+⛔ **EXCLUDE every row whose `full_prompt` contains its bank's concept word**, matched on word
+boundaries, case-insensitively.
+
+* This is **mechanical and pre-outcome**: it reads the prompt, never a hidden state, never an
+  accuracy. It would select exactly the same rows whatever the result.
+* It removes the violation of `P2`'s design invariant directly, rather than removing a template
+  family by name and hoping that is the same set.
+* Realised, verified before any re-run: **12 of 240** primary cell-`C` rows and **12 of 36**
+  `n_examples = 0` rows per bank, **all** in `bank_block = strength`, **identical counts in all
+  three primary banks** — so the exclusion is balanced across classes and cannot itself induce a
+  class asymmetry.
+* Cell `A`/`B` rows are filtered by the same rule.
+* ⚠ Both the excluded and retained counts are reported per bank, per cell, per block, always.
+
+### 23.2 The null control is now BLOCKING, in code
+
+* `n_examples = 0`, cell `C`, same classes, same folds.
+* Tested by the **same group-permutation null as the primary** (not against a theoretical chance
+  level, per `PR-031d`).
+* ⛔ **If the null's one-sided permutation p ≤ 0.05, the analyzer EXITS NON-ZERO and prints no
+  primary.** `VOIDS_RUN` being a dead flag is what let a fired null coexist with a headline; the
+  fix is a hard exit, not a JSON field.
+* ⛔ The undeclared `+0.15` slack is **removed**. There is no tolerance band.
+
+### 23.3 Class-set completeness is asserted
+
+⛔ The analyzer **refuses to run** unless every declared class has a `DONE.json`-complete run.
+A missing bank must never silently become a smaller problem scored against the larger chance level.
+
+### 23.4 Instruments that `PR-031` declared and the code never implemented
+
+All now required, and the analyzer emits an explicit verdict rather than leaving flags unread:
+
+1. **`P1`** — train on cell `B` (+`A` as `literal`), test on cell `C`. Declared in `PR-031a` §7.2 and
+   **never computed**; the (P1, P2) interpretation table was therefore unfillable.
+2. **Cell `F` (benign remap, `bicycle`)** as a fifth class — `A-020` §8.5. The only comparator that
+   separates bomb from **generic remapping** rather than from another weapon.
+3. **Leave-one-`bank_block`-out** — the held-out template-family test (`PR-031c` §9.2).
+4. **`P2` train-fold capability gate** (`PR-031a` §7.6).
+5. **The three `R-078` §21.2 contrasts**: 3-way; 2-way bomb-vs-knife (gun excluded, per the
+   `PR-034` PARTIAL verdict); and **knife-vs-club with bomb absent** — the control that decides
+   whether a positive is concept identity or remapping **strength**.
+6. **`DONE.json` guard** in the specificity analyzer.
+
+### 23.5 Verdict rule, fixed now
+
+`POSITIVE` requires **all** of:
+1. null control passes (permutation p > 0.05 at `n_examples = 0`);
+2. class set complete;
+3. `P2` 3-way permutation p ≤ 0.05 **in the above-chance direction**;
+4. the **knife-vs-club control** also clears p ≤ 0.05 — else the result is attributed to remapping
+   **strength** and ⛔ may **not** be called Bombness (`R-078` §21.2);
+5. the length-only control does **not** match the probe.
+
+Anything else is `NEGATIVE`, `CANNOT ANSWER`, or `VOID`, printed explicitly by the analyzer.
+
+### 23.6 What has NOT changed
+
+Population (8 banks, `semantic_one_word`, `n_examples ∈ {4,8}`), position, band L6–14, the
+leave-one-domain-out folds, layer/C selection on cell `B`, **domain as the independence unit (n = 6)**,
+the group-permutation null and its whole-group construction, `club`'s pre-outcome exclusion from the
+primary, and `R-078`'s installation gate with its PARTIAL verdict on `gun`.
+
+### 23.7 ⚠ Standing on the record
+
+This is the **second** void-and-respecify in this phase (`C-048` on the gate, `C-049` here). Both
+were caught by preregistered controls or by adversarial review, neither by the analysis returning
+something implausible. ⛔ If `PR-035`'s null control fires again, the honest conclusion is that this
+population cannot support the test and the answer is `CANNOT ANSWER` — **not** a third respecification.
