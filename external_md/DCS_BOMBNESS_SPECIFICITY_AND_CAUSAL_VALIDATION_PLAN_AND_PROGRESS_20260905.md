@@ -1240,3 +1240,56 @@ found that out by running it. ⛔ The correct reading is **not** "the gate was t
 declared. But the sequence is on the record so a reader can judge it, and if `PR-034` also fails,
 ⛔ **there is no third instrument**: the honest conclusion would be that installation cannot be
 established on the 6-domain `main` banks, and `PR-031` returns `CANNOT ANSWER`.
+
+---
+
+## §19 — `DCS-041` (operational) — my job monitor reported ALL SIX JOBS COMPLETE while five were still pending
+
+**Worth recording because it is the phase's recurring failure shape, in a new place.**
+
+A background monitor was armed over the six extraction jobs with:
+
+```sh
+JOBS="853582 853583 ..."
+for j in $JOBS; do  st=$(sacct -j $j ...) ; ... done
+```
+
+⛔ **The login shell here is `zsh`, which does NOT word-split unquoted variables.** `$JOBS` expanded
+as a *single* token, so the loop ran **once** with `j` = the whole string, `sacct -j "853582 853583 …"`
+returned one state, and the monitor concluded:
+
+> `JOB 853582 853583 853584 853585 853586 853587 COMPLETED | NOSCRIPT | NOLOG`
+> `ALL 6 EXTRACTION JOBS TERMINAL — rep caches present: 2`
+
+Ground truth at that moment: **one** job COMPLETED, **five** still `PENDING`.
+
+⚠ Note what saved it: the monitor also printed `caches present: 2`, which contradicted its own
+"all six terminal" headline, and the per-job fields read `NOSCRIPT | NOLOG`. ⇒ **The check that
+disagreed with the summary is what exposed the summary.** Had the monitor reported only its verdict,
+this phase would have proceeded to analyse a 1-of-6 population believing it was complete —
+precisely `C-047`'s shape (a job that "looked clean and was not") in the monitoring layer instead of
+the submission layer.
+
+**Fixes adopted:**
+1. ⛔ Never iterate a job list from an unquoted variable in this environment. Use a **literal**
+   `for j in 853646 853647 …`.
+2. Every monitor prints a **corroborating artifact count** beside its verdict, so a false verdict
+   contradicts itself visibly.
+3. The analyzers no longer trust job state at all: `load_results` requires **`DONE.json`** (§17.3).
+
+### 19.1 Extraction arms — realised state
+
+| job | bank | state | failures |
+|---|---|---|---|
+| 853582 | `button_bomb` | COMPLETED 00:07:57 | `{}` |
+| 853583 | `button_knife` | COMPLETED | `{}` |
+| 853584 | `button_gun` | COMPLETED | `{}` |
+| 853585 | `button_club` | COMPLETED | `{}` |
+| 853586 | `basket_bomb` | COMPLETED | `{}` |
+| 853587 | `basket_knife` | pending |  |
+| 853650 | `basket_gun` | submitted |  |
+| — | `basket_club` | not yet submitted (6-job cap) |  |
+
+✅ All completed arms verified: identical config signature, **2736 rep stacks each**, all 1296
+analysed rows present, **zero** occurrence-resolution failures, and each job's log header confirms
+`extract_boombness.py` ran with its own argsfile (the `C-047` check, §12.1).
