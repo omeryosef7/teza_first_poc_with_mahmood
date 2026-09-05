@@ -6360,3 +6360,79 @@ a bug against the script that computes the phase's primary.
 check disagrees with a long-standing artifact, suspect the check first.** The fixed simulator is kept
 in the verifier with the trap described in its docstring, rather than silently corrected, so the next
 reader sees why it draws one `p_d` per domain.
+
+### `R-061` — ⛔ **`PR-024` / `B-009`: NOT RESOLVED.** 1 of 3 on the declared conjunction — and the reason is now measurable
+
+All five arms judged in one invocation, **1160 rows each**, `judge_model_used` = `openai/gpt-4o-mini`
+on **every one of 5 800 rows**, `judge_status` `ok` on all, **116 domains at exactly 10 rows each**.
+
+| arm | ASR | attacks | refused | induced |
+|---|---|---|---|---|
+| baseline | 0.3422 | 397 | 144 | — |
+| **`KO-3`** | **0.2741** | **318** | **0** | — |
+| `d1` | 0.3172 | 368 | 277 | **+133** |
+| `d2` | 0.3405 | 395 | 179 | **+35** |
+| `d3` | 0.2819 | 327 | 344 | **+200** |
+
+**PRIMARY — paired domain sign test over 116 domains, `KO-3` vs each control:**
+
+| | domains | k_inf | **p** | |
+|---|---|---|---|---|
+| vs `d1` | 39 / **53** | 92 | **0.175** | ⛔ |
+| vs `d2` | 34 / **60** | 94 | **0.0096** | ✅ |
+| vs `d3` | 42 / **50** | 92 | **0.466** | ⛔ |
+
+⛔ **`PR-024a` required significance against ALL THREE. It is 1 of 3, so `B-009` is NOT RESOLVED**, and
+⛔ **the `d2` p-value may not be quoted alone** — that is precisely `R-016`'s error, which `C-016`
+corrected. All three appear together or none does.
+
+⚠ **`PR-024a`'s power clause bites, and not the way I expected.** The **realised ICC is 0.089–0.112**,
+*better* than the 0.158 `R-056` assumed — but the realised **base rate** is **0.32**, not the
+**0.403** taken from `R-016`. Recomputed at the realised values, power is:
+
+| control | observed effect | power | outcome |
+|---|---|---|---|
+| `d2` | **19.5 %** | **0.65** | significant ✅ |
+| `d1` | 13.6 % | **0.35** | not significant |
+| `d3` | **2.8 %** | **0.05** | not significant |
+
+⇒ ⚠ **The pattern of results is exactly what the realised power predicts.** ⛔ So `B-009` failed its
+own bar **not** because 116 domains were too few — that part worked — but because I sized the design
+on a baseline ASR that came in **20 % lower** than `R-016`'s.
+
+✅ **And the reason the three controls disagree is now measurable, which is the genuinely new
+result.** They induce **wildly different refusal loads** — `+35`, `+133`, `+200` — and refusal
+suppresses attack, so each control's ASR is depressed by a different amount:
+
+> **the between-control spread (0.0586) EXCEEDS the KO-3-vs-mean-control effect (0.0391).**
+
+⇒ ⛔ **The comparator draw matters more than the intervention does.** Selecting one control — which
+`R-016` did, and which `C-023` showed was justified by a number measured on the wrong outcome — would
+have returned anything from **p = 0.0096 to p = 0.47** from the same data. ⚠ `PR-024a`'s conjunction
+is the reason that is visible rather than hidden.
+
+✅ **The secondary bracket corrects exactly this, and it is unanimous.** Crediting each control with
+its induced refusals as would-be attacks:
+
+| | face `KO−ctrl` | adjusted | bracket |
+|---|---|---|---|
+| `d1` | −50 (p = 0.023) | **−183** | entirely negative |
+| `d2` | −77 (p = 0.0004) | **−112** | entirely negative |
+| `d3` | −9 (p = 0.707) | **−209** | entirely negative |
+
+⇒ ✅ **0 of 3 brackets straddle zero**, and the adjusted values (−112 … −209) are far more consistent
+than the face values (−9 … −77). ⚠ Under **no** assumption in the declared range does any control show
+`KO-3` attacking **more**. ⛔ But `PR-024a` binds the verdict to the **primary**, and the bracket
+"carries no conclusion the primary does not". ⇒ It is **supporting evidence for the direction**, not a
+resolution.
+
+✅ **Refusal replicates, judge-free:** `KO-3` removes **all 144** baseline refusals (144 → 0) — the
+third model-scope pair to show it (`R-012b`, `R-026`, here). And it does so while attacks **fall**
+397 → 318, which is the `R-048` phenomenon at 116 domains: removing refusal does not buy attacks.
+
+⇒ **Standing position on `B-009`.** ⛔ The behavioural effect is **still not certified at its own
+independence unit**, now for a *measured* reason rather than an unknown one: the effect is real and
+directionally unanimous, the design is adequately powered **only** where the control happens not to
+induce heavy refusal, and **control-to-control variance is larger than the effect**. ⚠ More domains
+will not fix that. ⇒ What would: **controls matched on induced refusal**, which `C-023` showed cannot
+be selected post hoc and which no existing draw provides.

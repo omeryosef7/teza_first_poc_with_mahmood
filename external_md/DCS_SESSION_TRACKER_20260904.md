@@ -83,12 +83,14 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 16 | `DCS-039` | `C-037c`'s wreckage was still on disk under the **live tag prefix**, incl. **53 rows from the pre-fix bank**. Every selector verified to filter on `DONE.json`; dirs **quarantined**, not deleted | ✅ |
 | 17 | `DCS-038`→held | `850796` started **on its own** at 23:39, as predicted when I declined the 30-min stall rule. Queued behind my own work, not fair-share | ✅ |
 | 17 | `R-060` | **dose matched to the digit** — `keys_masked` 522/378/846 identical for `KO-3`, `d1`, `d2`. Recorded with **nothing judged** | ✅ |
+| 18 | `A-012` | self review of `cds_domain_test.py` **before** it computed the primary: 5/5. ⚠ Check 4 failed on **my own simulator** — third audit this phase to fail on its instrument | ✅ |
+| 18 | `R-061` | ⛔ **`B-009` NOT RESOLVED** — 1 of 3 on the declared conjunction (p = 0.175 / **0.0096** / 0.466). ⚠ Realised power 0.35/0.65/0.05 explains the pattern; **control spread 0.0586 > effect 0.0391** | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `PR-024a` five behavioural arms, 116 domains × 10 rows | 850792–850796 | ⏳ 3 running / 2 queued, ~2.7 h each |
+| *(nothing in flight)* | — | `B-009` complete: 5 arms generated, judged and analysed |
 
 ## Standing rules being followed this session
 
