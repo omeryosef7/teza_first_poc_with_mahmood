@@ -7060,3 +7060,47 @@ shrinkage ratio and refuses to let `c_hi` be read alone; the calibrated result i
 **range across `c`, together with the shrinkage**. ⚠ This strengthens `PR-028`'s existing
 "significant raw but not calibrated ⇒ `CONFOUND-LIMITED`" branch: the converse — calibrated-only
 significance — is now explicitly **not** sufficient.
+
+## `PR-028b` — PREREGISTRATION: judge **all ten** arms in one invocation, and re-judge the five that already have labels
+
+⚠ **Frozen while 852000-852004 were still generating (162-398 of 1160 rows).**
+
+⛔ **The problem, which is structural and not a matter of taste.** `PR-028`'s primary compares `KO-3`
+against the control **distribution**. `KO-3`, the baseline and controls `d1`-`d3` were judged in
+session **`p24j`**; the five new controls would be judged now. A judge-session offset would then land
+on **5 of 8 controls but not on `KO-3`**, biasing the primary by **(5/8)·offset**.
+
+⚠ **And I cannot tell how big that is, because the two existing estimates disagree by 8×:**
+
+| source | offset | population |
+|---|---|---|
+| `judge_session_drift.json` | **0.0020** | AdvBench, 13 sessions, ASR 0.065 |
+| `R-049` | **0.0158** (net +6 / 380) | this bank, one re-judge |
+
+⇒ **3 % to 25 % of the −0.0391 effect.** ⚠ `R-049`'s net is only **1.41 sd** from zero under
+symmetric flipping (√18 = 4.24 on 18 observed flips), so it is not even **established** as an offset
+rather than noise — but "probably noise" is not a number I am willing to subtract a headline with.
+⇒ **Remove the term rather than assume it away.** All ten arms are judged in **one** invocation, at
+one seed, under one pinned model, with tag prefix `p28j_`.
+
+✅ **The re-judge is not pure cost — it settles the disagreement above.** Comparing the new labels
+against `p24j`'s on the **five** arms that have both gives a direct, in-population drift estimate on
+**5 × 1160 byte-identical completions** — far more data than either existing figure, on the bank that
+matters. ⇒ Recorded as its own result whatever the primary does.
+
+**Cost:** 10 arms × 1160 rows ≈ **$2.50**. ⛔ On `cpu-killable`, never the login node.
+
+✅ **The guard is in the analyzer, not in my memory.** `dcs_pr028_primary.py` now derives each arm's
+judge invocation from its **tag prefix** — exact, not a timestamp heuristic — and **refuses to run**
+if the arms span more than one, requiring an explicit `--allow-mixed-sessions` to override. ✅ Tested
+both ways: it passes on a single-prefix set and refuses on a genuinely mixed one.
+
+⚠ **Two silent-failure bugs found in the pre-flight while testing it, both mine, both in the same
+line.** `judge_pr028_all10.sh` refuses to judge anything unless **all ten** arms carry `DONE.json`
+and exactly 1160 rows — but under `set -e -o pipefail` the `pick` helper returned non-zero **twice
+over**: `ls -d` fails on an arm directory that does not exist yet, **and** the `while` loop exits
+non-zero whenever its last `[ -f DONE.json ]` is false — which is *precisely* the case the
+pre-flight exists to detect. Either killed the script at `dir=$(pick …)` **before** the `REFUSING`
+message printed, yielding **exit 1 with no reason**. ⇒ ⛔ A pre-flight whose only job is to name the
+unready arm, failing without naming it. Fixed by wrapping the whole pipeline; verified it now prints
+`REFUSING dcsp28_s20260905_d1: no run dir carrying DONE.json`.

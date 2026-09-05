@@ -104,6 +104,8 @@ def main():
         "outputs/boombness/judge/p28j_dcsp28_s20260906_d1_*",
         "outputs/boombness/judge/p28j_dcsp28_s20260906_d2_*"])
     ap.add_argument("--dose", type=int, default=4)
+    ap.add_argument("--allow-mixed-sessions", action="store_true",
+                    help="run even though arms come from different judge invocations (PR-028b)")
     ap.add_argument("--out", default="outputs/boombness/dcs_analysis/dcs_pr028_primary.json")
     a = ap.parse_args()
 
@@ -124,6 +126,22 @@ def main():
     # change the denominator of the others.
     ids = set(ko) & set(base)
     for _, c in ctrls: ids &= set(c)
+    # ⛔ JUDGE-SESSION CONSISTENCY. Arms judged in different invocations carry a session offset,
+    # and KO-3 sits on one side of it. With 5 of 8 controls in a second session the bias on the
+    # primary is (5/8)*offset -- between 3% and 25% of the effect depending on which drift
+    # estimate holds (judge_session_drift.json 0.0020 vs R-049 0.0158). The tag PREFIX identifies
+    # the invocation exactly, so this is a check, not a heuristic on timestamps.
+    def _prefix(name): return name.split("_", 1)[0]
+    prefixes = {_prefix(os.path.basename(kod)), _prefix(os.path.basename(based))}
+    prefixes |= {_prefix(nm) for nm, _ in ctrls}
+    if len(prefixes) > 1:
+        print(f"\n⛔ ARMS SPAN {len(prefixes)} JUDGE INVOCATIONS: {sorted(prefixes)}")
+        print("   KO-3 and the controls must come from ONE judging session, or a session offset "
+              "lands directly on the primary (PR-028b). Re-judge all arms together.")
+        if not a.allow_mixed_sessions:
+            sys.exit("   refusing; pass --allow-mixed-sessions to override deliberately")
+        print("   ⚠ OVERRIDDEN: results below are session-confounded and must say so.")
+
     ids = sorted(ids)
     n = len(ids)
     if n == 0: sys.exit("no common prompt ids across the arms")
@@ -212,7 +230,9 @@ def main():
                "controls": rows_out, "raw": raw, "calibrated": cal,
                "c_range": [C_LO, C_HI], "verdict": verdict,
                "calibrated_sd_shrinkage_c_hi_over_raw": shrink,
-               "is_preregistered_K": len(ctrls) == 8},
+               "is_preregistered_K": len(ctrls) == 8,
+               "judge_invocations": sorted(prefixes),
+               "single_judge_session": len(prefixes) == 1},
               open(os.path.join(REPO, a.out), "w"), indent=1)
     print(f"\n-> {a.out}")
 
