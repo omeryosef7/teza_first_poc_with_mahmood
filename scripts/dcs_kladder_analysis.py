@@ -153,10 +153,43 @@ def main():
             sign_test=dict(st), sign_summary=st.summary(), per_domain=delta)
 
     # ---- Holm over the FIVE NEW rungs only (§11.4); inherited rungs are context, not family
-    new = [k for k in res["rungs"] if res["rungs"][k]["is_new"]]
+    # ---- §11.7 SESSION ANCHOR (C-052). "If the K=8 rung re-run in this session does not reproduce
+    # the inherited -6.616 ... the whole ladder is suspect." dcsk8r is that re-run: same argsfile as
+    # dcsk8 but for --arm/--tag, and --arm does not feed the control-draw seed, so the draw is
+    # bit-identical and this is a reproduction test rather than a new draw. It is NOT a rung: it
+    # enters no Holm family and cannot be K*.
+    ad, ac = find_arm(a.root, "dcsk8r_C_demo"), find_arm(a.root, "dcsk8r_C_ctrl")
+    if ad and ac:
+        adm, acm = load_arm(ad), load_arm(ac)
+        if adm is not None and acm is not None:
+            aD, aC = contract(adm, "k8r_demo"), contract(acm, "k8r_ctrl")
+            adelta, _, _ = per_domain_delta(adm, acm)
+            av = [adelta[d] for d in sorted(adelta)]
+            anchor = dict(arm_dirs=dict(demo=os.path.basename(ad), ctrl=os.path.basename(ac)),
+                          n_domains=len(av), mean_delta=float(np.mean(av)),
+                          contracts=dict(demo=aD, ctrl=aC),
+                          dose_matched=bool(aD["keys_masked_median"] == aC["keys_masked_median"]),
+                          inherited_K8=res["rungs"].get("K8", {}).get("mean_delta"))
+            inh = anchor["inherited_K8"]
+            if inh is not None:
+                anchor["abs_diff_vs_inherited"] = abs(anchor["mean_delta"] - inh)
+                anchor["rel_diff_vs_inherited"] = abs(anchor["mean_delta"] - inh) / abs(inh)
+            res["session_anchor_K8_rerun"] = anchor
+    else:
+        res["session_anchor_K8_rerun"] = "MISSING — §11.7's kill criterion is UNEVALUABLE"
+
+    # C-052: the family is the FIVE DECLARED rungs, not the rungs that happen to be present.
+    # Building it from what is on disk makes Holm anti-conservative exactly when a rung is missing
+    # or VOID -- the case where caution matters most -- and can flip K*. A missing rung enters the
+    # family at p = 1.0, which costs the present rungs their full declared correction.
+    new = [f"K{K}" for K in NEW_RUNGS if f"K{K}" in res["rungs"]]
+    absent = [f"K{K}" for K in NEW_RUNGS if f"K{K}" not in res["rungs"]]
+    res["holm_family"] = dict(declared=[f"K{K}" for K in NEW_RUNGS], present=new, absent=absent,
+                              m=len(NEW_RUNGS))
     if new:
-        ps = [res["rungs"][k]["sign_test"]["p"] for k in new]
-        for k, adj in zip(new, holm(ps)):
+        ps = [res["rungs"][k]["sign_test"]["p"] for k in new] + [1.0] * len(absent)
+        adjs = holm(ps)
+        for k, adj in zip(new, adjs[:len(new)]):
             res["rungs"][k]["holm_p"] = adj
             res["rungs"][k]["significant"] = bool(adj <= ALPHA)
 
@@ -182,15 +215,29 @@ def main():
         res["profile"] = prof
         if len(prof) >= 3 and k8:
             fr = [abs(v) / abs(k8) for _, v in prof]
-            rises = [fr[i + 1] - fr[i] for i in range(len(fr) - 1)]
-            jumped = any(fr[i] < STEP_LOW and fr[i + 1] > STEP_HIGH for i in range(len(fr) - 1))
-            monotone = all(r >= -0.05 for r in rises)
-            if jumped:
+            ks = [K for K, _ in prof]
+            # C-052: "one rung" means ADJACENT VALUES OF K, not adjacent entries of whatever list
+            # is present. With a gap in the ladder the old test read K=3 -> K=8 as a single-rung
+            # jump and would have declared STEP from a hole in the data.
+            adj_i = [i for i in range(len(ks) - 1) if ks[i + 1] - ks[i] == 1]
+            res["shape_adjacent_pairs"] = [(ks[i], ks[i + 1]) for i in adj_i]
+            res["shape_gaps"] = [(ks[i], ks[i + 1]) for i in range(len(ks) - 1)
+                                 if ks[i + 1] - ks[i] != 1]
+            rises = [fr[i + 1] - fr[i] for i in adj_i]
+            jumped = any(fr[i] < STEP_LOW and fr[i + 1] > STEP_HIGH for i in adj_i)
+            monotone = all(fr[i + 1] - fr[i] >= -0.05 for i in range(len(fr) - 1))
+            if len(ks) < 8 or res["shape_gaps"]:
+                res["shape"] = ("INCOMPLETE — the 8-point profile PR-032 §11.5 requires is not on "
+                                f"disk; present K = {ks}, gaps {res['shape_gaps']}. No shape called.")
+            elif jumped:
                 res["shape"] = "STEP"
-            elif monotone and max(rises) <= RAMP_MAX_SINGLE:
+            elif monotone and rises and max(rises) <= RAMP_MAX_SINGLE:
                 res["shape"] = "RAMP"
             else:
                 res["shape"] = "NEITHER — reported as such, no mechanism claimed"
+            res["largest_single_rung_rise"] = (
+                max(((ks[i], ks[i + 1], fr[i + 1] - fr[i]) for i in adj_i),
+                    key=lambda t: t[2]) if adj_i else None)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=1, default=str)
