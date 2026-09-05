@@ -443,3 +443,79 @@ prose.
 * Any realised row count ≠ 288 per bank ⇒ the comparison is **void, not reinterpreted**.
 * NEGATIVE outcome ⇒ **stop the specificity route.** Do not add instruments to rescue it. Proceed to
   S4 (the K = 3–7 ladder), which is independent of this result.
+
+---
+
+## §7 — `DCS-PR-031a` — PRE-DATA AMENDMENT: a second, co-primary probe that the surface token cannot solve
+
+**Written 2026-09-05 21:0x IDT, still before any forward pass.** Nothing has been run. This is a
+**correction of the design, made before data**, and it is appended rather than edited into §6.
+
+### 7.1 The defect in `PR-031` as written
+
+`PR-031` trains the probe on cell `B`, where the surface token **is** the concept word (`bomb`,
+`knife`, `gun`, `club`), and tests on cell `C`, where the surface token is the codeword (`button` /
+`basket`) in **all four** banks. The probe can therefore succeed at training time by learning
+**token identity** and nothing else. If it then fails on cell `C`, that failure is ambiguous:
+
+* it might mean the codeword's state carries no concept information (the scientific negative), **or**
+* it might mean only that surface-token identity dominates the representation, and the transfer was
+  never possible for lexical reasons (an instrument limitation).
+
+⛔ `PR-031`'s capability gate (§6.6) does **not** catch this, because it tests `B → B`, which is
+exactly the direction token identity solves for free. A `B → C` failure would have been reported as
+NEGATIVE when it may be VOID.
+
+### 7.2 The repair: `P2`, a within-`C` probe
+
+Add a **co-primary** instrument on the same population, same position, same folds:
+
+**`P2` — train on cell `C` of TRAIN domains, test on cell `C` of the HELD-OUT domain**
+(leave-one-domain-out, 4 concept classes).
+
+In `P2` the surface token is `button` (or `basket`) in **every row of every class**, so token
+identity carries **zero** information and cannot solve the task. The only thing that differs between
+classes is what the demonstrations installed.
+
+The two probes are renamed and both are primary:
+
+| id | train | test | what a PASS means | what token identity can do |
+|---|---|---|---|---|
+| **`P1`** (was §6.3) | cell `B` (+`A` as `literal`) | cell `C` | the codeword's state is concept-specific **in the same code** the model uses for the explicit concept word | solves training; cannot solve the test |
+| **`P2`** (new) | cell `C`, train domains | cell `C`, held-out domain | the codeword's state carries **which** concept was installed | **nothing** — constant across classes |
+
+### 7.3 The interpretation table, fixed before the data
+
+| `P1` | `P2` | verdict |
+|---|---|---|
+| pass | pass | **Concept-specific, and in the explicit-concept code.** The strongest available positive. |
+| fail | pass | The state distinguishes concepts but **not in the explicit-concept code** — a remapping-internal code. A real positive for specificity, and a genuine limit on `P1`'s framing. |
+| fail | fail | **NEGATIVE.** The state carries remapping, not concept identity. This is the valuable negative `PR-031` §6.7 already committed to accepting. |
+| pass | fail | **Incoherent ⇒ suspect a bug**, not a finding. Halt and audit before reporting anything. |
+
+⚠ `P2` is the more **sensitive** test; `P1` is the more **interpretable** one. Neither is dropped
+after the fact, and ⛔ neither may be quoted without the other.
+
+### 7.4 What `P2` can be confounded by, stated now
+
+`P2` cannot be solved by surface identity, but it **can** be solved by **topical content of the
+demonstrations** leaking into the codeword position (bomb demos speak of evacuation and shells;
+knife demos of rusty blades in crates). ⚠ Therefore a `P2` pass licenses
+*"the codeword's state carries concept-distinguishing information"* and ⛔ **not**
+*"the model has built an amodal BOMB concept"*. The distinction between concept and topical context
+is **not resolved by this design** and will be stated as a limitation whatever the outcome.
+`P1` is what discriminates the two, which is why both are kept.
+
+### 7.5 The null control becomes much sharper
+
+At `n_examples = 0` there are no demonstrations, so the cell-`C` rows of all four concept banks are
+**byte-identical**. ⇒ `P2` at `n_examples = 0` **must** return chance (0.25). This is a far stronger
+null than `PR-031` §6.8(1), because it targets the exact instrument whose pass would be the headline.
+⛔ A `P2` accuracy above chance at `n_examples = 0` **voids the entire run**, no exceptions.
+
+### 7.6 Unchanged
+
+Population, position, layers, folds, layer-selection rule, independence unit (**domain, n = 6**),
+statistic (two-sided sign test), α = 0.05, attainable floor **0.031**, the single-composite-contrast
+rule from §4, the capability gate for `P1`, and all four declared outcomes. `P2` carries its own
+capability gate: its **train-fold** 4-way accuracy must exceed 0.25, else the fit failed.
