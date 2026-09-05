@@ -7320,3 +7320,39 @@ falls back to the prefix only when `RUNMETA` is absent (and says so).
 
 ⚠ Built and destroyed in an isolated mirror, `git status` verified clean afterwards (`DCS-039`,
 `C-041`).
+
+### `R-070` — ⚠ the eight draws are **almost** independent, and the residual dependence makes the primary **mildly anti-conservative**
+
+`PR-028`'s primary treats the K = 8 control ASRs as **independent draws from one population** and uses
+their sd as the error term. ⚠ That is an assumption, it had not been tested, and `R-066` means the
+actual masked positions of every draw are on disk — so it is testable **before** the primary runs.
+
+✅ **The reassuring part.** Over **11,200** arm-pair × row comparisons: **0 identical draws**, and
+mean pairwise overlap **25.54** against **25.06** for a simulated null of 8 genuinely independent
+draws from the **same pool at the same k**. ⇒ Nothing like the collision this log records once before,
+where four arms drew the same direction.
+
+⛔ **But the excess is systematic, not noise:** ratio **1.0193**, difference **+0.483 ± 0.097** =
+**5.0 SE**. ⇒ The draws are **slightly positively dependent**.
+
+✅ **The null is correctly specified, which is the first thing I checked** — a mis-sized simulated
+pool would manufacture exactly this excess. My reconstructed pool matches the **recorded** `n_pool`
+**exactly**: difference 0 on **300/300** rows, min 0, max 0. ⇒ The dependence is a property of the
+draws, not of my simulator. ⚠ Worth stating because three instruments have failed their own audit
+this phase (`A-012`, `C-034`, `C-040`).
+
+**Plausible mechanism, not verified:** the draw seed is **per arm**, not per row —
+`nondemo_draw_seed(control_seed, idx)` — and the arms' seeds are close deterministic offsets
+(28180678 … 28180683). Nearby seeds re-instantiated per row can leave a common structure. ⛔ Recorded
+as a hypothesis; not investigated, because it does not change what follows.
+
+⚠ **DECLARED BEFORE THE RESULT — the direction of the bias.** Positive dependence among the K = 8
+controls means their sd **understates** the population sd, so the SE is too small, `t` too large and
+**p too small**. ⇒ The primary is **mildly anti-conservative**, and the effect is in the direction
+that makes a positive easier, not harder. ⛔ A *significant* result therefore carries this caveat; a
+**null** is unaffected by it and if anything strengthened.
+
+⚠ **Magnitude not quantified in ASR terms.** A 1.9 % excess in position overlap is a **weak proxy**
+for correlation between arm-level ASRs, and I am not converting one into the other. ⇒ Reported as a
+declared, bounded-direction limitation rather than a correction — ⛔ inventing a correction factor
+from an unmapped proxy is how `PR-014`'s bracket went wrong at both ends (`C-038`).
