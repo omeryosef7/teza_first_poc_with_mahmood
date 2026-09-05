@@ -397,3 +397,74 @@ pending, and **not** a scientific judgement to be made unilaterally. ⚠ This wa
 too, but it is a **different** question from `B-013`'s match-ratio persistence: `R-066` closes the
 persistence half on behavioural arms and says **nothing** about whether `results.jsonl` gets tracked,
 which remains open.
+
+---
+
+# ADDENDUM — 2026-09-06 (session `teza-…-ad`)
+
+Appended, not rewritten. Authoritative log:
+`external_md/DCS_BOMBNESS_SPECIFICITY_AND_CAUSAL_VALIDATION_PLAN_AND_PROGRESS_20260905.md` §24–§37.
+
+## What is NEW and VERIFIED
+
+**`R-079`/`R-080`/`R-081` — the surgical row ladder resolves.** Independently verified by two
+verifiers that do not import the producer (`A-026`, `C-055`).
+
+⛔ **First, a correction to how the ladder was ever described.** `--knockout-scope query_last_k_rows`
+counts back from the end of the **whole chat-templated prompt**. Over all 380 prompts, zero
+variation, the token newly cut at each rung is:
+
+| K | 1 | 2 | 3 | 4 | 5 | **6** | **7** | 8 |
+|---|---|---|---|---|---|---|---|---|
+| token | `\n\n` | `<\|end_header_id\|>` | `assistant` | `<\|start_header_id\|>` | `<\|eot_id\|>` | **`?`** | **`' bomb'`** | `' a'` |
+| % of Δ₈ | 0.2 | 0.2 | 1.1 | 0.3 | 0.3 | **7.6** | **90.5** | 100 |
+
+⇒ **Rungs 1–5 never touch the question.** ⛔ *"K=1 and K=2 show one or two query rows don't matter"*
+is **retired**; the licensed statement is only about the generation-header scaffold.
+
+**`shape = STEP`, `K* = 7`.** Predicted in writing (`PR-036`) **before** K=4…7 were read; all three
+predictions held. The `§11.7` anchor reproduced the inherited K=8 value to **all 16 digits**
+(`absolute_difference = 0`) on a different node three days later.
+
+⛔ **The bound, declared before the numbers:** the K=7 token is `' bomb'` **only because
+`semantic_forced_choice` names both options.** So this is not yet a claim about the codeword.
+
+## `R-083` — the disambiguating follow-up: **CANNOT ANSWER**, by 1.9 points
+
+On `semantic_one_word` (question never names the concept; codeword sits at K=10), adding the
+codeword's row takes the effect **46.8 % → 94.8 %**, **6/6 domains at the exact attainable p-floor
+(0.03125)** — against a preregistered bar of **50 %**, measured at **48.1 %**. ⛔ Formally
+`CANNOT ANSWER`. **The bar was not moved.** ⛔ Not a null.
+
+⚠ **`C-054`** — this corrects one of our own: `KO-1`'s null ("the final codeword row's demonstration
+attention is not necessary") is **true on forced-choice and false here**, where that row alone carries
+**32.7 %**. ⛔ `KO-1` and `R-082` are now **bounded to their template**.
+
+## Novelty — narrowed twice more (`A-025`)
+
+* ⛔ **arXiv 2504.00132** (Bakalova et al.) already ablates demonstration→query edges in ICL.
+  *"First to causally intervene on that pathway"* is **FALSE**. Surviving intersection: we **zero
+  attention** in a **layer band** (they patch counterfactual K/V at all layers/heads), on a
+  **semantic-remapping attack**, with an **`intervention × condition` interaction**, and we **vary
+  query-row count** — ⛔ they have **no analogue of the K ladder**.
+* ⚠ **arXiv 2609.02438** (2026-09-02, **four days old**) publishes the representation/behaviour
+  dissociation framing in `PR-035`'s design shape. Not a scoop; ⛔ but that framing is now a
+  **citation, not a contribution**. → `Q-002`, a positioning decision for Omer and Matan.
+
+## Method failures worth carrying forward
+
+1. ⛔ **A verifier that iterates the producer's own key set can be made VACUOUS by the producer**
+   (`C-055`). Seven corruptions passed the first K-ladder verifier, including one making the anchor's
+   `difference = 0` true by construction. Closed by a second, row-level verifier; 8/8 mutations now
+   caught by their designated check.
+2. ⛔ **A verifier that recomputes only the control does not verify the headline** (`C-056`). A
+   fabricated `POSITIVE` passed all 14 `PR-035` checks. Closed by recomputing the primary itself.
+3. ⚠ **A correctness fix can make an analysis 30× more expensive** (`DCS-043`) — `C-053`'s
+   selection-on-cell-`B` repair turned the primary into a ~15–20 k-fit job that had to move to SLURM.
+
+## Status
+
+⚠ **`PR-035` (concept-specific Bombness) is RUNNING** as job `854173`. ⛔ **No Bombness verdict
+exists**, and none may be stated until it returns **and** `scripts/dcs_verify_pr035_primary.py`
+recomputes its headline.
+
