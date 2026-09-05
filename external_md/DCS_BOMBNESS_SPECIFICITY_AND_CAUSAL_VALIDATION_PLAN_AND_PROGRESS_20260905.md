@@ -2497,3 +2497,96 @@ Six wasted GPU arms (~25 min). ⚠ Recorded rather than hidden. The pre-flight d
 **before** generation on all six, so nothing partial was written and no arm produced a number that
 could have been mistaken for a result.
 
+
+---
+
+## §34 — `DCS-R-083` — `PR-037`: **CANNOT ANSWER**, by 1.9 percentage points. And it went against my own prediction.
+
+Analyzer `scripts/dcs_pr037_analysis.py` at `b74f8603`, committed before these arms were read.
+Zero VOID arms; `keys_masked = 2754` identical in all six arms (the `PR-037a` §33.2 assumption,
+**asserted in code, not trusted**); baseline contract clean (168 rows, 6 domains, uniform).
+
+### 34.1 The profile
+
+Baseline (unintervened) `semantic_logodds` = **+3.3696** — the mapping is installed.
+
+| arm | rows cut | `semantic_logodds` | Δ vs baseline | % of Δ_ref | `option_mass` |
+|---|---|---|---|---|---|
+| baseline | 0 | **+3.3696** | — | — | 0.294 |
+| K=5 (all scaffold) | 180 | +2.5960 | −0.774 | **12.1 %** | 0.280 |
+| K=6 (`?`) | 216 | +2.5997 | −0.770 | 12.1 % | 0.282 |
+| `ko1` (codeword row ALONE) | 36 | +1.2841 | −2.086 | **32.7 %** | 0.478 |
+| K=9 (`' actually'`) | 324 | +0.3845 | −2.985 | **46.8 %** | **0.105** |
+| **K=10 (`' button'`)** | 360 | **−2.6859** | **−6.056** | **94.8 %** | 0.243 |
+| `ref` (whole query span) | 1008 | −3.0151 | −6.385 | 100 % | 0.227 |
+
+### 34.2 ⛔ THE PREREGISTERED VERDICT: `CANNOT ANSWER`
+
+| primary (§30.5) | value |
+|---|---|
+| `inc(d) = Δ_K10(d) − Δ_K9(d)` | **−3.0704** |
+| domains negative | **6/6** |
+| sign test p | **0.03125** = **exactly the attainable floor** |
+| magnitude gain `|Δ_K10| − |Δ_K9|` | **+3.0704 = 48.1 % of |Δ_ref|** |
+| §30.6 `CODEWORD-ROW` bar | ≥ **50 %** |
+
+⇒ ⛔ **`CANNOT ANSWER`. It missed the `CODEWORD-ROW` bar by 1.9 percentage points.**
+
+⚠ **I am not moving the bar.** The significance test is as strong as this design can produce — 6/6
+domains at the exact floor — and the magnitude still fell short of a threshold I fixed in §30.6
+*before the arms existed*. ⛔ *"48.1 % is essentially 50 %"* is precisely the goalpost move this
+phase's rules forbid, and §5.12 already lists *"treating `CANNOT ANSWER` as a null"* as closed —
+⛔ **this is also not a null.** The honest statement is: **the data point strongly toward the
+codeword row and do not clear the bar set to conclude it.**
+
+### 34.3 ⛔ `C-054` — MY OWN PREDICTION IN `R-082` WAS WRONG, AND `R-082` MUST BE BOUNDED
+
+`R-082` §31.1 concluded *"the codeword's own query rows are not necessary for this effect"* and
+§31.1 read `H-codeword` as **disfavoured**. On this template it is **the best-supported reading**:
+
+* the `ko1` arm — `target_surface_row_only`, the codeword row **alone**, 36 rows — moves the readout
+  **32.7 %** of the way to the full-query effect. ⛔ **That is not a null.**
+* `R-005`/`R-006` found `KO-1` a **null** (+0.278, 25+/13−, p = 0.073).
+
+⇒ ⛔ **`R-082`'s claim, and `KO-1`'s null, are hereby BOUNDED TO THEIR TEMPLATE.** Neither may be
+stated unqualified again. ⚠ The correct statement is now:
+
+> On `semantic_forced_choice` the effect saturates **before** the codeword row is cut, so the
+> codeword row adds nothing there. On `semantic_one_word` the codeword row **alone** carries a third
+> of the effect, and adding it to K=9 carries half again.
+
+⚠ These are **not contradictory measurements** — they are the same ladder logic on templates whose
+content words sit in different places. But ⛔ the *sentence* "the codeword row is not necessary" is
+false as a general claim and was written on one template's evidence.
+
+### 34.4 ⚠ A post-hoc account, labelled as post-hoc and NOT adopted
+
+Both templates saturate exactly when the cut reaches **the question's semantically loaded content
+word** — `' bomb'` at K=7 in forced-choice (82.9 pp in one rung), `' button'` at K=10 here (48.1 pp).
+⚠ That is a tidy unifying story and ⛔ **it is post-hoc pattern-matching across two experiments, has
+no preregistration, and is NOT adopted.** It would need its own design — e.g. a template where the
+content word sits at a *third* position — and ⛔ it must not be written as a finding.
+
+### 34.5 ⛔ Three limitations that bound everything above
+
+1. **No dose-matched control exists on this population** (`B-018` §33). ⇒ This is a *localisation
+   within the query span*, conditional on `R-080`'s dose-matched demonstration-key result. ⛔ It is
+   **not** independent evidence that demonstration keys specifically matter.
+2. ⛔ **The floor is not zero.** K=5 — masking the same 2754 keys from rows that are **all chat
+   scaffold** — already moves the readout **12.1 %**. It passes the §33.3 VOID bar (< 20 %), but it
+   means ~12 % of every number in §34.1 is *masking per se*. ⚠ Rescaling the primary against a
+   12.1 % floor would lift it above 50 % — ⛔ **that rescaling is not preregistered, is not applied,
+   and does not change the verdict.** It is recorded only so that a future reader cannot present it
+   as a discovery.
+3. ⚠ **`option_mass` at K=9 is 0.105** — the rung on the *left* side of the primary increment is
+   measured where the two forced-choice options hold **one tenth** of the model's probability. That
+   is `B-006`/`R-050`'s standing limit at its worst in this phase, and it cuts **against**
+   over-reading the increment.
+
+### 34.6 What is next, and what is not
+
+⛔ **`PR-037` is CLOSED at `CANNOT ANSWER`.** It is not re-run with a lower bar, and no rung among
+K=5, 6, 9 may be promoted after the fact (§30.7). ⚠ The scientifically live question it leaves —
+whether saturation tracks *the content word* or *depth into the query* — is a **new** experiment
+needing its own preregistration, and it is the second item now queued behind `PR-035`.
+
