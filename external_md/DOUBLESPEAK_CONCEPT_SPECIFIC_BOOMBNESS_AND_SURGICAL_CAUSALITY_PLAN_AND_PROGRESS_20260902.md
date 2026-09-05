@@ -7747,3 +7747,48 @@ it? ⇒ This does **not** depend on the primary clearing α.
 * **Realised sd materially above 0.0783** ⇒ even K = 32 is under-sized, and the control population is
   wider than two independent estimates now say; ⇒ stop adding draws, the comparator itself is the
   problem.
+
+### `C-046` — adversarial re-audit of the phase's own headline claims: **4 of 6 did not survive as stated**
+
+A 14-agent synthesis re-read this log end-to-end, put six load-bearing claims to **refutation** agents
+(instructed to default to *refuted* if a number could not be verified, and to read the **last**
+mention of an id, since this log corrects itself later), and designed the continuation.
+⇒ **2 survived unchanged; 4 were corrected.** ⚠ Each was verified **by hand against the log** before
+being acted on — agent output is not authority.
+
+⛔ **1. "Qwen replicates at ~3× the Llama magnitude" is NOT CLAIMABLE.** ✅ Verified: `R-023`
+**pre-declared this exact comparison invalid**, three paragraphs before it was made — Qwen's mean is
+~2× Llama's over a **more bimodal** distribution (`frac>0` **0.813 vs 0.942**), so *"a mean-only
+comparison across models would be misleading"* (log line 2817). ⚠ The doses are also **unmatched**:
+Qwen **91,872** mask cells over **11** layers against Llama's **66,816** over **9** — on a quantity
+`R-022` showed is **steeply dose-graded** (K=1 −0.01 → K=32 −8.08). ⇒ The replication is **in sign
+and in the identical 1+/37− domain split**; the magnitude ratio is not a result. ⛔ It had reached
+**three** surfaces (summary ×2, collaborator draft) — all corrected.
+✅ Also fixed: the Qwen DiD rests on **6** arms (2 cells × baseline/KO-3/control — verified on disk),
+not the **4** the summary claimed.
+
+⛔ **2. "The effect is absent above layer 14" OVERSTATES.** ✅ Verified at log line 3345: band
+**24–31** gives **+0.754 with 38+/0− domains, Holm p = 2.9e-11** — the **most consistent sign pattern
+in the entire sweep** — and line 3359 already flagged it as *"an unexpected consistent positive"*.
+⇒ What is absent above 14 is the **destructive** effect; the region is **not inert**. ⚠ Compounding:
+the above-14 bands are **9L/8L** and **not dose-comparable** to the equal-dose 5L bands (`DCS-028`
+required that label), and `R-037` showed the inertness is **bank-specific**. ⇒ Corrected in the
+summary and in the figure's panel-E title.
+
+⚠ **3. `R-037`** — core finding stands; the claim as surveyed misstated its population.
+⚠ **4. `R-002` + `R-050`** — no retraction exists, but the two legs run on **different banks** with
+**different independence units** (`R-002` on the x2fit banks over 30 families; only `R-050` is cds38 /
+38 domains) and were being quoted under one scope line.
+
+⇒ ⚠ **The pattern is uniform and worth naming: none of the four was a wrong number.** Every figure
+checked out. All four were **scope, unit, or comparability** errors — claims true of one population,
+dose or bank, stated as if general. That is this phase's dominant failure mode (`C-027`, `R-066`,
+`R-067`, `R-074` are the same class) and it survived **four** prior audits (`A-005`, `A-009`,
+`A-013`, `A-014`) because those checked *whether the numbers were right*, not *what population they
+were about*.
+
+⇒ **Continuation plan written to `external_md/DCS_CONTINUATION_PLAN_20260905.md`** — 9 ranked
+experiments with costs, independence units and kill criteria. ⚠ The top two cost **0 GPU-h**:
+(#1) split-half reliability of the draw offset, which **gates** whether the K ladder is even
+well-specified, and (#2) the representation-vs-behaviour dissociation as a **positive** result at the
+domain unit, which rides `PR-029`'s already-committed spend. ⛔ Neither is preregistered yet.

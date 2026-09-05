@@ -25,8 +25,12 @@ must not be sent.
 >
 > **The causal path is the solid result.** Blocking the query span from attending to the
 > demonstrations takes the forced-choice reading of `button` from **+5.19 → −2.76** log-odds against
-> a dose-matched control that does nothing; it **replicates on `basket`** and **on Qwen3-14B at ~3×**
-> the magnitude, and it is **remapping-specific**. ⚠ Same caveat as before, on the figure itself: all
+> a dose-matched control that does nothing; it **replicates on `basket`** and **on Qwen3-14B** — in
+> sign and in the identical 1+/37− domain split — and it is **remapping-specific**. ⚠ I previously
+> wrote "at ~3× the magnitude"; **that ratio is not claimable** and our own gate said so before we
+> measured it: Qwen's baseline is ~2× Llama's over a more bimodal distribution, and the two runs are
+> not dose-matched (91,872 mask cells over 11 layers vs 66,816 over 9). Cross-family in **direction**,
+> not in size. ⚠ Same caveat as before, on the figure itself: all
 > three share the 1+/37− sign pattern, so those identical p-values are **one pattern replicated, not
 > three independent tests**. We also now have the missing reference cell: with the codeword present
 > but **no** remapping installed, the reading sits at **−5.50**, so the demonstrations move it

@@ -254,7 +254,7 @@ def main():
                  ha="center", va="center", fontsize=7.6, color="0.35", style="italic")
     axE.set_xlabel("layer band cut from the demonstrations")
     axE.set_ylabel("Δ semantic_logodds vs dose-matched control")
-    axE.set_title("E  Layer profile: DISTRIBUTED over 0-14, peak at 10-14, absent above 14\n"
+    axE.set_title("E  Layer profile: DESTRUCTIVE effect over 0-14, peak 10-14; above 14 NOT inert\n"
                   "KO-3 · each band vs its OWN dose-matched control · n=380 · 38 domains\n"
                   "⚠ shaded bands are equal-width/equal-dose; the two right-hand bands are 9L/8L "
                   "(coarse sweep) and are NOT dose-comparable to them",
