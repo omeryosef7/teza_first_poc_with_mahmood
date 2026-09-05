@@ -719,3 +719,81 @@ cell `F` as the benign-remap class; the mandatory length-only control (pre-data 
 `{bomb, knife, gun}` on cell `C` (chance **1/3**), leave-one-domain-out, two-sided sign test over the
 6 per-domain values of `(acc_d − 1/3)`. 4-way with `club` and 4-way with cell `F` are pre-declared
 secondaries.
+
+---
+
+## §10 — `DCS-PR-031d` — PRE-DATA AMENDMENT: the theoretical chance level is the WRONG null, and I found out by testing the analyzer before running it
+
+**Written 2026-09-05, before any real hidden state existed** (the smoke extraction 853482 was still
+loading weights). This amendment exists because the analyzer's own self-test **failed in a way that
+would have produced a false headline**.
+
+### 10.1 What the self-test found
+
+The analyzer was run on synthetic data with **no signal at all** — pure Gaussian noise, no class
+structure. The preregistered primary statistic (per-domain held-out accuracy vs the theoretical
+chance of 1/3, two-sided sign test over 6 domains) returned:
+
+> `6/6 negative, p = 0.0312 — SIGNIFICANT (attainable floor 0.0312 …)`
+
+⛔ **On data containing nothing.** The cause is not a coding bug — I checked, and per-domain accuracy
+simply swings widely (0.278, 0.472, …) because each held-out domain has few rows and the pipeline
+contains a **selection step**. Finite-sample held-out accuracy under such a pipeline does **not**
+centre on `1/k`, and a test that assumes it does will fire on noise in whichever direction the
+draw happens to lean.
+
+### 10.2 Measured false-positive rates
+
+12 synthetic null replicates, full decision rule end to end:
+
+| rule | false positives at α = 0.05 |
+|---|---|
+| sign test vs the theoretical 1/3 (**as preregistered in §6.5**) | **1/12 = 0.083** |
+| group-permutation null (**this amendment**) | **0/12 = 0.000** |
+
+⚠ 12 replicates bound the rate only loosely (0/12 is consistent with anything up to ≈0.26). The
+permutation test's validity does **not** rest on this count — it rests on exchangeability, which is
+exact by construction. The calibration is a sanity check, not a proof, and is reported as such.
+
+### 10.3 The replacement primary inference
+
+**Group-permutation null.** Within each domain, the three concept **groups** are relabelled by a
+random permutation of `{bomb, knife, gun}`; the entire leave-one-domain-out pipeline is re-run; the
+mean held-out accuracy is recorded. `p` is one-sided in the predicted direction (higher accuracy),
+`p = (1 + #{null ≥ observed}) / (1 + n_perm)`, with `n_perm = 200` ⇒ floor **0.00498**.
+
+⛔ **Whole groups, never individual rows.** Every row of one concept in one domain shares a
+demonstration pool, so permuting individual rows would destroy a correlation the real data carries
+and build an **anti-conservative** null. Permuting groups preserves that structure exactly and
+tests only whether the concept **label** is attached to the state.
+
+✅ The `(layer, C)` picks are held fixed across permutations, and this is legitimate rather than a
+shortcut: `PR-031` §6.3 selects them on **cell `B`**, which the permutation does not touch, so the
+selection is invariant under the null being tested. This is a direct benefit of having preregistered
+an independent selection cell.
+
+### 10.4 Consequences for §4's power constraint
+
+The attainable floor of the **primary** is now **0.005**, not 0.031. ⇒ §4's finding — that a
+Holm-corrected family of three hard-negative comparisons would be *uninformative by construction* —
+**no longer binds the primary**. ⚠ I am nonetheless **keeping the single composite comparator
+`mean(knife, gun)` as the primary**, exactly as committed in §8.8, because switching to the
+three-comparison family now that the floor allows it would be choosing a statistic for its power
+after having committed to another — the shopping this phase forbids. The three per-concept contrasts
+are upgraded from *structurally incapable* to **informative reported secondaries**, Holm-corrected.
+
+### 10.5 What is retained
+
+The two-sided sign test against 1/3 is **still computed and still reported**, now explicitly labelled
+as the **miscalibrated** statistic, with these measured false-positive rates beside it. It is not
+deleted: the phase's record should show what was preregistered and why it was replaced.
+
+⛔ **A significant result in the BELOW-chance direction is not a positive.** Direction is part of the
+declared rule: `POSITIVE` requires observed mean accuracy **above** the permutation null mean.
+
+### 10.6 Analyzer provenance
+
+`scripts/dcs_bombness_specificity.py`, committed **before** any real hidden state was read. It
+carries `--self-test` (planted-signal detection and noise behaviour) and `--calibrate N`
+(end-to-end false-positive rate). ⛔ If either fails, the analyzer prints
+`SELF-TEST FAILED — analyzer is not trustworthy` and exits non-zero.
