@@ -135,11 +135,24 @@ def main():
     # primary is (5/8)*offset -- between 3% and 25% of the effect depending on which drift
     # estimate holds (judge_session_drift.json 0.0020 vs R-049 0.0158). The tag PREFIX identifies
     # the invocation exactly, so this is a check, not a heuristic on timestamps.
-    def _prefix(name): return name.split("_", 1)[0]
-    prefixes = {_prefix(os.path.basename(kod)), _prefix(os.path.basename(based))}
-    prefixes |= {_prefix(nm) for nm, _ in ctrls}
+    # SESSION IDENTITY COMES FROM `slurm_job_id`, NOT THE TAG PREFIX. The prefix has a blind spot
+    # that matters here: cpu-killable is PREEMPTIBLE, so a killed judging run resubmitted under the
+    # same tag produces a SECOND p28j_ dir per arm, in a genuinely different session, with an
+    # IDENTICAL prefix. Prefix-matching would wave that through -- which is the same bias PR-028b
+    # exists to remove, arriving by a route the first guard could not see. RUNMETA.json records the
+    # job id exactly (verified: all five p24j arms carry 851289). The prefix remains the fallback
+    # only when RUNMETA is absent.
+    def _session(d):
+        rm = os.path.join(d, "RUNMETA.json")
+        if os.path.isfile(rm):
+            jid = json.load(open(rm)).get("slurm_job_id")
+            if jid is not None:
+                return f"job{jid}"
+        return os.path.basename(d).split("_", 1)[0] + "(no-RUNMETA)"
+    prefixes = {_session(kod), _session(based)}
+    prefixes |= {_session(newest(pat)) for pat in a.controls if newest(pat)}
     if len(prefixes) > 1:
-        print(f"\n⛔ ARMS SPAN {len(prefixes)} JUDGE INVOCATIONS: {sorted(prefixes)}")
+        print(f"\n⛔ ARMS SPAN {len(prefixes)} JUDGE SESSIONS: {sorted(prefixes)}")
         print("   KO-3 and the controls must come from ONE judging session, or a session offset "
               "lands directly on the primary (PR-028b). Re-judge all arms together.")
         if not a.allow_mixed_sessions:
@@ -255,7 +268,7 @@ def main():
                "c_range": [C_LO, C_HI], "verdict": verdict,
                "calibrated_sd_shrinkage_c_hi_over_raw": shrink,
                "is_preregistered_K": len(ctrls) == 8,
-               "judge_invocations": sorted(prefixes),
+               "judge_sessions": sorted(prefixes),
                "single_judge_session": len(prefixes) == 1},
               open(os.path.join(REPO, a.out), "w"), indent=1)
     print(f"\n-> {a.out}")

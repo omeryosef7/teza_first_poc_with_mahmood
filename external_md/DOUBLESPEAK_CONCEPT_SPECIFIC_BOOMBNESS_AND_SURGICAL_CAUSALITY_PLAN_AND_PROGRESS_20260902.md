@@ -7292,3 +7292,31 @@ remained *before* submitting 852324. ✅ The selectors would have skipped it any
 filters on `DONE.json` — but `DCS-039`'s lesson is that relying on that is how wreckage survives.
 ⚠ **The pre-flight itself is not at fault and needs no change**; what is missing is a `--check-only`
 flag, which is **not** being added while the real run is live.
+
+### `A-017` — the session guard had a blind spot exactly where `cpu-killable` puts one; now keyed on `slurm_job_id`
+
+✅ **The `B-016` mitigation fired in the live run**, which is the first thing worth recording: job
+852324's log carries `B-016 served snapshot BEFORE: gpt-4o-mini-2024-07-18`, after all **ten** arms
+pre-flighted OK. ⇒ The snapshot bounding is real, not intended.
+
+⛔ **But the session guard as built could not see the failure mode this run is most exposed to.**
+`PR-028b`'s guard keyed on the **tag prefix**. `cpu-killable` is **preemptible**: if 852324 is killed
+at arm 7 and resubmitted, the restart writes a **second** `p28j_` directory per arm, in a genuinely
+different judging session, under an **identical prefix**. ⇒ Prefix-matching waves it through — the
+same cross-session bias `PR-028b` exists to remove, arriving by the one route the first guard was
+blind to. ⚠ Found by asking *"what happens if this job is preempted?"*, not by any failure.
+
+✅ **Fixed with an exact discriminator that was already on disk.** `RUNMETA.json` records
+`slurm_job_id`. Verified it is reliable before relying on it: all five `p24j` arms carry **851289**,
+and the live re-judge carries **852324**. The guard now derives session identity from the job id and
+falls back to the prefix only when `RUNMETA` is absent (and says so).
+
+✅ **Tested on the case that motivated it**, not merely on the easy one:
+* passes the genuinely single-session K=3 set (δ **−0.0391**, p **0.1488**, unchanged);
+* refuses two real judging jobs, naming them — *"ARMS SPAN 2 JUDGE SESSIONS: ['job849653',
+  'job851289']"*;
+* ⛔ **refuses a simulated preemption restart** — same `p24j_` prefix, job **999999** vs **851289** —
+  which the previous guard **would have passed**.
+
+⚠ Built and destroyed in an isolated mirror, `git status` verified clean afterwards (`DCS-039`,
+`C-041`).
