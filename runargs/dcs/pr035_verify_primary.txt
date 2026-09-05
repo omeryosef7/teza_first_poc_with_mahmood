@@ -1,0 +1,1 @@
+scripts/dcs_verify_pr035_primary.py --n-perm 200

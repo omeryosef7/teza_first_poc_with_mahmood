@@ -2753,3 +2753,49 @@ this and its header says so (*"the LOGIN NODE is not a safe place for it"*).
 `cpu-killable`, 16 CPUs, 48 GB, 10 h. ⚠ Recorded because *"a correctness fix made the analysis 30×
 more expensive"* is a real and easily-missed consequence of `C-053`.
 
+
+---
+
+## §38 — `DCS-R-084` (interim) — ✅ THE BLOCKING NULL PASSES. `C-049`'s void is repaired, and demonstrably so.
+
+Job `854173`, first line of output, before any primary is computed:
+
+```
+[null n_examples=0] mean_acc=0.3333 chance=0.3333 above=0/6 perm_p=1.0
+```
+
+⇒ ⛔ **The `n_examples = 0` control no longer fires.** Under `PR-035` §23.2 this is the **blocking**
+gate: had it fired, the analyzer would have exited non-zero and printed no primary. It did not, so
+the run proceeds and the primary will be reported.
+
+### 38.1 Why this is a real result and not just a green light
+
+`C-049` §22.2 measured the *same* control on the *unrepaired* population and got **0.5556, above
+chance in 6/6 domains** — which voided the entire `PR-031` run. It also split that number by leakage:
+
+| `C-049` §22.2, measured independently | |
+|---|---|
+| clean rows | **0.3333** (n = **72**) — exactly chance |
+| leaking rows | **1.0000** (n = 36) — classified perfectly |
+
+Today's retained population, recomputed by me from prompt text: **24 rows per bank × 3 = 72**, with
+**12 excluded per bank** — and the measured accuracy is **0.3333**.
+
+⇒ ✅ **Both the population size and the accuracy reproduce `C-049`'s clean-row split to the digit.**
+The `C-053` §28.1 exclusion removed **exactly** the rows `C-049` identified as leaking and **nothing
+else**. ⚠ That is a much stronger statement than "the null passed": it shows the repair is
+**targeted**, not a population change that happened to move a number.
+
+### 38.2 ⛔ What this does NOT say
+
+⛔ It says **nothing whatever about concept-specificity.** The null control passing means only that
+`A` and `C` at zero demonstrations are no longer distinguishable — i.e. the instrument is not reading
+a lexical artifact. ⛔ The primary is still running and **no Bombness verdict exists.**
+⛔ And it does not retroactively rescue `PR-031`: that run stays **VOID** (§22), and the ≈0.72 figure
+recorded there stays unquotable.
+
+⚠ Two declared instruments remain **absent** from this run and will be reported as absent, not
+quietly dropped: §9.3's **4-way-with-`club` secondary** (deleted by the `C-050` edit) and §21.2(2)'s
+**installation-strength covariate** (§28.9). The analyzer is frozen at `1483f9c1` and was **not**
+edited mid-run to add them.
+
