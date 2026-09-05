@@ -174,7 +174,10 @@ def main():
                                            in zip([c[0] for c in ctrls], a.controls)]:
         if jd is None:
             continue
-        bad = [i for i in ids if _shas(jd).get(i) != ref_shas.get(i)]
+        # HOIST: called inside the comprehension this re-read a 1160-row file 1160 times per
+        # arm -- O(n^2) file I/O, which took the primary from seconds to minutes.
+        shas = _shas(jd)
+        bad = [i for i in ids if shas.get(i) != ref_shas.get(i)]
         if bad:
             sys.exit(f"⛔ {nm}: {len(bad)} paired rows differ in prompt_sha16 from KO-3 -- these "
                      f"arms were built from DIFFERENT bank contents (C-037c). Refusing.")
@@ -245,9 +248,21 @@ def main():
                    "whole measured c range). Does NOT retroactively resolve B-009's conjunction.")
     elif sig_raw and not sig_cal:
         verdict = "CONFOUND-LIMITED -- significant raw, not across the calibrated range (as R-048)."
-    elif raw["k"] >= 8:
+    elif raw["k"] >= 8 and raw["ctrl_sd"] <= 0.0295 * 1.25:
         verdict = ("WELL-POWERED NEGATIVE at K=%d -- the behavioural half is NOT established on "
                    "Llama. Report as prominently as a positive." % raw["k"])
+    elif raw["k"] >= 8:
+        # ⛔ "WELL-POWERED" IS A CLAIM ABOUT REALISED POWER, NOT ABOUT K. PR-028 sized K=8 on a
+        # between-control sd of 0.0295; if the realised sd is far larger the design is underpowered
+        # AT ITS OWN TARGET, which PR-028 declared as a separate branch. Gating the label on K alone
+        # would report a foreseeable null as a well-powered negative -- the same defect fixed for
+        # K<8 in PR-028a, recurring one branch over.
+        mde = 2.365 * raw["se"]
+        verdict = ("UNDERPOWERED NEGATIVE at K=%d -- NOT significant, but the realised "
+                   "between-control sd %.4f is %.2fx the %.4f PR-028 sized on, so the minimum "
+                   "detectable effect is %.4f, LARGER than the -0.0391 the design set out to "
+                   "detect. The behavioural half is NOT ESTABLISHED and this null is NOT evidence "
+                   "of absence." % (raw["k"], raw["ctrl_sd"], raw["ctrl_sd"]/0.0295, 0.0295, mde))
     else:
         # ⛔ "well-powered negative" is a claim about the DESIGN, and it is only true at the K the
         # design was sized for. At K<8 PR-028 predicts p=0.149 even if the effect is real, so a

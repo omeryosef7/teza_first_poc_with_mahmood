@@ -7575,3 +7575,63 @@ printed **alongside** the preregistered binomial, which is retained verbatim and
 no-op'd** on a non-matching anchor first (the edit targeted a function that lives in the *other*
 script); caught by the `NameError` on the next run and redone with assertions on both the anchor and
 the result.
+
+### `R-075` — `PR-028` PRIMARY, K = 8: **UNDERPOWERED NEGATIVE**, and the reason is that the control population is far wilder than K = 3 showed
+
+All ten arms judged in one session (852324), **1160 rows each**, `judge_status` **ok on all 11,600**,
+**one** slurm job ⇒ `A-017`'s session guard passes by construction. ✅ `B-016`'s snapshot bound
+**closed**: served snapshot **identical before and after** (`gpt-4o-mini-2024-07-18`) ⇒ no mid-run
+rotation, so the `p28j` labels are one judge.
+
+**`KO-3` ASR = 0.2526** against the **eight** control draws:
+
+| control | ASR | refusals | induced |
+|---|---|---|---|
+| `d1` | 0.2991 | 277 | +133 |
+| `d2` | 0.3448 | 179 | +35 |
+| `d3` | 0.2672 | 344 | +200 |
+| `s0905_d1` | 0.3190 | 166 | +22 |
+| `s0905_d2` | 0.3741 | 137 | **−7** |
+| `s0905_d3` | 0.2328 | 354 | +210 |
+| `s0906_d1` | **0.1259** | **706** | **+562** |
+| `s0906_d2` | 0.2353 | 281 | +137 |
+
+**PRIMARY (RAW):** control mean **0.2748**, between-control sd **0.0783**, SE 0.0277,
+δ **−0.0222**, **t(7) = −0.80, p = 0.449** ⇒ ⛔ **not significant**.
+
+⛔ **AND IT IS NOT A WELL-POWERED NEGATIVE — `PR-028`'s own declared branch fires instead.** The
+realised between-control sd is **0.0783**, **2.65×** the **0.0295** the K = 8 sizing rested on.
+⇒ minimum detectable effect **0.0655**, which is **larger than the −0.0391 the design set out to
+detect**; realised power against that effect is **0.232**, not the ~0.99 implied by the sized
+p = 0.007. ⇒ **`NOT ESTABLISHED`, and this null is NOT evidence of absence.** ⚠ **80 % power at this
+sd needs K ≈ 24**, three times the arms — ~27 more GPU-h.
+
+⛔ **The cause, and it is the real finding here: dose-matched controls are NOT an exchangeable
+population.** At **identical dose** — `keys_masked` median **522.0** and `match_ratio` **1.000** on
+all eight, verified — induced refusal ranges from **−7 to +562**, a **25-fold** spread, and ASR from
+**0.126 to 0.374**. ✅ The extreme arm was checked for a defect and has none: same dose, same match
+ratio, comparable normalised position range. ⇒ *Which positions you mask* changes behaviour enormously
+at constant dose. ⚠ This **confirms and greatly enlarges** `R-061`'s "between-control spread exceeds
+the effect": at K = 3 that spread read **0.0295**; at K = 8 it is **0.0783**.
+
+**CALIBRATED (`R-063`, applied symmetrically):** `c = 0.057` → δ −0.0372, **p = 0.176**;
+`c = 0.350` → δ −0.1144, p < 0.001. ⛔ **The `c_hi` p is not quotable** and `PR-028a` said so before
+the data: the correction removes **59 %** of the between-control spread (0.0783 → 0.0324), so that
+p is a property of the correction. ⇒ Calibrated-only significance is **explicitly not sufficient**
+⇒ the calibrated arm does **not** rescue the primary.
+
+⇒ **VERDICT: the behavioural half is `NOT ESTABLISHED` on Llama at K = 8, on an underpowered test.**
+⚠ Reported as prominently as a positive, per `PR-028`. ⛔ It does **not** resolve `B-009` (`R-061`'s
+`NOT RESOLVED` stands), and it is **not** "no effect" — the design could not have detected its own
+target effect.
+
+✅ `R-070`'s declared caveat applies in the harmless direction: residual draw dependence makes the
+test **mildly anti-conservative**, which cannot manufacture a null.
+
+⚠ **Two defects found while running it, both mine.**
+* ⛔ The verdict string read **`WELL-POWERED NEGATIVE at K=8`**, gating "well-powered" on **K alone**.
+  That is the **same defect `PR-028a` fixed for K < 8, recurring one branch over** — a foreseeable
+  null reported as a finding. Now gated on the **realised sd**, and it prints the MDE.
+* ⛔ `A-015`'s `prompt_sha16` guard called its loader **inside** the comprehension over ids,
+  re-reading a 1160-row file 1160 times per arm — **O(n²)** I/O that took the primary from **3.6 s**
+  to minutes. Hoisted; ✅ the guard's behaviour is unchanged and still passed on all eight arms.
