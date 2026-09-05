@@ -7792,3 +7792,40 @@ experiments with costs, independence units and kill criteria. ⚠ The top two co
 (#1) split-half reliability of the draw offset, which **gates** whether the K ladder is even
 well-specified, and (#2) the representation-vs-behaviour dissociation as a **positive** result at the
 domain unit, which rides `PR-029`'s already-committed spend. ⛔ Neither is preregistered yet.
+
+## `PR-030` — PREREGISTRATION: is the between-control spread a **stable property of the draw**, or noise? (gates `PR-029`)
+
+⚠ **Analyzer written and committed BEFORE it was run.** `scripts/dcs_draw_offset_reliability.py`.
+Plan item **#1**; **0 GPU-h, $0**, entirely on data already on disk.
+
+⛔ **Why this gates a spend already in flight.** `PR-029` is buying 24 draws to divide `R-075`'s
+between-control sd of **0.0783** by √K. ⚠ **That arithmetic is only valid if the 0.0783 is a real
+per-draw OFFSET.** If it is mostly within-arm sampling noise or judge instability, adding draws does
+not shrink the term that matters and **55 GPU-h is being spent on the wrong quantity**. ⛔ This phase
+has quoted **0.0295 → 0.0586 → 0.0783** as though each were pure draw heterogeneity and has **never
+subtracted the row and judge floors**.
+
+**Three measurements, K = 8 arms × 116 domains:**
+* **(a) Split-half reliability.** Split the 116 domains, compute each arm's ASR on each half,
+  correlate half against half **across arms** (unit = **arm**), Spearman-Brown corrected. **400
+  splits**, reporting the **distribution** — ⛔ never one estimate
+  ([[feedback-one-estimate-is-not-stability]]). Null by permuting arm labels.
+* **(b) Variance decomposition** of the observed between-arm variance into **draw offset +
+  within-arm sampling + judge instability**. ✅ Sampling uses the **design effect** from the measured
+  domain ICC, because rows cluster by domain and `p(1−p)/n` understates it. ✅ Judge variance comes
+  from `R-074`'s re-judge of **byte-identical** generations — the only *empirical* judge floor this
+  phase has — halved in variance because the sd of a **change** is √2 × the per-judging sd.
+* **(c)** `R-070`'s explicitly un-run hypothesis (per-arm rather than per-row seeding) is **deferred**,
+  not folded in here.
+
+⛔ **DECLARED BEFORE LOOKING.**
+* **SB median ρ ≥ 0.70 AND draw fraction ≥ 0.50** ⇒ the offset is **real**, the K ladder is well
+  specified, **`PR-029` proceeds**.
+* **median ρ < 0.50 with a permutation band overlapping the null AND draw fraction < 0.50** ⇒ **no
+  stable draw-level quantity**: ⛔ stop buying draws, **`PR-029` is cancelled mid-flight**, and
+  `R-063`'s arm-level calibration loses its footing.
+* **anything between** ⇒ **`INDETERMINATE`**, reported as such; `PR-029` continues but ⛔ the K ladder
+  **stops at 32 regardless of its outcome**.
+
+⚠ **I am running this while `PR-029`'s arms are queued, deliberately** — a gate that can cancel a
+spend is worth nothing after the spend completes.
