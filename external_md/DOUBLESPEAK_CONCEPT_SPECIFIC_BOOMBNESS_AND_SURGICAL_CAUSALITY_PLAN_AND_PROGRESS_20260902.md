@@ -7159,3 +7159,29 @@ refusal; it passed — correctly, because `dcsqwb` runs the **same `cds116` bank
 *"40 paired rows differ in prompt_sha16 from KO-3"*, and still passes the genuinely-matched K=3 set
 (δ **−0.0391**, p **0.1488**, unchanged). ⇒ The guard is confirmed to fire **and** confirmed not to
 fire spuriously — a guard seen passing only is not evidence.
+
+### `B-016` — ⛔ NEW LIMITATION: the artifacts record the judge **alias**, never the served **snapshot**
+
+✅ **Judging is unblocked** (checked before it is needed, not when it fails): the `.env` key
+authenticates (**HTTP 200** on `/v1/models/gpt-4o-mini`) and — the part `/models` cannot tell you —
+a **real completion succeeded**, so credits are live. ⚠ `C-024` was a *quota* block, which returns
+200 on `/models` and 429 only on a completion; a `/models` probe alone would have proved nothing.
+
+⛔ **But the completion came back stamped `gpt-4o-mini-2024-07-18`, and no artifact in this phase
+records that.** All five `p24j` arms carry `judge_model_used = openai/gpt-4o-mini` on 1160/1160 rows
+— the **alias**, identical to `judge_model_pinned`. The call site takes `out.get("judge_model")`
+from `strong_reject`, which stamps the alias it was **asked** for, not the `model` field the API
+**returned**. ⇒ Not a one-line fix; it is upstream of this repo.
+
+⚠ **Why this lands on live work.** `PR-028c` will measure judge drift between `p24j` and `p28j` on
+5 × 1160 byte-identical completions. ⛔ **That measurement cannot distinguish sampling noise from a
+silent snapshot rotation**, because the snapshot is not persisted on either side. A drift estimate
+of "0.00x" would be reported as endpoint noise when it might be two different models. ⇒ The result
+must carry this caveat; it is **not** an argument against making the measurement, which remains the
+best available.
+
+✅ **Mitigation available without touching the judge:** probe the served snapshot immediately
+**before and after** the judging run and record both, bounding the snapshot across the session.
+⇒ First observation recorded now: **`gpt-4o-mini-2024-07-18`, 2026-09-05 12:05 local**. ⛔ It does
+**not** recover what `p24j` used at 01:46-04:08 today — that is unrecoverable, and the asymmetry is
+the limitation.
