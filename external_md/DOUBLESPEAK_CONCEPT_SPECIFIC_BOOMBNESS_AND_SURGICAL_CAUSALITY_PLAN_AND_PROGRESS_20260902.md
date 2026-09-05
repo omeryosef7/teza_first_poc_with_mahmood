@@ -6525,3 +6525,38 @@ direction** but **not in magnitude** across draws. ⇒ Matching controls on *pre
 **reduce** the between-control spread `R-061` measured, but ⛔ would **not** eliminate it, because the
 attacks-per-refusal rate itself varies **6×** between draws. ⚠ That is a genuine input to the
 collaborators' decision and ⛔ still not a decision I should take.
+
+## `PR-026` — PREREGISTRATION: a **conversion-calibrated** bracket, applied symmetrically to BOTH arms
+
+⚠ **Frozen before computing.** `R-062` showed `PR-014`'s bracket assumes a refusal→attack conversion
+of **1.000** against a measured **0.057–0.350**, so its adjusted end over-credits by 3–17×. ⇒ The
+bracket's endpoints are not equally plausible and one of them is not plausible at all.
+
+⛔ **What this CANNOT do, stated first.** `R-061`'s verdict is set by the **PRIMARY** — the domain
+sign test, 1 of 3 — and `PR-024a` says the bracket "carries no conclusion the primary does not". ⇒
+`PR-026` refines the **secondary only**. ⛔ `B-009` remains **NOT RESOLVED** whatever this returns,
+and ⛔ this may not be presented as rescuing it.
+
+**The asymmetry `PR-014`'s bracket ignores.** It credits **controls** with their induced refusals and
+leaves `KO-3` untouched. But `KO-3` **removes all 144** baseline refusals — so by the very mechanism
+`R-062` measured, `KO-3` should have gained attacks it would not otherwise have had. ⇒ The existing
+bracket corrects **one arm in one direction** and is therefore not a bracket on the same quantity at
+both ends.
+
+**Design.** Apply the **measured** conversion `c` to **both** arms, at the observed range
+`c ∈ [0.057, 0.350]`:
+> `KO_adj  = 318 − c·144`  (remove the attacks its refusal-clearing gifted it)
+> `ctrl_adj = attacks_c + c·induced_c`
+> `Δ_adj(c) = KO_adj − ctrl_adj`, reported as an **interval over c**, per control.
+
+⛔ **Declared outcomes.**
+* **Δ_adj negative across the whole range for all three** ⇒ the direction is robust to **any**
+  conversion rate in the measured range, applied symmetrically. ⚠ Still a **secondary**.
+* **Δ_adj changes sign within the range for any control** ⇒ the direction is **conversion-dependent**,
+  and ⛔ `R-061`'s bracket claim must be withdrawn outright rather than merely qualified.
+* **The interval is wider than the face-to-adjusted bracket** ⇒ report that the calibration **buys
+  nothing** and say so.
+
+⚠ **Limits.** ⛔ `c` is measured on the **controls**, and `KO-3`'s own conversion is **unobservable** —
+there is no arm where `KO-3` refuses. Applying the controls' `c` to `KO-3` is an **assumption**, and
+the interval is only as good as it. ⛔ Correlational, same-data, and **not** independent of `R-061`.
