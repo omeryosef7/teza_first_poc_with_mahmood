@@ -7829,3 +7829,38 @@ subtracted the row and judge floors**.
 
 ⚠ **I am running this while `PR-029`'s arms are queued, deliberately** — a gate that can cancel a
 spend is worth nothing after the spend completes.
+
+### `R-077` — `PR-030`: the between-control spread is a **REAL, almost perfectly reproducible property of the draw** (93.5 %). `PR-029` proceeds.
+
+First declared branch, on K = 8 arms × 116 domains, **0 GPU-h**.
+
+✅ **(a) Split-half reliability, Spearman-Brown corrected, unit = arm, 400 splits:**
+**median ρ = +0.988**, 95 % band **[+0.923, +1.000]**, against a permuted-arm null of median **+0.047**
+(band [−4.46, +0.83]). ⇒ An arm's ASR on half the domains predicts its ASR on the other half **almost
+perfectly**. The draw's behavioural effect is **near-deterministic**, not a tendency.
+
+✅ **(b) Variance decomposition** of the observed between-arm variance (**0.006126**):
+
+| component | variance | share |
+|---|---|---|
+| within-arm sampling (ICC **0.097**, m = 10 ⇒ design effect **1.87**) | 0.000322 | **5.3 %** |
+| judge instability (empirical, from `R-074`'s byte-identical re-judge) | 0.000076 | **1.2 %** |
+| **DRAW OFFSET** | **0.005728** | **93.5 %** |
+
+⇒ ⛔ **VERDICT: `REAL DRAW OFFSET`. The K ladder is well specified and `PR-029` proceeds.** ✅ The
+√K arithmetic divides a quantity that is really there; the 55 GPU-h is buying what it was meant to.
+
+⚠ **This is the first time the phase has decomposed that number instead of quoting it.**
+**0.0295 → 0.0586 → 0.0783** were all reported as pure draw heterogeneity; now measured, **93.5 %** of
+it is — which happens to vindicate the earlier usage, but it was **not** established before and could
+as easily have gone the other way.
+
+⇒ ✅ **And it upgrades `R-075` from a nuisance to a target.** The 25-fold spread in induced refusal at
+identical dose is **not noise to be averaged away** — it is a **reproducible function of which
+positions the mask hits** (ρ = 0.988). ⇒ There is something real to find, which is exactly the
+premise of the continuation plan's mechanistic branch (#3: *the dose is attention mass, not key
+count*). ⛔ `R-076` already excluded the seven **positional-geometry** features as that function;
+the search must move to what the masked keys were **carrying**, not where they sat.
+
+✅ `R-063`'s arm-level calibration keeps its footing (it presumes a real arm-level quantity).
+⚠ `R-070`'s per-arm-vs-per-row seeding hypothesis remains **un-run** and is *not* what this tested.
