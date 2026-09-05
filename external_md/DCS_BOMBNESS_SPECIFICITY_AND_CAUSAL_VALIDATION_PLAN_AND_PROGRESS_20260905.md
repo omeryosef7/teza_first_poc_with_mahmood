@@ -925,3 +925,40 @@ verified mechanically (bank↔tag matched, no quote-guard violations).
 
 ⛔ These are **readout/extraction only** — no generation, no judge, no knockout. They cannot answer
 `PR-031`; they only produce the hidden states it consumes.
+
+---
+
+## §13 — `DCS-A-021` — the independent verifier, and what it confirmed before any result existed
+
+`scripts/dcs_verify_bombness_specificity.py`, committed while the extraction arms were still
+running. ⛔ It does **not** import `scripts/dcs_bombness_specificity.py`. It re-derives everything
+from the lowest-level artifacts — bank JSONL, `RUNMETA.json`, and the raw
+`cache/final_occurrence_reps.pt` tensors — because a verifier that reuses the producer's functions
+re-derives the producer's bugs (`A-004`: it reproduced every published number to the digit and still
+had to falsify two published claims).
+
+Six checks: population identity · the `prompt_id` join hazard · config identity across arms · cache
+integrity · **leakage** · independent re-derivation of the per-domain statistic.
+`--mutate {shuffle_labels, zero_reps}` corrupts an input and **requires** the verifier to fail,
+returning exit 2 if the corruption goes unnoticed.
+
+### 13.1 What it established with **no GPU result in hand**
+
+Two of this phase's load-bearing design decisions are now **verified from the prompts themselves**
+rather than asserted:
+
+| check | result |
+|---|---|
+| `prompt_id` collision across banks | ⛔ **2736 / 2736 shared** between two different banks — 100 %. `prompt_id` **is not a key**; the compound key is mandatory, and `A-019` §2.2 is confirmed at full bank scale rather than on a 200-row prefix. |
+| `semantic_forced_choice` leakage | ⛔ its cell-`C` question names the concept in **72/72 rows for every one of bomb / knife / gun / club**. The §2.3 disqualification is **measured**, not argued. |
+| `semantic_one_word` leakage | ✅ **0 / 288** — the question never names the concept, in any of the four banks. |
+| `comprehension_usage` leakage | ✅ **0 / 288** — likewise. |
+| structure across the 8 banks | ✅ identical: `n = 288`, cells `{A:72, B:72, C:72, E:72}`, 6 domains. |
+
+⇒ The choice of probe channel — the single most consequential decision in `PR-031` — rests on a
+verified property of the corpus, and the disqualified channel is verified to be disqualified for the
+stated reason.
+
+⚠ The verifier currently reports **1 FAIL**, and that is **correct behaviour**: `button_bomb`'s
+rep cache does not exist yet because job 853582 is still running. It is designed to fail on an
+incomplete population rather than analyse one.
