@@ -41,9 +41,24 @@ def load_arm(run_dir):
     return [json.loads(l) for l in open(p)]
 
 
-def find_arm(root, tag):
+def find_arm(root, tag, skipped=None):
+    """Newest arm dir for `tag` THAT IS COMPLETE.
+
+    C-051: this took `hits[-1]` unconditionally. A partial dir -- e.g. one left by a job cancelled
+    mid-flight -- sorts newest, `load_arm` then returns None for want of a DONE.json, and the rung
+    is reported as NOT RUN while a complete arm for it sits one directory earlier. That is a silent
+    misreport of the population, so completeness is now part of the selection, and every skipped
+    candidate is recorded rather than discarded.
+    """
     hits = sorted(glob.glob(os.path.join(root, f"{tag}_*")))
-    return hits[-1] if hits else None
+    for h in reversed(hits):
+        if os.path.exists(os.path.join(h, "DONE.json")):
+            if skipped is not None and h != (hits[-1] if hits else None):
+                skipped[tag] = [os.path.basename(x) for x in hits if x != h]
+            return h
+    if skipped is not None and hits:
+        skipped[tag] = ["NO COMPLETE ARM: " + os.path.basename(x) for x in hits]
+    return None
 
 
 def contract(rows, name):
@@ -98,12 +113,15 @@ def main():
     res = dict(preregistration="DCS-PR-032", alpha=ALPHA, expect_n=EXPECT_N,
                note="query_last_k_rows cuts _q[-K:]; rows and cut cells rise together by "
                     "construction. STEP vs RAMP only; NOT rows vs cells.",
-               rungs={}, contracts={}, void=[])
+               rungs={}, contracts={}, void=[], arm_dirs={}, skipped_incomplete={})
 
     for K in sorted(set(NEW_RUNGS) | set(INHERITED)):
-        dd, cd = find_arm(a.root, f"dcsk{K}_C_demo"), find_arm(a.root, f"dcsk{K}_C_ctrl")
+        sk = res["skipped_incomplete"]
+        dd, cd = find_arm(a.root, f"dcsk{K}_C_demo", sk), find_arm(a.root, f"dcsk{K}_C_ctrl", sk)
         if not dd or not cd:
+            res["arm_dirs"][f"K{K}"] = dict(demo=dd, ctrl=cd, status="MISSING ARM")
             continue
+        res["arm_dirs"][f"K{K}"] = dict(demo=os.path.basename(dd), ctrl=os.path.basename(cd))
         demo, ctrl = load_arm(dd), load_arm(cd)
         if demo is None or ctrl is None:
             continue
