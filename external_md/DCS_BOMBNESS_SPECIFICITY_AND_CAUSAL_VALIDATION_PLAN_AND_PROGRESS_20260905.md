@@ -2183,3 +2183,95 @@ result creates and it is recorded as an open experiment, not as a caveat.
 not importing the producer) is being built. ⛔ **`R-080`/`R-081` are NOT promoted until it passes**,
 per §28.9.
 
+
+---
+
+## §30 — `DCS-PR-037` — PREREGISTRATION: is `K*` the CODEWORD's row, or the readout template's CONCEPT-OPTION word?
+
+**Written 2026-09-06, before any arm of this experiment exists.** This is the follow-up `R-080`
+§27.4 named as the highest-value one its own bound created. It is answerable because the two readout
+templates put *different words* in the same structural position.
+
+### 30.1 The question
+
+`R-081` found `K* = 7` on `semantic_forced_choice`, where the token entering at K=7 is **`' bomb'`** —
+present only because that question names both options. Three readings survive that result:
+
+| reading | what carries the effect | prediction on a question that never names the concept |
+|---|---|---|
+| **H-boundary** | any user-text row | jump at **K=6** (`?`) |
+| **H-concept-option** | the row bearing the **concept** word | **no comparable jump**; the concept word does not exist here |
+| **H-codeword** | the row bearing the **codeword** | jump where `' button'` enters |
+
+### 30.2 Why this population can separate them
+
+On `semantic_one_word` — *"…In the text above, what does the word button actually refer to?"* — the
+tokens entering the cut are, verified over all 168 prompts, **168/168, zero variation**:
+
+| K | 1 | 2 | 3 | 4 | 5 | **6** | 7 | 8 | 9 | **10** | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| token | `\n\n` | `<\|end_header_id\|>` | `assistant` | `<\|start_header_id\|>` | `<\|eot_id\|>` | **`?`** | `' to'` | `' refer'` | `' actually'` | **`' button'`** | `' word'` |
+
+⇒ Rungs 1–5 are the **same chat scaffold** as the forced-choice ladder. The **codeword enters at
+K=10**, and **no concept word ever enters**. K=9 is the matched control: all trailing question
+content **except** the codeword.
+
+⚠ ⛔ **This is also a within-template retest of `KO-1`.** `R-005`/`R-006` found the final codeword
+row's L6–14 demonstration attention **not necessary** (+0.278, 25+/13−, p = 0.073) on a *different*
+bank and readout. The K=9→K=10 increment is the same proposition measured inside one template, and
+the arm `target_surface_row_only` is `KO-1` itself run here.
+
+### 30.3 ⛔ THE BINDING POWER CONSTRAINT, derived before any data
+
+Independence unit is **domain, n = 6**. A two-sided sign test on 6 domains has attainable floor
+**2/2⁶ = 0.03125**. Therefore:
+
+| Holm family size | smallest attainable adjusted p | status |
+|---|---|---|
+| **m = 1** | **0.0312** | ✅ USABLE |
+| m = 2 | 0.0625 | ⛔ **UNINFORMATIVE BY CONSTRUCTION** |
+| m = 5 | 0.1562 | ⛔ UNINFORMATIVE BY CONSTRUCTION |
+
+⇒ ⛔ **This experiment gets EXACTLY ONE significance test.** Any design with two or more corrected
+primaries could not clear α even if every domain moved the same way. Everything else is
+**descriptive**, reported with magnitudes and **no p-value claimed**.
+
+### 30.4 The design
+
+| field | value |
+|---|---|
+| bank | `boombness_prompt_bank_button_bomb.jsonl` (`bank_file_sha16 95a3a8017f9ab180`) |
+| population | `--query-kinds semantic_one_word --conditions natural_doublespeak --bank-blocks core2x2,core2x2_slot3,role_style --n-examples 4,8` |
+| n | **168 rows, 6 domains, 28 per domain** |
+| ⛔ exclusion | the `C-053` §28.1 concept-word rule is a **NO-OP here**: 0/168 rows leak, because the `strength` block is outside this block set **by construction, not by outcome** |
+| layers / attn | `6-14`, `--attn-impl eager` (mandatory) |
+| model / seed | Llama-3.1-8B-Instruct, `--seed 20260906` |
+| arms | K ∈ {5, 6, 9, 10} `query_last_k_rows`; plus `query_prefill_only` (100 % reference); plus `target_surface_row_only` (`KO-1` here). Each with its own `nondemo_matched_d1` control ⇒ **12 arms** |
+| judge | ⛔ **none** |
+
+### 30.5 THE SINGLE PRIMARY, fixed now
+
+> **Estimand.** Per domain *d*: `inc(d) = Δ_K10(d) − Δ_K9(d)`, where `Δ_K(d)` is the paired
+> per-domain mean of `semantic_logodds(demo) − semantic_logodds(control)` at rung K.
+> **Test.** Two-sided sign test over the **6 domains**. **α = 0.05.** **m = 1.** Floor 0.03125.
+
+### 30.6 Declared outcomes — all of them, before the data
+
+* **`CODEWORD-ROW`** — `inc` is negative in **6/6** domains (p = 0.031) **and**
+  `|Δ_K10| − |Δ_K9| ≥ 0.5 · |Δ_prefill|`. ⇒ The codeword's own query row carries the effect. ⚠ This
+  would **contradict `KO-1`** and would require reconciling the two, not quietly replacing it.
+* **`NOT-THE-CODEWORD`** — `inc` fails the sign test **and** `|Δ_K10| − |Δ_K9| < 0.2 · |Δ_prefill|`.
+  ⇒ ✅ **`KO-1` is confirmed within-template**, and `R-081`'s `K*=7` is attributed to the
+  **concept-option word of the forced-choice template**, not to the codeword.
+* **`CANNOT ANSWER`** — the sign test fails but the magnitude sits in [0.2, 0.5]·|Δ_prefill|, or
+  `|Δ_prefill|` is itself too small to normalise against (< 1.0 log-odds). ⛔ **Not a null.**
+* **`VOID`** — any arm with n ≠ 168, non-uniform domain loss, `keys_masked` differing between an arm
+  and its control, any liveness violation, or a decode edit.
+
+### 30.7 What this CANNOT settle, stated now
+
+⛔ It cannot show *where* the effect is if it is not the codeword — K=6 through K=9 are reported
+descriptively and **no rung among them may be promoted after the fact**. ⛔ It is one model, one
+codeword, one concept, 6 domains. ⛔ A `NOT-THE-CODEWORD` result does **not** show the codeword row is
+irrelevant to the *attack*; it is a representation readout only.
+
