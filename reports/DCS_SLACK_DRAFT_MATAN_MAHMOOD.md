@@ -65,14 +65,34 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
 > **18 of 380 labels** flip on a byte-identical re-judge (net +6), while the **refusal** label flips
 > **0 of 380**. Small enough that it doesn't explain the Qwen result.
 >
-> **One decision I'd like your view on** (the other one from last time is now closed — we built the
-> low-dose bank ourselves and it settled the question). **New demonstration pools.** Still the only
-> way to certify the behavioural effect at our own independence unit: 38 domains is **all that
-> exists** in our pools, so no amount of further judging fixes it. Cost is **GPU time and a design
-> decision**, not money — judging is ~**$0.08 per 380-row arm**. The real question is whether new
-> domains should extend to a **second harmful concept** (generality + power together) or just deepen
-> `bomb` (power only). Given `candle`→`missile` failed, I lean toward generality — but that's exactly
-> what I'd like to argue about.
+> **The decision I asked about last time is now answered, and not the way either of us framed it.**
+> I ran it: **78 new demonstration domains**, taking us from 38 to **116**, about 13.5 GPU-hours.
+> Power at the domain unit went from **0.31 to a planned 0.81**. ⛔ **It still did not resolve**, and
+> the reason is the useful part.
+>
+> We preregistered the strict version — significance against **all three** dose-matched controls, no
+> picking. It came back **1 of 3**: p = **0.175 / 0.0096 / 0.466**. ⚠ I'm not quoting the middle one
+> on its own; that is exactly the error we corrected earlier in the sprint.
+>
+> **Why it failed is not what I expected.** The clustering came in *better* than I assumed (ICC 0.09
+> vs 0.16), but the baseline attack rate came in **20 % lower** than the number I sized on, so real
+> power was **0.65 / 0.35 / 0.05** against the three observed effects — which is precisely the
+> pattern we got. ⇒ **Domain count was never the binding constraint.**
+>
+> **What is.** The three controls induce very different refusal loads — **+35, +133, +200** — and
+> refusal suppresses attack, so each control's ASR is depressed by a different amount. Concretely:
+> **the spread between our controls (0.059) is larger than the effect we're trying to measure
+> (0.039).** Which control you pick decides your p-value, anywhere from 0.01 to 0.47, from the same
+> data.
+>
+> ✅ **The refusal-adjusted bracket is unanimous** — −112, −183, −209, none straddling zero — so the
+> direction is not in doubt. But our preregistration ties the verdict to the primary, and I'm holding
+> to that.
+>
+> ⇒ **So the question is no longer "more domains, or a second concept?"** Neither fixes this. It is:
+> **can we build controls matched on induced refusal?** We showed earlier that we cannot select them
+> post hoc without repeating a mistake we already retracted, so this needs a design, not a filter.
+> **That's what I'd like the 30 minutes for.**
 >
 > **Positioning, unchanged.** The representational half **replicates Yona et al., ACL 2026**; ours
 > that's new is the **causal** half — they perform no internal intervention. Frame as a causal
@@ -103,7 +123,8 @@ narrowed. ⚠ The previous draft (09:49) predates **all** of that and must not b
   the confound that kills the contrast.
 * Scope line if asked: **38 domains × 2 codewords × 1 concept × 2 model families × 4 doses.** That is
   38 *contexts* for a single mapping, not 38 mappings.
-* If asked "what would change your mind": **new pools** (the behavioural claim) and **a second
-  harmful concept at adequate power** (generality — the one we ran was mixed). ⚠ The low-dose
+* If asked "what would change your mind": ⛔ **not new pools** — we ran them (116 domains) and the
+  constraint turned out to be control exchangeability, not `k`. It is **controls matched on induced
+  refusal**, and **a second harmful concept at adequate power** (generality — the one we ran was mixed). ⚠ The low-dose
   question is **closed**: we built the bank, both pre-registered gates passed, and the continuous
   gradient still failed. That one is settled, not pending.

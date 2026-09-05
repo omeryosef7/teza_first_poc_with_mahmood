@@ -273,7 +273,18 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
   aggregate survives, in `metadata.json`. ⚠ It blocked `PR-018a`'s declared secondary; recovered from
   `hook_n_keys_masked` (control ÷ knockout per `prompt_id`), and the recovery was **validated against the metadata
   count before use** — but the workaround assumes the two arms are row-aligned, which is not true in general.
-* `DCS-B-009`: ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
+* `DCS-B-009` → ⚠ **RUN AND NOT RESOLVED (`R-061`)**, and the limit has moved. 78 new domains took
+  `k` from 38 to **116** at a measured cost of ~13.5 GPU-h. The declared conjunction (significance
+  against **all three** dose-matched controls) came back **1 of 3**: p = 0.175 / **0.0096** / 0.466.
+  ⛔ The `d2` value may not be quoted alone. ⚠ Realised ICC **0.089–0.112** (better than the 0.158
+  assumed) but realised base rate **0.32** (not `R-016`'s 0.403) ⇒ recomputed power **0.65 / 0.35 /
+  0.05**, which is exactly the observed pattern. ⇒ ⛔ **Domain count was not the binding constraint.**
+  The controls induce refusal loads of **+35 / +133 / +200**, and the **between-control spread
+  (0.0586) exceeds the effect (0.0391)** — the comparator draw matters more than the intervention.
+  ✅ The bracket is unanimous (adjusted −112 / −183 / −209, **0 of 3 straddle zero**) but `PR-024a`
+  binds the verdict to the primary. ⇒ **More domains will not fix this; controls matched on induced
+  refusal would**, and `C-023` showed those cannot be selected post hoc.
+* `DCS-B-009` (original statement, superseded above): ⛔ **the behavioral design is underpowered at its own independence unit.** 38 domains
   cannot resolve a ~20 % relative effect by a clustered sign test (`k_inf` 36, floor 2.9e-11 — a
   true underpowering, not a floor limitation). **38 is the maximum that exists** in any
   demonstration-pool file in the repo; the other 38-domain files are the *same* 38 under different

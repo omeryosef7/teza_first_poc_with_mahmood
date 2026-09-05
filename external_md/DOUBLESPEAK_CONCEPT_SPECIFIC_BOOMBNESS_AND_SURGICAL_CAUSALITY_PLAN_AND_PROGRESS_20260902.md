@@ -44,6 +44,10 @@ Opened 2026-09-02, branch `behavioral-causality-sprint`, at `c8263888`.
 * ⛔ **"Layers 15–23 are inert"** without naming the bank (`R-037`).
 * ⛔ **"`candle` failed because its mapping is weak"** as an *explanation* — `R-038` tested it and the
   declared conjunction **failed**.
+* ⛔ **"`KO-3` reduces attack at the domain unit"** — `R-061`: **1 of 3** controls. ⛔ And never
+  `p = 0.0096` alone; all three or none.
+* ⛔ **"116 domains was not enough"** — `R-061`: realised ICC came in **better** than assumed; the
+  base rate came in **20 % lower**, and control-to-control variance exceeds the effect.
 * ⛔ **"the effect is GRADED by installation"** as a **continuous** claim — `R-053`: within the
   varying subrange the control reproduces most of it. Say **categorical**: *fully-installed domains
   lose more than partially-installed ones.*
