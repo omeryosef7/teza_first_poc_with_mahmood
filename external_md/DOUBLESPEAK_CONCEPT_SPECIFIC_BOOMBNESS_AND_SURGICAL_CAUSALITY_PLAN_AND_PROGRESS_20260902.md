@@ -7251,3 +7251,44 @@ makes the primary's estimand well-defined at all.
 * `B-016`'s mitigation is now **in the script**, not in my intentions: it probes the served snapshot
   **before and after** the run, prints both, and warns explicitly if the snapshot **rotated
   mid-run** — in which case the `p28j` labels are themselves an average over two judges.
+
+### `R-069` — all five `PR-028` arms land and pass their full contract; **K = 8 is achieved**
+
+852000-852004 all complete, queue empty. Wall 70-149 min each; ~10.1 GPU-h total.
+
+✅ **Every arm passes all ten contract checks**, on full data rather than the partial spot-check of
+`PR-028a`: `DONE.status = ok`, **1160** rows, **116 domains × exactly 10**, `n_examples` = {4},
+`decode_edits` max **0**, `control_draw_match_ratio` **1.000** on every row, draw seed exactly as
+declared, **0** liveness violations, **0** empty generations, `keys_masked` median **522.0** —
+identical to `R-060`'s figure for `KO-3`, `d1` and `d2`. Truncation **1-2 / 1160**, in line with the
+`PR-024` arms (1-2).
+
+✅ **The eight draws are genuinely distinct**, which `PR-028` required and which line 1077 of this log
+records having been violated once before (four arms drawing the *same* direction):
+old `[28180678, 36100455, 44020232]`, new `[28180682, 28180683, 36100459, 36100460, 44020236]`,
+**overlap NONE**, **8 distinct draws**.
+
+⇒ **`PR-028`'s K = 8 primary now has its data.** Judging submitted as **852324** on `cpu-killable`.
+
+### `C-041` — I started the judge **on the login node**, and it wrote a partial arm under the live prefix
+
+Testing the ten-arm pre-flight, I ran `bash scripts/judge_pr028_all10.sh` directly. ⛔ The pre-flight
+**passed** — which is the point of it — and the script then did exactly what it is written to do:
+**began judging**, on the login node, against the standing rule that judging runs on `cpu-killable`
+only. It was killed by the 2-minute timeout after **1 row**.
+
+⚠ **Two distinct errors, and the second is the one that matters.**
+1. I invoked a script whose pre-flight is its *first* step and whose *second* step spends money and
+   hours. ⇒ There is no dry-run separation; the only safe way to exercise the pre-flight is against
+   an **incomplete** arm set, which is what every earlier test did — and which stopped working the
+   moment the arms completed.
+2. It left `p28j_dcsp24_base_20260905_130435_47897` — **1 row, no `DONE.json`** — sitting under the
+   **live `p28j_` prefix**. ⛔ This is `DCS-039` exactly: partial wreckage under the prefix the real
+   run will use.
+
+✅ **Contained.** Confirmed dead (row count static across 5 s, no matching process), then
+**quarantined** to `VOID_loginnode_*` rather than deleted, and verified **0** live `p28j_` dirs
+remained *before* submitting 852324. ✅ The selectors would have skipped it anyway — `newest()`
+filters on `DONE.json` — but `DCS-039`'s lesson is that relying on that is how wreckage survives.
+⚠ **The pre-flight itself is not at fault and needs no change**; what is missing is a `--check-only`
+flag, which is **not** being added while the real run is live.

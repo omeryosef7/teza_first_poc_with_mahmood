@@ -113,12 +113,14 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 33 | `A-016` | ✅ Drift analyzer tested on **planted truth** before it sees real data: 30 sha-mutated rows **excluded and counted**, 35 flips recovered as **25 up / 10 down, net +15**, binomial **p=0.0167** — exact on every planted value. The byte-identity gate is now **seen to fire**, not merely seen to pass. ✅ Run in an isolated mirror (`DCS-039`'s lesson); real tree verified clean afterwards | ✅ |
 | 34 | `R-068` | ✅ Drift disagreement **RESOLVED** by a **peer's** measurement already in the repo: identical gens moved ASR **0.1714→0.1595** (Δ **0.0119**) while a **paired** delta held to 4 dp. The two *direct re-judge* figures agree (0.0119, 0.0158); the 0.0020 outlier is a min-max on a different bank at ASR 0.065 ⇒ ⛔ I had wrongly treated 0.0020 as the low end. Real bias from mixing: **19-25%** of the effect ⇒ `PR-028b` **necessary**, and raw ASR levels are exactly the class that does **not** transport across sessions | ✅ |
 | 34 | — | ⛔ Two judging-path bugs caught **before** submission: `judge_pr028_all10.sh` never sourced `.env`/conda (would have died under sbatch at arm 1 with *OPENAI_API_KEY is not set*), and `B-016`'s snapshot mitigation lived only in my intentions. Both fixed; sbatch wrapper added on **cpu-killable**; script now bounds the served snapshot **before and after** and warns on mid-run rotation | ✅ |
+| 35 | `R-069` | ✅ **All 5 arms land, all 10 contract checks pass on full data** (1160 rows, 116x10, `decode_edits` 0, `match_ratio` 1.0, `keys_masked` med **522.0** = `R-060`, 0 liveness viol, seeds as declared). ✅ **8 distinct draws, overlap NONE** — the collision this log records once before did not recur. ⇒ **K=8 has its data**; judging submitted **852324** on cpu-killable | ✅ |
+| 35 | `C-041` | ⛔ I ran the judge script **on the login node** to test its pre-flight; the pre-flight passed and the script then **started judging**, writing a 1-row partial under the **live `p28j_` prefix** (`DCS-039` exactly). ✅ Confirmed dead, **quarantined** to `VOID_loginnode_*`, verified **0** live `p28j_` dirs before submitting. ⚠ Root cause: no `--check-only` separation — the pre-flight was only ever safely testable while arms were **incomplete** | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| `852000`-`852004` (PR-028, 5 control draws) | `PR-028` | **1 of 5 COMPLETE** — `s20260906_d1` 1160/1160, contract fully verified (116 dom x 10, keys_masked med **522**, decode_edits **0**, match_ratio **1.0**, seed 28180683, 0 liveness violations, truncation 0.09% = same as the PR-024 controls). Other 4 at 648-829/1160, ETA ~12:30-13:00. Contract entry held until all five land |
+| `852324` p28judge (10-arm re-judge) | `PR-028b` | RUNNING on cpu-killable since 13:04; ~$2.50, est. 4-5 h. Arms 852000-852004 all COMPLETE and contract-verified (`R-069`) |
 
 ## Standing rules being followed this session
 
