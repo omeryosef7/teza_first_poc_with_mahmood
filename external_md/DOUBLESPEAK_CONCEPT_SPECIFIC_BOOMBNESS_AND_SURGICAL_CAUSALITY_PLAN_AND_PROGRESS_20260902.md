@@ -7185,3 +7185,29 @@ best available.
 ⇒ First observation recorded now: **`gpt-4o-mini-2024-07-18`, 2026-09-05 12:05 local**. ⛔ It does
 **not** recover what `p24j` used at 01:46-04:08 today — that is unrecoverable, and the asymmetry is
 the limitation.
+
+### `A-016` — the drift analyzer recovers **planted** drift exactly, and its byte-identity gate is seen to fire
+
+`PR-028c`'s byte-identity gate had never been observed rejecting anything. ⛔ By this phase's own
+rule (`A-015`, `A-014`) a guard seen only passing is not evidence, so it was tested against a
+**synthetic arm with known planted truth** before it judges the real re-judge.
+
+**Planted:** 30 rows given a changed `completion_sha256_16` (must be **excluded**), and among the
+remaining rows **25** labels flipped 0→1 and **10** flipped 1→0 (**net +15**).
+
+✅ **Recovered exactly:** `30` excluded for sha mismatch, **1130** byte-identical rows (1160 − 30),
+**35** flips = **25 up / 10 down**, **net +15**, drift `+0.01327`, exact binomial **p = 0.0167**,
+`net/sd = +2.54`. ⇒ The gate **fires**, the exclusion is **counted not silently averaged**, the
+flip accounting is exact, and the verdict branch for a systematic offset is reachable. ✅ The
+refusal-label channel correctly read **0 flips** (nothing was planted there), so it is not
+manufacturing signal either.
+
+✅ **Run in a fully isolated mirror**, not in the real tree: a scratch `REPO` with its own
+`scripts/` and `outputs/boombness/judge/`, the genuine `p24j` arm symlinked in read-only. ⚠
+Deliberate — `DCS-039` is the record of synthetic wreckage left under a **live tag prefix** and
+later needing quarantine. ✅ Verified afterwards: `git status` clean, no `drift_test.json` in the
+repo, no test arm in the real judge directory, mirror deleted.
+
+⚠ **This validates the instrument, not the answer.** The real drift may be far smaller than the
+planted +0.01327 — `judge_session_drift.json` says 0.0020 — and `B-016` still applies: whatever
+number comes back **cannot separate sampling noise from a snapshot rotation**.
