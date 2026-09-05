@@ -2131,3 +2131,55 @@ are from the bomb bank) but ⛔ **forbids any cross-bank cell-`F` comparison.**
   findings). ⛔ **No `PR-035` result may be promoted until the verifier is rebuilt**, since a verifier
   that reads the producer's derived fields proves nothing.
 
+
+---
+
+## §29 — `DCS-R-081` — the 8-point profile completes. `shape = STEP`, `K* = 7`.
+
+`K=1` (jobs 854108/854109) landed, completing the profile `PR-032` §11.5 requires. The shape rule,
+which had correctly refused to name a shape while the profile was incomplete, now fires.
+
+| K | token newly cut | Δ | % of Δ₈ | domains − | p | Holm |
+|---|---|---|---|---|---|---|
+| **1** | `'\n\n'` | **−0.0132** | 0.2 % | 23/38 | 2.56e-01 | — |
+| 2 | `<\|end_header_id\|>` | −0.0115 | 0.2 % | 23/38 | 2.56e-01 | — |
+| 3 | `assistant` | −0.0697 | 1.1 % | 35/38 | 6.68e-08 | ~0 |
+| 4 | `<\|start_header_id\|>` | −0.0194 | 0.3 % | 21/38 | 6.27e-01 | 1.000 |
+| 5 | `<\|eot_id\|>` | +0.0225 | 0.3 % | 18/38 | 8.71e-01 | 1.000 |
+| 6 | `?` | −0.5015 | 7.6 % | 34/38 | 6.04e-07 | ~0 |
+| 7 | `' bomb'` | −5.9849 | 90.5 % | 38/38 | 7.28e-12 | ~0 |
+| 8 | `' a'` | −6.6161 | 100 % | 38/38 | 7.28e-12 | — |
+
+**`shape = STEP`** — the declared criterion (some adjacent K-pair with `fr < 0.20` then `fr > 0.50`)
+fires at **K=6 → K=7** (0.076 → 0.905). **`K* = 7`.**
+
+### 29.1 ✅ Four independent reproductions of inherited values, none of which drifted
+
+| rung | inherited | this session | Δ |
+|---|---|---|---|
+| K=1 | −0.013 | **−0.0132** | — |
+| K=2 | −0.012 | **−0.0115** | — |
+| K=8 | −6.616 | **−6.6161** | — |
+| K=8 re-run (`dcsk8r`) | −6.616111537245543 | **−6.616111537245543** | **0.000000** |
+| K=16 | −7.888 | **−7.8884** | — |
+
+⇒ The measurement is **deterministic and stable across sessions, nodes and three days**.
+
+### 29.2 ⛔ What is claimable, in one sentence, with its bound attached
+
+> Demonstration→query attention is **not required by the chat template's own scaffold tokens at all**;
+> the requirement appears exactly when the cut reaches the question's content, and it is a **step**,
+> not a ramp — **90 % of the full effect arrives with a single additional token**.
+
+⛔ And the bound, which travels with it always (§26.4, declared before the numbers): **that token is
+`' bomb'`, which is in the cut only because the `semantic_forced_choice` question names both options.**
+So this is not yet a statement about the codeword. Separating "the question's concept-option token
+needs demonstration access" from "the mapping is read at the codeword's row" requires the same ladder
+on `semantic_one_word`. ⛔ **Not run. Not funded by `PR-032`.** It is the highest-value follow-up this
+result creates and it is recorded as an open experiment, not as a caveat.
+
+⚠ Verification status: an **independent verifier** for this result
+(`scripts/dcs_verify_kladder.py`, re-deriving from `results.jsonl` and re-tokenising all 380 prompts,
+not importing the producer) is being built. ⛔ **`R-080`/`R-081` are NOT promoted until it passes**,
+per §28.9.
+
