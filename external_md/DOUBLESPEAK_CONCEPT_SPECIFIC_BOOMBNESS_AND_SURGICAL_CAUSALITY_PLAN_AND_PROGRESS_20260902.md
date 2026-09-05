@@ -6809,3 +6809,104 @@ for the first time — the route this preregistration had to reject for lack of 
   positive.
 * **Between-control sd at K = 8 materially exceeds 0.0295** ⇒ the K = 3 estimate was optimistic, the
   design is underpowered at its own target, and ⛔ that is stated rather than absorbed.
+
+### `C-039` — `PR-028` asserts a persistence change that **was never made**
+
+`PR-028` (committed `f5e60c97`) states: *"The new arms persist the per-row control-draw key
+positions."* ⛔ **They do not.** `src/boombness/score_behavior.py` has not been touched since
+`156e5f78`; line 2348 records `n_control_draw_positions` — a **count** — and no position list. The
+five arms 852000–852004 were submitted against that unchanged code, so they will land with exactly
+the same per-row fields every previous arm has.
+
+The claim was written from intent, not from the file. ⚠ This is the same failure mode as `A-012`
+(trusting my own instrument) applied to prose: a preregistration is only binding if every factual
+sentence in it was **read off an artifact**. Nothing in `PR-028`'s declared outcomes depends on this
+sentence, so the design stands unmodified — but the sentence is withdrawn.
+
+⇒ Superseded by `R-065`, which shows the persistence change is **not needed at all**.
+
+### `R-065` — `B-007` is **CLOSED**, and its premise was false: the draw positions are **exactly regenerable**
+
+`B-007` recorded that per-row control-draw positions are not persisted, and I had been treating that
+as a blocker on fitting a *predicted-refusal* matched control (the route `PR-028` had to reject; see
+also `C-023`, which killed the *observed*-refusal route as post-hoc selection).
+
+`nondemo_control_draw`'s docstring claims the draw is regenerable from `control_seed` + `draw_index`
+plus the row's spans. ✅ **Tested against a real committed arm** (`dcsp24_d1`, `nondemo_matched_d1`,
+recorded `control_draw_seed` 28180678) rather than reasoned about:
+
+* the four regeneration inputs are all already on every row — `demo_span_bounds`,
+  `query_span_bounds`, `seq_len`, and the seed via `nondemo_draw_seed(control_seed, draw_index)`;
+* the demo key set is **not** a separate list: `demo_span_bounds = [138, 185]` spans exactly
+  `n_demo_span_positions = 48`, i.e. the keys are that contiguous range;
+* regenerating **200 rows** reproduced a count-matched draw on **200 / 200**, `match_ratio` min
+  **1.000**, median **1.000**, **0** mismatches.
+
+⇒ ✅ `B-007` closes with **no code change, no schema change, and no file growth** (it would have cost
+~600 k integers per arm). The positions of every control draw already run this phase — including the
+three `PR-024` arms and the five `PR-028` arms now generating — are recoverable offline whenever a
+predictor needs them.
+
+⚠ **Scope.** This closes the *availability* question only. It does **not** license a
+predicted-refusal control: that still needs a fitted predictor and a preregistration, and `PR-028`
+deliberately does not attempt one. ⛔ Do not restate `B-007` as a blocker again.
+
+### `C-040` — `R-065` reached the right verdict down a route that did not need to exist
+
+`R-065` closed `B-007` by showing the draw positions are **regenerable**. ⛔ They do not need to be
+regenerated: they are **written out verbatim**, per row, in
+`control_draw["<arm>@seed<control_seed>"]["positions"]` — a 48-integer list sitting in the field
+directly above the ones I inspected.
+
+⚠ **How I missed it.** My first probe tested `"demo_keys" in row or "demo_key_positions" in row`,
+i.e. it asked for **names I had guessed**, and reported `demo key list persisted? False`. I never
+listed the row's actual keys. Dumping all 47 fields — which cost one command — shows `control_draw`
+and `control_draw_match_ratio` both present. ⇒ This is [[feedback-matcher-scope-bug-class]] on my own
+probe: **the wrong key sees nothing, and reports it as absence**. ⛔ List the fields before testing
+for one.
+
+✅ **`R-065`'s verdict survives and is now stronger, because the persisted list gives the identity
+check `R-065` lacked.** As published, `R-065` verified only that regeneration produces a draw of the
+**right shape** — 200/200 count-matched — which **any** seed would satisfy. That is a verifier that
+cannot fail. Re-run against the persisted positions:
+
+* correct seed → **200 / 200 exact position-set matches**, 0 mismatched;
+* mutation, `seed + 1` → **0 / 200** exact ⇒ the check discriminates, so the pass means something.
+
+### `R-066` — `B-007` **and** `B-013` are **READOUT-ONLY**, and closed on every behavioural arm
+
+Both blockers say a field is missing "on any arm". ⛔ **Both were generalised from readout arms to
+all arms.** Measured over **every finished arm that requests a `nondemo` control** (n = **66**):
+
+| `--query-kinds` | arms | carries `control_draw` (+ `positions`, `match_ratio`) |
+|---|---|---|
+| `behavioral` | **46** | **46 / 46** ✅ |
+| `semantic_forced_choice` | **20** | **0 / 20** ⛔ |
+
+**Zero counterexamples in either direction**, and the split is uniform *within* each arm (0/380 vs
+1160/1160 on the pair I diffed), so it is an arm-level property, not a per-row dropout.
+
+✅ **Grounded in the code, not just the correlation.** The generation branch builds its row from
+`base` including `control_draw` / `control_draw_match_ratio` / `n_control_draw_positions` (≈ line
+2346). The readout branches call `_readout_knock_fields(knock_stats, dk, prot, seq_len)`, which is
+**never passed `knock_draw` at all** — so readout rows *structurally cannot* carry the draw. ✅ It
+*does* return `hook_n_keys_masked`, which is precisely why `B-013`'s workaround ("recover the ratio
+from the hooks") worked on the readout arms where `B-013` was raised.
+
+⚠ **This is `C-027`'s bug class, mirrored.** `C-027` probed the **behavioural** arm and made a claim
+about the **readout** arm; `B-007`/`B-013` probed the **readout** arms and made a claim about all
+arms. ⛔ Third time this phase a Llama `dcs_*` / `dcsro_*` mix-up has produced a false statement. ⇒
+**Name the `--query-kinds` of the arm you probed in any claim about row fields.**
+
+⇒ **Consequences.**
+* ✅ `B-007` **CLOSED for the behavioural arms**, which are the only ones a refusal predictor would
+  use — including the three `PR-024` controls and the five `PR-028` controls now generating. A
+  *predicted*-refusal matched control is **fittable today**, with no code change and no re-run.
+* ✅ `B-013` **CLOSED for the behavioural arms**: `control_draw_match_ratio` is on all 46, so the
+  row-alignment assumption its workaround needed is not required there.
+* ⚠ **Both stand, correctly scoped, for readout arms**, where the workaround via `hook_n_keys_masked`
+  remains the route. The fix site is exactly one call: `_readout_knock_fields` would have to take
+  `knock_draw` the way the generation branch does. ⛔ **Not applied mid-phase** — it is a generator
+  change with five arms in flight, and `B-013`'s own reasoning for deferring it still holds.
+* ⛔ The `control_draw_note` in `metadata.json` is still wrong **as written** ("every row carries its
+  own ratio"): true on behavioural arms, false on readout arms. It needs the scope, not deletion.

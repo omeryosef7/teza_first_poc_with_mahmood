@@ -262,8 +262,15 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
 
 ## KNOWN DEFECTS
 
-* `DCS-B-007`: per-row control-draw **positions** are not persisted, so control/demonstration
-  disjointness is a **code guarantee, not an artifact fact**.
+* `DCS-B-007` → ✅ **CLOSED for behavioural arms (`R-066`), and it was never true there.** The draw
+  positions ARE written per row, in `control_draw["<arm>@seed<seed>"]["positions"]`, on **46 / 46**
+  behavioural arms — so control/demonstration disjointness is an **artifact fact**, not only a code
+  guarantee, and a *predicted*-refusal matched control is fittable with no re-run. Independently
+  identity-verified: regeneration from the spans + seed reproduces the persisted set on **200/200**
+  rows, and the `seed+1` mutant on **0/200** (`scripts/dcs_verify_draw_regenerable.py`).
+  ⚠ **Still open, correctly scoped, on readout arms** (`--query-kinds semantic_forced_choice`, 0 / 20):
+  `_readout_knock_fields` is never passed the draw. ⛔ The original wording generalised from readout
+  arms to all arms — `C-027`'s bug class mirrored.
 * `DCS-B-006`: after `KO-3` the two cells are not in comparable measurement regimes (cell `C` leaves
   the option set on 257/380 rows). The defense — the dose-matched control on the *same* prompts
   keeps mass at 0.798 — is strong but **must be argued in the text**.
@@ -272,11 +279,14 @@ invocation. ⛔ It does **not** rescue the directional contrast, which stays `CO
   **18 / 380** labels, net **+6**, `refused` **0 / 380**. ⛔ Scope: *same arm, same configuration, second
   invocation*, so it is an **upper bound** containing cross-invocation drift, measured on **one** arm — not "the
   judge's intrinsic noise".
-* `DCS-B-013`: ⛔ the per-row **control match ratio is not persisted**, although the artifact's own
-  `control_draw_note` states that *"every row carries its own ratio in `control_draw_match_ratio`"*. Only the
-  aggregate survives, in `metadata.json`. ⚠ It blocked `PR-018a`'s declared secondary; recovered from
-  `hook_n_keys_masked` (control ÷ knockout per `prompt_id`), and the recovery was **validated against the metadata
-  count before use** — but the workaround assumes the two arms are row-aligned, which is not true in general.
+* `DCS-B-013` → ✅ **CLOSED for behavioural arms, ⚠ open for readout arms (`R-066`).** The per-row
+  `control_draw_match_ratio` **is** present on **46 / 46** behavioural arms and absent on **20 / 20**
+  readout arms — the blocker was raised on a readout arm (`PR-018a`) and its *"not persisted on any
+  arm"* wording over-generalised. Where it is absent the `hook_n_keys_masked` recovery (control ÷
+  knockout per `prompt_id`) remains the route; it was **validated against the metadata count before
+  use**, but assumes the two arms are row-aligned, which is not true in general.
+  ⛔ `metadata.json`'s `control_draw_note` — *"every row carries its own ratio"* — is still wrong **as
+  written**: it needs the `--query-kinds` scope, not deletion.
 * `DCS-B-009` → ⚠ **RUN AND NOT RESOLVED (`R-061`)**, and the limit has moved. 78 new domains took
   `k` from 38 to **116** at a measured cost of ~13.5 GPU-h. The declared conjunction (significance
   against **all three** dose-matched controls) came back **1 of 3**: p = 0.175 / **0.0096** / 0.466.
@@ -336,5 +346,8 @@ rather than leaving to be discovered:
 > recomputable from the repository alone.** `results.jsonl` is what the DiD scripts read, and it is
 > not here.
 
-Whether to track it is `B-013` — a shared-tree footprint decision (it would nearly double tracked
-outputs), pending, and **not** a scientific judgement to be made unilaterally.
+Whether to track it is a shared-tree footprint decision (it would nearly double tracked outputs),
+pending, and **not** a scientific judgement to be made unilaterally. ⚠ This was filed under `B-013`
+too, but it is a **different** question from `B-013`'s match-ratio persistence: `R-066` closes the
+persistence half on behavioural arms and says **nothing** about whether `results.jsonl` gets tracked,
+which remains open.

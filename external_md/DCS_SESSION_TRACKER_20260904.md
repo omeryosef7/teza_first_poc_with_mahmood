@@ -94,12 +94,16 @@ Inherited state at `06157b87`: `PR-015` in flight (849114–849119), `PR-014` `B
 | 23 | `A-013` | closing audit: **15/15** preregistrations resolved (by resolving-entry heading, not a regex window — `A-005`'s failure recurred on the first try); **all 5 verifiers + 7 pytest** re-run and green | ✅ |
 | 24 | `PR-027`/`R-064` | ⛔ gate **FAILS** (46>40 ✅ but only **4** domains ≤0.25, need >5) ⇒ **stops at Stage 1**. ✅ The 78 NEW domains reproduce the old 38's installation distribution almost exactly (0.900/0.192 vs 0.908/0.197) ⇒ **the ceiling is a PARADIGM property**; low-installation yield **3.45 %**, so ~580 domains would be needed | ✅ |
 | 24 | — | `R-064` propagated. ⛔ The figure asserted *"a low-dose block is the only route"* — falsified **twice** since (`R-054` built it and it yielded 1 domain; `R-064` shows ~580 domains is the route). Corrected in figure + summary | ✅ |
+| 25 | `C-039` | ⚠ `PR-028` asserted *"the new arms persist the per-row draw positions"* — `score_behavior.py` was **never touched**; the sentence was written from intent, not read off the file. Design unaffected; sentence withdrawn | ✅ |
+| 25 | `R-065` | ✅ **`B-007` CLOSED** and its premise was **false**: positions are exactly regenerable from `demo_span_bounds`+`query_span_bounds`+`seq_len`+the recorded seed. **200/200** rows, `match_ratio` median **1.000**. No code change, no schema change, ~600 k ints/arm not written | ✅ |
+| 25 | `C-040` | ⚠ `R-065` was right by the wrong route: the positions are **written verbatim** in `control_draw[...]["positions"]`. My probe tested for **key names I guessed** and read absence. ✅ The persisted list supplies the identity check `R-065` lacked — **200/200** exact, `seed+1` mutant **0/200** | ✅ |
+| 25 | `R-066` | ✅ **`B-007` and `B-013` are READOUT-ONLY.** Behavioural **46/46** carry the draw, readout **0/20**, **zero counterexamples**; grounded in code (`_readout_knock_fields` never gets `knock_draw`). ⇒ both **CLOSED for the arms that matter**, incl. all 8 `PR-024`/`PR-028` controls; a predicted-refusal control is fittable with **no re-run**. ⛔ `C-027`'s bug class, mirrored | ✅ |
 
 ## Live
 
 | what | id | state |
 |---|---|---|
-| *(nothing in flight)* | — | `B-009` complete: 5 arms generated, judged and analysed |
+| `852000`-`852004` (PR-028, 5 control draws) | `PR-028` | 2 RUNNING (n-802/n-803), 3 PENDING; ~2.7 h each |
 
 ## Standing rules being followed this session
 
