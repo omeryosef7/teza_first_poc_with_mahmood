@@ -378,8 +378,16 @@ def main():
                     "  accumulation - R-003 refuted it.\n\n"
                     "Behavioural status\n"
                     "─────────────────────────────\n"
-                    "- Llama: direction only (~-30 of 153); NOT\n"
-                    "  significant at the domain independence unit.\n"
+                    "- Llama: B-009 RUN at k=116 (78 new domains),\n"
+                    "  NOT RESOLVED (R-061). Conjunction over all 3\n"
+                    "  dose-matched controls = 1 of 3:\n"
+                    "  p = 0.175 / 0.0096 / 0.466. Never quote the\n"
+                    "  0.0096 alone.\n"
+                    "  [!] Domain count was NOT the constraint. The\n"
+                    "  controls induce +35/+133/+200 refusals and the\n"
+                    "  between-control spread (0.0586) EXCEEDS the\n"
+                    "  effect (0.0391) -- the comparator draw decides\n"
+                    "  the p-value, 0.01 to 0.47 on identical data.\n"
                     "- Qwen: CONFOUND-LIMITED (R-048). All 8 arms\n"
                     "  judged in one invocation. Face value gives\n"
                     "  KO-ctrl = +23..+45 (all 6 significant); the\n"
@@ -394,7 +402,7 @@ def main():
                     "- Judge-free and it survives: KO-3 removes ALL\n"
                     "  150 refusals and buys only +21 attacks\n"
                     "  (74->95), so 86% do not become attacks.",
-                    fontsize=7.0, va="top", family="monospace")
+                    fontsize=6.2, va="top", family="monospace")
     axes[2][1].text(0.52, 1.00,
                     "Generality (PR-013 / R-035)\n"
                     "─────────────────────────────\n"
@@ -436,7 +444,7 @@ def main():
                     "  AND have no control (R-033) => a low-dose\n"
                     "  block is the only route to settling this.\n"
                     "- PR-018's manipulation had no headroom (R-042).",
-                    fontsize=7.0, va="top", family="monospace")
+                    fontsize=6.2, va="top", family="monospace")
 
     fig.subplots_adjust(left=0.075, right=0.985, top=0.955, bottom=0.035,
                         hspace=0.62, wspace=0.26)
