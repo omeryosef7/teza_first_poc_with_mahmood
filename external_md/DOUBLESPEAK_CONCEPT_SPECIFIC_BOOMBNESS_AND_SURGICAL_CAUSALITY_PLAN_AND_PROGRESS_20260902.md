@@ -6910,3 +6910,66 @@ arms. ⛔ Third time this phase a Llama `dcs_*` / `dcsro_*` mix-up has produced 
   change with five arms in flight, and `B-013`'s own reasoning for deferring it still holds.
 * ⛔ The `control_draw_note` in `metadata.json` is still wrong **as written** ("every row carries its
   own ratio"): true on behavioural arms, false on readout arms. It needs the scope, not deletion.
+
+### `R-067` — ⚠ EXPLORATORY: can a control's refusal load be predicted from its **mask geometry**? ⛔ Not on this feature set — and the pooled test that said yes is an **arm-level artifact**
+
+**Why this was asked now.** `R-061` measured the binding constraint on the behavioural half: which
+control you draw decides the p-value (0.01 → 0.47 on identical data). `C-023` killed matching on
+*observed* refusal as post-hoc selection. Matching on **predicted** refusal is legitimate, and
+`R-066` had just shown the predictor's inputs are all persisted. ⇒ Before designing that control, ask
+the prior question: **is there anything to predict?** Cost: CPU only, on the three `PR-024` control
+arms already judged. ✅ No GPU spent to answer it.
+
+Seven mask-geometry features, each a property of the **mask alone** (computable before generation,
+so a control built on them is not post-hoc): position relative to the demo block and query span,
+normalised spread, run structure, distance to the query.
+
+⛔ **The pooled within-prompt test says "signal" and it is wrong.** All **7 / 7** features hit the
+permutation floor (p = 0.0005, n = 3480 residuals), |ρ| up to 0.204. ⚠ **This is confounded with arm
+identity.** The three arms refuse at **23.9 / 15.4 / 29.7 %**, every row inside an arm shares one
+seed, so *any* feature that differs between arms inherits that gap — at n = 3480 rows it reaches the
+floor whether or not geometry matters. **k = 3 draws is the real sample size, not 3480.** ⇒ This is
+`R-016`/`C-016`'s independence-unit error, arrived at from a new direction.
+
+✅ **The primary — within arm, residualised on each prompt's baseline refusal, arm as the unit:**
+
+| feature | `d1` | `d2` | `d3` | consistent |
+|---|---|---|---|---|
+| `frac_before_demo` | −0.099 | −0.099 | **+0.331** | ⛔ |
+| `mean_norm_position` | +0.019 | +0.018 | **−0.214** | ⛔ |
+| `frac_first_quarter` | −0.017 | +0.008 | +0.194 | ⛔ |
+| `n_runs_norm` | +0.007 | −0.039 | −0.257 | ⛔ |
+| `spread_norm` | +0.047 | +0.076 | +0.286 | ✅ |
+| `min_dist_to_query` | −0.038 | −0.043 | — | **DEGENERATE** |
+
+⇒ **1 of 6 non-degenerate features sign-consistent.** The pooled |ρ| of 0.10–0.20 collapses to
+**0.02–0.04** in `d1`/`d2`, and `d3` **flips sign** on four features while being the largest in
+magnitude.
+
+⚠ **Two things that are NOT null results and must not be read as such.**
+* `min_dist_to_query` has **one distinct value across all 1160 rows of `d3`** (sd = 0.0000). Its
+  ρ = 0.0000 means *no variance to correlate*, not *no effect*. ⛔ Excluded, not counted as a null —
+  the analyzer now labels it `DEGENERATE` rather than scoring it.
+* The one "consistent" feature, `spread_norm`, has within-arm sd **0.0072** in `d3` against
+  **0.095 / 0.110** in `d1` / `d2` — a 13× narrower range. ⚠ Treat its consistency as unsupported.
+
+✅ **And the within-arm test was not variance-starved**, which is the obvious objection: `n_runs_norm`
+has *larger* within-arm sd (**0.064**) than between-arm sd of the arm means (**0.018**), and still
+returns +0.007 / −0.039 / −0.257. ⇒ There was variance to find an effect in, and it was not found.
+
+⇒ **VERDICT: `NO USABLE WITHIN-ARM SIGNAL` on this feature set.** ⛔ Do not build a
+predicted-refusal control on mask geometry as specified here. ⚠ **Scope, stated rather than
+absorbed:** with k = 3 the sign test's attainable floor is **2/2³ = 0.25** — it *cannot* reach
+α = 0.05 no matter what the data say ([[feedback-floor-is-not-the-pvalue]]). This is a
+**feasibility screen, not a demonstrated null**, and it does not rule out a different feature set.
+
+✅ **The follow-up costs nothing extra.** The five `PR-028` arms now generating take this to **k = 8**,
+where the sign-test floor is **2/2⁸ = 0.0078** and the question becomes answerable. Re-run
+`scripts/dcs_draw_geometry_predicts_refusal.py` once they are judged; it already prints the k it has
+and warns when k is too small to conclude.
+
+⚠ **The analyzer was fixed before it was committed.** As first written it printed `VERDICT: SIGNAL`
+off the confounded pooled test. It now takes its verdict from the within-arm primary, prints the
+pooled figure under a `CONFOUNDED` label with no verdict attached, and excludes degenerate features.
+✅ It also refuses to report at all unless its own null calibration passes on outcome-shuffled data
+(1 / 7 false rejects at α = 0.05, expected 0.4).
