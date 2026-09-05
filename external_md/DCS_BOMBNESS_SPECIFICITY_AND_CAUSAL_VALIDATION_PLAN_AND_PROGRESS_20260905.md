@@ -666,3 +666,56 @@ The audit's construction is correct and is the properly-powered follow-up: copy
 no existing guard performs, and ~38 pools × 1 valence × N concepts of `gpt-4o-mini` calls.
 ⛔ **Not started.** It is a new-data task needing its own preregistration and Omer's sign-off on the
 spend; `PR-031` is deliberately the free test that runs first and tells us whether it is worth buying.
+
+---
+
+## §9 — `DCS-PR-031c` — PRE-DATA AMENDMENT: the primary readout channel, on power grounds
+
+**Written 2026-09-05 before any hidden state exists.** The smoke extraction (job 853482) was
+`PENDING` at the time of writing; no result of any kind has been read.
+
+### 9.1 Why
+
+`PR-031` §6.2 named `comprehension_usage` the primary probe channel because it is perfectly balanced
+(72 complete `A/B/C/E` quadruples). Counting the rows the probe would actually receive shows that
+choice is close to unusable:
+
+| channel | cell `C` rows/bank | at `n_examples ∈ {4,8}` | **per domain** | held-out domain rows (3 concepts) |
+|---|---|---|---|---|
+| `comprehension_usage` | 72 | 24 | **4** | **12** — accuracy granularity 1/12 |
+| `semantic_one_word` | 396 | 240 | **40** | **120** |
+
+Training would be 5 domains × 4 × 3 = **60 rows in 4096 dimensions** on the balanced channel. That
+is not a design that can return an interpretable negative: a failure would be attributable to
+sample size, and this phase has already been bitten three times by reading an underpowered negative
+as a null (`C-015`, `R-029`, `R-075`).
+
+### 9.2 The amendment
+
+* **PRIMARY channel: `semantic_one_word`**, all `bank_block`s, `n_examples ∈ {4, 8}`.
+  Leakage-safe by the §2.3 criterion (`occurrence_analysis_safe` **1008/1008**; codeword question
+  *"what does the word button actually refer to?"* is concept-free and byte-identical across the four
+  concept banks), open-ended rather than binary, and the only channel carrying cell `F`.
+* **`comprehension_usage` is retained as a pre-declared balanced replication channel**, reported in
+  full, with its own limitation stated: at 4 rows/domain/concept it is **underpowered by
+  construction** and a null there is not evidence.
+* ⚠ `semantic_one_word`'s cell `C` spans six template families —
+  `core2x2` 72, `core2x2_slot3` 48, `strength` 48, `consistency` 36, `position` 12, `role_style` 180.
+  These vary demonstration *presentation*, and they are **matched across all four concept banks**, so
+  they are balanced, not confounded. This is recorded as heterogeneity, and it buys a control the
+  original design lacked:
+* **NEW SECONDARY — leave-one-`bank_block`-out**, the held-out **template-family** generalisation
+  test §20 of the brief asks for and which no existing DCS result has. Reported alongside the primary.
+
+### 9.3 What does NOT change
+
+Independence unit **domain, n = 6**; two-sided sign test; α = 0.05; attainable floor **0.031**; the
+single-composite rule (§4); primary comparator `mean(knife, gun)` with `club` excluded on the
+pre-outcome mechanistic grounds of §8.3 and reported separately; `P2` sole primary, `P1` secondary;
+cell `F` as the benign-remap class; the mandatory length-only control (pre-data value **0.240**); the
+`n_examples = 0` null that voids the run if it fires; and all four declared outcomes.
+
+⇒ **Primary statistic, final form:** per-domain **3-way** held-out accuracy among
+`{bomb, knife, gun}` on cell `C` (chance **1/3**), leave-one-domain-out, two-sided sign test over the
+6 per-domain values of `(acc_d − 1/3)`. 4-way with `club` and 4-way with cell `F` are pre-declared
+secondaries.
