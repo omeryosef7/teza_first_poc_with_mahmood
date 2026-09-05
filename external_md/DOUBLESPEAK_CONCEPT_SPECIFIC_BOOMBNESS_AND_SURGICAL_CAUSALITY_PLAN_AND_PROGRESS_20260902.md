@@ -6753,3 +6753,59 @@ will help. **They do not.**
 **13, 30, 33** domains (`R-055`) and cannot be tested at **116** because the low tail does not exist.
 ⛔ `R-055`'s categorical reading stands, and the route to overturning it is **~580 domains**, not a
 better bank.
+
+## `PR-028` — PREREGISTRATION: stop choosing a comparator. Treat the **control draw as a random effect**
+
+⚠ **Frozen before any new arm is submitted.** Authorised by Omer ("preregister it") after `R-061`
+found the comparator draw matters more than the intervention.
+
+⛔ **Why "a control matched on induced refusal" is NOT the design I am proposing.** It is the obvious
+reading of `R-061`, and it does not survive contact with `C-023`: matching on **observed** refusal is
+post-hoc selection on the nuisance, which this phase has already retracted once. Matching on
+**predicted** refusal needs a predictor, and ⛔ `B-007` records that control-draw **positions are not
+persisted**, so no predictor can even be fitted today. ⇒ That route is blocked at the data layer.
+
+**The design that is available, and is better.** The three controls are **seeded draws from one
+population** — same intervention, same dose (`R-060`: `keys_masked` 522 identical), differing only in
+which keys. ⇒ The draw is a **random effect**, not a fixed choice, and the correct move is to
+**integrate over it rather than pick one**.
+
+**PRIMARY.** `KO-3` against the **control distribution**: one-sample test of the `KO-3` ASR against
+the mean of `K` control draws, with the **between-control sd as the error term**. ⛔ No control is
+selected, quoted alone, or excluded. ⚠ This is exactly the quantity `R-061` showed was being hidden
+by picking one comparator.
+
+**Sizing, from the measured between-control sd (0.0295) and the observed effect (−0.0391):**
+
+| K controls | SE | t | approx p |
+|---|---|---|---|
+| **3 (what we have)** | 0.0170 | 2.30 | **0.149** |
+| 4 | 0.0148 | 2.65 | 0.077 |
+| **6** | 0.0120 | 3.25 | **0.023** |
+| **8** | 0.0104 | 3.75 | **0.007** |
+
+⇒ **K = 8** (the 3 existing draws + **5 new**), which clears α with margin and does not sit on the
+boundary the way K = 6 does. **Cost: 5 arms × ~2.7 GPU-h ≈ 13.5 GPU-h**, plus ~**$1** judging.
+
+⛔ **What this fixes and what it does NOT.** ✅ It fixes the **variance** problem — "which control?"
+stops being a question. ⛔ It does **not** fix the **bias** problem: every control induces refusal
+(+35…+200) while `KO-3` removes all of it, so the control **mean** is still refusal-confounded. ⇒ The
+`R-063` conversion-calibrated correction is applied **on top**, and the primary is reported **both**
+raw and calibrated. ⚠ Anyone reading this as "the random-effect design solves the confound" has
+misread it.
+
+✅ **`B-007` closed as part of the same run.** The new arms persist the **per-row control-draw key
+positions**, which costs nothing at generation time and makes a *predictive* matched control possible
+for the first time — the route this preregistration had to reject for lack of data.
+
+⛔ **Declared outcomes.**
+* **`KO-3` outside the control distribution at α = 0.05, raw AND calibrated** ⇒ the behavioural effect
+  is established against the comparator *population* rather than a chosen member. ⚠ It would **not**
+  retroactively resolve `B-009` on `PR-024a`'s conjunction — that verdict stands as `NOT RESOLVED`;
+  this is a **different, better-specified estimand** and will be labelled as one.
+* **Significant raw but not calibrated** ⇒ **`CONFOUND-LIMITED`**, exactly as `R-048`.
+* **Not significant at K = 8** ⇒ a **well-powered negative** at the design's own sizing, and the
+  behavioural half is reported as **not established on Llama**. ⚠ Reported as prominently as a
+  positive.
+* **Between-control sd at K = 8 materially exceeds 0.0295** ⇒ the K = 3 estimate was optimistic, the
+  design is underpowered at its own target, and ⛔ that is stated rather than absorbed.
