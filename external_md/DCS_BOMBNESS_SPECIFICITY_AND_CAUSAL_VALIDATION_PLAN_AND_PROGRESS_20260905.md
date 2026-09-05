@@ -2590,3 +2590,39 @@ K=5, 6, 9 may be promoted after the fact (§30.7). ⚠ The scientifically live q
 whether saturation tracks *the content word* or *depth into the query* — is a **new** experiment
 needing its own preregistration, and it is the second item now queued behind `PR-035`.
 
+
+---
+
+## §35 — `DCS-A-026` — ✅ `R-080` / `R-081` ARE INDEPENDENTLY VERIFIED. §28.9's block on promoting them is lifted.
+
+`scripts/dcs_verify_kladder.py`. ⛔ It does **not** import `dcs_kladder_analysis.py` (checked: its
+imports are stdlib + numpy + the tokenizer only) and it does **not** read the producer's derived
+fields as truth — every number is re-derived from the raw `results.jsonl`, the committed argsfiles,
+the job logs, and a fresh tokenisation. Run by me, not reported on trust.
+
+| check | result |
+|---|---|
+| **C1** arm identity — 20 arms resolved, `DONE.json`, 380×38, **argsfile byte-for-byte**, log header says `score_behavior.py` (the `C-047` check), bank hash | ✅ PASS |
+| **C2** dose — `keys_masked` **2088 identical** on every rung and its control; `match_ratio` **min = mean = 1.000, below1 = 0** on all 10 families; 0 liveness violations; 0 decode edits; eager | ✅ PASS |
+| **C3** pairing — same 38 domains, paired; every `mean_delta` recomputed from raw rows | ✅ PASS |
+| **C4** ⛔ **the §11.7 anchor — `absolute_difference = 0`** | ✅ PASS |
+| **C5** Holm over the **five declared** rungs, absent entering at 1.0 | ✅ PASS |
+| **C6** `K* = 7`, `shape = STEP`, `gaps = []`, largest single-rung rise **K6→K7, 82.9 pp** | ✅ PASS |
+| **C7** ⛔ **token identity — 380/380 at every rung**, including `K=6 '?'` and `K=7 ' bomb'` | ✅ PASS |
+
+> `VERIFIED — every check re-derived from the raw arms agrees with the producer.` exit 0
+
+**Mutation harness: `MUTATION HARNESS OK — every mutation was caught by its DESIGNATED check`,
+exit 0, 7/7.** ⛔ This is the property `C-049` §22.5 found the *old* verifier lacked: it passed when
+*some* check failed. Each mutation here is bound to one check, e.g.
+
+* `N6` — a gap introduced while `STEP` is still claimed → `C6`: *"the 8-point profile §11.5 requires
+  is not verifiable … NO SHAPE MAY BE NAMED — yet the producer names 'STEP'."*
+* `N7` — the option word changed `bomb`→`knife` → `C7`: *"K=7: only 0/380 prompts newly cut `' bomb'`
+  … R-080's whole interpretation rests on it."*
+
+⇒ ✅ **`R-080` and `R-081` are promoted.** §28.9's block applied to them is lifted.
+⛔ It remains in force for **`PR-035`**, whose verifier is still being built, and ⚠ note that
+verification confirms the **numbers and the population**, ⛔ **not** the interpretation — `R-081`'s
+bound (§27.4/§29.2) and `C-054`'s template restriction stand exactly as written.
+
