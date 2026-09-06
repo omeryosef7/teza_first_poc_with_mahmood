@@ -3310,3 +3310,78 @@ p-values) is unchanged; ⛔ the *reason* is now "the statistic is not the prereg
 ⚠ ⛔ This is the third time this phase that an adversarial pass corrected **me** rather than the code
 (`C-053` §28 corrected `C-050`; `C-055` corrected `A-026`; this corrects `C-057` and §43).
 
+
+---
+
+## §46 — `DCS-C-060` / `DCS-R-087` — the prompt-validation table found FIVE things the log had wrong or missing
+
+From `scripts/dcs_metadata_sidecar.py` → `reports/DCS_PROMPT_VALIDATION_TABLE.md` (the brief's §19).
+✅ **`R-078`'s four published rows reproduce EXACTLY on all 24 quantities**, which is what makes the
+rest of this trustworthy.
+
+### 46.1 ⛔ `C-060` — `A-020` §8.1 is WRONG IN DIRECTION. Cell `A` is *not* always a different corpus.
+
+`A-020` §8.1 — the finding that **demoted `P1` to secondary** — states cell `A` is a different corpus
+in each concept bank (*"bomb-knife benign overlap 0/40"*). Measured over all 8 banks:
+
+* holding the codeword fixed, `bomb` and `club` share a **byte-identical cell-`A` demonstration
+  block on 104/696 design cells**, and a **byte-identical WHOLE PROMPT on 82**;
+* **every** concept pair is affected (**42–82** whole-prompt collisions);
+* cause: `demo_pools.json` and `demo_pools_club.json` share **9/40 benign sentences per domain
+  verbatim**;
+* hand-verified outside the script: `prompt_id = 0d28ddf3bd3656c2` has identical `prompt_sha16`
+  (`ad188ebe0f7c0ed5`) and identical `full_prompt` in `basket_bomb` **and** `basket_club`.
+
+⇒ ⛔ `A-020` §8.1 holds **only modally** (250/348 ids), not universally. ⚠ It **weakens rather than
+destroys** `P1`'s demotion — a partly-shared cell `A` is still not a matched one — ⛔ but the sentence
+*"cell A is a different corpus in each concept bank"* may not be written unqualified again.
+✅ **The `P2` primary is untouched**: its test population is cell `C`, and cell `C` is modally 8
+distinct blocks.
+
+### 46.2 ⛔ Cells `B` and `E` supply FOUR independent observations, not eight
+
+`demo_block_sha16` shows cells `B` and `E` have a modal **4 distinct demonstration blocks across the
+8 banks** — they are **shared between `button_X` and `basket_X`**. ⇒ ⛔ **Cell `B`, the declared
+layer/`C` SELECTION population (§23.6), is not 8 independent corpora.** ⚠ This does not invalidate
+selection (which happens within the button banks) ⛔ but it does mean the **basket transfer** selects
+on a cell `B` that **shares its demonstrations with basket's own** — a leakage channel for gate R3
+that was never recorded. ⚠ Gate R3 already has **no p-value** (§44.4); it now also has a design flaw.
+
+### 46.3 ⛔ `R-078`'s installation gate passes cells whose cell `C` is still NEGATIVE
+
+The gate is a **paired** rule (per-domain `mean(C) − mean(A) > 0`). Measured: **44/48** bank×domain×
+`n_examples` cells install. ⛔ **But 6 further cells PASS the paired rule while cell `C`'s own mean
+log-odds is still negative** — e.g. `gun/farm_storage/n8` at `C = −3.169`, `club/farm_storage/n4`
+at `−1.468`, `knife/farm_storage/n4` at `−1.339`.
+
+⇒ ⚠ **A paired improvement is not an installed mapping.** The model still reads those prompts as the
+*codeword*, just less so than in cell `A`. ⛔ `R-078`'s **PASS** verdicts must be read as *"the
+demonstrations move the readout toward the concept"*, ⛔ **not** *"the mapping is installed"*.
+The 4 non-installing cells concentrate in `{gun: 3, knife: 1}` × `{farm_storage: 2, lab_safety: 2}`.
+
+### 46.4 ✅ `R-087` — direct behavioural corroboration that `target_semantic` is false for cell `A`
+
+**30 of 192** joined rows decode to an argmax that is neither offered option nor `Neither`:
+**`mushroom` ×17, `onion` ×5, `clubs` ×5**, plus `car`, `both`, `mush`. ⇒ ✅ Cell `A`'s demonstrations
+install a **carrot-like benign object** (`demo_pools` natural word is `carrot`; cell `F`'s is
+`bicycle`), and the model **says so**. ⛔ That is behavioural confirmation of `A-025` §32.2's
+refutation — `target_semantic` claims `bomb` on those rows and is **demonstrably false on 9,600 rows**
+across cells `A`/`D`/`E`/`F`.
+
+⚠ ⛔ **This also retires an old ghost.** The `2026-09-05` draft's *"the model answers ` Mushroom` on
+22 of 380 rows"* was treated there as a curiosity; it is **the declared design showing through**, and
+`§7` of the brief's warning not to invent `mushroom` as the benign target is now settled from the
+generator: the benign target is **`carrot`**, and `mushroom` is the model's paraphrase of it.
+
+### 46.5 Two gaps in the grid, reported not dropped
+
+* ⛔ **`cell F × semantic_forced_choice` has ZERO rows** — the combination does not exist in any bank.
+* ⚠ **Only 192 of 10,080 core-population rows (1.9 %) carry any readout**, all from the four `inst_*`
+  arms. ⇒ The §19 validation table is **structurally complete and empirically thin**; its
+  installation columns rest on `R-078`'s 6-domain arms alone.
+
+⚠ Reproducing `R-078` also recovered **two decision rules the log never states**: `domains+` counts
+domains with paired `mean(C) − mean(A) > 0` (the alternative "cell-`C` mean > 0" gives 6/5/5/3 and
+**contradicts** the published 6/6/6/4), and the `option_mass` column is a **median** while the
+log-odds columns are **means**. Both are now recorded.
+
