@@ -3761,3 +3761,72 @@ capture path this phase would add. ⚠ **My recommendation is to build it** — 
 correlational probe result, and `R5` is what would make it causal. ⛔ Recorded rather than started,
 because "write a new capture pipeline" is a scope decision, not an engineering detail.
 
+
+---
+
+## §54 — `DCS-R-089` — ✅ **THE `PR-035` VERDICT IS RESTORED: `POSITIVE`.** Both tests are calibrated and conservative.
+
+The last input landed. Job **854780**, pure noise, 100 reps, α = 0.05:
+
+| | selection = **cell `B`** (what `PR-035` did) | selection = test set (the §28.2 defect) |
+|---|---|---|
+| **3-class** (clause 3, the primary) | **FPR 0.030** ✅ | 0.100 ⛔ |
+| **2-class** (clause 4, knife-vs-club) | **FPR 0.020** ✅ | 0.090 ⛔ |
+
+⇒ ⛔ **Both tests, AS RUN, are validly calibrated and CONSERVATIVE.** ⚠ For 3 classes the ORIGINAL and
+EXCLUDING nulls are **identical** (0.030 / 0.030, same median, same minimum) — exactly as the
+arithmetic predicted, since the symmetry there has probability 1/7776 and essentially never fires.
+
+### 54.1 §23.5, clause by clause
+
+| clause | requirement | result |
+|---|---|---|
+| 1 | blocking null passes | ✅ 0.3333 at chance, 0/6 domains, p = 1.0 (`R-084`) |
+| 2 | class set complete | ✅ all four `button_*` runs `DONE` |
+| 3 | 3-way perm p ≤ .05, above chance | ✅ **0.004975**, test calibrated at **0.030** |
+| 4 | knife-vs-club control clears | ✅ **0.0498**, test calibrated at **0.020** |
+| 5 | length-only control does not match | ✅ 0.336 vs null q95 0.488 |
+
+⇒ ✅ **`POSITIVE — concept-specific` STANDS.** ⛔ `C-058`'s override is **fully retracted**
+(`C-062`, `C-063` here); the analyzer was right and I was wrong.
+
+### 54.2 ⛔ The claim, stated exactly
+
+> On **held-out domains**, a linear probe on the codeword's **L6–14** hidden state identifies **which
+> of bomb / knife / gun** the demonstrations installed — **0.7485** against a 0.333 chance, **6/6**
+> leave-one-domain-out folds, permutation **p = 0.005** from a test that rejects noise at 0.030.
+> The **bomb-absent knife-vs-club** control also separates (**0.8596**, p = 0.0498, test FPR 0.020),
+> and since knife and club have **similar installation strengths** (+4.089, +6.435) while **bomb is
+> absent from that contrast**, a strength direction anchored on bomb cannot drive it.
+> ⇒ **The signal is concept IDENTITY, not remapping strength alone.**
+
+### 54.3 ⛔ What `POSITIVE` does NOT license — every caveat travels
+
+* ⛔ **NOT causal.** `A-025` `F-3` (arXiv 2605.04061) reports **0 % task transfer across all 28 layers
+  of Llama-3.2-3B despite 100 % probing accuracy**. ⇒ This is a **decodability** result. Gate **`R5`**
+  — does `KO-3` destroy it? — is **NOT RUN** (`B-021`/`Q-005`).
+* ⛔ **NOT "bomb vs generic remapping."** The cell-`F` comparator has an **invalid p** (`C-057`) *and*
+  is **block-confounded** (`C-053` §28.5: cells `C` and `F` sit in disjoint template blocks).
+* ⛔ **NOT lexical transfer.** `P2_basket_lexical_transfer` has **no permutation at all** — gate `R3`
+  has **no inference** — and `C-060` §46.2 found cell `B` supplies only **4** independent
+  demonstration blocks across 8 banks, a leakage channel for exactly that transfer.
+* ⛔ **`P1` is UNINFORMATIVE**, not a concept negative — class imbalance, 504 `literal` rows vs 144.
+* ⛔ **The two secondaries' p-values remain unquotable** (`C-057`), now **quantified**: their
+  selection scheme rejects noise at 0.090–0.100.
+* ⚠ **The 2-class test is underpowered by construction** — power **0.760** where a symmetry-free null
+  reaches 0.940. ⇒ Clearing 0.0498 is *harder* than the number suggests, not easier.
+* ⚠ One model, one codeword, **6 domains**, one band.
+
+### 54.4 ⚠ How close this came to being lost
+
+⛔ A correct, independently verified headline was **overturned by me on a sign error** (`C-058`),
+committed, and reported. It was recovered only because the brief mandates a **measured** false-positive
+rate before a null is trusted — and the measurement I ran first (`v1`) was itself wrong, testing
+test-set selection instead of the real design, which would have "confirmed" the erroneous override at
+0.090. ⇒ ⚠ **Two successive measurements were needed to undo one piece of bad reasoning.**
+
+⚠ ✅ **The one thing that worked throughout:** `R-086`'s primary never moved. 0.7485, 6/6 domains,
+`#{null ≥ obs} = 0`, reproduced to 16 digits by an independent recomputation on a different seed —
+**through four sections of argument in both directions.** ⇒ Verification of the *number* was solid
+while inference *about* the number was not.
+
