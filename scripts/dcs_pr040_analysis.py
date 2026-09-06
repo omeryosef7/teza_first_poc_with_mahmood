@@ -107,6 +107,7 @@ def main() -> int:
                     "cache is NOT used here. ONE significance test; the re-based secondary has no p.",
                void=[])
 
+    a_out = a.out
     off_pools, off_sel, layers = load_state("off", res)
     on_pools, on_sel, layers_on = load_state("on", res)
     if res["void"]:
@@ -115,6 +116,31 @@ def main() -> int:
     if layers != layers_on:
         res["verdict"] = f"VOID — layer lists differ between states: {layers} vs {layers_on}"
         return _write(res, a.out)
+
+    # ⛔ POPULATION IDENTITY. ko_off captures every row; ko_on SKIPS rows with no demo block
+    # (n_examples == 0), by design -- capturing those un-hooked would put un-knocked-out vectors
+    # into a cache whose name says otherwise. Cell C at n_examples in {4,8} all HAVE demo blocks,
+    # so the two states SHOULD hold identical prompt_id sets there. Assert it: an unequal pairing
+    # would make the per-domain drop a comparison between two different populations.
+    for cc in CLASSES:
+        # NB: do NOT name these `a`/`b` -- `a` is the argparse namespace and shadowing it breaks
+        # every later `a.out`. Caught by review before this file was ever run on real arms.
+        pid_off = {r["pid"] for r in off_pools[cc]}
+        pid_on = {r["pid"] for r in on_pools[cc]}
+        if pid_off != pid_on:
+            res["void"].append(
+                f"{cc}: cell-C population differs between states -- ko_off {len(pid_off)} rows, "
+                f"ko_on {len(pid_on)}, symmetric difference {len(pid_off ^ pid_on)}. The paired "
+                f"drop would compare two different populations.")
+        sel_off = {r["pid"] for r in off_sel[cc]}
+        sel_on = {r["pid"] for r in on_sel[cc]}
+        if sel_off != sel_on:
+            res["void"].append(f"{cc}: cell-B selection population differs between states "
+                               f"({len(sel_off)} vs {len(sel_on)})")
+    res["population_identity_checked"] = True
+    if res["void"]:
+        res["verdict"] = "VOID — " + "; ".join(res["void"])
+        return _write(res, a_out)
 
     C_off = [r for c in CLASSES for r in off_pools[c]]
     B_off = [r for c in CLASSES for r in off_sel[c]]
