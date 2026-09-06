@@ -4815,3 +4815,82 @@ if base_L6 - base_pr045 > 0.10:   verdict = "VOID — the restricted grid destro
 ### 70.4 Cost
 
 ⛔ CPU only. All three caches (`off`, `on`, `ko1` × 3 classes) are on disk. No GPU job. No new bank.
+
+---
+
+## §71 — `DCS-R-096` (`PR-045`) — above the degenerate layer the two scopes DO separate, and the codeword's own row carries about half
+
+Ran `scripts/dcs_pr045_analysis.py`, committed at `1977a42a` **before** it was run. CPU only, no new
+GPU job. Artifact: `outputs/boombness/dcs_analysis/dcs_pr045.json`.
+
+### 71.1 The declared bars, checked first
+
+| bar (§70.3) | value | |
+|---|---|---|
+| grid is the band minus its first layer | `[7,8,9,10,11,12,13,14]` | ✅ |
+| VOID if the restricted grid costs the baseline > 0.10 | cost **0.0745** (0.7529 → 0.6784) | ✅ passes, ⚠ **narrowly** |
+| BUG SIGNAL if `KO-1`'s drop exceeds `KO-legacy`'s | 0.0190 < 0.0365 | ✅ coherent |
+
+⚠ **The baseline cost is large and must travel with every number below.** Dropping layer 6 costs the
+probe 7.5 accuracy points — layer 6 is where `PR-035`'s primary lives. ⇒ These are **weaker
+measurements on a weaker probe**, and the available range they are fractions of is 0.345, not 0.420.
+
+### 71.2 `R-096` — the numbers
+
+| | baseline `ko_off` | knockout | mean drop | domains | of available |
+|---|---|---|---|---|---|
+| **`R6b`** `KO-1`, surface row only | 0.6784 | **0.6594** | **+0.0190** | 4/6 | **5.5 %** |
+| **`R6b` ref** `KO-legacy`, whole query | 0.6784 | **0.6418** | **+0.0365** | 5/6 | **10.6 %** |
+| **§13b** `KO-2`, read at ` bomb` | **1.0000** | **1.0000** | +0.0000 | 0/6 | 0.0 % |
+
+⛔ **No p-value on any row of that table** (§67.3). All picks for both `R6b` arms are `L = 7`,
+`C = 0.01`, selected on cell `B`.
+
+**Ratio `KO-1` / `KO-legacy` = 0.520.** ⛔ Descriptive, no bar, no verdict turns on it (§70.3).
+
+### 71.3 What may and may not be said
+
+✅ **May be said.** ⚠ *On layers 7–14, where the two knockout scopes are not arithmetically
+identical, they separate:* the whole-query knockout removes about twice what the codeword-row-only
+knockout removes. ⇒ The `PR-044` collapse was a property of layer 6 alone, and `C-068`'s explanation
+is confirmed by the separation appearing exactly where the explanation says it should.
+
+✅ **May be said.** ⚠ *Even the whole-query knockout removes only **10.6 %** of the probe's available
+accuracy on this grid* (5/6 domains, farm_storage negative). ⇒ `R-093`'s dissociation — readout
+destroyed, representation intact — **survives** on a grid where layer 6 cannot be doing the work.
+⚠ That is the one substantive thing these arms bought.
+
+⛔ **May NOT be said.** *"The codeword's own row accounts for half the causal effect."* The 0.520
+ratio is a ratio of two drops of **0.019 and 0.037** on a probe whose available range is 0.345. ⛔
+Neither drop has a p-value, neither is 6/6, and their ratio has no declared bar. ⛔ It is a
+descriptive quantity on a weakened probe and nothing more.
+
+⛔ **May NOT be said.** *"Gate `R6` passes / fails."* ⛔ **`R6` has no verdict.** `PR-044` was
+uninformative by construction (`C-068`); `PR-045` is descriptive by declaration. ⛔ **CANNOT ANSWER
+is not a null.**
+
+### 71.4 §13b — CANNOT ANSWER again, for the reason declared in advance
+
+Baseline **1.0000** in 6/6 domains on the restricted grid too, with picks scattered across
+`L7…L14`. ⇒ ⛔ The ceiling is **not** a layer-6 artefact: reading the token ` bomb` to decide whether
+the concept is *bomb* is a **lexical identity check**, and no choice of layer repairs that. ⇒ ⛔ **§13
+has no valid instrument in this sprint.** ⚠ A future preregistration would have to read the concept
+signal at a position that is **not** the concept word — the query's last token, say — and declare
+that before running.
+
+### 71.5 Gate ledger after `PR-045`
+
+| gate | status |
+|---|---|
+| `R1` | ✅ PASS |
+| `R2` | ✅ PASS |
+| `R3` | ⛔ FAIL on accuracy (`R-092`); direction transfers at AUROC 0.795 (`C-066`) — ⛔ never quote one without the other |
+| `R5` | ⛔ FAIL — dissociation (`R-093`), ✅ survives the matched-population check (`R-093a`) and the layers-7–14 re-read (`R-096`) |
+| `R6` | ⛔ **CANNOT ANSWER** — `PR-044` degenerate (`C-068`), `PR-045` descriptive |
+| `R7` | ✅ PASS |
+| `R8` | ⛔ **CANNOT ANSWER** — no behavioural outcome on this bank; power 0.250 vs a 0.50 bar (`PR-042`) |
+| §13 | ⛔ **CANNOT ANSWER** — instrument at ceiling by construction |
+| template-family claim | ⛔ **NO VALID INSTRUMENT** (`C-067`) |
+
+⛔ **Four CANNOT ANSWERs and one FAIL are not four nulls and a null.** Every one of them is recorded
+with the reason its instrument could not decide.
