@@ -4098,3 +4098,74 @@ offset **cancels exactly**.
   anchor becomes measured rather than inherited.
 * §55.5's train-on-KO/test-on-KO secondary is unchanged.
 
+
+---
+
+## §59 — `DCS-R-091` (PHASE 3 §9) — ✅ THE REMAPPING AXIS AND THE CONCEPT AXIS ARE DIFFERENT DIRECTIONS. And that explains `R-002`.
+
+`scripts/dcs_diffmeans_directions.py`. Zero GPU (44 s CPU). I **ran it myself** and every number below
+reproduced; an adversarial verifier independently re-derived four of them to **10 significant figures**
+with its own loader importing nothing from the deliverable.
+
+Directions are estimated on **TRAIN domains only**, leave-one-domain-out over n = 6, paired on
+`family_id`, evaluated on held-out domains. ⛔ **No layer selection and no hyper-parameter anywhere** —
+the statistic is the mean over the inherited L6–14 band.
+
+### 59.1 ✅ The decomposition
+
+| direction | `C_bomb` vs `A_bomb` (**is it remapped?**) | `C_bomb` vs pooled `C_{knife,gun,club}` (**which concept?**) |
+|---|---|---|
+| **`v_bomb`** (raw diff-in-means) | **AUROC 0.9987**, d 5.755, **6/6** | **0.5743** — *vs `gun` **0.4978**, i.e. chance* |
+| **`v_bomb_specific`** = `v_bomb − mean(v_knife, v_gun, v_club)` | **0.6070**, 3/6 | **AUROC 0.8964**, d 1.786, **6/6** |
+
+⇒ ⛔ **They are nearly complementary.** The raw difference-in-means is a **REMAPPING axis**: it says
+whether the codeword was remapped at all, and is **almost blind to which concept** it was remapped to.
+The residualized direction is a **CONCEPT-IDENTITY axis**: it barely registers remapping, and
+separates bomb from the hard negatives.
+
+**PRIMARY** (the one declared test): `v_bomb_specific`, held-out `C_bomb` vs pooled negatives,
+band-mean AUROC vs 0.5, exact two-sided sign test over 6 domains ⇒ **6/6, p = 0.03125 = the attainable
+floor.** ⚠ Per-layer profile is **FLAT** (0.912, 0.910, 0.894, 0.900, 0.886, 0.888, 0.880, 0.904,
+0.893) ⇒ **not a single-layer artifact.**
+
+### 59.2 ✅ `C-065` — this RECONCILES the inherited `R-002` negative
+
+`R-002` found the `toward_B_frac` geometry proxy **not bomb-specific**, with knife/gun/club matching or
+exceeding bomb — a result §1.3 has carried as *"a negative under one instrument"* since this phase
+opened. ⇒ **`R-091` says why.** That proxy measured movement along the **remapping axis**, and
+`v_bomb` vs the hard negatives is **0.5743, with `gun` at exactly chance**. ⛔ **`R-002` was not a
+failure to find concept specificity; it was a correct measurement of an axis that does not carry it.**
+⚠ ⛔ `R-002` is **not** retracted — its measurement stands. What changes is its **interpretation**.
+
+### 59.3 ✅ The controls
+
+* ⛔ **BOMB-ABSENT control** — `v_knife − v_club`, held-out `C_knife` vs `C_club`, **bomb in no term**:
+  **AUROC 0.9815**, d 4.796, **6/6** (per-domain .999 .944 .971 .994 .982 .999); **basket 0.9657**.
+  ⇒ A bomb-anchored *strength* axis **cannot** explain this. It is the strongest single row here.
+* ✅ **`n_examples = 0` blocking null PASSES EXACTLY:** `‖v_bomb‖ = 0.000`, held-out AUROC
+  **0.5000**, **0/6** domains — and the bank check confirms `A` vs `C` are **byte-identical 12/12**.
+* ✅ **Calibrated on synthetic data:** 50 null replicates carrying a **shared remap but no concept
+  component** ⇒ FPR **0.040** against the test's own 0.03125 floor.
+* ✅ **Cache binding** (`V6`-style): q95 rel-err **5.8e-07** on all 8 runs.
+* ⚠ **Lexical transfer, descriptive:** directions fitted on **button only**, scored on **basket** —
+  **0.9204**; and **0.8754** when the shared-domain channel is also removed.
+
+### 59.4 ⛔ Limitations that travel
+
+1. ⛔ **The strength confound is NOT fully closed by the primary.** `v_bomb_specific` subtracts a mean
+   over three concepts of very **unequal** installation strength (`R-078`: club +6.435, knife +4.089,
+   **gun does not install**). The z-projections show it: `C_club` sits at **−4.218** while `C_gun` sits
+   at **−0.621**. ⇒ a strength component is **present inside the primary** and this instrument cannot
+   decompose it. ⚠ Only the **bomb-absent** control is immune, and it is descriptive.
+2. ⚠ `C-060`'s cell-`A` overlap, **measured** on the exact families used: bomb/knife **6/168**,
+   bomb/gun **12/168**, bomb/club **18/168**. On those the cell-`A` term cancels exactly inside
+   `v_bomb − v_c'`; on the other ~90 % a benign-corpus difference survives as a nuisance term.
+3. ⛔ **n = 6.** Only **6/6 or 0/6** can clear α — 5/6 gives p = 0.21875. Declared before the data.
+
+### 59.5 What this adds to `R-086`
+
+`PR-035` showed a **classifier** can identify the installed concept. `R-091` shows there is a
+**direction**, that it is **stable across folds** (cos 0.927–0.959), **flat across the band**, and —
+⇒ the genuinely new part — that **remapping and concept identity live on different axes**. ⛔ Both
+remain **decodability** results; gate `R5` (running) is what would make either causal.
+
