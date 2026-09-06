@@ -3676,3 +3676,35 @@ caveat, it **overturned a correct headline result on a sign error**, and it surv
 long enough to be committed and reported. What caught it was **calibrating my own fix** — an action
 the brief mandates and I nearly skipped as a formality.
 
+
+---
+
+## §52 — `DCS-A-030` — blast radius of the permutation-symmetry finding: **ONE file, two contrasts**
+
+Asked and answered before it could become a lurking worry: does the `C-058`/`C-062` symmetry affect
+any other result in this phase?
+
+**Every analyzer, by inference method:**
+
+| script | inference | symmetry exposure |
+|---|---|---|
+| `dcs_bombness_specificity.py` | **label permutation** (9 call sites) | ⇐ the only one |
+| `dcs_kladder_analysis.py` (`R-080`/`R-081`) | `cluster_sign_test` + Holm | ✅ none |
+| `dcs_pr037_analysis.py` (`R-083`) | exact two-sided sign test | ✅ none |
+| `dcs_pr038_analysis.py` (`R-088`) | exact two-sided sign test | ✅ none |
+| `dcs_mask_overlap.py` (`R-085`) | row-independent sampling null + sign test | ✅ none |
+| `dcs_draw_offset_reliability.py` (`R-077`) | split-half + variance decomposition | ✅ none |
+
+⇒ ⛔ **A sign test has no relabel symmetry** — it counts per-domain signs and never refits a
+classifier under permuted labels. ⇒ ✅ **`R-077`, `R-080`, `R-081`, `R-083`, `R-085` and `R-088` are
+untouched by this entire line of correction.**
+
+Within the one exposed file, the **2-class** permutations are exactly two call sites — `:671` (the
+two `R-078` §21.2 contrasts) and `:694` (cell `F`) — and `C-062` has now measured them as **run** to
+be **conservative (FPR 0.020)**. The remaining sites are 3-class or 4-class, where the symmetry has
+probability `6/6⁶ = 1/7776` and contributes 0.03 expected replicates of 200.
+
+⚠ This is the check I should have run **when `C-058` was written**, before overriding a verdict:
+*"what else does this touch?"* ⛔ It touches nothing else, which means the damage from `C-058` was
+confined to the claim it was about — but that was luck, not design.
+
