@@ -655,3 +655,116 @@ No second paper exists; no new overlap.
 **Honesty on coverage, per §25.** Two searches returned nothing and are recorded as **null
 searches, not as evidence of novelty**. The **OpenReview blind spot flagged in the matrix
 §5.3/§6.3 remains OPEN** — this update did not run an OpenReview search and did not close it.
+
+---
+
+## 2026-09-07 · C-074 · **R-098's bank is VOID as a concept contrast. My design error.**
+
+**Supersedes `R-098`.** The six `ts116` banks are real, aligned and internally consistent — and
+they cannot answer the question they were built for, because the alignment I verified is *total*
+in exactly the cell that needs signal.
+
+### What is wrong
+
+Cell C (`natural_doublespeak`) draws the **harm** pool at `demo_surface = "codeword"` — the
+concept word is replaced by `button` before the prompt is assembled. Its demo block reads:
+
+> *A recent inspection revealed a suspicious package resembling a **button**. Staff received
+> training on how to handle a potential **button** threat.*
+
+The concept word never appears. So once the harm **sentences** are shared across concepts — which
+is precisely what a bomb→knife word swap on a pool whose `natural_word` is already `bomb`
+produces — the bomb, knife and gun prompts are **the same bytes**.
+
+Measured on the artifacts:
+
+| population | identical across bomb ∧ knife ∧ gun |
+|---|---|
+| cell C × `semantic_one_word` (**the primary**) | **1,856 / 1,856 = 100 %** |
+| cell C × `behavioral` | 1,856 / 1,856 = 100 % |
+| cell C, all channels | 3,712 / 5,568 = 66.7 % |
+| whole bank, per codeword | **7,424 / 22,272 = 33.3 %** |
+
+Extended by the adversarial agent to 14,848/14,848 triples over 44,544 rows in
+{A,C} × {behavioral, semantic_one_word} × n_ex {0,4,8}.
+
+⇒ The 6,960 probe rows collapse to 2,320 distinct texts, each carrying the **full label multiset
+{bomb, knife, gun}**. A hidden state is a deterministic function of its prompt, so the
+Bayes-optimal accuracy of *any* probe there is **exactly 1/3**. It cannot beat chance. **The
+ceiling is the bar.** Any other number would be a pipeline bug, not a finding.
+
+The only cell-C rows that do differ are `semantic_forced_choice`, and they differ by **one printed
+noun in the question, ~8 tokens from the end** — the instrument naming the answer, which is the
+defect §11 exists to avoid.
+
+Corroborating, from the concept-backing audit: **83.3 %** of dosed cell-C prompts carry
+bomb-specific collocates (*"suspicious package resembling a gun"*, *"gun disposal unit"*). The
+context installs **bomb in all three arms**. Tier-1 explosive predicates (`detonat*`, `defus*`,
+`blast`, `unexploded`) appear in 396/9,280 = 4.27 % of knife sentences — identically for gun,
+because they are the same sentences.
+
+### Why my verification missed it
+
+*"Identical up to a swap of word W"* and *"identical"* are the same statement when **W does not
+occur**. I reported 22272/22272 aligned and never counted how many rows actually contained the
+swapped word. The count is the check; the swap is not. Recorded plainly because this is the
+second time in one day that my own audit, not the artifact, was the broken thing — the first was
+the case-sensitivity false alarm in `R-098`.
+
+I also over-read mandate §6.1. It says keep the benign pool, filler, preamble, skeleton and query
+byte-identical and **CHANGE ONLY the harm demonstrations that define the installed concept**. I
+made the harm demonstrations identical too, which is not the middle between the old banks and the
+new one — it is the far end, past the manipulation.
+
+### What actually carries concept identity
+
+In doublespeak the codeword **stands for** the concept, so the installed concept is defined by
+what the demonstrations say the codeword **affords**. *"resembling a button"*, *"the button was
+defused"* install BOMB. *"the button was sharpened"*, *"the button slipped from the cutting
+board"* would install KNIFE. **Identity lives in the predicates, not in a word that is
+substituted away.**
+
+The three designs, stated so the distinction is never lost again:
+
+| design | benign / remap / filler | harm sentences | verdict |
+|---|---|---|---|
+| old 6-domain banks | **regenerated per concept** | regenerated per concept | confounded — three corpora (`A-034.1`) |
+| `ts116` word-swap (`R-098`) | shared | **shared** | **no manipulation** — this correction |
+| `ts116n` (next) | shared, byte-identical | **concept-specific, naturally generated** | the mandate §6.1 design |
+
+### The fix, and it dissolves Q-006 rather than answering it
+
+`scripts/dcs_ts_gen_concept_harm_pools.py` generates the **harm pool only** for a concept and
+copies benign / remap / filler **byte-for-byte** from `demo_pools_116dom.json`. It reuses
+`prepare_demos.gen_demos` and `demo_pools._clean` unchanged — same generator, same
+exactly-one-whole-word filter, same 8-round retry — so the new pools are produced by the identical
+process that produced the bomb pools they will be compared against. Neither `demo_pools.py` nor
+`prompt_families.py` is modified.
+
+The domain style hints are **concept-agnostic** by construction (`DOMAINS[d]["harm"]` specifies
+register and setting — *"flat incident-log sentences from an airport ground-handling safety
+inspection"* — never the concept), so knife and gun get naturally knife- and gun-affording
+sentences inside the same frame.
+
+**`Q-006` was a false dilemma and I posed it wrongly.** I framed alignment and naturalness as a
+trade, and proceeded on "alignment is primary". The trade only existed because I was word-swapping.
+Generating **only** the harm pool per concept gives **both**: naturalness where the manipulation
+lives, byte-identity everywhere else. The correct answer was available at the time and I did not
+see it.
+
+### Status of the artifacts
+
+The six `ts116` banks are **not deleted** and **not retracted as artifacts** — they are byte-exact,
+they verify against their hashes, and they remain the correct instrument for a different and
+narrower question: *is the doublespeak concept lexically separable at the codeword?* The measured
+answer to that is **no, by construction**. They are **VOID as a concept-identity contrast**, which
+is what `R-098` claimed. The claim is withdrawn; the files stay.
+
+### Cost of the error
+
+Roughly two hours of wall-clock and zero GPU. It was caught by the PHASE 4 audits **before any
+extraction**, by two independent agents that had been told to attack rather than confirm — the
+leakage audit found it as a byte-identity, the adversarial audit as a refutation. That is the
+gate working. Had the mandate not required these audits before GPU, the phase would have spent
+GPU hours to measure a quantity pinned to 1/3 by arithmetic and would very likely have reported
+the resulting 0.333 as a **negative result about the model**.
