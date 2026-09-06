@@ -4399,3 +4399,82 @@ that **prose describing an instrument drifts from the code implementing it**, an
 against each other catches it. ⚠ In each case the code was right and the prose was wrong — which is
 lucky, and is not a method.
 
+
+---
+
+## §64 — `DCS-R-093` (PHASE 5, gate `R5`) — ⛔ **`R5-FAIL`.** The knockout destroys the READOUT and leaves the REPRESENTATION intact.
+
+Six arms, **zero aborts**, population identity asserted (228/class on both sides, 48 selection rows),
+bank binding verified per class, every fold picking `(L=6, C=0.01)`. Analyzer committed at `8cc126b7`
+before the arms landed.
+
+### 64.1 ✅ The bridge validated itself end to end
+
+| | value |
+|---|---|
+| `ko_off` baseline (bridge, knockout disabled) | **0.7529** |
+| `R-086` published (original extractor) | **0.7485** |
+| **difference** | **0.0044** ⇐ VOID bar was 0.10 |
+
+⇒ ✅ **The bridge reproduces the published probe result on un-knocked states.** `PR-040a`'s
+bridge-to-bridge design and §55.7's kill criterion both hold.
+
+### 64.2 ⛔ The result
+
+| domain | `ko_off` | `ko_on` | drop |
+|---|---|---|---|
+| city_bridge | 0.7807 | 0.7632 | +0.018 |
+| farm_storage | 0.8421 | 0.8596 | **−0.018** |
+| game_manual | 0.5526 | 0.5263 | +0.026 |
+| instructional | 0.9298 | 0.8509 | +0.079 |
+| lab_safety | 0.7719 | 0.7018 | +0.070 |
+| news_report | 0.6404 | 0.5263 | +0.114 |
+| **mean** | **0.7529** | **0.7047** | **+0.0482** |
+
+Sign test **5/6**, **p = 0.21875**, floor **0.03125**. Drop is **11.5 %** of the 0.4196 available,
+below `PR-040` §55.4's 20 % `R5-FAIL` bar. ⇒ ⛔ **`R5-FAIL`: the concept signal SURVIVES.**
+
+⚠ ⛔ **This is an INFORMATIVE negative, not an uninformative one.** The floor was **0.03125** and the
+design **could** have cleared α — unlike `R-092`, where ties raised the floor to 0.25. The test had
+the power to detect a drop and found **11.5 %**.
+
+**Secondary (§55.5, no p):** train-on-KO / test-on-KO = **0.7120**. ⚠ That branch was written to
+separate *gone* from *re-based* **given a drop**; with no real drop it is simply confirmatory —
+0.7120 ≈ 0.7047 ≈ 0.7529, so the representation is **intact and in the same basis**, not re-based.
+⛔ The script's printed label *"PRESENT BUT RE-BASED"* is that branch's wording and **overstates**;
+the correct reading is **PRESENT AND UNMOVED**.
+
+### 64.3 ⛔ THE DISSOCIATION — same bank, same band, same `demo_all` scope
+
+| measurement | baseline | whole-query knockout | |
+|---|---|---|---|
+| **readout** — `semantic_logodds` (`R-083`'s `ref` arm) | **+3.3696** | **−3.0151** | ⛔ **SIGN FLIP**, Δ −6.38 |
+| **representation** — concept probe (this result) | **0.7529** | **0.7047** | ✅ **94 % retained** |
+
+⇒ ⛔ **The same intervention, on the same bank, in the same layer band, destroys the model's ability
+to REPORT the mapping while leaving WHICH CONCEPT WAS INSTALLED decodable from the codeword's hidden
+state.**
+
+⚠ This is the brief's §36 **dissociation** scenario — arriving one level earlier than expected. It was
+posed as *representation vs behaviour*; what `R-093` shows is **representation vs READOUT**, with the
+behavioural question still untouched.
+
+### 64.4 ⛔ What this does NOT license
+
+* ⛔ **Not** *"the knockout does nothing."* It abolishes the forced-choice preference — `R-010`/`R-011`
+  and `R-083`'s `ref` arm stand entirely.
+* ⛔ **Not** a claim about **behaviour**. `R-075` remains an underpowered negative; PHASE 7 is unrun.
+* ⛔ **No dose-matched control is feasible on this bank** (`B-018`) ⇒ this is conditional on `R-080`,
+  ⛔ not independent evidence about demonstration keys.
+* ⚠ The two rows of §64.3 are **different instruments at different sites** — a generated forced-choice
+  answer vs a probe on `codeword_last` hidden states. ⇒ The dissociation is between **what the model
+  can report** and **what is linearly decodable**, ⛔ not between two measurements of one quantity.
+* ⚠ `game_manual` is weak throughout (0.5526 baseline) and `farm_storage` moves the **wrong way**
+  (−0.018). n = 6.
+
+### 64.5 ⇒ What the phase now says, in one line
+
+> Doublespeak installs a concept-specific state at the codeword that a linear probe can read on
+> held-out domains; the demonstration→query attention path is necessary for the model to **report**
+> that mapping, and **not** necessary for the state to remain **decodable**.
+

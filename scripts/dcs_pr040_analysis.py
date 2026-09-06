@@ -125,15 +125,15 @@ def main() -> int:
     for cc in CLASSES:
         # NB: do NOT name these `a`/`b` -- `a` is the argparse namespace and shadowing it breaks
         # every later `a.out`. Caught by review before this file was ever run on real arms.
-        pid_off = {r["pid"] for r in off_pools[cc]}
-        pid_on = {r["pid"] for r in on_pools[cc]}
+        pid_off = {r["prompt_id"] for r in off_pools[cc]}
+        pid_on = {r["prompt_id"] for r in on_pools[cc]}
         if pid_off != pid_on:
             res["void"].append(
                 f"{cc}: cell-C population differs between states -- ko_off {len(pid_off)} rows, "
                 f"ko_on {len(pid_on)}, symmetric difference {len(pid_off ^ pid_on)}. The paired "
                 f"drop would compare two different populations.")
-        sel_off = {r["pid"] for r in off_sel[cc]}
-        sel_on = {r["pid"] for r in on_sel[cc]}
+        sel_off = {r["prompt_id"] for r in off_sel[cc]}
+        sel_on = {r["prompt_id"] for r in on_sel[cc]}
         if sel_off != sel_on:
             res["void"].append(f"{cc}: cell-B selection population differs between states "
                                f"({len(sel_off)} vs {len(sel_on)})")
