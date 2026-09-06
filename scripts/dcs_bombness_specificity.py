@@ -265,11 +265,25 @@ def group_permute(rows, rng, classes):
     Permuting whole groups preserves that structure exactly and tests the one thing at issue:
     whether the concept LABEL is attached to the state.
     """
+    # PR-039 / C-058: REJECT GLOBAL RELABELS. If the SAME permutation is drawn in every domain the
+    # classifier simply learns the relabelled mapping and scores EXACTLY the observed accuracy, so
+    # the null contains the observed value by construction with probability k!/(k!)^G. At k=2, G=6
+    # that is 2/64 -- 6.25 of 200 replicates -- and it accounted for ALL of the p=0.0498 that three
+    # 2-class contrasts reported. Conditioning the null on "not a global relabel" removes exactly
+    # that degenerate case and nothing else.
+    doms = sorted({r["domain"] for r in rows})
+    for _ in range(1000):
+        maps = []
+        for _d in doms:
+            perm = list(classes)
+            rng.shuffle(perm)
+            maps.append(dict(zip(classes, perm)))
+        if len(doms) < 2 or len({tuple(sorted(m.items())) for m in maps}) > 1:
+            break                      # not a global relabel -> usable
+    else:
+        raise RuntimeError("could not draw a non-global relabel in 1000 attempts")
     out = []
-    for d in sorted({r["domain"] for r in rows}):
-        perm = list(classes)
-        rng.shuffle(perm)
-        mapping = dict(zip(classes, perm))
+    for d, mapping in zip(doms, maps):
         for r in rows:
             if r["domain"] == d:
                 q = dict(r)
@@ -610,8 +624,11 @@ def main() -> int:
     train_p1 = B + A_rows
     p1lab = lambda r: r.get("p1_label", r["concept"])
     p1_classes = PRIMARY_CLASSES + ("literal",)
+    # C-058 §44.4: unbalanced, `literal` supplied 504 rows against 144 for the three concepts, so
+    # the probe predicted `literal` for every cell-C row and scored 0.0000. Same defect C-053 §28.5
+    # fixed for cell F and left standing here.
     res["P1_trainB_testC"] = loo_domain(C_rows, layers, p1_classes, p1lab, train_rows=train_p1,
-                                        selection_rows=B, tag="P1_B_to_C")
+                                        selection_rows=B, tag="P1_B_to_C", balanced=True)
     res["P1_trainB_testC_permutation"] = permutation_test(
         C_rows, layers, p1_classes, p1lab, res["P1_trainB_testC"]["picks"], a.n_perm, 20260905,
         res["P1_trainB_testC"]["mean_acc"], train_rows=train_p1)
@@ -653,7 +670,11 @@ def main() -> int:
             r["perm_group"] = "bomb"
         rows_f = C_bomb + F
         flab = lambda r: r.get("f_label", "bomb")
+        # C-057 §42.1: this was selecting (layer, C) on the TEST population's own labels.
+        F_sel = [dict(r, perm_group="benign_remap") for r in pool.get((PRIMARY_CODEWORD, "bomb", "F"), [])]
+        sel_f = [r for r in B if r["concept"] == "bomb"] + F_sel
         res["P2_bomb_vs_benign_remap"] = loo_domain(rows_f, layers, ("bomb", "benign_remap"), flab,
+                                                    selection_rows=sel_f,
                                                     tag="bomb_vs_benign_remap", balanced=True)
         # C-050 §25.4: this contrast had NO permutation test, so §23.4(2)'s instrument produced a
         # number with no inference attached. Its groups are CELLS, not concepts -- hence perm_group.
@@ -675,8 +696,9 @@ def main() -> int:
     _tick("cell F done")
     # held-out TEMPLATE FAMILY (PR-031c §9.2)
     if len({r["block"] for r in C_rows}) > 1:
+        # C-057 §42.1: same defect. Cell B is the declared selection population (§23.6).
         res["P2_leave_one_block_out"] = loo_domain(C_rows, layers, PRIMARY_CLASSES, lab,
-                                                   tag="P2_LOBO", group="block")
+                                                   selection_rows=B, tag="P2_LOBO", group="block")
         # A-08/C-053 §28.6: without this the one instrument PR-031c §9.2 added was judged by the
         # sign-vs-1/k rule that PR-031d §10.2 MEASURED at an 8.3% false-positive rate.
         res["P2_leave_one_block_out_permutation"] = permutation_test(
@@ -690,6 +712,10 @@ def main() -> int:
         if Cb:
             res["P2_basket_lexical_transfer"] = loo_domain(Cb, layers, PRIMARY_CLASSES, lab,
                                                            selection_rows=B, tag="P2_basket")
+            # C-058 §44.4: gate R3 (lexical transfer) had NO inference at all.
+            res["P2_basket_lexical_transfer_permutation"] = permutation_test(
+                Cb, layers, PRIMARY_CLASSES, lab, res["P2_basket_lexical_transfer"]["picks"],
+                a.n_perm, 20260905, res["P2_basket_lexical_transfer"]["mean_acc"])
     else:
         res["P2_basket_lexical_transfer"] = "SKIPPED — basket class set incomplete (would be VOID)"
 
@@ -733,7 +759,9 @@ def main() -> int:
     res["verdict_inputs"] = dict(P2_perm_p=pp, knife_club_ctrl_p=ctrl, above_null=bool(above),
                                  length_clause_passes=bool(length_ok),
                                  fit_capable=bool(res["P2_primary"]["fit_capable"]),
-                                 null_control_passed=True)
+                                 null_control_p=(res.get("null_n_examples_0", {}) or {})
+                                 .get("permutation", {}).get("p_one_sided")
+                                 if isinstance(res.get("null_n_examples_0"), dict) else None)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=1, default=str)
