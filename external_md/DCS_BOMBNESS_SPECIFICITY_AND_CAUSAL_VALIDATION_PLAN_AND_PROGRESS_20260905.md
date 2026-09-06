@@ -3549,3 +3549,63 @@ alone can see it**. Its diagnostic is specific —
 ⇒ The verifier is **re-run against the real `PR-035` output** so that a meaningful `V2` verdict
 exists on the actual run. ⛔ Until it returns, **no claim rests on `V2`.**
 
+
+---
+
+## §50 — `DCS-A-029` — ✅ `R-086` IS FULLY VERIFIED, AND `V2` NOW CARRIES INFORMATION
+
+Job **854790**, `scripts/dcs_verify_pr035_primary.py` with the repaired `V2` (`A-028`), re-run against
+the real `PR-035` output. It imports nothing from the producer and reads its JSON only as the claim
+under test.
+
+```
+V1  PASS  population rebuilt to §28.1's declared table (228 cell-C / 48 cell-B per class)
+V2  PASS  all 6 (layer, C) picks reproduce from cell-B selection (§23.6), checked fold by fold
+V3  PASS  recomputed 0.7485380116959064  vs producer 0.7485380116959064 — exact
+V4  PASS  permutation p: mine 0.0050 (own seed 90613) vs producer 0.004975  band ±0.0149
+V5  PASS  knife-vs-club: mine 0.8596491228070176 vs producer 0.8596491228070176 — exact
+V6  PASS  every class's rep cache binds to its OWN run's hnorm columns
+PRIMARY VERIFIED — the headline was recomputed from banks and caches, not read from the producer.
+```
+
+### 50.1 What `V2` settles that nothing else did
+
+⛔ **`C-057` §42.1 raised the possibility that the §28.2 defect — selecting `(layer, C)` on the test
+population's own labels — reached the PRIMARY.** `V2` now answers it directly: **all six folds' picks
+reproduce from a cell-`B` recomputation, fold by fold.** ⇒ ✅ **The primary's selection is the
+declared one.** The defect is confined to the two secondaries `C-057` named, exactly as scoped.
+
+⚠ And `V2` is now capable of saying otherwise: its mutation `W6` corrupts `picks` while leaving
+`mean_acc` correct, and `V2` alone catches it (job 854727, 6/6 by designated check).
+
+### 50.2 `V4` — an independent permutation, on a different seed
+
+⚠ Worth separating from `V3`. `V3` re-fits the same deterministic classifier, so an exact match is
+expected. **`V4` re-runs the whole permutation null with its OWN seed (90613, not the producer's
+20260905)** and lands at **0.0050 vs 0.004975** — both at the floor, `null_mean` 0.3218 against a
+0.333 chance. ⇒ The primary's p is **not** an artifact of one RNG stream.
+
+### 50.3 ⛔ What is still NOT settled
+
+⛔ The 2-class contrasts' **calibration** (job 854780). `V4`/`V5` verify that the producer's numbers
+are **reproducible**; they do **not** verify that the 2-class permutation test is **calibrated**.
+⇒ §23.5 clause 4 remains undecided and the `PR-035` verdict remains **UNDETERMINED**.
+
+⚠ First evidence from the v1 calibration, which used **test-set** selection (i.e. it measures the
+§28.2 **defect**, not the design):
+
+| 2-class, test-set selection | pure noise FPR | planted signal |
+|---|---|---|
+| ORIGINAL null | **0.090** | power 1.000, median p **0.040**, min **0.0396** |
+| EXCLUDING global relabels | **0.140** | power 1.000, median p **0.010**, min 0.0099 |
+
+⇒ ⛔ **The §28.2 defect empirically inflates significance — 0.090 against α = 0.05.** That is the
+first hard evidence for the concern `C-057` raised and `A-027` §45.4 downgraded on severity grounds;
+⚠ **the downgrade was wrong and the concern was right**, though it applies to the two secondaries,
+which `V2` has just confirmed the primary is not among.
+
+⚠ The ORIGINAL null's **min p = 0.0396** across 200 planted-signal replicates confirms §47.3's
+predicted symmetry floor (≈0.036) **empirically**. ⇒ `knife-vs-club`'s reported **0.0498** sits
+*above* the floor that a maximally separable planted signal reaches — it is **not** pinned at the
+floor, which is mildly reassuring and still not a calibration.
+
