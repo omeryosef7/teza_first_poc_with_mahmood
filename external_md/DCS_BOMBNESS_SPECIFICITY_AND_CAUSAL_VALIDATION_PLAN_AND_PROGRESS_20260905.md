@@ -4563,3 +4563,47 @@ verbatim: the dissociation is between **what the model can report** and **what i
 decodable**, ⛔ not two measurements of one quantity. ⚠ No population matching can close that gap; only
 a readout taken *at the same site* could, and none exists.
 
+
+---
+
+## §67 — `DCS-PR-044` — gate `R6` and §13, submitted on ONE arm set
+
+The bridge now takes `--knockout-scope` (jobs **857563/857564/857565**, `target_surface_row_only`,
+n-801 excluded). Argsfiles differ from the `R-093` `ko_on` set in **`--knockout-scope` and `--tag`
+only**, verified by token diff. ⛔ The **`ko_off` arms are reused** as the baseline — no duplicate GPU.
+
+### 67.1 ✅ Why one arm set answers BOTH gates
+
+`target_surface_row_only` blocks the row of the prompt's **`target_surface`** token. From `C-060`'s
+measured table, `target_surface` is **`button`** in cells `A`/`C`/`D`/`F` and **`bomb`** in cells
+`B`/`E`. The bridge extracts the **whole bank**. ⇒ a single arm per bank gives:
+
+* **gate `R6`** — cell `C` rows: the **codeword's** row blocked (`KO-1`);
+* **§13** — cell `B` rows: the **explicit concept's** row blocked (`KO-2`).
+
+⚠ ⛔ §13's **behavioural** half is already published (`R-006`/`R-009`) and is **not** regenerated;
+only the **representation** readout was missing, and it needs exactly this scope.
+
+### 67.2 ✅ The liveness gate was strengthened, not weakened
+
+I asked for the exact scoped closed form **or** an honestly-labelled weaker fallback. ⇒ The exact form
+was derived: `expected_prefill_edit_rows(blocked_keys, seq_len, allowed_rows=...)`, and the run
+asserts **`0 < scoped_edits < legacy_edits`** — the scoped mask must fire **and** must edit strictly
+fewer rows than the whole-query mask. ⛔ A scoped mask that silently degenerated to whole-query, or to
+nothing, fails.
+
+✅ **Self-test 20/20 → 35/35**, including `T8n` (target_surface_row_only is satisfiable on the reduced
+forward-only contract) and `T8m` (`response_query_only` is **refused**, because it would silently
+perform `query_prefill_only`). ✅ The **legacy default is unchanged**, which is what `R-093` rests on.
+
+### 67.3 Declared readings, before the arms land
+
+* **`R6`** — `PR-040`'s procedure, `ko_off` vs `ko1` on cell `C`. ⚠ `R-093` already found the
+  **whole-query** knockout leaves the probe at 94 %. ⇒ `KO-1` cuts **strictly fewer** rows, so ⛔ **a
+  large `R6` drop would be incoherent** with `R-093` and would indicate a bug, not a finding.
+  Expected: **no drop**, i.e. `R6` passes trivially and adds little.
+* **§13** — the **new** measurement: does blocking the **explicit concept word's** own row change the
+  concept signal read at the **codeword**? ⚠ These are **different token positions**, so this is not a
+  foregone conclusion the way `R6` is.
+* ⛔ Both are **descriptive**: `PR-040`'s single significance test is spent. ⛔ **No p-values.**
+

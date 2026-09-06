@@ -25,11 +25,31 @@ is a DECODABILITY result and gate `R5` — does `KO-3` destroy it? — is NOT RU
                                     knockout_liveness_summary / assert_knockout_live
   the run contract                  common.RunDir (config/metadata/results/summary/DONE.json)
 
-SCOPE IS `legacy_all_query`, HARD-CODED, AND THAT IS THE POINT. `AllQueryAttentionKnockout` blocks
-attention onto the demonstration keys from EVERY query row. This capture is a SINGLE FORWARD PASS —
-there is no decode step at all — so "every query row" is exactly "every prefill row", which is the
-whole-query `KO-3` scope for a forward-only readout. Exposing `--knockout-scope` here would only
-create the chance to file a run under a scope name whose decode half can never fire.
+SCOPE IS SELECTABLE (`--knockout-scope`), AND THE DEFAULT IS STILL `legacy_all_query`.
+`AllQueryAttentionKnockout` blocks attention onto the demonstration keys from EVERY query row.
+This capture is a SINGLE FORWARD PASS — there is no decode step at all — so "every query row" is
+exactly "every prefill row", which is the whole-query `KO-3` scope for a forward-only readout, and
+that is the scope that produced `R-093`. ⛔ THE DEFAULT PATH IS UNCHANGED: on `legacy_all_query`
+this file still constructs the SAME `pc.AllQueryAttentionKnockout` object (the branch lives in
+`score_behavior.make_intervention:1035`, not here), still gates it with the SAME legacy closed form,
+and adds not one extra tokenization pass.
+
+⛔ WHY A SECOND SCOPE EXISTS AT ALL. Gate `R6` needs `KO-1` = `target_surface_row_only`: block only
+the rows of the FINAL `target_surface` occurrence in the query from reading the demonstrations,
+rather than the whole query. Plan §13 needs the SAME scope where `target_surface` is the CONCEPT
+word (cells `B`/`E`) instead of the codeword (cells `A`/`C`/`D`/`F`) — and `target_surface` is ONE
+bank field that already holds both, so one scope, one code path and one dose serve both
+(pair_common.py:620-632). ⛔ Nothing is re-implemented for it: the row set is
+`score_behavior.target_surface_positions`, the hook is `pc.ScopedAttentionKnockout`, and the
+liveness contract is `pc.LIVENESS_REQUIREMENT` / `LIVENESS_MUST_BE_ZERO` as reduced by
+`score_behavior.readout_liveness_contract`.
+
+⛔ A SCOPE THAT CANNOT FIRE ON THIS PATH IS REFUSED AT ARGUMENT TIME, never discovered as a null.
+`decode_only` edits literally nothing without a decode step, and `response_query_only`, stripped of
+its decode half, edits exactly the rows `query_prefill_only` edits — i.e. it would file this run
+under a name that misdescribes the intervention. Both refusals come from
+`score_behavior.readout_liveness_contract`, which asks the hook's OWN row resolver rather than
+consulting a list of mode names kept here.
 
 ⛔ THE FAILURE THIS FILE IS MOST AFRAID OF is a mask that never fires. A silent no-op writes a cache
 that looks perfect, is not knocked out at all, and would be read as "the knockout does not destroy
@@ -84,8 +104,22 @@ DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 #: model of a different depth is the silent-weaker-knockout bug, and no exception can catch it).
 DEFAULT_BAND = "6-14"
 
-#: The ONLY scope this file runs. See the module docstring.
-KNOCKOUT_SCOPE = sb.DEFAULT_KNOCKOUT_SCOPE          # == "legacy_all_query"
+#: The DEFAULT scope, and the ONLY scope every committed run of this file (`R-093` included) has
+#: used. Imported from `score_behavior` rather than typed here, so the two cannot drift.
+LEGACY_SCOPE = sb.DEFAULT_KNOCKOUT_SCOPE            # == "legacy_all_query"
+
+#: Kept as an alias because `R-093`'s artifacts and this file's own history name it. Same object.
+KNOCKOUT_SCOPE = LEGACY_SCOPE
+
+#: `query_last_k_rows` takes its row set VERBATIM from the consumer (score_behavior's
+#: `--knockout-last-k`), not from any span resolvable here. Growing a second, silently-different
+#: definition of "last K" in this file is exactly how two scopes with one name diverge, so it is
+#: refused with a pointer to the script that owns it.
+SCOPES_NOT_SUPPORTED_HERE = ("query_last_k_rows",)
+
+#: The scope that needs `target_surface` rows. Named once; `resolve_row_spans` and the argument
+#: validation both read this rather than repeating the string.
+SURFACE_SCOPE = "target_surface_row_only"
 
 
 # --------------------------------------------------------------------------- #
@@ -107,14 +141,27 @@ def pick_layer_rows(hs: torch.Tensor, layers: Sequence[int], pos: int) -> torch.
     return torch.stack([hs[L + 1, pos, :] for L in layers], dim=0)
 
 
-def expected_prefill_edit_rows(blocked_keys: Sequence[int], seq_len: int) -> int:
-    """How many (query row, key) cells `AllQueryAttentionKnockout` MUST edit on ONE prefill pass.
+def expected_prefill_edit_rows(blocked_keys: Sequence[int], seq_len: int,
+                               allowed_rows: Optional[frozenset] = None) -> int:
+    """How many (query row, key) cells the knockout MUST edit on ONE prefill pass.
 
-    Derived from the hook's own index algebra (pair_common.py:562-574), not guessed:
+    Derived from the hook's own index algebra (pair_common.py:562-574 legacy, 850-878 scoped),
+    not guessed:
 
         past = kv_len - n_q = 0 at prefill, so n_q == kv_len == seq_len;
         for each blocked key kp < kv_len the first causally-legal query row is lo = max(0, kp),
-        and every row from lo onward is blocked  ->  (seq_len - kp) rows.
+        and every row from lo onward is a CANDIDATE.
+
+    `allowed_rows is None` is the LEGACY (`legacy_all_query`) case: every candidate row is edited,
+    so the count is `sum(seq_len - kp)`. ⛔ That branch is byte-for-byte the arithmetic this
+    function had before `--knockout-scope` existed, and it is what the default path still uses.
+
+    `allowed_rows` is the SCOPED case: `ScopedAttentionKnockout` keeps only the candidates whose
+    ABSOLUTE position is in the resolver's row set (`rows = [r for r in range(lo, n_q) if
+    (past + r) in allowed]`), so the count is `sum_kp |{r in allowed_rows : kp <= r < seq_len}|`.
+    ⛔ THIS IS AN EXACT CLOSED FORM, NOT A WEAKENED FALLBACK — the same per-key, per-row algebra,
+    with the row filter the hook itself applies, and `--self-test` checks it against the REAL hook's
+    own counter on a synthetic mask rather than against a second copy of this arithmetic.
 
     The hook multiplies that by the mask's head dimension and accumulates over the band, so the
     observed counter is `len(band) * head_mult * this`. `head_mult` is INFERRED from the first row
@@ -125,7 +172,81 @@ def expected_prefill_edit_rows(blocked_keys: Sequence[int], seq_len: int) -> int
     hook that fired on one layer, on one key, on one row. This does not.
     """
     n = int(seq_len)
-    return int(sum(n - int(kp) for kp in blocked_keys if 0 <= int(kp) < n))
+    if allowed_rows is None:
+        return int(sum(n - int(kp) for kp in blocked_keys if 0 <= int(kp) < n))
+    rows = sorted(int(r) for r in allowed_rows if 0 <= int(r) < n)
+    return int(sum(sum(1 for r in rows if r >= int(kp))
+                   for kp in blocked_keys if 0 <= int(kp) < n))
+
+
+def scoped_prefill_rows(pc, scope: str, seq_len: int, query_span, demo_span, surface_span):
+    """Which ABSOLUTE query rows `scope` may edit on THIS file's ONE prefill forward, or None.
+
+    ⛔ ASKED OF THE HOOK'S OWN RESOLVER. `pc.resolve_scoped_query_rows(scope, is_decode=False, ...)`
+    is the exact call `ScopedAttentionKnockout._pre` makes, so the prediction below cannot drift
+    from the mode it is predicting — which is the whole reason a scoped liveness gate is possible
+    at all. `None` means "every row" (legacy) and is passed straight through; an EMPTY set means
+    "this scope edits nothing on this row", which is a no-op knockout and must never be captured.
+    """
+    allowed = pc.resolve_scoped_query_rows(scope, False, query_span, demo_span, surface_span)
+    if allowed is None:
+        return None
+    return frozenset(int(r) for r in allowed if 0 <= int(r) < int(seq_len))
+
+
+def expected_prefill_edits_for_scope(pc, scope: str, blocked_keys: Sequence[int], seq_len: int, *,
+                                     query_span=None, demo_span=None, surface_span=None):
+    """`(expected_cells, form_tag, legacy_cells, allowed_rows)` for ONE row under `scope`.
+
+    ⛔ THE LEGACY CLOSED FORM IS STILL THE ONE APPLIED WHEN THE SCOPE IS LEGACY, and it is applied
+    UNCONDITIONALLY there: `legacy_all_query` returns `expected_prefill_edit_rows(keys, seq_len)`
+    with `allowed_rows=None`, tagged `legacy_closed_form`, and the resolver is additionally
+    asserted to have answered "every row". That assertion is not decoration — if a future edit made
+    the legacy scope resolve to a row SET, the default path would silently become a scoped one and
+    `R-093`'s reproduction would quietly stop being a reproduction.
+
+    `legacy_cells` is returned for EVERY scope, including the scoped ones, because it is the
+    denominator of the one check that survives a total failure of this arithmetic: a scope that
+    claims to be surgical must edit strictly fewer cells than the whole-query knockout would
+    (`assert_scope_narrows`).
+    """
+    legacy = expected_prefill_edit_rows(blocked_keys, seq_len)
+    allowed = scoped_prefill_rows(pc, scope, seq_len, query_span, demo_span, surface_span)
+    if scope == LEGACY_SCOPE:
+        if allowed is not None:
+            raise RuntimeError(
+                f"scope {scope!r} resolved to an explicit row set {sorted(allowed)[:8]}... instead "
+                f"of the all-rows sentinel None. The DEFAULT path would no longer be the path "
+                f"`R-093` ran; refusing rather than re-gating it under a different closed form.")
+        return legacy, "legacy_closed_form", legacy, None
+    if allowed is None:
+        raise RuntimeError(
+            f"scope {scope!r} resolved to the ALL-ROWS sentinel, i.e. to `legacy_all_query`'s row "
+            f"set. A scoped arm whose rows are every row is the legacy knockout filed under a "
+            f"surgical name; refusing.")
+    return (expected_prefill_edit_rows(blocked_keys, seq_len, allowed_rows=allowed),
+            "scoped_closed_form", legacy, allowed)
+
+
+def assert_scope_narrows(scope: str, expected_rows: int, legacy_rows: int, prompt_id: str) -> None:
+    """A non-legacy scope must imply MORE THAN ZERO and STRICTLY FEWER cells than legacy would.
+
+    ⛔ DELIBERATELY REDUNDANT with the exact closed form. `assert_row_edits` compares the hook's
+    counter against `expected_rows`; if the scope silently degraded to `legacy_all_query`, BOTH the
+    prediction and the counter would move together and that comparison would still pass. This is
+    the check that does not: it is stated in terms of what the scope CLAIMS about itself, and it
+    reads the two predictions against each other rather than a prediction against a counter.
+    """
+    if scope == LEGACY_SCOPE:
+        return
+    if expected_rows <= 0:
+        raise RuntimeError(f"{prompt_id}: scope {scope!r} resolves to ZERO editable mask cells "
+                           f"(legacy would edit {legacy_rows}); a no-op knockout must never be "
+                           f"captured — it scores as a perfectly clean null.")
+    if expected_rows >= legacy_rows:
+        raise RuntimeError(f"{prompt_id}: scope {scope!r} implies {expected_rows} mask cells but "
+                           f"`legacy_all_query` implies {legacy_rows}. A SURGICAL scope that does "
+                           f"not narrow the edit is the whole-query knockout under another name.")
 
 
 def assert_row_edits(stats: Dict, *, n_band_layers: int, expected_rows: int, head_mult: Optional[int],
@@ -197,9 +318,103 @@ def select_rows(rows: List[Dict], smoke: int, limit: int, knockout: bool) -> Lis
     return out
 
 
+def resolve_row_spans(dc, tok, row, args, scope: Optional[str]):
+    """Everything the knockout needs for ONE row, off ONE templating of it.
+
+    Returns `(occ, demo_keys, query_span, surface_span, reason)`. `occ` is
+    `extract_boombness.resolve_occurrences`' 5-tuple, or None when even that failed; `reason` is
+    None on success and otherwise the ledger string, prefixed by which resolution step failed.
+
+    `scope is None` is the BASELINE (`--no-knockout`) path: it resolves occurrences and NOTHING
+    else, so a baseline capture still never calls `demo_key_positions` — exactly as before.
+
+    ⛔ ONE RESOLVER, TWO CALLERS. The scoped pre-flight and the capture loop both call this, so the
+    population the pre-flight cleared IS the population the loop runs, by construction rather than
+    by two functions agreeing. And every span comes off the SAME `templated` string: a second
+    templating path can disagree with the first (enable_thinking, specials) and the mask would then
+    cut an arbitrary window while every downstream number still looked healthy
+    (score_behavior.py:744 records that failure).
+    """
+    try:
+        occ = eb.resolve_occurrences(dc, tok, row, enable_thinking=args._enable_thinking)
+    except ValueError as e:
+        return None, [], None, None, f"resolve:{e}"
+    if scope is None:
+        return occ, [], None, None, None
+    templated = occ[0]
+    dk, why = sb.demo_key_positions(tok, row, templated)
+    if why:
+        return occ, [], None, None, f"demokeys:{why}"
+    prot = sb.query_span_positions(tok, row, templated, dk)
+    surf = None
+    if scope == SURFACE_SCOPE:
+        pos, swhy = sb.target_surface_positions(tok, row, templated, prot)
+        if swhy:
+            return occ, dk, prot, None, f"surfacespan:{swhy}"
+        surf = frozenset(int(p) for p in pos)
+        # ⛔ THE HOOK REFUSES A SURFACE SPAN THAT LEAKS OUTSIDE THE QUERY SPAN — and it refuses it
+        # in its CONSTRUCTOR, which this file calls inside the per-row `try`, where the refusal
+        # would arrive as a quiet ledger entry and a shrunken population.
+        # `target_surface_positions` only requires the occurrence's LAST subtoken to be inside the
+        # query span (score_behavior.py:784-791, and for good reason there), so a LEADING subtoken
+        # can sit outside it. Checked here, where it is a pre-flight refusal instead.
+        if prot and not surf <= frozenset(int(p) for p in prot):
+            return occ, dk, prot, surf, "surfacespan:not_contained_in_query_span"
+    if scope != LEGACY_SCOPE and sb.scoped_span_is_dead(scope, prot, dk, surf):
+        return occ, dk, prot, surf, f"scopespan:{scope}_resolves_to_no_query_rows"
+    return occ, dk, prot, surf, None
+
+
+def scoped_preflight(dc, tok, rows, args, scope, run) -> Dict:
+    """REFUSE BEFORE CAPTURING ANYTHING if any selected row cannot carry this scope.
+
+    ⛔ ONLY RUNS FOR A NON-LEGACY SCOPE, so the default path costs not one extra tokenization and
+    stays exactly the run `R-093` produced.
+
+    This is `score_behavior.py:1840-1920`'s pre-flight, in this file's smaller vocabulary and for
+    the same reason it exists there: a scoped mode whose rows resolve to nothing on some rows is a
+    no-op knockout on those rows, and dropping them instead is a SILENTLY SHRUNKEN population —
+    which for gate `R6` would change the held-out test set that the paired sign test is computed
+    over. The `n_examples == 0` rows are the ONE declared exception (module docstring): they have
+    no demonstrations to block under any scope, and they are skipped in the legacy path too.
+    """
+    feas = {"n_rows": len(rows), "scope": scope, "resolve_error": 0, "no_demo_block": 0,
+            "dead_scope_span": 0, "ok": 0, "surface_span_sizes": {}}
+    bad: List = []
+    sizes: Dict[int, int] = collections.defaultdict(int)
+    for row in rows:
+        occ, dk, prot, surf, why = resolve_row_spans(dc, tok, row, args, scope)
+        if occ is None:
+            # A row that cannot even be templated fails identically with and without the knockout;
+            # it is the legacy path's own ledgered skip, not a statement about this scope.
+            feas["resolve_error"] += 1
+            continue
+        if why and why.startswith("demokeys:"):
+            feas["no_demo_block"] += 1
+            continue
+        if why:
+            feas["dead_scope_span"] += 1
+            bad.append((row.get("prompt_id"), why))
+            continue
+        feas["ok"] += 1
+        sizes[len(surf) if surf else 0] += 1
+    feas["surface_span_sizes"] = {str(k): v for k, v in sorted(sizes.items())}
+    run.note(knockout_feasibility=feas)
+    print(f"[ko-extract] SCOPE PRE-FLIGHT ({scope}): {feas}", flush=True)
+    if bad:
+        raise SystemExit(
+            f"REFUSING before capturing anything: {len(bad)} of {feas['n_rows']} selected rows "
+            f"cannot carry scope {scope!r} (first 5: {bad[:5]}). Capturing the rest would write a "
+            f"cache over a SILENTLY SHRUNKEN population, and the held-out sign test downstream is "
+            f"computed over exactly that population. Fix the scope or the bank slice — do NOT "
+            f"rescope to the feasible rows.")
+    return feas
+
+
 def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     tok = lm.tokenizer
     knockout = not args.no_knockout
+    scope = args.knockout_scope if knockout else None
     spec = ({"direction": args.arm, "mode": "attn_knockout", "layers": list(band), "alpha": 1.0}
             if knockout else None)
     knock_live = sb.new_knockout_live() if knockout else None
@@ -209,53 +424,75 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     n_keys_hist: List[int] = []
     skip_reasons: Dict[str, int] = collections.defaultdict(int)
     diag = {}
+    exp_forms: Dict[str, int] = collections.defaultdict(int)
+    surf_hist: List[int] = []
+
+    if knockout and scope != LEGACY_SCOPE:
+        scoped_preflight(dc, tok, rows, args, scope, run)
 
     for row in rows:
         pid = row["prompt_id"]
-        try:
-            templated, ids, last, following, n_sub = eb.resolve_occurrences(
-                dc, tok, row, enable_thinking=args._enable_thinking)
-        except ValueError as e:
-            ledger.fail(f"resolve:{e}", pid)
-            skip_reasons[f"resolve:{e}".split(":")[1]] += 1
+        occ, dk, prot, surf, why = resolve_row_spans(dc, tok, row, args, scope)
+        if occ is None:
+            ledger.fail(why, pid)
+            skip_reasons[why.split(":")[1]] += 1
             continue
+        templated, ids, last, following, n_sub = occ
         if args.position != "last" and not last:
             ledger.fail(f"capture:no_occurrence_at_position:{args.position}", pid)
             skip_reasons["no_occurrence_at_position"] += 1
             continue
 
-        dk: List[int] = []
-        prot = None
         keys: List[int] = []
         stats = None
         exp_rows = 0
+        exp_form = None
+        exp_legacy = 0
+        if why and why.startswith("demokeys:"):
+            # `no_demo_block` is the n_examples == 0 rows. DECLARED, LEDGERED, SKIPPED — see
+            # the module docstring. Capturing them un-hooked would put un-knocked-out vectors
+            # into a cache whose name says every vector in it is knocked out.
+            ledger.fail(why, pid)
+            skip_reasons[why.split(":")[1]] += 1
+            if args.on_no_demo_block == "fail":
+                raise SystemExit(f"REFUSING: {pid} has no usable demonstration block ({why}) "
+                                 f"and --on-no-demo-block=fail")
+            continue
+        if why:
+            # A SCOPED span that does not resolve. `scoped_preflight` already refused the run if
+            # any selected row was in this state, so arriving here means the two disagreed — which
+            # is itself a reason to write no cache at all.
+            run.abort(f"scoped_span_unresolvable_after_preflight: {pid}: {why}", ledger=ledger)
+            raise SystemExit(f"REFUSING (run aborted, no DONE.json): {pid}: {why} — the scope "
+                             f"pre-flight cleared this row and the capture loop did not.")
         if knockout:
-            dk, why = sb.demo_key_positions(tok, row, templated)
-            if why:
-                # `no_demo_block` is the n_examples == 0 rows. DECLARED, LEDGERED, SKIPPED — see
-                # the module docstring. Capturing them un-hooked would put un-knocked-out vectors
-                # into a cache whose name says every vector in it is knocked out.
-                ledger.fail(f"demokeys:{why}", pid)
-                skip_reasons[why] += 1
-                if args.on_no_demo_block == "fail":
-                    raise SystemExit(f"REFUSING: {pid} has no usable demonstration block ({why}) "
-                                     f"and --on-no-demo-block=fail")
-                continue
-            prot = sb.query_span_positions(tok, row, templated, dk)
             keys = sb.knockout_key_set(args.arm, dk, len(ids), args.seed, protected=prot)
             if not keys:
                 ledger.fail("keys:empty_key_set", pid)
                 skip_reasons["empty_key_set"] += 1
                 continue
-            exp_rows = expected_prefill_edit_rows(keys, len(ids))
+            try:
+                exp_rows, exp_form, exp_legacy, _allowed = expected_prefill_edits_for_scope(
+                    pc, scope, keys, len(ids),
+                    query_span=prot, demo_span=dk, surface_span=surf)
+                assert_scope_narrows(scope, exp_rows, exp_legacy, pid)
+            except RuntimeError as e:
+                run.abort(f"scope_prediction_failure: {e}", ledger=ledger)
+                raise SystemExit(f"REFUSING (run aborted, no DONE.json): {e}")
+            exp_forms[exp_form] += 1
+            surf_hist.append(len(surf) if surf else 0)
             stats = {}
 
         try:
             if knockout:
+                # ⛔ `surface_span` MUST be forwarded with the scope. Dropping it demotes
+                # `target_surface_row_only` to a no-op (the resolver answers "edit nothing"), and
+                # the hook refuses an empty required span in its constructor PRECISELY so that
+                # shows up as a crash rather than as a clean null (score_behavior.py:1038-1041).
                 ctxs = sb.make_intervention(dc, pc, lm, spec, None, control_seed=args.seed,
                                             demo_keys=dk, seq_len=len(ids), knock_stats=stats,
                                             protected=prot, knock_heads=None,
-                                            knock_scope=KNOCKOUT_SCOPE)
+                                            knock_scope=scope, surface_span=surf)
                 if not ctxs:
                     raise RuntimeError("make_intervention produced NO hooks for an attn_knockout "
                                        "spec; the forward would be an un-knocked-out baseline "
@@ -268,7 +505,7 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
                 head_mult = assert_row_edits(stats, n_band_layers=len(band),
                                              expected_rows=exp_rows, head_mult=head_mult,
                                              prompt_id=pid)
-                ks, bad = sb.record_knockout_row(knock_live, KNOCKOUT_SCOPE, stats,
+                ks, bad = sb.record_knockout_row(knock_live, scope, stats,
                                                  n_demo_positions=len(dk), readout=True)
                 if bad:
                     raise RuntimeError(f"{pid}: liveness contract violated: {bad}")
@@ -307,7 +544,7 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
             "layer_convention": sg.LAYER_CONVENTION, "layers": list(layers),
             # ---- knockout provenance: WHAT was blocked, and did it fire? -------------------- #
             "ko_applied": bool(knockout), "arm": (args.arm if knockout else None),
-            "knockout_scope": (KNOCKOUT_SCOPE if knockout else None),
+            "knockout_scope": scope,
             "band": (list(band) if knockout else None),
             "band_str": (args.band if knockout else None),
             "seed": int(args.seed),
@@ -316,7 +553,17 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
             "blocked_key_min": (min(keys) if keys else None),
             "blocked_key_max": (max(keys) if keys else None),
             "n_query_span_positions": (len(prot) if prot else 0),
+            # The surgical scope's rows go in the artifact IN FULL, not as a count: "which rows
+            # did you actually cut" is the first question anyone will ask of a scoped null, and a
+            # `target_surface` occurrence is small enough to record exactly (pair_common.py:832).
+            "n_surface_span_positions": (len(surf) if surf else 0),
+            "surface_span_positions": (sorted(surf) if surf else None),
             "expected_prefill_edit_rows": int(exp_rows),
+            # WHICH closed form gated this row, and what the WHOLE-QUERY knockout would have
+            # edited. Recorded per row so `legacy_closed_form` on every row of a default run is
+            # checkable from the artifact alone, not only from this file.
+            "expected_prefill_edit_rows_form": exp_form,
+            "expected_prefill_edit_rows_legacy": int(exp_legacy),
             "mask_head_mult": (int(head_mult) if head_mult else None),
             "hook_n_forward": int(ks.get("n_forward", 0)) if ks else 0,
             "hook_n_prefill_forward": int(ks.get("n_prefill_forward", 0)) if ks else 0,
@@ -355,7 +602,10 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
         "skip_reasons": dict(skip_reasons),
         "knockout_applied": bool(knockout),
         "arm": (args.arm if knockout else None),
-        "knockout_scope": (KNOCKOUT_SCOPE if knockout else None),
+        "knockout_scope": scope,
+        "expected_prefill_edit_rows_forms": dict(exp_forms),
+        "median_n_surface_span_positions": (sorted(surf_hist)[len(surf_hist) // 2]
+                                            if surf_hist else 0),
         "band": (list(band) if knockout else None),
         "mask_head_mult": head_mult,
         "median_n_blocked_keys": (sorted(n_keys_hist)[len(n_keys_hist) // 2] if n_keys_hist else 0),
@@ -365,9 +615,17 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     if knockout:
         # THE RUN-LEVEL GATE. `assert_knockout_live` raises SystemExit unless the mask demonstrably
         # fired where THIS scope says it must, on >= 99% of rows, and n_rows == 0 is a FAILURE.
-        ksum = sb.knockout_liveness_summary(knock_live, "eager", scope=KNOCKOUT_SCOPE, readout=True)
+        ksum = sb.knockout_liveness_summary(knock_live, "eager", scope=scope, readout=True)
         out["knockout_liveness"] = ksum
         sb.assert_knockout_live(ksum)
+        # ⛔ AND THE PER-ROW GATE MUST HAVE BEEN THE ONE THIS SCOPE DECLARES. `assert_knockout_live`
+        # reads the accumulator; this reads which closed form actually gated every row, so a run
+        # whose scope said `target_surface_row_only` while every row was gated by the whole-query
+        # form (or the reverse) cannot reach `finish()`.
+        _want_form = "legacy_closed_form" if scope == LEGACY_SCOPE else "scoped_closed_form"
+        if set(exp_forms) != {_want_form}:
+            raise SystemExit(f"REFUSING: scope {scope!r} must gate EVERY row with "
+                             f"{_want_form!r}, but the rows were gated by {dict(exp_forms)}.")
         print(f"[ko-extract] LIVENESS OK: {ksum['n_rows']} rows, "
               f"frac_rows_scope_live={ksum['frac_rows_scope_live']}, "
               f"total_prefill_edits={ksum['total_prefill_edits']}, "
@@ -620,6 +878,137 @@ def self_test() -> int:
         check("T6d the off-by-one control REFUSES a cache shifted by one block",
               bad_["offbyone_verdict"].startswith("INCONCLUSIVE"), bad_["offbyone_verdict"])
 
+    # ---- T8  --knockout-scope: the SCOPED closed form, and the gate that must still fire ---- #
+    #
+    # ⛔ WHICH GATE THIS FILE USES FOR THE SCOPED PATH, STATED PLAINLY: the EXACT closed form, not
+    # the weaker ">0 and < legacy" fallback. `ScopedAttentionKnockout` filters the legacy
+    # candidate rows through `resolve_scoped_query_rows`, so the cell count is
+    # `sum_kp |{r in allowed : kp <= r < seq_len}|` — derived, and checked HERE against the REAL
+    # hook's own counter rather than against a second copy of the arithmetic. The ">0 and strictly
+    # less than legacy" check is kept ON TOP (`assert_scope_narrows`), because it is the only one
+    # that still fires if the scope silently degraded to `legacy_all_query` — then the prediction
+    # and the counter would move together and the exact form would agree with itself.
+    S8, blocked8 = 10, [2, 3, 7]
+    q8, surf8 = frozenset({5, 6, 8, 9}), frozenset({8, 9})
+    legacy8 = expected_prefill_edit_rows(blocked8, S8)
+    check("T8 the generalised form REDUCES to the legacy one on the all-rows set",
+          expected_prefill_edit_rows(blocked8, S8, allowed_rows=frozenset(range(S8))) == legacy8
+          and legacy8 == (10 - 2) + (10 - 3) + (10 - 7), f"legacy={legacy8}")
+
+    st8: Dict[str, int] = {}
+    hook8 = pc.ScopedAttentionKnockout(stub, [0, 1], blocked_keys=blocked8,
+                                       mode=SURFACE_SCOPE, query_span=q8, demo_span=frozenset(),
+                                       heads=None, stats=st8, surface_span=surf8)
+    _, _ = hook8._pre(None, (), {"attention_mask": torch.zeros(1, 1, S8, S8)})
+    ks8 = sb.knockout_row_stats(st8)
+    pred8 = expected_prefill_edit_rows(blocked8, S8, allowed_rows=surf8)
+    check("T8b the SCOPED closed form matches the REAL ScopedAttentionKnockout counter",
+          ks8["n_prefill_edits"] == pred8 and pred8 == 6,
+          f"hook={ks8['n_prefill_edits']} predicted={pred8}")
+
+    e_l, f_l, l_l, a_l = expected_prefill_edits_for_scope(pc, LEGACY_SCOPE, blocked8, S8,
+                                                          query_span=q8, demo_span=frozenset(),
+                                                          surface_span=surf8)
+    check("T8c the LEGACY closed form is STILL the one applied when scope == legacy_all_query",
+          f_l == "legacy_closed_form" and a_l is None and e_l == l_l == legacy8,
+          f"form={f_l} expected={e_l} legacy={l_l} allowed={a_l}")
+    e_s, f_s, l_s, a_s = expected_prefill_edits_for_scope(pc, SURFACE_SCOPE, blocked8, S8,
+                                                          query_span=q8, demo_span=frozenset(),
+                                                          surface_span=surf8)
+    check("T8d the scoped form is used for target_surface_row_only and edits STRICTLY fewer cells",
+          f_s == "scoped_closed_form" and e_s == pred8 and l_s == legacy8 and 0 < e_s < l_s
+          and a_s == surf8, f"form={f_s} expected={e_s} legacy={l_s}")
+
+    # ---- T8e  THE NEW SCOPE'S ZERO-ROW CASE MUST FIRE ---------------------------------------- #
+    # The surface occurrence sits BEFORE every demonstration key, so causality leaves the scope no
+    # row to cut: the span resolves (it is non-empty, so `scoped_span_is_dead` is False and the
+    # hook's constructor is satisfied) and the mask still edits NOTHING. That is the silent no-op
+    # in its scoped disguise, and it must be refused rather than captured.
+    S9, blocked9 = 10, [7, 8]
+    q9, surf9 = frozenset({5, 6}), frozenset({5})
+    st9: Dict[str, int] = {}
+    hook9 = pc.ScopedAttentionKnockout(stub, [0], blocked_keys=blocked9, mode=SURFACE_SCOPE,
+                                       query_span=q9, demo_span=frozenset(), heads=None,
+                                       stats=st9, surface_span=surf9)
+    _, _ = hook9._pre(None, (), {"attention_mask": torch.zeros(1, 1, S9, S9)})
+    ks9 = sb.knockout_row_stats(st9)
+    pred9 = expected_prefill_edit_rows(blocked9, S9, allowed_rows=surf9)
+    check("T8e the scoped mask really CAN edit zero rows, and the closed form predicts it",
+          ks9["n_prefill_edits"] == 0 and pred9 == 0
+          and not sb.scoped_span_is_dead(SURFACE_SCOPE, q9, frozenset(), surf9),
+          f"hook={ks9['n_prefill_edits']} predicted={pred9}")
+    try:
+        assert_row_edits({"n_forward": 1, "n_prefill_forward": 1, "n_decode_forward": 0,
+                          "n_edits": 0, "n_decode_edits": 0},
+                         n_band_layers=1, expected_rows=pred9, head_mult=None, prompt_id="z")
+        check("T8f a scoped mask that edits ZERO rows is REFUSED", False, "assert_row_edits passed")
+    except RuntimeError as e:
+        check("T8f a scoped mask that edits ZERO rows is REFUSED",
+              "ZERO editable mask cells" in str(e), str(e)[:80])
+    try:
+        assert_scope_narrows(SURFACE_SCOPE, pred9, expected_prefill_edit_rows(blocked9, S9), "z")
+        check("T8g assert_scope_narrows refuses a scope that resolves to no cells", False,
+              "accepted 0 cells")
+    except RuntimeError as e:
+        check("T8g assert_scope_narrows refuses a scope that resolves to no cells",
+              "ZERO editable mask cells" in str(e))
+    try:
+        assert_scope_narrows(SURFACE_SCOPE, legacy8, legacy8, "z")
+        check("T8h a 'surgical' scope that did NOT narrow is refused", False, "accepted")
+    except RuntimeError as e:
+        check("T8h a 'surgical' scope that did NOT narrow is refused", "not narrow" in str(e))
+    check("T8i assert_scope_narrows is a NO-OP on the legacy scope (default path untouched)",
+          assert_scope_narrows(LEGACY_SCOPE, legacy8, legacy8, "z") is None)
+
+    # ---- T8j  the run-level gate, on the SCOPED contract -------------------------------------- #
+    live8 = sb.new_knockout_live()
+    for _ in range(4):
+        sb.record_knockout_row(live8, SURFACE_SCOPE,
+                               {"n_forward": 2, "n_prefill_forward": 2, "n_decode_forward": 0,
+                                "n_edits": 2 * pred8, "n_decode_edits": 0},
+                               n_demo_positions=3, readout=True)
+    s8_ok = sb.knockout_liveness_summary(live8, "eager", scope=SURFACE_SCOPE, readout=True)
+    check("T8j a live target_surface_row_only run passes assert_knockout_live on ITS contract",
+          sb.assert_knockout_live(s8_ok) is True and s8_ok["frac_rows_scope_live"] == 1.0,
+          json.dumps({k: s8_ok[k] for k in ("n_rows", "frac_rows_scope_live",
+                                            "total_prefill_edits")}))
+    leak = sb.new_knockout_live()
+    for _ in range(4):
+        sb.record_knockout_row(leak, SURFACE_SCOPE,
+                               {"n_forward": 3, "n_prefill_forward": 2, "n_decode_forward": 1,
+                                "n_edits": 2 * pred8 + 3, "n_decode_edits": 3},
+                               n_demo_positions=3, readout=True)
+    s8_leak = sb.knockout_liveness_summary(leak, "eager", scope=SURFACE_SCOPE, readout=True)
+    try:
+        sb.assert_knockout_live(s8_leak)
+        check("T8k a scoped run that leaked decode edits is REFUSED", False, "leak passed")
+    except SystemExit:
+        check("T8k a scoped run that leaked decode edits is REFUSED", True)
+
+    # ---- T8l  the empty span is a CRASH, not a clean null ------------------------------------ #
+    try:
+        pc.ScopedAttentionKnockout(stub, [0], blocked_keys=blocked8, mode=SURFACE_SCOPE,
+                                   query_span=q8, demo_span=frozenset(), heads=None, stats={},
+                                   surface_span=None)
+        check("T8l dropping surface_span is refused by the hook, not silently demoted", False,
+              "constructed with surface_span=None")
+    except ValueError as e:
+        check("T8l dropping surface_span is refused by the hook, not silently demoted",
+              "no-op knockout" in str(e))
+
+    # ---- T8m  scopes this forward-only path cannot satisfy are refused at argument time ------- #
+    for _bad_scope, _why in (("decode_only", "edits nothing without a decode step"),
+                             ("response_query_only", "would perform query_prefill_only")):
+        try:
+            sb.readout_liveness_contract(_bad_scope)
+            check(f"T8m {_bad_scope} is refused ({_why})", False, "contract returned")
+        except SystemExit:
+            check(f"T8m {_bad_scope} is refused ({_why})", True)
+    check("T8n target_surface_row_only IS satisfiable here, and on the reduced contract",
+          sb.readout_liveness_contract(SURFACE_SCOPE) ==
+          (("n_prefill_edits", "n_prefill_forward"), ("n_decode_edits",)),
+          str(sb.readout_liveness_contract(SURFACE_SCOPE)))
+
     # ---- T7  row selection ------------------------------------------------------------------ #
     rws = [{"prompt_id": f"p{i}", "demo_block": ("" if i % 2 else "D")} for i in range(10)]
     sel = select_rows(rws, smoke=3, limit=0, knockout=True)
@@ -667,6 +1056,17 @@ def main() -> int:
                     help="attention-knockout band as lo-hi BLOCK indices (default 6-14)")
     ap.add_argument("--arm", default="demo_all",
                     help=f"knockout arm; known: {sb.KNOCKOUT_ARMS}")
+    ap.add_argument("--knockout-scope", default=LEGACY_SCOPE,
+                    choices=list(pair().SCOPED_KNOCKOUT_MODES),
+                    help="WHICH QUERY ROWS are blocked from reading the demonstration keys. "
+                         f"Default {LEGACY_SCOPE!r} = every query row = the scope that produced "
+                         "R-093, and on that default this file constructs the same "
+                         "AllQueryAttentionKnockout object and applies the same legacy closed-form "
+                         "liveness gate it always did. 'target_surface_row_only' is gate R6's KO-1: "
+                         "only the rows of the FINAL target_surface occurrence in the query (the "
+                         "CODEWORD in cells A/C/D/F, the CONCEPT word in cells B/E — one scope, one "
+                         "dose, both experiments). Scopes with no prefill rows, or whose prefill "
+                         "half duplicates another mode, are refused at argument time.")
     ap.add_argument("--attn-impl", default="eager", choices=["eager", "sdpa"],
                     help="FORCED to eager whenever the knockout is live: under SDPA the additive "
                          "mask edit is discarded and the knockout is a silent no-op. `sdpa` is "
@@ -688,6 +1088,24 @@ def main() -> int:
         return self_test()
 
     knockout = not args.no_knockout
+    scope = args.knockout_scope
+    if knockout:
+        if scope in SCOPES_NOT_SUPPORTED_HERE:
+            raise SystemExit(
+                f"REFUSING: --knockout-scope {scope!r} takes its row set verbatim from the "
+                f"consumer, and score_behavior.py owns that definition (--knockout-last-k). "
+                f"Adding a second 'last K' here would be a second definition of K.")
+        # ⛔ THE ARGUMENT-TIME REFUSAL, AND IT IS NOT THIS FILE'S OPINION. `readout_liveness_contract`
+        # asks the hook's OWN row resolver whether the mode can fire at all on a path with no
+        # decode step, and refuses `decode_only` (edits nothing here) and `response_query_only`
+        # (stripped of its decode half it performs `query_prefill_only` under another name). It
+        # also returns the reduced contract this run will be judged on, which is printed below.
+        _req, _zero = sb.readout_liveness_contract(scope)
+    elif scope != LEGACY_SCOPE:
+        raise SystemExit(
+            f"REFUSING: --no-knockout with --knockout-scope {scope!r}. The baseline capture applies "
+            f"no hook at all, so a run naming a scope it never performed is exactly the artifact "
+            f"that gets read three weeks later as evidence that it did. Drop one of the two flags.")
     if knockout and args.attn_impl != "eager":
         raise SystemExit("REFUSING: --attn-impl sdpa with the knockout live. Under SDPA the custom "
                          "mask is discarded silently and the run would be an un-knocked-out "
@@ -739,11 +1157,17 @@ def main() -> int:
           f"attn={attn_impl}")
     print(f"[ko-extract] capture layers={layers} position={args.position}")
     if knockout:
-        print(f"[ko-extract] KNOCKOUT LIVE: arm={args.arm} scope={KNOCKOUT_SCOPE} "
+        print(f"[ko-extract] KNOCKOUT LIVE: arm={args.arm} scope={scope} "
               f"band {args.band} -> blocks {lo}..{hi} of {lm.num_layers} "
               f"({hi - lo + 1} blocks, depth {lo / lm.num_layers:.3f}-"
               f"{(hi + 1) / lm.num_layers:.3f}); liveness required > 0: "
-              f"{list(pc.LIVENESS_REQUIREMENT[KNOCKOUT_SCOPE])}", flush=True)
+              f"{list(pc.LIVENESS_REQUIREMENT[scope])}, required == 0: "
+              f"{list(pc.LIVENESS_MUST_BE_ZERO[scope])}", flush=True)
+        # The FORWARD-ONLY reduction of that contract is what rows are actually judged on here, so
+        # it is printed too rather than left to be inferred from the mode table.
+        print(f"[ko-extract] forward-only readout contract for {scope}: required > 0 {list(_req)}, "
+              f"required == 0 {list(_zero)}; per-row closed form: "
+              f"{'legacy' if scope == LEGACY_SCOPE else 'scoped'}", flush=True)
     else:
         print("[ko-extract] KNOCKOUT DISABLED (--no-knockout): baseline-reproduction control",
               flush=True)
@@ -753,7 +1177,7 @@ def main() -> int:
     # kind of artifact that gets read three weeks later as evidence that it did.
     run.note(layers=layers, band=(band if knockout else None),
              band_str=(args.band if knockout else None), arm=(args.arm if knockout else None),
-             knockout_applied=knockout, knockout_scope=(KNOCKOUT_SCOPE if knockout else None),
+             knockout_applied=knockout, knockout_scope=(scope if knockout else None),
              position=args.position, attn_implementation=attn_impl,
              n_bank_rows_used=len(rows), smoke=int(args.smoke or 0),
              layer_convention=sg.LAYER_CONVENTION)
