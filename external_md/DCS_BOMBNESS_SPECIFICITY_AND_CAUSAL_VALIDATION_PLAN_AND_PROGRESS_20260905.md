@@ -4666,3 +4666,152 @@ advance**.
 ⇒ ⛔ **Gate status is unchanged by this run.** The held-out **template-family** claim has **no valid
 instrument** in this phase; only the held-out **domain** claim (`R-086`) does.
 
+
+---
+
+## §69 — `DCS-R-095` / `DCS-C-068` — ⛔ GATE `R6` IS **UNINFORMATIVE BY CONSTRUCTION**, and §13 is at CEILING
+
+Ran `scripts/dcs_pr044_analysis.py` (frozen at `ffc01aa9`, before the arms landed) on the three
+`ko1` arms — jobs `857563` / `857564` / `857565`, all `DONE`, `target_surface_row_only`,
+`frac_rows_scope_live = 1.0` on 2520/2520 rows each, `total_decode_edits = 0`, `scope_violations {}`,
+scoped closed form `495` / `522` / `495` median prefill edits vs the legacy `28449` / `30996` /
+`28980`. ⇒ **The dose is real and it is ~1.7 % of the whole-query dose.** Artifact:
+`outputs/boombness/dcs_analysis/dcs_pr044.json`.
+
+### 69.1 `R-095` — what the analyzer printed
+
+| | `R6` (cell `C`, read at ` button`) | §13 (cell `B`, read at ` bomb`) |
+|---|---|---|
+| rows/class | 228 | 48 |
+| baseline (`ko_off`) | **0.7529** | **1.0000** |
+| knockout (`ko1`) | **0.7047** | **1.0000** |
+| mean drop | **+0.0482** | **+0.0000** |
+| domains with a drop | 5/6 | 0/6 |
+| of the available range | 11.5 % | 0.0 % |
+| p | ⛔ none, by §67.3 | ⛔ none, by §67.3 |
+
+### 69.2 ⛔ `C-068` — `R6` DID NOT MEASURE ANYTHING NEW. It re-read `R-093`'s TENSOR.
+
+⚠ Every one of `R6`'s six numbers is `R-093`'s number **to sixteen digits** — baseline, knockout,
+mean drop, 5/6, 11.5 %, and all six per-domain drops. That is not a coincidence and it is not a
+reproduction. I measured the cause instead of guessing it:
+
+* All six folds' frozen picks are **`L = 6`, `C = 0.01`** — selected on cell `B`, so the selection
+  itself is clean.
+* ⛔ `L = 6` is the **FIRST LAYER OF THE KNOCKOUT BAND** (`--band 6-14`).
+* Direct comparison of the two runs' caches, `koextract_on_button_bomb_…3018729` vs
+  `koextract_ko1_button_bomb_…4149630`, over all **2520 shared rows**:
+
+| layer | `ko_on` vs `ko1`, median rel. err | cos | **max abs elementwise diff** |
+|---|---|---|---|
+| **6** | **0.000e+00** | **1.00000000** | ⛔ **0.000e+00** |
+| 7 | 4.81e-02 | 0.9989 | 3.59e-01 |
+| 10 | 2.11e-01 | 0.9778 | 9.53e-01 |
+| 14 | 2.62e-01 | 0.9656 | 1.42e+00 |
+
+⇒ **At layer 6 the whole-query knockout and the surface-row-only knockout produce a BIT-IDENTICAL
+tensor at the read row**, and they diverge monotonically above it.
+
+**Why this is a mathematical identity, not a finding.** The band starts at layer 6, so no layer
+below it is perturbed at all. At layer 6 the read row's own hidden state is a function of the
+*unperturbed* layer-5 states of every position, masked by **its own query row**. Both scopes block
+exactly the same demonstration keys **on that row**. The rows the whole-query scope additionally
+blocks are *other* query rows, and their layer-6 outputs cannot reach the read row's layer-6 output.
+⇒ ⛔ **The two interventions are provably indistinguishable at the read site at the band's first
+layer**, for any prompt, before any data is collected.
+
+⇒ ⛔ **Gate `R6` is CANNOT ANSWER / UNINFORMATIVE BY CONSTRUCTION.** ⛔ **It is NOT a null and it is
+NOT a confirmation of `R-093`.** The instrument had no ability to separate the two scopes on the
+layer its own frozen selection landed on.
+
+⚠ **And it cuts the other way, at `R-093`'s expense.** `R-093` is published as a **whole-query**
+knockout. At `L = 6`, which is the only layer any of its six folds reads, ⛔ **`R-093`'s manipulation
+is arithmetically identical to blocking the single codeword row.** ⇒ The sentence *"destroying the
+whole demonstration→query pathway leaves the representation intact"* overstates the manipulation
+actually in force at the site read: what `R-093` measured is *"blocking the codeword row's own view
+of the demonstrations leaves the representation at that row 94 % decodable."* ⇒ **`R-093`'s verdict
+(`R5-FAIL`, dissociation) is unchanged — the drop and the readout collapse are what they were — but
+its DESCRIPTION must be corrected.** Recorded here; §64 is not rewritten (§33).
+
+### 69.3 §13 is a CEILING, so it is also CANNOT ANSWER
+
+Baseline **1.0000** in 6/6 domains. ⇒ ⛔ **available range = 0.** A readout pinned at ceiling cannot
+fall, so `+0.0000` carries no information about whether blocking the concept word's row changes the
+concept signal. ⚠ The cause is structural and was foreseeable: the capture site for cell `B` **is the
+token ` bomb` itself**, so the probe is reading a token whose *identity* is the label. This is the
+same degeneracy `PR-038` §40.4 guards against with its `option_mass` floor — ⛔ **§13 shipped with no
+such guard, and that is my design error, not a property of the model.**
+
+⇒ ⛔ **Neither `R6` nor §13 may be quoted as evidence for or against anything.** Both are recorded as
+CANNOT ANSWER. ⛔ **"Treat CANNOT ANSWER as a null" remains forbidden.**
+
+### 69.4 What the arms DID establish, and it is not nothing
+
+⚠ Three facts survive, all of them methodological:
+
+1. The scoped knockout **works**: 1.7 % of the dose, exact closed-form liveness on 7560 rows across
+   three banks, zero decode leakage, zero scope violations. The `--knockout-scope` instrument is
+   **validated for future use**.
+2. `ko_off` vs `ko1` at `L = 6` differ (`rel = 0.158`, `cos = 0.988`) ⇒ the scoped knockout is **not a
+   no-op**; it simply is not *distinguishable from the whole-query one* at that layer.
+3. ⛔ **Any band-limited intervention read at the band's first layer measures only the read row's own
+   mask.** ⚠ **This is a general trap and it applies to every knockout result in this project that
+   selects `L = 6`.** Flagged for the paper's methods section.
+
+---
+
+## §70 — `DCS-PR-045` — PREREGISTRATION: re-read `R6` and §13 **above the degenerate layer**, declared before running
+
+⛔ **WRITTEN AND COMMITTED BEFORE THE ANALYZER IS RUN.** Nothing below was chosen after seeing a
+number from it.
+
+### 70.1 What changes, and why it is NOT post-hoc layer selection
+
+⛔ The brief forbids choosing a layer after seeing outcomes. **This is not that.** §69.2 proves —
+from the band definition alone, with no data — that layer 6 **cannot** separate `legacy_all_query`
+from `target_surface_row_only` at the read row. ⇒ Layer 6 is excluded because it is **structurally
+degenerate for this specific contrast**, a fact derivable before the run, not because its number was
+unfavourable. ⚠ **The exclusion is declared as one uniform rule with no cell, arm or outcome named:**
+
+```python
+# PR-045: the band's FIRST layer is provably identical across knockout scopes at the read row.
+# It is excluded from BOTH arms and from SELECTION, for every cell, before any accuracy is read.
+LAYERS_PR045 = [L for L in layers if L > min(BAND)]     # -> 7..14
+```
+
+⛔ The same grid is used for training, for testing, and for the cell-`B` selection. ⛔ `ko_off` is
+re-read on the identical grid, so the baseline is not the old one.
+
+### 70.2 What is measured
+
+| readout | test cell | selection cell | grid |
+|---|---|---|---|
+| `R6b` | `C` (read at ` button`) | `B` | layers 7–14 |
+| §13b | `B` (read at ` bomb`) | `C` | layers 7–14 |
+
+### 70.3 ⛔ Inference rules, fixed now
+
+* ⛔ **NO p-VALUE, on either.** §67.3 spent `PR-040`'s single test and nothing since has changed
+  that. Both are **DESCRIPTIVE**.
+* ⛔ §13b is **expected to remain at ceiling** and, if it does, is **CANNOT ANSWER again** — a ceiling
+  is a property of the instrument, not of the model, and no layer change repairs it. ⚠ It is run only
+  because leaving it out would be selecting which of two pre-declared readouts to report.
+* ⛔ If `R6b`'s baseline on layers 7–14 is **below** `ko_off`'s layer-6 baseline by more than **0.10
+  absolute**, the whole comparison is **VOID**: the probe would be too weak on the restricted grid
+  for a drop to mean anything. Executable:
+
+```python
+if base_L6 - base_pr045 > 0.10:   verdict = "VOID — the restricted grid destroys the baseline"
+```
+
+* ⛔ A drop that is **larger** than `R-093`'s +0.0482 would be **incoherent**, because `KO-1` blocks a
+  strict subset of `KO-legacy`'s cells at every layer. If it happens it is reported as **a bug
+  signal**, not a finding, and the arms are re-audited.
+* ⚠ The interpretable quantity is the **ratio** `drop(ko1) / drop(ko_on)` on the same grid: it says
+  what fraction of the whole-query effect the codeword's own row accounts for **at layers where the
+  two differ**. `ko_on` is therefore re-read on the same restricted grid as a third arm. ⛔ No bar is
+  attached to that ratio and no verdict turns on it.
+
+### 70.4 Cost
+
+⛔ CPU only. All three caches (`off`, `on`, `ko1` × 3 classes) are on disk. No GPU job. No new bank.
