@@ -3708,3 +3708,56 @@ probability `6/6⁶ = 1/7776` and contributes 0.03 expected replicates of 200.
 *"what else does this touch?"* ⛔ It touches nothing else, which means the damage from `C-058` was
 confined to the claim it was about — but that was luck, not design.
 
+
+---
+
+## §53 — `DCS-B-021` / `DCS-Q-005` — PHASE 5 (gate `R5`) is BLOCKED ON A MISSING BRIDGE, and the bridge already has a pattern
+
+With `R-086` verified, the phase's most valuable remaining experiment is the brief's §12 gate **`R5`**
+and Matan's **question 2**: ⇒ *does the demonstration→query knockout destroy the **concept-specific**
+signal, not merely the forced-choice readout?* Feasibility was checked before preregistering anything.
+
+### 53.1 The two capabilities exist in different scripts and do not meet
+
+| capability | where |
+|---|---|
+| **persists** multi-layer hidden states as `{prompt_id: Tensor[len(layers), H]}` | `extract_boombness.py` (what `PR-035` consumed) |
+| applies **attention knockout** | `score_behavior.py`, `retrieval_strength.py`, `rah_transport_assay.py` |
+
+⛔ **`extract_boombness.py` has NO `--intervene` and no `--knockout-scope`** — verified from its
+argument list. ⛔ **`score_behavior.py` persists only `hnorm|L*` NORMS, never vectors** — a norm cannot
+train a probe. ⇒ There is **no existing path** that writes a knocked-out rep cache.
+
+### 53.2 ✅ But the hard part is already solved, once, in this repo
+
+`rah_transport_assay.py:25` names it exactly:
+
+> *"arm-active donor capture: the pattern at `score_behavior.py:1892-1928`, **the ONLY place in this
+> repository where a capture forward runs under live intervention hooks**."*
+
+⇒ ⛔ The bridge is **not** a new pipeline. It is: run that capture pattern at
+`position = codeword_last` across layers 6–14, and write the **same `final_occurrence_reps.pt`
+format** the extractor already writes, so the **frozen** `PR-035` analyzer consumes it unchanged.
+⚠ `rah_transport_assay` captures **one donor layer** and transplants immediately; it does not persist
+a multi-layer cache, so it is the **pattern** to reuse, not the script to call.
+
+### 53.3 The experiment it unlocks, sketched (⛔ NOT a preregistration)
+
+Extract `button_{bomb,knife,gun}` at `codeword_last`, L6–14, **under
+`demo_all:attn_knockout:6-14:1.0`, `query_prefill_only`** (the `KO-3` scope). Then apply the
+**already-frozen** probe procedure — train on **baseline** cell `B`, test on **knocked-out** cell `C` —
+and ask whether held-out 3-way accuracy falls from **0.7485** toward the 0.333 chance.
+Unit domain, n = 6, one paired sign test, floor 0.03125. Cost ≈ 3 arms × 8 min GPU.
+
+⚠ ⛔ It inherits `B-018`: **no dose-matched control is feasible on this bank**, so it would be a
+localisation **conditional on `R-080`**, not independent evidence about demonstration keys.
+
+### 53.4 `Q-005` — for Omer
+
+⇒ **Do I build the bridge?** It is ~100 lines reusing an existing pattern, it is the only way to run a
+**preregistered** gate (§12 `R5`) that is one of the brief's three headline questions, and the GPU cost
+is trivial. ⛔ Against: the brief says reuse rather than write, and this is the first genuinely **new**
+capture path this phase would add. ⚠ **My recommendation is to build it** — `R-086` without `R5` is a
+correlational probe result, and `R5` is what would make it causal. ⛔ Recorded rather than started,
+because "write a new capture pipeline" is a scope decision, not an engineering detail.
+
