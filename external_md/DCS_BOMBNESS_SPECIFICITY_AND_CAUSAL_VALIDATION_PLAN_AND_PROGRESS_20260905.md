@@ -4290,3 +4290,65 @@ learned direction is **not shared across codewords**.
   disagree sharply. ⇒ ⛔ **Neither may be cited as "the" transfer result** until the disagreement is
   understood; it is now the most interesting open question this phase has produced.
 
+
+---
+
+## §62 — `DCS-C-066` — ⛔ `R-092` §61.2's INTERPRETATION IS WRONG. The direction transfers; the DECISION OFFSET does not.
+
+⚠ **Descriptive diagnostic, no p-value.** Run to resolve the disagreement §61.4 flagged between two
+of my own instruments — `R-091`'s direction transferring at **0.9204** and `R-092`'s classifier
+failing at **0.3962**. ⛔ It is not a new preregistered test and changes no verdict.
+
+**Method:** take the *same* button-trained classifier `R-092` used — same fold structure, same
+`(L=6, C=0.01)` every fold picked — and score it on basket two ways: by **argmax accuracy** (what
+`R-092` measured) and by **macro one-vs-rest AUROC** of its predicted probabilities, which is pure
+**ranking** and is **invariant to any per-class offset**.
+
+| domain | argmax acc | macro OvR AUROC |
+|---|---|---|
+| city_bridge | 0.6754 | 0.8691 |
+| **farm_storage** | **0.3333** ⇐ exactly chance | **0.9317** |
+| game_manual | 0.3333 | 0.5185 |
+| instructional | 0.3509 | 0.8668 |
+| **lab_safety** | **0.3333** ⇐ exactly chance | **0.8386** |
+| news_report | 0.3509 | 0.7462 |
+| **MEAN** | **0.3962** (chance 0.333) | **0.7951** (chance 0.500) |
+
+⇒ ⛔ **In the very domains where the classifier collapses to a single class, the RANKING is
+excellent** — `farm_storage` sits at exactly chance accuracy with AUROC **0.9317**.
+
+### 62.1 The retraction
+
+⛔ **`R-092` §61.2's sentence — *"the concept signal is CODEWORD-SPECIFIC: present in both, encoded in
+different directions"* — is WRONG and is RETRACTED.** The directions are **shared**. What fails to
+transfer is the **decision offset**: the button-fitted boundary sits in the wrong place for basket
+states, so `argmax` collapses even though the ordering is preserved.
+
+✅ **This reconciles `R-091` and `R-092` completely.** They were measuring different things —
+`R-091` a **ranking** on a diff-in-means direction (0.9204), `R-092` an **argmax** with an absolute
+boundary (0.3962). ⇒ ⛔ There was never a contradiction, and §61.4's *"most interesting open
+question"* is **closed**, in about the time it took to score the same model two ways.
+
+### 62.2 What stands, and what the corrected claim is
+
+* ✅ ⛔ **Gate `R3` still FAILS as preregistered.** §60.3 declared **held-out accuracy** as the
+  statistic, and 0.3962 is what it is. ⛔ I am **not** switching to AUROC to rescue the gate — that is
+  exactly the metric-shopping the brief forbids, and it is the second time today a better-behaved
+  metric was available after a failure (§58.1 was the first).
+* ⇒ ⚠ **The corrected scientific statement:** *the concept direction is shared across codewords and
+  transfers by ranking (AUROC 0.795 macro OvR; 0.9204 by the independent diff-in-means instrument);
+  the absolute decision boundary is codeword-specific and does not transfer.*
+* ⇒ ✅ **`R-086` is LESS bounded than §61.4 said.** Its wording correction stands in weakened form:
+  the signal is not confined to one lexical setting, but a classifier trained in one **cannot be
+  applied unchanged** to another.
+* ⚠ `game_manual` is the one genuinely weak domain (AUROC 0.5185) — ⚠ and it is **also** the weakest
+  in the frozen basket-trained arm (0.500). ⇒ a **domain** property, not a transfer property.
+
+### 62.3 ⚠ Method note worth keeping
+
+⛔ **A leave-one-group-out classifier's ACCURACY conflates two things — whether the representation
+carries the label, and whether the decision boundary is portable.** Reporting only accuracy would
+have published *"the concept signal does not transfer across codewords"*, which is false. ⇒ ⚠ Any
+transfer claim in this phase should report **both** an offset-free ranking statistic **and** the
+accuracy, and say which one the gate is defined on.
+
