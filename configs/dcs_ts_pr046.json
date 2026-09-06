@@ -1,0 +1,151 @@
+{
+  "id": "DCS-PR-046",
+  "title": "Thesis-scale concept-identity probe on the aligned ts116n bank",
+  "status": "FROZEN_PENDING_BANK_SHA",
+  "written": "2026-09-07",
+  "written_at_commit": "347f0920",
+  "_why_machine_readable": [
+    "This repository has twice published a threshold that no code path ever read.",
+    "Every gate below is loaded by the analyzer at runtime; the analyzer REFUSES to run if this",
+    "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
+    "in a markdown log that no program consults is a wish, not a preregistration."
+  ],
+
+  "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
+  "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
+
+  "population": {
+    "bank_family": "ts116n",
+    "banks": {
+      "button_bomb":  {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl",  "bank_file_sha16": null, "bank_rows_sha16": null},
+      "button_knife": {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl", "bank_file_sha16": null, "bank_rows_sha16": null},
+      "button_gun":   {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl",   "bank_file_sha16": null, "bank_rows_sha16": null},
+      "basket_bomb":  {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl",  "bank_file_sha16": null, "bank_rows_sha16": null},
+      "basket_knife": {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl", "bank_file_sha16": null, "bank_rows_sha16": null},
+      "basket_gun":   {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl",   "bank_file_sha16": null, "bank_rows_sha16": null}
+    },
+    "pools": {
+      "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
+      "shared_pools_sha16": "976aa2b0b617118d",
+      "harm_bomb":  {"path": "data/boombness_prompts/demo_pools_116dom_ts_bomb.json",  "content_sha16": null, "job": 859722},
+      "harm_knife": {"path": "data/boombness_prompts/demo_pools_116dom_ts_knife.json", "content_sha16": null, "job": 859723},
+      "harm_gun":   {"path": "data/boombness_prompts/demo_pools_116dom_ts_gun.json",   "content_sha16": null, "job": 859724}
+    },
+    "concepts": ["bomb", "knife", "gun"],
+    "codewords": {"development": "button", "external_confirmation": "basket"},
+    "cell": "C",
+    "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
+    "query_kind_primary": "semantic_one_word",
+    "query_kind_display": "semantic_forced_choice",
+    "n_examples_primary": 4,
+    "n_examples_replication": 8,
+    "n_examples_null": 0,
+    "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
+    "rows_per_domain_per_concept": 10,
+    "preregistered_exclusions": [
+      {"domain": "school_campus", "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only", "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."}
+    ],
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter."
+  },
+
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 70, "n_validation": 23, "n_test": 23,
+    "seed": 202609061,
+    "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists."
+  },
+
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32, "hidden": 4096, "n_heads": 32, "n_kv_heads": 8,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim."
+  },
+
+  "read_site": {
+    "position": "codeword_last",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "layer_convention_verified_by": "planted-hook GPU test, REQUIRED to pass before any measurement run",
+    "layer_selection": "TRAIN+VALIDATION only, frozen before test is read",
+    "layer_grid": [6, 7, 8, 9, 10, 11, 12, 13, 14],
+    "C_grid": [0.01, 0.1, 1.0, 10.0],
+    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070)."
+  },
+
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "_no_mlp": "A linear probe, per mandate section 8.1. No MLP.",
+    "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
+  },
+
+  "primary": {
+    "statistic": "3-way argmax accuracy on the 23 untouched TEST domains, domain-mean",
+    "chance": 0.3333333333333333,
+    "independence_unit": "domain",
+    "n_test_domains": 23,
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level",
+    "n_perm": 10000,
+    "_p_floor_rule": "The attainable floor is 1/(n_perm+1) = 9.999e-05. EVERY p MUST be published next to its floor. On zero exceedances report 'p < 1/(B+1)', never a bare '0.0001'. The previous phase's headline p=0.004975 WAS the floor at B=200 and was read as a measurement.",
+    "success": "domain-mean accuracy significantly above 1/3 at alpha=0.05 by domain-level group permutation, AND above chance in a majority of test domains by two-sided sign test",
+    "negative": "not significant, WITH power >= 0.8 for the MDE below",
+    "cannot_answer": "option_mass on the primary channel shows it is disengaged, or the population fails any PHASE-4 gate",
+    "void": "the run did not execute this design (wrong bank sha, wrong script, dead hook, selection read test)"
+  },
+
+  "secondary": {
+    "macro_ovr_auroc": "co-primary for the lexical-transfer claim only; declared BEFORE running per the R3 lesson that accuracy and ranking can disagree",
+    "lexical_transfer": "train on button TRAIN domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining. A basket-specific recalibration is NOT zero-shot transfer and is labelled separately.",
+    "reported_always": ["accuracy", "balanced accuracy", "macro OvR AUROC", "per-class AUROC", "confusion matrix", "per-domain accuracy", "per-domain macro AUROC", "option_mass", "semantic_logodds"]
+  },
+
+  "power": {
+    "between_domain_sd_projected": 0.1406,
+    "between_domain_sd_source": "the six old per-domain accuracies, mean 0.7485380116959064; SD has only 5 df and its 95% upper bound is 0.3439",
+    "mde_accuracy_delta": 0.0925,
+    "power_at_old_effect": ">0.999",
+    "icc": 0.0884,
+    "deff_at_m60": 6.22,
+    "n_eff_test_rows": 222,
+    "_row_level_warning": "A row-level p would print 1.02e-06 where the honest domain-level p is 0.05. Row-level p-values are NOT reported for this claim.",
+    "flip_trigger": {
+      "checkable_on": "TRAIN only, before any test read",
+      "rule": "if 70-domain nested-LODO between-domain SD > 0.25, OR train-LODO mean accuracy < 0.55, rebuild the split as 58/29/29 BEFORE the confirmatory run",
+      "reason": "at SD=0.3439 the MDE degrades from 0.0925 to 0.2102"
+    }
+  },
+
+  "nulls_required": [
+    {"id": "N1", "name": "n_examples=0", "expect": "at chance; no concept signal"},
+    {"id": "N2", "name": "domain-level group permutation", "expect": "null distribution centred at chance", "_never": "row-level permutation; measured FPR 0.2000"},
+    {"id": "N3", "name": "full-prompt leakage", "expect": "0 rows name their own concept in the primary channel"},
+    {"id": "N4", "name": "length-only classifier", "expect": "at chance"},
+    {"id": "N5", "name": "prompt-text-only TF-IDF, concept words masked", "expect": "the probe must beat it"},
+    {"id": "N6", "name": "template-id-only classifier", "expect": "at chance BY CONSTRUCTION; above chance means alignment is broken and the run is VOID"},
+    {"id": "N7", "name": "codeword-only control", "expect": "pipeline sanity"},
+    {"id": "N8", "name": "label permutation through the ENTIRE pipeline including selection", "expect": "calibrated FPR at nominal alpha"}
+  ],
+
+  "phase4_gates_on_ts116n": [
+    {"id": "G1", "rule": "all three harm pool files verify: shared valences byte-identical to the shared pools file; every harm sentence carries exactly one whole-word target concept and no other concept"},
+    {"id": "G2", "rule": "cell C x semantic_one_word DIFFERS across concepts in 116/116 domains", "_why": "the exact inverse of the 1856/1856 identity that voided R-098 under C-074. This is the gate whose absence caused that error."},
+    {"id": "G3", "rule": "cell A (benign_literal) is byte-identical across concepts", "_why": "the alignment half; without it we are back to A-034.1's three corpora"},
+    {"id": "G4", "rule": "concept-backing audit re-run on ts116n; mass-noun polysemy and hedging rates re-measured, not inherited"},
+    {"id": "G5", "rule": "leakage audit re-run on ts116n; template-id-only classifier at chance"}
+  ],
+
+  "artifacts": {
+    "extraction": "scripts/dcs_extract_under_ko.py --no-knockout",
+    "analyzer": "scripts/dcs_ts_pr046_analysis.py",
+    "analyzer_commit": null,
+    "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration."
+  },
+
+  "kill_condition": "If G2 fails -- cell C does not differ across concepts in 116/116 domains -- the bank is VOID as a concept contrast and NO extraction is submitted. This is exactly what happened to R-098, and the gate exists so it costs CPU rather than GPU."
+}

@@ -1009,3 +1009,63 @@ Estimated ~3 h each from the smoke's per-domain cost; `--time=08:00:00`.
 
 Gate 4 is the one that would have caught `C-074` on day one, and it is now a required gate rather
 than a lesson.
+
+## 2026-09-07 · PR-046 · the flagship probe, preregistered before the bank exists
+
+`configs/dcs_ts_pr046.json`. Written at commit `347f0920`, **before any `ts116n` row, hidden
+state or outcome exists**. Status `FROZEN_PENDING_BANK_SHA`: every `*_sha` field is `null` and the
+analyzer **refuses to run** while any of them still is. Pinning happens when the banks are built,
+which is still before extraction — so no outcome can exist at the moment the design is frozen.
+
+**Why it is a JSON and not a paragraph.** This repository has twice published a threshold that no
+code path ever read. Every gate here is loaded by the analyzer at runtime, and the analyzer
+refuses to start if the file is missing, if a sha is null, or if a gate it needs is absent. *A
+number in a markdown log that no program consults is a wish, not a preregistration.*
+
+**Question.** In a large, aligned, held-out population, does the codeword's hidden state carry the
+**identity** of the installed concept, beyond generic remapping and generic harmfulness?
+(Mandate §32 CLAIM A.)
+
+**Design.** Cell **C**, `semantic_one_word`, `n_examples=4`, classes {bomb, knife, gun}, multinomial
+logistic regression on `codeword_last`. Train on the 70 TRAIN domains; select layer and `C` on the
+23 VALIDATION domains only; read the 23 TEST domains once. Primary statistic: domain-mean 3-way
+accuracy against chance 1/3, **domain-level group permutation, `n_perm = 10000`**.
+
+Details that exist only because something went wrong before:
+
+- **Select on `cell == "C"`, never on `condition == "natural_doublespeak"`.** That string lives in
+  `condition`; selecting the wrong field **binds zero rows** (found by `A-039`).
+- **Every p is published next to its floor**, `1/(B+1) = 9.999e-05`, and zero exceedances are
+  reported as `p < 1/(B+1)` rather than a bare number. The previous headline `p = 0.004975`
+  *was* the floor at `B=200` and was read as a measurement.
+- **`SELECTION_TRACE.inert` and `n_tied_at_best` are persisted in every artifact.** A saturated
+  selection surface is reported as a grid-order tie-break, never as learned localisation
+  (`C-070`).
+- **Row-level p-values are not reported for this claim.** ICC 0.0884 → DEFF 6.22; a row-level p
+  would print `1.02e-06` where the honest domain-level p is 0.05.
+- **`school_campus` is excluded prospectively** from occurrence-ordinal and all-codeword-sites
+  analyses only (`C-075`), and *not* from the probe, whose read site is unaffected.
+- **Non-installing domains are not dropped.** Installation is a preregistered stratification
+  variable and a stated limit (mandate §15).
+- **Doses are never pooled** into one p-value.
+- **Llama-only by decision**, recorded as a scope limit and not as a model-specificity claim.
+
+**Eight required nulls** (N1–N8), including the `n_examples=0` null, domain-level permutation
+(never row-level: measured FPR 0.2000), a concept-masked TF-IDF baseline the probe must beat, and
+**N6, the template-id-only classifier, which must sit at chance by construction — above chance
+means alignment is broken and the run is VOID.**
+
+**Five PHASE-4 gates on `ts116n` (G1–G5), and a kill condition.** **G2 is the one that matters:**
+cell C × `semantic_one_word` must **differ across concepts in 116/116 domains** — the exact
+inverse of the 1,856/1,856 identity that voided `R-098`. **If G2 fails, no extraction is
+submitted.** That gate exists so this class of error costs CPU instead of GPU, which is what it
+cost last time only because the PHASE-4 audits happened to be mandated.
+
+**Flip trigger, checkable on TRAIN alone before any test read:** if the 70-domain nested-LODO
+between-domain SD exceeds 0.25, or train-LODO mean accuracy is below 0.55, the split is rebuilt as
+58/29/29 *before* the confirmatory run. Recorded because the projected SD 0.1406 rests on five
+degrees of freedom, and at its 95 % upper bound the MDE degrades from 0.0925 to 0.2102.
+
+**Generation progress at the time of writing:** jobs 859722/3/4 at ~10 of 116 domains after 5:21,
+i.e. roughly an hour to completion — the smoke-based 3 h estimate was pessimistic because the
+per-domain cost excludes the one-time interpreter and API import.
