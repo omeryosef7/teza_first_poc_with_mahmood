@@ -3249,3 +3249,64 @@ assignments ⇒ the *effective* resolution is `1/63 = 0.0159`. ⇒ **A 2-class c
 ⚠ **This defect is not local to us.** Any leave-one-group-out design that permutes labels
 *within groups* and reports a permutation p on a **binary** outcome has it. Worth a methods paragraph.
 
+
+---
+
+## §45 — `DCS-A-027` — PHASES 2 / 3§8 / 8 delivered, and the verify pass corrected THREE of my own claims
+
+Four agents built in parallel while `PR-035` computed; four more tried to break each deliverable.
+⛔ **Three of my own statements did not survive.** Recorded before the deliverables are used.
+
+### 45.1 ✅ PHASE 2 — metadata sidecar + prompt-validation table
+
+`scripts/dcs_metadata_sidecar.py` → `reports/DCS_PROMPT_VALIDATION_TABLE.md`. ✅ Built **on top of the
+existing `src/boombness/dcs_metadata.py` (imported, not duplicated)**. 83 fields per row, all 24 of
+the brief's §7 fields present and asserted. ⛔ The DECLARED layer is derived branch-by-branch from
+`prompt_families.build_demo_block` / `CONDITIONS` — **never from `target_semantic`**, which `A-025`
+established is a bank constant and false for cells `A`, `D`, `F`. ✅ The compound
+`(bank_file_sha16, prompt_id)` key is enforced with a **mutation-tested** assertion that fails on a
+`prompt_id`-only join. ✅ No bank byte touched.
+
+### 45.2 ✅ PHASE 3 §8 — the probability/readout family
+
+`scripts/dcs_readout_family.py`. ⛔ **Reporting instrument only** — no p-value, no hypothesis, and no
+bomb-vs-knife/gun/club contrast, so `PR-035` was not pre-empted. `D` is named
+**`concept_binary_prob`**, never `P(bomb)`, with `option_mass` printed beside it everywhere. ✅ An
+independent re-derivation that imports nothing from the repo matched **every** number, and it
+reproduces `R-078`'s and `R-083`'s published values to the digit.
+
+⛔ **`C-059` — MY DEGRADED-REGIME THRESHOLD WAS UNPREREGISTERED AND WRONG.** The script used
+`option_mass < 0.30`, and I repeated a "degraded regime" framing on that basis. ⛔ **The plan fixes
+this bar at `0.05`, twice** (§18.3, §40.4). ⇒ Under the **preregistered** bar, `PR-037`'s worst rung
+(K=9, 0.105) is **NOT mass-limited**, and neither is any other arm. ⚠ `R-083` §34.5's limitation 3
+stands as a **caveat about measurement regime** — the options do hold only a tenth of the mass there
+— ⛔ but it may **not** be stated as a threshold breach, and the 0.30 figure is retired.
+
+### 45.3 ✅ PHASE 8 §16C — and a verdict layer I must not quote
+
+`R-085`'s **measurements** survived an independent re-implementation from raw `results.jsonl`:
+2× overlap, 8/8 arms, `p = 0.0078`, and the byte-identical rank sets. ✅ And I had already verified
+the **mechanism** — one seed per arm — in source myself.
+
+⛔ **But the script's own population verdict, `"TRUE AND VARYING — a live candidate for the offset
+spread"`, is a FALSE POSITIVE and may not be quoted.** Its rule (*near-constant iff
+`range(excess)/mean(excess) < 0.10`*; observed 0.128) is **not discriminating**: the verifier
+generated 30 pseudo-arms on the real geometry that are *by construction* the same single-seed
+mechanism, and they also exceed 0.10. ⚠ ⇒ §43 is unaffected — it claims the **structure** explains
+`R-077`'s stable offsets, ⛔ **not** that the between-arm *variation* in overlap explains the offset
+*spread*. That second claim is unsupported and is not made.
+
+### 45.4 ⚠ `C-057`'s severity was overstated by me
+
+The verifier measured the mechanism `C-057` invokes, on pure noise with the frozen analyzer's own
+functions (26 reps), and reports that the **paired inflation from omitting `selection_rows` is far
+smaller than "will change a number"** implies. ⇒ ⛔ **`C-057`'s *specification* finding stands** — the
+two secondaries really do select `(layer, C)` on the test population's labels, and `PR-039` fixes it —
+⚠ **but my wording "CRITICAL, will change a number the running job reports" was not supported by a
+measurement, and I am withdrawing that severity.** The conservative ruling (do not quote those two
+p-values) is unchanged; ⛔ the *reason* is now "the statistic is not the preregistered one", not
+"the number is materially wrong".
+
+⚠ ⛔ This is the third time this phase that an adversarial pass corrected **me** rather than the code
+(`C-053` §28 corrected `C-050`; `C-055` corrected `A-026`; this corrects `C-057` and §43).
+
