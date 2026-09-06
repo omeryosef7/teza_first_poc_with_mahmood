@@ -768,3 +768,244 @@ leakage audit found it as a byte-identity, the adversarial audit as a refutation
 gate working. Had the mandate not required these audits before GPU, the phase would have spent
 GPU hours to measure a quantity pinned to 1/3 by arithmetic and would very likely have reported
 the resulting 0.333 as a **negative result about the model**.
+
+## 2026-09-07 · A-036 · the token-role map, and the downstream read site (mandate §14, §22.2)
+
+`scripts/dcs_ts_token_roles.py`, `reports/DCS_TS_TOKEN_ROLE_MAP.md`,
+`outputs/dcs_ts/token_roles_ts116.json.gz` (4.4 MB: per-prompt `input_ids`, decoded tokens,
+preamble / demo-line / demo-block / query / generation-header spans, every codeword and concept
+occurrence, per-token query roles). 6,960 prompts = 116 domains × 2 codewords × 3 concepts.
+**14 checks, 13 PASS / 1 FAIL, 11 mutations 11/11 RED** — including binding the whole suite to an
+empty row set, which returns `ERROR_EMPTY` rather than PASS.
+
+**A third independent confirmation of `C-074`, by a different method.** Not the swap check —
+**token-id identity**: `input_ids` identical across all three concepts in **4,640/4,640**
+comparisons, and the strict whole-word count of bomb/knife/gun over the whole templated prompt is
+**0 in 6,960/6,960**. Three agents, three methods (byte identity, adversarial refutation, token
+identity), same conclusion.
+
+**THE DELIVERABLE — the downstream neutral read site, which unblocks the corrected mechanism
+test.** All nine tail offsets satisfy the four criteria at 6,960/6,960. **Nominated:
+`pos = len(input_ids) − 9`**, decoded `' actually'`, token id 3604. It is exactly the
+**codeword + 1** slot — the repo's existing `following` site
+(`ds_common.target_positions`, `extract_boombness --position following`) — so a readout there is
+**directly comparable with prior `following` results** rather than a new incomparable site.
+Verified strictly after every codeword occurrence, no concept substring, same token id in
+6,960/6,960.
+
+⚠ **Offsets must be relative to the END.** Prompt length ranges **196–280 tokens**, so an absolute
+index is not stable across prompts — the absolute-position-index bug class this repo has already
+hit twice. Over the last 28 positions of all 6,960 prompts the *only* varying position is `−10`,
+the codeword itself; 0 others vary. `button` and `basket` are one subtoken in 34,809/34,809
+occurrences, so the tail does not shift between codeword banks.
+
+**THE K-LADDER CORRECTION, now quantified rather than asserted.** Counting rungs back from the
+end: K=1 `'\n\n'`, K=2 `'<|end_header_id|>'`, K=3 `'assistant'`, K=4 `'<|start_header_id|>'`,
+K=5 `'<|eot_id|>'`. **The first five rungs carry zero query content.** The first query-content
+rung is K=6 (`'?'`) and the first non-punctuation query token is K=7 (`' to'`). Per-prompt query
+side, identical in all 6,960: 28 tokens = 5 scaffold + 23 content (1 chat_scaffold,
+4 response_header, 3 punctuation, 1 codeword, 8 answer_format_instruction,
+11 user_instruction_scaffold, 0 concept_word, 0 neutral_content). §33's ban on *"K=1/2 are query
+rows"* now has a measured replacement.
+
+**LAYER CONVENTION, read from code across eight sites and consistent:**
+**block layer L == `hidden_states[L+1]`; `hidden_states[0]` == embeddings**
+(`signals.py:46`, `common.py:15`, `extract_boombness.py:21,:346,:439`, `refusalness.py:235`,
+`ds_common.py:866`, `09_attention_knockout.py:57`).
+⚠ `extract_boombness.py:331-347`: transformers 5.12 ties the last tuple entry to
+`last_hidden_state`, so `hidden_states[n_layers]` is **post-final-norm**; `forward_hidden()`
+substitutes the hooked raw `layers[-1]` output. **L = n_layers−1 is correct only through
+`forward_hidden()`.**
+**This is a code reading, not a test.** Mandate §22.3 requires a planted hook; the report
+specifies it (hook block L=12, +1e3 on coord 0 at position p, assert `hidden_states[L+1]` moves
+by exactly 1e3 and `hidden_states[L]` does not; repeat at `n_layers−1` through `forward_hidden`
+and assert its `hs[-1]` differs from `out.hidden_states[-1]`; repeat with a **pre**-hook and
+assert it moves `[L]` not `[L+1]`; pin `transformers.__version__`). **Scheduled as the first GPU
+job of the phase**, before any measurement.
+
+Two off-by-one inconsistencies found by grep and **flagged, not adjudicated** (both outside this
+phase's code path): `44_kv_mediation.py:289` reads `hidden_states[R+1]` while `:292` reads
+`hidden_states[best_ps_layer]` bare, in the same function; `18_run_behavioral_necessity.py:99`
+stacks `hs[l]` so row `l` is block `l−1` and row 0 is the embedding.
+
+## 2026-09-07 · C-075 · the codeword matcher is right-permissive, and the bank agrees with it
+
+`ds_common.find_word_occurrences_in_text` is left-strict but **right-permissive** — its docstring
+says *"allow inflections (carrots) but not substrings inside a longer word (scarrot)"* — so
+**`basket` matches inside `basketball.`** in the `school_campus` dev preamble. **9 prompts**
+(basket × {bomb,knife,gun} × family_slot {0,8,12}, split=dev) therefore carry a spurious **6th
+"codeword occurrence"** that is an unrelated benign word, upstream of every demonstration.
+
+**Why no existing check caught it, and this is the point.** The *generator used the same matcher*,
+so the bank's own `n_codeword_occurrences` says 6 too. A checker that compares the finder against
+that field **agrees with itself and sees nothing** — check A does exactly that and passes
+6,960/6,960. Only check J, which re-derives from the templated text, fails. This is the
+matcher/scope bug class and the "a check that reads the same broken source" class in one object.
+
+**Blast radius:** it does *not* touch the nominated read position (6,960/6,960 still strictly
+after every match). It **does** corrupt any occurrence-ordinal analysis, any "block every codeword
+site" knockout, and any demo-installed-occurrence count on those 9 rows. Independently
+corroborated by the adversarial audit as F6: `n_codeword_occurrences` is substring-counted in the
+basket banks, wrong in **60/22,272** rows (0.27 %), all `school_campus`, all in train.
+**Not silently fixed** — fixing a matcher that a committed bank's metadata was generated with
+would change that metadata's meaning at a distance. Carried as a known defect with a named
+exclusion: `school_campus` is dropped from any occurrence-ordinal or all-sites-knockout analysis,
+and that exclusion is preregistered rather than applied after seeing an outcome.
+
+## 2026-09-07 · A-037 · concept backing, and what the word swap actually cost
+
+`scripts/dcs_ts_audit_concept_backing.py`, `reports/DCS_TS_CONCEPT_BACKING_AUDIT.md` (334 KB,
+including the 116-domain × 3-concept human-readable appendix Matan asked for). **13 checks, 13
+mutations, 13/13 RED**; a zero-binding check is forced RED by construction.
+
+The numbers that quantify `C-074` from the corpus side:
+
+- **396/9,280 = 4.27 %** of knife demonstration sentences carry a tier-1 explosive predicate
+  (`detonat*`, `explos*`, `unexploded`, `defus*`, `blast`, `fuse`, `… shell`) — **identically for
+  gun and bomb, because they are the same sentences.** Tier-2 bomb-procedural vocabulary
+  (`squad`, `disposal`, `sniffing`, `controlled explosion`): 464/9,280 = 5.00 %.
+- At prompt level: **1,110/6,960 = 15.95 %** of cell-C n_ex=4 rows and **780/2,784 = 28.02 %** of
+  n_ex=8 rows carry ≥1 tier-1 predicate. Balanced across dsplit (train 4.25 %, val 4.35 %,
+  test 4.24 %), so it is not a split artifact.
+- Conversely the demos afford the *nominal* concept at rate **zero**: knife-affording predicates
+  0/9,280, gun-affording 0/9,280 — with a documented false-friend table (`stable`/`stabilizing` 42,
+  `surrounding` 86, `fire alarm` 65, `triggered` 36, `barrel cellar` 11, film `shoot` 3) showing
+  the zero is tightened, not lazy.
+
+**A real polysemy defect the curated patterns could not see.** The 37 named-sense patterns
+(flare/glue/spray gun, chef's/putty/palette knife, bath bomb, photobomb) return **0** hits —
+mechanically impossible under a word swap. But the **mass-noun frame `a <W> of <NOUN>`** —
+*"a bomb of yeast"*, *"a bomb of rotting tomatoes"* — appears in **171/4,640 = 3.69 %** of
+sentences across **12 of 116 domains**: `restaurant_kitchen` **40/40**, `ceramics_kiln` 37/40,
+`plastics_moulding` 23/40, `brewery_works` 19/40, `dairy_plant` 16/40, `garden_centre` 14/40, then
+6/6/5/3/1/1. **This is the same failure mode as the old `club` pools**, and it will apply to the
+regenerated pools too — the audit must be re-run on `ts116n`.
+
+**Hedging caps installation strength:** **861/4,640 = 18.56 %** of sentences merely compare to,
+simulate, joke about, drill for, or deny a device (*"a package resembling a button"*, *"false
+alarm"*), from 0/40 to 20/40 by domain. Uniform across concepts, so it does not confound the
+contrast, but it bounds absolute installation.
+
+**Prompt-only domain rules, preregistered before any outcome:** blacklist = 6 domains with
+≥10/40 mass-noun sentences; clean sub-corpus = 35 domains with zero tier-1; **recommended analysis
+set = 33 domains (22 train / 6 validation / 5 test)**. ⚠ 33 domains would *undo* the thesis-scale
+gain — so on `ts116n` the right use of these rules is a **preregistered stratification**, not an
+exclusion, unless the regenerated pools show the same rates.
+
+## 2026-09-07 · A-038/A-039/A-040 · leakage, power, adversarial
+
+**A-038 leakage** (`scripts/dcs_ts_audit_leakage.py`, `reports/DCS_TS_LEAKAGE_AUDIT.md`): 19/19
+checks pass, 15/15 mutation transitions RED. Found `C-074` as a byte-identity. Nuisance baselines
+on the *doomed* population are all exactly at chance (length-only 0.3333/0.5000, TF-IDF
+0.3333/0.5000, template-id 0.3333/0.5000) — which correctly says **alignment is not broken**, it
+is total. **Template-id at chance is the check that would have screamed if the banks were
+misaligned, and it is the one number from this audit that carries over.** Occurrence table:
+own-concept rate is either 0/3712 or 3712/3712, never a third case; 24 of 36 buckets
+(**66.67 % of rows**) name the concept and are unusable for a "hidden state contains the concept"
+claim; our regex recount disagrees with the producer's `n_concept_occurrences` in **0/133,632**
+rows. **Must be re-run on `ts116n`, where the numbers will be informative rather than
+degenerate.**
+
+**A-039 power** (`scripts/dcs_ts_power.py`, `reports/DCS_TS_POWER_ANALYSIS.md`): 6 checks, each
+demonstrated RED under a named mutation. **RECOMMENDATION: KEEP 70/23/23.**
+- **p-floors at n=23**: permutation `1/(B+1)` → B=200 gives 0.004975 (**the old headline *is* the
+  floor**, MC relative SE 99.7 %); **B=10,000 → 9.999e-05, rel SE 14.1 %, recommended**. Sign-test
+  two-sided floor: n=6 → 0.03125 (so 6/6 was worth 0.031, not 0.005); **n=23 → 2.384e-07**.
+- **MDE**: recovered the six old per-domain accuracies exactly (mean 0.7485380116959064) →
+  between-domain SD 0.1290, projected 0.1514 (m=30) / 0.1406 (m=60) → **MDE 0.0925 at n=23**
+  against an old effect of 0.4152, a **4.5× margin**. ⚠ that SD has only **5 df**; at its 95 %
+  upper bound 0.3439 the MDE degrades to 0.2102.
+- **ICC** 0.0884 → DEFF 6.22 at m=60; the 1,380 test rows carry **n_eff = 222**. A row-level p
+  would print **1.02e-06** where the honest domain-level p is 0.05.
+- **FPR on pure noise, 300 reps, the real 36-point selection grid**: validation-selected **0.0467**
+  (calibrated); **test-selected 0.4433 — 9.5× inflation**, worse than the previously measured
+  3–5× because inflation scales with grid size; row-level permutation 0.2000. At n_test=6,
+  validation-selected FPR is 0.0600 ⇒ **the old 6-domain design was calibrated; its defect was
+  resolution, not type-I rate.**
+- **Four rules adopted for every confirmatory run in this phase:** (1) `n_perm=10000`, and publish
+  every p next to its floor, reporting `p < 1/(B+1)` on zero exceedances; (2) domain is the unit
+  everywhere, group permutation never row; (3) all hyperparameters selected on the 23 validation
+  domains; (4) use both codewords (SD 0.1514→0.1406, n_eff 193.6→222.0, and a free generalisation
+  axis).
+- **Flip trigger, checkable on TRAIN only before any test read:** if the 70-domain nested-LODO
+  between-domain SD exceeds 0.25, or train-LODO mean accuracy is below 0.55, rebuild as
+  **58/29/29** before the confirmatory run.
+- ⚠ Landmine found: the flagship cell is `cell == "C"`, **not** `condition == "natural_doublespeak"`
+  — that string lives in `condition`, and selecting on it **binds 0 rows**.
+
+**A-040 adversarial** (`reports/DCS_TS_ADVERSARIAL_AUDIT_BANK.md`): **CLAIM REFUTED**, by the same
+defect, found independently. Its additional findings:
+- **MINOR, real, and it survives the rebuild**: **28/18,530** demo sentences (0.15 %) appear in
+  more than one domain, 24 spanning dsplits; **72/3,864 test rows (1.86 %)** share a verbatim demo
+  sentence with a train row (cell C 30/966 = 3.11 %). 13/23 test domains have a name-sibling in
+  train, but train–test vocabulary cosine (mean .7547) is **not worse** than within-split
+  (mean .7464).
+- **The structural limit that binds every design here**: median inter-domain cosine is **0.752**.
+  *"The domains were never independent, since every harm pool is a rewrite of one bomb template
+  family."* This bounds the independence claim on `ts116n` too and must be stated in the write-up.
+- Honest nulls: 1,069,056 cross-concept field comparisons, **0 failures**; bomb/knife/gun are
+  **single tokens** in Llama-3.1-8B, Qwen3-14B and gemma-4-E4B, and **0/22,272** rows differ in
+  token count — so the token-length confound is a clean null; exact class balance (48 rows per
+  (domain, cell) in all 464); repair map uniform across all six banks; all six `bank_rows_sha16`,
+  `pools_sha16` and `manifest_sha16` recomputed and reproduce; `prompt_sha16 == sha256(full_prompt)[:16]`
+  in 133,632/133,632.
+
+## 2026-09-07 · PHASE-3b · the `ts116n` rebuild is generating (smoke passed)
+
+**Smoke, job 859713, `airport_apron` only, COMPLETED 0:0 in 6:06.** Log verified for script and
+args on its first lines per §26.10 before anything else was submitted. Result: 40 knife sentences,
+6 dropped for `occurrence != 1`, the three shared pools **byte-identical** to
+`demo_pools_116dom.json`, and the script's own verifier PASS.
+
+The sentences are the point, so they are recorded here rather than summarised:
+
+> *The security team confiscated a **knife** before boarding the aircraft.*
+> *A **knife** with a broken handle was found by the service road.*
+> *The baggage handler accidentally dropped a **knife** while unloading cargo.*
+
+against the same domain's bomb pool:
+
+> *The baggage handler found a suspicious package that resembled a **bomb**.*
+> *A **bomb** scare has caused a temporary evacuation of the baggage hall.*
+
+Genuinely knife-affording predicates, in the same airport-apron incident-log register. **The
+manipulation is real and the frame is shared** — which is what `R-098` lacked and what `A-034.1`
+said the old banks bought at the cost of regenerating everything.
+
+⚠ **A design correction made before launching, not after.** The plan had been to regenerate only
+knife and gun and reuse the shared file's **bomb** harm pool. That pool was generated on
+2026-08-28 at `openai_seed 20260828`; knife and gun would be generated on 2026-09-06 at seed
+20260906. That is a **concept × generation-run confound** — the bomb arm would differ from the
+other two in *when and under which seed it was produced*, not only in concept, and any bomb-vs-rest
+asymmetry would be uninterpretable. **All three harm pools are therefore regenerated in one
+family**, same generator, same hints, same seed 20260906, differing only in the concept word
+passed to `gen_demos`. The cost is one extra CPU job.
+
+Consequence to record: `ts116n`'s bomb harm pool will **not** equal `demo_pools_116dom.json`'s, so
+`ts116n` is a self-contained family and must not be joined to `cds116` or `ts116` on content.
+
+**Jobs submitted** (CPU, `cpu-killable`, mutually independent, well inside the concurrency cap):
+
+| concept | job | output |
+|---|---|---|
+| bomb | **859722** | `data/boombness_prompts/demo_pools_116dom_ts_bomb.json` |
+| knife | **859723** | `…_ts_knife.json` |
+| gun | **859724** | `…_ts_gun.json` |
+
+Estimated ~3 h each from the smoke's per-domain cost; `--time=08:00:00`.
+
+**Gates before the rebuilt banks may be used for anything:**
+1. all three pool files verify (shared valences byte-identical; every harm sentence carries
+   exactly one whole-word target concept and **no other concept**);
+2. `A-037` concept-backing re-run on `ts116n` — the mass-noun polysemy frame
+   (`restaurant_kitchen` 40/40 on the old pools) and the 18.56 % hedging rate are properties of a
+   *generated corpus* and must be re-measured, not inherited;
+3. `A-038` leakage re-run — on `ts116n` its baselines become informative rather than degenerate,
+   and **template-id-at-chance is the check that fails loudly if alignment breaks**;
+4. the cell-C occurrence check that `C-074` was missing: **count how many rows actually differ
+   across concepts**, and require cell C × `semantic_one_word` to differ in
+   **116/116 domains** — the exact inverse of the 1,856/1,856 identity that voided `R-098`;
+5. cells A (benign) must remain byte-identical across concepts, which is the alignment half.
+
+Gate 4 is the one that would have caught `C-074` on day one, and it is now a required gate rather
+than a lesson.
