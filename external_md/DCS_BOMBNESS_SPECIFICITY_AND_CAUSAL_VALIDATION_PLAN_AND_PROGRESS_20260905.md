@@ -3609,3 +3609,70 @@ predicted symmetry floor (≈0.036) **empirically**. ⇒ `knife-vs-club`'s repor
 *above* the floor that a maximally separable planted signal reaches — it is **not** pinned at the
 floor, which is mildly reassuring and still not a calibration.
 
+
+---
+
+## §51 — `DCS-C-062` — ⛔ **`C-058` IS RETRACTED.** The 2-class test as `PR-035` ran it is CONSERVATIVE, not artifactual.
+
+Job **854780** measured the four procedures on the **same** synthetic data with the **same** seeds,
+100 reps, on **pure noise**, where a valid test must reject at most α = 0.05:
+
+| selection | null | FPR on pure noise | |
+|---|---|---|---|
+| **cell `B`** | **ORIGINAL** | **0.020** | ✅ ⇐ **WHAT `PR-035` ACTUALLY DID** — conservative |
+| cell `B` | EXCLUDING (`PR-039`) | 0.050 | ✅ nominally exact |
+| test set | ORIGINAL | **0.090** | ⛔ the §28.2 defect |
+| test set | EXCLUDING | **0.140** | ⛔ both defects compounded |
+
+### 51.1 The retraction
+
+⛔ **`C-058` claimed the three 2-class p-values were "fully explained by the symmetry" and therefore
+invalid, and on that basis I OVERRODE the analyzer's `POSITIVE` verdict. That was WRONG.**
+
+The symmetry is real, and `C-061` already established that it pushes p **up**, not down. This
+measurement completes the argument: the procedure `PR-035` actually ran — **cell-`B` selection, the
+original null** — rejects pure noise at **0.020**, i.e. it is **CONSERVATIVE by a factor of 2.5**.
+
+⇒ ⛔ **`knife-vs-club`'s `p = 0.0498 ≤ 0.05` is a VALID clearance from a conservative test.**
+§23.5 **clause 4 IS satisfied.** ⚠ And the clearance is, if anything, *understated*: a test that
+rejects noise at 0.020 needs more evidence, not less, to reach 0.05.
+
+### 51.2 ⛔ Why `PR-039`'s "fix" must NOT be adopted
+
+⚠ Its FPR is **0.050** — nominally the best-calibrated of the four. ⛔ **It is still not adopted.**
+
+1. It is a change to a **preregistered statistic**, and I proposed it **after seeing outcomes**. The
+   brief's §33 forbids exactly that, and "it calibrates slightly better" is the seduction the rule
+   exists to resist.
+2. The statistic it would replace is **conservative**, so the change could only ever make results
+   *easier* to declare. ⛔ Adopting a more liberal null after reading the data is indefensible
+   regardless of its nominal calibration.
+3. ⇒ `EXCLUDE_GLOBAL_RELABELS` stays **off by default** (`C-061` gate). The flag remains for a
+   **future, preregistered** design, where it would be the better choice **declared in advance**.
+
+### 51.3 ✅ What the §28.2 arm settles, and for whom
+
+⛔ **Test-set selection inflates the FPR from 0.020 to 0.090 — a 4.5× increase.** ⇒ `C-057`'s finding
+was **serious and correctly raised**, and `A-027` §45.4's downgrade of it was **wrong**; §50.3 already
+began that retraction and this completes it with the paired number.
+
+✅ **It does not touch the primary.** `A-029`'s `V2` verified fold by fold that the primary's picks
+come from cell `B`. ⇒ The 0.090 column describes the **two secondaries** (`P2_leave_one_block_out`,
+`P2_bomb_vs_benign_remap`), whose p-values `C-057` already ruled unquotable. That ruling stands and
+is now **quantified**, not merely asserted.
+
+### 51.4 ⚠ What is STILL open — the verdict is not restored yet
+
+§23.5 needs **clause 3** as well: the **3-way primary's** permutation p. Its calibration under
+**cell-`B` selection** is still computing. ⚠ The available 3-class numbers use **test-set** selection
+(ORIGINAL 0.100, EXCLUDING 0.100) and therefore measure the **defect**, not the primary's design.
+
+⛔ **So the `PR-035` verdict remains UNDETERMINED for one more measurement** — even though the clause
+I overrode it on has now been vindicated. ⚠ I have been wrong on this question in **both** directions;
+I am not restoring `POSITIVE` until the 3-class cell-`B` arm lands.
+
+⚠ ⛔ **Standing note.** `C-058` is the most serious error of this phase: it did not merely mis-state a
+caveat, it **overturned a correct headline result on a sign error**, and it survived my own review
+long enough to be committed and reported. What caught it was **calibrating my own fix** — an action
+the brief mandates and I nearly skipped as a formality.
+
