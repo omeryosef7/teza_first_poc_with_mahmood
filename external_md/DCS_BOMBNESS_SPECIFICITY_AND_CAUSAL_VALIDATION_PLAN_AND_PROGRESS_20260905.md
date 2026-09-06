@@ -2799,3 +2799,72 @@ quietly dropped: §9.3's **4-way-with-`club` secondary** (deleted by the `C-050`
 **installation-strength covariate** (§28.9). The analyzer is frozen at `1483f9c1` and was **not**
 edited mid-run to add them.
 
+
+---
+
+## §39 — `DCS-044` (operational) — ⛔ THE `PR-035` JOB WAS 12× SLOWER THAN NECESSARY AND PRINTED NOTHING FOR EIGHT HOURS
+
+Job `854173` ran **7 h 55 m**, produced **one line of output** (the null control), and was cancelled
+with **nothing written** — the analyzer serialises its JSON only at the end. Two defects, both mine.
+Omer asked why no result was being stated; the honest answer turned out to be *"because the job
+cannot finish, and I had no instrument that would have told me"*.
+
+### 39.1 The measured cause — BLAS thread oversubscription
+
+⛔ **Measured, not guessed.** Three real primary fits (684 × 4096 — the actual fold shape), timed at
+different BLAS thread counts:
+
+| `OMP_NUM_THREADS` | time for 3 fits |
+|---|---|
+| **1** | **2.88 s** |
+| **4** | **1.99 s** ← best |
+| **16** | **34.06 s** ← ⛔ **12× slower** |
+
+The job requested **16 CPUs**, so every one of its fits ran in the 12×-slower regime.
+
+**Why the run needs so many fits.** Per instrument: selection is a 9-layer × 4-`C` × 6-inner-fold
+grid **per outer fold** = 1,296 fits, plus 6 outer + 6 self-fits, plus **1,200 permutation fits**.
+Across ~9 instruments that is **≈ 22,572 fits**. At the oversubscribed rate the run needed **≈ 40
+more hours** against a **2 h** remaining wall. ⛔ `scontrol update TimeLimit` was refused
+(*"Access/permission denied"*), so extending was not an option and cancelling lost nothing.
+
+⚠ **`C-053` §28.2 is what made it this large** — giving the blocking null a cell-`B` selection added
+the full grid *per outer fold*, and the same now holds for every instrument. `DCS-043` already
+flagged that a correctness fix had made the analysis far more expensive; ⛔ **I under-estimated by
+roughly an order of magnitude and did not measure until it was nearly too late.**
+
+### 39.2 The second defect: no progress output at all
+
+⛔ **A silent job is indistinguishable from a hung one.** For eight hours I could not tell whether
+`854173` was working, thrashing, or deadlocked, and I reported *"~3–5 hours, no intervention needed"*
+on an estimate I had never checked against a measurement. ⚠ That estimate was wrong by ~10×.
+
+**Fixed:** eight **print-only** progress ticks. Inserted **by line number**, after a text-anchored
+attempt matched a duplicate line inside `calibrate()` and broke the parse — recorded because it is
+the same class of near-miss as `C-050`'s. ⇒ The diff was then **proven print-only**: every added line
+is the `_tick` helper, a `print`, or the `time` import. ⛔ **No statistical line changed**, so the
+frozen semantics of `1483f9c1` are preserved.
+
+### 39.3 The resubmission, and immediate confirmation
+
+Job **854617**: 4 CPUs, `OMP_NUM_THREADS=4`, 48 GB, **20 h** wall. Chained: **854618** (the primary
+recomputation verifier, `afterok`) and **854619** (its mutation harness, which had itself **TIMED
+OUT at 3 h** for the same threading reason).
+
+✅ **Confirmed within a minute of starting:**
+
+```
+[progress] banks + caches loaded    t+    0.0s
+[progress] null control done        t+   49.3s
+```
+
+⇒ The null control now completes in **49 seconds**. On `854173` the same computation took
+**≈ 8 minutes**. ⚠ ⛔ **Nothing about the statistic changed** — the null's result is the same
+`0.3333 / 0/6 / p = 1.0` reported in `R-084`.
+
+### 39.4 The rule adopted
+
+⛔ **Never submit a long analysis job without (a) a measured per-unit cost, (b) `OMP_NUM_THREADS`
+set explicitly, and (c) progress output.** All three were missing here, and the third is what made
+the first two invisible for eight hours.
+
