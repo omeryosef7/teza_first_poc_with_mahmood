@@ -3514,3 +3514,38 @@ needing its own preregistration, not a rescue of this one.
 ⚠ `ko1` (job 854634) is still running and is **moot**: with `GAP ≈ 0` there is nothing for a knockout
 to destroy. It will be reported as descriptive if it lands, and its absence changes nothing.
 
+
+---
+
+## §49 — `DCS-A-028` — `V2` is now a real check, and job 854618's `V2 PASS` is retracted
+
+`A-027` §45.4 recorded that `dcs_verify_pr035_primary.py` printed `V2 PASS` **from inside `V3`'s
+success branch, without ever reading the producer's `picks`**, and that `V2` could not enter `fails`.
+⇒ ⛔ **Job 854618's `"V2 PASS — (layer, C) picks reproduce from cell-B selection"` carried no
+information and is RETRACTED.** ⚠ `V1`, `V3` and `V6` from that run are unaffected — `V3`'s exact
+16-digit reproduction of the primary stands.
+
+**Fixed.** `V2` now compares the producer's `picks` **fold by fold** against its own cell-`B`
+recomputation, and on mismatch it re-runs selection on the **test cell's own labels** and reports how
+many of the producer's picks match *that* instead — turning it into a **discriminator for the §28.2
+defect** rather than a bare inequality.
+
+**Harness (job 854727) — 6/6, each by its designated check:**
+
+```
+W1 fabricated headline                 -> V3  CAUGHT
+W2 p flipped across alpha              -> V4  CAUGHT
+W3 clause-4 control deleted            -> V5  CAUGHT
+W4 one class on another bank's cache   -> V6  CAUGHT
+W5 primary block deleted               -> V3  CAUGHT   (and V2 correctly reports "no picks")
+W6 picks corrupted, mean_acc intact    -> V2  CAUGHT
+MUTATION HARNESS OK — every corruption was caught by its designated check.
+```
+
+⚠ `W6` is the one that matters: it corrupts **only** `picks`, leaving `mean_acc` correct, so **`V2`
+alone can see it**. Its diagnostic is specific —
+*"producer (L=14, C=0.01) != cell-B recomputation (L=6, C=1.0)"*.
+
+⇒ The verifier is **re-run against the real `PR-035` output** so that a meaningful `V2` verdict
+exists on the actual run. ⛔ Until it returns, **no claim rests on `V2`.**
+
