@@ -4607,3 +4607,62 @@ perform `query_prefill_only`). ✅ The **legacy default is unchanged**, which is
   foregone conclusion the way `R6` is.
 * ⛔ Both are **descriptive**: `PR-040`'s single significance test is spent. ⛔ **No p-values.**
 
+
+---
+
+## §68 — `DCS-R-094` / `DCS-C-067` — ✅ a FIFTH exact reproduction, and ⛔ LOBO's null is mismatched to its own folds
+
+Job 857471 (`PR-043`). ⛔ Only the two permitted outputs were read; `P1`, cell `F` and the mislabelled
+basket arm were skipped as §65 declared.
+
+### 68.1 ✅ Reading 1 — the primary reproduces EXACTLY
+
+| | |
+|---|---|
+| re-run at HEAD, `PR-039` fixes live | **0.7485380116959064** |
+| `R-086` published | **0.7485380116959064** |
+| **identical** | **True**, 6/6 domains, perm p 0.004975 |
+
+⇒ ✅ **Fifth independent reproduction**, and the first confirming that `PR-039`'s five repairs —
+including the `group_permute` gate, the two `selection_rows` additions and `P1`'s balanced fit —
+**disturbed nothing** in the headline.
+
+### 68.2 ⛔ `C-067` — Reading 2: LOBO is STILL uninterpretable, for a NEW reason
+
+| | |
+|---|---|
+| observed | **0.9390**, 6/6 blocks, perm p **0.004975** (the floor) |
+| ⛔ **null mean** | **0.8494** (q05 0.797, q95 0.896) |
+| chance | 0.3333 |
+
+⛔ **The null sits at 0.849, not at chance.** The mechanism, verified from the fold structure:
+
+* LOBO folds on **`bank_block`** — `{consistency, core2x2, core2x2_slot3, position, role_style,
+  strength}`. ⇒ ⛔ **No domain is held out. All 6 domains appear in BOTH train and test.**
+* `group_permute` relabels **per domain**. ⇒ a domain's relabelling is applied **identically to its
+  train rows and its test rows**.
+* ⇒ ⛔ **The classifier simply learns the permuted mapping and predicts it correctly.** The "null"
+  measures *"can an arbitrary domain-consistent relabelling be learned?"* — and the answer is
+  largely **yes**, hence 0.849.
+
+⇒ ⛔ **§23.4(3)'s held-out-template-family test is STILL NOT SATISFIED.** `C-057` found its picks came
+from the test labels and `PR-039` fixed that; ⛔ the **null** was mismatched to the fold structure all
+along, and fixing the picks did not touch it. ⚠ **Two independent defects in one instrument, the
+second only visible once the first was repaired.**
+
+⚠ What the number *does* support, weakly: the true labelling is learned slightly better (0.939) than
+an arbitrary domain-consistent relabelling (0.849). ⛔ That is **not** *"the concept is decodable
+across template families"*, and it may not be reported as such.
+
+### 68.3 The fix, and why it is NOT being applied now
+
+A valid LOBO null must permute at the **fold** level — relabel per **block**, not per domain — or the
+folds must hold out domains. ⛔ **Neither is being done in this sprint.** Changing the null of a
+published instrument **after** seeing that its current null misbehaves is exactly the shape the
+brief's §33 forbids, and `C-062` already refused `PR-039` on that ground. ⇒ **LOBO is recorded as
+UNINTERPRETABLE and left alone.** ⚠ A future preregistration may specify a block-level null **in
+advance**.
+
+⇒ ⛔ **Gate status is unchanged by this run.** The held-out **template-family** claim has **no valid
+instrument** in this phase; only the held-out **domain** claim (`R-086`) does.
+
