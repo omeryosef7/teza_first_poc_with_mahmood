@@ -45,6 +45,11 @@ C_GRID           = (0.01, 0.1, 1.0, 10.0)
 ALPHA            = 0.05
 P1_CAPABILITY_GATE = 0.60                         # PR-031 §6.6, held-out cell-B accuracy
 MAX_OCCURRENCE_FAILURE = 0.02                     # PR-031 §6.2
+# C-061 §47.2: PR-039's global-relabel exclusion is NOT VALIDATED. Calibrating it on pure noise gave
+# an ANTI-CONSERVATIVE false-positive rate, and C-058's argument for it had the sign of the bias
+# backwards. Until job 854780 decides, the DEFAULT must remain the null PR-035 actually ran with,
+# so that a re-run reproduces the published numbers rather than silently changing the statistic.
+EXCLUDE_GLOBAL_RELABELS = False
 EXPECT_ROWS_PER_BANK = 2736
 
 
@@ -278,6 +283,8 @@ def group_permute(rows, rng, classes):
             perm = list(classes)
             rng.shuffle(perm)
             maps.append(dict(zip(classes, perm)))
+        if not EXCLUDE_GLOBAL_RELABELS:
+            break                      # C-061: the DEFAULT is the null PR-035 actually ran
         if len(doms) < 2 or len({tuple(sorted(m.items())) for m in maps}) > 1:
             break                      # not a global relabel -> usable
     else:
@@ -478,7 +485,13 @@ def main() -> int:
     ap.add_argument("--bank-dir", default="data/boombness_prompts")
     ap.add_argument("--channel", default=PRIMARY_CHANNEL)
     ap.add_argument("--out", default="outputs/boombness/dcs_analysis/dcs_bombness_specificity.json")
+    ap.add_argument("--exclude-global-relabels", action="store_true",
+                    help="C-061: PR-039's proposed null. NOT VALIDATED -- calibrating it on pure "
+                         "noise gave an anti-conservative FPR. Off by default; do not enable until "
+                         "the calibration in scripts/dcs_null_calibration2.py says otherwise.")
     a = ap.parse_args()
+    global EXCLUDE_GLOBAL_RELABELS
+    EXCLUDE_GLOBAL_RELABELS = bool(a.exclude_global_relabels)
     if a.self_test:
         return self_test()
     if a.calibrate:
