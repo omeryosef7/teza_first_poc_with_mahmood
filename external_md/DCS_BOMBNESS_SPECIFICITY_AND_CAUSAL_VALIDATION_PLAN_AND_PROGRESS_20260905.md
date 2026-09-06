@@ -4169,3 +4169,59 @@ failure to find concept specificity; it was a correct measurement of an axis tha
 ⇒ the genuinely new part — that **remapping and concept identity live on different axes**. ⛔ Both
 remain **decodability** results; gate `R5` (running) is what would make either causal.
 
+
+---
+
+## §60 — `DCS-PR-041` — PREREGISTRATION: gate `R3` (lexical transfer), implemented as it was actually specified
+
+**Written 2026-09-06 before this instrument is run.** ⚠ The basket caches already exist on disk, so
+this is a **confirmatory test on existing data** and the preregistration must precede the run. ⛔ I
+have not computed any transfer accuracy.
+
+### 60.1 Why a new preregistration is needed
+
+`C-064` §57.2 established that `P2_basket_lexical_transfer` **is not gate `R3`**. §6.8(3) specifies
+*"train on button, test on basket"*; the code passes **basket** cell `C` as `loo_domain`'s first
+argument, so it **trains and tests on basket**, with only the layer selection coming from button.
+⇒ ⛔ There is **no transfer** in it, and the published `0.6974` may not be cited as one.
+
+⛔ Editing the **frozen, published** analyzer is forbidden (brief §33). ⇒ `R3` is implemented in a
+**separate script** reusing the same probe machinery, and the frozen file is left exactly as it is.
+
+### 60.2 Design
+
+| field | value |
+|---|---|
+| train | **`button`** cell `C`, classes {bomb, knife, gun}, `C-053` §28.1 exclusion ⇒ 228/class |
+| test | **`basket`** cell `C`, same classes and exclusion |
+| selection | `(layer, C)` on **`button` cell `B`**, as §23.6 declares — never on either test set |
+| folds | leave-one-**domain**-out over the **6 shared domains**: train on `button` domains ≠ d, test on `basket` domain d ⇒ ⛔ removes the shared-domain channel as well as the shared-codeword one |
+| probe | ⛔ imported from `dcs_verify_pr035_primary.py`, unchanged — the same procedure that produced `R-086` |
+
+⚠ ✅ **The leakage worry is already measured and is NIL for this instrument**: the audit found **0**
+shared demonstration-block strings and **0** shared `prompt_id`s between `button` cell `B` and
+`basket` cell `C`. ⚠ `C-060` §46.2's cell-`B` sharing is between `button_X` and `basket_X` **cell
+`B`**, which is the *selection* population and is never a test set here.
+
+### 60.3 THE SINGLE PRIMARY
+
+Independence unit **domain, n = 6** ⇒ floor **2/2⁶ = 0.03125**; ⛔ m ≥ 2 is uninformative by
+construction. **One test:**
+
+> held-out `basket` accuracy vs chance (1/3) per domain; exact two-sided sign test over 6 domains.
+
+### 60.4 Declared outcomes
+
+* **`R3-PASS`** — above chance in **6/6** domains (p = 0.031) **and** mean ≥ **0.5409**, i.e. ≥ 50 %
+  of the way from chance (0.3333) to `R-086`'s button result (0.7485).
+* **`R3-FAIL`** — sign test fails **and** mean < **0.4164** (< 20 % of that range).
+* **`CANNOT ANSWER`** — between. ⛔ Not a null.
+* **`VOID`** — population ≠ 228/class, missing bank binding, or a layer-list mismatch.
+
+### 60.5 What it cannot settle
+
+⛔ `button` and `basket` share **domains, templates and demonstration pools**; only the **codeword**
+differs. ⇒ A pass shows the concept signal survives a **lexical substitution**, ⛔ **not** that it
+generalises to a new corpus, a new template family, or a new concept. ⚠ And like `R-086` it is a
+**decodability** result: gate `R5`, running now, is the causal one.
+
