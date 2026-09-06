@@ -4478,3 +4478,36 @@ behavioural question still untouched.
 > held-out domains; the demonstration→query attention path is necessary for the model to **report**
 > that mapping, and **not** necessary for the state to remain **decodable**.
 
+
+---
+
+## §65 — `DCS-PR-043` — the `PR-039` re-run, and ⛔ WHAT MAY BE READ FROM IT, fixed before it lands
+
+Submitted as job **pr035rerun**, `OMP_NUM_THREADS=4` (`A-031` Decision 1 — the setting that reproduces
+published numbers), output to a **separate file** `dcs_bombness_specificity_rerun.json` so the
+published `R-086` artifact is **not overwritten**.
+
+⛔ **Read ONLY these two things:**
+
+1. ✅ **`P2_primary` must reproduce 0.7485380116959064.** A fifth reproduction, this time at HEAD with
+   `PR-039`'s fixes in place, confirming none of them disturbed the headline.
+2. ✅ **`P2_leave_one_block_out` + its permutation.** `PR-039` gave it the `selection_rows=B` it was
+   missing (`C-057`), so its p becomes **valid for the first time**. This is §23.4(3)'s held-out
+   **template-family** test and the only instrument the re-run actually unlocks.
+
+⛔ **DO NOT read, and do not quote, from this run:**
+
+* ⛔ **`P1` and its permutation.** `C-064` §57.4 established that `PR-039`'s balanced fit makes `P1`'s
+  p sit at the **floor regardless of signal**. `R-089` §54.3 already ruled `P1` **UNINFORMATIVE**;
+  this re-run makes it **actively misleading**, and the ruling is that `P1` carries **no p-value**.
+* ⛔ **The cell-`F` contrast.** `A-031` Decision 3: its selection population still contains **24 of
+  its own 72 test rows**, and cell `F` is the only benign-remap cell that exists, so it **cannot** be
+  fixed on this bank. **Permanently descriptive.**
+* ⛔ **`P2_basket_lexical_transfer` and its new permutation.** `C-064` Decision 2: that arm trains
+  **and** tests on basket and **is not gate `R3`**. `R-092`/`PR-041` is the real `R3`, and it FAILS.
+  ⛔ A p-value on the mislabelled arm must not be presented as lexical transfer.
+
+⚠ ⛔ Writing this before the run lands is the point: three of its six outputs are known-unreadable in
+advance, and the temptation to quote a clean-looking number from a re-run is exactly what a
+preregistration is for.
+
