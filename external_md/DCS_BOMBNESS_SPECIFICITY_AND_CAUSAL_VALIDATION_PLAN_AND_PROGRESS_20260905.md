@@ -4511,3 +4511,55 @@ published `R-086` artifact is **not overwritten**.
 advance, and the temptation to quote a clean-looking number from a re-run is exactly what a
 preregistration is for.
 
+
+---
+
+## §66 — `DCS-R-093a` — the dissociation survives a MATCHED-POPULATION check, and the two arms are the same intervention
+
+⚠ **Descriptive robustness check, no p-value.** `R-093` §64.3's dissociation compares two arms whose
+populations were **overlapping but not identical**, and I verified rather than assumed.
+
+### 66.1 The two masks ARE the same kind of intervention
+
+| | readout arm (`PR-037` `ref`) | representation arm (`R-093` `ko_on`) |
+|---|---|---|
+| scope | `query_prefill_only` | `legacy_all_query` |
+| **`hook_n_decode_edits`** | **0** (median, min, max) | **0** (median, min, max) |
+| keys blocked | the demonstration span | the demonstration span |
+| band | L6–14 | L6–14 |
+
+⇒ ✅ **Both are prefill-only demonstration-block knockouts over the same band.** The scope names
+differ, but with **zero decode edits on both sides** they edit the same thing. ⛔ The nominal scope
+difference is therefore *not* a confound.
+
+### 66.2 The populations differed — and the readout's is a SUBSET
+
+`PR-037`'s readout used blocks `{core2x2, core2x2_slot3, role_style}` (168 rows); `R-093`'s probe used
+all six cell-`C` blocks (228/class). ⇒ the readout population is a **subset** of the probe population,
+not a disjoint one. ⚠ Still not matched, so I matched it.
+
+**Probe restricted to `PR-037`'s exact three blocks — 168 rows/class, 504 total:**
+
+| | full population (`R-093`) | matched population |
+|---|---|---|
+| `ko_off` | 0.7529 | **0.7361** |
+| `ko_on` | 0.7047 | **0.6865** |
+| mean drop | +0.0482 | **+0.0496** |
+| **% of available drop** | **11.5 %** | **12.3 %** |
+| domains positive | 5/6 | 4/6 |
+
+⇒ ✅ **The dissociation is unchanged.** On the *same* rows the readout **flips sign** (+3.3696 →
+−3.0151) while the probe retains **~88 %** of its available range.
+
+⚠ It is noisier on the smaller population — 4/6 domains, and `city_bridge` moves **−0.119** the wrong
+way. ⛔ That is why the preregistered primary stays the **full** 228/class population; this is a
+robustness check, not a replacement.
+
+### 66.3 What is still not matched
+
+⛔ The two arms remain **different instruments at different sites** — a generated forced-choice answer
+at the answer position vs a linear probe on `codeword_last` hidden states. ⇒ §64.4's bound stands
+verbatim: the dissociation is between **what the model can report** and **what is linearly
+decodable**, ⛔ not two measurements of one quantity. ⚠ No population matching can close that gap; only
+a readout taken *at the same site* could, and none exists.
+
