@@ -25,7 +25,7 @@ in `lab_safety|harm` the club pool uses `club` to mean a ROOM). It is still run 
 """
 from __future__ import annotations
 
-import argparse, collections, glob, json, os, re, sys
+import argparse, collections, glob, json, os, re, sys, time
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -542,6 +542,13 @@ def main() -> int:
         if list(v["layers"]) != list(layers):
             raise SystemExit(f"VOID: {k} extracted with layers {v['layers']} != {layers}")
 
+    _T0 = time.time()
+
+    def _tick(tag):
+        """PRINT ONLY (DCS-044). Progress so a long run is monitorable. Touches no statistic."""
+        print(f"[progress] {tag:<44s} t+{time.time() - _T0:7.1f}s", flush=True)
+
+    _tick("banks + caches loaded")
     lab = lambda r: r["concept"]
     res = dict(preregistration="DCS-PR-035 (supersedes PR-031/031a/031c/031d after C-049)",
                channel=a.channel, primary_codeword=PRIMARY_CODEWORD,
@@ -584,6 +591,7 @@ def main() -> int:
     else:
         res["null_n_examples_0"] = "NO ROWS — cannot run the blocking null"
 
+    _tick("null control done")
     # ================= primary and its mandated companions =================
     C_rows = gather(PRIMARY_CODEWORD, PRIMARY_CLASSES, "C")
     res["P2_primary"] = loo_domain(C_rows, layers, PRIMARY_CLASSES, lab, selection_rows=B,
@@ -591,6 +599,7 @@ def main() -> int:
     res["P2_primary_permutation"] = permutation_test(C_rows, layers, PRIMARY_CLASSES, lab,
                                                      res["P2_primary"]["picks"], a.n_perm,
                                                      20260905, res["P2_primary"]["mean_acc"])
+    _tick("P2 primary done")
     res["length_only_control"] = length_only_control(C_rows, PRIMARY_CLASSES, lab, tag="length_only")
 
     # P1 -- declared in PR-031a §7.2, never computed before C-049, and MIS-computed until C-050:
@@ -622,6 +631,7 @@ def main() -> int:
             f"{P1_CAPABILITY_GATE}, so the probe cannot do the task on the cell it trained on. "
             "P1 is reported but may not be read either way.")
 
+    _tick("P1 done")
     # R-078 §21.2 mandated contrasts
     for name, pair in (("P2_bomb_vs_knife_2way_gun_excluded", ("bomb", "knife")),
                        ("P2_knife_vs_club_CONTROL_bomb_absent", ("knife", "club"))):
@@ -631,6 +641,7 @@ def main() -> int:
             res[name + "_permutation"] = permutation_test(rp, layers, pair, lab, res[name]["picks"],
                                                           a.n_perm, 20260905, res[name]["mean_acc"])
 
+    _tick("R-078 contrasts done")
     # cell F: bomb vs GENERIC REMAPPING (A-020 §8.5) -- the only non-weapon comparator
     F = pool.get((PRIMARY_CODEWORD, "bomb", "F"), [])
     for r in F:
@@ -661,6 +672,7 @@ def main() -> int:
             interpretation="NEGATIVE informative; POSITIVE not attributable to concept")
         res["P2_bomb_vs_benign_remap_n"] = dict(n_C_bomb=len(C_bomb), n_F=len(F))
 
+    _tick("cell F done")
     # held-out TEMPLATE FAMILY (PR-031c §9.2)
     if len({r["block"] for r in C_rows}) > 1:
         res["P2_leave_one_block_out"] = loo_domain(C_rows, layers, PRIMARY_CLASSES, lab,
@@ -671,6 +683,7 @@ def main() -> int:
             C_rows, layers, PRIMARY_CLASSES, lab, res["P2_leave_one_block_out"]["picks"],
             a.n_perm, 20260905, res["P2_leave_one_block_out"]["mean_acc"], group="block")
 
+    _tick("leave-one-block-out done")
     # lexical transfer, only if that class set is complete
     if all((("basket"), c) in runs for c in PRIMARY_CLASSES):
         Cb = gather("basket", PRIMARY_CLASSES, "C")
@@ -680,6 +693,7 @@ def main() -> int:
     else:
         res["P2_basket_lexical_transfer"] = "SKIPPED — basket class set incomplete (would be VOID)"
 
+    _tick("basket transfer done")
     # ================= VERDICT (PR-035 §23.5) =================
     pp = res["P2_primary_permutation"]["p_one_sided"]
     ctrl = res.get("P2_knife_vs_club_CONTROL_bomb_absent_permutation", {}).get("p_one_sided")
