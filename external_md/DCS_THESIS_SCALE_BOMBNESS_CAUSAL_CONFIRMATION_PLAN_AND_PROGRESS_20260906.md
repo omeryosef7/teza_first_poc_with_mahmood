@@ -1219,3 +1219,107 @@ state does.
   asymmetry, and its value triggers the length-matching rule already recorded in `PR-046`;
 - the **planted-hook layer-convention test**, which is the first GPU job of the phase and must
   pass before any measurement.
+
+## 2026-09-07 · A-041 · gates G4 and G5 on `ts116n`: one CRITICAL, one trigger fired
+
+`reports/DCS_TS116N_CONCEPT_BACKING_AUDIT.md` (21 checks, 21 mutations, 21/21 RED),
+`reports/DCS_TS116N_LEAKAGE_AUDIT.md` (29 checks, 16/16 mutation targets RED),
+`reports/DCS_TS116N_ADVERSARIAL_AUDIT.md`.
+
+### The good news first, because it is the thing the rebuild was for
+
+**The positive control that the old bank scored zero on now passes.** A strict 3×3 affordance
+matrix is diagonal-dominant: bomb 374 (4.07 %), knife 520 (5.65 %), gun 282 (3.07 %), with largest
+off-diagonals 2, 6 and 8. And tier-1 explosive predicates are now **bomb 4.07 %, knife 0.00 %,
+gun 0.09 %** — where the old bank read 4.27 % for all three *because they were the same
+sentences*. The concepts are genuinely different concepts.
+
+Other clean results: cell C differs in 115/115 domains × both codewords (460 comparisons, 0
+identical); cell A byte-identical; **N6 template-id-only = 0.3333 / 0.5000, z = 0.00** — alignment
+intact, the run is **not** VOID; **N1 n_examples=0 = exactly 0.3333 / 0.5000 on every baseline**,
+so the signal localises entirely to the demonstration block; cross-domain verbatim sentence
+leakage **down from 72/3,864 (1.86 %) to 8/1,380 (0.58 %)**; splitting `full_prompt` on
+`demo_block` gives prefix and suffix identical in 1,150/1,150.
+
+### C-076 — CRITICAL: the codeword substitution is singular-only
+
+`demo_pools._clean` keeps a sentence with exactly one match of `\bWORD\b`, and `build_demo_block`
+substitutes exactly that form. A sentence carrying **both** `knife` and `knives` therefore passes
+the filter with a count of one, and only the singular is rewritten — shipping the literal plural
+into **cell C, the one cell whose entire purpose is that the concept word does not appear**:
+
+> `blood_bank[5]` — *"The **button** rack was overcrowded, making it difficult to access clean
+> **knives**."*
+
+**8 distinct sentences, 30 of 3,680 primary-channel rows, in 6 domains spanning 3 train,
+1 validation and 2 test.** That is an outright label in the probe's own population — not a
+register effect, and not something masking fixes.
+
+Verified independently before acting: 8 in knife, **0 in bomb, 0 in gun**. The defect is *general*,
+not knife-specific — nothing in the filter counts `bombs` either; knife merely exposed it because
+`knives` is an irregular plural that is common in storage and kitchen contexts.
+
+**Fixed at the filter, not by deleting rows.** `CONCEPT_FORMS` now lists every surface form
+explicitly (irregular plurals enumerated, not guessed from a suffix rule) and `_clean_strict`
+requires exactly one occurrence **counting all of them**. Confirmed to catch all 8 when run
+against the existing pools. Deleting the offending sentences was rejected: `_take` slices pools
+positionally, so removing a sentence silently changes which sentences every family slot in that
+domain draws.
+
+### C-077 — the N4 length trigger fired, and the preregistered rule is being followed
+
+**N4 length-only = 0.4174 accuracy / 0.5750 macro AUROC, z = +6.62** against chance 1/3
+(cell-A control 0.3333/0.5000). Mean prompt length: bomb 1085.7, gun 1074.3, knife 1055.0 chars.
+That is well above chance, so the rule written into `configs/dcs_ts_pr046.json` **before N4 was
+measured** fires: over-generate and length-match.
+
+`scripts/dcs_ts_length_match_pools.py` selects 40 of 60 candidates per (domain, concept) against a
+**shared** pooled-length quantile profile — deterministic greedy nearest-length, no RNG, no model
+output, emitted in original candidate order so family slots do not depend on the matching walk.
+Candidate generation is running (jobs 859978/859979/859980) with the `C-076` filter in place, so
+one regeneration fixes both defects.
+
+⚠ Recorded now: matching the marginal length distribution removes a first-order confound, it does
+not make the arms identical. **N4 will be re-measured on the rebuilt bank and reported at whatever
+value it takes.** If it is still well above chance, that is a finding about the corpus — not a
+reason for a third round.
+
+### C-078 — my own preregistered bar was miscalibrated, and I am saying so before running the probe
+
+`PR-046` requires the probe to beat the strongest nuisance baseline, and G5 nominates
+**N5c, concept-masked TF-IDF over the demonstration block = 0.8870 / 0.9829**.
+
+**That is the wrong bar for the claim, and I wrote it.** A bag-of-words over the demonstration
+text recovers the concept at 88.7 % because *we generated concept-specific demonstrations* — the
+demo block is the **treatment**, not a nuisance. Requiring a representation probe to beat a text
+classifier reading the treatment sets a bar no representation probe could ever clear, since the
+hidden state is a deterministic function of that same text. Mandate §6.6's nuisance-baseline rule
+was written for *shortcuts* — length, template id, prompt scaffolding — and N5c is not one.
+
+Handling it by the mandate's own rule (§21: *new design = new preregistration*) rather than by
+quietly moving the threshold:
+
+1. **`PR-046`'s N5c comparison stands and will be reported at whatever value it takes**, with this
+   entry cited. A preregistered comparison is not deleted because it turned out to answer a
+   different question than intended.
+2. **`PR-047` will preregister the comparison that actually tests Matan's question**, which is
+   about a *position*, not about a prompt: **is concept identity more decodable at the codeword's
+   representation than at matched control positions in the same prompt?** *"The codeword is
+   becoming represented as BOMB"* is a localisation claim. A text classifier has no position and
+   therefore cannot speak to it; a position-matched probe contrast can.
+
+This is written **before any probe has been run and before any hidden state exists**, which is the
+only thing that distinguishes it from moving a goalpost. Had I noticed after seeing the probe fall
+short of 0.887, the honest options would have been far worse.
+
+### Carried, not yet resolved
+
+- **3 knife/gun sentence pairs are byte-identical once the weapon noun is neutralised**
+  (`wind_farm`, `news_report`, `sports_stadium` — *"…brandishing a knife/gun during a heated
+  argument"*). 0 byte-identical shared sentences. Arguably a *feature* — matched frames — but
+  recorded.
+- **Register remains the live limit.** Hedge-only (5 regexes) reaches 0.4768/0.6350 and never
+  predicts gun at all; register-only (16 features) 0.4406/0.6277; combined 0.5174/0.7159. This is
+  `Q-011`, and length-matching does not touch it.
+- The G4 verdicts stand as **bomb / gun USABLE WITH STATED LIMIT** and **knife NOT USABLE AS
+  BUILT** — the latter cleared by `C-076`'s regeneration, which is in flight.

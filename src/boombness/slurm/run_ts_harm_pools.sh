@@ -30,6 +30,7 @@ if [ -f .env ]; then set -a; source .env; set +a; fi
 : "${TSH_OUT:?TSH_OUT not set}"
 : "${TSH_SEED:=20260906}"
 : "${TSH_DOMAINS:=}"
+: "${TSH_NPP:=40}"     # >40 emits a CANDIDATE pool for the length matcher (C-076 / N4 trigger)
 
 # Echo the resolved plan on the first lines so `head` on the log answers "did this run what I
 # meant?" without reasoning about env plumbing -- the DCS-C-047 lesson, where six jobs ran the
@@ -40,9 +41,10 @@ echo "concept: $TSH_CONCEPT"
 echo "out:     $TSH_OUT"
 echo "seed:    $TSH_SEED"
 echo "domains: ${TSH_DOMAINS:-<all 116>}"
+echo "n_per_pool: $TSH_NPP"
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)  dirty=$(git status --porcelain 2>/dev/null | wc -l)"
 
 python -u scripts/dcs_ts_gen_concept_harm_pools.py \
-  --concept "$TSH_CONCEPT" --out "$TSH_OUT" --seed "$TSH_SEED" \
+  --concept "$TSH_CONCEPT" --out "$TSH_OUT" --seed "$TSH_SEED" --n-per-pool "$TSH_NPP" \
   ${TSH_DOMAINS:+--domains "$TSH_DOMAINS"}
 echo "=== done ==="; date

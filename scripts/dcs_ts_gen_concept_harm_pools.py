@@ -61,6 +61,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -72,6 +73,49 @@ SHARED_VALENCES = ("benign", "remap", "filler")   # copied, never regenerated
 N_PER_POOL = 40
 PER_SPLIT = 20
 
+#: Every surface form of each concept that must be counted as an occurrence.
+#:
+#: `DCS-C-076`. `demo_pools._clean` keeps a sentence when it contains exactly one match of
+#: `\bWORD\b`, and `build_demo_block` substitutes exactly that form. A sentence carrying BOTH
+#: `knife` and `knives` therefore passes the filter with a count of one, and the substitution
+#: rewrites only the singular -- shipping the literal plural into cell C, which is the one cell
+#: whose whole purpose is that the concept word does NOT appear:
+#:     "The button rack was overcrowded, making it difficult to access clean knives."
+#: Eight such sentences reached the knife pools, 30 of 3680 primary-channel rows, four of them in
+#: TEST domains. Bomb and gun happened to escape (0 each), but the defect is general, not
+#: knife-specific: nothing in the filter counts `bombs` either. Irregular plurals are listed
+#: explicitly rather than guessed from a suffix rule.
+CONCEPT_FORMS = {
+    "bomb": ("bomb", "bombs"),
+    "knife": ("knife", "knives"),
+    "gun": ("gun", "guns"),
+}
+
+
+def _forms_re(concept: str):
+    forms = CONCEPT_FORMS.get(concept, (concept, concept + "s"))
+    return re.compile(r"(?i)\b(?:" + "|".join(re.escape(f) for f in forms) + r")\b")
+
+
+def _clean_strict(sentences, concept: str):
+    """Keep sentences with EXACTLY ONE occurrence counting every inflected form.
+
+    Stricter than `demo_pools._clean`, which counts only the exact form. Deduplicates
+    case-insensitively, preserving first-seen order, so the selection is deterministic.
+    """
+    rx = _forms_re(concept)
+    out, seen = [], set()
+    for s in sentences:
+        s = s.strip()
+        if not s or len(rx.findall(s)) != 1:
+            continue
+        k = s.casefold()
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(s)
+    return out
+
 
 def _content_sha16(pools: dict) -> str:
     """Hash the pool CONTENT in a canonical order, matching the shared file's own convention."""
@@ -82,7 +126,7 @@ def _content_sha16(pools: dict) -> str:
 def generate(concept: str, model: str, seed: int, domains: list[str] | None,
              n_per_pool: int = N_PER_POOL) -> dict:
     from openai import OpenAI
-    from demo_pools import DOMAINS, _clean
+    from demo_pools import DOMAINS
     from prepare_demos import gen_demos
 
     with open(SHARED) as f:
@@ -112,11 +156,12 @@ def generate(concept: str, model: str, seed: int, domains: list[str] | None,
         hint = DOMAINS[domain]["harm"]
         kept: list[str] = []
         raw = 0
-        for rnd in range(8):
+        for rnd in range(14):
             got = gen_demos(client, model, concept, int(n_per_pool * 2), seed + rnd,
                             style_hint=hint)
             raw += len(got)
-            kept = _clean(kept + got, concept)
+            # `_clean_strict`, not `demo_pools._clean`: see CONCEPT_FORMS above (C-076).
+            kept = _clean_strict(kept + got, concept)
             if len(kept) >= n_per_pool:
                 break
         if len(kept) < n_per_pool:
@@ -128,11 +173,17 @@ def generate(concept: str, model: str, seed: int, domains: list[str] | None,
             )
         kept = kept[:n_per_pool]
         dropped[f"{domain}|harm"] = raw - len(kept)
-        out[f"{domain}|harm"] = {
-            "domain": domain, "valence": "harm", "natural_word": concept,
-            "sentences": kept, "n": len(kept),
-            "dev": kept[:PER_SPLIT], "heldout": kept[PER_SPLIT:],
-        }
+        rec = {"domain": domain, "valence": "harm", "natural_word": concept,
+               "sentences": kept, "n": len(kept)}
+        if n_per_pool == N_PER_POOL:
+            # A finished pool carries its own dev/heldout cut. A CANDIDATE pool does not: the
+            # split must be applied AFTER length matching selects the final 40, or the two halves
+            # would be cut from a set that is about to change.
+            rec["dev"] = kept[:PER_SPLIT]
+            rec["heldout"] = kept[PER_SPLIT:]
+        else:
+            rec["candidates"] = True
+        out[f"{domain}|harm"] = rec
         print(f"[{i:3d}/{len(roster)}] {domain}|harm  n={len(kept)}  dropped={raw - len(kept)}",
               flush=True)
 
@@ -180,13 +231,17 @@ def verify(path: str) -> int:
             n_harm_checked += 1
             if pool.get("natural_word") != concept:
                 errs.append(f"{key}: natural_word={pool.get('natural_word')!r} != {concept!r}")
-            if len(pool.get("sentences", [])) != N_PER_POOL:
-                errs.append(f"{key}: {len(pool.get('sentences', []))} sentences, want {N_PER_POOL}")
-            import re
+            want_n = obj["_meta"].get("n_per_pool", N_PER_POOL)
+            if len(pool.get("sentences", [])) != want_n:
+                errs.append(f"{key}: {len(pool.get('sentences', []))} sentences, want {want_n}")
+            rx = _forms_re(concept)
             for i, s in enumerate(pool.get("sentences", [])):
-                n = len(re.findall(rf"(?i)\b{re.escape(concept)}\b", s))
+                # Count EVERY inflected form (C-076). Counting only the exact form is what let
+                # eight `knife`+`knives` sentences ship an unsubstituted plural into cell C.
+                n = len(rx.findall(s))
                 if n != 1:
-                    errs.append(f"{key}[{i}]: {n} whole-word {concept!r} occurrences, want exactly 1")
+                    errs.append(f"{key}[{i}]: {n} occurrence(s) of {concept!r} counting "
+                                f"inflections {CONCEPT_FORMS.get(concept)}, want exactly 1: {s[:80]!r}")
             for other in ("bomb", "knife", "gun"):
                 if other == concept:
                     continue
@@ -222,6 +277,8 @@ def main() -> int:
     ap.add_argument("--model", default="gpt-4o-mini")
     ap.add_argument("--seed", type=int, default=20260906)
     ap.add_argument("--domains", default="", help="comma list; default all 116")
+    ap.add_argument("--n-per-pool", type=int, default=N_PER_POOL,
+                    help="set >40 to emit a CANDIDATE pool for scripts/dcs_ts_length_match_pools.py")
     ap.add_argument("--verify", metavar="POOLS_JSON")
     a = ap.parse_args()
 
@@ -236,7 +293,7 @@ def main() -> int:
         return 2
 
     doms = [d for d in a.domains.split(",") if d] or None
-    obj = generate(a.concept, a.model, a.seed, doms)
+    obj = generate(a.concept, a.model, a.seed, doms, n_per_pool=a.n_per_pool)
     tmp = f"{a.out}.tmp.{os.getpid()}"
     with open(tmp, "w") as f:
         json.dump(obj, f, indent=2)
