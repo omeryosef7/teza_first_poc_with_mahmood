@@ -3959,3 +3959,84 @@ preregistered statistic, and I proposed it after seeing outcomes. `EXCLUDE_GLOBA
 declared in advance — and §56.1(3) says it is **irrelevant** at 3 classes, so it should not be
 carried into the primary at all.
 
+
+---
+
+## §57 — `DCS-A-031` / `DCS-C-064` — the 4-hour review and gate audit: four decisions, and one gate that is not the gate
+
+Two read-only agents plus two adversarial verifiers. ⛔ Several findings bite; I take the four
+decisions here rather than leaving them open.
+
+### 57.1 ✅ `R-086` is THREAD-INVARIANT — a fourth independent reproduction
+
+⚠ **The analyzer is NOT bit-reproducible across BLAS thread counts**, on exactly one instrument:
+
+| instrument | `OMP=4` | `OMP=1` |
+|---|---|---|
+| **`P2_primary`** | **0.7485380116959064** | **0.7485380116959064** ✅ identical, 16 digits |
+| cell-`F` contrast | 0.8881578947368421 (**published**) | 0.8903508772 (Δ 0.0022) |
+
+⇒ ✅ **The headline is thread-invariant**, recomputed from banks and caches at **both** thread counts,
+with per-domain values {city_bridge .77193, farm_storage .842105, game_manual .54386,
+instructional .929825, lab_safety .77193, news_report .631579}. That is the **fourth** independent
+reproduction of `R-086`.
+
+⛔ **DECISION 1 — any re-run intended to reproduce published numbers uses `OMP_NUM_THREADS=4`**, the
+setting job 854617 used. The standing "always 1" rule is for *speed*, and it is hereby subordinate to
+*reproduction* when reproducing a published number. ⚠ Only the already-unquotable cell-`F` number is
+affected either way.
+
+### 57.2 ⛔ `C-064` — GATE `R3` IS NOT THE GATE. Stronger than §54.3 said.
+
+§6.8(3) preregisters lexical transfer as *"train on button, test on basket, and vice versa"*. The code
+is
+
+```python
+res["P2_basket_lexical_transfer"] = loo_domain(Cb, ..., selection_rows=B, tag="P2_basket")
+```
+
+where `Cb` is **basket** cell `C`. `loo_domain` trains on its **first argument** ⇒ ⛔ **it trains on
+basket and tests on basket.** Only the *layer selection* comes from button. ⇒ **There is no transfer
+in it.**
+
+⛔ **DECISION 2 — `R3` is recorded as NOT IMPLEMENTED**, not merely "has no p-value" (§54.3's wording
+is upgraded). Adding `train_rows=` to a **frozen, published** file is a **preregistration** question
+under the brief's §33, not an edit. ⚠ Until re-specified, ⛔ **no basket number may be cited as
+lexical transfer.** ⚠ Encouraging for a future version: the audit measured **0** shared demo-block
+strings and **0** shared prompt_ids between button cell `B` and basket cell `C`, so `C-060` §46.2's
+leakage worry is **NIL for that instrument** — the transfer, once actually implemented, would be clean.
+
+### 57.3 ⛔ My `C-057` cell-`F` fix is only HALF a fix, and cannot be completed on this bank
+
+`PR-039` gave the cell-`F` contrast `selection_rows = [bomb cell B] + F_sel`. ⛔ **`F_sel` IS the
+cell-`F` test population** — 24 of 72 selection rows sit inside the test set. ⇒ the §28.2 defect is
+reduced, not removed. ⛔ And it **cannot** be removed: cell `F` is the **only** benign-remap cell that
+exists (24 rows, one block, `extra_conditions`), so there is no disjoint selection population for it.
+
+⛔ **DECISION 3 — the cell-`F` contrast is PERMANENTLY DESCRIPTIVE on this bank.** No p-value, ever,
+from these banks. ⚠ Measured effect of the partial fix, for the record: picks collapse to (6, 0.01) on
+all six folds and balanced accuracy moves 0.8882 → 0.9189. ⛔ That number is **not** a result.
+
+### 57.4 ⛔ Two CRITICAL defects that would fire on the NEXT run
+
+* **`C1` — `dcs_null_calibration2.py` is now SELF-DEFEATING at HEAD.** The `C-061` gate made
+  `group_permute` read a module global that defaults to `False`, so the script's `B_excl`/`T_excl`
+  arms are **bit-identical** to `B_orig`/`T_orig`. ⇒ Re-running it from HEAD cannot reproduce `R-090`.
+  ⚠ ✅ **`R-090` itself is SAFE** — job 854780 ran at commit `cd6dc033`, **before** the gate landed at
+  `21036812`, which the reviewer independently confirms *because* the published 0.020/0.050 split is
+  unreachable from HEAD. **Fixed below.**
+* **`C2` — `P1`'s permutation would publish a FLOOR p-value regardless of signal** once the analyzer
+  is re-run with `PR-039`'s balanced fit. ⛔ `P1` is already ruled **UNINFORMATIVE** (`R-089` §54.3);
+  this makes it **actively misleading** on the next run. ⇒ ⛔ **`P1` must be reported with NO p-value
+  at all**, alongside cell `F`.
+* `H1` — `DEGRADED_OPTION_MASS = 0.30` still sits in `dcs_readout_family.py`, **6× the preregistered
+  0.05** (§18.3, §40.4). `C-059` retired the *claim*; the **constant** survived. **Fixed below.**
+
+### 57.5 ⛔ `R5`/`R6` blocked status is CONFIRMED by a full artifact scan
+
+⇒ **Nothing on disk carries an intervened hidden-state vector.** §53.1 was, if anything, too
+generous: `score_behavior` persists **no representation quantity at all**. ⛔ `KO-2`'s *behavioural*
+answer is already published (`R-006`/`R-009`) and must **not** be regenerated; its *representation*
+readout needs the same bridge as `R5`. ⇒ **DECISION 4 — the bridge is built and is the path for
+`R5`, `R6` and §13's representation arm alike.**
+
