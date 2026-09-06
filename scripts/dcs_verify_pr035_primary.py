@@ -261,8 +261,42 @@ def run_checks(prod, pools, sel_pools, layers, bind, *, grid=None, n_perm=200, s
         say(f"  V3  FAIL  producer's primary is not reproducible from cell-B selection{note}")
         fails.append("V3")
     else:
-        say("  V2  PASS  (layer, C) picks reproduce from cell-B selection, per §23.6")
         say("  V3  PASS  P2 primary held-out accuracy reproduces exactly")
+
+    # ---- V2, as its OWN check. A-027/C-057 §42.5(2): this previously printed PASS inside V3's
+    # success branch WITHOUT EVER READING the producer's `picks`, and could not enter `fails`. It
+    # therefore could not detect the §28.2 defect it claims to check. Now it compares pick-by-pick.
+    theirs_picks = (pp.get("picks") or {})
+    if not theirs_picks:
+        say("  V2  FAIL  the producer reports no `picks` for P2_primary; the (layer, C) selection "
+            "cannot be checked at all")
+        fails.append("V2")
+    else:
+        bad = []
+        for d, (L, C) in sorted(picks.items()):
+            t = theirs_picks.get(d)
+            if t is None:
+                bad.append((d, "absent from producer"))
+            elif (int(t.get("layer", -1)), float(t.get("C", -1))) != (int(L), float(C)):
+                bad.append((d, f"producer (L={t.get('layer')}, C={t.get('C')}) != "
+                               f"cell-B recomputation (L={L}, C={C})"))
+        extra = sorted(set(theirs_picks) - set(picks))
+        if bad or extra:
+            say(f"  V2  FAIL  picks do not reproduce from cell-B selection: {bad[:3]}"
+                + (f"; producer has extra folds {extra}" if extra else ""))
+            # §28.2 discriminator: was the producer selecting on the TEST cell's own labels?
+            _, picks_bad = loo(C_rows, C_rows, layers, CLASSES, grid)
+            match_bad = sum(1 for d, (L, C) in picks_bad.items()
+                            if d in theirs_picks
+                            and (int(theirs_picks[d].get("layer", -1)), float(theirs_picks[d].get("C", -1)))
+                            == (int(L), float(C)))
+            if match_bad > len(bad) // 2:
+                say(f"  V2  FAIL  and {match_bad}/{len(picks_bad)} of the producer's picks MATCH "
+                    f"selection on the TEST cell's own labels -- the §28.2 defect, on the PRIMARY")
+            fails.append("V2")
+        else:
+            say(f"  V2  PASS  all {len(picks)} (layer, C) picks reproduce from cell-B selection "
+                f"(§23.6), checked fold by fold against the producer")
 
     if mine is not None:
         p_mine, null = perm_p(C_rows, layers, CLASSES, picks, mine, n_perm, seed)
@@ -308,7 +342,8 @@ def _honest(pools, sel_pools, layers, grid, n_perm, seed):
     pair = ("knife", "club")
     per_kc, _ = loo([r for c in pair for r in pools[c]],
                     [r for c in pair for r in sel_pools[c]], layers, pair, grid)
-    return dict(P2_primary=dict(mean_acc=mean, per_domain=per, n_domains=len(per)),
+    return dict(P2_primary=dict(mean_acc=mean, per_domain=per, n_domains=len(per),
+                                picks={d: dict(layer=int(L), C=float(C)) for d, (L, C) in picks.items()}),
                 P2_primary_permutation=dict(p_one_sided=p),
                 P2_knife_vs_club_CONTROL_bomb_absent=dict(
                     mean_acc=float(np.mean(list(per_kc.values()))) if per_kc else None))
@@ -338,12 +373,16 @@ def run_mutations(n_perm, seed):
         b["gun"] = 0.53
     def m_W5(j, b):   # primary block absent entirely
         j.pop("P2_primary", None)
+    def m_W6(j, b):   # picks corrupted, mean_acc left correct -> only V2 can see it
+        for d in list(j["P2_primary"].get("picks", {})):
+            j["P2_primary"]["picks"][d] = dict(layer=14, C=0.01)
 
     MUT = [("W1 fabricated headline", m_W1, "V3"),
            ("W2 p flipped across alpha", m_W2, "V4"),
            ("W3 clause-4 control deleted", m_W3, "V5"),
            ("W4 one class on another bank's cache", m_W4, "V6"),
-           ("W5 primary block deleted", m_W5, "V3")]
+           ("W5 primary block deleted", m_W5, "V3"),
+           ("W6 picks corrupted, mean_acc intact", m_W6, "V2")]
     ok_all = True
     for name, fn, designated in MUT:
         j = copy.deepcopy(honest)
