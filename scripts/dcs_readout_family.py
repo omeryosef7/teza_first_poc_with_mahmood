@@ -79,7 +79,8 @@ SCHEMA = "DCS_READOUT_FAMILY/1"
 
 # §1.5 / R-050: below this the two options are a minority of the answer distribution and the
 # mass-invariant members of the family (C, D) are contrasting options the model largely rejects.
-DEGRADED_OPTION_MASS = 0.30
+DEGRADED_OPTION_MASS = 0.05   # C-059/C-064 H1: the plan fixes this at 0.05 (§18.3, §40.4).
+#: 0.30 was an unpreregistered bar 6x too high; it mislabelled PR-037 K=9 (0.105) as degraded.
 
 # The eleven fields `score_behavior.py` writes that this instrument depends on. Verified per row.
 REQUIRED_FIELDS = (

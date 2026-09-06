@@ -46,7 +46,13 @@ def group_permute_ORIGINAL(rows, rng, classes):
     return out
 
 
-def perm_p(rows, classes, picks, obs, seed, gp):
+def perm_p(rows, classes, picks, obs, seed, gp, exclude=None):
+    """C-064 C1: the C-061 gate made M.group_permute read a MODULE GLOBAL that defaults to False.
+    Inheriting it silently made the EXCLUDING arms bit-identical to the ORIGINAL ones, so this
+    script could no longer reproduce R-090 from HEAD. The flag is now forced per arm and restored."""
+    prev = M.EXCLUDE_GLOBAL_RELABELS
+    if exclude is not None:
+        M.EXCLUDE_GLOBAL_RELABELS = bool(exclude)
     rng = np.random.default_rng(seed)
     null = []
     for _ in range(NPERM):
@@ -54,6 +60,7 @@ def perm_p(rows, classes, picks, obs, seed, gp):
                               lambda r: r["perm_label"], picks)
         if pd:
             null.append(float(np.mean(list(pd.values()))))
+    M.EXCLUDE_GLOBAL_RELABELS = prev
     null = np.array(null)
     return (1.0 + float((null >= obs).sum())) / (1.0 + len(null))
 
@@ -85,10 +92,10 @@ def main():
                 oT = M.loo_domain(C, LAYERS, classes, lab, tag="c")
                 if oB["mean_acc"] is None or oT["mean_acc"] is None:
                     continue
-                acc["B_orig"].append(perm_p(C, classes, oB["picks"], oB["mean_acc"], 7, group_permute_ORIGINAL))
-                acc["B_excl"].append(perm_p(C, classes, oB["picks"], oB["mean_acc"], 7, M.group_permute))
-                acc["T_orig"].append(perm_p(C, classes, oT["picks"], oT["mean_acc"], 7, group_permute_ORIGINAL))
-                acc["T_excl"].append(perm_p(C, classes, oT["picks"], oT["mean_acc"], 7, M.group_permute))
+                acc["B_orig"].append(perm_p(C, classes, oB["picks"], oB["mean_acc"], 7, group_permute_ORIGINAL, exclude=False))
+                acc["B_excl"].append(perm_p(C, classes, oB["picks"], oB["mean_acc"], 7, M.group_permute, exclude=True))
+                acc["T_orig"].append(perm_p(C, classes, oT["picks"], oT["mean_acc"], 7, group_permute_ORIGINAL, exclude=False))
+                acc["T_excl"].append(perm_p(C, classes, oT["picks"], oT["mean_acc"], 7, M.group_permute, exclude=True))
             print(f"\n{len(classes)}-class  {what}   (n={len(acc['B_orig'])} reps, n_perm={NPERM})")
             for k, desc in (("B_orig", "selection=cellB   null=ORIGINAL   <- WHAT PR-035 DID"),
                             ("B_excl", "selection=cellB   null=EXCLUDING  <- PR-039's fix"),
