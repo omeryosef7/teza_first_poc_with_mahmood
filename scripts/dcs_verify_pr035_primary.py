@@ -31,7 +31,7 @@ from `dcs_bombness_specificity.py` (which it does not import), and compares:
 """
 from __future__ import annotations
 
-import argparse, hashlib, json, os, re, sys
+import argparse, copy, hashlib, json, os, re, sys, tempfile
 import numpy as np
 
 # ---------------------------------------------------------------- declared by PR-035, not the producer
@@ -41,6 +41,11 @@ CHANNEL = "semantic_one_word"
 NEXAMPLES = (4, 8)
 LAYERS = tuple(range(6, 15))
 C_GRID = (0.01, 0.1, 1.0, 10.0)
+# --fast shrinks the grid FOR THE MUTATION HARNESS ONLY. The harness proves that each CHECK FIRES;
+# the check logic (recompute, compare, tolerance) does not depend on how large the grid is. The
+# real verification run always uses the full declared grid above.
+FAST_LAYERS = (6, 10)
+FAST_C = (1.0,)
 N_DOMAINS = 6
 BANKDIR = "data/boombness_prompts"
 RUNROOT = "outputs/boombness/extract_boombness"
@@ -101,12 +106,13 @@ def fit(train, test, layer, layers, C, classes):
     return float((clf.predict((Xte - mu) / sd) == yte).mean())
 
 
-def select(sel_rows, layers, classes):
+def select(sel_rows, layers, classes, grid=None):
+    Ls, Cs = grid if grid else (LAYERS, C_GRID)
     best, best_acc = None, -1.0
-    for L in LAYERS:
+    for L in Ls:
         if L not in layers:
             continue
-        for C in C_GRID:
+        for C in Cs:
             accs = []
             for d in sorted({r["domain"] for r in sel_rows}):
                 tr = [r for r in sel_rows if r["domain"] != d]
@@ -120,7 +126,7 @@ def select(sel_rows, layers, classes):
     return best
 
 
-def loo(rows, sel_rows, layers, classes):
+def loo(rows, sel_rows, layers, classes, grid=None):
     per, picks = {}, {}
     for d in sorted({r["domain"] for r in rows}):
         tr = [r for r in rows if r["domain"] != d]
@@ -128,7 +134,7 @@ def loo(rows, sel_rows, layers, classes):
         sel = [r for r in sel_rows if r["domain"] != d]
         if not tr or not te or not sel:
             continue
-        pick = select(sel, layers, classes)
+        pick = select(sel, layers, classes, grid)
         if pick is None:
             continue
         L, C = pick
@@ -177,31 +183,19 @@ def attach(rows, layers, reps, cc):
     return keep
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--producer", default="outputs/boombness/dcs_analysis/dcs_bombness_specificity.json")
-    ap.add_argument("--n-perm", type=int, default=200)
-    ap.add_argument("--seed", type=int, default=90613)   # deliberately NOT the producer's 20260905
-    ap.add_argument("--acc-tol", type=float, default=1e-9)
-    a = ap.parse_args()
-
-    if not os.path.exists(a.producer):
-        print(f"producer JSON not found: {a.producer}"); return 2
-    prod = json.load(open(a.producer))
-    fails = []
-
-    # ---- V1 + V6: rebuild the population, and bind each CLASS to its OWN bank's cache
-    layers_ref, pools, sel_pools = None, {}, {}
+def load_all():
+    """Load every class's population and bind it to its OWN run's cache. Returns (pools, sel, layers,
+    bind) where `bind` is the per-class q95 relative error of ||rep|| against that run's hnorm."""
+    layers_ref, pools, sel_pools, bind = None, {}, {}, {}
     for cc in CLASSES + ("club",):
         run = find_run(cc)
         if run is None:
-            print(f"  V1  FAIL  no complete run for {cc}"); fails.append("V1"); continue
+            raise SystemExit(f"no complete run for {cc}")
         layers, reps = load_cache(run)
         if layers_ref is None:
             layers_ref = layers
         elif layers != layers_ref:
-            print(f"  V1  FAIL  {cc} layers {layers} != {layers_ref}"); fails.append("V1")
-        # V6 -- per-class cache binding via that run's OWN hnorm column
+            raise SystemExit(f"{cc} layers {layers} != {layers_ref}")
         byid = {}
         for l in open(os.path.join(run, "results.jsonl")):
             r = json.loads(l)
@@ -215,77 +209,181 @@ def main():
                 h = row.get(f"hnorm|L{L}")
                 if h:
                     errs.append(abs(float(np.linalg.norm(v[j])) - float(h)) / max(1e-9, abs(float(h))))
-        q95 = float(np.quantile(errs, 0.95)) if errs else None
-        if q95 is None or q95 > HNORM_TOL:
-            print(f"  V6  FAIL  {cc}: rep cache does not bind to its own run's hnorm (q95 rel err "
-                  f"{q95}); this class's states may come from ANOTHER bank (prompt_id collides 8-way)")
-            fails.append("V6")
+        bind[cc] = float(np.quantile(errs, 0.95)) if errs else None
         pools[cc] = attach(build(cc, ("C",), NEXAMPLES), layers, reps, cc)
         sel_pools[cc] = attach(build(cc, ("B",), NEXAMPLES), layers, reps, cc)
+    return pools, sel_pools, layers_ref, bind
 
-    if "V1" in fails or layers_ref is None:
-        print("\nCANNOT VERIFY — population/cache load failed."); return 1
-    print(f"  V1  PASS  population rebuilt: " +
-          ", ".join(f"{c}:C={len(pools[c])},B={len(sel_pools[c])}" for c in CLASSES))
+
+def run_checks(prod, pools, sel_pools, layers, bind, *, grid=None, n_perm=200, seed=90613,
+               acc_tol=1e-9, quiet=False):
+    fails, out = [], []
+
+    def say(t):
+        out.append(t)
+        if not quiet:
+            print(t)
+
+    # V1 / V6
+    say(f"  V1  population: " + ", ".join(f"{c}:C={len(pools[c])},B={len(sel_pools[c])}" for c in CLASSES))
+    for cc in CLASSES + ("club",):
+        if bind.get(cc) is None or bind[cc] > HNORM_TOL:
+            say(f"  V6  FAIL  {cc}: rep cache does not bind to its own run's hnorm (q95 {bind.get(cc)}); "
+                f"this class's states may come from ANOTHER bank (prompt_id collides 8-way)")
+            fails.append("V6")
     if "V6" not in fails:
-        print("  V6  PASS  every class's rep cache binds to its OWN run's hnorm columns")
+        say("  V6  PASS  every class's rep cache binds to its OWN run's hnorm columns")
+
+    exp = {c: (228, 48) for c in CLASSES}
+    for c in CLASSES:
+        if (len(pools[c]), len(sel_pools[c])) != exp[c]:
+            say(f"  V1  FAIL  {c}: population {(len(pools[c]), len(sel_pools[c]))} != {exp[c]} "
+                f"(§28.1's exclusion did not produce the declared table)")
+            fails.append("V1")
+    if "V1" not in fails:
+        say("  V1  PASS  population rebuilt to §28.1's declared table (228 cell-C / 48 cell-B per class)")
 
     C_rows = [r for c in CLASSES for r in pools[c]]
     B_rows = [r for c in CLASSES for r in sel_pools[c]]
 
-    # ---- V2/V3: recompute picks (selection on cell B) and held-out accuracy
-    per, picks = loo(C_rows, B_rows, layers_ref, CLASSES)
+    per, picks = loo(C_rows, B_rows, layers, CLASSES, grid)
     mine = float(np.mean(list(per.values()))) if per else None
-    pp = prod.get("P2_primary", {})
+    pp = prod.get("P2_primary", {}) or {}
     theirs = pp.get("mean_acc")
-    print(f"  V3  recomputed P2 primary mean_acc = {mine!r}   producer = {theirs!r}")
-    if theirs is None or mine is None or abs(mine - theirs) > a.acc_tol:
-        # §28.2 check ON THE PRIMARY: was selection done on the TEST cell's own labels instead?
-        per_bad, _ = loo(C_rows, C_rows, layers_ref, CLASSES)
+    say(f"  V3  recomputed P2 primary mean_acc = {mine!r}   producer = {theirs!r}")
+    if theirs is None or mine is None or abs(mine - theirs) > acc_tol:
+        per_bad, _ = loo(C_rows, C_rows, layers, CLASSES, grid)
         alt = float(np.mean(list(per_bad.values()))) if per_bad else None
         note = ""
         if alt is not None and theirs is not None and abs(alt - theirs) <= 1e-9:
             note = ("  <-- and it MATCHES selection on the TEST cell's own labels: the §28.2 defect, "
                     "on the PRIMARY")
-        print(f"  V2/V3  FAIL  producer's primary is not reproducible from cell-B selection{note}")
+        say(f"  V3  FAIL  producer's primary is not reproducible from cell-B selection{note}")
         fails.append("V3")
     else:
-        print("  V2  PASS  (layer, C) picks reproduce from cell-B selection, per §23.6")
-        print("  V3  PASS  P2 primary held-out accuracy reproduces exactly")
+        say("  V2  PASS  (layer, C) picks reproduce from cell-B selection, per §23.6")
+        say("  V3  PASS  P2 primary held-out accuracy reproduces exactly")
 
-    # ---- V4: independent permutation null, own seed
     if mine is not None:
-        p_mine, null = perm_p(C_rows, layers_ref, CLASSES, picks, mine, a.n_perm, a.seed)
-        p_them = prod.get("P2_primary_permutation", {}).get("p_one_sided")
-        band = 3.0 * float(np.sqrt(max(p_mine, 1e-6) * (1 - max(p_mine, 1e-6)) / max(1, a.n_perm)))
-        ok = (p_them is not None and abs(p_mine - p_them) <= max(band, 2.0 / (1 + a.n_perm)))
-        print(f"  V4  {'PASS' if ok else 'FAIL'}  permutation p: mine={p_mine:.4f} (seed {a.seed}) "
-              f"producer={p_them!r}  MC band +-{max(band, 2.0/(1+a.n_perm)):.4f}  "
-              f"null_mean={null.mean():.4f}")
-        if not ok:
-            fails.append("V4")
-        same_side = (p_them is not None and ((p_mine <= 0.05) == (p_them <= 0.05)))
-        if not same_side:
-            print("  V4  FAIL  the two p-values fall on OPPOSITE sides of alpha=0.05")
+        p_mine, null = perm_p(C_rows, layers, CLASSES, picks, mine, n_perm, seed)
+        p_them = (prod.get("P2_primary_permutation", {}) or {}).get("p_one_sided")
+        band = max(3.0 * float(np.sqrt(max(p_mine, 1e-6) * (1 - max(p_mine, 1e-6)) / max(1, n_perm))),
+                   2.0 / (1 + n_perm))
+        ok = (p_them is not None and abs(p_mine - p_them) <= band)
+        side = (p_them is not None and ((p_mine <= 0.05) == (p_them <= 0.05)))
+        say(f"  V4  {'PASS' if (ok and side) else 'FAIL'}  permutation p: mine={p_mine:.4f} "
+            f"(seed {seed}) producer={p_them!r} band +-{band:.4f} null_mean={null.mean():.4f}")
+        if not ok or not side:
+            if not side:
+                say("  V4  FAIL  the two p-values fall on OPPOSITE sides of alpha=0.05")
             fails.append("V4")
 
-    # ---- V5: the §23.5 clause-4 control, recomputed
     pair = ("knife", "club")
     kc = [r for c in pair for r in pools[c]]
     kcs = [r for c in pair for r in sel_pools[c]]
+    got = prod.get("P2_knife_vs_club_CONTROL_bomb_absent")
     if kc and kcs:
-        per_kc, picks_kc = loo(kc, kcs, layers_ref, pair)
+        per_kc, _ = loo(kc, kcs, layers, pair, grid)
         mine_kc = float(np.mean(list(per_kc.values()))) if per_kc else None
-        got = prod.get("P2_knife_vs_club_CONTROL_bomb_absent", {})
         theirs_kc = got.get("mean_acc") if isinstance(got, dict) else None
-        ok = (theirs_kc is not None and mine_kc is not None and abs(mine_kc - theirs_kc) <= a.acc_tol)
-        print(f"  V5  {'PASS' if ok else 'FAIL'}  knife-vs-club control: mine={mine_kc!r} "
-              f"producer={theirs_kc!r}")
+        ok = (theirs_kc is not None and mine_kc is not None and abs(mine_kc - theirs_kc) <= acc_tol)
+        say(f"  V5  {'PASS' if ok else 'FAIL'}  knife-vs-club control (§23.5 clause 4): "
+            f"mine={mine_kc!r} producer={theirs_kc!r}")
         if not ok:
             fails.append("V5")
     else:
-        print("  V5  FAIL  the §23.5 clause-4 control population is empty"); fails.append("V5")
+        say("  V5  FAIL  the §23.5 clause-4 control population is empty")
+        fails.append("V5")
+    return fails, out
 
+
+# ---------------------------------------------------------------- mutation harness
+def _honest(pools, sel_pools, layers, grid, n_perm, seed):
+    """Build the producer JSON an HONEST analyzer would have written, under the fast grid."""
+    C_rows = [r for c in CLASSES for r in pools[c]]
+    B_rows = [r for c in CLASSES for r in sel_pools[c]]
+    per, picks = loo(C_rows, B_rows, layers, CLASSES, grid)
+    mean = float(np.mean(list(per.values())))
+    p, _ = perm_p(C_rows, layers, CLASSES, picks, mean, n_perm, seed)
+    pair = ("knife", "club")
+    per_kc, _ = loo([r for c in pair for r in pools[c]],
+                    [r for c in pair for r in sel_pools[c]], layers, pair, grid)
+    return dict(P2_primary=dict(mean_acc=mean, per_domain=per, n_domains=len(per)),
+                P2_primary_permutation=dict(p_one_sided=p),
+                P2_knife_vs_club_CONTROL_bomb_absent=dict(
+                    mean_acc=float(np.mean(list(per_kc.values()))) if per_kc else None))
+
+
+def run_mutations(n_perm, seed):
+    grid = (FAST_LAYERS, FAST_C)
+    print("Loading populations and caches ...")
+    pools, sel_pools, layers, bind = load_all()
+    print(f"MUTATION HARNESS (fast grid L{list(FAST_LAYERS)} C{list(FAST_C)}, n_perm={n_perm}).\n"
+          f"The grid only makes the harness interactive; each check's LOGIC is grid-independent.\n")
+    honest = _honest(pools, sel_pools, layers, grid, n_perm, seed)
+    base_fails, _ = run_checks(honest, pools, sel_pools, layers, bind, grid=grid, n_perm=n_perm,
+                               seed=seed, quiet=True)
+    if base_fails:
+        print(f"*** the HONEST producer already fails {base_fails}; the harness is meaningless. ***")
+        return 1
+
+    def m_W1(j, b):   # fabricated headline
+        j["P2_primary"]["mean_acc"] = 0.72
+        j["P2_primary_permutation"]["p_one_sided"] = 0.0099
+    def m_W2(j, b):   # p flipped across alpha, accuracy untouched
+        j["P2_primary_permutation"]["p_one_sided"] = 1e-4 if honest["P2_primary_permutation"]["p_one_sided"] > 0.05 else 0.9
+    def m_W3(j, b):   # clause-4 control deleted
+        j.pop("P2_knife_vs_club_CONTROL_bomb_absent", None)
+    def m_W4(j, b):   # one class joined to another bank's cache
+        b["gun"] = 0.53
+    def m_W5(j, b):   # primary block absent entirely
+        j.pop("P2_primary", None)
+
+    MUT = [("W1 fabricated headline", m_W1, "V3"),
+           ("W2 p flipped across alpha", m_W2, "V4"),
+           ("W3 clause-4 control deleted", m_W3, "V5"),
+           ("W4 one class on another bank's cache", m_W4, "V6"),
+           ("W5 primary block deleted", m_W5, "V3")]
+    ok_all = True
+    for name, fn, designated in MUT:
+        j = copy.deepcopy(honest)
+        b = dict(bind)
+        fn(j, b)
+        fails, lines = run_checks(j, pools, sel_pools, layers, b, grid=grid, n_perm=n_perm,
+                                  seed=seed, quiet=True)
+        caught = designated in fails
+        ok_all &= caught
+        print(f"  {name:38s} -> {designated}  {'CAUGHT' if caught else '*** NOT CAUGHT ***'}")
+        for l in lines:
+            if "FAIL" in l:
+                print("     " + l.strip())
+    print()
+    if ok_all:
+        print("MUTATION HARNESS OK — every corruption was caught by its designated check.")
+        return 0
+    print("MUTATION HARNESS FAILED.")
+    return 1
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--producer", default="outputs/boombness/dcs_analysis/dcs_bombness_specificity.json")
+    ap.add_argument("--n-perm", type=int, default=200)
+    ap.add_argument("--seed", type=int, default=90613)   # deliberately NOT the producer's 20260905
+    ap.add_argument("--acc-tol", type=float, default=1e-9)
+    ap.add_argument("--mutate", action="store_true")
+    a = ap.parse_args()
+
+    if a.mutate:
+        return run_mutations(min(a.n_perm, 20), a.seed)
+
+    if not os.path.exists(a.producer):
+        print(f"producer JSON not found: {a.producer}")
+        return 2
+    prod = json.load(open(a.producer))
+    pools, sel_pools, layers, bind = load_all()
+    fails, _ = run_checks(prod, pools, sel_pools, layers, bind, grid=None, n_perm=a.n_perm,
+                          seed=a.seed, acc_tol=a.acc_tol)
     if fails:
         print(f"\nPRIMARY VERIFICATION FAILED — {sorted(set(fails))}")
         return 1
