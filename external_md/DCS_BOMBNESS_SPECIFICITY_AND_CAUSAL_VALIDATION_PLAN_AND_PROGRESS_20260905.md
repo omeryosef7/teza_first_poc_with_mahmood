@@ -3385,3 +3385,67 @@ domains with paired `mean(C) − mean(A) > 0` (the alternative "cell-`C` mean > 
 **contradicts** the published 6/6/6/4), and the `option_mass` column is a **median** while the
 log-odds columns are **means**. Both are now recorded.
 
+
+---
+
+## §47 — `DCS-C-061` — ⛔ `C-058` GOT THE DIRECTION OF THE BIAS BACKWARDS. The `PR-035` downgrade is SUSPENDED.
+
+⚠ **I calibrated my own fix and it failed.** `PR-039`'s corrected null — the one that excludes global
+relabels — measured on **pure noise**, where a valid test must reject at most α = 0.05:
+
+| null | 2-class FPR | 3-class FPR |
+|---|---|---|
+| **`PR-039` "corrected"** (excludes global relabels) | **0.083** | **0.133** |
+
+⇒ ⛔ **Excluding the global relabels makes the test ANTI-CONSERVATIVE**, at 1.7× and 2.7× α. That is
+diagnostic of the mistake, and it points straight at the error in `C-058`'s reasoning.
+
+### 47.1 The error
+
+`C-058` established the symmetry correctly and then inferred from it **in the wrong direction**.
+
+* ✅ **UNCHANGED AND PROVEN:** a global relabel reproduces the observed accuracy **exactly**
+  (demonstrated to 1e-12), and at 2 classes it is drawn with probability 2/64 ⇒ 6.25 expected of 200.
+* ⛔ **WRONG:** *"the p-values are fully explained by the symmetry"*, implying they are **spuriously
+  small**. The p is `(1 + #{null ≥ obs}) / (1 + n_perm)`, and a global relabel gives
+  `null = obs`, so it **COUNTS IN THE NUMERATOR**. ⇒ The symmetry makes **p LARGER, not smaller.**
+  It is **CONSERVATIVE**, not anti-conservative.
+
+⇒ Removing those draws removes **high** null values, so the observed looks more extreme and p falls —
+exactly the anti-conservative FPR measured above. ⚠ **The calibration is not a surprise in hindsight;
+it is the direct consequence of the sign error, and I should have derived it before writing `C-058`.**
+
+### 47.2 What this does to the `PR-035` verdict
+
+⛔ **`C-058`'s downgrade is SUSPENDED, not reinstated and not confirmed.** If the symmetry is
+conservative, then `knife-vs-club` clearing at **p = 0.0498 ≤ 0.05 despite a symmetry-induced floor**
+is a **valid, conservative** clearance, and §23.5 clause 4 **is** satisfied — which would mean the
+analyzer's original `POSITIVE` verdict stands and my override was wrong.
+
+⚠ ⛔ **I am not restoring `POSITIVE` on this reasoning alone**, because I have now been wrong once in
+each direction on the same question. A head-to-head is running (**job 854722**): ORIGINAL vs
+global-excluded null, **same synthetic data, same seeds, 100 reps**, measuring FPR on pure noise
+**and** power on a planted signal, for both 2-class and 3-class. ⛔ Until it lands:
+
+* the `PR-035` verdict is **UNDETERMINED** — neither `POSITIVE` nor `CANNOT ANSWER`;
+* ⛔ **`PR-039`'s `group_permute` change MUST NOT be used**, and no re-run may be launched with it;
+* ⚠ ⛔ **`R-086`'s primary is unaffected either way.** 0.7485 vs 0.333 chance, 6/6 domains,
+  independently recomputed to 16 digits, with `#{null ≥ obs} = 0` — a count of zero cannot be
+  inflated *or* deflated by 0.03 expected symmetric draws.
+
+### 47.3 The point that survives regardless
+
+⚠ **The 2-class permutation test has a coarse attainable RESOLUTION.** Its reachable p-values near
+α are `8/201 = 0.0398`, `9/201 = 0.0448`, **`10/201 = 0.0498`**, `11/201 = 0.0547`. ⇒ The reported
+`0.0498` is **one step from failing**, and with ≈6.25 of the 200 draws spent on the symmetry the test
+has very little room. ⛔ That is a real fragility to report — ⛔ but *fragile* is not *invalid*, and
+`C-058` conflated them.
+
+### 47.4 ⚠ Standing on the record
+
+This is the **fourth** correction this phase in which the error was **mine, not the code's**
+(`C-053`←`C-050`, `C-055`←`A-026`, `A-027`←`C-057`/§43, and now `C-061`←`C-058`). ⚠ Three of those
+were caught by an adversarial pass; ⛔ **this one was caught by calibrating my own fix, which I did
+only because the brief requires a measured false-positive rate before a null is trusted.** Had I
+skipped it, `PR-035` would now carry a downgrade justified by a sign error.
+
