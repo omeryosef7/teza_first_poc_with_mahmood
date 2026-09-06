@@ -3073,3 +3073,76 @@ those two instruments only** — ⛔ not a re-run of the primary, and ⛔ not a 
    ⚠ It did **not** do so on the real run (all arms were present, and `R5` independently checks the
    producer's rung set against what is on disk), but the certificate is stronger than the check.
 
+
+---
+
+## §43 — `DCS-R-085` (PHASE 8 / §16C) — ✅ THE CONTROL MASKS ARE NOT ROW-INDEPENDENT. One seed per arm explains `R-077`'s draw offset.
+
+The brief's §16C — *"the previously untested cross-row mask-similarity hypothesis"* — is the one
+piece of the control-variance analysis never run. It is now run, on **zero GPU**, in 56–83 s.
+`scripts/dcs_mask_overlap.py`.
+
+**Feasibility, established before any analysis:** the drawn control key positions **are persisted
+per row** (`control_draw[…]["positions"]`), so nothing needed regenerating; `nondemo_control_draw`
+was **imported and reused**, not reimplemented. Provenance was hard-checked and **PASSED on all
+9,280 rows**: rebuilt pool size matches the recorded `n_pool`, every persisted position lies in the
+pool, and regeneration from the persisted seed reproduces the persisted positions **exactly**.
+
+### 43.1 The result
+
+**p-floors, stated BEFORE any p:** per-arm Monte-Carlo with B = 60 → floor **0.0164**; population
+exact two-sided sign test, unit = **ARM**, n = 8 → floor **0.0078**. Both < 0.05 ⇒ informative.
+⚠ The script returns `CANNOT ANSWER` when the arm count puts that floor above 0.05 — verified live
+with an n = 2 run.
+
+Primary: absolute-position Jaccard over all **C(1160,2) = 672,220** row pairs per arm, against a
+row-independent sampling null (mean **0.2459 ± 0.0003**):
+
+| arm | observed | vs null | z |
+|---|---|---|---|
+| `dcsp24_d1/d2/d3` | 0.4976 / 0.5095 / 0.5019 | **≈ 2.0×** | +778 / +815 / +791 |
+| `dcsp28_s20260905_d1/d2/d3` | 0.5053 / 0.4838 / 0.4981 | ≈ 2.0× | +802 / +735 / +780 |
+| `dcsp28_s20260906_d1/d2` | 0.4772 / 0.5023 | ≈ 2.0× | +715 / +792 |
+
+⇒ **8/8 arms positive, sign test p = 0.0078 = the attainable floor.**
+
+### 43.2 ⛔ The mechanism is the SAMPLER, not the model — and I verified it in source
+
+`nondemo_draw_seed(control_seed, draw_index) = control_seed + draw_index · STRIDE` (`:807-813`)
+depends **only on the run seed and the draw index — not on the row**. `nondemo_control_draw` then
+does `rng = _random.Random(int(seed)); rng.sample(pool, k)` (`:870-871`), and `knockout_key_set`
+calls it **once per row with that same seed** (`:922-924`).
+
+⇒ ⛔ **Every row of a control arm draws from an RNG seeded with the identical integer.** Rows sharing
+a pool size and `k` therefore get **literally the same ordinal slots**. Measured: on the 701 row
+pairs per arm with identical `(n_pool, k)`, the pool-**rank** sets are **byte-identical in 1.0000 of
+pairs, versus 0.0000 under the null, in every arm**; `distinct_draw_seeds = 1` in all 8.
+
+### 43.3 What this explains, and what it does NOT
+
+✅ **It explains `R-077`.** That result — split-half ρ = **+0.988**, variance decomposition **93.5 %
+draw offset** — was a measurement without a mechanism. The mechanism is that a "draw" is **one
+systematic mask pattern reused across every row**, not 1,160 independent draws. ⇒ An arm has a
+stable offset because it *is* a single object.
+
+✅ **It explains `R-076`'s null.** Seven row-level index-summary features failed to predict the
+offset because the offset is **not a row-level property at all**.
+
+⛔ **It does NOT invalidate `R-075`, `R-076` or `R-077`.** Each measured what it measured. What
+changes is the **interpretation of the between-control spread**: it is ⛔ **not sampling noise over
+row-independent draws**, it is variation among **8 distinct systematic maskings**. ⚠ Statements of
+the form *"the dose-matched control is one exchangeable intervention"* were already retired by
+`R-075`; this supplies the reason.
+
+⚠ ⛔ **This is a property of the CONTROL construction, not a finding about doublespeak.** It must be
+reported in a methods section, not as a result about the model. ⛔ And it does **not** by itself say
+the control is *wrong* — a fixed mask pattern per arm is a defensible design — only that the eight
+arms are **not** eight independent samples, so the spread across them cannot be read as an error bar.
+
+### 43.4 `Q-004` for Omer
+
+⇒ If a future control population is built, should the draw be **re-seeded per row**
+(`seed + hash(prompt_id)`), making arms genuinely exchangeable, or **kept fixed per arm** and the
+between-arm spread reported as systematic rather than stochastic? ⛔ Not a decision I should take
+alone: it changes what a "control draw" *means* across the whole behavioural half.
+
