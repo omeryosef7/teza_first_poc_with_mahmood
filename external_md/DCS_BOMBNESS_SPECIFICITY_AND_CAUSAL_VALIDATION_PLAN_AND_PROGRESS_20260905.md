@@ -3146,3 +3146,106 @@ arms are **not** eight independent samples, so the spread across them cannot be 
 between-arm spread reported as systematic rather than stochastic? ⛔ Not a decision I should take
 alone: it changes what a "control draw" *means* across the whole behavioural half.
 
+
+---
+
+## §44 — `DCS-R-086` / `DCS-C-058` — ⛔ THE `PR-035` PRIMARY IS REAL AND VERIFIED. THE `POSITIVE` VERDICT IS **NOT EARNED**.
+
+Job **854617** completed in **24 min** (`git_commit 40bcc969`). It printed
+`VERDICT: POSITIVE — concept-specific`. ⛔ **I am overriding that verdict.** The analyzer applied
+§23.5's rule correctly; one of the rule's inputs is an artifact.
+
+### 44.1 ✅ `R-086` — what IS established, and independently recomputed
+
+| instrument | acc | chance | domains | perm p |
+|---|---|---|---|---|
+| **`P2_primary`, 3-way {bomb, knife, gun}** | **0.7485** | 0.333 | **6/6** | **0.004975 = 1/201 = the floor** |
+| blocking null, `n_examples = 0` | 0.3333 | 0.3333 | **0/6** | 1.0 |
+| `length_only_control` | 0.3363 | — | — | (vs primary null q95 **0.4884** ⇒ passes) |
+
+✅ **Independently recomputed from banks and caches by `dcs_verify_pr035_primary.py` (job 854618),
+which imports nothing from the producer:**
+
+```
+V3  recomputed P2 primary mean_acc = 0.7485380116959064   producer = 0.7485380116959064
+V3  PASS  P2 primary held-out accuracy reproduces exactly
+V6  PASS  every class's rep cache binds to its OWN run's hnorm columns
+V1  PASS  population rebuilt to §28.1's declared table (228 cell-C / 48 cell-B per class)
+```
+
+⇒ ✅ **A held-out, domain-generalising signal in the codeword's hidden state carries WHICH CONCEPT the
+demonstrations installed.** 0.7485 against a 0.333 chance, on **leave-one-domain-out** folds, with
+layer/`C` selected on cell `B` only, while the `n_examples = 0` null sits at **exactly** chance and
+prompt length alone gets **0.336**. ⚠ The 3-way permutation p is **valid** (see §44.2).
+
+### 44.2 ⛔ `C-058` — the 2-class permutation nulls are a SYMMETRY ARTIFACT
+
+Three different contrasts returned **p = 0.04975124378109453**, identical to 16 digits. That is not
+a coincidence, and chasing it found a defect in the **preregistered null itself**.
+
+⛔ **Whole-group permutation has a symmetry.** `group_permute` draws, per domain, one of the `k!`
+label permutations. If the **same** permutation is drawn in **every** domain, the classifier simply
+learns the relabelled mapping and scores **exactly the observed accuracy**. **Demonstrated
+empirically**, not argued:
+
+```
+observed (identity labelling)   = 1.000000
+ALL-DOMAINS-FLIPPED permutation = 1.000000   identical? True
+half-flipped permutation        = 0.312500
+```
+
+⇒ The null **contains the observed value by construction**, with probability `k!/(k!)⁶`:
+
+| | assignments `(k!)⁶` | global relabels | P | expected of 200 | **observed `n_null ≥ obs`** |
+|---|---|---|---|---|---|
+| **2-class** contrasts | 64 | 2 | **0.03125** | **6.25** | **9, 9, 9** |
+| **3-class** primary | 46,656 | 6 | 0.000129 | 0.03 | **0** |
+
+⇒ ⛔ **Every one of the three 2-class p-values is fully explained by the symmetry alone.** A 2-class
+contrast under this null **cannot** report p below ≈ `(1+6.25)/201 = 0.036` in expectation; all three
+reported **0.0498**. ✅ The **3-class primary is unaffected** — the symmetry contributes 0.03 expected
+replicates, and **0** were observed, so its `p = 1/201` stands.
+
+### 44.3 ⛔ Consequence: the verdict is downgraded
+
+§23.5 clause 4 requires the **bomb-absent knife-vs-club control** to clear p ≤ 0.05. Its p is an
+artifact ⇒ ⛔ **clause 4 is not satisfied by a valid test**, and
+
+> ⛔ **`POSITIVE — concept-specific` MAY NOT BE CLAIMED.** The honest verdict is:
+> **the installed-concept signal is CONFIRMED; whether it is BOMB-SPECIFIC rather than
+> remapping-strength is `CANNOT ANSWER`.** ⛔ Not a null — the deciding control has no valid inference.
+
+⚠ **Descriptively** (no p attached): knife-vs-club **0.8596**, 6/6 domains, null mean 0.5089;
+bomb-vs-knife **0.9079**, 6/6; bomb-vs-benign-remap **0.8882**, 6/6. ⛔ These **look** like clean
+separations and I am deliberately **not** converting them into a claim.
+
+### 44.4 Three further results, reported honestly
+
+* ⛔ **`P1_trainB_testC` acc = 0.0000** — not chance, *systematically* wrong. It is a **class-imbalance
+  artifact**: `p1_classes` includes `literal`, supplied by cell `A` at **504 rows** against 144 for
+  the three concepts, so the probe predicts `literal` for everything and scores 0 on cell `C`. ⚠ The
+  same imbalance defect I fixed for cell `F` in `C-053` §28.5 and **did not** fix for `P1`. ⛔ **`P1`
+  is UNINFORMATIVE**, not a concept negative — exactly as `A-020` §8.1 ruled in advance.
+* ⛔ **`P2_basket_lexical_transfer` has `perm_p = None`** — no permutation was ever run for it, so gate
+  **R3 (lexical transfer) has NO inference.** acc 0.6974, 6/6 domains, descriptive only.
+* ⛔ **`P2_leave_one_block_out` acc = 0.9381** is one of `C-057`'s two INVALID instruments **and**
+  its null mean is **0.8570** — leaving out one *block* leaves nearly all data in training, so both
+  observed and null are inflated. Doubly unusable.
+* ⚠ **`trainfold = 1.0` everywhere.** At 4096 dimensions the probe separates its own training fold
+  perfectly, so `PR-031` §6.6's capability gate is **trivially passed and carries no information**.
+
+### 44.5 `PR-039` — the corrected null, preregistered now
+
+⛔ **Fix, declared before it is run:** exclude the `k!` **global relabels** from the permutation null
+(equivalently, condition the null on *not* being a global relabel), and re-run **only** the three
+2-class contrasts and the basket transfer. ⛔ The primary is **not** re-run — it is unaffected and
+already verified. Also fixes `C-057`'s two `selection_rows=` omissions and `P1`'s class imbalance.
+
+⚠ ⛔ **Attainable floor, stated first:** with the 2 global relabels removed, 62 assignments remain, so
+200 draws give a floor of `1/201 = 0.005`. But the sampled null is over only **62 distinct**
+assignments ⇒ the *effective* resolution is `1/63 = 0.0159`. ⇒ **A 2-class contrast here can clear
+α = 0.05, but cannot report p below ≈ 0.016.** Anything smaller would be a resolution artifact.
+
+⚠ **This defect is not local to us.** Any leave-one-group-out design that permutes labels
+*within groups* and reports a permutation p on a **binary** outcome has it. Worth a methods paragraph.
+
