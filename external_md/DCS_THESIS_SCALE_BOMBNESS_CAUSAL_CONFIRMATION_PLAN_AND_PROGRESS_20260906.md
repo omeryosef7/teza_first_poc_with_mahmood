@@ -557,3 +557,101 @@ published sentence. Q-001..Q-005 carry forward from the previous phase (see
 - **Q-010 — Qwen3-14B is absent from both caches** and `HF_HUB_OFFLINE=1` makes any Qwen job
   fail at load. **Proceeding Llama-only**, recorded as a scope limit, not as a model-specificity
   claim.
+
+## 2026-09-07 · C-073 · the silent-default launcher trap is now guarded
+
+`DCS-C-047` cost ~1.7 GPU-hours and was invisible: jobs 853040–853045 exported `ARGSFILE=…`, a
+variable `run_boombness.sh` never reads, so all six fell through
+`: "${BOOMB_SCRIPT:=extract_boombness.py}"`, ran the wrong script, and exited **`COMPLETED 0:0`**
+in 11–27 minutes. No guard in this project catches that class, because every guard checks an
+artifact and a missing arm is indistinguishable from an unstarted one.
+
+Two **additive, opt-in** defences, chosen so no existing caller can break:
+
+1. the runner now states whether `BOOMB_SCRIPT` was **PROVIDED or DEFAULTED**, so `grep` over the
+   first ten log lines answers *"did this job run what I meant?"* without reasoning about env
+   plumbing;
+2. an optional **`BOOMB_EXPECT`**: when set it must equal the resolved `BOOMB_SCRIPT`, or the job
+   refuses before doing any work. A caller that sets it cannot be silently defaulted; a caller
+   that does not is unaffected. It also refuses a `BOOMB_SCRIPT` that does not exist, naming the
+   bare-filename convention that has bitten before.
+
+**This phase sets `BOOMB_EXPECT` on every submission.**
+
+Proven to fire, not merely written — four mutations run against the real wrapper:
+
+| mutation | result |
+|---|---|
+| `BOOMB_EXPECT` ≠ `BOOMB_SCRIPT` | REFUSED, `origin=PROVIDED` |
+| the exact 853040 shape: variable not read, script defaults, `BOOMB_EXPECT` set | REFUSED, `origin=DEFAULTED` — names the cause |
+| nonexistent script | REFUSED, states the bare-filename rule |
+| valid call | **NOT blocked** — reaches the GPU guard (`need L40S got 'NVIDIA TITAN Xp'` on the login node) |
+
+That last row matters as much as the first three: a guard that also blocks correct calls is a
+new failure, not a fix.
+
+## 2026-09-07 · PHASE-4 · GPU preflight (mandate §27)
+
+`scripts/dcs_ts_preflight.sh`, run before every sbatch in this phase. **PASS** at 2026-09-07 00:39.
+
+| check | state |
+|---|---|
+| `.cache/huggingface → /vol/scratch/omeryosef/hf_cache` | resolves |
+| Llama-3.1-8B-Instruct snapshot `0e9e39f2…` | 4 safetensors shards, **15,327 MB resolved** |
+| `tokenizer.json` / `config.json` | 9,085,657 B / 855 B |
+| 10 MB write round-trip to `outputs/` | ok — 1.4 T free of 20 T |
+| 6/6 ts116 banks vs `bank_rows_sha16` | match |
+| domain split manifest | verifies |
+| our queue / cap | 0 jobs, within the 6-job cap (killable: 90 running, 113 pending) |
+
+It resolves symlinks with `readlink -f` and follows blob links with `ls -L`/`du -L`, because the
+`DCS-B-019` failure was a **dangling** symlink whose directory listing looked perfect: `mkdir -p`
+reports `File exists` on a dangling link rather than creating through it, and under
+`set -euo pipefail` three arms died in 4–47 s behind a message that never mentions the model
+cache. The 10 MB write is a real write, not a `touch`: the binding limit is a user/qtree quota
+`df` cannot see, and it is size-dependent — a 5-byte write has succeeded in the same second a
+100-byte write returned EDQUOT. It also refuses an argsfile on node-local `/tmp` (invisible to
+compute nodes; the job dies in ~3 s) or containing a quote character (`BOOMB_ARGS` is word-split,
+so quotes become literal argv characters).
+
+⚠ Standing risk unchanged: **scratch is purged by policy and there is no fallback copy** — the
+home cache is an 8.9 MB config-only stub. The preflight turns that from a cryptic death into a
+one-line diagnosis; it does not prevent it. → `Q-003`.
+
+## 2026-09-07 · A-035 · literature update (mandate §25)
+
+Full document: `reports/DCS_TS_LITERATURE_UPDATE_20260906.md`. The existing
+`DCS_LITERATURE_MATRIX.md` was deliberately **not** modified.
+
+**The decision-relevant finding, and it is good news narrowly and bad news broadly.**
+`arXiv 2609.02438` (Sudheendra & Srivastava, 2026-09-02) does **not** pre-empt our specific
+claim: it establishes a decodable / expressed / causally-used three-way separation for **logical
+validity**, on a purpose-built logic-verification benchmark across five models — no ICL framing,
+no demonstrations, no codeword mechanism, no attention intervention. **OVERLAPS on framing,
+ORTHOGONAL operationally.** But it, plus `2604.22128` (Dyck-language decodability-vs-causal-use)
+and at least three others, make *"decodable but not causally used"* **a converging 2026 pattern**.
+⇒ **the generic dissociation sentence can no longer lead.** Our instance — an *attacker-installed*
+concept, a safety endpoint, band-limited attention zeroing on a demonstration span — still can.
+This is the substance of `Q-002` and it is now answered with citations.
+
+`arXiv 2504.00132` (Bakalova et al.), pinned precisely so our delta is stated accurately rather
+than assumed: it ablates `y_i → t_{N+1}` edges by **counterfactual K/V patching**, at **every
+layer and head simultaneously**, on **Gemma-2 2B only**, one query position, task-accuracy
+endpoint, no safety framing. Ours is attention **zeroing**, **layer-banded** (6–14), on a
+semantic-remapping attack, cross-family, with a query-row-count axis it has no analogue of. The
+banned sentence stays banned; the delta survives.
+
+`arXiv 2605.04061`, logged in the matrix as the K-step's *"most direct threat"*: confirmed 0 %
+single-position vs 96 % multi-position transfer and a ~30 % depth window, with query position
+"strictly necessary" as a **binary**, not a count. **It still has no query-row-count axis**, so
+the K-step's specific axis is unaddressed. ⚠ A venue discrepancy surfaced (this fetch returned an
+internally garbled "ICLR 2026 (Learning and Intelligent Optimization Conference)" against the
+matrix's "LION 2026 + ICLR 2026 workshops") — recorded **UNRESOLVED**; do not print a venue for
+this paper until a third source agrees.
+
+*Yona et al. ACL 2026* is the same Doublespeak paper already at matrix row 1.1 (arXiv 2512.03771).
+No second paper exists; no new overlap.
+
+**Honesty on coverage, per §25.** Two searches returned nothing and are recorded as **null
+searches, not as evidence of novelty**. The **OpenReview blind spot flagged in the matrix
+§5.3/§6.3 remains OPEN** — this update did not run an OpenReview search and did not close it.

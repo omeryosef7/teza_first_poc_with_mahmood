@@ -53,7 +53,37 @@ export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export T
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 export PYTHONUNBUFFERED=1
 
+# SILENT-DEFAULT GUARD (2026-09-06, DCS-C-073). ADDITIVE and opt-in: nothing below changes what
+# any existing caller does.
+#
+# WHY. `BOOMB_SCRIPT` defaults to `extract_boombness.py`. Jobs 853040-853045 were exported
+# `ARGSFILE=...` -- a variable this runner never reads -- so all six fell through to that default,
+# ran the WRONG SCRIPT, and exited `COMPLETED 0:0` in 11-27 minutes. ~1.7 GPU-hours lost, and
+# nothing caught it: every artifact guard in this project checks a file that was never written,
+# and a missing arm is indistinguishable from an unstarted one.
+#
+# Two cheap defences that cannot break a working caller:
+#   1. say out loud whether BOOMB_SCRIPT was PROVIDED or DEFAULTED, so `grep` over the first ten
+#      log lines answers "did this job run what I meant?" without reasoning about env plumbing;
+#   2. honour an optional `BOOMB_EXPECT`. When set, it must equal the resolved BOOMB_SCRIPT or the
+#      job refuses BEFORE the node does any work. A caller that sets it cannot be silently
+#      defaulted, and a caller that does not is unaffected.
+# The DCS thesis-scale phase sets BOOMB_EXPECT on every submission.
+if [ -n "${BOOMB_SCRIPT:-}" ]; then _BOOMB_SCRIPT_ORIGIN=PROVIDED; else _BOOMB_SCRIPT_ORIGIN=DEFAULTED; fi
 : "${BOOMB_SCRIPT:=extract_boombness.py}"
+if [ -n "${BOOMB_EXPECT:-}" ] && [ "$BOOMB_EXPECT" != "$BOOMB_SCRIPT" ]; then
+  echo "ERROR BOOMB_EXPECT='$BOOMB_EXPECT' but BOOMB_SCRIPT resolved to '$BOOMB_SCRIPT'"
+  echo "  origin=$_BOOMB_SCRIPT_ORIGIN. If DEFAULTED, the variable you exported is not one this"
+  echo "  runner reads (it reads BOOMB_SCRIPT / BOOMB_ARGSFILE / BOOMB_ARGS / BOOMB_EXPECT)."
+  echo "  REFUSING: this is the 853040-853045 failure, which exits COMPLETED 0:0 and looks fine."
+  exit 1
+fi
+if [ ! -f "src/boombness/$BOOMB_SCRIPT" ]; then
+  echo "ERROR script not found: src/boombness/$BOOMB_SCRIPT (origin=$_BOOMB_SCRIPT_ORIGIN)"
+  echo "  NOTE BOOMB_SCRIPT is a BARE FILENAME; this runner prepends src/boombness/."
+  echo "  A script living elsewhere needs a relative path, e.g. ../../scripts/dcs_x.py"
+  exit 1
+fi
 : "${BOOMB_ARGSFILE:=}"
 : "${BOOMB_ARGS:=}"
 if [ -n "$BOOMB_ARGSFILE" ]; then
@@ -76,6 +106,7 @@ if [ -n "$BOOMB_ARGSFILE" ]; then
 fi
 
 echo "=== boombness: $BOOMB_SCRIPT ==="; date; hostname
+echo "boomb_script_origin: $_BOOMB_SCRIPT_ORIGIN  expect=${BOOMB_EXPECT:-<unset>}  argsfile=${BOOMB_ARGSFILE:-<unset>}"
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)  dirty=$(git status --porcelain 2>/dev/null | wc -l)"
 echo "args: $BOOMB_ARGS"
 
