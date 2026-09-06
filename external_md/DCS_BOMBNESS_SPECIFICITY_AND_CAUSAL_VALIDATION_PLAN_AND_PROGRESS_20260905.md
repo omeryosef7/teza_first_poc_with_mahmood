@@ -4352,3 +4352,50 @@ have published *"the concept signal does not transfer across codewords"*, which 
 transfer claim in this phase should report **both** an offset-free ranking statistic **and** the
 accuracy, and say which one the gate is defined on.
 
+
+---
+
+## §63 — `DCS-PR-040b` — CLARIFICATION, before any `R5` number is read: the probe is `P2`, not `P1`
+
+⚠ Found by re-reading my own preregistration against my own analyzer while the last arm was still
+loading. ⛔ **No `R5` outcome has been read; the final arm (856814) had not finished.**
+
+### 63.1 The ambiguity
+
+`PR-040` §55.2's table row reads:
+
+> *probe — `scripts/dcs_bombness_specificity.py` UNCHANGED — **train on BASELINE cell `B`**,
+> layer/`C` selected on cell `B`, leave-one-domain-out*
+
+⛔ *"train on cell `B`"* is **wrong prose**. In the frozen analyzer, cell `B` is the **selection**
+population and cell `C` is the **training** population:
+
+```
+:624  res["P2_primary"] = loo_domain(C_rows, ..., selection_rows=B, ...)
+```
+
+Training **on** cell `B` and testing on cell `C` is **`P1`**, a different instrument — and one
+`R-089` §54.3 already ruled **UNINFORMATIVE** through class imbalance. The analyzer implements **`P2`**
+(`vp.loo(C_off, B_off, ...)` — train on cell `C`, select on cell `B`).
+
+### 63.2 The operative reading, and why it is not a choice made after seeing data
+
+⇒ ⛔ **`P2` is the operative instrument.** Three independent parts of `PR-040` say so, all written
+before any arm existed:
+
+1. §55.2's own first clause — *"the frozen analyzer UNCHANGED"* — and the frozen analyzer's primary
+   **is** `P2`.
+2. §55.1 anchors the whole question on `R-086`, which **is** `P2`'s result.
+3. §55.4's thresholds are arithmetic on **0.7485** — `P2`'s number. `P1` scored **0.0000**; thresholds
+   built from `P2`'s value cannot have been meant for `P1`.
+
+⇒ The prose was loose; **every operative quantity in the preregistration is `P2`'s.** ⛔ This is a
+clarification of an internal inconsistency, **not** a change of instrument, and it is recorded
+**before** the outcome so it cannot later look like one.
+
+⚠ ⛔ **Standing note.** This is the **third** internal contradiction found in a preregistration of
+mine this phase (`C-050` §25.2 on §23.1's cell-`B` clause, `C-064` on `R3`, this). ⇒ The pattern is
+that **prose describing an instrument drifts from the code implementing it**, and only reading the two
+against each other catches it. ⚠ In each case the code was right and the prose was wrong — which is
+lucky, and is not a method.
+
