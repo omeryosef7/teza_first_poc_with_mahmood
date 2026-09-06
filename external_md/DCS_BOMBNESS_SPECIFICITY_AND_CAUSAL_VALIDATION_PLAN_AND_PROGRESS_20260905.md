@@ -3001,3 +3001,75 @@ Jobs **854623/854624/854625** and the staggered retry **854626/854627/854628** a
 none is quarantined, because none was written. `PR-038` §40 stands **unchanged** and will be
 re-submitted once the weights are restored — ⛔ **not** re-specified.
 
+
+---
+
+## §42 — `DCS-C-057` — ⛔ TWO `PR-035` SECONDARIES CARRY `C-053` §28.2's DEFECT. Declared INVALID **before** their numbers exist.
+
+⚠ **Written 2026-09-06 while job 854617 is still RUNNING** (`cell F done t+929.4s`; no verdict, no
+JSON on disk). ⛔ **I have not seen either number.** An adversarial review of this session's commits
+found this; I then **verified it in the source myself** rather than accepting the report.
+
+### 42.1 The defect
+
+```
+:597  res["P2_primary"] = loo_domain(C_rows, ..., selection_rows=B, ...)          ✅
+:656  res["P2_bomb_vs_benign_remap"]  = loo_domain(rows_f, ..., balanced=True)    ⛔ no selection_rows
+:678  res["P2_leave_one_block_out"]   = loo_domain(C_rows, ..., group="block")    ⛔ no selection_rows
+```
+
+With `selection_rows` absent, `loo_domain` takes its `else` branch and grid-searches `(layer, C)` on
+**the training fold of the TEST population's own true labels**. Those picks are then handed to
+`permutation_test` and held **fixed** across every replicate.
+
+⇒ The observed statistic is evaluated at a `(layer, C)` **chosen to maximise accuracy under the REAL
+labels**; the null replicates are evaluated at that same `(layer, C)` under **random** labels, for
+which it was never optimised. ⛔ **The null is biased low and the p-value is ANTI-CONSERVATIVE.**
+
+### 42.2 ⛔ Why this is the same mistake twice
+
+This is `C-053` §28.2 **word for word** — the defect I found in the blocking null and described as
+*"the one number that decides VOID was not the preregistered statistic"*. I repaired it **for the
+null and for the primary** and left it standing in **exactly the two instruments** to which
+`C-050` §25.4 and `C-053` §28.6 had just attached permutation p-values.
+
+⚠ ⇒ **The two fixes created the defect they were fixing.** Before `C-050` the cell-`F` contrast had
+no p-value at all and LOBO was judged by the sign-vs-1/k rule; adding permutation tests to instruments
+whose picks were selected on test labels made them *look* rigorous while being biased.
+
+### 42.3 Ruling, fixed now and pre-outcome
+
+⛔ **When job 854617 lands, these two fields may NOT be quoted, by me or anyone reading this log:**
+
+* `P2_leave_one_block_out_permutation.p_one_sided`
+* `P2_bomb_vs_benign_remap_permutation.p_one_sided`
+
+They are recorded as **INVALID — anti-conservative by construction**. ⚠ The **point estimates**
+(`mean_acc`, `per_domain`, `n_above_chance`) are unaffected and may be reported **descriptively,
+with no p-value attached**. The correct repair is `selection_rows=B` on both, then a **re-run of
+those two instruments only** — ⛔ not a re-run of the primary, and ⛔ not a re-specification.
+
+### 42.4 ✅ What is NOT affected
+
+* ✅ **`P2_primary` — the headline — passes `selection_rows=B` (`:597`). Verified by me in source.**
+* ✅ The **blocking null** passes `selection_rows=B_sel` (`C-053` §28.2's repair), so `R-084` stands.
+* ✅ `P1`, the two `R-078` contrasts, and the basket transfer all pass a `selection_rows=`.
+* ⇒ ⛔ **`§23.5`'s verdict rule reads none of the two affected fields**, so the `PR-035` verdict
+  itself is untouched.
+
+### 42.5 Three further review findings, recorded
+
+1. ⛔ **`verdict_inputs["null_control_passed"] = True` is a HARDCODED LITERAL** in the producer. It is
+   *true* here only because a fired null exits earlier — but as written it is a **dead flag that can
+   never be false**, the `VOIDS_RUN` shape (`C-049` §22.5) a third time. Report the null's real p
+   beside it; do not read that field.
+2. ⛔ **My own primary verifier prints `"V2 PASS — (layer, C) picks reproduce"` without ever reading
+   the producer's `picks`, and `V2` can never enter `fails`.** ⇒ It cannot detect the very §28.2
+   defect §42.1 describes. Its `W4` mutation also pokes the verifier's own `bind` dict rather than an
+   artifact, so **`V6`'s claim to close `X6` is undemonstrated.** Both must be fixed before
+   `854618`'s output is trusted.
+3. ⛔ **`dcs_verify_kladder_rowlevel.py` `continue`s past a MISSING arm directory** and then prints
+   its five `PASS` lines unconditionally ⇒ it would print `ROW-LEVEL VERIFIED` with arms absent.
+   ⚠ It did **not** do so on the real run (all arms were present, and `R5` independently checks the
+   producer's rung set against what is on disk), but the certificate is stronger than the check.
+
