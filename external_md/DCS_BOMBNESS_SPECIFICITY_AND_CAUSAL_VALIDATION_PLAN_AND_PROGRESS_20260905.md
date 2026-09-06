@@ -4040,3 +4040,61 @@ answer is already published (`R-006`/`R-009`) and must **not** be regenerated; i
 readout needs the same bridge as `R5`. ⇒ **DECISION 4 — the bridge is built and is the path for
 `R5`, `R6` and §13's representation arm alike.**
 
+
+---
+
+## §58 — `DCS-PR-040a` — the bridge PASSES its kill criterion, I nearly voided it with a bad metric, and the design needs one change
+
+### 58.1 ⚠ I nearly VOIDED a working bridge with an invalid metric
+
+`PR-040` §55.7 said *"reproduce the baseline cache to high precision"* and ⛔ **fixed no metric.** My
+first check used **element-wise relative error** `|b−k|/|b|`, got **q95 = 0.215**, and by the letter of
+§55.7 that voids the bridge.
+
+⛔ **The metric was invalid.** On dense 4096-dim vectors, element-wise relative error is dominated by
+components near zero and measures essentially nothing. Two independent diagnostics said so
+immediately: the **per-layer norms agree to ~0.1 %** (L6: 5.874 vs 5.867; L8: 6.836 vs 6.824), and a
+**layer-offset sweep** put offset **0** three orders of magnitude ahead of ±1 (0.214 vs 6.9/7.9) ⇒ the
+`block L == hidden_states[L+1]` convention is **correct**.
+
+⚠ **Switching metrics after a failure is the shape of goalpost-moving, and I am flagging it rather
+than burying it.** What makes it defensible here: the replacement was not chosen for its answer, the
+first metric is *known-bad* for this comparison, and the offset sweep is **independent** evidence
+the vectors are the same object.
+
+### 58.2 ✅ Under proper metrics the bridge passes decisively
+
+| bridge arm | min cosine vs baseline | mean rel-L2 |
+|---|---|---|
+| knockout **DISABLED**, eager | **0.999849** | 0.0140 |
+| knockout **DISABLED**, default impl | 0.999881 | 0.0129 |
+| knockout **ENABLED** | **0.7639** | **0.3764** |
+
+⇒ ✅ **Disabled reproduces the baseline to cosine 0.9999**, and ⇒ ✅ **the knockout demonstrably
+fires** — a **27×** separation in rel-L2 between the two. ⛔ The bridge is **NOT** VOID.
+
+### 58.3 ⛔ `PR-040a` — the residual 1.4 % is a CONFOUND, and the design changes to remove it
+
+The disabled bridge is **not bit-identical** to the published extractor: cos 0.9999, rel-L2 **0.014**.
+⚠ Expected — different attention implementation under `bfloat16` across 32 layers — ⛔ **but not
+harmless.** `PR-040` §55.2 as written trains the probe on **BASELINE cell `B`** (from the *extractor's*
+cache) and tests on **KNOCKED-OUT cell `C`** (from the *bridge's* cache). ⇒ Any degradation could then
+be **the code path**, not the knockout.
+
+⛔ **AMENDMENT, pre-data — no `R5` outcome has been read.** The bridge produces **BOTH** caches:
+
+* `ko_off` — every population, knockout **disabled**
+* `ko_on` — every population, knockout **enabled**
+
+and ⛔ **the primary compares `ko_on` against `ko_off`, bridge-to-bridge.** The published extractor
+cache is used **only** for the §55.7 reproduction check, never inside the primary. ⇒ The code-path
+offset **cancels exactly**.
+
+⚠ Consequences, declared now:
+* The baseline reference is **re-measured on `ko_off`**, not assumed to be `R-086`'s 0.7485. ⛔ If
+  `ko_off` does not itself reach ≈0.7485, that is a **finding about the bridge** and `R5` is `VOID`.
+* §55.4's thresholds are re-expressed against the **`ko_off`** baseline: `R5-PASS` needs ≥ 50 % of the
+  way from `acc(ko_off)` to chance, `R5-FAIL` ≤ 20 %. ⛔ The **fractions are unchanged**; only the
+  anchor becomes measured rather than inherited.
+* §55.5's train-on-KO/test-on-KO secondary is unchanged.
+
