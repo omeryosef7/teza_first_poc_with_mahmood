@@ -1,7 +1,7 @@
 {
   "id": "DCS-PR-046",
   "title": "Thesis-scale concept-identity probe on the aligned ts116n bank",
-  "status": "FROZEN_PENDING_BANK_SHA",
+  "status": "FROZEN",
   "written": "2026-09-07",
   "written_at_commit": "347f0920",
   "_why_machine_readable": [
@@ -10,29 +10,71 @@
     "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
     "in a markdown log that no program consults is a wish, not a preregistration."
   ],
-
   "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
   "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
-
   "population": {
     "bank_family": "ts116n",
     "banks": {
-      "button_bomb":  {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl",  "bank_file_sha16": null, "bank_rows_sha16": null},
-      "button_knife": {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl", "bank_file_sha16": null, "bank_rows_sha16": null},
-      "button_gun":   {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl",   "bank_file_sha16": null, "bank_rows_sha16": null},
-      "basket_bomb":  {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl",  "bank_file_sha16": null, "bank_rows_sha16": null},
-      "basket_knife": {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl", "bank_file_sha16": null, "bank_rows_sha16": null},
-      "basket_gun":   {"path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl",   "bank_file_sha16": null, "bank_rows_sha16": null}
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl",
+        "bank_file_sha16": "42341368bdbe6ebc",
+        "bank_rows_sha16": "9d1f03747189e1bd"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl",
+        "bank_file_sha16": "a47b3da02998f79f",
+        "bank_rows_sha16": "9ef9688609001104"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl",
+        "bank_file_sha16": "8e91fd0a2b53140c",
+        "bank_rows_sha16": "b865d8b991023ac7"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl",
+        "bank_file_sha16": "d459fbd4259eef62",
+        "bank_rows_sha16": "09882763cb4b0a24"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl",
+        "bank_file_sha16": "ffa88f1816492759",
+        "bank_rows_sha16": "71128bfa7631c005"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl",
+        "bank_file_sha16": "23e6df6802023e0f",
+        "bank_rows_sha16": "ab5ec1d45fb90cd3"
+      }
     },
     "pools": {
       "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
       "shared_pools_sha16": "976aa2b0b617118d",
-      "harm_bomb":  {"path": "data/boombness_prompts/demo_pools_116dom_ts_bomb.json",  "content_sha16": null, "job": 859722},
-      "harm_knife": {"path": "data/boombness_prompts/demo_pools_116dom_ts_knife.json", "content_sha16": null, "job": 859723},
-      "harm_gun":   {"path": "data/boombness_prompts/demo_pools_116dom_ts_gun.json",   "content_sha16": null, "job": 859724}
+      "harm_bomb": {
+        "path": "data/boombness_prompts/demo_pools_116dom_ts_bomb.json",
+        "content_sha16": "9dcaed6e32f30065",
+        "job": 859722
+      },
+      "harm_knife": {
+        "path": "data/boombness_prompts/demo_pools_116dom_ts_knife.json",
+        "content_sha16": "1f164f69d2f17a9e",
+        "job": 859723
+      },
+      "harm_gun": {
+        "path": "data/boombness_prompts/demo_pools_116dom_ts_gun.json",
+        "content_sha16": "a68ab2ceef4144b7",
+        "job": 859724
+      },
+      "_seed": 20260906
     },
-    "concepts": ["bomb", "knife", "gun"],
-    "codewords": {"development": "button", "external_confirmation": "basket"},
+    "concepts": [
+      "bomb",
+      "knife",
+      "gun"
+    ],
+    "codewords": {
+      "development": "button",
+      "external_confirmation": "basket"
+    },
     "cell": "C",
     "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
     "query_kind_primary": "semantic_one_word",
@@ -43,47 +85,95 @@
     "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
     "rows_per_domain_per_concept": 10,
     "preregistered_exclusions": [
-      {"domain": "school_campus", "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only", "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."}
+      {
+        "domain": "restaurant_kitchen",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
+        "seed_bumps_attempted": 1,
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+      },
+      {
+        "domain": "school_campus",
+        "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
+        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
+      }
     ],
-    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter."
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
+    "_register_asymmetry": {
+      "measured_on": "4640 harm sentences per concept, prompt-only",
+      "hedged_pct": {
+        "bomb": 14.1,
+        "knife": 0.2,
+        "gun": 3.4
+      },
+      "mean_sentence_chars": {
+        "bomb": 82,
+        "knife": 75,
+        "gun": 78
+      },
+      "mass_noun_polysemy_pct": {
+        "bomb": 1.08,
+        "knife": 0.0,
+        "gun": 0.0
+      },
+      "decision": "KEPT, not matched away. A bomb in a workplace is overwhelmingly a SUSPECTED bomb; a knife is simply present. That is a real property of the concepts in incident-log English and is part of what installing one rather than the other means. Equalising it means unnatural demonstrations, which is how R-098 ended up with no manipulation at all. It is instead measured, published, and converted into the bar: N5 concept-masked TF-IDF becomes strong and the probe MUST beat it.",
+      "deferred_decision_rule": "If N4 length-only comes out well above chance, over-generate and length-match the 40 kept sentences per pool -- prompt-only and outcome-blind, ~50% more API. THIS RULE IS RECORDED BEFORE N4 IS MEASURED so it cannot be chosen after seeing the probe."
+    }
   },
-
   "split": {
     "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
     "manifest_sha16": "be7d2c772d814ef3",
     "field": "dsplit",
     "unit": "domain",
-    "n_train": 70, "n_validation": 23, "n_test": 23,
+    "n_train": 69,
+    "n_validation": 23,
+    "n_test": 23,
     "seed": 202609061,
     "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
-    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists."
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
+    "n_domains_analysed": 115,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 69 are ANALYSED. The manifest is not regenerated -- a split may be created once (mandate 5.2). The exclusion is applied downstream and recorded here."
   },
-
   "model": {
     "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
     "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
-    "n_layers": 32, "hidden": 4096, "n_heads": 32, "n_kv_heads": 8,
+    "n_layers": 32,
+    "hidden": 4096,
+    "n_heads": 32,
+    "n_kv_heads": 8,
     "dtype": "bfloat16",
     "attn_impl": "eager",
     "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim."
   },
-
   "read_site": {
     "position": "codeword_last",
     "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
     "layer_convention_verified_by": "planted-hook GPU test, REQUIRED to pass before any measurement run",
     "layer_selection": "TRAIN+VALIDATION only, frozen before test is read",
-    "layer_grid": [6, 7, 8, 9, 10, 11, 12, 13, 14],
-    "C_grid": [0.01, 0.1, 1.0, 10.0],
+    "layer_grid": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "C_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
     "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070)."
   },
-
   "classifier": {
     "type": "multinomial_logistic_regression",
     "_no_mlp": "A linear probe, per mandate section 8.1. No MLP.",
     "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
   },
-
   "primary": {
     "statistic": "3-way argmax accuracy on the 23 untouched TEST domains, domain-mean",
     "chance": 0.3333333333333333,
@@ -98,13 +188,21 @@
     "cannot_answer": "option_mass on the primary channel shows it is disengaged, or the population fails any PHASE-4 gate",
     "void": "the run did not execute this design (wrong bank sha, wrong script, dead hook, selection read test)"
   },
-
   "secondary": {
     "macro_ovr_auroc": "co-primary for the lexical-transfer claim only; declared BEFORE running per the R3 lesson that accuracy and ranking can disagree",
     "lexical_transfer": "train on button TRAIN domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining. A basket-specific recalibration is NOT zero-shot transfer and is labelled separately.",
-    "reported_always": ["accuracy", "balanced accuracy", "macro OvR AUROC", "per-class AUROC", "confusion matrix", "per-domain accuracy", "per-domain macro AUROC", "option_mass", "semantic_logodds"]
+    "reported_always": [
+      "accuracy",
+      "balanced accuracy",
+      "macro OvR AUROC",
+      "per-class AUROC",
+      "confusion matrix",
+      "per-domain accuracy",
+      "per-domain macro AUROC",
+      "option_mass",
+      "semantic_logodds"
+    ]
   },
-
   "power": {
     "between_domain_sd_projected": 0.1406,
     "between_domain_sd_source": "the six old per-domain accuracies, mean 0.7485380116959064; SD has only 5 df and its 95% upper bound is 0.3439",
@@ -120,32 +218,87 @@
       "reason": "at SD=0.3439 the MDE degrades from 0.0925 to 0.2102"
     }
   },
-
   "nulls_required": [
-    {"id": "N1", "name": "n_examples=0", "expect": "at chance; no concept signal"},
-    {"id": "N2", "name": "domain-level group permutation", "expect": "null distribution centred at chance", "_never": "row-level permutation; measured FPR 0.2000"},
-    {"id": "N3", "name": "full-prompt leakage", "expect": "0 rows name their own concept in the primary channel"},
-    {"id": "N4", "name": "length-only classifier", "expect": "at chance"},
-    {"id": "N5", "name": "prompt-text-only TF-IDF, concept words masked", "expect": "the probe must beat it"},
-    {"id": "N6", "name": "template-id-only classifier", "expect": "at chance BY CONSTRUCTION; above chance means alignment is broken and the run is VOID"},
-    {"id": "N7", "name": "codeword-only control", "expect": "pipeline sanity"},
-    {"id": "N8", "name": "label permutation through the ENTIRE pipeline including selection", "expect": "calibrated FPR at nominal alpha"}
+    {
+      "id": "N1",
+      "name": "n_examples=0",
+      "expect": "at chance; no concept signal"
+    },
+    {
+      "id": "N2",
+      "name": "domain-level group permutation",
+      "expect": "null distribution centred at chance",
+      "_never": "row-level permutation; measured FPR 0.2000"
+    },
+    {
+      "id": "N3",
+      "name": "full-prompt leakage",
+      "expect": "0 rows name their own concept in the primary channel"
+    },
+    {
+      "id": "N4",
+      "name": "length-only classifier",
+      "expect": "at chance"
+    },
+    {
+      "id": "N5",
+      "name": "prompt-text-only TF-IDF, concept words masked",
+      "expect": "the probe must beat it"
+    },
+    {
+      "id": "N6",
+      "name": "template-id-only classifier",
+      "expect": "at chance BY CONSTRUCTION; above chance means alignment is broken and the run is VOID"
+    },
+    {
+      "id": "N7",
+      "name": "codeword-only control",
+      "expect": "pipeline sanity"
+    },
+    {
+      "id": "N8",
+      "name": "label permutation through the ENTIRE pipeline including selection",
+      "expect": "calibrated FPR at nominal alpha"
+    }
   ],
-
   "phase4_gates_on_ts116n": [
-    {"id": "G1", "rule": "all three harm pool files verify: shared valences byte-identical to the shared pools file; every harm sentence carries exactly one whole-word target concept and no other concept"},
-    {"id": "G2", "rule": "cell C x semantic_one_word DIFFERS across concepts in 116/116 domains", "_why": "the exact inverse of the 1856/1856 identity that voided R-098 under C-074. This is the gate whose absence caused that error."},
-    {"id": "G3", "rule": "cell A (benign_literal) is byte-identical across concepts", "_why": "the alignment half; without it we are back to A-034.1's three corpora"},
-    {"id": "G4", "rule": "concept-backing audit re-run on ts116n; mass-noun polysemy and hedging rates re-measured, not inherited"},
-    {"id": "G5", "rule": "leakage audit re-run on ts116n; template-id-only classifier at chance"}
+    {
+      "id": "G1",
+      "rule": "all three harm pool files verify: shared valences byte-identical to the shared pools file; every harm sentence carries exactly one whole-word target concept and no other concept"
+    },
+    {
+      "id": "G2",
+      "rule": "cell C x semantic_one_word DIFFERS across concepts in 116/116 domains",
+      "_why": "the exact inverse of the 1856/1856 identity that voided R-098 under C-074. This is the gate whose absence caused that error."
+    },
+    {
+      "id": "G3",
+      "rule": "cell A (benign_literal) is byte-identical across concepts",
+      "_why": "the alignment half; without it we are back to A-034.1's three corpora"
+    },
+    {
+      "id": "G4",
+      "rule": "concept-backing audit re-run on ts116n; mass-noun polysemy and hedging rates re-measured, not inherited"
+    },
+    {
+      "id": "G5",
+      "rule": "leakage audit re-run on ts116n; template-id-only classifier at chance"
+    }
   ],
-
   "artifacts": {
     "extraction": "scripts/dcs_extract_under_ko.py --no-knockout",
     "analyzer": "scripts/dcs_ts_pr046_analysis.py",
     "analyzer_commit": null,
     "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration."
   },
-
-  "kill_condition": "If G2 fails -- cell C does not differ across concepts in 116/116 domains -- the bank is VOID as a concept contrast and NO extraction is submitted. This is exactly what happened to R-098, and the gate exists so it costs CPU rather than GPU."
+  "kill_condition": "If G2 fails -- cell C does not differ across concepts in 116/116 domains -- the bank is VOID as a concept contrast and NO extraction is submitted. This is exactly what happened to R-098, and the gate exists so it costs CPU rather than GPU.",
+  "frozen_at": "2026-09-07",
+  "gates_g1_g3": {
+    "result": "19/19 PASS",
+    "mutations": "4/4 RED",
+    "verifier": "scripts/dcs_ts_verify_ts116n.py",
+    "G2": "115/115 domains differ in cell C x semantic_one_word, both codewords, both non-reference concepts",
+    "G3a": "3680/3680 cell-A concept-free rows byte-identical across all three concepts",
+    "G3b": "1840/1840 forced-choice queries restore exactly under concept->bomb substitution; demo_block and preamble identical"
+  }
 }

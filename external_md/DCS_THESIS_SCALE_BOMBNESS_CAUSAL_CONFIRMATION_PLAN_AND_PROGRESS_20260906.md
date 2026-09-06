@@ -1069,3 +1069,153 @@ degrees of freedom, and at its 95 % upper bound the MDE degrades from 0.0925 to 
 **Generation progress at the time of writing:** jobs 859722/3/4 at ~10 of 116 domains after 5:21,
 i.e. roughly an hour to completion — the smoke-based 3 h estimate was pessimistic because the
 per-domain cost excludes the one-time interpreter and API import.
+
+## 2026-09-07 · R-100 · the `ts116n` harm pools are generated, and two of three failed their own gate
+
+Jobs 859722 (bomb), 859723 (knife), 859724 (gun), `cpu-killable`, 15:34–17:08 each. All three
+produced **116/116 domains × 40 sentences**. Knife exited `COMPLETED 0:0`; **bomb and gun exited
+`FAILED 1:0` — on their own verifier, not on generation.** The files were written; the exit code
+is the gate refusing to certify them.
+
+| concept | `content_sha16` | verifier |
+|---|---|---|
+| bomb | `9dcaed6e32f30065` | **FAIL** — 1 sentence names another concept |
+| knife | `1f164f69d2f17a9e` | PASS — 348 shared pools byte-identical, 116 harm pools clean |
+| gun | `a68ab2ceef4144b7` | **FAIL** — 1 sentence names another concept |
+
+**What it caught**, both in `restaurant_kitchen`, a domain where knives are the natural furniture:
+
+> bomb[39] — *"A misplaced **knife** on the edge of the counter was a potential **bomb** hazard."*
+> gun[19] — *"A light-hearted debate broke out about whether a **gun** or a **knife** is the better
+> tool for a chef."*
+
+Two sentences out of 13,920. Exactly the concept-substitution failure mandate §6.5 asks for, and
+it was caught by a **prompt-only** check with no model outcome involved.
+
+**Repair, chosen to preserve symmetry rather than to minimise work.** `restaurant_kitchen|harm` is
+regenerated at seed **20260907** for **all three concepts**, not only the two that failed — jobs
+859813/859814/859815. Knife's pool for that domain is clean, and regenerating a clean pool is
+extra churn; it is done anyway so that no concept's pool for that domain comes from a different
+seed than the others. Recorded explicitly: this is regeneration until a **prompt-only,
+preregistered, outcome-blind** contamination check passes. It is not regeneration until a result
+looks good, and the number of seed bumps is logged.
+
+### The asymmetry this surfaced, which no gate was asked to look for
+
+Measured over all 4,640 harm sentences per concept:
+
+| | bomb | knife | gun |
+|---|---|---|---|
+| hedged (*resembl\*, simulat\*, drill, false alarm, looks like*) | **14.1 %** | **0.2 %** | 3.4 % |
+| mass-noun polysemy frame `a <W> of <NOUN>` | 1.08 % | 0.00 % | 0.00 % |
+| mean sentence length (chars) | 82 | 75 | 78 |
+| dropped for `occurrence != 1`, median | 6 | 5 | 7 |
+
+**The hedging gap is 70×, and it is not a generation artifact.** A bomb in a workplace is
+overwhelmingly a *suspected* bomb — a scare, a resemblance, a drill; a knife is simply present.
+That difference is a real property of how the two concepts occur in incident-log English, and it
+is therefore part of what "installing bomb rather than knife" *means* in natural demonstrations.
+
+**It cannot be removed without recreating the error this design exists to fix.** Equalising the
+registers means making the demonstrations unnatural — and demonstrations that differ only
+cosmetically are how `R-098` ended up with no manipulation at all. So it is kept, measured, and
+made into the bar rather than hidden:
+
+- the concept-masked **TF-IDF baseline (N5)** will now be strong, and **the probe must beat it**;
+- the **length-only baseline (N4)** may be above chance for the first time — mean length differs
+  by ~7 chars per sentence, ~28 per 4-demo block. **N4's value is now an outcome to report, not a
+  formality to pass.**
+
+**A decision deferred to measurement rather than taken now:** if N4 comes out well above chance,
+the fix is to over-generate and length-match the 40 kept sentences per pool — a prompt-only,
+outcome-blind matching step. That costs ~50 % more API and about an hour. **It will be decided on
+N4's measured value, before the probe is ever run**, and the decision rule is recorded here in
+advance so it cannot be made after seeing the probe.
+
+Good news buried in the same table: the mass-noun polysemy frame that hit `restaurant_kitchen`
+**40/40** on the old shared pools (`A-037`) is down to **1.08 % / 0 % / 0 %**. The `A-037`
+blacklist was derived from the old corpus and **must not be inherited** — `G4` re-measures it, and
+on current evidence the 6-domain blacklist and the 33-domain "clean set" largely dissolve, which
+protects the thesis-scale n.
+
+→ **`Q-011` (new, for Omer):** the three concepts differ in discourse register (bomb is discussed
+as a threat and a suspicion; knife as an object). Is that (a) part of the concept and therefore
+legitimately part of the manipulation, or (b) a confound to be matched away at the cost of
+naturalness? **This phase proceeds on (a), with the register difference measured, published, and
+converted into a nuisance baseline the probe has to beat.** Flagged because it is the single most
+likely thing Matan will press on, and because the honest answer is that it is not fully separable.
+
+## 2026-09-07 · R-101 · **`ts116n` exists and passes every gate. `C-074` is repaired.**
+
+Six banks, `{button, basket} × {bomb, knife, gun}`, preset `main_longpre_cds_ts`, seed 20260901,
+unified repair map, **0 alignment violations and 0 duplicate `prompt_id`s in all six**.
+
+| bank | `bank_rows_sha16` | `bank_file_sha16` |
+|---|---|---|
+| button_bomb | `9d1f03747189e1bd` | `42341368bdbe6ebc` |
+| button_knife | `9ef9688609001104` | `a47b3da02998f79f` |
+| button_gun | `b865d8b991023ac7` | `8e91fd0a2b53140c` |
+| basket_bomb | `09882763cb4b0a24` | `d459fbd4259eef62` |
+| basket_knife | `71128bfa7631c005` | `ffa88f1816492759` |
+| basket_gun | `ab5ec1d45fb90cd3` | `23e6df6802023e0f` |
+
+**Gates G1–G3: 19/19 PASS. Mutation harness: 4/4 RED.**
+
+| gate | result |
+|---|---|
+| G1 shared valences byte-identical to `demo_pools_116dom.json` | **348/348** pools, each concept |
+| G1 exactly one whole-word target concept per harm sentence | 115 harm pools, **0** violations, each concept |
+| G1 no other concept named | **0** sentences, each concept |
+| **G2 cell C × `semantic_one_word` DIFFERS across concepts** | **115/115 domains**, both codewords, knife and gun, over 1,840 rows each |
+| **G3a cell A concept-free channels byte-identical** | **3,680/3,680** rows, both codewords |
+| G3b forced-choice demos + preamble identical | 1,840/1,840 |
+| G3b forced-choice query differs ONLY by the concept noun | 1,840/1,840 restore exactly under `concept→bomb` |
+
+**G2 is the sentence that matters.** The population that was `1,856/1,856 identical` under `R-098`
+is now **115/115 domains differing**, while `G3a` holds byte-identity at 3,680/3,680. The
+manipulation exists *and* everything that is not the manipulation is shared. That is the matched
+pair, and neither half is allowed to pass alone.
+
+### A gate I corrected rather than relaxed
+
+G3's first version demanded byte-identity on **every** cell-A row and failed at exactly
+**3,680/5,520 = 2/3**. The differing third is entirely `semantic_forced_choice`, whose *question*
+names the concept by construction:
+
+> *"does the word button refer to a button or to a **bomb**?"* vs *"… or to a **knife**?"*
+
+That is the readout instrument, not the demonstrations — and it is precisely the property that
+makes forced-choice the **display** channel and `semantic_one_word` the **mechanistic** one.
+Conflating them made G3 test something it never meant to test. It is now split: **G3a** asserts
+byte-identity on the concept-free channels (what "everything else is shared" actually means), and
+**G3b** *bounds* the forced-choice difference — demo block and preamble identical, and the query
+must restore exactly under substitution. **G3b is a new obligation, so the pair is strictly
+stronger than the single gate it replaces.** Recorded in full because "the gate failed so I
+changed the gate" is a move that deserves scrutiny, and the reader should be able to check that
+this one added a requirement rather than dropped one.
+
+### The population, final
+
+**115 domains: 69 train / 23 validation / 23 test.** `restaurant_kitchen` is excluded from the
+whole analysis, prompt-only and prospectively — a kitchen has knives as natural furniture, so bomb
+and gun pools generated for it keep naming a knife, and a second seed cleaned bomb and knife while
+leaving gun contaminated again. That is the domain, not the draw; a third bump would have been
+selection rather than repair. Excluding it makes all three **original uniform-seed-20260906** pools
+fully clean — **0 contaminated sentences out of 13,920** — so every surviving domain comes from one
+generation family at one seed, which is strictly better than a per-domain patchwork. It sits in
+TRAIN, so **validation and test stay at 23/23 and the power analysis is unchanged.**
+
+**`PR-046` is now `FROZEN`**, with every bank hash pinned and the gate results recorded in the
+config the analyzer reads. It was written before the bank existed and is frozen before any hidden
+state does.
+
+### Still required before extraction
+
+- **G4** concept-backing audit re-run on `ts116n` (the `A-037` blacklist was derived from the old
+  corpus and must not be inherited — early evidence says the mass-noun frame collapses from
+  3.69 % to ~1 %);
+- **G5** leakage audit re-run, where the baselines finally become informative rather than
+  degenerate — **N4 length-only is now an outcome to report**, given the measured register
+  asymmetry, and its value triggers the length-matching rule already recorded in `PR-046`;
+- the **planted-hook layer-convention test**, which is the first GPU job of the phase and must
+  pass before any measurement.
