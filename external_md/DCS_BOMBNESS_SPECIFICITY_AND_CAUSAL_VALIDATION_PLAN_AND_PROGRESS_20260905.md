@@ -3830,3 +3830,79 @@ test-set selection instead of the real design, which would have "confirmed" the 
 **through four sections of argument in both directions.** ⇒ Verification of the *number* was solid
 while inference *about* the number was not.
 
+
+---
+
+## §55 — `DCS-PR-040` — PREREGISTRATION (PHASE 5, gate `R5`): does the knockout destroy the CONCEPT signal?
+
+**Written 2026-09-06 before the capture bridge exists and before any knocked-out state has been
+captured.** `Q-005` is answered: the bridge is built. This is Matan's **question 2** and the brief's
+§12 gate **`R5`**.
+
+### 55.1 Question
+
+`R-086` established a **decodability** result: a probe on the codeword's L6–14 state identifies which
+concept was installed (0.7485 vs 0.333, 6/6 domains, verified). `A-025` `F-3` (arXiv 2605.04061)
+is the standing warning that **probing accuracy need not predict causal importance** — *0 % task
+transfer despite 100 % probing accuracy*. ⇒ **Does the demonstration→query knockout that destroys the
+forced-choice readout (`R-010`/`R-011`) also destroy the concept-identity signal?**
+
+### 55.2 Design — the probe procedure is FROZEN and REUSED UNCHANGED
+
+| field | value |
+|---|---|
+| banks | `button_{bomb,knife,gun}` (`club` excluded from the primary, `A-020` §8.3) |
+| population | cell `C`, `semantic_one_word`, `n_examples ∈ {4,8}`, `C-053` §28.1 exclusion ⇒ **228 rows/class, 6 domains** |
+| intervention | `demo_all` attention knockout, band **L6–14**, `AllQueryAttentionKnockout` — the class every committed knockout artifact used, blocking from **every** query row ⇒ the whole-query (`KO-3`) scope |
+| attention | ⛔ **eager, forced** |
+| capture | `codeword_last`, layers 6–14, `block L == hidden_states[L+1]` |
+| probe | ⛔ **`scripts/dcs_bombness_specificity.py` UNCHANGED** — train on **BASELINE** cell `B`, layer/`C` selected on cell `B`, leave-one-domain-out |
+| test set | **KNOCKED-OUT** cell `C` |
+
+### 55.3 THE SINGLE PRIMARY
+
+Independence unit **domain, n = 6** ⇒ sign-test floor **2/2⁶ = 0.03125**; ⛔ any Holm family with
+m ≥ 2 is **UNINFORMATIVE BY CONSTRUCTION**. **One test:**
+
+> `drop(d) = acc_baseline(d) − acc_knockout(d)` per domain. Two-sided sign test, **n = 6, m = 1**.
+
+Reference: baseline mean **0.7485**, chance **0.3333**; the full available drop is **0.4152**.
+
+### 55.4 Declared outcomes, before the data
+
+* **`R5-PASS` (signal destroyed)** — `drop` positive in **6/6** domains (p = 0.031) **and** mean
+  knockout accuracy **≤ 0.5410** (i.e. ≥ 50 % of the way to chance).
+* **`R5-FAIL` (signal survives)** — sign test fails **and** mean knockout accuracy **≥ 0.6654**
+  (≤ 20 % of the way to chance).
+* **`CANNOT ANSWER`** — anything between. ⛔ Not a null.
+* **`VOID`** — liveness assertion fails, realised n ≠ 228/class, non-uniform domain loss, or the
+  knocked-out cache fails to bind to its own run.
+
+### 55.5 ⛔ THE ALTERNATIVE EXPLANATION, declared now — and the control that separates it
+
+⛔ A drop does **NOT** by itself mean the concept information was destroyed. The knockout may simply
+move the states **off the manifold the baseline-trained probe knows**, in which case the information
+could still be present in a different basis. ⇒ **Mandatory secondary, declared here:**
+
+> **train on KNOCKED-OUT data, test on KNOCKED-OUT data** (same LOO-domain folds).
+> * If **that also collapses** ⇒ the concept information is **gone**.
+> * If **that still classifies** ⇒ the information is **present but re-based**, and ⛔ `R5-PASS` may
+>   **NOT** be reported as "the knockout destroys the concept representation" — only as
+>   "the baseline-trained readout no longer finds it".
+
+⚠ This secondary carries **no p-value** (m = 1 is spent on the primary) and is read on magnitude only.
+
+### 55.6 What this CANNOT settle
+
+⛔ **No dose-matched control is feasible on this bank** (`B-018`) ⇒ conditional on `R-080`, ⛔ not
+independent evidence that demonstration keys specifically matter. ⛔ One model, one codeword, one
+band, 6 domains. ⛔ And `R5` is about the **representation**; it says nothing about whether downstream
+**behaviour** uses it (that is PHASE 7, gate `R8`, still unrun).
+
+### 55.7 Kill criteria
+
+⛔ If the bridge's knockout-**disabled** mode does **not** reproduce the existing baseline cache
+(`bombspec_button_bomb_20260905_212802_2909400`) to high precision, the capture site or the layer
+convention is wrong ⇒ **the bridge is VOID and no `R5` result may be read from it.** That check runs
+**before** the knocked-out arms are submitted.
+
