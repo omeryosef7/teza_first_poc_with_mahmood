@@ -463,6 +463,25 @@ def judge(expectation, res):
             return False, f"expected blindness, but the verifier failed {res['failed']}"
         if len(res["passed"]) != len(ALL_CHECKS):
             return False, f"only {len(res['passed'])}/{len(ALL_CHECKS)} checks even ran"
+        # C-070 (H-2): `judge` never read the PRODUCER verdict, so a corruption whose hole
+        # had been FIXED still scored SURVIVES -- the producer announced
+        # "VOID — length-only control WAS NOT COMPUTED" in plain text while this harness
+        # printed "NOT CAUGHT" in the same run. A survivor is a blind spot only if the
+        # corrupted artifacts still LOOK CLEAN.
+        #
+        # ⛔ ONLY `VOID` COUNTS AS SELF-ANNOUNCING, and the first version of this fix got
+        # that wrong. VOID means "the run did not run as specified" -- the artifacts confess.
+        # `NOT ATTRIBUTABLE` and `CANNOT ANSWER` are legitimate SCIENTIFIC verdicts that a
+        # perfectly clean run can reach, and treating them as confessions flipped X4 to NOT
+        # AS DECLARED even though X4's blind spot is real and demonstrated (its own evidence
+        # line: "§23.5 clause 3 (3-way p <= 0.05): now MET on rows that carry no class
+        # signal"). Measured, not assumed: X4's verdict is
+        # "NOT ATTRIBUTABLE — 3-way clears, bomb-absent control does not".
+        v = str(res.get("verdict") or "")
+        if v.startswith("VOID"):
+            return False, (f"SELF-ANNOUNCING: the producer verdict is now {v!r}. A VOID says "
+                           f"the run did not run as specified, so the artifacts do not look "
+                           f"clean and this is not a verifier blind spot")
         return True, f"the verifier printed VERIFIED — all {len(ALL_CHECKS)} checks PASS"
     want = expectation.split(":", 1)[1]
     if want in res["failed"]:
@@ -487,6 +506,17 @@ def run_mutations(work, verbose=True, only=None, report_path=None):
     if not clean_ok:
         print("⛔ the unmutated fixture does not verify — no attack result below would mean "
               "anything.")
+        return 1
+    # C-070 (H-1): `ok` starts True and nothing required `attacks` to be non-empty, so
+    # `--only NOPE` printed "VERIFIER BREACHED" over 0/0 attacks and 0/0 positive controls
+    # at exit 0. A verdict computed from a variable never set to failure is this project's
+    # named failure mode, and the harness written to catch it committed it.
+    if not attacks:
+        print("⛔ REFUSING: 0 attacks selected. A harness with nothing to run has no verdict.")
+        return 1
+    if not any(a[1].startswith("CAUGHT") for a in attacks):
+        print("⛔ REFUSING: the selection contains NO positive control. Without one, a "
+              "survivor cannot be told apart from a rig that never fires.")
         return 1
     print(f"[rig] {len(attacks)} attacks to run\n")
 
@@ -529,6 +559,13 @@ def run_mutations(work, verbose=True, only=None, report_path=None):
             json.dump(dict(target=TARGET, checks=ALL_CHECKS, results=results), fh, indent=1,
                       default=str)
         print(f"[write] {report_path}")
+    # C-070 (H-1): the controls must actually FIRE before any survivor may be quoted. The
+    # harness printed that sentence as advice and then left it out of its own verdict.
+    n_ctrl_ok = sum(1 for r in ctrl if r["as_declared"])
+    if ctrl and n_ctrl_ok != len(ctrl):
+        ok = False
+        print(f"⛔ {len(ctrl) - n_ctrl_ok} of {len(ctrl)} POSITIVE CONTROLS DID NOT FIRE — "
+              f"the rig is not demonstrably alive, so no survivor above may be quoted.")
     print("\n" + ("⛔ VERIFIER BREACHED — every declared corruption behaved exactly as declared.\n"
                   "   dcs_verify_pr035.py is blind to X1..X7; §28.9's promotion gate is NOT yet\n"
                   "   satisfied by it, and in particular the P2 PRIMARY is never recomputed."

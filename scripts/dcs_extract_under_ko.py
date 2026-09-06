@@ -250,7 +250,7 @@ def assert_scope_narrows(scope: str, expected_rows: int, legacy_rows: int, promp
 
 
 def assert_row_edits(stats: Dict, *, n_band_layers: int, expected_rows: int, head_mult: Optional[int],
-                     prompt_id: str) -> int:
+                     prompt_id: str, legal_head_mults: Optional[tuple] = None) -> int:
     """Check ONE row's hook counters against the closed form; return the head multiplier.
 
     `expected_rows` is whichever closed form the run's SCOPE selected
@@ -289,6 +289,19 @@ def assert_row_edits(stats: Dict, *, n_band_layers: int, expected_rows: int, hea
                            f"{n_band_layers} layers x {expected_rows} implied cells; the hook did "
                            f"not edit the rows the key set and the scope imply.")
     got = pe // denom
+    # C-071 (H-8): the multiplier used to be INFERRED from row 0 and never BOUNDED, so any row set
+    # whose scoped/legacy ratio happens to be constant absorbed a silently-widened mask into `got`
+    # and the run completed clean -- an adversarial review drove a WHOLE-QUERY knockout to a valid
+    # DONE.json under the `target_surface_row_only` name, with the only trace a `mask_head_mult` of
+    # 47 that nothing read. The eager 4-D mask is either broadcast [1,1,q,k] (multiplier 1) or
+    # expanded per head (multiplier n_heads); nothing else is a legal shape.
+    if legal_head_mults and got not in legal_head_mults:
+        raise RuntimeError(
+            f"{prompt_id}: mask head multiplier {got} is not a legal mask shape "
+            f"(expected one of {legal_head_mults}: 1 for a broadcast [1,1,q,k] eager mask, "
+            f"n_heads for an expanded one). A multiplier outside that set means the edited cell "
+            f"count does not decompose as layers x implied-rows x heads, i.e. the mask edited "
+            f"rows the declared scope does not imply. Refusing to capture this row.")
     if head_mult is not None and got != head_mult:
         raise RuntimeError(f"{prompt_id}: mask head multiplier changed mid-run ({got} vs "
                            f"{head_mult}); the mask shape is not stable and the counter no longer "
@@ -431,6 +444,12 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     knock_live = sb.new_knockout_live() if knockout else None
     cache: Dict[str, torch.Tensor] = {}
     head_mult: Optional[int] = None
+    # C-071 (H-8): the only legal mask shapes for the eager 4-D path. Read from the MODEL's
+    # own config rather than restated, so it cannot drift from the architecture in use; if
+    # the field is absent the bound is simply not applied (the mid-run stability check at
+    # assert_row_edits still holds), because a guessed n_heads would be worse than none.
+    _nh = getattr(getattr(lm.model, "config", None), "num_attention_heads", None)
+    legal_head_mults = (1, int(_nh)) if isinstance(_nh, int) and _nh > 0 else None
     n_ok = 0
     n_keys_hist: List[int] = []
     skip_reasons: Dict[str, int] = collections.defaultdict(int)
@@ -515,7 +534,8 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
                     hs = eb.forward_hidden(lm, ids, _diag=diag)
                 head_mult = assert_row_edits(stats, n_band_layers=len(band),
                                              expected_rows=exp_rows, head_mult=head_mult,
-                                             prompt_id=pid)
+                                             prompt_id=pid,
+                                             legal_head_mults=legal_head_mults)
                 ks, bad = sb.record_knockout_row(knock_live, scope, stats,
                                                  n_demo_positions=len(dk), readout=True)
                 if bad:

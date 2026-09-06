@@ -5211,3 +5211,71 @@ carve-out exists anywhere** in the scope, span, key, population or exclusion log
 the arithmetic floor at `n_perm = 200`, so it is checkable only as *"no permutation reached the
 observed mean."* ⚠ §73.1 records two prior reproductions; this review deliberately spent its budget
 on the accuracies instead. ⛔ **Recorded as a gap, not closed.**
+
+---
+
+## §75 — `DCS-C-071` — the four verifier harnesses hardened, and ⛔ MY OWN `H-2` FIX WAS TOO BROAD
+
+§74.5 recorded `H-1`–`H-4` as *"recorded, not fixed"*. ⚠ They are **verification infrastructure whose
+failure mode is exactly the class that bit this project twice** (`C-055` seven corruptions, `C-056`
+derived-field circularity), so leaving them recorded was the wrong call. All four are now fixed, and
+⛔ **one of my fixes was wrong and was caught by running it.**
+
+### 75.1 What was fixed
+
+| id | defect | fix |
+|---|---|---|
+| `H-1` | `--only NOPE` printed **"⛔ VERIFIER BREACHED"** over **0/0 attacks and 0/0 controls**, exit 0 | refuses an empty attack set, refuses a selection with **no positive control**, and ⛔ **`ok = False` when any control fails to fire** — the harness printed *"if these do not fire, the survivors prove nothing"* as advice and then left it out of its own verdict |
+| `H-2` | a survivor was credited without ever reading the **producer's** verdict | a `SURVIVES` credit now requires the corrupted artifacts to still **look clean** |
+| `H-3` | the kladder harness had **no vacuous-mutation guard**, so a zero-byte corruption was credited as a confirmed blind spot; and `res["passed"]` counted a **not-run** check as passed | `_tree_digest` before/after + a full-coverage requirement, matching the `pr035` harness |
+| `H-4` | `C5_FOLD_DISCIPLINE` and `C7_INDEPENDENCE_UNIT` **skipped** nodes lacking the field they check and then **passed over the empty set** | both **FAIL when they bind to nothing** |
+| `M-12` | `C3_CONFIG_IDENTITY` compared signatures for **equality** and never for **presence** — 8 metadata files with `model`/`dtype`/`seed` stripped agree perfectly on `None` and PASSED | identity fields must **exist**, not merely match |
+| `M-12` | the header pinned the producer at `commit 1483f9c1, sha256 50e2dde6…`; the file is now `af4353a0…` | ⛔ **removed rather than refreshed** — nothing ever read it, and a stale pin in a verifier header is worse than none because a reader takes it for a checked fact |
+
+Verified: `dcs_verify_pr035.py` still **VERIFIED** on the real artifacts, its own harness still
+**11/11 CAUGHT by designated check**, both red-team `--self-test`s still pass, the kladder harness
+still reports **7/7 with 2/2 controls firing** *with the vacuous guard active*, and the two `H-1`
+refusals fire with **exit code 1**.
+
+### 75.2 ⛔ `C-071` — my `H-2` fix flipped a REAL blind spot to "not as declared"
+
+The first version refused a `SURVIVES` credit when the producer verdict contained `VOID` **or**
+`NOT ATTRIBUTABLE` **or** `CANNOT`. ⇒ Running it, `X4` flipped from `AS DECLARED` to
+⛔ **NOT AS DECLARED**, and the harness went `HARNESS INCONCLUSIVE`.
+
+⚠ **I did not accept that.** I read the attack's own output:
+
+```
+X4  [SURVIVES]  ⛔ NOT AS DECLARED
+    corruption : (layer, C) grid-searched on the PRIMARY's own test labels:
+                 acc 0.2953 -> 0.3787,  p 0.9901 -> 0.0488
+    producer verdict now : 'NOT ATTRIBUTABLE — 3-way clears, bomb-absent control does not'
+    checks that FAILED   : NONE — all 14 passed
+    . §23.5 clause 3 (3-way p <= 0.05): now MET on rows that carry no class signal
+```
+
+⇒ ⛔ **`X4`'s blind spot is REAL** — the §28.2 defect takes pure noise from `p = 0.99` to
+`p = 0.049` and **all fourteen checks pass**. ⛔ **My test was wrong, not `X4`.**
+
+**The distinction, which is the point:**
+
+* ⛔ `VOID` means *"the run did not run as specified"* — ⚠ **the artifacts confess.** That is the case
+  the reviewer actually demonstrated (`'VOID — length-only control WAS NOT COMPUTED'`), and it is
+  genuinely not a verifier blind spot.
+* ⚠ `NOT ATTRIBUTABLE` and `CANNOT ANSWER` are **legitimate scientific verdicts a perfectly clean run
+  can reach.** ⛔ Treating them as confessions conflates *"the study concluded something negative"*
+  with *"the artifacts announce they are corrupt"* — and this phase has spent §33, §61, §64, §69 and
+  §72 insisting those are different things. ⛔ **I then wrote a test that assumed they were the
+  same.**
+
+⇒ Narrowed to `verdict.startswith("VOID")`. ✅ The reviewer's `H-2` scenario is **still caught**;
+`X4` is restored.
+
+### 75.3 ⚠ The pattern, stated because it has now happened twice in one day
+
+⛔ `C-069` fix #2 replaced an unconditional `CANNOT ANSWER` with `setdefault(..., False)` — **the same
+defect with an extra keystroke** (`C-070` §74.4). ⛔ `C-071` here wrote a test that classified two
+legitimate verdicts as corruption. ⚠ **Both fixes were written for real defects, and both were wrong
+in the same direction: too eager to declare something broken.** ⇒ ⛔ **A fix is not verified by having
+been written.** Both were caught only by **running the thing afterwards and reading what it printed**
+— which is the same rule this phase applies to results, applied to repairs.

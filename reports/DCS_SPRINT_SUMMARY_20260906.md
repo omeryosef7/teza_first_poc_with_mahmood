@@ -2,7 +2,7 @@
 
 **Scope.** The DCS phase (Doublespeak Concept-Specific Bombness + surgical causal validation) as
 recorded in `external_md/DCS_BOMBNESS_SPECIFICITY_AND_CAUSAL_VALIDATION_PLAN_AND_PROGRESS_20260905.md`,
-§§1–71. This file is a **new dated version**. It does not edit and does not delete
+§§1–75. This file is a **new dated version**. It does not edit and does not delete
 `reports/SPRINT_SUMMARY_2026-09-02_TO_09-05.md`, which covers the earlier window and stops before
 every headline below.
 
@@ -640,7 +640,11 @@ Binding on this document and on anything derived from it.
 17. ⛔ *"The concept survives even when its own word is blocked"* from §13 — that readout is at
     **ceiling** and measures lexical identity (§69.3).
 18. ⛔ *"Bomb installs ~3× harder than any hard negative"* — it is **2.03×** against club.
-19. ⛔ Any novelty claim resting on a search that returned nothing — the query-row-threshold axis
+19. ⛔ *"Selection maximises cell-`B` accuracy"* — it does not; the surface is flat at 1.0 and the
+    pick is a tie-break (`C-070`).
+20. ⛔ *"The result is robust to hyper-parameters"* as a **preregistered** check — the 36-point sweep
+    is **post-hoc**, run in response to a defect (§74.2).
+21. ⛔ Any novelty claim resting on a search that returned nothing — the query-row-threshold axis
     returned nothing on target, and that is recorded as a **null search, not evidence of novelty**.
 
 ---
@@ -653,8 +657,19 @@ Every number above is quoted from the phase log
 (`B-019`), §43 (`R-085`), §44/§50/§51 (`R-086`, `C-058` retracted), §48 (`R-088`), §54 (`R-089`),
 §56 (`R-090`), §57 (`A-031`/`C-064`), §58 (`PR-040a`), §59 (`R-091`), §61 (`R-092`), §62 (`C-066`),
 §63 (`PR-040b`), §64 (`R-093`), §65 (`PR-043`), §66 (`R-093a`), §67 (`PR-044`), §68
-(`R-094`/`C-067`), §69 (`R-095`/`C-068`), §70 (`PR-045`), §71 (`R-096`), plus PHASE 7 (`PR-042`).
-No number in this file was recomputed for it; nothing here is a new result.
+(`R-094`/`C-067`), §69 (`R-095`/`C-068`), §70 (`PR-045`), §71 (`R-096`), §72 (`R-097`, PHASE 7),
+§73 (`A-032`/`C-069`), §74 (`A-033`/`C-070`), §75 (`C-071`).
+No number in this file was recomputed for it; nothing here is a new result — ⚠ with one exception,
+declared: the 36-point grid sweep in §1's selection caveat was run **for this correction** and is
+**post-hoc descriptive with no p-value**.
+
+⚠ **Two audit findings that bear on how much weight the verification chain carries.** (1) §74.5:
+four verifier harnesses contained checks that could not fail — one printed *"VERIFIER BREACHED"*
+over **zero attacks**, one credited a **zero-byte** corruption as a confirmed blind spot, and two
+**passed over the empty set**. All are fixed (§75.1), but the earlier verification passes ran with
+them in place. (2) §75.3: **two repairs written the same day were themselves wrong in the same
+direction** — too eager to declare something broken — and both were caught only by *running them
+afterwards*. ⛔ **A fix is not verified by having been written.**
 
 ⚠ **`C-067` (§68.3), which §5 depends on:** the leave-one-block-out (template-family) probe is
 **UNINTERPRETABLE**. Its null mean is **0.8494**, not chance 0.3333, because LOBO folds on

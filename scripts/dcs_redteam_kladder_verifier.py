@@ -389,25 +389,39 @@ def run_attack(name, fn, rebuild):
                         detail="clean fixture does not pass; attack result is meaningless",
                         evidence={})
 
+        # C-070 (H-3): this harness had NO vacuous-mutation guard (the pr035 one does), so
+        # a corruption that rewrote byte-identical JSON was credited as a confirmed blind
+        # spot -- C-049 §22.5's failure recurring inside the harness written to prevent it.
+        before = _tree_digest(root)
         out = fn(env)
         detail, evidence = out if isinstance(out, tuple) else (str(out), {})
         if rebuild:
             rebuild_producer(env)
         env.published = pinned
+        changed = _tree_digest(root) != before
 
         rep = V.verify(env, verbose=False)
         return dict(name=name, precondition_ok=True, failed=list(rep.failed_ids),
                     passed=[c for c in ALL_CHECKS if c not in rep.failed_ids],
-                    detail=detail, evidence=evidence,
+                    detail=detail, evidence=evidence, bytes_changed=changed,
                     failure_text={cid: rep.checks[cid].failures[:3] for cid in rep.failed_ids})
 
 
 def judge(expectation, res):
     if not res["precondition_ok"]:
         return False, "clean fixture failed before the corruption was applied"
+    if not res.get("bytes_changed", True):
+        return False, "the corruption changed NOTHING on disk — a vacuous attack is not a finding"
     if expectation == "SURVIVES":
         if res["failed"]:
             return False, f"expected the verifier to be blind, but it failed {res['failed']}"
+        # C-070 (H-3): `res["passed"]` counted a NOT-RUN check as passed and judge never
+        # consulted it, so the banner's "ALL SEVEN of its checks PASSING" was not what the
+        # code tested.
+        if len(res.get("passed", [])) != len(ALL_CHECKS):
+            return False, (f"only {len(res.get('passed', []))}/{len(ALL_CHECKS)} checks "
+                           f"are accounted for; a survivor requires ALL of them to have "
+                           f"run and passed")
         return True, "the verifier printed VERIFIED on corrupted artifacts"
     want = expectation.split(":", 1)[1]
     if want in res["failed"]:
