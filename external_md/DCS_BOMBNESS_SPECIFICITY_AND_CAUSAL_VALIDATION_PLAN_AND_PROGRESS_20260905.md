@@ -4225,3 +4225,68 @@ differs. ⇒ A pass shows the concept signal survives a **lexical substitution**
 generalises to a new corpus, a new template family, or a new concept. ⚠ And like `R-086` it is a
 **decodability** result: gate `R5`, running now, is the causal one.
 
+
+---
+
+## §61 — `DCS-R-092` — ⛔ GATE `R3` **FAILS**. The concept signal exists in both codewords and does NOT transfer between them.
+
+`scripts/dcs_pr041_lexical_transfer.py`, committed before it ran. Populations verified 228/class on
+both sides, bank binding asserted per class, layers matched.
+
+### 61.1 The result
+
+Train on **button** cell `C`, test on **basket** cell `C`, selection on **button** cell `B`,
+leave-one-domain-out across codewords:
+
+| domain | held-out basket accuracy |
+|---|---|
+| city_bridge | 0.6754 |
+| instructional | 0.3509 |
+| news_report | 0.3509 |
+| farm_storage | **0.3333** ⇐ exactly chance |
+| game_manual | **0.3333** ⇐ exactly chance |
+| lab_safety | **0.3333** ⇐ exactly chance |
+| **mean** | **0.3962** (chance 0.3333) |
+
+⇒ ⛔ **`R3-FAIL`** — 3/6 domains above chance, mean **0.3962**, below the preregistered 0.4164 bar.
+⚠ Every fold picked the **same** `(L=6, C=0.01)`, and **three domains sit at exactly 1/3**, i.e. the
+probe collapsed to predicting a single class there.
+
+### 61.2 ⛔ But the signal IS present in basket — it is the TRANSFER that fails
+
+The frozen analyzer's `P2_basket_lexical_transfer` is **basket-trained and basket-tested**
+(`C-064` §57.2 — mislabelled, and it may not be cited as transfer). ⚠ As what it actually is, it is
+informative: **0.6974, above chance in 6/6 domains** (0.763, 0.842, 0.500, 0.842, 0.711, 0.526).
+
+⇒ ⛔ **Basket states carry the concept signal perfectly well. A basket-trained probe reads it. A
+button-trained probe does not.**
+
+⇒ ⚠ **The concept signal is CODEWORD-SPECIFIC: present in both, encoded in different directions.**
+That is a sharper statement than either "it generalises" or "it does not exist", and neither the
+frozen analyzer nor `R-086` could have produced it.
+
+### 61.3 ⛔ A statistical caveat that must travel
+
+⚠ Three domains land at **exactly** chance ⇒ their signed deviations are **zero** ⇒ the sign test
+drops them, `n` falls from 6 to **3**, and the attainable floor rises from **0.03125 to 0.25**.
+⇒ ⛔ **The significance half of this verdict is UNINFORMATIVE BY CONSTRUCTION** — p = 0.25 *is* the
+floor. ⛔ The verdict rests on the **magnitude** criterion (0.3962 < 0.4164), which `PR-041` §60.4
+declared in advance. ⚠ Recorded because *"sign test fails"* would otherwise read as evidence when it
+is arithmetic.
+
+### 61.4 What this does to `R-086`
+
+⛔ **`R-086` is bounded, not overturned.** Its claim — *a probe on the codeword's L6–14 state
+identifies which concept was installed, 0.7485, 6/6 held-out domains* — is unchanged and remains
+independently verified. ⇒ What `R-092` adds is that this holds **within a codeword**, and the
+learned direction is **not shared across codewords**.
+
+⛔ **Consequences for wording, effective immediately:**
+* ⛔ *"the model represents the codeword as BOMB"* — over-general. It is *"the state of **this**
+  codeword, in **this** lexical setting, carries which concept was installed."*
+* ⛔ Gate `R3` **FAILS**, and §12's gate family therefore **cannot** be reported as fully passed.
+* ⚠ `R-091`'s direction result claimed lexical transfer at **0.9204** descriptively. ⛔ That is a
+  **different instrument** (a diff-in-means direction, not a trained classifier) and the two
+  disagree sharply. ⇒ ⛔ **Neither may be cited as "the" transfer result** until the disagreement is
+  understood; it is now the most interesting open question this phase has produced.
+
