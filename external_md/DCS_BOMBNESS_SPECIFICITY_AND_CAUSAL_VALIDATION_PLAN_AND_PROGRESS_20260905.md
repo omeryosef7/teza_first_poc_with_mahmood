@@ -3906,3 +3906,56 @@ band, 6 domains. ⛔ And `R5` is about the **representation**; it says nothing a
 convention is wrong ⇒ **the bridge is VOID and no `R5` result may be read from it.** That check runs
 **before** the knocked-out arms are submitted.
 
+
+---
+
+## §56 — `DCS-R-090` — the complete calibration table, and the one design lesson worth keeping
+
+Job **854780** finished (3 h 14 m). All four procedures × 2 class-counts × {pure noise, planted
+signal}, same synthetic data, same seeds, 100 reps, `n_perm` = 100.
+
+| | | **FPR** (noise, must be ≤ .05) | **power** (planted) |
+|---|---|---|---|
+| **3-class** | **cell `B` + ORIGINAL** ⇐ *the primary, as run* | ✅ **0.030** | **1.000** |
+| | cell `B` + EXCLUDING | 0.030 | 1.000 |
+| | test set + ORIGINAL | ⛔ 0.100 | 1.000 |
+| | test set + EXCLUDING | ⛔ 0.100 | 1.000 |
+| **2-class** | **cell `B` + ORIGINAL** ⇐ *clause 4, as run* | ✅ **0.020** | 0.760 |
+| | cell `B` + EXCLUDING | 0.050 | 0.940 |
+| | test set + ORIGINAL | ⛔ 0.090 | 0.840 |
+| | test set + EXCLUDING | ⛔ 0.140 | 0.930 |
+
+### 56.1 What it settles
+
+1. ✅ **Both `PR-035` tests as run are valid and conservative** (0.030, 0.020). `R-089` stands.
+2. ⛔ **The §28.2 defect is the dominant error, not the symmetry.** Moving selection from cell `B` to
+   the test set costs **3.3× the FPR at 3 classes (0.030 → 0.100)** and **4.5× at 2 classes
+   (0.020 → 0.090)**. ⇒ `C-057` was the important finding all along; `C-058`, which I acted on, was
+   not.
+3. ⚠ **At 3 classes the two nulls are indistinguishable on every one of the four measurements.** The
+   symmetry there fires with probability 1/7776 and genuinely does not matter. ⇒ ⛔ `C-058` was not
+   merely wrong in direction — at the class count of the **primary** it was arguing about an effect
+   that **does not exist**.
+4. ⚠ **The cost of the symmetry is POWER, not validity**: 2-class power **0.760 vs 0.940**. ⇒
+   `knife-vs-club` cleared 0.05 through a test running at **76 %** power. Harder, not easier.
+
+### 56.2 ⛔ The design lesson, stated for the paper's methods section
+
+> In a leave-one-group-out design with a **group-permutation** null, **where the hyper-parameters are
+> selected matters far more than which permutations the null contains.** Selecting on the test
+> population and then freezing those picks across the null inflates the false-positive rate 3–5×.
+> Selecting on an independent population makes the same test **conservative**.
+
+⚠ ⛔ **This is a reportable methodological result in its own right**, and it was obtained only because
+a wrong claim of mine forced the measurement. ⛔ It generalises beyond this repo: any probing paper
+that grid-searches a layer on its evaluation set and then permutation-tests it has this defect, and
+the inflation is **large**.
+
+### 56.3 Standing
+
+⛔ **`PR-039` remains UNADOPTED** (`C-062` §51.2) — its only advantage is 2-class power, it changes a
+preregistered statistic, and I proposed it after seeing outcomes. `EXCLUDE_GLOBAL_RELABELS` stays
+**False** by default. ⚠ For a **future, preregistered** 2-class design it is the better choice,
+declared in advance — and §56.1(3) says it is **irrelevant** at 3 classes, so it should not be
+carried into the primary at all.
+
