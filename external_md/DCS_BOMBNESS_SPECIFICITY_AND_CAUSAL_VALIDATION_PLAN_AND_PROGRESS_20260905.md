@@ -2943,3 +2943,61 @@ the brief's §18 ordering makes this a *judge-free endpoint*, not a behavioural 
 `MAPPING-USE-DESTROYED` result would show the explicit reading tracks the pathway — ⛔ **not** that
 downstream attack behaviour uses it (`R-075` remains an underpowered negative).
 
+
+---
+
+## §41 — `DCS-B-019` (blocker) — ⛔ THE MODEL WEIGHTS WERE PURGED FROM SCRATCH. All GPU work is blocked; CPU work is not.
+
+**Discovered 2026-09-06 ~10:20 IDT**, when all three `PR-038` arms failed in **4–47 seconds** with
+
+```
+mkdir: cannot create directory '.../.cache/huggingface': File exists
+```
+
+⚠ That message is misleading and I nearly filed it as a race. It is not. `.cache/huggingface` is a
+**symlink** to `/vol/scratch/omeryosef/hf_cache`, and `mkdir -p` reports *"File exists"* on a
+**DANGLING** symlink. `run_boombness.sh` runs under `set -euo pipefail`, so the job dies there.
+
+### 41.1 What is actually gone
+
+* ⛔ **`/vol/scratch/omeryosef` no longer exists.** `/vol/scratch` itself is mounted and healthy
+  (9.0 T free); other users' directories (`danielsi`, `nirendy`, `roiba`, `yoavkorsade`, `yuyangd`)
+  are present. ⇒ **This user's scratch directory was purged**, not the volume.
+* ⛔ **The Llama-3.1-8B-Instruct weight shards are gone.** The home cache
+  `~/.cache/huggingface/hub/models--meta-llama--Llama-3.1-8B-Instruct` is **8.9 MB** — `config.json`,
+  `tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json` and nothing else. ⇒ the
+  ~16 GB of `.safetensors` lived only on scratch.
+* ⚠ Timing bracket: job **854028 succeeded at 00:24**; the failures begin **~10:20**. So the purge
+  happened inside that window, i.e. **during this session**.
+
+### 41.2 What is and is NOT affected
+
+| | status |
+|---|---|
+| ⛔ **New GPU work** (`PR-038` PHASE 4, any new arm) | **BLOCKED** |
+| ✅ `PR-035` primary (job 854617) | **UNAFFECTED** — it reads rep caches under `outputs/`, needs no model |
+| ✅ Every completed arm on disk | **UNAFFECTED** — `results.jsonl`, caches and logs are under `outputs/` |
+| ✅ Tokenizer-only work (`R-079`'s token table) | unaffected — config/tokenizer survive in the home cache |
+
+⇒ ⛔ **No result is invalidated.** Nothing that already ran needs re-running.
+
+### 41.3 Repair, in progress
+
+Verified before acting: an HF token is present in `.env`, `huggingface.co` returns **HTTP 200** from
+the login node, and `/vol/scratch/omeryosef/hf_cache` was **recreated successfully**. A
+`snapshot_download` of the weights is running in the background.
+
+⚠ ⛔ **This will recur.** Scratch is a purged volume by policy, and the project's `.cache/huggingface`
+symlink points into it, so the next purge silently breaks every GPU job again with the same
+misleading `mkdir` error. ⇒ **`Q-003` for Omer:** should the cache move somewhere durable, or should
+the wrapper gain an explicit *"is the cache symlink live?"* pre-flight that fails with a clear
+message? ⛔ I am not changing the shared wrapper or repointing project infrastructure unilaterally —
+I recreated the missing directory, which restores the documented prior state and nothing more.
+
+### 41.4 ⚠ `PR-038` is SUBMITTED-AND-FAILED, not run
+
+Jobs **854623/854624/854625** and the staggered retry **854626/854627/854628** all failed at the
+`mkdir` line **before loading the model or generating anything**. ⛔ **No partial output exists** and
+none is quarantined, because none was written. `PR-038` §40 stands **unchanged** and will be
+re-submitted once the weights are restored — ⛔ **not** re-specified.
+
