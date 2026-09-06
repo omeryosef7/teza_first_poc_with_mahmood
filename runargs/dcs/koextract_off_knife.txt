@@ -1,0 +1,1 @@
+--bank /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank_button_knife.jsonl --layers 6,7,8,9,10,11,12,13,14 --position codeword_last --model meta-llama/Llama-3.1-8B-Instruct --dtype bfloat16 --seed 20260905 --band 6-14 --arm demo_all --attn-impl eager --no-knockout --tag koextract_off_button_knife
