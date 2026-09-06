@@ -2,7 +2,7 @@
 
 **Scope.** The DCS phase (Doublespeak Concept-Specific Bombness + surgical causal validation) as
 recorded in `external_md/DCS_BOMBNESS_SPECIFICITY_AND_CAUSAL_VALIDATION_PLAN_AND_PROGRESS_20260905.md`,
-§§1–64. This file is a **new dated version**. It does not edit and does not delete
+§§1–71. This file is a **new dated version**. It does not edit and does not delete
 `reports/SPRINT_SUMMARY_2026-09-02_TO_09-05.md`, which covers the earlier window and stops before
 every headline below.
 
@@ -32,7 +32,8 @@ uses `OMP_NUM_THREADS=4`. `OMP_NUM_THREADS=1` elsewhere, for speed only.
 > On **held-out domains**, a linear probe on the codeword's **L6–14** hidden state identifies **which
 > of bomb / knife / gun** the demonstrations installed — **0.7485** against a **0.3333** chance,
 > **6/6** leave-one-domain-out folds, permutation **p = 0.004975** from a test measured to reject
-> noise at **0.030**.
+> noise at **0.030**. ⚠ **`p = 0.004975` IS the attainable floor** at `n_perm = 200` (`1/201`), i.e.
+> the smallest value this test can emit — not a measured tail. §44.1.
 
 | element | value |
 |---|---|
@@ -42,15 +43,23 @@ uses `OMP_NUM_THREADS=4`. `OMP_NUM_THREADS=1` elsewhere, for speed only.
 | length-only control | 0.336 vs null q95 0.488 (does not match) |
 | blocking null (`n_examples = 0`) | 0.3333 at chance, 0/6 domains, p = 1.0 (`R-084`) |
 
-**Four independent reproductions:** the analyzer's own run (854617); an independent recomputation on
-a different seed reproducing all 16 digits; `A-029`'s full verification pass once `V2` was made a
-real check (`A-028` retracted the earlier vacuous `V2 PASS`); and `A-031` §57.1's thread-invariance
-recomputation from banks and caches at both `OMP=4` and `OMP=1` — **identical to 16 digits**.
+**Four independent reproductions** (the producer run is the SOURCE, not one of them):
+
+1. job **854618**, an independent recomputation from banks and caches — **all 16 digits** (§44.1);
+2. `A-029`'s full verification pass once `V2` was made a real check (`A-028` retracted the earlier
+   vacuous `V2 PASS`). ⚠ Its `V4` re-ran the permutation on a **different seed (90613)** and matched
+   **inside a stated Monte-Carlo band** (0.0050 vs 0.004975) — ⛔ **not** to 16 digits, and a
+   different event from (1) (§50.2);
+3. `A-031` §57.1's thread-invariance recomputation at both `OMP=4` and `OMP=1` — **identical to 16
+   digits**;
+4. the `PR-043` re-run (§68.1), a **fifth** exact hit on `0.7485380116959064`.
 
 **Why the bomb-absent control matters:** `R-078` measured installation strength as +13.08 (bomb),
-+6.435 (club), +4.089 (knife), +4.098 (gun, and gun installs in only 4/6 domains). Bomb installs
-~3× harder than any hard negative, so a 3-way probe could in principle separate on *strength* rather
-than *identity*. Knife-vs-club has similar strengths and **contains no bomb term at all**, and it
++6.435 (club), +4.089 (knife), +4.098 (gun, and gun installs in only 4/6 domains). Bomb installs **3.20×** knife
+and **3.19×** gun — but only **2.03×** club (13.084 / 6.435). ⚠ The "~3× harder than any hard
+negative" phrasing inherited from §21 is **wrong against club**; club is the nearest hard negative on
+strength, which is precisely why it is the control. A 3-way probe could in principle separate on
+*strength* rather than *identity*. Knife-vs-club has similar strengths and **contains no bomb term at all**, and it
 separates. That is what licenses "identity, not strength alone".
 
 **Caveats — all of them travel:**
@@ -69,6 +78,21 @@ separates. That is what licenses "identity, not strength alone".
   accuracy across codewords, though the direction does by ranking.
 - ⚠ The 2-class control is **underpowered by construction** (power 0.760 where a symmetry-free null
   reaches 0.940) — clearing 0.0498 was *harder* than the number looks, not easier.
+- ⛔ **The capability gate is VACUOUS.** `train-fold accuracy = 1.0 everywhere`: at 4096 dimensions
+  the probe separates its own training fold perfectly, so `PR-031` §6.6's capability gate is
+  **trivially passed and carries no information** (§44.4).
+- ⚠ **The gun-excluded form, which `R-078` mandated be reported alongside.** The 2-way
+  `{bomb, knife}` primary is **0.9078947368421053**, 6/6 domains, permutation
+  **p = 0.04975124378109453**. §21 requires the primary be reported *both with and without gun*,
+  **neither promoted**. ⛔ It is **not** one of `C-057`'s two invalid instruments.
+- ⛔ **Two pre-declared instruments are ABSENT and are reported as absent, not quietly dropped**
+  (§28.9, §38): §9.3's **4-way-with-`club` secondary** (deleted by the `C-050` edit) and §21.2(2)'s
+  **installation-strength covariate** — which was control (2) of three fixed in advance against the
+  very strength confound this section relies on the club control to answer.
+- ⚠ **`R-082` bounds the K-ladder reading** (§31): over the same 380 prompts, 380/380 with zero
+  variation, **neither occurrence of the codeword ` button` enters the cut until `K = 11`**, while
+  the effect has already reached 100 % of Δ-8 by `K = 8`. ⇒ ⛔ The codeword's own rows are **not in
+  the cut at `K*`**, which is what makes §5's reading precise.
 - ⚠ **One model, one codeword, 6 domains, one layer band.**
 - ⚠ **How close this came to being lost:** a correct, verified headline was overturned by the log's
   own author on a sign error (`C-058`), committed and reported, and recovered only because a
@@ -208,6 +232,8 @@ states, so `argmax` collapses even though the ordering is preserved.
 
 `PR-040` / `PR-040a` / `PR-040b`. Six arms, **zero aborts**, 228/class both sides, 48 selection rows,
 bank binding verified per class, every fold picking `(L=6, C=0.01)`. Analyzer committed at `8cc126b7`
+⚠ **before any arm was analyzed** — five of six arms also landed after that commit; the sixth finished
+writing 9 s earlier, so *"before the arms landed"* is the wrong phrasing for one of six —
 **before** the arms landed. Probe is **`P2`**, clarified in `PR-040b` **before any number was read**
 (`PR-040` §55.2's prose said "train on cell `B`", which is `P1`; the frozen analyzer implements `P2`,
 and all three of `PR-040`'s operative quantities are `P2`'s).
@@ -276,6 +302,72 @@ state.**
   *representation vs behaviour*; this is *representation vs **readout***.
 - ⚠ `game_manual` is weak throughout (0.5526 baseline); `farm_storage` moves the **wrong way**
   (−0.018). **n = 6.**
+
+---
+
+### 4.4 `R-093a` (§66) — the dissociation survives a MATCHED-POPULATION check
+
+Restricting the probe to `PR-037`'s exact three blocks (`core2x2`, `core2x2_slot3`, `role_style`),
+168 rows/class: `ko_off` **0.7361** → `ko_on` **0.6865**, drop **+0.0496** = **12.3 %** of available.
+⚠ **Only 4/6 domains**, with `city_bridge` moving **−0.119** the wrong way. ⚠ On those rows the probe
+retains **~88 %** of its available range, not the **94 %** §4.2 leads with. ⇒ The two arms are the
+same intervention on the same rows; the dissociation is not a population artefact.
+
+### 4.5 ⛔ `C-068` (§69) — `R-093`'s DESCRIPTION must be corrected, though its verdict stands
+
+Gate `R6` re-ran the same probe against a knockout scoped to **only the codeword's own query row**
+(`target_surface_row_only`, 1.7 % of the whole-query dose, exact closed-form liveness on 7560 rows).
+It reproduced `R-093` **to sixteen digits** — every per-domain value. The cause is arithmetic, not
+empirical:
+
+* all six folds pick **`L = 6`**, the **first layer of the `6–14` knockout band**;
+* at the band's first layer no lower layer is perturbed, so the read row's state is a function of
+  unperturbed inputs masked by **its own query row** — and both scopes block the same keys there;
+* measured: `ko_on` vs `ko1` at `L6`, **max abs elementwise difference 0.000e+00** over all 2520
+  shared rows, rising to 0.36 at `L7` and 1.42 at `L14`.
+
+⇒ ⛔ **Gate `R6` is CANNOT ANSWER / UNINFORMATIVE BY CONSTRUCTION** — not a null, not a confirmation.
+⇒ ⚠ **And at `R-093`'s own expense:** at `L = 6`, the only layer any of its folds reads, `R-093`'s
+"whole-query" manipulation is **arithmetically identical to blocking the single codeword row**. The
+verdict (`R5-FAIL`, dissociation) is unchanged; ⛔ the sentence *"destroying the whole
+demonstration→query pathway"* overstates what was in force at the site read.
+
+⚠ **General trap, for the methods section:** *any* band-limited intervention read at the band's
+**first** layer measures only the read row's own mask.
+
+### 4.6 `R-096` (§71) — above the degenerate layer the scopes DO separate
+
+Re-read on layers **7–14** (a structural exclusion derivable from the band definition, applied
+uniformly to both arms and to selection, declared in `PR-045` **before** the numbers):
+
+| | baseline | knockout | drop | domains | of available |
+|---|---|---|---|---|---|
+| `KO-1`, codeword row only | 0.6784 | 0.6594 | **+0.0190** | 4/6 | 5.5 % |
+| `KO-legacy`, whole query | 0.6784 | 0.6418 | **+0.0365** | 5/6 | 10.6 % |
+
+⚠ Dropping `L6` costs the baseline **0.0745** (below the declared 0.10 VOID bar, **narrowly**), so
+these are weaker measurements on a weaker probe. ⛔ **No p-values.** The ratio **0.520** is
+descriptive with no bar. ✅ What it buys: `R-093`'s dissociation **survives** on a grid `L6` cannot
+influence — even the whole-query knockout removes only **10.6 %** of available accuracy.
+
+### 4.7 PHASE 7 / `R8` (`PR-042`) — ⛔ CANNOT ANSWER, and the bound was computed before any ρ
+
+The exact `n = 6` Spearman null over all **720** rank assignments: p-floor **2/720 = 0.002778**, and
+of 18 attainable |ρ| levels **exactly three** reach α — 1.0000, 0.9429, 0.8857; the next rung
+(0.8286) is p = 0.0583 and fails. ⇒ the bound is **Σd² ≤ 4**.
+
+| | |
+|---|---|
+| predictor `x` (per-domain probe drop) reliability | **0.5758** vs 0.50 bar — ✅ **x is NOT at a floor** |
+| outcome A (`mapping_use`) | ⛔ UNUSABLE — blind at baseline (`R-088`, GAP −0.0396 vs bar 1.0) |
+| outcome B (semantic probe) | ⚠ available, but it is the model's **report**, not behaviour (§64.4) |
+| outcome C (attack rate) | ⛔ NOT FEASIBLE — lives on `cds116`, whose shared-**name** domains share **0/672** byte-identical prompts and **3/960** demonstration sentences with this bank, at 10 judged rows/domain (binomial SE 0.158) |
+| attenuation ceiling √(rel_x·rel_y) | **0.6039** < 0.8857, the smallest reachable |ρ| |
+| power under a **perfectly monotone** truth | **0.2501** vs 0.50 bar — ⛔ FAIL |
+
+⇒ ⛔ **`R8` is CANNOT ANSWER for two independent reasons**, the first of them design-level: **no
+behavioural outcome exists on the bank `x` was measured on.** ⛔ ρ = +0.60 (p = 0.242) was computed
+and is **NOT CITABLE IN EITHER DIRECTION**. ⛔ This is not a null; no null model was fitted.
 
 ---
 
@@ -460,16 +552,23 @@ signal}, same synthetic data, same seeds, 100 reps.
 |---|---|
 | `R3` — lexical transfer | ⛔ **FAIL** on the preregistered accuracy statistic (`R-092`); direction transfers by ranking (`C-066`). Previously recorded as **NOT IMPLEMENTED** in the frozen analyzer (`A-031` DECISION 2). |
 | `R5` — does the knockout destroy the concept signal? | ⛔ **`R5-FAIL`** — the signal survives (`R-093`). Informative negative. |
-| `R6` — representation readout under `KO-2` | unrun. The bridge built for `R5` is the path (`A-031` DECISION 4). `KO-2`'s **behavioural** answer is already published (`R-006`/`R-009`) and must not be regenerated. |
-| `R8` / PHASE 7 — does destruction predict behaviour? | unrun. `R-075` stands as an **underpowered negative**, never "no effect". |
-| installation gate (`PR-034` / `R-078`) | **PARTIAL** — bomb/knife/club PASS 6/6; **gun installs inconsistently across domains** (4/6). State it that way, never "gun does not remap". |
+| `R6` — representation readout under `KO-1` | ⛔ **CANNOT ANSWER.** `PR-044` reproduced `R-093` to 16 digits because all six folds pick `L = 6`, the band's **first** layer, where the whole-query and surface-row-only knockouts produce a **bit-identical** tensor at the read row (max abs diff **0.000e+00** over 2520 rows) — `C-068` §69.2. `PR-045`'s layers-7–14 re-read is **descriptive**: `KO-1` +0.0190 vs `KO-legacy` +0.0365, ratio 0.520 (`R-096` §71). ⛔ Neither is a null. `KO-2`'s **behavioural** answer is already published (`R-006`/`R-009`) and must not be regenerated. |
+| §13 — concept signal read at the explicit concept word | ⛔ **CANNOT ANSWER** — baseline **1.0000** in 6/6 domains on both grids. The capture site *is* the token ` bomb`, so the probe reads **lexical identity**; no layer repairs it (§69.3, §71.4). |
+| `R8` / PHASE 7 — does destruction predict behaviour? | ⛔ **CANNOT ANSWER** (`PR-042`, §PHASE 7). No behavioural outcome exists on the bank `x` lives on; power under a **perfectly monotone** truth is **0.2501** against a 0.50 bar, and the attenuation ceiling 0.6039 sits below the smallest |ρ| that can reach α at n = 6 (0.8857). `R-075` stands as an **underpowered negative**, never "no effect". |
+| installation gate (`PR-034` / `R-078`) | **PARTIAL** — bomb/knife/club PASS 6/6; **gun installs inconsistently across domains** (4/6). State it that way, never "gun does not remap". ⛔ `C-060` §46.3 bounds the PASSes: they mean *the demonstrations move the readout toward the concept*, **NOT** *the mapping is installed* — 44/48 bank × domain × `n_examples` cells install, and **6 further cells PASS the paired rule while cell `C`'s own mean log-odds is still negative** (gun/farm_storage/n8 −3.169; club/farm_storage/n4 −1.468; knife/farm_storage/n4 −1.339). |
 | PHASE 4 (`PR-038`) | **CANNOT ANSWER**, closed (`R-088`). |
 
 **Open questions — decisions for Omer / Matan, not for the log:**
 
-- **`Q-001`** — does the aligned rebuild get funded, and on what result? Cell `A` is a different corpus
-  in every concept bank and cells `C`/`F` sit in disjoint template blocks; an aligned bank fixes it,
-  costs real GPU time, and changes the population.
+- **`Q-001`** — does the aligned rebuild get funded, and on what result? ⚠ Cell `A` differs across
+  concept banks **modally, not universally** — `C-060` §46.1 measured it: bomb and club share a
+  **byte-identical cell-`A` demonstration block on 104/696 design cells** and a byte-identical
+  **whole prompt on 82**, every concept pair shows 42–82 whole-prompt collisions, and the cause is
+  9/40 shared benign sentences per domain between `demo_pools.json` and `demo_pools_club.json`.
+  ⛔ **The sentence *"cell `A` is a different corpus in each concept bank"* may not be written
+  unqualified** (§46.1). Cells `C`/`F` do sit in disjoint template blocks, and `A-031` DECISION 3
+  adds that **cell `F` cannot be fixed on this bank at all** (24 rows, one block). An aligned bank
+  fixes both, costs real GPU time, and changes the population.
 - **`Q-002`** — **paper positioning against arXiv 2609.02438**, submitted **2026-09-02**, which
   publishes the representation-vs-behaviour dissociation framing in almost exactly our design shape.
   It does not scoop us (logical validity, not concept remapping; no attack; no attention
@@ -523,7 +622,15 @@ Binding on this document and on anything derived from it.
     basket-tested (`C-064`).
 13. ⛔ Any p-value for the cell-`F` contrast or for `P1`, ever, from these banks (`A-031` DECISIONS 3,
     `C2`).
-14. ⛔ Any novelty claim resting on a search that returned nothing — the query-row-threshold axis
+14. ⛔ *"Cell `A` is a different corpus in each concept bank"* — unqualified. It holds **modally**
+    (250/348 ids), not universally (`C-060` §46.1).
+15. ⛔ *"Gate `R6` passes"* or *"gate `R6` is null"* — `R6` has **no verdict** (`C-068`).
+16. ⛔ *"The codeword's own row accounts for half the causal effect"* — the 0.520 ratio is two drops
+    of 0.019 and 0.037 on a weakened probe, with no p-value and no bar (§71.3).
+17. ⛔ *"The concept survives even when its own word is blocked"* from §13 — that readout is at
+    **ceiling** and measures lexical identity (§69.3).
+18. ⛔ *"Bomb installs ~3× harder than any hard negative"* — it is **2.03×** against club.
+19. ⛔ Any novelty claim resting on a search that returned nothing — the query-row-threshold axis
     returned nothing on target, and that is recorded as a **null search, not evidence of novelty**.
 
 ---
@@ -535,5 +642,13 @@ Every number above is quoted from the phase log
 §21 (`R-078`), §26–§29 (`R-079`/`R-080`/`R-081`), §32 (`A-025` literature), §34 (`R-083`), §41
 (`B-019`), §43 (`R-085`), §44/§50/§51 (`R-086`, `C-058` retracted), §48 (`R-088`), §54 (`R-089`),
 §56 (`R-090`), §57 (`A-031`/`C-064`), §58 (`PR-040a`), §59 (`R-091`), §61 (`R-092`), §62 (`C-066`),
-§63 (`PR-040b`), §64 (`R-093`). No number in this file was recomputed for it; nothing here is a new
-result.
+§63 (`PR-040b`), §64 (`R-093`), §65 (`PR-043`), §66 (`R-093a`), §67 (`PR-044`), §68
+(`R-094`/`C-067`), §69 (`R-095`/`C-068`), §70 (`PR-045`), §71 (`R-096`), plus PHASE 7 (`PR-042`).
+No number in this file was recomputed for it; nothing here is a new result.
+
+⚠ **`C-067` (§68.3), which §5 depends on:** the leave-one-block-out (template-family) probe is
+**UNINTERPRETABLE**. Its null mean is **0.8494**, not chance 0.3333, because LOBO folds on
+`bank_block` while `group_permute` relabels per **domain** — so the relabelling hits train and test
+identically and the classifier simply learns it. ⛔ **The held-out template-family claim has NO VALID
+INSTRUMENT in this phase**; only the held-out **domain** claim (`R-086`) does. ⛔ Its null was **not**
+fixed after the fact (§33, and the `C-062` precedent).

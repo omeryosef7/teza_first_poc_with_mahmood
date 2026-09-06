@@ -7,7 +7,8 @@ Omer's explicit instruction.
 be sent.** That draft says *"`PR-035` is running, we'll have a verdict shortly"*. `PR-035` returned,
 was overturned by us on a sign error, and was restored on a measured false-positive rate. It also
 predates gates `R3` and `R5` entirely. Full current state:
-`reports/DCS_SPRINT_SUMMARY_20260906.md`.
+`reports/DCS_SPRINT_SUMMARY_20260906.md` (revised 2026-09-06, now covering log §§1–71 — it did not
+originally carry §§65–71, and §§4.4–4.7 there change what §4.2's headline is allowed to say).
 
 ---
 
@@ -20,7 +21,9 @@ predates gates `R3` and `R5` entirely. Full current state:
 > 6/6 held-out domains**, permutation p = 0.005 from a test we *measured* to reject noise at 0.030.
 > The bomb-absent control (knife vs club, similar install strengths, no bomb anywhere in the
 > contrast) also separates, so it is concept **identity**, not just how hard the codeword got
-> remapped. Reproduced four independent times, to 16 digits.
+> remapped. Reproduced four independent times — three of them to all 16 digits, the fourth
+> (a different permutation seed) matching inside its stated Monte-Carlo band. ⚠ The p = 0.005 **is
+> the attainable floor** at 200 permutations, not a measured tail.
 >
 > **2. Then we knocked the pathway out — and the probe barely moved.** Same bank, same L6–14 band,
 > same whole-query `demo_all` knockout:
@@ -35,6 +38,16 @@ predates gates `R3` and `R5` entirely. Full current state:
 > 11.5% of what was available against a 20% bar. **This is an informative negative:** the floor was
 > 0.031 and the design could have cleared it. The bridge validated itself first — knockout-disabled
 > reproduces the published 0.7485 at 0.7529, against a 0.10 void bar.
+>
+> ⚠ **One correction we have to make ourselves, since we found it after writing the above.** At the
+> layer this actually reads — every fold picks L6, the **first** layer of the 6–14 band — a
+> whole-query knockout and a knockout of *only the codeword's own row* are **arithmetically
+> identical at the read site** (we measured it: max elementwise difference 0.000e+00 over 2520
+> rows). So the honest sentence is *"blocking the codeword row's own view of the demonstrations
+> leaves the representation 94 % decodable"* — the verdict stands, the phrase "the whole pathway"
+> does not. Re-read on layers 7–14, where the two scopes genuinely differ, the whole-query knockout
+> removes 10.6 % of available accuracy and the codeword-row-only one 5.5 %. **The dissociation
+> survives; our description of it needed narrowing.**
 >
 > Two honest bounds on that. It is **representation vs readout**, not representation vs behaviour —
 > the behavioural half (PHASE 7) is still unrun, and those two rows are different instruments at
@@ -90,8 +103,17 @@ predates gates `R3` and `R5` entirely. Full current state:
 * ⛔ *"The knockout does nothing."* — it flips the semantic readout **+3.37 → −3.02**.
 * ⛔ *"`PR-035` is still running."* — it returned, was overturned on our own sign error, and was
   restored (`R-089`).
-* ⛔ *"The gates passed."* — `R3` **fails**, `R5` **fails**, `R6`/`R8` are **unrun**; the §12 gate
-  family cannot be reported as fully passed.
+* ⛔ *"The gates passed."* — `R3` **fails**, `R5` **fails**, `R6` and `R8` are **CANNOT ANSWER**
+  (not unrun, and not null); the §12 gate family cannot be reported as fully passed.
+* ⛔ *"Gate `R6` passed / was null."* — its instrument was **degenerate at the layer it read**
+  (`C-068`), and the layers-7–14 re-read carries **no p-value**.
+* ⛔ *"`R8` shows destruction doesn't predict behaviour."* — **no behavioural outcome exists on that
+  bank**, and power under a *perfectly monotone* truth is **0.25**. ρ = +0.60 was computed and is
+  **not citable in either direction**.
+* ⛔ *"Bomb installs ~3× harder than any hard negative."* — **2.03×** against club, which is exactly
+  why club is the control.
+* ⛔ *"Cell `A` is a different corpus in each concept bank"*, unqualified — it holds modally, not
+  universally (`C-060`).
 * ⛔ *"K=1 and K=2 show one or two query rows don't matter"* and *"the codeword's query row is not
   necessary"* — both false as stated (`R-079`; `C-054`/`R-083`).
 * ⛔ *"48.1 % is essentially 50 %, so it's the codeword row."* — the goalpost move `R-083` refused.
