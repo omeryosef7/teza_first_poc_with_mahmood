@@ -253,6 +253,13 @@ def assert_row_edits(stats: Dict, *, n_band_layers: int, expected_rows: int, hea
                      prompt_id: str) -> int:
     """Check ONE row's hook counters against the closed form; return the head multiplier.
 
+    `expected_rows` is whichever closed form the run's SCOPE selected
+    (`expected_prefill_edits_for_scope`): the legacy `sum(seq_len - kp)` on `legacy_all_query`, the
+    row-filtered `sum_kp |{r in allowed : kp <= r}|` on a scoped one. The arithmetic below — one
+    forward per band layer, a whole multiple of `n_band_layers x expected_rows`, a head multiplier
+    fixed by row 0 — is IDENTICAL either way, which is the point of deriving the scoped form
+    exactly instead of falling back to a ">0" check on the scoped path.
+
     Raises RuntimeError (not SystemExit) so the caller decides whether one bad row aborts the run
     or is charged to the ledger — SystemExit is a BaseException and would sail past a per-row
     `except Exception`, which is the failure mode `knockout_key_set`'s own comment records.
@@ -270,17 +277,17 @@ def assert_row_edits(stats: Dict, *, n_band_layers: int, expected_rows: int, hea
         raise RuntimeError(f"{prompt_id}: this is a SINGLE-FORWARD capture, but the hook recorded "
                            f"n_decode_forward={df} n_decode_edits={de}. Something generated.")
     if expected_rows <= 0:
-        raise RuntimeError(f"{prompt_id}: the key set implies ZERO editable mask cells; a no-op "
-                           f"knockout must never be captured.")
+        raise RuntimeError(f"{prompt_id}: the key set and the knockout SCOPE together imply ZERO "
+                           f"editable mask cells; a no-op knockout must never be captured.")
     if pe <= 0:
         raise RuntimeError(f"{prompt_id}: THE MASK NEVER FIRED (n_prefill_edits=0) while "
                            f"{expected_rows} cells x {n_band_layers} layers were implied by the "
-                           f"key set. This is the silent no-op (C-047); refusing.")
+                           f"key set and the scope. This is the silent no-op (C-047); refusing.")
     denom = n_band_layers * expected_rows
     if pe % denom:
         raise RuntimeError(f"{prompt_id}: n_prefill_edits={pe} is not a whole multiple of "
                            f"{n_band_layers} layers x {expected_rows} implied cells; the hook did "
-                           f"not edit the rows the key set implies.")
+                           f"not edit the rows the key set and the scope imply.")
     got = pe // denom
     if head_mult is not None and got != head_mult:
         raise RuntimeError(f"{prompt_id}: mask head multiplier changed mid-run ({got} vs "
@@ -365,7 +372,7 @@ def resolve_row_spans(dc, tok, row, args, scope: Optional[str]):
     return occ, dk, prot, surf, None
 
 
-def scoped_preflight(dc, tok, rows, args, scope, run) -> Dict:
+def scoped_preflight(dc, tok, rows, args, scope, run, ledger) -> Dict:
     """REFUSE BEFORE CAPTURING ANYTHING if any selected row cannot carry this scope.
 
     ⛔ ONLY RUNS FOR A NON-LEGACY SCOPE, so the default path costs not one extra tokenization and
@@ -402,6 +409,10 @@ def scoped_preflight(dc, tok, rows, args, scope, run) -> Dict:
     run.note(knockout_feasibility=feas)
     print(f"[ko-extract] SCOPE PRE-FLIGHT ({scope}): {feas}", flush=True)
     if bad:
+        # ABORTED.json, not a bare exit: a run directory that stops without a verdict is the one
+        # artifact shape an analyzer can mistake for an interrupted-but-fine run.
+        run.abort(f"scope_preflight_dead_span: {len(bad)} rows cannot carry {scope!r}",
+                  ledger=ledger)
         raise SystemExit(
             f"REFUSING before capturing anything: {len(bad)} of {feas['n_rows']} selected rows "
             f"cannot carry scope {scope!r} (first 5: {bad[:5]}). Capturing the rest would write a "
@@ -428,7 +439,7 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     surf_hist: List[int] = []
 
     if knockout and scope != LEGACY_SCOPE:
-        scoped_preflight(dc, tok, rows, args, scope, run)
+        scoped_preflight(dc, tok, rows, args, scope, run, ledger)
 
     for row in rows:
         pid = row["prompt_id"]
