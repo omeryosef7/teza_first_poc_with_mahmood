@@ -41,7 +41,11 @@ CLASSES = vp.CLASSES
 CHANCE = 1.0 / len(CLASSES)
 BAND_MIN = 6                                    # --band 6-14, the value the arms were run with
 VOID_BASELINE_COST = 0.10                       # §70.3
-R093_DROP = 0.04824561403508776                 # the L=6 whole-query drop, for the coherence check
+# C-070 (M-3): §70.3 worded the BUG bar against R-093's L=6 drop (+0.0482). That is the WRONG
+# comparator -- R-093 lives on the layer this grid excludes. The faithful reading of the stated
+# REASON ("KO-1 blocks a strict subset of KO-legacy's cells at every layer") compares the two arms
+# ON THIS GRID, which is what is implemented and what §71.1 reports. Kept for the record:
+R093_DROP_AT_L6 = 0.04824561403508776          # NOT the bar; the L=6 whole-query drop, for context
 
 
 def loo_on_grid(rows, sel_rows, layers, grid):
@@ -108,6 +112,15 @@ def main() -> int:
         res["verdict"] = "VOID — layer lists differ across arms"
         return _write(res, a.out)
 
+    # C-070 (CR-1): the cell-B selection surface is 1.000000 at ALL 36 grid points, so `select()`
+    # returns the FIRST grid element and no maximisation occurs. That makes "layers 7-14"
+    # operationally "layer 7". Persist the evidence so this is never again invisible in an artifact.
+    res["selection_is_inert_CR1"] = dict(
+        measured="cell-B LOO accuracy = 1.000000 at 36/36 (layer, C) grid points",
+        consequence="select() returns the first grid element; the pick is a TIE-BREAK, not a "
+                    "maximisation. The layers-7-14 grid resolves to layer 7.",
+        structural_justification_unaffected="C-068's layer-6 degeneracy is proven from the band "
+                    "definition and holds however the layer came to be picked.")
     keep = [L for L in layers if L > BAND_MIN]
     res["layers_all"], res["layers_pr045"] = list(layers), keep
     if len(keep) != len(layers) - 1:
@@ -126,10 +139,14 @@ def main() -> int:
     if r6 and ref:
         res["ratio_ko1_over_kolegacy"] = dict(
             value=(r6["mean_drop"] / ref["mean_drop"]) if ref["mean_drop"] else None,
+            reference_drop_at_L6_NOT_THE_BAR=R093_DROP_AT_L6,
             note="§70.3: DESCRIPTIVE, no bar attached, no verdict turns on it. It says what share "
                  "of the whole-query effect the codeword's OWN row accounts for, at layers where "
                  "the two scopes actually differ.")
-        if ref["mean_drop"] and r6["mean_drop"] > ref["mean_drop"] + 1e-12:
+        # C-070 (M-1): `if ref["mean_drop"] and ...` skipped the bar entirely when the reference
+        # drop was exactly 0.0 -- realistic on a 1/114 grid, and §13b's IS exactly 0.0. A KO-1 drop
+        # of +0.10 against a KO-legacy drop of 0.0 is flagrantly incoherent and printed clean.
+        if ref["mean_drop"] is not None and r6["mean_drop"] > ref["mean_drop"] + 1e-12:
             res["void"].append("BUG SIGNAL: KO-1's drop exceeds KO-legacy's on the same grid, but "
                                "KO-1 blocks a STRICT SUBSET of KO-legacy's cells at every layer. "
                                "Re-audit the arms; this is not a finding (§70.3).")
@@ -152,7 +169,8 @@ def main() -> int:
         res["verdict"] = "VOID — " + "; ".join(res["void"])
     else:
         res["verdict"] = ("REPORTED DESCRIPTIVELY (§70.3). No p-value is attached to any block. "
-                          "R6b is CANNOT ANSWER unless the ratio is read as descriptive only.")
+                          "⛔ Gate R6 remains CANNOT ANSWER: nothing here is a confirmatory test, "
+                          "and the ratio is descriptive with no bar attached to it.")
     return _write(res, a.out)
 
 

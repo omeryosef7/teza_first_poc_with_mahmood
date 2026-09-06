@@ -106,9 +106,18 @@ def fit(train, test, layer, layers, C, classes):
     return float((clf.predict((Xte - mu) / sd) == yte).mean())
 
 
+SELECTION_TRACE = []      # C-070: appended by every select() call, so inertness is never invisible
+
+
 def select(sel_rows, layers, classes, grid=None):
+    """⛔ C-070 (CR-1): this returns the FIRST grid element whenever the selection surface is flat,
+    because the candidate test is a strict `>`. On the real cell-B population that surface is
+    **1.000000 at all 36 grid points**, so no maximisation occurs and the pick is a tie-break
+    artifact of grid order. `best_acc` and the tie count are now recorded in `SELECTION_TRACE`;
+    every caller previously discarded `best_acc`, which is why this was invisible for the whole
+    phase -- the same shape as the vacuous capability gate (§44.4)."""
     Ls, Cs = grid if grid else (LAYERS, C_GRID)
-    best, best_acc = None, -1.0
+    best, best_acc, surface = None, -1.0, {}
     for L in Ls:
         if L not in layers:
             continue
@@ -121,8 +130,14 @@ def select(sel_rows, layers, classes, grid=None):
                     a = fit(tr, te, L, layers, C, classes)
                     if a is not None:
                         accs.append(a)
+            if accs:
+                surface[(L, C)] = float(np.mean(accs))
             if accs and float(np.mean(accs)) > best_acc:
                 best_acc, best = float(np.mean(accs)), (L, C)
+    if surface:
+        n_tied = sum(1 for v in surface.values() if v >= best_acc - 1e-12)
+        SELECTION_TRACE.append(dict(pick=best, best_acc=best_acc, n_grid=len(surface),
+                                    n_tied_at_best=n_tied, inert=bool(n_tied == len(surface))))
     return best
 
 

@@ -50,7 +50,10 @@ originally carry §§65–71, and §§4.4–4.7 there change what §4.2's headli
 > survives; our description of it needed narrowing.**
 >
 > Two honest bounds on that. It is **representation vs readout**, not representation vs behaviour —
-> the behavioural half (PHASE 7) is still unrun, and those two rows are different instruments at
+> the behavioural half (PHASE 7) has now run and returned **CANNOT ANSWER** — there is no
+> behavioural outcome measured on this bank at all, and even the readout substitute has 25 % power
+> under a *perfectly monotone* truth. Not a null, and not unrun. Those two rows are also different
+> instruments at
 > different sites (a generated answer vs a probe on hidden states). And **the probe result was never
 > causal to begin with**; this is what "decodable" not implying "used" looks like in our own data.
 >

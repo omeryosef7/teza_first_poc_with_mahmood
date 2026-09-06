@@ -78,6 +78,17 @@ separates. That is what licenses "identity, not strength alone".
   accuracy across codewords, though the direction does by ranking.
 - ⚠ The 2-class control is **underpowered by construction** (power 0.760 where a symmetry-free null
   reaches 0.940) — clearing 0.0498 was *harder* than the number looks, not easier.
+- ⛔ **The `(layer, C)` "selection on cell `B`" SELECTS NOTHING.** Measured over the full declared
+  grid: cell-`B` leave-one-domain-out accuracy is **1.000000 at all 36 grid points**, so `select()`'s
+  strict-`>` test returns the **first** grid element and the pick `(6, 0.01)` is a **tie-break
+  artifact of grid order**, not a maximisation (`C-070`). ⚠ **What this does NOT do:** it does not
+  change any reported number, and it does not make the pick data-dependent — a *constant* pick is if
+  anything a stronger guarantee of test-set independence than a fitted one. ⚠ **What it does do:**
+  the sentence *"selects the layer that maximises cell-`B` accuracy"* (§23.6) is **false as
+  written**, and `R-090`'s "where you select matters" lesson does not describe the real primary,
+  where selection is inert. ✅ **And the substantive claim survives the whole grid:** recomputed at
+  every one of the 36 points, the primary ranges **0.6594–0.7690** and is **6/6 above chance at
+  36/36** — the headline's 16 digits rest on a `>` vs `>=` comparison, the finding does not.
 - ⛔ **The capability gate is VACUOUS.** `train-fold accuracy = 1.0 everywhere`: at 4096 dimensions
   the probe separates its own training fold perfectly, so `PR-031` §6.6's capability gate is
   **trivially passed and carries no information** (§44.4).
@@ -232,9 +243,8 @@ states, so `argmax` collapses even though the ordering is preserved.
 
 `PR-040` / `PR-040a` / `PR-040b`. Six arms, **zero aborts**, 228/class both sides, 48 selection rows,
 bank binding verified per class, every fold picking `(L=6, C=0.01)`. Analyzer committed at `8cc126b7`
-⚠ **before any arm was analyzed** — five of six arms also landed after that commit; the sixth finished
-writing 9 s earlier, so *"before the arms landed"* is the wrong phrasing for one of six —
-**before** the arms landed. Probe is **`P2`**, clarified in `PR-040b` **before any number was read**
+⚠ **before any arm was analyzed** — five of six arms landed after that commit; the sixth finished
+writing 9 s earlier, so *"before the arms landed"* is the wrong phrasing for one of six. Probe is **`P2`**, clarified in `PR-040b` **before any number was read**
 (`PR-040` §55.2's prose said "train on cell `B`", which is `P1`; the frozen analyzer implements `P2`,
 and all three of `PR-040`'s operative quantities are `P2`'s).
 
@@ -292,7 +302,7 @@ state.**
 - ⛔ **Not "the knockout does nothing."** It abolishes the forced-choice preference; `R-010`/`R-011`
   and `R-083`'s `ref` arm stand entirely.
 - ⛔ **Not a claim about behaviour.** `R-075` remains an underpowered negative; PHASE 7 / gate `R8` is
-  unrun.
+  ⛔ **CANNOT ANSWER** (`R-097`, §4.7) — **not unrun, and not a null.**
 - ⛔ **No dose-matched control is feasible on this bank** (`B-018`) ⇒ this is a localisation
   **conditional on `R-080`**, not independent evidence about demonstration keys.
 - ⚠ The two rows above are **different instruments at different sites** — a generated forced-choice

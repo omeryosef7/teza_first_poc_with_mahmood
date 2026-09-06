@@ -5058,3 +5058,156 @@ sprint's code.** ⚠ I did not re-run the review over the newer range: the three
 been reproduced independently above, and `dcs_pr042_mediation.py` and
 `dcs_extract_under_ko.py` **were** adversarially verified, by agents 7 and 8, over their full
 current contents. ⛔ **Stated as a coverage gap rather than closed by assertion.**
+
+---
+
+## §74 — `DCS-A-033` / `DCS-C-070` — ⛔ THE CELL-`B` SELECTION SELECTS NOTHING, and three more defects I published
+
+A second adversarial review, run over `524ee475..HEAD` — the **4,260 lines §73.4 recorded as
+uncovered**. ⚠ It found four CRITICALs. ⛔ **One of them corrects a sentence I wrote in §69.2 two
+hours ago.** I verified all four from the artifacts myself before recording them; §73's rule applies
+to me as much as to an agent.
+
+### 74.1 ⛔ `C-070` CRITICAL 1 — *"selected on cell `B`"* describes a **TIE-BREAK**, not a selection
+
+My own measurement, `OMP=4`, the full declared grid, cell `B` (144 rows), leave-one-domain-out:
+
+```
+=== cell-B selection surface: mean LOO accuracy over 6 domains, all 36 grid points ===
+  L 6: 1.000000  1.000000  1.000000  1.000000       (C = 0.01, 0.1, 1.0, 10.0)
+  L 7 … L14: 1.000000 everywhere
+  -> max 1.00000000   min 1.00000000   n_at_max 36/36
+```
+
+⛔ **The selection surface is FLAT AT THE CEILING.** `select()` keeps a candidate only on strict
+`>`, iterating layers ascending then `C` ascending ⇒ ⛔ **it returns the FIRST grid element,
+`(6, 0.01)`, in every fold of every instrument.** The pick is an artifact of **grid order**, not of
+data.
+
+⇒ **Sentences that are now false and are corrected here, not edited away:**
+
+* §23.6 — *"an inner LOO CV … **selects the layer in `L6–14` that maximises cell-`B` accuracy**"*.
+  ⛔ Nothing is maximised.
+* §50.1 — *"✅ the primary's selection is the declared one"*. ⚠ It certified that two
+  implementations **iterate the grid in the same order**.
+* ⛔ §69.2 — *"selected on cell `B`, **so the selection itself is clean**"*. ⛔ **My sentence, and it
+  is wrong.** The selection is not clean; it is **inert**. `L = 6` is the **grid minimum**, not a
+  data fact — which I asserted as the premise for calling `L = 6` a coincidence worth explaining.
+* §70.1 / §71.2 — `PR-045`'s *"the same grid is used for … the cell-`B` selection"*. ⇒ ⛔ **"layers
+  7–14" is operationally "layer 7"**, and §71.1's *"the restricted grid costs the baseline 0.0745"*
+  is a **LAYER** effect (6→7), not a grid effect.
+
+### 74.2 ⚠ What this does and does not do to `R-086`
+
+⛔ **No reported number changes.** ⚠ And two things cut the other way, both measured, not argued:
+
+1. ⚠ **A constant pick is a *stronger* independence guarantee than a fitted one.** The §28.2 defect
+   was picks contaminated by test labels. A pick that is the same in every fold **cannot** be
+   contaminated. ⇒ `R-086`'s protection is real; it is simply **not the protection that was
+   claimed**.
+2. ✅ **The substantive claim survives the ENTIRE grid.** Recomputed at all 36 points:
+
+| | |
+|---|---|
+| best | **0.7690058479532165** at `(6, 1.0)` |
+| worst | **0.6593567251461989** at `(9, 10.0)` |
+| shipped pick `(6, 0.01)` | **0.7485380116959064** |
+| ⛔ **6/6 domains above chance** | **36/36 grid points** |
+| a `>=` (last-wins) tie-break would have shipped | `(14, 10.0)` → 0.707602 |
+
+⇒ ⚠ **The 16-digit headline rests on a `>` vs `>=` comparison operator that no preregistration
+declares. The FINDING does not** — it holds at every point of the grid.
+
+⛔ **What may NOT be claimed from this:** *"so the result is robust to hyper-parameters"* as a
+**preregistered** robustness check. ⛔ It is a **post-hoc** grid sweep, run because a reviewer found
+a defect. It is reported as **descriptive reassurance with no p-value**, exactly like every other
+post-hoc quantity in this phase.
+
+### 74.3 Root cause, and the fix applied
+
+⛔ `select_layer_C` and `select` both **return** `best_acc`, and **every call site discards it**
+(`dcs_bombness_specificity.py:212, :214` — `pick, _ = select_layer_C(...)`). ⇒ Nothing was persisted,
+so ⛔ **the ceiling was invisible in every artifact since the first run** — ⚠ *exactly* the shape of
+`train_fold_acc = 1.0` in §44.4, which was visible only because it happened to be written down.
+
+⇒ **Applied** (`dcs_verify_pr035_primary.select`): a `SELECTION_TRACE` recording `best_acc`,
+`n_grid`, `n_tied_at_best` and an `inert` flag on every call, and `PR-045`'s artifact now carries
+`selection_is_inert_CR1`. ⛔ **The frozen producer `dcs_bombness_specificity.py` is NOT edited**
+(§33). ⚠ **`Q-005` for Omer: should a future preregistration shrink the selection grid, or add a
+`selection_acc < 1.0` guard that VOIDs a selection which selected nothing?**
+
+### 74.4 ⛔ `C-070` CRITICALs 2–4, all verified and all fixed
+
+2. ⛔ **§72.3 published the STALE pre-`C-069` variance decomposition** beside the post-fix
+   reliability: `var_obs 0.0023007 = var_true 0.0012876 + mean_se² 0.0010131` divides to **0.5596**,
+   not the **0.5758** printed next to it. ⚠ Both pairs sum to `var_obs`, which is why every
+   consistency check passed it. ⇒ **CORRECTED HERE, not edited above** (§33): the artifact's values
+   are **var_true 0.0013248115929507796** and **mean_se² 0.0009758963171754151**, which divide to
+   **0.5758278080932547**. ⛔ §72.3's decomposition line is **VOID**; its reliability is right.
+3. ⛔ **`PR-042`'s `ANSWERABLE` branch was UNREACHABLE**, so §73.2's claim that it *"exists and is
+   reachable"* was **false**. ⚠ `C-069`'s fix replaced an unconditional assignment with
+   `res.setdefault("y_behavioural_outcome_available", False)` — and **nothing ever set it `True`**.
+   ⛔ **The same defect with an extra keystroke, in the fix written to remove it.** Worse: reason (1)
+   was a **hard-coded string literal** reciting `GAP -0.0396` and `3/960` whatever the candidate
+   search actually found. ⇒ Both are now **derived from `res["y_candidates"]`**: availability from
+   `status == AVAILABLE and is_behaviour is True`, and each clause of the reason read back from the
+   candidate it describes. ✅ Verdict unchanged (`CANNOT ANSWER`, `y_behavioural_candidates = []`).
+4. ⛔ **Both collaborator deliverables called PHASE 7 / `R8` "unrun"** while the same documents
+   reported it `CANNOT ANSWER` — ⛔ contradicted by the Slack draft's **own prohibition list**, which
+   says *"`R6` and `R8` are CANNOT ANSWER (not unrun, and not null)"*. ⚠ **"CANNOT ANSWER is not a
+   null" failing in the other direction**, in the document going to collaborators. ⇒ Fixed in both.
+
+### 74.5 The HIGH findings, and what was done with each
+
+| # | finding | action |
+|---|---|---|
+| `H-1` | `dcs_redteam_pr035_verifier.py --only NOPE` prints **"⛔ VERIFIER BREACHED"** at **0/0 attacks and 0/0 positive controls**, exit 0 | ⛔ recorded; the file's own precondition (controls must fire) is unenforced |
+| `H-2` | the same file scores a **fixed** hole as `AS DECLARED`, because `restate_verdict` calls the verifier-under-test's own `derive_verdict` | ⛔ recorded — check `C8` is tautological |
+| `H-3` | the kladder red-team has **no vacuous-mutation guard**; a corruption that changes **zero bytes** is credited as a confirmed blind spot | ⛔ recorded — `C-049` §22.5's failure recurring **inside the harness written to prevent it** |
+| `H-4` | `dcs_verify_pr035.py`: `C5`/`C7` **PASS over the empty set**, and a **fabricated** self-consistent headline (`per_domain := 0.95`) verifies `rc=0, all 14 checks PASS` | ⛔ recorded — 10 of 15 new mutations uncaught |
+| `H-5` | `res["void"]` was appended at 4 sites and **read at 0**; a fired guard degraded silently to a looser bound under which **both gates pass MORE comfortably** (0.5758→0.7938) | ✅ **FIXED** — `void` now returns a `VOID` verdict |
+| `H-6` | the published `se_mcnemar` values are **BLAS-thread dependent**; at the file's own documented `OMP=1` one boundary row flips and the analyzer returns **VOID** | ⛔ recorded; `A-031` DECISION 1 (`OMP=4`) is hereby **binding on `PR-042` too** |
+| `H-7` | the `C-069` tie fix **relocated** the traceback: `power_ceiling` sits outside the `try`, and `report()` then dies formatting `None` with `:+.4f` | ✅ **FIXED**, both frames |
+| `H-8` | `mask_head_mult` is inferred from row 0 and **never bounded**, so a whole-query knockout can complete under the scoped name | ⛔ recorded. ⚠ **The three shipped `ko1` arms all record `mask_head_mult: 1`** and are unaffected |
+| `H-9` | §73.3 item 7's fix was **botched mid-sentence** — the corrected text ended by re-asserting the phrase it had just declared false | ✅ **FIXED** |
+| `H-10` | the MC-band guard is bound to the **blocking null**'s p (1.0) instead of the knife-vs-club control's **0.04975**, which is 0.00025 under α | ⛔ recorded; §.. already notes the fragility, so this is a verifier gap, not an undisclosed claim |
+
+⚠ `M-1` (a truthiness test that skipped `PR-045`'s BUG bar when the reference drop is exactly `0.0`
+— realistic on a 1/114 grid, and §13b's **is** exactly 0.0), `M-3` (`PR-045` implements a **different
+BUG bar** than §70.3 worded — the same-grid comparison, which is the faithful reading of the stated
+reason) and `L-3` are ✅ **FIXED**. ⛔ `M-5` is conceded: §69.3's *"a readout pinned at ceiling cannot
+fall"* is a **logic error** — a ceiling means it cannot **rise**; it could have fallen by 0.6667, and
+the analyzer computes exactly that denominator. ⛔ **Right verdict, refutable argument.** ⛔ `M-6` is
+conceded: §69's per-bank dose triples are **mispaired** — the correct pairing is **bomb 495/28449,
+gun 495/28980, knife 522/30996**; the multiset is right, the per-arm table is not.
+
+### 74.6 ✅ What the review could NOT break — including the thing it was pointed at
+
+⚠ It was instructed that `C-068` was the **highest-value thing to break**, because `PR-045`'s
+layer-6 exclusion depends on it. ⛔ **It could not**, and it strengthened the result:
+
+* ⛔ **0 differing fp16 BIT PATTERNS** at `L6`, `0/2520` rows, in **all three banks** (§69.2 published
+  bomb only).
+* the band is verified to be **block** indices with `block_L == hidden_states[L+1]`, so capture layer
+  6 **is** the band's first perturbed block — and `off` **does** differ from `ko1` at `L6`, ruling
+  out an off-by-one.
+* the read row **is** the blocked row on **2520/2520** rows in all three banks, and the blocked key
+  sets are **identical** between arms (0 mismatches on 5 fields).
+
+⇒ ✅ **The layer-6 exclusion remains a STRUCTURAL exclusion, not post-hoc layer selection.** ⚠ One
+overstatement conceded: §69.2's *"for any prompt"* holds for any prompt **whose capture position lies
+inside the blocked span** — an invariant produced by two *independent* resolvers and **never
+asserted**.
+
+Also unbroken: every live headline reproduced **to 16 digits** from banks and caches by code
+importing nothing from `scripts/` (`R-086`, the knife-vs-club control, the gun-excluded primary,
+`R-093`, `R-093a`, `R-096` including the 0.520 ratio); the `(prompt_id, class)` pairing key (the
+`C-069` attack is now a **bit-identical no-op**); the exact McNemar formula; the 720-permutation
+bound by independent `Fraction` enumeration; **`R-093` rests on unchanged code** (88/88 rows
+byte-identical between `524ee475`'s bridge and HEAD's); and **no class-, arm- or cell-specific
+carve-out exists anywhere** in the scope, span, key, population or exclusion logic.
+
+⛔ **Still not independently reproduced: the permutation p `0.004975124378109453`.** It is `1/201`,
+the arithmetic floor at `n_perm = 200`, so it is checkable only as *"no permutation reached the
+observed mean."* ⚠ §73.1 records two prior reproductions; this review deliberately spent its budget
+on the accuracies instead. ⛔ **Recorded as a gap, not closed.**

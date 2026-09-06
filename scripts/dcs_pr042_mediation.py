@@ -691,7 +691,16 @@ def run(no_caches=False):
 
     res["attenuation_ceiling_sqrt_rel_x_rel_y"] = float(
         sqrt(max(x_audit["reliability"], 0) * max(y_audit["reliability"], 0)))
-    res["power"] = power_ceiling(x, sx, y, sy, null)
+    # C-070 (H-7): `power_ceiling` calls `spearman` internally and sits OUTSIDE the try below, so
+    # the tie fix relocated the traceback rather than removing it.
+    try:
+        res["power"] = power_ceiling(x, sx, y, sy, null)
+    except ValueError as e:
+        res["void"].append(f"power ceiling not computable: {e}")
+        res["verdict_gate_R8"] = "VOID"
+        res["verdict"] = (f"VOID — the power ceiling could not be computed ({e}). ⛔ Without it the "
+                          f"design's ceiling is unknown, so CANNOT ANSWER may not be claimed either.")
+        return res, null
 
     # descriptive only — computed so nobody has to wonder, banner-labelled so nobody may cite it
     # C-069: x lives on a 1/114 grid, so a tie between two domains is realistic and USED TO RAISE
@@ -718,8 +727,18 @@ def run(no_caches=False):
 
 
     # ---- VERDICT ---------------------------------------------------------------------------------
-    # Set by the y-candidate search above; named here so the verdict is derived, not asserted.
-    res.setdefault("y_behavioural_outcome_available", False)
+    # C-070: `setdefault(..., False)` was the SAME defect as the unconditional assignment it
+    # replaced -- nothing ever set it True, so the ANSWERABLE branch was unreachable and §73.2's
+    # claim that it "exists and is reachable" was false. It is now DERIVED from the candidate
+    # search: a candidate qualifies only if it is AVAILABLE **and** is actually behaviour
+    # (`is_behaviour`), which is what gate R8 asks about (§64.4). Candidate B is AVAILABLE and
+    # `is_behaviour=False`, so on today's artifacts this is correctly False -- but by measurement.
+    yc = res.get("y_candidates", {})
+    behavioural = [k for k, v in yc.items()
+                   if isinstance(v, dict) and v.get("status") == "AVAILABLE"
+                   and v.get("is_behaviour") is True]
+    res["y_behavioural_outcome_available"] = bool(behavioural)
+    res["y_behavioural_candidates"] = behavioural
     fails = []
     if not x_audit["passes_reliability"]:
         fails.append(f"x reliability {x_audit['reliability']:.3f} < {MIN_RELIABILITY}")
@@ -732,6 +751,17 @@ def run(no_caches=False):
         fails.append(
             f"attenuation ceiling {res['attenuation_ceiling_sqrt_rel_x_rel_y']:.3f} < the smallest "
             f"|rho| that can reach alpha at n=6 ({null['min_abs_rho_reaching_alpha']:.4f})")
+    # C-070 (H-5): `res["void"]` was appended at four sites and read at NONE, so a fired guard
+    # degraded silently to a looser noise bound under which BOTH §15 gates pass MORE comfortably
+    # (reliability 0.5758 -> 0.7938, range/noise 4.2120 -> 6.0404). A guard whose only consequence
+    # is a string in `noise_source` is not a guard.
+    if res.get("void"):
+        res["verdict_gate_R8"] = "VOID"
+        res["verdict"] = ("VOID — " + "; ".join(map(str, res["void"])) + "\n"
+                          "⛔ A VOID is not a CANNOT ANSWER and not a null: the instrument did not "
+                          "run as specified, so nothing about the design may be concluded from it.")
+        return res, null
+
     res["gate_failures"] = fails
 
     # C-069: this used to be an unconditional assignment, so `run()` could not return anything but
@@ -742,11 +772,20 @@ def run(no_caches=False):
     y_exists = bool(res.get("y_behavioural_outcome_available"))
     reasons = []
     if not y_exists:
-        reasons.append(
-            "  (1) NO BEHAVIOURAL OUTCOME EXISTS ON THIS BANK. A (mapping_use) is blind at baseline "
-            "(R-088, GAP -0.0396 vs bar 1.0). C (attack rate) lives on a different bank whose "
-            "shared-name domains share ZERO prompts and 3/960 demonstration sentences with the bank "
-            "x was measured on, at 10 judged rows/domain. B is a READOUT, not behaviour (§64.4).")
+        # C-070: this was a hard-coded string that recited GAP -0.0396 and 3/960 whatever the
+        # candidate search actually found. Each clause is now read back from the candidate it
+        # describes, so the printed reason cannot drift from the measurement.
+        why = []
+        for k in ("A", "B", "C"):
+            v = yc.get(k)
+            if not isinstance(v, dict):
+                continue
+            if v.get("status") == "AVAILABLE" and v.get("is_behaviour") is False:
+                why.append(f"{k} ({v.get('candidate')}) is a READOUT, not behaviour (§64.4)")
+            else:
+                why.append(f"{k} ({v.get('candidate')}) is {v.get('status')}"
+                           + (f": {v['reason']}" if v.get("reason") else ""))
+        reasons.append("  (1) NO BEHAVIOURAL OUTCOME EXISTS ON THIS BANK. " + "; ".join(why) + ".")
     if fails:
         reasons.append("  (2) EVEN THE READOUT SUBSTITUTE IS UNINFORMATIVE BY CONSTRUCTION: "
                        + "; ".join(fails) + ".")
@@ -888,9 +927,14 @@ def report(res, null):
     P(f"    (mean |rho| under that perfect truth: {pw['mean_abs_rho']:.4f})")
     dc = res["descriptive_correlation"]
     P("\n  ⛔⛔ NOT INTERPRETABLE — reported only so nobody has to wonder what it was: ⛔⛔")
-    P(f"     Spearman rho(x, y) = {dc['spearman_rho']:+.4f}, exact two-sided p = "
-      f"{dc['exact_two_sided_p']:.5f}, n = {dc['n']}")
-    P(f"     predicted sign {dc['predicted_sign']}; observed {dc['observed_sign']}")
+    if dc.get("spearman_rho") is None:
+        # C-070 (H-7): the tie path reaches here with rho=None, and `:+.4f` on None is a
+        # TypeError -- the traceback the C-069 fix was supposed to remove, one frame later.
+        P(f"     Spearman rho(x, y) = NOT COMPUTED — {dc.get('STATUS')}")
+    else:
+        P(f"     Spearman rho(x, y) = {dc['spearman_rho']:+.4f}, exact two-sided p = "
+          f"{dc['exact_two_sided_p']:.5f}, n = {dc['n']}")
+        P(f"     predicted sign {dc['predicted_sign']}; observed {dc['observed_sign']}")
     P("     ⇒ This number may NOT be cited in either direction. The design above cannot")
     P("       distinguish it from a perfect relationship or from no relationship.")
     P("\n" + "=" * 96)
