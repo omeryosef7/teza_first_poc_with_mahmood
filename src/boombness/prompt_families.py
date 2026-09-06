@@ -760,6 +760,75 @@ def _blocks(preset: str, domains: Optional[List[str]] = None) -> List[Dict]:
                  slots=[0, 4, 8, 12, 16], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
         ]
 
+    if preset == "main_longpre_cds_ts":
+        # `DCS-PR-046`, 2026-09-06. The THESIS-SCALE concept-contrast preset. DERIVES from
+        # `main_longpre_cds` and adds exactly two things it lacks and the thesis-scale phase
+        # cannot proceed without.
+        #
+        # WHY IT EXISTS. The phase's estimand is Matan's: hold the codeword, the context skeleton
+        # and the benign baseline fixed and vary ONLY the installed concept. `main_longpre_cds`
+        # supports that contrast, but it carries only `behavioral` and `semantic_forced_choice`,
+        # and it has no zero-dose cell. Both gaps are fatal here, for different reasons:
+        #
+        #   1. `semantic_forced_choice` NAMES THE CONCEPT IN THE QUESTION
+        #      (`QUERY_KINDS[...]["occurrence_analysis_safe"] is False`). That is precisely why
+        #      K*=7's decisive token was `' bomb'` and why §13's concept-row readout sat at a
+        #      baseline of 1.0000 with zero available range: the instrument supplied the answer.
+        #      A readout used to localise a hidden state must not contain the label being read.
+        #      `semantic_one_word` -- "what does the word {W} actually refer to?" -- names neither
+        #      the codeword nor the concept, and is added here as the PRIMARY mechanistic channel.
+        #      `semantic_forced_choice` is retained, unchanged, as the intuitive display channel.
+        #      ⚠ RECORDED BEFORE RUNNING, as `rbd12_sow` recorded it: `semantic_one_word` is the
+        #      framing forced-choice was introduced to REPLACE, because its absolute option mass
+        #      sits near 1e-5. The phase's primary statistic is therefore the RELATIVE
+        #      `semantic_logodds` (logp_concept - logp_codeword), which is well defined at low
+        #      absolute mass, and `option_mass` is reported alongside it as an engagement
+        #      diagnostic -- never as the outcome. If option mass shows the channel is disengaged,
+        #      that is a CANNOT ANSWER on the primary, not a licence to switch to the display
+        #      channel after the fact.
+        #
+        #   2. NO ZERO-DOSE CELL. `n_examples=0` is the one null the concept probe cannot do
+        #      without: with no demonstrations there is no installed concept, so a probe that
+        #      still separates {bomb, knife, gun} is reading the bank, not the model. It is also
+        #      the only cell that is byte-identical across concepts by construction, which makes
+        #      it the sharpest available test of the corpus confound.
+        #
+        # WHY A DERIVED PRESET AND NOT AN EDIT -- the same reasoning `main_ne12` and
+        # `main_longpre_cds_lowdose` already record. Appending query kinds to the `cds_n4`/`cds_n8`
+        # blocks would change what `main_longpre_cds` generates, turning
+        # `tests/test_bank_regenerates_byte_identically.py` red for banks nobody touched and
+        # changing the meaning of every historical `bank_rows_sha16` at a distance. Deriving leaves
+        # every existing preset byte-stable, and `family_id` carries the query kind (`prompt_id` is
+        # sha(family_id|condition)), so the new rows get fresh ids and cannot collide with -- or
+        # silently rejoin -- any run already completed against a `cds` bank.
+        #
+        # SLOTS, PREAMBLE, SPLITS, CONDITIONS are inherited UNCHANGED from `main_longpre_cds`, so
+        # the only things that vary between the inherited blocks and the new ones are the query
+        # kind and the dose. Holding everything else fixed is what makes the comparison readable;
+        # `R-50` is this project's recorded failure of re-tuning a design parameter to improve an
+        # outcome, and nothing here is re-tuned.
+        #
+        # The zero-dose block uses `slots=[0]` because with no demonstrations every slot yields the
+        # same text; the remaining duplicates across `splits` are dropped by `generate_bank` and
+        # counted in `stats["n_duplicate_prompt_id_rows_dropped"]` rather than silently deduped.
+        return _blocks("main_longpre_cds", domains) + [
+            dict(name="cds_n4_sow", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[4], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["semantic_one_word"],
+                 slots=[0, 4, 8, 12, 16], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+            dict(name="cds_n8_sow", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[8], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["semantic_one_word"],
+                 slots=[0, 3], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+            dict(name="cds_n0", domains=domains, splits=list(SPLITS),
+                 conditions=list(CORE_2X2), n_examples=[0], strengths=["none"],
+                 consistencies=["consistent"], positions=["near"], role_styles=["plain"],
+                 query_kinds=["behavioral", "semantic_one_word", "semantic_forced_choice"],
+                 slots=[0], n_preamble=(_N_PREAMBLE_OVERRIDE or 10)),
+        ]
+
     if preset == "main_longctx":
         # R-25's bank-design fix, and the ONLY reason this preset exists.
         #
@@ -1340,7 +1409,7 @@ def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
-    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "main_longpre_cds", "main_longpre_cds_lowdose",
+    ap.add_argument("--preset", choices=["smoke", "pilot", "main", "main_longctx", "main_longpre", "main_longpre_cds", "main_longpre_cds_lowdose", "main_longpre_cds_ts",
                                          "phase_d", "main_ne12", "main_fcslots", "rbd12", "rbd12_sow", "rbd12_cu",
                                          "rbd12_n16"],
                     default="main")
@@ -1365,11 +1434,30 @@ def main() -> int:
     pools = apply_incidental_repairs(obj["pools"], repairs)
 
     # SCREEN THE CODEWORD AGAINST THE POOL CORPUS, exactly as §2.4 screens it against the tokenizer.
-    collisions = incidental_codeword_collisions(pools, args.codeword)
+    #
+    # AND THE CONCEPT, added `DCS-C-072` 2026-09-06. The screen was codeword-only, which was safe
+    # only while the concept never varied. It does now: the thesis-scale phase's whole estimand is
+    # holding the codeword fixed and varying the concept, so the concept is substituted INTO the
+    # pools by `build_demo_block` (`natural_word` -> `_surface_word(...)`) on exactly the same
+    # footing as the codeword, and an incidental occurrence breaks the exact-word-swap invariant in
+    # exactly the same way. Measured on `demo_pools_116dom.json`: `knife` collides twice
+    # (`solar_array|benign[18]`, `university_lab|benign[39]`) and `gun` once
+    # (`coastguard_post|benign[4]`). Unscreened, those three sentences would have given the knife
+    # and gun banks a different target-occurrence count from the bomb bank in the families that
+    # draw them -- a silent, concept-dependent misalignment inside the one contrast the phase
+    # exists to measure, and one that no downstream guard checks for.
+    #
+    # ⚠ THE REPAIR MAP MUST BE THE SAME FOR EVERY CONCEPT IN A FAMILY. `apply_incidental_repairs`
+    # runs before generation and rewrites the pools in memory, so a per-concept map produces
+    # per-concept pools and destroys the byte-alignment it was invoked to protect. Pass the UNION
+    # of every concept's and codeword's repairs to every build in the family.
+    collisions = sorted(set(incidental_codeword_collisions(pools, args.codeword))
+                        | set(incidental_codeword_collisions(pools, args.concept)))
     if collisions:
         print(f"[prompt_families] REFUSING: {len(collisions)} pool sentence(s) already contain "
-              f"{args.codeword!r} incidentally, which breaks the exact-word-swap invariant for the "
-              f"families that draw them: {collisions}. Reword them with --incidental-replace.",
+              f"{args.codeword!r} or {args.concept!r} incidentally, which breaks the exact-word-swap "
+              f"invariant for the families that draw them: {collisions}. Reword them with "
+              f"--incidental-replace, using the SAME map for every concept in the family.",
               file=sys.stderr)
         return 2
 
