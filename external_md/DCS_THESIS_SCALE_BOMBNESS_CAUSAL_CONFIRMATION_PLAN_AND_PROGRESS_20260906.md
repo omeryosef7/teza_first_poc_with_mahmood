@@ -1631,3 +1631,58 @@ the probe; not run yet, and not claimed.
   `ts116` bank** and must be recomputed on `ts116m` before extraction. Added to the pre-extraction
   checklist.
 - `PR-048` records that the analyzer still does not exist (`B-020`).
+
+## 2026-09-07 · X1 CLOSED · `B-020` is fixed: the preregistration is now actually enforced
+
+`scripts/dcs_ts_prereg.py`. The claim I made in `PR-046` — *"the analyzer REFUSES to run if this
+file is absent, if any `*_sha` field is still null, or if a gate it needs is missing"* — is now
+**true**, having been false when written.
+
+It is deliberately a **separate loader**, not part of an analyzer. An enforcement path that lives
+inside one analyzer is bypassed by writing a second analyzer; this one is imported by anything
+that reads a preregistration, so the refusals come for free and cannot be routed around.
+
+**Refuses, all fail-closed:** config missing or unparseable · `status != FROZEN` · **any**
+`*_sha16` anywhere in the tree null or empty · a pinned artifact absent from disk · a pinned
+artifact whose **actual** hash disagrees with the pinned one · a mandate §21 required field
+missing · `require_gate`/`require_null` asked for something undeclared · `require()` asked for a
+threshold the config does not carry (no silent defaults) · and, under `for_extraction=True`, **any
+BLOCKING pre-extraction checklist item that is not done**.
+
+Verified on the real configs:
+
+| target | result |
+|---|---|
+| `PR-048`, normal load | **clean** — 17 hashes pinned *and verified against disk*, all 12 mandate-§21 fields present |
+| `PR-048`, `for_extraction=True` | **REFUSES** — `X3` planted-hook test is BLOCKING and not done |
+| `PR-046` (superseded) | **REFUSES** — missing `multiplicity` |
+| mutation harness | **6/6 refusals reachable** |
+
+The `for_extraction` refusal is the one that matters: **an extraction cannot start while this
+phase's own checklist is outstanding.** The guard now enforces the discipline rather than
+describing it.
+
+## 2026-09-07 · X3 · the first GPU job of the phase is running
+
+Job **860158**, `n-804`, `killable`. The planted-hook layer-convention test
+(`scripts/dcs_ts_layer_convention_test.py`), mandate §22.3.
+
+`A-036` read the convention off eight code sites and found them consistent —
+`block L == hidden_states[L+1]`, `hidden_states[0] == embeddings`. **That is a code reading, not a
+test.** Eight files agreeing tells you the authors agreed. This phase has been bitten four times
+by a checker whose notion of a thing differed from what the library actually does, and an
+off-by-one here would silently move every read site by one layer.
+
+Five assertions, each printing its measured delta rather than a verdict: a forward hook on block L
+must move `hidden_states[L+1]` by exactly 1e3 (**T1**) and must **not** move `hidden_states[L]`
+(**T2**) — together these *are* the convention, and if T2 is the one that moves it is off by one;
+a **pre**-hook must move `hidden_states[L]` instead (**T3**, the opposite-direction control that
+rules out "everything moves anyway"); an unhooked repeat must move nothing (**T4**); and at
+`L = n_layers−1`, `forward_hidden()`'s last layer must **differ** from `out.hidden_states[-1]`
+(**T5**), proving the post-final-norm substitution is real and not a no-op.
+
+**The launcher guards worked in production on their first real use.** The job's opening lines read
+`boombness: ../../scripts/dcs_ts_layer_convention_test.py`,
+`boomb_script_origin: PROVIDED  expect=<same>  argsfile=runargs/dcs_ts_layerconv.args` — so
+mandate §26.10's "verify the log says the expected script and args" is answered by `head` rather
+than by inference, and `BOOMB_REQUIRE_ARGS=1` was set so an empty-args default run was impossible.
