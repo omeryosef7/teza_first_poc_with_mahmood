@@ -159,10 +159,33 @@ def validate(obj: dict, path: str, for_extraction: bool = False, check_files: bo
                     errs.append(f"pool {name}: content_sha16 pinned {want} but the file carries {got}")
 
     if for_extraction:
-        for item in obj.get("pre_extraction_checklist", []):
-            st = str(item.get("status", ""))
-            if "BLOCKING" in st.upper() and "done" not in st.lower():
-                errs.append(f"pre-extraction checklist {item.get('id')} is BLOCKING and not done: "
+        # STRUCTURED FIELD, NOT PROSE MATCHING (DCS-C-086). The first version of this guard tested
+        #     "BLOCKING" in status.upper() and "done" not in status.lower()
+        # against a status string of "BLOCKING, not done" -- and "not done" CONTAINS "done", so the
+        # predicate was False and the guard passed an outstanding blocker. The extraction gate
+        # opened while X2 and X4 were still running. Caught by checking the gate's answer against
+        # the checklist by hand rather than trusting it.
+        #
+        # Same family as C-075/076/079/080: a check whose notion of a thing was not the thing.
+        # Here the fix is structural rather than a better regex -- `blocking` and `done` are
+        # BOOLEANS, and a checklist item that fails to declare them is itself a refusal, so an
+        # item cannot slip through by being malformed.
+        checklist = obj.get("pre_extraction_checklist", [])
+        if not checklist:
+            errs.append("pre_extraction_checklist is empty -- refusing to extract behind a "
+                        "checklist that declares nothing")
+        for item in checklist:
+            iid = item.get("id", "<no id>")
+            if "blocking" not in item or "done" not in item:
+                errs.append(f"checklist {iid}: must declare boolean fields 'blocking' and 'done'; "
+                            f"prose status strings are not machine-checkable (C-086)")
+                continue
+            if not isinstance(item["blocking"], bool) or not isinstance(item["done"], bool):
+                errs.append(f"checklist {iid}: 'blocking' and 'done' must be booleans, got "
+                            f"{type(item['blocking']).__name__}/{type(item['done']).__name__}")
+                continue
+            if item["blocking"] and not item["done"]:
+                errs.append(f"pre-extraction checklist {iid} is BLOCKING and not done: "
                             f"{item.get('item')!r}")
         if not obj.get("artifacts", {}).get("analyzer_exists", False):
             errs.append("artifacts.analyzer_exists is false -- refusing to extract behind an "

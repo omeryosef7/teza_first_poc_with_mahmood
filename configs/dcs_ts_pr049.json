@@ -292,8 +292,9 @@
   "artifacts": {
     "extraction": "shared with PR-048 -- the SAME rows, no additional forward passes",
     "analyzer": "scripts/dcs_ts_pr048_analysis.py",
-    "analyzer_exists": false,
-    "_analyzer_status": "NOT WRITTEN. Blocking, shared with PR-048."
+    "analyzer_exists": true,
+    "_analyzer_status": "WRITTEN AND FROZEN 2026-09-07, before any ts116m hidden state exists. Contains NO numeric gate literal: alpha, n_perm, chance, the grids, the split and the population filters are all fetched through Prereg.require(), which refuses rather than defaulting. Selftest: 11/11 guards reachable.",
+    "analyzer_committed_before_outcome": true
   },
   "kill_condition": "If Y3 shows the hedge-only advantage on knife-vs-gun is NOT small -- say it exceeds +0.10 -- then this contrast is not register-clean and its whole rationale fails. In that case it is withdrawn rather than reported, and the register confound returns to being an open limitation with no instrument. Declared before Y3 is measured.",
   "frozen_at": "2026-09-07",
@@ -347,17 +348,23 @@
     {
       "id": "Y1",
       "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
-      "status": "BLOCKING, not done"
+      "status": "BLOCKING, not done",
+      "blocking": true,
+      "done": false
     },
     {
       "id": "Y2",
       "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
-      "status": "BLOCKING, not done"
+      "status": "BLOCKING, not done",
+      "blocking": true,
+      "done": false
     },
     {
       "id": "Y3",
       "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
-      "status": "BLOCKING, not done"
+      "status": "BLOCKING, not done",
+      "blocking": true,
+      "done": false
     }
   ],
   "companion_of": "DCS-PR-048",

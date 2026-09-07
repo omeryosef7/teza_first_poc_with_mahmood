@@ -1788,3 +1788,55 @@ caveat.
 
 **Checklist status:** X1 done · X2 running · X3 **done (R-104)** · X4 running · X5 done.
 The extraction gate still refuses on `analyzer_exists = false`, which is correct.
+
+## 2026-09-07 · X1 CLOSED (properly) · the frozen analyzer, and C-086
+
+`scripts/dcs_ts_pr048_analysis.py`, committed **before any `ts116m` hidden state exists** —
+mandate §21. The circularity is deliberate: the analyzer must exist before the data, and
+extraction cannot be submitted until it does.
+
+**It contains no numeric gate literal.** `alpha`, `n_perm`, the chance level, the grids, the
+split, the population filter and the exclusions are all fetched through `Prereg.require()`, which
+**refuses rather than defaulting** when a key is absent. `B-020` was the failure of publishing
+thresholds no code path reads; the fix is not to copy them into the analyzer but to make the
+analyzer *unable to run without them*.
+
+Selftest: **11/11 guards reachable** — the permutation floor is labelled and a non-floor p is not;
+the n=6 sign-test floor computes to exactly 0.03125 (so the old 6/6 was worth 0.031, not 0.005)
+while n=23 is below 1e-6; a sign test over zero domains, a permutation over an empty null and a
+selection over an empty grid all **raise** rather than returning a number; a saturated selection
+surface is flagged `inert` with the `C-070` warning while a genuine surface is not; and both
+preregistration refusals fire through the real loader.
+
+### C-086 · my extraction gate opened while two blocking items were outstanding
+
+Having marked X1 done, I checked the gate and it **passed** — with X2 and X4 still running. The
+guard was:
+
+```python
+if "BLOCKING" in st.upper() and "done" not in st.lower():
+```
+
+against a status string of **`"BLOCKING, not done"`**. `"not done"` *contains* `"done"`, so the
+predicate was `False` and an outstanding blocker sailed through. **The gate written specifically
+to stop extraction starting early would not have stopped it.**
+
+This is the same family as `C-075`/`C-076`/`C-079`/`C-080` — a check whose notion of a thing was
+not the thing — and the sixth in this phase. The fix is **structural, not a better regex**:
+`blocking` and `done` are now **booleans**, and a checklist item that fails to declare them as
+booleans is *itself* a refusal, so an item cannot slip through by being malformed. Prose status
+strings are kept for humans and are no longer read by the guard.
+
+Caught by checking the gate's answer against the checklist **by hand** rather than trusting it —
+which is the only reason it was caught at all, and an argument for continuing to do that.
+
+With the fix, the gate refuses:
+
+> `pre-extraction checklist X2 is BLOCKING and not done: 'recompute the token-role map and the
+> read-site nomination on ts116m -- the rel_end=-9 nomination was computed on the VOID ts116 bank'`
+
+**X4 tightened to blocking** at the same time. It had been declared "required"; interpreting the
+probe requires knowing the live corpus's concept backing, so it should gate. Tightening a gate
+before any data exists is unambiguously safe, and it is recorded rather than done quietly.
+
+**Checklist: X1 done · X2 BLOCKING running · X3 done (R-104) · X4 BLOCKING running · X5 done.**
