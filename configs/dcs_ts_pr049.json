@@ -1,0 +1,382 @@
+{
+  "id": "DCS-PR-049",
+  "title": "Register-clean co-primary: knife vs gun concept identity, and the hedge-free stratum",
+  "status": "FROZEN",
+  "written": "2026-09-07",
+  "written_at_commit": "347f0920",
+  "_why_machine_readable": [
+    "This repository has twice published a threshold that no code path ever read.",
+    "Every gate below is loaded by the analyzer at runtime; the analyzer REFUSES to run if this",
+    "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
+    "in a markdown log that no program consults is a wish, not a preregistration."
+  ],
+  "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
+  "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
+  "population": {
+    "bank_family": "ts116m",
+    "banks": {
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+        "bank_file_sha16": "dcd92d723f3e6d00",
+        "bank_rows_sha16": "4ca3ec165ab5b018"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+        "bank_file_sha16": "94fd300d611fccf2",
+        "bank_rows_sha16": "65eb4fa533890eff"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl",
+        "bank_file_sha16": "8e646dfdb451abc6",
+        "bank_rows_sha16": "c7ceb5a151a2788a"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+        "bank_file_sha16": "79511d9e254571e6",
+        "bank_rows_sha16": "1e872cd8cd2f63a5"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl",
+        "bank_file_sha16": "538ca9b48d905290",
+        "bank_rows_sha16": "61e586e4bdca6f28"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl",
+        "bank_file_sha16": "f4c655a723729c08",
+        "bank_rows_sha16": "f1a8332bdd7c48ce"
+      }
+    },
+    "pools": {
+      "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
+      "shared_pools_sha16": "976aa2b0b617118d",
+      "harm_bomb": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_bomb.json",
+        "content_sha16": "e561c812ee355c73",
+        "job": 859722,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_knife": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_knife.json",
+        "content_sha16": "27eaf6a76f6d0526",
+        "job": 859723,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_gun": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_gun.json",
+        "content_sha16": "50ba5d1fbeb5764f",
+        "job": 859724,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "_seed": 20260906
+    },
+    "concepts": [
+      "knife",
+      "gun"
+    ],
+    "codewords": {
+      "development": "button",
+      "external_confirmation": "basket"
+    },
+    "cell": "C",
+    "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
+    "query_kind_primary": "semantic_one_word",
+    "query_kind_display": "semantic_forced_choice",
+    "n_examples_primary": 4,
+    "n_examples_replication": 8,
+    "n_examples_null": 0,
+    "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
+    "rows_per_domain_per_concept": 10,
+    "preregistered_exclusions": [
+      {
+        "domain": "restaurant_kitchen",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
+        "seed_bumps_attempted": 1,
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+      },
+      {
+        "domain": "school_campus",
+        "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
+        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
+      }
+    ],
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
+    "_register_asymmetry": {
+      "measured_on": "4640 harm sentences per concept, prompt-only",
+      "hedged_pct": {
+        "bomb": 14.1,
+        "knife": 0.2,
+        "gun": 3.4
+      },
+      "mean_sentence_chars": {
+        "bomb": 82,
+        "knife": 75,
+        "gun": 78
+      },
+      "mass_noun_polysemy_pct": {
+        "bomb": 1.08,
+        "knife": 0.0,
+        "gun": 0.0
+      },
+      "decision": "KEPT, not matched away. A bomb in a workplace is overwhelmingly a SUSPECTED bomb; a knife is simply present. That is a real property of the concepts in incident-log English and is part of what installing one rather than the other means. Equalising it means unnatural demonstrations, which is how R-098 ended up with no manipulation at all. It is instead measured, published, and converted into the bar: N5 concept-masked TF-IDF becomes strong and the probe MUST beat it.",
+      "deferred_decision_rule": "If N4 length-only comes out well above chance, over-generate and length-match the 40 kept sentences per pool -- prompt-only and outcome-blind, ~50% more API. THIS RULE IS RECORDED BEFORE N4 IS MEASURED so it cannot be chosen after seeing the probe.",
+      "n4_after_length_matching": {
+        "acc": 0.4014,
+        "macro_auroc": 0.5793,
+        "before": {
+          "acc": 0.4174,
+          "macro_auroc": 0.575
+        },
+        "verdict": "THE REMEDY DID NOT WORK. Length matching cut the cross-concept mean sentence-length spread 40.8% (7.03->4.16 chars) and moved the baseline by 0.016 accuracy; the AUROC rose slightly. Diagnosed: pool MARGINALS were matched while N4 reads full-prompt n_chars, whose demo block is four sentences drawn at fixed slots -- matching marginals does not match per-family sums. Per the rule recorded before N4 was ever measured, THERE IS NO THIRD ROUND. Length is now a permanent stated nuisance."
+      },
+      "n4_in_tokens": {
+        "acc": 0.3623,
+        "note": "C-084. The audit measured n_chars; the model reads TOKENS. Prompt token counts are bomb 196.21 / knife 195.50 / gun 196.69 on a 13-token sd, so the POSITIONAL confound is essentially matched and token-length-only N4 is 0.3623 against chance 0.3333. The character residual is lexical composition, i.e. register. LENGTH IN TOKENS IS NOT A LIVE CONFOUND; register is."
+      }
+    },
+    "_excluded_concept": "bomb is excluded from THIS contrast, not from the phase. It remains the 3-way primary in PR-048. Excluding it here is what makes the contrast register-clean, and the exclusion is declared before any probe has run."
+  },
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 69,
+    "n_validation": 23,
+    "n_test": 23,
+    "seed": 202609061,
+    "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
+    "n_domains_analysed": 115,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 69 are ANALYSED. The manifest is not regenerated -- a split may be created once (mandate 5.2). The exclusion is applied downstream and recorded here."
+  },
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32,
+    "hidden": 4096,
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim."
+  },
+  "read_site": {
+    "position": "codeword_last",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "layer_convention_verified_by": "planted-hook GPU test, job 860184, 2026-09-07 -- CONFIRMED",
+    "layer_selection": "TRAIN+VALIDATION only, frozen before test is read",
+    "layer_grid": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "C_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
+    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070)."
+  },
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "_no_mlp": "A linear probe, per mandate section 8.1. No MLP.",
+    "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
+  },
+  "primary": {
+    "statistic": "2-way knife-vs-gun argmax accuracy on the 23 untouched TEST domains, domain-mean",
+    "chance": 0.5,
+    "independence_unit": "domain",
+    "n_test_domains": 23,
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level",
+    "n_perm": 10000,
+    "_p_floor_rule": "floor 1/(B+1) = 9.999e-05; every p published next to its floor; zero exceedances reported as p < 1/(B+1)",
+    "success": "domain-mean accuracy significantly above 0.5 by domain-level group permutation AND above chance in a majority of test domains by two-sided sign test",
+    "negative": "not significant WITH power >= 0.8 for the MDE below",
+    "cannot_answer": "option_mass shows the primary channel is disengaged, or the population fails a PR-048 gate",
+    "void": "wrong bank sha, wrong script, dead hook, or the selection touched TEST"
+  },
+  "secondary": {
+    "hedge_free_stratum": "A hedge-free TEST stratum already exists in the bank: 115 bomb / 212 knife / 195 gun rows, enough for a balanced 345-row re-analysis at zero extra GPU. Reported as a SECONDARY robustness stratum for both the 3-way and the 2-way contrast. Row counts to be re-derived on ts116m before use -- the figures above were measured on a superseded corpus.",
+    "bomb_vs_knife_and_bomb_vs_gun": "reported for completeness and explicitly flagged as register-contaminated (+0.211 available to a hedge-only classifier), so they may not be quoted as evidence of concept identity without that caveat.",
+    "reported_always": [
+      "accuracy",
+      "balanced accuracy",
+      "AUROC",
+      "per-domain accuracy",
+      "option_mass",
+      "semantic_logodds",
+      "the hedge-only and register-only baselines on THIS contrast"
+    ]
+  },
+  "power": {
+    "_note": "Two-way at chance 0.5 on 23 test domains. The PR-048 power analysis was computed for a 3-way contrast at chance 1/3; it does NOT transfer. Recompute the MDE, the sign-test floor and the power curve for a 2-way estimator BEFORE reading TEST, and record them here. If the recomputation shows power < 0.8 for a scientifically meaningful effect, this contrast is declared EXPLORATORY rather than co-primary -- decided before the outcome, not after.",
+    "status": "TO BE COMPUTED BEFORE ANY TEST READ -- blocking for this preregistration"
+  },
+  "nulls_required": [
+    {
+      "id": "N2",
+      "name": "domain-level group permutation",
+      "expect": "null distribution centred at chance",
+      "_never": "row-level permutation; measured FPR 0.2000"
+    },
+    {
+      "id": "N3",
+      "name": "full-prompt leakage",
+      "expect": "0 rows name their own concept in the primary channel"
+    },
+    {
+      "id": "N4",
+      "name": "length-only classifier",
+      "expect": "at chance"
+    },
+    {
+      "id": "N5",
+      "name": "prompt-text-only TF-IDF, concept words masked",
+      "expect": "the probe must beat it"
+    },
+    {
+      "id": "N6",
+      "name": "template-id-only classifier",
+      "expect": "at chance BY CONSTRUCTION; above chance means alignment is broken and the run is VOID"
+    },
+    {
+      "id": "N7",
+      "name": "codeword-only control",
+      "expect": "pipeline sanity"
+    },
+    {
+      "id": "N8",
+      "name": "label permutation through the ENTIRE pipeline including selection",
+      "expect": "calibrated FPR at nominal alpha"
+    },
+    {
+      "id": "N1",
+      "name": "n_examples=0",
+      "expect": "at chance",
+      "_DEGENERATE_BY_CONSTRUCTION": "C-081. With no demonstrations the three concept arms are the SAME PROMPT, so a probe there is pinned to 1/3 by arithmetic -- C-074 verbatim. N1 landing at 0.3333 is therefore a PIPELINE SANITY CHECK, not evidence about the model, and the sentence \"the signal localises entirely to the demonstration block\" DOES NOT follow from it. Retained as a sanity check and explicitly demoted from the evidence list."
+    }
+  ],
+  "phase4_gates_on_ts116n": [
+    {
+      "id": "G1",
+      "rule": "all three harm pool files verify: shared valences byte-identical to the shared pools file; every harm sentence carries exactly one whole-word target concept and no other concept"
+    },
+    {
+      "id": "G2",
+      "rule": "cell C x semantic_one_word DIFFERS across concepts in 116/116 domains",
+      "_why": "the exact inverse of the 1856/1856 identity that voided R-098 under C-074. This is the gate whose absence caused that error."
+    },
+    {
+      "id": "G3",
+      "rule": "cell A (benign_literal) is byte-identical across concepts",
+      "_why": "the alignment half; without it we are back to A-034.1's three corpora"
+    },
+    {
+      "id": "G4",
+      "rule": "concept-backing audit re-run on ts116n; mass-noun polysemy and hedging rates re-measured, not inherited"
+    },
+    {
+      "id": "G5",
+      "rule": "leakage audit re-run on ts116n; template-id-only classifier at chance"
+    }
+  ],
+  "artifacts": {
+    "extraction": "shared with PR-048 -- the SAME rows, no additional forward passes",
+    "analyzer": "scripts/dcs_ts_pr048_analysis.py",
+    "analyzer_exists": false,
+    "_analyzer_status": "NOT WRITTEN. Blocking, shared with PR-048."
+  },
+  "kill_condition": "If Y3 shows the hedge-only advantage on knife-vs-gun is NOT small -- say it exceeds +0.10 -- then this contrast is not register-clean and its whole rationale fails. In that case it is withdrawn rather than reported, and the register confound returns to being an open limitation with no instrument. Declared before Y3 is measured.",
+  "frozen_at": "2026-09-07",
+  "gates_g1_g3": {
+    "result": "19/19 PASS",
+    "mutations": "4/4 RED",
+    "verifier": "scripts/dcs_ts_verify_ts116n.py",
+    "G2": "115/115 domains differ in cell C x semantic_one_word, both codewords, both non-reference concepts",
+    "G3a": "3680/3680 cell-A concept-free rows byte-identical across all three concepts",
+    "G3b": "1840/1840 forced-choice queries restore exactly under concept->bomb substitution; demo_block and preamble identical"
+  },
+  "supersedes": "DCS-PR-046",
+  "_why_superseded": [
+    "PR-046 is left BYTE-FROZEN on disk and is not edited. It pinned the ts116n bank family, which",
+    "three later corrections disqualified: C-076 (8 knife sentences shipped an unsubstituted plural",
+    "into cell C, 30/3680 primary rows, 4 in TEST), C-077 (the N4 length trigger fired), and C-079",
+    "(a case-insensitive filter against a case-enumerated substituter).",
+    "THE DESIGN IS UNCHANGED. Population, split, model, read site, classifier, primary statistic,",
+    "alpha, n_perm, nulls, gates, power and kill condition are all identical to PR-046. What changed",
+    "is only WHICH ARTIFACT the design binds to, and that change is forced by defect repair rather",
+    "than chosen after seeing an outcome -- no probe has been run and no hidden state exists.",
+    "C-080 additionally retracts PR-046's supporting claim that ts116n passed 19/19 gates: the G1",
+    "own-concept check was singular-only and could not see C-076. Under the corrected gate ts116n",
+    "scores 18/19 and ts116m scores 19/19 with 4/4 mutations RED."
+  ],
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PRIMARY",
+        "members": [
+          "PR-048 3-way domain-mean accuracy",
+          "PR-049 knife-vs-gun domain-mean accuracy"
+        ],
+        "correction": "Holm across the two, alpha=0.05 family-wise"
+      },
+      {
+        "name": "SECONDARY",
+        "members": [
+          "hedge-free stratum",
+          "bomb-vs-knife",
+          "bomb-vs-gun",
+          "AUROC variants",
+          "lexical transfer"
+        ],
+        "correction": "Holm within the secondary family"
+      }
+    ],
+    "_absent_members_enter_at_p_1": true
+  },
+  "pre_extraction_checklist": [
+    {
+      "id": "Y1",
+      "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
+      "status": "BLOCKING, not done"
+    },
+    {
+      "id": "Y2",
+      "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
+      "status": "BLOCKING, not done"
+    },
+    {
+      "id": "Y3",
+      "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
+      "status": "BLOCKING, not done"
+    }
+  ],
+  "companion_of": "DCS-PR-048",
+  "_why_this_exists": [
+    "The four-hour review (A-042, science lens) measured that register is NOT a uniform nuisance but",
+    "a BOMB-vs-REST SEVERITY axis: a hedge-only classifier buys +0.211 on bomb-vs-knife and only",
+    "+0.037 on knife-vs-gun. Threat-lexicon framing runs bomb 44.5% / knife 14.0% / gun 18.3%.",
+    "So the 3-way primary in PR-048 carries bomb's discourse register with it, while KNIFE-vs-GUN is",
+    "clean on register AND on length -- and is still exactly a test of concept IDENTITY between two",
+    "matched harmful concepts, with no severity gradient available to read instead.",
+    "",
+    "IT ALSO DISCHARGES A CONDITION THE REVIEW ATTACHED TO C-078. PR-046 adopted the N5 text baseline",
+    "explicitly AS THE ANSWER to the register confound. C-078 then argued -- before any probe ran --",
+    "that N5 is the wrong bar because the demonstration block is the TREATMENT, and proposed a",
+    "positional contrast instead. The review's verdict: legitimate correction, ILLEGITIMATE IF THE",
+    "POSITIONAL CONTRAST INHERITS N5'S JOB. It does not. The positional contrast answers",
+    "localisation; THIS preregistration answers register. Two questions, two instruments, rather than",
+    "one instrument quietly retargeted.",
+    "",
+    "COST: ZERO EXTRA GPU. It is a re-analysis of the PR-048 extraction on the same rows."
+  ]
+}

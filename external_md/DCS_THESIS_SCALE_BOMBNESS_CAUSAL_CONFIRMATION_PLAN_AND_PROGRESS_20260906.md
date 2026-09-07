@@ -1686,3 +1686,105 @@ rules out "everything moves anyway"); an unhooked repeat must move nothing (**T4
 `boomb_script_origin: PROVIDED  expect=<same>  argsfile=runargs/dcs_ts_layerconv.args` — so
 mandate §26.10's "verify the log says the expected script and args" is answered by `head` rather
 than by inference, and `BOOMB_REQUIRE_ARGS=1` was set so an empty-args default run was impossible.
+
+## 2026-09-07 · R-104 · X3 CLOSED · the layer convention is **confirmed by experiment**
+
+Job **860184**, `COMPLETED 0:0`, 27 s. `outputs/dcs_ts/layer_convention.json`.
+
+> **block layer L == `hidden_states[L+1]`; `hidden_states[0]` == embeddings — CONFIRMED.**
+> Llama-3.1-8B-Instruct, `n_layers=32`, `len(hidden_states)=33`.
+
+| check | measured |
+|---|---|
+| **T1** post-hook on block 12 moves `hs[13]` | **+1000.158** (kick 1000.0, tolerance 1.0) |
+| **T2** post-hook does **not** move `hs[12]` | 0.000000 |
+| **T3a** pre-hook leaves `hs[12]` | 0.000000 |
+| **T3b** pre-hook moves `hs[13]` by a residual | +1000.158 |
+| **T4** unhooked repeat | 0.000000 across all 33 entries |
+| **T5** `forward_hidden`'s last layer ≠ `hidden_states[-1]` | **FAIL** |
+
+The +0.158 is bf16 quantisation of a 1000.0 kick, not a discrepancy: at magnitude ~1000 the
+bfloat16 grid is coarse, and the post- and pre-hook routes land on the same representable value,
+which is why both read 1000.158.
+
+**The first run of this test (job 860158) failed, and the fault was mine.** The return-based
+post-hook moved nothing, and my T3 asserted that a pre-hook would move `hs[L]` — it cannot,
+because `hs[L]` is appended to the tuple *before* block L is called. Run 1 refuted my expectation,
+not the model. Fixed by an **in-place** post-hook (immune to whether the block returns a tuple and
+to where the tuple is collected) and a corrected, split T3. **The convention is credited to the
+direct post-hook pair T1+T2; the pre-hook result is corroboration and is labelled as such** — a
+corroborating observation is not the experiment.
+
+This closes mandate §22.3 for this phase. Eight code sites agreeing was never evidence; now there
+is evidence.
+
+### The one real failure, recorded rather than waved away
+
+**T5 FAILED:** `extract_boombness.forward_hidden` raises *"Could not locate transformer layers on
+this model"* on Llama-3.1-8B under transformers 5.12. `A-036` established that
+`L = n_layers − 1` is correct **only** through `forward_hidden`, because the library ties the last
+tuple entry to `last_hidden_state` (post-final-norm). So **the last layer is currently unreadable
+by the sanctioned path.**
+
+This phase reads the **6–14** band, so it does not bite here. It is recorded as an open defect in
+`PR-048`, and **any future last-layer read is blocked on it** rather than being allowed to
+silently read a post-norm tensor believing it is a block output.
+
+### The extraction gate is still shut, correctly
+
+With `X3` marked done, `dcs_ts_prereg.py --for-extraction` still **refuses**:
+
+> `artifacts.analyzer_exists is false -- refusing to extract behind an analyzer that does not exist`
+
+Exactly the behaviour `B-020` was fixed to produce.
+
+## 2026-09-07 · PR-049 · X5 CLOSED · the register-clean co-primary
+
+`configs/dcs_ts_pr049.json`, FROZEN, companion to `PR-048`. **Zero extra GPU** — a re-analysis of
+the same extraction on the same rows.
+
+**Primary: knife vs gun, 2-way, chance 0.5**, domain-mean accuracy on the 23 untouched TEST
+domains, domain-level group permutation at `n_perm = 10000`.
+
+**Why this contrast and not the 3-way.** `A-042` measured that register is a **bomb-vs-rest
+severity axis**, not a uniform nuisance:
+
+| contrast | hedge-only classifier buys |
+|---|---|
+| bomb vs knife | **+0.211** |
+| **knife vs gun** | **+0.037** |
+
+The 3-way primary carries bomb's discourse register with it. Knife-vs-gun is clean on register
+*and* on length, and is still exactly a test of concept **identity** between two matched harmful
+concepts — with no severity gradient available to read instead.
+
+**It discharges the condition the review attached to `C-078`.** `PR-046` adopted the N5 text
+baseline explicitly *as the answer to the register confound*. `C-078` then argued — before any
+probe ran — that N5 is the wrong bar because the demonstration block is the **treatment**. The
+review's verdict was *legitimate correction, illegitimate if the positional contrast inherits N5's
+job.* **It does not.** The positional contrast answers localisation; this preregistration answers
+register. Two questions, two instruments.
+
+**Three blocking items, and a kill condition declared before the measurement that could trigger
+it:**
+
+- **Y1** — recompute power for a **2-way estimator at chance 0.5**. `PR-048`'s analysis was
+  computed for a 3-way contrast at 1/3 and **does not transfer**. If power < 0.8 for a meaningful
+  effect, this contrast is declared **exploratory rather than co-primary** — decided before the
+  outcome.
+- **Y2** — re-derive the hedge-free stratum row counts on `ts116m`. The 115 / 212 / 195 figures
+  come from a **superseded corpus** and may not be quoted.
+- **Y3** — re-measure the hedge-only and register-only baselines **restricted to knife-vs-gun** on
+  `ts116m`, to confirm the +0.037 that is this contrast's entire rationale.
+
+> **KILL CONDITION.** If `Y3` shows the hedge-only advantage on knife-vs-gun exceeds **+0.10**,
+> the contrast is not register-clean, its rationale fails, and it is **withdrawn rather than
+> reported** — with the register confound returning to being an open limitation with no
+> instrument. Declared before `Y3` is measured.
+
+`bomb-vs-knife` and `bomb-vs-gun` are retained as secondaries and **explicitly flagged
+register-contaminated**: they may not be quoted as evidence of concept identity without that
+caveat.
+
+**Checklist status:** X1 done · X2 running · X3 **done (R-104)** · X4 running · X5 done.
+The extraction gate still refuses on `analyzer_exists = false`, which is correct.
