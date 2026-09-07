@@ -178,6 +178,13 @@ def main() -> int:
     ap.add_argument("--out", default=None)
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--tag-prefix", default="ts116m_full")
+    # A dress rehearsal that stops BEFORE the test split is touched. run_probe() has never
+    # executed end to end on real representations, and C-091 showed the frozen file could not even
+    # construct its estimator -- so the first real run is not the place to discover a runtime
+    # error. This exercises binding, sha verification, cache loading, the scaler, all 36 selection
+    # fits and the SELECTION_TRACE, then stops. It reads TRAIN and VALIDATION only.
+    ap.add_argument("--stop-after-selection", action="store_true",
+                    help="dry run: everything up to and including selection, then stop. Never reads TEST.")
     a = ap.parse_args()
 
     if a.selftest:
@@ -404,6 +411,15 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
             order.append((L, C))
     trace = select_hparams(scores, order)
     L_sel, C_sel = trace["chosen"]
+
+    if getattr(a, "stop_after_selection", False):
+        print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} "
+              f"best_val_acc={trace['best_acc']:.4f} n_tied={trace['n_tied_at_best']}/{trace['n_grid']} "
+              f"inert={trace['inert']}")
+        if trace["_warning"]:
+            print(f"  !! {trace['_warning']}")
+        print("  --stop-after-selection: TEST WAS NOT READ. Dry run complete.")
+        return 0
 
     # ---- TEST, read once ---------------------------------------------------------------------
     pred, truth, doms = fit_score(L_sel, C_sel, tr, te, why="observed")

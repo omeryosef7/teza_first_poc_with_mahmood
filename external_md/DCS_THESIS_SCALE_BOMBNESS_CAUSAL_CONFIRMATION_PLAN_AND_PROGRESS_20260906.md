@@ -2502,3 +2502,41 @@ Matan than a confirmatory number that quietly rests on a confound.
 → **`Q-014` for Omer:** fund a register-matched regeneration for the next phase, or accept register
 as a permanent stated limit of this bank family? The measurement that decides it already exists
 (`R-106`: hedge 13.72 / 0.20 / 2.33 %, surface 0.7065 on the cleanest contrast).
+
+## 2026-09-07 · C-102 · fair-share ran out, and the fix was fewer rows rather than different hardware
+
+The `PR-051` control extraction was estimated by SLURM to start at **2026-09-10 01:03 — three days
+out.** Fair-share is depleted after today's GPU hours; this is the priority wall, not a capacity
+wall.
+
+**The tempting fix was the wrong one.** The house note says to fall back to a5000/3090 in
+`killable` when L40S is full, and those cards do support bfloat16 — we use *eager* attention, so
+the usual flash-attention objection does not apply. **But `PR-051` is a PAIRED contrast between two
+read sites.** Extracting the control on different hardware would confound bf16 matmul numerics
+**with the very thing being tested**. Same hardware, or the contrast is worthless. Rejected.
+
+**The right fix: extract only the rows the analysis reads.** `PR-051` needs the analysis population
+— cell C × `semantic_one_word` × `n_examples=4` — which is **1,140 of 22,272 rows per bank, a 20×
+reduction**. The other 21,132 rows per bank would have cost ~6 GPU-hours to produce for no analysis
+that reads them.
+
+Added `--only-cell` / `--only-query-kind` / `--only-n-examples` to the extractor (refusing loudly
+if the filter selects **zero** rows, so an empty extraction cannot masquerade as a completed one)
+and plumbed them through the multi-bank driver. Job **860873 cancelled**, replaced by **860925**
+with a **1.5 h** limit — short enough that SLURM's **backfill** can place it in a gap, which a
+six-hour job cannot occupy.
+
+This is a scheduling change, not a scientific one: the control is captured at the same read
+convention, on the same hardware class, from the same pinned banks, over exactly the rows the
+paired contrast compares.
+
+## 2026-09-07 · a dress rehearsal for the analyzer, before the run that matters
+
+`--stop-after-selection` added: it binds the population, verifies every bank hash, loads the
+caches, fits all 36 selection points on **validation**, prints the `SELECTION_TRACE` — and
+**stops without touching TEST.**
+
+`run_probe()` has never executed end to end on real representations, and `C-091` showed the frozen
+file could not even construct its estimator. The first real run — the one that reads the test split
+once — is not the place to discover a runtime error. The dry run exercises everything except the
+irreversible step.

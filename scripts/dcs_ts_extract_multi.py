@@ -46,6 +46,9 @@ def main() -> int:
     ap.add_argument("--tag-prefix", default="ts116m_full")
     ap.add_argument("--layers", default="6,7,8,9,10,11,12,13,14")
     ap.add_argument("--position", default="codeword_last")
+    ap.add_argument("--only-cell", default="")
+    ap.add_argument("--only-query-kind", default="")
+    ap.add_argument("--only-n-examples", type=int, default=-1)
     a = ap.parse_args()
 
     names = [b for b in a.banks.split(",") if b]
@@ -66,6 +69,12 @@ def main() -> int:
                "--bank", bank, "--no-knockout",
                "--layers", a.layers, "--position", a.position,
                "--tag", f"{a.tag_prefix}_{name}"]
+        if a.only_cell:
+            cmd += ["--only-cell", a.only_cell]
+        if a.only_query_kind:
+            cmd += ["--only-query-kind", a.only_query_kind]
+        if a.only_n_examples >= 0:
+            cmd += ["--only-n-examples", str(a.only_n_examples)]
         print(f"\n=== [{i}/{len(names)}] {name} ===", flush=True)
         print("    " + " ".join(cmd), flush=True)
         t0 = time.time()

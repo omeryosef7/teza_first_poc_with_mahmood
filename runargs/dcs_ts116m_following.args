@@ -6,3 +6,9 @@ ts116m
 ts116m_following
 --position
 following
+--only-cell
+C
+--only-query-kind
+semantic_one_word
+--only-n-examples
+4

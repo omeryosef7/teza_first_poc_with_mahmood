@@ -1102,6 +1102,9 @@ def main() -> int:
                          "and a knocked-out run answering that glob would silently replace the "
                          "baseline it is meant to be compared against.")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--only-cell", default="", help="restrict to one cell, e.g. C")
+    ap.add_argument("--only-query-kind", default="", help="restrict to one query kind")
+    ap.add_argument("--only-n-examples", type=int, default=-1, help="restrict to one dose")
     ap.add_argument("--enable-thinking", default=None, choices=[None, "true", "false"])
     # --- this file's own ------------------------------------------------------------------- #
     ap.add_argument("--band", default=DEFAULT_BAND,
@@ -1168,6 +1171,24 @@ def main() -> int:
 
     dc, pc = ds(), pair()
     all_rows = read_jsonl(args.bank)
+    # POPULATION FILTER (DCS-C-102). The PR-051 control only ever needs the analysis population --
+    # cell C x semantic_one_word x n_examples=4 -- which is 1,140 of 22,272 rows per bank, a 20x
+    # reduction. Extracting all 22,272 would have cost ~6 GPU-hours for rows no analysis reads.
+    #
+    # This is not only thrift. Fair-share is depleted after today's runs and SLURM estimated the
+    # full control job's start at 2026-09-10 01:03 -- three days out. A short job can BACKFILL into
+    # a gap; a six-hour job cannot. Switching to a spare GPU class was rejected instead: PR-051 is
+    # a PAIRED contrast between two read sites, so extracting the control on different hardware
+    # would confound bf16 numerics with the site being tested. Same hardware, fewer rows.
+    if args.only_cell:
+        all_rows = [r for r in all_rows if r.get("cell") == args.only_cell]
+    if args.only_query_kind:
+        all_rows = [r for r in all_rows if r.get("query_kind") == args.only_query_kind]
+    if args.only_n_examples >= 0:
+        all_rows = [r for r in all_rows if int(r.get("n_examples", -1)) == args.only_n_examples]
+    if not all_rows:
+        raise SystemExit("population filter selected ZERO rows -- refusing to run an empty "
+                         "extraction that would look like a completed one")
     rows = select_rows(all_rows, args.smoke, args.limit, knockout)
     if not rows:
         raise SystemExit(f"no rows selected from {args.bank}")
