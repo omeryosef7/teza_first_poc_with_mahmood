@@ -3276,3 +3276,52 @@ threshold — but the gap is real and it is mine. **PHASE 9 must close it before
 
 Nothing was filtered: full distributions are reported and installation is a **stratification
 variable**, per mandate §15.
+
+## 2026-09-07 · B-021 · the PHASE 9 analyzer is built, and it found five blockers **in my own design**
+
+`scripts/dcs_ts_pr057_causal.py`, `reports/DCS_TS_PR057_DESIGN.md`. **`--self-test` 46 checks,
+0 failed; `--mutate` 21/21 RED; `--plan` enumerates 54 arms** (24 live, 30 control), 230 rows/arm
+on TEST, with per-arm launch commands. Default invocation **refuses** (no arm has run);
+`--for-extraction` refuses on 8 blocking items. Config and mandate §10 were checked against each
+other and **agree on every clause**, so nothing was chosen between them.
+
+The self-test includes the things that actually matter here: a deliberately **disabled hook**
+reproduces its input exactly, passes as a bridge, and is **REFUSED when presented as live**; a dead
+hook, a zero-norm direction and a zero-magnitude edit are each caught; the `C-068`
+read-at-the-edit-layer case is caught; domain-level permutation recovers a planted shift and
+centres at 0; and dropping any one of the four success conditions yields 3/4 with `success=False`.
+The literal negative wording is asserted as a string so it cannot drift.
+
+**Five blocking findings, all in work I specified:**
+
+**Q9 — the preregistered O2 is NOT COMPUTABLE.** `score_behavior` asserts one concept/codeword pair
+per bank and builds its answer set from `rows[0]`, so **there is no `logP(knife)` on a bomb bank**.
+`PR-057`'s O2 — source-vs-target concept log-odds, which is how success condition 2 was to be
+measured — **cannot be formed at all** on this data layout. The analyzer returns
+`computable=False`, reports the companion `semantic_logodds` explicitly labelled as unable to
+satisfy condition 2, and **refuses to emit a verdict**. I preregistered an outcome the pipeline
+cannot produce; better found now than after a GPU run.
+
+**Q13 — the controls would have been norm-matched to the WRONG direction.**
+`make_intervention`'s `random` and `orthogonal` controls derive from `payload["d_surface"]`.
+Unless the `PR-053` payload aliases that to `v_bomb_specific`, **C1 and C4 are matched to a
+different base direction while looking correct in every log.** That is precisely the silent-failure
+shape this phase has found eight times, and it would have produced a clean-looking control that
+controlled for nothing.
+
+**Q12 — an S1 arm launched today would silently be an all-position edit.** `make_intervention` only
+ever builds `AllPositionProjectOut`; `score_behavior` also lacks the cross-prompt donor, a
+`component_replace` mode and a disable-hooks flag. The single-site scope of §10.4 does not exist
+yet.
+
+**Q10** — `PR-048` persists `SELECTION_TRACE` and accuracies but **not the fitted coefficients**,
+so O1 has no frozen probe artifact. **Q11** — `extract_boombness.py` has no `--intervene`, so O1
+must be captured inside the intervention run.
+
+**Cost when unblocked:** 12,420 rows, ~1.5–2 GPU-hours, `--time=06:00:00`, derived from a measured
+2.42 rows/s — with the exact `sbatch` line, `BOOMB_EXPECT` and `BOOMB_REQUIRE_ARGS=1` set, and a
+shared-FS argsfile.
+
+**CLAIM C remains UNTESTED, and is now blocked on five concrete, named things rather than on
+"we didn't get to it".** That is a better place to be, and the honest read is that `PR-057` was
+preregistered against a pipeline that cannot yet execute it.
