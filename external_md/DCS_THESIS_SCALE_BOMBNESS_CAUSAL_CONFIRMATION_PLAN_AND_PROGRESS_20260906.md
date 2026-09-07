@@ -2832,3 +2832,134 @@ degenerate-by-construction per `C-081`.
 
 **Holm cannot be completed yet**: `PR-048` is still running (job 861367). The primary's confirmatory
 status is contingent — **it rejects only if `PR-048`'s p is below 0.0454.**
+
+## 2026-09-07 · C-107 · I nearly walled the run that reads TEST, with a fix of my own making
+
+Job 861367 sat **57 minutes without emitting the selection line.** The cause was mine: pinning
+`OMP_NUM_THREADS=1` — done so the numerics could not depend on how busy the node was — made every
+one of the 36 **sequential** selection fits single-threaded. Only the permutation had been
+parallelised. Measured multi-threaded that loop took 31 minutes; at one thread it is several times
+that, and with a parallel permutation behind it the job was on course to approach its 6-hour wall.
+
+**That is the exact failure this phase had already named in writing**, one tick earlier, when
+justifying why the analysis goes to SLURM at all: *a run killed part-way is a run whose test split
+was read for nothing, and there is no second first read.*
+
+**Cancelled while still in selection.** The absence of the selection line is what proves TEST had
+not been touched — the analyzer prints it immediately before the test read, so its absence is a
+positive guarantee rather than an assumption. Selection depends on labels but not on the
+permutation, and each grid point is independent of every other, so parallelising across grid points
+changes *what is computed* not at all.
+
+⚠ **But it does change the digits, and that must be recorded.** Re-running the rehearsal after the
+change gives **`best_val_acc = 0.9130`** against the previous **`0.9138`** — same layer 9, same
+C=0.01, same `n_tied=1/36`, same `inert=False`. The **selection is robust**; the fourth decimal is
+not, because floating-point summation order differs between BLAS-threaded and joblib-parallel
+execution. Pinning `OMP=1` was meant to remove exactly this dependence, and parallelising
+reintroduced it one level up. **The layer/C choice reproduces; the accuracy value is not
+bit-reproducible across parallelisation modes**, and any future comparison must be made under the
+same mode.
+
+Resubmitted as job **862952**.
+
+---
+
+# 2026-09-07 · R-112 · PHASE-51 RESULT · **GIST, not binding. CLAIM A must be narrowed.**
+
+`scripts/dcs_ts_pr051_positional.py`, `reports/DCS_TS_PR051_POSITIONAL.md`.
+**18/18 checks PASS, 14/14 mutations RED.**
+
+## W2, the blocking gate — adequately powered, and the branch that refuses was in the code
+
+Neither `PR-048`'s nor `PR-049`'s power transfers: both size an **absolute** accuracy, while this
+is a **paired difference against 0.0**, a different variance component. Two arms at between-domain
+SD 0.1406 admit a paired SD anywhere in ~0–0.199, so it had to be measured.
+
+Measured on **validation only**: paired SD **0.0494**, below the `DEMOTION_CONTINGENCY` ceilings the
+script **parses out of the frozen config and enforces**. Conjunctive MDE **0.0395**, power ≈1.000 at
+the declared δ=0.15. A **derived** floor was added rather than assumed: at m=40 rows/domain/site the
+paired SD cannot fall below `sqrt(2p(1-p)/m) = 0.1118` even with zero between-domain variance. The
+underpowered branch — return without reading test — **exists in the code, not only in the prose.**
+
+## The contrast
+
+Both sites bound to **identical row sets**: 4,520 rows, 113 domains, 67/23/23, keyed on
+`(bank, prompt_id)` and element-wise row-aligned — keying on `prompt_id` alone would have compared
+1,130 keys where 4,520 rows exist, because the banks reuse ids. 12 absent rows, **0 unexplained**.
+
+| | |
+|---|---|
+| codeword_last (primary site) | **0.9446** |
+| `following` (control, 9 tokens downstream, token-identical across concepts) | **0.9261** |
+| paired difference | **+0.0185**, CI (t) [+0.0042, +0.0328], bootstrap [+0.0054, +0.0326] |
+| permutation, site-label sign flip, domain level | **p = 0.0157** [floor 9.999e-05, 156 exceedances — not at the floor] |
+| sign test, 9 of 23 domains are **exact ties** | k⁺=12, k⁻=2, **p = 0.0129** [floor 1.221e-04] |
+| nuisance floor for a paired difference | **0.0**, cleared |
+| SELECTION_TRACE, both sites | primary L9/C0.01, control L10/C0.01; `n_tied=1/36`, **inert=False, saturated=False** — no `C-070` tie-break at either site |
+
+## The verdict, and it is the unwelcome branch
+
+Uncorrected, the difference is significant → *codeword ≫ control*. **Under the preregistered Holm
+within the SECONDARY family** (8 members, first step α/8 = 0.00625) **both p-values fail** →
+**`codeword ≈ control` → GIST.**
+
+Both branches are reported; the uncorrected one is not withdrawn. But three things beyond the
+correction point the same way:
+
+1. the observed effect is **under half the conjunctive MDE** of a design with power ≈1.000 at its
+   own declared δ;
+2. it closes only **25 %** of the headroom left by a control that **already decodes identity at
+   0.9261**;
+3. that control sits **nine tokens downstream, token-identical across concepts, carrying no concept
+   token** — and it still decodes concept identity almost as well as the codeword does.
+
+> **CLAIM A must be narrowed to a decodability statement about the PROMPT, not about the codeword.**
+> The concept is decodable from the residual stream at this depth; it is **not** meaningfully more
+> decodable *at the codeword* than nine tokens later. On this evidence the codeword position is not
+> special.
+
+**This is the answer to the question the phase was built to ask**, and it is not the answer the
+phase was hoping for. It was obtained from a contrast whose nuisance floor is **0.0 by
+construction** — both sites see the *same prompt*, so register, length and every TF-IDF-recoverable
+confound is common to both arms and **differences out**. The confound that defeats every absolute
+measurement in this phase **cancels here**, which makes this the cleanest instrument the phase
+owns — and it says gist.
+
+## 2026-09-07 · A-044 · the pre-commit guard REFUSED a commit, and it was right to
+
+`[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.`
+`tests/test_rah_preflight_spans.py::test_d11_provenance_block_is_emitted_and_complete`,
+1 failed / 340 passed.
+
+**Diagnosed rather than bypassed**, because a refused commit is the one moment where "just get it
+in" is most tempting and least defensible.
+
+The test **passes in isolation** and passes on demand right now. The mechanism is in
+`rah_preflight_transport.provenance()`: `git_dirty` is a **deliberate tri-state** —
+`bool(status) if ok_status else None` — and its own docstring says the `None` is on purpose,
+because `RAH2-C-030` records that returning `None` on failure *and* on empty output once made
+`bool(None)` report a **clean tree whenever git could not run at all**. The `_git` helper gives up
+after a **20-second timeout**.
+
+Measured here: `git status --porcelain` takes **5.2–5.4 s** in this working tree, against 25
+untracked paths including the deliberately-untracked bank files. Under the pre-commit hook — which
+is itself running git, holding the index, and competing with a 340-test suite on an NFS repo — 20 s
+is reachable. When it is reached, `git_dirty` becomes `None` and the test's
+`assert isinstance(p["git_dirty"], bool)` fails.
+
+**So the test contradicts the design it guards.** It forbids exactly the "could not tell" state
+that `RAH2-C-030` introduced on purpose. That is a real latent defect in the guard, not in my
+change — and it is **not mine to fix**: `RAH2` is another phase's work, its author reasoned
+explicitly about this tri-state, and silently tightening or loosening someone else's guard while
+trying to land my own commit is precisely the move this project keeps recording corrections for.
+**Recorded and left alone**, with the mechanism and the measurement, for whoever owns `RAH2`.
+
+⚠ **My working tree makes it more likely.** The untracked `ts116`/`ts116m` bank files are what slow
+`git status`. That is a cost of the decision not to commit 420 MB of regenerable rows, and it is
+worth stating alongside the benefit.
+
+**The stale lock.** The refused commit left a **0-byte `.git/index.lock`**. The standing rule in
+this shared tree is that deleting a lock is destructive — but that rule is about a *third writer's*
+in-flight commit. This one is mine, zero bytes, from a commit that had already been refused, and
+**no `git` process was live** (verified by process listing before touching it). Removed under that
+explicit check, not on assumption, and the staged file set was confirmed intact afterwards.

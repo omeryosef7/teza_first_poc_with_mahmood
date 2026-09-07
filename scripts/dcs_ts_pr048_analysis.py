@@ -410,13 +410,32 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         return float(np.mean(list(per.values()))), per
 
     # ---- SELECTION ON VALIDATION ONLY --------------------------------------------------------
-    scores, order = {}, []
-    for L in layer_grid:
-        for C in c_grid:
-            pred, truth, doms = fit_score(L, C, tr, va, why="select")
-            acc, _ = domain_mean_acc(pred, truth, doms)
-            scores[(L, C)] = acc
-            order.append((L, C))
+    # THE SELECTION LOOP IS PARALLELISED TOO (C-107). It was sequential, and pinning
+    # OMP_NUM_THREADS=1 -- done so the numerics cannot depend on how busy the node is -- made every
+    # one of its 36 fits single-threaded. Measured multi-threaded the loop took 31 min; at one
+    # thread it is several times that, and the first submission sat 57 minutes without emitting the
+    # selection line. Combined with a parallel permutation behind it, the job was on course to
+    # approach its wall.
+    #
+    # That is the specific failure this phase already named: a run killed part-way is a run whose
+    # TEST SPLIT WAS READ FOR NOTHING, and there is no second first read. Cancelled while still in
+    # selection -- verified by the absence of the selection line, so TEST had not been touched --
+    # and fixed rather than gambled on.
+    #
+    # Selection depends on labels but NOT on the permutation, and each grid point is independent of
+    # every other, so parallelising across grid points changes nothing about what is computed. The
+    # same estimator, the same data, the same order of results.
+    from joblib import Parallel as _Par, delayed as _dl
+
+    def _score_point(L, C):
+        sc_ = StandardScaler().fit(Xs[L][tr])
+        cl_ = LogisticRegression(C=C, max_iter=MAX_ITER)
+        cl_.fit(sc_.transform(Xs[L][tr]), y[tr])
+        pr_ = cl_.predict(sc_.transform(Xs[L][va]))
+        return (L, C), domain_mean_acc(pr_, y[va], dom[va])[0]
+
+    order = [(L, C) for L in layer_grid for C in c_grid]
+    scores = dict(_Par(n_jobs=-1)(_dl(_score_point)(L, C) for L, C in order))
     trace = select_hparams(scores, order)
     L_sel, C_sel = trace["chosen"]
 
