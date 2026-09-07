@@ -3325,3 +3325,41 @@ shared-FS argsfile.
 **CLAIM C remains UNTESTED, and is now blocked on five concrete, named things rather than on
 "we didn't get to it".** That is a better place to be, and the honest read is that `PR-057` was
 preregistered against a pipeline that cannot yet execute it.
+
+## 2026-09-07 · PR-054 · closing `C-111` **without pretending to preregister a threshold I had already seen**
+
+`configs/dcs_ts_pr054.json`, FROZEN, loads clean.
+
+`C-111` was that I cited `PR-054` in the readout driver's docstring and never wrote it, so `R-115`'s
+0.5 installation cut ran under no preregistration. The obvious repair — write the file now and name
+0.5 — **would have been worse than leaving the gap open.** I have already seen the installation
+numbers on four of six banks. Preregistering a threshold after seeing the data it will be applied
+to is not a preregistration, and calling it one would launder a post-hoc choice into a frozen file.
+
+**So the threshold is removed rather than defended.** The primary reporting mode is **the full
+sweep, 0.10 → 0.90 in steps of 0.05**, per concept, per codeword, per split. `R-115` already
+measured that the bomb ≫ {knife, gun} ordering holds **at every cut in that range** — so no
+threshold is load-bearing for any conclusion drawn, which means there is no reason to pick one, and
+picking one would import a degree of freedom the analysis does not need. **0.5 survives only as a
+labelled reference point for prose**, and every use of it must carry the words *"chosen after
+seeing four of six banks"*.
+
+Two further things the file fixes:
+
+**The measure is a within-prompt contrast, C minus A**, against the byte-identical baseline — so
+its nuisance floor is **0.0 by construction**, exactly as in `PR-051`, and surface confounds
+common to both cells difference out. Installation is never an absolute level against an arbitrary
+bar.
+
+**The §15 prohibition is written in as absolute.** Installation is a **stratification variable**;
+it is **never** a post-hoc exclusion, in this phase or a later one. No domain may be dropped for
+failing to install. *If a result holds only on installing domains, that is a finding to state, not
+a population to quietly adopt.* The analyzer enforces it by reporting full distributions and
+refusing to emit a filtered population.
+
+The file says of itself, in its own `artifacts` block, that it was written **after** the readout ran
+and after partial results were seen, that it specifies **reporting** rather than a hypothesis test,
+and that it is labelled so throughout precisely so it cannot be mistaken for the latter.
+
+**Two blocking items remain on it:** rerun the table on all **six** banks (`R-115` used four), and
+report the sweep rather than a single cut.
