@@ -1975,3 +1975,31 @@ concepts in 0/2300 triples cannot bite. And the layer convention it captures aga
 `PR-049`'s three blockers (2-way power at chance 0.5, the hedge-free stratum re-derived on
 `ts116m`, and the register re-measurement carrying the **+0.10 kill condition**) are running on CPU
 in parallel. They do not depend on the representations, so nothing is serialised behind them.
+
+## 2026-09-07 · PHASE 5 · a scheduling correction, not a scientific one
+
+Of the six extraction jobs, two started on `n-804` and **four sat PENDING for 32 minutes** with
+SLURM estimating starts at **10:09, 10:37, 12:04 and 12:34** — five to eight hours out. `killable`
+was saturated (90 running / 113 pending at the last preflight).
+
+The house rule is to cancel and resubmit with a different configuration when a job passes 30
+minutes pending, measured by `SUBMIT_TIME` rather than elapsed. The nodelist is already all six
+L40S nodes, so **there was nothing to widen** — the thing available to change was the **job
+shape**. Four jobs each waiting for a scarce slot is the wrong shape when each unit of work is
+~30 minutes: **one slot held for two hours beats four slots that never arrive.**
+
+`scancel 860354 860355 860356 860357` (my own jobs only; nothing else was touched, nothing was
+deleted), replaced by **job 860468**, one allocation extracting the remaining four banks
+sequentially via `scripts/dcs_ts_extract_multi.py`. It moved from `(Priority)` to `(Resources)`
+immediately, which is the queue saying it is now a candidate rather than outranked.
+
+**Nothing scientific changes.** Each bank is extracted by exactly the same
+`dcs_extract_under_ko.py` with exactly the same flags it would have received as its own job; the
+driver only decides *when* they run. It shells out per bank rather than importing, so each bank
+gets a clean interpreter and CUDA context — the ~25 s reload is a rounding error against a
+30-minute extraction, and a leaked hook or mutated global cannot cross between banks. It is
+fail-closed: a non-zero exit from any bank stops the run rather than continuing, and each bank's
+own stdout streams through unmodified so §26.10's "did this run what I meant?" is still answerable
+per bank.
+
+**In flight:** 860352 (button_bomb), 860353 (button_knife), 860468 (the remaining four).
