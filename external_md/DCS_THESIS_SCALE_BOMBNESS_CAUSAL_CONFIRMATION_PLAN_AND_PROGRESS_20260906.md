@@ -2963,3 +2963,72 @@ this shared tree is that deleting a lock is destructive — but that rule is abo
 in-flight commit. This one is mine, zero bytes, from a commit that had already been refused, and
 **no `git` process was live** (verified by process listing before touching it). Removed under that
 explicit check, not on assumption, and the staged file set was confirmed intact afterwards.
+
+---
+
+# 2026-09-07 · R-113 · **THE PRIMARY. Job 862952. The test split has now been read, once.**
+
+```
+rows=6780  domains=113  test_domains=23
+SELECTION (validation only): layer=9  C=0.01  best_val_acc=0.9130  n_tied=1/36  inert=False
+OBSERVED domain-mean accuracy = 0.9399   (chance 0.3333)
+sign test    k=23/23   p = 2.38419e-07 [floor 2.384e-07]  <-- AT THE FLOOR, not a measurement
+permutation  p < 9.999e-05 (FLOOR; 0 exceedances -- the design cannot resolve below this)
+NUISANCE FLOOR 0.9217  ->  observed 0.9399  ->  clears_floor = True
+VERDICT: SUPPORTS THE CLAIM
+```
+
+**Holm across the PRIMARY family, computed rather than asserted:**
+
+| step | hypothesis | p | threshold | outcome |
+|---|---|---|---|---|
+| 1 | `PR-048` 3-way accuracy | < 9.999e-05 | α/2 = 0.025 | **REJECT** |
+| 2 | `PR-053` `v_bomb_specific` AUROC | 0.0454 | α/1 = 0.05 | **REJECT** |
+
+Both primaries reject. **And that is the least interesting sentence in this entry.**
+
+## What must be said in the same breath
+
+**1. The margin over the surface floor is 0.0182.** The probe reaches 0.9399; a **bag of words over
+the demonstration block** reaches 0.9217. Clearing it by 1.8 accuracy points is a real result and a
+narrow one, and the floor is a **point estimate with no interval** — I am comparing a point to a
+point. The claim is "above the surface baseline", not "far above" it.
+
+**2. Both p-values are AT their floors, and the analyzer says so in its own output.** `k = 23/23`
+exhausts the sign test; 0 exceedances in 10,000 exhausts the permutation. These are statements that
+**the design cannot resolve further**, not measurements of how extreme the effect is. That is
+precisely the `C-069` failure — a headline p that *was* its own floor, read for months as a
+measurement — and the reason every p in this phase prints beside its floor.
+
+**3. Test (0.9399) came in ABOVE validation (0.9130).** Recorded because it is mildly unusual and I
+would rather flag it than have a reader notice it. It is consistent with 23 test domains being an
+easier draw than 23 validation domains; it is not evidence of anything and no weight is put on it.
+
+**4. `PR-051` already established that this is NOT localised at the codeword.** A control **nine
+tokens downstream**, token-identical across concepts and carrying no concept token, decodes the
+same labels at **0.9261**. So 0.9399 is a fact about **what is decodable from the prompt at this
+depth**, not about the codeword position being special.
+
+**5. `PR-053` established that the residual axis does not separate remapping from identity.**
+`CLAIM B` remains **unsupported** whatever its p-value does under Holm — a p-value cannot rescue a
+design whose question D failed.
+
+## The synthesis, stated as it would be to Matan
+
+> On a 113-domain aligned population where only the harmful demonstrations differ, the installed
+> concept is **linearly decodable from the model's residual stream at layer 9**, at 0.9399
+> domain-mean accuracy over 23 untouched test domains, 23/23 domains above chance — **and above a
+> concept-masked bag-of-words baseline, by 1.8 points.**
+>
+> It is **not** meaningfully more decodable at the codeword than nine tokens downstream, so this is
+> a statement about the **prompt**, not about the codeword being "represented as BOMB".
+>
+> The remapping and identity axes are **not** separable by residualisation: the residual direction
+> carries both.
+>
+> Whether any of this is **causally used** by the model is **untested** — no intervention has been
+> run — and the **register confound has no adequately powered instrument on this corpus**, which is
+> a CANNOT ANSWER with a costed fix for the next data build.
+
+That is a narrower set of claims than the phase set out to make, and every narrowing came from an
+instrument built in advance to be able to say so.
