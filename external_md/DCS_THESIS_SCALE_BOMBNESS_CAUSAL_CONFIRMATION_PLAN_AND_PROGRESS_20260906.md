@@ -3479,3 +3479,127 @@ conclusion here rests on the 0.5 reference point. `PR-054`'s **I-A and I-B are c
 **The codeword remains as consequential as the concept**, now on six banks: `button_bomb` installs
 in **92/113** domains, `basket_bomb` in **46/113** — same concept, same demonstrations, **exactly
 half**.
+
+## 2026-09-07 · the §34 deliverables updated for `R-116`
+
+Both were written while installation was still an assumption. Revised in place:
+
+**The installation row moves from `UNTESTED` to `UNSUPPORTED` as worded** — for knife and gun;
+bomb installs. It now carries the six-bank numbers per concept and **explicitly never pooled**,
+plus the Δ(C−A) > 0 *"direction yes, level no"* line and the exact nulls.
+
+**CLAIM A is now marked narrowed TWICE, by two independent instruments** — `R-112` (not localised
+at the codeword) and `R-116` (for knife and gun there is no installed concept for it to be bound
+to). `CLAIM A′` keeps 0.9399 and its status: **the number stands, its object changes.**
+
+**Three rows added**: the two-channel comparison, the decoded answers (§3.7), and the codeword
+effect. **`CLAIM C` stays `UNTESTED`** — no intervention has run — with `C-112` recorded against it.
+
+**Nine new must-not-say bans**, the important ones being: *"the demonstrations install the
+concept"* (now measured false for two of three), pooling 0.619/0.000/0.009 into a
+*"partial/weak installation"* gradient, quoting the display channel's flattering knife 0.628 as an
+installation number, *"the three-way probe measures concept identity"*, presenting 0.5 as
+preregistered, and treating §10.1's patch as the causal test.
+
+Three tempting framings were **deliberately kept out of the draft and written into the ban list
+instead** rather than softened into it. Compliance re-checked here: the draft's single hit on my
+banned-phrase grep is the sentence *"a null there would look identical whether or not the axis is
+causally used"* — which is the **explanation of why the patch arm is uninterpretable**, not a claim
+of causal use. Legitimate. DRAFT markers intact; **nothing sent**.
+
+⚠ One deviation from my own instruction, recorded rather than hidden: I asked for the draft to stay
+near its existing length and it grew from ~830 to ~1,190 words. The added material is the
+installation result, the channel comparison and the decoded answers — all of which earn their
+space — and weaker content was cut to partly offset it. But it is now a long message rather than a
+short one, and that was my constraint to hold.
+
+---
+
+## DCS-R-117 — PHASE 9 checklist Q0 is CLEARED, and the 16 rows that were not missing
+*2026-09-07*
+
+All six `ts116m` banks have now landed the PHASE 7 readout (3/6 when `DCS_TS_PR057_DESIGN.md` was
+written). `option_mass_gate = PASS` and `reportable = true` on **6/6**, with `semantic_one_word`
+median true mass 0.059-0.086. The preregistered branch "a disengaged primary channel is a CANNOT
+ANSWER, not a licence to fall back on the display channel" is therefore **not** taken.
+
+The row counts disagreed: button banks 5568, basket banks 5552. The prompt banks are identical in
+size (22272) and carry the same 116 domains with an empty symmetric difference, so the 16-row gap
+arose **during scoring**. Chased rather than tolerated, per the standing rule that two disagreeing
+counts get checked at corpus, instrument and population before either is believed.
+
+It resolves **entirely** to the single domain `school_campus` (button 48, basket 32) -- one of the
+three whole-population exclusions, so it cannot reach any result. Restricted to the 113 analysed
+domains all six banks are exactly balanced: **5424 rows each**, identical
+(cell x query_kind x n_examples) profile, {0: 226, 4: 1130} per cell per channel.
+
+This was worth the time precisely because the same 16 rows landing inside an analysed domain would
+have been a defect, and the two cases are indistinguishable without looking.
+
+Population arithmetic cross-checks independently: cell C / `semantic_one_word` / `n_examples=4` =
+1130 rows per bank over 113 domains = 10 rows per domain; TEST is 23 domains, giving **230 rows per
+arm**, which is the number `DCS_TS_PR057_DESIGN.md` section 2 states from the other direction.
+
+Q0 signs off instrument liveness and population balance and **nothing else**. It is not evidence
+against R-116's installation asymmetry (bomb 0.619, gun 0.009, knife 0.000) and must not be quoted
+as though it were. Written up in `reports/DCS_TS_PHASE9_Q0_SIGNOFF.md`.
+
+## DCS-R-118 — PHASE 9 checklist Q2 is CLOSED: the direction exists and reproduces R-111
+*2026-09-07*
+
+`v_bomb_specific` now exists on disk in the format the CONSUMER reads, which is the only format
+that matters. `outputs/dcs_ts/directions_pr053/directions_fit_dev.pt`, written by
+`scripts/dcs_ts_export_directions.py`, which **imports** its estimator from
+`scripts/dcs_ts_pr053_diffmeans.py` rather than reimplementing it.
+
+The format was derived from `score_behavior.py:2081-2085` -- which joins `--fit-dir` with the
+literal filename `directions_fit_dev.pt` and indexes
+`payload[<name>][<int layer>] -> Tensor[H]`, with `payload["gap"]` for `add` dosing and
+`payload["cell_means"]` for realised dose -- not guessed from the writer. Vectors are stored UNIT
+with the raw diff-of-means norm in `gap`, because this call site doses `add` in GAP UNITS and the
+config records that getting this wrong was already missed once at this exact second call site.
+
+**TRAIN only, asserted as equality not disjointness.** The fit set must EQUAL the frozen manifest's
+67 train domains; a population that grew *or shrank* refuses. Disjointness from validation and test
+is checked separately.
+
+**It reproduces the published result**: reloaded from disk and re-scored on the 23 untouched TEST
+domains, band-mean AUROC **0.976401** vs R-111's published 0.9764, CI [0.962219, 0.990583] vs
+[0.9622, 0.9906], sd 0.034703 vs 0.0347, 23/23 domains above chance, per-layer profile identical at
+all nine layers. 25/25 checks GREEN, **20/20 mutations RED** (including TRAIN+TEST leakage,
+fit-on-validation, TRAIN-1 domain, the residual axis swapped for the raw axis, a 1e-4 perturbation,
+and a one-layer rotation catching an off-by-one convention error).
+
+**The R-116 caveat travels with the file.** `v_knife` and `v_gun` are differences over demonstration
+sets that install nothing, so the two subtracted terms are not "the knife and gun concepts" -- they
+are the common mode of non-installing harm demonstrations. The subtraction is doing real work
+(`cos(v_bomb_specific, v_remap)` is only 0.22-0.44 across the band, so this is not a rescaled
+`v_bomb`) and it discriminates at 0.976. What it does **not** license is reading a projection-out
+result as being about concept identity alone. Recorded as `meta.interpretation_warning` inside the
+payload so it cannot be separated from the artifact.
+
+Definition unchanged: exported exactly as PR-053 froze it. The issue is flagged, not fixed.
+
+## DCS-C-113 — the FROZEN phase-9 config names a directions path that can never load
+*2026-09-07* -- defect, recorded, config NOT edited
+
+`configs/dcs_ts_pr057_phase9.json` `directions.artifact.path` reads
+`outputs/dcs_ts_pr053_diffmeans/<run>/directions.pt`. That path cannot ever load: the consumer
+(`score_behavior.py`) does not accept a file path at all -- it takes a DIRECTORY via `--fit-dir`
+and joins the fixed filename `directions_fit_dev.pt` itself. The loader, not the preregistration,
+fixes the filename.
+
+**Impact is documentation-only, and this was checked rather than assumed.** The config deliberately
+writes NO `*_sha16` for this artifact -- its own `pin_rule` explains that a null hash would
+correctly make the preregistration unloadable and an invented one would be worse -- and the path is
+not under `population.banks` or `population.pools`, which are the only places
+`dcs_ts_prereg.validate()` checks paths on disk. So the loader does not refuse, and PHASE 9 is not
+blocked by it.
+
+The config is FROZEN and was **not** edited. The binding requirement Q2 actually imposes is
+unaffected and is met: the analyzer recomputes the direction file's sha256 at load and writes it
+into every run artifact, so the direction actually used stays recoverable from the output even
+though it could not be pinned in advance.
+
+The correct `--fit-dir` argument for every PHASE 9 job is therefore
+**`--fit-dir outputs/dcs_ts/directions_pr053`**, not the path the config prints.

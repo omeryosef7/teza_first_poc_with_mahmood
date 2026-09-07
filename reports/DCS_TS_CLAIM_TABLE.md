@@ -32,14 +32,17 @@ question by construction; the claim is withdrawn).
 
 | CLAIM | EVIDENCE | N_DOMAINS | TEST POPULATION | CAVEAT | STATUS |
 |---|---|---|---|---|---|
-| **A (as worded in mandate §32)** — the **codeword representation** contains the identity of the concept installed by the demonstrations | `R-113` (`PR-048`, `outputs/dcs_ts/pr048_result.json`) + `R-112` (`PR-051`, `reports/DCS_TS_PR051_POSITIONAL.md`) | 113 analysed; **23 test** | `ts116m` cell C, 23 untouched test domains, 67/23/23 frozen split | The decodability is real but is **not localised at the codeword**: a control **nine tokens downstream**, token-identical across concepts and carrying no concept token, decodes the same labels at **0.9261** vs the codeword's **0.9446** (`R-112`). Under the preregistered Holm within the SECONDARY family (8 members, first step α/8 = 0.00625) **both p-values fail** → codeword ≈ control | **NARROWED** |
-| **A′ (the narrowed, defensible form)** — on an aligned 113-domain population the **installed concept is linearly decodable from the residual stream at layer 9**, above a measured surface baseline | `R-113`: domain-mean 3-way accuracy **0.9399** (chance 1/3), **23/23 test domains above chance**; selection layer 9, C=0.01, `n_tied=1/36`, `inert=False` (**not** the `C-070` degenerate selection); nuisance floor **0.9217** (concept-masked TF-IDF bag-of-words over the demo block, `A-041` G5 N5c) cleared by **0.0182** | **23 test** (of 113) | 23 untouched test domains, read **once** (job 862952); validation-only selection | Margin over the surface floor is **1.8 accuracy points**, and the floor is a **point estimate with no interval** — point compared to point. **Both p-values are AT their floors** and are statements about design resolution, not measurements: sign test p = 2.38419e-07 [floor 2.384e-07, k=23/23]; permutation p < 9.999e-05 [0/10000 exceedances]. Test (0.9399) came in **above** validation (0.9130) — flagged, no weight placed on it. This is a statement about **what is decodable from the prompt at this depth**, not about the codeword | **CONFIRMED** |
+| **A (as worded in mandate §32)** — the **codeword representation** contains the identity of the concept installed by the demonstrations | `R-113` (`PR-048`, `outputs/dcs_ts/pr048_result.json`) + `R-112` (`PR-051`, `reports/DCS_TS_PR051_POSITIONAL.md`) + `R-116` (`PR-054`, `reports/DCS_TS_PROMPT_VALIDATION.md`) | 113 analysed; **23 test** | `ts116m` cell C, 23 untouched test domains, 67/23/23 frozen split | Narrowed **twice, by two independent instruments**. (i) Not localised at the codeword: a control **nine tokens downstream**, token-identical across concepts and carrying no concept token, decodes the same labels at **0.9261** vs the codeword's **0.9446** (`R-112`); under the preregistered Holm within the SECONDARY family (8 members, first step α/8 = 0.00625) **both p-values fail** → codeword ≈ control. (ii) **The clause "the concept installed by the demonstrations" does not hold for two of the three arms**: on the concept-free primary channel, per concept and never pooled, the fraction of 113 domains reaching `concept_binary_prob ≥ 0.5` is **bomb 0.619, knife 0.000, gun 0.009** (`R-116`, 32,544 rows, six banks). So the three-way separation is **not** "which concept was installed" — it is **which demonstration set is present**. `R-112` said the signal is not bound to the codeword; `R-116` says that for knife and gun there is no installed concept for it to be bound *to* | **NARROWED** |
+| **A′ (the narrowed, defensible form)** — on an aligned 113-domain population the **installed concept is linearly decodable from the residual stream at layer 9**, above a measured surface baseline | `R-113`: domain-mean 3-way accuracy **0.9399** (chance 1/3), **23/23 test domains above chance**; selection layer 9, C=0.01, `n_tied=1/36`, `inert=False` (**not** the `C-070` degenerate selection); nuisance floor **0.9217** (concept-masked TF-IDF bag-of-words over the demo block, `A-041` G5 N5c) cleared by **0.0182** | **23 test** (of 113) | 23 untouched test domains, read **once** (job 862952); validation-only selection | Margin over the surface floor is **1.8 accuracy points**, and the floor is a **point estimate with no interval** — point compared to point. **Both p-values are AT their floors** and are statements about design resolution, not measurements: sign test p = 2.38419e-07 [floor 2.384e-07, k=23/23]; permutation p < 9.999e-05 [0/10000 exceedances]. Test (0.9399) came in **above** validation (0.9130) — flagged, no weight placed on it. This is a statement about **what is decodable from the prompt at this depth**, not about the codeword. **The 0.9399 stands; its interpretation narrows** (`R-116`): two of the three classes it separates do not install (knife 0.000, gun 0.009 of 113 domains; on the same 23 TEST domains the probe used, bomb 0.522, knife 0.000, gun 0.000), so the three classes are **three demonstration sets**, and "installed concept" must be replaced by "demonstration set present" wherever this row is quoted | **CONFIRMED** (as a decodability result about the prompt; the three-way *concept* framing is `NARROWED` in row A) |
 | **A″** — the codeword position is **special** / more concept-bearing than nearby positions | `R-112`: paired difference **+0.0185**, CI(t) [+0.0042, +0.0328], bootstrap [+0.0054, +0.0326]; permutation p = 0.0157 [floor 9.999e-05, 156 exceedances — **not** at floor]; sign p = 0.0129 with **9 of 23 domains exact ties** | **23 test** | Both sites bound to identical row sets: 4,520 rows, 113 domains, keyed on `(bank, prompt_id)`; 12 absent rows, **0 unexplained** | Uncorrected the difference is significant and that branch is reported, not withdrawn — but under preregistered Holm both fail; the effect is **under half the conjunctive MDE** of a design with power ≈1.000 at its declared δ=0.15; it closes only **25 %** of the headroom above a control that already decodes at 0.9261. Nuisance floor here is **0.0 by construction** (both arms see the same prompt, so every surface confound differences out) — **the cleanest instrument the phase owns, and it says gist** | **UNSUPPORTED** |
 | **B (mandate §32)** — remapping and concept identity correspond to **separable** representational axes | `R-111` (`PR-053`, `scripts/dcs_ts_pr053_diffmeans.py`, `reports/DCS_TS_PR053_DIFFMEANS.md`), preregistered question **D** | 113; **23 test** | `ts116m`, train-only directions, 23 untouched test domains | `v_bomb_specific` was required to read identity and stay **weak** on generic remapping. It does not: **0.8309** polarity-free on C_knife/C_gun vs A (21/23 domains) and **0.8236** on C_bomb vs A, both clearing the surface floor. **The residual axis carries remapping and identity together — residualising changed the mixture, it did not decompose it.** `PR-053` required C *and* D precisely so this could be caught; a p-value cannot rescue a design whose question D failed | **UNSUPPORTED** |
 | **B′ (the part that did hold)** — `v_bomb_specific` separates C_bomb from the hard negatives {C_knife, C_gun} | `R-111`: band-mean L6–14 domain-mean **AUROC 0.9764**, CI [0.9622, 0.9906], d = 3.03, **23/23 domains**, clearing the measured surface floor 0.7479 by 0.2285; permutation **p = 0.0454** [floor 9.999e-05, 453/10,000 — **not** at floor]. Holm across the PRIMARY family (`PR-048`, `PR-053`): **both REJECT** | **23 test** | 23 untouched test domains; directions fit on train only (the `D1` leak in `dcs_diffmeans_directions.py` was **fixed in `PR-053`, not inherited**) | **The null is BIMODAL** (sd 0.409): **4.5 % of arbitrary concept relabellings reach 0.9764**. The effect is enormous *and* the label-permutation evidence that it is specifically **BOMB** is thin — which is why p = 0.0454 sits beside an AUROC of 0.9764. Quoting the AUROC without that sentence badly overstates the case. The sign-test p (2.384e-07) **is** its own floor. This row does **not** rescue CLAIM B | **CONFIRMED** (as a discrimination result only) |
 | **Inherited claim that the raw `v_bomb` axis does *not* read concept identity (~0.574)** | `R-111`: with the A term genuinely cancelling, **B = 0.8856**; A (remapping axis) = 0.9969; E button→basket transfer 0.9747, Spearman ρ = 0.9921 on per-domain ranks; F (n_ex=0 null) fires exactly — ‖v‖ = 0.0, all contrasts 0.5000 | **23 test** | `ts116m` | The old ~0.574 was an artifact of each concept having its **own unaligned baseline**. ⚠ The concept-relabelling null is **only properly centred for the residual family** (C null mean 0.4943, D 0.5065); for the raw family it is structurally off-centre (A 0.8794, B 0.2230) because `mean_j w_j = 0` exactly while `mean_j u_j` is the grand remapping direction. **A's and B's permutation p-values are not calibrated and must not be quoted.** The point estimates stand; their p-values do not | **VOID** (the inherited negative is withdrawn) |
-| **C (mandate §32)** — the concept-specific direction **is / is not causally used** | none | 0 | none | **No intervention has been run in this phase.** There is no direct intervention on the concept axis, no matched control, no downstream semantic outcome. Nothing in `R-111`/`R-112`/`R-113` speaks to causal use in either direction | **UNTESTED** |
-| **Installation** — the demonstrations actually install their concept **in the model** (as opposed to in the text) | none in this phase; a readout run (job **865335**) is in flight at the time of writing and has produced no result | 0 | none | This is currently an **assumption inherited from the design**, not a measurement. Every decodability number above is compatible with the model merely encoding what the demonstration text says. It must be stated as an assumption wherever CLAIM A′ is used | **UNTESTED** |
+| **C (mandate §32)** — the concept-specific direction **is / is not causally used** | none | 0 | none | **No intervention has been run in this phase.** There is no direct intervention on the concept axis, no matched control, no downstream semantic outcome. Nothing in `R-111`/`R-112`/`R-113`/`R-116` speaks to causal use in either direction. ⚠ `R-116` changed how the causal test must be built: mandate §10.1's **patch arm is DEMOTED to exploratory** (`C-112`) because its donor — a C_knife prompt — installs no concept in 113/113 domains, so a null there would arise whether or not the axis is causally used; **mandate §10.2's projection-out becomes the primary causal test**, since it acts on a **bomb** prompt where the concept does install (0.619 of 113 domains) and needs no donor | **UNTESTED** |
+| **Installation** — the demonstrations actually install their concept **in the model** (as opposed to in the text) | `R-116` (`PR-054`, `scripts/dcs_ts_prompt_validation.py`, `reports/DCS_TS_PROMPT_VALIDATION.md`); job 865335 `COMPLETED 0:0`, **32,544 rows, 113 domains, 6/6 banks** — supersedes `R-115`'s four-bank table | **113** (all splits reported; the 23 test domains reported separately) | all six `ts116m` banks, cell C, dose 4, primary concept-free channel `semantic_one_word` | **No longer an assumption — measured, and per concept it does not hold.** Fraction of 113 domains at `concept_binary_prob ≥ 0.5`: **bomb 0.619, knife 0.000, gun 0.009**; on `R-113`'s 23 TEST domains **bomb 0.522, knife 0.000, gun 0.000**. Median `semantic_logodds` **bomb +0.99, knife −6.83, gun −7.38**. Never pooled: the honest statement is *"bomb installs in a majority of domains; knife and gun do not install"*, not *"the demonstrations install their concept"*. All three arms show Δ(C−A) > 0 — **direction yes, level no**. Nulls are exact (dose 0 and cell A both at `concept_binary_prob` 0.0000). ⚠ 0.5 is a **labelled post-hoc reference point chosen after seeing four of six banks**, not a gate: `PR-054` makes the **full 0.10–0.90 sweep** the primary reporting mode, and the ordering holds at every cut (0.10 → 109/17/49; 0.90 → 4/0/0). Installation is a **stratification variable and never a post-hoc exclusion** (mandate §15) | **UNSUPPORTED** (as worded, for knife and gun; bomb installs) |
+| **INSTRUMENT — the choice of readout channel, not the model, decides whether knife "installs"** | `R-116`: the **same rows** scored through both channels. Domains installing — primary concept-free `semantic_one_word`: bomb **0.619**, knife **0.000**, gun **0.009**; display forced-choice `semantic_forced_choice`: bomb **0.991**, knife **0.628**, gun **0.088**. The concept word appears in `full_prompt` on **100 %** of forced-choice rows and **0 %** of primary-channel rows | 113 | all six `ts116m` banks, cell C, dose 4 | The entire knife difference (0.000 → 0.628) is that forced choice **names the answer in its own question** (*"…does the word button refer to a button or to a knife?"*). ⚠ On the display channel ` Knife` is chosen **502 times in cell A** — the **benign baseline, where no knife demonstration exists at all**. Had the display channel been primary, this phase would have concluded that **all three concepts install** and that the three-way probe measures concept identity. The `PR-048` decision to make the concept-free channel primary was recorded **before any of this was visible**, with the known risk that its absolute option mass might be too small to use — that risk is retired: primary-cell median `option_mass` **0.1138** against the 0.05 gate, 95.5 % of rows ≥ 1 %, so the preregistered CANNOT-ANSWER trigger does **not** fire (⚠ still a minority of the mass, and dose-0 rows sit at 0.0328, **below** the gate) | **CONFIRMED** (as a finding about the instrument, not about the model) |
+| **The decoded answers themselves** — *"what does the codeword actually refer to?"* (mandate §3.7) | `R-116`, top next-token answers, primary channel, cell C, dose 4: **bomb → ` Bomb` 779**, ` Alarm` 119, ` Basket` 97; **knife → ` Container` 348, ` Basket` 324, ` Button` 208 — never ` Knife`**; **gun → ` Basket` 295, ` Button` 247 — never ` Gun`**; cell A, all three concepts → ` Basket` 295, ` Button` 140, identical as the byte-identical baseline requires | 113 | all six `ts116m` banks | Asked what the codeword refers to, the model answers **"Bomb"** when bomb was demonstrated and answers **with the codeword itself** when knife or gun was. This needs no statistic and no threshold, and it is the same conclusion as the installation row reached by counting words instead of probabilities. It is a statement about **the model's own next-token report on this channel**, not about causal use | **CONFIRMED** (as a descriptive readout) |
+| **The codeword matters as much as the concept** | `R-116`, six banks: `button_bomb` installs in **92/113** domains, `basket_bomb` in **46/113** — same concept, same demonstrations, **exactly half** | 113 | `ts116m`, primary channel, cell C, dose 4 | The lexical item is not incidental to whether the mapping takes. Any statement of the form "the concept installs" without naming the codeword is under-specified by a factor of two | **CONFIRMED** |
 | **D (mandate §32)** — a specific **demonstration→query pathway** is required for the model's semantic report | none in this phase | 0 | none | Not run: this phase built and read representations, not attention interventions. The inherited instrument is separately compromised (next row) | **UNTESTED** |
 | **Inherited "the whole-query pathway was removed" (`R-093`)** | `C-068`: **0 differing fp16 bit patterns over 2,520 rows in all three banks** at the L6 read site | 6 (inherited) | old 6-domain banks | The read site is degenerate by construction, so gate R6 is uninformative and the "whole-query knockout" is **arithmetically identical to blocking one row**. Mandate §33 already forbids the sentence | **VOID** |
 | **E (mandate §32)** — **representation destruction predicts behavioural change** | PHASE 7 / R8, log §A-034.2 D | — | — | Two independent disqualifiers: **no behavioural outcome exists on the bank `x` was measured on**, and power is **0.2501 against a 0.50 bar under a perfectly monotone truth**. ρ = +0.60 is **not citable in either direction**. No behaviour, ASR or representation→behaviour mediation was run in this phase | **CANNOT ANSWER** |
@@ -120,10 +123,55 @@ none of them is safe with a clause removed.
     causally used', which would be a claim we did not earn." *(mandate §32 CLAIM C; nothing in the
     log speaks to it)*
 
-11. "Whether the demonstrations install the concept in the model, as opposed to merely writing it in
-    the text, is an assumption we have not yet measured; the readout run is in flight (job 865335)
-    and has no result yet. Everything above is compatible with the model encoding what the
-    demonstration text says." *(no log entry claims installation)*
+11. "Installation is no longer an assumption — we measured it on all six banks, 32,544 rows, 113
+    domains, and per concept it does not hold. On the concept-free channel, the fraction of 113
+    domains where the model reports the concept at probability 0.5 or more is bomb 0.619, knife
+    0.000 and gun 0.009; on the same 23 test domains the probe used, bomb 0.522, knife 0.000, gun
+    0.000; median log-odds bomb +0.99, knife −6.83, gun −7.38. So bomb installs in a majority of
+    domains and knife and gun do not install at all — and I will not pool those." *(`R-116`,
+    `reports/DCS_TS_PROMPT_VALIDATION.md`)*
+
+11a. "That narrows R-113 a second time, and this is the headline change rather than a footnote: the
+    three-way probe reached 0.9399 separating three classes, and two of those classes do not
+    install. So it is not distinguishing which concept was installed — it is distinguishing which
+    demonstration set is present. The 0.9399 stands as a number; what it is a number about has
+    changed. And it converges with the positional result from a completely independent direction:
+    R-112 said the signal is not localised at the codeword, and R-116 says that for knife and gun
+    there was never an installed concept for it to be localised to." *(`R-116` + `R-112` + `R-113`)*
+
+11b. "The single most showable result of the phase is the same rows scored through two channels. On
+    the concept-free channel knife installs in 0.000 of 113 domains; on the forced-choice channel it
+    installs in 0.628 — and the whole of that difference is that forced choice names the answer in
+    its own question. The concept word appears in the prompt on 100 % of forced-choice rows and 0 %
+    of primary-channel rows, and on the forced-choice channel the model picks ' Knife' 502 times in
+    cell A, the benign baseline where no knife demonstration exists at all. Had we made the display
+    channel primary, this phase would have concluded that all three concepts install and that the
+    probe measures concept identity. The decision to make the concept-free channel primary was
+    recorded in PR-048 before any of this was visible, with the known risk that its option mass
+    would be too small to use — and that risk is retired: median option mass 0.1138 against a 0.05
+    gate, with 95.5 % of rows above 1 %, though it is still a minority of the mass and the dose-0
+    rows sit below the gate at 0.0328." *(`R-116`)*
+
+11c. "And the version of this that needs no statistics at all, which is your §3.7 question answered
+    directly: asked what the codeword refers to, on the concept-free channel in cell C at dose 4,
+    the top answers are ' Bomb' 779 times, ' Alarm' 119, ' Basket' 97 when bomb was demonstrated;
+    ' Container' 348, ' Basket' 324, ' Button' 208 and never ' Knife' when knife was; ' Basket' 295,
+    ' Button' 247 and never ' Gun' when gun was. The model answers 'Bomb' for bomb and answers with
+    the codeword itself for knife and gun." *(`R-116`)*
+
+11d. "Two qualifications I want to give you unprompted. The 0.5 cut is not a preregistered gate — it
+    is a labelled reference point chosen after I had seen four of the six banks, so PR-054 makes the
+    full 0.10-to-0.90 sweep the primary reporting mode instead; the bomb-over-knife-and-gun ordering
+    holds at every cut in that range, so nothing rests on the threshold. And the codeword matters as
+    much as the concept: button_bomb installs in 92 of 113 domains and basket_bomb in 46 of 113 —
+    same concept, same demonstrations, exactly half." *(`PR-054`, `R-116`)*
+
+11e. "This also changed the causal design before we spent GPU on it, not after. Mandate §10.1's
+    patch arm was to move a C_knife representation into a C_bomb prompt, but the knife donor
+    installs nothing in 113 of 113 domains, so a null there would look the same whether or not the
+    axis is causally used — that arm is demoted to exploratory, and §10.2's projection-out becomes
+    the primary causal test, because it acts on a bomb prompt where the concept does install."
+    *(`C-112`)*
 
 12. "Register is a stated scope limit of this bank family and I want to be the one who says it:
     natural bomb text hedges at 13.72 %, knife at 0.20 %, gun at 2.33 %, so register is produced by
@@ -247,9 +295,32 @@ Each of these was sayable before and is not now. The banning entry is named.
 - ✗ "Decodable but not causally used under this intervention." — Also banned here. That sentence is
   the mandate's correct wording *for a negative causal result*, and we do not have one; there was no
   intervention.
-- ✗ "The demonstrations install the concept in the model." — Never measured; job 865335 is in flight
-  with no result. Say "the demonstrations define the concept in the prompt" and mark installation as
-  an assumption.
+- ✗ "The demonstrations install the concept in the model." — **Now measured, and false as a general
+  statement** (`R-116`): knife **0.000** and gun **0.009** of 113 domains. Only the per-concept form
+  is sayable: *"bomb installs in 0.619 of 113 domains; knife and gun do not install."*
+- ✗ Pooling the three concepts into one installation number, or saying "the concepts install" /
+  "installation is partial" / "installation is weak". It is **not weak, it is absent for two of
+  three arms** — 0.619 vs 0.000 vs 0.009 is not a gradient to average over (`R-116`).
+- ✗ "The three-way probe measures concept identity." / "R-113 shows which concept was installed." —
+  Two of the three classes do not install; the probe distinguishes **which demonstration set is
+  present** (`R-116`). The 0.9399 itself is **not** retracted and must not be dropped — only its
+  object changes.
+- ✗ Quoting the display channel's installation numbers (bomb 0.991, knife **0.628**, gun 0.088) as
+  installation. `semantic_forced_choice` **names the concept word in its own question** — the word
+  is in `full_prompt` on 100 % of its rows and 0 % of primary-channel rows, and it picks ` Knife`
+  **502 times in cell A**, the benign baseline. Any use of those numbers must carry that sentence,
+  and must say the primary channel is `semantic_one_word`.
+- ✗ Presenting the 0.5 installation cut as preregistered, as a gate, or without the words *"chosen
+  after seeing four of six banks"*. `PR-054` removed it rather than defending it; the primary
+  reporting mode is the **full 0.10–0.90 sweep** (`C-111`, `PR-054`).
+- ✗ Excluding non-installing domains from any analysis. Installation is a **stratification
+  variable, never a post-hoc exclusion** (mandate §15, written into `PR-054` as absolute). If a
+  result holds only on installing domains, that is a finding to state, not a population to adopt.
+- ✗ "The concept installs" without naming the codeword — `button_bomb` **92/113** vs `basket_bomb`
+  **46/113**, same concept, exactly half (`R-116`).
+- ✗ "Mandate §10.1's patch arm will test causal use." — Demoted to **exploratory** (`C-112`): its
+  knife donor installs nothing in 113/113 domains, so its null cannot distinguish its own
+  hypotheses. §10.2's projection-out is the primary causal test — and it has **not been run**.
 - ✗ Any causal verb applied to the probe result: "drives", "causes", "makes the model treat",
   "is used by the model to".
 
@@ -294,7 +365,7 @@ Each of these was sayable before and is not now. The banning entry is named.
 
 - ✗ Presenting `R-111`/`R-112`/`R-113` as three converging confirmations. `R-112` **narrows**
   `R-113`, and `R-111` reports a **negative** on its own CLAIM-B question. Two of the three
-  headline results are constraints on the third.
+  headline results are constraints on the third — and `R-116` is a **third** constraint on it.
 - ✗ Any sentence of the form "we showed the mechanism". This phase measured **decodability from the
   prompt**, under a stated register limit, on one model, with no intervention.
 
