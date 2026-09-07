@@ -2171,3 +2171,119 @@ happens to be ready would be the worst kind of shortcut.
 Recorded as `Q-012` and flagged for Omer: a preregistration whose primary statistic omits a
 population axis is a defect in the preregistration, even when the axis is recoverable. The next one
 states the codeword scope in the statistic line.
+
+---
+
+# 2026-09-07 · A-043 · FOUR-HOUR FULL REVIEW #2 (mandate §29)
+
+Window `e4d78bf0..b5359329`. Three lenses. Reports:
+`reports/DCS_TS_REVIEW2_{CODE,DATA,SCIENCE}.md`. It found **three CRITICALs in the analyzer, an
+eighth instance of the compound class inside the C-087 fix, a seventh unfalsifiable check, and an
+arithmetic error in my own Q-012 resolution.** Everything below is fixed or recorded; all of it was
+found **before any outcome existed**, which is the only reason it was cheap.
+
+## C-091 · **the frozen analyzer could never have run**
+
+`LogisticRegression(multi_class="multinomial")` — the kwarg was **removed in scikit-learn 1.7**,
+and **1.9.0 is installed**. Confirmed by execution:
+`TypeError: LogisticRegression.__init__() got an unexpected keyword argument 'multi_class'`.
+`run_probe()` would have died on the **first of 36 selection fits, after loading ~6 GB of
+representations.** The file I committed as "the frozen analyzer, written before the outcome
+exists" was, as committed, incapable of producing any outcome at all.
+
+Amended, and **the amendment is not behaviour-neutral for `PR-049`**: with two classes the removed
+kwarg forced softmax, whereas the default path is binary. For three classes sklearn 1.9's default
+is softmax (verified: `coef_.shape == (3, n_features)`), so the primary is unaffected; the choice
+is now recorded in the artifact rather than left to a default that changed under us.
+
+## C-092 · **the null and the observed statistic were fit by different estimators**
+
+The observed fit used `max_iter=2000`; the permutation fit used `max_iter=200`. **A permutation
+test is valid only when the labels are the sole difference between the two pipelines.** The
+permuted problem is strictly harder — 68 mutually inconsistent within-domain label maps — so if the
+budget binds, it binds **on the null draws**, depressing null accuracies, reducing exceedances, and
+making **p too small**. The reviewer timed it at the real shape and found convergence in 9–14
+iterations, so it probably never bound; *probably* is not a property, and an artifact produced
+under a binding budget would have been indistinguishable from a valid one.
+
+Both paths now go through **one** `fit_score()` with one `MAX_ITER`, the permutation rebinding only
+the labels, and **`ConvergenceWarning` is captured and persisted** rather than swallowed.
+
+## C-093 · running the co-primary would have destroyed the primary
+
+`--out` defaulted to a single fixed path and **both** preregistrations name this same analyzer.
+Running `PR-049` would have overwritten `PR-048`'s result — while Holm needs both. Now derived from
+the preregistration id.
+
+## C-094 · the analyzer never checked that the extraction was COMPLETE
+
+It verified bank sha, position and attention — **all three of which pass on a 4-row smoke run.**
+`n_rows_captured`, `n_failed` and `knockout_applied` were never checked, so a partial extraction
+would have been analysed as if it were the population. Now all three refuse.
+
+## C-090 · the EIGHTH instance — inside the `C-087` fix, triplicated across three files
+
+`has_compound()` compared the substring count against `\bconcept\w*\b` — which **matches a prefix
+compound**. `gunfire` satisfies it, so the counts agreed and the check returned False, while
+`str.replace` would produce `buttonfire`. Blind to exactly the direction the original defect did
+not happen to take: `gunfire`, `bombardment`, `knifepoint` all passed.
+
+Fixed to compare against standalone-word occurrences. Verified on all four prefix cases and three
+legitimate ones. **Rescanned the shipped pools: 1 hit in 13,920 — the already-excluded
+`subway_station` handgun.** The defect was **latent, not live**; the banks are unaffected.
+
+## C-095 · the SEVENTH unfalsifiable check — my own mutation harness
+
+`dcs_ts_verify_ts116n.py` printed *"4/4 RED — every gate must be demonstrably falsifiable"* while
+carrying **no mutation for either gate added in this window** — neither the inflection/case check
+(`C-076`/`C-079`) nor the compound check (`C-087`/`C-090`). A harness that does not attack a gate
+cannot certify it, and printing a total that silently omits the untested gates is worse than
+printing nothing.
+
+Three mutations added — an extra inflected occurrence, an unenumerated case form, and a compound.
+**All three go RED. 7/7 mutations now turn a gate RED**, and the total covers every gate.
+
+## C-096 · my Q-012 arithmetic was wrong by 3×
+
+I wrote that the bank carries *"30 rows per domain per concept per codeword"*. **It carries 10** —
+30 is the all-query-kinds count, and the primary binds one kind. So `m=60` is 10 × 3 concepts × 2
+codewords, which still resolves to **two codewords** and leaves the pooling conclusion unchanged.
+The premise as written was wrong and is corrected rather than left for a reader checking the
+arithmetic. Also fixed: exclusions were being selected by testing whether the prose `scope` string
+*contains* `"ENTIRE"` — the `C-086` construction one window later, correct today only by luck of
+wording. Now a required boolean `whole_population`, and an exclusion that fails to declare it is a
+refusal.
+
+## What the data lens could NOT break — including the check nobody had run
+
+- **6/6 banks**: `bank_file_sha16` and `bank_rows_sha16` both recompute to the `PR-048` pins;
+  0 duplicate `prompt_id` in 133,632 rows; flat 192 rows/domain.
+- **3/3 completed extractions**: `DONE.json`, 22,272/22,272, `n_failed=0`, sha matching, `eager`,
+  `codeword_last`, `knockout_applied=false`, and the **cache tensor count loaded and counted**
+  rather than read off a summary field.
+- **The representations themselves, checked for the first time**: 66,816 tensors all `(9, 4096)`,
+  **0 NaN/Inf**, **0 of 22,271 equal to row 0**, norms rising monotonically 5.5→9.6 with sd
+  0.26–0.50. An extraction that had silently captured one vector 22,272 times would have passed
+  every earlier check.
+- **The check that matters most, and it passes decisively.** For matched `prompt_id`, bomb-bank and
+  knife-bank reps are **0/300 identical**, and TRAIN-only layer-9 cosine is **0.9006 bomb↔knife**
+  against **0.9429 within-bank same-domain**. **The concept swap moves the representation FURTHER
+  than the prompt swap**, at all nine layers. This is not `C-074`.
+- Population binds **6,840 rows** (4,080/1,380/1,380), exactly the independent figure; split
+  integrity holds at 68/23/23 over 114 domains.
+
+## Recorded, not yet acted on
+
+- **D2-05**: `restaurant_kitchen`'s exclusion rationale quotes a sentence from the **ts116n** pools,
+  not the pinned `tsm` pools — and all 116 domains of the pinned pools are already clean
+  (0/13,920 cross-concept). The exclusion is therefore **conservative rather than necessary** on the
+  live corpus, as `C-082` already suspected. Kept; the rationale text is stale and is flagged here.
+- **D2-07**: truncated sentences are **53 of 13,920**, not the 1 the preregistration names —
+  104 of 6,840 primary rows, and in TEST that is bomb 10 / knife 0 / gun 4. An **asymmetric**
+  nuisance that no gate currently measures. → new `Q-013`.
+- **D2-04**: G2's rule text says 116/116, its recorded result says 115/115, and the verifier now
+  computes 114 — three populations in one frozen file. The **bytes are stronger** than the record
+  (the reviewer measured 116/116), but *"19/19 PASS"* is not reproducible from the file as written.
+- **D2-01**: this log said "the three basket banks are still running". That is wrong: **one** job
+  runs all four remaining banks sequentially. Finish ≈08:51 against a 10:44 wall — 1h53m margin,
+  but **one node failure now costs three banks, not one.**

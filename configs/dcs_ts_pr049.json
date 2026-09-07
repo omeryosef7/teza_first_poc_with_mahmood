@@ -92,18 +92,21 @@
         "scope": "the ENTIRE analysis population, all concepts, all cells",
         "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
         "seed_bumps_attempted": 1,
-        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
       },
       {
         "domain": "subway_station",
         "scope": "the ENTIRE analysis population, all concepts, all cells",
         "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
-        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
       },
       {
         "domain": "school_campus",
         "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
-        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
+        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected.",
+        "whole_population": false
       }
     ],
     "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",

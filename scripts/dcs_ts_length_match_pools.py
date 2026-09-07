@@ -87,10 +87,26 @@ CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun":
 #: WHOLE-WORD COUNT. If `gun` appears 2 times as a substring but once as a word, something in the
 #: sentence is a compound the substituter will silently eat.
 def has_compound(sentence: str, concept: str) -> bool:
-    """True if `concept` appears inside a longer word, where str.replace would still rewrite it."""
+    r"""True if `concept` appears inside a longer word, where str.replace would still rewrite it.
+
+    `DCS-C-090`, the EIGHTH instance of the class -- and it was inside the C-087 fix itself,
+    triplicated across three files. The first version compared the substring count against
+    `\bconcept\w*\b`, which MATCHES a prefix compound: `gunfire` satisfies it, so `n_sub == n_word`
+    and the check returned False while `str.replace` would happily produce `buttonfire`. Blind to
+    exactly the direction the original defect did not happen to take. `gunfire`, `bombardment` and
+    `knifepoint` all passed.
+
+    The correct comparison is against occurrences that stand alone as a WORD (allowing only the
+    listed inflectional suffixes): if the substring appears more often than it appears as a word,
+    something is a compound.
+
+    Scanned the shipped pools when this was found: 0 of 13,920 sentences hit it, so the defect was
+    LATENT, not live -- the banks are unaffected. Fixed anyway, because the next corpus is the one
+    it would have bitten.
+    """
     n_sub = len(re.findall(re.escape(concept), sentence, flags=re.I))
-    n_word = len(re.findall(r"\b" + re.escape(concept) + r"\w*\b", sentence, flags=re.I))
-    return n_sub != n_word
+    n_standalone = len(re.findall(r"\b" + re.escape(concept) + r"(?:s|es)?\b", sentence, flags=re.I))
+    return n_sub != n_standalone
 
 
 def usable(sentences: list[str], concept: str) -> list[str]:

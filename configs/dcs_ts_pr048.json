@@ -93,18 +93,21 @@
         "scope": "the ENTIRE analysis population, all concepts, all cells",
         "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
         "seed_bumps_attempted": 1,
-        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
       },
       {
         "domain": "subway_station",
         "scope": "the ENTIRE analysis population, all concepts, all cells",
         "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
-        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
       },
       {
         "domain": "school_campus",
         "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
-        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
+        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected.",
+        "whole_population": false
       }
     ],
     "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
@@ -216,7 +219,8 @@
       "reading": "the PRIMARY POOLS both codewords in training and in test.",
       "evidence_from_the_frozen_artifact_not_from_preference": "power.deff_at_m60 = 6.22 and power.n_eff_test_rows = 222 are computed at m=60 rows per domain. The bank carries 30 rows per domain per concept per codeword, so m=60 is arithmetically TWO codewords. The frozen power analysis therefore already assumed pooling, and A-039 rule (4) -- adopted into the log before extraction -- says in terms: 'use both codewords (SD 0.1514->0.1406, n_eff 193.6->222.0, and a free generalisation axis)'. The reading is derivable from the artifact; it is not a choice being made now.",
       "consistency_with_mandate_5_3": "Mandate 5.3 forbids pooling button and basket into training for the flagship LEXICAL-GENERALISATION claim. That claim is secondary.lexical_transfer, which is explicitly a SEPARATE FIT: 'train on button TRAIN domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining.' So there are two fits -- a pooled one for concept identity and a button-only one for lexical transfer -- and neither borrows the other's numbers.",
-      "consequence": "The primary cannot be computed until ALL SIX banks are extracted. The three button banks are done and verified; running the primary on them alone would be a different estimand than the frozen one, and would also be a peek at TEST. It waits."
+      "consequence": "The primary cannot be computed until ALL SIX banks are extracted. The three button banks are done and verified; running the primary on them alone would be a different estimand than the frozen one, and would also be a peek at TEST. It waits.",
+      "CORRECTION_D2_02": "My stated derivation said the bank carries '30 rows per domain per concept per codeword'. IT CARRIES 10 for the primary query kind -- 30 is the all-query-kinds count, and the primary binds one kind. So m=60 is 10 rows x 3 concepts x 2 codewords, which still resolves to TWO codewords, and the pooling conclusion is unchanged. But the premise as written was wrong by 3x and is corrected here rather than left to be found by a reader checking the arithmetic."
     }
   },
   "secondary": {

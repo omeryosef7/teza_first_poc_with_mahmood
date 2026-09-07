@@ -107,10 +107,26 @@ CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun":
 #: WHOLE-WORD COUNT. If `gun` appears 2 times as a substring but once as a word, something in the
 #: sentence is a compound the substituter will silently eat.
 def has_compound(sentence: str, concept: str) -> bool:
-    """True if `concept` appears inside a longer word, where str.replace would still rewrite it."""
+    r"""True if `concept` appears inside a longer word, where str.replace would still rewrite it.
+
+    `DCS-C-090`, the EIGHTH instance of the class -- and it was inside the C-087 fix itself,
+    triplicated across three files. The first version compared the substring count against
+    `\bconcept\w*\b`, which MATCHES a prefix compound: `gunfire` satisfies it, so `n_sub == n_word`
+    and the check returned False while `str.replace` would happily produce `buttonfire`. Blind to
+    exactly the direction the original defect did not happen to take. `gunfire`, `bombardment` and
+    `knifepoint` all passed.
+
+    The correct comparison is against occurrences that stand alone as a WORD (allowing only the
+    listed inflectional suffixes): if the substring appears more often than it appears as a word,
+    something is a compound.
+
+    Scanned the shipped pools when this was found: 0 of 13,920 sentences hit it, so the defect was
+    LATENT, not live -- the banks are unaffected. Fixed anyway, because the next corpus is the one
+    it would have bitten.
+    """
     n_sub = len(re.findall(re.escape(concept), sentence, flags=re.I))
-    n_word = len(re.findall(r"\b" + re.escape(concept) + r"\w*\b", sentence, flags=re.I))
-    return n_sub != n_word
+    n_standalone = len(re.findall(r"\b" + re.escape(concept) + r"(?:s|es)?\b", sentence, flags=re.I))
+    return n_sub != n_standalone
 
 
 def occurrence_counts(sentence: str, concept: str) -> tuple[int, int]:
@@ -182,6 +198,24 @@ def g1_pools(res: Result, mutate: str | None = None) -> None:
         if mutate == f"g1_other_{cc}":
             k = next(k for k in pools if k.endswith("|harm"))
             pools[k]["sentences"][0] = "A gun was found next to the " + cc + "."
+        # THE SEVENTH UNFALSIFIABLE CHECK, found by the second four-hour review: this harness
+        # printed "4/4 RED -- every gate must be demonstrably falsifiable" while carrying NO
+        # mutation for either gate added in this window. A harness that does not attack a gate
+        # cannot certify it, and printing a total that omits the untested gates is worse than
+        # printing nothing. One mutation per new gate:
+        if mutate == f"g1_plural_{cc}":
+            # C-076: an extra INFLECTED occurrence the substituter will not rewrite
+            k = next(k for k in pools if k.endswith("|harm"))
+            plural = {"bomb": "bombs", "knife": "knives", "gun": "guns"}[cc]
+            pools[k]["sentences"][0] = f"The {cc} rack was full of clean {plural}."
+        if mutate == f"g1_case_{cc}":
+            # C-079: a case form _substitute does not enumerate
+            k = next(k for k in pools if k.endswith("|harm"))
+            pools[k]["sentences"][0] = f'A container marked "{cc[0]}{cc[1:].upper()}" was found.'
+        if mutate == f"g1_compound_{cc}":
+            # C-087/C-090: the concept inside a longer word, which str.replace still rewrites
+            k = next(k for k in pools if k.endswith("|harm"))
+            pools[k]["sentences"][0] = f"A witness described the {cc} as a large hand{cc} nearby."
 
         n_shared = n_harm = 0
         bad_shared, bad_occ, bad_other = [], [], []
@@ -345,6 +379,8 @@ def main() -> int:
     if a.mutate:
         print("\n=== mutation harness: every gate must be demonstrably falsifiable ===")
         muts = [f"g1_share_{CONCEPTS[1]}", f"g1_other_{CONCEPTS[1]}",
+                f"g1_plural_{CONCEPTS[1]}", f"g1_case_{CONCEPTS[1]}",
+                f"g1_compound_{CONCEPTS[2]}",
                 f"g2_{CODEWORDS[0]}", f"g3_{CODEWORDS[0]}"]
         n_red = 0
         for m in muts:

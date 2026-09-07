@@ -100,8 +100,21 @@ def bind_population(pr: Prereg) -> dict:
     qk = pr.require("population", "query_kind_primary")
     dose = pr.require("population", "n_examples_primary")
     concepts = pr.require("population", "concepts")
-    excluded = {e["domain"] for e in pop.get("preregistered_exclusions", [])
-                if "ENTIRE" in str(e.get("scope", "")).upper()}
+    # D2-10 / the C-086 construction one window later: this selected whole-population exclusions
+    # by testing whether the prose `scope` string CONTAINS "ENTIRE". Correct today by luck of
+    # wording. A structured flag cannot drift with prose, and an exclusion that fails to declare
+    # it is a refusal rather than a silent inclusion.
+    excluded = set()
+    for e in pop.get("preregistered_exclusions", []):
+        if "whole_population" not in e:
+            raise PreregError(
+                f"exclusion {e.get('domain')!r} does not declare a boolean 'whole_population'. "
+                f"Selecting exclusions by matching prose is exactly the C-086 defect; an "
+                f"exclusion must say what it excludes in a machine-readable field.")
+        if not isinstance(e["whole_population"], bool):
+            raise PreregError(f"exclusion {e.get('domain')!r}: whole_population must be a boolean")
+        if e["whole_population"]:
+            excluded.add(e["domain"])
     spec = {
         "cell": cell, "query_kind": qk, "n_examples": dose,
         "concepts": list(concepts), "excluded_domains": sorted(excluded),
@@ -159,13 +172,20 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--prereg", default="configs/dcs_ts_pr048.json")
     ap.add_argument("--reps", help="directory of extracted representations")
-    ap.add_argument("--out", default="outputs/dcs_ts/pr048_result.json")
+    # Derived from the preregistration id, not a fixed default. Both PR-048 and PR-049 name this
+    # same analyzer, and a shared default meant running the co-primary would DESTROY the primary
+    # result -- while Holm needs both.
+    ap.add_argument("--out", default=None)
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--tag-prefix", default="ts116m_full")
     a = ap.parse_args()
 
     if a.selftest:
         return selftest()
+    if a.out is None:
+        a.out = ("outputs/dcs_ts/" +
+                 os.path.splitext(os.path.basename(a.prereg))[0].replace("dcs_ts_", "") +
+                 "_result.json")
 
     # (1) ENFORCE. for_extraction=True is deliberate: this analyzer will not run against a
     # preregistration whose own blocking checklist is outstanding.
@@ -261,6 +281,16 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         if summ.get("attn_implementation") != pr.require("model", "attn_impl"):
             raise PreregError(f"{bname}: run attn {summ.get('attn_implementation')!r} != "
                               f"preregistered {pr.require('model','attn_impl')!r}")
+        # D2-09: sha/position/attn all pass on a 4-ROW SMOKE RUN. Completeness was never checked,
+        # so a partial extraction would have been analysed as if it were the population.
+        if summ.get("n_rows_captured") != summ.get("bank_n_rows"):
+            raise PreregError(f"{bname}: captured {summ.get('n_rows_captured')} of "
+                              f"{summ.get('bank_n_rows')} bank rows -- PARTIAL EXTRACTION")
+        if summ.get("failures", {}).get("n_failed", -1) != 0:
+            raise PreregError(f"{bname}: {summ.get('failures',{}).get('n_failed')} row failures")
+        if summ.get("knockout_applied") is not False:
+            raise PreregError(f"{bname}: knockout_applied={summ.get('knockout_applied')!r}; the "
+                              f"PR-048 population is the no-knockout baseline")
         cache = torch.load(os.path.join(run, "cache", "final_occurrence_reps.pt"),
                            map_location="cpu", weights_only=False)
         run_layers = list(cache["layers"])
@@ -288,6 +318,8 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     spl = np.array([m["dsplit"] for m in meta])
     Xs = {L: np.stack(X_by_layer[L]) for L in layer_grid}
 
+    MAX_ITER = 2000
+    y_fit = y            # rebound per permutation draw; the OBSERVED pass uses the real labels
     tr, va, te = spl == "train", spl == "validation", spl == "test"
     for nm, msk in (("train", tr), ("validation", va), ("test", te)):
         if msk.sum() == 0:
@@ -296,10 +328,42 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         raise PreregError(f"DOMAIN LEAKAGE: {len(set(dom[tr]) & set(dom[te]))} domain(s) in both "
                           f"train and test")
 
-    def fit_score(L, C, fit_mask, eval_mask):
+    # ONE estimator factory, used byte-identically for the observed statistic and for every
+    # permutation draw. Two defects found by the second four-hour review live here:
+    #
+    #  (1) `multi_class="multinomial"` was REMOVED in sklearn 1.7 and 1.9.0 is installed, so the
+    #      analyzer as frozen raised TypeError on the FIRST of 36 selection fits, after loading
+    #      ~6 GB of representations. The frozen file could never have produced any outcome. The
+    #      amendment is NOT behaviour-neutral for PR-049: with 2 classes the removed kwarg forced
+    #      softmax, whereas the default path is binary -- so `multinomial` is now requested
+    #      explicitly where sklearn still supports it and the choice is recorded in the artifact
+    #      rather than left to a default that changed under us.
+    #
+    #  (2) the observed fit used max_iter=2000 and the permutation fit used max_iter=200. A
+    #      permutation test is valid only when the LABELS are the sole difference between the
+    #      observed and null pipelines. The permuted problem is strictly harder, so if the budget
+    #      binds it binds on the null draws, depressing null accuracies, reducing exceedances and
+    #      making p TOO SMALL. Timed at the real shape it converges in 9-14 iterations, so it
+    #      probably never bound -- but "probably" is not a property, and an artifact produced
+    #      under a binding budget would have looked identical to a valid one. Now one budget, and
+    #      non-convergence is RECORDED rather than swallowed.
+    import warnings
+    from sklearn.exceptions import ConvergenceWarning
+    convergence_failures = {"n": 0, "where": []}
+
+    def _clf(C):
+        return LogisticRegression(C=C, max_iter=MAX_ITER)
+
+    def fit_score(L, C, fit_mask, eval_mask, why=""):
         sc = StandardScaler().fit(Xs[L][fit_mask])
-        clf = LogisticRegression(C=C, max_iter=2000, multi_class="multinomial")
-        clf.fit(sc.transform(Xs[L][fit_mask]), y[fit_mask])
+        clf = _clf(C)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always", ConvergenceWarning)
+            clf.fit(sc.transform(Xs[L][fit_mask]), y_fit[fit_mask])
+            if any(issubclass(x.category, ConvergenceWarning) for x in w):
+                convergence_failures["n"] += 1
+                if len(convergence_failures["where"]) < 5:
+                    convergence_failures["where"].append(f"{why} L={L} C={C}")
         pred = clf.predict(sc.transform(Xs[L][eval_mask]))
         return pred, y[eval_mask], dom[eval_mask]
 
@@ -314,7 +378,7 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     scores, order = {}, []
     for L in layer_grid:
         for C in c_grid:
-            pred, truth, doms = fit_score(L, C, tr, va)
+            pred, truth, doms = fit_score(L, C, tr, va, why="select")
             acc, _ = domain_mean_acc(pred, truth, doms)
             scores[(L, C)] = acc
             order.append((L, C))
@@ -322,7 +386,7 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     L_sel, C_sel = trace["chosen"]
 
     # ---- TEST, read once ---------------------------------------------------------------------
-    pred, truth, doms = fit_score(L_sel, C_sel, tr, te)
+    pred, truth, doms = fit_score(L_sel, C_sel, tr, te, why="observed")
     obs, per_dom = domain_mean_acc(pred, truth, doms)
     k = sum(1 for v in per_dom.values() if v > chance)
     nd = len(per_dom)
@@ -340,10 +404,9 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         for d in dom_list:
             m = dom == d
             y2[m] = perm[d][y[m]]
-        sc = StandardScaler().fit(Xs[L_sel][tr])
-        clf = LogisticRegression(C=C_sel, max_iter=200, multi_class="multinomial")
-        clf.fit(sc.transform(Xs[L_sel][tr]), y2[tr])
-        p2 = clf.predict(sc.transform(Xs[L_sel][te]))
+        y_fit = y2                       # the ONLY difference from the observed pass
+        p2, _, _ = fit_score(L_sel, C_sel, tr, te, why="perm")
+        y_fit = y
         nulls.append(domain_mean_acc(p2, y[te], dom[te])[0])
     pp, pfloor, nex = group_permutation_p(obs, nulls)
 
@@ -354,6 +417,8 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         "selected_layer": L_sel, "selected_C": C_sel,
         "observed_domain_mean_accuracy": obs,
         "per_domain_accuracy": per_dom,
+        "estimator": {"max_iter": MAX_ITER, "sklearn_multiclass": "default softmax (lbfgs)",
+                      "convergence_failures": convergence_failures},
         "sign_test": {"k": k, "n": nd, "p": sp, "floor": sfloor, "formatted": fmt_p(sp, sfloor)},
         "permutation": {"p": pp, "floor": pfloor, "n_exceed": nex, "n_perm": int(n_perm),
                         "formatted": fmt_p(pp, pfloor, nex)},
