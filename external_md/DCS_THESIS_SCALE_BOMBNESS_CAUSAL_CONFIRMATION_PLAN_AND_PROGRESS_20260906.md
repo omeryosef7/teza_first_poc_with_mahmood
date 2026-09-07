@@ -2372,3 +2372,83 @@ The honest caveats it attached, which I am not going to soften: **the find rate 
 decelerating** — `C-088` found three GREEN mutations *after* the harness-hardening commit — and
 **every guard shares an author with the thing it guards.** That is the strongest available argument
 for keeping independent adversarial lenses running rather than trusting the harnesses.
+
+## 2026-09-07 · R-108 · 30 extraction failures, all one domain, and the guard was wrong
+
+`basket_bomb` returned **22,242 / 22,272 with 30 failures** — the first extraction that is not
+clean. Every failure reads `resolve:occurrence_count_mismatch: text=N, tokens=N+1`: **always
+exactly one more TOKEN occurrence than TEXT occurrence.**
+
+**Diagnosed, not assumed: all 30 are `school_campus`.** It is `C-075`'s `basketball` defect, and at
+extraction it is not a metadata nuisance — `resolve_occurrences` found an extra token occurrence
+and **refused rather than guessing which one was the codeword**. That is correct behaviour. 15 in
+cell A, 15 in cell C; 3 of them in the primary population; the domain is in TRAIN.
+
+**`school_campus` is therefore widened to a WHOLE-POPULATION exclusion** in all four
+preregistrations. Its earlier scope — occurrence-ordinal analyses only — was written before we
+knew the pipeline would refuse the rows outright. Validation and test are untouched; **the analysed
+split becomes 67 / 23 / 23 over 113 domains.**
+
+**And my `C-094` guard was the wrong guard.** A blanket `n_failed == 0` would have refused this
+bank outright and told me nothing about why. The right rule is that every row missing from the
+cache must belong to a **preregistered excluded domain** — an *explained* failure passes, a single
+**unexplained** one refuses, naming the domains. That is strictly stronger than `n_failed == 0` on
+a clean run, and it does not silently tolerate the case it was written for.
+
+## 2026-09-07 · C-099 · the control site I queued was chat scaffold
+
+`W3` verified `--position last` against all four criteria and it passes them all —
+token-identical across concepts 2280/2280 triples, strictly after every codeword 6840/6840, no
+concept surface, present 6840/6840. **And it is pure chat scaffold**: the token is `'\n\n'`
+(id 271) in **6,840/6,840**, the terminator of the generation header, five tokens past the last
+content token.
+
+A scaffold control is a weaker instrument than a content one, and `PR-051`'s interpretation turns
+on which it is. The token-role map's own nomination was **`rel_end = −9`, `' actually'`** — the
+repo's `following` site, which `resolve_occurrences` has **always returned** and which the CLI
+**never exposed**, so no run could capture it.
+
+`--position following` added; job **860778 cancelled** while still pending (start estimated 12:59,
+so nothing was lost) and replaced by **860873** capturing the content control. Same cost, better
+instrument.
+
+⚠ Also flagged and true: `PR-051`'s `artifacts.extraction` says "no additional forward passes"
+while its own `design.sites` requires a control extraction. That is a contradiction inside a frozen
+file, written by me, and it is corrected rather than argued away.
+
+## 2026-09-07 · C-100 · **PR-050's central premise is false**
+
+`Z1` tested 17 candidate stratifications, scoring 100 strata for the 3-way and 74 for
+knife-vs-gun. **Zero usable strata reach chance on either contrast**, even under the weaker
+CI-covers rule. Closest usable: 0.4609 (3-way) and 0.5826 (2-way).
+
+`PR-050` asserts that within a surface-matched stratum the surface classifier is at chance **"by
+construction"**. **It is not, and the reason is elementary: a partition cannot change pooled
+accuracy** (0.5913 / 0.6630 under every stratification tried), and conditioning on the predicted
+score does not balance the arms. Refitting inside the most favourable stratum still gives 0.4986 /
+0.5609 — **binning removes confidence, not information.** I asserted a mathematical property that
+is simply untrue, and the kill condition I attached is now the operative clause.
+
+**One construction does work and is not preregistered:** arm-balanced joint simplex cells on
+knife-vs-gun — surface accuracy **0.5054**, CI [0.4629, 0.5479], 552 rows (60 %), all 23 domains,
+refit-within 0.5109. For the 3-way, **0 of 17** arm-balanced constructions work.
+
+## 2026-09-07 · C-101 · **PR-049's published power was overstated, and it fails at its own Holm alpha**
+
+`Z2` recomputed the variance components and reproduced `PR-048`'s icc / deff / n_eff to four
+decimals — so the correction is a correction, not double counting. On that basis
+**`PR-049`'s unstratified knife-vs-gun power is 0.905 / 0.793, not the published 0.963 / 0.900.**
+
+**0.793 is below 0.80 at the Holm alpha `PR-049` itself declares**, before any stratification is
+taken. `R-106` called it CO-PRIMARY on the strength of 0.900. That verdict is **withdrawn**: by the
+demotion rule already written into `PR-049`, knife-vs-gun is **EXPLORATORY**, and the trigger is
+not the SD>0.188 route I anticipated but a straightforward arithmetic correction to the power
+itself. And within the one clean stratum `Z1` found, power is **0.721** — so the surface-matched
+route is **not powered either** (MDE 0.1062–0.1186 against a +0.15 bar; roughly 0.06–0.09 of Holm
+power lost per halving).
+
+**Where this leaves the register question, stated plainly.** `PR-050` as frozen rests on a false
+premise; the only stratification that achieves balance is unpreregistered, 2-way only, and
+underpowered. **The register confound currently has no adequately powered instrument.** That is a
+**CANNOT ANSWER** unless something changes, and per `PR-050`'s own kill condition it will be
+reported as one rather than absorbed by the positional contrast.

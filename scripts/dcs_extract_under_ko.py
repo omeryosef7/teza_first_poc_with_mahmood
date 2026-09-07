@@ -468,7 +468,7 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
             skip_reasons[why.split(":")[1]] += 1
             continue
         templated, ids, last, following, n_sub = occ
-        if args.position != "last" and not last:
+        if args.position not in ("last",) and not last:
             ledger.fail(f"capture:no_occurrence_at_position:{args.position}", pid)
             skip_reasons["no_occurrence_at_position"] += 1
             continue
@@ -550,10 +550,21 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
             run.abort(f"knockout_liveness_row_failure: {e}", ledger=ledger)
             raise SystemExit(f"REFUSING (run aborted, no DONE.json): {e}")
 
-        pos = (len(ids) - 1) if args.position == "last" else last[-1]
+        if args.position == "last":
+            pos = len(ids) - 1
+        elif args.position == "following":
+            if not following:
+                ledger.fail("capture:no_following_index", pid)
+                skip_reasons["no_following_index"] += 1
+                continue
+            pos = following[-1]
+        else:
+            pos = last[-1]
         # The SAME self-check extract_boombness makes on every row (the phantom-cell guard).
         if args.position == "codeword_last" and pos not in last:
             raise SystemExit(f"{pid}: capture index {pos} is not a codeword occurrence")
+        if args.position == "following" and (pos in last or pos >= len(ids)):
+            raise RuntimeError(f"following index {pos} is a codeword position or out of range")
         if args.position == "last" and pos != len(ids) - 1:
             raise SystemExit(f"{pid}: capture index {pos} != seq_len-1")
 
@@ -1071,7 +1082,17 @@ def main() -> int:
     ap.add_argument("--bank", default=DEFAULT_BANK)
     ap.add_argument("--layers", default="6,7,8,9,10,11,12,13,14",
                     help="'all' or a comma list of BLOCK indices (PR-035 used 6..14)")
-    ap.add_argument("--position", default="codeword_last", choices=["codeword_last", "last"])
+    # `following` added 2026-09-07 (DCS-C-099). `resolve_occurrences` has always RETURNED the
+    # following index -- the token immediately after the codeword's last subtoken, the repo's
+    # existing "following" site -- but the CLI never exposed it, so no run could capture it.
+    #
+    # WHY IT MATTERS. PR-051 needs a DOWNSTREAM NEUTRAL control position. `last` qualifies on all
+    # four formal criteria but is PURE CHAT SCAFFOLD: measured on ts116m it is the token '\n\n'
+    # (id 271) in 6840/6840 prompts, the terminator of the generation header, five tokens past the
+    # last content token. A scaffold control is a weaker instrument than a content one, and the
+    # token-role map's own nomination was rel_end -9, `' actually'`, which IS this following site.
+    ap.add_argument("--position", default="codeword_last",
+                    choices=["codeword_last", "last", "following"])
     ap.add_argument("--model", default=None, help="default = ds_common.PRIMARY_MODEL")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260905)

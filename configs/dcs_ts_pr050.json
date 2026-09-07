@@ -104,9 +104,9 @@
       },
       {
         "domain": "school_campus",
-        "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
-        "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected.",
-        "whole_population": false
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-075 + R-108. 'basket' matches inside 'basketball.' in this domain's dev preamble. At extraction that is not a metadata nuisance but a HARD REFUSAL: resolve_occurrences found one more TOKEN occurrence than TEXT occurrence and declined to guess which was the codeword, so 30 rows of basket_bomb failed with occurrence_count_mismatch (text=N, tokens=N+1). Verified: all 30 are school_campus, 3 of them in the primary population. The extractor behaved correctly -- it refused rather than mis-indexing -- so the honest response is to remove the domain rather than to tolerate rows the pipeline could not resolve. Widened from the earlier occurrence-ordinal-only scope to the WHOLE population. It is in TRAIN: validation and test stay 23/23, analysed split becomes 67/23/23 over 113 domains.",
+        "whole_population": true
       }
     ],
     "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
@@ -150,13 +150,13 @@
     "manifest_sha16": "be7d2c772d814ef3",
     "field": "dsplit",
     "unit": "domain",
-    "n_train": 68,
+    "n_train": 67,
     "n_validation": 23,
     "n_test": 23,
     "seed": 202609061,
     "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
     "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
-    "n_domains_analysed": 114,
+    "n_domains_analysed": 113,
     "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 68 are ANALYSED (restaurant_kitchen C-082, subway_station C-087 -- both TRAIN, both prompt-only and prospective). The manifest is NOT regenerated; a split may be created once (mandate 5.2)."
   },
   "model": {

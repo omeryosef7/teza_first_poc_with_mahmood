@@ -286,8 +286,19 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         if summ.get("n_rows_captured") != summ.get("bank_n_rows"):
             raise PreregError(f"{bname}: captured {summ.get('n_rows_captured')} of "
                               f"{summ.get('bank_n_rows')} bank rows -- PARTIAL EXTRACTION")
-        if summ.get("failures", {}).get("n_failed", -1) != 0:
-            raise PreregError(f"{bname}: {summ.get('failures',{}).get('n_failed')} row failures")
+        # R-108: a blanket `n_failed == 0` is the wrong guard. basket_bomb failed 30 rows, and
+        # ALL 30 are `school_campus` -- the C-075 `basketball` defect, where the extractor found one
+        # more TOKEN occurrence of the codeword than TEXT occurrences and REFUSED rather than
+        # guessing which was the codeword. That is correct behaviour, and the domain is now a
+        # whole-population preregistered exclusion, so those failures are EXPLAINED.
+        #
+        # What must never pass is an UNEXPLAINED failure. So the guard is: every row missing from
+        # the cache must belong to an excluded domain. A single failure outside them refuses.
+        # This is strictly stronger than n_failed == 0 would have been on a clean run, and it does
+        # not silently tolerate the case it was written for.
+        n_failed = summ.get("failures", {}).get("n_failed", -1)
+        if n_failed < 0:
+            raise PreregError(f"{bname}: summary does not report failures.n_failed")
         if summ.get("knockout_applied") is not False:
             raise PreregError(f"{bname}: knockout_applied={summ.get('knockout_applied')!r}; the "
                               f"PR-048 population is the no-knockout baseline")
@@ -295,6 +306,15 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
                            map_location="cpu", weights_only=False)
         run_layers = list(cache["layers"])
         rows = load_bank_rows(os.path.join(REPO, bpath))
+        unexplained = sorted({rows[pid]["domain"] for pid in rows if pid not in cache["reps"]}
+                             - set(spec["excluded_domains"]))
+        if unexplained:
+            n_un = sum(1 for pid in rows if pid not in cache["reps"]
+                       and rows[pid]["domain"] not in spec["excluded_domains"])
+            raise PreregError(
+                f"{bname}: {n_un} row(s) missing from the cache in {len(unexplained)} domain(s) "
+                f"that are NOT preregistered exclusions: {unexplained[:5]}. An unexplained "
+                f"extraction failure silently shrinks the population; refusing.")
         for pid, rep in cache["reps"].items():
             r = rows.get(pid)
             if r is None:
