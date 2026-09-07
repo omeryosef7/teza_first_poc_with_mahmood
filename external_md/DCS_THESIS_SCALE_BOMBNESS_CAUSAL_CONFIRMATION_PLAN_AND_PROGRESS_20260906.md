@@ -1840,3 +1840,94 @@ probe requires knowing the live corpus's concept backing, so it should gate. Tig
 before any data exists is unambiguously safe, and it is recorded rather than done quietly.
 
 **Checklist: X1 done · X2 BLOCKING running · X3 done (R-104) · X4 BLOCKING running · X5 done.**
+
+## 2026-09-07 · C-087 · the SEVENTH instance — and this time it is the substituter itself
+
+`prompt_families._substitute` uses `str.replace`, which has **no word-boundary notion at all**. So
+`subway_station|harm[32]`:
+
+> *"A witness described the **gun** as a large, black **handgun** with a silver barrel."*
+
+passes every occurrence rule — one whole-word `gun`, in a substitutable case — and then **ships
+as `handbutton` / `handbasket`.** The inflection-aware, case-enumerated rule of `C-076`/`C-079` is
+blind to **compounds**, and this leaks concept identity **lexically** — only the gun arm contains
+`hand<codeword>` — while remaining invisible to every whole-word leakage check, including `N3`.
+
+The same pool's sentence 33 is also **truncated**: *"After the inspection, we felt relieved that
+no gun"* — no object, no terminal punctuation. **No occurrence rule can catch that**, because its
+count is correct.
+
+**The general rule, which subsumes all the special cases:**
+
+> **the substring count must equal the whole-word count.**
+> If `gun` appears twice as a substring but once as a word, something is a compound the
+> substituter will silently eat.
+
+Added to the gate, the generator and the length matcher from one shared implementation.
+Verified to separate the cases: `handgun` → True, *"The gun was found near the platform"* → False,
+*"The knife rack held clean knives"* → False.
+
+**Measured scope: exactly ONE compound occurrence across all three pools**, so excluding
+`subway_station` removes the entire known population of the defect. It is in **TRAIN**, so
+validation and test stay at 23/23 and the power analysis is unchanged. **Analysed population:
+114 domains, 68 / 23 / 23.**
+
+## 2026-09-07 · R-105 · X2 and X4 closed on `ts116m`
+
+**X2 — the read site survives, but with a distinction that must not be lost.**
+`rel_end = −9` (`' actually'`, id 3604) passes all four criteria on the full population:
+strictly after every codeword 6900/6900, token-identical across concepts 2300/2300 triples, no
+concept substring, present 6900/6900.
+
+⚠ **`−9` is NOT the primary read site.** `PR-048` reads `codeword_last`, which is `rel_end = −10`;
+`−9` is the **downstream neutral control**. Recorded explicitly so the two are never conflated.
+
+⚠ **And the finding that matters most for the extraction code:** the **absolute** codeword index
+is identical across concepts in **0 / 2300** triples — cross-concept spread 9.36 ± 5.90 tokens,
+range 0–50 — while the **end-relative** index is identical in **2300 / 2300** at exactly −10,
+sd 0. An absolute index would read **a different token in each concept arm**. `len(input_ids) +
+rel_end` is mandatory. This is the absolute-position-index bug class that has already hit this
+repo twice, and here it would have silently mis-read the primary.
+
+`C-084` is **verified, not refuted**: the published token means differ from the raw ones by a
+constant +1, exactly the `<|begin_of_text|>` BOS. Templated lengths are bomb 230.22 ± 13.11 /
+knife 229.50 ± 12.43 / gun 230.69 ± 13.11, cross-concept spread **1.194 tokens**. The K-ladder
+finding also re-derives: the first **five** rungs still carry zero query content; the codeword sits
+at K=10.
+
+**X4 — concept backing on the live corpus, nothing inherited.** 23 checks, 24 mutations, 24/24 RED.
+
+| | bomb | knife | gun |
+|---|---|---|---|
+| tier-1 explosive predicates | 394/9200 = **4.28 %** | **0/9200 = 0.00 %** | 6/9200 = 0.07 % |
+| positive control (own affordances) | **394** | **548** | **282** |
+| largest off-diagonal | — | — | **8** |
+| mass-noun polysemy | 0.57 % | **0.00 %** | 0.04 % |
+| hedging (narrow) | 13.72 % | 0.20 % | 2.33 % |
+| `C-076`/`C-079` violations | **0** | **0** | **0** |
+
+The 3×3 affordance matrix is diagonal-dominant with a largest off-diagonal of 8, and **no
+explosive predicate appears in any knife pool**. This is the positive control the original 6-domain
+banks scored *zero* on, and the word-swap bank could not have had at all.
+
+## 2026-09-07 · THE EXTRACTION GATE IS OPEN
+
+```
+=== prereg configs/dcs_ts_pr048.json (for_extraction=True) ===
+[prereg] clean: status FROZEN, 17 hashes pinned and verified, all 12 mandate-21 fields present
+```
+
+**X1 done** (frozen analyzer, 11/11 guards) · **X2 done** · **X3 done** (`R-104`, layer convention
+confirmed by experiment) · **X4 done** · **X5 done** (`PR-049`).
+
+`PR-049`'s own gate correctly **still refuses** on Y1/Y2/Y3 — its 2-way power analysis, its
+hedge-free stratum counts and its register re-measurement are all outstanding, and they are
+CPU-only so they can run alongside extraction.
+
+**What is true at this moment, stated before any hidden state exists:** the phase has built an
+aligned 114-domain three-concept population in which only the harmful demonstrations differ,
+verified by a gate that has been demonstrated capable of failing; the layer convention is
+established by experiment; the read site is established on the live bank with end-relative
+indexing proven mandatory; the design is frozen in a machine-readable preregistration that the
+code refuses to run without; and **seven** occurrence-counting defects have been found and fixed
+before a single GPU-hour was spent on measurement.

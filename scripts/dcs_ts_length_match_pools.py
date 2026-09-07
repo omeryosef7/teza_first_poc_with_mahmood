@@ -72,6 +72,27 @@ PER_SPLIT = 20
 CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun": ("gun", "guns")}
 
 
+
+#: `DCS-C-087`, the SEVENTH instance of the class, and this time it is the SUBSTITUTER.
+#: `prompt_families._substitute` uses `str.replace`, which has no word-boundary notion at all. So
+#: `subway_station|harm[32]` --
+#:     "A witness described the gun as a large, black handgun with a silver barrel."
+#: -- passes every occurrence rule (one whole-word `gun`, substitutable case) and then ships as
+#:     "... a large, black handbutton with a silver barrel."
+#: The inflection-aware, case-enumerated rule of C-076/C-079 is blind to COMPOUNDS, and this leaks
+#: concept identity LEXICALLY -- only the gun arm contains `hand<codeword>` -- while remaining
+#: invisible to any whole-word leakage check.
+#:
+#: The general rule, which subsumes the special cases: THE SUBSTRING COUNT MUST EQUAL THE
+#: WHOLE-WORD COUNT. If `gun` appears 2 times as a substring but once as a word, something in the
+#: sentence is a compound the substituter will silently eat.
+def has_compound(sentence: str, concept: str) -> bool:
+    """True if `concept` appears inside a longer word, where str.replace would still rewrite it."""
+    n_sub = len(re.findall(re.escape(concept), sentence, flags=re.I))
+    n_word = len(re.findall(r"\b" + re.escape(concept) + r"\w*\b", sentence, flags=re.I))
+    return n_sub != n_word
+
+
 def usable(sentences: list[str], concept: str) -> list[str]:
     """Sentences the substituter can actually rewrite, exactly once.
 
@@ -88,7 +109,8 @@ def usable(sentences: list[str], concept: str) -> list[str]:
     subs = (concept, concept.capitalize(), concept.upper())
     rx_sub = re.compile(r"\b(?:" + "|".join(re.escape(f) for f in subs) + r")\b")
     return [s for s in sentences
-            if len(rx_all.findall(s)) == 1 and len(rx_sub.findall(s)) == 1]
+            if len(rx_all.findall(s)) == 1 and len(rx_sub.findall(s)) == 1
+            and not has_compound(s, concept)]
 
 
 def _quantiles(vals: list[int], k: int) -> list[float]:

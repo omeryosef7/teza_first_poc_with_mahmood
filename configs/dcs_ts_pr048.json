@@ -96,6 +96,12 @@
         "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
       },
       {
+        "domain": "subway_station",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+      },
+      {
         "domain": "school_campus",
         "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
         "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
@@ -141,14 +147,14 @@
     "manifest_sha16": "be7d2c772d814ef3",
     "field": "dsplit",
     "unit": "domain",
-    "n_train": 69,
+    "n_train": 68,
     "n_validation": 23,
     "n_test": 23,
     "seed": 202609061,
     "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
     "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
-    "n_domains_analysed": 115,
-    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 69 are ANALYSED. The manifest is not regenerated -- a split may be created once (mandate 5.2). The exclusion is applied downstream and recorded here."
+    "n_domains_analysed": 114,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 68 are ANALYSED (restaurant_kitchen C-082, subway_station C-087 -- both TRAIN, both prompt-only and prospective). The manifest is NOT regenerated; a split may be created once (mandate 5.2)."
   },
   "model": {
     "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
@@ -183,7 +189,8 @@
       1.0,
       10.0
     ],
-    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070)."
+    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070).",
+    "_read_site_note": "X2 on ts116m: PR-048's primary read site is position=codeword_last == rel_end -10, constant end-relative in 2300/2300 triples, sd 0, one subtoken in every prompt. rel_end -9 (' actually', id 3604) is the DOWNSTREAM NEUTRAL control site, verified on all four criteria 6900/6900 -- it is NOT the primary and the two must not be conflated. MANDATORY: index as len(input_ids)+rel_end. The ABSOLUTE codeword index is identical across concepts in 0/2300 triples (mean cross-concept spread 9.36 +/- 5.90 tokens, range 0-50), so an absolute index reads a DIFFERENT TOKEN in each arm."
   },
   "classifier": {
     "type": "multinomial_logistic_regression",
@@ -384,9 +391,9 @@
     {
       "id": "X2",
       "item": "recompute the token-role map and the read-site nomination on ts116m -- the rel_end=-9 nomination was computed on the VOID ts116 bank",
-      "status": "BLOCKING, not done",
+      "status": "done 2026-09-07 -- reports/DCS_TS116M_TOKEN_ROLE_MAP.md",
       "blocking": true,
-      "done": false
+      "done": true
     },
     {
       "id": "X3",
@@ -400,9 +407,9 @@
     {
       "id": "X4",
       "item": "re-run G4 concept-backing on ts116m (A-037 rates were measured on a superseded corpus)",
-      "status": "BLOCKING, running",
+      "status": "done 2026-09-07 -- reports/DCS_TS116M_CONCEPT_BACKING_AUDIT.md",
       "blocking": true,
-      "done": false
+      "done": true
     },
     {
       "id": "X5",

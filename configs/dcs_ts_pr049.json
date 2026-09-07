@@ -95,6 +95,12 @@
         "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
       },
       {
+        "domain": "subway_station",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged"
+      },
+      {
         "domain": "school_campus",
         "scope": "occurrence-ordinal and all-codeword-sites knockout analyses only",
         "reason": "C-075: 'basket' matches inside 'basketball.' so those rows carry a spurious 6th codeword occurrence. Excluded PROSPECTIVELY, not after seeing an outcome. It is NOT excluded from the probe, whose read site is unaffected."
@@ -141,14 +147,14 @@
     "manifest_sha16": "be7d2c772d814ef3",
     "field": "dsplit",
     "unit": "domain",
-    "n_train": 69,
+    "n_train": 68,
     "n_validation": 23,
     "n_test": 23,
     "seed": 202609061,
     "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
     "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
-    "n_domains_analysed": 115,
-    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 69 are ANALYSED. The manifest is not regenerated -- a split may be created once (mandate 5.2). The exclusion is applied downstream and recorded here."
+    "n_domains_analysed": 114,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 68 are ANALYSED (restaurant_kitchen C-082, subway_station C-087 -- both TRAIN, both prompt-only and prospective). The manifest is NOT regenerated; a split may be created once (mandate 5.2)."
   },
   "model": {
     "hf_id": "meta-llama/Llama-3.1-8B-Instruct",

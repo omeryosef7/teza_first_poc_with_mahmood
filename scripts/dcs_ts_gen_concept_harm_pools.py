@@ -107,6 +107,27 @@ CONCEPT_FORMS = {
 #:   C-079  the filter was case-insensitive where the substituter is case-ENUMERATED ("bOMB")
 #: Each time the check and the transformation disagreed about what counts, and each time the
 #: disagreement was silent. The filter below is written to mirror `_substitute` exactly.
+
+#: `DCS-C-087`, the SEVENTH instance of the class, and this time it is the SUBSTITUTER.
+#: `prompt_families._substitute` uses `str.replace`, which has no word-boundary notion at all. So
+#: `subway_station|harm[32]` --
+#:     "A witness described the gun as a large, black handgun with a silver barrel."
+#: -- passes every occurrence rule (one whole-word `gun`, substitutable case) and then ships as
+#:     "... a large, black handbutton with a silver barrel."
+#: The inflection-aware, case-enumerated rule of C-076/C-079 is blind to COMPOUNDS, and this leaks
+#: concept identity LEXICALLY -- only the gun arm contains `hand<codeword>` -- while remaining
+#: invisible to any whole-word leakage check.
+#:
+#: The general rule, which subsumes the special cases: THE SUBSTRING COUNT MUST EQUAL THE
+#: WHOLE-WORD COUNT. If `gun` appears 2 times as a substring but once as a word, something in the
+#: sentence is a compound the substituter will silently eat.
+def has_compound(sentence: str, concept: str) -> bool:
+    """True if `concept` appears inside a longer word, where str.replace would still rewrite it."""
+    n_sub = len(re.findall(re.escape(concept), sentence, flags=re.I))
+    n_word = len(re.findall(r"\b" + re.escape(concept) + r"\w*\b", sentence, flags=re.I))
+    return n_sub != n_word
+
+
 def _substitutable_forms(concept: str):
     """Exactly the forms `_substitute` enumerates -- mirrored, not approximated."""
     return (concept, concept.capitalize(), concept.upper())
@@ -147,6 +168,8 @@ def _clean_strict(sentences, concept: str):
         # equal 1 means: one occurrence in the text, and the substituter can see it.
         if not s or len(rx.findall(s)) != 1 or len(rx_sing.findall(s)) != 1:
             continue
+        if has_compound(s, concept):
+            continue   # C-087: str.replace would rewrite the concept inside a longer word
         k = s.casefold()
         if k in seen:
             continue

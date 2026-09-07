@@ -69,7 +69,13 @@ SHARED_VALENCES = ("benign", "remap", "filler")
 #:
 #: This is decided on prompt text alone, before any extraction, and is recorded in
 #: `configs/dcs_ts_pr046.json` -- not applied after seeing an outcome.
-EXCLUDED_DOMAINS = frozenset({"restaurant_kitchen"})
+#: `subway_station` added 2026-09-07 (C-087), prompt-only and prospective, same precedent as
+#: `restaurant_kitchen`. Its gun pool carries the `handgun` compound above AND a TRUNCATED sentence
+#: at index 33 -- "After the inspection, we felt relieved that no gun" -- with no object and no
+#: terminal punctuation, which no occurrence rule can catch because its count is correct. It sits
+#: in TRAIN, so validation and test stay at 23/23 and the power analysis is unaffected; the
+#: analysed split becomes 68/23/23 over 114 domains. Decided before any extraction.
+EXCLUDED_DOMAINS = frozenset({"restaurant_kitchen", "subway_station"})
 
 #: `DCS-C-080`. THIS GATE WAS ITSELF BLIND, and it is the fourth instance of the class named in
 #: `C-079`: the checker's notion of "an occurrence" must be exactly the transformer's.
@@ -84,6 +90,27 @@ EXCLUDED_DOMAINS = frozenset({"restaurant_kitchen"})
 #:   * count case-INSENSITIVELY across every inflected form -- catches `knives` and `bOMB`;
 #:   * require the surviving occurrence to be one of the three case forms `_substitute` rewrites.
 CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun": ("gun", "guns")}
+
+
+
+#: `DCS-C-087`, the SEVENTH instance of the class, and this time it is the SUBSTITUTER.
+#: `prompt_families._substitute` uses `str.replace`, which has no word-boundary notion at all. So
+#: `subway_station|harm[32]` --
+#:     "A witness described the gun as a large, black handgun with a silver barrel."
+#: -- passes every occurrence rule (one whole-word `gun`, substitutable case) and then ships as
+#:     "... a large, black handbutton with a silver barrel."
+#: The inflection-aware, case-enumerated rule of C-076/C-079 is blind to COMPOUNDS, and this leaks
+#: concept identity LEXICALLY -- only the gun arm contains `hand<codeword>` -- while remaining
+#: invisible to any whole-word leakage check.
+#:
+#: The general rule, which subsumes the special cases: THE SUBSTRING COUNT MUST EQUAL THE
+#: WHOLE-WORD COUNT. If `gun` appears 2 times as a substring but once as a word, something in the
+#: sentence is a compound the substituter will silently eat.
+def has_compound(sentence: str, concept: str) -> bool:
+    """True if `concept` appears inside a longer word, where str.replace would still rewrite it."""
+    n_sub = len(re.findall(re.escape(concept), sentence, flags=re.I))
+    n_word = len(re.findall(r"\b" + re.escape(concept) + r"\w*\b", sentence, flags=re.I))
+    return n_sub != n_word
 
 
 def occurrence_counts(sentence: str, concept: str) -> tuple[int, int]:
@@ -172,6 +199,9 @@ def g1_pools(res: Result, mutate: str | None = None) -> None:
                     n_all, n_sub = occurrence_counts(s, cc)
                     if n_all != 1 or n_sub != 1:
                         bad_occ.append(f"{key}[{i}](all={n_all},sub={n_sub})")
+                    elif has_compound(s, cc):
+                        bad_occ.append(f"{key}[{i}](COMPOUND: the substituter will rewrite "
+                                       f"{cc!r} inside a longer word)")
                     for other in CONCEPTS:
                         if other != cc and re.search(rf"(?i)\b{other}s?\b", s):
                             bad_other.append(f"{key}[{i}]->{other}")
