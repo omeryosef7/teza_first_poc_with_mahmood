@@ -1,6 +1,6 @@
 {
-  "id": "DCS-PR-049",
-  "title": "Register-clean co-primary: knife vs gun concept identity, and the hedge-free stratum",
+  "id": "DCS-PR-050",
+  "title": "Surface-matched re-analysis: does concept identity survive removing what a surface classifier knows?",
   "status": "FROZEN",
   "written": "2026-09-07",
   "written_at_commit": "347f0920",
@@ -10,7 +10,7 @@
     "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
     "in a markdown log that no program consults is a wish, not a preregistration."
   ],
-  "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
+  "question": "Within strata where a surface classifier cannot distinguish the concepts, does the codeword's representation still carry concept identity?",
   "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
   "population": {
     "bank_family": "ts116m",
@@ -200,26 +200,24 @@
     "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
   },
   "primary": {
-    "statistic": "2-way knife-vs-gun argmax accuracy on the 23 untouched TEST domains, domain-mean",
+    "statistic": "domain-mean probe accuracy within surface-matched strata, TEST domains",
     "chance": 0.5,
     "independence_unit": "domain",
     "n_test_domains": 23,
     "alpha": 0.05,
     "test": "group permutation at the DOMAIN level",
     "n_perm": 10000,
-    "_p_floor_rule": "floor 1/(B+1) = 9.999e-05; every p published next to its floor; zero exceedances reported as p < 1/(B+1)",
-    "success": "domain-mean accuracy significantly above 0.5 by domain-level group permutation AND above chance in a majority of test domains by two-sided sign test",
-    "negative": "not significant WITH power >= 0.8 for the MDE below",
-    "cannot_answer": "option_mass shows the primary channel is disengaged, or the population fails a PR-048 gate",
-    "void": "wrong bank sha, wrong script, dead hook, or the selection touched TEST",
     "nuisance_floor": {
-      "accuracy": 0.7065,
-      "macro_auroc": 0.7479,
-      "source": "R-106 Y3: register-only surface classifier on knife-vs-gun",
-      "rule": "The probe result is reported AGAINST THIS FLOOR, not against chance. A result above chance but at or below the floor is NOT evidence for the claim: a bag of surface counts already reaches it without reading any representation.",
-      "enforced_by": "scripts/dcs_ts_pr048_analysis.py, which refuses to print a success verdict without comparing to it"
+      "accuracy": 0.5,
+      "macro_auroc": 0.5,
+      "source": "within a surface-matched stratum the surface classifier is at chance BY CONSTRUCTION -- that is the point of the stratification, and it is verified rather than assumed",
+      "rule": "the stratification MUST be verified to have driven the surface classifier to chance within strata; if it has not, the stratification failed and the analysis is VOID",
+      "enforced_by": "scripts/dcs_ts_pr048_analysis.py"
     },
-    "_success_amended": "S-1 (A-043). primary.success said only \"significantly above chance\" while the honest nuisance floor was recorded elsewhere in this same file and read by nothing. A knife-vs-gun result of 0.60 would have PASSED the frozen rule while sitting below a 17-feature bag of surface counts. That is B-020 -- a published threshold no code path reads -- RECURRING INSIDE THE FILE WRITTEN TO FIX B-020. Success now requires clearing the floor as well as chance. Amended BEFORE any outcome exists."
+    "success": "domain-mean accuracy significantly above chance WITHIN strata, with the surface classifier verified at chance within those same strata",
+    "negative": "not significant with adequate power",
+    "cannot_answer": "the stratification leaves too few rows per stratum, or fails to drive the surface classifier to chance",
+    "void": "strata defined using TEST labels, or the surface classifier fit on anything but TRAIN"
   },
   "secondary": {
     "hedge_free_stratum": "Y2 FEASIBLE AT FULL n=23. All 23/23 TEST domains carry hedge-free rows in every arm: bomb 248/460, knife 452/460, gun 420/460. Balanced knife-vs-gun N = 840 rows (832 domain-balanced); 3-way N = 744. The stratum exists at the DOMAIN level, not only at row level. The superseded 115/212/195 figures are RETIRED and may not be quoted.",
@@ -337,7 +335,7 @@
     "_analyzer_status": "WRITTEN AND FROZEN 2026-09-07, before any ts116m hidden state exists. Contains NO numeric gate literal: alpha, n_perm, chance, the grids, the split and the population filters are all fetched through Prereg.require(), which refuses rather than defaulting. Selftest: 11/11 guards reachable.",
     "analyzer_committed_before_outcome": true
   },
-  "kill_condition": "If Y3 shows the hedge-only advantage on knife-vs-gun is NOT small -- say it exceeds +0.10 -- then this contrast is not register-clean and its whole rationale fails. In that case it is withdrawn rather than reported, and the register confound returns to being an open limitation with no instrument. Declared before Y3 is measured.",
+  "kill_condition": "If step 1's surface classifier cannot be driven to chance by any preregistered stratification with usable n, then register cannot be separated from concept on this corpus, and the honest verdict is CANNOT ANSWER on the register confound -- to be stated as such rather than absorbed by another instrument. Declared before the stratification is attempted.",
   "frozen_at": "2026-09-07",
   "gates_g1_g3": {
     "result": "19/19 PASS",
@@ -387,45 +385,33 @@
   },
   "pre_extraction_checklist": [
     {
-      "id": "Y1",
-      "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "id": "Z1",
+      "item": "verify the stratification drives the surface classifier to chance within strata; if not, VOID",
       "blocking": true,
-      "done": true
+      "done": false,
+      "status": "BLOCKING, not done"
     },
     {
-      "id": "Y2",
-      "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "id": "Z2",
+      "item": "power for the within-stratum n; strata shrink the effective sample and the PR-049 power does not transfer",
       "blocking": true,
-      "done": true
-    },
-    {
-      "id": "Y3",
-      "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
-      "blocking": true,
-      "done": true
+      "done": false,
+      "status": "BLOCKING, not done"
     }
   ],
   "companion_of": "DCS-PR-048",
   "_why_this_exists": [
-    "The four-hour review (A-042, science lens) measured that register is NOT a uniform nuisance but",
-    "a BOMB-vs-REST SEVERITY axis: a hedge-only classifier buys +0.211 on bomb-vs-knife and only",
-    "+0.037 on knife-vs-gun. Threat-lexicon framing runs bomb 44.5% / knife 14.0% / gun 18.3%.",
-    "So the 3-way primary in PR-048 carries bomb's discourse register with it, while KNIFE-vs-GUN is",
-    "clean on register AND on length -- and is still exactly a test of concept IDENTITY between two",
-    "matched harmful concepts, with no severity gradient available to read instead.",
+    "A-043 section C, stated plainly: THE PHASE HAS NO INSTRUMENT THAT ANSWERS THE REGISTER CONFOUND.",
+    "N5 was disqualified by C-078 and rightly so -- the demo block is the treatment, not a nuisance.",
+    "PR-047 (the positional contrast) was cited repeatedly as the answer and NEVER EXISTED.",
+    "PR-049 survives its kill condition only because that condition was scoped to HEDGES while the",
+    "confound is REGISTER: a broader surface classifier reaches 0.7065 on knife-vs-gun and 0.6870",
+    "with every length channel removed. That is structurally the SAME defect C-078 diagnosed in N5 --",
+    "a bar that answers a narrower question than the one being asked.",
     "",
-    "IT ALSO DISCHARGES A CONDITION THE REVIEW ATTACHED TO C-078. PR-046 adopted the N5 text baseline",
-    "explicitly AS THE ANSWER to the register confound. C-078 then argued -- before any probe ran --",
-    "that N5 is the wrong bar because the demonstration block is the TREATMENT, and proposed a",
-    "positional contrast instead. The review's verdict: legitimate correction, ILLEGITIMATE IF THE",
-    "POSITIONAL CONTRAST INHERITS N5'S JOB. It does not. The positional contrast answers",
-    "localisation; THIS preregistration answers register. Two questions, two instruments, rather than",
-    "one instrument quietly retargeted.",
-    "",
-    "COST: ZERO EXTRA GPU. It is a re-analysis of the PR-048 extraction on the same rows."
+    "Register has been converted from an unknown into a QUANTIFIED FLOOR, which is real progress.",
+    "But a floor is a bar, not an answer. This preregistration is the answer, and it costs ZERO GPU:",
+    "it re-analyses the PR-048 extraction on the same rows."
   ],
   "_y3_result": {
     "kill_condition": "SURVIVE",
@@ -442,5 +428,11 @@
     },
     "QUALIFICATION": "The kill condition is written about the HEDGE-ONLY classifier and is answered on its own terms: SURVIVE, PR-049 is not withdrawn. But the broader rationale in this file -- that knife-vs-gun is \"clean on register AND on length\" -- is ONLY PARTLY SUPPORTED. A broader register-only SURFACE classifier reaches +0.2065 on knife-vs-gun (accuracy 0.7065, AUROC 0.7479), and +0.1870 with every length channel removed, so it is COMPOSITION rather than length in disguise. Length-only is +0.1174 in characters but only +0.0435 in TOKENS (C-084 again; the token figure is the honest one). Clean on hedges and on token length; NOT clean on character length or on surface register generally.",
     "THE_BAR": "The nuisance floor the probe must beat on THIS contrast is a measured 0.7065 accuracy / 0.7479 AUROC, not 0.5."
+  },
+  "design": {
+    "step1": "Fit the 17-feature register/surface classifier from R-106 on TRAIN domains only and score every row. This classifier reads ONLY hand-specified surface counts -- hedge markers, sentence length, type-token ratio, punctuation -- never the representation.",
+    "step2": "Stratify TEST rows by the surface classifier's predicted-probability vector, into preregistered bins. Within a bin, the surface features are (by construction) close to uninformative about the concept.",
+    "step3": "Re-run the frozen PR-048/PR-049 probe WITHIN strata and pool the per-domain accuracies. If concept identity survives where surface information does not, that is evidence the representation carries something the surface does not.",
+    "step4": "The cheapest discriminator, run alongside: the PER-DOMAIN correlation between probe accuracy and surface-classifier accuracy across the 23 test domains. A probe that is merely reading surface statistics propagated into the hidden state should track it closely; one reading concept identity need not. Costs one pearsonr over two existing 23-vectors."
   }
 }

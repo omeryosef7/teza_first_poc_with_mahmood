@@ -2287,3 +2287,88 @@ refusal.
 - **D2-01**: this log said "the three basket banks are still running". That is wrong: **one** job
   runs all four remaining banks sequentially. Finish ≈08:51 against a 10:44 wall — 1h53m margin,
   but **one node failure now costs three banks, not one.**
+
+## 2026-09-07 · A-043 (science lens) · **the phase has no instrument that answers the register confound**
+
+The hardest and most useful finding of the review, and it is a verdict about the phase rather than
+about a script. Quoted in substance because softening it would be the whole failure mode:
+
+> N5 was disqualified by `C-078`, rightly. `PR-047` — cited repeatedly in this log as the answer to
+> localisation — **never existed**. `PR-049` survives its kill condition only because that
+> condition was scoped to **hedges** while the confound is **register**: a broader surface
+> classifier reaches **0.7065** on knife-vs-gun and **0.6870** with every length channel removed.
+> That is **structurally the same defect `C-078` diagnosed in N5** — a bar answering a narrower
+> question than the one being asked.
+>
+> Register has been converted from an unknown into a **quantified floor**, which is real progress.
+> **But a floor is a bar, not an answer, and nothing applied even the bar.**
+
+### C-097 · **`B-020` recurred inside the code written to fix `B-020`**
+
+`dcs_ts_prereg.py` defines `require_gate()` and `require_null()`. **The analyzer never calls
+either.** Eight nulls are declared in `nulls_required`; the analyzer implemented exactly **one**
+(N2). And `primary.success` said only *"significantly above chance"* while the honest nuisance
+floor sat elsewhere **in the same file, read by nothing**.
+
+**A knife-vs-gun result of 0.60 would have PASSED the frozen success rule while sitting below a
+17-feature bag of surface counts.** That is a published threshold no code path reads — the exact
+failure `B-020` named — recurring *inside the file written to fix it*, by me, one window later.
+
+**Fixed:** the floor is now a machine-read field in `primary.nuisance_floor` (**0.9217** for the
+3-way, **0.7065** for knife-vs-gun), fetched through `require()` so a preregistration that forgets
+to declare one **cannot be analysed at all**, and the analyzer now prints an explicit verdict:
+`SUPPORTS THE CLAIM` / `SIGNIFICANT BUT BELOW THE NUISANCE FLOOR — NOT EVIDENCE FOR THE CLAIM` /
+`NOT SIGNIFICANT`. **Amended before any outcome exists.**
+
+### C-098 · **`PR-047` never existed, and no data was captured that could support it**
+
+I cited the positional contrast in `C-078`, in `PR-049`'s rationale and repeatedly in this log as
+the instrument that answers localisation. **It was never written.** Worse, all six extractions
+capture `--position codeword_last` only, so **no hidden state existed at any control position** —
+the instrument was not merely unwritten but unproducible from what I ran.
+
+**Acted on immediately:** job **860778** queued at `--position last` over all six banks, and two
+preregistrations written that should have existed before the extraction was designed.
+
+### S-3 · `H_bind` and `H_gist` predict the same thing for the planned primary
+
+"The codeword is represented as BOMB" and "the prompt is about bombs" make the **same prediction**
+for `PR-048`. A probe at the codeword cannot separate them, because a gist representation is
+available at the codeword too. The phase noticed the threat (`A-042`'s interference bank) and filed
+it as post-probe future work. That was wrong: it is a **wording constraint on CLAIM A right now**.
+
+## 2026-09-07 · PR-050 and PR-051 · the two missing instruments, both frozen before any outcome
+
+**`PR-050` — surface-matched re-analysis. Answers REGISTER. Zero GPU.**
+Fit the 17-feature surface classifier on TRAIN only, stratify TEST rows by its predicted-probability
+vector, and re-run the frozen probe **within strata** where surface features are uninformative by
+construction. Plus the cheapest discriminator available: the **per-domain correlation between probe
+accuracy and surface accuracy** across the 23 test domains — one `pearsonr` over two existing
+23-vectors. **Kill condition:** if no preregistered stratification drives the surface classifier to
+chance with usable n, then register cannot be separated from concept on this corpus and the honest
+verdict is **CANNOT ANSWER**, to be stated as such rather than absorbed by another instrument.
+
+**`PR-051` — positional contrast. Answers GIST vs BINDING.**
+The same frozen probe at `codeword_last` versus `last`, paired by domain. **The interpretation is
+fixed before the numbers exist:** codeword ≫ control is consistent with binding; **codeword ≈
+control is consistent with gist, and would mean CLAIM A must be narrowed to a decodability
+statement about the prompt, not about the codeword**; control ≫ codeword means the read site is
+wrong. Its nuisance floor is **0.0 by construction** — both sites see the *same* prompt, so every
+surface confound is common to both and differences out. That is precisely why the paired contrast
+is worth running: the confound that defeats the absolute measurement cancels in the difference.
+
+Both carry blocking checklists, including that neither `PR-048`'s nor `PR-049`'s power transfers to
+a within-stratum or paired estimator.
+
+## The review's verdict on this phase's character, recorded because Omer has to defend it
+
+Asked whether nine corrections in one window is evidence of rigour or of an untrustworthy pipeline,
+the reviewer answered **rigour, with a checkable proof**: *nine of the ten corrections in this
+window cost the phase something; the one that helped (`C-084`, the token-vs-character correction)
+was found by an independent lens, not by the author.* A pipeline being talked up would show the
+opposite ratio.
+
+The honest caveats it attached, which I am not going to soften: **the find rate is not
+decelerating** — `C-088` found three GREEN mutations *after* the harness-hardening commit — and
+**every guard shares an author with the thing it guards.** That is the strongest available argument
+for keeping independent adversarial lenses running rather than trusting the harnesses.

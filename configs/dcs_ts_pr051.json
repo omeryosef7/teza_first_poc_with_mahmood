@@ -1,6 +1,6 @@
 {
-  "id": "DCS-PR-049",
-  "title": "Register-clean co-primary: knife vs gun concept identity, and the hedge-free stratum",
+  "id": "DCS-PR-051",
+  "title": "Positional contrast: is concept identity localised to the codeword, or present everywhere?",
   "status": "FROZEN",
   "written": "2026-09-07",
   "written_at_commit": "347f0920",
@@ -10,7 +10,7 @@
     "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
     "in a markdown log that no program consults is a wish, not a preregistration."
   ],
-  "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
+  "question": "Is concept identity MORE decodable at the codeword's representation than at a downstream position that is token-identical across concepts?",
   "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
   "population": {
     "bank_family": "ts116m",
@@ -200,26 +200,24 @@
     "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
   },
   "primary": {
-    "statistic": "2-way knife-vs-gun argmax accuracy on the 23 untouched TEST domains, domain-mean",
-    "chance": 0.5,
+    "statistic": "paired per-domain difference in accuracy, codeword_last minus last, over the 23 TEST domains",
+    "chance": 0.0,
     "independence_unit": "domain",
     "n_test_domains": 23,
     "alpha": 0.05,
-    "test": "group permutation at the DOMAIN level",
+    "test": "paired domain-level permutation of the site label",
     "n_perm": 10000,
-    "_p_floor_rule": "floor 1/(B+1) = 9.999e-05; every p published next to its floor; zero exceedances reported as p < 1/(B+1)",
-    "success": "domain-mean accuracy significantly above 0.5 by domain-level group permutation AND above chance in a majority of test domains by two-sided sign test",
-    "negative": "not significant WITH power >= 0.8 for the MDE below",
-    "cannot_answer": "option_mass shows the primary channel is disengaged, or the population fails a PR-048 gate",
-    "void": "wrong bank sha, wrong script, dead hook, or the selection touched TEST",
     "nuisance_floor": {
-      "accuracy": 0.7065,
-      "macro_auroc": 0.7479,
-      "source": "R-106 Y3: register-only surface classifier on knife-vs-gun",
-      "rule": "The probe result is reported AGAINST THIS FLOOR, not against chance. A result above chance but at or below the floor is NOT evidence for the claim: a bag of surface counts already reaches it without reading any representation.",
-      "enforced_by": "scripts/dcs_ts_pr048_analysis.py, which refuses to print a success verdict without comparing to it"
+      "accuracy": 0.0,
+      "macro_auroc": 0.5,
+      "source": "a paired difference has no surface floor: both sites see the SAME prompt, so any surface confound is common to both and differences it out",
+      "rule": "this is precisely why the paired positional contrast is worth running -- the confound that defeats the absolute measurement cancels in the difference",
+      "enforced_by": "scripts/dcs_ts_pr048_analysis.py"
     },
-    "_success_amended": "S-1 (A-043). primary.success said only \"significantly above chance\" while the honest nuisance floor was recorded elsewhere in this same file and read by nothing. A knife-vs-gun result of 0.60 would have PASSED the frozen rule while sitting below a 17-feature bag of surface counts. That is B-020 -- a published threshold no code path reads -- RECURRING INSIDE THE FILE WRITTEN TO FIX B-020. Success now requires clearing the floor as well as chance. Amended BEFORE any outcome exists."
+    "success": "a significant positive paired difference",
+    "negative": "no significant difference WITH adequate power -- which would be evidence for gist over binding and must be reported as such",
+    "cannot_answer": "the control extraction fails or its population does not match",
+    "void": "the two sites analysed on different populations"
   },
   "secondary": {
     "hedge_free_stratum": "Y2 FEASIBLE AT FULL n=23. All 23/23 TEST domains carry hedge-free rows in every arm: bomb 248/460, knife 452/460, gun 420/460. Balanced knife-vs-gun N = 840 rows (832 domain-balanced); 3-way N = 744. The stratum exists at the DOMAIN level, not only at row level. The superseded 115/212/195 figures are RETIRED and may not be quoted.",
@@ -387,45 +385,37 @@
   },
   "pre_extraction_checklist": [
     {
-      "id": "Y1",
-      "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "id": "W1",
+      "item": "control extraction job 860778 completes; all six banks verified at --position last",
       "blocking": true,
-      "done": true
+      "done": false,
+      "status": "BLOCKING, running"
     },
     {
-      "id": "Y2",
-      "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "id": "W2",
+      "item": "power for a PAIRED difference at n=23; neither PR-048 nor PR-049 power transfers",
       "blocking": true,
-      "done": true
+      "done": false,
+      "status": "BLOCKING, not done"
     },
     {
-      "id": "Y3",
-      "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
-      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "id": "W3",
+      "item": "verify the control site is token-identical across concepts on ts116m (X2 verified rel_end -9; --position last is rel_end -1 and must be re-verified)",
       "blocking": true,
-      "done": true
+      "done": false,
+      "status": "BLOCKING, not done"
     }
   ],
   "companion_of": "DCS-PR-048",
   "_why_this_exists": [
-    "The four-hour review (A-042, science lens) measured that register is NOT a uniform nuisance but",
-    "a BOMB-vs-REST SEVERITY axis: a hedge-only classifier buys +0.211 on bomb-vs-knife and only",
-    "+0.037 on knife-vs-gun. Threat-lexicon framing runs bomb 44.5% / knife 14.0% / gun 18.3%.",
-    "So the 3-way primary in PR-048 carries bomb's discourse register with it, while KNIFE-vs-GUN is",
-    "clean on register AND on length -- and is still exactly a test of concept IDENTITY between two",
-    "matched harmful concepts, with no severity gradient available to read instead.",
+    "A-043 S-3: H_bind ('the codeword is represented as BOMB') and H_gist ('the prompt is about",
+    "bombs') make the SAME prediction for the PR-048 primary. A probe at the codeword cannot",
+    "distinguish them, because a gist representation is available at the codeword too.",
     "",
-    "IT ALSO DISCHARGES A CONDITION THE REVIEW ATTACHED TO C-078. PR-046 adopted the N5 text baseline",
-    "explicitly AS THE ANSWER to the register confound. C-078 then argued -- before any probe ran --",
-    "that N5 is the wrong bar because the demonstration block is the TREATMENT, and proposed a",
-    "positional contrast instead. The review's verdict: legitimate correction, ILLEGITIMATE IF THE",
-    "POSITIONAL CONTRAST INHERITS N5'S JOB. It does not. The positional contrast answers",
-    "localisation; THIS preregistration answers register. Two questions, two instruments, rather than",
-    "one instrument quietly retargeted.",
-    "",
-    "COST: ZERO EXTRA GPU. It is a re-analysis of the PR-048 extraction on the same rows."
+    "A-043 S-2 also found that PR-047 -- cited repeatedly in this log as the instrument that answers",
+    "localisation -- WAS NEVER WRITTEN, and that no hidden state existed at any control position",
+    "because all six extractions captured --position codeword_last only. Both gaps are mine.",
+    "The control extraction (job 860778, --position last) was queued the moment the review landed."
   ],
   "_y3_result": {
     "kill_condition": "SURVIVE",
@@ -442,5 +432,17 @@
     },
     "QUALIFICATION": "The kill condition is written about the HEDGE-ONLY classifier and is answered on its own terms: SURVIVE, PR-049 is not withdrawn. But the broader rationale in this file -- that knife-vs-gun is \"clean on register AND on length\" -- is ONLY PARTLY SUPPORTED. A broader register-only SURFACE classifier reaches +0.2065 on knife-vs-gun (accuracy 0.7065, AUROC 0.7479), and +0.1870 with every length channel removed, so it is COMPOSITION rather than length in disguise. Length-only is +0.1174 in characters but only +0.0435 in TOKENS (C-084 again; the token figure is the honest one). Clean on hedges and on token length; NOT clean on character length or on surface register generally.",
     "THE_BAR": "The nuisance floor the probe must beat on THIS contrast is a measured 0.7065 accuracy / 0.7479 AUROC, not 0.5."
+  },
+  "design": {
+    "sites": {
+      "primary_site": "codeword_last (PR-048 extraction)",
+      "control_site": "last (job 860778, --position last) -- the final prompt position, strictly after the codeword and token-identical across concepts"
+    },
+    "contrast": "the SAME frozen probe design fit and evaluated independently at each site; the statistic is the DIFFERENCE in domain-mean accuracy, paired by domain",
+    "_interpretation_fixed_before_the_numbers_exist": {
+      "codeword >> control": "consistent with binding: identity is localised where the codeword is",
+      "codeword ~= control": "consistent with GIST: the prompt topic is decodable throughout and the codeword position is not special. This would mean CLAIM A must be narrowed to a decodability statement about the prompt, NOT about the codeword.",
+      "control >> codeword": "the read site is wrong, or the codeword position is not where binding lands; either way the PR-048 framing is wrong"
+    }
   }
 }

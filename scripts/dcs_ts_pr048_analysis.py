@@ -410,6 +410,20 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         nulls.append(domain_mean_acc(p2, y[te], dom[te])[0])
     pp, pfloor, nex = group_permutation_p(obs, nulls)
 
+    # THE NUISANCE FLOOR, read from the preregistration and ENFORCED (S-1 / A-043).
+    # `require()` refuses if the key is absent, so a preregistration that forgets to declare a
+    # floor cannot be analysed at all -- which is the only way to stop B-020 recurring a third
+    # time. Chance is not the bar: a bag of surface counts already reaches the floor without
+    # reading any representation, so a result between chance and the floor is NOT evidence.
+    nf = pr.require("primary", "nuisance_floor")
+    floor_acc = nf["accuracy"]
+    clears_floor = obs > floor_acc
+    sig = (pp < pr.require("primary", "alpha")) and (sp < pr.require("primary", "alpha"))
+    verdict = ("SUPPORTS THE CLAIM" if (sig and clears_floor) else
+               "SIGNIFICANT BUT BELOW THE NUISANCE FLOOR -- NOT EVIDENCE FOR THE CLAIM"
+               if (sig and not clears_floor) else
+               "NOT SIGNIFICANT")
+
     res = {
         "prereg": a.prereg, "n_rows": n, "n_domains": len(set(dom)),
         "n_test_domains": nd, "chance": chance,
@@ -419,6 +433,8 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         "per_domain_accuracy": per_dom,
         "estimator": {"max_iter": MAX_ITER, "sklearn_multiclass": "default softmax (lbfgs)",
                       "convergence_failures": convergence_failures},
+        "nuisance_floor": {**nf, "observed": obs, "clears_floor": bool(clears_floor)},
+        "verdict": verdict,
         "sign_test": {"k": k, "n": nd, "p": sp, "floor": sfloor, "formatted": fmt_p(sp, sfloor)},
         "permutation": {"p": pp, "floor": pfloor, "n_exceed": nex, "n_perm": int(n_perm),
                         "formatted": fmt_p(pp, pfloor, nex)},
@@ -435,6 +451,9 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     print(f"  OBSERVED domain-mean accuracy = {obs:.4f}  (chance {chance:.4f})")
     print(f"  sign test    k={k}/{nd}  {fmt_p(sp, sfloor)}")
     print(f"  permutation  {fmt_p(pp, pfloor, nex)}")
+    print(f"  NUISANCE FLOOR {floor_acc:.4f} ({nf['source']})")
+    print(f"  observed {obs:.4f} vs floor {floor_acc:.4f} -> clears_floor={clears_floor}")
+    print(f"  VERDICT: {verdict}")
     print(f"  -> {a.out}")
     return 0
 

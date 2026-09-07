@@ -221,7 +221,15 @@
       "consistency_with_mandate_5_3": "Mandate 5.3 forbids pooling button and basket into training for the flagship LEXICAL-GENERALISATION claim. That claim is secondary.lexical_transfer, which is explicitly a SEPARATE FIT: 'train on button TRAIN domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining.' So there are two fits -- a pooled one for concept identity and a button-only one for lexical transfer -- and neither borrows the other's numbers.",
       "consequence": "The primary cannot be computed until ALL SIX banks are extracted. The three button banks are done and verified; running the primary on them alone would be a different estimand than the frozen one, and would also be a peek at TEST. It waits.",
       "CORRECTION_D2_02": "My stated derivation said the bank carries '30 rows per domain per concept per codeword'. IT CARRIES 10 for the primary query kind -- 30 is the all-query-kinds count, and the primary binds one kind. So m=60 is 10 rows x 3 concepts x 2 codewords, which still resolves to TWO codewords, and the pooling conclusion is unchanged. But the premise as written was wrong by 3x and is corrected here rather than left to be found by a reader checking the arithmetic."
-    }
+    },
+    "nuisance_floor": {
+      "accuracy": 0.9217,
+      "macro_auroc": 0.9924,
+      "source": "A-041 G5 N5c: concept-masked TF-IDF over the demo block, 3-way",
+      "rule": "The probe result is reported AGAINST THIS FLOOR, not against chance. A result above chance but at or below the floor is NOT evidence for the claim: a bag of surface counts already reaches it without reading any representation.",
+      "enforced_by": "scripts/dcs_ts_pr048_analysis.py, which refuses to print a success verdict without comparing to it"
+    },
+    "_success_amended": "S-1 (A-043). primary.success said only \"significantly above chance\" while the honest nuisance floor was recorded elsewhere in this same file and read by nothing. A knife-vs-gun result of 0.60 would have PASSED the frozen rule while sitting below a 17-feature bag of surface counts. That is B-020 -- a published threshold no code path reads -- RECURRING INSIDE THE FILE WRITTEN TO FIX B-020. Success now requires clearing the floor as well as chance. Amended BEFORE any outcome exists."
   },
   "secondary": {
     "macro_ovr_auroc": "co-primary for the lexical-transfer claim only; declared BEFORE running per the R3 lesson that accuracy and ranking can disagree",
