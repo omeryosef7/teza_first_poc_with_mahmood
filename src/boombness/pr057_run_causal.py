@@ -1,0 +1,2094 @@
+#!/usr/bin/env python3
+"""`DCS-PR-057` PHASE 9 -- the GPU runner (blocking checklist item `Q4b`).
+
+WHY THIS FILE EXISTS AT ALL
+---------------------------
+The arm manifest is 54 runs. A PHASE 7 baseline measured 5568 rows in 2296.6 s wall on one L40S
+INCLUDING the model load, and a Llama-3.1-8B load off this filesystem is minutes, not seconds. 54
+separate `score_behavior.py` invocations would therefore spend more wall time loading weights than
+computing. This runner loads the model ONCE and loops the manifest inside one allocation. That is
+its entire reason to exist, and `--model-loads` in `DONE.json` is the number that proves it did.
+
+IT IMPORTS THE ARM MANIFEST, THE HOOKS AND THE DONOR CONTRACT FROM THE ANALYZER
+------------------------------------------------------------------------------
+`scripts/dcs_ts_pr057_causal.py` is the analyzer and it is the single source of truth for what an
+arm IS: `build_arm_manifest`, `ArmSpec`, `liveness_gate`, `audit_end_relative`,
+`propagation_read_layers`, `donor_span_contract`, `ProbeReadCapture`, `load_frozen_probe`. Nothing
+here re-derives any of them. Two files that disagree about what an arm is would be the whole
+failure mode of this phase, so this runner additionally CROSS-CHECKS every argv it builds against
+the analyzer's own `launch_command()` for the same arm (bank, arm label, tag, mode, layer band,
+alpha) and REFUSES on any disagreement. A direction label the analyzer invents that this runner has
+no declared mapping for is a refusal, never a guess: see `DIRECTION_MAP`.
+
+WHAT IT RUNS THROUGH
+--------------------
+`src/boombness/score_behavior.py`'s `main()`, in-process, with `sys.argv` set -- not a
+re-implementation of the readout and not a copy of its flags' meanings. The single monkeypatch is a
+memoising `ds_common.load_model`, which is what makes "load once, loop the arms" true; it is
+installed by this file, it is counted, and the count is written into the artifact.
+
+FAIL-CLOSED, EVERYWHERE
+-----------------------
+A non-zero exit, a `SystemExit` from any house guard, a missing `DONE.json`, zero rows, a liveness
+record that cannot prove the hook fired and changed the state, a bridge record inside a live arm, a
+resolved edit index that is not `len(input_ids) + rel_end`, a population that is not the size the
+runner computed for it -- each STOPS the run. The runner never continues past a failure and never
+writes a `DONE.json` for a stage whose arms did not all reach a terminal state. A partial run is
+`ABORTED.json`, which is a different file, so it cannot be mistaken for a complete one.
+
+THE C-13 HOLE STAYS CLOSED
+--------------------------
+Every intervened arm is launched with `--pr057-liveness-out auto`; `--emit-liveness` is REQUIRED
+for any arm that installs a hook, and an arm that produced zero liveness records is refused. A hook
+that never fired must be impossible to mistake for a clean null, so the runner gates each arm
+TWICE: once with the producer's own gate (`pair_common.project_out_liveness_violations`, the same
+function `score_behavior` aborts on) and once with the consumer's (`liveness_gate` in the
+analyzer). Where the two schemas disagree the disagreement is RECORDED as a blocking defect and
+written into `PR057_ARM_GATE.json` -- it is never smoothed over. See `DEFECT_LIVENESS_SCHEMA`.
+
+ORDER, AND THE SECOND KILL CONDITION, AS CODE
+---------------------------------------------
+`Q0 -> Q1 -> smoke(Q7) -> H1 -> H2` is enforced by `assert_stage_order()`, which reads the earlier
+stages' own `DONE.json` files, not a comment. The frozen config's second kill condition -- "if the
+H1 upper bound does not move O2, H2a/H2b are NOT submitted at that site" -- is
+`h1_kill_state()` + `apply_kill_condition()`: an H2 arm at a killed site is removed from the
+submission list and recorded as `NOT_SUBMITTED_UNINFORMATIVE`, never as a negative. Submitting one
+anyway is a refusal (mutation `M5`).
+
+WHAT IS STILL BLOCKED, AND IS REPORTED RATHER THAN FAKED
+--------------------------------------------------------
+28 of the 54 manifest arms cannot be constructed with the instrument as it stands today, leaving 26
+that can: the 16 H1 arms and the 2 C7 self-patch controls need the cross-prompt donor path (and
+under C-112/R-116 the H1 population is EMPTY anyway), the 4 H2b arms need `component_replace`, the
+2 C2 arms need a shuffled-label direction the PR-053 payload does not carry, the 2 C4 arms are an
+additive mode that is not instrumented and has no single-site form, and the 2 C5 bridges carry a
+preregistered alpha of 0 that makes the bridge certify nothing (C-119, below).
+`constructibility()` names each one and the runner refuses to launch it. It does not substitute a
+different arm and it does not report a stage as complete when part of it could not be built.
+
+USAGE
+    python3 src/boombness/pr057_run_causal.py --self-test          # the runner's own logic
+    python3 src/boombness/pr057_run_causal.py --mutate             # each mutation must be RED
+    python3 src/boombness/pr057_run_causal.py --plan               # the 54-arm manifest, CPU only
+    python3 src/boombness/pr057_run_causal.py --stage h2 --split test --dry-run \
+            --fit-dir outputs/dcs_ts/directions_pr053
+    python3 src/boombness/pr057_run_causal.py --stage h2 --split test \
+            --fit-dir outputs/dcs_ts/directions_pr053 --emit-liveness
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import sys
+import time
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+for _p in ("scripts", os.path.join("src", "boombness"), "doublespeak_causality"):
+    _f = os.path.join(REPO, _p)
+    if _f not in sys.path:
+        sys.path.insert(0, _f)
+
+from dcs_ts_prereg import Prereg, PreregError  # noqa: E402
+from dcs_ts_prereg import load as load_prereg  # noqa: E402
+
+# THE ANALYZER IS THE SOURCE OF TRUTH FOR WHAT AN ARM IS. Nothing below re-derives a manifest, a
+# hook, a liveness rule or the donor contract; they are imported.
+import dcs_ts_pr057_causal as AN  # noqa: E402
+from dcs_ts_pr057_causal import (  # noqa: E402
+    ArmSpec,
+    Refusal,
+    audit_end_relative,
+    build_arm_manifest,
+    family_members,
+    launch_command,
+    liveness_gate,
+    load_arm_run,
+    load_frozen_probe,
+    option_mass_gate,
+    o2_projection_out_from_rows,
+    propagation_read_layers,
+    q1_power,
+    sha256_file,
+    CONTRACT_ARM,
+    CONTRACT_LIVENESS,
+    CONTRACT_PROBE,
+    C112_PRIMARY_IS_10_2,
+)
+from dcs_ts_pr048_analysis import _find_run, load_split  # noqa: E402
+from dcs_ts_pr051_positional import Checks, ZeroBinding  # noqa: E402
+
+PREREG_DEFAULT = "configs/dcs_ts_pr057_phase9.json"
+SCORE_SCRIPT = "src/boombness/score_behavior.py"
+RUNS_ROOT_DEFAULT = "outputs/boombness/score_behavior"
+STATE_ROOT_DEFAULT = "outputs/boombness/pr057_runner"
+MANIFEST_FILE = "PR057_RUN_MANIFEST.json"
+ARM_GATE_FILE = "PR057_ARM_GATE.json"
+STAGE_ORDER = ("q0", "q1", "smoke", "h1", "h2")
+
+#: PHASE 7 baseline (control C6) run tags: `<prefix>_<codeword>_<concept>`.
+PHASE7_TAG_PREFIX_DEFAULT = "ts116m_readout"
+
+
+class RunnerRefusal(RuntimeError):
+    """Anything this runner will not do. Every one of them is fail-closed."""
+
+
+# ============================================================================================
+# DEFECTS FOUND WHILE BUILDING THIS RUNNER. Recorded, never worked around.
+# ============================================================================================
+DEFECT_C113 = (
+    "C-113: configs/dcs_ts_pr057_phase9.json directions.artifact.path is "
+    "'outputs/dcs_ts_pr053_diffmeans/<run>/directions.pt', which can NEVER be loaded -- the "
+    "LOADER decides the filename and score_behavior.py:2081-2085 joins --fit-dir with "
+    "'directions_fit_dev.pt' (then 'directions_fit_heldout.pt'). The runner takes the DIRECTORY "
+    "outputs/dcs_ts/directions_pr053 and lets the loader join. The config is FROZEN and is NOT "
+    "edited to agree."
+)
+
+DEFECT_LIVENESS_SCHEMA = (
+    "C-117 (new, BLOCKING FOR ANALYSIS, found by this runner): the liveness PRODUCER and the "
+    "liveness CONSUMER do not share a schema. pair_common.hook_stats_dict() writes "
+    "n_destination_rows / n_cells_edited_realised and NO 'n_cells_edited_expected'; the "
+    "analyzer's liveness_gate() treats a zero/absent expected count as 'the arm declared no "
+    "destinations' and VOIDS the arm -- so EVERY arm score_behavior produces would be VOID at "
+    "analysis time. The producer also writes resolved_absolute_index as a LIST and leaves "
+    "rel_end None for an all-position (S2) edit, while audit_end_relative() does "
+    "int(record['rel_end']) and int(record['resolved_absolute_index']) and would raise. The "
+    "runner does NOT rewrite PR057_LIVENESS.jsonl. It gates the arm with the PRODUCER's own gate, "
+    "then feeds the consumer's gate an ANNOTATED COPY (expected := n_destination_rows, the "
+    "single-site index unpacked) and writes both verdicts plus this note into PR057_ARM_GATE.json "
+    "so no reader can mistake the annotation for the artifact."
+)
+
+DEFECT_PROBE_ATTRIBUTION = (
+    "C-118 (new, BLOCKING for O1, found by this runner): ProbeReadCapture (Q11) is a read hook on "
+    "a layer, and score_behavior offers NO per-row callback, so a captured record cannot be "
+    "attributed to a prompt_id/domain -- one row produces many forwards (the variant batches) and "
+    "order-based attribution would be a silent misalignment of exactly the shape this phase "
+    "refuses. O1 is a DOMAIN-LEVEL statistic, so records that cannot name their domain cannot "
+    "form it. --emit-probe is therefore REFUSED rather than producing an unattributable file."
+)
+
+DEFECT_PROBE_ARTIFACT = (
+    "The frozen PR-048 probe (Q10) is a CODE PATH in scripts/dcs_ts_pr048_analysis.py "
+    "(res['FROZEN_PROBE']) but the artifact on disk, outputs/dcs_ts/pr048_result.json, carries no "
+    "such block -- the analysis has not been re-run since the export was added. load_frozen_probe "
+    "refuses it, correctly."
+)
+
+DEFECT_C119_BRIDGE_ALPHA = (
+    "C-119 (new, found by this runner): the manifest gives control C5 (the disabled-hook bridge) "
+    "alpha = 0.0 -- 'none, the hook is registered and edits nothing'. But the bridge is not a "
+    "hook with no dose: it is the LIVE arm's hook, run in full, with its write discarded. "
+    "pair_common.DisabledHookBridge records `would_have_changed_max_abs` and "
+    "project_out_liveness_violations REFUSES a bridge whose inner hook would not have edited "
+    "anything, so an alpha=0 bridge is refused at the node -- and if it were not, it would "
+    "certify nothing, because the machinery it is supposed to prove inert would have been given "
+    "no edit to discard. The runner does NOT silently substitute alpha=1: it refuses the arm and "
+    "records this, because the dose of a control is a preregistered quantity."
+)
+
+#: Why an arm cannot be launched today. Each is a REFUSAL, and each names the item that would
+#: clear it. Nothing here is substituted with a different arm.
+UNBUILDABLE = {
+    "patch": (
+        "mode 'patch' (H1 upper-bound donor / C7 self-patch) has NO code path: score_behavior's "
+        "--rescue-donor offers only 'clean' and 'self', both on the SAME prompt (checklist Q3 / "
+        "Q12(a)). The donor contract is designed and unit-tested in the analyzer "
+        "(donor_span_contract / build_cross_prompt_donor / self_patch_gate) and the GPU wiring "
+        "does not exist. SEPARATELY, C-112/R-116: the source concept installs in 0/113 domains, "
+        "so on this bank the H1 population is EMPTY and its null would be CANNOT ANSWER BY "
+        "CONSTRUCTION. It must not be submitted at all."),
+    "component_replace": (
+        "mode 'component_replace' (H2b) has NO code path: make_intervention implements "
+        "'project_out' and 'add' only (checklist Q12(b)). The instrumented hook exists in the "
+        "analyzer (make_instrumented_component_replace_hook, with the orthogonal-residual "
+        "verification I-N7) and is not wired to score_behavior."),
+    "add": (
+        "mode 'add' (control C4) is constructible in make_intervention but is NOT INSTRUMENTED: "
+        "pc.AllPositionAdd is built with no `stats=`, so an additive arm launched with "
+        "--pr057-liveness-out produces ZERO liveness records and score_behavior refuses it -- and "
+        "launched WITHOUT it, a dead additive hook would score as a clean null (C-13). C4 also "
+        "has no single-site form: edit_positions is implemented for project_out only, so C4 x S1 "
+        "would silently be an all-position edit under a single-site label."),
+}
+
+
+# ============================================================================================
+# 1. SMALL PARSERS -- every number comes out of the frozen file, none is typed here
+# ============================================================================================
+def repo_path(*parts: str) -> str:
+    return os.path.join(REPO, *parts)
+
+
+def read_site_rel_end(pr: Prereg) -> int:
+    """The edit/read site as an END-RELATIVE offset, PARSED from the frozen file.
+
+    `read_site._positions_in_rel_end` says "codeword_last == rel_end -10". Typing -10 here would be
+    the same defect as a re-typed threshold: the file and the code could then disagree without
+    either being wrong on its own.
+    """
+    txt = str(pr.require("read_site", "_positions_in_rel_end"))
+    pos = str(pr.require("read_site", "position"))
+    m = re.search(re.escape(pos) + r"\s*==\s*rel_end\s*(-?\d+)", txt)
+    if not m:
+        raise RunnerRefusal(
+            "read_site._positions_in_rel_end does not state %r as a rel_end offset; refusing to "
+            "guess which token the single-site arm edits." % pos)
+    v = int(m.group(1))
+    if v >= 0:
+        raise RunnerRefusal(
+            "the frozen file resolves %r to a NON-NEGATIVE offset %d. A non-negative offset is an "
+            "absolute index wearing the wrong name, and an absolute index reused across examples "
+            "is this repository's twice-recorded bug class." % (pos, v))
+    return v
+
+
+def cell_condition(pr: Prereg) -> str:
+    """The `--conditions` value that binds the preregistered CELL.
+
+    A-039: the population is selected on the field `cell`, and `score_behavior` has NO --cells
+    flag, so the launcher must select on `condition` instead. That mapping is 1:1 on this bank and
+    is VERIFIED per bank by `bind_population_rows()` -- it is not assumed.
+    """
+    cell = str(pr.require("population", "cell"))
+    table = {"C": "natural_doublespeak", "A": "benign_literal", "B": "direct_harmful",
+             "E": "concept_in_benign_ctx"}
+    if cell not in table:
+        raise RunnerRefusal("no condition string is declared for cell %r" % cell)
+    return table[cell]
+
+
+def bank_path_for(arm: ArmSpec) -> str:
+    return ("data/boombness_prompts/boombness_prompt_bank_ts116m_%s_%s.jsonl"
+            % (arm.codeword, arm.target_concept))
+
+
+def file_sha16(path: str) -> str:
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+
+
+# ============================================================================================
+# 2. POPULATION BINDING -- and --split is LOAD-BEARING, not decorative
+# ============================================================================================
+def bind_population_rows(pr: Prereg, bank_abs: str) -> Dict[str, Any]:
+    """Apply exactly `score_behavior`'s own row filter, and verify the A-039 cell mapping.
+
+    `score_behavior` filters on query_kind, condition and n_examples (score_behavior.py:1765-1778).
+    This reproduces that filter to compute --expect-n, and then checks that selecting on
+    `condition` bound the SAME rows as selecting on `cell` would have. On this bank the mapping is
+    1:1; on another bank it may not be, and then this refuses instead of binding the wrong cell.
+    """
+    qk = str(pr.require("population", "query_kind_primary"))
+    dose = int(pr.require("population", "n_examples_primary"))
+    cond = cell_condition(pr)
+    cell = str(pr.require("population", "cell"))
+    rows = []
+    with open(bank_abs) as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    by_cond = [r for r in rows if r.get("query_kind") == qk
+               and r.get("condition") == cond and int(r.get("n_examples", -1)) == dose]
+    by_cell = [r for r in rows if r.get("query_kind") == qk
+               and r.get("cell") == cell and int(r.get("n_examples", -1)) == dose]
+    ids_cond = {r["prompt_id"] for r in by_cond}
+    ids_cell = {r["prompt_id"] for r in by_cell}
+    if not ids_cond:
+        raise ZeroBinding(
+            "the population filter (query_kind=%s, condition=%s, n_examples=%d) bound ZERO rows "
+            "of %s. A filter that binds nothing is not a filter." % (qk, cond, dose, bank_abs))
+    if ids_cond != ids_cell:
+        raise RunnerRefusal(
+            "A-039: selecting on condition=%r bound %d rows and selecting on cell=%r bound %d "
+            "(symmetric difference %d) on %s. score_behavior has no --cells flag, so the launcher "
+            "must select on `condition`; that is only legitimate where the mapping is 1:1, and "
+            "here it is not."
+            % (cond, len(ids_cond), cell, len(ids_cell),
+               len(ids_cond ^ ids_cell), os.path.basename(bank_abs)))
+    return {"rows": by_cond, "n": len(by_cond), "query_kind": qk, "condition": cond,
+            "n_examples": dose, "cell": cell,
+            "n_domains": len({r["domain"] for r in by_cond}),
+            "a039_cell_condition_mapping_is_1to1": True}
+
+
+def split_bind(pr: Prereg, bank_abs: str, split: str, assign: Dict[str, str]) -> Dict[str, Any]:
+    """Bind ONE domain split, as the EXCLUSION LIST that `score_behavior` will be given.
+
+    WHY --split IS IMPLEMENTED THIS WAY. `score_behavior` has no split flag: the bank's own
+    `split` field is dev/heldout, which is NOT the domain split this phase is preregistered on
+    (`data/boombness_prompts/dcs_ts116_domain_split.json`, field `dsplit`, 67/23/23 domains). A
+    `--split` argument that reached nothing would be a flag that cannot act -- the failure this
+    repository refuses. So the split is bound as a DECLARED, OUTCOME-INDEPENDENT prompt_id
+    exclusion (the mechanism `--exclude-prompt-ids` exists for), and the count is asserted with
+    `--expect-n`. A validation-stage job then never computes a TEST row at all, which is stronger
+    discipline than subsetting after the fact.
+
+    The three preregistered whole-population exclusions are removed in EVERY split.
+    """
+    pop = bind_population_rows(pr, bank_abs)
+    excl_domains = set()
+    for e in pr.require("population", "preregistered_exclusions"):
+        if "whole_population" not in e or not isinstance(e["whole_population"], bool):
+            raise RunnerRefusal(
+                "exclusion %r does not declare a boolean 'whole_population' (C-086)." % e.get("domain"))
+        if e["whole_population"]:
+            excl_domains.add(e["domain"])
+    unknown = sorted({r["domain"] for r in pop["rows"] if r["domain"] not in assign})
+    if unknown:
+        raise RunnerRefusal(
+            "%d domain(s) in the bound population are absent from the frozen split manifest "
+            "(%s...). A row whose split is unknown must not be silently kept or silently dropped."
+            % (len(unknown), unknown[:5]))
+    keep, drop = [], []
+    for r in pop["rows"]:
+        if r["domain"] in excl_domains or assign[r["domain"]] != split:
+            drop.append(r["prompt_id"])
+        else:
+            keep.append(r["prompt_id"])
+    if not keep:
+        raise ZeroBinding(
+            "split %r bound ZERO rows on %s. A stage whose population is empty must refuse, not "
+            "run." % (split, os.path.basename(bank_abs)))
+    n_dom = len({r["domain"] for r in pop["rows"] if r["prompt_id"] in set(keep)})
+    rows_per_domain = int(pr.require("population", "rows_per_domain_per_concept"))
+    if n_dom * rows_per_domain != len(keep):
+        raise RunnerRefusal(
+            "split %r binds %d rows over %d domains, but the frozen file says %d rows per domain "
+            "(%d expected). A population that is not the shape the preregistration describes is "
+            "not the preregistered population."
+            % (split, len(keep), n_dom, rows_per_domain, n_dom * rows_per_domain))
+    if split == "test" and n_dom != int(pr.require("primary", "n_test_domains")):
+        raise RunnerRefusal(
+            "the TEST split binds %d domains; the frozen file declares n_test_domains=%d."
+            % (n_dom, int(pr.require("primary", "n_test_domains"))))
+    return {"split": split, "bank": bank_abs, "n_keep": len(keep), "n_drop": len(drop),
+            "n_domains": n_dom, "keep_ids": sorted(keep), "drop_ids": sorted(drop),
+            "expect_n": len(keep), "population": {k: v for k, v in pop.items() if k != "rows"},
+            "excluded_whole_population_domains": sorted(excl_domains)}
+
+
+def exclusion_file_text(pr: Prereg, bind: Dict[str, Any]) -> str:
+    """The `--exclude-prompt-ids` file, carrying its own provenance in `#` comments."""
+    head = [
+        "# DCS-PR-057 runner: the rows OUTSIDE domain split %r on %s." % (bind["split"],
+                                                                         os.path.basename(bind["bank"])),
+        "# Source: %s field %s (sha16 %s) -- OUTCOME-INDEPENDENT, frozen before any outcome."
+        % (pr.require("split", "manifest"), pr.require("split", "field"),
+           pr.require("split", "manifest_sha16")),
+        "# Plus the preregistered whole-population exclusions: %s"
+        % (", ".join(bind["excluded_whole_population_domains"]) or "(none)"),
+        "# keep=%d drop=%d domains_kept=%d" % (bind["n_keep"], bind["n_drop"], bind["n_domains"]),
+    ]
+    return "\n".join(head + bind["drop_ids"]) + "\n"
+
+
+# ============================================================================================
+# 3. CONSTRUCTIBILITY, AND THE DIRECTION MAP THAT STOPS THE TWO FILES DRIFTING
+# ============================================================================================
+#: The analyzer's manifest names a direction by its SCIENTIFIC role; `score_behavior --intervene`
+#: names it by its key in the PR-053 payload, and a norm-matched control additionally names the
+#: base it is matched TO with the `<arm>@<base>` form (Q13). This table is the ONLY place the two
+#: vocabularies meet. A manifest label with no entry here is a REFUSAL: an unmapped label silently
+#: resolved to a plausible payload key is how a control ends up matched to an axis no arm touches.
+DIRECTION_MAP: Dict[str, Optional[str]] = {
+    "v_bomb_specific": "v_bomb_specific",
+    "v_remap": "v_remap",
+    "v_knife_specific": "v_knife_specific",
+    "random_norm_matched": "random@v_bomb_specific",
+    "orthogonal_to_concept_subspace": "orthogonal@v_bomb_specific",
+    # C2 wants a direction re-estimated with the labels permuted within domain. The PR-053 export
+    # carries no such key and this runner will not manufacture one: a control whose direction is
+    # invented at launch time is not the preregistered control.
+    "v_bomb_specific_shuffled_labels": None,
+}
+
+
+def payload_base_name(spec: str) -> str:
+    """The payload key a `--intervene` direction token resolves to (`random@v_x` -> `v_x`)."""
+    return spec.split("@", 1)[1] if "@" in spec else spec
+
+
+def constructibility(pr: Prereg, arm: ArmSpec, payload_keys: Sequence[str]) -> Dict[str, Any]:
+    """Can this arm be launched TODAY, with the instrument as it stands? Refusals are named."""
+    reasons: List[str] = []
+    spec: Optional[str] = None
+    if arm.mode in UNBUILDABLE:
+        reasons.append(UNBUILDABLE[arm.mode])
+    elif arm.mode in ("project_out", "disabled"):
+        if arm.direction is None:
+            reasons.append("mode %r with no direction" % arm.mode)
+        elif arm.direction not in DIRECTION_MAP:
+            reasons.append(
+                "the manifest names direction %r and this runner has NO declared mapping for it. "
+                "Refusing to resolve it to a payload key by resemblance: that is how a control "
+                "gets matched to an axis no arm edits (Q13)." % arm.direction)
+        elif DIRECTION_MAP[arm.direction] is None:
+            reasons.append(
+                "direction %r has no artifact: the PR-053 TRAIN-only export carries %s and "
+                "nothing that could stand in for it. The control is not constructible until the "
+                "shuffled-label refit exists."
+                % (arm.direction, sorted(k for k in payload_keys if k.startswith("v_"))))
+        else:
+            spec = DIRECTION_MAP[arm.direction]
+            base = payload_base_name(spec)
+            if base not in payload_keys:
+                reasons.append(
+                    "direction %r resolves to payload key %r which the fitted payload does NOT "
+                    "carry (it has %s)."
+                    % (arm.direction, base, sorted(k for k in payload_keys if k.startswith("v_"))))
+    else:
+        reasons.append("unknown arm mode %r" % arm.mode)
+    if arm.mode == "disabled" and not reasons and not float(arm.alpha or 0.0):
+        reasons.append(DEFECT_C119_BRIDGE_ALPHA)
+    if arm.scope == "S1" and arm.mode not in ("project_out", "disabled") and not reasons:
+        reasons.append("scope S1 (single site) is implemented for project_out only")
+    return {"arm_id": arm.arm_id, "constructible": not reasons, "intervene_direction": spec,
+            "reasons": reasons}
+
+
+# ============================================================================================
+# 4. THE COMMAND LINE FOR ONE ARM -- built here, cross-checked against the analyzer
+# ============================================================================================
+def build_argv(pr: Prereg, arm: ArmSpec, ctx: Dict[str, Any]) -> List[str]:
+    """The `score_behavior` argv for one arm. Every value comes from the frozen file or the ArmSpec."""
+    con = ctx["constructibility"]
+    if not con["constructible"]:
+        raise RunnerRefusal("arm %s is not constructible: %s" % (arm.arm_id, con["reasons"][0]))
+    band = "%d-%d" % (min(arm.layers), max(arm.layers))
+    seed = int(arm.control_draw_seed if arm.control_draw_seed is not None
+               else pr.require("seeds", "control_draws"))
+    argv = [
+        "--bank", bank_path_for(arm),
+        "--query-kinds", str(pr.require("population", "query_kind_primary")),
+        "--conditions", cell_condition(pr),
+        "--n-examples", str(int(pr.require("population", "n_examples_primary"))),
+        "--readout-ids", "whole_answer",
+        "--attn-impl", str(pr.require("model", "attn_impl")),
+        "--max-new", str(int(pr.require("decoding", "max_new_tokens"))),
+        "--no-generate",
+        "--fit-dir", ctx["fit_dir"],
+        "--intervene", "%s:%s:%s:%g" % (con["intervene_direction"],
+                                        "project_out", band, arm.alpha or 1.0),
+        "--seed", str(seed),
+        "--arm", arm.arm_id,
+        "--tag", arm.tag(),
+    ]
+    if arm.scope == "S1":
+        # '=' form on purpose: argparse reads a bare `-10` after a space as an option.
+        argv.append("--pr057-edit-positions=%d" % ctx["rel_end"])
+    if arm.mode == "disabled":
+        argv.append("--pr057-disable-hooks")
+    if not ctx.get("emit_liveness"):
+        raise RunnerRefusal(
+            "arm %s installs hooks and --emit-liveness was not given. Without "
+            "--pr057-liveness-out the hooks write NO statistics and a dead hook is "
+            "indistinguishable from a clean null (C-13). Refusing." % arm.arm_id)
+    argv += ["--pr057-liveness-out", "auto"]
+    if ctx.get("exclude_file"):
+        argv += ["--exclude-prompt-ids", ctx["exclude_file"]]
+    if ctx.get("expect_n"):
+        argv += ["--expect-n", str(int(ctx["expect_n"]))]
+    if ctx.get("limit"):
+        argv += ["--limit", str(int(ctx["limit"]))]
+    for tok in argv:
+        if " " in tok or '"' in tok or "'" in tok:
+            raise RunnerRefusal(
+                "argv token %r contains a space or a quote. BOOMB_ARGS is word-split by "
+                "run_boombness.sh, so such a value is torn apart at the node (job 766661)." % tok)
+    return argv
+
+
+def assert_argv_agrees_with_analyzer(pr: Prereg, arm: ArmSpec, argv: Sequence[str],
+                                     fit_dir: str) -> Dict[str, Any]:
+    """The anti-drift check: the runner and the analyzer must describe the SAME arm.
+
+    `launch_command()` is the analyzer's own idea of how this arm is launched. It is prose-adjacent
+    (it carries `#` comments for the paths that do not exist yet) so it is parsed, not diffed, and
+    the four things that decide WHICH EXPERIMENT RAN are compared: the bank, the arm label, the run
+    tag, and the intervention's mode / layer band / alpha. The direction is compared through
+    `DIRECTION_MAP`, which is the only sanctioned translation between the two vocabularies.
+    """
+    cmd = launch_command(pr, arm, fit_dir)
+    got = {argv[i]: argv[i + 1] for i in range(0, len(argv) - 1) if argv[i].startswith("--")}
+    out: Dict[str, Any] = {"arm_id": arm.arm_id, "analyzer_launch": cmd, "mismatches": []}
+
+    def _flag(text: str, flag: str) -> Optional[str]:
+        m = re.search(re.escape(flag) + r"\s+('?)([^\s']+)\1", text)
+        return m.group(2) if m else None
+
+    for flag in ("--bank", "--arm", "--tag"):
+        a, b = _flag(cmd, flag), got.get(flag)
+        if a != b:
+            out["mismatches"].append("%s: analyzer=%r runner=%r" % (flag, a, b))
+    a_int = _flag(cmd, "--intervene")
+    if a_int and "--intervene" in got:
+        a_dir, a_mode, a_band, a_alpha = a_int.split(":")
+        r_dir, r_mode, r_band, r_alpha = got["--intervene"].split(":")
+        want = DIRECTION_MAP.get(a_dir, "<unmapped>")
+        if want != r_dir:
+            out["mismatches"].append("direction: analyzer=%r maps to %r, runner used %r"
+                                     % (a_dir, want, r_dir))
+        # C5 is `project_out` plus --pr057-disable-hooks; the analyzer writes mode 'disabled' on
+        # the ArmSpec and 'project_out' in its own command, so compare against the command.
+        if a_mode != r_mode:
+            out["mismatches"].append("mode: analyzer=%r runner=%r" % (a_mode, r_mode))
+        if a_band != r_band:
+            out["mismatches"].append("layer band: analyzer=%r runner=%r" % (a_band, r_band))
+        if abs(float(a_alpha) - float(r_alpha)) > 0:
+            out["mismatches"].append("alpha: analyzer=%r runner=%r" % (a_alpha, r_alpha))
+    if out["mismatches"]:
+        raise RunnerRefusal(
+            "the runner's command for arm %s DISAGREES with the analyzer's launch_command: %s. "
+            "Two files that disagree about what an arm is would be the whole failure mode of this "
+            "phase." % (arm.arm_id, "; ".join(out["mismatches"])))
+    out["ok"] = True
+    return out
+
+
+# ============================================================================================
+# 5. STAGES, THE FIXED ORDER, AND THE SECOND KILL CONDITION
+# ============================================================================================
+def stage_selector(pr: Prereg, stage: str):
+    """Which arms belong to which stage. `h1 | h2` PARTITIONS the manifest; q1 and smoke are
+    subsets run on other splits, and every one of them is a subset of the SAME 54 declared arms --
+    a stage never invents an arm."""
+    dev_cw = str(pr.require("population", "codewords", "development"))
+    if stage == "h1":
+        return lambda a: a.hypothesis in ("H1", "C7")
+    if stage == "h2":
+        return lambda a: a.hypothesis not in ("H1", "C7")
+    if stage == "q1":
+        # The design's Q1 was "H1 x S1 and H2a x S1 on VALIDATION". C-112 demoted H1 to
+        # exploratory and R-116 made its population EMPTY, so the H1 half is not submittable; the
+        # power run is the PRIMARY arm (10.2 / H2a) at S1 on both codewords -- the same 2 arms and
+        # the same 460 rows the design costed. The deviation is recorded, not silent.
+        return lambda a: a.hypothesis == "H2a" and a.scope == "S1"
+    if stage == "smoke":
+        # Q7 asks for liveness, the self-patch control and a non-zero edit magnitude on a handful
+        # of TRAIN domains. The self-patch control is an H1-mode arm and is not constructible, so
+        # the smoke is the primary arm plus the DISABLED-HOOK BRIDGE, which is the other blocking
+        # liveness control and IS constructible. What cannot be smoked is reported as such.
+        return lambda a: ((a.hypothesis == "H2a" and a.scope == "S1" and a.codeword == dev_cw)
+                          or (a.hypothesis == "C5" and a.scope == "S1"))
+    raise RunnerRefusal("unknown stage %r; known: %s" % (stage, list(STAGE_ORDER)))
+
+
+def stage_dir(state_root: str, stage: str, split: str) -> str:
+    return os.path.join(state_root, "%s_%s" % (stage, split))
+
+
+def assert_stage_order(state_root: str, stage: str, split: str) -> Dict[str, Any]:
+    """`Q0 -> Q1 -> smoke -> H1 -> H2`, enforced by reading the earlier stages' own DONE.json.
+
+    A comment cannot stop a job being submitted out of order; this can. `q0` is not a job (it is a
+    gate over the PHASE 7 runs) so it has no DONE.json of its own and is checked separately by
+    `q0_gate`.
+    """
+    need = {"q1": [], "smoke": ["q1"], "h1": ["q1", "smoke"], "h2": ["q1", "smoke", "h1"]}
+    if stage not in need:
+        raise RunnerRefusal("stage %r has no declared predecessors" % stage)
+    missing = []
+    for pre in need[stage]:
+        hits = []
+        for cand in os.listdir(state_root) if os.path.isdir(state_root) else []:
+            if cand.startswith(pre + "_") and os.path.exists(
+                    os.path.join(state_root, cand, "DONE.json")):
+                d = json.load(open(os.path.join(state_root, cand, "DONE.json")))
+                if d.get("status") == "ok":
+                    hits.append(cand)
+        if not hits:
+            missing.append(pre)
+    if missing:
+        raise RunnerRefusal(
+            "stage %r was requested but %s has not completed (no %s/<stage>_*/DONE.json with "
+            "status ok). The launch order Q0 -> Q1 -> smoke(Q7) -> H1 -> H2 is fixed and is not "
+            "negotiable: Q1 decides whether the design can answer at all, and running the "
+            "confirmatory arms first would read TEST before that question was asked."
+            % (stage, missing, state_root))
+    return {"stage": stage, "predecessors_satisfied": need[stage]}
+
+
+def q0_gate(pr: Prereg, runs_root: str, tag_prefix: str) -> Dict[str, Any]:
+    """Q0: the PHASE 7 readout has LANDED on ALL SIX banks and the semantic channel is ENGAGED.
+
+    The FIRST kill condition in the frozen file: a disengaged `semantic_one_word` channel means
+    there is no y to move and the phase would reproduce R-097 at GPU cost. `option_mass_gate` is
+    the analyzer's, not a second copy.
+    """
+    channel = str(pr.require("population", "query_kind_primary"))
+    per_bank, missing, disengaged = {}, [], []
+    for key in sorted(pr.require("population", "banks")):
+        tag = "%s_%s" % (tag_prefix, key)
+        try:
+            d = _find_run(runs_root, tag)
+        except (PreregError, FileNotFoundError, OSError):
+            missing.append(tag)
+            continue
+        try:
+            g = option_mass_gate(json.load(open(os.path.join(d, "summary.json"))), channel)
+        except Refusal as e:
+            per_bank[key] = {"run_dir": d, "ok": False, "detail": str(e)[:160]}
+            disengaged.append(key)
+            continue
+        per_bank[key] = {"run_dir": d, **g}
+        if not g["ok"]:
+            disengaged.append(key)
+    ok = (not missing) and (not disengaged) and len(per_bank) == len(pr.require("population", "banks"))
+    return {"ok": ok, "n_banks": len(pr.require("population", "banks")), "per_bank": per_bank,
+            "missing_tags": missing, "disengaged": disengaged,
+            "detail": ("" if ok else
+                       "Q0 IS NOT SATISFIED: %d bank(s) have no COMPLETE PHASE 7 run (%s) and "
+                       "%d show the %s channel disengaged. Without it O2 DOES NOT EXIST and the "
+                       "phase repeats R-097 exactly."
+                       % (len(missing), missing[:6], len(disengaged), channel))}
+
+
+KILL_MOVED = "H1_MOVED_O2"
+KILL_NOT_MOVED = "H1_DID_NOT_MOVE_O2"
+KILL_UNAVAILABLE = "H1_NOT_AVAILABLE"
+
+
+def h1_kill_state(pr: Prereg, runs_root: str, scope: str,
+                  arms: Sequence[ArmSpec], baseline_rows_by_tag) -> Dict[str, Any]:
+    """The frozen file's SECOND kill condition, at one site (scope level).
+
+    "if the H1 upper bound does not move O2, H2a/H2b are NOT submitted at that site, because a
+    surgical edit cannot be expected to do what replacing the entire state could not."
+
+    Three states, and the third is NOT the second:
+      MOVED        -- proceed.
+      NOT_MOVED    -- the H2 arms at this site are NOT SUBMITTED and are reported UNINFORMATIVE.
+      UNAVAILABLE  -- no H1 arm ran at this site at all. Under C-112/R-116 the H1 donor
+                      population on this bank is EMPTY, so H1 is unconstructible and its silence
+                      is CANNOT ANSWER BY CONSTRUCTION -- which is not evidence that a surgical
+                      edit will fail, and mandate 10.2 (H2a) is the PRIMARY test in its own right.
+                      The H2 arms proceed, and this state is recorded on every one of them.
+    """
+    mde = float(pr.require("power", "declared_minimum_meaningful_effect",
+                           "o2_semantic_logodds_shift"))
+    h1 = [a for a in arms if a.hypothesis == "H1" and a.scope == scope]
+    ran = []
+    for a in h1:
+        try:
+            ran.append((a, load_arm_run(_find_run(runs_root, a.tag()))))
+        except (PreregError, Refusal, FileNotFoundError, OSError):
+            continue
+    if not ran:
+        return {"scope": scope, "state": KILL_UNAVAILABLE, "n_h1_arms_run": 0,
+                "declared_mde": mde, "note": C112_PRIMARY_IS_10_2,
+                "detail": "no H1 arm at scope %s produced a COMPLETE run; H1 is exploratory and "
+                          "unconstructible on this bank (R-116: the source concept installs in "
+                          "0/113 domains). The kill condition cannot fire on an arm that was "
+                          "never able to run, and it is NOT read as 'H1 did not move O2'." % scope}
+    deltas = {}
+    for a, run in ran:
+        lg = liveness_gate(annotate_liveness(run["liveness"], a), a.arm_id,
+                           expect_enabled=a.expect_enabled)
+        if not lg["live"]:
+            raise RunnerRefusal(
+                "the kill condition would be decided by arm %s, whose hook liveness is UNCLEAN "
+                "(%s). A null behind an unverified hook is VOID, not a negative, and it is "
+                "certainly not a licence to cancel the surgical arms." % (a.arm_id, lg["reasons"][:2]))
+        base = baseline_rows_by_tag(a)
+        deltas[a.arm_id] = per_domain_delta(run["results"], base)
+    means = {k: (sum(v.values()) / len(v)) for k, v in deltas.items() if v}
+    if not means:
+        raise ZeroBinding("the kill condition bound zero domains of O2 at scope %s" % scope)
+    biggest = max(abs(m) for m in means.values())
+    moved = biggest >= mde
+    return {"scope": scope, "state": KILL_MOVED if moved else KILL_NOT_MOVED,
+            "n_h1_arms_run": len(ran), "declared_mde": mde,
+            "per_arm_domain_mean_delta_o2": means, "max_abs_domain_mean_delta": biggest,
+            "detail": ("H1 moved O2 by %.4f nats >= the declared %.2f-nat effect" % (biggest, mde)
+                       if moved else
+                       "H1 -- which replaces the WHOLE state -- moved O2 by only %.4f nats, below "
+                       "the declared %.2f. The H2 arms at this site are NOT SUBMITTED and are "
+                       "reported UNINFORMATIVE, never as negatives." % (biggest, mde))}
+
+
+def apply_kill_condition(arms: Sequence[ArmSpec],
+                         states: Dict[str, Dict[str, Any]]) -> Tuple[List[ArmSpec], List[Dict[str, Any]]]:
+    """Remove the H2 arms at a killed site. Returns (submit, not_submitted_records)."""
+    submit, skipped = [], []
+    for a in arms:
+        st = states.get(a.scope, {}).get("state")
+        if a.hypothesis in ("H2a", "H2b") and st == KILL_NOT_MOVED:
+            skipped.append({"arm_id": a.arm_id, "status": "NOT_SUBMITTED_UNINFORMATIVE",
+                            "scope": a.scope, "kill_state": st,
+                            "why": states[a.scope]["detail"],
+                            "_wording": "UNINFORMATIVE, NOT NEGATIVE. The site's upper bound did "
+                                        "not move the outcome, so a surgical null there would be "
+                                        "a statement about the site, not about the axis."})
+        else:
+            submit.append(a)
+    return submit, skipped
+
+
+def assert_kill_condition_honoured(submit: Sequence[ArmSpec],
+                                   states: Dict[str, Dict[str, Any]]) -> None:
+    """Refuse a submission list that contains an arm the kill condition removed."""
+    bad = [a.arm_id for a in submit
+           if a.hypothesis in ("H2a", "H2b")
+           and states.get(a.scope, {}).get("state") == KILL_NOT_MOVED]
+    if bad:
+        raise RunnerRefusal(
+            "the submission list contains %d H2 arm(s) at a site where the H1 upper bound did NOT "
+            "move O2 (%s). The frozen file's second kill condition says they are NOT submitted. "
+            "Submitting them anyway would spend GPU time producing nulls that are uninformative "
+            "by construction and would be read as negatives." % (len(bad), bad[:4]))
+
+
+# ============================================================================================
+# 6. OUTCOMES USED BY THE RUNNER ITSELF (Q1's decision and the kill condition)
+# ============================================================================================
+def per_domain_delta(arm_rows: Sequence[Dict[str, Any]],
+                     base_rows: Sequence[Dict[str, Any]]) -> Dict[str, float]:
+    """Domain-mean change in O2 (`semantic_logodds`) between an arm and the untouched baseline.
+
+    Paired on `prompt_id`, which is the only join that keeps the contrast within-prompt (the
+    nuisance floor of 0.0 in the frozen file is *by construction* of that pairing). Refuses a zero
+    bind and refuses a row the baseline does not carry.
+    """
+    o2_arm = o2_projection_out_from_rows(list(arm_rows))          # validates the fields exist
+    o2_base = o2_projection_out_from_rows(list(base_rows))
+    assert o2_arm["computable"] and o2_base["computable"]
+    base = {r["prompt_id"]: float(r["semantic_logodds"]) for r in base_rows}
+    per: Dict[str, List[float]] = {}
+    unmatched = 0
+    for r in arm_rows:
+        pid = r["prompt_id"]
+        if pid not in base:
+            unmatched += 1
+            continue
+        per.setdefault(r["domain"], []).append(float(r["semantic_logodds"]) - base[pid])
+    if unmatched:
+        raise RunnerRefusal(
+            "%d of %d intervened rows have NO baseline row with the same prompt_id. An unpaired "
+            "contrast is not the within-prompt contrast this design's nuisance floor rests on."
+            % (unmatched, len(arm_rows)))
+    if not per:
+        raise ZeroBinding("the arm-vs-baseline delta bound ZERO domains")
+    return {d: sum(v) / len(v) for d, v in per.items()}
+
+
+# ============================================================================================
+# 7. LIVENESS -- gated twice, annotated once, never rewritten
+# ============================================================================================
+LIVENESS_REQUIRED_KEYS = ("mode", "enabled", "layer", "n_forward_calls", "hook_fired_count",
+                          "n_destination_rows", "n_cells_edited_realised",
+                          "projection_removed_l2", "max_abs_delta", "seq_len")
+
+
+def annotate_liveness(records: Sequence[Dict[str, Any]], arm: ArmSpec) -> List[Dict[str, Any]]:
+    """An ANNOTATED COPY for the analyzer's consumer-side gate. See `DEFECT_LIVENESS_SCHEMA`.
+
+    Two annotations, both stated rather than smuggled:
+      * `n_cells_edited_expected := n_destination_rows` -- the producer records how many cells the
+        hook SAW; a live hook must have edited all of them, so `realised == expected` is then the
+        real "did it edit everything it was given" check rather than a vacuous 0 == 0.
+      * the single-site `resolved_absolute_index` list of one is unpacked to an int, so
+        `audit_end_relative` can perform the `seq_len + rel_end` identity it exists for.
+    An all-position (S2) edit has no single rel_end and is NOT given one: it is marked
+    `_end_relative_audit = 'not applicable (all-position edit)'` instead, because inventing a
+    rel_end to make an audit pass is the audit failing.
+    """
+    out = []
+    for r in records:
+        miss = [k for k in LIVENESS_REQUIRED_KEYS if k not in r]
+        if miss:
+            raise RunnerRefusal(
+                "a liveness record from arm %s is missing %s. A record that grows keys as it goes "
+                "cannot distinguish 'the hook never fired' from 'the consumer read a key the "
+                "producer never wrote'." % (arm.arm_id, miss))
+        d = dict(r)
+        d["n_cells_edited_expected"] = int(r.get("n_destination_rows") or 0)
+        d["_expected_rule"] = "n_destination_rows (annotated by the runner; see C-117)"
+        idx = r.get("resolved_absolute_index")
+        if isinstance(idx, (list, tuple)):
+            if len(idx) == 1:
+                d["resolved_absolute_index"] = int(idx[0])
+            else:
+                d["_end_relative_audit"] = ("not applicable (%d edited positions in one record)"
+                                            % len(idx))
+        if r.get("rel_end") is None:
+            d["_end_relative_audit"] = "not applicable (all-position edit has no single rel_end)"
+        out.append(d)
+    return out
+
+
+#: Where each field of the frozen `persist_per_row_and_per_arm.fields` list actually lives. The
+#: KEYS are the config's own strings, so a field added to the frozen list that this runner has no
+#: location for is a REFUSAL rather than a quietly unpersisted quantity. `None` means "not
+#: applicable to this arm", and the reason is required alongside it.
+PERSIST_LOCATION = {
+    "activation_norm_pre": ("row", "activation_norm_pre"),
+    "activation_norm_post": ("row", "activation_norm_post"),
+    "norm_ratio": ("row", "norm_ratio"),
+    "projection_removed_l2": ("row", "projection_removed_l2"),
+    "frac_cellmean_spread_removed": ("arm", "realized_dose"),
+    "cosine(h_pre, h_post)": ("row", "cos_pre_post"),
+    "cosine(edit, v_used)": ("arm", "cos_edit_vs_direction"),
+    "orthogonal_residual_delta_l2 (H2b: must be 0 to tolerance)": ("arm", "H2b only"),
+    "layer(s) edited": ("row", "layer"),
+    "token position edited (as rel_end AND as the resolved absolute index)":
+        ("row", "rel_end + resolved_absolute_index"),
+    "occurrence index of the codeword": ("row", "occurrence_index_per_edit"),
+    "n_subtokens": ("row", "n_subtokens_per_occurrence"),
+    "hook_fired_count": ("row", "hook_fired_count"),
+    "n_destination_rows": ("row", "n_destination_rows"),
+    "n_cells_edited_realised": ("row", "n_cells_edited_realised"),
+    "n_cells_edited_expected": ("row", "n_cells_edited_expected"),
+    "direction_file_sha256 (recomputed at load, not pinned in advance)":
+        ("arm", "direction_file_sha256"),
+    "control_draw_seed": ("arm", "control_draw_seed"),
+    "per-draw output sha256": ("arm", "output_sha256"),
+}
+
+
+def persist_contract_report(pr: Prereg, arm: ArmSpec, record: Dict[str, Any],
+                            gate: Dict[str, Any]) -> Dict[str, Any]:
+    """Check, field by field, that this arm persisted what the FROZEN file says it must.
+
+    `persist_per_row_and_per_arm` is mandate 10.3's "verify intervention magnitude" made
+    machine-readable. Reading the list and hoping is what B-020 is; this reads the list and looks
+    each field up where it is supposed to be.
+    """
+    out, missing, unmapped = {}, [], []
+    for f in pr.require("persist_per_row_and_per_arm", "fields"):
+        loc = PERSIST_LOCATION.get(f)
+        if loc is None:
+            unmapped.append(f)
+            continue
+        where, key = loc
+        if f.startswith("orthogonal_residual_delta_l2"):
+            out[f] = {"present": None, "where": where,
+                      "note": "not applicable: this arm is %s, not H2b (component_replace)"
+                              % arm.hypothesis}
+            continue
+        if where == "row":
+            if f.startswith("token position"):
+                ok = ("rel_end" in record) and ("resolved_absolute_index" in record)
+            else:
+                # PRESENCE IS NOT ENOUGH. `hook_stats_dict` pre-populates every key with None, so
+                # `key in record` is trivially true -- a check that reads the producer's own null
+                # field and asserts None == None. A LIVE arm must carry a VALUE; the disabled-hook
+                # bridge legitimately has none for the edit quantities it never made.
+                ok = (key in record) and (record.get(key) is not None or not arm.expect_enabled)
+            val = record.get(key)
+            if ok and f.startswith("token position") and record.get("rel_end") is None:
+                out[f] = {"present": True, "where": where, "value": "all positions (S2)",
+                          "note": "an all-position edit has no single rel_end; `positions` is "
+                                  "every position by construction"}
+                continue
+        else:
+            ok = gate.get(key) not in (None, {}, "")
+            val = gate.get(key)
+            if f.startswith("frac_cellmean_spread_removed") and gate.get("realized_dose_note"):
+                out[f] = {"present": None, "where": where, "note": gate["realized_dose_note"]}
+                continue
+        out[f] = {"present": bool(ok), "where": where, "key": key,
+                  "value": (val if isinstance(val, (int, float, str)) else None)}
+        if not ok:
+            missing.append(f)
+    if unmapped:
+        raise RunnerRefusal(
+            "the frozen persist contract names %d field(s) this runner has no location for (%s). "
+            "A field nobody knows where to look for is an unpersisted quantity, not a satisfied "
+            "requirement." % (len(unmapped), unmapped[:3]))
+    if missing:
+        raise RunnerRefusal(
+            "arm %s did NOT persist %d field(s) the frozen `persist_per_row_and_per_arm` list "
+            "requires: %s" % (arm.arm_id, len(missing), missing))
+    return {"n_fields": len(out), "n_missing": 0, "per_field": out}
+
+
+def verify_arm_artifacts(pr: Prereg, arm: ArmSpec, run_dir: str,
+                         expect_rows: Optional[int],
+                         con_dir: Optional[str] = None,
+                         direction_sha: Optional[str] = None) -> Dict[str, Any]:
+    """Everything that must be TRUE about a finished arm before the next one is started."""
+    run = load_arm_run(run_dir)                       # refuses a partial run (no DONE.json)
+    n_rows = len(run["results"])
+    if n_rows == 0:
+        raise RunnerRefusal("arm %s wrote ZERO result rows into %s" % (arm.arm_id, run_dir))
+    if expect_rows and n_rows != expect_rows:
+        raise RunnerRefusal(
+            "arm %s wrote %d rows; the runner bound %d. A silently shrunken sample is how R-18 "
+            "happened." % (arm.arm_id, n_rows, expect_rows))
+    recs = run["liveness"]
+    if not recs:
+        raise RunnerRefusal(
+            "arm %s produced NO %s. A null behind an unrecorded hook is VOID, not a negative -- "
+            "and an empty liveness file reads to a consumer as 'no violations'."
+            % (arm.arm_id, CONTRACT_LIVENESS))
+    # (a) the PRODUCER's own gate -- the same function score_behavior aborts on, run again here so
+    #     a record that reached the file without aborting still cannot pass silently.
+    import pair_common as pc
+    prod = [{"i": i, "violations": pc.project_out_liveness_violations(r)}
+            for i, r in enumerate(recs)]
+    prod_bad = [p for p in prod if p["violations"]]
+    # (b) the CONSUMER's gate -- the analyzer's, on the annotated copy.
+    ann = annotate_liveness(recs, arm)
+    cons = liveness_gate(ann, arm.arm_id, expect_enabled=arm.expect_enabled)
+    # (c) the end-relative index audit, where it applies.
+    auditable = [r for r in ann if "_end_relative_audit" not in r]
+    aud = audit_end_relative(auditable) if auditable else {
+        "ok": None, "n_records": 0,
+        "witness_note": "no record carries a single (rel_end, resolved_absolute_index) pair; the "
+                        "end-relative identity is not auditable on an all-position edit"}
+    # (d) THE PER-DRAW OUTPUT HASH the frozen file's persist list names, and which control C1's
+    #     five-distinct-hashes gate needs. With --no-generate there is no gens.jsonl to hash, so
+    #     the hash is over the OUTCOME FIELDS of results.jsonl, sorted by prompt_id, with the
+    #     rule written next to the number rather than left to be inferred.
+    out_sha = hashlib.sha256(
+        "\n".join(sorted("%s|%.10g|%.10g|%.10g"
+                         % (r.get("prompt_id"), float(r.get("logp_concept", float("nan"))),
+                            float(r.get("logp_codeword", float("nan"))),
+                            float(r.get("semantic_logodds", float("nan"))))
+                         for r in run["results"])).encode()).hexdigest()
+    # (e) THE REALISED DOSE. `persist_per_row_and_per_arm` lists frac_cellmean_spread_removed;
+    #     score_behavior computes it per (direction, layer, alpha) into metadata.json
+    #     `realized_dose` -- but ONLY for a direction that is a payload key, so a norm-matched
+    #     control (random@v_x) legitimately has none. The distinction is recorded, not blurred.
+    meta_path = os.path.join(run_dir, "metadata.json")
+    meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
+    dose = (meta.get("realized_dose") if isinstance(meta.get("realized_dose"), dict)
+            else (meta.get("extra") or {}).get("realized_dose"))
+    derived = "@" in (con_dir or "")
+    if arm.expect_enabled and not derived and not dose:
+        raise RunnerRefusal(
+            "arm %s recorded NO realized_dose in metadata.json, so "
+            "frac_cellmean_spread_removed -- a field `persist_per_row_and_per_arm` requires -- "
+            "does not exist for it and the realised dose of this edit is unrecorded."
+            % arm.arm_id)
+    gate = {"arm_id": arm.arm_id, "run_dir": run_dir, "n_rows": n_rows,
+            "output_sha256": out_sha,
+            "output_sha256_rule": ("sha256 over sorted 'prompt_id|logp_concept|logp_codeword|"
+                                   "semantic_logodds' lines of results.jsonl (--no-generate "
+                                   "leaves no gens.jsonl to hash)"),
+            "realized_dose": dose,
+            "realized_dose_note": ("a norm-matched control's direction is DERIVED at hook-install "
+                                   "time and is not a payload key, so it has no cellmean dose"
+                                   if derived else ""),
+            "n_liveness_records": len(recs), "expect_enabled": arm.expect_enabled,
+            "producer_gate": {"n_records": len(recs), "n_violating": len(prod_bad),
+                              "first": prod_bad[:3]},
+            "consumer_gate": cons, "end_relative_audit": aud,
+            "hook_fired_count_total": sum(int(r.get("hook_fired_count", 0)) for r in recs),
+            "n_cells_edited_realised_total": sum(int(r.get("n_cells_edited_realised", 0))
+                                                 for r in recs),
+            "arm_manifest_echo_present": run["arm_manifest"] is not None,
+            "direction_file_sha256": direction_sha,
+            "control_draw_seed": (arm.control_draw_seed
+                                  if arm.control_draw_seed is not None
+                                  else int(pr.require("seeds", "control_draws"))),
+            "cos_edit_vs_direction": ("+/-1 BY CONSTRUCTION for project_out: the edit is "
+                                      "alpha * (h.d) * d, i.e. exactly along the unit direction"),
+            "_schema_note": DEFECT_LIVENESS_SCHEMA}
+    gate["persist_contract"] = persist_contract_report(pr, arm, ann[0], gate)
+    with open(os.path.join(run_dir, ARM_GATE_FILE), "w") as fh:
+        json.dump(gate, fh, indent=2, default=str)
+    if prod_bad:
+        raise RunnerRefusal("arm %s: the PRODUCER's liveness gate refuses %d/%d record(s): %s"
+                            % (arm.arm_id, len(prod_bad), len(recs), prod_bad[:2]))
+    if not cons["live"]:
+        raise RunnerRefusal("arm %s: the analyzer's liveness gate refuses it: %s"
+                            % (arm.arm_id, cons["reasons"]))
+    if aud.get("ok") is False:
+        raise RunnerRefusal(
+            "arm %s: %d edit index/indices are not len(input_ids)+rel_end. An absolute index "
+            "reused across examples is this repository's twice-recorded bug class."
+            % (arm.arm_id, aud["n_absolute_index_violations"]))
+    if run["arm_manifest"] is None:
+        raise RunnerRefusal("arm %s wrote no %s -- there is no record of what the run believed it "
+                            "was doing." % (arm.arm_id, CONTRACT_ARM))
+    return gate
+
+
+# ============================================================================================
+# 8. THE PROBE (O1) -- accepted as a flag, refused as a capability, with the reason
+# ============================================================================================
+def probe_gate(probe_json: str) -> Dict[str, Any]:
+    """`--emit-probe`. Both blockers are checked; neither is assumed away."""
+    reasons = [DEFECT_PROBE_ATTRIBUTION]
+    path = probe_json if os.path.isabs(probe_json) else repo_path(probe_json)
+    try:
+        load_frozen_probe(path)
+        artifact = "present"
+    except (Refusal, PreregError, OSError) as e:
+        artifact = "absent"
+        reasons.append("%s (%s)" % (DEFECT_PROBE_ARTIFACT, str(e).splitlines()[0][:120]))
+    return {"ok": False, "probe_artifact": artifact, "path": path, "reasons": reasons}
+
+
+# ============================================================================================
+# 9. DIRECTIONS -- provenance, sha, and the pin the frozen file could not carry
+# ============================================================================================
+def direction_gate(pr: Prereg, fit_dir: str, expect_sha: Optional[str] = None) -> Dict[str, Any]:
+    """Resolve the payload the LOADER will actually load, recompute its sha256, and check TRAIN-only.
+
+    `direction_provenance_gate` is the analyzer's; the filename resolution is `score_behavior`'s
+    (`directions_fit_dev.pt`, then `directions_fit_heldout.pt`). See `DEFECT_C113` for why the
+    frozen config's `directions.artifact.path` is not used.
+    """
+    d = fit_dir if os.path.isabs(fit_dir) else repo_path(fit_dir)
+    if not os.path.isdir(d):
+        raise RunnerRefusal("--fit-dir %r is not a directory. %s" % (fit_dir, DEFECT_C113))
+    cand = [os.path.join(d, n) for n in ("directions_fit_dev.pt", "directions_fit_heldout.pt")]
+    hit = next((c for c in cand if os.path.exists(c)), None)
+    if hit is None:
+        raise RunnerRefusal(
+            "no direction payload in %s: score_behavior loads directions_fit_dev.pt (then "
+            "directions_fit_heldout.pt) from --fit-dir. %s" % (d, DEFECT_C113))
+    sha = sha256_file(hit)
+    if expect_sha and sha != expect_sha:
+        raise RunnerRefusal(
+            "the direction payload sha256 is %s but %s was pinned. The axis this phase projects "
+            "out is not the axis the pin names; refusing." % (sha, expect_sha))
+    import torch
+    payload = torch.load(hit, map_location="cpu", weights_only=False)
+    meta = payload.get("meta") or {}
+    assign = load_split(pr)
+    prov = AN.direction_provenance_gate({"fit_domains": meta.get("fit_domains")}, assign, hit)
+    if not prov["ok"]:
+        raise RunnerRefusal("the direction payload fails its provenance gate: %s" % prov)
+    return {"path": hit, "sha256": sha, "provenance": prov,
+            "payload_keys": sorted(payload.keys()),
+            "direction_keys": sorted(k for k in payload if k.startswith("v_")),
+            "layers": sorted(int(x) for x in (payload.get("layers") or [])),
+            "_note": DEFECT_C113}
+
+
+# ============================================================================================
+# 10. THE MODEL CACHE -- the one monkeypatch, counted and reported
+# ============================================================================================
+class ModelCache:
+    """Memoise `ds_common.load_model` so 54 arms load the weights ONCE.
+
+    This is the whole point of the runner, so the count is an ARTIFACT field rather than a hope:
+    `DONE.json.model_loads` must be 1 for a single-model stage. A second load is not silently
+    tolerated -- it is reported, and a stage that loaded the weights per arm has not done the one
+    thing this file exists to do.
+    """
+
+    def __init__(self) -> None:
+        self.n_loads = 0
+        self.n_hits = 0
+        self._cache: Dict[Any, Any] = {}
+        self._orig = None
+        self._mod = None
+
+    def install(self, module=None):
+        if module is None:
+            import ds_common as module  # noqa: PLW0127
+        self._mod = module
+        self._orig = module.load_model
+        cache = self
+
+        def _cached(model_id, *a, **kw):
+            key = (model_id, str(kw.get("dtype")), kw.get("attn_implementation"),
+                   kw.get("quantize"), repr(a))
+            if key in cache._cache:
+                cache.n_hits += 1
+                print("[pr057] model cache HIT (%d) -- weights are NOT reloaded" % cache.n_hits,
+                      flush=True)
+                return cache._cache[key]
+            cache.n_loads += 1
+            print("[pr057] model LOAD #%d %r" % (cache.n_loads, key[:3]), flush=True)
+            lm = cache._orig(model_id, *a, **kw)
+            cache._cache[key] = lm
+            return lm
+
+        module.load_model = _cached
+        return self
+
+    def uninstall(self):
+        if self._mod is not None and self._orig is not None:
+            self._mod.load_model = self._orig
+        self._mod = self._orig = None
+
+
+# ============================================================================================
+# 11. THE RESUMABLE MANIFEST
+# ============================================================================================
+def manifest_load(sdir: str, runs_root: str) -> Dict[str, Any]:
+    """Load the manifest, and RE-VERIFY every 'done' arm against the artifact on disk.
+
+    A manifest is a claim; the run directory is the evidence. An arm recorded done whose directory
+    has no `DONE.json` is reset to pending -- a partial run must never be mistaken for a complete
+    one just because a driver said so (C-051/C-012).
+    """
+    path = os.path.join(sdir, MANIFEST_FILE)
+    if not os.path.exists(path):
+        return {}
+    man = json.load(open(path))
+    for arm_id, rec in list((man.get("arms") or {}).items()):
+        if rec.get("status") != "done":
+            continue
+        d = rec.get("run_dir")
+        if not (d and os.path.exists(os.path.join(d, "DONE.json"))):
+            rec["status"] = "pending"
+            rec["_reset_reason"] = ("the manifest claimed this arm was done but %s has no "
+                                    "DONE.json; a partial run is not a complete one" % d)
+    return man
+
+
+def manifest_save(sdir: str, man: Dict[str, Any]) -> None:
+    os.makedirs(sdir, exist_ok=True)
+    man["updated"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    tmp = os.path.join(sdir, MANIFEST_FILE + ".tmp")
+    with open(tmp, "w") as fh:
+        json.dump(man, fh, indent=2, default=str)
+    os.replace(tmp, os.path.join(sdir, MANIFEST_FILE))
+
+
+# ============================================================================================
+# 12. THE PLAN -- constructs and validates EVERY arm, on CPU, with no GPU and no model
+# ============================================================================================
+def plan(pr: Prereg, a) -> Dict[str, Any]:
+    arms = build_arm_manifest(pr)
+    members = family_members(pr)
+    runs_root = a.runs if os.path.isabs(a.runs) else repo_path(a.runs)
+    assign = load_split(pr)
+    rel_end = read_site_rel_end(pr)
+    dg = direction_gate(pr, a.fit_dir, a.expect_direction_sha)
+    grid = [int(x) for x in pr.require("read_site", "read_layer_grid")]
+    n_layers = int(pr.require("model", "n_layers"))
+
+    # every declared family member must be realised by at least one arm, and h1|h2 must PARTITION
+    per_member: Dict[str, int] = {}
+    for x in arms:
+        if x.family_member:
+            per_member[x.family_member] = per_member.get(x.family_member, 0) + 1
+    missing = [m for m in members if not per_member.get(m)]
+    if missing:
+        raise RunnerRefusal("the manifest realises no run for declared family member(s) %s" % missing)
+    sel_h1, sel_h2 = stage_selector(pr, "h1"), stage_selector(pr, "h2")
+    part = [x.arm_id for x in arms if bool(sel_h1(x)) == bool(sel_h2(x))]
+    if part:
+        raise RunnerRefusal("stages h1 and h2 do not PARTITION the manifest: %s" % part[:5])
+
+    binds: Dict[str, Any] = {}
+    out_arms = []
+    for arm in arms:
+        con = constructibility(pr, arm, dg["payload_keys"])
+        rec: Dict[str, Any] = {
+            "arm_id": arm.arm_id, "role": arm.role, "hypothesis": arm.hypothesis,
+            "scope": arm.scope, "layers": arm.layers, "mode": arm.mode,
+            "family_member": arm.family_member, "tag": arm.tag(),
+            "bank": bank_path_for(arm), "codeword": arm.codeword,
+            "target_concept": arm.target_concept, "expect_enabled": arm.expect_enabled,
+            "stage": "h1" if sel_h1(arm) else "h2",
+            "in_q1": bool(stage_selector(pr, "q1")(arm)),
+            "in_smoke": bool(stage_selector(pr, "smoke")(arm)),
+            "propagation_read_layers": propagation_read_layers(arm.layers, grid, n_layers),
+            **con,
+        }
+        if con["constructible"]:
+            bank_abs = repo_path(bank_path_for(arm))
+            key = (bank_abs, a.split)
+            if key not in binds:
+                binds[key] = split_bind(pr, bank_abs, a.split, assign)
+            b = binds[key]
+            ctx = {"fit_dir": a.fit_dir, "rel_end": rel_end, "emit_liveness": True,
+                   "constructibility": con, "expect_n": b["expect_n"],
+                   "exclude_file": "<state-dir>/%s" % os.path.basename(
+                       exclusion_file_name(bank_abs, a.split)),
+                   "limit": (a.smoke_limit if rec["in_smoke"] and a.stage == "smoke" else 0)}
+            argv = build_argv(pr, arm, ctx)
+            rec["argv"] = argv
+            rec["expect_n"] = b["expect_n"]
+            rec["n_domains"] = b["n_domains"]
+            rec["analyzer_agreement"] = assert_argv_agrees_with_analyzer(pr, arm, argv, a.fit_dir)["ok"]
+        out_arms.append(rec)
+
+    n_con = sum(1 for r in out_arms if r["constructible"])
+    return {
+        "prereg": a.prereg, "id": pr.require("id"), "split": a.split, "stage": a.stage,
+        "n_arms": len(arms), "n_live_arms": sum(1 for x in arms if x.role == "live"),
+        "n_control_arms": sum(1 for x in arms if x.role == "control"),
+        "n_constructible_today": n_con,
+        "n_unbuildable_today": len(arms) - n_con,
+        "family_members": members,
+        "rows_per_arm": {str(k[1]) + ":" + os.path.basename(k[0]): v["expect_n"]
+                         for k, v in binds.items()},
+        "directions": {k: v for k, v in dg.items() if k != "provenance"},
+        "direction_provenance": dg["provenance"],
+        "q0": q0_gate(pr, runs_root, a.phase7_tag_prefix),
+        "probe": probe_gate(a.probe_json),
+        "read_site_rel_end": rel_end,
+        "defects": [DEFECT_C113, DEFECT_LIVENESS_SCHEMA, DEFECT_PROBE_ATTRIBUTION,
+                    DEFECT_C119_BRIDGE_ALPHA],
+        "arms": out_arms,
+    }
+
+
+def exclusion_file_name(bank_abs: str, split: str) -> str:
+    base = os.path.basename(bank_abs).replace(".jsonl", "")
+    return "exclude_%s_%s.txt" % (base, split)
+
+
+# ============================================================================================
+# 13. EXECUTION
+# ============================================================================================
+def run_stage(pr: Prereg, a) -> int:
+    runs_root = a.runs if os.path.isabs(a.runs) else repo_path(a.runs)
+    state_root = a.state_root if os.path.isabs(a.state_root) else repo_path(a.state_root)
+    sdir = stage_dir(state_root, a.stage, a.split)
+    t_stage = time.time()
+
+    if a.emit_probe:
+        pg = probe_gate(a.probe_json)
+        raise RunnerRefusal("--emit-probe is REFUSED:\n  - %s" % "\n  - ".join(pg["reasons"]))
+    if not a.emit_liveness:
+        raise RunnerRefusal(
+            "--emit-liveness is REQUIRED: every arm in this phase installs a hook, and without "
+            "the liveness record a dead hook scores as a clean null (C-13).")
+
+    # ---- order, Q0, and the preregistration's own blocking checklist -----------------------
+    #
+    # A REAL RUN RAISES AT THE FIRST GATE. A --dry-run COLLECTS THEM ALL and exits non-zero: a
+    # dry run whose whole job is to tell you what is wrong should not stop at the first thing,
+    # and it cannot spend GPU time by continuing. It never becomes a licence to run: `blocking`
+    # is non-empty, so `main` returns 3.
+    blocking: List[str] = []
+
+    def _gate(fn, label):
+        try:
+            return fn()
+        except (RunnerRefusal, PreregError, Refusal, ZeroBinding) as e:
+            if not a.dry_run:
+                raise
+            blocking.append("%s: %s" % (label, str(e).splitlines()[0][:400]))
+            return None
+
+    def _q0():
+        g = q0_gate(pr, runs_root, a.phase7_tag_prefix)
+        if not g["ok"]:
+            raise RunnerRefusal("Q0: %s" % g["detail"])
+        return g
+
+    def _checklist():
+        # The confirmatory stages read TEST. They may not run until the frozen preregistration's
+        # BLOCKING checklist closes -- the loader is the enforcement, not a comment here.
+        if a.stage in ("h1", "h2"):
+            try:
+                load_prereg(a.prereg, for_extraction=True)
+            except PreregError as e:
+                raise RunnerRefusal(
+                    "the confirmatory stage %r requires the frozen preregistration to load with "
+                    "the BLOCKING checklist enforced, and it does not:\n%s" % (a.stage, e))
+        return True
+
+    q0 = _gate(_q0, "Q0")
+    _gate(lambda: assert_stage_order(state_root, a.stage, a.split), "launch order")
+    _gate(_checklist, "pre-extraction checklist")
+    if a.stage == "q1" and a.split != "validation":
+        raise RunnerRefusal("the Q1 power stage is VALIDATION-ONLY by preregistration; got --split %r"
+                            % a.split)
+    if a.stage in ("h1", "h2") and a.split != "test":
+        raise RunnerRefusal("the confirmatory stages run on TEST; got --split %r" % a.split)
+
+    assign = load_split(pr)
+    rel_end = read_site_rel_end(pr)
+    dg = direction_gate(pr, a.fit_dir, a.expect_direction_sha)
+    arms_all = build_arm_manifest(pr)
+    sel = stage_selector(pr, a.stage)
+    selected = [x for x in arms_all if sel(x)]
+    if not selected:
+        raise ZeroBinding("stage %r selected ZERO arms of %d" % (a.stage, len(arms_all)))
+
+    # ---- the SECOND kill condition, before anything is submitted ---------------------------
+    kill_states: Dict[str, Dict[str, Any]] = {}
+    skipped: List[Dict[str, Any]] = []
+    if a.stage == "h2":
+        def _baseline(arm: ArmSpec):
+            tag = "%s_%s_%s" % (a.phase7_tag_prefix, arm.codeword, arm.target_concept)
+            return load_arm_run(_find_run(runs_root, tag))["results"]
+        for scope in sorted({x.scope for x in selected}):
+            kill_states[scope] = h1_kill_state(pr, runs_root, scope, arms_all, _baseline)
+            print("[pr057] kill condition @%s: %s -- %s"
+                  % (scope, kill_states[scope]["state"], kill_states[scope]["detail"]), flush=True)
+        selected, skipped = apply_kill_condition(selected, kill_states)
+        assert_kill_condition_honoured(selected, kill_states)
+
+    # ---- constructibility, population binding, argv ----------------------------------------
+    # A DRY RUN WRITES NOTHING. It constructs and validates every arm on CPU -- the exclusion
+    # files are computed and their content hashed, not written -- so the whole path is testable
+    # without a GPU and without leaving artifacts that a later reader could mistake for a run.
+    if not a.dry_run:
+        os.makedirs(sdir, exist_ok=True)
+    man = manifest_load(sdir, runs_root) if not a.dry_run else {}
+    man.setdefault("started", time.strftime("%Y-%m-%d %H:%M:%S"))
+    man.update({"stage": a.stage, "split": a.split, "prereg": a.prereg,
+                "prereg_id": pr.require("id"), "fit_dir": a.fit_dir,
+                "direction_sha256": dg["sha256"], "kill_states": kill_states,
+                "not_submitted": skipped, "runs_root": runs_root})
+    man.setdefault("arms", {})
+
+    todo: List[Tuple[ArmSpec, List[str], int]] = []
+    unbuildable: List[Dict[str, Any]] = []
+    binds: Dict[Any, Any] = {}
+    for arm in selected:
+        con = constructibility(pr, arm, dg["payload_keys"])
+        if not con["constructible"]:
+            unbuildable.append({"arm_id": arm.arm_id, "reasons": con["reasons"]})
+            man.setdefault("arms", {}).setdefault(arm.arm_id, {})
+            man["arms"][arm.arm_id].update({"status": "UNBUILDABLE", "reasons": con["reasons"]})
+            continue
+        bank_abs = repo_path(bank_path_for(arm))
+        if bank_abs not in binds:
+            b = split_bind(pr, bank_abs, a.split, assign)
+            xf = os.path.join(sdir, exclusion_file_name(bank_abs, a.split))
+            text = exclusion_file_text(pr, b)
+            if not a.dry_run:
+                with open(xf, "w") as fh:
+                    fh.write(text)
+            b["exclude_file"] = xf
+            b["exclude_file_sha16"] = hashlib.sha256(text.encode()).hexdigest()[:16]
+            binds[bank_abs] = b
+        b = binds[bank_abs]
+        ctx = {"fit_dir": a.fit_dir, "rel_end": rel_end, "emit_liveness": True,
+               "constructibility": con, "expect_n": b["expect_n"],
+               "exclude_file": b["exclude_file"],
+               "limit": (a.smoke_limit if a.stage == "smoke" else 0)}
+        argv = build_argv(pr, arm, ctx)
+        assert_argv_agrees_with_analyzer(pr, arm, argv, a.fit_dir)
+        expect_rows = min(b["expect_n"], a.smoke_limit) if a.stage == "smoke" else b["expect_n"]
+        todo.append((arm, argv, expect_rows))
+
+    print("[pr057] stage=%s split=%s: %d selected, %d constructible, %d unbuildable, %d "
+          "not-submitted by the kill condition"
+          % (a.stage, a.split, len(selected), len(todo), len(unbuildable), len(skipped)), flush=True)
+    for u in unbuildable:
+        print("[pr057]   UNBUILDABLE %s: %s" % (u["arm_id"], u["reasons"][0][:160]), flush=True)
+    if not todo:
+        raise RunnerRefusal(
+            "stage %r has ZERO constructible arms (%d were selected). Refusing to write a "
+            "DONE.json for a stage that ran nothing -- an empty stage that reports success is "
+            "the failure this whole design exists to prevent." % (a.stage, len(selected)))
+
+    if a.dry_run:
+        for arm, argv, n in todo:
+            print("[pr057] DRY-RUN %-42s %s" % (arm.arm_id, " ".join(argv)))
+        print("[pr057] DRY-RUN: %d arm(s) constructed and validated, model NOT loaded, nothing "
+              "written, nothing run." % len(todo))
+        for b in blocking:
+            print("[pr057] BLOCKING %s" % b, file=sys.stderr)
+        if blocking:
+            print("[pr057] DRY-RUN: %d BLOCKING gate(s) above. This stage may NOT be submitted."
+                  % len(blocking), file=sys.stderr)
+            return 3
+        return 0
+
+    # ---- the loop. ONE model load. -----------------------------------------------------------
+    cache = ModelCache().install()
+    import score_behavior as SB
+    n_rows_total, n_done = 0, 0
+    try:
+        for i, (arm, argv, expect_rows) in enumerate(todo, 1):
+            rec = man["arms"].setdefault(arm.arm_id, {})
+            if rec.get("status") == "done":
+                print("[pr057] [%d/%d] %s already complete at %s -- SKIPPING (resume)"
+                      % (i, len(todo), arm.arm_id, rec.get("run_dir")), flush=True)
+                n_rows_total += int(rec.get("rows") or 0)
+                n_done += 1
+                continue
+            rec.update({"status": "running", "argv": argv, "tag": arm.tag(),
+                        "expect_rows": expect_rows})
+            manifest_save(sdir, man)
+            print("\n[pr057] === [%d/%d] %s ===\n[pr057]     %s"
+                  % (i, len(todo), arm.arm_id, " ".join(argv)), flush=True)
+            t0 = time.time()
+            old_argv = sys.argv
+            sys.argv = [SCORE_SCRIPT] + list(argv)
+            try:
+                rc = SB.main()
+            except SystemExit as e:                 # the house refusal idiom
+                rc = e.code if isinstance(e.code, int) else 1
+                if rc == 0:
+                    rc = 1
+                print("[pr057] arm %s REFUSED: %s" % (arm.arm_id, e), file=sys.stderr, flush=True)
+            finally:
+                sys.argv = old_argv
+            wall = time.time() - t0
+            if rc != 0:
+                rec.update({"status": "failed", "exit_code": rc, "wall_seconds": wall})
+                manifest_save(sdir, man)
+                write_terminal(sdir, "ABORTED.json",
+                               {"status": "aborted", "stage": a.stage, "split": a.split,
+                                "failed_arm": arm.arm_id, "exit_code": rc,
+                                "n_arms_done": n_done, "n_arms_total": len(todo),
+                                "rows": n_rows_total,
+                                "wall_seconds": time.time() - t_stage,
+                                "model_loads": cache.n_loads, "model_cache_hits": cache.n_hits,
+                                "detail": "STOPPED at the first failure; the remaining arms were "
+                                          "NOT run and no success is reported for them."})
+                raise RunnerRefusal(
+                    "arm %s exited %d. STOPPING: this runner never continues past a failure and "
+                    "never reports success it did not observe." % (arm.arm_id, rc))
+            run_dir = _find_run(runs_root, arm.tag())
+            _iv = argv[argv.index("--intervene") + 1] if "--intervene" in argv else ""
+            gate = verify_arm_artifacts(pr, arm, run_dir, expect_rows,
+                                        con_dir=_iv.split(":", 1)[0],
+                                        direction_sha=dg["sha256"])
+            rec.update({"status": "done", "run_dir": run_dir, "rows": gate["n_rows"],
+                        "output_sha256": gate["output_sha256"],
+                        "wall_seconds": wall, "exit_code": 0,
+                        "n_liveness_records": gate["n_liveness_records"],
+                        "hook_fired_count_total": gate["hook_fired_count_total"],
+                        "n_cells_edited_realised_total": gate["n_cells_edited_realised_total"]})
+            manifest_save(sdir, man)
+            n_rows_total += gate["n_rows"]
+            n_done += 1
+            print("[pr057] [%d/%d] %s OK: %d rows, %d liveness records, %d hook firings, %.1f min"
+                  % (i, len(todo), arm.arm_id, gate["n_rows"], gate["n_liveness_records"],
+                     gate["hook_fired_count_total"], wall / 60.0), flush=True)
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            except Exception:
+                pass
+    finally:
+        cache.uninstall()
+
+    # ---- CONTROL C1: five draws, FIVE DISTINCT OUTPUT HASHES ---------------------------------
+    # `_five_draws_and_distinct_hashes`: this project has TWICE published a control band that was
+    # secretly n=1 because the seed never reached the draw, once with a fake between-draw sd of
+    # 0.0048. The gate is the analyzer's `control_band_gate`; the hashes are the runner's
+    # per-arm output hashes. It runs HERE, at the end of the stage, so a band that is secretly
+    # n=1 fails before anyone computes an equivalence interval from it.
+    bands: Dict[str, List[str]] = {}
+    for arm in selected:
+        if arm.hypothesis != "C1":
+            continue
+        r = man["arms"].get(arm.arm_id) or {}
+        if r.get("status") == "done" and r.get("output_sha256"):
+            bands.setdefault(arm.arm_id.rsplit("_draw", 1)[0], []).append(r["output_sha256"])
+    n_draws = int(pr.require("seeds", "n_control_draws"))
+    band_report = {}
+    for key, shas in sorted(bands.items()):
+        if len(shas) < n_draws:
+            continue
+        g = AN.control_band_gate(shas, n_draws)
+        band_report[key] = g
+        if not g["ok"]:
+            raise RunnerRefusal("control band %s: %s" % (key, g["detail"]))
+    if band_report:
+        print("[pr057] control band(s) verified distinct: %s"
+              % {k: v["n_distinct"] for k, v in band_report.items()}, flush=True)
+
+    # ---- Q1's decision, as a code path -------------------------------------------------------
+    q1 = None
+    if a.stage == "q1":
+        # One value per domain: the mean over the stage's arms of that arm's own domain-mean
+        # delta. Pooling the arms' ROWS instead would let a bank with more surviving rows dominate
+        # the SD that Q1 exists to measure.
+        acc: Dict[str, List[float]] = {}
+        for arm, _argv, _n in todo:
+            run = load_arm_run(man["arms"][arm.arm_id]["run_dir"])
+            tag = "%s_%s_%s" % (a.phase7_tag_prefix, arm.codeword, arm.target_concept)
+            base = load_arm_run(_find_run(runs_root, tag))["results"]
+            for dom, val in per_domain_delta(run["results"], base).items():
+                acc.setdefault(dom, []).append(val)
+        deltas = {d: sum(v) / len(v) for d, v in acc.items()}
+        q1 = q1_power(pr, deltas)
+        print("\n[pr057] Q1: %s" % q1["decision"], flush=True)
+        if not q1["power_ok"]:
+            write_terminal(sdir, "DONE.json",
+                           {"status": "ok", "stage": a.stage, "split": a.split,
+                            "n_arms_done": n_done, "rows": n_rows_total,
+                            "wall_seconds": time.time() - t_stage,
+                            "model_loads": cache.n_loads, "q1": q1,
+                            "verdict": "CANNOT ANSWER WITHOUT READING TEST"})
+            print("[pr057] the confirmatory stages are NOT unlocked.", file=sys.stderr)
+            return 5
+
+    done = {"status": "ok", "stage": a.stage, "split": a.split,
+            "n_arms_selected": len(selected), "n_arms_done": n_done,
+            "n_arms_unbuildable": len(unbuildable), "unbuildable": unbuildable,
+            "n_arms_not_submitted_by_kill_condition": len(skipped), "not_submitted": skipped,
+            "kill_states": kill_states,
+            "rows": n_rows_total, "wall_seconds": time.time() - t_stage,
+            "model_loads": cache.n_loads, "model_cache_hits": cache.n_hits,
+            "direction_sha256": dg["sha256"], "q1": q1, "control_bands": band_report,
+            "q0": q0,
+            "defects_recorded": [DEFECT_C113, DEFECT_LIVENESS_SCHEMA, DEFECT_PROBE_ATTRIBUTION,
+                                 DEFECT_C119_BRIDGE_ALPHA]}
+    write_terminal(sdir, "DONE.json", done)
+    manifest_save(sdir, man)
+    print("[pr057] stage %s COMPLETE: %d arm(s), %d rows, %.1f min, %d model load(s)"
+          % (a.stage, n_done, n_rows_total, (time.time() - t_stage) / 60.0, cache.n_loads))
+    return 0
+
+
+def write_terminal(sdir: str, name: str, blob: Dict[str, Any]) -> None:
+    """DONE.json / ABORTED.json. They are DIFFERENT FILES so a partial stage can never be read as
+    a complete one, and neither is allowed to overwrite the other."""
+    os.makedirs(sdir, exist_ok=True)
+    other = "ABORTED.json" if name == "DONE.json" else "DONE.json"
+    if os.path.exists(os.path.join(sdir, other)):
+        raise RunnerRefusal("%s already carries %s; refusing to also write %s -- a stage has ONE "
+                            "verdict." % (sdir, other, name))
+    with open(os.path.join(sdir, name), "w") as fh:
+        json.dump(blob, fh, indent=2, default=str)
+
+
+# ============================================================================================
+# 14. SELF-TEST -- CPU only, on the real functions
+# ============================================================================================
+def _stub_arm(**kw) -> ArmSpec:
+    base = dict(arm_id="x", role="live", family_member="H2axS1", hypothesis="H2a", scope="S1",
+                layers=[9], mode="project_out", direction="v_bomb_specific",
+                source_concept="knife", target_concept="bomb", codeword="button",
+                dose_units="scale-free", alpha=1.0, control_draw_seed=None, expect_enabled=True)
+    base.update(kw)
+    return ArmSpec(**base)
+
+
+def _live_record(**kw) -> Dict[str, Any]:
+    import pair_common as pc
+    r = pc.hook_stats_dict(mode="project_out_single", layer=9, rel_end=-10)
+    r.update({  # the keys score_behavior's writer adds around the hook's own record
+        "prompt_id": "p0", "domain": "d", "split": "test", "cell": "C", "concept": "bomb",
+        "codeword": "button", "arm": "x", "n_target_occurrences": 1,
+        "codeword_last_indices": [90], "n_codeword_occurrences": 1,
+        "n_subtokens_per_occurrence": [1], "occurrence_index_per_edit": [0],
+        "liveness_violations": []})
+    r.update({"n_forward_calls": 1, "hook_fired_count": 1, "n_destination_rows": 1,
+              "n_cells_edited_realised": 1, "activation_norm_pre": 10.0,
+              "activation_norm_post": 9.8, "projection_removed_l2": 1.4, "max_abs_delta": 0.3,
+              "cos_pre_post": 0.99, "direction_norm": 1.0, "alpha": 1.0, "norm_ratio": 0.98,
+              "resolved_absolute_index": [90], "seq_len_last": 100, "seq_len": 100})
+    r.update(kw)
+    return r
+
+
+def selftest() -> int:
+    ck = Checks()
+    pr = load_prereg(PREREG_DEFAULT, for_extraction=False)
+    arms = build_arm_manifest(pr)
+    payload_keys = ["v_bomb", "v_bomb_specific", "v_gun", "v_knife", "v_knife_specific",
+                    "v_remap", "gap", "cell_means", "meta", "layers"]
+
+    ck.add("manifest_54", "the runner sees the analyzer's 54-arm manifest", len(arms) == 54,
+           len(arms), "live=%d control=%d" % (sum(1 for a in arms if a.role == "live"),
+                                              sum(1 for a in arms if a.role == "control")))
+    ck.add("manifest_24_live", "24 live / 30 control", sum(1 for a in arms if a.role == "live") == 24
+           and sum(1 for a in arms if a.role == "control") == 30, 54, "")
+
+    sel_h1, sel_h2 = stage_selector(pr, "h1"), stage_selector(pr, "h2")
+    n1 = sum(1 for a in arms if sel_h1(a))
+    n2 = sum(1 for a in arms if sel_h2(a))
+    ck.add("stages_partition", "h1 | h2 partitions the manifest exactly",
+           n1 + n2 == len(arms) and not [a for a in arms if sel_h1(a) and sel_h2(a)],
+           n1 + n2, "h1=%d h2=%d" % (n1, n2))
+    ck.add("stage_h1_is_18", "stage h1 is the 16 H1 arms plus the 2 C7 self-patch controls",
+           n1 == 18, n1, "")
+    nq1 = sum(1 for a in arms if stage_selector(pr, "q1")(a))
+    ck.add("stage_q1_is_2", "the Q1 power stage is 2 arms (H2a x S1, both codewords)", nq1 == 2,
+           nq1, "")
+    nsm = sum(1 for a in arms if stage_selector(pr, "smoke")(a))
+    sm_con = [a.arm_id for a in arms if stage_selector(pr, "smoke")(a)
+              and constructibility(pr, a, payload_keys)["constructible"]]
+    ck.add("stage_smoke_is_2", "the smoke selects 2 arms (primary + the disabled-hook bridge)",
+           nsm == 2, nsm, "constructible today: %s (C5 is refused on C-119)" % sm_con)
+    labels = sorted({a.direction for a in arms if a.direction})
+    ck.add("direction_map_covers_manifest",
+           "every direction label the manifest uses has a DECLARED mapping (or an explicit None)",
+           all(l in DIRECTION_MAP for l in labels), len(labels), "%s" % labels)
+
+    rel = read_site_rel_end(pr)
+    ck.add("rel_end_parsed", "the edit site is PARSED from the frozen file as a negative offset",
+           rel == -10 and rel < 0, rel, "codeword_last")
+    ck.add("cond_mapping", "cell C maps to the condition string the launcher must use",
+           cell_condition(pr) == "natural_doublespeak", 1, "")
+
+    # constructibility
+    con_ok = constructibility(pr, _stub_arm(), payload_keys)
+    ck.add("constructible_h2a", "the 10.2 PRIMARY arm is constructible today",
+           con_ok["constructible"] and con_ok["intervene_direction"] == "v_bomb_specific", 1, "")
+    for mode, name in (("patch", "H1/C7"), ("component_replace", "H2b"), ("add", "C4")):
+        c = constructibility(pr, _stub_arm(mode=mode, direction="v_bomb_specific"), payload_keys)
+        ck.add("unbuildable_%s" % mode, "%s is refused, with the reason" % name,
+               not c["constructible"] and bool(c["reasons"]), len(c["reasons"]),
+               c["reasons"][0][:70])
+    c2 = constructibility(pr, _stub_arm(direction="v_bomb_specific_shuffled_labels"), payload_keys)
+    ck.add("unbuildable_c2", "C2's shuffled-label direction has no artifact and is refused",
+           not c2["constructible"], len(c2["reasons"]), c2["reasons"][0][:70])
+    cun = constructibility(pr, _stub_arm(direction="v_something_new"), payload_keys)
+    ck.add("unmapped_direction", "an UNMAPPED manifest direction is refused, never guessed",
+           not cun["constructible"], len(cun["reasons"]), cun["reasons"][0][:70])
+    ck.add("c1_base", "C1 is norm-matched to the axis the arm edits (Q13)",
+           DIRECTION_MAP["random_norm_matched"] == "random@v_bomb_specific", 1, "")
+
+    # argv construction + the anti-drift check against the analyzer
+    ctx = {"fit_dir": "outputs/dcs_ts/directions_pr053", "rel_end": rel, "emit_liveness": True,
+           "constructibility": con_ok, "expect_n": 230, "exclude_file": "/x/e.txt", "limit": 0}
+    argv = build_argv(pr, _stub_arm(), ctx)
+    ck.add("argv_single_site", "an S1 arm carries --pr057-edit-positions in the '=' form",
+           "--pr057-edit-positions=-10" in argv, 1, "")
+    ck.add("argv_liveness", "every arm carries --pr057-liveness-out auto",
+           "--pr057-liveness-out" in argv and argv[argv.index("--pr057-liveness-out") + 1] == "auto",
+           1, "")
+    ck.add("argv_expect_n", "--expect-n binds the population size the runner computed",
+           "--expect-n" in argv and argv[argv.index("--expect-n") + 1] == "230", 1, "")
+    ck.add("argv_no_spaces", "no argv token contains a space or a quote (BOOMB_ARGS is word-split)",
+           all(" " not in t and '"' not in t and "'" not in t for t in argv), len(argv), "")
+    try:
+        build_argv(pr, _stub_arm(), {**ctx, "emit_liveness": False})
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("argv_refuses_no_liveness", "an arm without liveness instrumentation is REFUSED (C-13)",
+           ok, 1, "")
+
+    n_agree = 0
+    for arm in arms:
+        c = constructibility(pr, arm, payload_keys)
+        if not c["constructible"]:
+            continue
+        cx = {**ctx, "constructibility": c}
+        av = build_argv(pr, arm, cx)
+        assert_argv_agrees_with_analyzer(pr, arm, av, ctx["fit_dir"])
+        n_agree += 1
+    ck.add("analyzer_agreement", "every constructible arm's argv agrees with the analyzer's own "
+           "launch_command on bank/arm/tag/mode/band/alpha", n_agree > 0, n_agree, "")
+
+    # population binding
+    assign = load_split(pr)
+    bank = repo_path("data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl")
+    b_test = split_bind(pr, bank, "test", assign)
+    b_val = split_bind(pr, bank, "validation", assign)
+    ck.add("bind_test_230", "the TEST split binds 23 domains x 10 rows = 230 rows",
+           b_test["expect_n"] == 230 and b_test["n_domains"] == 23, b_test["expect_n"], "")
+    ck.add("bind_val_230", "the VALIDATION split binds 23 domains x 10 rows",
+           b_val["expect_n"] == 230 and b_val["n_domains"] == 23, b_val["expect_n"], "")
+    ck.add("bind_disjoint", "the two splits share no prompt_id",
+           not (set(b_test["keep_ids"]) & set(b_val["keep_ids"])), len(b_test["keep_ids"]), "")
+    ck.add("bind_a039", "selecting on `condition` bound exactly the rows `cell` would have (A-039)",
+           b_test["population"]["a039_cell_condition_mapping_is_1to1"], 1, "")
+    txt = exclusion_file_text(pr, b_test)
+    ids = [l for l in txt.splitlines() if not l.startswith("#")]
+    ck.add("exclusion_file", "the exclusion file lists every row outside the split, with provenance",
+           len(ids) == b_test["n_drop"] and txt.startswith("#"), len(ids), "")
+
+    # liveness
+    rec = _live_record()
+    ann = annotate_liveness([rec], _stub_arm())
+    ck.add("annotate_expected", "the annotated copy carries n_cells_edited_expected (C-117)",
+           ann[0]["n_cells_edited_expected"] == 1, 1, ann[0]["_expected_rule"])
+    ck.add("annotate_index", "the single-site absolute index is unpacked for the audit",
+           ann[0]["resolved_absolute_index"] == 90, 90, "")
+    ck.add("liveness_live_ok", "a live, firing, state-changing hook passes the consumer gate",
+           liveness_gate(ann, "x", expect_enabled=True)["live"], 1, "")
+    aud = audit_end_relative(ann)
+    ck.add("audit_ok", "seq_len + rel_end == resolved_absolute_index", aud["ok"], aud["n_records"],
+           aud["witness_note"][:60])
+    dead = annotate_liveness([_live_record(hook_fired_count=0, n_cells_edited_realised=0,
+                                           projection_removed_l2=0.0, max_abs_delta=0.0)],
+                             _stub_arm())
+    ck.add("liveness_dead_refused", "a DEAD hook does not pass as a clean null",
+           not liveness_gate(dead, "x", expect_enabled=True)["live"], len(dead),
+           "; ".join(liveness_gate(dead, "x", expect_enabled=True)["reasons"])[:70])
+    bridge = annotate_liveness([_live_record(enabled=False, hook_fired_count=0,
+                                             n_cells_edited_realised=0,
+                                             projection_removed_l2=0.0, max_abs_delta=0.0,
+                                             would_have_changed_max_abs=0.06)],
+                               _stub_arm(mode="disabled", expect_enabled=False))
+    ck.add("bridge_ok_as_bridge", "the disabled-hook bridge passes AS A BRIDGE",
+           liveness_gate(bridge, "c5", expect_enabled=False)["live"], 1, "")
+    ck.add("bridge_refused_as_live", "the SAME record presented as a live arm is REFUSED",
+           not liveness_gate(bridge, "c5", expect_enabled=True)["live"], len(bridge), "")
+
+    # the frozen persist contract
+    gate_stub = {"realized_dose": {"v_bomb_specific|L9|alpha1": {"cell_residual_frac_removed": 0.09}},
+                 "direction_file_sha256": "0" * 64, "control_draw_seed": 20260907,
+                 "output_sha256": "a" * 64, "cos_edit_vs_direction": "+/-1 BY CONSTRUCTION"}
+    rep = persist_contract_report(pr, _stub_arm(), ann[0], gate_stub)
+    ck.add("persist_contract", "every field of the frozen persist_per_row_and_per_arm list is "
+           "looked up where it is supposed to live", rep["n_missing"] == 0, rep["n_fields"],
+           "%d fields" % rep["n_fields"])
+    try:
+        persist_contract_report(pr, _stub_arm(),
+                                {**ann[0], "cos_pre_post": None}, gate_stub)
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("persist_contract_null", "a persisted field that is present but NULL on a LIVE arm is "
+           "refused (a check that reads the producer's own null field is not a check)", ok, 1, "")
+
+    # kill condition
+    states_nm = {"S1": {"state": KILL_NOT_MOVED, "detail": "d"},
+                 "S2": {"state": KILL_MOVED, "detail": "d"}}
+    sub, skip = apply_kill_condition([a for a in arms if sel_h2(a)], states_nm)
+    ck.add("kill_removes_h2", "H2 arms at a killed site are NOT SUBMITTED",
+           all(s["status"] == "NOT_SUBMITTED_UNINFORMATIVE" for s in skip) and len(skip) > 0,
+           len(skip), "")
+    ck.add("kill_keeps_other_site", "the other site's H2 arms are untouched",
+           any(x.scope == "S2" and x.hypothesis == "H2a" for x in sub), len(sub), "")
+    ck.add("kill_wording", "the skipped arms are UNINFORMATIVE, never negative",
+           all("NEGATIVE" in s["_wording"] for s in skip), len(skip), "")
+    try:
+        assert_kill_condition_honoured([a for a in arms if a.hypothesis == "H2a"], states_nm)
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("kill_enforced", "submitting a killed arm anyway is a REFUSAL", ok, 1, "")
+    states_un = {"S1": {"state": KILL_UNAVAILABLE, "detail": "d"}}
+    sub2, skip2 = apply_kill_condition([a for a in arms if a.hypothesis == "H2a" and a.scope == "S1"],
+                                       states_un)
+    ck.add("kill_unavailable_is_not_notmoved",
+           "an H1 that could not run does NOT kill the primary arm (C-112)",
+           len(sub2) > 0 and not skip2, len(sub2), "")
+
+    # order
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        try:
+            assert_stage_order(td, "h2", "test")
+            ok = False
+        except RunnerRefusal:
+            ok = True
+        ck.add("order_enforced", "stage h2 refuses while q1/smoke/h1 have no DONE.json", ok, 1, "")
+        for s in ("q1", "smoke", "h1"):
+            os.makedirs(os.path.join(td, "%s_x" % s))
+            json.dump({"status": "ok"}, open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+        ck.add("order_satisfied", "with all three complete, stage h2 proceeds",
+               assert_stage_order(td, "h2", "test")["stage"] == "h2", 1, "")
+        # terminal files
+        write_terminal(td, "DONE.json", {"status": "ok"})
+        try:
+            write_terminal(td, "ABORTED.json", {"status": "aborted"})
+            ok = False
+        except RunnerRefusal:
+            ok = True
+        ck.add("one_verdict", "a stage has ONE verdict: DONE and ABORTED cannot coexist", ok, 1, "")
+        # resume
+        sd = os.path.join(td, "man")
+        os.makedirs(sd)
+        json.dump({"arms": {"a": {"status": "done", "run_dir": os.path.join(td, "nope")}}},
+                  open(os.path.join(sd, MANIFEST_FILE), "w"))
+        m = manifest_load(sd, td)
+        ck.add("resume_verifies", "a 'done' arm with no DONE.json on disk is reset to pending",
+               m["arms"]["a"]["status"] == "pending", 1, m["arms"]["a"]["_reset_reason"][:60])
+
+    # model cache
+    class _Stub:
+        n = 0
+
+        @staticmethod
+        def load_model(model_id, **kw):
+            _Stub.n += 1
+            return ("model", model_id, _Stub.n)
+
+    c = ModelCache().install(_Stub)
+    a1 = _Stub.load_model("m", dtype="bf16", attn_implementation="eager")
+    a2 = _Stub.load_model("m", dtype="bf16", attn_implementation="eager")
+    c.uninstall()
+    ck.add("model_cache", "the model is loaded ONCE and reused -- the reason this file exists",
+           a1 is a2 and c.n_loads == 1 and c.n_hits == 1, c.n_loads, "hits=%d" % c.n_hits)
+
+    # probe
+    pg = probe_gate("outputs/dcs_ts/pr048_result.json")
+    ck.add("probe_refused", "--emit-probe is refused, naming BOTH blockers",
+           (not pg["ok"]) and len(pg["reasons"]) >= 1
+           and any("attribut" in r for r in pg["reasons"]), len(pg["reasons"]),
+           pg["probe_artifact"])
+
+    # directions
+    try:
+        dg = direction_gate(pr, "outputs/dcs_ts/directions_pr053")
+        ok = bool(dg["sha256"]) and dg["provenance"]["ok"]
+        detail = "sha=%s fit_domains=%d" % (dg["sha256"][:16], dg["provenance"]["n_fit_domains"])
+    except (RunnerRefusal, Refusal, PreregError, ImportError) as e:
+        ok, detail = False, str(e)[:80]
+    ck.add("direction_gate", "the PR-053 payload loads, its sha is recomputed and it is TRAIN-only",
+           ok, 1, detail)
+    try:
+        direction_gate(pr, "outputs/dcs_ts/directions_pr053", expect_sha="0" * 64)
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("direction_sha_pin", "a direction file whose sha does not match the pin is REFUSED",
+           ok, 1, "")
+
+    ck.report()
+    print("\n[pr057-runner] self-test: %d check(s), %d FAILED" % (len(ck.rows), ck.n_fail))
+    return 1 if ck.n_fail else 0
+
+
+# ============================================================================================
+# 15. MUTATION HARNESS -- every mutation must produce a REFUSAL
+# ============================================================================================
+def mutate() -> int:
+    pr = load_prereg(PREREG_DEFAULT, for_extraction=False)
+    payload_keys = ["v_bomb", "v_bomb_specific", "v_remap", "v_knife_specific"]
+    assign = load_split(pr)
+    bank = repo_path("data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl")
+    rel = read_site_rel_end(pr)
+    con = constructibility(pr, _stub_arm(), payload_keys)
+    ctx = {"fit_dir": "outputs/dcs_ts/directions_pr053", "rel_end": rel, "emit_liveness": True,
+           "constructibility": con, "expect_n": 230, "exclude_file": "/x/e.txt", "limit": 0}
+    results: List[Tuple[str, str, bool, str]] = []
+
+    def m(name: str, why: str, fn):
+        try:
+            fn()
+        except (RunnerRefusal, Refusal, ZeroBinding, PreregError, SystemExit, AssertionError) as e:
+            results.append((name, why, True, ("%s: %s" % (type(e).__name__, e)).splitlines()[0][:110]))
+            return
+        except Exception as e:                                      # noqa: BLE001
+            results.append((name, why, False, "WRONG EXCEPTION %s: %s" % (type(e).__name__, e)))
+            return
+        results.append((name, why, False, "NO REFUSAL -- the mutation passed"))
+
+    # ---- the five the task names -----------------------------------------------------------
+    m("M1_dead_hook", "a hook that never fired must not score as a clean null",
+      lambda: _assert_live(annotate_liveness(
+          [_live_record(hook_fired_count=0, n_cells_edited_realised=0,
+                        projection_removed_l2=0.0, max_abs_delta=0.0)], _stub_arm())))
+    m("M2_zero_magnitude_edit", "a hook that fired and changed nothing must not pass",
+      lambda: _assert_live(annotate_liveness(
+          [_live_record(projection_removed_l2=0.0, max_abs_delta=0.0, cos_pre_post=1.0)],
+          _stub_arm())))
+    m("M3_direction_sha_mismatch", "an arm whose direction file sha != the pin must be refused",
+      lambda: direction_gate(pr, "outputs/dcs_ts/directions_pr053", expect_sha="deadbeef" * 8))
+    m("M4a_absolute_edit_index", "an ABSOLUTE (non end-relative) edit index must be refused",
+      lambda: _audit_or_raise(annotate_liveness(
+          [_live_record(rel_end=10, resolved_absolute_index=[10])], _stub_arm())))
+    m("M4b_absolute_index_in_config", "a non-negative rel_end parsed from the file must be refused",
+      lambda: _fake_rel_end(pr))
+    m("M5_skipped_kill_condition", "an H2 arm at a killed site must not be submitted",
+      lambda: assert_kill_condition_honoured(
+          [a for a in build_arm_manifest(pr) if a.hypothesis == "H2a" and a.scope == "S1"],
+          {"S1": {"state": KILL_NOT_MOVED, "detail": "d"}}))
+
+    # ---- and the ones this runner's own shape makes possible --------------------------------
+    m("M6_bridge_as_live", "a DISABLED-hook bridge presented as a live arm must be refused",
+      lambda: _assert_live(annotate_liveness(
+          [_live_record(enabled=False, hook_fired_count=0, n_cells_edited_realised=0,
+                        projection_removed_l2=0.0, max_abs_delta=0.0)], _stub_arm())))
+    m("M7_liveness_record_missing_keys", "a record missing a producer key must be refused",
+      lambda: annotate_liveness([{k: v for k, v in _live_record().items() if k != "hook_fired_count"}],
+                                _stub_arm()))
+    m("M8_no_liveness_at_all", "an arm launched without liveness instrumentation must be refused",
+      lambda: build_argv(pr, _stub_arm(), {**ctx, "emit_liveness": False}))
+    m("M9_unmapped_direction", "an unmapped manifest direction must not resolve by resemblance",
+      lambda: build_argv(pr, _stub_arm(direction="v_looks_right"),
+                         {**ctx, "constructibility": constructibility(
+                             pr, _stub_arm(direction="v_looks_right"), payload_keys)}))
+    m("M10_unbuildable_mode_launched", "an arm whose mode has no code path must not be launched",
+      lambda: build_argv(pr, _stub_arm(mode="component_replace"),
+                         {**ctx, "constructibility": constructibility(
+                             pr, _stub_arm(mode="component_replace"), payload_keys)}))
+    m("M11_argv_disagrees_with_analyzer", "a runner argv that names a different bank must be refused",
+      lambda: assert_argv_agrees_with_analyzer(
+          pr, _stub_arm(), _swap(build_argv(pr, _stub_arm(), ctx), "--bank",
+                                 "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl"),
+          ctx["fit_dir"]))
+    m("M12_argv_with_a_space", "a value with a space would be torn apart by BOOMB_ARGS word-splitting",
+      lambda: build_argv(pr, _stub_arm(arm_id="a b"), ctx))
+    m("M13_partial_run_as_complete", "a run directory with no DONE.json must not be analysed",
+      lambda: load_arm_run(repo_path("outputs")))
+    m("M14_zero_bind_population", "a split that binds zero rows must refuse",
+      lambda: split_bind(pr, bank, "nonexistent_split", assign))
+    m("M15_unknown_domain_in_split", "a domain absent from the frozen split manifest must refuse",
+      lambda: split_bind(pr, bank, "test", {k: v for k, v in list(assign.items())[:5]}))
+    import tempfile
+    with tempfile.TemporaryDirectory() as _td:
+        m("M16_expect_n_mismatch", "a run whose row count is not the bound population must refuse",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(), _fake_run_dir(os.path.join(_td, "a"), 41, [_live_record()]), 230,
+              con_dir="v_bomb_specific"))
+        m("M17_dead_hook_end_to_end",
+          "a COMPLETE-looking run whose hooks never fired must be refused by verify_arm_artifacts",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(),
+              _fake_run_dir(os.path.join(_td, "b"), 230,
+                            [_live_record(hook_fired_count=0, n_cells_edited_realised=0,
+                                          projection_removed_l2=0.0, max_abs_delta=0.0)]), 230,
+              con_dir="v_bomb_specific"))
+        m("M18_empty_liveness_file",
+          "a run with an EMPTY liveness file must not read as 'no violations'",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(), _fake_run_dir(os.path.join(_td, "c"), 230, []), 230,
+              con_dir="v_bomb_specific"))
+        m("M19_no_arm_manifest_echo",
+          "a run with no PR057_ARM.json has no record of what it believed it was doing",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(),
+              _fake_run_dir(os.path.join(_td, "d"), 230, [_live_record()], arm_manifest=False),
+              230, con_dir="v_bomb_specific"))
+        m("M20_no_realized_dose",
+          "an arm with no realized_dose has no frac_cellmean_spread_removed and must be refused",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(),
+              _fake_run_dir(os.path.join(_td, "e"), 230, [_live_record()], realized_dose=False),
+              230, con_dir="v_bomb_specific"))
+    m("M21_out_of_order_stage", "a confirmatory stage with no completed Q1 must refuse",
+      lambda: assert_stage_order(repo_path("outputs", "no_such_state_root_"), "h2", "test"))
+    m("M22_zero_domain_delta", "an arm-vs-baseline delta that pairs nothing must refuse",
+      lambda: per_domain_delta(
+          [{"prompt_id": "a", "domain": "d", "semantic_logodds": 1.0, "logp_concept": 1.0,
+            "logp_codeword": 0.0, "option_mass": 0.1}],
+          [{"prompt_id": "b", "domain": "d", "semantic_logodds": 0.0, "logp_concept": 1.0,
+            "logp_codeword": 1.0, "option_mass": 0.1}]))
+    m("M23_persisted_field_is_null",
+      "a required persisted quantity that is present but NULL must be refused",
+      lambda: persist_contract_report(
+          pr, _stub_arm(),
+          {**annotate_liveness([_live_record()], _stub_arm())[0], "projection_removed_l2": None},
+          {"realized_dose": {"x": 1}, "direction_file_sha256": "s", "control_draw_seed": 1,
+           "output_sha256": "o", "cos_edit_vs_direction": "c"}))
+    m("M24_identical_control_band", "a 5-draw control band with identical outputs is n=1",
+      lambda: _band_or_raise(pr))
+    m("M25_probe_without_artifact", "--emit-probe must refuse rather than write an unattributable file",
+      lambda: _probe_or_raise())
+
+    red = sum(1 for r in results if r[2])
+    print("MUTATION HARNESS -- each mutation must produce a REFUSAL")
+    for name, why, ok, detail in results:
+        print("  [%s] %-32s %s\n        %s" % ("RED" if ok else "GREEN(BAD)", name, why, detail))
+    print("\n[pr057-runner] mutations: %d/%d RED" % (red, len(results)))
+    return 0 if red == len(results) else 1
+
+
+def _assert_live(ann) -> None:
+    lg = liveness_gate(ann, "mutant", expect_enabled=True)
+    if not lg["live"]:
+        raise RunnerRefusal("liveness gate refuses: %s" % lg["reasons"][:2])
+
+
+def _audit_or_raise(ann) -> None:
+    aud = audit_end_relative([r for r in ann if "_end_relative_audit" not in r])
+    if not aud["ok"]:
+        raise RunnerRefusal("end-relative audit failed: %s violation(s)"
+                            % aud["n_absolute_index_violations"])
+
+
+def _fake_rel_end(pr: Prereg) -> None:
+    obj = json.loads(json.dumps(pr.obj))
+    obj["read_site"]["_positions_in_rel_end"] = "codeword_last == rel_end 10 (absolute)"
+    read_site_rel_end(Prereg(obj, "<mutant>"))
+
+
+def _fake_run_dir(td: str, n_rows: int, records: Sequence[Dict[str, Any]],
+                  arm_manifest: bool = True, realized_dose: bool = True) -> str:
+    """A minimal but REAL score_behavior-shaped run directory, so verify_arm_artifacts is
+    exercised end to end rather than a re-typed copy of its arithmetic."""
+    d = os.path.join(td, "run")
+    os.makedirs(d, exist_ok=True)
+    json.dump({"status": "ok", "rows_written": n_rows}, open(os.path.join(d, "DONE.json"), "w"))
+    json.dump({"option_mass": {}}, open(os.path.join(d, "summary.json"), "w"))
+    json.dump({"model": "stub"}, open(os.path.join(d, "RUNMETA.json"), "w"))
+    json.dump({"realized_dose": ({"v_bomb_specific|L9|alpha1": {"cell_residual_frac_removed": 0.09}}
+                                 if realized_dose else {})},
+              open(os.path.join(d, "metadata.json"), "w"))
+    with open(os.path.join(d, "results.jsonl"), "w") as fh:
+        for i in range(n_rows):
+            fh.write(json.dumps({"prompt_id": "p%d" % i, "domain": "d", "semantic_logodds": 0.0,
+                                 "logp_concept": 0.0, "logp_codeword": 0.0,
+                                 "option_mass": 0.1}) + "\n")
+    with open(os.path.join(d, CONTRACT_LIVENESS), "w") as fh:
+        for r in records:
+            fh.write(json.dumps(r) + "\n")
+    if arm_manifest:
+        json.dump({"arm": "stub"}, open(os.path.join(d, CONTRACT_ARM), "w"))
+    return d
+
+
+def _probe_or_raise() -> None:
+    pg = probe_gate("outputs/dcs_ts/pr048_result.json")
+    if not pg["ok"]:
+        raise RunnerRefusal("--emit-probe refused: %s" % pg["reasons"][0][:100])
+
+
+def _band_or_raise(pr: Prereg) -> None:
+    n = int(pr.require("seeds", "n_control_draws"))
+    g = AN.control_band_gate(["same"] * n, n)
+    if not g["ok"]:
+        raise RunnerRefusal("control band: %s" % g["detail"])
+
+
+def _swap(argv: List[str], flag: str, value: str) -> List[str]:
+    out = list(argv)
+    out[out.index(flag) + 1] = value
+    return out
+
+
+# ============================================================================================
+# 16. MAIN
+# ============================================================================================
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--prereg", default=PREREG_DEFAULT)
+    ap.add_argument("--stage", default="", choices=["", "q1", "smoke", "h1", "h2"])
+    ap.add_argument("--split", default="test", choices=["train", "validation", "test"])
+    ap.add_argument("--fit-dir", default="outputs/dcs_ts/directions_pr053",
+                    help="the PR-053 TRAIN-ONLY direction DIRECTORY. The loader joins "
+                         "directions_fit_dev.pt itself; see C-113 in this file's header.")
+    ap.add_argument("--runs", default=RUNS_ROOT_DEFAULT)
+    ap.add_argument("--state-root", default=STATE_ROOT_DEFAULT)
+    ap.add_argument("--phase7-tag-prefix", default=PHASE7_TAG_PREFIX_DEFAULT)
+    ap.add_argument("--probe-json", default="outputs/dcs_ts/pr048_result.json")
+    ap.add_argument("--expect-direction-sha", default="")
+    ap.add_argument("--smoke-limit", type=int, default=40)
+    ap.add_argument("--emit-liveness", action="store_true")
+    ap.add_argument("--emit-probe", action="store_true")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="construct and validate every arm WITHOUT a GPU and without loading the "
+                         "model; writes nothing")
+    ap.add_argument("--plan", action="store_true", help="print the validated manifest and stop")
+    ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--mutate", action="store_true")
+    ap.add_argument("--out", default="")
+    a = ap.parse_args()
+    a.expect_direction_sha = a.expect_direction_sha or None
+
+    if a.self_test:
+        return selftest()
+    if a.mutate:
+        return mutate()
+
+    try:
+        pr = load_prereg(a.prereg, for_extraction=False)
+    except PreregError as e:
+        print("PREREG REFUSAL:\n%s" % e, file=sys.stderr)
+        return 2
+    AN.check_wording_pin(pr)
+
+    try:
+        if a.plan:
+            p = plan(pr, a)
+            txt = json.dumps(p, indent=2, default=str)
+            AN.assert_sayable(txt, AN.forbidden_from_prereg(pr))
+            if a.out:
+                open(a.out, "w").write(txt)
+                print("wrote %s" % a.out)
+            else:
+                print(txt)
+            return 0
+        if not a.stage:
+            print("--stage is required (one of q1, smoke, h1, h2), or use --plan / --self-test / "
+                  "--mutate", file=sys.stderr)
+            return 2
+        if a.dry_run:
+            # the CPU path: everything except invoking score_behavior.
+            return run_stage(pr, a)
+        return run_stage(pr, a)
+    except (RunnerRefusal, Refusal, ZeroBinding, PreregError) as e:
+        print("REFUSAL:\n  %s" % e, file=sys.stderr)
+        return 3
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

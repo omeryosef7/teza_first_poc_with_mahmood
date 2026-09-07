@@ -3791,3 +3791,139 @@ bounded**: a positive is unattributable to identity content, and a null sits und
 The sharpest point is the reviewer's: `meta.interpretation_warning` guards **only the null**. A
 caveat that fires only against the result you did not want is not a caveat. Making it symmetric is a
 preregistration-integrity item, and it is open.
+
+---
+
+## DCS-R-120 — Q4b: the PHASE 9 GPU runner exists, and only 26 of 54 arms can be built
+*2026-09-07* — `src/boombness/pr057_run_causal.py`, `reports/DCS_TS_PR057_RUNNER.md`
+
+The runner loads the model **once** and loops the manifest; 54 separate `score_behavior`
+invocations would spend more wall time loading weights than computing. It **imports** the arm
+manifest, hooks, gates and donor contract from `scripts/dcs_ts_pr057_causal.py` and cross-checks
+every argv it builds against the analyzer's own `launch_command()`, so the runner and the analyzer
+cannot drift into two files that disagree about what an arm is.
+
+Verified, and I re-ran the two harnesses myself rather than accept the report: **`--self-test`
+49 checks / 0 failed** (post-rename, bound to the real artifact `sha=0d59b255…`, `fit_domains=67`),
+**`--mutate` 26/26 RED**, **`--plan` 54 arms (24 live / 30 control)** reproducing the design doc
+exactly. Targeted pytest 113/113; the wider 26-file run did **not** complete (115 passed when
+cancelled under three-way node contention) and is stated as such rather than rounded up to "green".
+
+**THE STRUCTURAL FINDING: 26 constructible, 28 not.** Constructible are H2a (4), C1 norm-matched
+random (20), C3 raw axis (2). Not constructible: **H1 (16) and C7 (2)** — no `patch` path *and an
+empty donor population under R-116*; H2b (4) — no `component_replace`; C2 (2) — no shuffled-label
+direction; C4 (2) — `add` is uninstrumented with no single-site form; C5 (2) — `C-119`.
+
+**Why the H1 loss is the one that matters**, and it is a scientific loss rather than a wiring one:
+H1's donor is a `C_knife` prompt and knife installs in **0 of 113 domains**, so there is no
+knife-installed donor to patch from. `C-112` demoted this arm; the plan shows the demotion is total.
+H1 is also *precisely* the control the interpretability-illusion literature asks for (`A-047`,
+`arXiv:2311.17030`): comparing a subspace edit against full activation patching at the same site.
+With it unavailable, **a positive H2a cannot be validated against its own upper bound.**
+
+Combined with `A-047`'s two measured bounds, PHASE 9 as constructible can return either a **null**
+interpretable only with its 4.7–19.0% realised dose attached, or a **positive** attributable neither
+to concept identity nor checkable against an upper bound. Written up in
+`reports/DCS_TS_PHASE9_CONSTRUCTIBILITY.md` **before** submission, because a scope limit recorded
+after a result reads as an excuse.
+
+## DCS-C-117 / C-118 / C-119 — three defects that must close before any GPU time
+*2026-09-07* — found by building the arms, which is the only way they surface
+
+- **`C-117` — the liveness producer and consumer do not share a schema. BLOCKING.**
+  `pair_common.hook_stats_dict()` writes no `n_cells_edited_expected`, and the analyzer's
+  `liveness_gate()` reads a missing count as "the arm declared no destinations" and **VOIDs the
+  arm** — so *every* arm would be VOID at analysis time, for a schema reason rather than a
+  scientific one. It also writes `resolved_absolute_index` as a **list** and leaves `rel_end`
+  **None** on an all-position (S2) edit, while `audit_end_relative()` calls `int()` on both. This
+  would have burned the GPU allocation and returned nothing.
+- **`C-118` — `--emit-probe` is refused.** `ProbeReadCapture` is a read hook on a layer and
+  `score_behavior` exposes no per-row callback; one row produces many forwards, so order-based
+  attribution would be exactly the silent misalignment this phase refuses. Independently,
+  `outputs/dcs_ts/pr048_result.json` carries **no `FROZEN_PROBE` block** — the analysis has not been
+  re-run since Q10 added the export. O1 is therefore not capturable.
+- **`C-119` — control C5 certifies nothing at its preregistered α=0.** The bridge is the live arm's
+  hook run with its write discarded, and the liveness check refuses a bridge whose inner hook would
+  not have edited anything. Refused rather than silently re-dosed to α=1. This is **not cosmetic**:
+  the frozen config lists *"the disabled-hook bridge not reproducing baseline"* under `primary.void`,
+  so a void condition that cannot be evaluated is a hole in the validity argument.
+
+**Renumbering, recorded not silent.** These arrived from the runner work labelled `C-114`/`C-115`/
+`C-116`, IDs already taken the same day by unrelated defects. Renumbered to `C-117`/`C-118`/`C-119`
+in the report and in the runner's own `DEFECT_*` constants and self-test labels — code and report
+citing different IDs for one defect is the drift this phase punishes. A defect ID is a citation
+target, so the collision is named rather than quietly fixed.
+
+## DCS-R-121 — F-1 closed: the direction artifact now verifies its own TRAIN-only property
+*2026-09-07*
+
+The adversarial review's F-1 was that TRAIN-only was enforced **only** through `meta.fit_domains`,
+a field the producer writes about itself — the project's recorded *"a check that reads the same
+broken source"* class. `check_train_only_recomputation()` now re-derives every direction from the
+TRAIN rows, rebuilding the TRAIN set from the frozen split manifest and **never** from
+`meta.fit_domains`, and separately asserts the metadata matches that manifest set.
+
+Measured residuals: honest fit **7.186e-09** (float32 storage floor), leaked mutant **1.121e-02** —
+reproducing inside the harness the leak signature the reviewer had measured externally. Tolerance
+1e-6, ~140x above the floor and ~4 orders below the leak, justified from those two numbers rather
+than picked.
+
+**Mutations 20/20 → 22/22 RED.** The decisive one: "arrays LEAKED (TRAIN+TEST) while
+`meta.fit_domains` still reports the 67 TRAIN domains" turns **exactly one** check red — the new
+recomputation row — with every metadata check, the algebra check and `content_sha256` staying
+GREEN. That is F-1's prediction confirmed: it would have passed all 26 previous checks. Self-test
+16/16 → 21/21; checks 26 → 28, and the count is now **printed by the script** rather than
+hand-typed anywhere.
+
+Payload **bit-identical** (`content_sha256 = 8df3fdec…`). The shipped `.pt` was deliberately not
+re-exported: that would have changed only `meta.written_utc`, but with it the `payload_sha256`
+already published — correct call.
+
+## DCS-A-048 — PHASES 10 and 11 preregistered before anything runs
+*2026-09-07* — `configs/dcs_ts_pr058_phase10.json`, `configs/dcs_ts_pr059_phase11.json`
+
+Both verified by me directly, not on report: **clean under the loader, status FROZEN, 17 hashes
+pinned and verified, all 12 mandate-§21 fields**, `--mutate` **6/6 RED** each, and both correctly
+**refusing `--for-extraction`** — PR-058 with 10 refusals, PR-059 with 9 — behind their blocking
+checklists and `analyzer_exists: false`. Every bank/pool/split hash copied verbatim from `PR-048`;
+no hash invented.
+
+**PHASE 10** (mandate §13) does **not** preregister the naive probe at the `bomb` token, which
+trivially reads lexical identity. It is a 2x2 already present in the bank: cell **E** (benign demos
+remapping the literal ` bomb`) is the symmetric arm, cell **C** the reference codeword-row arm, cell
+**B** the matched specificity control — and `target_surface_row_only` implements both halves in one
+code path because `target_surface` holds the codeword in A/C and the concept in B/E.
+
+**PHASE 11** (mandate §14) runs on the concept-free `semantic_one_word` channel and on **mapped
+regions, never raw last-K**. Two things declared now rather than discovered mid-run: mandate §14.1's
+**scope B is unconstructible** (`neutral_content` = **0 tokens in 6900/6900** prompts), and scope A
+is exactly `query_last_k_rows` K=5 — so **the first five rungs of any last-K ladder on this template
+are pure chat scaffold**, which is mandate §12's warning confirmed quantitatively on our own token
+map. `dcs_kladder_analysis.py` is **not** reusable (frozen to PR-032's rung set and `EXPECT_N=380`);
+it is a template whose half-of-reference rule PR-059 inherits.
+
+Biggest interpretability risk in each, preregistered rather than discovered: **PHASE 10**'s cell-B/E
+query names the concept by construction, so `logp_concept` sits at a ceiling cell C does not have —
+mitigated by differencing cell B and by the copy account and the mechanism account predicting
+**opposite signs**, declared in advance. **PHASE 11**'s concept-free channel is only weakly engaged
+(median `option_mass` 0.1138), so a knockout can move an ordering inside a residual while the output
+word never changes; the tempting escape to the display channel is *exactly* the leakage the phase
+exists to remove and is forbidden.
+
+## DCS-C-120 — a stale prose note in a FROZEN config, and why it changed nothing
+*2026-09-07* — documentation-only, verified rather than assumed
+
+`configs/dcs_ts_pr048.json` `_exclusion_note` reads *"70 train domains are ASSIGNED; **68** are
+ANALYSED"* and names only two exclusions (`restaurant_kitchen`, `subway_station`). `school_campus`
+was added later, so the correct figure is **67**.
+
+**No result is affected, and I checked rather than assumed it.** The analyzer binds
+`population.preregistered_exclusions`, which carries all **three** entries each with a boolean
+`whole_population: true`, and refuses any exclusion that fails to declare that boolean. The prose
+note is read by **no code path**.
+
+Worth recording as a positive: this is the `C-086` defence working exactly as designed. The lesson
+then was that selecting on prose is a defect and a structured field is the fix; here the prose drifted
+and the structured field did not, and the structured field is what the analyzer reads. The stale note
+should be corrected the next time this config is legitimately reopened — it is FROZEN and was not
+edited for this.

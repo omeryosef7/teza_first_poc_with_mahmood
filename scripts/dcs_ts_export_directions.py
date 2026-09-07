@@ -121,6 +121,24 @@ R111 = {
 DP = 4
 _Z_ALPHA2 = 1.9599639845400545   # Phi^-1(0.975); the CI convention R-111 used, not a gate
 
+#: Tolerance for the TRAIN-ONLY RECOMPUTATION check (`check_train_only_recomputation`), on UNIT
+#: vectors. It is bracketed by two measured numbers, not chosen for comfort:
+#:   * an HONEST fit re-derived from the TRAIN rows agrees with the shipped float32 arrays to
+#:     ~5e-09 -- that is the float32 storage precision of the payload, and it is the floor;
+#:   * a LEAKED fit (TRAIN + the 23 TEST domains) differs from it by ~1.1e-02 -- that is the
+#:     smallest deviation the check has to catch, and it is the ceiling.
+#: (Both observed in reports/DCS_TS_PR053_DIRECTION_EXPORT_ADVERSARIAL_REVIEW.md section 1b, and
+#: both reproduced by this check: see the residuals printed by --verify and --mutate.)
+#: 1e-06 sits ~200x above the storage floor -- so no honest export can trip it, whatever the
+#: rounding of the last float32 bit -- and ~10,000x below the leak, so the smallest leakage the
+#: reviewer could construct is still four orders of magnitude outside it. Anything in that window
+#: would do; the window itself is six orders wide, which is why the check has resolution at all.
+REFIT_ATOL = 1e-6
+#: `gap` is stored as a float64 scalar, so an honest gap matches EXACTLY; the leaked fit moves it
+#: by ~1e-2 relative. A relative tolerance well inside that window, loose enough for the float64
+#: round-trip through torch.save.
+REFIT_GAP_RTOL = 1e-9
+
 
 # ================================================================================== utilities
 def _sha256_hex(b: bytes) -> str:
@@ -195,6 +213,24 @@ def fit_directions(Dm: dict, fit_domains, concepts) -> dict:
         "v_knife_specific": knife - 0.5 * (bomb + gun),      # PR-057 H3's counterfactual target
     }
     return {"raw": out, "fit_domains": tr}
+
+
+def train_refit(ctx: dict) -> dict:
+    """Re-derive the direction arrays from the TRAIN ROWS, independently of anything the payload
+    says about itself.
+
+    The TRAIN domain set used here is `ctx["train"]`, which `prepare()` rebuilt from the FROZEN
+    SPLIT MANIFEST (`load_split(pr)` minus the preregistered exclusions) -- NOT from
+    `meta.fit_domains`, which is the producer's own claim about the producer. The rows are
+    `ctx["arm"]["Dmean"]`, i.e. the same per-domain paired differences `build_payload` fitted from.
+
+    Cached on `ctx` because the mutation harness calls it once per case and neither the split nor
+    the arm changes between them.
+    """
+    if "_train_refit" not in ctx:
+        Dm = {c: ctx["arm"]["Dmean"][(c, ctx["dose"])] for c in ctx["concepts"]}
+        ctx["_train_refit"] = fit_directions(Dm, ctx["train"], ctx["concepts"])
+    return ctx["_train_refit"]
 
 
 def score_identity_auroc(v_spec_unit: np.ndarray, rows: dict, dose, test_domains, concepts):
@@ -294,6 +330,9 @@ def check_payload(payload: dict, ctx: dict, log: CheckLog) -> CheckLog:
     log.add("fit domain count matches split.n_train", len(fit) == int(ctx["n_train"]),
             f"{len(fit)} vs {ctx['n_train']}")
 
+    # ---- TRAIN ONLY, RECOMPUTED. The check that does not take the producer's word for it. ---
+    check_train_only_recomputation(payload, ctx, dirs, layers, log)
+
     # ---- the estimator's own algebra -----------------------------------------------------
     if {"v_bomb", "v_knife", "v_gun", "v_bomb_specific", "v_remap"}.issubset(dirs):
         g = payload["gap"]
@@ -324,6 +363,84 @@ def check_payload(payload: dict, ctx: dict, log: CheckLog) -> CheckLog:
             all(len(meta.get("norms", {}).get(n, [])) == len(layers) for n in names) and bool(names))
     log.add("read site recorded and equal to the preregistered one",
             meta.get("position") == ctx["position"], f"{meta.get('position')!r}")
+    return log
+
+
+def check_train_only_recomputation(payload: dict, ctx: dict, dirs: dict, layers, log: CheckLog):
+    """RECOMPUTE the direction arrays from the TRAIN rows and compare them to the STORED arrays.
+
+    WHY THIS EXISTS (F-1 of reports/DCS_TS_PR053_DIRECTION_EXPORT_ADVERSARIAL_REVIEW.md). Every
+    other TRAIN-only check in `check_payload` reads `meta.fit_domains` -- a field the producer
+    writes ABOUT ITSELF. A payload whose ARRAYS were fitted on TRAIN + TEST while its METADATA
+    honestly lists the 67 TRAIN domains passes all of them: the verifier asserts the producer's
+    claim, not the producer's arithmetic. That is this repo's recorded
+    `feedback_check_reads_same_broken_source` failure class.
+
+    This check touches `meta.fit_domains` for exactly one purpose -- to catch it LYING. The
+    arithmetic is compared against a fit over the TRAIN set rebuilt from the frozen split
+    manifest, so BOTH directions of a metadata/array disagreement are caught:
+
+      * arrays leaked, metadata honest  -> the array comparison goes RED;
+      * arrays honest, metadata lying   -> the domain-set comparison goes RED.
+    """
+    meta = payload.get("meta") or {}
+    A_NAME = ("direction arrays RECOMPUTED from the TRAIN rows equal the stored arrays "
+              f"(atol {REFIT_ATOL:g}, not trusting meta.fit_domains)")
+    D_NAME = "meta.fit_domains == the TRAIN set rebuilt from the frozen split manifest"
+    try:
+        refit = train_refit(ctx)
+    except Exception as e:                      # a recomputation that cannot run proves nothing
+        log.add(A_NAME, False, f"the recomputation itself failed: {type(e).__name__}: {e}")
+        log.add(D_NAME, False, "recomputation unavailable")
+        return log
+    tr = list(refit["fit_domains"])
+
+    grid = [int(L) for L in ctx["layer_grid"]]
+    ok, detail = bool(dirs), ""
+    worst_u, worst_u_name = 0.0, None
+    worst_g, worst_g_name = 0.0, None
+    if not dirs:
+        detail = "no direction arrays could be stacked from the payload"
+    for name in sorted(refit["raw"]):
+        ref = refit["raw"][name]
+        if name not in dirs:
+            ok = False
+            detail = f"{name} is absent or malformed in the payload; nothing to compare"
+            continue
+        try:
+            idx = [grid.index(int(L)) for L in layers]
+        except ValueError:
+            ok = False
+            detail = f"payload layers {list(layers)} are not a subset of the fitted grid {grid}"
+            break
+        u_ref = unit(ref)[idx]
+        du = float(np.abs(np.asarray(dirs[name], dtype=np.float64) - u_ref).max())
+        if du > worst_u:
+            worst_u, worst_u_name = du, name
+        if not (du <= REFIT_ATOL):
+            ok = False
+        g = (payload.get("gap") or {}).get(name) or {}
+        n_ref = np.linalg.norm(ref, axis=1)[idx]
+        for i, L in enumerate(layers):
+            gv = g.get(int(L))
+            if gv is None:
+                ok = False
+                detail = f"gap[{name}][{int(L)}] is missing; the raw scale cannot be compared"
+                continue
+            rel = abs(float(gv) - float(n_ref[i])) / max(float(n_ref[i]), 1e-12)
+            if rel > worst_g:
+                worst_g, worst_g_name = rel, name
+            if not (rel <= REFIT_GAP_RTOL):
+                ok = False
+    log.add(A_NAME, ok,
+            (detail + "; " if detail else "")
+            + f"max|unit diff| {worst_u:.3e} ({worst_u_name}) vs atol {REFIT_ATOL:g}; "
+              f"max gap rel-diff {worst_g:.3e} ({worst_g_name}); "
+              f"refit over {len(tr)} manifest TRAIN domains")
+    fit = list(meta.get("fit_domains") or [])
+    log.add(D_NAME, bool(tr) and sorted(fit) == sorted(tr),
+            f"n_meta={len(fit)} n_manifest={len(tr)} "
+            f"extra={sorted(set(fit) - set(tr))[:5]} missing={sorted(set(tr) - set(fit))[:5]}")
     return log
 
 
@@ -579,7 +696,12 @@ def mutate(pr: Prereg, ctx: dict, out_dir: str) -> dict:
             red, err = 1, f"{type(e).__name__}: {e}"
         results.append({"mutation": name, "n_checks_red": red,
                         "caught": red > 0, "raised": err,
-                        "red_checks": [r["check"] for r in log.red] if not err else []})
+                        "red_checks": [r["check"] for r in log.red] if not err else [],
+                        # the REASON, not just the colour: the reviewer's bar is that a mutation
+                        # goes red because of the check meant for it, and the detail string is
+                        # where the measured residual behind that verdict is recorded.
+                        "red_details": [{"check": r["check"], "detail": r["detail"]}
+                                        for r in log.red] if not err else []})
         print(f"  {'RED  ' if red > 0 else 'GREEN'}  {name}"
               + (f"   [raised {err[:90]}]" if err else f"   [{red} check(s) red]"))
 
@@ -668,6 +790,24 @@ def mutate(pr: Prereg, ctx: dict, out_dir: str) -> dict:
              np.stack([rot[int(L)].double().numpy() for L in layers]),
              rows, dose, ctx["test"], concepts))
 
+    # 21. THE ONE THAT MATTERS (F-1): the ARRAYS are fitted on TRAIN + the 23 TEST domains while
+    #     `meta.fit_domains` still honestly reports the 67 TRAIN domains. Every metadata-reading
+    #     TRAIN-only check stays GREEN on this payload -- so does the algebra check (the leaked
+    #     residual is still v_bomb - mean(v_knife, v_gun)) and so does the content sha (recomputed
+    #     from the leaked arrays). Only `check_train_only_recomputation` can see it.
+    p = build_payload(pr, ctx, fit_domains=sorted(set(ctx["train"]) | set(ctx["test"])))
+    p["meta"]["fit_domains"] = sorted(ctx["train"])
+    p["meta"]["n_fit_domains"] = len(ctx["train"])
+    case("arrays LEAKED (fitted on TRAIN+TEST) while meta.fit_domains still reports the "
+         "67 TRAIN domains", p)
+    # 22. the mirror: the ARRAYS are the honest TRAIN fit, the METADATA lies -- and lies subtly,
+    #     swapping one TRAIN domain for one TEST domain so the COUNT still matches split.n_train.
+    p = copy(base_payload)
+    claimed = sorted(ctx["train"])[:-1] + [sorted(ctx["test"])[0]]
+    p["meta"]["fit_domains"] = sorted(claimed)
+    case("arrays honest, meta.fit_domains swaps one TRAIN domain for a TEST domain "
+         "(count unchanged)", p)
+
     n_red = sum(1 for r in results if r["caught"])
     print(f"\n  MUTATIONS: {n_red}/{len(results)} turned at least one check RED.")
     if n_red != len(results):
@@ -755,6 +895,48 @@ def selftest() -> int:
     check_reproduction(fake, L2)
     chk(len(L2.red) >= 1, "an AUROC of 0.9700 does NOT pass as 0.9764")
 
+    # the TRAIN-only RECOMPUTATION check: honest arrays pass, leaked arrays go RED, and a lying
+    # metadata field goes RED the other way. Built on a toy arm so no data is needed.
+    toy_layers = [6, 7]
+    toy_train = [f"d{i}" for i in range(4)]
+    toy_all = toy_train + ["d4"]                          # d4 stands in for a TEST domain
+    toy_Dm = {c: {d: rng.normal(size=(2, 8)) for d in toy_all} for c in ("bomb", "knife", "gun")}
+    toy_ctx = {"concepts": ["bomb", "knife", "gun"], "layer_grid": toy_layers, "dose": 4,
+               "train": list(toy_train),
+               "arm": {"Dmean": {(c, 4): toy_Dm[c] for c in ("bomb", "knife", "gun")}}}
+
+    def _toy_payload(fit_on):
+        raw = fit_directions(toy_Dm, fit_on, toy_ctx["concepts"])["raw"]
+        d = {n: unit(v) for n, v in raw.items()}
+        gap = {n: {int(L): float(np.linalg.norm(raw[n][i]))
+                   for i, L in enumerate(toy_layers)} for n in raw}
+        return d, {"gap": gap, "meta": {"fit_domains": sorted(fit_on)}}
+
+    d_ok, p_ok = _toy_payload(toy_train)
+    L3 = CheckLog()
+    check_train_only_recomputation(p_ok, dict(toy_ctx), d_ok, toy_layers, L3)
+    chk(not L3.red, "recomputation check: an honest TRAIN fit is GREEN on both arms")
+
+    d_leak, _ = _toy_payload(toy_all)                     # arrays leaked ...
+    L4 = CheckLog()
+    check_train_only_recomputation(p_ok, dict(toy_ctx), d_leak, toy_layers, L4)   # ... metadata honest
+    chk(len(L4.red) == 1 and "RECOMPUTED" in L4.red[0]["check"],
+        "recomputation check: LEAKED arrays + honest metadata go RED on the array arm")
+
+    L5 = CheckLog()
+    p_lie = {"gap": p_ok["gap"], "meta": {"fit_domains": sorted(toy_all)}}
+    check_train_only_recomputation(p_lie, dict(toy_ctx), d_ok, toy_layers, L5)
+    chk(len(L5.red) == 1 and "meta.fit_domains" in L5.red[0]["check"],
+        "recomputation check: honest arrays + LYING metadata go RED on the domain-set arm")
+
+    L6 = CheckLog()
+    d_eps = {n: v.copy() for n, v in d_ok.items()}
+    d_eps["v_bomb_specific"] = d_eps["v_bomb_specific"] + 2 * REFIT_ATOL
+    check_train_only_recomputation(p_ok, dict(toy_ctx), d_eps, toy_layers, L6)
+    chk(len(L6.red) == 1, f"recomputation check: a {2 * REFIT_ATOL:g} array shift is RED")
+    chk(REFIT_ATOL > 5e-9 * 100 and REFIT_ATOL < 1.1e-2 / 100,
+        "REFIT_ATOL sits between the float32 storage floor (5e-09) and a leaked fit (1.1e-02)")
+
     print(f"\n  selftest {ok[0]}/{ok[1]}")
     return 0 if ok[0] == ok[1] else 1
 
@@ -810,7 +992,8 @@ def main() -> int:
         log = CheckLog()
         check_payload(payload, ctx, log)         # on the in-memory object
         check_reproduction(rep, log)
-        print("\n  PRE-WRITE CHECKS")
+        print(f"\n  PRE-WRITE CHECKS ({len(log.rows)} checks: {len(log.rows) - len(log.red)} "
+              f"GREEN, {len(log.red)} RED)")
         log.show()
         if log.red:
             print("\n  REFUSING TO WRITE. The direction does not reproduce the result it is "
@@ -835,9 +1018,11 @@ def main() -> int:
         log = CheckLog()
         check_payload(payload, ctx, log)
         check_reproduction(rep, log)
-        print("\n  VERIFY (payload reloaded from disk)")
+        print(f"\n  VERIFY (payload reloaded from disk) -- {len(log.rows)} checks")
         log.show()
-        v = {"verified_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        v = {"n_checks": len(log.rows),
+             "n_checks_green": len(log.rows) - len(log.red), "n_checks_red": len(log.red),
+             "verified_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
              "payload_file": PAYLOAD_NAME, "payload_sha256": _file_sha256(path),
              "content_sha256": payload["meta"]["content_sha256"],
              "reproduction": {k: val for k, val in rep.items() if k != "per_domain_band_auroc"},
@@ -845,6 +1030,7 @@ def main() -> int:
              "verdict": "GREEN" if log.ok else "RED"}
         with open(os.path.join(out_dir, VERIFY_NAME), "w") as f:
             json.dump(v, f, indent=2)
+        print(f"  {v['n_checks_green']}/{v['n_checks']} checks GREEN, {v['n_checks_red']} RED")
         print(f"  verdict {v['verdict']} -> {os.path.relpath(os.path.join(out_dir, VERIFY_NAME), REPO)}")
         rc = rc or (0 if log.ok else 2)
 
