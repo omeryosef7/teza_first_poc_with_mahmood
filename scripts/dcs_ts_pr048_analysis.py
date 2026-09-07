@@ -437,21 +437,41 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     sp, sfloor = sign_test_two_sided(k, nd)
 
     # ---- DOMAIN-LEVEL group permutation ------------------------------------------------------
+    #
+    # COST, measured rather than assumed. One fit at the SELECTED config is 2.8 s (14 lbfgs
+    # iterations), so 10,000 draws is ~7.8 h of fitting -- plus another ~3.4 h if the StandardScaler
+    # is refit inside every draw, which it was. The dress rehearsal is what surfaced this: 36
+    # selection fits took 31 minutes, and extrapolating THAT number would have implied ~140 h and
+    # panicked me into cutting n_perm back toward the arithmetic floor C-069 exists to prevent.
+    # The 36 were slow because the weaker-regularisation configs converge slowly; the one config
+    # the permutation actually uses is fast.
+    #
+    # TWO SPEEDUPS, both provably label-independent, so the null and the observed statistic remain
+    # byte-identical in everything except the labels (the C-092 invariant):
+    #   1. the scaler is fit ONCE on the train rows -- it depends on the features and the fixed
+    #      train mask, never on y, so it cannot differ between draws;
+    #   2. the draws are embarrassingly parallel and are run with joblib.
+    # n_perm is NOT reduced. Making the null cheaper than the observed statistic, or shrinking it
+    # until p returns to its floor, are both refused.
+    from joblib import Parallel, delayed
     rng = np.random.default_rng(pr.require("split", "seed"))
     dom_list = sorted(set(dom[tr]))
-    nulls = []
-    for _ in range(int(n_perm)):
-        # permute the LABEL MAP WITHIN each training domain's concept assignment, at the domain
-        # level -- never row level (measured FPR 0.2000 at row level).
-        perm = {d: rng.permutation(len(concepts)) for d in dom_list}
+    _sc = StandardScaler().fit(Xs[L_sel][tr])
+    _Xtr = _sc.transform(Xs[L_sel][tr])
+    _Xte = _sc.transform(Xs[L_sel][te])
+    _yte, _dte = y[te], dom[te]
+
+    def _one_draw(seed_i):
+        r = np.random.default_rng(seed_i)
         y2 = y.copy()
         for d in dom_list:
             m = dom == d
-            y2[m] = perm[d][y[m]]
-        y_fit = y2                       # the ONLY difference from the observed pass
-        p2, _, _ = fit_score(L_sel, C_sel, tr, te, why="perm")
-        y_fit = y
-        nulls.append(domain_mean_acc(p2, y[te], dom[te])[0])
+            y2[m] = r.permutation(len(concepts))[y[m]]
+        c = LogisticRegression(C=C_sel, max_iter=MAX_ITER).fit(_Xtr, y2[tr])
+        return domain_mean_acc(c.predict(_Xte), _yte, _dte)[0]
+
+    seeds = rng.integers(0, 2**31 - 1, size=int(n_perm))
+    nulls = Parallel(n_jobs=-1, verbose=0)(delayed(_one_draw)(int(s_)) for s_ in seeds)
     pp, pfloor, nex = group_permutation_p(obs, nulls)
 
     # THE NUISANCE FLOOR, read from the preregistration and ENFORCED (S-1 / A-043).

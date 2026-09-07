@@ -92,12 +92,21 @@ def main() -> int:
             if h is not None:
                 h.remove()
 
-    def add_post(mod, inp, out):
-        # A block returns a tuple whose first element is the hidden state.
-        t = out[0] if isinstance(out, tuple) else out
-        t = t.clone()
-        t[0, pos, COORD] += DELTA
-        return (t,) + tuple(out[1:]) if isinstance(out, tuple) else t
+    # RUN 1 (job 860158) FAILED T1: the return-based post-hook moved nothing. The pre-hook DID
+    # move hs[L+1] by 1000.158 -- a residual-stream signature (out = in + f(in), so a +1e3 kick on
+    # the input reappears almost exactly on the output). So the harness, not the model, was wrong.
+    # Two possible causes, and the test now distinguishes them instead of guessing:
+    #   (a) transformers 5.12 blocks may not return a plain tuple, so the returned replacement was
+    #       discarded;
+    #   (b) the hidden-state tuple may be collected from a tensor the hook's return never reaches.
+    # An IN-PLACE edit is immune to both: it mutates the tensor object the caller already holds.
+    seen_type = {}
+
+    def add_post_inplace(mod, inp, out):
+        seen_type["out"] = type(out).__name__
+        t = out[0] if isinstance(out, (tuple, list)) else out
+        t[0, pos, COORD] += DELTA          # in place, no return
+        return None
 
     def add_pre(mod, inp):
         t = inp[0].clone()
@@ -105,9 +114,10 @@ def main() -> int:
         return (t,) + tuple(inp[1:])
 
     base = run()
-    post = run(add_post, layers[TEST_LAYER])
+    post = run(add_post_inplace, layers[TEST_LAYER])
     pre = run(add_pre, layers[TEST_LAYER], pre=True)
     again = run()
+    res_block_return_type = seen_type.get("out", "<hook never fired>")
 
     def d(a_, b_, idx):
         return float((b_[idx][0, pos, COORD] - a_[idx][0, pos, COORD]).item())
@@ -117,6 +127,7 @@ def main() -> int:
         "torch": torch.__version__, "n_layers": n_layers,
         "test_layer": TEST_LAYER, "delta": DELTA, "pos": pos, "coord": COORD,
         "n_hidden_states": len(base),
+        "block_return_type": res_block_return_type,
         "checks": {},
     }
 
@@ -137,9 +148,19 @@ def main() -> int:
 
     pL = d(base, pre, TEST_LAYER)
     pLp1 = d(base, pre, TEST_LAYER + 1)
-    check("T3_pre_hook_moves_hidden_states[L]", abs(pL - DELTA) < 1.0,
-          f"hidden_states[{TEST_LAYER}] moved {pL:.3f} under a PRE-hook, want {DELTA}; "
-          f"hidden_states[{TEST_LAYER+1}] moved {pLp1:.3f} (expected nonzero: it propagates)")
+    # T3 CORRECTED after run 1. My original expectation -- "a pre-hook moves hidden_states[L]" --
+    # was WRONG, and run 1 proved it: hs[L] is appended to the tuple BEFORE block L is called, so a
+    # pre-hook that rewrites block L's input cannot retroactively change the tuple entry already
+    # recorded. What it must do is leave hs[L] untouched and move hs[L+1], and by a RESIDUAL amount:
+    # a transformer block computes out = in + f(in), so a +DELTA kick on one input coordinate
+    # reappears on the output as DELTA plus a small nonlinear term. Run 1 measured 1000.158 -- that
+    # residual signature is itself evidence hs[L+1] is block L's OUTPUT and not some later tensor.
+    check("T3a_pre_hook_leaves_hidden_states[L]", abs(pL) < 1e-3,
+          f"hidden_states[{TEST_LAYER}] moved {pL:.6f} under a PRE-hook, want 0 "
+          f"(it is recorded before block {TEST_LAYER} runs)")
+    check("T3b_pre_hook_moves_hidden_states[L+1]_by_residual", abs(pLp1 - DELTA) < 25.0,
+          f"hidden_states[{TEST_LAYER+1}] moved {pLp1:.3f} under a PRE-hook, want ~{DELTA} "
+          f"(residual pass-through; a non-residual path would not preserve the kick)")
 
     drift = max(abs(d(base, again, i)) for i in range(len(base)))
     check("T4_no_hook_is_deterministic", drift < 1e-3,
@@ -149,6 +170,12 @@ def main() -> int:
     try:
         from extract_boombness import forward_hidden  # noqa: E402
         try:
+            # Run 1: "Could not locate transformer layers on this model." Pass the layer list
+            # explicitly where the signature allows it, and record the signature either way so the
+            # failure is diagnostic rather than a dead end.
+            import inspect
+            sig = list(inspect.signature(forward_hidden).parameters)
+            res["forward_hidden_signature"] = sig
             hs = forward_hidden(model, ids["input_ids"].to(model.device))
             last_fh = hs[-1] if not isinstance(hs, tuple) else hs[0][-1]
             same = torch.allclose(last_fh[0, pos].float().cpu(), base[-1][0, pos], atol=1e-3)
@@ -166,8 +193,15 @@ def main() -> int:
     n_pass = sum(1 for v in res["checks"].values() if v["pass"])
     n = len(res["checks"])
     res["summary"] = {"n_checks": n, "n_pass": n_pass, "all_pass": n_pass == n}
-    res["convention_confirmed"] = bool(res["checks"]["T1_post_hook_moves_hidden_states[L+1]_by_delta"]["pass"]
-                                       and res["checks"]["T2_post_hook_does_NOT_move_hidden_states[L]"]["pass"])
+    # The convention is CONFIRMED by the post-hook pair (T1+T2) -- the direct test. T3a/T3b are a
+    # second, independent route to the same conclusion via the residual signature, and are reported
+    # but not sufficient on their own: a corroborating observation is not the experiment.
+    res["convention_confirmed"] = bool(
+        res["checks"]["T1_post_hook_moves_hidden_states[L+1]_by_delta"]["pass"]
+        and res["checks"]["T2_post_hook_does_NOT_move_hidden_states[L]"]["pass"])
+    res["convention_corroborated_by_prehook"] = bool(
+        res["checks"]["T3a_pre_hook_leaves_hidden_states[L]"]["pass"]
+        and res["checks"]["T3b_pre_hook_moves_hidden_states[L+1]_by_residual"]["pass"])
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(res, f, indent=2)

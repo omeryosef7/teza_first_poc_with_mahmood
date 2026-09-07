@@ -2619,3 +2619,51 @@ and saying so is the deliverable.
 The implementation must **reuse** `dcs_diffmeans_directions.py` rather than reimplement it, and
 must **fix rather than inherit** its known `D1` defect, where `transfer()` leaks the held-out
 domain into the standardisation constants.
+
+## 2026-09-07 · R-110 · the dress rehearsal PASSES, and the selection is not degenerate
+
+```
+SELECTION (validation only): layer=9  C=0.01  best_val_acc=0.9138  n_tied=1/36  inert=False
+--stop-after-selection: TEST WAS NOT READ.
+```
+
+**`n_tied = 1/36`, `inert = False`.** Against `C-070`, where the surface was `1.000000` at all 36
+grid points and every pick was a grid-order tie-break reported for months as learned localisation,
+this selection **actually selected something** — a unique optimum at layer 9. It is the first
+non-degenerate layer selection in this project's recorded history, and it is recorded here with
+its trace rather than as an adjective.
+
+⚠ **One thing visible on VALIDATION, stated now rather than after the test read.** Validation
+accuracy is **0.9138** and the preregistered nuisance floor is **0.9217**. Validation is not test,
+and nothing is concluded from it — but it is the honest early signal that the probe may land **at
+or below** the surface floor. That is precisely the outcome `C-078` argued was likely, and the
+reason the floor was pinned into the config and made machine-read *before* any of this was
+visible.
+
+## 2026-09-07 · C-104 · the permutation was a ~140-hour job, and the rehearsal is why that is not a crisis
+
+36 selection fits took 31 minutes. Extrapolated, 10,000 permutation draws is **~140 hours** — and
+meeting that number mid-run, with the test split loaded and the answer one line away, the pressure
+to cut `n_perm` back toward the arithmetic floor `C-069` exists to prevent would have been
+considerable.
+
+**Measured instead of extrapolated.** A single fit at the **selected** config is **2.8 s**
+(14 lbfgs iterations). The 36 were slow because the weaker-regularisation configs converge slowly;
+the one config the permutation actually uses is fast. True cost: ~7.8 h of fitting, **plus ~3.4 h
+of redundant `StandardScaler` refits** inside the draw loop.
+
+Two speedups, both **provably label-independent**, so the `C-092` invariant holds — the null and
+the observed statistic stay identical in everything except the labels:
+
+1. **the scaler is fit once.** It depends on the features and the fixed train mask, never on `y`,
+   so it cannot differ between draws;
+2. **the draws are parallelised** — they are embarrassingly parallel by construction.
+
+**`n_perm` is NOT reduced.** Making the null cheaper than the observed statistic, or shrinking it
+until `p` returns to its floor, are both refused — and the refusal is written into the code comment
+so the next person to meet a slow run sees the reasoning rather than just the constant.
+
+**This is the third defect the rehearsal has caught** — after the blunt completeness check
+(`C-103`) and, at construction time, the estimator that could not be built (`C-091`). The pattern
+worth keeping: a mode that provably cannot read TEST removes the temptation that makes mid-run
+fixes dangerous.
