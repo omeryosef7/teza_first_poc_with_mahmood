@@ -43,6 +43,7 @@ USAGE
 from __future__ import annotations
 
 import argparse
+import hashlib          # Q10: content hash of the frozen probe export
 import json
 import os
 import sys
@@ -389,7 +390,12 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     def _clf(C):
         return LogisticRegression(C=C, max_iter=MAX_ITER)
 
-    def fit_score(L, C, fit_mask, eval_mask, why=""):
+    def fit_score(L, C, fit_mask, eval_mask, why="", return_estimator=False):
+        # `return_estimator` is ADDITIVE and DEFAULT-OFF (Q10, 2026-09-07). It hands back the
+        # ALREADY-FITTED scaler and classifier from the observed pass so they can be frozen and
+        # exported. It fits nothing extra, consumes no randomness and touches no returned
+        # number: with the default the tuple, the arithmetic and the RNG stream are exactly what
+        # they were.
         sc = StandardScaler().fit(Xs[L][fit_mask])
         clf = _clf(C)
         with warnings.catch_warnings(record=True) as w:
@@ -400,6 +406,8 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
                 if len(convergence_failures["where"]) < 5:
                     convergence_failures["where"].append(f"{why} L={L} C={C}")
         pred = clf.predict(sc.transform(Xs[L][eval_mask]))
+        if return_estimator:
+            return pred, y[eval_mask], dom[eval_mask], sc, clf
         return pred, y[eval_mask], dom[eval_mask]
 
     def domain_mean_acc(pred, truth, doms):
@@ -449,7 +457,11 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         return 0
 
     # ---- TEST, read once ---------------------------------------------------------------------
-    pred, truth, doms = fit_score(L_sel, C_sel, tr, te, why="observed")
+    # `return_estimator=True` returns the SAME fitted objects the observed statistic was
+    # computed from -- not a re-fit. Q10 requires the frozen probe to be THE probe that produced
+    # the reported number, and a second fit, however identical it looks, is a different object.
+    pred, truth, doms, _obs_scaler, _obs_clf = fit_score(
+        L_sel, C_sel, tr, te, why="observed", return_estimator=True)
     obs, per_dom = domain_mean_acc(pred, truth, doms)
     k = sum(1 for v in per_dom.values() if v > chance)
     nd = len(per_dom)
@@ -522,6 +534,108 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         "permutation": {"p": pp, "floor": pfloor, "n_exceed": nex, "n_perm": int(n_perm),
                         "formatted": fmt_p(pp, pfloor, nex)},
     }
+
+    # ---- Q10: THE FROZEN PROBE, EXPORTED --------------------------------------------------
+    #
+    # WHY. This file persisted SELECTION_TRACE, the selected (layer, C) and the per-domain
+    # accuracies, and NOT THE ESTIMATOR. So PHASE 9's outcome O1 -- "does the probe score move
+    # under intervention?" -- had no frozen probe to score against, and the only way to answer it
+    # would have been to REFIT under the intervention, which lets the probe chase the edit and
+    # makes O1 unfalsifiable. The estimator below is the one that produced the reported
+    # `observed_domain_mean_accuracy`, and it is written so PHASE 9 can load exactly it.
+    #
+    # ADDITIVE: this block adds a key. It does not read, recompute or modify any number already
+    # in `res`, and it does not fit anything -- `_obs_scaler` / `_obs_clf` are the objects the
+    # observed pass already built.
+    _probe = {
+        "_what_this_is": "the FROZEN PR-048 probe: the exact fitted estimator behind "
+                         "observed_domain_mean_accuracy. Load it; do NOT refit it. Refitting "
+                         "under an intervention lets the probe chase the edit.",
+        "_do_not_refit": True,
+        "selected_layer": int(L_sel), "selected_C": float(C_sel),
+        "read_site": {"position": pr.require("read_site", "position"),
+                      "layer": int(L_sel)},
+        "fit_on": {"split": "train", "n_rows": int(tr.sum()),
+                   "n_domains": len(set(dom[tr])),
+                   "domains": sorted(set(str(d) for d in dom[tr]))},
+        "classes": [str(c) for c in concepts],
+        "class_index_of_label": {str(c): i for i, c in enumerate(concepts)},
+        "sklearn_classes_": [int(c) for c in _obs_clf.classes_],
+        "feature_dim": int(Xs[L_sel].shape[1]),
+        "estimator": {"kind": "sklearn.linear_model.LogisticRegression",
+                      "C": float(C_sel), "max_iter": int(MAX_ITER),
+                      "n_iter_": [int(v) for v in np.atleast_1d(_obs_clf.n_iter_)],
+                      "coef": [[float(v) for v in row] for row in _obs_clf.coef_],
+                      "intercept": [float(v) for v in np.atleast_1d(_obs_clf.intercept_)]},
+        "scaler": {"kind": "sklearn.preprocessing.StandardScaler",
+                   "with_mean": bool(_obs_scaler.with_mean),
+                   "with_std": bool(_obs_scaler.with_std),
+                   "mean": [float(v) for v in _obs_scaler.mean_],
+                   "scale": [float(v) for v in _obs_scaler.scale_],
+                   "var": [float(v) for v in _obs_scaler.var_],
+                   # n_samples_seen_ is a SCALAR normally and an ARRAY when the fit saw NaNs
+                   # (sklearn then counts per feature). int() on the array raises, so a probe
+                   # fitted on data with any NaN would have died HERE, after the test split had
+                   # already been read -- and there is no second first read of test. Recorded as
+                   # a list in that case, which also makes the NaN visible instead of averaged.
+                   "n_samples_seen": (int(_obs_scaler.n_samples_seen_)
+                                      if np.ndim(_obs_scaler.n_samples_seen_) == 0
+                                      else [int(v) for v in _obs_scaler.n_samples_seen_])},
+        "scoring_rule": "z = (x - scaler.mean) / scaler.scale ; logits = coef @ z + intercept ; "
+                        "posterior = softmax(logits) for multiclass, sigmoid for the single-row "
+                        "binary case (sklearn_classes_ gives the row order)",
+        "sklearn_version": __import__("sklearn").__version__,
+        "produced_by": os.path.basename(__file__),
+        "prereg": a.prereg,
+    }
+    # A CONTENT HASH OVER THE NUMBERS, not over the file. PHASE 9 pins this, so a probe that has
+    # been re-fitted, re-selected or re-scaled between the two phases cannot be loaded silently
+    # under the name of the one that produced R-113.
+    _payload_for_sha = {k: _probe[k] for k in
+                        ("selected_layer", "selected_C", "classes", "feature_dim",
+                         "estimator", "scaler")}
+    _probe["sha256"] = hashlib.sha256(
+        json.dumps(_payload_for_sha, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    # ZERO-BIND REFUSALS. A probe artifact with no coefficients, no scaler or no train rows is
+    # not a probe, and it must not be written for a later phase to discover at load time.
+    if not _probe["estimator"]["coef"] or not _probe["estimator"]["coef"][0]:
+        raise PreregError("Q10: the frozen probe has NO coefficients; refusing to write it.")
+    if len(_probe["scaler"]["mean"]) != _probe["feature_dim"]:
+        raise PreregError(
+            f"Q10: scaler mean has {len(_probe['scaler']['mean'])} entries but the feature "
+            f"dimension is {_probe['feature_dim']}; refusing to write a mismatched probe.")
+    if len(_probe["estimator"]["coef"][0]) != _probe["feature_dim"]:
+        raise PreregError(
+            f"Q10: coefficient row has {len(_probe['estimator']['coef'][0])} entries but the "
+            f"feature dimension is {_probe['feature_dim']}; refusing.")
+    if _probe["fit_on"]["n_rows"] == 0 or _probe["fit_on"]["n_domains"] == 0:
+        raise PreregError("Q10: the frozen probe reports ZERO train rows or ZERO train domains.")
+    # SELF-VERIFICATION. Re-score the TEST rows from the EXPORTED NUMBERS ALONE -- not from the
+    # sklearn objects -- and require the predictions to reproduce `pred` exactly. This is the
+    # check that a `scoring_rule` written in prose actually reconstructs the estimator, and it
+    # is the difference between exporting a probe and exporting a hope. It reads no new data:
+    # `pred` is already computed above and no number in `res` is touched.
+    _z = (Xs[L_sel][te] - np.asarray(_probe["scaler"]["mean"])) / np.asarray(
+        _probe["scaler"]["scale"])
+    _logits = _z @ np.asarray(_probe["estimator"]["coef"]).T + np.asarray(
+        _probe["estimator"]["intercept"])
+    if _logits.shape[1] == 1:                    # sklearn's binary parameterisation
+        _repro = np.asarray(_obs_clf.classes_)[(_logits[:, 0] > 0).astype(int)]
+    else:
+        _repro = np.asarray(_obs_clf.classes_)[_logits.argmax(axis=1)]
+    _n_disagree = int((_repro != pred).sum())
+    if _n_disagree:
+        raise PreregError(
+            f"Q10: re-scoring the test rows from the EXPORTED coefficients disagrees with the "
+            f"estimator on {_n_disagree}/{len(pred)} rows. The exported probe is not the probe "
+            "that produced the reported accuracy; refusing to write it.")
+    _probe["self_verification"] = {
+        "reproduced_from_exported_numbers": True, "n_test_rows": int(len(pred)),
+        "n_disagreements": 0,
+        "_note": "predictions recomputed from `coef`/`intercept`/`scaler` alone, NOT from the "
+                 "sklearn objects, and required to match the estimator on every test row"}
+    res["FROZEN_PROBE"] = _probe
     os.makedirs(os.path.dirname(os.path.join(REPO, a.out)), exist_ok=True)
     with open(os.path.join(REPO, a.out), "w") as f:
         json.dump(res, f, indent=2)

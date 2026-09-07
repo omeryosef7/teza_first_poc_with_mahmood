@@ -3603,3 +3603,96 @@ though it could not be pinned in advance.
 
 The correct `--fit-dir` argument for every PHASE 9 job is therefore
 **`--fit-dir outputs/dcs_ts/directions_pr053`**, not the path the config prints.
+
+---
+
+## DCS-C-114 — the claim table cites a report that does not contain its numbers
+*2026-09-07* — provenance defect, found by a universal-quantifier sweep, fix in flight
+
+`reports/DCS_TS_CLAIM_TABLE.md` and this log both cite
+`reports/DCS_TS_PROMPT_VALIDATION.md` as the source for **R-116**: six banks, 32,544 rows, and the
+headline that **knife installs in 0 of 113 domains, superseding R-115's 3/113 from four banks**.
+
+The file on disk is the **superseded four-bank table**. Its own line 26 reads *"Job 865335 was
+still running when this table was built. Four of six banks are analysed; two are ..."* and line 50
+reads *"21,696 rows, 113 domains x 4 banks"*. Its primary-channel table gives knife **3/113**
+(train 1/67, val 0/23, test 2/23) with max 0.695.
+
+So a reader who follows the citation finds **3/113 where the claim says 0.000**. The claim is
+believed correct and the cited artifact is stale — which is the more dangerous direction of this
+failure, because every number in the claim table is defensible and the audit trail still fails.
+
+**How it was found, and a near-miss worth recording.** A universal-quantifier sweep over my own new
+text (grep for every/all/none/never and ask only "does this name its population?") led to checking
+the exclusion constants, which led to reading the source report. Reading only that report, I
+concluded the opposite: that "knife 0.000" was **false**, that the true figure was 3/113, and that
+I had been propagating an error into commit messages and the collaborator draft. The reasoning was
+concrete — knife's max of 0.695 exceeds the 0.5 cut, which *proves* at least one domain installs —
+and it was wrong, because it was reasoning about the wrong population. This log's own R-116 entry
+records the supersession explicitly. **Two artifacts disagreed and I nearly "corrected" the right
+one to match the stale one.** The rule that saved it is the standing one: when two counts disagree,
+check corpus, then instrument, then population, before believing either.
+
+The mechanism of the supersession is counterintuitive enough to need verifying rather than
+believing — adding banks should not *reduce* an installation count. The hypothesis under test is
+that the statistic is a domain-mean pooled across each concept's TWO banks, so the three domains
+that passed on `button_knife` alone fall under 0.5 once `basket_knife` is averaged in. That is
+being confirmed or refuted against the actual per-bank numbers, not assumed.
+
+**Fix:** regenerate the report on all six complete banks (all six now carry `DONE.json` with status
+ok and `option_mass_gate` PASS — verified under R-117), require it to state its own bank and row
+counts in its header so this cannot recur silently, and re-verify every number the claim table
+asserts against it. Instruction given: **if any number disagrees, stop and report it — do not adjust
+anything to make them agree.**
+
+## DCS-A-046 — the remaining phases, and the two that are DECISIONS rather than states
+*2026-09-07*
+
+Written up in `reports/DCS_TS_REMAINING_PHASES_GATING.md`. Of the mandate's fourteen phases, 1-7
+are complete, 9 is in flight with 7 of 12 blockers closed, and:
+
+**PHASE 8 is DEFERRED, not skipped.** Its analyzer does not exist and its FROZEN config returns 6
+refusals under `--for-extraction`, so it cannot run today regardless of scheduling. PHASE 9's
+item **Q8** asks only that PHASE 8 be "completed or explicitly deferred so the two GPU phases do not
+compete for fair-share" — this is that deferral, for the reason Q8 names. **Q8 satisfied.**
+`A-045`'s constraint carries forward: read strictly above the band floor AND do not select on a
+saturating population, which are ONE requirement.
+
+**PHASE 12 is GATED OFF by its own written precondition.** The mandate does not list it
+unconditionally: *"PHASE 12 — **Only if representation story is solid:** row-randomized behavioural
+controls; mapping_use; ASR."* The representation story is not solid, and this phase's own results
+are what established that: `R-112` narrows CLAIM A from the codeword to the prompt (control 0.9261
+vs codeword 0.9446, **both** p-values failing preregistered Holm); `R-116` shows two of three arms
+never install; CLAIM B is UNSUPPORTED after `R-111`'s question D failed. A precondition written into
+the mandate is not a hurdle to be argued past. It reopens only on a PHASE 9 positive, and even then
+the installation asymmetry must be handled first, because an ASR number computed over arms that
+never installed their concept is uninterpretable in exactly the way section 33 bans.
+
+PHASES 10 and 11 are runnable but unstarted (zero prior mentions in this log); PHASE 11 reuses the
+four existing k-ladder scripts rather than starting from nothing, with the *concept-free* readout
+as the new part — which is precisely what `R-116` showed matters, the display channel taking knife
+from 0.000 to 0.628 purely by naming "knife" in its own question. PHASE 13 is blocked on PHASE 9 by
+construction. PHASE 14 runs continuously; its **literature update is outstanding** and is named here
+so it is not quietly dropped.
+
+## DCS-C-115 — a background waiter I wrote committed 7 files under a 3-file message
+*2026-09-07* — process defect, mine, no foreign work taken
+
+Commit `30c3128b` is titled *"DCS: fold R-116 into the section-34 deliverables"* and contains
+**seven** files, including `DCS_TS_PHASE9_BLOCKERS_CLEARED.md`, `DCS_TS_PHASE9_Q0_SIGNOFF.md` and
+`dcs_ts_export_directions.py`, none of which that message describes.
+
+Cause: a background waiter **I wrote in an earlier turn** — a loop that waits for git to be free and
+then commits — used `git commit -q -m "..."` with **no `--` pathspec**. The standing rule in this
+tree is that only `git commit -- <paths>` is safe, and I applied it to my foreground commands while
+leaving it out of the one that ran unattended. Everything swept was my own, so no other writer's
+work was taken; the message misdescribes the commit permanently.
+
+Second-order effect: that waiter starved for ~40 minutes because its "is git busy" guard matched my
+own foreground `git status`/`git add` calls, then fired at the worst possible moment — concurrently
+with my second commit, which died on `cannot lock ref 'HEAD': is at 30c3128b but expected
+2a478209`, rc=128. **Git refused rather than clobbering, which is the correct outcome**, and the
+three code files simply stayed uncommitted until this entry's commit.
+
+Rule updated: the path-limit applies to commands written for **later, unattended** execution, not
+only to the ones typed now — and never leave such a waiter queued while continuing to use git.

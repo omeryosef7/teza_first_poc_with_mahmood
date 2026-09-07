@@ -935,11 +935,120 @@ def knockout_key_set(name, demo_keys, seq_len, control_seed, protected=None, dra
     raise SystemExit(f"unknown attn_knockout arm '{name}'; known arms: {KNOCKOUT_ARMS}")
 
 
+#: The norm-matched CONTROL family. Every one of these is DERIVED from a base direction by
+#: renormalising a draw to that base direction's norm, so "which base?" is not a detail: it is
+#: the whole of what "norm-matched" means, and for `orthogonal` it is also what the control is
+#: orthogonal TO.
+CONTROL_ARMS = ("random", "orthogonal", "in_subspace", "in_subspace_orth")
+
+#: The historical base. Every committed control artifact in this repo was derived from it, and
+#: the DEFAULT MUST NOT MOVE -- an existing caller passing `random:project_out:8-21:1.0` gets
+#: exactly the direction it always got.
+DEFAULT_CONTROL_BASE = "d_surface"
+
+#: Relative tolerance on ||control|| vs ||base||. Directions are stored float32
+#: (`signals.estimate_directions` casts with .float()), and every control maker renormalises
+#: EXACTLY to `d.float().norm()`, so the realised difference is float32 round-off ~1e-7. The bar
+#: is loosened for half precision only, and never silently: a bf16 payload is announced.
+CONTROL_NORM_RTOL = 1e-4
+CONTROL_NORM_RTOL_HALF = 1e-2
+
+
+def _control_norm_rtol(t) -> float:
+    return (CONTROL_NORM_RTOL_HALF
+            if getattr(t, "dtype", None) in (torch.bfloat16, torch.float16)
+            else CONTROL_NORM_RTOL)
+
+
+def split_control_base(name: str, control_base: Optional[str] = None):
+    """Split an --intervene direction name into (arm_name, control_base_direction_name).
+
+    `Q13`, and it is the EIGHTH time in this project that a checker has disagreed with the thing
+    it checks. `make_intervention`'s `random`/`orthogonal` controls read `payload["d_surface"]`
+    as a HARD-CODED literal. Every log line, every arm label and every recorded seed looks
+    correct while the control is norm-matched to -- and, for `orthogonal`, orthogonal to -- a
+    DIFFERENT direction than the live arm is intervening with. On the PR-053 payload, whose live
+    direction is `v_bomb_specific`, C1 and C4 would have been controls for an axis no arm in
+    PHASE 9 touches, and nothing in the artifact would have said so.
+
+    The fix is to make the mismatch IMPOSSIBLE rather than unlikely:
+      * the base is NAMED in the spec (`random@d_bomb_specific:project_out:7-14:1.0`) or passed
+        as `control_base=`, so it travels with the arm instead of being assumed;
+      * the control is DERIVED from that live direction object, layer by layer;
+      * the norms are ASSERTED equal at hook-install time, before a single forward runs;
+      * the resolved base name and the per-layer norms are ECHOED into the arm manifest, so a
+        reader can see which axis was controlled for without re-deriving it.
+
+    Default behaviour is UNCHANGED: no `@` and no `control_base` -> `d_surface`, exactly as
+    before.
+    """
+    base = None
+    nm = name
+    if "@" in name:
+        nm, _, base = name.partition("@")
+        if not base:
+            raise SystemExit(f"[score] REFUSING: control spec {name!r} names an EMPTY base "
+                             "direction after '@'.")
+        if nm not in CONTROL_ARMS:
+            raise SystemExit(
+                f"[score] REFUSING: '@base' selects the norm-matched control's base direction "
+                f"and is only meaningful for {list(CONTROL_ARMS)}; got {nm!r} in {name!r}.")
+    if control_base:
+        if base is not None and base != control_base:
+            raise SystemExit(
+                f"[score] REFUSING: the spec says the control base is {base!r} and "
+                f"control_base= says {control_base!r}. Two answers to 'which axis is this a "
+                "control for' is exactly the ambiguity Q13 exists to remove.")
+        if nm in CONTROL_ARMS:
+            base = control_base
+    return nm, (base or DEFAULT_CONTROL_BASE)
+
+
+def assert_control_norm_matched(arm: str, base_name: str, base: Dict[int, "torch.Tensor"],
+                                dmap: Dict[int, "torch.Tensor"], band) -> Dict:
+    """Refuse, at HOOK-INSTALL TIME, a control whose norm does not match its base direction's.
+
+    Fails loudly on a ZERO-LAYER bind (a check that binds nothing is not a check) and on a
+    zero-norm base (a control matched to nothing is not a control). Returns the manifest echo.
+    """
+    per = {}
+    for L in sorted(set(band)):
+        b, c = base.get(L), dmap.get(L)
+        if b is None or c is None:
+            continue
+        nb = float(b.float().norm())
+        nc = float(c.float().norm())
+        if not (nb > 0.0):
+            raise SystemExit(
+                f"[score] REFUSING: control arm {arm!r} has a ZERO-NORM base direction "
+                f"{base_name!r} at L{L}. 'Norm-matched to zero' is not a control.")
+        rel = abs(nc - nb) / nb
+        cos = float(torch.dot(b.float().reshape(-1) / nb, c.float().reshape(-1) / (nc or 1.0)))
+        per[f"L{L}"] = {"base_norm": nb, "control_norm": nc, "rel_norm_diff": rel,
+                        "cos_with_base": cos}
+        tol = max(_control_norm_rtol(b), _control_norm_rtol(c))
+        if rel > tol:
+            raise SystemExit(
+                f"[score] REFUSING: control arm {arm!r} at L{L} has norm {nc:.6f} but its "
+                f"declared base direction {base_name!r} has norm {nb:.6f} (relative difference "
+                f"{rel:.3e} > {tol:.0e}). A 'norm-matched' control that is not norm-matched is "
+                "the Q13 defect: it looks correct in every log.")
+    if not per:
+        raise SystemExit(
+            f"[score] REFUSING: control arm {arm!r} bound ZERO layers of band {sorted(set(band))} "
+            f"against base {base_name!r}. A norm check over an empty layer set asserts nothing.")
+    return {"control_arm": arm, "control_base_direction": base_name, "per_layer": per,
+            "n_layers_checked": len(per)}
+
+
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
                       knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None,
-                      surface_span=None):
+                      surface_span=None,
+                      edit_positions=None, disable_hooks: bool = False,
+                      hook_stats=None, control_base: Optional[str] = None,
+                      arm_echo=None):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -949,6 +1058,36 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     and this second call site was missed, which the 4-hourly audit caught. `add` is therefore
     dosed in gap units here too (alpha=1 = one diff-of-means). `project_out` is scale-free —
     it removes the component along a unit direction — so it is left unscaled.
+
+    ADDED 2026-09-07 for DCS-PR-057 (mandate section 10). All FOUR are ADDITIVE and DEFAULT-OFF;
+    an existing caller that passes none of them gets byte-identical behaviour.
+
+      `control_base` / `<arm>@<base>`   Q13. Which direction a norm-matched control is matched
+                                        TO. Default `d_surface`, unchanged. See
+                                        `split_control_base`.
+      `edit_positions`                  Q12(d). SINGLE-SITE scoping. `None` (default) keeps
+                                        `AllPositionProjectOut`, the all-position/all-timestep
+                                        edit. A list of positions routes to
+                                        `pc.SinglePositionProjectOut`, one hook per position, so
+                                        mandate 10.4's scope level S1 (single site) and S2
+                                        (band-wide L7-14) are DISTINCT buildable hypotheses
+                                        rather than one arm wearing two names. Before this,
+                                        `make_intervention` only ever built the all-position
+                                        class, so an S1 arm launched through it would SILENTLY
+                                        have been an all-position edit -- a LARGER intervention
+                                        reported under the smaller arm's name, which is the same
+                                        shape as the `knock_scope` defect above.
+      `disable_hooks`                   Q12(c). Control C5, the DISABLED-HOOK BRIDGE, as a real
+                                        code path. Every hook is still constructed and
+                                        registered on the same layer objects and RUNS IN FULL;
+                                        only its write is discarded. See
+                                        `pc.DisabledHookBridge`.
+      `hook_stats`                      C-13. A list to receive one liveness record per hook.
+                                        Without it the hooks write no statistics at all and a
+                                        DEAD HOOK IS INDISTINGUISHABLE FROM A CLEAN NULL.
+      `arm_echo`                        A dict to receive the arm manifest echo -- what this
+                                        call believed it was doing, including the control's
+                                        resolved base direction and the per-layer norm check.
     """
     if not spec:
         return []
@@ -987,9 +1126,26 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                                          demo_keys=demo_keys, seq_len=seq_len,
                                          knock_stats=knock_stats, protected=protected,
                                          knock_heads=knock_heads, knock_scope=knock_scope,
-                                         draw_log=draw_log, surface_span=surface_span))
+                                         draw_log=draw_log, surface_span=surface_span,
+                                         # NEW PASSENGERS (2026-09-07). Dropping any of these
+                                         # here reproduces the exact failure recorded above, in
+                                         # its most dangerous forms: losing `edit_positions`
+                                         # promotes a single-site leg to an all-position edit,
+                                         # and losing `disable_hooks` turns a leg of the C5
+                                         # BRIDGE back into a LIVE edit inside an arm labelled
+                                         # "disabled". `python3
+                                         # scripts/dcs_ts_pr057_causal.py --self-test` fails if
+                                         # this line drops them.
+                                         edit_positions=edit_positions,
+                                         disable_hooks=disable_hooks,
+                                         hook_stats=hook_stats,
+                                         control_base=control_base,
+                                         arm_echo=arm_echo))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
+    # Q13: resolve WHICH direction a norm-matched control is matched to, before anything is
+    # built. No '@' and no `control_base=` -> `d_surface`, i.e. the historical behaviour.
+    name, _ctl_base_name = split_control_base(name, control_base=control_base)
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
     # Refusal is this sprint's CONCLUSION — the §18=B/C call turns on it — and until now it was only
     # ever MEASURED, never manipulated, which the plan-coverage sweep called the single largest hole
@@ -1158,9 +1314,18 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             diag[f"L{L}"] = how
         print(f"[score] {name}: {json.dumps(diag, sort_keys=True)}")
         gaps = {}
-    elif name in ("random", "orthogonal", "in_subspace", "in_subspace_orth"):
+    elif name in CONTROL_ARMS:
         import signals as _sg
-        base = payload["d_surface"]
+        # Q13. Was `payload["d_surface"]`, HARD-CODED. The base is now the direction this arm
+        # actually controls FOR, resolved by name, and its absence is a refusal that names what
+        # the payload does carry -- never a silent fall-through to a different axis.
+        if _ctl_base_name not in payload:
+            raise SystemExit(
+                f"[score] REFUSING: control arm {name!r} declares base direction "
+                f"{_ctl_base_name!r}, which is NOT in the fitted payload (have "
+                f"{sorted(k for k in payload if k.startswith(('d_', 'v_')))}). A control whose "
+                "base is missing must not fall back to another axis: that is Q13.")
+        base = payload[_ctl_base_name]
         control_diag = {}
         if name in ("in_subspace", "in_subspace_orth"):
             # VARIANCE-MATCHED control (review #5). `random`/`orthogonal` are isotropic draws in
@@ -1205,7 +1370,26 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             maker = (_sg.random_control_direction if name == "random"
                      else _sg.orthogonal_control_direction)
             dmap = {L: maker(v, seed=int(control_seed) + L) for L, v in base.items()}
-        gaps = (payload.get("gap") or {}).get("d_surface", {})
+        # THE GAP MUST COME FROM THE SAME BASE (Q13, second half). An additive control dosed in
+        # `gap[d_surface]` units while norm-matched to a different axis is dose-mismatched as
+        # well as axis-mismatched -- the F-3 retraction's arithmetic, one level down.
+        gaps = (payload.get("gap") or {}).get(_ctl_base_name, {})
+        # ASSERTED AT HOOK-INSTALL TIME, not hoped for. Every control maker renormalises to
+        # `base.norm()`, so this can only fire if the base being checked is not the base being
+        # used -- which is precisely the bug it is here to make impossible.
+        _echo = assert_control_norm_matched(name, _ctl_base_name, base, dmap, band)
+        if not getattr(make_intervention, "_ctl_base_printed", set()).__contains__(
+                (name, _ctl_base_name)):
+            _seen = getattr(make_intervention, "_ctl_base_printed", None)
+            if _seen is None:
+                _seen = set()
+                make_intervention._ctl_base_printed = _seen
+            _seen.add((name, _ctl_base_name))
+            print(f"[score] CONTROL BASE: arm {name!r} is norm-matched to {_ctl_base_name!r} "
+                  f"over {_echo['n_layers_checked']} layer(s); "
+                  f"{json.dumps(_echo['per_layer'], sort_keys=True)}", flush=True)
+        if arm_echo is not None:
+            arm_echo.setdefault("controls", []).append(_echo)
     else:
         dmap = payload[name] if name in payload else None
         if dmap is None:
@@ -1213,13 +1397,51 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                              f"(have {sorted(k for k in payload if k.startswith('d_'))} "
                              "plus the derived controls random/orthogonal/in_subspace/in_subspace_orth)")
         gaps = (payload.get("gap") or {}).get(name, {})
+    # SCOPE (Q12(d), mandate 10.4). `edit_positions is None` -> the ALL-POSITION /
+    # ALL-TIMESTEP edit, which is what every committed artifact used and what S2 (band-wide
+    # L7-14) needs. A list of positions -> `pc.SinglePositionProjectOut`, one hook per position,
+    # which is S1 (single site). Until 2026-09-07 only the first existed, so an S1 arm launched
+    # through this function would have been an all-position edit reported under the single-site
+    # name: the same silent-larger-intervention shape as the dropped `knock_scope`.
+    _pos = None
+    if edit_positions is not None:
+        _pos = [int(x) for x in edit_positions]
+        if not _pos:
+            raise SystemExit(
+                f"[score] REFUSING: intervention {name!r} was given an EMPTY edit_positions "
+                "list. A single-site edit with no site is a no-op, and a no-op scores as a "
+                "perfectly healthy null.")
+        if len(set(_pos)) != len(_pos):
+            raise SystemExit(f"[score] REFUSING: duplicate edit_positions {_pos}; the same "
+                             "position edited twice is a DOUBLE dose under a single-dose label.")
+        if mode != "project_out":
+            raise SystemExit(
+                f"[score] REFUSING: edit_positions is implemented for mode 'project_out' only "
+                f"(got {mode!r}). Refusing rather than silently widening the scope back to all "
+                "positions.")
     ctxs = []
+    _stats_here = []
     for L in band:
         d = dmap.get(L)
         if d is None:
             continue
         if mode == "project_out":
-            ctxs.append(pc.AllPositionProjectOut(lm.model, L, d, alpha=alpha))
+            if _pos is None:
+                st = (pc.hook_stats_dict(mode="project_out_all", layer=L)
+                      if hook_stats is not None else None)
+                ctxs.append(pc.AllPositionProjectOut(lm.model, L, d, alpha=alpha, stats=st))
+                if st is not None:
+                    st["arm"], st["direction"] = name, name
+                    _stats_here.append(st)
+            else:
+                for q in _pos:
+                    st = (pc.hook_stats_dict(mode="project_out_single", layer=L, rel_end=q)
+                          if hook_stats is not None else None)
+                    ctxs.append(pc.SinglePositionProjectOut(lm.model, L, d, alpha=alpha, pos=q,
+                                                            stats=st, rel_end=q))
+                    if st is not None:
+                        st["arm"], st["direction"] = name, name
+                        _stats_here.append(st)
         elif mode == "add":
             g = float(gaps.get(L, 1.0))
             if not gaps:
@@ -1232,6 +1454,33 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
             raise SystemExit(f"unknown intervention mode {mode!r}")
     if not ctxs:
         raise SystemExit(f"intervention {name}/{mode} produced no hooks over layers {band}")
+    # THE DISABLED-HOOK BRIDGE (Q12(c), control C5). NOT a simulation: the same hooks are
+    # registered on the same layer objects and RUN IN FULL; only the write is discarded, and
+    # what the write WOULD have been is recorded, so a bridge whose inner hook was itself dead
+    # is refused rather than passing as a perfect identity.
+    if disable_hooks:
+        bridged, bstats = [], []
+        for c in ctxs:
+            bst = pc.hook_stats_dict(mode="bridge", layer=getattr(c, "layer_idx", -1),
+                                     enabled=False)
+            bst["arm"], bst["direction"] = name, name
+            bridged.append(pc.DisabledHookBridge(c, stats=bst))
+            bstats.append(bst)
+        ctxs = bridged
+        _stats_here = bstats
+        print(f"[score] DISABLED-HOOK BRIDGE: {len(ctxs)} hook(s) for {name}/{mode} are "
+              f"registered and will RUN, and every edit will be DISCARDED. This arm must "
+              f"reproduce the untouched baseline byte-for-byte; if it does not, the bridge is "
+              f"not a bridge.", flush=True)
+    if hook_stats is not None:
+        hook_stats.extend(_stats_here)
+    if arm_echo is not None:
+        arm_echo.setdefault("arms", []).append(
+            {"direction": name, "mode": mode, "layers": sorted(set(band)), "alpha": float(alpha),
+             "scope": ("single_position" if _pos is not None else "all_position"),
+             "edit_positions": _pos, "disable_hooks": bool(disable_hooks),
+             "control_base_direction": (_ctl_base_name if name in CONTROL_ARMS else None),
+             "n_hooks": len(ctxs)})
     return ctxs
 
 
@@ -1354,6 +1603,61 @@ def main() -> int:
                          'next token is the answer word rather than a preamble. Pass "" to reproduce '
                          'the pre-2026-08-18 behaviour, which scored a ~1e-5 tail. Does NOT affect '
                          'generation.')
+    # ---- DCS-PR-057 (mandate section 10). All THREE default to OFF. ----------------------
+    ap.add_argument("--pr057-disable-hooks", action="store_true",
+                    help="CONTROL C5, the DISABLED-HOOK BRIDGE. Build and register every hook "
+                         "--intervene asks for, RUN them in full, and DISCARD every edit. The "
+                         "arm must then reproduce the untouched baseline byte-for-byte. This is "
+                         "NOT 'omit --intervene': that would skip the direction load, the "
+                         "resolution, the dtype/device cast and the projection, so it could not "
+                         "show the machinery around the edit is inert. What the discarded edit "
+                         "WOULD have been is recorded, so a bridge over a dead hook is REFUSED "
+                         "rather than scoring as a perfect identity.")
+    ap.add_argument("--pr057-edit-positions", default="",
+                    help="SCOPE LEVEL S1 (mandate 10.4): comma list of END-RELATIVE token "
+                         "positions (negative, e.g. -10 for codeword_last) to edit, instead of "
+                         "every position. Empty (default) = the all-position/all-timestep edit "
+                         "every committed artifact used, which is scope level S2. Before this "
+                         "flag existed `make_intervention` only ever built AllPositionProjectOut, "
+                         "so a single-site arm would SILENTLY have been an all-position edit -- a "
+                         "larger intervention reported under the smaller arm's name. WRITE IT "
+                         "WITH AN '=': argparse accepts a bare '-10' after a space (it matches "
+                         "the negative-number pattern) but REJECTS '-10,-9' as an unknown "
+                         "option, and BOOMB_ARGS is word-split with quote characters refused, so "
+                         "'--pr057-edit-positions=-10,-9' is the only form that survives both an "
+                         "argsfile and a multi-site list.")
+    ap.add_argument("--pr057-control-base", default="",
+                    help="Q13: the direction a norm-matched control (random / orthogonal / "
+                         "in_subspace / in_subspace_orth) is matched TO, and for `orthogonal` the "
+                         "direction it is orthogonal to. Empty (default) = d_surface, exactly as "
+                         "before. Equivalent to writing '<arm>@<base>' in --intervene. The "
+                         "resolved base and the per-layer norms are asserted at hook-install time "
+                         "and echoed into PR057_ARM.json.")
+    ap.add_argument("--pr057-liveness-out", default="",
+                    help="path to write PR057_LIVENESS.jsonl: one record per row per hook, with "
+                         "fired count, forward calls, cells edited, pre/post norm, projection "
+                         "removed, cosine and the resolved absolute token index. Empty = off. "
+                         "Without it the hooks write NO statistics and a dead hook is "
+                         "indistinguishable from a clean null (C-13).")
+    ap.add_argument("--semantic-extra-words", default="",
+                    help="Q9 (DCS-PR-057). Comma list of EXTRA candidate words to score in the "
+                         "semantic readout, in ADDITION to this bank's own concept and codeword. "
+                         "Default \"\" = OFF and the answer set is exactly what it has always "
+                         "been. WHY IT EXISTS: `score_behavior` asserts one concept/codeword pair "
+                         "per bank and builds the answer set from rows[0], so a bomb bank scores "
+                         "{bomb, button} and there is NO logP(knife) on it. Passing "
+                         "--semantic-extra-words knife,gun on a bomb bank emits logp_knife / "
+                         "logp_gun under the SAME `logp_{group}` rule as every other option, plus "
+                         "word-named ALIASES of the bank's own pair (logp_bomb, logp_button), so "
+                         "a cross-concept contrast is expressible. The one-pair-per-bank "
+                         "assertion is NOT relaxed: this ADDS candidates, it does not admit a "
+                         "second pair, so the guard that stops a two-pair bank being scored "
+                         "against rows[0] stays exactly where it is. Under C-112 the PHASE 9 "
+                         "PRIMARY (mandate 10.2) does not need this -- see the note at the "
+                         "semantic branch -- it is the EXPLORATORY 10.1 arm that does. NOTE: "
+                         "extra options RAISE option_mass, so the --min-option-mass gate is fed "
+                         "the CORE PAIR mass (option_mass_core_pair) whenever this flag is on, "
+                         "and the gate therefore keeps measuring exactly what it measured before.")
     ap.add_argument("--min-option-mass", type=float, default=0.05,
                     help="refuse to finish if the MEDIAN next-token mass on the answer options is "
                          "below this. A forced choice decided inside a 1e-5 tail is not a forced "
@@ -1680,6 +1984,28 @@ def main() -> int:
         raise SystemExit("[score] REFUSING: --knockout-heads given with no --intervene. The flag "
                          "only reaches attn_knockout arms, so it would silently do nothing and the "
                          "run would be filed under a head-restricted name while blocking nothing.")
+    # PR-057 flags that only reach the hook builder. Each would SILENTLY do nothing without
+    # --intervene, and the run would then be filed under a PR-057 arm name having intervened on
+    # nothing at all -- the same shape as the two guards below.
+    for _f, _v in (("--pr057-disable-hooks", bool(args.pr057_disable_hooks)),
+                   ("--pr057-edit-positions", bool(args.pr057_edit_positions.strip())),
+                   ("--pr057-control-base", bool(args.pr057_control_base.strip()))):
+        if _v and not args.intervene:
+            raise SystemExit(
+                f"[score] REFUSING: {_f} given with no --intervene. There are no hooks for it to "
+                "reach, so it would do nothing while the run carried its name.")
+    if args.pr057_disable_hooks and not args.pr057_liveness_out.strip():
+        raise SystemExit(
+            "[score] REFUSING: --pr057-disable-hooks without --pr057-liveness-out. The C5 bridge "
+            "is a control whose ENTIRE content is a liveness claim -- that the hooks ran and "
+            "edited nothing, and that the hook they wrapped WOULD have edited something. Without "
+            "the record it is indistinguishable from a run with no hooks at all, which is the "
+            "one thing it exists to rule out. Pass --pr057-liveness-out auto.")
+    if args.pr057_control_base.strip() and "@" in args.intervene:
+        raise SystemExit(
+            "[score] REFUSING: --pr057-control-base was given AND the --intervene spec names a "
+            "base with '@'. Two answers to 'which axis is this a control for' is exactly the "
+            "ambiguity Q13 exists to remove; give one.")
     if _knock_scope != DEFAULT_KNOCKOUT_SCOPE and not args.intervene:
         raise SystemExit("[score] REFUSING: --knockout-scope given with no --intervene. The flag "
                          "only reaches attn_knockout arms, so it would silently do nothing and the "
@@ -1985,6 +2311,41 @@ def main() -> int:
     spaced = bool(args.answer_prefix) or True
     sem_variants = {"concept": sg.answer_variants(concept, spaced),
                     "codeword": sg.answer_variants(codeword, spaced)}
+    # ---- Q9: OPTIONAL EXTRA CANDIDATE WORDS (default OFF) --------------------------------
+    # Appended AFTER the two historical groups, deliberately: `string_option_readout` reads
+    # `top1_id` from the FIRST variant's row, and every option's log-probability is an absolute
+    # teacher-forced score that does not depend on which other options are present. So with the
+    # flag off the flattened variant list, its batching, its padding width and every emitted
+    # number are byte-identical to before.
+    extra_words = [w.strip() for w in (args.semantic_extra_words or "").split(",") if w.strip()]
+    if extra_words:
+        if len(set(extra_words)) != len(extra_words):
+            raise SystemExit(f"[score] REFUSING: duplicate --semantic-extra-words {extra_words}; "
+                             "one word scored twice would be double-counted in option_mass.")
+        _reserved = {"concept", "codeword", "option_mass", "top1_id"}
+        for w in extra_words:
+            if any(ch.isspace() for ch in w) or not w.isprintable():
+                raise SystemExit(
+                    f"[score] REFUSING: --semantic-extra-words entry {w!r} contains whitespace. "
+                    "The word becomes a readout GROUP NAME and therefore a results.jsonl field "
+                    f"name (logp_{w}); a field name with a space is not addressable by any "
+                    "downstream selector and would bind zero rows silently.")
+            if w in _reserved:
+                raise SystemExit(f"[score] REFUSING: --semantic-extra-words {w!r} collides with a "
+                                 f"reserved readout group name {sorted(_reserved)}.")
+            if w.lower() in (str(concept).lower(), str(codeword).lower()):
+                raise SystemExit(
+                    f"[score] REFUSING: --semantic-extra-words {w!r} is this bank's own "
+                    f"{'concept' if w.lower() == str(concept).lower() else 'codeword'}, which is "
+                    "ALREADY scored. Adding it again would put the same variants in the answer "
+                    "set twice and inflate option_mass. Its word-named alias "
+                    f"logp_{w} is emitted for you.")
+            sem_variants[w] = sg.answer_variants(w, spaced)
+        print(f"[score] Q9 EXTRA SEMANTIC CANDIDATES: {extra_words} (answer set is now "
+              f"{sorted(sem_variants)}); aliases logp_{concept}/logp_{codeword} are emitted so a "
+              f"cross-concept contrast is expressible. option_mass now spans "
+              f"{len(sem_variants)} options; the --min-option-mass gate is fed "
+              f"option_mass_core_pair.", flush=True)
     comp_variants = {w: sg.answer_variants(w, spaced) for w in COMPREHENSION_WORDS}
 
     # READOUT B (`mapping_use_forced_choice`). The two option words are benign PROPERTY words and
@@ -2007,7 +2368,10 @@ def main() -> int:
         print(f"[score] mapping-use options: {_o} -> variants {mu_variants} ids {mu_ids}")
 
     run.note(readout_mode=args.readout_ids, semantic_variants=sem_variants,
-             comprehension_variants=comp_variants)
+             comprehension_variants=comp_variants,
+             semantic_extra_words=extra_words,
+             semantic_answer_set=sorted(sem_variants),
+             option_mass_gate_input=("option_mass_core_pair" if extra_words else "option_mass"))
     print(f"[score] whole-answer variants: {sem_variants} {comp_variants}")
 
     def _semantic(templated):
@@ -2051,6 +2415,27 @@ def main() -> int:
     option_mass = collections.defaultdict(list)
     gens_path = run.p("gens.jsonl")
     gens_fh = open(gens_path, "a")
+    # ---- PR-057 HOOK-LIVENESS SINK (C-13). Off unless --pr057-liveness-out is given. --------
+    # "auto" writes PR057_LIVENESS.jsonl into the run directory, which is where the PR-057
+    # analyzer's `load_arm_run` looks for it.
+    _pr057_live_path = None
+    _pr057_live_fh = None
+    if args.pr057_liveness_out:
+        _pr057_live_path = (run.p("PR057_LIVENESS.jsonl")
+                            if args.pr057_liveness_out.strip() == "auto"
+                            else args.pr057_liveness_out)
+        if spec is None:
+            raise SystemExit("[score] REFUSING: --pr057-liveness-out was given with no "
+                             "--intervene. There are no hooks, so the file would record ZERO "
+                             "rows -- and a liveness artifact that binds nothing is exactly the "
+                             "clean-looking null it exists to prevent.")
+        _pr057_live_fh = open(_pr057_live_path, "a")
+        print(f"[score] PR-057 liveness -> {_pr057_live_path}", flush=True)
+    _pr057_live_n = 0
+    # Bound HERE, not inside the row loop: a run whose rows all failed must still be able to
+    # write (or refuse to write) its arm manifest without a NameError masking the real failure.
+    _pr057_echo = None
+    _pr057_stats = None
     n_gen = 0
     counts = collections.Counter()
 
@@ -2128,12 +2513,44 @@ def main() -> int:
         # rather than only reproducible in principle.
         knock_draw = {} if _wants_knockout else None
         try:
+            # PR-057 passengers. Each is inert unless its flag was given, and each is
+            # resolved PER ROW: `--pr057-edit-positions` is END-RELATIVE and is resolved
+            # against THIS row's realised length, never against a length captured from an
+            # earlier row. That is this repository's twice-recorded absolute-position-index
+            # bug class and it is not being written a third time.
+            _pr057_pos = None
+            if args.pr057_edit_positions.strip():
+                _pr057_pos = []
+                for _t in args.pr057_edit_positions.split(","):
+                    _t = _t.strip()
+                    if not _t:
+                        continue
+                    _r = int(_t)
+                    if _r >= 0:
+                        raise SystemExit(
+                            f"[score] REFUSING: --pr057-edit-positions {_r} is NON-NEGATIVE. "
+                            "Sites are declared END-RELATIVE (e.g. -10) because the absolute "
+                            "index of the same site differs across prompts -- 0/2300 triples "
+                            "agree on it. An absolute index reused across examples is this "
+                            "repo's twice-recorded bug class.")
+                    if -_r > len(ids_r):
+                        raise SystemExit(
+                            f"[score] REFUSING: end-relative position {_r} is outside this "
+                            f"row's {len(ids_r)} tokens.")
+                    _pr057_pos.append(len(ids_r) + _r)
+            _pr057_stats = [] if (args.pr057_liveness_out or args.pr057_disable_hooks) else None
+            _pr057_echo = {} if _pr057_stats is not None else None
             ctxs = make_intervention(dc, pc, lm, spec, payload,
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
                                      knock_stats=knock_stats, protected=prot,
                                      knock_heads=_knock_heads, knock_scope=_knock_scope,
-                                     draw_log=knock_draw, surface_span=surf)
+                                     draw_log=knock_draw, surface_span=surf,
+                                     edit_positions=_pr057_pos,
+                                     disable_hooks=bool(args.pr057_disable_hooks),
+                                     hook_stats=_pr057_stats,
+                                     control_base=(args.pr057_control_base or None),
+                                     arm_echo=_pr057_echo)
             import contextlib
             # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) --------
             # ORDERING MATTERS AND IT BIT ME. An earlier draft captured the donor BEFORE
@@ -2192,12 +2609,27 @@ def main() -> int:
                     # diagnostic, and is meaningless when both terms are in the tail.
                     rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
                     rec["semantic_margin_p_diff"] = rec["p_concept"] - rec["p_codeword"]
+                    # THE CORE-PAIR MASS, ALWAYS. It is what `option_mass` meant before Q9's
+                    # flag existed, and it is what the --min-option-mass gate is fed whenever
+                    # extra candidates widen the answer set -- so the gate's meaning does not
+                    # drift with the size of the answer set.
+                    rec["option_mass_core_pair"] = float(
+                        math.exp(rec["logp_concept"]) + math.exp(rec["logp_codeword"]))
+                    if extra_words:
+                        # WORD-NAMED ALIASES (Q9). Same numbers, named for the words, so a
+                        # cross-concept contrast such as logp_knife - logp_bomb is expressible.
+                        for _grp, _w in (("concept", concept), ("codeword", codeword)):
+                            rec[f"logp_{_w}"] = rec[f"logp_{_grp}"]
+                            rec[f"p_{_w}"] = rec[f"p_{_grp}"]
+                            rec[f"n_variants_{_w}"] = rec.get(f"n_variants_{_grp}")
+                        rec["semantic_answer_set"] = sorted(sem_variants)
                     # LEDGER THE HOOK (C-6). The readout above ran INSIDE the ExitStack, i.e.
                     # under the intervention; recording nothing left the mask unobservable.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
                     run.log_row({**base, **_kf, "readout": "semantic", **rec})
-                    option_mass[f"semantic/{row['query_kind']}"].append(rec["option_mass"])
+                    option_mass[f"semantic/{row['query_kind']}"].append(
+                        rec["option_mass_core_pair"] if extra_words else rec["option_mass"])
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "mapping_use_forced_choice":
@@ -2389,6 +2821,56 @@ def main() -> int:
                                      f"semantic_one_word, semantic_forced_choice, "
                                      f"comprehension_usage, mapping_use_forced_choice, "
                                      f"behavioral")
+            # ---- PR-057 HOOK LIVENESS, ONE RECORD PER ROW PER HOOK (C-13) ------------------
+            #
+            # The hooks have now RUN (the readout above executed inside the ExitStack). This is
+            # where a dead hook stops being indistinguishable from a clean null.
+            #
+            # The refusals below are SystemExit, deliberately. SystemExit is a BaseException, so
+            # the `except Exception` beneath does NOT catch it: a dead hook aborts the run
+            # instead of being charged to the failure ledger and producing 229 more rows under a
+            # label that claims an intervention happened.
+            if _pr057_stats is not None and _pr057_live_fh is not None:
+                if not _pr057_stats:
+                    raise SystemExit(
+                        "[score] REFUSING: the intervention produced ZERO instrumented hooks on "
+                        f"row {row['prompt_id']!r}. A zero-hook bind is not a null result.")
+                for _st in _pr057_stats:
+                    _viol = pc.project_out_liveness_violations(_st)
+                    # OCCURRENCE INDEX, resolved against THIS row (mandate 10.3 persists
+                    # "occurrence"). `_last_r` is last_idx_per_occurrence from
+                    # resolve_occurrences: one absolute index per occurrence of the codeword in
+                    # this prompt. An edited position that IS one of them gets its ordinal;
+                    # one that is not gets None, which is the honest value -- it says "this
+                    # edit was not at a codeword_last site" rather than defaulting to 0 and
+                    # implying it was the first occurrence.
+                    _occ = None
+                    _ri = _st.get("resolved_absolute_index")
+                    if _ri:
+                        _occ = [(_last_r.index(_a) if _a in _last_r else None) for _a in _ri]
+                        _st["occurrence_index"] = (_occ[0] if len(_occ) == 1 else _occ)
+                    _pr057_live_fh.write(json.dumps({
+                        "codeword_last_indices": list(_last_r),
+                        "n_codeword_occurrences": len(_last_r),
+                        "n_subtokens_per_occurrence": list(_nsub_r),
+                        "occurrence_index_per_edit": _occ,
+                        "prompt_id": row.get("prompt_id"), "domain": row.get("domain"),
+                        "split": row.get("split"), "cell": row.get("cell"),
+                        "concept": row.get("concept"), "codeword": row.get("codeword"),
+                        "arm": args.arm, "seq_len": len(ids_r),
+                        "n_target_occurrences": row.get("n_target_occurrences"),
+                        "liveness_violations": _viol, **_st}) + "\n")
+                    _pr057_live_n += 1
+                    if _viol:
+                        _pr057_live_fh.flush()
+                        raise SystemExit(
+                            f"[score] REFUSING: hook liveness UNCLEAN on row "
+                            f"{row['prompt_id']!r} (layer {_st.get('layer')}, mode "
+                            f"{_st.get('mode')!r}): {_viol}. A null measured through a hook that "
+                            "cannot prove it fired and changed the state is VOID, not a "
+                            "negative. Record written to "
+                            f"{_pr057_live_path} before aborting.")
+                _pr057_live_fh.flush()
             ledger.ok()
         except Exception as e:
             ledger.fail(f"{row['query_kind']}:{type(e).__name__}:{str(e)[:80]}", row["prompt_id"])
@@ -2398,6 +2880,29 @@ def main() -> int:
             print(f"[score] {i+1}/{len(rows)} rows  {dict(counts)}")
 
     gens_fh.close()
+    if _pr057_live_fh is not None:
+        _pr057_live_fh.close()
+        # ZERO-ROW REFUSAL. A liveness file with no records proves nothing and would be read by
+        # the analyzer as "no violations".
+        if _pr057_live_n == 0:
+            raise SystemExit(
+                f"[score] REFUSING: {_pr057_live_path} has ZERO liveness records after "
+                f"{len(rows)} rows. Either no row survived to the readout or the hooks were "
+                "never instrumented; either way this run cannot show that anything fired.")
+        print(f"[score] PR-057 liveness: {_pr057_live_n} record(s) written, 0 violations "
+              f"(a violation would have aborted the run)", flush=True)
+        # THE ARM MANIFEST ECHO -- what this run believed it was doing, including the control's
+        # resolved base direction (Q13) and the realised edit scope (Q12).
+        if _pr057_echo:
+            with open(run.p("PR057_ARM.json"), "w") as _fh:
+                json.dump({"arm": args.arm, "intervene": args.intervene,
+                           "fit_dir": args.fit_dir,
+                           "control_base_flag": (args.pr057_control_base or None),
+                           "edit_positions_flag": (args.pr057_edit_positions or None),
+                           "disable_hooks": bool(args.pr057_disable_hooks),
+                           "semantic_extra_words": extra_words,
+                           "n_liveness_records": _pr057_live_n,
+                           **_pr057_echo}, _fh, indent=2)
     # THE TAIL GATE. A forced choice decided inside a 1e-5 tail is not a forced choice, and the
     # sprint published §2.6 verdicts from exactly that for two months without noticing, because the
     # quantity was never recorded. It is recorded now and it is FATAL by default.

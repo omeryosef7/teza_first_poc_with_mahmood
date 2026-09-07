@@ -174,13 +174,42 @@ FORBIDDEN_SUBSTRINGS = (
 # (score_behavior.py:119-123), so an answer set whose groups are named for the concepts emits
 # `logp_bomb` / `logp_knife` / `logp_gun` under exactly the existing rule.
 BLOCKER_Q9 = (
-    "Q9 (BLOCKING, discovered while writing this analyzer): the PHASE 7 readout scores ONE "
-    "concept per bank ({concept, codeword}), so logP(source concept) does not exist on the target "
-    "bank and the preregistered O2 -- semantic_logodds(source vs target concept) -- is NOT "
-    "COMPUTABLE from the instrument as it stands. score_behavior._semantic must be extended to a "
-    "multi-concept answer set emitting logp_bomb / logp_knife / logp_gun / logp_codeword "
-    "(the existing `logp_{group}` rule, next_token_readout:119), and the one-pair-per-bank "
-    "assertion at score_behavior.py:1960 relaxed for that answer set ONLY."
+    "Q9: the PHASE 7 readout scores ONE concept per bank ({concept, codeword}), so logP(source "
+    "concept) does not exist on the target bank and a CROSS-CONCEPT O2 -- semantic_logodds"
+    "(source vs target concept) -- is not computable from the DEFAULT instrument. RESOLVED "
+    "2026-09-07 by `score_behavior --semantic-extra-words knife,gun`, which appends extra "
+    "candidate words to the semantic answer set under the existing `logp_{group}` rule "
+    "(next_token_readout:119) and emits word-named ALIASES of the bank's own pair, so a bomb "
+    "bank yields logp_bomb / logp_knife / logp_gun / logp_codeword. The flag is DEFAULT-OFF and "
+    "the one-pair-per-bank assertion is NOT relaxed: extra CANDIDATES are added, a second PAIR "
+    "is not admitted, so the guard that stops a two-pair bank being scored against rows[0] "
+    "stays exactly where it is. Under C-112 the PRIMARY arm no longer needs this -- see "
+    "`o2_projection_out_from_rows` -- and it is the EXPLORATORY 10.1 arm that does."
+)
+
+# ------------------------------------------------------------------------------------------
+# C-112 (2026-09-07): THE PRIMARY ARM CHANGED, AND WITH IT WHAT O2 HAS TO BE.
+#
+# R-116 (2026-09-07, ALL SIX BANKS -- supersedes R-115's four-bank figures) measured INSTALLATION
+# per concept on the primary concept-free channel: bomb installs in 0.619 of 113 domains (0.522 of
+# the 23 TEST domains), knife in **0.000**, gun in 0.009 (0.000 on TEST). R-115 had reported knife
+# at 3/113 from four banks; on six it is ZERO. Mandate 10.1's upper-bound patch takes a
+# DONOR C_knife prompt and writes it into a C_bomb target. For ~97% of domains that donor is a
+# prompt in which the knife demonstrations INSTALLED NOTHING, so "the reading did not shift to
+# knife" is a statement about the donor, not about the target's concept axis. That arm is
+# DEMOTED TO EXPLORATORY and its null is CANNOT ANSWER BY CONSTRUCTION.
+#
+# Mandate 10.2 -- project v_bomb_specific out of a BOMB prompt where the concept demonstrably
+# DOES install -- becomes the PRIMARY causal test. It needs no donor and no second installed
+# concept, and its outcome is "does the BOMB reading fall", which IS computable today.
+# ------------------------------------------------------------------------------------------
+C112_PRIMARY_IS_10_2 = (
+    "C-112: mandate 10.2 (surgical subspace projection-out on a BOMB prompt) is the PRIMARY "
+    "causal test. Mandate 10.1 (the cross-concept upper-bound patch) is EXPLORATORY: R-115 "
+    "measured (R-116, six banks) knife installing in ZERO of 113 domains and gun in 0.009, so its "
+    "donor is a prompt in which the source concept NEVER installed. The arm is not merely "
+    "under-powered: on this bank its population is EMPTY, so a null from it is CANNOT ANSWER BY "
+    "CONSTRUCTION rather than evidence, and it must not be submitted at all."
 )
 O2_REQUIRED_FIELDS = ("logp_bomb", "logp_knife", "logp_gun", "logp_codeword")
 #: Computable TODAY, reported as a companion, and explicitly NOT able to satisfy success
@@ -461,6 +490,29 @@ def gap_unit_alpha(alpha: float, gap: Optional[float]) -> float:
     return float(alpha) * g
 
 
+def _resolve_hook_target(model, layer_idx: int):
+    """The module to hook: block `layer_idx` of a real model, or a bare test module.
+
+    ORDER MATTERS AND IT IS NOT COSMETIC. An HF model IS an `nn.Module` and therefore HAS
+    `register_forward_hook`, so a `hasattr` check FIRST would hook the WHOLE MODEL instead of
+    block L -- editing (or reading) the final hidden state while every log said "layer 9". That
+    is the same silent wrong-scope shape as Q12's all-position/single-position defect, one level
+    down, and it was present in this file's first draft. `ds_common._get_layers` is tried FIRST
+    and only an object it cannot resolve is treated as being itself the layer -- which is what
+    lets these hooks be unit-tested on CPU against the real hook functions.
+    """
+    try:
+        import ds_common as dc
+        layers = dc._get_layers(model)
+    except Exception:
+        layers = None
+    if layers is not None:
+        return layers[layer_idx]
+    if hasattr(model, "register_forward_hook"):
+        return model
+    raise Refusal("cannot resolve a decoder layer from %s" % type(model).__name__)
+
+
 class InstrumentedHook:
     """Context manager registering an instrumented hook on one decoder layer.
 
@@ -470,11 +522,7 @@ class InstrumentedHook:
     """
 
     def __init__(self, model, layer_idx: int, hook_fn, stats: LivenessStats):
-        if hasattr(model, "register_forward_hook"):
-            self.layer = model
-        else:
-            import ds_common as dc
-            self.layer = dc._get_layers(model)[layer_idx]
+        self.layer = _resolve_hook_target(model, layer_idx)
         self.stats = stats
         self.stats.layer = int(layer_idx)
         self._fn = hook_fn
@@ -489,6 +537,245 @@ class InstrumentedHook:
             self._h.remove()
             self._h = None
         return False
+
+
+# ============================================================================================
+# 5b. THE FROZEN PR-048 PROBE, AND O1 CAPTURED INSIDE THE INTERVENTION RUN (Q10 / Q11)
+# ============================================================================================
+#: Where `dcs_ts_pr048_analysis.py` writes the frozen estimator (added 2026-09-07 for Q10).
+FROZEN_PROBE_KEY = "FROZEN_PROBE"
+
+BLOCKER_Q11 = (
+    "Q11: `extract_boombness.py` has no --intervene, so O1 CANNOT be captured by a separate "
+    "extraction: an un-intervened extraction measures the un-intervened state, which is O1's "
+    "baseline and not its outcome. O1 is therefore captured INSIDE the intervention run by "
+    "`ProbeReadCapture`, which registers a READ hook (it returns `output` unchanged) at the "
+    "primary read layer and at every `propagation_read_layers()` layer, applies the FROZEN "
+    "PR-048 probe on the fly, and writes PR057_PROBE.jsonl."
+)
+
+
+class FrozenProbe:
+    """The PR-048 estimator, loaded and NEVER refitted.
+
+    `Q10` used to be blocking because `dcs_ts_pr048_analysis.py` persisted `SELECTION_TRACE`, the
+    selected (layer, C) and the per-domain accuracies but NOT the coefficients. With no frozen
+    estimator, the only way to compute O1 under intervention would have been to REFIT -- which
+    lets the probe chase the edit and makes O1 unfalsifiable by construction. That is why
+    `refit` is not a parameter here: there is no code path in this class that fits anything.
+
+    Scoring is reconstructed from the exported numbers alone (mean/scale/coef/intercept), which
+    is the same arithmetic `dcs_ts_pr048_analysis.py` self-verifies against its own sklearn
+    objects on every test row before it will write the artifact. Two implementations of one rule
+    that are checked against each other beat one implementation nobody checked.
+    """
+
+    def __init__(self, blob: Dict[str, Any], source: str = "<memory>"):
+        import numpy as np
+        need = ("selected_layer", "classes", "estimator", "scaler", "feature_dim", "sha256")
+        miss = [k for k in need if k not in blob]
+        if miss:
+            raise Refusal("the frozen probe is missing %s. %s" % (miss, BLOCKER_Q9_PROBE))
+        self.raw = blob
+        self.source = source
+        self.layer = int(blob["selected_layer"])
+        self.C = float(blob.get("selected_C", float("nan")))
+        self.classes = [str(c) for c in blob["classes"]]
+        self.sha256 = str(blob["sha256"])
+        self.mean = np.asarray(blob["scaler"]["mean"], dtype=float)
+        self.scale = np.asarray(blob["scaler"]["scale"], dtype=float)
+        self.coef = np.asarray(blob["estimator"]["coef"], dtype=float)
+        self.intercept = np.asarray(blob["estimator"]["intercept"], dtype=float)
+        self.feature_dim = int(blob["feature_dim"])
+        self.sk_classes = [int(c) for c in blob.get("sklearn_classes_", range(len(self.classes)))]
+        if self.mean.shape[0] != self.feature_dim or self.scale.shape[0] != self.feature_dim:
+            raise Refusal("frozen probe scaler width %d != feature_dim %d"
+                          % (self.mean.shape[0], self.feature_dim))
+        if self.coef.shape[1] != self.feature_dim:
+            raise Refusal("frozen probe coefficient width %d != feature_dim %d"
+                          % (self.coef.shape[1], self.feature_dim))
+        if float(np.abs(self.coef).max()) == 0.0:
+            raise Refusal("frozen probe coefficients are ALL ZERO. A probe that reads nothing "
+                          "returns the same posterior under every intervention and would score "
+                          "as a clean O1 null.")
+        if float(np.min(self.scale)) <= 0.0:
+            raise Refusal("frozen probe scaler has a non-positive scale entry; refusing.")
+
+    def posterior(self, x) -> Dict[str, float]:
+        """Posterior probability per concept for ONE hidden-state vector."""
+        import numpy as np
+        v = np.asarray(x, dtype=float).reshape(-1)
+        if v.shape[0] != self.feature_dim:
+            raise Refusal("the read site produced a %d-vector but the frozen probe was fitted on "
+                          "%d features. This is a READ-SITE MISMATCH, not a small difference: "
+                          "refusing rather than truncating." % (v.shape[0], self.feature_dim))
+        z = (v - self.mean) / self.scale
+        logits = self.coef @ z + self.intercept
+        if logits.shape[0] == 1:                       # sklearn's binary parameterisation
+            p1 = 1.0 / (1.0 + math.exp(-float(logits[0])))
+            probs = [1.0 - p1, p1]
+            order = self.sk_classes if len(self.sk_classes) == 2 else [0, 1]
+        else:
+            m = float(np.max(logits))
+            e = np.exp(logits - m)
+            probs = list(e / e.sum())
+            order = self.sk_classes
+        out = {}
+        for i, ci in enumerate(order):
+            out[self.classes[int(ci)]] = float(probs[i])
+        return out
+
+    def margin(self, x, source: str, target: str) -> float:
+        """O1: posterior mass on the SOURCE concept minus mass on the TARGET concept.
+
+        Exactly `outcome_variables.O1_probe.definition`. A concept the probe was never fitted on
+        is a refusal, not a zero -- silently scoring an absent class as 0.0 would make every
+        intervention look like it moved the margin toward the other class.
+        """
+        post = self.posterior(x)
+        for c in (source, target):
+            if c not in post:
+                raise Refusal("the frozen probe has no class %r (it knows %s); O1 cannot be "
+                              "formed and must not be defaulted to zero." % (c, self.classes))
+        return float(post[source] - post[target])
+
+
+BLOCKER_Q9_PROBE = (
+    "Run `scripts/dcs_ts_pr048_analysis.py` at or after commit 2026-09-07: it writes the "
+    "FROZEN_PROBE block (coefficients, scaler statistics, selected layer and C, a content "
+    "sha256, and a self-verification that re-scoring the test rows from the exported numbers "
+    "reproduces the estimator on every row). An earlier result JSON has no probe to load."
+)
+
+
+def load_frozen_probe(path: str, expect_sha: Optional[str] = None) -> FrozenProbe:
+    """Load the frozen PR-048 probe from a PR-048 result JSON, refusing on every absence.
+
+    `expect_sha` PINS the probe. PHASE 9's O1 is only interpretable against the estimator that
+    produced R-113; a probe that has been re-selected or re-fitted between the phases is a
+    different instrument wearing the same name, and this is where that is caught.
+    """
+    if not os.path.exists(path):
+        raise Refusal("no PR-048 result at %s; O1 has no frozen probe. %s"
+                      % (path, BLOCKER_Q9_PROBE))
+    blob = json.load(open(path))
+    if FROZEN_PROBE_KEY not in blob:
+        raise Refusal("%s carries no %r block, so the fitted coefficients were never persisted "
+                      "and O1 has nothing to score against. %s"
+                      % (path, FROZEN_PROBE_KEY, BLOCKER_Q9_PROBE))
+    fp = FrozenProbe(blob[FROZEN_PROBE_KEY], source=path)
+    sv = blob[FROZEN_PROBE_KEY].get("self_verification") or {}
+    if not sv.get("reproduced_from_exported_numbers"):
+        raise Refusal("%s exports a probe that was never self-verified: the producer did not "
+                      "prove that re-scoring from the exported coefficients reproduces its own "
+                      "estimator. An unverified export is a check that reads the producer's own "
+                      "null field." % path)
+    if int(sv.get("n_disagreements", -1)) != 0:
+        raise Refusal("%s exports a probe whose self-verification disagreed on %s rows."
+                      % (path, sv.get("n_disagreements")))
+    if expect_sha and fp.sha256 != expect_sha:
+        raise Refusal("frozen probe sha %s != pinned %s. The probe has changed since the run "
+                      "this phase's O1 is defined against; refusing." % (fp.sha256, expect_sha))
+    return fp
+
+
+class ProbeReadCapture:
+    """Q11: capture O1 INSIDE the intervention run, with a READ-ONLY hook.
+
+    `extract_boombness.py` has no `--intervene`, so there is no way to get an intervened
+    representation out of a separate extraction job -- and capturing O1 in an UN-INTERVENED job
+    would measure the baseline and report it as the outcome. The fix is not a new extractor: it
+    is to read the state where it already exists, during the intervened forward.
+
+    This hook RETURNS `output` UNCHANGED. That is load-bearing and it is unit-tested: a read
+    hook that accidentally edits would contaminate the very arm it is measuring, and the edit
+    would be invisible because the arm is *supposed* to be edited.
+
+    It records, per row per read layer: the posterior over concepts, the O1 margin, the
+    resolved absolute index, the sequence length, and the number of forward calls seen -- so a
+    capture that never ran is `n_forward_calls == 0` rather than an absent file.
+    """
+
+    def __init__(self, model, layer_idx: int, probe: FrozenProbe, rel_end: int,
+                 source: str, target: str, records: List[Dict[str, Any]],
+                 row_meta: Optional[Dict[str, Any]] = None):
+        if rel_end >= 0:
+            raise Refusal("ProbeReadCapture takes an END-RELATIVE index (negative); got %d. An "
+                          "absolute index reused across examples is this repository's "
+                          "twice-recorded bug class." % rel_end)
+        self.layer = _resolve_hook_target(model, layer_idx)
+        self.layer_idx = int(layer_idx)
+        self.probe = probe
+        self.rel_end = int(rel_end)
+        self.source, self.target = source, target
+        self.records = records
+        self.row_meta = dict(row_meta or {})
+        self.n_forward_calls = 0
+        self.n_captured = 0
+        self._h = None
+
+    def _hook(self, module, inputs, output):
+        h = output[0] if isinstance(output, tuple) else output
+        self.n_forward_calls += 1
+        if int(h.shape[1]) <= 1:            # decode step: the prompt site is not in this tensor
+            return output
+        seq_len = int(h.shape[1])
+        idx = seq_len + self.rel_end
+        if idx < 0:
+            return output
+        v = h[0, idx, :].detach().float().cpu().numpy()
+        post = self.probe.posterior(v)
+        self.records.append({
+            **self.row_meta,
+            "read_layer": self.layer_idx, "rel_end": self.rel_end,
+            "seq_len": seq_len, "resolved_absolute_index": idx,
+            "probe_sha256": self.probe.sha256, "probe_fit_layer": self.probe.layer,
+            "posterior": post,
+            "o1_margin_source_minus_target": float(post[self.source] - post[self.target]),
+            "o1_source": self.source, "o1_target": self.target,
+            "hidden_norm": float((v ** 2).sum() ** 0.5),
+            "n_forward_calls": self.n_forward_calls})
+        self.n_captured += 1
+        return output                        # READ-ONLY. Never returns an edited tensor.
+
+    def __enter__(self):
+        self._h = self.layer.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._h is not None:
+            self._h.remove()
+            self._h = None
+        return False
+
+    def liveness_violations(self) -> List[str]:
+        bad = []
+        if self.n_forward_calls == 0:
+            bad.append("probe_read_hook_never_ran")
+        if self.n_captured == 0:
+            bad.append("probe_read_captured_zero_rows")
+        return bad
+
+
+def o1_from_probe_rows(rows: Sequence[Dict[str, Any]], read_layer: int) -> Dict[str, Any]:
+    """O1 per row at ONE read layer, refusing a zero bind.
+
+    Reading O1 at the layer that was edited is legitimate FOR O1 -- it is the same tensor, by
+    design -- but it is not evidence of propagation, which is what `assert_read_sees_edit`
+    enforces separately.
+    """
+    sel = [r for r in rows if int(r.get("read_layer", -1)) == int(read_layer)]
+    if not sel:
+        raise ZeroBinding("O1 at read layer %d bound ZERO probe records (of %d). A check that "
+                          "binds nothing is not a check." % (read_layer, len(rows)))
+    vals = [float(r["o1_margin_source_minus_target"]) for r in sel]
+    shas = sorted({str(r.get("probe_sha256")) for r in sel})
+    if len(shas) != 1:
+        raise Refusal("the probe records at layer %d were produced by %d DIFFERENT probes %s. "
+                      "O1 is defined against ONE frozen estimator." % (read_layer, len(shas), shas))
+    return {"read_layer": int(read_layer), "n": len(vals), "values": vals,
+            "probe_sha256": shas[0],
+            "definition": "frozen PR-048 posterior(source) - posterior(target)"}
 
 
 def liveness_gate(stats_rows: Sequence[Dict[str, Any]], arm_id: str,
@@ -1178,6 +1465,95 @@ def option_mass_gate(summary: Dict[str, Any], channel: str) -> Dict[str, Any]:
             "ok": bool(om.get("reportable")) and summary.get("option_mass_gate") == "PASS"}
 
 
+#: The fields the 10.2 PRIMARY outcome is built from. All THREE already exist on every PHASE 7
+#: `results.jsonl` row (`score_behavior.py`, the semantic branch), plus `option_mass_core_pair`
+#: which was added alongside the Q9 flag and is identical to `option_mass` when the flag is off.
+O2_10_2_FIELDS = ("logp_concept", "logp_codeword", "semantic_logodds")
+
+#: Gates that MUST accompany the 10.2 primary. `semantic_logodds` alone cannot separate "the
+#: bomb reading fell" from "the readout was destroyed" -- these are what separate them, and the
+#: outcome is not reportable without them. Named here so the requirement is a data structure and
+#: not a sentence in a report nobody re-reads.
+O2_10_2_REQUIRED_COMPANION_GATES = (
+    "option_mass_gate: the semantic_one_word channel must still be ENGAGED after the edit. A "
+    "destroyed readout collapses option_mass; a moved readout does not.",
+    "C1 norm-matched random control (5 distinct draws): a fall that the random control "
+    "reproduces is 'this much perturbation', not 'this axis'.",
+    "C4 same-norm edit orthogonal to the concept subspace, dosed in gap units: same separation, "
+    "from the other side.",
+    "C5 disabled-hook bridge: reproduces the untouched baseline byte-for-byte.",
+    "hook liveness clean (liveness_gate): a fall measured through an unverified hook is VOID.",
+)
+
+
+def o2_projection_out_from_rows(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """O2 for the C-112 PRIMARY (mandate 10.2): does the TARGET CONCEPT reading fall?
+
+    THE Q9(a) ANSWER, WITH THE FIELD NAMES.
+
+    Mandate 10.2 projects `v_bomb_specific` out of a BOMB prompt. The intervention and the
+    prompt carry the SAME concept, so the outcome needs no source-concept log-odds and no second
+    installed concept: the question is whether the model's semantic reading of the codeword
+    moves AWAY from that concept. That contrast is
+    `semantic_logodds = logp_concept - logp_codeword`, computed on every PHASE 7 row today by
+    `score_behavior.py`'s semantic branch, where on a bomb bank `concept == "bomb"` and
+    `codeword == "button"`. Concretely, per row:
+
+        logp_concept            log P(the concept word | prompt), whole-answer, variant-summed
+        logp_codeword           log P(the literal codeword | prompt), same rule
+        semantic_logodds        logp_concept - logp_codeword          <-- THE OUTCOME
+        option_mass_core_pair   P(concept) + P(codeword)              <-- the engagement gate
+        top1_id / gens.jsonl    the free one-word answer               <-- O3, corroborant only
+
+    and the statistic is the domain-mean change in `semantic_logodds` between the intervened arm
+    and the untouched PHASE 7 baseline, on TEST domains, exactly as `primary.statistic` defines
+    it for the cross-concept case.
+
+    WHY IT IS SUFFICIENT HERE AND WAS NOT THERE. The objection to `semantic_logodds` recorded
+    against the 10.1 arm is that a fall cannot be told from a destroyed readout -- for a CLAIM
+    THAT THE ANSWER MOVED TOWARD KNIFE, which needs logP(knife) and therefore needed Q9's flag.
+    The 10.2 primary makes no such claim. Its claim is directional and one-sided: removing the
+    bomb component reduces the bomb reading. "Destroyed" is not an alternative interpretation of
+    that claim, it is a RIVAL CAUSE for the same observation, and rival causes are what the
+    preregistered controls are for -- which is why they are returned here as
+    `required_companion_gates` rather than left to a reader's memory. Without them this number
+    is not reportable, and `reportable_alone` says so.
+
+    Refuses a zero bind and a missing field; never substitutes one field for another.
+    """
+    if not rows:
+        raise ZeroBinding("O2 (10.2 primary) over ZERO rows")
+    have = set(rows[0].keys())
+    missing = [f for f in O2_10_2_FIELDS if f not in have]
+    if missing:
+        raise Refusal(
+            "the 10.2 PRIMARY outcome needs %s and the rows carry none of %s. These are PHASE 7 "
+            "fields that every semantic row has emitted since 2026-08-18; their absence means "
+            "this is not a semantic_one_word readout, not that the outcome should be "
+            "substituted." % (list(O2_10_2_FIELDS), missing))
+    vals = [float(r["semantic_logodds"]) for r in rows]
+    mass_field = ("option_mass_core_pair" if "option_mass_core_pair" in have
+                  else ("option_mass" if "option_mass" in have else None))
+    if mass_field is None:
+        raise Refusal("no option_mass on these rows, so channel engagement is UNMEASURED. A "
+                      "forced choice decided inside a 1e-5 tail is not a forced choice.")
+    return {
+        "computable": True, "values": vals, "n": len(vals),
+        "mandate": "10.2", "primary_under": C112_PRIMARY_IS_10_2,
+        "definition": "semantic_logodds = logp_concept - logp_codeword (target concept vs the "
+                      "literal codeword), domain-mean delta vs the untouched baseline",
+        "fields_used": list(O2_10_2_FIELDS),
+        "engagement_field": mass_field,
+        "engagement_values": [float(r[mass_field]) for r in rows],
+        "direction_expected": "FALLS under projection-out of v_bomb_specific",
+        "reportable_alone": False,
+        "required_companion_gates": list(O2_10_2_REQUIRED_COMPANION_GATES),
+        "_what_it_cannot_say": "It cannot say the answer moved TOWARD another concept. That is "
+                               "the exploratory 10.1 claim and it needs logp_knife, which "
+                               "requires --semantic-extra-words (Q9).",
+    }
+
+
 def o2_from_rows(rows: Sequence[Dict[str, Any]], source: str, target: str) -> Dict[str, Any]:
     """O2 = semantic log-odds of the SOURCE concept against the TARGET concept, per row.
 
@@ -1594,6 +1970,262 @@ def selftest() -> int:
     except PreregError as e:
         ck.add("prereg_loads", "the frozen preregistration loads", False, 0, str(e)[:120])
 
+    # ================================================================================
+    # BLOCKERS Q9 / Q10 / Q11 / Q12 / Q13 -- cleared 2026-09-07. Every check below drives
+    # the REAL shared-file code, never a re-implementation of it.
+    # ================================================================================
+    import pair_common as _pc
+    import score_behavior as _sb
+
+    # ---- Q9: the C-112 primary outcome, on a PHASE 7-shaped row --------------------------
+    _row7 = {"logp_concept": -1.0, "logp_codeword": -3.0, "semantic_logodds": 2.0,
+             "option_mass": 0.09, "option_mass_core_pair": 0.09, "domain": "d1"}
+    _o2p = o2_projection_out_from_rows([_row7])
+    ck.add("q9_10_2_primary_computable",
+           "the C-112 PRIMARY outcome (mandate 10.2) is computable from the PHASE 7 fields that "
+           "exist TODAY -- logp_concept / logp_codeword / semantic_logodds -- with no donor and "
+           "no second installed concept",
+           _o2p["computable"] and _o2p["values"] == [2.0]
+           and _o2p["fields_used"] == list(O2_10_2_FIELDS), 1,
+           _o2p["definition"][:70])
+    ck.add("q9_10_2_not_reportable_alone",
+           "and it is NOT reportable alone: the companion gates that separate 'the reading fell' "
+           "from 'the readout was destroyed' are returned as data, not left in prose",
+           (_o2p["reportable_alone"] is False)
+           and len(_o2p["required_companion_gates"]) >= 5, 1)
+    _caught = False
+    try:
+        o2_projection_out_from_rows([{"option_mass": 0.1}])
+    except Refusal:
+        _caught = True
+    ck.add("q9_10_2_missing_field_refused",
+           "a row without semantic_logodds is REFUSED, never substituted", _caught, 1)
+
+    # ---- Q10: the frozen probe, exported, loaded, and never refitted ---------------------
+    import numpy as _np
+    _hid = 6
+    _blob = {"selected_layer": 9, "selected_C": 0.01,
+             "classes": ["bomb", "knife", "gun"], "sklearn_classes_": [0, 1, 2],
+             "feature_dim": _hid,
+             "estimator": {"coef": [[1.0] + [0.0] * (_hid - 1),
+                                    [0.0, 1.0] + [0.0] * (_hid - 2),
+                                    [0.0, 0.0, 1.0] + [0.0] * (_hid - 3)],
+                           "intercept": [0.0, 0.0, 0.0]},
+             "scaler": {"mean": [0.0] * _hid, "scale": [1.0] * _hid},
+             "sha256": "deadbeef",
+             "self_verification": {"reproduced_from_exported_numbers": True,
+                                   "n_disagreements": 0}}
+    _fp = FrozenProbe(_blob)
+    _post = _fp.posterior(_np.array([3.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
+    ck.add("q10_frozen_probe_scores",
+           "the frozen probe reconstructs a posterior from the EXPORTED numbers alone (coef, "
+           "intercept, scaler) -- the same rule dcs_ts_pr048_analysis self-verifies against its "
+           "own sklearn objects before it will write the artifact",
+           abs(sum(_post.values()) - 1.0) < 1e-9 and _post["bomb"] > _post["knife"], 3,
+           "P(bomb)=%.4f" % _post["bomb"])
+    ck.add("q10_o1_margin",
+           "O1 is posterior(source) - posterior(target), exactly outcome_variables.O1_probe",
+           abs(_fp.margin(_np.array([3.0, 0, 0, 0, 0, 0]), "knife", "bomb")
+               - (_post["knife"] - _post["bomb"])) < 1e-12, 1)
+    _caught = False
+    try:
+        _fp.margin(_np.zeros(_hid), "hammer", "bomb")
+    except Refusal:
+        _caught = True
+    ck.add("q10_absent_class_refused",
+           "a concept the probe was never fitted on is a REFUSAL, not a silent 0.0 (which would "
+           "make every intervention look like it moved the margin)", _caught, 1)
+    _caught = False
+    try:
+        _z = json.loads(json.dumps(_blob))
+        _z["estimator"]["coef"] = [[0.0] * _hid] * 3
+        FrozenProbe(_z)
+    except Refusal:
+        _caught = True
+    ck.add("q10_zero_coefficient_probe_refused",
+           "an ALL-ZERO probe is refused: it returns the same posterior under every intervention "
+           "and would score as a clean O1 null", _caught, 1)
+    _caught = False
+    try:
+        _z = json.loads(json.dumps(_blob))
+        _z.pop("self_verification")
+        import tempfile as _tf
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False) as _f:
+            json.dump({FROZEN_PROBE_KEY: _z}, _f)
+            _pth = _f.name
+        load_frozen_probe(_pth)
+    except Refusal:
+        _caught = True
+    ck.add("q10_unverified_export_refused",
+           "an export whose producer never proved it reproduces its own estimator is refused -- "
+           "an unverified export is a check that reads the producer's own null field", _caught, 1)
+    _caught = False
+    try:
+        import tempfile as _tf
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False) as _f:
+            json.dump({"selected_layer": 9}, _f)
+            _pth2 = _f.name
+        load_frozen_probe(_pth2)
+    except Refusal:
+        _caught = True
+    ck.add("q10_missing_probe_block_refused",
+           "a PR-048 result JSON with no FROZEN_PROBE block is refused and NAMES the fix; O1 has "
+           "nothing to score against without it", _caught, 1)
+
+    # ---- Q11: O1 captured INSIDE the intervention run, read-only -------------------------
+    _layer = _toy_layer(_hid)
+    _recs: List[Dict[str, Any]] = []
+    _x = torch.randn(1, 11, _hid)
+    with ProbeReadCapture(_layer, 9, _fp, -3, "knife", "bomb", _recs,
+                          row_meta={"prompt_id": "p1"}) as _prc:
+        _y = _layer(_x)[0]
+    ck.add("q11_probe_read_is_read_only",
+           "the O1 capture hook returns the state UNCHANGED -- a read hook that edited would "
+           "contaminate the very arm it measures, invisibly, because that arm is supposed to be "
+           "edited",
+           float((_y - _x).abs().max()) == 0.0, len(_recs))
+    ck.add("q11_probe_read_captures_o1",
+           "and it captures O1 at the END-RELATIVE site, recording seq_len + rel_end",
+           len(_recs) == 1 and _recs[0]["resolved_absolute_index"] == 11 - 3
+           and _recs[0]["seq_len"] == 11 and not _prc.liveness_violations(), 1,
+           "o1=%.4f" % _recs[0]["o1_margin_source_minus_target"])
+    _caught = False
+    try:
+        ProbeReadCapture(_layer, 9, _fp, 8, "knife", "bomb", [])
+    except Refusal:
+        _caught = True
+    ck.add("q11_absolute_read_index_refused",
+           "a NON-NEGATIVE (absolute) read index is refused -- the twice-recorded bug class",
+           _caught, 1)
+    _dead = ProbeReadCapture(_layer, 9, _fp, -3, "knife", "bomb", [])
+    ck.add("q11_capture_that_never_ran_is_detected",
+           "a capture that never ran reports n_forward_calls == 0 rather than an absent file",
+           _dead.liveness_violations() == ["probe_read_hook_never_ran",
+                                           "probe_read_captured_zero_rows"], 1)
+    _caught = False
+    try:
+        o1_from_probe_rows([], 15)
+    except ZeroBinding:
+        _caught = True
+    ck.add("q11_o1_zero_bind_refused", "O1 over ZERO probe records is a refusal", _caught, 1)
+
+    # ---- Q12: single-position scoping and the DISABLED-HOOK BRIDGE -----------------------
+    # Driven against the REAL pair_common classes, on a toy layer, with the REAL stats dicts.
+    _d = torch.randn(_hid)
+    _xa = torch.randn(1, 9, _hid)
+    _sa = _pc.hook_stats_dict(mode="project_out_all", layer=3)
+    _la = _toy_layer(_hid)
+    with _pc.AllPositionProjectOut(_la, 3, _d, alpha=1.0, stats=_sa):
+        _ya = _la(_xa)[0]
+    _n_moved_all = int(((_ya - _xa).abs().amax(dim=-1) > 1e-6).sum())
+
+    _ss = _pc.hook_stats_dict(mode="project_out_single", layer=3, rel_end=-3)
+    _ls = _toy_layer(_hid)
+    with _pc.SinglePositionProjectOut(_ls, 3, _d, alpha=1.0, pos=6, stats=_ss, rel_end=-3):
+        _ys = _ls(_xa)[0]
+    _n_moved_one = int(((_ys - _xa).abs().amax(dim=-1) > 1e-6).sum())
+    ck.add("q12_single_vs_all_position_scope",
+           "S1 (single site) and S2 (band-wide) are now DISTINCT edits: the all-position hook "
+           "moves every position and the single-position hook moves exactly one. Before this, "
+           "make_intervention only ever built AllPositionProjectOut, so an S1 arm would silently "
+           "have been an all-position edit -- a LARGER intervention under the smaller arm's name",
+           _n_moved_all == 9 and _n_moved_one == 1, _n_moved_all,
+           "all=%d one=%d" % (_n_moved_all, _n_moved_one))
+    ck.add("q12_live_hooks_record_liveness",
+           "both hooks now RECORD what C-13 says they recorded nothing of: fired count, "
+           "destinations, pre/post norm, projection removed, cosine, layer, resolved index",
+           _pc.project_out_liveness_violations(_sa) == []
+           and _pc.project_out_liveness_violations(_ss) == []
+           and _sa["hook_fired_count"] == 1 and _ss["projection_removed_l2"] > 0
+           and _ss["resolved_absolute_index"] == [6], 2,
+           "cos=%.6f removed=%.4f" % (_sa["cos_pre_post"], _sa["projection_removed_l2"]))
+
+    _lb = _toy_layer(_hid)
+    _inner = _pc.SinglePositionProjectOut(_lb, 3, _d, alpha=1.0, pos=6)
+    _bst = _pc.hook_stats_dict(mode="bridge", layer=3, enabled=False)
+    with _pc.DisabledHookBridge(_inner, stats=_bst):
+        _yb = _lb(_xa)[0]
+    ck.add("q12_disabled_bridge_is_a_real_code_path",
+           "the C5 bridge REGISTERS and RUNS the real hook and discards only its write: the "
+           "output is bit-identical to the untouched forward, and what the edit WOULD have been "
+           "is recorded",
+           float((_yb - _xa).abs().max()) == 0.0
+           and _bst["would_have_changed_max_abs"] > 0.0
+           and _bst["n_cells_edited_realised"] == 0
+           and _pc.project_out_liveness_violations(_bst) == [], 1,
+           "would_have_moved=%.5f" % _bst["would_have_changed_max_abs"])
+    _as_live = dict(_bst); _as_live["enabled"] = True
+    ck.add("q12_bridge_presented_as_live_is_DETECTED",
+           "and the SAME record presented as a LIVE arm is REFUSED, not tolerated: a "
+           "deliberately disabled hook must never pass as a clean null",
+           _pc.project_out_liveness_violations(_as_live) != [], 1,
+           str(_pc.project_out_liveness_violations(_as_live))[:60])
+    _dead_bridge = _pc.hook_stats_dict(mode="bridge", layer=3, enabled=False)
+    _dead_bridge["n_forward_calls"] = 4
+    ck.add("q12_bridge_over_a_dead_hook_refused",
+           "a bridge whose inner hook would not have changed anything bridges NOTHING and is "
+           "refused rather than scoring as a perfect identity",
+           "bridge_over_a_dead_hook:would_have_changed_max_abs==0"
+           in _pc.project_out_liveness_violations(_dead_bridge), 1)
+    _never = _pc.hook_stats_dict(mode="project_out_all", layer=3, enabled=True)
+    ck.add("q12_hook_that_never_ran_refused",
+           "a hook that never ran at all is refused on n_forward_calls == 0",
+           "hook_never_ran:n_forward_calls==0"
+           in _pc.project_out_liveness_violations(_never), 1)
+
+    # ---- Q13: the norm-matched control's BASE DIRECTION ----------------------------------
+    ck.add("q13_default_base_unchanged",
+           "with no '@' and no control_base=, the base is d_surface -- EXACTLY the historical "
+           "behaviour, so no existing caller changes",
+           _sb.split_control_base("random") == ("random", "d_surface")
+           and _sb.split_control_base("d_surface") == ("d_surface", "d_surface"), 2)
+    ck.add("q13_base_travels_with_the_arm",
+           "'<arm>@<base>' names the base in the spec, so it travels with the arm instead of "
+           "being assumed",
+           _sb.split_control_base("random@v_bomb_specific")
+           == ("random", "v_bomb_specific"), 1)
+    _caught = False
+    try:
+        _sb.split_control_base("random@a", control_base="b")
+    except SystemExit:
+        _caught = True
+    ck.add("q13_two_answers_refused",
+           "two different answers to 'which axis is this a control for' is refused", _caught, 1)
+    _caught = False
+    try:
+        _sb.split_control_base("d_surface@v_bomb_specific")
+    except SystemExit:
+        _caught = True
+    ck.add("q13_at_on_a_non_control_refused",
+           "'@base' on a NON-control direction is refused; it would mean nothing", _caught, 1)
+    _base = {7: torch.tensor([3.0, 4.0]), 8: torch.tensor([0.0, 5.0])}
+    _good = {7: torch.tensor([5.0, 0.0]), 8: torch.tensor([5.0, 0.0])}
+    _echo = _sb.assert_control_norm_matched("random", "v_bomb_specific", _base, _good, [7, 8])
+    ck.add("q13_norm_match_asserted_at_install",
+           "a correctly norm-matched control passes and its per-layer norms are ECHOED into the "
+           "arm manifest, so a reader can see WHICH axis was controlled for",
+           _echo["n_layers_checked"] == 2
+           and _echo["control_base_direction"] == "v_bomb_specific", 2,
+           "L7 base=%.4f ctl=%.4f" % (_echo["per_layer"]["L7"]["base_norm"],
+                                      _echo["per_layer"]["L7"]["control_norm"]))
+    _caught = False
+    try:
+        _sb.assert_control_norm_matched("random", "d_surface", _base,
+                                        {7: torch.tensor([50.0, 0.0])}, [7])
+    except SystemExit:
+        _caught = True
+    ck.add("q13_wrong_base_is_DETECTED",
+           "a control norm-matched to a DIFFERENT base direction is refused AT HOOK-INSTALL "
+           "TIME. This is the eighth instance in this project of a checker disagreeing with the "
+           "thing it checks, and it is the one that looks correct in every log", _caught, 1)
+    _caught = False
+    try:
+        _sb.assert_control_norm_matched("random", "d_surface", _base, _good, [30, 31])
+    except SystemExit:
+        _caught = True
+    ck.add("q13_zero_layer_bind_refused",
+           "a norm check that binds ZERO layers asserts nothing and is refused", _caught, 1)
+
     ck.report()
     ok_all &= (ck.n_fail == 0)
     print("\n[selftest] %d checks, %d FAILED" % (len(ck.rows), ck.n_fail))
@@ -1653,12 +2285,89 @@ def mutate() -> int:
     raisers["M20 permutation over zero domains"] = lambda: domain_group_permutation({}, {}, 10, 1)
     raisers["M21 Holm over an empty family"] = lambda: holm({}, 0.05)
 
+    # ---- Q9-Q13, cleared 2026-09-07. Every new guard must ALSO be shown RED. ----------
+    import pair_common as _pc
+    import score_behavior as _sb
+    import torch as _t
+
+    def _dead_stats():
+        st = _pc.hook_stats_dict(mode="project_out_all", layer=3, enabled=True)
+        st["n_forward_calls"] = 5          # it ran...
+        return st                           # ...and edited nothing
+
+    def _bridge_as_live():
+        st = _pc.hook_stats_dict(mode="bridge", layer=3, enabled=False)
+        st.update({"n_forward_calls": 5, "would_have_changed_max_abs": 0.9})
+        st["enabled"] = True                # presented as a LIVE arm
+        return st
+
+    def _under_dosed():
+        st = _pc.hook_stats_dict(mode="project_out_all", layer=3, enabled=True)
+        st.update({"n_forward_calls": 1, "hook_fired_count": 1,
+                   "n_cells_edited_realised": 9, "activation_norm_pre": 100.0,
+                   "activation_norm_post": 100.0, "projection_removed_l2": 1e-9,
+                   "max_abs_delta": 1e-12, "cos_pre_post": 1.0})
+        return st
+
+    muts["M22 pair_common: hook that never ran"] = lambda: not _pc.\
+        project_out_liveness_violations(
+            _pc.hook_stats_dict(mode="project_out_all", layer=3, enabled=True))
+    muts["M23 pair_common: hook ran and edited nothing"] = lambda: not _pc.\
+        project_out_liveness_violations(_dead_stats())
+    muts["M24 disabled bridge presented as a live arm"] = lambda: not _pc.\
+        project_out_liveness_violations(_bridge_as_live())
+    muts["M25 bridge over a hook that would not have edited"] = lambda: not _pc.\
+        project_out_liveness_violations(
+            dict(_pc.hook_stats_dict(mode="bridge", layer=3, enabled=False),
+                 n_forward_calls=4))
+    muts["M26 edit below float32 resolution"] = lambda: not _pc.\
+        project_out_liveness_violations(_under_dosed())
+    muts["M27 liveness record missing keys"] = lambda: not _pc.\
+        project_out_liveness_violations({"enabled": True, "hook_fired_count": 1})
+
+    raisers["M28 control matched to the WRONG base direction"] = lambda: \
+        _sb.assert_control_norm_matched(
+            "random", "d_surface", {7: _t.tensor([3.0, 4.0])},
+            {7: _t.tensor([50.0, 0.0])}, [7])
+    raisers["M29 control norm check binding zero layers"] = lambda: \
+        _sb.assert_control_norm_matched(
+            "random", "d_surface", {7: _t.tensor([3.0, 4.0])},
+            {7: _t.tensor([5.0, 0.0])}, [30])
+    raisers["M30 zero-norm base direction"] = lambda: _sb.assert_control_norm_matched(
+        "random", "d_surface", {7: _t.zeros(2)}, {7: _t.zeros(2)}, [7])
+    raisers["M31 two answers for the control base"] = lambda: _sb.split_control_base(
+        "random@a", control_base="b")
+    raisers["M32 '@base' on a non-control direction"] = lambda: _sb.split_control_base(
+        "d_surface@v_bomb_specific")
+    raisers["M33 10.2 primary over ZERO rows"] = lambda: o2_projection_out_from_rows([])
+    raisers["M34 10.2 primary with no semantic_logodds"] = lambda: \
+        o2_projection_out_from_rows([{"option_mass": 0.1}])
+    raisers["M35 frozen probe with all-zero coefficients"] = lambda: FrozenProbe(
+        {"selected_layer": 9, "classes": ["a", "b"], "feature_dim": 2, "sha256": "x",
+         "estimator": {"coef": [[0.0, 0.0]], "intercept": [0.0]},
+         "scaler": {"mean": [0.0, 0.0], "scale": [1.0, 1.0]}})
+    raisers["M36 probe read at an ABSOLUTE index"] = lambda: ProbeReadCapture(
+        _toy_layer(4), 9, FrozenProbe(
+            {"selected_layer": 9, "classes": ["a", "b"], "feature_dim": 4, "sha256": "x",
+             "sklearn_classes_": [0, 1],
+             "estimator": {"coef": [[1.0, 0.0, 0.0, 0.0]], "intercept": [0.0]},
+             "scaler": {"mean": [0.0] * 4, "scale": [1.0] * 4}}),
+        7, "a", "b", [])
+    raisers["M37 O1 over zero probe records"] = lambda: o1_from_probe_rows([], 15)
+    raisers["M38 probe records from two DIFFERENT probes"] = lambda: o1_from_probe_rows(
+        [{"read_layer": 15, "o1_margin_source_minus_target": 0.1, "probe_sha256": "a"},
+         {"read_layer": 15, "o1_margin_source_minus_target": 0.2, "probe_sha256": "b"}], 15)
+
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0
+    # `score_behavior`'s house refusal idiom is SystemExit, not an exception class of ours, so a
+    # mutation against a guard that lives in that shared file raises SystemExit. Catching it here
+    # is what lets those guards be shown RED alongside the analyzer's own.
+    _REFUSALS = (Refusal, ZeroBinding, SystemExit)
     for name, fn in muts.items():
         try:
             passed = bool(fn())
-        except (Refusal, ZeroBinding) as e:
+        except _REFUSALS as e:
             passed = False
             print("  RED    %-42s -> refusal: %s" % (name, str(e)[:70]))
             n_red += 1
@@ -1672,7 +2381,7 @@ def mutate() -> int:
         try:
             fn()
             print("  GREEN  %-42s -> NO REFUSAL RAISED   <-- UNREACHABLE" % name)
-        except (Refusal, ZeroBinding) as e:
+        except _REFUSALS as e:
             n_red += 1
             print("  RED    %-42s -> refusal: %s" % (name, str(e)[:70]))
     total = len(muts) + len(raisers)
