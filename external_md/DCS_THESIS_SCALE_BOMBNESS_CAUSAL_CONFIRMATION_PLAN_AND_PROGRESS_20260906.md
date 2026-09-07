@@ -2003,3 +2003,81 @@ own stdout streams through unmodified so §26.10's "did this run what I meant?" 
 per bank.
 
 **In flight:** 860352 (button_bomb), 860353 (button_knife), 860468 (the remaining four).
+
+## 2026-09-07 · R-106 · PR-049's three blockers: **SURVIVE, with a qualification that matters**
+
+`scripts/dcs_ts_pr049_blockers.py`, `reports/DCS_TS_PR049_BLOCKERS.md`. 19/20 checks PASS,
+11/11 mutations RED, 6,840 rows over 114 domains (68/23/23), both prospective exclusions applied.
+
+### Y3 — the kill condition: **SURVIVE**, +0.0348 against a +0.10 threshold
+
+The `ts116n` register figures **replicate** on `ts116m`: hedge-only buys **bomb-vs-knife +0.2217**
+(was +0.211), **knife-vs-gun +0.0348** (was +0.037), bomb-vs-gun +0.1870. Register is confirmed as
+a **bomb-vs-rest severity axis**, and the contrast that motivated `PR-049` is not withdrawn.
+
+**But one check FAILS, and it is a finding rather than a harness defect.** A *broader*
+register-only **surface** classifier reaches **+0.2065 on knife-vs-gun** — accuracy 0.7065, AUROC
+0.7479 — and **+0.1870 with every length channel removed**, so it is **composition, not length in
+disguise**. Length-only is +0.1174 in characters but only **+0.0435 in tokens** (`C-084` again; the
+token figure is the honest one).
+
+So the kill condition, which is written about the **hedge-only** classifier, is answered on its own
+terms — and `PR-049`'s broader *rationale* is **only partly supported**:
+
+> knife-vs-gun is clean on **hedges** and on **token length**.
+> It is **not** clean on character length, and **not** clean on surface register generally.
+
+**Consequence, recorded now rather than discovered later: the nuisance floor the probe must beat
+on this contrast is a measured 0.7065 / 0.7479, not 0.5.** I am writing that down before the probe
+exists, in the same spirit as `C-078` — it is much easier to accept a bar before you know whether
+you cleared it.
+
+### Y1 — **CO-PRIMARY**, but the binding arm is not the one I assumed
+
+Sign-test floor at n=23 is **2.3842e-07** (closed form agreeing with brute force over all 2²³
+patterns). The permutation floor at the preregistered `n_perm=10000` is 9.999e-05, **read at
+runtime from the config** rather than restated.
+
+**The success rule is conjunctive — permutation AND sign test — and the sign test is the binding
+arm at every SD**, requiring **k ≥ 17 of 23** domains (π ≥ 0.788). Conjunctive power at δ=+0.15,
+n=23, sd=0.1406: **0.963** at α=0.05 and **0.900** under Holm α=0.025. FPR on pure noise through
+the real 36-point grid, validation-selected, domain-grouped: **0.0400** [0.0174, 0.0773] over 200
+reps, null mean accuracy 0.4951 — calibrated.
+
+⚠ **There is no measured 2-way per-domain SD anywhere in the record.** Every MDE is labelled by
+the SD assumed to produce it (0.0306 at sd=.05; 0.0859 at sd=.1406, PR-048's 3-way value borrowed;
+0.1528 at the distribution-free ceiling; 0.2102 at sd=.3439). Stated, not papered over.
+
+**DEMOTION CONTINGENCY, declared now:** conjunctive power falls below 0.8 at **sd = 0.188** (0.160
+under Holm). If the **TRAIN-only** between-domain SD exceeds that, `PR-049` is **demoted to
+EXPLORATORY** — checkable before any test read, using the SD measurement `PR-048` already requires.
+
+### Y2 — the hedge-free stratum is **feasible at the full n=23**
+
+All **23/23** TEST domains carry hedge-free rows in every arm: bomb 248/460, knife 452/460, gun
+420/460. Balanced knife-vs-gun N = **840 rows** (832 domain-balanced); 3-way N = 744. **The stratum
+exists at the domain level, not only at row level** — which is the distinction that decides whether
+it is usable at all. The superseded 115/212/195 figures are **retired**.
+
+### C-088 · three mutations came back GREEN, and each was a real hole
+
+The agent's harness reported three mutations that failed to turn a check RED. Each was a genuine
+gap, and one of them corrects a claim of mine:
+
+1. **`wrong_cell_field` did not fire — because on `ts116m`, `condition == "natural_doublespeak"`
+   binds the *same* 6,840 rows as `cell == "C"`.** `A-039`'s finding that selecting the wrong field
+   binds **zero** rows is therefore **corpus-specific**, not a general property, and my restatement
+   of it in `PR-046`/`PR-048` as a flat warning is too strong. Corrected here.
+   Chasing it further exposed something worse: **`prompt_id` is not unique across the six banks —
+   6,840 rows carry only 1,140 distinct ids** — so the first version of that positive check compared
+   six *collapsed* sets and would have passed vacuously. This is the third independent confirmation
+   that the compound key `(bank_file_sha16, prompt_id)` is load-bearing.
+2. **`row_level_permutation`** does inflate FPR to ≈0.17, but the mutation arm ran at 20 reps where
+   the CI still covers 0.05 — a mutation too underpowered to detect the defect it plants. Raised to
+   100 reps plus a 2α point-estimate bound.
+3. **`mde_drop_beta`** — monotonicity in SD survives an MDE that omits the type-II term, so the
+   check could not see it. Replaced with a round-trip: `t_power(23, MDE, sd)` must return 0.800.
+
+Mutation accounting was also corrected so that a check **already RED on the real corpus**
+(`Y3-surf`) cannot be credited as a catch — otherwise a pre-existing failure would launder itself
+into evidence that the harness works.

@@ -211,7 +211,7 @@
     "void": "wrong bank sha, wrong script, dead hook, or the selection touched TEST"
   },
   "secondary": {
-    "hedge_free_stratum": "A hedge-free TEST stratum already exists in the bank: 115 bomb / 212 knife / 195 gun rows, enough for a balanced 345-row re-analysis at zero extra GPU. Reported as a SECONDARY robustness stratum for both the 3-way and the 2-way contrast. Row counts to be re-derived on ts116m before use -- the figures above were measured on a superseded corpus.",
+    "hedge_free_stratum": "Y2 FEASIBLE AT FULL n=23. All 23/23 TEST domains carry hedge-free rows in every arm: bomb 248/460, knife 452/460, gun 420/460. Balanced knife-vs-gun N = 840 rows (832 domain-balanced); 3-way N = 744. The stratum exists at the DOMAIN level, not only at row level. The superseded 115/212/195 figures are RETIRED and may not be quoted.",
     "bomb_vs_knife_and_bomb_vs_gun": "reported for completeness and explicitly flagged as register-contaminated (+0.211 available to a hedge-only classifier), so they may not be quoted as evidence of concept identity without that caveat.",
     "reported_always": [
       "accuracy",
@@ -224,8 +224,32 @@
     ]
   },
   "power": {
-    "_note": "Two-way at chance 0.5 on 23 test domains. The PR-048 power analysis was computed for a 3-way contrast at chance 1/3; it does NOT transfer. Recompute the MDE, the sign-test floor and the power curve for a 2-way estimator BEFORE reading TEST, and record them here. If the recomputation shows power < 0.8 for a scientifically meaningful effect, this contrast is declared EXPLORATORY rather than co-primary -- decided before the outcome, not after.",
-    "status": "TO BE COMPUTED BEFORE ANY TEST READ -- blocking for this preregistration"
+    "status": "COMPUTED 2026-09-07, before any test read",
+    "verdict": "CO-PRIMARY",
+    "sign_test_floor_n23": 2.3842e-07,
+    "_sign_test_binding": "The SIGN TEST is the binding arm, not the permutation: primary.success is conjunctive (permutation AND sign test), and rejecting needs k >= 17 of 23 domains, pi >= 0.788.",
+    "perm_floor_at_n_perm_10000": 9.999e-05,
+    "mde_by_assumed_sd": {
+      "0.05": 0.0306,
+      "0.1406": 0.0859,
+      "0.25": 0.1528,
+      "0.3439": 0.2102
+    },
+    "_no_measured_2way_sd": "There is NO measured 2-way per-domain SD anywhere in the record. Every MDE above is labelled by the SD ASSUMED to produce it; 0.1406 is PR-048s 3-way value borrowed, and 0.25 is the distribution-free ceiling on [0.5,1].",
+    "conjunctive_power_delta_0.15_n23_sd_0.1406": {
+      "alpha_0.05": 0.963,
+      "holm_alpha_0.025": 0.9
+    },
+    "fpr_on_pure_noise": {
+      "value": 0.04,
+      "ci": [
+        0.0174,
+        0.0773
+      ],
+      "reps": 200,
+      "null_mean_acc": 0.4951
+    },
+    "DEMOTION_CONTINGENCY": "If the TRAIN-ONLY between-domain SD exceeds 0.188 (0.160 under Holm), conjunctive power falls below 0.8 and this contrast is DEMOTED TO EXPLORATORY. Checkable before any test read, using the SD measurement PR-048 already requires. Declared now."
   },
   "nulls_required": [
     {
@@ -354,23 +378,23 @@
     {
       "id": "Y1",
       "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
-      "status": "BLOCKING, not done",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
       "blocking": true,
-      "done": false
+      "done": true
     },
     {
       "id": "Y2",
       "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
-      "status": "BLOCKING, not done",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
       "blocking": true,
-      "done": false
+      "done": true
     },
     {
       "id": "Y3",
       "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
-      "status": "BLOCKING, not done",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
       "blocking": true,
-      "done": false
+      "done": true
     }
   ],
   "companion_of": "DCS-PR-048",
@@ -391,5 +415,21 @@
     "one instrument quietly retargeted.",
     "",
     "COST: ZERO EXTRA GPU. It is a re-analysis of the PR-048 extraction on the same rows."
-  ]
+  ],
+  "_y3_result": {
+    "kill_condition": "SURVIVE",
+    "hedge_only_knife_vs_gun": 0.0348,
+    "threshold": 0.1,
+    "replication": {
+      "bomb_vs_knife": 0.2217,
+      "knife_vs_gun": 0.0348,
+      "bomb_vs_gun": 0.187
+    },
+    "_ts116n_was": {
+      "bomb_vs_knife": 0.211,
+      "knife_vs_gun": 0.037
+    },
+    "QUALIFICATION": "The kill condition is written about the HEDGE-ONLY classifier and is answered on its own terms: SURVIVE, PR-049 is not withdrawn. But the broader rationale in this file -- that knife-vs-gun is \"clean on register AND on length\" -- is ONLY PARTLY SUPPORTED. A broader register-only SURFACE classifier reaches +0.2065 on knife-vs-gun (accuracy 0.7065, AUROC 0.7479), and +0.1870 with every length channel removed, so it is COMPOSITION rather than length in disguise. Length-only is +0.1174 in characters but only +0.0435 in TOKENS (C-084 again; the token figure is the honest one). Clean on hedges and on token length; NOT clean on character length or on surface register generally.",
+    "THE_BAR": "The nuisance floor the probe must beat on THIS contrast is a measured 0.7065 accuracy / 0.7479 AUROC, not 0.5."
+  }
 }
