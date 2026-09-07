@@ -1542,3 +1542,92 @@ over 133,632 rows. `C-076`: 0 multi-occurrence in 34,800 new-pool sentences, and
 independent detector finds exactly the 8 old ones. `C-074`: `ts116`'s primary channel confirmed
 1,856/1,856 identical — the VOID verdict was correct. **20 of 21 load-bearing numbers in this log
 reproduce exactly.**
+
+## 2026-09-07 · A-042 (science lens) · three findings that change the design
+
+The science lens produced the most valuable output of the review. Three things I had not seen.
+
+### C-084 · **N4 was measured in the wrong unit, and my "the remedy did not work" was pessimistic**
+
+The leakage audit reads **`n_chars`**. The model reads **tokens**.
+
+| unit | N4 length-only accuracy |
+|---|---|
+| characters (what I reported) | 0.4014 |
+| **tokens (what the model sees)** | **0.3623** |
+
+Prompt token counts on `ts116m`: **bomb 196.21, knife 195.50, gun 196.69**, on a 13-token sd.
+**The positional confound is essentially matched.** The character residual is lexical
+composition — which is register again, not length.
+
+`R-102`'s verdict *"the remedy did not work"* stands for characters and is **too pessimistic about
+the quantity that matters**. Corrected here rather than left standing, because it understates the
+bank. The honest statement: **length in tokens is not a live confound (0.3623 against 1/3);
+register is.**
+
+### C-085 · **my "strictly stronger" claim about the G3 split was false**
+
+I wrote that splitting G3 into G3a/G3b made the pair *"strictly stronger than the single gate it
+replaces."* It is **strictly weaker on 1,840 rows** — G3a simply does not examine the
+forced-choice channel that old G3 demanded byte-identity from. The *change* was still correct,
+because old G3 was unsatisfiable by construction, but the justification I gave for it was wrong.
+Corrected.
+
+### R-103 · **knife-vs-gun is the register-clean, length-clean contrast — and CLAIM A lives there**
+
+The single most useful finding of the review. Register is not a uniform nuisance; it is a
+**bomb-vs-rest severity axis**:
+
+| contrast | hedge-only classifier buys |
+|---|---|
+| bomb vs knife | **+0.211** |
+| **knife vs gun** | **+0.037** |
+
+Threat-lexicon framing runs bomb 44.5 % / knife 14.0 % / gun 18.3 %. So the 3-way probe carries
+bomb's register with it, while **the knife-vs-gun two-way contrast is clean on register *and* on
+length** — and it is exactly a test of concept *identity* between two matched harmful concepts,
+with no severity gradient to read instead.
+
+**It is preregistered nowhere.** That is now the gap to close, and it costs **zero extra GPU** —
+it is a re-analysis of the same extraction. A **hedge-free TEST stratum** also already exists in
+the bank: 115 bomb / 212 knife / 195 gun rows, enough for a balanced 345-row re-analysis.
+
+### The C-078 verdict, and the condition attached to it
+
+The lens was asked to argue both sides of whether declaring my own preregistered bar
+miscalibrated was legitimate. Its verdict: **legitimate as a correction** — the timing is
+independently verifiable (no GPU has run, no hidden state exists, and N5c needs none), and
+requiring a probe to beat a text classifier reading the *treatment* is a bar no true positive
+clears.
+
+**But it attached a condition I accept:** `PR-046` adopted N5 explicitly *as the answer to the
+register confound*, and the positional contrast tests a **different proposition**. So —
+
+> **legitimate correction, illegitimate if `PR-047` inherits N5's job.**
+
+The register confound needs its own answer, not a change of subject. **`R-103` supplies exactly
+that**: knife-vs-gun is register-clean by measurement, so it answers the question N5 was adopted
+to answer, while the positional contrast answers localisation. Two questions, two instruments —
+rather than one instrument quietly retargeted.
+
+### The killer experiment, for a later preregistration
+
+**The strongest remaining threat to CLAIM A is context-gist, not codeword binding**: the model may
+represent "this prompt is about bombs" everywhere, with the codeword position carrying nothing
+special. The lens's proposed test is better than anything in the current plan:
+
+> a **within-prompt two-codeword interference bank** — `button`↔BOMB and `basket`↔KNIFE installed
+> in the *same* prompt — read at **both** codeword positions in **one forward pass**. Identical
+> gist, register, length and position band; **only the token differs.**
+
+If each codeword's representation tracks *its own* installed concept, that is binding. If both
+track the prompt's overall gist, that is context. Recorded now as the design to preregister after
+the probe; not run yet, and not claimed.
+
+### Process items that gate the science, carried forward
+
+- `multiplicity` — a mandate §21 required field — is **missing** from the preregistration.
+- the **token-role map and the `rel_end = −9` read-site nomination were computed on the VOID
+  `ts116` bank** and must be recomputed on `ts116m` before extraction. Added to the pre-extraction
+  checklist.
+- `PR-048` records that the analyzer still does not exist (`B-020`).

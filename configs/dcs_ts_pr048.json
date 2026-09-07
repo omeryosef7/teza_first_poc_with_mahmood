@@ -129,6 +129,10 @@
           "macro_auroc": 0.575
         },
         "verdict": "THE REMEDY DID NOT WORK. Length matching cut the cross-concept mean sentence-length spread 40.8% (7.03->4.16 chars) and moved the baseline by 0.016 accuracy; the AUROC rose slightly. Diagnosed: pool MARGINALS were matched while N4 reads full-prompt n_chars, whose demo block is four sentences drawn at fixed slots -- matching marginals does not match per-family sums. Per the rule recorded before N4 was ever measured, THERE IS NO THIRD ROUND. Length is now a permanent stated nuisance."
+      },
+      "n4_in_tokens": {
+        "acc": 0.3623,
+        "note": "C-084. The audit measured n_chars; the model reads TOKENS. Prompt token counts are bomb 196.21 / knife 195.50 / gun 196.69 on a 13-token sd, so the POSITIONAL confound is essentially matched and token-length-only N4 is 0.3623 against chance 0.3333. The character residual is lexical composition, i.e. register. LENGTH IN TOKENS IS NOT A LIVE CONFOUND; register is."
       }
     }
   },
@@ -329,5 +333,70 @@
     "C-080 additionally retracts PR-046's supporting claim that ts116n passed 19/19 gates: the G1",
     "own-concept check was singular-only and could not see C-076. Under the corrected gate ts116n",
     "scores 18/19 and ts116m scores 19/19 with 4/4 mutations RED."
+  ],
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PRIMARY",
+        "members": [
+          "3-way domain-mean accuracy on TEST"
+        ],
+        "correction": "none -- a single preregistered primary"
+      },
+      {
+        "name": "CO-PRIMARY (PR-049)",
+        "members": [
+          "knife-vs-gun 2-way domain-mean accuracy on TEST"
+        ],
+        "correction": "Holm across the two primaries, alpha=0.05 family-wise"
+      },
+      {
+        "name": "SECONDARY",
+        "members": [
+          "macro OvR AUROC",
+          "per-class AUROC",
+          "lexical transfer button->basket",
+          "n_examples=8 replication",
+          "hedge-free stratum re-analysis"
+        ],
+        "correction": "Holm within the secondary family; reported as secondary regardless of outcome"
+      },
+      {
+        "name": "NULLS N1-N8",
+        "members": [
+          "diagnostics"
+        ],
+        "correction": "not corrected -- they are gates, not hypotheses; each reported with its own value"
+      }
+    ],
+    "_declared_before_outcome": "2026-09-07, no GPU has run",
+    "_absent_members_enter_at_p_1": "A declared family member that is not run enters Holm at p=1.0 rather than being dropped."
+  },
+  "pre_extraction_checklist": [
+    {
+      "id": "X1",
+      "item": "write scripts/dcs_ts_pr048_analysis.py; it MUST refuse to start on a null sha or a missing gate, and that refusal MUST be mutation-tested",
+      "status": "BLOCKING, not done (B-020)"
+    },
+    {
+      "id": "X2",
+      "item": "recompute the token-role map and the read-site nomination on ts116m -- the rel_end=-9 nomination was computed on the VOID ts116 bank",
+      "status": "BLOCKING, not done"
+    },
+    {
+      "id": "X3",
+      "item": "planted-hook layer-convention GPU test: hook block L=12, +1e3 on coord 0 at position p, assert hidden_states[L+1] moves by exactly 1e3 and hidden_states[L] does not; repeat at n_layers-1 through forward_hidden; repeat with a PRE-hook and assert it moves [L] not [L+1]; pin transformers.__version__",
+      "status": "BLOCKING, first GPU job of the phase"
+    },
+    {
+      "id": "X4",
+      "item": "re-run G4 concept-backing on ts116m (A-037 rates were measured on a superseded corpus)",
+      "status": "required"
+    },
+    {
+      "id": "X5",
+      "item": "PR-049: preregister the knife-vs-gun register-clean co-primary and the hedge-free stratum",
+      "status": "required"
+    }
   ]
 }
