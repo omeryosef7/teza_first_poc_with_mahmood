@@ -3202,3 +3202,77 @@ one, and carries the single concrete ask: fund the register-matched regeneration
 
 **DRAFT ONLY. Nothing was sent — no Slack, no email, no calendar** — and the file says so in its
 header and its last line.
+
+---
+
+# 2026-09-07 · R-115 · **ONLY BOMB INSTALLS.** The §15 table materially qualifies R-113.
+
+`scripts/dcs_ts_prompt_validation.py`, `reports/DCS_TS_PROMPT_VALIDATION.md`. 18/18 refusals
+reachable; a bare invocation **refuses** rather than defaulting. 21,696 rows, 113 domains, on the
+**4 of 6** banks complete at run time (`basket_knife`, `basket_gun` missing; **nothing imputed for
+them**, and that is stated rather than smoothed over).
+
+## The finding
+
+Domain-mean `concept_binary_prob ≥ 0.5`, primary channel, cell C, dose 4:
+
+| concept | domains installing | median prob | median `semantic_logodds` | **on R-113's 23 TEST domains** |
+|---|---|---|---|---|
+| **bomb** | **70 / 113** | 0.576 | **+0.99** | **12 / 23** |
+| **knife** | **3 / 113** | 0.140 | **−4.89** | **2 / 23** |
+| **gun** | **1 / 113** | 0.030 | **−6.96** | **0 / 23** |
+
+All three show Δ(C−A) > 0 at the permutation floor — **direction yes, level no.** The
+demonstrations move the readout in the right direction for every concept; only for **bomb** do they
+move it past the point where the model actually reports the concept.
+
+## What this does to `R-113`
+
+`R-113` reported a **three-way** probe at 0.9399, and it separated three classes **two of which do
+not install**. So the probe is not distinguishing *which concept was installed* — for knife and gun
+there is, by this measurement, **no installed concept to distinguish**. It is distinguishing
+**which demonstration set is present**.
+
+That is not a retraction of the number; the number is what it is, and the population and split were
+honest. It is a **substantial narrowing of what the number means**, and it converges with `R-112`
+from a completely different direction: `R-112` said the signal is not localised at the codeword,
+and `R-115` says for two of three arms there is no bound concept for it to be localised *to*.
+**Two independent instruments, the same conclusion — the probe reads the prompt.**
+
+`CLAIM A` was already narrowed to a statement about the prompt. It must now also carry: **the
+three-way framing overstates what was manipulated.** A bomb-vs-knife contrast is, on this evidence,
+a contrast between *an installed concept* and *a demonstration set that failed to install one*.
+
+## The other four findings
+
+**`option_mass`: the channel IS engaged, and the CANNOT-ANSWER trigger does NOT fire.** Median
+**0.1137** against the 0.05 gate, p10 0.0221, 95.4 % of rows ≥ 1 % — three to four orders of
+magnitude above the ~1e-5 the preregistration feared. No fallback to the display channel is
+licensed. ⚠ Qualified honestly: at **dose 0** the median is **0.0372, below the gate**, and 0.11 is
+a *minority* of the mass — roughly 89 % of the time the argmax is a third word entirely.
+
+**The codeword matters as much as the concept.** `button_bomb` installs in **92/113** domains;
+`basket_bomb` in **46/113** — same concept, same demonstrations, **half the installation**. The
+lexical item is not incidental to whether the mapping takes.
+
+**The display channel names the answer in its own question.** *"…does the word button refer to a
+button or to a bomb?"* — the concept word appears in `full_prompt` in **100 %** of forced-choice
+rows and **0 %** of primary-channel rows. Its more flattering installation numbers (knife 92/113)
+are **partly a measurement of the prompt**, which is exactly why `PR-048` made it the display
+channel and not the mechanistic one.
+
+**The dose-0 null is clean:** cell A ≡ cell C domain-means to 1e-9 in **113/113** domains, all
+concepts, both channels — confirming `C-081` at the level of measured readouts rather than only at
+the level of prompt bytes.
+
+## C-111 · a preregistration I referenced and never wrote
+
+The installation cut of 0.5 is **not preregistered**. There is **no `configs/dcs_ts_pr054*.json`
+on disk** — I cited `PR-054` in the readout driver's own docstring and never created the file. The
+script refuses to apply any cut unless it is passed **and** explicitly acknowledged, and stamps
+`installation_rule_source = unregistered_cli` into every row. A sweep from 0.10 to 0.90 shows the
+bomb ≫ {knife, gun} ordering holds **at every cut**, so the conclusion does not depend on the
+threshold — but the gap is real and it is mine. **PHASE 9 must close it before extraction.**
+
+Nothing was filtered: full distributions are reported and installation is a **stratification
+variable**, per mandate §15.
