@@ -3173,3 +3173,32 @@ does not, the finding is **"decodable but not causally used under this intervent
 mandate §32 calls a valuable result — and **never** "the representation is meaningless". It also
 records its dependence on the PHASE 7 readout (job 865335) for an outcome variable, without which
 the phase would repeat `R-097` exactly: a mediation question with no `y` measured where `x` lives.
+
+## 2026-09-07 · mandate §34 deliverables 12–15 complete
+
+`reports/DCS_TS_CLAIM_TABLE.md` — 20 rows in the mandated columns
+`CLAIM | EVIDENCE | N_DOMAINS | TEST POPULATION | CAVEAT | STATUS`, statuses drawn only from the
+log's own vocabulary: **7 CONFIRMED, 5 VOID, 4 CANNOT ANSWER, 4 UNTESTED, 2 UNSUPPORTED,
+1 NARROWED.** CLAIM A **as worded** is NARROWED; its narrowed form A′ is CONFIRMED; the
+codeword-is-special form A″ is **UNSUPPORTED**. CLAIM B is UNSUPPORTED, with a discrimination-only
+B′ CONFIRMED carrying the bimodal-null caveat. CLAIM C UNTESTED. CLAIM D UNTESTED, and the
+*inherited* whole-query knockout VOID. CLAIM E CANNOT ANSWER. **Installation is listed as an
+assumption, not a result** — job 865335 is still in flight.
+
+Plus **18 speakable sentences** with every qualification inline, and a must-not-say list that
+reproduces mandate §33 verbatim and then adds **~30** sentences this phase newly made unsayable —
+grouped by cause: localisation, separability, p-values at their floors, the 1.8-point margin,
+causality and installation, register, the banks and the 113-vs-116 population, and presenting
+`R-111`/`R-112`/`R-113` as converging confirmations when one narrows another and one is a negative.
+
+Notably it **bans the mandate's own phrase** *"decodable but not causally used"* for present use —
+no intervention exists to license it. That is the right call: §32 offers it as the honest wording
+*for a causal result*, and using it now would imply an experiment that has not run.
+
+`reports/DCS_TS_SLACK_DRAFT_MATAN_MAHMOOD_20260907.md` — the collaborator update, ~570 words of
+prose, checked against the must-not-say lists (spot-checked here: **0** banned phrases, DRAFT
+marker present three times). It answers each of Matan's §3 asks in a line, including the unwelcome
+one, and carries the single concrete ask: fund the register-matched regeneration.
+
+**DRAFT ONLY. Nothing was sent — no Slack, no email, no calendar** — and the file says so in its
+header and its last line.
