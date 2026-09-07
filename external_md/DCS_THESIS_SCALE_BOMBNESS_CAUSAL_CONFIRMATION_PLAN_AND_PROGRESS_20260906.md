@@ -4116,3 +4116,86 @@ The reviewer's exact F2 reproduction now returns `live = True` (expected 3 = rea
 which remains uninstrumented (`pc.AllPositionAdd` receives no `stats=`)**. That is now *the one
 remaining place where a dead hook could score as a clean null*, and it is the reason C4 must not be
 quietly reinstated.
+
+---
+
+## DCS-R-125 — PHASE 11's analyzer, and mandate §12's warning confirmed on our own tokens
+*2026-09-07* — `scripts/dcs_ts_pr059_localisation.py`, `reports/DCS_TS_PR059_ANALYZER.md`
+
+Written at **exactly** the path `artifacts.analyzer` declares, so the PR058-D1 rename defect is
+designed out rather than repeated. The identity gate is kept anyway, with mutation M40 injecting a
+mismatch into a *copy* of the prereg so the refusal stays reachable — the M47 lesson applied
+prospectively.
+
+Observed: **`--self-test` 92/92, 0 failed**; **`--mutate` 80/80 RED**, every message read to confirm
+each fires for its own intended reason rather than a stray exception; `--verify-token-map`
+`ok=true`, 6900/6900, `problems=[]`; the default analysis **REFUSES** with no arm data (rc=1,
+"78 arm tags searched, 78 absent", listing the 8 outstanding blockers); source-literal audit clean
+on 12 declared gates.
+
+**U4 — both structural claims CONFIRMED, re-derived from the raw `query_roles` arrays rather than
+from the design's summary.**
+
+- **Scope A *is* `query_last_k_rows` K=5**: `sorted(query_span)[-5:]` equals S_A's declared set in
+  **6900/6900** prompts, and those five rows are `<|eot_id|>`, `<|start_header_id|>`, `assistant`,
+  `<|end_header_id|>`, `'\n\n'` — one `chat_scaffold` plus four `response_header`, **zero query
+  content**. This is mandate §12's warning ("avoid raw last-K rows when they include unknown chat
+  scaffold") confirmed quantitatively on this template: **the first five rungs of any last-K ladder
+  here are pure scaffold.**
+- **Scope B *is* unconstructible**: `neutral_content` = **0 tokens across all 6900 prompts**
+  (`concept_word` likewise 0). S_B enters Holm at p = 1.0 as an absent member rather than being
+  silently dropped.
+
+Also confirmed: S_C = `codeword` (` button` 3450 / ` basket` 3450), S_D = 22, S_E = 23 (S_D plus the
+codeword row), S_F = ` actually` 6900/6900, S_G = 28.
+
+## DCS-PR059-D1 — the preregistered control is ARITHMETICALLY IMPOSSIBLE for the primary contrast
+*2026-09-07* — BLOCKING, needs an amendment, config NOT edited
+
+`dose_matching.per_scope_random_row_control` requires, for **every** scope, an m-row draw from the
+query span **excluding the scope's own rows**. The span is **28 rows**. So:
+
+- **S_D** needs 22 rows drawn from a pool of **6**.
+- **S_E** needs 23 rows drawn from a pool of **5**.
+
+The control cannot exist for the two largest scopes — and **S_D vs S_E is the phase's declared
+primary contrast** (they differ by exactly the codeword row). This is arithmetic, not a shortage of
+data, and no amount of GPU time changes it.
+
+The analyzer does the right thing: it **refuses to draw fewer rows and call the result
+dose-matched** (mutation M58), omits those control arms from the manifest, and
+`assert_scope_has_its_control()` then refuses to render S_D/S_E at all. So PHASE 11 as frozen cannot
+report its own primary contrast.
+
+Resolving this is a **design decision that changes the preregistration**, and it is recorded rather
+than taken quietly. The options, with what each costs:
+  1. draw the control rows from the **demo block** instead of the query span — rows are plentiful,
+     but it changes *what the control controls for*;
+  2. drop "excluding own rows" and allow overlap — then it is not a control;
+  3. accept that S_D/S_E have **no** random-row control and demote them from primary, relying on the
+     other declared controls;
+  4. redefine the primary contrast onto a smaller scope pair.
+
+None is taken here. PHASE 11 has seven other blocking items outstanding and is not runnable
+regardless, so nothing is lost by leaving this to an explicit amendment (a new preregistration
+superseding the control rule) rather than an edit to a frozen file.
+
+**U3 is NOT closable, and the reason is a population fact.** *Zero* knockout runs on the
+concept-free channel exist on any of the six preregistered `ts116m` banks. The nearest usable rows
+are the `dcssow_*` family — right channel, right cell, right dose, matched baseline — but **6
+domains on `button_bomb`, only one of which (`game_manual`) is a ts116 validation domain**. An SD
+over n=1 does not exist, so the between-domain SD the power calculation needs cannot be measured
+from what is on disk. Recorded descriptively and entered nowhere.
+
+⚠ **Two warnings that carry forward.** From that off-population bank, the **K=5-shaped arm MOVES**
+(Δ = −0.87) — and a scaffold-only scope moving the readout is the frozen file's **third kill
+condition**. It is off-population and a different template, so it is a warning and not a result; but
+it is exactly the thing U8's smoke run must check before anything larger is submitted. Second, at
+the descriptive SD of 1.279 the 0.5-nat effect has power 0.985 / 0.884 / **0.434** at n = 113 / 67 /
+23 — so a test-split-only reading of PHASE 11 would be badly underpowered.
+
+**Closable now: U4, U5, U6.** **U1 and U2 are half-closed** — the declared-offset selector and the
+seeded random-row draw exist, are tested and mutation-covered in the analyzer, but their
+producer-side halves live in `score_behavior.py` and `dcs_extract_under_ko.py` and remain
+BLOCKING. **U3 not closable.** `analyzer_exists` stays `false` in the frozen config, so the loader
+still refuses `--for-extraction` with 9 refusals.
