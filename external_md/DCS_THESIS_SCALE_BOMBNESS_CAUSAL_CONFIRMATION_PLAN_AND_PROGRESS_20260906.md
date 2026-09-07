@@ -1429,3 +1429,116 @@ which no text classifier can answer. `PR-047` is where that gets tested.
 
 Carried as live limits, not resolved: **register** (H3 = 0.5014) is `Q-011`; **length** (N4 =
 0.4014) is now a permanent stated nuisance rather than something we will keep attacking.
+
+---
+
+# 2026-09-07 · A-042 · FOUR-HOUR FULL REVIEW #1 (mandate §29)
+
+Four independent read-only lenses over `b80db84d..e4d78bf0`: code, data, output/process, science.
+Reports: `reports/DCS_TS_REVIEW1_{CODE,DATA,OUTPUT,SCIENCE}.md`. It found **three CRITICALs, one
+retraction of a published claim, and one retraction of my own reasoning.** Everything below is a
+correction *to this phase*, not to inherited work.
+
+## C-080 · **the G1 gate was itself blind. `R-101`'s "19/19 PASS" is RETRACTED.**
+
+`dcs_ts_verify_ts116n.py` counted the own-concept occurrence as `\bknife\b` — singular,
+case-insensitive — and therefore printed *"0 sentence(s) not exactly one whole-word 'knife'"* over
+a pools file carrying **eight** `knife`+`knives` sentences. The generator's own verifier reported
+8 failures on the same bytes at the same time. **`R-101` was a green verdict from a gate that
+could not see `C-076`**, and it is the gate the build script names as required before extraction.
+
+**This is the FOURTH instance of the class named in `C-079`** — and the first one inside a gate
+rather than a producer, which is worse, because a blind gate manufactures confidence:
+
+| | the checker said | the transformer did |
+|---|---|---|
+| `C-075` | right-permissive (`basketball` counts) | exact word only |
+| `C-076` | singular only | text carried `knives` |
+| `C-079` | case-insensitive | three enumerated case forms |
+| **`C-080`** | **singular, case-insensitive — in the GATE** | **both of the above** |
+
+Fixed by sharing one rule across generator, matcher and gate instead of restating it three times.
+**Re-run with the corrected gate:**
+
+| family | result |
+|---|---|
+| `ts116n` (the one `R-101` certified) | **18/19 — G1[knife] FAILS with the 8 sentences** |
+| `ts116m` (the live family) | **19/19 PASS, 4/4 mutations RED** |
+
+So the retraction lands on a bank already superseded, and `ts116m` now passes a gate that has been
+demonstrated capable of failing. That is the only reason the retraction is cheap.
+
+## C-081 · **the `n_examples=0` null cannot fail, and my inference from it was wrong**
+
+With no demonstrations the three concept arms are **the same prompt** — 230/230 byte-identical.
+A probe there is pinned to 1/3 **by arithmetic**, which is `C-074`'s argument verbatim, applied to
+my own control. N1 landing at exactly 0.3333 on all four baselines is therefore a **pipeline
+sanity check, not evidence about the model.**
+
+**Retracted:** my sentence in `A-041` that *"the signal localises entirely to the demonstration
+block."* It does not follow from N1. N1 is demoted from the evidence list in `PR-048` and kept,
+labelled, as a sanity check.
+
+## C-082 · **"that is the domain, not the draw" is UNSUPPORTED**
+
+The `restaurant_kitchen` regeneration retried with `for rnd in range(14)` over `seed + rnd`. Seed
+20260906 spans 20260906–20260919; the "second seed" 20260907 spans 20260907–20260920. **They share
+13 of 14 OpenAI seeds.** The second attempt was very nearly the same draws, so its failing again
+says little about the domain and much about the overlap.
+
+The **exclusion stands** — it is preregistered, prompt-only, and costs one TRAIN domain — but its
+stated *reason* was overclaimed and is corrected here. Lens B further finds `restaurant_kitchen`
+is **clean in the new pools (0/40 on all three concepts)**, so the exclusion is now **conservative
+rather than necessary**. It is kept anyway: reversing a preregistered exclusion, even toward more
+data, is a move I would rather not have to defend.
+
+## C-083 · **cross-split leakage got 5× WORSE, not better**
+
+TEST harm sentences appearing verbatim in a TRAIN domain, under the frozen split:
+`ts` pools **3/2,760 (0.109 %)** → `tsm` pools **15/2,760 (0.543 %)**. Length matching selects a
+different 40 of 60, and it selected more shared sentences. `A-041`'s "1.86 % → 0.58 %" compared a
+different population and should not be quoted. Still small in absolute terms, now recorded as a
+known property of `ts116m` rather than an improvement.
+
+## B-020 · **the analyzer does not exist, and I said it did**
+
+`configs/dcs_ts_pr046.json` names `scripts/dcs_ts_pr046_analysis.py`. **There is no such file.**
+Every threshold in the preregistration — `alpha`, `n_perm=10000`, the p-floor rule, the MDE, the
+flip trigger, the layer grid, all eight nulls and all five gates — is currently read by **no code
+path**, and the log's claim that the analyzer *"refuses to start if a sha is null"* is prose I
+wrote about code that was never written. That is precisely the *"thresholds published but never
+enforced"* failure this project has recorded twice before, committed by me while citing it as the
+reason to write a machine-readable preregistration.
+
+**Writing the analyzer, with that refusal implemented and mutation-tested, is now a blocking
+prerequisite for the first extraction**, recorded in `PR-048`.
+
+Also fixed this tick, both verified by mutation:
+- **`dcs_ts_preflight.sh` was gating the VOID `ts116` banks** — a green preflight said nothing
+  about the bank a job would read, and deleting the void rows would have *blocked every
+  submission* while instructing the operator to regenerate them. It now gates `ts116m` and runs
+  the G1–G3 gates.
+- **`BOOMB_EXPECT` did not close the `853040` hole.** Mistyping `ARGSFILE=` still leaves
+  `BOOMB_ARGS` empty, and a job whose script happens to match `BOOMB_EXPECT` then runs the right
+  script with **no arguments** and exits `COMPLETED 0:0` — the same invisible failure one step
+  further along. Added opt-in `BOOMB_REQUIRE_ARGS=1`; proven to refuse on empty args and proven
+  **not** to block a valid call.
+
+## PR-048 · supersedes PR-046
+
+`configs/dcs_ts_pr048.json`. **`PR-046` is left byte-frozen on disk and is not edited.**
+**The design is unchanged** — population, split, model, read site, classifier, primary statistic,
+alpha, `n_perm`, nulls, gates, power and kill condition are identical. Only the artifact it binds
+to changed, forced by defect repair, with **no probe run and no hidden state in existence.**
+It pins the six `ts116m` hashes, records N4's post-remedy value and the "no third round" ruling,
+demotes N1, and records that the analyzer does not yet exist.
+
+## What the review did NOT break, re-derived from bytes by lens B
+
+Split: 116 keys, 70/23/23, 0 overlap, rebuilds from seed 202609061, `manifest_sha16` recomputes.
+Hashes: 12/12 agree across `_meta.json` and the config. Balance: 22,272 rows/bank, 192 per domain
+in all 116, the three concept banks carry *identical* row-identity key sets. Duplicates: 0 and 0
+over 133,632 rows. `C-076`: 0 multi-occurrence in 34,800 new-pool sentences, and lens B's
+independent detector finds exactly the 8 old ones. `C-074`: `ts116`'s primary channel confirmed
+1,856/1,856 identical — the VOID verdict was correct. **20 of 21 load-bearing numbers in this log
+reproduce exactly.**

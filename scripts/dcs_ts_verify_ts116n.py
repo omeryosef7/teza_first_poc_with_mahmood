@@ -70,6 +70,29 @@ SHARED_VALENCES = ("benign", "remap", "filler")
 #: This is decided on prompt text alone, before any extraction, and is recorded in
 #: `configs/dcs_ts_pr046.json` -- not applied after seeing an outcome.
 EXCLUDED_DOMAINS = frozenset({"restaurant_kitchen"})
+
+#: `DCS-C-080`. THIS GATE WAS ITSELF BLIND, and it is the fourth instance of the class named in
+#: `C-079`: the checker's notion of "an occurrence" must be exactly the transformer's.
+#:
+#: G1's own-concept check counted `\bknife\b` -- singular, case-insensitive -- and therefore
+#: reported "0 sentence(s) not exactly one whole-word 'knife'" over a pools file carrying EIGHT
+#: `knife`+`knives` sentences. The generator's verifier reported 8 failures on the same bytes at
+#: the same time. So `R-101`'s published "19/19 PASS" was green from a gate that could not see
+#: `C-076`, and this gate is the one the build script names as required before extraction.
+#:
+#: The rule is now shared with the generator and the length matcher instead of being restated:
+#:   * count case-INSENSITIVELY across every inflected form -- catches `knives` and `bOMB`;
+#:   * require the surviving occurrence to be one of the three case forms `_substitute` rewrites.
+CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun": ("gun", "guns")}
+
+
+def occurrence_counts(sentence: str, concept: str) -> tuple[int, int]:
+    """(occurrences across all inflections, occurrences the substituter can rewrite)."""
+    forms = CONCEPT_FORMS.get(concept, (concept, concept + "s"))
+    n_all = len(re.findall(r"(?i)\b(?:" + "|".join(re.escape(f) for f in forms) + r")\b", sentence))
+    subs = (concept, concept.capitalize(), concept.upper())
+    n_sub = len(re.findall(r"\b(?:" + "|".join(re.escape(f) for f in subs) + r")\b", sentence))
+    return n_all, n_sub
 N_DOMAINS = 116 - len(EXCLUDED_DOMAINS)
 
 
@@ -146,8 +169,9 @@ def g1_pools(res: Result, mutate: str | None = None) -> None:
                     continue
                 n_harm += 1
                 for i, s in enumerate(pool["sentences"]):
-                    if len(re.findall(rf"(?i)\b{re.escape(cc)}\b", s)) != 1:
-                        bad_occ.append(f"{key}[{i}]")
+                    n_all, n_sub = occurrence_counts(s, cc)
+                    if n_all != 1 or n_sub != 1:
+                        bad_occ.append(f"{key}[{i}](all={n_all},sub={n_sub})")
                     for other in CONCEPTS:
                         if other != cc and re.search(rf"(?i)\b{other}s?\b", s):
                             bad_other.append(f"{key}[{i}]->{other}")
@@ -160,8 +184,9 @@ def g1_pools(res: Result, mutate: str | None = None) -> None:
         res.add(f"G1[{cc}] shared byte-identical", not bad_shared,
                 f"{n_shared - len(bad_shared)}/{n_shared} pools identical to demo_pools_116dom.json"
                 + (f"; first bad {bad_shared[:2]}" if bad_shared else ""))
-        res.add(f"G1[{cc}] exactly-one-{cc}", not bad_occ,
-                f"{n_harm} harm pools, {len(bad_occ)} sentence(s) not exactly one whole-word {cc!r}"
+        res.add(f"G1[{cc}] exactly-one-substitutable-{cc}", not bad_occ,
+                f"{n_harm} harm pools, {len(bad_occ)} sentence(s) without exactly one "
+                f"SUBSTITUTABLE {cc!r} (inflection-aware, case-enumerated)"
                 + (f"; first {bad_occ[:2]}" if bad_occ else ""))
         res.add(f"G1[{cc}] no other concept", not bad_other,
                 f"{len(bad_other)} sentence(s) mention another concept"

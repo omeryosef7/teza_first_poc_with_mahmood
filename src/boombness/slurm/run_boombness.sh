@@ -105,6 +105,18 @@ if [ -n "$BOOMB_ARGSFILE" ]; then
   esac
 fi
 
+# ARGS GUARD (DCS-C-080). BOOMB_EXPECT alone does NOT close the 853040 hole: exporting the
+# mistyped `ARGSFILE=` leaves BOOMB_ARGSFILE and BOOMB_ARGS both empty, and a job whose
+# BOOMB_SCRIPT happens to match BOOMB_EXPECT then runs the right script with NO ARGUMENTS and
+# exits COMPLETED 0:0 -- the same invisible failure, one step further along. Opt-in like the
+# others: set BOOMB_REQUIRE_ARGS=1 and empty args become a refusal instead of a default run.
+if [ "${BOOMB_REQUIRE_ARGS:-0}" = "1" ] && [ -z "${BOOMB_ARGS// /}" ]; then
+  echo "ERROR BOOMB_REQUIRE_ARGS=1 but BOOMB_ARGS is empty after resolving"
+  echo "  BOOMB_ARGSFILE='${BOOMB_ARGSFILE:-<unset>}'  origin=$_BOOMB_SCRIPT_ORIGIN"
+  echo "  This runner reads BOOMB_SCRIPT / BOOMB_EXPECT / BOOMB_ARGSFILE / BOOMB_ARGS."
+  echo "  A variable by any other name is silently ignored -- that is DCS-C-047."
+  exit 1
+fi
 echo "=== boombness: $BOOMB_SCRIPT ==="; date; hostname
 echo "boomb_script_origin: $_BOOMB_SCRIPT_ORIGIN  expect=${BOOMB_EXPECT:-<unset>}  argsfile=${BOOMB_ARGSFILE:-<unset>}"
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)  dirty=$(git status --porcelain 2>/dev/null | wc -l)"

@@ -84,8 +84,17 @@ rm -f "$g"
 note INFO "df: $(df -h "$PROJECT_DIR" 2>/dev/null | tail -1 | awk '{print $4" free of "$2}')"
 
 echo "[4] frozen artifacts"
-if bash scripts/dcs_ts_build_banks.sh check >/dev/null 2>&1; then note OK "6/6 ts116 banks match bank_rows_sha16"
-else note FAIL "ts116 bank drift or missing -- run: bash scripts/dcs_ts_build_banks.sh build"; fi
+# GATE THE LIVE FAMILY, NOT THE VOID ONE (DCS-C-080). This checked `ts116`, which C-074 voided as
+# a concept contrast -- so a green preflight meant nothing about the bank a job would actually
+# read, and deleting the void rows would have BLOCKED every submission while instructing the
+# operator to regenerate them. ts116m is the live family: per-concept harm pools (C-074), the
+# inflection- and case-aware filter (C-076/C-079), and length matching (C-077).
+if POOLS_TAG=tsm BANK_TAG=ts116m bash scripts/dcs_ts_build_ts116n.sh check >/dev/null 2>&1; then
+  note OK "6/6 ts116m banks match bank_rows_sha16"
+else note FAIL "ts116m bank drift or missing -- run: POOLS_TAG=tsm BANK_TAG=ts116m bash scripts/dcs_ts_build_ts116n.sh build"; fi
+if POOLS_TAG=tsm BANK_TAG=ts116m python3 scripts/dcs_ts_verify_ts116n.py >/dev/null 2>&1; then
+  note OK "ts116m gates G1-G3 pass"
+else note FAIL "ts116m FAILS gates G1-G3 -- do not extract from it"; fi
 if python3 scripts/dcs_ts_split_manifest.py --check >/dev/null 2>&1; then note OK "domain split manifest verifies"
 else note FAIL "domain split manifest FAILED its own check"; fi
 
