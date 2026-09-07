@@ -2703,3 +2703,56 @@ BLAS free to choose a thread count makes the numerics depend on how busy the nod
 so two runs of the same frozen analyzer could disagree in the last digits — and this project
 already records `OMP_NUM_THREADS` as a binding reproduction constant elsewhere (`A-031`). One place
 to reason about, and it is the place the speedup actually comes from.
+
+## 2026-09-07 · C-106 · two preregistrations disagreed about the Holm family
+
+The pre-submission checklist printed the primary family and it read **one member**. `PR-053`
+declares **two**. Holm is defined *over a family* — two configs disagreeing about which hypotheses
+are in it means the correction is **undefined**, and whichever file the analyzer happened to read
+would silently set the threshold.
+
+Caught by printing the family as part of a manual checklist, **not by any guard** — none of the
+sixteen looks across preregistrations. One identical `multiplicity` block is now written into all
+five, and verified byte-identical by hashing it in each file (`31589eb781be` in all five).
+
+Final family, fixed before any outcome exists:
+
+| family | members | correction |
+|---|---|---|
+| **PRIMARY** | `PR-048` 3-way accuracy · `PR-053` `v_bomb_specific` AUROC | Holm, α=0.05 family-wise |
+| SECONDARY | AUROC variants, lexical transfer, n_ex=8 replication, hedge-free stratum, mandate §9.1 A–F, per-layer profile, `PR-051` | Holm within family |
+| EXPLORATORY | `PR-049` (demoted, `C-101`) · `PR-052` | none — no confirmatory weight |
+| NULLS N1–N8 | diagnostics | not corrected; gates, not hypotheses |
+
+An absent member enters Holm at **p = 1.0** rather than being dropped.
+
+## 2026-09-07 · **THE PRIMARY IS SUBMITTED — job 861367, the first and only read of the test split**
+
+Everything that gates it, verified immediately before submission:
+
+| check | result |
+|---|---|
+| preregistration gate, `for_extraction` | clean — FROZEN, **17 hashes verified against disk**, all 12 mandate-§21 fields |
+| analyzer guards | **16/16 reachable** |
+| frozen bank gates on `ts116m` | **19/19 pass** |
+| split manifest | 6/6 checks, `manifest_sha16 be7d2c772d814ef3` |
+| dress rehearsal | passed **twice, bit-identically**: layer 9, C=0.01, val 0.9138, `n_tied=1/36`, `inert=False` |
+| permutation path | synthetically validated — null centres on chance, marginals exact, one statistic per draw |
+| Holm family | byte-identical across five preregistrations |
+
+`PR-049`'s demotion contingency is moot: `C-101` already demoted it to EXPLORATORY by a
+straightforward power correction (0.793 against its own Holm α), so the SD>0.188 route never
+needed to fire.
+
+**What the run will report, and the shape of the answer is already fixed.** Domain-mean 3-way
+accuracy over 23 untouched test domains, against **chance 1/3 and the measured nuisance floor
+0.9217**, with a domain-level group permutation at `n_perm=10000` and every p printed beside its
+floor. The analyzer emits one of three verdicts and cannot emit anything else:
+
+- `SUPPORTS THE CLAIM`
+- `SIGNIFICANT BUT BELOW THE NUISANCE FLOOR — NOT EVIDENCE FOR THE CLAIM`
+- `NOT SIGNIFICANT`
+
+**Validation accuracy was 0.9138 against a 0.9217 floor.** The middle verdict is a live
+possibility, and it was made a printable outcome *before* that was visible — which is the only
+reason it will be believable if it prints.

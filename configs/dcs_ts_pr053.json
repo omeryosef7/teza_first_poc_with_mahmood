@@ -357,31 +357,44 @@
       {
         "name": "PRIMARY",
         "members": [
-          "PR-048 3-way probe",
-          "PR-053 v_bomb_specific identity AUROC"
+          "DCS-PR-048: 3-way domain-mean accuracy on TEST",
+          "DCS-PR-053: v_bomb_specific identity AUROC on TEST"
         ],
-        "correction": "Holm across the two, alpha=0.05 family-wise",
-        "_note": "PR-049 was DEMOTED to exploratory by C-101 and no longer enters the primary family."
+        "correction": "Holm across the two, alpha=0.05 family-wise"
       },
       {
         "name": "SECONDARY",
         "members": [
+          "macro OvR AUROC",
+          "per-class AUROC",
+          "lexical transfer button->basket",
+          "n_examples=8 replication",
+          "hedge-free stratum re-analysis",
           "mandate 9.1 questions A-F",
-          "per-layer profile",
-          "lexical transfer"
+          "the per-layer diff-in-means profile",
+          "DCS-PR-051: paired positional contrast"
         ],
-        "correction": "Holm within the family"
+        "correction": "Holm within the secondary family"
       },
       {
         "name": "EXPLORATORY",
         "members": [
-          "PR-049 knife-vs-gun",
-          "PR-052 arm-balanced cells"
+          "DCS-PR-049: knife-vs-gun (demoted by C-101)",
+          "DCS-PR-052: arm-balanced surface cells"
         ],
-        "correction": "none -- exploratory results carry no confirmatory weight"
+        "correction": "none -- exploratory results carry no confirmatory weight and are labelled as such"
+      },
+      {
+        "name": "NULLS N1-N8",
+        "members": [
+          "diagnostics"
+        ],
+        "correction": "not corrected -- they are gates, not hypotheses; each reported with its own value"
       }
     ],
-    "_declared_before_any_outcome": "2026-09-07; no probe has been run and no test split has been read"
+    "_absent_members_enter_at_p_1": "A declared member that is not run enters Holm at p=1.0 rather than being dropped.",
+    "_declared_before_any_outcome": "2026-09-07; no probe has been run and no test split has been read",
+    "_consistency": "C-106. PR-048 and PR-053 previously declared DIFFERENT primary families -- PR-048 listed one member, PR-053 listed two. Holm is defined over a family, so two configs disagreeing about the family means the correction is undefined. Caught by the pre-submission checklist printing the family, not by any guard. This identical block is now written into BOTH files."
   },
   "pre_extraction_checklist": [
     {
