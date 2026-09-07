@@ -47,6 +47,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import statistics as st
 import sys
 
@@ -60,6 +61,34 @@ CONCEPTS = ("bomb", "knife", "gun")
 SHARED_VALENCES = ("benign", "remap", "filler")
 N_KEEP = 40
 PER_SPLIT = 20
+
+#: Same two-part rule as the generator's `_clean_strict`: exactly one occurrence across every
+#: inflected form, AND that occurrence is the SINGULAR, because `build_demo_block` substitutes
+#: only the singular. A plural-only sentence survives assembly unchanged and contributes zero
+#: codeword occurrences -- `prompt_families --strict` rejects the whole bank for it. Applied here
+#: as well as at generation so that candidate pools produced before the rule existed can still be
+#: used: every domain retains at least 50 usable candidates against the 40 needed, so no
+#: regeneration is required.
+CONCEPT_FORMS = {"bomb": ("bomb", "bombs"), "knife": ("knife", "knives"), "gun": ("gun", "guns")}
+
+
+def usable(sentences: list[str], concept: str) -> list[str]:
+    """Sentences the substituter can actually rewrite, exactly once.
+
+    Two regexes because two different things must both hold (C-076 and C-079):
+      rx_all   case-INSENSITIVE over every inflection -- catches "knives" and "bOMB", so a
+               sentence carrying a second, unrewritable occurrence is rejected;
+      rx_sub   case-SENSITIVE over exactly the three forms `prompt_families._substitute`
+               enumerates -- so the one occurrence we keep is one it will actually rewrite.
+    A sentence passing only rx_all survives assembly unchanged and contributes ZERO codeword
+    occurrences, which `--strict` rejects as an alignment violation for the whole bank.
+    """
+    forms = CONCEPT_FORMS.get(concept, (concept, concept + "s"))
+    rx_all = re.compile(r"(?i)\b(?:" + "|".join(re.escape(f) for f in forms) + r")\b")
+    subs = (concept, concept.capitalize(), concept.upper())
+    rx_sub = re.compile(r"\b(?:" + "|".join(re.escape(f) for f in subs) + r")\b")
+    return [s for s in sentences
+            if len(rx_all.findall(s)) == 1 and len(rx_sub.findall(s)) == 1]
 
 
 def _quantiles(vals: list[int], k: int) -> list[float]:
@@ -108,15 +137,17 @@ def build() -> tuple[dict, dict]:
     after = {cc: [] for cc in CONCEPTS}
 
     for dom in domains:
-        pools = {cc: cand[cc][f"{dom}|harm"]["sentences"] for cc in CONCEPTS}
+        pools = {cc: usable(cand[cc][f"{dom}|harm"]["sentences"], cc) for cc in CONCEPTS}
         for cc in CONCEPTS:
             before[cc] += [len(s) for s in pools[cc][:N_KEEP]]
         targets = _quantiles([len(s) for cc in CONCEPTS for s in pools[cc]], N_KEEP)
         for cc in CONCEPTS:
             sel = select(pools[cc], targets)
             if len(sel) != N_KEEP:
-                raise SystemExit(f"{dom}|{cc}: only {len(sel)} of {N_KEEP} selected "
-                                 f"({len(pools[cc])} candidates) -- refusing a short pool")
+                raise SystemExit(f"{dom}|{cc}: only {len(sel)} of {N_KEEP} selected from "
+                                 f"{len(pools[cc])} USABLE candidates -- refusing a short pool. "
+                                 f"Generate more candidates for this domain rather than relaxing "
+                                 f"the filter.")
             picked[cc][dom] = sel
             after[cc] += [len(s) for s in sel]
 

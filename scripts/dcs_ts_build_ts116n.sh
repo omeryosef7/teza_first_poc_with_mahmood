@@ -36,14 +36,19 @@ cd "$(dirname "$0")/.."
 
 PRESET=main_longpre_cds_ts
 SEED=20260901
+# TAG selects the pools/bank family. ts116n = the first per-concept-harm build; ts116m = the same
+# with the C-076 inflection filter and the C-077 length matching applied. Parameterised rather
+# than copied so the two families cannot drift apart in the build recipe.
+POOLS_TAG="${POOLS_TAG:-ts}"      # demo_pools_116dom_<POOLS_TAG>_<concept>.json
+BANK_TAG="${BANK_TAG:-ts116n}"    # boombness_prompt_bank_<BANK_TAG>_<cw>_<cc>.jsonl
 REPAIRS='button=switch,basket=hamper,knife=peeler,gun=beacon'
 
 MODE="${1:-build}"   # build | check
 fail=0
 for cw in button basket; do
   for cc in bomb knife gun; do
-    pools="data/boombness_prompts/demo_pools_116dom_ts_${cc}.json"
-    out="data/boombness_prompts/boombness_prompt_bank_ts116n_${cw}_${cc}.jsonl"
+    pools="data/boombness_prompts/demo_pools_116dom_${POOLS_TAG}_${cc}.json"
+    out="data/boombness_prompts/boombness_prompt_bank_${BANK_TAG}_${cw}_${cc}.jsonl"
     if [[ ! -s "$pools" ]]; then echo "MISSING pools $pools" >&2; fail=1; continue; fi
     if [[ "$MODE" == "build" ]]; then
       PYTHONPATH=src python3 -m boombness.prompt_families \
@@ -66,8 +71,8 @@ print(rows_sha16([(r['prompt_id'], r['prompt_sha16']) for r in map(json.loads, o
     fi
   done
 done
-[[ $fail -eq 0 ]] || { echo "[build-ts116n] FAILED" >&2; exit 1; }
-echo "[build-ts116n] 6/6 banks present and matching their recorded bank_rows_sha16"
+[[ $fail -eq 0 ]] || { echo "[build-${BANK_TAG}] FAILED" >&2; exit 1; }
+echo "[build-${BANK_TAG}] 6/6 banks present and matching their recorded bank_rows_sha16"
 echo
 echo "NEXT, and required before any extraction:"
 echo "  python3 scripts/dcs_ts_verify_ts116n.py --mutate     # gates G1-G3 + falsifiability"

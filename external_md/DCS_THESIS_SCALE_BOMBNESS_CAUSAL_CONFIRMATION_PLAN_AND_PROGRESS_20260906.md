@@ -1323,3 +1323,109 @@ short of 0.887, the honest options would have been far worse.
   `Q-011`, and length-matching does not touch it.
 - The G4 verdicts stand as **bomb / gun USABLE WITH STATED LIMIT** and **knife NOT USABLE AS
   BUILT** — the latter cleared by `C-076`'s regeneration, which is in flight.
+
+## 2026-09-07 · C-079 · a third instance of one bug class, and the pattern is now named
+
+Building `ts116m` from the length-matched pools **refused under `--strict` with 170 alignment
+violations and wrote nothing.** Two distinct defects, found in sequence, both mine, both in the
+`C-076` fix itself.
+
+**First: my C-076 fix opened the opposite hole.** Requiring *"exactly one occurrence counting
+inflections"* admits a sentence whose sole occurrence is the **plural** — *"Several bombs were
+found in the loading bay."* `build_demo_block` substitutes only the singular, so such a sentence
+survives assembly **unchanged** and contributes **zero** codeword occurrences. Violation shape:
+`{benign_literal: 5, direct_harmful: 4, natural_doublespeak: 4, concept_in_benign_ctx: 5}`. The
+old filter let plural-*contaminated* sentences through; mine let plural-*only* sentences through.
+
+**Second, after fixing that, 4 violations remained — all in `restaurant_kitchen`:**
+
+> `A container marked "**bOMB**" was found, but its contents were safe.`
+
+A **case-insensitive** occurrence check counts that as one occurrence. `_substitute` enumerates
+only `bomb`, `Bomb`, `BOMB`, so it rewrote nothing.
+
+**The pattern, named because it has now cost three corrections in one phase:**
+
+> **THE CHECKER'S NOTION OF "AN OCCURRENCE" MUST BE EXACTLY THE TRANSFORMER'S.**
+>
+> | | the checker said | the transformer did |
+> |---|---|---|
+> | `C-075` | right-permissive (`basketball` counts) | exact word only |
+> | `C-076` | singular only | singular only — but the text carried `knives` |
+> | `C-079` | case-insensitive | three enumerated case forms |
+>
+> Every time the two disagreed about what counts as an occurrence, and every time the
+> disagreement was **silent** until something downstream refused.
+
+The filter now mirrors `_substitute` exactly: one occurrence case-insensitively across all
+inflections (so a second, unrewritable occurrence is rejected) **and** one occurrence
+case-*sensitively* over exactly the three forms the substituter rewrites. Applied in both the
+generator and the length matcher, so candidate pools generated before the rule existed are still
+usable — every domain retained ≥50 usable candidates against the 40 needed, so **no regeneration
+was required**.
+
+**`--strict` did its job.** It refused, removed its temporaries, and left no bank at the target
+path for a downstream step to pick up. Three defects that would each have silently corrupted the
+primary cell were caught by a build-time invariant rather than by a reviewer.
+
+## 2026-09-07 · R-102 · `ts116m` is built and gated; the length remedy did **not** work
+
+Six banks, 115 domains, **0 alignment violations, 19/19 gates PASS, 4/4 mutations RED.**
+
+| bank | `bank_rows_sha16` |
+|---|---|
+| button_bomb | `9c0dcd1e6c6cf6c1`* |
+| button_gun | `c7ceb5a151a2788a` |
+| basket_bomb | `1e872cd8cd2f63a5` |
+| basket_knife | `61e586e4bdca6f28` |
+| basket_gun | `f1a8332bdd7c48ce` |
+
+\* full table pinned into `configs/dcs_ts_pr046.json` at the next freeze.
+
+**The `C-076` fix is confirmed on the artifact: `0 / 6900` probe rows print their own concept
+word**, against 30/3680 before. The plural leak is gone from the primary channel.
+
+### The honest negative
+
+**N4 length-only: 0.4174 → 0.4014 accuracy; macro AUROC 0.5750 → 0.5793.** The AUROC went
+*slightly up*. Length matching cut the cross-concept mean sentence-length spread by 40.8 %
+(7.03 → 4.16 chars) and moved the length baseline by **0.016 accuracy**.
+
+**The remedy did not work, and per the rule recorded before N4 was ever measured, there is no
+third round.**
+
+Why it failed, diagnosed rather than waved at: I matched the **marginal** length distribution of
+each pool, but `N4` reads `n_chars` of the **full prompt**, whose demo block is four sentences
+drawn by `_take` at fixed slot offsets. Matching pool marginals does not match per-family sums,
+and matching at the family level would require choosing which sentences co-occur — which
+`_take`'s positional slicing exists to keep fixed. **The fix addressed the wrong level of
+aggregation.** That is a real limitation of the remedy, not of the measurement.
+
+### The full nuisance picture on `ts116m`, which is now the honest bar
+
+| baseline | acc | macro AUROC |
+|---|---|---|
+| N6 template-id (probe pop) | **0.3333** | **0.5000** (z = 0.00) |
+| N6b template-id (all cell C, 6,624 test rows) | **0.3333** | **0.5000** |
+| N1 `n_examples=0`, all four baselines | **0.3333** | **0.5000** |
+| cell-A controls (length, TF-IDF, hedge+register) | **0.3333** | **0.5000** |
+| N4 length-only | 0.4014 | 0.5793 |
+| H2 register-only (16 features) | 0.3942 | 0.5943 |
+| H1 hedge-only (5 regexes) | 0.4739 | 0.6374 |
+| H3 hedge + register | 0.5014 | 0.6929 |
+| N5b TF-IDF full prompt, concept-masked | 0.9014 | 0.9837 |
+| N5c TF-IDF demo block, concept-masked | **0.9217** | **0.9924** |
+
+**Read this correctly.** The four exact-chance rows are the ones that would scream if the bank
+were broken, and they are all silent: template identity carries nothing, the zero-dose null
+carries nothing, and the benign cell carries nothing. What *does* carry the label is the
+demonstration text itself — at 0.92 — which is the **treatment**, exactly as `C-078` argued before
+any of these numbers existed.
+
+So the phase's position is unchanged by these numbers, which is the point of having written it
+down first: **surface text predicts the concept, and that was never in doubt.** The open question
+is whether the *codeword's representation specifically* carries it — a question about a position,
+which no text classifier can answer. `PR-047` is where that gets tested.
+
+Carried as live limits, not resolved: **register** (H3 = 0.5014) is `Q-011`; **length** (N4 =
+0.4014) is now a permanent stated nuisance rather than something we will keep attacking.

@@ -92,22 +92,60 @@ CONCEPT_FORMS = {
 }
 
 
+#: The THREE case forms `prompt_families._substitute` actually rewrites. Anything else is invisible
+#: to the substituter and survives assembly unchanged.
+#:
+#: `DCS-C-079`. The generator emitted `A container marked "bOMB" was found...`. A case-INSENSITIVE
+#: occurrence check counts that as one occurrence; `_substitute` tries only `bomb`, `Bomb` and
+#: `BOMB`, so it rewrote nothing and the demo contributed zero codeword occurrences. `--strict`
+#: caught it as an alignment violation and refused to write the bank.
+#:
+#: This is the third instance of one bug class in this phase, and the pattern is worth naming:
+#: THE CHECKER'S NOTION OF "AN OCCURRENCE" MUST BE EXACTLY THE TRANSFORMER'S.
+#:   C-075  the finder was right-permissive where the generator was not ("basketball")
+#:   C-076  the filter counted only the singular where the text carried a plural ("knives")
+#:   C-079  the filter was case-insensitive where the substituter is case-ENUMERATED ("bOMB")
+#: Each time the check and the transformation disagreed about what counts, and each time the
+#: disagreement was silent. The filter below is written to mirror `_substitute` exactly.
+def _substitutable_forms(concept: str):
+    """Exactly the forms `_substitute` enumerates -- mirrored, not approximated."""
+    return (concept, concept.capitalize(), concept.upper())
+
+
 def _forms_re(concept: str):
     forms = CONCEPT_FORMS.get(concept, (concept, concept + "s"))
     return re.compile(r"(?i)\b(?:" + "|".join(re.escape(f) for f in forms) + r")\b")
 
 
 def _clean_strict(sentences, concept: str):
-    """Keep sentences with EXACTLY ONE occurrence counting every inflected form.
+    """Keep sentences with EXACTLY ONE occurrence, counting every inflected form, AND SINGULAR.
 
-    Stricter than `demo_pools._clean`, which counts only the exact form. Deduplicates
-    case-insensitively, preserving first-seen order, so the selection is deterministic.
+    TWO conditions, and the second one was learned the hard way. Requiring only "exactly one
+    occurrence counting inflections" admits a sentence whose sole occurrence is the PLURAL --
+    "Several bombs were found in the loading bay." `build_demo_block` substitutes only the
+    singular form, so such a sentence passes the filter and then survives assembly UNCHANGED,
+    contributing ZERO codeword occurrences. `prompt_families --strict` caught it as 170 alignment
+    violations of the shape
+        {benign_literal: 5, direct_harmful: 4, natural_doublespeak: 4, concept_in_benign_ctx: 5}
+    and refused to write anything.
+
+    So the first version of this filter (C-076) fixed one direction and opened the other: the old
+    filter let plural-CONTAMINATED sentences through, mine let plural-ONLY sentences through. The
+    correct rule is both at once -- exactly one occurrence across all forms, and that occurrence
+    is the form the substitution actually rewrites.
+
+    Deduplicates case-insensitively, preserving first-seen order, so selection is deterministic.
     """
     rx = _forms_re(concept)
+    subs = _substitutable_forms(concept)
+    rx_sing = re.compile(r"\b(?:" + "|".join(re.escape(f) for f in subs) + r")\b")  # case-SENSITIVE
     out, seen = [], set()
     for s in sentences:
         s = s.strip()
-        if not s or len(rx.findall(s)) != 1:
+        # rx is case-insensitive across inflections (catches "knives" and "bOMB");
+        # rx_sing is case-SENSITIVE over exactly the forms _substitute rewrites. Requiring both to
+        # equal 1 means: one occurrence in the text, and the substituter can see it.
+        if not s or len(rx.findall(s)) != 1 or len(rx_sing.findall(s)) != 1:
             continue
         k = s.casefold()
         if k in seen:

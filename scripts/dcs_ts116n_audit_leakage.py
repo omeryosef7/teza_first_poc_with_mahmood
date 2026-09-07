@@ -55,7 +55,7 @@ BANKDIR = os.path.join(REPO, "data", "boombness_prompts")
 SPLIT_PATH = os.path.join(BANKDIR, "dcs_ts116_domain_split.json")
 PREREG_PATH = os.path.join(REPO, "configs", "dcs_ts_pr046.json")
 
-BANK_FAMILY = "ts116n"
+BANK_FAMILY = os.environ.get("BANK_TAG", "ts116n")   # env-selected so the SAME audit code runs on ts116n and ts116m; a second copy is a second place to drift
 CONCEPTS = ["bomb", "knife", "gun"]
 CODEWORDS = ["button", "basket"]
 CONCEPT_IDX = {c: i for i, c in enumerate(CONCEPTS)}

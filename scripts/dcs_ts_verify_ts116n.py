@@ -73,12 +73,19 @@ EXCLUDED_DOMAINS = frozenset({"restaurant_kitchen"})
 N_DOMAINS = 116 - len(EXCLUDED_DOMAINS)
 
 
+#: Which bank family to gate. ts116n is the first per-concept-harm build; ts116m adds the C-076
+#: inflection filter and the C-077 length matching. Env-selected so the SAME gate code runs on
+#: both -- a second copy of a verifier is a second place for the gates to drift.
+BANK_TAG = os.environ.get("BANK_TAG", "ts116n")
+POOLS_TAG = os.environ.get("POOLS_TAG", "ts")
+
+
 def bank_path(cw: str, cc: str) -> str:
-    return os.path.join(DP, f"boombness_prompt_bank_ts116n_{cw}_{cc}.jsonl")
+    return os.path.join(DP, f"boombness_prompt_bank_{BANK_TAG}_{cw}_{cc}.jsonl")
 
 
 def pool_path(cc: str) -> str:
-    return os.path.join(DP, f"demo_pools_116dom_ts_{cc}.json")
+    return os.path.join(DP, f"demo_pools_116dom_{POOLS_TAG}_{cc}.json")
 
 
 def load_bank(p: str) -> dict:
