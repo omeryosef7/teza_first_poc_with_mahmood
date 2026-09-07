@@ -3363,3 +3363,40 @@ and that it is labelled so throughout precisely so it cannot be mistaken for the
 
 **Two blocking items remain on it:** rerun the table on all **six** banks (`R-115` used four), and
 report the sweep rather than a single cut.
+
+## 2026-09-07 · C-112 · **R-115 compromises PHASE 9's upper-bound patch, and that has to be faced before spending GPU**
+
+Mandate §10.1 specifies the upper-bound test as: patch the **C_knife** representation into a
+**C_bomb** target and ask whether the semantic interpretation shifts **bomb → knife**.
+
+**`R-115` makes that arm largely uninterpretable.** Knife installs in **3 of 113** domains
+(median `semantic_logodds` **−4.89**); gun in **1 of 113** (−6.96); on the 23 test domains,
+**2/23 and 0/23**. So the donor representation is not "a prompt where knife is installed" — it is,
+for ~97 % of domains, **a prompt where a knife demonstration set failed to install anything**.
+
+Patching that in and observing no shift toward knife would be **exactly what you would expect
+whether or not the concept axis is causally used.** The arm cannot distinguish its own hypotheses.
+Running it as specified would produce a null that reads as evidence and is not.
+
+**Consequence, decided now rather than after the run:**
+
+- **§10.1 (patch) is DEMOTED to exploratory**, and its null is **CANNOT ANSWER by construction**
+  on this corpus — for the same structural reason `C-074` was: the manipulation the arm depends on
+  is absent. It may still be run for the ~3 domains where knife does install, reported as an
+  n=3 observation and nothing more.
+- **§10.2 (surgical subspace intervention) becomes the primary causal test**, and it is
+  **unaffected** by `R-115`. Projecting `v_bomb_specific` out of a **bomb** prompt — where the
+  concept demonstrably *does* install in 70/113 domains — and asking whether the bomb readout falls
+  is a well-posed question that needs no donor and no second installed concept. The four-part
+  success rule of §10.5 applies to it unchanged.
+
+**This is the second time `R-115` has changed the meaning of a design rather than a number**, and
+both times in the same direction: the three-way framing assumed three installed concepts, and there
+is one. `R-113`'s interpretation narrowed; `PHASE 9`'s primary arm moves from the patch to the
+projection.
+
+Worth stating plainly: had the readout run *before* the probe — the ordering the mandate's own
+PHASE list implies, with PHASE 7 ahead of the analysis phases — this would have been known before
+`PR-048` was designed as a three-way contrast at all. **The phase ran its confirmatory analysis
+before its validation instrument**, and the cost is that two designs had to be reinterpreted after
+the fact rather than built correctly the first time.
