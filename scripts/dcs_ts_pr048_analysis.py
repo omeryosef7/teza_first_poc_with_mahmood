@@ -161,6 +161,7 @@ def main() -> int:
     ap.add_argument("--reps", help="directory of extracted representations")
     ap.add_argument("--out", default="outputs/dcs_ts/pr048_result.json")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--tag-prefix", default="ts116m_full")
     a = ap.parse_args()
 
     if a.selftest:
@@ -190,9 +191,187 @@ def main() -> int:
         print(f"  gates:      alpha={alpha} n_perm={n_perm} chance={chance} unit={unit}")
         return 0
 
-    raise SystemExit("--reps handling is implemented in the extraction follow-up; "
-                     "no representations exist yet and this analyzer will not fabricate a path "
-                     "to them.")
+    return run_probe(pr, spec, assign, a)
+
+
+# --------------------------------------------------------------------------------------------
+# the probe
+# --------------------------------------------------------------------------------------------
+def _find_run(reps_root: str, tag: str) -> str:
+    """Newest COMPLETE run directory for a tag. Complete means DONE.json, not merely newest.
+
+    `C-051`/`C-012`: a producer that takes hits[-1] with no DONE.json filter reads a PARTIAL newer
+    run while its verifier reads an older complete one, and the two silently disagree.
+    """
+    cands = []
+    for d in sorted(os.listdir(reps_root)):
+        if not d.startswith(tag + "_"):
+            continue
+        full = os.path.join(reps_root, d)
+        if os.path.exists(os.path.join(full, "DONE.json")):
+            cands.append(full)
+    if not cands:
+        raise PreregError(f"no COMPLETE run directory for tag {tag!r} under {reps_root} "
+                          f"(a directory without DONE.json is a partial run and is not used)")
+    return cands[-1]
+
+
+def load_bank_rows(path: str) -> dict:
+    out = {}
+    with open(path) as f:
+        for line in f:
+            r = json.loads(line)
+            out[r["prompt_id"]] = r
+    return out
+
+
+def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    import torch
+
+    reps_root = a.reps
+    layer_grid = pr.require("read_site", "layer_grid")
+    c_grid = pr.require("read_site", "C_grid")
+    n_perm = pr.require("primary", "n_perm")
+    chance = pr.require("primary", "chance")
+    concepts = spec["concepts"]
+    excluded = set(spec["excluded_domains"])
+
+    # ---- bind rows, with the bank sha VERIFIED against the preregistration -------------------
+    X_by_layer = {L: [] for L in layer_grid}
+    meta = []
+    banks = pr.require("population", "banks")
+    for bname, bpath in spec["banks"].items():
+        cw, cc = bname.split("_", 1)
+        if cc not in concepts:
+            continue
+        run = _find_run(reps_root, f"{a.tag_prefix}_{bname}")
+        summ = json.load(open(os.path.join(run, "summary.json")))
+        want_rows = banks[bname]["bank_rows_sha16"]
+        if summ.get("bank_rows_sha16") != want_rows:
+            raise PreregError(f"{bname}: the run at {run} was extracted from bank_rows_sha16 "
+                              f"{summ.get('bank_rows_sha16')} but the preregistration pins "
+                              f"{want_rows}. BANK BINDING FAILED -- this run measures a different "
+                              f"population than the one that was frozen.")
+        if summ.get("position") != pr.require("read_site", "position"):
+            raise PreregError(f"{bname}: run position {summ.get('position')!r} != preregistered "
+                              f"{pr.require('read_site','position')!r}")
+        if summ.get("attn_implementation") != pr.require("model", "attn_impl"):
+            raise PreregError(f"{bname}: run attn {summ.get('attn_implementation')!r} != "
+                              f"preregistered {pr.require('model','attn_impl')!r}")
+        cache = torch.load(os.path.join(run, "cache", "final_occurrence_reps.pt"),
+                           map_location="cpu", weights_only=False)
+        run_layers = list(cache["layers"])
+        rows = load_bank_rows(os.path.join(REPO, bpath))
+        for pid, rep in cache["reps"].items():
+            r = rows.get(pid)
+            if r is None:
+                continue
+            if (r["cell"] != spec["cell"] or r["query_kind"] != spec["query_kind"]
+                    or r["n_examples"] != spec["n_examples"] or r["domain"] in excluded):
+                continue
+            t = rep if hasattr(rep, "shape") else torch.as_tensor(rep)
+            t = t.float()
+            for L in layer_grid:
+                X_by_layer[L].append(t[run_layers.index(L)].numpy())
+            meta.append({"pid": pid, "bank": bname, "codeword": cw, "concept": cc,
+                         "domain": r["domain"], "dsplit": assign[r["domain"]]})
+
+    n = len(meta)
+    if n == 0:
+        raise PreregError("the population bound ZERO rows -- refusing to report a statistic over "
+                          "an empty set (this is the C-074 shape)")
+    y = np.array([concepts.index(m["concept"]) for m in meta])
+    dom = np.array([m["domain"] for m in meta])
+    spl = np.array([m["dsplit"] for m in meta])
+    Xs = {L: np.stack(X_by_layer[L]) for L in layer_grid}
+
+    tr, va, te = spl == "train", spl == "validation", spl == "test"
+    for nm, msk in (("train", tr), ("validation", va), ("test", te)):
+        if msk.sum() == 0:
+            raise PreregError(f"the {nm} split bound ZERO rows")
+    if set(dom[tr]) & set(dom[te]):
+        raise PreregError(f"DOMAIN LEAKAGE: {len(set(dom[tr]) & set(dom[te]))} domain(s) in both "
+                          f"train and test")
+
+    def fit_score(L, C, fit_mask, eval_mask):
+        sc = StandardScaler().fit(Xs[L][fit_mask])
+        clf = LogisticRegression(C=C, max_iter=2000, multi_class="multinomial")
+        clf.fit(sc.transform(Xs[L][fit_mask]), y[fit_mask])
+        pred = clf.predict(sc.transform(Xs[L][eval_mask]))
+        return pred, y[eval_mask], dom[eval_mask]
+
+    def domain_mean_acc(pred, truth, doms):
+        per = {}
+        for d in sorted(set(doms)):
+            m = doms == d
+            per[d] = float((pred[m] == truth[m]).mean())
+        return float(np.mean(list(per.values()))), per
+
+    # ---- SELECTION ON VALIDATION ONLY --------------------------------------------------------
+    scores, order = {}, []
+    for L in layer_grid:
+        for C in c_grid:
+            pred, truth, doms = fit_score(L, C, tr, va)
+            acc, _ = domain_mean_acc(pred, truth, doms)
+            scores[(L, C)] = acc
+            order.append((L, C))
+    trace = select_hparams(scores, order)
+    L_sel, C_sel = trace["chosen"]
+
+    # ---- TEST, read once ---------------------------------------------------------------------
+    pred, truth, doms = fit_score(L_sel, C_sel, tr, te)
+    obs, per_dom = domain_mean_acc(pred, truth, doms)
+    k = sum(1 for v in per_dom.values() if v > chance)
+    nd = len(per_dom)
+    sp, sfloor = sign_test_two_sided(k, nd)
+
+    # ---- DOMAIN-LEVEL group permutation ------------------------------------------------------
+    rng = np.random.default_rng(pr.require("split", "seed"))
+    dom_list = sorted(set(dom[tr]))
+    nulls = []
+    for _ in range(int(n_perm)):
+        # permute the LABEL MAP WITHIN each training domain's concept assignment, at the domain
+        # level -- never row level (measured FPR 0.2000 at row level).
+        perm = {d: rng.permutation(len(concepts)) for d in dom_list}
+        y2 = y.copy()
+        for d in dom_list:
+            m = dom == d
+            y2[m] = perm[d][y[m]]
+        sc = StandardScaler().fit(Xs[L_sel][tr])
+        clf = LogisticRegression(C=C_sel, max_iter=200, multi_class="multinomial")
+        clf.fit(sc.transform(Xs[L_sel][tr]), y2[tr])
+        p2 = clf.predict(sc.transform(Xs[L_sel][te]))
+        nulls.append(domain_mean_acc(p2, y[te], dom[te])[0])
+    pp, pfloor, nex = group_permutation_p(obs, nulls)
+
+    res = {
+        "prereg": a.prereg, "n_rows": n, "n_domains": len(set(dom)),
+        "n_test_domains": nd, "chance": chance,
+        "SELECTION_TRACE": trace,
+        "selected_layer": L_sel, "selected_C": C_sel,
+        "observed_domain_mean_accuracy": obs,
+        "per_domain_accuracy": per_dom,
+        "sign_test": {"k": k, "n": nd, "p": sp, "floor": sfloor, "formatted": fmt_p(sp, sfloor)},
+        "permutation": {"p": pp, "floor": pfloor, "n_exceed": nex, "n_perm": int(n_perm),
+                        "formatted": fmt_p(pp, pfloor, nex)},
+    }
+    os.makedirs(os.path.dirname(os.path.join(REPO, a.out)), exist_ok=True)
+    with open(os.path.join(REPO, a.out), "w") as f:
+        json.dump(res, f, indent=2)
+
+    print(f"  rows={n}  domains={len(set(dom))}  test_domains={nd}")
+    print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} best_val_acc={trace['best_acc']:.4f} "
+          f"n_tied={trace['n_tied_at_best']}/{trace['n_grid']} inert={trace['inert']}")
+    if trace["_warning"]:
+        print(f"  !! {trace['_warning']}")
+    print(f"  OBSERVED domain-mean accuracy = {obs:.4f}  (chance {chance:.4f})")
+    print(f"  sign test    k={k}/{nd}  {fmt_p(sp, sfloor)}")
+    print(f"  permutation  {fmt_p(pp, pfloor, nex)}")
+    print(f"  -> {a.out}")
+    return 0
 
 
 def selftest() -> int:
@@ -230,12 +409,23 @@ def selftest() -> int:
                   (not real["inert"]) and real["chosen"] == (7, 0.01) and real["_warning"] == ""))
 
     # the preregistration refusals, exercised through the real loader
-    try:
-        load("configs/dcs_ts_pr048.json", for_extraction=True)
-        cases.append(("for_extraction refuses while the checklist is open", False))
-    except PreregError as e:
-        cases.append(("for_extraction refuses while the checklist is open",
-                      "analyzer_exists" in str(e) or "BLOCKING" in str(e)))
+    # The extraction refusal must be tested on a SYNTHETIC open blocker, not on the live config.
+    # The first version asserted that the real config refuses -- true when written, and it went
+    # stale the moment the checklist was legitimately completed. A guard test whose expected
+    # answer changes as the project progresses tests the project, not the guard.
+    from dcs_ts_prereg import validate as _validate
+    _live = json.load(open(os.path.join(REPO, "configs/dcs_ts_pr048.json")))
+    _open = json.loads(json.dumps(_live))
+    _open["pre_extraction_checklist"].append(
+        {"id": "SYNTH", "item": "synthetic open blocker", "blocking": True, "done": False})
+    cases.append(("for_extraction refuses an OPEN blocker",
+                  any("SYNTH" in e for e in _validate(_open, "SYNTH", for_extraction=True))))
+    cases.append(("for_extraction accepts the live config now that the checklist is closed",
+                  not _validate(_live, "LIVE", for_extraction=True)))
+    _mal = json.loads(json.dumps(_live))
+    _mal["pre_extraction_checklist"][0].pop("done", None)
+    cases.append(("a checklist item missing its booleans refuses",
+                  any("boolean" in e for e in _validate(_mal, "MAL", for_extraction=True))))
     try:
         load("configs/does_not_exist.json")
         cases.append(("a missing preregistration refuses", False))

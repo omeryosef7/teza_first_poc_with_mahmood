@@ -2081,3 +2081,55 @@ gap, and one of them corrects a claim of mine:
 Mutation accounting was also corrected so that a check **already RED on the real corpus**
 (`Y3-surf`) cannot be credited as a catch — otherwise a pre-existing failure would launder itself
 into evidence that the harness works.
+
+## 2026-09-07 · R-107 · first bank extracted and **bound to the frozen preregistration**
+
+Job **860352**, `COMPLETED 0:0`, 58:19. `ts116m_full_button_bomb_20260907_040927_3131687`.
+
+| | |
+|---|---|
+| rep stacks cached | **22,272 / 22,272** |
+| `n_rows_captured` / `n_failed` | 22,272 / **0**, `skip_reasons: {}` |
+| cache size | 1,649,019,931 B — exactly 22272 × 9 layers × 4096 × 2 (bf16) |
+| `bank_rows_sha16` | **`4ca3ec165ab5b018`** — **matches PR-048's pin** |
+| `bank_file_sha16` | `dcd92d723f3e6d00` |
+| attn / layers / position | `eager` / `[6..14]` / `codeword_last` |
+| `knockout_applied` | `false` (baseline-reproduction control) |
+| layer convention recorded in the artifact | `block_L == hidden_states[L+1]; hidden_states[0] == embeddings` |
+
+**The bank binding is the important line.** The run's `bank_rows_sha16` equals the hash `PR-048`
+froze *before the bank was extracted*, so this measurement is provably of the preregistered
+population and not of some neighbouring artifact. `DONE.json` is present, so the run is complete
+rather than merely newest.
+
+One incidental measurement worth keeping: `last_layer_tied_vs_raw_relnorm = 0.6276`. That is the
+relative difference between the tied post-final-norm tensor and the raw last-block output — so the
+substitution `T5` could not exercise is **not** cosmetic, it is a 63 % relative change. It does not
+affect this phase (the band is 6–14), and it strengthens the standing block on any last-layer read.
+
+## 2026-09-07 · the analyzer's reps path, and a stale guard of my own
+
+`run_probe()` implemented against the real cache format. It refuses before computing anything if:
+the run directory has no `DONE.json` (a partial newer run must never shadow a complete older one —
+the `C-051` defect); the run's `bank_rows_sha16` disagrees with the preregistered pin (**bank
+binding**); the run's `position` or `attn_implementation` disagrees with the preregistration; the
+population binds **zero rows**; any split binds zero rows; or any domain appears in **both** train
+and test.
+
+Selection runs on **validation only** and returns a `SELECTION_TRACE` the caller cannot drop.
+Permutation is at the **domain** level — labels are permuted within each training domain, never
+row-wise, because row-level permutation was measured at FPR 0.2000. Both p-values print beside
+their floors.
+
+**C-089 — a guard test of mine went stale, and the shape is worth naming.** The selftest asserted
+that the live preregistration *refuses* under `for_extraction`. That was true when written, and it
+became **false the moment the checklist was legitimately completed** — so the selftest failed
+because the project had progressed correctly. A guard test whose expected answer changes as work
+advances is testing the project, not the guard. Replaced with three assertions against a
+**synthetic** config: an open blocker refuses, the live config is accepted now that its checklist
+is closed, and a checklist item missing its booleans refuses. **13/13 guards reachable.**
+
+**Extraction status:** button_bomb done; button_knife 15,300/22,272; the multi-bank job on
+button_gun at 12,200/22,272 with three basket banks behind it. Roughly three hours to full
+coverage. Per-bank rate is ~380 rows/min, i.e. ~58 min/bank — my 30-minute figure was 2× optimistic
+and is corrected here rather than left to look like a delay.
