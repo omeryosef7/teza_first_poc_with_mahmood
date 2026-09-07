@@ -3032,3 +3032,144 @@ design whose question D failed.
 
 That is a narrower set of claims than the phase set out to make, and every narrowing came from an
 instrument built in advance to be able to say so.
+
+## 2026-09-07 · A-045 · `C-068`, `C-070` and the §13 ceiling are ONE fact, not three — and it explains why this phase's selection is healthy
+
+The stood-down peer session sent a synthesis of its own handoff, unprompted, correcting itself.
+Recorded here because it is right, because it is better than what it replaced, and because I
+**verified its premise independently from my own bank** rather than taking it on trust.
+
+**The premise, checked against raw rows of `ts116m_button_bomb`:**
+
+| cell | rows | contain the concept word | **`target_surface == target_semantic`** |
+|---|---|---|---|
+| A | 5,568 | 1,856 | **0** |
+| **B** | 5,568 | **5,568** | **5,568** |
+| **C** | 5,568 | 1,856 | **0** |
+| E | 5,568 | 5,568 | 5,568 |
+
+Cell B: `target_surface='bomb'`, `target_semantic='bomb'` — **the capture token IS the concept
+word, in 5,568 of 5,568 rows.**
+Cell C: `target_surface='button'`, `target_semantic='bomb'` — the capture token is the codeword,
+and the concept is what it *stands for*.
+
+**So a probe at the capture site in cell B is reading the token `bomb` itself.** It cannot do
+otherwise, and it must saturate. The mechanism is visible in one metadata field.
+
+**The chain is then deterministic, not coincidental:**
+
+> cell-B capture site **is** the concept word
+> → any probe there saturates at 1.0000 (the §13 ceiling)
+> → the selection surface is 1.000000 at all 36 grid points (`C-070`)
+> → `select()`'s strict `>` has no maximum and returns the **first** grid element
+> → the pick is **(6, 0.01)** in every fold of every cell-B-selected instrument
+> → **L=6 is the first layer of the 6–14 knockout band**
+> → at the band's first layer the two knockout scopes are provably identical at the read row
+>   (0 differing fp16 bit patterns, 2,520 rows, 3 banks)
+> → **gate R6 is uninformative by construction** (`C-068`)
+
+`R6`'s degeneracy is **not bad luck in layer choice.** It *descends* from the cell-B ceiling. The
+inherited framing had §69.2 treating *"all six folds picked L=6"* as a coincidence worth
+explaining, and §69.3 treating the §13 ceiling as a separate design error. Both are individually
+defensible; together they miss that **one property of cell B produces all three.**
+
+### Why this matters for THIS phase, and it is not retrospective
+
+**It explains `R-113`'s healthy selection.** `PR-048` selects on **cell C**, where
+`target_surface != target_semantic` in 5,568/5,568 rows — a population where the probe *cannot*
+read lexical identity. So the surface does not saturate, `select()` finds a genuine maximum, and
+the result was **layer 9, `n_tied = 1/36`, `inert = False`** rather than layer 6 with 36/36 tied.
+
+That was recorded in `R-110` as *"the first non-degenerate layer selection in this project's
+recorded history"*, and I treated it as a welcome property. **It is not luck — it is a
+consequence of moving the selection population off the saturating cell**, and it now has a
+mechanism rather than an observation.
+
+### The operational consequence, which is the peer's actual point
+
+**The fix for §13 and the fix for the inert selection are the same fix**: read the concept signal
+at a position that is *not* the concept word. A non-saturating selection population also stops
+forcing the grid minimum, which stops landing on the degenerate layer. **One change repairs the
+instrument in three places.**
+
+This is now a **binding constraint on `PR-056` (PHASE 8)**: the corrected knockout must not select
+on a saturating population *and* must read strictly above the band floor. Those had been treated
+as two independent requirements; they are one requirement with two symptoms, and satisfying only
+the second would leave the first free to re-create it.
+
+**Credit where due:** the synthesis is the peer's, produced after it had stood down and while
+declining to edit anything itself. The verification above is mine, from my own bank, and it
+agrees.
+
+## 2026-09-07 · R-114 · the exploratory pair, and **PR-052's premise fails on the rows it is computed over**
+
+`scripts/dcs_ts_exploratory.py`, `reports/DCS_TS_EXPLORATORY.md`. Distinct `--out` per
+preregistration (`C-093`), and the writer refuses to overwrite a file holding a different
+`prereg_id`. The EXPLORATORY label is **enforced rather than asserted**: the analyzer reads the
+`EXPLORATORY` family out of the frozen `multiplicity` block and **refuses to run on any
+preregistration that does not place its own id there**, so it cannot be pointed at `PR-048` or
+`PR-053` to manufacture a number, and `assert_no_verdict()` refuses to leave confirmatory language
+in an artifact.
+
+| | estimate | 95 % t | bootstrap | floor | margin |
+|---|---|---|---|---|---|
+| **PR-049** knife-vs-gun, unstratified | **0.9446** | [0.9267, 0.9624] | [0.9283, 0.9609] | **0.7065** (re-derived, replicates to 4 dp) | +0.2381 |
+| **PR-052** arm-balanced surface cells | **0.9294** | [0.9058, 0.9530] | [0.9073, 0.9519] | **0.5573**, not the frozen 0.5054 | +0.3721 |
+
+Both 23/23 domains; both p-values **at their floors** and reported as such. 17/17 and 19/20 checks,
+11/11 and 12/12 mutations RED.
+
+### C-108 · the one failed check is the finding: PR-052's premise does not hold on TEST
+
+`SURFACE-FLOOR-VERIFIED` **FAILS**. Inside the arm-balanced cells the surface classifier reaches
+**0.5573, CI [0.5135, 0.6003] — the CI EXCLUDES 0.5** on the test rows. It covers chance on
+validation (0.5199, [0.4773, 0.5623]), which is where `Z1` measured it.
+
+So `PR-052` asserts surface information is *verifiably absent* inside the cells, and on the rows
+the estimate is actually computed over it is **reduced, not absent** — 0.7065 → 0.5573. That is
+the **second** of my preregistrations to rest on a premise that fails when checked (`C-100` was
+the first, and it was the same kind of error: asserting a property of a construction instead of
+measuring it). Per `PR-052`'s own rule — *"the floor is the measured surface accuracy in the SAME
+cells, verified per run"* — the operative bar is **0.5573**, and the margin is +0.3721 rather
+than the +0.4240 the frozen number would have implied.
+
+### C-109 · I mislabelled where the 0.5054 floor was measured
+
+`PR-052` **and this log** say the 0.5054 surface floor was measured on *"all 23 **test**
+domains"*. **`Z1` never read a test label.** It was **validation** —
+`reports/DCS_TS_PR050_PR051_BLOCKERS.md` says so explicitly, and the agent that wrote it scoped
+itself to train+validation on instruction. I introduced the error when recording `R-106`/`PR-052`
+and it propagated into a frozen config. Corrected here; the frozen files are not edited.
+
+Also carried forward: `PR-049`'s config still shows the superseded 0.963/0.900 power. `C-101`'s
+corrected 0.905/0.793 **travels beside it in the artifact** rather than replacing it in the frozen
+file.
+
+### C-110 · the occurrence-bug class is EIGHT instances, not seven
+
+I briefed the claim-table agent with "seven". The log's own numbering reaches **"the EIGHTH
+instance"** at `C-090`, and counting them out gives `C-075`, `C-076`, `C-079`, `C-080`, `C-087`,
+`C-090`, plus `C-095` (the mutation harness that carried no mutation for the gates it certified)
+and `R-108` (the same matcher causing a hard extraction refusal). The table names each instance
+rather than quoting a bare total, which is the right fix — a count is exactly the kind of thing
+that drifts.
+
+## 2026-09-07 · PR-056 and PR-057 · PHASE 8 and PHASE 9 preregistered before anything runs
+
+`configs/dcs_ts_pr056_phase8.json` (corrected attention knockout) and
+`configs/dcs_ts_pr057_phase9.json` (**the causal concept-axis intervention — CLAIM C**).
+
+Both verify under the loader: *clean, status FROZEN, 17 hashes pinned and verified, all 12
+mandate-§21 fields present*, with every bank/pool/split hash **copied verbatim from `PR-048`** —
+no hash invented — and 6/6 mutations producing a refusal on each.
+
+**Both refuse `--for-extraction` right now**, by design: PR-056 gives 6 refusals and PR-057 gives
+9, covering every blocking checklist item plus `analyzer_exists: false`. **Nothing can be submitted
+until the analyzers exist and the blockers close.** All `blocking`/`done` fields are real booleans,
+per `C-086`.
+
+`PR-057` carries the clause that matters: if the probe score moves but the model's interpretation
+does not, the finding is **"decodable but not causally used under this intervention"** — which
+mandate §32 calls a valuable result — and **never** "the representation is meaningless". It also
+records its dependence on the PHASE 7 readout (job 865335) for an outcome variable, without which
+the phase would repeat `R-097` exactly: a mediation question with no `y` measured where `x` lives.

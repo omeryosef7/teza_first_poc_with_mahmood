@@ -1,0 +1,614 @@
+{
+  "id": "DCS-PR-056",
+  "title": "PHASE 8 -- the CORRECTED attention-knockout mechanism test: intervene over a band, read STRICTLY ABOVE its floor",
+  "status": "FROZEN",
+  "written": "2026-09-07",
+  "written_at_commit": "b80db84d",
+  "phase": 8,
+  "_why_machine_readable": [
+    "Every gate in this file is fetched through scripts/dcs_ts_prereg.py, which REFUSES on a null",
+    "*_sha16, on a missing mandate-21 field, on a status that is not FROZEN, and -- with",
+    "for_extraction=True -- on a BLOCKING checklist item that is not done. A number in a markdown",
+    "log that no program consults is a wish, not a preregistration (B-020, and B-020 RECURRED",
+    "inside the file written to fix B-020, which is C-097)."
+  ],
+  "question": "Does blocking the model's QUERY rows from attending to the demonstration block change what is decodable about the installed concept, and does the WHOLE-QUERY scope differ from the single CODEWORD-ROW scope, when the state is read STRICTLY ABOVE the first layer of the intervened band and at a downstream neutral position?",
+  "claim_it_could_support": "CLAIM D of the phase mandate (section 32) -- 'a specific demonstration->query pathway is required for the model's semantic report' -- and, negatively, the retraction or the repair of R-093's whole-query wording. It supports NO part of CLAIM C: this design contains no concept-axis intervention and no behavioural outcome.",
+  "_the_defect_this_design_exists_to_not_repeat": {
+    "id": "C-068 / R-093 / gate R6",
+    "what_happened": "The intervention band was 6-14 and the state was read at L6 -- the FIRST layer of that band. At the read row, `legacy_all_query` and `target_surface_row_only` produce a BIT-IDENTICAL tensor: 0 differing fp16 bit patterns over 2520 rows, in all three banks. Gate R6 therefore reproduced R-093 to sixteen digits and was read as a confirmation. It is CANNOT ANSWER.",
+    "why_it_is_structural": "A state read at the first affected layer can only reflect the READ ROW'S OWN attention mask. Differences in what OTHER query rows were allowed to read have had zero layers in which to propagate into it. Any band-limited intervention read at the band floor is uninformative BY CONSTRUCTION -- not underpowered, not null: arithmetically incapable of resolving the contrast. Mandate section 12.1 and section 22.5.",
+    "the_fix_in_this_design": [
+      "intervene over blocks 6-14 as before, so the manipulation is comparable to R-093;",
+      "read the PRIMARY at block 9, three layers above the band floor;",
+      "capture 7..14 and report the whole propagation profile as secondary;",
+      "read L6 too, and publish it EXPLICITLY LABELLED as uninformative by construction rather than as a null;",
+      "read a SECOND, downstream neutral position (rel_end -9) that carries no concept token;",
+      "and enforce all of that with the DEGENERACY GATE below, which is code, not prose."
+    ]
+  },
+  "population": {
+    "bank_family": "ts116m",
+    "banks": {
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+        "bank_file_sha16": "dcd92d723f3e6d00",
+        "bank_rows_sha16": "4ca3ec165ab5b018"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+        "bank_file_sha16": "94fd300d611fccf2",
+        "bank_rows_sha16": "65eb4fa533890eff"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl",
+        "bank_file_sha16": "8e646dfdb451abc6",
+        "bank_rows_sha16": "c7ceb5a151a2788a"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+        "bank_file_sha16": "79511d9e254571e6",
+        "bank_rows_sha16": "1e872cd8cd2f63a5"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl",
+        "bank_file_sha16": "538ca9b48d905290",
+        "bank_rows_sha16": "61e586e4bdca6f28"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl",
+        "bank_file_sha16": "f4c655a723729c08",
+        "bank_rows_sha16": "f1a8332bdd7c48ce"
+      }
+    },
+    "pools": {
+      "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
+      "shared_pools_sha16": "976aa2b0b617118d",
+      "harm_bomb": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_bomb.json",
+        "content_sha16": "e561c812ee355c73",
+        "job": 859722,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_knife": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_knife.json",
+        "content_sha16": "27eaf6a76f6d0526",
+        "job": 859723,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_gun": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_gun.json",
+        "content_sha16": "50ba5d1fbeb5764f",
+        "job": 859724,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "_seed": 20260906
+    },
+    "concepts": [
+      "bomb",
+      "knife",
+      "gun"
+    ],
+    "codewords": {
+      "development": "button",
+      "external_confirmation": "basket"
+    },
+    "cell": "C",
+    "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
+    "query_kind_primary": "semantic_one_word",
+    "query_kind_display": "semantic_forced_choice",
+    "n_examples_primary": 4,
+    "n_examples_replication": 8,
+    "n_examples_null": 0,
+    "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
+    "rows_per_domain_per_concept": 10,
+    "preregistered_exclusions": [
+      {
+        "domain": "restaurant_kitchen",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
+        "seed_bumps_attempted": 1,
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "subway_station",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "school_campus",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-075 + R-108. 'basket' matches inside 'basketball.' in this domain's dev preamble. At extraction that is not a metadata nuisance but a HARD REFUSAL: resolve_occurrences found one more TOKEN occurrence than TEXT occurrence and declined to guess which was the codeword, so 30 rows of basket_bomb failed with occurrence_count_mismatch (text=N, tokens=N+1). Verified: all 30 are school_campus, 3 of them in the primary population. The extractor behaved correctly -- it refused rather than mis-indexing -- so the honest response is to remove the domain rather than to tolerate rows the pipeline could not resolve. Widened from the earlier occurrence-ordinal-only scope to the WHOLE population. It is in TRAIN: validation and test stay 23/23, analysed split becomes 67/23/23 over 113 domains.",
+        "whole_population": true
+      }
+    ],
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
+    "_register_asymmetry": {
+      "measured_on": "4640 harm sentences per concept, prompt-only",
+      "hedged_pct": {
+        "bomb": 14.1,
+        "knife": 0.2,
+        "gun": 3.4
+      },
+      "mean_sentence_chars": {
+        "bomb": 82,
+        "knife": 75,
+        "gun": 78
+      },
+      "mass_noun_polysemy_pct": {
+        "bomb": 1.08,
+        "knife": 0.0,
+        "gun": 0.0
+      },
+      "decision": "KEPT, not matched away. A bomb in a workplace is overwhelmingly a SUSPECTED bomb; a knife is simply present. That is a real property of the concepts in incident-log English and is part of what installing one rather than the other means. Equalising it means unnatural demonstrations, which is how R-098 ended up with no manipulation at all. It is instead measured, published, and converted into the bar: N5 concept-masked TF-IDF becomes strong and the probe MUST beat it.",
+      "deferred_decision_rule": "If N4 length-only comes out well above chance, over-generate and length-match the 40 kept sentences per pool -- prompt-only and outcome-blind, ~50% more API. THIS RULE IS RECORDED BEFORE N4 IS MEASURED so it cannot be chosen after seeing the probe.",
+      "n4_after_length_matching": {
+        "acc": 0.4014,
+        "macro_auroc": 0.5793,
+        "before": {
+          "acc": 0.4174,
+          "macro_auroc": 0.575
+        },
+        "verdict": "THE REMEDY DID NOT WORK. Length matching cut the cross-concept mean sentence-length spread 40.8% (7.03->4.16 chars) and moved the baseline by 0.016 accuracy; the AUROC rose slightly. Diagnosed: pool MARGINALS were matched while N4 reads full-prompt n_chars, whose demo block is four sentences drawn at fixed slots -- matching marginals does not match per-family sums. Per the rule recorded before N4 was ever measured, THERE IS NO THIRD ROUND. Length is now a permanent stated nuisance."
+      },
+      "n4_in_tokens": {
+        "acc": 0.3623,
+        "note": "C-084. The audit measured n_chars; the model reads TOKENS. Prompt token counts are bomb 196.21 / knife 195.50 / gun 196.69 on a 13-token sd, so the POSITIONAL confound is essentially matched and token-length-only N4 is 0.3623 against chance 0.3333. The character residual is lexical composition, i.e. register. LENGTH IN TOKENS IS NOT A LIVE CONFOUND; register is."
+      }
+    }
+  },
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 67,
+    "n_validation": 23,
+    "n_test": 23,
+    "seed": 202609061,
+    "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
+    "n_domains_analysed": 113,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 68 are ANALYSED (restaurant_kitchen C-082, subway_station C-087 -- both TRAIN, both prompt-only and prospective). The manifest is NOT regenerated; a split may be created once (mandate 5.2)."
+  },
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32,
+    "hidden": 4096,
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim."
+  },
+  "read_site": {
+    "position_primary": "codeword_last",
+    "position_downstream_neutral": "following",
+    "_positions_in_rel_end": "codeword_last == rel_end -10 (' button' / ' basket'), one subtoken, rel_end constant in 2300/2300 triples. following == rel_end -9 (' actually', token id 3604), verified on all four downstream-neutral criteria in 6900/6900 prompts by reports/DCS_TS116M_TOKEN_ROLE_MAP.md. --position following was only exposed in the extractor CLI on 2026-09-07 (C-099); before that no run could capture it.",
+    "_extractor_flag": "scripts/dcs_extract_under_ko.py --position {codeword_last|following}",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "layer_convention_verified_by": "planted-hook GPU test, job 860184, 2026-09-07 -- CONFIRMED",
+    "primary_read_layer": 9,
+    "_primary_read_layer_is_inherited_not_selected": "L9 is NOT chosen here. It is the layer PR-048 selected on VALIDATION ONLY, before any test read (best_val_acc 0.9130, C=0.01, n_tied=1/36, inert=False -- explicitly NOT the C-070 degenerate selection). Inheriting a frozen prior selection means this phase performs no layer selection of its own, so the measured test-selection FPR inflation (0.4433 vs 0.0467) cannot enter. Choosing a layer here after seeing the knockout profile would be exactly that inflation.",
+    "read_layer_grid": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "layers_captured": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "_l6_is_captured_and_is_not_evidence": "Block 6 IS captured, because refusing to look at it would make the C-068 degeneracy unfalsifiable in this run too. It is EXCLUDED from the primary, from every secondary, and from Holm. It is reported under one heading only: 'uninformative by construction at the band floor'. A number from L6 may never be quoted as a null.",
+    "C_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
+    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070).",
+    "_read_site_note": "X2 on ts116m: PR-048's primary read site is position=codeword_last == rel_end -10, constant end-relative in 2300/2300 triples, sd 0, one subtoken in every prompt. rel_end -9 (' actually', id 3604) is the DOWNSTREAM NEUTRAL control site, verified on all four criteria 6900/6900 -- it is NOT the primary and the two must not be conflated. MANDATORY: index as len(input_ids)+rel_end. The ABSOLUTE codeword index is identical across concepts in 0/2300 triples (mean cross-concept spread 9.36 +/- 5.90 tokens, range 0-50), so an absolute index reads a DIFFERENT TOKEN in each arm."
+  },
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "_no_mlp": "A linear probe, per mandate section 8.1. No MLP.",
+    "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)",
+    "_probe_is_frozen_from_pr048": "The probe is the PR-048 estimator at its PR-048-selected hyperparameters (layer 9, C=0.01), refitted on the TRAIN domains of the SAME arm it scores. It is not re-tuned per arm: a probe re-selected inside each knockout arm would make the arms differ by their hyperparameters as well as by their intervention.",
+    "_refit_per_arm_rule": "PREDECLARED and consequential. The probe IS refit within each arm (train domains of that arm) rather than transferred from the baseline arm, because a knockout can rotate the representation without destroying it, and a transferred probe would score that rotation as destruction. BOTH are computed -- 'refit' is the primary, 'transferred' is a declared secondary -- and the two are reported side by side. Declaring only one after seeing them would be the choice this rule exists to prevent."
+  },
+  "intervention": {
+    "kind": "attention knockout -- query rows are blocked from attending to demonstration-block KEYS",
+    "implementation": "doublespeak_causality.pair_common.ScopedAttentionKnockout, via scripts/dcs_extract_under_ko.py",
+    "_nothing_reimplemented": "The hook, the row resolver and the liveness contract are imported from pair_common, which owns them. A second definition of a scope is a second place for two scopes to drift apart.",
+    "band": "6-14 (BLOCK indices, inclusive), --band 6-14",
+    "_band_is_unchanged_on_purpose": "Identical to R-093's band. The whole point is that the MANIPULATION is comparable and only the READ SITE is corrected. Changing both at once would leave the C-068 diagnosis untestable.",
+    "attn_impl": "eager, FORCED",
+    "_why_eager": "Under SDPA the additive mask edit is discarded and the knockout is a SILENT NO-OP -- an un-knocked-out baseline filed under a knockout name. dcs_extract_under_ko.py refuses --attn-impl sdpa whenever the knockout is live.",
+    "keys_blocked": "the demonstration block (arm demo_all)",
+    "scopes_predeclared": [
+      {
+        "rank": 1,
+        "mode": "legacy_all_query",
+        "mandate_12_3_item": "1. demos -> whole user-query content",
+        "meaning": "every query row, prefill AND decode == AllQueryAttentionKnockout. This is R-093's scope."
+      },
+      {
+        "rank": 2,
+        "mode": "query_prefill_only",
+        "mandate_12_3_item": "1. demos -> whole user-query content (prefill half)",
+        "meaning": "prefill only, the whole final-query span. Separates the whole-query claim from the decode half."
+      },
+      {
+        "rank": 3,
+        "mode": "target_surface_row_only",
+        "mandate_12_3_item": "2. demos -> codeword row only",
+        "meaning": "prefill only, the rows of the FINAL target_surface occurrence in the query. In cell C target_surface IS the codeword."
+      },
+      {
+        "rank": 4,
+        "mode": "prompt_last_row_only",
+        "mandate_12_3_item": "3. demos -> downstream readout row only",
+        "meaning": "the LAST row of the query span, i.e. the row where the answer is actually scored."
+      },
+      {
+        "rank": 5,
+        "mode": "demo_processing_only",
+        "mandate_12_3_item": "not in the 12.3 list; added as the upstream half of the ladder",
+        "meaning": "prefill only, the rows INSIDE the demonstration block. Distinguishes 'the mapping is built while the demonstrations are read' from 'the mapping is retrieved at the query'.",
+        "family": "SECONDARY, not primary"
+      }
+    ],
+    "_scope_4_of_mandate_12_3_is_NOT_APPLICABLE": "'4. demos -> explicit concept row, when applicable' has NO instance in this population. The analysed population is cell C only, where target_surface is the CODEWORD; the explicit concept word lives in cells B/E, which this phase does not analyse. It is recorded as NOT APPLICABLE rather than quietly dropped, and it enters no family.",
+    "dose_matched_control": {
+      "id": "K-CTRL-DOSE",
+      "arm": "nondemo_matched_d2",
+      "mandate_12_3_item": "5. dose-matched nondemo control",
+      "rule": "Block the SAME NUMBER of key positions, drawn from OUTSIDE the demonstration block, under the SAME scope as the arm it matches. A dose-matched control must be VERIFIED, not named (mandate 22.6): the realised (n_destinations, n_keys, n_cells_edited) triple of the control MUST equal the arm's, and the run is VOID if it does not.",
+      "seed": 20260907,
+      "n_draws": 5,
+      "_why_five_draws": "A single control draw has no draw-to-draw variance, and this repo has twice published a 'control band' that was secretly n=1 because the seed never reached the draw (composed-arm seed drop; retraction #7). Five seeded draws, and the per-draw sha256 of each arm's output MUST differ -- byte-identical draws are the tell, both previous times."
+    },
+    "disabled_hook_arm": {
+      "id": "K-CTRL-OFF",
+      "flag": "--no-knockout",
+      "mandate_12_3_item": "6. no intervention",
+      "requirement": "MUST reproduce the untouched baseline cache. The gate is max|diff| == 0.000e+00 per (prompt, layer) against the committed PR-048 extraction, via --compare-baseline. A disabled arm that does not reproduce baseline VOIDS the whole run: it means the capture path, not the hook, is moving the numbers.",
+      "_tolerance_is_exactly_zero": "Not 'small'. Cell A on this bank already agrees to max|diff|=0.000e+00 across three separate extraction runs (PR-053 V2, 3616/3616), so bit-exactness is the demonstrated property of this pipeline and anything less is a regression."
+    }
+  },
+  "hook_liveness": {
+    "_mandate": "section 22.4. A dead hook must be IMPOSSIBLE to mistake for a null.",
+    "gate": "doublespeak_causality.pair_common.scoped_liveness_violations(mode, stats) MUST return []",
+    "_gate_is_not_restated_at_the_call_site": "The contract lives in pair_common's LIVENESS_REQUIREMENT / LIVENESS_MUST_BE_ZERO tables. Two modes make ZERO decode edits by design, and a hand-written '>0' gate at the call site has already been this exact failure mode. The analyzer calls the shared function.",
+    "persist_per_arm_and_per_row": [
+      "hook_fired_count",
+      "n_destination_rows",
+      "n_blocked_keys",
+      "layers_edited",
+      "n_cells_edited_realised",
+      "n_cells_edited_expected",
+      "realised == expected (boolean)",
+      "state_changed_vs_disabled_arm (cosine and relative L2 over the dense residual)"
+    ],
+    "_metric_rule": "Cosine and relative L2 over the whole vector. NOT an element-wise relative metric: on dense activations it is dominated by near-zero entries and reports enormous 'changes' from nothing (mandate 22.4).",
+    "void_if": "any arm reports hook_fired_count == 0, or realised != expected cell count, or a non-empty scoped_liveness_violations list"
+  },
+  "degeneracy_gate": {
+    "id": "G-DEGEN",
+    "_this_is_the_C_068_guard_as_code": "C-068 was found by hand, after the result had been published and read as a confirmation. This makes it a precondition that runs BEFORE any accuracy is computed.",
+    "rule": "For every ordered pair of scopes entering a contrast, and at EVERY captured layer and BOTH read positions, count the number of differing fp16/bf16 bit patterns at the read row across the analysed rows. Persist the count.",
+    "blocking": "If the differing-bit-pattern count is 0 for a pair at a given (layer, position), that (pair, layer, position) cell is UNINFORMATIVE BY CONSTRUCTION. The analyzer must refuse to emit an accuracy, a delta, or a p-value for it, and must label it in the report. It is NOT a null and may never be counted as one.",
+    "primary_precondition": "The PRIMARY contrast (legacy_all_query vs target_surface_row_only, block 9, codeword_last) requires a NON-ZERO count. If it is zero at block 9 the primary is VOID and the phase is CANNOT ANSWER at that site -- the honest verdict, and the same one gate R6 should have returned.",
+    "expected": "non-zero at every block >= 7; expected zero, or near it, at block 6",
+    "_expectation_is_not_an_assumption": "It is measured and published either way; the gate does not assume it."
+  },
+  "primary": {
+    "statistic": "Paired per-domain difference in 3-way probe accuracy between the WHOLE-QUERY scope and the CODEWORD-ROW scope, delta = acc(target_surface_row_only) - acc(legacy_all_query), read at BLOCK 9, position codeword_last, domain-mean over the 23 untouched TEST domains.",
+    "co_primary": "The SAME paired difference read at the DOWNSTREAM NEUTRAL position (following, rel_end -9), block 9. Declared as a co-primary BEFORE running, because mandate 12.2 requires a downstream site and a design with only the codeword site could not distinguish 'the pathway does not matter' from 'the pathway does not matter AT THE CODEWORD' -- which is precisely the narrowing R-112 forced on CLAIM A.",
+    "null_hypothesis": "delta == 0, i.e. blocking the whole query is no different from blocking the codeword row alone",
+    "chance": 0.0,
+    "_chance_is_zero_because_this_is_a_paired_difference": "Both arms see the SAME prompts, so every surface confound -- register, length, TF-IDF recoverable composition -- is common to both arms and DIFFERENCES OUT. The nuisance floor for a paired difference is 0.0 BY CONSTRUCTION, exactly as in PR-051. That is why this is the strongest instrument available for the mechanism question, and it is why the absolute accuracies inside each arm are NOT the primary.",
+    "independence_unit": "domain",
+    "n_test_domains": 23,
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level, arm-label flip within domain",
+    "n_perm": 10000,
+    "_p_floor_rule": "The attainable floor is 1/(n_perm+1) = 9.999e-05. EVERY p MUST be published next to its floor. On zero exceedances report 'p < 1/(B+1)', never a bare '0.0001'. The previous phase's headline p=0.004975 WAS the floor at B=200 and was read as a measurement.",
+    "secondary_test": "two-sided sign test over domains, with the number of EXACT TIES reported",
+    "_ties_must_be_reported": "PR-051 had 9 of 23 domains at an exact tie. A sign test that silently drops ties reports a k out of a denominator the reader cannot see.",
+    "success": "delta significantly different from 0 at alpha=0.05 by domain-level group permutation, AFTER Holm within the PHASE8_MECHANISM family, AND with G-DEGEN non-zero at that (layer, position), AND with hook liveness clean in both arms, AND with the disabled-hook arm reproducing baseline at max|diff|==0.",
+    "negative": "delta not significant WITH power >= 0.8 for the declared MDE -> the whole-query scope is not distinguishable from the codeword-row scope at this depth. WORDING IS CONSTRAINED: this licenses 'blocking the whole query does no more than blocking the codeword row, at block 9, on this population'. It does NOT license 'the codeword row is unnecessary' (mandate 33) and it does NOT license any statement about a pathway being 'removed'.",
+    "cannot_answer": "G-DEGEN returns 0 differing bit patterns at the primary cell; OR power < 0.8 at the realised paired SD; OR option_mass shows the primary channel is disengaged.",
+    "void": "hook_fired_count == 0 in any arm; realised != expected cell count; a non-empty liveness violation list; the disabled-hook arm not reproducing baseline; SDPA used with the knockout live; a wrong bank sha; an absolute (rather than end-relative) read index.",
+    "nuisance_floor": {
+      "value": 0.0,
+      "source": "by construction -- a paired within-prompt contrast; identical argument to PR-051, whose floor was also 0.0",
+      "rule": "the paired difference is tested against 0.0; the per-arm ABSOLUTE accuracies are additionally reported against the PR-048 measured surface floor 0.9217, and an absolute accuracy above chance but below 0.9217 is NOT evidence for anything"
+    }
+  },
+  "secondary": {
+    "reported_always": [
+      "per-arm absolute 3-way accuracy (refit probe) at every captured layer and both positions",
+      "per-arm absolute 3-way accuracy (probe transferred from the untouched baseline arm)",
+      "the full block 7-14 propagation profile of delta, both positions",
+      "block 6, labelled UNINFORMATIVE BY CONSTRUCTION",
+      "macro OvR AUROC and per-class AUROC per arm",
+      "confusion matrix per arm",
+      "per-domain delta and per-domain accuracy",
+      "option_mass and semantic_logodds",
+      "G-DEGEN differing-bit-pattern counts for every (pair, layer, position)",
+      "the full hook_liveness block for every arm"
+    ],
+    "scope_ladder": "The five predeclared scopes ordered by row count give a LADDER: codeword row / last query row / whole query prefill / whole query prefill+decode / demonstration block. Reported as a profile. NOTE the standing confound the ladder cannot resolve on its own: a monotone row-count effect and a distributed-retrieval account explain the same ladder equally well (DCS-B-010). Separating them needs query_last_k_rows with K swept, which is NOT run here and is recorded as an open question rather than argued around."
+  },
+  "power": {
+    "_honesty_statement": "THERE IS NO MEASURED SD FOR THIS ESTIMAND. No knockout has ever been run on the ts116m bank, so the between-domain SD of a knockout-induced PAIRED accuracy difference has never been observed. Every number in this block is therefore an ASSUMPTION or a DERIVED BOUND, and each is labelled as such. The blocking checklist item P1 replaces them with a measurement on VALIDATION ONLY before TEST is read.",
+    "assumed_paired_sd": 0.0494,
+    "assumed_paired_sd_provenance": "ASSUMPTION, BORROWED. This is PR-051's MEASURED paired SD -- but PR-051 paired two READ SITES within one forward pass, and this design pairs two INTERVENTIONS. They are different variance components and there is no argument that they are equal. It is used only to size the run in advance and is superseded by P1.",
+    "derived_sd_floor": 0.1118,
+    "derived_sd_floor_derivation": "DERIVED, not assumed. At m=40 rows per domain per arm the paired SD cannot fall below sqrt(2*p*(1-p)/m) even with zero between-domain variance. Recomputed by the analyzer from the REALISED m and the realised p -- it is NOT hardcoded, because deriving a band from a hardcoded N is the 'one estimate is not stability' failure.",
+    "mde_paired_delta_at_derived_floor": 0.0672,
+    "mde_derivation": "two-sided paired t at n=23 domains, alpha=0.05, power 0.80: MDE = (t_{0.975,22} + t_{0.80,22}) * SD / sqrt(23), evaluated at the DERIVED floor SD=0.1118",
+    "_mde_at_the_borrowed_sd": 0.0297,
+    "_which_mde_governs": "The one computed from the REALISED SD at P1. The two are printed side by side so a reader can see how much of the design's sensitivity was assumed.",
+    "icc": 0.0884,
+    "icc_provenance": "inherited from PR-048's measurement on this population",
+    "independence_unit": "domain",
+    "_row_level_warning": "A row-level p would print 1.02e-06 where the honest domain-level p is 0.05. Row-level p-values are NOT reported for this claim.",
+    "underpowered_branch": "IF the realised paired SD at P1 implies power < 0.8 for a delta of 0.05, the phase returns WITHOUT READING TEST and is declared CANNOT ANSWER with a costed fix. This branch MUST exist in the analyzer as a code path, not only in this prose -- PR-051's did, and that is why its power statement is believable."
+  },
+  "nulls_required": [
+    {
+      "id": "K-N1",
+      "name": "disabled-hook baseline reproduction",
+      "expect": "max|diff| == 0.000e+00 against the committed PR-048 extraction, per (prompt, layer)",
+      "blocking": true
+    },
+    {
+      "id": "K-N2",
+      "name": "hook liveness, every arm",
+      "expect": "scoped_liveness_violations == [], hook_fired_count > 0, realised == expected cells",
+      "blocking": true
+    },
+    {
+      "id": "K-N3",
+      "name": "degeneracy count G-DEGEN at the primary cell",
+      "expect": "non-zero differing bit patterns; zero means CANNOT ANSWER at that cell, never a null",
+      "blocking": true
+    },
+    {
+      "id": "K-N4",
+      "name": "dose-matched nondemo control",
+      "expect": "same realised (n_destinations, n_keys, n_cells) as the arm it matches; a materially smaller delta than the demo arm",
+      "blocking": false
+    },
+    {
+      "id": "K-N5",
+      "name": "control-draw independence",
+      "expect": "the 5 seeded control draws produce 5 DISTINCT output hashes; identical hashes mean the seed never reached the draw",
+      "blocking": true
+    },
+    {
+      "id": "K-N6",
+      "name": "domain-level group permutation",
+      "expect": "null distribution centred at 0",
+      "_never": "row-level permutation; measured FPR 0.2000"
+    },
+    {
+      "id": "K-N7",
+      "name": "end-relative index audit",
+      "expect": "every read index is len(input_ids)+rel_end; 0 absolute indices anywhere in the path",
+      "_why": "the absolute cross-concept codeword spread is 9.36 +/- 5.90 tokens, so an absolute index reads a DIFFERENT TOKEN in each arm"
+    },
+    {
+      "id": "K-N8",
+      "name": "label permutation through the ENTIRE pipeline including the probe refit",
+      "expect": "calibrated FPR at nominal alpha"
+    }
+  ],
+  "phase4_gates_on_ts116n": [
+    {
+      "id": "G1",
+      "rule": "all three harm pool files verify: shared valences byte-identical to the shared pools file; every harm sentence carries exactly one whole-word target concept and no other concept"
+    },
+    {
+      "id": "G2",
+      "rule": "cell C x semantic_one_word DIFFERS across concepts in 116/116 domains",
+      "_why": "the exact inverse of the 1856/1856 identity that voided R-098 under C-074. This is the gate whose absence caused that error."
+    },
+    {
+      "id": "G3",
+      "rule": "cell A (benign_literal) is byte-identical across concepts",
+      "_why": "the alignment half; without it we are back to A-034.1's three corpora"
+    },
+    {
+      "id": "G4",
+      "rule": "concept-backing audit re-run on ts116n; mass-noun polysemy and hedging rates re-measured, not inherited"
+    },
+    {
+      "id": "G5",
+      "rule": "leakage audit re-run on ts116n; template-id-only classifier at chance"
+    }
+  ],
+  "gates_g1_g3": {
+    "result": "19/19 PASS",
+    "mutations": "4/4 RED",
+    "verifier": "scripts/dcs_ts_verify_ts116n.py",
+    "G2": "115/115 domains differ in cell C x semantic_one_word, both codewords, both non-reference concepts",
+    "G3a": "3680/3680 cell-A concept-free rows byte-identical across all three concepts",
+    "G3b": "1840/1840 forced-choice queries restore exactly under concept->bomb substitution; demo_block and preamble identical"
+  },
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PRIMARY",
+        "members": [
+          "DCS-PR-048: 3-way domain-mean accuracy on TEST",
+          "DCS-PR-053: v_bomb_specific identity AUROC on TEST"
+        ],
+        "correction": "Holm across the two, alpha=0.05 family-wise"
+      },
+      {
+        "name": "SECONDARY",
+        "members": [
+          "macro OvR AUROC",
+          "per-class AUROC",
+          "lexical transfer button->basket",
+          "n_examples=8 replication",
+          "hedge-free stratum re-analysis",
+          "mandate 9.1 questions A-F",
+          "the per-layer diff-in-means profile",
+          "DCS-PR-051: paired positional contrast"
+        ],
+        "correction": "Holm within the secondary family"
+      },
+      {
+        "name": "EXPLORATORY",
+        "members": [
+          "DCS-PR-049: knife-vs-gun (demoted by C-101)",
+          "DCS-PR-052: arm-balanced surface cells"
+        ],
+        "correction": "none -- exploratory results carry no confirmatory weight and are labelled as such"
+      },
+      {
+        "name": "NULLS N1-N8",
+        "members": [
+          "diagnostics"
+        ],
+        "correction": "not corrected -- they are gates, not hypotheses; each reported with its own value"
+      },
+      {
+        "name": "PHASE8_MECHANISM",
+        "members": [
+          "DCS-PR-056 H1: delta(target_surface_row_only - legacy_all_query) at block 9, codeword_last",
+          "DCS-PR-056 H2: the same delta at block 9, following (downstream neutral)",
+          "DCS-PR-056 H3: delta(prompt_last_row_only - legacy_all_query) at block 9, codeword_last",
+          "DCS-PR-056 H4: delta(query_prefill_only - legacy_all_query) at block 9, codeword_last"
+        ],
+        "correction": "Holm across the four, alpha=0.05 family-wise",
+        "_h1_and_h2_are_co_primary": "both are declared before running; neither is promoted after seeing the other",
+        "_demo_processing_only_is_secondary": "it answers a different question (where the mapping is BUILT) and enters the SECONDARY family, not this one"
+      }
+    ],
+    "_absent_members_enter_at_p_1": "A declared member that is not run enters Holm at p=1.0 rather than being dropped.",
+    "_consistency": "C-106. PR-048 and PR-053 previously declared DIFFERENT primary families -- PR-048 listed one member, PR-053 listed two. Holm is defined over a family, so two configs disagreeing about the family means the correction is undefined. Caught by the pre-submission checklist printing the family, not by any guard. This identical block is now written into BOTH files.",
+    "_families_copied_verbatim": "The PRIMARY / SECONDARY / EXPLORATORY / NULLS blocks below are copied BYTE-FOR-BYTE from configs/dcs_ts_pr048.json and configs/dcs_ts_pr053.json and are NOT edited here. This phase adds NEW families (PHASE8_MECHANISM, PHASE9_CAUSAL) whose members are disjoint from PRIMARY, so PR-048's and PR-053's Holm corrections are arithmetically unaffected and neither file needs to be reopened. That is the C-106 rule applied forwards: two configs must not disagree about the membership of a family, and adding a disjoint family is the only way to add hypotheses without redefining an existing correction.",
+    "_declared_before_any_outcome": "2026-09-07; no knockout has been run on ts116m and no hidden state under knockout exists"
+  },
+  "artifacts": {
+    "extraction": "scripts/dcs_extract_under_ko.py --bank <ts116m bank> --band 6-14 --arm demo_all --knockout-scope <mode> --layers 6,7,8,9,10,11,12,13,14 --position {codeword_last|following} --attn-impl eager --only-cell C --only-query-kind semantic_one_word --only-n-examples 4 --tag bombspecko8",
+    "_tag_must_not_collide": "The tag MUST NOT match the glob bombspec_<cw>_<cc>_* that the frozen analyzer and the verifier use to resolve BASELINE runs. A knocked-out run answering the baseline glob would silently replace the baseline it is meant to be compared against.",
+    "analyzer": "scripts/dcs_ts_pr056_mechanism.py",
+    "analyzer_commit": null,
+    "analyzer_exists": false,
+    "analyzer_committed_before_outcome": false,
+    "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.",
+    "_loader_will_refuse_extraction_and_that_is_correct": "scripts/dcs_ts_prereg.py --for-extraction REFUSES this file today, on analyzer_exists==false and on the BLOCKING checklist items below. That refusal is the design working: nothing may be submitted until the analyzer exists and the blockers are closed. `--check` without --for-extraction loads cleanly, which is the state a FROZEN-but-not-yet-runnable preregistration should be in.",
+    "report": "reports/DCS_TS_PR056_MECHANISM.md",
+    "log_entry": "external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md"
+  },
+  "seeds": {
+    "extraction": 20260907,
+    "control_draws": 20260907,
+    "permutation": 20260907,
+    "n_control_draws": 5
+  },
+  "decoding": {
+    "generation": "none -- this is a hidden-state capture, no tokens are generated",
+    "max_new_tokens": 0
+  },
+  "endpoints": [
+    "3-way probe accuracy",
+    "macro OvR AUROC",
+    "option_mass",
+    "semantic_logodds"
+  ],
+  "kill_condition": "If the SMOKE run (--smoke) shows G-DEGEN == 0 differing bit patterns at block 9 between legacy_all_query and target_surface_row_only, the full run is NOT SUBMITTED. C-068 cost a published confirmation; this gate makes the same discovery cost a smoke test.",
+  "pre_extraction_checklist": [
+    {
+      "id": "P1",
+      "item": "measure the realised between-domain PAIRED SD of the knockout delta on VALIDATION DOMAINS ONLY, and recompute MDE and power from it; if power < 0.8 at delta=0.05, return CANNOT ANSWER without reading TEST",
+      "status": "NOT DONE -- no knockout has been run on ts116m; power.assumed_paired_sd is a BORROWED number from a different variance component",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "P2",
+      "item": "write scripts/dcs_ts_pr056_mechanism.py; it must fetch every threshold through Prereg.require(), carry NO numeric gate literal, call pair_common.scoped_liveness_violations rather than restating the contract, implement the underpowered return branch, and refuse to emit any statistic for a (pair, layer, position) cell whose G-DEGEN count is 0",
+      "status": "NOT DONE",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "P3",
+      "item": "mutation-test that analyzer: a dead hook, a zero G-DEGEN count, a disabled arm that does not reproduce baseline, identical control-draw hashes, and an absolute read index must EACH produce a refusal. Four verifier harnesses in this project contained checks that could not fail (fixed only at b80db84d); an unreachable refusal is not a guard",
+      "status": "NOT DONE",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "P4",
+      "item": "smoke run of every predeclared scope (--smoke) confirming hook liveness and a non-zero G-DEGEN count at block 9, BEFORE the full submission",
+      "status": "NOT DONE",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "P5",
+      "item": "confirm --position following is exercised end-to-end on ts116m; the flag was only exposed on 2026-09-07 (C-099) and no run has used it",
+      "status": "NOT DONE",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "P6",
+      "item": "confirm the run tag does not answer the baseline glob bombspec_<cw>_<cc>_*",
+      "status": "NOT DONE",
+      "blocking": false,
+      "done": false
+    }
+  ],
+  "_checklist_name_note": "This is the phase's PRE-ANALYSIS checklist. It is stored under the key `pre_extraction_checklist` because that is the ONLY key scripts/dcs_ts_prereg.py enforces. A second, better-named key that no code path reads is B-020 -- a published threshold never enforced -- which this project has now committed three times. Fields `blocking` and `done` are BOOLEANS: C-086 passed an outstanding blocker because the prose status 'BLOCKING, not done' contains the substring 'done'.",
+  "things_that_must_not_be_said": [
+    "the representation is meaningless",
+    "the whole demonstration->query pathway was removed (forbidden whenever the read site is the FIRST intervened layer -- mandate section 33)",
+    "probe accuracy proves causal use",
+    "the model represents button as BOMB (without an explicit scope/decodability qualification)",
+    "a significant row-level p-value establishes a domain-level claim",
+    "KO-3 restores the literal meaning (on Llama)",
+    "the codeword row is unnecessary (as a general statement)",
+    "n=6 proves thesis-scale generality",
+    "'the whole demonstration->query pathway is required/removed' on the strength of any block-6 number",
+    "'gate R6 was a null' -- it was CANNOT ANSWER (C-068)",
+    "any statement that treats a G-DEGEN==0 cell as a measured null"
+  ],
+  "frozen_at": "2026-09-07",
+  "depends_on": [
+    {
+      "what": "DCS-PR-048",
+      "why": "supplies the frozen probe, the layer-9/C=0.01 selection made on validation only, the surface floor 0.9217, and the extraction the disabled-hook arm must reproduce",
+      "status": "COMPLETE -- R-113"
+    },
+    {
+      "what": "reports/DCS_TS116M_TOKEN_ROLE_MAP.md",
+      "why": "supplies rel_end -10 (codeword) and rel_end -9 (downstream neutral) and their 6900/6900 verification",
+      "status": "COMPLETE"
+    }
+  ]
+}
