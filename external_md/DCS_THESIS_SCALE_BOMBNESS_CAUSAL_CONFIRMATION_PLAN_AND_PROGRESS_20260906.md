@@ -4038,3 +4038,81 @@ does **not** invent a cut. **PR058-D3**: `read_site.position_NOT_USED` is named 
 in cells B/E the refused site is the *concept* token — a producer labelling that read
 `target_surface_last` would slip past a name-keyed refusal, so the gate also refuses every position
 that is not the single preregistered downstream site.
+
+---
+
+## DCS-R-124 — C-117, F3 and C-119 are closed; PHASE 9's three GPU blockers clear
+*2026-09-07*
+
+**C-117 / F2 — the two liveness schemas are reconciled, with ownership decided rather than patched.**
+`n_cells_edited_expected` and `orthogonal_residual_delta_l2` are now the **producer's**: expected is
+counted at the top of each forward from the tensor the hook was *handed*, **before** the write, and
+realised from the slice actually written — so `realised == expected` is a genuine bind and not
+`0 == 0`. The orthogonal residual can only be measured where `h_pre`, `h_post` and `d` all live,
+which is the hook.
+
+Missing-versus-zero is the **consumer's**, and this is the part that matters: a new
+`NotMeasured(Refusal)` makes an **absent** field raise, while a **measured** zero still FAILS. The
+bug was a defaulting `.get` turning a field that was never recorded into a scientific verdict —
+`orthogonal_residual_gate` asserting *"the orthogonal component was NOT preserved; H2b is VOID"*
+with `max_abs = nan`. It was **not** fixed by making the gate lenient; a dead hook still cannot pass
+as a clean null. `hook_stats_dict` now initialises both measured floats to **`None`, not `0.0`** —
+a `0.0` default for the orthogonal residual *is* the failing verdict handed to a hook that never
+computed it.
+
+The runner also no longer sets `expected := n_destination_rows`, which would have made the identity
+true by construction — the same defect one layer up.
+
+**F3 — `rel_end` was persisted as the absolute index; fixed and asserted at three points.**
+`SinglePositionProjectOut.__init__` (per row, earliest), `make_intervention`, and
+`project_out_liveness_violations` over the persisted record. Replayed through the real
+`make_intervention`: `rel_end` is now constant **−3** across rows (was 7 and 14) while the absolute
+index correctly varies 7/14/20, `n_distinct_absolute_indices = 3`, violations CLEAN.
+
+A design correction inside the fix, which I would have got wrong: the invariant is
+`resolved_absolute_index == seq_len_at_resolution + rel_end`, **not** `seq_len_last + rel_end`. The
+hook also fires on the readout's variant forwards, whose lengths differ, and re-resolving there
+would *move the edit*.
+
+**C-119 — and a correction to my own account of it.** I recorded, in this log and in two commit
+messages, that control C5's `alpha = 0` was **preregistered**. That is **wrong**. The frozen
+`controls.arms[C5]` carries only id/name/rule/blocking and preregisters **no alpha at all**; the
+`0.0` was a literal in the *unfrozen* `build_arm_manifest`. So this was never "interpreting a frozen
+field" — it was an ordinary code defect, and the responsibility is the code's, not the
+preregistration's. The distinction matters because "the frozen config says something unrunnable" and
+"our code invented a value" are different failures with different fixes.
+
+C5 now runs the **live arm's alpha (1.0) with the write discarded**: the bridge's dose to the model
+is zero because nothing is *written*, not because alpha is. At `alpha = 0` the projection is an
+identity, so the bridge would have passed with a garbage direction on the wrong layer — certifying
+nothing, exactly as suspected, but for a reason I had mislocated. `alpha = 0` is retained as a
+tripwire and `build_argv`'s silent `arm.alpha or 1.0` fallback is removed.
+
+**F6 and F9 fixed too.** F6: `min_projection_removed_l2` — the minimum over forwards, so a
+*partially* dead hook can no longer pass on the last forward alone. F9: the consumer's `cos == 1.0`
+gate is replaced by the producer's scale-free relative-magnitude rule (stricter and
+dose-independent), with cosine still required to be recorded. The added fired-count identity is
+stated honestly in the report as a **tripwire** rather than a check, since it holds by construction
+in today's hooks.
+
+**Observed, all on the final file state:**
+
+| harness | before | now |
+|---|---|---|
+| `dcs_ts_pr057_causal.py --self-test` | 73 / 0 | **77 / 0** |
+| `dcs_ts_pr057_causal.py --mutate` | 38/38 RED | **52/52 RED** |
+| `pr057_run_causal.py --self-test` | 49 / 0 | **50 / 0** |
+| `pr057_run_causal.py --mutate` | 26/26 RED | **28/28 RED** |
+| `--plan --split test` | 26 constructible | **28 constructible** (the two C5 bridges) |
+
+The reviewer's exact F2 reproduction now returns `live = True` (expected 3 = realised 3) and
+`ok = True, n_violations 0/3, max_abs = 1.82e-06`, against the previous `live=False`, `ok=False`,
+`max_abs=nan`. A missing `n_cells_edited_expected` raises `NotMeasured`; a measured 0 still gives
+`live=False`. Tests completed rather than cancelled: 43 passed (5 hook files) and 237 passed
+(11 readout/intervention files).
+
+**Still blocking Q1, and named rather than glossed:** `C-113`; `C-118` (`--emit-probe` refused, no
+`FROZEN_PROBE` block on disk); and **26 of 54 arms still unbuildable** — including **C4's `add` mode,
+which remains uninstrumented (`pc.AllPositionAdd` receives no `stats=`)**. That is now *the one
+remaining place where a dead hook could score as a clean null*, and it is the reason C4 must not be
+quietly reinstated.

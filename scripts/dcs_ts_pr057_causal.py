@@ -129,6 +129,24 @@ class Refusal(RuntimeError):
     """Anything this analyzer will not do. Every one of them is fail-closed."""
 
 
+class NotMeasured(Refusal):
+    """A gate was asked to rule on a quantity NOBODY RECORDED.
+
+    C-117 / review F2. `liveness_gate` and `orthogonal_residual_gate` used to read
+    `n_cells_edited_expected` and `orthogonal_residual_delta_l2` with a defaulting `.get`, so a
+    field the producer never wrote arrived as `0` / `NaN` and the gate then published a
+    SUBSTANTIVE SCIENTIFIC VERDICT about it -- "the arm declared no destinations", "the orthogonal
+    component was NOT preserved; H2b is VOID". Both statements were false: the quantity had simply
+    never been measured. That is the repo's recorded bug class (a check that reads the producer's
+    own null field) with the sign flipped, and it is worse, because it manufactures a positive
+    claim of a physical violation out of an absence.
+
+    A MISSING field is therefore this exception, and a MEASURED ZERO is still a failing verdict.
+    The two must never be the same thing -- which is also why this is not fixed by making the
+    gates lenient: a dead hook must stay impossible to mistake for a clean null.
+    """
+
+
 # THE NEGATIVE'S WORDING IS A LITERAL, SO IT CANNOT DRIFT.
 #
 # Mandate section 32 calls this a valuable result and section 33 forbids the alternative. The
@@ -292,22 +310,51 @@ def resolve_end_relative(input_ids: Sequence[int], rel_end: int) -> int:
 def audit_end_relative(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     """`I-N9`: every persisted edit/read index must equal len(input_ids)+rel_end, and the absolute
     index must VARY across concepts (it is a witness, never an input)."""
-    bad = []
+    bad, seen, n_na = [], [], 0
     for r in records:
-        need = ("seq_len", "rel_end", "resolved_absolute_index")
-        miss = [k for k in need if k not in r]
+        # SCHEMA (C-117). `pair_common` writes the length the site was resolved against as
+        # `seq_len_at_resolution`, `score_behavior`'s row wrapper writes the same number as
+        # `seq_len`, and `resolved_absolute_index` is a LIST (one entry per edited position),
+        # which is the honest shape. `seq_len_last` is NOT accepted here: it is the length of
+        # the last forward, and the readout's variant forwards have different lengths, so
+        # auditing against it would fail on correct rows.
+        _sl = (r["seq_len"] if r.get("seq_len") is not None
+               else r.get("seq_len_at_resolution"))
+        _abs = r.get("resolved_absolute_index")
+        _rel = r.get("rel_end")
+        if _abs is None and _rel is None:
+            # an ALL-POSITION (S2) edit: every position is edited, so there is no single site to
+            # audit. Counted and reported as such -- never given an invented rel_end.
+            n_na += 1
+            continue
+        need = {"seq_len (or seq_len_at_resolution)": _sl, "rel_end": _rel,
+                "resolved_absolute_index": _abs}
+        miss = sorted(k for k, v in need.items() if v is None)
         if miss:
-            raise Refusal("liveness record is missing %s -- the end-relative audit cannot be "
-                          "performed and is therefore not assumed to pass" % miss)
-        if int(r["seq_len"]) + int(r["rel_end"]) != int(r["resolved_absolute_index"]):
-            bad.append(r)
-    spread = len({int(r["resolved_absolute_index"]) for r in records})
-    return {"n_records": len(records), "n_absolute_index_violations": len(bad),
+            raise NotMeasured(
+                "liveness record is missing %s -- the end-relative audit cannot be performed and "
+                "is therefore NOT assumed to pass" % miss)
+        idxs = list(_abs) if isinstance(_abs, (list, tuple)) else [_abs]
+        for a in idxs:
+            seen.append(int(a))
+            if int(_sl) + int(_rel) != int(a):
+                bad.append(r)
+    n_aud = len(records) - n_na
+    spread = len(set(seen))
+    if n_na and not n_aud:
+        return {"n_records": 0, "n_not_applicable": n_na, "not_applicable": True,
+                "n_absolute_index_violations": 0, "n_distinct_absolute_indices": 0,
+                "ok": True,
+                "witness_note": ("all %d record(s) are ALL-POSITION edits: every position is "
+                                 "edited, so there is no single site whose index could be a "
+                                 "reused absolute one. Not applicable, not passed." % n_na)}
+    return {"n_records": n_aud, "n_not_applicable": n_na,
+            "n_absolute_index_violations": len(bad),
             "n_distinct_absolute_indices": spread,
-            "ok": (not bad) and len(records) > 0,
+            "ok": (not bad) and n_aud > 0,
             "witness_note": ("the absolute index takes %d distinct values over %d records; a "
                              "SINGLE value across concepts would mean an absolute index was "
-                             "reused" % (spread, len(records)))}
+                             "reused" % (spread, n_aud))}
 
 
 # ============================================================================================
@@ -334,7 +381,10 @@ class LivenessStats:
     projection_removed_l2: float = 0.0
     cos_pre_post: float = 1.0
     cos_edit_vs_direction: float = float("nan")
-    orthogonal_residual_delta_l2: float = 0.0
+    # None, NOT 0.0 (C-117). A default of 0.0 is a MEASURED PERFECT PRESERVATION -- exactly the
+    # I-N7 verdict -- handed out to a hook that never computed it. `orthogonal_residual_gate`
+    # raises `NotMeasured` on None and only rules when a hook actually wrote a number.
+    orthogonal_residual_delta_l2: Optional[float] = None
     frac_cellmean_spread_removed: Optional[float] = None
     rel_end: Optional[int] = None
     seq_len: Optional[int] = None
@@ -398,6 +448,17 @@ def make_instrumented_project_out_hook(direction, stats: LivenessStats, position
         proj = (pre @ d.float().reshape(-1, 1))            # [n, 1]
         edit = alpha * proj * d.float().reshape(1, -1)
         post = pre - edit
+        # EXPECTED, from the tensor this forward was handed, BEFORE the write (C-117). The
+        # producer side of this schema does the same thing in `pair_common`; the two now agree.
+        stats.n_cells_edited_expected += n_dest * int(h.shape[0])
+        # I-N7 for a project_out edit: the change is `alpha*(h.d)d`, so its component orthogonal
+        # to `d` must be zero to float error. MEASURED, so the gate has something to rule on.
+        _dv = d.float().reshape(-1)
+        _delta = pre - post
+        _orth = float((_delta - (_delta @ _dv.reshape(-1, 1)) * _dv.reshape(1, -1)).norm())
+        stats.orthogonal_residual_delta_l2 = (
+            _orth if stats.orthogonal_residual_delta_l2 is None
+            else max(float(stats.orthogonal_residual_delta_l2), _orth))
         if enabled:
             h[:, sel, :] = post.to(h.dtype).reshape(h[:, sel, :].shape)
             stats.hook_fired_count += 1
@@ -456,6 +517,7 @@ def make_instrumented_component_replace_hook(v_out, v_in, c_in: float, stats: Li
         q, _ = torch.linalg.qr(basis.T)                             # [hidden, k]
         orth_pre = pre - (pre @ q) @ q.T
         orth_post = post - (post @ q) @ q.T
+        stats.n_cells_edited_expected += n_dest * int(h.shape[0])
         stats.orthogonal_residual_delta_l2 = float((orth_pre - orth_post).norm())
         if enabled:
             h[:, sel, :] = post.to(h.dtype).reshape(h[:, sel, :].shape)
@@ -785,21 +847,53 @@ def liveness_gate(stats_rows: Sequence[Dict[str, Any]], arm_id: str,
     `primary.void`: `hook_fired_count == 0`; realised != expected cells; an arm's edit magnitude
     is 0. Any of those makes a null VOID rather than a negative, which is the distinction C-13
     says nothing in the current hook stack can make.
+
+    MISSING IS NOT ZERO (C-117). Every field this gate rules on must be PRESENT in the record; a
+    record that lacks one raises `NotMeasured` instead of being defaulted into a verdict. The
+    producer -- `pair_common.hook_stats_dict` and the hooks around it -- now writes all of them,
+    including `n_cells_edited_expected`, which it counts from the tensor each forward was handed
+    BEFORE the write. A present-but-zero expected count is still a failure (a check that binds
+    zero is not a check); an ABSENT one is not a failure at all, it is an unanswered question.
     """
     reasons: List[str] = []
     if not stats_rows:
         return {"arm_id": arm_id, "live": False, "n_rows": 0,
                 "reasons": ["NO LIVENESS RECORDS AT ALL -- %s is absent or empty. A null behind an "
                             "unrecorded hook is VOID, not a negative." % CONTRACT_LIVENESS]}
-    n_fired = sum(int(r.get("hook_fired_count", 0)) for r in stats_rows)
-    n_rows_fired = sum(1 for r in stats_rows if int(r.get("hook_fired_count", 0)) > 0)
-    realised = sum(int(r.get("n_cells_edited_realised", 0)) for r in stats_rows)
-    expected = sum(int(r.get("n_cells_edited_expected", 0)) for r in stats_rows)
-    mags = [float(r.get("projection_removed_l2", 0.0)) for r in stats_rows]
+    # NO DEFAULTS ON THE QUANTITIES THIS GATE RULES ON. `.get(k, 0)` is what turned an
+    # unwritten field into "the arm declared no destinations" (C-117).
+    # Each branch requires exactly what it RULES ON, and nothing else. A disabled-hook bridge
+    # legitimately has no `cos_pre_post` and no `projection_removed_l2`: it never edited anything,
+    # which is the point of it, and demanding those would refuse the control for being correct.
+    _required = (("hook_fired_count", "n_cells_edited_realised", "projection_removed_l2",
+                  "cos_pre_post", "activation_norm_pre", "n_cells_edited_expected", "enabled")
+                 if expect_enabled else
+                 ("hook_fired_count", "n_cells_edited_realised", "n_forward_calls", "enabled"))
+    for _i, r in enumerate(stats_rows):
+        _miss = [k for k in _required if k not in r or r[k] is None]
+        if _miss:
+            raise NotMeasured(
+                "arm %s: liveness record %d/%d does not carry %s. This gate will not turn an "
+                "UNRECORDED quantity into a scientific verdict about the arm; the record is "
+                "incomplete and the arm is unjudged, which is a different thing from failing."
+                % (arm_id, _i + 1, len(stats_rows), _miss))
+    n_fired = sum(int(r["hook_fired_count"]) for r in stats_rows)
+    n_rows_fired = sum(1 for r in stats_rows if int(r["hook_fired_count"]) > 0)
+    realised = sum(int(r["n_cells_edited_realised"]) for r in stats_rows)
+    expected = sum(int(r.get("n_cells_edited_expected") or 0) for r in stats_rows)
+    mags = [float(r.get("projection_removed_l2") or 0.0) for r in stats_rows]
     zero_mag = sum(1 for m in mags if not (m > tol))
-    cos = [float(r.get("cos_pre_post", 1.0)) for r in stats_rows]
-    unchanged = sum(1 for c in cos if abs(c - 1.0) <= tol)
-    disabled_flags = {bool(r.get("enabled", True)) for r in stats_rows}
+    # REVIEW F9: the two components used to encode OPPOSITE cosine policies. `pair_common`
+    # deliberately does not gate `cos_pre_post == 1.0`, and its reason is right: at float32 a
+    # genuine small edit rounds the cosine to 1.0, so gating on it refuses LIVE hooks. This gate
+    # did the opposite at tol=1e-6, and at a reduced dose or a narrower band it would have voided
+    # healthy arms. The state-changed question is answered instead by the SCALE-FREE relative
+    # magnitude -- the same rule the producer applies -- and the cosine is required to be
+    # RECORDED (mandate 10.3 persists it) rather than gated on a value.
+    _rel_mag = [(float(r["projection_removed_l2"]) / float(r["activation_norm_pre"]))
+                for r in stats_rows if expect_enabled and float(r["activation_norm_pre"]) > 0]
+    unchanged = sum(1 for x in _rel_mag if x < 1.19e-7)
+    disabled_flags = {bool(r["enabled"]) for r in stats_rows}
 
     if expect_enabled:
         if n_fired == 0:
@@ -820,9 +914,10 @@ def liveness_gate(stats_rows: Sequence[Dict[str, Any]], arm_id: str,
             reasons.append("%d/%d records have projection_removed_l2 <= %g: a ZERO-MAGNITUDE EDIT "
                            "scores as a clean null" % (zero_mag, len(stats_rows), tol))
         if unchanged:
-            reasons.append("%d/%d records have cos(h_pre,h_post) == 1 to %g: the state did not "
-                           "change even though the hook reports firing"
-                           % (unchanged, len(stats_rows), tol))
+            reasons.append("%d/%d records have an edit below float32 resolution relative to the "
+                           "state (||removed||/||h_pre|| < 1.19e-07): an under-dosed edit that "
+                           "the readout cannot distinguish from no edit at all"
+                           % (unchanged, len(stats_rows)))
         if False in disabled_flags:
             reasons.append("some records carry enabled=False in an arm that is supposed to be "
                            "LIVE -- the disabled-hook bridge leaked into a live arm")
@@ -841,16 +936,38 @@ def liveness_gate(stats_rows: Sequence[Dict[str, Any]], arm_id: str,
                            "not exercised at all, so it bridges nothing")
     return {"arm_id": arm_id, "live": (not reasons), "n_rows": len(stats_rows),
             "n_fired": n_fired, "n_cells_realised": realised, "n_cells_expected": expected,
-            "n_zero_magnitude": zero_mag, "n_unchanged_state": unchanged,
+            "n_zero_magnitude": zero_mag, "n_under_dosed": unchanged,
+            "n_unchanged_state": unchanged,
             "expect_enabled": expect_enabled, "reasons": reasons}
 
 
 def orthogonal_residual_gate(stats_rows: Sequence[Dict[str, Any]],
                              tol: float = 1e-4) -> Dict[str, Any]:
-    """`I-N7`, blocking: `||h_orth_pre - h_orth_post||` must be 0 to numerical tolerance."""
+    """`I-N7`, blocking: `||h_orth_pre - h_orth_post||` must be 0 to numerical tolerance.
+
+    A RECORD THAT LACKS THE FIELD IS `NotMeasured`, NOT A VIOLATION (C-117). The previous version
+    defaulted the absent field to NaN, `abs(nan) <= tol` is False, so every row counted as a
+    violation and the gate asserted "the orthogonal component was NOT preserved; H2b is VOID" --
+    a positive claim about the physics of the edit whose actual content was that the producer had
+    never written the number. `pair_common` now measures it on every project_out edit (the change
+    is `alpha*(h.d)d`, so its component orthogonal to `d` must be 0 to float error) and the
+    analyzer's own component-replace hook measures it against `span{v_out, v_in}`.
+    """
     if not stats_rows:
         raise ZeroBinding("orthogonal-residual gate over zero records")
-    vals = [float(r.get("orthogonal_residual_delta_l2", float("nan"))) for r in stats_rows]
+    missing = [i for i, r in enumerate(stats_rows)
+               if r.get("orthogonal_residual_delta_l2") is None]
+    if missing:
+        raise NotMeasured(
+            "%d/%d liveness record(s) do not carry `orthogonal_residual_delta_l2` (first: index "
+            "%d). I-N7 asks whether the orthogonal component was PRESERVED; an unrecorded "
+            "quantity cannot answer it, and defaulting it to NaN would make this gate report a "
+            "physical violation that nobody observed."
+            % (len(missing), len(stats_rows), missing[0]))
+    vals = [float(r["orthogonal_residual_delta_l2"]) for r in stats_rows]
+    if any(v != v for v in vals):
+        raise NotMeasured("an `orthogonal_residual_delta_l2` of NaN reached the I-N7 gate. NaN is "
+                          "not a measurement and must not be read as a violation.")
     bad = [v for v in vals if not (abs(v) <= tol)]
     return {"n": len(vals), "max_abs": max(abs(v) for v in vals), "tol": tol,
             "n_violations": len(bad), "ok": not bad,
@@ -1189,14 +1306,47 @@ def build_arm_manifest(pr: Prereg) -> List[ArmSpec]:
             control_draw_seed=seed, expect_enabled=True,
             note="separates 'the concept direction matters' from 'perturbing this site by this "
                  "much matters'"))
+        # ---- C-119, RESOLVED BY INTERPRETATION, AND THE INTERPRETATION IS RECORDED ---------
+        # This arm used to carry `alpha=0.0` with the gloss "none -- the hook is registered and
+        # edits nothing". That reading makes the control CERTIFY NOTHING, and it is refused
+        # twice over: `pair_common.project_out_liveness_violations` refuses a bridge whose inner
+        # hook `would_have_changed_max_abs == 0`, and the frozen config lists "the disabled-hook
+        # bridge not reproducing baseline" under `primary.void`, so an UNEVALUABLE void condition
+        # is a hole in the validity argument rather than a satisfied one.
+        #
+        # WHAT THE FROZEN FILE ACTUALLY SAYS. `controls.arms[C5].rule` is: "the full intervention
+        # code path with the hook DISABLED. MUST reproduce the untouched baseline generations
+        # byte-for-byte ... and the untouched hidden states at max|diff| == 0.000e+00". It states
+        # NO alpha for C5 and no dose for it anywhere -- `alpha=0.0` was a literal typed into
+        # THIS file, not a preregistered quantity, and this file is not frozen. The
+        # interpretation adopted is therefore the operational reading of its own words: "the full
+        # intervention code path" is the LIVE arm's path, at the LIVE arm's dose, and "the hook
+        # DISABLED" is `DisabledHookBridge` -- the hook registered on the same layer objects,
+        # RUN IN FULL, and its write discarded. `alpha` is what the code path is run AT; the
+        # bridge's dose-to-the-model is zero because nothing is written, not because alpha is.
+        #
+        # WHY IT MUST BE THE LIVE ALPHA AND NOT ANY ALPHA. What C5 certifies is that the
+        # machinery AROUND the edit -- layer resolution, direction load, dtype/device cast,
+        # projection -- is inert. Run at alpha=0 the projection is `h - 0*(h.d)d`, an identity:
+        # the bridge would reproduce the baseline even if the direction were garbage, the layer
+        # wrong and the hook installed on the whole model. It would pass for reasons that have
+        # nothing to do with what it is asked. At the live alpha the inner hook computes the real
+        # edit, `would_have_changed_max_abs > 0` proves the machinery ran, and the byte-identical
+        # output then means what C5 says it means. `alpha` is matched to the H2a arm this bridge
+        # shadows (`v_bomb_specific`, scale-free project_out, alpha=1.0) so the discarded write
+        # is exactly the arm's write.
         arms.append(ArmSpec(
             arm_id="c5_disabled_bridge_%s" % scope.lower(), role="control", family_member=None,
             hypothesis="C5", scope=scope, layers=list(layers), mode="disabled",
             direction="v_bomb_specific", source_concept="knife", target_concept="bomb",
-            codeword="button", dose_units="none -- the hook is registered and edits nothing",
-            alpha=0.0, control_draw_seed=None, expect_enabled=False,
+            codeword="button",
+            dose_units="the LIVE arm's dose, RUN IN FULL and DISCARDED -- the bridge's dose to "
+                       "the model is zero because nothing is written, not because alpha is",
+            alpha=1.0, control_draw_seed=None, expect_enabled=False,
             note="BLOCKING: must reproduce the untouched baseline byte-for-byte and the hidden "
-                 "states at max|diff| == 0.000e+00"))
+                 "states at max|diff| == 0.000e+00. C-119: alpha is the H2a arm's alpha, not 0; "
+                 "an alpha=0 bridge is an identity that would pass with a garbage direction on "
+                 "the wrong layer. The frozen file preregisters no alpha for C5."))
         arms.append(ArmSpec(
             arm_id="c7_selfpatch_%s" % scope.lower(), role="control", family_member=None,
             hypothesis="C7", scope=scope, layers=list(layers), mode="patch",
@@ -1696,7 +1846,7 @@ def selftest() -> int:
     x = torch.randn(1, 12, hidden)
     d = torch.randn(hidden)
     layer = _toy_layer(hidden)
-    st = LivenessStats(arm_id="unit_live", n_cells_edited_expected=1)
+    st = LivenessStats(arm_id="unit_live")
     hook = make_instrumented_project_out_hook(d, st, positions=[resolve_end_relative(range(12), -3)])
     with InstrumentedHook(layer, 9, hook, st):
         y = layer(x)[0]
@@ -1707,7 +1857,7 @@ def selftest() -> int:
            "reasons=%s" % live["reasons"])
 
     # ---- DISABLED hook is DETECTED as disabled -----------------------------------------
-    st_d = LivenessStats(arm_id="unit_bridge", n_cells_edited_expected=1, enabled=False)
+    st_d = LivenessStats(arm_id="unit_bridge", enabled=False)
     hook_d = make_instrumented_project_out_hook(d, st_d, positions=[9], enabled=False)
     with InstrumentedHook(layer, 9, hook_d, st_d):
         y_d = layer(x)[0]
@@ -1738,7 +1888,7 @@ def selftest() -> int:
     # ---- H2b orthogonal residual preservation ------------------------------------------
     v_out = torch.randn(hidden)
     v_in = torch.randn(hidden)
-    st_r = LivenessStats(arm_id="unit_h2b", n_cells_edited_expected=1)
+    st_r = LivenessStats(arm_id="unit_h2b")
     hook_r = make_instrumented_component_replace_hook(v_out, v_in, 0.7, st_r, positions=[9])
     with InstrumentedHook(layer, 9, hook_r, st_r):
         _ = layer(x)
@@ -2119,9 +2269,14 @@ def selftest() -> int:
         _ya = _la(_xa)[0]
     _n_moved_all = int(((_ya - _xa).abs().amax(dim=-1) > 1e-6).sum())
 
-    _ss = _pc.hook_stats_dict(mode="project_out_single", layer=3, rel_end=-3)
+    # rel_end=-3 against a 9-token row RESOLVES to absolute 6, and all three numbers are handed
+    # to the hook so that `resolved_absolute_index == seq_len_at_resolution + rel_end` is an
+    # assertion the constructor makes rather than a comment (review F3).
+    _ss = _pc.hook_stats_dict(mode="project_out_single", layer=3, rel_end=-3,
+                              seq_len_at_resolution=9)
     _ls = _toy_layer(_hid)
-    with _pc.SinglePositionProjectOut(_ls, 3, _d, alpha=1.0, pos=6, stats=_ss, rel_end=-3):
+    with _pc.SinglePositionProjectOut(_ls, 3, _d, alpha=1.0, pos=6, stats=_ss, rel_end=-3,
+                                      seq_len_at_resolution=9):
         _ys = _ls(_xa)[0]
     _n_moved_one = int(((_ys - _xa).abs().amax(dim=-1) > 1e-6).sum())
     ck.add("q12_single_vs_all_position_scope",
@@ -2139,6 +2294,56 @@ def selftest() -> int:
            and _sa["hook_fired_count"] == 1 and _ss["projection_removed_l2"] > 0
            and _ss["resolved_absolute_index"] == [6], 2,
            "cos=%.6f removed=%.4f" % (_sa["cos_pre_post"], _sa["projection_removed_l2"]))
+    # ---- C-117: the PRODUCER writes the two fields the CONSUMER reads, and the consumer's own
+    #      gates now pass on REAL producer records rather than voiding them. This is the exact
+    #      reproduction the 2026-09-07 review ran and got live=False / ok=False / max_abs=nan on.
+    _row_all = dict(_sa, seq_len=9, arm="selftest")
+    _row_one = dict(_ss, seq_len=9, arm="selftest")
+    _lg = liveness_gate([_row_all, _row_one], "selftest", expect_enabled=True)
+    _og = orthogonal_residual_gate([_row_all, _row_one])
+    _aud = audit_end_relative([_row_all, _row_one])
+    ck.add("c117_producer_records_pass_the_consumer_gates",
+           "REAL pair_common records -- the ones the producer itself calls clean -- pass "
+           "liveness_gate and orthogonal_residual_gate. Before C-117 both fields were absent, so "
+           "the defaulting .get made every healthy arm VOID and made the I-N7 gate assert a "
+           "physical violation nobody had measured",
+           _lg["live"] and _og["ok"] and _aud["ok"], 2,
+           "expected=%d realised=%d orth_max=%.3e n_audited=%d reasons=%s"
+           % (_lg["n_cells_expected"], _lg["n_cells_realised"], _og["max_abs"],
+              _aud["n_records"], _lg["reasons"]))
+    ck.add("c117_expected_is_not_vacuous",
+           "the expected cell count is COUNTED from the tensor each forward was handed (9 cells "
+           "for the all-position edit on a 1x9 row, 1 for the single site), so "
+           "`realised == expected` is a real bind and not 0 == 0",
+           _sa["n_cells_edited_expected"] == 9 and _ss["n_cells_edited_expected"] == 1
+           and _sa["n_cells_edited_realised"] == 9 and _ss["n_cells_edited_realised"] == 1, 2,
+           "all: %d/%d  one: %d/%d" % (_sa["n_cells_edited_realised"],
+                                       _sa["n_cells_edited_expected"],
+                                       _ss["n_cells_edited_realised"],
+                                       _ss["n_cells_edited_expected"]))
+    _missing = {k: v for k, v in _row_one.items() if k != "n_cells_edited_expected"}
+    _caught = ""
+    try:
+        liveness_gate([_missing], "selftest", expect_enabled=True)
+    except NotMeasured as e:
+        _caught = str(e)
+    _zero = liveness_gate([dict(_row_one, n_cells_edited_expected=0)], "selftest",
+                          expect_enabled=True)
+    ck.add("c117_missing_is_not_zero",
+           "a record MISSING n_cells_edited_expected RAISES NotMeasured (the arm is UNJUDGED), "
+           "while a record whose expected count is a MEASURED ZERO returns live=False (the arm "
+           "is judged and it FAILED). Collapsing these two was the whole of C-117",
+           bool(_caught) and not _zero["live"], 2,
+           "raised=%r | measured-zero reasons=%s" % (_caught[:48], _zero["reasons"][:1]))
+    ck.add("f3_end_relative_invariant_holds_and_is_checked",
+           "the persisted site satisfies resolved_absolute_index == seq_len + rel_end, and the "
+           "producer's own gate now REFUSES a record where it does not",
+           _ss["rel_end"] == -3 and _ss["seq_len_at_resolution"] == 9
+           and _ss["resolved_absolute_index"] == [6]
+           and any("absolute_index_is_not_end_relative" in v for v in
+                   _pc.project_out_liveness_violations(dict(_ss, rel_end=-4))), 1,
+           "rel_end=%d seq_len=%d abs=%s" % (_ss["rel_end"], _ss["seq_len_at_resolution"],
+                                             _ss["resolved_absolute_index"]))
 
     _lb = _toy_layer(_hid)
     _inner = _pc.SinglePositionProjectOut(_lb, 3, _d, alpha=1.0, pos=6)
@@ -2358,12 +2563,66 @@ def mutate() -> int:
         [{"read_layer": 15, "o1_margin_source_minus_target": 0.1, "probe_sha256": "a"},
          {"read_layer": 15, "o1_margin_source_minus_target": 0.2, "probe_sha256": "b"}], 15)
 
+    # ---- C-117 / F2 / F3, fixed 2026-09-07. The three new fixes, each shown RED. ----------
+    # THE POINT OF THE FIRST PAIR: a MISSING field and a MEASURED ZERO must produce DIFFERENT
+    # outcomes. M39 (missing) must RAISE -- the arm is unjudged. M40 (measured zero) must return
+    # live=False -- the arm is judged and it failed. If either collapsed into the other, the fix
+    # would be undone: defaulting missing->0 is the C-117 bug, and excusing a measured 0 would be
+    # the leniency that lets a dead hook pass as a clean null.
+    def _live_row(**kw):
+        r = _pc.hook_stats_dict(mode="project_out_single", layer=9, rel_end=-10,
+                                seq_len_at_resolution=100)
+        r.update({"n_forward_calls": 1, "n_forward_with_destinations": 1, "hook_fired_count": 1,
+                  "n_destination_rows": 1, "n_cells_edited_realised": 1,
+                  "n_cells_edited_expected": 1, "activation_norm_pre": 10.0,
+                  "activation_norm_post": 9.8, "projection_removed_l2": 1.4,
+                  "min_projection_removed_l2": 1.4, "orthogonal_residual_delta_l2": 2e-7,
+                  "max_abs_delta": 0.3, "cos_pre_post": 0.99, "seq_len": 100,
+                  "resolved_absolute_index": [90]})
+        r.update(kw)
+        return r
+
+    muts["M40 expected cell count MEASURED and genuinely 0"] = lambda: liveness_gate(
+        [_live_row(n_cells_edited_expected=0)], "m", expect_enabled=True)["live"]
+    muts["M41 realised != expected cell count"] = lambda: liveness_gate(
+        [_live_row(n_cells_edited_expected=8)], "m", expect_enabled=True)["live"]
+    muts["M42 pair_common: absolute index recorded as rel_end"] = lambda: not _pc.        project_out_liveness_violations(_live_row(rel_end=90, seq_len_at_resolution=100))
+    muts["M43 pair_common: partially dead hook (fired 1 of 4 forwards)"] = lambda: not _pc.        project_out_liveness_violations(_live_row(n_forward_calls=4,
+                                                  n_forward_with_destinations=4,
+                                                  hook_fired_count=1))
+    muts["M44 pair_common: some forward removed exactly zero"] = lambda: not _pc.        project_out_liveness_violations(_live_row(min_projection_removed_l2=0.0))
+    muts["M45 pair_common: orthogonal residual never measured"] = lambda: not _pc.        project_out_liveness_violations(_live_row(orthogonal_residual_delta_l2=None))
+
+    raisers["M39 liveness record MISSING n_cells_edited_expected"] = lambda: liveness_gate(
+        [{k: v for k, v in _live_row().items() if k != "n_cells_edited_expected"}], "m",
+        expect_enabled=True)
+    raisers["M46 orthogonal residual MISSING (not zero)"] = lambda: orthogonal_residual_gate(
+        [{k: v for k, v in _live_row().items() if k != "orthogonal_residual_delta_l2"}])
+    raisers["M47 orthogonal residual recorded as NaN"] = lambda: orthogonal_residual_gate(
+        [_live_row(orthogonal_residual_delta_l2=float("nan"))])
+    raisers["M48 end-relative audit on a record with no seq_len"] = lambda: audit_end_relative(
+        [{"rel_end": -10, "resolved_absolute_index": 90}])
+    raisers["M49 single-site hook whose rel_end names another token"] = lambda:         _pc.SinglePositionProjectOut(_toy_layer(4), 3, _t.ones(4), pos=90, rel_end=-10,
+                                     seq_len_at_resolution=137)
+    raisers["M50 single-site hook given a NON-NEGATIVE rel_end"] = lambda:         _pc.SinglePositionProjectOut(_toy_layer(4), 3, _t.ones(4), pos=90, rel_end=90,
+                                     seq_len_at_resolution=100)
+    raisers["M51 score_behavior: edit index that is not seq_len+rel_end"] = lambda:         _sb.make_intervention(None, _pc, None, {"direction": "v", "mode": "project_out",
+                                                "layers": [9], "alpha": 1.0},
+                              {"v": {9: _t.ones(4)}}, edit_positions=[90],
+                              edit_positions_rel_end=[-10], edit_positions_seq_len=137)
+    raisers["M52 score_behavior: absolute index passed as rel_end"] = lambda:         _sb.make_intervention(None, _pc, None, {"direction": "v", "mode": "project_out",
+                                                "layers": [9], "alpha": 1.0},
+                              {"v": {9: _t.ones(4)}}, edit_positions=[90],
+                              edit_positions_rel_end=[90], edit_positions_seq_len=100)
+
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0
     # `score_behavior`'s house refusal idiom is SystemExit, not an exception class of ours, so a
     # mutation against a guard that lives in that shared file raises SystemExit. Catching it here
     # is what lets those guards be shown RED alongside the analyzer's own.
-    _REFUSALS = (Refusal, ZeroBinding, SystemExit)
+    # `pair_common`'s own construction-time guards raise ValueError (its house idiom -- see
+    # `DisabledHookBridge` "bound ZERO hooks"), so a mutation against one of those lands here too.
+    _REFUSALS = (Refusal, ZeroBinding, SystemExit, ValueError)
     for name, fn in muts.items():
         try:
             passed = bool(fn())

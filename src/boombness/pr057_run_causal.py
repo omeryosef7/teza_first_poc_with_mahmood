@@ -150,18 +150,20 @@ DEFECT_C113 = (
 )
 
 DEFECT_LIVENESS_SCHEMA = (
-    "C-117 (new, BLOCKING FOR ANALYSIS, found by this runner): the liveness PRODUCER and the "
-    "liveness CONSUMER do not share a schema. pair_common.hook_stats_dict() writes "
-    "n_destination_rows / n_cells_edited_realised and NO 'n_cells_edited_expected'; the "
-    "analyzer's liveness_gate() treats a zero/absent expected count as 'the arm declared no "
-    "destinations' and VOIDS the arm -- so EVERY arm score_behavior produces would be VOID at "
-    "analysis time. The producer also writes resolved_absolute_index as a LIST and leaves "
-    "rel_end None for an all-position (S2) edit, while audit_end_relative() does "
-    "int(record['rel_end']) and int(record['resolved_absolute_index']) and would raise. The "
-    "runner does NOT rewrite PR057_LIVENESS.jsonl. It gates the arm with the PRODUCER's own gate, "
-    "then feeds the consumer's gate an ANNOTATED COPY (expected := n_destination_rows, the "
-    "single-site index unpacked) and writes both verdicts plus this note into PR057_ARM_GATE.json "
-    "so no reader can mistake the annotation for the artifact."
+    "C-117 (RESOLVED 2026-09-07 in the producer, not here): the liveness PRODUCER and the liveness "
+    "CONSUMER did not share a schema. pair_common.hook_stats_dict() wrote n_destination_rows / "
+    "n_cells_edited_realised and NO 'n_cells_edited_expected' and NO "
+    "'orthogonal_residual_delta_l2', while the analyzer's liveness_gate() and "
+    "orthogonal_residual_gate() read both with a defaulting .get -- so a MISSING field became a "
+    "measured 0 / NaN and EVERY healthy arm gated VOID with a substantive scientific verdict "
+    "('the arm declared no destinations'; 'the orthogonal component was NOT preserved'). "
+    "RECONCILED as follows: the PRODUCER owns both measurements (only the hook sees the tensor it "
+    "was handed and holds h_pre, h_post and d) and now writes them; the CONSUMER raises "
+    "NotMeasured on an ABSENT field instead of defaulting it, so a missing field can never again "
+    "be mistaken for a measured zero, and a measured zero is still a failing verdict. This runner "
+    "no longer invents 'expected := n_destination_rows'; it requires the producer's own count. It "
+    "still does NOT rewrite PR057_LIVENESS.jsonl, and both gates' verdicts go into "
+    "PR057_ARM_GATE.json."
 )
 
 DEFECT_PROBE_ATTRIBUTION = (
@@ -188,8 +190,16 @@ DEFECT_C119_BRIDGE_ALPHA = (
     "project_out_liveness_violations REFUSES a bridge whose inner hook would not have edited "
     "anything, so an alpha=0 bridge is refused at the node -- and if it were not, it would "
     "certify nothing, because the machinery it is supposed to prove inert would have been given "
-    "no edit to discard. The runner does NOT silently substitute alpha=1: it refuses the arm and "
-    "records this, because the dose of a control is a preregistered quantity."
+    "no edit to discard. RESOLVED 2026-09-07 BY INTERPRETATION, RECORDED AS SUCH: the frozen "
+    "config preregisters NO alpha for C5 -- controls.arms[C5] carries only id/name/rule/blocking, "
+    "and its rule is 'the full intervention code path with the hook DISABLED'. The alpha=0.0 was "
+    "a literal in scripts/dcs_ts_pr057_causal.py's build_arm_manifest, which is not frozen. C5 "
+    "now runs the LIVE arm's alpha (1.0, the H2a arm it shadows) with the write discarded, which "
+    "is what 'the hook is registered and edits nothing' means operationally: the bridge's dose to "
+    "the model is zero because nothing is WRITTEN, not because alpha is. At alpha=0 the inner "
+    "projection is the identity and the bridge would reproduce baseline even with a garbage "
+    "direction on the wrong layer -- it would pass for reasons unrelated to what it certifies. "
+    "This constant is retained as a TRIPWIRE: an alpha=0 disabled arm is still refused."
 )
 
 #: Why an arm cannot be launched today. Each is a REFUSAL, and each names the item that would
@@ -473,8 +483,12 @@ def build_argv(pr: Prereg, arm: ArmSpec, ctx: Dict[str, Any]) -> List[str]:
         "--max-new", str(int(pr.require("decoding", "max_new_tokens"))),
         "--no-generate",
         "--fit-dir", ctx["fit_dir"],
+        # NO `arm.alpha or 1.0` HERE. That fallback turned a manifest alpha of 0.0 into a
+        # launched alpha of 1.0 -- the arm submitted would not have been the arm declared, and
+        # `assert_argv_agrees_with_analyzer` would have caught it only by luck. An alpha of 0 is
+        # refused above (C-119) rather than quietly replaced.
         "--intervene", "%s:%s:%s:%g" % (con["intervene_direction"],
-                                        "project_out", band, arm.alpha or 1.0),
+                                        "project_out", band, float(arm.alpha)),
         "--seed", str(seed),
         "--arm", arm.arm_id,
         "--tag", arm.tag(),
@@ -782,6 +796,7 @@ def per_domain_delta(arm_rows: Sequence[Dict[str, Any]],
 # ============================================================================================
 LIVENESS_REQUIRED_KEYS = ("mode", "enabled", "layer", "n_forward_calls", "hook_fired_count",
                           "n_destination_rows", "n_cells_edited_realised",
+                          "n_cells_edited_expected", "orthogonal_residual_delta_l2",
                           "projection_removed_l2", "max_abs_delta", "seq_len")
 
 
@@ -789,11 +804,13 @@ def annotate_liveness(records: Sequence[Dict[str, Any]], arm: ArmSpec) -> List[D
     """An ANNOTATED COPY for the analyzer's consumer-side gate. See `DEFECT_LIVENESS_SCHEMA`.
 
     Two annotations, both stated rather than smuggled:
-      * `n_cells_edited_expected := n_destination_rows` -- the producer records how many cells the
-        hook SAW; a live hook must have edited all of them, so `realised == expected` is then the
-        real "did it edit everything it was given" check rather than a vacuous 0 == 0.
       * the single-site `resolved_absolute_index` list of one is unpacked to an int, so
         `audit_end_relative` can perform the `seq_len + rel_end` identity it exists for.
+    `n_cells_edited_expected` is NO LONGER INVENTED HERE (C-117 is closed in the producer). The
+    hook counts it from the tensor each forward was handed, before the write; overwriting that
+    measured number with `n_destination_rows` -- which the producer only increments AFTER a
+    successful write -- would make `realised == expected` true by construction again and hide the
+    very mismatch the frozen `void_if` asks about. A record that lacks it is a REFUSAL.
     An all-position (S2) edit has no single rel_end and is NOT given one: it is marked
     `_end_relative_audit = 'not applicable (all-position edit)'` instead, because inventing a
     rel_end to make an audit pass is the audit failing.
@@ -807,8 +824,8 @@ def annotate_liveness(records: Sequence[Dict[str, Any]], arm: ArmSpec) -> List[D
                 "cannot distinguish 'the hook never fired' from 'the consumer read a key the "
                 "producer never wrote'." % (arm.arm_id, miss))
         d = dict(r)
-        d["n_cells_edited_expected"] = int(r.get("n_destination_rows") or 0)
-        d["_expected_rule"] = "n_destination_rows (annotated by the runner; see C-117)"
+        d["_expected_rule"] = ("n_cells_edited_expected is the PRODUCER's own count, taken from "
+                               "the tensor each forward was handed before the write (C-117)")
         idx = r.get("resolved_absolute_index")
         if isinstance(idx, (list, tuple)):
             if len(idx) == 1:
@@ -834,7 +851,8 @@ PERSIST_LOCATION = {
     "frac_cellmean_spread_removed": ("arm", "realized_dose"),
     "cosine(h_pre, h_post)": ("row", "cos_pre_post"),
     "cosine(edit, v_used)": ("arm", "cos_edit_vs_direction"),
-    "orthogonal_residual_delta_l2 (H2b: must be 0 to tolerance)": ("arm", "H2b only"),
+    "orthogonal_residual_delta_l2 (H2b: must be 0 to tolerance)":
+        ("row", "orthogonal_residual_delta_l2"),
     "layer(s) edited": ("row", "layer"),
     "token position edited (as rel_end AND as the resolved absolute index)":
         ("row", "rel_end + resolved_absolute_index"),
@@ -867,9 +885,25 @@ def persist_contract_report(pr: Prereg, arm: ArmSpec, record: Dict[str, Any],
             continue
         where, key = loc
         if f.startswith("orthogonal_residual_delta_l2"):
-            out[f] = {"present": None, "where": where,
-                      "note": "not applicable: this arm is %s, not H2b (component_replace)"
-                              % arm.hypothesis}
+            # MEASURED, NOT WAIVED (C-117). The frozen list names this field for H2b, where it is
+            # I-N7; but a project_out edit is `alpha*(h.d)d`, so its component orthogonal to `d`
+            # must be zero too, and `pair_common` now records it on every edit. What used to be a
+            # "not applicable to this arm" note is a number.
+            _v = record.get("orthogonal_residual_delta_l2")
+            if _v is None:
+                if arm.expect_enabled:
+                    raise RunnerRefusal(
+                        "arm %s is a LIVE edit and its liveness record carries no "
+                        "`orthogonal_residual_delta_l2`. An unmeasured orthogonal residual is not "
+                        "a preserved one -- and the analyzer's I-N7 gate used to default the "
+                        "absence to NaN and report a physical violation nobody observed (C-117)."
+                        % arm.arm_id)
+                out[f] = {"present": None, "where": "row",
+                          "note": "the disabled-hook bridge discarded its write, so there is no "
+                                  "edit whose orthogonal component could have been disturbed"}
+            else:
+                out[f] = {"present": True, "where": "row",
+                          "key": "orthogonal_residual_delta_l2", "value": float(_v)}
             continue
         if where == "row":
             if f.startswith("token position"):
@@ -1563,10 +1597,14 @@ def _live_record(**kw) -> Dict[str, Any]:
         "n_subtokens_per_occurrence": [1], "occurrence_index_per_edit": [0],
         "liveness_violations": []})
     r.update({"n_forward_calls": 1, "hook_fired_count": 1, "n_destination_rows": 1,
-              "n_cells_edited_realised": 1, "activation_norm_pre": 10.0,
+              "n_forward_with_destinations": 1,
+              "n_cells_edited_realised": 1, "n_cells_edited_expected": 1,
+              "activation_norm_pre": 10.0,
               "activation_norm_post": 9.8, "projection_removed_l2": 1.4, "max_abs_delta": 0.3,
+              "min_projection_removed_l2": 1.4, "orthogonal_residual_delta_l2": 2.1e-07,
               "cos_pre_post": 0.99, "direction_norm": 1.0, "alpha": 1.0, "norm_ratio": 0.98,
-              "resolved_absolute_index": [90], "seq_len_last": 100, "seq_len": 100})
+              "resolved_absolute_index": [90], "seq_len_last": 100, "seq_len": 100,
+              "seq_len_at_resolution": 100})
     r.update(kw)
     return r
 
@@ -1599,7 +1637,13 @@ def selftest() -> int:
     sm_con = [a.arm_id for a in arms if stage_selector(pr, "smoke")(a)
               and constructibility(pr, a, payload_keys)["constructible"]]
     ck.add("stage_smoke_is_2", "the smoke selects 2 arms (primary + the disabled-hook bridge)",
-           nsm == 2, nsm, "constructible today: %s (C5 is refused on C-119)" % sm_con)
+           nsm == 2, nsm, "constructible today: %s" % sm_con)
+    ck.add("c5_bridge_runs_the_live_alpha",
+           "C-119: the C5 bridge carries the LIVE arm's alpha, so its inner hook has a real edit "
+           "to discard and `would_have_changed_max_abs > 0` can be true",
+           all(float(a.alpha) > 0 for a in arms if a.hypothesis == "C5")
+           and len(sm_con) == 2,
+           len([a for a in arms if a.hypothesis == "C5"]), "constructible: %s" % sm_con)
     labels = sorted({a.direction for a in arms if a.direction})
     ck.add("direction_map_covers_manifest",
            "every direction label the manifest uses has a DECLARED mapping (or an explicit None)",
@@ -1683,8 +1727,10 @@ def selftest() -> int:
     # liveness
     rec = _live_record()
     ann = annotate_liveness([rec], _stub_arm())
-    ck.add("annotate_expected", "the annotated copy carries n_cells_edited_expected (C-117)",
-           ann[0]["n_cells_edited_expected"] == 1, 1, ann[0]["_expected_rule"])
+    ck.add("annotate_expected", "the PRODUCER's own n_cells_edited_expected survives annotation "
+           "unaltered (C-117 -- the runner no longer invents it)",
+           ann[0]["n_cells_edited_expected"] == rec["n_cells_edited_expected"] == 1, 1,
+           ann[0]["_expected_rule"])
     ck.add("annotate_index", "the single-site absolute index is unpacked for the audit",
            ann[0]["resolved_absolute_index"] == 90, 90, "")
     ck.add("liveness_live_ok", "a live, firing, state-changing hook passes the consumer gate",
@@ -1952,6 +1998,18 @@ def mutate() -> int:
       lambda: _band_or_raise(pr))
     m("M25_probe_without_artifact", "--emit-probe must refuse rather than write an unattributable file",
       lambda: _probe_or_raise())
+    # C-119, after the fix. The tripwire stays: an alpha=0 bridge is an IDENTITY, so it would
+    # reproduce the baseline with a garbage direction on the wrong layer and certify nothing.
+    m("M26_alpha_zero_bridge_certifies_nothing",
+      "a disabled-hook bridge at alpha=0 must be REFUSED, not silently certified",
+      lambda: _constructible_or_raise(pr, _stub_arm(mode="disabled", expect_enabled=False,
+                                                    alpha=0.0), payload_keys))
+    m("M27_liveness_record_missing_the_producer_expected_count",
+      "a record missing the PRODUCER's n_cells_edited_expected must refuse, and must NOT be "
+      "repaired by the runner inventing one (C-117)",
+      lambda: annotate_liveness(
+          [{k: v for k, v in _live_record().items() if k != "n_cells_edited_expected"}],
+          _stub_arm()))
 
     red = sum(1 for r in results if r[2])
     print("MUTATION HARNESS -- each mutation must produce a REFUSAL")
@@ -1959,6 +2017,13 @@ def mutate() -> int:
         print("  [%s] %-32s %s\n        %s" % ("RED" if ok else "GREEN(BAD)", name, why, detail))
     print("\n[pr057-runner] mutations: %d/%d RED" % (red, len(results)))
     return 0 if red == len(results) else 1
+
+
+def _constructible_or_raise(pr: Prereg, arm: ArmSpec, payload_keys) -> None:
+    con = constructibility(pr, arm, payload_keys)
+    if con["constructible"]:
+        raise AssertionError("NOT REFUSED")
+    raise RunnerRefusal("arm %s is not constructible: %s" % (arm.arm_id, con["reasons"][0][:120]))
 
 
 def _assert_live(ann) -> None:

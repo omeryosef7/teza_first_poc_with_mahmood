@@ -1046,7 +1046,8 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
                       knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None,
                       surface_span=None,
-                      edit_positions=None, disable_hooks: bool = False,
+                      edit_positions=None, edit_positions_rel_end=None,
+                      edit_positions_seq_len=None, disable_hooks: bool = False,
                       hook_stats=None, control_base: Optional[str] = None,
                       arm_echo=None):
     """Return a list of context managers implementing --intervene, or [].
@@ -1404,6 +1405,7 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # through this function would have been an all-position edit reported under the single-site
     # name: the same silent-larger-intervention shape as the dropped `knock_scope`.
     _pos = None
+    _rel = None
     if edit_positions is not None:
         _pos = [int(x) for x in edit_positions]
         if not _pos:
@@ -1411,6 +1413,29 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                 f"[score] REFUSING: intervention {name!r} was given an EMPTY edit_positions "
                 "list. A single-site edit with no site is a no-op, and a no-op scores as a "
                 "perfectly healthy null.")
+        # THE OFFSET IS CARRIED ALONGSIDE THE INDEX, NOT INFERRED FROM IT (review F3). Passing
+        # `_pos` as `rel_end` too is what made the recorded site unauditable; and re-deriving the
+        # offset here from some sequence length would re-introduce the guess. If the caller did
+        # not declare the offsets, the record says so (rel_end stays None) rather than lying.
+        if edit_positions_rel_end is not None:
+            _rel = [int(x) for x in edit_positions_rel_end]
+            if len(_rel) != len(_pos):
+                raise SystemExit(
+                    f"[score] REFUSING: {len(_pos)} edit position(s) but {len(_rel)} end-relative "
+                    "offset(s). The site edited and the site recorded must be the same site.")
+            if any(r >= 0 for r in _rel):
+                raise SystemExit(
+                    f"[score] REFUSING: end-relative offsets {_rel} contain a NON-NEGATIVE value. "
+                    "An absolute index recorded under the name `rel_end` defeats the audit that "
+                    "exists to catch absolute indices.")
+            if edit_positions_seq_len is not None:
+                _bad = [(p, r) for p, r in zip(_pos, _rel)
+                        if int(edit_positions_seq_len) + r != p]
+                if _bad:
+                    raise SystemExit(
+                        f"[score] REFUSING: edit position(s) {_bad} do not satisfy "
+                        f"resolved_absolute_index == seq_len({edit_positions_seq_len}) + rel_end. "
+                        "The token edited and the token persisted are not the same token.")
         if len(set(_pos)) != len(_pos):
             raise SystemExit(f"[score] REFUSING: duplicate edit_positions {_pos}; the same "
                              "position edited twice is a DOUBLE dose under a single-dose label.")
@@ -1434,11 +1459,18 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                     st["arm"], st["direction"] = name, name
                     _stats_here.append(st)
             else:
-                for q in _pos:
-                    st = (pc.hook_stats_dict(mode="project_out_single", layer=L, rel_end=q)
+                for _qi, q in enumerate(_pos):
+                    # paired BY INDEX IN THE LIST, not by looking `q` up: a value lookup would
+                    # pair the wrong offset the moment two sites resolved to the same index, and
+                    # "the same site under two names" is the failure this whole block prevents.
+                    _q_rel = (_rel[_qi] if _rel is not None else None)
+                    st = (pc.hook_stats_dict(mode="project_out_single", layer=L,
+                                             rel_end=_q_rel,
+                                             seq_len_at_resolution=edit_positions_seq_len)
                           if hook_stats is not None else None)
-                    ctxs.append(pc.SinglePositionProjectOut(lm.model, L, d, alpha=alpha, pos=q,
-                                                            stats=st, rel_end=q))
+                    ctxs.append(pc.SinglePositionProjectOut(
+                        lm.model, L, d, alpha=alpha, pos=q, stats=st, rel_end=_q_rel,
+                        seq_len_at_resolution=edit_positions_seq_len))
                     if st is not None:
                         st["arm"], st["direction"] = name, name
                         _stats_here.append(st)
@@ -1478,7 +1510,10 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         arm_echo.setdefault("arms", []).append(
             {"direction": name, "mode": mode, "layers": sorted(set(band)), "alpha": float(alpha),
              "scope": ("single_position" if _pos is not None else "all_position"),
-             "edit_positions": _pos, "disable_hooks": bool(disable_hooks),
+             "edit_positions": _pos, "edit_positions_rel_end": _rel,
+             "edit_positions_seq_len": (int(edit_positions_seq_len)
+                                        if edit_positions_seq_len is not None else None),
+             "disable_hooks": bool(disable_hooks),
              "control_base_direction": (_ctl_base_name if name in CONTROL_ARMS else None),
              "n_hooks": len(ctxs)})
     return ctxs
@@ -2519,8 +2554,17 @@ def main() -> int:
             # earlier row. That is this repository's twice-recorded absolute-position-index
             # bug class and it is not being written a third time.
             _pr057_pos = None
+            _pr057_rel = None
             if args.pr057_edit_positions.strip():
+                # TWO LISTS, DELIBERATELY (review F3, 2026-09-07). `_pr057_pos` is what the hook
+                # EDITS -- the offset resolved against THIS row's prompt. `_pr057_rel` is what the
+                # artifact RECORDS as `rel_end`. Until today the resolved absolute index was passed
+                # as both, so `rel_end` came out as 7 on a 10-token row and 14 on a 17-token row:
+                # the frozen config's mandated end-relative persistence never happened and
+                # `resolved_absolute_index == seq_len + rel_end` -- the invariant pair_common's own
+                # comment claims -- was false on every row while liveness reported clean.
                 _pr057_pos = []
+                _pr057_rel = []
                 for _t in args.pr057_edit_positions.split(","):
                     _t = _t.strip()
                     if not _t:
@@ -2538,6 +2582,7 @@ def main() -> int:
                             f"[score] REFUSING: end-relative position {_r} is outside this "
                             f"row's {len(ids_r)} tokens.")
                     _pr057_pos.append(len(ids_r) + _r)
+                    _pr057_rel.append(_r)
             _pr057_stats = [] if (args.pr057_liveness_out or args.pr057_disable_hooks) else None
             _pr057_echo = {} if _pr057_stats is not None else None
             ctxs = make_intervention(dc, pc, lm, spec, payload,
@@ -2547,6 +2592,9 @@ def main() -> int:
                                      knock_heads=_knock_heads, knock_scope=_knock_scope,
                                      draw_log=knock_draw, surface_span=surf,
                                      edit_positions=_pr057_pos,
+                                     edit_positions_rel_end=_pr057_rel,
+                                     edit_positions_seq_len=(len(ids_r) if _pr057_pos is not None
+                                                             else None),
                                      disable_hooks=bool(args.pr057_disable_hooks),
                                      hook_stats=_pr057_stats,
                                      control_base=(args.pr057_control_base or None),

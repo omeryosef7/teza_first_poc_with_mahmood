@@ -1080,12 +1080,54 @@ class ZHeadCapture:
 HOOK_STATS_KEYS = (
     "mode", "enabled", "layer", "alpha", "direction_norm",
     "n_forward_calls", "n_prefill_forward", "n_decode_forward",
-    "hook_fired_count", "n_destination_rows", "n_cells_edited_realised",
+    "n_forward_with_destinations",
+    "hook_fired_count", "n_destination_rows",
+    "n_cells_edited_realised", "n_cells_edited_expected",
     "activation_norm_pre", "activation_norm_post", "norm_ratio",
-    "projection_removed_l2", "sum_projection_removed_l2", "cos_pre_post", "max_abs_delta",
-    "positions", "rel_end", "occurrence_index", "resolved_absolute_index", "seq_len_last",
+    "projection_removed_l2", "sum_projection_removed_l2", "min_projection_removed_l2",
+    "orthogonal_residual_delta_l2",
+    "cos_pre_post", "max_abs_delta",
+    "positions", "rel_end", "occurrence_index", "resolved_absolute_index",
+    "seq_len_last", "seq_len_at_resolution",
     "would_have_changed_max_abs", "would_have_changed_l2", "bridged_and_discarded",
 )
+# ONE SCHEMA, AND THE PRODUCER OWNS THE MEASUREMENTS (C-117 / review F2, 2026-09-07).
+#
+# `scripts/dcs_ts_pr057_causal.py` carries a second liveness schema (`LivenessStats`) whose
+# `liveness_gate()` / `orthogonal_residual_gate()` read `n_cells_edited_expected` and
+# `orthogonal_residual_delta_l2` -- two fields THIS file never wrote. Both consumers read them
+# with a defaulting `.get`, so a MISSING field became a measured `0` / `NaN` and every healthy
+# arm gated VOID with a substantive scientific verdict ("the orthogonal component was NOT
+# preserved") whose real content was "nobody measured it". The two schemas are reconciled here
+# rather than in the gate, and the split of ownership is deliberate:
+#
+#   n_cells_edited_expected      -> PRODUCER. Only the hook sees the tensor it was HANDED, so
+#                                   only the hook can say how many cells it was supposed to
+#                                   edit. It is counted at the TOP of the forward, from the
+#                                   input shape and the declared scope, BEFORE the write;
+#                                   `n_cells_edited_realised` is counted from the slice actually
+#                                   written. `realised == expected` is then a real bind instead
+#                                   of the vacuous `0 == 0` the consumer was getting.
+#   orthogonal_residual_delta_l2 -> PRODUCER. Only the hook holds `h_pre`, `h_post` and `d`.
+#                                   For `project_out` the edit is `alpha*(h.d)d`, i.e. exactly
+#                                   along `d`, so the component of the change ORTHOGONAL to `d`
+#                                   must be 0 to float error; measuring it costs one projection
+#                                   and turns I-N7 from an assertion into a number.
+#   n_forward_with_destinations  -> PRODUCER. Review F6: the gated scalars are overwritten every
+#                                   forward, so they certify the LAST decode step, not the run.
+#                                   This counts the forwards that HAD cells to edit; a hook that
+#                                   fired on some of them and not others is then caught by an
+#                                   exact identity, with no numeric threshold.
+#   min_projection_removed_l2    -> PRODUCER, same reason: the minimum over forwards, so a
+#                                   forward that was handed cells and removed exactly nothing
+#                                   cannot hide behind a healthy last forward.
+#   seq_len_at_resolution        -> PRODUCER, supplied by the caller (review F3). See
+#                                   `SinglePositionProjectOut.__init__`.
+#
+# `hook_stats_dict` initialises the two MEASURED floats to None, not to 0.0. A missing or
+# unmeasured quantity must never be indistinguishable from a measured zero -- that is the same
+# defect one level down, and it is what `project_out_liveness_violations` and the analyzer's
+# gates now refuse on separately from a genuine zero.
 
 
 def _resolve_layer(model, layer_idx: int):
@@ -1115,7 +1157,8 @@ def _resolve_layer(model, layer_idx: int):
 
 def hook_stats_dict(mode: str = "", layer: int = -1, enabled: bool = True,
                     rel_end: Optional[int] = None,
-                    occurrence_index: Optional[int] = None) -> Dict[str, Any]:
+                    occurrence_index: Optional[int] = None,
+                    seq_len_at_resolution: Optional[int] = None) -> Dict[str, Any]:
     """A fresh, fully-populated liveness record. Every key exists from the start.
 
     A record that GROWS keys as the hook runs cannot distinguish "this hook never fired" from
@@ -1126,13 +1169,21 @@ def hook_stats_dict(mode: str = "", layer: int = -1, enabled: bool = True,
         "mode": str(mode), "enabled": bool(enabled), "layer": int(layer),
         "alpha": None, "direction_norm": None,
         "n_forward_calls": 0, "n_prefill_forward": 0, "n_decode_forward": 0,
-        "hook_fired_count": 0, "n_destination_rows": 0, "n_cells_edited_realised": 0,
+        "n_forward_with_destinations": 0,
+        "hook_fired_count": 0, "n_destination_rows": 0,
+        "n_cells_edited_realised": 0, "n_cells_edited_expected": 0,
         "activation_norm_pre": None, "activation_norm_post": None, "norm_ratio": None,
         "projection_removed_l2": 0.0, "sum_projection_removed_l2": 0.0,
+        # None, NOT 0.0: "never measured" and "measured and it was zero" are opposite verdicts
+        # for both of these, and the consumer is entitled to tell them apart.
+        "min_projection_removed_l2": None, "orthogonal_residual_delta_l2": None,
         "cos_pre_post": None, "max_abs_delta": 0.0,
         "positions": None, "rel_end": (None if rel_end is None else int(rel_end)),
         "occurrence_index": (None if occurrence_index is None else int(occurrence_index)),
-        "resolved_absolute_index": None, "seq_len_last": None,
+        "resolved_absolute_index": None,
+        "seq_len_last": None,
+        "seq_len_at_resolution": (None if seq_len_at_resolution is None
+                                  else int(seq_len_at_resolution)),
         "would_have_changed_max_abs": 0.0, "would_have_changed_l2": 0.0,
         "bridged_and_discarded": False,
     }
@@ -1140,8 +1191,16 @@ def hook_stats_dict(mode: str = "", layer: int = -1, enabled: bool = True,
 
 def _record_edit(stats: Dict[str, Any], pre: torch.Tensor, post: torch.Tensor,
                  removed: torch.Tensor, n_dest: int, seq_len: int,
-                 abs_index: Optional[Sequence[int]] = None) -> None:
-    """Fold one forward's edit into `stats`. `pre`/`post`/`removed` are [n_cells, hidden]."""
+                 abs_index: Optional[Sequence[int]] = None,
+                 direction: Optional[torch.Tensor] = None) -> None:
+    """Fold one forward's edit into `stats`. `pre`/`post`/`removed` are [n_cells, hidden].
+
+    `direction` is the (already normalised) axis the edit is supposed to lie along. Given it,
+    the ORTHOGONAL residual of the change is measured -- `||(I - dd^T)(h_pre - h_post)||`, which
+    for `project_out` must be zero to float error because the edit IS `alpha*(h.d)d`. Passing it
+    is what turns `orthogonal_residual_delta_l2` from a field the analyzer invented into a
+    number this file produced (C-117).
+    """
     pre_f = pre.detach().float().reshape(-1, pre.shape[-1])
     post_f = post.detach().float().reshape(-1, post.shape[-1])
     rem_f = removed.detach().float().reshape(-1, removed.shape[-1])
@@ -1158,6 +1217,23 @@ def _record_edit(stats: Dict[str, Any], pre: torch.Tensor, post: torch.Tensor,
                              if npre > 0 and npost > 0 else None)
     stats["max_abs_delta"] = max(float(stats["max_abs_delta"]),
                                  float((pre_f - post_f).abs().max()))
+    # MINIMUM over forwards, not the last one (review F6). `projection_removed_l2` above is
+    # overwritten every call, so on its own it certifies the final decode step and a hook that
+    # was dead on some other forward passes.
+    _prev_min = stats.get("min_projection_removed_l2")
+    stats["min_projection_removed_l2"] = (nrem if _prev_min is None
+                                          else min(float(_prev_min), nrem))
+    if direction is not None:
+        d_f = direction.detach().float().reshape(-1)
+        _dn = float(d_f.norm())
+        if _dn > 0.0:
+            d_f = d_f / _dn
+            delta = pre_f - post_f
+            along = (delta @ d_f.reshape(-1, 1)) * d_f.reshape(1, -1)
+            _orth = float((delta - along).norm())
+            _prev = stats.get("orthogonal_residual_delta_l2")
+            stats["orthogonal_residual_delta_l2"] = (_orth if _prev is None
+                                                     else max(float(_prev), _orth))
     stats["seq_len_last"] = int(seq_len)
     if abs_index is not None:
         stats["resolved_absolute_index"] = [int(i) for i in abs_index]
@@ -1212,6 +1288,54 @@ def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
         # relative-magnitude rule above answer "did the state change" without that false alarm.
         if stats.get("cos_pre_post") is None:
             bad.append("cosine_not_recorded")
+        # ---- C-117: REALISED vs EXPECTED, and it must not be vacuous ----------------------
+        # `n_cells_edited_expected` is counted at the top of every forward from the tensor the
+        # hook was handed; `n_cells_edited_realised` from the slice it wrote. The frozen config's
+        # `void_if` names "realised != expected cell count", and a comparison of 0 with 0 does
+        # not implement it -- a check that binds zero is not a check.
+        _exp = stats.get("n_cells_edited_expected")
+        if _exp is None:
+            bad.append("n_cells_edited_expected_NOT_MEASURED")
+        elif int(_exp) == 0:
+            bad.append("n_cells_edited_expected==0:the hook was handed no destinations, so "
+                       "'realised == expected' is vacuously true")
+        elif int(stats.get("n_cells_edited_realised") or 0) != int(_exp):
+            bad.append("realised_!=_expected:%d!=%d"
+                       % (int(stats.get("n_cells_edited_realised") or 0), int(_exp)))
+        # ---- review F6: EVERY forward that had destinations must have fired ---------------
+        # The gated scalars above are overwritten on each call, so on their own they certify the
+        # LAST forward. This is an exact identity over all of them, with no threshold: a hook
+        # dead on prefill but live on the final decode step no longer passes.
+        _nfd = int(stats.get("n_forward_with_destinations") or 0)
+        if _nfd and int(stats.get("hook_fired_count") or 0) != _nfd:
+            bad.append("partially_dead_hook:fired %d of %d forwards that had destinations"
+                       % (int(stats.get("hook_fired_count") or 0), _nfd))
+        _minp = stats.get("min_projection_removed_l2")
+        if _minp is None:
+            bad.append("min_projection_removed_l2_NOT_MEASURED")
+        elif not (float(_minp) > 0.0):
+            bad.append("some forward removed EXACTLY ZERO projection "
+                       "(min_projection_removed_l2==0) even though the hook reports firing")
+        # ---- C-117: the orthogonal residual is MEASURED, never defaulted ------------------
+        # `orthogonal_residual_gate` in the analyzer used to read this field with a NaN default
+        # and then assert "the orthogonal component was NOT preserved; H2b is VOID" when the
+        # truth was that nobody had measured it. It is measured here; its absence is a
+        # NOT-MEASURED refusal, which is a different thing from a violation.
+        if stats.get("orthogonal_residual_delta_l2") is None:
+            bad.append("orthogonal_residual_delta_l2_NOT_MEASURED")
+        # ---- review F3: the persisted site must satisfy its own documented invariant -------
+        _rel, _slr = stats.get("rel_end"), stats.get("seq_len_at_resolution")
+        _abs = stats.get("resolved_absolute_index")
+        if _abs is not None and (_rel is None or _slr is None):
+            bad.append("site_not_auditable:resolved_absolute_index is persisted but %s is not, "
+                       "so `resolved_absolute_index == seq_len + rel_end` cannot be checked"
+                       % ("rel_end" if _rel is None else "seq_len_at_resolution"))
+        elif _abs is not None:
+            _idx = list(_abs) if isinstance(_abs, (list, tuple)) else [_abs]
+            for _a in _idx:
+                if int(_slr) + int(_rel) != int(_a):
+                    bad.append("absolute_index_is_not_end_relative:%d != %d%+d"
+                               % (int(_a), int(_slr), int(_rel)))
     else:
         if int(stats.get("n_cells_edited_realised") or 0) != 0:
             bad.append("disabled_hook_edited_cells")
@@ -1344,10 +1468,17 @@ def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0,
                 stats["n_decode_forward"] += 1
             else:
                 stats["n_prefill_forward"] += 1
+            # EXPECTED, counted from the tensor this forward was HANDED and BEFORE the write.
+            # An all-position edit's destination set is every cell of the block output, so the
+            # count is batch x seq. Counting it here rather than deriving it from what was
+            # written is the whole point: `realised == expected` must be able to be FALSE.
+            stats["n_forward_with_destinations"] += 1
+            stats["n_cells_edited_expected"] += int(h.shape[0]) * int(h.shape[1])
             _pre = h.reshape(-1, h.shape[-1])
             _post = h_post.reshape(-1, h_post.shape[-1])
             _record_edit(stats, _pre, _post, _pre - _post,
-                         n_dest=int(h.shape[0]) * int(h.shape[1]), seq_len=int(h.shape[1]))
+                         n_dest=int(h.shape[0]) * int(h.shape[1]), seq_len=int(h.shape[1]),
+                         direction=d)
         h = h_post
         return (h,) + tuple(output[1:]) if is_tuple else h
 
@@ -1509,9 +1640,11 @@ def make_single_position_project_out_hook(direction: torch.Tensor, alpha: float 
         # is only visible if the index is written down.
         if stats is not None:
             _abs = pos if pos >= 0 else int(h.shape[1]) + int(pos)
+            stats["n_forward_with_destinations"] += 1
+            stats["n_cells_edited_expected"] += int(h.shape[0])
             _record_edit(stats, hp_pre, h_new, hp_pre - h_new,
                          n_dest=int(h.shape[0]), seq_len=int(h.shape[1]),
-                         abs_index=[_abs])
+                         abs_index=[_abs], direction=d)
         return (h,) + tuple(output[1:]) if is_tuple else h
 
     return hook
@@ -1526,10 +1659,45 @@ class SinglePositionProjectOut:
     def __init__(self, model, layer_idx: int, direction: torch.Tensor,
                  alpha: float = 1.0, pos: int = -1,
                  stats: Optional[Dict[str, Any]] = None,
-                 rel_end: Optional[int] = None, occurrence_index: Optional[int] = None):
+                 rel_end: Optional[int] = None, occurrence_index: Optional[int] = None,
+                 seq_len_at_resolution: Optional[int] = None):
+        """`pos` is the RESOLVED ABSOLUTE index inside the prompt; `rel_end` is the END-RELATIVE
+        offset that produced it, and `seq_len_at_resolution` is the length it was resolved
+        against (`len(input_ids)` of THIS row).
+
+        WHY THREE ARGUMENTS FOR ONE SITE (review F3, 2026-09-07). The caller used to pass the
+        already-resolved absolute index as BOTH `pos` and `rel_end`, so `rel_end` was recorded as
+        7 on a 10-token row and 14 on a 17-token row: the frozen config's mandated end-relative
+        persistence never happened, the documented invariant
+        `resolved_absolute_index == seq_len + rel_end` was FALSE on every row while liveness
+        reported clean, and a reader inspecting a VARYING `rel_end` would read it as evidence of
+        exactly the absolute-index bug class the field exists to detect.
+
+        The absolute index is what the hook must use -- the site is defined relative to the
+        PROMPT, and this hook also fires on the readout's variant forwards, whose realised
+        lengths differ; re-resolving `-10` against each of those would move the edit. So the
+        absolute index is the input and the offset is the record, which is what
+        `_absolute_index_is_persisted_only_as_a_witness` says. The identity between them is
+        asserted HERE, at construction, per row -- the earliest point at which it can be
+        checked -- and again in `project_out_liveness_violations` over the persisted record.
+        """
         self.layer = _resolve_layer(model, layer_idx)
         self.layer_idx = layer_idx
         self.pos = int(pos)
+        if rel_end is not None and int(rel_end) >= 0:
+            raise ValueError(
+                "SinglePositionProjectOut got rel_end=%r, which is NON-NEGATIVE. An end-relative "
+                "offset is negative by construction; a non-negative one is an absolute index "
+                "wearing the wrong name, and recording it as `rel_end` is how the persisted site "
+                "stopped being auditable (review F3)." % (rel_end,))
+        if rel_end is not None and seq_len_at_resolution is not None:
+            _want = int(seq_len_at_resolution) + int(rel_end)
+            if _want != int(pos):
+                raise ValueError(
+                    "SinglePositionProjectOut: pos=%d but seq_len_at_resolution(%d) + "
+                    "rel_end(%d) = %d. The edit site and the site RECORDED for the audit are not "
+                    "the same token. Refusing rather than editing one position and persisting "
+                    "another." % (int(pos), int(seq_len_at_resolution), int(rel_end), _want))
         # ADDITIVE, DEFAULT-OFF (Q12/C-13).
         self.stats = stats
         if stats is not None:
@@ -1537,6 +1705,8 @@ class SinglePositionProjectOut:
                           "enabled": True, "positions": [int(pos)]})
             if rel_end is not None:
                 stats["rel_end"] = int(rel_end)
+            if seq_len_at_resolution is not None:
+                stats["seq_len_at_resolution"] = int(seq_len_at_resolution)
             if occurrence_index is not None:
                 stats["occurrence_index"] = int(occurrence_index)
         self._hook = make_single_position_project_out_hook(direction, alpha, pos, stats=stats)
