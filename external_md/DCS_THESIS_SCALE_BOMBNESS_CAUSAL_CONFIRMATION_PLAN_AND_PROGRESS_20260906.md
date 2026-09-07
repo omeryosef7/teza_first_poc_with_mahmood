@@ -3927,3 +3927,114 @@ then was that selecting on prose is a defect and a structured field is the fix; 
 and the structured field did not, and the structured field is what the analyzer reads. The stale note
 should be corrected the next time this config is legitimately reopened — it is FROZEN and was not
 edited for this.
+
+---
+
+## DCS-C-121 — the 4-hourly review found that `e9dae21c` did not import
+*2026-09-07* — my defect; fixed in `021b20e8` and verified at HEAD
+
+`reports/DCS_TS_PHASE9_INSTRUMENT_REVIEW.md`. Verdict on the committed instrument: **NO — not fit
+to run PHASE 9 as committed.**
+
+**F1.** The Q9–Q13 work touched **four** files; I committed three.
+`doublespeak_causality/pair_common.py` — 354 insertions carrying `hook_stats_dict`,
+`project_out_liveness_violations`, `DisabledHookBridge` and `_resolve_layer` — was left
+uncommitted. At HEAD those symbols did not exist, and `score_behavior.py:1432` passes `stats=` to
+`AllPositionProjectOut` **unconditionally** (the guard selects `st=None`, but the *kwarg* is still
+passed) against a committed signature with no such parameter — so **every pre-existing
+`project_out` caller raised `TypeError`**. In a shared tree a broken HEAD is other people's problem.
+
+**How I caused it.** I commit path-limited, which is the rule here and which protected three
+concurrent writers today. But I built every pathspec from a `git status` filtered to
+`external_md/ reports/ scripts/ src/boombness/ configs/`, and this file lives in
+`doublespeak_causality/` — a directory that filter never covered. It was invisible to every check I
+ran, *including the checks I ran specifically to see what was outstanding*. The scoped status was
+the instrument and it could not see the thing it existed to find: the matcher/scope class, this time
+in my own process. I also had the evidence and missed it — the agent reported four modified files
+and three appeared.
+
+**The trap worth naming.** Self-test 73/0, mutate 38/38 RED, and "84/84 hook constructions and
+300/300 applications bit-identical" all certified a **working-tree** state that no commit recorded.
+Every one was true when run and none described HEAD. The review found this **only** because it tested
+at a clean detached worktree.
+
+**Verified after the fix, not assumed.** At a detached worktree at `021b20e8`: all four symbols
+present, `AllPositionProjectOut` accepts `stats=`. The analyzer self-test there reads 68 checks /
+1 failed rather than 73/0 — chased, not waved through: the single failure is `prereg_loads` with
+`n=0`, because a detached worktree has no prompt banks (24 files, **1.3 GB**, untracked for size —
+tracked banks are ~4.6 MB). Artifact absence, not a code defect. Recorded as a reproducibility fact:
+the pinned population lives only on this filesystem, protected by `bank_file_sha16` and regenerable
+from the generator scripts.
+
+**F2 confirms `C-117` independently and makes it worse.** Fed **real** producer records that
+`hook_stats_dict` itself calls CLEAN, `liveness_gate` returns `live=False` and
+`orthogonal_residual_gate` returns `ok=False, max_abs=nan` while asserting *"the orthogonal
+component was NOT preserved; H2b is VOID"* — when the truth is the field was never recorded. Two
+liveness schemas exist and the one written is not the one read.
+
+**F3.** `rel_end` is persisted as the **absolute** index: for `--pr057-edit-positions=-3`, rows of
+length 10 and 17 record `rel_end=7` and `14`, so `pair_common`'s own documented invariant
+`resolved_absolute_index == seq_len + rel_end` is false on every row while liveness reports clean —
+which reads as evidence of exactly the bug class the field exists to detect.
+
+**Five attack lines returned NO FINDING**, which is a real result: Q10 is genuinely additive (one
+fit, no RNG consumption, export after the permutation); Q9 leaves the one-pair assertion intact and
+**R-116 stands**; Q13's alias reaches both control families and the gap dose; S1 cannot degrade to
+all-position; the layer convention agrees on read, write and probe-fit sides. The "4 pre-existing
+failures" claim did not reproduce as stated (the report records no pytest invocation), but the
+failures **are** genuinely pre-existing and unrelated — every failing family also fails at the clean
+commit and none touches the instrument files.
+
+## DCS-R-122 — PHASE 10's analyzer exists, and PR058-D1 is resolved by moving the CODE
+*2026-09-07* — `scripts/dcs_ts_pr058_symmetry.py`, `reports/DCS_TS_PR058_ANALYZER.md`
+
+Built to PR-057's shape: every gate through `Prereg.require()`, domain-level permutation as the only
+permutation in the code path, every p through `fmt_p` beside its floor, binding on `cell` and
+refusing `condition` *before* the bind, exclusions from the boolean `whole_population`, installation
+as a stratifier with a separate refusal if it is ever used as an exclusion, and explicit CANNOT
+ANSWER / kill / VOID branches.
+
+The phase's largest interpretability risk is handled **structurally rather than in prose**:
+`PairedDelta` cannot be constructed without a `BaselineDistribution`, and `render_delta()` refuses
+until the baseline has actually been rendered — so a delta cannot be printed without its baseline.
+`ceiling_gate()` differences the cell-B/E ceiling out via cell B; `copy_vs_mechanism()` scores the
+two accounts' **opposite-sign** predictions.
+
+Notable: `source_gate_literal_audit()` re-reads the analyzer's own source and fails if a declared
+gate value appears as a numeric literal. **It fired during development** — three synthetic test
+values happened to equal 0.5, the declared MDE and installation cut — and the file was changed, not
+the audit.
+
+Observed: **`--self-test` 55/0**, **`--mutate` 52/52 RED**, refuses with no arm data (rc=1, naming
+the outstanding blockers, never an empty result), and cells E/B/C each bind 1130 rows / 113 domains /
+67-23-23 on both bomb banks — confirming the config's arithmetic independently.
+
+**PR058-D1 resolved by renaming the file**, not by amending the frozen field: the config declares
+`scripts/dcs_ts_pr058_symmetry.py` and the code moved to it. The config is FROZEN; the code is not.
+
+Two checks had to be repaired in the process, and the reason is worth keeping:
+
+- the self-test asserted `match is False` — it had encoded **the conflict itself** as an invariant,
+  so it failed exactly when the defect was fixed. A check that hardcodes the current defect state
+  fails when the defect is repaired, which is the opposite of what a check is for. It now asserts
+  the gate's *behaviour*: that its verdict matches the filesystem either way.
+- mutation **M47** fired only because the paths genuinely disagreed, so resolving D1 made it
+  **unreachable** and it silently went GREEN (52/52 → 51/52). An unreachable refusal is not a guard —
+  this repo says so in `dcs_ts_prereg.py` in those words. M47 now injects the mismatch into a copy of
+  the preregistration, so the refusal path stays exercised whatever this file is called. Back to
+  **52/52**.
+
+Still open on PR-058, none closable on CPU: T1, T2, T4, T6, T10 (GPU/tokenizer), T3 (code path
+exists, needs T2's rows), T9 (the independent verifier — deliberately not written by the same
+session, since one sharing these assumptions is not independent). `analyzer_exists` remains `false`
+in the frozen config, so the loader still refuses `--for-extraction` with 10 refusals; flipping it is
+the config owner's edit.
+
+**PR058-D2**, recorded not papered over: the ceiling rule — the design's own primary defence against
+this phase's largest risk — has **no numeric criterion**. "p90 at the top of the scored range" is
+unevaluable because no scored range for `semantic_logodds` is pinned anywhere and log-odds are
+unbounded a priori. `ceiling_gate()` refuses unless the producing arm persists a `scored_range`; it
+does **not** invent a cut. **PR058-D3**: `read_site.position_NOT_USED` is named `codeword_last`, but
+in cells B/E the refused site is the *concept* token — a producer labelling that read
+`target_surface_last` would slip past a name-keyed refusal, so the gate also refuses every position
+that is not the single preregistered downstream site.
