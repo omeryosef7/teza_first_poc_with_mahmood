@@ -209,7 +209,15 @@
     "success": "domain-mean accuracy significantly above 1/3 at alpha=0.05 by domain-level group permutation, AND above chance in a majority of test domains by two-sided sign test",
     "negative": "not significant, WITH power >= 0.8 for the MDE below",
     "cannot_answer": "option_mass on the primary channel shows it is disengaged, or the population fails any PHASE-4 gate",
-    "void": "the run did not execute this design (wrong bank sha, wrong script, dead hook, selection read test)"
+    "void": "the run did not execute this design (wrong bank sha, wrong script, dead hook, selection read test)",
+    "_codeword_scope_reading": {
+      "recorded": "2026-09-07, BEFORE any test read and before three of six banks finished extracting",
+      "question": "primary.statistic says '3-way argmax accuracy on the 23 untouched TEST domains, domain-mean' and does NOT name a codeword. That is a gap in my own preregistration, and it has to be resolved one way or the other before the analyzer runs.",
+      "reading": "the PRIMARY POOLS both codewords in training and in test.",
+      "evidence_from_the_frozen_artifact_not_from_preference": "power.deff_at_m60 = 6.22 and power.n_eff_test_rows = 222 are computed at m=60 rows per domain. The bank carries 30 rows per domain per concept per codeword, so m=60 is arithmetically TWO codewords. The frozen power analysis therefore already assumed pooling, and A-039 rule (4) -- adopted into the log before extraction -- says in terms: 'use both codewords (SD 0.1514->0.1406, n_eff 193.6->222.0, and a free generalisation axis)'. The reading is derivable from the artifact; it is not a choice being made now.",
+      "consistency_with_mandate_5_3": "Mandate 5.3 forbids pooling button and basket into training for the flagship LEXICAL-GENERALISATION claim. That claim is secondary.lexical_transfer, which is explicitly a SEPARATE FIT: 'train on button TRAIN domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining.' So there are two fits -- a pooled one for concept identity and a button-only one for lexical transfer -- and neither borrows the other's numbers.",
+      "consequence": "The primary cannot be computed until ALL SIX banks are extracted. The three button banks are done and verified; running the primary on them alone would be a different estimand than the frozen one, and would also be a peek at TEST. It waits."
+    }
   },
   "secondary": {
     "macro_ovr_auroc": "co-primary for the lexical-transfer claim only; declared BEFORE running per the R3 lesson that accuracy and ranking can disagree",

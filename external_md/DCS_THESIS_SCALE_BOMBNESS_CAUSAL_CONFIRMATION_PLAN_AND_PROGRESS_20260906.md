@@ -2133,3 +2133,41 @@ is closed, and a checklist item missing its booleans refuses. **13/13 guards rea
 button_gun at 12,200/22,272 with three basket banks behind it. Roughly three hours to full
 coverage. Per-bank rate is ~380 rows/min, i.e. ~58 min/bank — my 30-minute figure was 2× optimistic
 and is corrected here rather than left to look like a delay.
+
+## 2026-09-07 · Q-012 · a gap in my own preregistration, resolved from the artifact before the outcome
+
+All three **button** banks are extracted and verified — 22,272/22,272, `failures: {}`,
+`bank_rows_sha16` matching the pin, `eager`, `codeword_last` — in 58–59 min each. The three basket
+banks are still running.
+
+That made a gap in `PR-048` visible: **`primary.statistic` never names a codeword.** It says
+*"3-way argmax accuracy on the 23 untouched TEST domains, domain-mean"* and stops. With half the
+banks in hand, that ambiguity would have been resolved at analysis time, by me, knowing which
+banks were available — which is exactly the shape of a post-hoc choice.
+
+**Resolved now, from the frozen artifact rather than from preference.** The primary **pools both
+codewords**, and the evidence is arithmetic:
+
+- `power.deff_at_m60 = 6.22` and `power.n_eff_test_rows = 222` are computed at **m = 60** rows per
+  domain;
+- the bank carries **30** rows per domain per concept per codeword;
+- so **m = 60 is two codewords**. The frozen power analysis already assumed pooling.
+
+And `A-039` rule (4), adopted into this log before extraction, says it in terms: *"use both
+codewords (SD 0.1514→0.1406, n_eff 193.6→222.0, and a free generalisation axis)."*
+
+**This does not conflict with mandate §5.3.** That section forbids pooling button and basket into
+training for the flagship **lexical-generalisation** claim — which is
+`secondary.lexical_transfer`, and which is explicitly a **separate fit**: *"train on button TRAIN
+domains, evaluate on basket at the SAME untouched TEST domain ids, no retraining."* Two fits, one
+pooled for concept identity and one button-only for transfer, neither borrowing the other's
+numbers.
+
+**Consequence: the primary waits for all six banks.** Running it on the three finished button banks
+would be a different estimand than the frozen one *and* a peek at TEST. Having spent this phase
+building machinery specifically to prevent that, routing around it by hand because half the data
+happens to be ready would be the worst kind of shortcut.
+
+Recorded as `Q-012` and flagged for Omer: a preregistration whose primary statistic omits a
+population axis is a defect in the preregistration, even when the axis is recoverable. The next one
+states the codeword scope in the statistic line.
