@@ -580,6 +580,51 @@ def selftest() -> int:
     except PreregError:
         cases.append(("a missing preregistration refuses", True))
 
+    # THE PERMUTATION PATH, exercised synthetically. `--stop-after-selection` stops BEFORE the
+    # permutation, so the dress rehearsal cannot validate it -- and the only other thing that
+    # exercises it is the run that reads TEST. That asymmetry is exactly how an untested code path
+    # reaches an irreversible step, so it is tested here on fake data instead.
+    #
+    # Two properties, on a construction with NO signal: the null must centre on chance, and the
+    # within-domain label permutation must preserve the class marginals exactly (if it did not,
+    # the null would be testing a different design than the observed statistic).
+    try:
+        import numpy as _np
+        from sklearn.linear_model import LogisticRegression as _LR
+        from sklearn.preprocessing import StandardScaler as _SS
+        from joblib import Parallel as _P, delayed as _d
+        _r = _np.random.default_rng(0)
+        _nd, _pd_, _f = 12, 9, 24                      # domains, rows/domain, features
+        _dom = _np.repeat([f"d{i}" for i in range(_nd)], _pd_)
+        _y = _np.tile(_np.arange(3).repeat(_pd_ // 3), _nd)   # balanced inside every domain
+        _X = _r.standard_normal((_nd * _pd_, _f))             # PURE NOISE: no signal at all
+        _tr = _np.arange(len(_y)) < (len(_y) * 2 // 3)
+        _te = ~_tr
+        _sc = _SS().fit(_X[_tr]); _Xtr = _sc.transform(_X[_tr]); _Xte = _sc.transform(_X[_te])
+        _doms = sorted(set(_dom[_tr]))
+
+        def _draw(sd):
+            rr = _np.random.default_rng(sd)
+            y2 = _y.copy()
+            for dd in _doms:
+                m = _dom == dd
+                y2[m] = rr.permutation(3)[_y[m]]
+            c = _LR(C=1.0, max_iter=500).fit(_Xtr, y2[_tr])
+            pr_ = c.predict(_Xte)
+            return float(_np.mean([_np.mean(pr_[_dom[_te] == dd] == _y[_te][_dom[_te] == dd])
+                                   for dd in sorted(set(_dom[_te]))])), y2
+
+        _res = _P(n_jobs=2)(_d(_draw)(int(x)) for x in _r.integers(0, 2**31 - 1, 40))
+        _accs = [a for a, _ in _res]
+        cases.append(("permutation null centres on chance on pure noise",
+                      abs(float(_np.mean(_accs)) - 1 / 3) < 0.12))
+        _marg_ok = all(sorted(_np.bincount(y2, minlength=3)) == sorted(_np.bincount(_y, minlength=3))
+                       for _, y2 in _res)
+        cases.append(("within-domain permutation preserves class marginals exactly", _marg_ok))
+        cases.append(("parallel permutation returns one statistic per draw", len(_accs) == 40))
+    except Exception as _e:
+        cases.append((f"permutation path raised {type(_e).__name__}: {_e}", False))
+
     for name, ok in cases:
         n_red += ok
         print(f"  {'PASS' if ok else 'FAIL'}  {name}")

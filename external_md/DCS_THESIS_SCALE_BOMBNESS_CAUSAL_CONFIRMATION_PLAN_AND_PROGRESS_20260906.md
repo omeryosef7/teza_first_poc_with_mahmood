@@ -2667,3 +2667,39 @@ so the next person to meet a slow run sees the reasoning rather than just the co
 (`C-103`) and, at construction time, the estimator that could not be built (`C-091`). The pattern
 worth keeping: a mode that provably cannot read TEST removes the temptation that makes mid-run
 fixes dangerous.
+
+## 2026-09-07 · C-105 · the rehearsal cannot test the code I just changed
+
+`--stop-after-selection` stops **before** the permutation. So the dress rehearsal — the thing built
+specifically to de-risk the run that reads TEST — **cannot validate the permutation path at all**,
+and the only other thing that exercises it is the irreversible run itself. That asymmetry is
+precisely how an untested code path reaches a step that cannot be taken back, and I nearly let the
+rerun stand in for a test it structurally cannot perform.
+
+Tested synthetically instead, on a construction with **no signal**, asserting two properties:
+
+| property | why it matters | result |
+|---|---|---|
+| the null centres on chance under pure noise | a null that does not is measuring something other than "labels shuffled" | **PASS** |
+| within-domain permutation preserves the class marginals **exactly** | if it did not, the null would be testing a *different design* than the observed statistic — the `C-092` failure in another guise | **PASS** |
+| the parallelised path returns one statistic per draw | the speedup must not silently drop or duplicate draws | **PASS** |
+
+**16/16 guards reachable.** Also noted: run under the bare `python3` the new test reports
+`ModuleNotFoundError: numpy` as a **FAIL** rather than crashing the suite — which is the right
+behaviour, since a guard that cannot run is not a guard that passed.
+
+## 2026-09-07 · the confirmatory analysis goes to SLURM, not the login node
+
+`src/boombness/slurm/run_ts_analysis_cpu.sh`. CPU-only — the representations already exist, and
+taking a GPU slot for a scikit-learn job would be waste in a queue where fair-share is already
+spent (`C-102`).
+
+Mandate §26.17 forbids long inference on the login node, and the practical reason bites here: this
+is ~1.5 h of saturated multi-core work, and **a login-node run that gets killed halfway is a run
+whose test split has been read for nothing.** There is no second first read.
+
+`OMP_NUM_THREADS` is **pinned to 1**, with parallelism taken at the joblib level instead. Leaving
+BLAS free to choose a thread count makes the numerics depend on how busy the node happened to be,
+so two runs of the same frozen analyzer could disagree in the last digits — and this project
+already records `OMP_NUM_THREADS` as a binding reproduction constant elsewhere (`A-031`). One place
+to reason about, and it is the place the speedup actually comes from.
