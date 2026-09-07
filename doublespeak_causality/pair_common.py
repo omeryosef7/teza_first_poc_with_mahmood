@@ -1053,9 +1053,263 @@ class ZHeadCapture:
 
 
 # --------------------------------------------------------------------------- #
+# HOOK LIVENESS INSTRUMENTATION (DCS-PR-057 / blocker Q12, C-13)
+#
+# WHY THIS BLOCK EXISTS. `make_project_out_hook`, `AllPositionProjectOut` and
+# `SinglePositionProjectOut` wrote NO statistics of any kind. A hook on the wrong layer
+# object, a hook holding a zero direction, a hook whose handle was removed before the
+# forward, and a hook that only ever sees KV-cached decode steps all produce EXACTLY the
+# artifact that a live intervention with no effect produces. A DEAD HOOK SCORES AS A CLEAN
+# NULL, and there was nothing in this file that could tell the two apart.
+#
+# Everything here is ADDITIVE and DEFAULT-OFF: `stats=None` (the default) leaves the hook
+# body byte-identical to what every committed artifact was produced with. Pass a dict from
+# `hook_stats_dict()` and the hook records, per (layer, position-set):
+#
+#   fired count, forward calls (prefill/decode split), destination rows, cells edited,
+#   pre/post activation norm, norm ratio, projection magnitude removed, cosine before/after,
+#   max |delta|, layer, rel_end / resolved absolute token index, occurrence index.
+#
+# `project_out_liveness_violations()` turns those into refusals, and it refuses the DISABLED
+# case separately: a bridge (`DisabledHookBridge`) that never ran, or that wrapped a hook
+# which would not have changed anything anyway, bridges nothing and is REFUSED rather than
+# tolerated.
+# --------------------------------------------------------------------------- #
+#: Keys every instrumented residual-stream edit hook writes. Named here so a consumer can
+#: refuse a stats dict that is missing one rather than reading `None` as "no effect".
+HOOK_STATS_KEYS = (
+    "mode", "enabled", "layer", "alpha", "direction_norm",
+    "n_forward_calls", "n_prefill_forward", "n_decode_forward",
+    "hook_fired_count", "n_destination_rows", "n_cells_edited_realised",
+    "activation_norm_pre", "activation_norm_post", "norm_ratio",
+    "projection_removed_l2", "sum_projection_removed_l2", "cos_pre_post", "max_abs_delta",
+    "positions", "rel_end", "occurrence_index", "resolved_absolute_index", "seq_len_last",
+    "would_have_changed_max_abs", "would_have_changed_l2", "bridged_and_discarded",
+)
+
+
+def _resolve_layer(model, layer_idx: int):
+    """The decoder layer to hook.
+
+    A real model resolves through the house helper `ds_common._get_layers`, unchanged. Anything
+    `_get_layers` cannot resolve but which IS itself hookable is treated AS the layer -- which is
+    what lets the hooks in this file be unit-tested on CPU against the REAL hook functions
+    instead of against a re-implementation of them. Testing a copy of a hook proves nothing
+    about the hook, and C-13 is a defect that lived precisely in the gap between the two.
+
+    The order matters and is not cosmetic: an HF model is itself an nn.Module and therefore has
+    `register_forward_hook`, so a `hasattr` check FIRST would hook the whole model instead of
+    block L and edit the final hidden state -- a different intervention, silently, on the real
+    path.
+    """
+    try:
+        layers = dc._get_layers(model)
+    except Exception:
+        layers = None
+    if layers is not None:
+        return layers[layer_idx]
+    if hasattr(model, "register_forward_hook"):
+        return model
+    raise TypeError(f"cannot resolve a decoder layer from {type(model).__name__}")
+
+
+def hook_stats_dict(mode: str = "", layer: int = -1, enabled: bool = True,
+                    rel_end: Optional[int] = None,
+                    occurrence_index: Optional[int] = None) -> Dict[str, Any]:
+    """A fresh, fully-populated liveness record. Every key exists from the start.
+
+    A record that GROWS keys as the hook runs cannot distinguish "this hook never fired" from
+    "this consumer read a key the producer never wrote" -- that is the shape of the check that
+    reads the producer's own null field and asserts None == None.
+    """
+    return {
+        "mode": str(mode), "enabled": bool(enabled), "layer": int(layer),
+        "alpha": None, "direction_norm": None,
+        "n_forward_calls": 0, "n_prefill_forward": 0, "n_decode_forward": 0,
+        "hook_fired_count": 0, "n_destination_rows": 0, "n_cells_edited_realised": 0,
+        "activation_norm_pre": None, "activation_norm_post": None, "norm_ratio": None,
+        "projection_removed_l2": 0.0, "sum_projection_removed_l2": 0.0,
+        "cos_pre_post": None, "max_abs_delta": 0.0,
+        "positions": None, "rel_end": (None if rel_end is None else int(rel_end)),
+        "occurrence_index": (None if occurrence_index is None else int(occurrence_index)),
+        "resolved_absolute_index": None, "seq_len_last": None,
+        "would_have_changed_max_abs": 0.0, "would_have_changed_l2": 0.0,
+        "bridged_and_discarded": False,
+    }
+
+
+def _record_edit(stats: Dict[str, Any], pre: torch.Tensor, post: torch.Tensor,
+                 removed: torch.Tensor, n_dest: int, seq_len: int,
+                 abs_index: Optional[Sequence[int]] = None) -> None:
+    """Fold one forward's edit into `stats`. `pre`/`post`/`removed` are [n_cells, hidden]."""
+    pre_f = pre.detach().float().reshape(-1, pre.shape[-1])
+    post_f = post.detach().float().reshape(-1, post.shape[-1])
+    rem_f = removed.detach().float().reshape(-1, removed.shape[-1])
+    npre, npost, nrem = float(pre_f.norm()), float(post_f.norm()), float(rem_f.norm())
+    stats["hook_fired_count"] += 1
+    stats["n_cells_edited_realised"] += int(pre_f.shape[0])
+    stats["n_destination_rows"] += int(n_dest)
+    stats["activation_norm_pre"] = npre
+    stats["activation_norm_post"] = npost
+    stats["norm_ratio"] = (npost / npre) if npre else None
+    stats["projection_removed_l2"] = nrem
+    stats["sum_projection_removed_l2"] = float(stats["sum_projection_removed_l2"]) + nrem
+    stats["cos_pre_post"] = (float((pre_f * post_f).sum() / (npre * npost))
+                             if npre > 0 and npost > 0 else None)
+    stats["max_abs_delta"] = max(float(stats["max_abs_delta"]),
+                                 float((pre_f - post_f).abs().max()))
+    stats["seq_len_last"] = int(seq_len)
+    if abs_index is not None:
+        stats["resolved_absolute_index"] = [int(i) for i in abs_index]
+
+
+def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
+                                    rel_tol: float = 1.19e-7) -> List[str]:
+    """Names of every way this hook's record fails to prove it did what it claims.
+
+    An EMPTY list is the only clean state. The two branches are deliberately asymmetric:
+
+      enabled=True  -- must have RUN, must have EDITED, and must have CHANGED THE STATE.
+                       A deliberately disabled hook presented as a live arm fails here on
+                       `hook_fired_count==0`, which is the unit-tested case.
+      enabled=False -- the C5 disabled-hook bridge. It must have RUN, must have edited
+                       NOTHING, and the hook it wrapped must have been one that WOULD have
+                       changed the state. A bridge over a dead hook bridges nothing and is
+                       refused rather than passed as a clean identity.
+    """
+    if stats is None:
+        return ["no_stats_recorded"]
+    missing = [k for k in HOOK_STATS_KEYS if k not in stats]
+    if missing:
+        return ["stats_missing_keys:" + ",".join(missing)]
+    bad: List[str] = []
+    if int(stats.get("n_forward_calls") or 0) == 0:
+        bad.append("hook_never_ran:n_forward_calls==0")
+    dn = stats.get("direction_norm")
+    if dn is not None and float(dn) == 0.0:
+        bad.append("zero_norm_direction")
+    if stats.get("enabled", True):
+        if int(stats.get("hook_fired_count") or 0) == 0:
+            bad.append("hook_fired_count==0")
+        if int(stats.get("n_cells_edited_realised") or 0) == 0:
+            bad.append("zero_cells_edited")
+        if not (float(stats.get("projection_removed_l2") or 0.0) > 0.0):
+            bad.append("zero_projection_removed")
+        if not (float(stats.get("max_abs_delta") or 0.0) > 0.0):
+            bad.append("state_unchanged:max_abs_delta==0")
+        # SCALE-FREE, AND NOT A RESTATEMENT OF THE TWO ABOVE. An edit whose magnitude is below
+        # float32 resolution relative to the state is numerically indistinguishable from no edit
+        # even though `max_abs_delta > 0` -- an under-dosed arm that would score as a clean null.
+        # The bar is `rel_tol`, the float32 epsilon by default, NOT a scientific threshold.
+        _npre = float(stats.get("activation_norm_pre") or 0.0)
+        if _npre > 0.0:
+            _rel = float(stats.get("projection_removed_l2") or 0.0) / _npre
+            if _rel < rel_tol:
+                bad.append("edit_below_float32_resolution:rel=%.3e" % _rel)
+        # The COSINE is required to be RECORDED (mandate 10.3 lists it among the persisted
+        # quantities). It is not gated on `== 1.0`: at float32 a genuine small edit rounds the
+        # cosine to 1.0000001, so gating on it would refuse live hooks. `max_abs_delta` and the
+        # relative-magnitude rule above answer "did the state change" without that false alarm.
+        if stats.get("cos_pre_post") is None:
+            bad.append("cosine_not_recorded")
+    else:
+        if int(stats.get("n_cells_edited_realised") or 0) != 0:
+            bad.append("disabled_hook_edited_cells")
+        if not (float(stats.get("would_have_changed_max_abs") or 0.0) > 0.0):
+            bad.append("bridge_over_a_dead_hook:would_have_changed_max_abs==0")
+    return bad
+
+
+class DisabledHookBridge:
+    """C5, the DISABLED-HOOK BRIDGE, as a real code path rather than a simulated one.
+
+    Wraps an already-constructed pair_common edit context manager (`AllPositionProjectOut`,
+    `AllPositionProjectOutMultiLayer`, `SinglePositionProjectOut`, `AllPositionAdd`, ...),
+    registers on the SAME layer objects, RUNS THE INNER HOOK IN FULL, measures what its edit
+    would have been, and then RETURNS THE UNMODIFIED OUTPUT.
+
+    That is the distinction the bridge exists to make. "Comment out the hook" proves nothing:
+    it does not run the resolution, the direction load, the dtype/device cast or the
+    projection, so it cannot show that the machinery around the edit is inert. This runs all
+    of it and discards only the write, and it RECORDS `would_have_changed_max_abs`, so a
+    bridge whose inner hook was itself dead is detectable (`project_out_liveness_violations`
+    refuses it) instead of scoring as a perfect identity.
+    """
+
+    def __init__(self, inner, stats: Optional[Dict[str, Any]] = None):
+        if hasattr(inner, "_hooks") and hasattr(inner, "layers"):
+            pairs = list(zip(list(inner.layers), list(inner._hooks)))
+            idxs = list(getattr(inner, "layer_idxs", [-1] * len(pairs)))
+        elif hasattr(inner, "_hook") and hasattr(inner, "layer"):
+            pairs = [(inner.layer, inner._hook)]
+            idxs = [int(getattr(inner, "layer_idx", -1))]
+        else:
+            raise TypeError(
+                f"DisabledHookBridge cannot bridge {type(inner).__name__}: it exposes neither "
+                "(_hook, layer) nor (_hooks, layers). Refusing rather than registering nothing "
+                "-- a bridge that binds no hook is exactly the clean-looking null this class "
+                "exists to make impossible.")
+        if not pairs:
+            raise ValueError("DisabledHookBridge bound ZERO hooks; a bridge over nothing is not "
+                             "a control.")
+        self.inner = inner
+        self.layer_idxs = idxs
+        self._pairs = pairs
+        self.stats = stats if stats is not None else hook_stats_dict(
+            mode=f"bridge:{type(inner).__name__}", layer=idxs[0], enabled=False)
+        self.stats["enabled"] = False
+        self.stats["mode"] = f"bridge:{type(inner).__name__}"
+        # If the inner object carried its own live-arm record, mark it so it can never be read
+        # as evidence that a live edit happened. Its write was discarded.
+        _is = getattr(inner, "stats", None)
+        if isinstance(_is, dict):
+            _is["enabled"] = False
+            _is["bridged_and_discarded"] = True
+        self._handles: List[Any] = []
+
+    def _shim(self, fn):
+        st = self.stats
+
+        def f(module, inputs, output):
+            st["n_forward_calls"] += 1
+            h_in = output[0] if isinstance(output, tuple) else output
+            if hasattr(h_in, "shape") and len(h_in.shape) >= 2:
+                if int(h_in.shape[1]) <= 1:
+                    st["n_decode_forward"] += 1
+                else:
+                    st["n_prefill_forward"] += 1
+                st["seq_len_last"] = int(h_in.shape[1])
+            edited = fn(module, inputs, output)          # the REAL hook runs, in full
+            h_out = edited[0] if isinstance(edited, tuple) else edited
+            if h_out is not h_in and hasattr(h_out, "shape"):
+                d = (h_out.detach().float() - h_in.detach().float())
+                st["would_have_changed_max_abs"] = max(
+                    float(st["would_have_changed_max_abs"]), float(d.abs().max()))
+                st["would_have_changed_l2"] = max(
+                    float(st["would_have_changed_l2"]), float(d.norm()))
+            return output                                 # ...and its edit is DISCARDED
+        return f
+
+    def __enter__(self):
+        for layer, fn in self._pairs:
+            self._handles.append(layer.register_forward_hook(self._shim(fn)))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+    def liveness_violations(self) -> List[str]:
+        return project_out_liveness_violations(self.stats)
+
+
+# --------------------------------------------------------------------------- #
 # All-position / all-timestep directional ablation (S4 — TOCTOU factorial)
 # --------------------------------------------------------------------------- #
-def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0):
+def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0,
+                          stats: Optional[Dict[str, Any]] = None):
     """S4: forward hook that projects `direction` out of the block output at EVERY
     position and on EVERY forward call (prefill AND each KV-cached decode step).
 
@@ -1068,15 +1322,33 @@ def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0):
     output (register_forward_hook), so `direction` lives in the post-block-L residual
     == hidden_states[L+1]. `direction` need not be unit-norm; it is normalized here.
     """
-    d_cpu = direction.detach().float().cpu()
-    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+    d_raw = direction.detach().float().cpu()
+    d_cpu = d_raw / (d_raw.norm() + 1e-8)
+    if stats is not None:
+        stats["direction_norm"] = float(d_raw.norm())
+        stats["alpha"] = float(alpha)
+        if not stats.get("mode"):
+            stats["mode"] = "project_out_all"
 
     def hook(module, inputs, output):
         is_tuple = isinstance(output, tuple)
         h = output[0] if is_tuple else output
         d = d_cpu.to(device=h.device, dtype=h.dtype)
         proj = (h * d).sum(dim=-1, keepdim=True)          # [.., 1] over hidden
-        h = h - alpha * proj * d                          # broadcast over all positions
+        h_post = h - alpha * proj * d                     # broadcast over all positions
+        # LIVENESS (default-off). With `stats is None` this branch is not entered and the
+        # arithmetic above is byte-identical to the pre-2026-09-07 hook.
+        if stats is not None:
+            stats["n_forward_calls"] += 1
+            if int(h.shape[1]) <= 1:
+                stats["n_decode_forward"] += 1
+            else:
+                stats["n_prefill_forward"] += 1
+            _pre = h.reshape(-1, h.shape[-1])
+            _post = h_post.reshape(-1, h_post.shape[-1])
+            _record_edit(stats, _pre, _post, _pre - _post,
+                         n_dest=int(h.shape[0]) * int(h.shape[1]), seq_len=int(h.shape[1]))
+        h = h_post
         return (h,) + tuple(output[1:]) if is_tuple else h
 
     return hook
@@ -1093,10 +1365,20 @@ class AllPositionProjectOut:
     """
 
     def __init__(self, model, layer_idx: int, direction: torch.Tensor,
-                 alpha: float = 1.0):
-        self.layer = dc._get_layers(model)[layer_idx]
+                 alpha: float = 1.0, stats: Optional[Dict[str, Any]] = None,
+                 rel_end: Optional[int] = None, occurrence_index: Optional[int] = None):
+        self.layer = _resolve_layer(model, layer_idx)
         self.layer_idx = layer_idx
-        self._hook = make_project_out_hook(direction, alpha)
+        # ADDITIVE, DEFAULT-OFF (Q12/C-13). `stats=None` -> no record, unchanged hook body.
+        self.stats = stats
+        if stats is not None:
+            stats.update({"mode": "project_out_all", "layer": int(layer_idx),
+                          "enabled": True, "positions": None})
+            if rel_end is not None:
+                stats["rel_end"] = int(rel_end)
+            if occurrence_index is not None:
+                stats["occurrence_index"] = int(occurrence_index)
+        self._hook = make_project_out_hook(direction, alpha, stats=stats)
         self._handle = None
 
     def __enter__(self):
@@ -1134,15 +1416,29 @@ class AllPositionProjectOutMultiLayer:
     """
 
     def __init__(self, model, layer_idxs: Sequence[int], direction: torch.Tensor,
-                 alpha: float = 1.0):
+                 alpha: float = 1.0,
+                 stats_by_layer: Optional[Dict[int, Dict[str, Any]]] = None):
         all_layers = dc._get_layers(model)
         self.layer_idxs = list(layer_idxs)
         bad = [i for i in self.layer_idxs if i < 0 or i >= len(all_layers)]
         if bad:
             raise IndexError(f"layer index out of range for {len(all_layers)} layers: {bad}")
         self.layers = [all_layers[i] for i in self.layer_idxs]
+        # LIVENESS: one INDEPENDENT record per layer (additive, default-off). A single shared
+        # dict would let a hook that fired at one layer mask a hook that never fired at another
+        # -- a PARTIALLY dead band, which one aggregate counter cannot see.
+        self.stats_by_layer: Dict[int, Dict[str, Any]] = {}
+        if stats_by_layer is not None:
+            for i in self.layer_idxs:
+                st = stats_by_layer.setdefault(
+                    i, hook_stats_dict(mode="project_out_all", layer=i, enabled=True))
+                st.update({"mode": "project_out_all", "layer": int(i), "enabled": True,
+                           "positions": None})
+                self.stats_by_layer[i] = st
         # one hook instance per layer (each holds its own normalized copy of `direction`)
-        self._hooks = [make_project_out_hook(direction, alpha) for _ in self.layers]
+        self._hooks = [make_project_out_hook(direction, alpha,
+                                             stats=self.stats_by_layer.get(i))
+                       for i in self.layer_idxs]
         self._handles: List[Any] = []
 
     def __enter__(self):
@@ -1161,7 +1457,8 @@ class AllPositionProjectOutMultiLayer:
 # Single-position / single-layer ablation — the D3 SCOPE-MATCHED control
 # --------------------------------------------------------------------------- #
 def make_single_position_project_out_hook(direction: torch.Tensor, alpha: float = 1.0,
-                                          pos: int = -1):
+                                          pos: int = -1,
+                                          stats: Optional[Dict[str, Any]] = None):
     """Project `direction` out of the block output at ONE position (default the last
     prompt token = the `decision` position) and ONLY during PREFILL (a multi-token
     forward). This is the intervention-scope-matched analogue of a token attack, which
@@ -1173,19 +1470,48 @@ def make_single_position_project_out_hook(direction: torch.Tensor, alpha: float 
     confound, ASYMMETRY_GAP_MATRIX §D3). On KV-cached decode steps (seq==1) the hook is a
     no-op — there is no decision position to touch. `direction` is normalized here.
     """
-    d_cpu = direction.detach().float().cpu()
-    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+    d_raw = direction.detach().float().cpu()
+    d_cpu = d_raw / (d_raw.norm() + 1e-8)
+    if stats is not None:
+        stats["direction_norm"] = float(d_raw.norm())
+        stats["alpha"] = float(alpha)
+        if not stats.get("mode"):
+            stats["mode"] = "project_out_single"
 
     def hook(module, inputs, output):
         is_tuple = isinstance(output, tuple)
         h = output[0] if is_tuple else output
+        if stats is not None:
+            stats["n_forward_calls"] += 1
+            if int(h.shape[1]) <= 1:
+                stats["n_decode_forward"] += 1
+            else:
+                stats["n_prefill_forward"] += 1
         if h.shape[1] <= 1:                       # decode step (cached) → no-op
             return output
         d = d_cpu.to(device=h.device, dtype=h.dtype)
         h = h.clone()
         hp = h[:, pos, :]                          # [batch, hidden] at decision position
         proj = (hp * d).sum(dim=-1, keepdim=True)  # [batch, 1]
-        h[:, pos, :] = hp - alpha * proj * d
+        h_new = hp - alpha * proj * d
+        # `hp` is a VIEW into the cloned `h`, so the assignment below overwrites it. The
+        # pre-edit state must be COPIED before the write or the liveness record compares the
+        # post-edit state with itself and reports `projection_removed_l2 = 0` on a hook that
+        # fired correctly -- i.e. the instrument would manufacture the exact dead-hook signature
+        # it exists to detect. Caught by the self-test on its first run.
+        hp_pre = hp.clone() if stats is not None else None
+        h[:, pos, :] = h_new
+        # LIVENESS (default-off). This branch also RESOLVES the (possibly negative) position
+        # against the REALISED sequence length and records it, so `resolved_absolute_index ==
+        # seq_len + rel_end` is auditable per row. A position computed once and reused as an
+        # absolute index across examples is this repository's twice-recorded bug class, and its
+        # signature -- a SINGLE distinct absolute index across prompts of different lengths --
+        # is only visible if the index is written down.
+        if stats is not None:
+            _abs = pos if pos >= 0 else int(h.shape[1]) + int(pos)
+            _record_edit(stats, hp_pre, h_new, hp_pre - h_new,
+                         n_dest=int(h.shape[0]), seq_len=int(h.shape[1]),
+                         abs_index=[_abs])
         return (h,) + tuple(output[1:]) if is_tuple else h
 
     return hook
@@ -1198,10 +1524,22 @@ class SinglePositionProjectOut:
     attack's one-position/one-layer budget, so medium and scope are separable."""
 
     def __init__(self, model, layer_idx: int, direction: torch.Tensor,
-                 alpha: float = 1.0, pos: int = -1):
-        self.layer = dc._get_layers(model)[layer_idx]
+                 alpha: float = 1.0, pos: int = -1,
+                 stats: Optional[Dict[str, Any]] = None,
+                 rel_end: Optional[int] = None, occurrence_index: Optional[int] = None):
+        self.layer = _resolve_layer(model, layer_idx)
         self.layer_idx = layer_idx
-        self._hook = make_single_position_project_out_hook(direction, alpha, pos)
+        self.pos = int(pos)
+        # ADDITIVE, DEFAULT-OFF (Q12/C-13).
+        self.stats = stats
+        if stats is not None:
+            stats.update({"mode": "project_out_single", "layer": int(layer_idx),
+                          "enabled": True, "positions": [int(pos)]})
+            if rel_end is not None:
+                stats["rel_end"] = int(rel_end)
+            if occurrence_index is not None:
+                stats["occurrence_index"] = int(occurrence_index)
+        self._hook = make_single_position_project_out_hook(direction, alpha, pos, stats=stats)
         self._handle = None
 
     def __enter__(self):
