@@ -2756,3 +2756,79 @@ floor. The analyzer emits one of three verdicts and cannot emit anything else:
 **Validation accuracy was 0.9138 against a 0.9217 floor.** The middle verdict is a live
 possibility, and it was made a printable outcome *before* that was visible — which is the only
 reason it will be believable if it prints.
+
+---
+
+# 2026-09-07 · R-111 · PHASE 6 RESULT · **CLAIM B is UNSUPPORTED**, and the check that found it was preregistered for exactly this
+
+`scripts/dcs_ts_pr053_diffmeans.py`, `reports/DCS_TS_PR053_DIFFMEANS.md`. Analyzer selftest 12/12;
+mutation harness **9/9 RED, 13/13 cases as declared** (4 GREEN-by-design controls), including
+sha-pin corruption, missing rows outside the exclusions, a byte-flipped cell-A prompt turning V2
+red, the `A-039` wrong-field zero-bind, and fitting directions on the evaluation domains. The `D1`
+leak in `dcs_diffmeans_directions.py` is **fixed here, not inherited**, and that file was not
+edited.
+
+## The gates
+
+**V2 PASSES, 3,616/3,616** — cell A is byte-identical across the three concepts at matched
+`prompt_id` in all six codeword×dose cells. And the numerical corollary is the one I actually
+wanted: at matched `prompt_id`, cell-A hidden states from **three separate extraction runs** agree
+to `max|diff| = 0.000e+00`. **The A term cancels in arithmetic, not merely in text.** That is the
+whole payoff of the aligned rebuild, measured rather than argued.
+
+**V1 PASSES** — realised between-domain SD **0.0347**, MDE 0.0203, far below the 0.2479 needed to
+clear the measured surface floor. Adequately powered at every point of the assumed bracket.
+
+## The primary
+
+**`v_bomb_specific`, C_bomb vs {C_knife, C_gun}, band-mean L6–14, domain-mean over 23 untouched
+test domains = 0.9764**, CI [0.9622, 0.9906], d = 3.03, **23/23 domains**, clearing the measured
+surface floor of 0.7479 by **0.2285**.
+
+Permutation **p = 0.0454** [floor 9.999e-05, **453/10,000 exceedances**]. The sign-test p
+(2.384e-07) **is** its own floor and is reported as such, not as a measurement.
+
+## THE FINDING — and it is a negative
+
+> **C is strong. D is not weak. CLAIM B is UNSUPPORTED.**
+
+`v_bomb_specific` was supposed to read *identity* and stay quiet on *remapping*. It does not:
+
+| mandate §9.1 question | result |
+|---|---|
+| **C** — does `v_bomb_specific` separate C_bomb from the hard negatives? | **0.9764** ✔ |
+| **D** — does it stay **weak** on generic C-vs-A remapping? | **NO**: 0.8309 polarity-free on C_knife/C_gun vs A (21/23 domains), and **0.8236** on C_bomb vs A |
+
+Both clear the surface floor. **The residual axis carries remapping and identity together —
+residualising changed the mixture, it did not decompose it.** Replicates at both doses, both
+codewords, validation and test.
+
+**This is precisely why `PR-053` was written to require C *and* D.** Reporting C alone would have
+produced the sentence *"a concept-identity axis exists, AUROC 0.976, 23/23 domains"* — which is
+false, and which I would have had no way to catch after the fact. The preregistration says in
+terms that *"a direction that discriminates identity AND remapping equally well is not a separate
+axis — it is one axis doing two jobs."* It is one axis doing two jobs.
+
+## A correction to inherited work, in the opposite direction
+
+**B = 0.8856, reversing the old ~0.574.** The raw `v_bomb` axis **does** read concept identity —
+once the A term genuinely cancels. The old finding that it did not was an artifact of each concept
+having its own unaligned baseline. `A = 0.9969` (the remapping axis, near ceiling).
+**E**: button→basket transfer **0.9747**, Spearman ρ = 0.9921 on per-domain ranks.
+**F**: the n_ex=0 null fires exactly — ‖v‖ = 0.0, all contrasts exactly 0.5000, and flagged
+degenerate-by-construction per `C-081`.
+
+## Two methodological caveats that must travel with the number
+
+1. **The concept-relabelling null is only properly centred for the residual family.** C's null mean
+   is 0.4943 and D's is 0.5065 — but for the raw `v_bomb` family it is structurally off-centre
+   (A's null mean 0.8794, B's 0.2230), because `mean_j w_j = 0` exactly while `mean_j u_j` is the
+   grand remapping direction. **A's and B's permutation p-values are therefore not calibrated and
+   are not quoted as evidence.** The point estimates stand; their p-values do not.
+2. **The primary's null is BIMODAL**, sd 0.409: **4.5 % of arbitrary relabellings reach 0.9764.**
+   So the effect is enormous *and* the label-permutation evidence that it is specifically **bomb**
+   is thin — which is exactly why p = 0.0454 sits beside an AUROC of 0.9764. Reporting the AUROC
+   without that sentence would badly overstate the case.
+
+**Holm cannot be completed yet**: `PR-048` is still running (job 861367). The primary's confirmatory
+status is contingent — **it rejects only if `PR-048`'s p is below 0.0454.**

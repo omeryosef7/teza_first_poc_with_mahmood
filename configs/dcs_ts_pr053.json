@@ -325,7 +325,7 @@
   "artifacts": {
     "extraction": "shared with PR-048 -- cells A and C from the same runs, no additional forward passes",
     "analyzer": "scripts/dcs_ts_pr053_diffmeans.py",
-    "analyzer_exists": false,
+    "analyzer_exists": true,
     "_reuse": "scripts/dcs_diffmeans_directions.py already implements directions/_z/lodo/band/auroc with a built-in blocking null and no layer selection. REUSE it; do not reimplement. Its known defect D1 (transfer() passes all domains to _z, leaking the held-out domain into the standardisation constants) must be fixed in the new file, not inherited."
   },
   "kill_condition": "If G2 fails -- cell C does not differ across concepts in 116/116 domains -- the bank is VOID as a concept contrast and NO extraction is submitted. This is exactly what happened to R-098, and the gate exists so it costs CPU rather than GPU.",
@@ -401,15 +401,15 @@
       "id": "V1",
       "item": "power for an AUROC estimator at n=23 domains; neither the 3-way accuracy nor the 2-way power transfers",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true,
+      "status": "done 2026-09-07 -- adequately powered; realised SD 0.0347, MDE 0.0203"
     },
     {
       "id": "V2",
       "item": "verify cell A is byte-identical across concepts in the ANALYSED population, so the A term cancels exactly",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true,
+      "status": "done 2026-09-07 -- V2 PASSES 3616/3616, cell A byte-identical AND numerically max|diff|=0.000e+00 across three separate runs"
     }
   ],
   "companion_of": "DCS-PR-048",
