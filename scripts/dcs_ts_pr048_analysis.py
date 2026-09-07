@@ -290,9 +290,17 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
                               f"preregistered {pr.require('model','attn_impl')!r}")
         # D2-09: sha/position/attn all pass on a 4-ROW SMOKE RUN. Completeness was never checked,
         # so a partial extraction would have been analysed as if it were the population.
-        if summ.get("n_rows_captured") != summ.get("bank_n_rows"):
-            raise PreregError(f"{bname}: captured {summ.get('n_rows_captured')} of "
-                              f"{summ.get('bank_n_rows')} bank rows -- PARTIAL EXTRACTION")
+        # NOTE the blanket `n_rows_captured == bank_n_rows` check that used to sit here has been
+        # REMOVED, and deliberately. It was written before school_campus became a preregistered
+        # whole-population exclusion, and it refused all three basket banks -- which are missing
+        # exactly the 30 rows the pipeline was RIGHT to refuse (R-108). It is superseded by the
+        # per-domain missing-row check below, which is strictly stronger: it refuses any missing
+        # row whose domain is not excluded, and an empty cache fails it because every domain would
+        # then be unexplained. Keeping both meant the blunt one vetoing the precise one.
+        #
+        # Found by the --stop-after-selection dress rehearsal on its FIRST run, which is exactly
+        # what that mode exists for: this would otherwise have been discovered by the run that
+        # reads the test split.
         # R-108: a blanket `n_failed == 0` is the wrong guard. basket_bomb failed 30 rows, and
         # ALL 30 are `school_campus` -- the C-075 `basketball` defect, where the extractor found one
         # more TOKEN occurrence of the codeword than TEXT occurrences and REFUSED rather than

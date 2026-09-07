@@ -2540,3 +2540,46 @@ caches, fits all 36 selection points on **validation**, prints the `SELECTION_TR
 file could not even construct its estimator. The first real run — the one that reads the test split
 once — is not the place to discover a runtime error. The dry run exercises everything except the
 irreversible step.
+
+## 2026-09-07 · R-109 · **all twelve extractions complete and verified, at both read sites**
+
+| family | banks | cached | attempted | missing | unexplained | sha | position |
+|---|---|---|---|---|---|---|---|
+| `ts116m_full` (primary) | 6/6 | 22,272 ×3, 22,242 ×3 | 22,272 | 0 ×3, **30 ×3** | **none** | all OK | `codeword_last` |
+| `ts116m_following` (control) | 6/6 | 1,160 ×3, 1,157 ×3 | 1,160 | 0 ×3, **3 ×3** | **none** | all OK | `following` |
+
+**Every missing row is explained by the `school_campus` exclusion, and the pattern is exactly what
+`R-108` predicted:** 30 per *basket* bank at the full population and 3 per basket bank in the
+analysis population, **zero in every button bank** — because `basket` collides with `basketball`
+and `button` collides with nothing. A defect that reproduces its own predicted arithmetic in a
+second, independently-scoped extraction is a defect that is understood.
+
+Job 860468 `COMPLETED 0:0` in 4:09:45; job 860925 in **29:10** — the 20× row reduction turned a
+job SLURM would not start for three days into one that **backfilled within minutes**.
+
+**`PR-051`'s W1 and W3 are closed**, and its control site is corrected in the frozen file from
+`last` to **`following`** (`rel_end −9`, `' actually'`, id 3604), with the reason recorded: `last`
+passes all four formal criteria but is the generation-header terminator `'\n\n'` in 6,840/6,840
+prompts — pure chat scaffold. Its `artifacts.extraction` claim of *"no additional forward passes"*
+is also corrected: a second read site necessarily requires a second forward pass, and saying
+otherwise was simply wrong.
+
+## 2026-09-07 · C-103 · the dress rehearsal paid for itself on its first run
+
+`--stop-after-selection` failed immediately:
+
+> `basket_bomb: captured 22242 of 22272 bank rows -- PARTIAL EXTRACTION`
+
+**A blanket `n_rows_captured == bank_n_rows` check that I failed to remove when I replaced the
+failure guard.** It was written before `school_campus` became a whole-population exclusion, and it
+vetoed all three basket banks — which are missing exactly the 30 rows the pipeline was **right** to
+refuse. The blunt check was overriding the precise one sitting directly beneath it.
+
+Removed, not weakened: the per-domain missing-row check is **strictly stronger** — it refuses any
+missing row whose domain is not excluded, and an empty cache fails it because every domain would
+then be unexplained.
+
+**This is precisely what the rehearsal exists for.** Without it, the discovery would have happened
+on the run that reads the test split — and the temptation at that moment, with the population
+loaded and the answer one line away, is to reach for the quickest thing that makes the error go
+away. Finding it in a mode that provably cannot read TEST removes that temptation entirely.

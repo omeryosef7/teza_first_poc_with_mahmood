@@ -329,7 +329,7 @@
     }
   ],
   "artifacts": {
-    "extraction": "shared with PR-048 -- the SAME rows, no additional forward passes",
+    "extraction": "PR-048's codeword_last extraction PLUS a dedicated control extraction at --position following (job 860925), restricted to the analysis population. The earlier claim of 'no additional forward passes' was WRONG and is corrected: a second read site necessarily requires a second forward pass.",
     "analyzer": "scripts/dcs_ts_pr048_analysis.py",
     "analyzer_exists": true,
     "_analyzer_status": "WRITTEN AND FROZEN 2026-09-07, before any ts116m hidden state exists. Contains NO numeric gate literal: alpha, n_perm, chance, the grids, the split and the population filters are all fetched through Prereg.require(), which refuses rather than defaulting. Selftest: 11/11 guards reachable.",
@@ -388,8 +388,8 @@
       "id": "W1",
       "item": "control extraction job 860778 completes; all six banks verified at --position last",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, running"
+      "done": true,
+      "status": "done 2026-09-07 -- job 860925, 6/6 banks at --position following"
     },
     {
       "id": "W2",
@@ -402,8 +402,8 @@
       "id": "W3",
       "item": "verify the control site is token-identical across concepts on ts116m (X2 verified rel_end -9; --position last is rel_end -1 and must be re-verified)",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true,
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR050_PR051_BLOCKERS.md"
     }
   ],
   "companion_of": "DCS-PR-048",
@@ -436,7 +436,7 @@
   "design": {
     "sites": {
       "primary_site": "codeword_last (PR-048 extraction)",
-      "control_site": "last (job 860778, --position last) -- the final prompt position, strictly after the codeword and token-identical across concepts"
+      "control_site": "following (rel_end -9, ' actually', token id 3604) -- job 860925. CHANGED FROM `last` after W3 measured that `last` is the generation-header terminator '\\n\\n' in 6840/6840 prompts, i.e. pure chat scaffold. `following` is a CONTENT position passing the same four criteria, and is the token-role map's own nomination."
     },
     "contrast": "the SAME frozen probe design fit and evaluated independently at each site; the statistic is the DIFFERENCE in domain-mean accuracy, paired by domain",
     "_interpretation_fixed_before_the_numbers_exist": {
