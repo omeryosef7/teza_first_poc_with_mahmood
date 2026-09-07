@@ -39,8 +39,11 @@ concept at probability ≥ 0.5 is **bomb 0.619, knife 0.000, gun 0.009** — on 
 domains the probe used, **bomb 0.522, knife 0.000, gun 0.000**; median log-odds **+0.99 / −6.83 /
 −7.38**. Per concept, never pooled: **bomb installs in a majority of domains, knife and gun do not
 install at all.** That 0.5 is a labelled reference point chosen after I had seen four of the six
-banks, **not a preregistered gate** — the primary reporting mode is the full 0.10–0.90 sweep, and
-the ordering holds at every cut in it. All three arms do move in the right direction from the benign
+banks, **not a preregistered gate** — the primary reporting mode is the full 0.10–0.90 sweep
+(bomb/knife/gun: 0.10 → 109/49/17, 0.25 → 103/3/2, 0.50 → 70/0/1, 0.75 → 21/0/0, 0.90 → 4/0/0).
+**bomb ≫ {knife, gun} holds at every cut**; I had written that "the ordering" holds at every
+cut, and that is too strong — knife and gun swap places at 0.50 (1 vs 0). The statement that
+survives the whole sweep is just **neither knife nor gun installs**. All three arms do move in the right direction from the benign
 baseline — direction yes, level no.
 
 **R-113 (probe), and how R-116 narrows it.** The demonstration arm is linearly decodable from the

@@ -3696,3 +3696,98 @@ three code files simply stayed uncommitted until this entry's commit.
 
 Rule updated: the path-limit applies to commands written for **later, unattended** execution, not
 only to the ones typed now — and never leave such a waiter queued while continuing to use git.
+
+---
+
+## DCS-R-119 — C-114 fixed: the six-bank table regenerated, every asserted number reproduced
+*2026-09-07*
+
+`reports/DCS_TS_PROMPT_VALIDATION.md` is now the **six-bank** table: **32,544 rows, 113 domains,
+6/6 banks** (was 21,696 / 4 banks). Its header carries a boxed scope block stating bank, row and
+domain counts plus the `C-114` history, so a citing reader sees the coverage **before** any number
+— which is the specific defect that must not recur silently.
+
+Row arithmetic stated and checked: 6 x 5568 = 33,360 attempted − 48 `basket` failures − 816
+exclusion rows = **32,544** = 6 x (113 x 48). Provenance confirmed independently:
+`outputs/boombness/logs/boomb_865335.out` names exactly these six run dirs and ends
+`all 6 bank(s) completed`.
+
+**Every number the claim table asserts reproduced**, computed twice — once by the script, once by an
+independent scratch reimplementation reading only `results.jsonl` and the split manifest: primary
+70/113, 0/113, 1/113 (= 0.619 / 0.000 / 0.009); TEST 12/23, 0/23, 0/23; median log-odds +0.9868 /
+−6.8300 / −7.3791; display 112 / 71 / 10 of 113; option_mass 0.11376, 95.52% ≥ 1%, dose-0 0.03281;
+button_bomb 92 vs basket_bomb 46; the decoded-answer counts; leakage 100% display / 0% primary
+across all 32,544 rows. **No disagreement. Nothing was adjusted.**
+
+**The 3 → 0 supersession is CONFIRMED, with the mechanism measured rather than assumed.** The
+statistic is a domain mean pooled across each concept's two banks. `basket_knife` installs in
+**0/113** on its own (median 0.0086); `button_knife` in 3/113 (median 0.1403). Pooling drags all
+three former passers under the cut — `cheese_dairy` 0.6946/0.0185 → **0.3565**, `lab_safety`
+0.5810/0.1550 → **0.3680**, `bakery_plant` 0.5062/0.0118 → **0.2590** — and knife's pooled max is
+**0.3680**, so the zero is not a near-miss. The control cases behave consistently: bomb pools 92 and
+46 into an intermediate 70, and gun's single domain passes in *both* banks so pooling leaves it at
+1/113. **`R-115`'s "knife 3/113" was a `button_knife`-only number reported as a knife number** — a
+population change, not a re-scoring.
+
+## DCS-C-116 — a transposed triple and an over-broad quantifier in a published deliverable
+*2026-09-07* — both corrected in place
+
+The regeneration was told to report anything the new table does **not** support. It found two, both
+in `reports/DCS_TS_CLAIM_TABLE.md` row 42, and both are the kinds this project keeps recording.
+
+**(1) A transposition.** The row read *"the ordering holds at every cut (0.10 → 109/17/49 ...)"*
+while every other figure in that same row is given **bomb/knife/gun**. Read in the row's own order
+that says knife = 17 and gun = 49, which is backwards; the true triple is **109/49/17**. The written
+triple is correct only in the **superseded four-bank table's** column order (bomb|gun|knife) — it
+was copied across without re-ordering. A stale artifact does not only make citations fail; its
+*column order* propagates into text that never mentions it.
+
+**(2) An over-broad universal.** *"The ordering holds at every cut"* is false as written. Only
+**bomb ≫ {knife, gun}** holds at every cut. Knife and gun **reverse** across the sweep: knife > gun
+at 0.10 and 0.25, gun > knife at 0.50 (1 vs 0), tied at 0 above — because knife's distribution sits
+higher in the body (median 0.087 vs 0.032) but has a lower max (0.368 vs 0.717). The only claim that
+survives the whole sweep is **"neither knife nor gun installs"**.
+
+This is the universal-quantifier failure exactly: a sentence with *every* in it that does not name
+the population it holds over. Corrected in the claim table (with the full sweep now printed and the
+correction labelled) and in the collaborator draft, which carried the same over-broad sentence.
+**The draft has not been sent; DRAFT markers intact.**
+
+Also recorded, not fixed: no run artifact carries the SLURM job id — `DONE.json`/`config.json` record
+only `run_id`, so "job 865335" is verifiable *solely* through `outputs/boombness/logs/boomb_865335.out`.
+The citation chain there is the log, not the artifact.
+
+## DCS-A-047 — PHASE 14 literature update, and the ceiling it puts on PHASE 9
+*2026-09-07* — `reports/DCS_TS_PHASE14_LITERATURE_UPDATE.md`
+
+The outstanding PHASE 14 component named in `A-046`. Provenance is stated in the file: search results
+plus one full-text fetch, one summary from a small model, and **nothing from it used as a
+measurement or a threshold**.
+
+Three results bear directly on PHASE 9, and all three had to be recorded **before** the run:
+
+- **`arXiv:2311.17030`** (subspace-patching interpretability illusion) is about exactly the
+  intervention H2a performs. A subspace effect can run through **dormant or disconnected** features
+  that correlate with the behaviour but sit off the causal path. **A positive H2a would not by
+  itself establish causal use.** Our H1-first launch order is precisely the "compare against full
+  activation patching" control this literature asks for; what we lack is cross-model replication
+  (Llama-only by decision) and any downstream-connectivity test.
+- **`arXiv:2605.04061`** reports single-position intervention at **0% task transfer across all 28
+  layers of Llama-3.2-3B despite 100% probing accuracy** — same model family, same geometry as our
+  **S1**. S1 nulls are the *expected* result, so an S1-only null is **uninformative** and must not be
+  reported as evidence of non-use. Our preregistration already declared S1 and S2 as distinct
+  hypotheses with that interpretation written in advance.
+- **`arXiv:2512.03771`** describes this attack under the name **"Doublespeak"** — the closest
+  published neighbour to this project. It reframes our contribution: not that doublespeak exists,
+  but the measurement discipline around whether the remapped representation is *used*, plus two
+  negatives that literature does not report (`R-112`, `R-116`).
+
+**The convergence with our own adversarial review is the important part.** Measured from our exported
+vectors: `cos(v_knife, v_gun) = 0.91–0.95` at every layer — the two subtracted terms are **one
+generic demonstration-presence axis measured twice** — and projecting the axis out removes only
+**4.7–19.0%** of the cell-mean spread, leaving 78–96% of `v_bomb` intact. So **both outcomes are
+bounded**: a positive is unattributable to identity content, and a null sits under a 5–19% dose.
+
+The sharpest point is the reviewer's: `meta.interpretation_warning` guards **only the null**. A
+caveat that fires only against the result you did not want is not a caveat. Making it symmetric is a
+preregistration-integrity item, and it is open.
