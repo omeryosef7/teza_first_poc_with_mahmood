@@ -376,15 +376,15 @@
       "id": "I-A",
       "item": "rerun the table on all SIX banks once job 865335 completes; R-115 was computed on four",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true,
+      "status": "done 2026-09-07 -- all 6 banks, 32544 rows"
     },
     {
       "id": "I-B",
       "item": "report the full sweep, not a single cut, and label the 0.5 reference as post-hoc",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true,
+      "status": "done 2026-09-07 -- sweep reported 0.10-0.90; 0.5 labelled post-hoc"
     }
   ],
   "companion_of": "DCS-PR-048",

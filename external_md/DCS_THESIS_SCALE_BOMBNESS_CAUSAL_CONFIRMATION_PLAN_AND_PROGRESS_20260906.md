@@ -3400,3 +3400,82 @@ PHASE list implies, with PHASE 7 ahead of the analysis phases — this would hav
 `PR-048` was designed as a three-way contrast at all. **The phase ran its confirmatory analysis
 before its validation instrument**, and the cost is that two designs had to be reinterpreted after
 the fact rather than built correctly the first time.
+
+---
+
+# 2026-09-07 · R-116 · the §15 table on **all six banks** — supersedes `R-115`, and knife is **zero**
+
+Job 865335 `COMPLETED 0:0` in 3:40:27, 6/6 banks. Table rerun on the full population: **32,544
+rows, 113 domains**, coverage `6/6 COMPLETE`. The only failures are 16 per *basket* bank, all
+`school_campus`, all the `C-075` `basketball` case — an excluded domain, so accepted; the analyzer
+would have refused a short domain that was not an exclusion.
+
+## Installation, primary (concept-free) channel — `semantic_one_word`, cell C, dose 4
+
+| concept | median `concept_binary_prob` | median `semantic_logodds` | domains installing (113) | **on the 23 TEST domains** |
+|---|---|---|---|---|
+| **bomb** | **0.7284** | **+0.99** | **0.619** | **0.522** |
+| **knife** | 0.0011 | **−6.83** | **0.000** | **0.000** |
+| **gun** | 0.0006 | −7.38 | 0.009 | **0.000** |
+
+**On six banks, knife installs in ZERO of 113 domains.** `R-115` reported 3/113 from four banks;
+the full population removes even those. **`R-115` is superseded — the finding is stronger, not
+weaker.**
+
+The nulls are exact: at **dose 0**, bomb's `concept_binary_prob` is **0.0000** with log-odds
+**−14.52**; in **cell A** at dose 4 it is **0.0000**, −12.56. The instrument reads nothing where
+there is nothing to read.
+
+## The result that most deserves to be shown to Matan
+
+**The same rows, scored through the two channels:**
+
+| concept | primary (concept-free) — domains installing | **display (forced choice)** — domains installing |
+|---|---|---|
+| bomb | 0.619 | 0.991 |
+| **knife** | **0.000** | **0.628** |
+| gun | 0.009 | 0.088 |
+
+**The display channel says knife installs in 63 % of domains. The concept-free channel says zero.**
+The entire difference is that forced choice **names the answer in its own question** — *"does the
+word button refer to a button or to a knife?"* — and the concept word appears in `full_prompt` on
+**100 %** of forced-choice rows against **0 %** of primary-channel rows.
+
+Had the display channel been primary, this phase would have reported that all three concepts
+install and that the three-way probe measures concept identity. **The `PR-048` decision to make the
+concept-free channel primary — recorded before any of this was visible, with the known risk that
+its absolute option mass might be too small to use — is what stopped that.**
+
+## The decoded answers, which need no statistics
+
+Top answers, primary channel, cell C, dose 4:
+
+- **bomb** → **` Bomb` 779**, ` Alarm` 119, ` Basket` 97, ` Gren` 91, ` Explos` 80
+- **knife** → ` Container` 348, ` Basket` 324, ` Button` 208, ` Fast` 190 — **never ` Knife`**
+- **gun** → ` Basket` 295, ` Button` 247, ` A` 118, ` Container` 117 — **never ` Gun`**
+- cell A, all three → ` Basket` 295, ` Button` 140, ` A` 126 … (identical, as the byte-identical baseline requires)
+
+Asked *"what does the word button actually refer to?"*, the model answers **"Bomb"** when bomb was
+demonstrated, and answers **with the codeword itself** when knife or gun was. That is Matan's own
+question (§3.7), answered directly and without a statistic.
+
+⚠ And on the display channel, ` Knife` is chosen **502 times in cell A** — the *benign baseline*,
+where no knife demonstration exists at all. The option being named is doing the work.
+
+## Option mass — the channel is engaged
+
+Primary cell median **0.1138** against the 0.05 gate; 95.5 % of rows carry ≥1 % of the next-token
+mass; p10 = 0.0227. **Three to four orders of magnitude above the ~1e-5 the phase recorded as its
+worry before running, so the preregistered CANNOT-ANSWER trigger does NOT fire.** Per concept:
+bomb 0.1591, knife 0.1156, gun 0.0934. ⚠ Still a *minority* of the mass — most of the time the
+preferred answer is a third word, and dose-0 rows sit at 0.0328, **below** the gate.
+
+## Threshold independence, and the codeword
+
+The sweep `PR-054` made primary: at a cut of **0.10** the counts are 109 / 17 / 49; at **0.90**
+they are 4 / 0 / 0. **The bomb ≫ {knife, gun} ordering holds across the whole range**, so no
+conclusion here rests on the 0.5 reference point. `PR-054`'s **I-A and I-B are closed.**
+
+**The codeword remains as consequential as the concept**, now on six banks: `button_bomb` installs
+in **92/113** domains, `basket_bomb` in **46/113** — same concept, same demonstrations, **exactly
+half**.
