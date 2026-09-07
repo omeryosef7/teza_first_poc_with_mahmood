@@ -2583,3 +2583,39 @@ then be unexplained.
 on the run that reads the test split — and the temptation at that moment, with the population
 loaded and the answer one line away, is to reach for the quickest thing that makes the error go
 away. Finding it in a mode that provably cannot read TEST removes that temptation entirely.
+
+## 2026-09-07 · PR-053 · PHASE 6, difference-in-means, preregistered
+
+Mandate §9 says in terms: *"Matan explicitly did not want us to abandon difference-in-means. Do
+not."* The phase had spent its effort on the linear probe and had not started this. `PR-053` closes
+it, at **zero additional GPU** — cells A and C were both captured in the `PR-048` extraction, at the
+same read site, from the same pinned banks.
+
+**Why the aligned bank matters more here than anywhere else.** The old estimate was confounded
+because each concept had its **own** cell-A baseline, so `v_c` was a difference between two
+independently generated corpora. On `ts116m`, cell A is **byte-identical across concepts** (gate
+G3a, 3,680/3,680) — the A term is literally the same prompts in all three arms and **cancels
+exactly.** That is the single cleanest thing this rebuild bought, and diff-in-means is where it
+shows.
+
+**The estimator has no hyperparameter at all.** No layer selection, no regularisation constant,
+every layer 6–14 reported and none picked. That is its chief virtue over the probe: with nothing to
+select, the `C-070` saturated-selection failure and the test-selection FPR inflation (0.4433 vs
+0.0467) are both **structurally impossible** rather than merely avoided.
+
+**The separability claim needs two results, not one.** Questions C *and* D from mandate §9.1:
+`v_bomb_specific` must discriminate **identity** *and* stay **weak on generic remapping**. A
+direction that does both equally well is not a separate axis — it is one axis doing two jobs.
+Reporting C without D is exactly the error the raw-vs-residual framing exists to avoid, and the
+preregistration says so explicitly so it cannot be quietly dropped later.
+
+**Multiplicity updated before any outcome exists.** The PRIMARY family is now `PR-048` + `PR-053`
+under Holm; `PR-049` has left it (demoted by `C-101`) and sits in an EXPLORATORY family alongside
+`PR-052`, which carries no confirmatory weight. Two blocking items: **V1** power for an AUROC
+estimator at n=23 (neither existing power analysis transfers), and **V2** verification that cell A
+really is byte-identical in the *analysed* population — if it is not, the estimator does not work
+and saying so is the deliverable.
+
+The implementation must **reuse** `dcs_diffmeans_directions.py` rather than reimplement it, and
+must **fix rather than inherit** its known `D1` defect, where `transfer()` leaks the held-out
+domain into the standardisation constants.
