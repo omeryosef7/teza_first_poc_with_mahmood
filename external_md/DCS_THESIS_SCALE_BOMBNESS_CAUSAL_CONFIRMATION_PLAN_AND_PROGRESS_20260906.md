@@ -2452,3 +2452,53 @@ premise; the only stratification that achieves balance is unpreregistered, 2-way
 underpowered. **The register confound currently has no adequately powered instrument.** That is a
 **CANNOT ANSWER** unless something changes, and per `PR-050`'s own kill condition it will be
 reported as one rather than absorbed by the positional contrast.
+
+## 2026-09-07 · PR-050 WITHDRAWN · PR-052 written EXPLORATORY · and the structural conclusion behind both
+
+**`PR-050` is WITHDRAWN, not amended.** Its central premise is false (`C-100`), and amending a
+false premise into a different design *is* a new design — mandate §21 says that gets a new
+preregistration. The file stays byte-frozen as the record of a design that did not survive its own
+first check. The loader now refuses it on `status != FROZEN`, which is the behaviour I want.
+
+**`PR-052`** carries the one construction that does work — arm-balanced joint simplex cells on
+knife-vs-gun, surface accuracy **0.5054** CI [0.4629, 0.5479] over 552 rows and all 23 test
+domains — and is **declared EXPLORATORY before it is run, not after it disappoints.** `Z2` measured
+conjunctive power there at **0.721** under Holm, against an MDE of 0.1062–0.1186 for a +0.15 bar.
+Mandate §20 forbids running a confirmatory experiment whose likely negative would be
+uninterpretable, so `success` and `negative` are both marked **NOT AVAILABLE** in the file itself:
+it can produce a point estimate with an honest interval where surface information is *verifiably*
+absent, and nothing more. Its nuisance floor is the **measured** 0.5054, not the nominal 0.5.
+
+### The structural conclusion, which matters more than either file
+
+Three instruments have now failed to answer the register confound, and they failed for the **same
+underlying reason** rather than three unrelated ones:
+
+| instrument | why it failed |
+|---|---|
+| **N5** (text baseline) | reads the *treatment*; no representation probe can beat it (`C-078`) |
+| **PR-049** (knife-vs-gun) | register is only *partly* smaller there — surface reaches 0.7065 (`R-106`) — and it is underpowered at its own alpha (`C-101`) |
+| **PR-050** (surface matching) | a partition cannot remove information; balance costs the power needed to use it (`C-100`, `Z2`) |
+
+**The common cause: register is not a nuisance layered on top of the manipulation — it is
+*produced by* the manipulation.** We asked a generator for naturally concept-specific
+demonstrations, and natural bomb text hedges while natural knife text does not. Every
+analysis-side remedy either reads the treatment, or conditions on it and destroys the power, or
+narrows the contrast until register shrinks and n shrinks with it.
+
+**No re-analysis of this corpus can fix it.** The fix is a *design* fix, and it belongs to the next
+data build: generate the harm pools under an explicit **register constraint** — matched hedge
+rate, matched threat-lexicon density, matched sentence structure — so the arms differ in concept
+affordance and in nothing else. That is expensive (a new generation campaign with per-sentence
+constraints and a much stricter accept filter) and it is the only thing on the table that would
+turn register from a **stated limit** into a **controlled variable**.
+
+**So the honest position for this phase, recorded before the primary is computed:** register is a
+**stated scope limit**, the probe result will be reported **against a measured surface floor rather
+than against chance**, and the register question itself is **CANNOT ANSWER on this corpus** — with
+a concrete, costed recommendation for what would answer it. That is a more useful thing to hand
+Matan than a confirmatory number that quietly rests on a confound.
+
+→ **`Q-014` for Omer:** fund a register-matched regeneration for the next phase, or accept register
+as a permanent stated limit of this bank family? The measurement that decides it already exists
+(`R-106`: hedge 13.72 / 0.20 / 2.33 %, surface 0.7065 on the cleanest contrast).

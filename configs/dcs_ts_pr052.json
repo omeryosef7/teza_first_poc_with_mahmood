@@ -1,7 +1,7 @@
 {
-  "id": "DCS-PR-050",
-  "title": "Surface-matched re-analysis: does concept identity survive removing what a surface classifier knows?",
-  "status": "WITHDRAWN",
+  "id": "DCS-PR-052",
+  "title": "Arm-balanced surface cells on knife-vs-gun: EXPLORATORY, declared underpowered before running",
+  "status": "FROZEN",
   "written": "2026-09-07",
   "written_at_commit": "347f0920",
   "_why_machine_readable": [
@@ -10,7 +10,7 @@
     "file is absent, if any *_sha field is still null, or if a gate it needs is missing. A number",
     "in a markdown log that no program consults is a wish, not a preregistration."
   ],
-  "question": "Within strata where a surface classifier cannot distinguish the concepts, does the codeword's representation still carry concept identity?",
+  "question": "In a large, aligned, held-out population, does the codeword's hidden state carry the IDENTITY of the concept installed by the demonstrations, beyond generic remapping and generic harmfulness?",
   "claim_it_could_support": "CLAIM A of the phase mandate (section 32).",
   "population": {
     "bank_family": "ts116m",
@@ -200,7 +200,7 @@
     "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)"
   },
   "primary": {
-    "statistic": "domain-mean probe accuracy within surface-matched strata, TEST domains",
+    "statistic": "domain-mean knife-vs-gun accuracy within arm-balanced surface cells, TEST domains",
     "chance": 0.5,
     "independence_unit": "domain",
     "n_test_domains": 23,
@@ -208,16 +208,16 @@
     "test": "group permutation at the DOMAIN level",
     "n_perm": 10000,
     "nuisance_floor": {
-      "accuracy": 0.5,
+      "accuracy": 0.5054,
       "macro_auroc": 0.5,
-      "source": "within a surface-matched stratum the surface classifier is at chance BY CONSTRUCTION -- that is the point of the stratification, and it is verified rather than assumed",
-      "rule": "the stratification MUST be verified to have driven the surface classifier to chance within strata; if it has not, the stratification failed and the analysis is VOID",
+      "source": "MEASURED surface accuracy inside the arm-balanced cells (Z1), CI [0.4629, 0.5479] -- not assumed to be 0.5",
+      "rule": "the floor is the measured surface accuracy in the SAME cells, verified per run, never the nominal chance level",
       "enforced_by": "scripts/dcs_ts_pr048_analysis.py"
     },
-    "success": "domain-mean accuracy significantly above chance WITHIN strata, with the surface classifier verified at chance within those same strata",
-    "negative": "not significant with adequate power",
-    "cannot_answer": "the stratification leaves too few rows per stratum, or fails to drive the surface classifier to chance",
-    "void": "strata defined using TEST labels, or the surface classifier fit on anything but TRAIN"
+    "success": "NOT AVAILABLE -- this design is exploratory; it reports an estimate and an interval, never a confirmatory verdict",
+    "negative": "NOT AVAILABLE -- power 0.721 means a null is CANNOT ANSWER",
+    "cannot_answer": "the default outcome unless the estimate is far outside its interval",
+    "void": "cells constructed using TEST labels, or the surface classifier fit on anything but TRAIN"
   },
   "secondary": {
     "hedge_free_stratum": "Y2 FEASIBLE AT FULL n=23. All 23/23 TEST domains carry hedge-free rows in every arm: bomb 248/460, knife 452/460, gun 420/460. Balanced knife-vs-gun N = 840 rows (832 domain-balanced); 3-way N = 744. The stratum exists at the DOMAIN level, not only at row level. The superseded 115/212/195 figures are RETIRED and may not be quoted.",
@@ -233,32 +233,13 @@
     ]
   },
   "power": {
-    "status": "COMPUTED 2026-09-07, before any test read",
-    "verdict": "CO-PRIMARY",
-    "sign_test_floor_n23": 2.3842e-07,
-    "_sign_test_binding": "The SIGN TEST is the binding arm, not the permutation: primary.success is conjunctive (permutation AND sign test), and rejecting needs k >= 17 of 23 domains, pi >= 0.788.",
-    "perm_floor_at_n_perm_10000": 9.999e-05,
-    "mde_by_assumed_sd": {
-      "0.05": 0.0306,
-      "0.1406": 0.0859,
-      "0.25": 0.1528,
-      "0.3439": 0.2102
-    },
-    "_no_measured_2way_sd": "There is NO measured 2-way per-domain SD anywhere in the record. Every MDE above is labelled by the SD ASSUMED to produce it; 0.1406 is PR-048s 3-way value borrowed, and 0.25 is the distribution-free ceiling on [0.5,1].",
-    "conjunctive_power_delta_0.15_n23_sd_0.1406": {
-      "alpha_0.05": 0.963,
-      "holm_alpha_0.025": 0.9
-    },
-    "fpr_on_pure_noise": {
-      "value": 0.04,
-      "ci": [
-        0.0174,
-        0.0773
-      ],
-      "reps": 200,
-      "null_mean_acc": 0.4951
-    },
-    "DEMOTION_CONTINGENCY": "If the TRAIN-ONLY between-domain SD exceeds 0.188 (0.160 under Holm), conjunctive power falls below 0.8 and this contrast is DEMOTED TO EXPLORATORY. Checkable before any test read, using the SD measurement PR-048 already requires. Declared now."
+    "conjunctive_power_holm": 0.721,
+    "mde": [
+      0.1062,
+      0.1186
+    ],
+    "bar": 0.15,
+    "verdict": "UNDERPOWERED -- declared before running, which is why the design is exploratory"
   },
   "nulls_required": [
     {
@@ -335,7 +316,7 @@
     "_analyzer_status": "WRITTEN AND FROZEN 2026-09-07, before any ts116m hidden state exists. Contains NO numeric gate literal: alpha, n_perm, chance, the grids, the split and the population filters are all fetched through Prereg.require(), which refuses rather than defaulting. Selftest: 11/11 guards reachable.",
     "analyzer_committed_before_outcome": true
   },
-  "kill_condition": "If step 1's surface classifier cannot be driven to chance by any preregistered stratification with usable n, then register cannot be separated from concept on this corpus, and the honest verdict is CANNOT ANSWER on the register confound -- to be stated as such rather than absorbed by another instrument. Declared before the stratification is attempted.",
+  "kill_condition": "If Y3 shows the hedge-only advantage on knife-vs-gun is NOT small -- say it exceeds +0.10 -- then this contrast is not register-clean and its whole rationale fails. In that case it is withdrawn rather than reported, and the register confound returns to being an open limitation with no instrument. Declared before Y3 is measured.",
   "frozen_at": "2026-09-07",
   "gates_g1_g3": {
     "result": "19/19 PASS",
@@ -345,7 +326,7 @@
     "G3a": "3680/3680 cell-A concept-free rows byte-identical across all three concepts",
     "G3b": "1840/1840 forced-choice queries restore exactly under concept->bomb substitution; demo_block and preamble identical"
   },
-  "supersedes": "DCS-PR-046",
+  "supersedes": "DCS-PR-050",
   "_why_superseded": [
     "PR-046 is left BYTE-FROZEN on disk and is not edited. It pinned the ts116n bank family, which",
     "three later corrections disqualified: C-076 (8 knife sentences shipped an unsubstituted plural",
@@ -385,33 +366,45 @@
   },
   "pre_extraction_checklist": [
     {
-      "id": "Z1",
-      "item": "verify the stratification drives the surface classifier to chance within strata; if not, VOID",
+      "id": "Y1",
+      "item": "recompute the 2-way power analysis at chance 0.5 on 23 test domains",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true
     },
     {
-      "id": "Z2",
-      "item": "power for the within-stratum n; strata shrink the effective sample and the PR-049 power does not transfer",
+      "id": "Y2",
+      "item": "re-derive the hedge-free stratum row counts on ts116m (the 115/212/195 figures are from a superseded corpus)",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
       "blocking": true,
-      "done": false,
-      "status": "BLOCKING, not done"
+      "done": true
+    },
+    {
+      "id": "Y3",
+      "item": "re-measure the hedge-only and register-only baselines RESTRICTED to knife-vs-gun on ts116m, to confirm the +0.037 that motivates this contrast",
+      "status": "done 2026-09-07 -- reports/DCS_TS_PR049_BLOCKERS.md",
+      "blocking": true,
+      "done": true
     }
   ],
   "companion_of": "DCS-PR-048",
   "_why_this_exists": [
-    "A-043 section C, stated plainly: THE PHASE HAS NO INSTRUMENT THAT ANSWERS THE REGISTER CONFOUND.",
-    "N5 was disqualified by C-078 and rightly so -- the demo block is the treatment, not a nuisance.",
-    "PR-047 (the positional contrast) was cited repeatedly as the answer and NEVER EXISTED.",
-    "PR-049 survives its kill condition only because that condition was scoped to HEDGES while the",
-    "confound is REGISTER: a broader surface classifier reaches 0.7065 on knife-vs-gun and 0.6870",
-    "with every length channel removed. That is structurally the SAME defect C-078 diagnosed in N5 --",
-    "a bar that answers a narrower question than the one being asked.",
+    "The four-hour review (A-042, science lens) measured that register is NOT a uniform nuisance but",
+    "a BOMB-vs-REST SEVERITY axis: a hedge-only classifier buys +0.211 on bomb-vs-knife and only",
+    "+0.037 on knife-vs-gun. Threat-lexicon framing runs bomb 44.5% / knife 14.0% / gun 18.3%.",
+    "So the 3-way primary in PR-048 carries bomb's discourse register with it, while KNIFE-vs-GUN is",
+    "clean on register AND on length -- and is still exactly a test of concept IDENTITY between two",
+    "matched harmful concepts, with no severity gradient available to read instead.",
     "",
-    "Register has been converted from an unknown into a QUANTIFIED FLOOR, which is real progress.",
-    "But a floor is a bar, not an answer. This preregistration is the answer, and it costs ZERO GPU:",
-    "it re-analyses the PR-048 extraction on the same rows."
+    "IT ALSO DISCHARGES A CONDITION THE REVIEW ATTACHED TO C-078. PR-046 adopted the N5 text baseline",
+    "explicitly AS THE ANSWER to the register confound. C-078 then argued -- before any probe ran --",
+    "that N5 is the wrong bar because the demonstration block is the TREATMENT, and proposed a",
+    "positional contrast instead. The review's verdict: legitimate correction, ILLEGITIMATE IF THE",
+    "POSITIONAL CONTRAST INHERITS N5'S JOB. It does not. The positional contrast answers",
+    "localisation; THIS preregistration answers register. Two questions, two instruments, rather than",
+    "one instrument quietly retargeted.",
+    "",
+    "COST: ZERO EXTRA GPU. It is a re-analysis of the PR-048 extraction on the same rows."
   ],
   "_y3_result": {
     "kill_condition": "SURVIVE",
@@ -429,23 +422,20 @@
     "QUALIFICATION": "The kill condition is written about the HEDGE-ONLY classifier and is answered on its own terms: SURVIVE, PR-049 is not withdrawn. But the broader rationale in this file -- that knife-vs-gun is \"clean on register AND on length\" -- is ONLY PARTLY SUPPORTED. A broader register-only SURFACE classifier reaches +0.2065 on knife-vs-gun (accuracy 0.7065, AUROC 0.7479), and +0.1870 with every length channel removed, so it is COMPOSITION rather than length in disguise. Length-only is +0.1174 in characters but only +0.0435 in TOKENS (C-084 again; the token figure is the honest one). Clean on hedges and on token length; NOT clean on character length or on surface register generally.",
     "THE_BAR": "The nuisance floor the probe must beat on THIS contrast is a measured 0.7065 accuracy / 0.7479 AUROC, not 0.5."
   },
-  "design": {
-    "step1": "Fit the 17-feature register/surface classifier from R-106 on TRAIN domains only and score every row. This classifier reads ONLY hand-specified surface counts -- hedge markers, sentence length, type-token ratio, punctuation -- never the representation.",
-    "step2": "Stratify TEST rows by the surface classifier's predicted-probability vector, into preregistered bins. Within a bin, the surface features are (by construction) close to uninformative about the concept.",
-    "step3": "Re-run the frozen PR-048/PR-049 probe WITHIN strata and pool the per-domain accuracies. If concept identity survives where surface information does not, that is evidence the representation carries something the surface does not.",
-    "step4": "The cheapest discriminator, run alongside: the PER-DOMAIN correlation between probe accuracy and surface-classifier accuracy across the 23 test domains. A probe that is merely reading surface statistics propagated into the hidden state should track it closely; one reading concept identity need not. Costs one pearsonr over two existing 23-vectors."
-  },
-  "withdrawn": "2026-09-07",
-  "_withdrawal_reason": [
-    "C-100. This preregistration's central premise -- that within a surface-matched stratum the",
-    "surface classifier is at chance 'BY CONSTRUCTION' -- is FALSE, and elementarily so: a partition",
-    "cannot change pooled accuracy. Measured: 0 of 174 usable strata reach chance on either contrast;",
-    "refitting inside the most favourable stratum still gives 0.4986 (3-way) / 0.5609 (2-way).",
-    "Binning removes confidence, not information.",
+  "_why_exploratory_from_the_outset": [
+    "PR-050 was withdrawn because its premise was false (C-100). One construction DOES drive the",
+    "surface classifier to chance: arm-balanced joint simplex cells on knife-vs-gun -- surface",
+    "accuracy 0.5054, CI [0.4629, 0.5479], 552 rows (60%), all 23 test domains, refit-within 0.5109.",
+    "For the 3-way, 0 of 17 arm-balanced constructions work at all.",
     "",
-    "WITHDRAWN rather than amended. Amending a false premise into a different design is a NEW DESIGN,",
-    "and mandate 21 says a new design gets a new preregistration. PR-052 carries the one construction",
-    "that does achieve balance, declared EXPLORATORY from the outset because it is underpowered.",
-    "This file stays byte-frozen as the record of a design that did not survive its own first check."
+    "IT IS DECLARED EXPLORATORY BEFORE IT IS RUN, not after it disappoints. Z2 measured conjunctive",
+    "power in that stratum at 0.721 under the Holm alpha -- below 0.8 -- against an MDE of",
+    "0.1062-0.1186 for a +0.15 bar. A confirmatory label on a design known in advance to be",
+    "underpowered is the thing mandate 20 forbids: an experiment whose likely negative would be",
+    "uninterpretable.",
+    "",
+    "WHAT IT CAN AND CANNOT DO. It can produce a POINT ESTIMATE of concept decodability where surface",
+    "information is verifiably absent, with an honest interval. It CANNOT support a confirmatory",
+    "claim, and a null from it is CANNOT ANSWER rather than evidence of absence."
   ]
 }
