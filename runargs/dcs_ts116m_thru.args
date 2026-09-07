@@ -1,0 +1,11 @@
+--bank
+data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+--no-knockout
+--layers
+6,7,8,9,10,11,12,13,14
+--position
+codeword_last
+--tag
+ts116m_thru
+--smoke
+256

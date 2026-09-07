@@ -1931,3 +1931,47 @@ established by experiment; the read site is established on the live bank with en
 indexing proven mandatory; the design is frozen in a machine-readable preregistration that the
 code refuses to run without; and **seven** occurrence-counting defects have been found and fixed
 before a single GPU-hour was spent on measurement.
+
+## 2026-09-07 · PHASE 5 · **extraction submitted** — the first measurement of the phase
+
+Two smoke runs first, per the house rule of 2–4 prompts before scale, and then a throughput
+measurement before committing six jobs. Both `COMPLETED 0:0`:
+
+| job | rows | elapsed | result |
+|---|---|---|---|
+| **860339** | 4 | 1:30 | 4 rep stacks, `failures: {}` |
+| **860342** | 256 | **0:45** | 256 rep stacks, `failures: {}` |
+
+256 rows in 45 s *including model load* ⇒ a full 22,272-row bank is roughly half an hour, so all
+six run inside one wall-clock window. The throughput check existed to stop me sizing six jobs off
+a 4-row smoke whose runtime was mostly weight loading.
+
+Every run confirms the configuration in its own log rather than by inference:
+`model=meta-llama/Llama-3.1-8B-Instruct blocks=32 hidden=4096 **attn=eager**`,
+`capture layers=[6..14] position=codeword_last`, `KNOCKOUT DISABLED (--no-knockout):
+baseline-reproduction control`, and `GPU ok: NVIDIA L40S`.
+
+**Six jobs submitted, exactly at the phase's concurrency cap** (mandate §26.2):
+
+| bank | job |
+|---|---|
+| button_bomb | **860352** |
+| button_knife | **860353** |
+| button_gun | **860354** |
+| basket_bomb | **860355** |
+| basket_knife | **860356** |
+| basket_gun | **860357** |
+
+Each carries `BOOMB_EXPECT` and `BOOMB_REQUIRE_ARGS=1`, so neither the `853040` silent-default nor
+its empty-args successor is reachable; each argsfile lives on the shared filesystem, not node-local
+scratch; and each log's opening lines state the script, the origin, the expect and the argsfile.
+
+**Two things that make this extraction safe that were not true a few hours ago.** The read site
+resolves **per prompt** — `resolve_occurrences` returns `last_idx_per_occurrence` and
+`following_idx` for each row, so the `X2` finding that the absolute codeword index differs across
+concepts in 0/2300 triples cannot bite. And the layer convention it captures against was
+**confirmed by experiment** (`R-104`), not read off eight agreeing files.
+
+`PR-049`'s three blockers (2-way power at chance 0.5, the hedge-free stratum re-derived on
+`ts116m`, and the register re-measurement carrying the **+0.10 kill condition**) are running on CPU
+in parallel. They do not depend on the representations, so nothing is serialised behind them.
