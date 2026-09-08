@@ -4495,3 +4495,46 @@ its dose (M75). Tests to completion: 43, 248 and 81 passed.
 `frac_cellmean_spread_removed = 0.1656`, `cell_residual_frac_removed = {'C': 0.0936}`. And the smoke
 analysis **correctly refuses a verdict** — there is no C1 control band, so the "identical
 control-draw hashes" clause is UNEVALUABLE. The refusal is the instrument working.
+
+---
+
+## DCS-R-130 — the H2 gate opens: dry-run rc=0, and A3 stays open on purpose
+*2026-09-08*
+
+Seven checklist items closed **with evidence attached to each**, not as bare booleans: A4 (the
+verdict path), A9 (launch order re-derivation), A10 (Holm-with-absent), A11 (O1 as a paired contrast
+against the C5 bridge), A12 (the preregistered fallback, taken deliberately), A13 (`--emit-probe`
+required for h1/h2), A14 (stage-aware scoping). `artifacts.analyzer_exists` and
+`analyzer_verdict_path_present` set true.
+
+**The convention was checked, not assumed.** `configs/dcs_ts_pr048.json` is FROZEN with all five of
+its checklist items `done: true` and `analyzer_exists: true` — so in this project the freeze protects
+the **design**, and the pre-extraction checklist is the **operational ledger**, flipped as items
+complete with evidence. That is how PR-048 reached extraction, and it is what was done here.
+
+**Every number was re-run by me before the gate was opened**, because I over-claimed Q7 earlier the
+same day and would not repeat it on the gate that lets TEST be read: analyzer **100 checks / 0
+FAILED** and **82/82 mutations RED**; runner **64 / 0** and **37/37 RED**. All four match the agent's
+report exactly.
+
+**Two stale pins corrected** in the same edit — the analyzer had drifted from `2c2f80038c905fa1` to
+`26ac2c0ac8bd8599` and the runner from `c74d16763a349be4` to `ad4bafa4bd862188` — so the config now
+pins the instrument that was actually verified. All 52 hashes re-verify against disk.
+
+**A3 is left OPEN deliberately.** There is genuinely no cross-prompt donor code path
+(`score_behavior.py:1811` still `choices=("clean","self")`, both on the same prompt), so it is not
+closed and not marked N/A. `dcs_ts_prereg.py --check --for-extraction` still refuses on it — **one
+refusal, and it is the right one**. The stage-aware scoping that lets h2 proceed lives in the
+**runner**, which re-derives from the stage's own arms that 0 of 36 use mode `patch`; the loader
+itself remains fail-closed and stage-blind. The two disagree by design, and that is the safe
+direction: the strict gate stays strict.
+
+**`h2 --split test --dry-run` returns rc = 0**: launch order satisfied as
+`CANNOT_RUN_BY_CONSTRUCTION` (0 of 18 h1 arms constructible, **no `DONE.json` written for it and
+none needed**), 30 arms constructed and validated, model not loaded, nothing written.
+
+**What the confirmatory run still cannot escape, restated so it is not lost at the moment of
+submission:** no S2 arm has ever run on a GPU and 15 of the 30 are S2; H1's upper bound is
+unbuildable, so a positive H2a has no full-patch control (`A-047`, `arXiv:2311.17030`); the realised
+dose is 4.7–19.0%, so a null is weak evidence of non-use and must be published with the dose
+attached; and O1 is scoped to the development codeword only.

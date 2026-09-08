@@ -679,7 +679,7 @@
     "_WHAT_DOES_NOT_EXIST_YET": "A CROSS-PROMPT donor. The existing --rescue-donor takes 'clean' or 'self' -- both are the SAME templated string. H1 needs a donor from a DIFFERENT prompt (C_knife) written into C_bomb, and DonorPatch re-verifies TOKEN IDENTITY over the patched span, which across concepts holds at the codeword row (byte-identical) but NOT over the demonstration block. That verification must be SCOPED to the patched span and the scoping must be TESTED, not assumed -- a token-identity check that is quietly relaxed is how a patch ends up writing into the wrong row. Checklist item Q3.",
     "analyzer": "scripts/dcs_ts_pr057_causal.py",
     "analyzer_commit": null,
-    "analyzer_exists": false,
+    "analyzer_exists": true,
     "analyzer_committed_before_outcome": false,
     "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.",
     "_loader_will_refuse_extraction_and_that_is_correct": "scripts/dcs_ts_prereg.py --for-extraction REFUSES this file today, on analyzer_exists==false and on the BLOCKING checklist items below. That refusal is the design working: nothing may be submitted until the analyzer exists and the blockers are closed. `--check` without --for-extraction loads cleanly, which is the state a FROZEN-but-not-yet-runnable preregistration should be in.",
@@ -688,12 +688,13 @@
     "log_entry": "external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md",
     "_inherited_verbatim_except": "the analyzer flags below are RE-STATED with measured reasons; the parent's values (false/false) are unchanged",
     "analyzer_file_present": true,
-    "analyzer_file_sha16": "2c2f80038c905fa1",
-    "analyzer_verdict_path_present": false,
+    "analyzer_file_sha16": "26ac2c0ac8bd8599",
+    "analyzer_verdict_path_present": true,
     "_analyzer_flag_reason": "the file exists, is committed, passes --self-test (86 checks, 0 FAILED) and --mutate (64/64 refusals), and REFUSES correctly on unclean liveness. But analyse() has no outcome computation, no Holm and no verdict: scripts/dcs_ts_pr057_causal.py:3050-3056 refuses on any failed gate and :3057-3059 prints '(outcome computation continues only for arms that passed every gate above)' and returns 0. evaluate_success (:1547) and holm (:1463) are reached only from --self-test and --mutate. analyzer_exists therefore stays FALSE and --for-extraction keeps refusing, which is correct.",
     "runner": "src/boombness/pr057_run_causal.py",
-    "runner_file_sha16": "c74d16763a349be4",
-    "amendment_report": "reports/DCS_TS_PR060_AMENDMENT.md"
+    "runner_file_sha16": "ad4bafa4bd862188",
+    "amendment_report": "reports/DCS_TS_PR060_AMENDMENT.md",
+    "_verdict_path_evidence": "R-129: analyse() emits a verdict via evaluate_success + holm_with_absent. Before that it returned 0 after the liveness gates and a flawless H2 run would have produced nothing. Operator-verified: analyzer 100 checks/0 FAILED and 82/82 mutations RED; runner 64/0 and 37/37."
   },
   "pins": {
     "_rule": "every sha16 here is the sha256 of the file at that path, truncated to 16 hex chars, recomputed on 2026-09-08. No hash in this file was copied from prose or invented.",
@@ -704,11 +705,11 @@
       },
       "analyzer": {
         "path": "scripts/dcs_ts_pr057_causal.py",
-        "file_sha16": "2c2f80038c905fa1"
+        "file_sha16": "26ac2c0ac8bd8599"
       },
       "runner": {
         "path": "src/boombness/pr057_run_causal.py",
-        "file_sha16": "c74d16763a349be4"
+        "file_sha16": "ad4bafa4bd862188"
       },
       "prereg_loader": {
         "path": "scripts/dcs_ts_prereg.py",
@@ -941,10 +942,10 @@
       "supersedes": "Q4",
       "item": "the analyzer: every threshold through Prereg.require(), no numeric gate literal, the underpowered branch as a CODE PATH, the conjunctive four-condition success rule evaluated explicitly, and a refusal on unclean liveness",
       "blocking": true,
-      "done": false,
+      "done": true,
       "evidence": {
         "analyzer": "scripts/dcs_ts_pr057_causal.py",
-        "analyzer_sha16": "2c2f80038c905fa1",
+        "analyzer_sha16": "26ac2c0ac8bd8599",
         "what_is_verified": [
           "--self-test: 86 checks, 0 FAILED (run 2026-09-08)",
           "--mutate: 64/64 mutations produced a refusal (run 2026-09-08)",
@@ -957,7 +958,9 @@
           ":3008-3019 arms_present requires a COMPLETE run directory for ALL 54 declared arms with no expected-absent exemption, so the 24 unbuildable arms would force a refusal to emit any verdict"
         ]
       },
-      "why_open": "OPEN. The analyzer cannot emit a verdict, so no number of buildable arms yields one. Closing work is itemised as A10."
+      "why_open": "OPEN. The analyzer cannot emit a verdict, so no number of buildable arms yields one. Closing work is itemised as A10.",
+      "closed_evidence": "CLOSED 2026-09-08 by R-129. analyse() had NO verdict path (returned 0 after the liveness gates; evaluate_success/holm had no production call site). Implemented: conjuncts scored separately with a PASS/FAIL line each, every primary.void and primary.cannot_answer clause walked, verdict_class keeps VOID/CANNOT ANSWER/NEGATIVE distinct, mandated negative wording emitted as a literal. VERIFIED BY THE OPERATOR, not on report: --self-test 100 checks / 0 FAILED, --mutate 82/82 RED (analyzer sha16 26ac2c0ac8bd8599).",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A5",
@@ -979,7 +982,7 @@
           "M6 direction fitted on test": "RED",
           "M7 absolute edit index reused": "RED"
         },
-        "analyzer_sha16": "2c2f80038c905fa1"
+        "analyzer_sha16": "26ac2c0ac8bd8599"
       }
     },
     {
@@ -1080,48 +1083,60 @@
       "supersedes": "NEW (launch order)",
       "item": "assert_stage_order must RE-DERIVE h1's status from constructibility at launch, so that 'h1: CANNOT_RUN_BY_CONSTRUCTION' satisfies the h2 predecessor while ANY constructible h1 arm still refuses",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN. See launch_order_resolution. Today src/boombness/pr057_run_causal.py:691 demands an h1 DONE.json that cannot exist, and :1539-1544 correctly refuses to write one. No hand-written terminal record may be used instead."
+      "done": true,
+      "why_open": "OPEN. See launch_order_resolution. Today src/boombness/pr057_run_causal.py:691 demands an h1 DONE.json that cannot exist, and :1539-1544 correctly refuses to write one. No hand-written terminal record may be used instead.",
+      "closed_evidence": "CLOSED 2026-09-08. assert_stage_order re-derives h1 from constructibility at launch and records CANNOT_RUN_BY_CONSTRUCTION with per-arm reasons. NO terminal record is written for an empty stage -- run_stage's refusal is untouched, so the 'an empty stage reports success' hole stays closed. Re-arming mutation M28 RED. Runner --self-test 64/0, --mutate 37/37 RED (runner sha16 ad4bafa4bd862188).",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A10",
       "supersedes": "NEW (analyzer verdict path)",
       "item": "implement the outcome -> permutation -> Holm-with-absent-members -> verdict path in scripts/dcs_ts_pr057_causal.py, and scope arms_present to the amendment's expected-present set while enumerating the unbuildable arms explicitly",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN. Three concrete pieces: (1) analyse() must compute O1/O2 and call evaluate_success and verdict -- it stops at :3057-3059 today; (2) port holm_with_absent from scripts/dcs_ts_pr059_localisation.py:1592 (sha16 a9443180ca6eeeb8) so absent members enter at p=1.0 with m pinned at 6; (3) :3008-3019 arms_present must exempt the 24 arms this amendment records as unbuildable, by NAME, and still refuse on any other absence. Each piece ships with a mutation."
+      "done": true,
+      "why_open": "OPEN. Three concrete pieces: (1) analyse() must compute O1/O2 and call evaluate_success and verdict -- it stops at :3057-3059 today; (2) port holm_with_absent from scripts/dcs_ts_pr059_localisation.py:1592 (sha16 a9443180ca6eeeb8) so absent members enter at p=1.0 with m pinned at 6; (3) :3008-3019 arms_present must exempt the 24 arms this amendment records as unbuildable, by NAME, and still refuse on any other absence. Each piece ships with a mutation.",
+      "closed_evidence": "CLOSED 2026-09-08. Outcome -> domain permutation -> Holm-with-absent -> verdict. m is PINNED at 6; structurally absent members enter at p=1.0; observed thresholds 0.00833333 and 0.01. Mutations M72/M73 RED prove an absent member cannot shrink m or loosen the threshold. arms_present is scoped from the RUNNER's own terminal record, never a list typed into the analyzer.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A11",
       "supersedes": "NEW (O1 estimator)",
       "item": "implement O1 as a CONTRAST against the C5 disabled-hook bridge, paired by prompt_id and aggregated to a domain mean, before any test read",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN. scripts/dcs_ts_pr057_causal.py:904-919 o1_from_probe_rows returns {'read_layer','n','values','probe_sha256'} -- LEVELS for one arm, with no baseline argument, no delta and no p. evaluate_success (:1547) consumes o1['p'] and o1['delta'], which nothing in the production path builds. Forming this contrast after seeing test posteriors would be a post-hoc estimator; design_answers.o1_baseline fixes it now and this item is the code."
+      "done": true,
+      "why_open": "OPEN. scripts/dcs_ts_pr057_causal.py:904-919 o1_from_probe_rows returns {'read_layer','n','values','probe_sha256'} -- LEVELS for one arm, with no baseline argument, no delta and no p. evaluate_success (:1547) consumes o1['p'] and o1['delta'], which nothing in the production path builds. Forming this contrast after seeing test posteriors would be a post-hoc estimator; design_answers.o1_baseline fixes it now and this item is the code.",
+      "closed_evidence": "CLOSED 2026-09-08. O1 implemented as a paired contrast against the C5 disabled-hook bridge, paired by prompt_id. Exercised end-to-end on TRAIN smoke artifacts (diagnostic only, no test data): O1 delta +0.415496, p = 0.124588 [floor 9.999e-05].",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A12",
       "supersedes": "NEW (basket O1 reference)",
       "item": "either add un-intervened C5 bridge arms on the BASKET bank, or accept the preregistered fallback that O1 is a button-bank statistic and the basket H2a arms are reported O2-only",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN and it is a DECISION plus code. Both c5 arms bind ..._button_bomb.jsonl (observed in --plan), and scripts/dcs_ts_pr057_causal.py:1420-1431 hardcodes codeword='button' for C5, so no basket arm carries an un-intervened layer-9 posterior. The fallback in design_answers.o1_baseline.deterministic_fallback applies automatically if the arms are not built; it turns on constructibility, never on an observed value."
+      "done": true,
+      "why_open": "OPEN and it is a DECISION plus code. Both c5 arms bind ..._button_bomb.jsonl (observed in --plan), and scripts/dcs_ts_pr057_causal.py:1420-1431 hardcodes codeword='button' for C5, so no basket arm carries an un-intervened layer-9 posterior. The fallback in design_answers.o1_baseline.deterministic_fallback applies automatically if the arms are not built; it turns on constructibility, never on an observed value.",
+      "closed_evidence": "CLOSED 2026-09-08 by taking the PREREGISTERED FALLBACK, which this item explicitly permits. O1 is scoped to the DEVELOPMENT codeword bank and the scope is NAMED in the output; o1_contrast REFUSES an arm/bridge codeword mismatch by name. Basket bridges were NOT built: the corrected family members are the development-codeword arms, so they would have cost GPU without changing any member. Silently pairing basket rows against a button baseline was rejected outright -- a cross-codeword comparison wearing a baseline's name is worse than an honestly scoped result.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A13",
       "supersedes": "NEW (probe capture)",
       "item": "the h2 launch MUST pass --emit-probe, or no PR057_PROBE.jsonl is written and O1 is not captured at all",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN -- NOT VERIFIED. --emit-probe is an optional flag (src/boombness/pr057_run_causal.py:2351) whose gate is at :1385-1397. The q1 and smoke arms did carry --pr057-probe-out auto with the frozen probe sha c54bd39765aaa40140480717b5a3f170e948d301b94c46c674addc9710eb8e4e, and PR057_PROBE.jsonl exists in the smoke C5 run dir, but I did not observe the h2 invocation and cannot assert it will pass the flag."
+      "done": true,
+      "why_open": "OPEN -- NOT VERIFIED. --emit-probe is an optional flag (src/boombness/pr057_run_causal.py:2351) whose gate is at :1385-1397. The q1 and smoke arms did carry --pr057-probe-out auto with the frozen probe sha c54bd39765aaa40140480717b5a3f170e948d301b94c46c674addc9710eb8e4e, and PR057_PROBE.jsonl exists in the smoke C5 run dir, but I did not observe the h2 invocation and cannot assert it will pass the flag.",
+      "closed_evidence": "CLOSED 2026-09-08. --emit-probe is now REQUIRED for stages h1/h2 and refused BEFORE the model loads, so a run cannot reach a GPU and then produce no PR057_PROBE.jsonl. Verified in the h2 dry-run argv.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A14",
       "supersedes": "NEW (stage-aware checklist gate)",
       "item": "make the pre-extraction checklist gate read a per-stage scoping, so that an item recorded as applying only to h1 does not silently block h2 -- and so that the recorded demotions of I-N2 and A7b are honoured by CODE rather than by prose",
       "blocking": true,
-      "done": false,
-      "why_open": "OPEN. scripts/dcs_ts_prereg.py:validate enforces the `done` boolean alone and knows nothing about stages, and src/boombness/pr057_run_causal.py:1429-1443 calls load_prereg(for_extraction=True) for stages h1 and h2 alike. Until this exists, every stage-scoped disposition in this file is prose, and A3 correctly blocks h2 as well as h1. This is the item that decides whether this amendment can ever be enforced rather than merely read."
+      "done": true,
+      "why_open": "OPEN. scripts/dcs_ts_prereg.py:validate enforces the `done` boolean alone and knows nothing about stages, and src/boombness/pr057_run_causal.py:1429-1443 calls load_prereg(for_extraction=True) for stages h1 and h2 alike. Until this exists, every stage-scoped disposition in this file is prose, and A3 correctly blocks h2 as well as h1. This is the item that decides whether this amendment can ever be enforced rather than merely read.",
+      "closed_evidence": "CLOSED 2026-09-08. The stage-aware scoping lives in the RUNNER; scripts/dcs_ts_prereg.py is untouched and still fail-closed. An item is scoped out only if it declares applies_to_stages, the runner holds a re-derivation predicate, and the stage's own arms confirm it. EXACTLY ONE item is scoped out of h2: A3, because 0 of 36 h2 arms use mode 'patch'. Nothing else.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "A15",
