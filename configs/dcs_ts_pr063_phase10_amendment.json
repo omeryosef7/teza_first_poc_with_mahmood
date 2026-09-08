@@ -1,0 +1,481 @@
+{
+  "id": "DCS-PR-063",
+  "title": "PHASE 10 AMENDMENT -- the cells-B/E semantic answer set is built PER CELL from the pinned benign pool, and the option-mass gate is evaluated PER CELL AND PER DOSE",
+  "status": "FROZEN",
+  "written": "2026-09-08",
+  "phase": 10,
+  "mandate_section": 13,
+  "parent": {
+    "id": "DCS-PR-058",
+    "path": "configs/dcs_ts_pr058_phase10.json",
+    "parent_file_sha16": "574e94b4bf4807cf",
+    "_the_parent_is_not_edited": "configs/dcs_ts_pr058_phase10.json is FROZEN. No design field in it is changed by this file; its checklist booleans remain its own operational ledger. An amendment is a NEW file (C-106: two configs must not disagree about a family's membership, and the only safe way to add is to be disjoint and to name what you supersede).",
+    "_no_hypothesis_is_added_or_removed": "PHASE10_SYMMETRY keeps exactly the four members H1-H4 and their declared signs. This file changes the INSTRUMENT the outcome is measured with, and the POPULATION the engagement gate is applied to. It does not add a hypothesis, so no Holm correction anywhere is redefined."
+  },
+  "question": "PHASE 10's primary readout could not run: job 869869 scored cells B and E and the option-mass gate refused at median 0.01015 against 0.05. Is that a disengaged model, or a mis-specified instrument -- and can the correct instrument be built from artifacts already pinned, without regenerating the ts116m bank family?",
+  "answer_established_by_this_file": "MIS-SPECIFIED INSTRUMENT, AND YES. The second option cells B/E needed is the word their demonstrations remap the concept TOWARD, and it is already on disk as `pools[\"<domain>|benign\"][\"natural_word\"]` in data/boombness_prompts/demo_pools_116dom.json -- the file DCS-PR-058 already pins by content hash. Recovered on 66816/66816 cell-B and cell-E rows across all six ts116m banks. NO BANK IS REGENERATED AND NO EXISTING PIN MOVES.",
+  "supersedes": [
+    "The RUN-WIDE semantic answer set. src/boombness/score_behavior.py built {concept, codeword} ONCE from rows[0] and scored every row against it (the `_pairs_in_bank` assertion enforces one pair per bank BY DESIGN). Under this amendment cells whose `query_surface` is `concept` are scored against {concept, benign natural_word}. Cells whose `query_surface` is `codeword` are UNCHANGED, byte for byte -- proved below and enforced in code.",
+    "The POOLED option-mass gate as PHASE 10's engagement criterion. It remains the historical default for every other run; PHASE 10 requires the per-cell/per-dose form.",
+    "reports/DCS_TS_P10_CELLBE_OPTION_MASS.md 'Verdict, salvage, and what must change' item 2, which concluded 'the bank must be regenerated with the mapping-use option pair before cell E has a well-posed forced choice'. That conclusion looked ONLY at `mapping_use_options` (absent on this bank, correctly reported) and did not look at the demonstration pools. It is superseded by evidence, and the diagnostic's items 1, 3 and 4 stand unchanged.",
+    "NOTHING in outputs/. The job-869869 run artifact and its `reportable: false` / `option_mass_gate: OVERRIDDEN` records stand and are CORRECT. This file does not relabel a published run; it replaces the instrument for the NEXT one."
+  ],
+  "claim_it_could_support": "None on its own. This is an instrument repair. It supports DCS-PR-058's CLAIM D only by making the preregistered readout measurable; every hypothesis, sign, control, null and multiplicity family stays exactly as the parent declares them.",
+  "population": {
+    "_identical_to_the_parent": "Same bank family, same six banks, same three whole-population exclusions, same 113 analysed domains, same cells, same doses, same primary channel. The pins below are RE-VERIFIED here against the files on disk, which is the point of restating them.",
+    "bank_family": "ts116m",
+    "banks": {
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+        "bank_file_sha16": "dcd92d723f3e6d00",
+        "bank_rows_sha16": "4ca3ec165ab5b018"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+        "bank_file_sha16": "79511d9e254571e6",
+        "bank_rows_sha16": "1e872cd8cd2f63a5"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+        "bank_file_sha16": "94fd300d611fccf2",
+        "bank_rows_sha16": "65eb4fa533890eff"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl",
+        "bank_file_sha16": "538ca9b48d905290",
+        "bank_rows_sha16": "61e586e4bdca6f28"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl",
+        "bank_file_sha16": "8e646dfdb451abc6",
+        "bank_rows_sha16": "c7ceb5a151a2788a"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl",
+        "bank_file_sha16": "f4c655a723729c08",
+        "bank_rows_sha16": "f1a8332bdd7c48ce"
+      }
+    },
+    "pools": {
+      "shared": {
+        "path": "data/boombness_prompts/demo_pools_116dom.json",
+        "content_sha16": "976aa2b0b617118d",
+        "_role_in_this_amendment": "THE SOURCE OF THE SECOND OPTION. Its `pools[\"<domain>|benign\"][\"natural_word\"]` is the word the benign demonstrations were written about before the generator substituted the concept into it. It is the SAME file DCS-PR-058 already pins as population.pools.shared_valences_from / shared_pools_sha16, unchanged and unregenerated."
+      }
+    },
+    "query_kind_primary": "semantic_one_word",
+    "n_examples_primary": 4,
+    "n_examples_null": 0,
+    "concept_primary": "bomb",
+    "cells_repaired": [
+      "B",
+      "E"
+    ],
+    "cells_unchanged": [
+      "A",
+      "C"
+    ],
+    "n_domains_analysed": 113
+  },
+  "instrument": {
+    "semantic_options_mode": "per_cell_remap",
+    "remap_valence": "benign",
+    "remap_pool": {
+      "path": "data/boombness_prompts/demo_pools_116dom.json",
+      "content_sha16": "976aa2b0b617118d",
+      "field": "pools['<demo_pool_domain>|benign'].natural_word"
+    },
+    "rule": "The answer set is keyed on the bank row's `query_surface`, NOT on its cell name and NOT on its demonstration valence. query_surface == 'codeword' (cells A/C) -> {concept, codeword}, the bank pair, unchanged. query_surface == 'concept' (cells B/E) -> {concept, the benign pool's natural_word for that row's own demo_pool_domain}.",
+    "_why_query_surface_and_not_demo_valence": "Cell B's demonstrations are the HARM pool, whose own natural_word IS the concept, so 'the word this cell remaps toward' is degenerate there. It is also the wrong question to ask of a matched specificity control: the parent's primary._largest_risk mitigation (2) requires cell B to carry 'the identical query text and the identical ceiling' so that H1-minus-H3 differences the ceiling out. Two cells scored on two different axes cannot difference anything. On cell B the contrast option is therefore the counterfactual that was never installed -- which is what a specificity control is for.",
+    "_group_names_are_deliberately_unchanged": "The two readout groups stay `concept` and `codeword`, so semantic_logodds = logp_concept - logp_codeword keeps its field names AND the parent's declared H1 sign ('logP(bomb) rises relative to logP(button)') keeps its meaning: on cells B/E the `codeword` slot holds the remap target, and cutting the benign demonstrations is still predicted to raise the concept side. The two words actually scored are written to metadata AND to every row (semantic_concept_word / semantic_contrast_word / semantic_options_source), so no reader has to infer them from a cell name.",
+    "recovered_words_by_cell": {
+      "_measured_2026_09_08_cpu_only": "resolve_semantic_options_for_row applied to all 22272 rows of each of the six ts116m banks, 133632 rows total.",
+      "A": "{concept, codeword} -- bank_pair",
+      "C": "{concept, codeword} -- bank_pair",
+      "B": "{concept, carrot} -- benign_pool_natural_word",
+      "E": "{concept, carrot} -- benign_pool_natural_word",
+      "coverage": "66816/66816 cell-B and cell-E rows resolved; 0 missing, 0 degenerate, 0 rows whose demo_pool_domain has no benign pool. natural_word is 'carrot' in 116/116 benign pools (it is a global property of the pool file, not a per-domain one), and demo_pool_domain == domain on 133632/133632 rows.",
+      "corroboration": "Inverting the substitution on cell-E demo blocks (concept -> 'carrot') reproduces a verbatim benign-pool sentence on 149922/150336 = 99.72% of demo lines across the six banks; the residual 414 are capitalised-inside-quotes and length-truncated lines, not a different pool."
+    },
+    "option_mass_gate_scope": "per_cell_dose",
+    "option_mass_gate_min_dose": 1,
+    "option_mass_gate_value": 0.05,
+    "option_mass_gate_statistic": "median_true",
+    "_dose_0_is_EXCLUDED_from_the_gate_and_still_REPORTED": "DECISION AND ITS EVIDENCE. At dose 0 the passage carries no demonstrations, the queried word occurs only inside the question, and the correct one-word answer is 'None' -- the decoded argmax is ` None` on 232/232 rows in EVERY cell of BOTH runs on disk (job 869869 cells B/E; the 20260907_133811 run cells A/C). Neither scored option is that answer in any cell, so the instrument is INAPPLICABLE at dose 0 rather than the model disengaged. Excluded rather than 'scored as None' because a None median propagates as a NaN REFUSAL in the tail gate, which would condemn a bucket that is behaving exactly as it should. Dose-0 buckets are still computed and written, with gated=false and the reason string attached.",
+    "_and_the_pooled_gate_is_why_this_matters": "The cells-A/C run's headline median_true 0.082485 is a POOLED median over two cells and two doses. Broken out: A/n0 0.041589, A/n4 0.059274, C/n0 0.041589, C/n4 0.313414. Three of the four sub-buckets sit at or below the 0.05 gate and the pooled pass is carried entirely by C/n4. With dose 0 excluded on the evidence above, both GATED A/C sub-buckets pass on their own."
+  },
+  "recoverability_finding": {
+    "question": "Can the correct option set be built from what the bank ALREADY contains?",
+    "answer": "YES, and no regeneration of any kind is required.",
+    "field_used": "pools['<demo_pool_domain>|benign'].natural_word in data/boombness_prompts/demo_pools_116dom.json (content_sha16 976aa2b0b617118d), joined per row on the bank field `demo_pool_domain`.",
+    "per_row_coverage": "66816/66816 cell-B and cell-E rows over all six ts116m banks (11136 per cell per bank x 2 cells x 6 banks). 0 unresolved.",
+    "what_was_NOT_available_and_is_correctly_reported_absent": "`mapping_use_options` is None on all 22272 rows of every ts116m bank, exactly as reports/DCS_TS_P10_CELLBE_OPTION_MASS.md §2 and DCS-PR-058 outcome_variables.O3_mapping_use state. O3 stays UNCONSTRUCTIBLE ON THIS BANK. The repair here does not use it and does not claim it.",
+    "alternatives_costed_but_NOT_TAKEN": {
+      "_they_are_recorded_because_a_recommendation_with_no_alternative_is_not_a_recommendation": true,
+      "regenerate_ts116m": "REJECTED. It would move bank_file_sha16 / bank_rows_sha16 in configs/dcs_ts_pr048.json, dcs_ts_pr057_phase9.json, dcs_ts_pr060_phase9_amendment.json, dcs_ts_pr058_phase10.json and dcs_ts_pr059_phase11.json, breaking the provenance of a COMPLETED confirmatory result (PHASE 9, 30 arms, 6900 rows) to fix a readout that did not need the bank changed. Cost: regeneration + re-pin of 5 configs + re-verification of every downstream artifact + PHASE 9 becomes unverifiable against its own pins.",
+      "a_new_bank_FAMILY": "REJECTED AS UNNECESSARY, though it was the safe fallback. It leaves ts116m and every pin untouched, but costs a full generation pass, a new token-role map for the new family, a new installation table (R-116 is measured on ts116m), and a PHASE-10 result on a DIFFERENT population from PHASE 9's -- so the within-phase symmetry DCS-PR-058 was written to obtain would become a cross-family comparison.",
+      "recommendation": "NEITHER. The per-cell option set from the already-pinned pool file, which is what this amendment implements."
+    }
+  },
+  "byte_identity_proof_cells_A_and_C": {
+    "_claim": "The repair does not alter cells A/C.",
+    "method": "resolve_semantic_options_for_row + signals.answer_variants applied to all 22272 rows of each of the six banks, compared against the pre-amendment run-wide set built from rows[0] by the identical rule (src/boombness/signals.py is UNMODIFIED by this amendment, and the `sem_variants = {...}` construction line is unchanged from git HEAD).",
+    "ground_truth_before": "The answer set as SHIPPED by the two runs on disk, read from their metadata.json: {\"concept\": [\" bomb\", \" Bomb\"], \"codeword\": [\" button\", \" Button\"]}, sha256[:16] bbb81e6ccf7c34b3, identical in ts116m_readout_button_bomb_20260907_133811_3183103 and ts116m_p10be_button_bomb_20260908_190838_351592.",
+    "observed": "Cells A and C reproduce their bank's pre-amendment set with an IDENTICAL sha256[:16] in 6/6 banks (button_bomb bbb81e6ccf7c34b3, basket_bomb a624225d36810b5a, button_knife 6d4afb4482097de3, basket_knife fcc2fbe1c4133504, button_gun 2b29e43308a7c29c, basket_gun 3bdf384ac86aca18). Cells B and E move to {concept, carrot}: bomb 95e6fc5f20682015, knife 9e5e0c4d8ad19ed7, gun c43a74593fd5dba5.",
+    "enforced_in_code_not_only_in_this_report": "score_behavior.main() REFUSES to start when a cell resolved to the bank pair does not reproduce the run-wide set exactly, and when one cell resolves to two option sets. A published identity claim with no code path is B-020.",
+    "and_the_launcher_too": "scripts/dcs_ts_readout_multi.py appends the four new flags ONLY when they differ from score_behavior's defaults. --print-cmd-only reproduces job 869869's command line byte for byte (verified against that run's config.json args)."
+  },
+  "gate_table_on_the_rows_already_on_disk": {
+    "_provenance": "Recomputed CPU-only from the written results.jsonl of two runs, with the SAME function the amended gate uses (score_behavior.option_mass_block). It is the PRE-AMENDMENT option set -- these rows were scored against {concept, codeword} -- so it measures the defect, not the repair.",
+    "_units": "median_true of option_mass; gate 0.05",
+    "job_869869_cells_B_E": {
+      "POOLED": {
+        "n": 2784,
+        "median_true": 0.010148,
+        "verdict": "BELOW GATE"
+      },
+      "B/n0": {
+        "n": 232,
+        "median_true": 0.00033,
+        "gated": false,
+        "verdict": "NOT GATED"
+      },
+      "B/n4": {
+        "n": 1160,
+        "median_true": 0.012608,
+        "gated": true,
+        "verdict": "BELOW GATE"
+      },
+      "E/n0": {
+        "n": 232,
+        "median_true": 0.00033,
+        "gated": false,
+        "verdict": "NOT GATED"
+      },
+      "E/n4": {
+        "n": 1160,
+        "median_true": 0.015763,
+        "gated": true,
+        "verdict": "BELOW GATE"
+      }
+    },
+    "run_20260907_133811_cells_A_C_semantic_one_word": {
+      "POOLED": {
+        "n": 2784,
+        "median_true": 0.082485,
+        "verdict": "PASS"
+      },
+      "A/n0": {
+        "n": 232,
+        "median_true": 0.041589,
+        "gated": false,
+        "verdict": "NOT GATED (would have been BELOW GATE)"
+      },
+      "A/n4": {
+        "n": 1160,
+        "median_true": 0.059274,
+        "gated": true,
+        "verdict": "PASS"
+      },
+      "C/n0": {
+        "n": 232,
+        "median_true": 0.041589,
+        "gated": false,
+        "verdict": "NOT GATED (would have been BELOW GATE)"
+      },
+      "C/n4": {
+        "n": 1160,
+        "median_true": 0.313414,
+        "gated": true,
+        "verdict": "PASS"
+      }
+    },
+    "run_20260907_133811_cells_A_C_semantic_forced_choice_DISPLAY_ONLY": {
+      "POOLED": {
+        "n": 2784,
+        "median_true": 0.35808,
+        "verdict": "PASS"
+      },
+      "A/n0": {
+        "n": 232,
+        "median_true": 0.000421,
+        "gated": false,
+        "verdict": "NOT GATED"
+      },
+      "A/n4": {
+        "n": 1160,
+        "median_true": 0.266485,
+        "gated": true,
+        "verdict": "PASS"
+      },
+      "C/n0": {
+        "n": 232,
+        "median_true": 0.000421,
+        "gated": false,
+        "verdict": "NOT GATED"
+      },
+      "C/n4": {
+        "n": 1160,
+        "median_true": 0.876273,
+        "gated": true,
+        "verdict": "PASS"
+      },
+      "_label": "SECONDARY DISPLAY ONLY. Its question names both options and answers itself (R-116); it is quoted here as a gate table, never as a mechanism readout, and DCS-PR-058 leakage.consequence_for_this_phase forbids falling back on it."
+    },
+    "_what_this_table_does_and_does_not_settle": "It settles that the pooled gate hid four sub-populations, and that with dose 0 excluded on the evidence stated above both GATED A/C buckets pass on their own. It does NOT settle whether the REPAIRED cells-B/E instrument clears the gate: p(carrot) was never scored by any run and cannot be computed from the written rows. That is checklist item A2 and it is the phase's kill condition, still open."
+  },
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 67,
+    "n_validation": 23,
+    "n_test": 23,
+    "seed": 202609061,
+    "n_domains_analysed": 113,
+    "_unchanged": "The manifest is NOT regenerated and NOT re-split. A split may be created once (mandate 5.2)."
+  },
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_unchanged_from_the_parent": true
+  },
+  "read_site": {
+    "_unchanged_from_the_parent": "position_PRIMARY_REPRESENTATION `following`, rel_end -9, verified for cells B and E by the parent's closed item T1 (6780/6780 prompts per cell).",
+    "position_PRIMARY_REPRESENTATION": "following",
+    "position_NOT_USED": "codeword_last",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "primary_read_layer": 9,
+    "_the_readout_read_position_is_also_unchanged": "The semantic readout is scored at the token immediately after the literal `Answer:` prefix, end-relative offset 0, identically on all four cells. reports/DCS_TS_P10_CELLBE_OPTION_MASS.md §1 established that THE READ POSITION IS NOT THE DEFECT and this amendment does not move it. Only the two candidate WORDS change."
+  },
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "role": "SECONDARY DIAGNOSTIC ONLY",
+    "_unchanged_from_the_parent": "the FROZEN PR-048 estimator at block 9, C=0.01, TRAIN-fitted standardisation, with the parent's off-distribution caveat attached to a positive and a null alike."
+  },
+  "primary": {
+    "_unchanged_from_the_parent": "statistic, independence unit, test, n_perm, alpha, p-floor rule, the forbidden row-level permutation, the conjunctive four-condition success rule and the MANDATORY negative wording are all the parent's and are not restated as new values here.",
+    "statistic": "domain-mean PAIRED delta(semantic_logodds) = KO - baseline, within prompt_id, semantic_one_word, cell E, concept bomb, n_examples 4, per codeword bank, never pooled across banks",
+    "independence_unit": "domain",
+    "n_domains_analysed": 113,
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level, arm-label flip within domain",
+    "n_perm": 10000,
+    "attainable_p_floor": 9.999e-05,
+    "what_this_amendment_changes_about_the_primary": "ONLY the two words logp_codeword is a probability of, on cells B/E. The parent's H1 sign is preserved by keeping the group names -- see instrument._group_names_are_deliberately_unchanged.",
+    "cannot_answer": "ANY of the parent's (a)-(d), evaluated with the REPAIRED instrument and with the per-cell/per-dose gate. Branch (a) is now reachable only from a correctly specified answer set: scripts/dcs_ts_pr058_symmetry.instrument_gate RAISES on a concept-query row scored against the bank codeword, so that condition is VOID and is NOT allowed to present itself as CANNOT ANSWER.",
+    "_a_new_void_condition": "A PHASE-10 readout whose rows do not record `semantic_contrast_word`, or whose concept-query rows were scored against the bank codeword, is VOID. It is not a low-engagement result and it is not a CANNOT ANSWER: one live option is not a forced choice, and job 869869 shows that failure passes every liveness, population and provenance check in the analyzer and the verifier alike."
+  },
+  "power": {
+    "_unchanged_from_the_parent": "The MDE formula, the SD-unit MDEs, the declared 0.5-nat minimum meaningful effect, the ICC and the design effect are the parent's.",
+    "design": "paired, domain-level, two-sided, alpha 0.05, target power 0.80",
+    "mde_formula": "d_MDE = 2.80158 / sqrt(n), in units of the BETWEEN-DOMAIN SD of the paired delta",
+    "declared_minimum_meaningful_effect": {
+      "semantic_logodds_shift": 0.5,
+      "unit": "natural-log odds"
+    },
+    "_honesty_statement": "STILL NULL, AND MORE SO. The parent's T3 was already unmeasured. It is now unmeasured against a DIFFERENT outcome variable -- logp_codeword on cells B/E is a probability of `carrot`, not of `button` -- so any SD borrowed from the old instrument would be an SD of a different quantity. T3 must be measured with the repaired instrument, on VALIDATION domains only.",
+    "mde_in_semantic_logodds_nats": null
+  },
+  "nulls_required": [
+    {
+      "id": "A-N1",
+      "name": "the A/C byte-identity gate",
+      "expect": "every cell resolved to the bank pair reproduces the run-wide answer set exactly; score_behavior REFUSES otherwise",
+      "blocking": true
+    },
+    {
+      "id": "A-N2",
+      "name": "one option set per cell",
+      "expect": "a cell resolving to two distinct option sets is a REFUSAL, not a mixture",
+      "blocking": true
+    },
+    {
+      "id": "A-N3",
+      "name": "the instrument is recorded per row",
+      "expect": "semantic_concept_word / semantic_contrast_word / semantic_options_source on every scored row, and the pool's content_sha16 on the run",
+      "blocking": true
+    },
+    {
+      "id": "A-N4",
+      "name": "the per-cell/per-dose gate binds something",
+      "expect": "at least one GATED (cell, dose) bucket; a gate whose only buckets are ungated is a REFUSAL, not a pass",
+      "blocking": true
+    },
+    {
+      "id": "A-N5",
+      "name": "a degenerate forced choice is refused",
+      "expect": "a recovered contrast word equal to the concept is a ValueError before any GPU time",
+      "blocking": true
+    },
+    {
+      "id": "A-N6",
+      "name": "every null the parent requires",
+      "expect": "P-N1..P-N11 of configs/dcs_ts_pr058_phase10.json, unchanged and still required",
+      "blocking": true
+    }
+  ],
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PHASE10_SYMMETRY",
+        "members": [
+          "DCS-PR-058 H1: cell E, delta(semantic_logodds), target_surface_row_only vs baseline",
+          "DCS-PR-058 H2: cell C, the same delta -- the reference codeword-row arm",
+          "DCS-PR-058 H3: cell B, the same delta -- the matched specificity control",
+          "DCS-PR-058 H4: cell E, downstream representation shift at `following`, blocks 7-14"
+        ],
+        "correction": "Holm across the four, alpha = 0.05 family-wise -- IDENTICAL to the parent",
+        "_this_amendment_adds_no_member": "The membership is restated verbatim so that the two files cannot disagree about it (C-106). An instrument repair is not a hypothesis."
+      }
+    ],
+    "_no_existing_correction_is_redefined": true
+  },
+  "artifacts": {
+    "readout": "src/boombness/score_behavior.py --semantic-options per_cell_remap --semantic-remap-pool data/boombness_prompts/demo_pools_116dom.json --option-mass-gate-scope per_cell_dose",
+    "score_behavior_sha16_at_freeze": "2aa691c10b412ecf",
+    "launcher": "scripts/dcs_ts_readout_multi.py",
+    "launcher_sha16_at_freeze": "7bd88bd0a52297da",
+    "analyzer": "scripts/dcs_ts_pr058_symmetry.py",
+    "analyzer_sha16_at_freeze": "31b891fce52b862c",
+    "analyzer_exists": true,
+    "_analyzer_sha16_moved_and_that_is_recorded_not_hidden": "The parent's closed item T7/T9 evidence records analyzer sha16 8810217ae44fc81d at commit 9ee2170c. This amendment ADDS two refusals to it -- instrument_gate and kill_condition_channel_by_cell_dose -- and adds nothing else, so the hash moved to 31b891fce52b862c. Both are STRICTER: neither can turn a refusal into a pass, and no existing check, threshold or code path was altered. Re-run after the edit: --self-test 57 checks / 0 failed (was 55/0), --mutate 56/56 refusals (was 52/52). The parent's `_freeze_rule` ('the analyzer is not edited to rescue an outcome') is honoured in substance: no outcome exists yet, and every edit makes the analyzer refuse MORE.",
+    "verifier": "scripts/dcs_ts_pr058_verifier.py",
+    "verifier_sha16_at_freeze": "7edb6d3efd7af12a",
+    "_verifier_sha16_moved_too": "Parent T9 records 395a8ed9b82d1245. Added: check class R9 (THE INSTRUMENT), which re-derives the expected contrast word PER ROW from the pinned bank's `query_surface` and the pinned pool's `natural_word` and imports nothing from the producer, plus the run-level pool-hash and mode pins. Re-run after the edit: --self-test PASS (9 assertions, clean synthetic tree passes, empty root still FAILS R5, zero-bound check still EMPTY), --mutate 18/18 caught by the named check (was 16/16); the two new mutations X17 (cells B/E scored against the bank codeword -- job 869869's defect, replayed) and X18 (the option set is not recorded) each go RED on R9. R9 reports EMPTY, never PASS, when this amendment is absent from disk.",
+    "diagnostic_that_established_this": "reports/DCS_TS_P10_CELLBE_OPTION_MASS.md",
+    "diagnostic_sha16_at_freeze": "5c7ad43b7e451601",
+    "report": "reports/DCS_TS_PR063_AMENDMENT.md",
+    "parent_config_sha16_at_freeze": "574e94b4bf4807cf",
+    "_WHAT_DOES_NOT_EXIST_YET": [
+      "any readout at all on cells B or E with a CORRECTLY SPECIFIED answer set. Checklist A2 -- this is still the phase's kill condition, and the repair does not close it.",
+      "the between-domain SD of the paired delta in nats, now against the repaired outcome. Parent T3.",
+      "the PR-053 TRAIN-only direction file for O2. Parent T5.",
+      "any smoke run under a live hook. Parent T10."
+    ],
+    "_score_behavior_sha16_note": "Moved from f2a8ee74c2eb549c during the same session, for one reason recorded here rather than left as an unexplained hash: the per-row answer set is handed to `_semantic` through a one-slot cell instead of a second positional argument, because tests/test_readout_liveness.py pins the CALL SITE TEXT `_semantic(templated)` with an AST walk to prove the forward-only readout is nested inside the intervention ExitStack. That pin is load-bearing -- 'if it were not, every forward-only intervention ever produced was a baseline' -- and it was NOT weakened to make room for the argument."
+  },
+  "seeds": {
+    "generation": "greedy, deterministic",
+    "control_draws": 20260908,
+    "n_control_draws": 3,
+    "permutation": 20260908,
+    "extraction": 20260908,
+    "_unchanged_from_the_parent": true
+  },
+  "kill_condition": "UNCHANGED IN SUBSTANCE, SHARPENED IN FORM. If the cells-B/E readout pre-run (A2) shows median option_mass below the 0.05 gate in a GATED (cell, dose) bucket WITH THE REPAIRED ANSWER SET, no knockout job is submitted and PHASE 10's readout outcome is CANNOT ANSWER. The repair removes one explanation for a low mass (a dead second option); it does not promise the mass will clear. What it does guarantee is that a low mass now means what the gate says it means.",
+  "pre_extraction_checklist": [
+    {
+      "id": "A1",
+      "item": "establish whether the cells-B/E second option is recoverable from artifacts already on disk, and if so from WHICH field, with per-row coverage",
+      "blocking": true,
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only, no GPU, no regeneration. FIELD: pools['<demo_pool_domain>|benign'].natural_word in data/boombness_prompts/demo_pools_116dom.json (_meta.content_sha16 976aa2b0b617118d, the file DCS-PR-058 already pins). COVERAGE: 66816/66816 cell-B and cell-E rows across all six ts116m banks resolve to a non-empty, non-degenerate contrast word; 0 unresolved, 0 equal to the concept. The word is 'carrot' in 116/116 benign pools. demo_pool_domain == domain on 133632/133632 rows. CORROBORATION: inverting the substitution on cell-E demo blocks reproduces a verbatim benign-pool sentence on 149922/150336 = 99.72% of demo lines. NO BANK, POOL, SPLIT OR PIN WAS REGENERATED OR MOVED.",
+      "closed_on": "2026-09-08"
+    },
+    {
+      "id": "A2",
+      "item": "score cells B and E on semantic_one_word at dose 4, NO intervention, WITH the repaired answer set, and check option_mass against the 0.05 gate PER CELL AND PER DOSE. This is DCS-PR-058 T2 re-opened against the corrected instrument: T2's first attempt (job 869869) measured the answer set, not the model.",
+      "blocking": true,
+      "done": false,
+      "_why_it_is_still_open": "p(carrot) has never been scored by any run on this bank and cannot be computed from the written rows -- results.jsonl carries logp_concept, logp_codeword, option_mass and top1_id, and ` Carrot` is the argmax on 0 of 1160 cell-E dose-4 rows, which bounds nothing about its mass. The gate is a MEASUREMENT and this amendment does not pre-decide it."
+    },
+    {
+      "id": "A3",
+      "item": "re-measure the cell-E baseline ceiling (parent kill condition 3) against the repaired option set before any delta is interpreted",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "A4",
+      "item": "parent T3: measure the between-domain SD of the paired delta on VALIDATION DOMAINS ONLY with the repaired instrument, and recompute MDE and power for the declared 0.5-nat effect",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "A5",
+      "item": "parent T10: smoke run under a live hook -- eager on the loaded config, hook liveness, n_decode_edits == 0, non-zero realised dose, the disabled-hook bridge",
+      "blocking": true,
+      "done": false
+    },
+    {
+      "id": "A6",
+      "item": "prove the repair does not alter cells A/C, and enforce that proof in code rather than in a report",
+      "blocking": true,
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only. Cells A and C reproduce their bank's pre-amendment answer set with an IDENTICAL sha256[:16] in 6/6 ts116m banks; the pre-amendment set was taken as GROUND TRUTH from the metadata.json the two runs on disk actually shipped ({\" bomb\",\" Bomb\"}/{\" button\",\" Button\"}, bbb81e6ccf7c34b3), not re-derived from the same code being tested. src/boombness/signals.py is UNMODIFIED (empty git diff) and the `sem_variants` construction line is unchanged from git HEAD. ENFORCED IN CODE: score_behavior.main() REFUSES when a bank_pair cell does not reproduce the run-wide set and when one cell resolves to two option sets. The four new flags all DEFAULT to the historical behaviour, and scripts/dcs_ts_readout_multi.py --print-cmd-only reproduces job 869869's command line byte for byte against that run's own config.json.",
+      "closed_on": "2026-09-08"
+    },
+    {
+      "id": "A7",
+      "item": "make the option-mass gate a PER CELL AND PER DOSE statistic, decide dose 0 explicitly, and publish the table for the rows already on disk",
+      "blocking": true,
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only. --option-mass-gate-scope per_cell_dose gates each (cell, n_examples) bucket on median_true; --option-mass-gate-min-dose 1 EXCLUDES dose 0 from the gate while still recording it with gated=false and a reason string. Dose 0 is excluded, not scored as None, because the decoded argmax is ` None` on 232/232 rows in every cell of both runs on disk -- the instrument is inapplicable there -- and a None median would propagate as a NaN refusal. option_mass_by_cell is written to summary.json on EVERY run (additive key; no pre-existing key changes value). Table for the rows on disk is in gate_table_on_the_rows_already_on_disk above and in reports/DCS_TS_PR063_AMENDMENT.md. A gate whose only buckets are ungated REFUSES rather than passing vacuously (analyzer check kill_channel_by_cell_dose, mutation M56 RED).",
+      "closed_on": "2026-09-08"
+    },
+    {
+      "id": "A8",
+      "item": "make the analyzer and the independent verifier REFUSE a readout whose concept-query rows were scored against the bank codeword, so that a mis-specified instrument cannot present itself as CANNOT ANSWER",
+      "blocking": true,
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only. ANALYZER: scripts/dcs_ts_pr058_symmetry.instrument_gate raises Refusal on a concept-query row scored against the bank codeword, on a row that does not record its contrast word, and on a zero-row check; kill_condition_channel_by_cell_dose refuses a POOLED key and refuses a gate that binds only ungated doses. --self-test 57 checks / 0 failed; --mutate 56/56 refusals, with M53-M56 covering the four new refusals. VERIFIER: check class R9 re-derives the expected contrast word PER ROW from the pinned bank's query_surface and the pinned pool's natural_word, imports nothing from the analyzer, and re-hashes the pool against this file's pin; --self-test PASS; --mutate 18/18 caught by the named check, with X17 (job 869869's defect replayed) and X18 (the option set unrecorded) both RED on R9. R9 is EMPTY, never PASS, when this amendment is absent.",
+      "closed_on": "2026-09-08"
+    },
+    {
+      "id": "A9",
+      "item": "the POOLED tail gate's failure test reads `med` (the upper-middle element) while its own `reportable` field and its own comment read `median_true`; med >= median_true by construction, so the pooled gate is biased toward passing. Reconcile them in a change of its own.",
+      "blocking": false,
+      "done": false,
+      "_evidence_and_why_it_is_not_fixed_here": "OBSERVED 2026-09-08 and swept: 244 runs on disk carry an option_mass block, 241 buckets have both fields, 230 of them differ, and the 0.05 verdict differs on 0 of 241 -- so no published verdict is at stake today. It is left EXACTLY as it was because changing a published gate's definition on a shared file while PHASE 9 and PHASE 11 are in flight is not a repair an instrument amendment gets to make. The PER-CELL gate this amendment adds reads median_true, which is the stricter of the two, so the new code path does not inherit the bias."
+    },
+    {
+      "id": "A10",
+      "item": "parent T11: confirm PHASE 9 (PR-057) and PHASE 11 (PR-059) are not competing for the same fair-share allocation; at most 6 parallel jobs and no two model-loading jobs on one node",
+      "blocking": false,
+      "done": false
+    }
+  ],
+  "_checklist_name_note": "Stored under `pre_extraction_checklist` because that is the ONLY key scripts/dcs_ts_prereg.py enforces. `blocking` and `done` are BOOLEANS (C-086).",
+  "things_that_must_not_be_said": [
+    "'the repaired option set fixes the option-mass gate' -- A2 is OPEN. The repair makes the gate MEAN something on cells B/E; whether the mass clears 0.05 is an unmeasured quantity and p(carrot) has never been scored.",
+    "'cells B/E were disengaged' -- job 869869's rows show the opposite: 69.0% of cell-B dose-4 argmaxes are ` Threat`/` Explos`/` Device`, the referent.",
+    "'the benign remapping installs' as a SCORED result -- the food-family top-1 tally (0.8% -> 24.6%) is a hand-assignment over decoded tokens, offered as a description and not as a metric, exactly as the diagnostic labelled it.",
+    "'carrot is what the model would answer' -- ` Carrot` is the argmax on 0 of 1160 cell-E dose-4 rows. It is the word the DEMONSTRATIONS remap toward, which is what the forced choice is about; it is not a prediction of the argmax.",
+    "'mapping_use now exists on this bank' -- mapping_use_options is None on all 22272 rows of every ts116m bank and O3 stays UNCONSTRUCTIBLE.",
+    "'the A/C result is repaired' -- cells A/C are byte-identical before and after; nothing about them changed.",
+    "'the bank was fixed' -- no bank, pool, split or pin was regenerated or moved."
+  ],
+  "_what_this_amendment_still_cannot_say": [
+    "It cannot say the cells-B/E channel is engaged. That is A2, and it needs GPU.",
+    "It cannot escape the cell-B/E query naming the concept. The parent's ceiling risk is unchanged; the amendment changes the OTHER option, not the queried one.",
+    "It cannot make dose 0 usable. Dose 0 has no answer in any two-word option set on this bank, in any cell.",
+    "It says nothing about knife or gun as INSTALLED concepts (0/113 and 1/113 domains on the concept-free channel).",
+    "It is a repair to an instrument, not evidence about a model."
+  ],
+  "depends_on": [
+    {
+      "what": "configs/dcs_ts_pr058_phase10.json",
+      "why": "the parent preregistration; every hypothesis, control, null, seed and threshold is inherited from it unchanged",
+      "status": "FROZEN",
+      "blocking": true
+    },
+    {
+      "what": "reports/DCS_TS_P10_CELLBE_OPTION_MASS.md",
+      "why": "established the defect, the read position's innocence, the top-1 tallies and the dose-0 ` None` finding this amendment's dose decision rests on",
+      "status": "COMPLETE",
+      "blocking": true
+    },
+    {
+      "what": "data/boombness_prompts/demo_pools_116dom.json",
+      "why": "carries `natural_word`, which IS the recovered second option; already pinned by the parent",
+      "status": "COMPLETE, UNCHANGED",
+      "blocking": true
+    }
+  ],
+  "frozen_at": "2026-09-08"
+}

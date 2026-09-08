@@ -47,7 +47,27 @@ def main() -> int:
     ap.add_argument("--arm", default="base")
     ap.add_argument("--intervene", default="")
     ap.add_argument("--fit-dir", default="")
+    # ---- DCS-PR-063 (PHASE 10 AMENDMENT) PASSTHROUGH ----------------------------------------
+    # These four are FORWARDED VERBATIM to score_behavior.py and are otherwise inert. Their
+    # defaults are score_behavior's own defaults, so an invocation that does not name them
+    # produces the identical command line this launcher has always produced -- checked by
+    # `--print-cmd-only`, which prints the commands and runs nothing.
+    ap.add_argument("--semantic-options", choices=("bank_pair", "per_cell_remap"),
+                    default="bank_pair")
+    ap.add_argument("--semantic-remap-pool", default="")
+    ap.add_argument("--option-mass-gate-scope", choices=("pooled", "per_cell_dose"),
+                    default="pooled")
+    ap.add_argument("--option-mass-gate-min-dose", type=int, default=1)
+    ap.add_argument("--print-cmd-only", action="store_true",
+                    help="print the per-bank command lines and EXIT 0 without launching anything. "
+                         "CPU-only, no model load: it is how the forwarding above is checked "
+                         "against the pre-amendment command line without spending an allocation.")
     a = ap.parse_args()
+
+    if a.semantic_options == "per_cell_remap" and not a.semantic_remap_pool.strip():
+        print("ERROR --semantic-options per_cell_remap requires --semantic-remap-pool",
+              file=sys.stderr)
+        return 2
 
     names = [b for b in a.banks.split(",") if b]
     if not names:
@@ -72,6 +92,16 @@ def main() -> int:
                "--attn-impl", a.attn_impl,
                "--arm", a.arm,
                "--tag", f"{a.tag_prefix}_{name}"]
+        # DCS-PR-063: appended ONLY when they differ from score_behavior's own defaults, so a
+        # pre-amendment invocation produces a byte-identical command line.
+        if a.semantic_options != "bank_pair":
+            cmd += ["--semantic-options", a.semantic_options]
+        if a.semantic_remap_pool.strip():
+            cmd += ["--semantic-remap-pool", a.semantic_remap_pool]
+        if a.option_mass_gate_scope != "pooled":
+            cmd += ["--option-mass-gate-scope", a.option_mass_gate_scope]
+        if a.option_mass_gate_min_dose != 1:
+            cmd += ["--option-mass-gate-min-dose", str(a.option_mass_gate_min_dose)]
         if a.intervene:
             cmd += ["--intervene", a.intervene]
             if not a.fit_dir:
@@ -80,6 +110,8 @@ def main() -> int:
             cmd += ["--fit-dir", a.fit_dir]
         print(f"\n=== [{i}/{len(names)}] {name} ===", flush=True)
         print("    " + " ".join(cmd), flush=True)
+        if a.print_cmd_only:
+            continue
         t0 = time.time()
         rc = subprocess.call(cmd, cwd=REPO)
         print(f"=== [{i}/{len(names)}] {name} exit={rc} elapsed={(time.time()-t0)/60:.1f} min ===",
@@ -89,6 +121,10 @@ def main() -> int:
                   file=sys.stderr)
             return rc
 
+    if a.print_cmd_only:
+        print(f"\n[readout-multi] --print-cmd-only: {len(names)} command(s) printed, NOTHING RUN",
+              flush=True)
+        return 0
     print(f"\n[readout-multi] all {len(names)} bank(s) completed", flush=True)
     return 0
 

@@ -598,6 +598,111 @@ def resolve_mapping_use_options(rows):
     return opts
 
 
+# ---------------------------------------------------------------------------------------------
+# DCS-PR-063 (PHASE 10 AMENDMENT). THE PER-CELL SEMANTIC OPTION SET.
+#
+# THE DEFECT THIS REPAIRS. `main()` builds ONE answer set from rows[0] -- {concept, codeword} --
+# and scores every row against it. On cells A/C the query asks about the CODEWORD ("what does the
+# word button actually refer to?") and {bomb, button} is exactly the right forced choice. On cells
+# B/E the query asks about the CONCEPT ("what does the word bomb actually refer to?"), and there
+# the SAME answer set offers (a) the word the question is about, whose repetition is a non-answer,
+# and (b) `button`, which occurs ZERO times in the stimulus (n_codeword_occurrences == 0 on every
+# B/E row). Measured on job 869869: median p_codeword 5e-6 (cell B) / 8e-6 (cell E). One live
+# option is not a forced choice. That is a mis-specified INSTRUMENT, not a disengaged model --
+# the model answers confidently and on topic (reports/DCS_TS_P10_CELLBE_OPTION_MASS.md).
+#
+# WHAT THE SECOND OPTION ACTUALLY IS, AND WHERE IT COMES FROM. The cell-E demonstrations are the
+# BENIGN demonstration pool with its natural word substituted by the concept -- "a large crate of
+# {carrot -> bomb} puree", "a fresh supply of organic {carrot -> bomb} juice". The word the
+# demonstrations remap the concept TOWARD is therefore carried, per domain, by the pinned pool
+# file as `pools["<domain>|benign"]["natural_word"]`. NOTHING NEEDS REGENERATING: the field is
+# already on disk in an artifact the preregistration already pins by content hash.
+#
+# WHY CELL B GETS THE SAME CONTRAST WORD AND NOT ITS OWN. Cell B's demonstrations are the HARM
+# pool, whose `natural_word` IS the concept, so "the word this cell's demonstrations remap toward"
+# is degenerate there. It is also the wrong question to ask of a matched specificity control:
+# PR-058 primary._largest_risk mitigation (2) requires cell B to carry "the identical query text
+# and the identical ceiling" so that H1-minus-H3 differences the ceiling out. Two cells scored on
+# two different axes cannot difference anything. So the rule is keyed on the QUERY SURFACE, not on
+# the demonstration valence: a row whose query names the CONCEPT is scored against
+# {concept, benign natural_word}, in cell B and cell E alike. On cell B the contrast option is
+# then the counterfactual that was never installed, which is what a specificity control is for.
+#
+# GROUP NAMES ARE DELIBERATELY UNCHANGED. The two groups stay "concept" and "codeword" so that
+# `semantic_logodds = logp_concept - logp_codeword`, every emitted field name, and the SIGN of the
+# preregistered H1 ("logP(bomb) rises relative to logP(button)") all keep their declared meaning:
+# on cells B/E the "codeword" slot holds the remap target instead of the bank codeword, and
+# cutting the benign demonstrations is still predicted to raise the concept side. The words
+# actually scored are written to metadata AND to every row, so no reader has to infer them.
+SEMANTIC_REMAP_VALENCE = "benign"
+
+
+def resolve_semantic_options_for_row(row, pools, concept, codeword):
+    """Return (concept_word, contrast_word, source) for ONE bank row. Pure; no model, no I/O.
+
+    `pools` is the `pools` mapping of a demo-pool JSON file (domain|valence -> pool dict).
+    Refuses rather than guessing: an unknown query surface, an absent pool, an absent or empty
+    `natural_word`, or a contrast word equal to the concept are each a ValueError.
+    """
+    qs = row.get("query_surface")
+    if qs == "codeword":
+        # CELLS A/C -- UNCHANGED, BY CONSTRUCTION. This branch returns the bank pair verbatim, so
+        # the option set on those cells is identical to the one the pre-amendment code builds.
+        return concept, codeword, "bank_pair"
+    if qs == "concept":
+        dom = row.get("demo_pool_domain") or row.get("domain")
+        if not dom:
+            raise ValueError(f"row {row.get('prompt_id')!r} carries neither demo_pool_domain nor "
+                             f"domain, so its demonstration pool cannot be identified")
+        key = f"{dom}|{SEMANTIC_REMAP_VALENCE}"
+        pool = pools.get(key)
+        if pool is None:
+            raise ValueError(f"demonstration pool {key!r} is absent from the pinned pool file; "
+                             f"the remap target for row {row.get('prompt_id')!r} is not recoverable")
+        w = str(pool.get("natural_word") or "").strip()
+        if not w:
+            raise ValueError(f"demonstration pool {key!r} carries no natural_word; the remap "
+                             f"target is not recoverable and will NOT be invented")
+        if w.lower() == str(concept).lower():
+            raise ValueError(f"pool {key!r} natural_word {w!r} IS this bank's concept: the forced "
+                             f"choice would be between a word and itself")
+        # The source tag is DOMAIN-FREE on purpose: it names the RULE, not the row, so that one
+        # cell resolves to ONE option set across all 116 domains and the per-cell uniqueness
+        # assertion in main() is a statement about the answer set rather than about the key.
+        return concept, w, f"{SEMANTIC_REMAP_VALENCE}_pool_natural_word"
+    raise ValueError(f"row {row.get('prompt_id')!r} carries query_surface {qs!r}, which is neither "
+                     f"'codeword' nor 'concept'; the option set is not derivable from it")
+
+
+def option_mass_block(vals, min_option_mass):
+    """The option-mass summary for ONE bucket, and a failure string or None.
+
+    Extracted VERBATIM from the tail gate so that the pooled bucket and the per-cell/per-dose
+    buckets are computed by ONE piece of arithmetic. A second copy of a gate is a second gate.
+    """
+    n_nan = sum(1 for m in vals if m is None or (isinstance(m, float) and math.isnan(m)))
+    v = sorted(m for m in vals if m is not None and not (isinstance(m, float) and math.isnan(m)))
+    if n_nan or not v:
+        return ({"n": len(vals), "n_nan": n_nan, "n_numeric": len(v),
+                 "median": None, "median_true": None, "reportable": False,
+                 "median_note": (f"{n_nan}/{len(vals)} option_mass values are NaN/None: the "
+                                 "readout did not produce a number on those rows. NOT reportable "
+                                 "at any threshold.")},
+                f"{n_nan}/{len(vals)} option_mass values are NaN -- corrupted readout, not a low mass")
+    med = v[len(v) // 2]
+    med_true = statistics.median(v)
+    return ({"n": len(v), "median": med, "median_true": med_true,
+             "p10": v[int(0.10 * len(v))],
+             "p90": v[int(0.90 * len(v))], "max": v[-1],
+             "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v),
+             "reportable": med_true >= min_option_mass,
+             "median_note": ("`median` is the upper-middle element and is kept for continuity "
+                             "with historical runs; `median_true` is the actual median and is "
+                             "what `reportable` is computed from.")},
+            None if med_true >= min_option_mass
+            else f"median option mass {med_true:.4g} < {min_option_mass}")
+
+
 def readout_liveness_contract(scope, query_kinds=()):
     """`scope`'s liveness contract AS IT APPLIES WHERE THERE IS NO DECODE STEP -- or a refusal.
 
@@ -1968,6 +2073,51 @@ def main() -> int:
     ap.add_argument("--allow-tail-readout", action="store_true",
                     help="override --min-option-mass deliberately (the run is then NOT reportable "
                          "as a comprehension or semantic result, and says so in summary.json)")
+    # ---- DCS-PR-063 (PHASE 10 AMENDMENT) -----------------------------------------------------
+    ap.add_argument("--semantic-options", choices=("bank_pair", "per_cell_remap"),
+                    default="bank_pair",
+                    help="how the semantic answer set is built. `bank_pair` (DEFAULT, and the only "
+                         "behaviour that existed before DCS-PR-063) builds ONE set {concept, "
+                         "codeword} from rows[0] and scores every row against it. "
+                         "`per_cell_remap` builds it PER ROW from that row's `query_surface`: a "
+                         "row that asks about the CODEWORD keeps {concept, codeword} byte for "
+                         "byte, and a row that asks about the CONCEPT (cells B/E) is scored "
+                         "against {concept, the benign demonstration pool's natural_word} -- the "
+                         "word its demonstrations remap the concept TOWARD. Requires "
+                         "--semantic-remap-pool. WHY: on cells B/E `codeword` occurs ZERO times in "
+                         "the stimulus (n_codeword_occurrences == 0) and carries 5e-6 of the "
+                         "answer mass, so the 'forced choice' has one live option "
+                         "(reports/DCS_TS_P10_CELLBE_OPTION_MASS.md).")
+    ap.add_argument("--semantic-remap-pool", default="",
+                    help="path to the demonstration-pool JSON that carries `natural_word` per "
+                         "domain|valence. REQUIRED by --semantic-options per_cell_remap and "
+                         "IGNORED otherwise. Its `_meta.content_sha16` is read back and recorded "
+                         "on the run so the option set's provenance is pinned rather than "
+                         "asserted.")
+    ap.add_argument("--option-mass-gate-scope", choices=("pooled", "per_cell_dose"),
+                    default="pooled",
+                    help="which population the tail gate is applied to. `pooled` (DEFAULT, the "
+                         "historical behaviour) takes ONE median per (readout, query_kind) over "
+                         "every row. `per_cell_dose` ALSO requires each (cell, n_examples) "
+                         "sub-bucket to clear --min-option-mass. WHY: the pooled median is a "
+                         "statement about population composition. Measured on the cells-A/C run "
+                         "(job 20260907_133811): pooled median_true 0.0825 PASSES while A/dose0 "
+                         "= 0.0416, A/dose4 = 0.0593 and C/dose0 = 0.0416 sit at or below the "
+                         "0.05 gate -- the pass is carried entirely by C/dose4 = 0.3134.")
+    ap.add_argument("--option-mass-gate-min-dose", type=int, default=1,
+                    help="under --option-mass-gate-scope per_cell_dose, (cell, n_examples) "
+                         "sub-buckets whose n_examples is BELOW this are RECORDED with their full "
+                         "statistics but are NOT gated. Default 1, i.e. DOSE 0 IS EXCLUDED FROM "
+                         "THE GATE. WHY, with evidence: at dose 0 the passage contains no "
+                         "demonstrations, the queried word occurs only inside the question, and "
+                         "the correct one-word answer is 'None' -- decoded argmax is ` None` on "
+                         "232/232 rows in EVERY cell of job 869869 and of the cells-A/C run. "
+                         "Neither option is the answer, so the instrument is INAPPLICABLE there "
+                         "rather than the model disengaged, and feeding the gate a population "
+                         "where it cannot apply measures the question, not the model. Dose 0 is "
+                         "excluded rather than scored as None because a None median would "
+                         "propagate as a NaN refusal into a bucket that is doing exactly what it "
+                         "should. It is still REPORTED, with gated=false and its reason attached.")
     # ATTENTION IMPLEMENTATION IS A RESULT-BEARING CHOICE, SO IT MUST BE EXPRESSIBLE.
     # A knockout arm is FORCED to eager (under sdpa the 4-D mask edit is silently discarded). Before
     # this flag existed, the baseline and text-deletion arms could ONLY run sdpa -- so every
@@ -2744,6 +2894,68 @@ def main() -> int:
     spaced = bool(args.answer_prefix) or True
     sem_variants = {"concept": sg.answer_variants(concept, spaced),
                     "codeword": sg.answer_variants(codeword, spaced)}
+    # ---- DCS-PR-063: THE PER-ROW ANSWER SET -------------------------------------------------
+    # `sem_variants` above is the run-wide set and STAYS the run-wide set. When
+    # --semantic-options per_cell_remap is on, `_row_sem_variants(row)` returns the set for that
+    # row instead; on every row whose query asks about the CODEWORD it returns a dict that is
+    # `==` to `sem_variants` (proved by the identity check below, which REFUSES if it is not).
+    _remap_pools = None
+    _remap_pool_sha16 = None
+    _cell_variants = {}          # cell -> {"concept": [...], "codeword": [...]}
+    _cell_option_words = {}      # cell -> {"concept": w, "codeword": w, "source": s}
+    if args.semantic_options == "per_cell_remap":
+        if not (args.semantic_remap_pool or "").strip():
+            raise SystemExit("[score] REFUSING: --semantic-options per_cell_remap needs "
+                             "--semantic-remap-pool; the remap target is READ from the pinned "
+                             "pool file, never guessed from the cell name.")
+        if (args.semantic_extra_words or "").strip():
+            raise SystemExit(
+                "[score] REFUSING: --semantic-extra-words with --semantic-options per_cell_remap. "
+                "Q9 widens ONE run-wide answer set; per_cell_remap makes the answer set a "
+                "per-cell property. Combining them would give different cells different EXTRA "
+                "sets or the same extras against different core pairs, and option_mass_core_pair "
+                "would then mean a different pair in different rows of one summary bucket. "
+                "Refused rather than defined by accident.")
+        with open(args.semantic_remap_pool) as _fh:
+            _pj = json.load(_fh)
+        _remap_pools = _pj.get("pools") or {}
+        _remap_pool_sha16 = (_pj.get("_meta") or {}).get("content_sha16")
+        if not _remap_pools:
+            raise SystemExit(f"[score] REFUSING: {args.semantic_remap_pool} carries no `pools`.")
+        # Resolve EVERY row, then assert the answer set is constant WITHIN a cell. Two option sets
+        # inside one cell would make the cell's median a mixture of two instruments.
+        _per_cell = collections.defaultdict(set)
+        for _r in rows:
+            _cw, _xw, _src = resolve_semantic_options_for_row(_r, _remap_pools, concept, codeword)
+            _per_cell[_r.get("cell")].add((_cw, _xw, _src))
+        for _cell, _opts in sorted(_per_cell.items(), key=lambda kv: str(kv[0])):
+            if len(_opts) != 1:
+                raise SystemExit(f"[score] REFUSING: cell {_cell!r} resolves to {len(_opts)} "
+                                 f"distinct option sets {sorted(_opts)}; one cell is one forced "
+                                 f"choice or it is not a cell.")
+            _cw, _xw, _src = next(iter(_opts))
+            _cell_variants[_cell] = {"concept": sg.answer_variants(_cw, spaced),
+                                     "codeword": sg.answer_variants(_xw, spaced)}
+            _cell_option_words[_cell] = {"concept": _cw, "codeword": _xw, "source": _src}
+        # THE A/C IDENTITY GATE, ENFORCED IN THE CODE AND NOT ONLY IN THE REPORT. Any cell whose
+        # source is the bank pair MUST reproduce the run-wide set exactly, or this amendment has
+        # changed a population it promised not to touch.
+        for _cell, _w in sorted(_cell_option_words.items(), key=lambda kv: str(kv[0])):
+            if _w["source"] == "bank_pair" and _cell_variants[_cell] != sem_variants:
+                raise SystemExit(f"[score] REFUSING: cell {_cell!r} takes the bank pair but its "
+                                 f"option set {_cell_variants[_cell]} differs from the run-wide "
+                                 f"{sem_variants}.")
+        print(f"[score] DCS-PR-063 per-cell answer sets (pool sha16 {_remap_pool_sha16}): "
+              f"{_cell_option_words}", flush=True)
+
+    def _row_sem_variants(row):
+        if not _cell_variants:
+            return sem_variants
+        v = _cell_variants.get(row.get("cell"))
+        if v is None:
+            raise SystemExit(f"[score] REFUSING: row {row.get('prompt_id')!r} is in cell "
+                             f"{row.get('cell')!r}, for which no answer set was resolved.")
+        return v
     # ---- Q9: OPTIONAL EXTRA CANDIDATE WORDS (default OFF) --------------------------------
     # Appended AFTER the two historical groups, deliberately: `string_option_readout` reads
     # `top1_id` from the FIRST variant's row, and every option's log-probability is an absolute
@@ -2800,6 +3012,13 @@ def main() -> int:
                  mapping_use_token_ids=mu_ids)
         print(f"[score] mapping-use options: {_o} -> variants {mu_variants} ids {mu_ids}")
 
+    run.note(semantic_options_mode=args.semantic_options,
+             semantic_variants_by_cell=(_cell_variants or None),
+             semantic_option_words_by_cell=(_cell_option_words or None),
+             semantic_remap_pool=(args.semantic_remap_pool or None),
+             semantic_remap_pool_sha16=_remap_pool_sha16,
+             option_mass_gate_scope=args.option_mass_gate_scope,
+             option_mass_gate_min_dose=args.option_mass_gate_min_dose)
     run.note(readout_mode=args.readout_ids, semantic_variants=sem_variants,
              comprehension_variants=comp_variants,
              semantic_extra_words=extra_words,
@@ -2807,7 +3026,20 @@ def main() -> int:
              option_mass_gate_input=("option_mass_core_pair" if extra_words else "option_mass"))
     print(f"[score] whole-answer variants: {sem_variants} {comp_variants}")
 
-    def _semantic(templated):
+    #: DCS-PR-063. THE PER-ROW ANSWER SET IS HANDED OVER OUT OF BAND, ON PURPOSE, AND HERE IS WHY.
+    #: tests/test_readout_liveness.py pins the CALL SITE TEXT `_semantic(templated)` with an AST
+    #: walk, to prove the forward-only readout is nested inside the intervention ExitStack -- "if
+    #: it were not, every forward-only intervention ever produced was a baseline". That pin is
+    #: load-bearing and is not weakened to make room for a second positional argument, so the row's
+    #: answer set travels through this one-slot cell and the call site is left exactly as it was.
+    #: It is set IMMEDIATELY before the call and is None on every pre-amendment path.
+    _active_sem_variants = [None]
+
+    def _semantic(templated, variants=None):
+        # DCS-PR-063: `variants` defaults to the active cell, and the active cell defaults to the
+        # run-wide set, so every caller that sets neither -- i.e. every pre-amendment code path --
+        # is unchanged.
+        variants = variants or _active_sem_variants[0] or sem_variants
         if args.readout_ids == "whole_answer":
         # BATCH-1 UNDER INTERVENTION (2026-08-25, correction C-8). `string_option_readout` runs
         # ONE BATCHED forward over up to `max_batch` (16) option variants, while every knockout hook
@@ -2817,9 +3049,15 @@ def main() -> int:
         # mode the repo deliberately adopted on 2026-08-18 instead of silently falling back to the
         # weaker `primary` readout to dodge the constraint. It costs <=16x more forwards on the probe
         # population, which is 96 rows.
-            return sg.string_option_readout(lm, templated + args.answer_prefix, sem_variants,
+            return sg.string_option_readout(lm, templated + args.answer_prefix, variants,
                                              max_batch=(args.readout_max_batch
                                                         or (1 if _wants_knockout else 16)))
+        if _cell_variants:
+            raise SystemExit("[score] REFUSING: --semantic-options per_cell_remap requires "
+                             "--readout-ids whole_answer. The single-next-token readout scores a "
+                             "token id pair built once from the bank pair, and there is no "
+                             "per-cell id pair; scoring cells B/E against it would be the very "
+                             "defect this flag repairs, wearing a different flag.")
         return next_token_readout(lm, templated, {"concept": c_ids, "codeword": w_ids},
                                   answer_prefix=args.answer_prefix)
 
@@ -2846,6 +3084,8 @@ def main() -> int:
           f"comprehension={comp_ids}")
 
     option_mass = collections.defaultdict(list)
+    #: DCS-PR-063: (bucket, cell, n_examples) -> [option_mass...]. Filled on the semantic branch.
+    option_mass_cells = collections.defaultdict(list)
     gens_path = run.p("gens.jsonl")
     gens_fh = open(gens_path, "a")
     # ---- PR-057 HOOK-LIVENESS SINK (C-13). Off unless --pr057-liveness-out is given. --------
@@ -3164,6 +3404,7 @@ def main() -> int:
                     # fix the tail problem and was then NEVER SCORED BY ANY RUN -- it was not in
                     # this dispatch, and the dispatch had no `else`, so asking for it produced
                     # counts={}, n_failed=0 and a DONE.json indistinguishable from a real run.
+                    _active_sem_variants[0] = _row_sem_variants(row)
                     rec = _semantic(templated)
                     # log-odds is the primary; the probability difference is kept only as a
                     # diagnostic, and is meaningless when both terms are in the tail.
@@ -3183,13 +3424,32 @@ def main() -> int:
                             rec[f"p_{_w}"] = rec[f"p_{_grp}"]
                             rec[f"n_variants_{_w}"] = rec.get(f"n_variants_{_grp}")
                         rec["semantic_answer_set"] = sorted(sem_variants)
+                    if _cell_option_words:
+                        # DCS-PR-063. WRITTEN ONLY WHEN THE FLAG IS ON, so a pre-amendment
+                        # results.jsonl is unchanged key-for-key. The two words actually scored go
+                        # on the ROW: `logp_codeword` no longer implies the bank codeword on cells
+                        # whose query names the concept, and a reader must not have to infer that
+                        # from a cell name.
+                        _ow = _cell_option_words[row.get("cell")]
+                        rec["semantic_concept_word"] = _ow["concept"]
+                        rec["semantic_contrast_word"] = _ow["codeword"]
+                        rec["semantic_options_source"] = _ow["source"]
+                        rec["semantic_answer_set"] = sorted(_row_sem_variants(row))
                     # LEDGER THE HOOK (C-6). The readout above ran INSIDE the ExitStack, i.e.
                     # under the intervention; recording nothing left the mask unobservable.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
                     run.log_row({**base, **_kf, "readout": "semantic", **rec})
-                    option_mass[f"semantic/{row['query_kind']}"].append(
-                        rec["option_mass_core_pair"] if extra_words else rec["option_mass"])
+                    _om_val = (rec["option_mass_core_pair"] if extra_words
+                               else rec["option_mass"])
+                    option_mass[f"semantic/{row['query_kind']}"].append(_om_val)
+                    # DCS-PR-063. THE SAME NUMBER, ALSO BUCKETED BY (cell, dose). Additive: the
+                    # pooled bucket above is untouched, so every historical summary key keeps its
+                    # historical value. A pooled median is a statement about population
+                    # composition, and this project has already published one whose pass was
+                    # carried entirely by one of its four sub-populations.
+                    option_mass_cells[(f"semantic/{row['query_kind']}", row.get("cell"),
+                                       int(row.get("n_examples", -1)))].append(_om_val)
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "mapping_use_forced_choice":
@@ -3551,12 +3811,68 @@ def main() -> int:
                                               "continuity with historical runs; `median_true` is the "
                                               "actual median and is what `reportable` is computed "
                                               "from.")}
+        # DCS-PR-063 AGREEMENT ASSERTION, NOT A REFACTOR. tests/test_option_mass_gate.py pins the
+        # EXACT SOURCE TEXT of the six lines above, so the pooled loop is left byte-for-byte as it
+        # was rather than folded into `option_mass_block`. The two are then held together by an
+        # equality check instead of by sharing code: a second copy of a gate is a second gate
+        # unless something compares them, and this is the something.
+        _chk, _ = option_mass_block(vals, args.min_option_mass)
+        if _chk != mass_summary[kind]:
+            raise SystemExit(
+                f"[score] REFUSING: the pooled option-mass block and option_mass_block() disagree "
+                f"on {kind}: {mass_summary[kind]} vs {_chk}. The per-cell gate and the pooled gate "
+                f"would then be two different gates.")
+        # DCS-PR-063 OBSERVATION, RECORDED AND NOT SILENTLY FIXED: `reportable` is computed from
+        # `median_true` (correct, and what the comment above declares) while the POOLED tail_fail
+        # below still tests `med`, the upper-middle element, which is >= median_true by
+        # construction and therefore biased toward passing. Swept over every summary.json on disk:
+        # 0 verdicts differ between the two. It is left EXACTLY as it was here, because changing a
+        # published gate's definition on a shared file while two phases are in flight is not a
+        # repair a side task gets to make; it is carried as an item on
+        # configs/dcs_ts_pr063_phase10_amendment.json. The PER-CELL gate added below reads
+        # `median_true`, which is the stricter of the two.
         print(f"[score] option mass {kind}: median={med:.4g} "
               f"p90={mass_summary[kind]['p90']:.4g} max={v[-1]:.4g} "
               f"frac>1%={mass_summary[kind]['frac_above_1pct']:.3f} "
               f"{'OK' if med >= args.min_option_mass else 'BELOW GATE'}")
         if med < args.min_option_mass:
             tail_fail.append(f"{kind}: median option mass {med:.4g} < {args.min_option_mass}")
+
+    # ---- DCS-PR-063: THE PER-CELL / PER-DOSE GATE -----------------------------------------
+    # ALWAYS COMPUTED AND ALWAYS RECORDED (an additive summary key, exactly as
+    # `declared_offset_scope` is). ENFORCED only under --option-mass-gate-scope per_cell_dose, so
+    # no historical run's verdict moves.
+    cell_mass_summary = {}
+    for (kind, cell, dose), vals in sorted(option_mass_cells.items(),
+                                           key=lambda kv: (kv[0][0], str(kv[0][1]), kv[0][2])):
+        if not vals:
+            continue
+        key = f"{kind}/cell={cell}/dose={dose}"
+        blk, fail = option_mass_block(vals, args.min_option_mass)
+        gated = (args.option_mass_gate_scope == "per_cell_dose"
+                 and dose >= args.option_mass_gate_min_dose)
+        blk["cell"] = cell
+        blk["n_examples"] = dose
+        blk["gated"] = gated
+        if args.option_mass_gate_scope == "per_cell_dose" and not gated:
+            # DOSE 0 IS NOT A LOW-ENGAGEMENT MEASUREMENT, IT IS AN INAPPLICABLE ONE. With no
+            # demonstrations the queried word occurs only inside the question and the correct
+            # one-word answer is "None" -- observed as the decoded argmax on 232/232 rows in every
+            # cell of both runs on disk. Neither scored option is that answer, in any cell, so the
+            # bucket measures the question rather than the model. Reported in full, not gated.
+            blk["gate_skip_reason"] = (
+                f"n_examples {dose} < --option-mass-gate-min-dose "
+                f"{args.option_mass_gate_min_dose}: with no demonstrations the correct one-word "
+                f"answer is 'None' and neither scored option is it, so the instrument is "
+                f"INAPPLICABLE rather than the model disengaged. Recorded, not gated.")
+        blk["gate_statistic"] = "median_true"
+        cell_mass_summary[key] = blk
+        print(f"[score] option mass {key}: n={blk['n']} "
+              f"median_true={blk['median_true'] if blk['median_true'] is None else round(blk['median_true'], 6)} "
+              f"{'GATED' if gated else 'recorded, not gated'} "
+              f"{'OK' if fail is None else 'BELOW GATE'}")
+        if gated and fail is not None:
+            tail_fail.append(f"{key}: {fail}")
 
     knock_summary = None
     if _wants_knockout:
@@ -3566,6 +3882,14 @@ def main() -> int:
 
     _summary = {"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
                         "option_mass": mass_summary,
+                        # DCS-PR-063. Additive keys; every pre-existing key keeps its value.
+                        "option_mass_by_cell": cell_mass_summary,
+                        "option_mass_gate_scope": args.option_mass_gate_scope,
+                        "option_mass_gate_min_dose": args.option_mass_gate_min_dose,
+                        "semantic_options_mode": args.semantic_options,
+                        "semantic_option_words_by_cell": (_cell_option_words or None),
+                        "semantic_remap_pool": (args.semantic_remap_pool or None),
+                        "semantic_remap_pool_sha16": _remap_pool_sha16,
                         "knockout_liveness": knock_summary,
                         "option_mass_gate": ("PASS" if not tail_fail else
                                              "OVERRIDDEN — NOT REPORTABLE: " + "; ".join(tail_fail)),

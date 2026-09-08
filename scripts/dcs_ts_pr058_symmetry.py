@@ -1136,6 +1136,107 @@ def kill_condition_channel(pr: Prereg, median_option_mass_by_cell: Dict[str, flo
                       % (sorted(below), gate)}
 
 
+def instrument_gate(scored_rows: Sequence[Dict[str, Any]],
+                    bank_index: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """DCS-PR-063. REFUSE a readout whose forced choice had only one live option.
+
+    THE DEFECT THIS CATCHES, and it is not hypothetical: job 869869 scored cells B and E with the
+    answer set {` bomb`, ` button`} built once from rows[0]. On those cells the query names the
+    CONCEPT and the CODEWORD occurs zero times in the stimulus, so the second option carried
+    5e-6 of the answer mass. The run had 2784 rows, zero failures and a clean DONE.json; every
+    liveness, population and provenance gate in this analyzer would have passed it. The tail gate
+    saw it and reported it as a DISENGAGED MODEL, which is the one thing it was not -- the model's
+    argmax was ` Threat` / ` Explos` / ` Device`, i.e. the referent, on 69% of cell-B rows.
+
+    So a low option mass is NOT self-diagnosing, and the CANNOT ANSWER branch it feeds must not be
+    reachable from a mis-specified instrument. This gate is checked BEFORE the channel kill
+    condition, and it raises rather than returning a flag, because a wrong option set is not a
+    result with a caveat.
+    """
+    if not scored_rows:
+        raise Refusal("instrument_gate bound ZERO scored rows; an instrument check over nothing "
+                      "is the vacuous PASS this project has published before (C-074)")
+    missing, dead, unjoined = [], [], []
+    for r in scored_rows:
+        b = bank_index.get(str(r.get("prompt_id")))
+        if b is None:
+            unjoined.append(str(r.get("prompt_id")))
+            continue
+        if str(b.get("query_surface")) != "concept":
+            continue
+        w = r.get("semantic_contrast_word")
+        if w is None:
+            missing.append(str(r.get("prompt_id")))
+        elif str(w).lower() == str(b.get("codeword", "")).lower():
+            dead.append(str(r.get("prompt_id")))
+    if unjoined:
+        raise Refusal("%d scored row(s) do not join to the bank, so their option set cannot be "
+                      "checked: %s" % (len(unjoined), unjoined[:4]))
+    if missing:
+        raise Refusal(
+            "%d row(s) whose query names the CONCEPT do not record `semantic_contrast_word`, so "
+            "this run cannot show which two words its forced choice was between. Score with "
+            "--semantic-options per_cell_remap (DCS-PR-063)." % len(missing))
+    if dead:
+        raise Refusal(
+            "%d row(s) whose query names the CONCEPT were scored against the BANK CODEWORD, which "
+            "occurs zero times in their own stimulus. One live option is not a forced choice, and "
+            "the resulting option_mass measures the answer set rather than the model. This is job "
+            "869869's defect (reports/DCS_TS_P10_CELLBE_OPTION_MASS.md); it is a VOID readout, "
+            "not a CANNOT ANSWER." % len(dead))
+    return {"ok": True, "n_rows": len(scored_rows),
+            "n_concept_query_rows": sum(1 for r in scored_rows
+                                        if str((bank_index.get(str(r.get("prompt_id"))) or {})
+                                               .get("query_surface")) == "concept")}
+
+
+def kill_condition_channel_by_cell_dose(pr: Prereg,
+                                        median_by_cell_dose: Dict[Any, float],
+                                        gated_doses: Sequence[int]) -> Dict[str, Any]:
+    """DCS-PR-063. The channel kill condition, PER CELL AND PER DOSE rather than pooled.
+
+    WHY THE POOLED FORM IS NOT ENOUGH, measured rather than argued. The cells-A/C readout's
+    headline median option mass is a pooled statistic over two cells and two doses; broken out it
+    is A/dose0 0.0416, A/dose4 0.0593, C/dose0 0.0416, C/dose4 0.3134, and the pooled pass is
+    carried entirely by the last of the four. A pooled median is a statement about population
+    composition.
+
+    `gated_doses` is passed IN, from the amendment, so that no dose threshold is a literal here.
+    A dose not in it is REPORTED and NOT gated -- at dose 0 the passage carries no demonstrations
+    and the correct one-word answer is "None" (observed as the argmax on 232/232 rows in every
+    cell of both runs on disk), so neither option is the answer and the instrument is inapplicable
+    rather than the model disengaged.
+    """
+    if not median_by_cell_dose:
+        raise Refusal("no option_mass was measured on any (cell, dose); the channel's engagement "
+                      "is unmeasured and cannot be assumed (checklist T2)")
+    keys = list(median_by_cell_dose)
+    if not all(isinstance(k, (tuple, list)) and len(k) == 2 for k in keys):
+        raise Refusal("kill_condition_channel_by_cell_dose requires (cell, n_examples) keys; got "
+                      "%s. A pooled median is not a statement about any cell." % keys[:3])
+    gate = option_mass_gate_value(pr)
+    gated = {k: float(v) for k, v in median_by_cell_dose.items() if int(k[1]) in set(gated_doses)}
+    if not gated:
+        raise Refusal("every measured (cell, dose) bucket is outside gated_doses=%s, so the gate "
+                      "binds nothing and would pass vacuously" % list(gated_doses))
+    below = {k: v for k, v in gated.items() if v < gate}
+    return {"gate": gate, "gated_doses": sorted(set(int(d) for d in gated_doses)),
+            "measured": {"%s/n%s" % (k[0], k[1]): float(v)
+                         for k, v in median_by_cell_dose.items()},
+            "gated": {"%s/n%s" % (k[0], k[1]): v for k, v in gated.items()},
+            "not_gated": {"%s/n%s" % (k[0], k[1]): float(v)
+                          for k, v in median_by_cell_dose.items()
+                          if int(k[1]) not in set(gated_doses)},
+            "killed": bool(below),
+            "cells_below_gate": sorted("%s/n%s" % (k[0], k[1]) for k in below),
+            "reason": "" if not below else
+                      "median option_mass on %s is below the %.4g gate: the semantic_one_word "
+                      "channel is DISENGAGED there, so there is no y to move. NO knockout job is "
+                      "submitted. CANNOT ANSWER -- and falling back on the display channel is "
+                      "FORBIDDEN in this phase."
+                      % (sorted("%s/n%s" % (k[0], k[1]) for k in below), gate)}
+
+
 def kill_condition_whole_query(whole_query_moved: Optional[bool]) -> Dict[str, Any]:
     """Kill 2 (K6): if the WHOLE-QUERY knockout does not move the cell-E readout, the surgical
     single-row scope is NOT submitted -- a one-row cut cannot be expected to do what cutting the
@@ -1673,6 +1774,50 @@ def selftest(pr: Prereg) -> int:
     k1 = kill_condition_channel(pr, {"E": g / 2.0, "B": g * 2.0})
     ck.add("kill_channel", "a disengaged primary channel kills the phase and is CANNOT ANSWER",
            k1["killed"] and k1["cells_below_gate"] == ["E"], 2)
+    # ---- DCS-PR-063: the instrument, and the per-cell/per-dose form of the same kill ---------
+    _bidx = {"p1": {"query_surface": "concept", "codeword": "button"},
+             "p2": {"query_surface": "codeword", "codeword": "button"}}
+    _ok_rows = [{"prompt_id": "p1", "semantic_contrast_word": "carrot"},
+                {"prompt_id": "p2", "semantic_contrast_word": "button"}]
+    _ig = instrument_gate(_ok_rows, _bidx)
+    _dead = False
+    try:
+        instrument_gate([{"prompt_id": "p1", "semantic_contrast_word": "button"}], _bidx)
+    except Refusal:
+        _dead = True
+    _absent = False
+    try:
+        instrument_gate([{"prompt_id": "p1"}], _bidx)
+    except Refusal:
+        _absent = True
+    _empty = False
+    try:
+        instrument_gate([], _bidx)
+    except Refusal:
+        _empty = True
+    ck.add("instrument_gate", "a concept-query row scored against the bank codeword is VOID, an "
+           "unrecorded option set is VOID, and a zero-row instrument check refuses",
+           _ig["ok"] and _dead and _absent and _empty, 4)
+    _gd = [int(pr.require("population", "n_examples_primary"))]
+    _null_dose = int(pr.require("population", "n_examples_null"))
+    _kd = kill_condition_channel_by_cell_dose(
+        pr, {("E", _gd[0]): g / 2.0, ("B", _gd[0]): g * 2.0, ("E", _null_dose): g / 100.0}, _gd)
+    _pooled_refused = False
+    try:
+        kill_condition_channel_by_cell_dose(pr, {"E": g / 2.0}, _gd)
+    except Refusal:
+        _pooled_refused = True
+    _vacuous_refused = False
+    try:
+        kill_condition_channel_by_cell_dose(pr, {("E", _null_dose): g * 2.0}, _gd)
+    except Refusal:
+        _vacuous_refused = True
+    ck.add("kill_channel_by_cell_dose",
+           "the channel kill is evaluated PER CELL AND PER DOSE; a pooled key is refused, a "
+           "gate that binds only ungated doses is refused, and the ungated dose is REPORTED",
+           _kd["killed"] and _kd["cells_below_gate"] == ["E/n%d" % _gd[0]]
+           and ("E/n%d" % _null_dose) in _kd["not_gated"]
+           and _pooled_refused and _vacuous_refused, 4)
     ck.add("kill_whole_query", "the K6 kill condition is UNEVALUATED, not passed, when K6 has not "
            "run", not kill_condition_whole_query(None)["killed"]
            and not kill_condition_whole_query(None)["evaluated"]
@@ -1884,6 +2029,20 @@ def mutate(pr: Prereg) -> int:
     raisers["M44 T3 with a zero measured SD"] = lambda: t3_power(
         pr, {("d%d" % i): 0.1 for i in range(10)})
     raisers["M45 option_mass never measured"] = lambda: kill_condition_channel(pr, {})
+    raisers["M53 cells B/E scored against the bank codeword"] = lambda: instrument_gate(
+        [{"prompt_id": "p1", "semantic_contrast_word": "button"}],
+        {"p1": {"query_surface": "concept", "codeword": "button"}})
+    raisers["M54 the option set is not recorded on the row"] = lambda: instrument_gate(
+        [{"prompt_id": "p1"}], {"p1": {"query_surface": "concept", "codeword": "button"}})
+    raisers["M55 a POOLED option_mass fed to the per-cell kill"] = lambda: (
+        kill_condition_channel_by_cell_dose(
+            pr, {"E": option_mass_gate_value(pr)},
+            [int(pr.require("population", "n_examples_primary"))]))
+    raisers["M56 a per-cell kill that binds only ungated doses"] = lambda: (
+        kill_condition_channel_by_cell_dose(
+            pr, {("E", int(pr.require("population", "n_examples_null"))):
+                 option_mass_gate_value(pr)},
+            [int(pr.require("population", "n_examples_primary"))]))
     raisers["M46 ceiling rule with no scored range"] = lambda: ceiling_gate(
         BaselineDistribution(cell="E", n_rows=2, n_domains=2, values=[0.1, 0.2]),
         ceiling_quantile(pr))

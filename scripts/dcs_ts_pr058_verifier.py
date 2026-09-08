@@ -81,6 +81,10 @@ import tempfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PREREG_DEFAULT = "configs/dcs_ts_pr058_phase10.json"
+#: DCS-PR-063. The AMENDMENT that repairs the cells-B/E answer set. Named here, with the same
+#: reasoning as F_ROWS above: a producer must not be able to make a check evaporate by not
+#: mentioning the file that declares it.
+AMENDMENT_DEFAULT = "configs/dcs_ts_pr063_phase10_amendment.json"
 PR_ID = "DCS-PR-058"
 
 #: The producer artifacts this verifier reads. Named here so that a producer cannot rename one and
@@ -178,6 +182,47 @@ def declared_population(pr):
         "control_ids": [c["id"] for c in pr["controls"]["arms"]],
         "independence_unit": pr["primary"]["independence_unit"],
     }
+
+
+def declared_instrument(amend_path=None, repo=None):
+    """R9. THE ANSWER SET THE ROWS MUST HAVE BEEN SCORED AGAINST -- re-derived HERE.
+
+    WHY THIS CHECK EXISTS. Every other class in this file asks whether the right rows were
+    compared. R9 asks whether the right QUESTION was asked of them, and it is the class job
+    869869 walked straight through: 2784 rows, 0 failures, a healthy DONE.json, and a forced
+    choice whose second option (` button`) occurs ZERO times in the stimulus and carries 5e-6 of
+    the answer mass. Every one of R1-R8 would have passed that run. `option_mass` caught it and
+    then MIS-NAMED it, because a mass gate cannot tell a disengaged model from a wrong option set.
+
+    Returns None when the amendment is absent, which makes R9 bind zero rows and report EMPTY --
+    never PASS (C-074).
+    """
+    repo = repo or REPO
+    fp = amend_path or os.path.join(repo, AMENDMENT_DEFAULT)
+    if not os.path.isabs(fp):
+        fp = os.path.join(repo, fp)
+    if not os.path.exists(fp):
+        return None
+    with open(fp) as fh:
+        am = json.load(fh)
+    inst = am.get("instrument") or {}
+    pool_rel = ((inst.get("remap_pool") or {}).get("path") or "")
+    pool_fp = pool_rel if os.path.isabs(pool_rel) else os.path.join(repo, pool_rel)
+    if not pool_rel or not os.path.exists(pool_fp):
+        raise VerifierError("amendment %s names remap pool %r, which is not on disk; the option "
+                            "set cannot be re-derived and R9 will not be faked"
+                            % (fp, pool_rel))
+    with open(pool_fp) as fh:
+        pj = json.load(fh)
+    return {"amendment": fp,
+            "mode": inst.get("semantic_options_mode"),
+            "valence": inst.get("remap_valence"),
+            "pool_path": pool_fp,
+            "pool_pinned_sha16": (inst.get("remap_pool") or {}).get("content_sha16"),
+            "pool_actual_sha16": (pj.get("_meta") or {}).get("content_sha16"),
+            "pools": pj.get("pools") or {},
+            "gate_scope": inst.get("option_mass_gate_scope"),
+            "gate_min_dose": inst.get("option_mass_gate_min_dose")}
 
 
 def declared_arm_tags(pop, banks=None):
@@ -314,10 +359,27 @@ class Report:
 
 
 def verify(pr, runs_root, bank_root=None, split_root=None, producer_summary=None, rep=None,
-           banks=None):
-    """Re-derive everything from the arm directories and refuse on any of R1-R7."""
+           banks=None, instrument=None):
+    """Re-derive everything from the arm directories and refuse on any of R1-R9."""
     rep = rep or Report()
     pop = declared_population(pr)
+    # ---- R9 THE INSTRUMENT PIN, once per run rather than once per arm.
+    if instrument:
+        rep.check("R9", (instrument["pool_pinned_sha16"]
+                         and instrument["pool_actual_sha16"] == instrument["pool_pinned_sha16"]),
+                  "remap pool %s carries content_sha16 %r but the amendment pins %r -- the words "
+                  "the forced choice was built from are not the words that were pinned"
+                  % (instrument["pool_path"], instrument["pool_actual_sha16"],
+                     instrument["pool_pinned_sha16"]), bound=1)
+        rep.check("R9", instrument["mode"] == "per_cell_remap",
+                  "the amendment declares semantic_options_mode=%r; PHASE 10 rows must be scored "
+                  "per cell, because ONE answer set built from rows[0] gives cells B/E a second "
+                  "option that occurs zero times in their own stimulus"
+                  % instrument["mode"], bound=1)
+        rep.check("R9", instrument["gate_scope"] == "per_cell_dose",
+                  "the amendment declares option_mass_gate_scope=%r; a pooled median is a "
+                  "statement about population composition, not about any cell"
+                  % instrument["gate_scope"], bound=1)
     expected = declared_arm_tags(pop, banks)
     assign, _split_path = load_split(pop, split_root)
 
@@ -482,6 +544,44 @@ def verify(pr, runs_root, bank_root=None, split_root=None, producer_summary=None
                   "%s: %d domain(s) absent from the frozen split manifest: %s"
                   % (tag, len(unassigned), unassigned[:4]), bound=len(usable))
 
+        # ---- R9  THE OPTION SET, RE-DERIVED PER ROW FROM THE PINNED BANK AND THE PINNED POOL.
+        #          Nothing here is imported from the producer: the expected contrast word comes
+        #          from the bank row's own `query_surface` and, for a concept-query row, from the
+        #          benign pool's `natural_word` for that row's own demonstration domain.
+        if instrument:
+            miss, wrong, dead = [], [], []
+            for r in usable:
+                b_ = bank_idx.get(r.get("prompt_id"))
+                if b_ is None:
+                    continue
+                qs = b_.get("query_surface")
+                got = r.get("semantic_contrast_word")
+                if qs == "concept":
+                    dom = b_.get("demo_pool_domain") or b_.get("domain")
+                    want = ((instrument["pools"].get("%s|%s" % (dom, instrument["valence"]))
+                             or {}).get("natural_word"))
+                    if got is None:
+                        miss.append(r.get("prompt_id"))
+                    elif want is None or got != want:
+                        wrong.append((r.get("prompt_id"), got, want))
+                    if got is not None and str(got).lower() == str(b_.get("codeword", "")).lower():
+                        dead.append(r.get("prompt_id"))
+                elif qs == "codeword":
+                    if got is not None and got != b_.get("codeword"):
+                        wrong.append((r.get("prompt_id"), got, b_.get("codeword")))
+            rep.check("R9", not miss,
+                      "%s: %d concept-query row(s) carry no `semantic_contrast_word`, so the run "
+                      "cannot show WHICH two words its forced choice was between"
+                      % (tag, len(miss)), bound=len(usable))
+            rep.check("R9", not wrong,
+                      "%s: %d row(s) scored against the wrong contrast word, e.g. %s"
+                      % (tag, len(wrong), wrong[:2]), bound=len(usable))
+            rep.check("R9", not dead,
+                      "%s: %d concept-query row(s) scored against the BANK CODEWORD, which occurs "
+                      "zero times in their stimulus (n_codeword_occurrences == 0). One live "
+                      "option is not a forced choice -- this is job 869869's defect exactly"
+                      % (tag, len(dead)), bound=len(usable))
+
         row_hash_by_arm[tag] = sha256_rows(
             [{k: v for k, v in r.items() if k in ("prompt_id", "semantic_logodds",
                                                   "logp_concept", "logp_codeword")}
@@ -550,6 +650,24 @@ def _synth_tree(pr, root, n_domains=4, rows_per_domain=2, banks=None, cells=None
         json.dump({"assign": {d: ("train" if i % 3 else "test") for i, d in enumerate(doms)},
                    "field_name": pop["split_field"]}, fh)
 
+    # DCS-PR-063 R9. A synthetic remap pool, so the CLEAN tree exercises the instrument check
+    # rather than skipping it. `natural_word` is deliberately NOT any bank's codeword.
+    synth_pool = {"_meta": {"content_sha16": None},
+                  "pools": {"%s|benign" % d: {"domain": d, "valence": "benign",
+                                              "natural_word": "carrot"} for d in doms}}
+    pool_rel = os.path.join(root, "pool.json")
+    with open(pool_rel, "w") as fh:
+        json.dump(synth_pool, fh)
+    synth_pool["_meta"]["content_sha16"] = sha16_file(pool_rel)
+    with open(pool_rel, "w") as fh:
+        json.dump(synth_pool, fh)
+    instrument = {"amendment": "<synthetic>", "mode": "per_cell_remap", "valence": "benign",
+                  "pool_path": pool_rel,
+                  "pool_pinned_sha16": synth_pool["_meta"]["content_sha16"],
+                  "pool_actual_sha16": synth_pool["_meta"]["content_sha16"],
+                  "pools": synth_pool["pools"], "gate_scope": "per_cell_dose",
+                  "gate_min_dose": 1}
+
     bank_rows, rng = {}, random.Random(20260908)
     for bank in banks:
         rel = "bank_%s.jsonl" % bank
@@ -566,6 +684,10 @@ def _synth_tree(pr, root, n_domains=4, rows_per_domain=2, banks=None, cells=None
                                      "domain": d, "cell": cell, "condition": "synthetic",
                                      "query_kind": pop["query_kind"], "n_examples": dose,
                                      "codeword": bank.split("_")[0], "concept": bank.split("_")[1],
+                                     # DCS-PR-063 R9: the fields the option set is re-derived from.
+                                     "query_surface": ("concept" if cell in ("B", "E")
+                                                       else "codeword"),
+                                     "demo_pool_domain": d,
                                      "target_surface": "bomb"})
         with open(os.path.join(root, rel), "w") as fh:
             for r in rows:
@@ -593,6 +715,12 @@ def _synth_tree(pr, root, n_domains=4, rows_per_domain=2, banks=None, cells=None
                     "logp_concept": -1.0 + jitter, "logp_codeword": -2.0,
                     "semantic_logodds": 1.0 + jitter,
                     "option_mass_core_pair": 0.20,
+                    # DCS-PR-063 R9.
+                    "semantic_concept_word": r["concept"],
+                    "semantic_contrast_word": ("carrot" if r["cell"] in ("B", "E")
+                                               else r["codeword"]),
+                    "semantic_options_source": ("benign_pool_natural_word"
+                                                if r["cell"] in ("B", "E") else "bank_pair"),
                 }) + "\n")
         with open(os.path.join(d, F_LIVENESS), "w") as fh:
             for i, r in enumerate(sel):
@@ -619,7 +747,7 @@ def _synth_tree(pr, root, n_domains=4, rows_per_domain=2, banks=None, cells=None
 
     summary = {k: None for k in DECLARED_SUMMARY_KEYS}
     summary["independence_unit"] = declared_population(pr2)["independence_unit"]
-    return pr2, runs, root, summary
+    return pr2, runs, root, summary, instrument
 
 
 # ============================================================================================
@@ -654,15 +782,16 @@ def selftest(pr):
 
     tmp = tempfile.mkdtemp(prefix="pr058_verifier_selftest_")
     try:
-        pr2, runs, root, summary = _synth_tree(pr, os.path.join(tmp, "clean"))
-        rep = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary)
+        pr2, runs, root, summary, inst = _synth_tree(pr, os.path.join(tmp, "clean"))
+        rep = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary,
+                     instrument=inst)
         say("a CLEAN synthetic arm tree passes every check", not rep.failed,
             "failing=%s" % rep.failed)
 
         # An empty run root must FAIL R5, never pass vacuously.
         empty = os.path.join(tmp, "empty")
         os.makedirs(empty, exist_ok=True)
-        rep2 = verify(pr2, empty, bank_root=root, split_root=root)
+        rep2 = verify(pr2, empty, bank_root=root, split_root=root, instrument=inst)
         say("an EMPTY run root fails R5 rather than passing vacuously", "R5" in rep2.failed,
             "failing=%s" % rep2.failed)
 
@@ -809,6 +938,35 @@ def _mutations():
             r["n_cells_edited_realised"] = 0
         _write_live(d, recs)
 
+    def X17(runs, root):
+        # DCS-PR-063. The cells-B/E rows are put back on the PRE-AMENDMENT answer set: the second
+        # option becomes the bank codeword, which occurs zero times in their own stimulus. This is
+        # job 869869's defect, replayed, and R1-R8 all pass on it.
+        for d in sorted(glob.glob(os.path.join(runs, "*"))):
+            if not ("_b_" in os.path.basename(d) or "_e_" in os.path.basename(d)):
+                continue
+            rows = _rows_of(d)
+            if not rows:
+                continue
+            for r in rows:
+                r["semantic_contrast_word"] = "button"
+                r["semantic_options_source"] = "bank_pair"
+            _write_rows(d, rows)
+            return
+
+    def X18(runs, root):
+        # The rows do not say what they were scored against at all.
+        for d in sorted(glob.glob(os.path.join(runs, "*"))):
+            if not ("_b_" in os.path.basename(d) or "_e_" in os.path.basename(d)):
+                continue
+            rows = _rows_of(d)
+            if not rows:
+                continue
+            for r in rows:
+                r.pop("semantic_contrast_word", None)
+            _write_rows(d, rows)
+            return
+
     return [
         ("X1  silent denominator: null the readout on all but one row", "R1", X1),
         ("X2  arm identity: relabel every row into cell A", "R2", X2),
@@ -826,6 +984,8 @@ def _mutations():
         ("X14 unequal populations across arms of one cell", "R8", X14),
         ("X15 bank substitution: the pinned file sha16 no longer matches", "R4", X15),
         ("X16 realised != expected cells", "R6", X16),
+        ("X17 cells B/E scored against the BANK CODEWORD (job 869869's defect)", "R9", X17),
+        ("X18 the rows do not record which two words the forced choice was between", "R9", X18),
     ]
 
 
@@ -836,14 +996,16 @@ def mutate(pr):
     try:
         for name, target, fn in muts:
             root = os.path.join(base, re.sub(r"\W+", "_", name)[:40])
-            pr2, runs, root, summary = _synth_tree(pr, root)
-            rep0 = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary)
+            pr2, runs, root, summary, inst = _synth_tree(pr, root)
+            rep0 = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary,
+                          instrument=inst)
             if rep0.failed:
                 print("  SETUP-FAIL %s -- the clean fixture already fails %s"
                       % (name, rep0.failed))
                 continue
             fn(runs, root)
-            rep = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary)
+            rep = verify(pr2, runs, bank_root=root, split_root=root, producer_summary=summary,
+                         instrument=inst)
             caught = target in rep.failed
             n_red += bool(caught)
             print("  %-5s %-70s -> %s (failing: %s)"
@@ -871,6 +1033,9 @@ def main():
                          "defaults to the two confirmatory bomb banks; see declared_arm_tags().")
     ap.add_argument("--producer-summary", default=None,
                     help="the analyzer's own JSON summary, checked for OMISSION (R5)")
+    ap.add_argument("--amendment", default=AMENDMENT_DEFAULT,
+                    help="DCS-PR-063 amendment declaring the per-cell answer set (R9). If it is "
+                         "absent from disk R9 binds nothing and reports EMPTY, never PASS.")
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--mutate", action="store_true")
     a = ap.parse_args()
@@ -894,7 +1059,15 @@ def main():
         print("  expecting %d arm(s) over bank(s) %s (the analyzer's manifest defaults to the two "
               "confirmatory bomb banks; this derivation is independent -- see declared_arm_tags)"
               % (len(tags), sorted({v["bank"] for v in tags.values()})))
-        rep = verify(pr, root, producer_summary=summary, banks=bl)
+        inst = declared_instrument(a.amendment)
+        if inst is None:
+            print("  R9 EMPTY: amendment %r is not on disk, so the option set cannot be "
+                  "re-derived. R9 will NOT report PASS." % a.amendment)
+        else:
+            print("  R9 instrument: mode=%s valence=%s pool=%s sha16=%s gate=%s/min_dose=%s"
+                  % (inst["mode"], inst["valence"], os.path.basename(inst["pool_path"]),
+                     inst["pool_actual_sha16"], inst["gate_scope"], inst["gate_min_dose"]))
+        rep = verify(pr, root, producer_summary=summary, banks=bl, instrument=inst)
         rep.render()
         return 0 if not rep.failed else 1
     except VerifierError as e:

@@ -4973,3 +4973,67 @@ agent stopped rather than reach into it:
 18 hashes verified, 12/12 mandate-§21 fields) and still refusing `--for-extraction` with **7
 refusals** (V3, V8, V10, V11, V12, V13, `analyzer_exists`). Repo tests **676 passed**, run to
 completion.
+
+---
+
+## DCS-R-139 / PR-063 — PHASE 10 repaired with NO regeneration and NO pin moved
+*2026-09-08*
+
+The diagnostic recommended regenerating the bank. **Regeneration was not needed, and it would have
+been expensive in a way the recommendation had not costed**: `bank_file_sha16` is pinned across
+`PR-048`, `PR-057`, `PR-060`, `PR-058` and `PR-059`, so regenerating `ts116m` would have invalidated
+the provenance of a **completed confirmatory result** — PHASE 9, 30 arms, 6,900 rows.
+
+**The correct option set was recoverable from what the bank already holds.** The field is
+`pools["<demo_pool_domain>|benign"]["natural_word"]` in `demo_pools_116dom.json`, whose
+`_meta.content_sha16` **`976aa2b0b617118d` is already `population.pools.shared_pools_sha16` in the
+frozen PR-058** — the evidence was pinned by the preregistration all along. Cell E's demonstrations
+are the benign pool with `carrot` substituted by the concept: *"a large crate of **bomb** puree"* ←
+*"…of **carrot** puree"*. So the honest forced choice on B/E is **{concept, carrot}**.
+
+**Coverage 66,816 / 66,816** cell-B and cell-E rows across all six banks, 0 unresolved, 0 degenerate;
+`natural_word` is `carrot` in 116/116 benign pools; `demo_pool_domain == domain` on 133,632/133,632
+rows. Corroborated independently: **inverting** the substitution on cell-E demo blocks reproduces a
+verbatim benign-pool sentence on **149,922/150,336 = 99.72%** of demo lines.
+
+The rule keys on **`query_surface`, not on cell name or demo valence** — because cell B's *harm*
+pool's `natural_word` **is** the concept, and H1–H3 needs B and E on one axis: `codeword` →
+`{concept, codeword}` (A/C, unchanged); `concept` → `{concept, benign natural_word}` (B/E).
+
+**A/C are provably untouched.** The "before" was taken from the `metadata.json` the two runs on disk
+**actually shipped**, not re-derived from the code under test — and all **6/6 banks reproduce their
+pre-amendment option set with an identical sha16**. `signals.py` is unmodified. `score_behavior`
+now *refuses* if a bank-pair cell fails to reproduce the run-wide set, or if one cell resolves to two
+sets, and `--print-cmd-only` reproduces job 869869's command line **byte for byte**.
+
+**The per-cell/per-dose gate, computed on rows already on disk** (no GPU): B/n4 **0.012608** and
+E/n4 **0.015763**, both BELOW gate — and, confirming `C-128`, **A/n0 and C/n0 (0.041589) "would have
+been BELOW"** had they been gated. Only A/n4 (0.059274) and C/n4 (0.313414) pass. **Dose 0 is
+excluded from the gate with evidence**: argmax is `" None"` on **232/232 rows in every cell of both
+runs**, so neither option is the answer — the instrument is **inapplicable**, not the model
+disengaged. Excluded rather than scored `None` because a `None` median propagates as a NaN refusal.
+
+**Not settled, and stated as such:** `p(carrot)` was never scored and cannot be computed from the
+written rows (`" Carrot"` is argmax on 0/1160 cell-E dose-4 rows, which bounds nothing). **Whether
+the repaired instrument clears 0.05 is item A2, still open** — which is exactly what the pre-run is
+for.
+
+**Observed:** `pr058_symmetry --self-test` 55 → **57/0**, `--mutate` 52 → **56/56**; the verifier
+16 → **18/18**, with new **X17** replaying job 869869's own defect (cells B/E scored against the bank
+codeword) and X18 (option set unrecorded), both RED on a new check R9. Amendment clean (16 hashes,
+12/12 fields), `--for-extraction` **4 refusals** (A2–A5). **The parent PR-058 still verifies clean at
+17 hashes — no pin moved.** `pytest tests` to completion: 1693 passed / 4 failed, the four
+pre-existing in `test_prompt_families_strict.py`.
+
+**Two source-text pins forced design decisions and neither was weakened.**
+`tests/test_option_mass_gate.py` pins the pooled loop's exact code, so the refactor was **reverted**
+and the two copies are held together by a runtime equality check instead (equal on 3000/3000 random
+inputs including NaN/None). `tests/test_readout_liveness.py` AST-pins the literal
+`_semantic(templated)` to prove the readout runs **inside** the intervention ExitStack; the first
+attempt broke it, so the per-row answer set now travels through a one-slot cell and **the call site
+is unchanged**.
+
+**Defect `A9`, recorded not fixed:** the pooled tail gate's *failure* test reads `med` (upper-middle)
+while its `reportable` field, its comment and its test all read `median_true` — biased toward
+passing. Swept across 244 runs / 241 buckets: **230 differ, 0 verdicts differ.** Left as-is; the new
+per-cell gate reads `median_true`.
