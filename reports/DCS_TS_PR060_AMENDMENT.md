@@ -798,3 +798,396 @@ they did, and neither needed to change.
   records carry a null the producer, not the consumer, has to fill.
 * The remaining 27 h2 arms are unaffected, and the 15 S2 arms among them will now clear the gate
   they would all have failed.
+
+---
+
+# APPENDIX E — THE BASKET C5 BRIDGE: I STOPPED AND DID NOT BUILD IT (2026-09-08, sixth session)
+
+## E.0 — Verdict up front
+
+I was asked to make `c5_disabled_bridge_s1` / `_s2` constructible on the **basket** bank, so that
+the `primary.void` bridge clause stops being UNEVALUABLE for `h2a_s1_projout_basket` and the
+analyzer can emit a verdict for job 869523.
+
+**I did not build it, and I changed no code.** The reason is the one the task itself named as the
+stop condition: **the design does not intend a per-bank bridge, and the one-bridge scope is already
+a FROZEN, CLOSED decision.** Building the basket arms would require the frozen amendment to change,
+and both configs are frozen.
+
+No outcome value was read. Nothing under `outputs/` was written. The refusal that motivated this
+session still stands, and §E.5 says exactly what should be done about it instead.
+
+## E.1 — What the frozen files actually say
+
+**The parent, `configs/dcs_ts_pr057_phase9.json`.** `controls.arms` is a flat list of C1–C7 with
+**no bank field and no per-bank language anywhere**. C5 reads, in full:
+
+> `{"id": "C5", "name": "disabled-hook bridge", "rule": "the full intervention code path with the
+> hook DISABLED. MUST reproduce the untouched baseline generations byte-for-byte (greedy decoding)
+> and the untouched hidden states at max|diff| == 0.000e+00", "blocking": true}`
+
+That is a statement about **the code path**, once. Compare the two nulls that sit side by side in
+`nulls_required`:
+
+> `{"id": "I-N1", "name": "disabled-hook bridge", "expect": "byte-identical greedy generations and
+> max|diff|==0.000e+00 hidden states vs the untouched baseline", "blocking": true}`
+> `{"id": "I-N3", "name": "hook liveness, every live arm", "expect": "hook_fired_count > 0,
+> realised == expected cells, non-zero edit magnitude", "blocking": true}`
+
+**Where this design wants a null replicated per arm it says so** — I-N3 says *"every live arm"*.
+I-N1 carries no quantifier at all. The parent also places basket outside the confirmatory family:
+`multiplicity` lists `"lexical transfer button->basket"` under **SECONDARY**, and
+`population.codewords` is `{"development": "button", "external_confirmation": "basket"}`. The six
+`PHASE9_CAUSAL` members are hypothesis × scope, never hypothesis × scope × bank.
+
+**The amendment, `configs/dcs_ts_pr060_phase9_amendment.json`, settles it explicitly.** Checklist
+item **A12** is written as a genuine either/or and is recorded **done, on the second branch**:
+
+> `"item": "either add un-intervened C5 bridge arms on the BASKET bank, or accept the preregistered
+> fallback that O1 is a button-bank statistic and the basket H2a arms are reported O2-only"`
+> `"closed_evidence": "CLOSED 2026-09-08 by taking the PREREGISTERED FALLBACK, which this item
+> explicitly permits. ... Basket bridges were NOT built ..."`
+
+and `design_answers.o1_baseline.deterministic_fallback` is the rule it closed on:
+
+> `"IF the basket bridge arms of A12 are not built, THEN O1 is a BUTTON-BANK statistic and the
+> basket H2a arms are reported O2-only and are NOT eligible for the conjunctive success rule. This
+> rule is fixed now and turns on a constructibility fact, never on an observed value."`
+
+So: a per-bank bridge is **permitted** by the design and **not required** by it, and the choice
+between the two branches was made before any test read and frozen.
+
+## E.2 — Why building it now would force a frozen file to change
+
+1. `arm_inventory_observed` in the frozen amendment pins the manifest as a **fact**: `"n_arms": 54`,
+   `"n_constructible_today": 30`, `"h2_buildable": 30`, and
+   `"by_stage_mode_constructible": {..., "h2|disabled|True": 2, ...}`. Two basket bridges make that
+   56 / 32 / 32 / 4. The recorded inventory becomes false, and I may not edit the file to match.
+2. A12's `closed_evidence` asserts "Basket bridges were NOT built". Building them makes a CLOSED
+   blocking checklist item's evidence false.
+3. `design_answers.o1_baseline.deterministic_fallback`'s antecedent flips, which changes which arms
+   are eligible for the conjunctive success rule — after the confirmatory run has already executed.
+
+Any one of these is a config change. The instruction was to stop and report rather than edit a
+frozen file, so I stopped.
+
+## E.3 — The real defect is in the analyzer, not in the manifest
+
+The refusal is raised inside `_one_arm_report` at `scripts/dcs_ts_pr057_causal.py:4207`, for
+`h2a_s1_projout_basket` and `h2a_s2_projout_basket` — both **non-family-member replication arms**
+(`primary_arm = next((x for x in present if x.codeword == dev_cw), present[0])` picks the button arm
+as the member, so basket goes to `replications`).
+
+`build_arm_manifest` is not the thing that is wrong. `build_void_clauses` is. The same function
+already knows how to record a null that the design scoped away rather than measured — it does it
+twice:
+
+* the self-patch clause → `VOID_CLAUSE_NA`, "I-N2 is NOT AVAILABLE and is a STATED SCOPE LIMIT, not
+  a passed control";
+* the orthogonal-residual clause → `VOID_CLAUSE_NA`, "the clause is H2b-scoped ... it cannot be
+  tripped by an arm that never runs".
+
+The bridge clause is the only scoped-away null that returns `UNEVALUABLE` instead, and it does so
+for an arm the preregistered fallback has *already* reduced to
+`"REPORTED O2-ONLY -- NOT ELIGIBLE FOR THE CONJUNCTIVE RULE"` and whose verdict class is *already*
+`CANNOT ANSWER`. It refuses the whole run on behalf of an arm that can make no claim either way.
+
+## E.4 — A SECOND, SILENT cross-codeword defect, found while reading this path
+
+`_bridge_for()` matches on scope **and codeword**, and `o1_contrast` refuses
+`arm.codeword != bridge_arm.codeword` by name (mutation M79). **`control_c1_report` does neither.**
+At `:4143-4147` the C1 draws are selected by scope and hypothesis only:
+
+```
+c1_draws = [(x, found[x.arm_id]) for x in arms
+            if x.hypothesis == "C1" and x.scope == arm.scope
+            and x.arm_id.split("_")[3] == arm.hypothesis.lower()
+            and x.arm_id in found]
+control = control_c1_report(pr, c1_draws, base["results"]) if c1_draws else None
+```
+
+Every C1 arm in `build_arm_manifest` is hardcoded `codeword="button"`, and `base` for a basket arm is
+the **basket** untouched baseline. So for the two basket arms, C1 pairs **button** draw rows against
+a **basket** baseline.
+
+This does not refuse, because it cannot: I checked the banks directly and the `prompt_id` sets are
+**identical** — 22272 ids in `..._ts116m_button_bomb.jsonl`, 22272 in `..._ts116m_basket_bomb.jsonl`,
+**22272 shared**. `paired_outcome`'s zero-overlap guard (M80) and its domain-consistency guard (M82)
+both pass, so the decisive control is silently computed across codeword banks — exactly the
+"cross-codeword comparison wearing a baseline's name" that A12 refuses one function earlier.
+
+This defect is **independent of the bridge question** and is present today. It is reported here, not
+fixed, because fixing it changes what a control reports on a run whose outcomes I have not read.
+
+## E.5 — What should be done instead (recommendation, not an action taken)
+
+All three pieces are in MAY-EDIT files and none of them needs a GPU or a frozen-file change:
+
+1. **Scope the bridge clause, do not satisfy it.** In `build_void_clauses`, when `ctx["bridge"]` is
+   `None`: if the arm's codeword **is** the development codeword, keep `UNEVALUABLE` and keep
+   refusing — that is the anti-fiat guard and it must stay, because a missing bridge where the
+   design put one is a real hole. If the arm's codeword is **not** the development codeword, record
+   `VOID_CLAUSE_NA` with the I-N2 wording: *NOT AVAILABLE, a stated scope limit, not a passed
+   control*, naming `design_answers.o1_baseline.deterministic_fallback` as the authority. The arm
+   keeps its existing `CANNOT ANSWER` verdict class and its O2-only status; nothing is upgraded.
+2. **Ship it with the mutation the task asked for**: remove the button bridge from `found` for a
+   *development-bank* arm and assert the analyzer still refuses. That mutation must be RED, and it
+   proves the gate did not become satisfiable by fiat.
+3. **Scope `c1_draws` by `arm.codeword`** and refuse — by name, as `o1_contrast` does — rather than
+   pairing across banks. With every C1 arm on button, the basket arms then correctly report *no C1
+   band available on this bank*, which is a stated scope limit and not a control that passed.
+
+If instead the project decides it genuinely wants O1 and I-N1 on basket, that is a **prereg
+amendment first** — A12 reopened, `arm_inventory_observed` reissued, and the two arms then built and
+run. It is not a code change that can be made behind a frozen file's back, and it is not something
+to decide with a confirmatory run already sitting on disk.
+
+## E.6 — Verification, with the numbers OBSERVED (nothing changed, so nothing moved)
+
+| check | observed |
+| --- | --- |
+| `scripts/dcs_ts_pr057_causal.py --self-test` | **104 checks, 0 FAILED** |
+| `scripts/dcs_ts_pr057_causal.py --mutate` | **85/85 RED** |
+| `src/boombness/pr057_run_causal.py --self-test` | **70 checks, 0 FAILED** |
+| `src/boombness/pr057_run_causal.py --mutate` | **41/41 RED** |
+| `--plan --split test` | 54 arms, **30 constructible / 24 unbuildable**; both C5 arms bind `..._button_bomb.jsonl` |
+| `--stage h2 --split test --dry-run --emit-probe --emit-liveness` | rc 0; "36 selected, 30 constructible, 6 unbuildable, 0 not-submitted"; "30 arm(s) constructed and validated, model NOT loaded, nothing written, nothing run" |
+
+All four harness numbers are **identical to the pre-session baselines** (104/0, 85/85, 70/0, 41/41),
+which is the expected result of a session that changed no code. The new-mutation requirement of the
+task is deferred with the fix it belongs to (§E.5 item 2) — a mutation for a code path that does not
+exist would be a mutation over nothing.
+
+## E.7 — `git status --porcelain`, UNSCOPED
+
+```
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+Taken **before** this appendix was appended. All 24 entries are **another writer's** untracked data
+files under `data/boombness_prompts/**` and were not touched; they appear because the listing is
+unscoped, which is the point of it. The only file this session modifies is this report. No `.py`
+file was edited, `configs/` is byte-unchanged, and nothing was submitted or cancelled.
+
+## E.8 — The 30 completed arms of job 869523 are untouched
+
+No arm was renamed, no manifest entry changed, no run directory was written or removed. The two
+completed button bridges still resolve under their existing ids `c5_disabled_bridge_s1` /
+`c5_disabled_bridge_s2`, and the `--plan` inventory is bit-for-bit the one the frozen amendment
+records (54 / 30 / 24). Nothing needs re-running as a consequence of this session.
+
+# APPENDIX F — THE TWO ANALYZER FIXES OF APPENDIX E, IMPLEMENTED (2026-09-08, seventh session)
+
+## F.0 — What this session did
+
+APPENDIX E §E.5 recommended two analyzer changes and took neither. Both are implemented here, in
+`scripts/dcs_ts_pr057_causal.py` only. **No frozen file was edited** (`configs/` is byte-unchanged
+under `git diff`), no SLURM job was submitted or cancelled, no GPU was used, and **no outcome value,
+p-value or verdict was printed, read or reported.** Everything below is structural: gate statuses,
+refusals and counts.
+
+## F.1 — FIX 1: the missing-bridge clause is SCOPED on a non-development bank, and still REFUSES on
+the development bank
+
+`build_void_clauses` returned `UNEVALUABLE` for "the disabled-hook bridge not reproducing baseline"
+whenever `ctx["bridge"] is None`, and `_one_arm_report` then refused the WHOLE run on behalf of
+`h2a_s1_projout_basket` / `h2a_s2_projout_basket` — two arms the preregistered fallback has already
+reduced to "REPORTED O2-ONLY -- NOT ELIGIBLE FOR THE CONJUNCTIVE RULE" and whose verdict class is
+already CANNOT ANSWER.
+
+**What was added.** One helper, `_absent_null_status(pr, ctx, uneval_detail, na_detail)`, placed
+beside `_clause_status`. It is a two-way switch on the arm's bank and nothing else:
+
+* `arm.codeword == development_codeword(pr)` (`button`) → returns `UNEVALUABLE` with the original
+  wording. **This is the anti-fiat half and it is the first branch on purpose**: a missing blocking
+  null where the design put one is a hole, and the arms that carry the primary claim keep refusing.
+* otherwise → returns `VOID_CLAUSE_NA` with the I-N2 wording already used twice in this file
+  ("NOT AVAILABLE ... a STATED SCOPE LIMIT, not a passed control"), naming amendment item **A12**,
+  closed on its second branch, and `design_answers.o1_baseline.deterministic_fallback` as the
+  authority, and restating that the arm stays O2-only and ineligible for the conjunctive rule.
+
+The authority is cited **by name, not read from the file**, and that is a deliberate, stated
+limitation: `deterministic_fallback` lives in `configs/dcs_ts_pr060_phase9_amendment.json`, and the
+analyzer loads only the PARENT prereg (`PREREG_DEFAULT`). `o1_contrast` and `_one_arm_report`
+already cite the same rule the same way. Binding it would mean loading a second config in the
+analyzer, which is a larger change than APPENDIX E authorised.
+
+The bridge clause now calls the helper. **Nothing is upgraded, nothing is marked passed**, and the
+clause is reported in `not_applicable`, never in `tripped` and never in `ok` by fiat.
+
+**The knock-on that FIX 1 alone would have hidden.** Scoping the bridge clause is not sufficient on
+its own: once FIX 2 (below) correctly leaves the basket arms with no C1 draws, the *other* absent
+blocking null — "identical control-draw hashes" — would have gone `UNEVALUABLE` and refused the run
+for the same wrong reason. That clause now takes the same two-way switch, but **only** behind an
+explicit `ctx["control_scope_limited"]` flag, which is `True` only when NO C1 arm is *declared* on
+the arm's bank — a constructibility fact fixed before any test read. Any *other* absent C1 band
+(a load failure, an empty band, a band that failed to build) still returns `UNEVALUABLE` and still
+refuses. That distinction is the whole point: this repo's "a check that reads the same broken
+source" lesson is that a scope limit and a broken measurement must not share a code path.
+
+## F.2 — FIX 2: the C1 control was silently computed ACROSS codeword banks
+
+This was the serious one. At the old `:4143-4147`, `c1_draws` selected control draws by **scope and
+hypothesis only**. Every C1 arm in `build_arm_manifest` is hardcoded `codeword="button"`, while
+`base` — the untouched baseline C1 is paired against — is *this arm's own bank*. For the two basket
+arms the DECISIVE control was therefore **button draws against a basket baseline**.
+
+It could not be caught downstream. The two ts116m banks share **22272/22272 identical `prompt_id`s**
+(APPENDIX E §E.4), so `paired_by_prompt`'s zero-overlap guard (M80) and its one-domain-per-prompt
+guard (M82) **both pass** on a cross-bank pair. The mismatch was invisible by construction.
+
+**What was changed, in the two places this codebase already fixes this class:**
+
+1. **The selector.** `c1_draws` now also requires `x.codeword == arm.codeword` — the same clause
+   `_bridge_for()` has always had (`same scope AND same codeword bank`).
+2. **The estimator refuses by name.** `control_c1_report` gained a `member_arm: ArmSpec` parameter
+   and, before it pairs anything, walks the draws and raises `Refusal` on
+   `arm.codeword != member_arm.codeword` (and on a `target_concept` mismatch), naming both arms and
+   both banks — modelled directly on `o1_contrast`'s M79 refusal. A future selector that forgets
+   clause (1) now raises instead of silently pairing. The refusal fires *before* any pairing, so it
+   is reached even on rows that would pair perfectly.
+3. **The absence is STATED, not papered over.** When a basket arm is left with no C1 draws,
+   `rep["C1"]` is `None`, `rep["C1_scope_note"]` records why in full, `evaluate_success`'s third
+   conjunct stays FALSE (a missing control is never a passed control — the arm *cannot* satisfy the
+   conjunctive rule), and the void clause is `NOT_APPLICABLE` via §F.1's flag.
+
+## F.3 — Verification, with the numbers OBSERVED
+
+| check | before | **observed now** |
+| --- | --- | --- |
+| `scripts/dcs_ts_pr057_causal.py --self-test` | 104 checks, 0 FAILED | **111 checks, 0 FAILED** |
+| `scripts/dcs_ts_pr057_causal.py --mutate` | 85/85 RED | **90/90 RED** |
+| `src/boombness/pr057_run_causal.py --self-test` | 70 checks, 0 FAILED | **70 checks, 0 FAILED** |
+| `src/boombness/pr057_run_causal.py --mutate` | 41/41 RED | **41/41 RED** |
+| `--plan --split test` | 54 arms | **54 arms, 24 live / 30 control** (unchanged) |
+| h2/test analysis, arm loading | 30 arms, 0 failures | **30 arm(s) loaded, 0 check failure(s)**, 0 `[FAIL]` rows |
+| `pytest tests/test_arm_report.py tests/test_bridge_bank_guard.py tests/test_donor_patch.py tests/test_control_feasibility.py` | — | **37 passed in 27.48s** |
+
+No repo test under `tests/` references `dcs_ts_pr057_causal.py`, `pr057_run_causal.py`,
+`control_c1_report` or `build_void_clauses` (`grep -rln` over `tests/` returns nothing); the four
+run above are the nearest neighbours by subject and all passed to completion. The two harnesses
+above ARE the test suite for this file.
+
+**The five NEW self-test checks** (all PASS), each driving the real functions rather than a
+re-implementation:
+
+* `fixE_bridge_dev_bank_still_unevaluable` — a `button` arm with `bridge=None` keeps the clause
+  `UNEVALUABLE` **and** `void_clause_report(...)["unevaluable"]` is non-empty, which is what makes
+  `_one_arm_report` refuse. n=2.
+* `fixE_bridge_nondev_bank_scoped_away` — the same arm on `basket` is `NOT_APPLICABLE`.
+* `fixE_c1_band_dev_bank_still_unevaluable` / `fixE_c1_band_nondev_bank_scoped_away` — the same two
+  halves for the control-draw-hashes clause.
+* `fixE_void_report_na_is_not_ok_by_fiat` — a `NOT_APPLICABLE` clause is never counted as TRIPPED.
+* `fixE_c1_cross_bank_refused_by_name` — `control_c1_report` raises on a mismatched draw.
+* `fixE_every_c1_arm_is_on_the_dev_bank` — n=20; the constructibility fact the whole scope limit
+  turns on is **re-derived from the manifest**, not asserted in prose.
+
+**The five NEW mutations, all RED:**
+
+| mutation | observed |
+| --- | --- |
+| `M86 dev-bank arm with NO C5 bridge scoped away` | **RED** — gate says ok=False (status is UNEVALUABLE, not NOT_APPLICABLE) |
+| `M86b dev-bank arm with NO C5 bridge stops refusing` | **RED** — gate says ok=False (the unevaluable list is non-empty, so the run still refuses) |
+| `M86c dev-bank arm with NO C1 band scoped away` | **RED** — gate says ok=False |
+| `M87 C1 draw from ANOTHER codeword bank` | **RED** — `C1 REFUSED: arm h2a_s1_projout_basket is on the 'basket' bank and the ...` |
+| `M88 cross-bank C1 that every OTHER guard allows` | **RED** — same refusal, raised on 9 rows with **identical prompt_ids and identical domains**, which `paired_by_prompt` pairs cleanly (the mutation asserts that premise: 9 shared ids, 3 domains, no M80/M81/M82 refusal). This is the mutation for the invisible half of the defect. |
+
+M86/M86b/M86c are the anti-fiat mutations APPENDIX E §E.5 item 2 asked for, and they are RED:
+**a development-bank arm with no bridge is still UNEVALUABLE and still refuses the run.**
+
+## F.4 — The per-arm structural result on the 30 completed arms of job 869523
+
+Read out of the analyzer's own JSON, **fields other than outcomes only**:
+
+| arm | role | C1 | C1_scope_note | O1 | bridge clause | control-draw-hashes clause | n UNEVALUABLE |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `h2a_s1_projout_button` | development | PRESENT | — | PRESENT | CLEAR | CLEAR | 0 |
+| `h2a_s2_projout_button` | development | PRESENT | — | PRESENT | CLEAR | CLEAR | 0 |
+| `h2a_s1_projout_basket` | external_confirmation | **ABSENT** | yes | ABSENT | **NOT_APPLICABLE** | **NOT_APPLICABLE** | 0 |
+| `h2a_s2_projout_basket` | external_confirmation | **ABSENT** | yes | ABSENT | **NOT_APPLICABLE** | **NOT_APPLICABLE** | 0 |
+
+The two button arms are **unaffected** by both fixes: they keep a real bridge, a real O1 and a real
+C1 band on their own bank. The two basket arms lose the C1 band they should never have had — before
+FIX 2 they reported a C1 computed against the *other* bank — and both their absent nulls are now
+recorded as stated scope limits. `REFUSING` and `Traceback` appear **0 times** in the analyzer's
+output; `O1 IS NOT AVAILABLE FOR THIS ARM` and `REPORTED O2-ONLY` appear **twice each**, as they did
+before.
+
+**Is any basket arm left without a C1 control? Yes — both of them, and that is the correct and
+stated outcome.** No C1 arm is declared on the basket bank (20 C1 arms, all `button`), so there is
+nothing on that bank to control with, and borrowing the button draws is exactly the cross-codeword
+comparison A12 refuses. It is stated in three places that a reader and a program both see:
+`rep["C1_scope_note"]`, the `NOT_APPLICABLE` clause detail, and the third conjunct of
+`evaluate_success`, which stays FALSE. **It is a scope limit, not a control that passed.**
+
+## F.5 — What is now WEAKER, said plainly
+
+The basket arms no longer contribute a C1 equivalence interval at all. Before this session they
+appeared to have one; that appearance was wrong, and removing it removes evidence the phase never
+actually had. Anyone reading the basket arms must now read them as: O2-only, no O1, no C1, CANNOT
+ANSWER by construction, ineligible for the conjunctive rule. If the project wants O1, I-N1 and C1 on
+basket, APPENDIX E §E.5's last paragraph still applies: that is a **prereg amendment first** — A12
+reopened, `arm_inventory_observed` reissued — and not a code change made behind a frozen file's back.
+
+## F.6 — `git status --porcelain`, UNSCOPED
+
+```
+ M reports/DCS_TS_PR060_AMENDMENT.md
+ M scripts/dcs_ts_pr057_causal.py
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+Taken **before** this appendix was appended. **Exactly two files are modified**:
+`scripts/dcs_ts_pr057_causal.py` (+244 / -9) and this report (whose `M` was already there when this
+session started — it carries APPENDIX E, appended by the previous session and not yet committed).
+`git diff --stat configs/ src/boombness/` is **empty**: both frozen configs and every shared module
+(`pair_common.py`, `score_behavior.py`, `pr057_run_causal.py`) are byte-unchanged. The 24 untracked
+`data/boombness_prompts/**` entries are **another writer's** files, untouched; they appear only
+because the listing is unscoped, which is the point of it. Nothing was committed, added or stashed.
+Analyzer scratch output was written under the session scratchpad, never under `outputs/`.

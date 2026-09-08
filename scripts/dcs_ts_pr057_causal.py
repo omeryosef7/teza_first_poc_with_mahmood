@@ -2894,6 +2894,72 @@ def selftest() -> int:
     ck.add("q13_zero_layer_bind_refused",
            "a norm check that binds ZERO layers asserts nothing and is refused", _caught, 1)
 
+    # ---- APPENDIX E, FIX 1 and FIX 2: the two halves of each fix, driven on the REAL functions.
+    _pr_e = load(PREREG_DEFAULT)
+    _man_e = build_arm_manifest(_pr_e)
+    _dev_e = development_codeword(_pr_e)
+    _ext_e = str(_pr_e.require("population", "codewords", "external_confirmation"))
+
+    def _e_ctx(cw):
+        arm = next(x for x in _man_e if x.hypothesis == "H2a" and x.scope == "S1"
+                   and x.codeword == cw)
+        return {"arm": arm, "bridge": None, "control_band": None, "control_scope_limited": True,
+                "direction_provenance": None, "index_audit": None, "orthogonal_residual": None,
+                "bank_sha": None,
+                "liveness": {"live": True, "n_fired": 1, "n_rows": 1, "n_cells_realised": 1,
+                             "n_cells_expected": 1, "expect_enabled": True}}
+
+    def _e_status(cw, needle):
+        got = [c["status"] for c in build_void_clauses(_pr_e, _e_ctx(cw))
+               if needle in c["clause"].lower()]
+        return got[0] if len(got) == 1 else "AMBIGUOUS(%d)" % len(got)
+
+    ck.add("fixE_bridge_dev_bank_still_unevaluable",
+           "THE ANTI-FIAT HALF. A DEVELOPMENT-codeword arm with NO C5 disabled-hook bridge keeps "
+           "the void clause UNEVALUABLE, which refuses the run. A missing blocking null where the "
+           "design put one is a hole, and scoping the OTHER bank away must not make this gate "
+           "satisfiable by fiat",
+           _e_status(_dev_e, "disabled-hook bridge") == VOID_CLAUSE_UNEVALUABLE
+           and bool(void_clause_report(_pr_e, build_void_clauses(
+               _pr_e, _e_ctx(_dev_e)))["unevaluable"]), 2, "bank=%r" % _dev_e)
+    ck.add("fixE_bridge_nondev_bank_scoped_away",
+           "a NON-development arm with no bridge is NOT_APPLICABLE -- a stated scope limit, not a "
+           "passed control (I-N1 carries no quantifier; I-N3 says 'every live arm' where this "
+           "design does want one per arm; A12 closed on the preregistered fallback)",
+           _e_status(_ext_e, "disabled-hook bridge") == VOID_CLAUSE_NA, 1, "bank=%r" % _ext_e)
+    ck.add("fixE_c1_band_dev_bank_still_unevaluable",
+           "same anti-fiat rule for the C1 five-distinct-draws clause on the development bank",
+           _e_status(_dev_e, "control-draw hashes") == VOID_CLAUSE_UNEVALUABLE, 1)
+    ck.add("fixE_c1_band_nondev_bank_scoped_away",
+           "and NOT_APPLICABLE on the bank that declares no C1 arm at all",
+           _e_status(_ext_e, "control-draw hashes") == VOID_CLAUSE_NA, 1)
+    ck.add("fixE_void_report_na_is_not_ok_by_fiat",
+           "a NOT_APPLICABLE clause is reported as such and never counted as TRIPPED",
+           VOID_CLAUSE_NA in {c["status"] for c in build_void_clauses(_pr_e, _e_ctx(_ext_e))}
+           and not void_clause_report(_pr_e, build_void_clauses(
+               _pr_e, _e_ctx(_ext_e)))["tripped"], 2)
+    # FIX 2: C1 is scoped BY CODEWORD, and a mismatch refuses by name rather than pairing.
+    _c1_dev_e = next(x for x in _man_e if x.hypothesis == "C1" and x.scope == "S1"
+                     and x.codeword == _dev_e)
+    _h2a_ext_e = next(x for x in _man_e if x.hypothesis == "H2a" and x.scope == "S1"
+                      and x.codeword == _ext_e)
+    _caught = False
+    try:
+        control_c1_report(_pr_e, _h2a_ext_e, [(_c1_dev_e, {"results": []})], [])
+    except Refusal:
+        _caught = True
+    ck.add("fixE_c1_cross_bank_refused_by_name",
+           "C1 REFUSES a control draw whose codeword differs from the arm it is a control for. "
+           "`base` is the arm's OWN bank baseline and every C1 arm is declared on the development "
+           "codeword, so this pairing was silently CROSS-BANK; the two banks share every "
+           "prompt_id, so the zero-overlap (M80) and domain (M82) guards cannot see it",
+           _caught, 1)
+    ck.add("fixE_every_c1_arm_is_on_the_dev_bank",
+           "the constructibility fact the scope limit turns on, re-derived from the manifest and "
+           "not asserted in prose: NO C1 arm is declared on any bank but the development one",
+           {x.codeword for x in _man_e if x.hypothesis == "C1"} == {_dev_e},
+           len([x for x in _man_e if x.hypothesis == "C1"]))
+
     ck.report()
     ok_all &= (ck.n_fail == 0)
     print("\n[selftest] %d checks, %d FAILED" % (len(ck.rows), ck.n_fail))
@@ -3247,6 +3313,62 @@ def mutate() -> int:
         project_out_liveness_violations(_all_row(resolved_absolute_index=[90]))
     muts["M85 all-position record claiming edited positions"] = lambda: not _pc.\
         project_out_liveness_violations(_all_row(positions=[90]))
+
+    # ---- 2026-09-08: the two analyzer fixes of APPENDIX E, each with the mutation that keeps
+    # it honest. FIX 1 scopes a missing blocking null AWAY on a non-development bank; the danger
+    # of such a fix is that it makes the gate satisfiable BY FIAT everywhere, so M86 shows the
+    # DEVELOPMENT bank still returning UNEVALUABLE (which refuses the run) with its bridge gone.
+    # FIX 2 scopes the C1 control BY CODEWORD; M87/M88 show the mismatch refusing by name, and
+    # M88 in particular shows it refusing on rows the EXISTING pairing guards cannot see.
+    _man_m = build_arm_manifest(_pr_m)
+    _dev_cw_m = development_codeword(_pr_m)
+    _ext_cw_m = str(_pr_m.require("population", "codewords", "external_confirmation"))
+
+    def _void_ctx(cw):
+        arm = next(x for x in _man_m if x.hypothesis == "H2a" and x.scope == "S1"
+                   and x.codeword == cw)
+        return {"arm": arm, "bridge": None, "control_band": None, "control_scope_limited": True,
+                "direction_provenance": None, "index_audit": None, "orthogonal_residual": None,
+                "bank_sha": None,
+                "liveness": {"live": True, "n_fired": 1, "n_rows": 1, "n_cells_realised": 1,
+                             "n_cells_expected": 1, "expect_enabled": True}}
+
+    def _statuses(cw, needle):
+        return [c["status"] for c in build_void_clauses(_pr_m, _void_ctx(cw))
+                if needle in c["clause"].lower()]
+
+    muts["M86 dev-bank arm with NO C5 bridge scoped away"] = lambda: (
+        _statuses(_dev_cw_m, "disabled-hook bridge") == [VOID_CLAUSE_NA])
+    muts["M86b dev-bank arm with NO C5 bridge stops refusing"] = lambda: not void_clause_report(
+        _pr_m, build_void_clauses(_pr_m, _void_ctx(_dev_cw_m)))["unevaluable"]
+    muts["M86c dev-bank arm with NO C1 band scoped away"] = lambda: (
+        _statuses(_dev_cw_m, "control-draw hashes") == [VOID_CLAUSE_NA])
+
+    _c1_button_m = next(x for x in _man_m if x.hypothesis == "C1" and x.scope == "S1"
+                        and x.codeword == _dev_cw_m)
+    _h2a_basket_m = next(x for x in _man_m if x.hypothesis == "H2a" and x.scope == "S1"
+                         and x.codeword == _ext_cw_m)
+    raisers["M87 C1 draw from ANOTHER codeword bank"] = lambda: control_c1_report(
+        _pr_m, _h2a_basket_m, [(_c1_button_m, {"results": []})], [])
+
+    def _m88():
+        """A cross-bank C1 pairing on rows the EXISTING guards cannot object to.
+
+        The two banks share every `prompt_id` (22272/22272 in the ts116m button/basket bomb
+        banks), so a cross-bank pair overlaps completely and agrees on every domain: M80's
+        zero-overlap guard and M82's one-domain-per-prompt guard BOTH pass. The `assert` below
+        states that fact rather than assuming it -- if a downstream guard ever did catch this,
+        this mutation would be RED for the wrong reason and the assert says so.
+        """
+        a_rows = [{"prompt_id": "p%d" % i, "domain": "d%d" % (i % 3), "v": 1.0} for i in range(9)]
+        b_rows = [{"prompt_id": "p%d" % i, "domain": "d%d" % (i % 3), "v": 2.0} for i in range(9)]
+        _pre, _post, shared = paired_by_prompt(a_rows, b_rows, lambda r: r["v"],
+                                               "M88 identical ids")
+        assert len(shared) == 9 and len(_pre) == 3, \
+            "M88 premise broken: identical prompt_ids failed to pair cleanly"
+        return control_c1_report(_pr_m, _h2a_basket_m,
+                                 [(_c1_button_m, {"results": a_rows})], b_rows)
+    raisers["M88 cross-bank C1 that every OTHER guard allows"] = _m88
 
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0
@@ -3610,16 +3732,42 @@ def o2_contrast(pr: Prereg, arm: ArmSpec, arm_run: Dict[str, Any],
     return out
 
 
-def control_c1_report(pr: Prereg, draws: Sequence[Tuple[ArmSpec, Dict[str, Any]]],
+def control_c1_report(pr: Prereg, member_arm: ArmSpec,
+                      draws: Sequence[Tuple[ArmSpec, Dict[str, Any]]],
                       baseline_rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     """`C1` / `I-N4`, the DECISIVE control: it must NOT move O2, with 5 DISTINCT output hashes.
 
     "A control that 'fails to reach significance' is not thereby a passed control"
     (`_control_arms_are_not_members`): the answer is an EQUIVALENCE INTERVAL over the domain-level
     deltas, reported beside the permutation p and its floor, never a bare p > alpha.
+
+    THE CODEWORD BANK IS PART OF THE PAIRING, AND A MISMATCH IS REFUSED BY NAME. `baseline_rows`
+    is `member_arm`'s OWN untouched baseline, on `member_arm.codeword`'s bank. Every C1 arm in
+    `build_arm_manifest` is hardcoded to the development codeword, so an arm on the other bank
+    would otherwise have its decisive control computed as a CROSS-CODEWORD contrast -- and it
+    would not be caught downstream: the two banks share every `prompt_id` (22272/22272), so
+    `paired_by_prompt`'s zero-overlap guard (M80) and its domain-consistency guard (M82) BOTH
+    pass and the mismatch is invisible. This is the same defect `o1_contrast` refuses for the C5
+    bridge (M79) and it is refused here the same way, by name, rather than silently paired.
     """
     n_expected = int(pr.require("seeds", "n_control_draws"))
     alpha = float(pr.require("primary", "alpha"))
+    for arm, _run in draws:
+        if arm.codeword != member_arm.codeword:
+            raise Refusal(
+                "C1 REFUSED: arm %s is on the %r bank and the control draw offered is %s on the "
+                "%r bank. C1 is paired against %s's OWN untouched baseline, so pairing them by "
+                "prompt_id would be a CROSS-CODEWORD comparison wearing a baseline's name -- "
+                "different prompts, a different bank sha, a different population. The two banks "
+                "share every prompt_id, so no overlap or domain guard downstream can catch it. "
+                "The DECISIVE control is scoped to the codeword bank that declares C1 arms "
+                "(amendment A12 / design_answers.o1_baseline.deterministic_fallback)."
+                % (member_arm.arm_id, member_arm.codeword, arm.arm_id, arm.codeword,
+                   member_arm.arm_id))
+        if arm.target_concept != member_arm.target_concept:
+            raise Refusal("C1 REFUSED: arm %s targets concept %r and the control draw %s targets "
+                          "%r." % (member_arm.arm_id, member_arm.target_concept, arm.arm_id,
+                                   arm.target_concept))
     shas, per_draw, acc = [], {}, defaultdict(list)
     for arm, run in draws:
         gate = run.get("arm_gate") or {}
@@ -3742,6 +3890,44 @@ def _clause_status(clause: str, status: str, detail: str = "") -> Dict[str, Any]
     return {"clause": clause, "status": status, "detail": detail}
 
 
+def _absent_null_status(pr: Prereg, ctx: Dict[str, Any], uneval_detail: str,
+                        na_detail: str) -> Tuple[str, str]:
+    """A blocking null with NO evidence: UNEVALUABLE on the DEVELOPMENT bank, NOT_APPLICABLE off it.
+
+    THE ANTI-FIAT HALF FIRST. On the development codeword (`population.codewords.development`,
+    `button`) a missing blocking null is a HOLE where the design put a control: the arm that
+    carries the primary claim is there, and this returns `UNEVALUABLE`, which refuses the run.
+    Nothing below makes that gate satisfiable by fiat.
+
+    THE SCOPE HALF. On a NON-development bank the frozen design never required the null per bank.
+    `nulls_required` I-N3 says "hook liveness, EVERY LIVE ARM" -- where this design wants a null
+    replicated per arm it says so -- while I-N1 ("disabled-hook bridge") carries no quantifier at
+    all; `multiplicity` puts "lexical transfer button->basket" under SECONDARY, not in the
+    confirmatory family; and the amendment's item A12 is an explicit either/or CLOSED on its
+    second branch, whose rule is `design_answers.o1_baseline.deterministic_fallback` in
+    `configs/dcs_ts_pr060_phase9_amendment.json` -- cited by name here, as `o1_contrast` and
+    `_one_arm_report` already cite it, because the analyzer loads the PARENT prereg and the
+    amendment is a separate frozen file it does not read.
+    Such a clause is recorded NOT_APPLICABLE: a STATED SCOPE LIMIT, not a passed control. The arm
+    keeps its existing verdict class and its O2-only status; nothing is upgraded.
+
+    This is the pattern the file already uses twice for a null the design scoped away -- the
+    self-patch clause (I-N2) and the orthogonal-residual clause (H2b) -- and not a new one.
+    """
+    arm = ctx["arm"]
+    if arm.codeword == development_codeword(pr):
+        return VOID_CLAUSE_UNEVALUABLE, uneval_detail
+    return VOID_CLAUSE_NA, (
+        "%s This null is NOT AVAILABLE on the %r bank -- the external-confirmation codeword, a "
+        "SECONDARY family ('lexical transfer %s->%s') -- and is a STATED SCOPE LIMIT, not a "
+        "passed control. Authority: PR-060 amendment item A12, CLOSED on its second branch, and "
+        "design_answers.o1_baseline.deterministic_fallback: O1 is a %s-bank statistic and the "
+        "arms on this bank are reported O2-ONLY and are NOT eligible for the conjunctive success "
+        "rule. Nothing is upgraded and nothing is marked passed."
+        % (na_detail, arm.codeword, development_codeword(pr), arm.codeword,
+           development_codeword(pr)))
+
+
 def build_void_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Give EVERY clause of the frozen `primary.void` sentence a status, from `ctx`.
 
@@ -3783,11 +3969,17 @@ def build_void_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
         elif "disabled-hook bridge" in low:
             g = ctx.get("bridge")
             if g is None:
-                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
-                                          "no C5 disabled-hook bridge run exists on this bank, so "
-                                          "'reproduces the untouched baseline' is UNMEASURED. An "
-                                          "unevaluable void condition is a hole in the validity "
-                                          "argument, not a satisfied one (I-N1 is blocking)."))
+                out.append(_clause_status(clause, *_absent_null_status(
+                    pr, ctx,
+                    "no C5 disabled-hook bridge run exists on this bank, so "
+                    "'reproduces the untouched baseline' is UNMEASURED. An "
+                    "unevaluable void condition is a hole in the validity "
+                    "argument, not a satisfied one (I-N1 is blocking).",
+                    "no C5 disabled-hook bridge run exists on this bank, so "
+                    "'reproduces the untouched baseline' was never measured here. I-N1 names the "
+                    "'disabled-hook bridge' with NO quantifier -- unlike I-N3, which says 'every "
+                    "live arm' where this design does want a per-arm replication -- so the "
+                    "frozen design requires ONE bridge on the code path, not one per bank.")))
             else:
                 out.append(_clause_status(clause,
                                           VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
@@ -3801,7 +3993,23 @@ def build_void_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
                                       "passed control."))
         elif "control-draw hashes" in low:
             g = ctx.get("control_band")
-            if g is None:
+            if g is None and ctx.get("control_scope_limited"):
+                # The C1 band is absent because NO C1 arm exists on this arm's codeword bank --
+                # every C1 arm in `build_arm_manifest` is on the development codeword. That is a
+                # constructibility fact, decided before any test read, not a measurement that came
+                # back empty. On the development bank `_absent_null_status` still returns
+                # UNEVALUABLE and still refuses.
+                out.append(_clause_status(clause, *_absent_null_status(
+                    pr, ctx,
+                    "no C1 band was loaded for this member, so the five-distinct-draws condition "
+                    "is UNMEASURED",
+                    "NO C1 norm-matched random control arm is declared on this bank -- every C1 "
+                    "arm in the frozen manifest binds the development codeword -- so the "
+                    "five-distinct-draws condition has nothing to bind here. Pairing the "
+                    "development bank's C1 draws against this bank's baseline is REFUSED by "
+                    "`control_c1_report` as a cross-codeword comparison wearing a baseline's "
+                    "name.")))
+            elif g is None:
                 out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
                                           "no C1 band was loaded for this member, so the "
                                           "five-distinct-draws condition is UNMEASURED"))
@@ -4140,13 +4348,33 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
             rep["O1"] = o1
             rep["O1_scope_note"] = o1["_scope_statement"]
 
-        # C1, the decisive control, matched to this arm's scope and hypothesis.
+        # C1, the decisive control, matched to this arm's scope, hypothesis AND CODEWORD BANK.
+        # The codeword clause is not cosmetic: `base` is THIS arm's own untouched baseline, every
+        # C1 arm is declared on the development codeword, and the two banks share every prompt_id
+        # -- so without it the decisive control was computed ACROSS banks and no downstream guard
+        # could see it. `_bridge_for` already matches on scope AND codeword for exactly this
+        # reason; `control_c1_report` re-checks and REFUSES a mismatch by name, so a future
+        # selector that forgets the clause raises instead of pairing.
         c1_draws = [(x, found[x.arm_id]) for x in arms
                     if x.hypothesis == "C1" and x.scope == arm.scope
+                    and x.codeword == arm.codeword
                     and x.arm_id.split("_")[3] == arm.hypothesis.lower()
                     and x.arm_id in found]
-        control = control_c1_report(pr, c1_draws, base["results"]) if c1_draws else None
+        control = control_c1_report(pr, arm, c1_draws, base["results"]) if c1_draws else None
         rep["C1"] = control
+        if control is None:
+            # A STATED SCOPE LIMIT, not a control that passed. `evaluate_success` conjunct 3
+            # stays FALSE (a missing control is never a passed control) and `build_void_clauses`
+            # records the five-distinct-draws clause NOT_APPLICABLE on a non-development bank --
+            # and UNEVALUABLE, still refusing, on the development bank.
+            rep["C1_scope_note"] = (
+                "NO C1 BAND IS AVAILABLE FOR THIS ARM. Every C1 norm-matched random control arm "
+                "in the frozen manifest is declared on the %r bank and this arm is on the %r "
+                "bank; C1 is paired against this arm's OWN untouched baseline, so borrowing the "
+                "%r draws would be a cross-codeword comparison wearing a baseline's name and is "
+                "REFUSED. This is a STATED SCOPE LIMIT, not a passed control: the conjunctive "
+                "success rule's third conjunct CANNOT be satisfied by this arm."
+                % (dev_cw, arm.codeword, dev_cw))
 
         across = {"majority_moved_intended": o2["majority_moved_intended"],
                   "sign_p": o2["sign_test"]["p"], "sign_p_floor": o2["sign_test"]["floor"],
@@ -4190,6 +4418,13 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                 "index_audit": audits.get(arm.arm_id),
                 "direction_provenance": dprov, "bridge": bridge_gate,
                 "control_band": (control or {}).get("band"), "orthogonal_residual": ortho,
+                # TRUE only when the band is absent because NO C1 arm is DECLARED on this bank --
+                # a constructibility fact fixed before any test read, not a measurement that came
+                # back empty. Any other absent band stays UNEVALUABLE and still refuses.
+                "control_scope_limited": bool(
+                    control is None
+                    and not any(x.hypothesis == "C1" and x.codeword == arm.codeword
+                                for x in arms)),
                 "bank_sha": bank_gate}
         vr = void_clause_report(pr, build_void_clauses(pr, vctx))
         rep["void"] = vr

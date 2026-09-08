@@ -4598,3 +4598,67 @@ Repo tests 676 passed / 0 failed across 26 files, run to completion.
 **Resume, not restart.** Re-verified against symlink copies so no artifact was overwritten: both S1
 arms of job 869332 **pass unchanged**. Arm 3 re-runs because the fix is in the producer; arms 1 and 2
 do not.
+
+---
+
+## DCS-R-132 — the H2 confirmatory run COMPLETES; two analyzer defects found before the verdict
+*2026-09-08* — job 869523
+
+**The run:** 30 arms, **6,900 rows**, 54.3 min, 1 model load, `COMPLETED 0:0`, `DONE.json` written.
+The analyzer loads all 30 with **0 check failures**: every liveness gate PASSED including the
+1840-record all-position arms; every S1 index audit passed with **54 distinct absolute indices over
+230 records** (end-relative addressing proven under real conditions, not asserted); the C5 bridge
+recorded 1840 liveness records and **0 hook firings**. The kill condition logged `H1_NOT_AVAILABLE`
+and stated explicitly that this is **not** read as "H1 did not move O2".
+
+Then the analyzer **refused a verdict**, and the refusal was correct twice over.
+
+**I proposed the wrong fix and was overruled by the evidence.** My instinct was to build the missing
+basket C5 bridge — "make the measurement rather than argue it away". That would have been wrong:
+building it forces the **frozen** amendment to change three ways (`arm_inventory_observed` pins
+`n_arms 54` / `n_constructible_today 30` **as fact**; A12's `closed_evidence` "Basket bridges were
+NOT built" becomes false; and `design_answers.o1_baseline.deterministic_fallback`'s antecedent flips
+**after** the confirmatory run executed). That is retroactively editing a pre-outcome choice.
+
+And the design never wanted a per-bank bridge. The decisive evidence is a contrast inside
+`nulls_required`: **I-N3 says "hook liveness, EVERY LIVE ARM"; I-N1 says only "disabled-hook bridge",
+with no quantifier.** Where this design wants per-arm replication it says so. `population.codewords`
+is `{"development": "button", "external_confirmation": "basket"}`, `multiplicity` puts
+"lexical transfer button→basket" in **SECONDARY**, and frozen item A12 had already chosen the
+button-only fallback explicitly.
+
+**Defect 1 — the analyzer refused the whole run on behalf of arms that can make no claim.** The
+basket arms are non-family replication arms, already `REPORTED O2-ONLY` and already CANNOT ANSWER.
+`_absent_null_status()` now switches on the arm's bank **and nothing else**: development codeword →
+`UNEVALUABLE` and **still refuses** (the anti-fiat guard, proven by mutations M86/M86b/M86c going
+RED); any other bank → `VOID_CLAUSE_NA` with the I-N2 wording already used twice in this file
+("a STATED SCOPE LIMIT, not a passed control"). Nothing is upgraded.
+
+A consequence not anticipated in the analysis: fixing the C1 defect below leaves the basket arms with
+**no** C1 draws, which would have made the "identical control-draw hashes" clause UNEVALUABLE and
+refused for the same wrong reason. That clause takes the same switch — but **only** behind an
+explicit `control_scope_limited` flag, true solely when no C1 arm is *declared* on that bank. Any
+other absent band still refuses. **A scope limit and a broken measurement do not share a code path.**
+
+**Defect 2 — the decisive control was silently computed ACROSS codeword banks. This is the serious
+one.** `c1_draws` filtered on scope and hypothesis only; every C1 arm is declared on `button`, while
+a basket arm's `base` is the **basket** baseline. The two banks share **22272/22272 identical
+`prompt_id`s**, so `paired_outcome`'s zero-overlap guard and the domain guard **both pass** — the
+mismatch was invisible to every existing check. C1 is the norm-matched random control: the null the
+primary claim rests on.
+
+Fixed the way this codebase already fixes the class: `c1_draws` now requires `codeword` equality (as
+`_bridge_for()` always did) and `control_c1_report` **raises by name** on a mismatch *before* pairing
+anything, modelled on `o1_contrast`'s M79. Mutation **M88** is the sharp one — it asserts the premise
+that identical `prompt_id`s and domains pair cleanly, demonstrating that M80/M81/M82 **cannot** see
+this defect.
+
+**Recorded as a weakening, not a gain:** before this fix the basket arms reported a C1 computed
+against the other bank. That evidence is now correctly **gone**, both basket arms are left with no C1
+control, and conjunct 3 of the success rule stays FALSE for them. Stated in three places a reader and
+a program both see: `C1_scope_note`, the `NOT_APPLICABLE` clause detail, and the conjunct itself.
+
+**Observed:** analyzer `--self-test` 104 → **111 / 0** and `--mutate` 85 → **90/90 RED**; runner
+**70 / 0** and **41/41 RED**; h2/test **30 arms loaded, 0 check failures**; 37 nearest-neighbour tests
+passed. **No outcome value, p-value or verdict was printed, read or reported** during either fix —
+the analyzer was corrected without anyone seeing what it will say.
