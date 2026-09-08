@@ -4538,3 +4538,63 @@ submission:** no S2 arm has ever run on a GPU and 15 of the 30 are S2; H1's uppe
 unbuildable, so a positive H2a has no full-patch control (`A-047`, `arXiv:2311.17030`); the realised
 dose is 4.7–19.0%, so a null is weak evidence of non-use and must be published with the dose
 attached; and O1 is scoped to the development codeword only.
+
+---
+
+## DCS-R-131 / C-127 — H2 reaches the GPU; the S2 gap costs one arm instead of fifteen
+*2026-09-08*
+
+**Job 869332 ran the H2 confirmatory stage.** Arms 1 and 2 (`h2a_s1_projout_{basket,button}`)
+completed cleanly — 230 rows, 230 liveness records, **230 hook firings** each. Arm 3
+(`h2a_s2_projout_basket`) was the **first all-position S2 arm ever run on a GPU**, the single
+largest untested surface named in `R-127`. **It ran fine**: 230 rows, **1840 liveness records**
+(230 x 8 layers), 0 violations, 1840 probe records, option-mass median 0.05284 OK.
+
+It was then refused at artifact verification for one field: *"did NOT persist 1 field(s) the frozen
+`persist_per_row_and_per_arm` list requires: ['occurrence index of the codeword']"*. The liveness
+writer derived that ordinal **only** from `resolved_absolute_index`, which an all-position edit does
+not have. The row's `codeword_last_indices` `[174,192,211,230,250]` were **already in the record** —
+only the ordinal was missing.
+
+**The kill condition behaved correctly under an unbuildable H1**, which is worth recording because it
+is the distinction the phase depends on: it logged `H1_NOT_AVAILABLE` and stated explicitly that this
+is **not** read as *"H1 did not move O2"*. Never-ran and ran-and-null stayed distinct under real
+conditions.
+
+**The fix, and the semantics are the point.** "Occurrence index of the codeword" is a property of the
+**prompt**, not of the edit, so it is now populated for all-position arms too — via one
+`occurrence_annotation()` reused by every mode and built on the existing occurrence resolution, and
+carried with `occurrence_index_is_prompt_property: true` so an S2 record can never be misread as
+having been edited at that site. **`rel_end` and `resolved_absolute_index` STAY null on all-position
+arms**, now enforced by two independent checkers plus a new producer refusal — inventing an edit site
+would have been far worse than the missing field.
+
+**The field x mode sweep is what made this cheap.** Rather than fixing only the arm that failed, all
+19 frozen fields were checked against all five modes. **Both** all-position modes were missing the
+ordinal — so `c4_samenorm_orth_s2`, the ten `c1_random_s2_*` draws, `c3_vremap_s2` and
+`h2a_s2_projout_button`, **15 of the 30 arms**, would each have died at the same gate, one queue wait
+and one partial run at a time.
+
+A second defect of the same class fell out: the "all positions (S2)" note was printed for **every**
+record lacking a `rel_end`, including the C5 bridge over a *single*-position hook — and a **live**
+single-position record with no site was **silently excused from the end-relative audit**. Now a
+refusal.
+
+**`C-127` — and this one is mine, for the third time in two days.** The runner self-test
+`a14_analyzer_exists_still_gates` asserted that `"analyzer_exists"` appears in the LIVE config's
+blocking list. `R-130` legitimately flipped that flag to true, having built the verdict path — and
+the check that verifies the flag blocks **failed because the flag no longer needed to block**. A
+check that hardcodes the present state fails exactly when the state is repaired.
+
+This is the same class as PR-058's `identity_gate` self-test and mutation `M47`, both fixed earlier
+the same day, and I then committed a third instance myself. Fixed the same way: the check now
+**injects `analyzer_exists: false` into a copy** and asserts the gate refuses, so it tests the gate's
+*behaviour* and survives the real flag being either value.
+
+**Observed after all fixes:** analyzer `--self-test` **104 / 0** and `--mutate` **85/85 RED**; runner
+`--self-test` **70 / 0** and `--mutate` **41/41 RED**; `h2 --split test --dry-run` **rc = 0**, 30 arms.
+Repo tests 676 passed / 0 failed across 26 files, run to completion.
+
+**Resume, not restart.** Re-verified against symlink copies so no artifact was overwritten: both S1
+arms of job 869332 **pass unchanged**. Arm 3 re-runs because the fix is in the producer; arms 1 and 2
+do not.

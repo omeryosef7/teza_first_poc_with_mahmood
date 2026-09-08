@@ -529,3 +529,272 @@ They are shown because the listing is unscoped, which is the point of it. **Not 
 command, and therefore stated here:** nothing under `outputs/` was written by this session — the two
 dry runs and the two stage analyses wrote no file, and `--dry-run` computes the exclusion files
 without writing them. `configs/` is unchanged; both frozen files hash as they did.
+
+---
+
+# APPENDIX D — THE DEFECT THAT STOPPED JOB 869332'S H2 RUN (2026-09-08, fifth session)
+
+## D.0 — Verdict up front
+
+Job 869332 ran the H2 test stage and was stopped at artifact verification on its THIRD arm:
+
+```
+arm h2a_s2_projout_basket did NOT persist 1 field(s) the frozen `persist_per_row_and_per_arm`
+list requires: ['occurrence index of the codeword']
+```
+
+The arm itself had run **cleanly** — 230 rows, 1840 liveness records (230 rows × 8 layers), 0
+liveness violations, 1840 probe records, option-mass median 0.05284. Nothing about the
+intervention was wrong. The **producer never computed** the occurrence index on the all-position
+code path, and the frozen contract requires it of every arm.
+
+**The two arms already on disk are VALID and the run can RESUME, not restart.** Arm 3 must be
+re-run, because the fix is in the PRODUCER: the record it wrote is null and no consumer may
+invent the value after the fact.
+
+## D.1 — Why this is a defect and not a limitation
+
+"Occurrence index of the codeword" is a property of the **prompt** — where the codeword occurs in
+that row — not a property of the **edit**. It is perfectly well defined for an all-position arm.
+The code derived it exclusively from `resolved_absolute_index` (`score_behavior.py`, the PR-057
+liveness writer), which an all-position edit does not have, so the field came out null on a
+quantity that was never in doubt. Measured, on the same row of the same bank, from the two arms
+of job 869332:
+
+| field | S1 (`project_out_single`) | S2 (`project_out_all`), BEFORE |
+|---|---|---|
+| `occurrence_index` | 4 | **None** |
+| `occurrence_index_per_edit` | `[4]` | **None** |
+| `codeword_last_indices` | `[174, 192, 211, 230, 250]` | `[174, 192, 211, 230, 250]` (present!) |
+| `rel_end` | -10 | None |
+| `resolved_absolute_index` | `[250]` | None |
+| `mode` | `project_out_single` | `project_out_all` |
+
+The row's codeword sites were **already in the S2 record**. Only the ordinal was missing.
+
+## D.2 — The fix, and the line it does not cross
+
+`doublespeak_causality/pair_common.py` gains `occurrence_annotation(stats, codeword_last_indices)`
+— ONE resolution, reused by every mode, built on `resolve_occurrences`'s own
+`last_idx_per_occurrence`. Nothing about occurrence resolution is re-implemented.
+
+* **single-position modes** — unchanged behaviour: the ordinal of the occurrence the hook edited,
+  or `None` for an edited position that is not at a codeword site (never 0).
+* **all-position modes** — `occurrence_index` = the ordinal of the **codeword_last** occurrence of
+  this prompt, i.e. the same value an S1 record carries for the same row (verified: 4, the last of
+  5, on the real bank rows). It is written with two sibling fields so it can never be misread:
+  `occurrence_index_is_prompt_property: true` and an `occurrence_index_source` string that says in
+  terms that **the edit was NOT scoped to that occurrence**.
+* **`rel_end` and `resolved_absolute_index` STAY NULL** on an all-position arm. They describe the
+  edit site; there is no single edit site; inventing one would be worse than the bug. This is now
+  **enforced**, not merely intended: `project_out_liveness_violations` refuses any `*_all` record
+  carrying a `rel_end`, a `resolved_absolute_index` or a `positions` list, and
+  `persist_contract_report` refuses it independently.
+* `mode` is unchanged (`project_out_all`), so the record stays self-describing.
+
+The frozen persist field is now looked up in `occurrence_index` (the prompt property, present on
+every mode) instead of `occurrence_index_per_edit` (the per-edit ordinal, null by design on an
+all-position arm). Both frozen config files are untouched.
+
+## D.3 — Field × mode, every field of the frozen list, every constructible mode
+
+Measured by driving the **real** `pair_common` hook classes on a CPU toy layer, feeding each
+record through the real `annotate_liveness` + `persist_contract_report` against the frozen list
+read out of `configs/dcs_ts_pr057_phase9.json`. `PERSISTED` = present with a non-null value on a
+live arm. `n/a(reasoned)` = absent WITH the reason recorded, which the contract allows.
+
+| frozen field | project_out_single (S1) | project_out_all (S2) | add_single (C4×S1) | add_all (C4×S2) | bridge (C5, either scope) |
+|---|---|---|---|---|---|
+| activation_norm_pre | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| activation_norm_post | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| norm_ratio | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| projection_removed_l2 | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| frac_cellmean_spread_removed | PERSISTED (arm) | PERSISTED (arm) | n/a(reasoned)¹ | n/a(reasoned)¹ | PERSISTED (arm) |
+| cosine(h_pre, h_post) | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| cosine(edit, v_used) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) |
+| orthogonal_residual_delta_l2 | PERSISTED | PERSISTED | PERSISTED | PERSISTED | n/a(reasoned)² |
+| layer(s) edited | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| token position (rel_end AND resolved absolute index) | PERSISTED | PERSISTED³ | PERSISTED | PERSISTED³ | PERSISTED⁴ |
+| **occurrence index of the codeword** | PERSISTED | **WAS MISSING → PERSISTED** | PERSISTED | **WAS MISSING → PERSISTED** | PERSISTED |
+| n_subtokens | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| hook_fired_count | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| n_destination_rows | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| n_cells_edited_realised | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| n_cells_edited_expected | PERSISTED | PERSISTED | PERSISTED | PERSISTED | PERSISTED |
+| direction_file_sha256 | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) |
+| control_draw_seed | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) |
+| per-draw output sha256 | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) | PERSISTED (arm) |
+
+`(arm)` = supplied by the runner's per-arm gate, mode-independent by construction.
+
+1. A norm-matched / orthogonal control direction (`orthogonal@v_bomb_specific`) is DERIVED at
+   hook-install time and is not a payload key, so it has no cell-mean dose. The runner records
+   the reason (`realized_dose_note`) rather than a number. Pre-existing and correct — the additive
+   arm's own dose is carried per row as `alpha_gap_units` / `gap_norm` /
+   `realised_dose_l2_per_cell`, which `project_out_liveness_violations` asserts against alpha.
+2. The C5 bridge discarded its write, so there is no edit whose orthogonal component could have
+   been disturbed. Pre-existing and correct.
+3. `rel_end` / `resolved_absolute_index` are present as explicit nulls with the note "an
+   all-position edit has no single rel_end". This is the honest value, and it is now ENFORCED as
+   the only permitted one (D.2).
+4. **Fixed in this session (second defect, same class).** The report used to print
+   `"all positions (S2)"` for EVERY record without a `rel_end` — including the C5 disabled-hook
+   bridge over a **single-position** hook, i.e. an S1 arm whose contract report claimed S2 scope.
+   The note is now mode-aware. And the same blanket rule in `annotate_liveness` excused a **LIVE
+   single-position** record with no `rel_end` from the end-relative audit entirely; that case is
+   now a REFUSAL (mutation M70).
+
+**BEFORE / AFTER, measured on real hook records rather than argued** (`LAST=[3,6,9]`, edit at
+occurrence 2):
+
+```
+project_out_single  BEFORE occurrence_index_per_edit=[2]     AFTER occurrence_index=2 (prompt_property=False, per_edit=[2])
+project_out_all     BEFORE occurrence_index_per_edit=None    AFTER occurrence_index=2 (prompt_property=True,  per_edit=None)
+add_single          BEFORE occurrence_index_per_edit=[2]     AFTER occurrence_index=2 (prompt_property=False, per_edit=[2])
+add_all             BEFORE occurrence_index_per_edit=None    AFTER occurrence_index=2 (prompt_property=True,  per_edit=None)
+```
+
+**Both** all-position modes were affected, not only the one that ran. `c4_samenorm_orth_s2` — the
+one control whose job is to be sceptical of H2a — would have died at the same gate, after its own
+queue wait and its own partial run. So would `c1_random_s2_*` (10 draws), `c3_vremap_s2` and
+`h2a_s2_projout_button`: **every S2 arm in the stage**, 15 of the 30 h2 arms.
+
+## D.4 — Verification, with the numbers OBSERVED
+
+| harness | before (as reported to me) | observed at HEAD 268b6f1d, before my change | observed after |
+|---|---|---|---|
+| `scripts/dcs_ts_pr057_causal.py --self-test` | 100 / 0 FAILED | 100 checks, 0 FAILED | **104 checks, 0 FAILED** |
+| `scripts/dcs_ts_pr057_causal.py --mutate` | 82 / 82 RED | 82/82 RED | **85/85 RED** |
+| `src/boombness/pr057_run_causal.py --self-test` | 64 / 0 FAILED | **64 checks, 1 FAILED** | **70 checks, 1 FAILED** |
+| `src/boombness/pr057_run_causal.py --mutate` | 37 / 37 RED | 37/37 RED | **41/41 RED** |
+
+**The one FAILED check is PRE-EXISTING and is not mine.** `a14_analyzer_exists_still_gates`
+asserts that `artifacts.analyzer_exists == false` still blocks the h2 checklist gate — but
+`configs/dcs_ts_pr060_phase9_amendment.json:682` says `"analyzer_exists": true` as of commit
+268b6f1d (`DCS-R-130`, 15:40 today, another writer). The check reads the live frozen file, so it
+fails on the file's new value, not on any behaviour. It fails identically with my changes reverted.
+**I did not touch it**: the frozen amendment is FROZEN, and rewriting the check to read a forged
+value instead would change what the gate is tested against. **Flagged for whoever owns DCS-R-130.**
+
+New checks (all PASS): `persist_contract_all_position` (19 fields),
+`persist_contract_all_position_occurrence_is_the_prompt_property`,
+`persist_contract_all_position_null_occurrence_refused`,
+`persist_contract_all_position_fabricated_rel_end_refused`,
+`persist_contract_all_position_fabricated_resolved_absolute_index_refused`,
+`live_single_position_without_a_site_refused`, and in the analyzer
+`occurrence_index_on_both_scopes`, `occurrence_index_s2_is_labelled_a_prompt_property`,
+`occurrence_index_does_not_invent_an_edit_site`,
+`occurrence_index_absent_when_no_occurrence_resolves`.
+
+New mutations, every one RED, with the refusal each produced:
+
+```
+[RED] M67_all_position_without_the_occurrence_index
+      RunnerRefusal: arm h2a_s2_projout_basket did NOT persist 1 field(s) ... ['occurrence index of the codeword']
+[RED] M68_all_position_fabricates_a_rel_end
+      RunnerRefusal: arm h2a_s2_projout_basket is an ALL-POSITION edit whose liveness record carries ['rel_end'].
+[RED] M69_all_position_fabricates_an_absolute_index
+      RunnerRefusal: ... carries ['rel_end', 'resolved_absolute_index'].
+[RED] M70_live_single_position_with_no_site
+      RunnerRefusal: arm x is a LIVE SINGLE-POSITION edit (mode 'project_out_single') whose record carries NO rel_end
+[RED] M83 all-position record claiming a single rel_end        (pair_common producer gate)
+[RED] M84 all-position record claiming an edit site            (pair_common producer gate)
+[RED] M85 all-position record claiming edited positions        (pair_common producer gate)
+```
+
+One harness-shape note, stated rather than hidden: with **only** a `rel_end` fabricated and no
+resolved index, the end-relative audit refuses FIRST (a `rel_end` with no resolved index is
+unauditable) — a correct refusal for a different reason. M68 therefore calls
+`persist_contract_report` directly so the fabrication gate itself is the thing shown RED, and
+M83–M85 exercise the producer's gate on the same shapes.
+
+`--stage h2 --split test --dry-run --emit-liveness --emit-probe` → **rc=0**, 30 arms constructed
+and validated, model not loaded, nothing written. (Without the two emit flags the runner refuses
+with `--emit-liveness is REQUIRED`, which is the pre-existing C-13 guard and is correct.)
+
+Repo tests touching what changed, run to COMPLETION: `pytest -q` over the 26 test files that
+reference `pair_common`, `score_behavior` or `pr057` — batch 1 (13 files) **346 passed, 1 warning
+in 733.08s**; batch 2 (13 files) **330 passed in 392.70s**. 676 passed, 0 failed, 0 skipped.
+
+## D.5 — The two completed arms are still valid
+
+`verify_arm_artifacts` was re-run under the new code against **symlink copies** of the job-869332
+run directories (so no artifact on disk was written or overwritten):
+
+```
+PASS h2a_s1_projout_basket  rows 230  liveness 230  hook firings 230  occurrence index = 4
+PASS h2a_s1_projout_button  rows 230  liveness 230  hook firings 230  occurrence index = 4
+REFUSED h2a_s2_projout_basket  -- did NOT persist ['occurrence index of the codeword']
+```
+
+Diffing the freshly computed `PR057_ARM_GATE.json` against the one on disk for each S1 arm: the
+ONLY differences are the run_dir path (the copy), the direction sha (stubbed in this re-run), and
+the occurrence field's *report entry*, which now reads `key: occurrence_index, value: 4,
+per_edit: [4]` where it used to read `key: occurrence_index_per_edit, value: null` (the old entry
+displayed null because a list is not a scalar). Every gate number, every count, and the verdict
+are unchanged.
+
+The S2 arm on disk still refuses, and that is correct: the fix is in the producer, so the null in
+its 1840 records cannot be repaired after the fact without inventing the value. **Arm 3 re-runs;
+arms 1 and 2 do not.**
+
+## D.6 — What I changed
+
+| file | change |
+|---|---|
+| `doublespeak_causality/pair_common.py` | NEW `occurrence_annotation()` — one occurrence resolution for all modes, prompt-property semantics for all-position, explicit sibling labels, `None` (never 0) when no occurrence resolves. NEW refusal in `project_out_liveness_violations`: a `*_all` record carrying `rel_end` / `resolved_absolute_index` / `positions`. |
+| `src/boombness/score_behavior.py` | the PR-057 liveness writer calls `pc.occurrence_annotation` before the liveness gate and persists its three fields; the old `resolved_absolute_index`-only derivation is gone. |
+| `src/boombness/pr057_run_causal.py` | `PERSIST_LOCATION` for the frozen occurrence field now points at `occurrence_index`; a dedicated persist branch that records the prompt-property labelling and refuses a null on a live arm; a fabricated-site refusal; mode-aware `annotate_liveness` / persist notes plus a refusal for a LIVE single-position record with no site; `_live_record()` now runs the PRODUCER's resolution instead of hand-writing its output; NEW `_live_record_all()`; 6 new self-test checks; mutations M67–M70. |
+| `scripts/dcs_ts_pr057_causal.py` | 4 new self-test checks on `occurrence_annotation` across both scopes; mutations M83–M85 against the producer gate. |
+
+No new scripts. Neither frozen config was edited; neither needed to be.
+
+## D.7 — `git status --porcelain`, UNSCOPED
+
+```
+ M doublespeak_causality/pair_common.py
+ M reports/DCS_TS_PR060_AMENDMENT.md
+ M scripts/dcs_ts_pr057_causal.py
+ M src/boombness/pr057_run_causal.py
+ M src/boombness/score_behavior.py
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+Five files touched, all five on the MAY-EDIT list. The `??` entries under
+`data/boombness_prompts/**` are **another writer's** and were not touched; they appear because the
+listing is unscoped, which is the point of it. Nothing under `outputs/` was written by this
+session: the re-verification of the two completed arms ran against symlink copies in a scratch
+directory, and the dry run writes nothing. `configs/` is unchanged — both frozen files hash as
+they did, and neither needed to change.
+
+## D.8 — Resume, do not restart
+
+* `ts116m_pr057_h2a_s1_projout_basket_20260908_154439_3905688` — **VALID**, verification unchanged.
+* `ts116m_pr057_h2a_s1_projout_button_20260908_155134_3905688` — **VALID**, verification unchanged.
+* `ts116m_pr057_h2a_s2_projout_basket_20260908_155303_3905688` — must be **RE-RUN**; its 1840
+  records carry a null the producer, not the consumer, has to fill.
+* The remaining 27 h2 arms are unaffected, and the 15 S2 arms among them will now clear the gate
+  they would all have failed.

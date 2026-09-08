@@ -984,7 +984,26 @@ def annotate_liveness(records: Sequence[Dict[str, Any]], arm: ArmSpec) -> List[D
                 d["_end_relative_audit"] = ("not applicable (%d edited positions in one record)"
                                             % len(idx))
         if r.get("rel_end") is None:
-            d["_end_relative_audit"] = "not applicable (all-position edit has no single rel_end)"
+            # MODE-AWARE, because "no rel_end" means opposite things on different arms
+            # (2026-09-08). An ALL-POSITION edit has no single site and is exempt. A DISABLED-HOOK
+            # bridge records no site of its own -- it discarded the write, and the wrapped hook's
+            # own record is not the one persisted. But a LIVE SINGLE-POSITION arm with no rel_end
+            # is a site that was edited and never written down, and blanket-labelling it "all
+            # positions" excused it from the end-relative audit while calling it a different
+            # scope than it ran at.
+            _m = str(r.get("mode") or "")
+            if _m.endswith("_single") and arm.expect_enabled:
+                raise RunnerRefusal(
+                    "arm %s is a LIVE SINGLE-POSITION edit (mode %r) whose liveness record "
+                    "carries NO rel_end. The token edited is not written down, the "
+                    "`resolved_absolute_index == seq_len + rel_end` audit cannot run, and a "
+                    "record with no site must not be excused as an all-position edit."
+                    % (arm.arm_id, _m))
+            d["_end_relative_audit"] = (
+                "not applicable (all-position edit has no single rel_end)"
+                if _m.endswith("_all") else
+                "not applicable (mode %r records no single rel_end; a disabled-hook bridge "
+                "discarded its write and carries no site of its own)" % _m)
         out.append(d)
     return out
 
@@ -1006,7 +1025,13 @@ PERSIST_LOCATION = {
     "layer(s) edited": ("row", "layer"),
     "token position edited (as rel_end AND as the resolved absolute index)":
         ("row", "rel_end + resolved_absolute_index"),
-    "occurrence index of the codeword": ("row", "occurrence_index_per_edit"),
+    # THE PROMPT PROPERTY, NOT THE EDIT PROPERTY (2026-09-08). `occurrence_index_per_edit` is
+    # the ordinal of the occurrence each EDITED position sits at, and an all-position edit has
+    # no edited position to speak of -- it edits all of them -- so it is null there BY DESIGN.
+    # `occurrence_index` is where the codeword IS in this prompt, which is what the frozen list
+    # names ("occurrence index of the codeword") and which is well defined on every mode. Looking
+    # the frozen field up in the per-edit key is what refused the first S2 arm ever run.
+    "occurrence index of the codeword": ("row", "occurrence_index"),
     "n_subtokens": ("row", "n_subtokens_per_occurrence"),
     "hook_fired_count": ("row", "hook_fired_count"),
     "n_destination_rows": ("row", "n_destination_rows"),
@@ -1055,8 +1080,44 @@ def persist_contract_report(pr: Prereg, arm: ArmSpec, record: Dict[str, Any],
                 out[f] = {"present": True, "where": "row",
                           "key": "orthogonal_residual_delta_l2", "value": float(_v)}
             continue
+        if f.startswith("occurrence index"):
+            # A PROPERTY OF THE PROMPT, REQUIRED OF EVERY ARM, AND NEVER A CLAIM ABOUT SCOPE.
+            # `pair_common.occurrence_annotation` populates it on every mode: on a single-position
+            # edit it is the ordinal of the occurrence the hook edited; on an all-position edit it
+            # is the codeword_last occurrence of the prompt -- the same value an S1 arm records
+            # for the same row -- carried with `occurrence_index_is_prompt_property=True` so no
+            # reader can take it for a claim that the edit was scoped to that occurrence.
+            _v = record.get("occurrence_index")
+            _prop = record.get("occurrence_index_is_prompt_property")
+            _ok = ("occurrence_index" in record
+                   and (_v is not None or not arm.expect_enabled))
+            out[f] = {"present": bool(_ok), "where": "row", "key": "occurrence_index",
+                      "value": (_v if isinstance(_v, (int, float, str)) else None),
+                      "is_prompt_property": _prop,
+                      "per_edit": record.get("occurrence_index_per_edit"),
+                      "source": record.get("occurrence_index_source"),
+                      "note": ("an all-position edit has no edit site, so this is the codeword's "
+                               "own occurrence ordinal in the PROMPT and the edit was NOT scoped "
+                               "to it" if _prop else "")}
+            if not _ok:
+                missing.append(f)
+            continue
         if where == "row":
             if f.startswith("token position"):
+                # A FABRICATED SITE IS WORSE THAN A NULL ONE. An all-position record that carries
+                # a rel_end or a resolved_absolute_index describes an intervention nobody ran.
+                # `pair_common.project_out_liveness_violations` refuses it in the producer; it is
+                # refused here too, because two independent checkers is what this contract is for.
+                if str(record.get("mode") or "").endswith("_all"):
+                    _fab = [k for k in ("rel_end", "resolved_absolute_index")
+                            if record.get(k) is not None]
+                    if _fab:
+                        raise RunnerRefusal(
+                            "arm %s is an ALL-POSITION edit whose liveness record carries %s. "
+                            "There is no single edit site on an all-position arm; a site "
+                            "recorded for one is invented, and it would pass the end-relative "
+                            "audit while describing an intervention that was never run."
+                            % (arm.arm_id, _fab))
                 ok = ("rel_end" in record) and ("resolved_absolute_index" in record)
             else:
                 # PRESENCE IS NOT ENOUGH. `hook_stats_dict` pre-populates every key with None, so
@@ -1066,9 +1127,18 @@ def persist_contract_report(pr: Prereg, arm: ArmSpec, record: Dict[str, Any],
                 ok = (key in record) and (record.get(key) is not None or not arm.expect_enabled)
             val = record.get(key)
             if ok and f.startswith("token position") and record.get("rel_end") is None:
-                out[f] = {"present": True, "where": where, "value": "all positions (S2)",
-                          "note": "an all-position edit has no single rel_end; `positions` is "
-                                  "every position by construction"}
+                # THE NOTE MUST NAME THE ARM'S OWN MODE (2026-09-08). "all positions (S2)" was
+                # printed for every record without a rel_end, including the C5 disabled-hook
+                # bridge over a SINGLE-position hook -- an S1 arm whose contract report claimed
+                # S2 scope.
+                _m = str(record.get("mode") or "")
+                out[f] = {"present": True, "where": where,
+                          "value": ("all positions (S2)" if _m.endswith("_all")
+                                    else "no site recorded (mode %r)" % _m),
+                          "note": ("an all-position edit has no single rel_end; `positions` is "
+                                   "every position by construction" if _m.endswith("_all") else
+                                   "the disabled-hook bridge discarded its write and records no "
+                                   "site of its own; this is NOT an all-position edit")}
                 continue
         else:
             ok = gate.get(key) not in (None, {}, "")
@@ -2031,7 +2101,7 @@ def _live_record(**kw) -> Dict[str, Any]:
         "prompt_id": "p0", "domain": "d", "split": "test", "cell": "C", "concept": "bomb",
         "codeword": "button", "arm": "x", "n_target_occurrences": 1,
         "codeword_last_indices": [90], "n_codeword_occurrences": 1,
-        "n_subtokens_per_occurrence": [1], "occurrence_index_per_edit": [0],
+        "n_subtokens_per_occurrence": [1],
         "liveness_violations": []})
     r.update({"n_forward_calls": 1, "hook_fired_count": 1, "n_destination_rows": 1,
               "n_forward_with_destinations": 1,
@@ -2042,6 +2112,37 @@ def _live_record(**kw) -> Dict[str, Any]:
               "cos_pre_post": 0.99, "direction_norm": 1.0, "alpha": 1.0, "norm_ratio": 0.98,
               "resolved_absolute_index": [90], "seq_len_last": 100, "seq_len": 100,
               "seq_len_at_resolution": 100})
+    # THE SAME RESOLUTION THE PRODUCER RUNS, not a hand-written copy of its output. A stub that
+    # hand-writes `occurrence_index_per_edit` cannot notice that the producer stopped writing the
+    # field the frozen contract actually looks up -- which is how job 869332 got to the GPU.
+    r.update(pc.occurrence_annotation(r, r["codeword_last_indices"]))
+    r.update(kw)
+    return r
+
+
+def _live_record_all(**kw) -> Dict[str, Any]:
+    """The S2 (ALL-POSITION) counterpart of `_live_record`, as `score_behavior` now writes it.
+
+    Every field the frozen persist list names, with NO edit site: an all-position edit has none.
+    `occurrence_index` is present because it is a property of the PROMPT (job 869332's defect);
+    `rel_end` / `resolved_absolute_index` / `positions` stay null because they are properties of
+    the EDIT SITE and inventing one would be worse than the bug being fixed.
+    """
+    import pair_common as pc
+    r = pc.hook_stats_dict(mode="project_out_all", layer=7)
+    r.update({"prompt_id": "p0", "domain": "d", "split": "test", "cell": "C", "concept": "bomb",
+              "codeword": "basket", "arm": "x", "n_target_occurrences": 5,
+              "codeword_last_indices": [174, 192, 211, 230, 250], "n_codeword_occurrences": 5,
+              "n_subtokens_per_occurrence": [1, 1, 1, 1, 1],
+              "liveness_violations": []})
+    r.update({"n_forward_calls": 1, "hook_fired_count": 1, "n_destination_rows": 1052,
+              "n_forward_with_destinations": 1, "n_cells_edited_realised": 1052,
+              "n_cells_edited_expected": 1052, "activation_norm_pre": 10.0,
+              "activation_norm_post": 9.8, "projection_removed_l2": 1.4, "max_abs_delta": 0.3,
+              "min_projection_removed_l2": 1.4, "orthogonal_residual_delta_l2": 2.1e-07,
+              "cos_pre_post": 0.99, "direction_norm": 1.0, "alpha": 1.0, "norm_ratio": 0.98,
+              "seq_len_last": 260, "seq_len": 260})
+    r.update(pc.occurrence_annotation(r, r["codeword_last_indices"]))
     r.update(kw)
     return r
 
@@ -2233,6 +2334,53 @@ def selftest() -> int:
     ck.add("persist_contract_null", "a persisted field that is present but NULL on a LIVE arm is "
            "refused (a check that reads the producer's own null field is not a check)", ok, 1, "")
 
+    # ---- 2026-09-08: the S2 persist defect that stopped job 869332 -----------------------
+    _s2_arm = _stub_arm(arm_id="h2a_s2_projout_basket", scope="S2", family_member="H2axS2",
+                        layers=[7, 8, 9, 10, 11, 12, 13, 14])
+    _s2 = annotate_liveness([_live_record_all()], _s2_arm)[0]
+    _rep2 = persist_contract_report(pr, _s2_arm, _s2, gate_stub)
+    ck.add("persist_contract_all_position",
+           "every field of the frozen list is persisted by an ALL-POSITION (S2) arm too -- the "
+           "arm that ran clean on the GPU (job 869332: 230 rows, 1840 liveness records, 0 "
+           "violations) and was refused at artifact verification for one missing field",
+           _rep2["n_missing"] == 0, _rep2["n_fields"], "%d fields" % _rep2["n_fields"])
+    ck.add("persist_contract_all_position_occurrence_is_the_prompt_property",
+           "the S2 occurrence index is the CODEWORD's occurrence in the prompt (the same value "
+           "an S1 record carries for the same row), labelled as a prompt property, with no "
+           "per-edit ordinal and no invented edit site",
+           _rep2["per_field"]["occurrence index of the codeword"]["value"] == 4
+           and _rep2["per_field"]["occurrence index of the codeword"]["is_prompt_property"] is True
+           and _s2["rel_end"] is None and _s2["resolved_absolute_index"] is None,
+           _rep2["per_field"]["occurrence index of the codeword"]["value"],
+           str(_rep2["per_field"]["token position edited (as rel_end AND as the resolved "
+                                  "absolute index)"]["value"]))
+    try:
+        persist_contract_report(pr, _s2_arm, {**_s2, "occurrence_index": None}, gate_stub)
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("persist_contract_all_position_null_occurrence_refused",
+           "an all-position arm that leaves the occurrence index null is REFUSED -- this is the "
+           "exact refusal job 869332 hit, and it must survive the fix", ok, 1)
+    for _k, _v in (("rel_end", -10), ("resolved_absolute_index", [250])):
+        try:
+            persist_contract_report(pr, _s2_arm, {**_s2, _k: _v}, gate_stub)
+            ok = False
+        except RunnerRefusal:
+            ok = True
+        ck.add("persist_contract_all_position_fabricated_%s_refused" % _k,
+               "an all-position arm that FABRICATES a %s is refused: there is no single edit "
+               "site, and inventing one would describe an intervention nobody ran" % _k, ok, 1)
+    try:
+        annotate_liveness([_live_record(rel_end=None, resolved_absolute_index=None)], _stub_arm())
+        ok = False
+    except RunnerRefusal:
+        ok = True
+    ck.add("live_single_position_without_a_site_refused",
+           "a LIVE SINGLE-position record with no rel_end is refused rather than excused as an "
+           "all-position edit (the note used to say 'all positions (S2)' for every record "
+           "without one, including the C5 bridge over a single-position hook)", ok, 1)
+
     # kill condition
     states_nm = {"S1": {"state": KILL_NOT_MOVED, "detail": "d"},
                  "S2": {"state": KILL_MOVED, "detail": "d"}}
@@ -2337,9 +2485,31 @@ def selftest() -> int:
                for i in json.load(open(repo_path(AMENDMENT_DEFAULT)))["pre_extraction_checklist"]
                if i["blocking"] and not i["done"] and not i.get("applies_to_stages")), 1,
            "%d blocking reason(s)" % len(g_h2["blocking"]))
+    # C-127. This asserted that "analyzer_exists" appears in the LIVE config's blocking list -- i.e.
+    # it encoded the then-current state (analyzer_exists == false) as an invariant. When DCS-R-130
+    # legitimately flipped the flag to true, having built the verdict path, this check FAILED. A
+    # check that hardcodes the present defect state fails exactly when the defect is repaired, which
+    # is the opposite of what a check is for. This is the THIRD occurrence of that class in two days
+    # (PR-058's identity_gate self-test, mutation M47, and now this one), so it is fixed the same
+    # way: assert the GATE'S BEHAVIOUR against an injected false, not the live value.
+    _mut = json.load(open(repo_path(AMENDMENT_DEFAULT)))
+    _mut["artifacts"]["analyzer_exists"] = False
+    import tempfile as _tf
+    with _tf.NamedTemporaryFile("w", suffix=".json", delete=False) as _fh:
+        json.dump(_mut, _fh)
+        _mut_path = _fh.name
+    try:
+        _g_false = checklist_gate(PREREG_DEFAULT, _mut_path, "h2")
+        _blocks_when_false = any("analyzer_exists" in r for r in _g_false["blocking"])
+    finally:
+        os.unlink(_mut_path)
     ck.add("a14_analyzer_exists_still_gates",
-           "artifacts.analyzer_exists == false still refuses, stage-aware or not",
-           any("analyzer_exists" in r for r in g_h2["blocking"]), 1)
+           "artifacts.analyzer_exists == false still refuses, stage-aware or not -- proven by "
+           "INJECTING false into a copy, so the check survives the real flag being true",
+           _blocks_when_false, 1,
+           "live value=%r; injected-false blocks=%r"
+           % (json.load(open(repo_path(AMENDMENT_DEFAULT)))["artifacts"]["analyzer_exists"],
+              _blocks_when_false))
     _forged = {"id": "ZZ9", "item": "a fabricated blocker", "blocking": True, "done": False,
                "applies_to_stages": ["h1"]}
     ck.add("a14_a_scope_with_no_code_path_is_not_a_scope",
@@ -2579,6 +2749,49 @@ def mutate() -> int:
               pr, _stub_arm(),
               _fake_run_dir(os.path.join(_td, "e"), 230, [_live_record()], realized_dose=False),
               230, con_dir="v_bomb_specific"))
+        # ---- 2026-09-08: the S2 (all-position) persist defect and its two honest limits ----
+        _s2arm = _stub_arm(arm_id="h2a_s2_projout_basket", scope="S2", family_member="H2axS2")
+        m("M67_all_position_without_the_occurrence_index",
+          "an ALL-POSITION arm that does not persist the occurrence index of the codeword must "
+          "REFUSE -- it is a property of the PROMPT, required of every arm, and this is the "
+          "exact refusal that stopped job 869332 after a clean 230-row run",
+          lambda: verify_arm_artifacts(
+              pr, _s2arm,
+              _fake_run_dir(os.path.join(_td, "s2a"), 230,
+                            [_live_record_all(occurrence_index=None,
+                                              occurrence_index_is_prompt_property=None,
+                                              occurrence_index_source="never computed")]),
+              230, con_dir="v_bomb_specific", direction_sha="0" * 64))
+        # DIRECT, not end-to-end: with only a rel_end fabricated the end-relative audit refuses
+        # FIRST (a rel_end with no resolved index is unauditable), which is a correct refusal for
+        # a different reason. The fabrication gate itself is exercised here, and again against
+        # `pair_common`'s producer gate as M83-M85 of the analyzer's harness.
+        m("M68_all_position_fabricates_a_rel_end",
+          "an ALL-POSITION arm that INVENTS a rel_end must refuse: there is no single edit site, "
+          "and a fabricated one describes an intervention nobody ran",
+          lambda: persist_contract_report(
+              pr, _s2arm,
+              annotate_liveness([_live_record_all()], _s2arm)[0] | {"rel_end": -10},
+              {"realized_dose": {"x": 1}, "direction_file_sha256": "s", "control_draw_seed": 1,
+               "output_sha256": "o", "cos_edit_vs_direction": "c"}))
+        m("M69_all_position_fabricates_an_absolute_index",
+          "an ALL-POSITION arm that INVENTS a resolved_absolute_index must refuse for the same "
+          "reason",
+          lambda: verify_arm_artifacts(
+              pr, _s2arm,
+              _fake_run_dir(os.path.join(_td, "s2c"), 230,
+                            [_live_record_all(rel_end=-10, seq_len_at_resolution=260,
+                                              resolved_absolute_index=[250])]),
+              230, con_dir="v_bomb_specific", direction_sha="0" * 64))
+        m("M70_live_single_position_with_no_site",
+          "a LIVE SINGLE-POSITION arm whose record carries NO rel_end must refuse rather than be "
+          "excused as an all-position edit",
+          lambda: verify_arm_artifacts(
+              pr, _stub_arm(),
+              _fake_run_dir(os.path.join(_td, "s2d"), 230,
+                            [_live_record(rel_end=None, resolved_absolute_index=None,
+                                          seq_len_at_resolution=None)]),
+              230, con_dir="v_bomb_specific", direction_sha="0" * 64))
     m("M21_out_of_order_stage", "a confirmatory stage with no completed Q1 must refuse",
       lambda: assert_stage_order(repo_path("outputs", "no_such_state_root_"), "h2", "test"))
     m("M22_zero_domain_delta", "an arm-vs-baseline delta that pairs nothing must refuse",

@@ -1404,6 +1404,21 @@ def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
                         "add_realised_dose_!=_declared:the hook WROTE %.6g per cell but reports "
                         "alpha=%.6g (relative error %.3g). The magnitude injected is not the "
                         "magnitude the manifest claims." % (float(_rd), float(_al), _relerr))
+        # ---- an ALL-POSITION edit MUST NOT carry a single edit site (2026-09-08) -----------
+        # `occurrence_index` is a property of the PROMPT and is populated on every mode (see
+        # `occurrence_annotation`). `rel_end` and `resolved_absolute_index` are properties of the
+        # EDIT SITE, and an all-position edit has none: there is no single site. A record that
+        # carries one is not a more complete record, it is a FABRICATED one -- it says the edit
+        # was scoped to a token when the edit touched every token -- and it would pass the
+        # end-relative audit below while describing an intervention nobody ran. Refused here, in
+        # the producer's own gate, so it cannot reach an artifact.
+        if str(stats.get("mode") or "").endswith("_all"):
+            for _k in ("rel_end", "resolved_absolute_index", "positions"):
+                if stats.get(_k) is not None:
+                    bad.append(
+                        "all_position_edit_claims_a_single_site:%s=%r on mode %r. An "
+                        "all-position edit has no edit site; inventing one is worse than "
+                        "leaving it null." % (_k, stats.get(_k), stats.get("mode")))
         # ---- review F3: the persisted site must satisfy its own documented invariant -------
         _rel, _slr = stats.get("rel_end"), stats.get("seq_len_at_resolution")
         _abs = stats.get("resolved_absolute_index")
@@ -1423,6 +1438,75 @@ def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
         if not (float(stats.get("would_have_changed_max_abs") or 0.0) > 0.0):
             bad.append("bridge_over_a_dead_hook:would_have_changed_max_abs==0")
     return bad
+
+
+def occurrence_annotation(stats: Optional[Dict[str, Any]],
+                          codeword_last_indices: Optional[Sequence[int]]) -> Dict[str, Any]:
+    """Resolve "occurrence index of the codeword" for ONE hook record, on EVERY edit mode.
+
+    The frozen `persist_per_row_and_per_arm` list requires this field of every arm. It is a
+    property of the PROMPT -- where the codeword occurs in this row -- NOT a property of the
+    edit, so it is well defined whether the edit touched one position or all of them. Until
+    2026-09-08 it was derived only from `resolved_absolute_index`, so the FIRST all-position
+    (S2) arm ever run persisted `null` for it and was refused at artifact verification after a
+    clean 230-row GPU run.
+
+    `codeword_last_indices` is `last_idx_per_occurrence` from `extract_boombness.resolve_
+    occurrences` -- one absolute index per occurrence of the codeword in this prompt. It is the
+    SAME resolution the single-position path uses; nothing about occurrence resolution is
+    re-implemented here.
+
+      single-position modes  the ordinal of the occurrence the hook EDITED, or `None` for an
+                             edited position that is not at a codeword_last site (the honest
+                             value: it says "this edit was not at a codeword site" rather than
+                             defaulting to 0 and implying it was the first occurrence).
+      all-position modes     the ordinal of the codeword_last occurrence of this prompt -- the
+                             LAST one, which is the site the single-position arms edit and
+                             therefore the same value an S1 record carries for the same row.
+                             It is labelled `occurrence_index_is_prompt_property = True` and
+                             `occurrence_index_per_edit` stays `None`, so no reader can take it
+                             for a claim that the edit was scoped to that occurrence. `rel_end`
+                             and `resolved_absolute_index` STAY NULL for the same reason and
+                             `project_out_liveness_violations` refuses a record that fills them.
+
+    Returns the sibling fields the writer persists alongside the record; mutates
+    `stats["occurrence_index"]` in place.
+    """
+    last = [int(x) for x in (codeword_last_indices or [])]
+    if stats is None:
+        return {"occurrence_index_per_edit": None,
+                "occurrence_index_is_prompt_property": None,
+                "occurrence_index_source": "no hook record"}
+    if not last:
+        # NOT 0, and not a guess. A prompt in which no codeword occurrence could be resolved has
+        # no occurrence index, and a live arm carrying `None` here is REFUSED downstream by the
+        # frozen persist contract -- which is the correct outcome, not a defect to paper over.
+        stats["occurrence_index"] = None
+        return {"occurrence_index_per_edit": None,
+                "occurrence_index_is_prompt_property": None,
+                "occurrence_index_source": "NO codeword occurrence resolved for this prompt"}
+    _ri = stats.get("resolved_absolute_index")
+    if _ri:
+        _idx = list(_ri) if isinstance(_ri, (list, tuple)) else [_ri]
+        occ = [(last.index(int(a)) if int(a) in last else None) for a in _idx]
+        stats["occurrence_index"] = (occ[0] if len(occ) == 1 else occ)
+        return {"occurrence_index_per_edit": occ,
+                "occurrence_index_is_prompt_property": False,
+                "occurrence_index_source": ("the ordinal, among this prompt's %d codeword "
+                                            "occurrence(s), of the position this hook EDITED"
+                                            % len(last))}
+    stats["occurrence_index"] = len(last) - 1
+    return {"occurrence_index_per_edit": None,
+            "occurrence_index_is_prompt_property": True,
+            "occurrence_index_source": (
+                "codeword_last: the ordinal of the LAST of this prompt's %d codeword "
+                "occurrence(s) (last_idx_per_occurrence[-1] = %d), which is the site the "
+                "single-position arms edit. THIS record (mode %r) carries no single edit site "
+                "-- an all-position edit has none, and a disabled-hook bridge discarded its "
+                "write -- so `occurrence_index_per_edit`, `rel_end` and "
+                "`resolved_absolute_index` are null, and this field is an audit property of the "
+                "PROMPT, never a claim that the edit was scoped to this occurrence."
+                % (len(last), last[-1], str(stats.get("mode") or "")))}
 
 
 class DisabledHookBridge:

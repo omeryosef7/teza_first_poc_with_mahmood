@@ -2653,6 +2653,42 @@ def selftest() -> int:
            and _sa["hook_fired_count"] == 1 and _ss["projection_removed_l2"] > 0
            and _ss["resolved_absolute_index"] == [6], 2,
            "cos=%.6f removed=%.4f" % (_sa["cos_pre_post"], _sa["projection_removed_l2"]))
+    # ---- 2026-09-08: "occurrence index of the codeword" on BOTH scopes -------------------
+    # The frozen `persist_per_row_and_per_arm` list requires it of EVERY arm. It is a property of
+    # the PROMPT, so it is well defined for an all-position edit; the code simply never computed
+    # it on that path, and the first S2 arm ever run (job 869332) was refused at artifact
+    # verification after 230 clean rows and 1840 clean liveness records. The two records above
+    # come from the SAME toy prompt, so the S1 and S2 values must AGREE -- which is exactly what
+    # the audit is for -- while the S2 record keeps a null edit site.
+    _codeword_last = [2, 4, 6]                      # this toy prompt's codeword occurrences
+    _oc_one = _pc.occurrence_annotation(_ss, _codeword_last)
+    _oc_all = _pc.occurrence_annotation(_sa, _codeword_last)
+    ck.add("occurrence_index_on_both_scopes",
+           "the occurrence index of the codeword is populated on the all-position (S2) record "
+           "as well as the single-position (S1) one, and the two AGREE on the same prompt",
+           _ss["occurrence_index"] == 2 and _sa["occurrence_index"] == 2, 2,
+           "S1=%r S2=%r" % (_ss["occurrence_index"], _sa["occurrence_index"]))
+    ck.add("occurrence_index_s2_is_labelled_a_prompt_property",
+           "the S2 value is labelled a PROMPT property and carries no per-edit ordinal, so it "
+           "cannot be read as a claim that the all-position edit was scoped to that occurrence",
+           _oc_all["occurrence_index_is_prompt_property"] is True
+           and _oc_all["occurrence_index_per_edit"] is None
+           and _oc_one["occurrence_index_is_prompt_property"] is False
+           and _oc_one["occurrence_index_per_edit"] == [2], 2,
+           _oc_all["occurrence_index_source"][:60])
+    ck.add("occurrence_index_does_not_invent_an_edit_site",
+           "populating the occurrence index leaves `rel_end` and `resolved_absolute_index` NULL "
+           "on the all-position record -- they describe the edit site, and there is none",
+           _sa["rel_end"] is None and _sa["resolved_absolute_index"] is None
+           and _pc.project_out_liveness_violations(_sa) == [], 1,
+           "rel_end=%r abs=%r" % (_sa["rel_end"], _sa["resolved_absolute_index"]))
+    ck.add("occurrence_index_absent_when_no_occurrence_resolves",
+           "a prompt in which NO codeword occurrence resolves gets None, never 0 -- and a live "
+           "arm carrying None is then refused by the frozen persist contract",
+           _pc.occurrence_annotation(
+               _pc.hook_stats_dict(mode="project_out_all", layer=3),
+               [])["occurrence_index_is_prompt_property"] is None, 1)
+
     # ---- C-117: the PRODUCER writes the two fields the CONSUMER reads, and the consumer's own
     #      gates now pass on REAL producer records rather than voiding them. This is the exact
     #      reproduction the 2026-09-07 review ran and got live=False / ok=False / max_abs=nan on.
@@ -3187,6 +3223,30 @@ def mutate() -> int:
     raisers["M82 a prompt_id in two DIFFERENT domains"] = lambda: paired_by_prompt(
         [{"prompt_id": "a", "domain": "d1", "v": 1.0}],
         [{"prompt_id": "a", "domain": "d2", "v": 1.0}], lambda r: r["v"], "M82")
+
+    # ---- 2026-09-08: the S2 (all-position) persist defect that stopped job 869332 ----------
+    # The FIX populates `occurrence_index` -- a property of the PROMPT -- on an all-position arm.
+    # The guard that keeps the fix honest is the other half: `rel_end` and
+    # `resolved_absolute_index` describe the EDIT SITE, an all-position edit has none, and a
+    # record that invents one would pass the end-relative audit while describing an intervention
+    # nobody ran. Both are shown RED here, because a fix with no mutation is not a proven fix.
+    def _all_row(**kw):
+        r = _pc.hook_stats_dict(mode="project_out_all", layer=9)
+        r.update({"n_forward_calls": 1, "n_forward_with_destinations": 1, "hook_fired_count": 1,
+                  "n_destination_rows": 12, "n_cells_edited_realised": 12,
+                  "n_cells_edited_expected": 12, "activation_norm_pre": 10.0,
+                  "activation_norm_post": 9.8, "projection_removed_l2": 1.4,
+                  "min_projection_removed_l2": 1.4, "orthogonal_residual_delta_l2": 2e-7,
+                  "max_abs_delta": 0.3, "cos_pre_post": 0.99, "seq_len": 100})
+        r.update(kw)
+        return r
+
+    muts["M83 all-position record claiming a single rel_end"] = lambda: not _pc.\
+        project_out_liveness_violations(_all_row(rel_end=-10, seq_len_at_resolution=100))
+    muts["M84 all-position record claiming an edit site"] = lambda: not _pc.\
+        project_out_liveness_violations(_all_row(resolved_absolute_index=[90]))
+    muts["M85 all-position record claiming edited positions"] = lambda: not _pc.\
+        project_out_liveness_violations(_all_row(positions=[90]))
 
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0

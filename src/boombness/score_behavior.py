@@ -3062,24 +3062,29 @@ def main() -> int:
                         "[score] REFUSING: the intervention produced ZERO instrumented hooks on "
                         f"row {row['prompt_id']!r}. A zero-hook bind is not a null result.")
                 for _st in _pr057_stats:
-                    _viol = pc.project_out_liveness_violations(_st)
                     # OCCURRENCE INDEX, resolved against THIS row (mandate 10.3 persists
-                    # "occurrence"). `_last_r` is last_idx_per_occurrence from
-                    # resolve_occurrences: one absolute index per occurrence of the codeword in
-                    # this prompt. An edited position that IS one of them gets its ordinal;
-                    # one that is not gets None, which is the honest value -- it says "this
-                    # edit was not at a codeword_last site" rather than defaulting to 0 and
-                    # implying it was the first occurrence.
-                    _occ = None
-                    _ri = _st.get("resolved_absolute_index")
-                    if _ri:
-                        _occ = [(_last_r.index(_a) if _a in _last_r else None) for _a in _ri]
-                        _st["occurrence_index"] = (_occ[0] if len(_occ) == 1 else _occ)
+                    # "occurrence"), ON EVERY EDIT MODE. `_last_r` is last_idx_per_occurrence
+                    # from resolve_occurrences: one absolute index per occurrence of the codeword
+                    # in this prompt.
+                    #
+                    # THE RESOLUTION IS `pc.occurrence_annotation` AND IT RUNS BEFORE THE
+                    # LIVENESS GATE, because the gate now rules on what it writes. Until
+                    # 2026-09-08 this was derived ONLY from `resolved_absolute_index`, so an
+                    # ALL-POSITION (S2) arm -- which has no single edit site -- persisted `null`
+                    # for a field the frozen `persist_per_row_and_per_arm` list requires of every
+                    # arm, and the first S2 arm ever run (job 869332, 230 clean rows, 1840 clean
+                    # liveness records) was REFUSED at artifact verification. The occurrence index
+                    # is a property of the PROMPT, not of the edit, so it is well defined for an
+                    # all-position arm and is now populated for one -- while `rel_end` and
+                    # `resolved_absolute_index`, which ARE properties of the edit site, stay null
+                    # and are refused if fabricated.
+                    _occ_ann = pc.occurrence_annotation(_st, _last_r)
+                    _viol = pc.project_out_liveness_violations(_st)
                     _pr057_live_fh.write(json.dumps({
                         "codeword_last_indices": list(_last_r),
                         "n_codeword_occurrences": len(_last_r),
                         "n_subtokens_per_occurrence": list(_nsub_r),
-                        "occurrence_index_per_edit": _occ,
+                        **_occ_ann,
                         "prompt_id": row.get("prompt_id"), "domain": row.get("domain"),
                         "split": row.get("split"), "cell": row.get("cell"),
                         "concept": row.get("concept"), "codeword": row.get("codeword"),
