@@ -4791,3 +4791,62 @@ minimal repaired version, and ~20–60 GPU-hours for one that actually answers C
 needs generation plus a judge.
 
 **No preregistration was written.** Writing one would have implied the phase is runnable.
+
+---
+
+## DCS-R-136 / C-128 — PHASE 10's T2 gate failure is OUR instrument; and Q0's pass was a POOLED pass
+*2026-09-08* — `reports/DCS_TS_P10_CELLBE_OPTION_MASS.md`
+
+GPU job 869869 scored all 2,784 rows of `button_bomb` on cells B/E and then failed its own
+option-mass gate (median **0.01015** against 0.05). The runner stopped rather than burn the other
+five banks — **~2.7 GPU-hours saved by failing closed**. The question was whether that number is a
+property of the model or of us. **It is us.**
+
+**The option set is wrong for cells B/E by bank construction.** `metadata.json` declares
+`semantic_variants = {"concept": [" bomb"," Bomb"], "codeword": [" button"," Button"]}`, but the bank
+records **`n_codeword_occurrences = 0` on every B/E row** — the word `button` never appears in those
+stimuli at all. Measured `p_codeword` median **5e-6 (B) / 8e-6 (E)** against 0.030–0.059 on A/C. So
+one option is dead and the other is the very word the question asks about. **One live option is not a
+forced choice.** The read position is *not* the defect: the answer scaffold is byte-identical across
+A/B/C/E and the readout sits at offset 0 after `"Answer:"` in every cell.
+
+**What the model actually said, and it is a result rather than a diagnostic.** On **cell B** it is
+confident and on-topic, naming the *referent*: ` Threat` 409 (35.3%), ` Explos` 266 (22.9%),
+` Device` 125 (10.8%) — top-3 = 69.0%, with top-1 landing in the option set on **0.1%** of rows. On
+**cell E the benign remap INSTALLED**: food-family top-1 rises **0.8% → 24.6%** while explosive-family
+falls 24.4% → 16.6% (` Food` 39, ` Cake` 32, ` Sn`(ack) 27, ` Seeds` 24, ` Juice` 17, ` Fruit` 15).
+**This answers PHASE 11's kill condition (3) with no GPU**: the cell-E remap does install, so that
+CANNOT-ANSWER branch is not the one we are in.
+
+## The finding that qualifies my own Q0 sign-off
+
+`R-117` recorded Q0 as CLEARED on "`option_mass_gate = PASS` 6/6, the channel is engaged everywhere".
+**That was a POOLED pass.** Broken out per cell and per dose: **A dose0 0.0416, A dose4 0.0593,
+C dose0 0.0416, C dose4 0.3134** — *three of the four sub-cells sit at or below the 0.05 gate*, and
+the 0.0825 headline is carried by **C dose 4 alone**.
+
+**PHASE 9 is unaffected, and I checked rather than assumed it**: its population is cell C,
+`semantic_one_word`, dose 4 — precisely the one sub-cell that passes strongly (0.3134). So the
+verdict stands on the sub-cell that genuinely engages. But the general claim *"the concept-free
+channel is engaged"* is narrower than I wrote it, and the honest form is **"engaged on cell C at
+dose 4; at or below the gate on A dose 0/4 and C dose 0"**.
+
+Also measured: **dose 0 decodes ` None` on 232/232 rows in all four cells** — correct, since the
+queried word is absent from the passage, but it means **dose 0 is not a usable null for this channel
+in any cell**.
+
+## What PHASE 10 needs before any re-run
+
+`--allow-tail-readout` is **declined**: the tail it warns about is real, and the repair is a correct
+option set, not a waiver. Accepting a gate deliberately is only honest once the thing it warns about
+has been checked and found fine; here it has been checked and found broken. Three items:
+
+1. build the option set **per cell**, not once per bank from `rows[0]` — a `score_behavior.py` change;
+2. decide B/E's real second option. The design's own `mapping_use_forced_choice` `{literal, mapped}`
+   pair is the right instrument, but **`mapping_use_options` is `None` on all 22,272 rows**, so the
+   bank must be **regenerated**;
+3. compute the gate **per cell and per dose**, excluding dose 0 or scoring `"None"` in it.
+
+The remaining five banks stay unrun until those are done. The written rows are not salvageable for the
+primary readout — `summary.json`'s `reportable: false` is correct and stands — but the `top1_id`
+column is salvageable as the diagnostic above.
