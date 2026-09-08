@@ -1192,6 +1192,35 @@ def liveness_gate(records: Sequence[Dict[str, Any]], arm_id: str, pr: Prereg,
                 "reasons": ["NO LIVENESS RECORDS AT ALL -- %s is absent or empty for arm %r. A "
                             "null behind an unrecorded hook is VOID, not a negative."
                             % (CONTRACT_LIVENESS, arm_id)]}
+    # ---- PR059-D4: A MISSING FIELD RAISES; IT IS NEVER READ AS A MEASURED ZERO ---------------
+    # Until this block, every counter below was read with `r.get(key, 0)`. The attention-knockout
+    # producer wrote NONE of `hook_fired_count` / `n_cells_edited_expected` /
+    # `n_cells_edited_realised`, so on a real knockout arm this gate compared 0 against 0 and
+    # called the arm dead for a SCHEMA reason -- or, with the comparison satisfied, called a
+    # never-measured hook clean. Both are the C-117 shape: a check that reads the producer's own
+    # absent field and asserts something about nothing.
+    #
+    # The producer now owns these counts (`ScopedAttentionKnockout._pre`, expected BEFORE the
+    # write and realised READ BACK from the mask). The gate's job is to refuse to guess: an
+    # ABSENT field is a REFUSAL, and it is a different outcome from a field that is present and
+    # zero -- which is a DEAD HOOK and is reported as one.
+    _required = (("attn_implementation", "n_forward", "hook_fired_count",
+                  "n_prefill_edits", "n_decode_edits", "surface_span_n_tokens",
+                  "n_cells_edited_expected", "n_cells_edited_realised")
+                 if expect_enabled else
+                 ("attn_implementation", "n_forward", "enabled", "hook_fired_count",
+                  "n_cells_edited_realised"))
+    for _i, _r in enumerate(records):
+        _missing = [k for k in _required if k not in _r]
+        if _missing:
+            raise Refusal(
+                "liveness record %d of arm %r is MISSING %s. The gate REFUSES to read an absent "
+                "field as a measured zero: 'the producer never wrote this' and 'the hook fired "
+                "zero times' are opposite verdicts, and defaulting collapses them into the one "
+                "that looks like a clean scientific null. Fix the PRODUCER "
+                "(score_behavior/pair_common), never this gate -- a lenient gate here is the "
+                "C-117 defect with the sign flipped."
+                % (_i, arm_id, ", ".join(_missing)))
     impls = {str(r.get("attn_implementation", "")) for r in records}
     if impls != {want_impl}:
         reasons.append(
@@ -1818,35 +1847,413 @@ def success_conditions(pr: Prereg) -> List[str]:
     return [str(c) for c in conds]
 
 
+# ---- PR059-D7 (a): EACH CONJUNCT AGAINST **ITS OWN** PREREGISTERED EXPECTED SIGN ------------
+#
+# PHASE 9 shipped `evaluate_success(..., expected_sign=o2["expected_sign"])` -- ONE scalar,
+# applied to two conjuncts whose preregistered directions are OPPOSITE -- and printed a
+# correct O1 as `[FAIL] 1_probe_moves_intended` for two days
+# (`reports/DCS_TS_PHASE9_VERDICT_REVIEW.md`, finding 1, SERIOUS).
+#
+# The defence here is structural, not a comment. There is NO scalar to share: the signs arrive
+# as a MAP KEYED BY CONJUNCT, every entry carries the id of the conjunct it belongs to, and
+# `evaluate_success` checks that self-label against the key it looked the entry up by. Swapping
+# two conjuncts' expectations is therefore caught BY NAME, and handing the function a bare
+# scalar is a refusal.
+CONJUNCT_IDS = (
+    "1_reference_scope_moves_in_the_expected_direction",
+    "2_a_narrower_scope_reproduces_the_declared_fraction",
+    "3_that_scopes_OWN_random_row_control_does_NOT_reproduce",
+    "4_the_scaffold_only_scope_is_NULL",
+)
+
+#: The verdict CLASSES. They are kept apart on purpose: VOID ("the instrument did not do what it
+#: claims"), CANNOT_ANSWER ("the design could not address it") and NEGATIVE ("it addressed it and
+#: the answer is no") are three different statements about the world, and collapsing any two of
+#: them is the single most damaging thing this analyzer could do.
+VERDICT_CLASSES = ("VOID", "CANNOT_ANSWER", "POSITIVE", "NEGATIVE", "NO_VERDICT")
+
+#: `primary.void` clause -> the evidence key that decides it. The clause text is read from the
+#: FROZEN file and matched against these patterns; a clause matching NONE of them is a refusal,
+#: so a void clause added to the design can never be silently skipped by this walk.
+VOID_CLAUSE_KEYS = (
+    ("attn_implementation", "eager_on_loaded_config"),
+    ("hook_fired_count", "hook_fired"),
+    ("n_decode_edits", "no_decode_leak"),
+    ("realised != expected cell count", "realised_equals_expected_cells"),
+    ("realised row set", "realised_row_set_equals_declared"),
+    ("disabled-hook bridge", "bridge_reproduces_baseline"),
+    ("identical output hashes", "control_draws_distinct"),
+    ("absolute index", "no_absolute_index"),
+    ("row-level p-value", "no_row_level_p"),
+    ("unequal per-arm populations", "equal_populations"),
+)
+
+#: `primary.cannot_answer` clause -> the evidence key that decides it. Same rule: an unmatched
+#: clause refuses.
+CANNOT_ANSWER_CLAUSE_KEYS = (
+    ("option_mass", "option_mass_above_gate"),
+    ("realised power", "power_at_or_above_bar"),
+    ("resolver fails", "resolver_within_tolerance"),
+    ("installation stratification", "installing_stratum_non_empty"),
+)
+
+
+def _sgn(x) -> int:
+    return 0 if float(x) == float(0) else (1 if float(x) > float(0) else -1)
+
+
+def o1_expected_sign(pr: Prereg) -> Dict[str, Any]:
+    """O1's OWN preregistered direction, PARSED OUT OF THE FROZEN FILE -- never chosen here.
+
+    The frozen file does not carry a machine-readable `direction_expected` for O1; it states the
+    direction in prose, twice, in two different sections, both as "a knockout predicted to LOWER
+    the installed reading". BOTH statements are read and they must AGREE. Zero statements, or two
+    that disagree, is a REFUSAL -- not a default, and not a sign this analyzer picks for itself.
+    Hardcoding `-1` here would be the analyzer choosing the direction of its own primary conjunct
+    after the design was frozen.
+    """
+    obj = getattr(pr, "obj", None)
+    if not isinstance(obj, dict):
+        raise Refusal("the preregistration exposes no object to parse the expected direction "
+                      "from; O1's sign may not be assumed")
+    lower_pat = "knockout predicted to lower"
+    raise_pat = "knockout predicted to raise"
+    hits: List[Dict[str, Any]] = []
+
+    def _walk(node, path):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                _walk(v, "%s.%s" % (path, k))
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                _walk(v, "%s[%d]" % (path, i))
+        elif isinstance(node, str):
+            low = node.lower()
+            if lower_pat in low:
+                hits.append({"path": path, "sign": -1, "quote": node.strip()[:160]})
+            elif raise_pat in low:
+                hits.append({"path": path, "sign": 1, "quote": node.strip()[:160]})
+
+    _walk(obj, "")
+    if not hits:
+        raise Refusal(
+            "the frozen preregistration states NO expected direction for O1 anywhere. "
+            "`primary.success.conditions[0]` requires the reference scope to move 'in the "
+            "EXPECTED direction', and this analyzer REFUSES to supply the expectation itself: "
+            "an analyzer that picks the direction of its own primary conjunct after freeze has "
+            "removed the conjunct.")
+    signs = sorted({h["sign"] for h in hits})
+    if len(signs) != 1:
+        raise Refusal(
+            "the frozen preregistration states CONTRADICTORY expected directions for O1: %s. "
+            "A conjunct cannot be scored against two opposite expectations."
+            % [(h["path"], h["sign"]) for h in hits])
+    return {"outcome": "O1_semantic_readout", "sign": signs[0], "n_statements": len(hits),
+            "sources": hits,
+            "_meaning": "the demonstration->query knockout is preregistered to LOWER the "
+                        "installed semantic reading, so a delta with sign %+d is the EXPECTED "
+                        "direction and a delta with sign %+d is a movement the design did not "
+                        "predict" % (signs[0], -signs[0])}
+
+
+def conjunct_expected_signs(pr: Prereg) -> "OrderedDict[str, Dict[str, Any]]":
+    """Each conjunct's OWN expectation, keyed by conjunct, each carrying its own id.
+
+    They are NOT the same expectation and there is no scalar that could serve all four:
+
+      conjunct 1  a FIXED sign -- O1's preregistered direction, parsed from the frozen file.
+      conjunct 2  SAME AS THE REFERENCE'S OBSERVED sign. "Reproduces a fraction of the S_G
+                  effect" is a statement about agreement with the DENOMINATOR, not about O1's
+                  absolute direction, and it is not knowable before the run. Scoring it against
+                  conjunct 1's fixed sign is EXACTLY the PHASE 9 defect.
+      conjunct 3  EXPECTED NULL. A control's preregistered expectation is that it does NOT
+                  reproduce; it has no direction to match.
+      conjunct 4  EXPECTED NULL. `S_A` is a null by design; a scaffold-only arm that moves in
+                  the "expected" direction is not a pass, it is the family being VOID (kill 3).
+    """
+    o1 = o1_expected_sign(pr)
+    conds = success_conditions(pr)
+    out: "OrderedDict[str, Dict[str, Any]]" = OrderedDict()
+    out[CONJUNCT_IDS[0]] = {
+        "conjunct": CONJUNCT_IDS[0], "kind": "fixed_sign", "sign": int(o1["sign"]),
+        "outcome": "O1_semantic_readout", "condition_text": conds[0],
+        "source": o1["sources"]}
+    out[CONJUNCT_IDS[1]] = {
+        "conjunct": CONJUNCT_IDS[1], "kind": "same_sign_as_reference", "sign": None,
+        "outcome": "fraction of the reference scope's OWN observed effect",
+        "condition_text": conds[1],
+        "source": "primary.success.half_of_S_G_rule + fraction_of_reference().same_sign"}
+    out[CONJUNCT_IDS[2]] = {
+        "conjunct": CONJUNCT_IDS[2], "kind": "expected_null", "sign": 0,
+        "outcome": "the scope's OWN dose-matched random-row control",
+        "condition_text": conds[2], "source": "nulls_required L-N7"}
+    out[CONJUNCT_IDS[3]] = {
+        "conjunct": CONJUNCT_IDS[3], "kind": "expected_null", "sign": 0,
+        "outcome": "the scaffold-only scope %s" % scaffold_scope_id(pr),
+        "condition_text": conds[3], "source": "nulls_required L-N5 + kill_condition (third)"}
+    return out
+
+
+def assert_conjunct_signs_are_their_own(signs: Any) -> "OrderedDict[str, Dict[str, Any]]":
+    """The structural defence against the PHASE 9 defect. Called by `evaluate_success`."""
+    if not isinstance(signs, dict):
+        raise Refusal(
+            "evaluate_success was handed a SINGLE expected sign (%r) to score ALL FOUR conjuncts "
+            "against. That is the PHASE 9 defect verbatim: one outcome's preregistered direction "
+            "applied to another outcome's test, which mislabelled a correct result as FAIL for "
+            "two days. Each conjunct is scored against ITS OWN expectation or not at all."
+            % (signs,))
+    missing = [c for c in CONJUNCT_IDS if c not in signs]
+    if missing:
+        raise Refusal("the per-conjunct expected signs are missing %s" % missing)
+    for cid in CONJUNCT_IDS:
+        got = signs[cid].get("conjunct")
+        if got != cid:
+            raise Refusal(
+                "conjunct %r was handed the expectation preregistered for %r. The two conjuncts "
+                "do not share a direction -- %r is scored against %s and %r against %s -- and "
+                "applying one to the other is how PHASE 9 printed a correct outcome as FAIL."
+                % (cid, got, cid, signs[cid].get("kind"), got,
+                   signs.get(got, {}).get("kind") if got in signs else "(unknown)"))
+    return signs
+
+
+def control_status_for_scope(pr: Prereg, scope_id: str, control_ok: Any,
+                             span: Optional[Sequence[int]] = None) -> Dict[str, Any]:
+    """Conjunct 3 for ONE scope: PASS / FAIL / **UNEVALUABLE**.
+
+    `PR059-D1`: for `S_D` (m=22), `S_E` (m=23) and the reference `S_G` (m=28) the dose-matched
+    random-row control needs an m-row draw from a pool of `28 - m` and therefore DOES NOT EXIST.
+    Those scopes are DEMOTED: they still run, they are still reported, and they still enter Holm
+    at their own p -- but conjunct 3 has no value for them.
+
+    UNEVALUABLE IS NOT A PASS. `primary.success._conjunctive_on_purpose` says "any three of four
+    is not a localisation result", and an unevaluable condition is a HOLE IN THE VALIDITY
+    ARGUMENT, not a satisfied one (the lesson PHASE 9's C5 clause taught). A scope in this state
+    can never contribute a POSITIVE; it forces CANNOT ANSWER.
+    """
+    scopes = declared_scopes(pr)
+    if scope_id not in scopes:
+        raise Refusal("conjunct 3 was asked about scope %r, which this design does not declare"
+                      % scope_id)
+    sp = list(span) if span is not None else query_span_rel_end(pr)
+    con = random_row_control_constructible(pr, scope_id, scopes[scope_id]["rel_end_rows"], sp)
+    if not con["constructible"]:
+        return {"scope": scope_id, "status": "UNEVALUABLE", "passed": False,
+                "constructible": False,
+                "reason": "PR059-D1: the dose-matched random-row control for %s is NOT "
+                          "CONSTRUCTIBLE (%s). Success condition 3 has NO VALUE for this scope. "
+                          "It is reported as UNEVALUABLE and it REFUSES a verdict for this "
+                          "scope -- an unevaluable condition is a hole in the validity argument, "
+                          "never a satisfied one."
+                          % (scope_id, con.get("reason", "").strip() or "empty draw pool")}
+    if control_ok is None:
+        return {"scope": scope_id, "status": "UNEVALUATED", "passed": False,
+                "constructible": True,
+                "reason": "the control for %s IS constructible but has not been read; that is "
+                          "UNEVALUATED, and it is reported as such rather than as passed"
+                          % scope_id}
+    ok = bool(control_ok)
+    return {"scope": scope_id, "status": "PASS" if ok else "FAIL", "passed": ok,
+            "constructible": True,
+            "reason": "" if ok else
+                      "the dose-matched random-row control for %s REPRODUCED the scope's effect, "
+                      "so the effect is a property of cutting m rows and not of cutting THESE "
+                      "rows" % scope_id}
+
+
 def evaluate_success(pr: Prereg, reference_moved: bool,
                      reproducing: Sequence[Tuple[str, Dict[str, Any]]],
                      holm_res: Dict[str, Any],
-                     control_ok_by_scope: Dict[str, bool],
-                     scaffold_null: bool) -> Dict[str, Any]:
-    """All four conditions TOGETHER. Any three of four is not a localisation result."""
+                     control_ok_by_scope: Dict[str, Any],
+                     scaffold_null: bool,
+                     expected_signs: Optional[Dict[str, Any]] = None,
+                     reference_delta: Optional[float] = None,
+                     scaffold_delta: Optional[float] = None) -> Dict[str, Any]:
+    """All four conditions TOGETHER, EACH SCORED AGAINST ITS OWN PREREGISTERED EXPECTATION.
+
+    `primary.success._conjunctive_on_purpose`: "Any three of four is not a localisation result."
+    """
     conds = success_conditions(pr)
+    signs = assert_conjunct_signs_are_their_own(
+        conjunct_expected_signs(pr) if expected_signs is None else expected_signs)
     rej = holm_res["per_member"]
+
+    # ---- conjunct 1 -- O1's OWN fixed direction --------------------------------------------
+    s1 = signs[CONJUNCT_IDS[0]]
+    c1_pass = bool(reference_moved)
+    c1_detail = "reference scope %s moved=%s" % (reference_scope_id(pr), reference_moved)
+    if reference_delta is not None:
+        got = _sgn(reference_delta)
+        c1_pass = bool(reference_moved) and got == int(s1["sign"])
+        c1_detail = ("reference scope %s delta=%.6g sign=%+d; O1's OWN preregistered expected "
+                     "sign is %+d (parsed from the frozen file, not chosen here)"
+                     % (reference_scope_id(pr), float(reference_delta), got, int(s1["sign"])))
+
+    # ---- conjunct 2 -- agreement with the REFERENCE, not with O1's absolute sign ------------
     winners = [sid for sid, fr in reproducing
-               if fr.get("reproduces") and rej.get(sid, {}).get("reject", False)]
+               if fr.get("reproduces") and fr.get("same_sign", True)
+               and rej.get(sid, {}).get("reject", False)]
+
+    # ---- conjunct 3 -- each winner's OWN control, with UNEVALUABLE kept distinct ------------
+    span = query_span_rel_end(pr)
+    c3_rows = [control_status_for_scope(pr, s, (control_ok_by_scope or {}).get(s), span)
+               for s in winners]
+    c3_unevaluable = [r["scope"] for r in c3_rows if r["status"] == "UNEVALUABLE"]
+    c3_unevaluated = [r["scope"] for r in c3_rows if r["status"] == "UNEVALUATED"]
+    c3_pass = bool(winners) and all(r["status"] == "PASS" for r in c3_rows)
+
+    # ---- conjunct 4 -- EXPECTED NULL; a scaffold arm that "moves as expected" is VOID -------
+    c4_pass = bool(scaffold_null)
+    c4_detail = "scaffold-only scope %s is null=%s" % (scaffold_scope_id(pr), scaffold_null)
+    if scaffold_delta is not None:
+        c4_detail += " (delta=%.6g; the preregistered expectation is a NULL, so there is no "
+        c4_detail = (c4_detail % float(scaffold_delta)) + \
+            "direction for it to match -- movement in EITHER direction fails this conjunct)"
+
     rows = [
-        {"condition": conds[0], "passed": bool(reference_moved),
-         "detail": "reference scope %s moved=%s" % (reference_scope_id(pr), reference_moved)},
-        {"condition": conds[1], "passed": bool(winners),
-         "detail": "scopes reaching the declared fraction AND surviving Holm: %s" % winners},
-        {"condition": conds[2],
-         "passed": bool(winners) and all(bool(control_ok_by_scope.get(s)) for s in winners),
-         "detail": "dose-matched random-row control did NOT reproduce, for %s: %s"
-                   % (winners, {s: control_ok_by_scope.get(s) for s in winners})},
-        {"condition": conds[3], "passed": bool(scaffold_null),
-         "detail": "scaffold-only scope %s is null=%s" % (scaffold_scope_id(pr), scaffold_null)},
+        {"conjunct": CONJUNCT_IDS[0], "condition": conds[0], "passed": c1_pass,
+         "status": "PASS" if c1_pass else "FAIL",
+         "expected": signs[CONJUNCT_IDS[0]]["kind"],
+         "expected_sign": signs[CONJUNCT_IDS[0]]["sign"], "detail": c1_detail},
+        {"conjunct": CONJUNCT_IDS[1], "condition": conds[1], "passed": bool(winners),
+         "status": "PASS" if winners else "FAIL",
+         "expected": signs[CONJUNCT_IDS[1]]["kind"],
+         "expected_sign": signs[CONJUNCT_IDS[1]]["sign"],
+         "detail": "scopes reaching the declared fraction WITH THE REFERENCE'S OWN SIGN and "
+                   "surviving Holm: %s" % winners},
+        {"conjunct": CONJUNCT_IDS[2], "condition": conds[2], "passed": c3_pass,
+         "status": ("UNEVALUABLE" if c3_unevaluable else
+                    "UNEVALUATED" if c3_unevaluated else
+                    "PASS" if c3_pass else "FAIL"),
+         "expected": signs[CONJUNCT_IDS[2]]["kind"],
+         "expected_sign": signs[CONJUNCT_IDS[2]]["sign"],
+         "per_scope": c3_rows,
+         "detail": "dose-matched random-row control, per winning scope: %s"
+                   % {r["scope"]: r["status"] for r in c3_rows}},
+        {"conjunct": CONJUNCT_IDS[3], "condition": conds[3], "passed": c4_pass,
+         "status": "PASS" if c4_pass else "FAIL",
+         "expected": signs[CONJUNCT_IDS[3]]["kind"],
+         "expected_sign": signs[CONJUNCT_IDS[3]]["sign"], "detail": c4_detail},
     ]
     n_pass = sum(1 for r in rows if r["passed"])
+    ca: List[str] = []
+    for s in c3_unevaluable:
+        ca.append("scope %s reached the declared fraction but its dose-matched random-row "
+                  "control is NOT CONSTRUCTIBLE (PR059-D1), so success condition 3 is "
+                  "UNEVALUABLE for it. A conjunctive rule with an unevaluable conjunct returns "
+                  "CANNOT ANSWER, never a positive and never a null" % s)
+    for s in c3_unevaluated:
+        ca.append("scope %s reached the declared fraction and its control IS constructible but "
+                  "was not read; condition 3 is UNEVALUATED and is not assumed to pass" % s)
     return {"conditions": rows, "n_conditions": len(rows), "n_passed": n_pass,
             "winners": winners, "success": n_pass == len(rows),
+            "unevaluable_scopes": c3_unevaluable, "unevaluated_scopes": c3_unevaluated,
+            "cannot_answer_reasons": ca,
+            "_expected_signs": {c: signs[c]["sign"] for c in CONJUNCT_IDS},
+            "_expected_kinds": {c: signs[c]["kind"] for c in CONJUNCT_IDS},
             "_conjunctive": "all %d are required TOGETHER; %d of %d is not a localisation result"
                             % (len(rows), n_pass, len(rows))}
 
 
+# ---- PR059-D7 (b): EVERY `void` AND `cannot_answer` CLAUSE WALKED, EACH WITH A STATUS -------
+def _split_clauses(text: str) -> List[str]:
+    return [c.strip(" .") for c in str(text).split(";") if c.strip(" .")]
+
+
+def _clause_walk(clauses: Sequence[str], table: Sequence[Tuple[str, str]],
+                 evidence: Dict[str, Any], what: str) -> Dict[str, Any]:
+    rows = []
+    for c in clauses:
+        low = c.lower()
+        key = next((k for pat, k in table if pat.lower() in low), None)
+        if key is None:
+            raise Refusal(
+                "`primary.%s` carries the clause %r and this analyzer has NO evidence key for "
+                "it. A clause the walk cannot decide must not be walked past: it would be a "
+                "declared way for this phase to be %s that nothing ever checks." % (what, c, what))
+        if key not in (evidence or {}):
+            rows.append({"clause": c, "key": key, "status": "UNEVALUATED", "triggered": False})
+        else:
+            ok = bool(evidence[key])
+            rows.append({"clause": c, "key": key,
+                         "status": "CLEAN" if ok else what.upper(), "triggered": not ok})
+    return {"what": what, "clauses": rows, "n": len(rows),
+            "n_triggered": sum(1 for r in rows if r["triggered"]),
+            "n_unevaluated": sum(1 for r in rows if r["status"] == "UNEVALUATED"),
+            "triggered": [r["clause"] for r in rows if r["triggered"]],
+            "clean": all(r["status"] == "CLEAN" for r in rows)}
+
+
+def void_walk(pr: Prereg, evidence: Dict[str, Any]) -> Dict[str, Any]:
+    """Every clause of `primary.void`, each with a status. UNEVALUATED is NOT clean."""
+    return _clause_walk(_split_clauses(pr.require("primary", "void")),
+                        VOID_CLAUSE_KEYS, evidence, "void")
+
+
+def cannot_answer_walk(pr: Prereg, evidence: Dict[str, Any]) -> Dict[str, Any]:
+    """Every clause of `primary.cannot_answer`, each with a status."""
+    return _clause_walk(_split_clauses(pr.require("primary", "cannot_answer")),
+                        CANNOT_ANSWER_CLAUSE_KEYS, evidence, "cannot_answer")
+
+
+# ---- PR059-D7 (c): THE VERDICT, WITH A CLASS THAT CANNOT COLLAPSE --------------------------
+def verdict_record(pr: Prereg, success: Dict[str, Any], liveness_clean: bool,
+                   cannot_answer_reasons: Sequence[str], reference_moved: bool,
+                   forbidden: Sequence[str]) -> Dict[str, Any]:
+    """The verdict AND its CLASS. `verdict()` is this, reduced to its sentence."""
+    reasons = list(cannot_answer_reasons or []) + list(success.get("cannot_answer_reasons") or [])
+    if not liveness_clean:
+        return {"class": "VOID", "sentence": None, "refuses": True, "reasons": reasons,
+                "reason": "hook liveness is UNCLEAN. A dead hook, an SDPA arm, a leaked decode "
+                          "edit, a zero realised dose or a realised row set differing from the "
+                          "declared one produces EXACTLY the artifact a real intervention with "
+                          "no effect produces. That is VOID, not a negative."}
+    if reasons:
+        return {"class": "CANNOT_ANSWER", "refuses": False, "reasons": reasons,
+                "sentence": assert_sayable(
+                    "CANNOT ANSWER -- %s. This is reported as CANNOT ANSWER and explicitly NOT "
+                    "as a mechanism null." % "; ".join(reasons), forbidden)}
+    if not reference_moved:
+        return {"class": "VOID", "sentence": None, "refuses": True, "reasons": reasons,
+                "reason": "the reference scope did not move. `primary.negative."
+                          "_the_other_negative`: the intervention did not do what it claims -- "
+                          "check liveness, dose, the eager record and the disabled-hook bridge. "
+                          "That is VOID or a kill, NOT a localisation negative."}
+    if success.get("success"):
+        return {"class": "POSITIVE", "refuses": False, "reasons": reasons,
+                "sentence": assert_sayable(
+                    "POSITIVE -- all %d conjunctive conditions passed; the reproducing scope(s) "
+                    "are %s. Scope of the claim: this intervention, this band, this bank, this "
+                    "channel, Llama-3.1-8B-Instruct only, one query template."
+                    % (success.get("n_conditions", 0), success.get("winners")), forbidden)}
+    if not success.get("winners"):
+        # THE MANDATED WORDING, EMITTED AS A LITERAL. `check_wording_pin` returns the pinned
+        # constant only after asserting it still equals the frozen file's MANDATORY_WORDING
+        # word for word; nothing here paraphrases it or appends to it.
+        return {"class": "NEGATIVE", "refuses": False, "reasons": reasons,
+                "sentence": assert_sayable(check_wording_pin(pr), forbidden)}
+    return {"class": "NO_VERDICT", "refuses": False, "reasons": reasons,
+            "sentence": assert_sayable(
+                "NO VERDICT -- %d of %d conjunctive conditions passed. A scope reached the "
+                "declared fraction but at least one other required condition did not hold, and "
+                "the declared negative's precondition (no narrower scope reaches the fraction) "
+                "is not met either."
+                % (success.get("n_passed", 0), success.get("n_conditions", 0)), forbidden)}
+
+
+def verdict(pr: Prereg, success: Dict[str, Any], liveness_clean: bool,
+            cannot_answer_reasons: Sequence[str], reference_moved: bool,
+            forbidden: Sequence[str]) -> str:
+    """The verdict SENTENCE. REFUSES on unclean liveness before it can produce any outcome."""
+    rec = verdict_record(pr, success, liveness_clean, cannot_answer_reasons, reference_moved,
+                         forbidden)
+    if rec["class"] not in VERDICT_CLASSES:
+        raise Refusal("verdict class %r is not one of the declared %s"
+                      % (rec["class"], list(VERDICT_CLASSES)))
+    if rec.get("refuses"):
+        raise Refusal("REFUSING to emit any verdict: %s" % rec["reason"])
+    return rec["sentence"]
 def verdict(pr: Prereg, success: Dict[str, Any], liveness_clean: bool,
             cannot_answer_reasons: Sequence[str], reference_moved: bool,
             forbidden: Sequence[str]) -> str:
@@ -2154,8 +2561,25 @@ def build_arm_manifest(pr: Prereg, banks: Optional[Sequence[str]] = None) -> Lis
                 _add(bank, sid, [], "baseline", -1)
                 continue
             _add(bank, sid, s["rel_end_rows"], "scope", -1)
-            if sid == ref:
-                continue                       # the denominator gets no dose-matched control
+            # ---- PR059-D5, RESOLVED HERE (the analyzer was the wrong one, for the +6) --------
+            # This used to be `if sid == ref: continue  # the denominator gets no dose-matched
+            # control`, which skipped BOTH declared controls for the reference scope. That was one
+            # refusal doing duty for two, and the two are not the same refusal:
+            #
+            #   per_scope_random_row_control  -- needs an m-row draw from the query span EXCLUDING
+            #       the scope's own rows. For the reference m == len(span), so the pool is EMPTY.
+            #       It is genuinely unbuildable, it is refused by `random_row_control_constructible`
+            #       three lines below, and PR059-D1 already decided what that costs.
+            #   per_scope_nondemo_key_control -- draws NON-DEMONSTRATION KEYS, and the frozen file
+            #       says its pool "EXCLUDES query_span_positions". The 28-row query span therefore
+            #       does not constrain it AT ALL, at any m. The frozen text is "for EVERY scope"
+            #       and names no exemption.
+            #
+            # Skipping the second because the first is impossible left the DENOMINATOR OF EVERY
+            # FRACTION THIS PHASE REPORTS with no control of any kind, and made the analyzer's
+            # manifest disagree with the independent verifier by exactly these 6 arms (3 draws x
+            # 2 confirmatory banks). The verifier was right; this file was wrong. The reference
+            # still gets no random-row control, because that one really cannot be built.
             if random_row_control_constructible(pr, sid, s["rel_end_rows"],
                                                 span)["constructible"]:
                 for i in range(n_random_row_draws(pr)):
@@ -2314,6 +2738,64 @@ def _readout(arm_id="u", scope_id="S_C", om=None, ans=None) -> ArmReadout:
     return ArmReadout(arm_id=arm_id, scope_id=scope_id, n_rows=len(om), n_domains=2,
                       option_mass=list(om), argmax_answers=list(ans),
                       logodds=[float(0)] * len(om))
+
+
+def _obs_scope(pr: Prereg, sid: str, delta: float, p: float,
+               control_deltas: Optional[Sequence[float]] = None,
+               distinct: bool = True, n_dom: int = 8) -> Dict[str, Any]:
+    per = OrderedDict((("d%d" % i), delta) for i in range(n_dom))
+    st = {"unit": "domain", "n_domains": n_dom, "observed_delta": delta,
+          "per_domain_delta": dict(per),
+          "permutation": {"p": p, "floor": p_floor(pr), "n_exceed": 0, "n_perm": n_perm(pr),
+                          "formatted": fmt_p(p, p_floor(pr), 0)}}
+    rec: Dict[str, Any] = {
+        "scope_id": sid, "arm_id": "a_" + sid, "readout": _readout(arm_id="a_" + sid,
+                                                                   scope_id=sid),
+        "per_domain": {k: [v] for k, v in per.items()}, "stats": st, "delta": delta,
+        "p": p, "floor": p_floor(pr), "formatted": st["permutation"]["formatted"],
+        "control": None}
+    if control_deltas is not None:
+        shas = [("%064x" % (i + 1)) for i in range(len(control_deltas))]
+        if not distinct:
+            shas = [shas[0]] * len(control_deltas)
+        rec["control"] = {"n_draws": len(control_deltas), "deltas": list(control_deltas),
+                          "output_sha256": shas,
+                          "band": control_interval(list(control_deltas), alpha(pr))
+                          if len(control_deltas) > 1 else None,
+                          "distinct": control_band_gate(shas, n_random_row_draws(pr))}
+    return rec
+
+
+def _fake_obs(pr: Prereg, ref_delta: float = -6.0, ref_p: float = 0.0001,
+              winner: str = "S_C", winner_delta: float = -4.0, winner_p: float = 0.0001,
+              control_deltas: Optional[Sequence[float]] = (-0.1, -0.2, -0.15),
+              scaffold_delta: float = 0.0, scaffold_p: float = 0.9,
+              liveness_clean: bool = True,
+              void_evidence: Optional[Dict[str, Any]] = None,
+              cannot_answer_evidence: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """A COMPLETE synthetic observation, so `decide()` runs END TO END with no run directory.
+
+    Every quantity here is a number a real run would MEASURE; nothing about the decision is
+    encoded. That is the point of the observe/decide split: the verdict logic is exercised on a
+    CPU with no GPU, which is exactly what PR059-D7 (and PHASE 9's A4) says never happened.
+    """
+    ref, scaf = reference_scope_id(pr), scaffold_scope_id(pr)
+    scopes = OrderedDict()
+    scopes[ref] = _obs_scope(pr, ref, ref_delta, ref_p)
+    scopes[scaf] = _obs_scope(pr, scaf, scaffold_delta, scaffold_p,
+                              control_deltas=list(control_deltas or []) or None)
+    if winner not in (ref, scaf):
+        scopes[winner] = _obs_scope(pr, winner, winner_delta, winner_p,
+                                    control_deltas=control_deltas)
+    ve = {k: True for _pat, k in VOID_CLAUSE_KEYS}
+    ve.update(void_evidence or {})
+    ce = {k: True for _pat, k in CANNOT_ANSWER_CLAUSE_KEYS}
+    ce.update(cannot_answer_evidence or {})
+    return {"liveness_clean": bool(liveness_clean),
+            "void_evidence": ve, "cannot_answer_evidence": ce,
+            "banks": OrderedDict([(primary_banks(pr)[0], {
+                "baseline_readout": _readout(arm_id="a_base", scope_id="S_0"),
+                "scopes": scopes, "reference": scopes[ref], "scaffold": scopes[scaf]})])}
 
 
 def _fake_bank(pr: Prereg, n_dom=4) -> Dict[str, Dict[str, Any]]:
@@ -2764,7 +3246,11 @@ def selftest(pr: Prereg) -> int:
 
     # ---- success and verdict ------------------------------------------------------------------
     ids = family_member_ids(pr)
-    win, other = ids[3], ids[0]
+    # `ids[3]` is S_D, one of the three scopes PR059-D1 DEMOTED: its dose-matched random-row
+    # control is not constructible, so conjunct 3 is UNEVALUABLE for it and it can NEVER produce
+    # a POSITIVE. The four-conjunct fixture therefore uses a scope whose control EXISTS; the
+    # demoted case is asserted separately, below, as the thing it now is.
+    win, other = ids[2], ids[0]
     hr = holm_with_absent(pr, {win: 0.0001, other: 0.9})
     succ4 = evaluate_success(pr, True, [(win, fr)], hr, {win: True}, True)
     succ3 = evaluate_success(pr, True, [(win, fr)], hr, {win: False}, True)
@@ -2794,6 +3280,128 @@ def selftest(pr: Prereg) -> int:
     v_pos = verdict(pr, succ4, True, [], True, forb)
     ck.add("positive_branch", "the positive verdict states its scope limits",
            v_pos.startswith("POSITIVE") and "Llama" in v_pos, 1)
+
+    # ---- PR059-D7: THE VERDICT PATH, DRIVEN END TO END ON A CPU WITH NO RUN DIRECTORY -------
+    _null = open(os.devnull, "w")
+
+    def _cls(**kw):
+        import contextlib
+        with contextlib.redirect_stdout(_null), contextlib.redirect_stderr(_null):
+            return decide(pr, _fake_obs(pr, **kw), forb)["verdict"]["class"]
+
+    def _raises(fn):
+        try:
+            fn()
+            return False
+        except (Refusal, ZeroBinding, CannotAnswer, PreregError):
+            return True
+
+    os1 = o1_expected_sign(pr)
+    ck.add("o1_expected_sign_is_PARSED_not_chosen",
+           "O1's expected direction is READ OUT of the frozen file (it states it in prose, and "
+           "this analyzer refuses to supply it)", os1["sign"] == -1 and os1["n_statements"] >= 2,
+           os1["n_statements"], "sources=%s" % [h["path"] for h in os1["sources"]])
+    csigns = conjunct_expected_signs(pr)
+    ck.add("each_conjunct_has_ITS_OWN_expected_sign",
+           "the four conjuncts do NOT share an expectation: a fixed sign, agreement with the "
+           "reference, and two expected-NULLs -- so there is no scalar PHASE 9's defect could "
+           "be repeated with",
+           [csigns[c]["kind"] for c in CONJUNCT_IDS]
+           == ["fixed_sign", "same_sign_as_reference", "expected_null", "expected_null"], 4)
+    _swapped = OrderedDict(csigns)
+    _swapped[CONJUNCT_IDS[0]] = csigns[CONJUNCT_IDS[2]]
+    ck.add("a_conjunct_scored_against_ANOTHERS_sign_REFUSES",
+           "conjunct 1 handed conjunct 3's expectation is caught BY NAME -- the PHASE 9 defect "
+           "designed out rather than commented on",
+           _raises(lambda: evaluate_success(pr, True, [], hr, {}, True,
+                                            expected_signs=_swapped)), 1)
+    ck.add("a_SHARED_scalar_expected_sign_REFUSES",
+           "handing evaluate_success one sign for all four conjuncts is a refusal",
+           _raises(lambda: evaluate_success(pr, True, [], hr, {}, True, expected_signs=-1)), 1)
+
+    ck.add("verdict_path_reaches_POSITIVE", "decide() runs end to end and can emit a POSITIVE",
+           _cls() == "POSITIVE", 1)
+    ck.add("verdict_path_reaches_NEGATIVE",
+           "no narrower scope reaching the fraction emits the MANDATORY negative wording",
+           _cls(winner_delta=-1.0) == "NEGATIVE", 1)
+    ck.add("verdict_path_reaches_CANNOT_ANSWER",
+           "a disengaged primary channel is CANNOT ANSWER, never a mechanism null",
+           _cls(cannot_answer_evidence={"option_mass_above_gate": False}) == "CANNOT_ANSWER", 1)
+    ck.add("verdict_path_reaches_VOID_on_unclean_liveness",
+           "no verdict is emitted on unclean liveness; the class is VOID and stays distinct "
+           "from CANNOT_ANSWER and from NEGATIVE",
+           _cls(liveness_clean=False) == "VOID", 1)
+    ck.add("a_triggered_void_CLAUSE_is_also_VOID",
+           "every `primary.void` clause is walked with a status, and a triggered one refuses "
+           "the verdict just as unclean liveness does",
+           _cls(void_evidence={"hook_fired": False}) == "VOID", 1)
+    ck.add("VOID_CANNOT_ANSWER_NEGATIVE_are_three_distinct_classes",
+           "the three cannot collapse into one another",
+           len({_cls(), _cls(winner_delta=-1.0), _cls(liveness_clean=False),
+                _cls(cannot_answer_evidence={"option_mass_above_gate": False})}) == 4, 4)
+
+    # PR059-D1: a DEMOTED scope reaching the fraction is CANNOT ANSWER, never a positive.
+    ck.add("a_DEMOTED_scope_cannot_pass_condition_3",
+           "S_D/S_E/S_G have no constructible random-row control, so success condition 3 is "
+           "UNEVALUABLE for them -- and unevaluable REFUSES a verdict rather than passing",
+           _cls(winner="S_D", winner_delta=-4.0) == "CANNOT_ANSWER", 1)
+    _cs = control_status_for_scope(pr, "S_D", True)
+    ck.add("UNEVALUABLE_is_not_a_PASS_even_when_told_the_control_passed",
+           "handing condition 3 a True for a demoted scope does NOT make it pass",
+           _cs["status"] == "UNEVALUABLE" and not _cs["passed"], 1, _cs["reason"][:80])
+    _cs_ok = control_status_for_scope(pr, "S_C", True)
+    ck.add("a_scope_whose_control_EXISTS_is_still_evaluated",
+           "the demotion is scoped to the three scopes that cannot build one, not applied "
+           "wholesale", _cs_ok["status"] == "PASS" and _cs_ok["passed"], 1)
+    ck.add("a_constructible_control_left_UNREAD_is_UNEVALUATED_not_passed",
+           "'not measured' and 'measured and clean' are different verdicts",
+           control_status_for_scope(pr, "S_C", None)["status"] == "UNEVALUATED", 1)
+
+    # every clause of both declared lists is walked, and UNEVALUATED is not clean
+    _vw = void_walk(pr, {k: True for _p, k in VOID_CLAUSE_KEYS})
+    _cw = cannot_answer_walk(pr, {k: True for _p, k in CANNOT_ANSWER_CLAUSE_KEYS})
+    ck.add("every_void_and_cannot_answer_clause_is_walked",
+           "each clause of `primary.void` and `primary.cannot_answer` gets a status of its own",
+           _vw["clean"] and _cw["clean"] and _vw["n"] >= 9 and _cw["n"] >= 4,
+           _vw["n"] + _cw["n"])
+    ck.add("an_UNEVALUATED_clause_is_NOT_clean",
+           "a clause with no evidence is UNEVALUATED, and UNEVALUATED is not a satisfied clause",
+           void_walk(pr, {})["n_unevaluated"] == _vw["n"] and not void_walk(pr, {})["clean"], 1)
+
+    # Holm: a structurally absent member enters at p = 1.0 and m never shrinks
+    _hr1 = holm_with_absent(pr, {ids[2]: 0.0001})
+    ck.add("absent_members_enter_at_p_1_and_m_does_NOT_shrink",
+           "S_B is DECLARED and UNCONSTRUCTIBLE; it enters Holm at p = 1.0 and the family size "
+           "stays %d -- dropping it would make every surviving member easier to declare "
+           "significant" % len(ids),
+           _hr1["m"] == len(ids) and "S_B" in _hr1["absent_members_at_p1"]
+           and _hr1["per_member"]["S_B"]["p"] == float(1), _hr1["m"])
+    ck.add("a_shrunken_family_REFUSES",
+           "reporting fewer members than the family declares is refused",
+           _raises(lambda: refuse_shrunken_family(pr, ids[:-1])), 1)
+
+    # PR059-D4, the consumer half
+    _thin = _lr()
+    _thin.pop("n_cells_edited_expected")
+    ck.add("a_MISSING_liveness_field_RAISES_and_is_not_a_measured_zero",
+           "PR059-D4: 'the producer never wrote this' and 'the hook edited zero cells' are "
+           "opposite verdicts; the gate refuses to collapse them",
+           _raises(lambda: liveness_gate([_thin], "u", pr)), 1)
+    ck.add("a_field_PRESENT_and_zero_is_a_DEAD_HOOK_not_a_refusal",
+           "the other half of the same distinction: present-and-zero is measured, and it is VOID",
+           not liveness_gate([_lr(hook_fired_count=0)], "u", pr)["live"], 1)
+
+    # PR059-D5, both derivations
+    ck.add("PR059-D5_the_reference_scope_now_carries_its_nondemo_control",
+           "`per_scope_nondemo_key_control` is declared 'for EVERY scope' and its draw pool "
+           "excludes the query span entirely, so the reference is not exempt from it",
+           len([a for a in build_arm_manifest(pr)
+                if a.scope_id == ref and a.kind == "nondemo_control"])
+           == n_nondemo_draws(pr) * len(primary_banks(pr)), 1)
+    ck.add("PR059-D5_and_it_still_has_NO_random_row_control",
+           "that one really is unbuildable at m == len(span), and PR059-D1 stands",
+           not [a for a in build_arm_manifest(pr)
+                if a.scope_id == ref and a.kind == "random_row_control"], 1)
 
     # ---- banks, arms, identity ------------------------------------------------------------------
     caught = False
@@ -2866,6 +3474,73 @@ def _audit_or_raise(pr: Prereg):
         os.unlink(tmp)
 
 
+class _ObjStub(object):
+    """A Prereg whose OBJECT is edited -- `_PreregStub` only intercepts `require()`, and
+    `o1_expected_sign` deliberately reads the whole tree so it cannot be fooled by one key."""
+
+    def __init__(self, pr: Prereg, drop: str = "", add: str = ""):
+        import copy
+        obj = copy.deepcopy(pr.obj)
+
+        def _strip(node):
+            if isinstance(node, dict):
+                return {k: _strip(v) for k, v in node.items()}
+            if isinstance(node, list):
+                return [_strip(v) for v in node]
+            if isinstance(node, str) and drop and drop in node.lower():
+                return node.lower().replace(drop, "[direction statement removed]")
+            return node
+
+        self.obj = _strip(obj) if drop else obj
+        if add:
+            self.obj["_mutation"] = add
+        self.path = pr.path + "#OBJ-MUTANT"
+        self._pr = pr
+
+    def require(self, *keys):
+        return self._pr.require(*keys)
+
+
+def _drop(rec: Dict[str, Any], key: str) -> Dict[str, Any]:
+    out = dict(rec)
+    out.pop(key, None)
+    return out
+
+
+def _decide_quiet(pr: Prereg, obs: Dict[str, Any], forb: Sequence[str],
+                  require: str) -> Dict[str, Any]:
+    """Run `decide()` with its printing suppressed and REFUSE unless the class is `require`.
+
+    The mutation is "this observation still produced a verdict"; the refusal is what proves it
+    did not.
+    """
+    import contextlib
+    null = open(os.devnull, "w")
+    with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+        res = decide(pr, obs, forb)
+    got = res["verdict"]["class"]
+    if got != require:
+        raise Refusal("the verdict class is %r, not %r -- the observation was REFUSED a %r "
+                      "verdict" % (got, require, require))
+    return res
+
+
+def _assert_condition3_passes(pr: Prereg, scope_id: str) -> Dict[str, Any]:
+    st = control_status_for_scope(pr, scope_id, True)
+    if st["status"] != "PASS":
+        raise Refusal("success condition 3 for scope %s is %s, not PASS: %s"
+                      % (scope_id, st["status"], st["reason"]))
+    return st
+
+
+def _assert_walk_clean(walk: Dict[str, Any]) -> Dict[str, Any]:
+    if not walk["clean"]:
+        raise Refusal("%d of %d `%s` clause(s) are UNEVALUATED or triggered, and an UNEVALUATED "
+                      "clause is not a satisfied one"
+                      % (walk["n_unevaluated"] + walk["n_triggered"], walk["n"], walk["what"]))
+    return walk
+
+
 def mutate(pr: Prereg) -> int:
     """Every refusal must be REACHABLE, and each must fire for ITS OWN reason."""
     forb = forbidden_from_prereg(pr)
@@ -2879,8 +3554,8 @@ def mutate(pr: Prereg) -> int:
     ko = {("d%d" % i): [-0.6] for i in range(10)}
     fr = fraction_of_reference(pr, -3.0, -6.0)
     fr_no = fraction_of_reference(pr, -1.0, -6.0)
-    hr = holm_with_absent(pr, {ids[3]: 0.0001, ids[0]: 0.9})
-    succ_ok = evaluate_success(pr, True, [(ids[3], fr)], hr, {ids[3]: True}, True)
+    hr = holm_with_absent(pr, {ids[2]: 0.0001, ids[0]: 0.9})
+    succ_ok = evaluate_success(pr, True, [(ids[2], fr)], hr, {ids[2]: True}, True)
 
     # Gates that RETURN a flag: the mutation must make that flag False.
     muts: "OrderedDict[str, Any]" = OrderedDict()
@@ -2928,13 +3603,13 @@ def mutate(pr: Prereg) -> int:
     muts["M21 below-fraction scope reproduces"] = lambda: fraction_of_reference(
         pr, -1.0, -6.0)["reproduces"]
     muts["M22 three of four conditions"] = lambda: evaluate_success(
-        pr, True, [(ids[3], fr)], hr, {ids[3]: False}, True)["success"]
+        pr, True, [(ids[2], fr)], hr, {ids[2]: False}, True)["success"]
     muts["M23 control reproduces the scope"] = lambda: evaluate_success(
-        pr, True, [(ids[3], fr)], hr, {ids[3]: True}, False)["success"]
+        pr, True, [(ids[2], fr)], hr, {ids[2]: True}, False)["success"]
     muts["M24 no scope reaches the fraction"] = lambda: evaluate_success(
-        pr, True, [(ids[3], fr_no)], hr, {ids[3]: True}, True)["success"]
+        pr, True, [(ids[2], fr_no)], hr, {ids[2]: True}, True)["success"]
     muts["M25 reference did not move"] = lambda: evaluate_success(
-        pr, False, [(ids[3], fr)], hr, {ids[3]: True}, True)["success"]
+        pr, False, [(ids[2], fr)], hr, {ids[2]: True}, True)["success"]
     muts["M26 underpowered U3 proceeds"] = lambda: u3_power(
         pr, {("d%d" % i): (declared_mde(pr) * (1 if i % 2 else -1) * (i + 1))
              for i in range(30)})["power_ok"]
@@ -2988,6 +3663,43 @@ def mutate(pr: Prereg) -> int:
         pr, succ_ok, False, [], True, forb)
     raisers["M53 verdict when the reference did not move"] = lambda: verdict(
         pr, succ_ok, True, [], False, forb)
+    # ---- PR059-D7: the five new refusals the verdict path had to grow ---------------------
+    _sw = OrderedDict(conjunct_expected_signs(pr))
+    _sw[CONJUNCT_IDS[0]] = conjunct_expected_signs(pr)[CONJUNCT_IDS[2]]
+    raisers["M81 a conjunct scored against ANOTHER outcome's sign"] = \
+        lambda: evaluate_success(pr, True, [(ids[2], fr)], hr, {ids[2]: True}, True,
+                                 expected_signs=_sw)
+    raisers["M82 ONE shared expected_sign for all four conjuncts"] = \
+        lambda: evaluate_success(pr, True, [(ids[2], fr)], hr, {ids[2]: True}, True,
+                                 expected_signs=-1)
+    raisers["M83 a verdict emitted on unclean liveness (via decide)"] = \
+        lambda: _decide_quiet(pr, _fake_obs(pr, liveness_clean=False), forb, require="POSITIVE")
+    raisers["M84 a triggered `void` clause emitting a verdict anyway"] = \
+        lambda: _decide_quiet(pr, _fake_obs(pr, void_evidence={"hook_fired": False}), forb,
+                              require="POSITIVE")
+    raisers["M85 an absent Holm member DROPPED, shrinking the family"] = \
+        lambda: refuse_shrunken_family(pr, ids[:-1])
+    raisers["M86 Holm run over a family SMALLER than the declared one"] = \
+        lambda: holm({i: 0.001 for i in ids}, alpha(pr), m=len(ids) - 1)
+    raisers["M87 a DEMOTED scope passing success condition 3"] = \
+        lambda: _assert_condition3_passes(pr, "S_D")
+    raisers["M88 a demoted scope's win reported as a POSITIVE"] = \
+        lambda: _decide_quiet(pr, _fake_obs(pr, winner="S_D", winner_delta=-4.0), forb,
+                              require="POSITIVE")
+    raisers["M89 a MISSING liveness field read as a measured zero"] = \
+        lambda: liveness_gate([_drop(_lr(), "n_cells_edited_expected")], "m", pr)
+    raisers["M90 a MISSING hook_fired_count read as a measured zero"] = \
+        lambda: liveness_gate([_drop(_lr(), "hook_fired_count")], "m", pr)
+    raisers["M91 a `void` clause with NO evidence key in this analyzer"] = \
+        lambda: _clause_walk(["a brand new way for this phase to be void"], VOID_CLAUSE_KEYS,
+                             {}, "void")
+    raisers["M92 an UNEVALUATED cannot_answer clause treated as clean"] = \
+        lambda: _assert_walk_clean(cannot_answer_walk(pr, {}))
+    raisers["M93 O1's expected direction supplied by the analyzer instead of the file"] = \
+        lambda: o1_expected_sign(_ObjStub(pr, drop="knockout predicted to lower"))
+    raisers["M94 the frozen file stating TWO OPPOSITE expected directions for O1"] = \
+        lambda: o1_expected_sign(_ObjStub(pr, add="a knockout predicted to RAISE the installed "
+                                                  "reading"))
     raisers["M54 forbidden mandate-33 wording"] = lambda: assert_sayable(
         "our K=7 proves the bomb token is the mechanism", forb)
     raisers["M55 absolute (non-negative) offsets"] = lambda: parse_rel_end_spec([5, 6])
@@ -3076,6 +3788,303 @@ def mutate(pr: Prereg) -> int:
 # ============================================================================================
 # 21. THE ANALYSIS
 # ============================================================================================
+# ============================================================================================
+# 21b. PR059-D7 -- THE VERDICT PATH
+#
+# Split in two ON PURPOSE. `observe()` does the I/O -- it reads run directories and measures.
+# `decide()` is PURE: it takes measured quantities and emits the conjunct table, the clause
+# walks, Holm and the verdict. Only `decide()` can turn numbers into a claim, and because it
+# touches no disk it is driven END TO END by --self-test and --mutate on a machine with no GPU
+# and no run directories. An analyzer whose verdict logic can only be exercised by a completed
+# GPU run is an analyzer whose verdict logic is never exercised (PR059-D7, and PHASE 9's A4).
+# ============================================================================================
+ARM_RESULTS = "results.jsonl"
+
+
+def read_arm_rows(run_dir: str, pr: Prereg) -> Dict[str, Dict[str, Any]]:
+    """One arm's scored rows, keyed by prompt_id. REFUSES on an incomplete or empty run."""
+    p = os.path.join(run_dir, ARM_RESULTS)
+    if not os.path.exists(os.path.join(run_dir, "DONE.json")):
+        raise Refusal("%s carries no DONE.json; a partial run is not a result" % run_dir)
+    if not os.path.exists(p):
+        raise Refusal("%s carries no %s, so this arm scored nothing" % (run_dir, ARM_RESULTS))
+    out: Dict[str, Dict[str, Any]] = {}
+    want_kind = primary_channel(pr)
+    with open(p) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            d = json.loads(line)
+            if str(d.get("query_kind") or want_kind) != want_kind:
+                continue
+            out[str(d["prompt_id"])] = d
+    if not out:
+        raise ZeroBinding("%s bound ZERO rows on the primary channel %r" % (run_dir, want_kind))
+    return out
+
+
+def paired_domain_delta(treat: Dict[str, Dict[str, Any]], base: Dict[str, Dict[str, Any]],
+                        assign: Dict[str, str]) -> Dict[str, List[float]]:
+    """Per-domain lists of the PAIRED per-row delta, within prompt_id. `L-N11`: the two arms must
+    cover EXACTLY the same prompt_ids, or they are not the same population and the pairing is a
+    comparison of two different sets wearing one name."""
+    only_t, only_b = sorted(set(treat) - set(base)), sorted(set(base) - set(treat))
+    if only_t or only_b:
+        raise Refusal(
+            "UNEQUAL PER-ARM POPULATIONS (primary.void): %d prompt_id(s) only in the scope arm "
+            "and %d only in the baseline. `L-N11` requires the ledgered exclusions replayed into "
+            "EVERY arm; a paired delta over a differing set is not a paired delta."
+            % (len(only_t), len(only_b)))
+    per: "OrderedDict[str, List[float]]" = OrderedDict()
+    for pid, tr in sorted(treat.items()):
+        dom = assign.get(pid) or tr.get("domain")
+        if dom is None:
+            raise Refusal("row %r carries no domain and the split manifest does not assign one; "
+                          "the independence unit is the DOMAIN and cannot be bound" % pid)
+        per.setdefault(str(dom), []).append(
+            float(tr["semantic_logodds"]) - float(base[pid]["semantic_logodds"]))
+    if not per:
+        raise ZeroBinding("the paired delta bound ZERO domains")
+    return per
+
+
+def _readout_from_rows(arm_id: str, scope_id: str, rows: Dict[str, Dict[str, Any]],
+                       assign: Dict[str, str]) -> ArmReadout:
+    """The engagement distribution for ONE arm. Fields are read WITHOUT defaults: an arm whose
+    rows carry no `option_mass` has not measured engagement, and on this channel that is not a
+    detail -- `primary._largest_risk` makes the readout the precondition of every delta."""
+    vals, ans = [], []
+    for pid, r in sorted(rows.items()):
+        for k in ("option_mass", "argmax_answer"):
+            if k not in r:
+                raise Refusal("row %r of arm %r carries no %r. The readout is the precondition "
+                              "of every delta on this weakly engaged channel and is never "
+                              "defaulted." % (pid, arm_id, k))
+        vals.append(float(r["option_mass"]))
+        ans.append(str(r["argmax_answer"]))
+    doms = {str(assign.get(pid) or rows[pid].get("domain")) for pid in rows}
+    return ArmReadout(arm_id=arm_id, scope_id=scope_id, n_rows=len(vals), n_domains=len(doms),
+                      option_mass=vals, argmax_answers=ans,
+                      logodds=[float(r["semantic_logodds"]) for r in rows.values()])
+
+
+def observe(pr: Prereg, arms: Sequence[ArmSpec], found: Dict[str, str],
+            assign: Dict[str, str], liveness_clean: bool) -> Dict[str, Any]:
+    """Measure everything `decide()` needs, from the run directories. NOTHING is decided here."""
+    by_id = {a.arm_id: a for a in arms}
+    ref, scaf = reference_scope_id(pr), scaffold_scope_id(pr)
+    banks = sorted({a.bank for a in arms if a.confirmatory})
+    out: Dict[str, Any] = {"liveness_clean": bool(liveness_clean), "banks": OrderedDict()}
+    for bank in banks:
+        base_id = next((a.arm_id for a in arms
+                        if a.bank == bank and a.kind == "baseline"), None)
+        if base_id is None or base_id not in found:
+            raise Refusal("bank %r has no COMPLETE untouched baseline arm. Every number this "
+                          "phase reports is a PAIRED delta against it; without it there is "
+                          "nothing to subtract and no readout to gate on." % bank)
+        base_rows = read_arm_rows(found[base_id], pr)
+        b: Dict[str, Any] = {
+            "baseline_readout": _readout_from_rows(base_id, "S_0", base_rows, assign),
+            "scopes": OrderedDict(), "reference": None, "scaffold": None}
+        for a in arms:
+            if a.bank != bank or a.kind not in ("scope",) or a.arm_id not in found:
+                continue
+            rows = read_arm_rows(found[a.arm_id], pr)
+            per = paired_domain_delta(rows, base_rows, assign)
+            base_per = paired_domain_delta(base_rows, base_rows, assign)
+            st = domain_group_permutation(base_per, per, pr)
+            rec = {"scope_id": a.scope_id, "arm_id": a.arm_id,
+                   "readout": _readout_from_rows(a.arm_id, a.scope_id, rows, assign),
+                   "per_domain": st["per_domain_delta"], "stats": st,
+                   "delta": st["observed_delta"],
+                   "p": st["permutation"]["p"], "floor": st["permutation"]["floor"],
+                   "formatted": st["permutation"]["formatted"]}
+            # each scope's OWN dose-matched random-row control, where one exists
+            ctrl = [c for c in arms if c.bank == bank and c.scope_id == a.scope_id
+                    and c.kind == "random_row_control"]
+            shas, cdel = [], []
+            for c in ctrl:
+                if c.arm_id not in found:
+                    continue
+                crows = read_arm_rows(found[c.arm_id], pr)
+                shas.append(hashlib.sha256(
+                    json.dumps(sorted((k, v.get("argmax_answer"))
+                                      for k, v in crows.items())).encode()).hexdigest())
+                cst = domain_group_permutation(base_per,
+                                               paired_domain_delta(crows, base_rows, assign), pr)
+                cdel.append(cst["observed_delta"])
+            rec["control"] = ({"n_draws": len(cdel), "deltas": cdel, "output_sha256": shas,
+                               "band": control_interval(cdel, alpha(pr)) if len(cdel) > 1
+                               else None,
+                               "distinct": control_band_gate(shas, n_random_row_draws(pr))
+                               if shas else None}
+                              if ctrl else None)
+            b["scopes"][a.scope_id] = rec
+            if a.scope_id == ref:
+                b["reference"] = rec
+            if a.scope_id == scaf:
+                b["scaffold"] = rec
+        out["banks"][bank] = b
+    return out
+
+
+def decide(pr: Prereg, obs: Dict[str, Any], forbidden: Sequence[str]) -> Dict[str, Any]:
+    """PURE. Emit the conjunct table, both clause walks, Holm, and the verdict -- per bank.
+
+    `refuse_pooling_across_banks`: the two codeword banks are a TRANSFER PAIR and are never
+    pooled, so this loops banks and produces one verdict each rather than one verdict.
+    """
+    ref, scaf = reference_scope_id(pr), scaffold_scope_id(pr)
+    rule = half_of_reference_rule(pr)
+    floor = p_floor(pr)
+    out: Dict[str, Any] = {"banks": OrderedDict()}
+    verdicts = []
+    for bank, b in obs["banks"].items():
+        print("\n=== %s -- BANK %s (never pooled with any other bank) ===" % (FAMILY_NAME, bank))
+
+        # ---- 1. THE READOUT COMES FIRST, ALWAYS ------------------------------------------
+        b["baseline_readout"].render()
+        eg = engagement_gate(b["baseline_readout"], pr)
+        ca_ev = dict(b.get("cannot_answer_evidence") or {})
+        ca_ev.setdefault("option_mass_above_gate", not eg["cannot_answer"])
+        ca_ev.update(obs.get("cannot_answer_evidence") or {})
+        void_ev = dict(obs.get("void_evidence") or {})
+        void_ev.setdefault("no_row_level_p", True)          # only a domain-level test exists here
+        void_ev.setdefault("equal_populations", True)       # bound by paired_domain_delta
+
+        # ---- 2. THE KILL CONDITIONS, IN THE FROZEN ORDER, EACH WITH A STATUS -------------
+        k2 = kill_baseline_channel(pr, b["baseline_readout"])
+        refm = None if b["reference"] is None else bool(
+            b["reference"]["p"] <= alpha(pr)
+            and _sgn(b["reference"]["delta"]) == int(o1_expected_sign(pr)["sign"]))
+        k1 = kill_reference_scope(pr, refm)
+        scafm = None if b["scaffold"] is None else bool(b["scaffold"]["p"] <= alpha(pr))
+        k3 = kill_scaffold_moved(pr, scafm)
+        for tag, k in (("kill1_reference", k1), ("kill2_baseline_engagement", k2),
+                       ("kill3_scaffold_moved", k3)):
+            print("  KILL  %-26s evaluated=%s killed=%s %s"
+                  % (tag, k.get("evaluated"), k.get("killed"), (k.get("reason") or "")[:110]))
+        gate_narrow_scopes(k1)                      # CONTROL FLOW, not a paragraph
+
+        # ---- 3. EVERY DELTA, BESIDE ITS READOUT, WITH ITS p AND ITS FLOOR ----------------
+        if b["reference"] is not None:
+            r = b["reference"]
+            print("  REF   %s delta=%+.6g  %s  [attainable floor %.4e]"
+                  % (ref, r["delta"], r["formatted"], floor))
+        fracs, pvals, reported = [], {}, []
+        members = set(family_member_ids(pr))
+        for sid, rec in b["scopes"].items():
+            if sid == ref:
+                continue
+            rec["readout"].render()
+            d = ScopeDelta(scope_id=sid, arm_id=rec["arm_id"], readout=rec["readout"],
+                           control=rec.get("control"), per_domain=rec["per_domain"],
+                           stats=rec["stats"])
+            try:
+                render_delta(d, floor)
+            except Refusal as e:
+                print("  DELTA %s NOT RENDERED: %s" % (sid, e))
+            if sid in members:
+                pvals[sid] = float(rec["p"])
+                reported.append(sid)
+            if b["reference"] is not None:
+                fr = fraction_of_reference(pr, rec["delta"], b["reference"]["delta"])
+                rec["fraction"] = fr
+                print("        fraction of %s = %.4f (rule %.4g) reproduces=%s same_sign=%s "
+                      "p=%s [floor %.4e]"
+                      % (ref, fr["fraction"], rule, fr["reproduces"], fr["same_sign"],
+                         rec["formatted"], floor))
+                if sid in members:
+                    fracs.append((sid, fr))
+
+        # ---- 4. HOLM OVER THE DECLARED FAMILY; ABSENT MEMBERS ENTER AT p = 1.0 ----------
+        # S_B is the worked example: DECLARED, UNCONSTRUCTIBLE, and it enters at p = 1.0. It is
+        # never dropped -- dropping it would shrink m and make every surviving member easier to
+        # declare significant.
+        holm_res = holm_with_absent(pr, pvals)
+        refuse_shrunken_family(pr, list(holm_res["per_member"]))
+        print("  HOLM  family=%s m=%d alpha=%g; absent-at-p=1.0: %s"
+              % (FAMILY_NAME, holm_res["m"], holm_res["alpha"],
+                 holm_res["absent_members_at_p1"]))
+        for mid, mv in holm_res["per_member"].items():
+            print("        %-6s p=%-12s threshold=%.6g reject=%s [attainable floor %.4e]"
+                  % (mid, ("%.6g" % mv["p"]), mv["threshold"], mv["reject"], floor))
+
+        # ---- 5. THE CONJUNCTIVE RULE, EACH CONDITION SCORED SEPARATELY ------------------
+        # Conjunct 3's INPUT: did this scope's OWN dose-matched random-row control reproduce it?
+        # Measured on the SAME rule the scope was measured on -- the control's own mean delta as
+        # a fraction of the reference -- so "reproduces" means the same thing for both. `None`
+        # here is NOT a pass: it becomes UNEVALUATED (or, for a demoted scope, UNEVALUABLE) in
+        # `control_status_for_scope`, and either one refuses a verdict for that scope.
+        ctrl_ok = {}
+        for sid, rec in b["scopes"].items():
+            c = rec.get("control")
+            if (not c) or (not c.get("deltas")) or b["reference"] is None:
+                ctrl_ok[sid] = None
+                continue
+            distinct = bool((c.get("distinct") or {}).get("ok"))
+            cmean = sum(c["deltas"]) / len(c["deltas"])
+            cfr = fraction_of_reference(pr, cmean, b["reference"]["delta"])
+            rec["control_fraction"] = cfr
+            ctrl_ok[sid] = bool(distinct and not cfr["reproduces"])
+            print("        CONTROL %s: %d draw(s), mean delta=%+.6g, fraction of %s = %.4f "
+                  "(rule %.4g), %d DISTINCT output hash(es) required by L-N7 = %s -> %s"
+                  % (sid, len(c["deltas"]), cmean, ref, cfr["fraction"], rule,
+                     n_random_row_draws(pr), distinct,
+                     "does NOT reproduce" if ctrl_ok[sid] else "REPRODUCES / not distinct"))
+            if c.get("band"):
+                print("        CONTROL %s interval: mean=%+.6g CI=[%+.6g, %+.6g] -- "
+                      "'p > alpha' is not a passed control; the interval is the result"
+                      % (sid, c["band"]["mean"], c["band"]["ci_low"], c["band"]["ci_high"]))
+        succ = evaluate_success(
+            pr, bool(refm), fracs, holm_res, ctrl_ok, not bool(scafm),
+            reference_delta=(None if b["reference"] is None else b["reference"]["delta"]),
+            scaffold_delta=(None if b["scaffold"] is None else b["scaffold"]["delta"]))
+        print("  SUCCESS RULE (CONJUNCTIVE -- %s):" % succ["_conjunctive"])
+        for row in succ["conditions"]:
+            print("    [%s] %-58s expected=%s(sign=%s)"
+                  % (row["status"].ljust(11), row["conjunct"], row["expected"],
+                     row["expected_sign"]))
+            print("            %s" % row["condition"])
+            print("            %s" % row["detail"])
+
+        # ---- 6. EVERY `void` AND `cannot_answer` CLAUSE, WALKED, EACH WITH A STATUS -----
+        vw = void_walk(pr, void_ev)
+        cw = cannot_answer_walk(pr, ca_ev)
+        for w in (vw, cw):
+            print("  %s CLAUSES (%d; %d triggered, %d UNEVALUATED -- UNEVALUATED IS NOT CLEAN):"
+                  % (w["what"].upper(), w["n"], w["n_triggered"], w["n_unevaluated"]))
+            for row in w["clauses"]:
+                print("    [%-11s] %s" % (row["status"], row["clause"][:104]))
+
+        # ---- 7. THE VERDICT, WITH ITS CLASS ---------------------------------------------
+        reasons = list(cw["triggered"]) + [
+            "a `%s` clause is UNEVALUATED (%s), and an unevaluated clause is not a satisfied one"
+            % (cw["what"], r["clause"][:70])
+            for r in cw["clauses"] if r["status"] == "UNEVALUATED"]
+        rec = verdict_record(pr, succ, bool(obs["liveness_clean"]) and vw["clean"],
+                             reasons, bool(refm), forbidden)
+        print("  VERDICT CLASS: %s   (VOID / CANNOT_ANSWER / NEGATIVE are three different "
+              "statements about the world and are never collapsed)" % rec["class"])
+        if rec.get("refuses"):
+            print("  REFUSING TO EMIT A VERDICT: %s" % rec["reason"], file=sys.stderr)
+        else:
+            print("  VERDICT: %s" % rec["sentence"])
+        out["banks"][bank] = {"success": succ, "holm": holm_res, "void_walk": vw,
+                              "cannot_answer_walk": cw, "verdict": rec,
+                              "kills": {"reference": k1, "baseline": k2, "scaffold": k3}}
+        verdicts.append(rec)
+    classes = sorted({v["class"] for v in verdicts})
+    out["verdict"] = {"class": classes[0] if len(classes) == 1 else "NO_VERDICT",
+                      "per_bank": classes,
+                      "_never_pooled": refuse_pooling_across_banks(list(obs["banks"]))
+                      if len(obs["banks"]) < 2 else
+                      "the two codeword banks are a TRANSFER PAIR: each carries its own verdict "
+                      "and they are NEVER pooled into one p-value"}
+    print("\n[%s] verdict class per bank: %s" % (PR_ID, [v["class"] for v in verdicts]))
+    return out
+
+
 def analyse(pr: Prereg, runs_root: str, ack_path_conflict: bool) -> int:
     forb = forbidden_from_prereg(pr)
     check_wording_pin(pr)
@@ -3193,7 +4202,10 @@ def analyse(pr: Prereg, runs_root: str, ack_path_conflict: bool) -> int:
     print("  (baseline readout, then the kill conditions, then the reference scope, then the "
           "narrow scopes with their controls, then Holm, then the verdict -- in that order; no "
           "delta is rendered before its option_mass / argmax readout)")
-    return 0
+    # ---- PR059-D7: THE VERDICT PATH. Reached ONLY with every gate above it clean. -----------
+    obs = observe(pr, arms, found, assign, liveness_clean=all_clean)
+    res = decide(pr, obs, forb)
+    return 0 if res["verdict"]["class"] in ("POSITIVE", "NEGATIVE") else 2
 
 
 # ============================================================================================

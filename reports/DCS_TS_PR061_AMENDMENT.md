@@ -434,3 +434,283 @@ the command:
 Items 2, 3 and 4 all need files this session was instructed not to write. Each is **reported, not
 worked around**, and each is a named refusal reachable from `--plan` on CPU before a queue slot is
 spent.
+
+---
+
+# ADDENDUM — 2026-09-08. `PR059-D4`, `D5`, `D6`, `D7` CLOSED; PHASE 11 can now produce a result
+
+**CPU only. No GPU. No SLURM job submitted or cancelled. No network. No `git add` / `git commit` /
+`git stash`.** Every FROZEN file named in §1 above — including
+`configs/dcs_ts_pr059_phase11.json` and `configs/dcs_ts_pr061_phase11_amendment.json` — was
+**opened read-only and not edited**. No fix required a frozen field to change; §A6 records the two
+consequences of that.
+
+Files written: `scripts/dcs_ts_pr059_localisation.py`, `scripts/dcs_ts_pr059_verifier.py`,
+`src/boombness/pr059_run_localisation.py`, `src/boombness/score_behavior.py`,
+`doublespeak_causality/pair_common.py`, and this report.
+
+---
+
+## A1. `PR059-D7` — the analyzer has a verdict path. **CLOSED.**
+
+`analyse()` ended at the liveness gates and returned 0. It now ends in a verdict, and the verdict
+logic is split so that it can be *exercised without a GPU* — which is the actual defect, since a
+verdict path only a completed run can reach is a verdict path nobody has ever run.
+
+* **`observe()`** does the I/O: reads each arm's `results.jsonl`, pairs within `prompt_id`, refuses
+  unequal per-arm populations by name (`L-N11`), and forms each scope's domain-level delta through
+  the existing `domain_group_permutation`.
+* **`decide()`** is **pure**. It takes measured quantities and emits the conjunct table, both
+  clause walks, Holm and the verdict. It touches no disk, so `--self-test` drives it end to end.
+
+What it emits, against the frozen preregistration:
+
+| requirement | how it is met |
+|---|---|
+| conjunctive rule, each condition scored separately with its own PASS/FAIL line | four `[PASS]`/`[FAIL]`/`[UNEVALUABLE]`/`[UNEVALUATED]` rows, each printing its condition text, its detail, and its own expected sign |
+| **each conjunct against ITS OWN expected sign** | §A2 |
+| every `void` and `cannot_answer` clause walked with a status | `void_walk()` / `cannot_answer_walk()` split the frozen strings into **10** and **4** clauses and give each `CLEAN` / `VOID` / `CANNOT_ANSWER` / `UNEVALUATED`. **A clause this analyzer has no evidence key for is a REFUSAL**, so a clause added to the design can never be walked past (mutation `M91`). **`UNEVALUATED` is not clean** (`M92`). |
+| a verdict CLASS keeping VOID / CANNOT ANSWER / NEGATIVE distinct | `VERDICT_CLASSES = (VOID, CANNOT_ANSWER, POSITIVE, NEGATIVE, NO_VERDICT)`; `verdict_record()` returns the class beside the sentence, and a self-test asserts the four reachable classes are **four distinct values** |
+| mandated wording as a literal | the NEGATIVE branch returns `check_wording_pin(pr)` — the pinned constant, returned only after it is asserted equal word-for-word to the frozen `MANDATORY_WORDING`. Nothing paraphrases or appends to it. |
+| Holm over the declared family, structurally absent members at p = 1.0 | `holm_with_absent()` + `refuse_shrunken_family()`; `S_B` is declared, unconstructible, enters at **p = 1.0**, and `m` stays **6** |
+| every p beside its attainable floor | every printed p carries `[attainable floor 9.9990e-05]`; the reference line, each scope's fraction line and every Holm row |
+| refusal to emit any verdict on unclean liveness | `verdict()` raises; `verdict_record()` returns class **VOID**. It also refuses when any `void` clause is triggered, not only when the liveness loop failed. |
+
+Driven on CPU with a synthetic-but-complete observation, `decide()` reaches, in order:
+**POSITIVE**, **NEGATIVE**, **CANNOT_ANSWER**, **VOID** (unclean liveness), **VOID** (a triggered
+`void` clause), **NO_VERDICT** (a winner whose control reproduced), and — for a reference that moved
+the *wrong* way — the kill condition, correctly, before any narrower scope is read.
+
+## A2. Each conjunct is scored against **its own** preregistered expected sign
+
+PHASE 9 shipped one `expected_sign` applied to two conjuncts with opposite preregistered directions
+and printed a correct O1 as `[FAIL]` for two days. **The defence here is structural, not a comment.**
+
+* `o1_expected_sign(pr)` **PARSES** the direction out of the frozen file. The file carries no
+  machine-readable `direction_expected` for O1; it states the direction in prose, **twice**, in two
+  different sections — `installation.…floor_limitation_quantified` and `power.…` — both as *"a
+  knockout predicted to **LOWER** the installed reading"*. Both are read and must **agree**;
+  observed **sign = −1 from 2 statements**. Zero statements, or two that disagree, is a refusal
+  (`M93`, `M94`). Hardcoding `−1` would be the analyzer choosing the direction of its own primary
+  conjunct after freeze.
+* `conjunct_expected_signs(pr)` returns a **map keyed by conjunct**, and the four kinds are
+  genuinely different: `fixed_sign` (O1's parsed direction) · `same_sign_as_reference`
+  ("reproduces a fraction of the S_G effect" is agreement with the **denominator's observed** sign,
+  *not* O1's absolute sign, and is not knowable before the run) · `expected_null` ·
+  `expected_null`. **There is no scalar to share.**
+* Every entry carries the id of the conjunct it belongs to, and `evaluate_success` checks that
+  self-label against the key it looked the entry up by — so swapping two conjuncts' expectations is
+  caught **by name** (`M81`), and handing the function a bare scalar is a refusal (`M82`).
+
+## A3. `PR059-D4` — one liveness schema, owned by the producer. **CLOSED. The gate was not made lenient.**
+
+**Ownership went to the PRODUCER**, exactly as `C-117` was fixed.
+
+`ScopedAttentionKnockout._pre` (`pair_common.py`) now counts, on **opposite sides of the write**:
+
+* `n_cells_edited_expected` — summed from the rows this forward **resolved**, **BEFORE** the mask
+  is written;
+* `n_cells_edited_realised` — **read back out of the mask that was actually written**, at exactly
+  the coordinates the write targeted;
+* `hook_fired_count` / `n_forward_with_destinations` — per forward.
+
+Counting both from the same source would make `realised == expected` a tautology, and `0 == 0` on a
+dead hook is the clean-looking null the file exists to prevent. Measured on CPU against the real
+class: **`n_edits=12 expected=12 realised=12 hook_fired_count=2 n_forward_with_destinations=2`**,
+and `realised <= expected` always, so a write that does not land is a strict inequality.
+
+`score_behavior` copies the three fields onto the row **without a default**, and **only on the
+declared-offset path** (`_rel_end_rows is not None`) — so every row written by any other arm,
+**including every PHASE 9 and PHASE 10 arm, is unchanged key-for-key**.
+
+**A MISSING FIELD RAISES.** `liveness_gate()` previously read every counter with `r.get(key, 0)`.
+It now requires eight fields per record and **refuses by name** on absence, with the reason spelled
+out: *"'the producer never wrote this' and 'the hook fired zero times' are opposite verdicts, and
+defaulting collapses them into the one that looks like a clean scientific null. Fix the PRODUCER,
+never this gate."* A field **present and zero** remains a **DEAD HOOK → VOID**. Both halves are
+asserted (`M89`, `M90` and two self-test checks); the runner still invents nothing —
+`LIVENESS_FIELD_MAP` leaves a field the row lacks **absent**, and the gate raises on it.
+
+## A4. `PR059-D6` — `L-N1` is CONSTRUCTIBLE. **CLOSED — and it had a second, worse half.**
+
+**First half.** `DisabledHookBridge` grew a third family, `attn_pre_kwargs`, reached **only** by
+objects the two existing branches already refused. `ScopedAttentionKnockout` edits the additive
+attention mask in a forward **pre**-hook and exposes `_pre` / `layers` / `_handles`; its edit is not
+a return value to be swapped, so the shim runs `_pre` **in full** — the eager-mask assertion, the
+batch check, the head expansion, `resolve_scoped_query_rows`, the per-key causal `lo`, the `min_val`
+writes into the clone and every counter — and hands back the **original** `(args, kwargs)`.
+A dedicated contract, `bridge_mask_liveness_violations()`, replaces the project-out one, because a
+mask edit's *magnitude* is always `|finfo.min|` and carries no information: the informative witness
+is **how many mask cells would have been blocked**.
+
+Measured on CPU against the real classes:
+
+```
+BRIDGE kind='attn_pre_kwargs'  n_forward_calls=2 prefill=2 cells_would=12 realised=0
+BRIDGE liveness_violations = []
+BRIDGE max|bridged - baseline| = 0        BYTE-IDENTICAL = True     <- L-N1 HOLDS
+DEAD-INNER bridge -> ['bridge_over_a_dead_hook:n_mask_cells_would_have_edited==0', ...]
+UNBRIDGEABLE object -> still TypeError('cannot bridge ...')
+```
+
+**Second half, found while proving the first and more dangerous than it.**
+`score_behavior.make_intervention` returns the attention-knockout hooks from an **early `return`,
+above its own disabled-hook-bridge block**. `--pr057-disable-hooks` on a knockout arm was therefore
+**silently ignored**: the arm installed a **fully live knockout and recorded it as the C5 bridge**.
+That is worse than the `TypeError` it replaced — a live arm wearing the null's name, whose
+"byte-identical to baseline" check would then fail and be read as *the bridge is broken* rather than
+as *the bridge was never installed*. Both knockout returns now go through `_bridge_if_disabled()`,
+which is the **identity** when `disable_hooks` is False, so no existing arm changes. Verified:
+
+```
+disable_hooks=False -> ['ScopedAttentionKnockout']
+disable_hooks=True  -> ['DisabledHookBridge']   kind='attn_pre_kwargs'
+```
+
+**The guard survives the fix.** The runner refuses the bridge arm **by name** if `pair_common`
+stops declaring the family *or* if `score_behavior` stops routing through it — re-derived from
+their own source, never asserted in prose (`M46`). `--stage kill --dry-run` now **constructs** the
+bridge arm instead of refusing it.
+
+## A5. `PR059-D5` — 78 vs 82 reconciled at **84**. Which was right, and why.
+
+**Both were half right, and neither number was.**
+
+* **The +6 (S_G's nondemo-key controls): the VERIFIER was right; the analyzer was wrong.**
+  `build_arm_manifest` carried `if sid == ref: continue  # the denominator gets no dose-matched
+  control` — **one refusal doing duty for two**, and the two are different refusals.
+  `per_scope_random_row_control` needs an m-row draw from a pool of `span − m`, and at
+  `m == len(span)` the pool is **empty** — genuinely unbuildable, and `PR059-D1` already decided
+  what that costs. But `per_scope_nondemo_key_control` draws **non-demonstration keys**, and the
+  frozen file says its pool *"EXCLUDES query_span_positions"* — the 28-row span does not constrain
+  it **at any m** — and the frozen text is *"for **every** scope"* with no exemption. Skipping the
+  second because the first was impossible left **the denominator of every fraction this phase
+  reports with no control of any kind** (§3.5 item 5, now retired). S_G now carries its 3 nondemo
+  draws per bank; it still gets **no** random-row control, because that one really cannot be built.
+* **The −2 (the bridge arms): the ANALYZER was right; the verifier was wrong.**
+  `nulls_required` `L-N1` is a **DECLARED, BLOCKING** arm and has to be **run** to be reported. The
+  verifier's expected set simply did not know about it, so a complete run would have been reported
+  as containing two *"arms nobody preregistered"*. It is now declared in `expected_arms()` **from
+  `nulls_required`**, not adopted from the producer's naming.
+
+The verifier's reference scope is re-derived independently — *the family scope whose row set **is**
+the whole query span* — rather than read off a key the analyzer also reads; two files agreeing
+because they read the same string is not two derivations.
+
+**Observed: analyzer 84, verifier 84, `only_in_analyzer = []`, `only_in_verifier = []`** — tag for
+tag. The comparator survives as a pure function so it can still be driven with sets that really
+differ (`M42`).
+
+## A6. What is NOT fixed, and why — the two frozen fields
+
+Both are refusals to edit a frozen file, not oversights.
+
+1. **`pre_extraction_checklist` items `V10`–`V13` still read `done: false`,** and
+   `artifacts.analyzer_exists` still reads `false`, in
+   `configs/dcs_ts_pr061_phase11_amendment.json`. **That file is FROZEN and was not edited.** The
+   four defects are closed **in code**; the checklist that records them cannot be updated without a
+   **successor amendment**. `--for-extraction` therefore still returns **7 refusals**, unchanged —
+   which is the correct fail-closed state, since the two GPU items `V3` and `V8` are outstanding
+   regardless.
+2. **`artifacts.pair_common_sha16_at_freeze` is now a stale witness.** `pair_common.py` was edited,
+   so the pinned hash no longer matches the file. `dcs_ts_prereg.py` verifies only bank and pool
+   hashes against disk (`*_sha16_at_freeze` are checked non-null only, and the file itself calls
+   them `_these_hashes_are_witnesses_not_gates`), so `--check` stays **clean at 18 hashes** — but
+   the witness is stale and a successor amendment must re-pin it.
+
+## A7. Observed numbers
+
+**The PHASE 9 / PHASE 10 instrument is provably unchanged — measured BEFORE and AFTER.**
+
+| harness | expected | BEFORE | AFTER |
+|---|---|---|---|
+| `dcs_ts_pr057_causal.py --self-test` | 117/0 | **117 checks, 0 FAILED** | **117 checks, 0 FAILED** |
+| `dcs_ts_pr057_causal.py --mutate` | 102/102 RED | **102/102** | **102/102** |
+| `pr057_run_causal.py --self-test` | 70/0 | **70 checks, 0 FAILED** | **70 checks, 0 FAILED** |
+| `pr057_run_causal.py --mutate` | 41/41 RED | **41/41 RED** | **41/41 RED** |
+| `dcs_ts_pr058_symmetry.py --self-test` | 57/0 | **57 checks, 0 failed** | **57 checks, 0 failed** |
+| `dcs_ts_pr058_symmetry.py --mutate` | 56/56 RED | **56/56** | **56/56** |
+
+| PHASE 11 entry point | was | now |
+|---|---|---|
+| `dcs_ts_pr059_localisation.py --self-test` | 92/0 | **114 checks, 0 failed** |
+| `dcs_ts_pr059_localisation.py --mutate` | 80/80 RED | **94/94 RED** |
+| `pr059_run_localisation.py --self-test` | 51/0 | **56 checks, 0 failed** |
+| `pr059_run_localisation.py --mutate` | 43/43 RED | **46/46 RED** |
+| `dcs_ts_pr059_verifier.py --self-test` | 22/0 | **25 checks, 0 FAILED** |
+| `dcs_ts_pr059_verifier.py --mutate` | 22/22 RED | **22/22 RED** |
+| `--plan` / verifier arm set | 78 vs 82 | **84 vs 84, tag for tag** |
+| `--stage smoke --split train --dry-run` | rc 0 | **rc = 0**, 6 arms constructed and validated, model NOT loaded, nothing written (`outputs/boombness/pr059_runner` does not exist afterwards) |
+| `--stage kill --split test --dry-run` | bridge arm REFUSED | **rc = 0**, **12 arms**, the bridge arm **constructed** |
+| `dcs_ts_prereg.py --check` (amendment) | clean, 18 hashes | **clean, 18 hashes** |
+| `dcs_ts_prereg.py --check --for-extraction` (amendment) | 7 refusals | **7 refusals** (V3, V8, V10, V11, V12, V13, `analyzer_exists`) |
+| `dcs_extract_under_ko.py --self-test` | — | **35/35** |
+| repo tests, the 26 files importing `score_behavior` / `pair_common` / `dcs_ts_prereg` / the PR-059 analyzer or verifier | 676 passed | **676 passed, 1 warning, 572.95 s — RAN TO COMPLETION** (re-run after the last edit; an earlier run mid-work also gave 676 passed) |
+
+**The five NEW mutations the task required, all RED**, plus the ones that had to survive the fixes:
+
+| mutation | file | result |
+|---|---|---|
+| `M81` a conjunct scored against ANOTHER outcome's sign | analyzer | **RED** |
+| `M82` ONE shared `expected_sign` for all four conjuncts | analyzer | **RED** |
+| `M83` a verdict emitted on unclean liveness (through `decide`) | analyzer | **RED** |
+| `M84` a triggered `void` clause emitting a verdict anyway | analyzer | **RED** |
+| `M85` an absent Holm member DROPPED, shrinking the family | analyzer | **RED** |
+| `M86` Holm run over a family smaller than the declared one | analyzer | **RED** |
+| `M87` a DEMOTED scope passing success condition 3 | analyzer | **RED** |
+| `M88` a demoted scope's win reported as a POSITIVE | analyzer | **RED** |
+| `M89` / `M90` a MISSING liveness field read as a measured zero | analyzer | **RED** |
+| `M91` a `void` clause with no evidence key | analyzer | **RED** |
+| `M92` an UNEVALUATED `cannot_answer` clause treated as clean | analyzer | **RED** |
+| `M93` / `M94` O1's direction supplied by the analyzer / stated twice and contradictorily | analyzer | **RED** |
+| `M41` a liveness field the row never carried, read as a measured zero | runner | **RED** |
+| `M42` the two arm sets differing and reported as agreeing | runner | **RED** |
+| `M44` / `M45` hook fired zero times / realised != expected cells | runner | **RED** |
+| `M46` the bridge family removed from `pair_common`'s dispatch | runner | **RED** |
+
+## A8. `PR059-D1` is unchanged, and is now enforced as control flow
+
+The decision of §3 stands, untouched. What changed is that it is no longer only prose:
+`control_status_for_scope()` returns **PASS / FAIL / UNEVALUABLE / UNEVALUATED**, re-derives
+constructibility from the span, and **UNEVALUABLE is not a PASS** — handing it `True` for `S_D`
+still returns `UNEVALUABLE`. A demoted scope reaching the declared fraction therefore produces
+**CANNOT_ANSWER**, never a POSITIVE and never a null — measured, not asserted. `UNEVALUATED` (a
+control that exists but was not read) is likewise not a pass.
+
+## A9. What still blocks PHASE 11 from a GPU submission
+
+**The four code defects are closed. What remains is GPU work and one bookkeeping act.**
+
+1. **`V3` / `U3` — power has never been measured on the concept-free channel.** `--u3-inventory`
+   still returns rc = 2. `power.mde.in_semantic_logodds_nats` stays `null` by design. This is a
+   **validation** submission and must print PROCEED before any confirmatory stage exists.
+   **Unchanged by this work.**
+2. **`V8` — the smoke has not been run.** It is launchable (§9 above) and `--dry-run` exits 0.
+3. **A SUCCESSOR AMENDMENT is required** to mark `V10`–`V13` done and to flip
+   `artifacts.analyzer_exists` to `true`, and to re-pin `pair_common_sha16_at_freeze`. Until then
+   `--for-extraction` stays fail-closed at 7 refusals. **This is correct and must not be worked
+   around**; the frozen file was not edited.
+4. **`PR059-D1` remains DECIDED, not removed.** PHASE 11's declared primary contrast `S_D` vs `S_E`
+   still cannot be run as designed and will report **CANNOT ANSWER for a stated reason**.
+5. **The arm count rose from 78 to 84**, so the `kill` stage is 12 arms and the family stage grew by
+   S_G's 6 nondemo-key controls. The `sbatch` line in §9 is otherwise unchanged; the smoke is still
+   6 arms.
+
+## A10. UNSCOPED `git status --porcelain`
+
+Reproduced in full in the session report. The entries attributable to this addendum are exactly:
+
+```
+ M doublespeak_causality/pair_common.py
+ M reports/DCS_TS_PR061_AMENDMENT.md
+ M scripts/dcs_ts_pr059_localisation.py
+ M scripts/dcs_ts_pr059_verifier.py
+ M src/boombness/pr059_run_localisation.py
+ M src/boombness/score_behavior.py
+```
+
+`src/boombness/pr059_run_localisation.py` and `reports/DCS_TS_PR061_AMENDMENT.md` were `??` at the
+start of this session (untracked, from the session above) and a peer has since committed them.
+Everything else `git status --porcelain` lists is pre-existing untracked data under
+`data/boombness_prompts/`, which this session neither created nor touched.
+**No `git add`, no `git commit`, no `git stash`, and nothing written under `outputs/`.**

@@ -55,6 +55,7 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import inspect
 import json
 import os
 import re
@@ -262,13 +263,65 @@ LIVENESS_FIELD_MAP: Dict[str, Optional[str]] = {
     "surface_span_positions": "surface_span_positions",
     "surface_span_decoded": "surface_span_decoded",
     "seq_len": "seq_len",
-    # NO PRODUCER SOURCE. The attention-knockout hook counts edits, rows and masked keys; it has
-    # no `hook_fired_count` counter and never computes an EXPECTED cell count, so "realised ==
-    # expected" cannot be evaluated for it at all. Inventing either is PR059-D4.
-    "hook_fired_count": None,
-    "n_cells_edited_expected": None,
-    "n_cells_edited_realised": None,
+    # PR059-D4, RESOLVED BY THE PRODUCER. These three had NO producer source: the
+    # attention-knockout hook counted edits, rows and masked keys but never a fired-count and
+    # never an EXPECTED cell count, so "realised == expected cells" -- a clause of `primary.void`
+    # -- could not be evaluated for a knockout arm at all.
+    #
+    # OWNERSHIP WENT TO THE PRODUCER, which is where PR-057's C-117 says it belongs:
+    # `ScopedAttentionKnockout._pre` counts EXPECTED from the rows it resolved BEFORE the mask
+    # write, and READS REALISED BACK out of the mask afterwards, so the two are measured on
+    # opposite sides of the write and `realised == expected` is a real bind rather than `0 == 0`
+    # on a dead hook. `score_behavior` copies them onto the row WITHOUT a default, only on the
+    # declared-offset path.
+    #
+    # THE MAP STILL DOES NOT DEFAULT. A field absent from a row stays ABSENT in the record, and
+    # the analyzer's gate RAISES on it. This runner still invents nothing.
+    "hook_fired_count": "hook_fired_count",
+    "n_cells_edited_expected": "n_cells_edited_expected",
+    "n_cells_edited_realised": "n_cells_edited_realised",
 }
+
+
+def bridge_family_constructible() -> Tuple[bool, str]:
+    """PR059-D6. Can `DisabledHookBridge` bridge the hook family THIS PHASE installs?
+
+    Re-derived from `pair_common`'s own dispatch, never asserted in prose. `ScopedAttentionKnockout`
+    edits the additive attention mask in a forward PRE hook and exposes `_pre` / `layers` /
+    `_handles`; the bridge's original two branches wanted `(_hook, layer)` or `(_hooks, layers)`
+    and refused it with a TypeError, which made BLOCKING null L-N1 unbuildable and the `kill`
+    stage impossible to complete as designed.
+    """
+    try:
+        import pair_common as pc
+    except Exception as e:                                   # noqa: BLE001
+        return False, "pair_common is not importable: %r" % (e,)
+    fams = tuple(getattr(pc.DisabledHookBridge, "BRIDGE_FAMILIES", ()))
+    if "attn_pre_kwargs" not in fams:
+        return False, ("DisabledHookBridge declares bridge families %s, none of which is the "
+                       "attention-mask pre-hook family that ScopedAttentionKnockout installs; "
+                       "null L-N1 is NOT CONSTRUCTIBLE" % (fams,))
+    if not hasattr(pc, "bridge_mask_liveness_violations"):
+        return False, ("the attention-mask bridge has no liveness contract of its own, so a "
+                       "bridge over a DEAD knockout would score as a perfect identity")
+    # PR059-D6, SECOND HALF -- and the more dangerous one. The bridge CLASS being able to wrap a
+    # knockout is not enough: `score_behavior.make_intervention` returns the knockout hooks from
+    # an EARLY return, above its own disabled-hook-bridge block, so `--pr057-disable-hooks` on a
+    # knockout arm used to install a FULLY LIVE knockout and record it as the C5 bridge. A live
+    # arm wearing the null's name is worse than a TypeError, because it produces a number.
+    try:
+        import inspect as _i
+        import score_behavior as _sb
+        src = _i.getsource(_sb.make_intervention)
+    except Exception as e:                                   # noqa: BLE001
+        return False, "score_behavior.make_intervention is not readable: %r" % (e,)
+    knock = src.split("attn_knockout", 1)[-1] if "attn_knockout" in src else ""
+    if "_bridge_if_disabled" not in knock:
+        return False, ("score_behavior.make_intervention returns the attention-knockout hooks "
+                       "WITHOUT routing them through the disabled-hook bridge, so "
+                       "--pr057-disable-hooks would install a LIVE knockout and label it the "
+                       "L-N1 bridge")
+    return True, "attn_pre_kwargs (pair_common.DisabledHookBridge) + score_behavior routing"
 
 
 def analyzer_liveness_contract_report() -> Dict[str, Any]:
@@ -493,7 +546,13 @@ def constructibility(pr: Prereg, arm: ArmSpec) -> Dict[str, Any]:
         reasons.append("scope %s is declared UNCONSTRUCTIBLE: %s" % (arm.scope_id, s["status"]))
 
     if arm.kind == "bridge":
-        reasons.append(DEFECT_D6_BRIDGE_NOT_CONSTRUCTIBLE)
+        # PR059-D6, RESOLVED -- but NOT by deleting the guard. The refusal now re-derives
+        # constructibility from `pair_common`'s OWN dispatch table, so if the attention-mask
+        # bridge family is ever removed this arm is refused BY NAME again, before a queue slot
+        # and a model load, instead of dying at the node.
+        _ok, _why = bridge_family_constructible()
+        if not _ok:
+            reasons.append("%s CURRENT STATE: %s" % (DEFECT_D6_BRIDGE_NOT_CONSTRUCTIBLE, _why))
     elif arm.kind == "random_row_control":
         con = random_row_control_constructible(pr, arm.scope_id, s["rel_end_rows"], span)
         if not con["constructible"]:
@@ -1308,6 +1367,19 @@ def verifier_arm_set() -> Dict[str, Any]:
         return {"ok": False, "error": repr(e), "tags": []}
 
 
+def compare_arm_sets(mine: Sequence[str], theirs: Sequence[str]) -> int:
+    """PR059-D5's SURVIVING guard, as a PURE comparator so it can be driven with a set that
+    really does differ. The two derivations agreeing today is a measurement; a comparator that
+    can no longer fire would make it an assumption."""
+    only_a = sorted(set(mine) - set(theirs))
+    only_v = sorted(set(theirs) - set(mine))
+    if only_a or only_v:
+        raise RunnerRefusal(
+            "%s OBSERVED NOW: only_in_analyzer_manifest=%s only_in_verifier_expectation=%s"
+            % (DEFECT_D5_ARM_COUNT, only_a[:6], only_v[:6]))
+    return len(set(mine))
+
+
 def arm_set_disagreement(pr: Prereg) -> Dict[str, Any]:
     v = verifier_arm_set()
     mine = sorted(x.tag() for x in build_arm_manifest(pr))
@@ -1692,8 +1764,13 @@ def selftest() -> int:
     ck.add("liveness_gate / audit_end_relative / bind_rows are the analyzer's",
            {liveness_gate.__module__, audit_end_relative.__module__, bind_rows.__module__}
            == {"dcs_ts_pr059_localisation"}, "")
-    ck.add("the manifest has 78 arms over 2 confirmatory banks",
-           len(arms) == 78 and len({x.bank for x in arms}) == 2, "n=%d" % len(arms))
+    # PR059-D5, RESOLVED: 78 -> 84. The reference scope S_G now carries the nondemo-key control
+    # the frozen file requires "for every scope" (+6; its random-row control really is
+    # unbuildable and it still has none), and the independent verifier now knows about the
+    # disabled-hook bridge arm that BLOCKING null L-N1 requires (+2 on its side). Both
+    # derivations land on 84, tag for tag.
+    ck.add("the manifest has 84 arms over 2 confirmatory banks (PR059-D5 reconciled)",
+           len(arms) == 84 and len({x.bank for x in arms}) == 2, "n=%d" % len(arms))
     part = assert_stages_partition(pr)
     ck.add("kill and family PARTITION the manifest",
            part["n_kill"] + part["n_family"] == part["n_arms"], json.dumps(part))
@@ -1805,9 +1882,14 @@ def selftest() -> int:
 
     # ---- constructibility refusals ---------------------------------------------------------
     bridge = _arm_by(arms, kind="bridge")
-    ck.add("PR059-D6: the disabled-hook bridge arm is refused by name",
-           not constructibility(pr, bridge)["constructible"]
-           and "PR059-D6" in constructibility(pr, bridge)["reasons"][0], "")
+    _bfc = bridge_family_constructible()
+    ck.add("PR059-D6 RESOLVED: the disabled-hook bridge IS constructible for the knockout family",
+           _bfc[0] and constructibility(pr, bridge)["constructible"], _bfc[1])
+    ck.add("PR059-D6: and the guard survives -- it re-derives the family from pair_common's own "
+           "dispatch, so removing the branch refuses the arm by name again",
+           "BRIDGE_FAMILIES" in inspect.getsource(bridge_family_constructible), "")
+    ck.add("PR059-D6 second half: score_behavior ROUTES the knockout hooks through the bridge",
+           "routing" in _bfc[1], _bfc[1])
     ck.add("PR059-D6 is a MEASURED property of pair_common, not an assertion",
            _refuses(lambda: _bridge_probe(), "cannot bridge"), "")
     sd = _arm_by(arms, scope_id="S_D", kind="scope")
@@ -1829,25 +1911,39 @@ def selftest() -> int:
 
     # ---- PR059-D4 and PR059-D5 --------------------------------------------------------------
     lc = analyzer_liveness_contract_report()
-    ck.add("PR059-D4: hook_fired_count / n_cells_edited_* have NO producer source",
-           not lc["ok"] and set(lc["unmapped"]) == {"hook_fired_count",
-                                                    "n_cells_edited_expected",
-                                                    "n_cells_edited_realised"},
-           str(lc["unmapped"]))
-    ck.add("PR059-D4: an unmapped field is left ABSENT, never defaulted to 0",
-           all(k not in liveness_records_from_rows(
-               pr, _arm_by(arms, scope_id="S_C", kind="scope"),
-               [{"prompt_id": "p", "seq_len": 100, "surface_span_positions": [90],
-                 "hook_n_prefill_edits": 1}])[0]
-               for k in lc["unmapped"]), "")
+    ck.add("PR059-D4 RESOLVED: every analyzer-liveness field now HAS a producer source",
+           lc["ok"] and not lc["unmapped"]
+           and {"hook_fired_count", "n_cells_edited_expected",
+                "n_cells_edited_realised"} <= set(lc["mapped"]),
+           str(sorted(lc["mapped"])))
+    # THE RUNNER STILL INVENTS NOTHING. The map having a source does not mean a row HAS the
+    # field; a row that lacks it leaves the record without it, and the analyzer RAISES rather
+    # than reading the absence as a measured zero. Both halves are checked.
+    _thin = liveness_records_from_rows(
+        pr, _arm_by(arms, scope_id="S_C", kind="scope"),
+        [{"prompt_id": "p", "seq_len": 100, "surface_span_positions": [90],
+          "hook_n_prefill_edits": 1}])[0]
+    ck.add("PR059-D4: a field the ROW does not carry is still left ABSENT, never defaulted to 0",
+           all(k not in _thin for k in ("hook_fired_count", "n_cells_edited_expected",
+                                        "n_cells_edited_realised")), str(sorted(_thin)))
+    ck.add("PR059-D4: and the analyzer's gate RAISES on that absence rather than reading it as "
+           "a measured zero",
+           _refuses(lambda: liveness_gate([_thin], "u", pr), "MISSING"), "")
     dis = arm_set_disagreement(pr)
-    ck.add("PR059-D5: the analyzer manifest and the independent verifier DISAGREE",
-           dis.get("agree") is False and dis["n_runner"] == 78 and dis["n_verifier"] == 82,
+    ck.add("PR059-D5 RESOLVED: the analyzer manifest and the INDEPENDENT verifier now AGREE",
+           dis.get("agree") is True and dis["n_runner"] == dis["n_verifier"] == 84,
            "runner=%s verifier=%s" % (dis.get("n_runner"), dis.get("n_verifier")))
-    ck.add("PR059-D5: the difference is S_G's nondemo controls and the bridge arms",
-           all("s_g_nondemo" in t for t in dis["only_in_verifier_expectation"])
-           and all("bridge" in t for t in dis["only_in_analyzer_manifest"]),
-           str(dis["only_in_analyzer_manifest"]))
+    ck.add("PR059-D5: neither set carries an arm the other does not -- tag for tag",
+           not dis["only_in_analyzer_manifest"] and not dis["only_in_verifier_expectation"],
+           "only_analyzer=%s only_verifier=%s" % (dis["only_in_analyzer_manifest"],
+                                                  dis["only_in_verifier_expectation"]))
+    ck.add("PR059-D5: the reference scope S_G carries its nondemo-key control on BOTH banks",
+           len([x for x in arms if x.scope_id == "S_G"
+                and x.kind == "nondemo_control"]) == 2 * n_nondemo_draws(pr),
+           "n=%d" % len([x for x in arms if x.scope_id == "S_G"
+                         and x.kind == "nondemo_control"]))
+    ck.add("PR059-D5: and it still gets NO random-row control, because that one cannot be built",
+           not [x for x in arms if x.scope_id == "S_G" and x.kind == "random_row_control"], "")
 
     # ---- terminal records, C-124 and A15 ----------------------------------------------------
     import tempfile
@@ -2020,8 +2116,11 @@ def mutate() -> int:
                                                   0, span), "PR059-D1"))
     muts.append(("M16 a scope rendered with NO dose-matched control",
                  lambda: assert_scope_has_its_control("S_E", None), "S_E"))
-    muts.append(("M17 PR059-D6: the disabled-hook bridge launched anyway",
-                 lambda: _build_unbuildable(pr, arms, kind="bridge"), "PR059-D6"))
+    # PR059-D6 is RESOLVED, so the bridge ARM is no longer the refusal. What must stay reachable
+    # is the refusal underneath it: a hook object the bridge cannot bind must still raise rather
+    # than register nothing and score as a perfect identity.
+    muts.append(("M17 PR059-D6: a bridge over a hook family it cannot bind",
+                 lambda: _bridge_probe(), "cannot bridge"))
 
     # ---- population and split --------------------------------------------------------------------
     muts.append(("M18 a split that binds ZERO rows",
@@ -2090,10 +2189,21 @@ def mutate() -> int:
     muts.append(("M40 an unknown stage name", lambda: stage_selector(pr, "h9"), "unknown stage"))
 
     # ---- the two schema disagreements ------------------------------------------------------------
-    muts.append(("M41 PR059-D4: the analyzer's liveness fields treated as available",
-                 lambda: _assert_liveness_evaluable(), "PR059-D4"))
-    muts.append(("M42 PR059-D5: the two arm sets treated as agreeing",
-                 lambda: _assert_arm_sets_agree(pr), "PR059-D5"))
+    # PR059-D4 and PR059-D5 are RESOLVED, so "the defect is still there" is no longer a
+    # reachable refusal. What replaces each is the guard that had to SURVIVE the fix.
+    muts.append(("M41 PR059-D4: a liveness field the row never carried, read as a measured zero",
+                 lambda: _liveness_field_dropped(pr, "n_cells_edited_expected"), "MISSING"))
+    muts.append(("M42 PR059-D5: the two arm sets differing and being reported as agreeing",
+                 lambda: compare_arm_sets(
+                     sorted(x.tag() for x in build_arm_manifest(pr))[1:],
+                     verifier_arm_set()["tags"]), "PR059-D5"))
+    muts.append(("M44 PR059-D4: a hook that fired zero times, on a complete record",
+                 lambda: _liveness_field_dropped_value(pr, "hook_fired_count", 0), "VOID"))
+    muts.append(("M45 PR059-D4: realised cells != expected cells",
+                 lambda: _liveness_field_dropped_value(pr, "n_cells_edited_realised", 1),
+                 "realised"))
+    muts.append(("M46 PR059-D6: the bridge family removed from pair_common's dispatch",
+                 lambda: _bridge_family_gone(pr, arms), "PR059-D6"))
 
     n_red = 0
     for name, fn, needle in muts:
@@ -2183,8 +2293,58 @@ def _assert_liveness_evaluable():
 
 def _assert_arm_sets_agree(pr: Prereg):
     d = arm_set_disagreement(pr)
+    compare_arm_sets(sorted(x.tag() for x in build_arm_manifest(pr)),
+                     verifier_arm_set()["tags"])
     if not d.get("agree"):
         raise RunnerRefusal(d.get("defect") or "arm sets disagree")
+
+
+def _liveness_field_dropped(pr: Prereg, field: str):
+    """PR059-D4's SURVIVING guard. The producer now writes the three counters, so "they have no
+    source" is no longer reachable -- but "a row arrived without one and the gate read it as a
+    measured zero" is the defect that mattered, and it must still refuse."""
+    rec = AN.LivenessRecord(arm_id="u", scope_id="S_C", prompt_id="p", enabled=True,
+                            hook_fired_count=1, n_forward=1, n_prefill_edits=1, n_decode_edits=0,
+                            keys_masked=4, surface_span_n_tokens=1,
+                            surface_span_positions=[190], surface_span_decoded=[" button"],
+                            n_cells_edited_expected=4, n_cells_edited_realised=4,
+                            attn_implementation=required_attn_impl(pr), seq_len=200,
+                            query_kind=primary_channel(pr), output_sha256="a").as_row()
+    rec.pop(field)
+    return liveness_gate([rec], "u", pr)
+
+
+def _liveness_field_dropped_value(pr: Prereg, field: str, value):
+    """A COMPLETE record whose field is present and carries a defect value. This is the other
+    half of PR059-D4: 'the producer never wrote it' RAISES, and 'it wrote it and it is zero'
+    is a DEAD HOOK -- two different verdicts, and the gate must give two different answers."""
+    rec = AN.LivenessRecord(arm_id="u", scope_id="S_C", prompt_id="p", enabled=True,
+                            hook_fired_count=1, n_forward=1, n_prefill_edits=1, n_decode_edits=0,
+                            keys_masked=4, surface_span_n_tokens=1,
+                            surface_span_positions=[190], surface_span_decoded=[" button"],
+                            n_cells_edited_expected=4, n_cells_edited_realised=4,
+                            attn_implementation=required_attn_impl(pr), seq_len=200,
+                            query_kind=primary_channel(pr), output_sha256="a").as_row()
+    rec[field] = value
+    lg = liveness_gate([rec], "u", pr)
+    if not lg["live"]:
+        raise RunnerRefusal("arm u is VOID: %s" % "; ".join(lg["reasons"]))
+    return lg
+
+
+def _bridge_family_gone(pr: Prereg, arms):
+    """PR059-D6's SURVIVING guard: if pair_common stops declaring the attention-mask bridge
+    family, the bridge arm must be refused BY NAME again rather than launched to die."""
+    import pair_common as pc
+    saved = getattr(pc.DisabledHookBridge, "BRIDGE_FAMILIES", ())
+    try:
+        pc.DisabledHookBridge.BRIDGE_FAMILIES = ("forward_output",)
+        c = constructibility(pr, _arm_by(arms, kind="bridge"))
+        if not c["constructible"]:
+            raise RunnerRefusal("; ".join(c["reasons"]))
+        return c
+    finally:
+        pc.DisabledHookBridge.BRIDGE_FAMILIES = saved
 
 
 def _run_smoke_on(pr: Prereg, split: str):
@@ -2272,6 +2432,13 @@ def _fake_arm_gate(pr: Prereg, arms, n_rows: int = 40, expect: int = 40, impl: s
                 "surface_span_n_tokens": (0 if zero_dose else len(pos)),
                 "surface_span_decoded": [" button"] * len(pos),
                 "hook_n_forward": 1, "hook_n_prefill_edits": prefill,
+                # PR059-D4: the three fields the PRODUCER now owns. Expected is counted before
+                # the mask write and realised is read back from it, so a fixture that reports
+                # them EQUAL is asserting the healthy case and can be made to disagree.
+                "hook_fired_count": (0 if (prefill <= 0 or zero_dose) else 1),
+                "n_forward_with_destinations": 1,
+                "n_cells_edited_expected": (0 if zero_dose else 12 * len(pos)),
+                "n_cells_edited_realised": (0 if zero_dose else 12 * len(pos)),
                 "hook_n_decode_edits": decode, "hook_n_keys_masked": 12,
                 "hook_liveness_violations": ([violation] if violation else []),
                 "attn_implementation": impl or required_attn_impl(pr)}) + "\n")

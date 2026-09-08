@@ -1345,6 +1345,35 @@ def assert_control_norm_matched(arm: str, base_name: str, base: Dict[int, "torch
             "n_layers_checked": len(per)}
 
 
+def _bridge_if_disabled(pc, ctxs, name, mode, disable_hooks, hook_stats):
+    """DCS-PR-059 D-6. Wrap `ctxs` in the C5 disabled-hook bridge, or return them UNCHANGED.
+
+    `disable_hooks=False` returns the exact list it was handed, so every arm that does not ask
+    for the bridge is byte-identical to before this function existed.
+
+    It exists because the ATTENTION-KNOCKOUT branch of `make_intervention` returns EARLY, above
+    the bridge block at the bottom of that function. `--pr057-disable-hooks` on a knockout arm
+    therefore installed a LIVE knockout and labelled it the bridge -- the null's name on a live
+    arm, which is the one confusion the C5 control exists to make impossible.
+    """
+    if not disable_hooks:
+        return ctxs
+    bridged, bstats = [], []
+    for c in ctxs:
+        bst = pc.hook_stats_dict(mode="bridge", layer=getattr(c, "layer_idx", -1), enabled=False)
+        bst["arm"], bst["direction"] = name, name
+        bridged.append(pc.DisabledHookBridge(c, stats=bst))
+        bstats.append(bst)
+    if hook_stats is not None:
+        hook_stats.extend(bstats)
+    print(f"[score] DISABLED-HOOK BRIDGE: {len(bridged)} attention-knockout hook(s) for "
+          f"{name}/{mode} are registered and will RUN IN FULL -- the eager-mask assertion, the "
+          f"row resolution and every counter -- and every mask edit will be DISCARDED. This arm "
+          f"must reproduce the untouched baseline byte-for-byte; if it does not, the bridge is "
+          f"not a bridge.", flush=True)
+    return bridged
+
+
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
@@ -1493,17 +1522,29 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         # second one. Any other scope routes to the scoped hook, which needs the SPANS as well as
         # the keys: `protected` is the final-query span and `demo_keys` the demonstration block,
         # and both are passed separately from `keys` because a CONTROL arm's keys are neither.
+        # DCS-PR-059 D-6, SECOND HALF. These two `return`s leave `make_intervention` BEFORE the
+        # disabled-hook-bridge block at the bottom of this function, so `--pr057-disable-hooks`
+        # on a knockout arm used to be silently ignored: the arm ran a FULLY LIVE knockout and
+        # was recorded as the C5 bridge. That is worse than the TypeError it replaced -- a live
+        # arm wearing the null's name, whose "byte-identical to baseline" check would fail and be
+        # read as the bridge being broken rather than as the bridge never having been installed.
+        # Every return from this branch now goes through `_bridge_if_disabled`, which is the
+        # IDENTITY when `disable_hooks` is False, so no existing arm changes.
         if knock_scope == DEFAULT_KNOCKOUT_SCOPE:
-            return [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
-                                                 heads=knock_heads, stats=knock_stats)]
+            return _bridge_if_disabled(
+                pc, [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
+                                                  heads=knock_heads, stats=knock_stats)],
+                name, mode, disable_hooks, hook_stats)
         # `surface_span` is the newest passenger: dropping it demotes the SURGICAL scope to a
         # no-op, and the hook refuses an empty span precisely so that shows up as a crash rather
         # than as a clean null. tests/test_scoped_knockout_wiring.py covers this line.
-        return [pc.ScopedAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
-                                           mode=knock_scope,
-                                           query_span=protected, demo_span=demo_keys,
-                                           heads=knock_heads, stats=knock_stats,
-                                           surface_span=surface_span)]
+        return _bridge_if_disabled(
+            pc, [pc.ScopedAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
+                                            mode=knock_scope,
+                                            query_span=protected, demo_span=demo_keys,
+                                            heads=knock_heads, stats=knock_stats,
+                                            surface_span=surface_span)],
+            name, mode, disable_hooks, hook_stats)
     if name == "refusalness":
         import refusalness as _rf
         # pass the model so the per-model direction file is chosen, and assert the width
@@ -2832,6 +2873,36 @@ def main() -> int:
 
     knock_live = new_knockout_live()
 
+    def _pr059_cell_fields(ks):
+        """DCS-PR-059 D-4. Copy the three counters the analyzer's `liveness_gate` reads out of
+        the hook's OWN stats -- WITHOUT a default.
+
+        The consumer schema (`dcs_ts_pr059_localisation.liveness_gate`) reads `hook_fired_count`,
+        `n_cells_edited_expected` and `n_cells_edited_realised`. The attention-knockout producer
+        wrote none of them, so "realised == expected cells" -- a clause of `primary.void` -- could
+        not be evaluated for a knockout arm at all.
+
+        OWNERSHIP IS THE PRODUCER'S, and it is settled in `ScopedAttentionKnockout._pre`: expected
+        is counted from the resolved rows BEFORE the mask write, realised is read back OUT of the
+        mask afterwards. That is what makes `realised == expected` a real bind rather than `0 == 0`
+        on a dead hook.
+
+        A key the hook did not write is left ABSENT here, never defaulted to 0: "not measured" and
+        "measured and it was zero" are opposite verdicts about a hook, and collapsing them is the
+        C-117 defect arriving from the producer's side. The consumer RAISES on the absence.
+
+        Emitted ONLY on the declared-offset path, so every row written by any other arm --
+        including every PHASE 9 and every PHASE 10 arm -- is unchanged, key for key.
+        """
+        if _rel_end_rows is None:
+            return {}
+        out = {}
+        for _k in ("hook_fired_count", "n_forward_with_destinations",
+                   "n_cells_edited_expected", "n_cells_edited_realised"):
+            if _k in (ks or {}):
+                out[_k] = int(ks[_k])
+        return out
+
     def _readout_knock_fields(knock_stats, dk, prot, seq_len):
         """Ledger ONE forward-only readout row into the accumulator, and return its row fields.
 
@@ -2861,7 +2932,8 @@ def main() -> int:
                 "n_query_span_positions": len(_pl),
                 "query_span_bounds": ([_pl[0], _pl[-1]] if _pl else None),
                 "n_demo_span_positions": len(dk),
-                "demo_span_bounds": ([min(dk), max(dk)] if dk else None)}
+                "demo_span_bounds": ([min(dk), max(dk)] if dk else None),
+                **_pr059_cell_fields(ks)}
 
     # ONE PAIR PER RUN, ASSERTED. `concept`/`codeword` are read from rows[0] and then used to
     # build the answer set for EVERY row; a bank carrying two pairs would be scored entirely
@@ -3616,7 +3688,9 @@ def main() -> int:
                                     "n_query_span_positions": len(_pl),
                                     "query_span_bounds": ([_pl[0], _pl[-1]] if _pl else None),
                                     "n_demo_span_positions": len(dk),
-                                    "demo_span_bounds": ([min(dk), max(dk)] if dk else None)}
+                                    "demo_span_bounds": ([min(dk), max(dk)]
+                                                         if dk else None),
+                                    **_pr059_cell_fields(ks)}
                         gens_fh.write(json.dumps({**base, "generation": text,
                                                   "n_chars": len(text), "n_new_tokens": n_new,
                                                   "stop_reason": stop}) + "\n")

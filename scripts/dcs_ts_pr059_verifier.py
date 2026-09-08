@@ -181,6 +181,23 @@ def query_span_offsets(cfg):
     return sorted(set(rows))
 
 
+def reference_scope_id(cfg):
+    """The REFERENCE scope (the denominator), re-derived HERE and not read off a key.
+
+    The reference is defined by WHAT IT COVERS -- it is the family scope whose row set IS the
+    whole query span -- so it is recomputed from `scopes.family` and `token_map.rel_end_layout`
+    rather than taken from any field the analyzer also reads. Two files agreeing because they
+    read the same string is not two derivations.
+    """
+    span = set(query_span_offsets(cfg))
+    hits = [sid for sid, rel in scope_table(cfg).items() if rel and set(rel) == span]
+    if len(hits) != 1:
+        raise SystemExit("[pr059-verifier] REFUSING: %d scope(s) cover the whole %d-row query "
+                         "span (%s); the denominator of every fraction this phase reports is "
+                         "not identifiable." % (len(hits), len(span), hits))
+    return hits[0]
+
+
 def _draw_seed(seed, scope_id, draw_index):
     """The same three fields, hashed the same way the producer hashes them -- and written out
     here rather than imported, so 'the draw is reproducible' is a claim two files make
@@ -223,6 +240,7 @@ def expected_arms(cfg, banks=DECLARED_CONFIRMATORY_BANKS):
     and only where constructible: `P4`) and the NON-DEMONSTRATION KEY draws (`n_nondemo_draws`).
     """
     scopes = scope_table(cfg)
+    ref = reference_scope_id(cfg)
     n_rr = int(cfg["seeds"]["n_random_row_draws"])
     n_nd = int(cfg["seeds"]["n_nondemo_draws"])
     arms = collections.OrderedDict()
@@ -235,6 +253,17 @@ def expected_arms(cfg, banks=DECLARED_CONFIRMATORY_BANKS):
 
     for bank in banks:
         add(bank, "S_0", "baseline", rel_end=[])
+        # ---- PR059-D5, RESOLVED HERE (this file was the wrong one, for the -2) --------------
+        # `nulls_required` L-N1 -- "disabled-hook bridge", `blocking: true` -- is a DECLARED,
+        # BLOCKING arm of this design, and it has to be RUN to be reported: it is the arm that
+        # shows the intervention code path is inert with the hook off. The analyzer's manifest
+        # carried one bridge arm per bank; this expected set did not know about it, so a complete
+        # run would have been reported as containing two "arms nobody preregistered". The analyzer
+        # was right about these two. Declared HERE, from `nulls_required`, and not adopted from
+        # the producer's naming -- a verifier that takes its arm set from the thing it verifies
+        # can never notice a missing arm.
+        if any(str(n.get("id")) == "L-N1" for n in cfg.get("nulls_required", [])):
+            add(bank, ref, "bridge", rel_end=scopes.get(ref, []))
         for sid, rel in scopes.items():
             if sid == "S_0" or not rel:
                 continue                       # S_0 has no rows; S_B is UNCONSTRUCTIBLE
@@ -778,6 +807,23 @@ def self_test():
           not [t for t, s in exp.items()
                if s["kind"] == "random_row_control"
                and s["scope_id"] in EXPECT_RANDOM_ROW_IMPOSSIBLE_D1])
+    # PR059-D5. The two derivations of the arm set now agree at 84, and each half of the
+    # reconciliation is pinned HERE, on this file's own re-derivation.
+    _ref = reference_scope_id(cfg)
+    check("T15b PR059-D5 the REFERENCE scope carries its nondemo-key control on every bank "
+          "('for EVERY scope'; its draw pool excludes the query span, so the 28-row span does "
+          "not constrain it)",
+          sum(1 for s in exp.values()
+              if s["scope_id"] == _ref and s["kind"] == "nondemo_control")
+          == int(cfg["seeds"]["n_nondemo_draws"]) * len(DECLARED_CONFIRMATORY_BANKS),
+          "ref=%s" % _ref)
+    check("T15c PR059-D5 the BLOCKING null L-N1 bridge arm is expected, one per bank",
+          sum(1 for s in exp.values() if s["kind"] == "bridge")
+          == len(DECLARED_CONFIRMATORY_BANKS),
+          str(sorted(t for t, s in exp.items() if s["kind"] == "bridge")))
+    check("T15d the reference is RE-DERIVED as the scope covering the whole query span, not "
+          "read off a key the analyzer also reads",
+          set(sc[_ref]) == set(span) and _ref == "S_G", _ref)
     check("T17 every family scope has its nondemo control band",
           all(sum(1 for s in exp.values()
                   if s["scope_id"] == sid and s["kind"] == "nondemo_control"

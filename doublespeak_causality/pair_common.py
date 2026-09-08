@@ -813,6 +813,14 @@ class ScopedAttentionKnockout:
                     "n_edits", "n_decode_edits", "n_prefill_edits",
                     "n_query_rows_edited", "n_keys_masked"):
             self.stats.setdefault(key, 0)
+        # DCS-PR-059 D-4 (ADDITIVE). The three counters the PR-057 project-out schema carries and
+        # this class never wrote. They are seeded HERE, at construction, for the same reason
+        # `hook_stats_dict` seeds every key at once: a record that GROWS keys as the hook runs
+        # cannot distinguish "this hook never fired" from "this consumer read a key the producer
+        # never wrote". Nothing that existed before this line reads them.
+        for key in ("hook_fired_count", "n_forward_with_destinations",
+                    "n_cells_edited_expected", "n_cells_edited_realised"):
+            self.stats.setdefault(key, 0)
         # RESOLVED SPANS GO IN THE ARTIFACT, not only in a log line: a null is uninterpretable
         # without knowing which rows the mode actually had to work with.
         self.stats["mode"] = mode
@@ -857,6 +865,22 @@ class ScopedAttentionKnockout:
         n_edits = 0
         n_keys_masked = 0
         rows_touched = set()
+        # DCS-PR-059 D-4 (ADDITIVE). `expected` is counted from the rows this forward RESOLVED,
+        # BEFORE the mask is written. `realised` is READ BACK OUT of the mask that was actually
+        # written, at exactly the coordinates the write targeted. They are measured on OPPOSITE
+        # SIDES of the write on purpose: counting both from the same source would make
+        # "realised == expected" a tautology, and `0 == 0` on a dead hook is precisely the
+        # clean-looking null this file exists to make impossible. realised <= expected always, and
+        # a write that did not land shows up as a strict inequality rather than as silence.
+        n_cells_expected = 0
+        n_cells_realised = 0
+        _hsel = (None if self.heads is None
+                 else torch.tensor(list(self.heads), device=am.device, dtype=torch.long))
+
+        def _readback(_kp, rowsel):
+            sub = am[0] if _hsel is None else am[0].index_select(0, _hsel)
+            return int((sub[:, rowsel, _kp] == min_val).sum().item())
+
         if allowed is None or allowed:          # an empty set means: edit nothing this forward
             for kp in self.k:
                 if kp >= kv_len:
@@ -867,22 +891,32 @@ class ScopedAttentionKnockout:
                 if allowed is None:
                     # LEGACY PATH, kept as a contiguous slice so the produced mask (and n_edits)
                     # are identical to AllQueryAttentionKnockout's.
+                    n_rows = n_q - lo
+                    n_cells_expected += n_rows * n_heads_edited          # BEFORE the write
                     for h in hs:
                         am[0, h, lo:, kp] = min_val
-                    n_rows = n_q - lo
+                    n_cells_realised += _readback(kp, slice(lo, n_q))    # FROM what was written
                     rows_touched.update(range(lo, n_q))
                 else:
                     rows = [r for r in range(lo, n_q) if (past + r) in allowed]
                     if not rows:
                         continue
                     ridx = torch.tensor(rows, device=am.device, dtype=torch.long)
+                    n_rows = len(rows)
+                    n_cells_expected += n_rows * n_heads_edited          # BEFORE the write
                     for h in hs:
                         am[0, h, ridx, kp] = min_val
-                    n_rows = len(rows)
+                    n_cells_realised += _readback(kp, ridx)              # FROM what was written
                     rows_touched.update(rows)
                 n_edits += n_rows * n_heads_edited
                 n_keys_masked += 1
         kwargs["attention_mask"] = am
+        self.stats["n_cells_edited_expected"] += n_cells_expected
+        self.stats["n_cells_edited_realised"] += n_cells_realised
+        self.stats["n_forward_with_destinations"] += int(n_cells_expected > 0)
+        # A forward that resolved destinations and wrote them is a forward on which the hook
+        # FIRED. Zero over a whole row is "the hook never fired" and is VOID, not a null.
+        self.stats["hook_fired_count"] += int(n_cells_realised > 0)
         self.stats["n_forward"] += 1
         self.stats["n_decode_forward"] += int(is_decode)
         self.stats["n_prefill_forward"] += int(not is_decode)
@@ -1440,6 +1474,41 @@ def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
     return bad
 
 
+def bridge_mask_liveness_violations(stats: Optional[Dict[str, Any]]) -> List[str]:
+    """DCS-PR-059 D-6 / L-N1. The contract for a `DisabledHookBridge` over the ATTENTION-MASK
+    family. [] is the only clean state.
+
+    It is NOT `project_out_liveness_violations` with a widened branch, because the two bridges
+    witness different things. The project-out bridge's evidence that its inner hook was alive is
+    a HIDDEN-STATE delta; this one's is a MASK delta, whose magnitude is always |finfo.min| and
+    therefore carries no information at all -- the informative quantity is HOW MANY mask cells
+    would have been blocked. Reusing the other function would have let a bridge whose inner hook
+    resolved ZERO rows pass on a magnitude that is constant by construction.
+    """
+    if stats is None:
+        return ["no_stats_recorded"]
+    bad: List[str] = []
+    if stats.get("enabled", False):
+        bad.append("bridge_stats_marked_enabled:a bridge that reports itself as a live arm is "
+                   "not a bridge")
+    if int(stats.get("n_forward_calls") or 0) == 0:
+        bad.append("hook_never_ran:n_forward_calls==0")
+    if int(stats.get("n_prefill_forward") or 0) == 0:
+        bad.append("bridge_never_saw_a_prefill_forward:this family is PREFILL-ONLY, so a bridge "
+                   "that only ran on decode steps exercised nothing the live arm does")
+    if int(stats.get("n_cells_edited_realised") or 0) != 0:
+        bad.append("disabled_hook_edited_cells")
+    # A bridge over a DEAD hook bridges nothing and is refused rather than passed as a perfect
+    # identity. Both witnesses are required: the count proves rows resolved, the magnitude proves
+    # the write reached the tensor.
+    if int(stats.get("n_mask_cells_would_have_edited") or 0) == 0:
+        bad.append("bridge_over_a_dead_hook:n_mask_cells_would_have_edited==0 -- the wrapped "
+                   "knockout resolved no rows, so this bridge certifies nothing")
+    if not (float(stats.get("would_have_changed_max_abs") or 0.0) > 0.0):
+        bad.append("bridge_over_a_dead_hook:would_have_changed_max_abs==0")
+    return bad
+
+
 def occurrence_annotation(stats: Optional[Dict[str, Any]],
                           codeword_last_indices: Optional[Sequence[int]]) -> Dict[str, Any]:
     """Resolve "occurrence index of the codeword" for ONE hook record, on EVERY edit mode.
@@ -1525,22 +1594,51 @@ class DisabledHookBridge:
     refuses it) instead of scoring as a perfect identity.
     """
 
+    #: The two hook FAMILIES this bridge knows how to run-and-discard. They differ in WHAT the
+    #: discarded write is, so they cannot share a shim (DCS-PR-059 D-6).
+    #:   "forward_output"     -- a `register_forward_hook` whose RETURN VALUE is the edited block
+    #:                           output. Discarding = return the original output.
+    #:   "attn_pre_kwargs"    -- a `register_forward_pre_hook(..., with_kwargs=True)` on
+    #:                           `layer.self_attn` whose edit is written into the additive
+    #:                           `attention_mask` it hands back. Discarding = return the ORIGINAL
+    #:                           (args, kwargs), i.e. the unedited mask.
+    BRIDGE_FAMILIES = ("forward_output", "attn_pre_kwargs")
+
     def __init__(self, inner, stats: Optional[Dict[str, Any]] = None):
+        kind = "forward_output"
         if hasattr(inner, "_hooks") and hasattr(inner, "layers"):
             pairs = list(zip(list(inner.layers), list(inner._hooks)))
             idxs = list(getattr(inner, "layer_idxs", [-1] * len(pairs)))
         elif hasattr(inner, "_hook") and hasattr(inner, "layer"):
             pairs = [(inner.layer, inner._hook)]
             idxs = [int(getattr(inner, "layer_idx", -1))]
+        elif hasattr(inner, "_pre") and getattr(inner, "layers", None):
+            # DCS-PR-059 D-6 (ADDITIVE -- reached ONLY by objects the two branches above already
+            # refused with a TypeError). The ATTENTION-KNOCKOUT family (`ScopedAttentionKnockout`,
+            # `AllQueryAttentionKnockout`) edits the additive attention mask in a forward PRE hook
+            # on `layer.self_attn` and exposes `_pre` / `layers` / `_handles` rather than a
+            # `_hook`. Its edit is therefore not a return value to be swapped, and the bridge for
+            # it must discard a different thing -- the mask -- which is why this is a separate
+            # family rather than a widened `hasattr` on the branch above.
+            #
+            # It is a REAL bridge and not a simulated one for exactly the reason the class
+            # docstring gives: `_pre` runs IN FULL -- the eager-mask assertion, the batch check,
+            # the head expansion, `resolve_scoped_query_rows`, the per-key causal `lo`, the
+            # min_val writes into the clone and every counter -- and only the WRITE is dropped.
+            # "Comment out the knockout" proves none of that machinery is inert.
+            kind = "attn_pre_kwargs"
+            pairs = [(l, inner._pre) for l in list(inner.layers)]
+            idxs = list(getattr(inner, "layer_idxs", [-1] * len(pairs)))
         else:
             raise TypeError(
-                f"DisabledHookBridge cannot bridge {type(inner).__name__}: it exposes neither "
-                "(_hook, layer) nor (_hooks, layers). Refusing rather than registering nothing "
-                "-- a bridge that binds no hook is exactly the clean-looking null this class "
-                "exists to make impossible.")
+                f"DisabledHookBridge cannot bridge {type(inner).__name__}: it exposes none of "
+                "(_hook, layer), (_hooks, layers) or (_pre, layers). Refusing rather than "
+                "registering nothing -- a bridge that binds no hook is exactly the clean-looking "
+                "null this class exists to make impossible.")
         if not pairs:
             raise ValueError("DisabledHookBridge bound ZERO hooks; a bridge over nothing is not "
                              "a control.")
+        self.kind = kind
         self.inner = inner
         self.layer_idxs = idxs
         self._pairs = pairs
@@ -1579,9 +1677,54 @@ class DisabledHookBridge:
             return output                                 # ...and its edit is DISCARDED
         return f
 
+    def _shim_pre(self, fn):
+        """DCS-PR-059 D-6. The `attn_pre_kwargs` shim: run the real pre-hook IN FULL, measure the
+        mask edit it WOULD have installed, and hand back the ORIGINAL (args, kwargs).
+
+        `fn` is handed a COPY of the kwargs dict because `ScopedAttentionKnockout._pre` rebinds
+        `kwargs["attention_mask"]` in place. It clones the tensor before writing, so the original
+        mask is never touched -- the copy is belt-and-braces against a future hook that writes
+        through, which would turn this bridge into a live arm silently.
+        """
+        st = self.stats
+
+        def f(module, args, kwargs):
+            st["n_forward_calls"] += 1
+            am_in = kwargs.get("attention_mask")
+            if am_in is not None and hasattr(am_in, "shape") and len(am_in.shape) >= 3:
+                n_q = int(am_in.shape[-2])
+                if n_q <= 1:
+                    st["n_decode_forward"] += 1
+                else:
+                    st["n_prefill_forward"] += 1
+                st["seq_len_last"] = n_q
+            # THE REAL HOOK RUNS, IN FULL -- including its eager-mask assertion and its refusal
+            # of a non-4-D mask. A bridge that skipped them would not be exercising the code path.
+            _a, _kw = fn(module, args, dict(kwargs))
+            am_out = _kw.get("attention_mask")
+            if (am_in is not None and am_out is not None and am_out is not am_in
+                    and hasattr(am_out, "shape")):
+                d = (am_out.detach().float() - am_in.detach().float())
+                st["would_have_changed_max_abs"] = max(
+                    float(st["would_have_changed_max_abs"] or 0.0), float(d.abs().max()))
+                st["would_have_changed_l2"] = max(
+                    float(st["would_have_changed_l2"] or 0.0), float(d.norm()))
+                # The count is the informative number for a MASK edit: the magnitude is always
+                # |finfo.min| and says nothing, while "how many cells would have been blocked"
+                # is what a reader needs to know the bridged hook was not itself dead.
+                st["n_mask_cells_would_have_edited"] = int(
+                    st.get("n_mask_cells_would_have_edited", 0) + int((d != 0).sum()))
+            return args, kwargs                           # ...and the edit is DISCARDED
+
+        return f
+
     def __enter__(self):
         for layer, fn in self._pairs:
-            self._handles.append(layer.register_forward_hook(self._shim(fn)))
+            if self.kind == "attn_pre_kwargs":
+                self._handles.append(layer.self_attn.register_forward_pre_hook(
+                    self._shim_pre(fn), with_kwargs=True))
+            else:
+                self._handles.append(layer.register_forward_hook(self._shim(fn)))
         return self
 
     def __exit__(self, *exc):
@@ -1591,6 +1734,8 @@ class DisabledHookBridge:
         return False
 
     def liveness_violations(self) -> List[str]:
+        if self.kind == "attn_pre_kwargs":
+            return bridge_mask_liveness_violations(self.stats)
         return project_out_liveness_violations(self.stats)
 
 

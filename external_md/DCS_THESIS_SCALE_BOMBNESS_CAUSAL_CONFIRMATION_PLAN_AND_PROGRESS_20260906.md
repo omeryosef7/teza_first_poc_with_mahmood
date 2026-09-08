@@ -5089,3 +5089,63 @@ itself was answerable on **CPU in seconds** by comparing `prompt_sha16` across b
 submitting. **New rule: before spending GPU to compare two populations, verify on CPU that they
 differ.** Byte-identical inputs cannot produce different results, and finding that out from a
 scheduler is the expensive way.
+
+---
+
+## DCS-R-141 / C-130 — PHASE 11's four defects close, and a live knockout was masquerading as the disabled-hook control
+*2026-09-08*
+
+**`C-130`, found while proving `D-6` and worse than the defect it was chasing.** `make_intervention`
+returns knockout hooks from an early `return` **above its own bridge block**, so
+`--pr057-disable-hooks` on a knockout arm silently installed a **fully live knockout labelled as the
+C5 disabled-hook bridge**. That is worse than the `TypeError` it was hunting, because **it produces a
+number**: a live intervention wearing the name of the control whose entire job is to certify that
+nothing happened. Both returns now route through `_bridge_if_disabled()`, an identity when
+`disabled` is false.
+
+**`D-7` — the verdict path, and built better than PHASE 9's.** `analyse()` is split into `observe()`
+(I/O) and **`decide()` (pure)**, so the verdict logic is driven end-to-end by `--self-test` on CPU.
+That addresses the real defect rather than the symptom: *a path only a completed GPU run can reach is
+a path nobody has run.* Driven on CPU it reaches POSITIVE / NEGATIVE / CANNOT_ANSWER / VOID(×2) /
+NO_VERDICT. All 10 `void` and 4 `cannot_answer` clauses are walked with a status, and **a clause with
+no evidence key REFUSES** — `UNEVALUATED` is not clean.
+
+**The PHASE 9 sign bug is not repeated, and the fix is stronger than PHASE 9's.**
+`o1_expected_sign()` **parses** the direction out of the frozen file — which states it twice in prose,
+*"a knockout predicted to LOWER the installed reading"* → **−1 from 2 statements** — and **refuses on
+zero or contradictory statements** rather than hardcoding a sign. The four conjuncts take genuinely
+different kinds (`fixed_sign`, `same_sign_as_reference`, two `expected_null`), each self-labels its
+conjunct id, and a mismatch is caught by name. **There is no scalar to share**, so PHASE 9's
+"one outcome's sign applied to another's test" is structurally impossible here.
+
+**`D-4` — the liveness schema, producer-owned, gate not made lenient.**
+`ScopedAttentionKnockout._pre` counts `expected` from resolved rows **before** the write and reads
+`realised` **back out of the written mask** — measured `expected=12 realised=12 hook_fired_count=2`,
+with `realised ≤ expected` always, so the bind is real and not `0 == 0`. `liveness_gate` now
+**RAISES** on a missing field, while present-and-zero stays a DEAD HOOK → VOID. Fields are emitted
+only on the declared-offset path, so PHASE 9/10 rows are unchanged key-for-key.
+
+**`D-5` — 78 vs 82, resolved at 84, and BOTH were half right.** The **verifier** was right about the
++6: the analyzer's `if sid == ref: continue` was one refusal doing duty for two — the random-row
+control is genuinely unbuildable at m=28, but the **nondemo-key** control's pool *excludes the query
+span*, and the frozen text says "for every scope", so **the denominator of every fraction had no
+control at all**. The **analyzer** was right about the −2: L-N1 is a declared BLOCKING arm the
+verifier did not know about. Observed **84 vs 84, tag for tag, both `only_in_*` empty**.
+
+**PHASE 9 and PHASE 10 are provably unchanged** — measured before, after, and again at the end state:
+`pr057_causal` **117/0 · 102/102**, `pr057_run_causal` **70/0 · 41/41**, `pr058_symmetry`
+**57/0 · 56/56**. This work edits `pair_common.py` and `score_behavior.py`, the instrument behind a
+completed confirmatory verdict, so that proof was the precondition for keeping any of it.
+
+**PHASE 11 observed:** analyzer 92 → **114/0** and 80 → **94/94 RED**; runner 51 → **56/0** and
+43 → **46/46 RED**; verifier 22 → **25/0**; `--plan` **84 arms**; smoke `--dry-run` **rc=0**; kill
+`--dry-run` **rc=0, 12 arms, the bridge arm now constructed**; repo tests **676 passed**, run to
+completion.
+
+**Still blocking a confirmatory submission:** V3/U3 (power never measured on the concept-free
+channel), V8 (the smoke has not run — but it is now launchable and its dry-run is clean), and a
+**successor amendment**, because V10–V13 and `artifacts.analyzer_exists` live in the **FROZEN**
+PR-061 and the defects are closed in code but not yet in the ledger. `--for-extraction` stays
+fail-closed at 7 refusals, which is correct. **`PR059-D1` remains DECIDED, not removed**: the primary
+S_D-vs-S_E contrast still reports CANNOT ANSWER, now enforced as control flow — UNEVALUABLE is not a
+PASS, and a demoted scope reaching the fraction yields CANNOT_ANSWER, measured rather than asserted.
