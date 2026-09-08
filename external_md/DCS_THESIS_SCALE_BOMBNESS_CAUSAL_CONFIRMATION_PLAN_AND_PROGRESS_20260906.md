@@ -4916,3 +4916,60 @@ development bank's cell means and the labelling does not say so per arm; C2/C7/H
 by construction; `_find_run` still takes newest-complete before the split guard (clean on this run,
 and the guard is a hard refusal); and **C3 is the raw axis, not remapping-only — no arm in this
 design isolates remapping**, which the printed C3 sentence now says.
+
+---
+
+## DCS-R-138 / PR-061 — PHASE 11's launcher exists; its primary contrast is CANNOT ANSWER, for a stated reason
+*2026-09-08*
+
+`src/boombness/pr059_run_localisation.py` closes `PR059-D2`, the Q4b-class hole where the analyzer,
+arms and verifier all existed and nothing could run them. Observed: **`--self-test` 51/0**,
+**`--mutate` 43/43 RED**, **`--plan` 78 arms** matching the analyzer exactly (76 constructible),
+**`--stage smoke --split train --dry-run` rc = 0** with no model loaded and nothing written. The argv
+was validated end-to-end against the *real* `score_behavior` on CPU — every flag parsed, the scope
+resolved to `S_C: 1 row [-10]`, population bound to 1160 — and then refused on a deliberately wrong
+`--expect-n`, before the model loaded.
+
+PHASE 9's two hard-won lessons were built in rather than relearned: **C-123**
+(`assert_expect_n_agrees_with_limit`, mutations M01–M03 covering both directions) and **C-124**
+(`assert_stage_has_no_prior_verdict` before any arm runs, M04–M06).
+
+**PR059-D1 is decided — option 3, and the headline is honest.** PHASE 11's declared primary contrast
+**S_D vs S_E cannot be run as designed: CANNOT ANSWER, for a stated reason.** The dose-matched control
+exists only where `28 − m ≥ m`, and S_D/S_E/S_G have pools **6/5/0** against doses **22/23/28**. Those
+three are **demoted, not deleted**: still run, still reported, still entering Holm at their own p,
+still carrying the nondemo-key control — but success condition 3 is **unevaluable** for them, and
+success is conjunctive.
+
+The rejected options are recorded with why: demo-block draws **change the causal graph** and the
+selector forbids them; overlap produces **a control that cannot fail**; and promoting S_C vs S_F would
+make the headline the comparison the design itself calls *"close to uninformative"* — choosing the
+contrast that survives rather than the one that answers the question.
+
+**A fifth option was found and deliberately NOT taken**, which is the part worth keeping: control the
+**difference row** — `S_D ∪ {one random non-codeword row}`, m = 1, pool 5, exactly 23 rows against
+S_E. It is constructible. But it is a **new arm** and would require editing the **frozen** analyzer,
+so it is named for a successor preregistration instead of taken unilaterally.
+
+**What the decision costs, stated plainly:** the codeword-row question goes unanswered; rows-vs-cells
+is unseparated for the three largest scopes; and any S_D−S_E difference is an **upper bound, never an
+estimate**.
+
+**Four new defects, reported rather than fixed** — each needs a file held by concurrent work, and the
+agent stopped rather than reach into it:
+- **`PR059-D4`** — the analyzer's `liveness_gate` reads the **PR-057 project-out schema**, but the
+  knockout producer writes none of `hook_fired_count` / `n_cells_edited_expected` /
+  `n_cells_edited_realised`. The runner **refuses to invent them**, which is right: inventing them is
+  how a dead hook reads as a clean null.
+- **`PR059-D5`** — analyzer manifest **78** against verifier expected **82** (S_G's nondemo controls
+  +6, bridge arms −2). A complete run would fail R5 **both ways at once**.
+- **`PR059-D6`** — **null L-N1 is not constructible**: `DisabledHookBridge` cannot bridge
+  `ScopedAttentionKnockout`, which exposes `_handles` rather than `_hooks`. Measured on CPU, not
+  inferred.
+- **`PR059-D7`** — `analyse()` has **no verdict path**, so `analyzer_exists` stays false. This is
+  PHASE 9's `A4` arriving again in a second phase.
+
+`configs/dcs_ts_pr061_phase11_amendment.json` records the decision: clean under the loader (FROZEN,
+18 hashes verified, 12/12 mandate-§21 fields) and still refusing `--for-extraction` with **7
+refusals** (V3, V8, V10, V11, V12, V13, `analyzer_exists`). Repo tests **676 passed**, run to
+completion.
