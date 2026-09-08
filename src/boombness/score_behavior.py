@@ -308,6 +308,205 @@ def scoped_span_is_dead(scope, query_span, demo_span, surface_span=None):
     return (pre is not None and not pre) and (dec is not None and not dec)
 
 
+# ==================================================================================== #
+# DCS-PR-059 / PHASE 11 -- U1 THE DECLARED-OFFSET ROW SELECTOR, and U2 THE PER-SCOPE
+# DOSE-MATCHED RANDOM-ROW CONTROL DRAW.  (PRODUCER HALF.)
+#
+# ADDITIVE BY CONSTRUCTION. Nothing below is reachable unless `--knockout-rel-end-rows` is
+# given. Every pre-existing code path -- including the PHASE 9 (PR-057) instrument that
+# lives in this file -- computes exactly what it computed before, because the legacy
+# `sorted(query_span)[-K:]` branch is left in place and is still the branch taken when the
+# new flag is absent.
+#
+# WHY IT EXISTS. `configs/dcs_ts_pr059_phase11.json` defines its scopes as SETS OF END-
+# RELATIVE OFFSETS read off a frozen token-role map (`token_map.rel_end_layout`), not as a
+# K. Scopes S_D `[-28..-6] minus [-10]`, S_E `[-28..-6]` and S_F `[-9]` are not expressible
+# as `sorted(query_span)[-K:]`, which is the ONLY selector this file had. The row set still
+# travels through the existing `surface_span` channel -- `pc.resolve_scoped_query_rows`
+# takes it verbatim for `query_last_k_rows` -- so there is no new hook, no new liveness
+# contract and no artifact-format change.
+#
+# WHY END-RELATIVE AND WHY AN ABSOLUTE INDEX IS REFUSED. `token_map._absolute_indices_are_void`:
+# the full list of ABSOLUTE codeword indices is identical across the three concepts in
+# 0/2300 triples (spread 9.36 +/- 5.90 tokens, range 0-50) while the END-RELATIVE index is
+# identical in 2300/2300. An absolute index reused across prompts therefore reads a
+# DIFFERENT TOKEN in each arm -- this repository's twice-recorded bug class, and the same
+# one `--pr057-edit-positions` already refuses by hand further down this file.
+# ==================================================================================== #
+class DeclaredOffsetRefusal(ValueError):
+    """A declared-offset scope that cannot be resolved on this row / on this template.
+
+    A ValueError rather than a SystemExit because the per-row call sites already run inside
+    a `try` that ledgers and skips; the ARGUMENT-TIME call sites in main() convert it into a
+    SystemExit so a malformed declaration never starts a run.
+    """
+
+
+def parse_rel_end_rows(spec, *, what="--knockout-rel-end-rows"):
+    """Parse a declared offset set: a comma list of negative ints and/or `a..b` ranges.
+
+    `"-28..-6,-3"` -> `[-28, -27, ..., -6, -3]`. Returns [] for an empty/absent spec, which
+    is the signal "the legacy last-K selector is in force". Refuses a NON-NEGATIVE offset
+    and a DUPLICATE offset: a duplicated row is a dose the artifact would over-count, and a
+    silent de-duplication would make the realised dose differ from the declared one.
+    """
+    if spec is None:
+        return []
+    txt = str(spec).strip()
+    if not txt:
+        return []
+    out = []
+    for tok in txt.replace(";", ",").split(","):
+        tok = tok.strip()
+        if not tok:
+            continue
+        try:
+            if ".." in tok:
+                a, b = tok.split("..", 1)
+                a, b = int(a.strip()), int(b.strip())
+                if a > b:
+                    a, b = b, a
+                out.extend(range(a, b + 1))
+            else:
+                out.append(int(tok))
+        except ValueError:
+            raise DeclaredOffsetRefusal(
+                f"{what}: {tok!r} is not an end-relative offset or an `a..b` range of them")
+    bad = sorted(r for r in out if r >= 0)
+    if bad:
+        raise DeclaredOffsetRefusal(
+            f"{what}: ABSOLUTE INDEX REFUSED -- offsets {bad} are not negative. Every edit "
+            f"index in this phase is len(input_ids)+rel_end. The full list of ABSOLUTE "
+            f"codeword indices is identical across the three concepts in 0/2300 triples "
+            f"while the END-RELATIVE index is identical in 2300/2300, so an absolute index "
+            f"cuts a DIFFERENT TOKEN in each arm while every downstream number still looks "
+            f"healthy.")
+    dup = sorted({r for r in out if out.count(r) > 1})
+    if dup:
+        raise DeclaredOffsetRefusal(
+            f"{what}: offsets {dup} are declared more than once. A duplicated row would be "
+            f"silently de-duplicated and the REALISED dose would then differ from the "
+            f"DECLARED one, which is the defect this phase exists to close.")
+    return sorted(out)
+
+
+def surface_span_from_rel_end(rel_end_rows, seq_len, query_span_positions=None):
+    """Turn a scope's DECLARED rel_end set into absolute `surface_span` positions for ONE row.
+
+    ⛔ ONE DEFINITION, THREE CALL SITES. The pre-flight feasibility pass, the per-row
+    resolution and `scripts/dcs_extract_under_ko.py` all call THIS function. They agree by
+    construction, exactly as they do today for last-K (where both sites compute
+    `sorted(query_span)[-K:]`); a second implementation is how a scope silently becomes a
+    different intervention than the one being reported.
+
+    END-RELATIVE IN EVERY PROMPT SEPARATELY: `seq_len` is THIS row's own length, so the same
+    declared scope resolves to a different absolute set in a longer prompt. That is the
+    point, not an inconvenience.
+
+    `query_span_positions`, when supplied, CONSTRAINS the result: the codeword also appears
+    throughout the demonstration block, so a selector that is not constrained to the query
+    span can cut a demonstration row and report it as a query-position result.
+    """
+    if int(seq_len) <= 0:
+        raise DeclaredOffsetRefusal(
+            f"the declared-offset selector was given seq_len={seq_len}; it binds nothing")
+    rows = [int(r) for r in rel_end_rows]
+    if not rows:
+        raise DeclaredOffsetRefusal(
+            "the declared-offset selector was given an EMPTY rel_end set. An empty scope "
+            "cuts nothing and its arm would score as a clean null (this is scope S_B's "
+            "shape, and S_B is declared UNCONSTRUCTIBLE rather than run as an empty arm).")
+    bad = sorted(r for r in rows if r >= 0)
+    if bad:
+        raise DeclaredOffsetRefusal(
+            f"ABSOLUTE INDEX REFUSED: offsets {bad} are not negative.")
+    out = []
+    for r in rows:
+        pos = int(seq_len) + r
+        if pos < 0 or pos >= int(seq_len):
+            raise DeclaredOffsetRefusal(
+                f"rel_end {r} resolves to position {pos} outside a sequence of length {seq_len}")
+        out.append(pos)
+    if query_span_positions is not None:
+        qs = {int(x) for x in query_span_positions}
+        if not qs:
+            raise DeclaredOffsetRefusal(
+                "the row's query span is EMPTY, so no scope can be constrained to it")
+        outside = sorted(p for p in out if p not in qs)
+        if outside:
+            raise DeclaredOffsetRefusal(
+                f"the declared scope resolves {len(outside)} position(s) {outside[:6]} "
+                f"OUTSIDE this row's query span")
+    return sorted(out)
+
+
+def rel_end_of_positions(positions, seq_len):
+    """The inverse, for the artifact: absolute positions -> the offsets they came from."""
+    return sorted(int(p) - int(seq_len) for p in positions)
+
+
+def _random_row_draw_seed(seed, scope_id, draw_index):
+    """A stable, CROSS-PROCESS seed.
+
+    `hash()` is salted per interpreter run, and a control band seeded with it is
+    unrepeatable without anyone noticing -- this project has twice published a "control
+    band" that was secretly n=1. sha256 of the same three fields the analyzer uses, so the
+    rows PLANNED on CPU and the rows CUT on GPU are the same rows.
+    """
+    h = hashlib.sha256(("%d|%s|%d" % (int(seed), str(scope_id), int(draw_index))).encode())
+    return int.from_bytes(h.digest()[:8], "big")
+
+
+def random_row_control_rel_end(scope_id, scope_rel_end, query_span_rel_end, seed, draw_index):
+    """U2 -- the per-scope DOSE-MATCHED RANDOM-ROW control draw, with the draw RECORDED.
+
+    `dose_matching.per_scope_random_row_control`: "for every scope of size m, a SEEDED
+    RANDOM m-row draw from the query span that EXCLUDES the scope's own rows, run through
+    the same surface_span channel". This is the control the K-ladder did not have: the
+    nondemo-KEY control asks "do the DEMONSTRATIONS matter, or any equal quantity of
+    context?"; this one asks "does cutting THESE rows matter, or ANY m rows?" -- the
+    rows-versus-cells confound `PR-032` declared it could not separate.
+
+    ⛔ REFUSES BY NAME RATHER THAN DRAWING FEWER ROWS (defect `PR059-D1`). The query span on
+    this template is 28 rows. Scope S_D cuts 22 and leaves a pool of 6; S_E cuts 23 and
+    leaves 5. For those two the dose-matched control is ARITHMETICALLY IMPOSSIBLE, and a
+    smaller draw labelled "dose-matched" would be a control over a set it could not build.
+    """
+    span = sorted({int(x) for x in query_span_rel_end})
+    own = sorted({int(x) for x in scope_rel_end})
+    if not span:
+        raise DeclaredOffsetRefusal(
+            "a random-row control was requested against an EMPTY query span")
+    m = len(own)
+    if m <= 0:
+        raise DeclaredOffsetRefusal(
+            "a dose-matched random-row control was requested for a scope of ZERO rows; "
+            "there is no dose to match and a zero-row control would 'pass' vacuously")
+    not_in_span = sorted(r for r in own if r not in set(span))
+    if not_in_span:
+        raise DeclaredOffsetRefusal(
+            f"scope {scope_id} declares offsets {not_in_span} that are NOT in the declared "
+            f"query span; its control pool would then exclude rows the scope never cut")
+    pool = [r for r in span if r not in set(own)]
+    if len(pool) < m:
+        raise DeclaredOffsetRefusal(
+            f"PR059-D1: scope {scope_id} asks for {m} control row(s) but the query span "
+            f"({len(span)} rows) has only {len(pool)} row(s) outside the scope. A "
+            f"DOSE-MATCHED random-row control is NOT CONSTRUCTIBLE for this scope on this "
+            f"template. Drawing fewer rows and calling it dose-matched is refused; the "
+            f"conflict with `dose_matching.per_scope_random_row_control` (which requires one "
+            f"for EVERY scope) is recorded as PR059-D1 and needs a new preregistration, not "
+            f"a smaller draw.")
+    rng = random.Random(_random_row_draw_seed(seed, scope_id, draw_index))
+    rows = sorted(rng.sample(pool, m))
+    return {"scope_id": str(scope_id), "draw_index": int(draw_index), "seed": int(seed),
+            "derived_seed": _random_row_draw_seed(seed, scope_id, draw_index),
+            "m": m, "pool_size": len(pool), "span_size": len(span),
+            "pool_rel_end": pool, "excluded_rel_end": own, "rel_end_rows": rows,
+            "_recorded": "persisted so 'which rows did the control actually cut' is "
+                         "answerable from the artifact and not from the seed"}
+
+
 def new_knockout_live():
     """The empty per-row liveness accumulator. One definition, so a test can build a real one."""
     return {"n_rows": 0, "n_rows_decode_live": 0, "n_demo_positions": [],
@@ -1827,6 +2026,50 @@ def main() -> int:
                          "'retrieval is distributed across the span' from 'a row-count threshold', "
                          "which the 1-row and 32-row rungs cannot distinguish. Must be >=1 for that "
                          "scope and is REFUSED for any other, so it cannot silently do nothing.")
+    # ---- DCS-PR-059 / PHASE 11 (U1, U2). ADDITIVE: absent => every path below is the one
+    # that ran before. `query_last_k_rows` is reused deliberately -- its resolver takes the
+    # row set VERBATIM from the consumer via `surface_span`, so a declared offset set needs
+    # NO new mode, no new hook and no new liveness contract.
+    ap.add_argument("--knockout-rel-end-rows", "--declared-rel-end",
+                    dest="knockout_rel_end_rows", default="",
+                    help="⚠ PASS IT WITH `=`: `--knockout-rel-end-rows=-28..-6`. argparse treats a bare "
+                         "`-28..-6` as an OPTION (it is not a valid negative number) and "
+                         "errors with `expected one argument`. The `=` form works "
+                         "everywhere, including in a word-split argsfile. "
+                         "DCS-PR-059 U1 (alias --declared-rel-end, the spelling "
+                         "`dcs_ts_pr059_localisation.py --plan` prints, so the planned command "
+                         "and the flag that exists are the same string): the DECLARED-OFFSET row set for --knockout-scope "
+                         "query_last_k_rows, as END-RELATIVE offsets -- a comma list of "
+                         "negative ints and/or `a..b` ranges, e.g. '-28..-6' (scope S_E) or "
+                         "'-28..-11,-9..-6' (S_D) or '-9' (S_F). Resolved as "
+                         "len(input_ids)+rel_end IN EVERY PROMPT SEPARATELY and constrained "
+                         "to that prompt's query span. A NON-NEGATIVE offset is REFUSED: the "
+                         "absolute index of the same site agrees across concepts in 0/2300 "
+                         "triples, the end-relative one in 2300/2300. Mutually exclusive "
+                         "with --knockout-last-k.")
+    ap.add_argument("--knockout-scope-id", default="",
+                    help="DCS-PR-059: the scope's DECLARED id (S_A..S_G). Required with "
+                         "--knockout-rel-end-rows: it is persisted on every row and it is "
+                         "the string the random-row control draw is seeded from, so an arm "
+                         "that cannot name its scope cannot be matched to a declared one.")
+    ap.add_argument("--knockout-query-span-rel-end", default="",
+                    help="DCS-PR-059 U2: the DECLARED query span, end-relative (e.g. "
+                         "'-28..-1'), used ONLY as the draw pool for the random-row control. "
+                         "Declared rather than derived so the rows planned on CPU are the "
+                         "rows cut on GPU; every realised span is still checked against it "
+                         "per row by the selector's own query-span constraint.")
+    ap.add_argument("--knockout-random-row-draw", type=int, default=-1,
+                    help="DCS-PR-059 U2: run the DOSE-MATCHED RANDOM-ROW CONTROL for draw "
+                         "index N (0-based) instead of the scope itself: m rows drawn from "
+                         "--knockout-query-span-rel-end EXCLUDING the rows named by "
+                         "--knockout-rel-end-rows. -1 (default) = cut the scope itself. "
+                         "REFUSES when the pool is smaller than the dose (PR059-D1: S_D and "
+                         "S_E on this template) rather than drawing fewer rows.")
+    ap.add_argument("--knockout-random-row-seed", type=int, default=0,
+                    help="DCS-PR-059 U2: seed for the random-row draw. Required with "
+                         "--knockout-random-row-draw and NOT defaulted to --seed: the frozen "
+                         "file declares seeds.random_row_draws separately, and a control band "
+                         "that quietly inherits another seed is not the declared band.")
     ap.add_argument("--knockout-scope", default=DEFAULT_KNOCKOUT_SCOPE,
                     help="query-row scope for attn_knockout arms: legacy_all_query (default, "
                          "byte-identical to every Phase 2-4 arm), query_prefill_only, decode_only, "
@@ -1860,9 +2103,84 @@ def main() -> int:
         raise SystemExit(f"[score] REFUSING: --knockout-last-k={args.knockout_last_k} is only "
                          f"meaningful with --knockout-scope query_last_k_rows, got {_knock_scope!r}. "
                          f"A flag that reaches nothing must never run.")
-    if _knock_scope == "query_last_k_rows" and int(args.knockout_last_k) < 1:
+    # ---- DCS-PR-059 U1/U2: the DECLARED-OFFSET selector, resolved ONCE at argument time -----
+    # `_rel_end_rows is None` is the sentinel for "legacy last-K selector", and every branch
+    # below is guarded on it, so an invocation without --knockout-rel-end-rows is byte-for-byte
+    # the run it was before this block existed.
+    try:
+        _rel_end_declared = parse_rel_end_rows(args.knockout_rel_end_rows)
+    except DeclaredOffsetRefusal as _e:
+        raise SystemExit(f"[score] REFUSING: {_e}")
+    _rel_end_rows = None
+    _rel_end_scope_id = (args.knockout_scope_id or "").strip()
+    _rr_draw = None
+    if _rel_end_declared:
+        if _knock_scope != "query_last_k_rows":
+            raise SystemExit(
+                f"[score] REFUSING: --knockout-rel-end-rows is only meaningful with "
+                f"--knockout-scope query_last_k_rows (the mode whose resolver takes the row set "
+                f"verbatim from the consumer via surface_span), got {_knock_scope!r}. A flag that "
+                f"reaches nothing must never run.")
+        if int(args.knockout_last_k) != 0:
+            raise SystemExit(
+                f"[score] REFUSING: --knockout-last-k={args.knockout_last_k} together with "
+                f"--knockout-rel-end-rows. Two selectors for one row set is two definitions of the "
+                f"scope, and the one that loses is silent.")
+        if not _rel_end_scope_id:
+            raise SystemExit(
+                "[score] REFUSING: --knockout-rel-end-rows without --knockout-scope-id. The scope "
+                "id is persisted on every row and is what the random-row draw is seeded from; an "
+                "arm that cannot name its declared scope cannot be checked against one.")
+        if int(args.knockout_random_row_draw) >= 0:
+            try:
+                _span_rel = parse_rel_end_rows(args.knockout_query_span_rel_end,
+                                               what="--knockout-query-span-rel-end")
+            except DeclaredOffsetRefusal as _e:
+                raise SystemExit(f"[score] REFUSING: {_e}")
+            if not _span_rel:
+                raise SystemExit(
+                    "[score] REFUSING: --knockout-random-row-draw needs "
+                    "--knockout-query-span-rel-end (the draw POOL). Deriving the pool from the "
+                    "first row's realised span would make the control band depend on row order.")
+            if int(args.knockout_random_row_seed) <= 0:
+                raise SystemExit(
+                    "[score] REFUSING: --knockout-random-row-draw needs a positive "
+                    "--knockout-random-row-seed (seeds.random_row_draws in the frozen file). An "
+                    "unseeded or silently-inherited draw is not the declared control band.")
+            try:
+                _rr_draw = random_row_control_rel_end(
+                    _rel_end_scope_id, _rel_end_declared, _span_rel,
+                    int(args.knockout_random_row_seed), int(args.knockout_random_row_draw))
+            except DeclaredOffsetRefusal as _e:
+                raise SystemExit(f"[score] REFUSING: {_e}")
+            _rel_end_rows = list(_rr_draw["rel_end_rows"])
+            _rel_end_scope_id = (f"{_rel_end_scope_id}_randomrow_d"
+                                 f"{int(args.knockout_random_row_draw)}")
+            print(f"[score] DCS-PR-059 U2 random-row control {_rel_end_scope_id}: "
+                  f"m={_rr_draw['m']} pool={_rr_draw['pool_size']} "
+                  f"rows={_rr_draw['rel_end_rows']}", flush=True)
+        else:
+            _rel_end_rows = list(_rel_end_declared)
+            print(f"[score] DCS-PR-059 U1 declared-offset scope {_rel_end_scope_id}: "
+                  f"{len(_rel_end_rows)} row(s) {_rel_end_rows}", flush=True)
+    else:
+        for _flag, _val in (("--knockout-scope-id", _rel_end_scope_id),
+                            ("--knockout-query-span-rel-end",
+                             args.knockout_query_span_rel_end.strip())):
+            if _val:
+                raise SystemExit(
+                    f"[score] REFUSING: {_flag}={_val!r} without --knockout-rel-end-rows. It "
+                    f"would reach nothing, and an arm labelled with a scope it never cut is "
+                    f"exactly the artifact that gets read later as evidence that it did.")
+        if int(args.knockout_random_row_draw) >= 0:
+            raise SystemExit(
+                "[score] REFUSING: --knockout-random-row-draw without --knockout-rel-end-rows. "
+                "There is no scope to exclude, so the 'control' would be an unconstrained draw.")
+    if (_knock_scope == "query_last_k_rows" and int(args.knockout_last_k) < 1
+            and _rel_end_rows is None):
         raise SystemExit("[score] REFUSING: --knockout-scope query_last_k_rows needs "
-                         "--knockout-last-k >= 1; K=0 is a no-op knockout that scores as a null.")
+                         "--knockout-last-k >= 1 (or --knockout-rel-end-rows); K=0 is a no-op "
+                         "knockout that scores as a null.")
     if _knock_scope not in pc.SCOPED_KNOCKOUT_MODES:
         raise SystemExit(f"[score] REFUSING: unknown --knockout-scope {args.knockout_scope!r}; "
                          f"known: {list(pc.SCOPED_KNOCKOUT_MODES)}")
@@ -2285,7 +2603,18 @@ def main() -> int:
             # `templated` string, so the pre-flight population and the per-row population agree by
             # construction rather than by coincidence.
             _surf = None
-            if _knock_scope == "query_last_k_rows":
+            if _knock_scope == "query_last_k_rows" and _rel_end_rows is not None:
+                # DCS-PR-059 U1, CALL SITE 1 of 2. The pre-flight and the per-row resolution
+                # call the SAME function (`surface_span_from_rel_end`), so they agree by
+                # construction rather than by two branches happening to match -- exactly the
+                # property the last-K branch above has today, kept the only way that survives
+                # editing.
+                try:
+                    _surf = frozenset(surface_span_from_rel_end(_rel_end_rows, len(_ids), _prot))
+                except DeclaredOffsetRefusal as _e:
+                    _feas["dead_scope_span"] += 1; _b["bad"] += 1
+                    _bad.append((_r["prompt_id"], f"relend:{_e}")); continue
+            elif _knock_scope == "query_last_k_rows":
                 _q = sorted(_prot)
                 _surf = frozenset(_q[-int(args.knockout_last_k):]) if _q else frozenset()
                 if not _surf:
@@ -2644,7 +2973,30 @@ def main() -> int:
             # to refusing is a no-op knockout that scores as a clean null. Because the skip is
             # ledgered by prompt_id, the excluded rows can be replayed into every OTHER arm as a
             # declared population exclusion, which is the standing rule (crash > silent skip).
-            if _knock_scope == "query_last_k_rows":
+            if _knock_scope == "query_last_k_rows" and _rel_end_rows is not None:
+                # DCS-PR-059 U1, CALL SITE 2 of 2 -- the SAME function as the pre-flight.
+                try:
+                    surf = frozenset(surface_span_from_rel_end(_rel_end_rows, len(ids_r), prot))
+                except DeclaredOffsetRefusal as _e:
+                    ledger.fail(f"relend:{_e}", row["prompt_id"]); continue
+                # PROVENANCE, NOT A LOG LINE. The frozen file requires the REALISED row set AND
+                # ITS DECODED TOKENS on every row (`token_map._the_layout_is_the_scope_definition`:
+                # "which token did you actually cut" must be answerable from the artifact and not
+                # from the design file). `seq_len` travels with them because the declared-vs-
+                # realised audit is `positions == seq_len + rel_end` and cannot be run without it.
+                _pos = sorted(surf)
+                _dec = [lm.tokenizer.decode([ids_r[i]]) for i in _pos]
+                base["surface_span_positions"] = _pos
+                base["surface_span_n_tokens"] = len(_pos)
+                base["surface_span_rel_end"] = sorted(int(r) for r in _rel_end_rows)
+                base["surface_span_decoded"] = _dec
+                base["surface_span_tokens"] = list(_dec)
+                base["seq_len"] = len(ids_r)
+                base["knockout_scope_id"] = _rel_end_scope_id
+                base["knockout_selector"] = "declared_rel_end"
+                if _rr_draw is not None:
+                    base["random_row_control_draw"] = _rr_draw
+            elif _knock_scope == "query_last_k_rows":
                 _qs = sorted(prot)
                 surf = frozenset(_qs[-int(args.knockout_last_k):]) if _qs else frozenset()
                 if not surf:
@@ -3212,7 +3564,7 @@ def main() -> int:
                                                   readout=_readout_only)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
 
-    run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
+    _summary = {"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
                         "option_mass": mass_summary,
                         "knockout_liveness": knock_summary,
                         "option_mass_gate": ("PASS" if not tail_fail else
@@ -3226,8 +3578,21 @@ def main() -> int:
                         # same class of hole as an unrecorded seed.
                         "intervention": (spec if not (_wants_knockout and spec is not None)
                                          else {**spec, "knockout_scope": _knock_scope}),
-                        "note": "ASR is NOT computed here — run judge_boombness.py on gens.jsonl"},
-               ledger=ledger)
+                "note": "ASR is NOT computed here — run judge_boombness.py on gens.jsonl"}
+    # DCS-PR-059 U1/U2. Added ONLY when the declared-offset selector actually ran, so a
+    # summary.json written by any other arm is unchanged, key-for-key.
+    if _rel_end_rows is not None:
+        _summary["declared_offset_scope"] = {
+            "scope_id": _rel_end_scope_id,
+            "declared_rel_end_rows": sorted(int(r) for r in _rel_end_declared),
+            "realised_rel_end_rows": sorted(int(r) for r in _rel_end_rows),
+            "n_rows": len(_rel_end_rows),
+            "selector": "declared_rel_end (len(input_ids)+rel_end, per row, constrained to "
+                        "that row's query span)",
+            "random_row_control_draw": _rr_draw,
+            "_persisted_per_row": ["surface_span_positions", "surface_span_rel_end",
+                                   "surface_span_decoded", "seq_len", "knockout_scope_id"]}
+    run.finish(summary=_summary, ledger=ledger)
 
     # THE LIVENESS GATE. A knockout that did not fire during decode makes every ASR number in this
     # run a statement about the hook rather than about the model, and it fails in the direction

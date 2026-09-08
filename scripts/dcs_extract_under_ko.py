@@ -117,6 +117,10 @@ KNOCKOUT_SCOPE = LEGACY_SCOPE
 #: refused with a pointer to the script that owns it.
 SCOPES_NOT_SUPPORTED_HERE = ("query_last_k_rows",)
 
+#: The same mode, named once so the DECLARED-OFFSET branch (DCS-PR-059 U1) and the last-K
+#: refusal below cannot drift apart on a retyped string.
+LAST_K_SCOPE = "query_last_k_rows"
+
 #: The scope that needs `target_surface` rows. Named once; `resolve_row_spans` and the argument
 #: validation both read this rather than repeating the string.
 SURFACE_SCOPE = "target_surface_row_only"
@@ -367,7 +371,20 @@ def resolve_row_spans(dc, tok, row, args, scope: Optional[str]):
         return occ, [], None, None, f"demokeys:{why}"
     prot = sb.query_span_positions(tok, row, templated, dk)
     surf = None
-    if scope == SURFACE_SCOPE:
+    # ---- DCS-PR-059 / PHASE 11 (U1). THE DECLARED-OFFSET ROW SELECTOR, third call site.
+    # ⛔ IT IS `score_behavior`'s FUNCTION, NOT A COPY. `SCOPES_NOT_SUPPORTED_HERE` refuses
+    # `query_last_k_rows` precisely because a SECOND definition of the row set in this file is
+    # how two scopes with one name diverge. That reasoning forbids a second DEFINITION, not a
+    # second CALLER: `sb.surface_span_from_rel_end` is the single definition that the two
+    # score_behavior call sites use, so the O2 capture cuts the same rows as the behavioural
+    # arm by construction. The last-K selector is still refused in main() -- K has no owner here.
+    _rel_end = getattr(args, "_rel_end_rows", None)
+    if scope == LAST_K_SCOPE and _rel_end is not None:
+        try:
+            surf = frozenset(sb.surface_span_from_rel_end(_rel_end, len(occ[1]), prot))
+        except sb.DeclaredOffsetRefusal as e:
+            return occ, dk, prot, None, f"relend:{e}"
+    elif scope == SURFACE_SCOPE:
         pos, swhy = sb.target_surface_positions(tok, row, templated, prot)
         if swhy:
             return occ, dk, prot, None, f"surfacespan:{swhy}"
@@ -600,6 +617,17 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
             # `target_surface` occurrence is small enough to record exactly (pair_common.py:832).
             "n_surface_span_positions": (len(surf) if surf else 0),
             "surface_span_positions": (sorted(surf) if surf else None),
+            # DCS-PR-059 U1: the REALISED row set and ITS DECODED TOKENS, on every row, with the
+            # `seq_len` the offsets were resolved against -- `positions == seq_len + rel_end` is
+            # the declared-vs-realised audit and it cannot be run without all three (`seq_len`
+            # is already recorded above by the read-position block, so it is not repeated here).
+            "surface_span_rel_end": (sorted(int(x) - len(ids) for x in surf)
+                                     if (surf and getattr(args, "_rel_end_rows", None) is not None)
+                                     else None),
+            "surface_span_decoded": ([tok.decode([ids[i]]) for i in sorted(surf)]
+                                     if (surf and getattr(args, "_rel_end_rows", None) is not None)
+                                     else None),
+            "knockout_scope_id": getattr(args, "_rel_end_scope_id", None) or None,
             "expected_prefill_edit_rows": int(exp_rows),
             # WHICH closed form gated this row, and what the WHOLE-QUERY knockout would have
             # edited. Recorded per row so `legacy_closed_form` on every row of a default run is
@@ -1122,6 +1150,34 @@ def main() -> int:
                          "CODEWORD in cells A/C/D/F, the CONCEPT word in cells B/E — one scope, one "
                          "dose, both experiments). Scopes with no prefill rows, or whose prefill "
                          "half duplicates another mode, are refused at argument time.")
+    # ---- DCS-PR-059 / PHASE 11 (U1). ADDITIVE: absent => this file behaves exactly as it did.
+    ap.add_argument("--knockout-rel-end-rows", default="",
+                    help="⚠ PASS IT WITH `=`: `--knockout-rel-end-rows=-28..-6`. argparse treats a bare "
+                         "`-28..-6` as an OPTION (it is not a valid negative number) and "
+                         "errors with `expected one argument`. The `=` form works "
+                         "everywhere, including in a word-split argsfile. "
+                         "DCS-PR-059 U1: the DECLARED-OFFSET row set for --knockout-scope "
+                         "query_last_k_rows, END-RELATIVE (e.g. '-28..-6', or '-28..-11,-9..-6', "
+                         "or '-9'). It is resolved by score_behavior.surface_span_from_rel_end -- "
+                         "the SAME function the behavioural arm's two call sites use -- so the O2 "
+                         "capture cuts the same rows as the arm it is meant to explain. A "
+                         "NON-NEGATIVE offset is REFUSED.")
+    ap.add_argument("--knockout-scope-id", default="",
+                    help="DCS-PR-059: the declared scope id (S_A..S_G), persisted on every row "
+                         "and used to seed the random-row control draw. Required with "
+                         "--knockout-rel-end-rows.")
+    ap.add_argument("--knockout-query-span-rel-end", default="",
+                    help="DCS-PR-059 U2: the declared query span, end-relative (e.g. '-28..-1'), "
+                         "used ONLY as the draw pool for the random-row control.")
+    ap.add_argument("--knockout-random-row-draw", type=int, default=-1,
+                    help="DCS-PR-059 U2: capture the DOSE-MATCHED RANDOM-ROW CONTROL for draw "
+                         "index N instead of the scope itself. REFUSES when the pool is smaller "
+                         "than the dose (PR059-D1) rather than drawing fewer rows.")
+    ap.add_argument("--knockout-random-row-seed", type=int, default=0,
+                    help="DCS-PR-059 U2: seed for the random-row draw (seeds.random_row_draws). "
+                         "Required with --knockout-random-row-draw and never inherited from "
+                         "--seed: a band that quietly inherits another seed is not the declared "
+                         "band.")
     ap.add_argument("--attn-impl", default="eager", choices=["eager", "sdpa"],
                     help="FORCED to eager whenever the knockout is live: under SDPA the additive "
                          "mask edit is discarded and the knockout is a silent no-op. `sdpa` is "
@@ -1144,12 +1200,76 @@ def main() -> int:
 
     knockout = not args.no_knockout
     scope = args.knockout_scope
+    # ---- DCS-PR-059 U1/U2: the DECLARED-OFFSET selector, resolved ONCE at argument time -------
+    # `args._rel_end_rows is None` is the sentinel for "no declared-offset scope"; every branch
+    # this file grew for PR-059 is guarded on it, so an invocation without the flag is the run it
+    # was before.
+    try:
+        _rel_end_declared = sb.parse_rel_end_rows(args.knockout_rel_end_rows)
+    except sb.DeclaredOffsetRefusal as e:
+        raise SystemExit(f"REFUSING: {e}")
+    args._rel_end_rows = None
+    args._rel_end_scope_id = (args.knockout_scope_id or "").strip()
+    args._rr_draw = None
+    if _rel_end_declared:
+        if scope != LAST_K_SCOPE:
+            raise SystemExit(
+                f"REFUSING: --knockout-rel-end-rows is only meaningful with --knockout-scope "
+                f"{LAST_K_SCOPE} (the mode whose resolver takes the row set verbatim via "
+                f"surface_span), got {scope!r}.")
+        if not knockout:
+            raise SystemExit(
+                "REFUSING: --no-knockout with --knockout-rel-end-rows. The baseline capture "
+                "applies no hook at all, so a run naming rows it never cut is exactly the "
+                "artifact that gets read later as evidence that it did.")
+        if not args._rel_end_scope_id:
+            raise SystemExit(
+                "REFUSING: --knockout-rel-end-rows without --knockout-scope-id; an arm that "
+                "cannot name its declared scope cannot be checked against one.")
+        if int(args.knockout_random_row_draw) >= 0:
+            try:
+                _span_rel = sb.parse_rel_end_rows(args.knockout_query_span_rel_end,
+                                                  what="--knockout-query-span-rel-end")
+            except sb.DeclaredOffsetRefusal as e:
+                raise SystemExit(f"REFUSING: {e}")
+            if not _span_rel:
+                raise SystemExit("REFUSING: --knockout-random-row-draw needs "
+                                 "--knockout-query-span-rel-end (the draw POOL).")
+            if int(args.knockout_random_row_seed) <= 0:
+                raise SystemExit("REFUSING: --knockout-random-row-draw needs a positive "
+                                 "--knockout-random-row-seed (seeds.random_row_draws).")
+            try:
+                args._rr_draw = sb.random_row_control_rel_end(
+                    args._rel_end_scope_id, _rel_end_declared, _span_rel,
+                    int(args.knockout_random_row_seed), int(args.knockout_random_row_draw))
+            except sb.DeclaredOffsetRefusal as e:
+                raise SystemExit(f"REFUSING: {e}")
+            args._rel_end_rows = list(args._rr_draw["rel_end_rows"])
+            args._rel_end_scope_id = (f"{args._rel_end_scope_id}_randomrow_d"
+                                      f"{int(args.knockout_random_row_draw)}")
+        else:
+            args._rel_end_rows = list(_rel_end_declared)
+        print(f"[ko-extract] DCS-PR-059 declared-offset scope {args._rel_end_scope_id}: "
+              f"{len(args._rel_end_rows)} row(s) {args._rel_end_rows}", flush=True)
+    else:
+        for _flag, _val in (("--knockout-scope-id", args._rel_end_scope_id),
+                            ("--knockout-query-span-rel-end",
+                             args.knockout_query_span_rel_end.strip())):
+            if _val:
+                raise SystemExit(f"REFUSING: {_flag}={_val!r} without --knockout-rel-end-rows; "
+                                 f"it would reach nothing.")
+        if int(args.knockout_random_row_draw) >= 0:
+            raise SystemExit("REFUSING: --knockout-random-row-draw without "
+                             "--knockout-rel-end-rows; there is no scope to exclude, so the "
+                             "'control' would be an unconstrained draw.")
     if knockout:
-        if scope in SCOPES_NOT_SUPPORTED_HERE:
+        if scope in SCOPES_NOT_SUPPORTED_HERE and args._rel_end_rows is None:
             raise SystemExit(
                 f"REFUSING: --knockout-scope {scope!r} takes its row set verbatim from the "
                 f"consumer, and score_behavior.py owns that definition (--knockout-last-k). "
-                f"Adding a second 'last K' here would be a second definition of K.")
+                f"Adding a second 'last K' here would be a second definition of K. "
+                f"(A DECLARED-OFFSET row set is different: --knockout-rel-end-rows is resolved "
+                f"by score_behavior's own selector, so there is still exactly one definition.)")
         # ⛔ THE ARGUMENT-TIME REFUSAL, AND IT IS NOT THIS FILE'S OPINION. `readout_liveness_contract`
         # asks the hook's OWN row resolver whether the mode can fire at all on a path with no
         # decode step, and refuses `decode_only` (edits nothing here) and `response_query_only`
@@ -1261,6 +1381,17 @@ def main() -> int:
                "bank_file_sha16": run._extra_meta.get("bank_file_sha16"),
                "bank_rows_sha16": run._extra_meta.get("bank_rows_sha16"),
                "bank_n_rows": run._extra_meta.get("bank_n_rows")}
+    # DCS-PR-059 U1/U2. Added ONLY when the declared-offset selector actually ran, so a
+    # summary.json written by any other capture is unchanged, key-for-key.
+    if args._rel_end_rows is not None:
+        summary["declared_offset_scope"] = {
+            "scope_id": args._rel_end_scope_id,
+            "declared_rel_end_rows": sorted(int(r) for r in _rel_end_declared),
+            "realised_rel_end_rows": sorted(int(r) for r in args._rel_end_rows),
+            "n_rows": len(args._rel_end_rows),
+            "selector": "score_behavior.surface_span_from_rel_end -- the SAME definition the "
+                        "behavioural arm's two call sites use",
+            "random_row_control_draw": args._rr_draw}
     summary.update(capture(lm, dc, pc, rows, layers, band, run, ledger, args))
 
     if args.compare_baseline:

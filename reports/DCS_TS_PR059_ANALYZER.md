@@ -162,3 +162,156 @@ python3 scripts/dcs_ts_pr059_localisation.py --plan
 python3 scripts/dcs_ts_pr059_localisation.py                    # REFUSES: no arm has run
 python3 scripts/dcs_ts_prereg.py --check --for-extraction configs/dcs_ts_pr059_phase11.json
 ```
+
+---
+
+# Appendix A — 2026-09-08: the producer halves of U1/U2, and the independent verifier (U7)
+
+**CPU only**, no GPU, no SLURM, no network. Governing file `configs/dcs_ts_pr059_phase11.json`,
+still `FROZEN`; only its `pre_extraction_checklist` **booleans** were touched, each with a
+`closed_evidence` / `why_open` string, which is the house convention (`configs/dcs_ts_pr048.json`
+is FROZEN with all items `done: true`; `configs/dcs_ts_pr060_phase9_amendment.json` carries
+per-item evidence blocks). The design sections were not edited.
+
+## A.1 Observed numbers
+
+| entry point | observed |
+|---|---|
+| `dcs_ts_pr059_localisation.py --self-test` | **92 checks, 0 failed** |
+| `dcs_ts_pr059_localisation.py --mutate` | **80/80 RED** |
+| `dcs_ts_pr059_localisation.py --verify-token-map` | `ok=true`, **6900/6900**, `layout_mismatches={}` |
+| `dcs_ts_pr059_localisation.py --control-draws` | rc=1 (2 of 6 scopes have no constructible control) |
+| **`dcs_ts_pr059_verifier.py --self-test`** (NEW) | **22 checks, 0 FAILED** |
+| **`dcs_ts_pr059_verifier.py --mutate`** (NEW) | **22/22 RED** |
+| **`dcs_ts_pr059_verifier.py`** (default) | **rc=2** — "82 declared arm(s) searched, 0 present on disk" |
+| `dcs_extract_under_ko.py --self-test` | **35/35** |
+| repo tests importing either changed script (26 files) | **676 passed**, 1 warning, 326 s |
+| `dcs_ts_prereg.py --check` | clean: FROZEN, 17 hashes pinned and verified, 12/12 mandate-21 fields |
+| `dcs_ts_prereg.py --check --for-extraction` | **9 refusals → 4** (U2, U3, U8, `analyzer_exists`) |
+
+**PHASE 9 (PR-057) is UNMOVED**, measured before and after the edits, identical both times:
+`dcs_ts_pr057_causal.py --self-test` **111 checks, 0 FAILED**; `--mutate` **90/90 RED**;
+`pr057_run_causal.py --self-test` **70 checks, 0 FAILED**; `--mutate` **41/41 RED**.
+
+## A.2 U1 — the producer half, CLOSED
+
+`score_behavior.surface_span_from_rel_end()` is **one definition called at three sites**: the
+pre-flight feasibility pass, the per-row resolution, and — by import, not by restatement —
+`scripts/dcs_extract_under_ko.py`. "The two call sites agree" is therefore structural rather than
+remembered. The legacy `sorted(query_span)[-K:]` branch is left intact and is still the branch
+taken when the new flag is absent, so every pre-existing invocation is byte-for-byte the run it was.
+
+* **END-RELATIVE IN EVERY PROMPT SEPARATELY** — offsets resolve against *this* row's
+  `len(input_ids)` and are constrained to *this* row's query span.
+* **AN ABSOLUTE INDEX REFUSES**, at argument time and again at resolution time. Observed:
+  `--knockout-rel-end-rows=9` → `ABSOLUTE INDEX REFUSED -- offsets [9] are not negative`.
+* **Persisted on every row**: `surface_span_positions`, `surface_span_rel_end`,
+  `surface_span_decoded`, `surface_span_tokens`, `seq_len`, `knockout_scope_id`,
+  `knockout_selector`; `summary.json` gains `declared_offset_scope` **only** on this path.
+* **Agreement with the analyzer, re-derived**: the producer's selector and the analyzer's return
+  identical positions for all five constructible scopes at `seq_len ∈ {60, 137, 400, 1024}` —
+  **0 mismatches**. `S_D` → 22 offsets, `S_E` → 23, `S_F` → `[-9]`.
+
+**A usability caveat, recorded because it will bite whoever writes the argsfiles.** `argparse`
+rejects a bare `-28..-6` as an option (it is not a valid negative number) and dies with
+`expected one argument`. The value must be passed as `--knockout-rel-end-rows=-28..-6`. This is
+documented in `--help` on both scripts. The alias `--declared-rel-end` was added because that is
+the spelling `--plan` prints, so the planned command and the flag that exists are one string.
+
+## A.3 U2 — PARTIALLY closed, and it cannot close as written
+
+Implemented and reproducible: `random_row_control_rel_end()` draws *m* rows from the declared
+query span **excluding the scope's own rows**, seeded from `--knockout-random-row-seed` (never
+inherited from `--seed`) through `sha256(seed|scope_id|draw_index)` rather than the salted builtin
+`hash()`, and the **whole draw is recorded** — seed, derived seed, pool, excluded rows, chosen
+rows — per row and in `summary.json`. Observed: `S_A` draw 0 → `[-28, -25, -21, -16, -8]`, m=5,
+pool=23, **byte-equal to the draw `--plan` prints and to the draw the new verifier re-derives from
+the frozen seeds with no shared code**. All three draws agree with the analyzer on `S_A`, `S_C`,
+`S_F` and `S_F2` (rows, pool, derived seed).
+
+It stays **BLOCKING and `done: false`** for two independent reasons:
+
+1. **`PR059-D1` is arithmetic, and it now also names `S_G`.** The query span is 28 rows. `S_D`
+   (22) leaves a pool of **6**, `S_E` (23) leaves **5**, and the reference scope `S_G` (28) leaves
+   **0**. The producer **refuses by name** rather than drawing fewer rows — observed:
+   `REFUSING: PR059-D1: scope S_E asks for 23 control row(s) but the query span (28 rows) has only
+   5 row(s) outside the scope`. `dose_matching.per_scope_random_row_control` requires one for
+   *every* scope, so the item cannot be satisfied as written.
+2. The item's second clause — *"verify the 3 draws produce 3 DISTINCT output hashes"* — is a
+   statement about **arm outputs, which do not exist**; that is GPU work behind `U8`. The CPU
+   precondition is met (three distinct **row sets** for every constructible scope) and the
+   output-hash gate itself is implemented as the new verifier's `R3`, where mutation **M06**
+   ("control band is secretly n=1") is RED.
+
+## A.4 U7 — the independent verifier
+
+`scripts/dcs_ts_pr059_verifier.py`. **Independence is enforced, not claimed**: `T00a` scans the
+verifier's own source for any import of the analyzer and `T00b` asserts the analyzer is absent from
+`sys.modules` after the verifier is fully imported, which also catches an indirect import through a
+third module. Every quantity is re-derived — its own offset parser (all three shapes the frozen
+file uses, including `[-28..-6] minus [-10]`), the scope table from `scopes.family`, the span from
+`token_map.rel_end_layout`'s keys, the draws from `seeds.*`, the arm tags from a rule stated in the
+verifier, the outcomes from each arm directory's `results.jsonl`. The only shared objects are the
+frozen config (a data file) and the arm directories.
+
+**The expected arm set is declared HERE** — `expected_arms()` builds **82** arms over the two
+confirmatory banks — and `R5` fails both when the producer reports *less* (an arm complete on disk
+and absent from its output) and when it reports *more* (an arm nobody preregistered).
+
+| class | what it closes | mutations RED |
+|---|---|---|
+| `V0` | the verifier is still bound to the design it was written against | (T20) |
+| `R1` | silent denominator; non-uniform domains | M01, M02 |
+| `R2` | row-level identity: swapped arms, a baseline claiming a scope, an argsfile that disagrees | M03, M04, M05 |
+| `R3` | a control band that is secretly n=1; an arm that is a byte-copy; a short band | M06, M07, M08 |
+| `R4` | population swap and population drift | M09, M10 |
+| `R5` | vacuous by omission; and an invented arm | M12, M13, M14 |
+| `P1` | **realised ≠ declared** — a pinned absolute index, an off-by-one, missing decoded tokens | M15, M16, M17 |
+| `P2` | SDPA, a dead hook, a scope that leaked into decode | M18, M19, M20 |
+| `P3` | the display channel used as a mechanism result | M11 |
+| `P4` | `PR059-D1` — an impossible control shipped, or claimed by the producer | M21, M22 |
+
+The fixture is built from the **design**, not from the checks: it writes what a correct producer
+would write, with a **per-row-varying `seq_len`**, precisely so an absolute-index producer cannot
+pass `P1` by accident.
+
+## A.5 New, recorded, not fixed here
+
+**`PR059-D2` — `--plan`'s commands are not runnable, so `U8` has no launcher.** Every arm line
+`dcs_ts_pr059_localisation.py --plan` prints is addressed to `scripts/dcs_ts_readout_multi.py`,
+which accepts only `--banks --family --tag-prefix --query-kinds --conditions --n-examples
+--max-new --attn-impl --arm --intervene --fit-dir`. It forwards **no** `--only-cell`,
+**no** `--knockout-scope`, **no** `--knockout-rel-end-rows`. The printed line is therefore a design
+statement, not a command. `U8` (smoke `S_G` and `S_C`) cannot be launched through it as written;
+either the wrapper grows the pass-through or the arms go through `score_behavior.py` directly.
+That file is outside this session's write scope, so this is recorded rather than fixed.
+
+**`PR059-D1` now also names `S_G`.** The earlier record named `S_D` and `S_E`. Re-derived
+independently by the new verifier (`T10`): the scopes whose dose-matched control is arithmetically
+impossible are **`S_D`, `S_E` and `S_G`** — pools 6, 5 and 0 against doses 22, 23 and 28. `S_G` is
+the *denominator*, not a family member, so no Holm-corrected claim rests on its control; but
+`dose_matching` says *every* scope, and it does not have one.
+
+**Does `PR059-D1` still block the primary contrast? YES.** `S_D` vs `S_E` is
+`scopes.family[S_D].interpretation`'s "THE DECISIVE CONTRAST OF THIS PHASE", and
+`assert_scope_has_its_control()` refuses to render a delta for a scope with no dose-matched
+control. Nothing in this session changed that: the producer now refuses to *build* the impossible
+control instead of silently drawing a smaller one, which makes the block explicit rather than
+removing it. Resolving it is a config-owner decision and a new preregistration.
+
+## A.6 Reproduce
+
+```
+python3 scripts/dcs_ts_pr059_verifier.py --self-test          # 22/22
+python3 scripts/dcs_ts_pr059_verifier.py --mutate             # 22/22 RED
+python3 scripts/dcs_ts_pr059_verifier.py                      # rc=2, 82 arms searched, 0 present
+python3 scripts/dcs_ts_pr059_localisation.py --self-test      # 92/0
+python3 scripts/dcs_ts_pr059_localisation.py --mutate         # 80/80 RED
+python3 scripts/dcs_ts_pr059_localisation.py --verify-token-map
+python3 scripts/dcs_ts_prereg.py --check --for-extraction configs/dcs_ts_pr059_phase11.json
+python3 scripts/dcs_extract_under_ko.py --self-test           # 35/35
+python3 scripts/dcs_ts_pr057_causal.py --self-test            # 111/0   (PHASE 9, unchanged)
+python3 scripts/dcs_ts_pr057_causal.py --mutate               # 90/90   (PHASE 9, unchanged)
+python3 src/boombness/pr057_run_causal.py --self-test         # 70/0    (PHASE 9, unchanged)
+python3 src/boombness/pr057_run_causal.py --mutate            # 41/41   (PHASE 9, unchanged)
+```

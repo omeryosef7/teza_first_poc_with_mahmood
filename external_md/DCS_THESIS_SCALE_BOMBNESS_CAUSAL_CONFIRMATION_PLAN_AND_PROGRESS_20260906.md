@@ -4707,3 +4707,42 @@ repaired, mutation retargeted, now 6,780/6,780 PASS. **PR058-D6**: the committed
 excludes **1 domain (115)** while PR-048 now names **3 (113)** — printed as a `[WARN]` with a
 recorded `exclusion_readback` rather than silently repaired, since repairing it would rewrite a
 pinned artifact.
+
+---
+
+## DCS-R-134 — PHASE 11's CPU blockers close; and PHASE 11 has no launcher
+*2026-09-08*
+
+Loader refusals on `configs/dcs_ts_pr059_phase11.json` go **9 → 4** (U2, U3, U8,
+`analyzer_exists`). **The PHASE 9 instrument is provably undisturbed** — the harnesses were measured
+before *and* after every edit and were identical both times: `dcs_ts_pr057_causal.py` **111/0** and
+**90/90 RED**, `pr057_run_causal.py` **70/0** and **41/41 RED**. That mattered: this work edits
+`score_behavior.py` and `dcs_extract_under_ko.py`, the instrument that had just produced a
+confirmatory verdict.
+
+**U1** — the declared-offset row selector is **one definition called at three sites**, and
+`dcs_extract_under_ko.py` takes it **by import rather than restatement**, so that file's recorded
+"second definition of K" hazard is not reintroduced and its last-K refusal stays intact. Producer and
+analyzer return **identical positions for all five constructible scopes at seq_len ∈ {60,137,400,1024}
+— 0 mismatches**. A non-negative offset refuses twice, at argument time and again at resolution.
+Purely additive: the legacy branch is untouched and still taken when the flag is absent.
+
+**U4** re-verified (`ok=true`, 6900/6900, K=5 matches S_A in 6900/6900, `neutral_content` 0) and then
+**independently re-derived a second time** by the new verifier. **U5** 92/0, **U6** 80/80 RED.
+**U7** — `scripts/dcs_ts_pr059_verifier.py`, **22/22 self-test and 22/22 mutations RED**, with
+independence **enforced by test rather than claimed** (source scan plus a `sys.modules` assertion).
+Its fixture uses a **per-row-varying `seq_len`** precisely so a pinned-absolute-index producer cannot
+pass by accident.
+
+**U2 is PARTIAL and stays open, and `PR059-D1` got worse.** The draw is implemented, reproducible
+from a sha256-derived seed (never a salted `hash()`), and byte-equal across producer, `--plan` and the
+independent verifier. But the arithmetic impossibility now names **three** scopes, not two: pools of
+**6 / 5 / 0** against doses **22 / 23 / 28** for S_D, S_E and **S_G** — S_G's pool is **empty**. The
+producer now **refuses by name** rather than drawing fewer rows and calling it dose-matched, which
+makes the block explicit rather than removing it. **PR059-D1 still blocks the primary S_D-vs-S_E
+contrast**; resolving it is a config-owner decision and a new preregistration, not a code change.
+
+**`PR059-D2` — PHASE 11 has no launcher.** Every arm command `--plan` prints is addressed to
+`scripts/dcs_ts_readout_multi.py`, which forwards **no** `--only-cell`, **no** `--knockout-scope` and
+**no** row-set flag. U8's smoke run cannot be launched as written. This is the same class as PHASE 9's
+Q4b — the analyzer and the arms exist, and nothing can actually run them.
