@@ -1048,9 +1048,52 @@ def _runs_a_bridge_arm(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
     return any(x.kind == "bridge" for x in build_arm_manifest(pr) if sel(x))
 
 
+def _reads_the_test_split(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
+    """`V3` / `U3` is, IN ITS OWN WORDS, a precondition for READING TEST: "if power < 0.8, return
+    CANNOT ANSWER WITHOUT READING TEST." The run that MEASURES it is a VALIDATION run, so an
+    unmeasured V3 blocking the validation run is circular -- the same shape PHASE 9 resolved by
+    letting its `q1` validation power run proceed while the checklist was still open.
+
+    RE-DERIVED, never read off the flag's spelling: this asks whether the population THIS RUN
+    WILL ACTUALLY SCORE -- the `keep_ids` of the exclusion list handed to `score_behavior`, built
+    from the bank on disk -- contains any domain the FROZEN split manifest assigns to TEST. A run
+    called `validation` that nonetheless bound a test domain is a TEST read and V3 blocks it.
+    Anything this predicate cannot re-derive is fail-closed: it returns True and the item blocks.
+    """
+    split = str(ctx.get("split") or "")
+    if split not in ("train", "validation", "test"):
+        return True
+    try:
+        assign = load_split(pr)
+        test_domains = {d for d, sp in assign.items() if str(sp) == "test"}
+        if not test_domains:
+            return True                    # a manifest with no TEST split cannot witness anything
+        for bank_key in primary_banks(pr):
+            bank_abs = repo_path(bank_path_for(pr, bank_key))
+            rows = load_bank_rows(bank_abs)
+            b = split_bind(pr, bank_abs, split, assign)
+            for pid in b["keep_ids"]:
+                if str((rows.get(pid) or {}).get("domain")) in test_domains:
+                    return True
+        return False
+    except Exception:                                        # noqa: BLE001 -- fail CLOSED
+        return True
+
+
+def _runs_a_random_row_control_band(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
+    """Re-derived from the ARM MANIFEST: does this stage run a per-scope RANDOM-ROW control BAND
+    at all? `U2`'s "verify the 3 draws produce 3 DISTINCT output hashes" is a statement about the
+    outputs of THOSE arms, and a stage that builds none of them cannot make it true or false."""
+    sel = stage_selector(pr, stage)
+    return any(x.kind == "random_row_control" for x in build_arm_manifest(pr) if sel(x))
+
+
 CHECKLIST_STAGE_RELEVANCE = {
-    "V3": ("the stage produces a number that enters a confirmatory estimate (it is not a "
-           "truncated TRAIN smoke)", _feeds_a_confirmatory_estimate),
+    # V3's relevance is NOT "does this feed a confirmatory estimate" -- the validation run that
+    # MEASURES the power is itself confirmatory-grade work, and gating it on its own result is
+    # circular. Its own text scopes it to READING TEST, so that is what is re-derived.
+    "V3": ("the population this stage will actually score contains a domain the frozen split "
+           "manifest assigns to TEST", _reads_the_test_split),
     "V8": ("the stage produces a number that enters a confirmatory estimate (a smoke cannot "
            "require itself to have already run)", _feeds_a_confirmatory_estimate),
     "V10": ("the stage's arms carry a Holm-corrected family member's estimate, so the analyzer's "
@@ -1061,6 +1104,8 @@ CHECKLIST_STAGE_RELEVANCE = {
     "V12": ("the stage installs a disabled-hook bridge arm (null L-N1)", _runs_a_bridge_arm),
     "V13": ("the stage produces a number an analyzer VERDICT would rest on (it is not a truncated "
             "TRAIN smoke)", _feeds_a_confirmatory_estimate),
+    "V16": ("the stage runs a per-scope RANDOM-ROW control band, whose three draws are what the "
+            "three-distinct-output-hashes clause is about", _runs_a_random_row_control_band),
 }
 
 

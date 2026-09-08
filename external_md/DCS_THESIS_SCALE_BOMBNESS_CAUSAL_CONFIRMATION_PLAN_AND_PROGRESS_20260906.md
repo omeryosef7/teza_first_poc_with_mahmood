@@ -5243,3 +5243,56 @@ the run that measures it. PHASE 9 hit this exact shape and resolved it the same 
 validation power run executed while the checklist was still open, because the power item gates the
 test read, not the validation run. **V3 is to be scoped, never closed** — it stays open until
 measured, so that a power < 0.8 outcome can still return CANNOT ANSWER WITHOUT READING TEST.
+
+---
+
+## DCS-R-144 / PR-064 — V3 scoped by re-derivation, not by name; and two corrections to R-143
+*2026-09-09*
+
+**Two things I stated in `R-143` were wrong**, both caught by checking rather than by accepting my
+framing:
+
+1. **Not every V8 arm recorded `eager`.** Five of six did. The sixth, `basket_bomb_S_0_baseline`, is a
+   **cache hit from the earlier job 870303** and records **no backend field at all** — which is
+   correct and gated, because the arm gate requires the backend only of a **non-baseline** arm.
+2. **`57,456 / 2,052` are PER-ROW figures, not totals.** The artifacts carry the 40-row totals
+   **2,298,240 / 82,080**, ratio exactly **28.000**. The 28:1 relationship stands; I mis-described
+   the quantities.
+
+**V8 could not be closed whole, and was not.** It inherited U2's *"3 draws produce 3 DISTINCT output
+hashes"* clause, and the smoke built **zero** control arms (`DONE.json control_bands {}`). Rather
+than mark measured what nothing measured, that clause was carved into a new **`V16`** (blocking, not
+done, scoped to `family`) — the same `Q7 → A7a/A7b` split PR-060 used. **V11** was additionally
+closed, unprompted and correctly: it is measurably resolved (analyzer **84**, verifier **84**, tag
+for tag, `only_in_* = []`), and leaving a resolved blocker at `done:false` is its own stale-claim
+failure.
+
+**V3 is scoped by RE-DERIVATION, not by name, and the distinction did real work.** The obvious move —
+point V3 at the existing `_feeds_a_confirmatory_estimate` predicate — **would have been refused as
+contradicted**, because that predicate returns True for a validation run too. A new
+`_reads_the_test_split` predicate instead loads the frozen split manifest, builds the exact
+`keep_ids` exclusion list the run will hand `score_behavior` from the bank on disk, and asks whether
+any kept prompt's domain is **TEST-assigned**. It never reads the flag's spelling and fails closed.
+
+The proof that this is not a name-only escape hatch is the third dry-run, which nobody asked for:
+
+| command | result |
+|---|---|
+| `--stage kill --split validation --dry-run` | **rc = 0** — V3 and V16 scoped out by re-derivation; 12 arms, model not loaded, nothing written |
+| `--stage family --split test --dry-run` | **rc = 3** — still blocks on V3 and V16 |
+| `--stage kill --split test --dry-run` | **rc = 3** — *"V3 declares applies_to_stages=['family'], but stage 'kill''s OWN arms and binding contradict that"* |
+
+**A stage-name-only scope would have let that third case through.** `V3` is scoped, never closed: it
+stays open until measured, so a power < 0.8 outcome can still return **CANNOT ANSWER WITHOUT READING
+TEST**.
+
+**New defect `PR059-D9`, reported not fixed, and it is the serious kind.** The runner's control-band
+distinctness check selects `if arm.kind != "random_row_control": continue` — but the six nondemo-key
+control draws the `kill` stage **actually runs** are kind `nondemo_control`, so **nothing checks that
+they differ**. This repo has **twice** published a band that was secretly n = 1. Recorded on V16; no
+nondemo-key band may be reported as a band until the check covers it.
+
+Loader: `--check` **clean, 21 hashes**; `--check --for-extraction` **2 refusals (V3, V16), down from
+7**. PHASE 9 and PHASE 10 unchanged: 117/0 · 102/102 · 70/0 · 41/41 · 57/0 · 56/56. PHASE 11
+harnesses re-run before flipping anything and all reproduced: 114/0 · 94/94 · 58/0 · 49/49 · 25/0 ·
+22/22. Repo tests **676 passed**, run to completion.
