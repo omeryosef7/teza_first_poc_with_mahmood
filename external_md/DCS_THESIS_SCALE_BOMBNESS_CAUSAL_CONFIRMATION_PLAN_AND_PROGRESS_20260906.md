@@ -5210,3 +5210,36 @@ not that it lets the valid case through.
 **The two run dirs already on disk carry no loaded-config field**, so the fixed gate will correctly
 refuse them: their backend cannot be established *from the artifact*. They are **re-scored, not
 patched** — 36 s + 25 s with the model cache hit.
+
+---
+
+## DCS-R-143 — PHASE 11's smoke COMPLETES; the knockout is live and scope-proportional
+*2026-09-09* — job 870382, U8 closed
+
+**6 arms, 240 rows, 16.2 min, 1 model load, `COMPLETED 0:0`, `DONE.json` written.** The first time
+PHASE 11 has produced anything at all.
+
+Every arm records **`attn_implementation: 'eager'` from the LOADED config** (the `R-142` fix working
+in production), `frac_rows_scope_live 1.0`, `n_decode_edits 0` — correct for a readout-only scope —
+and `scope_violations {}`.
+
+**An internal consistency check nobody designed, and it is the strongest evidence the scopes are
+real:** the prefill-edit counts are **proportional to the declared scope sizes**. S_G declares **28
+rows** and shows **57,456** edits; S_C declares **1 row** (the codeword) and shows **2,052** — a
+**28:1 ratio**, from an instrument that had no reason to produce one unless the declared-offset row
+selector is resolving exactly the rows it claims. `U1`'s producer half is confirmed by arithmetic on
+a live run rather than by its own unit tests.
+
+Per-arm: `basket_bomb_S_0_baseline` 0.9 min, `basket_bomb_S_G_scope` 13.0 min,
+`basket_bomb_S_C_scope` 0.8 min, `button_bomb_S_0_baseline` 0.3, `button_bomb_S_G_scope` 0.5,
+`button_bomb_S_C_scope` 0.5. The 13-minute arm is the first-load cost, not the scope.
+
+**The circularity that now needs an amendment.** `--stage kill --split validation --dry-run` refuses
+on six items: V3, V8, V10, V12, V13 and `analyzer_exists`. Four are genuinely done (V8 by this run;
+V10/V12/V13 by `R-141`), and **V3 is circular**: its own text makes it a precondition for **reading
+TEST** — *"measure the between-domain SD … on VALIDATION DOMAINS ONLY … if power < 0.8, return
+CANNOT ANSWER WITHOUT READING TEST"* — and the `kill` stage on the **validation** split is precisely
+the run that measures it. PHASE 9 hit this exact shape and resolved it the same way: its Q1
+validation power run executed while the checklist was still open, because the power item gates the
+test read, not the validation run. **V3 is to be scoped, never closed** — it stays open until
+measured, so that a power < 0.8 outcome can still return CANNOT ANSWER WITHOUT READING TEST.
