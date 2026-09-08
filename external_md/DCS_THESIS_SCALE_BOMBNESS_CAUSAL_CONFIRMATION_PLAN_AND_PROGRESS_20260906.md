@@ -5296,3 +5296,60 @@ Loader: `--check` **clean, 21 hashes**; `--check --for-extraction` **2 refusals 
 7**. PHASE 9 and PHASE 10 unchanged: 117/0 · 102/102 · 70/0 · 41/41 · 57/0 · 56/56. PHASE 11
 harnesses re-run before flipping anything and all reproduced: 114/0 · 94/94 · 58/0 · 49/49 · 25/0 ·
 22/22. Repo tests **676 passed**, run to completion.
+
+---
+
+## DCS-R-145 / C-132 — the option-mass gate refuses the knockout arm BECAUSE the knockout worked
+*2026-09-09* — job 870536, kill/validation, ABORTED after 1 of 12 arms
+
+Arm 1 (`basket_bomb_S_0_baseline`) completed: 230 rows, 44.3 min, liveness clean
+(`frac_rows_scope_live 1.0`, 13,061,664 prefill edits, `n_decode_edits 0`, `attn_implementation
+'eager'` from the loaded config). Arm 2 (`basket_bomb_S_G_scope`) then exited 4 on the tail gate:
+*"median option mass 0.04831 < 0.05"*.
+
+**Measured, and the shape is unambiguous:**
+
+| arm | median option mass | reportable |
+|---|---|---|
+| baseline `S_0` | **0.08080** | true |
+| knockout `S_G` | **0.04517** | false |
+
+**The channel IS engaged at baseline, and the knockout roughly HALVES it.** That is the intervention
+working. But the tail gate — whose own comment says *"a forced choice decided inside a 1e-5 tail is
+not a forced choice"* — is a validity check on **the instrument**, and here it is applied to an
+**intervention arm**, where a fall in option mass is **the result**. So it refuses exactly when the
+manipulation succeeds.
+
+**This is a real design tension, not a bug, and it is not mine to resolve by fiat.** The
+counter-argument is serious: if the knockout arm's readout really is decided inside a thin tail, then
+its `semantic_logodds` is itself shaky, and a delta between a well-supported baseline and a
+barely-supported arm is hard to interpret. Both readings are defensible, which is precisely why the
+frozen preregistration must settle it rather than me. The candidate resolutions — gate the baseline
+and report the arm's mass as a diagnostic; or keep the gate and treat a below-gate arm as CANNOT
+ANSWER for that arm — differ in what PHASE 11 is allowed to claim, so the choice belongs to the
+design.
+
+⚠ Note the arm sits at **0.04517 against a 0.05 gate** — a 10% margin. Whatever is decided must not
+be decided by *this* number's proximity to the threshold, which is how a gate becomes a formality.
+
+**`ABORTED.json` is written, and it carries the provenance the A15 fix added** — `slurm_job_id
+870536`, `slurm_nodelist n-804`, pid, timestamp. The `C-124` guard will now correctly refuse a
+resubmission until that record is archived, which is the intended behaviour.
+
+## And a walltime estimate of mine that was badly wrong
+
+The agent's recommendation was `--time=08:00:00`. **I overrode it with 3:00:00 and I was wrong.**
+Arm 1 alone took **44.3 minutes** for 230 rows; twelve arms is on the order of **9 hours**. The job
+died at 68 minutes for an unrelated reason, so the under-request cost nothing this time — but it
+would have truncated the run at arm 4 or 5.
+
+**The error was applying the right lesson to the wrong measurement.** `R-125`'s rule is to size from
+measured cost, and I sized from the *smoke*: 40-row arms on a warm cache at 0.3–0.9 min, giving
+~0.75 s/row. The real figure at 230 rows is **~11.6 s/row including the load** — roughly **15×**
+higher. A 40-row cache-hit arm is not a scale model of a 230-row cold arm, and treating it as one is
+the same class of error as generalising from one bank.
+
+**Corrected rule:** size from a measurement *of the same shape* as the job being sized — same row
+count per arm, same cache state — or take the larger of the two estimates. And when someone who has
+just read the code recommends a walltime, a contrary estimate needs better evidence than an
+extrapolation from a smoke test.
