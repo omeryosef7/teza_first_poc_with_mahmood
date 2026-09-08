@@ -4850,3 +4850,69 @@ has been checked and found fine; here it has been checked and found broken. Thre
 The remaining five banks stay unrun until those are done. The written rows are not salvageable for the
 primary readout — `summary.json`'s `reportable: false` is correct and stands — but the `top1_id`
 column is salvageable as the diagnostic above.
+
+---
+
+## DCS-R-137 — the CORRECTED PHASE 9 verdict. Both classes held; C4 is the decisive number
+*2026-09-08* — the answer to CLAIM C
+
+The 4-hourly review found three defects in the verdict path. All three are fixed and the analysis
+re-run. **Both verdict classes are unchanged** — which was the thing to check before anything else,
+and the agent was instructed to stop loudly if either moved.
+
+**Defect 1, and I reported it to the collaborator-facing summary wrongly first.** I said the probe
+margin "moved significantly in the UNINTENDED direction". **It did not.** Verified on real rows: the
+C5 bridge mean margin is **−0.94230** (the probe saturated on bomb) against the arm's **−0.55039** —
+**P(bomb) FELL**, exactly as projecting the axis out should make it. The run's own JSON already
+recorded `o1["moved_intended_sign"] = True`. The `[FAIL]` was a labelling bug at `:4386`: O2's
+`expected_sign` (−1) was passed into `evaluate_success` and applied to **both** conjuncts, so O1 —
+whose preregistered sign is **+1** — was scored against O2's direction. Each conjunct now takes its
+own outcome's sign. The S1 block was also internally contradictory: the literal
+`DECODABLE BUT NOT CAUSALLY USED` is reachable only via `o1_moved=True` yet printed three lines under
+`[FAIL] 1_probe_moves_intended`. They now agree.
+
+**The corrected per-condition table** (re-run, rc=0, 30 arms, 0 check failures; every outcome number
+reproduced to the printed digit):
+
+| conjunct | S1 was → now | S2 was → now |
+|---|---|---|
+| 1 probe moves intended | FAIL → **PASS** | FAIL → **PASS** |
+| 2 semantic readout moves | FAIL → FAIL | PASS → PASS |
+| 3 random control does not move | PASS → PASS | FAIL → FAIL |
+| 4 holds across domains | FAIL → FAIL | PASS → PASS |
+| **count** | 1/4 → **2/4** | 2/4 → **3/4** |
+| **class** | **NEGATIVE** | **NOT A CAUSAL RESULT** |
+
+**Defect 2 — C3 and C4 had run, passed liveness, and were analysed NOWHERE.** They are now on the
+page, and C4 is the strongest evidence in the phase:
+
+| arm | delta | p | equivalence 95% CI | ratio to arm | sign |
+|---|---|---|---|---|---|
+| `c4_samenorm_orth_s2` | **+1.237557** | floor | [+0.789922, +1.685192] | **1.93×** | **OPPOSITE** (5/23) |
+| `c4_samenorm_orth_s1` | **+0.149133** | floor | [+0.118710, +0.179557] | **49.75×** | OPPOSITE (0/23) |
+| `c3_vremap_s2` | −2.844680 | floor | [−3.153896, −2.535464] | 4.43× | SAME (23/23) |
+| `c3_vremap_s1` | −0.047336 | 0.0781922 | [−0.100677, +0.006005] | 15.79× | SAME (17/23) |
+
+A concept-free, norm-matched, equal-magnitude **orthogonal** ADD moves the readout **1.93× as far as
+the concept edit at S2, in the opposite direction**. The site is perturbation-sensitive at this norm,
+and the arm's movement cannot be read as the concept direction being used. That sentence is now
+printed in the report rather than left for a reader to infer.
+
+**Defect 3 — the dose the null was scoped to was DEFINITIONAL.** `frac_cellmean_spread_removed =
+0.1656` is exactly cos²(v_bomb_specific, v_bomb): `cell_means` holds only cells A and C, so the
+centred matrix is rank 1 and the figure is computable **without loading the model**. Nulls are now
+scoped to the **measured** `cell_residual_frac_removed` (S1 L9 = **0.0936**; S2 L7–L14 =
+0.1003 / 0.0396 / 0.0936 / 0.1412 / 0.1681 / 0.2058 / 0.2106 / 0.1729). The definitional figures print
+only as bracketed "for reference only". A null with **no** dose still refuses, and a null carrying
+**only** the definitional dose now refuses too.
+
+**Observed:** `--self-test` 111 → **117 / 0**; `--mutate` 90 → **102/102 RED**, with 12 new mutations
+including "a conjunct scored against another outcome's sign", "a null carrying only the definitional
+dose", and "a built C3/C4 arm reported nowhere".
+
+**Left open and named rather than buried:** Holm sets no alpha — the enforcement is an agreement
+check, not the frozen file's literal reading; the measured dose is itself borrowed from the
+development bank's cell means and the labelling does not say so per arm; C2/C7/H1/H2b remain absent
+by construction; `_find_run` still takes newest-complete before the split guard (clean on this run,
+and the guard is a hard refusal); and **C3 is the raw axis, not remapping-only — no arm in this
+design isolates remapping**, which the printed C3 sentence now says.

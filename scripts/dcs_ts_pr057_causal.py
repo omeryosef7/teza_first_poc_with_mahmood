@@ -1586,30 +1586,74 @@ class ConditionResult:
     value: Any = None
 
 
+def outcome_expected_sign(outcome: Dict[str, Any], name: str) -> int:
+    """The preregistered direction of ONE outcome, read off THAT outcome's own record.
+
+    D-1, closed 2026-09-08. O1 and O2 have OPPOSITE preregistered directions and the analyzer
+    derives each of them separately (`o1_expected_sign` parses `O1_probe.direction_expected` ->
+    +1, `o2_expected_sign` parses O2's "FALLS under projection-out" -> -1). The conjunct table
+    used to be handed ONE shared `expected_sign` and applied it to both, so O1 -- which moved
+    +0.391905 / +0.317962, i.e. in exactly its INTENDED direction on both arms -- was scored
+    against O2's -1 and printed `[FAIL] 1_probe_moves_intended`, three lines above a verdict
+    sentence that is only reachable when `o1_moved is True`. The report said the probe both did
+    and did not move as intended.
+
+    There is now no way to score an outcome against another outcome's direction: the sign comes
+    from the outcome's own record or this refuses, and `evaluate_success` refuses a caller-
+    supplied shared sign outright.
+    """
+    if not isinstance(outcome, dict):
+        raise NotMeasured("%s carries no record, so its preregistered direction cannot be read; "
+                          "a conjunct scored against a direction taken from somewhere else is "
+                          "the D-1 defect." % name)
+    s = outcome.get("expected_sign")
+    if s is None:
+        raise NotMeasured(
+            "%s carries no `expected_sign`. Its preregistered direction MUST come from its own "
+            "record -- O1's is +1 and O2's is -1, and applying either one to the other conjunct "
+            "mislabels a correct result (D-1)." % name)
+    si = _sign(float(s))
+    if si == 0:
+        raise NotMeasured("%s declares expected_sign=%r, which names no direction." % (name, s))
+    return si
+
+
 def evaluate_success(o1: Dict[str, Any], o2: Dict[str, Any], control: Dict[str, Any],
                      across_domains: Dict[str, Any], alpha: float,
-                     expected_sign: float = 1.0) -> Dict[str, Any]:
+                     expected_sign: Optional[float] = None) -> Dict[str, Any]:
     """Mandate 10.5: FOUR conditions, conjunctively. Any three of four is NOT a causal result.
 
     Each condition alone has a cheap way to be satisfied -- (1) by construction, (2) by a large
     enough perturbation of anything, (3) by an under-dosed control, (4) by a lucky pooling.
     Together they do not, which is why this design can return a clean negative.
+
+    EACH CONJUNCT IS SCORED AGAINST ITS OWN OUTCOME'S PREREGISTERED SIGN (D-1). `expected_sign`
+    survives only as a tripwire: a caller that still passes one is trying to score two outcomes
+    with opposite declared directions against a single direction, and is REFUSED by name.
     """
+    if expected_sign is not None:
+        raise Refusal(
+            "evaluate_success REFUSES a caller-supplied `expected_sign=%r`. O1 and O2 have "
+            "OPPOSITE preregistered directions (+1 and -1); one shared sign necessarily scores "
+            "one of them against the other's direction, which is defect D-1. Each conjunct now "
+            "reads its own outcome's `expected_sign`." % (expected_sign,))
     conds: List[ConditionResult] = []
 
     c1_ok = (o1 is not None and o1.get("p") is not None
-             and o1["p"] < alpha and _sign(o1.get("delta", 0.0)) == _sign(expected_sign))
+             and o1["p"] < alpha
+             and _sign(o1.get("delta", 0.0)) == outcome_expected_sign(o1, "O1"))
     conds.append(ConditionResult(
         "1_probe_moves_intended", bool(c1_ok),
         "O1 (frozen PR-048 probe posterior margin) moves in the intended direction, "
-        "significantly, at the DOMAIN level", o1))
+        "significantly, at the DOMAIN level -- scored against O1's OWN preregistered sign", o1))
 
     c2_ok = (o2 is not None and o2.get("p") is not None
-             and o2["p"] < alpha and _sign(o2.get("delta", 0.0)) == _sign(expected_sign))
+             and o2["p"] < alpha
+             and _sign(o2.get("delta", 0.0)) == outcome_expected_sign(o2, "O2"))
     conds.append(ConditionResult(
         "2_semantic_readout_moves_intended", bool(c2_ok),
         "O2 (the semantic readout -- the MODEL-INTERPRETATION variable) moves in the intended "
-        "direction, significantly, at the DOMAIN level", o2))
+        "direction, significantly, at the DOMAIN level -- scored against O2's OWN sign", o2))
 
     # A control that "fails to reach significance" is NOT a passed control.
     c3_ok = bool(control is not None and control.get("distinct_hashes_ok")
@@ -1631,6 +1675,13 @@ def evaluate_success(o1: Dict[str, Any], o2: Dict[str, Any], control: Dict[str, 
     all_ok = all(c.passed for c in conds)
     return {"conditions": [asdict(c) for c in conds], "n_passed": sum(c.passed for c in conds),
             "success": all_ok,
+            "_expected_signs": {"O1": (outcome_expected_sign(o1, "O1")
+                                       if isinstance(o1, dict) else None),
+                                "O2": (outcome_expected_sign(o2, "O2")
+                                       if isinstance(o2, dict) else None)},
+            "_signs_are_per_outcome": "conjunct 1 is scored against O1's own preregistered sign "
+                                      "and conjunct 2 against O2's; they are OPPOSITE and one "
+                                      "shared sign mislabels one of them (D-1)",
             "_conjunctive_on_purpose": "any three of four is NOT a causal result"}
 
 
@@ -1651,17 +1702,40 @@ VERDICT_SUCCESS = "SUPPORTS"
 VERDICT_NOT_CAUSAL = "NOT A CAUSAL RESULT"
 
 
-def format_realised_dose(dose: Optional[Dict[str, Any]]) -> str:
-    """The realised dose of the edit, in the words the frozen persist list uses.
+#: The exact words the analyzer must use whenever it prints `frac_cellmean_spread_removed`.
+#: D-2, closed 2026-09-08. `cellmean_dose` (insubspace_null_test.py:319-357) centres the matrix of
+#: CELL MEANS and returns the fraction of its squared spread lying along the edited direction. The
+#: PR-053 payload has exactly TWO cells (A and C), so the centred matrix has rank 1 -- its rows are
+#: +-(m_A - m_C)/2 -- and the ratio collapses IDENTICALLY to cos^2(u, m_A - m_C). And `v_bomb` is
+#: DEFINED as mean_TRAIN[h(C_bomb) - h(A_shared)], i.e. it IS that contrast
+#: (cos(v_bomb, m_A - m_C) = -0.99999999999998 measured at L9). So the printed 0.1656 is exactly
+#: cos^2(v_bomb_specific, v_bomb) and 0.4069 is exactly |cos|: both are computable BEFORE any model
+#: is loaded, on any prompt, on any split, and they are IDENTICAL at all eight edited layers. They
+#: say "v_bomb_specific sits about 24 degrees off v_bomb"; they say NOTHING about how much of the
+#: model's state the hook actually changed.
+DEFINITIONAL_DOSE_NOTE = (
+    "DEFINITIONAL, NOT MEASURED: with only two cells (A, C) the centred cell-mean matrix is rank 1, "
+    "so frac_cellmean_spread_removed collapses identically to cos^2(edited direction, m_A - m_C) = "
+    "cos^2(v_bomb_specific, v_bomb) -- a geometric property of two directions from the same fit, "
+    "identical at every edited layer and computable without loading the model. It is NOT an "
+    "intervention measurement and NO null is scoped to it")
 
-    `alpha` is NOT the dose of a `project_out` edit -- `_project_out_is_scale_free`: "its realised
-    dose is `frac_cellmean_spread_removed`, NOT alpha". A null reported without it is a claim that
-    an unmeasured amount of an unmeasured thing did not matter.
+
+def format_realised_dose(dose: Optional[Dict[str, Any]]) -> str:
+    """The realised dose of the edit, MEASURED figure first, definitional figures labelled as such.
+
+    `alpha` is NOT the dose of a `project_out` edit -- `_project_out_is_scale_free`. A null
+    reported without a dose is a claim that an unmeasured amount of an unmeasured thing did not
+    matter, so this function still REFUSES to format a dose-less null. What changed (D-2) is
+    WHICH number carries the scope: `cell_residual_frac_removed` -- the UN-CENTRED
+    alpha*|m_C . u| / ||m_C|| from `score_behavior.cell_residual_frac_removed`, whose own
+    docstring exists because the centred metric once hid a 6.60x dose gap -- is the only genuinely
+    measured dose here, and a null that carries only the definitional cosine is refused.
     """
     if not dose:
         raise NotMeasured(
             "the realised dose of this arm was never recorded (no `realized_dose` in "
-            "metadata.json), so `frac_cellmean_spread_removed` / `cell_residual_frac_removed` do "
+            "metadata.json), so `cell_residual_frac_removed` / `frac_cellmean_spread_removed` do "
             "not exist for it. A null MUST carry the dose it was measured at; without one the "
             "sentence 'not causally used' would be scoped to nothing.")
     bits = []
@@ -1676,15 +1750,28 @@ def format_realised_dose(dose: Optional[Dict[str, Any]]) -> str:
             raise NotMeasured(
                 "arm dose entry %r carries no frac_cellmean_spread_removed (neither "
                 "`cellmean_frac_at_alpha1` nor `realized_variance_frac_removed`)." % key)
-        bits.append("%s: frac_cellmean_spread_removed=%.4f, norm_frac_removed=%s, "
-                    "cell_residual_frac_removed=%s"
-                    % (key, float(frac),
+        if not cell:
+            raise NotMeasured(
+                "arm dose entry %r carries a DEFINITIONAL dose (frac_cellmean_spread_removed=%.4f "
+                "= cos^2 of two directions from the same fit) and NO MEASURED dose "
+                "(`cell_residual_frac_removed` is absent or empty). A null scoped to a cosine is "
+                "scoped to nothing that happened to the model: refusing to publish it. %s"
+                % (key, float(frac), DEFINITIONAL_DOSE_NOTE))
+        bits.append("%s: MEASURED cell_residual_frac_removed=%s [definitional, for reference "
+                    "only: frac_cellmean_spread_removed=%.4f, norm_frac_removed=%s]"
+                    % (key,
+                       {k: round(float(v), 4) for k, v in sorted(cell.items())},
+                       float(frac),
                        ("%.4f" % d["realized_norm_frac_removed"])
-                       if d.get("realized_norm_frac_removed") is not None else "NOT MEASURED",
-                       {k: round(float(v), 4) for k, v in sorted(cell.items())} or "NOT MEASURED"))
+                       if d.get("realized_norm_frac_removed") is not None else "NOT MEASURED"))
     if not bits:
         raise NotMeasured("the arm's `realized_dose` block carries no per-direction entry")
-    return "REALISED DOSE -- " + " | ".join(bits)
+    # The note is printed ONCE, at the end, rather than per direction -- but it is printed, and
+    # `assert_sayable`-style selftests check for it, so the labelling cannot be dropped by a
+    # future edit that only shortens the line.
+    return ("REALISED DOSE (the null above is scoped to the MEASURED figure, "
+            "cell_residual_frac_removed) -- " + " | ".join(bits)
+            + "  ||  " + DEFINITIONAL_DOSE_NOTE + ".")
 
 
 def verdict(success: Dict[str, Any], liveness_ok: bool, o1_moved: bool, o2_moved: bool,
@@ -2227,20 +2314,49 @@ def selftest() -> int:
            and not h["per_member"]["H2axS1"]["reject"], 6)
 
     # ---- the conjunctive success rule -----------------------------------------------------------
-    good_o1 = {"p": 0.001, "delta": 0.8}
-    good_o2 = {"p": 0.002, "delta": 0.9}
+    # The two outcomes carry OPPOSITE preregistered signs, exactly as the real run does
+    # (O1 +1, O2 -1), so a shared-sign regression cannot pass unnoticed here (D-1).
+    good_o1 = {"p": 0.001, "delta": 0.8, "expected_sign": 1}
+    good_o2 = {"p": 0.002, "delta": -0.9, "expected_sign": -1}
     good_ctl = {"distinct_hashes_ok": True, "equivalence": {"ci_low": -0.05, "ci_high": 0.05},
                 "moved": False}
     good_dom = {"majority_moved_intended": True, "sign_p": 0.004}
     s_all = evaluate_success(good_o1, good_o2, good_ctl, good_dom, alpha=0.05)
     ck.add("success_all_four", "all four conditions together = success", s_all["success"], 4)
+    ck.add("conjuncts_use_their_own_expected_sign",
+           "O1 (+1) and O2 (-1) each pass against THEIR OWN preregistered direction; one shared "
+           "sign would have failed one of them (D-1)",
+           s_all["conditions"][0]["passed"] and s_all["conditions"][1]["passed"]
+           and s_all["_expected_signs"] == {"O1": 1, "O2": -1}, 2)
+    _swapped = evaluate_success(dict(good_o1, expected_sign=-1), good_o2, good_ctl, good_dom,
+                                alpha=0.05)
+    ck.add("o1_scored_against_o2s_sign_FAILS",
+           "O1 scored against O2's -1 -- the published defect -- fails conjunct 1, so the "
+           "corrected scoring is doing work",
+           not _swapped["conditions"][0]["passed"] and _swapped["conditions"][1]["passed"], 1)
+    _shared_refused = False
+    try:
+        evaluate_success(good_o1, good_o2, good_ctl, good_dom, alpha=0.05, expected_sign=-1)
+    except Refusal:
+        _shared_refused = True
+    ck.add("shared_expected_sign_REFUSED",
+           "a caller handing ONE expected_sign for both outcomes is refused by name",
+           _shared_refused, 1)
+    _nosign = False
+    try:
+        evaluate_success({"p": 0.001, "delta": 0.8}, good_o2, good_ctl, good_dom, alpha=0.05)
+    except NotMeasured:
+        _nosign = True
+    ck.add("outcome_without_its_own_sign_REFUSED",
+           "an outcome record with no `expected_sign` of its own cannot be scored at all",
+           _nosign, 1)
     for drop, label in ((("o1",), "probe"), (("o2",), "readout"), (("ctl",), "control"),
                         (("dom",), "across-domains")):
         a1, a2, a3, a4 = good_o1, good_o2, good_ctl, good_dom
         if "o1" in drop:
-            a1 = {"p": 0.5, "delta": 0.0}
+            a1 = {"p": 0.5, "delta": 0.0, "expected_sign": 1}
         if "o2" in drop:
-            a2 = {"p": 0.5, "delta": 0.0}
+            a2 = {"p": 0.5, "delta": 0.0, "expected_sign": -1}
         if "ctl" in drop:
             a3 = {"distinct_hashes_ok": True, "equivalence": {}, "moved": True}
         if "dom" in drop:
@@ -2251,7 +2367,8 @@ def selftest() -> int:
                (not s["success"]) and s["n_passed"] == 3, 4)
 
     # ---- the mandated negative wording -----------------------------------------------------------
-    s_neg = evaluate_success({"p": 0.001, "delta": 0.8}, {"p": 0.7, "delta": 0.0},
+    s_neg = evaluate_success({"p": 0.001, "delta": 0.8, "expected_sign": 1},
+                             {"p": 0.7, "delta": 0.0, "expected_sign": -1},
                              good_ctl, good_dom, alpha=0.05)
     _dose = {"v_bomb_specific|L9|alpha1": {"cellmean_frac_at_alpha1": 0.1656,
                                            "realized_norm_frac_removed": 0.4069,
@@ -2263,10 +2380,28 @@ def selftest() -> int:
            v["verdict"].startswith(MANDATORY_NEGATIVE_WORDING)
            and v["verdict_class"] == VERDICT_NEGATIVE, 1, v["verdict"][:110])
     ck.add("negative_carries_the_realised_dose",
-           "a null carries frac_cellmean_spread_removed AND cell_residual_frac_removed in the "
-           "SAME breath -- the claim table bans a bare 'not causally used'",
+           "a null carries the MEASURED cell_residual_frac_removed in the same breath -- the "
+           "claim table bans a bare 'not causally used'",
+           "MEASURED cell_residual_frac_removed" in v["verdict"]
+           and "0.0936" in v["verdict"], 1)
+    ck.add("cellmean_dose_is_labelled_DEFINITIONAL",
+           "the cellmean figure is printed ONLY with the words that say it is a cos^2 of two "
+           "directions from the same fit and that no null is scoped to it (D-2)",
            "frac_cellmean_spread_removed=0.1656" in v["verdict"]
-           and "cell_residual_frac_removed" in v["verdict"], 1)
+           and DEFINITIONAL_DOSE_NOTE in v["verdict"]
+           and "scoped to the MEASURED figure" in v["verdict"], 1)
+    _defonly = False
+    try:
+        verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+                wording=MANDATORY_NEGATIVE_WORDING,
+                realised_dose={"v_bomb_specific|L9|alpha1": {
+                    "cellmean_frac_at_alpha1": 0.1656,
+                    "realized_norm_frac_removed": 0.4069}})
+    except NotMeasured:
+        _defonly = True
+    ck.add("null_with_ONLY_the_definitional_dose_REFUSED",
+           "a null carrying the definitional cos^2 and NO measured cell-residual dose refuses "
+           "rather than publishing a scope sentence about a cosine (D-2)", _defonly, 1)
     _nodose = False
     try:
         verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
@@ -3001,7 +3136,8 @@ def mutate() -> int:
     muts["M11 O2 schema absent -> not computable"] = lambda: o2_from_rows(
         [{"semantic_logodds": -1.5}], "knife", "bomb")["computable"]
     muts["M12 three of four conditions"] = lambda: evaluate_success(
-        {"p": 0.001, "delta": 0.8}, {"p": 0.5, "delta": 0.0},
+        {"p": 0.001, "delta": 0.8, "expected_sign": 1},
+        {"p": 0.5, "delta": 0.0, "expected_sign": -1},
         {"distinct_hashes_ok": True, "equivalence": {}, "moved": False},
         {"majority_moved_intended": True, "sign_p": 0.01}, alpha=0.05)["success"]
 
@@ -3220,8 +3356,8 @@ def mutate() -> int:
     _pr_m = load(PREREG_DEFAULT)
     _dose_m = {"v|L9|a1": {"cellmean_frac_at_alpha1": 0.1656, "realized_norm_frac_removed": 0.4069,
                            "cell_residual_frac_removed": {"C": 0.0936}}}
-    _good = {"p": 0.001, "delta": 0.8}
-    _goodo2 = {"p": 0.001, "delta": 0.8}
+    _good = {"p": 0.001, "delta": 0.8, "expected_sign": 1}
+    _goodo2 = {"p": 0.001, "delta": -0.8, "expected_sign": -1}
     _goodctl = {"distinct_hashes_ok": True, "equivalence": {}, "moved": False}
     _gooddom = {"majority_moved_intended": True, "sign_p": 0.01}
     for _k, _label in ((0, "M65 conjunct 1 (O1) fails"), (1, "M66 conjunct 2 (O2) fails"),
@@ -3239,7 +3375,8 @@ def mutate() -> int:
         muts["%s -> success" % _label] = (
             lambda a=_args: evaluate_success(a[0], a[1], a[2], a[3], alpha=0.05)["success"])
 
-    _s_neg = evaluate_success({"p": 0.001, "delta": 0.8}, {"p": 0.7, "delta": 0.0},
+    _s_neg = evaluate_success({"p": 0.001, "delta": 0.8, "expected_sign": 1},
+                              {"p": 0.7, "delta": 0.0, "expected_sign": -1},
                               {"distinct_hashes_ok": True, "equivalence": {}, "moved": False},
                               {"majority_moved_intended": False, "sign_p": 0.9}, alpha=0.05)
     muts["M69 a VOID reported as a NEGATIVE"] = lambda: (
@@ -3369,6 +3506,55 @@ def mutate() -> int:
         return control_c1_report(_pr_m, _h2a_basket_m,
                                  [(_c1_button_m, {"results": a_rows})], b_rows)
     raisers["M88 cross-bank C1 that every OTHER guard allows"] = _m88
+
+    # ---- 2026-09-08: the three PHASE 9 verdict-path defects, each with the mutation that keeps
+    # its fix honest. D-1 the shared expected_sign, D-2 the definitional dose, D-3 the two
+    # concept-free controls that were built and never reported.
+    muts["M89 D-1 conjunct 1 scored against O2's sign"] = lambda: evaluate_success(
+        dict(_good, expected_sign=-1), _goodo2, _goodctl, _gooddom,
+        alpha=0.05)["conditions"][0]["passed"]
+    muts["M90 D-1 conjunct 2 scored against O1's sign"] = lambda: evaluate_success(
+        _good, dict(_goodo2, expected_sign=1), _goodctl, _gooddom,
+        alpha=0.05)["conditions"][1]["passed"]
+    raisers["M91 D-1 ONE shared expected_sign for both"] = lambda: evaluate_success(
+        _good, _goodo2, _goodctl, _gooddom, alpha=0.05, expected_sign=_goodo2["expected_sign"])
+    raisers["M92 D-1 an outcome with NO sign of its own"] = lambda: evaluate_success(
+        {"p": 0.001, "delta": 0.8}, _goodo2, _goodctl, _gooddom, alpha=0.05)
+    raisers["M93 D-2 a null on the DEFINITIONAL dose alone"] = lambda: verdict(
+        _s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+        wording=MANDATORY_NEGATIVE_WORDING,
+        realised_dose={"v|L9|a1": {"cellmean_frac_at_alpha1": 0.1656,
+                                   "realized_norm_frac_removed": 0.4069}})
+    raisers["M94 D-2 a measured dose recorded EMPTY"] = lambda: format_realised_dose(
+        {"v|L9|a1": {"cellmean_frac_at_alpha1": 0.1656, "cell_residual_frac_removed": {}}})
+    muts["M95 D-2 the cellmean figure printed UNLABELLED"] = lambda: (
+        DEFINITIONAL_DOSE_NOTE not in format_realised_dose(_dose_m))
+    _cf_built = {x.arm_id: {} for x in _man_m
+                 if x.hypothesis in CONCEPT_FREE_CONTROLS and x.scope == "S2"}
+    raisers["M96 D-3 a built C4 arm reported NOWHERE"] = lambda: (
+        concept_free_controls_reported_gate(
+            _man_m, _cf_built,
+            [k for k in _cf_built if not k.startswith("c4_")]))
+    raisers["M97 D-3 NO concept-free control reported at all"] = lambda: (
+        concept_free_controls_reported_gate(_man_m, _cf_built, []))
+    raisers["M98 D-3 a C3/C4 control from ANOTHER bank"] = lambda: (
+        concept_free_control_report(
+            _pr_m, _h2a_basket_m,
+            next(x for x in _man_m if x.hypothesis == "C4" and x.scope == "S1"),
+            {"results": []}, [], 0.05, 1.0))
+    raisers["M99 D-3 a C3/C4 control at ANOTHER scope"] = lambda: (
+        concept_free_control_report(
+            _pr_m,
+            next(x for x in _man_m if x.hypothesis == "H2a" and x.scope == "S1"
+                 and x.codeword == _dev_cw_m),
+            next(x for x in _man_m if x.hypothesis == "C4" and x.scope == "S2"),
+            {"results": []}, [], 0.05, 1.0))
+    muts["M100 7b: a void clause CLEAR over ZERO records"] = lambda: ([
+        c["status"] for c in build_void_clauses(
+            _pr_m, dict(_void_ctx(_dev_cw_m),
+                        index_audit={"n_records": 0, "not_applicable": True, "ok": True,
+                                     "witness_note": "Not applicable, not passed."}))
+        if "absolute" in c["clause"].lower()] == [VOID_CLAUSE_CLEAR])
 
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0
@@ -3796,6 +3982,125 @@ def control_c1_report(pr: Prereg, member_arm: ArmSpec,
                              "reported here, never by a bare p > alpha"}
 
 
+#: The two CONCEPT-FREE controls that ran, passed liveness, and used to be analysed NOWHERE.
+#: D-3, closed 2026-09-08. `c3_vremap_{s1,s2}` and `c4_samenorm_orth_{s1,s2}` are all four among
+#: the arms this analyzer loads and liveness-gates, and `analyse()` contained no reference to
+#: either hypothesis: four arms of confirmatory GPU time were loaded, checked, and discarded.
+#: C4 is the decisive one. It is an ADD along a direction ORTHOGONAL to the concept subspace,
+#: dosed in GAP UNITS so its magnitude matches the concept edit's. It therefore separates the two
+#: readings of any movement at a site: "this DIRECTION carries the readout" from "perturbing this
+#: site by this much moves the readout". If C4 moves O2 as hard as the arm does -- or harder --
+#: the arm's movement is a fact about the perturbation, not about the concept direction.
+CONCEPT_FREE_CONTROLS = ("C3", "C4")
+
+
+def concept_free_control_report(pr: Prereg, member_arm: ArmSpec, cx_arm: ArmSpec,
+                                cx_run: Dict[str, Any], baseline_rows: Sequence[Dict[str, Any]],
+                                alpha: float, arm_delta: Optional[float]) -> Dict[str, Any]:
+    """C3 / C4 against the SAME untouched baseline as the arm, with C1's discipline (D-3).
+
+    Same rules as `control_c1_report`: the codeword bank, the scope and the target concept are
+    part of the pairing and a mismatch is REFUSED BY NAME rather than silently paired (the two
+    banks share every prompt_id, so no downstream guard would see it). The answer is an
+    EQUIVALENCE INTERVAL over the domain-level deltas beside the permutation p and its floor,
+    never a bare p, and the SIGN and the DIRECTION are reported rather than dropped.
+    """
+    if cx_arm.codeword != member_arm.codeword:
+        raise Refusal(
+            "%s REFUSED: arm %s is on the %r bank and the control offered is %s on the %r bank. "
+            "The two banks share every prompt_id, so this would be a cross-codeword contrast "
+            "wearing a baseline's name and no downstream guard could see it."
+            % (cx_arm.hypothesis, member_arm.arm_id, member_arm.codeword, cx_arm.arm_id,
+               cx_arm.codeword))
+    if cx_arm.scope != member_arm.scope:
+        raise Refusal("%s REFUSED: arm %s is scope %r and the control offered is %s at scope %r. "
+                      "A control at another scope edits other sites."
+                      % (cx_arm.hypothesis, member_arm.arm_id, member_arm.scope, cx_arm.arm_id,
+                         cx_arm.scope))
+    if cx_arm.target_concept != member_arm.target_concept:
+        raise Refusal("%s REFUSED: arm %s targets %r and the control offered is %s targeting %r."
+                      % (cx_arm.hypothesis, member_arm.arm_id, member_arm.target_concept,
+                         cx_arm.arm_id, cx_arm.target_concept))
+    o = o2_contrast(pr, cx_arm, cx_run, baseline_rows)
+    eq = equivalence_interval(list(o["per_domain_delta"].values()), alpha)
+    moved = bool(o["p"] < alpha)
+    ratio = None
+    if arm_delta is not None and abs(float(arm_delta)) > 0.0:
+        ratio = abs(float(o["delta"])) / abs(float(arm_delta))
+    same_sign = (None if arm_delta is None
+                 else bool(_sign(float(o["delta"])) == _sign(float(arm_delta))))
+    rec = {"arm_id": cx_arm.arm_id, "hypothesis": cx_arm.hypothesis, "scope": cx_arm.scope,
+           "codeword": cx_arm.codeword, "mode": cx_arm.mode, "direction": cx_arm.direction,
+           "dose_units": cx_arm.dose_units, "control_draw_seed": cx_arm.control_draw_seed,
+           "delta": o["delta"], "delta_sign": _sign(float(o["delta"])),
+           "p": o["p"], "p_formatted": o["p_formatted"], "p_floor": o["p_floor"],
+           "n_domains": o["n_domains"],
+           "n_domains_moved_intended": o["n_domains_moved_intended"],
+           "expected_sign_of_O2": o["expected_sign"],
+           "equivalence": eq, "moved": moved,
+           "arm_delta": (None if arm_delta is None else float(arm_delta)),
+           "abs_ratio_to_arm": ratio, "same_sign_as_arm": same_sign,
+           "_not_a_bare_p": "reported with its equivalence interval, its sign and its direction, "
+                            "never as a bare p"}
+    if cx_arm.hypothesis == "C4":
+        if moved and ratio is not None and ratio >= 1.0:
+            rec["reading"] = (
+                "DECISIVE AGAINST A DIRECTION READING: a CONCEPT-FREE, norm-matched, "
+                "equal-magnitude ADD ORTHOGONAL to the concept subspace moves O2 by %+.6f "
+                "(p = %s, floor %.6g) where the concept edit moves it by %+.6f -- %.2fx as far, "
+                "%s. Whatever moved the readout at these sites moved it for a reason that does "
+                "not need the concept direction: at this norm the site is perturbation-sensitive, "
+                "and the arm's own movement cannot be read as the concept direction being used."
+                % (rec["delta"], rec["p_formatted"], rec["p_floor"], float(arm_delta), ratio,
+                   "in the SAME direction as the arm" if same_sign
+                   else "in the OPPOSITE direction to the arm"))
+        elif moved:
+            rec["reading"] = (
+                "the concept-free norm-matched orthogonal ADD DOES move O2 (%+.6f, p = %s), by "
+                "%s of the arm's %+.6f. The site is movable at this norm by an edit that carries "
+                "no concept information."
+                % (rec["delta"], rec["p_formatted"],
+                   ("%.2fx" % ratio) if ratio is not None else "an unmeasured fraction",
+                   float(arm_delta) if arm_delta is not None else float("nan")))
+        else:
+            rec["reading"] = (
+                "the concept-free norm-matched orthogonal ADD does NOT move O2; equivalence 95%% "
+                "CI [%+.6f, %+.6f] over %d domains. This control is CLEAN at this dose."
+                % (eq["ci_low"], eq["ci_high"], eq["n"]))
+    else:
+        rec["reading"] = (
+            "C3 is the RAW axis (v_remap), NOT a remapping-only axis -- R-111's question D FAILED "
+            "and no arm in this design isolates remapping, so this arm bounds what the raw axis "
+            "does at these sites and nothing finer. delta = %+.6f, p = %s, equivalence 95%% CI "
+            "[%+.6f, %+.6f], %d/%d domains moved O2's intended way."
+            % (rec["delta"], rec["p_formatted"], eq["ci_low"], eq["ci_high"],
+               rec["n_domains_moved_intended"], rec["n_domains"]))
+    return rec
+
+
+def concept_free_controls_reported_gate(arms: Sequence[ArmSpec], found: Dict[str, Any],
+                                        reported_arm_ids: Sequence[str]) -> Dict[str, Any]:
+    """A C3/C4 arm that RAN and is not in the report REFUSES the run (D-3).
+
+    Evidence that was paid for, loaded and liveness-checked, and then left out of the artifact,
+    is not a scope limit -- it is a silent omission, and the strongest single number in this
+    phase (C4 x S2) sat on disk unreported behind exactly this hole.
+    """
+    built = sorted(x.arm_id for x in arms
+                   if x.hypothesis in CONCEPT_FREE_CONTROLS and x.arm_id in found)
+    seen = set(reported_arm_ids)
+    missing = [a for a in built if a not in seen]
+    if missing:
+        raise Refusal(
+            "%d concept-free control arm(s) RAN, passed liveness and are analysed NOWHERE: %s. "
+            "C4 is the arm that separates 'the concept direction matters' from 'perturbing this "
+            "site by this much matters'; a verdict published without it is published without the "
+            "control that decides how to read it. Refusing to emit the report."
+            % (len(missing), missing))
+    return {"n_built": len(built), "reported": built,
+            "_why": "every built C3/C4 arm is reported, or this refuses"}
+
+
 # ---- primary.void and primary.cannot_answer, clause by clause -------------------------------
 #: Each machine-checkable clause of `primary.void`, with the exact substring of the frozen text it
 #: implements. A clause whose evidence is ABSENT is `UNEVALUABLE`, and an unevaluable void
@@ -4031,7 +4336,22 @@ def build_void_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
                                           g.get("detail") or "max|delta|=%.3e" % g["max_abs"]))
         elif "absolute read/edit index" in low or "absolute" in low:
             aud = ctx.get("index_audit") or {}
-            if aud.get("ok") is True:
+            # NOT APPLICABLE IS TESTED FIRST (Finding 7b, closed 2026-09-08). `audit_end_relative`
+            # returns `{"n_records": 0, "not_applicable": True, "ok": True, ...}` for an
+            # all-position arm and says IN WORDS "Not applicable, not passed" -- and this branch
+            # used to test `ok is True` first and emit CLEAR with a universal quantifier over an
+            # EMPTY SET ("0 records, every index == ..."). That is a check reading the producer's
+            # own field and printing PASS, and the dedicated NOT_APPLICABLE branch below was
+            # unreachable for the case it was written for.
+            if aud.get("not_applicable") is True or (aud.get("ok") is True
+                                                     and not aud.get("n_records")):
+                out.append(_clause_status(
+                    clause, VOID_CLAUSE_NA,
+                    "the audit bound ZERO records and is NOT APPLICABLE, NOT PASSED: an "
+                    "all-position (or disabled) arm resolves no single (rel_end, absolute index) "
+                    "pair, so there is no absolute index that could be reused. %s"
+                    % aud.get("witness_note", "")))
+            elif aud.get("ok") is True:
                 out.append(_clause_status(clause, VOID_CLAUSE_CLEAR,
                                           "%d records, every index == len(input_ids)+rel_end"
                                           % aud.get("n_records", 0)))
@@ -4303,6 +4623,7 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
     h1_state = "NOT_AVAILABLE" if not h1_ran else "RAN"
 
     observed_p: Dict[str, float] = {}
+    reported_cfree: set = set()          # D-3: every C3/C4 arm this report actually carries
     per_member: "OrderedDict[str, Any]" = OrderedDict()
     replications: "OrderedDict[str, Any]" = OrderedDict()
 
@@ -4376,6 +4697,29 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                 "success rule's third conjunct CANNOT be satisfied by this arm."
                 % (dev_cw, arm.codeword, dev_cw))
 
+        # C3 / C4 -- the CONCEPT-FREE controls (D-3). Same bank, same scope, same target concept,
+        # same untouched baseline as the arm, and the same discipline C1 gets: an equivalence
+        # interval, the draw/direction named, the sign reported. These four arms ran, passed
+        # liveness and were analysed NOWHERE; `concept_free_controls_reported_gate` below now
+        # refuses the whole report if one of them is built and left out again.
+        cfree = []
+        for cx in arms:
+            if (cx.hypothesis in CONCEPT_FREE_CONTROLS and cx.scope == arm.scope
+                    and cx.codeword == arm.codeword
+                    and cx.target_concept == arm.target_concept
+                    and cx.arm_id in found):
+                r_cx = concept_free_control_report(pr, arm, cx, found[cx.arm_id],
+                                                   base["results"], alpha, o2["delta"])
+                cfree.append(r_cx)
+                reported_cfree.add(cx.arm_id)
+        rep["concept_free_controls"] = cfree
+        if not cfree:
+            rep["concept_free_controls_note"] = (
+                "NO C3/C4 CONTROL IS AVAILABLE FOR THIS ARM. Both concept-free controls are "
+                "declared on the %r bank at each scope and this arm is on the %r bank; pairing "
+                "them against this arm's baseline would be a cross-codeword contrast and is "
+                "REFUSED. A STATED SCOPE LIMIT, not a passed control." % (dev_cw, arm.codeword))
+
         across = {"majority_moved_intended": o2["majority_moved_intended"],
                   "sign_p": o2["sign_test"]["p"], "sign_p_floor": o2["sign_test"]["floor"],
                   "sign_p_formatted": o2["sign_test"]["formatted"],
@@ -4383,8 +4727,9 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                   "n_domains_moved_intended": o2["n_domains_moved_intended"]}
         rep["across_domains"] = across
 
-        success = evaluate_success(o1, o2, control, across, alpha,
-                                   expected_sign=o2["expected_sign"])
+        # D-1: NO shared expected_sign. Conjunct 1 reads o1["expected_sign"] (+1) and conjunct 2
+        # reads o2["expected_sign"] (-1); passing o2's sign for both mislabelled a correct O1.
+        success = evaluate_success(o1, o2, control, across, alpha)
         rep["success"] = success
 
         # ---- primary.void, clause by clause
@@ -4501,6 +4846,41 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
 
     hm = holm_with_absent(pr, observed_p)
 
+    # D-3: nothing that ran may be silently absent from the artifact.
+    cfree_gate = concept_free_controls_reported_gate(arms, found, sorted(reported_cfree))
+
+    # D-4 (Finding 7c): the frozen file says each member is assessed under Holm BEFORE its
+    # conjunction is evaluated, and until now the per-member threshold was printed and read by no
+    # decision -- the "threshold published but never enforced" shape this repo has now committed
+    # four times. The conjunction is evaluated at `alpha` (the frozen `primary.alpha`), so the
+    # question this ENFORCES is whether the Holm threshold and alpha would ever disagree about
+    # conjunct 2 for any member. If they would, the printed table and the family correction are
+    # telling a reader two different things and this REFUSES rather than publishing both.
+    holm_gate: "OrderedDict[str, Any]" = OrderedDict()
+    for member, rep in per_member.items():
+        if not rep.get("O2") or rep.get("status", "").startswith("ABSENT"):
+            continue
+        conds = {c["name"]: c for c in (rep.get("success") or {}).get("conditions", [])}
+        c2 = conds.get("2_semantic_readout_moves_intended")
+        if c2 is None:
+            continue
+        thr = float(hm["per_member"][member]["threshold"])
+        o2r = rep["O2"]
+        at_holm = bool(o2r["p"] < thr
+                       and _sign(o2r["delta"]) == outcome_expected_sign(o2r, "O2"))
+        holm_gate[member] = {"holm_threshold": thr, "alpha": alpha, "o2_p": float(o2r["p"]),
+                             "conjunct2_at_alpha": bool(c2["passed"]),
+                             "conjunct2_at_holm_threshold": at_holm,
+                             "agrees": bool(at_holm == bool(c2["passed"]))}
+        rep["holm_gate"] = holm_gate[member]
+    disagree = [m for m, g in holm_gate.items() if not g["agrees"]]
+    if disagree:
+        raise Refusal(
+            "the Holm per-member threshold and `primary.alpha` DISAGREE about conjunct 2 for %s. "
+            "The frozen file assesses each member under Holm before its conjunction is evaluated, "
+            "so publishing a conjunct table at alpha beside a Holm line that says otherwise would "
+            "print two different answers to one question. Refusing." % disagree)
+
     # ------------------------------------------------------------------------------- the report
     lines: List[str] = []
     lines.append("")
@@ -4546,9 +4926,46 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                          "[%+.6f, %+.6f]; smallest draw p = %.6g"
                          % (c["n_draws"], c["band"]["n_distinct"], c["equivalence"]["ci_low"],
                             c["equivalence"]["ci_high"], c["smallest_draw_p"]))
+        for cx in rep.get("concept_free_controls", []) or []:
+            lines.append("   %-2s  %s [%s, dose %s, seed %s]"
+                         % (cx["hypothesis"], cx["arm_id"], cx["direction"], cx["dose_units"],
+                            cx["control_draw_seed"]))
+            lines.append("       delta = %+.6f (sign %+d)   p = %s   [attainable floor %.6g]   "
+                         "equivalence 95%% CI [%+.6f, %+.6f]   n_domains=%d"
+                         % (cx["delta"], cx["delta_sign"], cx["p_formatted"], cx["p_floor"],
+                            cx["equivalence"]["ci_low"], cx["equivalence"]["ci_high"],
+                            cx["n_domains"]))
+            lines.append("       vs the arm: arm delta %+.6f, |control| / |arm| = %s, %s; "
+                         "%d/%d domains moved O2's intended way"
+                         % (cx["arm_delta"],
+                            ("%.3f" % cx["abs_ratio_to_arm"]) if cx["abs_ratio_to_arm"] is not None
+                            else "NOT COMPUTABLE (arm delta is 0)",
+                            ("SAME sign as the arm" if cx["same_sign_as_arm"]
+                             else "OPPOSITE sign to the arm"),
+                            cx["n_domains_moved_intended"], cx["n_domains"]))
+            lines.append("       %s" % cx["reading"])
+        if rep.get("concept_free_controls_note"):
+            lines.append("   C3/C4  %s" % rep["concept_free_controls_note"])
+        if rep.get("power_at_realised_sd"):
+            pw = rep["power_at_realised_sd"]
+            eqa = equivalence_interval(list(rep["O2"]["per_domain_delta"].values()), alpha)
+            lines.append("   NULL RESOLUTION (the numbers that scope any negative above): "
+                         "realised between-domain SD = %.6f over n=%d domains; power = %.3f at "
+                         "the declared MDE %.2f nats (bar %.2f); smallest effect resolvable at "
+                         "that bar = %.6f nats"
+                         % (pw["realised_between_domain_sd"], pw["n_domains"], pw["power"],
+                            pw["declared_mde"], pw["bar"], pw["mde_at_bar"]))
+            lines.append("       arm O2 equivalence 95%% CI [%+.6f, %+.6f] -- a null here is "
+                         "reported by this interval, never by a bare p > alpha"
+                         % (eqa["ci_low"], eqa["ci_high"]))
         for cnd in (rep.get("success") or {}).get("conditions", []):
             lines.append("   [%s] %s -- %s" % ("PASS" if cnd["passed"] else "FAIL",
                                                cnd["name"], cnd["detail"]))
+        _es = (rep.get("success") or {}).get("_expected_signs")
+        if _es:
+            lines.append("       (conjunct 1 scored against O1's OWN preregistered sign %s; "
+                         "conjunct 2 against O2's %s -- they are OPPOSITE)"
+                         % (_es.get("O1"), _es.get("O2")))
         for c in (rep.get("void") or {}).get("clauses", []):
             if c["status"] != VOID_CLAUSE_CLEAR:
                 lines.append("   void[%s] %s -- %s" % (c["status"], c["clause"], c["detail"]))
@@ -4558,6 +4975,14 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                              % (c["status"], c["clause"], c["detail"][:220]))
         lines.append("   Holm: p = %.6g vs threshold %.6g -> reject=%s"
                      % (h["p"], h["threshold"], h["reject"]))
+        if rep.get("holm_gate"):
+            g = rep["holm_gate"]
+            lines.append("       Holm ENFORCED on conjunct 2: at the Holm threshold %.6g -> %s; "
+                         "at primary.alpha %.3g -> %s; they AGREE (a disagreement REFUSES the "
+                         "report rather than printing both)"
+                         % (g["holm_threshold"], "PASS" if g["conjunct2_at_holm_threshold"]
+                            else "FAIL", g["alpha"],
+                            "PASS" if g["conjunct2_at_alpha"] else "FAIL"))
         lines.append("   VERDICT [%s]: %s" % (rep.get("verdict_class"), rep.get("verdict")))
     if replications:
         lines.append("")
@@ -4580,6 +5005,16 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
     lines.append("  * no shuffled-label control: C2's direction has no artifact; I-N5 is NOT "
                  "AVAILABLE.")
     lines.append("  * O1 is scoped to the %r bank (above)." % dev_cw)
+    lines.append("  * the dose any null above is scoped to is the MEASURED "
+                 "cell_residual_frac_removed. frac_cellmean_spread_removed / norm_frac_removed "
+                 "are DEFINITIONAL: with two cells (A, C) the centred cell-mean matrix is rank 1, "
+                 "so the first is exactly cos^2(v_bomb_specific, v_bomb) and the second exactly "
+                 "|cos| -- identical at all eight edited layers and computable before the model "
+                 "is loaded. They measure an angle between two directions from one fit, not an "
+                 "amount of anything that was removed from the model's state.")
+    lines.append("  * every C3/C4 concept-free control that ran is reported above (%d of %d); an "
+                 "unreported one refuses this report." % (len(cfree_gate["reported"]),
+                                                          cfree_gate["n_built"]))
     txt = "\n".join(lines)
     assert_sayable(txt, forbidden)
     print(txt)
@@ -4589,6 +5024,8 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
               "external_confirmation_arms": replications,
               "expected_absent_arms": expected_absent,
               "o1_scope_codeword": dev_cw,
+              "concept_free_controls_gate": cfree_gate,
+              "holm_enforcement": holm_gate,
               "n_arms_loaded": len(found)}
     out_path = getattr(a, "out", None)
     if out_path:
