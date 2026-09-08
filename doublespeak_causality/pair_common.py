@@ -1090,6 +1090,10 @@ HOOK_STATS_KEYS = (
     "positions", "rel_end", "occurrence_index", "resolved_absolute_index",
     "seq_len_last", "seq_len_at_resolution",
     "would_have_changed_max_abs", "would_have_changed_l2", "bridged_and_discarded",
+    # ---- the ADDITIVE arm's DOSE (control C4, 2026-09-07). Present on every record and
+    # gated only for `add*` modes, the same way the `would_have_changed_*` pair is present
+    # everywhere and gated only for a bridge.
+    "alpha_gap_units", "gap_norm", "dose_units", "realised_dose_l2_per_cell",
 )
 # ONE SCHEMA, AND THE PRODUCER OWNS THE MEASUREMENTS (C-117 / review F2, 2026-09-07).
 #
@@ -1123,6 +1127,22 @@ HOOK_STATS_KEYS = (
 #                                   cannot hide behind a healthy last forward.
 #   seq_len_at_resolution        -> PRODUCER, supplied by the caller (review F3). See
 #                                   `SinglePositionProjectOut.__init__`.
+#   alpha_gap_units / gap_norm   -> PRODUCER, DECLARED BY THE CALLER, and the identity between
+#   dose_units                      them and the absolute `alpha` the hook was actually handed
+#   realised_dose_l2_per_cell       is CHECKED (control C4, 2026-09-07). `make_add_hook`
+#                                   normalises its direction, so `alpha` is an ABSOLUTE
+#                                   residual-space magnitude, while every non-`refusalness`
+#                                   caller doses in GAP UNITS and must pass `alpha * gap`. A
+#                                   bare `alpha` at that call site injects an absolute magnitude
+#                                   under a gap-unit label -- the RETRACTION F-3 arithmetic, a
+#                                   14.65x overdose from an identical-looking flag, which this
+#                                   repository has hit at this second call site twice. The
+#                                   caller therefore declares BOTH the gap-unit alpha and the
+#                                   gap, the hook asserts `alpha == alpha_gap_units * gap_norm`
+#                                   at construction, and `realised_dose_l2_per_cell` -- the L2
+#                                   of the change actually written to a cell -- is MEASURED and
+#                                   compared with `alpha`, so the record alone can convict a
+#                                   hook whose body disagrees with its own manifest.
 #
 # `hook_stats_dict` initialises the two MEASURED floats to None, not to 0.0. A missing or
 # unmeasured quantity must never be indistinguishable from a measured zero -- that is the same
@@ -1186,6 +1206,10 @@ def hook_stats_dict(mode: str = "", layer: int = -1, enabled: bool = True,
                                   else int(seq_len_at_resolution)),
         "would_have_changed_max_abs": 0.0, "would_have_changed_l2": 0.0,
         "bridged_and_discarded": False,
+        # None, NOT 0.0 / "" (C4): an undeclared dose and a declared dose of zero are opposite
+        # verdicts, and `realised_dose_l2_per_cell == 0.0` IS the dead-additive-hook signature.
+        "alpha_gap_units": None, "gap_norm": None, "dose_units": None,
+        "realised_dose_l2_per_cell": None,
     }
 
 
@@ -1323,6 +1347,63 @@ def project_out_liveness_violations(stats: Optional[Dict[str, Any]],
         # NOT-MEASURED refusal, which is a different thing from a violation.
         if stats.get("orthogonal_residual_delta_l2") is None:
             bad.append("orthogonal_residual_delta_l2_NOT_MEASURED")
+        # ---- C4: the ADDITIVE arm's DOSE, declared AND measured ---------------------------
+        # `pc.AllPositionAdd` normalises its direction, so the `alpha` it is handed is an
+        # ABSOLUTE residual-space magnitude. Every non-`refusalness` caller doses in GAP UNITS
+        # and must therefore hand it `alpha * gap`. A bare `alpha` there injects an absolute
+        # magnitude under a gap-unit label -- at L18 a 14.65x overdose from an identical-looking
+        # flag (RETRACTION F-3), and this repository has written that bug at this exact second
+        # call site before. Two independent binds, neither of which is a threshold on a
+        # scientific quantity:
+        #   1. the caller DECLARES `alpha_gap_units` and `gap_norm`; the absolute `alpha` the
+        #      hook actually holds must be their product. This catches the flag arithmetic.
+        #   2. `realised_dose_l2_per_cell` -- the L2 of the change actually WRITTEN to a cell --
+        #      is MEASURED in the hook and must equal `alpha`. This catches a hook body that
+        #      disagrees with its own manifest, which (1) alone cannot see.
+        if str(stats.get("mode") or "").startswith("add"):
+            _al = stats.get("alpha")
+            _du = stats.get("dose_units")
+            _agu, _gn = stats.get("alpha_gap_units"), stats.get("gap_norm")
+            if _al is None:
+                bad.append("add_alpha_NOT_RECORDED")
+            if _du is None:
+                bad.append("add_dose_units_NOT_DECLARED:an additive arm whose caller did not say "
+                           "whether alpha is in GAP UNITS or ABSOLUTE residual magnitude cannot "
+                           "be audited for the F-3 overdose")
+            elif str(_du) == "gap":
+                if _agu is None or _gn is None:
+                    bad.append("add_declared_gap_units_but_%s_NOT_RECORDED"
+                               % ("alpha_gap_units" if _agu is None else "gap_norm"))
+                elif _al is not None:
+                    _want = float(_agu) * float(_gn)
+                    if abs(float(_al) - _want) > 1e-6 * max(1.0, abs(_want)):
+                        bad.append(
+                            "add_dosed_in_ABSOLUTE_units:the hook holds alpha=%.6g but the "
+                            "caller declared %.6g GAP UNITS x gap_norm %.6g = %.6g. A bare alpha "
+                            "at this call site injects an absolute magnitude under a gap-unit "
+                            "label (RETRACTION F-3)." % (float(_al), float(_agu), float(_gn),
+                                                         _want))
+            elif str(_du) != "absolute":
+                bad.append("add_dose_units_UNKNOWN:%r (expected 'gap' or 'absolute')" % (_du,))
+            _rd = stats.get("realised_dose_l2_per_cell")
+            if _rd is None:
+                bad.append("realised_dose_l2_per_cell_NOT_MEASURED")
+            elif not (float(_rd) > 0.0):
+                bad.append("realised_dose_l2_per_cell==0:the additive hook reports firing but "
+                           "wrote a change of ZERO magnitude to every cell")
+            elif _al is not None and abs(float(_al)) > 0.0:
+                # 5% RELATIVE, and it is a NUMERICAL bar, not a scientific one: the add is
+                # computed in the model's dtype (bf16 on the L40S nodes), whose ~3 decimal digits
+                # put a genuine cell's realised magnitude within ~1e-2 of the requested one. The
+                # error it exists to catch is a GAP FACTOR -- 1.6x to 2.6x at these layers, i.e.
+                # 60-160% -- so the bar has two orders of magnitude of headroom over the noise
+                # and none over the defect.
+                _relerr = abs(float(_rd) - abs(float(_al))) / abs(float(_al))
+                if _relerr > 5e-2:
+                    bad.append(
+                        "add_realised_dose_!=_declared:the hook WROTE %.6g per cell but reports "
+                        "alpha=%.6g (relative error %.3g). The magnitude injected is not the "
+                        "magnitude the manifest claims." % (float(_rd), float(_al), _relerr))
         # ---- review F3: the persisted site must satisfy its own documented invariant -------
         _rel, _slr = stats.get("rel_end"), stats.get("seq_len_at_resolution")
         _abs = stats.get("resolved_absolute_index")
@@ -1809,7 +1890,64 @@ class AllPositionMLPAblate:
 # --------------------------------------------------------------------------- #
 # All-position / all-timestep directional ADD (NEXT5 W5 — mechanism-derived defense)
 # --------------------------------------------------------------------------- #
-def make_add_hook(direction: torch.Tensor, alpha: float = 1.0):
+def _declare_add_dose(stats: Optional[Dict[str, Any]], alpha: float,
+                      alpha_gap_units: Optional[float], gap_norm: Optional[float],
+                      where: str) -> None:
+    """Record the additive dose in BOTH units, and refuse a caller that contradicts itself.
+
+    C4, 2026-09-07. `alpha` here is the ABSOLUTE residual-space magnitude the hook will inject,
+    because the direction is normalised. Every non-`refusalness` caller in this repository doses
+    additively in GAP UNITS -- `alpha_gap_units * gap` -- and passing a bare `alpha` there is a
+    14.65x overdose at L18 from a flag that looks identical (RETRACTION F-3). So the caller
+    declares BOTH numbers and the identity is asserted HERE, at construction, which is the
+    earliest point it can be checked; `project_out_liveness_violations` asserts it again over the
+    persisted record, so an arm cannot be analysed as gap-dosed without the check having run.
+    """
+    if stats is None:
+        return
+    stats["alpha"] = float(alpha)
+    if alpha_gap_units is None and gap_norm is None:
+        stats["dose_units"] = "absolute"
+        stats["alpha_gap_units"] = None
+        stats["gap_norm"] = None
+        return
+    if alpha_gap_units is None or gap_norm is None:
+        raise ValueError(
+            "%s: an additive dose declared in GAP UNITS needs BOTH alpha_gap_units and gap_norm "
+            "(got %r and %r). Half a declaration cannot be audited." % (where, alpha_gap_units,
+                                                                        gap_norm))
+    want = float(alpha_gap_units) * float(gap_norm)
+    if abs(float(alpha) - want) > 1e-6 * max(1.0, abs(want)):
+        raise ValueError(
+            "%s: the hook was handed alpha=%.6g but the caller declares %.6g GAP UNITS x "
+            "gap_norm %.6g = %.6g. A bare alpha at this call site injects an ABSOLUTE magnitude "
+            "under a gap-unit label -- the RETRACTION F-3 arithmetic. Refusing to build the "
+            "hook." % (where, float(alpha), float(alpha_gap_units), float(gap_norm), want))
+    stats["dose_units"] = "gap"
+    stats["alpha_gap_units"] = float(alpha_gap_units)
+    stats["gap_norm"] = float(gap_norm)
+
+
+def _record_add_dose(stats: Dict[str, Any], pre: torch.Tensor, post: torch.Tensor) -> None:
+    """MEASURE the per-cell magnitude actually written. `pre`/`post` are [n_cells, hidden].
+
+    `_declare_add_dose` checks the caller's arithmetic; this checks the HOOK's. An additive edit
+    writes `alpha * d_hat` to every destination cell, so the L2 of the change at a cell IS
+    `alpha`. Recording it means the persisted record alone can convict a hook whose body does
+    not inject what its manifest says -- including a hook that fired and wrote nothing, which is
+    the C-13 signature this whole subsystem exists to make visible.
+    """
+    _per_cell = (pre.detach().float().reshape(-1, pre.shape[-1])
+                 - post.detach().float().reshape(-1, post.shape[-1])).norm(dim=-1)
+    if _per_cell.numel() == 0:
+        return
+    _mx = float(_per_cell.abs().max())
+    _prev = stats.get("realised_dose_l2_per_cell")
+    stats["realised_dose_l2_per_cell"] = _mx if _prev is None else max(float(_prev), _mx)
+
+
+def make_add_hook(direction: torch.Tensor, alpha: float = 1.0,
+                  stats: Optional[Dict[str, Any]] = None):
     """NEXT5 W5: forward hook that ADDS `alpha * d_hat` to the block output at EVERY
     position and on EVERY forward call (prefill AND each KV-cached decode step).
 
@@ -1822,27 +1960,194 @@ def make_add_hook(direction: torch.Tensor, alpha: float = 1.0):
     `direction` lives in the post-block-L residual == hidden_states[L+1]. `direction` is
     normalized to unit norm here, so `alpha` is an absolute residual-space magnitude,
     directly comparable across layers.
+
+    LIVENESS (C4, 2026-09-07). `stats=None` (the default) leaves the hook body byte-identical
+    to what every committed artifact was produced with. Passed a dict from `hook_stats_dict()`
+    this records the same liveness quantities `make_project_out_hook` does -- fired count,
+    forward split, expected vs realised cells, pre/post norms, the orthogonal residual, the
+    minimum magnitude over forwards -- plus the additive DOSE. Until today `pc.AllPositionAdd`
+    took no `stats` at all, so control C4 -- the equal-magnitude orthogonal edit, the arm whose
+    whole job is to separate "this DIRECTION matters" from "this much PERTURBATION at this site
+    matters" -- was the ONE remaining place in the intervention stack where a dead hook produced
+    exactly the "the control did not move the readout" record a positive H2a wants to see.
     """
-    d_cpu = direction.detach().float().cpu()
-    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+    d_raw = direction.detach().float().cpu()
+    d_cpu = d_raw / (d_raw.norm() + 1e-8)
+    if stats is not None:
+        stats["direction_norm"] = float(d_raw.norm())
+        if stats.get("alpha") is None:
+            stats["alpha"] = float(alpha)
+        if not stats.get("mode"):
+            stats["mode"] = "add_all"
 
     def hook(module, inputs, output):
         is_tuple = isinstance(output, tuple)
         h = output[0] if is_tuple else output
         d = d_cpu.to(device=h.device, dtype=h.dtype)
-        h = h + alpha * d                                 # broadcast over ALL positions/timesteps
+        h_post = h + alpha * d                            # broadcast over ALL positions/timesteps
+        # LIVENESS (default-off). With `stats is None` this branch is not entered and the
+        # arithmetic above is byte-identical to the pre-2026-09-07 hook.
+        if stats is not None:
+            stats["n_forward_calls"] += 1
+            if int(h.shape[1]) <= 1:
+                stats["n_decode_forward"] += 1
+            else:
+                stats["n_prefill_forward"] += 1
+            # EXPECTED, counted from the tensor this forward was HANDED and BEFORE the write,
+            # exactly as the project-out hook counts it: an all-position edit's destination set
+            # is every cell of the block output, so the count is batch x seq.
+            stats["n_forward_with_destinations"] += 1
+            stats["n_cells_edited_expected"] += int(h.shape[0]) * int(h.shape[1])
+            _pre = h.reshape(-1, h.shape[-1])
+            _post = h_post.reshape(-1, h_post.shape[-1])
+            _record_edit(stats, _pre, _post, _pre - _post,
+                         n_dest=int(h.shape[0]) * int(h.shape[1]), seq_len=int(h.shape[1]),
+                         direction=d)
+            _record_add_dose(stats, _pre, _post)
+        h = h_post
+        return (h,) + tuple(output[1:]) if is_tuple else h
+
+    return hook
+
+
+def make_single_position_add_hook(direction: torch.Tensor, alpha: float, pos: int,
+                                  stats: Optional[Dict[str, Any]] = None):
+    """The SINGLE-SITE additive edit: `alpha * d_hat` added at ONE absolute prompt position.
+
+    C4 x S1, 2026-09-07. `edit_positions` used to be implemented for `project_out` only, so the
+    single-site orthogonal control could not be built at all -- and building it out of
+    `AllPositionAdd` would have been an ALL-POSITION edit reported under a single-site label,
+    which is the silent-larger-intervention shape this phase refuses everywhere else. This is
+    the additive mirror of `make_single_position_project_out_hook`, including its two
+    load-bearing details: the pre-edit slice is COPIED before the write (`hp` is a view into the
+    clone, so measuring after the write would compare the post-edit state with itself and
+    manufacture the dead-hook signature), and on a KV-cached decode step (seq==1) there is no
+    prompt site to touch, so the hook is a no-op there.
+    """
+    d_raw = direction.detach().float().cpu()
+    d_cpu = d_raw / (d_raw.norm() + 1e-8)
+    if stats is not None:
+        stats["direction_norm"] = float(d_raw.norm())
+        if stats.get("alpha") is None:
+            stats["alpha"] = float(alpha)
+        if not stats.get("mode"):
+            stats["mode"] = "add_single"
+
+    def hook(module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        h = output[0] if is_tuple else output
+        if stats is not None:
+            stats["n_forward_calls"] += 1
+            if int(h.shape[1]) <= 1:
+                stats["n_decode_forward"] += 1
+            else:
+                stats["n_prefill_forward"] += 1
+        if h.shape[1] <= 1:                       # decode step (cached) -> no-op
+            return output
+        d = d_cpu.to(device=h.device, dtype=h.dtype)
+        h = h.clone()
+        hp = h[:, pos, :]
+        h_new = hp + alpha * d
+        hp_pre = hp.clone() if stats is not None else None
+        h[:, pos, :] = h_new
+        if stats is not None:
+            _abs = pos if pos >= 0 else int(h.shape[1]) + int(pos)
+            stats["n_forward_with_destinations"] += 1
+            stats["n_cells_edited_expected"] += int(h.shape[0])
+            _record_edit(stats, hp_pre, h_new, hp_pre - h_new,
+                         n_dest=int(h.shape[0]), seq_len=int(h.shape[1]),
+                         abs_index=[_abs], direction=d)
+            _record_add_dose(stats, hp_pre, h_new)
         return (h,) + tuple(output[1:]) if is_tuple else h
 
     return hook
 
 
 class AllPositionAdd:
-    """Context manager wrapping `make_add_hook` on a single decoder layer (W5 defense)."""
+    """Context manager wrapping `make_add_hook` on a single decoder layer (W5 defense).
 
-    def __init__(self, model, layer_idx: int, direction: torch.Tensor, alpha: float = 1.0):
-        self.layer = dc._get_layers(model)[layer_idx]
+    `stats`, `alpha_gap_units` and `gap_norm` are ADDITIVE and DEFAULT-OFF (C4). With all three
+    omitted this is the class every committed W5 artifact was produced with: `dc._get_layers`
+    resolves the layer, no record is written and the hook body is unchanged. `_resolve_layer`
+    replaces the direct `_get_layers` index for one reason only -- it tries `_get_layers` FIRST
+    and falls back to a hookable object only when that cannot resolve, which is what lets this
+    hook be unit-tested on CPU against the REAL hook function rather than a re-implementation of
+    it. Testing a copy of a hook proves nothing about the hook, and C-13 lived in exactly that
+    gap.
+    """
+
+    def __init__(self, model, layer_idx: int, direction: torch.Tensor, alpha: float = 1.0,
+                 stats: Optional[Dict[str, Any]] = None,
+                 alpha_gap_units: Optional[float] = None,
+                 gap_norm: Optional[float] = None):
+        self.layer = _resolve_layer(model, layer_idx)
         self.layer_idx = layer_idx
-        self._hook = make_add_hook(direction, alpha)
+        self.stats = stats
+        if stats is not None:
+            stats.update({"mode": "add_all", "layer": int(layer_idx),
+                          "enabled": True, "positions": None})
+            _declare_add_dose(stats, alpha, alpha_gap_units, gap_norm, "AllPositionAdd")
+        self._hook = make_add_hook(direction, alpha, stats=stats)
+        self._handle = None
+
+    def __enter__(self):
+        self._handle = self.layer.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+class SinglePositionAdd:
+    """C4 x S1: the equal-magnitude edit at ONE absolute prompt position, on one layer.
+
+    The additive mirror of `SinglePositionProjectOut`, and it carries the same three-argument
+    site contract for the same reason (review F3): `pos` is the RESOLVED ABSOLUTE index inside
+    the prompt, `rel_end` is the END-RELATIVE offset that produced it, and
+    `seq_len_at_resolution` is the length it was resolved against. The absolute index is what
+    the hook must use -- this hook also fires on the readout's variant forwards, whose realised
+    lengths differ, so re-resolving the offset inside the hook would MOVE the edit -- and the
+    identity `seq_len_at_resolution + rel_end == pos` is asserted here, at construction, per row.
+    """
+
+    def __init__(self, model, layer_idx: int, direction: torch.Tensor,
+                 alpha: float = 1.0, pos: int = -1,
+                 stats: Optional[Dict[str, Any]] = None,
+                 rel_end: Optional[int] = None, occurrence_index: Optional[int] = None,
+                 seq_len_at_resolution: Optional[int] = None,
+                 alpha_gap_units: Optional[float] = None,
+                 gap_norm: Optional[float] = None):
+        self.layer = _resolve_layer(model, layer_idx)
+        self.layer_idx = layer_idx
+        self.pos = int(pos)
+        if rel_end is not None and int(rel_end) >= 0:
+            raise ValueError(
+                "SinglePositionAdd got rel_end=%r, which is NON-NEGATIVE. An end-relative offset "
+                "is negative by construction; a non-negative one is an absolute index wearing "
+                "the wrong name, and recording it as `rel_end` is how the persisted site stopped "
+                "being auditable (review F3)." % (rel_end,))
+        if rel_end is not None and seq_len_at_resolution is not None:
+            _want = int(seq_len_at_resolution) + int(rel_end)
+            if _want != int(pos):
+                raise ValueError(
+                    "SinglePositionAdd: pos=%d but seq_len_at_resolution(%d) + rel_end(%d) = %d. "
+                    "The edit site and the site RECORDED for the audit are not the same token."
+                    % (int(pos), int(seq_len_at_resolution), int(rel_end), _want))
+        self.stats = stats
+        if stats is not None:
+            stats.update({"mode": "add_single", "layer": int(layer_idx),
+                          "enabled": True, "positions": [int(pos)]})
+            if rel_end is not None:
+                stats["rel_end"] = int(rel_end)
+            if seq_len_at_resolution is not None:
+                stats["seq_len_at_resolution"] = int(seq_len_at_resolution)
+            if occurrence_index is not None:
+                stats["occurrence_index"] = int(occurrence_index)
+            _declare_add_dose(stats, alpha, alpha_gap_units, gap_norm, "SinglePositionAdd")
+        self._hook = make_single_position_add_hook(direction, alpha, int(pos), stats=stats)
         self._handle = None
 
     def __enter__(self):

@@ -728,3 +728,382 @@ Nothing in this appendix's three defects. What is left is unchanged from the run
 6. The instrument as a whole is again **uncommitted working-tree state** (four modified files).
    Given F1, that provenance should be committed before the GPU time is spent — by the session
    that owns the tree, under the house's path-limited commit rule.
+
+---
+
+# APPENDIX B — THE LAST TWO CODE BLOCKERS, 2026-09-08 (third session)
+
+**Mode:** EDIT + RUN + REPORT. CPU only. **No SLURM job submitted, no GPU, no network, no commit,
+no `git add`, no `git stash`.** `configs/dcs_ts_pr057_phase9.json` and `configs/dcs_ts_pr048.json`
+are FROZEN and were **not** edited; the one place this work reads a frozen field rather than a
+literal is recorded in B.2.
+
+Python: `/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`.
+
+**Files modified (unscoped `git status --porcelain`, ` M` entries only):**
+
+```
+ M doublespeak_causality/pair_common.py
+ M reports/DCS_TS_PHASE9_INSTRUMENT_REVIEW.md
+ M scripts/dcs_ts_pr048_analysis.py
+ M scripts/dcs_ts_pr057_causal.py
+ M src/boombness/pr057_run_causal.py
+ M src/boombness/score_behavior.py
+```
+
+Plus **one artifact**, which does not appear in `git status` because `.gitignore:11` ignores
+`outputs/`: `outputs/dcs_ts/pr048_result.json` — two keys ADDED, none changed, none removed (B.2).
+It is named here rather than left to the ` M` list, because a file the status output cannot show is
+exactly the kind that gets omitted from a handover.
+
+Nothing else in the tree was written. `scripts/dcs_ts_pr058_*`, `scripts/dcs_ts_pr059_*`, the
+`ts116*` banks and the `ts_cand/ts_repair/ts_smoke` directories belong to other work and were not
+touched.
+
+---
+
+## B.1 — C-122: control C4's `add` mode was UNINSTRUMENTED. Closed.
+
+**Why this one was the highest priority.** `pc.AllPositionAdd` received no `stats=`, so unlike
+`project_out` it produced **no liveness record at all**. C4 is the equal-magnitude orthogonal
+control — the arm that separates *"this DIRECTION matters"* from *"this much PERTURBATION at this
+site matters"*. A dead C4 hook — a stale layer object, a zero direction, a handle removed before the
+forward — produces exactly the *"the control did not move the readout"* artifact that a **positive**
+H2a wants to see. It was the last place in the intervention stack where a dead hook could score as a
+clean null, and it sat in the one arm whose whole job is to be sceptical.
+
+**Instrumented to the same standard `project_out` now meets, on Appendix A's ownership split.**
+
+| what | where | how |
+|---|---|---|
+| `n_cells_edited_expected` | PRODUCER, **before** the write | `make_add_hook` counts `batch x seq` at the top of every forward from the tensor it was HANDED; `make_single_position_add_hook` counts `batch`. `n_cells_edited_realised` is counted from the slice actually written, so `realised == expected` is a real bind and not `0 == 0`. |
+| `orthogonal_residual_delta_l2` | PRODUCER | `_record_edit(direction=d)` — an additive edit is `alpha*d`, so its component orthogonal to `d` must be 0 to float error. Measured, not asserted. |
+| MISSING vs MEASURED ZERO | CONSUMER | unchanged and inherited: a missing field raises `NotMeasured`, a measured zero fails. `hook_stats_dict` initialises the measured floats to **`None`, not `0.0`**; the four new dose fields are initialised to `None` for the same reason (an undeclared dose and a declared dose of zero are opposite verdicts, and `realised_dose_l2_per_cell == 0.0` IS the dead-additive-hook signature). |
+| `n_forward_with_destinations`, `min_projection_removed_l2` | PRODUCER | the F6 fix applies to the additive hook too, for free. |
+
+**The dose is in GAP UNITS at this call site, and that is now DECLARED and CHECKED — both ways.**
+
+`score_behavior.py`'s second `AllPositionAdd` call site passes `alpha * g`, where
+`g = gaps[L]` is the difference-of-means gap for the arm's own base direction (Q13's `gaps` alias,
+not `d_surface`). `make_add_hook` normalises its direction, so the alpha it receives is an
+**absolute** residual magnitude and `alpha * g` is what makes `alpha=1` mean *one difference of
+means*. **Verified, on the real `make_intervention` path with a toy layer:**
+
+```
+[score] ADD DOSE v_bomb_specific L9: alpha=1 x unit=2.500000 -> EFFECTIVE MAGNITUDE 2.500000
+scope S2 | mode add_all    | viol [] | alpha 2.5 gapunits 1.0 gap 2.5 | realised/cell 2.5000
+scope S1 | mode add_single | viol [] | alpha 2.5 gapunits 1.0 gap 2.5 | realised/cell 2.5000
+                                     | abs [7] rel_end -3
+```
+
+and the other way, which is the direction that matters — a **bare** `alpha` at this call site
+injects an absolute magnitude under a gap-unit label. At L18 that is a 14.65x overdose from an
+identical-looking flag (RETRACTION F-3), and this repository has written it at this exact second
+call site before. It is now refused **at construction**:
+
+```
+AllPositionAdd: the hook was handed alpha=1 but the caller declares 1 GAP UNITS x gap_norm 2.5
+= 2.5. A bare alpha at this call site injects an ABSOLUTE magnitude under a gap-unit label --
+the RETRACTION F-3 arithmetic. Refusing to build the hook.
+```
+
+Two independent binds, neither a threshold on a scientific quantity: (1) the caller declares
+`alpha_gap_units` and `gap_norm` and the absolute `alpha` must be their product — this catches the
+flag arithmetic; (2) `realised_dose_l2_per_cell`, the L2 of the change actually **written** to a
+cell, is MEASURED in the hook and must equal `alpha` — this catches a hook body that disagrees with
+its own manifest, which (1) alone cannot see. The second bar is 5% relative and is **numerical, not
+scientific**: the add is computed in the model's dtype (bf16 on the L40S nodes), while the error it
+exists to catch is a gap FACTOR of 1.6x–2.6x at these layers.
+
+**C4 also gained a real single-site form.** `edit_positions` was `project_out`-only, so
+`c4_samenorm_orth_s1` would have been an **all-position** edit under a single-site label — the
+silent-larger-intervention shape this phase refuses everywhere else. `pc.SinglePositionAdd` is the
+additive mirror of `SinglePositionProjectOut`, with the same three-argument site contract
+(`pos` / `rel_end` / `seq_len_at_resolution`, identity asserted at construction) and the same
+copy-before-write detail. Measured: the all-position hook moves 9 of 9 positions, the single-site
+hook moves 1.
+
+**One deliberate, recorded behaviour change.** `AllPositionAdd` now resolves its layer through
+`pair_common._resolve_layer` instead of indexing `dc._get_layers(model)` directly — the same helper
+`AllPositionProjectOut` uses. For every real model the two are identical; the difference is that
+`_resolve_layer` falls back to a hookable object, which is what lets the additive hook be
+unit-tested on CPU **against the real hook function** rather than a re-implementation of it (C-13
+lived in exactly that gap). It inherits review **F8**'s residual: an architecture that makes
+`_get_layers` raise would be hooked whole-model. Not reachable for the Qwen/Llama models in play,
+and it is now the same residual the project-out hook already had rather than a new one.
+
+**Not touched, and why:** the *first* `AllPositionAdd` call site (`refusalness`, dosed in units of
+the direction's own norm) passes no `stats`, so it is default-off and byte-identical;
+`AllPositionAddMultiLayer` has no PR-057 caller and was left alone.
+
+### Constructibility
+
+**26 → 28 (after Appendix A's C5 fix) → 30.** Both C4 arms are now constructible:
+
+```
+--plan --split test:  54 arms, 30 constructible today, 24 unbuildable
+newly constructible:  c4_samenorm_orth_s1, c4_samenorm_orth_s2
+```
+
+The runner's `build_argv` also stopped hard-coding `"project_out"` as the launched mode. That was
+correct only while `add` was unbuildable; with C4 constructible it would have launched the
+equal-magnitude **orthogonal** control as a **projection** — a different intervention under the
+control's name, and one that would have passed the direction check. C5 remains the single arm whose
+launched mode (`project_out` + `--pr057-disable-hooks`) differs from its manifest mode, which is
+what the analyzer's own `launch_command` writes and what `assert_argv_agrees_with_analyzer`
+compares.
+
+The remaining 24: 16 H1 + 2 C7 (`patch` has no code path, and under C-112/R-116 the H1 population is
+empty), 4 H2b (`component_replace` has no code path), 2 C2 (no shuffled-label direction in the
+PR-053 payload). Each is refused by name.
+
+---
+
+## B.2 — C-118(b): the FROZEN_PROBE artifact, exported without re-running the inference
+
+`outputs/dcs_ts/pr048_result.json` was produced **before** the Q10 export block existed, so it
+carried no `FROZEN_PROBE` and O1 had no estimator to score against. Re-running the analyzer costs
+~7.8 h of CPU in the permutation alone and re-reads the TEST split for a number already published.
+
+`--export-frozen-probe-only` was added instead. It:
+
+* **reads the frozen selection rather than recomputing it** — layer 9, C=0.01, taken out of the
+  existing result file. Re-selecting would be a second look at validation and could move the layer.
+  It is read at the TOP of `run_probe`, before a single representation is loaded, so a missing or
+  malformed result refuses before the expensive part — and so the representation load can be
+  narrowed to **the selected layer only** (the 9-layer grid otherwise accumulates
+  6780 x 9 x 5120 float32 twice over; on this shared node that was an OOM kill, observed);
+* re-fits the OBSERVED pass at that selection and **verifies the re-fit reproduces the published
+  number BIT-FOR-BIT** before anything is written;
+* **does not re-run the permutation.** The published null is carried through untouched;
+* exports the estimator through the **same** `_finish_probe_export` the full run now uses — one
+  probe builder, two callers, so the two cannot drift into exporting different estimators under one
+  name;
+* writes **non-destructively**: every guard raises before the write (review F5), and the write goes
+  to a temp file in the same directory and is `os.replace`d in, so a crash mid-write cannot truncate
+  the published result either.
+
+**Observed:**
+
+```
+--export-frozen-probe-only: SELECTION IS NOT RECOMPUTED. Taking layer=9 C=0.01 from
+outputs/dcs_ts/pr048_result.json; re-selecting would be a second look at validation.
+Loading layer 9 ONLY.
+RE-FIT at the frozen selection: observed domain-mean accuracy = 0.939855072463768
+PUBLISHED in outputs/dcs_ts/pr048_result.json:                 0.939855072463768
+bit-for-bit identical: True   per-domain disagreements: 0
+permutation: NOT RE-RUN. The published null is carried through from the existing file unchanged.
+```
+
+Diff of the artifact before/after, by key: **added `FROZEN_PROBE`, `_frozen_probe_export`;
+removed nothing; changed nothing.** The probe: layer 9, C=0.01, feature_dim 4096, classes
+`['bomb','knife','gun']`, fit on 4020 TRAIN rows over 67 TRAIN domains, sha256
+`c54bd39765aaa40140480717b5a3f170e948d301b94c46c674addc9710eb8e4e`, self-verification
+**0 disagreements over 1380 test rows** (predictions recomputed from the exported
+`coef`/`intercept`/`scaler` alone, not from the sklearn objects).
+
+The reproduction gate is a module-level function (`assert_refit_reproduces_published`) so the
+self-test can prove it fires, and it is **bit-for-bit, not a tolerance**: a probe that reproduces
+the headline "to six decimal places" is a different probe. Four new self-test cases cover it,
+including a re-fit that differs in the 15th decimal and one whose headline matches while a single
+per-domain accuracy does not.
+
+**Review F4 is now closed too, as a side effect.** `load_frozen_probe(expect_sha=...)` has always
+been able to refuse a re-fitted probe and **no caller ever passed a sha** — the repo's own
+"threshold published but never enforced" shape. The runner reads the sha off the artifact it just
+gated and puts `--pr057-probe-sha` in every arm's argv, so an artifact swapped between the gate and
+the node is refused **at the node**.
+
+---
+
+## B.3 — C-118(a): O1's attribution. The blocker's stated reason was half wrong, and it is closed.
+
+The recorded reason was: *"ProbeReadCapture is a read hook on a layer and `score_behavior` exposes
+NO per-row callback; one row produces many forwards (variant batches), so order-based attribution
+would be the exact silent misalignment this phase refuses."*
+
+**The first half is wrong.** `score_behavior` builds its interventions **inside the row loop** — it
+must, because the edit site is end-relative and is resolved against the row's own length — and its
+`PR057_LIVENESS.jsonl` writer already stamps `prompt_id` and `domain` from exactly that scope. The
+read hook is now built there too and handed the row's metadata, so **attribution is by construction
+and never by the order records arrive in**. A record that cannot name its domain cannot form a
+domain-level O1; these can.
+
+**The second half is real, and it is closed by pinning rather than by ordering.** One row makes many
+forwards of DIFFERENT lengths, so a hook resolving `seq_len + rel_end` internally reads a DIFFERENT
+TOKEN on each of them and O1 would be a mean over several tokens. Two changes:
+
+* `ProbeReadCapture(abs_index=, seq_len_at_resolution=)` **pins** the site to the index resolved
+  against the ROW's prompt — the same number, computed by the same arithmetic, that the edit hook
+  is given, so read and edit are at the same token by construction. The end-relative contract is the
+  same three-argument one `SinglePositionProjectOut` carries: the offset is the record, the absolute
+  index is the input, and `seq_len_at_resolution + rel_end == abs_index` is asserted at
+  construction. A pin without the length it was resolved against is refused — an unaudited absolute
+  index is the bug class the pin exists to avoid.
+* **ONE record per row per layer**, and the invariant that makes that sound is CHECKED rather than
+  assumed. The model is causal and `signals.string_option_readout` **right**-pads over a shared
+  context prefix (`# LEFT padding would shift the context; pad on the RIGHT`), so a prompt position
+  cannot see the variant appended after it and every forward of a row must read the same state.
+  Every capture is hashed; a row whose forwards disagree at the pinned index is **REFUSED**, not
+  averaged. If that assumption ever breaks — a left-padding change, a template that inserts rather
+  than appends — the run stops instead of reporting a mean over several different tokens.
+
+**Verified on CPU against the real `ProbeReadCapture`:** two forwards of lengths 11 and 15 produce
+`n_forward_calls=2, n_captures=2, records=1`, at pinned index 8, carrying `domain='warehouse'`.
+Unpinned that hook would have read index 8 on one forward and index 12 on the other.
+
+**`--emit-probe` is therefore no longer refused.** `probe_gate` now returns `ok=True` when the
+artifact loads, and the Q1 dry run emits the full argv:
+
+```
+--pr057-probe-out auto --pr057-probe-json outputs/dcs_ts/pr048_result.json
+--pr057-probe-sha c54bd39765aaa40140480717b5a3f170e948d301b94c46c674addc9710eb8e4e
+--pr057-probe-read-layers 7,8,9,10,11,12,13,14 --pr057-probe-rel-end=-10
+--pr057-probe-source knife --pr057-probe-target bomb
+```
+
+The read layers come from the frozen `read_site.read_layer_grid` and the offset from
+`read_site_rel_end(pr)`; the source/target come off the ArmSpec's own
+`source_concept`/`target_concept`. No literal here.
+
+### The honest limit on B.3, stated before it is used
+
+**The `score_behavior` half of the O1 capture has never run against a model.** What has been
+verified on CPU is: the flags parse (14 `--pr057-probe*` entries in `--help`); the frozen probe
+loads and the **sha pin refuses a wrong sha**; the hook itself behaves as described, against the
+real `ProbeReadCapture` (four self-test checks, three mutations); and the runner's `--dry-run`
+constructs and validates the whole argv. What has **not** been exercised is the in-loop wiring
+itself — the per-row construction and the record writer — because that needs a loaded model.
+
+There is also one assumption it shares with the **edit** path and does not remove: the readout
+scores `templated + answer_prefix`, so a token-boundary merge at that join would move both the read
+and the edit together. That is pre-existing, it is not made worse here, and both now write the
+resolved index down so it is visible in the artifact.
+
+**Consequence:** O1 is **capturable** — it is no longer CANNOT ANSWER by construction — but the
+capture must be proved by the **smoke stage (Q7)** before any O1 number is reported. O2, the
+primary, is unaffected either way, and **Q1 does not need O1.**
+
+---
+
+## B.4 — Verification, with the numbers observed
+
+| command | before (Appendix A) | **observed now** |
+|---|---|---|
+| `scripts/dcs_ts_pr057_causal.py --self-test` | 77 checks, 0 FAILED | **86 checks, 0 FAILED** |
+| `scripts/dcs_ts_pr057_causal.py --mutate` | 52/52 RED | **64/64 RED** |
+| `src/boombness/pr057_run_causal.py --self-test` | 50 checks, 0 FAILED | **53 checks, 0 FAILED** |
+| `src/boombness/pr057_run_causal.py --mutate` | 28/28 RED | **28/28 RED** |
+| `src/boombness/pr057_run_causal.py --plan --split test` | 54 arms, 28 constructible | **54 arms, 30 constructible, 24 unbuildable** |
+| `scripts/dcs_ts_pr048_analysis.py --selftest` | 16/16 | **20/20 guards reachable** |
+
+The baselines in the "before" column were re-measured at the session's start commit `97fdf678`
+(77/0, 52/52, 50/0, 28/28, 28 constructible, 16/16) rather than quoted from Appendix A.
+
+**The new mutations the task asked for, each observed RED:**
+
+```
+M53 C4: an add hook that never fired (dead C4)            -> hook_never_ran:n_forward_calls==0
+M54 C4: add dosed in ABSOLUTE not gap units               -> add_dosed_in_ABSOLUTE_units
+M55 C4: add whose dose units were never declared          -> add_dose_units_NOT_DECLARED
+M56 C4: realised per-cell magnitude != declared alpha     -> add_realised_dose_!=_declared
+M57 C4: realised per-cell magnitude NEVER MEASURED        -> ..._NOT_MEASURED
+M58 C4: AllPositionAdd handed a BARE (absolute) alpha     -> refused at CONSTRUCTION
+M59 C4: SinglePositionAdd whose rel_end names another tok -> refused at CONSTRUCTION
+M60 C4: SinglePositionAdd given a NON-NEGATIVE rel_end    -> refused at CONSTRUCTION
+M61 C4: half a dose declaration (gap_norm, no gap units)  -> refused at CONSTRUCTION
+M62 O1 read pinned with no seq_len_at_resolution          -> Refusal (the pin is unauditable)
+M63 O1 read pin that is not seq_len + rel_end             -> Refusal
+M64 O1 read site MOVED between a row's forwards           -> Refusal (never averaged)
+```
+
+`M25_probe_without_artifact` was **re-pointed, not deleted**: it used to aim at the real result
+file, where it was reachable only because that file had no `FROZEN_PROBE`. Now that the block
+exists, leaving it there would have made it GREEN — an unreachable refusal dressed as a passing
+test. It aims at an absent artifact, which is the condition the guard is actually for. Likewise the
+self-test's `unbuildable_add` check was **inverted, not deleted**: C4 must now be constructible at
+BOTH scopes, because a C4 buildable only all-position would be an all-position edit under an S1
+label.
+
+**Repo tests — what completed, honestly.** The node was heavily contended throughout (load average
+~130, 112 users, ~2 GB RAM free; one background run was OOM-killed and is reported as killed, not as
+a pass). Only runs that went to completion are reported, all against the final state of all five
+code files.
+
+| invocation | **observed** |
+|---|---|
+| `pytest -q -p no:randomly` over the 5 `doublespeak_causality/tests/` files that drive the changed hooks (`test_projectout_hook_synthetic`, `test_singleposition_projectout_synthetic`, `test_hook_firing_synthetic`, `test_resolve_positions_synthetic`, `test_alladd_hook_synthetic`) | **43 passed, 0 failed, 26.77 s** |
+| `pytest -q -p no:randomly` over the 12 `tests/` files that drive `make_intervention` and the readout — `test_donor_patch`, `test_option_mass_gate`, `test_prompt_id_exclusions`, `test_readout_liveness`, `test_cell_residual_dose`, `test_knockout_liveness_gate`, `test_band_range_and_abort`, `test_silent_failures`, `test_composed_knockout`, `test_scoped_knockout_wiring`, `test_nondemo_control_draws`, `test_intervention_liveness` | **248 passed, 0 failed, 221.44 s** |
+
+**The whole-root suite was NOT re-run and nothing is claimed for it.** An earlier session
+established that `pytest` at this repo root does not collect (8 collection errors, 0 tests), and its
+`--ignore`-ed variant takes far longer than this node allows. A cancelled run is not a pass.
+
+---
+## B.5 — `git status --porcelain`, UNSCOPED, at the end of this session
+
+Reproduced verbatim, because omitting one modified file left HEAD unable to import earlier in this
+sprint. The untracked `data/boombness_prompts/**` entries are another writer's and were **not**
+touched by this work; they are shown because the listing is unscoped, which is the point of it.
+
+```
+ M doublespeak_causality/pair_common.py
+ M reports/DCS_TS_PHASE9_INSTRUMENT_REVIEW.md
+ M scripts/dcs_ts_pr048_analysis.py
+ M scripts/dcs_ts_pr057_causal.py
+ M src/boombness/pr057_run_causal.py
+ M src/boombness/score_behavior.py
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+**Not shown by that command, and therefore stated here:** `outputs/dcs_ts/pr048_result.json` was
+modified (two keys added, nothing changed or removed). `outputs/` is gitignored
+(`.gitignore:11`), so `git status` cannot surface it and a reader of the ` M` list alone would
+miss the one artifact this session wrote.
+
+---
+
+## B.6 — What still blocks the Q1 validation submission
+
+1. **Nothing in this appendix.** Both blockers the task named are closed: C-122 (C4's `add` mode
+   uninstrumented) and C-118 (both halves — the attribution point and the missing `FROZEN_PROBE`).
+   The Q1 stage is 2 arms (`h2a_s1_projout_*`), 230 rows each, and `--dry-run` constructs and
+   validates both with `--emit-liveness --emit-probe`.
+2. **`--dry-run` must be re-run on the shared filesystem immediately before submission**, as
+   before.
+3. **The instrument is again uncommitted working-tree state** (six modified files plus one ignored
+   artifact). Given F1 — a commit that did not import — that provenance should be committed before
+   GPU time is spent, by the session that owns the tree, under the house's path-limited
+   `git commit -- <paths>` rule.
+4. **O1's `score_behavior` wiring has not run against a model** (B.3). It does not block Q1 — Q1's
+   outcome is O2 — but the **smoke stage (Q7)** must exercise `--emit-probe` before any O1 number is
+   reported.
+5. **Carried over, unchanged:** C-113 (the frozen `directions.artifact.path` can never load; the
+   runner uses the directory and lets the loader join) and **24 of 54 arms unbuildable**, each
+   refused by name (16 H1 + 2 C7, 4 H2b, 2 C2).
+6. **F5 is now closed for the export path** (guards raise before an atomic replace) and **F4 is
+   closed** (`--pr057-probe-sha` is supplied by the runner). **F7** and **F8** remain as recorded in
+   A.5.

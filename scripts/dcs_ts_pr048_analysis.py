@@ -186,6 +186,29 @@ def main() -> int:
     # fits and the SELECTION_TRACE, then stops. It reads TRAIN and VALIDATION only.
     ap.add_argument("--stop-after-selection", action="store_true",
                     help="dry run: everything up to and including selection, then stop. Never reads TEST.")
+    # ---- C-118(b): EXPORT THE FROZEN PROBE WITHOUT RE-RUNNING THE INFERENCE ----------------
+    #
+    # `outputs/dcs_ts/pr048_result.json` was produced BEFORE the Q10 export block existed, so it
+    # carries no FROZEN_PROBE and PHASE 9's outcome O1 has no estimator to score against. The
+    # obvious fix -- re-run this analyzer -- costs ~7.8 h of CPU in the permutation alone and
+    # would re-read the TEST split for a number that is already published.
+    #
+    # This mode instead RE-FITS the observed pass at the ALREADY-FROZEN selection read out of the
+    # existing result file (nothing is re-selected: a re-selection would be a second look at
+    # validation and could move the layer), exports the estimator through the SAME code path the
+    # full run uses, and then REQUIRES the re-fit to reproduce the published
+    # `observed_domain_mean_accuracy` BIT-FOR-BIT. If it does not, the probe on disk is not the
+    # probe behind R-113 and the run refuses rather than shipping it.
+    #
+    # It is NON-DESTRUCTIVE by construction: it adds one key to the existing blob and replaces
+    # the file atomically, and every guard raises BEFORE anything is written. Finding F5 --
+    # export guards that raise before `json.dump` discard a completed permutation -- is what that
+    # is for: here there is nothing to discard, because the permutation is not recomputed and the
+    # published one is carried through untouched.
+    ap.add_argument("--export-frozen-probe-only", action="store_true",
+                    help="re-fit the OBSERVED pass at the selection already frozen in --out, "
+                         "verify it reproduces the published accuracy exactly, and add the "
+                         "FROZEN_PROBE block to that file. No selection, no permutation.")
     a = ap.parse_args()
 
     if a.selftest:
@@ -253,6 +276,40 @@ def load_bank_rows(path: str) -> dict:
     return out
 
 
+def assert_refit_reproduces_published(obs: float, per_dom: dict, prev: dict,
+                                      out_name: str) -> None:
+    """THE WHOLE JUSTIFICATION FOR `--export-frozen-probe-only` IS THIS COMPARISON.
+
+    The probe that mode exports is only "the probe behind R-113" if the estimator re-fitted at
+    the frozen selection IS the estimator that produced the published number. Anything that could
+    have drifted between the two runs -- the representation cache, the population binding, the
+    split assignment, the sklearn version, the solver -- moves this accuracy.
+
+    The check is BIT-FOR-BIT (`repr` of the float, and of every per-domain accuracy) rather than
+    to a tolerance, deliberately: a probe that reproduces the headline "to six decimal places" is
+    a DIFFERENT probe, and PHASE 9's O1 would then be defined against an estimator no published
+    result came from. It raises BEFORE anything is written, so a failure leaves the existing
+    result -- including its ~7.8 h permutation null -- untouched (review F5).
+    """
+    want = float(prev["observed_domain_mean_accuracy"])
+    same = (repr(float(obs)) == repr(want))
+    wdom = prev.get("per_domain_accuracy") or {}
+    disagree = sorted(d for d in set(wdom) | set(per_dom)
+                      if repr(float(wdom.get(d, float("nan"))))
+                      != repr(float(per_dom.get(d, float("nan")))))
+    print(f"  RE-FIT at the frozen selection: observed domain-mean accuracy = {obs!r}")
+    print(f"  PUBLISHED in {out_name}:{' ' * 42}{want!r}")
+    print(f"  bit-for-bit identical: {same}   per-domain disagreements: {len(disagree)}")
+    if not same or disagree:
+        raise PreregError(
+            f"--export-frozen-probe-only: the re-fit does NOT reproduce the published result. "
+            f"observed={obs!r} published={want!r}; {len(disagree)} per-domain accuracies "
+            f"disagree {disagree[:5]}. The estimator this run holds is NOT the one behind the "
+            "published number, so exporting it under that name would pin PHASE 9's O1 to a "
+            "probe that never produced R-113. Nothing was written. Do not loosen this check: "
+            "find what changed.")
+
+
 def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     import numpy as np
     from sklearn.linear_model import LogisticRegression
@@ -267,8 +324,49 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     concepts = spec["concepts"]
     excluded = set(spec["excluded_domains"])
 
+    # ---- C-118(b): the already-frozen selection, READ (never recomputed) --------------------
+    # Read HERE, before a single representation is loaded, for two reasons. First, a missing or
+    # malformed result file must refuse before the expensive part rather than after it. Second,
+    # the export needs ONE layer -- the selected one -- so the 9-layer grid is narrowed to it:
+    # this loop otherwise accumulates 6780 x 9 x 5120 float32 twice over, and on a shared node
+    # that is the difference between a run and an OOM kill.
+    _export_only = bool(getattr(a, "export_frozen_probe_only", False))
+    _prev: dict = {}
+    if _export_only:
+        _out_path = os.path.join(REPO, a.out)
+        if not os.path.exists(_out_path):
+            raise PreregError(
+                f"--export-frozen-probe-only needs an EXISTING result at {a.out} to take the "
+                "frozen selection and the published accuracy from. There is none, so there is "
+                "nothing to reproduce and nothing to add a probe to; run the analyzer normally.")
+        _prev = json.load(open(_out_path))
+        for _k in ("selected_layer", "selected_C", "observed_domain_mean_accuracy"):
+            if _prev.get(_k) is None:
+                raise PreregError(
+                    f"{a.out} does not carry {_k!r}. A probe cannot be pinned to a selection the "
+                    "result file does not record.")
+        if _prev.get("FROZEN_PROBE") is not None:
+            print(f"  NOTE: {a.out} already carries a FROZEN_PROBE block; it will be REPLACED "
+                  "only if the re-fit reproduces the published accuracy exactly.")
+        _sel_L, _sel_C = int(_prev["selected_layer"]), float(_prev["selected_C"])
+        if _sel_L not in layer_grid:
+            raise PreregError(
+                f"{a.out} names selected_layer={_sel_L}, which is not in the preregistered layer "
+                f"grid {layer_grid}. Refusing to fit a probe at a layer this analyzer did not "
+                "search.")
+        if _sel_C not in [float(c) for c in c_grid]:
+            raise PreregError(
+                f"{a.out} names selected_C={_sel_C}, which is not in the preregistered C grid "
+                f"{c_grid}.")
+        layers_needed = [_sel_L]
+        print(f"  --export-frozen-probe-only: SELECTION IS NOT RECOMPUTED. Taking layer={_sel_L} "
+              f"C={_sel_C} from {a.out}; re-selecting would be a second look at validation. "
+              f"Loading layer {_sel_L} ONLY.", flush=True)
+    else:
+        layers_needed = list(layer_grid)
+
     # ---- bind rows, with the bank sha VERIFIED against the preregistration -------------------
-    X_by_layer = {L: [] for L in layer_grid}
+    X_by_layer = {L: [] for L in layers_needed}
     meta = []
     banks = pr.require("population", "banks")
     for bname, bpath in spec["banks"].items():
@@ -340,7 +438,7 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
                 continue
             t = rep if hasattr(rep, "shape") else torch.as_tensor(rep)
             t = t.float()
-            for L in layer_grid:
+            for L in layers_needed:
                 X_by_layer[L].append(t[run_layers.index(L)].numpy())
             meta.append({"pid": pid, "bank": bname, "codeword": cw, "concept": cc,
                          "domain": r["domain"], "dsplit": assign[r["domain"]]})
@@ -352,7 +450,8 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     y = np.array([concepts.index(m["concept"]) for m in meta])
     dom = np.array([m["domain"] for m in meta])
     spl = np.array([m["dsplit"] for m in meta])
-    Xs = {L: np.stack(X_by_layer[L]) for L in layer_grid}
+    Xs = {L: np.stack(X_by_layer[L]) for L in layers_needed}
+    X_by_layer.clear()          # the stacked copy is the one that is used; free the lists
 
     MAX_ITER = 2000
     y_fit = y            # rebound per permutation draw; the OBSERVED pass uses the real labels
@@ -433,28 +532,32 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     # Selection depends on labels but NOT on the permutation, and each grid point is independent of
     # every other, so parallelising across grid points changes nothing about what is computed. The
     # same estimator, the same data, the same order of results.
-    from joblib import Parallel as _Par, delayed as _dl
+    if _export_only:
+        L_sel, C_sel, trace = _sel_L, _sel_C, _prev.get("SELECTION_TRACE")
+    else:
+        from joblib import Parallel as _Par, delayed as _dl
 
-    def _score_point(L, C):
-        sc_ = StandardScaler().fit(Xs[L][tr])
-        cl_ = LogisticRegression(C=C, max_iter=MAX_ITER)
-        cl_.fit(sc_.transform(Xs[L][tr]), y[tr])
-        pr_ = cl_.predict(sc_.transform(Xs[L][va]))
-        return (L, C), domain_mean_acc(pr_, y[va], dom[va])[0]
+        def _score_point(L, C):
+            sc_ = StandardScaler().fit(Xs[L][tr])
+            cl_ = LogisticRegression(C=C, max_iter=MAX_ITER)
+            cl_.fit(sc_.transform(Xs[L][tr]), y[tr])
+            pr_ = cl_.predict(sc_.transform(Xs[L][va]))
+            return (L, C), domain_mean_acc(pr_, y[va], dom[va])[0]
 
-    order = [(L, C) for L in layer_grid for C in c_grid]
-    scores = dict(_Par(n_jobs=-1)(_dl(_score_point)(L, C) for L, C in order))
-    trace = select_hparams(scores, order)
-    L_sel, C_sel = trace["chosen"]
+        order = [(L, C) for L in layer_grid for C in c_grid]
+        scores = dict(_Par(n_jobs=-1)(_dl(_score_point)(L, C) for L, C in order))
+        trace = select_hparams(scores, order)
+        L_sel, C_sel = trace["chosen"]
 
-    if getattr(a, "stop_after_selection", False):
-        print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} "
-              f"best_val_acc={trace['best_acc']:.4f} n_tied={trace['n_tied_at_best']}/{trace['n_grid']} "
-              f"inert={trace['inert']}")
-        if trace["_warning"]:
-            print(f"  !! {trace['_warning']}")
-        print("  --stop-after-selection: TEST WAS NOT READ. Dry run complete.")
-        return 0
+        if getattr(a, "stop_after_selection", False):
+            print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} "
+                  f"best_val_acc={trace['best_acc']:.4f} "
+                  f"n_tied={trace['n_tied_at_best']}/{trace['n_grid']} "
+                  f"inert={trace['inert']}")
+            if trace["_warning"]:
+                print(f"  !! {trace['_warning']}")
+            print("  --stop-after-selection: TEST WAS NOT READ. Dry run complete.")
+            return 0
 
     # ---- TEST, read once ---------------------------------------------------------------------
     # `return_estimator=True` returns the SAME fitted objects the observed statistic was
@@ -466,6 +569,13 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     k = sum(1 for v in per_dom.values() if v > chance)
     nd = len(per_dom)
     sp, sfloor = sign_test_two_sided(k, nd)
+
+    if _export_only:
+        assert_refit_reproduces_published(obs, per_dom, _prev, a.out)
+        if _prev.get("n_rows") is not None and int(_prev["n_rows"]) != n:
+            raise PreregError(
+                f"--export-frozen-probe-only: the population binds {n} rows but {a.out} records "
+                f"{_prev['n_rows']}. Refusing.")
 
     # ---- DOMAIN-LEVEL group permutation ------------------------------------------------------
     #
@@ -484,6 +594,16 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
     #   2. the draws are embarrassingly parallel and are run with joblib.
     # n_perm is NOT reduced. Making the null cheaper than the observed statistic, or shrinking it
     # until p returns to its floor, are both refused.
+    if _export_only:
+        # NOT RECOMPUTED, and not recomputable cheaply: this is the ~7.8 h the mode exists to
+        # avoid. `res` is the EXISTING blob, carried through byte-for-byte; the probe block below
+        # is added to it and nothing else in it is read, rewritten or recomputed.
+        res = dict(_prev)
+        print("  permutation: NOT RE-RUN. The published null (p, floor, n_exceed, n_perm) is "
+              "carried through from the existing file unchanged.")
+        return _finish_probe_export(a, pr, res, _prev, L_sel, C_sel, MAX_ITER, concepts, Xs,
+                                    tr, te, dom, pred, _obs_scaler, _obs_clf, np, obs)
+
     from joblib import Parallel, delayed
     rng = np.random.default_rng(pr.require("split", "seed"))
     dom_list = sorted(set(dom[tr]))
@@ -535,6 +655,34 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
                         "formatted": fmt_p(pp, pfloor, nex)},
     }
 
+    # THE SAME EXPORT PATH THE EXPORT-ONLY MODE USES -- one probe builder, two callers, so the
+    # two cannot drift into exporting different estimators under the same name.
+    _finish_probe_export(a, pr, res, _prev, L_sel, C_sel, MAX_ITER, concepts,
+                         Xs, tr, te, dom, pred, _obs_scaler, _obs_clf, np, obs)
+
+    print(f"  rows={n}  domains={len(set(dom))}  test_domains={nd}")
+    print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} best_val_acc={trace['best_acc']:.4f} "
+          f"n_tied={trace['n_tied_at_best']}/{trace['n_grid']} inert={trace['inert']}")
+    if trace["_warning"]:
+        print(f"  !! {trace['_warning']}")
+    print(f"  OBSERVED domain-mean accuracy = {obs:.4f}  (chance {chance:.4f})")
+    print(f"  sign test    k={k}/{nd}  {fmt_p(sp, sfloor)}")
+    print(f"  permutation  {fmt_p(pp, pfloor, nex)}")
+    print(f"  NUISANCE FLOOR {floor_acc:.4f} ({nf['source']})")
+    print(f"  observed {obs:.4f} vs floor {floor_acc:.4f} -> clears_floor={clears_floor}")
+    print(f"  VERDICT: {verdict}")
+    print(f"  -> {a.out}")
+    return 0
+
+
+def _finish_probe_export(a, pr, res, _prev, L_sel, C_sel, MAX_ITER, concepts, Xs,
+                        tr, te, dom, pred, _obs_scaler, _obs_clf, np, obs) -> int:
+    """Build the FROZEN_PROBE block, verify it, and write `res`. ONE code path, two callers.
+
+    Both the full run and `--export-frozen-probe-only` come through here, deliberately: two
+    export blocks would be two probes that could drift, and the whole point of Q10 is that the
+    estimator PHASE 9 loads is the one that produced the reported number.
+    """
     # ---- Q10: THE FROZEN PROBE, EXPORTED --------------------------------------------------
     #
     # WHY. This file persisted SELECTION_TRACE, the selected (layer, C) and the per-domain
@@ -636,22 +784,26 @@ def run_probe(pr: Prereg, spec: dict, assign: dict, a) -> int:
         "_note": "predictions recomputed from `coef`/`intercept`/`scaler` alone, NOT from the "
                  "sklearn objects, and required to match the estimator on every test row"}
     res["FROZEN_PROBE"] = _probe
-    os.makedirs(os.path.dirname(os.path.join(REPO, a.out)), exist_ok=True)
-    with open(os.path.join(REPO, a.out), "w") as f:
+    res["_frozen_probe_export"] = {
+        "export_only_mode": bool(getattr(a, "export_frozen_probe_only", False)),
+        "reproduced_published_accuracy": (
+            None if not getattr(a, "export_frozen_probe_only", False)
+            else {"published": float(_prev["observed_domain_mean_accuracy"]),
+                  "refit": float(obs), "bit_for_bit": True,
+                  "_note": "the probe below was re-fitted at the selection already frozen in "
+                           "this file and reproduces its published observed_domain_mean_accuracy "
+                           "and every per-domain accuracy EXACTLY; the selection was not "
+                           "recomputed and the permutation null was not re-run"})}
+    _target = os.path.join(REPO, a.out)
+    os.makedirs(os.path.dirname(_target), exist_ok=True)
+    # ATOMIC, AND NON-DESTRUCTIVE IN EXPORT-ONLY MODE (review F5). Every guard above raises
+    # BEFORE this point, so a refusal leaves the existing file -- including its ~7.8 h
+    # permutation null -- exactly as it was. The write goes to a temp file in the SAME directory
+    # and is `os.replace`d in, so a crash mid-write cannot truncate the published result either.
+    _tmp = _target + ".tmp_probe_export"
+    with open(_tmp, "w") as f:
         json.dump(res, f, indent=2)
-
-    print(f"  rows={n}  domains={len(set(dom))}  test_domains={nd}")
-    print(f"  SELECTION (validation only): layer={L_sel} C={C_sel} best_val_acc={trace['best_acc']:.4f} "
-          f"n_tied={trace['n_tied_at_best']}/{trace['n_grid']} inert={trace['inert']}")
-    if trace["_warning"]:
-        print(f"  !! {trace['_warning']}")
-    print(f"  OBSERVED domain-mean accuracy = {obs:.4f}  (chance {chance:.4f})")
-    print(f"  sign test    k={k}/{nd}  {fmt_p(sp, sfloor)}")
-    print(f"  permutation  {fmt_p(pp, pfloor, nex)}")
-    print(f"  NUISANCE FLOOR {floor_acc:.4f} ({nf['source']})")
-    print(f"  observed {obs:.4f} vs floor {floor_acc:.4f} -> clears_floor={clears_floor}")
-    print(f"  VERDICT: {verdict}")
-    print(f"  -> {a.out}")
+    os.replace(_tmp, _target)
     return 0
 
 
@@ -757,6 +909,30 @@ def selftest() -> int:
         cases.append(("parallel permutation returns one statistic per draw", len(_accs) == 40))
     except Exception as _e:
         cases.append((f"permutation path raised {type(_e).__name__}: {_e}", False))
+
+    # ---- C-118(b): the export-only mode's reproduction gate must be REACHABLE -------------
+    # It is the only thing standing between "a frozen probe" and "a probe that is not the one
+    # behind the published number". A guard that cannot fail is not a guard.
+    _prev_ok = {"observed_domain_mean_accuracy": 0.939855072463768,
+                "per_domain_accuracy": {"d1": 1.0, "d2": 0.8797101449275362}}
+    _pd_ok = dict(_prev_ok["per_domain_accuracy"])
+    try:
+        assert_refit_reproduces_published(0.939855072463768, _pd_ok, _prev_ok, "x.json")
+        cases.append(("an EXACT re-fit passes the export-only reproduction gate", True))
+    except PreregError:
+        cases.append(("an EXACT re-fit passes the export-only reproduction gate", False))
+    for _lbl, _obs, _pd in (
+            ("a re-fit off in the 15th decimal is REFUSED (bit-for-bit, not a tolerance)",
+             0.9398550724637681, _pd_ok),
+            ("a re-fit whose HEADLINE matches but a per-domain accuracy does not is REFUSED",
+             0.939855072463768, {"d1": 1.0, "d2": 0.8797101449275363}),
+            ("a re-fit missing a published domain entirely is REFUSED",
+             0.939855072463768, {"d1": 1.0})):
+        try:
+            assert_refit_reproduces_published(_obs, _pd, _prev_ok, "x.json")
+            cases.append((_lbl, False))
+        except PreregError:
+            cases.append((_lbl, True))
 
     for name, ok in cases:
         n_red += ok

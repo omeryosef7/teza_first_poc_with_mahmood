@@ -1439,11 +1439,11 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         if len(set(_pos)) != len(_pos):
             raise SystemExit(f"[score] REFUSING: duplicate edit_positions {_pos}; the same "
                              "position edited twice is a DOUBLE dose under a single-dose label.")
-        if mode != "project_out":
+        if mode not in ("project_out", "add"):
             raise SystemExit(
-                f"[score] REFUSING: edit_positions is implemented for mode 'project_out' only "
-                f"(got {mode!r}). Refusing rather than silently widening the scope back to all "
-                "positions.")
+                f"[score] REFUSING: edit_positions is implemented for modes 'project_out' and "
+                f"'add' only (got {mode!r}). Refusing rather than silently widening the scope "
+                "back to all positions.")
     ctxs = []
     _stats_here = []
     for L in band:
@@ -1475,13 +1475,53 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                         st["arm"], st["direction"] = name, name
                         _stats_here.append(st)
         elif mode == "add":
+            # C4, THE EQUAL-MAGNITUDE ORTHOGONAL CONTROL, AND THE LAST UNINSTRUMENTED HOOK.
+            # Until 2026-09-07 this line built `pc.AllPositionAdd` with no `stats=`, so an
+            # additive arm produced ZERO liveness records: a dead additive hook -- a stale layer
+            # object, a zero direction, a handle removed before the forward -- returned exactly
+            # the artifact a live control with no effect returns. C4 is the arm that separates
+            # "this DIRECTION matters" from "this much PERTURBATION at this site matters", so a
+            # dead C4 is a FALSE CONFIRMATION of H2a in the one arm whose job is to be sceptical.
+            #
+            # THE DOSE IS IN GAP UNITS AT THIS CALL SITE, and that is now DECLARED rather than
+            # implied. `pc.AllPositionAdd` normalises its direction, so the alpha it receives is
+            # an ABSOLUTE residual magnitude; `alpha * g` is what makes alpha=1 mean "one
+            # difference-of-means". Passing a bare `alpha` here injects an absolute magnitude
+            # under a gap-unit label -- at L18 a 14.65x overdose from an identical-looking flag,
+            # which is RETRACTION F-3 and which this repository has written at this exact second
+            # call site before. `alpha_gap_units=` and `gap_norm=` make the hook assert
+            # `alpha == alpha_gap_units * gap_norm` at construction, and
+            # `project_out_liveness_violations` asserts it again over the persisted record.
             g = float(gaps.get(L, 1.0))
             if not gaps:
                 raise SystemExit(
                     f"direction {name!r} has no `gap` entry; refusing to dose an additive "
                     "intervention on a unit vector (see the docstring)")
             _report_add_magnitude(name, L, alpha, g, alpha * g)
-            ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * g))
+            if _pos is None:
+                st = (pc.hook_stats_dict(mode="add_all", layer=L)
+                      if hook_stats is not None else None)
+                ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * g, stats=st,
+                                              alpha_gap_units=alpha, gap_norm=g))
+                if st is not None:
+                    st["arm"], st["direction"] = name, name
+                    _stats_here.append(st)
+            else:
+                for _qi, q in enumerate(_pos):
+                    # paired BY INDEX IN THE LIST, exactly as the project-out branch above: a
+                    # value lookup would pair the wrong offset the moment two sites resolved to
+                    # the same index.
+                    _q_rel = (_rel[_qi] if _rel is not None else None)
+                    st = (pc.hook_stats_dict(mode="add_single", layer=L, rel_end=_q_rel,
+                                             seq_len_at_resolution=edit_positions_seq_len)
+                          if hook_stats is not None else None)
+                    ctxs.append(pc.SinglePositionAdd(
+                        lm.model, L, d, alpha=alpha * g, pos=q, stats=st, rel_end=_q_rel,
+                        seq_len_at_resolution=edit_positions_seq_len,
+                        alpha_gap_units=alpha, gap_norm=g))
+                    if st is not None:
+                        st["arm"], st["direction"] = name, name
+                        _stats_here.append(st)
         else:
             raise SystemExit(f"unknown intervention mode {mode!r}")
     if not ctxs:
@@ -1674,6 +1714,35 @@ def main() -> int:
                          "removed, cosine and the resolved absolute token index. Empty = off. "
                          "Without it the hooks write NO statistics and a dead hook is "
                          "indistinguishable from a clean null (C-13).")
+    # ---- O1 (mandate 10.2): the FROZEN PR-048 probe, read INSIDE the intervened forward ----
+    ap.add_argument("--pr057-probe-out", default="",
+                    help="path to write PR057_PROBE.jsonl: ONE record per row per read layer, "
+                         "carrying the frozen PR-048 posterior and the O1 margin at the read "
+                         "site. 'auto' writes it into the run directory. Empty (default) = off. "
+                         "O1 is a DOMAIN-LEVEL statistic, so every record is stamped with this "
+                         "row's prompt_id/domain from the row loop -- attribution by "
+                         "construction, never by the order records arrive in.")
+    ap.add_argument("--pr057-probe-json", default="",
+                    help="the PR-048 result JSON carrying the FROZEN_PROBE block (Q10). The "
+                         "probe is LOADED, never refitted: refitting under an intervention lets "
+                         "the probe chase the edit and makes O1 unfalsifiable.")
+    ap.add_argument("--pr057-probe-sha", default="",
+                    help="PIN the frozen probe's content sha256 (review F4). Given, a probe that "
+                         "has been re-fitted, re-selected or re-scaled since the run O1 is "
+                         "defined against is REFUSED instead of loading silently under its name.")
+    ap.add_argument("--pr057-probe-read-layers", default="",
+                    help="comma list of layers to read the probe at (e.g. 7,8,9,10,11,12,13,14).")
+    ap.add_argument("--pr057-probe-rel-end", default="",
+                    help="the READ site as a NEGATIVE end-relative offset (e.g. -10). It is "
+                         "resolved against THIS row's prompt length, exactly as "
+                         "--pr057-edit-positions is, and the read hook is PINNED to that "
+                         "absolute index: one row makes many forwards (the readout's variant "
+                         "batches) whose lengths differ, so re-resolving the offset inside the "
+                         "hook would read a different token on each of them.")
+    ap.add_argument("--pr057-probe-source", default="",
+                    help="O1's SOURCE concept (the positive term of the margin).")
+    ap.add_argument("--pr057-probe-target", default="",
+                    help="O1's TARGET concept (the negative term of the margin).")
     ap.add_argument("--semantic-extra-words", default="",
                     help="Q9 (DCS-PR-057). Comma list of EXTRA candidate words to score in the "
                          "semantic readout, in ADDITION to this bank's own concept and codeword. "
@@ -2467,6 +2536,63 @@ def main() -> int:
         _pr057_live_fh = open(_pr057_live_path, "a")
         print(f"[score] PR-057 liveness -> {_pr057_live_path}", flush=True)
     _pr057_live_n = 0
+    # ---- O1 PROBE SINK (C-118(a)). Off unless --pr057-probe-out is given. -------------------
+    # THE ATTRIBUTION POINT IS THIS LOOP. The blocker recorded against O1 was "score_behavior
+    # exposes no per-row callback", but the interventions themselves are already constructed per
+    # row here -- they must be, because the edit site is end-relative -- and the liveness writer
+    # below already stamps prompt_id/domain from exactly this scope. So the read hook is built
+    # per row too, handed this row's metadata, and its records name their domain by construction.
+    _pr057_probe_path = None
+    _pr057_probe_fh = None
+    _pr057_probe = None
+    _pr057_probe_layers = []
+    _pr057_probe_rel = None
+    _pr057_probe_n = 0
+    if args.pr057_probe_out:
+        # `scripts/` is not on score_behavior's path (only its own directory is), and the O1
+        # definition, the frozen-probe loader and the read hook all live in the analyzer -- which
+        # is where they belong: re-implementing them here would be a second O1 that could drift
+        # from the one the analyzer computes.
+        _scripts = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__)))), "scripts")
+        if _scripts not in sys.path:
+            sys.path.insert(0, _scripts)
+        import dcs_ts_pr057_causal as _pr057
+        if not args.pr057_probe_json:
+            raise SystemExit("[score] REFUSING: --pr057-probe-out needs --pr057-probe-json. O1 "
+                             "is defined against the FROZEN PR-048 estimator; there is no "
+                             "fallback probe and refitting one here would let it chase the edit.")
+        _pr057_probe = _pr057.load_frozen_probe(
+            args.pr057_probe_json if os.path.isabs(args.pr057_probe_json)
+            else os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)))), args.pr057_probe_json),
+            expect_sha=(args.pr057_probe_sha or None))
+        _pr057_probe_layers = [int(x) for x in args.pr057_probe_read_layers.split(",")
+                               if x.strip()]
+        if not _pr057_probe_layers:
+            raise SystemExit("[score] REFUSING: --pr057-probe-out with no "
+                             "--pr057-probe-read-layers binds ZERO read sites.")
+        if not args.pr057_probe_rel_end.strip():
+            raise SystemExit("[score] REFUSING: --pr057-probe-out needs --pr057-probe-rel-end. "
+                             "A read site that is not declared cannot be audited.")
+        _pr057_probe_rel = int(args.pr057_probe_rel_end)
+        if _pr057_probe_rel >= 0:
+            raise SystemExit(
+                f"[score] REFUSING: --pr057-probe-rel-end {_pr057_probe_rel} is NON-NEGATIVE. "
+                "The read site is declared END-RELATIVE for the same reason the edit site is: "
+                "an absolute index reused across examples is this repo's twice-recorded bug "
+                "class.")
+        if not (args.pr057_probe_source and args.pr057_probe_target):
+            raise SystemExit("[score] REFUSING: O1 is posterior(SOURCE) - posterior(TARGET) and "
+                             "both concepts must be named; a missing class must never be scored "
+                             "as zero.")
+        _pr057_probe_path = (run.p("PR057_PROBE.jsonl")
+                             if args.pr057_probe_out.strip() == "auto"
+                             else args.pr057_probe_out)
+        _pr057_probe_fh = open(_pr057_probe_path, "a")
+        print(f"[score] PR-057 O1 probe (sha {_pr057_probe.sha256[:16]}, fit layer "
+              f"{_pr057_probe.layer}) -> {_pr057_probe_path}; read layers "
+              f"{_pr057_probe_layers} at rel_end {_pr057_probe_rel}", flush=True)
     # Bound HERE, not inside the row loop: a run whose rows all failed must still be able to
     # write (or refuse to write) its arm manifest without a NameError masking the real failure.
     _pr057_echo = None
@@ -2585,6 +2711,7 @@ def main() -> int:
                     _pr057_rel.append(_r)
             _pr057_stats = [] if (args.pr057_liveness_out or args.pr057_disable_hooks) else None
             _pr057_echo = {} if _pr057_stats is not None else None
+            _probe_rows_this_row = []
             ctxs = make_intervention(dc, pc, lm, spec, payload,
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
@@ -2599,6 +2726,39 @@ def main() -> int:
                                      hook_stats=_pr057_stats,
                                      control_base=(args.pr057_control_base or None),
                                      arm_echo=_pr057_echo)
+            # ---- O1: the FROZEN PROBE, read INSIDE this row's intervened forward -----------
+            # Built HERE, in the row loop, which is the attribution point: `row` is in scope, so
+            # every record names its prompt_id and its DOMAIN -- and O1 is a domain-level
+            # statistic, so a record that cannot name its domain cannot form it.
+            #
+            # THE SITE IS PINNED, and this is the load-bearing half. The offset is resolved
+            # ONCE, against THIS row's prompt (`len(ids_r)`), by the same arithmetic
+            # `--pr057-edit-positions` uses, and the resolved absolute index is handed to the
+            # hook. One row makes MANY forwards -- `string_option_readout` scores each answer
+            # variant, in batches -- and their lengths differ, so a hook re-resolving `-10`
+            # against each forward would read a DIFFERENT TOKEN every time and O1 would be a
+            # mean over several tokens. Pinned, read and edit are at the same index by
+            # construction, and `ProbeReadCapture` additionally REFUSES a row whose forwards
+            # disagree at that index rather than averaging them.
+            _probe_caps = []
+            if _pr057_probe is not None:
+                if -_pr057_probe_rel > len(ids_r):
+                    raise SystemExit(
+                        f"[score] REFUSING: probe read offset {_pr057_probe_rel} is outside this "
+                        f"row's {len(ids_r)} tokens.")
+                _probe_abs = len(ids_r) + _pr057_probe_rel
+                _rmeta = {"prompt_id": row.get("prompt_id"), "domain": row.get("domain"),
+                          "split": row.get("split"), "cell": row.get("cell"),
+                          "concept": row.get("concept"), "codeword": row.get("codeword"),
+                          "arm": args.arm, "condition": row.get("condition"),
+                          "query_kind": row.get("query_kind")}
+                for _rl in _pr057_probe_layers:
+                    _probe_caps.append(_pr057.ProbeReadCapture(
+                        lm.model, _rl, _pr057_probe, _pr057_probe_rel,
+                        args.pr057_probe_source, args.pr057_probe_target,
+                        _probe_rows_this_row, row_meta=_rmeta,
+                        abs_index=_probe_abs, seq_len_at_resolution=len(ids_r)))
+                ctxs = list(ctxs) + _probe_caps
             import contextlib
             # --- Section 20 Q3 RESCUE (additive; inert unless --rescue-layer is passed) --------
             # ORDERING MATTERS AND IT BIT ME. An earlier draft captured the donor BEFORE
@@ -2878,6 +3038,24 @@ def main() -> int:
             # the `except Exception` beneath does NOT catch it: a dead hook aborts the run
             # instead of being charged to the failure ledger and producing 229 more rows under a
             # label that claims an intervention happened.
+            # ---- O1 PROBE RECORDS. Same place, same discipline as the liveness records: the
+            # hooks have RUN, `row` is still in scope, and a read hook that captured nothing is
+            # a refusal rather than an absent line. `liveness_violations()` also refuses a row
+            # whose forwards disagreed at the pinned index.
+            if _probe_caps and _pr057_probe_fh is not None:
+                for _cap in _probe_caps:
+                    _pbad = _cap.liveness_violations()
+                    if _pbad:
+                        _pr057_probe_fh.flush()
+                        raise SystemExit(
+                            f"[score] REFUSING: the O1 read hook at layer {_cap.layer_idx} on "
+                            f"row {row['prompt_id']!r} is UNCLEAN: {_pbad}. A probe record that "
+                            "cannot prove it read the site it names is not an outcome.")
+                for _prec in _probe_rows_this_row:
+                    _pr057_probe_fh.write(json.dumps({**_prec, "seq_len_prompt": len(ids_r)})
+                                          + "\n")
+                    _pr057_probe_n += 1
+                _pr057_probe_fh.flush()
             if _pr057_stats is not None and _pr057_live_fh is not None:
                 if not _pr057_stats:
                     raise SystemExit(
@@ -2928,6 +3106,16 @@ def main() -> int:
             print(f"[score] {i+1}/{len(rows)} rows  {dict(counts)}")
 
     gens_fh.close()
+    if _pr057_probe_fh is not None:
+        _pr057_probe_fh.close()
+        # ZERO-ROW REFUSAL, for the same reason the liveness sink has one: a probe artifact that
+        # binds nothing reads downstream as "O1 did not move".
+        if _pr057_probe_n == 0:
+            raise SystemExit(
+                f"[score] REFUSING: {_pr057_probe_path} has ZERO probe records after "
+                f"{len(rows)} rows. O1 cannot be formed from an empty file.")
+        print(f"[score] PR-057 O1 probe: {_pr057_probe_n} record(s) written over "
+              f"{len(_pr057_probe_layers)} read layer(s)", flush=True)
     if _pr057_live_fh is not None:
         _pr057_live_fh.close()
         # ZERO-ROW REFUSAL. A liveness file with no records proves nothing and would be read by

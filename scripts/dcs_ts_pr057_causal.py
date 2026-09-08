@@ -756,24 +756,73 @@ class ProbeReadCapture:
     It records, per row per read layer: the posterior over concepts, the O1 margin, the
     resolved absolute index, the sequence length, and the number of forward calls seen -- so a
     capture that never ran is `n_forward_calls == 0` rather than an absent file.
-    """
 
+    C-118(a), 2026-09-07: ATTRIBUTION AND THE MANY-FORWARDS PROBLEM.
+
+    O1 is a DOMAIN-LEVEL statistic, so a record that cannot name its domain cannot form it. The
+    attribution point is `row_meta`, which the caller fills IN THE ROW LOOP -- `score_behavior`
+    constructs its interventions per row (it must: the edit site is end-relative and is resolved
+    against THIS row's length), and its own `PR057_LIVENESS.jsonl` writer already stamps
+    `prompt_id`/`domain` from exactly there. So attribution is by CONSTRUCTION, never by the
+    order in which records arrive.
+
+    That leaves the second half, which is the one that could still misalign silently: ONE ROW
+    PRODUCES MANY FORWARDS (`string_option_readout` scores each answer variant, in batches), and
+    those forwards have DIFFERENT sequence lengths. Resolving `seq_len + rel_end` inside the hook
+    therefore reads a DIFFERENT TOKEN on every variant forward, and averaging them would be the
+    exact silent misalignment this phase refuses. Two changes close it:
+
+      * `abs_index=` PINS the site to the index the caller resolved against the ROW's prompt --
+        the same number, computed the same way, that the edit hook is given. Read and edit are
+        then at the same token by construction rather than by a coincidence of lengths. The
+        end-relative contract is the same three-argument one `SinglePositionProjectOut` carries:
+        the offset is the record, the absolute index is the input, and
+        `seq_len_at_resolution + rel_end == abs_index` is asserted at construction.
+      * the state at that index is IDENTICAL on every forward of the row -- the model is causal
+        and `string_option_readout` RIGHT-pads over a shared context prefix, so a prompt position
+        cannot see the variant appended after it. That is an INVARIANT, so it is CHECKED: every
+        capture is hashed, ONE record is emitted per row per layer, and a row whose captures
+        DISAGREE is refused instead of averaged. If the assumption ever breaks -- a left-padding
+        change, a template that inserts rather than appends -- the run stops rather than
+        reporting a mean over several different tokens.
+    """
     def __init__(self, model, layer_idx: int, probe: FrozenProbe, rel_end: int,
                  source: str, target: str, records: List[Dict[str, Any]],
-                 row_meta: Optional[Dict[str, Any]] = None):
+                 row_meta: Optional[Dict[str, Any]] = None,
+                 abs_index: Optional[int] = None,
+                 seq_len_at_resolution: Optional[int] = None):
         if rel_end >= 0:
             raise Refusal("ProbeReadCapture takes an END-RELATIVE index (negative); got %d. An "
                           "absolute index reused across examples is this repository's "
                           "twice-recorded bug class." % rel_end)
+        if abs_index is not None:
+            if seq_len_at_resolution is None:
+                raise Refusal(
+                    "ProbeReadCapture was pinned to absolute index %d with no "
+                    "seq_len_at_resolution. Without the length it was resolved against, "
+                    "`abs_index == seq_len + rel_end` cannot be checked and the pin is an "
+                    "unaudited absolute index -- the bug class it exists to prevent."
+                    % abs_index)
+            if int(seq_len_at_resolution) + int(rel_end) != int(abs_index):
+                raise Refusal(
+                    "ProbeReadCapture: abs_index=%d but seq_len_at_resolution(%d) + rel_end(%d) "
+                    "= %d. The token read and the token RECORDED are not the same token."
+                    % (int(abs_index), int(seq_len_at_resolution), int(rel_end),
+                       int(seq_len_at_resolution) + int(rel_end)))
         self.layer = _resolve_hook_target(model, layer_idx)
         self.layer_idx = int(layer_idx)
         self.probe = probe
         self.rel_end = int(rel_end)
+        self.abs_index = None if abs_index is None else int(abs_index)
+        self.seq_len_at_resolution = (None if seq_len_at_resolution is None
+                                      else int(seq_len_at_resolution))
         self.source, self.target = source, target
         self.records = records
         self.row_meta = dict(row_meta or {})
         self.n_forward_calls = 0
         self.n_captured = 0
+        self._shas: List[str] = []
+        self._record: Optional[Dict[str, Any]] = None
         self._h = None
 
     def _hook(self, module, inputs, output):
@@ -782,22 +831,49 @@ class ProbeReadCapture:
         if int(h.shape[1]) <= 1:            # decode step: the prompt site is not in this tensor
             return output
         seq_len = int(h.shape[1])
-        idx = seq_len + self.rel_end
-        if idx < 0:
+        # PINNED, when the caller resolved the site against the row's prompt; otherwise
+        # end-relative against THIS forward, which is the historical behaviour and is correct
+        # only when the row makes exactly one forward.
+        idx = self.abs_index if self.abs_index is not None else seq_len + self.rel_end
+        if idx < 0 or idx >= seq_len:
             return output
-        v = h[0, idx, :].detach().float().cpu().numpy()
+        v = h[0, idx, :].detach().float().cpu().contiguous().numpy()
+        _sha = hashlib.sha256(v.tobytes()).hexdigest()[:16]
+        self.n_captured += 1
+        self._shas.append(_sha)
+        if self._record is not None:
+            # ONE RECORD PER ROW PER LAYER. A second capture is the SAME token on a later
+            # variant forward and must be bit-identical; if it is not, the assumption that a
+            # prompt position cannot see the variant appended after it has broken, and that is
+            # a refusal rather than something to average over.
+            if _sha != self._shas[0]:
+                raise Refusal(
+                    "ProbeReadCapture at layer %d, row %r: forward %d read a DIFFERENT state at "
+                    "the SAME pinned index %d (%s != %s). One row's forwards must agree at a "
+                    "prompt position -- the model is causal and the readout right-pads a shared "
+                    "context -- so this means the site moved between forwards. Refusing: an O1 "
+                    "averaged over several different tokens is the silent misalignment this "
+                    "phase exists to refuse."
+                    % (self.layer_idx, self.row_meta.get("prompt_id"), self.n_forward_calls,
+                       idx, _sha, self._shas[0]))
+            self._record["n_forward_calls"] = self.n_forward_calls
+            self._record["n_captures"] = self.n_captured
+            return output
         post = self.probe.posterior(v)
-        self.records.append({
+        self._record = {
             **self.row_meta,
             "read_layer": self.layer_idx, "rel_end": self.rel_end,
             "seq_len": seq_len, "resolved_absolute_index": idx,
+            "seq_len_at_resolution": self.seq_len_at_resolution,
+            "index_pinned_to_row_prompt": self.abs_index is not None,
+            "capture_sha16": _sha,
             "probe_sha256": self.probe.sha256, "probe_fit_layer": self.probe.layer,
             "posterior": post,
             "o1_margin_source_minus_target": float(post[self.source] - post[self.target]),
             "o1_source": self.source, "o1_target": self.target,
             "hidden_norm": float((v ** 2).sum() ** 0.5),
-            "n_forward_calls": self.n_forward_calls})
-        self.n_captured += 1
+            "n_forward_calls": self.n_forward_calls, "n_captures": self.n_captured}
+        self.records.append(self._record)
         return output                        # READ-ONLY. Never returns an edited tensor.
 
     def __enter__(self):
@@ -816,6 +892,12 @@ class ProbeReadCapture:
             bad.append("probe_read_hook_never_ran")
         if self.n_captured == 0:
             bad.append("probe_read_captured_zero_rows")
+        if len(set(self._shas)) > 1:
+            bad.append("probe_read_site_moved_between_forwards:%d distinct states at one index"
+                       % len(set(self._shas)))
+        if self.abs_index is not None and self._record is not None and (
+                int(self._record["resolved_absolute_index"]) != int(self.abs_index)):
+            bad.append("probe_read_index_is_not_the_pinned_one")
         return bad
 
 
@@ -2259,6 +2341,47 @@ def selftest() -> int:
         _caught = True
     ck.add("q11_o1_zero_bind_refused", "O1 over ZERO probe records is a refusal", _caught, 1)
 
+    # ---- C-118(a): ATTRIBUTION, AND THE MANY-FORWARDS PROBLEM ----------------------------
+    # One row makes MANY forwards of DIFFERENT lengths (the readout scores each answer variant).
+    # Unpinned, `seq_len + rel_end` reads a different token on each of them; pinned, all of them
+    # read the site resolved against the ROW's prompt, ONE record is emitted, and the caller's
+    # row_meta names the DOMAIN -- which is what makes a domain-level O1 formable at all.
+    _prow: List[Dict[str, Any]] = []
+    _lp = _toy_layer(_hid)
+    _xp = torch.randn(1, 11, _hid)
+    _xp2 = torch.cat([_xp, torch.randn(1, 4, _hid)], dim=1)     # the same prompt + a variant
+    with ProbeReadCapture(_lp, 9, _fp, -3, "knife", "bomb", _prow,
+                          row_meta={"prompt_id": "p1", "domain": "warehouse"},
+                          abs_index=8, seq_len_at_resolution=11) as _prc2:
+        _lp(_xp); _lp(_xp2)
+    ck.add("c118a_probe_records_name_their_domain",
+           "C-118(a): O1 is a DOMAIN-LEVEL statistic, and the record carries the row's domain "
+           "because the hook is built in the row loop and handed the row's metadata -- "
+           "attribution by CONSTRUCTION, never by the order records arrive in",
+           len(_prow) == 1 and _prow[0]["domain"] == "warehouse"
+           and _prow[0]["prompt_id"] == "p1", 1, str(_prow[0]["domain"]))
+    ck.add("c118a_site_is_pinned_across_forwards",
+           "TWO forwards of DIFFERENT lengths produce ONE record at the SAME pinned index. "
+           "Unpinned this hook would have read index 8 on the 11-token forward and index 12 on "
+           "the 15-token one, and O1 would have been a mean over two different tokens",
+           _prc2.n_forward_calls == 2 and _prc2.n_captured == 2 and len(_prow) == 1
+           and _prow[0]["resolved_absolute_index"] == 8
+           and _prow[0]["index_pinned_to_row_prompt"] is True
+           and not _prc2.liveness_violations(), 2,
+           "forwards=%d records=%d idx=%d" % (_prc2.n_forward_calls, len(_prow),
+                                              _prow[0]["resolved_absolute_index"]))
+    for _kw, _lbl in ((dict(abs_index=8), "no seq_len_at_resolution"),
+                      (dict(abs_index=9, seq_len_at_resolution=11), "abs != seq + rel_end")):
+        _caught = False
+        try:
+            ProbeReadCapture(_lp, 9, _fp, -3, "knife", "bomb", [], **_kw)
+        except Refusal:
+            _caught = True
+        ck.add("c118a_pin_audited_%s" % _lbl.split()[0],
+               "a pinned read index that cannot be checked against `seq_len + rel_end` (%s) is "
+               "REFUSED: an unaudited absolute index is the bug class the pin exists to avoid"
+               % _lbl, _caught, 1)
+
     # ---- Q12: single-position scoping and the DISABLED-HOOK BRIDGE -----------------------
     # Driven against the REAL pair_common classes, on a toy layer, with the REAL stats dicts.
     _d = torch.randn(_hid)
@@ -2377,6 +2500,74 @@ def selftest() -> int:
            "a hook that never ran at all is refused on n_forward_calls == 0",
            "hook_never_ran:n_forward_calls==0"
            in _pc.project_out_liveness_violations(_never), 1)
+
+    # ---- C-122: CONTROL C4, the ADDITIVE arm, INSTRUMENTED -------------------------------
+    # C4 is the equal-magnitude orthogonal control -- the arm that separates "this DIRECTION
+    # matters" from "this much PERTURBATION at this site matters". Until 2026-09-07
+    # `pc.AllPositionAdd` took no `stats=`, so it was the LAST place in the intervention stack
+    # where a dead hook produced exactly the "the control did not move the readout" record a
+    # POSITIVE H2a wants to see: a false confirmation in the one arm whose job is scepticism.
+    # Driven here against the REAL pair_common classes on a toy layer, exactly as Q12 is.
+    _gap = 2.5                       # stands for payload["gap"][v_bomb_specific][L]
+    _a4 = _pc.hook_stats_dict(mode="add_all", layer=3)
+    _l4 = _toy_layer(_hid)
+    with _pc.AllPositionAdd(_l4, 3, _d, alpha=1.0 * _gap, stats=_a4,
+                            alpha_gap_units=1.0, gap_norm=_gap):
+        _y4 = _l4(_xa)[0]
+    _n_moved_add = int(((_y4 - _xa).abs().amax(dim=-1) > 1e-6).sum())
+    ck.add("c120_add_hook_records_liveness",
+           "the additive hook now records the same liveness quantities the project-out hook "
+           "does -- fired count, expected vs realised cells, magnitude, cosine and the "
+           "ORTHOGONAL RESIDUAL -- so a dead C4 can no longer score as a clean null",
+           _pc.project_out_liveness_violations(_a4) == []
+           and _a4["hook_fired_count"] == 1 and _n_moved_add == 9
+           and _a4["n_cells_edited_realised"] == _a4["n_cells_edited_expected"] == 9
+           and _a4["orthogonal_residual_delta_l2"] is not None, 3,
+           "moved=%d cells=%d/%d orth=%.3e" % (_n_moved_add, _a4["n_cells_edited_realised"],
+                                               _a4["n_cells_edited_expected"],
+                                               _a4["orthogonal_residual_delta_l2"]))
+    ck.add("c120_add_dose_is_in_GAP_UNITS",
+           "alpha=1 at this call site means ONE difference-of-means: the hook is handed "
+           "alpha*gap, records both numbers, and the magnitude it actually WROTE per cell "
+           "equals that product",
+           _a4["dose_units"] == "gap" and abs(_a4["alpha"] - _gap) < 1e-9
+           and _a4["alpha_gap_units"] == 1.0 and _a4["gap_norm"] == _gap
+           and abs(_a4["realised_dose_l2_per_cell"] - _gap) < 1e-3, 4,
+           "alpha=%.4f realised/cell=%.4f" % (_a4["alpha"],
+                                              _a4["realised_dose_l2_per_cell"]))
+    _caught = ""
+    try:
+        _pc.AllPositionAdd(_toy_layer(_hid), 3, _d, alpha=1.0,
+                           stats=_pc.hook_stats_dict(mode="add_all", layer=3),
+                           alpha_gap_units=1.0, gap_norm=_gap)
+    except ValueError as _e:
+        _caught = str(_e)
+    ck.add("c120_bare_alpha_absolute_dose_REFUSED",
+           "a BARE alpha at this call site -- an ABSOLUTE residual magnitude under a gap-unit "
+           "label -- is refused at CONSTRUCTION. That is RETRACTION F-3's arithmetic (a 14.65x "
+           "overdose from an identical-looking flag) and this repo has written it at this exact "
+           "second call site before",
+           "ABSOLUTE magnitude" in _caught, 1, _caught[:70])
+    _a4s = _pc.hook_stats_dict(mode="add_single", layer=3, rel_end=-3, seq_len_at_resolution=9)
+    _l4s = _toy_layer(_hid)
+    with _pc.SinglePositionAdd(_l4s, 3, _d, alpha=1.0 * _gap, pos=6, stats=_a4s, rel_end=-3,
+                               seq_len_at_resolution=9, alpha_gap_units=1.0, gap_norm=_gap):
+        _y4s = _l4s(_xa)[0]
+    _n_moved_add1 = int(((_y4s - _xa).abs().amax(dim=-1) > 1e-6).sum())
+    ck.add("c120_add_has_a_real_single_site_form",
+           "C4 x S1 is a SINGLE-SITE edit, not an all-position edit under a single-site label: "
+           "the additive hook moves exactly one position and its resolved index satisfies "
+           "seq_len_at_resolution + rel_end",
+           _n_moved_add1 == 1 and _pc.project_out_liveness_violations(_a4s) == []
+           and _a4s["resolved_absolute_index"] == [6] and _a4s["rel_end"] == -3, 1,
+           "all=%d one=%d abs=%s" % (_n_moved_add, _n_moved_add1,
+                                     _a4s["resolved_absolute_index"]))
+    _dead4 = _pc.hook_stats_dict(mode="add_all", layer=3, enabled=True)
+    ck.add("c120_dead_add_hook_refused",
+           "a C4 hook that never ran is REFUSED rather than reported as a control that did not "
+           "move the readout",
+           "hook_never_ran:n_forward_calls==0"
+           in _pc.project_out_liveness_violations(_dead4), 1)
 
     # ---- Q13: the norm-matched control's BASE DIRECTION ----------------------------------
     ck.add("q13_default_base_unchanged",
@@ -2614,6 +2805,77 @@ def mutate() -> int:
                                                 "layers": [9], "alpha": 1.0},
                               {"v": {9: _t.ones(4)}}, edit_positions=[90],
                               edit_positions_rel_end=[90], edit_positions_seq_len=100)
+
+    # ---- C-122, control C4's ADDITIVE hook, fixed 2026-09-07 -----------------------------
+    # The three defects the C4 instrumentation must be able to convict, each shown RED. M53 is
+    # the one that matters most: a C4 hook that never fired must REFUSE, because the record it
+    # would otherwise produce -- no cells edited, no state change -- is EXACTLY the record a
+    # working control that legitimately did not move the readout produces, and C4 is the arm
+    # whose whole job is to be sceptical of a positive H2a.
+    def _add_row(**kw):
+        r = _pc.hook_stats_dict(mode="add_all", layer=9)
+        r.update({"n_forward_calls": 1, "n_forward_with_destinations": 1, "hook_fired_count": 1,
+                  "n_destination_rows": 1, "n_cells_edited_realised": 1,
+                  "n_cells_edited_expected": 1, "activation_norm_pre": 10.0,
+                  "activation_norm_post": 10.3, "projection_removed_l2": 2.5,
+                  "min_projection_removed_l2": 2.5, "orthogonal_residual_delta_l2": 2e-7,
+                  "max_abs_delta": 0.3, "cos_pre_post": 0.99, "seq_len": 100,
+                  "alpha": 2.5, "alpha_gap_units": 1.0, "gap_norm": 2.5, "dose_units": "gap",
+                  "realised_dose_l2_per_cell": 2.5})
+        r.update(kw)
+        return r
+
+    muts["M53 C4: an add hook that never fired (dead C4)"] = lambda: not _pc.        project_out_liveness_violations(_add_row(n_forward_calls=0, hook_fired_count=0,
+                                                n_cells_edited_realised=0,
+                                                n_cells_edited_expected=0,
+                                                projection_removed_l2=0.0, max_abs_delta=0.0,
+                                                realised_dose_l2_per_cell=0.0))
+    muts["M54 C4: add dosed in ABSOLUTE not gap units"] = lambda: not _pc.        project_out_liveness_violations(_add_row(alpha=1.0, realised_dose_l2_per_cell=1.0))
+    muts["M55 C4: add whose dose units were never declared"] = lambda: not _pc.        project_out_liveness_violations(_add_row(dose_units=None))
+    muts["M56 C4: realised per-cell magnitude != declared alpha"] = lambda: not _pc.        project_out_liveness_violations(_add_row(realised_dose_l2_per_cell=1.0))
+    muts["M57 C4: realised per-cell magnitude NEVER MEASURED"] = lambda: not _pc.        project_out_liveness_violations(_add_row(realised_dose_l2_per_cell=None))
+    raisers["M58 C4: AllPositionAdd handed a BARE (absolute) alpha"] = lambda:         _pc.AllPositionAdd(_toy_layer(4), 3, _t.ones(4), alpha=1.0,
+                          stats=_pc.hook_stats_dict(mode="add_all", layer=3),
+                          alpha_gap_units=1.0, gap_norm=2.5)
+    raisers["M59 C4: SinglePositionAdd whose rel_end names another token"] = lambda:         _pc.SinglePositionAdd(_toy_layer(4), 3, _t.ones(4), pos=90, rel_end=-10,
+                              seq_len_at_resolution=137)
+    raisers["M60 C4: SinglePositionAdd given a NON-NEGATIVE rel_end"] = lambda:         _pc.SinglePositionAdd(_toy_layer(4), 3, _t.ones(4), pos=90, rel_end=90,
+                              seq_len_at_resolution=100)
+    raisers["M61 C4: half a dose declaration (gap_norm with no alpha_gap_units)"] = lambda:         _pc.AllPositionAdd(_toy_layer(4), 3, _t.ones(4), alpha=2.5,
+                          stats=_pc.hook_stats_dict(mode="add_all", layer=3),
+                          gap_norm=2.5)
+
+    # ---- C-118(a), the O1 read site. The mutations that matter are the ones about WHICH
+    # TOKEN was read, because a misattributed O1 is worse than no O1 at all. ---------------
+    _mp = FrozenProbe(
+        {"selected_layer": 9, "classes": ["knife", "bomb"], "feature_dim": 4,
+         "sklearn_classes_": [0, 1],
+         "estimator": {"coef": [[1.0, 0.0, 0.0, 0.0]], "intercept": [0.0]},
+         "scaler": {"mean": [0.0] * 4, "scale": [1.0] * 4},
+         "self_verification": {"reproduced_from_exported_numbers": True, "n_disagreements": 0},
+         "sha256": "deadbeef"}, source="mutate")
+    raisers["M62 O1 read pinned to an index with no seq_len_at_resolution"] = lambda:         ProbeReadCapture(_toy_layer(4), 9, _mp, -10, "knife", "bomb", [], abs_index=90)
+    raisers["M63 O1 read pin that is not seq_len + rel_end"] = lambda:         ProbeReadCapture(_toy_layer(4), 9, _mp, -10, "knife", "bomb", [], abs_index=90,
+                         seq_len_at_resolution=137)
+
+    def _o1_site_moves():
+        # A layer whose output at a position DEPENDS ON THE SEQUENCE LENGTH -- i.e. exactly the
+        # world in which "every forward of a row agrees at a prompt position" is FALSE (a
+        # left-padding change, or a template that inserts rather than appends). The hook must
+        # REFUSE rather than emit a mean over two different states.
+        import torch as _tt
+
+        class _LenDependent(_tt.nn.Module):
+            def forward(self, x):
+                return (x * float(x.shape[1]),)
+        lay = _LenDependent()
+        cap = ProbeReadCapture(lay, 9, _mp, -3, "knife", "bomb", [],
+                               row_meta={"prompt_id": "p"}, abs_index=8,
+                               seq_len_at_resolution=11)
+        with cap:
+            lay(_t.randn(1, 11, 4))
+            lay(_t.randn(1, 15, 4))
+    raisers["M64 O1 read site MOVED between a row's forwards"] = _o1_site_moves
 
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0

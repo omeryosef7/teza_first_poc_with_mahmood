@@ -4199,3 +4199,82 @@ seeded random-row draw exist, are tested and mutation-covered in the analyzer, b
 producer-side halves live in `score_behavior.py` and `dcs_extract_under_ko.py` and remain
 BLOCKING. **U3 not closable.** `analyzer_exists` stays `false` in the frozen config, so the loader
 still refuses `--for-extraction` with 9 refusals.
+
+---
+
+## DCS-R-126 / C-122 — the last two code blockers close, and two more real bugs fell out
+*2026-09-08*
+
+**C-122 (C4's `add` mode was uninstrumented) — closed, and it was the right thing to prioritise.**
+C4 is the equal-magnitude orthogonal control: the arm whose whole job is to separate *"this
+direction matters"* from *"this much perturbation at this site matters"*. Running dead, it would
+have produced exactly the **"the control did not move the readout"** result that a positive H2a
+wants to see — a false confirmation in the most sceptical arm. It is now instrumented to the same
+standard `project_out` meets under Appendix A's ownership split: expected counted **before** the
+write, realised from the slice written, missing raises `NotMeasured`, measured zero fails, and the
+new dose fields initialise to `None` rather than `0.0`.
+
+**Two further defects surfaced only because someone tried to build the arm:**
+
+- **C4 × S1 would have been an all-position edit under an S1 label.** There was no
+  single-position additive form at all; `SinglePositionAdd` / `make_single_position_add_hook` now
+  provide one under the same `pos` / `rel_end` / `seq_len_at_resolution` contract.
+- **`build_argv` hard-coded `"project_out"`**, so the orthogonal control **would have been launched
+  as a projection** — C4 would have run the very intervention it exists to be different from.
+
+**Gap units verified both ways**, at the call site where this project has already been bitten twice:
+`alpha=1 × gap 2.5 → effective magnitude 2.500000`, realised per-cell 2.5000; a bare alpha (absolute
+magnitude wearing a gap-unit label) is **refused at construction** and is separately convictable
+from the persisted record alone.
+
+**C-118 — both halves closed, and the stated reason for one of them was half wrong.**
+
+- **(b) the frozen probe now exists on disk.** A new `--export-frozen-probe-only` reads the frozen
+  selection (L9, C=0.01) rather than re-selecting, loads only that layer, re-fits the observed pass,
+  and **refuses unless the re-fit reproduces the published number bit-for-bit**. It reproduced
+  exactly: `0.939855072463768 == 0.939855072463768`, **0 per-domain disagreements**, probe sha
+  `c54bd397…`, self-verified 0/1380. The ~7.8-hour permutation was **not** re-run and the TEST split
+  was not re-read. Verified additive on disk: `FROZEN_PROBE` added, `permutation` and
+  `SELECTION_TRACE` intact, `observed_domain_mean_accuracy` unchanged. Review findings **F4 and F5**
+  close with it.
+- **(a) O1 IS capturable.** The recorded blocker said `score_behavior` exposes no per-row callback,
+  so attribution would be order-based guesswork. Half of that was wrong: `make_intervention` is
+  already constructed **inside the row loop** — it must be, because the edit site is end-relative —
+  and the liveness writer already stamps `prompt_id`/`domain` from there, so **attribution is by
+  construction**. The real half (many forwards per row, at different lengths) is closed by pinning
+  the read to the absolute index resolved against that row's prompt, emitting one record per row per
+  layer, and **refusing** a row whose forwards disagree at that index rather than averaging.
+
+**Observed, on the final tree:**
+
+| harness | before | now |
+|---|---|---|
+| `dcs_ts_pr057_causal.py --self-test` | 77/0 | **86 / 0** |
+| `dcs_ts_pr057_causal.py --mutate` | 52/52 RED | **64/64 RED** |
+| `pr057_run_causal.py --self-test` | 50/0 | **53 / 0** |
+| `pr057_run_causal.py --mutate` | 28/28 RED | **28/28 RED** |
+| `dcs_ts_pr048_analysis.py --selftest` | 16/16 | **20/20** |
+| constructible arms | 28 | **30 of 54** |
+
+Both C4 arms are now constructible. The remaining 24 are refused **by name**: 16 H1 + 2 C7
+(`patch`, and the empty R-116 donor population), 4 H2b (`component_replace`), 2 C2 (no shuffled-label
+direction). Tests run to completion: **43 passed** (5 hook files) and **248 passed** (12
+intervention/readout files); the whole-root suite does not collect at this root and one background
+run was OOM-killed at load ~130 — reported as killed, **not** as a pass.
+
+Two guards were **re-pointed rather than deleted** when the fix made them unreachable — `M25` now
+targets an absent artifact, and the `unbuildable_add` self-test was **inverted**. That is the M47
+lesson applied twice without being asked: a guard made vacuous by a fix must be re-aimed, not
+removed.
+
+**ID collision, recorded not silent.** This work arrived labelled `C-120`, which the log had already
+given to the stale `_exclusion_note` finding. Renumbered to **C-122** across the code, the review
+appendix and the `DEFECT_*` constants, and the harnesses re-run afterwards to prove the rename broke
+nothing: **86/0, 53/0, 20/20, 30 constructible**. That re-run is not ceremony — a rename broke a
+hardcoded check on PR-058 earlier today.
+
+**What still blocks Q1:** nothing from these two. Remaining is (i) `C-113`, documentation-only;
+(ii) the **`score_behavior` half of the O1 capture has never run against a model** — flags, probe
+load, sha pin, hook and argv are all CPU-verified, but the in-loop wiring needs the **Q7 smoke
+stage** before any O1 number is reported, which does not block Q1 since Q1's outcome is O2; and
+(iii) a `--dry-run` on the shared filesystem immediately before submitting.

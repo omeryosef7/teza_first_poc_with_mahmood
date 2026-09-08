@@ -167,12 +167,20 @@ DEFECT_LIVENESS_SCHEMA = (
 )
 
 DEFECT_PROBE_ATTRIBUTION = (
-    "C-118 (new, BLOCKING for O1, found by this runner): ProbeReadCapture (Q11) is a read hook on "
-    "a layer, and score_behavior offers NO per-row callback, so a captured record cannot be "
+    "C-118(a) (CLOSED 2026-09-07). It was recorded as: ProbeReadCapture (Q11) is a read hook on a "
+    "layer and score_behavior offers NO per-row callback, so a captured record cannot be "
     "attributed to a prompt_id/domain -- one row produces many forwards (the variant batches) and "
     "order-based attribution would be a silent misalignment of exactly the shape this phase "
-    "refuses. O1 is a DOMAIN-LEVEL statistic, so records that cannot name their domain cannot "
-    "form it. --emit-probe is therefore REFUSED rather than producing an unattributable file."
+    "refuses. THE FIRST HALF OF THAT WAS WRONG: score_behavior builds its interventions INSIDE "
+    "the row loop -- it must, because the edit site is end-relative and is resolved against the "
+    "row's own length -- and its PR057_LIVENESS.jsonl writer already stamps prompt_id/domain from "
+    "that scope. The read hook is now built there too and handed the row's metadata, so "
+    "attribution is BY CONSTRUCTION and never by the order records arrive in. THE SECOND HALF WAS "
+    "REAL and is closed differently: the site is PINNED to the absolute index resolved against "
+    "the row's prompt (the same number the edit hook gets) instead of being re-resolved against "
+    "each variant forward's length, ONE record is emitted per row per read layer, and a row whose "
+    "forwards disagree at that index is REFUSED rather than averaged -- so if the causal/"
+    "right-padding assumption that makes them agree ever breaks, the run stops."
 )
 
 DEFECT_PROBE_ARTIFACT = (
@@ -218,14 +226,33 @@ UNBUILDABLE = {
         "'project_out' and 'add' only (checklist Q12(b)). The instrumented hook exists in the "
         "analyzer (make_instrumented_component_replace_hook, with the orthogonal-residual "
         "verification I-N7) and is not wired to score_behavior."),
-    "add": (
-        "mode 'add' (control C4) is constructible in make_intervention but is NOT INSTRUMENTED: "
-        "pc.AllPositionAdd is built with no `stats=`, so an additive arm launched with "
-        "--pr057-liveness-out produces ZERO liveness records and score_behavior refuses it -- and "
-        "launched WITHOUT it, a dead additive hook would score as a clean null (C-13). C4 also "
-        "has no single-site form: edit_positions is implemented for project_out only, so C4 x S1 "
-        "would silently be an all-position edit under a single-site label."),
 }
+
+#: C-122, CLOSED 2026-09-07. `add` was in UNBUILDABLE above with this reason:
+#:
+#:   "mode 'add' (control C4) is constructible in make_intervention but is NOT INSTRUMENTED:
+#:    pc.AllPositionAdd is built with no `stats=`, so an additive arm launched with
+#:    --pr057-liveness-out produces ZERO liveness records and score_behavior refuses it -- and
+#:    launched WITHOUT it, a dead additive hook would score as a clean null (C-13). C4 also has
+#:    no single-site form: edit_positions is implemented for project_out only, so C4 x S1 would
+#:    silently be an all-position edit under a single-site label."
+#:
+#: BOTH halves are now closed in the producer, not waived here:
+#:   * `pc.make_add_hook` / `pc.AllPositionAdd` take `stats=` and record the same liveness
+#:     quantities the project-out hook does, so a dead C4 hook REFUSES instead of returning the
+#:     "the control did not move the readout" record a positive H2a wants to see;
+#:   * `pc.SinglePositionAdd` gives C4 a real single-site form under the same three-argument
+#:     rel_end/seq_len/absolute-index contract the S1 project-out arm uses, so C4 x S1 is an
+#:     S1 edit rather than an all-position edit under an S1 label;
+#:   * the DOSE is declared in gap units AND checked: `alpha == alpha_gap_units * gap_norm` at
+#:     construction, and the realised per-cell magnitude against `alpha` in the record.
+DEFECT_C122_ADD_UNINSTRUMENTED = (
+    "C-122 (CLOSED 2026-09-07): mode 'add' (control C4) was constructible in make_intervention "
+    "and NOT INSTRUMENTED -- pc.AllPositionAdd took no `stats=`, so a C4 arm produced zero "
+    "liveness records and a dead additive hook scored as a clean null (C-13) in the ONE arm "
+    "whose job is to be sceptical of a positive H2a. Closed in pair_common (stats on the add "
+    "hooks, a real SinglePositionAdd, and a declared-and-measured gap-unit dose)."
+)
 
 
 # ============================================================================================
@@ -430,7 +457,7 @@ def constructibility(pr: Prereg, arm: ArmSpec, payload_keys: Sequence[str]) -> D
     spec: Optional[str] = None
     if arm.mode in UNBUILDABLE:
         reasons.append(UNBUILDABLE[arm.mode])
-    elif arm.mode in ("project_out", "disabled"):
+    elif arm.mode in ("project_out", "add", "disabled"):
         if arm.direction is None:
             reasons.append("mode %r with no direction" % arm.mode)
         elif arm.direction not in DIRECTION_MAP:
@@ -456,8 +483,8 @@ def constructibility(pr: Prereg, arm: ArmSpec, payload_keys: Sequence[str]) -> D
         reasons.append("unknown arm mode %r" % arm.mode)
     if arm.mode == "disabled" and not reasons and not float(arm.alpha or 0.0):
         reasons.append(DEFECT_C119_BRIDGE_ALPHA)
-    if arm.scope == "S1" and arm.mode not in ("project_out", "disabled") and not reasons:
-        reasons.append("scope S1 (single site) is implemented for project_out only")
+    if arm.scope == "S1" and arm.mode not in ("project_out", "add", "disabled") and not reasons:
+        reasons.append("scope S1 (single site) is implemented for project_out and add only")
     return {"arm_id": arm.arm_id, "constructible": not reasons, "intervene_direction": spec,
             "reasons": reasons}
 
@@ -487,8 +514,16 @@ def build_argv(pr: Prereg, arm: ArmSpec, ctx: Dict[str, Any]) -> List[str]:
         # launched alpha of 1.0 -- the arm submitted would not have been the arm declared, and
         # `assert_argv_agrees_with_analyzer` would have caught it only by luck. An alpha of 0 is
         # refused above (C-119) rather than quietly replaced.
+        # THE ARM'S OWN MODE, not a literal. C5 is the only arm whose launched mode differs
+        # from its manifest mode: `disabled` is `project_out` plus --pr057-disable-hooks, which
+        # is what the analyzer's own `launch_command` writes, and `assert_argv_agrees_with_
+        # analyzer` compares the two. Hard-coding "project_out" here was correct only while
+        # `add` was unbuildable; with C4 constructible it would have launched the equal-magnitude
+        # ORTHOGONAL control as a PROJECTION -- a different intervention under the control's
+        # name, and one that would have passed the direction check.
         "--intervene", "%s:%s:%s:%g" % (con["intervene_direction"],
-                                        "project_out", band, float(arm.alpha)),
+                                        ("project_out" if arm.mode == "disabled" else arm.mode),
+                                        band, float(arm.alpha)),
         "--seed", str(seed),
         "--arm", arm.arm_id,
         "--tag", arm.tag(),
@@ -504,6 +539,23 @@ def build_argv(pr: Prereg, arm: ArmSpec, ctx: Dict[str, Any]) -> List[str]:
             "--pr057-liveness-out the hooks write NO statistics and a dead hook is "
             "indistinguishable from a clean null (C-13). Refusing." % arm.arm_id)
     argv += ["--pr057-liveness-out", "auto"]
+    _pb = ctx.get("probe")
+    if _pb:
+        # O1's SOURCE and TARGET come off the ArmSpec, which carries the manifest's own
+        # source_concept/target_concept -- not from a literal here. The frozen definition is
+        # "posterior mass on the SOURCE concept minus its mass on the TARGET concept".
+        if not (arm.source_concept and arm.target_concept):
+            raise RunnerRefusal(
+                "arm %s has no source/target concept, so O1 (posterior(source) - "
+                "posterior(target)) is undefined for it. A missing class must never be scored "
+                "as zero." % arm.arm_id)
+        argv += ["--pr057-probe-out", "auto",
+                 "--pr057-probe-json", _pb["json"],
+                 "--pr057-probe-sha", str(_pb["sha"]),
+                 "--pr057-probe-read-layers", ",".join(str(int(x)) for x in _pb["read_layers"]),
+                 "--pr057-probe-rel-end=%d" % int(_pb["rel_end"]),
+                 "--pr057-probe-source", str(arm.source_concept),
+                 "--pr057-probe-target", str(arm.target_concept)]
     if ctx.get("exclude_file"):
         argv += ["--exclude-prompt-ids", ctx["exclude_file"]]
     if ctx.get("expect_n"):
@@ -1022,8 +1074,12 @@ def verify_arm_artifacts(pr: Prereg, arm: ArmSpec, run_dir: str,
             "control_draw_seed": (arm.control_draw_seed
                                   if arm.control_draw_seed is not None
                                   else int(pr.require("seeds", "control_draws"))),
-            "cos_edit_vs_direction": ("+/-1 BY CONSTRUCTION for project_out: the edit is "
-                                      "alpha * (h.d) * d, i.e. exactly along the unit direction"),
+            "cos_edit_vs_direction": (
+                "+/-1 BY CONSTRUCTION for project_out: the edit is alpha * (h.d) * d, i.e. "
+                "exactly along the unit direction. Also +/-1 by construction for add: the edit "
+                "is alpha * d. In BOTH cases the claim is no longer only structural -- "
+                "`orthogonal_residual_delta_l2` in the record MEASURES the component of the "
+                "realised change that is not along d, and a record without it refuses."),
             "_schema_note": DEFECT_LIVENESS_SCHEMA}
     gate["persist_contract"] = persist_contract_report(pr, arm, ann[0], gate)
     with open(os.path.join(run_dir, ARM_GATE_FILE), "w") as fh:
@@ -1049,16 +1105,27 @@ def verify_arm_artifacts(pr: Prereg, arm: ArmSpec, run_dir: str,
 # 8. THE PROBE (O1) -- accepted as a flag, refused as a capability, with the reason
 # ============================================================================================
 def probe_gate(probe_json: str) -> Dict[str, Any]:
-    """`--emit-probe`. Both blockers are checked; neither is assumed away."""
-    reasons = [DEFECT_PROBE_ATTRIBUTION]
+    """`--emit-probe`. Both C-118 blockers are checked; neither is assumed away.
+
+    The ATTRIBUTION blocker is closed in code (see `DEFECT_PROBE_ATTRIBUTION`), so it is no
+    longer a reason. The ARTIFACT blocker is checked here on every call, against the file on
+    disk: a probe that does not load, or that its producer never self-verified, is still a
+    refusal, and `--emit-probe` must never write a file O1 cannot be formed from.
+    """
+    reasons: List[str] = []
     path = probe_json if os.path.isabs(probe_json) else repo_path(probe_json)
+    sha = None
+    fit_layer = None
     try:
-        load_frozen_probe(path)
+        fp = load_frozen_probe(path)
         artifact = "present"
+        sha, fit_layer = fp.sha256, fp.layer
     except (Refusal, PreregError, OSError) as e:
         artifact = "absent"
         reasons.append("%s (%s)" % (DEFECT_PROBE_ARTIFACT, str(e).splitlines()[0][:120]))
-    return {"ok": False, "probe_artifact": artifact, "path": path, "reasons": reasons}
+    return {"ok": not reasons, "probe_artifact": artifact, "path": path, "reasons": reasons,
+            "probe_sha256": sha, "probe_fit_layer": fit_layer,
+            "attribution": DEFECT_PROBE_ATTRIBUTION}
 
 
 # ============================================================================================
@@ -1277,9 +1344,23 @@ def run_stage(pr: Prereg, a) -> int:
     sdir = stage_dir(state_root, a.stage, a.split)
     t_stage = time.time()
 
+    probe_ctx = None
     if a.emit_probe:
         pg = probe_gate(a.probe_json)
-        raise RunnerRefusal("--emit-probe is REFUSED:\n  - %s" % "\n  - ".join(pg["reasons"]))
+        if not pg["ok"]:
+            raise RunnerRefusal("--emit-probe is REFUSED:\n  - %s" % "\n  - ".join(pg["reasons"]))
+        # THE PIN IS SUPPLIED HERE (review F4). `load_frozen_probe(expect_sha=...)` has always
+        # been able to refuse a re-fitted probe and NOTHING passed it a sha, so the published
+        # guarantee had no code path -- the repo's own "threshold published but never enforced"
+        # shape. The runner reads the sha off the artifact it just gated and hands it to every
+        # arm, so an artifact swapped between the gate and the node is refused AT the node.
+        probe_ctx = {"json": a.probe_json, "sha": pg["probe_sha256"],
+                     "read_layers": [int(x) for x in pr.require("read_site", "read_layer_grid")],
+                     "rel_end": read_site_rel_end(pr)}
+        print("[pr057] --emit-probe: frozen PR-048 probe sha %s (fit layer %s) -> read at "
+              "layers %s, rel_end %d"
+              % (str(pg["probe_sha256"])[:16], pg["probe_fit_layer"],
+                 probe_ctx["read_layers"], probe_ctx["rel_end"]), flush=True)
     if not a.emit_liveness:
         raise RunnerRefusal(
             "--emit-liveness is REQUIRED: every arm in this phase installs a hook, and without "
@@ -1390,7 +1471,7 @@ def run_stage(pr: Prereg, a) -> int:
         b = binds[bank_abs]
         ctx = {"fit_dir": a.fit_dir, "rel_end": rel_end, "emit_liveness": True,
                "constructibility": con, "expect_n": b["expect_n"],
-               "exclude_file": b["exclude_file"],
+               "exclude_file": b["exclude_file"], "probe": probe_ctx,
                "limit": (a.smoke_limit if a.stage == "smoke" else 0)}
         argv = build_argv(pr, arm, ctx)
         assert_argv_agrees_with_analyzer(pr, arm, argv, a.fit_dir)
@@ -1659,11 +1740,36 @@ def selftest() -> int:
     con_ok = constructibility(pr, _stub_arm(), payload_keys)
     ck.add("constructible_h2a", "the 10.2 PRIMARY arm is constructible today",
            con_ok["constructible"] and con_ok["intervene_direction"] == "v_bomb_specific", 1, "")
-    for mode, name in (("patch", "H1/C7"), ("component_replace", "H2b"), ("add", "C4")):
+    for mode, name in (("patch", "H1/C7"), ("component_replace", "H2b")):
         c = constructibility(pr, _stub_arm(mode=mode, direction="v_bomb_specific"), payload_keys)
         ck.add("unbuildable_%s" % mode, "%s is refused, with the reason" % name,
                not c["constructible"] and bool(c["reasons"]), len(c["reasons"]),
                c["reasons"][0][:70])
+    # C-122, CLOSED. `add` used to be in UNBUILDABLE with C4 refused for it. The check is not
+    # deleted, it is INVERTED: the arm must now be constructible at BOTH scopes, because a C4
+    # that is buildable only all-position would be an all-position edit under an S1 label.
+    c4a = constructibility(pr, _stub_arm(mode="add", scope="S2",
+                                         direction="orthogonal_to_concept_subspace"), payload_keys)
+    c4s = constructibility(pr, _stub_arm(mode="add", scope="S1",
+                                         direction="orthogonal_to_concept_subspace"), payload_keys)
+    ck.add("c120_add_constructible",
+           "C-122: control C4 (mode 'add') is constructible at BOTH scopes now that the additive "
+           "hook is instrumented and has a single-site form",
+           c4a["constructible"] and c4s["constructible"]
+           and c4a["intervene_direction"] == "orthogonal@v_bomb_specific",
+           2, "%s / %s" % (c4a["reasons"], c4s["reasons"]))
+    _c4argv = build_argv(pr, _stub_arm(mode="add", scope="S1", alpha=1.0,
+                                       direction="orthogonal_to_concept_subspace"),
+                         {"fit_dir": "outputs/dcs_ts/directions_pr053",
+                          "rel_end": read_site_rel_end(pr), "emit_liveness": True,
+                          "constructibility": c4s, "expect_n": 0, "exclude_file": "",
+                          "limit": 0})
+    ck.add("c120_add_argv_mode",
+           "C4's argv launches mode 'add', NOT 'project_out': the runner used to hard-code the "
+           "mode, which would have launched the orthogonal control as a projection",
+           any(t.startswith("orthogonal@v_bomb_specific:add:") for t in _c4argv)
+           and "--pr057-edit-positions=-10" in _c4argv,
+           1, [t for t in _c4argv if ":add:" in t])
     c2 = constructibility(pr, _stub_arm(direction="v_bomb_specific_shuffled_labels"), payload_keys)
     ck.add("unbuildable_c2", "C2's shuffled-label direction has no artifact and is refused",
            not c2["constructible"], len(c2["reasons"]), c2["reasons"][0][:70])
@@ -1844,10 +1950,37 @@ def selftest() -> int:
 
     # probe
     pg = probe_gate("outputs/dcs_ts/pr048_result.json")
-    ck.add("probe_refused", "--emit-probe is refused, naming BOTH blockers",
-           (not pg["ok"]) and len(pg["reasons"]) >= 1
-           and any("attribut" in r for r in pg["reasons"]), len(pg["reasons"]),
-           pg["probe_artifact"])
+    ck.add("probe_attribution_closed",
+           "C-118(a): the per-row attribution blocker is CLOSED, so it is no longer a reason to "
+           "refuse --emit-probe; the ARTIFACT is the only gate left, and it is checked against "
+           "the file on disk rather than assumed",
+           not any("attribut" in r.lower() for r in pg["reasons"])
+           and (pg["ok"] == (pg["probe_artifact"] == "present")), 1,
+           "artifact=%s ok=%s reasons=%d"
+           % (pg["probe_artifact"], pg["ok"], len(pg["reasons"])))
+    _pg_missing = probe_gate("outputs/dcs_ts/__no_such_pr048_result__.json")
+    ck.add("probe_artifact_refused",
+           "a MISSING or unverified probe artifact still refuses --emit-probe by name",
+           (not _pg_missing["ok"]) and bool(_pg_missing["reasons"]), 1,
+           _pg_missing["reasons"][0][:60])
+    if pg["ok"]:
+        _pargv = build_argv(pr, _stub_arm(),
+                            {"fit_dir": "outputs/dcs_ts/directions_pr053",
+                             "rel_end": read_site_rel_end(pr), "emit_liveness": True,
+                             "constructibility": constructibility(pr, _stub_arm(), payload_keys),
+                             "expect_n": 0, "exclude_file": "", "limit": 0,
+                             "probe": {"json": "outputs/dcs_ts/pr048_result.json",
+                                       "sha": pg["probe_sha256"],
+                                       "read_layers": pr.require("read_site", "read_layer_grid"),
+                                       "rel_end": read_site_rel_end(pr)}})
+        ck.add("probe_argv_pins_the_sha",
+               "review F4: the probe argv carries --pr057-probe-sha, so `load_frozen_probe`'s "
+               "pin -- published since the export was written and never supplied by any caller "
+               "-- is finally enforced at the node",
+               "--pr057-probe-sha" in _pargv
+               and _pargv[_pargv.index("--pr057-probe-sha") + 1] == pg["probe_sha256"]
+               and "--pr057-probe-rel-end=-10" in _pargv, 1,
+               str(pg["probe_sha256"])[:16])
 
     # directions
     try:
@@ -2070,8 +2203,15 @@ def _fake_run_dir(td: str, n_rows: int, records: Sequence[Dict[str, Any]],
     return d
 
 
-def _probe_or_raise() -> None:
-    pg = probe_gate("outputs/dcs_ts/pr048_result.json")
+def _probe_or_raise(path: str = "outputs/dcs_ts/__no_such_pr048_result__.json") -> None:
+    """The ARTIFACT half of C-118, which is still a live refusal.
+
+    It used to point at the real result file, where it was reachable only because that file had
+    no FROZEN_PROBE block. Now that the block exists, pointing it there would have made the
+    mutation GREEN -- an unreachable refusal dressed as a passing test. It points at an absent
+    artifact instead, which is the condition the guard is actually for.
+    """
+    pg = probe_gate(path)
     if not pg["ok"]:
         raise RunnerRefusal("--emit-probe refused: %s" % pg["reasons"][0][:100])
 
