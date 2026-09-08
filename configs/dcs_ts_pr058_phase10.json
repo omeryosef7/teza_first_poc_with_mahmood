@@ -650,16 +650,16 @@
     "nondemo_control": "src/boombness/score_behavior.py nondemo_control_draw / nondemo_draw_seed / the nondemo_matched_d{1,2,3} arms in KNOCKOUT_ARMS (EXISTS)",
     "token_map": "scripts/dcs_ts116m_token_roles.py (EXISTS, cell C ONLY -- hardcoded, no --cell argument)",
     "_WHAT_DOES_NOT_EXIST_YET": [
-      "a cells-B/E token-role map. dcs_ts116m_token_roles.py is hardcoded to cell C and would need a --cell argument plus a concept-word role class. Checklist T1.",
-      "any readout at all on cells B or E, on any channel. Checklist T2.",
-      "scripts/dcs_ts_pr058_symmetry.py, the frozen analyzer. Checklist T7.",
-      "a mutation harness for that analyzer. Checklist T8.",
-      "an independent verifier. The architecture is inherited from scripts/dcs_verify_kladder_rowlevel.py (its R1-R5 check classes: silent denominator, sign inversion, anchor-by-copy, population swap, vacuous-by-omission) but the file itself binds PR-032's arm directories and rung set and cannot bind this population. Checklist T9."
+      "any readout at all on cells B or E, on any channel. Checklist T2 -- still the phase's kill condition.",
+      "the between-domain SD of the paired delta in nats. Checklist T3.",
+      "the PR-053 TRAIN-only direction file for O2. Checklist T5.",
+      "any smoke run under a live hook. Checklist T10.",
+      "SUPERSEDED 2026-09-08: the cells-B/E token-role map (T1), the analyzer (T7), its mutation harness (T8) and the independent verifier (T9) DO now exist -- see each item's closed_evidence."
     ],
     "analyzer": "scripts/dcs_ts_pr058_symmetry.py",
-    "analyzer_commit": null,
-    "analyzer_exists": false,
-    "analyzer_committed_before_outcome": false,
+    "analyzer_commit": "9ee2170c",
+    "analyzer_exists": true,
+    "analyzer_committed_before_outcome": true,
     "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.",
     "_loader_will_refuse_extraction_and_that_is_correct": "scripts/dcs_ts_prereg.py --for-extraction REFUSES this file today, on artifacts.analyzer_exists == false and on every BLOCKING checklist item below. That refusal IS the design working. --check without --for-extraction loads cleanly, which is the state a FROZEN-but-not-yet-runnable preregistration should be in.",
     "report": "reports/DCS_TS_PR058_SYMMETRY.md",
@@ -672,7 +672,8 @@
     "prompt_validation_report_sha16_at_freeze": "b799805ff9d23e74",
     "literature_update_sha16_at_freeze": "2afeaa4447950180",
     "pair_common_sha16_at_freeze": "33da1f4a5a4bdae5",
-    "_these_hashes_are_witnesses_not_gates": "The loader file-verifies only bank and pool hashes. These five are recorded so that a later reader can tell whether the artifact this design was written against is the artifact they are holding. A mismatch is a signal to re-read, not an automatic refusal."
+    "_these_hashes_are_witnesses_not_gates": "The loader file-verifies only bank and pool hashes. These five are recorded so that a later reader can tell whether the artifact this design was written against is the artifact they are holding. A mismatch is a signal to re-read, not an automatic refusal.",
+    "_analyzer_exists_evidence": "Flipped 2026-09-08. scripts/dcs_ts_pr058_symmetry.py is on disk, sha16 8810217ae44fc81d, committed at 9ee2170c with a clean working tree, and its own --self-test (55 checks, 0 failed) and --mutate (52/52 refusals) were re-run before this flag was flipped. `analyzer_committed_before_outcome` is true in the only sense that matters here: NO cell-B or cell-E row has been scored by any run on any channel, so no outcome exists for it to have been written against. The analyzer's own identity gate reports match=True."
   },
   "seeds": {
     "generation": "greedy, deterministic",
@@ -702,7 +703,9 @@
       "item": "produce the token-role map for cells B and E: add a --cell argument to scripts/dcs_ts116m_token_roles.py (or a sibling), add a concept_word role class, and re-derive the four downstream-neutral criteria at `following`. REPORT the subtoken count of ' bomb'/' knife'/' gun' at the query row -- if it is not 1 where ' button' is 1, the dose-matched last-subtoken-only comparison becomes the headline.",
       "status": "NOT DONE -- the existing script hardcodes cell C",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only, no weights. Added --cell {C,B,E} to scripts/dcs_ts116m_token_roles.py (sha16 3260bc83508ca37c); the default cell-C path is UNCHANGED and was regression-checked against the committed artifact (240/240 records byte-identical apart from four newly added fields). Cell B -> outputs/dcs_ts/token_roles_ts116m_cellB.json.gz (sha16 ceb5d1be171cd23e; gzip embeds a build timestamp, so a re-run changes the FILE hash and not the records) + reports/DCS_TS116M_TOKEN_ROLE_MAP_CELLB.md; cell E -> outputs/dcs_ts/token_roles_ts116m_cellE.json.gz (sha16 3310cf9171de9bf2) + reports/DCS_TS116M_TOKEN_ROLE_MAP_CELLE.md. 6780 prompts each (113 domains x 2 codewords x 3 concepts x 10 slots). OBSERVED, both cells: ONE query-side role census in 6780/6780 prompts -- answer_format_instruction 8, user_instruction_scaffold 11, punctuation 3, concept_word 1, chat_scaffold 1, response_header 4 = 28 query-side tokens (23 content, 5 scaffold), with codeword 0 and neutral_content 0. CONCEPT_WORD IS NON-EMPTY: 1 token per prompt in 6780/6780, which REFUTES any reading of the cell-C figure (0 tokens in 6900/6900) as a property of the bank -- it is a property of the cell, and the mirror is exact, codeword 0 here where concept_word was 0 there. DOSE PARITY HOLDS: the final target_surface occurrence inside the query is ONE subtoken at rel_end -10 in 6780/6780 prompts on both cells (' bomb' 13054, ' knife' 22145, ' gun' 6166, each a single Llama-3.1 token), so the dose-matched last-subtoken-only comparison of intervention.dose._dose_must_be_equal_across_the_three_cells is NOT triggered and cell E is a 1-row cut compared against cell C's 1-row cut. The `following` read site survives unchanged: rel_end -9, ' actually', token id 3604, all four downstream-neutral criteria in 6780/6780 (strictly after every target occurrence 6780/6780; token-identical across the three concepts at matched prompt_id 2260/2260; no bomb/knife/gun substring; present in every prompt), ranked 1 of 9 qualifying offsets. So read_site._following_in_cells_B_and_E_IS_NOT_YET_VERIFIED is now VERIFIED and H4 is not CANNOT ANSWER on read-site grounds. TWO CELL-C PREMISES ARE VIOLATED BY CONSTRUCTION ON B/E and are reported rather than suppressed, named in source (CELL_BE_EXPECTED_VIOLATIONS) before the run: C_query_tail_token_ids_identical_across_concepts 4520/4520 and D_no_bomb_knife_gun_token_anywhere_inflection_aware 6780/6780 -- the query names the concept here, which is leakage.cell_BE_caveat, not a defect. One UNEXPECTED finding, cell B only: H_codeword_is_one_subtoken fails on 6 of 33900 target-surface occurrences -- 4 x 'BOMB' (theatre_backstage) and 2 x '-knife' (radiology_suite), ALL inside the DEMONSTRATION block, none in the query span, so the destination-row dose is untouched; cell E is 0/33900. Checks A and A2 were repaired, not excused: they compared the target-surface occurrence count against n_codeword_occurrences, which on cells B/E counts a word that is not in the prompt at all (5 vs 0 on every row); they now select n_concept_occurrences when target_surface IS the concept and pass 6780/6780 on both cells, with the mutation retargeted so it still goes RED. 26/26 mutations RED on cell B.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T2",
@@ -723,7 +726,9 @@
       "item": "confirm target_surface_positions resolves the final CONCEPT occurrence inside the query span on cells B/E with a per-row ledger, and that the empty-needle guard fires on a planted empty target_surface",
       "status": "NOT DONE",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only. score_behavior.target_surface_positions was exercised at the real call site (demo_key_positions -> query_span_positions -> target_surface_positions, on the same templated string ds_common.apply_template produces) over the FULL primary population: 6780 cell-B rows + 6780 cell-E rows = 13560 rows, 6 banks, semantic_one_word, n_examples 4, after the three whole-population exclusions. AGREEMENT 6780/6780 on cell B and 6780/6780 on cell E (13560/13560) against an INDEPENDENT re-derivation of 'the final CONCEPT occurrence inside the query span' written for this check and not imported from the resolver. Realised dose 1 token in 13560/13560; end-relative index -10 in 13560/13560; decoded ' bomb' 4520, ' knife' 4520, ' gun' 4520; the token immediately after it is rel_end -9 ' actually' in 13560/13560, which is the declared `following` read site. Zero rows resolved outside the query span, zero rows fell back to a demonstration occurrence, zero refusal reasons. EMPTY-NEEDLE GUARD: on a PLANTED empty target_surface (never present on these rows on disk) the resolver returned ([], 'empty_target_surface') in 100/100 trials, 50 per cell, so the guard fires before any search rather than matching at every token.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T5",
@@ -737,28 +742,36 @@
       "item": "verify at THIS call site that the dose-matched nondemo draw protects query_span_positions and that the 3 draws produce 3 DISTINCT output hashes. The identical control-band collapse has been published twice.",
       "status": "NOT DONE",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08, CPU only, AT THE CALL SITE, with its residual named. Verified read-only over the same 13560-row population by calling score_behavior.knockout_key_set('nondemo_matched_d{1,2,3}', demo_keys, seq_len, control_seed=20260908, protected=query_span_positions(...)) exactly as the two production call sites do (score_behavior.py:2636/2718 and :2283 pre-flight; scripts/dcs_extract_under_ko.py:368/499 -- all four pass protected=prot, and knockout_key_set forwards `protected` into nondemo_control_draw, whose pool is range(1, seq_len-1) minus demo keys MINUS the protected set). OBSERVED: the query span is protected in 13560/13560 rows (zero drawn key intersects query_span_positions, zero overlap rows); the THREE DRAWS ARE DISTINCT AS KEY SETS in 13560/13560 rows (zero collisions); match_ratio is 1.000 on every draw of every row (zero rows below 1, zero InfeasibleControl); the protected pool never falls below 117 keys against a demo count that must be matched. RESIDUAL, STATED RATHER THAN GLOSSED: the frozen item also asks for 3 DISTINCT OUTPUT HASHES, which requires generation and therefore GPU time -- it is not CPU-observable and is NOT claimed here. Distinct key sets are the necessary precondition (identical draws would guarantee identical outputs); the sufficient check stays a run-time VOID gate, enforced by dcs_ts_pr058_symmetry.control_band_gate and independently by dcs_ts_pr058_verifier check R3, whose mutation X3 is RED.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T7",
       "item": "write scripts/dcs_ts_pr058_symmetry.py; every threshold fetched through Prereg.require(), no numeric gate literal anywhere in the file, the underpowered return as a CODE PATH, the conjunctive four-condition success rule evaluated explicitly, and a refusal to emit any verdict when hook liveness is unclean",
       "status": "NOT DONE",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08 by re-running it myself rather than inheriting the claim. scripts/dcs_ts_pr058_symmetry.py (sha16 8810217ae44fc81d, committed 9ee2170c, working tree clean) --self-test: 55 checks, 0 FAILED. The self-test includes source_gate_literal_audit, which reads this analyzer's own source text and confirms no declared gate value appears as a numeric literal, so the no-literal claim is checked rather than asserted; the underpowered return, the conjunctive four-condition success rule, the refusal to emit a verdict on unclean liveness, and the refusal to render a delta before its baseline distribution are each exercised as named checks. The arm manifest binds 38 arms over the two confirmatory bomb banks.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T8",
       "item": "mutation-test that analyzer: a dead hook, an SDPA arm, a zero realised dose, an identical-hash control band, a row-level p-value, an absolute edit index, unequal per-arm populations, and a delta computed from the concept-token read site must EACH produce a refusal",
       "status": "NOT DONE",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08 by re-running it myself. scripts/dcs_ts_pr058_symmetry.py --mutate: 52/52 mutations produced a refusal. The eight corruptions this item names are each among them and each went RED: a dead hook, an SDPA arm, a zero realised dose, an identical-hash control band, a row-level p-value, an absolute edit index, unequal per-arm populations, and a delta computed from the concept-token read site.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T9",
       "item": "write the independent verifier, re-deriving every quantity from the arm directories rather than importing anything from the analyzer, and closing the R1-R5 classes that scripts/dcs_verify_kladder_rowlevel.py names (silent denominator, sign inversion, anchor-by-copy, population swap/drift, vacuous-by-omission, producer picks arms)",
       "status": "NOT DONE",
       "blocking": true,
-      "done": false
+      "done": true,
+      "closed_evidence": "CLOSED 2026-09-08. Written: scripts/dcs_ts_pr058_verifier.py (sha16 395a8ed9b82d1245). It imports NOTHING from dcs_ts_pr058_symmetry.py -- not the run-finder, the split loader, the bank loader, the Prereg loader or the arm-tag rule -- and re-derives all of them from the frozen file read as plain JSON plus the arm directories on disk; assert_independent_of_analyzer() enforces that against this file's own source text and is the first line of --self-test, so the independence is checked and not merely claimed. Check classes: R1 silent denominator (usable readouts, never JSON lines, and uniform per domain), R2 row-level arm identity (cell/dose/channel/scope on every row), R3 anchor-by-copy plus the collapsed control band, R4 population swap and drift (rows JOINED to the pinned bank by prompt_id and prompt_sha16 and to the frozen split manifest, plus a re-hash of each pinned bank file), R5 vacuous-by-omission and producer-picks-arms (the expected arm set and the expected summary keys are declared IN THE VERIFIER from the preregistration), R6 VOID-before-outcome (eager read back from the loaded config, hook_fired_count, n_decode_edits == 0, realised == expected, non-zero realised dose, index == len(input_ids)+rel_end, no absolute index reused across differing sequence lengths, no outcome at the refused position_NOT_USED read site), R7 the domain independence unit, R8 equal populations across arms. A check that binds ZERO rows returns EMPTY, never PASS. OBSERVED: --self-test PASS (9 assertions, including that a CLEAN synthetic arm tree passes every check, that an EMPTY run root FAILS R5 instead of passing vacuously, and that a zero-bound check is EMPTY); --mutate 16/16 mutations CAUGHT BY THE NAMED CHECK. Run against the real run root today it correctly refuses on R5: no PR-058 arm has ever produced a complete run. Its independent arm-set derivation reproduces the analyzer's 38 arms EXACTLY when restricted to the two confirmatory banks (--banks button_bomb,basket_bomb); its default is 114 because the frozen file says the knife and gun arms ARE run and reported as registered descriptive arms, and that scope difference is recorded in declared_arm_tags() rather than reconciled away.",
+      "closed_on": "2026-09-08"
     },
     {
       "id": "T10",

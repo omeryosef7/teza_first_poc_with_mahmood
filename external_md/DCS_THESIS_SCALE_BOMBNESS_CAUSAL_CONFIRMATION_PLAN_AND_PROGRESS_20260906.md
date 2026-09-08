@@ -4662,3 +4662,48 @@ a program both see: `C1_scope_note`, the `NOT_APPLICABLE` clause detail, and the
 **70 / 0** and **41/41 RED**; h2/test **30 arms loaded, 0 check failures**; 37 nearest-neighbour tests
 passed. **No outcome value, p-value or verdict was printed, read or reported** during either fix —
 the analyzer was corrected without anyone seeing what it will say.
+
+---
+
+## DCS-R-133 — PHASE 10's CPU blockers close; `concept_word` is NON-EMPTY on cells B/E
+*2026-09-08*
+
+Loader refusals on `configs/dcs_ts_pr058_phase10.json` go **10 → 3**. Only **T2** (job 869869,
+running), **T3** and **T10** remain, all GPU or downstream of it.
+
+**The finding, and it refutes the premise I handed the agent.** I asked it to confirm or refute
+whether `concept_word` is non-empty on cells B/E, given it is **0 tokens in 6900/6900** on cell C.
+It is **non-empty** — and the reason is that emptiness on C was never a property of the *bank*, it is
+a property of the *cell*. One role census holds in **6,780/6,780** on both B and E:
+`answer_format_instruction` 8, `user_instruction_scaffold` 11, `punctuation` 3, **`concept_word` 1**,
+`chat_scaffold` 1, `response_header` 4 = 28 query-side tokens, with **`codeword` 0** and
+`neutral_content` 0. **The exact mirror of cell C.**
+
+Seeing it at all required making the role precedence **cell-aware**: `target_surface` *is* the
+concept on B/E, so under the original codeword-first precedence the map would have reported
+`concept_word: 0` on the very cells whose query names the concept — a matcher that could not see the
+thing it existed to find, which is a class this project has now recorded several times.
+
+**Dose parity holds**, which matters for PHASE 10 being answerable at all: ` bomb`/` knife`/` gun`
+are **one subtoken each at `rel_end −10` in 6,780/6,780**, exactly as ` button` is — so the
+dose-matched fallback is not triggered, and the `following` read site survives (`−9`, `' actually'`,
+all four criteria 6,780/6,780). **H4 is not CANNOT ANSWER on read-site grounds.**
+
+**T1** added `--cell {C,B,E}`; cell C's default path is regression-checked **240/240 byte-identical**
+to the committed artifact. **T4** 13,560/13,560 agreement at the real call site, against a
+re-derivation written for the check rather than imported, with the empty-needle guard firing 100/100
+on planted input. **T6** query span protected in 13,560/13,560, three draws distinct as key sets with
+**0 collisions**, smallest protected pool 117 — with the residual named rather than glossed: the
+"3 distinct *output* hashes" half needs generation and is **not** claimed, staying a run-time VOID
+gate. **T7/T8** re-run: 55/0 and 52/52 RED. **T9** an independent verifier whose
+`assert_independent_of_analyzer()` enforces the independence against its own source as its first
+self-test line — a verifier sharing the analyzer's assumptions verifies nothing.
+
+**Three new defects, recorded rather than repaired away.** **PR058-D4**: 6 of 33,900 multi-subtoken
+concept occurrences on cell B (4× `BOMB`, 2× `-knife`), all in the demo block, none in the query
+span; cell E has 0. **PR058-D5**: checks A/A2 were comparing the target-surface count against
+`n_codeword_occurrences` — a word that does not occur in a B/E prompt at all, so 5 vs 0 on every row;
+repaired, mutation retargeted, now 6,780/6,780 PASS. **PR058-D6**: the committed cell-C token map
+excludes **1 domain (115)** while PR-048 now names **3 (113)** — printed as a `[WARN]` with a
+recorded `exclusion_readback` rather than silently repaired, since repairing it would rewrite a
+pinned artifact.

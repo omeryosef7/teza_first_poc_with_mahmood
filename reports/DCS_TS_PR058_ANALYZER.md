@@ -195,3 +195,211 @@ $P scripts/dcs_ts_pr058_symmetry.py --plan               # 38 arms
 $P scripts/dcs_ts_pr058_symmetry.py                      # REFUSES: no arm has run
 $P scripts/dcs_ts_prereg.py --check --for-extraction configs/dcs_ts_pr058_phase10.json   # 10 refusals
 ```
+
+---
+
+## 6. CPU checklist closure, 2026-09-08 — T1, T4, T6, T7, T8, T9
+
+Everything in this section was run on the login node with
+`/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`. **No GPU, no SLURM
+submission, no network.** GPU job 869869 (cells B and E, `semantic_one_word`, doses 0 and 4, no
+intervention) is item **T2** and is *not* touched here; T2, T3 and T10 remain open.
+
+### 6.1 T1 — the cells-B/E token-role map
+
+`scripts/dcs_ts116m_token_roles.py` grew a `--cell {C,B,E}` argument. The **default path is
+unchanged**: cell C still binds `configs/dcs_ts_pr048.json`, still excludes `restaurant_kitchen`
+only, still writes `outputs/dcs_ts/token_roles_ts116m.json.gz`, and a 4-domain regression run
+reproduced the committed artifact on **240/240 records byte-identically** apart from four newly
+added record fields (`cell`, `condition`, `target_surface`, `target_surface_is_concept`). Cells B
+and E bind `configs/dcs_ts_pr058_phase10.json`, its **three** whole-population exclusions and its
+113 domains, and write their own artifacts and reports.
+
+| | cell B | cell E |
+|---|---|---|
+| records | **6,780** (113 × 2 × 3 × 10) | **6,780** |
+| artifact | `outputs/dcs_ts/token_roles_ts116m_cellB.json.gz` `ceb5d1be171cd23e` | `..._cellE.json.gz` `3310cf9171de9bf2` |
+| | *(gzip embeds a build timestamp: a re-run changes the file hash, not the records)* | |
+| report | `reports/DCS_TS116M_TOKEN_ROLE_MAP_CELLB.md` | `..._CELLE.md` |
+| distinct query-side role censuses | **1** in 6,780/6,780 | **1** in 6,780/6,780 |
+| query-side tokens per prompt | **28** (23 content + 5 scaffold) | **28** |
+| `concept_word` | **1** | **1** |
+| `codeword` | **0** | **0** |
+| `neutral_content` | **0** | **0** |
+
+**The census, both cells:** `answer_format_instruction` 8, `user_instruction_scaffold` 11,
+`punctuation` 3, **`concept_word` 1**, `chat_scaffold` 1, `response_header` 4.
+
+**`concept_word` IS NON-EMPTY on cells B and E — the cell-C figure was a property of the cell, not
+of the bank.** Cell C reports `concept_word` = 0 tokens in 6,900/6,900 prompts; cells B and E
+report **1 token in 6,780/6,780**, and the mirror is exact — `codeword` is **0** here where
+`concept_word` was 0 there. The role precedence had to be made cell-aware to see it: `target_surface`
+holds the concept in B/E, so under the original codeword-first precedence every one of those tokens
+would have been labelled `codeword` and the map would have reported `concept_word: 0` on the very
+cells whose query names the concept. The flip is conditioned on `target_surface == concept`, which
+is why cell C is bit-identical.
+
+**Dose parity holds, so the fallback comparison is not triggered.** The final `target_surface`
+occurrence inside the query is **one subtoken at `rel_end −10` in 6,780/6,780 prompts on both
+cells** — ` bomb` = 13054, ` knife` = 22145, ` gun` = 6166, each a single Llama-3.1 token, exactly
+as ` button` = 3215 is. Cell E is therefore a **1-row cut compared against cell C's 1-row cut**, and
+`intervention.dose._dose_must_be_equal_across_the_three_cells_or_the_symmetry_is_not_a_symmetry`
+does not fire.
+
+**The `following` read site survives into cells B and E.** `rel_end −9`, `' actually'`, id **3604**,
+all four downstream-neutral criteria in **6,780/6,780** (strictly after every target occurrence
+6,780/6,780; token-identical across the three concepts at matched `prompt_id` **2,260/2,260**; no
+`bomb`/`knife`/`gun` substring; present in every prompt), ranked **1 of 9** qualifying offsets. So
+`read_site._following_in_cells_B_and_E_IS_NOT_YET_VERIFIED` is now **verified**, and **H4 is not
+CANNOT ANSWER on read-site grounds**.
+
+**Two cell-C premises are violated by construction on B/E, and are reported rather than
+suppressed.** Named in source (`CELL_BE_EXPECTED_VIOLATIONS`) *before* the run, still executed,
+still counted, excluded from the exit status only:
+`C_query_tail_token_ids_identical_across_concepts` **4,520/4,520** and
+`D_no_bomb_knife_gun_token_anywhere_inflection_aware` **6,780/6,780**. The query names the concept
+here; that is `leakage.cell_BE_caveat`, not a defect.
+
+**PR058-D4 (new, cell B only) — six multi-subtoken concept occurrences, all upstream of the query.**
+`H_codeword_is_one_subtoken` fails on **6 of 33,900** target-surface occurrences in cell B: four
+`BOMB` (uppercase, `theatre_backstage`) and two `-knife` (hyphenated, `radiology_suite`). **All six
+sit inside the demonstration block; none is in the query span**, so the destination-row dose is
+untouched. Cell E is **0/33,900**. This is the same shape as the cell-C map's item 4 (`BASKET` is
+three subtokens where ` basket` is one) and it is recorded, not repaired.
+
+**PR058-D5 (new) — checks `A` and `A2` were reading the wrong bank field on B/E, and were repaired
+rather than excused.** Both compared the re-derived `target_surface` occurrence count against
+`n_codeword_occurrences`. On a cell-B row that compares a count of ` bomb` (5) against a count of
+` button` (0) — a **180/180, then 6,780/6,780 "failure" that is a wrong key, not a defect**: the
+recorded matcher/scope bug class. They now select `n_concept_occurrences` when `target_surface` *is*
+the concept, and pass **6,780/6,780** on both cells; the mutation that proves `A` can fail was
+retargeted to the field the check selects, or it would have come back GREEN. **26/26 mutations RED**
+on cell B.
+
+**PR058-D6 (new, cell C, not repaired here) — the committed cell-C map and PR-048 disagree about the
+exclusion set.** The map hardcodes `{restaurant_kitchen}` and 115 domains; `configs/dcs_ts_pr048.json`
+now names **three** whole-population exclusions (`subway_station` C-087 and `school_campus`
+C-075/R-108 were added after the map was built), which implies 113. The new `--cell` path reads the
+exclusion set back from the bound preregistration: excluding a domain the preregistration does *not*
+name is **fatal**; the reverse is a printed `[WARN]` and a recorded `exclusion_readback` block,
+because repairing it would rewrite a committed artifact whose sha16 PR-058 pins as a witness. Cells
+B and E agree with PR-058 exactly.
+
+### 6.2 T4 — `target_surface_positions` on cells B and E
+
+Exercised at the real call site (`demo_key_positions` → `query_span_positions` →
+`target_surface_positions`, on the same templated string `ds_common.apply_template` produces) over
+the **full primary population: 6,780 cell-B + 6,780 cell-E = 13,560 rows**, six banks,
+`semantic_one_word`, `n_examples` 4, after the three exclusions.
+
+| quantity | cell B | cell E |
+|---|---|---|
+| agreement with an **independent** re-derivation of "final concept occurrence inside the query span" | **6,780 / 6,780** | **6,780 / 6,780** |
+| realised dose | 1 token, 6,780/6,780 | 1 token, 6,780/6,780 |
+| end-relative index | **−10**, 6,780/6,780 | **−10**, 6,780/6,780 |
+| decoded | ` bomb` 2260, ` knife` 2260, ` gun` 2260 | same |
+| the `following` token | `−9 ' actually'`, 6,780/6,780 | 6,780/6,780 |
+| resolved outside the query span / fell back to a demo occurrence / refusal reasons | 0 / 0 / 0 | 0 / 0 / 0 |
+
+The comparison rule was **written for this check, not imported from the resolver** — a verifier that
+re-runs the producer's own code and compares it with itself asserts `None == None`.
+
+**Empty-needle guard:** on a *planted* empty `target_surface` (never present on these rows on disk)
+the resolver returned `([], "empty_target_surface")` in **100/100** trials, 50 per cell — before any
+search, so it never matches at every token.
+
+### 6.3 T6 — the dose-matched nondemo draw, at this call site
+
+Read-only, over the same 13,560 rows, calling
+`knockout_key_set("nondemo_matched_d{1,2,3}", demo_keys, seq_len, control_seed=20260908,
+protected=query_span_positions(...))` exactly as the production call sites do. The protection is
+plumbed at **four** call sites — `src/boombness/score_behavior.py:2636`/`:2718` (main loop),
+`:2283` (pre-flight) and `scripts/dcs_extract_under_ko.py:368`/`:499` — and `knockout_key_set`
+forwards `protected` into `nondemo_control_draw`, whose pool is `range(1, seq_len-1)` minus the demo
+keys **minus the protected set**.
+
+| observed | value |
+|---|---|
+| rows where **no** drawn key intersects `query_span_positions` | **13,560 / 13,560** |
+| rows where the three draws are **distinct key sets** | **13,560 / 13,560** (0 collisions) |
+| draws with `match_ratio` < 1.000 | **0** |
+| `InfeasibleControl` refusals | **0** |
+| smallest protected pool seen | **117** keys |
+
+**Residual, stated rather than glossed.** The frozen item also asks for **3 distinct *output*
+hashes**. That requires generation and therefore GPU time; it is not CPU-observable and is **not**
+claimed. Distinct key sets are the necessary precondition — identical draws would guarantee
+identical outputs — and the sufficient check stays a run-time VOID gate, enforced by
+`dcs_ts_pr058_symmetry.control_band_gate` and independently by the new verifier's **R3**, whose
+mutation `X3` is RED.
+
+### 6.4 T7 / T8 — the analyzer, re-run rather than inherited
+
+`--self-test` **55 checks, 0 failed**; `--mutate` **52/52 mutations produced a refusal**, including
+each of the eight T8 names it in terms (dead hook, SDPA arm, zero realised dose, identical-hash
+control band, row-level p-value, absolute edit index, unequal per-arm populations, a delta from the
+concept-token read site). `source_gate_literal_audit` reads the analyzer's own source and confirms
+no declared gate value appears as a numeric literal, so the no-literal property is **checked**.
+`analyzer_identity_gate` now reports `match=True`: **PR058-D1 is resolved by the rename**.
+
+### 6.5 T9 — `scripts/dcs_ts_pr058_verifier.py`, the independent verifier
+
+Imports **nothing** from the analyzer — not the run-finder, the split loader, the bank loader, the
+`Prereg` loader or the arm-tag rule — and re-derives all of them from the frozen file read as plain
+JSON plus the arm directories on disk. `assert_independent_of_analyzer()` enforces that against the
+file's own source text and is the **first** line of `--self-test`, so the independence is checked,
+not claimed.
+
+| class | what it closes |
+|---|---|
+| **R1** | silent denominator — usable readouts, never JSON lines, and uniform per domain |
+| **R2** | row-level arm identity — cell, channel, dose and scope on **every row**, so an arm swap fails |
+| **R3** | anchor-by-copy, and the control band that is secretly n = 1 |
+| **R4** | population swap/drift — rows **joined** to the pinned bank by `prompt_id` *and* `prompt_sha16` and to the frozen split manifest, plus a re-hash of each pinned bank file |
+| **R5** | vacuous-by-omission / producer-picks-arms — the expected arm set and summary keys are declared **in the verifier**, from the preregistration |
+| **R6** | VOID before outcome — eager read back from the loaded config, `hook_fired_count`, `n_decode_edits == 0`, realised == expected, non-zero realised dose, `index == len(input_ids)+rel_end`, no absolute index reused across differing sequence lengths, no outcome at the refused `position_NOT_USED` site |
+| **R7** | the domain independence unit (row-level FPR 0.2000) |
+| **R8** | equal populations across the arms of one cell (P-N8) |
+
+A check that binds **zero** rows returns `EMPTY`, never `PASS`.
+
+Observed: `--self-test` **PASS** (9 assertions, including that a clean synthetic arm tree passes
+every check, that an **empty run root FAILS R5** rather than passing vacuously, and that a
+zero-bound check is `EMPTY`); `--mutate` **16/16 mutations caught by the named check**. Run against
+the real run root today it correctly refuses on **R5** — no PR-058 arm has ever produced a complete
+run.
+
+**A recorded scope divergence, not reconciled away.** The verifier's independent arm-set derivation
+reproduces the analyzer's **38** arms exactly under `--banks button_bomb,basket_bomb`. Its *default*
+is **114**, because `installation.THE_ASYMMETRY…what_is_still_run` says the knife and gun arms **are
+run and are reported** as registered descriptive arms, and an arm that is run is an arm a verifier
+must be able to see. Two independent derivations disagreeing about scope is what two independent
+derivations are for; it is recorded in `declared_arm_tags()`.
+
+### 6.6 Checklist state after this session
+
+`done: true` with `closed_evidence` and `closed_on`: **T1, T4, T6, T7, T8, T9**.
+`artifacts.analyzer_exists` flipped to **true** (`analyzer_commit` `9ee2170c`, working tree clean,
+self-test and mutate re-run before the flip; no cell-B or cell-E row has been scored by any run, so
+`analyzer_committed_before_outcome` is true in the only sense available).
+
+Still open, and each is GPU or downstream of GPU: **T2** (the readout on cells B/E — the phase's
+kill condition, job 869869), **T3** (the between-domain SD on validation only), **T10** (the smoke
+run under a live hook), plus the non-blocking **T5** (the PR-053 train-only direction file) and
+**T11** (fair-share coordination).
+
+### 6.7 Reproduce
+
+```
+P=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
+$P scripts/dcs_ts116m_token_roles.py --cell B          # 19/22 PASS, 2 expected-on-B, 6780 records
+$P scripts/dcs_ts116m_token_roles.py --cell E          # 20/22 PASS, 2 expected-on-E, 6780 records
+$P scripts/dcs_ts116m_token_roles.py --cell B --mutate --limit-domains 3   # 26/26 RED
+$P scripts/dcs_ts_pr058_verifier.py --self-test        # PASS
+$P scripts/dcs_ts_pr058_verifier.py --mutate           # 16/16 caught
+$P scripts/dcs_ts_pr058_verifier.py                    # REFUSES on R5: no arm has run
+$P scripts/dcs_ts_pr058_symmetry.py --self-test        # 55 checks, 0 failed
+$P scripts/dcs_ts_pr058_symmetry.py --mutate           # 52/52 refusals
+$P scripts/dcs_ts_prereg.py --check configs/dcs_ts_pr058_phase10.json                  # clean
+$P scripts/dcs_ts_prereg.py --check --for-extraction configs/dcs_ts_pr058_phase10.json # 3 refusals
+```
