@@ -92,9 +92,63 @@ domains, so a null there would look identical whether or not the axis is causall
 **demoted to exploratory**; §10.2's **projection-out becomes the primary causal test**, since it
 acts on a bomb prompt where the concept does install.
 
+## PHASE 9 — the causal test ran. Here is the answer.
+
+**We ran it: 30 arms, 6,900 rows, on the untouched TEST split.** Two scopes, and they say different
+things.
+
+**Single position (the codeword site, layer 9): the axis is decodable, the edit reaches it, and the
+model does not follow.** The frozen probe moved exactly as intended — P(bomb) fell, 0.392 in margin,
+p at the resolution floor — so this is not a failed edit. The semantic readout moved **−0.003**
+(p = 0.81), and the norm-matched random control did not move either. The preregistered wording is
+*"decodable but not causally used **under this intervention, at this dose, without an upper-bound
+control**"* — and those qualifiers are part of the claim, not trimmable. The realised dose is
+**9.4% of the cell residual**. A null at 9.4% is weak evidence of non-use, and I would not report it
+without that number attached.
+
+**All positions, layers 7–14: the readout moves a lot — and it is not the concept direction doing
+it.** The arm moved the readout **−0.642** (p at floor, 21/23 domains). But a **concept-free,
+norm-matched, equal-magnitude *orthogonal* edit moved it +1.238 — 1.93× further, in the opposite
+direction**. At the single-position scope that ratio is 49.75×. The site is perturbation-sensitive
+at this norm, so the large movement cannot be attributed to the concept axis. The analyzer calls
+this **NOT A CAUSAL RESULT** rather than a positive, and I think that is right.
+
+**What we could not test at all, and it matters for how much the above is worth.** The upper-bound
+arm (§10.1's full-state patch) **never ran** — its donor is a C_knife prompt and knife installs in
+0/113 domains, so there is no donor to patch from. That is *unbuildable*, **not** "H1 showed no
+effect". So a positive here could never have been validated against a full patch either. The
+component-replacement arm and the shuffled-label control are likewise absent by construction; all
+four entered the multiplicity correction at p = 1.0 as CANNOT ANSWER, not as evidence. Of 54
+preregistered arms, **30 were constructible**. The probe outcome is scoped to the **button** bank
+only.
+
+**A correction I owe you**, because I had it backwards in an earlier read: the probe moved in the
+*intended* direction all along. Our own report labelled it a failure for two days because one
+outcome's expected sign was applied to the other's test. Found by the scheduled adversarial review,
+fixed, re-run — both verdict classes held.
+
+## PHASES 10, 11 and 13 — three separate walls, none of them effort
+
+**PHASE 13 (representation → behaviour) is CANNOT ANSWER**, and for a sharper reason than low power:
+at the band scope **the mediator is a constant** (CV 0.019, ICC −0.011). A correlation against a
+constant is *undefined*, and more domains cannot fix it. At the single-position scope the mediator
+varies but there is no outcome to mediate.
+
+**PHASE 11's declared primary contrast is CANNOT ANSWER.** Its dose-matched control needs m rows
+drawn from a 28-row span *excluding* the scope's own rows; the three largest scopes need 22, 23 and
+28 from pools of 6, 5 and 0. That is arithmetic, not a shortage of GPU. Those scopes are demoted —
+still run and reported, but their success condition is unevaluable.
+
+**PHASE 10 is blocked on our own instrument, not the model.** Cells B/E scored 5× below the
+engagement gate — because the forced-choice option set was built once per bank and offers `button`,
+a word that **never appears** in those prompts. One live option is not a forced choice. The model
+was in fact confident and on-topic (` Threat` 35%, ` Explos` 23%), and cell E shows the benign remap
+**installing**: food-family answers rise 0.8% → 24.6%. Repair first, then re-run.
+
 ## Not established
 
-Causal use is **untested** — no intervention has been run this phase, on either arm. And one
+Causal use is now **tested and answered above** — a scoped negative at one site, and not-a-causal-result
+at the other. What remains unestablished: one
 confound has no adequately powered instrument on this dataset: the arms differ in **discourse
 register**, because naturally written text about bomb hedges at 13.72% versus 0.20% (knife) and
 2.33% (gun). Three attempts failed for
