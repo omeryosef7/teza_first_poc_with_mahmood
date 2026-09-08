@@ -1480,6 +1480,48 @@ def holm(pvals: Dict[str, float], alpha: float, m: Optional[int] = None) -> Dict
             "n_rejected": sum(1 for v in out.values() if v["reject"])}
 
 
+def holm_with_absent(pr: Prereg, observed: Dict[str, float]) -> Dict[str, Any]:
+    """`A10`. Holm over the DECLARED family, with structurally absent members entering at p = 1.0.
+
+    `multiplicity._absent_members_enter_at_p_1` -- "A declared member that is not run enters Holm
+    at p=1.0 rather than being dropped" -- had a docstring in `holm()` and NO production call site
+    (the amendment's `_enforcement_gap`; the repo's "threshold published but never enforced"
+    pattern, now committed four times). This is that call site, and it is the ONLY one the
+    analysis uses.
+
+    `m` is `len(family_members(pr))` -- SIX -- and is never `len(observed)`. Shrinking the family
+    to whichever members turned out to be buildable would loosen every surviving threshold AFTER
+    the fact: with m=6 the two reportable members face alpha/6 = 0.008333 and alpha/5 = 0.01; with
+    m=2 they would face alpha/2 and alpha. A p of 1.0 sorts last and is never rejected, so absent
+    members cost nothing except the correction they were declared to carry.
+
+    Refuses an observed p-value for a member the family does not declare: a p attached to a
+    non-member is a hypothesis smuggled into a corrected family.
+    """
+    members = family_members(pr)
+    alpha = float(pr.require("primary", "alpha"))
+    unknown = sorted(set(observed) - set(members))
+    if unknown:
+        raise Refusal(
+            "Holm was handed p-value(s) for %s, which the declared family %s does not contain. A "
+            "member added at analysis time is not corrected for and is not preregistered (C-106)."
+            % (unknown, members))
+    absent = [k for k in members if k not in observed]
+    pv = {k: (float(observed[k]) if k in observed else 1.0) for k in members}
+    out = holm(pv, alpha, m=len(members))
+    if out["m"] != len(members):
+        raise Refusal("Holm ran at m=%d over a family of %d declared members" % (out["m"], len(members)))
+    out["family"] = "PHASE9_CAUSAL"
+    out["members_declared"] = members
+    out["members_observed"] = sorted(observed)
+    out["absent_members_at_p1"] = absent
+    out["_m_is_not_reduced"] = (
+        "m = %d, the number of DECLARED members, not %d, the number that could be built. The "
+        "absent members %s enter at p = 1.0 (multiplicity._absent_members_enter_at_p_1) and are "
+        "never dropped." % (len(members), len(observed), absent))
+    return out
+
+
 def domain_group_permutation(per_domain_pre: Dict[str, List[float]],
                              per_domain_post: Dict[str, List[float]],
                              n_perm: int, seed: int) -> Dict[str, Any]:
@@ -1596,35 +1638,124 @@ def _sign(x: float) -> int:
     return (x > 0) - (x < 0)
 
 
+#: Verdict CLASSES. A reader must be able to tell these apart without reading the sentence, and a
+#: downstream program must not be able to collapse two of them by string-matching. They mean
+#: different things: VOID says the instrument did not do what it claimed; CANNOT ANSWER says the
+#: design cannot decide; NEGATIVE is a scientific finding with mandated wording; SUCCESS is a
+#: causal claim. `primary.void` and `primary.cannot_answer` are separate lists in the frozen file
+#: for exactly this reason.
+VERDICT_VOID = "VOID"
+VERDICT_CANNOT_ANSWER = "CANNOT ANSWER"
+VERDICT_NEGATIVE = "NEGATIVE"
+VERDICT_SUCCESS = "SUPPORTS"
+VERDICT_NOT_CAUSAL = "NOT A CAUSAL RESULT"
+
+
+def format_realised_dose(dose: Optional[Dict[str, Any]]) -> str:
+    """The realised dose of the edit, in the words the frozen persist list uses.
+
+    `alpha` is NOT the dose of a `project_out` edit -- `_project_out_is_scale_free`: "its realised
+    dose is `frac_cellmean_spread_removed`, NOT alpha". A null reported without it is a claim that
+    an unmeasured amount of an unmeasured thing did not matter.
+    """
+    if not dose:
+        raise NotMeasured(
+            "the realised dose of this arm was never recorded (no `realized_dose` in "
+            "metadata.json), so `frac_cellmean_spread_removed` / `cell_residual_frac_removed` do "
+            "not exist for it. A null MUST carry the dose it was measured at; without one the "
+            "sentence 'not causally used' would be scoped to nothing.")
+    bits = []
+    for key, d in sorted(dose.items()):
+        if not isinstance(d, dict):
+            continue
+        cell = d.get("cell_residual_frac_removed") or {}
+        frac = d.get("cellmean_frac_at_alpha1")
+        if frac is None:
+            frac = d.get("realized_variance_frac_removed")
+        if frac is None:
+            raise NotMeasured(
+                "arm dose entry %r carries no frac_cellmean_spread_removed (neither "
+                "`cellmean_frac_at_alpha1` nor `realized_variance_frac_removed`)." % key)
+        bits.append("%s: frac_cellmean_spread_removed=%.4f, norm_frac_removed=%s, "
+                    "cell_residual_frac_removed=%s"
+                    % (key, float(frac),
+                       ("%.4f" % d["realized_norm_frac_removed"])
+                       if d.get("realized_norm_frac_removed") is not None else "NOT MEASURED",
+                       {k: round(float(v), 4) for k, v in sorted(cell.items())} or "NOT MEASURED"))
+    if not bits:
+        raise NotMeasured("the arm's `realized_dose` block carries no per-direction entry")
+    return "REALISED DOSE -- " + " | ".join(bits)
+
+
 def verdict(success: Dict[str, Any], liveness_ok: bool, o1_moved: bool, o2_moved: bool,
-            power_ok: bool, wording: str) -> str:
-    """The ONLY place a verdict string is produced.
+            power_ok: bool, wording: str,
+            realised_dose: Optional[Dict[str, Any]] = None,
+            void_tripped: Sequence[str] = (),
+            cannot_answer_tripped: Sequence[str] = ()) -> Dict[str, Any]:
+    """The ONLY place a verdict is produced. Returns a CLASS and a sentence, never a bare string.
 
     Order matters and is fixed by the frozen file:
-      * an unclean hook is VOID FIRST -- `_and_the_other_negative`: a null with an unverified hook
+      * a tripped `primary.void` clause is VOID FIRST, and it is NOT a negative;
+      * an unclean hook is VOID too -- `_and_the_other_negative`: a null with an unverified hook
         is VOID, not a negative;
-      * then underpowered is CANNOT ANSWER;
+      * then `primary.cannot_answer` (including the underpowered branch) is CANNOT ANSWER, which
+        is not a negative either;
       * then the conjunction;
-      * then the mandated negative wording, which is a literal and cannot drift.
+      * then the mandated negative wording, which is a LITERAL and cannot drift.
+
+    A VOID AND A NEGATIVE MUST NEVER COLLAPSE. They are returned with distinct `verdict_class`
+    values so no downstream reader has to parse prose to tell "the instrument did not do what it
+    claimed" from "the instrument worked and the model did not use the axis".
+
+    EVERY NULL CARRIES ITS REALISED DOSE, structurally. `_things_that_must_not_be_said` /
+    the claim table ban a bare "not causally used"; rather than leave that to an editor, this
+    function REFUSES to emit any null-shaped verdict without `realised_dose`.
     """
+    def _null(cls: str, sentence: str) -> Dict[str, Any]:
+        dose = format_realised_dose(realised_dose)
+        return {"verdict_class": cls, "verdict": sentence + "  " + dose,
+                "realised_dose": realised_dose, "realised_dose_text": dose}
+
+    if void_tripped:
+        return {"verdict_class": VERDICT_VOID,
+                "verdict": ("VOID -- %d preregistered `primary.void` condition(s) are TRIPPED: %s. "
+                            "A void result is NOT a negative: it says the instrument did not do "
+                            "what it claimed, so the model was never asked the question."
+                            % (len(void_tripped), "; ".join(void_tripped))),
+                "void_tripped": list(void_tripped)}
     if not liveness_ok:
-        return ("VOID -- HOOK LIVENESS UNCLEAN. This arm's hooks did not demonstrably fire and "
-                "demonstrably change the state, so its null is a statement about the hook and not "
-                "about the model. Check hook liveness, dose, and the disabled-hook bridge FIRST.")
-    if not power_ok:
-        return ("CANNOT ANSWER -- power below the declared bar at the realised between-domain SD "
-                "of O2. Reported without a causal claim in either direction.")
+        return {"verdict_class": VERDICT_VOID,
+                "verdict": ("VOID -- HOOK LIVENESS UNCLEAN. This arm's hooks did not demonstrably "
+                            "fire and demonstrably change the state, so its null is a statement "
+                            "about the hook and not about the model. Check hook liveness, dose, "
+                            "and the disabled-hook bridge FIRST. This is NOT a negative."),
+                "void_tripped": ["liveness_gate"]}
+    if cannot_answer_tripped or not power_ok:
+        reasons = list(cannot_answer_tripped) or [
+            "power below the declared bar at the realised between-domain SD of O2"]
+        return {"verdict_class": VERDICT_CANNOT_ANSWER,
+                "verdict": ("CANNOT ANSWER -- %s. Reported WITHOUT a causal claim in either "
+                            "direction; this is neither a positive nor a negative."
+                            % "; ".join(reasons)),
+                "cannot_answer_tripped": reasons}
     if success.get("success"):
-        return ("SUPPORTS CLAIM C UNDER THIS INTERVENTION -- all four of mandate 10.5's conditions "
-                "hold together at these sites, this dose and this population.")
+        return {"verdict_class": VERDICT_SUCCESS,
+                "verdict": ("SUPPORTS CLAIM C UNDER THIS INTERVENTION -- all four of mandate "
+                            "10.5's conditions hold together at these sites, this dose and this "
+                            "population.")}
     if o1_moved and not o2_moved:
-        return wording
+        # The MANDATED WORDING, verbatim and first, so a reader (or a grep) sees the preregistered
+        # sentence and not a paraphrase of it. The dose is appended by `_null`, never substituted
+        # into the sentence.
+        return _null(VERDICT_NEGATIVE, wording)
     if (not o1_moved) and (not o2_moved):
-        return ("VOID PENDING DIAGNOSIS -- neither O1 nor O2 moved, which means the arm may not "
-                "have done what it claimed. Check hook liveness, dose and the disabled-hook "
-                "bridge before calling this a negative.")
-    return ("NOT A CAUSAL RESULT -- the conjunctive criterion is not met (%d/4 conditions). "
-            "Reported as such, per condition." % success.get("n_passed", 0))
+        return _null(VERDICT_VOID,
+                     "VOID PENDING DIAGNOSIS -- neither O1 nor O2 moved, which means the arm may "
+                     "not have done what it claimed. Check hook liveness, dose and the "
+                     "disabled-hook bridge before calling this a negative.")
+    return _null(VERDICT_NOT_CAUSAL,
+                 "NOT A CAUSAL RESULT -- the conjunctive criterion is not met (%d/4 conditions). "
+                 "Reported as such, per condition." % success.get("n_passed", 0))
 
 
 # ============================================================================================
@@ -1675,7 +1806,8 @@ def load_arm_run(run_dir: str) -> Dict[str, Any]:
            "summary": json.load(open(os.path.join(run_dir, "summary.json"))),
            "runmeta": json.load(open(os.path.join(run_dir, "RUNMETA.json"))),
            "results": load_jsonl(os.path.join(run_dir, "results.jsonl"))}
-    for key, fn in (("arm_manifest", CONTRACT_ARM),):
+    for key, fn in (("arm_manifest", CONTRACT_ARM), ("meta", "metadata.json"),
+                    ("arm_gate", "PR057_ARM_GATE.json")):
         p = os.path.join(run_dir, fn)
         out[key] = json.load(open(p)) if os.path.exists(p) else None
     for key, fn in (("liveness", CONTRACT_LIVENESS), ("probe", CONTRACT_PROBE)):
@@ -2121,15 +2253,119 @@ def selftest() -> int:
     # ---- the mandated negative wording -----------------------------------------------------------
     s_neg = evaluate_success({"p": 0.001, "delta": 0.8}, {"p": 0.7, "delta": 0.0},
                              good_ctl, good_dom, alpha=0.05)
+    _dose = {"v_bomb_specific|L9|alpha1": {"cellmean_frac_at_alpha1": 0.1656,
+                                           "realized_norm_frac_removed": 0.4069,
+                                           "cell_residual_frac_removed": {"C": 0.0936}}}
     v = verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
-                wording=MANDATORY_NEGATIVE_WORDING)
-    ck.add("negative_wording", "probe moves + readout does not => the literal mandated wording",
-           v == MANDATORY_NEGATIVE_WORDING, 1, v)
+                wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose)
+    ck.add("negative_wording", "probe moves + readout does not => the LITERAL mandated wording, "
+           "first, unparaphrased",
+           v["verdict"].startswith(MANDATORY_NEGATIVE_WORDING)
+           and v["verdict_class"] == VERDICT_NEGATIVE, 1, v["verdict"][:110])
+    ck.add("negative_carries_the_realised_dose",
+           "a null carries frac_cellmean_spread_removed AND cell_residual_frac_removed in the "
+           "SAME breath -- the claim table bans a bare 'not causally used'",
+           "frac_cellmean_spread_removed=0.1656" in v["verdict"]
+           and "cell_residual_frac_removed" in v["verdict"], 1)
+    _nodose = False
+    try:
+        verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+                wording=MANDATORY_NEGATIVE_WORDING, realised_dose=None)
+    except NotMeasured:
+        _nodose = True
+    ck.add("negative_without_dose_REFUSED",
+           "the SAME null with no recorded realised dose REFUSES rather than printing a bare "
+           "negative", _nodose, 1)
     v_void = verdict(s_neg, liveness_ok=False, o1_moved=True, o2_moved=False, power_ok=True,
-                     wording=MANDATORY_NEGATIVE_WORDING)
+                     wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose)
     ck.add("negative_refused_without_liveness",
            "the SAME numbers with unclean hook liveness return VOID, never a negative",
-           v_void.startswith("VOID"), 1)
+           v_void["verdict_class"] == VERDICT_VOID
+           and MANDATORY_NEGATIVE_WORDING not in v_void["verdict"], 1)
+    v_vc = verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+                   wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose,
+                   void_tripped=["hook_fired_count == 0 [n_fired=0]"])
+    ck.add("void_never_collapses_into_negative",
+           "a TRIPPED primary.void clause returns verdict_class VOID and the mandated NEGATIVE "
+           "wording appears nowhere in it -- the two must never collapse",
+           v_vc["verdict_class"] == VERDICT_VOID
+           and MANDATORY_NEGATIVE_WORDING not in v_vc["verdict"]
+           and v_vc["verdict_class"] != VERDICT_NEGATIVE, 1)
+    v_ca = verdict(s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+                   wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose,
+                   cannot_answer_tripped=["option_mass shows the channel is disengaged"])
+    ck.add("cannot_answer_is_its_own_branch",
+           "a tripped primary.cannot_answer clause returns CANNOT ANSWER -- neither a positive "
+           "nor a negative",
+           v_ca["verdict_class"] == VERDICT_CANNOT_ANSWER
+           and MANDATORY_NEGATIVE_WORDING not in v_ca["verdict"], 1)
+    ck.add("four_verdict_classes_are_distinct",
+           "VOID, CANNOT ANSWER, NEGATIVE and SUPPORTS are four distinct classes",
+           len({VERDICT_VOID, VERDICT_CANNOT_ANSWER, VERDICT_NEGATIVE, VERDICT_SUCCESS,
+                VERDICT_NOT_CAUSAL}) == 5, 5)
+
+    # ---- Holm with structurally absent members (A10) ---------------------------------------
+    _pr = load(PREREG_DEFAULT)
+    hm = holm_with_absent(_pr, {"H2axS1": 0.004, "H2axS2": 0.009})
+    ck.add("holm_absent_members_enter_at_p1",
+           "the four unbuildable members enter Holm at p=1.0 and are NEVER dropped",
+           hm["m"] == 6 and len(hm["absent_members_at_p1"]) == 4
+           and all(hm["per_member"][k]["p"] == 1.0 for k in hm["absent_members_at_p1"]), 6,
+           str(hm["absent_members_at_p1"]))
+    ck.add("holm_thresholds_are_the_preregistered_ones",
+           "with m pinned at 6 the two reportable members face alpha/6 and alpha/5",
+           abs(hm["per_member"]["H2axS1"]["threshold"] - 0.05 / 6) < 1e-12
+           and abs(hm["per_member"]["H2axS2"]["threshold"] - 0.05 / 5) < 1e-12, 2,
+           "%.8f / %.8f" % (hm["per_member"]["H2axS1"]["threshold"],
+                            hm["per_member"]["H2axS2"]["threshold"]))
+    _shrunk = holm({"H2axS1": 0.004, "H2axS2": 0.009}, 0.05)
+    ck.add("holm_m_is_not_shrunk_to_the_buildable_members",
+           "shrinking m to the 2 buildable members would LOOSEN the first threshold from "
+           "alpha/6 to alpha/2; holm_with_absent does not",
+           _shrunk["m"] == 2 and _shrunk["per_member"]["H2axS1"]["threshold"] > 0.05 / 6
+           and hm["per_member"]["H2axS1"]["threshold"] < _shrunk["per_member"]["H2axS1"]["threshold"],
+           2)
+    _bad_member = False
+    try:
+        holm_with_absent(_pr, {"H2axS1": 0.004, "H3xS9": 0.001})
+    except Refusal:
+        _bad_member = True
+    ck.add("holm_refuses_an_undeclared_member",
+           "a p-value for a member the family does not declare is a hypothesis smuggled into a "
+           "corrected family", _bad_member, 1)
+
+    # ---- the O1 scope guard (A12) -----------------------------------------------------------
+    _arms_pr = build_arm_manifest(_pr)
+    _h2a_basket = next(x for x in _arms_pr
+                       if x.hypothesis == "H2a" and x.scope == "S1" and x.codeword == "basket")
+    _c5_button = next(x for x in _arms_pr if x.hypothesis == "C5" and x.scope == "S1")
+    _cross = False
+    try:
+        o1_contrast(_pr, _h2a_basket, {"probe": []}, _c5_button, {"probe": []})
+    except Refusal as e:
+        _cross = "CROSS-CODEWORD" in str(e)
+    ck.add("o1_refuses_a_cross_codeword_baseline",
+           "pairing a basket arm against the button C5 bridge is a cross-codeword comparison "
+           "wearing a baseline's name and is REFUSED, not silently reported", _cross, 1)
+    ck.add("o1_expected_sign_is_parsed_not_typed",
+           "O1's intended direction is parsed out of outcome_variables.O1_probe.direction_expected",
+           o1_expected_sign(_pr, "knife", "bomb") == 1, 1)
+    ck.add("o2_expected_sign_is_parsed_not_typed",
+           "O2's intended direction is parsed out of the outcome's own direction_expected",
+           o2_expected_sign({"direction_expected": "FALLS under projection-out"}) == -1, 1)
+
+    # ---- stage scoping of the expected-absent set (A10) --------------------------------------
+    _sel_h2 = stage_selector(_pr, "h2")
+    _sel_h1 = stage_selector(_pr, "h1")
+    ck.add("stage_partition", "h1 and h2 PARTITION the 54-arm manifest",
+           sum(1 for x in _arms_pr if _sel_h1(x)) + sum(1 for x in _arms_pr if _sel_h2(x))
+           == len(_arms_pr)
+           and not any(_sel_h1(x) and _sel_h2(x) for x in _arms_pr), len(_arms_pr))
+    _exp = expected_absent_arms(_pr, _arms_pr, "h2", {"unbuildable": []})
+    ck.add("expected_absent_covers_only_out_of_stage_without_a_stage_record",
+           "with an EMPTY unbuildable list, only the out-of-stage arms are exempt -- an arm the "
+           "runner believed it could build still refuses when absent",
+           set(_exp) == {x.arm_id for x in _arms_pr if _sel_h1(x)}, len(_exp))
     caught = False
     try:
         assert_sayable("in short, the representation is meaningless")
@@ -2877,6 +3113,81 @@ def mutate() -> int:
             lay(_t.randn(1, 15, 4))
     raisers["M64 O1 read site MOVED between a row's forwards"] = _o1_site_moves
 
+    # ---- A4/A10/A11/A12: THE VERDICT PATH. Every one of these mutations is a way the verdict
+    # could quietly become wrong rather than absent, which is the more dangerous failure.
+    _pr_m = load(PREREG_DEFAULT)
+    _dose_m = {"v|L9|a1": {"cellmean_frac_at_alpha1": 0.1656, "realized_norm_frac_removed": 0.4069,
+                           "cell_residual_frac_removed": {"C": 0.0936}}}
+    _good = {"p": 0.001, "delta": 0.8}
+    _goodo2 = {"p": 0.001, "delta": 0.8}
+    _goodctl = {"distinct_hashes_ok": True, "equivalence": {}, "moved": False}
+    _gooddom = {"majority_moved_intended": True, "sign_p": 0.01}
+    for _k, _label in ((0, "M65 conjunct 1 (O1) fails"), (1, "M66 conjunct 2 (O2) fails"),
+                       (2, "M67 conjunct 3 (C1 control) fails"),
+                       (3, "M68 conjunct 4 (across domains) fails")):
+        _args = [dict(_good), dict(_goodo2), dict(_goodctl), dict(_gooddom)]
+        if _k == 0:
+            _args[0]["p"] = 0.9
+        elif _k == 1:
+            _args[1]["p"] = 0.9
+        elif _k == 2:
+            _args[2]["moved"] = True
+        else:
+            _args[3]["majority_moved_intended"] = False
+        muts["%s -> success" % _label] = (
+            lambda a=_args: evaluate_success(a[0], a[1], a[2], a[3], alpha=0.05)["success"])
+
+    _s_neg = evaluate_success({"p": 0.001, "delta": 0.8}, {"p": 0.7, "delta": 0.0},
+                              {"distinct_hashes_ok": True, "equivalence": {}, "moved": False},
+                              {"majority_moved_intended": False, "sign_p": 0.9}, alpha=0.05)
+    muts["M69 a VOID reported as a NEGATIVE"] = lambda: (
+        MANDATORY_NEGATIVE_WORDING in verdict(
+            _s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+            wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose_m,
+            void_tripped=["hook_fired_count == 0"])["verdict"])
+    muts["M70 unclean liveness yields a verdict"] = lambda: (
+        verdict(_s_neg, liveness_ok=False, o1_moved=True, o2_moved=False, power_ok=True,
+                wording=MANDATORY_NEGATIVE_WORDING,
+                realised_dose=_dose_m)["verdict_class"] != VERDICT_VOID)
+    muts["M71 CANNOT ANSWER collapsed into a NEGATIVE"] = lambda: (
+        MANDATORY_NEGATIVE_WORDING in verdict(
+            _s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=False,
+            wording=MANDATORY_NEGATIVE_WORDING, realised_dose=_dose_m)["verdict"])
+    muts["M72 an absent Holm member SHRINKS m"] = lambda: (
+        holm_with_absent(_pr_m, {"H2axS1": 0.004, "H2axS2": 0.009})["m"] != 6)
+    muts["M73 Holm threshold loosened by absence"] = lambda: (
+        holm_with_absent(_pr_m, {"H2axS1": 0.004, "H2axS2": 0.009}
+                         )["per_member"]["H2axS1"]["threshold"] > 0.05 / 6.0)
+    muts["M74 an expected-absent arm the runner could build"] = lambda: (
+        "h2a_s1_projout_button" in expected_absent_arms(
+            _pr_m, build_arm_manifest(_pr_m), "h2", {"unbuildable": []}))
+
+    raisers["M75 a null with NO realised dose"] = lambda: verdict(
+        _s_neg, liveness_ok=True, o1_moved=True, o2_moved=False, power_ok=True,
+        wording=MANDATORY_NEGATIVE_WORDING, realised_dose=None)
+    raisers["M76 a realised dose with no cellmean fraction"] = lambda: format_realised_dose(
+        {"v|L9|a1": {"realized_norm_frac_removed": 0.4}})
+    raisers["M77 Holm over an UNDECLARED family member"] = lambda: holm_with_absent(
+        _pr_m, {"H2axS1": 0.004, "H9xS9": 0.001})
+    raisers["M78 a primary.void clause NO check implements"] = lambda: void_clause_report(
+        _pr_m, [{"clause": "hook_fired_count == 0", "status": VOID_CLAUSE_CLEAR}])
+    raisers["M79 O1 paired ACROSS codeword banks"] = lambda: o1_contrast(
+        _pr_m,
+        next(x for x in build_arm_manifest(_pr_m)
+             if x.hypothesis == "H2a" and x.scope == "S1" and x.codeword == "basket"),
+        {"probe": []},
+        next(x for x in build_arm_manifest(_pr_m) if x.hypothesis == "C5" and x.scope == "S1"),
+        {"probe": []})
+    raisers["M80 a paired contrast that shares NO prompt_id"] = lambda: paired_by_prompt(
+        [{"prompt_id": "a", "domain": "d", "v": 1.0}],
+        [{"prompt_id": "b", "domain": "d", "v": 1.0}], lambda r: r["v"], "M80")
+    raisers["M81 the same prompt_id twice in one arm"] = lambda: paired_by_prompt(
+        [{"prompt_id": "a", "domain": "d", "v": 1.0}, {"prompt_id": "a", "domain": "d", "v": 2.0}],
+        [{"prompt_id": "a", "domain": "d", "v": 1.0}], lambda r: r["v"], "M81")
+    raisers["M82 a prompt_id in two DIFFERENT domains"] = lambda: paired_by_prompt(
+        [{"prompt_id": "a", "domain": "d1", "v": 1.0}],
+        [{"prompt_id": "a", "domain": "d2", "v": 1.0}], lambda r: r["v"], "M82")
+
     print("=== PR-057 mutation harness (Q5): every refusal must be REACHABLE ===")
     n_red = 0
     # `score_behavior`'s house refusal idiom is SystemExit, not an exception class of ours, so a
@@ -2987,13 +3298,601 @@ def plan(pr: Prereg, fit_dir: str) -> Dict[str, Any]:
 
 
 # ============================================================================================
+# 13b. THE OUTCOME PATH -- A4 / A10 / A11 / A12
+# ============================================================================================
+#
+# WHY THIS SECTION EXISTS. Until 2026-09-08 `analyse()` ended after the liveness gates with
+# `return 0` and the comment "(outcome computation continues only for arms that passed every gate
+# above)". It did not. `evaluate_success` and `holm` had no production call site, so a PERFECT h2
+# run would have produced no verdict at all -- amendment item A4, the highest-priority blocker.
+# Everything below is that path: paired domain-level outcomes, the domain-level permutation, Holm
+# over the DECLARED family with absent members at p=1.0, the four conjuncts evaluated and reported
+# SEPARATELY, and one verdict whose class a reader cannot mistake.
+
+
+def stage_selector(pr: Prereg, stage: str):
+    """Which arms belong to which stage. `h1 | h2` PARTITIONS the manifest; `q1` and `smoke` are
+    subsets run on other splits. A stage NEVER invents an arm.
+
+    This lived in `src/boombness/pr057_run_causal.py` and is moved here because the ANALYZER now
+    needs it too (A10: an arm outside the analysed stage is expected-absent, and an arm inside it
+    is not). Two copies of "which arms is this stage" is exactly how the analyzer would come to
+    demand a run the runner never scheduled. The runner imports this one.
+    """
+    dev_cw = str(pr.require("population", "codewords", "development"))
+    if stage == "h1":
+        return lambda a: a.hypothesis in ("H1", "C7")
+    if stage == "h2":
+        return lambda a: a.hypothesis not in ("H1", "C7")
+    if stage == "q1":
+        # C-112 demoted H1 to exploratory and R-116 made its population EMPTY, so the power run is
+        # the PRIMARY arm (10.2 / H2a) at S1 on both codewords. The deviation is recorded.
+        return lambda a: a.hypothesis == "H2a" and a.scope == "S1"
+    if stage == "smoke":
+        return lambda a: ((a.hypothesis == "H2a" and a.scope == "S1" and a.codeword == dev_cw)
+                          or (a.hypothesis == "C5" and a.scope == "S1"))
+    raise Refusal("unknown stage %r; known: q1, smoke, h1, h2" % stage)
+
+
+def development_codeword(pr: Prereg) -> str:
+    """`population.codewords.development`. The codeword the family member's p-value is computed on.
+
+    WHY THIS AND NOT A POOLED p. `PHASE9_CAUSAL` declares SIX members (H1/H2a/H2b x S1/S2) and the
+    arm manifest realises each H2a member with TWO arms, one per codeword. Six members and eight
+    H2a arms cannot both be the family. The frozen file names the codewords by ROLE --
+    `development: button`, `external_confirmation: basket` -- and lists "lexical transfer
+    button->basket" in the SECONDARY family, not the primary one. So the PHASE9_CAUSAL member is
+    the DEVELOPMENT codeword's arm and the external-confirmation arm is reported beside it as the
+    replication it is declared to be. Pooling the two into one p, or promoting basket to a seventh
+    and eighth family member, would both redefine a declared family after the fact (C-106).
+    """
+    return str(pr.require("population", "codewords", "development"))
+
+
+def o1_expected_sign(pr: Prereg, source: str, target: str) -> int:
+    """+1 / -1, PARSED from `outcome_variables.O1_probe.direction_expected`, never typed here."""
+    text = str(pr.require("outcome_variables", "O1_probe", "direction_expected"))
+    clause = text.split(" under ")[0].lower()
+    has_s, has_t = (source.lower() in clause), (target.lower() in clause)
+    if has_s and not has_t:
+        return 1
+    if has_t and not has_s:
+        return -1
+    raise Refusal(
+        "outcome_variables.O1_probe.direction_expected is %r; its leading clause %r names %s the "
+        "source concept %r and %s the target %r, so the INTENDED direction of O1 is ambiguous and "
+        "this analyzer will not guess it."
+        % (text, clause, "" if has_s else "neither", source, "also" if has_t else "not", target))
+
+
+def o2_expected_sign(o2_spec: Dict[str, Any]) -> int:
+    """+1 / -1, parsed from the outcome's OWN `direction_expected` string.
+
+    `o2_projection_out_from_rows` states "FALLS under projection-out of v_bomb_specific". The sign
+    is read off that sentence rather than typed at the call site, so the definition of the outcome
+    and the direction it is expected to move cannot drift apart into two places.
+    """
+    text = str(o2_spec.get("direction_expected", "")).upper()
+    if "FALLS" in text and "RISES" not in text:
+        return -1
+    if "RISES" in text and "FALLS" not in text:
+        return 1
+    raise Refusal("the O2 outcome declares direction_expected=%r, which names neither FALLS nor "
+                  "RISES unambiguously." % o2_spec.get("direction_expected"))
+
+
+def paired_by_prompt(arm_rows: Sequence[Dict[str, Any]], base_rows: Sequence[Dict[str, Any]],
+                     value_of, label: str) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], List[str]]:
+    """Pair an arm against its baseline BY `prompt_id`, then group by DOMAIN.
+
+    Never by row order. `_read_site_note` records what order-based attribution costs in this
+    repository; the same argument applies to pairing two runs. A prompt present in one run and not
+    the other is DROPPED from the pair and counted, never matched to a neighbour.
+    """
+    def _index(rows, which):
+        out = {}
+        for r in rows:
+            pid = r.get("prompt_id")
+            if pid is None:
+                raise Refusal("%s: a %s row carries no prompt_id, so it cannot be paired" % (label, which))
+            if pid in out:
+                raise Refusal("%s: prompt_id %r appears twice in the %s rows. A duplicated id "
+                              "would be averaged into the pair silently." % (label, pid, which))
+            dom = r.get("domain")
+            if not dom:
+                raise Refusal("%s: row %r carries no domain, and the independence unit is the "
+                              "DOMAIN." % (label, pid))
+            out[pid] = (dom, float(value_of(r)))
+        return out
+
+    a, b = _index(arm_rows, "arm"), _index(base_rows, "baseline")
+    shared = sorted(set(a) & set(b))
+    if not shared:
+        raise ZeroBinding(
+            "%s: the arm (%d rows) and its baseline (%d rows) share ZERO prompt_ids. A paired "
+            "contrast over an empty intersection is not a contrast." % (label, len(a), len(b)))
+    post: Dict[str, List[float]] = {}
+    pre: Dict[str, List[float]] = {}
+    for pid in shared:
+        da, va = a[pid]
+        db, vb = b[pid]
+        if da != db:
+            raise Refusal("%s: prompt_id %r sits in domain %r in the arm and %r in the baseline. "
+                          "The two runs are not the same population." % (label, pid, da, db))
+        post.setdefault(da, []).append(va)
+        pre.setdefault(db, []).append(vb)
+    return pre, post, shared
+
+
+def paired_outcome(pr: Prereg, arm_rows, base_rows, value_of, label: str,
+                   expected_sign: int) -> Dict[str, Any]:
+    """One outcome, as a DOMAIN-LEVEL paired contrast with its permutation p and its p-FLOOR.
+
+    `_p_floor_rule`: "EVERY p MUST be published next to its floor." `fmt_p` does that and the
+    formatted string is carried in the record so no caller can print the p without it.
+    """
+    pre, post, shared = paired_by_prompt(arm_rows, base_rows, value_of, label)
+    n_perm = int(pr.require("primary", "n_perm"))
+    seed = int(pr.require("seeds", "permutation"))
+    perm = domain_group_permutation(pre, post, n_perm, seed)
+    dd = perm["per_domain_delta"]
+    n_intended = sum(1 for v in dd.values() if _sign(v) == _sign(expected_sign))
+    return {
+        "name": label,
+        "n_prompts_paired": len(shared),
+        "n_domains": perm["n_domains"],
+        "delta": perm["observed_delta"],
+        "expected_sign": int(expected_sign),
+        "moved_intended_sign": _sign(perm["observed_delta"]) == _sign(expected_sign),
+        "p": perm["permutation"]["p"],
+        "p_floor": perm["permutation"]["floor"],
+        "p_formatted": perm["permutation"]["formatted"],
+        "n_exceed": perm["permutation"]["n_exceed"],
+        "n_perm": n_perm,
+        "sign_test": perm["sign_test"],
+        "n_domains_moved_intended": n_intended,
+        "majority_moved_intended": (2 * n_intended) > perm["n_domains"],
+        "per_domain_delta": dd,
+    }
+
+
+def o1_contrast(pr: Prereg, arm: ArmSpec, arm_run: Dict[str, Any],
+                bridge_arm: ArmSpec, bridge_run: Dict[str, Any]) -> Dict[str, Any]:
+    """`A11`/`A12`. O1 as a PAIRED CONTRAST against the C5 disabled-hook bridge, not as a level.
+
+    The frozen parent defines O1 as a LEVEL and requires it to "move", but declares no baseline,
+    no delta and no p anywhere; `evaluate_success` consumes `o1['p']` and `o1['delta']`, which
+    nothing built. The amendment fixes the contrast BEFORE any test read, on a structural fact --
+    which arms carry an un-intervened block-9 posterior -- and this is that estimator.
+
+    A12, THE SCOPE, AND THE REFUSAL THAT ENFORCES IT. The C5 bridge is built on ONE codeword bank.
+    Pairing an arm on the OTHER bank against it would be a CROSS-CODEWORD comparison wearing a
+    baseline's name -- different prompts, different bank sha, different population -- and this
+    function REFUSES it by name rather than reporting it. The consequence is the preregistered
+    fallback: O1 is scoped to the bank that has a bridge, and the arms on the other bank are
+    reported O2-only and are NOT eligible for the conjunctive rule. That scope is NAMED in the
+    record and printed with the result.
+    """
+    if arm.codeword != bridge_arm.codeword:
+        raise Refusal(
+            "O1 REFUSED: arm %s is on the %r bank and the only disabled-hook bridge offered is %s "
+            "on the %r bank. Pairing them by prompt_id would be a CROSS-CODEWORD comparison "
+            "wearing a baseline's name -- different prompts, a different bank sha, a different "
+            "population. O1 is scoped to the codeword that HAS an un-intervened block-9 posterior "
+            "(amendment A12 / design_answers.o1_baseline.deterministic_fallback)."
+            % (arm.arm_id, arm.codeword, bridge_arm.arm_id, bridge_arm.codeword))
+    if arm.target_concept != bridge_arm.target_concept:
+        raise Refusal("O1 REFUSED: arm %s targets concept %r and the bridge %s targets %r."
+                      % (arm.arm_id, arm.target_concept, bridge_arm.arm_id,
+                         bridge_arm.target_concept))
+    read_layer = int(pr.require("read_site", "primary_read_layer"))
+    a_rows = [r for r in arm_run["probe"] if int(r.get("read_layer", -1)) == read_layer]
+    b_rows = [r for r in bridge_run["probe"] if int(r.get("read_layer", -1)) == read_layer]
+    if not a_rows or not b_rows:
+        raise ZeroBinding(
+            "O1 at block %d bound %d arm record(s) and %d bridge record(s). Without "
+            "%s in BOTH runs O1 was never captured -- the stage must be launched with "
+            "--emit-probe (amendment A13)." % (read_layer, len(a_rows), len(b_rows), CONTRACT_PROBE))
+    # ONE frozen estimator, and the same one on both sides. A contrast between two probes is not
+    # a contrast in the probe's score.
+    lvl_a = o1_from_probe_rows(a_rows, read_layer)
+    lvl_b = o1_from_probe_rows(b_rows, read_layer)
+    if lvl_a["probe_sha256"] != lvl_b["probe_sha256"]:
+        raise Refusal("O1's arm records were produced by probe %s and its baseline's by probe %s. "
+                      "O1 is defined against ONE frozen estimator."
+                      % (lvl_a["probe_sha256"][:16], lvl_b["probe_sha256"][:16]))
+    for r in a_rows[:1] + b_rows[:1]:
+        if str(r.get("o1_source")) != str(arm.source_concept) or \
+                str(r.get("o1_target")) != str(arm.target_concept):
+            raise Refusal(
+                "a probe record declares o1_source=%r / o1_target=%r but the arm is %r -> %r. "
+                "O1's sign would be read backwards."
+                % (r.get("o1_source"), r.get("o1_target"), arm.source_concept, arm.target_concept))
+    sign = o1_expected_sign(pr, str(arm.source_concept), str(arm.target_concept))
+    out = paired_outcome(pr, a_rows, b_rows,
+                         lambda r: float(r["o1_margin_source_minus_target"]),
+                         "O1 probe margin (%s - %s) @ block %d" % (arm.source_concept,
+                                                                   arm.target_concept, read_layer),
+                         sign)
+    out.update({
+        "read_layer": read_layer,
+        "probe_sha256": lvl_a["probe_sha256"],
+        "baseline_arm": bridge_arm.arm_id,
+        "baseline_rule": "C5 disabled-hook bridge on the SAME codeword bank, paired by prompt_id, "
+                         "aggregated to a domain mean over the analysed domains",
+        "codeword_scope": arm.codeword,
+        "_scope_statement": "O1 IS SCOPED TO THE %r CODEWORD BANK -- it is the bank that carries "
+                            "an un-intervened block-9 posterior (the C5 bridge). This is a "
+                            "SCOPED result, stated as one." % arm.codeword,
+    })
+    return out
+
+
+def o2_contrast(pr: Prereg, arm: ArmSpec, arm_run: Dict[str, Any],
+                baseline_rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """O2, the PRIMARY: the domain-mean change in the semantic readout vs the UNTOUCHED baseline.
+
+    The baseline is C6 -- the PHASE 7 readout run on the same bank, no hooks at all -- which is
+    what `primary.statistic` names ("relative to the untouched baseline"). It is paired by
+    prompt_id and aggregated to a domain mean, never pooled over rows (`_row_level_warning`).
+    """
+    spec = o2_projection_out_from_rows(list(arm_run["results"]))
+    o2_projection_out_from_rows(list(baseline_rows))          # same schema on both sides or refuse
+    sign = o2_expected_sign(spec)
+    out = paired_outcome(pr, arm_run["results"], baseline_rows,
+                         lambda r: float(r["semantic_logodds"]),
+                         "O2 semantic_logodds (%s vs the literal codeword)" % arm.target_concept,
+                         sign)
+    out.update({k: spec[k] for k in ("definition", "fields_used", "engagement_field",
+                                     "direction_expected", "reportable_alone",
+                                     "required_companion_gates", "mandate")})
+    out["baseline_rule"] = "C6 untouched PHASE 7 readout on the same bank, paired by prompt_id"
+    return out
+
+
+def control_c1_report(pr: Prereg, draws: Sequence[Tuple[ArmSpec, Dict[str, Any]]],
+                      baseline_rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """`C1` / `I-N4`, the DECISIVE control: it must NOT move O2, with 5 DISTINCT output hashes.
+
+    "A control that 'fails to reach significance' is not thereby a passed control"
+    (`_control_arms_are_not_members`): the answer is an EQUIVALENCE INTERVAL over the domain-level
+    deltas, reported beside the permutation p and its floor, never a bare p > alpha.
+    """
+    n_expected = int(pr.require("seeds", "n_control_draws"))
+    alpha = float(pr.require("primary", "alpha"))
+    shas, per_draw, acc = [], {}, defaultdict(list)
+    for arm, run in draws:
+        gate = run.get("arm_gate") or {}
+        shas.append(str(gate.get("output_sha256") or ""))
+        o = paired_outcome(pr, run["results"], baseline_rows,
+                           lambda r: float(r["semantic_logodds"]),
+                           "C1 %s" % arm.arm_id, o2_expected_sign(
+                               o2_projection_out_from_rows(list(run["results"]))))
+        per_draw[arm.arm_id] = {k: o[k] for k in ("delta", "p", "p_floor", "p_formatted",
+                                                  "n_domains")}
+        for d, v in o["per_domain_delta"].items():
+            acc[d].append(v)
+    band = control_band_gate(shas, n_expected)
+    if not acc:
+        raise ZeroBinding("the C1 band bound ZERO draws")
+    per_domain = {d: sum(v) / len(v) for d, v in acc.items()}
+    eq = equivalence_interval(list(per_domain.values()), alpha)
+    # "moved" is decided on the BAND's own permutation p, at the declared alpha.
+    pooled_p = min(v["p"] for v in per_draw.values())
+    moved = bool(pooled_p < alpha)
+    return {"n_draws": len(draws), "n_expected": n_expected,
+            "distinct_hashes_ok": bool(band["ok"]), "band": band,
+            "per_draw": per_draw, "equivalence": eq,
+            "smallest_draw_p": pooled_p, "moved": moved,
+            "_not_a_bare_p": "a control is shown NOT to move O2 by its equivalence interval, "
+                             "reported here, never by a bare p > alpha"}
+
+
+# ---- primary.void and primary.cannot_answer, clause by clause -------------------------------
+#: Each machine-checkable clause of `primary.void`, with the exact substring of the frozen text it
+#: implements. A clause whose evidence is ABSENT is `UNEVALUABLE`, and an unevaluable void
+#: condition is a hole in the validity argument, not a satisfied one -- so it refuses the verdict.
+#: A clause scoped to an arm that is UNBUILDABLE is `NOT_APPLICABLE` (the amendment's reading:
+#: "its only H2b clause is per-arm and cannot be tripped by an arm that never runs") and is
+#: reported as a stated scope limit instead.
+VOID_CLAUSE_TRIPPED = "TRIPPED"
+VOID_CLAUSE_CLEAR = "CLEAR"
+VOID_CLAUSE_NA = "NOT_APPLICABLE"
+VOID_CLAUSE_UNEVALUABLE = "UNEVALUABLE"
+
+
+def void_clause_report(pr: Prereg, clauses: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Every clause of `primary.void`, each with its own status, and NOT one boolean.
+
+    The frozen list is a single sentence of semicolon-separated conditions. This checks that every
+    one of them has been given a status, so a clause cannot be quietly dropped by nobody writing
+    a check for it.
+    """
+    text = str(pr.require("primary", "void"))
+    declared = [c.strip() for c in text.split(";") if c.strip()]
+    covered = {str(c["clause"]) for c in clauses}
+    uncovered = [c for c in declared if c not in covered]
+    if uncovered:
+        raise Refusal(
+            "primary.void declares %d clauses and this analyzer produced a status for %d. "
+            "UNCHECKED: %s. A void condition nobody checks is a hole in the validity argument."
+            % (len(declared), len(covered), uncovered))
+    tripped = ["%s [%s]" % (c["clause"], c.get("detail", "")) for c in clauses
+               if c["status"] == VOID_CLAUSE_TRIPPED]
+    uneval = ["%s [%s]" % (c["clause"], c.get("detail", "")) for c in clauses
+              if c["status"] == VOID_CLAUSE_UNEVALUABLE]
+    na = [c["clause"] for c in clauses if c["status"] == VOID_CLAUSE_NA]
+    return {"n_declared": len(declared), "clauses": list(clauses),
+            "tripped": tripped, "unevaluable": uneval, "not_applicable": na,
+            "ok": (not tripped) and (not uneval)}
+
+
+def expected_absent_arms(pr: Prereg, arms: Sequence[ArmSpec], stage: str,
+                         stage_record: Optional[Dict[str, Any]]) -> Dict[str, str]:
+    """`A10`. Which declared arms are EXPECTED to have no run directory, and why -- BY NAME.
+
+    `arms_present` used to require a complete run for ALL 54 declared arms with no expected-absent
+    exemption, so the 24 arms nothing can build would have forced a refusal to emit any verdict.
+    The exemption is NOT a list typed here: it is
+
+      (a) the arms OUTSIDE the analysed stage -- `stage_selector`, the runner's own partition; and
+      (b) the arms the RUNNER recorded as UNBUILDABLE in that stage's terminal record, with the
+          reasons it re-derived from `constructibility` at launch.
+
+    Nothing else is exempt. An arm the runner believed it could build and which has no run
+    directory still refuses, which is the property the original check had and must keep.
+    """
+    sel = stage_selector(pr, stage)
+    out: Dict[str, str] = {}
+    for a in arms:
+        if not sel(a):
+            out[a.arm_id] = "not selected by stage %r (stage_selector)" % stage
+    if stage_record:
+        for u in (stage_record.get("unbuildable") or []):
+            out[str(u.get("arm_id"))] = "UNBUILDABLE at launch: %s" % (
+                "; ".join(u.get("reasons") or []) or "no reason recorded")
+        for s in (stage_record.get("not_submitted") or []):
+            out[str(s.get("arm_id"))] = "not submitted by the kill condition: %s" % s.get("reason", "")
+    # Cross-check against the amendment's OWN recorded inventory when the loaded file carries one.
+    inv = (pr.obj.get("arm_inventory_observed") or {}).get("h2_unbuildable_arm_ids")
+    if inv and stage == "h2" and stage_record:
+        declared = set(str(x) for x in inv)
+        observed = {k for k, v in out.items() if v.startswith("UNBUILDABLE")}
+        if declared != observed:
+            raise Refusal(
+                "the preregistration records %d h2 arms as unbuildable (%s) and the runner's "
+                "terminal record re-derived %d (%s). They must agree: a disagreement means either "
+                "an arm became buildable and was not run, or one was dropped that the design "
+                "expects."
+                % (len(declared), sorted(declared), len(observed), sorted(observed)))
+    return out
+
+
+
+def _outcome_sha(row_map: Dict[str, Any], prompt_ids: Sequence[str]) -> str:
+    """The runner's own per-arm output-hash rule, RESTRICTED to a set of prompt_ids."""
+    return hashlib.sha256("\n".join(sorted(
+        "%s|%.10g|%.10g|%.10g" % (p, float(row_map[p]["logp_concept"]),
+                                  float(row_map[p]["logp_codeword"]),
+                                  float(row_map[p]["semantic_logodds"]))
+        for p in prompt_ids)).encode()).hexdigest()
+
+
+def _clause_status(clause: str, status: str, detail: str = "") -> Dict[str, Any]:
+    return {"clause": clause, "status": status, "detail": detail}
+
+
+def build_void_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Give EVERY clause of the frozen `primary.void` sentence a status, from `ctx`.
+
+    The clauses are read out of the frozen text and matched to an evaluator by keyword, so a
+    clause nobody wrote a check for is UNMATCHED and refuses (`void_clause_report`) rather than
+    silently passing. Nothing here re-types the frozen sentence.
+    """
+    declared = [c.strip() for c in str(pr.require("primary", "void")).split(";") if c.strip()]
+    out: List[Dict[str, Any]] = []
+    for clause in declared:
+        low = clause.lower()
+        if "direction fitted" in low:
+            g = ctx.get("direction_provenance")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "no direction fit MANIFEST.json was readable under "
+                                          "--fit-dir, so TRAIN-only provenance is unverified"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          g.get("detail") or "fit on %d TRAIN domains"
+                                          % g["n_fit_domains"]))
+        elif "hook_fired_count" in low:
+            lg = ctx["liveness"]
+            out.append(_clause_status(clause,
+                                      VOID_CLAUSE_CLEAR if lg["live"] else VOID_CLAUSE_TRIPPED,
+                                      "n_fired=%d over %d records" % (lg["n_fired"], lg["n_rows"])))
+        elif "realised != expected" in low or "realised != expected cells" in low:
+            lg = ctx["liveness"]
+            same = lg["n_cells_realised"] == lg["n_cells_expected"]
+            if not lg["expect_enabled"]:
+                out.append(_clause_status(clause, VOID_CLAUSE_CLEAR,
+                                          "disabled-hook bridge: 0 realised, 0 expected, by design"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if same else VOID_CLAUSE_TRIPPED,
+                                          "realised=%d expected=%d" % (lg["n_cells_realised"],
+                                                                       lg["n_cells_expected"])))
+        elif "disabled-hook bridge" in low:
+            g = ctx.get("bridge")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "no C5 disabled-hook bridge run exists on this bank, so "
+                                          "'reproduces the untouched baseline' is UNMEASURED. An "
+                                          "unevaluable void condition is a hole in the validity "
+                                          "argument, not a satisfied one (I-N1 is blocking)."))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          g.get("detail") or "byte-identical to the untouched "
+                                                             "baseline on every paired row"))
+        elif "self-patch" in low:
+            out.append(_clause_status(clause, VOID_CLAUSE_NA,
+                                      "C7 is mode 'patch' and has no code path; the clause is "
+                                      "per-arm and cannot be tripped by an arm that never runs. "
+                                      "I-N2 is NOT AVAILABLE and is a STATED SCOPE LIMIT, not a "
+                                      "passed control."))
+        elif "control-draw hashes" in low:
+            g = ctx.get("control_band")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "no C1 band was loaded for this member, so the "
+                                          "five-distinct-draws condition is UNMEASURED"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          g.get("detail") or "%d distinct draw hashes"
+                                          % g["n_distinct"]))
+        elif "orthogonal residual" in low:
+            g = ctx.get("orthogonal_residual")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_NA,
+                                          "the clause is H2b-scoped and H2b has no code path "
+                                          "(mode 'component_replace'); it cannot be tripped by an "
+                                          "arm that never runs. I-N7 is NOT AVAILABLE."))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          g.get("detail") or "max|delta|=%.3e" % g["max_abs"]))
+        elif "absolute read/edit index" in low or "absolute" in low:
+            aud = ctx.get("index_audit") or {}
+            if aud.get("ok") is True:
+                out.append(_clause_status(clause, VOID_CLAUSE_CLEAR,
+                                          "%d records, every index == len(input_ids)+rel_end"
+                                          % aud.get("n_records", 0)))
+            elif aud.get("ok") is False:
+                out.append(_clause_status(clause, VOID_CLAUSE_TRIPPED, aud.get("witness_note", "")))
+            elif ctx["arm"].scope != "S1" or not ctx["liveness"]["expect_enabled"]:
+                out.append(_clause_status(clause, VOID_CLAUSE_NA,
+                                          "an all-position (or disabled) arm resolves no single "
+                                          "(rel_end, absolute index) pair, so the end-relative "
+                                          "identity is not auditable and no absolute index is "
+                                          "reused: %s" % aud.get("witness_note", "")))
+            else:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "a SINGLE-SITE arm produced no auditable index record"))
+        elif "bank sha" in low:
+            g = ctx.get("bank_sha")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "the run records no bank_rows_sha16"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          g.get("detail") or "bank %s matches the pin" % g["bank"]))
+        else:
+            out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                      "NO CHECK IMPLEMENTS THIS CLAUSE"))
+    return out
+
+
+def build_cannot_answer_clauses(pr: Prereg, ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Every clause of `primary.cannot_answer`, with a status. Same rule as `primary.void`."""
+    text = str(pr.require("primary", "cannot_answer"))
+    declared = [c.strip(" ;") for c in text.split("OR ") if c.strip(" ;")]
+    out: List[Dict[str, Any]] = []
+    for clause in declared:
+        low = clause.lower()
+        if "phase 7 readout" in low or "o2 does not exist" in low:
+            ok = bool(ctx.get("baseline_present"))
+            out.append(_clause_status(clause, VOID_CLAUSE_CLEAR if ok else VOID_CLAUSE_TRIPPED,
+                                      "the untouched PHASE 7 baseline run was %s"
+                                      % ("located" if ok else "NOT FOUND")))
+        elif "option_mass" in low or "disengaged" in low:
+            g = ctx.get("option_mass")
+            if g is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE, "option_mass unmeasured"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if g["ok"] else VOID_CLAUSE_TRIPPED,
+                                          "median_true=%r reportable=%r gate=%r"
+                                          % (g["median_true"], g["reportable"], g["gate"])))
+        elif "power" in low:
+            p = ctx.get("power")
+            if p is None:
+                out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                          "power at the REALISED between-domain SD was not computed"))
+            else:
+                out.append(_clause_status(clause,
+                                          VOID_CLAUSE_CLEAR if p["power_ok"] else VOID_CLAUSE_TRIPPED,
+                                          "power=%.3f at the realised SD %.5f, bar %.2f, declared "
+                                          "MDE %.2f nats, n=%d domains"
+                                          % (p["power"], p["realised_between_domain_sd"],
+                                             p["bar"], p["declared_mde"], p["n_domains"])))
+        elif "h1" in low:
+            h1 = ctx.get("h1_state")
+            if h1 == "NOT_AVAILABLE":
+                out.append(_clause_status(
+                    clause, VOID_CLAUSE_NA,
+                    "NO H1 arm ran: mode 'patch' has no code path and R-116/C-112 measured the "
+                    "donor concept installing in 0 of 113 domains. H1's silence is CANNOT ANSWER "
+                    "BY CONSTRUCTION and is NOT evidence in either direction about a surgical "
+                    "edit. A reviewer may read the frozen clause as making the WHOLE phase CANNOT "
+                    "ANSWER; that reading is recorded as an open interpretive risk (PR-060 "
+                    "design_answers.h1_is_cannot_answer_by_construction) and is not settled here."))
+            elif h1 == "DID_NOT_MOVE":
+                out.append(_clause_status(clause, VOID_CLAUSE_TRIPPED,
+                                          "an H1 arm RAN and did not move O2"))
+            else:
+                out.append(_clause_status(clause, VOID_CLAUSE_CLEAR, "H1 moved O2"))
+        else:
+            out.append(_clause_status(clause, VOID_CLAUSE_UNEVALUABLE,
+                                      "NO CHECK IMPLEMENTS THIS CLAUSE"))
+    return out
+
+
+def realised_power(pr: Prereg, per_domain_delta: Dict[str, float]) -> Dict[str, Any]:
+    """`primary.cannot_answer`: "power < 0.8 at the REALISED between-domain SD of O2"."""
+    vals = list(per_domain_delta.values())
+    if len(vals) < 2:
+        raise ZeroBinding("power at the realised SD over %d domains" % len(vals))
+    m = sum(vals) / len(vals)
+    sd = math.sqrt(sum((x - m) ** 2 for x in vals) / (len(vals) - 1))
+    mde = float(pr.require("power", "declared_minimum_meaningful_effect", "o2_semantic_logodds_shift"))
+    alpha = float(pr.require("primary", "alpha"))
+    bar = power_bar(pr)
+    if sd <= 0:
+        raise Refusal("the realised between-domain SD of O2 is %r -- every domain returned the "
+                      "identical value, which is the byte-identical-arms signature, not a "
+                      "measurement." % sd)
+    pw = t_power(len(vals), mde, sd, alpha=alpha)
+    return {"n_domains": len(vals), "realised_between_domain_sd": sd, "declared_mde": mde,
+            "alpha": alpha, "bar": bar, "power": pw, "power_ok": pw >= bar,
+            "mde_at_bar": t_mde(len(vals), sd, alpha=alpha, power=bar)}
+
+
+# ============================================================================================
 # 14. MAIN
 # ============================================================================================
 def analyse(pr: Prereg, runs_root: str, a) -> int:
-    """The confirmatory analysis. Refuses long before it can produce a number it should not."""
+    """The confirmatory analysis. Refuses long before it can produce a number it should not.
+
+    A4, closed 2026-09-08: this function now HAS a verdict path. Order:
+      1. the population, the split and the arm manifest;
+      2. `arms_present`, scoped to the analysed stage and to the arms the RUNNER re-derived as
+         unbuildable -- and still refusing on any other absence (A10);
+      3. hook liveness on every present arm, BEFORE any outcome is computed;
+      4. per family member: O2 vs the untouched C6 baseline, O1 vs the C5 disabled-hook bridge
+         (A11/A12), the C1 band with its equivalence interval, and the four conjuncts evaluated
+         and reported SEPARATELY;
+      5. `primary.void` and `primary.cannot_answer`, clause by clause;
+      6. Holm over the DECLARED family with absent members at p=1.0 and m pinned at 6 (A10);
+      7. ONE verdict per member, with a class a reader cannot confuse and, for any null, the
+         REALISED DOSE in the same breath.
+    """
     wording = check_wording_pin(pr)
     forbidden = forbidden_from_prereg(pr)
     ck = Checks()
+    stage = getattr(a, "stage", "h2") or "h2"
+    split = getattr(a, "split", "test") or "test"
+    alpha = float(pr.require("primary", "alpha"))
 
     # Q0 -- the outcome variable must exist at all.
     dep = pr.require("_DEPENDENCY_ON_PHASE_7_AND_WHY_IT_IS_BLOCKING")
@@ -3006,21 +3905,57 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
     spec = bind_population(pr)
     arms = build_arm_manifest(pr)
     members = family_members(pr)
+    by_id = {x.arm_id: x for x in arms}
 
+    state_root = getattr(a, "state_root", "") or ""
+    if state_root and not os.path.isabs(state_root):
+        state_root = os.path.join(REPO, state_root)
+    srec_path = os.path.join(state_root, "%s_%s" % (stage, split), "DONE.json") if state_root else ""
+    stage_record = json.load(open(srec_path)) if srec_path and os.path.exists(srec_path) else None
+    if stage_record is not None and stage_record.get("status") != "ok":
+        raise Refusal("the stage record %s reports status %r; a stage that did not complete does "
+                      "not license an analysis." % (srec_path, stage_record.get("status")))
+    expected_absent = expected_absent_arms(pr, arms, stage, stage_record)
+
+    # ONLY the analysed stage's arms are looked up. An arm outside the stage may well have a run
+    # directory -- `h2a_s1_projout_basket` has one from the Q1 VALIDATION stage -- and reading it
+    # here would silently mix a validation run into a test analysis. The stage owns its arms.
+    in_stage = [x for x in arms if stage_selector(pr, stage)(x)]
+    want_dir = os.sep + "%s_%s" % (stage, split) + os.sep
     found, absent = {}, []
-    for arm in arms:
+    for arm in in_stage:
         try:
             d = _find_run(runs_root, arm.tag())
         except PreregError:
             absent.append(arm.arm_id)
             continue
-        found[arm.arm_id] = load_arm_run(d)
-    ck.add("arms_present", "every declared arm has a COMPLETE run directory",
-           not absent, len(arms), "absent=%s" % absent[:6])
+        run = load_arm_run(d)
+        # BIND THE RUN TO THIS STAGE AND THIS SPLIT. The runner writes each stage's exclusion file
+        # under `<stage>_<split>/` and `score_behavior` records the path it was handed in
+        # `metadata.json:population_filter.exclude_prompt_ids_file`. A run whose population came
+        # from a different stage/split directory is a DIFFERENT population wearing this arm's tag.
+        xf = str(((run.get("meta") or {}).get("population_filter") or {})
+                 .get("exclude_prompt_ids_file") or "")
+        if not xf:
+            raise Refusal(
+                "arm %s at %s records no `population_filter.exclude_prompt_ids_file`, so which "
+                "SPLIT it bound cannot be verified. The domain split is the whole discipline of "
+                "this phase and is not taken on trust." % (arm.arm_id, d))
+        if want_dir not in xf:
+            raise Refusal(
+                "arm %s at %s bound its population from %r, which is not this stage's "
+                "%s_%s directory. Analysing it here would read a run from another stage or "
+                "another SPLIT under this arm's name -- test is read ONCE."
+                % (arm.arm_id, d, xf, stage, split))
+        found[arm.arm_id] = run
+    unexplained = [x for x in absent if x not in expected_absent]
+    ck.add("arms_present",
+           "every declared arm has a COMPLETE run directory, OR is expected-absent BY NAME "
+           "(outside the analysed stage, or re-derived UNBUILDABLE by the runner at launch)",
+           not unexplained, len(arms),
+           "unexplained absences=%s; expected-absent=%d" % (unexplained[:6], len(expected_absent)))
 
     if not found:
-        # This is the expected state before the GPU work exists, and it is a REFUSAL rather than
-        # an empty report: a report over zero arms is exactly the C-074 shape.
         raise Refusal(
             "NO PR-057 arm has produced a COMPLETE run under %s.\n"
             "  Nothing is analysable yet, and an analysis over zero arms would be a statistic over "
@@ -3031,7 +3966,7 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
 
     # Every arm is gated on liveness BEFORE any outcome is computed, so a number for an arm whose
     # hook did not fire is never produced in the first place.
-    live_report = {}
+    live_report, audits = {}, {}
     for arm in arms:
         run = found.get(arm.arm_id)
         if run is None:
@@ -3043,8 +3978,18 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
                lg["live"], lg["n_rows"], "; ".join(lg["reasons"])[:160])
         if run["liveness"]:
             aud = audit_end_relative(run["liveness"])
-            ck.add("index_%s" % arm.arm_id, "every edit index is len(input_ids)+rel_end (I-N9)",
-                   aud["ok"], aud["n_records"], aud["witness_note"])
+            audits[arm.arm_id] = aud
+            # NOT APPLICABLE IS NOT FAILED. An all-position (S2) or disabled arm resolves no single
+            # (rel_end, absolute index) pair, so the audit binds zero records BY CONSTRUCTION --
+            # every position is edited and no absolute index could be a reused one. Recording that
+            # as a failed check would refuse every band-wide arm for being what it is; recording it
+            # as a PASSED check would be a check that binds zero. It is reported as neither, and
+            # `build_void_clauses` gives the clause status NOT_APPLICABLE with the reason.
+            if aud["n_records"]:
+                ck.add("index_%s" % arm.arm_id, "every edit index is len(input_ids)+rel_end (I-N9)",
+                       aud["ok"] is True, aud["n_records"], aud["witness_note"])
+            else:
+                print("  [ N/A] index_%-38s %s" % (arm.arm_id, aud["witness_note"][:150]))
 
     ck.report()
     print("\n[pr057] %d arm(s) loaded, %d check failure(s)" % (len(found), ck.n_fail))
@@ -3055,7 +4000,306 @@ def analyse(pr: Prereg, runs_root: str, a) -> int:
             "negative is %r and it is not available to an arm that has not passed liveness."
             % (ck.n_fail, wording), forbidden), file=sys.stderr)
         return 1
-    print("  (outcome computation continues only for arms that passed every gate above)")
+
+    # ---------------------------------------------------------------- the outcome path (A4/A10)
+    dev_cw = development_codeword(pr)
+    prefix = getattr(a, "phase7_tag_prefix", "ts116m_readout") or "ts116m_readout"
+    fit_dir = getattr(a, "fit_dir", "") or ""
+    fit_dir_abs = fit_dir if os.path.isabs(fit_dir) else os.path.join(REPO, fit_dir)
+    fit_manifest_path = os.path.join(fit_dir_abs, "MANIFEST.json")
+    dprov = None
+    if os.path.exists(fit_manifest_path):
+        dprov = direction_provenance_gate(json.load(open(fit_manifest_path)), assign)
+
+    baselines: Dict[Tuple[str, str], Any] = {}
+
+    def _baseline(arm: ArmSpec):
+        key = (arm.codeword, arm.target_concept)
+        if key not in baselines:
+            try:
+                baselines[key] = load_arm_run(
+                    _find_run(runs_root, "%s_%s_%s" % (prefix, arm.codeword, arm.target_concept)))
+            except (PreregError, FileNotFoundError, OSError):
+                baselines[key] = None
+        return baselines[key]
+
+    def _bridge_for(arm: ArmSpec):
+        """The C5 disabled-hook bridge at the SAME scope AND the SAME codeword bank, or None."""
+        for b in arms:
+            if (b.hypothesis == "C5" and b.scope == arm.scope and b.codeword == arm.codeword
+                    and b.arm_id in found):
+                return b, found[b.arm_id]
+        return None, None
+
+    h1_ran = [x for x in arms if x.hypothesis == "H1" and x.arm_id in found]
+    h1_state = "NOT_AVAILABLE" if not h1_ran else "RAN"
+
+    observed_p: Dict[str, float] = {}
+    per_member: "OrderedDict[str, Any]" = OrderedDict()
+    replications: "OrderedDict[str, Any]" = OrderedDict()
+
+    def _member_arms(member: str) -> List[ArmSpec]:
+        return [x for x in arms if x.family_member == member]
+
+    def _one_arm_report(arm: ArmSpec, is_family_member: bool) -> Dict[str, Any]:
+        run = found[arm.arm_id]
+        base = _baseline(arm)
+        rep: Dict[str, Any] = {"arm_id": arm.arm_id, "family_member": arm.family_member,
+                               "codeword": arm.codeword, "scope": arm.scope,
+                               "hypothesis": arm.hypothesis,
+                               "is_family_member": bool(is_family_member),
+                               "codeword_role": ("development" if arm.codeword == dev_cw
+                                                 else "external_confirmation")}
+        if base is None:
+            rep["status"] = "NO UNTOUCHED BASELINE"
+            rep["verdict_class"] = VERDICT_CANNOT_ANSWER
+            rep["verdict"] = ("CANNOT ANSWER -- the untouched PHASE 7 baseline run "
+                              "%s_%s_%s was not found, so O2 does not exist for this arm."
+                              % (prefix, arm.codeword, arm.target_concept))
+            return rep
+        o2 = o2_contrast(pr, arm, run, base["results"])
+        rep["O2"] = o2
+        power = realised_power(pr, o2["per_domain_delta"])
+        rep["power_at_realised_sd"] = power
+
+        # O1 -- the paired contrast against the C5 bridge on the SAME bank (A11/A12).
+        bridge_arm, bridge_run = _bridge_for(arm)
+        if bridge_arm is None:
+            o1 = None
+            rep["O1"] = None
+            rep["O1_scope_note"] = (
+                "O1 IS NOT AVAILABLE FOR THIS ARM. The C5 disabled-hook bridge -- the only "
+                "un-intervened block-9 posterior in the buildable set -- exists on the %r bank "
+                "only, and this arm is on the %r bank. Pairing it against the %r bridge would be "
+                "a cross-codeword comparison wearing a baseline's name and is REFUSED. Under the "
+                "preregistered fallback (PR-060 design_answers.o1_baseline) this arm is reported "
+                "O2-ONLY and is NOT eligible for the conjunctive success rule."
+                % (dev_cw, arm.codeword, dev_cw))
+        else:
+            o1 = o1_contrast(pr, arm, run, bridge_arm, bridge_run)
+            rep["O1"] = o1
+            rep["O1_scope_note"] = o1["_scope_statement"]
+
+        # C1, the decisive control, matched to this arm's scope and hypothesis.
+        c1_draws = [(x, found[x.arm_id]) for x in arms
+                    if x.hypothesis == "C1" and x.scope == arm.scope
+                    and x.arm_id.split("_")[3] == arm.hypothesis.lower()
+                    and x.arm_id in found]
+        control = control_c1_report(pr, c1_draws, base["results"]) if c1_draws else None
+        rep["C1"] = control
+
+        across = {"majority_moved_intended": o2["majority_moved_intended"],
+                  "sign_p": o2["sign_test"]["p"], "sign_p_floor": o2["sign_test"]["floor"],
+                  "sign_p_formatted": o2["sign_test"]["formatted"],
+                  "n_domains": o2["n_domains"],
+                  "n_domains_moved_intended": o2["n_domains_moved_intended"]}
+        rep["across_domains"] = across
+
+        success = evaluate_success(o1, o2, control, across, alpha,
+                                   expected_sign=o2["expected_sign"])
+        rep["success"] = success
+
+        # ---- primary.void, clause by clause
+        bridge_gate = None
+        if bridge_arm is not None:
+            # I-N1: the bridge must reproduce the UNTOUCHED baseline. The two runs bind different
+            # populations (the bridge is split-restricted, the PHASE 7 baseline is not), so the
+            # hashes are taken over the SHARED prompt_ids on both sides -- comparing whole-run
+            # hashes would compare two different row sets and always disagree, which is a check
+            # that cannot pass rather than a check that passes.
+            shared = sorted({r["prompt_id"] for r in bridge_run["results"]}
+                            & {r["prompt_id"] for r in base["results"]})
+            if not shared:
+                raise ZeroBinding("the C5 bridge and the untouched baseline share ZERO prompt_ids")
+            b_map = {r["prompt_id"]: r for r in bridge_run["results"]}
+            u_map = {r["prompt_id"]: r for r in base["results"]}
+            maxdiff = max(abs(float(b_map[p]["semantic_logodds"])
+                              - float(u_map[p]["semantic_logodds"])) for p in shared)
+            bridge_gate = disabled_bridge_gate(_outcome_sha(u_map, shared),
+                                               _outcome_sha(b_map, shared), maxdiff)
+            bridge_gate["n_prompts_compared"] = len(shared)
+            bridge_gate["max_abs_row_diff_vs_untouched"] = maxdiff
+        meta = run.get("meta") or {}
+        bank_key = "%s_%s" % (arm.codeword, arm.target_concept)
+        bank_gate = (bank_sha_gate(pr, bank_key, meta.get("bank_rows_sha16"))
+                     if meta.get("bank_rows_sha16") else None)
+        ortho = None
+        if arm.hypothesis == "H2b":
+            ortho = orthogonal_residual_gate(run["liveness"])
+        vctx = {"arm": arm, "liveness": live_report[arm.arm_id],
+                "index_audit": audits.get(arm.arm_id),
+                "direction_provenance": dprov, "bridge": bridge_gate,
+                "control_band": (control or {}).get("band"), "orthogonal_residual": ortho,
+                "bank_sha": bank_gate}
+        vr = void_clause_report(pr, build_void_clauses(pr, vctx))
+        rep["void"] = vr
+
+        # ---- primary.cannot_answer, clause by clause
+        cctx = {"baseline_present": True,
+                "option_mass": option_mass_gate(run["summary"],
+                                                str(pr.require("population", "query_kind_primary"))),
+                "power": power, "h1_state": h1_state}
+        ca = build_cannot_answer_clauses(pr, cctx)
+        rep["cannot_answer"] = ca
+        ca_tripped = ["%s [%s]" % (c["clause"], c["detail"]) for c in ca
+                      if c["status"] == VOID_CLAUSE_TRIPPED]
+        ca_uneval = [c["clause"] for c in ca if c["status"] == VOID_CLAUSE_UNEVALUABLE]
+        if ca_uneval:
+            raise Refusal(
+                "arm %s: %d clause(s) of primary.cannot_answer are UNEVALUABLE (%s). An "
+                "unevaluable cannot-answer condition is a hole in the validity argument, not a "
+                "satisfied one; refusing to emit a verdict behind it." % (arm.arm_id,
+                                                                          len(ca_uneval), ca_uneval))
+        if vr["unevaluable"]:
+            raise Refusal(
+                "arm %s: %d clause(s) of primary.void are UNEVALUABLE (%s). An unevaluable void "
+                "condition is a hole in the validity argument, not a satisfied one; refusing to "
+                "emit a verdict behind it." % (arm.arm_id, len(vr["unevaluable"]),
+                                               vr["unevaluable"]))
+
+        if not is_family_member:
+            rep["status"] = "REPORTED, NOT A FAMILY MEMBER"
+            rep["_why"] = ("this arm is the %r codeword -- external confirmation, a SECONDARY "
+                           "family member ('lexical transfer button->basket'). PHASE9_CAUSAL "
+                           "declares six members and the development codeword's arm is the one "
+                           "corrected within it; promoting this arm would redefine a declared "
+                           "family after the fact (C-106)." % arm.codeword)
+            if o1 is None:
+                rep["status"] = "REPORTED O2-ONLY -- NOT ELIGIBLE FOR THE CONJUNCTIVE RULE"
+            return rep
+
+        v = verdict(success, live_report[arm.arm_id]["live"],
+                    o1_moved=bool(o1 is not None and o1["p"] < alpha and o1["moved_intended_sign"]),
+                    o2_moved=bool(o2["p"] < alpha and o2["moved_intended_sign"]),
+                    power_ok=power["power_ok"], wording=wording,
+                    realised_dose=(run.get("meta") or {}).get("realized_dose"),
+                    void_tripped=vr["tripped"], cannot_answer_tripped=ca_tripped)
+        rep.update(v)
+        if o1 is None:
+            rep["verdict_class"] = VERDICT_CANNOT_ANSWER
+            rep["verdict"] = (
+                "CANNOT ANSWER -- O1, one of the four conjunctive conditions, has no baseline on "
+                "the %r bank (no C5 disabled-hook bridge). The arm is reported O2-only. %s"
+                % (arm.codeword, rep["O1_scope_note"]))
+        return rep
+
+    for member in members:
+        marms = _member_arms(member)
+        present = [x for x in marms if x.arm_id in found]
+        if not present:
+            reasons = sorted({expected_absent.get(x.arm_id, "no run directory and no recorded "
+                                                             "reason") for x in marms})
+            per_member[member] = {
+                "status": "ABSENT -- ENTERS HOLM AT p = 1.0",
+                "arm_ids": [x.arm_id for x in marms], "reasons": reasons,
+                "_no_claim": "No claim is made about %s in EITHER direction. Its absence is "
+                             "CANNOT ANSWER BY CONSTRUCTION and is not evidence." % member}
+            continue
+        primary_arm = next((x for x in present if x.codeword == dev_cw), present[0])
+        rep = _one_arm_report(primary_arm, is_family_member=True)
+        per_member[member] = rep
+        if rep.get("O2") and rep.get("verdict_class") != VERDICT_VOID:
+            observed_p[member] = float(rep["O2"]["p"])
+        for other in present:
+            if other.arm_id != primary_arm.arm_id:
+                replications[other.arm_id] = _one_arm_report(other, is_family_member=False)
+
+    hm = holm_with_absent(pr, observed_p)
+
+    # ------------------------------------------------------------------------------- the report
+    lines: List[str] = []
+    lines.append("")
+    lines.append("=" * 92)
+    lines.append("PR-057 PHASE 9 -- CAUSAL VERDICT (stage %s, split %s)" % (stage, split))
+    lines.append("=" * 92)
+    lines.append("O1 SCOPE: the C5 disabled-hook bridge exists on the %r codeword bank only, so O1 "
+                 "is a %r-BANK STATISTIC. Arms on any other bank are reported O2-ONLY and are NOT "
+                 "eligible for the conjunctive success rule." % (dev_cw, dev_cw))
+    lines.append("HOLM: family PHASE9_CAUSAL, m = %d (NOT reduced). Absent members at p = 1.0: %s"
+                 % (hm["m"], hm["absent_members_at_p1"] or "none"))
+    for member in members:
+        rep = per_member[member]
+        h = hm["per_member"][member]
+        lines.append("")
+        lines.append("-- %s --" % member)
+        if rep.get("status", "").startswith("ABSENT"):
+            lines.append("   %s" % rep["status"])
+            for r in rep["reasons"]:
+                lines.append("     reason: %s" % r)
+            lines.append("   %s" % rep["_no_claim"])
+            lines.append("   Holm: p = %.6g (absent) vs threshold %.6g -> reject=%s"
+                         % (h["p"], h["threshold"], h["reject"]))
+            continue
+        lines.append("   arm: %s (codeword %s, role %s)"
+                     % (rep["arm_id"], rep["codeword"], rep["codeword_role"]))
+        if rep.get("O2"):
+            o2 = rep["O2"]
+            lines.append("   O2  delta = %+.6f   p = %s   [attainable floor %.6g]   n_domains=%d"
+                         % (o2["delta"], o2["p_formatted"], o2["p_floor"], o2["n_domains"]))
+            lines.append("       sign test: %s   [floor %.6g]   %d/%d domains moved the intended way"
+                         % (o2["sign_test"]["formatted"], o2["sign_test"]["floor"],
+                            o2["n_domains_moved_intended"], o2["n_domains"]))
+        if rep.get("O1"):
+            o1 = rep["O1"]
+            lines.append("   O1  delta = %+.6f   p = %s   [attainable floor %.6g]   baseline=%s"
+                         % (o1["delta"], o1["p_formatted"], o1["p_floor"], o1["baseline_arm"]))
+        else:
+            lines.append("   O1  NOT AVAILABLE -- %s" % rep.get("O1_scope_note", ""))
+        if rep.get("C1"):
+            c = rep["C1"]
+            lines.append("   C1  %d draws, %d distinct hashes; equivalence 95%% CI "
+                         "[%+.6f, %+.6f]; smallest draw p = %.6g"
+                         % (c["n_draws"], c["band"]["n_distinct"], c["equivalence"]["ci_low"],
+                            c["equivalence"]["ci_high"], c["smallest_draw_p"]))
+        for cnd in (rep.get("success") or {}).get("conditions", []):
+            lines.append("   [%s] %s -- %s" % ("PASS" if cnd["passed"] else "FAIL",
+                                               cnd["name"], cnd["detail"]))
+        for c in (rep.get("void") or {}).get("clauses", []):
+            if c["status"] != VOID_CLAUSE_CLEAR:
+                lines.append("   void[%s] %s -- %s" % (c["status"], c["clause"], c["detail"]))
+        for c in rep.get("cannot_answer", []):
+            if c["status"] != VOID_CLAUSE_CLEAR:
+                lines.append("   cannot_answer[%s] %s -- %s"
+                             % (c["status"], c["clause"], c["detail"][:220]))
+        lines.append("   Holm: p = %.6g vs threshold %.6g -> reject=%s"
+                     % (h["p"], h["threshold"], h["reject"]))
+        lines.append("   VERDICT [%s]: %s" % (rep.get("verdict_class"), rep.get("verdict")))
+    if replications:
+        lines.append("")
+        lines.append("-- external-confirmation arms (NOT family members) --")
+        for k, rep in replications.items():
+            lines.append("   %s: %s" % (k, rep.get("status", "")))
+            if rep.get("O2"):
+                lines.append("      O2 delta = %+.6f  p = %s  [floor %.6g]"
+                             % (rep["O2"]["delta"], rep["O2"]["p_formatted"],
+                                rep["O2"]["p_floor"]))
+            if rep.get("O1_scope_note"):
+                lines.append("      %s" % rep["O1_scope_note"])
+    lines.append("")
+    lines.append("SCOPE LIMITS THAT TRAVEL WITH EVERY SENTENCE ABOVE:")
+    lines.append("  * no measured ceiling: H1 has no code path and its population is empty "
+                 "(R-116/C-112). Its silence is CANNOT ANSWER BY CONSTRUCTION and is NOT evidence "
+                 "in either direction.")
+    lines.append("  * no counterfactual replacement: H2b (mode component_replace) has no code "
+                 "path; I-N7 is NOT AVAILABLE.")
+    lines.append("  * no shuffled-label control: C2's direction has no artifact; I-N5 is NOT "
+                 "AVAILABLE.")
+    lines.append("  * O1 is scoped to the %r bank (above)." % dev_cw)
+    txt = "\n".join(lines)
+    assert_sayable(txt, forbidden)
+    print(txt)
+
+    result = {"prereg": pr.path, "id": pr.require("id"), "stage": stage, "split": split,
+              "alpha": alpha, "holm": hm, "per_member": per_member,
+              "external_confirmation_arms": replications,
+              "expected_absent_arms": expected_absent,
+              "o1_scope_codeword": dev_cw,
+              "n_arms_loaded": len(found)}
+    out_path = getattr(a, "out", None)
+    if out_path:
+        with open(out_path, "w") as f:
+            f.write(assert_sayable(json.dumps(result, indent=2, default=str), forbidden))
+        print("wrote %s" % out_path)
     return 0
 
 
@@ -3067,6 +4311,15 @@ def main() -> int:
                     help="root under which each arm's run directory lives")
     ap.add_argument("--fit-dir", default="outputs/dcs_ts_pr053_diffmeans/<run>",
                     help="the PR-053 TRAIN-ONLY direction directory (Q2)")
+    ap.add_argument("--stage", default="h2", choices=["q1", "smoke", "h1", "h2"],
+                    help="which stage's arms are being analysed; arms OUTSIDE it are "
+                         "expected-absent (A10) and never demanded")
+    ap.add_argument("--split", default="test", choices=["train", "validation", "test"])
+    ap.add_argument("--state-root", default="outputs/boombness/pr057_runner",
+                    help="the runner's state root; <stage>_<split>/DONE.json supplies the "
+                         "UNBUILDABLE arm list the runner RE-DERIVED at launch (A10)")
+    ap.add_argument("--phase7-tag-prefix", default="ts116m_readout",
+                    help="tag prefix of the untouched PHASE 7 baseline runs (control C6)")
     ap.add_argument("--plan", action="store_true", help="print the arm manifest and stop")
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--mutate", action="store_true")

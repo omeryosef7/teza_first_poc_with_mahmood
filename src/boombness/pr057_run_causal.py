@@ -82,6 +82,7 @@ import hashlib
 import json
 import os
 import re
+import socket
 import sys
 import time
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -122,6 +123,12 @@ from dcs_ts_pr048_analysis import _find_run, load_split  # noqa: E402
 from dcs_ts_pr051_positional import Checks, ZeroBinding  # noqa: E402
 
 PREREG_DEFAULT = "configs/dcs_ts_pr057_phase9.json"
+#: The PHASE 9 amendment (DCS-PR-060). It is a SEPARATE, also-FROZEN file; the parent is
+#: never edited. It supersedes the parent's `pre_extraction_checklist` on measured evidence
+#: and adds the stage scoping the A14 gate reads. It cannot stand alone -- it carries no
+#: `hypotheses`, `scope_levels`, `seeds`, `controls` or `things_that_must_not_be_said` -- so
+#: the PARENT is what is loaded and the amendment is overlaid onto the checklist gate only.
+AMENDMENT_DEFAULT = "configs/dcs_ts_pr060_phase9_amendment.json"
 SCORE_SCRIPT = "src/boombness/score_behavior.py"
 RUNS_ROOT_DEFAULT = "outputs/boombness/score_behavior"
 STATE_ROOT_DEFAULT = "outputs/boombness/pr057_runner"
@@ -652,46 +659,87 @@ def assert_argv_agrees_with_analyzer(pr: Prereg, arm: ArmSpec, argv: Sequence[st
 # ============================================================================================
 # 5. STAGES, THE FIXED ORDER, AND THE SECOND KILL CONDITION
 # ============================================================================================
-def stage_selector(pr: Prereg, stage: str):
-    """Which arms belong to which stage. `h1 | h2` PARTITIONS the manifest; q1 and smoke are
-    subsets run on other splits, and every one of them is a subset of the SAME 54 declared arms --
-    a stage never invents an arm."""
-    dev_cw = str(pr.require("population", "codewords", "development"))
-    if stage == "h1":
-        return lambda a: a.hypothesis in ("H1", "C7")
-    if stage == "h2":
-        return lambda a: a.hypothesis not in ("H1", "C7")
-    if stage == "q1":
-        # The design's Q1 was "H1 x S1 and H2a x S1 on VALIDATION". C-112 demoted H1 to
-        # exploratory and R-116 made its population EMPTY, so the H1 half is not submittable; the
-        # power run is the PRIMARY arm (10.2 / H2a) at S1 on both codewords -- the same 2 arms and
-        # the same 460 rows the design costed. The deviation is recorded, not silent.
-        return lambda a: a.hypothesis == "H2a" and a.scope == "S1"
-    if stage == "smoke":
-        # Q7 asks for liveness, the self-patch control and a non-zero edit magnitude on a handful
-        # of TRAIN domains. The self-patch control is an H1-mode arm and is not constructible, so
-        # the smoke is the primary arm plus the DISABLED-HOOK BRIDGE, which is the other blocking
-        # liveness control and IS constructible. What cannot be smoked is reported as such.
-        return lambda a: ((a.hypothesis == "H2a" and a.scope == "S1" and a.codeword == dev_cw)
-                          or (a.hypothesis == "C5" and a.scope == "S1"))
-    raise RunnerRefusal("unknown stage %r; known: %s" % (stage, list(STAGE_ORDER)))
+#: `stage_selector` NOW LIVES IN THE ANALYZER (`scripts/dcs_ts_pr057_causal.py`) and is imported.
+#: The analyzer needs the same partition to decide which arms are EXPECTED-ABSENT (amendment A10),
+#: and two copies of "which arms belong to this stage" is exactly how the analyzer would come to
+#: demand a run this runner never scheduled. One definition, imported by both.
+stage_selector = AN.stage_selector
 
 
 def stage_dir(state_root: str, stage: str, split: str) -> str:
     return os.path.join(state_root, "%s_%s" % (stage, split))
 
 
-def assert_stage_order(state_root: str, stage: str, split: str) -> Dict[str, Any]:
+#: `A9`. The ONLY stages whose predecessor status may be satisfied by RE-DERIVING constructibility
+#: instead of by a terminal record. An explicit allowlist, not a general "an empty stage is fine":
+#: the rejected alternative was letting a zero-arm stage write a `DONE.json`, which reopens exactly
+#: the silent-success hole `run_stage` refuses at (":stage has ZERO constructible arms").
+#: `h1` is here because its 18 arms are unbuildable for two independent reasons -- mode `patch`
+#: has no `score_behavior` code path, and R-116/C-112 measured the donor concept installing in 0 of
+#: 113 domains -- so no `h1/DONE.json` can ever exist and none may ever be hand-written.
+#: This is RE-DERIVED AT EVERY LAUNCH, so it cannot be asserted by hand, and it RE-ARMS the moment
+#: one h1 arm becomes constructible. That is the property an allowlist of "stages known
+#: unbuildable" would not have.
+RE_DERIVABLE_PREDECESSORS = ("h1",)
+PREDECESSOR_BY_CONSTRUCTION = "CANNOT_RUN_BY_CONSTRUCTION"
+
+
+def stage_constructibility_state(pr: Prereg, stage: str,
+                                 payload_keys: Optional[Sequence[str]]) -> Dict[str, Any]:
+    """Re-derive, from `constructibility`, whether a stage has ANY arm that could run today.
+
+    THE RISK THIS CARRIES, STATED. After A9 a bug in the constructibility path can OPEN a gate
+    rather than only refuse an arm. Two mitigations ship with it: (a) the mutation
+    `h1 arm made constructible -> the gate REFUSES again`, and (b) the refusal below -- if any
+    arm's unbuildability turns on the direction PAYLOAD and the payload was not readable, this
+    function refuses instead of deciding. A gate that opens on missing evidence is the failure.
+    """
+    arms = [x for x in build_arm_manifest(pr) if stage_selector(pr, stage)(x)]
+    if not arms:
+        raise ZeroBinding("stage %r selects ZERO arms; its constructibility is undefined" % stage)
+    per: Dict[str, Any] = {}
+    buildable: List[str] = []
+    payload_dependent: List[str] = []
+    for arm in arms:
+        con = constructibility(pr, arm, payload_keys or ())
+        if con["constructible"]:
+            buildable.append(arm.arm_id)
+        else:
+            per[arm.arm_id] = con["reasons"]
+            if any("payload" in r for r in con["reasons"]):
+                payload_dependent.append(arm.arm_id)
+    if payload_keys is None and payload_dependent:
+        raise RunnerRefusal(
+            "the constructibility of %d %s arm(s) (%s) turns on the direction PAYLOAD, which "
+            "could not be read. Refusing to decide the launch order on evidence that is missing: "
+            "a gate that opens because it could not look is the failure this guard exists to "
+            "prevent." % (len(payload_dependent), stage, payload_dependent[:4]))
+    return {"stage": stage, "n_selected": len(arms), "n_constructible": len(buildable),
+            "constructible_arm_ids": buildable, "unbuildable_reasons": per,
+            "state": ("RUNNABLE" if buildable else PREDECESSOR_BY_CONSTRUCTION)}
+
+
+def assert_stage_order(state_root: str, stage: str, split: str,
+                       pr: Optional[Prereg] = None,
+                       payload_keys: Optional[Sequence[str]] = None) -> Dict[str, Any]:
     """`Q0 -> Q1 -> smoke -> H1 -> H2`, enforced by reading the earlier stages' own DONE.json.
 
     A comment cannot stop a job being submitted out of order; this can. `q0` is not a job (it is a
     gate over the PHASE 7 runs) so it has no DONE.json of its own and is checked separately by
     `q0_gate`.
+
+    `A9`, 2026-09-08. h1 can NEVER write a `DONE.json`: `run_stage` refuses a stage with zero
+    constructible arms BEFORE `write_terminal`, and that refusal is correct -- an empty stage that
+    reports success is the failure this whole design exists to prevent. So the predecessor is
+    re-derived instead: if a stage on `RE_DERIVABLE_PREDECESSORS` has ZERO constructible arms at
+    THIS launch, it satisfies the order as `CANNOT_RUN_BY_CONSTRUCTION`, recorded with the per-arm
+    reasons. If ANY of its arms is constructible, the gate refuses exactly as it did before -- a
+    stage that COULD run must run. No terminal record is written for it, by hand or otherwise.
     """
     need = {"q1": [], "smoke": ["q1"], "h1": ["q1", "smoke"], "h2": ["q1", "smoke", "h1"]}
     if stage not in need:
         raise RunnerRefusal("stage %r has no declared predecessors" % stage)
-    missing = []
+    missing, by_construction = [], {}
     for pre in need[stage]:
         hits = []
         for cand in os.listdir(state_root) if os.path.isdir(state_root) else []:
@@ -700,8 +748,21 @@ def assert_stage_order(state_root: str, stage: str, split: str) -> Dict[str, Any
                 d = json.load(open(os.path.join(state_root, cand, "DONE.json")))
                 if d.get("status") == "ok":
                     hits.append(cand)
-        if not hits:
-            missing.append(pre)
+        if hits:
+            continue
+        if pr is not None and pre in RE_DERIVABLE_PREDECESSORS:
+            st = stage_constructibility_state(pr, pre, payload_keys)
+            if st["state"] == PREDECESSOR_BY_CONSTRUCTION:
+                by_construction[pre] = st
+                continue
+            raise RunnerRefusal(
+                "stage %r was requested and predecessor %r has no DONE.json -- but %d of its %d "
+                "arms ARE constructible today (%s). A stage that COULD run must run: the "
+                "by-construction exemption is for a stage nothing can build, and re-deriving it "
+                "at every launch is what makes it re-arm the moment that changes."
+                % (stage, pre, st["n_constructible"], st["n_selected"],
+                   st["constructible_arm_ids"][:4]))
+        missing.append(pre)
     if missing:
         raise RunnerRefusal(
             "stage %r was requested but %s has not completed (no %s/<stage>_*/DONE.json with "
@@ -709,7 +770,12 @@ def assert_stage_order(state_root: str, stage: str, split: str) -> Dict[str, Any
             "negotiable: Q1 decides whether the design can answer at all, and running the "
             "confirmatory arms first would read TEST before that question was asked."
             % (stage, missing, state_root))
-    return {"stage": stage, "predecessors_satisfied": need[stage]}
+    for pre, st in sorted(by_construction.items()):
+        print("[pr057] launch order: predecessor %r satisfied as %s -- 0 of %d arms constructible; "
+              "no DONE.json exists for it and none was written"
+              % (pre, PREDECESSOR_BY_CONSTRUCTION, st["n_selected"]), flush=True)
+    return {"stage": stage, "predecessors_satisfied": need[stage],
+            "predecessors_by_construction": by_construction}
 
 
 def q0_gate(pr: Prereg, runs_root: str, tag_prefix: str) -> Dict[str, Any]:
@@ -1375,6 +1441,151 @@ def exclusion_file_name(bank_abs: str, split: str) -> str:
 # ============================================================================================
 # 13. EXECUTION
 # ============================================================================================
+# ============================================================================================
+# 9b. A14 -- THE STAGE-AWARE PRE-EXTRACTION CHECKLIST GATE
+# ============================================================================================
+#
+# `scripts/dcs_ts_prereg.py:validate` enforces the `done` boolean alone and knows nothing about
+# stages, so a checklist item that is genuinely scoped to h1 -- A3, the cross-prompt donor --
+# blocked h2 as well. Marking it done because it is irrelevant to h2 would be the
+# "threshold published but never enforced" failure in reverse. This gate is the third option.
+#
+# IT IS STRICTLY STRONGER THAN THE LOADER'S, NOT WEAKER. An item is scoped out of a stage ONLY if
+# ALL THREE of these hold:
+#   1. the preregistration declares `applies_to_stages` for it and the running stage is not in it;
+#   2. THIS runner carries a predicate that RE-DERIVES the item's relevance from the arm manifest;
+#   3. that predicate, run against the stage's OWN arms, says the item is irrelevant.
+# An item with no declared scope blocks. An item whose scope this runner cannot re-derive blocks --
+# a prose scope with no code path is not a scope. An item whose scope the arms CONTRADICT blocks,
+# and says so. Everything else is unchanged: `blocking and not done` refuses, malformed booleans
+# refuse (C-086), and `artifacts.analyzer_exists == false` refuses.
+#
+#: {checklist id: (what makes it relevant, predicate over (pr, stage))}
+CHECKLIST_STAGE_RELEVANCE = {
+    # A3 / Q3: the cross-prompt donor. Relevant to a stage iff that stage runs a `patch` arm.
+    "A3": ("the stage runs an arm whose mode is 'patch' (the cross-prompt donor)",
+           lambda pr, stage: any(x.mode == "patch" for x in build_arm_manifest(pr)
+                                 if stage_selector(pr, stage)(x))),
+    # A7b / I-N2: the self-patch identity control is control C7, which is itself mode `patch`.
+    "A7b": ("the stage runs an arm whose mode is 'patch' (control C7 is the self-patch)",
+            lambda pr, stage: any(x.mode == "patch" for x in build_arm_manifest(pr)
+                                  if stage_selector(pr, stage)(x))),
+}
+
+
+def load_amendment(amendment_path: str, pr: Prereg) -> Dict[str, Any]:
+    """Load an AMENDMENT and verify it amends THIS preregistration, at the sha it names.
+
+    An amendment is a new file; the parent is never edited. Anything it supersedes it must say it
+    supersedes -- `amendment.supersedes[].field` -- so a file cannot quietly replace a gate it
+    never claimed to touch.
+    """
+    fp = amendment_path if os.path.isabs(amendment_path) else repo_path(amendment_path)
+    if not os.path.exists(fp):
+        raise RunnerRefusal("amendment not found: %s" % amendment_path)
+    obj = json.load(open(fp))
+    if obj.get("status") != "FROZEN":
+        raise RunnerRefusal("amendment %s has status %r, not FROZEN" % (amendment_path,
+                                                                        obj.get("status")))
+    am = obj.get("amendment") or {}
+    if am.get("amends_prereg_id") != pr.require("id"):
+        raise RunnerRefusal("amendment %s amends %r but the loaded preregistration is %r"
+                            % (amendment_path, am.get("amends_prereg_id"), pr.require("id")))
+    parent = am.get("amends") or ""
+    want, got = am.get("amends_file_sha16"), file_sha16(repo_path(parent))
+    if want != got:
+        raise RunnerRefusal(
+            "amendment %s pins its parent %s at sha16 %r and the file on disk hashes %r. An "
+            "amendment to a file that has since changed amends nothing."
+            % (amendment_path, parent, want, got))
+    fields = {str(x.get("field", "")).split(" ")[0] for x in (am.get("supersedes") or [])}
+    if "pre_extraction_checklist" not in fields:
+        raise RunnerRefusal(
+            "amendment %s does not declare that it supersedes `pre_extraction_checklist`, so its "
+            "own checklist may not stand in for the parent's." % amendment_path)
+    return obj
+
+
+def checklist_gate(prereg_path: str, amendment_path: str, stage: str) -> Dict[str, Any]:
+    """`A14`. The BLOCKING pre-extraction checklist, evaluated FOR ONE STAGE."""
+    pr = load_prereg(prereg_path, for_extraction=False)
+    base = pr.obj
+    checklist = list(base.get("pre_extraction_checklist") or [])
+    artifacts = dict(base.get("artifacts") or {})
+    source = prereg_path
+    blocking: List[str] = []
+    scoped_out: List[Dict[str, Any]] = []
+
+    if amendment_path:
+        amd = load_amendment(amendment_path, pr)
+        acl = list(amd.get("pre_extraction_checklist") or [])
+        if not acl:
+            raise RunnerRefusal("amendment %s carries an EMPTY checklist" % amendment_path)
+        # Every BLOCKING parent item must be superseded by name, or it still stands. An amendment
+        # that quietly drops a parent blocker would be a relaxation wearing a supersession's name.
+        superseded = set()
+        for it in acl:
+            for tok in str(it.get("supersedes", "")).replace("(", " ").replace(")", " ").split():
+                superseded.add(tok.strip(",+"))
+        orphan = [str(it.get("id")) for it in checklist
+                  if it.get("blocking") and not it.get("done")
+                  and str(it.get("id")) not in superseded]
+        if orphan:
+            blocking.append(
+                "the amendment %s supersedes no item for BLOCKING parent checklist item(s) %s, so "
+                "they still stand and are not done" % (amendment_path, orphan))
+        checklist = acl
+        artifacts.update(amd.get("artifacts") or {})
+        source = amendment_path
+
+    if not checklist:
+        blocking.append("pre_extraction_checklist is empty -- refusing to extract behind a "
+                        "checklist that declares nothing")
+    for item in checklist:
+        iid = str(item.get("id", "<no id>"))
+        if "blocking" not in item or "done" not in item:
+            blocking.append("checklist %s: must declare boolean 'blocking' and 'done' (C-086)" % iid)
+            continue
+        if not isinstance(item["blocking"], bool) or not isinstance(item["done"], bool):
+            blocking.append("checklist %s: 'blocking'/'done' must be booleans" % iid)
+            continue
+        if not item["blocking"] or item["done"]:
+            continue
+        scope = item.get("applies_to_stages")
+        if not scope:
+            blocking.append("%s [%s] is BLOCKING and not done, and declares no applies_to_stages: "
+                            "%s" % (iid, source, str(item.get("item"))[:150]))
+            continue
+        if stage in scope:
+            blocking.append("%s [%s] is BLOCKING, not done, and applies to stage %r: %s"
+                            % (iid, source, stage, str(item.get("item"))[:150]))
+            continue
+        rel = CHECKLIST_STAGE_RELEVANCE.get(iid)
+        if rel is None:
+            blocking.append(
+                "%s [%s] is BLOCKING, not done, and declares applies_to_stages=%s -- but this "
+                "runner has NO predicate that re-derives its relevance, so the scope is prose. A "
+                "prose scope with no code path is not a scope (C-086, the same failure with the "
+                "sign flipped)." % (iid, source, scope))
+            continue
+        why, pred = rel
+        if pred(pr, stage):
+            blocking.append(
+                "%s [%s] declares applies_to_stages=%s, but stage %r's OWN arms contradict that: "
+                "%s. The declared scope is wrong and the item blocks." % (iid, source, scope,
+                                                                          stage, why))
+            continue
+        scoped_out.append({"id": iid, "applies_to_stages": list(scope),
+                           "why": "not relevant to stage %r, RE-DERIVED at launch: NOT (%s)"
+                                  % (stage, why),
+                           "item": str(item.get("item"))[:200]})
+    if not artifacts.get("analyzer_exists", False):
+        blocking.append("artifacts.analyzer_exists is false [%s] -- refusing to extract behind an "
+                        "analyzer that does not exist" % source)
+    return {"ok": not blocking, "stage": stage, "source": source,
+            "blocking": blocking, "scoped_out": scoped_out}
+
+
 def run_stage(pr: Prereg, a) -> int:
     runs_root = a.runs if os.path.isabs(a.runs) else repo_path(a.runs)
     state_root = a.state_root if os.path.isabs(a.state_root) else repo_path(a.state_root)
@@ -1402,6 +1613,17 @@ def run_stage(pr: Prereg, a) -> int:
         raise RunnerRefusal(
             "--emit-liveness is REQUIRED: every arm in this phase installs a hook, and without "
             "the liveness record a dead hook scores as a clean null (C-13).")
+    # A13: O1 is one of the four CONJUNCTIVE success conditions. Without `--emit-probe` no
+    # PR057_PROBE.jsonl is written, O1 is never captured, and the conjunction is unevaluable --
+    # which the analyzer would (correctly) report as CANNOT ANSWER after the GPU time was spent.
+    # The flag is therefore REQUIRED for the confirmatory stages, not merely recommended.
+    if a.stage in ("h1", "h2") and not a.emit_probe:
+        raise RunnerRefusal(
+            "--emit-probe is REQUIRED for the confirmatory stage %r. O1 (the frozen PR-048 probe "
+            "margin) is one of the four conjunctive conditions of primary.success; without the "
+            "flag no %s is written, O1 is never captured, and the whole stage returns CANNOT "
+            "ANSWER on a condition that a single command-line flag would have supplied "
+            "(amendment A13)." % (a.stage, CONTRACT_PROBE))
 
     # ---- order, Q0, and the preregistration's own blocking checklist -----------------------
     #
@@ -1427,19 +1649,36 @@ def run_stage(pr: Prereg, a) -> int:
         return g
 
     def _checklist():
-        # The confirmatory stages read TEST. They may not run until the frozen preregistration's
-        # BLOCKING checklist closes -- the loader is the enforcement, not a comment here.
+        # The confirmatory stages read TEST. They may not run until the BLOCKING checklist closes.
+        # A14: the gate is now STAGE-AWARE, and strictly stronger than the loader's -- see
+        # `checklist_gate`. It is never weaker: an item with no declared stage scope, or whose
+        # scope this runner cannot re-derive, still blocks every stage.
         if a.stage in ("h1", "h2"):
-            try:
-                load_prereg(a.prereg, for_extraction=True)
-            except PreregError as e:
+            g = checklist_gate(a.prereg, getattr(a, "amendment", "") or "", a.stage)
+            for s in g["scoped_out"]:
+                print("[pr057] checklist %s: SCOPED OUT of stage %r -- %s"
+                      % (s["id"], a.stage, s["why"]), flush=True)
+            if not g["ok"]:
+                # PRINTED as well as raised: `_gate` keeps only the first line of a refusal for
+                # the --dry-run summary, and "which items are still open" is the whole content of
+                # this one.
+                for r in g["blocking"]:
+                    print("[pr057] CHECKLIST BLOCKS %s: %s" % (a.stage, r), flush=True)
                 raise RunnerRefusal(
-                    "the confirmatory stage %r requires the frozen preregistration to load with "
-                    "the BLOCKING checklist enforced, and it does not:\n%s" % (a.stage, e))
+                    "the confirmatory stage %r requires the BLOCKING pre-extraction checklist to "
+                    "close, and it does not (%d item(s), each printed above): %s"
+                    % (a.stage, len(g["blocking"]),
+                       "; ".join(r.split(" [")[0] for r in g["blocking"])))
         return True
 
+    # `dg` is computed BEFORE the launch-order gate because A9's re-derivation of a predecessor's
+    # constructibility needs the direction payload's keys, and a gate that decided without them
+    # would be deciding on evidence it did not look at.
+    dg = _gate(lambda: direction_gate(pr, a.fit_dir, a.expect_direction_sha), "direction gate")
     q0 = _gate(_q0, "Q0")
-    _gate(lambda: assert_stage_order(state_root, a.stage, a.split), "launch order")
+    _gate(lambda: assert_stage_order(state_root, a.stage, a.split, pr=pr,
+                                     payload_keys=(dg["payload_keys"] if dg else None)),
+          "launch order")
     _gate(_checklist, "pre-extraction checklist")
     if a.stage == "q1" and a.split != "validation":
         raise RunnerRefusal("the Q1 power stage is VALIDATION-ONLY by preregistration; got --split %r"
@@ -1449,7 +1688,12 @@ def run_stage(pr: Prereg, a) -> int:
 
     assign = load_split(pr)
     rel_end = read_site_rel_end(pr)
-    dg = direction_gate(pr, a.fit_dir, a.expect_direction_sha)
+    if dg is None:                      # only reachable under --dry-run, which collected it above
+        for b in blocking:
+            print("[pr057] BLOCKING %s" % b, file=sys.stderr)
+        print("[pr057] DRY-RUN: the direction gate did not pass, so no arm could be constructed. "
+              "%d BLOCKING gate(s) above." % len(blocking), file=sys.stderr)
+        return 3
     arms_all = build_arm_manifest(pr)
     sel = stage_selector(pr, a.stage)
     selected = [x for x in arms_all if sel(x)]
@@ -1484,6 +1728,8 @@ def run_stage(pr: Prereg, a) -> int:
     man = manifest_load(sdir, runs_root) if not a.dry_run else {}
     man.setdefault("started", time.strftime("%Y-%m-%d %H:%M:%S"))
     man.update({"stage": a.stage, "split": a.split, "prereg": a.prereg,
+                "amendment": getattr(a, "amendment", "") or None,
+                "provenance": slurm_provenance(),
                 "prereg_id": pr.require("id"), "fit_dir": a.fit_dir,
                 "direction_sha256": dg["sha256"], "kill_states": kill_states,
                 "not_submitted": skipped, "runs_root": runs_root})
@@ -1731,9 +1977,32 @@ def assert_stage_has_no_prior_verdict(sdir: str) -> None:
                    prior.get("n_arms_done"), name))
 
 
+def slurm_provenance() -> Dict[str, Any]:
+    """`A15`. Who wrote this record: the SLURM job id, its node list, and the host.
+
+    `outputs/boombness/pr057_runner/smoke_train/DONE.json` could not be traced to the job that
+    wrote it: the arm run dirs carried `slurm_job_id` 868702 in their own `RUNMETA.json`, and the
+    stage record -- written later, by a different invocation -- carried nothing. A terminal record
+    that cannot name the job that produced it is evidence with no provenance. Read from the
+    environment, never typed, and recorded as `null` off a batch node rather than invented.
+    """
+    return {"slurm_job_id": os.environ.get("SLURM_JOB_ID") or None,
+            "slurm_array_task_id": os.environ.get("SLURM_ARRAY_TASK_ID") or None,
+            "slurm_nodelist": os.environ.get("SLURM_JOB_NODELIST")
+                              or os.environ.get("SLURM_NODELIST") or None,
+            "hostname": socket.gethostname(),
+            "pid": os.getpid(),
+            "written_at": time.strftime("%Y-%m-%d %H:%M:%S")}
+
+
 def write_terminal(sdir: str, name: str, blob: Dict[str, Any]) -> None:
     """DONE.json / ABORTED.json. They are DIFFERENT FILES so a partial stage can never be read as
-    a complete one, and neither is allowed to overwrite the other."""
+    a complete one, and neither is allowed to overwrite the other.
+
+    `A15`: every terminal record carries the SLURM job id of the invocation that wrote it.
+    """
+    blob = dict(blob)
+    blob.setdefault("provenance", slurm_provenance())
     os.makedirs(sdir, exist_ok=True)
     other = "ABORTED.json" if name == "DONE.json" else "DONE.json"
     if os.path.exists(os.path.join(sdir, other)):
@@ -2002,6 +2271,104 @@ def selftest() -> int:
             json.dump({"status": "ok"}, open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
         ck.add("order_satisfied", "with all three complete, stage h2 proceeds",
                assert_stage_order(td, "h2", "test")["stage"] == "h2", 1, "")
+
+    # ---- A9: the launch-order gate, RE-DERIVED -------------------------------------------
+    _keys = list(direction_gate(pr, "outputs/dcs_ts/directions_pr053")["payload_keys"])
+    with tempfile.TemporaryDirectory() as td:
+        for s in ("q1", "smoke"):
+            os.makedirs(os.path.join(td, "%s_x" % s))
+            json.dump({"status": "ok"}, open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+        try:
+            assert_stage_order(td, "h2", "test")
+            ok = False
+        except RunnerRefusal:
+            ok = True
+        ck.add("a9_without_pr_the_gate_is_unchanged",
+               "with no `pr` the gate still demands an h1 DONE.json -- the old behaviour is the "
+               "default and the exemption is opt-in", ok, 1)
+        r = assert_stage_order(td, "h2", "test", pr=pr, payload_keys=_keys)
+        st = r["predecessors_by_construction"].get("h1") or {}
+        ck.add("a9_h1_satisfied_by_construction",
+               "h1 has ZERO constructible arms at this launch, so the h2 predecessor is satisfied "
+               "as CANNOT_RUN_BY_CONSTRUCTION -- and NO DONE.json was written for it",
+               st.get("state") == PREDECESSOR_BY_CONSTRUCTION and st.get("n_constructible") == 0
+               and not os.path.exists(os.path.join(td, "h1_test", "DONE.json")),
+               st.get("n_selected", 0),
+               "%d/%d constructible" % (st.get("n_constructible", -1), st.get("n_selected", -1)))
+        ck.add("a9_reasons_are_persisted",
+               "the per-arm reasons the gate re-derived are carried in the record, not discarded",
+               len(st.get("unbuildable_reasons") or {}) == st.get("n_selected"),
+               len(st.get("unbuildable_reasons") or {}))
+        # THE MITIGATION THE AMENDMENT REQUIRED: make ONE h1 arm constructible and the gate must
+        # REFUSE again. Without this, a bug in the constructibility path could OPEN the gate.
+        _real = globals()["constructibility"]
+
+        def _one_h1_buildable(_pr, arm, keys):
+            if arm.arm_id.startswith("h1_s1_bomb_from_knife"):
+                return {"arm_id": arm.arm_id, "constructible": True,
+                        "intervene_direction": None, "reasons": []}
+            return _real(_pr, arm, keys)
+        globals()["constructibility"] = _one_h1_buildable
+        try:
+            assert_stage_order(td, "h2", "test", pr=pr, payload_keys=_keys)
+            ok = False
+        except RunnerRefusal as e:
+            ok = "COULD run must run" in str(e)
+        finally:
+            globals()["constructibility"] = _real
+        ck.add("a9_re_arms_when_an_h1_arm_becomes_constructible",
+               "with ONE h1 arm constructible the gate REFUSES again -- the exemption is "
+               "re-derived at every launch, never asserted", ok, 1)
+
+    # ---- A14: the stage-aware checklist gate ----------------------------------------------
+    g_h2 = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "h2")
+    g_h1 = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "h1")
+    ck.add("a14_h1_scoped_item_is_scoped_out_of_h2",
+           "A3 (the cross-prompt donor) declares applies_to_stages=[h1] and NO h2 arm has mode "
+           "'patch', so it is scoped out of h2 -- re-derived, not read off the prose",
+           "A3" in {s["id"] for s in g_h2["scoped_out"]}, 1,
+           str(sorted(s["id"] for s in g_h2["scoped_out"])))
+    ck.add("a14_h1_scoped_item_still_blocks_h1",
+           "the SAME item still blocks the stage it applies to",
+           any(r.startswith("A3 ") for r in g_h1["blocking"]), 1)
+    ck.add("a14_unscoped_blockers_still_block",
+           "every BLOCKING item that declares no applies_to_stages still blocks h2",
+           all(any(r.startswith(i["id"] + " ") for r in g_h2["blocking"])
+               for i in json.load(open(repo_path(AMENDMENT_DEFAULT)))["pre_extraction_checklist"]
+               if i["blocking"] and not i["done"] and not i.get("applies_to_stages")), 1,
+           "%d blocking reason(s)" % len(g_h2["blocking"]))
+    ck.add("a14_analyzer_exists_still_gates",
+           "artifacts.analyzer_exists == false still refuses, stage-aware or not",
+           any("analyzer_exists" in r for r in g_h2["blocking"]), 1)
+    _forged = {"id": "ZZ9", "item": "a fabricated blocker", "blocking": True, "done": False,
+               "applies_to_stages": ["h1"]}
+    ck.add("a14_a_scope_with_no_code_path_is_not_a_scope",
+           "an item scoped away from h2 for which this runner has NO re-derivation predicate "
+           "BLOCKS -- prose is not enforcement",
+           "ZZ9" not in CHECKLIST_STAGE_RELEVANCE and _forged["applies_to_stages"] == ["h1"], 1)
+
+    # ---- A15: provenance on every terminal record -------------------------------------------
+    with tempfile.TemporaryDirectory() as td:
+        os.environ["SLURM_JOB_ID"] = "999999"
+        try:
+            write_terminal(td, "DONE.json", {"status": "ok"})
+            blob = json.load(open(os.path.join(td, "DONE.json")))
+        finally:
+            os.environ.pop("SLURM_JOB_ID", None)
+        ck.add("a15_terminal_record_names_its_job",
+               "every terminal record carries the SLURM job id, node list and host of the "
+               "invocation that wrote it",
+               blob["provenance"]["slurm_job_id"] == "999999"
+               and blob["provenance"]["hostname"] and "written_at" in blob["provenance"], 3,
+               str(blob["provenance"])[:110])
+    with tempfile.TemporaryDirectory() as td:
+        write_terminal(td, "ABORTED.json", {"status": "aborted"})
+        ck.add("a15_provenance_is_null_off_a_batch_node",
+               "off SLURM the job id is recorded as null rather than invented",
+               json.load(open(os.path.join(td, "ABORTED.json")))["provenance"]["slurm_job_id"]
+               is None, 1)
+
+    with tempfile.TemporaryDirectory() as td:
         # terminal files
         write_terminal(td, "DONE.json", {"status": "ok"})
         try:
@@ -2244,6 +2611,145 @@ def mutate() -> int:
           [{k: v for k, v in _live_record().items() if k != "n_cells_edited_expected"}],
           _stub_arm()))
 
+    # ---- A9 / A13 / A14 / A15, 2026-09-08 ---------------------------------------------------
+    def _order_with_a_buildable_h1():
+        """The mitigation A9's risk section requires: if the constructibility path ever says an
+        h1 arm IS buildable, the launch-order gate must REFUSE again rather than open."""
+        import tempfile as _tf
+        _real = globals()["constructibility"]
+
+        def _fake(_pr, arm, keys):
+            if arm.hypothesis == "H1":
+                return {"arm_id": arm.arm_id, "constructible": True,
+                        "intervene_direction": None, "reasons": []}
+            return _real(_pr, arm, keys)
+        globals()["constructibility"] = _fake
+        try:
+            with _tf.TemporaryDirectory() as td:
+                for s in ("q1", "smoke"):
+                    os.makedirs(os.path.join(td, "%s_x" % s))
+                    json.dump({"status": "ok"},
+                              open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+                assert_stage_order(td, "h2", "test", pr=pr, payload_keys=payload_keys)
+        finally:
+            globals()["constructibility"] = _real
+        raise AssertionError("NOT REFUSED")
+
+    m("M28_h1_becomes_constructible_reopens_the_order_gate",
+      "A9 lets a re-derivation OPEN a gate; if any h1 arm is constructible it must refuse again",
+      _order_with_a_buildable_h1)
+
+    def _order_on_a_stage_not_allowlisted():
+        import tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            # q1 is NOT on RE_DERIVABLE_PREDECESSORS: a missing q1 may never be excused by
+            # constructibility, however few arms it turns out to have.
+            assert_stage_order(td, "smoke", "train", pr=pr, payload_keys=payload_keys)
+        raise AssertionError("NOT REFUSED")
+
+    m("M29_by_construction_exemption_is_allowlisted",
+      "only the stages on RE_DERIVABLE_PREDECESSORS may be excused; a missing q1 still refuses",
+      _order_on_a_stage_not_allowlisted)
+
+    def _checklist_scope_with_no_predicate():
+        g = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "h2")
+        saved = dict(CHECKLIST_STAGE_RELEVANCE)
+        CHECKLIST_STAGE_RELEVANCE.clear()
+        try:
+            g2 = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "h2")
+        finally:
+            CHECKLIST_STAGE_RELEVANCE.update(saved)
+        if len(g2["scoped_out"]) or len(g2["blocking"]) <= len(g["blocking"]):
+            raise AssertionError("NOT REFUSED")
+        raise RunnerRefusal("a stage scope with no re-derivation predicate BLOCKS: %s"
+                            % [r[:70] for r in g2["blocking"] if r.startswith("A3 ")][:1])
+
+    m("M30_a_prose_stage_scope_with_no_code_path",
+      "an item scoped away from the stage that this runner cannot RE-DERIVE must still block",
+      _checklist_scope_with_no_predicate)
+
+    def _checklist_scope_contradicted_by_the_arms():
+        saved = CHECKLIST_STAGE_RELEVANCE.get("A3")
+        CHECKLIST_STAGE_RELEVANCE["A3"] = ("the stage runs any arm at all",
+                                           lambda _pr, _stage: True)
+        try:
+            g = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "h2")
+        finally:
+            if saved is not None:
+                CHECKLIST_STAGE_RELEVANCE["A3"] = saved
+        if any(s["id"] == "A3" for s in g["scoped_out"]):
+            raise AssertionError("NOT REFUSED")
+        raise RunnerRefusal("the arms contradict the declared scope, so A3 blocks h2")
+
+    m("M31_stage_scope_contradicted_by_the_stages_own_arms",
+      "if the stage's OWN arms need the item, the declared applies_to_stages does not excuse it",
+      _checklist_scope_contradicted_by_the_arms)
+
+    def _amendment_pinned_to_a_different_parent():
+        import tempfile as _tf
+        obj = json.load(open(repo_path(AMENDMENT_DEFAULT)))
+        obj["amendment"]["amends_file_sha16"] = "0" * 16
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False,
+                                    dir=repo_path("outputs")) as fh:
+            json.dump(obj, fh)
+            p = fh.name
+        try:
+            checklist_gate(PREREG_DEFAULT, p, "h2")
+        finally:
+            os.unlink(p)
+        raise AssertionError("NOT REFUSED")
+
+    m("M32_amendment_whose_parent_sha_does_not_match",
+      "an amendment that pins a parent sha the file on disk does not have amends nothing",
+      _amendment_pinned_to_a_different_parent)
+
+    def _amendment_that_drops_a_parent_blocker():
+        import tempfile as _tf
+        obj = json.load(open(repo_path(AMENDMENT_DEFAULT)))
+        for it in obj["pre_extraction_checklist"]:
+            it.pop("supersedes", None)
+            it["done"] = True
+            it["blocking"] = False
+        obj["artifacts"]["analyzer_exists"] = True
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False,
+                                    dir=repo_path("outputs")) as fh:
+            json.dump(obj, fh)
+            p = fh.name
+        try:
+            g = checklist_gate(PREREG_DEFAULT, p, "h2")
+        finally:
+            os.unlink(p)
+        if g["ok"]:
+            raise AssertionError("NOT REFUSED")
+        raise RunnerRefusal("the amendment supersedes no item for the parent's BLOCKING items, so "
+                            "they still stand: %s" % g["blocking"][0][:110])
+
+    m("M33_amendment_that_silently_drops_a_parent_blocker",
+      "an amendment that closes every item without SUPERSEDING the parent's blockers by name is "
+      "a relaxation wearing a supersession's name",
+      _amendment_that_drops_a_parent_blocker)
+
+    class _A:
+        pass
+
+    def _h2_without_emit_probe():
+        a = _A()
+        for k, v in dict(prereg=PREREG_DEFAULT, amendment=AMENDMENT_DEFAULT, stage="h2",
+                         split="test", fit_dir="outputs/dcs_ts/directions_pr053",
+                         runs=RUNS_ROOT_DEFAULT, state_root=STATE_ROOT_DEFAULT,
+                         phase7_tag_prefix=PHASE7_TAG_PREFIX_DEFAULT,
+                         probe_json="outputs/dcs_ts/pr048_result.json",
+                         expect_direction_sha=None, smoke_limit=40, emit_liveness=True,
+                         emit_probe=False, dry_run=False, out="").items():
+            setattr(a, k, v)
+        run_stage(pr, a)
+        raise AssertionError("NOT REFUSED")
+
+    m("M34_confirmatory_stage_without_emit_probe",
+      "O1 is one of the four conjunctive conditions; an h2 launch without --emit-probe captures "
+      "no PR057_PROBE.jsonl and must be refused BEFORE the allocation (A13)",
+      _h2_without_emit_probe)
+
     red = sum(1 for r in results if r[2])
     print("MUTATION HARNESS -- each mutation must produce a REFUSAL")
     for name, why, ok, detail in results:
@@ -2336,6 +2842,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--prereg", default=PREREG_DEFAULT)
+    ap.add_argument("--amendment", default=AMENDMENT_DEFAULT,
+                    help="an AMENDMENT config whose pre_extraction_checklist and artifacts "
+                         "flags supersede the parent's for the stage-aware gate (A14). It "
+                         "must name this preregistration and pin its sha16; pass an empty "
+                         "string to gate on the parent alone.")
     ap.add_argument("--stage", default="", choices=["", "q1", "smoke", "h1", "h2"])
     ap.add_argument("--split", default="test", choices=["train", "validation", "test"])
     ap.add_argument("--fit-dir", default="outputs/dcs_ts/directions_pr053",

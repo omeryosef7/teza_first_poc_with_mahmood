@@ -4436,3 +4436,62 @@ status **could not be determined**), and new blockers A9 (launch order), A10 (Ho
 **Verdict: NO-GO for H2, and the wording matters — *the design is not void, the instrument is not
 ready*.** Those are different diagnoses with different remedies, and the second is fixable work
 rather than a dead end.
+
+---
+
+## DCS-R-129 — the analyzer can now return a verdict, and a validation run nearly leaked into a test result
+*2026-09-08*
+
+**`A4` closed — this was the one that mattered.** `analyse()` ran to `return 0` after the liveness
+gates; `evaluate_success` and `holm` had **no production call site**. A flawless H2 run would have
+produced nothing. It now computes O1 and O2 as paired domain-level contrasts, runs the domain
+permutation, applies Holm over the declared family with **m pinned at 6** (absent members at
+p = 1.0; observed thresholds **0.00833333** and **0.01**), evaluates the four conjuncts
+**separately with a PASS/FAIL line each** so a reader sees *which* failed, walks **every** clause of
+`primary.void` and `primary.cannot_answer`, and emits one verdict.
+
+Three properties are structural rather than editorial, which is the point:
+- `verdict_class` is one of `VOID` / `CANNOT ANSWER` / `NEGATIVE` / `SUPPORTS` / `NOT A CAUSAL
+  RESULT`, so **VOID and NEGATIVE cannot collapse into each other**. They mean different things.
+- the mandated negative wording is emitted **as a literal, first** — not paraphrased.
+- **no null-shaped branch can be emitted without its realised dose**: `format_realised_dose` raises
+  `NotMeasured`. The claim table *bans* a bare "not causally used"; the analyzer now makes that ban
+  impossible to violate rather than merely discouraged.
+
+An UNEVALUABLE void clause **refuses** the verdict rather than passing it; a clause scoped to an
+unbuildable arm is `NOT_APPLICABLE` **plus a stated scope limit**. `arms_present` is scoped to the
+stage and to the arms the **runner** re-derived as unbuildable in its own terminal record — never a
+list typed into the analyzer, which would drift.
+
+⚠ **A real hole found in passing, and it is the serious kind: the analyzer would have read the Q1
+VALIDATION run of `h2a_s1_projout_basket` into a smoke or test analysis.** Validation data entering
+a test result silently. Runs are now bound to `<stage>_<split>/` via the recorded exclusion-file
+path. Nothing had been published from it — but nothing would have flagged it either.
+
+**`A12` decided rather than fudged.** O1 is scoped to the **development codeword bank** and the
+scope is **named in the output**; `o1_contrast` **refuses** an arm/bridge codeword mismatch by name.
+The alternative — silently pairing basket rows against a button baseline — is a cross-codeword
+comparison wearing a baseline's name, and is worse than an honestly scoped result. Building basket
+bridges would have cost GPU without changing any family member, since the corrected members are the
+development-codeword arms.
+
+**`A9`** — `assert_stage_order` re-derives h1's constructibility at launch and records
+`CANNOT_RUN_BY_CONSTRUCTION` with per-arm reasons. Crucially **no terminal record is written for an
+empty stage**: `run_stage`'s refusal is untouched, so the "an empty stage reports success" hole
+stays closed. **`A14`** — the stage-aware gate scopes out **exactly one** item from h2 (A3, since
+0 of 36 h2 arms use mode `patch`), and only because the runner can re-derive that from the stage's
+own arms. **`A13`** `--emit-probe` is now required for h1/h2 and refused before the model loads;
+**`A15`** the SLURM job id, node and host are stamped into every terminal record and the manifest,
+closing the traceability gap C-126 recorded.
+
+**Observed:** analyzer `--self-test` 86 → **100/0** and `--mutate` 64 → **82/82 RED**; runner
+53 → **64/0** and 30 → **37/37 RED**. New mutations include: each conjunct failing alone must not
+yield success (M65–M68), VOID reported as NEGATIVE (M69), CANNOT ANSWER as NEGATIVE (M71), an
+absent Holm member shrinking `m` or loosening the threshold (M72/M73), and a null printed without
+its dose (M75). Tests to completion: 43, 248 and 81 passed.
+
+**Exercised end-to-end on real artifacts** (TRAIN smoke, diagnostic only, no test data): O2 delta
++0.035428, p = 0.254775 [floor 9.999e-05]; O1 delta +0.415496, p = 0.124588, scope = button; dose
+`frac_cellmean_spread_removed = 0.1656`, `cell_residual_frac_removed = {'C': 0.0936}`. And the smoke
+analysis **correctly refuses a verdict** — there is no C1 control band, so the "identical
+control-draw hashes" clause is UNEVALUABLE. The refusal is the instrument working.

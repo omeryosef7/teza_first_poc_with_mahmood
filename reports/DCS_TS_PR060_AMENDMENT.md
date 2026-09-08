@@ -175,3 +175,357 @@ $ python scripts/dcs_ts_prereg.py --mutate configs/dcs_ts_pr060_phase9_amendment
 
 The nine `--for-extraction` refusals (A3, A4, A9, A10, A11, A12, A13, A14, `analyzer_exists == false`) are the
 NO-GO of §5, enforced by the loader rather than asserted in prose. That refusal is the correct state today.
+
+---
+
+# APPENDIX C — THE PHASE 9 BLOCKERS, CLOSED IN CODE (2026-09-08, fourth session)
+
+**Nothing was run on a GPU. No SLURM job was submitted or cancelled. No network. No commit, no
+stash, no `git add`.** `configs/dcs_ts_pr057_phase9.json` and
+`configs/dcs_ts_pr060_phase9_amendment.json` are FROZEN and were **not edited**. Two files were
+written: `scripts/dcs_ts_pr057_causal.py` and `src/boombness/pr057_run_causal.py` (plus this
+report). `src/boombness/score_behavior.py` and `doublespeak_causality/pair_common.py` were in the
+may-edit set and did **not** need to change.
+
+Python: `/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python`.
+
+## C.0 — Verdict up front
+
+**The h2 dry run still returns rc = 3, and that is now the correct state for a different reason
+than yesterday.** Every *engineering* blocker A9–A15 is closed and shipped with mutations. What
+remains is **bookkeeping in a frozen file that I may not edit**: A4, A9, A10, A11, A12, A13, A14
+still carry `"done": false` and `artifacts.analyzer_exists` still carries `false` in
+`configs/dcs_ts_pr060_phase9_amendment.json`. The gate reads those booleans and refuses, which is
+exactly what it is for. **Flipping them requires a decision by whoever owns the amendment; it is
+not a code change and I did not make it.**
+
+## C.1 — A4 / A10: `analyse()` has a verdict path
+
+`analyse()` ended at `:3057-3059` with `return 0` after the liveness gates. It now runs, in this
+order and no other:
+
+1. population, split, arm manifest, family members;
+2. **the runs are scoped to the analysed stage**, and each one is bound to it: `score_behavior`
+   records `population_filter.exclude_prompt_ids_file`, the runner writes that file under
+   `<stage>_<split>/`, and a run whose exclusion file names a different stage or split is
+   **REFUSED**. This closed a real hole I hit while testing: analysing the smoke stage picked up
+   `h2a_s1_projout_basket`, whose only run directory is the **Q1 VALIDATION** run. It would have
+   been liveness-gated and reported. It is now refused by name;
+3. `arms_present`, scoped by `expected_absent_arms()` to (a) arms outside the stage
+   (`stage_selector`) and (b) arms the **runner** re-derived as UNBUILDABLE and wrote into its own
+   terminal record — never a list typed in the analyzer. Any other absence still refuses. When the
+   loaded file carries `arm_inventory_observed.h2_unbuildable_arm_ids`, the two sets must agree or
+   it refuses;
+4. hook liveness on every present arm, **before** any outcome;
+5. per family member: **O2** vs the untouched C6 PHASE 7 baseline and **O1** vs the C5 bridge, both
+   paired by `prompt_id` and aggregated to a **domain** mean; the **C1** band with its equivalence
+   interval; `evaluate_success` with all four conjuncts **evaluated and printed separately**, each
+   line saying PASS/FAIL so a reader sees *which* one failed;
+6. `primary.void` and `primary.cannot_answer`, **clause by clause**;
+7. `holm_with_absent` over the declared family;
+8. one verdict per member.
+
+**Which family member is which arm.** `PHASE9_CAUSAL` declares six members; the manifest realises
+each H2a member with **two** arms, one per codeword. Six members and eight arms cannot both be the
+family. The frozen file names the codewords by ROLE — `development: button`,
+`external_confirmation: basket` — and puts "lexical transfer button→basket" in the **SECONDARY**
+family. So the corrected member is the **development** codeword's arm, and the basket arm is
+reported beside it as the replication it was declared to be. Pooling them into one p, or promoting
+basket to a seventh and eighth member, would each redefine a declared family after the fact
+(C-106). `development_codeword(pr)` reads the role out of the config; nothing is typed.
+
+**Holm.** `holm_with_absent(pr, observed)` sets `m = len(family_members(pr))` — **six** — and puts
+every declared-but-unrun member in at **p = 1.0**. Observed: `H2axS1` faces
+**0.00833333** and `H2axS2` faces **0.01**, the preregistered thresholds. It refuses a p-value for a
+member the family does not declare. The old `holm(pvals, alpha)` still exists and still computes
+`m = len(pvals)`; the self-test now measures the difference (`m = 2`, first threshold `0.025`) so
+"m is not shrunk" is a **number in the output**, not an assertion.
+
+**p and its floor.** Every outcome record carries `p`, `p_floor`, `n_exceed` and the `fmt_p` string,
+and the printed line is `p = <value> [floor 9.999e-05]`. The sign test prints its own floor beside
+it (on 23 domains the sign-test floor is not the permutation floor, and printing one for the other
+is how the previous phase read a floor as a measurement).
+
+## C.2 — VOID, CANNOT ANSWER and NEGATIVE cannot collapse
+
+`verdict()` now returns a **dict with a `verdict_class`**, one of `VOID` / `CANNOT ANSWER` /
+`NEGATIVE` / `SUPPORTS` / `NOT A CAUSAL RESULT`, so nothing downstream has to parse prose to tell
+"the instrument did not do what it claimed" from "the instrument worked and the model did not use
+the axis". Order: tripped `primary.void` clause → unclean liveness → tripped
+`primary.cannot_answer` (including the underpowered branch) → the conjunction → the mandated
+wording.
+
+* **The mandated wording is emitted as a literal and FIRST.** The negative verdict string *starts
+  with* `DECODABLE BUT NOT CAUSALLY USED UNDER THIS INTERVENTION`, byte for byte, checked against
+  `primary.negative.MANDATORY_WORDING` at load time as before. The realised dose is appended after
+  it; it is never substituted into it.
+* **A null cannot be printed without its realised dose.** `format_realised_dose()` raises
+  `NotMeasured` when `metadata.json` has no `realized_dose`, and every null-shaped branch of
+  `verdict()` goes through it. The claim table's ban on a bare "not causally used" is now
+  **structural**: there is no code path that emits the sentence without
+  `frac_cellmean_spread_removed` and `cell_residual_frac_removed` in the same string.
+  Observed on the real smoke arm:
+  `REALISED DOSE -- v_bomb_specific|L9|alpha1: frac_cellmean_spread_removed=0.1656,
+  norm_frac_removed=0.4069, cell_residual_frac_removed={'C': 0.0936}`.
+
+**Every void clause is given a status, and an UNEVALUABLE one refuses.** `build_void_clauses()`
+splits the frozen `primary.void` sentence into its nine clauses and matches each to an evaluator by
+keyword; `void_clause_report()` refuses if any declared clause got no status — *a void condition
+nobody checks is a hole in the validity argument*. Statuses are `TRIPPED` / `CLEAR` /
+`NOT_APPLICABLE` / `UNEVALUABLE`, and **UNEVALUABLE refuses the verdict**. `NOT_APPLICABLE` is
+reserved for a clause scoped to an arm that is unbuildable — the amendment's own reading, that the
+H2b clause "is per-arm and cannot be tripped by an arm that never runs" — and it is reported as a
+stated scope limit, never as a satisfied control. The same treatment is applied to
+`primary.cannot_answer`, whose H1 clause resolves to `NOT_APPLICABLE` carrying the recorded
+interpretive risk verbatim.
+
+**Observed, on the real smoke-stage artifacts** (`--stage smoke --split train`, TRAIN only, no test
+row read): 2 arms loaded, 0 check failures, and the analyzer **refused** with
+
+> `arm h2a_s1_projout_button: 1 clause(s) of primary.void are UNEVALUABLE (['identical
+> control-draw hashes [no C1 band was loaded for this member ...]'])`
+
+which is the correct answer for a smoke stage: it ran no C1 draws, so it cannot certify the
+decisive control, so it emits nothing. That refusal is reached **after** O1, O2, C1 and the
+conjunction were computed, so it is also the evidence that the whole path executes on real
+artifacts rather than on synthetic ones.
+
+## C.3 — A11 / A12: O1's estimator, and the scope I chose
+
+`o1_from_probe_rows` returned levels. `o1_contrast()` is the estimator the amendment fixed before
+any test read: domain-mean of [probe posterior(source) − posterior(target)] at block 9 under the
+intervened arm **minus** the same under the C5 disabled-hook bridge, **paired by `prompt_id`**, with
+the permutation p and its floor.
+
+**A12, decided: the preregistered fallback, implemented in code.** O1 is scoped to the **development
+codeword bank** — the only bank with an un-intervened block-9 posterior — and the scope is NAMED in
+the output, on its own line, at the top of the verdict block and again per arm:
+
+> `O1 SCOPE: the C5 disabled-hook bridge exists on the 'button' codeword bank only, so O1 is a
+> 'button'-BANK STATISTIC. Arms on any other bank are reported O2-ONLY and are NOT eligible for the
+> conjunctive success rule.`
+
+Basket rows are **never** paired against a button baseline: `o1_contrast` refuses on
+`arm.codeword != bridge_arm.codeword` by name ("a CROSS-CODEWORD comparison wearing a baseline's
+name"), and that refusal is mutation `M79`.
+
+**Why the fallback and not "build basket bridges".** Both were pre-authorised. Adding two arms would
+change a 54-arm frozen-ish manifest and cost GPU time, and — this is the part that decided it — it
+would **not** change any family member: the corrected members are the development-codeword arms
+(§C.1), which already have their bridge. The basket arms are external confirmation, and external
+confirmation reported O2-only with the reason stated is honest. If someone later wants O1 on basket
+too, adding a `c5_disabled_bridge_*_basket` arm is a two-line change to `build_arm_manifest` and the
+analyzer picks it up with no further edit — `_bridge_for()` matches on scope **and** codeword.
+
+## C.4 — A9: the launch-order gate
+
+Implemented as PR-060 recommended (c), **not** (b). `run_stage`'s refusal to write a terminal record
+for a stage with zero constructible arms is **unchanged** — that guard stays exactly where it is, and
+no status was invented for an empty stage, so the silent-success hole is not reopened.
+
+`assert_stage_order(state_root, stage, split, pr=None, payload_keys=None)`: when a predecessor has no
+`DONE.json` **and** it is on the explicit allowlist `RE_DERIVABLE_PREDECESSORS = ("h1",)`, the gate
+re-runs `build_arm_manifest` + `stage_selector` + `constructibility` **at that launch**. Zero
+constructible arms → the predecessor is satisfied as `CANNOT_RUN_BY_CONSTRUCTION`, with the per-arm
+reasons persisted into the manifest and `DONE.json`. **Any** constructible h1 arm → it refuses, with
+"a stage that COULD run must run". Called with no `pr`, the gate behaves exactly as it did before.
+
+Two mitigations for the risk PR-060 named (a bug here can now *open* a gate):
+
+* `M28`, the mutation the amendment demanded: monkeypatch `constructibility` so H1 arms are
+  constructible, and the gate must refuse again. Observed RED — *"16 of its 18 arms ARE
+  constructible"*.
+* `stage_constructibility_state` **refuses** rather than decides if any arm's unbuildability turns
+  on the direction payload and the payload was not readable. A gate that opens because it could not
+  look is the failure. (This is why `direction_gate` now runs *before* the order gate.)
+* `M29`: only allowlisted stages may be excused; a missing `q1` still refuses.
+
+## C.5 — A14: the stage-aware checklist gate
+
+`scripts/dcs_ts_prereg.py` is **not** in the may-edit set and was not touched; its default remains
+fail-closed. The stage-aware gate lives in the runner as `checklist_gate()`, and it is **strictly
+stronger** than the loader's, never weaker. An item is scoped out of a stage only if **all three**
+hold:
+
+1. the file declares `applies_to_stages` and the running stage is not in it;
+2. the runner carries a **predicate that re-derives** the item's relevance from the arm manifest
+   (`CHECKLIST_STAGE_RELEVANCE`);
+3. that predicate, run against the stage's **own** arms, says it is irrelevant.
+
+An item with no declared scope blocks. An item whose scope has no predicate blocks — *a prose scope
+with no code path is not a scope*. An item whose scope the arms **contradict** blocks and says so.
+`artifacts.analyzer_exists == false` still blocks. Mutations `M30`, `M31`.
+
+**Exactly one item is scoped out of h2, and it is A3.** Observed:
+
+```
+[pr057] checklist A3: SCOPED OUT of stage 'h2' -- not relevant to stage 'h2', RE-DERIVED at
+        launch: NOT (the stage runs an arm whose mode is 'patch' (the cross-prompt donor))
+```
+
+A3 is the cross-prompt donor for H1. The predicate is "does this stage run any arm with
+`mode == 'patch'`"; 0 of the 36 h2 arms do, and all 18 patch arms are stage h1. The same item still
+blocks h1 (self-test `a14_h1_scoped_item_still_blocks_h1`). **A7b** carries the same scope and the
+same predicate but is already non-blocking, so it changes nothing. **Nothing else was scoped out**:
+A4, A9, A10, A11, A12, A13, A14 declare no `applies_to_stages` and all seven still block h2.
+
+**The amendment has to be read for any of this to matter, and reading it is itself gated.** The
+amendment cannot be loaded as a preregistration — it carries no `hypotheses`, `scope_levels`,
+`seeds`, `controls` or `things_that_must_not_be_said`, so `build_arm_manifest` cannot run against
+it. The runner therefore loads the **parent** and overlays the amendment onto the checklist gate
+only, via a new `--amendment` (default `configs/dcs_ts_pr060_phase9_amendment.json`).
+`load_amendment()` refuses unless the amendment is FROZEN, names this preregistration's `id`, and
+**pins the parent at the sha16 the parent file actually has** (`M32`). And every BLOCKING parent
+item must be superseded **by name** in the amendment's own `supersedes` fields, or it still stands
+(`M33`) — an amendment that quietly closed the parent's blockers would be a relaxation wearing a
+supersession's name.
+
+## C.6 — A13 and A15
+
+**A13.** `--emit-probe` is now **REQUIRED** for stages `h1`/`h2`, refused before the model is
+loaded: O1 is one of the four conjunctive conditions and without the flag no `PR057_PROBE.jsonl` is
+written, so the whole stage would return CANNOT ANSWER on a condition a single flag supplies.
+Mutation `M34`. This closes A13 structurally — there is no longer an h2 invocation that can omit it.
+
+**A15.** `write_terminal()` stamps `provenance = {slurm_job_id, slurm_array_task_id,
+slurm_nodelist, hostname, pid, written_at}` into **every** `DONE.json` and `ABORTED.json`, read from
+the environment and recorded as `null` off a batch node rather than invented. The same block goes
+into `PR057_RUN_MANIFEST.json` alongside the amendment path. Self-tests
+`a15_terminal_record_names_its_job` and `a15_provenance_is_null_off_a_batch_node`. This does not
+retro-fit the existing `smoke_train/DONE.json`; nothing hand-writes a terminal record.
+
+## C.7 — Verification, with the numbers observed
+
+| command | before | **observed now** |
+|---|---|---|
+| `scripts/dcs_ts_pr057_causal.py --self-test` | 86 checks, 0 FAILED | **100 checks, 0 FAILED** |
+| `scripts/dcs_ts_pr057_causal.py --mutate` | 64/64 RED | **82/82 RED** |
+| `src/boombness/pr057_run_causal.py --self-test` | 53 checks, 0 FAILED | **64 checks, 0 FAILED** |
+| `src/boombness/pr057_run_causal.py --mutate` | 28/28 RED (measured 30/30 at session start) | **37/37 RED** |
+| `src/boombness/pr057_run_causal.py --plan --split test` | 54 arms, 30 constructible | **unchanged** |
+| `--stage q1 --split validation --dry-run` | rc 0 | **rc 0** |
+| `--stage smoke --split train --dry-run` | rc 0 | **rc 0** |
+| `--stage h2 --split test --dry-run` | rc 3 | **rc 3** (§C.8) |
+
+The `--mutate` "before" for the runner is quoted at what **I measured at this session's start
+(30/30)**, not at the 28/28 the amendment records; two mutations had been added since.
+
+**The new mutations the task named, each observed RED.** Analyzer: `M65`–`M68` (each of the four
+conjuncts failing alone must not yield success), `M69` (a VOID reported as a NEGATIVE), `M70`
+(unclean liveness yielding a verdict), `M71` (CANNOT ANSWER collapsed into a NEGATIVE), `M72`/`M73`
+(an absent Holm member shrinking `m` / loosening the threshold), `M74` (exempting an arm the runner
+believed it could build), `M75` (a null with no realised dose), `M76` (a dose with no cellmean
+fraction), `M77` (Holm over an undeclared member), `M78` (a `primary.void` clause no check
+implements), `M79` (O1 paired across codeword banks), `M80`–`M82` (a pairing that shares no
+`prompt_id`, a duplicated `prompt_id`, a `prompt_id` in two domains). Runner: `M28`–`M34` (§C.4–C.6).
+
+**The outcome path, exercised on real artifacts** — the TRAIN smoke stage only, 4 domains, 40 rows,
+**diagnostic and not a result**, quoted so the path is not merely asserted to run:
+
+```
+O2 delta = +0.035428   p = 0.254775 [floor 9.999e-05]   n_domains=4  n_pairs=40
+           sign test   p = 0.625    [floor 1.250e-01]
+O1 delta = +0.415496   p = 0.124588 [floor 9.999e-05]   n_domains=4  scope=button
+power at the realised SD 0.05151: 1.000 (bar 0.80, declared MDE 0.5 nats)
+REALISED DOSE -- v_bomb_specific|L9|alpha1: frac_cellmean_spread_removed=0.1656,
+                 norm_frac_removed=0.4069, cell_residual_frac_removed={'C': 0.0936}
+```
+
+**Repo tests, run to COMPLETION** (a cancelled run is not a pass):
+
+| invocation | **observed** |
+|---|---|
+| `pytest -q -p no:randomly` over the 5 `doublespeak_causality/tests/` files driving the changed hooks | **43 passed, 0 failed, 3.73 s** |
+| `pytest -q -p no:randomly` over the 12 `tests/` files driving `make_intervention` and the readout | **248 passed, 0 failed, 95.52 s** |
+| `pytest -q -p no:randomly tests/test_cited_artifact_check.py tests/test_my_cited_artifacts.py tests/test_run_index.py tests/test_run_completeness_check.py` (the artifact/run-index guards that read `reports/` and `outputs/`, i.e. the ones this report could break) | **81 passed, 0 failed, 149.22 s** |
+
+No test file in `tests/` or `doublespeak_causality/tests/` imports `dcs_ts_pr057_causal`,
+`pr057_run_causal`, `dcs_ts_prereg`, `dcs_ts_pr048_analysis` or `dcs_ts_pr051_positional`
+(`grep -rln`), so the two changed files are covered by their own `--self-test`/`--mutate` harnesses
+and by the hook/readout suites above. **The whole-root suite was NOT re-run and nothing is claimed
+for it** — an earlier session established it does not collect at this repo root (8 collection
+errors, 0 tests).
+
+Both configs still load clean: `--check` on the parent (17 hashes) and on the amendment (52 hashes).
+
+## C.8 — What still blocks H2, precisely
+
+`--stage h2 --split test --dry-run --emit-liveness --emit-probe` → **rc = 3**. The order gate now
+passes (`predecessor 'h1' satisfied as CANNOT_RUN_BY_CONSTRUCTION -- 0 of 18 arms constructible`),
+A3 is scoped out, all 30 constructible arms are built and validated, and the **only** remaining
+gate is the checklist:
+
+```
+A4   is BLOCKING and not done  (the analyzer's verdict path)      <- IMPLEMENTED, §C.1-C.2
+A9   is BLOCKING and not done  (the launch-order gate)            <- IMPLEMENTED, §C.4
+A10  is BLOCKING and not done  (outcome -> Holm -> verdict)       <- IMPLEMENTED, §C.1
+A11  is BLOCKING and not done  (the O1 estimator)                 <- IMPLEMENTED, §C.3
+A12  is BLOCKING and not done  (the basket O1 reference)          <- DECIDED + IMPLEMENTED, §C.3
+A13  is BLOCKING and not done  (--emit-probe on the h2 launch)    <- IMPLEMENTED, §C.6
+A14  is BLOCKING and not done  (the stage-aware checklist gate)   <- IMPLEMENTED, §C.5
+artifacts.analyzer_exists is false                                <- the analyzer now emits verdicts
+```
+
+**Every line above is a `done: false` boolean in a FROZEN file I was told not to edit.** The code
+each one asks for exists, self-tests and mutates. Closing them is a decision about the amendment,
+and it needs:
+
+1. `pre_extraction_checklist` A4, A9, A10, A11, A12, A13, A14 → `"done": true`, each with the
+   evidence object this appendix supplies (the observed self-test/mutation counts, and for A12 the
+   recorded decision that the preregistered fallback was taken, not the basket arms);
+2. `artifacts.analyzer_exists` → `true` and `analyzer_verdict_path_present` → `true`;
+3. `pins.files.analyzer.file_sha16` and `pins.files.runner.file_sha16` are now **stale**. Recomputed
+   here: analyzer `26ac2c0ac8bd8599` (was `2c2f80038c905fa1`), runner `ad4bafa4bd862188` (was
+   `c74d16763a349be4`). `artifacts.analyzer_file_sha16` and `artifacts.runner_file_sha16` carry the
+   same two stale values. The loader does not verify these (it only refuses a *null* sha16), so
+   nothing breaks today — but a pin that no longer names the file it pins is the shape of defect
+   this project keeps recording, and it should be corrected in the same edit.
+
+**A3 remains genuinely open and is NOT closed here.** `score_behavior.py:1811` still offers only
+`clean` and `self`. It is now *scoped out of h2 by re-derivation* rather than by prose, which is a
+different thing from done, and it still blocks h1. **A7b, A8** unchanged. **A15** is closed and was
+non-blocking.
+
+**Scope limits that survive all of this, unchanged:** no measured ceiling (H1), no counterfactual
+replacement (H2b, I-N7 NOT AVAILABLE), no shuffled-label control (C2, I-N5 NOT AVAILABLE), no
+self-patch identity control (C7, I-N2 NOT AVAILABLE), and O1 scoped to the development codeword
+bank. The analyzer prints all five under `SCOPE LIMITS THAT TRAVEL WITH EVERY SENTENCE ABOVE`, in
+the same output as the verdict, so they cannot be separated from it by a reader in a hurry.
+
+## C.9 — `git status --porcelain`, UNSCOPED
+
+```
+ M reports/DCS_TS_PR060_AMENDMENT.md
+ M scripts/dcs_ts_pr057_causal.py
+ M src/boombness/pr057_run_causal.py
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+The `??` entries under `data/boombness_prompts/**` are **another writer's** and were not touched.
+They are shown because the listing is unscoped, which is the point of it. **Not shown by that
+command, and therefore stated here:** nothing under `outputs/` was written by this session — the two
+dry runs and the two stage analyses wrote no file, and `--dry-run` computes the exclusion files
+without writing them. `configs/` is unchanged; both frozen files hash as they did.
