@@ -4372,3 +4372,67 @@ it is free upside — it simply is not the lever when every GPU is held.
 `--open-mode=append` is now set on every submission, and it is **not** cosmetic: `JobFileAppend=0`
 with killable's `PreemptMode=REQUEUE` and `GraceTime=0` means a requeue **truncates** the log and
 destroys the previous attempt's evidence.
+
+---
+
+## DCS-C-126 — I reported "Q7 smoke CLOSED". It is a SUBSTITUTION, not a satisfaction.
+*2026-09-08* — correcting `R-127` and commit `6d2ecae3`
+
+Checklist item Q7 reads, verbatim:
+
+> *smoke run: **H1 at S1** on a handful of TRAIN domains, confirming hook liveness, **the self-patch
+> identity control**, and a non-zero measured edit magnitude, BEFORE the full submission*
+
+What the smoke stage actually ran was **`h2a_s1_projout_button` + `c5_disabled_bridge_s1`**. Not H1,
+and not the self-patch identity control. And since H1 is unbuildable by construction, **the
+self-patch control cannot be exercised at all** on this bank — it is CANNOT ANSWER BY CONSTRUCTION,
+not merely "not yet done".
+
+So the smoke **stage** completed and proved real things — 40/40 hook firings, 160/160 cells, the C5
+bridge firing 0 times exactly as a disabled bridge should. **Checklist item Q7 is not satisfied by
+it.** I wrote "Q7 smoke CLOSED" in `R-127`, in the summary, and in commit `6d2ecae3`'s message. That
+was wrong, and it is the kind of wrong this project cares about most: a declared item ticked because
+*something* ran, rather than because *the declared thing* ran. Q7 must be **amended** — with the
+substitution and its reason recorded — never ticked.
+
+Also confirmed: `smoke_train/DONE.json` records **no SLURM job id** (`job id recorded? False`), and
+the arm-level `RUNMETA.json` carries `slurm_job_id 868702` while the terminal record was written by
+a later invocation. So the terminal record cannot be traced to the job that produced it. Recorded as
+**A15**.
+
+## DCS-R-128 — PR-060, the amendment, and the two irreversible answers
+*2026-09-08* — `configs/dcs_ts_pr060_phase9_amendment.json`, `reports/DCS_TS_PR060_AMENDMENT.md`
+
+Verified by me, not on report: **clean under the loader — status FROZEN, 52 hashes pinned and
+verified, all 12 mandate-§21 fields**; `--mutate` **6/6 RED**; and it still **refuses
+`--for-extraction` with 9 refusals**, so the NO-GO is enforced by the loader rather than asserted in
+prose. It names the parent it amends (`DCS-PR-057`, `amends_file_sha16 7c88346ee375baaf`) and lists
+exactly which fields it supersedes — the frozen parent is never edited.
+
+**Two questions answered before any test read, which is the whole point of asking them now:**
+
+- **The Holm family survives absent members.** `m` stays **6**; H1×S1/S2 and H2b×S1/S2 enter at
+  **p = 1.0** as structurally absent rather than breaking the family, so H2a faces thresholds
+  0.008333 and 0.01. **The design is NOT void** despite 6 of 36 arms being unbuildable — this was
+  the single largest risk to the confirmatory run and it is retired.
+- **O1's baseline is the C5 disabled-hook bridge**, paired by `prompt_id`. But that forces a new
+  problem (**A12**): both C5 arms bind `..._button_bomb.jsonl`, and the analyzer hardcodes
+  `codeword='button'`, so **there is no basket reference**. An arm cannot be added after TEST is
+  read, so this must be resolved first.
+
+**Closed on evidence run or read:** A0/Q0 (job 865335, 6/6 banks `gate=PASS`, `missing_tags=[]`),
+A1/Q1 (SD 0.04200821142171075, MDE 0.025678627181435994, PROCEED), A2/Q2 (fit = 67 TRAIN domains,
+VERIFY 28/28, MUTATIONS 22/22, sha recorded in 4/4 arm gates), A5/Q5 (`--mutate` 64/64, **all seven
+named mutations RED**), A6/Q6 (`--self-test` 86/0 including the five `c122_*`; M54/55/56/58/61 RED,
+with the residual gap — no GPU round-trip of a live C4 arm — recorded rather than glossed).
+
+**Left open deliberately, and this is the honest part:** A3 (the donor is genuinely absent —
+`score_behavior.py:1811` still `choices=("clean","self")`), **A4 (`analyse()` returns at
+`:3057-3059` with no verdict path)**, A7b (self-patch, CANNOT ANSWER BY CONSTRUCTION), A8 (PR-056
+status **could not be determined**), and new blockers A9 (launch order), A10 (Holm-with-absent and
+`arms_present` scoping), A11/A12/A13 (O1 estimator, the basket reference, `--emit-probe`), A14
+(a stage-aware checklist gate), A15 (job id absent from terminal records).
+
+**Verdict: NO-GO for H2, and the wording matters — *the design is not void, the instrument is not
+ready*.** Those are different diagnoses with different remedies, and the second is fixable work
+rather than a dead end.

@@ -1,0 +1,1185 @@
+{
+  "id": "DCS-PR-060",
+  "title": "PHASE 9 AMENDMENT to DCS-PR-057 -- close the pre-extraction checklist on measured evidence, record the arms that are UNBUILDABLE, fix the Holm family and the O1 baseline BEFORE any test read, and state what still blocks the H2 test stage",
+  "status": "FROZEN",
+  "written": "2026-09-08",
+  "written_at_commit": "6d2ecae3",
+  "phase": 9,
+  "kind": "AMENDMENT",
+  "_read_this_first": [
+    "This file AMENDS configs/dcs_ts_pr057_phase9.json (DCS-PR-057), which is FROZEN and is NOT edited.",
+    "It is written to be read WITHOUT the parent: `amendment.supersedes` says, field by field, what the parent",
+    "says and what this file says instead; `amendment.leaves_untouched` names everything that still governs from",
+    "the parent unchanged. Blocks marked `_inherited_verbatim: true` are byte-copies carried only because the",
+    "mandate-21 loader requires those top-level fields to be present in the file it validates; they are NOT",
+    "re-decided here.",
+    "This amendment does NOT open the H2 test stage. Seven BLOCKING items are still open and are listed with the",
+    "reason each is open. `go_no_go.verdict` is NO-GO."
+  ],
+  "amendment": {
+    "amends": "configs/dcs_ts_pr057_phase9.json",
+    "amends_prereg_id": "DCS-PR-057",
+    "amends_file_sha16": "7c88346ee375baaf",
+    "amends_frozen_at": "2026-09-07",
+    "_the_parent_is_never_edited": "configs/dcs_ts_pr057_phase9.json is FROZEN. An amendment is a NEW file. Nothing in this file rewrites, deletes or relaxes a parent field in place; the parent remains the record of what was declared on 2026-09-07 and this file is the record of what changed on 2026-09-08 and why.",
+    "supersedes": [
+      {
+        "field": "pre_extraction_checklist",
+        "parent_says": "nine items Q0-Q8, every one status prose plus blocking/done booleans, ALL done=false",
+        "this_file_says": "a re-derived checklist (pre_extraction_checklist below, items A0-A14) in which each parent item is either CLOSED on named artifact evidence (A0/A1/A2/A5/A6/A7a), left OPEN with the reason (A3/A4/A7b/A8), or replaced by the concrete engineering it turned out to require (A9-A14). Every item carries machine-readable blocking/done booleans and an `evidence` object with job ids, measured numbers and artifact sha16s -- prose status strings are not machine-checkable (C-086).",
+        "why": "Q0, Q1, Q2, Q5, Q6 and the h2-scoped half of Q7 have been executed and have artifacts; the rest have not."
+      },
+      {
+        "field": "power.o2_semantic_readout",
+        "parent_says": "between_domain_sd null, mde null, power null -- 'NOT MEASURED, NOT ASSUMED TO A NUMBER'",
+        "this_file_says": "MEASURED on VALIDATION DOMAINS ONLY by stage q1 (slurm job 867233): between-domain SD 0.04200821142171075 over 23 validation domains, power 1.0 at the declared 0.5-nat effect, MDE at the 0.80 power bar 0.025678627181435994 nats at n=23, decision PROCEED. See power.o2_semantic_readout_MEASURED.",
+        "why": "Q1 is the parent's own resolution path for these nulls and it has run."
+      },
+      {
+        "field": "multiplicity.families[PHASE9_CAUSAL]",
+        "parent_says": "six members (H1/H2a/H2b x S1/S2), Holm across the six at alpha=0.05 family-wise on the O2 p-values",
+        "this_file_says": "the family and m are UNCHANGED at six. Four of the six members are UNBUILDABLE and will not be run: H1xS1, H1xS2 (no cross-prompt donor code path, and R-116/C-112 an empty population) and H2bxS1, H2bxS2 (make_intervention implements project_out and add only). Under the parent's own rule multiplicity._absent_members_enter_at_p_1 they enter Holm at p=1.0. m stays 6, so the two REPORTABLE members H2axS1 and H2axS2 face exactly the preregistered thresholds: 0.05/6 = 0.008333 and 0.05/5 = 0.01. See design_answers.holm_family.",
+        "why": "the rule already existed in the parent but had no implementation and no production call site; this file pins the arithmetic and A10 makes it a code path."
+      },
+      {
+        "field": "outcome_variables.O1_probe (its CONTRAST, which the parent never operationalised)",
+        "parent_says": "O1 is defined as a LEVEL -- 'the frozen PR-048 probe's posterior mass on the SOURCE concept minus its mass on the TARGET concept, at block 9, codeword_last, domain-mean over TEST domains'. primary.success condition 1 requires O1 to MOVE, but no baseline, delta or p is declared anywhere.",
+        "this_file_says": "O1's baseline is the C5 DISABLED-HOOK BRIDGE arm on the SAME codeword bank -- same 230 prompts, same exclusions, same decoding, probe read at block 9 -- paired by prompt_id and aggregated to a domain mean over the 23 test domains. See design_answers.o1_baseline. Consequence: the C5 bridge exists on the BUTTON bank only, so either a basket bridge arm is added (item A12) or the basket H2a arms are reported O2-only and are NOT eligible for the conjunctive success rule.",
+        "why": "choosing this contrast after seeing test posteriors would be the post-hoc estimator the parent forbids. It is fixed here, before any test read, on a purely structural fact (which arms carry an un-intervened layer-9 read), not on any observed value."
+      },
+      {
+        "field": "artifacts.analyzer_exists / analyzer_committed_before_outcome",
+        "parent_says": "false / false, with the note that --for-extraction correctly refuses on them",
+        "this_file_says": "still FALSE, deliberately, and now with the reason measured: the analyzer FILE exists and is committed (scripts/dcs_ts_pr057_causal.py, sha16 2c2f80038c905fa1, --self-test 86 checks 0 FAILED, --mutate 64/64 refusals), but analyse() has NO outcome, Holm or verdict path -- it ends at line 3057-3059 with `return 0` after the liveness gates, and evaluate_success()/holm() are exercised only under --self-test and --mutate. An analyzer that cannot emit a verdict is not an analyzer for the purposes of this gate.",
+        "why": "keeping the flag false keeps --for-extraction fail-closed, which is the correct state today."
+      },
+      {
+        "field": "nulls_required dispositions I-N2, I-N5, I-N7 (the LIST is copied verbatim and unedited)",
+        "parent_says": "I-N2 (self-patch identity control, H1) blocking:true; I-N5 (shuffled-label direction) blocking:null; I-N7 (orthogonal residual preservation, H2b) blocking:true",
+        "this_file_says": "recorded in nulls_disposition_amendment: I-N2 is ARM-SCOPED to the h1 stage, which has zero constructible arms, so it is NOT AVAILABLE and is demoted to non-blocking FOR THE h2 STAGE ONLY -- a recorded deviation, not a satisfied control. I-N7 is arm-scoped to H2b, which is unbuildable, likewise NOT AVAILABLE. I-N5 maps to the C2 shuffled-label control, whose direction has no artifact; it was already non-blocking and its absence is a stated scope limit. NONE of the three is reported as passed.",
+        "why": "a blocking null attached to an arm that cannot be built would make the phase permanently unrunnable while asserting nothing; the honest move is to name it NOT AVAILABLE and carry the scope limit into the report."
+      },
+      {
+        "field": "kill_condition (second clause)",
+        "parent_says": "if the H1 upper bound does not move O2, H2a/H2b are NOT submitted at that site",
+        "this_file_says": "the clause is about an H1 arm that RAN and did not move O2. No H1 arm can run. The runner already distinguishes this as KILL_UNAVAILABLE / H1_NOT_AVAILABLE (src/boombness/pr057_run_causal.py:752, 779-787) and proceeds with H2 while stamping that state on every arm. This amendment RECORDS that reading: H1's silence is CANNOT ANSWER BY CONSTRUCTION and is NOT evidence that a surgical edit will fail. The H2 write-up must report the primary 10.2 test WITHOUT a measured ceiling and must not describe the missing ceiling as evidence in either direction.",
+        "why": "C-112 demoted H1 to exploratory and R-116/C-112 measured its population empty (donor concept installs in 0 of 113 domains) after the parent was frozen."
+      },
+      {
+        "field": "launch order (NOT a parent field -- see below)",
+        "parent_says": "nothing machine-readable. The parent's only ordering text is prose (hypotheses H1 'order': 'FIRST -- run before H2'). The executable predecessor table is hardcoded in the runner at src/boombness/pr057_run_causal.py:691.",
+        "this_file_says": "launch_order_resolution below: the h1 predecessor of h2 must be re-derived from CONSTRUCTIBILITY at launch, not read from a DONE.json that can never exist and never hand-written. Recorded as blocking item A9.",
+        "why": "h1 has 18 of 18 arms unbuildable and run_stage raises 'ZERO constructible arms' BEFORE write_terminal, so h1 can never produce a DONE.json."
+      }
+    ],
+    "leaves_untouched": [
+      {
+        "field": "question / claim_it_could_support",
+        "note": "unchanged; the phase asks the same question"
+      },
+      {
+        "field": "population (banks, pools, concepts, codewords, cell C, exclusions)",
+        "note": "unchanged; copied verbatim below only so the loader can verify the pinned bank hashes against disk"
+      },
+      {
+        "field": "split",
+        "note": "unchanged: 67/23/23 over 113 domains, test read once"
+      },
+      {
+        "field": "model / read_site / classifier",
+        "note": "unchanged; L9 stays INHERITED from PR-048's validation-only selection and is not re-selected here"
+      },
+      {
+        "field": "directions (v_bomb_specific definition, TRAIN-only rule, unit-norm + gap-unit dosing)",
+        "note": "unchanged"
+      },
+      {
+        "field": "primary.statistic / alpha / n_perm / test / p-floor rule / independence_unit",
+        "note": "unchanged: domain-level group permutation, alpha 0.05, B=10000, floor 9.999e-05 published beside every p"
+      },
+      {
+        "field": "primary.success.conditions (the four conjuncts) and _conjunctive_on_purpose",
+        "note": "unchanged and evaluable from the buildable arms: the conjunction is PER family member and names O1, O2, C1 and cross-domain holding -- it never names H2b or C2"
+      },
+      {
+        "field": "primary.negative.MANDATORY_WORDING",
+        "note": "unchanged and non-negotiable: 'DECODABLE BUT NOT CAUSALLY USED UNDER THIS INTERVENTION'"
+      },
+      {
+        "field": "primary.void",
+        "note": "unchanged; note that its only H2b clause is per-arm and cannot be triggered by an arm that never runs"
+      },
+      {
+        "field": "power.declared_minimum_meaningful_effect (0.5 nats) and underpowered_branch",
+        "note": "unchanged; the 0.5-nat MDE was declared before the readout existed and is NOT re-declared here"
+      },
+      {
+        "field": "seeds / decoding / endpoints / things_that_must_not_be_said",
+        "note": "unchanged"
+      },
+      {
+        "field": "multiplicity families PRIMARY / SECONDARY / EXPLORATORY / NULLS / PHASE8_MECHANISM",
+        "note": "unchanged and untouched; only PHASE9_CAUSAL's absent-member arithmetic is pinned"
+      }
+    ],
+    "_what_this_amendment_does_NOT_do": [
+      "It does not mark any blocking item done that was not measured. Q3 stays open. Q4 stays open.",
+      "It does not authorise a submission. go_no_go.verdict is NO-GO with seven named conditions.",
+      "It does not change a threshold, an alpha, an MDE, a population or a read site.",
+      "It does not hand-write any terminal record; no DONE.json is created by this file or by anything it asks for."
+    ]
+  },
+  "question": "Is v_bomb_specific -- the TRAIN-estimated concept-identity direction -- CAUSALLY USED by the model? Concretely: when the codeword representation is replaced with the matched C_knife representation (upper bound), or when the v_bomb_specific component is projected out or replaced with the knife component while the orthogonal residual is preserved (surgical), does the model's SEMANTIC READOUT move bomb -> knife, and does a norm-matched random control fail to move it?",
+  "_question_note": "verbatim from the parent; the amendment does not change the question",
+  "population": {
+    "bank_family": "ts116m",
+    "banks": {
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+        "bank_file_sha16": "dcd92d723f3e6d00",
+        "bank_rows_sha16": "4ca3ec165ab5b018"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+        "bank_file_sha16": "94fd300d611fccf2",
+        "bank_rows_sha16": "65eb4fa533890eff"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl",
+        "bank_file_sha16": "8e646dfdb451abc6",
+        "bank_rows_sha16": "c7ceb5a151a2788a"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+        "bank_file_sha16": "79511d9e254571e6",
+        "bank_rows_sha16": "1e872cd8cd2f63a5"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl",
+        "bank_file_sha16": "538ca9b48d905290",
+        "bank_rows_sha16": "61e586e4bdca6f28"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl",
+        "bank_file_sha16": "f4c655a723729c08",
+        "bank_rows_sha16": "f1a8332bdd7c48ce"
+      }
+    },
+    "pools": {
+      "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
+      "shared_pools_sha16": "976aa2b0b617118d",
+      "harm_bomb": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_bomb.json",
+        "content_sha16": "e561c812ee355c73",
+        "job": 859722,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_knife": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_knife.json",
+        "content_sha16": "27eaf6a76f6d0526",
+        "job": 859723,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_gun": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_gun.json",
+        "content_sha16": "50ba5d1fbeb5764f",
+        "job": 859724,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "_seed": 20260906
+    },
+    "concepts": [
+      "bomb",
+      "knife",
+      "gun"
+    ],
+    "codewords": {
+      "development": "button",
+      "external_confirmation": "basket"
+    },
+    "cell": "C",
+    "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
+    "query_kind_primary": "semantic_one_word",
+    "query_kind_display": "semantic_forced_choice",
+    "n_examples_primary": 4,
+    "n_examples_replication": 8,
+    "n_examples_null": 0,
+    "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
+    "rows_per_domain_per_concept": 10,
+    "preregistered_exclusions": [
+      {
+        "domain": "restaurant_kitchen",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
+        "seed_bumps_attempted": 1,
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "subway_station",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "school_campus",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-075 + R-108. 'basket' matches inside 'basketball.' in this domain's dev preamble. At extraction that is not a metadata nuisance but a HARD REFUSAL: resolve_occurrences found one more TOKEN occurrence than TEXT occurrence and declined to guess which was the codeword, so 30 rows of basket_bomb failed with occurrence_count_mismatch (text=N, tokens=N+1). Verified: all 30 are school_campus, 3 of them in the primary population. The extractor behaved correctly -- it refused rather than mis-indexing -- so the honest response is to remove the domain rather than to tolerate rows the pipeline could not resolve. Widened from the earlier occurrence-ordinal-only scope to the WHOLE population. It is in TRAIN: validation and test stay 23/23, analysed split becomes 67/23/23 over 113 domains.",
+        "whole_population": true
+      }
+    ],
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
+    "_register_asymmetry": {
+      "measured_on": "4640 harm sentences per concept, prompt-only",
+      "hedged_pct": {
+        "bomb": 14.1,
+        "knife": 0.2,
+        "gun": 3.4
+      },
+      "mean_sentence_chars": {
+        "bomb": 82,
+        "knife": 75,
+        "gun": 78
+      },
+      "mass_noun_polysemy_pct": {
+        "bomb": 1.08,
+        "knife": 0.0,
+        "gun": 0.0
+      },
+      "decision": "KEPT, not matched away. A bomb in a workplace is overwhelmingly a SUSPECTED bomb; a knife is simply present. That is a real property of the concepts in incident-log English and is part of what installing one rather than the other means. Equalising it means unnatural demonstrations, which is how R-098 ended up with no manipulation at all. It is instead measured, published, and converted into the bar: N5 concept-masked TF-IDF becomes strong and the probe MUST beat it.",
+      "deferred_decision_rule": "If N4 length-only comes out well above chance, over-generate and length-match the 40 kept sentences per pool -- prompt-only and outcome-blind, ~50% more API. THIS RULE IS RECORDED BEFORE N4 IS MEASURED so it cannot be chosen after seeing the probe.",
+      "n4_after_length_matching": {
+        "acc": 0.4014,
+        "macro_auroc": 0.5793,
+        "before": {
+          "acc": 0.4174,
+          "macro_auroc": 0.575
+        },
+        "verdict": "THE REMEDY DID NOT WORK. Length matching cut the cross-concept mean sentence-length spread 40.8% (7.03->4.16 chars) and moved the baseline by 0.016 accuracy; the AUROC rose slightly. Diagnosed: pool MARGINALS were matched while N4 reads full-prompt n_chars, whose demo block is four sentences drawn at fixed slots -- matching marginals does not match per-family sums. Per the rule recorded before N4 was ever measured, THERE IS NO THIRD ROUND. Length is now a permanent stated nuisance."
+      },
+      "n4_in_tokens": {
+        "acc": 0.3623,
+        "note": "C-084. The audit measured n_chars; the model reads TOKENS. Prompt token counts are bomb 196.21 / knife 195.50 / gun 196.69 on a 13-token sd, so the POSITIONAL confound is essentially matched and token-length-only N4 is 0.3623 against chance 0.3333. The character residual is lexical composition, i.e. register. LENGTH IN TOKENS IS NOT A LIVE CONFOUND; register is."
+      }
+    },
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#population (sha16 7c88346ee375baaf)"
+  },
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 67,
+    "n_validation": 23,
+    "n_test": 23,
+    "seed": 202609061,
+    "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
+    "n_domains_analysed": 113,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 68 are ANALYSED (restaurant_kitchen C-082, subway_station C-087 -- both TRAIN, both prompt-only and prospective). The manifest is NOT regenerated; a split may be created once (mandate 5.2).",
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#split (sha16 7c88346ee375baaf)"
+  },
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32,
+    "hidden": 4096,
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim.",
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#model (sha16 7c88346ee375baaf)"
+  },
+  "read_site": {
+    "position": "codeword_last",
+    "position_downstream_neutral": "following",
+    "_positions_in_rel_end": "codeword_last == rel_end -10 (' button' / ' basket'), one subtoken, rel_end constant in 2300/2300 triples. following == rel_end -9 (' actually', token id 3604), verified on all four downstream-neutral criteria in 6900/6900 prompts by reports/DCS_TS116M_TOKEN_ROLE_MAP.md. --position following was only exposed in the extractor CLI on 2026-09-07 (C-099); before that no run could capture it.",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "layer_convention_verified_by": "planted-hook GPU test, job 860184, 2026-09-07 -- CONFIRMED",
+    "primary_read_layer": 9,
+    "_primary_read_layer_is_inherited_not_selected": "L9 is NOT chosen here. It is the layer PR-048 selected on VALIDATION ONLY, before any test read (best_val_acc 0.9130, C=0.01, n_tied=1/36, inert=False -- explicitly NOT the C-070 degenerate selection). Inheriting a frozen prior selection means this phase performs no layer selection of its own, so the measured test-selection FPR inflation (0.4433 vs 0.0467) cannot enter. Choosing a layer here after seeing the knockout profile would be exactly that inflation.",
+    "read_layer_grid": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "_read_must_be_at_or_above_the_edit": "For the SINGLE-SITE scope the edit is AT block 9 and the probe read is at block 9 post-edit, which is legitimate for the probe (it is the same tensor, deliberately) but is NOT evidence of propagation. The SEMANTIC readout is downstream of everything by construction, since it is scored from generated tokens. Any claim about propagation uses blocks 10-14 or the downstream neutral position -- the C-068 / mandate-22.5 rule, applied to a write instead of a mask.",
+    "C_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
+    "_selection_guard": "SELECTION_TRACE.inert and n_tied_at_best MUST be persisted in every artifact. If the selection surface is saturated (best_acc == 1.0 at every grid point) the selection is INERT and must be reported as a grid-order tie-break, never as learned localisation (C-070).",
+    "_read_site_note": "X2 on ts116m: PR-048's primary read site is position=codeword_last == rel_end -10, constant end-relative in 2300/2300 triples, sd 0, one subtoken in every prompt. rel_end -9 (' actually', id 3604) is the DOWNSTREAM NEUTRAL control site, verified on all four criteria 6900/6900 -- it is NOT the primary and the two must not be conflated. MANDATORY: index as len(input_ids)+rel_end. The ABSOLUTE codeword index is identical across concepts in 0/2300 triples (mean cross-concept spread 9.36 +/- 5.90 tokens, range 0-50), so an absolute index reads a DIFFERENT TOKEN in each arm.",
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#read_site (sha16 7c88346ee375baaf)"
+  },
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "_no_mlp": "A linear probe, per mandate section 8.1. No MLP.",
+    "standardisation": "fit on TRAIN domains only; never on the held-out domain (D1)",
+    "_probe_is_the_frozen_pr048_probe": "The probe used as OUTCOME 1 is the PR-048 estimator fitted on TRAIN domains at layer 9, C=0.01, and it is FROZEN before any intervention runs. It is NOT refit under intervention: the question is whether the edit moves the score of a fixed readout, and refitting would let the probe chase the edit.",
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#classifier (sha16 7c88346ee375baaf)"
+  },
+  "primary": {
+    "statistic": "Domain-mean change in the SEMANTIC READOUT (O2) under the intervention relative to the untouched baseline, on the 23 untouched TEST domains: delta_O2 = mean_domain[ semantic_logodds(source_concept vs target_concept)_post - ..._pre ]. O1 (the probe score) is a CO-REQUIRED but NOT SUFFICIENT outcome; see success.",
+    "_why_O2_and_not_O1_is_the_primary": "O1 measures whether an edit along a direction moves a linear readout of that same direction. That is very nearly guaranteed by construction and is NOT the question. The question is whether the MODEL uses it.",
+    "chance": 0.0,
+    "independence_unit": "domain",
+    "n_test_domains": 23,
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level, arm-label flip within domain",
+    "n_perm": 10000,
+    "_p_floor_rule": "The attainable floor is 1/(n_perm+1) = 9.999e-05. EVERY p MUST be published next to its floor. On zero exceedances report 'p < 1/(B+1)', never a bare '0.0001'. The previous phase's headline p=0.004975 WAS the floor at B=200 and was read as a measurement.",
+    "secondary_test": "two-sided sign test over domains, EXACT TIES reported with the count",
+    "success": {
+      "_mandate": "section 10.5 -- ALL FOUR REQUIRED TOGETHER, conjunctively. Any three of four is NOT a causal result.",
+      "conditions": [
+        "1. O1: the concept-probe score moves in the INTENDED direction, significantly, at the domain level",
+        "2. O2: the SEMANTIC READOUT moves in the INTENDED direction, significantly, at the domain level",
+        "3. C1: the norm-matched random control does NOT move O2 (and its 5 draws are genuinely distinct)",
+        "4. the effect HOLDS ACROSS DOMAINS -- a domain-level estimator, a majority of test domains moving the intended way by sign test -- and is NOT a pooled-row result"
+      ],
+      "_conjunctive_on_purpose": "Conjunctive success is why this design can return a clean negative. Each condition alone has a cheap way to be satisfied: (1) by construction, (2) by a large enough perturbation of anything, (3) by an under-dosed control, (4) by a lucky pooling. Together they do not.",
+      "_holm": "each of the six family members (H1/H2a/H2b x S1/S2) is assessed under Holm within PHASE9_CAUSAL before its conjunction is evaluated"
+    },
+    "negative": {
+      "condition": "O1 moves but O2 does not, with power >= 0.8 for the declared MDE on O2",
+      "MANDATORY_WORDING": "DECODABLE BUT NOT CAUSALLY USED UNDER THIS INTERVENTION",
+      "_this_is_non_negotiable": "Mandate section 32 calls this a VALUABLE RESULT and section 33 forbids the alternative. The sentence 'the representation is meaningless' MUST NOT BE SAID, written, drafted or implied, in this report, in the Slack draft, or in the log. Nor may any paraphrase of it. The finding is scoped to THIS intervention, at THESE sites and doses, on THIS population -- 'under this intervention' is part of the claim, not a hedge that can be trimmed.",
+      "_and_the_other_negative": "If NEITHER O1 nor O2 moves, the arm did not do what it claimed: check hook liveness, dose, and the disabled-hook bridge FIRST. A null with an unverified hook is VOID, not a negative."
+    },
+    "cannot_answer": "the PHASE 7 readout (job 865335) has not landed, so O2 does not exist; OR option_mass shows the semantic_one_word channel is disengaged; OR power < 0.8 at the realised between-domain SD of O2; OR H1, the upper bound, itself does not move O2 -- in which case the site cannot support ANY causal conclusion about surgical edits at it, and H2a/H2b are reported as uninformative rather than as negatives.",
+    "void": "a direction fitted on validation or test; hook_fired_count == 0; realised != expected cells; the disabled-hook bridge not reproducing baseline; the self-patch control changing the output; identical control-draw hashes; H2b's orthogonal residual not preserved; an absolute read/edit index; a wrong bank sha.",
+    "nuisance_floor": {
+      "value": 0.0,
+      "source": "by construction -- every arm is a within-prompt paired contrast against the same prompt's own baseline, so register, length and every TF-IDF-recoverable surface confound is common to both arms and differences out",
+      "_this_is_the_one_place_the_register_confound_does_not_bite": "REGISTER is CANNOT ANSWER on this corpus as an ABSOLUTE confound (C-078, C-098, C-100, C-101): it is PRODUCED BY the manipulation -- natural bomb text hedges 13.7%, knife 0.2% -- so no re-analysis fixes it and only a register-matched regeneration would. But a paired within-prompt intervention contrast holds the prompt FIXED, so register is identical in both arms. That is a real strength of this design and it is stated here so it is not over-claimed elsewhere: it removes register from THIS contrast, and from nothing else."
+    },
+    "_inherited_verbatim": true,
+    "_inherited_from": "configs/dcs_ts_pr057_phase9.json#primary (sha16 7c88346ee375baaf)",
+    "_AMENDMENT_what_changed": [
+      "NOTHING in the parent's statistic, alpha, n_perm, test, p-floor rule, success conditions, negative wording, void list or cannot_answer text is changed.",
+      "ADDED here, because the parent declared them nowhere: (a) the O1 CONTRAST -- see design_answers.o1_baseline; (b) which family members are reportable and what Holm threshold each faces -- see design_answers.holm_family; (c) the reading of cannot_answer's H1 clause when H1 is UNBUILDABLE rather than uninformative -- see amendment.supersedes[kill_condition] and design_answers.h1_is_cannot_answer_by_construction."
+    ],
+    "_AMENDMENT_reportable_family_scope": {
+      "reportable_members": [
+        "H2a x S1",
+        "H2a x S2"
+      ],
+      "absent_members_entering_at_p_1": [
+        "H1 x S1",
+        "H1 x S2",
+        "H2b x S1",
+        "H2b x S2"
+      ],
+      "controls_available": [
+        "C1 norm-matched random (5 draws)",
+        "C3",
+        "C4 same-norm orthogonal",
+        "C5 disabled-hook bridge",
+        "C6 untouched PHASE 7 baseline"
+      ],
+      "controls_NOT_available": [
+        "C2 shuffled-label direction (no artifact)",
+        "C7 self-patch identity (h1, no code path)"
+      ],
+      "_the_success_rule_is_still_satisfiable": "primary.success names O1, O2, C1 and cross-domain holding. All four are computable from the 30 buildable h2 arms for H2a x S1 and H2a x S2, subject to the O1 basket question in A12.",
+      "_evaluate_success_signature": "scripts/dcs_ts_pr057_causal.py:1547 evaluate_success(o1, o2, control, across_domains, alpha, expected_sign) -- one arm, four outcomes, no H2b or C2 term"
+    }
+  },
+  "power": {
+    "_honesty_statement": "THERE IS NO MEASURED SD FOR THE OUTCOME THAT MATTERS. The between-domain SD of an intervention-induced change in the semantic readout (O2) has NEVER been measured on this bank -- the readout itself does not exist yet (job 865335 is in flight). Every O2 power number below is therefore an ASSUMPTION, explicitly labelled. Checklist item Q1 is BLOCKING and replaces them with a measurement on VALIDATION DOMAINS ONLY before TEST is read.",
+    "o1_probe": {
+      "between_domain_sd_source": "PR-048 measured on this population",
+      "between_domain_sd": 0.1406,
+      "status": "MEASURED for the absolute probe accuracy; the PAIRED-under-intervention SD is still an assumption",
+      "icc": 0.0884,
+      "deff_at_m60": 6.22,
+      "n_eff_test_rows": 222
+    },
+    "o2_semantic_readout": {
+      "between_domain_sd": null,
+      "status": "NOT MEASURED, NOT ASSUMED TO A NUMBER. Left explicitly null rather than filled with a plausible-looking value.",
+      "_why_not_borrowed": "PR-051's paired SD of 0.0494 is a READ-SITE contrast on hidden states; PR-048's 0.1406 is an absolute probe accuracy. O2 is a log-odds over generated-token probabilities. None of the three is the same variance component, and this project's recorded lesson is that borrowing one for another is how a design gets sized against a number that does not apply.",
+      "mde": null,
+      "power": null,
+      "resolution": "Q1 measures it on VALIDATION and the analyzer computes MDE and power from the realised value"
+    },
+    "declared_minimum_meaningful_effect": {
+      "o2_semantic_logodds_shift": 0.5,
+      "unit": "natural-log odds, source-vs-target concept",
+      "justification": "ASSUMPTION, stated as one. 0.5 nats is roughly a 1.65x odds shift toward the counterfactual concept -- large enough that a reader would call it 'the model's answer moved', small enough not to require a full argmax flip. It is declared BEFORE the readout exists so it cannot be chosen to match an observed effect."
+    },
+    "underpowered_branch": "IF the realised O2 SD at Q1 implies power < 0.8 for the declared 0.5-nat effect, the phase returns WITHOUT READING TEST and is declared CANNOT ANSWER with a costed fix (more domains, or a more informative estimator chosen BEFORE data). Mandate section 20: do not knowingly run a major confirmatory experiment whose likely negative would be uninterpretable. This branch MUST exist as a code path, not only as prose.",
+    "_row_level_warning": "A row-level p would print 1.02e-06 where the honest domain-level p is 0.05. Row-level p-values are NOT reported for this claim.",
+    "_inherited_verbatim_except": "o2_semantic_readout_MEASURED is NEW; the parent's null o2_semantic_readout block is left in place unedited so the before/after is visible",
+    "o2_semantic_readout_MEASURED": {
+      "measured_by": "stage q1, split=validation, VALIDATION DOMAINS ONLY -- no test row was read",
+      "slurm_job_id": "867233",
+      "n_validation_domains": 23,
+      "between_domain_sd": 0.04200821142171075,
+      "validation_mean_delta": 0.03559080929211948,
+      "declared_mde": 0.5,
+      "alpha": 0.05,
+      "n_test_domains": 23,
+      "power_at_declared_mde": 1.0,
+      "power_bar": 0.8,
+      "mde_at_power_bar": 0.025678627181435994,
+      "power_ok": true,
+      "decision": "PROCEED -- power >= 0.80 for the declared 0.50-nat effect",
+      "artifact": "outputs/boombness/pr057_runner/q1_validation/DONE.json",
+      "artifact_sha16": "f1ab3a70c514fbfc",
+      "_underpowered_branch_not_taken": "power >= 0.80 at the declared 0.5-nat effect, so the CANNOT-ANSWER-WITHOUT-READING-TEST branch does not fire. The branch remains a code path and is not deleted."
+    }
+  },
+  "nulls_required": [
+    {
+      "id": "I-N1",
+      "name": "disabled-hook bridge",
+      "expect": "byte-identical greedy generations and max|diff|==0.000e+00 hidden states vs the untouched baseline",
+      "blocking": true
+    },
+    {
+      "id": "I-N2",
+      "name": "self-patch identity control (H1)",
+      "expect": "output EXACTLY reproduced; otherwise the patch is not writing what it read",
+      "blocking": true
+    },
+    {
+      "id": "I-N3",
+      "name": "hook liveness, every live arm",
+      "expect": "hook_fired_count > 0, realised == expected cells, non-zero edit magnitude",
+      "blocking": true
+    },
+    {
+      "id": "I-N4",
+      "name": "norm-matched random direction, 5 draws",
+      "expect": "does NOT move O2; 5 DISTINCT output hashes",
+      "blocking": true
+    },
+    {
+      "id": "I-N5",
+      "name": "shuffled-label direction",
+      "expect": "does not move O2 beyond the random control"
+    },
+    {
+      "id": "I-N6",
+      "name": "same-norm orthogonal edit",
+      "expect": "separates 'this direction' from 'this much perturbation'"
+    },
+    {
+      "id": "I-N7",
+      "name": "orthogonal residual preservation (H2b)",
+      "expect": "||h_orth_pre - h_orth_post|| == 0 to numerical tolerance",
+      "blocking": true
+    },
+    {
+      "id": "I-N8",
+      "name": "domain-level group permutation",
+      "expect": "null centred at 0",
+      "_never": "row-level permutation; measured FPR 0.2000"
+    },
+    {
+      "id": "I-N9",
+      "name": "end-relative index audit",
+      "expect": "every edit and read index is len(input_ids)+rel_end; 0 absolute indices in the path"
+    },
+    {
+      "id": "I-N10",
+      "name": "direction provenance audit",
+      "expect": "the direction file's recomputed sha256 matches the one written in the artifact, and its fit manifest names TRAIN domains only"
+    }
+  ],
+  "_nulls_required_note": "copied VERBATIM and unedited from the parent. Dispositions -- which of these can be satisfied by a buildable arm and which cannot -- are in nulls_disposition_amendment below, not in this list.",
+  "nulls_disposition_amendment": {
+    "_rule": "a null attached to an arm that cannot be built is NOT AVAILABLE. It is never reported as passed, and its absence is a stated scope limit.",
+    "I-N1": {
+      "name": "disabled-hook bridge",
+      "parent_blocking": true,
+      "status": "AVAILABLE AND EXERCISED",
+      "evidence": "smoke c5_disabled_bridge_s1: 40 rows, hook_fired_count_total 0, n_cells_edited_realised_total 0, expect_enabled false, producer_gate n_violating 0",
+      "artifact": "outputs/boombness/score_behavior/ts116m_pr057_c5_disabled_bridge_s1_20260908_134107_3330294/PR057_ARM_GATE.json",
+      "artifact_sha16": "1b08ce0c7ea18826",
+      "blocking_for_h2": true
+    },
+    "I-N2": {
+      "name": "self-patch identity control (H1)",
+      "parent_blocking": true,
+      "status": "NOT AVAILABLE -- CANNOT ANSWER BY CONSTRUCTION",
+      "why": "C7 is mode 'patch'; 18 of 18 h1 arms (16 H1 + 2 C7) are unbuildable -- score_behavior --rescue-donor offers only 'clean' and 'self', both on the SAME prompt",
+      "blocking_for_h2": false,
+      "_deviation": "demoted to non-blocking FOR THE h2 STAGE ONLY. This is a recorded deviation from the parent, requires the stage-aware gate of item A9/A14, and is NOT a claim that the control passed."
+    },
+    "I-N3": {
+      "name": "hook liveness, every live arm",
+      "parent_blocking": true,
+      "status": "AVAILABLE AND EXERCISED",
+      "evidence": "smoke h2a_s1_projout_button: 40/40 rows fired, 160 cells realised == 160 expected, n_zero_magnitude 0, n_under_dosed 0",
+      "artifact": "outputs/boombness/score_behavior/ts116m_pr057_h2a_s1_projout_button_20260908_133924_3330294/PR057_ARM_GATE.json",
+      "artifact_sha16": "f3dd9354642b1270",
+      "blocking_for_h2": true
+    },
+    "I-N4": {
+      "name": "norm-matched random direction, 5 draws",
+      "parent_blocking": true,
+      "status": "AVAILABLE, NOT YET RUN (C1 arms are constructible)",
+      "blocking_for_h2": true
+    },
+    "I-N5": {
+      "name": "shuffled-label direction",
+      "parent_blocking": null,
+      "status": "NOT AVAILABLE",
+      "why": "maps to C2; direction 'v_bomb_specific_shuffled_labels' has no artifact -- the PR-053 TRAIN-only export carries only v_bomb, v_bomb_specific, v_gun, v_knife, v_knife_specific, v_remap",
+      "blocking_for_h2": false,
+      "_consequence": "a stated scope limit in the report; C2 appears in neither primary.void nor primary.cannot_answer, so its absence VOIDS nothing"
+    },
+    "I-N6": {
+      "name": "same-norm orthogonal edit",
+      "parent_blocking": null,
+      "status": "AVAILABLE, NOT YET RUN (C4 arms are constructible)",
+      "blocking_for_h2": false
+    },
+    "I-N7": {
+      "name": "orthogonal residual preservation (H2b)",
+      "parent_blocking": true,
+      "status": "NOT AVAILABLE -- arm-scoped to H2b, which is unbuildable",
+      "why": "make_intervention implements 'project_out' and 'add' only; the instrumented component-replace hook exists in the analyzer and is not wired to score_behavior",
+      "blocking_for_h2": false,
+      "_consequence": "H2b x S1/S2 enter Holm at p=1.0; no H2b claim is made in either direction"
+    },
+    "I-N8": {
+      "name": "domain-level group permutation",
+      "parent_blocking": null,
+      "status": "AVAILABLE, requires the analyzer outcome path of item A10",
+      "blocking_for_h2": false
+    },
+    "I-N9": {
+      "name": "end-relative index audit",
+      "parent_blocking": null,
+      "status": "AVAILABLE AND EXERCISED",
+      "evidence": "smoke h2a_s1_projout_button end_relative_audit ok=true, 0 absolute-index violations, 26 distinct absolute indices over 40 records",
+      "blocking_for_h2": false
+    },
+    "I-N10": {
+      "name": "direction provenance audit",
+      "parent_blocking": null,
+      "status": "AVAILABLE AND EXERCISED -- see checklist item A2",
+      "blocking_for_h2": false
+    }
+  },
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PRIMARY",
+        "members": [
+          "DCS-PR-048: 3-way domain-mean accuracy on TEST",
+          "DCS-PR-053: v_bomb_specific identity AUROC on TEST"
+        ],
+        "correction": "Holm across the two, alpha=0.05 family-wise"
+      },
+      {
+        "name": "SECONDARY",
+        "members": [
+          "macro OvR AUROC",
+          "per-class AUROC",
+          "lexical transfer button->basket",
+          "n_examples=8 replication",
+          "hedge-free stratum re-analysis",
+          "mandate 9.1 questions A-F",
+          "the per-layer diff-in-means profile",
+          "DCS-PR-051: paired positional contrast"
+        ],
+        "correction": "Holm within the secondary family"
+      },
+      {
+        "name": "EXPLORATORY",
+        "members": [
+          "DCS-PR-049: knife-vs-gun (demoted by C-101)",
+          "DCS-PR-052: arm-balanced surface cells"
+        ],
+        "correction": "none -- exploratory results carry no confirmatory weight and are labelled as such"
+      },
+      {
+        "name": "NULLS N1-N8",
+        "members": [
+          "diagnostics"
+        ],
+        "correction": "not corrected -- they are gates, not hypotheses; each reported with its own value"
+      },
+      {
+        "name": "PHASE8_MECHANISM",
+        "members": [
+          "DCS-PR-056 H1: delta(target_surface_row_only - legacy_all_query) at block 9, codeword_last",
+          "DCS-PR-056 H2: the same delta at block 9, following (downstream neutral)",
+          "DCS-PR-056 H3: delta(prompt_last_row_only - legacy_all_query) at block 9, codeword_last",
+          "DCS-PR-056 H4: delta(query_prefill_only - legacy_all_query) at block 9, codeword_last"
+        ],
+        "correction": "Holm across the four, alpha=0.05 family-wise"
+      },
+      {
+        "name": "PHASE9_CAUSAL",
+        "members": [
+          "DCS-PR-057 H1 x S1: upper-bound patch, single-site block 9",
+          "DCS-PR-057 H1 x S2: upper-bound patch, band-wide blocks 7-14",
+          "DCS-PR-057 H2a x S1: project_out v_bomb_specific, single-site block 9",
+          "DCS-PR-057 H2a x S2: project_out v_bomb_specific, band-wide blocks 7-14",
+          "DCS-PR-057 H2b x S1: counterfactual component replacement, single-site block 9",
+          "DCS-PR-057 H2b x S2: counterfactual component replacement, band-wide blocks 7-14"
+        ],
+        "correction": "Holm across the six, alpha=0.05 family-wise, on the O2 p-values",
+        "_both_scope_levels_are_members": "mandate 10.4 -- they are DISTINCT hypotheses with different interpretations, declared together, corrected together, and neither is allowed to rescue the other",
+        "_control_arms_are_not_members": "C1-C7 are gates, not hypotheses. They are not corrected and each is reported with its own value. A control that 'fails to reach significance' is not thereby a passed control -- C1 must be shown NOT to move O2, which is an equivalence question and is reported with its interval, never as a bare p > 0.05.",
+        "_directions_and_pairs": "the four directed pairs (bomb<-knife, bomb<-gun, knife<-bomb, gun<-bomb) are strata of H1, reported per pair; the family-wise correction is over the six members above, and the per-pair breakdown is secondary"
+      }
+    ],
+    "_absent_members_enter_at_p_1": "A declared member that is not run enters Holm at p=1.0 rather than being dropped.",
+    "_consistency": "C-106. PR-048 and PR-053 previously declared DIFFERENT primary families -- PR-048 listed one member, PR-053 listed two. Holm is defined over a family, so two configs disagreeing about the family means the correction is undefined. Caught by the pre-submission checklist printing the family, not by any guard. This identical block is now written into BOTH files.",
+    "_families_copied_verbatim": "The PRIMARY / SECONDARY / EXPLORATORY / NULLS blocks below are copied BYTE-FOR-BYTE from configs/dcs_ts_pr048.json and configs/dcs_ts_pr053.json and are NOT edited here. This phase adds NEW families (PHASE8_MECHANISM, PHASE9_CAUSAL) whose members are disjoint from PRIMARY, so PR-048's and PR-053's Holm corrections are arithmetically unaffected and neither file needs to be reopened. That is the C-106 rule applied forwards: two configs must not disagree about the membership of a family, and adding a disjoint family is the only way to add hypotheses without redefining an existing correction.",
+    "_declared_before_any_outcome": "2026-09-07; no intervention has been run in this phase and no semantic readout exists yet",
+    "_inherited_verbatim_except": "_AMENDMENT_PHASE9_CAUSAL is NEW; the families list is copied byte-for-byte and unedited",
+    "_AMENDMENT_PHASE9_CAUSAL": {
+      "family": "PHASE9_CAUSAL",
+      "m": 6,
+      "_m_is_NOT_reduced": "dropping the four absent members to m=2 would LOOSEN the correction after seeing which arms could be built. m stays 6.",
+      "members_run": [
+        "H2a x S1",
+        "H2a x S2"
+      ],
+      "members_absent_at_p_1": [
+        "H1 x S1",
+        "H1 x S2",
+        "H2b x S1",
+        "H2b x S2"
+      ],
+      "rule_source": "configs/dcs_ts_pr057_phase9.json multiplicity._absent_members_enter_at_p_1 -- 'A declared member that is not run enters Holm at p=1.0 rather than being dropped.'",
+      "arithmetic": "with four p=1.0 sorting last, the two observed p-values face thresholds alpha/6 and alpha/5: 0.008333333333333333 and 0.01 at alpha=0.05. These are exactly the preregistered thresholds; Holm neither breaks nor VOIDs.",
+      "alpha": 0.05,
+      "threshold_first": 0.008333333333333333,
+      "threshold_second": 0.01,
+      "enforcement_status": "NOT ENFORCED IN CODE TODAY -- see checklist item A10",
+      "_enforcement_gap": "scripts/dcs_ts_pr057_causal.py:1463 holm(pvals, alpha, m=None) restates the p=1.0 rule in its DOCSTRING and then does m = int(m or len(pvals)) with no injection of absent members. grep 'holm(' finds 1463 (def), 2091 (self-test, all six hardcoded) and 2682 (mutation) -- there is NO production call site. The working reference implementation is scripts/dcs_ts_pr059_localisation.py:1592 holm_with_absent(pr, observed), which sets absent_members_at_p1 = sorted(set(ids) - set(observed)) and m = len(ids). This is the 'threshold published but never enforced' pattern and A10 closes it."
+    }
+  },
+  "artifacts": {
+    "readout_and_intervention": "src/boombness/score_behavior.py via scripts/dcs_ts_readout_multi.py, with --intervene '<direction>:<mode>:<layers>:<alpha>' --fit-dir <PR-053 direction dir>",
+    "_existing_machinery_is_reused_not_reimplemented": "score_behavior.make_intervention already implements project_out (scale-free, realised dose reported separately from alpha), gap-unit `add`, composed arms with OFFSET control seeds, and the donor_patch ActivationCapture/DonorBlock/DonorPatch path with token-identity re-verification over the patched span. None of it is rewritten.",
+    "_WHAT_DOES_NOT_EXIST_YET": "A CROSS-PROMPT donor. The existing --rescue-donor takes 'clean' or 'self' -- both are the SAME templated string. H1 needs a donor from a DIFFERENT prompt (C_knife) written into C_bomb, and DonorPatch re-verifies TOKEN IDENTITY over the patched span, which across concepts holds at the codeword row (byte-identical) but NOT over the demonstration block. That verification must be SCOPED to the patched span and the scoping must be TESTED, not assumed -- a token-identity check that is quietly relaxed is how a patch ends up writing into the wrong row. Checklist item Q3.",
+    "analyzer": "scripts/dcs_ts_pr057_causal.py",
+    "analyzer_commit": null,
+    "analyzer_exists": false,
+    "analyzer_committed_before_outcome": false,
+    "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.",
+    "_loader_will_refuse_extraction_and_that_is_correct": "scripts/dcs_ts_prereg.py --for-extraction REFUSES this file today, on analyzer_exists==false and on the BLOCKING checklist items below. That refusal is the design working: nothing may be submitted until the analyzer exists and the blockers are closed. `--check` without --for-extraction loads cleanly, which is the state a FROZEN-but-not-yet-runnable preregistration should be in.",
+    "report": "reports/DCS_TS_PR057_CAUSAL.md",
+    "_mandate_34_output": "this is required final output #7, 'causal concept-direction intervention report'",
+    "log_entry": "external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md",
+    "_inherited_verbatim_except": "the analyzer flags below are RE-STATED with measured reasons; the parent's values (false/false) are unchanged",
+    "analyzer_file_present": true,
+    "analyzer_file_sha16": "2c2f80038c905fa1",
+    "analyzer_verdict_path_present": false,
+    "_analyzer_flag_reason": "the file exists, is committed, passes --self-test (86 checks, 0 FAILED) and --mutate (64/64 refusals), and REFUSES correctly on unclean liveness. But analyse() has no outcome computation, no Holm and no verdict: scripts/dcs_ts_pr057_causal.py:3050-3056 refuses on any failed gate and :3057-3059 prints '(outcome computation continues only for arms that passed every gate above)' and returns 0. evaluate_success (:1547) and holm (:1463) are reached only from --self-test and --mutate. analyzer_exists therefore stays FALSE and --for-extraction keeps refusing, which is correct.",
+    "runner": "src/boombness/pr057_run_causal.py",
+    "runner_file_sha16": "c74d16763a349be4",
+    "amendment_report": "reports/DCS_TS_PR060_AMENDMENT.md"
+  },
+  "pins": {
+    "_rule": "every sha16 here is the sha256 of the file at that path, truncated to 16 hex chars, recomputed on 2026-09-08. No hash in this file was copied from prose or invented.",
+    "files": {
+      "parent_prereg": {
+        "path": "configs/dcs_ts_pr057_phase9.json",
+        "file_sha16": "7c88346ee375baaf"
+      },
+      "analyzer": {
+        "path": "scripts/dcs_ts_pr057_causal.py",
+        "file_sha16": "2c2f80038c905fa1"
+      },
+      "runner": {
+        "path": "src/boombness/pr057_run_causal.py",
+        "file_sha16": "c74d16763a349be4"
+      },
+      "prereg_loader": {
+        "path": "scripts/dcs_ts_prereg.py",
+        "file_sha16": "fa7221d73a61a436"
+      },
+      "readout_and_intervention": {
+        "path": "src/boombness/score_behavior.py",
+        "file_sha16": "af890bac1f3ae19f"
+      },
+      "hook_library": {
+        "path": "doublespeak_causality/pair_common.py",
+        "file_sha16": "7dbf5703fc72ce81"
+      },
+      "holm_with_absent_reference": {
+        "path": "scripts/dcs_ts_pr059_localisation.py",
+        "file_sha16": "a9443180ca6eeeb8"
+      },
+      "frozen_pr048_probe_result": {
+        "path": "outputs/dcs_ts/pr048_result.json",
+        "file_sha16": "2906fff9b75eb6f8"
+      },
+      "direction_payload": {
+        "path": "outputs/dcs_ts/directions_pr053/directions_fit_dev.pt",
+        "file_sha16": "0d59b25561d220a5"
+      },
+      "direction_manifest": {
+        "path": "outputs/dcs_ts/directions_pr053/MANIFEST.json",
+        "file_sha16": "76c5b41f98c06978"
+      },
+      "direction_verify": {
+        "path": "outputs/dcs_ts/directions_pr053/VERIFY.json",
+        "file_sha16": "aec40a3619b96780"
+      },
+      "direction_mutations": {
+        "path": "outputs/dcs_ts/directions_pr053/MUTATIONS.json",
+        "file_sha16": "8f8d82c8ee58b57e"
+      },
+      "q1_stage_done": {
+        "path": "outputs/boombness/pr057_runner/q1_validation/DONE.json",
+        "file_sha16": "f1ab3a70c514fbfc"
+      },
+      "smoke_stage_done": {
+        "path": "outputs/boombness/pr057_runner/smoke_train/DONE.json",
+        "file_sha16": "6830f03708f309f1"
+      },
+      "smoke_h2a_arm_gate": {
+        "path": "outputs/boombness/score_behavior/ts116m_pr057_h2a_s1_projout_button_20260908_133924_3330294/PR057_ARM_GATE.json",
+        "file_sha16": "f3dd9354642b1270"
+      },
+      "smoke_c5_arm_gate": {
+        "path": "outputs/boombness/score_behavior/ts116m_pr057_c5_disabled_bridge_s1_20260908_134107_3330294/PR057_ARM_GATE.json",
+        "file_sha16": "1b08ce0c7ea18826"
+      }
+    }
+  },
+  "arm_inventory_observed": {
+    "_command": "python src/boombness/pr057_run_causal.py --plan --split test",
+    "_observed_on": "2026-09-08",
+    "n_arms": 54,
+    "n_constructible_today": 30,
+    "n_unbuildable_today": 24,
+    "by_stage_mode_constructible": {
+      "h1|patch|False": 18,
+      "h2|add|True": 2,
+      "h2|component_replace|False": 4,
+      "h2|disabled|True": 2,
+      "h2|project_out|False": 2,
+      "h2|project_out|True": 26
+    },
+    "h2_buildable": 30,
+    "h2_unbuildable_arm_ids": [
+      "h2b_s1_replace_basket",
+      "h2b_s1_replace_button",
+      "h2b_s2_replace_basket",
+      "h2b_s2_replace_button",
+      "c2_shuffled_s1",
+      "c2_shuffled_s2"
+    ],
+    "h1_unbuildable_n": 18,
+    "h1_constructible_n": 0,
+    "reasons": {
+      "h1 (18 arms, 16 H1 + 2 C7)": "mode 'patch' has NO code path: score_behavior's --rescue-donor offers only 'clean' and 'self', both on the SAME prompt (src/boombness/score_behavior.py:1811). SEPARATELY, C-112/R-116: the donor concept installs in 0 of 113 domains, so the H1 population is EMPTY.",
+      "h2b (4 arms)": "mode 'component_replace' has NO code path: make_intervention implements 'project_out' and 'add' only",
+      "c2 (2 arms)": "direction 'v_bomb_specific_shuffled_labels' has no artifact in the PR-053 TRAIN-only export"
+    },
+    "_no_h2_arm_uses_the_donor": "0 of the 36 h2-stage arms have mode 'patch'; all 18 patch arms are stage h1. This is why Q3 is NOT APPLICABLE to h2 -- and why it still cannot simply be marked done."
+  },
+  "design_answers": {
+    "_why_here": "both of these are irreversible once TEST is read. They are fixed now, before any test row is seen, on structural facts only.",
+    "holm_family": {
+      "decision": "m = 6, unchanged. H2a x S1 and H2a x S2 are the reportable members; H1 x S1/S2 and H2b x S1/S2 enter at p = 1.0.",
+      "forces": [
+        "H2a's smaller p must be < 0.008333333333333333 and its larger < 0.01 to survive the family-wise correction.",
+        "No H2b or H1 claim may be made in EITHER direction; their absence is CANNOT ANSWER BY CONSTRUCTION.",
+        "The analyzer must implement holm-with-absent-members (item A10); today no production code applies Holm at all."
+      ],
+      "rejected_alternative": "reducing m to 2 -- that would loosen the correction on the basis of which arms turned out to be buildable, i.e. after the fact."
+    },
+    "o1_baseline": {
+      "decision": "O1 = domain-mean over the 23 test domains of [ probe posterior(source) - probe posterior(target) ] under the intervened arm MINUS the same quantity under the C5 disabled-hook bridge arm on the SAME codeword bank, paired by prompt_id at block 9, codeword_last.",
+      "why_this_baseline": "it is the only un-intervened layer-9 posterior inside the buildable set: same bank, same 230 prompts, same exclusion file, same eager/greedy path, probe read at block 9 in every arm because --emit-probe passes read_layer_grid [7..14]. The PHASE 7 readout (C6) supplies O2's baseline but writes no PR057_PROBE.jsonl and captures no hidden state, so it cannot supply O1.",
+      "forces": [
+        "the C5 bridge exists on the BUTTON bank only (both c5 arms bind ..._button_bomb.jsonl); the basket bank has no un-intervened arm -- item A12",
+        "h2 MUST be launched with --emit-probe or O1 is never captured -- item A13",
+        "the estimator must exist in code before the test read; scripts/dcs_ts_pr057_causal.py:904-919 o1_from_probe_rows returns LEVELS only, with no baseline argument, no delta and no p -- item A11"
+      ],
+      "deterministic_fallback": "IF the basket bridge arms of A12 are not built, THEN O1 is a BUTTON-BANK statistic and the basket H2a arms are reported O2-only and are NOT eligible for the conjunctive success rule. This rule is fixed now and turns on a constructibility fact, never on an observed value."
+    },
+    "h1_is_cannot_answer_by_construction": {
+      "decision": "H1's absence is CANNOT ANSWER BY CONSTRUCTION, not 'H1 did not move O2'.",
+      "runner_agreement": "src/boombness/pr057_run_causal.py:752 KILL_UNAVAILABLE = 'H1_NOT_AVAILABLE'; :779-787 returns it when no H1 arm ran; :819 apply_kill_condition removes an arm only on KILL_NOT_MOVED, so H2 proceeds and the state is stamped on every arm.",
+      "forces": [
+        "the report states the H2a result as the primary mandate-10.2 test WITHOUT a measured ceiling",
+        "the missing ceiling must not be described as evidence for or against causal use",
+        "a reviewer may still read the parent's cannot_answer clause as making the whole phase CANNOT ANSWER; that reading is recorded here as an open interpretive risk, not settled"
+      ]
+    }
+  },
+  "launch_order_resolution": {
+    "problem": "src/boombness/pr057_run_causal.py:684-712 assert_stage_order hardcodes need = {'q1': [], 'smoke': ['q1'], 'h1': ['q1','smoke'], 'h2': ['q1','smoke','h1']} at :691 and satisfies a predecessor only from a <pre>_*/DONE.json with status == 'ok'. h1 can never write one: run_stage raises 'stage has ZERO constructible arms' (:1539-1544) BEFORE write_terminal.",
+    "rejected_a": "declare predecessors in an amendment JSON -- INERT: assert_stage_order takes (state_root, stage, split), reads no Prereg, and the parent carries no machine-readable predecessor field. It would still need a code change, and a config-read gate is assertable by hand.",
+    "rejected_b": "let a zero-arm stage write a terminal record -- REFUSED: that reopens exactly the silent-success hole :1539-1544 exists to close. A record no downstream gate accepts buys nothing over this amendment.",
+    "recommended_c": "make assert_stage_order AGREE with h1_kill_state by RE-DERIVING h1's status at launch: give it `pr`, and before reporting h1 missing, run build_arm_manifest(pr) + stage_selector(pr,'h1') + constructibility(...). If ZERO selected h1 arms are constructible, satisfy the predecessor as 'h1: CANNOT_RUN_BY_CONSTRUCTION' and persist the per-arm reasons into the manifest and DONE.json. If ANY h1 arm is constructible, refuse exactly as today.",
+    "why_c": [
+      "it is re-computed at every launch, so it cannot be asserted by hand",
+      "it RE-ARMS automatically the moment the cross-prompt donor is implemented -- an allowlist of 'stages known unbuildable' would not",
+      "the scientific content of h1's place in the order is already enforced elsewhere, inside the h2 stage itself, by h1_kill_state/apply_kill_condition (:755-841, called for h2 at :1461-1471)"
+    ],
+    "cost": "signature change touching the call site at :1442 and the self-tests at :1995-2006 and :2216",
+    "risk": "a bug in the constructibility path would now be able to OPEN a gate rather than only refuse an arm. Mitigation: the change must ship with a mutation that makes one h1 arm constructible and asserts the gate REFUSES again.",
+    "recorded_as": "checklist item A9",
+    "_no_hand_written_record": "under no circumstances is a DONE.json or any terminal record written by hand to satisfy this gate."
+  },
+  "pre_extraction_checklist": [
+    {
+      "id": "A0",
+      "supersedes": "Q0",
+      "item": "the PHASE 7 readout has LANDED, option_mass shows the semantic_one_word channel is engaged, and the installation stratification exists",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "slurm_job_id": "865335",
+        "gate": "PASS on 6 of 6 banks",
+        "channel": "semantic_one_word",
+        "median_option_mass_true": {
+          "basket_bomb": 0.05937252938747406,
+          "basket_gun": 0.066568274050951,
+          "basket_knife": 0.0857,
+          "button_bomb": 0.0825,
+          "button_gun": 0.0616,
+          "button_knife": 0.0663
+        },
+        "_median_note": "basket_bomb and basket_gun are quoted at full precision from the artifact; the remaining four are quoted at 4 dp as printed",
+        "n_rows_per_bank": {
+          "basket_*": 2776,
+          "button_*": 2784
+        },
+        "missing_tags": [],
+        "disengaged": [],
+        "recorded_in": "outputs/boombness/pr057_runner/q1_validation/DONE.json",
+        "recorded_in_sha16": "f1ab3a70c514fbfc",
+        "field": "DONE.json q0.ok == true, q0.n_banks == 6"
+      }
+    },
+    {
+      "id": "A1",
+      "supersedes": "Q1",
+      "item": "measure the between-domain SD of O2 on VALIDATION DOMAINS ONLY and recompute MDE and power for the declared 0.5-nat effect",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "slurm_job_id": "867233",
+        "stage": "q1",
+        "split": "validation",
+        "rows": 460,
+        "arms": [
+          "h2a_s1_projout_basket",
+          "h2a_s1_projout_button"
+        ],
+        "n_validation_domains": 23,
+        "between_domain_sd": 0.04200821142171075,
+        "validation_mean_delta": 0.03559080929211948,
+        "power_at_declared_mde": 1.0,
+        "mde_at_power_bar": 0.025678627181435994,
+        "decision": "PROCEED -- power >= 0.80 for the declared 0.50-nat effect",
+        "recorded_in": "outputs/boombness/pr057_runner/q1_validation/DONE.json",
+        "recorded_in_sha16": "f1ab3a70c514fbfc"
+      }
+    },
+    {
+      "id": "A2",
+      "supersedes": "Q2",
+      "item": "produce the PR-053 TRAIN-ONLY direction file, verify its fit manifest names TRAIN domains only, and record its sha256 into every run artifact",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "payload": "outputs/dcs_ts/directions_pr053/directions_fit_dev.pt",
+        "payload_sha256": "0d59b25561d220a58bac9ebe08b39690c5bdb9f8b613001dd3edba3a0dac5df7",
+        "payload_sha16": "0d59b25561d220a5",
+        "manifest": "outputs/dcs_ts/directions_pr053/MANIFEST.json",
+        "manifest_sha16": "76c5b41f98c06978",
+        "n_fit_domains": 67,
+        "fit_split": "TRAIN only (split.train == 67); the 23 validation and 23 test domains are listed separately and are disjoint",
+        "verify": "outputs/dcs_ts/directions_pr053/VERIFY.json",
+        "verify_sha16": "aec40a3619b96780",
+        "verify_result": "28 checks, 28 GREEN, 0 RED",
+        "mutations": "outputs/dcs_ts/directions_pr053/MUTATIONS.json",
+        "mutations_sha16": "8f8d82c8ee58b57e",
+        "mutations_result": "22 of 22 caught, including 'fit on TRAIN + the 23 TEST domains (leakage)' and 'fit on the VALIDATION domains instead of TRAIN'",
+        "recomputed_into_run_artifacts": "observed in 4 of 4 PR057_ARM_GATE.json as direction_file_sha256, and in both stage DONE.json / PR057_RUN_MANIFEST.json as direction_sha256, all equal to the payload sha256 above",
+        "_recomputed_here": "sha256 of the payload recomputed on 2026-09-08 and equal to the pinned value"
+      }
+    },
+    {
+      "id": "A3",
+      "supersedes": "Q3",
+      "item": "implement and TEST the cross-prompt donor for H1 (span-scoped token-identity re-verification that still refuses a mismatch; self-patch reproduces the output exactly)",
+      "blocking": true,
+      "done": false,
+      "why_open": "GENUINELY OPEN. src/boombness/score_behavior.py:1811 still declares --rescue-donor choices ('clean','self'), both on the SAME prompt: there is no cross-prompt donor GPU code path. The contract is designed and unit-tested in the analyzer only (donor_span_contract, build_cross_prompt_donor, self_patch_gate). This item is NOT closed and NOT marked N/A.",
+      "applies_to_stages": [
+        "h1"
+      ],
+      "_observed_scope": "0 of the 36 h2-stage arms use mode 'patch'; all 18 patch arms are stage h1 (python src/boombness/pr057_run_causal.py --plan --split test)",
+      "_enforcement_gap": "NO code path reads a per-stage scoping of this checklist. scripts/dcs_ts_prereg.py:validate enforces the `done` boolean alone, so with blocking:true this item correctly refuses EVERY stage, h2 included, until the stage-aware gate of item A14 exists. Marking it done:true because it is irrelevant to h2 would be the 'published threshold never enforced' failure in reverse.",
+      "_dead_end_note": "h1 is a dead end for a second, independent reason (R-116/C-112: the donor concept installs in 0 of 113 domains), so implementing the donor would not by itself make H1 answerable on this bank."
+    },
+    {
+      "id": "A4",
+      "supersedes": "Q4",
+      "item": "the analyzer: every threshold through Prereg.require(), no numeric gate literal, the underpowered branch as a CODE PATH, the conjunctive four-condition success rule evaluated explicitly, and a refusal on unclean liveness",
+      "blocking": true,
+      "done": false,
+      "evidence": {
+        "analyzer": "scripts/dcs_ts_pr057_causal.py",
+        "analyzer_sha16": "2c2f80038c905fa1",
+        "what_is_verified": [
+          "--self-test: 86 checks, 0 FAILED (run 2026-09-08)",
+          "--mutate: 64/64 mutations produced a refusal (run 2026-09-08)",
+          "liveness refusal path present: :3050-3056 'REFUSING to emit any causal verdict' on any failed gate",
+          "the conjunctive rule EXISTS: :1547 evaluate_success(o1, o2, control, across_domains, alpha, expected_sign)"
+        ],
+        "what_is_missing": [
+          "analyse() ends at :3057-3059 with '(outcome computation continues only for arms that passed every gate above)' and `return 0` -- no O1/O2 computation, no permutation, no Holm, no verdict",
+          "evaluate_success and holm have NO production call site (grep 'holm(': :1463 def, :2091 self-test, :2682 mutation)",
+          ":3008-3019 arms_present requires a COMPLETE run directory for ALL 54 declared arms with no expected-absent exemption, so the 24 unbuildable arms would force a refusal to emit any verdict"
+        ]
+      },
+      "why_open": "OPEN. The analyzer cannot emit a verdict, so no number of buildable arms yields one. Closing work is itemised as A10."
+    },
+    {
+      "id": "A5",
+      "supersedes": "Q5",
+      "item": "mutation-test the analyzer: a dead hook, a zero-magnitude edit, an identical-hash control band, a broken orthogonal residual, a self-patch that changes the output, a direction fitted on test, and an absolute edit index must EACH produce a refusal",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "command": "python scripts/dcs_ts_pr057_causal.py --mutate",
+        "run_on": "2026-09-08",
+        "exit_code": 0,
+        "result": "[mutate] 64/64 mutations produced a refusal; 0 GREEN lines",
+        "the_seven_named": {
+          "M1 dead hook (fired=0)": "RED",
+          "M2 zero-magnitude edit": "RED",
+          "M3 identical control-band hashes": "RED",
+          "M4 broken orthogonal residual": "RED",
+          "M5 self-patch changes the output": "RED",
+          "M6 direction fitted on test": "RED",
+          "M7 absolute edit index reused": "RED"
+        },
+        "analyzer_sha16": "2c2f80038c905fa1"
+      }
+    },
+    {
+      "id": "A6",
+      "supersedes": "Q6",
+      "item": "verify the gap-unit dosing at THIS call site: an `add`-style edit must be dosed in diff-of-means units, not bare alpha",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "command": "python scripts/dcs_ts_pr057_causal.py --self-test",
+        "run_on": "2026-09-08",
+        "exit_code": 0,
+        "result": "[selftest] 86 checks, 0 FAILED",
+        "checks": {
+          "c120_add_dose_is_in_GAP_UNITS": "PASS (alpha=2.5000, realised/cell=2.5000)",
+          "c120_bare_alpha_absolute_dose_REFUSED": "PASS (refused at hook CONSTRUCTION)",
+          "c120_add_has_a_real_single_site_form": "PASS (all=9 one=1 abs=[6])",
+          "c120_add_hook_records_liveness": "PASS (moved=9 cells=9/9 orth=1.390e-07)",
+          "c120_dead_add_hook_refused": "PASS"
+        },
+        "mutations": {
+          "M54 add dosed in ABSOLUTE not gap units": "RED",
+          "M55 dose units never declared": "RED",
+          "M56 realised per-cell magnitude != declared alpha": "RED",
+          "M58 AllPositionAdd handed a BARE (absolute) alpha": "RED",
+          "M61 half a dose declaration (gap_norm with no alpha_gap_units)": "RED"
+        },
+        "call_site": "src/boombness/score_behavior.py `elif mode == \"add\":` passes alpha*g with alpha_gap_units=alpha and gap_norm=g; doublespeak_causality/pair_common.py:1914-1925 refuses half a declaration and refuses alpha != alpha_gap_units * gap_norm at hook construction",
+        "hook_library_sha16": "7dbf5703fc72ce81",
+        "not_covered": "no GPU round-trip of a live C4 `add` arm exists yet; the evidence is the construction-time refusal, the persisted-record gate, and the self-test/mutation harness over the SAME hook classes the run uses (src/boombness/common.py:54-57 imports pair_common for both)."
+      }
+    },
+    {
+      "id": "A7a",
+      "supersedes": "Q7 (h2-scoped half)",
+      "item": "smoke run on TRAIN domains confirming hook liveness, the disabled-hook bridge, and a non-zero measured edit magnitude BEFORE the full submission",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "stage": "smoke",
+        "split": "train",
+        "arms": [
+          "h2a_s1_projout_button",
+          "c5_disabled_bridge_s1"
+        ],
+        "slurm_job_id_of_the_arm_runs": "868702 (from each run's RUNMETA.json slurm_job_id)",
+        "h2a_s1_projout_button": {
+          "rows": 40,
+          "n_liveness_records": 40,
+          "hook_fired_count_total": 40,
+          "n_cells_realised": 160,
+          "n_cells_expected": 160,
+          "n_zero_magnitude": 0,
+          "n_under_dosed": 0,
+          "end_relative_audit_ok": true,
+          "n_distinct_absolute_indices": 26,
+          "realized_variance_frac_removed": 0.16558547364775356,
+          "realized_norm_frac_removed": 0.4069219503144965,
+          "arm_gate_sha16": "f3dd9354642b1270"
+        },
+        "c5_disabled_bridge_s1": {
+          "rows": 40,
+          "n_liveness_records": 40,
+          "hook_fired_count_total": 0,
+          "n_cells_realised": 0,
+          "expect_enabled": false,
+          "producer_gate_n_violating": 0,
+          "arm_gate_sha16": "1b08ce0c7ea18826"
+        },
+        "stage_record": "outputs/boombness/pr057_runner/smoke_train/DONE.json",
+        "stage_record_sha16": "6830f03708f309f1",
+        "_substitution_recorded": "the parent's Q7 names H1 at S1. H1 is unbuildable, so the smoke ran the h2 stage's own arm family instead -- H2a x S1 plus the C5 disabled-hook bridge. That substitution is what was executed and it is recorded here rather than described as Q7 satisfied.",
+        "_observation_gap": "neither DONE.json records a slurm job id. The smoke arm run dirs carry slurm_job_id 868702; the stage DONE.json was written at 13:55:41, after those runs, by a later invocation whose job id is recorded in NO artifact I read. Item A15 asks the runner to stamp the job id into the terminal record."
+      }
+    },
+    {
+      "id": "A7b",
+      "supersedes": "Q7 (H1 half) + null I-N2",
+      "item": "the self-patch identity control must reproduce the output exactly",
+      "blocking": false,
+      "done": false,
+      "why_open": "NOT AVAILABLE -- CANNOT ANSWER BY CONSTRUCTION. C7 is mode 'patch'; both C7 arms are among the 18 unbuildable h1 arms. Demoted to non-blocking FOR THE h2 STAGE ONLY as a recorded deviation; it is NOT reported as passed, and the demotion needs the stage-aware gate of item A14 to be honoured by any code.",
+      "applies_to_stages": [
+        "h1"
+      ],
+      "_deviation": true
+    },
+    {
+      "id": "A8",
+      "supersedes": "Q8",
+      "item": "confirm PR-056 (PHASE 8) has either completed or been explicitly deferred, so the two GPU phases are not competing for the same fair-share allocation",
+      "blocking": false,
+      "done": false,
+      "why_open": "COULD NOT DETERMINE. No PR-056 run directory under outputs/boombness and no PHASE 8 report under reports/ was found (reports/ carries PR-057, PR-058 and PR-059 documents only). Non-blocking, and left false rather than guessed."
+    },
+    {
+      "id": "A9",
+      "supersedes": "NEW (launch order)",
+      "item": "assert_stage_order must RE-DERIVE h1's status from constructibility at launch, so that 'h1: CANNOT_RUN_BY_CONSTRUCTION' satisfies the h2 predecessor while ANY constructible h1 arm still refuses",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN. See launch_order_resolution. Today src/boombness/pr057_run_causal.py:691 demands an h1 DONE.json that cannot exist, and :1539-1544 correctly refuses to write one. No hand-written terminal record may be used instead."
+    },
+    {
+      "id": "A10",
+      "supersedes": "NEW (analyzer verdict path)",
+      "item": "implement the outcome -> permutation -> Holm-with-absent-members -> verdict path in scripts/dcs_ts_pr057_causal.py, and scope arms_present to the amendment's expected-present set while enumerating the unbuildable arms explicitly",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN. Three concrete pieces: (1) analyse() must compute O1/O2 and call evaluate_success and verdict -- it stops at :3057-3059 today; (2) port holm_with_absent from scripts/dcs_ts_pr059_localisation.py:1592 (sha16 a9443180ca6eeeb8) so absent members enter at p=1.0 with m pinned at 6; (3) :3008-3019 arms_present must exempt the 24 arms this amendment records as unbuildable, by NAME, and still refuse on any other absence. Each piece ships with a mutation."
+    },
+    {
+      "id": "A11",
+      "supersedes": "NEW (O1 estimator)",
+      "item": "implement O1 as a CONTRAST against the C5 disabled-hook bridge, paired by prompt_id and aggregated to a domain mean, before any test read",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN. scripts/dcs_ts_pr057_causal.py:904-919 o1_from_probe_rows returns {'read_layer','n','values','probe_sha256'} -- LEVELS for one arm, with no baseline argument, no delta and no p. evaluate_success (:1547) consumes o1['p'] and o1['delta'], which nothing in the production path builds. Forming this contrast after seeing test posteriors would be a post-hoc estimator; design_answers.o1_baseline fixes it now and this item is the code."
+    },
+    {
+      "id": "A12",
+      "supersedes": "NEW (basket O1 reference)",
+      "item": "either add un-intervened C5 bridge arms on the BASKET bank, or accept the preregistered fallback that O1 is a button-bank statistic and the basket H2a arms are reported O2-only",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN and it is a DECISION plus code. Both c5 arms bind ..._button_bomb.jsonl (observed in --plan), and scripts/dcs_ts_pr057_causal.py:1420-1431 hardcodes codeword='button' for C5, so no basket arm carries an un-intervened layer-9 posterior. The fallback in design_answers.o1_baseline.deterministic_fallback applies automatically if the arms are not built; it turns on constructibility, never on an observed value."
+    },
+    {
+      "id": "A13",
+      "supersedes": "NEW (probe capture)",
+      "item": "the h2 launch MUST pass --emit-probe, or no PR057_PROBE.jsonl is written and O1 is not captured at all",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN -- NOT VERIFIED. --emit-probe is an optional flag (src/boombness/pr057_run_causal.py:2351) whose gate is at :1385-1397. The q1 and smoke arms did carry --pr057-probe-out auto with the frozen probe sha c54bd39765aaa40140480717b5a3f170e948d301b94c46c674addc9710eb8e4e, and PR057_PROBE.jsonl exists in the smoke C5 run dir, but I did not observe the h2 invocation and cannot assert it will pass the flag."
+    },
+    {
+      "id": "A14",
+      "supersedes": "NEW (stage-aware checklist gate)",
+      "item": "make the pre-extraction checklist gate read a per-stage scoping, so that an item recorded as applying only to h1 does not silently block h2 -- and so that the recorded demotions of I-N2 and A7b are honoured by CODE rather than by prose",
+      "blocking": true,
+      "done": false,
+      "why_open": "OPEN. scripts/dcs_ts_prereg.py:validate enforces the `done` boolean alone and knows nothing about stages, and src/boombness/pr057_run_causal.py:1429-1443 calls load_prereg(for_extraction=True) for stages h1 and h2 alike. Until this exists, every stage-scoped disposition in this file is prose, and A3 correctly blocks h2 as well as h1. This is the item that decides whether this amendment can ever be enforced rather than merely read."
+    },
+    {
+      "id": "A15",
+      "supersedes": "NEW (provenance defect)",
+      "item": "the runner should stamp the slurm job id into every terminal record",
+      "blocking": false,
+      "done": false,
+      "why_open": "OPEN, minor, non-blocking. Neither outputs/boombness/pr057_runner/q1_validation/DONE.json nor .../smoke_train/DONE.json carries a job id; the q1 job id 867233 and the smoke arm job id 868702 are recoverable only from each run's RUNMETA.json, and the job that wrote the smoke DONE.json at 13:55:41 is recorded nowhere I could read."
+    }
+  ],
+  "_checklist_note": "A0-A8 supersede the parent's Q0-Q8 one for one (Q7 splits into A7a and A7b). A9-A15 are NEW and record the engineering the investigations found to be missing. This file's OWN --for-extraction load REFUSES today, on A3, A4, A9, A10, A11, A12, A13, A14 and on artifacts.analyzer_exists == false. That refusal is the correct state.",
+  "go_no_go": {
+    "verdict": "NO-GO for the H2 test stage as of 2026-09-08",
+    "_not_because_the_design_is_void": "nothing in the parent's success rule, void list, cannot_answer list or blocking nulls requires an H2b or a C2 arm, and the parent pre-authorises the Holm treatment absent members need. On the prereg's own terms a verdict IS producible from the 30 buildable h2 arms.",
+    "why_no_go_anyway": [
+      "A4/A10: the analyzer has no outcome, Holm or verdict path -- no number of arms yields a verdict today",
+      "A11/A12/A13: O1, one of the four conjunctive conditions, has no estimator, no basket reference and no verified capture flag",
+      "A9: the launch-order gate demands an h1 DONE.json that can never be written",
+      "A3/A14: a blocking checklist item is open and the gate that would scope it to h1 does not exist"
+    ],
+    "conditions_to_flip_to_GO": [
+      "A9 landed with its re-arming mutation",
+      "A10 landed: outcome -> permutation -> holm-with-absent (m=6) -> verdict, with mutations",
+      "A11 landed: O1 as a paired contrast against the C5 bridge",
+      "A12 decided and landed (basket bridge arms, or the fallback applied in code)",
+      "A13 verified: the h2 invocation passes --emit-probe",
+      "A14 landed: the checklist gate is stage-aware, after which A3's h1-only scope is honoured by code",
+      "artifacts.analyzer_exists flipped to true ONLY once A10 exists"
+    ],
+    "what_a_GO_would_buy": "an H2a-only confirmatory result -- two family members of six -- with no measured ceiling (H1), no counterfactual replacement (H2b) and no shuffled-label control (C2). That is a real result under the parent's success rule and it must be reported with those three scope limits stated in the same breath.",
+    "_forbidden": "the phrase 'the representation is meaningless', and any paraphrase, remains forbidden (parent primary.negative._this_is_non_negotiable)"
+  },
+  "frozen_at": "2026-09-08",
+  "depends_on": [
+    {
+      "what": "configs/dcs_ts_pr057_phase9.json (DCS-PR-057)",
+      "why": "the parent preregistration this file amends",
+      "status": "FROZEN",
+      "blocking": true,
+      "file_sha16": "7c88346ee375baaf"
+    },
+    {
+      "what": "stage q1 (slurm 867233)",
+      "why": "supplies the measured O2 between-domain SD and the PROCEED decision",
+      "status": "COMPLETE",
+      "blocking": true
+    },
+    {
+      "what": "stage smoke (arm runs under slurm 868702)",
+      "why": "supplies hook liveness and the disabled-hook bridge on the h2 arm family",
+      "status": "COMPLETE",
+      "blocking": true
+    },
+    {
+      "what": "PHASE 7 readout (slurm 865335)",
+      "why": "supplies O2 and the C6 untouched baseline",
+      "status": "COMPLETE",
+      "blocking": true
+    }
+  ]
+}
