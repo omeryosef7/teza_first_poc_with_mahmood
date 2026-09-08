@@ -4746,3 +4746,48 @@ contrast**; resolving it is a config-owner decision and a new preregistration, n
 `scripts/dcs_ts_readout_multi.py`, which forwards **no** `--only-cell`, **no** `--knockout-scope` and
 **no** row-set flag. U8's smoke run cannot be launched as written. This is the same class as PHASE 9's
 Q4b — the analyzer and the arms exist, and nothing can actually run them.
+
+---
+
+## DCS-R-135 — PHASE 13 is CANNOT ANSWER, and the reason is stronger than "underpowered"
+*2026-09-08* — `reports/DCS_TS_PR062_PHASE13_ASSESSMENT.md`; **no config written, deliberately**
+
+PHASE 13 correlates representation destruction against downstream use. It was blocked on PHASE 9.
+PHASE 9 has returned, and **the premise does not survive it**: no arm on this bank supplies both
+halves of the mediation.
+
+- **S2** moved the readout hard — O2 −0.642195, p at floor, 21/23 domains — but its **mediator is a
+  CONSTANT**. Recomputed from the frozen `PR057_LIVENESS.jsonl`: domain-mean dose **9.6322**,
+  between-domain SD **0.1843**, **CV 0.019**, **ICC = −0.0114** (basket 9.6034 / 0.1778 / −0.0115).
+  A correlation against a constant is **undefined, not underpowered** — which is a much stronger
+  statement than "we lack power", and it cannot be fixed with more domains.
+- **S1** is the exact mirror: the mediator genuinely varies (ICC **0.2753**, CV 0.307) but there is
+  no `y`. O2 = −0.002997 at p = 0.807519, and that movement sits **inside** the C1 band
+  [−0.008842, +0.007934].
+- Separately, S2's conjunct 3 failed, so the readout is demonstrably movable by **generic
+  perturbation** at that dose. A mediation there measures the perturbation, not the representation.
+
+**The precondition is in §32, not §31**, and it was found rather than assumed: §31 lists PHASE 13
+bare, but CLAIM E — its claim, one to one — reads *"Only if: SAME bank; adequate power; valid
+controls; domain-level estimator. **Otherwise: CANNOT ANSWER**."* Bank and estimator are met;
+**valid controls** and **adequate power** both fail on measurements already in hand. A second gate
+closes the other reading: CLAIM E says *behavioural*, and that instrument belongs to PHASE 12, which
+is gated off pending a PHASE 9 positive that did not arrive.
+
+**The deepest threat, stated rather than buried:** the mediator is fixed by design and never
+experimentally varied, so whatever between-domain dose variation survives at S1 is activation
+magnitude and domain difficulty — not representation content. Any coefficient would be confounded.
+This is `R-097`'s lesson arriving in a second form.
+
+**Power computed before any GPU was requested:** at n = 23 TEST domains a domain-level correlation
+needs **r ≥ 0.556** (α = 0.05) rising to **r ≥ 0.652** at the Holm first step (α = 0.00833333) for
+80% power; at n = 113 it would be 0.261–0.320.
+
+**Reopening condition, recorded so this is a decision and not an abandonment:** a graded,
+**within-domain-randomised dose ladder** that finds a working dose at which C1 is equivalent to zero.
+If no such dose exists, PHASE 13 is **CANNOT ANSWER permanently on this bank**. The counterfactual
+cost was estimated before being declined: ~60–80 arms / 14–18k rows / ~2.0–2.5 GPU-hours for a
+minimal repaired version, and ~20–60 GPU-hours for one that actually answers CLAIM E, since that
+needs generation plus a judge.
+
+**No preregistration was written.** Writing one would have implied the phase is runnable.
