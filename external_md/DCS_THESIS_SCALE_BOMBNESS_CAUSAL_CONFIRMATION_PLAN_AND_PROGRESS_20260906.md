@@ -5037,3 +5037,55 @@ is unchanged**.
 while its `reportable` field, its comment and its test all read `median_true` — biased toward
 passing. Swept across 244 runs / 241 buckets: **230 differ, 0 verdicts differ.** Left as-is; the new
 per-cell gate reads `median_true`.
+
+---
+
+## DCS-R-140 / C-129 — PHASE 10's primary is CANNOT ANSWER; and cells B/E are codeword-DEGENERATE
+*2026-09-08* — jobs 870154 (button_bomb) and 870186 (basket_bomb)
+
+**Item A2 is answered: the repaired instrument does NOT clear the gate.** With the correct
+`{concept, carrot}` option set — the one recovered from the already-pinned benign pool —
+**B/dose4 = 0.012711** and **E/dose4 = 0.018079**, both roughly **3× below the 0.05 gate**. Swapping
+the dead `button` option for the real remap target moved it by about half a percentage point.
+
+The reason is in what the model says: it answers with a **category**, not with either declared
+option — ` Threat` 35.4%, ` Explos` 22.8%, ` Device` 10.7% on cell B. **A two-option forced choice
+cannot capture a categorical answer whichever two words are chosen.** So PHASE 10's primary
+concept-free readout is **CANNOT ANSWER on measured grounds**, and the preregistered consequence
+holds: a disengaged primary channel is not a licence to fall back on the display channel.
+
+**A provenance defect (`C-129`) that nearly misled me.** The run's `metadata.json` still advertises
+the **old** `{" bomb"," Bomb"}/{" button"," Button"}` set, which reads as though the repair never
+applied. It did: `summary.json` records `semantic_options_mode = "per_cell_remap"`,
+`semantic_options_source = "benign_pool_natural_word"` and
+`semantic_option_words_by_cell = {B: {concept: bomb, codeword: carrot}, E: {...}}`. **The run
+artifact does not record the option set it actually used** — anyone reading `metadata.json` alone
+would draw the wrong conclusion about a published number. Recorded, not fixed here.
+
+## The structural finding, which matters more than the gate number
+
+I re-ran on `basket_bomb` before generalising, because `R-116` had established that button and basket
+differ enormously (installation 92/113 vs 46/113) and "the channel is unusable on B/E" is a claim
+about a population. **Every bucket came back byte-identical to button_bomb** — median 0.010557, p90
+0.058872, B/dose4 0.012711, E/dose4 0.018079, to six decimals.
+
+Verified rather than assumed: **232/232 prompts are byte-identical across the two banks on cells B
+and E** (116/116 on each cell, by `prompt_sha16`).
+
+**Cells B and E are codeword-DEGENERATE by construction.** They never contain the codeword — that is
+the same `n_codeword_occurrences = 0` fact that broke the option set — so the `button_*` and
+`basket_*` banks hold *literally the same* B/E prompts. Consequences:
+
+- **`PR-058` declares a six-bank population, but for its PRIMARY cells there are only THREE distinct
+  populations**, one per concept. The codeword dimension is degenerate on B/E.
+- **PHASE 10's cell-B/E arms cannot address lexical transfer at all.** Any "button → basket" question
+  is unanswerable there, and must not be asked of these cells.
+- The A2 result above is therefore already established on the **complete** B/E population; a third
+  bank would add nothing either.
+
+**And the mistake is mine to own: ~17 minutes of GPU spent re-scoring identical prompts.** The a
+priori reason to check a second bank was sound — R-116 is exactly the precedent — but the check
+itself was answerable on **CPU in seconds** by comparing `prompt_sha16` across banks *before*
+submitting. **New rule: before spending GPU to compare two populations, verify on CPU that they
+differ.** Byte-identical inputs cannot produce different results, and finding that out from a
+scheduler is the expensive way.
