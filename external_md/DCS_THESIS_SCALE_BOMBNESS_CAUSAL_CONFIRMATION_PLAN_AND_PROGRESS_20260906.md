@@ -5149,3 +5149,64 @@ PR-061 and the defects are closed in code but not yet in the ledger. `--for-extr
 fail-closed at 7 refusals, which is correct. **`PR059-D1` remains DECIDED, not removed**: the primary
 S_D-vs-S_E contrast still reports CANNOT ANSWER, now enforced as control flow — UNEVALUABLE is not a
 PASS, and a demoted scope reaching the fraction yields CANNOT_ANSWER, measured rather than asserted.
+
+---
+
+## DCS-R-142 / C-131 — the attention backend is EAGER; a missing field was read as a value
+*2026-09-09* — PHASE 11 smoke, job 870303
+
+The smoke ran arm 1 cleanly (`frac_rows_scope_live 1.0`, **2,298,240** prefill edits,
+`n_decode_edits 0`, no scope violations) and then refused arm 2 for recording
+`attn_implementation=''` rather than `'eager'`. Under SDPA the additive mask edit is silently
+discarded and a knockout becomes a **no-op scoring as a clean null** — so this had to be settled
+before anything else, and getting it wrong was expensive in *both* directions.
+
+**Settled: EAGER, by the cheapest decisive test rather than by inspection.** Arms 1 and 2 ran the
+**same 40 prompt_ids** under the same seed and population filter. Their outputs differ on **40/40
+rows** — `semantic_logodds` max|Δ| **20.79**, mean 10.31; `p_codeword` max|Δ| 0.691; and the **argmax
+token flipped on 36/40 rows**; pooled option mass 0.0895 → 0.2611. **A discarded mask is a no-op and
+a no-op yields bit-identical logits.** The edit landed.
+
+Corroborated independently: transformers **5.12.1** round-trips `eager→'eager'`, `sdpa→'sdpa'`,
+`default→'sdpa'` on `config._attn_implementation` through the same `from_pretrained` kwargs
+`ds_common.load_model` uses — **the attribute has not moved**, so `score_behavior.py:2551` read the
+right field, passed, and the backend really was eager. And `AttentionKnockout._pre` *raises* unless
+handed a 4-D additive mask; it was entered on every prefill forward and never raised.
+
+**`C-131` — where the refusal actually came from, and it is a recorded class.** Not
+`score_behavior.py:2551`, which passed: arm `basket_bomb_S_G_scope` completed with
+`DONE.json {"status":"ok"}`, 40 rows. The refusal was in
+`pr059_run_localisation.py::verify_arm_artifacts`, reading the *finished artifact*. It looked for
+`summary.intervention.attn_implementation` and top-level `summary.attn_implementation` — **score_
+behavior wrote neither**. The only copy lived in `summary.knockout_liveness.attn_implementation`, and
+that field held the **requested** value, not the loaded one. Both lookups missed, `None or None or ""`
+collapsed to `""`, and `"" != "eager"` gated a healthy arm VOID. **A missing field read as a value** —
+the mirror of `C-117`, in the same file whose `liveness_records_from_rows` docstring warns against
+exactly that.
+
+**A latent bug found alongside it, and it is the more dangerous one.** The old guard read
+`getattr(cfg, "_attn_implementation", "eager")` — **defaulting to eager**. Had that attribute ever
+moved between library versions, **every knockout arm would have been waved through silently**. It now
+yields `"<unrecorded>"` and **refuses**: absent is no longer a pass.
+
+**Nothing was weakened.** Request and loaded state are now separate recorded facts, and every
+`attn_implementation` the run writes — metadata, intervention note, `knockout_liveness`, plus a new
+top-level `summary.json` key — carries the **LOADED** value with `attn_implementation_requested`
+beside it. The runner reads only the loaded sources; **`knockout_liveness.attn_implementation` is
+deliberately NOT a fallback**, because it historically held the *request*, and accepting it would let
+a silently-fallen-back SDPA arm pass **on the strength of its own request**. Absent and wrong are now
+distinct refusals, and both refuse.
+
+**Observed:** genuine loads through the real functions — `eager` ACCEPTED, `sdpa` REFUSED,
+default(→sdpa) REFUSED, attribute-absent REFUSED. Runner 56 → **58/0** and 46 → **49/49 RED** (new
+M23b backend recorded nowhere, M23c backend only in the requested echo, M23d SDPA in the intervention
+block). **PHASE 9 and PHASE 10 unchanged**: 117/0 · 102/102, 70/0 · 41/41, 57/0 · 56/56. Analyzer
+114/0 · 94/94 unchanged. `pytest` **676 passed, 0 failed**.
+
+Two **positive** self-tests were added as well, and the reasoning is worth keeping: the regression
+here was **the refusal of a good arm**, which no mutation can cover — mutations prove a guard fires,
+not that it lets the valid case through.
+
+**The two run dirs already on disk carry no loaded-config field**, so the fixed gate will correctly
+refuse them: their backend cannot be established *from the artifact*. They are **re-scored, not
+patched** — 36 s + 25 s with the model cache hit.

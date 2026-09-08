@@ -809,6 +809,49 @@ def readout_liveness_violations(scope, stats):
     return list(dict.fromkeys(bad))           # stable order, no duplicate strings
 
 
+#: What `loaded_attn_implementation` returns when the loaded model exposes NO attention-backend
+#: attribute at all. It is a SENTINEL, never a backend name, so it can never compare equal to
+#: "eager" and an unestablishable backend fails closed.
+ATTN_UNRECORDED = "<unrecorded>"
+
+
+def loaded_attn_implementation(model) -> str:
+    """The attention backend the model ACTUALLY LOADED -- not the one that was requested.
+
+    The two are different facts and only one is evidence. A request can be silently downgraded
+    (an unavailable backend falls back), and PHASE 11's artifacts recorded only the request, in a
+    place no verifier read -- so a valid eager arm was gated VOID on an empty string.
+
+    WHICH ATTRIBUTE IS AUTHORITATIVE IS A LIBRARY PROPERTY AND WAS RE-ESTABLISHED, NOT ASSUMED.
+    On the installed transformers (5.12.1) `config._attn_implementation` is populated on the
+    top-level config for BOTH backends and for a default no-argument load; verified by a CPU
+    round-trip on a 2-layer Llama (eager -> 'eager', sdpa -> 'sdpa', default -> 'sdpa'), and the
+    inner `model.model.config` is the SAME object, so there is no per-submodule split to chase.
+    If a future version moves the attribute, this returns `ATTN_UNRECORDED` and every knockout
+    REFUSES -- the safe direction.
+    """
+    return str(getattr(getattr(model, "config", None), "_attn_implementation", ATTN_UNRECORDED))
+
+
+def assert_eager_for_knockout(loaded: str, requested: str = "") -> None:
+    """Refuse unless the LOADED backend is eager. Never a warning; ABSENT is never a pass.
+
+    An attention-mask knockout under SDPA/flash is a silent no-op that scores as a CLEAN NULL --
+    the exact failure this project's gates exist for. The predecessor of this check defaulted a
+    MISSING attribute to "eager", so a library that stopped populating the field would have waved
+    every knockout through: a check that reads its own absence as a pass. Absent now refuses.
+    """
+    if loaded == "eager":
+        return
+    raise SystemExit(
+        "REFUSING: attn_knockout requested but the LOADED model config reports "
+        f"attn_implementation={loaded!r}, not 'eager' (requested {requested!r}); the mask edit "
+        "would be discarded silently and the arm would score as a CLEAN NULL."
+        + ("  This transformers build did not populate config._attn_implementation at all, so the "
+           "attention backend cannot be established from the loaded model; refusing rather than "
+           "assuming eager." if loaded == ATTN_UNRECORDED else ""))
+
+
 def knockout_liveness_summary(knock_live, attn_impl, scope=DEFAULT_KNOCKOUT_SCOPE,
                               readout=False):
     """Reduce the per-row liveness counters to the block written into summary.json.
@@ -2548,10 +2591,23 @@ def main() -> int:
               f"{list(_rreq)}; required == 0: {list(_rzero)})", flush=True)
     _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
-    if _wants_knockout and getattr(getattr(lm.model, "config", None), "_attn_implementation",
-                                   "eager") != "eager":
-        raise SystemExit("REFUSING: attn_knockout requested but the model did not load with "
-                         "attn_implementation='eager'; the mask edit would be discarded silently.")
+    # THE REQUEST AND THE LOADED STATE ARE TWO DIFFERENT FACTS, and only one of them is evidence.
+    # `_attn_impl` is what this process ASKED for; `_attn_impl_loaded` is what the model actually
+    # holds. Every attn_implementation field this run writes into its artifacts records the LOADED
+    # value, so a downstream verifier reading `attn_implementation` reads the model's state and not
+    # this process's intent. (DCS-TS-P11: PHASE 11's smoke was refused by pr059_run_localisation
+    # because score_behavior recorded only the request, in a place the runner did not read.)
+    #
+    # WHICH FIELD IS AUTHORITATIVE IS A LIBRARY PROPERTY, RE-ESTABLISHED, NOT ASSUMED. On the
+    # installed transformers (5.12.1) `config._attn_implementation` is populated on the top-level
+    # config for BOTH backends and for a default (no-argument) load -- verified by a CPU
+    # round-trip on a 2-layer Llama: eager -> 'eager', sdpa -> 'sdpa', default -> 'sdpa'.
+    _attn_impl_loaded = loaded_attn_implementation(lm.model)
+    if _attn_impl_loaded != _attn_impl:
+        print(f"[score] NOTE: attn_implementation requested {_attn_impl!r}, LOADED config reports "
+              f"{_attn_impl_loaded!r}", flush=True)
+    if _wants_knockout:
+        assert_eager_for_knockout(_attn_impl_loaded, _attn_impl)
 
     # SELF-CHECK that --enable-thinking actually changed the RENDERING, not just the argparse
     # namespace. It was silently inert once: the flag reached the readout templating and not
@@ -2588,7 +2644,8 @@ def main() -> int:
              min_option_mass=args.min_option_mass)
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
-                   attn_implementation=_attn_impl, num_layers=lm.num_layers)
+                   attn_implementation=_attn_impl_loaded,
+                   attn_implementation_requested=_attn_impl, num_layers=lm.num_layers)
 
     spec = None
     payload = None
@@ -2740,7 +2797,8 @@ def main() -> int:
             if dose_records:
                 print(f"[score] REALIZED DOSE {dose_records}", flush=True)
         run.note(intervention=spec, intervention_specs=specs, intervention_direction_file=p,
-                     attn_implementation=_attn_impl,
+                     attn_implementation=_attn_impl_loaded,
+                     attn_implementation_requested=_attn_impl,
                      realized_dose=dose_records,
                      dose_metric_note=("variance = frac*(1-(1-alpha)^2); norm = alpha*sqrt(frac). "
                                        "They are NOT monotone-equivalent at partial alpha and they "
@@ -3950,11 +4008,21 @@ def main() -> int:
 
     knock_summary = None
     if _wants_knockout:
-        knock_summary = knockout_liveness_summary(knock_live, _attn_impl, scope=_knock_scope,
-                                                  readout=_readout_only)
+        knock_summary = knockout_liveness_summary(knock_live, _attn_impl_loaded,
+                                                  scope=_knock_scope, readout=_readout_only)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
 
     _summary = {"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
+                        # THE LOADED ATTENTION BACKEND, AT THE TOP LEVEL, FOR EVERY ARM.
+                        # An attention-mask knockout is void under SDPA/flash, so this is a
+                        # result-bearing field, not provenance -- and a verifier can only check it
+                        # if the producer writes it somewhere the verifier can reach. It was
+                        # previously recorded ONLY inside `knockout_liveness` (and only as the
+                        # REQUESTED value), which is why PHASE 11's smoke read '' and refused a
+                        # valid arm. `attn_implementation` is the LOADED value; the request is kept
+                        # beside it so a silent backend fallback is visible after the fact.
+                        "attn_implementation": _attn_impl_loaded,
+                        "attn_implementation_requested": _attn_impl,
                         "option_mass": mass_summary,
                         # DCS-PR-063. Additive keys; every pre-existing key keeps its value.
                         "option_mass_by_cell": cell_mass_summary,

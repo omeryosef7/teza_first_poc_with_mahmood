@@ -1253,15 +1253,41 @@ def verify_arm_artifacts(pr: Prereg, arm: ArmSpec, run_dir: str,
 
     summary_path = os.path.join(run_dir, "summary.json")
     summary = json.load(open(summary_path)) if os.path.exists(summary_path) else {}
-    impl = str(((summary.get("intervention") or {}) if isinstance(summary.get("intervention"), dict)
-                else {}).get("attn_implementation")
-               or summary.get("attn_implementation") or "")
+    # WHICH FIELD CARRIES THE LOADED BACKEND, AND WHY NOT THE OTHER ONE (DCS-TS-P11).
+    # This check exists because an attention-mask knockout is a silent no-op under SDPA/flash and
+    # would score as a clean null. It read `intervention.attn_implementation` then a top-level
+    # `attn_implementation`, and score_behavior wrote NEITHER: the only copy in the artifact lived
+    # in `knockout_liveness.attn_implementation`. The absent field became "" and a VALID eager arm
+    # was refused as void -- a missing-field-reads-as-a-value bug, the mirror of PR-057's C-117.
+    #
+    # `knockout_liveness.attn_implementation` is DELIBERATELY NOT a fallback here. Before the
+    # producer fix that field held the value score_behavior REQUESTED, not the one the model
+    # LOADED, and those are exactly the two things this gate must not confuse. Accepting it would
+    # let an arm whose backend silently fell back to SDPA pass on the strength of its own request.
+    # score_behavior now stamps the LOADED value at the summary top level for every arm.
+    _srcs = [("summary.attn_implementation", summary.get("attn_implementation")),
+             ("summary.intervention.attn_implementation",
+              ((summary.get("intervention") or {}) if isinstance(summary.get("intervention"), dict)
+               else {}).get("attn_implementation"))]
+    _found = [(k, str(v)) for k, v in _srcs if v is not None and str(v) != ""]
+    impl = _found[0][1] if _found else ""
     want_impl = required_attn_impl(pr)
-    if arm.kind != "baseline" and impl != want_impl:
-        raise RunnerRefusal(
-            "arm %s records attn_implementation=%r on the LOADED config, not %r. Under SDPA the "
-            "additive mask edit is DISCARDED and the knockout is a silent no-op scoring as a "
-            "CLEAN NULL. This arm is VOID, not a negative." % (arm.arm_id, impl, want_impl))
+    if arm.kind != "baseline":
+        # ABSENT AND WRONG ARE DIFFERENT FAILURES AND GET DIFFERENT MESSAGES. Both refuse: a
+        # backend that cannot be established from the artifact is not evidence that it was eager.
+        if not _found:
+            raise RunnerRefusal(
+                "arm %s: summary.json records NO loaded attn_implementation (looked at %s). The "
+                "attention backend cannot be established from this artifact, and an attn_knockout "
+                "is a silent no-op under SDPA/flash -- so this arm cannot be read as a null. It "
+                "was produced by a score_behavior that predates the loaded-config recording; "
+                "re-run the arm." % (arm.arm_id, ", ".join(k for k, _ in _srcs)))
+        if impl != want_impl:
+            raise RunnerRefusal(
+                "arm %s records attn_implementation=%r on the LOADED config (from %s), not %r. "
+                "Under SDPA the additive mask edit is DISCARDED and the knockout is a silent "
+                "no-op scoring as a CLEAN NULL. This arm is VOID, not a negative."
+                % (arm.arm_id, impl, _found[0][0], want_impl))
 
     recs = liveness_records_from_rows(pr, arm, rows, attn_impl=impl)
     gate: Dict[str, Any] = {"arm_id": arm.arm_id, "run_dir": run_dir, "n_rows": len(rows),
@@ -1904,6 +1930,16 @@ def selftest() -> int:
 
     ck.add("a clean run passes the arm gate end to end (the gates are not over-eager)",
            _no_raise(lambda: _fake_arm_gate(pr, arms, n_rows=40, expect=40)), "")
+    # DCS-TS-P11: both accepted sources of the LOADED backend must let a valid eager arm through.
+    # The regression this replaces was a refusal of a GOOD arm, so a mutation alone cannot cover
+    # it -- only a positive check can.
+    ck.add("an eager arm recorded at the summary TOP LEVEL passes the arm gate",
+           _no_raise(lambda: _fake_arm_gate(pr, arms, impl_field="summary", stamp_rows=False)),
+           "summary.attn_implementation")
+    ck.add("an eager arm recorded in the INTERVENTION block passes the arm gate",
+           _no_raise(lambda: _fake_arm_gate(pr, arms, impl_field="intervention",
+                                            stamp_rows=False)),
+           "summary.intervention.attn_implementation")
     ck.add("CANNOT ANSWER when the row-set resolver fails on more than the declared tolerance",
            _refuses(lambda: _fake_arm_gate(pr, arms, n_rows=40, expect=40,
                                            n_resolver_failed=9), "CANNOT ANSWER"),
@@ -2144,6 +2180,22 @@ def mutate() -> int:
                  lambda: _fake_arm_gate(pr, arms, n_rows=39, expect=40), "unequal populations"))
     muts.append(("M23 an arm that ran under SDPA",
                  lambda: _fake_arm_gate(pr, arms, impl="sdpa"), "VOID"))
+    # DCS-TS-P11. The gate refused a VALID eager arm because it read
+    # `intervention.attn_implementation` / a top-level `attn_implementation` and score_behavior
+    # wrote neither -- the absent field became "" and "" != "eager". These three fix the shape of
+    # that bug in both directions: absent must REFUSE (not be read as a value), the requested-value
+    # echo must NOT be accepted as the loaded backend, and a recorded SDPA must still be VOID
+    # through the second accepted source too.
+    muts.append(("M23b an arm whose summary records the backend NOWHERE (absent != eager)",
+                 lambda: _fake_arm_gate(pr, arms, impl_field="absent", stamp_rows=False),
+                 "cannot be established"))
+    muts.append(("M23c the backend recorded ONLY in knockout_liveness (the REQUESTED echo)",
+                 lambda: _fake_arm_gate(pr, arms, impl_field="knockout_liveness",
+                                        stamp_rows=False),
+                 "cannot be established"))
+    muts.append(("M23d an arm that ran under SDPA, recorded in the intervention block",
+                 lambda: _fake_arm_gate(pr, arms, impl="sdpa", impl_field="intervention"),
+                 "VOID"))
     muts.append(("M24 a dead hook: n_prefill_edits == 0",
                  lambda: _fake_arm_gate(pr, arms, prefill=0), "HOOK NEVER FIRED"))
     muts.append(("M25 a decode leak: n_decode_edits != 0",
@@ -2405,20 +2457,37 @@ def _amendment_variant(pr: Prereg, edit, gate: bool = False, stage: str = "famil
 def _fake_arm_gate(pr: Prereg, arms, n_rows: int = 40, expect: int = 40, impl: str = "",
                    prefill: int = 1, decode: int = 0, shift: int = 0, pin_absolute: bool = False,
                    no_done: bool = False, violation: str = "", zero_dose: bool = False,
-                   n_resolver_failed: int = 0):
-    """Build a real `score_behavior`-shaped run directory and push it through the arm gate."""
+                   n_resolver_failed: int = 0, impl_field: str = "summary",
+                   stamp_rows: bool = True):
+    """Build a real `score_behavior`-shaped run directory and push it through the arm gate.
+
+    `impl_field` says WHERE in summary.json the attention backend is recorded, because the
+    DCS-TS-P11 defect was entirely about that: the gate read two places and the producer wrote a
+    third. "summary" / "intervention" are the two the gate accepts (both are the LOADED value);
+    "knockout_liveness" is the place score_behavior used to write the REQUESTED value and must
+    NOT be accepted; "absent" is an artifact that records the backend nowhere at all.
+    `stamp_rows=False` drops the per-row echo so the summary-level field is what is under test.
+    """
     import tempfile
     arm = _arm_by(arms, scope_id="S_C", kind="scope")
     rows_declared = list(declared_scopes(pr)["S_C"]["rel_end_rows"])
     td = tempfile.mkdtemp()
     if not no_done:
         json.dump({"status": "ok"}, open(os.path.join(td, "DONE.json"), "w"))
-    json.dump({"attn_implementation": impl or required_attn_impl(pr),
-               "failures": {"n_attempted": n_rows + n_resolver_failed, "n_succeeded": n_rows,
-                            "n_failed": n_resolver_failed,
-                            "failure_reasons": ({"relend:out_of_span": n_resolver_failed}
-                                                if n_resolver_failed else {})}},
-              open(os.path.join(td, "summary.json"), "w"))
+    _impl_val = impl or required_attn_impl(pr)
+    _summary = {"failures": {"n_attempted": n_rows + n_resolver_failed, "n_succeeded": n_rows,
+                             "n_failed": n_resolver_failed,
+                             "failure_reasons": ({"relend:out_of_span": n_resolver_failed}
+                                                 if n_resolver_failed else {})}}
+    if impl_field == "summary":
+        _summary["attn_implementation"] = _impl_val
+    elif impl_field == "intervention":
+        _summary["intervention"] = {"mode": "attn_knockout", "attn_implementation": _impl_val}
+    elif impl_field == "knockout_liveness":
+        _summary["knockout_liveness"] = {"attn_implementation": _impl_val}
+    elif impl_field != "absent":
+        raise ValueError("unknown impl_field %r" % impl_field)
+    json.dump(_summary, open(os.path.join(td, "summary.json"), "w"))
     with open(os.path.join(td, "results.jsonl"), "w") as fh:
         for i in range(n_rows):
             # PER-ROW-VARYING seq_len on purpose: an absolute-index producer cannot pass the
@@ -2441,7 +2510,7 @@ def _fake_arm_gate(pr: Prereg, arms, n_rows: int = 40, expect: int = 40, impl: s
                 "n_cells_edited_realised": (0 if zero_dose else 12 * len(pos)),
                 "hook_n_decode_edits": decode, "hook_n_keys_masked": 12,
                 "hook_liveness_violations": ([violation] if violation else []),
-                "attn_implementation": impl or required_attn_impl(pr)}) + "\n")
+                **({"attn_implementation": _impl_val} if stamp_rows else {})}) + "\n")
     verify_arm_artifacts(pr, arm, td, expect)
 
 
