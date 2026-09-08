@@ -570,6 +570,38 @@ def build_argv(pr: Prereg, arm: ArmSpec, ctx: Dict[str, Any]) -> List[str]:
     return argv
 
 
+def assert_expect_n_agrees_with_limit(argv: Sequence[str]) -> None:
+    """`--expect-n` and `--limit` must not contradict each other.  `C-123`, job 868569.
+
+    The smoke stage emitted `--expect-n 670 --limit 40`: the first says "this arm scores the whole
+    bound population", the second truncates it to 40. `score_behavior`'s row-count guard did its job
+    and refused -- *"population is 40 rows, --expect-n says 670. A silently-shrunken sample is how
+    R-18 happened."* -- but only after a 27-minute queue wait and a model load.
+
+    That guard is the LAST line of defence and it fires on a GPU. This one fires in the runner,
+    before anything is submitted, because two flags that must agree should be checked where they are
+    built rather than where they are consumed.
+
+    It refuses BOTH directions: an `--expect-n` larger than a `--limit` (the observed defect, a
+    shrunken sample), and a `--limit` larger than `--expect-n` (which would silently widen the
+    population past what the runner bound and audited).
+    """
+    argv = list(argv)
+    if "--expect-n" not in argv or "--limit" not in argv:
+        return
+    n = int(argv[argv.index("--expect-n") + 1])
+    lim = int(argv[argv.index("--limit") + 1])
+    if lim <= 0:
+        return
+    if n != lim:
+        raise RunnerRefusal(
+            "C-123: --expect-n %d contradicts --limit %d in the SAME argv. --expect-n must "
+            "describe the population the arm will ACTUALLY score, and --limit truncates it, so "
+            "the two must be equal whenever a limit is applied. Refusing here rather than letting "
+            "score_behavior's row-count guard catch it after a queue wait and a model load."
+            % (n, lim))
+
+
 def assert_argv_agrees_with_analyzer(pr: Prereg, arm: ArmSpec, argv: Sequence[str],
                                      fit_dir: str) -> Dict[str, Any]:
     """The anti-drift check: the runner and the analyzer must describe the SAME arm.
@@ -1297,14 +1329,19 @@ def plan(pr: Prereg, a) -> Dict[str, Any]:
             if key not in binds:
                 binds[key] = split_bind(pr, bank_abs, a.split, assign)
             b = binds[key]
+            # C-123, same clamp as the run path. --plan is what a human READS to decide what to
+            # submit, so an unclamped expect_n here would print an argv that refuses when run.
+            plan_limit = (a.smoke_limit if rec["in_smoke"] and a.stage == "smoke" else 0)
+            plan_expect = min(b["expect_n"], plan_limit) if plan_limit else b["expect_n"]
             ctx = {"fit_dir": a.fit_dir, "rel_end": rel_end, "emit_liveness": True,
-                   "constructibility": con, "expect_n": b["expect_n"],
+                   "constructibility": con, "expect_n": plan_expect,
                    "exclude_file": "<state-dir>/%s" % os.path.basename(
                        exclusion_file_name(bank_abs, a.split)),
-                   "limit": (a.smoke_limit if rec["in_smoke"] and a.stage == "smoke" else 0)}
+                   "limit": plan_limit}
             argv = build_argv(pr, arm, ctx)
+            assert_expect_n_agrees_with_limit(argv)
             rec["argv"] = argv
-            rec["expect_n"] = b["expect_n"]
+            rec["expect_n"] = plan_expect
             rec["n_domains"] = b["n_domains"]
             rec["analyzer_agreement"] = assert_argv_agrees_with_analyzer(pr, arm, argv, a.fit_dir)["ok"]
         out_arms.append(rec)
@@ -1439,6 +1476,11 @@ def run_stage(pr: Prereg, a) -> int:
     # without a GPU and without leaving artifacts that a later reader could mistake for a run.
     if not a.dry_run:
         os.makedirs(sdir, exist_ok=True)
+    # C-124: refuse a stage that already carries a verdict BEFORE any arm runs, not after.
+    # Skipped on --dry-run, which writes nothing and is exactly how an operator inspects a stage
+    # whose prior verdict they are still deciding what to do about.
+    if not a.dry_run:
+        assert_stage_has_no_prior_verdict(sdir)
     man = manifest_load(sdir, runs_root) if not a.dry_run else {}
     man.setdefault("started", time.strftime("%Y-%m-%d %H:%M:%S"))
     man.update({"stage": a.stage, "split": a.split, "prereg": a.prereg,
@@ -1469,13 +1511,24 @@ def run_stage(pr: Prereg, a) -> int:
             b["exclude_file_sha16"] = hashlib.sha256(text.encode()).hexdigest()[:16]
             binds[bank_abs] = b
         b = binds[bank_abs]
+        # C-123 (job 868569). `--expect-n` must describe the population the arm will ACTUALLY
+        # score. In the smoke stage `--limit` truncates it, and this built the ctx with the
+        # UNCLAMPED bound count while clamping only the runner's own bookkeeping below -- so the
+        # argv carried `--expect-n 670` beside `--limit 40` and score_behavior's row-count guard
+        # correctly refused: "population is 40 rows, --expect-n says 670. A silently-shrunken
+        # sample is how R-18 happened." The guard was right and the runner was wrong.
+        #
+        # Clamp ONCE, above the ctx, and use the same number for the argv and for the runner's
+        # expectation, so the two cannot drift apart again. Two variables that must agree are a
+        # standing invitation for exactly this defect.
+        expect_rows = min(b["expect_n"], a.smoke_limit) if a.stage == "smoke" else b["expect_n"]
         ctx = {"fit_dir": a.fit_dir, "rel_end": rel_end, "emit_liveness": True,
-               "constructibility": con, "expect_n": b["expect_n"],
+               "constructibility": con, "expect_n": expect_rows,
                "exclude_file": b["exclude_file"], "probe": probe_ctx,
                "limit": (a.smoke_limit if a.stage == "smoke" else 0)}
         argv = build_argv(pr, arm, ctx)
         assert_argv_agrees_with_analyzer(pr, arm, argv, a.fit_dir)
-        expect_rows = min(b["expect_n"], a.smoke_limit) if a.stage == "smoke" else b["expect_n"]
+        assert_expect_n_agrees_with_limit(argv)
         todo.append((arm, argv, expect_rows))
 
     print("[pr057] stage=%s split=%s: %d selected, %d constructible, %d unbuildable, %d "
@@ -1642,6 +1695,40 @@ def run_stage(pr: Prereg, a) -> int:
     print("[pr057] stage %s COMPLETE: %d arm(s), %d rows, %.1f min, %d model load(s)"
           % (a.stage, n_done, n_rows_total, (time.time() - t_stage) / 60.0, cache.n_loads))
     return 0
+
+
+def assert_stage_has_no_prior_verdict(sdir: str) -> None:
+    """Refuse a stage that ALREADY carries a terminal verdict -- BEFORE any arm runs.  `C-124`.
+
+    `write_terminal` enforces "a stage has ONE verdict", which is correct. But it enforces it at the
+    END. Job 868702 ran BOTH smoke arms to completion (40 rows each, 40 and 0 hook firings, exactly
+    as designed) and was then refused, because job 868569 -- which had died 13 seconds in on the
+    `C-123` `--expect-n`/`--limit` defect, having completed ZERO arms -- had already written
+    `ABORTED.json` into the same stage directory. A successful run was discarded at the last step by
+    a stale record from a superseded failure.
+
+    The verdict rule is right; enforcing it only at the end is not. This checks at the START, so the
+    operator is told before an allocation is spent rather than after. The remedy is deliberately NOT
+    automatic: a terminal record is evidence, and silently overwriting one is how a failed run gets
+    quietly reported as a success. Archive it by hand, with provenance.
+    """
+    for name in ("DONE.json", "ABORTED.json"):
+        fp = os.path.join(sdir, name)
+        if os.path.exists(fp):
+            try:
+                prior = json.load(open(fp))
+            except Exception:
+                prior = {}
+            raise RunnerRefusal(
+                "stage dir %s ALREADY carries %s (status=%r, failed_arm=%r, n_arms_done=%s). A "
+                "stage has ONE verdict, so this run could not write its own -- and refusing here, "
+                "before any arm runs, is the whole point: job 868702 completed both smoke arms and "
+                "was rejected at the end by a stale record from a run that had completed none.\n"
+                "  If that prior verdict is superseded, ARCHIVE it with provenance (e.g. rename to "
+                "%s.<jobid>.superseded.json) rather than deleting it, then re-run. Never hand-write "
+                "a terminal record."
+                % (sdir, name, prior.get("status"), prior.get("failed_arm"),
+                   prior.get("n_arms_done"), name))
 
 
 def write_terminal(sdir: str, name: str, blob: Dict[str, Any]) -> None:
@@ -2081,6 +2168,19 @@ def mutate() -> int:
       lambda: split_bind(pr, bank, "nonexistent_split", assign))
     m("M15_unknown_domain_in_split", "a domain absent from the frozen split manifest must refuse",
       lambda: split_bind(pr, bank, "test", {k: v for k, v in list(assign.items())[:5]}))
+
+    # C-123, job 868569. The smoke stage emitted `--expect-n 670 --limit 40` and score_behavior's
+    # row-count guard refused on the GPU after a 27-minute queue wait. assert_expect_n_agrees_with_
+    # limit now catches it in the runner. A guard with no mutation is not a proven guard (the M47
+    # lesson), so both directions are exercised: a shrunken sample AND a widened one.
+    m("M65_expect_n_gt_limit",
+      "an --expect-n LARGER than --limit (a silently-shrunken sample) must refuse in the runner",
+      lambda: assert_expect_n_agrees_with_limit(
+          ["--bank", "b.jsonl", "--expect-n", "670", "--limit", "40"]))
+    m("M66_limit_gt_expect_n",
+      "a --limit LARGER than --expect-n (a silently-widened population) must refuse too",
+      lambda: assert_expect_n_agrees_with_limit(
+          ["--bank", "b.jsonl", "--expect-n", "40", "--limit", "670"]))
     import tempfile
     with tempfile.TemporaryDirectory() as _td:
         m("M16_expect_n_mismatch", "a run whose row count is not the bound population must refuse",

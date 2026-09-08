@@ -4278,3 +4278,97 @@ hardcoded check on PR-058 earlier today.
 load, sha pin, hook and argv are all CPU-verified, but the in-loop wiring needs the **Q7 smoke
 stage** before any O1 number is reported, which does not block Q1 since Q1's outcome is O2; and
 (iii) a `--dry-run` on the shared filesystem immediately before submitting.
+
+---
+
+## DCS-R-127 — PHASE 9 reaches the GPU: Q1 PROCEEDs and Q7 smoke is CLOSED
+*2026-09-08*
+
+**Q1 (job 867233), the validation power run.** 2 arms, 460 rows, 3.7 min compute, `COMPLETED 0:0`.
+Verdict **`PROCEED`**. 230 rows / 230 liveness records / **230 hook firings, 0 violations** per arm.
+This is the first time the intervention path has run against a model at all.
+
+**The verdict is soundly earned and the SD was MEASURED, not assumed** — 0.042008 nats between
+domains over the 23 validation domains, independently re-derived from the raw `results.jsonl`
+paired against the untouched PHASE 7 baselines and byte-matching `DONE.json`. Zero test leakage:
+the 930 dropped rows are exactly train 700 + test 230.
+
+⚠ **Publish the MDE, not the power.** `power_at_declared_mde = 1.0` is saturated and carries no
+information — the declared 0.5-nat effect is ~14x the arm-averaged validation delta. The informative
+figure is **MDE = 0.0257 nats at 80% power, n = 23, measured SD 0.0420**.
+
+**What is now PROVEN on GPU**, with numbers rather than assertions: `rel_end` constant at **−10 on
+all 460** rows while `resolved_absolute_index` takes **57 distinct values spanning 191–253** (`F3`
+is genuinely fixed, not merely patched); the edited index equals `codeword_last_indices[-1]` on
+**460/460** — independent corroboration that the edit hit the intended token, and stronger evidence
+than the expected/realised bind; `projection_removed_l2` non-zero on all 460; probe **1840 records
+per arm = 230 x 8 layers, one per (prompt_id, layer)**, attributed from the row loop rather than by
+arrival order; and the layer-9 read is empirically **post**-edit.
+
+**What is NOT proven, and the first is large: no S2 arm has ever run on a GPU.** All 15 S2 arms in
+H2 edit 8 layers at every position; their cost and liveness behaviour are both untested. Also
+unexercised: the many-forwards disagreement guard (`n_forward_calls == 1` throughout, and H2 is also
+`--no-generate`); `min_projection_removed_l2` is vacuous with one forward per row and must not be
+cited as an active partial-dead-hook guard; and there is **no un-intervened layer-9 arm**, so every
+L9 posterior reported so far is post-edit.
+
+**Q7 smoke CLOSED (job 868758).** `h2a_s1_projout_button` 40 rows / **40 hook firings**;
+`c5_disabled_bridge_s1` 40 rows / **0 hook firings** — correct, a disabled bridge edits nothing.
+
+## DCS-C-123 / C-124 — two defects of mine, both caught by guards doing their job
+*2026-09-08*
+
+**`C-123` — the smoke stage contradicted itself.** It emitted `--expect-n 670` beside `--limit 40`:
+the first says "score the whole bound population", the second truncates it to 40. `score_behavior`'s
+row-count guard refused — *"population is 40 rows, --expect-n says 670. A silently-shrunken sample
+is how R-18 happened."* **The guard was right and my runner was wrong**: `expect_rows` was clamped
+for the runner's own bookkeeping and the *unclamped* count was put into the argv. Two variables that
+must agree, clamped in one place and not the other.
+
+Fixed by clamping **once**, above the ctx, so the argv and the runner's expectation cannot drift;
+the same defect was present in the `--plan` path, which is worse in one way — `--plan` is what a
+human reads to decide what to submit, so it printed a command that would refuse. New
+`assert_expect_n_agrees_with_limit()` refuses in the runner **before** submission rather than on a
+GPU after a queue wait, with mutations **M65/M66** covering both directions (shrunken *and* widened).
+
+**`C-124` — a successful run discarded by a stale verdict.** Job 868702 ran **both** smoke arms to
+completion and was refused at the very last step, because job 868569 — dead 13 seconds in on
+`C-123`, having completed **zero** arms — had already written `ABORTED.json`. "A stage has ONE
+verdict" is the right rule; enforcing it **only at the end** is not.
+
+`assert_stage_has_no_prior_verdict()` now refuses at the **start** of a stage. The remedy is
+deliberately **not** automatic: a terminal record is evidence, and silently overwriting one is how a
+failed run gets quietly reported as a success. The stale file was **archived with provenance**
+(`ABORTED.868569.superseded.json` + `SUPERSEDED_NOTE.md`), never deleted, and the stage's real
+verdict still came from the runner — 868758 resumed, skipped both completed arms (0 model loads,
+0.6 min) and wrote `DONE.json`.
+
+## DCS-C-125 — my SLURM diagnosis was wrong, and the 30-minute rule needs a caveat
+*2026-09-08* — correcting a claim I made confidently
+
+I reported that job 867233's 42-minute pend was caused by requesting `--time=06:00:00` for a
+4-minute job, and that the fix was a shorter walltime. **The evidence says otherwise.**
+
+Across the entire pend window **zero jobs started on any of the six L40S nodes**; all 48 GPUs were
+held; the holding jobs carried TimeLimits of 18h (x23), 24h (x10), 5d (x6), 3d (x1) — **our 6h was
+the shortest in the queue**; and 867233 started **one second** after 865619 released. That is
+capacity exhaustion, not request shape. A short `--time` wins only when a backfill *gap* exists.
+
+Two further corrections. **There is no L40S anywhere outside those six nodes** (`sinfo` verified), so
+"widen the nodelist" — the standing house fix — has nothing to widen to; and widening means changing
+GPU model, which control C5 forbids outright, since `disabled_bridge_gate` demands a byte-identical
+greedy hash against an L40S-produced baseline. **And fair-share was not the blocker**: 867233 held
+priority 100001114 and beat five jobs submitted 21 minutes earlier at 100001042, with fairshare
+contributing ~1131 of ~100,001,131. The standing belief that "the real blocker is always fair-share"
+is **false for this event**.
+
+**The 30-minute rule needs one caveat.** Cancelling 867233 at the mark would have surrendered a
+top-of-queue position, and the GPU freed at 04:30:27 would have gone to another user. Refined rule,
+now implemented in the monitor: `Reason=Priority` → cancel and resubmit with a different shape;
+`Reason=Resources` **with a planned `START_TIME` inside ~30 min** → do **not** cancel, and log the
+deviation with the `START_TIME` that justified it. Requesting a realistic walltime remains correct —
+it is free upside — it simply is not the lever when every GPU is held.
+
+`--open-mode=append` is now set on every submission, and it is **not** cosmetic: `JobFileAppend=0`
+with killable's `PreemptMode=REQUEUE` and `GraceTime=0` means a requeue **truncates** the log and
+destroys the previous attempt's evidence.
