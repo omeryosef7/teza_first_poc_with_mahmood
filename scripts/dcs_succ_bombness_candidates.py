@@ -322,6 +322,91 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
                                  "the Doublespeak manipulation traverses at the queried token"
                                  % (codeword, ref_c))}
 
+        # ---- THE INCONGRUITY TEST (successor plan sections 2.1 and 33).
+        #
+        # `v_lex = E - A` contrasts the CONCEPT word with the CODEWORD in a BENIGN context. In
+        # cell E, ` bomb` sits in a sentence about sterile store rooms: it is semantically
+        # INCONGRUOUS, while cell A's ` button` is congruous. So `v_lex` may carry a large
+        # "an out-of-place word is here" component, and cell C's codeword is ALSO made incongruous
+        # by the harmful demonstrations -- which would make B1 a surprisal result wearing a
+        # semantic label.
+        #
+        # A SECOND, INDEPENDENT OPERATIONALISATION OF THE SAME AXIS DISCRIMINATES THEM:
+        #
+        #     v_lex_harm = mean_d [ h_B - h_C ]
+        #
+        # is the same button -> bomb contrast measured in the HARMFUL context, where the roles are
+        # REVERSED: ` bomb` (cell B) is now the congruous word and ` button` (cell C) the odd one.
+        # The lexical/semantic component enters both axes with the SAME sign; the incongruity
+        # component enters with OPPOSITE signs. Therefore:
+        #
+        #   cos(v_lex_benign, v_lex_harm) HIGH  -> the shared component dominates -> semantic
+        #   cos(...) LOW or NEGATIVE            -> incongruity dominates
+        #
+        # And projecting the SAME shift `h_C - h_A` (whose own incongruity component is POSITIVE:
+        # C's codeword is odd, A's is not) onto `v_lex_harm` (whose incongruity component is
+        # NEGATIVE) puts the two accounts in direct opposition: incongruity SUBTRACTS here where it
+        # ADDED before. A B1 that survives against this axis is not carried by incongruity.
+        #
+        # The direction is LEAVE-ONE-DOMAIN-OUT, which also removes the shared-term bias: h_C(d)
+        # appears in the shift but NOT in the axis domain d is scored against.
+        delta_BC_L = {d: (means["bomb"][("B", d)][L_i] - means["bomb"][("C", d)][L_i])
+                      for d in common}
+        vharm_full = torch.stack([delta_BC_L[d] for d in common]).mean(dim=0)
+        gap_harm = float(torch.linalg.vector_norm(vharm_full))
+        vben_full = torch.stack([delta_EA["bomb"][d][L_i] for d in common]).mean(dim=0)
+        cos_two_ops = float(torch.dot(_unit(vben_full, torch), _unit(vharm_full, torch)))
+        hvals = []
+        for d in common:
+            vhat = _unit(loo_direction(delta_BC_L, common, d, torch), torch)
+            hvals.append(float(torch.dot(delta_CA["bomb"][d][L_i], vhat)) / gap_harm)
+        k_h = sum(1 for x in hvals if x > 0)
+        p_h, f_h = sign_test_two_sided(k_h, len(hvals))
+        out["metrics"]["B1harmref|L%d|shift_bomb" % L] = {
+            "mean_gap_units": mean(hvals), "sd_gap_units": sd(hvals),
+            "ci95_gap_units": boot_ci(hvals, rng), "d_paired": cohen_d_paired(hvals),
+            "n_domains": len(hvals), "n_positive": k_h, "sign_p": p_h, "sign_p_floor": f_h,
+            "ref_gap_norm": gap_harm,
+            "cos_benign_axis_vs_harm_axis": cos_two_ops,
+            "_reading": "the SAME Doublespeak shift projected on the button->bomb axis measured "
+                        "in the HARMFUL context, where incongruity enters with the opposite sign"}
+
+        # ---- PROTOTYPE similarity (candidate family D), with the control that decides how to
+        # read it. cos(h_C, mu) - cos(h_A, mu) asks whether the Doublespeak codeword state sits
+        # closer to a prototype than the benign codeword state does. THREE prototypes are used,
+        # because the obvious one has an obvious confound:
+        #
+        #   mu_B  the concept token in the HARMFUL context. h_C is also in a harmful context and
+        #         h_A is not, so a positive score here could be CONTEXT similarity, not concept
+        #         similarity. Reported, but it is not the evidence.
+        #   mu_E  the concept token in the BENIGN context. Now h_A shares the context with the
+        #         prototype and h_C does not, so context works AGAINST the predicted sign. A
+        #         positive score here cannot be explained by shared context.
+        #   mu_C  the CODEWORD in the harmful context -- no concept token anywhere in it. This is
+        #         the pure context reference: it measures how large "same context" alone is on
+        #         this metric, and it is the number mu_B has to beat to mean anything.
+        #
+        # Every prototype is leave-one-domain-out.
+        protos = {"B": "mu_B_concept_in_harm_ctx", "E": "mu_E_concept_in_benign_ctx",
+                  "C": "mu_C_codeword_in_harm_ctx_CONTEXT_ONLY"}
+        for cell_p, pname in protos.items():
+            pvals = []
+            for d in common:
+                keep = [means["bomb"][(cell_p, x)][L_i] for x in common if x != d]
+                muh = _unit(torch.stack(keep).mean(dim=0), torch)
+                hc, ha = means["bomb"][("C", d)][L_i], means["bomb"][("A", d)][L_i]
+                cc = float(torch.dot(hc, muh) / torch.linalg.vector_norm(hc))
+                ca = float(torch.dot(ha, muh) / torch.linalg.vector_norm(ha))
+                pvals.append(cc - ca)
+            k_p = sum(1 for x in pvals if x > 0)
+            p_p, f_p = sign_test_two_sided(k_p, len(pvals))
+            out["metrics"]["B3proto|L%d|shift_bomb|proto_%s" % (L, cell_p)] = {
+                "prototype": pname,
+                "mean_delta_cos": mean(pvals), "sd": sd(pvals), "ci95": boot_ci(pvals, rng),
+                "d_paired": cohen_d_paired(pvals), "n_domains": len(pvals), "n_positive": k_p,
+                "sign_p": p_p, "sign_p_floor": f_p,
+                "_reading": "cos(h_C, mu) - cos(h_A, mu), mu leave-one-domain-out"}
+
         # ---- AXIS GEOMETRY. The off-diagonal of the 3x3 cannot be read without it: if
         # v_lex(bomb) and v_lex(knife) are nearly the same direction, "the bomb shift also aligns
         # with the knife axis" is a statement about the axes, not about the shift. Both are

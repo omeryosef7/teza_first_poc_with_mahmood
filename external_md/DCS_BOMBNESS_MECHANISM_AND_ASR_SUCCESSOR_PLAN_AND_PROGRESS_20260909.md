@@ -2452,3 +2452,189 @@ not about would be a number with a unit that does not belong to it.
 cell C from a *different* domain, which is constructible (the query span is identical across
 domains) and asks whether the patch carries *this domain's* installed state or generic
 installed-ness. It needs a change to the family-pairing loop and is not in this version.
+
+---
+
+### 2026-09-09 21:40 — ENTRY 014 — loop iteration 1: nothing finished, and a measured reason not to add GPU load
+
+**Label: OPERATIONS.**
+
+| job | arm | state |
+|---|---|---|
+| 872466 `p11kill3` | PHASE 11 kill, arm **2/12** (`basket_bomb_S_G_scope`) | RUNNING 31 min |
+| 872512 `sowk` | concept-free K ladder, arm **2/27** | RUNNING 18 min |
+| 872515–872518 | ASR cells C/B/A/E dose 4 | RUNNING |
+| 872519–872522, 872548 | ASR dose 0, C→A patch smoke | PENDING |
+
+**A timing fact that changes the plan for this iteration.** The same PHASE-11 arm
+(`pr059_basket_bomb_s_g_scope_n4`) completed in **594 s** on 2026-09-09 04:02 with the cluster
+quiet. The current instance has been running **> 25 min** on the same 230 rows. With six of this
+user's jobs on six of the same six-node `--nodelist`, throughput is down roughly **2.5×**. At that
+rate the 11 remaining PHASE-11 arms need ~4.6 h against a 6 h wall.
+
+**Consequence, acted on rather than noted:** no further GPU work is submitted this iteration. The
+position-sweep argsfiles are **written and held** (`runargs/dcs_succ/pos_{following,last}_{button,basket}_bomb.txt`)
+and go in when slots free.
+
+**ASR generation rates, and a cell asymmetry visible before any judging.** Rows written so far:
+cell C 106/1130, cell B 369/1130, cell E 440/1130, cell C dose-0 2/226. Cell **E** is running an
+order of magnitude faster than cell **C** on the same hardware. Generation is greedy with the same
+640-token cap, so the only thing that can differ is **how long the completions are** — cell E
+(the query names `bomb` outright in a benign-demonstration context) is terminating early, cell C
+(the Doublespeak attack) is producing long answers. ⛔ This is a *rate observation*, not a refusal
+rate; the refusal channel is measured independently by the judge and no number is claimed here.
+
+**What was done instead: the decisive CPU test of `S-002`'s own alternative explanation.**
+
+---
+
+### 2026-09-09 — ENTRY 015 — `PR-067c`: a second, independent operationalisation of the button→bomb axis
+
+**Label: EXPLORATORY, TRAIN ONLY. Design recorded BEFORE the numbers were computed.**
+
+`S-002` named its own live confound: `v_lex = E − A` contrasts the concept word with the codeword
+in a **benign** context, where `' bomb'` is semantically **incongruous** and `' button'` is
+congruous — so the axis may carry a large "an out-of-place word is here" component, and cell C's
+codeword is *also* made incongruous by the harmful demonstrations. On that reading `B1` would be a
+surprisal result wearing a semantic label.
+
+**The discriminating construction, and why it discriminates.** Measure the same button→bomb
+contrast in the **harmful** context, where the congruity roles are **reversed** — `' bomb'` (cell B)
+is now the congruous word and `' button'` (cell C) the odd one:
+
+> `v_lex_harm = mean_d [ h_B − h_C ]`   against   `v_lex_benign = mean_d [ h_E − h_A ]`
+
+The **lexical/semantic** component enters both axes with the **same** sign; the **incongruity**
+component enters with **opposite** signs. Two readings follow, and they are stated here before the
+result exists:
+
+* `cos(v_lex_benign, v_lex_harm)` **high** ⇒ the shared component dominates ⇒ the axis is semantic.
+  **Low or negative** ⇒ incongruity dominates.
+* Projecting the *same* shift `h_C − h_A` — whose own incongruity component is **positive**
+  (C's codeword is odd, A's is not) — onto `v_lex_harm`, whose incongruity component is
+  **negative**, puts the two accounts in **direct opposition**: incongruity *subtracts* here where
+  it *added* before. A `B1` that survives against this axis is not carried by incongruity.
+
+The direction is leave-one-domain-out, which also removes the shared-term bias — `h_C(d)` appears
+in the shift but **not** in the axis that domain `d` is scored against.
+
+**Also added, candidate family D (plan §7):** `B3 = cos(h_C, μ_B) − cos(h_A, μ_B)` with `μ_B` the
+leave-one-domain-out mean of the *actual concept-token* state — a prototype-similarity reading of
+the same question that shares no construction with `B1`.
+
+Mutation harness re-run after the change: **4/4 RED**. Recomputation in flight.
+
+---
+
+### 2026-09-09 — ENTRY 016 — `S-003`: the prototype candidate FAILS its own control; the incongruity component is real; the specificity survives
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains. Three findings, one of them a negative on a candidate
+this session proposed.**
+
+#### S-003a — `B3` (prototype similarity) is a CONTEXT measure, not a concept measure. Candidate REJECTED.
+
+`B3 = cos(h_C, μ) − cos(h_A, μ)` was run against **three** prototypes, and the third is the one
+that decides it:
+
+| prototype | what it is | button L12 | basket L11 |
+|---|---|---|---|
+| `μ_B` | the concept token in the **harmful** context | 0.0429 (66/67) | 0.0409 (66/67) |
+| `μ_E` | the concept token in the **benign** context — context works *against* the prediction | **0.0067 (41/67)** | 0.0132 (55/67) |
+| `μ_C` | the **codeword** in the harmful context — **no concept token anywhere in it** | **0.0515 (66/67)** | 0.0457 (66/67) |
+
+**The context-only reference `μ_C` is as large or LARGER than `μ_B` at every layer ≥ 8** (button L12:
+0.0515 against 0.0429; L14: 0.0563 against 0.0295). A prototype containing no concept token at all
+beats the prototype the candidate was built on. And when the prototype is moved to a benign context
+so that context similarity opposes the prediction, the effect **collapses** — button falls from
+0.0178 at L6 to 0.0067 at L12 with only **41/67** domains positive, and goes **negative** at L14.
+
+⛔ **`B3` is REJECTED as a Bombness candidate.** What it measures is that `h_C` and `μ_B` share a
+harmful demonstration context and `h_A` does not. This is the successor plan's §15 rule applied to a
+non-causal metric: *if the control moves the outcome at least as much as the treatment, the treatment
+is not what you said it was.* It is recorded rather than dropped, because a candidate that failed a
+control it was given is evidence about the space of candidates.
+
+#### S-003b — the two independent operationalisations of button→bomb AGREE
+
+`cos(v_lex_benign, v_lex_harm)` — the same lexical contrast measured in the benign cells (`E−A`) and
+in the harmful cells (`B−C`), where the congruity roles are reversed — is **0.937 at L6**, falling
+monotonically to **0.66–0.73 at L11–L14**, identically for both codewords. The **shared** component
+(the token direction, which enters both with the same sign) dominates the **opposed** component
+(incongruity, which enters with opposite signs) at every layer. Plan §2.1 asked whether different
+reasonable measurements agree; on this axis, they do, and the agreement weakens with depth in a way
+that is itself a measurement.
+
+#### S-003c — but the incongruity component is REAL, and the harm-axis projection shows it
+
+The same Doublespeak shift `h_C − h_A` projected on `v_lex_harm` is **negative** wherever
+`B1_benref` peaks: button **−0.0294** at L12 (17/67 positive), −0.0737 at L14 (7/67); basket
+−0.0214 at L11. It is positive only at L6–L7.
+
+**This is not a clean test and it is not reported as one.** Under the decomposition
+`state ≈ token + context + incongruity`, the shift carries `+incongruity(codeword in harm ctx)`
+and `v_lex_harm = B − C` carries `−incongruity(codeword in harm ctx)` — the *same term*, with
+opposite sign. So the inner product contains a structural `−‖incongruity‖²` that leave-one-out
+cannot remove, because it is not per-domain noise. ⛔ The negative number therefore **cannot be
+read as "the shift is anti-bomb"**.
+
+What it *does* license: under a simple "Doublespeak moves the codeword along the A→B line by
+fraction f" model, `C − A = f(B−A)` and `B − C = (1−f)(B−A)` would be **positively** aligned. They
+are not. So the shift is **not simply movement along the codeword→concept line**, and a
+non-trivial part of `B1_benref`'s magnitude is the incongruity/context component the decomposition
+predicts.
+
+#### What survives, and the argument for it
+
+The **3 × 3 specificity of `S-002` is not touched by any of this**, and the reason is structural:
+cell A is **bit-identical** across the three concept banks (‖h_A^bomb − h_A^knife‖ = 0.000000 at
+every layer), and all three concept words sit in the **same** benign sentences. So the incongruity
+component is **shared by `v_lex_bomb`, `v_lex_knife` and `v_lex_gun` alike** — and the Gram-Schmidt
+residualisation of the bomb axis against span{knife, gun} removes exactly what the three share.
+It retained **90.8 %** of the alignment (button). If incongruity were driving `B1`, that
+residualisation should have destroyed it.
+
+The residual caveat, stated: this assumes `bomb`, `knife` and `gun` are *equally* incongruous in a
+sentence about sterile store rooms. They are plausibly similar and certainly not identical, so the
+control is partial.
+
+#### The candidate table so far (TRAIN, exploratory)
+
+| candidate | definition | status |
+|---|---|---|
+| **`B1`** | ⟨h_C − h_A, v̂_lex(benign)⟩ / gap | **SURVIVES.** 0.104 / 0.137 gap units, 66–67/67 domains, ~14 sd over random, 90.8 % bomb-specific after residualisation. Magnitude partly context/incongruity (`S-003c`); specificity not explained by it (`S-002`) |
+| **`B1_resid`** | same, bomb axis ⊥ span{knife, gun} | **SURVIVES**, and is the specificity-carrying form |
+| `B1_harmref` | same shift, harm-context axis | **NOT A VALID TEST** — structurally biased by a shared incongruity term. Reported, never quoted as a null |
+| **`B3`** | cos(h_C, μ_B) − cos(h_A, μ_B) | ⛔ **REJECTED** — the concept-free context prototype `μ_C` beats it |
+
+⛔ Nothing here makes any forbidden sentence sayable. `B1` is a TRAIN-only exploratory quantity that
+has not been confirmed on validation or test, has no position control, and has had no causal test.
+
+---
+
+### 2026-09-09 21:41 — ENTRY 017 — `C-201`: PHASE 11's re-run STALLED and was cancelled, not waited out
+
+**Label: OPERATIONS / CORRECTION to entry 014's reading.**
+
+Entry 014 attributed job 872466's slowness to contention (2.5×). That was wrong and this supersedes
+it. The evidence:
+
+* the previous successful instance of the same arm printed **`[pr059] model LOAD #1`** at line 21 of
+  its log. Job 872466 **never printed that line at all**;
+* `boomb_872466.err` is **0 bytes** with mtime 21:07, while every other concurrent job wrote a
+  multi-kilobyte weight-loading progress bar to its `.err`;
+* `boomb_872466.out` stopped growing at **21:09** and produced nothing for **30 minutes**, while
+  five sibling jobs on the same six-node list advanced normally (`sowk` completed three arms;
+  the ASR arms wrote hundreds of rows);
+* the arm's run directory contains only an empty `plots/`.
+
+So the job was **stuck between the population filter and the model load** — not loading slowly. It
+was **cancelled**, and all four pending dose-0 ASR arms started within seconds of the GPU freeing.
+
+**Cost: none.** `basket_bomb_S_0_baseline` remains complete on disk and the runner's resume skips it;
+`basket_bomb_S_G_scope` is the arm that was in flight and it had written nothing. An **orphan run
+directory** `pr059_basket_bomb_s_g_scope_n4_20260909_210624_682708` (containing only `plots/`) is
+left in place rather than deleted, per the standing rule that failed artifacts are quarantined with
+provenance and not tidied away.
+
+**Not resubmitted this iteration, deliberately**: putting it straight back into the same queue
+reproduces the conditions. It goes in when the ASR wave drains.
