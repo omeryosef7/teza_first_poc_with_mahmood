@@ -3611,3 +3611,94 @@ verification's §8.4 prediction was substantially right.
 Refusal). **The interaction is the robust component for bomb (67/67, both codewords) and for gun
 (62–63/67), and the harm-context main effect is negative or null everywhere except knife.** The
 `C-208a` finding is not a bomb peculiarity; it is the shape of the manipulation.
+
+---
+
+### 2026-09-10 00:35 — ENTRY 035 — `R-205`: **the concept-free K ladder resolves, and `K* = 10` is the CODEWORD**
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains, 670 rows per arm, 27 arms, ONE model load (26 cache
+hits), all `rc = 0`. Job 872512, `finished 2026-09-10T00:28:22`.** This is plan §10, which the plan
+calls the **highest priority** and which the handoff records as *"named in `R-081` §27.4 as the
+single highest-value follow-up and never funded"*.
+
+**The reason it had to be redone.** `PR-032`/`R-080` found a sharp step at **K = 7** — and on that
+run's `semantic_forced_choice` readout, K = 7 is the rung at which the cut first reaches the literal
+option token `' bomb'` that the question itself supplied. `R-083` closed **CANNOT ANSWER** for
+exactly that reason. On the concept-free template the concept word appears on **0 of 32,544** rows,
+and the rungs are different objects.
+
+| K | rung reaches | mean Δ vs baseline | f | domains negative | option mass |
+|---|---|---|---|---|---|
+| 1–3 | response header | −0.045 … −0.059 | 0.006–0.008 | 55–59/67 | 0.34 |
+| 4–6 | `<\|start_header_id\|>`, `<\|eot_id\|>`, `?` | −1.15 … −1.16 | 0.158–0.161 | 65/67 | 0.23 |
+| 7 | `' to'` | −1.7244 | 0.237 | 65/67 | 0.162 |
+| 8 | `' refer'` | −2.5100 | 0.345 | 65/67 | 0.129 |
+| 9 | `' actually'` | −2.6811 | 0.368 | 65/67 | 0.134 |
+| **10** | **the CODEWORD `' button'`** | **−7.1738** | **0.985** | **67/67** | 0.409 |
+| 11–14 | `' word'`, `' the'`, `' does'`, `' what'` | −7.21 … −7.28 | 0.989–1.000 | 67/67 | 0.42 |
+
+**The single largest rung is the codeword, and it is not close:**
+
+```
+K9  -> K10  (adding the CODEWORD row)          -4.4927   = 61.7 % of the whole climb
+K10 -> K14  (adding FOUR more content rows)    -0.1098   =  1.5 %
+K1  -> K9   (nine rows, none of them the codeword) -2.6365 = 36.2 %
+```
+
+**One row carries 62 % of the effect; the four content rows after it carry 1.5 %.** The ladder is
+nested, so the K9 → K10 increment *is* the marginal effect of adding the codeword row to the cut.
+
+**The dose-matched control decides it.** Each of K8–K11 carries a **three-draw** `nondemo_matched`
+band — the same number of keys blocked from the *same* rows, drawn from outside the demonstration
+block — and the three draws are genuinely distinct:
+
+| rung | demo | control band | between-draw sd | **contrast** | domains | 95 % CI |
+|---|---|---|---|---|---|---|
+| K8 | −2.5100 | −0.0277 | 0.0328 | **−2.4823** | 65/67 | [−2.692, −2.256] |
+| K9 | −2.6811 | −0.0292 | 0.0288 | **−2.6519** | 65/67 | [−2.863, −2.427] |
+| **K10** | **−7.1738** | **+0.0335** | 0.0397 | **−7.2073** | **67/67** | **[−7.546, −6.835]** |
+| K11 | −7.2068 | +0.0301 | 0.0386 | −7.2369 | 67/67 | [−7.579, −6.863] |
+
+Cutting the **same number of rows** from **non-demonstration** keys moves the readout **+0.03**.
+Cutting the demonstration keys from those same rows moves it **−7.17**. Every p is at or near its
+attainable floor (1.355e−20 at n = 67) and Holm-corrected within its declared family.
+
+**The readout is MORE engaged after the cut, not destroyed.** Option mass falls to 0.129 at K8–K9
+and then **rises to 0.409–0.429** at K10–K14. This is the signature of the model *confidently
+flipping its answer to the codeword*, not of a collapsed channel — which is what the 0.05 gate
+exists to distinguish, and it passes comfortably.
+
+#### What may and may not be said
+
+⛔ **The frozen shape rule returns `SHAPE = NEITHER`, and it is reported as such.** The rule requires
+a single adjacent rise ≥ 0.50 of the climb **and** a crossing from below 0.20 to above 0.50; the
+K9 → K10 rise is 0.617 but starts at f = 0.368, already above 0.20. **The word "step" is not used.**
+The rule was frozen before the data and it is not being moved — this is `PR-037`'s 1.9-percentage-point
+lesson applied to a result that would have been convenient.
+
+⛔ **The token identity at rel_end −K rests on the frozen token-role map, not on these run
+directories.** `query_last_k_rows` persists the cut *positions* but not their decoded text, so
+"rung K reaches rel_end −K" is verified on every row while "rel_end −10 is the codeword" is
+inherited. The analyzer states this limitation itself.
+
+⛔ EXPLORATORY, TRAIN only, one bank, one codeword. Not a confirmatory test.
+
+**What it does establish, and it is what `R-083` could not.** On a readout that **never names the
+answer**, the demonstration→query pathway's effect on the model's semantic report is carried
+overwhelmingly by **the query row that holds the codeword** — 62 % of the climb in one row, against
+a dose-matched non-demonstration control that moves +0.03, in 67 of 67 independent domains.
+
+#### And it sits in tension with `S-007`, which is the interesting part
+
+`S-007` showed that transplanting the codeword token's **entire hidden state**, at every layer, from
+an installed prompt into an uninstalled one transfers **0.05 %** of a 12.33 log-odds gap. `R-205`
+shows that **cutting that same row's access to the demonstrations** destroys 62 % of the reading.
+
+Both are about the same token, and they are not contradictory — they are the shape of the answer.
+**The codeword row is where the demonstrations are READ, not where the result is STORED.** Blocking
+its access to the demonstrations removes the reading; copying its post-hoc state carries nothing,
+because the state is a *consequence* of an attention operation the recipient prompt cannot perform —
+it has no harmful demonstrations to attend to. That reconciles `R-112` (not localised), `R-093`
+(readout destroyed, representation intact), `S-007` (state transfers nothing) and `R-205` (this row
+is required) into one account, and it is the first time in this project's record that all four
+point somewhere specific.
