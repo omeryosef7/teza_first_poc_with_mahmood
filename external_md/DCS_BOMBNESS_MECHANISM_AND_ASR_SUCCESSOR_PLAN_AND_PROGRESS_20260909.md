@@ -4030,3 +4030,78 @@ than by luck.
 * **`C9`** — `R-205` ran on a `kladder_run.py` predating the `C-205`/`C-206` fixes (both protective;
   no `R-205` number moves, and TRAIN-only is carried by `--expect-n 670` plus the exclusion file,
   which the reviewer verified independently).
+
+---
+
+### 2026-09-10 02:50 — ENTRY 040 — `C-214`: the position control's first reading was a **denominator artefact**, caught before it was written down
+
+**Label: CORRECTION, pre-publication. The number was computed, read, and rejected in the same
+sitting — the check is the entry.**
+
+The position control (plan §8) returned, and in **gap units** it looked decisive:
+
+| `button_bomb` L12 | gap units |
+|---|---|
+| codeword (rel_end −10) | 0.1044 |
+| `following` (rel_end −9) | **0.1589** |
+| `last` (rel_end −1) | **0.4692** — 4.5× the codeword |
+
+paired `codeword − last` = **−0.3648**, **2/67** domains positive, p = 3.1e−17. On `basket` L12 the
+paired contrast is −0.3146 with **0/67** positive, p = 1.4e−20. Read at face value this says `B1` is
+**not localised at the codeword** and is largest at the final prompt token — which is precisely the
+outcome `ENTRY 038` pre-declared as one of the two possibilities.
+
+⛔ **It is an artefact of the denominator, and `ENTRY 038`'s own caveat is what caught it.** The
+gap-unit denominator is `‖mean_d(h_E − h_A)‖` **at that position**, and it is not remotely constant:
+
+| position | reference gap ‖mean(h_E − h_A)‖, L6 → L14 |
+|---|---|
+| codeword | **3.33 → 5.20** |
+| `following` | 1.04 → 2.32 |
+| **`last`** | **0.113 → 1.45** |
+
+At the final prompt token the E and A prompts have **nearly converged** — their reference difference
+is up to **30× smaller** — so dividing by it inflates the downstream positions enormously. In **raw
+projection** the ordering **reverses**:
+
+| `button_bomb` | raw proj, codeword | `following` | `last` |
+|---|---|---|---|
+| L9 | **0.2893** | 0.2692 | 0.1781 |
+| L12 | **0.4031** | 0.2876 | 0.3385 |
+| L13 | 0.4278 | 0.3143 | **0.4062** |
+| L14 | 0.3623 | 0.2637 | **0.5502** |
+
+**The codeword is the largest site at every layer through L12**, and `last` only overtakes at
+L13–L14. So the two readings of the same data point in opposite directions, and the reason is a
+normalisation I chose.
+
+⛔ **VERDICT: the position control as first posed is INCONCLUSIVE, and "gap units" is not a
+position-portable statistic.** `REVIEW-1`'s claim review had already flagged (`A6`) that the
+gap-unit convention mixes a leave-one-out numerator with an in-sample denominator; this is the same
+defect biting somewhere it changes a conclusion rather than a decimal.
+
+**The fix, and it is the right statistic rather than a patch.** The control now computes three
+quantities and says which may be compared across positions:
+
+* `gap_units` — comparable **within** a position, **not across**; carries a `_WARNING` in the
+  artifact;
+* `raw_proj` — absolute displacement along the local axis;
+* **`cos` = proj / ‖h_C − h_A‖ — scale-free in *both* terms and therefore the only
+  position-portable one.** The paired contrast is now computed on `cos` and marked
+  `_this_is_the_portable_one`.
+
+Recomputing. ⛔ **No localisation claim, in either direction, is made until the cosine contrast is
+in hand.** In particular: `S-002`'s and `S-004`'s numbers are all read at a **single** position, so
+nothing already in this log depends on the comparison — but `ENTRY 038`'s framing ("an equal value
+would establish that `B1` is a global prompt-state signal") must now wait for the portable statistic
+rather than the one I had.
+
+**The generalisable lesson, and it is the third of its kind this session.** `C-134`: a constant
+printed as a measurement. `C-213a`: a check that existed only in a shell heredoc. Here: a
+**denominator that changes by 30× across the thing being compared**, in a statistic invented to
+make positions comparable. All three are the same failure — *a quantity that could not have told you
+it was wrong.* The only reason this one did not reach the log as a result is that the entry
+announcing the experiment had already written down what would make it uninterpretable.
+
+**Also this iteration**: `basket_bomb` cell B dose 4 completed (1130 rows) and is judging; cells
+C dose 4 and C dose 0 are generating.
