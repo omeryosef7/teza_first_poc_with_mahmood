@@ -1,0 +1,1873 @@
+# DCS — BOMBNESS MECHANISM AND ASR SUCCESSOR PLAN AND PROGRESS (2026-09-09)
+
+STATUS: PLAN RECORDED ONLY. NO EXPERIMENTS RUN YET.
+
+This file is the authoritative live record for the successor phase. It is append-only.
+Section 0 below is the verbatim research mandate as issued by the user on 2026-09-09.
+Nothing in it has been executed yet; the user explicitly asked only that the mandate be
+written down at this point.
+
+---
+
+## 0. VERBATIM RESEARCH MANDATE (issued 2026-09-09)
+
+You are continuing the Doublespeak / Bombness causal-mechanism research project in the existing repository.
+
+Your job is NOT merely to run the next few experiments from the previous plan.
+
+Your job is to take the current scientific state of the project, the requests from Matan, the failures and limitations discovered so far, and execute a serious thesis-scale research program whose central goal is:
+
+Determine whether Doublespeak actually creates a concept-specific internal representation of BOMB, where that representation lives, how to measure it reliably, whether it is distinct from position / template / generic remapping / harmfulness / surface cues, whether the model causally uses it, and whether changes in this representation predict or cause changes in actual jailbreak behavior / ASR.
+
+We want results we can defend scientifically in front of Matan and Mahmood.
+
+Do not optimize for producing a positive result.
+
+Do optimize aggressively for actually answering the scientific question.
+
+If one proposed Bombness representation fails, do not stop at "negative."
+
+Try alternative reasonable operationalizations, positions, layers, representations, readouts, and causal interventions — BUT do this without p-hacking or test-set fishing.
+
+The correct workflow is:
+
+1. broad exploration on TRAIN;
+2. model / metric selection on VALIDATION only;
+3. freeze the candidate, hypothesis, statistic, intervention, and analysis;
+4. test once on untouched TEST or, where necessary, a newly generated independent confirmatory bank.
+
+Never repeatedly query TEST while searching for a successful representation.
+
+### 0. FIRST ACTION: WRITE AND MAINTAIN THE RESEARCH PLAN
+
+Before running new experiments:
+
+Create a new append-only external markdown file, for example:
+
+`external_md/DCS_BOMBNESS_MECHANISM_AND_ASR_SUCCESSOR_PLAN_AND_PROGRESS_20260909.md`
+
+Write this entire research program into that file.
+
+The external MD is the authoritative live record for this successor phase.
+
+It must contain:
+
+* current scientific state;
+* Matan's questions;
+* hypotheses;
+* experimental phases;
+* exact data populations;
+* train / validation / test policy;
+* preregistrations;
+* power calculations;
+* intervention definitions;
+* read sites;
+* controls;
+* success / negative / cannot-answer / void criteria;
+* experiment launches;
+* SLURM job IDs;
+* outputs;
+* audits;
+* bugs;
+* corrections;
+* claim changes;
+* open questions;
+* literature updates;
+* final paper-facing summary.
+
+Use append-only discipline.
+
+Never silently rewrite history.
+
+If a result, interpretation, analyzer, or experiment later turns out to be wrong, append a correction and explicitly supersede the previous statement.
+
+### 1. CURRENT SCIENTIFIC STATE — DO NOT LOSE THIS CONTEXT
+
+Read the existing authoritative logs, frozen preregistrations, claim table, current handoff, reports, and actual artifacts before implementing anything.
+
+At minimum read:
+
+* `HANDOFF_20260902_TO_0909_DCS_COMPLETE.md` if present in the working context / copy it into your understanding;
+* `external_md/DCS_THESIS_SCALE_MANDATE_20260906.md`;
+* `external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md`;
+* `external_md/DCS_BOMBNESS_SPECIFICITY_AND_CAUSAL_VALIDATION_PLAN_AND_PROGRESS_20260905.md`;
+* `external_md/DOUBLESPEAK_CONCEPT_SPECIFIC_BOOMBNESS_AND_SURGICAL_CAUSALITY_PLAN_AND_PROGRESS_20260902.md`;
+* `reports/DCS_TS_CLAIM_TABLE.md`;
+* `reports/DCS_TS_PROMPT_VALIDATION.md`;
+* `reports/DCS_TS_PR051_POSITIONAL.md`;
+* `reports/DCS_TS_PR053_DIFFMEANS.md`;
+* `reports/DCS_TS_PHASE9_VERDICT_REVIEW.md`;
+* all PHASE-11 reports and preregistrations;
+* current literature matrix.
+
+The current state that must NOT be forgotten:
+
+1. A linear probe strongly decodes which concept-conditioned demonstration set is present.
+2. On the thesis-scale population, the signal is not convincingly localized to the codeword: a downstream position decodes nearly as well.
+3. Bomb installs substantially better than knife/gun on the concept-free semantic readout.
+4. Knife and gun mostly do not install on the current aligned bank.
+5. Therefore a classifier that separates bomb / knife / gun cannot automatically be interpreted as reading an actually installed semantic concept.
+6. `v_bomb_specific` strongly separates bomb-conditioned rows from knife/gun-conditioned rows, but it also carries generic remapping information. The clean "concept identity vs remapping axis" decomposition is not established.
+7. The old forced-choice semantic readout leaks the answer into the question and must not be treated as the primary semantic probe.
+8. `semantic_one_word`, which does not name the concept, is the preferred semantic channel.
+9. Whole-query demonstration-attention knockout strongly disrupts the semantic readout.
+10. Single codeword-row knockout did not reproduce that full effect.
+11. The K ladder found a sharp threshold, but the decisive forced-choice row is confounded with the literal `bomb` option in the readout template.
+12. Therefore the K ladder needs to be repeated on a concept-free semantic readout.
+13. Existing direct subspace intervention on `v_bomb_specific` did NOT establish causal use. A norm-matched orthogonal control moved the readout even more strongly.
+14. Behaviour / ASR has not yet been cleanly connected to the representation.
+15. Current register / surface differences are a real limitation of the existing corpus and cannot simply be "regressed away."
+16. The previous thesis-scale work found multiple instrumentation and analyzer bugs. Treat every new result as guilty until independently audited.
+
+Do not revive previously withdrawn claims.
+
+Do not write:
+
+* "the codeword is represented as BOMB";
+* "Bombness is localized at the codeword";
+* "the probe measures concept identity";
+* "remapping and concept identity are separable axes";
+* "the concept direction is causally used";
+* "Bombness predicts jailbreak";
+* "representation destruction predicts ASR";
+
+unless the new work actually establishes those claims under a fresh valid design.
+
+### 2. MATAN'S QUESTIONS — THESE ARE THE ACTUAL RESEARCH REQUIREMENTS
+
+The successor program must explicitly answer or make meaningful progress on all of these:
+
+#### 2.1 What does "the model is moving toward the representation of a bomb" actually mean?
+
+We need multiple independent operationalizations of "Bombness."
+
+Do not rely on one direction or one probe.
+
+Test whether different reasonable measurements agree.
+
+#### 2.2 How can we validate Bombness?
+
+At minimum investigate:
+
+* probability / logits;
+* logit lens;
+* concept-free semantic readout;
+* linear classifier / probe;
+* difference-in-means directions;
+* geometry / similarity;
+* potentially local linear/Jacobian-style readouts if useful;
+* explicit question: "what does this codeword actually refer to?";
+* actual behavioural attack success / ASR.
+
+We want to know whether any representation measure predicts something externally meaningful.
+
+#### 2.3 Are the prompts actually doing what we think?
+
+Do not assume a Doublespeak prompt installs its mapping.
+
+Measure it.
+
+For every bank / codeword / concept / domain:
+
+* semantic installation;
+* attack success;
+* refusal;
+* topicality;
+* response quality where needed;
+* surface / register diagnostics.
+
+#### 2.4 Does Bombness correspond to BOMB specifically?
+
+Primary concept = BOMB.
+
+Do not average together:
+
+* bomb;
+* cyber;
+* disease;
+* knife;
+* gun;
+* generic harmfulness;
+
+and call the result "Bombness."
+
+Other harmful concepts may be used only as carefully designed controls / hard negatives / replication concepts.
+
+The primary scientific target must remain BOMB.
+
+#### 2.5 What is the relevant harmful-vs-benign contrast?
+
+Matan specifically wanted us to exploit the prompt table and compare harmful vs benign context carefully.
+
+Build reusable metadata such as:
+
+* `codeword`
+* `target_concept`
+* `harmful_concept`
+* `benign_concept`
+* `mapping_type`
+* `demo_valence`
+* `query_valence`
+* `template_family`
+* `domain`
+* `split`
+* `dose`
+* `position`
+* `register_features`
+* `prompt_family_id`
+
+so that every analysis can cleanly group and pair the correct conditions.
+
+#### 2.6 Do not abandon difference-in-means.
+
+Try multiple scientifically meaningful difference-in-means definitions.
+
+For example, where constructible:
+
+* harmful Doublespeak − literal benign;
+* harmful Doublespeak − benign remapping;
+* harmful context − benign context with the same codeword;
+* bomb-remapping − benign-remapping;
+* bomb-remapping − hard-negative harmful-remapping;
+* direct bomb − direct benign control;
+* representation changes relative to the same prompt structure.
+
+However, each contrast must isolate one intended factor.
+
+Never compare two cells that differ simultaneously in template, topic, codeword, register and concept and then interpret the vector as "Bombness."
+
+#### 2.7 Test the final codeword / final concept token carefully.
+
+Repeat the previous "Experiment 3"-style reasoning at:
+
+* last codeword occurrence;
+* first codeword occurrence;
+* all codeword occurrences;
+* final query codeword occurrence;
+* neighboring positions;
+* concept occurrence in direct-control prompts;
+* neutral positions matched by relative offset.
+
+But avoid the old mistake:
+
+reading the hidden state of the literal token `bomb` and asking whether it contains "bomb" is largely a lexical identity test.
+
+Use comparisons where the token identity itself is controlled.
+
+#### 2.8 Make attention knockout more surgical.
+
+We want to know what information flow from demonstrations is actually required.
+
+Do not only compare "everything" versus "nothing."
+
+#### 2.9 Measure ASR.
+
+This is important.
+
+We eventually need to know whether the thing we call Bombness has anything to do with the actual jailbreak.
+
+Representation-only results are not enough.
+
+### 3. CENTRAL DESIGN PRINCIPLE: SEPARATE THE VARIABLES
+
+Every major experiment must explicitly state which variable is changing and which variables are held constant.
+
+The main confounds we must isolate are:
+
+1. semantic concept;
+2. codeword identity;
+3. token position;
+4. demonstration content;
+5. prompt template;
+6. query template;
+7. harmfulness;
+8. generic remapping;
+9. register / hedging / style;
+10. lexical overlap;
+11. prompt length;
+12. domain/topic;
+13. number of demonstrations;
+14. codeword occurrence count;
+15. intervention dose;
+16. layer / read site;
+17. hardware / software configuration.
+
+For patching experiments especially:
+
+Change ONE meaningful thing at a time whenever possible.
+
+Before interpreting any patch:
+
+* donor and recipient must be structurally aligned;
+* token correspondence must be explicit;
+* patch position must mean the same semantic role;
+* surface differences must be documented;
+* intervention norm must be measured;
+* random / orthogonal / shuffled controls must be present;
+* read site must be downstream of the intervention.
+
+### 4. DATA STRATEGY — THESIS SCALE, NOT n=6 CLAIMS
+
+Important experiments must use enough independent data.
+
+Rows are not independent.
+
+DOMAIN is the main independence unit unless a different unit is scientifically justified and preregistered.
+
+For major claims:
+
+1. perform power analysis before running;
+2. target at least 0.80 power, preferably ~0.90 for thesis-level primary claims;
+3. use enough independent domains to achieve this;
+4. do not cite thousands of rows as thousands of independent samples;
+5. keep train / validation / test separated by DOMAIN;
+6. never leak the same domain across splits.
+
+For the existing `ts116m` bank:
+
+Respect the existing frozen split and exclusions.
+
+Do not rebuild or reinterpret the split after seeing outcomes.
+
+For NEW data:
+
+Create a fresh deterministic split BEFORE extracting hidden states or behaviour.
+
+Prefer a large population, ideally ~100+ usable domains if constructible.
+
+If power analysis says fewer or more are needed, document the calculation.
+
+For important confirmatory results, favor:
+
+* a discovery / development bank;
+* a completely independent confirmatory bank;
+
+over repeatedly reusing the same test population.
+
+### 5. BUILD A CLEAN BOMB-ONLY PRIMARY BANK
+
+The current bank taught us something important:
+
+multi-concept construction can introduce register / installation asymmetries.
+
+Create a successor primary bank whose MAIN PURPOSE is clean Bombness measurement.
+
+Primary concept:
+
+`bomb`
+
+Primary codeword:
+
+pick one discovery codeword with strong verified installation, likely `button` unless artifact review shows another choice is better.
+
+Replication codeword:
+
+use a second codeword such as `basket` only after verifying that the mapping installs sufficiently.
+
+If basket remains too weak, do not pretend it is a symmetric replication.
+
+Either:
+
+* improve the construction under a preregistered generation process;
+* or choose a replacement replication codeword before looking at the confirmatory outcome.
+
+Potentially add a third codeword as a held-out lexical-transfer replication.
+
+#### Required condition structure
+
+Construct tightly aligned cells where only one factor changes.
+
+At minimum attempt:
+
+A. literal benign codeword;
+B. direct BOMB concept with the same semantic task;
+C. natural Doublespeak codeword→BOMB;
+D. benign remapping using the same codeword and structurally matched demonstrations;
+E. harmful-context control where harmfulness exists but BOMB does not;
+F. remapping control where semantic remapping exists but harmfulness does not.
+
+Do NOT require all six if some are impossible to construct cleanly, but explicitly reason about what each cell identifies.
+
+#### Register matching
+
+This is now a first-class requirement.
+
+The current corpus has a structural register confound.
+
+For the successor bank, constrain generation or mechanically match:
+
+* hedge rate;
+* modal verbs;
+* threat lexicon density;
+* sentence length;
+* punctuation;
+* sentence structure;
+* lexical diversity;
+* number of target mentions;
+* syntactic role of the codeword/concept;
+* directness of instructions;
+* style;
+* domain distribution.
+
+Create quantitative surface diagnostics.
+
+Train nuisance classifiers using ONLY surface text.
+
+Examples:
+
+* TF-IDF;
+* length-only;
+* lexical-count features;
+* simple bag-of-words;
+* register feature classifier.
+
+A proposed concept representation must be interpreted relative to these measured nuisance floors.
+
+If surface text alone almost solves the classification problem, DO NOT call a hidden-state classifier a concept probe.
+
+Either regenerate the bank or scope the claim appropriately.
+
+### 6. PROMPT VALIDATION MUST HAPPEN BEFORE REPRESENTATION CLAIMS
+
+For every primary population, create a large prompt-validation table.
+
+For each domain × codeword × condition × dose:
+
+measure at least:
+
+* `semantic_one_word` concept-free interpretation;
+* option mass;
+* decoded top tokens;
+* attack success;
+* refusal;
+* topicality;
+* response length if relevant;
+* direct lexical leakage;
+* surface/register features.
+
+The semantic question must not name `bomb`.
+
+Examples of acceptable conceptual forms:
+
+* "What does the word X refer to in this context? Answer with one word."
+* variants that do not provide bomb as one of the options.
+
+Forced choice may remain as a DISPLAY / diagnostic channel but never as the primary semantic-installation measure.
+
+Also test several concept-free semantic question templates on TRAIN / VALIDATION to ensure the result is not template-specific.
+
+Freeze the winning or ensemble readout before TEST.
+
+Do not optimize semantic-readout wording on TEST.
+
+### 7. BOMBNESS CANDIDATE SEARCH
+
+We need a systematic candidate-generation phase.
+
+The purpose is to ask:
+
+What internal quantity, if any, behaves like an intuitive, concept-specific, position-robust representation of BOMB?
+
+Run this search on TRAIN and VALIDATION only.
+
+Do NOT read TEST while generating candidates.
+
+#### Candidate family A — difference-in-means directions
+
+Construct and compare several clean directions such as:
+
+1. `C_bomb - A_literal`
+2. `C_bomb - D_benign_remap`
+3. `C_bomb - E_harmful_nonbomb`
+4. `B_direct_bomb - matched_direct_control`
+5. context-conditioned differences at the SAME token identity
+6. paired within-domain directions
+
+Where useful, estimate:
+
+* raw direction;
+* domain-centered direction;
+* template-centered direction;
+* codeword-centered direction;
+* residualized direction after removing generic-remapping axis;
+* residualized direction after removing surface-predictive components.
+
+Do not assume residualization automatically makes a semantic axis.
+
+Validate every resulting direction independently.
+
+#### Candidate family B — linear probes
+
+Train probes for questions like:
+
+* BOMB context vs literal context;
+* BOMB context vs benign remap;
+* BOMB context vs harmful non-BOMB;
+* direct bomb vs direct matched control;
+* installed vs non-installed semantic state.
+
+Use:
+
+* logistic regression as primary;
+* potentially linear SVM / LDA as secondary exploratory models.
+
+Do not jump to nonlinear models unless linear models clearly fail and the motivation is documented.
+
+The main goal is interpretable geometry.
+
+Selection:
+
+* TRAIN fit;
+* VALIDATION layer / regularization selection;
+* TEST once.
+
+#### Candidate family C — probability / logit-based Bombness
+
+Investigate full-vocabulary signals, not only two-option probability.
+
+Examples:
+
+* log P(`bomb`);
+* log P(`bomb`) − log P(codeword);
+* bomb token rank;
+* mass over a predeclared bomb semantic lexicon;
+* contrast against neutral / literal alternatives;
+* logit-lens trajectories across layers;
+* calibrated semantic lexical score.
+
+Avoid constructing the lexicon after seeing which words spike.
+
+Freeze it before confirmatory evaluation.
+
+#### Candidate family D — representation similarity
+
+Measure similarities to reference representations generated under matched direct-BOMB prompts.
+
+Possible metrics:
+
+* cosine similarity;
+* centered cosine;
+* Mahalanobis distance;
+* linear discriminant score;
+* whitened-space projection;
+* prototype distance.
+
+Important:
+
+A direct BOMB prompt and a Doublespeak BOMB prompt must be structurally aligned enough that the comparison is not merely template identity.
+
+#### Candidate family E — local linear / Jacobian-style semantic readout
+
+If feasible using existing infrastructure, explore a local linear readout of how perturbing the hidden state changes downstream BOMB-related logits.
+
+The point is to distinguish:
+
+* "BOMB is decodable"
+
+from
+
+* "this state has local causal leverage on BOMB-related output."
+
+Keep this exploratory until validated.
+
+#### Candidate family F — multivariate subspace
+
+If a single vector fails, explore whether BOMB occupies a small subspace rather than a 1-D direction.
+
+Examples:
+
+* supervised linear subspace;
+* LDA subspace;
+* low-rank discriminative subspace;
+* PCA inside a carefully defined between-condition difference matrix.
+
+Use TRAIN only for discovering dimensionality.
+
+Freeze rank before TEST.
+
+Do not use arbitrary high-dimensional patches and call them "Bombness."
+
+### 8. POSITION SEARCH — DO NOT CONFUSE BOMBNESS WITH POSITION
+
+This is one of the most important pieces.
+
+For every strong candidate Bombness metric, create a position × layer map.
+
+Read positions such as:
+
+* all codeword occurrences;
+* first codeword occurrence;
+* last demonstration codeword occurrence;
+* query codeword;
+* query codeword −1 / +1;
+* several neutral nearby offsets;
+* final user-text token;
+* final prompt token;
+* multiple relative offsets downstream;
+* matched positions in literal and direct controls;
+* selected demonstration positions.
+
+Prefer relative-to-end / semantic-role indexing rather than absolute token index because prompt lengths vary.
+
+For each position:
+
+* use the same classifier/direction where scientifically meaningful;
+* compare within the same prompts;
+* estimate paired differences;
+* include position-matched controls.
+
+Questions:
+
+1. Is the representation strongest at the codeword?
+2. Is it equally decodable everywhere in the late residual stream?
+3. Is it a global prompt-state signal?
+4. Does it appear first at one position and later spread?
+5. Does it propagate from demonstrations to query?
+6. Does it depend on the query reading the codeword?
+
+Do NOT declare localization because one position has high absolute accuracy.
+
+Localization requires a relative comparison against meaningful nearby and role-matched positions.
+
+### 9. LAYER SEARCH
+
+Do a full layer sweep during development.
+
+For candidate metrics, inspect all layers or a broad enough layer range to establish:
+
+* onset;
+* peak;
+* persistence;
+* decay.
+
+However:
+
+* layer selection happens on VALIDATION;
+* freeze the selected layer / band before TEST.
+
+Avoid the previous read-site trap:
+
+A band-limited intervention read at the first layer of the intervention band cannot tell us the effect of the full band.
+
+Any causal intervention must be read strictly downstream of where the intervention could have affected the representation.
+
+Include an automated invariant that refuses analyses violating this.
+
+### 10. SEMANTIC_ONE_WORD K LADDER — HIGHEST PRIORITY
+
+Run the missing high-value experiment:
+
+Repeat the query-row K ladder using the concept-free `semantic_one_word` readout.
+
+This is specifically designed to remove the previous confound where K=7 corresponded to the literal option token `' bomb'` in a forced-choice question.
+
+Implement a precise token-role map for the concept-free query.
+
+For each K:
+
+* identify exactly which query rows are affected;
+* print token IDs / decoded tokens / semantic role;
+* compute actual mask cells;
+* verify which rows first enter user-written content;
+* verify when the codeword row is first included.
+
+Run enough independent domains for a defensible result.
+
+Use:
+
+* baseline;
+* K ladder;
+* dose-matched non-demonstration controls where constructible;
+* random-row controls;
+* multiple control draws where feasible.
+
+Analyze:
+
+* semantic readout;
+* option mass;
+* full-vocabulary response distribution;
+* ASR where the same prompt population supports behavioural generation;
+* refusal.
+
+The main question:
+
+Does the sharp retrieval threshold align with the codeword row when the readout does NOT contain the word bomb?
+
+If yes, that is strong mechanistic evidence.
+
+If no, localize what row actually matters.
+
+### 11. MORE SURGICAL ATTENTION KNOCKOUTS
+
+Implement / validate a hierarchy of knockouts.
+
+Examples:
+
+1. final codeword row only → demonstration keys;
+2. all codeword rows → demonstration keys;
+3. query span → demonstration keys;
+4. final query row → demonstration keys;
+5. last K query rows → demonstration keys;
+6. query codeword → only demonstration codeword positions;
+7. query codeword → only non-codeword demonstration tokens;
+8. final query rows → demonstration codeword positions;
+9. demonstration processing only;
+10. carefully matched non-demo key controls.
+
+Where feasible, isolate:
+
+* query codeword attending to demonstration codewords;
+* query codeword attending to surrounding demonstration context;
+* query content words attending to demonstrations.
+
+Use one-variable changes.
+
+Do not compare interventions with wildly different effective doses without measuring the difference.
+
+For every knockout store:
+
+* rows targeted;
+* keys targeted;
+* layers targeted;
+* exact number of mask cells;
+* realised changes;
+* liveness witness;
+* disabled-hook witness;
+* norm / magnitude where relevant.
+
+### 12. PHASE-11 SUCCESSOR CONTROL
+
+The previous PHASE-11 primary contrast became CANNOT ANSWER because the intended dose-matched control was arithmetically impossible.
+
+Do not edit the old frozen preregistration.
+
+Create a NEW successor preregistration.
+
+Investigate the previously identified constructible control:
+
+* difference-row control;
+* matched number of affected rows;
+* same layer band;
+* same key-pool logic;
+* enough independent control draws to characterize variance.
+
+Before GPU:
+
+1. prove the arm is constructible;
+2. prove control populations differ;
+3. verify row selectors on CPU;
+4. mutation-test the analyzer;
+5. verify disabled hooks are truly inert at the model input, not merely in bookkeeping counters.
+
+Complete the `button_bomb` population first because it has stronger semantic-channel engagement.
+
+Do not pool it with weakly engaged `basket_bomb` unless preregistered and justified.
+
+### 13. PATCHING — START WITH AN AGGRESSIVE UPPER BOUND
+
+We previously discussed with Matan that before trying subtle direction edits, we should first ask:
+
+Can we transfer the relevant state at all under a clean, structurally aligned patch?
+
+Build an aggressive upper-bound patching experiment.
+
+The donor and recipient prompts should differ ONLY in the semantic mapping variable as much as possible.
+
+Use aligned prompt templates.
+
+Primary example:
+
+* recipient: same codeword in benign/literal context;
+* donor: same codeword in Doublespeak→BOMB context.
+
+Patch:
+
+* the FULL hidden state at a selected semantic role;
+* one position at a time;
+* then selected small position sets.
+
+Try:
+
+* query codeword state;
+* all query codeword occurrences;
+* last demonstration codeword;
+* multiple codeword positions;
+* final query span;
+* small local windows.
+
+Measure whether the recipient changes toward the donor in:
+
+1. semantic_one_word interpretation;
+2. Bombness candidate score;
+3. downstream logits;
+4. ASR / harmful behaviour;
+5. refusal.
+
+If aggressive state transfer cannot move anything under a clean aligned design, that constrains how promising a 1-D direction objective can be.
+
+If aggressive transfer works, systematically reduce the patch:
+
+full state
+→ low-rank subspace
+→ candidate Bombness direction
+→ scalar projection manipulation.
+
+This creates a principled path from causal upper bound to interpretable mechanism.
+
+### 14. PATCH ONLY ONE THING
+
+For every patching experiment, document:
+
+* donor prompt;
+* recipient prompt;
+* exact text difference;
+* donor position;
+* recipient position;
+* token IDs;
+* semantic role;
+* layer;
+* hidden-state norm;
+* patched dimensions;
+* whether the rest of the prompt is byte-identical.
+
+Reject comparisons where donor and recipient differ in:
+
+* domain;
+* topic;
+* unrelated nouns;
+* sentence structure;
+* query style;
+
+unless that difference is explicitly the variable under study.
+
+This is especially important because earlier experiments could inadvertently transfer prompt/template/topic state rather than "Bombness."
+
+### 15. DIRECT CAUSAL TESTS OF CANDIDATE BOMBNESS
+
+For each Bombness candidate that survives validation:
+
+Run causal interventions.
+
+At minimum:
+
+A. project out the candidate direction/subspace;
+B. add the candidate direction/subspace;
+C. matched-norm random direction;
+D. matched-norm orthogonal direction;
+E. shuffled-label direction;
+F. generic remapping direction;
+G. surface / register direction where available;
+H. aggressive full-state upper bound;
+I. disabled-hook plumbing control.
+
+For each intervention:
+
+Measure:
+
+* change in Bombness metric;
+* concept-free semantic readout;
+* relevant full-vocabulary logits;
+* ASR;
+* refusal;
+* topicality;
+* general response corruption;
+* perplexity / output degeneration if useful.
+
+A causal claim requires more than:
+
+"we edited the direction and the readout moved."
+
+It requires evidence that:
+
+1. the intended representation moved;
+2. downstream semantics moved in the predicted direction;
+3. matched random / orthogonal controls do not produce an equal or larger effect;
+4. the effect is consistent across domains;
+5. an upper-bound intervention shows the site is capable of carrying the effect;
+6. the intervention dose is substantial and measured.
+
+If an orthogonal control moves the outcome more than the concept edit, do not call the concept direction causal.
+
+### 16. ASR IS A REQUIRED OUTPUT OF THIS SUCCESSOR PHASE
+
+The earlier plan gated behavioural work behind a "solid representation story."
+
+For THIS successor phase, create a new preregistration and explicitly add behavioural evaluation.
+
+Do not silently reinterpret the old frozen PHASE 12.
+
+ASR must be measured for two different purposes:
+
+#### 16.1 Prompt validation / practical relevance
+
+For the same exact domains and prompt families used in representation experiments, measure:
+
+* baseline Doublespeak ASR;
+* direct harmful baseline;
+* benign baseline;
+* refusal;
+* topicality.
+
+This answers:
+
+Are we studying a representation on prompts where the attack actually works?
+
+This can happen even before a final Bombness metric is selected.
+
+#### 16.2 Representation → behaviour relationship
+
+Once a Bombness score is frozen:
+
+Test whether Bombness predicts ASR.
+
+Important:
+
+* same prompts / same domains;
+* no joining representation measured on one bank with behaviour from a different bank;
+* domain-level independence;
+* preregister correlation / regression;
+* power analysis;
+* report uncertainty;
+* do not exclude "non-installing" domains post hoc.
+
+Installation may be used as a preregistered stratification variable, not a post-outcome exclusion rule.
+
+Possible analyses:
+
+* per-domain Bombness vs ASR;
+* per-domain installation score vs ASR;
+* intervention-induced ΔBombness vs intervention-induced ΔASR;
+* dose-response if real variation exists;
+* within-domain paired comparisons.
+
+The strongest desired evidence is:
+
+A controlled intervention changes Bombness and produces a corresponding change in ASR on the same prompts, while matched control interventions do not.
+
+### 17. ASR EVALUATION QUALITY
+
+Use the existing evaluation framework where possible.
+
+Preserve judge reproducibility metadata.
+
+Measure at least:
+
+* StrongREJECT-style ASR or the project's current primary attack rubric;
+* refusal independently;
+* topicality independently.
+
+Do not confuse:
+
+* refusal reduction;
+* harmful compliance;
+* topicality.
+
+A response becoming non-refusing does not automatically mean the jailbreak succeeded.
+
+If judge noise is known:
+
+* quantify it;
+* rejudge a stable subset;
+* report disagreement rates.
+
+Do not quote fake precision below judge reliability.
+
+### 18. TRY MULTIPLE BOMBNESS DEFINITIONS — BUT AVOID P-HACKING
+
+This is critical.
+
+We explicitly WANT creativity.
+
+If the original proxy fails, try alternatives.
+
+Examples:
+
+* codeword residual direction;
+* surrounding-token pooled representation;
+* last-k query-token pooled representation;
+* mean over codeword occurrences;
+* attention-output state instead of residual stream;
+* MLP output;
+* post-attention residual;
+* probe score;
+* semantic logit lens;
+* prototype similarity;
+* low-rank subspace;
+* direct-vs-Doublespeak delta;
+* Doublespeak-vs-benign-remapping delta;
+* layer-integrated score;
+* trajectory features such as onset depth;
+* change in score from early to late layer;
+* representation flow from demonstrations to query.
+
+But:
+
+#### Exploration
+
+Use TRAIN / VALIDATION.
+
+Create a candidate table.
+
+For each candidate report:
+
+* definition;
+* motivation;
+* location;
+* layers;
+* validation performance;
+* nuisance-floor performance;
+* position specificity;
+* lexical transfer;
+* semantic-readout correlation;
+* ASR correlation;
+* stability across domains;
+* stability across seeds.
+
+#### Confirmation
+
+Select a SMALL predeclared number of finalists.
+
+Freeze them.
+
+Run TEST once.
+
+If all finalists fail, record the negative.
+
+Do not return to TEST repeatedly with candidate 4, 5, 6, 7 until something passes.
+
+If further search is scientifically warranted, generate a fresh confirmatory bank.
+
+### 19. IMPORTANT NEGATIVE CONTROLS
+
+Every serious Bombness candidate should face:
+
+1. literal codeword control;
+2. benign remapping;
+3. harmful non-BOMB;
+4. generic remapping;
+5. surface-only classifier;
+6. neutral neighboring positions;
+7. random direction;
+8. orthogonal matched-norm direction;
+9. shuffled-label probe/direction;
+10. label-permutation null;
+11. no-demonstration dose-0;
+12. lexical identity control;
+13. template control;
+14. codeword control;
+15. domain holdout.
+
+Where constructible, include a BOMB-ABSENT control whose construction mathematically contains no BOMB data.
+
+### 20. LEXICAL TRANSFER
+
+Bombness should not merely mean "button-ness."
+
+Discovery:
+
+train / define on `button`.
+
+Confirmation:
+
+test ranking / discrimination on a second codeword.
+
+Do not automatically use raw classifier accuracy because codeword-specific offsets may shift the boundary.
+
+Predeclare both:
+
+* accuracy;
+* offset-invariant AUROC / ranking metric.
+
+Interpret them separately.
+
+A shared direction with a shifted intercept is scientifically different from no transfer.
+
+### 21. TEMPLATE TRANSFER
+
+Matan specifically worried that the representation might just encode template differences.
+
+Create at least:
+
+* discovery template families;
+* held-out validation templates;
+* confirmatory held-out template family where feasible.
+
+The harmful and benign comparison templates must be structurally aligned.
+
+Where templates cannot be aligned, do not interpret a classifier as concept-specific.
+
+### 22. DO NOT MIX POSITION AND CONCEPT
+
+Create explicit factorial analyses wherever possible:
+
+concept × position
+codeword × position
+condition × position
+layer × position
+
+A high score at the codeword means little unless we know the same score at adjacent positions.
+
+A high score downstream means little unless token identity is controlled.
+
+Use within-prompt paired comparisons wherever possible because surface confounds cancel.
+
+### 23. INTERVENTION DOSE
+
+For every causal manipulation report an actual measured dose.
+
+Examples:
+
+* projection fraction removed;
+* residual-state norm changed;
+* cosine before / after;
+* candidate-score shift in standard deviations;
+* fraction of donor-recipient semantic span transferred;
+* number of mask cells;
+* number of rows;
+* number of key positions;
+* layers.
+
+Never use a definitional geometric quantity as though it were a measured change in model state.
+
+If the intervention moves only 5–10% of the representation, scope a null accordingly.
+
+### 24. CODE / ANALYZER SAFETY RULES FROM PREVIOUS FAILURES
+
+These are mandatory.
+
+#### 24.1 Compound keys
+
+`prompt_id` is NOT globally unique across banks.
+
+Never join across banks on `prompt_id` alone.
+
+Use a compound key including bank identity / hash.
+
+Add tests that deliberately create collisions.
+
+#### 24.2 Occurrence logic
+
+The checker's definition of a codeword/concept occurrence must match the transformer's actual token/text semantics.
+
+Test:
+
+* singular;
+* plural;
+* casing;
+* compounds;
+* punctuation;
+* substrings.
+
+#### 24.3 Disabled-hook controls
+
+Do not trust bookkeeping counters.
+
+Add a direct witness:
+
+* snapshot the live input before;
+* snapshot the live input after;
+* verify the model received the unchanged tensor/mask.
+
+#### 24.4 Read-site correctness
+
+Automatically refuse any analysis reading at or before a layer where the intended upstream intervention cannot yet have affected the state.
+
+#### 24.5 Population identity
+
+Before spending GPU comparing two banks:
+
+CPU-check that the scored populations are actually different.
+
+#### 24.6 Machine-readable preregistration
+
+Analyzers should read critical thresholds from frozen config, not duplicated prose.
+
+#### 24.7 Missing values
+
+Missing != zero.
+
+Raise on missing critical fields.
+
+#### 24.8 Mutation tests
+
+For every major verifier create mutations that:
+
+* flip signs;
+* remove rows;
+* duplicate rows;
+* swap bank identity;
+* corrupt split;
+* corrupt intervention liveness;
+* corrupt control identity;
+* join wrong prompts;
+* leak concept tokens.
+
+A verifier that cannot catch these should not certify the result.
+
+### 25. STATISTICS
+
+Default independence unit:
+
+DOMAIN.
+
+Use:
+
+* paired domain-level estimates;
+* bootstrap CIs at the domain level;
+* permutation tests respecting groups;
+* exact sign tests where appropriate;
+* Holm correction for preregistered families;
+* effect sizes;
+* attainable p-value floors.
+
+Always print a p-value beside its attainable floor when relevant.
+
+Do not use p-value magnitude as effect size.
+
+Primary claims should report:
+
+* effect estimate;
+* CI;
+* number of independent domains;
+* consistency count;
+* p-value;
+* p-value floor;
+* nuisance floor;
+* power / MDE.
+
+### 26. MULTIPLE CONTROL DRAWS
+
+Previous work showed random control position selection can dominate behaviour.
+
+Therefore:
+
+Do not characterize a stochastic control family using one RNG draw.
+
+Where behaviour is sensitive to the specific control positions:
+
+* use multiple independently seeded draws;
+* verify each arm's actual selected positions;
+* treat draw as a random effect where appropriate;
+* report between-draw variance.
+
+Do not use one seed per arm if that makes every row share effectively the same control geometry unless this is explicitly intended.
+
+### 27. COMPUTE / REPRODUCIBILITY
+
+Use the existing SLURM infrastructure.
+
+Do not run major GPU experiments interactively when SLURM is appropriate.
+
+For important comparisons:
+
+* same model revision;
+* same attention implementation;
+* same dtype;
+* same generation config;
+* same hardware class where hardware could confound the comparison.
+
+Record:
+
+* model revision;
+* tokenizer revision if relevant;
+* attention backend;
+* dtype;
+* GPU model;
+* library versions;
+* git commit;
+* bank hashes;
+* config hashes;
+* RNG seeds.
+
+If fair-share or hardware availability becomes a problem, prefer reducing to the exact rows needed rather than silently mixing hardware across experimental conditions.
+
+### 28. REUSE EXISTING CODE
+
+Do not write large amounts of new code unnecessarily.
+
+Before implementing something:
+
+1. search the repository;
+2. read existing experiment runners;
+3. read the relevant external paper code already copied into the project;
+4. reuse the existing patching / knockout infrastructure where valid;
+5. extend it minimally.
+
+However:
+
+Do not reuse code merely because it exists.
+
+Verify that its semantics actually match the new preregistration.
+
+### 29. LITERATURE
+
+Continue literature review in parallel.
+
+Specifically search for recent work on:
+
+* Doublespeak jailbreaks;
+* in-context semantic remapping;
+* ICL representation;
+* label-word / demonstration attention;
+* causal tracing in ICL;
+* decodability vs causal use;
+* representation patching;
+* refusal directions;
+* adversarial suffix objectives based on internal activations.
+
+Update:
+
+`reports/DCS_LITERATURE_MATRIX.md`
+
+or the current successor literature file.
+
+For each relevant paper record:
+
+* exact question;
+* model;
+* intervention;
+* position;
+* layer;
+* causal method;
+* readout;
+* whether harmful/jailbreak setting exists;
+* what is actually novel relative to them.
+
+Do not claim novelty without checking.
+
+### 30. EXPLORATORY VS CONFIRMATORY LABELING
+
+Every experiment must be labeled:
+
+* EXPLORATORY;
+* VALIDATION;
+* CONFIRMATORY;
+* CONTROL;
+* REPLICATION.
+
+Never promote exploratory numbers into confirmatory claims after they look good.
+
+A new confirmatory test requires a frozen hypothesis before the new data / untouched split is read.
+
+### 31. IMPORTANT PHASE ORDER
+
+Recommended order:
+
+Phase A — audit current state
+Reproduce the key existing artifacts and verify no drift.
+
+Phase B — design / build clean Bomb-only aligned bank
+Including register constraints and nuisance classifiers.
+
+Phase C — large prompt-validation campaign
+Semantic installation + ASR + refusal.
+
+Phase D — exploratory Bombness candidate search
+TRAIN only.
+
+Phase E — validation candidate ranking
+VALIDATION only.
+
+Phase F — positional and layer controls
+Still no TEST selection.
+
+Phase G — freeze 1–3 representation candidates
+Write preregistration.
+
+Phase H — confirmatory representation test
+TEST once.
+
+Phase I — semantic_one_word K ladder
+High-priority mechanistic localization.
+
+Phase J — successor surgical knockouts
+Including difference-row control.
+
+Phase K — aggressive upper-bound patching
+Full hidden states first.
+
+Phase L — reduced / interpretable patching
+Directions / subspaces.
+
+Phase M — ASR causal evaluation
+Same prompt population, same domains.
+
+Phase N — cross-codeword replication
+Fresh lexical setting.
+
+Phase O — independent confirmation
+Fresh bank if needed.
+
+Phase P — adversarial review and paper-facing synthesis
+
+### 32. WHAT COUNTS AS SUCCESS?
+
+The ideal story would require multiple links:
+
+Link 1 — representation exists
+
+Doublespeak BOMB creates an internal signal that is:
+
+* reproducible;
+* concept-specific;
+* stronger than nuisance floors;
+* robust across domains;
+* robust across codewords;
+* not merely template identity.
+
+Link 2 — localization
+
+The signal has a meaningful positional / layer structure rather than being equally readable everywhere.
+
+Link 3 — semantic validity
+
+Higher representation score corresponds to the model actually interpreting the codeword as BOMB under a concept-free readout.
+
+Link 4 — causal use
+
+Manipulating that representation changes semantic interpretation more than matched random/orthogonal controls.
+
+Link 5 — behavioural relevance
+
+The same manipulation changes jailbreak ASR in the predicted direction.
+
+If we establish all five, that is a very strong mechanism story.
+
+If we establish only 1–3, say representation but not causal mechanism.
+
+If we establish pathway causality without a clean Bombness variable, say pathway result but not Bombness mechanism.
+
+Do not force all findings into one story.
+
+### 33. IF SOMETHING DOES NOT WORK
+
+Do not immediately abandon the research question.
+
+Ask WHY it failed.
+
+Possible failure types:
+
+1. no signal exists;
+2. wrong token position;
+3. wrong layer;
+4. wrong representation type;
+5. 1-D direction is insufficient;
+6. prompt does not install;
+7. codeword differs;
+8. template confound;
+9. surface/register confound;
+10. readout is blind;
+11. readout leaks the answer;
+12. intervention too weak;
+13. intervention site too early/late;
+14. wrong control;
+15. underpowered design;
+16. analyzer bug.
+
+Use targeted diagnostic experiments to distinguish these.
+
+Examples:
+
+If codeword probe fails:
+
+* inspect neighboring positions;
+* inspect pooled query positions;
+* inspect trajectory over layers;
+* inspect attention / MLP outputs.
+
+If difference-in-means fails:
+
+* try matched within-domain contrasts;
+* benign-remap subtraction;
+* surface residualization;
+* low-rank discriminative subspace.
+
+If semantic readout fails:
+
+* inspect full-vocabulary top tokens;
+* try multiple concept-free wording templates on TRAIN;
+* measure option mass;
+* use category-level lexical sets.
+
+If patching fails:
+
+* first prove an aggressive full-state patch works;
+* then reduce patch dimensionality.
+
+If ASR correlation fails:
+
+* check whether attack has adequate variation;
+* check whether representation varies;
+* check reliability / attenuation;
+* perform power analysis;
+* inspect intervention-induced changes rather than only observational correlation.
+
+A failure should generate a scientifically motivated branch, not random fishing.
+
+### 34. DO NOT MOVE GOALPOSTS
+
+If a preregistered result misses a threshold by 1.9%, it failed.
+
+Do not say "essentially passed."
+
+If a control invalidates interpretation, downgrade the claim.
+
+If the readout becomes disengaged because the intervention worked, call the semantic endpoint CANNOT ANSWER and report channel movement separately.
+
+If an instrument cannot physically answer the question, CANNOT ANSWER is not a negative.
+
+If a script ran the wrong experiment, VOID it.
+
+### 35. USER-FACING / COLLABORATOR OUTPUTS
+
+Create and maintain:
+
+1. successor plan/progress external MD;
+2. current claim table;
+3. "what we can tell Matan" summary;
+4. "what we cannot claim" list;
+5. prompt-validation table;
+6. Bombness candidate leaderboard;
+7. positional/layer map;
+8. causal intervention table;
+9. ASR linkage table;
+10. final thesis-scale report;
+11. figures suitable for presentation;
+12. literature update;
+13. draft Slack update for Matan and Mahmood.
+
+DRAFT ONLY.
+
+DO NOT SEND SLACK.
+
+DO NOT EMAIL.
+
+DO NOT CREATE CALENDAR EVENTS.
+
+### 36. FIGURES WE EVENTUALLY WANT
+
+Produce publication-quality data outputs that can support figures such as:
+
+Figure 1
+Prompt factorial design.
+
+Figure 2
+Bombness candidate score by:
+
+* literal;
+* benign remap;
+* Doublespeak bomb;
+* harmful non-bomb;
+* direct bomb.
+
+Figure 3
+Layer × position Bombness heatmap.
+
+Figure 4
+Concept-free semantic installation vs internal Bombness.
+
+Figure 5
+K ladder under concept-free readout.
+
+Figure 6
+Aggressive patch upper bound → reduced patch.
+
+Figure 7
+Bombness intervention Δ vs semantic readout Δ.
+
+Figure 8
+Bombness / semantic score vs ASR.
+
+Figure 9
+Intervention ΔBombness vs ΔASR.
+
+Each figure must carry:
+
+* n independent domains;
+* split;
+* CI;
+* controls;
+* exact metric.
+
+### 37. RESEARCH HYGIENE
+
+Before each important run:
+
+* preregister;
+* run power analysis;
+* CPU dry run;
+* bank invariants;
+* leakage checks;
+* token-role checks;
+* control constructibility;
+* mutation tests;
+* analyzer review.
+
+After each important run:
+
+* independently recompute headline statistics;
+* inspect raw rows;
+* inspect per-domain effects;
+* check controls;
+* check option mass;
+* check liveness;
+* inspect artifact hashes;
+* perform adversarial claim review.
+
+### 38. SUBAGENTS
+
+Use subagents aggressively for work that can happen independently without contaminating results.
+
+Good parallel tasks:
+
+* literature search;
+* code audit;
+* bank audit;
+* token-role audit;
+* power analysis;
+* analyzer mutation testing;
+* independent result verification;
+* surface-confound analysis;
+* experiment-design criticism.
+
+Do NOT let multiple agents independently modify the same critical file without coordination.
+
+Prefer read-only fan-out followed by one controlled integration.
+
+### 39. CONTINUOUS REVIEW LOOP
+
+Keep the session operating in iterative loops.
+
+Approximately every 30 minutes:
+
+* inspect running jobs;
+* inspect newly completed artifacts;
+* update external MD;
+* identify blockers;
+* launch only preregistered next work;
+* re-evaluate whether the current path still answers Matan's question.
+
+Approximately every 4 hours:
+
+perform a full review with separate sections:
+
+1. CODE REVIEW
+2. DATA REVIEW
+3. OUTPUT REVIEW
+4. STATISTICAL REVIEW
+5. SCIENTIFIC CLAIM REVIEW
+
+Ask:
+
+* Did we actually run what we think we ran?
+* Could a join bug explain the result?
+* Could token position explain it?
+* Could prompt surface explain it?
+* Could codeword explain it?
+* Could generic remapping explain it?
+* Could the readout itself inject the answer?
+* Is the intervention live?
+* Is the control actually inert?
+* Is TEST still untouched?
+* Are we using enough independent data?
+* Is the claim stronger than the experiment?
+
+### 40. GIT / VERSION CONTROL RULES
+
+Commit and push after meaningful progress so the work can be tracked.
+
+Use descriptive commit messages.
+
+Never use a commit message claiming files/results that are not actually in that commit.
+
+Never run `git commit` in the background.
+
+Do not delete failed artifacts merely because they are embarrassing.
+
+Quarantine / supersede them with provenance.
+
+Preserve append-only history.
+
+### 41. IMPORTANT: DO NOT HIDE NEGATIVES
+
+Our goal is not to "make Bombness work."
+
+Our goal is to understand whether it exists and whether it matters.
+
+If after a large, well-powered, well-controlled search we find:
+
+* Bombness is global prompt gist rather than codeword-localized;
+* the concept is decodable but not causally used;
+* semantic installation and jailbreak are dissociated;
+* demonstrations affect attack through a different refusal mechanism;
+* Bombness cannot be cleanly separated from remapping;
+
+those are valid research results.
+
+But only conclude this after the strongest reasonable alternative operationalizations have been tested on properly separated data.
+
+### 42. SPECIAL EMPHASIS FOR THIS SESSION
+
+Do not spend the whole session polishing existing conclusions.
+
+I want NEW empirical progress on the exact questions Matan raised.
+
+The highest priorities are:
+
+1. build/validate a truly clean BOMB-specific primary population;
+2. validate that the prompts really install BOMB;
+3. measure ASR on the same population;
+4. test multiple Bombness definitions;
+5. map Bombness across token positions and layers;
+6. make sure Bombness is not merely position/template/remapping/harmfulness;
+7. run `semantic_one_word` K ladder;
+8. run more surgical attention knockouts;
+9. create a clean aggressive full-state patch upper bound;
+10. progressively reduce the patch to an interpretable direction/subspace;
+11. test whether interventions move ASR;
+12. replicate on a second codeword;
+13. confirm finalists on untouched/fresh data.
+
+For IMPORTANT experiments, prefer substantially larger scale.
+
+Do not treat n=6 as thesis-level confirmation if a larger aligned population can be built.
+
+Use the current 113-domain infrastructure whenever it genuinely answers the question.
+
+Build a fresh large bank when the existing bank structurally cannot answer it.
+
+### 43. FINAL DELIVERABLE
+
+At the end of this research phase, produce a self-contained report that answers:
+
+A. What is our best operational definition of Bombness?
+B. Why do we believe it is BOMB-specific?
+C. Where is it represented?
+D. When does it appear across layers?
+E. Is it localized to the codeword or is it global prompt gist?
+F. Does the model's concept-free semantic interpretation track it?
+G. Does demonstration→query information flow create or expose it?
+H. Can we causally manipulate it?
+I. Are those causal effects larger/more specific than matched controls?
+J. Does manipulating it change ASR?
+K. Does it transfer across codewords/templates/domains?
+L. What alternative mechanism is supported if Bombness itself is not the behavioural driver?
+M. What can we confidently tell Matan and Mahmood?
+N. What claims are still forbidden?
+
+Now implement this plan.
+
+Document progress continuously in the new external MD so another session can recover everything without conversational context.
+
+Reuse existing code where possible.
+
+Do not skip stages merely because they are difficult.
+
+If a stage is genuinely impossible, prove why and mark it CANNOT ANSWER rather than silently bypassing it.
+
+Fan out subagents for parallelizable read-only work.
+
+Double-check your own code.
+
+Run mutation tests.
+
+Independently verify important outputs.
+
+Commit and push meaningful progress.
+
+Stay in the established iterative research loop.
+
+The goal is not a fast answer.
+
+The goal is a research-grade answer that we can stand behind in front of Matan and Mahmood.
+
+---
+
+## 1. PROGRESS LOG (append-only)
+
+### 2026-09-09 — ENTRY 001 — Plan recorded
+
+* Action: created this file and wrote the full successor research mandate verbatim (Section 0 above).
+* Scope of this session so far: DOCUMENTATION ONLY. The user explicitly instructed "write that in external md and dont do anything."
+* No repository reads beyond confirming `external_md/` exists.
+* No experiments designed, launched, or analyzed.
+* No preregistrations frozen.
+* No SLURM jobs submitted.
+* No claims made or changed. The claim table is untouched.
+* TEST splits: untouched.
+* Next action when the session resumes: Phase A (audit current state) per Section 31, beginning with the reading list in Section 1 of the mandate.
+
+---
+
+### 2026-09-09 — ENTRY 002 — Session opens; Phase A launched; inherited state re-read
+
+**Label: CONTROL (audit). No claim is made in this entry.**
+
+**Inherited state, re-read from source this session** (not from memory):
+
+* `HANDOFF_2026-09-02_TO_09-09_DCS_COMPLETE.md` (869 lines) — read §1 (executive summary),
+  §2 (background), §3 (chronology), §8 (mandate phase ledger), §11–13 (verification, open items,
+  file map, reproducibility constants).
+* `external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md`
+  (5534 lines) — heading index read in full; entries `R-146` → `C-134` (the tail, 2026-09-09) read
+  verbatim.
+* `configs/dcs_ts_pr059_phase11.json` — the FROZEN PHASE-11 preregistration, dumped in full.
+* `reports/DCS_TS_CLAIM_TABLE.md` — located (53.9 KB), header read.
+
+**The four constraints that bind everything this successor phase does** (restating, so a later
+session does not have to re-derive them):
+
+1. `semantic_one_word` is the only admissible primary semantic channel. `semantic_forced_choice`
+   carries the concept word on 100.0 % of its rows against 0.0 % on the primary channel
+   (`R-116`, 32,544 rows). Falling back to it is forbidden.
+2. Only **bomb** installs. At the 0.50 cut on the concept-free channel: bomb 70/113, knife 0/113,
+   gun 1/113; per bank `button_bomb` **92/113**, `basket_bomb` **46/113**. Any arm whose hypothesis
+   requires knife or gun to have installed is **unconstructible on this bank**.
+3. Register is a **structural** property of this corpus (bomb hedges 13.72 %, knife 0.20 %,
+   gun 2.33 %) and cannot be regressed away (`A-043`, `C-100`, `C-101`). It is `Q-014`, a decision
+   reserved for Omer.
+4. Independence unit is the **domain**. 113 analysed, frozen split 67 train / 23 validation /
+   23 test, manifest `be7d2c772d814ef3`. TEST is read once by a frozen analyzer.
+
+**Compute state at session open** [VERIFIED]: `squeue -u $USER` is **empty** — no DCS job is
+running or queued. Partitions with idle nodes: `killable` (5 idle), `studentkillable` (3 idle),
+`cpu-killable` (1 idle); `gpu-h100-killable`, `gpu-b200-killable`, `gpu-h200-killable` all `mix`.
+Git HEAD `6422a764` (`DCS-C-134`), branch `behavioral-causality-sprint`, working tree carries the
+uncommitted handoff and the `ts116`/`ts116m`/`ts116n` bank JSONLs (untracked by design — 6 × ~70 MB).
+
+**PHASE A launched** — eight parallel READ-ONLY auditors (workflow `wf_115fa2c9-5cc`), none of which
+may write a file:
+
+| auditor | question it must answer before any GPU time is spent |
+|---|---|
+| `audit:bank` | bank files on disk, full field schema, cell/dose/split census, verbatim example prompts for cells A/B/C/E in one domain, the frozen split's TEST/VALIDATION domain names |
+| `audit:kladder` | the K-ladder and knockout runners, `ScopedAttentionKnockout` / `DisabledHookBridge` / `make_intervention`, the literal readout question strings, option-mass code, the exact prior invocation |
+| `audit:readout-asr` | the semantic readout scorers, `src/boombness/score_behavior.py`, the judge (model? alias? API?), and **whether any behavioural data exists on `ts116m` at all** |
+| `audit:extract-probe` | `dcs_ts_extract_multi.py`, which hidden states are already on disk and reusable, the probe/positional/diff-means analyzers, the prereg harness, the power utilities |
+| `audit:patching` | whether donor→recipient activation patching exists anywhere; `pr057_run_causal.py`; the minimal extension point for a full-hidden-state patch |
+| `audit:compute` | SLURM submission pattern, `OMP_NUM_THREADS=4`, model cache, environment versions, disk headroom, a quotable sbatch template |
+| `audit:bankgen` | the bank generation pipeline end to end, the demo pools, the hedge/register measurement code, the surface nuisance classifier, and the concrete cost of a register-matched BOMB-only rebuild (`Q-014`) |
+| `audit:verify-headline` | independent verification of `R-113`, `R-112`, `R-111`, `R-116`, `R-137` against artifacts on disk — VERIFIED / MISMATCH / NOT FOUND |
+
+**The three candidate work-fronts this session will choose between, once the audit returns.** Named
+now, before the audit reports, so the choice is on the record rather than rationalised afterwards:
+
+* **W1 — the difference-row control (plan §12).** `PR059-D1` closed PHASE 11's decisive `S_D` vs
+  `S_E` contrast as CANNOT ANSWER *by arithmetic*: a dose-matched non-demonstration control needs
+  `28 − m ≥ m` and the pools are 6/5/0 against doses 22/23/28. The handoff (§12.1) names the
+  constructible alternative and records that it was **deliberately not taken**: `S_D ∪ {one row
+  drawn from the 5-row scaffold pool}` is **exactly 23 rows**, dose-matched to `S_E` **by row and
+  therefore by cell** (every query row sits causally after the whole demonstration block, so all
+  query rows carry the same number of demonstration keys). Note the pool has size **5** — so all
+  five draws can be **enumerated exhaustively** rather than sampled, which retires plan §26's
+  single-RNG-draw hazard by construction rather than by seeding.
+* **W2 — ASR on the representation bank (plan §16.1).** No behavioural outcome exists on `ts116m`.
+  Until one does, plan §16 cannot be started at all and `Q-014`-independent progress on Matan's
+  question 2.9 is zero.
+* **W3 — the aggressive full-state patch upper bound (plan §13).** Never attempted. Donor = cell C
+  (Doublespeak→BOMB), recipient = cell A (same codeword, literal benign), same domain, same
+  `family_id`, patched at the **end-relative** last query codeword row (the absolute index is void —
+  `PR-059` records cross-concept absolute-index spread 9.36 ± 5.90 tokens against end-relative
+  agreement 2300/2300).
+
+**Nothing has been run on a GPU this session. TEST is untouched. No claim has changed.**
