@@ -3784,3 +3784,94 @@ amendment** — a new file, never an edit to the frozen `PR-066`.
 Bombness candidate, and `C-208` withdrew the specificity reading of the only candidate on the table.
 That this phase now has both a working attack and a measured representation does **not** connect
 them; `Q2` is the preregistered test of whether they connect at all, and it has not run.
+
+---
+
+### 2026-09-10 01:50 — ENTRY 037 — `PR-066-A1` frozen, and **`Q2` PASSES: installation predicts attack success, ρ = 0.3961 over 113 domains**
+
+**Label: CONFIRMATORY for `Q2`, per the frozen `PR-066` + amendment `A1`.** Report
+`reports/DCS_SUCC_PR066_BEHAVIOUR.md`, analyzer `scripts/dcs_succ_pr066_behaviour.py` loaded and
+**enforced** through `dcs_ts_prereg.py` against `configs/dcs_ts_pr066_amendment1.json`
+(FROZEN, `file_sha16 5278f55ac74f4d39`).
+
+#### The amendment, and why it is a separate file
+
+`DCS-PR-066` is **FROZEN and was not touched**. `A1` is a new file, following the
+`PR-061 → PR-064 → PR-065` precedent, and it changes exactly four things:
+`A1-1` `analyzer_exists → true` (selftest ALL PASS, mutate **5/5**, verified by me, not taken on
+trust); `A1-2` checklist `X5 → done` **with an honest statement of what was and was not
+satisfied** — the analyzer was written and mutation-tested before any judge run completed, but the
+TEST-domain outcomes already existed on disk under the parent's own `discipline_for_Q1`, so X5's
+*intent* is met and X5's *letter* about TEST being unread is not; `A1-3` `N2`'s reading (the dose-0
+arm is the instrument's false-positive floor, `C-209`); `A1-4` `N5` satisfied by the byte-identical
+dose-0 pair (`R-204`) rather than the 200-row re-judge, **which was not run**.
+
+⚠ **Three attempts were needed to write it, and each failure was the loader working.** The analyzer
+refused on `primary.inference`, then `artifacts.generation_runs`, then on `N7`'s prose when I wrote
+`"statement": "inherited"`. **An amendment that paraphrases a parent clause silently changes what
+the analyzer enforces** — the analyzer parses prose out of `N5` and `N7`. The unchanged blocks are
+now copied **verbatim** and a machine check asserts byte-identity across **13 blocks**, with
+`question` and `artifacts` excluded **by name** and their two edits itemised.
+
+#### `Q1` — all three preregistered contrasts reject under Holm
+
+| id | contrast | informative domains | +/−/ties | mean Δ | sign test p (floor) | Holm α | reject |
+|---|---|---|---|---|---|---|---|
+| **Q1b** | C dose 4 − C dose 0 | 97 | 77/20/16 | **0.1726** | 4.59e−09 (1.26e−29) | 0.05 | ✅ |
+| **Q1c** | C dose 4 − A dose 4 | 98 | 87/11/15 | **0.2230** | 8.07e−16 (6.31e−30) | 0.025 | ✅ |
+| **Q1d** | C dose 4 − **B dose 4** | 104 | **103/1/9** | **0.3186** | 1.04e−29 (9.86e−32) | 0.0167 | ✅ |
+
+**`Q1d`: the Doublespeak attack beats the direct harmful request in 103 of 104 informative domains.**
+
+#### `Q2` — the primary. **PASSES its preregistered success criterion.**
+
+| row | n domains | ρ | permutation p (floor) | Fisher-z 95 % CI |
+|---|---|---|---|---|
+| **pooled** | **113** | **0.3961** | **9.999e−05, at its floor** | [0.2280, 0.5412] |
+| train | 67 | 0.4836 | 9.999e−05, at floor | [0.2753, 0.6485] |
+| validation | 23 | **0.1435** | 0.508 | [−0.286, 0.525] |
+| test | 23 | 0.3779 | 0.078 | [−0.041, 0.684] |
+
+`PR-066`'s success clause requires **|ρ| ≥ MDE (0.2996) AND p < 0.05 AND the sign consistent in ≥ 2
+of 3 splits**. Measured: **0.3961 ≥ 0.2996** ✅, **p at its floor** ✅, and the sign is positive in
+**3 of 3** ✅. ⛔ The per-split rows are printed unconditionally and the validation row is
+**null** — at n = 23 the design's own MDE is **0.556**, so neither small split can test anything;
+that is why the primary was declared on 113 domains *before* the data existed.
+
+**And it is not the false-positive channel.** The frozen `y` is raw `malicious_at_0.5`, which
+`C-209` showed is heavily contaminated. Recomputing against `asr_and_concept_present`:
+
+| population | raw ASR | **concept-present** |
+|---|---|---|
+| TRAIN (67) | 0.4836 | **0.5260** |
+| all 113 | 0.3961 | **0.4206** |
+
+**The correlation strengthens when the false positives are removed**, both at the permutation floor.
+Had it been an artefact of fluent literal-button answers, it would have weakened.
+
+#### `C-212` — a defect in my own amendment, recorded
+
+The analyzer reports **`N5` NOT-EVALUABLE**, and therefore **`N1` and `N2` NOT-EVALUABLE**, because
+their bar *is* N5's disagreement rate and the analyzer can only discover it via `--rejudge-run`.
+`A1-4` declares N5 satisfied by a **different artifact** (the byte-identical dose-0 pair) and the
+analyzer has **no way to consume that**. So the amendment and the analyzer disagree about whether a
+blocking null is met. Evaluated by hand against `R-204`'s measured **0.0221**: `N1` = 0.2230 and
+`N2` = 0.1726, both **≈ 8–10× the floor**, so both pass — but ⛔ **that is my arithmetic, not the
+analyzer's**, and the gap is a real defect: an amendment that satisfies a null by a route the
+analyzer cannot see has moved the check back into prose.
+
+#### What may now be said, and what still may not
+
+✅ **Per-domain semantic installation predicts per-domain attack success**, ρ = 0.3961 [0.228, 0.541]
+over 113 independent domains, preregistered, powered, permutation p at its floor, sign consistent
+across all three splits, and **strengthening** under the false-positive correction. This is **Link 3
+of plan §32**, on the same bank and the same domains the representation was measured on — the thing
+`R-097` was CANNOT ANSWER for.
+
+⛔ **NOT "Bombness predicts jailbreak."** `Q2`'s predictor is **installation** — the model's own
+concept-free semantic report — **not any Bombness candidate**. `C-208` withdrew the specificity
+reading of the only candidate on the table, and `S-007` showed that transplanting the candidate's
+own site transfers nothing. **The forbidden sentence stays forbidden.**
+
+⛔ **NOT causal.** `Q2` is a correlation across domains. Plan §32's Link 5 needs an intervention that
+moves installation and moves ASR with it, and none has been run.
