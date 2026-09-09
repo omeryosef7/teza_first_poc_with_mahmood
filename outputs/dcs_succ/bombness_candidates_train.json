@@ -1,0 +1,5174 @@
+{
+ "_label": "EXPLORATORY -- TRAIN ONLY. No number here may be quoted as confirmatory.",
+ "split": "train",
+ "n_domains_requested": 67,
+ "seed": 20260909,
+ "split_manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+ "query_kind": "semantic_one_word",
+ "n_examples": 4,
+ "position": "codeword_last",
+ "by_codeword": {
+  "button": {
+   "codeword": "button",
+   "layers": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "n_train_domains": 67,
+   "domains": [
+    "apiary_unit",
+    "bar_cellar",
+    "battery_assembly",
+    "blood_bank",
+    "bus_garage",
+    "cable_works",
+    "campsite_park",
+    "care_home_store",
+    "cargo_airfield",
+    "cheese_dairy",
+    "city_bridge",
+    "construction_site",
+    "council_depot",
+    "courier_hub",
+    "dairy_plant",
+    "dental_clinic",
+    "department_store",
+    "district_heating",
+    "farm_storage",
+    "ferry_terminal",
+    "film_studio",
+    "fire_station",
+    "furniture_workshop",
+    "garden_centre",
+    "garden_nursery",
+    "gas_holder",
+    "glassworks",
+    "harbour_dock",
+    "hospital_ward_store",
+    "hotel_service",
+    "juice_bottling",
+    "language_centre",
+    "lorry_park",
+    "market_hall",
+    "mountain_rescue",
+    "museum_archive",
+    "news_report",
+    "orchard_store",
+    "paint_store",
+    "paper_mill",
+    "pathology_lab",
+    "pipeline_station",
+    "plastics_moulding",
+    "plumbing_depot",
+    "postal_depot",
+    "power_substation",
+    "printing_works",
+    "quarry_site",
+    "radiology_suite",
+    "rail_depot",
+    "records_vault",
+    "recycling_centre",
+    "roofing_yard",
+    "scout_centre",
+    "sewage_plant",
+    "shoe_factory",
+    "solar_array",
+    "sports_academy",
+    "sports_stadium",
+    "surveying_office",
+    "telecom_exchange",
+    "textile_mill",
+    "theatre_backstage",
+    "tunnel_works",
+    "warehouse_logistics",
+    "weighbridge_office",
+    "winery_cellar"
+   ],
+   "banks": {
+    "bomb": {
+     "run": "ts116m_full_button_bomb_20260907_040927_3131687",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " button"
+      ],
+      "B": [
+       " bomb"
+      ],
+      "C": [
+       " button"
+      ],
+      "E": [
+       " bomb"
+      ]
+     },
+     "n_rows": 4520
+    },
+    "knife": {
+     "run": "ts116m_full_button_knife_20260907_043559_3133560",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " button"
+      ],
+      "B": [
+       " knife"
+      ],
+      "C": [
+       " button"
+      ],
+      "E": [
+       " knife"
+      ]
+     },
+     "n_rows": 4520
+    },
+    "gun": {
+     "run": "ts116m_full_button_gun_20260907_044459_4158652",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " button"
+      ],
+      "B": [
+       " gun"
+      ],
+      "C": [
+       " button"
+      ],
+      "E": [
+       " gun"
+      ]
+     },
+     "n_rows": 4520
+    }
+   },
+   "cellA_identity_across_concept_banks": {
+    "L6": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L7": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L8": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L9": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L10": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L11": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L12": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L13": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L14": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    }
+   },
+   "cells": {
+    "A": "benign_literal",
+    "B": "direct_harmful",
+    "C": "natural_doublespeak",
+    "E": "concept_in_benign_ctx"
+   },
+   "metrics": {
+    "B1|L6|shift_bomb|ref_bomb": {
+     "mean_proj": 0.21824607542201654,
+     "sd_proj": 0.07329760867085712,
+     "mean_gap_units": 0.06559017027949242,
+     "sd_gap_units": 0.022028357781484896,
+     "ci95_gap_units": [
+      0.06028691113755295,
+      0.07079030023370397
+     ],
+     "mean_cos": 0.15652233265478435,
+     "sd_cos": 0.05081384888480767,
+     "d_paired": 2.977533365406919,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.327420473098755,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_bomb|ref_knife": {
+     "mean_proj": 0.10891198682070558,
+     "sd_proj": 0.07030477050877836,
+     "mean_gap_units": 0.03643183073685378,
+     "sd_gap_units": 0.02351744352424411,
+     "ci95_gap_units": [
+      0.03079417559847589,
+      0.0420397932376734
+     ],
+     "mean_cos": 0.07974156466237671,
+     "sd_cos": 0.05251251530167736,
+     "d_paired": 1.5491407771127945,
+     "n_domains": 67,
+     "n_positive": 62,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.989473342895508,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_bomb|ref_gun": {
+     "mean_proj": 0.1435634498831941,
+     "sd_proj": 0.07020991307223069,
+     "mean_gap_units": 0.04747653603244201,
+     "sd_gap_units": 0.023218468701611972,
+     "ci95_gap_units": [
+      0.04187512101928452,
+      0.05293022263854982
+     ],
+     "mean_cos": 0.10698586628812741,
+     "sd_cos": 0.05649700431296853,
+     "d_paired": 2.0447746422289206,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0238821506500244,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_bomb": {
+     "mean_proj": 0.0825595181616051,
+     "sd_proj": 0.07261290964168962,
+     "mean_gap_units": 0.02481186818109561,
+     "sd_gap_units": 0.02182258305757997,
+     "ci95_gap_units": [
+      0.019421074818947913,
+      0.030079041375974835
+     ],
+     "mean_cos": 0.05370825447015062,
+     "sd_cos": 0.044887820254656464,
+     "d_paired": 1.1369812691571966,
+     "n_domains": 67,
+     "n_positive": 59,
+     "sign_p": 1.016748503966658e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.327420473098755,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_knife": {
+     "mean_proj": 0.11547508420172467,
+     "sd_proj": 0.06871476597366151,
+     "mean_gap_units": 0.038627233280454414,
+     "sd_gap_units": 0.022985575749307936,
+     "ci95_gap_units": [
+      0.03311372253167379,
+      0.044173801054927686
+     ],
+     "mean_cos": 0.07465324367981059,
+     "sd_cos": 0.04399700244458619,
+     "d_paired": 1.6804988355193768,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.989473342895508,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_gun": {
+     "mean_proj": 0.07810003491841368,
+     "sd_proj": 0.06269237113607608,
+     "mean_gap_units": 0.0258277376655122,
+     "sd_gap_units": 0.020732412181671662,
+     "ci95_gap_units": [
+      0.020819640886631838,
+      0.030661520160990958
+     ],
+     "mean_cos": 0.056937113041080206,
+     "sd_cos": 0.049345875017762685,
+     "d_paired": 1.2457661674479452,
+     "n_domains": 67,
+     "n_positive": 59,
+     "sign_p": 1.016748503966658e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0238821506500244,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_bomb": {
+     "mean_proj": 0.12512983795978241,
+     "sd_proj": 0.07088487356796697,
+     "mean_gap_units": 0.037605658488736676,
+     "sd_gap_units": 0.02130325101412669,
+     "ci95_gap_units": [
+      0.03266299867123268,
+      0.04264853587714319
+     ],
+     "mean_cos": 0.0909723661590833,
+     "sd_cos": 0.04950963503807224,
+     "d_paired": 1.7652544423289886,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.327420473098755,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_knife": {
+     "mean_proj": 0.12635423837285212,
+     "sd_proj": 0.06862331119019875,
+     "mean_gap_units": 0.04226638737994882,
+     "sd_gap_units": 0.02295498347669908,
+     "ci95_gap_units": [
+      0.03683121418151372,
+      0.047610699793851616
+     ],
+     "mean_cos": 0.09146479642163005,
+     "sd_cos": 0.04767624893724179,
+     "d_paired": 1.8412728296168093,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.989473342895508,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_gun": {
+     "mean_proj": 0.10445689523954,
+     "sd_proj": 0.06829653534243929,
+     "mean_gap_units": 0.03454397031216497,
+     "sd_gap_units": 0.022585713311531676,
+     "ci95_gap_units": [
+      0.029128776728475646,
+      0.03986431195816118
+     ],
+     "mean_cos": 0.0820021834725134,
+     "sd_cos": 0.05663455770048851,
+     "d_paired": 1.529461117109271,
+     "n_domains": 67,
+     "n_positive": 63,
+     "sign_p": 1.1067861037383775e-14,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0238821506500244,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L6|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.06393361441886664,
+     "sd_resid_units": 0.023456485998290696,
+     "ci95_resid_units": [
+      0.058270129105646995,
+      0.06933164420997928
+     ],
+     "d_paired": 2.725626269148992,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.5648274421691895,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7708155500349557,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7708 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L7|shift_bomb|ref_bomb": {
+     "mean_proj": 0.23635069920278307,
+     "sd_proj": 0.0734437032088098,
+     "mean_gap_units": 0.06782031412206492,
+     "sd_gap_units": 0.02107450935711273,
+     "ci95_gap_units": [
+      0.06277594740714502,
+      0.07273037264243394
+     ],
+     "mean_cos": 0.14775480685160275,
+     "sd_cos": 0.04466368469805633,
+     "d_paired": 3.2181206676194956,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.484954357147217,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_bomb|ref_knife": {
+     "mean_proj": 0.12038386556834205,
+     "sd_proj": 0.0885732708669025,
+     "mean_gap_units": 0.03973995183672982,
+     "sd_gap_units": 0.029238947442455077,
+     "ci95_gap_units": [
+      0.03271385680720917,
+      0.04646570813038096
+     ],
+     "mean_cos": 0.07690805249201252,
+     "sd_cos": 0.05806169097192119,
+     "d_paired": 1.3591444054182074,
+     "n_domains": 67,
+     "n_positive": 60,
+     "sign_p": 1.3280368233066497e-11,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0292906761169434,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_bomb|ref_gun": {
+     "mean_proj": 0.12810923602543214,
+     "sd_proj": 0.07946791348510045,
+     "mean_gap_units": 0.04146986316676884,
+     "sd_gap_units": 0.025724324027047628,
+     "ci95_gap_units": [
+      0.03514144105987111,
+      0.047403064630514524
+     ],
+     "mean_cos": 0.08503336635917079,
+     "sd_cos": 0.05577790471928365,
+     "d_paired": 1.6120875760686926,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0892128944396973,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_bomb": {
+     "mean_proj": 0.051998559058880185,
+     "sd_proj": 0.06979156026927981,
+     "mean_gap_units": 0.014920872335741636,
+     "sd_gap_units": 0.020026534960535664,
+     "ci95_gap_units": [
+      0.01006704755324759,
+      0.019557688697371768
+     ],
+     "mean_cos": 0.030883681902444875,
+     "sd_cos": 0.037574696235370963,
+     "d_paired": 0.7450551163815778,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.484954357147217,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_knife": {
+     "mean_proj": 0.14541893125052996,
+     "sd_proj": 0.08776208218586301,
+     "mean_gap_units": 0.048004284434312955,
+     "sd_gap_units": 0.028971165718028644,
+     "ci95_gap_units": [
+      0.04107726193269628,
+      0.0549811423026203
+     ],
+     "mean_cos": 0.0826947710582752,
+     "sd_cos": 0.049324056976357826,
+     "d_paired": 1.6569676519588605,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0292906761169434,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_gun": {
+     "mean_proj": 0.02709771085308114,
+     "sd_proj": 0.07283710258504154,
+     "mean_gap_units": 0.00877172010444944,
+     "sd_gap_units": 0.02357788377620128,
+     "ci95_gap_units": [
+      0.0030619190620058295,
+      0.01430231188198442
+     ],
+     "mean_cos": 0.023469546146279465,
+     "sd_cos": 0.047687641728101964,
+     "d_paired": 0.37203169664036256,
+     "n_domains": 67,
+     "n_positive": 48,
+     "sign_p": 0.0005216127568115162,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0892128944396973,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_bomb": {
+     "mean_proj": 0.098125201903645,
+     "sd_proj": 0.07060511046154738,
+     "mean_gap_units": 0.028156811208273697,
+     "sd_gap_units": 0.02025998140169179,
+     "ci95_gap_units": [
+      0.023243899052954084,
+      0.03290994641877407
+     ],
+     "mean_cos": 0.06263626748146117,
+     "sd_cos": 0.043595452968154334,
+     "d_paired": 1.3897747806383716,
+     "n_domains": 67,
+     "n_positive": 62,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.484954357147217,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_knife": {
+     "mean_proj": 0.14519774670531946,
+     "sd_proj": 0.08581748278851133,
+     "mean_gap_units": 0.04793126914167223,
+     "sd_gap_units": 0.02832923346217648,
+     "ci95_gap_units": [
+      0.04118997181923622,
+      0.05471989018365492
+     ],
+     "mean_cos": 0.09135490455801723,
+     "sd_cos": 0.05286107671960506,
+     "d_paired": 1.6919366775549092,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0292906761169434,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_gun": {
+     "mean_proj": 0.05474637430022234,
+     "sd_proj": 0.07984517274858952,
+     "mean_gap_units": 0.01772178744908156,
+     "sd_gap_units": 0.025846445511186224,
+     "ci95_gap_units": [
+      0.01145976071601202,
+      0.023731735386818165
+     ],
+     "mean_cos": 0.043132988742563584,
+     "sd_cos": 0.05553984580980539,
+     "d_paired": 0.6856566579498001,
+     "n_domains": 67,
+     "n_positive": 50,
+     "sign_p": 6.737973666915461e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0892128944396973,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L7|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.07277963660866997,
+     "sd_resid_units": 0.028613509009601478,
+     "ci95_resid_units": [
+      0.06591142343534435,
+      0.07949499023442508
+     ],
+     "d_paired": 2.543541114941485,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.69527530670166,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7734033305698764,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7734 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L8|shift_bomb|ref_bomb": {
+     "mean_proj": 0.26091190038332296,
+     "sd_proj": 0.08409417069228826,
+     "mean_gap_units": 0.07749825205173932,
+     "sd_gap_units": 0.02497835946470118,
+     "ci95_gap_units": [
+      0.07158992900319754,
+      0.08330342722518319
+     ],
+     "mean_cos": 0.12449714871693565,
+     "sd_cos": 0.039798863902212274,
+     "d_paired": 3.102615772715498,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3666810989379883,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_bomb|ref_knife": {
+     "mean_proj": 0.13271292374094032,
+     "sd_proj": 0.08623651949417596,
+     "mean_gap_units": 0.04601425061360404,
+     "sd_gap_units": 0.029899942735010746,
+     "ci95_gap_units": [
+      0.03892046896758393,
+      0.05296357247451311
+     ],
+     "mean_cos": 0.06650477909876577,
+     "sd_cos": 0.045603511788432076,
+     "d_paired": 1.5389410950183717,
+     "n_domains": 67,
+     "n_positive": 60,
+     "sign_p": 1.3280368233066497e-11,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.8841700553894043,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_bomb|ref_gun": {
+     "mean_proj": 0.15770941269375496,
+     "sd_proj": 0.12085430043179066,
+     "mean_gap_units": 0.052767973828501145,
+     "sd_gap_units": 0.04043662615515575,
+     "ci95_gap_units": [
+      0.04312836409885542,
+      0.062463895462374776
+     ],
+     "mean_cos": 0.07994237771564851,
+     "sd_cos": 0.06073815936829195,
+     "d_paired": 1.3049549095918607,
+     "n_domains": 67,
+     "n_positive": 58,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9887335300445557,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_bomb": {
+     "mean_proj": 0.006663317250004455,
+     "sd_proj": 0.07394907308605563,
+     "mean_gap_units": 0.0019791946591277633,
+     "sd_gap_units": 0.021964977053924913,
+     "ci95_gap_units": [
+      -0.0033554326649405633,
+      0.007107938794608128
+     ],
+     "mean_cos": 0.0067818432105647055,
+     "sd_cos": 0.03145725359580351,
+     "d_paired": 0.09010683936836172,
+     "n_domains": 67,
+     "n_positive": 41,
+     "sign_p": 0.08643723427347086,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3666810989379883,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_knife": {
+     "mean_proj": 0.05985931940932772,
+     "sd_proj": 0.09063751079495097,
+     "mean_gap_units": 0.020754434814782743,
+     "sd_gap_units": 0.03142585529087799,
+     "ci95_gap_units": [
+      0.013252331862340434,
+      0.027991753841362686
+     ],
+     "mean_cos": 0.03274800761423146,
+     "sd_cos": 0.045437642338794514,
+     "d_paired": 0.6604254561309315,
+     "n_domains": 67,
+     "n_positive": 51,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.8841700553894043,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_gun": {
+     "mean_proj": -0.06708352752863916,
+     "sd_proj": 0.10917986007966896,
+     "mean_gap_units": -0.02244546957909596,
+     "sd_gap_units": 0.03653047653199157,
+     "ci95_gap_units": [
+      -0.03135109005805147,
+      -0.013702634735021462
+     ],
+     "mean_cos": -0.019754147424319926,
+     "sd_cos": 0.04868937683354446,
+     "d_paired": -0.6144313381578622,
+     "n_domains": 67,
+     "n_positive": 21,
+     "sign_p": 0.003065317669608741,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9887335300445557,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_bomb": {
+     "mean_proj": 0.07055708909157052,
+     "sd_proj": 0.08149738410718632,
+     "mean_gap_units": 0.02095746137459458,
+     "sd_gap_units": 0.024207040023153513,
+     "ci95_gap_units": [
+      0.015241722582559807,
+      0.026717146456353258
+     ],
+     "mean_cos": 0.0388286129117128,
+     "sd_cos": 0.040931734002858246,
+     "d_paired": 0.8657589426278149,
+     "n_domains": 67,
+     "n_positive": 55,
+     "sign_p": 1.0273195443541005e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3666810989379883,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_knife": {
+     "mean_proj": 0.09054680696841497,
+     "sd_proj": 0.09639111393362967,
+     "mean_gap_units": 0.031394406442580534,
+     "sd_gap_units": 0.033420745685058255,
+     "ci95_gap_units": [
+      0.02345000368578957,
+      0.039322269221943505
+     ],
+     "mean_cos": 0.05140332116484844,
+     "sd_cos": 0.0518395107615298,
+     "d_paired": 0.9393688201462346,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.8841700553894043,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_gun": {
+     "mean_proj": 0.0055775308230919625,
+     "sd_proj": 0.12205762396008925,
+     "mean_gap_units": 0.001866185381541463,
+     "sd_gap_units": 0.040839246032840414,
+     "ci95_gap_units": [
+      -0.00777370254241144,
+      0.011401393906030757
+     ],
+     "mean_cos": 0.015218256795593835,
+     "sd_cos": 0.06166762215862562,
+     "d_paired": 0.04569588233927706,
+     "n_domains": 67,
+     "n_positive": 36,
+     "sign_p": 0.6254068289416487,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9887335300445557,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L8|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.07877710843536248,
+     "sd_resid_units": 0.036900894294511356,
+     "ci95_resid_units": [
+      0.06974537109327394,
+      0.08752845664000589
+     ],
+     "d_paired": 2.1348292484900506,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.6078946590423584,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7746188553067924,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7746 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L9|shift_bomb|ref_bomb": {
+     "mean_proj": 0.2892864784086818,
+     "sd_proj": 0.09019097335807011,
+     "mean_gap_units": 0.08654093735219139,
+     "sd_gap_units": 0.02698090632527699,
+     "ci95_gap_units": [
+      0.08004424170700103,
+      0.09288020803091197
+     ],
+     "mean_cos": 0.12451490530248632,
+     "sd_cos": 0.03886024394290063,
+     "d_paired": 3.207488151393778,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3427703380584717,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_bomb|ref_knife": {
+     "mean_proj": 0.14895355392859053,
+     "sd_proj": 0.09333961706128784,
+     "mean_gap_units": 0.05067951105279683,
+     "sd_gap_units": 0.03175759174426381,
+     "ci95_gap_units": [
+      0.0431251641407607,
+      0.05818135184850397
+     ],
+     "mean_cos": 0.06675011437055814,
+     "sd_cos": 0.04347289415571077,
+     "d_paired": 1.5958234950844714,
+     "n_domains": 67,
+     "n_positive": 62,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9391276836395264,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_bomb|ref_gun": {
+     "mean_proj": 0.21261903418422634,
+     "sd_proj": 0.135644064052397,
+     "mean_gap_units": 0.07054326710808603,
+     "sd_gap_units": 0.04500432183218174,
+     "ci95_gap_units": [
+      0.06029818819569755,
+      0.08126125809650225
+     ],
+     "mean_cos": 0.09501423525358306,
+     "sd_cos": 0.05948733527947028,
+     "d_paired": 1.567477616286218,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0140230655670166,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_bomb": {
+     "mean_proj": 0.016963480658996017,
+     "sd_proj": 0.07863629363297907,
+     "mean_gap_units": 0.005074677271681382,
+     "sd_gap_units": 0.023524288443534574,
+     "ci95_gap_units": [
+      -0.0004536940076153321,
+      0.01053736365953844
+     ],
+     "mean_cos": 0.01095454279282858,
+     "sd_cos": 0.03048464713970246,
+     "d_paired": 0.2157207553317562,
+     "n_domains": 67,
+     "n_positive": 43,
+     "sign_p": 0.027119992403126347,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3427703380584717,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_knife": {
+     "mean_proj": 0.0836778240723174,
+     "sd_proj": 0.0955394280154808,
+     "mean_gap_units": 0.028470292236062036,
+     "sd_gap_units": 0.03250604883458965,
+     "ci95_gap_units": [
+      0.020814242698683892,
+      0.03602052389541694
+     ],
+     "mean_cos": 0.039782684161928684,
+     "sd_cos": 0.04320201475277671,
+     "d_paired": 0.8758459811875637,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9391276836395264,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_gun": {
+     "mean_proj": -0.07202323414941332,
+     "sd_proj": 0.1262707594889914,
+     "mean_gap_units": -0.023896046109343184,
+     "sd_gap_units": 0.04189442374596977,
+     "ci95_gap_units": [
+      -0.03371300983302908,
+      -0.013997057281934323
+     ],
+     "mean_cos": -0.01893068828246273,
+     "sd_cos": 0.04969694542942383,
+     "d_paired": -0.5703872728800089,
+     "n_domains": 67,
+     "n_positive": 22,
+     "sign_p": 0.006741447363103126,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0140230655670166,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_bomb": {
+     "mean_proj": 0.07719609970504891,
+     "sd_proj": 0.08394735981763884,
+     "mean_gap_units": 0.023093450012448506,
+     "sd_gap_units": 0.025113110183452404,
+     "ci95_gap_units": [
+      0.017058749323649546,
+      0.028932962182849215
+     ],
+     "mean_cos": 0.03830825392665003,
+     "sd_cos": 0.038753131993101535,
+     "d_paired": 0.9195774575012736,
+     "n_domains": 67,
+     "n_positive": 56,
+     "sign_p": 2.1457960315833698e-08,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3427703380584717,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_knife": {
+     "mean_proj": 0.1052444319365852,
+     "sd_proj": 0.10109617516688096,
+     "mean_gap_units": 0.035808050300918146,
+     "sd_gap_units": 0.03439665984217923,
+     "ci95_gap_units": [
+      0.02762123511007246,
+      0.04373706404481832
+     ],
+     "mean_cos": 0.052419022973371435,
+     "sd_cos": 0.04809577416083788,
+     "d_paired": 1.0410327765897833,
+     "n_domains": 67,
+     "n_positive": 55,
+     "sign_p": 1.0273195443541005e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9391276836395264,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_gun": {
+     "mean_proj": 0.017598080580859488,
+     "sd_proj": 0.1351242850857533,
+     "mean_gap_units": 0.0058387345411866735,
+     "sd_gap_units": 0.044831868285763396,
+     "ci95_gap_units": [
+      -0.00499428904120445,
+      0.016362346873056762
+     ],
+     "mean_cos": 0.01839117020502296,
+     "sd_cos": 0.06083242253499935,
+     "d_paired": 0.1302362530147064,
+     "n_domains": 67,
+     "n_positive": 40,
+     "sign_p": 0.14207137942637568,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0140230655670166,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L9|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.0766294356722237,
+     "sd_resid_units": 0.0371262147530566,
+     "ci95_resid_units": [
+      0.06767063687287415,
+      0.08539083906371968
+     ],
+     "d_paired": 2.0640250071794566,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.6297531127929688,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.786698710004818,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7867 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L10|shift_bomb|ref_bomb": {
+     "mean_proj": 0.28206935633363117,
+     "sd_proj": 0.11102488880256062,
+     "mean_gap_units": 0.08300210026929726,
+     "sd_gap_units": 0.032670329994577196,
+     "ci95_gap_units": [
+      0.0752225322231783,
+      0.09085906906030493
+     ],
+     "mean_cos": 0.10373581451886496,
+     "sd_cos": 0.039903544813754556,
+     "d_paired": 2.5405957112485367,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3983399868011475,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_bomb|ref_knife": {
+     "mean_proj": 0.1307518840558938,
+     "sd_proj": 0.08082846618632816,
+     "mean_gap_units": 0.04304753799758171,
+     "sd_gap_units": 0.026611214779550002,
+     "ci95_gap_units": [
+      0.03655293031994496,
+      0.04936588680117042
+     ],
+     "mean_cos": 0.049916588727634874,
+     "sd_cos": 0.03288223938688874,
+     "d_paired": 1.6176464830407733,
+     "n_domains": 67,
+     "n_positive": 61,
+     "sign_p": 1.4944372779199244e-12,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.037383556365967,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_bomb|ref_gun": {
+     "mean_proj": 0.17005574828319586,
+     "sd_proj": 0.2046840759780611,
+     "mean_gap_units": 0.05500761261409553,
+     "sd_gap_units": 0.06620877255454626,
+     "ci95_gap_units": [
+      0.03925689644242434,
+      0.07096869469412853
+     ],
+     "mean_cos": 0.06701174602621601,
+     "sd_cos": 0.07411732146547106,
+     "d_paired": 0.8308206071752406,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0914947986602783,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_bomb": {
+     "mean_proj": -0.03303590133341391,
+     "sd_proj": 0.10304564295932069,
+     "mean_gap_units": -0.009721187833389959,
+     "sd_gap_units": 0.03032234660438357,
+     "ci95_gap_units": [
+      -0.017322599513371555,
+      -0.002680217130424459
+     ],
+     "mean_cos": -0.006930092869034421,
+     "sd_cos": 0.031746879694309144,
+     "d_paired": -0.32059483918650966,
+     "n_domains": 67,
+     "n_positive": 31,
+     "sign_p": 0.6254068289416487,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3983399868011475,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_knife": {
+     "mean_proj": 0.07016125183774909,
+     "sd_proj": 0.08551106697997073,
+     "mean_gap_units": 0.023099240032000597,
+     "sd_gap_units": 0.02815287084857969,
+     "ci95_gap_units": [
+      0.016510893908354973,
+      0.029722970768312023
+     ],
+     "mean_cos": 0.029610200005358932,
+     "sd_cos": 0.03566653755276781,
+     "d_paired": 0.8204932333984671,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.037383556365967,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_gun": {
+     "mean_proj": -0.20763391898527964,
+     "sd_proj": 0.19062860901074058,
+     "mean_gap_units": -0.06716295271635563,
+     "sd_gap_units": 0.06166227712669963,
+     "ci95_gap_units": [
+      -0.08206253947053063,
+      -0.05286938341753988
+     ],
+     "mean_cos": -0.05731286173230463,
+     "sd_cos": 0.057417513986224314,
+     "d_paired": -1.0892064945696631,
+     "n_domains": 67,
+     "n_positive": 9,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0914947986602783,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_bomb": {
+     "mean_proj": 0.05186876173673281,
+     "sd_proj": 0.10125922572900375,
+     "mean_gap_units": 0.015262970137828027,
+     "sd_gap_units": 0.02979667311754729,
+     "ci95_gap_units": [
+      0.00802819159539646,
+      0.02207078761633569
+     ],
+     "mean_cos": 0.024198902239221394,
+     "sd_cos": 0.03940509162236751,
+     "d_paired": 0.5122373923295366,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3983399868011475,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_knife": {
+     "mean_proj": 0.10562203588214383,
+     "sd_proj": 0.08517197169446446,
+     "mean_gap_units": 0.03477401978448641,
+     "sd_gap_units": 0.028041230260812768,
+     "ci95_gap_units": [
+      0.027958154671437085,
+      0.04157018811780838
+     ],
+     "mean_cos": 0.04448514988845691,
+     "sd_cos": 0.03687549509238229,
+     "d_paired": 1.2401032144828048,
+     "n_domains": 67,
+     "n_positive": 58,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.037383556365967,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_gun": {
+     "mean_proj": -0.08583439810118124,
+     "sd_proj": 0.1872117711989084,
+     "mean_gap_units": -0.027764691093246606,
+     "sd_gap_units": 0.06055703903498009,
+     "ci95_gap_units": [
+      -0.04212806863557709,
+      -0.013239989350255147
+     ],
+     "mean_cos": -0.017282755092417463,
+     "sd_cos": 0.06795743313844695,
+     "d_paired": -0.4584882539783467,
+     "n_domains": 67,
+     "n_positive": 24,
+     "sign_p": 0.027119992403126347,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0914947986602783,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L10|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.084399305959251,
+     "sd_resid_units": 0.048439251945190616,
+     "ci95_resid_units": [
+      0.07272184334456733,
+      0.09590054106165394
+     ],
+     "d_paired": 1.742374264052415,
+     "n_domains": 67,
+     "n_positive": 63,
+     "sign_p": 1.1067861037383775e-14,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.671581983566284,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7861432328555921,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7861 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L11|shift_bomb|ref_bomb": {
+     "mean_proj": 0.3528910502513398,
+     "sd_proj": 0.14329357414071262,
+     "mean_gap_units": 0.10007933577830051,
+     "sd_gap_units": 0.04063782776890282,
+     "ci95_gap_units": [
+      0.09024060631813605,
+      0.10994439929613965
+     ],
+     "mean_cos": 0.1150848132656727,
+     "sd_cos": 0.044050317031472795,
+     "d_paired": 2.4627137146066644,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5261130332946777,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_bomb|ref_knife": {
+     "mean_proj": 0.1358592724149574,
+     "sd_proj": 0.09050808344710966,
+     "mean_gap_units": 0.0442216632085261,
+     "sd_gap_units": 0.02946002810630843,
+     "ci95_gap_units": [
+      0.03729399138881587,
+      0.05119334011486576
+     ],
+     "mean_cos": 0.04606793572652628,
+     "sd_cos": 0.031812481772467135,
+     "d_paired": 1.5010733543413248,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0722334384918213,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_bomb|ref_gun": {
+     "mean_proj": 0.15817615284181352,
+     "sd_proj": 0.21101547319094116,
+     "mean_gap_units": 0.0502122216659498,
+     "sd_gap_units": 0.06698579731803864,
+     "ci95_gap_units": [
+      0.0342837123832223,
+      0.0662467910527315
+     ],
+     "mean_cos": 0.05492766487040099,
+     "sd_cos": 0.06759313446451089,
+     "d_paired": 0.7495950436709682,
+     "n_domains": 67,
+     "n_positive": 55,
+     "sign_p": 1.0273195443541005e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.1501524448394775,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_bomb": {
+     "mean_proj": 0.007298954804219417,
+     "sd_proj": 0.12127534906065493,
+     "mean_gap_units": 0.0020699718742140058,
+     "sd_gap_units": 0.034393494455661124,
+     "ci95_gap_units": [
+      -0.006270287912424646,
+      0.010218956951169556
+     ],
+     "mean_cos": 0.005134683474279186,
+     "sd_cos": 0.035609085551177797,
+     "d_paired": 0.06018498285722436,
+     "n_domains": 67,
+     "n_positive": 37,
+     "sign_p": 0.4638176178968696,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5261130332946777,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_knife": {
+     "mean_proj": 0.044405100908853225,
+     "sd_proj": 0.0959343919702191,
+     "mean_gap_units": 0.014453687129534001,
+     "sd_gap_units": 0.03122627036352872,
+     "ci95_gap_units": [
+      0.0069629704140767275,
+      0.021890390335131314
+     ],
+     "mean_cos": 0.019498585708258694,
+     "sd_cos": 0.03670471526222408,
+     "d_paired": 0.46286946731926853,
+     "n_domains": 67,
+     "n_positive": 45,
+     "sign_p": 0.006741447363103126,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0722334384918213,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_gun": {
+     "mean_proj": -0.19931602222261144,
+     "sd_proj": 0.20005375102911238,
+     "mean_gap_units": -0.06327186563594003,
+     "sd_gap_units": 0.06350605392346545,
+     "ci95_gap_units": [
+      -0.07832541039844748,
+      -0.04859655491888801
+     ],
+     "mean_cos": -0.05213355769621684,
+     "sd_cos": 0.05946328088341637,
+     "d_paired": -0.9963123470432024,
+     "n_domains": 67,
+     "n_positive": 10,
+     "sign_p": 4.042104433067337e-09,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.1501524448394775,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_bomb": {
+     "mean_proj": 0.08640614648196679,
+     "sd_proj": 0.12271495463685808,
+     "mean_gap_units": 0.02450464453807707,
+     "sd_gap_units": 0.034801764287799214,
+     "ci95_gap_units": [
+      0.01597703727747698,
+      0.03266127150407644
+     ],
+     "mean_cos": 0.03175201688798868,
+     "sd_cos": 0.041156283768925724,
+     "d_paired": 0.7041207547821907,
+     "n_domains": 67,
+     "n_positive": 53,
+     "sign_p": 1.772867877551979e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5261130332946777,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_knife": {
+     "mean_proj": 0.09353741123549529,
+     "sd_proj": 0.09399330638506312,
+     "mean_gap_units": 0.030446062484566078,
+     "sd_gap_units": 0.030594454577385573,
+     "ci95_gap_units": [
+      0.023300582537996318,
+      0.037698499495807065
+     ],
+     "mean_cos": 0.03657275396163405,
+     "sd_cos": 0.03660759579238788,
+     "d_paired": 0.995149706217375,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0722334384918213,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_gun": {
+     "mean_proj": -0.09736626990028281,
+     "sd_proj": 0.1912705008127031,
+     "mean_gap_units": -0.03090843113316197,
+     "sd_gap_units": 0.060717855456817335,
+     "ci95_gap_units": [
+      -0.0454441935012807,
+      -0.016699385306698303
+     ],
+     "mean_cos": -0.021896883127034306,
+     "sd_cos": 0.06236921123064759,
+     "d_paired": -0.5090501122053646,
+     "n_domains": 67,
+     "n_positive": 18,
+     "sign_p": 0.00019429778641481447,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.1501524448394775,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L11|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.11863589486590363,
+     "sd_resid_units": 0.05973678553208234,
+     "ci95_resid_units": [
+      0.10420280103976806,
+      0.13273958875852138
+     ],
+     "d_paired": 1.9859772133568996,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.740438222885132,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7771838840698085,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7772 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L12|shift_bomb|ref_bomb": {
+     "mean_proj": 0.4031227181818503,
+     "sd_proj": 0.14450193588793755,
+     "mean_gap_units": 0.10444100418877339,
+     "sd_gap_units": 0.03743755092599351,
+     "ci95_gap_units": [
+      0.09554259834680694,
+      0.11346056934397385
+     ],
+     "mean_cos": 0.13268934685053957,
+     "sd_cos": 0.044747132470037636,
+     "d_paired": 2.7897392218639565,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8598127365112305,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_bomb|ref_knife": {
+     "mean_proj": 0.12794607649765796,
+     "sd_proj": 0.0695415935365491,
+     "mean_gap_units": 0.037528958418250116,
+     "sd_gap_units": 0.020397839805738584,
+     "ci95_gap_units": [
+      0.03271229848615308,
+      0.042414347330070865
+     ],
+     "mean_cos": 0.04398788500770825,
+     "sd_cos": 0.02573088726597918,
+     "d_paired": 1.8398496495541643,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4092626571655273,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_bomb|ref_gun": {
+     "mean_proj": 0.19481680508869798,
+     "sd_proj": 0.1745115006643463,
+     "mean_gap_units": 0.057133279409740875,
+     "sd_gap_units": 0.0511784100100084,
+     "ci95_gap_units": [
+      0.04502307947213079,
+      0.06913819632098579
+     ],
+     "mean_cos": 0.0673101816134276,
+     "sd_cos": 0.05737516405642919,
+     "d_paired": 1.1163551075261609,
+     "n_domains": 67,
+     "n_positive": 56,
+     "sign_p": 2.1457960315833698e-08,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.409865617752075,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_bomb": {
+     "mean_proj": 0.09144092271966275,
+     "sd_proj": 0.12463085254517363,
+     "mean_gap_units": 0.023690507535428645,
+     "sd_gap_units": 0.03228935211448204,
+     "ci95_gap_units": [
+      0.01610195926701564,
+      0.03138250742903926
+     ],
+     "mean_cos": 0.030715040244163428,
+     "sd_cos": 0.03723424899182118,
+     "d_paired": 0.7336941122706285,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8598127365112305,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_knife": {
+     "mean_proj": 0.045797156698223374,
+     "sd_proj": 0.0780201696799284,
+     "mean_gap_units": 0.013433155876672547,
+     "sd_gap_units": 0.022884763517984453,
+     "ci95_gap_units": [
+      0.007927787264271789,
+      0.01886969335035592
+     ],
+     "mean_cos": 0.01865504015609071,
+     "sd_cos": 0.02994140689157482,
+     "d_paired": 0.5869912470852422,
+     "n_domains": 67,
+     "n_positive": 47,
+     "sign_p": 0.0013071686857636005,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4092626571655273,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_gun": {
+     "mean_proj": -0.12665413418756938,
+     "sd_proj": 0.16715644571451807,
+     "mean_gap_units": -0.03714343859423558,
+     "sd_gap_units": 0.04902141739671093,
+     "ci95_gap_units": [
+      -0.049028002921308315,
+      -0.02551186698193772
+     ],
+     "mean_cos": -0.030583873970981456,
+     "sd_cos": 0.05330033793275047,
+     "d_paired": -0.7576981769753499,
+     "n_domains": 67,
+     "n_positive": 16,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.409865617752075,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_bomb": {
+     "mean_proj": 0.15280952084976346,
+     "sd_proj": 0.13626091853085837,
+     "mean_gap_units": 0.039589879427125635,
+     "sd_gap_units": 0.035302468755005076,
+     "ci95_gap_units": [
+      0.031080636812428886,
+      0.047703955155028385
+     ],
+     "mean_cos": 0.05278574326052357,
+     "sd_cos": 0.044579017706556284,
+     "d_paired": 1.1214478993487589,
+     "n_domains": 67,
+     "n_positive": 58,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8598127365112305,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_knife": {
+     "mean_proj": 0.08632717523445833,
+     "sd_proj": 0.07548393309902376,
+     "mean_gap_units": 0.02532136239283806,
+     "sd_gap_units": 0.022140838266119796,
+     "ci95_gap_units": [
+      0.020136176073809336,
+      0.030764411067184444
+     ],
+     "mean_cos": 0.03318017516146612,
+     "sd_cos": 0.02963198500765022,
+     "d_paired": 1.143649670734696,
+     "n_domains": 67,
+     "n_positive": 62,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4092626571655273,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_gun": {
+     "mean_proj": -0.055410607982037674,
+     "sd_proj": 0.1616924205499241,
+     "mean_gap_units": -0.016250085544006462,
+     "sd_gap_units": 0.047419000827521894,
+     "ci95_gap_units": [
+      -0.02730695582969971,
+      -0.00500610139231199
+     ],
+     "mean_cos": -0.009256991701381367,
+     "sd_cos": 0.055393137188644026,
+     "d_paired": -0.3426914371965203,
+     "n_domains": 67,
+     "n_positive": 22,
+     "sign_p": 0.006741447363103126,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.409865617752075,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L12|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.1254100672644473,
+     "sd_resid_units": 0.06446283639215342,
+     "ci95_resid_units": [
+      0.10968967802019501,
+      0.14069924884104343
+     ],
+     "d_paired": 1.9454630649747915,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.9193806648254395,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7563529280086734,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7564 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L13|shift_bomb|ref_bomb": {
+     "mean_proj": 0.42781243809679553,
+     "sd_proj": 0.1742430715396483,
+     "mean_gap_units": 0.0988293768926846,
+     "sd_gap_units": 0.04025206528528909,
+     "ci95_gap_units": [
+      0.08912172463416215,
+      0.10821567196515447
+     ],
+     "mean_cos": 0.12103276179064859,
+     "sd_cos": 0.04579140211372354,
+     "d_paired": 2.4552622627491303,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.328798294067383,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_bomb|ref_knife": {
+     "mean_proj": 0.09165524133939797,
+     "sd_proj": 0.08180428853811092,
+     "mean_gap_units": 0.024168497470320127,
+     "sd_gap_units": 0.021570907584799754,
+     "ci95_gap_units": [
+      0.019156917236808346,
+      0.029453667194615202
+     ],
+     "mean_cos": 0.027398084147676065,
+     "sd_cos": 0.024863409202868295,
+     "d_paired": 1.120420982534402,
+     "n_domains": 67,
+     "n_positive": 57,
+     "sign_p": 4.042104433067337e-09,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.7923433780670166,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_bomb|ref_gun": {
+     "mean_proj": 0.21224533266095974,
+     "sd_proj": 0.17798366362260773,
+     "mean_gap_units": 0.05577841551143909,
+     "sd_gap_units": 0.046774393666636827,
+     "ci95_gap_units": [
+      0.04471515597131509,
+      0.06718090577793871
+     ],
+     "mean_cos": 0.06208058405719321,
+     "sd_cos": 0.04936529691364304,
+     "d_paired": 1.1924989537860036,
+     "n_domains": 67,
+     "n_positive": 57,
+     "sign_p": 4.042104433067337e-09,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8051517009735107,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_bomb": {
+     "mean_proj": 0.1119341796208451,
+     "sd_proj": 0.15463666665740589,
+     "mean_gap_units": 0.025858026181134582,
+     "sd_gap_units": 0.0357227701899013,
+     "ci95_gap_units": [
+      0.017262630057296304,
+      0.03455705457895675
+     ],
+     "mean_cos": 0.0333261221751246,
+     "sd_cos": 0.04097328059287114,
+     "d_paired": 0.7238527707586506,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.328798294067383,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_knife": {
+     "mean_proj": 0.05776570362052811,
+     "sd_proj": 0.08593937641544762,
+     "mean_gap_units": 0.015232192304793793,
+     "sd_gap_units": 0.022661285608385894,
+     "ci95_gap_units": [
+      0.00987928117410813,
+      0.02067083465866421
+     ],
+     "mean_cos": 0.020241678793800417,
+     "sd_cos": 0.028385847412359094,
+     "d_paired": 0.6721680564829501,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.7923433780670166,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_gun": {
+     "mean_proj": -0.09960803960158086,
+     "sd_proj": 0.1707968143204742,
+     "mean_gap_units": -0.026177153351362347,
+     "sd_gap_units": 0.04488567808657339,
+     "ci95_gap_units": [
+      -0.03680391040766868,
+      -0.0154273184475098
+     ],
+     "mean_cos": -0.01976254102703809,
+     "sd_cos": 0.05010929620432486,
+     "d_paired": -0.5831961210627826,
+     "n_domains": 67,
+     "n_positive": 20,
+     "sign_p": 0.0013071686857636005,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8051517009735107,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_bomb": {
+     "mean_proj": 0.14404295875565776,
+     "sd_proj": 0.15916911467648642,
+     "mean_gap_units": 0.033275507189389854,
+     "sd_gap_units": 0.03676981551545787,
+     "ci95_gap_units": [
+      0.024399616035778973,
+      0.04188998596294409
+     ],
+     "mean_cos": 0.04336315661688131,
+     "sd_cos": 0.044721772494756326,
+     "d_paired": 0.904968021267362,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.328798294067383,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_knife": {
+     "mean_proj": 0.0765548529131199,
+     "sd_proj": 0.08291863858976459,
+     "mean_gap_units": 0.0201866880926116,
+     "sd_gap_units": 0.021864749660941513,
+     "ci95_gap_units": [
+      0.01503402713387642,
+      0.025476244966414183
+     ],
+     "mean_cos": 0.02596589315708764,
+     "sd_cos": 0.02727213920113317,
+     "d_paired": 0.9232526512147748,
+     "n_domains": 67,
+     "n_positive": 58,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.7923433780670166,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_gun": {
+     "mean_proj": -0.06340106638537636,
+     "sd_proj": 0.1622636474372299,
+     "mean_gap_units": -0.01666190243326063,
+     "sd_gap_units": 0.04264314807625576,
+     "ci95_gap_units": [
+      -0.02704818952709955,
+      -0.006726140272958386
+     ],
+     "mean_cos": -0.011399562325959157,
+     "sd_cos": 0.04813056797266682,
+     "d_paired": -0.3907287145748554,
+     "n_domains": 67,
+     "n_positive": 23,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8051517009735107,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L13|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.11438365647339069,
+     "sd_resid_units": 0.05935771107055775,
+     "ci95_resid_units": [
+      0.09994643416811425,
+      0.12828252094849263
+     ],
+     "d_paired": 1.9270226969740176,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 3.373594284057617,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7793373714550589,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7793 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L14|shift_bomb|ref_bomb": {
+     "mean_proj": 0.3622799442886417,
+     "sd_proj": 0.16741123798223442,
+     "mean_gap_units": 0.06961121108742269,
+     "sd_gap_units": 0.03216766263026458,
+     "ci95_gap_units": [
+      0.06195615742786446,
+      0.07722699656647282
+     ],
+     "mean_cos": 0.09612727012303582,
+     "sd_cos": 0.04079977909867883,
+     "d_paired": 2.164012097724805,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.204333305358887,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_bomb|ref_knife": {
+     "mean_proj": 0.04218109217541876,
+     "sd_proj": 0.09736620361330456,
+     "mean_gap_units": 0.009131198108636059,
+     "sd_gap_units": 0.02107745552394658,
+     "ci95_gap_units": [
+      0.004063547168844299,
+      0.014154295350847437
+     ],
+     "mean_cos": 0.0123345583174004,
+     "sd_cos": 0.027367105940929455,
+     "d_paired": 0.43322108298422907,
+     "n_domains": 67,
+     "n_positive": 44,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.619447708129883,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_bomb|ref_gun": {
+     "mean_proj": 0.1716232916423634,
+     "sd_proj": 0.15256737768409087,
+     "mean_gap_units": 0.03768216347327047,
+     "sd_gap_units": 0.03349818554092464,
+     "ci95_gap_units": [
+      0.029726735910893216,
+      0.04578948197625158
+     ],
+     "mean_cos": 0.04704346487706263,
+     "sd_cos": 0.039808832508847765,
+     "d_paired": 1.1249016286937177,
+     "n_domains": 67,
+     "n_positive": 59,
+     "sign_p": 1.016748503966658e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.554496765136719,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_bomb": {
+     "mean_proj": 0.1075883884983721,
+     "sd_proj": 0.14404935325268586,
+     "mean_gap_units": 0.02067284744956451,
+     "sd_gap_units": 0.02767873324030931,
+     "ci95_gap_units": [
+      0.01401310417301265,
+      0.02735461622098348
+     ],
+     "mean_cos": 0.028945819804791693,
+     "sd_cos": 0.03576446783806596,
+     "d_paired": 0.746885606002303,
+     "n_domains": 67,
+     "n_positive": 51,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.204333305358887,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_knife": {
+     "mean_proj": 0.044649753219156124,
+     "sd_proj": 0.10191774358716264,
+     "mean_gap_units": 0.009665604210775218,
+     "sd_gap_units": 0.022062755122824542,
+     "ci95_gap_units": [
+      0.004449730860566896,
+      0.01486669197879062
+     ],
+     "mean_cos": 0.014133062393344538,
+     "sd_cos": 0.028826257099642427,
+     "d_paired": 0.4380959747305484,
+     "n_domains": 67,
+     "n_positive": 43,
+     "sign_p": 0.027119992403126347,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.619447708129883,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_gun": {
+     "mean_proj": -0.0791232024402872,
+     "sd_proj": 0.14206501914615074,
+     "mean_gap_units": -0.01737254553476712,
+     "sd_gap_units": 0.031192253825629002,
+     "ci95_gap_units": [
+      -0.024889750725545157,
+      -0.009946879181832279
+     ],
+     "mean_cos": -0.0143890891416238,
+     "sd_cos": 0.03988491082445015,
+     "d_paired": -0.5569506337016605,
+     "n_domains": 67,
+     "n_positive": 21,
+     "sign_p": 0.003065317669608741,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.554496765136719,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_bomb": {
+     "mean_proj": 0.10724369771500576,
+     "sd_proj": 0.15446252104018512,
+     "mean_gap_units": 0.020606615953013087,
+     "sd_gap_units": 0.029679598130491668,
+     "ci95_gap_units": [
+      0.013533180850752044,
+      0.027546401977833156
+     ],
+     "mean_cos": 0.029520854446572785,
+     "sd_cos": 0.040179298426852514,
+     "d_paired": 0.6943023912390056,
+     "n_domains": 67,
+     "n_positive": 51,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.204333305358887,
+     "_reading": "gap_units is the fraction of the benign button->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_knife": {
+     "mean_proj": 0.06086893326866982,
+     "sd_proj": 0.10497036861978269,
+     "mean_gap_units": 0.013176668968791454,
+     "sd_gap_units": 0.022723575468782273,
+     "ci95_gap_units": [
+      0.007824472792574927,
+      0.01869561275423933
+     ],
+     "mean_cos": 0.020093619863640094,
+     "sd_cos": 0.03330245816296247,
+     "d_paired": 0.5798677671519434,
+     "n_domains": 67,
+     "n_positive": 44,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.619447708129883,
+     "_reading": "gap_units is the fraction of the benign button->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_gun": {
+     "mean_proj": -0.0750177824007931,
+     "sd_proj": 0.14266407157692548,
+     "mean_gap_units": -0.016471146269118313,
+     "sd_gap_units": 0.03132378370953633,
+     "ci95_gap_units": [
+      -0.02390836256045493,
+      -0.009091180539146686
+     ],
+     "mean_cos": -0.014677381321181444,
+     "sd_cos": 0.04059057131946984,
+     "d_paired": -0.5258351424545105,
+     "n_domains": 67,
+     "n_positive": 20,
+     "sign_p": 0.0013071686857636005,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.554496765136719,
+     "_reading": "gap_units is the fraction of the benign button->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L14|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.08046893292285708,
+     "sd_resid_units": 0.044890609705187476,
+     "ci95_resid_units": [
+      0.06968520214199729,
+      0.09088059154804463
+     ],
+     "d_paired": 1.7925560256660589,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 4.182467937469482,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.8036510523188066,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.8037 of it here). A large number over a tiny residual is not a large effect."
+    }
+   },
+   "controls": {
+    "L6": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0004867743949655146,
+      "between_draw_sd": 0.005456542455963035,
+      "n_draws": 12,
+      "draws": [
+       0.0001324856798572302,
+       -0.0058789694516534095,
+       0.01017535353568405,
+       0.0017238623079368885,
+       0.006258823907290671,
+       -2.5148664536473247e-05,
+       -0.006184001209869194,
+       -0.0072503062242178775,
+       0.002408901136724886,
+       0.007064872179090449,
+       -0.0009540035008852865,
+       -0.0016305769558357592
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.06607575710827278,
+      "between_draw_sd": 4.0420703249638295e-05,
+      "n_draws": 12,
+      "draws": [
+       0.06610774743151868,
+       0.06609283256285373,
+       0.06611549561228906,
+       0.0660654658862409,
+       0.06608906471493826,
+       0.06610726263967659,
+       0.0660547570864365,
+       0.0660945006765729,
+       0.06597237932728567,
+       0.06607661089342994,
+       0.0660992750540833,
+       0.06603369341394788
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.003042930508605363,
+      "sd": 0.026295338016783364,
+      "ci95": [
+       -0.009326601147663469,
+       0.0032737133615554186
+      ],
+      "n_positive": 32,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.327420473098755,
+      "knife": 2.989473342895508,
+      "gun": 3.0238821506500244
+     }
+    },
+    "L7": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.0011812490501123226,
+      "between_draw_sd": 0.004376323546891405,
+      "n_draws": 12,
+      "draws": [
+       0.0009193191626444584,
+       0.002832649977257146,
+       -0.00255138334705914,
+       0.002372043451996665,
+       -0.003706126437840774,
+       0.004568322535525481,
+       0.00476291532847664,
+       -0.0036967926760992265,
+       -0.0008833319843881476,
+       -0.00865669273581363,
+       -0.00711365080354988,
+       -0.0030222610724974655
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.0684475044100497,
+      "between_draw_sd": 5.005865958921348e-05,
+      "n_draws": 12,
+      "draws": [
+       0.06851669194384796,
+       0.06846610562187477,
+       0.06838480129884121,
+       0.06838577911359849,
+       0.06851051259876045,
+       0.06844191989948077,
+       0.06843731497862778,
+       0.06849025785538573,
+       0.06837539877240889,
+       0.06840623783761626,
+       0.06847234703068554,
+       0.06848268596946851
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.01943162746534876,
+      "sd": 0.028139875110587426,
+      "ci95": [
+       -0.026221700474174554,
+       -0.012774894193739105
+      ],
+      "n_positive": 15,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.484954357147217,
+      "knife": 3.0292906761169434,
+      "gun": 3.0892128944396973
+     }
+    },
+    "L8": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.0019508723048820844,
+      "between_draw_sd": 0.004737071163581376,
+      "n_draws": 12,
+      "draws": [
+       0.0005568605577067441,
+       0.00044140332159416475,
+       -0.0015642873112862586,
+       0.007866036395219952,
+       -0.0020484508332704455,
+       -0.008944506438936392,
+       -0.003258455419886002,
+       -0.0026523750036918695,
+       -0.010897467013794297,
+       -0.0023923815803081256,
+       -0.001038756148974471,
+       0.0005219118170419858
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.0783882334744693,
+      "between_draw_sd": 5.4378039679857416e-05,
+      "n_draws": 12,
+      "draws": [
+       0.07841461203079007,
+       0.07840239177124135,
+       0.0784242158893031,
+       0.07841204937015338,
+       0.07829182185819308,
+       0.078370548503925,
+       0.07838066081531565,
+       0.07842556364367946,
+       0.07845193458925431,
+       0.07832907767881088,
+       0.07830399856720949,
+       0.07845192697575586
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.05560697945727264,
+      "sd": 0.03332455837480463,
+      "ci95": [
+       -0.06326159658943564,
+       -0.04771651118039492
+      ],
+      "n_positive": 4,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.3666810989379883,
+      "knife": 2.8841700553894043,
+      "gun": 2.9887335300445557
+     }
+    },
+    "L9": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.003443583003502651,
+      "between_draw_sd": 0.006991697936235565,
+      "n_draws": 12,
+      "draws": [
+       0.0030661575610642345,
+       0.00425889487401018,
+       0.001412143181388873,
+       0.012119540792744157,
+       0.007672232344456706,
+       -0.004167698583588972,
+       -0.006052516273511861,
+       0.003935255164154226,
+       0.008336240517767006,
+       0.008730521971302046,
+       0.011671781268699005,
+       -0.009659556776453793
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.08753462004553175,
+      "between_draw_sd": 9.497168579355904e-05,
+      "n_draws": 12,
+      "draws": [
+       0.08759852730077411,
+       0.08758895427982694,
+       0.08764635639438578,
+       0.08751146762191353,
+       0.08742673703944037,
+       0.08752293526046037,
+       0.08754313274401512,
+       0.08754797593250521,
+       0.08768527126270691,
+       0.08735046546172778,
+       0.08743490462854449,
+       0.08755871262008048
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.058362258197393345,
+      "sd": 0.03229540525157759,
+      "ci95": [
+       -0.06596498539823929,
+       -0.05070147031919829
+      ],
+      "n_positive": 2,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.3427703380584717,
+      "knife": 2.9391276836395264,
+      "gun": 3.0140230655670166
+     }
+    },
+    "L10": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.0022201795042343544,
+      "between_draw_sd": 0.006165968222327309,
+      "n_draws": 12,
+      "draws": [
+       -0.004833136092255074,
+       -0.004175470742578626,
+       -0.003643854055211461,
+       0.006951719840419046,
+       -0.0054380349575003485,
+       0.0014176048397920077,
+       -0.007437808911533565,
+       -0.011243887514371435,
+       0.0055540202039240155,
+       0.0058428544723540645,
+       0.00019298733942833853,
+       -0.009829148473279217
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.08433086739319808,
+      "between_draw_sd": 5.487141535117822e-05,
+      "n_draws": 12,
+      "draws": [
+       0.08441649756115145,
+       0.08435202456241918,
+       0.08426685815147383,
+       0.08429576766522373,
+       0.0842884738761648,
+       0.0842700716631149,
+       0.08437617060705001,
+       0.08443108744621627,
+       0.0842989202227455,
+       0.08435253344873585,
+       0.08431940327739262,
+       0.08430260023668874
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.08416791739392934,
+      "sd": 0.038232200295384794,
+      "ci95": [
+       -0.09322184842669706,
+       -0.07504662803444204
+      ],
+      "n_positive": 2,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.3983399868011475,
+      "knife": 3.037383556365967,
+      "gun": 3.0914947986602783
+     }
+    },
+    "L11": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0032892310159398004,
+      "between_draw_sd": 0.009761382822776195,
+      "n_draws": 12,
+      "draws": [
+       0.0059782470836523645,
+       -0.005218061416964618,
+       -0.00821452262312823,
+       0.014567784092024923,
+       0.007944512252901026,
+       -0.0018970962252147546,
+       0.008335413070739282,
+       -0.006690273963155967,
+       -0.0033990048899379386,
+       0.007620059299941944,
+       -0.0034848613039796155,
+       0.023928576814399194
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.10136980318059724,
+      "between_draw_sd": 8.052267068114667e-05,
+      "n_draws": 12,
+      "draws": [
+       0.1014934928935127,
+       0.10144139910267272,
+       0.10132978917809152,
+       0.10132042143186375,
+       0.10147551009436506,
+       0.10145700908964685,
+       0.10123933176006979,
+       0.10130888890567774,
+       0.1013823621781322,
+       0.101356768303469,
+       0.10129083648880997,
+       0.10134182874085569
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.15037720422915865,
+      "sd": 0.05345957254961529,
+      "ci95": [
+       -0.1626488576025737,
+       -0.13744494876680757
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.5261130332946777,
+      "knife": 3.0722334384918213,
+      "gun": 3.1501524448394775
+     }
+    },
+    "L12": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0014618804331217809,
+      "between_draw_sd": 0.0071929467615459396,
+      "n_draws": 12,
+      "draws": [
+       0.009293140265056921,
+       0.0008729831403540067,
+       0.0031967746081264055,
+       -0.00023612508669171973,
+       -0.011170612081020648,
+       0.0031007729634530126,
+       0.008046504550436623,
+       0.012288194942579222,
+       0.004070096587432138,
+       0.0034259558281483685,
+       -0.008442693184971537,
+       -0.006902427335441422
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.10560040820689397,
+      "between_draw_sd": 7.789734365728792e-05,
+      "n_draws": 12,
+      "draws": [
+       0.10563020398029527,
+       0.10561109050747228,
+       0.1057202097946668,
+       0.10559350964635711,
+       0.10555646095907428,
+       0.1056887954249602,
+       0.10541080207852573,
+       0.10563403632345818,
+       0.10558145149858472,
+       0.10563265315842603,
+       0.10554453859465192,
+       0.10560114651625511
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.16190581842168286,
+      "sd": 0.05367871484087962,
+      "ci95": [
+       -0.17457942420799435,
+       -0.14911125384242507
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.8598127365112305,
+      "knife": 3.4092626571655273,
+      "gun": 3.409865617752075
+     }
+    },
+    "L13": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.0032335102406388506,
+      "between_draw_sd": 0.006133076193226005,
+      "n_draws": 12,
+      "draws": [
+       -0.013958471974392067,
+       0.0025211133222498446,
+       0.00034206959375827537,
+       -0.002536403350495953,
+       -0.007470528905266454,
+       0.00632557397234805,
+       -0.006098446747676111,
+       -0.01196817915650574,
+       -0.00426923776429457,
+       0.001806831893429017,
+       0.0019685623468930842,
+       -0.005465006117713583
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.09986357692797859,
+      "between_draw_sd": 7.274483024779114e-05,
+      "n_draws": 12,
+      "draws": [
+       0.09976670432755035,
+       0.09987234452153759,
+       0.09981657320600827,
+       0.09984801879387044,
+       0.09991149294715544,
+       0.09976350406014273,
+       0.09977211638322485,
+       0.09986736769287971,
+       0.09997483132420262,
+       0.09988411180618484,
+       0.09995328943488536,
+       0.09993256863810081
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.20118811555021687,
+      "sd": 0.05983063627297649,
+      "ci95": [
+       -0.2150710228077028,
+       -0.186970285515004
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 4.328798294067383,
+      "knife": 3.7923433780670166,
+      "gun": 3.8051517009735107
+     }
+    },
+    "L14": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0005912582244463456,
+      "between_draw_sd": 0.007606138528256183,
+      "n_draws": 12,
+      "draws": [
+       0.013732259450173687,
+       -0.013365346623667722,
+       -0.006103414925458398,
+       0.007368068418107571,
+       0.0003374034785113523,
+       0.0011819493141633768,
+       -0.005090253229847315,
+       -0.0031293522025510165,
+       0.0007951720242237333,
+       0.011947668166112112,
+       0.0004429926806677749,
+       -0.0010220478570790073
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.07046669505068048,
+      "between_draw_sd": 6.472294060388815e-05,
+      "n_draws": 12,
+      "draws": [
+       0.07047937400608421,
+       0.07051176130877035,
+       0.07036945235253328,
+       0.07044273137336672,
+       0.07051342738341732,
+       0.07046435114007261,
+       0.07046459784723885,
+       0.07044406148951941,
+       0.07045619077598109,
+       0.07044331696902208,
+       0.07062274937894032,
+       0.07038832658321957
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.15831620358541543,
+      "sd": 0.050174714205053296,
+      "ci95": [
+       -0.17024910887781822,
+       -0.1463269848716557
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 5.204333305358887,
+      "knife": 4.619447708129883,
+      "gun": 4.554496765136719
+     }
+    }
+   },
+   "axis_geometry": {
+    "L6": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999998211860657,
+      "bomb|knife": 0.4927314519882202,
+      "bomb|gun": 0.6241326928138733,
+      "knife|bomb": 0.4927314519882202,
+      "knife|knife": 1.0,
+      "knife|gun": 0.6307193636894226,
+      "gun|bomb": 0.6241326928138733,
+      "gun|knife": 0.6307193636894226,
+      "gun|gun": 0.9999998211860657
+     },
+     "lex_axis_norms": {
+      "bomb": 3.327420473098755,
+      "knife": 2.989473342895508,
+      "gun": 3.0238821506500244
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7708155500349557
+    },
+    "L7": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999997019767761,
+      "bomb|knife": 0.473007470369339,
+      "bomb|gun": 0.6244286298751831,
+      "knife|bomb": 0.473007470369339,
+      "knife|knife": 0.9999998807907104,
+      "knife|gun": 0.6202660799026489,
+      "gun|bomb": 0.6244286298751831,
+      "gun|knife": 0.6202660799026489,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.484954357147217,
+      "knife": 3.0292906761169434,
+      "gun": 3.0892128944396973
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7734033305698764
+    },
+    "L8": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.000000238418579,
+      "bomb|knife": 0.46799778938293457,
+      "bomb|gun": 0.6226671934127808,
+      "knife|bomb": 0.46799778938293457,
+      "knife|knife": 1.000000238418579,
+      "knife|gun": 0.6108604669570923,
+      "gun|bomb": 0.6226671934127808,
+      "gun|knife": 0.6108604669570923,
+      "gun|gun": 1.000000238418579
+     },
+     "lex_axis_norms": {
+      "bomb": 3.3666810989379883,
+      "knife": 2.8841700553894043,
+      "gun": 2.9887335300445557
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7746188553067924
+    },
+    "L9": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000001192092896,
+      "bomb|knife": 0.44812464714050293,
+      "bomb|gun": 0.6078304052352905,
+      "knife|bomb": 0.44812464714050293,
+      "knife|knife": 1.000000238418579,
+      "knife|gun": 0.5944788455963135,
+      "gun|bomb": 0.6078304052352905,
+      "gun|knife": 0.5944788455963135,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.3427703380584717,
+      "knife": 2.9391276836395264,
+      "gun": 3.0140230655670166
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.786698710004818
+    },
+    "L10": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999998807907104,
+      "bomb|knife": 0.4216020107269287,
+      "bomb|gun": 0.6136426329612732,
+      "knife|bomb": 0.4216020107269287,
+      "knife|knife": 1.0,
+      "knife|gun": 0.5901834964752197,
+      "gun|bomb": 0.6136426329612732,
+      "gun|knife": 0.5901834964752197,
+      "gun|gun": 1.000000238418579
+     },
+     "lex_axis_norms": {
+      "bomb": 3.3983399868011475,
+      "knife": 3.037383556365967,
+      "gun": 3.0914947986602783
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7861432328555921
+    },
+    "L11": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.000000238418579,
+      "bomb|knife": 0.40659070014953613,
+      "bomb|gun": 0.6261546015739441,
+      "knife|bomb": 0.40659070014953613,
+      "knife|knife": 0.9999998807907104,
+      "knife|gun": 0.5670235753059387,
+      "gun|bomb": 0.6261546015739441,
+      "gun|knife": 0.5670235753059387,
+      "gun|gun": 1.0000003576278687
+     },
+     "lex_axis_norms": {
+      "bomb": 3.5261130332946777,
+      "knife": 3.0722334384918213,
+      "gun": 3.1501524448394775
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7771838840698085
+    },
+    "L12": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000001192092896,
+      "bomb|knife": 0.44188016653060913,
+      "bomb|gun": 0.6478478908538818,
+      "knife|bomb": 0.44188016653060913,
+      "knife|knife": 0.9999999403953552,
+      "knife|gun": 0.5667482614517212,
+      "gun|bomb": 0.6478478908538818,
+      "gun|knife": 0.5667482614517212,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.8598127365112305,
+      "knife": 3.4092626571655273,
+      "gun": 3.409865617752075
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7563529280086734
+    },
+    "L13": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999999403953552,
+      "bomb|knife": 0.4119522273540497,
+      "bomb|gun": 0.6197711825370789,
+      "knife|bomb": 0.4119522273540497,
+      "knife|knife": 1.0000001192092896,
+      "knife|gun": 0.5392873883247375,
+      "gun|bomb": 0.6197711825370789,
+      "gun|knife": 0.5392873883247375,
+      "gun|gun": 0.9999997019767761
+     },
+     "lex_axis_norms": {
+      "bomb": 4.328798294067383,
+      "knife": 3.7923433780670166,
+      "gun": 3.8051517009735107
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7793373714550589
+    },
+    "L14": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000001192092896,
+      "bomb|knife": 0.41365355253219604,
+      "bomb|gun": 0.5855567455291748,
+      "knife|bomb": 0.41365355253219604,
+      "knife|knife": 1.0000001192092896,
+      "knife|gun": 0.5557122826576233,
+      "gun|bomb": 0.5855567455291748,
+      "gun|knife": 0.5557122826576233,
+      "gun|gun": 0.9999998807907104
+     },
+     "lex_axis_norms": {
+      "bomb": 5.204333305358887,
+      "knife": 4.619447708129883,
+      "gun": 4.554496765136719
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.8036510523188066
+    }
+   }
+  },
+  "basket": {
+   "codeword": "basket",
+   "layers": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "n_train_domains": 67,
+   "domains": [
+    "apiary_unit",
+    "bar_cellar",
+    "battery_assembly",
+    "blood_bank",
+    "bus_garage",
+    "cable_works",
+    "campsite_park",
+    "care_home_store",
+    "cargo_airfield",
+    "cheese_dairy",
+    "city_bridge",
+    "construction_site",
+    "council_depot",
+    "courier_hub",
+    "dairy_plant",
+    "dental_clinic",
+    "department_store",
+    "district_heating",
+    "farm_storage",
+    "ferry_terminal",
+    "film_studio",
+    "fire_station",
+    "furniture_workshop",
+    "garden_centre",
+    "garden_nursery",
+    "gas_holder",
+    "glassworks",
+    "harbour_dock",
+    "hospital_ward_store",
+    "hotel_service",
+    "juice_bottling",
+    "language_centre",
+    "lorry_park",
+    "market_hall",
+    "mountain_rescue",
+    "museum_archive",
+    "news_report",
+    "orchard_store",
+    "paint_store",
+    "paper_mill",
+    "pathology_lab",
+    "pipeline_station",
+    "plastics_moulding",
+    "plumbing_depot",
+    "postal_depot",
+    "power_substation",
+    "printing_works",
+    "quarry_site",
+    "radiology_suite",
+    "rail_depot",
+    "records_vault",
+    "recycling_centre",
+    "roofing_yard",
+    "scout_centre",
+    "sewage_plant",
+    "shoe_factory",
+    "solar_array",
+    "sports_academy",
+    "sports_stadium",
+    "surveying_office",
+    "telecom_exchange",
+    "textile_mill",
+    "theatre_backstage",
+    "tunnel_works",
+    "warehouse_logistics",
+    "weighbridge_office",
+    "winery_cellar"
+   ],
+   "banks": {
+    "bomb": {
+     "run": "ts116m_full_basket_bomb_20260907_054404_4164227",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " basket"
+      ],
+      "B": [
+       " bomb"
+      ],
+      "C": [
+       " basket"
+      ],
+      "E": [
+       " bomb"
+      ]
+     },
+     "n_rows": 4520
+    },
+    "knife": {
+     "run": "ts116m_full_basket_knife_20260907_064357_4169305",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " basket"
+      ],
+      "B": [
+       " knife"
+      ],
+      "C": [
+       " basket"
+      ],
+      "E": [
+       " knife"
+      ]
+     },
+     "n_rows": 4520
+    },
+    "gun": {
+     "run": "ts116m_full_basket_gun_20260907_074403_4175988",
+     "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+     ],
+     "n_selected_rows": 4520,
+     "layer_convention": "block_L == hidden_states[L+1]; hidden_states[0] == embeddings",
+     "position": "codeword_last",
+     "token_text_by_cell": {
+      "A": [
+       " basket"
+      ],
+      "B": [
+       " gun"
+      ],
+      "C": [
+       " basket"
+      ],
+      "E": [
+       " gun"
+      ]
+     },
+     "n_rows": 4520
+    }
+   },
+   "cellA_identity_across_concept_banks": {
+    "L6": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L7": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L8": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L9": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L10": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L11": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L12": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L13": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    },
+    "L14": {
+     "max_abs_diff": 0.0,
+     "mean_abs_diff": 0.0
+    }
+   },
+   "cells": {
+    "A": "benign_literal",
+    "B": "direct_harmful",
+    "C": "natural_doublespeak",
+    "E": "concept_in_benign_ctx"
+   },
+   "metrics": {
+    "B1|L6|shift_bomb|ref_bomb": {
+     "mean_proj": 0.19988002533565707,
+     "sd_proj": 0.0720364614661861,
+     "mean_gap_units": 0.05783281330965966,
+     "sd_gap_units": 0.020842859212502,
+     "ci95_gap_units": [
+      0.0528775702091876,
+      0.06274807930040086
+     ],
+     "mean_cos": 0.14864195488572457,
+     "sd_cos": 0.05041106458973344,
+     "d_paired": 2.7747063260385256,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.456169843673706,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_bomb|ref_knife": {
+     "mean_proj": 0.16137950528246253,
+     "sd_proj": 0.08164158947341689,
+     "mean_gap_units": 0.05311703696494229,
+     "sd_gap_units": 0.026871809517236084,
+     "ci95_gap_units": [
+      0.04673258902830684,
+      0.059520624110586264
+     ],
+     "mean_cos": 0.12079392933586891,
+     "sd_cos": 0.058766848906191695,
+     "d_paired": 1.9766825501971508,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.038187265396118,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_bomb|ref_gun": {
+     "mean_proj": 0.1586585553335165,
+     "sd_proj": 0.08272452208300646,
+     "mean_gap_units": 0.04748927421989457,
+     "sd_gap_units": 0.02476089301110458,
+     "ci95_gap_units": [
+      0.041475123508707676,
+      0.05324626719384474
+     ],
+     "mean_cos": 0.12048099097985168,
+     "sd_cos": 0.0621862528735778,
+     "d_paired": 1.9179144386511802,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3409345149993896,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_bomb": {
+     "mean_proj": 0.045380313116223064,
+     "sd_proj": 0.05938128939756243,
+     "mean_gap_units": 0.013130232358021632,
+     "sd_gap_units": 0.01718124168760283,
+     "ci95_gap_units": [
+      0.009055793272715855,
+      0.01724228496840267
+     ],
+     "mean_cos": 0.03470666247786194,
+     "sd_cos": 0.04232596563843764,
+     "d_paired": 0.7642190591786964,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.456169843673706,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_knife": {
+     "mean_proj": 0.1291184677506116,
+     "sd_proj": 0.06951417883965363,
+     "mean_gap_units": 0.04249852180648159,
+     "sd_gap_units": 0.022880149499471487,
+     "ci95_gap_units": [
+      0.03694903796986105,
+      0.047993991284119464
+     ],
+     "mean_cos": 0.09661815767191041,
+     "sd_cos": 0.047246970717669305,
+     "d_paired": 1.8574407395136674,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.038187265396118,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_knife|ref_gun": {
+     "mean_proj": 0.052840127859876226,
+     "sd_proj": 0.06284835115748881,
+     "mean_gap_units": 0.01581597233428141,
+     "sd_gap_units": 0.018811608211812048,
+     "ci95_gap_units": [
+      0.011304655023458324,
+      0.020211983582600273
+     ],
+     "mean_cos": 0.04504899826949577,
+     "sd_cos": 0.04933933798570294,
+     "d_paired": 0.8407559925870857,
+     "n_domains": 67,
+     "n_positive": 55,
+     "sign_p": 1.0273195443541005e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3409345149993896,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_bomb": {
+     "mean_proj": 0.1103023621740181,
+     "sd_proj": 0.06731205883447232,
+     "mean_gap_units": 0.031914624327829086,
+     "sd_gap_units": 0.019475911740183333,
+     "ci95_gap_units": [
+      0.027365635821417843,
+      0.036706626997820804
+     ],
+     "mean_cos": 0.08987153549849519,
+     "sd_cos": 0.053241047503986116,
+     "d_paired": 1.6386716449316103,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.456169843673706,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_knife": {
+     "mean_proj": 0.16262989218777685,
+     "sd_proj": 0.07394919775556351,
+     "mean_gap_units": 0.053528593855972605,
+     "sd_gap_units": 0.02433990774624685,
+     "ci95_gap_units": [
+      0.0476364516436029,
+      0.05923947819080872
+     ],
+     "mean_cos": 0.12975973585268255,
+     "sd_cos": 0.053966644024471745,
+     "d_paired": 2.1992110411440065,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.038187265396118,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L6|shift_gun|ref_gun": {
+     "mean_proj": 0.10589753113575835,
+     "sd_proj": 0.07399907804408568,
+     "mean_gap_units": 0.03169697899205238,
+     "sd_gap_units": 0.022149215350334157,
+     "ci95_gap_units": [
+      0.0263334412982556,
+      0.036819584150963765
+     ],
+     "mean_cos": 0.0908389174393274,
+     "sd_cos": 0.06303653491604255,
+     "d_paired": 1.4310655475014007,
+     "n_domains": 67,
+     "n_positive": 60,
+     "sign_p": 1.3280368233066497e-11,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.3409345149993896,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L6|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.04652086056319121,
+     "sd_resid_units": 0.02067853623269036,
+     "ci95_resid_units": [
+      0.041536665370471626,
+      0.051406702975819694
+     ],
+     "d_paired": 2.249717293318235,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.54740309715271,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7370595810896173,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7371 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L7|shift_bomb|ref_bomb": {
+     "mean_proj": 0.27281504980663757,
+     "sd_proj": 0.07688895103233721,
+     "mean_gap_units": 0.07558453787094369,
+     "sd_gap_units": 0.021302401884646435,
+     "ci95_gap_units": [
+      0.07044104281404377,
+      0.08059317448880206
+     ],
+     "mean_cos": 0.1829315194342183,
+     "sd_cos": 0.04723899395968918,
+     "d_paired": 3.5481697453760246,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.609402894973755,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_bomb|ref_knife": {
+     "mean_proj": 0.1958998064997036,
+     "sd_proj": 0.09329565351987777,
+     "mean_gap_units": 0.06330664519837952,
+     "sd_gap_units": 0.030149263245662195,
+     "ci95_gap_units": [
+      0.05613380887346477,
+      0.07046300924534976
+     ],
+     "mean_cos": 0.13329725455972588,
+     "sd_cos": 0.06264781923757848,
+     "d_paired": 2.099774202856779,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.094458818435669,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_bomb|ref_gun": {
+     "mean_proj": 0.19746154357693088,
+     "sd_proj": 0.0945163949818762,
+     "mean_gap_units": 0.05730525718029431,
+     "sd_gap_units": 0.027429575521780082,
+     "ci95_gap_units": [
+      0.05078802013029313,
+      0.06375952668802502
+     ],
+     "mean_cos": 0.135202562616402,
+     "sd_cos": 0.06367391117113734,
+     "d_paired": 2.089177688323753,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.445784091949463,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_bomb": {
+     "mean_proj": 0.02679624514821083,
+     "sd_proj": 0.05675652682939664,
+     "mean_gap_units": 0.007424010543551601,
+     "sd_gap_units": 0.015724630494543153,
+     "ci95_gap_units": [
+      0.003590769986740011,
+      0.011134114249489053
+     ],
+     "mean_cos": 0.02048551358824682,
+     "sd_cos": 0.03782607913138137,
+     "d_paired": 0.47212623190910097,
+     "n_domains": 67,
+     "n_positive": 47,
+     "sign_p": 0.0013071686857636005,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.609402894973755,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_knife": {
+     "mean_proj": 0.12723789030491417,
+     "sd_proj": 0.0766920098013338,
+     "mean_gap_units": 0.04111797822187089,
+     "sd_gap_units": 0.024783658242413978,
+     "ci95_gap_units": [
+      0.03522012658392737,
+      0.046993198599528115
+     ],
+     "mean_cos": 0.0880011086412769,
+     "sd_cos": 0.0519944359590593,
+     "d_paired": 1.659076227556385,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.094458818435669,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_knife|ref_gun": {
+     "mean_proj": 0.01652067608491921,
+     "sd_proj": 0.07260548505933154,
+     "mean_gap_units": 0.004794460605792797,
+     "sd_gap_units": 0.02107081672034035,
+     "ci95_gap_units": [
+      -0.00041657554700538985,
+      0.00968995876683058
+     ],
+     "mean_cos": 0.0181684991507045,
+     "sd_cos": 0.05107357406759502,
+     "d_paired": 0.22754033075350835,
+     "n_domains": 67,
+     "n_positive": 42,
+     "sign_p": 0.049800114294728665,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.445784091949463,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_bomb": {
+     "mean_proj": 0.11531625129282475,
+     "sd_proj": 0.07456459336443089,
+     "mean_gap_units": 0.03194884435134893,
+     "sd_gap_units": 0.020658428979559256,
+     "ci95_gap_units": [
+      0.027177720066905265,
+      0.0369401656167435
+     ],
+     "mean_cos": 0.08614732553004667,
+     "sd_cos": 0.05423116258714924,
+     "d_paired": 1.5465282661600803,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.609402894973755,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_knife": {
+     "mean_proj": 0.1700174244982538,
+     "sd_proj": 0.08812875209934126,
+     "mean_gap_units": 0.05494253905896286,
+     "sd_gap_units": 0.02847953625180014,
+     "ci95_gap_units": [
+      0.048183762101761236,
+      0.061748139083131794
+     ],
+     "mean_cos": 0.12487837024288309,
+     "sd_cos": 0.06316303693443502,
+     "d_paired": 1.9291935996847576,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.094458818435669,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L7|shift_gun|ref_gun": {
+     "mean_proj": 0.08995741965777393,
+     "sd_proj": 0.0947729313110099,
+     "mean_gap_units": 0.026106516617783865,
+     "sd_gap_units": 0.027504024855310023,
+     "ci95_gap_units": [
+      0.01949063073704706,
+      0.0324403736366901
+     ],
+     "mean_cos": 0.07317732438148856,
+     "sd_cos": 0.07082837929961774,
+     "d_paired": 0.9491889552573485,
+     "n_domains": 67,
+     "n_positive": 55,
+     "sign_p": 1.0273195443541005e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.445784091949463,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L7|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.0685596864123768,
+     "sd_resid_units": 0.025959912308761914,
+     "ci95_resid_units": [
+      0.06241260731978922,
+      0.07468878782933297
+     ],
+     "d_paired": 2.6409829739385033,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.667449951171875,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7390280411439829,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7390 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L8|shift_bomb|ref_bomb": {
+     "mean_proj": 0.3246718989824181,
+     "sd_proj": 0.08594756302457449,
+     "mean_gap_units": 0.09243924038300347,
+     "sd_gap_units": 0.02447063470433646,
+     "ci95_gap_units": [
+      0.0864859779444064,
+      0.0981790739141965
+     ],
+     "mean_cos": 0.1603564150046221,
+     "sd_cos": 0.03828544617944091,
+     "d_paired": 3.7775579383162565,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5122735500335693,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_bomb|ref_knife": {
+     "mean_proj": 0.2401572684409903,
+     "sd_proj": 0.10143210079563349,
+     "mean_gap_units": 0.08080513662699403,
+     "sd_gap_units": 0.03412861420502087,
+     "ci95_gap_units": [
+      0.07282262060676586,
+      0.08879029370024183
+     ],
+     "mean_cos": 0.12116995388026687,
+     "sd_cos": 0.05179600855772497,
+     "d_paired": 2.3676653303756554,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9720544815063477,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_bomb|ref_gun": {
+     "mean_proj": 0.25021262592010535,
+     "sd_proj": 0.11905560886675114,
+     "mean_gap_units": 0.0734748301781269,
+     "sd_gap_units": 0.03496062842980276,
+     "ci95_gap_units": [
+      0.06518492665629123,
+      0.081719791647395
+     ],
+     "mean_cos": 0.12672883438514182,
+     "sd_cos": 0.06015004652194108,
+     "d_paired": 2.10164500691561,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4054195880889893,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_bomb": {
+     "mean_proj": -0.002940060209427307,
+     "sd_proj": 0.06571243710404676,
+     "mean_gap_units": -0.0008370817840766436,
+     "sd_gap_units": 0.018709373335519013,
+     "ci95_gap_units": [
+      -0.0051955576258165236,
+      0.0036417718543384674
+     ],
+     "mean_cos": 0.0016436062522966748,
+     "sd_cos": 0.03284440146290724,
+     "d_paired": -0.044741305283992415,
+     "n_domains": 67,
+     "n_positive": 34,
+     "sign_p": 1.0,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5122735500335693,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_knife": {
+     "mean_proj": 0.07001359523760516,
+     "sd_proj": 0.09232815111010594,
+     "mean_gap_units": 0.02355730545091477,
+     "sd_gap_units": 0.031065430221625886,
+     "ci95_gap_units": [
+      0.016197670404792242,
+      0.03084118050106732
+     ],
+     "mean_cos": 0.03978117077219133,
+     "sd_cos": 0.04900285061731306,
+     "d_paired": 0.7583125449367056,
+     "n_domains": 67,
+     "n_positive": 50,
+     "sign_p": 6.737973666915461e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9720544815063477,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_knife|ref_gun": {
+     "mean_proj": -0.05056176821131315,
+     "sd_proj": 0.1043816497241497,
+     "mean_gap_units": -0.014847441527664075,
+     "sd_gap_units": 0.030651626627520894,
+     "ci95_gap_units": [
+      -0.02213349229567183,
+      -0.007474536721962248
+     ],
+     "mean_cos": -0.01776307907525006,
+     "sd_cos": 0.050599851445158835,
+     "d_paired": -0.48439326591343573,
+     "n_domains": 67,
+     "n_positive": 23,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4054195880889893,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_bomb": {
+     "mean_proj": 0.10646053584320332,
+     "sd_proj": 0.0947656656301051,
+     "mean_gap_units": 0.03031100349293289,
+     "sd_gap_units": 0.026981288410522393,
+     "ci95_gap_units": [
+      0.023917763823609196,
+      0.03676227280233296
+     ],
+     "mean_cos": 0.06172589065970491,
+     "sd_cos": 0.05025395603061684,
+     "d_paired": 1.1234083054800283,
+     "n_domains": 67,
+     "n_positive": 59,
+     "sign_p": 1.016748503966658e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5122735500335693,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_knife": {
+     "mean_proj": 0.14051674621930318,
+     "sd_proj": 0.11820865472902291,
+     "mean_gap_units": 0.047279330541775286,
+     "sd_gap_units": 0.039773380826151734,
+     "ci95_gap_units": [
+      0.03795843096628791,
+      0.056732658089169816
+     ],
+     "mean_cos": 0.08093297985654502,
+     "sd_cos": 0.06221594275050511,
+     "d_paired": 1.1887179203707081,
+     "n_domains": 67,
+     "n_positive": 62,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 2.9720544815063477,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L8|shift_gun|ref_gun": {
+     "mean_proj": 0.06472169543241164,
+     "sd_proj": 0.1369957615329103,
+     "mean_gap_units": 0.019005498076884956,
+     "sd_gap_units": 0.04022874655800869,
+     "ci95_gap_units": [
+      0.009361746045375501,
+      0.028274390626057112
+     ],
+     "mean_cos": 0.04469308694780271,
+     "sd_cos": 0.07149763455423647,
+     "d_paired": 0.4724357506262239,
+     "n_domains": 67,
+     "n_positive": 47,
+     "sign_p": 0.0013071686857636005,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4054195880889893,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L8|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.07956290920197055,
+     "sd_resid_units": 0.03346250544569511,
+     "ci95_resid_units": [
+      0.07137951658921363,
+      0.08752261384915866
+     ],
+     "d_paired": 2.3776734031792643,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.573976993560791,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7328520848087672,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7329 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L9|shift_bomb|ref_bomb": {
+     "mean_proj": 0.3623712791213349,
+     "sd_proj": 0.10549212263310404,
+     "mean_gap_units": 0.10297502504116787,
+     "sd_gap_units": 0.0299776902742684,
+     "ci95_gap_units": [
+      0.09584017880900265,
+      0.10996355983206667
+     ],
+     "mean_cos": 0.16081230712697525,
+     "sd_cos": 0.04399995328633638,
+     "d_paired": 3.435055339455466,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5190210342407227,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_bomb|ref_knife": {
+     "mean_proj": 0.25577857731772,
+     "sd_proj": 0.13207143162497895,
+     "mean_gap_units": 0.0833173563401281,
+     "sd_gap_units": 0.04302097011580689,
+     "ci95_gap_units": [
+      0.07288199008231637,
+      0.09355300075428145
+     ],
+     "mean_cos": 0.11540176006718776,
+     "sd_cos": 0.059043361667117475,
+     "d_paired": 1.9366684692569356,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0699315071105957,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_bomb|ref_gun": {
+     "mean_proj": 0.2976761315462749,
+     "sd_proj": 0.16104080105086985,
+     "mean_gap_units": 0.08551384359164521,
+     "sd_gap_units": 0.04626241882882218,
+     "ci95_gap_units": [
+      0.07454542183381688,
+      0.09650606492698399
+     ],
+     "mean_cos": 0.13414294903259863,
+     "sd_cos": 0.06996012629940883,
+     "d_paired": 1.8484516321565272,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4810285568237305,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_bomb": {
+     "mean_proj": -0.020894108360994663,
+     "sd_proj": 0.08386309215124463,
+     "mean_gap_units": -0.005937477542103654,
+     "sd_gap_units": 0.023831369956371758,
+     "ci95_gap_units": [
+      -0.01168072402277167,
+      -0.0003770172467564495
+     ],
+     "mean_cos": -0.004552852235371719,
+     "sd_cos": 0.03497421873049202,
+     "d_paired": -0.24914545630290796,
+     "n_domains": 67,
+     "n_positive": 29,
+     "sign_p": 0.3284320626971899,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5190210342407227,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_knife": {
+     "mean_proj": 0.05199791459060872,
+     "sd_proj": 0.11846115293185176,
+     "mean_gap_units": 0.01693780935182782,
+     "sd_gap_units": 0.03858755566939238,
+     "ci95_gap_units": [
+      0.008056479878392787,
+      0.02595329294223868
+     ],
+     "mean_cos": 0.029816376997907307,
+     "sd_cos": 0.05427378520686741,
+     "d_paired": 0.43894486338928373,
+     "n_domains": 67,
+     "n_positive": 44,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0699315071105957,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_knife|ref_gun": {
+     "mean_proj": -0.08578101826359087,
+     "sd_proj": 0.14301155411736377,
+     "mean_gap_units": -0.024642434517073278,
+     "sd_gap_units": 0.04108313154657222,
+     "ci95_gap_units": [
+      -0.034529957220330906,
+      -0.01488401950798629
+     ],
+     "mean_cos": -0.02841515427385891,
+     "sd_cos": 0.058352498591330744,
+     "d_paired": -0.5998187964113296,
+     "n_domains": 67,
+     "n_positive": 21,
+     "sign_p": 0.003065317669608741,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4810285568237305,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_bomb": {
+     "mean_proj": 0.10103299509066699,
+     "sd_proj": 0.11183283407742524,
+     "mean_gap_units": 0.0287105402632145,
+     "sd_gap_units": 0.03177952987187947,
+     "ci95_gap_units": [
+      0.021065636338821407,
+      0.03637185655189593
+     ],
+     "mean_cos": 0.053592707896778835,
+     "sd_cos": 0.05327021315072072,
+     "d_paired": 0.9034287284601837,
+     "n_domains": 67,
+     "n_positive": 58,
+     "sign_p": 6.811497890247056e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5190210342407227,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_knife": {
+     "mean_proj": 0.13085673743886733,
+     "sd_proj": 0.14585143289257937,
+     "mean_gap_units": 0.04262529542948307,
+     "sd_gap_units": 0.04750967002187421,
+     "ci95_gap_units": [
+      0.03131141745078714,
+      0.05397665759420883
+     ],
+     "mean_cos": 0.06888445285684473,
+     "sd_cos": 0.06958947967441893,
+     "d_paired": 0.8971919908064548,
+     "n_domains": 67,
+     "n_positive": 53,
+     "sign_p": 1.772867877551979e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.0699315071105957,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L9|shift_gun|ref_gun": {
+     "mean_proj": 0.05651512704511632,
+     "sd_proj": 0.17451271972394153,
+     "mean_gap_units": 0.01623518052856298,
+     "sd_gap_units": 0.05013251597199648,
+     "ci95_gap_units": [
+      0.004064547347658947,
+      0.02788442959773716
+     ],
+     "mean_cos": 0.03698638437691762,
+     "sd_cos": 0.08047303164884456,
+     "d_paired": 0.32384531703199954,
+     "n_domains": 67,
+     "n_positive": 42,
+     "sign_p": 0.049800114294728665,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.4810285568237305,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L9|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.08291163629067237,
+     "sd_resid_units": 0.03228226902322063,
+     "ci95_resid_units": [
+      0.07501832853027038,
+      0.0905579861422393
+     ],
+     "d_paired": 2.568333602295243,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.592538356781006,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7367214721239601,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7367 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L10|shift_bomb|ref_bomb": {
+     "mean_proj": 0.4039112623058148,
+     "sd_proj": 0.14262738182891965,
+     "mean_gap_units": 0.10936274066134133,
+     "sd_gap_units": 0.038617693602097145,
+     "ci95_gap_units": [
+      0.10023236618158124,
+      0.11848409720478849
+     ],
+     "mean_cos": 0.1532509511075334,
+     "sd_cos": 0.050371539170507205,
+     "d_paired": 2.8319335118294675,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.69331693649292,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_bomb|ref_knife": {
+     "mean_proj": 0.27898215866689363,
+     "sd_proj": 0.1623042929464373,
+     "mean_gap_units": 0.08617932525933181,
+     "sd_gap_units": 0.050136806309244254,
+     "ci95_gap_units": [
+      0.07439776160809927,
+      0.09849210380775521
+     ],
+     "mean_cos": 0.10754273105333934,
+     "sd_cos": 0.061400458128264564,
+     "d_paired": 1.7188834232435346,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2372283935546875,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_bomb|ref_gun": {
+     "mean_proj": 0.3078698751224733,
+     "sd_proj": 0.2281951696296292,
+     "mean_gap_units": 0.08471227891970086,
+     "sd_gap_units": 0.06278929645228716,
+     "ci95_gap_units": [
+      0.07011822805480865,
+      0.09943826581972383
+     ],
+     "mean_cos": 0.1190594785745806,
+     "sd_cos": 0.08453296457371767,
+     "d_paired": 1.3491515864343648,
+     "n_domains": 67,
+     "n_positive": 61,
+     "sign_p": 1.4944372779199244e-12,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.634300470352173,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_bomb": {
+     "mean_proj": -0.07729480471879022,
+     "sd_proj": 0.13704548993900237,
+     "mean_gap_units": -0.020928289136265515,
+     "sd_gap_units": 0.03710634432287235,
+     "ci95_gap_units": [
+      -0.029825970969029388,
+      -0.012304818118458072
+     ],
+     "mean_cos": -0.0224209497773233,
+     "sd_cos": 0.047018149922693715,
+     "d_paired": -0.5640083796496578,
+     "n_domains": 67,
+     "n_positive": 21,
+     "sign_p": 0.003065317669608741,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.69331693649292,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_knife": {
+     "mean_proj": 0.0532292799412537,
+     "sd_proj": 0.13301319727302255,
+     "mean_gap_units": 0.016442855884754082,
+     "sd_gap_units": 0.041088604541419264,
+     "ci95_gap_units": [
+      0.006589765383394237,
+      0.02610542850275443
+     ],
+     "mean_cos": 0.02802857944950729,
+     "sd_cos": 0.05292403399760525,
+     "d_paired": 0.40018044098282535,
+     "n_domains": 67,
+     "n_positive": 43,
+     "sign_p": 0.027119992403126347,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2372283935546875,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_knife|ref_gun": {
+     "mean_proj": -0.18676257264147053,
+     "sd_proj": 0.2050880710025498,
+     "mean_gap_units": -0.05138886400974237,
+     "sd_gap_units": 0.05643123695346969,
+     "ci95_gap_units": [
+      -0.06458548015071669,
+      -0.03804504167120958
+     ],
+     "mean_cos": -0.054968618443853756,
+     "sd_cos": 0.06739280484033565,
+     "d_paired": -0.9106457129783457,
+     "n_domains": 67,
+     "n_positive": 16,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.634300470352173,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_bomb": {
+     "mean_proj": 0.09070621739461351,
+     "sd_proj": 0.15527273591762888,
+     "mean_gap_units": 0.024559554176995662,
+     "sd_gap_units": 0.04204154113702247,
+     "ci95_gap_units": [
+      0.014640944865846937,
+      0.03455751623473263
+     ],
+     "mean_cos": 0.04441665775864767,
+     "sd_cos": 0.06298404364098271,
+     "d_paired": 0.5841734987057389,
+     "n_domains": 67,
+     "n_positive": 51,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.69331693649292,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_knife": {
+     "mean_proj": 0.15507099396590865,
+     "sd_proj": 0.16104307423514155,
+     "mean_gap_units": 0.04790239523249412,
+     "sd_gap_units": 0.049747207999218675,
+     "ci95_gap_units": [
+      0.03623863033862241,
+      0.05934434237416005
+     ],
+     "mean_cos": 0.07088565410599984,
+     "sd_cos": 0.06930867197614071,
+     "d_paired": 0.9629162551845417,
+     "n_domains": 67,
+     "n_positive": 52,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2372283935546875,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L10|shift_gun|ref_gun": {
+     "mean_proj": -9.954154991836691e-05,
+     "sd_proj": 0.228147732667346,
+     "mean_gap_units": -2.7389466206882186e-05,
+     "sd_gap_units": 0.06277624388201394,
+     "ci95_gap_units": [
+      -0.01533130400206344,
+      0.014719093143880459
+     ],
+     "mean_cos": 0.015821099322490064,
+     "sd_cos": 0.09115859096652079,
+     "d_paired": -0.00043630304257068745,
+     "n_domains": 67,
+     "n_positive": 37,
+     "sign_p": 0.4638176178968696,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.634300470352173,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L10|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.09854506299716785,
+     "sd_resid_units": 0.04581840883931198,
+     "ci95_resid_units": [
+      0.0875308997911995,
+      0.10943848673096503
+     ],
+     "d_paired": 2.150774448383215,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.653374433517456,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7184258700627607,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7184 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L11|shift_bomb|ref_bomb": {
+     "mean_proj": 0.5264577632074925,
+     "sd_proj": 0.156302351660192,
+     "mean_gap_units": 0.13658738024777953,
+     "sd_gap_units": 0.04055202569293019,
+     "ci95_gap_units": [
+      0.12694434085566472,
+      0.14594375073852464
+     ],
+     "mean_cos": 0.17868986027209163,
+     "sd_cos": 0.046883014725976405,
+     "d_paired": 3.36820116662118,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8543660640716553,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_bomb|ref_knife": {
+     "mean_proj": 0.3487947688841108,
+     "sd_proj": 0.18318538922681954,
+     "mean_gap_units": 0.10645254083749296,
+     "sd_gap_units": 0.05590837898712646,
+     "ci95_gap_units": [
+      0.09329480761007754,
+      0.11979314761422878
+     ],
+     "mean_cos": 0.11959150817321954,
+     "sd_cos": 0.060922107935443684,
+     "d_paired": 1.9040534310967032,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2765283584594727,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_bomb|ref_gun": {
+     "mean_proj": 0.3576613731904706,
+     "sd_proj": 0.21533010288149018,
+     "mean_gap_units": 0.0964304736631446,
+     "sd_gap_units": 0.058055986391736515,
+     "ci95_gap_units": [
+      0.08234827899630504,
+      0.11008782029290853
+     ],
+     "mean_cos": 0.12298251366464011,
+     "sd_cos": 0.0718076288255266,
+     "d_paired": 1.6609910477185548,
+     "n_domains": 67,
+     "n_positive": 63,
+     "sign_p": 1.1067861037383775e-14,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.709007740020752,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_bomb": {
+     "mean_proj": -0.040377519274158266,
+     "sd_proj": 0.1433155105829505,
+     "mean_gap_units": -0.010475787354640744,
+     "sd_gap_units": 0.03718264124387698,
+     "ci95_gap_units": [
+      -0.01925432589619353,
+      -0.0018437144266242383
+     ],
+     "mean_cos": -0.00929521534468931,
+     "sd_cos": 0.04590032741065231,
+     "d_paired": -0.28173865557132355,
+     "n_domains": 67,
+     "n_positive": 29,
+     "sign_p": 0.3284320626971899,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8543660640716553,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_knife": {
+     "mean_proj": 0.07201967652497897,
+     "sd_proj": 0.14992134818311614,
+     "mean_gap_units": 0.021980483196196263,
+     "sd_gap_units": 0.045756157670982206,
+     "ci95_gap_units": [
+      0.011154913618740872,
+      0.03276591143407892
+     ],
+     "mean_cos": 0.031215911744908904,
+     "sd_cos": 0.053227636576722685,
+     "d_paired": 0.4803830635048257,
+     "n_domains": 67,
+     "n_positive": 44,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2765283584594727,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_knife|ref_gun": {
+     "mean_proj": -0.1600175484625706,
+     "sd_proj": 0.19565379245746795,
+     "mean_gap_units": -0.04314295350100167,
+     "sd_gap_units": 0.052750979823076145,
+     "ci95_gap_units": [
+      -0.05589274002417254,
+      -0.030841875895979448
+     ],
+     "mean_cos": -0.04347533677297393,
+     "sd_cos": 0.06064820317120184,
+     "d_paired": -0.8178607041177384,
+     "n_domains": 67,
+     "n_positive": 16,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.709007740020752,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_bomb": {
+     "mean_proj": 0.13808542325981518,
+     "sd_proj": 0.16650972565862038,
+     "mean_gap_units": 0.03582571581536425,
+     "sd_gap_units": 0.0432002884237528,
+     "ci95_gap_units": [
+      0.025690904051919938,
+      0.045975154934346486
+     ],
+     "mean_cos": 0.05570144058149891,
+     "sd_cos": 0.060243214629558346,
+     "d_paired": 0.8292934404499533,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.8543660640716553,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_knife": {
+     "mean_proj": 0.18449122473291718,
+     "sd_proj": 0.1827980836246251,
+     "mean_gap_units": 0.056306921396419574,
+     "sd_gap_units": 0.05579017289829635,
+     "ci95_gap_units": [
+      0.04297261723626433,
+      0.06961468592154493
+     ],
+     "mean_cos": 0.07358935237761838,
+     "sd_cos": 0.06883055149429337,
+     "d_paired": 1.0092623569936812,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.2765283584594727,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L11|shift_gun|ref_gun": {
+     "mean_proj": 0.01884990667840883,
+     "sd_proj": 0.2140611625443364,
+     "mean_gap_units": 0.005082196641170494,
+     "sd_gap_units": 0.05771386245291005,
+     "ci95_gap_units": [
+      -0.008876980416693688,
+      0.018502481546862345
+     ],
+     "mean_cos": 0.01867593180366918,
+     "sd_cos": 0.07821997396019512,
+     "d_paired": 0.08805850839245363,
+     "n_domains": 67,
+     "n_positive": 34,
+     "sign_p": 1.0,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.709007740020752,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L11|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.1399575609090186,
+     "sd_resid_units": 0.05307704962869257,
+     "ci95_resid_units": [
+      0.12749216139070202,
+      0.15240118838298036
+     ],
+     "d_paired": 2.6368752952191197,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.728332042694092,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7078549357639244,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7079 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L12|shift_bomb|ref_bomb": {
+     "mean_proj": 0.558579392619987,
+     "sd_proj": 0.15771449173136337,
+     "mean_gap_units": 0.1333182374375366,
+     "sd_gap_units": 0.03764230892471694,
+     "ci95_gap_units": [
+      0.124448862109629,
+      0.14220806368791594
+     ],
+     "mean_cos": 0.1927251584168121,
+     "sd_cos": 0.0481962181883978,
+     "d_paired": 3.541712536926668,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.189819812774658,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_bomb|ref_knife": {
+     "mean_proj": 0.34630624477320643,
+     "sd_proj": 0.1716898936800725,
+     "mean_gap_units": 0.09821470456566207,
+     "sd_gap_units": 0.04869237109986673,
+     "ci95_gap_units": [
+      0.08665563918844292,
+      0.10960423881825425
+     ],
+     "mean_cos": 0.12047591088356334,
+     "sd_cos": 0.05742645092929812,
+     "d_paired": 2.017045018494301,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5260121822357178,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_bomb|ref_gun": {
+     "mean_proj": 0.37828298102119073,
+     "sd_proj": 0.2052846457728568,
+     "mean_gap_units": 0.093171223426661,
+     "sd_gap_units": 0.05056167619736072,
+     "ci95_gap_units": [
+      0.08136440926397281,
+      0.10517706102227893
+     ],
+     "mean_cos": 0.13165469404390473,
+     "sd_cos": 0.06860887999070378,
+     "d_paired": 1.842724182303206,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.060083866119385,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_bomb": {
+     "mean_proj": -0.035589460839531316,
+     "sd_proj": 0.14469552936317615,
+     "mean_gap_units": -0.008494270023503139,
+     "sd_gap_units": 0.03453502437551204,
+     "ci95_gap_units": [
+      -0.0166690596514255,
+      -0.0002839081988722993
+     ],
+     "mean_cos": -0.008098205986823865,
+     "sd_cos": 0.04658484498055653,
+     "d_paired": -0.24596102586006055,
+     "n_domains": 67,
+     "n_positive": 28,
+     "sign_p": 0.22154872964481115,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.189819812774658,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_knife": {
+     "mean_proj": 0.02713544764069479,
+     "sd_proj": 0.15352963579719842,
+     "mean_gap_units": 0.007695789531699569,
+     "sd_gap_units": 0.04354200378849819,
+     "ci95_gap_units": [
+      -0.002688434614931725,
+      0.017945693404712856
+     ],
+     "mean_cos": 0.01583522049964631,
+     "sd_cos": 0.05245140714844255,
+     "d_paired": 0.17674403707007266,
+     "n_domains": 67,
+     "n_positive": 39,
+     "sign_p": 0.22154872964481115,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5260121822357178,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_knife|ref_gun": {
+     "mean_proj": -0.16609573424029261,
+     "sd_proj": 0.19171508568209125,
+     "mean_gap_units": -0.040909434316450805,
+     "sd_gap_units": 0.04721948905585833,
+     "ci95_gap_units": [
+      -0.05245941629340794,
+      -0.029861286070436973
+     ],
+     "mean_cos": -0.04669298288228557,
+     "sd_cos": 0.05872819261379087,
+     "d_paired": -0.8663675769142051,
+     "n_domains": 67,
+     "n_positive": 15,
+     "sign_p": 6.459072791237881e-06,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.060083866119385,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_bomb": {
+     "mean_proj": 0.1489086572025249,
+     "sd_proj": 0.1768679661339542,
+     "mean_gap_units": 0.03554058738958322,
+     "sd_gap_units": 0.04221374045601868,
+     "ci95_gap_units": [
+      0.025146957263483708,
+      0.04547187781435604
+     ],
+     "mean_cos": 0.06010915760399298,
+     "sd_cos": 0.06360325788377671,
+     "d_paired": 0.8419198821438713,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.189819812774658,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_knife": {
+     "mean_proj": 0.14213609575891673,
+     "sd_proj": 0.1840352430689093,
+     "mean_gap_units": 0.04031072169149266,
+     "sd_gap_units": 0.05219359252247937,
+     "ci95_gap_units": [
+      0.027676231810696606,
+      0.05251651828903377
+     ],
+     "mean_cos": 0.05899883845755489,
+     "sd_cos": 0.06788296667270467,
+     "d_paired": 0.7723308502692385,
+     "n_domains": 67,
+     "n_positive": 50,
+     "sign_p": 6.737973666915461e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.5260121822357178,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L12|shift_gun|ref_gun": {
+     "mean_proj": 0.004249266876992005,
+     "sd_proj": 0.2150284957838087,
+     "mean_gap_units": 0.0010465958381922393,
+     "sd_gap_units": 0.05296158968000143,
+     "ci95_gap_units": [
+      -0.011777656000821543,
+      0.013419839752269808
+     ],
+     "mean_cos": 0.013118313468104362,
+     "sd_cos": 0.07779853460934034,
+     "d_paired": 0.01976141283741412,
+     "n_domains": 67,
+     "n_positive": 35,
+     "sign_p": 0.807194691367025,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.060083866119385,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L12|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.1406973098779189,
+     "sd_resid_units": 0.05431566598093458,
+     "ci95_resid_units": [
+      0.12765019212873036,
+      0.15360073860604417
+     ],
+     "d_paired": 2.5903633387705356,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 2.891735553741455,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.690181364106548,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.6902 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L13|shift_bomb|ref_bomb": {
+     "mean_proj": 0.5737973040164407,
+     "sd_proj": 0.174829096224074,
+     "mean_gap_units": 0.12153940775556604,
+     "sd_gap_units": 0.0370315870513501,
+     "ci95_gap_units": [
+      0.11257531379597766,
+      0.13045684599397717
+     ],
+     "mean_cos": 0.17265030522231042,
+     "sd_cos": 0.045489086112736644,
+     "d_paired": 3.2820469613422887,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.721080303192139,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_bomb|ref_knife": {
+     "mean_proj": 0.30605433700578427,
+     "sd_proj": 0.1798889747368389,
+     "mean_gap_units": 0.077361753635672,
+     "sd_gap_units": 0.045470770587714114,
+     "ci95_gap_units": [
+      0.0666100931966403,
+      0.08808931765740802
+     ],
+     "mean_cos": 0.0928162250873294,
+     "sd_cos": 0.05280031736167574,
+     "d_paired": 1.701351277661756,
+     "n_domains": 67,
+     "n_positive": 64,
+     "sign_p": 6.801200228001569e-16,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.9561452865600586,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_bomb|ref_gun": {
+     "mean_proj": 0.3714974356898621,
+     "sd_proj": 0.20866916383407466,
+     "mean_gap_units": 0.08068717014130447,
+     "sd_gap_units": 0.045321778047425675,
+     "ci95_gap_units": [
+      0.07002863576222843,
+      0.09145659328402728
+     ],
+     "mean_cos": 0.11228990466632564,
+     "sd_cos": 0.05962149326755689,
+     "d_paired": 1.7803178431541609,
+     "n_domains": 67,
+     "n_positive": 65,
+     "sign_p": 3.088620938868081e-17,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.604169845581055,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_bomb": {
+     "mean_proj": -0.08293596096336842,
+     "sd_proj": 0.1557140269178083,
+     "mean_gap_units": -0.01756715743794733,
+     "sd_gap_units": 0.032982710930064656,
+     "ci95_gap_units": [
+      -0.025466510012083783,
+      -0.009893253496861607
+     ],
+     "mean_cos": -0.0211566372291921,
+     "sd_cos": 0.043816685984112765,
+     "d_paired": -0.5326171482749279,
+     "n_domains": 67,
+     "n_positive": 22,
+     "sign_p": 0.006741447363103126,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.721080303192139,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_knife": {
+     "mean_proj": -0.0317620755548575,
+     "sd_proj": 0.1665559211387798,
+     "mean_gap_units": -0.008028541232487247,
+     "sd_gap_units": 0.04210055725319513,
+     "ci95_gap_units": [
+      -0.01823294049063078,
+      0.001722678027430122
+     ],
+     "mean_cos": -0.0025918719282085885,
+     "sd_cos": 0.049983352443831765,
+     "d_paired": -0.19069916780918472,
+     "n_domains": 67,
+     "n_positive": 35,
+     "sign_p": 0.807194691367025,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.9561452865600586,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_knife|ref_gun": {
+     "mean_proj": -0.2177915665696361,
+     "sd_proj": 0.1971016169217954,
+     "mean_gap_units": -0.04730311302018234,
+     "sd_gap_units": 0.04280937140296153,
+     "ci95_gap_units": [
+      -0.05745110519442783,
+      -0.03712500480581288
+     ],
+     "mean_cos": -0.05730679289062123,
+     "sd_cos": 0.05268327224004592,
+     "d_paired": -1.1049709787822284,
+     "n_domains": 67,
+     "n_positive": 10,
+     "sign_p": 4.042104433067337e-09,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.604169845581055,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_bomb": {
+     "mean_proj": 0.10118132660082027,
+     "sd_proj": 0.17479262678145072,
+     "mean_gap_units": 0.02143181647056648,
+     "sd_gap_units": 0.03702386224256033,
+     "ci95_gap_units": [
+      0.012645011883046519,
+      0.03021943168627301
+     ],
+     "mean_cos": 0.03877494917663952,
+     "sd_cos": 0.05665762868544647,
+     "d_paired": 0.5788649582303652,
+     "n_domains": 67,
+     "n_positive": 51,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.721080303192139,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_knife": {
+     "mean_proj": 0.07588256988674402,
+     "sd_proj": 0.18877682418139832,
+     "mean_gap_units": 0.01918093608557165,
+     "sd_gap_units": 0.047717363875062146,
+     "ci95_gap_units": [
+      0.007818869778180434,
+      0.030334614564439352
+     ],
+     "mean_cos": 0.03205147856981096,
+     "sd_cos": 0.06171886265316293,
+     "d_paired": 0.40196973445123424,
+     "n_domains": 67,
+     "n_positive": 43,
+     "sign_p": 0.027119992403126347,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 3.9561452865600586,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L13|shift_gun|ref_gun": {
+     "mean_proj": -0.05620036357596739,
+     "sd_proj": 0.21235960942262236,
+     "mean_gap_units": -0.01220640538052844,
+     "sd_gap_units": 0.04612332223721912,
+     "ci95_gap_units": [
+      -0.02327480889829051,
+      -0.0014575183162381115
+     ],
+     "mean_cos": -0.007622247654714319,
+     "sd_cos": 0.06778497951970129,
+     "d_paired": -0.26464714136915546,
+     "n_domains": 67,
+     "n_positive": 32,
+     "sign_p": 0.807194691367025,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.604169845581055,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L13|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.131024592625579,
+     "sd_resid_units": 0.048223661241340164,
+     "ci95_resid_units": [
+      0.11943876034587371,
+      0.14237260484615982
+     ],
+     "d_paired": 2.717018767402443,
+     "n_domains": 67,
+     "n_positive": 66,
+     "sign_p": 9.215718466126788e-19,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 3.3371994495391846,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7068719943786491,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7069 of it here). A large number over a tiny residual is not a large effect."
+    },
+    "B1|L14|shift_bomb|ref_bomb": {
+     "mean_proj": 0.4488665779579931,
+     "sd_proj": 0.1678934534490148,
+     "mean_gap_units": 0.07933841783401252,
+     "sd_gap_units": 0.02967563551274216,
+     "ci95_gap_units": [
+      0.07232661479837532,
+      0.08620390863209915
+     ],
+     "mean_cos": 0.12902988481285718,
+     "sd_cos": 0.04392366096707001,
+     "d_paired": 2.673520430588457,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.657619476318359,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_bomb|ref_knife": {
+     "mean_proj": 0.16825184948853592,
+     "sd_proj": 0.1774709317530111,
+     "mean_gap_units": 0.03412601001455201,
+     "sd_gap_units": 0.035995888382242075,
+     "ci95_gap_units": [
+      0.02580436316936827,
+      0.04250011423201749
+     ],
+     "mean_cos": 0.04958715633886144,
+     "sd_cos": 0.051777407981271735,
+     "d_paired": 0.9480530012807648,
+     "n_domains": 67,
+     "n_positive": 54,
+     "sign_p": 4.4658346801823307e-07,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.93031120300293,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_bomb|ref_gun": {
+     "mean_proj": 0.2533356774765164,
+     "sd_proj": 0.19683590655998967,
+     "mean_gap_units": 0.045537477080874474,
+     "sd_gap_units": 0.03538155649039826,
+     "ci95_gap_units": [
+      0.03709478683107873,
+      0.054129113936050424
+     ],
+     "mean_cos": 0.07332643735454465,
+     "sd_cos": 0.055026756005725035,
+     "d_paired": 1.2870399608686605,
+     "n_domains": 67,
+     "n_positive": 59,
+     "sign_p": 1.016748503966658e-10,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.563234806060791,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_bomb": {
+     "mean_proj": -0.15345376457518606,
+     "sd_proj": 0.1552972798564376,
+     "mean_gap_units": -0.02712338028697621,
+     "sd_gap_units": 0.027449226747482812,
+     "ci95_gap_units": [
+      -0.033721277120160584,
+      -0.02052300738126358
+     ],
+     "mean_cos": -0.0396873121850842,
+     "sd_cos": 0.039462818914013105,
+     "d_paired": -0.988129120594026,
+     "n_domains": 67,
+     "n_positive": 11,
+     "sign_p": 2.1457960315833698e-08,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.657619476318359,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_knife": {
+     "mean_proj": -0.10623826520211661,
+     "sd_proj": 0.1707945760287762,
+     "mean_gap_units": -0.021547983652108922,
+     "sd_gap_units": 0.034641743491719036,
+     "ci95_gap_units": [
+      -0.02973809303805554,
+      -0.013255590342508146
+     ],
+     "mean_cos": -0.023182680463300864,
+     "sd_cos": 0.04639380926543688,
+     "d_paired": -0.6220236477780017,
+     "n_domains": 67,
+     "n_positive": 23,
+     "sign_p": 0.013933875024287792,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.93031120300293,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_knife|ref_gun": {
+     "mean_proj": -0.2694520490494237,
+     "sd_proj": 0.19524026405289407,
+     "mean_gap_units": -0.04843441962145348,
+     "sd_gap_units": 0.03509473729927635,
+     "ci95_gap_units": [
+      -0.056914016204262015,
+      -0.04012752364507118
+     ],
+     "mean_cos": -0.06878834572089115,
+     "sd_cos": 0.04662691322171522,
+     "d_paired": -1.3801049202454692,
+     "n_domains": 67,
+     "n_positive": 5,
+     "sign_p": 1.4195339782113736e-13,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.563234806060791,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_bomb": {
+     "mean_proj": 0.007295422763355187,
+     "sd_proj": 0.17587226508639384,
+     "mean_gap_units": 0.0012894862925815955,
+     "sd_gap_units": 0.031085912692177205,
+     "ci95_gap_units": [
+      -0.006228193962777763,
+      0.008529743752410033
+     ],
+     "mean_cos": 0.00865908037481395,
+     "sd_cos": 0.053320909414168394,
+     "d_paired": 0.04148137149294947,
+     "n_domains": 67,
+     "n_positive": 41,
+     "sign_p": 0.08643723427347086,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.657619476318359,
+     "_reading": "gap_units is the fraction of the benign basket->bomb lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_knife": {
+     "mean_proj": -0.02546603325754404,
+     "sd_proj": 0.18080649090238618,
+     "mean_gap_units": -0.005165197937613617,
+     "sd_gap_units": 0.03667242968197656,
+     "ci95_gap_units": [
+      -0.013825850706374083,
+      0.0036199185734875953
+     ],
+     "mean_cos": 0.0008109714505405447,
+     "sd_cos": 0.05755368932173817,
+     "d_paired": -0.1408468973124015,
+     "n_domains": 67,
+     "n_positive": 33,
+     "sign_p": 1.0,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 4.93031120300293,
+     "_reading": "gap_units is the fraction of the benign basket->knife lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1|L14|shift_gun|ref_gun": {
+     "mean_proj": -0.14084476210288147,
+     "sd_proj": 0.21279571120170976,
+     "mean_gap_units": -0.025317062287113976,
+     "sd_gap_units": 0.03825035588465228,
+     "ci95_gap_units": [
+      -0.03449472799410706,
+      -0.01634384732437716
+     ],
+     "mean_cos": -0.03243835664759067,
+     "sd_cos": 0.06291422006552663,
+     "d_paired": -0.6618778231360793,
+     "n_domains": 67,
+     "n_positive": 16,
+     "sign_p": 2.1689238760717064e-05,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "ref_gap_norm": 5.563234806060791,
+     "_reading": "gap_units is the fraction of the benign basket->gun lexical gap that the Doublespeak manipulation traverses at the queried token"
+    },
+    "B1resid|L14|shift_bomb|ref_bomb_minus_knifegun": {
+     "mean_resid_units": 0.09219301469726801,
+     "sd_resid_units": 0.035662977586046946,
+     "ci95_resid_units": [
+      0.08344742994053436,
+      0.10046636312462803
+     ],
+     "d_paired": 2.5851182637463874,
+     "n_domains": 67,
+     "n_positive": 67,
+     "sign_p": 1.3552527156068805e-20,
+     "sign_p_floor": 1.3552527156068805e-20,
+     "resid_norm": 4.12784481048584,
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7296080670967986,
+     "_reading": "units are the RESIDUAL gap, not the full bomb gap: the denominator is the length of the part of the bomb axis that knife and gun cannot express (0.7296 of it here). A large number over a tiny residual is not a large effect."
+    }
+   },
+   "controls": {
+    "L6": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.00029035269364343963,
+      "between_draw_sd": 0.0045159332951998895,
+      "n_draws": 12,
+      "draws": [
+       -0.0027884592446628716,
+       -0.0015112285704905434,
+       0.005189512656394928,
+       0.00032873641361346763,
+       0.0022589643843348487,
+       0.002855107390053128,
+       -0.0007790739287532408,
+       -0.011776524232945054,
+       0.00303774310933599,
+       0.0009802157149300494,
+       0.0028738230527472486,
+       -0.004153049068279227
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.05814482355913712,
+      "between_draw_sd": 2.291822258750655e-05,
+      "n_draws": 12,
+      "draws": [
+       0.05816035346420491,
+       0.058173666863144624,
+       0.05816657164487924,
+       0.05815950020403096,
+       0.05815001484858836,
+       0.05814140129423528,
+       0.058121534988755885,
+       0.05814123972684693,
+       0.05809430802023288,
+       0.058139578460811824,
+       0.05816538707744693,
+       0.05812432611646764
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.006120313681184218,
+      "sd": 0.025985383713656197,
+      "ci95": [
+       -0.012296533999253364,
+       3.897051095670118e-05
+      ],
+      "n_positive": 29,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.456169843673706,
+      "knife": 3.038187265396118,
+      "gun": 3.3409345149993896
+     }
+    },
+    "L7": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.001317516554605793,
+      "between_draw_sd": 0.004011286261446592,
+      "n_draws": 12,
+      "draws": [
+       -0.006979216256639248,
+       0.0032176193418471176,
+       -0.0017196982615162266,
+       -0.003554293400654508,
+       -0.0011674205247980513,
+       0.0038148222641007567,
+       0.0063856370517683895,
+       -0.00011891526235582627,
+       -0.00229214982614736,
+       -0.004865877491513034,
+       -0.005023133686393764,
+       -0.003507572602967762
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.07598601873590444,
+      "between_draw_sd": 3.1737130276569925e-05,
+      "n_draws": 12,
+      "draws": [
+       0.07604076765210147,
+       0.07600775392007433,
+       0.07594734167312434,
+       0.0759533385541857,
+       0.07602013849647664,
+       0.07595911739877434,
+       0.07598679901912998,
+       0.07599276253386382,
+       0.07595602494407148,
+       0.07596108060509019,
+       0.07598146188556432,
+       0.07602563814839665
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.023718616937935637,
+      "sd": 0.027707039307310142,
+      "ci95": [
+       -0.0303361630676734,
+       -0.01708426827238821
+      ],
+      "n_positive": 11,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.609402894973755,
+      "knife": 3.094458818435669,
+      "gun": 3.445784091949463
+     }
+    },
+    "L8": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.001410827170140164,
+      "between_draw_sd": 0.0053808502919235855,
+      "n_draws": 12,
+      "draws": [
+       0.003987883747944598,
+       0.004947657037573226,
+       0.0024430445716694775,
+       0.002473036895750555,
+       0.0010651415820477363,
+       -0.007974337305362225,
+       -0.0010370802362126234,
+       -0.007570914755330835,
+       -0.012253310156427858,
+       0.0005338016922852006,
+       -0.004017078604287876,
+       0.00047222948866865465
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.0931219475449712,
+      "between_draw_sd": 4.444615146510399e-05,
+      "n_draws": 12,
+      "draws": [
+       0.09315424300590106,
+       0.09313627798223335,
+       0.0931293152473482,
+       0.09314815677888971,
+       0.09304812026783454,
+       0.09310884237394143,
+       0.09311402958198597,
+       0.09315641388579109,
+       0.09316445028266541,
+       0.09304027785895844,
+       0.09308577369606097,
+       0.09317746957804415
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.049902125310573676,
+      "sd": 0.029348099673905895,
+      "ci95": [
+       -0.05686010858207909,
+       -0.04298001767668031
+      ],
+      "n_positive": 2,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.5122735500335693,
+      "knife": 2.9720544815063477,
+      "gun": 3.4054195880889893
+     }
+    },
+    "L9": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0022498689631562365,
+      "between_draw_sd": 0.006513772610363502,
+      "n_draws": 12,
+      "draws": [
+       0.0011946966378257428,
+       0.008156402943383125,
+       -0.005524526646027994,
+       0.011143364069329422,
+       0.0076537847705062554,
+       -0.0023910918301858937,
+       -0.006171331409460211,
+       0.00673612540989947,
+       0.00623018186890587,
+       0.004630641901977445,
+       0.004225312903377388,
+       -0.008885133061655781
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.10371684876405907,
+      "between_draw_sd": 6.074555649218524e-05,
+      "n_draws": 12,
+      "draws": [
+       0.10376659114833423,
+       0.10375223177135307,
+       0.10377721655135642,
+       0.10369365373950257,
+       0.10366234115630159,
+       0.10374406324116106,
+       0.10370246616073729,
+       0.10366634657824135,
+       0.10381620589833764,
+       0.10359787807534648,
+       0.10367894874825295,
+       0.10374424209978404
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.060927389558919756,
+      "sd": 0.029228238399961286,
+      "ci95": [
+       -0.06790795067203406,
+       -0.05397055634897662
+      ],
+      "n_positive": 1,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.5190210342407227,
+      "knife": 3.0699315071105957,
+      "gun": 3.4810285568237305
+     }
+    },
+    "L10": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -9.383567018483592e-05,
+      "between_draw_sd": 0.00418065024465475,
+      "n_draws": 12,
+      "draws": [
+       0.002682112687893702,
+       -0.0024970865119976096,
+       -0.003318507090191914,
+       0.008603914054541409,
+       -0.0030462671394312,
+       -0.00018289061361737998,
+       -0.004732736404098749,
+       -0.004777539873569819,
+       0.00014192566584143594,
+       0.0024690853858728616,
+       0.00544035776257382,
+       -0.0019083959660345878
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.11033436520342256,
+      "between_draw_sd": 5.518189453322867e-05,
+      "n_draws": 12,
+      "draws": [
+       0.11040072238953423,
+       0.11030712268528121,
+       0.11030619646709386,
+       0.11030717350955467,
+       0.11039043258179973,
+       0.11023840007786645,
+       0.11036404773832764,
+       0.11039999341649821,
+       0.11026589471511554,
+       0.11039431910315212,
+       0.11033522287809183,
+       0.11030285687875536
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.08046200963848527,
+      "sd": 0.0335670032938387,
+      "ci95": [
+       -0.08832615277590118,
+       -0.07248627133821953
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.69331693649292,
+      "knife": 3.2372283935546875,
+      "gun": 3.634300470352173
+     }
+    },
+    "L11": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0009100647181897813,
+      "between_draw_sd": 0.009799714793134191,
+      "n_draws": 12,
+      "draws": [
+       0.006139933774228037,
+       -0.009228982339800875,
+       -0.014265772432821372,
+       0.010200023458095479,
+       0.0033840599334152097,
+       -0.005922510266657101,
+       0.007854884539520091,
+       -0.010888010084757963,
+       -0.001749079146401005,
+       0.009826671849228367,
+       -0.0019179838479566268,
+       0.017487541182185134
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.1374645125168442,
+      "between_draw_sd": 5.406279321730748e-05,
+      "n_draws": 12,
+      "draws": [
+       0.1375373129989153,
+       0.13751619035947862,
+       0.13747472152137158,
+       0.13741261503079588,
+       0.13750078300727642,
+       0.1374929725532593,
+       0.13736658616114575,
+       0.1374205794919775,
+       0.1374697339165468,
+       0.13749279413806534,
+       0.1373895078973909,
+       0.1375003531259068
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.14233826414088524,
+      "sd": 0.04112432811766125,
+      "ci95": [
+       -0.15187652297852305,
+       -0.13256921445957867
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 3.8543660640716553,
+      "knife": 3.2765283584594727,
+      "gun": 3.709007740020752
+     }
+    },
+    "L12": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.0011593761249080947,
+      "between_draw_sd": 0.0064156825557826975,
+      "n_draws": 12,
+      "draws": [
+       0.0038013872504739244,
+       0.0028645302789838123,
+       0.003060563815160123,
+       -0.0033970450605533093,
+       -0.009220189951514546,
+       0.00847609103131928,
+       0.005356021984157964,
+       0.010377205146561302,
+       -0.0006955522180430297,
+       0.006198549971179651,
+       -0.008677206983127586,
+       -0.004231841765700448
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.13406686026985806,
+      "between_draw_sd": 4.929540634684995e-05,
+      "n_draws": 12,
+      "draws": [
+       0.13404785255415255,
+       0.13410581235222313,
+       0.13412274301392693,
+       0.13410339784943665,
+       0.13403017791707605,
+       0.1341245117436481,
+       0.13399120593326136,
+       0.13409879309015968,
+       0.13401375374040803,
+       0.13409624505877626,
+       0.13399437481555695,
+       0.13407345516967123
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.15154357463444923,
+      "sd": 0.0411351344054802,
+      "ci95": [
+       -0.16144024987385813,
+       -0.1416601182749355
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 4.189819812774658,
+      "knife": 3.5260121822357178,
+      "gun": 4.060083866119385
+     }
+    },
+    "L13": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": -0.0035423181033070006,
+      "between_draw_sd": 0.004964296224376035,
+      "n_draws": 12,
+      "draws": [
+       -0.0072409762573497185,
+       0.0019400755909533233,
+       0.005769761361249667,
+       -0.002927396464001513,
+       -0.007399462994980203,
+       0.00027523065200568035,
+       -0.008348387244437216,
+       -0.011152070635225355,
+       -0.0020275856154054815,
+       -0.002086128966926933,
+       -0.0012712037296125742,
+       -0.00803967293595368
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.12219236671060563,
+      "between_draw_sd": 4.405920662143074e-05,
+      "n_draws": 12,
+      "draws": [
+       0.12212960462116927,
+       0.12218965296109764,
+       0.12215468140353193,
+       0.12219763049405537,
+       0.12220269598392998,
+       0.12216441412376121,
+       0.1221304181465596,
+       0.12218049657242348,
+       0.12223431700780321,
+       0.12220415645727241,
+       0.12226003334200436,
+       0.12226029941365901
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.1862012072090054,
+      "sd": 0.047568922468474946,
+      "ci95": [
+       -0.19736404929738835,
+       -0.17501671683735395
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 4.721080303192139,
+      "knife": 3.9561452865600586,
+      "gun": 4.604169845581055
+     }
+    },
+    "L14": {
+     "random_unit_gap_units": {
+      "mean_of_draw_means": 0.00010459599702636759,
+      "between_draw_sd": 0.006346033692222311,
+      "n_draws": 12,
+      "draws": [
+       0.010563742330061852,
+       -0.011743745985513174,
+       -0.005598677471296482,
+       0.0013913762714812205,
+       0.0015527706433150713,
+       0.0018413088975387346,
+       -0.002605407437076904,
+       -0.0028903792964204613,
+       -0.001002987132341379,
+       0.009307059370864647,
+       0.005302731759261212,
+       -0.004862639985557926
+      ]
+     },
+     "domain_shuffled_ref_gap_units": {
+      "mean_of_draw_means": 0.07989004669255252,
+      "between_draw_sd": 3.4274185241895605e-05,
+      "n_draws": 12,
+      "draws": [
+       0.07990977832767461,
+       0.07989455447437185,
+       0.07985527413844448,
+       0.0798703157371792,
+       0.07991105628157108,
+       0.07990197103139877,
+       0.07992238116471784,
+       0.07985816053190008,
+       0.07984385042801619,
+       0.07991171420631156,
+       0.07995288258949368,
+       0.0798486213995509
+      ]
+     },
+     "harm_context_at_concept_token_gap_units": {
+      "mean": -0.14495967872700866,
+      "sd": 0.04070840428071816,
+      "ci95": [
+       -0.15456076092225343,
+       -0.13527769511962837
+      ],
+      "n_positive": 0,
+      "n_domains": 67
+     },
+     "gap_norms": {
+      "bomb": 5.657619476318359,
+      "knife": 4.93031120300293,
+      "gun": 5.563234806060791
+     }
+    }
+   },
+   "axis_geometry": {
+    "L6": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0,
+      "bomb|knife": 0.5223396420478821,
+      "bomb|gun": 0.6690608263015747,
+      "knife|bomb": 0.5223396420478821,
+      "knife|knife": 0.9999997019767761,
+      "knife|gun": 0.6755794882774353,
+      "gun|bomb": 0.6690608263015747,
+      "gun|knife": 0.6755794882774353,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.456169843673706,
+      "knife": 3.038187265396118,
+      "gun": 3.3409345149993896
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7370595810896173
+    },
+    "L7": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.000000238418579,
+      "bomb|knife": 0.5044693946838379,
+      "bomb|gun": 0.6696827411651611,
+      "knife|bomb": 0.5044693946838379,
+      "knife|knife": 1.000000238418579,
+      "knife|gun": 0.6723501682281494,
+      "gun|bomb": 0.6696827411651611,
+      "gun|knife": 0.6723501682281494,
+      "gun|gun": 1.0000001192092896
+     },
+     "lex_axis_norms": {
+      "bomb": 3.609402894973755,
+      "knife": 3.094458818435669,
+      "gun": 3.445784091949463
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7390280411439829
+    },
+    "L8": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999998807907104,
+      "bomb|knife": 0.5079565644264221,
+      "bomb|gun": 0.6770706176757812,
+      "knife|bomb": 0.5079565644264221,
+      "knife|knife": 1.0,
+      "knife|gun": 0.6773120164871216,
+      "gun|bomb": 0.6770706176757812,
+      "gun|knife": 0.6773120164871216,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.5122735500335693,
+      "knife": 2.9720544815063477,
+      "gun": 3.4054195880889893
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7328520848087672
+    },
+    "L9": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000001192092896,
+      "bomb|knife": 0.4998955726623535,
+      "bomb|gun": 0.6730972528457642,
+      "knife|bomb": 0.4998955726623535,
+      "knife|knife": 0.9999999403953552,
+      "knife|gun": 0.67148756980896,
+      "gun|bomb": 0.6730972528457642,
+      "gun|knife": 0.67148756980896,
+      "gun|gun": 0.9999999403953552
+     },
+     "lex_axis_norms": {
+      "bomb": 3.5190210342407227,
+      "knife": 3.0699315071105957,
+      "gun": 3.4810285568237305
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7367214721239601
+    },
+    "L10": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.000000238418579,
+      "bomb|knife": 0.5039025545120239,
+      "bomb|gun": 0.6942186951637268,
+      "knife|bomb": 0.5039025545120239,
+      "knife|knife": 1.0,
+      "knife|gun": 0.6794889569282532,
+      "gun|bomb": 0.6942186951637268,
+      "gun|knife": 0.6794889569282532,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 3.69331693649292,
+      "knife": 3.2372283935546875,
+      "gun": 3.634300470352173
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7184258700627607
+    },
+    "L11": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000001192092896,
+      "bomb|knife": 0.4960397481918335,
+      "bomb|gun": 0.7053198218345642,
+      "knife|bomb": 0.4960397481918335,
+      "knife|knife": 1.0000001192092896,
+      "knife|gun": 0.6626366376876831,
+      "gun|bomb": 0.7053198218345642,
+      "gun|knife": 0.6626366376876831,
+      "gun|gun": 0.9999998211860657
+     },
+     "lex_axis_norms": {
+      "bomb": 3.8543660640716553,
+      "knife": 3.2765283584594727,
+      "gun": 3.709007740020752
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7078549357639244
+    },
+    "L12": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 0.9999996423721313,
+      "bomb|knife": 0.510906994342804,
+      "bomb|gun": 0.7220832109451294,
+      "knife|bomb": 0.510906994342804,
+      "knife|knife": 1.0,
+      "knife|gun": 0.6581429243087769,
+      "gun|bomb": 0.7220832109451294,
+      "gun|knife": 0.6581429243087769,
+      "gun|gun": 0.9999997615814209
+     },
+     "lex_axis_norms": {
+      "bomb": 4.189819812774658,
+      "knife": 3.5260121822357178,
+      "gun": 4.060083866119385
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.690181364106548
+    },
+    "L13": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0000004768371582,
+      "bomb|knife": 0.4910987913608551,
+      "bomb|gun": 0.7058752775192261,
+      "knife|bomb": 0.4910987913608551,
+      "knife|knife": 0.9999998807907104,
+      "knife|gun": 0.6465286016464233,
+      "gun|bomb": 0.7058752775192261,
+      "gun|knife": 0.6465286016464233,
+      "gun|gun": 1.000000238418579
+     },
+     "lex_axis_norms": {
+      "bomb": 4.721080303192139,
+      "knife": 3.9561452865600586,
+      "gun": 4.604169845581055
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7068719943786491
+    },
+    "L14": {
+     "cos_between_lex_axes": {
+      "bomb|bomb": 1.0,
+      "bomb|knife": 0.4979892075061798,
+      "bomb|gun": 0.6813218593597412,
+      "knife|bomb": 0.4979892075061798,
+      "knife|knife": 0.9999998211860657,
+      "knife|gun": 0.6664307117462158,
+      "gun|bomb": 0.6813218593597412,
+      "gun|knife": 0.6664307117462158,
+      "gun|gun": 1.0
+     },
+     "lex_axis_norms": {
+      "bomb": 5.657619476318359,
+      "knife": 4.93031120300293,
+      "gun": 5.563234806060791
+     },
+     "frac_of_bomb_axis_orthogonal_to_knife_and_gun": 0.7296080670967986
+    }
+   }
+  }
+ }
+}

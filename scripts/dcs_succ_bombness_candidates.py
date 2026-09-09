@@ -322,6 +322,55 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
                                  "the Doublespeak manipulation traverses at the queried token"
                                  % (codeword, ref_c))}
 
+        # ---- AXIS GEOMETRY. The off-diagonal of the 3x3 cannot be read without it: if
+        # v_lex(bomb) and v_lex(knife) are nearly the same direction, "the bomb shift also aligns
+        # with the knife axis" is a statement about the axes, not about the shift. Both are
+        # reported; neither is inferred from the other.
+        vfull = {c: torch.stack([delta_EA[c][d][L_i] for d in common]).mean(dim=0)
+                 for c in CONCEPTS}
+        vhatf = {c: _unit(vfull[c], torch) for c in CONCEPTS}
+        cosmat = {}
+        for c1 in CONCEPTS:
+            for c2 in CONCEPTS:
+                cosmat["%s|%s" % (c1, c2)] = float(torch.dot(vhatf[c1], vhatf[c2]))
+
+        # ---- B1_resid: the part of the bomb axis that the two HARD NEGATIVE axes cannot express.
+        # Gram-Schmidt v_lex(bomb) against span{v_lex(knife), v_lex(gun)}, then project the
+        # Doublespeak shift on what is left. If the whole alignment survives, it is not carried by
+        # a shared "some other weapon word is here" component; if it collapses, it is.
+        basis = []
+        for c in ("knife", "gun"):
+            u = vfull[c].clone()
+            for b in basis:
+                u = u - float(torch.dot(u, b)) * b
+            n = float(torch.linalg.vector_norm(u))
+            if n > 1e-8:
+                basis.append(u / n)
+        resid = vfull["bomb"].clone()
+        for b in basis:
+            resid = resid - float(torch.dot(resid, b)) * b
+        rnorm = float(torch.linalg.vector_norm(resid))
+        frac_kept = rnorm / float(torch.linalg.vector_norm(vfull["bomb"]))
+        rhat = _unit(resid, torch)
+        rvals_spec = [float(torch.dot(delta_CA["bomb"][d][L_i], rhat)) / rnorm for d in common]
+        k_spec = sum(1 for x in rvals_spec if x > 0)
+        p_spec, f_spec = sign_test_two_sided(k_spec, len(rvals_spec))
+        out["metrics"]["B1resid|L%d|shift_bomb|ref_bomb_minus_knifegun" % L] = {
+            "mean_resid_units": mean(rvals_spec), "sd_resid_units": sd(rvals_spec),
+            "ci95_resid_units": boot_ci(rvals_spec, rng),
+            "d_paired": cohen_d_paired(rvals_spec),
+            "n_domains": len(rvals_spec), "n_positive": k_spec,
+            "sign_p": p_spec, "sign_p_floor": f_spec,
+            "resid_norm": rnorm, "frac_of_bomb_axis_orthogonal_to_knife_and_gun": frac_kept,
+            "_reading": ("units are the RESIDUAL gap, not the full bomb gap: the denominator is "
+                         "the length of the part of the bomb axis that knife and gun cannot "
+                         "express (%.4f of it here). A large number over a tiny residual is not "
+                         "a large effect." % frac_kept)}
+        out.setdefault("axis_geometry", {})["L%d" % L] = {
+            "cos_between_lex_axes": cosmat,
+            "lex_axis_norms": {c: float(torch.linalg.vector_norm(vfull[c])) for c in CONCEPTS},
+            "frac_of_bomb_axis_orthogonal_to_knife_and_gun": frac_kept}
+
         # ---- CONTROLS at this layer, for the diagonal cell only (bomb shift vs bomb ref)
         # C1 random unit directions, matched by construction to nothing but dimensionality
         rvals = []
