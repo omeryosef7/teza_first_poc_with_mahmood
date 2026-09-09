@@ -1237,6 +1237,11 @@ def main() -> int:
                     choices=sorted(_QK))
     ap.add_argument("--n-families", type=int, default=4, help="matched families per pair (smoke=2)")
     ap.add_argument("--n-examples", default="4", help="comma list")
+    ap.add_argument("--only-domains-file", default="",
+                    help="restrict to the domains named in this file, one per line, '#' comments "
+                         "allowed. This module has NO --split flag and its round-robin family "
+                         "selector spans domains alphabetically, so without this it would read "
+                         "validation and test domains. Generated from the FROZEN manifest.")
     ap.add_argument("--bank-blocks", default="core2x2",
                     help="comma list of bank_block values to select. Default is the historical "
                          "hardcoded value so no existing caller changes; ts116m has no core2x2 "
@@ -1316,9 +1321,26 @@ def main() -> int:
     # slice carries 0 distinct (concept, codeword) pairs" -- which is what job 872575 did. Found by
     # the 2026-09-09 four-hourly code review, finding F2. The default is unchanged so no existing
     # caller moves; ts116m callers pass --bank-blocks cds_n4_sow.
+    only_domains = None
+    if args.only_domains_file:
+        if not os.path.exists(args.only_domains_file):
+            raise SystemExit("REFUSING: --only-domains-file not found: %s" % args.only_domains_file)
+        only_domains = set()
+        with open(args.only_domains_file, encoding="utf-8") as fh:
+            for raw in fh:
+                tok = raw.split("#", 1)[0].strip()
+                if tok:
+                    only_domains.add(tok)
+        if not only_domains:
+            raise SystemExit("REFUSING: --only-domains-file %s names no domain. An empty "
+                             "restriction is a no-op recorded as a restriction."
+                             % args.only_domains_file)
+        print("[patch] restricted to %d domains from %s"
+              % (len(only_domains), os.path.basename(args.only_domains_file)))
     want_blocks = {x.strip() for x in args.bank_blocks.split(",") if x.strip()}
     rows = [r for r in rows if r["query_kind"] == args.query_kind and r["n_examples"] in want_n
-            and r["bank_block"] in want_blocks]
+            and r["bank_block"] in want_blocks
+            and (only_domains is None or r.get("domain") in only_domains)]
     if not rows:
         raise SystemExit(
             "REFUSING: the selection (query_kind=%r, n_examples=%s, bank_blocks=%s) binds ZERO "

@@ -3421,3 +3421,76 @@ file in place, so the `||` fallback never ran and the intended new argsfile was 
 first resubmission (872634) pointed at a path that did not exist. The `||` was guarding against
 "sed failed"; the actual risk was "sed did something different from what I meant". Cancelled,
 original restored, new argsfile written explicitly, `test -s` checked before submitting.
+
+---
+
+### 2026-09-09 23:20 — ENTRY 032 — `S-006`: **the aggressive C→A patch is LIVE, provably, and transfers ZERO of the reading.** Plan §13's upper bound returns a negative.
+
+**Label: EXPLORATORY SMOKE, 8 TRAIN domains, 120 rows. `DONE.json` present, job 872635, 1 min 18 s.**
+⛔ n = 8. A scaled run over all 67 TRAIN domains is submitted as job **872644**; nothing here is a
+claim.
+
+Plan §13 asks the upper-bound question first: *"Can we transfer the relevant state at all under a
+clean, structurally aligned patch?"* Donor = cell C (`natural_doublespeak`), recipient = cell A
+(`benign_literal`), **same domain, same family, same codeword token `' button'` on both sides**,
+patch at the query codeword (rel_end −10), full residual state, every layer window.
+
+| arm | `semantic_logodds` | `p_concept` | `option_mass` |
+|---|---|---|---|
+| **baseline** (cell A untouched) | **−11.598** | 0.0000 | 0.067 |
+| `self_swap_noop_check` | **−11.598** (identical) | 0.0000 | 0.067 |
+| **`donor_ceiling`** (cell C itself) | **+1.323** | **0.3066** | 0.402 |
+| transplant `L0-4` … `L25-31`, `all`, `write_carry_8-21` | **−11.53 … −11.77** | 0.0000 | 0.068–0.094 |
+
+**The dynamic range is ~12.9 log-odds and the transplant covers ~2 % of it, in noise — several
+windows land *further from* the donor than baseline. `transplant|all` — the donor's residual state
+copied at that token at ALL 32 LAYERS — reads −11.64, and on the example family −13.16 against a
+baseline of −12.49.**
+
+#### The liveness evidence, because a null that could be an inert hook is worth nothing
+
+`C-134` is the standing lesson: a control returning the expected null may mean the intervention
+never fired. The transplant rows carry **no liveness counter**, so liveness was established from the
+readout itself, and it is unambiguous — **0 of 96 transplant rows are identical to their baseline**,
+and the logit-lens `boombness` columns move *exactly* as a working patch must:
+
+| arm | `ll\|L16` | `ll\|L20` | `ll\|L24` |
+|---|---|---|---|
+| baseline | −1.629 | −4.305 | −6.828 |
+| **`donor_ceiling`** | **+0.578** | **−2.117** | **−3.517** |
+| `transplant\|L13-16` | **+0.578** ✓ | −1.895 | −4.047 |
+| `transplant\|L21-24` | −1.629 | −4.305 | **−3.517** ✓ |
+| `transplant\|L25-31` | −1.629 | −4.305 | −6.828 |
+| `transplant\|all` | **+0.578** ✓ | **−2.117** ✓ | **−3.517** ✓ |
+
+Patching window *W* sets the captured state at every read layer **inside or after** *W* to the
+**donor's exact value**, and leaves earlier read layers at baseline. `L25-31` is downstream of all
+three read layers and therefore changes none of them — which is the invariant behaving correctly,
+not a failure. **The patch demonstrably installs the donor's local representation at that token, at
+the layers asked for, and the semantic reading does not move.**
+
+#### What this means, stated carefully
+
+> **Copying the donor's full hidden state at the query codeword — at every layer — reproduces the
+> donor's local representation there exactly and transfers none of the donor's semantic reading.**
+
+The installed reading is **not carried by the codeword token's residual state**. The recipient has
+no harmful demonstrations to attend to, and the readout is computed at the answer position after the
+full prefill; on this evidence the model *recomputes* the reading from the demonstration block
+rather than *reading it off* the codeword. That converges with three inherited results from
+different instruments — `R-112` (the signal is not localised at the codeword), `R-093` (the knockout
+destroys the readout and leaves the representation), and PHASE 11's pathway family.
+
+**And it bears directly on `B1`.** `B1` measures a quantity at exactly this token. Transplanting
+that token's entire state, at every layer, changes nothing downstream. ⛔ That is evidence — not
+proof, at n = 8 — that **whatever `B1` measures at the codeword is not causally used for the
+semantic reading**, which converges with `C-208`'s conclusion that `B1` is an anomaly signal rather
+than a concept representation.
+
+#### Instrument change made to scale it
+
+`aggressive_patching` has **no `--split` flag** and its round-robin family selector spans domains
+alphabetically, so scaling it up would silently have read validation and test domains.
+`--only-domains-file` was added (refusing on a missing file or an empty list) and
+`runargs/dcs_succ/domains_train.txt` was generated from the frozen manifest: **67 TRAIN domains**,
+the three preregistered exclusions removed. Job **872644** runs `--n-families 67` under it.
