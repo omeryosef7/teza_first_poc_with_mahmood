@@ -2379,3 +2379,76 @@ channel. It is a reason to expect ASR well below 1.0 and a reason the topicality
 
 **Eight production arms submitted** — jobs **872515**–**872522**, cells A/B/C/E × doses 4 and 0,
 1,130 and 226 rows, 113 domains each.
+
+---
+
+### 2026-09-09 — ENTRY 013 — `PR-068`: the C → A aggressive patch is built and proved constructible on CPU
+
+**Label: INSTRUMENT + CPU PREFLIGHT. No GPU number exists yet.**
+
+Successor plan §13 asks for an aggressive upper bound before any subtle direction edit: *"recipient:
+same codeword in benign/literal context; donor: same codeword in Doublespeak→BOMB context"*. The
+Phase-A audit found the two halves of that experiment already in the repo and **never joined**:
+`src/boombness/aggressive_patching.py` does full-hidden-state donor→recipient transplant but its
+`PAIRS` are `B→C` and `E→A`; `scripts/dcs_ts_pr057_causal.py::build_cross_prompt_donor` is an
+end-relative pairing contract that is unit-tested and has **zero GPU callers**
+(`pr057_run_causal.UNBUILDABLE` names `patch` as having no code path).
+
+**What was added to `aggressive_patching.py`** — four localised changes, and the historical two
+pairs are byte-for-byte unchanged (`--pairs` defaults to them):
+
+1. `PAIRS["ds_to_benign"] = ("natural_doublespeak", "benign_literal")` — donor cell C, recipient
+   cell A, **same codeword surface on both sides**.
+2. `PAIR_ALIGNMENT`, because the correspondence is not a detail. `harm_ctx` and `benign_ctx` are
+   exact word swaps, so absolute indices agree and `run_pair` has always asserted that. **A and C
+   are not length-matched** — measured over all 670 train families, donor−recipient token delta
+   spans **−32 … +32 and is equal in only 5.5 %** — so `ds_to_benign` is `end_relative`.
+3. Under `end_relative` the alignment block checks **three separate things**, because each one
+   failing produces a *different* wrong answer: (a) the last 28 token ids are identical on both
+   sides; (b) the final target occurrence sits at the **same end-relative offset**; (c) that offset
+   is inside the verified suffix. Demonstration-position scopes are **refused by name** — the two
+   demonstration blocks are different text of different length, so "the first demo occurrence" is
+   not the same object on each side, and mapping them by arithmetic would be a wrong answer with
+   plausible numbers.
+4. `donor_positions()` maps recipient indices to donor indices and **asserts token identity at
+   every patched position**. Under `absolute` it is the identity map, so nothing changes for the
+   old pairs. The transplant now READS at donor indices and WRITES at recipient indices; it
+   previously used one list for both.
+
+Also `--no-add`, one flag, because `--add-directions ''` already expands to `[]` but
+`run_boombness.sh` word-splits `BOOMB_ARGS` and refuses quote characters, so an empty value cannot
+reach it through a SLURM argsfile.
+
+**CPU preflight** (`scripts/dcs_succ_pr068_preflight.py`, real tokenizer, real bank, **whole train
+population, not a sample**):
+
+```
+n_families_examined        670
+n_families_constructible   670        failures: {}
+n_domains_constructible     67
+patch_position_rel_end     {-10: 670}        <- the codeword, every family
+token-length delta         mean 4.09, median 4, range [-32, +32], frac_equal 0.0552
+```
+
+**670/670 constructible over all 67 TRAIN domains, zero failures**, and the patch lands on rel_end
+**−10 — the token `' button'` — in every one of them.** The delta line is the point: under the
+historical `absolute` assertion **94.5 % of these families would have been ledgered as a length
+mismatch**, which is why this pair had never run.
+
+**Why this pair and not the two that existed.** `harm_ctx` (B→C) transplants the state of the
+literal token `' bomb'`. `ds_to_benign` transplants **the installed state of the codeword itself**,
+and donor and recipient carry the *same* token there — so mandate §2.7's objection (reading the
+token `bomb` to ask whether the concept is bomb is a lexical identity test) does not apply. The
+question it asks is the plan's: *can the relevant state be transferred at all under a clean,
+structurally aligned patch?*
+
+**Smoke submitted as job 872548** (4 families, `query_only`, singleton layers 9/11/12, readout at
+16/20/24 — strictly downstream of every patched layer, which the module's own `T10` flags check).
+`--no-add` is passed **on purpose**: the only `directions_fit_*.pt` on disk were fitted on a
+different bank family, and an `add` arm dosed in gap units borrowed from a population the run is
+not about would be a number with a unit that does not belong to it.
+
+**Not yet done, named so it is not quietly skipped**: the **cross-domain donor control** — donor
+cell C from a *different* domain, which is constructible (the query span is identical across
+domains) and asks whether the patch carries *this domain's* installed state or generic
+installed-ness. It needs a change to the family-pairing loop and is not in this version.

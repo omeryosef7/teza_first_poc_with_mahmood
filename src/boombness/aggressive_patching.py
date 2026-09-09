@@ -210,7 +210,42 @@ DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 PAIRS = {
     "harm_ctx": ("direct_harmful", "natural_doublespeak"),
     "benign_ctx": ("concept_in_benign_ctx", "benign_literal"),
+    # ADDED 2026-09-09, successor plan section 13 ("start with an aggressive upper bound").
+    # DONOR = cell C (natural_doublespeak: harmful demonstrations, codeword surface).
+    # RECIPIENT = cell A (benign_literal: benign demonstrations, THE SAME codeword surface).
+    # The two share `preamble` and `final_query_text` byte-for-byte and differ ONLY in the
+    # demonstration block, so the patched token is ` button` on BOTH sides and mandate section 2.7's
+    # objection -- that reading the token `bomb` to ask whether the concept is bomb is a lexical
+    # identity test -- does not apply. This is the pair the plan asks for and the one the two
+    # historical pairs are not: `harm_ctx` transplants the literal CONCEPT token's state, this one
+    # transplants the INSTALLED state of the codeword itself.
+    "ds_to_benign": ("natural_doublespeak", "benign_literal"),
 }
+
+#: HOW donor and recipient token indices are put in correspondence, per pair. This is not a detail:
+#: `harm_ctx` and `benign_ctx` are exact word swaps, so their token sequences have equal length and
+#: absolute indices agree -- which is why `run_pair` has always asserted that and used ONE index
+#: list for both sides. Cells A and C are NOT length-matched (measured: 7 of 60 sampled families
+#: have equal token length, delta in [-31, +20]) because their demonstration blocks are drawn from
+#: different pools. Their QUERY SPANS are byte-identical (S-001: last 28 token ids equal in 20/20
+#: sampled quadruples, ` button` at rel_end -10 in both), so the correspondence is END-RELATIVE and
+#: is only defined inside that shared suffix.
+PAIR_ALIGNMENT = {
+    "harm_ctx": "absolute",
+    "benign_ctx": "absolute",
+    "ds_to_benign": "end_relative",
+}
+
+#: The shared suffix an END-RELATIVE pair must actually exhibit before any position is patched.
+#: 28 is the query span on this template (token-role map, census constant in 6900/6900 prompts).
+#: It is VERIFIED per prompt, never assumed from the generator.
+END_RELATIVE_SHARED_SUFFIX = 28
+
+#: Scopes an END-RELATIVE pair may use. Demonstration-position scopes are NOT constructible for
+#: C -> A -- the demonstration blocks are different text of different length, so "the first demo
+#: occurrence" of the donor and of the recipient are not the same object. They are REFUSED BY NAME
+#: rather than silently mapped onto whatever index arithmetic happens to produce.
+END_RELATIVE_SCOPES = ("query_only",)
 
 # Plan §5.1 scopes. Note the final occurrence IS the query occurrence in this bank, so the
 # plan's "last carrot" and "final query carrot" are the same set; we name it once and add
@@ -867,7 +902,8 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
              dose_unit: str = "gap", semantic_mode: str = "whole_answer",
              answer_prefix: str = "", sem_variants: Optional[Dict[str, Sequence[str]]] = None,
              option_mass: Optional[Dict[str, List[float]]] = None,
-             band_draw_counts: Optional[List[int]] = None) -> int:
+             band_draw_counts: Optional[List[int]] = None,
+             align_mode: str = "absolute") -> int:
     """Every intervention for one donor/recipient family. Returns rows written."""
     try:
         d_text, d_ids, d_last, _, d_nsub = resolve_occurrences(dc, lm.tokenizer, donor)
@@ -877,12 +913,45 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         return 0
 
     # Alignment is asserted here, live, not assumed from the generator.
-    if len(d_ids) != len(r_ids):
-        ledger.fail(f"pair_len_mismatch:{len(d_ids)}vs{len(r_ids)}", recip["prompt_id"])
+    if align_mode not in ("absolute", "end_relative"):
+        ledger.fail(f"unknown_align_mode:{align_mode}", recip["prompt_id"])
         return 0
-    if d_last != r_last:
-        ledger.fail("pair_occurrence_positions_differ", recip["prompt_id"])
-        return 0
+    if align_mode == "absolute":
+        if len(d_ids) != len(r_ids):
+            ledger.fail(f"pair_len_mismatch:{len(d_ids)}vs{len(r_ids)}", recip["prompt_id"])
+            return 0
+        if d_last != r_last:
+            ledger.fail("pair_occurrence_positions_differ", recip["prompt_id"])
+            return 0
+    else:
+        # END-RELATIVE. Three separate things are checked, because each one failing would produce a
+        # DIFFERENT wrong answer and "the pair is aligned" is not one assertion.
+        #  (a) the shared suffix really is shared, token id for token id;
+        #  (b) the QUERY occurrence sits at the same END-RELATIVE offset on both sides -- this is
+        #      what makes "the same semantic role" true rather than hoped;
+        #  (c) that offset lies INSIDE the verified suffix, so (a) actually covers it.
+        S = END_RELATIVE_SHARED_SUFFIX
+        if len(d_ids) < S or len(r_ids) < S:
+            ledger.fail(f"pair_shorter_than_shared_suffix:{len(d_ids)},{len(r_ids)}",
+                        recip["prompt_id"])
+            return 0
+        if list(d_ids[-S:]) != list(r_ids[-S:]):
+            ledger.fail(f"pair_shared_suffix_differs:{S}", recip["prompt_id"])
+            return 0
+        d_rel = d_last[-1] - len(d_ids)
+        r_rel = r_last[-1] - len(r_ids)
+        if d_rel != r_rel:
+            ledger.fail(f"pair_query_occurrence_rel_end_differs:{d_rel}vs{r_rel}",
+                        recip["prompt_id"])
+            return 0
+        if r_rel < -S:
+            ledger.fail(f"query_occurrence_outside_verified_suffix:{r_rel}", recip["prompt_id"])
+            return 0
+        bad = [sc for sc in scopes if sc not in END_RELATIVE_SCOPES]
+        if bad:
+            ledger.fail(f"scope_not_constructible_under_end_relative:{','.join(sorted(bad))}",
+                        recip["prompt_id"])
+            return 0
     if any(n != 1 for n in d_nsub + r_nsub):
         ledger.fail(f"multi_subtoken_target:{sorted(set(d_nsub + r_nsub))}", recip["prompt_id"])
         return 0
@@ -954,6 +1023,29 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
             _wf_cache[(scope, wname)] = hit
         return hit
 
+    def donor_positions(rpos: Sequence[int]) -> Optional[List[int]]:
+        """Recipient indices -> donor indices, and the TOKEN IDENTITY check that makes the
+        transplant a counterfactual about context rather than about which word is there.
+
+        Under `absolute` this is the identity, which is what the historical pairs always did.
+        Under `end_relative` it is `len(d_ids) + (p - len(r_ids))`, and every mapped pair must
+        carry the SAME token id -- if it does not, the patch would be moving one word's state onto
+        a different word and the row would be a lexical result wearing a contextual label."""
+        if align_mode == "absolute":
+            dp = list(rpos)
+        else:
+            dp = [len(d_ids) + (p - len(r_ids)) for p in rpos]
+        for rp, dpi in zip(rpos, dp):
+            if not (0 <= dpi < len(d_ids)):
+                ledger.fail(f"donor_position_out_of_range:{dpi}", recip["prompt_id"])
+                return None
+            if d_ids[dpi] != r_ids[rp]:
+                ledger.fail(
+                    f"patch_token_identity_differs:donor={d_ids[dpi]},recip={r_ids[rp]}",
+                    recip["prompt_id"])
+                return None
+        return dp
+
     n = 0
     # -- baseline (no intervention) ------------------------------------------ #
     with contextlib.ExitStack() as st:
@@ -995,8 +1087,13 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
             pos = select_positions(r_last, scope)
             if not pos:
                 continue
+            dpos = donor_positions(pos)
+            if dpos is None:
+                continue
             for wname, wlayers in windows.items():
-                src = {L: donor_hs[L + 1, pos, :].clone() for L in wlayers}
+                # READ at the DONOR's indices, WRITE at the RECIPIENT's. Under `absolute` the two
+                # lists are equal and this is the historical behaviour byte for byte.
+                src = {L: donor_hs[L + 1, dpos, :].clone() for L in wlayers}
                 try:
                     with contextlib.ExitStack() as st:
                         st.enter_context(pc.ComponentOutSwap(lm.model, pos, src, component="resid_post"))
@@ -1109,6 +1206,11 @@ def main() -> int:
     ap.add_argument("--n-families", type=int, default=4, help="matched families per pair (smoke=2)")
     ap.add_argument("--n-examples", default="4", help="comma list")
     ap.add_argument("--scopes", default=",".join(SCOPES))
+    ap.add_argument("--pairs", default="harm_ctx,benign_ctx",
+                    help="which donor->recipient pairs to run. The default is the historical two, "
+                         "so an existing caller is unchanged. 'ds_to_benign' is the successor "
+                         "plan's C->A upper bound and is END-RELATIVE: it accepts only the "
+                         "query_only scope.")
     ap.add_argument("--alphas", default="0.25,0.5,1,2,4,8")
     ap.add_argument("--add-directions", default="d_surface,d_context,d_naive,random,orthogonal")
     ap.add_argument("--n-control-draws", type=int, default=12,
@@ -1122,6 +1224,13 @@ def main() -> int:
     ap.add_argument("--readout-layers", default="")
     ap.add_argument("--singletons", default="8,9,10,14,15,16,17,18,19,20,21")
     ap.add_argument("--no-transplant", action="store_true")
+    ap.add_argument("--no-add", action="store_true",
+                    help="run the TRANSPLANT family only. Added 2026-09-09: --add-directions '' "
+                         "already expands to [], but run_boombness.sh word-splits BOOMB_ARGS and "
+                         "REFUSES quote characters, so an empty value cannot be passed through a "
+                         "SLURM argsfile. A flag can. Use it when the available directions_fit_*.pt "
+                         "were fitted on a DIFFERENT bank, where an `add` arm would be dosing in "
+                         "units borrowed from a population the run is not about.")
     # C-6. `whole_answer` is the DEFAULT for new runs and is the same contract score_behavior.py
     # already runs (`--readout-ids whole_answer --answer-prefix "Answer:"`). The old instrument is
     # still selectable, and is emitted alongside the new one under `nexttok|` regardless, so the
@@ -1218,7 +1327,7 @@ def main() -> int:
     # T9a: expand the stochastic control families requested on the command line into K named
     # draws. Anything that is not a stochastic control passes through untouched.
     n_control_draws = max(1, int(args.n_control_draws))
-    add_dirs = expand_add_directions(args.add_directions, n_control_draws)
+    add_dirs = [] if args.no_add else expand_add_directions(args.add_directions, n_control_draws)
     # Matched on the EXPANDED direction IDENTITIES, not by substring on the raw spec string: the
     # old `any(d in args.add_directions ...)` test was a substring match on an incidental spelling
     # (a family named `orthogonalized` would have set it, and one reached only through the
@@ -1284,7 +1393,28 @@ def main() -> int:
     option_mass: Dict[str, List[float]] = collections.defaultdict(list)
     band_draw_counts: List[int] = []
     family_accounting = []          # A11-11: the truncation was never recorded anywhere
-    for pair_name, (donor_cond, recip_cond) in PAIRS.items():
+    requested_pairs = [x.strip() for x in args.pairs.split(",") if x.strip()]
+    unknown = [x for x in requested_pairs if x not in PAIRS]
+    if unknown:
+        raise SystemExit("REFUSING: unknown --pairs %s; known: %s"
+                         % (unknown, sorted(PAIRS)))
+    for pair_name in requested_pairs:
+        donor_cond, recip_cond = PAIRS[pair_name]
+        align_mode = PAIR_ALIGNMENT[pair_name]
+        # A pair whose correspondence is END-RELATIVE may only be asked for scopes that live in
+        # the verified shared suffix. Refusing HERE, before the model runs, turns a whole run's
+        # worth of ledgered per-row failures into one message.
+        if align_mode == "end_relative":
+            bad = [sc for sc in args.scopes.split(",") if sc.strip()
+                   and sc.strip() not in END_RELATIVE_SCOPES]
+            if bad:
+                raise SystemExit(
+                    "REFUSING: pair %r is END-RELATIVE (donor %s, recipient %s are not "
+                    "length-matched) and scope(s) %s are not constructible for it. The "
+                    "demonstration blocks are different text of different length, so a "
+                    "demonstration-position scope names a different object on each side. "
+                    "Constructible scopes: %s."
+                    % (pair_name, donor_cond, recip_cond, bad, list(END_RELATIVE_SCOPES)))
         eligible = [f for f, d in sorted(by_family.items())
                     if donor_cond in d and recip_cond in d]
         # AUDIT 11 (A11-10): this was `eligible[:n_families]`. `family_id` is PREFIXED BY DOMAIN and
@@ -1355,7 +1485,8 @@ def main() -> int:
                               answer_prefix=args.answer_prefix,
                               sem_variants=sem_variants,
                               option_mass=option_mass,
-                              band_draw_counts=band_draw_counts)
+                              band_draw_counts=band_draw_counts,
+                              align_mode=align_mode)
             print(f"  {fam[:60]} -> {total} rows")
 
     # -- C-6 TAIL GATE ------------------------------------------------------- #
@@ -1377,6 +1508,8 @@ def main() -> int:
 
     run.finish(summary={"model": lm.model_id, "n_rows": total, "pairs": list(PAIRS),
                         "scopes_requested": args.scopes.split(","),
+                        "pairs_requested": requested_pairs,
+                        "pair_alignment": {k: PAIR_ALIGNMENT[k] for k in requested_pairs},
                 "family_accounting": family_accounting, "alphas": alphas,
                         "readout_layers": readout_layers, "windows": sorted(windows),
                         "n_control_draws": n_control_draws,

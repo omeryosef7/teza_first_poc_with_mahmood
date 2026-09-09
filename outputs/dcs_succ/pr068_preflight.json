@@ -1,0 +1,27 @@
+{
+ "_label": "CPU PREFLIGHT for the C->A end-relative patch. No GPU, no model weights.",
+ "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+ "split": "train",
+ "query_kind": "semantic_one_word",
+ "n_examples": 4,
+ "shared_suffix_required": 28,
+ "constructible_scopes": [
+  "query_only"
+ ],
+ "n_families_examined": 670,
+ "n_families_constructible": 670,
+ "n_domains_constructible": 67,
+ "failures": {},
+ "token_length_delta_donor_minus_recipient": {
+  "n": 670,
+  "mean": 4.09,
+  "median": 4.0,
+  "min": -32,
+  "max": 32,
+  "frac_equal": 0.0552,
+  "_why_this_matters": "the historical `absolute` alignment asserts this is 0. It is not, which is exactly why this pair needs end-relative correspondence and why running it under the old assertion would have ledgered every row as a length mismatch."
+ },
+ "patch_position_rel_end_histogram": {
+  "-10": 670
+ }
+}
