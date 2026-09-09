@@ -147,7 +147,7 @@ def load_bank(bank_name, torch, keep_domains=None):
     if len(rows) != n_selected:
         raise Refusal("bank %r: %d rows selected but only %d family keys survived -- the key is "
                       "not unique over the selection" % (bank_name, n_selected, len(rows)))
-    meta = {"run": os.path.basename(run), "layers": layers, "n_selected_rows": n_selected,
+    meta = {"run": os.path.basename(run), "layers": layers, "n_rows_analysed_selected": n_selected,
             "layer_convention": blob.get("layer_convention"),
             "position": blob.get("position"),
             "token_text_by_cell": {c: sorted(v) for c, v in seen_token_text.items()},
@@ -268,7 +268,7 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
         del reps
         if verbose:
             print("[cand] %-16s run=%s rows=%d train_domains=%d dropped=%s token_text=%s"
-                  % (name, meta["run"][:40], meta["n_rows"], len(kept), dropped,
+                  % (name, meta["run"][:40], meta["n_rows_analysed"], len(kept), dropped,
                      meta["token_text_by_cell"]), file=sys.stderr)
 
     common = sorted(set(doms["bomb"]) & set(doms["knife"]) & set(doms["gun"]))
@@ -324,6 +324,14 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
                     cosv.append(p / float(torch.linalg.vector_norm(s)))
                 k = sum(1 for x in raw if x > 0)
                 pv, floor = sign_test_two_sided(k, len(raw))
+                if shift_c == "bomb" and ref_c == "bomb":
+                    # PER-DOMAIN VALUES. Exported because two required analyses cannot be done from
+                    # a mean: the surface nuisance floor (plan section 5 -- can a text-only feature
+                    # of the demonstration block predict this?) and the representation -> behaviour
+                    # link (plan section 16.2 -- per-domain B1 against per-domain ASR on the same
+                    # domains of the same bank).
+                    out.setdefault("per_domain_B1_export", {})[
+                        "B1|L%d|shift_bomb|ref_bomb" % L] = {d: v for d, v in zip(common, gapu)}
                 out["metrics"]["B1|L%d|shift_%s|ref_%s" % (L, shift_c, ref_c)] = {
                     "mean_proj": mean(raw), "sd_proj": sd(raw),
                     "mean_gap_units": mean(gapu), "sd_gap_units": sd(gapu),

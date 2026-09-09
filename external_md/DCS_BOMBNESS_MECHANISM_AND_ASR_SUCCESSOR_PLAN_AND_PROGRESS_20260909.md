@@ -2760,3 +2760,133 @@ which is the half of `R-097`'s CANNOT ANSWER that could not be repaired by analy
 completions where E terminates early). `Q1c` (C − A) and `Q1d` (C − B) are the preregistered
 contrasts and neither can be computed yet. ⛔ Nor may these three numbers be compared to the
 8-row judge smoke's `ASR@0.5 = 0.50`, which was one domain and is not an estimate of anything.
+
+---
+
+### 2026-09-09 — ENTRY 020 — `S-004`: residualising ALL THREE shifts partly rebuts the review's column reading, and produces a dissociation
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains.** This is the computation the independent
+verification asked for in its §8.4 — *"`B1resid` is computed only for `shift_bomb`; the missing rows
+are exactly what would tell you whether 'the shift lands in the concept-specific part of the axis'
+is a general property or a bomb-only one. On the evidence of 8.2 it will be bomb-only."*
+
+**It is not bomb-only.** Each concept's Doublespeak shift projected on **its own** axis after
+Gram-Schmidt against the other two:
+
+| shift → its own residual axis | `button` L12 | `basket` L11 |
+|---|---|---|
+| **bomb** | **+0.1254** [0.1099, 0.1403], 64/67 | **+0.1400** [0.1270, 0.1526], 66/67 |
+| **knife** | **+0.0425** [0.0328, 0.0519], **56/67** | **+0.0954** [0.0823, 0.1083], **66/67** |
+| **gun** | **−0.0978** [−0.1167, −0.0780], **11/67** | **−0.0919** [−0.1101, −0.0738], **9/67** |
+| fraction of each axis ⊥ the other two | 0.756 / 0.818 / 0.695 | 0.708 / 0.748 / 0.611 |
+
+**What changes.** On the RAW axes the knife diagonal was 0.0134 with 47/67 domains — indistinguishable
+from noise, which is what the review's §8.3 column reading rested on. On the **concept-specific
+residual** it is **+0.0425 with 56/67** (button) and **+0.0954 with 66/67** (basket). The shared
+component was *masking* a real knife effect. So *"harmful demonstrations push everything toward a
+generic danger region and `bomb` is nearest it"* cannot be the whole account: once the generic part
+is projected out, knife's shift still moves toward **knife-specific**-ness, in most domains, on both
+codewords.
+
+⛔ It does not rescue the strong reading either. `bomb` (0.125) is still **3×** `knife` (0.043) on
+button, and **`gun` is consistently NEGATIVE on its own residual** — −0.098 with only **11/67**
+domains positive, and −0.092 with 9/67 on basket. A concept whose demonstrations move the codeword
+*away* from that concept's own specific direction, in 56 of 67 domains, is not explained by either
+account on the table, and it is recorded as an open anomaly rather than dropped. Note `gun`'s axis
+also has the **smallest** orthogonal fraction (0.695 / 0.611), so its residual is the shortest and
+the least well determined of the three.
+
+**And this is a dissociation, which is the part that matters for Link 3.** `R-116` measures knife's
+semantic installation at **3/113** domains on `button` and **0/113** on `basket` — knife essentially
+never installs. Yet knife's shift lands on knife's concept-specific axis in **56/67** and **66/67**
+TRAIN domains. **Representational movement toward a concept-specific direction occurs where the
+concept-free semantic readout reports no installation at all.** Whatever `B1` is measuring, it is
+not a proxy for installation — which is exactly the counterexample entry 011 flagged from the
+codeword side (basket: larger shift, half the installation) now appearing from the concept side.
+
+**Cell coordinates on the bomb axis** (the table the review's §8.6 asked for, so "10 % of the gap"
+is never quoted alone):
+
+| | A (benign, codeword) | **C (Doublespeak, codeword)** | B (harmful, concept) | E (benign, concept) |
+|---|---|---|---|---|
+| `button` L12 | 0.000 | **0.1056** | 0.8374 | 1.000 |
+| `basket` L11 | 0.000 | **0.1375** | 0.8566 | 1.000 |
+
+C and B are **far apart**, which kills the "harm demonstrations pull everything into one attractor"
+account; and `cos(h_C − h_A, v_lex)` is 0.133 / 0.179, so **~87 %** of what the Doublespeak context
+does to that token is orthogonal to the lexical axis. Both halves are to be quoted together.
+
+---
+
+### 2026-09-09 — ENTRY 021 — `D-007`: a verification grep of mine that verified nothing
+
+**Label: BUG (mine), in my own checking rather than in the analysis.**
+
+After patching the per-domain export into `dcs_succ_bombness_candidates.py` I confirmed it with
+`grep -c 'per_domain'`, got **2**, and read that as "applied". The patch had in fact been **lost** —
+the two hits were the pre-existing parameter name `per_domain_delta` in `loo_direction`. The run
+that followed produced an artifact with no export, and the surface-floor script refused on it,
+which is the only reason it surfaced.
+
+Two things, both mine:
+* the earlier `pkill -f dcs_succ_bombness_candidates` killed **my own shell's python heredoc**
+  mid-write (exit 144) — the same broad-pattern mistake made twice this session;
+* the confirming grep matched a string that **already existed in the file**, so it could not have
+  distinguished applied from not-applied. This is precisely *"a check that reads the same broken
+  source"* in miniature, and it is the shape the project has recorded three times before
+  (`C-134`'s `realised = 0` constant printed as a measurement is the same defect one level down).
+
+**Fix**: the patch now writes a marker string that exists nowhere else (`per_domain_B1_export`) and
+the confirmation greps for **that**, printing the count. **Standing rule for this session:** a patch
+confirmation must grep for a string unique to the patch, never for a token that could pre-exist.
+
+**Everything else from entry 018's fix list did apply and is verified present in the artifact**:
+`leakage_probe` (out of `controls`), `cell_coordinates_on_bomb_axis`, `n_rows_analysed`
+(**2680**, not 4520 — the `D-002` split-filter fix is live and visible in the run log), the analytic
+random-direction sd, and `B1resid` for all three shifts.
+
+---
+
+### 2026-09-09 22:10 — ENTRY 022 — `C-202`: the root cause of every stall this session is **node n-801**, and the repo already knew
+
+**Label: OPERATIONS / CORRECTION. This supersedes `C-201`'s "stuck for a reason not established".**
+
+By 22:05 **four** of this session's jobs had produced no run directory at all after 27–42 minutes,
+while their siblings advanced normally. `sacct -X --format=NodeList` on all of them:
+
+| job | arm | node | elapsed with no run dir |
+|---|---|---|---|
+| 872466 | PHASE 11 kill | **n-801** | 37 min (cancelled, `C-201`) |
+| 872548 | `PR-068` C→A patch smoke | **n-801** | 27 min |
+| 872517 | ASR cell A dose 4 | **n-801** | 42 min |
+| 872520 | ASR cell B dose 0 | **n-801** | 29 min |
+
+Every job that stalled ran on **n-801**. Every job that progressed (`sowk` n-804, `tsb66_C_n4`
+n-803, `tsb66_C_n0` n-804, `tsb66_A_n0` n-803) ran elsewhere. Four for four, both ways.
+
+**And this is written down in the launcher itself**, in a comment I read at the start of the
+session and did not act on — `src/boombness/slurm/run_boombness.sh`:
+
+> *"n-801 is in the list but every weight load slower than 15 min in 232 logged runs happened
+> there."*
+
+The same comment gives the correct remedy and warns against the wrong one: pass a **reduced
+`--nodelist`**, never `--exclude`, because `--exclude` on the sbatch line *nullifies* the
+`#SBATCH --nodelist` directive and the job then lands anywhere in the partition (which happened on
+2026-08-06 and put a run on an RTX 3090; only the GPU guard caught it).
+
+**Action taken.** All four cancelled and resubmitted with
+`--nodelist=n-802,n-803,n-804,n-805,t-806`: **872575** (`PR-068` smoke), **872576** (`p11kill4`),
+**872577** (ASR cell A dose 4), **872578** (ASR cell B dose 0). The first two were running within
+seconds of submission.
+
+**Cost of not acting on it earlier**: ≈ 2.3 node-hours of wall clock across four jobs, and one
+wrong diagnosis in `C-201` ("contention, 2.5× slower") that entry 017 had already had to correct
+once. **Nothing scientific was lost** — no stalled job had written a row, and `C-201`'s note that
+the PHASE-11 resume is free still holds.
+
+**The lesson worth keeping, because it is not about a node.** The repository's own launcher
+documented the failure mode, in the right file, in a comment placed exactly where a reader would
+see it. I read the file, quoted its `--exclude` warning in entry 004's audit table, and still
+submitted eleven jobs against the default node list. ⛔ **Standing rule for the rest of this
+session: every `sbatch` carries `--nodelist=n-802,n-803,n-804,n-805,t-806`.**
