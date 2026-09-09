@@ -5458,3 +5458,77 @@ whether it verified the production object or a stand-in.
 number was published. But the producer should be able to convict itself — if the only thing that
 distinguished *fired-and-discarded* from *fired-and-wrote* was a downstream cell count, the bridge is
 under-instrumented.
+
+---
+
+## DCS-C-134 — correcting R-147: the bridge was NEVER live. A constant was printed as a measurement.
+*2026-09-09*
+
+**`R-147` is wrong and this supersedes it.** I reported that the disabled-hook bridge "ran as a live
+knockout" and called it a control that had become the thing it controls for. **The model was never
+edited.** `_pre` clones the additive mask, edits the *clone*, and `_shim_pre` hands the model back the
+**original** `(args, kwargs)`. Arm 12 was **inert**. Verified on the real classes: *model mask
+untouched* **True**, min-value cells reaching `self_attn` **0**, and logits **byte-identical** to
+baseline (`max|bridge − baseline| = 0`).
+
+The 13,061,664 was the *bookkeeping*: `_pre` counts as it writes and reads
+`n_cells_edited_realised` back **out of the clone**, and those counters are `knock_stats`, copied onto
+every row. Matching the live arm exactly is not evidence of a live run — **it is the same counting
+code over the same rows**.
+
+## Why the CPU test said 0, named precisely — and it is the deepest defect of the session
+
+Not a different object, not a different signature, not a tiny-model path, not a project-out vs
+attention-mask asymmetry. **The `D-6` test read the bridge's OWN stats dict, and `hook_stats_dict`
+SEEDS `n_cells_edited_realised: 0` and `hook_fired_count: 0` at construction — neither `_shim` nor
+`_shim_pre` ever writes them.**
+
+**`realised = 0` was a constant printed as a measurement.** It would have printed 0 if the bridge had
+rewritten the entire mask. The `cells_would = 12` half was real; **the half carrying the claim was
+vacuous.** This is *"a check that reads the same broken source"* in its purest form — a test reading
+a field that nobody writes.
+
+**And no witness existed for the thing that mattered.** Every bridge field —
+`would_have_changed_max_abs/_l2`, `n_mask_cells_would_have_edited`, `n_forward_calls` — proved the
+inner hook was **alive**. **None proved its write was DISCARDED.** Nothing anywhere compared the mask
+the model was handed before and after. Only the downstream analyzer could convict, and **it convicted
+for the wrong reason** — the right refusal from the wrong evidence, which is luck, not a guard.
+
+## The fix (`C-134`), and what it adds that did not exist
+
+`ScopedAttentionKnockout.bridged_discard` routes write counters to `_would_have` twins under the
+bridge while forward counters and `expected` stay live; `bridged_scoped_liveness_violations` demands
+twins **> 0** *and* every write counter **== 0**. Most importantly `_shim_pre` now **snapshots the
+live mask before the inner hook and compares it after**, recording `n_cells_written_to_live_mask` —
+**the direct proof of discard that never existed**. The runner re-derives the fix from
+`pair_common`'s source and refuses by name if it is removed.
+
+Verified against the real object in the production configuration: real `LlamaForCausalLM` /
+`LlamaAttention` built from **Llama-3.1-8B-Instruct's own pinned `config.json`**, `eager`, bfloat16,
+real KV-cached `generate()`, scope `query_last_k_rows`, routed through
+`make_intervention(disable_hooks=True)`. **Stated honestly:** depth/width reduced to 2L/256/8h with
+random weights so it runs on CPU — the hook classes, mask plumbing and routing are production, and
+weights do not enter a mask edit.
+
+```
+LIVE  row: fired=2 realised=120 prefill=120     BRIDGE row: fired=0 realised=0 prefill=0
+BRIDGE would-have: fired=2 prefill=120 realised=120
+BRIDGE own: n_live_mask_forwards_checked=12   n_cells_written_to_live_mask=0
+LOGITS max|live−baseline| = 0.302246          max|bridge−baseline| = 0  (byte-identical)
+```
+
+**A test caught the first draft and the fix was corrected, not the test:** twins seeded in
+`__init__` broke `test_legacy_mode_is_byte_identical_to_AllQueryAttentionKnockout`, so they are now
+seeded by the **bridge**.
+
+**Observed:** PHASE 9/10 **unmoved** (117/0 · 102/102, 70/0 · 41/41, 57/0 · 56/56); PHASE 11 analyzer
+and verifier untouched (122/0 · 104/104, 27/0 · 25/25); runner 69 → **75/0** and 56 → **58/58 RED**,
+with new **M54** (a bridge row reporting non-zero realised) and **M55** (the inner hook writing the
+live mask — *nothing before could catch this*), plus **six positive self-test checks** running the
+real classes and reading all three witnesses. Repo tests **2067 passed / 5 failed**, and the 5 were
+proved pre-existing by symlinking `git show HEAD:` copies of the three changed files and reproducing
+them test-id for test-id.
+
+**Reported, not fixed, and it is mine:** the fifth failure is
+`test_legacy_mode_is_byte_identical_to_...`, whose pinned stats-key list is **one commit stale** —
+`PR059-D4` added four keys on 2026-09-08 without updating it.

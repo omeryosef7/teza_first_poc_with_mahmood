@@ -285,6 +285,17 @@ LIVENESS_FIELD_MAP: Dict[str, Optional[str]] = {
 }
 
 
+def _pair_common():
+    """`pair_common`, imported the same way `bridge_family_constructible` imports it.
+
+    One accessor rather than an import at each call site: the DCS-C-134 gates read the PRODUCER's
+    own tables (`KNOCKOUT_WRITE_COUNTERS`, `KNOCKOUT_WOULD_HAVE_COUNTERS`) instead of restating
+    which counters describe a write, so the runner cannot drift from the hook.
+    """
+    import pair_common as pc
+    return pc
+
+
 def bridge_family_constructible() -> Tuple[bool, str]:
     """PR059-D6. Can `DisabledHookBridge` bridge the hook family THIS PHASE installs?
 
@@ -306,6 +317,39 @@ def bridge_family_constructible() -> Tuple[bool, str]:
     if not hasattr(pc, "bridge_mask_liveness_violations"):
         return False, ("the attention-mask bridge has no liveness contract of its own, so a "
                        "bridge over a DEAD knockout would score as a perfect identity")
+    # ---- DCS-C-134 (2026-09-09). THE THIRD APPEARANCE OF THE SAME SHAPE ---------------------
+    # C-130 was a live knockout labelled the bridge. PR059-D6 was a bridge that could not be
+    # built. THIS one was a bridge that ran correctly -- the model's mask was never touched --
+    # and RECORDED ITSELF AS A LIVE KNOCKOUT, because `ScopedAttentionKnockout._pre` counted the
+    # write it made into the clone the bridge discards. Job 870913's bridge arm persisted
+    # hook_fired_count=8280 and n_cells_edited_realised=13061664, the live arm's own numbers.
+    # Two things must therefore be re-derived from pair_common's own source, not asserted here:
+    # the producer must divert its write counters under the bridge, and the bridge must MEASURE
+    # the discard rather than assert it. If either goes, the arm is refused BY NAME again.
+    if not hasattr(pc, "bridged_scoped_liveness_violations"):
+        return False, ("pair_common has no BRIDGED liveness contract, so a bridged knockout row "
+                       "is judged by the LIVE contract and a bridge that wrote nothing would be "
+                       "refused as a dead hook -- or, as in job 870913, a bridge that wrote "
+                       "nothing would report the live arm's own edit counts and pass")
+    if not hasattr(pc, "KNOCKOUT_WRITE_COUNTERS"):
+        return False, ("pair_common does not declare which knockout counters DESCRIBE A WRITE, "
+                       "so 'the bridge wrote nothing' cannot be checked field by field")
+    try:
+        _presrc = inspect.getsource(pc.ScopedAttentionKnockout._pre)
+    except Exception as e:                                   # noqa: BLE001
+        return False, "ScopedAttentionKnockout._pre is not readable: %r" % (e,)
+    if "bridged_discard" not in _presrc or "_would_have" not in _presrc:
+        return False, ("ScopedAttentionKnockout._pre writes its WRITE counters unconditionally: "
+                       "a bridged row would again carry the live arm's hook_fired_count and "
+                       "n_cells_edited_realised for a mask edit that was discarded (DCS-C-134)")
+    try:
+        _shimsrc = inspect.getsource(pc.DisabledHookBridge._shim_pre)
+    except Exception as e:                                   # noqa: BLE001
+        return False, "DisabledHookBridge._shim_pre is not readable: %r" % (e,)
+    if "n_cells_written_to_live_mask" not in _shimsrc:
+        return False, ("the attention-mask bridge does not MEASURE its own discard -- it only "
+                       "claims one in a comment, which is what let a CPU test certify this "
+                       "control as inert while production recorded 13,061,664 edited cells")
     # PR059-D6, SECOND HALF -- and the more dangerous one. The bridge CLASS being able to wrap a
     # knockout is not enough: `score_behavior.make_intervention` returns the knockout hooks from
     # an EARLY return, above its own disabled-hook-bridge block, so `--pr057-disable-hooks` on a
@@ -1486,6 +1530,41 @@ def verify_arm_artifacts(pr: Prereg, arm: ArmSpec, run_dir: str,
     if viol:
         raise RunnerRefusal("arm %s: the producer's own liveness gate reports %d violation(s): %s"
                             % (arm.arm_id, len(viol), viol[:3]))
+    if arm.kind == "bridge":
+        # ---- DCS-C-134. FIRED-AND-DISCARDED, PROVED ON THE ROWS ------------------------------
+        # A bridge has to prove two opposite things and the artifact must carry both. Before
+        # 2026-09-09 it carried neither: a bridged row was numerically identical to a live one,
+        # and the only thing that noticed was the analyzer's cell count downstream.
+        _pc = _pair_common()
+        _wh = _pc.KNOCKOUT_WOULD_HAVE_COUNTERS
+        _n_marked = sum(1 for r in rows if r.get("bridged_and_discarded"))
+        _would = sum(int(r.get("hook_fired_count_would_have") or 0) for r in rows)
+        _would_pe = sum(int(r.get("n_prefill_edits_would_have") or 0) for r in rows)
+        _realised = sum(int(r.get("n_cells_edited_realised") or 0) for r in rows)
+        _fired = sum(int(r.get("hook_fired_count") or 0) for r in rows)
+        gate["bridge_discard"] = {"n_rows_marked_bridged": _n_marked, "n_rows": len(rows),
+                                  "hook_fired_count_would_have": _would,
+                                  "n_prefill_edits_would_have": _would_pe,
+                                  "n_cells_edited_realised": _realised,
+                                  "hook_fired_count": _fired,
+                                  "would_have_fields": list(_wh)}
+        if _n_marked != len(rows):
+            raise RunnerRefusal(
+                "arm %s: only %d/%d rows carry `bridged_and_discarded`. A bridge arm whose rows "
+                "do not say they were bridged is indistinguishable from a live knockout on every "
+                "counter -- which is exactly how job 870913's bridge reported 13,061,664 edited "
+                "cells (DCS-C-134)." % (arm.arm_id, _n_marked, len(rows)))
+        if _realised or _fired or prefill or decode:
+            raise RunnerRefusal(
+                "arm %s: the bridge reports REALISED work -- n_cells_edited_realised=%d, "
+                "hook_fired_count=%d, n_prefill_edits=%d, n_decode_edits=%d. A disabled-hook "
+                "bridge must edit ZERO cells." % (arm.arm_id, _realised, _fired, prefill, decode))
+        if _would <= 0 or _would_pe <= 0:
+            raise RunnerRefusal(
+                "arm %s: the bridge's would-have counters are hook_fired_count_would_have=%d / "
+                "n_prefill_edits_would_have=%d. A bridge over a knockout that resolved nothing "
+                "certifies nothing, and passes as a perfect identity -- the false negative the "
+                "D-6 regression was." % (arm.arm_id, _would, _would_pe))
     if arm.kind != "bridge":
         if prefill <= 0:
             raise RunnerRefusal(
@@ -2149,6 +2228,43 @@ def selftest() -> int:
            "routing" in _bfc[1], _bfc[1])
     ck.add("PR059-D6 is a MEASURED property of pair_common, not an assertion",
            _refuses(lambda: _bridge_probe(), "cannot bridge"), "")
+    # ---- DCS-C-134: THE POSITIVE TEST. A correctly-discarding bridge must PASS ---------------
+    # The D-6 regression was a FALSE NEGATIVE -- a measurement that read the wrong dict and
+    # certified the control as inert -- and a mutation suite cannot catch those. So the bridge is
+    # RUN here, on the real classes, and all three witnesses are read: the model's own mask, the
+    # bridge's record, and the INNER record that is what reaches the artifact.
+    _cbm = cpu_bridge_measurement()
+    ck.add("DCS-C-134: the real bridge over the real knockout leaves the MODEL'S mask untouched",
+           _cbm["live_mask_untouched"]
+           and _cbm["n_min_cells_the_model_saw_at_prefill_beyond_causal"] == 0,
+           "model saw %r extra blocked cells" % (
+               _cbm["n_min_cells_the_model_saw_at_prefill_beyond_causal"],))
+    ck.add("DCS-C-134: the bridge MEASURES its discard rather than asserting it",
+           int(_cbm["bridge_stats"].get("n_live_mask_forwards_checked") or 0) > 0
+           and _cbm["bridge_stats"].get("n_cells_written_to_live_mask") is not None
+           and int(_cbm["bridge_stats"]["n_cells_written_to_live_mask"]) == 0,
+           "forwards_checked=%r cells_written=%r" % (
+               _cbm["bridge_stats"].get("n_live_mask_forwards_checked"),
+               _cbm["bridge_stats"].get("n_cells_written_to_live_mask")))
+    ck.add("DCS-C-134: the ROW record (the dict the artifact carries) reports ZERO realised work",
+           all(int(_cbm["row_record"].get(k) or 0) == 0
+               for k in _pair_common().KNOCKOUT_WRITE_COUNTERS)
+           and bool(_cbm["row_record"].get("bridged_and_discarded")),
+           "realised=%r fired=%r" % (_cbm["row_record"].get("n_cells_edited_realised"),
+                                     _cbm["row_record"].get("hook_fired_count")))
+    ck.add("DCS-C-134: ...and PROVES the inner hook ran, in the would-have twins",
+           int(_cbm["row_record"].get("hook_fired_count_would_have") or 0) > 0
+           and int(_cbm["row_record"].get("n_prefill_edits_would_have") or 0) > 0,
+           "fired_would_have=%r prefill_would_have=%r" % (
+               _cbm["row_record"].get("hook_fired_count_would_have"),
+               _cbm["row_record"].get("n_prefill_edits_would_have")))
+    ck.add("DCS-C-134: and BOTH contracts accept that record -- the positive test",
+           not _cbm["row_liveness_violations"] and not _cbm["bridge_liveness_violations"],
+           "row=%r bridge=%r" % (_cbm["row_liveness_violations"],
+                                 _cbm["bridge_liveness_violations"]))
+    ck.add("DCS-C-134: the PRODUCER convicts itself -- no downstream gate needed",
+           _refuses(lambda: _bridge_records_a_realised_edit(),
+                    "bridged_knockout_reports_a_REALISED"), "")
     sd = _arm_by(arms, scope_id="S_D", kind="scope")
     ck.add("PR059-D1: the S_D scope arm is RUNNABLE and is flagged as having no control",
            constructibility(pr, sd)["constructible"]
@@ -2379,6 +2495,164 @@ def _no_raise(fn) -> bool:
         return True
     except Exception:                                        # noqa: BLE001
         return False
+
+
+# ============================================================================================
+# DCS-C-134 -- THE BRIDGE, EXERCISED ON CPU AGAINST THE REAL CLASSES
+# ============================================================================================
+#
+# WHY THIS IS HERE AND NOT IN A PROSE CLAIM. `PR059-D6` closed on a CPU measurement that printed
+# `cells_would=12 realised=0` and concluded the bridge was inert. It read `realised` off the
+# BRIDGE's own stats dict -- a dict the bridge never writes an edit count into, so that field was
+# 0 whatever the inner hook did. The dict that reaches the artifact is the INNER knockout's
+# (`knock_stats` in score_behavior), and nobody looked at it. Production then reported
+# hook_fired_count=8280 and 13,061,664 edited cells for the same control.
+#
+# So the exercise below reads BOTH dicts and the MODEL'S OWN MASK, and it is a positive test as
+# well as a mutation target: a false negative is what the D-6 regression was, and mutations alone
+# cannot catch those.
+
+
+def _cpu_bridge_probe_model(n_layers: int = 2, n_heads: int = 4, hidden: int = 8):
+    """The smallest object that is a REAL transformer for the purposes of this hook: a `.config`
+    with `num_attention_heads`, a `model.layers` ModuleList, and a `self_attn` submodule on each
+    layer that takes `attention_mask` as a KEYWORD (which is what `register_forward_pre_hook(...,
+    with_kwargs=True)` needs) and RECORDS the mask it was actually handed.
+
+    The MODEL is a stand-in. `ScopedAttentionKnockout` and `DisabledHookBridge` are the REAL
+    classes, unmodified and unmocked, and the mask the `self_attn` records is the mask the hook
+    chain really produced -- which is the quantity the D-6 measurement never looked at.
+    """
+    import torch
+    from torch import nn
+
+    class _Attn(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.seen = None
+
+        def forward(self, x, attention_mask=None):
+            self.seen = None if attention_mask is None else attention_mask.detach().clone()
+            return x
+
+    class _Block(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.self_attn = _Attn()
+
+        def forward(self, x, attention_mask=None):
+            return self.self_attn(x, attention_mask=attention_mask)
+
+    class _Cfg:
+        def __init__(self):
+            self.num_attention_heads = n_heads
+            self.hidden_size = hidden
+
+    class _Model(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.config = _Cfg()
+            self.model = nn.Module()
+            self.model.layers = nn.ModuleList(_Block() for _ in range(n_layers))
+
+        def forward(self, x, attention_mask=None):
+            for b in self.model.layers:
+                x = b(x, attention_mask=attention_mask)
+            return x
+
+    return _Model()
+
+
+def cpu_bridge_measurement(force_live_counters: bool = False,
+                           write_through: bool = False) -> Dict[str, Any]:
+    """Run the REAL `DisabledHookBridge` over the REAL `ScopedAttentionKnockout` on CPU and
+    return every number a reader needs to tell FIRED-AND-DISCARDED from FIRED-AND-WROTE.
+
+    `force_live_counters=True` reproduces the PRE-2026-09-09 producer (the bridge does not tell
+    the inner hook it is bridged), and `write_through=True` reproduces a hook that edits the
+    caller's mask in place instead of a clone. Both are mutation targets, and both must be
+    REFUSED by the producer's own contracts -- not by a downstream analyzer.
+    """
+    import torch
+    pc = _pair_common()
+    seq, hidden, heads = 12, 8, 4
+    query_span = frozenset(range(8, 12))
+    demo_span = frozenset(range(2, 6))
+    model = _cpu_bridge_probe_model(n_layers=1, n_heads=heads, hidden=hidden)
+    knock_stats: Dict[str, Any] = {}
+    inner = pc.ScopedAttentionKnockout(model, [0], blocked_keys=sorted(demo_span),
+                                       mode="query_prefill_only", query_span=query_span,
+                                       demo_span=demo_span, stats=knock_stats)
+    if write_through:
+        _real_pre = inner._pre
+
+        def _pre_write_through(mod, args, kwargs):
+            _am = kwargs.get("attention_mask")
+            _a, _kw = _real_pre(mod, args, kwargs)
+            if _am is not None and _am.numel():
+                # ONE cell, into the tensor the MODEL owns. Deliberately one and not the whole
+                # mask: a wholesale copy would also flatten the bridge's would-have delta and the
+                # refusal would then be "the inner hook was dead", i.e. the right answer for the
+                # wrong reason. One cell leaves every other witness intact, so what is being
+                # tested is the discard measurement and nothing else.
+                _am.reshape(-1)[0] = torch.finfo(_am.dtype).min
+            return _a, _kw
+        inner._pre = _pre_write_through
+    bst = pc.hook_stats_dict(mode="bridge", layer=0, enabled=False)
+    bridge = pc.DisabledHookBridge(inner, stats=bst)
+    if force_live_counters:
+        inner.bridged_discard = False                     # the pre-fix producer, exactly
+    minv = torch.finfo(torch.float32).min
+    mask = torch.zeros(1, 1, seq, seq)
+    for q in range(seq):
+        for k in range(q + 1, seq):
+            mask[:, :, q, k] = minv
+    before = mask.clone()
+    with bridge:
+        model(torch.zeros(1, seq, hidden), attention_mask=mask)
+        model(torch.zeros(1, 1, hidden), attention_mask=torch.zeros(1, 1, 1, seq + 1))
+    seen = model.model.layers[0].self_attn.seen
+    return {
+        # what the MODEL was handed -- the only thing that decides whether this arm is live
+        "live_mask_untouched": bool(torch.equal(mask, before)),
+        "n_min_cells_the_model_saw_at_prefill_beyond_causal": int(
+            (seen == minv).sum()) if seen is not None else None,
+        # the BRIDGE's own record (this, and only this, is what the D-6 measurement read)
+        "bridge_stats": dict(bst),
+        "bridge_liveness_violations": bridge.liveness_violations(),
+        # the INNER record -- the dict score_behavior persists per row and the analyzer reads
+        "row_record": dict(knock_stats),
+        "row_liveness_violations": pc.scoped_liveness_violations("query_prefill_only",
+                                                                 knock_stats),
+    }
+
+
+def _bridge_records_a_realised_edit():
+    """MUTATION. The pre-fix producer: the inner knockout counts the write it made into the clone
+    the bridge threw away, so the bridged row carries the LIVE arm's edit counts."""
+    m = cpu_bridge_measurement(force_live_counters=True)
+    _v = m["row_liveness_violations"]
+    if not any(x.startswith("bridged_knockout_reports_a_REALISED_") for x in _v):
+        raise AssertionError(
+            "a bridged row reporting realised edits (n_cells_edited_realised=%r, "
+            "hook_fired_count=%r) was NOT refused for reporting them; reasons were %r. This is "
+            "DCS-C-134 and it is not caught."
+            % (m["row_record"].get("n_cells_edited_realised"),
+               m["row_record"].get("hook_fired_count"), _v))
+    raise RunnerRefusal("the bridged row is REFUSED by the producer's own contract: %s"
+                        % "; ".join(_v)[:200])
+
+
+def _bridge_writes_the_live_mask():
+    """MUTATION. A hook in this family that edits the mask it was handed instead of a clone. The
+    bridge is then a LIVE knockout, and the only witness is the bridge's own snapshot."""
+    m = cpu_bridge_measurement(write_through=True)
+    _v = m["bridge_liveness_violations"]
+    if not any(x.startswith("bridge_WROTE_") for x in _v):
+        raise AssertionError(
+            "a bridge that wrote into the LIVE mask (untouched=%r) was not refused for writing "
+            "it; reasons were %r" % (m["live_mask_untouched"], _v))
+    raise RunnerRefusal("the bridge is REFUSED by its own contract: %s" % "; ".join(_v)[:200])
 
 
 def _bridge_probe():
@@ -2614,6 +2888,16 @@ def mutate() -> int:
                           dict(_am5["option_mass_gate_policy"],
                                baseline_gate_is_not_relaxed=False)},
                      _sg5.kind, _sg5.scope_id), "baseline_gate_is_not_relaxed"))
+
+    # ---- DCS-C-134: the disabled-hook bridge, on the REAL classes ----------------------------
+    # Both mutations run `pair_common`'s real `DisabledHookBridge` over its real
+    # `ScopedAttentionKnockout` on CPU. M54 is the defect PHASE 11 job 870913 shipped; M55 is the
+    # one the discard measurement exists to catch and that no test could have caught before it.
+    muts.append(("M54 DCS-C-134: a BRIDGE row reporting a non-zero REALISED edit count",
+                 lambda: _bridge_records_a_realised_edit(),
+                 "bridged_knockout_reports_a_REALISED"))
+    muts.append(("M55 DCS-C-134: a bridge whose inner hook writes the LIVE attention mask",
+                 lambda: _bridge_writes_the_live_mask(), "bridge_WROTE_"))
 
     n_red = 0
     for name, fn, needle in muts:

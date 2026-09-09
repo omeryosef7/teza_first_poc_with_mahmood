@@ -727,15 +727,94 @@ def resolve_scoped_query_rows(mode: str, is_decode: bool,
     raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
 
 
+#: DCS-C-134 (ADDITIVE, 2026-09-09). The counters of `ScopedAttentionKnockout` that DESCRIBE A
+#: WRITE, as opposed to the ones that describe the code path having run. A knockout wrapped in a
+#: `DisabledHookBridge` runs its `_pre` in full and its mask edit is thrown away, so EVERY counter
+#: in this tuple must be exactly 0 on such a record and its `_would_have` twin carries the number.
+#:
+#: WHY THIS EXISTS. Until 2026-09-09 `_pre` wrote these counters unconditionally, including under
+#: the bridge -- and `n_cells_edited_realised` is READ BACK OUT OF THE CLONE the hook edits, a
+#: clone the bridge then discards. The bridged arm therefore persisted a per-row record that was
+#: NUMERICALLY IDENTICAL to a live knockout's (PHASE 11 job 870913: hook_fired_count=8280,
+#: n_cells_edited_realised=13061664 -- the same 13,061,664 the live arm reported on the same 230
+#: rows) while the model's attention mask was never touched. The mask discard was correct; the
+#: BOOKKEEPING was the defect, and only a downstream analyzer gate caught it.
+KNOCKOUT_WRITE_COUNTERS: tuple = (
+    "n_edits", "n_prefill_edits", "n_decode_edits", "n_query_rows_edited", "n_keys_masked",
+    "n_cells_edited_realised", "hook_fired_count",
+)
+
+#: The `_would_have` twin of every write counter. Seeded by `DisabledHookBridge.__init__` -- i.e.
+#: on a BRIDGED record only, and strictly before the first forward -- for the reason the D-4 block
+#: below gives: a record that GROWS keys cannot tell "this hook never fired" from "this consumer
+#: read a key the producer never wrote". They are deliberately NOT seeded on a live arm's record:
+#: see the note in `ScopedAttentionKnockout.__init__`.
+KNOCKOUT_WOULD_HAVE_COUNTERS: tuple = tuple(k + "_would_have" for k in KNOCKOUT_WRITE_COUNTERS)
+
+
+def bridged_scoped_liveness_violations(mode: str, stats: Dict[str, Any]) -> List[str]:
+    """[] iff `stats` is the record of a knockout that RAN IN FULL and WROTE NOTHING.
+
+    The bridged contract is not the live one with a relaxation; it is the live one with its two
+    halves separated. A live arm proves itself by writing. A BRIDGE has to prove two opposite
+    things at once and BOTH are required here:
+
+      * it RESOLVED destinations -- the mode's required counters are > 0 in their `_would_have`
+        twins, so a bridge over a knockout that cut nothing is refused rather than passing as a
+        perfect identity (that is a false negative wearing a null's name);
+      * it WROTE NOTHING -- every counter in `KNOCKOUT_WRITE_COUNTERS` is exactly 0, so a
+        bridge that quietly ran live can no longer produce a record indistinguishable from the
+        live arm's. THE PRODUCER CONVICTS ITSELF; before this, only the analyzer's downstream
+        cell-count gate could.
+
+    `n_forward` and the two forward counters are NOT write counters and stay live: the hook did
+    run those forwards, and that is precisely what the bridge exists to demonstrate.
+    """
+    if mode not in LIVENESS_REQUIREMENT:
+        raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
+    bad: List[str] = []
+    if int(stats.get("n_forward", 0)) <= 0:
+        bad.append("bridged_knockout_never_ran:n_forward==0 -- the wrapped hook was registered "
+                   "and never called, so this bridge exercised nothing")
+    for key in LIVENESS_REQUIREMENT[mode]:
+        _tw = key + "_would_have"
+        if _tw not in stats:
+            bad.append(f"{_tw}_NOT_RECORDED (the bridged producer wrote no would-have twin for "
+                       f"{key}, so 'the inner hook was alive' cannot be evaluated at all)")
+        elif int(stats.get(_tw, 0)) <= 0:
+            bad.append(f"{_tw}==0 (mode {mode} requires it > 0: a bridge over a knockout that "
+                       f"resolved nothing certifies nothing)")
+    for key in LIVENESS_MUST_BE_ZERO[mode]:
+        _tw = key + "_would_have"
+        if int(stats.get(_tw, 0)) != 0:
+            bad.append(f"{_tw}=={int(stats.get(_tw, 0))} (mode {mode} requires it == 0; the "
+                       f"scoping leaked in the bridged run exactly as it would have live)")
+    for key in KNOCKOUT_WRITE_COUNTERS:
+        _v = int(stats.get(key, 0))
+        if _v != 0:
+            bad.append(f"bridged_knockout_reports_a_REALISED_{key}=={_v}: the write was supposed "
+                       f"to be DISCARDED, so a non-zero realised counter on a bridged record is "
+                       f"either a live arm wearing the null's name or a producer counting a "
+                       f"write it threw away. Both are refusals.")
+    return bad
+
+
 def scoped_liveness_violations(mode: str, stats: Dict[str, Any]) -> List[str]:
     """[] iff `stats` satisfies this mode's proof-of-life contract. The gate, in one place.
 
     Callers do `if scoped_liveness_violations(mode, stats): refuse to report`. Do NOT restate
     the ">0 / ==0" rules at the call site: two modes make zero decode edits by design and a
     hand-written gate has already been the failure mode this whole class exists to avoid.
+
+    DCS-C-134 (ADDITIVE). A record that `DisabledHookBridge` has stamped `bridged_and_discarded`
+    is judged by `bridged_scoped_liveness_violations` instead. The branch is reached ONLY on a
+    stats dict carrying that key, which nothing but the bridge writes, so every live arm --
+    every PHASE 9 and PHASE 10 arm included -- takes the identical path it always did.
     """
     if mode not in LIVENESS_REQUIREMENT:
         raise ValueError(f"unknown scoped knockout mode {mode!r}; known: {SCOPED_KNOCKOUT_MODES}")
+    if stats.get("bridged_and_discarded"):
+        return bridged_scoped_liveness_violations(mode, stats)
     bad: List[str] = []
     for key in LIVENESS_REQUIREMENT[mode]:
         if int(stats.get(key, 0)) <= 0:
@@ -821,6 +900,27 @@ class ScopedAttentionKnockout:
         for key in ("hook_fired_count", "n_forward_with_destinations",
                     "n_cells_edited_expected", "n_cells_edited_realised"):
             self.stats.setdefault(key, 0)
+        # DCS-C-134 (ADDITIVE, 2026-09-09). THE BRIDGE SWITCH and the `_would_have` twins.
+        #
+        # `bridged_discard` is set to True by `DisabledHookBridge` when it wraps this object. It
+        # changes NOTHING about what `_pre` computes -- the clone, the head expansion, the row
+        # resolution, the min_val writes and the read-back all still happen, which is the whole
+        # point of the bridge -- it changes only WHERE the WRITE-DESCRIBING counters land. Under
+        # the bridge the mask edit is thrown away, so `n_cells_edited_realised` and its six
+        # siblings describe a write into a discarded clone, and reporting them in the live fields
+        # made a bridged row byte-for-byte indistinguishable from a live knockout's row.
+        #
+        # THE TWINS ARE SEEDED BY THE BRIDGE, NOT HERE, and that is deliberate on both counts.
+        # They must exist before the first forward -- "not measured" and "measured and zero" are
+        # opposite verdicts (the D-4 rule above) -- and `DisabledHookBridge.__init__` seeds all
+        # seven the moment it wraps this object, which is strictly before `__enter__`. Seeding
+        # them here instead would add seven keys to the stats dict of EVERY live knockout,
+        # including the `legacy_all_query` arm whose stats-key set is pinned byte-for-byte
+        # against `AllQueryAttentionKnockout` (doublespeak_causality/tests/
+        # test_scoped_attnknockout.py::test_legacy_mode_is_byte_identical_to_...). An artifact
+        # schema that grows keys nobody decided to add is the drift that test exists to stop, and
+        # a bridged-arm repair has no business changing what a live arm records.
+        self.bridged_discard = False
         # RESOLVED SPANS GO IN THE ARTIFACT, not only in a log line: a null is uninterpretable
         # without knowing which rows the mode actually had to work with.
         self.stats["mode"] = mode
@@ -911,20 +1011,30 @@ class ScopedAttentionKnockout:
                 n_edits += n_rows * n_heads_edited
                 n_keys_masked += 1
         kwargs["attention_mask"] = am
+        # ---- DCS-C-134 (ADDITIVE): WHICH FIELD EACH COUNTER LANDS IN ------------------------
+        # `_sfx` is "" for a live arm -- byte-identical to every run before 2026-09-09 -- and
+        # "_would_have" when this hook is wrapped in a `DisabledHookBridge`, whose shim hands the
+        # ORIGINAL (args, kwargs) back to the model and throws `am` away. Under the bridge the
+        # numbers below are a description of a write into a discarded clone, and a record that
+        # files them as realised is a control reporting itself as the thing it controls for.
+        #
+        # The forward counters and `n_cells_edited_expected` are NOT suffixed: the forwards
+        # really happened and the destinations were really resolved. Only the WRITE moves.
+        _sfx = "_would_have" if getattr(self, "bridged_discard", False) else ""
         self.stats["n_cells_edited_expected"] += n_cells_expected
-        self.stats["n_cells_edited_realised"] += n_cells_realised
+        self.stats["n_cells_edited_realised" + _sfx] += n_cells_realised
         self.stats["n_forward_with_destinations"] += int(n_cells_expected > 0)
         # A forward that resolved destinations and wrote them is a forward on which the hook
         # FIRED. Zero over a whole row is "the hook never fired" and is VOID, not a null.
-        self.stats["hook_fired_count"] += int(n_cells_realised > 0)
+        self.stats["hook_fired_count" + _sfx] += int(n_cells_realised > 0)
         self.stats["n_forward"] += 1
         self.stats["n_decode_forward"] += int(is_decode)
         self.stats["n_prefill_forward"] += int(not is_decode)
-        self.stats["n_edits"] += n_edits
-        self.stats["n_decode_edits"] += n_edits if is_decode else 0
-        self.stats["n_prefill_edits"] += 0 if is_decode else n_edits
-        self.stats["n_query_rows_edited"] += len(rows_touched)
-        self.stats["n_keys_masked"] += n_keys_masked
+        self.stats["n_edits" + _sfx] += n_edits
+        self.stats["n_decode_edits" + _sfx] += n_edits if is_decode else 0
+        self.stats["n_prefill_edits" + _sfx] += 0 if is_decode else n_edits
+        self.stats["n_query_rows_edited" + _sfx] += len(rows_touched)
+        self.stats["n_keys_masked" + _sfx] += n_keys_masked
         return args, kwargs
 
     def liveness_violations(self) -> List[str]:
@@ -1506,6 +1616,23 @@ def bridge_mask_liveness_violations(stats: Optional[Dict[str, Any]]) -> List[str
                    "knockout resolved no rows, so this bridge certifies nothing")
     if not (float(stats.get("would_have_changed_max_abs") or 0.0) > 0.0):
         bad.append("bridge_over_a_dead_hook:would_have_changed_max_abs==0")
+    # ---- DCS-C-134 (ADDITIVE): THE DISCARD, AS A MEASUREMENT ---------------------------------
+    # Everything above this line witnesses that the inner hook was ALIVE. Nothing above it
+    # witnesses that its write was DISCARDED -- that was left to a comment about cloning and to
+    # a downstream analyzer's cell count. `_shim_pre` now snapshots the mask it was handed and
+    # compares it after the inner hook has run, so the bridge can convict itself.
+    if stats.get("n_live_mask_forwards_checked") is None:
+        bad.append("discard_NOT_MEASURED:this bridge recorded no live-mask comparison at all, so "
+                   "'the write was discarded' is an assertion and not an observation")
+    elif int(stats.get("n_live_mask_forwards_checked") or 0) == 0:
+        bad.append("discard_measured_on_ZERO_forwards:a check that binds nothing is not a check")
+    if int(stats.get("n_cells_written_to_live_mask") or 0) != 0:
+        bad.append("bridge_WROTE_%d_cells_into_the_LIVE_mask:the inner hook wrote through the "
+                   "tensor the model handed it. This arm is a LIVE knockout wearing the null's "
+                   "name." % int(stats.get("n_cells_written_to_live_mask") or 0))
+    if stats.get("bridge_returned_a_different_mask_object"):
+        bad.append("bridge_returned_a_different_mask_object:the kwargs handed back to the model "
+                   "no longer carry the tensor the model supplied")
     return bad
 
 
@@ -1652,7 +1779,28 @@ class DisabledHookBridge:
         if isinstance(_is, dict):
             _is["enabled"] = False
             _is["bridged_and_discarded"] = True
+        # ---- DCS-C-134 (ADDITIVE, 2026-09-09) ------------------------------------------------
+        # THE INNER HOOK IS TOLD IT IS BRIDGED. `enabled=False` on the record was never enough:
+        # the inner hook went on incrementing its WRITE counters, and PHASE 11 job 870913
+        # persisted a bridged row carrying hook_fired_count=8280 and
+        # n_cells_edited_realised=13061664 -- the live arm's own numbers, from a write into a
+        # clone this shim throws away. `bridged_discard` moves those counters into their
+        # `_would_have` twins at source, so the record says FIRED-AND-DISCARDED rather than
+        # FIRED-AND-WROTE, and `bridged_scoped_liveness_violations` refuses it if it does not.
+        try:
+            inner.bridged_discard = True
+        except Exception:                                    # noqa: BLE001  (slots / frozen)
+            pass
+        if isinstance(_is, dict):
+            for _k in KNOCKOUT_WOULD_HAVE_COUNTERS:
+                _is.setdefault(_k, 0)
         self._handles: List[Any] = []
+        if kind == "attn_pre_kwargs":
+            # THE DISCARD IS MEASURED, NOT ASSERTED IN A COMMENT. Seeded so that "the bridge
+            # never checked" and "the bridge checked and found zero" are different states.
+            self.stats.setdefault("n_cells_written_to_live_mask", 0)
+            self.stats.setdefault("n_live_mask_forwards_checked", 0)
+            self.stats.setdefault("bridge_returned_a_different_mask_object", False)
 
     def _shim(self, fn):
         st = self.stats
@@ -1698,9 +1846,25 @@ class DisabledHookBridge:
                 else:
                     st["n_prefill_forward"] += 1
                 st["seq_len_last"] = n_q
+            # DCS-C-134. THE WITNESS OF THE DISCARD, taken BEFORE the inner hook runs. A comment
+            # saying "it clones, so the caller's tensor is safe" is not evidence; this is. If any
+            # future hook in this family writes THROUGH into the mask it was handed, the bridge
+            # is a live arm, and the only thing that would notice is this snapshot.
+            _snap = (am_in.detach().clone()
+                     if (am_in is not None and hasattr(am_in, "detach")) else None)
             # THE REAL HOOK RUNS, IN FULL -- including its eager-mask assertion and its refusal
             # of a non-4-D mask. A bridge that skipped them would not be exercising the code path.
             _a, _kw = fn(module, args, dict(kwargs))
+            if _snap is not None:
+                st["n_cells_written_to_live_mask"] = int(
+                    st.get("n_cells_written_to_live_mask", 0)
+                    + int((am_in.detach() != _snap).sum()))
+                st["n_live_mask_forwards_checked"] = int(
+                    st.get("n_live_mask_forwards_checked", 0)) + 1
+            if kwargs.get("attention_mask") is not am_in:
+                # The dict handed back to the model no longer holds the tensor the model gave us.
+                # Whatever it holds, this is no longer a bridge.
+                st["bridge_returned_a_different_mask_object"] = True
             am_out = _kw.get("attention_mask")
             if (am_in is not None and am_out is not None and am_out is not am_in
                     and hasattr(am_out, "shape")):

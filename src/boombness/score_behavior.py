@@ -2959,6 +2959,22 @@ def main() -> int:
                    "n_cells_edited_expected", "n_cells_edited_realised"):
             if _k in (ks or {}):
                 out[_k] = int(ks[_k])
+        # ---- DCS-C-134 (ADDITIVE, 2026-09-09): THE BRIDGED ROW SAYS SO ON ITS FACE -----------
+        # A row produced under `--pr057-disable-hooks` now carries `bridged_and_discarded=True`
+        # and the `_would_have` twins of the write counters. The four fields above are then ZERO
+        # BY CONSTRUCTION on such a row, which is the point: before this, a bridged row was
+        # numerically identical to a live knockout's (PHASE 11 job 870913 persisted
+        # hook_fired_count=8280 / n_cells_edited_realised=13061664 on an arm whose mask edit was
+        # thrown away), and only the analyzer's downstream cell-count gate could tell them apart.
+        #
+        # These keys appear ONLY on a bridged row -- `bridged_and_discarded` is written by
+        # `pc.DisabledHookBridge` and by nothing else -- so every live arm, PHASE 9 and PHASE 10
+        # included, is unchanged key for key.
+        if (ks or {}).get("bridged_and_discarded"):
+            out["bridged_and_discarded"] = True
+            for _k in pair().KNOCKOUT_WOULD_HAVE_COUNTERS:
+                if _k in ks:
+                    out[_k] = int(ks[_k])
         return out
 
     def _readout_knock_fields(knock_stats, dk, prot, seq_len):

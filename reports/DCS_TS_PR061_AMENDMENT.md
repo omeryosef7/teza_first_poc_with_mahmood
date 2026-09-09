@@ -714,3 +714,282 @@ start of this session (untracked, from the session above) and a peer has since c
 Everything else `git status --porcelain` lists is pre-existing untracked data under
 `data/boombness_prompts/`, which this session neither created nor touched.
 **No `git add`, no `git commit`, no `git stash`, and nothing written under `outputs/`.**
+
+---
+
+# ADDENDUM (2026-09-09) — `DCS-C-133` diagnosed, `DCS-C-134` fixed: the bridge never ran live; its **bookkeeping** did
+
+`C-133` recorded that PHASE 11 job 870913's arm `button_bomb_S_G_bridge` refused with
+*"the disabled-hook bridge reports `hook_fired_count=8280`; the disabled-hook bridge edited
+**13061664** cells"*, and read that as **the bridge ran as a live knockout**. It did not. This
+addendum reports what actually happened, why the CPU measurement said `0`, and the fix.
+
+## B1. THE FINDING — the mask discard was correct; the COUNTERS were not
+
+Reproduced on CPU with the **real** `pair_common.DisabledHookBridge` over the **real**
+`pair_common.ScopedAttentionKnockout` (`query_prefill_only`, 12-token layout, one bridged layer):
+
+```
+model mask untouched:                                   True      <- the model was NEVER edited
+what the MODEL's self_attn was handed, min-val cells:   0
+BRIDGE stats:   realised=0   fired=0   cells_would=16   n_forward_calls=2
+BRIDGE liveness_violations:                             []
+INNER record (= knock_stats, THE DICT THE ARTIFACT CARRIES):
+        hook_fired_count=1   n_cells_edited_realised=16   n_prefill_edits=16   n_edits=16
+        enabled=False   bridged_and_discarded=True
+INNER scoped_liveness_violations:                       []        <- and it passed the producer gate
+```
+
+`ScopedAttentionKnockout._pre` **clones** the additive mask, edits the clone, and returns the clone
+in a `kwargs` dict that `_shim_pre` throws away — so the tensor the model owns is untouched and the
+arm was, in fact, **inert**. But `_pre` counts as it writes, and `n_cells_edited_realised` is
+**read back out of the clone** (`_readback`), so every write counter describes an edit into a
+tensor that was then discarded. Those counters are `knock_stats`, which `score_behavior`
+copies onto each row (`_pr059_cell_fields`, `hook_n_prefill_edits`, …) and which
+`pr059_run_localisation.liveness_records_from_rows` hands to the analyzer.
+
+**So the bridged arm produced a per-row record that was numerically identical to a live knockout's
+while editing nothing.** 13,061,664 matching `basket_bomb_S_0_baseline` exactly is not a
+coincidence and not evidence of a live run — it is the *same counting code over the same rows*.
+
+## B2. WHY THE CPU TEST SAID `0` AND PRODUCTION SAID `13,061,664`
+
+**It read a different dictionary, and the field it read is a constant.**
+
+`DisabledHookBridge` keeps its **own** stats dict (`bst`, from `pc.hook_stats_dict`). That dict
+seeds `n_cells_edited_realised: 0` and `hook_fired_count: 0` at construction (`pair_common.py`
+`hook_stats_dict`) and **neither `_shim` nor `_shim_pre` ever writes either field**. The `D-6`
+closing measurement printed `realised=0` off that dict. It would have printed `0` if the bridge had
+edited the entire mask on every forward. **It was a constant reported as a measurement.**
+
+The dict that reaches the artifact is the **inner knockout's** (`knock_stats`), and no CPU test ever
+looked at it. Naming the cause precisely, against the four candidates in the brief:
+
+| candidate | verdict |
+|---|---|
+| a different object | **NO** — the D-6 test used the real `ScopedAttentionKnockout` and the real bridge |
+| a different call signature | **NO** — `_shim_pre` calls `_pre(module, args, dict(kwargs))` in production too |
+| a tiny-model path that skips the real branch | **NO** — the `attn_pre_kwargs` branch is the one production takes |
+| a discard that works for project-out but not attention-mask | **NO** — the discard works for both |
+| **the test read the wrong dict, and that dict's field is never written** | **YES** |
+
+The `cells_would=12` half of that measurement *was* real (the bridge does write
+`n_mask_cells_would_have_edited`). Only the `realised=0` half was vacuous, and it was the half that
+carried the whole claim.
+
+## B3. COULD THE BRIDGE CONVICT ITSELF? — **NO. Only the downstream gate could.**
+
+Before this addendum:
+
+* the bridge's own record carried `would_have_changed_max_abs`, `would_have_changed_l2`,
+  `n_mask_cells_would_have_edited`, `n_forward_calls` — **all witnesses that the inner hook was
+  ALIVE, none that its write was DISCARDED**;
+* `n_cells_edited_realised` and `hook_fired_count` on that record were seeded zeros, so they could
+  not distinguish anything;
+* the row record carried the live arm's counters verbatim;
+* **nothing anywhere compared the mask the model was handed before and after the inner hook ran.**
+
+The claim "it clones, so the caller's tensor is safe" lived in a comment. The only thing that could
+convict was `dcs_ts_pr059_localisation.liveness_gate`'s cell count — and it convicted for the wrong
+reason, reading a bookkeeping defect as a live intervention.
+
+## B4. THE FIX (`DCS-C-134`) — additive, in three files
+
+1. **`pair_common.ScopedAttentionKnockout`** gains `bridged_discard` (default `False`) and the
+   `_would_have` twin of every write counter (`KNOCKOUT_WRITE_COUNTERS` /
+   `KNOCKOUT_WOULD_HAVE_COUNTERS`). **The twins are seeded by the BRIDGE, not by the
+   constructor** — they must exist before the first forward, and `DisabledHookBridge.__init__`
+   seeds all seven strictly before `__enter__`. Seeding them in the constructor instead would add
+   seven keys to the stats dict of every LIVE knockout, and the `legacy_all_query` arm's stats-key
+   set is pinned byte-for-byte against `AllQueryAttentionKnockout`
+   (`test_scoped_attnknockout.py::test_legacy_mode_is_byte_identical_to_...`). A bridged-arm
+   repair has no business changing what a live arm records; the first draft of this fix did, that
+   test caught it, and it was corrected rather than the test relaxed. `_pre` computes **exactly** what it
+   computed before — clone, head expansion, `resolve_scoped_query_rows`, per-key causal `lo`,
+   `min_val` writes, read-back — and chooses only **where the write-describing counters land**
+   (`_sfx = "_would_have" if bridged else ""`). Forward counters and `n_cells_edited_expected` are
+   **not** suffixed: those forwards really happened and those destinations really resolved.
+2. **`pair_common.DisabledHookBridge`** tells the inner hook it is bridged (`inner.bridged_discard
+   = True`) and **measures its own discard**: `_shim_pre` snapshots the mask it was handed *before*
+   the inner hook runs, compares afterwards, and records `n_cells_written_to_live_mask`,
+   `n_live_mask_forwards_checked` and `bridge_returned_a_different_mask_object`.
+   `bridge_mask_liveness_violations` now refuses a bridge that wrote a live-mask cell, that handed
+   back a different mask object, or **that never took the measurement at all**.
+3. **`pair_common.bridged_scoped_liveness_violations`** (new; `scoped_liveness_violations` routes
+   to it **only** on a record carrying `bridged_and_discarded`, which nothing but the bridge
+   writes). It demands both halves: the mode's required counters `> 0` in their `_would_have`
+   twins (**so a bridge over a dead knockout is still refused — the D-6 false negative**) and every
+   counter in `KNOCKOUT_WRITE_COUNTERS` exactly `0`.
+4. **`score_behavior._pr059_cell_fields`** carries `bridged_and_discarded` and the twins onto the
+   row — **only on a bridged row**, so every live arm is unchanged key for key.
+5. **`pr059_run_localisation`**: `bridge_family_constructible()` re-derives the fix from
+   `pair_common`'s own source (`bridged_discard` and `_would_have` in `_pre`,
+   `n_cells_written_to_live_mask` in `_shim_pre`), so if either is removed the bridge arm is
+   **refused by name** before it takes a queue slot; and `verify_arm_artifacts` gains a
+   bridge branch that refuses on rows not marked bridged, on any realised work, and on
+   would-have counters of zero.
+
+## B5. VERIFICATION — the real object, in the production configuration
+
+`meta-llama/Llama-3.1-8B-Instruct`'s **own** `config.json` (the pinned revision, from the local
+cache), `AutoModelForCausalLM.from_config(..., attn_implementation="eager", dtype=bfloat16)` →
+a real `LlamaForCausalLM` with real `LlamaAttention`, real 4-D eager mask, real KV-cached
+`generate()`. **Depth and width are reduced (2 layers / 256 hidden / 8 heads / 2 kv) so it runs on
+CPU; weights are random.** The hook classes, the mask plumbing and the `score_behavior`
+routing are the production ones; the *weights* are the only stand-in, and weights do not enter a
+mask edit. Scope `query_last_k_rows` (PHASE 11's), reached through
+`score_behavior.make_intervention(..., disable_hooks=True)`:
+
+```
+model class: LlamaForCausalLM | attn impl: eager | dtype: torch.bfloat16 | attn: LlamaAttention
+disable_hooks=False -> ScopedAttentionKnockout      disable_hooks=True -> DisabledHookBridge
+
+LIVE   row record : hook_fired_count=2 n_cells_edited_realised=120 n_prefill_edits=120 n_forward=12
+BRIDGE row record : hook_fired_count=0 n_cells_edited_realised=0   n_prefill_edits=0   n_forward=12
+                    bridged_and_discarded=True
+BRIDGE would-have : hook_fired_count_would_have=2  n_prefill_edits_would_have=120
+                    n_cells_edited_realised_would_have=120  n_decode_edits_would_have=0
+                    n_query_rows_edited_would_have=10  n_keys_masked_would_have=24
+BRIDGE own stats  : n_forward_calls=12 prefill=2 cells_would=120 realised=0
+                    n_live_mask_forwards_checked=12  n_cells_written_to_live_mask=0  diff_obj=False
+
+scoped_liveness_violations LIVE   : []
+scoped_liveness_violations BRIDGE : []
+bridge_mask_liveness_violations   : []
+
+LOGITS max|live   - baseline| = 0.302246     <- a LIVE knockout MOVES the model
+LOGITS max|bridge - baseline| = 0            BYTE-IDENTICAL = True
+```
+
+The last two lines are the discrimination the D-6 measurement never had: the same instrument that
+shows the bridge is inert shows the live arm is not.
+
+## B6. THE NEW MUTATION AND THE NEW POSITIVE TEST (`pr059_run_localisation`)
+
+Both run the real classes on CPU (`cpu_bridge_measurement()`), reading **three** witnesses — the
+model's own mask, the bridge's record and the inner record.
+
+* **`M54` DCS-C-134: a BRIDGE row reporting a non-zero REALISED edit count** — reinstates the
+  pre-fix producer (`inner.bridged_discard = False`) and requires a
+  `bridged_knockout_reports_a_REALISED_*` refusal. **RED.**
+* **`M55` DCS-C-134: a bridge whose inner hook writes the LIVE attention mask** — one cell, into the
+  tensor the model owns, leaving every other witness intact; requires a `bridge_WROTE_*` refusal.
+  **RED.** *Nothing before this addendum could have caught `M55`.*
+* **Positive test (6 self-test checks)** — the model's mask untouched and `0` extra blocked cells;
+  the discard measured (`n_live_mask_forwards_checked=2`, `n_cells_written_to_live_mask=0`); the row
+  record reporting zero realised work on **every** counter in `KNOCKOUT_WRITE_COUNTERS` and carrying
+  `bridged_and_discarded`; the would-have twins `> 0`; **both** contracts returning `[]`; and the
+  producer convicting itself without any downstream gate. **All PASS.**
+
+## B7. HARNESSES — observed, before and after
+
+| harness | before | after |
+|---|---|---|
+| `scripts/dcs_ts_pr057_causal.py` | 117 / 0 · 102/102 RED | **117 / 0 · 102/102 RED** |
+| `src/boombness/pr057_run_causal.py` | 70 / 0 · 41/41 RED | **70 / 0 · 41/41 RED** |
+| `scripts/dcs_ts_pr058_symmetry.py` | 57 / 0 · 56/56 RED | **57 / 0 · 56/56 RED** |
+| `scripts/dcs_ts_pr059_localisation.py` | 122 / 0 · 104/104 RED | **122 / 0 · 104/104 RED** (untouched) |
+| `scripts/dcs_ts_pr059_verifier.py` | 27 / 0 · 25/25 RED | **27 / 0 · 25/25 RED** (untouched) |
+| `src/boombness/pr059_run_localisation.py` | 69 / 0 · 56/56 RED | **75 / 0 · 58/58 RED** (+6 checks, +M54/M55) |
+
+The three PHASE 9/10 harnesses did not move. The only movement is the runner's, and it is exactly
+the tests this addendum added.
+
+## B8. SCOPE — what did NOT change
+
+* The five `button_bomb` arms already `done` are **live** arms. `bridged_discard` is `False` on
+  every one of them, `scoped_liveness_violations` takes the identical branch it always did, and no
+  row key changes. **They stay valid.**
+* `basket_bomb` stays closed as `CANNOT_ANSWER_BANK`. Nothing here reopens it.
+* No `configs/*.json` was edited. No `*pr057*` / `*pr058*` / `*pr063*` / `*pr064*` / `*pr065*` file
+  was touched. No SLURM job was submitted or cancelled; no GPU and no network were used.
+* **`button_bomb_S_G_bridge` can be resubmitted.** Its previous artifact is correctly refused by the
+  new gate and must be re-run; the arm itself is constructible
+  (`bridge_family_constructible() -> (True, 'attn_pre_kwargs (pair_common.DisabledHookBridge) +
+  score_behavior routing')`).
+
+## B9. REPO TESTS, TO COMPLETION — and a BASELINE, because "5 failed" is not a verdict on its own
+
+```
+with this addendum : 5 failed, 2067 passed, 7 skipped   in 901.16s
+HEAD baseline      : 5 failed, 2067 passed, 7 skipped   in 1192.62s
+```
+
+The baseline was produced by running the SAME suite against a tree in which
+`pair_common.py`, `score_behavior.py` and `pr059_run_localisation.py` are `git show HEAD:` copies
+and everything else is the working tree (symlinked; no `git stash`, no worktree, no write to the
+shared tree). **The two failure sets are identical, test id for test id:**
+
+```
+tests/test_prompt_families_strict.py::test_violating_input_really_violates
+tests/test_prompt_families_strict.py::test_strict_violation_writes_nothing
+tests/test_prompt_families_strict.py::test_strict_violation_does_not_clobber_an_existing_bank
+tests/test_prompt_families_strict.py::test_non_strict_violation_still_writes_both_files
+doublespeak_causality/tests/test_scoped_attnknockout.py::test_legacy_mode_is_byte_identical_to_...
+```
+
+Both are **PRE-EXISTING and NOT MINE**, and both are worth naming rather than filing as noise:
+
+* The four `test_prompt_families_strict` failures are a **pool-data** refusal
+  (*"142 pool sentence(s) already contain 'carrot' or 'was' incidentally"*), unrelated to hooks,
+  bridges or liveness.
+* `test_legacy_mode_is_byte_identical_to_AllQueryAttentionKnockout` pins the exact set of stats
+  keys `ScopedAttentionKnockout` adds over `AllQueryAttentionKnockout`, and the **`PR059-D4`** work
+  of 2026-09-08 added four (`hook_fired_count`, `n_forward_with_destinations`,
+  `n_cells_edited_expected`, `n_cells_edited_realised`) without updating that list. The test is
+  doing its job — it is the guard that also caught this addendum's first draft (§B4.1) — but its
+  list is one commit stale. The test file is outside this session's write scope, so it is
+  **REPORTED, not fixed**: the pinned list needs the four D-4 keys added deliberately, by whoever
+  owns `PR059-D4`.
+
+## B10. UNSCOPED `git status --porcelain`
+
+```
+ M doublespeak_causality/pair_common.py
+ M reports/DCS_TS_PR061_AMENDMENT.md
+ M src/boombness/pr059_run_localisation.py
+ M src/boombness/score_behavior.py
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_basket_knife.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_bomb.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_gun.jsonl
+?? data/boombness_prompts/boombness_prompt_bank_ts116n_button_knife.jsonl
+?? data/boombness_prompts/demo_pools_116dom_ts_bomb.json
+?? data/boombness_prompts/demo_pools_116dom_ts_gun.json
+?? data/boombness_prompts/demo_pools_116dom_ts_knife.json
+?? data/boombness_prompts/ts_cand/
+?? data/boombness_prompts/ts_repair/
+?? data/boombness_prompts/ts_smoke/
+```
+
+The four `M` entries are this addendum's, and nothing else is. Everything `??` is pre-existing
+untracked data under `data/boombness_prompts/` that this session neither created nor touched.
+**No `git add`, no `git commit`, no `git stash`, no `configs/*.json` edited, no `*pr057*` /
+`*pr058*` / `*pr063*` / `*pr064*` / `*pr065*` file touched, no SLURM job submitted or cancelled,
+no GPU, no network.**
+
+## B11. THE LESSON, STATED SO THE FOURTH APPEARANCE IS HARDER
+
+`C-130` was found by reading code. `PR059-D6` was found by a `TypeError`. **`C-134` was found by a
+downstream gate, and the CPU test that should have found it printed a hardcoded zero.** The rule
+the three of them share:
+
+> A control's proof of inertness must be a measurement of **the thing the model was handed**, taken
+> by the control itself, and read from **the dictionary that reaches the artifact**. A field that
+> is seeded and never written reports the answer you were hoping for at every failure.
+
+`n_cells_written_to_live_mask` and the `_would_have` twins exist so that the next reader can tell
+those apart without running the arm on a GPU.
