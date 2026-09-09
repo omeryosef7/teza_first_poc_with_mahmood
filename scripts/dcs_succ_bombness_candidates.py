@@ -92,8 +92,17 @@ def _find_run(bank_name: str) -> str:
     return hits[0]
 
 
-def load_bank(bank_name, torch):
-    """-> (meta, rows_by_cell_domain_slot, reps) for ONE bank, filtered to the analysis cell."""
+def load_bank(bank_name, torch, keep_domains=None):
+    """-> (meta, rows_by_cell_domain_slot, reps) for ONE bank, filtered to the analysis cell.
+
+    `keep_domains` filters AT SELECTION TIME. That is not tidiness: the independent verification
+    of 2026-09-09 (reports/DCS_SUCC_S002_INDEPENDENT_VERIFICATION.md section 7.1) found that this
+    function used to select all 113 analysed domains and let `domain_cell_means` drop the
+    non-TRAIN ones afterwards. No statistic was ever computed on a validation or test row -- but
+    the artifact published `n_selected_rows = 4520` (113 x 10 x 4) beside `n_train_domains = 67`,
+    when the number of rows the metrics ran on was 2680 (67 x 10 x 4), and NOTHING IN THE ARTIFACT
+    let a reader see that the held-out rows were untouched. The split rule exists precisely to
+    make that visible from the outside, so the filter moved here."""
     run = _find_run(bank_name)
     cache = os.path.join(run, "cache", "final_occurrence_reps.pt")
     blob = torch.load(cache, map_location="cpu", weights_only=False)
@@ -109,6 +118,8 @@ def load_bank(bank_name, torch):
             if r["query_kind"] != QUERY_KIND or int(r["n_examples"]) != DOSE:
                 continue
             if r["cell"] not in CELLS or r["domain"] in EXCLUDED_DOMAINS:
+                continue
+            if keep_domains is not None and r["domain"] not in keep_domains:
                 continue
             # family_slot: everything in family_id except the DOMAIN (first field) and the
             # QUERY_KIND (last field, constant here), so a cell-A row and a cell-C row of the same
@@ -140,7 +151,11 @@ def load_bank(bank_name, torch):
             "layer_convention": blob.get("layer_convention"),
             "position": blob.get("position"),
             "token_text_by_cell": {c: sorted(v) for c, v in seen_token_text.items()},
-            "n_rows": len(rows)}
+            "n_rows_analysed": len(rows),
+            "_n_rows_note": "rows actually bound AFTER the split filter -- 67 x 10 x 4 on TRAIN. "
+                            "The field was called `n_rows` and reported 4520 (all 113 analysed "
+                            "domains) until the S-002 independent verification found that a "
+                            "reader could not tell the held-out rows were untouched."}
     return meta, rows, reps
 
 
@@ -245,7 +260,7 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
     banks, means, doms = {}, {}, {}
     for concept in CONCEPTS:
         name = "%s_%s" % (codeword, concept)
-        meta, rows, reps = load_bank(name, torch)
+        meta, rows, reps = load_bank(name, torch, keep_domains=set(train_domains))
         m, kept, dropped = domain_cell_means(rows, reps, torch, set(train_domains))
         banks[concept] = meta
         means[concept] = m
@@ -419,42 +434,73 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
             for c2 in CONCEPTS:
                 cosmat["%s|%s" % (c1, c2)] = float(torch.dot(vhatf[c1], vhatf[c2]))
 
-        # ---- B1_resid: the part of the bomb axis that the two HARD NEGATIVE axes cannot express.
+        # ---- CELL COORDINATES on the bomb axis, in gap units, relative to cell A. This is the
+        # table that stops "traverses 10% of the gap" from flattering itself: it shows where all
+        # FOUR cells sit, so the reader can see that C is at 0.10 while B is at 0.84 and E at 1.00.
+        # It also kills one whole account: if harmful demonstrations simply pulled everything into
+        # a single attractor, C and B would sit at the SAME coordinate. They do not. (S-002 IV 8.6)
+        vb_hat_full = _unit(torch.stack([delta_EA["bomb"][d][L_i] for d in common]).mean(dim=0),
+                            torch)
+        gapb = gap["bomb"]
+        coords = {}
+        for cell in ("A", "C", "B", "E"):
+            vals = []
+            for d in common:
+                delta = means["bomb"][(cell, d)][L_i] - means["bomb"][("A", d)][L_i]
+                vals.append(float(torch.dot(delta, vb_hat_full)) / gapb)
+            coords[cell] = {"mean_gap_units": mean(vals), "sd": sd(vals)}
+        out.setdefault("cell_coordinates_on_bomb_axis", {})["L%d" % L] = {
+            "coords": coords,
+            "_reading": "gap units relative to cell A, on the FULL (in-sample) bomb axis. A is 0 "
+                        "by construction and E is ~1 by construction; the informative rows are C "
+                        "and B."}
+
+        # ---- B1_resid FOR ALL THREE SHIFTS, not only bomb. The independent verification (8.4)
+        # pointed out that computing the residualised projection only for the bomb shift cannot
+        # tell you whether "the shift lands in the concept-SPECIFIC part of its own axis" is a
+        # general property of the manipulation or a bomb-only one. It costs nothing, so it is run
+        # for all three and the answer is reported whichever way it comes out.
         # Gram-Schmidt v_lex(bomb) against span{v_lex(knife), v_lex(gun)}, then project the
         # Doublespeak shift on what is left. If the whole alignment survives, it is not carried by
         # a shared "some other weapon word is here" component; if it collapses, it is.
-        basis = []
-        for c in ("knife", "gun"):
-            u = vfull[c].clone()
-            for b in basis:
-                u = u - float(torch.dot(u, b)) * b
-            n = float(torch.linalg.vector_norm(u))
-            if n > 1e-8:
-                basis.append(u / n)
-        resid = vfull["bomb"].clone()
-        for b in basis:
-            resid = resid - float(torch.dot(resid, b)) * b
-        rnorm = float(torch.linalg.vector_norm(resid))
-        frac_kept = rnorm / float(torch.linalg.vector_norm(vfull["bomb"]))
-        rhat = _unit(resid, torch)
-        rvals_spec = [float(torch.dot(delta_CA["bomb"][d][L_i], rhat)) / rnorm for d in common]
-        k_spec = sum(1 for x in rvals_spec if x > 0)
-        p_spec, f_spec = sign_test_two_sided(k_spec, len(rvals_spec))
-        out["metrics"]["B1resid|L%d|shift_bomb|ref_bomb_minus_knifegun" % L] = {
-            "mean_resid_units": mean(rvals_spec), "sd_resid_units": sd(rvals_spec),
-            "ci95_resid_units": boot_ci(rvals_spec, rng),
-            "d_paired": cohen_d_paired(rvals_spec),
-            "n_domains": len(rvals_spec), "n_positive": k_spec,
-            "sign_p": p_spec, "sign_p_floor": f_spec,
-            "resid_norm": rnorm, "frac_of_bomb_axis_orthogonal_to_knife_and_gun": frac_kept,
-            "_reading": ("units are the RESIDUAL gap, not the full bomb gap: the denominator is "
-                         "the length of the part of the bomb axis that knife and gun cannot "
-                         "express (%.4f of it here). A large number over a tiny residual is not "
-                         "a large effect." % frac_kept)}
+        frac_kept_by_concept = {}
+        for target in CONCEPTS:
+            others = [c for c in CONCEPTS if c != target]
+            basis = []
+            for c in others:
+                u = vfull[c].clone()
+                for bvec in basis:
+                    u = u - float(torch.dot(u, bvec)) * bvec
+                nrm = float(torch.linalg.vector_norm(u))
+                if nrm > 1e-8:
+                    basis.append(u / nrm)
+            resid = vfull[target].clone()
+            for bvec in basis:
+                resid = resid - float(torch.dot(resid, bvec)) * bvec
+            rnorm = float(torch.linalg.vector_norm(resid))
+            frac_kept = rnorm / float(torch.linalg.vector_norm(vfull[target]))
+            frac_kept_by_concept[target] = frac_kept
+            rhat = _unit(resid, torch)
+            rvals_spec = [float(torch.dot(delta_CA[target][d][L_i], rhat)) / rnorm for d in common]
+            k_spec = sum(1 for x in rvals_spec if x > 0)
+            p_spec, f_spec = sign_test_two_sided(k_spec, len(rvals_spec))
+            out["metrics"]["B1resid|L%d|shift_%s|ref_%s_minus_others" % (L, target, target)] = {
+                "mean_resid_units": mean(rvals_spec), "sd_resid_units": sd(rvals_spec),
+                "ci95_resid_units": boot_ci(rvals_spec, rng),
+                "d_paired": cohen_d_paired(rvals_spec),
+                "n_domains": len(rvals_spec), "n_positive": k_spec,
+                "sign_p": p_spec, "sign_p_floor": f_spec,
+                "resid_norm": rnorm,
+                "frac_of_axis_orthogonal_to_the_other_two": frac_kept,
+                "_reading": ("units are the RESIDUAL gap, not the full %s gap: the denominator is "
+                             "the length of the part of the %s axis the other two concepts cannot "
+                             "express (%.4f of it here). A large number over a tiny residual is "
+                             "not a large effect." % (target, target, frac_kept))}
+        frac_kept = frac_kept_by_concept["bomb"]
         out.setdefault("axis_geometry", {})["L%d" % L] = {
             "cos_between_lex_axes": cosmat,
             "lex_axis_norms": {c: float(torch.linalg.vector_norm(vfull[c])) for c in CONCEPTS},
-            "frac_of_bomb_axis_orthogonal_to_knife_and_gun": frac_kept}
+            "frac_of_axis_orthogonal_to_the_other_two": frac_kept_by_concept}
 
         # ---- CONTROLS at this layer, for the diagonal cell only (bomb shift vs bomb ref)
         # C1 random unit directions, matched by construction to nothing but dimensionality
@@ -464,9 +510,17 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
             v = _unit(torch.randn(delta_EA["bomb"][common[0]][L_i].shape, generator=g), torch)
             per = [float(torch.dot(delta_CA["bomb"][d][L_i], v)) / gap["bomb"] for d in common]
             rvals.append(mean(per))
-        # C2 domain-shuffled reference: the E-A pairing permuted across domains before averaging.
-        # This keeps the direction's LENGTH and its per-domain composition and destroys only the
-        # domain correspondence, so it is not a test of "is 4096-d chance small".
+        # LOO-LEAKAGE PROBE -- NOT A CONTROL, AND IT IS NO LONGER FILED AS ONE.
+        # The independent verification (section 7.2) proved what this quantity actually is:
+        # permuting which domain sits in which slot and then taking the LOO mean excluding slot d
+        # gives (sum_all delta - delta[perm[d]]) / 66 -- so the permutation only changes WHICH
+        # SINGLE DOMAIN is dropped from a 67-term mean, and the projected domain is now INSIDE the
+        # axis. It is mathematically obliged to return approximately the IN-SAMPLE value, which is
+        # >= the real one. Measured: 0.105600 against an independently computed in-sample 0.105566.
+        # It therefore measures the leave-one-out leakage (about 1%), which is genuinely useful,
+        # and it CANNOT PRODUCE A NULL. Sitting in a block called "controls" beside a quantity
+        # whose job IS to produce a null, it invited the reading "we shuffled and the effect
+        # survived". It is renamed and moved out.
         shuf = []
         for j in range(n_random_draws):
             r2 = random.Random(20260909 + 7717 * L + j)
@@ -487,16 +541,31 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
                                        common, d, torch), torch)
             be.append(float(torch.dot(delta_BE["bomb"][d][L_i], vhat)) / gap["bomb"])
         out["controls"]["L%d" % L] = {
-            "random_unit_gap_units": {"mean_of_draw_means": mean(rvals),
-                                      "between_draw_sd": sd(rvals), "n_draws": n_random_draws,
-                                      "draws": rvals},
-            "domain_shuffled_ref_gap_units": {"mean_of_draw_means": mean(shuf),
-                                              "between_draw_sd": sd(shuf),
-                                              "n_draws": n_random_draws, "draws": shuf},
+            "random_unit_gap_units": {
+                "mean_of_draw_means": mean(rvals),
+                "between_draw_sd_from_%d_draws" % n_random_draws: sd(rvals),
+                "between_draw_sd_ANALYTIC": (
+                    float(torch.linalg.vector_norm(
+                        torch.stack([delta_CA["bomb"][d][L_i] for d in common]).mean(dim=0)))
+                    / (math.sqrt(len(delta_CA["bomb"][common[0]][L_i])) * gap["bomb"])),
+                "n_draws": n_random_draws, "draws": rvals,
+                "_why_the_analytic_sd_is_here": "12 draws estimate a standard deviation to about "
+                    "+/-21%, so two banks printing 0.0015 +/- 0.0072 and 0.0009 +/- 0.0098 invite "
+                    "a between-bank reading that is pure sampling noise. The analytic value costs "
+                    "nothing and is the one to quote (S-002 IV 7.3)."},
+            "_domain_shuffled_ref_MOVED": "see leakage_probe -- it is not a control (S-002 IV 7.2)",
             "harm_context_at_concept_token_gap_units": {
                 "mean": mean(be), "sd": sd(be), "ci95": boot_ci(be, rng),
                 "n_positive": sum(1 for x in be if x > 0), "n_domains": len(be)},
             "gap_norms": gap}
+        out.setdefault("leakage_probe", {})["L%d" % L] = {
+            "domain_shuffled_ref_gap_units": {"mean_of_draw_means": mean(shuf),
+                                              "between_draw_sd": sd(shuf),
+                                              "n_draws": n_random_draws, "draws": shuf},
+            "_what_this_is": "a LEAVE-ONE-OUT LEAKAGE estimate, NOT a null control. It is obliged "
+                             "to return approximately the in-sample value; the gap between it and "
+                             "the LOO estimate is the leakage. It may never be quoted as a "
+                             "control that the effect survived."}
     return out
 
 

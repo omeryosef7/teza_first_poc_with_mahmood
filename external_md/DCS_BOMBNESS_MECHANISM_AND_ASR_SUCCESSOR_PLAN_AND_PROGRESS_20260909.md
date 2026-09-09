@@ -2638,3 +2638,125 @@ provenance and not tidied away.
 
 **Not resubmitted this iteration, deliberately**: putting it straight back into the same queue
 reproduces the conditions. It goes in when the ASR wave drains.
+
+---
+
+### 2026-09-09 — ENTRY 018 — `A-103`: `S-002` independently re-verified to six significant figures, and five defects found in it
+
+**Label: AUDIT / INDEPENDENT VERIFICATION.** `reports/DCS_SUCC_S002_INDEPENDENT_VERIFICATION.md`
+(48 KB), written by an agent that was **forbidden to read `dcs_succ_bombness_candidates.py` or its
+artifact** until it had its own numbers, and that wrote its own loader, its own LOO, its own
+bootstrap and its own sign test from a prose description.
+
+**Every headline number reproduced.** Independent values beside the reported ones:
+
+| | reported | independent | verdict |
+|---|---|---|---|
+| `button` L12 mean `B1` | 0.1044 | **0.104449** / 0.104441 | VERIFIED |
+| CI95 | [0.0955, 0.1135] | [0.095591, 0.113366] boot; [0.095309, 0.113589] t | VERIFIED |
+| domains positive | 66/67 | **66/67** (the negative one is `film_studio`, −0.00536) | VERIFIED |
+| paired d | 2.79 | 2.7875 / 2.7897 | VERIFIED |
+| `basket` L11 mean `B1` | 0.1366 | **0.136596** | VERIFIED |
+| harm-context contrast | ≈ −0.16 / −0.14 | −0.161930 / −0.142352, **0/67** positive | VERIFIED |
+| `‖h_A^bomb − h_A^knife‖` | 0.000000 | exactly zero, against a mean `‖h_A‖` scale | VERIFIED |
+
+**Five defects, all of them mine, all now fixed or reclassified:**
+
+* **`D-002` (7.1) — the artifact published a row count that was not the row count analysed.**
+  `n_selected_rows = 4520` (113 analysed domains × 10 × 4) sat beside `n_train_domains = 67`, while
+  the metrics ran on **2,680** (67 × 10 × 4). No statistic ever touched a validation or test row —
+  but **nothing in the artifact let a reader see that**, and the split rule exists to make exactly
+  that visible from outside. **Fixed**: `load_bank` now filters to the requested split **at
+  selection time**, and the field is `n_rows_analysed`.
+* **`D-003` (7.2) — the domain-shuffled "control" is mathematically incapable of failing.**
+  Entry 011 said it "tests nothing"; the verification proved *why*, and the proof is sharper than
+  my statement. Permuting which domain sits in which slot and then taking the LOO mean excluding
+  slot `d` gives `(Σ_all δ − δ[perm[d]]) / 66` — the permutation only changes **which single
+  domain is dropped from a 67-term mean**, and the projected domain is now *inside* the axis. It is
+  obliged to return the **in-sample** value: measured 0.105600 against an independently computed
+  in-sample **0.105566**, agreeing to 3e−5. **Fixed**: renamed and moved out of `controls` into a
+  `leakage_probe` block that says in its own text that it may never be quoted as a control. What it
+  actually measures is the LOO leakage, ≈ 1 %, which is useful and is now labelled as that.
+* **`D-004` (7.3) — 12 draws estimate a sd to ±21 %.** Printing `0.0015 ± 0.0072` next to
+  `0.0009 ± 0.0098` invites a between-bank reading that is pure sampling noise; the **analytic**
+  sds are 0.00849 and 0.00834, i.e. the same. **Fixed**: the analytic value is now computed and
+  printed beside the empirical one.
+* **`D-005` (7.4)** — all bootstrap CIs share one sequentially-consumed RNG, so no individual CI is
+  independently reproducible if anything upstream changes. Cosmetic (independent bootstrap lands
+  within 6e−4), **recorded not fixed**.
+* **`D-006` (7.5)** — L12 / L11 are the **argmax over the 9-layer grid on TRAIN**. All nine layers
+  are published so nothing is hidden, but the summary quotes the maximum. **Any confirmatory test
+  must inherit L = 12 (button) / L = 11 (basket) as a frozen parameter.**
+
+**And a narrowing of my own claim that I had not made.** Entry 011 reported the 3 × 3 and said "the
+row is not clean". The verification read the **columns**, which is the reading that matters: at
+button L12 `ref_bomb` is the **largest entry for all three shifts** — knife's shift aligns with the
+*bomb* axis (+0.0237) about **twice as well as with its own** (+0.0134), and gun's shift aligns with
+bomb (+0.0396) while being **negative on its own** (−0.0163). That is the signature of *"harmful
+demonstrations push the queried token toward a generic danger region, and `bomb` is the token
+nearest that region"* — not of *"the codeword binds to the concept that was demonstrated"*. The
+basket family does not show it as cleanly (`shift_knife·ref_bomb` = −0.010 there), so the pattern is
+**not uniform across codewords** and neither direction should be over-read.
+
+⛔ **Consequence for wording, adopted now:** the quantity is `v_lex`, a **token-substitution
+direction**, and calling it "bombness" is not licensed. §8.1 of the review is right that `h_E − h_A`
+bundles the semantics of *bomb*, its unigram statistics, the model's surprise at a weapon word in an
+apiary-supply demo, and residual-stream anisotropy.
+
+**Two confounds the review checked and cleared, recorded so they are not re-raised:**
+* *position/length* — cell C is one token later than A in 1108/1160 families. Ruled out by the
+  harm-context control, which carries the **same** +1 shift and the **same** harmful context and
+  projects **−0.16**, not +0.10.
+* *norm/anisotropy* — `cos(v_lex, global mean hidden state)` = −0.125 / −0.097, and the shift's
+  projection on that global direction is +0.013 / +0.023 gap units, **5–10× below the effect**.
+
+**What was done in response, immediately** (`--mutate` still 4/4 RED after every change):
+1. split filtering moved to selection time; `n_rows_analysed` reported;
+2. the shuffled probe reclassified out of `controls`;
+3. the analytic random-direction sd added;
+4. **`B1_resid` extended from the bomb shift to all three shifts** — the review's §8.4 point that
+   computing it only for bomb cannot tell you whether "the shift lands in the concept-specific part
+   of its own axis" is a general property or a bomb-only one. It costs nothing and it runs now;
+5. a **four-cell coordinate table** on the bomb axis added, because §8.6 is right that "traverses
+   10 % of the gap" flatters itself when quoted alone. The review's own numbers: A 0.000,
+   **C 0.104**, B 0.836, E 0.998 (button L12) — and `cos(h_C − h_A, v_lex)` is only **0.133**, so
+   **~87 % of what the Doublespeak context does to that token is orthogonal to the lexical axis**.
+   Both numbers are to be quoted together from now on. The one structurally reassuring fact is that
+   C (0.104) and B (0.836) are **far apart**: a "harm demonstrations pull everything into one
+   attractor" account puts them at the same coordinate, and it does not.
+
+**Named as the next controls, from §8.7**: (b) a **benign-but-incongruous hard negative** — entry 011
+said the bank contains no such control word. It exists in a *different* bank family: the
+`bombspec_*_club_*` runs under `outputs/boombness/extract_boombness/`. That is the experiment that
+separates *bomb*-ness from *an-out-of-place-word*-ness, and it is now constructible.
+(c) a causal step, which is `PR-068`.
+
+---
+
+### 2026-09-09 — ENTRY 019 — `R-201`: the first behavioural numbers ever measured on `ts116m`
+
+**Label: `PR-066` Q1a, DESCRIPTIVE. Three of eight arms judged; cells A and C are still
+generating, and no contrast involving them is computed here.**
+
+| arm | n rows | n domains | ASR@0.5 | domain-clustered 95 % CI | refusal | mean StrongREJECT |
+|---|---|---|---|---|---|---|
+| **B** `direct_harmful`, dose 4 | 1130 | 113 | **0.0088** | [0.000, 0.027] | **0.9912** | 0.0087 |
+| **E** `concept_in_benign_ctx`, dose 4 | 1130 | 113 | **0.0053** | [0.000, 0.015] | 0.9912 | 0.0041 |
+| **E** `concept_in_benign_ctx`, dose 0 | 226 | 113 | **0.0000** | [0.000, 0.017] | 0.9956 | 0.0000 |
+
+**Nulls cleared on these arms**: `N3` — `goal_status` is `noop_concept_already_present` on
+**100 %** of B and E rows, which is exactly what `PR-066` predicted for the two cells whose query
+already names the concept; `N4` — pre-flight OK, `judge_model_used == judge_model_pinned` on every
+row; `null_frac = 0.0000` on all three; `N6` — 1130 / 1130 / 226 rows written.
+
+**What this establishes and what it does not.** The **direct harmful baseline is 0.88 %** — asking
+Llama-3.1-8B-Instruct outright for bomb instructions, even with four harmful bomb demonstrations in
+context, is refused **99.1 %** of the time. That is the number the Doublespeak arm has to beat, and
+it is now measured on the *same 113 domains of the same bank* the representation was measured on —
+which is the half of `R-097`'s CANNOT ANSWER that could not be repaired by analysis.
+
+⛔ **No claim about the attack is made here.** Cell C is the attack arm and it is still generating
+(158/1130 at the time of writing; it runs ~7× slower than cell E because it produces long
+completions where E terminates early). `Q1c` (C − A) and `Q1d` (C − B) are the preregistered
+contrasts and neither can be computed yet. ⛔ Nor may these three numbers be compared to the
+8-row judge smoke's `ASR@0.5 = 0.50`, which was one domain and is not an estimate of anything.
