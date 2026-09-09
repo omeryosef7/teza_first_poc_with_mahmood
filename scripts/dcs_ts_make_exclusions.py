@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Emit the `--exclude-prompt-ids` file for the THREE preregistered whole-population exclusions.
+
+WHY A SCRIPT AND NOT A HAND-WRITTEN LIST. `score_behavior.main` refuses an exclusion id that is
+not present in the selected population, so the list must be scoped to exactly the
+(query_kind, bank_block, condition) an arm selects. A hand-maintained list would be a different
+list per arm, edited by hand, which is the shape `CDS-C-001` warns about. This derives it from the
+bank every time and prints the arithmetic, so "which rows did you exclude" is answerable from the
+file rather than from memory.
+
+The three domains and their authority (frozen before any outcome of this phase):
+  restaurant_kitchen  DCS-C-082   knives are natural kitchen furniture, so bomb/gun harm pools
+                                  generated for it keep naming a knife
+  subway_station      DCS-C-087
+  school_campus       DCS-C-075 / DCS-R-108
+They are excluded from the ENTIRE analysis population, all concepts, all cells -- not per arm.
+
+USAGE
+  python3 scripts/dcs_ts_make_exclusions.py \
+      --bank data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl \
+      --query-kind behavioral --bank-block cds_n4 --condition natural_doublespeak \
+      --out runargs/dcs_succ/exclude_button_bomb_behavioral_cds_n4_C.txt
+"""
+from __future__ import annotations
+import argparse, hashlib, json, os, sys
+
+EXCLUDED_DOMAINS = ("restaurant_kitchen", "school_campus", "subway_station")
+AUTHORITY = {"restaurant_kitchen": "DCS-C-082", "school_campus": "DCS-C-075 / DCS-R-108",
+             "subway_station": "DCS-C-087"}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--bank", required=True)
+    ap.add_argument("--query-kind", required=True)
+    ap.add_argument("--bank-block", required=True)
+    ap.add_argument("--condition", required=True)
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+
+    sel, exc, doms = 0, [], set()
+    with open(a.bank, encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if (r["query_kind"] != a.query_kind or r["bank_block"] != a.bank_block
+                    or r["condition"] != a.condition):
+                continue
+            sel += 1
+            doms.add(r["domain"])
+            if r["domain"] in EXCLUDED_DOMAINS:
+                exc.append(r["prompt_id"])
+
+    if not exc:
+        # An empty exclusion that still gets recorded as an exclusion is the failure mode the
+        # runner's own loader refuses on. Refuse it here too, one step earlier.
+        print("REFUSING: the selection (%s, %s, %s) contains none of %s -- an empty exclusion "
+              "file would be a no-op recorded as an exclusion."
+              % (a.query_kind, a.bank_block, a.condition, list(EXCLUDED_DOMAINS)), file=sys.stderr)
+        return 2
+    if len(set(exc)) != len(exc):
+        print("REFUSING: duplicate prompt_id in the derived list", file=sys.stderr)
+        return 2
+
+    exc = sorted(exc)
+    sha = hashlib.sha256("\n".join(exc).encode("utf-8")).hexdigest()[:16]
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    with open(a.out, "w", encoding="utf-8") as fh:
+        fh.write("# Derived by scripts/dcs_ts_make_exclusions.py from %s\n" % a.bank)
+        fh.write("# selection: query_kind=%s bank_block=%s condition=%s\n"
+                 % (a.query_kind, a.bank_block, a.condition))
+        fh.write("# %d selected rows over %d domains; %d rows in the %d preregistered excluded "
+                 "domains; %d rows remain over %d domains\n"
+                 % (sel, len(doms), len(exc), len(EXCLUDED_DOMAINS), sel - len(exc),
+                    len(doms - set(EXCLUDED_DOMAINS))))
+        for d in EXCLUDED_DOMAINS:
+            fh.write("#   %-20s %s\n" % (d, AUTHORITY[d]))
+        fh.write("# exclusion_sha16 = %s\n" % sha)
+        for i in exc:
+            fh.write(i + "\n")
+
+    print("wrote %s: selected=%d excluded=%d remain=%d domains_remain=%d exclusion_sha16=%s"
+          % (a.out, sel, len(exc), sel - len(exc), len(doms - set(EXCLUDED_DOMAINS)), sha))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

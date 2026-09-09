@@ -1,0 +1,13 @@
+# Derived by scripts/dcs_ts_make_exclusions.py from data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+# selection: query_kind=behavioral bank_block=cds_n0 condition=direct_harmful
+# 232 selected rows over 116 domains; 6 rows in the 3 preregistered excluded domains; 226 rows remain over 113 domains
+#   restaurant_kitchen   DCS-C-082
+#   school_campus        DCS-C-075 / DCS-R-108
+#   subway_station       DCS-C-087
+# exclusion_sha16 = f5155d545dee91f2
+01549defd7d2c2e2
+0dd2c2b339b44f47
+6411c24d4d9b3af1
+96d4fb5d0dd83914
+a7bafbd233a3fd1c
+d1e5c8a04dbb2145
