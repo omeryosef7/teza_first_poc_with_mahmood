@@ -1028,9 +1028,23 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         transplant a counterfactual about context rather than about which word is there.
 
         Under `absolute` this is the identity, which is what the historical pairs always did.
-        Under `end_relative` it is `len(d_ids) + (p - len(r_ids))`, and every mapped pair must
-        carry the SAME token id -- if it does not, the patch would be moving one word's state onto
-        a different word and the row would be a lexical result wearing a contextual label."""
+        Under `end_relative` it is `len(d_ids) + (p - len(r_ids))`.
+
+        THE TOKEN-IDENTITY ASSERTION APPLIES ONLY TO `end_relative`, AND THE FIRST VERSION OF THIS
+        FUNCTION GOT THAT WRONG. Found by the 2026-09-09 four-hourly code review, finding F1.
+        The check was unguarded, and for `harm_ctx` the donor is `direct_harmful`
+        (`target_surface="bomb"`, token 13054) while the recipient is `natural_doublespeak`
+        (`target_surface="button"`, token 3215). Those tokens DIFFER BY DESIGN -- transplanting the
+        concept token's state onto the codeword token IS that pair's experiment. So the check was
+        true for every family, `donor_positions` returned None, the transplant loop `continue`d,
+        and **the historical pairs silently wrote zero transplant rows** while the run still exited
+        0, because `none` and `donor_ceiling` are emitted before this function is ever called.
+        Entry 013 of the successor log claimed the old pairs were "byte-for-byte unchanged"; that
+        claim was FALSE and is corrected in the log.
+
+        For `end_relative` the assertion is the point: donor and recipient carry the SAME word
+        there (` button` in both cells A and C), so a mismatch would mean the patch is moving one
+        word's state onto a different word -- a lexical result wearing a contextual label."""
         if align_mode == "absolute":
             dp = list(rpos)
         else:
@@ -1039,7 +1053,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
             if not (0 <= dpi < len(d_ids)):
                 ledger.fail(f"donor_position_out_of_range:{dpi}", recip["prompt_id"])
                 return None
-            if d_ids[dpi] != r_ids[rp]:
+            if align_mode == "end_relative" and d_ids[dpi] != r_ids[rp]:
                 ledger.fail(
                     f"patch_token_identity_differs:donor={d_ids[dpi]},recip={r_ids[rp]}",
                     recip["prompt_id"])
@@ -1205,6 +1219,10 @@ def main() -> int:
                     choices=sorted(_QK))
     ap.add_argument("--n-families", type=int, default=4, help="matched families per pair (smoke=2)")
     ap.add_argument("--n-examples", default="4", help="comma list")
+    ap.add_argument("--bank-blocks", default="core2x2",
+                    help="comma list of bank_block values to select. Default is the historical "
+                         "hardcoded value so no existing caller changes; ts116m has no core2x2 "
+                         "block and needs cds_n4_sow for the semantic_one_word rows (F2).")
     ap.add_argument("--scopes", default=",".join(SCOPES))
     ap.add_argument("--pairs", default="harm_ctx,benign_ctx",
                     help="which donor->recipient pairs to run. The default is the historical two, "
@@ -1275,8 +1293,20 @@ def main() -> int:
     dc, pc = ds(), pair()
     rows = read_jsonl(args.bank)
     want_n = {int(x) for x in args.n_examples.split(",")}
+    # The block filter WAS hardcoded to "core2x2", which exists only in the older bank family.
+    # On ts116m it selects ZERO rows, and the run then dies downstream with "the selected bank
+    # slice carries 0 distinct (concept, codeword) pairs" -- which is what job 872575 did. Found by
+    # the 2026-09-09 four-hourly code review, finding F2. The default is unchanged so no existing
+    # caller moves; ts116m callers pass --bank-blocks cds_n4_sow.
+    want_blocks = {x.strip() for x in args.bank_blocks.split(",") if x.strip()}
     rows = [r for r in rows if r["query_kind"] == args.query_kind and r["n_examples"] in want_n
-            and r["bank_block"] == "core2x2"]
+            and r["bank_block"] in want_blocks]
+    if not rows:
+        raise SystemExit(
+            "REFUSING: the selection (query_kind=%r, n_examples=%s, bank_blocks=%s) binds ZERO "
+            "rows of %s. A run that selects nothing does not fail here -- it fails several "
+            "hundred lines later, in a message about readout ids, which is how F2 stayed hidden."
+            % (args.query_kind, sorted(want_n), sorted(want_blocks), os.path.basename(args.bank)))
     by_family: Dict[str, Dict[str, Dict]] = collections.defaultdict(dict)
     for r in rows:
         by_family[r["family_id"]][r["condition"]] = r

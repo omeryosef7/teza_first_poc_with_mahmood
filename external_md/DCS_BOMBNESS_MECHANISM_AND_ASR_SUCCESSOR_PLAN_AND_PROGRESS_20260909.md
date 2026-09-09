@@ -2947,3 +2947,89 @@ register/hedging, demonstration length, incongruity, generic-danger-region, conc
 **register is now excluded** and **length is bounded at ≈ 15 %**. Incongruity remains partly
 bounded (the residualisation of `S-002`/`S-004`) and partly open. That is progress on the plan §33
 question "if it fails, ask WHY", run in the direction of "if it works, ask what else it could be".
+
+---
+
+### 2026-09-09 22:20 — ENTRY 024 — `REVIEW-1`: the four-hourly five-part review, and the two CRITICAL regressions it found in my own work
+
+**Label: REVIEW (mandate §39's four-hourly cycle).** Five adversarial reviewers, read-only, in
+parallel: `reports/DCS_SUCC_REVIEW1_{CODE,DATA,OUTPUT,STATISTICAL,CLAIM}.md`.
+
+**⛔ `C-203` (CRITICAL, mine) — `PR-068` silently killed the transplant arm of BOTH historical
+pairs, and entry 013's "byte-for-byte unchanged" claim was FALSE. This supersedes that sentence.**
+
+The token-identity assertion I added inside `donor_positions()` was **not guarded by
+`align_mode`**. For `harm_ctx` the donor is `direct_harmful` (`target_surface = "bomb"`, token
+**13054**) and the recipient is `natural_doublespeak` (`target_surface = "button"`, token **3215**).
+Those tokens **differ by design** — transplanting the concept token's state onto the codeword token
+*is that pair's experiment*. So `d_ids[dpi] != r_ids[rp]` was true for **every family**,
+`donor_positions` returned `None`, the transplant loop `continue`d, and **zero transplant rows would
+have been written** — while the run still exited **0**, because `none` and `donor_ceiling` are
+emitted before that function is ever called.
+
+Entry 013 said *"Under `absolute` it is the identity map, so nothing changes for the old pairs."*
+The **map** is the identity; the **assertion** was new. That distinction is the whole defect, and I
+did not make it. **Fixed**: the assertion now applies only under `end_relative`, where donor and
+recipient carry the *same* word and a mismatch really would be a lexical result wearing a
+contextual label. Repo tests for the module: **64 passed**.
+
+⚠️ **No published number is affected** — the historical pairs were not re-run in this session, so
+nothing on disk was produced under the broken guard. What was at risk was every *future* run of them.
+
+**⛔ `C-204` (CRITICAL, mine) — the C→A patch has NOT run, and entry 013's "proved constructible"
+was true of the wrong thing. This supersedes that reading.**
+
+`aggressive_patching.main()` hard-filtered `r["bank_block"] == "core2x2"` — a block that exists only
+in the older bank family. On `ts116m` it selects **zero rows**, and the run then dies several
+hundred lines later inside a message about readout ids. Job **872575** did exactly that:
+
+> *"the selected bank slice carries 0 distinct (concept, codeword) pairs"*
+
+leaving a run directory with only `config.json` and `RUNMETA.json`.
+
+My CPU preflight (`dcs_succ_pr068_preflight.py`) faithfully reproduced `run_pair`'s **per-row**
+checks P1–P8 and reported 670/670 constructible — and it is right about those. It never reproduced
+`main()`'s **selector**. ⛔ *A preflight that validates a population the runner then discards is not
+a preflight*, and that is the same shape as `C-134` (a check reading a source nobody writes) and
+`D-007` (a grep matching a string that pre-existed): **three instances this session of a check that
+could not have failed.** **Fixed**: `--bank-blocks` added, default `core2x2` so no existing caller
+moves, and a **zero-row selection is now a refusal at the point of selection** rather than a
+confusing death later. Resubmitted as job **872583** with `--bank-blocks cds_n4_sow`.
+
+**`C-205` (HIGH, mine) — `kladder_run.py` would have died on the first refusing rung.**
+`rc = int(e.code or 0)` inside `except SystemExit`: `score_behavior` raises `SystemExit` with a
+**string** on every refusal path, `int("[score] REFUSING: …")` raises `ValueError` **inside the
+handler**, and Python does not route that to the sibling `except Exception`. The manifest would lose
+the arm, `finished`/`model_loads` would never be written, and **every remaining rung would die** —
+precisely the `PR-065` stop-scope failure entry 009 claims was designed out. **Fixed.** The ladder
+currently running (job 872512) has completed its arms at `rc=0` so far and is not affected
+retroactively, but it is running the unfixed file.
+
+**`C-206` (HIGH, mine) — `kladder_run.py --split` labelled the run without selecting it.** The
+population comes from `--exclude-prompt-ids`; `--split validation` would have run **train** data
+under a manifest saying validation. **Fixed** by cross-checking `--split` against the exclusion
+file's own provenance header and refusing on disagreement — the header exists precisely because
+`dcs_ts_make_exclusions.py` writes its own arithmetic into it.
+
+**`C-207` (MEDIUM, mine) — `dcs_ts_make_exclusions.py` printed a domain count that was not the
+domain count.** `domains_remain=113` on stdout beside `670 rows remain over 67 domains` in the file
+header it had just written: `len(doms − EXCLUDED)` ignored the `--split` filter. **Same shape as
+`D-002`.** Fixed; it now prints **67**.
+
+**Also recorded from the review, not yet acted on:**
+* three of the six refusals I added to `aggressive_patching` are **unreachable** (shadowed by an
+  earlier `SystemExit` in `main()`);
+* `dcs_succ_pr066_behaviour.py`'s `--installation-run` override bypasses the compound-key check, so
+  the `"(bank_file_sha16, domain) — COMPOUND"` label is a label on that path. Inert on the default
+  path; must be fixed before the override is used;
+* `holm` is now the **13th and 14th** copy of that function in this repository, and
+  `dcs_succ_pr066_behaviour.py` reimplements `two_sided_sign_p` / `cluster_bootstrap_ci` that
+  `clustered_stats` already provides and that its own sibling analyzer imports. Genuine duplication
+  against mandate §28, recorded;
+* `dcs_succ_bombness_candidates.py`'s mutation family covers **four reducers only** — none of
+  §24.8's bank-identity, split, join or leakage mutations. The 4/4 RED figure is real and narrow,
+  and should not be quoted as if it were §24.8 coverage.
+
+**What the review did NOT overturn.** `S-002`'s numbers (independently re-derived in `A-103`), the
+`R-201` ASR figures, and `S-005`'s nuisance floor are untouched by all five findings above: every one
+of them is in code that either had not run on the affected path or had not run at all.

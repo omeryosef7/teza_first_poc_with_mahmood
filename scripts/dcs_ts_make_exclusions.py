@@ -100,8 +100,13 @@ def main() -> int:
         for i in exc:
             fh.write(i + "\n")
 
+    # F6: this line used to print len(doms - EXCLUDED_DOMAINS), which ignores the --split filter,
+    # so it said 113 while the file header it had just written said 67. Same shape as D-002: a
+    # count that is not the count. It now reports the domains that actually REMAIN.
+    remaining_domains = (doms if keep_domains is None else doms & keep_domains) - set(
+        EXCLUDED_DOMAINS)
     print("wrote %s: selected=%d excluded=%d remain=%d domains_remain=%d exclusion_sha16=%s"
-          % (a.out, sel, len(exc), sel - len(exc), len(doms - set(EXCLUDED_DOMAINS)), sha))
+          % (a.out, sel, len(exc), sel - len(exc), len(remaining_domains), sha))
     return 0
 
 

@@ -151,7 +151,11 @@ def main() -> int:
     ap.add_argument("--exclude-prompt-ids", default=os.path.join(
         REPO, "runargs/dcs_succ/exclude_button_bomb_sow_cds_n4_sow_C_train.txt"))
     ap.add_argument("--expect-n", type=int, default=670)
-    ap.add_argument("--split", default="train", choices=["train", "validation"])
+    ap.add_argument("--split", default="train", choices=["train", "validation"],
+                    help="LABEL ONLY -- it names the run and is recorded in the manifest. The "
+                         "population is selected by --exclude-prompt-ids, which is derived from "
+                         "the frozen manifest by scripts/dcs_ts_make_exclusions.py. The two are "
+                         "cross-checked below; a mismatch is a refusal (F3).")
     ap.add_argument("--model", default="meta-llama/Llama-3.1-8B-Instruct")
     ap.add_argument("--max-new", type=int, default=8)
     ap.add_argument("--min-option-mass", type=float, default=0.05)
@@ -160,6 +164,19 @@ def main() -> int:
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--allow-tail-readout", action="store_true")
     a = ap.parse_args()
+
+    # F3: --split labelled the run but did not select it, so `--split validation` would have run
+    # TRAIN data under a manifest saying validation. The exclusion file carries its own provenance
+    # header naming the split it was derived for; it is checked against --split here rather than
+    # trusted.
+    if not os.path.exists(a.exclude_prompt_ids):
+        raise RunnerRefusal("--exclude-prompt-ids file not found: %s" % a.exclude_prompt_ids)
+    _hdr = "".join(l for l in open(a.exclude_prompt_ids, encoding="utf-8") if l.startswith("#"))
+    if ("split=%s" % a.split) not in _hdr:
+        raise RunnerRefusal(
+            "--split %r does not match the exclusion file's own provenance header. The file is "
+            "what selects the population; --split only labels it, so a disagreement means the run "
+            "would be recorded as a split it did not use. Header:\n%s" % (a.split, _hdr))
 
     arms = build_arms(a)
     print("[kladder] %d arms; band %s; split %s; expect-n %d" % (len(arms), a.band, a.split,
@@ -191,7 +208,19 @@ def main() -> int:
         try:
             rc = SB.main()
         except SystemExit as e:            # score_behavior refuses with SystemExit
-            rc = int(e.code or 0)
+            # `score_behavior` raises SystemExit with a STRING message on every refusal path, and
+            # `int("[score] REFUSING: ...")` raises ValueError INSIDE this handler -- which Python
+            # does NOT route to the sibling `except Exception`. The whole ladder would die on the
+            # first refusing rung, which is exactly the PR-065 stop-scope failure this runner was
+            # written to avoid. Found by the 2026-09-09 four-hourly code review, finding F4.
+            code = e.code
+            if code is None:
+                rc = 0
+            elif isinstance(code, int):
+                rc = code
+            else:
+                rc = 2
+                print("[kladder] arm %s refused: %s" % (arm["arm_id"], code), flush=True)
         except Exception as e:             # noqa: BLE001 -- an arm must not take down the ladder
             rc = 99
             print("[kladder] arm %s raised %r" % (arm["arm_id"], e), flush=True)
